@@ -1,0 +1,9 @@
+$Id$
+
+SEGS End-User License Agreement / Legal Stuff
+
+SEGS has been built with education as the main target. Thus, you may 
+only use the source code and binary releases provided by the project for 
+educational purposes. You are not allowed to use SEGS for any 
+commercial purpose, and you are not allowed to use SEGS for hosting
+servers for public usage.
