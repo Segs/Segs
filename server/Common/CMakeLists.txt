@@ -1,0 +1,4 @@
+# $Id: CMakeLists.txt 182 2006-03-11 01:27:03Z malign $
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include)
+SUBDIRS(src)
