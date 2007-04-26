@@ -1,0 +1,13 @@
+$Id$
+
+SEGS Developers
+=================
+nemerle    (?)
+malign     (malign@necrotic.net)
+SilverJohn (?)
+
+SEGS Contributors
+===================
+Darawk     (darawk@darawk.com)
+rz950      (?)
+Catvir     (?)
