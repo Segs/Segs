@@ -1,0 +1,78 @@
+/*
+ * Super Entity Game Server Project
+ * http://segs.sf.net/
+ * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ *
+ * $Id: AuthServer.h 316 2007-01-25 15:17:16Z nemerle $
+ */
+
+#pragma once
+#include <list>
+#include <string>
+
+// ACE includes
+#include <ace/OS.h>
+#include <ace/INET_Addr.h>
+#include <ace/Singleton.h>
+#include <ace/Synch.h>
+
+#include <ace/Acceptor.h>
+#include <ace/SOCK_Acceptor.h>
+class AuthClientService;
+typedef ACE_Acceptor<AuthClientService, ACE_SOCK_ACCEPTOR> ClientAcceptor;
+
+// segs includes
+#include "Client.h"
+#include "Server.h"
+#include "ServerHandle.h"
+
+// Boost includes
+#include <boost/pool/object_pool.hpp>
+#include <map>
+class IClient;
+#ifndef WIN32 // If anything other than Windows, use the below headers
+#include <ext/hash_map>
+#include <ext/hash_set>
+using namespace __gnu_cxx;
+typedef std::map< std::string,AuthClient *> hmClients;
+#else         // Anything else will use the following headers
+#include <hash_map>
+#include <hash_set>
+using namespace stdext;
+typedef hash_map<std::string,AuthClient *> hmClients;
+#endif
+class AuthClient;
+class AuthServer  : public Server
+{
+public:
+	typedef enum
+	{
+		AUTH_OK = 0,
+		AUTH_ACCOUNT_BLOCKED,
+		AUTH_WRONG_LOGINPASS,
+		AUTH_ALREADY_LOGGEDIN,
+		AUTH_UNAVAILABLE_SERVER,
+		AUTH_KICKED_FROM_GAME,
+		AUTH_UNKN_ERROR
+	} eAuthError; // this is a public type so other servers can pass us valid errors
+	AuthServer();
+	virtual	~AuthServer();
+
+	bool                        ReadConfig(const std::string &name); // later name will be used to read GameServer specific configuration
+	bool                        Run(void);
+	bool                        ShutDown(const std::string &reason="No particular reason");
+
+    ServerHandle<AdminServer>   AuthenticateMapServer(const ServerHandle<MapServer> &map,int version,const string &passw); // World-cluster interface
+
+	AuthClient *                GetClientByLogin(const char *);
+protected:
+	typedef hmClients::iterator ihmClients; //!< helper typedef for iterators to m_clients store
+	typedef hmClients::const_iterator cihmClients; //!< helper typedef for const iterators to m_clients store
+
+	ClientAcceptor *			m_acceptor;	//!< ace acceptor wrapping AuthClientService
+	ACE_INET_Addr				m_location;	//!< address this server will bind at.
+	bool						m_running;	//!< true if this server is running
+	hmClients					m_clients;	//!< mapping from string:login to client's object
+	boost::object_pool<AuthClient> m_client_pool; //!< pool used to efficiently construct new client objects.
+};
