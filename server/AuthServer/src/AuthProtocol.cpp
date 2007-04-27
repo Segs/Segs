@@ -66,7 +66,7 @@ AuthPacket *AuthSerializer::serializefrom(GrowingBuffer &buffer)
 		tmp = (u8 *)&(buffer.GetBuffer()[2]);
 		
 		m_codec.XorDecodeBuf(tmp, packet_size+1); // Let's see what's in those murky waters
-		eAuthPacketType recv_type = OpcodeToType(tmp[0]);
+		eAuthPacketType recv_type = OpcodeToType(tmp[0],false);
 		AuthPacket *pkt = AuthPacketFactory::PacketForType(recv_type); // Crow's nest, report !			
 		if(!pkt)
 		{
@@ -113,12 +113,15 @@ bool AuthSerializer::serializeto(AuthPacket *pkt,GrowingBuffer &buffer)
 	return true;
 }
 
-eAuthPacketType AuthSerializer::OpcodeToType(u8 op)
+eAuthPacketType AuthSerializer::OpcodeToType( u8 opcode,bool direction )
 {
-	switch(op)
+	switch(opcode)
 	{	
 	case 0:
+		if(direction)
 			return SMSG_AUTHVERSION;
+		else
+			return CMSG_AUTH_LOGIN;
 	case 2:
 			return CMSG_AUTH_SELECT_DBSERVER;
 	case 3:

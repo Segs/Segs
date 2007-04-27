@@ -21,7 +21,7 @@ public:
 	AuthSerializer();
 	AuthPacket *serializefrom(GrowingBuffer &buffer); // returns null if it's not possible to serialize the packet
 	bool serializeto(AuthPacket *pkt,GrowingBuffer &buffer); // returns false if it's not possible to serialize the packet, i.e. buffer to small etc.
-	static eAuthPacketType OpcodeToType(u8 opcode);
+	static eAuthPacketType OpcodeToType(u8 opcode,bool direction); // false -> client->server packet.
 	AuthPacketCodec m_codec;
 	static const int m_protocol_version = 30206;
 };
