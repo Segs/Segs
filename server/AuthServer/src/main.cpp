@@ -110,7 +110,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 
 	ACE_LOG_MSG->msg_callback(&t);
 	set_callbacked_logging();
-	ACE_DEBUG((LM_ERROR,ACE_TEXT("main")));
+	ACE_DEBUG((LM_ERROR,ACE_TEXT("main\n")));
 /*
 	AuthServerTP server_pool;
 	server_pool.activate(THR_NEW_LWP|THR_JOINABLE,4);
