@@ -18,7 +18,7 @@ bool pktAuthServerList::serializeto(GrowingBuffer &buf)
 	GameServerInterface *gs;
 	buf.uPut(m_op);
 	buf.uPut((u8)serv_manager->GameServerCount());
-	buf.uPut(unknown1); //selected number ???
+	buf.uPut(unknown1); //preferred number
 	for(size_t i=0; i<serv_manager->GameServerCount(); i++)
 	{
 		gs = serv_manager->GetGameServer(i);

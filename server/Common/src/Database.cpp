@@ -148,16 +148,12 @@ size_t DbResultRow::getColIntArray(const char *column_name,u32 *arr,size_t arr_s
 	{
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),0);
 	}
-	res++;
-	char *val,*f,*fd;
-	fd = f =  strdup(res);
-	val= strtok(f,",");
-	while(val && idx<arr_size)
+	while(res && idx<arr_size)
 	{
-		arr[idx++]=strtol(val,0,0);
-		val = strtok(NULL,",");
+		res++;
+		arr[idx++]=strtol(res,0,0);
+		res=strchr(res,',');
 	}
-	free(fd);
 	return idx;
 }
 size_t DbResultRow::getColFloatArray(const char *column_name,float *arr,size_t arr_size)
@@ -168,15 +164,11 @@ size_t DbResultRow::getColFloatArray(const char *column_name,float *arr,size_t a
 	{
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),0);
 	}
-	res++;
-	char *val,*f,*fd;
-	fd = f =  strdup(res);
-	val= strtok(f,",");
-	while(val && idx<arr_size)
+	while(res && idx<arr_size)
 	{
-		arr[idx++]=(float)atof(val);
-		val = strtok(NULL,",");
+		res++;
+		arr[idx++]=atof(res);
+		res=strchr(res,',');
 	}
-	free(fd);
 	return idx;
 }

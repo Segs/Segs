@@ -51,6 +51,7 @@ void pktCS_ServerUpdate::serializeto( BitStream &tgt ) const
 
 void pktCS_ServerUpdate::serializefrom( BitStream &src )
 {
+/*
 	m_build_date = src.GetPackedBits(1);
 	src.GetBitArray(clientInfo,128);
 	localMapServer = src.GetPackedBits(1);
@@ -66,6 +67,14 @@ void pktCS_ServerUpdate::serializefrom( BitStream &src )
 	developerID = src.GetPackedBits(1);
 	if(developerID)
 		src.GetString(developerString);
+*/
+	m_build_date = src.GetPackedBits(1);
+	u32 t = src.GetPackedBits(1);
+	src.GetString(currentVersion);
+	src.GetBitArray(clientInfo,128);
+	authID = src.GetPackedBits(1);
+	authCookie = src.GetBits(32);
+	src.GetString(accountName);
 }
 
 void pktSC_MapServerAddr::dependent_dump( void )
