@@ -144,11 +144,10 @@ bool CharacterHandler::ReceivePacket(GamePacket *pak)
 			break;
 		}
 	case 5:
-		{
+		{	
 			pktCS_CharUpdate *up = static_cast<pktCS_CharUpdate *>(pak);
 			ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Char update req! %d;\n"),up->m_index));
 			ACE_ASSERT(m_client->getMaxSlots()>up->m_index);
-			m_client->getCharacter(up->m_index);
 			pktSC_Character *res = new pktSC_Character;
 			res->m_slot_idx=up->m_index;
 			res->m_costume=m_client->getCharacter(up->m_index)->m_costume;

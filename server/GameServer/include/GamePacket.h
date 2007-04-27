@@ -165,6 +165,7 @@ class pktSC_Character : public GamePacket
 protected:
 	virtual void dependent_dump(void);
 public:
+	static pktSC_Character *null_character_packet;
 	pktSC_Character()
 	{
 		m_opcode=6;

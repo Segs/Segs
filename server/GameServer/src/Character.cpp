@@ -49,14 +49,15 @@ void Character::serializeto( BitStream &tgt) const
 	tgt.StoreString(m_name);
 	tgt.StoreString(m_archetype);
 	tgt.StoreString(m_origin);
-	tgt.StorePackedBits(1,m_villain);
+
+	//tgt.StorePackedBits(1,m_villain);
 	tgt.StorePackedBits(1,m_bodyType);
 	tgt.StoreFloat(m_unkn1);
 	tgt.StoreFloat(m_unkn2);
 	tgt.StoreBits(32,m_face_bits);
 	tgt.StoreString(m_mapName);
 	tgt.StorePackedBits(1,m_unkn3);
-	tgt.StorePackedBits(32,m_unkn4); // if != 0 UpdateCharacter is called
+	//tgt.StorePackedBits(32,m_unkn4); // if != 0 UpdateCharacter is called
 }
 
 void Character::setName( const std::string &val )

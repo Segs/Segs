@@ -202,9 +202,11 @@ void pktSC_CharSlots::serializefrom( BitStream &src )
 
 void pktSC_CharSlots::serializeto( BitStream &tgt ) const
 {
+/*
 	tgt.StoreBits_4_10_24_32(m_unknown_new);
 	tgt.StoreBits_4_10_24_32(m_authreservations);
 	tgt.StorePackedBits(1,m_last_played_idx);
+*/
 	tgt.StorePackedBits(1,static_cast<u32>(m_characters.size()));
 	ACE_ASSERT(m_characters.size()>0);
 	for(size_t i=0; i<m_characters.size(); i++)
@@ -237,7 +239,11 @@ void pktSC_Character::serializefrom( BitStream &src )
 void pktSC_Character::serializeto( BitStream &tgt ) const
 {
 	tgt.StorePackedBits(1,m_slot_idx);
-	m_costume->serializeto(tgt);
+	if(m_costume)
+		m_costume->serializeto(tgt);
+	else
+		tgt.StorePackedBits(1,0); // 0 parts
+
 }
 
 void pktSC_EnterGameError::dependent_dump( void )
