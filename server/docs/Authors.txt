@@ -2,12 +2,15 @@ $Id$
 
 SEGS Developers
 =================
-nemerle    (?)
-malign     (malign@necrotic.net)
-SilverJohn (?)
+nemerle    (nemerle@users.sourceforge.net)
+malign     (malign@users.sourceforge.net)
+Patrick    (patrick_guerra@users.sourceforge.net)
 
 SEGS Contributors
 ===================
 Darawk     (darawk@darawk.com)
 rz950      (?)
 Catvir     (?)
+SilverJohn (?)
+Fork       (catnipjunkie@users.sourceforge.net)
+gustav     (bjordal@users.sourceforge.net)
