@@ -148,3 +148,155 @@ void pktSC_CmdShortcuts::serializeto( BitStream &tgt ) const
 	// command shortcuts sent to the client depend on it's access level
 	NetCommandManagerSingleton::instance()->SendCommandShortcuts(m_client,tgt,m_commands2);
 }
+
+void MapCostume::GetCostume( BitStream &src )
+{
+	//body_type = src.GetPackedBits(3);
+	//face_bits = src.GetBits(32);
+	float c = src.GetFloat();
+	float d = src.GetFloat();
+	m_non_default_costme_p = src.GetBits(1);
+	m_num_parts = src.GetPackedBits(4);
+	for(int costume_part=0; costume_part<m_num_parts;costume_part++)
+	{
+		CostumePart part;
+		GetCostumeString_Cached(src,part.name_0);
+		GetCostumeString_Cached(src,part.name_1);
+		GetCostumeString_Cached(src,part.name_2);
+		part.m_colors[0] = GetCostumeColor_Cached(src);
+		part.m_colors[1] = GetCostumeColor_Cached(src);
+		if(m_non_default_costme_p)
+		{
+			GetCostumeString(src,part.name_3);
+			GetCostumeString(src,part.name_4);
+			GetCostumeString(src,part.name_5);
+		}
+		m_parts.push_back(part);
+	}
+}
+
+void MapCostume::dump()
+{
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Costume \n")));
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    a: 0x%08x\n"),a));
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    b: 0x%08x\n"),b));
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    c: 0x%08x\n"),c));
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Height %f\n"),split.m_height));			
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Physique %f\n"),split.m_physique));			
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Floats (")));
+	for(int i=2; i<29; i++)
+	{
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT (" %f "),m_floats[i]));			
+	}
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT (")\n")));
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    ****** Parts *******\n")));		
+	for(int i=0; i<m_num_parts; i++)
+	{
+		if(m_parts[i].m_generic)
+			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),m_parts[i].name_0.c_str(),
+			m_parts[i].name_1.c_str(),m_parts[i].name_2.c_str(),m_parts[i].name_3.c_str(),
+			m_parts[i].m_colors[0],m_parts[i].m_colors[1],
+			m_parts[i].name_4.c_str(),m_parts[i].name_5.c_str()
+			));		
+		else
+			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,0x%08x,0x%08x,%s,%s\n"),m_parts[i].name_0.c_str(),
+			m_parts[i].name_1.c_str(),m_parts[i].name_2.c_str(),m_parts[i].name_3.c_str(),
+			m_parts[i].m_colors[0],m_parts[i].m_colors[1],m_parts[i].m_colors[2],m_parts[i].m_colors[3],
+			m_parts[i].name_4.c_str(),m_parts[i].name_5.c_str()
+			));		
+	}
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    *************\n")));
+}
+
+void MapCostume::GetCostumeString_Cached( BitStream &src,string &tgt )
+{
+	bool in_cache= src.GetBits(1);
+	if(in_cache)
+	{
+		if(stringcache.size()==1)
+		{
+			tgt = stringcache[0];
+			return;
+		}
+		int in_cache_idx = src.GetBits(stringcachecount_bitlength);
+		tgt = stringcache[in_cache_idx];
+	}
+	else
+	{
+		GetCostumeString(src,tgt);
+		size_t max_string_idx =(size_t(1)<<stringcachecount_bitlength)-1; 
+		if(stringcache.size()>max_string_idx)
+		{
+			stringcachecount_bitlength++;
+		}
+		stringcache.push_back(tgt);
+	}
+}
+
+void MapCostume::GetCostumeString( BitStream &src,string &tgt )
+{
+	int name_in_hash= src.GetBits(1);
+	if(name_in_hash)
+	{
+		int part_idx=0;
+		//if(hash_map.find(name)!=hash_map.end())
+		//{
+		//	var_4C = 1;
+		//	part_idx = hash_map[name];
+		//}
+		//GetHashTableMaxIndexBits() const 12
+		char buf[128];
+		part_idx=src.GetPackedBits(12);
+		sprintf(buf,"0x%08x",part_idx);
+		tgt= buf;
+	}
+	else
+		src.GetString(tgt);
+}
+
+void MapCostume::serializeto( BitStream &bs ) const
+{
+	storePackedBitsConditional(bs,2,m_costume_type);
+	switch(m_costume_type)	
+	{
+	case 1: // full costume
+		{
+			bs.StoreBits(1,0);
+			if(false)
+			{
+			}
+			bs.StoreBits(1,0);
+		}
+	case 2: // npc costume
+		bs.StorePackedBits(12,costume_type_idx_P); // npc number
+		bs.StorePackedBits(1,costume_sub_idx_P); // costume idx ?
+		storeStringConditional(bs,"");
+		break;
+	}
+}
+
+void Power::serializeto( BitStream &tgt ) const
+{
+	tgt.StoreBits(4,entry_type);
+	switch(entry_type)
+	{
+	case 1:
+		tgt.StoreBits(32,unkn1); //powersetIdx
+		tgt.StoreBits(32,unkn2);
+		break;
+	case 2:
+		tgt.StorePackedBits(3,unkn1);
+		tgt.StorePackedBits(3,unkn2);
+		break;
+	case 6:
+	case 12:
+		tgt.StoreString(sunkn1);
+		tgt.StoreString(sunkn2);
+		tgt.StoreString(sunkn3);
+		break;
+	case 0:
+		break;
+	default:
+		ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Unknown tray entry type %d\n"),entry_type));
+	}
+}

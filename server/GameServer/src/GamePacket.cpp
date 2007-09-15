@@ -136,8 +136,8 @@ void pktCS_MapServerAddr_Query::serializefrom( BitStream &src )
 	m_character_index = src.GetPackedBits(1);
 	m_map_server_ip = src.GetPackedBits(1);
 	m_mapnumber = src.GetPackedBits(1);
-	m_charVillain = src.GetPackedBits(1);
-	m_unkn3 = src.GetBits(1);
+	//m_charVillain = src.GetPackedBits(1);
+	//m_unkn3 = src.GetBits(1);
 	src.GetString(m_char_name);
 }
 

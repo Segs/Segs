@@ -125,31 +125,7 @@ public:
 	string sunkn1;
 	string sunkn2;
 	string sunkn3;
-	void serializeto(BitStream &tgt) const
-	{
-		tgt.StoreBits(4,entry_type);
-		switch(entry_type)
-		{
-		case 1:
-			tgt.StoreBits(32,unkn1); //powersetIdx
-			tgt.StoreBits(32,unkn2);
-			break;
-		case 2:
-			tgt.StorePackedBits(3,unkn1);
-			tgt.StorePackedBits(3,unkn2);
-			break;
-		case 6:
-		case 12:
-			tgt.StoreString(sunkn1);
-			tgt.StoreString(sunkn2);
-			tgt.StoreString(sunkn3);
-			break;
-		case 0:
-			break;
-		default:
-			ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Unknown tray entry type %d\n"),entry_type));
-		}
-	}
+	void serializeto(BitStream &tgt) const;
 	void serializefrom(BitStream &src)
 	{
 		entry_type = src.GetBits(4);
@@ -234,6 +210,7 @@ public:
 };
 class PowerTrayGroup
 {
+	static const int num_trays=2; // was 3, displayed trays
 	PowerTray m_trays[9];
 	u32 m_power_rel1,m_power_rel2;
 	bool m_c;
@@ -245,7 +222,7 @@ public:
 	}
 	void serializeto(BitStream &tgt) const
 	{
-		for(int i=0; i<3; i++)
+		for(int i=0; i<num_trays; i++)
 			tgt.StoreBits(32,m_trays[i].unkn0);
 		for(int bar_num=0; bar_num<9; bar_num++)
 			m_trays[bar_num].serializeto(tgt);
@@ -259,7 +236,7 @@ public:
 	}
 	void serializefrom(BitStream &src)
 	{
-		for(int i=0; i<3; i++)
+		for(int i=0; i<num_trays; i++)
 		{
 			m_trays[i].unkn0 = src.GetBits(32);
 		}
@@ -335,70 +312,9 @@ public:
 	{
 		ACE_ASSERT(!"still not implemented");
 	}
-	void serializeto(BitStream &bs) const
-	{
-		storePackedBitsConditional(bs,2,m_costume_type);
-		switch(m_costume_type)	
-		{
-		case 1: // full costume
-			{
-				bs.StoreBits(1,0);
-				if(false)
-				{
-				}
-				bs.StoreBits(1,0);
-			}
-		case 2: // npc costume
-			bs.StorePackedBits(12,costume_type_idx_P); // npc number
-			bs.StorePackedBits(1,costume_sub_idx_P); // costume idx ?
-			storeStringConditional(bs,"");
-			break;
-		}
-	}
-	void GetCostumeString(BitStream &src,string &tgt)
-	{
-		int name_in_hash= src.GetBits(1);
-		if(name_in_hash)
-		{
-			int part_idx=0;
-			//if(hash_map.find(name)!=hash_map.end())
-			//{
-			//	var_4C = 1;
-			//	part_idx = hash_map[name];
-			//}
-			//GetHashTableMaxIndexBits() const 12
-			char buf[128];
-			part_idx=src.GetPackedBits(12);
-			sprintf(buf,"0x%08x",part_idx);
-			tgt= buf;
-		}
-		else
-			src.GetString(tgt);
-	}
-	void GetCostumeString_Cached(BitStream &src,string &tgt)
-	{
-		bool in_cache= src.GetBits(1);
-		if(in_cache)
-		{
-			if(stringcache.size()==1)
-			{
-				tgt = stringcache[0];
-				return;
-			}
-			int in_cache_idx = src.GetBits(stringcachecount_bitlength);
-			tgt = stringcache[in_cache_idx];
-		}
-		else
-		{
-			GetCostumeString(src,tgt);
-			size_t max_string_idx =(size_t(1)<<stringcachecount_bitlength)-1; 
-			if(stringcache.size()>max_string_idx)
-			{
-				stringcachecount_bitlength++;
-			}
-			stringcache.push_back(tgt);
-		}
-	}
+	void serializeto(BitStream &bs) const;
+	void GetCostumeString(BitStream &src,string &tgt);
+	void GetCostumeString_Cached(BitStream &src,string &tgt);
 	u32 GetCostumeColor(BitStream &src)
 	{
 		bool in_hash= src.GetBits(1);
@@ -439,91 +355,9 @@ public:
 		return tgt;
 	}
 
-	void GetCostume(BitStream &src)
-	{
-		a = src.GetBits(6);
-		b = src.GetBits(32);
-		c = src.GetBits(1);
-		costume_sends_nonquantized_floats = src.GetBits(1);
-		for(int i=0; i<29; i++)
-		{
-			float received;
-			if(i==0)
-			{
-				received = src.GetFloat();
-			}
-			else if(costume_sends_nonquantized_floats)
-			{
-				received = src.GetFloat();
-			}
-			else
-			{
-				ACE_ASSERT(!"Oh well, we'll need to implement quantized floats then..\n");
-				//received = GetQuantziedFloat(6bits,-1.0,1.0,stored_val);
-			}
-			m_floats[i]=received;
-		}
-		m_non_default_costme_p = src.GetBits(1);
-		m_num_parts = 24;
-		if(m_non_default_costme_p)
-		{
-			m_num_parts = src.GetPackedBits(4);
-		}
-		for(int costume_part=0; costume_part<m_num_parts;costume_part++)
-		{
-			CostumePart part;
-			GetCostumeString_Cached(src,part.name_0);
-			GetCostumeString_Cached(src,part.name_1);
-			GetCostumeString_Cached(src,part.name_2);
-			GetCostumeString_Cached(src,part.name_3);
-			part.m_generic = !(src.GetBits(1));
-			int num_colors = part.m_generic ? 2 : 4;
-			for(int i=0; i<num_colors; i++)
-			{
-				part.m_colors[i] = GetCostumeColor_Cached(src);
-			}
-			if(costume_sends_nonquantized_floats)
-			{
+	void GetCostume(BitStream &src);
 
-				GetCostumeString(src,part.name_4);
-				GetCostumeString(src,part.name_5);
-			}
-			m_parts.push_back(part);
-		}
-	}
-
-	void dump()
-	{
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Costume \n")));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    a: 0x%08x\n"),a));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    b: 0x%08x\n"),b));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    c: 0x%08x\n"),c));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Height %f\n"),split.m_height));			
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Physique %f\n"),split.m_physique));			
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Floats (")));
-		for(int i=2; i<29; i++)
-		{
-			ACE_DEBUG ((LM_DEBUG,ACE_TEXT (" %f "),m_floats[i]));			
-		}
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT (")\n")));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    ****** Parts *******\n")));		
-		for(int i=0; i<m_num_parts; i++)
-		{
-			if(m_parts[i].m_generic)
-				ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),m_parts[i].name_0.c_str(),
-				m_parts[i].name_1.c_str(),m_parts[i].name_2.c_str(),m_parts[i].name_3.c_str(),
-				m_parts[i].m_colors[0],m_parts[i].m_colors[1],
-				m_parts[i].name_4.c_str(),m_parts[i].name_5.c_str()
-				));		
-			else
-				ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,0x%08x,0x%08x,%s,%s\n"),m_parts[i].name_0.c_str(),
-				m_parts[i].name_1.c_str(),m_parts[i].name_2.c_str(),m_parts[i].name_3.c_str(),
-				m_parts[i].m_colors[0],m_parts[i].m_colors[1],m_parts[i].m_colors[2],m_parts[i].m_colors[3],
-				m_parts[i].name_4.c_str(),m_parts[i].name_5.c_str()
-				));		
-		}
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    *************\n")));		
-	}
+	void dump();
 };
 class ClientOptions
 {
@@ -595,7 +429,7 @@ public:
 	vector<u8> m_fx3;
 	int m_state_mode;
 	bool m_state_mode_send;
-	Entity() : m_char(this)
+	Entity() : m_char(0)
 	{
 		field_78=0;
 	}
@@ -798,18 +632,13 @@ public:
 	void serializefrom_newchar(BitStream &src)
 	{
 		src.GetPackedBits(1); //2
-		player_type = src.GetBits(1); // player_type hero/villain ?
+		//player_type = src.GetBits(1); // player_type hero/villain ?
 		GetCharBuildInfo(src);
 		m_char.m_trays.serializefrom(src);
 		m_costume.GetCostume(src);
-		m_char.field_5A8 = src.GetPackedBits(5);
-		if(src.GetBits(1))
-			src.GetString(m_char.char_arr_10_5AC);//player_pp
-		field_E30= src.GetBits(2);
-		m_char.field_498 = src.GetBits(1); //player_pp
+		int t = src.GetBits(1);
 		src.GetString(ent_string1);
 		src.GetString(ent_string2);
-
 	}
 	void InsertUpdate(PosUpdate pup)
 	{
@@ -951,7 +780,7 @@ public:
 	virtual void serializefrom(BitStream &src)
 	{
 		m_cookie = src.GetPackedBits(1);
-		m_city_of_developers = src.GetBits(1);
+		//m_city_of_developers = src.GetBits(1);
 		m_new_character=src.GetBits(1);
 		if(m_new_character)
 		{
