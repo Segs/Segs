@@ -1108,53 +1108,7 @@ public:
 		src.GetBits(32); //unused - crc ?
 		ref_crc=src.GetBits(32); // 0x3f6057cf
 	}
-	virtual void serializeto(BitStream &tgt) const
-	{
-		tgt.StorePackedBits(1,undos_PP);
-		tgt.StoreBits(1,var_14);
-		if(var_14)
-		{
-			tgt.StoreBits(1,m_outdoor_map);
-			tgt.StorePackedBits(1,m_map_number);
-			tgt.StorePackedBits(1,unkn1);
-			tgt.StoreString(m_map_desc);
-		}
-		tgt.StoreBits(1,current_map_flags);
-		tgt.StorePackedBits(1,num_base_elems);
-		u32 hashes[] = {0x00000000,0xAFD34459,0xE63A2B76,0xFBBAD9D4,
-						0x9AE0A9D4,0x06BDEF70,0xA47A21F8,0x5FBF835D,
-						0xFF25F3F6,0x70E6C422,0xF1CCC459,0xCBD35A55,
-						0x64CCCC31,0x535B08CC};
-		for(size_t i=1; i<num_base_elems; i++)
-		{
-//			ACE_TRACE(!"Hold yer horses!");
-			tgt.StoreBits(1,1);
-			tgt.StoreString(m_trays[i]);
-			if(i<12)
-				tgt.StoreBits(32,hashes[i]); // crc ? 
-			else
-				tgt.StoreBits(32,0); // crc ? 
-			tgt.StoreBits(1,0);
-			tgt.StorePackedBits(1,0);
-		}
-		if(num_base_elems!=0)
-		{
-			tgt.StoreBits(1,1);
-			tgt.StoreString(m_trays[0]);
-			tgt.StoreBits(32,hashes[0]); // crc ?
-			tgt.StoreBits(1,0);
-			tgt.StorePackedBits(1,0);
-		}
-		for(size_t i=0; i<m_refs.size(); i++)
-		{
-			m_refs[i].serializeto(tgt);
-		}
-		tgt.StorePackedBits(1,~0); // finishing marker,-1
-		tgt.StorePackedBits(1,0xD8); //unused
-		tgt.StorePackedBits(1,ref_count);
-		tgt.StoreBits(32,0); //unused - crc ?
-		tgt.StoreBits(32,ref_crc); // 0x3f6057cf
-	}
+	virtual void serializeto(BitStream &tgt) const;
 	string m_map_desc;
 	int ref_count;
 	int ref_crc;

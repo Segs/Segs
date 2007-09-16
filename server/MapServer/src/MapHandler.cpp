@@ -271,7 +271,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		res->m_trays.push_back("object_library/Villain_Lairs/cot/elements/crystals/crystals.txt");
 		res->m_trays.push_back("object_library/Villain_Lairs/cot/elements/big_detail/big_detail.txt");
 		res->m_trays.push_back("object_library/Streets_Ruined/Ruin_Elements/Ruin_Signs/ruin_xtralarge/ruin_xtralarge.txt");
-		res->m_trays.push_back("object_library/Omni/EncounterSpawns/City_00_01/City_00_01.txt");
+		//res->m_trays.push_back("object_library/Omni/EncounterSpawns/City_00_01/City_00_01.txt");
 		res->m_trays.push_back("object_library/city_templates/map_2d_blackpoly/map_2d_blackpoly.txt");
 		res->m_trays.push_back("object_library/Omni/EncounterSpawns/BaseTypes/BaseTypes.txt");
 		res->m_trays.push_back("object_library/Omni/EncounterSpawns/City_01_03/City_01_03.txt");
