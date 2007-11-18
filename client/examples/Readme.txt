@@ -1,0 +1,2 @@
+This is an example client, showing how to connect to the authorization servers, obtain the game information etc.
+It's not very game-like, as it's using wxWidgets as it's ui, and not something fancier ( like ogre )
