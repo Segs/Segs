@@ -1,10 +1,8 @@
 # $Id: CMakeLists.txt 301 2006-12-26 15:50:44Z nemerle $
 
-SET (segs_common_SRCS 
+SET (segs_server_common_SRCS 
 AdminServerInterface.cpp
 AuthServerInterface.cpp
-BitStream.cpp
-Buffer.cpp 
 CRUDP_Packet.cpp
 CRUDP_Protocol.cpp
 GameServerInterface.cpp
@@ -14,7 +12,6 @@ ServerSupport.cpp
 PacketCodec.cpp
 GameProtocol.cpp
 GameProtocolHandler.cpp
-PacketBase.cpp
 RoamingServer.cpp
 ServerEndpoint.cpp
 ServerHandle.cpp
@@ -23,19 +20,14 @@ InterfaceManager.cpp
 Database.cpp
 ../include/AdminServerInterface.h
 ../include/AuthServerInterface.h
-../include/Base.h
-../include/BitStream.h
-../include/Buffer.h
 ../include/Client.h
 ../include/CommonNetStructures.h
-../include/ConfigExtension.h
 ../include/CRUDP_Packet.h
 ../include/CRUDP_Protocol.h
 ../include/GameProtocol.h
 ../include/GameServerInterface.h
 ../include/MapServerInterface.h
 ../include/NetManager.h
-../include/PacketBase.h
 ../include/PacketCodec.h
 ../include/ServerHandle.h
 ../include/server_support.h
@@ -44,6 +36,5 @@ Database.cpp
 ../include/InterfaceManager.h
 ../include/ServerManager.h
 ../include/Database.h
-../include/version.h
 )
-ADD_LIBRARY(segs_common STATIC ${segs_common_SRCS})
+ADD_LIBRARY(segs_server_common STATIC ${segs_server_common_SRCS})

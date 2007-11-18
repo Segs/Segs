@@ -10,8 +10,6 @@ AuthProtocol.cpp
 AuthServer.cpp 
 ClientConnection.cpp
 packets/authserverlist.cpp
-../../Common/include/Base.h
-../../Common/include/Buffer.h
 ../include/AuthClient.h
 ../include/AuthClientServicer.h
 ../include/AuthFSM.h 
@@ -39,7 +37,7 @@ ADD_LIBRARY(authserver_lib STATIC ${authserver_SRCS})
 IF(BUILD_SEPARATE)
 	ADD_DEFINITIONS(-DSEPARATE)
 	ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
-	TARGET_LINK_LIBRARIES(authserver segs_common authserver_lib adminserver_lib gameserver_lib mapserver_lib 
+	TARGET_LINK_LIBRARIES(authserver segs_common segs_server_common authserver_lib adminserver_lib gameserver_lib mapserver_lib 
 						${ACE_lib} 
 						${PGSQL_lib} 
 						${ZLIB_LIBRARIES}
