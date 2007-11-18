@@ -1,9 +1,10 @@
 set(SOURCES 
-  stdwx.cpp
-  wxOgrePanel.cpp
+  generated/main.cpp
+  generated/LoginDialog.cpp
 )
 
 include_directories( 
+  ${CMAKE_CURRENT_SOURCE_DIR}/generated
 )
 
 add_definitions( 
@@ -12,4 +13,4 @@ add_definitions(
   -D__WXDEBUG__
 )
 
-add_library( wxTools STATIC ${SOURCES} )
+ADD_LIBRARY( wxTools STATIC ${SOURCES} )
