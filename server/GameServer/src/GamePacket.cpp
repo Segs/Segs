@@ -8,6 +8,9 @@
  */
 #include "GamePacket.h"
 #include "Character.h"
+#include "opcodes/ControlCodes.h"
+#include "opcodes/Opcodes.h"
+
 void pktCS_ServerUpdate::dependent_dump()
 {
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IGame:pktCS_ServerUpdate\n%I{\n")));

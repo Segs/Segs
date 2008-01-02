@@ -202,7 +202,7 @@ public:
 
 	virtual GamePacket *PacketFromStream(BitStream &bs)
 	{
-		eGameOpcode opcode = (eGameOpcode)bs.GetPackedBits(1);
+		u8 opcode = bs.GetPackedBits(1);
 		return PacketFromStream(opcode,bs);
 	}
 };

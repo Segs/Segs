@@ -15,6 +15,9 @@
 #include "MapServerInterface.h"
 #include "CharacterClient.h"
 #include "Character.h"
+#include "opcodes/ControlCodes.h"
+#include "opcodes/Opcodes.h"
+
 static const u32 supported_version=20040422;
 typedef struct
 {

@@ -11,6 +11,9 @@
 #include "PacketBase.h"
 #include "GameProtocol.h"
 #include "Client.h"
+#include "opcodes/ControlCodes.h"
+#include "opcodes/Opcodes.h"
+
 LinkCommandHandler::~LinkCommandHandler()
 {
     delete m_proto;

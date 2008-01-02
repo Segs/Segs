@@ -14,6 +14,9 @@
 #include <ace/OS_NS_strings.h>
 
 #include "PacketBase.h"
+#include "opcodes/ControlCodes.h"
+#include "opcodes/Opcodes.h"
+
 #include "MapClient.h"
 #include "CommonNetStructures.h"
 
