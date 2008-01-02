@@ -1,7 +1,5 @@
 # $Id: CMakeLists.txt 270 2006-10-01 18:33:49Z nemerle $
 
-PROJECT(SEGS)
-
 SET(UNICODE )
 
 IF(CMAKE_CXX_COMPILER MATCHES cl)

@@ -1,5 +1,3 @@
-PROJECT(example_client)
-
 SET(WX_INTERNAL_PATH /lib/8_0/vc_lib)
 SET(wxWidgets_LIB_DIR,$ENV{WXDIR}${WX_INTERNAL_PATH})
 FIND_PACKAGE(wxWidgets REQUIRED)
