@@ -1,6 +1,7 @@
 # $Id: CMakeLists.txt 301 2006-12-26 15:50:44Z nemerle $
 
 SET (segs_server_common_SRCS 
+ServerProtocolHandler.cpp
 AdminServerInterface.cpp
 AuthServerInterface.cpp
 GameServerInterface.cpp

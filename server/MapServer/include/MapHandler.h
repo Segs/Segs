@@ -8,11 +8,11 @@
  */
 
 #pragma once
-#include "GameProtocolHandler.h"
+#include "ServerProtocolHandler.h"
 class MapClient;
 class MapServer;
 class IClient;
-class MapHandler : public LinkCommandHandler
+class MapHandler : public ServerCommandHandler
 {
 	MapClient *m_client;
 	MapServer *m_server;

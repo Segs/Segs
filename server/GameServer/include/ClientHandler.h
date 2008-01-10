@@ -9,11 +9,11 @@
 
 #pragma once
 #include "types.h"
-#include "GameProtocolHandler.h"
+#include "ServerProtocolHandler.h"
 class CharacterClient;
 class GameServer;
 class CharacterDatabase;
-class CharacterHandler : public LinkCommandHandler
+class CharacterHandler : public ServerCommandHandler
 {
 		CharacterClient *	m_client;
 		GameServer *		m_server;

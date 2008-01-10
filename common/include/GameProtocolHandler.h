@@ -29,7 +29,11 @@ class ControlPacket;
 class IClient;
 class IGameProtocol;
 
-class LinkCommandHandler
+/*!
+	LinkCommandHandler is a class that implements common parts of client server protocol
+	i.e. commands that are sent by any part of system to any other part 
+*/
+class LinkCommandHandler 
 {
 public:
 virtual					~LinkCommandHandler();
