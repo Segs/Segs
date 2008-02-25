@@ -1,9 +1,18 @@
-#pragma once
+/*
+ * Super Entity Game Server
+ * http://segs.sf.net/
+ * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ *
+ * $Id$
+ */
+
 #include "ServerProtocolHandler.h"
 #include "opcodes/ControlCodes.h"
 #include "opcodes/Opcodes.h"
 #include "PacketBase.h"
 #include "GameProtocol.h"
+
 bool ServerCommandHandler::ReceiveControlPacket(const ControlPacket *pak)
 {
 	GamePacket *res = NULL;
