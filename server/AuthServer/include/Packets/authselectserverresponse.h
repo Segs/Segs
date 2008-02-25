@@ -7,7 +7,11 @@
  * $Id: authselectserverresponse.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHSELECTSERVERRESPONSE_H
+#define AUTHSELECTSERVERRESPONSE_H
+
 #include "AuthPacket.h"
 #include "Base.h"
 
@@ -48,3 +52,5 @@ public:
 	u32 cookie;
 	u8 m_unk2;
 };
+
+#endif // AUTHSELECTSERVERRESPONSE_H

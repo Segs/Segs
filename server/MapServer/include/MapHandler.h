@@ -7,7 +7,11 @@
  * $Id: MapHandler.h 319 2007-01-26 17:03:18Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef MAPHANDLER_H
+#define MAPHANDLER_H
+
 #include "ServerProtocolHandler.h"
 class MapClient;
 class MapServer;
@@ -24,3 +28,5 @@ virtual	bool		ReceivePacket(GamePacket *pak);
 		void		setClient(IClient *cl);
 
 };
+
+#endif // MAPHANDLER_H

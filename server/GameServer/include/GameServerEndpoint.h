@@ -7,7 +7,11 @@
  * $Id: GameServerEndpoint.h 292 2006-10-12 14:12:14Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef GAMESERVERENDPOINT_H
+#define GAMESERVERENDPOINT_H
+
 #include <string>
 #include <ace/ACE.h>
 #include <ace/Synch.h>
@@ -23,6 +27,7 @@
 #include "CRUDP_Protocol.h"
 #include "ServerEndpoint.h"
 #include "ClientHandler.h"
+
 // Endpoint is a ACE's handler for incoming packets and such
 class GameServerEndpoint : public ServerEndpoint
 {
@@ -36,3 +41,5 @@ public:
 	};
 	virtual PacketFactory *getFactory() const;
 };
+
+#endif // GAMESERVERENDPOINT_H

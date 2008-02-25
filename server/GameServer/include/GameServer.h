@@ -7,17 +7,21 @@
  * $Id: GameServer.h 319 2007-01-26 17:03:18Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef GAMESERVER_H
+#define GAMESERVER_H
+
 #include <string>
 #ifndef WIN32
 #include <ext/hash_map>
 #include <ext/hash_set>
 // Hashing function for int64 is in ClientManager
-#else
+#else // WIN32
 #include <hash_map>
 #include <hash_set>
 using namespace stdext;
-#endif
+#endif // WIN32
 
 #include <ace/ACE.h>
 #include <ace/Synch.h>
@@ -86,3 +90,5 @@ protected:
 	GameServerEndpoint	*m_endpoint;
 	CharacterDatabase   *m_database; // we might consider making database connection a singleton wrapper
 };
+
+#endif // GAMESERVER_H

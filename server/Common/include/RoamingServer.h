@@ -1,4 +1,16 @@
+/*
+ * Super Entity Game Server
+ * http://segs.sf.net/
+ * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ *
+ * $Id$
+ */
+
+// Inclusion guards
 #pragma once
+#ifndef ROAMINGSERVER_H
+#define ROAMINGSERVER_H
 
 #include <string>
 #include <ace/INET_Addr.h>
@@ -23,3 +35,5 @@ private:
 	ACE_INET_Addr m_authaddr;
 	std::string m_passw;
 };
+
+#endif // ROAMINGSERVER_H

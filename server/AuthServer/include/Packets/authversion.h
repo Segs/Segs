@@ -7,7 +7,11 @@
  * $Id: authversion.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHVERSION_H
+#define AUTHVERSION_H
+
 #include "AuthPacket.h"
 #include "Base.h"
 
@@ -43,3 +47,5 @@ public:
 	virtual u32 GetSeed() const {return seed;}
 	virtual void SetSeed(u32 s) {seed=s;}
 };
+
+#endif // AUTHVERSION_H

@@ -7,6 +7,11 @@
  * $Id: Walking.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
+#pragma once
+#ifndef WALKING_H
+#define WALKING_H
+
 class Walking
 {
  public:
@@ -17,3 +22,5 @@ class Walking
   GetPosition(char *client);
   UpdatePosition(int x, int y, int z);
 };
+
+#endif // WALKING_H

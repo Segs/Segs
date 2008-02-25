@@ -7,7 +7,11 @@
  * $Id: Client.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef CHARACTERCLIENT_H
+#define CHARACTERCLIENT_H
+
 #include <string>
 #include <ace/OS_NS_time.h>
 #include "ServerManager.h"
@@ -36,3 +40,5 @@ virtual				~CharacterClient();
 		size_t		getMaxSlots();
 		void		reset();
 };
+
+#endif // CHARACTERCLIENT_H

@@ -6,7 +6,12 @@
  *
  * $Id: AdminDatabase.h 267 2006-09-18 04:46:30Z nemerle $
  */
+
+// Inclusion guards
 #pragma once
+#ifndef ADMINDATABASE_H
+#define ADMINDATABASE_H
+
 // ACE Logging
 #include <string>
 #include <ace/Log_Msg.h>
@@ -14,6 +19,7 @@
 
 #include "types.h"
 #include "Database.h"
+
 class IClient;
 class AdminDatabase : public Database
 {
@@ -32,3 +38,5 @@ public:
 	int GetAccountByName(IClient *to_fill,const std::string &login);
 	int GetAccountById(IClient *to_fill,u64 id);
 };
+
+#endif // ADMINDATABASE_H

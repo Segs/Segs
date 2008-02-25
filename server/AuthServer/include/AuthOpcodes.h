@@ -7,7 +7,11 @@
  * $Id: AuthOpcodes.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHOPCODES_H
+#define AUTHOPCODES_H
+
 #include "Base.h"
 typedef enum 
 { 
@@ -24,3 +28,5 @@ typedef enum
 	SMSG_AUTH_ERROR,
 	MSG_AUTH_UNKNOWN //always last
 } eAuthPacketType;
+
+#endif // AUTHOPCODES_H

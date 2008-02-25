@@ -6,7 +6,12 @@
  *
  * $Id: AdminDatabase.h 267 2006-09-18 04:46:30Z nemerle $
  */
+
+// Inclusion guards
 #pragma once
+#ifndef CHARACTERDATABASE_H
+#define CHARACTERDATABASE_H
+
 // ACE Logging
 #include <string>
 #include <ace/Log_Msg.h>
@@ -28,3 +33,5 @@ public:
 	bool fill( CharacterCostume *); 
 	u8	maxSlots(u64 account_id); //! returns maximum number of slots available to this account
 };
+
+#endif // CHARACTERDATABASE_H

@@ -7,7 +7,11 @@
  * $Id: AuthPacket.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHPACKET_H
+#define AUTHPACKET_H
+
 #include "Base.h"
 #include <ace/Log_Msg.h>
 #include "AuthOpcodes.h"
@@ -109,3 +113,5 @@ public:
 	static AuthPacket *PacketForType(eAuthPacketType type);
 	static void Destroy(AuthPacket *what);
 };
+
+#endif // AUTHPACKET_H

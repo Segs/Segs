@@ -7,7 +7,11 @@
  * $Id: GameServerInterface.h 319 2007-01-26 17:03:18Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef GAMESERVERINTERFACE_H
+#define GAMESERVERINTERFACE_H
+
 #include <ace/INET_Addr.h>
 #include <string>
 #include "Base.h"
@@ -52,3 +56,5 @@ public:
 protected:
 	GameServer *m_instance;
 };
+
+#endif // GAMESERVERINTERFACE_H

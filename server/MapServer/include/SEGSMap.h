@@ -7,8 +7,13 @@
  * $Id: MapHandler.h 291 2006-10-12 10:52:55Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef SEGSMAP_H
+#define SEGSMAP_H
+
 #include "EntityStorage.h"
+
 class SEGSMap
 {
 	string m_name;
@@ -17,3 +22,5 @@ public:
 	EntityManager m_entities;
 
 };
+
+#endif // SEGSMAP_H

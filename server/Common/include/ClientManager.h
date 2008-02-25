@@ -7,7 +7,11 @@
  * $Id: ClientManager.h 319 2007-01-26 17:03:18Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef CLIENTMANAGER_H
+#define CLIENTMANAGER_H
+
 #include <ace/INET_Addr.h>
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
@@ -25,7 +29,7 @@ namespace __gnu_cxx {
 #include <hash_map>
 #include <hash_set>
 using namespace stdext;
-#endif
+#endif // WIN32
 
 class ClientManager
 {
@@ -98,3 +102,5 @@ public:
 		return cook;
 	}
 };
+
+#endif // CLIENTMANAGER_H

@@ -7,6 +7,11 @@
  * $Id: Cmsg_DB_Hello.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
+#pragma once
+#ifndef CMSG_DB_HELLO_H
+#define CMSG_DB_HELLO_H
+
 #include "Base.h"
 #include "Packet.h"
 
@@ -24,3 +29,5 @@ public:
 		StorePackedBits(1, 4);
 	}
 };
+
+#endif // CMSG_DB_HELLO_H

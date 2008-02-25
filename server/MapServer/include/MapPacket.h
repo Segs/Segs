@@ -7,7 +7,11 @@
  * $Id: MapPacket.h 313 2007-01-25 11:21:43Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef MAPPACKET_H
+#define MAPPACKET_H
+
 #include <string>
 #include <list>
 #include <limits>
@@ -1290,3 +1294,5 @@ public:
 		return res;
 	}
 };
+
+#endif // MAPPACKET_H

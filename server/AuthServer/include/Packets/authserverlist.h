@@ -7,7 +7,11 @@
  * $Id: authserverlist.h 285 2006-10-03 07:11:07Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHSERVERLIST_H
+#define AUTHSERVERLIST_H
+
 #include <string>
 #include "Base.h"
 #include "AuthPacket.h"
@@ -45,3 +49,5 @@ public:
 	u8 unknown1;
 	serverEntry *srvlist;
 };
+
+#endif // AUTHSERVERLIST_H

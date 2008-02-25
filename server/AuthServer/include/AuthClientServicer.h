@@ -7,7 +7,11 @@
  * $Id: AuthClientServicer.h 317 2007-01-25 15:44:29Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHCLIENTSERVICER_H
+#define AUTHCLIENTSERVICER_H
+
 #include <ace/ACE.h>
 #include <ace/Synch.h>
 #include <ace/SOCK_Stream.h>
@@ -32,3 +36,5 @@ virtual int handle_input(ACE_HANDLE fd = ACE_INVALID_HANDLE);	//!< Called when i
 virtual int handle_output(ACE_HANDLE fd = ACE_INVALID_HANDLE);	//!< Called when output is possible.
 virtual int handle_close(ACE_HANDLE handle,ACE_Reactor_Mask close_mask);//!< Called when this handler is removed from the ACE_Reactor.
 };
+
+#endif // AUTHCLIENTSERVICER_H

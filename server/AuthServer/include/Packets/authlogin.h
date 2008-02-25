@@ -7,7 +7,11 @@
  * $Id: authlogin.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHLOGIN_H
+#define AUTHLOGIN_H
+
 #include "AuthPacket.h"
 #include <ace/Log_Msg.h>
 #include <stdlib.h>
@@ -91,3 +95,5 @@ public:
 	u16 unkval2;
 	u32 m_seed;
 };
+
+#endif // AUTHLOGIN_H

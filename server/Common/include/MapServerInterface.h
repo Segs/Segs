@@ -7,7 +7,11 @@
  * $Id: MapServerInterface.h 305 2007-01-21 08:53:16Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef MAPSERVERINTERFACE_H
+#define MAPSERVERINTERFACE_H
+
 #include <ace/INET_Addr.h>
 #include <string>
 #include "Base.h"
@@ -32,3 +36,5 @@ public:
 protected:
 	MapServer *m_instance;
 };
+
+#endif // MAPSERVERINTERFACE_H

@@ -7,7 +7,11 @@
  * $Id: AuthFSM.h 262 2006-09-15 07:46:05Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHFSM_H
+#define AUTHFSM_H
+
 /**
 AuthFSM_Default is used as mixin for the Protocol class.
 */
@@ -32,3 +36,5 @@ public:
 	static void SendError(ClientConnection *conn,int err);
 	static void ConnectionClosed(ClientConnection *conn);
 };
+
+#endif // AUTHFSM_H

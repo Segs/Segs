@@ -7,7 +7,11 @@
  * $Id: GamePacket.h 310 2007-01-25 10:51:06Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef GAMEPACKET_H
+#define GAMEPACKET_H
+
 #include "PacketBase.h"
 #include "CommonNetStructures.h"
 #include <ace/os_include/os_string.h>
@@ -207,4 +211,4 @@ public:
 	}
 };
 
-
+#endif // GAMEPACKET_H

@@ -7,7 +7,10 @@
  * $Id: MapServer.h 305 2007-01-21 08:53:16Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef MAPSERVER_H
+#define MAPSERVER_H
 
 #include <string>
 #include <map>
@@ -15,11 +18,11 @@
 #include <ext/hash_map>
 #include <ext/hash_set>
 using namespace __gnu_cxx;
-#else
+#else // WIN32
 #include <hash_map>
 #include <hash_set>
 using namespace stdext;
-#endif
+#endif // WIN32
 
 #include <ace/ACE.h>
 #include <ace/Synch.h>
@@ -79,3 +82,5 @@ protected:
 	ACE_INET_Addr m_listen_point; //! this is used as a listening endpoint
 	MapServerEndpoint	*m_endpoint;
 };
+
+#endif // MAPSERVER_H

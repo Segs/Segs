@@ -7,7 +7,11 @@
  * $Id: NetManager.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef NETMANAGER_H
+#define NETMANAGER_H
+
 #include <ace/INET_Addr.h>
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
@@ -23,3 +27,5 @@ public:
 	static IGameProtocol *CreateGameProtocol();
 //	IGameProtocol *getProtocolFor(ACE_INET_Addr &clientaddr); // if client has
 };
+
+#endif // NETMANAGER_H

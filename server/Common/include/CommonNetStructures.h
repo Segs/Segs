@@ -7,7 +7,11 @@
  * $Id: CommonNetStructures.h 301 2006-12-26 15:50:44Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef COMMONNETSTRUCTURES_H
+#define COMMONNETSTRUCTURES_H
+
 #include <ace/Log_Msg.h>
 #include "BitStream.h"
 class Quaternion
@@ -159,3 +163,5 @@ public:
 	float m_floats[8];
 	vector<CostumePart> m_parts;
 };
+
+#endif // COMMONNETSTRUCTURES_H

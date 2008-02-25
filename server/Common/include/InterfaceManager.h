@@ -1,4 +1,16 @@
+/*
+ * Super Entity Game Server
+ * http://segs.sf.net/
+ * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ *
+ * $Id$
+ */
+
+// Inclusion guards
 #pragma once
+#ifndef INTERFACEMANAGER_H
+#define INTERFACEMANAGER_H
 
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
@@ -19,3 +31,5 @@ public:
 	AuthServerInterface *get(const ServerHandle<AuthServer> &h_serv) const;
 };
 typedef ACE_Singleton<InterfaceManagerC,ACE_Thread_Mutex> InterfaceManager;
+
+#endif // INTERFACEMANAGER_H

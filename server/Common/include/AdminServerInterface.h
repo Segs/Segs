@@ -7,14 +7,18 @@
  * $Id: AdminServerInterface.h 301 2006-12-26 15:50:44Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef ADMINSERVERINTERFACE_H
+#define ADMINSERVERINTERFACE_H
+
 #include <ace/INET_Addr.h>
 #ifndef WIN32
 #include <ext/hash_map>
 using namespace __gnu_cxx;
 #else
 #include <hash_map>
-#endif
+#endif // WIN32
 #include <list>
 #include "Server.h"
 #include "ServerHandle.h"
@@ -57,3 +61,5 @@ public:
 	void RunCommand(const char *); //magical entry point to internal workings of all the servers ??
 protected:
 };
+
+#endif // ADMINSERVERINTERFACE_H

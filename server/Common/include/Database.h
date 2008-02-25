@@ -7,7 +7,11 @@
  * $Id: Database.h 301 2006-12-26 15:50:44Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef DATABASE_H
+#define DATABASE_H
+
 // ACE Logging
 #include <string>
 #include "types.h"
@@ -63,3 +67,5 @@ public:
 	int OpenConnection(void);
 	int CloseConnection(void);
 };
+
+#endif // DATABASE_H

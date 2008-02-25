@@ -7,7 +7,11 @@
  * $Id: AdminServer.h 315 2007-01-25 14:17:50Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef ADMINSERVER_H
+#define ADMINSERVER_H
+
 #include <list>
 #include <string>
 
@@ -63,3 +67,5 @@ protected:
 	AdminDatabase *m_db;
 };
 typedef ACE_Singleton<AdminServer,ACE_Thread_Mutex> IAdminServer; // AdminServer Interface
+
+#endif // ADMINSERVER_H

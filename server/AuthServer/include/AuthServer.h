@@ -7,7 +7,11 @@
  * $Id: AuthServer.h 316 2007-01-25 15:17:16Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHSERVER_H
+#define AUTHSERVER_H
+
 #include <list>
 #include <string>
 
@@ -41,7 +45,7 @@ typedef std::map< std::string,AuthClient *> hmClients;
 #include <hash_set>
 using namespace stdext;
 typedef hash_map<std::string,AuthClient *> hmClients;
-#endif
+#endif // WIN32
 class AuthClient;
 class AuthServer  : public Server
 {
@@ -76,3 +80,5 @@ protected:
 	hmClients					m_clients;	//!< mapping from string:login to client's object
 	boost::object_pool<AuthClient> m_client_pool; //!< pool used to efficiently construct new client objects.
 };
+
+#endif // AUTHSERVER_H

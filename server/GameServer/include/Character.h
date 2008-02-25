@@ -6,7 +6,14 @@
  *
  * $Id: Client.h 253 2006-08-31 22:00:14Z malign $
  */
-//* Another small step toward a real Character server. Now we 
+
+// Inclusion guards
+#pragma once
+#ifndef CHARACTER_H
+#define CHARACTER_H
+
+//* Another small step toward a real Character server.
+
 #pragma once
 #include "types.h"
 #include "CommonNetStructures.h"
@@ -149,3 +156,5 @@ protected:
 	*/
 
 };
+
+#endif // CHARACTER_H

@@ -7,7 +7,11 @@
  * $Id: authselectserver.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHSELECTSERVER_H
+#define AUTHSELECTSERVER_H
+
 #include "AuthPacket.h"
 #include "Base.h"
 
@@ -40,3 +44,5 @@ public:
 	u8 unkLoginArray[8];
 	u8 serverId;
 };
+
+#endif // AUTHSELECTSERVER_H

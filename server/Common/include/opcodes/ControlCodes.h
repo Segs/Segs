@@ -14,8 +14,11 @@ Description: Defines an enumerated list of control codes, which are a
 			 the RUDP network connection.  These opcodes are not relevant
 			 to the game-play itself.
 ************************************************************************/
-#pragma once
 
+// Inclusion guards
+#pragma once
+#ifndef CONTROLCODES_H
+#define CONTROLCODES_H
 
 typedef enum 
 {
@@ -61,3 +64,5 @@ static const char *netCommands[] =
 	"ungroupall"
 };
 */
+
+#endif // CONTROLCODES_H

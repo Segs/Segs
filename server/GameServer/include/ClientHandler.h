@@ -7,7 +7,11 @@
  * $Id: ClientHandler.h 319 2007-01-26 17:03:18Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef CLIENTHANDLER_H
+#define CLIENTHANDLER_H
+
 #include "types.h"
 #include "ServerProtocolHandler.h"
 class CharacterClient;
@@ -29,3 +33,5 @@ virtual bool				ReceivePacket(GamePacket *pak);
 		CharacterDatabase *	getDb();
 		void				setClient(IClient *cl);
 };
+
+#endif // CLIENTHANDLER_H

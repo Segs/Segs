@@ -7,10 +7,13 @@
  * $Id: authloginresponse.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHLOGINRESPONSE_H
+#define AUTHLOGINRESPONSE_H
+
 #include "AuthPacket.h"
 #include "Base.h"
-
 
 class pktAuthLoginResponse : public AuthPacket
 {
@@ -51,3 +54,5 @@ public:
 	u8 unkArray2[8];
 	u32 unk1, unk2, unk3;
 };
+
+#endif // AUTHLOGINRESPONSE_H

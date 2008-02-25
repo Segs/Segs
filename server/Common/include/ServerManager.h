@@ -7,7 +7,11 @@
  * $Id: ServerManager.h 316 2007-01-25 15:17:16Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef SERVERMANAGER_H
+#define SERVERMANAGER_H
+
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
 #include <deque>
@@ -52,3 +56,5 @@ protected:
 	AdminServerInterface *m_adminserv;
 };
 typedef ACE_Singleton<ServerManagerC,ACE_Thread_Mutex> ServerManager;
+
+#endif // SERVERMANAGER_H

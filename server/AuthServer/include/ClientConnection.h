@@ -7,7 +7,11 @@
  * $Id: ClientConnection.h 316 2007-01-25 15:17:16Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef CLIENTCONNECTION_H
+#define CLIENTCONNECTION_H
+
 #include <ace/Message_Queue.h>
 #include <ace/INET_Addr.h>
 #include "types.h"
@@ -64,3 +68,5 @@ protected:
 	AuthClient	*m_client;
 	int fsm_data;
 };
+
+#endif // CLIENTCONNECTION_H

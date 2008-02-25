@@ -7,6 +7,11 @@
  * $Id: NameTables.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
+#pragma once
+#ifndef NAMETABLES_H
+#define NAMETABLES_H
+
 typedef unsigned long int uint32;
 
 struct NameTableEntry
@@ -27,3 +32,5 @@ inline const char* LookupName(uint32 id, NameTableEntry *table)
 }
 
 extern NameTableEntry OpcodeNames[];
+
+#endif // NAMETABLES_H

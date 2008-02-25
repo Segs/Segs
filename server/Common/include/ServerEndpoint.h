@@ -7,7 +7,11 @@
  * $Id: ServerEndpoint.h 319 2007-01-26 17:03:18Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef SERVERENDPOINT_H
+#define SERVERENDPOINT_H
+
 #include <string>
 #include <ace/ACE.h>
 #include <ace/Synch.h>
@@ -53,7 +57,7 @@ public:
 		return _Key1 < _Key2;
 	}
 };
-#endif
+#endif // WIN32
 typedef hash_map<ACE_INET_Addr,CrudP_Protocol *,ACE_INET_Addr_Hash> hmAddrProto;
 //#include "MapServer.h"
 //class Net;
@@ -87,3 +91,5 @@ protected:
 	ACE_SOCK_Dgram endpoint_;
 	// Wrapper for sending/receiving dgrams.
 };
+
+#endif // SERVERENDPOINT_H

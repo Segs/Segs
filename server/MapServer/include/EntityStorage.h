@@ -7,11 +7,16 @@
  * $Id: EntityStorage.h 308 2007-01-25 05:14:43Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef ENTITYSTORAGE_H
+#define ENTITYSTORAGE_H
+
 #include "types.h"
 #include "GameProtocolHandler.h"
 #include "BitStream.h"
 #include <list>
+
 class MapClient;
 class SEGSMap;
 class Entity;
@@ -41,3 +46,5 @@ public:
 
 	Entity * CreateInstance(SEGSMap *target_world,u64 id); // will create a new instance of given entity, bound to given map
 };
+
+#endif // ENTITYSTORAGE_H

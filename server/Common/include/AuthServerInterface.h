@@ -7,7 +7,11 @@
  * $Id: AuthServerInterface.h 301 2006-12-26 15:50:44Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHSERVERINTERFACE_H
+#define AUTHSERVERINTERFACE_H
+
 #include <ace/INET_Addr.h>
 #include <list>
 #include "Server.h"
@@ -36,3 +40,5 @@ public:
 protected:
 	AuthServer *m_server;
 };
+
+#endif // AUTHSERVERINTERFACE_H

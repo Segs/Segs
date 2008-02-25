@@ -7,7 +7,11 @@
  * $Id: AuthPacketCodec.h 286 2006-10-03 07:19:16Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHPACKETCODEC_H
+#define AUTHPACKETCODEC_H
+
 #include "types.h"
 #include <stdlib.h>
 
@@ -41,3 +45,5 @@ private:
     long long xor_enc_key; //key for encryption
     long long xor_dec_key; //key for decryption
 };
+
+#endif // AUTHPACKETCODEC_H

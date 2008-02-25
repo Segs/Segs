@@ -7,7 +7,11 @@
  * $Id: Client.h 319 2007-01-26 17:03:18Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef CLIENT_H
+#define CLIENT_H
+
 #include <string>
 #include <ace/OS_NS_time.h>
 #include "ServerManager.h"
@@ -63,3 +67,5 @@ class CharacterData
 {
 
 };
+
+#endif // CLIENT_H

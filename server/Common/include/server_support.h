@@ -7,6 +7,11 @@
  * $Id$
  */
 
+// Inclusion guards
+#pragma once
+#ifndef SERVER_SUPPORT_H
+#define SERVER_SUPPORT_H
+
 #include <ace/Reactor.h>
 #include <ace/OS.h>
 #include <ace/Event_Handler.h>
@@ -20,3 +25,5 @@ public:
 	// Called when object is signaled by OS.
 	virtual int handle_signal (int signum,siginfo_t * = 0,ucontext_t * = 0);
 };
+
+#endif // SERVER_SUPPORT_H

@@ -7,7 +7,11 @@
  * $Id: authrequestserverlist.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHREQUESTSERVERLIST_H
+#define AUTHREQUESTSERVERLIST_H
+
 #include "AuthPacket.h"
 #include "Base.h"
 
@@ -41,3 +45,5 @@ public:
     u8 unkArrayFromLoginResponse[8];
 	u8 unk1;
 };
+
+#endif // AUTHREQUESTSERVERLIST_H

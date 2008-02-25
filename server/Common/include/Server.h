@@ -7,7 +7,11 @@
  * $Id: Server.h 301 2006-12-26 15:50:44Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef SERVER_H
+#define SERVER_H
+
 #include <string>
 // this class represents very high level interface to all servers
 class Server
@@ -18,3 +22,5 @@ public:
 	virtual bool Run(void)=0;
     virtual bool ShutDown(const std::string &reason="No particular reason")=0;
 };
+
+#endif // SERVER_H

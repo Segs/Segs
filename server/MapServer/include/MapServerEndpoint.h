@@ -7,7 +7,11 @@
  * $Id: MapServerEndpoint.h 291 2006-10-12 10:52:55Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef MAPSERVERENDPOINT_H
+#define MAPSERVERENDPOINT_H
+
 #include <string>
 #include <ace/ACE.h>
 #include <ace/Synch.h>
@@ -37,3 +41,5 @@ public:
 	virtual PacketFactory *getFactory() const;
 
 };
+
+#endif // MAPSERVERENDPOINT_H

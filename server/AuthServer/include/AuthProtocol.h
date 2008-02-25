@@ -7,7 +7,11 @@
  * $Id: AuthProtocol.h 317 2007-01-25 15:44:29Z nemerle $
  */
 
+// Inclusion guards
 #pragma once
+#ifndef AUTHPROTOCOL_H
+#define AUTHPROTOCOL_H
+
 #include "Buffer.h"
 #include "AuthOpcodes.h"
 #include "AuthPacketCodec.h"
@@ -55,3 +59,5 @@ public:
 	virtual u32 getVersion(){return this->m_protocol_version;};
 
 };
+
+#endif // AUTHPROTOCOL_H

@@ -7,6 +7,11 @@
  * $Id: Chat.h 253 2006-08-31 22:00:14Z malign $
  */
 
+// Inclusion guards
+#pragma once
+#ifndef CHAT_H
+#define CHAT_H
+
 class Chat
 {
   public:
@@ -21,3 +26,5 @@ class Chat
    int TeamSay(char *charname, char *team[7], char *message);
    int GenericSpeech(char *charname, int channel, char *message);
 };
+
+#endif // CHAT_H
