@@ -13,12 +13,12 @@
 
 // end wxGlade
 
-
+#include "Avatar.h"
 class LoginDialog: public wxDialog {
 public:
     // begin wxGlade: LoginDialog::ids
     // end wxGlade
-
+	StickFigures::HumanStickfigure m_human1;
     LoginDialog(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_DIALOG_STYLE);
 
 private:
@@ -42,6 +42,7 @@ public:
     virtual void OnSetLogin(wxCommandEvent &event); // wxGlade: <event_handler>
     virtual void OnSetPassword(wxCommandEvent &event); // wxGlade: <event_handler>
     virtual void OnLogin(wxCommandEvent &event); // wxGlade: <event_handler>
+	void OnMyPaint(wxPaintEvent &ev);
 }; // wxGlade: end class
 
 

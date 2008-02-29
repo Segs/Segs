@@ -2,6 +2,7 @@
 
 #include "PacketBase.h"
 #include "LoginDialog.h"
+#include "Avatar.h"
 // begin wxGlade: ::extracode
 
 // end wxGlade
@@ -27,6 +28,7 @@ BEGIN_EVENT_TABLE(LoginDialog, wxDialog)
     // begin wxGlade: LoginDialog::event_table
     EVT_TEXT_ENTER(wxID_ANY, LoginDialog::OnSetLogin)
     EVT_TEXT_ENTER(wxID_ANY, LoginDialog::OnSetPassword)
+	EVT_PAINT(LoginDialog::OnMyPaint)
     EVT_BUTTON(wxID_ANY, LoginDialog::OnLogin)
     // end wxGlade
 END_EVENT_TABLE();
@@ -90,3 +92,9 @@ void LoginDialog::do_layout()
     // end wxGlade
 }
 
+void LoginDialog::OnMyPaint(wxPaintEvent &ev)
+{
+	wxDialog::OnPaint(ev);
+	wxPaintDC m_dc(this);
+	m_human1.draw_on(&m_dc,20,20);
+}
