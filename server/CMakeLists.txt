@@ -19,7 +19,7 @@ FIND_PATH(ACE_path ACE.h
 )
 FIND_LIBRARY(ACE_lib NAMES libACE.so ACE ACEd.lib libACE.a PATHS /usr/lib /usr/local/lib DOC "Path to ACE framework library"])
 
-# PostgreSQL
+# BOOST
 FIND_PATH(BOOST_path object_pool.hpp
    /usr/local/include/boost
    /usr/include/boost/
@@ -41,6 +41,7 @@ FIND_PACKAGE(SWIG)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/Common/include)
+INCLUDE_DIRECTORIES(../common/include)
 INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${ACE_path})
 INCLUDE_DIRECTORIES(${PGSQL_path})
