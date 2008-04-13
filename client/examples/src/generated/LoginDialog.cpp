@@ -17,13 +17,15 @@
 class Auth_Handler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_NULL_SYNCH>
 {
     typedef ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH> PARENT;
-
-    typedef ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH> super;
-
+	AuthObserver *m_observer; 
 public:
-    Auth_Handler():notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
+	Auth_Handler():notifier_ (0, this, ACE_Event_Handler::WRITE_MASK),m_observer(0)
+	{
+		ACE_ASSERT(!"Auth_Handler should not be automatically instantiated!");
+	}
+    Auth_Handler(AuthObserver *observer):notifier_ (0, this, ACE_Event_Handler::WRITE_MASK),m_observer(observer)
     {}
-
+	
     virtual int open (void * = 0);
 
     // Called when input is available from the client.
@@ -45,11 +47,14 @@ private:
 int Auth_Handler::open (void *p)
 {
     ACE_Time_Value iter_delay (2);   // Two seconds
-    if (super::open (p) == -1)
+    if (PARENT::open (p) == -1)
         return -1;
     this->notifier_.reactor (this->reactor ());
     this->msg_queue ()->notification_strategy (&this->notifier_);
-    return this->reactor ()->schedule_timer(this, 0, ACE_Time_Value::zero, iter_delay);
+	int res= this->reactor ()->schedule_timer(this, 0, ACE_Time_Value::zero, iter_delay);
+	if(res!=-1)
+		m_observer->notify_connected();
+	return res;
 }
 int Auth_Handler::handle_input (ACE_HANDLE)
 {
@@ -57,13 +62,14 @@ int Auth_Handler::handle_input (ACE_HANDLE)
     ssize_t recv_cnt = this->peer ().recv (buf, sizeof (buf) - 1);
     if (recv_cnt > 0)
     {
-        ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("%*C"),ACE_static_cast (int, recv_cnt),buf));
+		m_observer->notify_raw_data(buf,recv_cnt);
         return 0;
     }
     if (recv_cnt == 0 || ACE_OS::last_error () != EWOULDBLOCK)
     {
         this->reactor ()->end_reactor_event_loop ();
-        return -1;
+		m_observer->notify_disconnected();
+		return -1;
     }
     return 0;
 }
@@ -124,14 +130,14 @@ LoginDialog::LoginDialog(wxWindow* parent, int id, const wxString& title, const 
     wxDialog(parent, id, title, pos, size, wxDEFAULT_DIALOG_STYLE)
 {
     // begin wxGlade: LoginDialog::LoginDialog
-    text_ctrl_1 = new wxTextCtrl(this, wxID_ANY, wxEmptyString);
-    m_txt_server_response = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PASSWORD);
-    m_server_response = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+    m_txt_login = new wxTextCtrl(this, wxID_ANY, wxEmptyString);
+    m_txt_passw = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PASSWORD);
+    m_server_response = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(120,200), wxTE_MULTILINE);
     m_btn_login = new wxButton(this, wxID_ANY, wxT("Login"));
     m_btn_cancel = new wxButton(this, wxID_CANCEL, wxEmptyString);
     Auth_Client_Connector cntr;
-    Auth_Handler *hndlr=0;
-    cntr.connect(hndlr,ACE_INET_Addr(2167,"127.0.0.1"));
+    Auth_Handler *hndlr=new Auth_Handler(this);
+    cntr.connect(hndlr,ACE_INET_Addr(2106,"127.0.0.1"));
     set_properties();
     do_layout();
     // end wxGlade
@@ -189,11 +195,11 @@ void LoginDialog::do_layout()
     wxBoxSizer* sizer_2 = new wxBoxSizer(wxHORIZONTAL);
     wxStaticText* label_1 = new wxStaticText(this, wxID_ANY, wxT("Login:"));
     sizer_2->Add(label_1, 0, wxALIGN_CENTER_VERTICAL, 0);
-    sizer_2->Add(text_ctrl_1, 0, wxALIGN_CENTER_VERTICAL, 0);
+    sizer_2->Add(m_txt_login, 0, wxALIGN_CENTER_VERTICAL, 0);
     sizer_2->Add(20, 20, 1, 0, 0);
     wxStaticText* label_2 = new wxStaticText(this, wxID_ANY, wxT("Password:"));
     sizer_2->Add(label_2, 0, wxLEFT|wxALIGN_CENTER_VERTICAL, 11);
-    sizer_2->Add(m_txt_server_response, 0, wxALIGN_CENTER_VERTICAL, 0);
+    sizer_2->Add(m_txt_passw, 0, wxALIGN_CENTER_VERTICAL, 0);
     sizer_1->Add(sizer_2, 0, wxLEFT|wxRIGHT|wxTOP|wxEXPAND, 3);
     sizer_1->Add(m_server_response, 1, wxALL|wxEXPAND, 3);
     sizer_3->Add(m_btn_login, 0, wxALIGN_CENTER_VERTICAL, 0);
@@ -211,4 +217,19 @@ void LoginDialog::OnMyPaint(wxPaintEvent &ev)
 	wxDialog::OnPaint(ev);
 	wxPaintDC m_dc(this);
 	m_human1.draw_on(&m_dc,20,20);
+}
+
+void LoginDialog::notify_raw_data( char *dat,size_t sz )
+{
+	wxString raw_info = wxString::Format(wxT("Got raw data of size %d\n"),sz);
+	(*m_server_response) << raw_info;
+}
+void LoginDialog::notify_connected()
+{
+	(*m_server_response) << wxT("CONNECTED\n");
+}
+
+void LoginDialog::notify_disconnected()
+{
+	(*m_server_response) << wxT("DISCONNECTED\n");
 }

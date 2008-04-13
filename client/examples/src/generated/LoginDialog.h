@@ -14,13 +14,25 @@
 // end wxGlade
 
 #include "Avatar.h"
-class LoginDialog: public wxDialog {
+
+class AuthObserver
+{
+public:
+	virtual void notify_connected()=0;
+	virtual void notify_disconnected()=0;
+	virtual void notify_raw_data(char *dat,size_t sz)=0;
+};
+
+class LoginDialog: public wxDialog,public AuthObserver
+{
 public:
     // begin wxGlade: LoginDialog::ids
     // end wxGlade
 	StickFigures::HumanStickfigure m_human1;
     LoginDialog(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_DIALOG_STYLE);
-
+	void notify_connected();
+	void notify_disconnected();
+	void notify_raw_data(char *dat,size_t sz);
 private:
     // begin wxGlade: LoginDialog::methods
     void set_properties();
@@ -29,8 +41,8 @@ private:
 
 protected:
     // begin wxGlade: LoginDialog::attributes
-    wxTextCtrl* text_ctrl_1;
-    wxTextCtrl* m_txt_server_response;
+    wxTextCtrl* m_txt_login;
+    wxTextCtrl* m_txt_passw;
     wxTextCtrl* m_server_response;
     wxButton* m_btn_login;
     wxButton* m_btn_cancel;
