@@ -15,7 +15,7 @@ CREATE TABLE bans (
     reason text
 );
 
-ALTER TABLE public.bans OWNER TO segsdmin;
+ALTER TABLE public.bans OWNER TO segsadmin;
 
 CREATE TABLE game_servers (
     id serial NOT NULL,
