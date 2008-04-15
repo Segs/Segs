@@ -136,7 +136,7 @@ bool MapServer::startup()
 	AdminServerInterface *i_admin;
 	GameServerInterface *i_game;
 
-	ServerHandle<MapServer> h_me(m_listen_point,m_id);
+	ServerHandle<IMapServer> h_me(m_listen_point,m_id);
 
 	i_auth = getAuthServer(); // connect to AuthServer
 	i_admin= InterfaceManager::instance()->get(i_auth->AuthenticateMapServer(h_me,MAPSERVER_VERSION,"some_password"));// Authenticate

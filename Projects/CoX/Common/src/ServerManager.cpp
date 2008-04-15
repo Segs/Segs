@@ -8,8 +8,6 @@
  */
 
 #include "ServerManager.h"
-#include "GameServer/include/GameServer.h"
-#include "MapServer/include/MapServer.h"
 GameServerInterface *ServerManagerC::GetGameServer(size_t idx) 
 {
 	if(idx>m_GameServers.size()) 
@@ -21,19 +19,16 @@ ServerManagerC::ServerManagerC() : m_adminserv(NULL),m_authserv(NULL)
 }
 bool ServerManagerC::LoadConfiguration(const std::string &config_file_path)
 {
-	GameServer *game_instance		= new GameServer;
-	MapServer * map_instance		= new MapServer;
-	m_adminserv						= new AdminServerInterface;	
-	m_authserv						= new AuthServerInterface;
-	GameServerInterface *iface		= new GameServerInterface(game_instance); // takes over game_instance
-	MapServerInterface *iface_map	= new MapServerInterface(map_instance); // takes over map_instance
-
 	m_adminserv->ReadConfig(config_file_path+"/local_1.cfg");
 	m_authserv->ReadConfig(config_file_path+"/local_1.cfg");
-	iface->ReadConfig(config_file_path+"/local_1.cfg");
-	iface_map->ReadConfig(config_file_path+"/local_1.cfg");
-	AddGameServer(iface);   // takes over iface
-	AddMapServer(iface_map); // takes over iface_map
+	for(size_t idx=0; idx<m_GameServers.size(); idx++)
+	{
+		m_GameServers[idx]->ReadConfig(config_file_path+"/local_1.cfg");
+	}
+	for(size_t idx=0; idx<m_MapServers.size(); idx++)
+	{
+		m_GameServers[idx]->ReadConfig(config_file_path+"/local_1.cfg");
+	}
 	return true;
 }
 bool ServerManagerC::StartLocalServers()
@@ -75,7 +70,8 @@ bool ServerManagerC::CreateServerConnections()
 {
 	return true; // for now, this is just a stub
 }
-void ServerManagerC::RemoveGameServer(GameServerInterface *srv)
+/*
+void ServerManagerC::RemoveGameServer(IGameServer *srv)
 {
 	deque<GameServerInterface *>::iterator iter = find(m_GameServers.begin(),m_GameServers.end(),srv);
 	ACE_ASSERT(iter!=m_GameServers.end());
@@ -89,9 +85,41 @@ void ServerManagerC::RemoveMapServer(MapServerInterface *srv)
 	delete *iter;
 	m_MapServers.erase(iter);
 };
+*/
 MapServerInterface *ServerManagerC::GetMapServer(size_t idx) 
 {
 	if(idx>m_MapServers.size()) 
 		return NULL;
 	return m_MapServers[idx];
 };
+
+void ServerManagerC::AddGameServer( IGameServer *srv )
+{
+	m_GameServers.push_back(new GameServerInterface(srv));
+}
+
+size_t ServerManagerC::GameServerCount( void )
+{
+	return m_GameServers.size();
+}
+
+size_t ServerManagerC::MapServerCount( void )
+{
+	return m_MapServers.size();
+}
+
+void ServerManagerC::AddMapServer( IMapServer *srv )
+{
+	m_MapServers.push_back(new MapServerInterface(srv));
+}
+
+void ServerManagerC::SetAuthServer( IAuthServer *srv )
+{
+	ACE_ASSERT(m_authserv==0);
+	m_authserv=new AuthServerInterface(srv);
+}
+void ServerManagerC::SetAdminServer( IAdminServer *srv )
+{
+	ACE_ASSERT(m_adminserv==0);
+	m_adminserv=new AdminServerInterface(srv);
+}

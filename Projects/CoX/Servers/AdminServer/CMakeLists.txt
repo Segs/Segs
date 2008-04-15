@@ -13,6 +13,7 @@ SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
 
 SEGS_ADD_COMPONENT(segs_common LIB)
+SEGS_ADD_COMPONENT(segs_server_common LIB)
 
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 
@@ -22,7 +23,7 @@ ${target_INCLUDE}
 )
 
 ADD_LIBRARY(adminserver_lib STATIC ${target_SOURCES})
-MESSAGE(ERROR " Deps:${target_DEPENDS}")
+
 TARGET_LINK_LIBRARIES(adminserver_lib ${target_DEPENDS})
 ADD_DEPENDENCIES(adminserver_lib ${target_DEPENDS})
 

@@ -8,7 +8,6 @@
  */
 
 #include "MapServerInterface.h"
-#include "MapServer/include/MapServer.h"
 #include <ace/Log_Msg.h>
 
 bool MapServerInterface::Run()

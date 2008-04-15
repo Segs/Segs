@@ -8,7 +8,6 @@
  */
 
 #include "GameServerInterface.h"
-#include "GameServer/include/GameServer.h"
 #include <ace/Log_Msg.h>
 
 bool GameServerInterface::Run()
@@ -81,12 +80,12 @@ bool GameServerInterface::isClientConnected(u64 id)
 	ACE_ASSERT(m_instance);
 	return m_instance->isClientConnected(id);
 }
-int	GameServerInterface::GetAccessKeyForServer(const ServerHandle<MapServer> &h_map)
+int	GameServerInterface::GetAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
 {
 	ACE_ASSERT(m_instance);
 	return m_instance->GetAccessKeyForServer(h_map);
 }
-bool GameServerInterface::MapServerReady(const ServerHandle<MapServer> &h_map)
+bool GameServerInterface::MapServerReady(const ServerHandle<IMapServer> &h_map)
 {
 	ACE_ASSERT(m_instance);
 	return m_instance->MapServerReady(h_map);

@@ -147,3 +147,8 @@ int AdminDatabase::GetAccount(IClient *client,const string &query)
 	return 0;
 
 }
+
+int AdminDatabase::RemoveAccountByID( u64 id )
+{
+	return 0;
+}

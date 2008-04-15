@@ -15,13 +15,22 @@
 #include <ace/INET_Addr.h>
 #include <string>
 #include "Base.h"
+#include "RoamingServer.h"
 class MapServer;
 // this is a proxy for calling GameServer services
-
-class MapServerInterface
+class IMapServer : public RoamingServer
 {
 public:
-	MapServerInterface(MapServer *mi) : m_instance(mi){};
+	virtual u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)=0;
+	virtual void AssociatePlayerWithMap(u64 player_id,int map_number)=0;
+	virtual bool ShutDown(const std::string &reason)=0;
+	virtual bool Online()=0;
+	virtual const ACE_INET_Addr &getAddress()=0;
+};
+class MapServerInterface : public Server
+{
+public:
+	MapServerInterface(IMapServer *mi) : m_instance(mi){};
 	~MapServerInterface(void){};
 	u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level);
 	void AssociatePlayerWithMap(u64 player_id,int map_number);
@@ -34,7 +43,7 @@ public:
 	const ACE_INET_Addr &getAddress();
 
 protected:
-	MapServer *m_instance;
+	IMapServer *m_instance;
 };
 
 #endif // MAPSERVERINTERFACE_H

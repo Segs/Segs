@@ -8,10 +8,8 @@
  */
 
 #include "AuthServerInterface.h"
-#include "AuthServer/include/AuthServer.h"
-AuthServerInterface::AuthServerInterface(void)
+AuthServerInterface::AuthServerInterface(IAuthServer *server) : m_server(server)
 {
-	m_server = new AuthServer;
 }
 
 AuthServerInterface::~AuthServerInterface(void)
@@ -41,7 +39,7 @@ bool AuthServerInterface::ShutDown(const std::string &reason)
 {
 	return m_server->ShutDown(reason);
 }
-ServerHandle<AdminServer> AuthServerInterface::AuthenticateMapServer(const ServerHandle<MapServer> &map,int version,const string &passw)
+ServerHandle<IAdminServer> AuthServerInterface::AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw)
 {
     return m_server->AuthenticateMapServer(map,version,passw);
 }

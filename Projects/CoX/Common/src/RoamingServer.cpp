@@ -34,7 +34,7 @@ bool RoamingServer::ReadConfig(const std::string &inipath)
 */
 AuthServerInterface *RoamingServer::getAuthServer ( ) 
 {
-	ServerHandle<AuthServer> h_auth(m_authaddr,-1);
+	ServerHandle<IAuthServer> h_auth(m_authaddr,-1);
 	return InterfaceManager::instance()->get(h_auth);
 }
 

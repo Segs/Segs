@@ -40,14 +40,16 @@ public:
 	virtual AuthServerInterface *	GetAuthServer(void);
 	virtual GameServerInterface *	GetGameServer(size_t idx); //! If called from standalone MapServer it contains it's controlling GameServer interface
 	virtual MapServerInterface *	GetMapServer(size_t idx);
+	
+			void	SetAuthServer(IAuthServer *srv);
+			void	SetAdminServer(IAdminServer *srv);
+	virtual size_t	GameServerCount(void);;
+	virtual void	AddGameServer(IGameServer *srv);
+//	virtual void	RemoveGameServer(IGameServer *srv);
 
-	virtual size_t	GameServerCount(void){return m_GameServers.size();};
-	virtual void	AddGameServer(GameServerInterface *srv){m_GameServers.push_back(srv);};
-	virtual void	RemoveGameServer(GameServerInterface *srv);
-
-	virtual size_t	MapServerCount(void){return m_MapServers.size();};
-	virtual void	AddMapServer(MapServerInterface *srv){m_MapServers.push_back(srv);};
-	virtual void	RemoveMapServer(MapServerInterface *srv);
+	virtual size_t	MapServerCount(void);
+	virtual void	AddMapServer(IMapServer *srv);
+//	virtual void	RemoveMapServer(IMapServer *srv);
 
 protected:
 	deque<GameServerInterface *> m_GameServers;

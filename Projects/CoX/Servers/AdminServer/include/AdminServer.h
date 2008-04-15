@@ -24,19 +24,20 @@
 // segs includes
 #include "Server.h"
 #include "ServerHandle.h"
+#include "AdminServerInterface.h"
 
 class AdminDatabase;
-class GameServer;
-class MapServer;
+class IGameServer;
+class IMapServer;
 class IClient;
 //! The AdminServer class handles administrative functions such as account saving, account banning, etcetera.
-class AdminServer : public Server
+class _AdminServer : public IAdminServer
 {
 public:
 
     // Constructor/Destructor
-	AdminServer(void);
-	~AdminServer(void);
+	_AdminServer(void);
+	~_AdminServer(void);
 
     // Client handling related interface
 	int                         GetBlockedIpList(std::list<int> &) // Called from auth server during user authentication, might be useful for automatical firewall rules update
@@ -58,14 +59,14 @@ public:
 	bool                        Run(void);
 	bool                        ShutDown(const std::string &reason="No particular reason");
     // Internal World-cluster interface
-    ServerHandle<GameServer>    RegisterMapServer(const ServerHandle<MapServer> &map_h );
-    int                         GetAccessKeyForServer(const ServerHandle<MapServer> &h_server );
+    ServerHandle<IGameServer>    RegisterMapServer(const ServerHandle<IMapServer> &map_h );
+    int                         GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server );
 
 protected:
 	bool m_running;
 	std::list<ACE_INET_Addr> m_ban_list;
 	AdminDatabase *m_db;
 };
-typedef ACE_Singleton<AdminServer,ACE_Thread_Mutex> IAdminServer; // AdminServer Interface
+typedef ACE_Singleton<_AdminServer,ACE_Thread_Mutex> AdminServer; // AdminServer Interface
 
 #endif // ADMINSERVER_H

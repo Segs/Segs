@@ -14,18 +14,25 @@
 
 #include <ace/INET_Addr.h>
 #include <list>
-#include "Server.h"
+#include "RoamingServer.h"
 #include "ServerHandle.h"
+
 class AuthClient;
-class AuthServer;
-
-class MapServer;
-class AdminServer;
-
+class IMapServer;
+class IAdminServer;
+class IAuthServer : public RoamingServer
+{
+public:
+virtual	bool						ReadConfig(const std::string &name)=0;
+virtual	bool						Run(void)=0;
+virtual	bool						ShutDown(const std::string &reason)=0;
+virtual	AuthClient *				GetClientByLogin(const char *)=0;
+virtual	ServerHandle<IAdminServer>	AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw)=0;
+};
 class AuthServerInterface : public Server
 {
 public:
-	AuthServerInterface(void);
+	AuthServerInterface(IAuthServer *server);
 	~AuthServerInterface(void);
 
 	bool ReadConfig(const std::string &name);
@@ -35,10 +42,10 @@ public:
 //	void SendError(int reason);
 	AuthClient *GetClientByLogin(const char *);
 
-    ServerHandle<AdminServer> AuthenticateMapServer(const ServerHandle<MapServer> &map,int version,const std::string &passw);
+    ServerHandle<IAdminServer> AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw);
 
 protected:
-	AuthServer *m_server;
+	IAuthServer *m_server;
 };
 
 #endif // AUTHSERVERINTERFACE_H

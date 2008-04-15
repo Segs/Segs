@@ -31,12 +31,21 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/InterfaceManager.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/ServerManager.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Database.h
 )
+
+FIND_PATH(PGSQL_path libpq-fe.h
+   /usr/local/include/postgresql
+   /usr/include/postgresql
+   /usr/include/pgsql
+)
+FIND_LIBRARY(PGSQL_lib NAMES libpq.so libpq.a libpq pq PATHS /usr/lib /usr/local/lib DOC "Path to PostgreSQL library"])
+
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
 
 SEGS_ADD_COMPONENT(segs_common LIB)
 
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${PGSQL_path})
 
 SET (target_SOURCES
 ${target_CPP}

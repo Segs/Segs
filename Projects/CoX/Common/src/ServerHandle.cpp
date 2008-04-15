@@ -77,12 +77,12 @@ SERVER_CLASS *ServerHandle<SERVER_CLASS>::getServer()
 {
     return m_server;
 }
-class AuthServer;
-class AdminServer;
-class GameServer;
-class MapServer;
+class IAuthServer;
+class IAdminServer;
+class IGameServer;
+class IMapServer;
 
-template class ServerHandle<AuthServer>;
-template class ServerHandle<AdminServer>;
-template class ServerHandle<GameServer>;
-template class ServerHandle<MapServer>;
+template class ServerHandle<IAuthServer>;
+template class ServerHandle<IAdminServer>;
+template class ServerHandle<IGameServer>;
+template class ServerHandle<IMapServer>;

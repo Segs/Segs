@@ -154,11 +154,46 @@ bool GameServer::isClientConnected(u64 id)
 {
 	return m_clients.getById(id)!=NULL;
 }
-int GameServer::GetAccessKeyForServer(const ServerHandle<MapServer> &h_map)
+int GameServer::GetAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
 {
 	return 0;
 }
-bool GameServer::MapServerReady(const ServerHandle<MapServer> &h_map)
+bool GameServer::MapServerReady(const ServerHandle<IMapServer> &h_map)
 {
 	return false;
+}
+
+std::string GameServer::getName( void )
+{
+	return m_serverName;
+}
+
+u8 GameServer::getId( void )
+{
+	return m_id;
+}
+
+u16 GameServer::getCurrentPlayers( void )
+{
+	return m_current_players;
+}
+
+u16 GameServer::getMaxPlayers()
+{
+	return m_max_players;
+}
+
+u8 GameServer::getUnkn1( void )
+{
+	return m_unk1;
+}
+
+u8 GameServer::getUnkn2( void )
+{
+	return m_unk2;
+}
+
+CharacterDatabase * GameServer::getDb()
+{
+	return m_database;
 }

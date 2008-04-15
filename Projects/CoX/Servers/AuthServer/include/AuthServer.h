@@ -30,6 +30,7 @@ typedef ACE_Acceptor<AuthClientService, ACE_SOCK_ACCEPTOR> ClientAcceptor;
 #include "Client.h"
 #include "Server.h"
 #include "ServerHandle.h"
+#include "AuthServerInterface.h"
 
 // Boost includes
 #include <boost/pool/object_pool.hpp>
@@ -47,7 +48,7 @@ using namespace stdext;
 typedef hash_map<std::string,AuthClient *> hmClients;
 #endif // WIN32
 class AuthClient;
-class AuthServer  : public Server
+class AuthServer  : public IAuthServer
 {
 public:
 	typedef enum
@@ -67,7 +68,7 @@ public:
 	bool                        Run(void);
 	bool                        ShutDown(const std::string &reason="No particular reason");
 
-    ServerHandle<AdminServer>   AuthenticateMapServer(const ServerHandle<MapServer> &map,int version,const string &passw); // World-cluster interface
+    ServerHandle<IAdminServer>   AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const string &passw); // World-cluster interface
 
 	AuthClient *                GetClientByLogin(const char *);
 protected:

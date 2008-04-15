@@ -16,17 +16,17 @@
 // currently there is no such thing, and 'client-cache' is just a hash-map
 
 // Defined constructor
-AdminServer::AdminServer(void) : m_running(false)
+_AdminServer::_AdminServer(void) : m_running(false)
 {
 	m_db=new AdminDatabase;
 }
 
 // Defined destructor
-AdminServer::~AdminServer(void)
+_AdminServer::~_AdminServer(void)
 {
 	(void)ShutDown();
 }
-bool AdminServer::ReadConfig(const std::string &inipath)
+bool _AdminServer::ReadConfig(const std::string &inipath)
 {
 	if(m_running)
 		ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AdminServer: Already initialized and running\n") ),false);
@@ -51,14 +51,14 @@ bool AdminServer::ReadConfig(const std::string &inipath)
 	m_db->setConnectionConfiguration(dbhost.c_str(),dbname.c_str(),dbuser.c_str(),dbpass.c_str());
 	return true;
 }
-bool AdminServer::Run()
+bool _AdminServer::Run()
 {
 	if(m_db->OpenConnection())
 		return false;
 	m_running=true;
 	return true;
 }
-bool AdminServer::ShutDown(const std::string &reason/* ="No particular reason" */)
+bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" */)
 {
 	bool res;
 	ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
@@ -67,7 +67,7 @@ bool AdminServer::ShutDown(const std::string &reason/* ="No particular reason" *
 	delete m_db;
 	return res;
 }
-void AdminServer::FillClientInfo(IClient *client)
+void _AdminServer::FillClientInfo(IClient *client)
 {
 	if((client->getLogin().size()>0) && (client->getId()==0)) // existing client
 	{
@@ -81,14 +81,14 @@ void AdminServer::FillClientInfo(IClient *client)
 	}
 
 }
-bool AdminServer::Login(const IClient *client,const ACE_INET_Addr &client_addr)
+bool _AdminServer::Login(const IClient *client,const ACE_INET_Addr &client_addr)
 {
 	// Here we should log to the Db, a Login event for that client
 	//client->setState(AuthClient::LOGGED_IN); modifying this should be done in AuthServer
 	return true;
 }
 
-bool AdminServer::Logout(const IClient *client) const
+bool _AdminServer::Logout(const IClient *client) const
 {
 	// Here we should log to the Db, a Logout event for that client
 	//if(client)
@@ -96,21 +96,22 @@ bool AdminServer::Logout(const IClient *client) const
 	return true;
 }
 
-bool AdminServer::ValidPassword(const IClient *client ,const char *pass)
+bool _AdminServer::ValidPassword(const IClient *client ,const char *pass)
 {
 	return m_db->ValidPassword(client->getLogin().c_str(),pass);
 }
 
-int AdminServer::SaveAccount(const char *username, const char *password) 
+int _AdminServer::SaveAccount(const char *username, const char *password) 
 {
 	return m_db->AddAccount(username, password);  // Add the given account
 }
 
-/*
-int AdminServer::RemoveAccount(IClient *client)
+int _AdminServer::RemoveAccount(IClient *client)
 {
 	return m_db->RemoveAccountByID(client->getId());
 }
+
+/*
 */
 
 /*
@@ -126,7 +127,7 @@ bool AdminServer::AccountBlocked(const char *login) const
 }
 */
 
-int AdminServer::AddIPBan(const ACE_INET_Addr &client_addr)
+int _AdminServer::AddIPBan(const ACE_INET_Addr &client_addr)
 {
 	m_ban_list.push_back(client_addr);
 	return 0;
@@ -138,10 +139,10 @@ int AdminServer::AddIPBan(const ACE_INET_Addr &client_addr)
  * @return ServerHandle
  * @param  map_h
  */
-ServerHandle<GameServer> AdminServer::RegisterMapServer(const ServerHandle<MapServer> &map_h)
+ServerHandle<IGameServer> _AdminServer::RegisterMapServer(const ServerHandle<IMapServer> &map_h)
 {
 	// For each server, find number of free Map handlers, and player occupancy ( servers with low number of Maps, and low occupancy should be prioritised)
-	return ServerHandle<GameServer>(0);
+	return ServerHandle<IGameServer>(0);
 }
 
 
@@ -151,7 +152,7 @@ ServerHandle<GameServer> AdminServer::RegisterMapServer(const ServerHandle<MapSe
  * @return int
  * @param  map_h
  */
-int AdminServer::GetAccessKeyForServer(const ServerHandle<MapServer> &map_h) 
+int _AdminServer::GetAccessKeyForServer(const ServerHandle<IMapServer> &map_h) 
 {
 	return 0;
 }

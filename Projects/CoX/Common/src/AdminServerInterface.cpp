@@ -8,8 +8,7 @@
  */
 
 #include "AdminServerInterface.h"
-#include "AdminServer/include/AdminServer.h"
-AdminServerInterface::AdminServerInterface(void)
+AdminServerInterface::AdminServerInterface(IAdminServer *srv) : m_server(srv)
 {
 }
 
@@ -18,51 +17,51 @@ AdminServerInterface::~AdminServerInterface(void)
 }
 int AdminServerInterface::GetBlockedIpList(std::list<int> &addreses) // called from auth server during user authentication, might be useful for automatical firewall rules update
 {
-	return IAdminServer::instance()->GetBlockedIpList(addreses);
+	return m_server->GetBlockedIpList(addreses);
 }
 bool AdminServerInterface::Login(IClient  *client,const ACE_INET_Addr &client_addr) // Records given 'client' as logged in from 'addr'.
 {
-	return IAdminServer::instance()->Login(client,client_addr);
+	return m_server->Login(client,client_addr);
 }
 bool AdminServerInterface::Logout(IClient  *client)
 {
-	return IAdminServer::instance()->Logout(client);
+	return m_server->Logout(client);
 }
 int AdminServerInterface::SaveAccount(const char *username, const char *password)
 {
-        return IAdminServer::instance()->SaveAccount(username, password);
+        return m_server->SaveAccount(username, password);
 }
 bool AdminServerInterface::ValidPassword(const IClient *client, const char *password)
 {
-	return IAdminServer::instance()->ValidPassword(client, password);
+	return m_server->ValidPassword(client, password);
 }
 void AdminServerInterface::InvalidGameServerConnection(const ACE_INET_Addr &from)
 {
-	return IAdminServer::instance()->InvalidGameServerConnection(from);
+	return m_server->InvalidGameServerConnection(from);
 }
 void AdminServerInterface::FillClientInfo(IClient *client)
 {
-	return IAdminServer::instance()->FillClientInfo(client);
+	return m_server->FillClientInfo(client);
 }
 bool AdminServerInterface::Run()
 {
-	return IAdminServer::instance()->Run();
+	return m_server->Run();
 }
 bool AdminServerInterface::ReadConfig(const std::string &name)
 {
-	return IAdminServer::instance()->ReadConfig(name);
+	return m_server->ReadConfig(name);
 }
 bool AdminServerInterface::ShutDown(const std::string &reason)
 {
-	return IAdminServer::instance()->ShutDown(reason);
+	return m_server->ShutDown(reason);
 }
-ServerHandle<GameServer> RegisterMapServer(const ServerHandle<MapServer> &map_h)
+ServerHandle<IGameServer> AdminServerInterface::RegisterMapServer(const ServerHandle<IMapServer> &map_h)
 {
-	return IAdminServer::instance()->RegisterMapServer(map_h);
+	return m_server->RegisterMapServer(map_h);
 }
-int GetAccessKeyForServer(const ServerHandle<MapServer> &h_server)
+int AdminServerInterface::GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server)
 {
-	return IAdminServer::instance()->GetAccessKeyForServer(h_server);
+	return m_server->GetAccessKeyForServer(h_server);
 }
 
 /*

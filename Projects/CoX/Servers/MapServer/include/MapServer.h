@@ -37,7 +37,7 @@ using namespace stdext;
 #include "Base.h"
 #include "CRUDP_Protocol.h"
 #include "ClientManager.h"
-#include "RoamingServer.h"
+#include "MapServerInterface.h"
 
 #define MAPSERVER_VERSION 1
 
@@ -45,7 +45,7 @@ class Net;
 class MapServerEndpoint;
 class MapClient;
 class SEGSMap;
-class MapServer : public RoamingServer
+class MapServer : public IMapServer
 {
 public:
 	MapServer(void);

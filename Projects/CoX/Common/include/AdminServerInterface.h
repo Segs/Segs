@@ -20,8 +20,8 @@ using namespace __gnu_cxx;
 #include <hash_map>
 #endif // WIN32
 #include <list>
-#include "Server.h"
 #include "ServerHandle.h"
+#include "RoamingServer.h"
 /************************************************************************/
 /* Design consideration:                                                */
 /* Current implementation gets knowledge it shouldn't possess,          */
@@ -34,21 +34,45 @@ using namespace __gnu_cxx;
 
 class IClient;
 
-class MapServer;
-class GameServer;
+class IMapServer;
+class IGameServer;
 
+class IAdminServer : public RoamingServer
+{
+public:
+virtual	int                         GetBlockedIpList(std::list<int> &)=0;
+virtual	bool                        Logout(const IClient *client) const=0;
+virtual	bool                        Login(const IClient *client,const ACE_INET_Addr &client_addr)=0;
+virtual	bool                        ValidPassword(const IClient *client, const char *password)=0;
+
+virtual	void                        FillClientInfo(IClient *client)=0;
+virtual	int                         SaveAccount(const char *username, const char *password)=0;
+virtual	int                         RemoveAccount(IClient *client)=0;
+
+virtual	int                         AddIPBan(const ACE_INET_Addr &client_addr)=0;
+virtual	void                        InvalidGameServerConnection(const ACE_INET_Addr &)=0;
+
+virtual	bool                        ReadConfig(const std::string &name)=0;
+virtual	bool                        Run(void)=0;
+virtual	bool                        ShutDown(const std::string &reason="No particular reason")=0;
+
+virtual	ServerHandle<IGameServer>    RegisterMapServer(const ServerHandle<IMapServer> &map_h )=0;
+virtual	int                         GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server )=0;
+
+
+};
 class AdminServerInterface : public Server
 {
 public:
-	AdminServerInterface(void);
+	AdminServerInterface(IAdminServer *srv);
 	~AdminServerInterface(void);
 
 	bool ReadConfig(const std::string &name);
 	bool Run(void);
 	bool ShutDown(const std::string &reason);
 
-    ServerHandle<GameServer> RegisterMapServer(const ServerHandle<MapServer> &map_h);
-    int GetAccessKeyForServer(const ServerHandle<MapServer> &h_server);
+    ServerHandle<IGameServer> RegisterMapServer(const ServerHandle<IMapServer> &map_h);
+    int GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server);
 
 
 	int GetBlockedIpList(std::list<int> &addreses); // called from auth server during user authentication, might be useful for automatical firewall rules update
@@ -60,6 +84,7 @@ public:
 	void InvalidGameServerConnection(const ACE_INET_Addr &from);
 	void RunCommand(const char *); //magical entry point to internal workings of all the servers ??
 protected:
+	IAdminServer *m_server;
 };
 
 #endif // ADMINSERVERINTERFACE_H

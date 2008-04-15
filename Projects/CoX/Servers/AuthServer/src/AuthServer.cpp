@@ -118,9 +118,9 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
  * @param  version MapServer version
  * @param  passw server password
  */
-ServerHandle<AdminServer> AuthServer::AuthenticateMapServer(const ServerHandle<MapServer> &map,int version,const string &passw)
+ServerHandle<IAdminServer> AuthServer::AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const string &passw)
 {
     // we need to ask our adminserver the key it's 
 //    AdminServerInterface *i_admin = InterfaceManager::instance()->get(ServerHandle<AdminServer>(0)); // trying local only
-    return ServerHandle<AdminServer>(0);
+    return ServerHandle<IAdminServer>(0);
 }

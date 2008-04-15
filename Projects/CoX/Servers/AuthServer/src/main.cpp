@@ -35,7 +35,14 @@
 #include "ServerManager.h"
 #include "server_support.h"
 #include "version.h"
-//#include "TestingThread.h"
+//////////////////////////////////////////////////////////////////////////
+
+#include "AdminServer.h"
+#include "AuthServer.h"
+#include "MapServer.h"
+#include "GameServer.h"
+//////////////////////////////////////////////////////////////////////////
+
 class LogCallback : public ACE_Log_Msg_Callback
 {
 public:
@@ -59,6 +66,16 @@ static ACE_THR_FUNC_RETURN event_loop (void *arg)
 	reactor->run_reactor_event_loop (); 
 	return 0; 
 }
+static bool CreateServers()
+{
+	GameServer *game_instance		= new GameServer;
+	MapServer * map_instance		= new MapServer;
+	ServerManager::instance()->SetAdminServer(AdminServer::instance());
+	ServerManager::instance()->SetAuthServer(new AuthServer);
+	ServerManager::instance()->AddGameServer(game_instance);
+	ServerManager::instance()->AddMapServer(map_instance);
+	return true;
+};
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
 //	int opt;
@@ -87,22 +104,6 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 	ACE_LOG_MSG->msg_ostream (&myostream);
 #endif /* ACE_LACKS_IOSTREAM_TOTALLY */ 
 
-	// this should be transfered to AuthServer::ReadConfig method, and reading from file instead of commandline
-/*
-	ACE_Get_Opt get_opts(argc,argv,"b:h");
-	while((opt=get_opts())!=-1)
-		switch(opt)
-	{
-		case 'b':
-			//set the number of messages we wish to enqueue and dequeue
-			break;
-		case 'h':
-		default:
-			ACE_DEBUG((LM_ERROR,"Auth server usage:\n\t -b bind_at_address\n\t -h this message\n"));
-			break;
-	}
-*/
-
 	// Print out startup copyright messages
 	VersionInfo version;
 	version.getAuthVersion();
@@ -117,6 +118,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 */
 	ACE_Thread_Manager::instance()->spawn_n(N_THREADS, event_loop, ACE_Reactor::instance()); 
 	bool no_err=true;
+	no_err=CreateServers();
 	no_err=ServerManager::instance()->LoadConfiguration(".");
 	if(no_err)
 		no_err=ServerManager::instance()->StartLocalServers();

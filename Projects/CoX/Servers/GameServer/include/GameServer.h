@@ -43,7 +43,7 @@ class GameServerEndpoint;
 class CharacterClient;
 class pktCS_ServerUpdate;
 class CharacterDatabase;
-class GameServer : public RoamingServer
+class GameServer : public IGameServer
 {
 public:
 	~GameServer(void);
@@ -56,19 +56,19 @@ public:
 	const ACE_INET_Addr &	getAddress() {return m_location;};
 	
 	// World-cluster management interface
-	int						GetAccessKeyForServer(const ServerHandle<MapServer> &h_map);
-	bool					MapServerReady(const ServerHandle<MapServer> &h_map);
+	int						GetAccessKeyForServer(const ServerHandle<IMapServer> &h_map);
+	bool					MapServerReady(const ServerHandle<IMapServer> &h_map);
 
-	ServerHandle<MapServer> GetMapHandle(const std::string &mapname);
+	ServerHandle<IMapServer> GetMapHandle(const std::string &mapname);
 
 
-	std::string				getName(void){return m_serverName;};
-	u8						getId(void){return m_id;}
-	u16						getCurrentPlayers(void){return m_current_players;}
-	u16						getMaxPlayers(){return m_max_players;}
-	u8						getUnkn1(void){return m_unk1;};
-	u8						getUnkn2(void){return m_unk2;};
-	CharacterDatabase *		getDb() {return m_database;}
+	std::string				getName(void);;
+	u8						getId(void);
+	u16						getCurrentPlayers(void);
+	u16						getMaxPlayers();
+	u8						getUnkn1(void);
+	u8						getUnkn2(void);
+	CharacterDatabase *		getDb();
 	u32						ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level);
 	void					checkClientConnection(u64 id);
 	CharacterClient *		ClientExpected(ACE_INET_Addr &from,pktCS_ServerUpdate *pak);
