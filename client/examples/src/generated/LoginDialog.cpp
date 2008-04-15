@@ -8,7 +8,7 @@
 #include <ace/SOCK_Connector.h>
 #include <ace/SOCK_Stream.h>
 #include <ace/Reactor_Notification_Strategy.h>
-
+//#include "AuthPacket.h"
 
 // begin wxGlade: ::extracode
 
@@ -233,3 +233,61 @@ void LoginDialog::notify_disconnected()
 {
 	(*m_server_response) << wxT("DISCONNECTED\n");
 }
+/*
+	Component should be includeable into the project source as/is ( just writing 
+		ADD_COMPONENT_MACRO(COMPONENT_NAME SOURCE) // adds component's sources to the target
+		ADD_COMPONENT_MACRO(COMPONENT_NAME LIB) // adds component's include directory, and does ADD_DEPENDENCIES
+
+	SEGS/
+		CMakeScripts/
+		Components/
+			Server/
+				ComponentName/
+					include/
+					src/
+					Doc/
+			Client/
+				ComponentName/
+					include/
+					src/
+					Doc/
+			Common/
+				ComponentName/
+					include/
+					src/
+					Doc/
+
+		Utilities/
+		Projects/
+			Example1/
+				Servers/
+				Clients/
+				Utilities/
+				Data/
+				Doc/
+				License.txt
+				Readme.txt
+				Authors.txt
+			CoX/
+				Servers/
+				Clients/
+				Utilities/
+				Data/
+				Doc/
+				License.txt
+				Readme.txt
+				Authors.txt
+			OtherWorldSpecificFilesHere/
+				Servers/
+				Clients/
+				Utilities/
+				Data/
+				Doc/
+				License.txt
+				Readme.txt
+				Authors.txt
+		License.txt
+		Readme.txt
+		Authors.txt
+
+*/
