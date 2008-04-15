@@ -21,7 +21,9 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 
-ADD_LIBRARY(adminserver_lib STATIC ${adminserver_SRCS})
-
+ADD_LIBRARY(adminserver_lib STATIC ${target_SOURCES})
+MESSAGE(ERROR " Deps:${target_DEPENDS}")
 TARGET_LINK_LIBRARIES(adminserver_lib ${target_DEPENDS})
 ADD_DEPENDENCIES(adminserver_lib ${target_DEPENDS})
+
+SEGS_REGISTER_COMPONENT(adminserver_lib "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
