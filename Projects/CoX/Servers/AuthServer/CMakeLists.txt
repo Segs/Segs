@@ -35,7 +35,7 @@ ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
 IF(BUILD_SEPARATE)
 	ADD_DEFINITIONS(-DSEPARATE)
 	ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
-    TARGET_LINK_LIBRARIES(authserver   ${target_DEPENDS}
+    TARGET_LINK_LIBRARIES(authserver   ${target_DEPENDS} authserver_lib
                     						${ACE_lib} 
                     						${PGSQL_lib} 
                     						${ZLIB_LIBRARIES}
