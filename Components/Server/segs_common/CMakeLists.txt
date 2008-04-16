@@ -4,15 +4,24 @@ SET(target_CPP
 SET(target_INCLUDE
 )
 
-SET(target_INCLUDE_DIR "")
+FIND_PATH(ACE_path ACE.h
+  /usr/local/include/ace
+  /usr/include/ace
+)
+FIND_PACKAGE(ZLIB REQUIRED)
+
+SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 SEGS_ADD_COMPONENT(CRUDP_Protocol SOURCE)
 SEGS_ADD_COMPONENT(ConfigExtensions SOURCE)
-INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
+
+INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${ACE_path})
+INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 
 ADD_LIBRARY(segs_common STATIC ${target_SOURCES})
 SEGS_REGISTER_COMPONENT(segs_common "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
