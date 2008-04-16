@@ -4,7 +4,7 @@ MACRO(SEGS_ADD_COMPONENT component_name LINK_TYPE)
 		IF("${LINK_TYPE}" STREQUAL "LIB")
 
             SET(target_INCLUDE_DIR ${target_INCLUDE_DIR} ${${component_name}_INCLUDE_DIR})
-			SET(target_DEPENDS ${target_DEPENDS} ${component_name})
+			SET(target_DEPENDS ${target_DEPENDS} ${component_name} ${${component_name}_DEPENDS})
 
 		ELSEIF("${LINK_TYPE}" STREQUAL "SOURCE")
 
@@ -36,7 +36,7 @@ MACRO(SEGS_REGISTER_COMPONENT name include_dir sources includes )
 
         SET(${name}_VISITED TRUE CACHE INTERNAL "")
         SET(${name}_INCLUDE_DIR ${include_dir} CACHE INTERNAL "")
-    
+        SET(${name}_DEPENDS ${target_DEPENDS} CACHE INTERNAL "") # warning! will pull in all current dependencies 
         SET(${name}_CPP ${sources} CACHE INTERNAL "")	
         SET(${name}_INCLUDE ${includes} CACHE INTERNAL "")
         SET(${name}_SOURCES ${${name}_CPP} ${${name}_INCLUDE} CACHE INTERNAL "")
