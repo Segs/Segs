@@ -1,9 +1,9 @@
 # $Id: CMakeLists.txt 301 2006-12-26 15:50:44Z nemerle $
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/src/Bitstream.cpp 
+${CMAKE_CURRENT_SOURCE_DIR}/src/BitStream.cpp 
 )
 SET(target_INCLUDE
-${CMAKE_CURRENT_SOURCE_DIR}/include/Bitstream.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/BitStream.h
 )
 
 # ACE framework
