@@ -7,7 +7,7 @@
  * $Id: ClientConnection.cpp 317 2007-01-25 15:44:29Z nemerle $
  */
 
-#include "ClientConnection.h"
+#include "AuthConnection.h"
 #include "AuthProtocol.h"
 AuthConnection::AuthConnection(void) : m_received_bytes_storage(0x1000,0,40)
 {

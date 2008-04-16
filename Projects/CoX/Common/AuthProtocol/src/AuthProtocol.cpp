@@ -9,7 +9,7 @@
 
 #include "AuthProtocol.h"
 #include "AuthPacket.h"
-#include "ClientConnection.h"
+#include "AuthConnection.h"
 /*! 
 	@class AuthSerializer
 	@brief Responsible for packet serialization to/from GrowingBuffer

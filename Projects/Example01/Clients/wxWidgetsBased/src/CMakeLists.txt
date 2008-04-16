@@ -1,3 +1,4 @@
+SET(UNICODE TRUE)
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/generated/main.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/generated/LoginDialog.cpp

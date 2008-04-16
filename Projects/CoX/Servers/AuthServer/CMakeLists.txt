@@ -5,7 +5,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthClient.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthClientServicer.cpp 
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthFSM.cpp 
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthServer.cpp 
-${CMAKE_CURRENT_SOURCE_DIR}/src/packets/authserverlist.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthClient.h
@@ -13,21 +12,11 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthClientServicer.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthFSM.h 
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthServer.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthConnection_ServerSide.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authversion.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authlogin.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authloginresponse.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authrequestserverlist.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authserverlist.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authselectserver.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authselectserverresponse.h
 )
 SET (authserver_standaloneSRCS 
 ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 
-SET(target_INCLUDE_DIR
-${CMAKE_CURRENT_SOURCE_DIR}/include
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets
-)
+SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
 SEGS_ADD_COMPONENT(AuthProtocol SOURCE)
 SEGS_ADD_COMPONENT(segs_server_common LIB)
