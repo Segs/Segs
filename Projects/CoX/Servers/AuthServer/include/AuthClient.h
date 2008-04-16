@@ -20,7 +20,7 @@ class GameServerInterface;
 
 // skeleton class used during authentication
 class AuthClient : public Client
-{
+	{
 public:
 	AuthClient();
 	bool			AccountBlocked() {return m_access_level==0; }

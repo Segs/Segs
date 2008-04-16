@@ -16,7 +16,7 @@
 #include "AuthOpcodes.h"
 #include "AuthPacketCodec.h"
 #include "AuthFSM.h"
-class ClientConnection;
+class AuthConnection;
 class AuthPacket;
 class AuthFSM_Default;
 class AuthSerializer
@@ -36,11 +36,11 @@ public:
 	virtual ~IAuthProtocol(){}; // my_conn doesn't belong to us, therefore no delete.
 	virtual u32 getVersion()=0;
 	virtual void ReceivedBytes(GrowingBuffer &buf)=0;
-	virtual void setConnection(ClientConnection *conn)=0;
+	virtual void setConnection(AuthConnection *conn)=0;
 	virtual void Established()=0;
 	virtual void Closed()=0;
 protected:
-	ClientConnection *my_conn;
+	AuthConnection *my_conn;
 };
 /*
 	This class handles every client connection, so it uses only stack variables, and threadsafe data 
@@ -55,7 +55,7 @@ public:
 	void Established();
 	void Closed();
 	void ReceivedBytes(GrowingBuffer &buf);
-	virtual void setConnection(ClientConnection *conn) {my_conn = conn;};
+	virtual void setConnection(AuthConnection *conn) {my_conn = conn;};
 	virtual u32 getVersion(){return this->m_protocol_version;};
 
 };

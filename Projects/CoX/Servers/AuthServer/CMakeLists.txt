@@ -4,24 +4,15 @@ SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthClient.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthClientServicer.cpp 
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthFSM.cpp 
-${CMAKE_CURRENT_SOURCE_DIR}/src/AuthPacket.cpp 
-${CMAKE_CURRENT_SOURCE_DIR}/src/AuthPacketCodec.cpp 
-${CMAKE_CURRENT_SOURCE_DIR}/src/AuthProtocol.cpp 
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthServer.cpp 
-${CMAKE_CURRENT_SOURCE_DIR}/src/ClientConnection.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/packets/authserverlist.cpp
 )
 SET(target_INCLUDE
-#${CMAKE_CURRENT_SOURCE_DIR}/include/AdminDatabase.h
-#${CMAKE_CURRENT_SOURCE_DIR}/include/AdminServer.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthClient.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthClientServicer.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthFSM.h 
-${CMAKE_CURRENT_SOURCE_DIR}/include/AuthPacket.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/AuthPacketCodec.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthServer.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/ClientConnection.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/AuthProtocol.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/AuthConnection_ServerSide.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authversion.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authlogin.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authloginresponse.h
@@ -38,7 +29,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Packets
 )
 SET(target_DEPENDS "")
-
+SEGS_ADD_COMPONENT(AuthProtocol SOURCE)
 SEGS_ADD_COMPONENT(segs_server_common LIB)
 SEGS_ADD_COMPONENT(adminserver_lib LIB)
 SEGS_ADD_COMPONENT(gameserver_lib LIB)

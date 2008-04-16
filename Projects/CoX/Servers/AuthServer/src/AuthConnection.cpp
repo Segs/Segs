@@ -9,21 +9,18 @@
 
 #include "ClientConnection.h"
 #include "AuthProtocol.h"
-#include "AuthFSM.h"
-ClientConnection::ClientConnection(void) : m_received_bytes_storage(0x1000,0,40),fsm_data(0)
+AuthConnection::AuthConnection(void) : m_received_bytes_storage(0x1000,0,40)
 {
-	m_client = NULL;
 	m_queue  = NULL;
 	m_current_proto = new AuthProtocol; //m_current_proto->setConnection(this); at connection establish point
 }
-ClientConnection::~ClientConnection(void)
+AuthConnection::~AuthConnection(void)
 {
 	m_queue  = NULL;
-	m_client = NULL;
 	delete m_current_proto;
 	m_current_proto = NULL;
 }
-void ClientConnection::sendBytes(GrowingBuffer &buffer)
+void AuthConnection::sendBytes(GrowingBuffer &buffer)
 {
 	const size_t packet_size = buffer.GetReadableDataSize();
 	ACE_ASSERT(packet_size<0x10000);
@@ -41,7 +38,7 @@ void ClientConnection::sendBytes(GrowingBuffer &buffer)
 	if(-1==m_queue->enqueue(payload))
 		ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),ACE_TEXT ("SendPacket")));
 }
-void ClientConnection::ReceivedBytes(const u8 *buffer,size_t recv_cnt)
+void AuthConnection::ReceivedBytes(const u8 *buffer,size_t recv_cnt)
 {
 	m_received_bytes_storage.PutBytes(buffer,recv_cnt);
 	ACE_ASSERT(m_received_bytes_storage.getLastError()==0);// all received data must fit into the buffer!
@@ -52,22 +49,22 @@ void ClientConnection::ReceivedBytes(const u8 *buffer,size_t recv_cnt)
 	m_current_proto->ReceivedBytes(m_received_bytes_storage); // protocol eats the bytes
 	return; // not enough data left in buffer wait for more
 }
-void ClientConnection::Established(const ACE_INET_Addr &with_peer)
+void AuthConnection::Established(const ACE_INET_Addr &with_peer)
 {
 	//ServerManager::instance()->GetAdminServer()->Log("Established",with_peer)
 	m_peer = with_peer;
 	m_current_proto->setConnection(this); // not set in constructor
 	m_current_proto->Established();
 }
-void ClientConnection::Closed()
+void AuthConnection::Closed()
 {
 	m_current_proto->Closed();
 }
-void ClientConnection::Choked()
+void AuthConnection::Choked()
 {
 	ACE_ASSERT(!"implemented yet");
 }
-void ClientConnection::DataSent()
+void AuthConnection::DataSent()
 {
 	ACE_ASSERT(!"implemented yet");
 }

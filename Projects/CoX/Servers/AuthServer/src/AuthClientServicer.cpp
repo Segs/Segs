@@ -29,7 +29,7 @@ int AuthClientService::open (void *p)
 	m_notifier.reactor(reactor());						// notify reactor with write event, 
 	msg_queue()->notification_strategy (&m_notifier);	// whenever there is a new event on msg_queue()
 	
-	client = new ClientConnection; // this object will handle incoming data, interface with AuthServerProxy and also will post Message blocks on the queue
+	client = new AuthConnection; // this object will handle incoming data, interface with AuthServerProxy and also will post Message blocks on the queue
 	ACE_INET_Addr peer_addr;
 	if(peer().get_remote_addr(peer_addr)!=0)
 		peer_addr.set("255.255.255.255"); // invalid peer addr

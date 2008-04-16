@@ -16,7 +16,7 @@
 AuthFSM_Default is used as mixin for the Protocol class.
 */
 class AuthPacket;
-class ClientConnection;
+class AuthConnection;
 class AuthFSM_Default
 {
 
@@ -31,10 +31,10 @@ class AuthFSM_Default
 private:
 	static AuthPacket *auth_error(char,char);
 public:
-	static AuthPacket *ReceivedPacket(ClientConnection *caller,AuthPacket *pkt);
-	static AuthPacket *ConnectionEstablished(ClientConnection *conn);
-	static void SendError(ClientConnection *conn,int err);
-	static void ConnectionClosed(ClientConnection *conn);
+	static AuthPacket *ReceivedPacket(AuthConnection *caller,AuthPacket *pkt);
+	static AuthPacket *ConnectionEstablished(AuthConnection *conn);
+	static void SendError(AuthConnection *conn,int err);
+	static void ConnectionClosed(AuthConnection *conn);
 };
 
 #endif // AUTHFSM_H

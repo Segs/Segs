@@ -34,8 +34,9 @@ AuthPacket *AuthFSM_Default::auth_error(char a,char b)
 	static_cast<pktAuthErrorPacket*>(result)->setError(2,b);
 	return result;
 }
-AuthPacket *AuthFSM_Default::ReceivedPacket(ClientConnection *caller,AuthPacket *pkt)
+AuthPacket *AuthFSM_Default::ReceivedPacket(AuthConnection *conn,AuthPacket *pkt)
 {
+	AuthConnection_ServerSide *caller = static_cast<AuthConnection_ServerSide *>(conn);
 	AuthPacket *result = NULL;
 	AdminServerInterface *adminserv;
 	adminserv = ServerManager::instance()->GetAdminServer();
@@ -156,21 +157,24 @@ AuthPacket *AuthFSM_Default::ReceivedPacket(ClientConnection *caller,AuthPacket 
 	AuthPacketFactory::Destroy(pkt);
 	return result;
 }
-AuthPacket *AuthFSM_Default::ConnectionEstablished(ClientConnection *conn)
+AuthPacket *AuthFSM_Default::ConnectionEstablished(AuthConnection *conn)
 {
+	AuthConnection_ServerSide *caller = static_cast<AuthConnection_ServerSide *>(conn);
+
 	// this is a step 2 from ClientScenario1
 	pktAuthVersion * res = (pktAuthVersion *)AuthPacketFactory::PacketForType(SMSG_AUTHVERSION);
-	conn->setClientState((int)CLIENT_CONNECTED);
+	caller->setClientState((int)CLIENT_CONNECTED);
 	return res;
 }
-void AuthFSM_Default::ConnectionClosed(ClientConnection *conn)
+void AuthFSM_Default::ConnectionClosed(AuthConnection *conn)
 {
+	AuthConnection_ServerSide *caller = static_cast<AuthConnection_ServerSide *>(conn);
 	AdminServerInterface *adminserv;
 	adminserv = ServerManager::instance()->GetAdminServer();
-	if(conn->getClient())
+	if(caller->getClient())
 	{
-		conn->getClient()->setState(AuthClient::NOT_LOGGEDIN);
-		adminserv->Logout(conn->getClient());
+		caller->getClient()->setState(AuthClient::NOT_LOGGEDIN);
+		adminserv->Logout(caller->getClient());
 	}
 	else
 	{

@@ -24,27 +24,18 @@
 class IAuthProtocol;
 class AuthClient;
 
-class ClientConnection
+class AuthConnection
 {
-	ClientConnection(const ClientConnection &); // no copy construction or assignment
-	ClientConnection &operator=(const ClientConnection&);
+	AuthConnection(const AuthConnection &); // no copy construction or assignment
+	AuthConnection &operator=(const AuthConnection&);
 public:
 
-	ClientConnection(void);
-	~ClientConnection(void);
+	AuthConnection(void);
+	virtual ~AuthConnection(void);
 
-	//////////////////////////////////////////////////////////////////////////
-	// Client connection FSM support methods
-	//////////////////////////////////////////////////////////////////////////
-	
-	int getClientState(void) const{return fsm_data;}; 
-	void setClientState(int state) {fsm_data = state;}
 
 	IAuthProtocol *	getProtocol();
 	void			setProtocol(IAuthProtocol *,bool retain_old_settings); //retain_old_settings tells us to try and copy old settings from existing Protocol object
-
-	void			setClient(AuthClient *cl){m_client=cl;}
-	AuthClient *	getClient(){return m_client;}
 
 	const ACE_INET_Addr &peer() const {return m_peer;}
 	//////////////////////////////////////////////////////////////////////////
@@ -60,13 +51,33 @@ public:
 	void Choked(); // this is called when client sends waaay too much data, this situation should be logged, and after a while client IP added to blocked list
 	void DataSent(); // this is pre-design interface for Async processing, it's called when last SendPacket finishes
 
+
 protected:
 	ACE_Message_Queue_Base *m_queue;
 	ACE_INET_Addr m_peer;
 	GrowingBuffer m_received_bytes_storage;
 	IAuthProtocol *m_current_proto;
+};
+class AuthConnection_ServerSide : public AuthConnection
+{
+public:
+	AuthConnection_ServerSide():AuthConnection(),m_client(0),fsm_data(0)
+	{}
+	virtual ~AuthConnection_ServerSide()
+	{
+		m_client = NULL;
+	}
+	//////////////////////////////////////////////////////////////////////////
+	// Client connection FSM support methods
+	//////////////////////////////////////////////////////////////////////////
+
+	void			setClient(AuthClient *cl){m_client=cl;}
+	AuthClient *	getClient(){return m_client;}
+
+	int getClientState(void) const{return fsm_data;}; 
+	void setClientState(int state) {fsm_data = state;}
+protected:
 	AuthClient	*m_client;
 	int fsm_data;
 };
-
 #endif // CLIENTCONNECTION_H

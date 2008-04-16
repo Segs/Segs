@@ -26,7 +26,7 @@ class AuthClientService : public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH
 {
 	typedef ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH> super;
 	ACE_Reactor_Notification_Strategy m_notifier;
-	ClientConnection *client; 
+	AuthConnection *client; 
 public:
 			AuthClientService(void);
 virtual		~AuthClientService(void);
