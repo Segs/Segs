@@ -60,7 +60,7 @@ IF(BUILD_SEPARATE)
                     						${PGSQL_lib} 
                     						${ZLIB_LIBRARIES}
                     						${CMAKE_THREAD_LIBS_INIT})
-    ADD_DEPENDENCIES(authserver ${target_DEPENDS})
+    ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
 ENDIF(BUILD_SEPARATE)
 
 SEGS_REGISTER_COMPONENT(authserver_lib "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
