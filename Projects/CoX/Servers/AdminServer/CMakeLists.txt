@@ -12,7 +12,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/AdminServer.h
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
 
-SEGS_ADD_COMPONENT(segs_common LIB)
 SEGS_ADD_COMPONENT(segs_server_common LIB)
 
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})

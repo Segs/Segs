@@ -39,18 +39,27 @@ FIND_PATH(PGSQL_path libpq-fe.h
 )
 FIND_LIBRARY(PGSQL_lib NAMES libpq.so libpq.a libpq pq PATHS /usr/lib /usr/local/lib DOC "Path to PostgreSQL library"])
 
+FIND_PATH(ACE_path ACE.h
+  /usr/local/include/ace
+  /usr/include/ace
+)
+FIND_PACKAGE(ZLIB REQUIRED)
+
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
 
 SEGS_ADD_COMPONENT(segs_common LIB)
 
-INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
-INCLUDE_DIRECTORIES(${PGSQL_path})
-
 SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
+
+INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${PGSQL_path})
+INCLUDE_DIRECTORIES(${ACE_path})
+INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
+
 ADD_LIBRARY(segs_server_common STATIC ${target_SOURCES})
 ADD_DEPENDENCIES(segs_server_common ${target_DEPENDS})
 

@@ -39,7 +39,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/Packets
 )
 SET(target_DEPENDS "")
 
-SEGS_ADD_COMPONENT(segs_common LIB)
 SEGS_ADD_COMPONENT(segs_server_common LIB)
 SEGS_ADD_COMPONENT(adminserver_lib LIB)
 SEGS_ADD_COMPONENT(gameserver_lib LIB)

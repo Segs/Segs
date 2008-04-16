@@ -16,16 +16,24 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/PacketBase.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/PacketCodec.h
 )
 
+FIND_PATH(ACE_path ACE.h
+  /usr/local/include/ace
+  /usr/include/ace
+)
+FIND_PACKAGE(ZLIB REQUIRED)
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 SEGS_ADD_COMPONENT(Bitstream SOURCE)
 
-INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
+
+INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${ACE_path})
+INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 
 SEGS_REGISTER_COMPONENT(CRUDP_Protocol "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
 
