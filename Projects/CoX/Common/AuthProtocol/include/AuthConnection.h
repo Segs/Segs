@@ -9,8 +9,8 @@
 
 // Inclusion guards
 #pragma once
-#ifndef CLIENTCONNECTION_H
-#define CLIENTCONNECTION_H
+#ifndef AUTHCONNECTION_H
+#define AUTHCONNECTION_H
 
 #include <ace/Message_Queue.h>
 #include <ace/INET_Addr.h>
@@ -57,27 +57,5 @@ protected:
 	ACE_INET_Addr m_peer;
 	GrowingBuffer m_received_bytes_storage;
 	IAuthProtocol *m_current_proto;
-};
-class AuthConnection_ServerSide : public AuthConnection
-{
-public:
-	AuthConnection_ServerSide():AuthConnection(),m_client(0),fsm_data(0)
-	{}
-	virtual ~AuthConnection_ServerSide()
-	{
-		m_client = NULL;
-	}
-	//////////////////////////////////////////////////////////////////////////
-	// Client connection FSM support methods
-	//////////////////////////////////////////////////////////////////////////
-
-	void			setClient(AuthClient *cl){m_client=cl;}
-	AuthClient *	getClient(){return m_client;}
-
-	int getClientState(void) const{return fsm_data;}; 
-	void setClientState(int state) {fsm_data = state;}
-protected:
-	AuthClient	*m_client;
-	int fsm_data;
 };
 #endif // CLIENTCONNECTION_H

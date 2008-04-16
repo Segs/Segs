@@ -12,7 +12,7 @@
 #include "AuthFSM.h"
 #include "AuthPacket.h"
 #include "AuthProtocol.h"
-#include "ClientConnection.h"
+#include "AuthConnection_ServerSide.h"
 #include "AuthClient.h"
 #include "AdminServerInterface.h"
 #include "ServerManager.h"
