@@ -20,13 +20,13 @@
 #include <ace/Event_Handler.h>
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
-#include "ClientConnection.h"
+#include "AuthConnection_ServerSide.h"
 
 class AuthClientService : public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH>
 {
 	typedef ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH> super;
 	ACE_Reactor_Notification_Strategy m_notifier;
-	AuthConnection *client; 
+	AuthConnection_ServerSide *client; 
 public:
 			AuthClientService(void);
 virtual		~AuthClientService(void);

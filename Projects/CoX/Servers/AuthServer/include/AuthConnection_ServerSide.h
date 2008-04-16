@@ -9,8 +9,8 @@
 
 // Inclusion guards
 #pragma once
-#ifndef CLIENTCONNECTION_H
-#define CLIENTCONNECTION_H
+#ifndef AUTHCONNECTION_SERVERSIDE_H
+#define AUTHCONNECTION_SERVERSIDE_H
 
 #include "AuthConnection.h"
 
