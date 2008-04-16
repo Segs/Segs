@@ -143,49 +143,5 @@ eAuthPacketType AuthSerializer::OpcodeToType( u8 opcode,bool direction )
 	Turns bytes into AuthFSM::ReceivedPacket calls, and uses serializer to build buffers ready to send.
 	Also it handles 'connection Established' condition.
  */
-
-void AuthProtocol::ReceivedBytes(GrowingBuffer &buf)
-{
-	AuthPacket *res,*pkt = this->serializefrom(buf);
-	if(pkt)
-	{
-		res = this->ReceivedPacket(my_conn,pkt);
-		// if there is a response, send it
-		if(res)
-			sendPacket(res);
-	}
-}
-void AuthProtocol::Established()
-{
-	AuthPacket *res = this->ConnectionEstablished(my_conn); // this will call static method from current FSM
-	if(!res)
-	{
-		return;
-	}
-	if(res->GetPacketType()==SMSG_AUTHVERSION)
-	{
-		u32 seed = 1;
-		static_cast<pktAuthVersion *>(res)->SetSeed(seed);
-		static_cast<pktAuthVersion *>(res)->m_proto_version = this->m_protocol_version;
-		this->m_codec.SetXorKey(seed);
-	}
-	sendPacket(res);
-}
-void AuthProtocol::Closed()
-{
-	this->ConnectionClosed(my_conn);
-}
-void AuthProtocol::sendPacket(AuthPacket *pkt)
-{
-	GrowingBuffer output(0x10000,0,64);
-	if(this->serializeto(pkt,output))
-	{
-		my_conn->sendBytes(output);
-	}
-	//TODO: handle this error!
-	AuthPacketFactory::Destroy(pkt);
-
-}
-
 //template class AuthProtocol< AuthSerializer >; // instantiation of protocol 30206
 //template class AuthProtocol< AuthSerializer<AuthPacketCodec,30207> >; // instantiation of protocol 30207

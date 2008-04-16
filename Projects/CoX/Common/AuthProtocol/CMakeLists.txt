@@ -9,6 +9,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/packets/authserverlist.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthConnection.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/AuthOpcodes.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthPacket.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthPacketCodec.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthProtocol.h

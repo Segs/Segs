@@ -12,7 +12,7 @@
 AuthConnection::AuthConnection(void) : m_received_bytes_storage(0x1000,0,40)
 {
 	m_queue  = NULL;
-	m_current_proto = new AuthProtocol; //m_current_proto->setConnection(this); at connection establish point
+	m_current_proto = 0; // this will be set by inheriting classes
 }
 AuthConnection::~AuthConnection(void)
 {
@@ -40,6 +40,8 @@ void AuthConnection::sendBytes(GrowingBuffer &buffer)
 }
 void AuthConnection::ReceivedBytes(const u8 *buffer,size_t recv_cnt)
 {
+	ACE_ASSERT(m_current_proto);
+
 	m_received_bytes_storage.PutBytes(buffer,recv_cnt);
 	ACE_ASSERT(m_received_bytes_storage.getLastError()==0);// all received data must fit into the buffer!
 	m_received_bytes_storage.ResetReading(); //retrying
@@ -51,6 +53,8 @@ void AuthConnection::ReceivedBytes(const u8 *buffer,size_t recv_cnt)
 }
 void AuthConnection::Established(const ACE_INET_Addr &with_peer)
 {
+	ACE_ASSERT(m_current_proto);
+
 	//ServerManager::instance()->GetAdminServer()->Log("Established",with_peer)
 	m_peer = with_peer;
 	m_current_proto->setConnection(this); // not set in constructor
@@ -58,6 +62,8 @@ void AuthConnection::Established(const ACE_INET_Addr &with_peer)
 }
 void AuthConnection::Closed()
 {
+	ACE_ASSERT(m_current_proto);
+
 	m_current_proto->Closed();
 }
 void AuthConnection::Choked()

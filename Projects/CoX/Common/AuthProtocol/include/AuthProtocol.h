@@ -15,7 +15,7 @@
 #include "Buffer.h"
 #include "AuthOpcodes.h"
 #include "AuthPacketCodec.h"
-#include "AuthFSM.h"
+//#include "AuthFSM.h"
 class AuthConnection;
 class AuthPacket;
 class AuthFSM_Default;
@@ -46,15 +46,59 @@ protected:
 	This class handles every client connection, so it uses only stack variables, and threadsafe data 
 	passed to it by	callers.
 */
-class AuthProtocol : public IAuthProtocol,public AuthSerializer,public AuthFSM_Default
+template<class Auth_FSM>
+class AuthProtocol : public IAuthProtocol,public AuthSerializer,public Auth_FSM
 {
-	void sendPacket(AuthPacket *);
+	void sendPacket(AuthPacket *pkt)
+	{
+		GrowingBuffer output(0x10000,0,64);
+		if(this->serializeto(pkt,output))
+		{
+			my_conn->sendBytes(output);
+		}
+		//TODO: handle this error!
+		AuthPacketFactory::Destroy(pkt);
+
+	}
+
+
 public:
 	AuthProtocol(){};
 	virtual ~AuthProtocol(){};
-	void Established();
-	void Closed();
-	void ReceivedBytes(GrowingBuffer &buf);
+
+	void ReceivedBytes(GrowingBuffer &buf)
+	{
+		AuthPacket *res,*pkt = this->serializefrom(buf);
+		if(pkt)
+		{
+			res = this->ReceivedPacket(my_conn,pkt);
+			// if there is a response, send it
+			if(res)
+				sendPacket(res);
+		}
+	}
+
+	void Established()
+	{
+		AuthPacket *res = this->ConnectionEstablished(my_conn); // this will call static method from current FSM
+		if(!res)
+		{
+			return;
+		}
+		if(res->GetPacketType()==SMSG_AUTHVERSION)
+		{
+			u32 seed = 1;
+			static_cast<pktAuthVersion *>(res)->SetSeed(seed);
+			static_cast<pktAuthVersion *>(res)->m_proto_version = this->m_protocol_version;
+			this->m_codec.SetXorKey(seed);
+		}
+		sendPacket(res);
+	}
+	void Closed()
+	{
+		this->ConnectionClosed(my_conn);
+	}
+
 	virtual void setConnection(AuthConnection *conn) {my_conn = conn;};
 	virtual u32 getVersion(){return this->m_protocol_version;};
 

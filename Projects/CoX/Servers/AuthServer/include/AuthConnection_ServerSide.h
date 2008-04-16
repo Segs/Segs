@@ -23,8 +23,7 @@ class AuthClient;
 class AuthConnection_ServerSide : public AuthConnection
 {
 public:
-	AuthConnection_ServerSide():AuthConnection(),m_client(0),fsm_data(0)
-	{}
+	AuthConnection_ServerSide();
 	virtual ~AuthConnection_ServerSide()
 	{
 		m_client = NULL;

@@ -36,3 +36,4 @@ ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
 ADD_DEPENDENCIES(mapserver_lib ${target_DEPENDS})
 
 SEGS_REGISTER_COMPONENT(mapserver_lib "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
+
