@@ -74,3 +74,4 @@ void AuthConnection::DataSent()
 {
 	ACE_ASSERT(!"implemented yet");
 }
+

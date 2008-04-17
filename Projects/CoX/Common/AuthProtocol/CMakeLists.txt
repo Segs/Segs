@@ -6,6 +6,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthPacket.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthPacketCodec.cpp 
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthProtocol.cpp 
 ${CMAKE_CURRENT_SOURCE_DIR}/src/packets/authserverlist.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/packets/authlogin.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthConnection.h
@@ -21,7 +22,13 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authserverlist.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authselectserver.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authselectserverresponse.h
 )
-SET(target_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/include/Packets")
+FIND_PACKAGE(Boost)
+
+SET(target_INCLUDE_DIR 
+	"${CMAKE_CURRENT_SOURCE_DIR}/include" 
+	"${CMAKE_CURRENT_SOURCE_DIR}/include/Packets"
+	${Boost_INCLUDE_DIRS}
+)
 # add components here
 # end of additional components
 

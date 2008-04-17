@@ -34,14 +34,19 @@ public:
 // This allows us to pass pointers to derived Protocol's with mixins 
 class IAuthProtocol
 {
+	friend class AuthConnection;
+protected:
+	virtual void ReceivedBytes(GrowingBuffer &buf)=0; // raw bytes from connection
 public:
 	virtual ~IAuthProtocol(){}; // my_conn doesn't belong to us, therefore no delete.
+
 	virtual u32 getVersion()=0;
-	virtual void ReceivedBytes(GrowingBuffer &buf)=0;
 	virtual void setConnection(AuthConnection *conn)=0;
 	virtual void Established()=0;
 	virtual void Closed()=0;
+	virtual void sendPacket(AuthPacket *pkt)=0;
 protected:
+	void do_send(GrowingBuffer &buf);
 	AuthConnection *my_conn;
 };
 /*
@@ -51,22 +56,22 @@ protected:
 template<class Auth_FSM>
 class AuthProtocol : public IAuthProtocol,public AuthSerializer,public Auth_FSM
 {
+public:
+
+	AuthProtocol(bool direction=false):AuthSerializer(direction){};
+	virtual ~AuthProtocol(){};
+
 	void sendPacket(AuthPacket *pkt)
 	{
 		GrowingBuffer output(0x10000,0,64);
 		if(this->serializeto(pkt,output))
 		{
-			my_conn->sendBytes(output);
+			do_send(output);
 		}
 		//TODO: handle this error!
 		AuthPacketFactory::Destroy(pkt);
 
 	}
-
-
-public:
-	AuthProtocol(){};
-	virtual ~AuthProtocol(){};
 
 	void ReceivedBytes(GrowingBuffer &buf)
 	{

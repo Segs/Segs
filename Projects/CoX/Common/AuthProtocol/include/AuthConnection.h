@@ -18,23 +18,27 @@
 #include "Buffer.h"
 //#include "Auth.h"
 /******************************************************************************/
-/* Servicer  --Bytes-->   ClientConnection  --Bytes-->  Protocol --Actions--> */
-/* Servicer <--Messages-- ClientConnection <--Bytes--   Protocol <--Actions--    */
+/* Servicer  --Bytes-->   ClientConnection  --Bytes-->  Protocol --packets--> FSM --Actions/Notifications--> */
+/* Servicer <--Messages-- ClientConnection <--Bytes--   Protocol <--packets-- AuthInterface <--Actions--   */
 /******************************************************************************/
 class IAuthProtocol;
 class AuthClient;
+class AuthPacket;
 
 class AuthConnection
 {
 	AuthConnection(const AuthConnection &); // no copy construction or assignment
 	AuthConnection &operator=(const AuthConnection&);
+protected:
+	friend class IAuthProtocol;
+	void sendBytes(GrowingBuffer &buffer); // packet converted into raw bytes
 public:
 
 	AuthConnection(void);
 	virtual ~AuthConnection(void);
 
 
-	IAuthProtocol *	getProtocol();
+	IAuthProtocol *	getProtocol() {return m_current_proto;};
 	void			setProtocol(IAuthProtocol *,bool retain_old_settings); //retain_old_settings tells us to try and copy old settings from existing Protocol object
 
 	const ACE_INET_Addr &peer() const {return m_peer;}
@@ -43,7 +47,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	
 	void ReceivedBytes(const u8 *buffer,size_t recv_cnt);
-	void sendBytes(GrowingBuffer &buffer);
+
 	void setMessageQueue(ACE_Message_Queue_Base *q){m_queue=q;};
 
 	void Established(const ACE_INET_Addr &peer);

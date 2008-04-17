@@ -145,3 +145,8 @@ eAuthPacketType AuthSerializer::OpcodeToType( u8 opcode,bool direction )
  */
 //template class AuthProtocol< AuthSerializer >; // instantiation of protocol 30206
 //template class AuthProtocol< AuthSerializer<AuthPacketCodec,30207> >; // instantiation of protocol 30207
+
+void IAuthProtocol::do_send( GrowingBuffer &buf )
+{
+	my_conn->sendBytes(buf);
+}
