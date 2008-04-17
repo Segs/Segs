@@ -29,19 +29,19 @@ namespace StickFigures
 		{
 			m_points=new Point[7];
 			int idx=0;
-			m_points[idx++]=Point(0,2); // torso
-			m_points[idx++]=Point(0,0);
-			m_points[idx++]=Point(1,2); // left hand
-			m_points[idx++]=Point(-1,2); // right hand
-			m_points[idx++]=Point(1,-2); // left leg
-			m_points[idx++]=Point(-1,-2); // right leg
+			m_points[idx++]=Point(0,0); // torso
+			m_points[idx++]=Point(0,2);
+			m_points[idx++]=Point(1,0); // left hand
+			m_points[idx++]=Point(-1,0); // right hand
+			m_points[idx++]=Point(1,4); // left leg
+			m_points[idx++]=Point(-1,4); // right leg
 			m_sticks=new Stick[5];
 			idx=0;
 			m_sticks[idx++] = Stick(0,1);
-			m_sticks[idx++] = Stick(1,2);
-			m_sticks[idx++] = Stick(1,3);
-			m_sticks[idx++] = Stick(0,4);
-			m_sticks[idx++] = Stick(0,5);
+			m_sticks[idx++] = Stick(0,2);
+			m_sticks[idx++] = Stick(0,3);
+			m_sticks[idx++] = Stick(1,4);
+			m_sticks[idx++] = Stick(1,5);
 		}
 	};
 }

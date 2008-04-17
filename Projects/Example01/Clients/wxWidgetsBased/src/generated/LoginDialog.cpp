@@ -136,6 +136,7 @@ LoginDialog::LoginDialog(wxWindow* parent, int id, const wxString& title, const 
     m_server_response = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(120,200), wxTE_MULTILINE);
     m_btn_login = new wxButton(this, wxID_ANY, wxT("Login"));
     m_btn_cancel = new wxButton(this, wxID_CANCEL, wxEmptyString);
+	m_world = new wxPanel(this);
 	m_txt_login->Enable(false);
 	m_txt_passw->Enable(false);
     Auth_Client_Connector cntr;
@@ -205,6 +206,7 @@ void LoginDialog::do_layout()
     sizer_2->Add(m_txt_passw, 0, wxALIGN_CENTER_VERTICAL, 0);
     sizer_1->Add(sizer_2, 0, wxLEFT|wxRIGHT|wxTOP|wxEXPAND, 3);
     sizer_1->Add(m_server_response, 1, wxALL|wxEXPAND, 3);
+	sizer_1->Add(m_world,1,wxALL|wxEXPAND, 3);
     sizer_3->Add(m_btn_login, 0, wxALIGN_CENTER_VERTICAL, 0);
     sizer_3->Add(20, 20, 1, 0, 0);
     sizer_3->Add(m_btn_cancel, 0, wxALIGN_CENTER_VERTICAL, 0);
@@ -217,8 +219,8 @@ void LoginDialog::do_layout()
 
 void LoginDialog::OnMyPaint(wxPaintEvent &ev)
 {
-	wxDialog::OnPaint(ev);
-	wxPaintDC m_dc(this);
+	ev.Skip();
+	wxPaintDC m_dc(m_world);
 	m_human1.draw_on(&m_dc,20,20);
 }
 

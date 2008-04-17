@@ -46,6 +46,7 @@ protected:
     wxTextCtrl* m_server_response;
     wxButton* m_btn_login;
     wxButton* m_btn_cancel;
+	wxPanel *m_world;
     // end wxGlade
 
     DECLARE_EVENT_TABLE();
