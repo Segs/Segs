@@ -79,6 +79,14 @@ inline	void		uGet(T &val)
 			val = *((T *)&m_buf[m_read_off]);
 			m_read_off += sizeof(T);
 		}
+template<typename T> 
+inline	T		ruGet(void)
+		{
+			T val = *((T *)&m_buf[m_read_off]);
+			m_read_off += sizeof(T);
+			return val;
+		}
+
 		void		PopFront(size_t count); //! this method removes up-to 'count' elements from the beginning of the buffer
 
 		//			Accessors

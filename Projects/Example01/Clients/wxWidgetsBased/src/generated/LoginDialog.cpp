@@ -7,7 +7,9 @@
 #include <ace/Reactor_Notification_Strategy.h>
 #include "LoginDialog.h"
 #include "Avatar.h"
-//#include "AuthPacket.h"
+#include "Buffer.h"
+#include "AuthPacket.h"
+#include "AuthProtocol.h"
 
 // begin wxGlade: ::extracode
 
@@ -134,6 +136,8 @@ LoginDialog::LoginDialog(wxWindow* parent, int id, const wxString& title, const 
     m_server_response = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(120,200), wxTE_MULTILINE);
     m_btn_login = new wxButton(this, wxID_ANY, wxT("Login"));
     m_btn_cancel = new wxButton(this, wxID_CANCEL, wxEmptyString);
+	m_txt_login->Enable(false);
+	m_txt_passw->Enable(false);
     Auth_Client_Connector cntr;
     Auth_Handler *hndlr=new Auth_Handler(this);
     cntr.connect(hndlr,ACE_INET_Addr(2106,"127.0.0.1"));
@@ -220,8 +224,33 @@ void LoginDialog::OnMyPaint(wxPaintEvent &ev)
 
 void LoginDialog::notify_raw_data( char *dat,size_t sz )
 {
-	wxString raw_info = wxString::Format(wxT("Got raw data of size %d\n"),sz);
-	(*m_server_response) << raw_info;
+	GrowingBuffer from((u8*)dat,sz,false);
+	AuthSerializer srlz(true);
+	AuthPacket *pkt=srlz.serializefrom(from);
+	if(!pkt)
+	{
+		wxString raw_info = wxString::Format(wxT("Got raw data of size %d\n"),sz);
+		(*m_server_response) << raw_info;
+		return;
+	}
+
+	switch(pkt->GetPacketType())
+	{
+	case SMSG_AUTHVERSION:
+		pktAuthVersion* vers_pkt = static_cast<pktAuthVersion*>(pkt);
+		(*m_server_response) << wxString::Format(wxT("Server is working with version %d of authorization protocol"),
+													vers_pkt->GetVersion()
+												);
+		u32 vp=vers_pkt->GetVersion();
+		if(vers_pkt->GetVersion()==30206)
+		{
+			m_txt_login->Enable(true);
+			m_txt_passw->Enable(true);
+		}
+		AuthPacketFactory::Destroy(pkt);
+		break;
+
+	}
 }
 void LoginDialog::notify_connected()
 {

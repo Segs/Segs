@@ -33,7 +33,7 @@ static long long  KeyPrepare(const char *co_string)
 	}
 	return t;
 }
-AuthSerializer::AuthSerializer()
+AuthSerializer::AuthSerializer(bool type) : m_direction(type)
 {
 	static char key_30207[] = {	0x39, 0x3D, 0x33, 0x2A, 0x32, 0x3B, 0x78, 0x5D,
 		0x31, 0x31, 0x73, 0x61, 0x3B, 0x2F, 0x34, 0x73,
@@ -66,7 +66,7 @@ AuthPacket *AuthSerializer::serializefrom(GrowingBuffer &buffer)
 		tmp = (u8 *)&(buffer.GetBuffer()[2]);
 		
 		m_codec.XorDecodeBuf(tmp, packet_size+1); // Let's see what's in those murky waters
-		eAuthPacketType recv_type = OpcodeToType(tmp[0],false);
+		eAuthPacketType recv_type = OpcodeToType(tmp[0],m_direction);
 		AuthPacket *pkt = AuthPacketFactory::PacketForType(recv_type); // Crow's nest, report !			
 		if(!pkt)
 		{

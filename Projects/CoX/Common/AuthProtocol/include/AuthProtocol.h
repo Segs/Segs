@@ -22,11 +22,13 @@ class AuthFSM_Default;
 class AuthSerializer
 {
 public:
-	AuthSerializer();
+	AuthSerializer(bool type=false);
 	AuthPacket *serializefrom(GrowingBuffer &buffer); // returns null if it's not possible to serialize the packet
 	bool serializeto(AuthPacket *pkt,GrowingBuffer &buffer); // returns false if it's not possible to serialize the packet, i.e. buffer to small etc.
 	static eAuthPacketType OpcodeToType(u8 opcode,bool direction); // false -> client->server packet.
 	AuthPacketCodec m_codec;
+	bool m_direction; // if false this is server serializer, if true then it's client serializer
+					  // only difference is in the OpcodeToType method
 	static const int m_protocol_version = 30206;
 };
 // This allows us to pass pointers to derived Protocol's with mixins 
