@@ -16,13 +16,15 @@
 #include "Base.h"
 #include "AuthPacket.h"
 #include <ace/INET_Addr.h>
+#include <vector>
+class IGameServer;
 typedef struct _serverEntry
 {
 	u8 id;							//	0x00
 	u8 pad1, pad2, pad3;
 	ACE_INET_Addr  address;			//	0x04
-	u8 unk3;						//	0x0C
-	u8 unk4;						//	0x0D
+	u8 unk1;						//	0x0C
+	u8 unk2;						//	0x0D
 	u8 server_online;				//	0x0E
 	u8 pad4;
 	u16 numPlayers;					//	0x10
@@ -45,9 +47,11 @@ public:
 	bool serializeto(GrowingBuffer &buf); // buf size must be 3+16*MaximumNumberOfServers
 	u16 serializefrom(GrowingBuffer &buf);
 
+	void add_game_server(u8 id,const ACE_INET_Addr &addr,u8 unk1,u8 unk2,u16 num_players,u16 max_players, u8 is_online);
+
 	u8 nServers, availableServers;
 	u8 unknown1;
-	serverEntry *srvlist;
+	std::vector<serverEntry> srvlist;
 };
 
 #endif // AUTHSERVERLIST_H

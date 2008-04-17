@@ -8,34 +8,24 @@
  */
 
 #include "authserverlist.h"
-#include "ServerManager.h"
-#include "GameServerInterface.h" // change this later to IGameServer 
 #include <ace/Log_Msg.h>
 
 bool pktAuthServerList::serializeto(GrowingBuffer &buf) 
 {
-	ServerManagerC *serv_manager = ServerManager::instance();
-	GameServerInterface *gs;
 	buf.uPut(m_op);
-	buf.uPut((u8)serv_manager->GameServerCount());
+	buf.uPut((u8)srvlist.size());
 	buf.uPut(unknown1); //preferred number
-	for(size_t i=0; i<serv_manager->GameServerCount(); i++)
+	for(size_t i=0; i<srvlist.size(); i++)
 	{
-		gs = serv_manager->GetGameServer(i);
-		if(!gs)
-		{
-			ACE_TRACE((LM_WARNING,ACE_TEXT("Server manager getgameserver returned NULL!")));
-			continue;
-		}
-		buf.Put(gs->getId());
-		u32 addr= gs->getAddress().get_ip_address();
+		buf.Put(srvlist[i].id);
+		u32 addr= srvlist[i].address.get_ip_address();
 		buf.Put(ACE_SWAP_LONG(addr)); //must be network byte order
-		buf.Put((u32)gs->getAddress().get_port_number());
-		buf.Put(gs->getUnkn1());
-		buf.Put(gs->getUnkn2());
-		buf.Put(gs->getCurrentPlayers());
-		buf.Put(gs->getMaxPlayers());
-		buf.Put((u8)gs->Online());
+		buf.Put((u32)srvlist[i].address.get_port_number());
+		buf.Put(srvlist[i].unk1);
+		buf.Put(srvlist[i].unk2);
+		buf.Put(srvlist[i].numPlayers);
+		buf.Put(srvlist[i].playerCapacity);
+		buf.Put((u8)srvlist[i].server_online);
 	}
 	return buf.getLastError()==0;
 }
@@ -46,7 +36,7 @@ u16 pktAuthServerList::serializefrom(GrowingBuffer &buf)
 	buf.Get(nServers);
 	buf.Get(availableServers);
 
-	srvlist = new serverEntry[nServers];
+	srvlist.resize(nServers);
 	ACE_ASSERT(buf.GetReadableDataSize()>=static_cast<size_t>(nServers)*16);
 	// ok, we're pretty sure that we have enough data in buffer, so unchecked reading here
 	for(u32 i = 0; i < nServers; i++)
@@ -56,8 +46,8 @@ u16 pktAuthServerList::serializefrom(GrowingBuffer &buf)
 		buf.uGet(port);
 		buf.uGet(addr);
 		srvlist[i].address.set(port,addr);
-		buf.uGet(srvlist[i].unk3);
-		buf.uGet(srvlist[i].unk4);
+		buf.uGet(srvlist[i].unk1);
+		buf.uGet(srvlist[i].unk2);
 		buf.uGet(srvlist[i].numPlayers);
 		buf.uGet(srvlist[i].playerCapacity);
 		buf.uGet(srvlist[i].server_online);
@@ -67,4 +57,16 @@ u16 pktAuthServerList::serializefrom(GrowingBuffer &buf)
 	}
 
 	return 3+nServers*16;
+}
+void pktAuthServerList::add_game_server(u8 id,const ACE_INET_Addr &addr,u8 unk1,u8 unk2,u16 num_players,u16 max_players, u8 is_online)
+{
+	serverEntry entry;
+	entry.id = id;
+	entry.address=addr;
+	entry.unk1=unk1;
+	entry.unk2=unk2;
+	entry.numPlayers=num_players;
+	entry.playerCapacity=max_players;
+	entry.server_online=is_online;
+	srvlist.push_back(entry);
 }

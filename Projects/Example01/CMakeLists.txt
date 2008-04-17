@@ -1,0 +1,7 @@
+# $Id: CMakeLists.txt 270 2006-10-01 18:33:49Z nemerle $
+
+SET(UNICODE TRUE)
+
+ADD_SUBDIRECTORY(Common)
+ADD_SUBDIRECTORY(Servers)
+ADD_SUBDIRECTORY(Clients)

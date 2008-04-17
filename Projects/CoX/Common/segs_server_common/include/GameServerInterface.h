@@ -40,7 +40,7 @@ virtual bool					MapServerReady(const ServerHandle<IMapServer> &h_map)=0;
 
 };
 
-class GameServerInterface : public Server
+class GameServerInterface : public IGameServer
 {
 public:
 	GameServerInterface(IGameServer *mi) : m_instance(mi){};

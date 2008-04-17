@@ -11,7 +11,7 @@
 #pragma once
 #ifndef AUTHFSM_H
 #define AUTHFSM_H
-
+#include "AuthOpcodes.h"
 /**
 AuthFSM_Default is used as mixin for the Protocol class.
 */
@@ -28,10 +28,14 @@ class AuthFSM_Default
 		CLIENT_SERVSELECT,
 		CLIENT_AWAITING_DISCONNECT
 	} eClientState;
+	static AuthPacket * BuildServerListPacket( void );
+	//! this method will create error packet if recv_type!=expect_type, NULL othrwise
+	static AuthPacket * ExpectingPacket(eAuthPacketType expect_type,eAuthPacketType recv_type,char *waitng_for_txt); 
 private:
 	static AuthPacket *auth_error(char,char);
 public:
 	static AuthPacket *ReceivedPacket(AuthConnection *caller,AuthPacket *pkt);
+
 	static AuthPacket *ConnectionEstablished(AuthConnection *conn);
 	static void SendError(AuthConnection *conn,int err);
 	static void ConnectionClosed(AuthConnection *conn);

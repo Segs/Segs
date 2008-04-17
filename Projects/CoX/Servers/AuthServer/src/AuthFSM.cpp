@@ -54,12 +54,9 @@ AuthPacket *AuthFSM_Default::ReceivedPacket(AuthConnection *conn,AuthPacket *pkt
 	case CLIENT_CONNECTED: //step 3 of ClientScenario1
 		{
 			AuthClient *client = NULL;
-			if(pkt->GetPacketType()!=CMSG_AUTH_LOGIN)
-			{
-				ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Unexpected packet type %d while waiting for login attempt\n"),static_cast<int>(pkt->GetPacketType())));
-				result = auth_error(2,AuthServer::AUTH_UNKN_ERROR);
+			result=ExpectingPacket(pkt->GetPacketType(),CMSG_AUTH_LOGIN,"login attempt");
+			if(result)
 				break;
-			}
 			pktAuthLogin *auth_pkt = static_cast<pktAuthLogin *>(pkt);
             ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) User %s trying to login from %s.\n"),auth_pkt->username,caller->peer().get_host_addr()));
 			// step 3b: retrieving client's info
@@ -108,24 +105,20 @@ AuthPacket *AuthFSM_Default::ReceivedPacket(AuthConnection *conn,AuthPacket *pkt
 			break;
 		}
 	case CLIENT_AUTHORIZED:
-		if(pkt->GetPacketType()!=CMSG_AUTH_REQUEST_SERVER_LIST)
 		{
-			ACE_DEBUG ((LM_WARNING,ACE_TEXT ("(%P|%t) Unexpected packet type %d while waiting for server list request\n"),static_cast<int>(pkt->GetPacketType())));
-			result = auth_error(2,AuthServer::AUTH_UNKN_ERROR);
-			break; // let's do something here. Maybe send error and close the connection ?
+			result=ExpectingPacket(pkt->GetPacketType(),CMSG_AUTH_LOGIN,"server list request");
+			if(result)
+				break;
+			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client requesting server list\n")));
+			result = BuildServerListPacket();
+			caller->setClientState((int)CLIENT_SERVSELECT);
+			break;
 		}
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client requesting server list\n")));
-		result = AuthPacketFactory::PacketForType(SMSG_AUTH_SERVER_LIST);
-		caller->setClientState((int)CLIENT_SERVSELECT);
-		break;
 	case CLIENT_SERVSELECT:
-		if(pkt->GetPacketType()!=CMSG_AUTH_SELECT_DBSERVER)
 		{
-			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client sent wrong packet\n")));
-			result = auth_error(2,AuthServer::AUTH_UNKN_ERROR);
-		}
-		else
-		{
+			result=ExpectingPacket(pkt->GetPacketType(),CMSG_AUTH_SELECT_DBSERVER,"db server selection");
+			if(result)
+				break;
 			pktAuthSelectServer *serv_select = static_cast<pktAuthSelectServer *>(pkt);
 			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client selected server %d!\n"),serv_select->serverId));
 			pktAuthSelectServerResponse *res_pkt=static_cast<pktAuthSelectServerResponse *>(AuthPacketFactory::PacketForType(PKT_SELECT_SERVER_RESPONSE));
@@ -180,4 +173,34 @@ void AuthFSM_Default::ConnectionClosed(AuthConnection *conn)
 	{
 		ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Client disconnected without a valid login attempt. Old client ?\n")));
 	}
+}
+
+AuthPacket * AuthFSM_Default::BuildServerListPacket( void )
+{
+	ServerManagerC *manager = ServerManager::instance();
+
+	AuthPacket *result = AuthPacketFactory::PacketForType(SMSG_AUTH_SERVER_LIST);
+	pktAuthServerList* serv_list_packet = static_cast<pktAuthServerList*>(result);
+	size_t cnt=manager->GameServerCount();
+	while(cnt-->0) // will add in reverse order 
+	{
+		IGameServer *gs=manager->GetGameServer(cnt);
+		serv_list_packet->add_game_server(	gs->getId(),
+											gs->getAddress(),
+											gs->getUnkn1(),
+											gs->getUnkn2(),
+											gs->getCurrentPlayers(),
+											gs->getMaxPlayers(),
+											gs->Online());
+	}
+	return result;
+}
+AuthPacket * AuthFSM_Default::ExpectingPacket(eAuthPacketType expect_type,eAuthPacketType recv_type,char *waiting_for)
+{
+	if(expect_type!=recv_type)
+	{
+		ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Unexpected packet type %d while waiting for %s\n"),static_cast<int>(expect_type),waiting_for));
+		return auth_error(2,AuthServer::AUTH_UNKN_ERROR);
+	}
+	return 0;
 }
