@@ -14,6 +14,7 @@
 
 #include "Buffer.h"
 #include "AuthOpcodes.h"
+#include "AuthPacket.h"
 #include "AuthPacketCodec.h"
 //#include "AuthFSM.h"
 class AuthConnection;
