@@ -22,8 +22,11 @@ FIND_LIBRARY(ACE_lib NAMES libACE.so ACE ACEd.lib libACE.a PATHS /usr/lib /usr/l
 # BOOST
 FIND_PATH(BOOST_path object_pool.hpp
    /usr/local/include/boost
-   /usr/include/boost/
+   /usr/local/include/boost/pool
+   /usr/include/boost
+   /usr/include/boost/pool
    /include/boost
+   /include/boost/pool
 )
 # PostgreSQL
 FIND_PATH(PGSQL_path libpq-fe.h
