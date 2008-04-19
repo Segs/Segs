@@ -208,3 +208,8 @@ void GameServer::disconnectClient( IClient *cl )
 {
 	m_clients.removeById(cl->getId());
 }
+
+int GameServer::CreateLinkedAccount(u64 auth_account_id,const std::string &username)
+{
+	return m_database->CreateLinkedAccount(auth_account_id,username);
+}

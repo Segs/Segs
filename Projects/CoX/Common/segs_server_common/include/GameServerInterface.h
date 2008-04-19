@@ -36,7 +36,7 @@ virtual void					checkClientConnection(u64 id)=0;
 virtual bool					isClientConnected(u64 id)=0;
 virtual int						GetAccessKeyForServer(const ServerHandle<IMapServer> &h_map)=0;
 virtual bool					MapServerReady(const ServerHandle<IMapServer> &h_map)=0;
-
+virtual int						CreateLinkedAccount(u64 auth_account_id,const std::string &username)=0;
 
 };
 
@@ -71,6 +71,7 @@ public:
 	u32						ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level);
 	void					checkClientConnection(u64 id);
 	bool					isClientConnected(u64 id);
+	int						CreateLinkedAccount(u64 auth_account_id,const std::string &username);
 	//bool					getCharacterData(u64 id,
 protected:
 	IGameServer *m_instance;

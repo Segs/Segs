@@ -69,6 +69,9 @@ public:
 	u8						getUnkn1(void);
 	u8						getUnkn2(void);
 	CharacterDatabase *		getDb();
+
+	int						CreateLinkedAccount(u64 auth_account_id,const std::string &username); // Part of exposed db interface.
+
 	u32						ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level);
 	void					checkClientConnection(u64 id);
 	CharacterClient *		ClientExpected(ACE_INET_Addr &from,pktCS_ServerUpdate *pak);

@@ -131,6 +131,19 @@ INSERT INTO costume_part(costume_id,part_type,name_0,name_1,name_2,name_3,color_
 VALUES(,,'','','','',0,0,0,0);
 */
 }
+
+int CharacterDatabase::CreateLinkedAccount( u64 auth_account_id,const std::string &username )
+{
+	stringstream query;
+	DbResults results;
+	ACE_ASSERT(auth_account_id>0);
+	ACE_ASSERT(username.size()>2);
+	
+	query<<"INSERT INTO accounts  (account_id,max_slots) VALUES ("<<auth_account_id<<",2);";
+	if(!execQuery(query.str(),results))
+		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.m_msg),1);
+	return 0;
+}
 #ifdef DEFINED_ARRAYSIZE
 #undef DEFINED_ARRAYSIZE
 #undef ARRAYSIZE

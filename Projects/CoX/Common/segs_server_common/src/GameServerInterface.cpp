@@ -90,3 +90,9 @@ bool GameServerInterface::MapServerReady(const ServerHandle<IMapServer> &h_map)
 	ACE_ASSERT(m_instance);
 	return m_instance->MapServerReady(h_map);
 }
+
+int GameServerInterface::CreateLinkedAccount( u64 auth_account_id,const std::string &username )
+{
+	ACE_ASSERT(m_instance);
+	return m_instance->CreateLinkedAccount(auth_account_id,username);
+}

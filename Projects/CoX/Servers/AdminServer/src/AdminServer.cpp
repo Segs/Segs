@@ -103,7 +103,21 @@ bool _AdminServer::ValidPassword(const IClient *client ,const char *pass)
 
 int _AdminServer::SaveAccount(const char *username, const char *password) 
 {
-	return m_db->AddAccount(username, password);  // Add the given account
+	int res = m_db->AddAccount(username, password);
+
+	if(res!=0)
+		return res;
+	IClient tmp;
+	tmp.setLogin(username); // Fix if username is preprocessed before db entry in AddAccount
+	FillClientInfo(&tmp);
+	// also register this account on all currently available gameserver
+	// they really should check for sync with AdminDb on startup
+	for(int idx=0; idx<ServerManager::instance()->GameServerCount(); idx++)
+	{
+		if(0!=ServerManager::instance()->GetGameServer(idx)->CreateLinkedAccount(tmp.getId(),username));
+			res=2;
+	}
+	return res;   // Add the given account
 }
 
 int _AdminServer::RemoveAccount(IClient *client)

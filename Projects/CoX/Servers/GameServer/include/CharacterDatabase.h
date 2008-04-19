@@ -26,6 +26,7 @@ class Character;
 class CharacterDatabase : public Database
 {
 public:
+	int CreateLinkedAccount(u64 auth_account_id,const std::string &username);
 	int AddCharacter(const std::string &username, const std::string &charname);
 	int RemoveCharacter(char *username, char *charname);
 	bool fill( CharacterClient *); //! 
