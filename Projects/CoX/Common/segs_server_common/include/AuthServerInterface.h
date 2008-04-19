@@ -20,7 +20,7 @@
 class AuthClient;
 class IMapServer;
 class IAdminServer;
-class IAuthServer : public RoamingServer
+class IAuthServer : public Server
 {
 public:
 virtual	bool						ReadConfig(const std::string &name)=0;
