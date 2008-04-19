@@ -27,7 +27,7 @@ bool ServerManagerC::LoadConfiguration(const std::string &config_file_path)
 	}
 	for(size_t idx=0; idx<m_MapServers.size(); idx++)
 	{
-		m_GameServers[idx]->ReadConfig(config_file_path+"/local_1.cfg");
+		m_MapServers[idx]->ReadConfig(config_file_path+"/local_1.cfg");
 	}
 	return true;
 }

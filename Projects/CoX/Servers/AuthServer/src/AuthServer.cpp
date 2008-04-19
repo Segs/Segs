@@ -53,7 +53,7 @@ bool AuthServer::ReadConfig(const std::string &inipath)
 	ACE_Ini_ImpExp config_importer (config);
 	ACE_Configuration_Section_Key root;
 	if (config_importer.import_config (inipath.c_str()) == -1)
-		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("%p AuthServer: Unable to open config file : %s\n"), inipath.c_str()),false);
+		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AuthServer: Unable to open config file : %s\n"), inipath.c_str()),false);
 	if(-1==config.open_section(config.root_section(),"AuthServer",1,root))
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("%p AuthServer: Config file %s is missing [AuthServer] section\n"), inipath.c_str()),false);
 

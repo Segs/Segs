@@ -71,7 +71,7 @@ bool GameServer::ReadConfig(const std::string &inipath)
 	ACE_Ini_ImpExp config_importer (config);
 	ACE_Configuration_Section_Key root;
 	if (config_importer.import_config (inipath.c_str()) == -1)
-		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("%p GameServer: Unable to open config file : %s\n"), inipath.c_str()),false);
+		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) GameServer: Unable to open config file : %s\n"), inipath.c_str()),false);
 	if(-1==config.open_section(config.root_section(),"GameServer",1,root))
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("%p GameServer: Config file %s is missing [GameServer] section\n"), inipath.c_str()),false);
 
