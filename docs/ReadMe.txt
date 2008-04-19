@@ -10,7 +10,6 @@ client movement in a virtual world, and client chat.
 SEGS currently runs under a variety of platforms including Windows, Linux, *BSD, and probably other UNIX
 derivatives. SEGS also works under the x86-64/amd64 architecture.
 
-
 For SEGS installation instructions, please see Install.txt.
 
 For SEGS legal stuff, please see License.txt.
