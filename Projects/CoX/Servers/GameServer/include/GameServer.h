@@ -62,7 +62,7 @@ public:
 	ServerHandle<IMapServer> GetMapHandle(const std::string &mapname);
 
 
-	std::string				getName(void);;
+	std::string				getName(void);
 	u8						getId(void);
 	u16						getCurrentPlayers(void);
 	u16						getMaxPlayers();
@@ -73,7 +73,7 @@ public:
 	void					checkClientConnection(u64 id);
 	CharacterClient *		ClientExpected(ACE_INET_Addr &from,pktCS_ServerUpdate *pak);
 	bool					isClientConnected(u64 id); //! This function will check if given client is available in clientstore, and it's packet backlog.
-
+	void					disconnectClient(IClient *cl);
 protected:
 	u32 GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver
 	list< ServerHandle<MapServer> > GetMapsHandling(const std::string &mapname);

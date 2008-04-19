@@ -17,3 +17,13 @@ PacketFactory *GameServerEndpoint::getFactory() const
 {
 	return &m_fact;
 }
+
+void GameServerEndpoint::HeartBeat()
+{
+
+}
+
+int GameServerEndpoint::handle_timeout( const ACE_Time_Value & tv,const void *arg )
+{
+	return ServerEndpoint::handle_timeout(tv,arg);
+}

@@ -34,12 +34,17 @@ class GameServerEndpoint : public ServerEndpoint
 //	typedef ACE_Svc_Handler<ACE_SOCK_DGRAM, ACE_MT_SYNCH> super;
 	GameServer *m_server; //! this is used to inform all subordinate character handlers who's the boss
 public:
-	GameServerEndpoint(const ACE_INET_Addr &addr,GameServer *srv):ServerEndpoint(addr),m_server(srv){}
-	virtual LinkCommandHandler *createNewHandler() const 
+	GameServerEndpoint(const ACE_INET_Addr &addr,GameServer *srv):ServerEndpoint(addr),m_server(srv)
+	{
+		ACE_Reactor::instance()->register_handler(this,TIMER_MASK);
+	}
+	LinkCommandHandler *createNewHandler() const 
 	{
 		return new CharacterHandler(m_server);
 	};
-	virtual PacketFactory *getFactory() const;
+	int handle_timeout(const ACE_Time_Value & tv,const void *arg);
+	PacketFactory *getFactory() const;
+	void HeartBeat();
 };
 
 #endif // GAMESERVERENDPOINT_H

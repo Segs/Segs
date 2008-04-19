@@ -23,8 +23,9 @@ AuthClient::AuthClient() :m_state(NOT_LOGGEDIN),m_game_server(NULL)
 
 void AuthClient::forceGameServerConnectionCheck()
 {
-	ACE_ASSERT(m_game_server!=NULL);
-	m_game_server->checkClientConnection(m_id);
+	//ACE_ASSERT(m_game_server!=NULL);
+	if(m_game_server)
+		m_game_server->checkClientConnection(m_id);
 }
 /*! 
 	\brief This function checks if this client is logged in.
@@ -50,4 +51,9 @@ bool AuthClient::isLoggedIn()
 			return true;
 	}
 	return false; //
+}
+
+void AuthClient::setState( eClientState state )
+{
+	m_state=state;
 }

@@ -72,15 +72,14 @@ bool MapServer::ReadConfig(const std::string &inipath)
 		ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) MapServer already initialized and running\n") ));
 		return true;
 	}
-	if(!RoamingServer::ReadConfig(inipath))
-		return false;
-
 	if (config.open () == -1)
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) MapServer: %p\n"), ACE_TEXT ("config")),false);
 	if (config_importer.import_config (inipath.c_str()) == -1)
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) MapServer: Unable to open config file : %s\n"), inipath.c_str()),false);
 	if(-1==config.open_section(config.root_section(),"MapServer",1,root))
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) MapServer: Config file %s is missing [MapServer] section\n"), inipath.c_str()),false);
+	if(!RoamingServer::ReadConfig(inipath))
+		return false;
 
 	config.get_addr(root,ACE_TEXT("listen_addr"),m_listen_point,ACE_INET_Addr(7002,"0.0.0.0"));
 	config.get_addr(root,ACE_TEXT("location_addr"),m_location,ACE_INET_Addr(7002,"127.0.0.1"));

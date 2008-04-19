@@ -72,10 +72,6 @@ int ServerEndpoint::handle_input(ACE_HANDLE)
 	return 0;
 }
 
-int ServerEndpoint::handle_timeout (const ACE_Time_Value &,const void *)
-{
-	return 0;
-}
 int ServerEndpoint::handle_output(ACE_HANDLE)
 {
 	ACE_Message_Block *mb;

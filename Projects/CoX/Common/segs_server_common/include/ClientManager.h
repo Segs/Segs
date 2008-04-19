@@ -43,7 +43,7 @@ class ClientStore
 	hash_map<u32,CLIENT_CLASS *> m_expected_clients;
 	hash_map<u64,CLIENT_CLASS *> m_clients; // this maps client's id to it's object
 	hash_map<u32,CLIENT_CLASS *> m_connected_clients_cookie; // this maps client's id to it's object
-
+	hash_map<u64,u32> m_id_to_cookie; // client cookie is only usefull in this context
 	u32 create_cookie(const ACE_INET_Addr &from,u64 id)
 	{
 		u64 res = ((from.hash()+id&0xFFFFFFFF)^(id>>32));
@@ -83,9 +83,10 @@ public:
 	{
 		CLIENT_CLASS * exp;
 		u32 cook = create_cookie(from,id);
-		// we already expect this client
+		// if we already expect this client
 		if(m_expected_clients.find(cook)!=m_expected_clients.end())
 		{
+			// return pregenerated cookie
 			return cook;
 		}
 		if(getByCookie(cook)) // already connected ?!
@@ -99,7 +100,28 @@ public:
 		exp->setState(IClient::CLIENT_EXPECTED);
 		m_expected_clients[cook] = exp;
 		m_clients[id] = exp;
+		m_id_to_cookie[id]=cook;
 		return cook;
+	}
+	void removeById(u64 id)
+	{
+		ACE_ASSERT(getById(id)!=0);
+		CLIENT_CLASS *cl=getById(id);
+		u32 cookie = m_id_to_cookie[id];
+
+		m_id_to_cookie.erase(id);
+		m_expected_clients.erase(cookie);
+		m_connected_clients_cookie.erase(cookie);
+		m_clients.erase(id);
+
+		delete cl;
+	}
+	void connectedClient(u32 cookie)
+	{
+		// client with cookie has just connected
+		m_connected_clients_cookie[cookie]=getExpectedByCookie(cookie);
+		// so he's no longer expected
+		m_expected_clients.erase(cookie); 
 	}
 };
 

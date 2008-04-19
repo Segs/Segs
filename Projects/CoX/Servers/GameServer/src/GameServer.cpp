@@ -129,6 +129,11 @@ u32 GameServer::ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)
 CharacterClient * GameServer::ClientExpected(ACE_INET_Addr &from,pktCS_ServerUpdate *pak)
 {
 	CharacterClient * res = m_clients.getExpectedByCookie(pak->authCookie);
+	if(res->getState()==IClient::CLIENT_EXPECTED)
+	{
+		m_clients.connectedClient(pak->authCookie);
+		res->setState(IClient::CLIENT_CONNECTED);
+	}
 	// if (res->getExpectedPeer()==from)
 	return res;
 }
@@ -147,6 +152,7 @@ u32 GameServer::GetClientCookie(const ACE_INET_Addr &client_addr)
 */
 void GameServer::checkClientConnection(u64 id)
 {
+//	m_clients.getById(id)->;
 // empty for now, later on it will use client store to get the client, and then check it's packet backlog
 //
 }
@@ -196,4 +202,9 @@ u8 GameServer::getUnkn2( void )
 CharacterDatabase * GameServer::getDb()
 {
 	return m_database;
+}
+//
+void GameServer::disconnectClient( IClient *cl )
+{
+	m_clients.removeById(cl->getId());
 }

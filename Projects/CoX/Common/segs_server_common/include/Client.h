@@ -34,6 +34,7 @@ public:
 	string			getLogin()	const	{return m_login;}
 	void			setLogin(const string &lgn)	{m_login=lgn;}
 	void			setState(eClientState s) {m_state=s;}
+	eClientState	getState() {return m_state;}
 protected:
 	u64 m_id;
 	u16 m_access_level;

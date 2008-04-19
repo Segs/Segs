@@ -28,7 +28,7 @@ public:
 	void			setCreationDate(tm &new_date) {m_creation_date=new_date;} 
 	u8 *			getPassword() const			{return (u8 *)m_password;}
 	void			setPassword(const u8 *src)	{memcpy(m_password,src,14);}
-	void			setState(eClientState state ) {m_state=state;};
+	void			setState(eClientState state );;
 	eClientState	getState(void) const {return m_state;};
 	bool			isLoggedIn();
 	void			forceGameServerConnectionCheck();

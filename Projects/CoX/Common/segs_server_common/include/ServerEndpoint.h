@@ -76,7 +76,6 @@ private:
 	ACE_HANDLE get_handle(void) const;
 	int handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE); //! Called when input is available from the client.	
 	int handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE); //! Called when output is possible.
-	int handle_timeout (const ACE_Time_Value & tv,const void *arg = 0);
 	int handle_close (ACE_HANDLE handle,ACE_Reactor_Mask close_mask);//! Called when this handler is removed from the ACE_Reactor.
 	int open(void *p=NULL);
 protected:

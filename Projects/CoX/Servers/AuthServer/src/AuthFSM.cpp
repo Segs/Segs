@@ -106,7 +106,7 @@ AuthPacket *AuthFSM_Default::ReceivedPacket(AuthConnection *conn,AuthPacket *pkt
 		}
 	case CLIENT_AUTHORIZED:
 		{
-			result=ExpectingPacket(pkt->GetPacketType(),CMSG_AUTH_LOGIN,"server list request");
+			result=ExpectingPacket(pkt->GetPacketType(),CMSG_AUTH_REQUEST_SERVER_LIST,"server list request");
 			if(result)
 				break;
 			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client requesting server list\n")));

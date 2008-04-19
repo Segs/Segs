@@ -27,7 +27,7 @@ class RoamingServer //: public Server
 public:
 	virtual ~RoamingServer(){}
 
-	virtual bool ReadConfig(const std::string &configpath);
+	virtual bool ReadConfig(const std::string &configpath)=0;
     virtual bool Run(void) = 0;
 protected:
 	AuthServerInterface *getAuthServer();

@@ -27,6 +27,7 @@ typedef struct
 CharacterHandler::CharacterHandler(GameServer *srv):m_server(srv)
 {
 	m_client=0;
+	
 }
 CharacterHandler::~CharacterHandler()
 {
@@ -174,7 +175,7 @@ bool CharacterHandler::ReceivePacket(GamePacket *pak)
 }
 void CharacterHandler::setClient(IClient *cl)
 {
-//	m_client=cl;
+	m_client=static_cast<CharacterClient *>(cl);
 }
 
 bool CharacterHandler::sendAllowConnection()
@@ -189,6 +190,7 @@ bool CharacterHandler::sendNotAuthorized()
 	pktSC_EnterGameError *res = new pktSC_EnterGameError();
 	res->m_error = "Unauthorized access attempt !";
 	m_proto->SendPacket(res);
+	m_server->disconnectClient(m_client);
 	return true;
 }
 bool CharacterHandler::sendWrongVersion(u32 version)
@@ -198,6 +200,7 @@ bool CharacterHandler::sendWrongVersion(u32 version)
 	pktSC_EnterGameError *res = new pktSC_EnterGameError();
 	res->m_error = stream.str();
 	m_proto->SendPacket(res);
+	m_server->disconnectClient(m_client);
 	return true;
 }
 
