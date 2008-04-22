@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions>
+<filetypes>
+
+<filetype name="tricks">
+    <type_ref name="Texture"    type="STRUCT"   offset="0x0"   sub_size="0x40"     sub_ref="Texture"/>
+    <type_ref name="Trick"      type="STRUCT"   offset="0x4"   sub_size="0x130"    sub_ref="Trick"/>
+</filetype>
+
+</filetypes>
+
+<structures>
+
+<structure name="Trick">
+    
+</structure>
+
+<structure name="Texture">
+    <type_ref name=""           type="0x206"    offset="0x4"    sub_size="0x0"      sub_ref="0x0"/>
+    <type_ref name=""           type="0x3"      offset="0x0"    sub_size="0x0"      sub_ref="0x0"/>
+    <type_ref name="Gloss"      type="0xA"      offset="0x3C"   sub_size="0x1"      sub_ref="0x0"/>
+    <type_ref name="Surface"    type="0x206"    offset="0x4"    sub_size="0x0"      sub_ref="0x0"/>
+    <type_ref name="Fade"       type="0x0B"     offset="0x14"   sub_size="0x0"      sub_ref="0x0"/>
+    <type_ref name="ScaleST0"   type="0x0B"     offset="0x1C"   sub_size="0x0"      sub_ref="0x0"/>
+    <type_ref name="ScaleST1"   type="0x0B"     offset="0x24"   sub_size="0x0"      sub_ref="0x0"/>
+    <type_ref name="Blend"      type="0x6"      offset="0x8"    sub_size="0x0"      sub_ref="0x0"/>
+    <type_ref name="BumpMap"    type="0x6"      offset="0x0C"   sub_size="0x0"      sub_ref="0x0"/>
+    <type_ref name="BlendType"  type="ENUM"     offset="0x30"   sub_size="0x0"      sub_ref="BlendType_ENUM"/>
+    <type_ref name="Flags"      type="BITFIELD" offset="0x2C"   sub_size="0x0"      sub_ref="TextureFlag_BF"/>
+    <type_ref name="End"        type="0x2"      offset="0x0"    sub_size="0x0"      sub_ref="0x0"/>
+</structure>
+
+<bitfield name="TextureFlag_BF">
+    <field name="ClampS"  mask="0x40"/>
+    <field name="ClampT"  mask="0x80"/>
+    <field name="RepeatS"  mask="0x2000"/>
+    <field name="RepeatT"  mask="0x4000"/>
+    <field name="MirrorS"  mask="0x200"/>
+    <field name="MirrorT"  mask="0x400"/>
+    <field name="Cubemap"  mask="0x8000"/>
+    <field name="Truecolor"  mask="0x2"/>
+    <field name="Replaceable"  mask="0x800"/>
+    <field name="Trilinear"  mask="0x4"/>
+    <field name="NoMip"  mask="0x10000"/>
+    <field name="Jpeg"  mask="0x20000"/>
+    <field name="IsBumpMap"  mask="0x1000"/>
+    <field name="NoDither"  mask="0x40000"/>
+    <field name="NoColl"  mask="0x80000"/>
+    <field name="SurfaceSlick"  mask="0x100000"/>
+    <field name="SurfaceIcy"  mask="0x200000"/>
+    <field name="SurfaceBouncy"  mask="0x400000"/>
+</bitfield>
+
+<enum name="">
+    <field name="Multiply"  value="0x0"/>
+    <field name="ColorBlendDual"  value="0x2"/>
+    <field name="AddGlow"  value="0x3"/>
+    <field name="AlphaDetail"  value="0x4"/>
+</enum>
+<structure name="Trick">
+    <type_ref name=""				type="0x206"	offset="0x4"  sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name=""				type="0x3"		offset="0x0"  sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="LodFar"			type="0x0A"		offset="0x64" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="LodFarFade"		type="0x0A"		offset="0x6C" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="LodNear"		type="0x0A"		offset="0x60" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="LodNearFade"	type="0x0A"		offset="0x68" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="TrickFlags"		type="BITFIELD" offset="0x3C" sub_size="0x0"	sub_ref="TrickFlag_BF"/>
+    <type_ref name="ObjFlags"		type="BITFIELD" offset="0x54" sub_size="0x0"	sub_ref="TrickObj_BF"/>
+    <type_ref name="GfxFlags"		type="BITFIELD" offset="0x50" sub_size="0x0"	sub_ref="TrickGfx_BF"/>
+    <type_ref name="GroupFlags"		type="BITFIELD" offset="0x58" sub_size="0x0"	sub_ref="TrickGroup_BF"/>
+    <type_ref name="Sway"			type="0x0B"		offset="0x90" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="Rotate"			type="0x10A"	offset="0x90" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="AlphaRef"		type="0x0A"		offset="0x80" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="FogDist"		type="0x0B"		offset="0x74" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="SortBias"		type="0x0A"		offset="0x40" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="ScrollST0"		type="0x0B"		offset="0x8"  sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="ScrollST1"		type="0x0B"		offset="0x14" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="ShadowDist"		type="0x0A"		offset="0x7C" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="NightGlow"		type="0x0B"		offset="0x88" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="TintColor0"		type="0x0D"		offset="0x34" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="TintColor1"		type="0x0D"		offset="0x38" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="ObjTexBias"		type="0x0A"		offset="0x84" sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="StAnim"			type="STRUCT"	offset="0x70" sub_size="0x18"	sub_ref="0xoffset stru_71CA20"/>
+    <type_ref name="End"			type="0x2"		offset="0x0"  sub_size="0x0"	sub_ref="0x0"/>
+</structure>
+
+<bitfield name="TrickFlag_BF">
+    <field name="CameraFace"  value="0x8"/>
+    <field name="FrontFace"  value="0x4"/>
+    <field name="NightLight"  value="0x400"/>
+    <field name="NoColl"  value="0x10000"/>
+    <field name="NoDraw"  value="0x2000"/>
+    <field name="EditorVisible"  value="0x200000"/>
+    <field name="DoubleSided"  value="0x40"/>
+    <field name="NoZTest"  value="0x80"/>
+    <field name="NoZWrite"  value="0x800"/>
+    <field name="Additive"  value="0x1"/>
+    <field name="NoFog"  value="0x80000"/>
+    <field name="LightFace"  value="0x800000"/>
+    <field name="SelectOnly"  value="0x20000000"/>
+    <field name="ReflectTex0"  value="0x1000000"/>
+    <field name="ReflectTex1"  value="0x100"/>
+    <field name="NotSelectable"  value="0x80000000"/>
+    <field name="ColorOnly"  value="0x20"/>
+    <field name="SimpleAlphaSort"  value="0x4000000"/>
+</bitfield>
+
+<bitfield name="TrickObj_BF">
+    <field name="WorldFx"  value="0x1000"/>
+    <field name="StaticFx"  value="0x8000"/>
+    <field name="FullBright"  value="0x4"/>
+    <field name="ForceAlphaSort"  value="0x1"/>
+    <field name="TreeDraw"  value="0x100"/>
+    <field name="NoLightAngle"  value="0x10"/>
+    <field name="ForceOpaque"  value="0x400"/>
+</bitfield>
+<bitfield name="TrickGfx_BF">
+    <field name="SortFirst"  value="0x0"/>
+</bitfield>
+<bitfield  name="TrickGroup_BF">
+    <field name="VisOutside"  value="0x1"/>
+    <field name="VisBlocker"  value="0x2"/>
+    <field name="VisAngleBlocker"  value="0x4"/>
+    <field name="VisShell"  value="0x10"/>
+    <field name="VisWindow"  value="0x20"/>
+    <field name="VisTray"  value="0x8"/>
+    <field name="VisDoorFrame"  value="0x40"/>
+    <field name="RegionMarker"  value="0x80"/>
+    <field name="VolumeTrigger"  value="0x100"/>
+    <field name="WaterVolume"  value="0x200"/>
+    <field name="LavaVolume"  value="0x400"/>
+    <field name="SewerWaterVolume"  value="0x4000"/>
+    <field name="DoorVolume"  value="0x800"/>
+    <field name="ParentFade"  value="0x1000"/>
+    <field name="KeyLight"  value="0x2000"/>
+</bitfield>
+<structure name="StAnim">
+    <type_ref name=""	type="0x20A"    offset="0x0C" sub_size="0x0" sub_ref="0x0"/>
+    <type_ref name=""	type="0x20A"    offset="0x10" sub_size="0x0" sub_ref="0x0"/>
+    <type_ref name=""	type="0x206"    offset="0x8" sub_size="0x0" sub_ref="0x0"/>
+    <type_ref name=""	type="0x20F"    offset="0x14" sub_size="0x0" sub_ref="StAnim_BF"/>
+    <type_ref name="\n"	type="0x2"      offset="0x0" sub_size="0x0" sub_ref="0x0"/>
+</structure>
+<bitfield  name="StAnim_BF">
+    <field name="FRAMESNAP"  value="0x1"/>
+    <field name="PINGPONG"  value="0x2"/>
+</bitfield>
+
+</structures>
+
+</definitions>
