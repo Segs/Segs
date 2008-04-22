@@ -12,12 +12,6 @@ ENDIF (CMAKE_CXX_COMPILER MATCHES cl)
 # just testing 
 OPTION(BUILD_SEPARATE "When set to 1 this will build each server as a separate executable file" ON)
 
-# ACE framework
-FIND_PATH(ACE_path ACE.h
-  /usr/local/include/ace
-  /usr/include/ace
-)
-FIND_LIBRARY(ACE_lib NAMES libACE.so ACE ACEd.lib libACE.a PATHS /usr/lib /usr/local/lib DOC "Path to ACE framework library"])
 
 # BOOST
 FIND_PATH(BOOST_path object_pool.hpp
@@ -28,16 +22,9 @@ FIND_PATH(BOOST_path object_pool.hpp
    /include/boost
    /include/boost/pool
 )
-# PostgreSQL
-FIND_PATH(PGSQL_path libpq-fe.h
-   /usr/local/include/postgresql
-   /usr/include/postgresql
-   /usr/include/pgsql
-)
-FIND_LIBRARY(PGSQL_lib NAMES libpq.so libpq.a libpq pq PATHS /usr/lib /usr/local/lib DOC "Path to PostgreSQL library"])
 
-# zlib 
-
+FIND_PACKAGE(ACE REQUIRED) # ACE framework
+FIND_PACKAGE(POSTGRE REQUIRED) # PostgreSQL
 FIND_PACKAGE(ZLIB REQUIRED)
 FIND_PACKAGE(Threads REQUIRED)
 FIND_PACKAGE(SWIG)

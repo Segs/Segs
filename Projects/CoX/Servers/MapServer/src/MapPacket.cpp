@@ -313,29 +313,37 @@ void pktMap_Server_SceneResp::serializeto( BitStream &tgt ) const
 		//tgt.StorePackedBits(1,unkn1);
 	}
 	//tgt.StoreBits(1,current_map_flags);
-	tgt.StorePackedBits(1,num_base_elems);
+	tgt.StorePackedBits(1,m_trays.size());
 	u32 hashes[] = {0x00000000,0xAFD34459,0xE63A2B76,0xFBBAD9D4,
 		0x9AE0A9D4,0x06BDEF70,0xA47A21F8,0x5FBF835D,
 		0xFF25F3F6,0x70E6C422,0xF1CCC459,0xCBD35A55,
 		0x64CCCC31,0x535B08CC};
-	for(size_t i=1; i<num_base_elems; i++)
+	for(size_t i=1; i<m_trays.size(); i++)
 	{
 		//			ACE_TRACE(!"Hold yer horses!");
 		tgt.StoreBits(1,1);
+		// old coh use it that way, first string of the 2 is optional (path), second is mandatory
+		//NetStructure::storeStringConditional(tgt,m_trays[i]);
+		//tgt.StoreString("");
+		NetStructure::storeStringConditional(tgt,"");
 		tgt.StoreString(m_trays[i]);
 		if(i<12)
 			tgt.StoreBits(32,hashes[i]); // crc ? 
 		else
 			tgt.StoreBits(32,0); // crc ? 
-		tgt.StoreBits(1,0);
+		//tgt.StoreBits(1,0);
+		tgt.StorePackedBits(1,0);
 		tgt.StorePackedBits(1,0);
 	}
-	if(num_base_elems!=0)
+	if(m_trays.size()!=0)
 	{
 		tgt.StoreBits(1,1);
+		NetStructure::storeStringConditional(tgt,"");
 		tgt.StoreString(m_trays[0]);
+		//tgt.StoreString(m_trays[0]);
 		tgt.StoreBits(32,hashes[0]); // crc ?
-		tgt.StoreBits(1,0);
+		//tgt.StoreBits(1,0);
+		tgt.StorePackedBits(1,0);
 		tgt.StorePackedBits(1,0);
 	}
 	for(size_t i=0; i<m_refs.size(); i++)

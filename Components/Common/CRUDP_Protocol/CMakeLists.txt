@@ -16,10 +16,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/PacketBase.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/PacketCodec.h
 )
 
-FIND_PATH(ACE_path ACE.h
-  /usr/local/include/ace
-  /usr/include/ace
-)
+FIND_PACKAGE(ACE REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)

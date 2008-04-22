@@ -58,7 +58,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		pktMap_Server_SceneResp *res = new pktMap_Server_SceneResp;
 		res->undos_PP=0;
 		res->var_14=1;
-		res->m_outdoor_map=0;
+		res->m_outdoor_map=1;//0;
 		res->m_map_number=1;
 		res->m_map_desc="maps/City_Zones/City_00_01/City_00_01.txt";
 		res->current_map_flags=1; //off 1
@@ -278,8 +278,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		res->m_trays.push_back("object_library/Omni/neighborhood_markers/neighborhood_markers.txt");
 		res->m_trays.push_back("object_library/Streets/elements/information_post/information_post.txt");
 		res->m_trays.push_back("object_library/Omni/City_Volumes/City_Volumes.txt");
-		res->num_base_elems=res->m_trays.size();
-		res->m_crc.resize(res->num_base_elems);
+		res->m_crc.resize(res->m_trays.size());
 		Matrix4x3 mat;
 		for(size_t j=0; j<sizeof(Matrix4x3)/4; j++)
 		{

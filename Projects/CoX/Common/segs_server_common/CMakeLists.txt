@@ -32,17 +32,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/ServerManager.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Database.h
 )
 
-FIND_PATH(PGSQL_path libpq-fe.h
-   /usr/local/include/postgresql
-   /usr/include/postgresql
-   /usr/include/pgsql
-)
-FIND_LIBRARY(PGSQL_lib NAMES libpq.so libpq.a libpq pq PATHS /usr/lib /usr/local/lib DOC "Path to PostgreSQL library"])
-
-FIND_PATH(ACE_path ACE.h
-  /usr/local/include/ace
-  /usr/include/ace
-)
+FIND_PACKAGE(POSTGRE REQUIRED)
+FIND_PACKAGE(ACE REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
