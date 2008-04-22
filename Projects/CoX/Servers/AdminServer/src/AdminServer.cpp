@@ -114,7 +114,7 @@ int _AdminServer::SaveAccount(const char *username, const char *password)
 	// they really should check for sync with AdminDb on startup
 	for(int idx=0; idx<ServerManager::instance()->GameServerCount(); idx++)
 	{
-		if(0!=ServerManager::instance()->GetGameServer(idx)->CreateLinkedAccount(tmp.getId(),username));
+		if(0!=ServerManager::instance()->GetGameServer(idx)->createLinkedAccount(tmp.getId(),username));
 			res=2;
 	}
 	return res;   // Add the given account
@@ -167,6 +167,21 @@ ServerHandle<IGameServer> _AdminServer::RegisterMapServer(const ServerHandle<IMa
  * @param  map_h
  */
 int _AdminServer::GetAccessKeyForServer(const ServerHandle<IMapServer> &map_h) 
+{
+	return 0;
+}
+
+bool _AdminServer::Online( void )
+{
+	return m_running;
+}
+
+void _AdminServer::InvalidGameServerConnection( const ACE_INET_Addr & )
+{
+
+}
+
+int _AdminServer::GetBlockedIpList( std::list<int> & ) /* Called from auth server during user authentication, might be useful for automatical firewall rules update */
 {
 	return 0;
 }

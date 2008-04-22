@@ -40,8 +40,7 @@ public:
 	~_AdminServer(void);
 
     // Client handling related interface
-	int                         GetBlockedIpList(std::list<int> &) // Called from auth server during user authentication, might be useful for automatical firewall rules update
-	                            {return 0;}
+	int                         GetBlockedIpList(std::list<int> &); // Called from auth server during user authentication, might be useful for automatical firewall rules update
 
 	bool                        Logout(const IClient *client) const; // Client logout
 	bool                        Login(const IClient *client,const ACE_INET_Addr &client_addr); // Records given client as logged in.
@@ -53,13 +52,14 @@ public:
 
 	//bool AccountBlocked(const char *login) const; // Check if account is blocked.
 	int                         AddIPBan(const ACE_INET_Addr &client_addr); // Add client's IP to the banlist.
-	void                        InvalidGameServerConnection(const ACE_INET_Addr &){}
+	void                        InvalidGameServerConnection(const ACE_INET_Addr &);
 
 	bool                        ReadConfig(const std::string &name); // later name will be used to read GameServer specific configuration
 	bool                        Run(void);
 	bool                        ShutDown(const std::string &reason="No particular reason");
+	bool						Online(void);
     // Internal World-cluster interface
-    ServerHandle<IGameServer>    RegisterMapServer(const ServerHandle<IMapServer> &map_h );
+    ServerHandle<IGameServer>   RegisterMapServer(const ServerHandle<IMapServer> &map_h );
     int                         GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server );
 
 protected:

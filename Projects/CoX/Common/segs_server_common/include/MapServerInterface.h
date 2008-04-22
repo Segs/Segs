@@ -22,10 +22,9 @@ class IMapServer : public RoamingServer
 {
 public:
 	virtual u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)=0;
-	virtual void AssociatePlayerWithMap(u64 player_id,int map_number)=0;
-	virtual bool ShutDown(const std::string &reason)=0;
-	virtual bool Online()=0;
 	virtual const ACE_INET_Addr &getAddress()=0;
+
+	virtual void AssociatePlayerWithMap(u64 player_id,int map_number)=0;
 };
 class MapServerInterface : public Server
 {

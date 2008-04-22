@@ -160,11 +160,11 @@ bool GameServer::isClientConnected(u64 id)
 {
 	return m_clients.getById(id)!=NULL;
 }
-int GameServer::GetAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
+int GameServer::getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
 {
 	return 0;
 }
-bool GameServer::MapServerReady(const ServerHandle<IMapServer> &h_map)
+bool GameServer::isMapServerReady(const ServerHandle<IMapServer> &h_map)
 {
 	return false;
 }
@@ -209,7 +209,7 @@ void GameServer::disconnectClient( IClient *cl )
 	m_clients.removeById(cl->getId());
 }
 
-int GameServer::CreateLinkedAccount(u64 auth_account_id,const std::string &username)
+int GameServer::createLinkedAccount(u64 auth_account_id,const std::string &username)
 {
 	return m_database->CreateLinkedAccount(auth_account_id,username);
 }

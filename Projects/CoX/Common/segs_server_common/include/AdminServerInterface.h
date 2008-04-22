@@ -40,7 +40,6 @@ class IGameServer;
 class IAdminServer : public RoamingServer
 {
 public:
-virtual	int                         GetBlockedIpList(std::list<int> &)=0;
 virtual	bool                        Logout(const IClient *client) const=0;
 virtual	bool                        Login(const IClient *client,const ACE_INET_Addr &client_addr)=0;
 virtual	bool                        ValidPassword(const IClient *client, const char *password)=0;
@@ -50,11 +49,8 @@ virtual	int                         SaveAccount(const char *username, const char
 virtual	int                         RemoveAccount(IClient *client)=0;
 
 virtual	int                         AddIPBan(const ACE_INET_Addr &client_addr)=0;
+virtual	int                         GetBlockedIpList(std::list<int> &)=0;
 virtual	void                        InvalidGameServerConnection(const ACE_INET_Addr &)=0;
-
-virtual	bool                        ReadConfig(const std::string &name)=0;
-virtual	bool                        Run(void)=0;
-virtual	bool                        ShutDown(const std::string &reason="No particular reason")=0;
 
 virtual	ServerHandle<IGameServer>    RegisterMapServer(const ServerHandle<IMapServer> &map_h )=0;
 virtual	int                         GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server )=0;

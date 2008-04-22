@@ -23,8 +23,6 @@ class IGameServer : public RoamingServer
 {
 public:
 virtual u32						ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)=0;
-virtual bool					ShutDown(const std::string &reason)=0;
-virtual bool					Online()=0;
 virtual const ACE_INET_Addr &	getAddress()=0;
 virtual std::string				getName(void)=0;
 virtual u8						getId(void)=0;
@@ -34,9 +32,9 @@ virtual u8						getUnkn1(void)=0;
 virtual u8						getUnkn2(void)=0;
 virtual void					checkClientConnection(u64 id)=0;
 virtual bool					isClientConnected(u64 id)=0;
-virtual int						GetAccessKeyForServer(const ServerHandle<IMapServer> &h_map)=0;
-virtual bool					MapServerReady(const ServerHandle<IMapServer> &h_map)=0;
-virtual int						CreateLinkedAccount(u64 auth_account_id,const std::string &username)=0;
+virtual int						getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)=0;
+virtual bool					isMapServerReady(const ServerHandle<IMapServer> &h_map)=0;
+virtual int						createLinkedAccount(u64 auth_account_id,const std::string &username)=0;
 
 };
 
@@ -50,8 +48,8 @@ public:
 	bool					Run(void);
 	bool					ShutDown(const std::string &reason);
 
-	int						GetAccessKeyForServer(const ServerHandle<IMapServer> &h_map);
-	bool					MapServerReady(const ServerHandle<IMapServer> &h_map);
+	int						getAccessKeyForServer(const ServerHandle<IMapServer> &h_map);
+	bool					isMapServerReady(const ServerHandle<IMapServer> &h_map);
 
 	bool					isLocal(){return true;} //! this method returns true if this interface is a local ( same process )
 	bool					Online();
@@ -71,7 +69,7 @@ public:
 	u32						ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level);
 	void					checkClientConnection(u64 id);
 	bool					isClientConnected(u64 id);
-	int						CreateLinkedAccount(u64 auth_account_id,const std::string &username);
+	int						createLinkedAccount(u64 auth_account_id,const std::string &username);
 	//bool					getCharacterData(u64 id,
 protected:
 	IGameServer *m_instance;

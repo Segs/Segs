@@ -80,19 +80,19 @@ bool GameServerInterface::isClientConnected(u64 id)
 	ACE_ASSERT(m_instance);
 	return m_instance->isClientConnected(id);
 }
-int	GameServerInterface::GetAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
+int	GameServerInterface::getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
 {
 	ACE_ASSERT(m_instance);
-	return m_instance->GetAccessKeyForServer(h_map);
+	return m_instance->getAccessKeyForServer(h_map);
 }
-bool GameServerInterface::MapServerReady(const ServerHandle<IMapServer> &h_map)
+bool GameServerInterface::isMapServerReady(const ServerHandle<IMapServer> &h_map)
 {
 	ACE_ASSERT(m_instance);
-	return m_instance->MapServerReady(h_map);
+	return m_instance->isMapServerReady(h_map);
 }
 
-int GameServerInterface::CreateLinkedAccount( u64 auth_account_id,const std::string &username )
+int GameServerInterface::createLinkedAccount( u64 auth_account_id,const std::string &username )
 {
 	ACE_ASSERT(m_instance);
-	return m_instance->CreateLinkedAccount(auth_account_id,username);
+	return m_instance->createLinkedAccount(auth_account_id,username);
 }
