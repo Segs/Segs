@@ -52,7 +52,7 @@ virtual	int                         AddIPBan(const ACE_INET_Addr &client_addr)=0
 virtual	int                         GetBlockedIpList(std::list<int> &)=0;
 virtual	void                        InvalidGameServerConnection(const ACE_INET_Addr &)=0;
 
-virtual	ServerHandle<IGameServer>    RegisterMapServer(const ServerHandle<IMapServer> &map_h )=0;
+virtual	ServerHandle<IGameServer>   RegisterMapServer(const ServerHandle<IMapServer> &map_h )=0;
 virtual	int                         GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server )=0;
 
 

@@ -155,7 +155,7 @@ int _AdminServer::AddIPBan(const ACE_INET_Addr &client_addr)
  */
 ServerHandle<IGameServer> _AdminServer::RegisterMapServer(const ServerHandle<IMapServer> &map_h)
 {
-	// For each server, find number of free Map handlers, and player occupancy ( servers with low number of Maps, and low occupancy should be prioritised)
+	// For each server, find number of free Map handlers, and player occupancy ( servers with low number of Maps, and low occupancy should be prioritized)
 	return ServerHandle<IGameServer>(0);
 }
 

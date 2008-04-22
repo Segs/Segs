@@ -28,10 +28,6 @@ public:
     ServerHandle(SERVER_CLASS *impl );
 	ServerHandle(const ACE_INET_Addr &addr,int id);
 	virtual ~ServerHandle(){};
-private:
-    ACE_INET_Addr m_address; //! Address of remote host.
-    int m_id; //! Remote host uses this to identify it's servers.
-    SERVER_CLASS * m_server; //! Set only if the handle is for same process server (i.e. thread)
 
 	void setAddress( ACE_INET_Addr new_var );
     ACE_INET_Addr getAddress ( );
@@ -39,6 +35,10 @@ private:
     int getId ( );
     void setServer ( SERVER_CLASS * new_var );
     SERVER_CLASS * getServer ( );
+private:
+	ACE_INET_Addr m_address; //! Address of remote host.
+	int m_id; //! Remote host uses this to identify it's servers.
+	SERVER_CLASS * m_server; //! Set only if the handle is for same process server (i.e. thread)
 };
 
 #endif // SERVERHANDLE_H
