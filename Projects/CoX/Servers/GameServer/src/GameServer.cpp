@@ -129,6 +129,8 @@ u32 GameServer::ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)
 CharacterClient * GameServer::ClientExpected(ACE_INET_Addr &from,pktCS_ServerUpdate *pak)
 {
 	CharacterClient * res = m_clients.getExpectedByCookie(pak->authCookie);
+	if(0==res)
+		return res;
 	if(res->getState()==IClient::CLIENT_EXPECTED)
 	{
 		m_clients.connectedClient(pak->authCookie);

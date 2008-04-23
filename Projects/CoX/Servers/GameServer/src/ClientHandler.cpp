@@ -57,11 +57,11 @@ bool CharacterHandler::ReceivePacket(GamePacket *pak)
 			pktCS_ServerUpdate * su_pak = (pktCS_ServerUpdate * )pak;
 			pktSC_Character * char_pak;
 			pak->dump();
+			m_client = m_server->ClientExpected(getTargetAddr(),su_pak);
 			if(su_pak->m_build_date!=supported_version)
 			{
 				return sendWrongVersion(su_pak->m_build_date);
 			}
-			m_client = m_server->ClientExpected(getTargetAddr(),su_pak);
 			if(!m_client)
 			{
 				return sendNotAuthorized();
@@ -190,7 +190,8 @@ bool CharacterHandler::sendNotAuthorized()
 	pktSC_EnterGameError *res = new pktSC_EnterGameError();
 	res->m_error = "Unauthorized access attempt !";
 	m_proto->SendPacket(res);
-	m_server->disconnectClient(m_client);
+	if(m_client)
+		m_server->disconnectClient(m_client);
 	return true;
 }
 bool CharacterHandler::sendWrongVersion(u32 version)
@@ -200,7 +201,8 @@ bool CharacterHandler::sendWrongVersion(u32 version)
 	pktSC_EnterGameError *res = new pktSC_EnterGameError();
 	res->m_error = stream.str();
 	m_proto->SendPacket(res);
-	m_server->disconnectClient(m_client);
+	if(m_client)
+		m_server->disconnectClient(m_client);
 	return true;
 }
 
