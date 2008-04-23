@@ -7,7 +7,7 @@
     <type_ref name="Trick"      type="0x15"   offset="0x4"   param="0x130"    sub_ref="Trick"/>
 </filetype>
 <filetype name="sequencers">
-    <type_ref name="Sequencers"  type="0x15"   offset="0x0"   param="0x20"     sub_ref="Sequencer"/>
+    <type_ref name="Sequencer"  type="0x15"   offset="0x0"   param="0x20"     sub_ref="Sequencer"/>
 </filetype>
 
 </filetypes>
@@ -64,79 +64,80 @@
 </structure>
 <!-- Start of sequencers related structures-->
 <structure name="Sequencer">
-	<type_ref name="Sequencer"  type="0x0"  offset="0x0"	sub_size="0x0"		sub_ref="0x0"/>
-	<type_ref name=""			type="0x3"  offset="0x8"	sub_size="0x0"		sub_ref="0x0"/>
-	<type_ref name="TypeDef"	type="0x15" offset="0x0C"	sub_size="0x0C"		sub_ref="TypeDef"/>
-	<type_ref name="Group"		type="0x15" offset="0x10"	sub_size="0x4"		sub_ref="Group"/>
-	<type_ref name="Move"		type="0x15" offset="0x14"	sub_size="0x12C"	sub_ref="Move"/>
-	<type_ref name="SeqEnd"		type="0x2"  offset="0x0"	sub_size="0x0"		sub_ref="0x0"/>
+	<type_ref name="Sequencer"  type="0x0"  offset="0x0"	param="0x0"		sub_ref="0x0"/>
+	<type_ref name=""			type="0x3"  offset="0x8"	param="0x0"		sub_ref="0x0"/>
+	<type_ref name="TypeDef"	type="0x15" offset="0x0C"	param="0x0C"	sub_ref="TypeDef"/>
+	<type_ref name="Group"		type="0x15" offset="0x10"	param="0x4"		sub_ref="Group"/>
+	<type_ref name="Move"		type="0x15" offset="0x14"	param="0x12C"	sub_ref="Move"/>
+	<type_ref name="SeqEnd"		type="0x2"  offset="0x0"	param="0x0"		sub_ref="0x0"/>
 </structure>
 
 <structure name="TypeDef">
-	<type_ref name=""				type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="BaseSkeleton"	type="0x7"		offset="0x4"	sub_size="0x0" sub_ref="0x0"/>
-	<type_ref name="ParentType"		type="0x6"		offset="0x8"	sub_size="0x0" sub_ref="0x0"/>
-	<type_ref name="TypeDefEnd"		type="0x2"		offset="0x0"	sub_size="0x0" sub_ref="0x0"/>
+	<type_ref name=""				type="0x207"	offset="0x0"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="BaseSkeleton"	type="0x7"		offset="0x4"	param="0x0" sub_ref="0x0"/>
+	<type_ref name="ParentType"		type="0x6"		offset="0x8"	param="0x0" sub_ref="0x0"/>
+	<type_ref name="TypeDefEnd"		type="0x2"		offset="0x0"	param="0x0" sub_ref="0x0"/>
 </structure>
 
 <structure name="Group">
-	<type_ref name=""	type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="\n" type="0x2"		offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name=""	type="0x207"	offset="0x0"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="\n" type="0x2"		offset="0x0"	param="0x0"	sub_ref="0x0"/>
 </structure>
 
 <structure name="Move">
-	<type_ref name=""				type="0x207"    offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="MoveRate"		type="0x0A"     offset="0x8"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="Interpolate"	type="0x5"	    offset="0x0C"	sub_size="0x5"	sub_ref="0x0"/>
-	<type_ref name="Priority"		type="0x5"	    offset="0x10"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="Scale"			type="0x0A"     offset="0x4"	sub_size="0x1"	sub_ref="0x0"/>
-	<type_ref name="NextMove"		type="0x15"     offset="0x10C"	sub_size="0x4"	sub_ref="NextMove"/>
-	<type_ref name="CycleMove"		type="0x15"     offset="0x110"	sub_size="0x4"	sub_ref="CycleMove"/>
-	<type_ref name="Type"			type="0x15"     offset="0x108"	sub_size="0x2C"	sub_ref="SeqType"/>
-	<type_ref name="Member"			type="0x12"     offset="0x124"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="Interrupts"		type="0x12"     offset="0x128"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="SticksOnChild"  type="0x12"     offset="0x114"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="SetsOnChild"	type="0x12"     offset="0x118"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="Sets"			type="0x12"     offset="0x11C"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="Requires"		type="0x12"     offset="0x120"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="Flags"			type="0xF"	    offset="0x14"	sub_size="0x0"	sub_ref="Move_BF"/>
-	<type_ref name="MEnd"			type="0x2"	    offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name=""				type="0x207"    offset="0x0"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="MoveRate"		type="0x0A"     offset="0x8"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="Interpolate"	type="0x5"	    offset="0x0C"	param="0x5"	sub_ref="0x0"/>
+	<type_ref name="Priority"		type="0x5"	    offset="0x10"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="Scale"			type="0x0A"     offset="0x4"	param="0x1"	sub_ref="0x0"/>
+	<type_ref name="NextMove"		type="0x15"     offset="0x10C"	param="0x4"	sub_ref="NextMove"/>
+	<type_ref name="CycleMove"		type="0x15"     offset="0x110"	param="0x4"	sub_ref="CycleMove"/>
+	<type_ref name="Type"			type="0x15"     offset="0x108"	param="0x2C"	sub_ref="SeqType"/>
+	<type_ref name="Member"			type="0x12"     offset="0x124"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="Interrupts"		type="0x12"     offset="0x128"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="SticksOnChild"  type="0x12"     offset="0x114"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="SetsOnChild"	type="0x12"     offset="0x118"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="Sets"			type="0x12"     offset="0x11C"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="Requires"		type="0x12"     offset="0x120"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="Flags"			type="0xF"	    offset="0x14"	param="0x0"	sub_ref="Move_BF"/>
+	<type_ref name="MEnd"			type="0x2"	    offset="0x0"	param="0x0"	sub_ref="0x0"/>
 </structure>
 
 <structure name="NextMove">
-    <type_ref name=""	type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
-    <type_ref name="\n" type="0x2"		offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name=""	type="0x207"	offset="0x0"	param="0x0"	sub_ref="0x0"/>
+    <type_ref name="\n" type="0x2"		offset="0x0"	param="0x0"	sub_ref="0x0"/>
 </structure>
 
 <structure name="CycleMove">
-    <type_ref name=""	type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
-    <type_ref name="\n" type="0x2"		offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name=""	type="0x207"	offset="0x0"	param="0x0"	sub_ref="0x0"/>
+    <type_ref name="\n" type="0x2"		offset="0x0"	param="0x0"	sub_ref="0x0"/>
 </structure>
 
 <structure name="SeqType">
-	<type_ref name="Anim"			type="0x15" offset="0x4"  sub_size="0x0C"			sub_ref="Anim"/>
-	<type_ref name="PlayFx"			type="0x15" offset="0x8"  sub_size="0x0C"			sub_ref="PlayFX"/>
-	<type_ref name="Scale"			type="0x0A" offset="0x10" sub_size="0x1"			sub_ref="0x0"/>
-	<type_ref name="MoveRate"		type="0x0A" offset="0x14" sub_size="0x0"			sub_ref="0x0"/>
-	<type_ref name="SmoothSprint"	type="0x0A" offset="0x28" sub_size="0x0"			sub_ref="0x0"/>
-	<type_ref name="PitchAngle"		type="0x0A" offset="0x18" sub_size="0x0"			sub_ref="0x0"/>
-	<type_ref name="PitchRate"		type="0x0A" offset="0x1C" sub_size="0x0"			sub_ref="0x0"/>
-	<type_ref name="PitchStart"		type="0x0A" offset="0x20" sub_size="0x0"			sub_ref="0x0"/>
-	<type_ref name="PitchEnd"		type="0x0A" offset="0x24" sub_size="0x0FFFFFFFF"	sub_ref="0x0"/>
-	<type_ref name="TEnd"			type="0x2"	offset="0x0"  sub_size="0x0"			sub_ref="0x0"/>
+	<type_ref name=""	            type="0x207"	offset="0x0"    param="0x0"	sub_ref="0x0"/>
+	<type_ref name="Anim"			type="0x15"     offset="0x4"    param="0x0C"			sub_ref="Anim"/>
+	<type_ref name="PlayFx"			type="0x15"     offset="0x8"    param="0x0C"			sub_ref="PlayFX"/>
+	<type_ref name="Scale"			type="0x0A"     offset="0x10"   param="0x1"			sub_ref="0x0"/>
+	<type_ref name="MoveRate"		type="0x0A"     offset="0x14"   param="0x0"			sub_ref="0x0"/>
+	<type_ref name="SmoothSprint"	type="0x0A"     offset="0x28"   param="0x0"			sub_ref="0x0"/>
+	<type_ref name="PitchAngle"		type="0x0A"     offset="0x18"   param="0x0"			sub_ref="0x0"/>
+	<type_ref name="PitchRate"		type="0x0A"     offset="0x1C"   param="0x0"			sub_ref="0x0"/>
+	<type_ref name="PitchStart"		type="0x0A"     offset="0x20"   param="0x0"			sub_ref="0x0"/>
+	<type_ref name="PitchEnd"		type="0x0A"     offset="0x24"   param="0x0FFFFFFFF"	sub_ref="0x0"/>
+	<type_ref name="TEnd"			type="0x2"	    offset="0x0"    param="0x0"			sub_ref="0x0"/>
 </structure>
 
 <structure name="Anim">
-	<type_ref name=""	type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name=""	type="0x205"	offset="0x4"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name=""	type="0x205"	offset="0x8"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name="\n" type="0x2"		offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name=""	type="0x207"	offset="0x0"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name=""	type="0x205"	offset="0x4"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name=""	type="0x205"	offset="0x8"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name="\n" type="0x2"		offset="0x0"	param="0x0"	sub_ref="0x0"/>
 </structure>
 <structure name="PlayFX">
-	<type_ref name=""	type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name=""	type="0x205"	offset="0x4"	sub_size="0x0"	sub_ref="0x0"/>
-	<type_ref name=""	type="0x20F"	offset="0x8"	sub_size="0x0"	sub_ref="PlayFX_BF"/>
-	<type_ref name="\n" type="0x2"		offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name=""	type="0x207"	offset="0x0"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name=""	type="0x205"	offset="0x4"	param="0x0"	sub_ref="0x0"/>
+	<type_ref name=""	type="0x20F"	offset="0x8"	param="0x0"	sub_ref="PlayFX_BF"/>
+	<type_ref name="\n" type="0x2"		offset="0x0"	param="0x0"	sub_ref="0x0"/>
 </structure>
 
 </structures>

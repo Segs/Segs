@@ -200,7 +200,7 @@ class Serializer
         @num_data_blocks.times {
             @data_blocks<<DataBlock.new(@bf.read_pascal_str(),@bf.read_time())
         }
-        pp @data_blocks
+        #pp @data_blocks
     end
     def read_non_nested_structure(current_template,tgt_struct)
         deb = false
@@ -210,7 +210,6 @@ class Serializer
     
             offset = entry.offset
             fixed_type=(entry.type&0xFF)-3
-            
             case(fixed_type)
             when 0,3,4
                 tgt_struct.set_val(entry.name,offset,@bf.read_pascal_str)
@@ -251,7 +250,7 @@ class Serializer
                 arr_size.times {  arr<<@bf.read_bytes(4) }
                 tgt_struct.set_val(entry.name,offset,arr)
             when 15
-                arr_size = @bf.read_bytes(4)
+                arr_size = @bf.read_int()
                 arr=[]
                 arr_size.times { arr << @bf.read_pascal_str() }
                 tgt_struct.set_val(entry.name,offset,arr)
@@ -269,11 +268,13 @@ class Serializer
     def read_structured_data(current_template,tgt_struct,sub_size)
         
         raise "Must get Structure template!" if !current_template.is_a?(StructureTemplate)
+
         bytes_to_process=@bf.read_int()
         sub_size-=4
         datasum=bytes_to_process
         if(bytes_to_process<=sub_size)
             count=0
+            #p "Process struct of size #{bytes_to_process} #{current_template.name}"
             bytes_to_process -= read_non_nested_structure(current_template,tgt_struct)
             #pp tgt_struct
         end
@@ -296,7 +297,6 @@ class Serializer
             return 0 if @bf.bytes_left==0
             template_entry = current_template[@entry_type]
             p template_entry if @entry_type==nil
-            #p template_entry
             raise "Couldn't find structure corresponding with #{@entry_type}" if(template_entry==nil)||!template_entry.is_structure_ref()
             offset = template_entry.offset
 
@@ -307,7 +307,6 @@ class Serializer
                 elem = sub.new_elem
                 elem.init_from_tpl(template_entry)
                 return 0 if(0==read_structured_data(TEMPLATES[template_entry.sub_ref],elem,struct_size))
-                    
                 @deb_count+=1
                 if(@deb_count==20)
                     #exit()
@@ -346,17 +345,18 @@ end
 file = File.new("templates.xml")
 doc = Document.new(file)
 doc.root.elements["bitfields"].each_element("bitfield") { |s|
-    p s    
+    #p s    
 }
 doc.root.elements["enums"].each_element("enum") { |s|
-    p s    
+    #p s    
 }
 
 doc.root.elements["structures"].each_element("structure") { |s|
     strct = StructureTemplate.new(s.attributes['name'])
     TEMPLATES[s.attributes['name']]=strct
+    p s.attributes['name']
     s.each_element("type_ref") {|t_ref|
-        p t_ref
+        #p t_ref
         attr = t_ref.attributes
         obj=TypeRef.new(attr['name'],attr['type'],attr['offset'],attr['param'],attr['sub_ref'])
         strct.add_entry(obj)
@@ -374,6 +374,5 @@ doc.root.elements["filetypes"].each_element("filetype") { |s|
         }
     
 }
-
-ss=Serializer.new('tricks')
-ss.serialize_from('tricks.bin')
+ss=Serializer.new('sequencers')
+ss.serialize_from('sequencers.bin')
