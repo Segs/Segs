@@ -9,6 +9,14 @@
 <filetype name="sequencers">
     <type_ref name="Sequencer"  type="0x15"   offset="0x0"   param="0x20"     sub_ref="Sequencer"/>
 </filetype>
+<filetype name="attrib_names">
+    <type_ref name="{"			type="1"	offset="0x0"	param="0x0"		sub_ref="0x0"/>
+    <type_ref name="Damage"		type="0x15" offset="0x0"	param="0x0C"	sub_ref="Attrib"/>
+    <type_ref name="Defense"	type="0x15" offset="0x4"	param="0x0C"	sub_ref="Attrib"/>
+    <type_ref name="Boost"		type="0x15" offset="0x8"	param="0x0C"	sub_ref="Attrib"/>
+    <type_ref name="Group"		type="0x15" offset="0x0C"	param="0x0C"	sub_ref="Attrib"/>
+    <type_ref name="}"			type="0x2"	offset="0x0"	param="0x0"		sub_ref="0x0"/>
+</filetype>
 
 </filetypes>
 
@@ -138,6 +146,13 @@
 	<type_ref name=""	type="0x205"	offset="0x4"	param="0x0"	sub_ref="0x0"/>
 	<type_ref name=""	type="0x20F"	offset="0x8"	param="0x0"	sub_ref="PlayFX_BF"/>
 	<type_ref name="\n" type="0x2"		offset="0x0"	param="0x0"	sub_ref="0x0"/>
+</structure>
+<!-- Attrib names related-->
+<structure name="Attrib">
+    <type_ref name="Name"			type="0x206"	offset="0x0"	param="0x0" sub_ref="0x0"/>
+    <type_ref name="DisplayName"	type="0x206"	offset="0x4"	param="0x0" sub_ref="0x0"/>
+    <type_ref name="IconName"		type="0x206"	offset="0x8"	param="0x0" sub_ref="0x0"/>
+    <type_ref name="\n"				type="0x2"		offset="0x0"	param="0x0"	sub_ref="0x0"/>
 </structure>
 
 </structures>
