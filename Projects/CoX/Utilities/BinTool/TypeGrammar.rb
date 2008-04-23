@@ -202,6 +202,70 @@ class Serializer
         }
         pp @data_blocks
     end
+    def read_non_nested_structure(current_template,tgt_struct)
+        deb = false
+        start = @bf.bytes_left
+        current_template.each_entry {|entry|
+            next if((entry.type&0x100)!=0) # skip if flag 0x100 is set
+    
+            offset = entry.offset
+            fixed_type=(entry.type&0xFF)-3
+            
+            case(fixed_type)
+            when 0,3,4
+                tgt_struct.set_val(entry.name,offset,@bf.read_pascal_str)
+            when 1,2,12
+                tgt_struct.set_val(entry.name,offset,@bf.read_int())
+            when 5
+                raise "Unknown type !"
+                tgt_struct.set_val(entry.name,offset,@bf.read_bytes(128))
+            when 6
+                tgt_struct.set_val(entry.name,offset,@bf.read_bytes(4))
+            when 7
+                tgt_struct.set_val(entry.name,offset,@bf.read_bytes(4).unpack("F")[0])
+            when 8
+                #tgt_struct.set_val(offset,@bf.read_bytes(8)) # double ?
+                val = [@bf.read_bytes(4).unpack("F")[0],@bf.read_bytes(4).unpack("F")[0]]
+                tgt_struct.set_val(entry.name,offset,val)
+                tgt_struct.set_val(entry.name,offset+4,:prev)
+            when 9
+                raise "Unknown type !"
+                tgt_struct.set_val(entry.name,offset,@bf.read_bytes(12)) # vec3 ?
+            when 10
+                tgt_struct.set_val(entry.name,offset,[:rgb,@bf.read_bytes(3).unpack("CCC")])
+                @bf.skip(1)
+            when 11
+                raise "Unknown type !"
+                tgt_struct.set_val(entry.name,offset,@bf.read_bytes(2))
+                @bf.skip(2)
+            when 13
+                raise "Unknown type !"
+                arr_size = @bf.read_bytes(4)
+                arr=[]
+                arr_size.times { arr << @bf.read_bytes(4) }
+                tgt_struct.set_val(entry.name,offset,arr)
+            when 14
+                raise "Unknown type !"
+                arr_size = @bf.read_bytes(4)
+                arr=[]
+                arr_size.times {  arr<<@bf.read_bytes(4) }
+                tgt_struct.set_val(entry.name,offset,arr)
+            when 15
+                arr_size = @bf.read_bytes(4)
+                arr=[]
+                arr_size.times { arr << @bf.read_pascal_str() }
+                tgt_struct.set_val(entry.name,offset,arr)
+            when 16
+                ;
+            when 17 # aligned bytes
+                raise "Unknown type !"
+                round_up_bytes = ((entry.param+3)&(~3))-entry.param
+                tgt_struct.set_val(entry.name,offset,@bf.read_bytes(entry.sub_size))
+                @bf.skip(round_up_bytes)
+            end
+        }
+        return start-@bf.bytes_left
+    end
     def read_structured_data(current_template,tgt_struct,sub_size)
         
         raise "Must get Structure template!" if !current_template.is_a?(StructureTemplate)
@@ -210,90 +274,7 @@ class Serializer
         datasum=bytes_to_process
         if(bytes_to_process<=sub_size)
             count=0
-            deb=false
-            if current_template.name=="Trick"
-                deb=false
-            end
-            p "Trick structure of size #{bytes_to_process}" if deb
-            current_template.each_entry {|entry|
-                if((entry.type&0x100)==0)
-                    offset = entry.offset
-                    fixed_type=(entry.type&0xFF)-3
-                    p [entry.name,fixed_type,bytes_to_process] if deb
-                    case(fixed_type)
-                    when 0,3,4
-                        start=@bf.bytes_left()
-                        tgt_struct.set_val(entry.name,offset,@bf.read_pascal_str)
-                        bytes_to_process -= start-@bf.bytes_left();
-                    when 1,2,12
-                        tgt_struct.set_val(entry.name,offset,@bf.read_int())
-                        bytes_to_process -= 4
-                    when 5
-                        tgt_struct.set_val(entry.name,offset,@bf.read_bytes(128))
-                        bytes_to_process -= 128
-                    when 6
-                        tgt_struct.set_val(entry.name,offset,@bf.read_bytes(4))
-                        bytes_to_process -= 4
-                    when 7
-                        tgt_struct.set_val(entry.name,offset,@bf.read_bytes(4).unpack("F")[0])
-                        bytes_to_process -= 4
-                    when 8
-                        #tgt_struct.set_val(offset,@bf.read_bytes(8)) # double ?
-                        val = [@bf.read_bytes(4).unpack("F")[0],@bf.read_bytes(4).unpack("F")[0]]
-                        tgt_struct.set_val(entry.name,offset,val)
-                        tgt_struct.set_val(entry.name,offset+4,:prev)
-                        bytes_to_process -= 8
-                    when 9
-                        tgt_struct.set_val(entry.name,offset,@bf.read_bytes(12)) # vec3 ?
-                        bytes_to_process -= 12
-                    when 10
-                        tgt_struct.set_val(entry.name,offset,@bf.read_bytes(3))
-                        @bf.skip(1)
-                        bytes_to_process -= 4
-                    when 11
-                        tgt_struct.set_val(entry.name,offset,@bf.read_bytes(2))
-                        @bf.skip(2)
-                        bytes_to_process -= 4
-                    when 13
-                        arr_size = @bf.read_bytes(4)
-                        bytes_to_process -= 4
-                        arr=[]
-                        arr_size.times {
-                            arr << @bf.read_bytes(4)
-                            bytes_to_process -= 4
-                        }
-                        tgt_struct.set_val(entry.name,offset,arr)
-                    when 14
-                        arr_size = @bf.read_bytes(4)
-                        bytes_to_process -= 4
-                        arr=[]
-                        arr_size.times {
-                            arr<<@bf.read_bytes(4)
-                            bytes_to_process -= 4
-                        }
-                        tgt_struct.set_val(entry.name,offset,arr)
-                    when 15
-                        arr_size = @bf.read_bytes(4)
-                        bytes_to_process -= 4
-                        arr=[]
-                        arr_size.times {
-                            start = @bf.bytes_left()
-                            arr << @bf.read_pascal_str()
-                            bytes_to_process -= start-@bf.bytes_left
-                        }
-                        tgt_struct.set_val(entry.name,offset,arr)
-                    when 16
-                        ;
-                    when 17 # aligned bytes
-                        start = @bf.bytes_left()
-                        round_up_bytes = ((entry.param+3)&(~3))-entry.param
-                        tgt_struct.set_val(entry.name,offset,@bf.read_bytes(entry.sub_size))
-                        @bf.skip(round_up_bytes)
-                        bytes_to_process -= start-@bf.bytes_left
-                    end
-                end
-                    
-            }
+            bytes_to_process -= read_non_nested_structure(current_template,tgt_struct)
             #pp tgt_struct
         end
         if(bytes_to_process!=0)

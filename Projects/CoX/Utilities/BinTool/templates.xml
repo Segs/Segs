@@ -6,6 +6,9 @@
     <type_ref name="Texture"    type="0x15"   offset="0x0"   param="0x40"     sub_ref="Texture"/>
     <type_ref name="Trick"      type="0x15"   offset="0x4"   param="0x130"    sub_ref="Trick"/>
 </filetype>
+<filetype name="sequencers">
+    <type_ref name="Sequencers"  type="0x15"   offset="0x0"   param="0x20"     sub_ref="Sequencer"/>
+</filetype>
 
 </filetypes>
 
@@ -59,6 +62,82 @@
     <type_ref name=""	type="0x20F"    offset="0x14" param="0x0" sub_ref="StAnim_BF"/>
     <type_ref name="\n"	type="0x2"      offset="0x0" param="0x0" sub_ref="0x0"/>
 </structure>
+<!-- Start of sequencers related structures-->
+<structure name="Sequencer">
+	<type_ref name="Sequencer"  type="0x0"  offset="0x0"	sub_size="0x0"		sub_ref="0x0"/>
+	<type_ref name=""			type="0x3"  offset="0x8"	sub_size="0x0"		sub_ref="0x0"/>
+	<type_ref name="TypeDef"	type="0x15" offset="0x0C"	sub_size="0x0C"		sub_ref="TypeDef"/>
+	<type_ref name="Group"		type="0x15" offset="0x10"	sub_size="0x4"		sub_ref="Group"/>
+	<type_ref name="Move"		type="0x15" offset="0x14"	sub_size="0x12C"	sub_ref="Move"/>
+	<type_ref name="SeqEnd"		type="0x2"  offset="0x0"	sub_size="0x0"		sub_ref="0x0"/>
+</structure>
+
+<structure name="TypeDef">
+	<type_ref name=""				type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="BaseSkeleton"	type="0x7"		offset="0x4"	sub_size="0x0" sub_ref="0x0"/>
+	<type_ref name="ParentType"		type="0x6"		offset="0x8"	sub_size="0x0" sub_ref="0x0"/>
+	<type_ref name="TypeDefEnd"		type="0x2"		offset="0x0"	sub_size="0x0" sub_ref="0x0"/>
+</structure>
+
+<structure name="Group">
+	<type_ref name=""	type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="\n" type="0x2"		offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+</structure>
+
+<structure name="Move">
+	<type_ref name=""				type="0x207"    offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="MoveRate"		type="0x0A"     offset="0x8"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="Interpolate"	type="0x5"	    offset="0x0C"	sub_size="0x5"	sub_ref="0x0"/>
+	<type_ref name="Priority"		type="0x5"	    offset="0x10"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="Scale"			type="0x0A"     offset="0x4"	sub_size="0x1"	sub_ref="0x0"/>
+	<type_ref name="NextMove"		type="0x15"     offset="0x10C"	sub_size="0x4"	sub_ref="NextMove"/>
+	<type_ref name="CycleMove"		type="0x15"     offset="0x110"	sub_size="0x4"	sub_ref="CycleMove"/>
+	<type_ref name="Type"			type="0x15"     offset="0x108"	sub_size="0x2C"	sub_ref="SeqType"/>
+	<type_ref name="Member"			type="0x12"     offset="0x124"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="Interrupts"		type="0x12"     offset="0x128"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="SticksOnChild"  type="0x12"     offset="0x114"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="SetsOnChild"	type="0x12"     offset="0x118"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="Sets"			type="0x12"     offset="0x11C"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="Requires"		type="0x12"     offset="0x120"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="Flags"			type="0xF"	    offset="0x14"	sub_size="0x0"	sub_ref="Move_BF"/>
+	<type_ref name="MEnd"			type="0x2"	    offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+</structure>
+
+<structure name="NextMove">
+    <type_ref name=""	type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="\n" type="0x2"		offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+</structure>
+
+<structure name="CycleMove">
+    <type_ref name=""	type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+    <type_ref name="\n" type="0x2"		offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+</structure>
+
+<structure name="SeqType">
+	<type_ref name="Anim"			type="0x15" offset="0x4"  sub_size="0x0C"			sub_ref="Anim"/>
+	<type_ref name="PlayFx"			type="0x15" offset="0x8"  sub_size="0x0C"			sub_ref="PlayFX"/>
+	<type_ref name="Scale"			type="0x0A" offset="0x10" sub_size="0x1"			sub_ref="0x0"/>
+	<type_ref name="MoveRate"		type="0x0A" offset="0x14" sub_size="0x0"			sub_ref="0x0"/>
+	<type_ref name="SmoothSprint"	type="0x0A" offset="0x28" sub_size="0x0"			sub_ref="0x0"/>
+	<type_ref name="PitchAngle"		type="0x0A" offset="0x18" sub_size="0x0"			sub_ref="0x0"/>
+	<type_ref name="PitchRate"		type="0x0A" offset="0x1C" sub_size="0x0"			sub_ref="0x0"/>
+	<type_ref name="PitchStart"		type="0x0A" offset="0x20" sub_size="0x0"			sub_ref="0x0"/>
+	<type_ref name="PitchEnd"		type="0x0A" offset="0x24" sub_size="0x0FFFFFFFF"	sub_ref="0x0"/>
+	<type_ref name="TEnd"			type="0x2"	offset="0x0"  sub_size="0x0"			sub_ref="0x0"/>
+</structure>
+
+<structure name="Anim">
+	<type_ref name=""	type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name=""	type="0x205"	offset="0x4"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name=""	type="0x205"	offset="0x8"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name="\n" type="0x2"		offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+</structure>
+<structure name="PlayFX">
+	<type_ref name=""	type="0x207"	offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name=""	type="0x205"	offset="0x4"	sub_size="0x0"	sub_ref="0x0"/>
+	<type_ref name=""	type="0x20F"	offset="0x8"	sub_size="0x0"	sub_ref="PlayFX_BF"/>
+	<type_ref name="\n" type="0x2"		offset="0x0"	sub_size="0x0"	sub_ref="0x0"/>
+</structure>
 
 </structures>
 <bitfields>
@@ -83,58 +162,79 @@
         <field name="SurfaceBouncy"  mask="0x400000"/>
     </bitfield>
     <bitfield name="TrickFlag_BF">
-        <field name="CameraFace"  value="0x8"/>
-        <field name="FrontFace"  value="0x4"/>
-        <field name="NightLight"  value="0x400"/>
-        <field name="NoColl"  value="0x10000"/>
-        <field name="NoDraw"  value="0x2000"/>
-        <field name="EditorVisible"  value="0x200000"/>
-        <field name="DoubleSided"  value="0x40"/>
-        <field name="NoZTest"  value="0x80"/>
-        <field name="NoZWrite"  value="0x800"/>
-        <field name="Additive"  value="0x1"/>
-        <field name="NoFog"  value="0x80000"/>
-        <field name="LightFace"  value="0x800000"/>
-        <field name="SelectOnly"  value="0x20000000"/>
-        <field name="ReflectTex0"  value="0x1000000"/>
-        <field name="ReflectTex1"  value="0x100"/>
-        <field name="NotSelectable"  value="0x80000000"/>
-        <field name="ColorOnly"  value="0x20"/>
-        <field name="SimpleAlphaSort"  value="0x4000000"/>
+        <field name="CameraFace"        mask="0x8"/>
+        <field name="FrontFace"         mask="0x4"/>
+        <field name="NightLight"        mask="0x400"/>
+        <field name="NoColl"            mask="0x10000"/>
+        <field name="NoDraw"            mask="0x2000"/>
+        <field name="EditorVisible"     mask="0x200000"/>
+        <field name="DoubleSided"       mask="0x40"/>
+        <field name="NoZTest"           mask="0x80"/>
+        <field name="NoZWrite"          mask="0x800"/>
+        <field name="Additive"          mask="0x1"/>
+        <field name="NoFog"             mask="0x80000"/>
+        <field name="LightFace"         mask="0x800000"/>
+        <field name="SelectOnly"        mask="0x20000000"/>
+        <field name="ReflectTex0"       mask="0x1000000"/>
+        <field name="ReflectTex1"       mask="0x100"/>
+        <field name="NotSelectable"     mask="0x80000000"/>
+        <field name="ColorOnly"         mask="0x20"/>
+        <field name="SimpleAlphaSort"   mask="0x4000000"/>
     </bitfield>
     <bitfield name="TrickObj_BF">
-        <field name="WorldFx"  value="0x1000"/>
-        <field name="StaticFx"  value="0x8000"/>
-        <field name="FullBright"  value="0x4"/>
-        <field name="ForceAlphaSort"  value="0x1"/>
-        <field name="TreeDraw"  value="0x100"/>
-        <field name="NoLightAngle"  value="0x10"/>
-        <field name="ForceOpaque"  value="0x400"/>
+        <field name="WorldFx"  mask="0x1000"/>
+        <field name="StaticFx"  mask="0x8000"/>
+        <field name="FullBright"  mask="0x4"/>
+        <field name="ForceAlphaSort"  mask="0x1"/>
+        <field name="TreeDraw"  mask="0x100"/>
+        <field name="NoLightAngle"  mask="0x10"/>
+        <field name="ForceOpaque"  mask="0x400"/>
     </bitfield>
     <bitfield name="TrickGfx_BF">
-        <field name="SortFirst"  value="0x0"/>
+        <field name="SortFirst"  mask="0x0"/>
     </bitfield>
     <bitfield  name="TrickGroup_BF">
-        <field name="VisOutside"  value="0x1"/>
-        <field name="VisBlocker"  value="0x2"/>
-        <field name="VisAngleBlocker"  value="0x4"/>
-        <field name="VisShell"  value="0x10"/>
-        <field name="VisWindow"  value="0x20"/>
-        <field name="VisTray"  value="0x8"/>
-        <field name="VisDoorFrame"  value="0x40"/>
-        <field name="RegionMarker"  value="0x80"/>
-        <field name="VolumeTrigger"  value="0x100"/>
-        <field name="WaterVolume"  value="0x200"/>
-        <field name="LavaVolume"  value="0x400"/>
-        <field name="SewerWaterVolume"  value="0x4000"/>
-        <field name="DoorVolume"  value="0x800"/>
-        <field name="ParentFade"  value="0x1000"/>
-        <field name="KeyLight"  value="0x2000"/>
+        <field name="VisOutside"  mask="0x1"/>
+        <field name="VisBlocker"  mask="0x2"/>
+        <field name="VisAngleBlocker"  mask="0x4"/>
+        <field name="VisShell"  mask="0x10"/>
+        <field name="VisWindow"  mask="0x20"/>
+        <field name="VisTray"  mask="0x8"/>
+        <field name="VisDoorFrame"  mask="0x40"/>
+        <field name="RegionMarker"  mask="0x80"/>
+        <field name="VolumeTrigger"  mask="0x100"/>
+        <field name="WaterVolume"  mask="0x200"/>
+        <field name="LavaVolume"  mask="0x400"/>
+        <field name="SewerWaterVolume"  mask="0x4000"/>
+        <field name="DoorVolume"  mask="0x800"/>
+        <field name="ParentFade"  mask="0x1000"/>
+        <field name="KeyLight"  mask="0x2000"/>
     </bitfield>
     <bitfield  name="StAnim_BF">
-        <field name="FRAMESNAP"  value="0x1"/>
-        <field name="PINGPONG"  value="0x2"/>
+        <field name="FRAMESNAP"  mask="0x1"/>
+        <field name="PINGPONG"  mask="0x2"/>
     </bitfield>
+    <!-- sequencers fields -->
+    <bitfield name="PlayFX_BF">
+        <field name="Constant"  mask="0x1"/>
+    </bitfield>
+    
+    <bitfield name="Move_BF">
+        <field name="Cycle"  mask="0x1"/>
+        <field name="FinishCycle"  mask="0x4"/>
+        <field name="ReqInputs"  mask="0x8"/>
+        <field name="NoInterp"  mask="0x20"/>
+        <field name="HitReact"  mask="0x40"/>
+        <field name="NoSizeScale"  mask="0x80"/>
+        <field name="AlwaysSizeScale"  mask="0x4000"/>
+        <field name="FullSizeScale"  mask="0x2000"/>
+        <field name="MoveScale"  mask="0x100"/>
+        <field name="NotSelectable"  mask="0x200"/>
+        <field name="SmoothSprint"  mask="0x400"/>
+        <field name="PitchToTarget"  mask="0x800"/>
+        <field name="PickRandomly"  mask="0x1000"/>
+    </bitfield>
+
 </bitfields>
 <enums>
     <enum name="BlendType_ENUM">
