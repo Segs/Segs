@@ -1,1 +1,1 @@
-#ADD_SUBDIRECTORY(Utilities) disabled for now
+ADD_SUBDIRECTORY(Utilities)
