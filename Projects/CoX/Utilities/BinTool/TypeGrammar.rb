@@ -9,7 +9,9 @@ TEMPLATES={}
 structures={}
 filetypes={}
 class TypeVisitor
+    
     def initialize
+        @unnamed_count=0
         reset()
     end
     def reset
@@ -21,8 +23,13 @@ class TypeVisitor
     def visited?(type)
         @visited[type]
     end
+    def next_unnamed
+        @unnamed_count+=1
+        "unnamed_"+@unnamed_count.to_s()
+    end
 end
 class C_TypeVisitor < TypeVisitor
+    attr_reader :indent_amount
     def initialize(stream)
         super()
         @indent_amount = 0
@@ -31,43 +38,51 @@ class C_TypeVisitor < TypeVisitor
     def indent()
         "\t"*@indent_amount
     end
-    def visit_bf(bf,entering_leaving)
-        if entering_leaving==:enter
-            return if visited?(bf)
-            visiting(bf)
-        end
-        if(entering_leaving==:enter)
-            @out_stream<<indent()+"typedef enum #{bf.name}\n{\n"
-            @indent_amount+=1
-        else
-            @indent_amount-=1
-            @out_stream<<indent()+"};\n"
-        end
+    def visit_bf(bf)
+        return if visited?(bf)
+        visiting(bf)
+        @out_stream<<indent()+"typedef enum #{bf.name}\n{\n"
+        @indent_amount+=1
+        bf.visit_contents(self)
+        @indent_amount-=1
+        @out_stream<<indent()+"};\n"
     end
     def visit_bf_field(k,v)
         @out_stream<<indent()+"#{v} = 0x"+k.to_s(16)+",\n"
     end
-    def visit_enum(enum,entering_leaving)
-        if entering_leaving==:enter
-            return if visited?(enum)
-            visiting(enum)
-        end
-        if(entering_leaving==:enter)
-            @out_stream<<indent()+"typedef enum #{enum.name}\n{\n"
-            @indent_amount+=1
-        else
-            @indent_amount-=1
-            @out_stream<<indent()+"};\n"
-        end
+    def visit_enum(enum)
+        return if visited?(enum)
+        visiting(enum)
+        @out_stream<<indent()+"typedef enum #{enum.name}\n{\n"
+        @indent_amount+=1
+        enum.visit_contents(self)
+        @indent_amount-=1
+        @out_stream<<indent()+"};\n"
     end
     def visit_enum_field(k,v)
         @out_stream<<indent()+"#{v} = "+k.to_s+",\n"
     end
-    def visit_struct(bf,entering_leaving)
-        if entering_leaving==:enter
-            return if visited?(bf)
-            visiting(bf)
+    def visit_struct(strct)
+            
+        return if visited?(strct)
+        visiting(strct)            
+        @out_stream<<indent()+"typedef struct #{strct.name}\n{\n"
+        @indent_amount+=1
+        strct.visit_contents(self)
+        @indent_amount-=1
+        @out_stream<<indent()+"};\n"
+    end
+    def visit_struct_field(name,fld)
+        name=next_unnamed() if(name.size==0) # solve >1 unnmed fields
+        typename = fld.referenced_type.name
+        typename += " *" if(fld.referenced_type.is_a?(StructureType))
+        case fld.referenced_type.name
+        when "finisher"
+            @out_stream<<"//"
+            name = "\"#{name}\""
         end
+        @out_stream<<indent()+"#{typename} #{name};"
+        @out_stream<<"// offset: 0x"<<fld.offset.to_s(16)+"\n"
     end
 end
 class TypeStorage
@@ -100,6 +115,10 @@ class TypeStorage
         @bitfields.each {|bf| bf.visit(vs) }
         @enums.each {|enum| enum.visit(vs) }
     end
+    def export_struct_tree(tree_root,language_visitor,filename)
+        vs = language_visitor.new(File.open(tree_root+".h","w"))
+        @types[tree_root].visit(vs)
+    end
     def load_types(from)
         file = File.new(from)
         doc = Document.new(file)
@@ -120,7 +139,6 @@ class TypeStorage
         }
         doc.root.elements["structures"].each_element("structure") { |s|
             strct = StructureType.new(s.attributes['name'])
-            p s.attributes['name']
             s.each_element("type_ref") {|t_ref|
                 attr = t_ref.attributes
                 obj = TypeStorage.instance.get_type(attr['sub_ref'])
@@ -142,7 +160,6 @@ class TypeStorage
         doc.root.elements["filetypes"].each_element("filetype") { |s|
         
             strct = StructureType.new(s.attributes['name'])
-            p s.attributes['name']
             s.each_element("type_ref") {|t_ref|
                 attr = t_ref.attributes
                 obj = TypeStorage.instance.get_type(attr['sub_ref'])
@@ -178,19 +195,19 @@ class EnumType < Type
         4
     end
     def visit(visitor)
-        visitor.visit_enum(self,:enter)
+        visitor.visit_enum(self)
+    end
+    def visit_contents(visitor)
         key=0
         visited_count=0
         while(visited_count<@values.size)
             while(@values[key]==nil) do
                 key+=1
             end
-            
             visitor.visit_enum_field(key,@values[key])
             visited_count+=1
             key+=1
         end
-        visitor.visit_enum(self,:leave)
     end
 
     def init_val(into,name,offset,val)
@@ -219,7 +236,9 @@ class BitfieldType < Type
         into.set_val(offset,CreatedField.new(offset,name,val))
     end
     def visit(visitor)
-        visitor.visit_bf(self,:enter)
+        visitor.visit_bf(self)
+    end
+    def visit_contents(visitor)
         key=0
         visited_count=0
         while(visited_count<@values.size)
@@ -233,12 +252,8 @@ class BitfieldType < Type
                 key <<= 1
             end
         end
-        
-        visitor.visit_bf(self,:leave)
     end
-    def typename
-        @name
-    end
+
 end
 class PrimitiveType < Type
     def initialize(type_id)
@@ -302,10 +317,22 @@ class PrimitiveType < Type
     def serialize_out(visitor,val)
         visitor.visit_primitive(self,val)
     end
-    def typename
+    def name
         case @type_id
+        when 2
+            return "finisher"
+        when 3
+            return "string"
+        when 5
+            return "/*version*/ unsigned int"
+        when 6
+            return "Filename *"
+        when 10
+            return "float"
+        when 11
+            return "UVCoords"
         when 12
-            return "Vec3"
+            return "Vector3"
         when 13
             return "RGB"
         else
@@ -339,8 +366,6 @@ class StructTypeField
 end
 class StructureType < Type
     attr_reader :name
-    @@recurse_count=0
-    @@field_count=0
     def initialize(name)
         @bound = false # all TypeRef's were resolved ?
         @entries=[]
@@ -410,7 +435,6 @@ class StructureType < Type
         while(sub_size>0)
             start                   = stream.bytes_left()
             entry_type,struct_size  = *stream.read_header()
-            
             return 0 if(struct_size==0)
 
             raise "Wrong structure size!" if(struct_size>sub_size)
@@ -421,7 +445,10 @@ class StructureType < Type
             return 0 if stream.bytes_left==0
             template_entry = nil
             @entries.each {|e|
-                next if e[0]!=entry_type
+                curr_typename = e[1].referenced_type.name
+                entry_type1 = entry_type
+                entry_type2 = @name + entry_type # disambiguation of entry type name by including parent type name
+                next if (curr_typename!=entry_type1 && curr_typename !=entry_type2)
                 template_entry=e[1]
                 break
             }
@@ -431,11 +458,6 @@ class StructureType < Type
             field_flags = template_entry.get_flags()
 
             elem = template_entry.instantiate(tgt_struct)
-            @@recurse_count+=1
-            if @@recurse_count==-1
-                pp tgt_struct
-                exit()
-            end
             #pp tgt_struct if entry_type == "Property"
             if template_entry.read_from(stream,elem,struct_size)==0
                 raise "read_failed"
@@ -446,7 +468,27 @@ class StructureType < Type
     end
     def init_val(into,name,offset,val)
         into.set_val(offset,CreatedField.new(offset,name,nil))
-        @@field_count+=1
+    end
+    def visit(visitor)
+        bind_all_types()
+        key=0
+        visited_count=0
+
+        @entries.each {|entr|
+            v=entr[1]
+            next if v.referenced_type.is_a?(PrimitiveType)
+            v.referenced_type.visit(visitor)
+            raise "visitor indent is #{visitor.indent_amount} after visiting #{v.referenced_type.name}" if visitor.indent_amount!=0
+        }
+        visitor.visit_struct(self)
+    end
+    def visit_contents(visitor)
+        offset_sorted = @entries.dup
+        offset_sorted.sort! {|a,b| a[1].offset<=>b[1].offset}
+        offset_sorted.each {|entr|
+            struct_entry= entr[1]
+            visitor.visit_struct_field(entr[0],entr[1])
+        }
     end
 end
 class CreatedPrimitive
@@ -469,9 +511,9 @@ class CreatedField
     end
 end
 class CreatedStructure
-    attr_reader :typename
+    attr_reader :name
     def initialize(size,name)
-        @typename=name
+        @name=name
         @values=[]
     end
     def set_val(offset,value)
@@ -577,7 +619,7 @@ class XMLWriter
         ("\t"*@indent)
     end
     def enter_structure(struct,name)
-        @tgt_stream << indent() << "<struct type=\"#{struct.typename}\" sub_name=\"#{name}\">\n"
+        @tgt_stream << indent() << "<struct type=\"#{struct.name}\" sub_name=\"#{name}\">\n"
         @indent+=1
     end
     
@@ -587,14 +629,23 @@ class XMLWriter
     end
     def visit_field(field)
         if field.value!=nil && !(field.value.is_a?(CreatedPrimitive) && field.value.value=="")
-            @tgt_stream << indent() << "<field name=\"#{field.name}\">\n"
-            @indent+=1
-            field.value.serialize_out(self)
-            @indent-=1
-            @tgt_stream << indent() << "</field>\n"
+            @tgt_stream << indent() << "<field name=\"#{field.name}\" type=\"#{field.value.type.name}\" "
+            output_value(field.value)
+            @tgt_stream << "/>\n"
+#            field.value.serialize_out(self)
+#            @tgt_stream << indent() << "</field>\n"
         else
             #printf((" " * (@indent+1) )+"<empty\\>\n")
         end
+    end
+    def output_value(prim)
+        val_s = ""
+        if(prim.value.is_a?(Array))
+            val_s = "["+prim.value.join(",")+"]"
+        else
+            val_s = prim.value.to_s()
+        end        
+        @tgt_stream << "value=\"#{val_s}\""
     end
     def visit_primitive(prim)
         val_s = ""
@@ -602,12 +653,14 @@ class XMLWriter
             val_s = "["+prim.value.join(",")+"]"
         else
             val_s = prim.value.to_s()
-        end
-        @tgt_stream << indent() << "<value=\"#{val_s}\" type=\"#{prim.type.typename}\"\\>\n"
+        end        
+        @tgt_stream << indent() << "<value=\"#{val_s}\" type=\"#{prim.type.name}\"\\>\n"
     end
     def visit_bitfield(bf)
+        p "visiting bitfield"
     end
     def visit_enum()
+        p "visiting enum"
     end
 end
 class BinFile
@@ -714,5 +767,6 @@ end
 
 TypeStorage.instance.load_types("templates.xml")
 TypeStorage.instance.export_types(C_TypeVisitor,"cox_types.h")
-#ss=Serializer.new('scenefile')
-#ss.serialize_from('City_00_01.bin')
+TypeStorage.instance.export_struct_tree("scenefile",C_TypeVisitor,"cox_types.h")
+ss=Serializer.new('scenefile')
+ss.serialize_from('City_00_01.bin')
