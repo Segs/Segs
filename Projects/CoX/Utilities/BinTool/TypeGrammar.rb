@@ -8,23 +8,164 @@ include REXML
 TEMPLATES={}
 structures={}
 filetypes={}
+class TypeVisitor
+    def initialize
+        reset()
+    end
+    def reset
+        @visited={}
+    end
+    def visiting(type)
+        @visited[type]=true
+    end
+    def visited?(type)
+        @visited[type]
+    end
+end
+class C_TypeVisitor < TypeVisitor
+    def initialize(stream)
+        super()
+        @indent_amount = 0
+        @out_stream=stream
+    end
+    def indent()
+        "\t"*@indent_amount
+    end
+    def visit_bf(bf,entering_leaving)
+        if entering_leaving==:enter
+            return if visited?(bf)
+            visiting(bf)
+        end
+        if(entering_leaving==:enter)
+            @out_stream<<indent()+"typedef enum #{bf.name}\n{\n"
+            @indent_amount+=1
+        else
+            @indent_amount-=1
+            @out_stream<<indent()+"};\n"
+        end
+    end
+    def visit_bf_field(k,v)
+        @out_stream<<indent()+"#{v} = 0x"+k.to_s(16)+",\n"
+    end
+    def visit_enum(enum,entering_leaving)
+        if entering_leaving==:enter
+            return if visited?(enum)
+            visiting(enum)
+        end
+        if(entering_leaving==:enter)
+            @out_stream<<indent()+"typedef enum #{enum.name}\n{\n"
+            @indent_amount+=1
+        else
+            @indent_amount-=1
+            @out_stream<<indent()+"};\n"
+        end
+    end
+    def visit_enum_field(k,v)
+        @out_stream<<indent()+"#{v} = "+k.to_s+",\n"
+    end
+    def visit_struct(bf,entering_leaving)
+        if entering_leaving==:enter
+            return if visited?(bf)
+            visiting(bf)
+        end
+    end
+end
 class TypeStorage
     include Singleton
     def initialize
         @types={}
+        @bitfields=[]
+        @enums=[]
+        @structs=[]
     end
     def add_type(name,type)
         raise "type clash!" if @types[name]!=nil
         @types[name] = type
+        case type
+        when StructureType
+            @structs<<type
+        when EnumType
+            @enums<<type
+        when BitfieldType
+            @bitfields<<type
+        else
+            raise "unknown type"
+        end
     end
     def get_type(name)
         @types[name]
+    end
+    def export_types(language_visitor,filename)
+        vs = language_visitor.new(File.open(filename,"w"))
+        @bitfields.each {|bf| bf.visit(vs) }
+        @enums.each {|enum| enum.visit(vs) }
+    end
+    def load_types(from)
+        file = File.new(from)
+        doc = Document.new(file)
+        doc.root.elements["bitfields"].each_element("bitfield") { |s|
+            bf = BitfieldType.new(s.attributes['name'])
+            s.each_element("field") {|fld|
+                attr = fld.attributes
+                bf.add_value(attr["mask"].to_i(0),attr["name"])
+            }
+            #p s    
+        }
+        doc.root.elements["enums"].each_element("enum") { |s|
+            en = EnumType.new(s.attributes['name'])
+            s.each_element("field") {|fld|
+                attr = fld.attributes
+                en.add_value(attr["value"].to_i(0),attr["name"])
+            }
+        }
+        doc.root.elements["structures"].each_element("structure") { |s|
+            strct = StructureType.new(s.attributes['name'])
+            p s.attributes['name']
+            s.each_element("type_ref") {|t_ref|
+                attr = t_ref.attributes
+                obj = TypeStorage.instance.get_type(attr['sub_ref'])
+                t_flags = attr['type'].to_i(0) & 0xFF00 #>>8
+                if(obj==nil)
+                    type_id = 0xFF & attr['type'].to_i(0)
+                    if(type_id==0x15 )#|| type_id==0x16 || type_id==0x13)
+                        obj=TypeRef.new(attr['type'],attr['sub_ref'])
+                    else
+                        obj=PrimitiveType.new(type_id)
+                    end
+                end
+        
+                strct.add_entry(attr['name'],obj,t_flags,attr['offset'],attr['param'])
+                
+                }
+        }
+        
+        doc.root.elements["filetypes"].each_element("filetype") { |s|
+        
+            strct = StructureType.new(s.attributes['name'])
+            p s.attributes['name']
+            s.each_element("type_ref") {|t_ref|
+                attr = t_ref.attributes
+                obj = TypeStorage.instance.get_type(attr['sub_ref'])
+                type_id = 0xFF & attr['type'].to_i(0)
+                t_flags = attr['type'].to_i(0) & 0xFF00 #>>8
+                if(obj==nil)
+                    if(type_id==0x15 ) #|| type_id==0x16 || type_id==0x13)
+                        obj=TypeRef.new(attr['type'],attr['sub_ref'])
+                    else
+                        obj=PrimitiveType.new(type_id)
+                    end
+                end
+                strct.add_entry(attr['name'],obj,t_flags,attr['offset'],attr['param'])
+                
+                }
+        }
     end
 end
 class Type
     
 end
 class EnumType < Type
+    attr_reader :name
     def initialize(name)
         @name=name
         @values={}
@@ -36,12 +177,29 @@ class EnumType < Type
     def get_byte_size
         4
     end
+    def visit(visitor)
+        visitor.visit_enum(self,:enter)
+        key=0
+        visited_count=0
+        while(visited_count<@values.size)
+            while(@values[key]==nil) do
+                key+=1
+            end
+            
+            visitor.visit_enum_field(key,@values[key])
+            visited_count+=1
+            key+=1
+        end
+        visitor.visit_enum(self,:leave)
+    end
+
     def init_val(into,name,offset,val)
         into.set_val(offset,CreatedField.new(offset,name,val))
     end
 
 end
 class BitfieldType < Type
+    attr_reader :name
     def initialize(name)
         @name=name
         @values={}
@@ -59,6 +217,24 @@ class BitfieldType < Type
     end
     def init_val(into,name,offset,val)
         into.set_val(offset,CreatedField.new(offset,name,val))
+    end
+    def visit(visitor)
+        visitor.visit_bf(self,:enter)
+        key=0
+        visited_count=0
+        while(visited_count<@values.size)
+            if(@values[key]!=nil)
+                visitor.visit_bf_field(key,@values[key])
+                visited_count+=1
+            end
+            if(key==0)
+                key=1
+            else
+                key <<= 1
+            end
+        end
+        
+        visitor.visit_bf(self,:leave)
     end
     def typename
         @name
@@ -536,64 +712,7 @@ class Serializer
     end
 end
 
-
-file = File.new("templates.xml")
-doc = Document.new(file)
-doc.root.elements["bitfields"].each_element("bitfield") { |s|
-    bf = BitfieldType.new(s.attributes['name'])
-    s.each_element("field") {|fld|
-        attr = fld.attributes
-        bf.add_value(attr["mask"].to_i(0),attr["name"])
-    }
-    #p s    
-}
-doc.root.elements["enums"].each_element("enum") { |s|
-    en = EnumType.new(s.attributes['name'])
-    s.each_element("field") {|fld|
-        attr = fld.attributes
-        en.add_value(attr["value"].to_i(0),attr["name"])
-    }
-}
-doc.root.elements["structures"].each_element("structure") { |s|
-    strct = StructureType.new(s.attributes['name'])
-    p s.attributes['name']
-    s.each_element("type_ref") {|t_ref|
-        attr = t_ref.attributes
-        obj = TypeStorage.instance.get_type(attr['sub_ref'])
-        t_flags = attr['type'].to_i(0) & 0xFF00 #>>8
-        if(obj==nil)
-            type_id = 0xFF & attr['type'].to_i(0)
-            if(type_id==0x15 )#|| type_id==0x16 || type_id==0x13)
-                obj=TypeRef.new(attr['type'],attr['sub_ref'])
-            else
-                obj=PrimitiveType.new(type_id)
-            end
-        end
-
-        strct.add_entry(attr['name'],obj,t_flags,attr['offset'],attr['param'])
-        
-        }
-}
-
-doc.root.elements["filetypes"].each_element("filetype") { |s|
-
-    strct = StructureType.new(s.attributes['name'])
-    p s.attributes['name']
-    s.each_element("type_ref") {|t_ref|
-        attr = t_ref.attributes
-        obj = TypeStorage.instance.get_type(attr['sub_ref'])
-        type_id = 0xFF & attr['type'].to_i(0)
-        t_flags = attr['type'].to_i(0) & 0xFF00 #>>8
-        if(obj==nil)
-            if(type_id==0x15 ) #|| type_id==0x16 || type_id==0x13)
-                obj=TypeRef.new(attr['type'],attr['sub_ref'])
-            else
-                obj=PrimitiveType.new(type_id)
-            end
-        end
-        strct.add_entry(attr['name'],obj,t_flags,attr['offset'],attr['param'])
-        
-        }
-}
-ss=Serializer.new('scenefile')
-ss.serialize_from('City_00_01.bin')
+TypeStorage.instance.load_types("templates.xml")
+TypeStorage.instance.export_types(C_TypeVisitor,"cox_types.h")
+#ss=Serializer.new('scenefile')
+#ss.serialize_from('City_00_01.bin')
