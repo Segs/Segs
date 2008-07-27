@@ -21,6 +21,7 @@ FIND_LIBRARY(ACE_lib
 		${MAIN_LIB_PATH}
 		${MAIN_LIB_PATH}/ACE
 		${MAIN_LIB_PATH}/ACEd
+		${ACE_path}/lib
 	DOC "Path to ACE framework library"]
 )
 
