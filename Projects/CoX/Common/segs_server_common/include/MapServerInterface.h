@@ -24,7 +24,7 @@ public:
 	virtual u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)=0;
 	virtual const ACE_INET_Addr &getAddress()=0;
 
-	virtual void AssociatePlayerWithMap(u64 player_id,int map_number)=0;
+	virtual void AssociatePlayerWithMap(u64 player_id,const std::string &name,int map_number)=0;
 };
 class MapServerInterface : public Server
 {
@@ -32,7 +32,7 @@ public:
 	MapServerInterface(IMapServer *mi) : m_instance(mi){};
 	~MapServerInterface(void){};
 	u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level);
-	void AssociatePlayerWithMap(u64 player_id,int map_number);
+	void AssociatePlayerWithMap(u64 player_id,const std::string &name,int map_number);
 
 	bool ReadConfig(const std::string &name); // later name will be used to read GameServer specific configuration
 	bool Run(void);

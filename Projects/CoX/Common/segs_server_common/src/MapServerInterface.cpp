@@ -29,9 +29,9 @@ u32 MapServerInterface::ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access
 {
 	return m_instance->ExpectClient(from,id,access_level);
 }
-void MapServerInterface::AssociatePlayerWithMap(u64 player_id,int map_number)
+void MapServerInterface::AssociatePlayerWithMap( u64 player_id,const std::string &name,int map_number )
 {
-	m_instance->AssociatePlayerWithMap(player_id, map_number);
+	m_instance->AssociatePlayerWithMap(player_id, name,map_number);
 }
 
 bool MapServerInterface::Online()

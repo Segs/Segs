@@ -36,6 +36,5 @@ AuthServerInterface *RoamingServer::getAuthServer ( )
 {
 	ServerHandle<IAuthServer> h_auth(m_authaddr,-1);
 	return InterfaceManager::instance()->get(h_auth);
+
 }
-
-

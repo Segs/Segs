@@ -9,8 +9,6 @@
 
 // Inclusion guards
 #pragma once
-#ifndef COMMONNETSTRUCTURES_H
-#define COMMONNETSTRUCTURES_H
 
 #include <ace/Log_Msg.h>
 #include "BitStream.h"
@@ -62,13 +60,20 @@ typedef struct
 	Vector3 row3;
 	Vector3 row4;
 } Matrix4x3;
-typedef struct
+class TransformStruct
 {
+public:
+	TransformStruct(const Vector3 &a,const Vector3 &b,const Vector3 &c,bool set1,bool set2,bool set3) :
+	  v1(a),v2(b),v3(c),v1_set(set1),v2_set(set3),v3_set(set3)
+	{
+
+	}
+	TransformStruct() {v1_set=v2_set=v3_set=false;}
 	Vector3 v1;
 	Vector3 v2;
 	Vector3 v3;
 	bool v1_set,v2_set,v3_set;
-} TransformStruct;
+};
 
 class NetStructure // this represents an interface all structures that are traversing the network should implement
 {
@@ -103,6 +108,11 @@ public:
 		if(val!=0.0)
 			bs.StoreFloat(val);
 	}
+	static void storeFloatPacked(BitStream &bs,float val)
+	{
+		bs.StoreBits(1,0);
+		bs.StoreFloat(val);
+	}
 	static int getPackedBitsConditional(BitStream &bs,int numbits)
 	{
 		if(bs.GetBits(1))
@@ -122,6 +132,29 @@ public:
 		tgt.StoreBits(1,0); // no packed matrices for now
 		tgt.StoreBitArray((u8*)&src,12*4*8);
 	}
+	void SendTransformMatrix(BitStream &tgt,const TransformStruct &src) const
+	{
+		tgt.StoreBits(1,1); // partial
+		tgt.StoreBits(1,src.v1_set ? 1:0);
+		tgt.StoreBits(1,src.v2_set ? 1:0);
+		tgt.StoreBits(1,src.v3_set ? 1:0);
+		if(src.v1_set)
+		{
+			for(int i=0; i<3; i++)
+				storeFloatPacked(tgt,src.v1.v[i]);
+		}
+		if(src.v2_set)
+		{
+			for(int i=0; i<3; i++)
+				storeFloatPacked(tgt,src.v2.v[i]);
+		}
+		if(src.v3_set)
+		{
+			for(int i=0; i<3; i++)
+				storeFloatPacked(tgt,src.v3.v[i]);
+		}
+	}
+
 	void recvTransformMatrix(BitStream &bs,Matrix4x3 &src) const
 	{
 		if(bs.GetBits(1))
@@ -157,11 +190,18 @@ public:
 class Costume : public NetStructure
 {
 public:
-	u32 a,b,c,d,e,f,g,h;
+	u32 a,b;
 	bool m_non_default_costme_p;
 	int m_num_parts;
 	float m_floats[8];
 	vector<CostumePart> m_parts;
+	u32 m_body_type;
+#if 0
+0 male SM
+1 female SF
+2 bm BM
+3 bf BF
+4 huge SH
+5,6 enemy EY
+#endif
 };
-
-#endif // COMMONNETSTRUCTURES_H

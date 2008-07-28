@@ -8,7 +8,7 @@
  */
 
 #include "MapHandler.h"
-#include "MapPacket.h"
+#include "Entity.h"
 #include "GameProtocol.h"
 #include "PacketCodec.h"
 #include "ServerManager.h"
@@ -67,7 +67,7 @@ void EntityManager::sendEntities( BitStream &tgt ) const
 
 Entity * EntityManager::CreatePlayer()
 {
-	Entity *res = new Entity;
+	Entity *res = new PlayerEntity;
 	m_map_entities[m_last_ent++] = res;
 	m_entlist.push_back(res);
 	return res;

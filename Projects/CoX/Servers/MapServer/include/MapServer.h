@@ -60,7 +60,7 @@ public:
 	bool Online(void) { return m_online;}
 	const ACE_INET_Addr &getAddress() {return m_location;};
 	u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level);
-	void AssociatePlayerWithMap(u64 player_id,int map_number); //! this method tells this server that packets of this player should go to given Map 
+	void AssociatePlayerWithMap(u64 player_id,const std::string &name,int map_number); //! this method tells this server that packets of this player should go to given Map 
 	// not in the interface
 	MapClient * ClientExpected(ACE_INET_Addr &from,u32 cookie);
 	GameServerInterface *getGameInterface(){return m_i_game;}

@@ -30,11 +30,11 @@ public:
 	{
 		m_last_ent = 0;
 	}
-	void sendDebuggedEntities(BitStream &tgt) const;
-	void sendGlobalEntDebugInfo(BitStream &tgt) const;
-	void sendDeletes(BitStream &tgt) const;
-	void sendEntities(BitStream &tgt) const;
-	Entity *CreatePlayer();
+		void sendDebuggedEntities(BitStream &tgt) const;
+		void sendGlobalEntDebugInfo(BitStream &tgt) const;
+		void sendDeletes(BitStream &tgt) const;
+		void sendEntities(BitStream &tgt) const;
+		Entity *CreatePlayer();
 };
 
 class EntityStorage

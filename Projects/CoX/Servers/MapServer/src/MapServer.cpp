@@ -19,7 +19,7 @@
 #include "MapClient.h"
 
 #include "SEGSMap.h"
-
+#include "Entity.h"
 // Template instantiation
 template class ClientStore<MapClient>;
 
@@ -154,9 +154,14 @@ bool MapServer::startup()
 	return m_i_game->MapServerReady(h_me); // inform game server that we are ready.
 #endif
 }
-void MapServer::AssociatePlayerWithMap(u64 player_id,int map_number)
+void MapServer::AssociatePlayerWithMap( u64 player_id,const std::string &name,int map_number )
 {
 	MapClient *client=m_clients.getById(player_id);
+	if(client->getCharEntity()==0)
+	{
+		client->setCharEntity(new PlayerEntity);
+		client->getCharEntity()->m_name=name;
+	}
 	client->setCurrentMap(getMapByNum(map_number));
 }
 SEGSMap * MapServer::getMapByNum(int num)

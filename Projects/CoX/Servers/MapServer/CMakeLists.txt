@@ -12,6 +12,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityStorage.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/SEGSMap.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityStorage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapClient.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapPacket.h

@@ -2,7 +2,7 @@
 #include "Client.h"
 #include "MapPacket.h"
 #include "MapHandler.h"
-
+#include "Entity.h"
 MapClient::MapClient() : m_ent(NULL)
 {
 
@@ -25,7 +25,6 @@ void MapClient::SendCommand(NetCommand *command,...)
 GamePacket * MapClient::HandleClientPacket( pktCS_SendEntity *ent )
 {
 	GameServerInterface *giface = ServerManager::instance()->GetGameServer(0);
-	Entity char_data;
 	//giface->getCharacterData(getId());
 	// Client sends us it's entity 
 	//	At this point we either got a new character, or an old one.

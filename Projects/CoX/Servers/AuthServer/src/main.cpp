@@ -76,6 +76,7 @@ static bool CreateServers()
 	ServerManager::instance()->AddMapServer(map_instance);
 	return true;
 };
+
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
 //	int opt;
@@ -133,3 +134,4 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 	ACE_Thread_Manager::instance()->wait();
 	return (0);
 }
+

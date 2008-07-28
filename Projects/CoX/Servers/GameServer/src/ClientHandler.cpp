@@ -124,8 +124,7 @@ bool CharacterHandler::ReceivePacket(GamePacket *pak)
 				MapServerInterface *map_iface = ServerManager::instance()->GetMapServer(0);
 				res->m_map_cookie = map_iface->ExpectClient(getTargetAddr(),m_client->getId(),m_client->getAccessLevel());//0 -> invalid name. 1 -> game databes problem detected
 				res->m_address		= map_iface->getAddress();
-				//AssociateCharacterWithClient();
-				map_iface->AssociatePlayerWithMap(m_client->getId(),query->m_mapnumber);
+				map_iface->AssociatePlayerWithMap(m_client->getId(),query->m_char_name,query->m_mapnumber);
 				m_proto->SendPacket(res);
 				break;
 			}
