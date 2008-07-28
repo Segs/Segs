@@ -126,7 +126,7 @@ void BitStream::uStoreBits(u32 nBits, u32 dataBits)
 	ACE_ASSERT(m_write_off+7<(m_size+m_safe_area));
 	tp = (u64 *)write_ptr();
 	r = dataBits;
-	u64 mask_ = (((1ULL<<nBits)-1)<<m_write_bit_off); // all bits in the mask are those that'll change
+	u64 mask_ = BIT_MASK(nBits)<<m_write_bit_off; // all bits in the mask are those that'll change
 	(*tp) = (r<<m_write_bit_off)|((*tp)&~mask_); // put those bits in
 	write_ptr((m_write_bit_off+nBits)>>3); //advance
 	m_write_bit_off = (m_write_bit_off+nBits)&0x7;
