@@ -195,9 +195,67 @@ void Entity::sendNetFx(BitStream &bs) const
 		}
 	}
 }
-void Entity::sendCostumes(BitStream &bs) const
+void MobEntity::sendCostumes( BitStream &bs ) const
 {
-	m_costume->serializeto(bs);
+	int npc_costume_type_idx=0;
+	int costume_idx=0;
+	storePackedBitsConditional(bs,2,m_costume_type);
+	if((m_costume_type!=2)&&(m_costume_type!=4))
+	{
+		ACE_ASSERT(false);
+		return;
+	}
+	if(m_costume_type==2)
+	{
+		bs.StorePackedBits(12,npc_costume_type_idx);
+		bs.StorePackedBits(1,costume_idx);
+	}
+	else
+	{
+		bs.StoreString(m_costume_seq);
+	}
+}
+
+void PlayerEntity::sendCostumes(BitStream &bs) const
+{
+	storePackedBitsConditional(bs,2,m_costume_type);
+	if(m_costume_type!=1)
+	{
+		ACE_ASSERT(false);
+		return;
+	}
+	if(m_type==ENT_PLAYER)
+	{
+		bs.StoreBits(1,m_current_costume_set);
+		if(m_current_costume_set)
+		{
+			bs.StoreBits(32,m_current_costume_idx);
+			bs.StoreBits(32,m_num_costumes);
+		}
+		bs.StoreBits(1,m_multiple_costumes);
+		if(m_multiple_costumes)
+		{
+			for(size_t idx=0; idx<=m_num_costumes; idx++)
+			{
+				m_costumes[idx]->serializeto(bs);
+			}
+		}
+		else
+		{
+			m_costumes[m_current_costume_idx]->serializeto(bs);
+		}
+		//m_costume=m_costumes[m_current_costume_idx]; // this is only set if ent!=playerPtr
+	}
+	else
+	{
+		m_costume->serializeto(bs); // m_costume is the costume that is rendered
+	}
+	bs.StoreBits(1,m_supergroup_costume);
+	if(m_supergroup_costume)
+	{
+		m_sg_costume->serializeto(bs);
+		bs.StoreBits(1,m_using_sg_costume);
+	}
 }
 void Entity::sendXLuency(BitStream &bs,float val) const
 {
@@ -448,7 +506,7 @@ void Entity::serializefrom_newchar( BitStream &src )
 	int val = src.GetPackedBits(1); //2
 	m_char.GetCharBuildInfo(src);
 	m_costume = new MapCostume;
-	m_costume->GetCostume(src);
+	m_costume->serializefrom(src);
 	int t = src.GetBits(1); // The -> 1
 	src.GetString(m_battle_cry);
 	src.GetString(m_character_description);
@@ -719,58 +777,6 @@ void Avatar::sendOptions(BitStream &) const
 }
 
 
-void MobEntity::sendCostumes( BitStream &bs ) const
-{
-	int npc_costume_type_idx=0;
-	int costume_idx=0;
-	storePackedBitsConditional(bs,2,2);
-	bs.StorePackedBits(12,npc_costume_type_idx);
-	bs.StorePackedBits(1,costume_idx);
-}
-
-void PlayerEntity::sendCostumes( BitStream &bs ) const
-{
-	bool b1=false;
-	bool b2=false;
-	bool b3=false;
-	bool ent_player=true;
-	int current_costume_idx=0;
-	int count_ofP=1;
-	storePackedBitsConditional(bs,2,1);
-	if(ent_player)
-	{
-		bs.StoreBits(1,b1);
-		if ( b1 )
-		{
-			bs.StoreBits(32,current_costume_idx);
-			bs.StoreBits(32,count_ofP);
-		}
-		bs.StoreBits(1,b2);
-		if (b2)
-		{
-			for(size_t idx=0; idx < count_ofP + 1; idx++)
-				m_costumes[idx]->serializeto(bs);
-		}
-		else
-		{
-			//m_costumes[current_costume_idx]->serializeto(bs);
-			m_costume->serializeto(bs);
-		}
-	}
-	else
-	{
-		m_costume->serializeto(bs);
-	}
-	bool has_supergroup_costume=false;
-	bs.StoreBits(1,has_supergroup_costume);
-	if(has_supergroup_costume)
-	{
-		m_sg_costume->serializeto(bs);
-		bool field_AC=false;
-		bs.StoreBits(1,field_AC);
-	}
-}
-
 
 void MapCostume::GetCostume( BitStream &src )
 {
@@ -917,27 +923,84 @@ void MapCostume::clear_cache()
 	colorcache.clear();
 }
 
-void MapCostume::serializefrom( BitStream & )
+void MapCostume::serializefrom( BitStream &src )
 {
-	ACE_ASSERT(!"still not implemented");
+	GetCostume(src);
 }
 void MapCostume::serializeto( BitStream &bs ) const
 {
-	storePackedBitsConditional(bs,2,m_costume_type);
-	switch(m_costume_type)	
+	SendCommon(bs);
+}
+class FullCostume : public MapCostume
+{
+public:
+	void serializeto( BitStream &bs ) const
 	{
-	case 1: // full costume
+		storePackedBitsConditional(bs,2,1);
+		bs.StoreBits(1,0);
+		if(false)
 		{
-			bs.StoreBits(1,0);
-			if(false)
-			{
-			}
-			bs.StoreBits(1,0);
 		}
-	case 2: // npc costume
-		bs.StorePackedBits(12,costume_type_idx_P); // npc number
-		bs.StorePackedBits(1,costume_sub_idx_P); // costume idx ?
-		storeStringConditional(bs,"");
-		break;
+		bs.StoreBits(1,0);
+	}
+};
+void MapCostume::SendCommon(BitStream &bs) const
+{
+	bs.StorePackedBits(3,m_body_type); // 0:male normal
+	bs.StoreBits(32,a); // rgb ?
+
+	bs.StoreFloat(split.m_height);
+	bs.StoreFloat(split.m_physique);
+
+	bs.StoreBits(1,m_non_default_costme_p);
+	bs.StorePackedBits(4,m_num_parts);
+	for(int costume_part=0; costume_part<m_num_parts;costume_part++)
+	{
+		CostumePart part=m_parts[costume_part];
+		SendCostumeString_Cached(bs,part.name_0);
+		SendCostumeString_Cached(bs,part.name_1);
+		SendCostumeString_Cached(bs,part.name_2);
+		SendCostumeColor_Cached(bs,part.m_colors[0]);
+		SendCostumeColor_Cached(bs,part.m_colors[1]);
+		if(m_non_default_costme_p)
+		{
+			SendCostumeString_Cached(bs,part.name_0);
+			SendCostumeString_Cached(bs,part.name_1);
+			SendCostumeString_Cached(bs,part.name_2);
+		}
+	}
+}
+
+void MapCostume::SendCostumeString_Cached( BitStream &tgt,const string &src ) const
+{
+	int cache_idx=0;
+#ifdef HASH_LOADING
+	cache_idx=cache_lookup(color);
+#endif
+	tgt.StoreBits(1,(cache_idx||src.size()==0));
+	if(cache_idx||src.size()==0)
+	{
+		tgt.StorePackedBits(12,cache_idx);
+	}
+	else
+	{
+		tgt.StoreString(src);
+	}
+}
+
+void MapCostume::SendCostumeColor_Cached( BitStream &tgt,u32 color ) const
+{
+	int cache_idx=0;
+#ifdef HASH_LOADING
+	cache_idx=cache_lookup(color);
+#endif
+	tgt.StoreBits(1,(cache_idx||color==0));
+	if(cache_idx||color==0)
+	{
+		tgt.StorePackedBits(10,cache_idx);
+	}
+	else
+	{
+		tgt.StoreBits(32,color);
 	}
 }

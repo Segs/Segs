@@ -228,9 +228,6 @@ class MapCostume : public Costume
 	vector<u32> colorcache;
 	u32 colorcachecount_bitlength;
 	bool costume_sends_nonquantized_floats;
-
-public:
-	~MapCostume(){}
 	union
 	{
 		struct{
@@ -238,30 +235,33 @@ public:
 			float m_physique;
 		} split;
 		float m_floats[30];
-
 	};
 
-	u8 m_costume_type;
-	int costume_type_idx_P;
-	int costume_sub_idx_P;
-	MapCostume()
-	{
-		stringcachecount_bitlength=0;
-		colorcachecount_bitlength=0;
-	}
-	void clear_cache();
-	void serializefrom(BitStream &);
-	void serializeto(BitStream &bs) const;
-	void GetCostumeString(BitStream &src,string &tgt);
-	void GetCostumeString_Cached(BitStream &src,string &tgt);
-	u32 GetCostumeColor(BitStream &src);
-	u32 GetCostumeColor_Cached(BitStream &src);
+	u8		m_costume_type;
+	int		costume_type_idx_P;
+	int		costume_sub_idx_P;
 
-	void GetCostume(BitStream &src);
-
-	void dump();
+protected:
+		void	GetCostume(BitStream &src);
+		void	GetCostumeString(BitStream &src,string &tgt);
+		u32		GetCostumeColor(BitStream &src);
+		void	GetCostumeString_Cached(BitStream &src,string &tgt);
+		u32		GetCostumeColor_Cached(BitStream &src);
+		void	SendCostumeString_Cached(BitStream &tgt,const string &src) const;
+		void	SendCostumeColor_Cached(BitStream &tgt,u32 color) const;
+		void	SendCommon(BitStream &bs) const;
+public:
+				~MapCostume(){}
+				MapCostume()
+				{
+					stringcachecount_bitlength=0;
+					colorcachecount_bitlength=0;
+				}
+		void	clear_cache();
+		void	serializefrom(BitStream &);
+		void	serializeto(BitStream &bs) const;
+		void	dump();
 };
-
 class Entity : public NetStructure
 {
 public:
@@ -279,13 +279,14 @@ public:
 		vector<u8> m_fx1;
 		vector<u32> m_fx2;
 		vector<u8> m_fx3;
-		int m_state_mode;
-		bool m_state_mode_send;
-		bool m_odd_send;
-		bool m_SG_info;
-		bool m_seq_update;
-		bool m_is_villian;
-		bool m_contact;
+		u8		m_costume_type;
+		int		m_state_mode;
+		bool	m_state_mode_send;
+		bool	m_odd_send;
+		bool	m_SG_info;
+		bool	m_seq_update;
+		bool	m_is_villian;
+		bool	m_contact;
 		int m_seq_upd_num1;
 		int m_seq_upd_num2;
 		PosUpdate m_pos_updates[64];
@@ -355,6 +356,7 @@ virtual void			serializefrom(BitStream &){};
 };
 class MobEntity : public Entity
 {
+		std::string		m_costume_seq;
 public:
 
 virtual	void			sendCostumes(BitStream &bs) const;
@@ -363,10 +365,17 @@ virtual	void			sendCostumes(BitStream &bs) const;
 };
 class PlayerEntity : public MobEntity
 {
-	vector<Costume *> m_costumes;
-	Costume * m_sg_costume;
+		vector<Costume *>	m_costumes;
+		Costume *			m_sg_costume;
+		bool				m_current_costume_set;
+		u32					m_current_costume_idx;
+		u32					m_num_costumes;
+		bool				m_multiple_costumes; // has more then 1 costume
+		bool				m_supergroup_costume; // player has a sg costume
+		bool				m_using_sg_costume; // player uses sg costume currently
 public:
-	virtual	void			sendCostumes(BitStream &bs) const;
+
+virtual	void				sendCostumes(BitStream &bs) const;
 
 
 };

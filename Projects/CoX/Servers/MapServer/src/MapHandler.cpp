@@ -160,7 +160,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 			pent->m_hasgroup_name=false;
 			pent->m_pchar_things=false;
 			pent->m_rare_bits = true;
-			pent->m_costume->m_costume_type=2; // npc costume for now
+//			pent->m_costume->m_costume_type=2; // npc costume for now
 
 			m_client->getCurrentMap()->m_entities.m_entlist.push_back(pent);
 		}
@@ -247,6 +247,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		door2.m_SG_info=true;
 		door2.field_78=0;
 */
+/*
 		PlayerEntity m_player1;
 		m_player1.m_idx=0x6A;
 		m_player1.m_create=true;
@@ -277,8 +278,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		m_player1.m_num_fx=1;
 		m_player1.m_fx1.push_back(2);
 		m_player1.m_fx2.push_back(0xAE4C);
-		m_player1.m_costume = new MapCostume;
-		m_player1.m_costume->m_costume_type=2;
+		m_player1.m_costume = new NpcC;
 		m_player1.m_costume->costume_type_idx_P=0x356;
 		m_player1.m_costume->costume_sub_idx_P =0;
 		//door2.m_ragdol_num_bones=0;
@@ -290,6 +290,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		m_player1.entReceiveSeeThroughWalls=false;
 		m_player1.m_SG_info=true;
 		m_player1.field_78=0;
+*/
 //		res->unkn3=false;
 /*
 		res->m_command_idx=0;
