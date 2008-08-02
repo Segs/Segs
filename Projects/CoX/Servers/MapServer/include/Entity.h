@@ -276,6 +276,7 @@ public:
 		int field_78;
 		int m_num_titles;
 		int m_num_fx;
+		bool m_has_titles;
 		vector<u8> m_fx1;
 		vector<u32> m_fx2;
 		vector<u8> m_fx3;
@@ -353,6 +354,10 @@ virtual void			serializefrom(BitStream &){};
 
 		void			serializefrom_newchar(BitStream &src);
 		void			InsertUpdate(PosUpdate pup);
+		void			sendCharacterStats(BitStream &bs) const;
+		void			sendTargetUpdate(BitStream &bs) const;
+		void			sendWhichSideOfTheForce(BitStream &bs) const;
+		void			sendBuffs(BitStream &bs) const;
 };
 class MobEntity : public Entity
 {

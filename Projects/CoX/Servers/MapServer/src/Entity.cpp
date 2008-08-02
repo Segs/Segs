@@ -264,7 +264,26 @@ void Entity::sendXLuency(BitStream &bs,float val) const
 }
 void Entity::sendTitles(BitStream &bs) const
 {
-	bs.StoreBits(1,0); // no titles
+	bs.StoreBits(1,m_has_titles); // no titles
+	if(m_has_titles)
+	{
+		if(m_type==ENT_PLAYER)
+		{
+			bs.StoreString(m_name);
+			bs.StoreBits(1,0); // ent_player2->flag_F4
+			storeStringConditional(bs,"");//max 32 chars
+			storeStringConditional(bs,"");//max 32 chars
+			storeStringConditional(bs,"");//max 128 chars
+		}
+		else // unused
+		{
+			bs.StoreString("");
+			bs.StoreBits(1,0);
+			storeStringConditional(bs,"");
+			storeStringConditional(bs,"");
+			storeStringConditional(bs,"");
+		}
+	}
 }
 void Entity::sendRagDoll(BitStream &bs) const
 {
@@ -316,8 +335,7 @@ void Entity::sendAFK(BitStream &bs) const
 	{
 		bs.StoreBits(1,away_string); // 1/0 only
 		if(away_string)
-			storeStringConditional(bs,"");
-
+			bs.StoreString("");
 	}
 }
 void Entity::sendOtherSupergroupInfo(BitStream &bs) const
@@ -328,7 +346,10 @@ void Entity::sendOtherSupergroupInfo(BitStream &bs) const
 		bs.StorePackedBits(2,field_78);
 		if(field_78)
 		{
-			// ...
+			bs.StoreString("");//64 chars max
+			bs.StoreString("");//128 chars max -> hash table key from the CostumeString_HTable
+			bs.StoreBits(32,0);
+			bs.StoreBits(32,0);
 		}
 	}
 }
@@ -338,8 +359,8 @@ void Entity::sendLogoutUpdate(BitStream &bs) const
 	bs.StoreBits(1,is_logout);
 	if(is_logout)
 	{
-		bs.StoreBits(1,0);
-		storePackedBitsConditional(bs,5,0);
+		bs.StoreBits(1,0); // flags_1[1] set in entity 
+		storePackedBitsConditional(bs,5,0); // time to logout, multiplied by 30
 	}
 }
 
@@ -434,40 +455,52 @@ void Entity::serializeto( BitStream &bs ) const
 		sendXLuency(bs,1.0f);
 		sendTitles(bs);
 	}
-	if(m_hasRagdoll)
-	{
-		sendRagDoll(bs);
-	}
-	else
-	{
-		//			sendRagDollNull(bs);
-	}
 	if(m_pchar_things)
 	{
-		//sendCharacterStats(bs);
-		//sendBuffs(bs);
-		//sendTargetUpdate(bs);
-		//sendStatusEffects(bs);
+		sendCharacterStats(bs);
+		sendBuffs(bs);
+		sendTargetUpdate(bs);
 	}
 	if(m_rare_bits)
 	{
 		sendOnOddSend(bs,m_odd_send);
-		//bs.StoreBits(1,0);//
+		sendWhichSideOfTheForce(bs);
+/*
 		sendAllyID(bs);
 		bs.StoreBits(1,m_is_villian);
 		sendPvP(bs);
+*/
 		sendEntCollision(bs);
 		sendNoDrawOnClient(bs);
+/*
 		sendContactOrPnpc(bs);
 		bs.StoreBits(1,entReceiveAlwaysCon);
 		bs.StoreBits(1,entReceiveSeeThroughWalls);
 		sendPetName(bs);
+*/
 		sendAFK(bs);
 		sendOtherSupergroupInfo(bs);
 		sendLogoutUpdate(bs);
 	}
 }
-
+void Entity::sendBuffs(BitStream &bs) const
+{
+	bs.StoreBits(1,0); // nothing here for now
+}
+void Entity::sendCharacterStats(BitStream &bs) const
+{
+	bs.StoreBits(1,0); // nothing here for now
+}
+void Entity::sendTargetUpdate(BitStream &bs) const
+{
+	bs.StoreBits(1,0); // nothing here for now
+}
+void Entity::sendWhichSideOfTheForce(BitStream &bs) const
+{
+	bs.StoreBits(1,0);
+	bs.StoreBits(1,0);
+	// flags 3 & 2 of entity flags_1
+}
 bool Entity::update_rot( int axis ) const /* returns true if given axis needs updating */
 {
 	if(axis==axis)
@@ -533,6 +566,7 @@ Entity::Entity() : m_char(0)
 	m_state_mode_send=0;
 	m_state_mode=0;
 	m_seq_update=0;
+	m_has_titles=false;
 }
 
 PowerPool_Info Avatar::get_power_info( BitStream &src )
