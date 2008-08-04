@@ -276,10 +276,8 @@ class PrimitiveType < Type
         when 7
             res=bf.read_float()
         when 8
-            #tgt_struct.set_val(offset,@bf.read_bytes(8)) # double ?
             res=[bf.read_float(),bf.read_float()]
         when 9
-            #raise "Unknown type !"
             res=[bf.read_float(),bf.read_float(),bf.read_float()]
         when 10
             res=[bf.read_bytes(3).unpack("CCC")]
@@ -310,6 +308,7 @@ class PrimitiveType < Type
             val = bf.read_bytes(@param)
             bf.skip(round_up_bytes)
         end
+        return res
     end
     def init_val(into,name,offset,val)
         into.set_val(offset,CreatedField.new(offset,name,val))
@@ -326,7 +325,7 @@ class PrimitiveType < Type
         when 5
             return "/*version*/ unsigned int"
         when 6
-            return "Filename *"
+            return "Name *"
         when 10
             return "float"
         when 11
@@ -352,14 +351,6 @@ class StructTypeField
            @init_to= CreatedPrimitive.new(@referenced_type,init_to)
         end
     end
-    def instantiate(tgt_struct)
-        sub = StructArray.new((@flags&0x400)==0,@init_to,tgt_struct,@offset,@referenced_type.name)
-        sub.init_storage()
-        elem = sub.new_elem
-        @referenced_type.bind_all_types()
-        elem.init_from_tpl(@referenced_type)
-        sub
-    end
     def read_from(stream,tgt_struct,sub_size)
         @referenced_type.read_from(stream,tgt_struct,sub_size)
     end
@@ -372,7 +363,6 @@ class StructureType < Type
     def initialize(name)
         @bound = false # all TypeRef's were resolved ?
         @entries=[]
-#        @name_val_map={}
         @name = name
         TypeStorage.instance.add_type(name,self)
     end
@@ -380,7 +370,6 @@ class StructureType < Type
         raise "untyped value #{name}" if !type.kind_of?(Type)
         val = StructTypeField.new(name,type,flags,offset,init_to)
         @entries<<val
- #       @name_val_map[name]=val
     end
     def is_valid_name?(parent_name,name_to_check)
         return true if(@name==name_to_check)
@@ -409,6 +398,7 @@ class StructureType < Type
         @bound = all_bound
     end
     def each_non_compound(&blk)
+        bind_all_types() if !@bound
         @entries.each {|entry|
             val = entry
             offset   = val.offset
@@ -466,12 +456,11 @@ class StructureType < Type
         into.set_val(offset,CreatedField.new(offset,name,nil))
     end
     def visit(visitor)
-        bind_all_types()
+        bind_all_types() if !@bound
         key=0
         visited_count=0
 
-        @entries.each {|entr|
-            v=entr
+        @entries.each {|v|
             next if v.referenced_type.is_a?(PrimitiveType)
             v.referenced_type.visit(visitor)
             raise "visitor indent is #{visitor.indent_amount} after visiting #{v.referenced_type.name}" if visitor.indent_amount!=0
@@ -536,50 +525,15 @@ class CreatedStructure
         instance
     end
 
-    def each_val(&blk)
-        @values.each_idx{|idx|
-            @values[0].each{|k,e| yield e} if(idx==0 && @values[0].is_a?(Hash))
-            yield @values[idx]
-        }
-    end
-    def get_val(offset)
-        @values[offset/4]
-    end
     def serialize_out(visitor)
-        sub_name = @name
-        visitor.enter_structure(@type.name,sub_name)
+        visitor.enter_structure(@type.name,@name)
         @values.each {|entry|
             next if entry==nil
             entry.each {|name,same_name_entries|
-                same_name_entries.each {|v|
-                    v.serialize_out(visitor)
-                }
-                
+                same_name_entries.each {|v| v.serialize_out(visitor) }
             }
         }
         visitor.leave_structure(self)
-    end
-end
-class BitFieldTemplate
-    def initialize(name)
-    end
-    def to_c_code
-        
-    end
-    def encode(flags)
-    end
-    def decode(number)
-    end
-end
-class EnumTemplate
-    def initialize(name)
-    end
-    def to_c_code
-        
-    end
-    def encode(flags)
-    end
-    def decode(number)
     end
 end
 class TypeRef < Type
@@ -779,7 +733,5 @@ else
     ss=Serializer.new(ARGV[0])
     ss.serialize_from(ARGV[1],ARGV[2])
 end
-#TypeStorage.instance.export_types(C_TypeVisitor,"cox_types.h")
-#TypeStorage.instance.export_struct_tree("scenefile",C_TypeVisitor,"cox_types.h")
-#ss=Serializer.new('scenefile')
-#ss.serialize_from('City_00_01.bin')
+TypeStorage.instance.export_types(C_TypeVisitor,"cox_types.h")
+TypeStorage.instance.export_struct_tree("scenefile",C_TypeVisitor,"cox_types.h")
