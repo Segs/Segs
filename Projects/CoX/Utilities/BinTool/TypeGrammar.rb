@@ -72,7 +72,8 @@ class C_TypeVisitor < TypeVisitor
         @indent_amount-=1
         @out_stream<<indent()+"};\n"
     end
-    def visit_struct_field(name,fld)
+    def visit_struct_field(fld)
+        name=fld.name
         name=next_unnamed() if(name.size==0) # solve >1 unnmed fields
         typename = fld.referenced_type.name
         typename += " *" if(fld.referenced_type.is_a?(StructureType))
@@ -151,12 +152,9 @@ class TypeStorage
                         obj=PrimitiveType.new(type_id)
                     end
                 end
-        
                 strct.add_entry(attr['name'],obj,t_flags,attr['offset'],attr['param'])
-                
                 }
         }
-        
         doc.root.elements["filetypes"].each_element("filetype") { |s|
         
             strct = StructureType.new(s.attributes['name'])
@@ -230,7 +228,6 @@ class BitfieldType < Type
     end
     def read_from(stream)
         res=stream.read_int()        
-        CreatedPrimitive.new(self,res)        
     end
     def init_val(into,name,offset,val)
         into.set_val(offset,CreatedField.new(offset,name,val))
@@ -256,6 +253,7 @@ class BitfieldType < Type
 
 end
 class PrimitiveType < Type
+    attr_reader :type_id
     def initialize(type_id)
         @type_id        = type_id
     end
@@ -309,7 +307,6 @@ class PrimitiveType < Type
             val = bf.read_bytes(@param)
             bf.skip(round_up_bytes)
         end
-        CreatedPrimitive.new(self,res)
     end
     def init_val(into,name,offset,val)
         into.set_val(offset,CreatedField.new(offset,name,val))
@@ -339,6 +336,9 @@ class PrimitiveType < Type
             return "some_type"
         end
     end
+    def create_instance(init_val=nil)
+        CreatedPrimitive.new(self,init_val)
+    end
 end
 class StructTypeField
     attr_accessor :referenced_type,:offset,:init_to
@@ -355,7 +355,7 @@ class StructTypeField
         elem = sub.new_elem
         @referenced_type.bind_all_types()
         elem.init_from_tpl(@referenced_type)
-        elem
+        sub
     end
     def read_from(stream,tgt_struct,sub_size)
         @referenced_type.read_from(stream,tgt_struct,sub_size)
@@ -376,23 +376,30 @@ class StructureType < Type
     def add_entry(name,type,flags,offset,init_to)
         raise "untyped value #{name}" if !type.kind_of?(Type)
         val = StructTypeField.new(name,type,flags,offset,init_to)
-        @entries<<[name,val]
+        @entries<<val
  #       @name_val_map[name]=val
+    end
+    def is_valid_name?(parent_name,name_to_check)
+        return true if(@name==name_to_check)
+        return true if(@name==parent_name+name_to_check)
+        return false
     end
     def each_entry(&blck)
         bind_all_types() if !@bound
         raise "unresolved types !" if !@bound
         @entries.each {|e| yield e }
     end
+    def create_instance(init_val=nil)
+        CreatedStructure.new(self,0,@name)
+    end
 
     def bind_all_types
         all_bound=true
         @entries.each {|entr|
-            v=entr[1]
+            v=entr
             if v.referenced_type.is_a?(TypeRef)
                 deref = v.referenced_type.dereference()
-                raise "cannot find type!" if deref==nil
-                all_bound=false if deref==nil
+                raise "cannot dereference type! #{referenced_type}" if deref==nil
                 v.referenced_type = deref
             end
         }
@@ -400,7 +407,7 @@ class StructureType < Type
     end
     def each_non_compound(&blk)
         @entries.each {|entry|
-            val = entry[1]
+            val = entry
             offset   = val.offset
             next if((val.get_flags()&0x100)!=0) # skip if flag 0x100 is set
             next if val.referenced_type.is_a?(StructureType)
@@ -410,12 +417,10 @@ class StructureType < Type
     def read_non_nested_structure(stream,tgt_struct)
         deb = false
         start = stream.bytes_left
-        self.each_non_compound {|entry|
-            name= entry[0]
-            val = entry[1]
+        self.each_non_compound {|val|
             offset   = val.offset
             read_val = val.referenced_type.read_from(stream)
-            tgt_struct.set_val(offset,CreatedField.new(offset,name,read_val))
+            tgt_struct.create_instance_of(val,read_val)
         }
         return start-stream.bytes_left
     end
@@ -424,44 +429,32 @@ class StructureType < Type
         bytes_to_process=stream.read_int()
         sub_size-=4
         datasum=bytes_to_process
-        if(bytes_to_process<=sub_size)
-            bytes_to_process -= read_non_nested_structure(stream,tgt_struct)
-        end
-        if(bytes_to_process!=0)
-            raise "Unprocessed bytes left #{bytes_to_process}!"
-        end
+        bytes_to_process -= read_non_nested_structure(stream,tgt_struct) if(bytes_to_process<=sub_size)
+        raise "Unprocessed bytes left #{bytes_to_process}!" if(bytes_to_process!=0)
         sub_size-=datasum
         # after entries
         while(sub_size>0)
             start                   = stream.bytes_left()
             entry_type,struct_size  = *stream.read_header()
-            return 0 if(struct_size==0)
+            sub_size -= start-stream.bytes_left()   # reduce number of bytes left by size of header
+
+            return 0 if(struct_size==0) || (stream.bytes_left==0)
 
             raise "Wrong structure size!" if(struct_size>sub_size)
 
-            sub_size -= start-stream.bytes_left()   # reduce number of bytes left by size of header
-
             # read structures
-            return 0 if stream.bytes_left==0
             template_entry = nil
             @entries.each {|e|
-                curr_typename = e[1].referenced_type.name
-                entry_type1 = entry_type
-                entry_type2 = @name + entry_type # disambiguation of entry type name by including parent type name
-                next if (curr_typename!=entry_type1 && curr_typename !=entry_type2)
-                template_entry=e[1]
+                next if !e.referenced_type.is_a?(StructureType)
+                next if !e.referenced_type.is_valid_name?(@name,entry_type)
+                template_entry=e
                 break
             }
-            raise "Couldn't find structure corresponding with #{entry_type}" if(!template_entry.referenced_type.is_a?(StructureType))
-            
+            raise "Couldn't find structure corresponding with #{entry_type}" if(template_entry==nil)
             offset = template_entry.offset
             field_flags = template_entry.get_flags()
-
-            elem = template_entry.instantiate(tgt_struct)
-            #pp tgt_struct if entry_type == "Property"
-            if template_entry.read_from(stream,elem,struct_size)==0
-                raise "read_failed"
-            end
+            elem = tgt_struct.create_instance_of(template_entry)
+            raise "read_failed" if template_entry.read_from(stream,elem,struct_size)==0
             sub_size-=struct_size
         end
         return 1
@@ -475,7 +468,7 @@ class StructureType < Type
         visited_count=0
 
         @entries.each {|entr|
-            v=entr[1]
+            v=entr
             next if v.referenced_type.is_a?(PrimitiveType)
             v.referenced_type.visit(visitor)
             raise "visitor indent is #{visitor.indent_amount} after visiting #{v.referenced_type.name}" if visitor.indent_amount!=0
@@ -484,11 +477,8 @@ class StructureType < Type
     end
     def visit_contents(visitor)
         offset_sorted = @entries.dup
-        offset_sorted.sort! {|a,b| a[1].offset<=>b[1].offset}
-        offset_sorted.each {|entr|
-            struct_entry= entr[1]
-            visitor.visit_struct_field(entr[0],entr[1])
-        }
+        offset_sorted.sort!{|a,b| a.offset<=>b.offset}
+        offset_sorted.each {|entr| visitor.visit_struct_field(entr) }
     end
 end
 class CreatedPrimitive
@@ -502,80 +492,59 @@ class CreatedPrimitive
 end
 class CreatedField
     attr_reader :name,:value,:offset
+    attr_writer :value
     def initialize(offset,name,value)
         @offset,@name,@value=offset,name,value
         raise "whoa" if value==0
     end
     def serialize_out(visitor)
-        visitor.visit_field(self)
+        if(@value.is_a?(Array))
+            visitor.visit_array(@value)
+        else
+            visitor.visit_field(self)
+        end
     end
 end
 class CreatedStructure
     attr_reader :name
-    def initialize(size,name)
-        @name=name
+    def initialize(type,size,name)
+        @type=type
+        @name=name+self.object_id.to_s
         @values=[]
+        # values are split like this:
+        # for each possible offset 0..x there is field name based hash, containing array of values
     end
-    def set_val(offset,value)
-        #print "Setting vals at 0x"+offset.to_s(16).upcase+" -> #{value}\n"
-        if(offset==0)
-            @values[0] ||= {}
-            @values[0][value.name] = value
-        else
-            @values[offset/4]=value
-        end
+    def create_instance_of(template,init_value=nil)
+        of = template.offset
+        @values[of/4] ||= {}
+        @values[of/4][template.name] ||= []
+        instance = template.referenced_type.create_instance(init_value)
+        @values[of/4][template.name] << instance
+        instance
+    end
+
+    def each_val(&blk)
+        @values.each_idx{|idx|
+            @values[0].each{|k,e| yield e} if(idx==0 && @values[0].is_a?(Hash))
+            yield @values[idx]
+        }
     end
     def get_val(offset)
         @values[offset/4]
     end
-    def init_from_tpl(tpl)
-        tpl.each_entry {|entr|
-            e = entr[1]
-            e.referenced_type.init_val(self,e.name,e.offset,e.init_to)
-        }
-    end
     def serialize_out(visitor)
-        sub_name = ""
-        sub_name = @values[0][""].value.value if @values[0][""]!=nil
-        visitor.enter_structure(self,sub_name)
-        @values.each {|v|
-            next if v==nil
-            next if v.is_a?(Hash)
-            if(v.is_a?(Array))
-                v.each {|entry|
-                    entry.serialize_out(visitor)
+        sub_name = @name
+        visitor.enter_structure(@type.name,sub_name)
+        @values.each {|entry|
+            next if entry==nil
+            entry.each {|name,same_name_entries|
+                same_name_entries.each {|v|
+                    v.serialize_out(visitor)
                 }
-            else
-                v.serialize_out(visitor)
-            end
+                
+            }
         }
         visitor.leave_structure(self)
-    end
-end
-class StructArray
-    def initialize(type,entry_size,values,offset,type_name)
-        @type       = type ? 2 : 1
-        @struct     = values
-        @entry_size = entry_size
-        @my_offset  = offset
-        @type_name  = type_name
-        raise "typename cannot be empty" if type_name==nil
-    end
-    def init_storage
-        @struct ||= CreatedStructure.new() if(@type!=1)
-    end
-    def new_elem()
-        if(@type==1)
-            return @struct
-        else
-            res = CreatedStructure.new(@entry_size,@type_name)
-            if(@struct.get_val(@my_offset).is_a?(Array))
-                @struct.get_val(@my_offset)<<res
-            else
-                @struct.set_val(@my_offset,[res])
-            end
-            return res
-        end
     end
 end
 class BitFieldTemplate
@@ -618,20 +587,37 @@ class XMLWriter
     def indent()
         ("\t"*@indent)
     end
-    def enter_structure(struct,name)
-        @tgt_stream << indent() << "<struct type=\"#{struct.name}\" sub_name=\"#{name}\">\n"
+    def enter_structure(typename,name)
+        @tgt_stream << indent() << "<struct type=\"#{typename}\" sub_name=\"#{name}\">\n"
         @indent+=1
     end
     
     def leave_structure(struct)
-        @tgt_stream << indent() << "</struct>\n"
         @indent-=1
+        @tgt_stream << indent() << "</struct>\n"
     end
     def visit_field(field)
         if field.value!=nil && !(field.value.is_a?(CreatedPrimitive) && field.value.value=="")
             @tgt_stream << indent() << "<field name=\"#{field.name}\" type=\"#{field.value.type.name}\" "
             output_value(field.value)
             @tgt_stream << "/>\n"
+#            field.value.serialize_out(self)
+#            @tgt_stream << indent() << "</field>\n"
+        else
+            #printf((" " * (@indent+1) )+"<empty\\>\n")
+        end
+    end
+    def visit_array(arr)
+        if arr!=nil && (arr.size()>0)
+            @tgt_stream << indent() << "<array>\n"
+            idx=0
+        @indent+=1
+            arr.each {|v|
+                v.serialize_out(self)
+                idx+=1
+            }
+        @indent-=1
+            @tgt_stream << indent() << "</array>\n"
 #            field.value.serialize_out(self)
 #            @tgt_stream << indent() << "</field>\n"
         else
@@ -648,6 +634,7 @@ class XMLWriter
         @tgt_stream << "value=\"#{val_s}\""
     end
     def visit_primitive(prim)
+        return if(prim.type.type_id==0x2)
         val_s = ""
         if(prim.value.is_a?(Array))
             val_s = "["+prim.value.join(",")+"]"
@@ -751,9 +738,8 @@ class Serializer
     def serialize_from(file)
         @bf = BinFile.new(file)
         read_data_blocks()
-        @bf.str_dump_info()
-        res = CreatedStructure.new(0,file)
-        res.init_from_tpl(@template)
+        res = CreatedStructure.new(@template,0,file)
+        #res.init_from_tpl(@template)
         @template.read_from(@bf,res,@bf.bytes_left())
         serializer = XMLWriter.new(File.new("output.xml","w"))
         res.serialize_out(serializer)
@@ -768,5 +754,7 @@ end
 TypeStorage.instance.load_types("templates.xml")
 TypeStorage.instance.export_types(C_TypeVisitor,"cox_types.h")
 TypeStorage.instance.export_struct_tree("scenefile",C_TypeVisitor,"cox_types.h")
-ss=Serializer.new('scenefile')
-ss.serialize_from('City_00_01.bin')
+ss=Serializer.new('supergroupColors')
+ss.serialize_from('supergroupColors.bin')
+#ss=Serializer.new('scenefile')
+#ss.serialize_from('City_00_01.bin')

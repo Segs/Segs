@@ -24,23 +24,31 @@
     <type_ref name="RootMod"	type="0x115"	offset="0x4"	param="0x38" sub_ref="Def"/>
     <type_ref name="Ref"		type="0x15"		offset="0x8"	param="0x1C" sub_ref="Ref"/>
 </filetype>
+<filetype name="supergroupColors">
+    <type_ref name="Color"      type="0x15"     offset="0x0"   param="0x0C"     sub_ref="Color"/>
+    <type_ref name="EndPalette" type="0x2"      offset="0x0"   param="0x0"     sub_ref="0x0"/>
+</filetype>
 
 </filetypes>
 
 <structures>
-
+<structure name="Color">
+    <type_ref name=""           type="0x20C"    offset="0x0"    param="0x0"      sub_ref="0x0"/>
+    <type_ref name="\n"         type="0x2"      offset="0x0"    param="0x0"      sub_ref="0x0"/>
+</structure>
+    
 <structure name="Texture">
     <type_ref name=""           type="0x206"    offset="0x4"    param="0x0"      sub_ref="0x0"/>
     <type_ref name=""           type="0x3"      offset="0x0"    param="0x0"      sub_ref="0x0"/>
     <type_ref name="Gloss"      type="0xA"      offset="0x3C"   param="0x1"      sub_ref="0x0"/>
-    <type_ref name="Surface"    type="0x206"    offset="0x38"    param="0x0"      sub_ref="0x0"/>
+    <type_ref name="Surface"    type="0x206"    offset="0x38"   param="0x0"      sub_ref="0x0"/>
     <type_ref name="Fade"       type="0x0B"     offset="0x14"   param="0x0"      sub_ref="0x0"/>
     <type_ref name="ScaleST0"   type="0x0B"     offset="0x1C"   param="0x0"      sub_ref="0x0"/>
     <type_ref name="ScaleST1"   type="0x0B"     offset="0x24"   param="0x0"      sub_ref="0x0"/>
     <type_ref name="Blend"      type="0x6"      offset="0x8"    param="0x0"      sub_ref="0x0"/>
     <type_ref name="BumpMap"    type="0x6"      offset="0x0C"   param="0x0"      sub_ref="0x0"/>
-    <type_ref name="BlendType"  type="0x5"     offset="0x30"   param="0x0"      sub_ref="BlendType_ENUM"/>
-    <type_ref name="Flags"      type="0xF" offset="0x2C"   param="0x0"      sub_ref="TextureFlag_BF"/>
+    <type_ref name="BlendType"  type="0x5"      offset="0x30"   param="0x0"      sub_ref="BlendType_ENUM"/>
+    <type_ref name="Flags"      type="0xF"      offset="0x2C"   param="0x0"      sub_ref="TextureFlag_BF"/>
     <type_ref name="End"        type="0x2"      offset="0x0"    param="0x0"      sub_ref="0x0"/>
 </structure>
 
