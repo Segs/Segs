@@ -7,7 +7,7 @@ require 'singleton'
 include REXML
 TEMPLATES={}
 structures={}
-filetypes={}
+FILETYPES=[]
 class TypeVisitor
     
     def initialize
@@ -156,7 +156,7 @@ class TypeStorage
                 }
         }
         doc.root.elements["filetypes"].each_element("filetype") { |s|
-        
+            FILETYPES<<s.attributes['name']
             strct = StructureType.new(s.attributes['name'])
             s.each_element("type_ref") {|t_ref|
                 attr = t_ref.attributes
@@ -249,6 +249,9 @@ class BitfieldType < Type
                 key <<= 1
             end
         end
+    end
+    def create_instance(init_val=nil)
+        CreatedBitfield.new(self,init_val)
     end
 
 end
@@ -490,6 +493,16 @@ class CreatedPrimitive
         visitor.visit_primitive(self)
     end
 end
+class CreatedBitfield
+    attr_reader :type,:value
+    def initialize(type,value)
+        @type,@value = type,value
+    end
+    def serialize_out(visitor)
+        visitor.visit_bf(self)
+    end
+end
+
 class CreatedField
     attr_reader :name,:value,:offset
     attr_writer :value
@@ -641,7 +654,11 @@ class XMLWriter
         else
             val_s = prim.value.to_s()
         end        
-        @tgt_stream << indent() << "<value=\"#{val_s}\" type=\"#{prim.type.name}\"\\>\n"
+        @tgt_stream << indent() << "<type=\"#{prim.type.name}\" value=\"#{val_s}\" \\>\n"
+    end
+    def visit_bf(prim)
+        val_s = prim.value.to_s()
+        @tgt_stream << indent() << "<type=\"#{prim.type.name}\" value=\"#{val_s}\" \\>\n"
     end
     def visit_bitfield(bf)
         p "visiting bitfield"
@@ -735,13 +752,14 @@ class Serializer
     def init_sub(templ,sub)
         
     end
-    def serialize_from(file)
+    def serialize_from(file,tgtfilename)
+        tgtfilename="output.xml" if tgtfilename==nil || tgtfilename.size()==0
         @bf = BinFile.new(file)
         read_data_blocks()
         res = CreatedStructure.new(@template,0,file)
         #res.init_from_tpl(@template)
         @template.read_from(@bf,res,@bf.bytes_left())
-        serializer = XMLWriter.new(File.new("output.xml","w"))
+        serializer = XMLWriter.new(File.new(tgtfilename,"w"))
         res.serialize_out(serializer)
         exit()
         #@header=CommonHeader.new()
@@ -752,9 +770,16 @@ class Serializer
 end
 
 TypeStorage.instance.load_types("templates.xml")
-TypeStorage.instance.export_types(C_TypeVisitor,"cox_types.h")
-TypeStorage.instance.export_struct_tree("scenefile",C_TypeVisitor,"cox_types.h")
-ss=Serializer.new('supergroupColors')
-ss.serialize_from('supergroupColors.bin')
+if(ARGV.size==0)
+    printf("Usage: TypeGrammar.rb type filename [output_filename]\n")
+    printf("\tHandled types:\n")
+    FILETYPES.each {|name| printf("\t\t- #{name}\n") }
+    
+else
+    ss=Serializer.new(ARGV[0])
+    ss.serialize_from(ARGV[1],ARGV[2])
+end
+#TypeStorage.instance.export_types(C_TypeVisitor,"cox_types.h")
+#TypeStorage.instance.export_struct_tree("scenefile",C_TypeVisitor,"cox_types.h")
 #ss=Serializer.new('scenefile')
 #ss.serialize_from('City_00_01.bin')
