@@ -423,7 +423,7 @@ class StructureType < Type
         sub_size-=4
         datasum=bytes_to_process
         bytes_to_process -= read_non_nested_structure(stream,tgt_struct) if(bytes_to_process<=sub_size)
-        raise "Unprocessed bytes left #{bytes_to_process}!" if(bytes_to_process!=0)
+        raise "Unprocessed bytes left #{bytes_to_process} while reading: #{@name}!" if(bytes_to_process!=0)
         sub_size-=datasum
         # after entries
         while(sub_size>0)
@@ -701,7 +701,6 @@ class Serializer
         @num_data_blocks.times {
             @data_blocks<<DataBlock.new(@bf.read_pascal_str(),@bf.read_time())
         }
-        #pp @data_blocks
     end
     def init_sub(templ,sub)
         
