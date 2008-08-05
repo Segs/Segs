@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-#require 'profile'
 require 'rexml/document'
 require 'pp'
 require 'stringio'
@@ -307,6 +306,8 @@ class PrimitiveType < Type
             round_up_bytes = ((@param+3)&(~3))-@param
             val = bf.read_bytes(@param)
             bf.skip(round_up_bytes)
+        else
+            #p "Non readable type #{@type_id}"
         end
         return res
     end
@@ -334,6 +335,8 @@ class PrimitiveType < Type
             return "Vector3"
         when 13
             return "RGB"
+        when 18
+            return "string[]"
         else
             return "some_type"
         end
@@ -387,13 +390,11 @@ class StructureType < Type
 
     def bind_all_types
         all_bound=true
-        @entries.each {|entr|
-            v=entr
-            if v.referenced_type.is_a?(TypeRef)
-                deref = v.referenced_type.dereference()
-                raise "cannot dereference type! #{referenced_type}" if deref==nil
-                v.referenced_type = deref
-            end
+        @entries.each {|v|
+            next if !v.referenced_type.is_a?(TypeRef)
+            deref = v.referenced_type.dereference()
+            raise "cannot dereference type! #{v.referenced_type}" if deref==nil
+            v.referenced_type = deref
         }
         @bound = all_bound
     end
@@ -411,6 +412,8 @@ class StructureType < Type
         deb = false
         start = stream.bytes_left
         self.each_non_compound {|val|
+            next if(val.referenced_type.type_id==2)
+            next if(val.referenced_type.type_id==1)
             offset   = val.offset
             read_val = val.referenced_type.read_from(stream)
             tgt_struct.create_instance_of(val,read_val)
@@ -420,10 +423,11 @@ class StructureType < Type
     def read_from(stream,tgt_struct,sub_size)
         
         bytes_to_process=stream.read_int()
+        btp = bytes_to_process
         sub_size-=4
         datasum=bytes_to_process
         bytes_to_process -= read_non_nested_structure(stream,tgt_struct) if(bytes_to_process<=sub_size)
-        raise "Unprocessed bytes left #{bytes_to_process} while reading: #{@name}!" if(bytes_to_process!=0)
+        raise "Unprocessed bytes left #{bytes_to_process} from #{btp} while reading: #{@name}!" if(bytes_to_process!=0)
         sub_size-=datasum
         # after entries
         while(sub_size>0)
