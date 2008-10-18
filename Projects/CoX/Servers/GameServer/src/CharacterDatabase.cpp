@@ -34,7 +34,7 @@ bool CharacterDatabase::fill( CharacterClient *c )
 	DbResults results;
 
 	ACE_ASSERT(c&&c->getId());
-	query<<"SELECT * FROM accounts WHERE id="<<c->getId();
+	query<<"SELECT * FROM accounts WHERE account_id="<<c->getId();
 
 	if(!execQuery(query.str(),results))
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);

@@ -16,7 +16,7 @@
 #endif
 #include "Entity.h"
 #include <limits>
-#include <strstream>
+#include <sstream>
 float AngleDequantize(int value,int numb_bits)
 {
 	int max_val = 1<<numb_bits;
@@ -230,12 +230,12 @@ void PlayerEntity::sendCostumes(BitStream &bs) const
 		if(m_current_costume_set)
 		{
 			bs.StoreBits(32,m_current_costume_idx);
-			bs.StoreBits(32,m_num_costumes);
+			bs.StoreBits(32,m_costumes.size());
 		}
 		bs.StoreBits(1,m_multiple_costumes);
 		if(m_multiple_costumes)
 		{
-			for(size_t idx=0; idx<=m_num_costumes; idx++)
+			for(size_t idx=0; idx<=m_costumes.size(); idx++)
 			{
 				m_costumes[idx]->serializeto(bs);
 			}
@@ -256,6 +256,21 @@ void PlayerEntity::sendCostumes(BitStream &bs) const
 		m_sg_costume->serializeto(bs);
 		bs.StoreBits(1,m_using_sg_costume);
 	}
+}
+
+PlayerEntity::PlayerEntity()
+{
+	m_costume_type=1;
+	m_multiple_costumes=false;
+	m_current_costume_idx=0;
+	m_current_costume_set=false;
+	m_supergroup_costume=false;
+	m_sg_costume=0;
+	m_using_sg_costume=false;
+}
+MobEntity::MobEntity()
+{
+	m_costume_type=2;
 }
 void Entity::sendXLuency(BitStream &bs,float val) const
 {
@@ -534,12 +549,13 @@ void Avatar::DumpBuildInfo()
 	DumpPowerPoolInfo(m_powers[1]);
 }
 
-void Entity::serializefrom_newchar( BitStream &src )
+void PlayerEntity::serializefrom_newchar( BitStream &src )
 {
 	int val = src.GetPackedBits(1); //2
 	m_char.GetCharBuildInfo(src);
 	m_costume = new MapCostume;
 	m_costume->serializefrom(src);
+	m_costumes.push_back(m_costume);
 	int t = src.GetBits(1); // The -> 1
 	src.GetString(m_battle_cry);
 	src.GetString(m_character_description);
@@ -869,7 +885,7 @@ void MapCostume::dump()
 
 void MapCostume::GetCostumeString_Cached( BitStream &src,string &tgt )
 {
-	strstream strm;
+	ostringstream strm;
 	bool in_cache= src.GetBits(1);
 	if(in_cache)
 	{
@@ -879,7 +895,7 @@ void MapCostume::GetCostumeString_Cached( BitStream &src,string &tgt )
 			return;
 		}
 		int in_cache_idx = src.GetPackedBits(12);
-		strm <<"Hash:"<<in_cache_idx<<"\0";
+		strm <<"Hash:"<<(int)in_cache_idx;
 		tgt=strm.str();
 		tgt.push_back(0);
 		//tgt = stringcache[in_cache_idx];
@@ -905,8 +921,7 @@ void MapCostume::GetCostumeString( BitStream &src,string &tgt )
 		//GetHashTableMaxIndexBits() const 12
 		char buf[128]={0};
 		part_idx=src.GetPackedBits(12);
-		sprintf(buf,"0x%08x",part_idx);
-		buf[9]=0;
+		sprintf(buf,"0x%08x\0",part_idx);
 		tgt= buf;
 	}
 	else

@@ -287,7 +287,7 @@ s32 BitStream::uGetBits(u32 nBits)
 	tp = (u64 *)read_ptr();
 	r = *tp;//swap64(*tp);
 	r>>=m_read_bit_off; // starting at the top
-	tgt = r & (~1ull)>>(64-nBits);
+	tgt = s32(r & (~1ull)>>(64-nBits));
 	read_ptr((m_read_bit_off+nBits)>>3);
 	m_read_bit_off = (m_read_bit_off+nBits)&0x7; 
 	return tgt;

@@ -237,11 +237,11 @@ class MapCostume : public Costume
 		float m_floats[30];
 	};
 
-	u8		m_costume_type;
-	int		costume_type_idx_P;
-	int		costume_sub_idx_P;
 
 protected:
+		u8		m_costume_type;
+		int		costume_type_idx_P;
+		int		costume_sub_idx_P;
 		void	GetCostume(BitStream &src);
 		void	GetCostumeString(BitStream &src,string &tgt);
 		u32		GetCostumeColor(BitStream &src);
@@ -352,7 +352,6 @@ static	void			sendPvP(BitStream &bs);
 virtual void			serializefrom(BitStream &){};
 		bool			update_rot(int axis) const; // returns true if given axis needs updating;
 
-		void			serializefrom_newchar(BitStream &src);
 		void			InsertUpdate(PosUpdate pup);
 		void			sendCharacterStats(BitStream &bs) const;
 		void			sendTargetUpdate(BitStream &bs) const;
@@ -363,7 +362,8 @@ class MobEntity : public Entity
 {
 		std::string		m_costume_seq;
 public:
-
+						MobEntity();
+virtual					~MobEntity(){}
 virtual	void			sendCostumes(BitStream &bs) const;
 
 
@@ -379,8 +379,10 @@ class PlayerEntity : public MobEntity
 		bool				m_supergroup_costume; // player has a sg costume
 		bool				m_using_sg_costume; // player uses sg costume currently
 public:
-
+							PlayerEntity();
+virtual						~PlayerEntity(){}
 virtual	void				sendCostumes(BitStream &bs) const;
+		void				serializefrom_newchar(BitStream &src);
 
 
 };

@@ -264,7 +264,7 @@ void pktCS_SendEntity::get_new_character(PlayerEntity *ent)
 {
 	ACE_ASSERT(m_new_character);
 	m_ent = ent;
-	m_ent->serializefrom_newchar(m_newchar_optional);
+	ent->serializefrom_newchar(m_newchar_optional);
 	arr_size = m_newchar_optional.GetReadableBits()>>3;
 	if(arr_size>512)
 		arr_size = 512;
