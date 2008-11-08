@@ -551,8 +551,9 @@ class TypeRef < Type
     end
 end
 class XMLWriter
-    def initialize(tgt_stream)
+    def initialize(tgt_stream,srcs)
         @indent=0
+        @srcs=srcs
         @tgt_stream=tgt_stream
     end
     def indent()
@@ -709,25 +710,22 @@ class Serializer
     def init_sub(templ,sub)
         
     end
-    def serialize_from(file,tgtfilename)
-        tgtfilename="output.xml" if tgtfilename==nil || tgtfilename.size()==0
+    def serialize_from(file,tgtfilename="output.xml")
+        #tgtfilename="output.xml" if tgtfilename==nil || tgtfilename.size()==0
         @bf = BinFile.new(file)
         read_data_blocks()
         res = CreatedStructure.new(@template,0,file)
-        #res.init_from_tpl(@template)
+
         @template.read_from(@bf,res,@bf.bytes_left())
-        serializer = XMLWriter.new(File.new(tgtfilename,"w"))
+        serializer = XMLWriter.new(File.new(tgtfilename,"w"),@data_blocks)
         res.serialize_out(serializer)
-        exit()
-        #@header=CommonHeader.new()
-        #@template
     end
     def serialize_to(structures,file)
     end
 end
 
 TypeStorage.instance.load_types("templates.xml")
-if(ARGV.size==0)
+if(ARGV.size<2)
     printf("Usage: TypeGrammar.rb type filename [output_filename]\n")
     printf("\tHandled types:\n")
     FILETYPES.each {|name| printf("\t\t- #{name}\n") }

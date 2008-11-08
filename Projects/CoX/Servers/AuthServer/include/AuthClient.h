@@ -20,7 +20,7 @@ class GameServerInterface;
 
 // skeleton class used during authentication
 class AuthClient : public Client
-	{
+{
 public:
 	AuthClient();
 	bool			AccountBlocked() {return m_access_level==0; }
@@ -32,8 +32,9 @@ public:
 	eClientState	getState(void) const {return m_state;};
 	bool			isLoggedIn();
 	void			forceGameServerConnectionCheck();
+	void			setSelectedServer(IGameServer *gs){m_game_server=gs;};
 protected:
-	GameServerInterface *m_game_server; //!< every auth client knows where it is connected.
+	IGameServer *m_game_server; //!< every auth client knows where it is connected.
 	u8 m_password[14];					//!< client's password
 	eClientState m_state;				//!< current state of this client
 	tm m_creation_date;					//!< account creation date.

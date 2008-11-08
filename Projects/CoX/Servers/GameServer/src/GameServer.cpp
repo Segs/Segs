@@ -154,6 +154,11 @@ u32 GameServer::GetClientCookie(const ACE_INET_Addr &client_addr)
 */
 void GameServer::checkClientConnection(u64 id)
 {
+	CharacterClient *client = m_clients.getById(id);
+	if(client)
+	{
+		client->getState();
+	}
 //	m_clients.getById(id)->;
 // empty for now, later on it will use client store to get the client, and then check it's packet backlog
 //

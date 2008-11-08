@@ -131,6 +131,7 @@ AuthPacket *AuthFSM_Default::ReceivedPacket(AuthConnection *conn,AuthPacket *pkt
 				break;
 			}
 			u32 res_cookie = gs->ExpectClient(caller->peer(),caller->getClient()->getId(),caller->getClient()->getAccessLevel());
+			caller->getClient()->setSelectedServer(gs);
 			res_pkt->cookie=0xCAFEF00D;
 			res_pkt->db_server_cookie=res_cookie;
 			result = res_pkt;
