@@ -120,7 +120,7 @@ void pktSC_MapServerAddr::serializeto( BitStream &tgt ) const
 	tgt.StorePackedBits(1,unused3);
 	tgt.StorePackedBits(1,port);
 	tgt.StorePackedBits(1,unused4);
-	tgt.StorePackedBits(1,m_map_cookie);
+	tgt.StorePackedBits(1,m_map_cookie); // this should be 0 if there was an error ( like "InvalidName" )
 }
 
 void pktCS_MapServerAddr_Query::dependent_dump( void )
@@ -149,8 +149,8 @@ void pktCS_MapServerAddr_Query::serializeto( BitStream &tgt ) const
 	tgt.StorePackedBits(1,m_character_index);
 	tgt.StorePackedBits(1,m_map_server_ip);
 	tgt.StorePackedBits(1,m_mapnumber);
-	tgt.StorePackedBits(1,m_charVillain);
-	tgt.StoreBits(1,m_unkn3);
+//	tgt.StorePackedBits(1,m_charVillain);
+//	tgt.StoreBits(1,m_unkn3);
 	tgt.StoreString(m_char_name);
 }
 

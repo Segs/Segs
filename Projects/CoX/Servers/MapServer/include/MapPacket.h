@@ -171,16 +171,12 @@ public:
 		m_resp = src.GetPackedBits(1);
 		if(m_resp==0)
 			src.GetString(m_fatal_error);
-		else 
-			m_unkn1 = src.GetFloat();
 	}
 	virtual void serializeto(BitStream &tgt)const
 	{
 		tgt.StorePackedBits(1,m_resp);
 		if(m_resp==0)
 			tgt.StoreString(m_fatal_error);
-		else
-			tgt.StoreFloat(m_unkn1);
 	}
 	u32 m_resp;
 	float m_unkn1;
