@@ -32,14 +32,13 @@ int Database::OpenConnection(void) // Opens connection to the database server
 
 	if (PQstatus(pConnection) != CONNECTION_OK)   // If the connection did not go well, let us know
 	{
-	 //ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: connection to %s failed. %s.\n"), PQhost(pConnection), PQerrorMessage(pConnection)),1);
-         ACE_ERROR((LM_ERROR, ACE_TEXT ("(%P|%t) Database: connection to %s failed. %s.\n"), PQhost(pConnection), PQerrorMessage(pConnection)));
-         exit(1); // Exit SEGS to make the user correct the problem
+		ACE_ERROR((LM_ERROR, ACE_TEXT ("(%P|%t) Database: connection to %s failed. %s.\n"), PQhost(pConnection), PQerrorMessage(pConnection)));
+		exit(1); // Exit SEGS to make the user corrects the problem
 	}
-        else
-        {
-	 ACE_DEBUG ((LM_INFO,"Connected to %s database server version %i.\n",PQdb(pConnection), PQserverVersion(pConnection)));
-        }
+	else
+	{
+		ACE_DEBUG ((LM_INFO,"Connected to %s database server version %i.\n",PQdb(pConnection), PQserverVersion(pConnection)));
+	}
 	return 0;
 }
 

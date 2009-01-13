@@ -146,14 +146,15 @@ bool CharacterHandler::ReceivePacket(GamePacket *pak)
 			m_proto->SendPacket(res);
 			break;
 		}
-	case 5:
+	case 5: // Update ? disconnect request ? clients waits for packet 6 after this
 		{	
 			pktCS_CharUpdate *up = static_cast<pktCS_CharUpdate *>(pak);
 			ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Char update req! %d;\n"),up->m_index));
 			ACE_ASSERT(m_client->getMaxSlots()>up->m_index);
+			
 			pktSC_Character *res = new pktSC_Character;
-			res->m_slot_idx=up->m_index;
-			res->m_costume=m_client->getCharacter(up->m_index)->m_costume;
+			res->m_slot_idx	= up->m_index;
+			res->m_costume	= m_client->getCharacter(up->m_index)->m_costume;
 			m_proto->SendPacket(res); 
 			break;
 		}
@@ -179,7 +180,7 @@ void CharacterHandler::setClient(IClient *cl)
 
 bool CharacterHandler::sendAllowConnection()
 {
-	pktConnected *res = new pktConnected;
+	pktSC_Connected *res = new pktSC_Connected;
 	m_proto->SendPacket(res);
 	return true;
 }

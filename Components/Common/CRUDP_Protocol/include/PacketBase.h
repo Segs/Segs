@@ -89,17 +89,29 @@ public:
 	u8 key[64];
 
 };
-class pktConnected : public ControlPacket
+class pktSC_Connected : public ControlPacket
 	
 {
 protected:
 	virtual void dependent_dump();
 public:
-	virtual ~pktConnected (){}
-	pktConnected();
+	virtual ~pktSC_Connected (){}
+	pktSC_Connected();
 	virtual void serializefrom(BitStream &) {}
 	virtual void serializeto(BitStream &) const {}
 };
+class pktSC_Diconnect : public ControlPacket
+
+{
+protected:
+	virtual void dependent_dump();
+public:
+	virtual ~pktSC_Diconnect(){}
+	pktSC_Diconnect();
+	virtual void serializefrom(BitStream &) {}
+	virtual void serializeto(BitStream &) const {}
+};
+
 class pktIdle : public ControlPacket
 {
 protected:

@@ -93,13 +93,22 @@ void pktBlowfishKey::dependent_dump()
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
 }
 
-pktConnected::pktConnected()
+pktSC_Connected::pktSC_Connected()
 {
 	m_opcode=0;
 	m_comm_opcode=(u8)CTRL_CONNECTED;
 }
-
-void pktConnected::dependent_dump()
+pktSC_Diconnect::pktSC_Diconnect()
+{
+	m_opcode=0;
+	m_comm_opcode=(u8)CTRL_DISCONNECT;
+}
+void pktSC_Diconnect::dependent_dump()
+{
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IDisconnect request\n%I{\n")));
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
+}
+void pktSC_Connected::dependent_dump()
 {
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IConnected\n%I{\n")));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));

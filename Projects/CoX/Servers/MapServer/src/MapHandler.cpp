@@ -31,13 +31,14 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 	if(pak->getType()==COMM_CONNECT) // let's try not to overburden our servers
 	{
 		pak->dump();
-		pktConnected *res = new pktConnected;
+		pktSC_Connected *res = new pktSC_Connected;
 		m_proto->SendPacket(res);
+		
 		return true;
 	}
 	if(pak->m_opcode==9)
 	{
-		
+
 		pktCS_SendEntity *in_pak = (pktCS_SendEntity *)pak;
 		setClient(m_server->ClientExpected(getTargetAddr(),in_pak->m_cookie));
 		if(in_pak->m_new_character)
@@ -51,6 +52,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		in_pak->dump();
 		//m_client->setHandler(this);
 		ACE_ASSERT(m_client!=0);
+		// pktSC_Connect is created inside HandleClientPacket
 		m_proto->SendPacket(m_client->HandleClientPacket(in_pak));
 		return true;
 	}
@@ -304,6 +306,8 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		return true;
 //		send_it=1;
 	}
+	// after successfuly receiving entities, client sends packet 6
+	// it contains cookie, and a flag stating if the client has debugging console enabled
 	if(pak->m_opcode==6)
 	{
 		pak->dump();
