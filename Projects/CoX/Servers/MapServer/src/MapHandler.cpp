@@ -76,39 +76,37 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		res->current_map_flags=1; //off 1
 		Vector3 positions[]=
 		{
-			Vector3(-311.341552734375f,19.8681640625f,847.740234375f),
-			Vector3(508.752990722656f,21.3001594543457f,1689.75915527344f),
-			Vector3(-256.0f,-208.5f,1408.0f),
-			Vector3(-763.200073242188f,-13.01953125f,1153.44641113281f),
-			Vector3(82.2197723388672f,-170.190353393555f,577.763061523438f),
-			Vector3(-1120.96960449219f,424.330169677734f,1720.67956542969f),
-			Vector3(256.0f,0.0,1536.0f),
-			Vector3(-386.0f,464.738403320313f,1151.24987792969f),
-			Vector3(602.023986816406f,-6.59837007522583f,1916.49035644531f),
-			Vector3(728.895446777344f,345.579864501953f,1676.47485351563f),
-			Vector3(-495.978302001953f,-24.5270690917969f,2024.0f),
-			Vector3(22.9860458374023f,7.47305393218994f,567.4833984375f),
-			Vector3(-44.4782905578613f,7.47305393218994f,261.0f),
-			Vector3(-256.0f,-207.5f,1408.0f),
+			Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),
+			Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),
+			Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),
+			Vector3(0,0,0),Vector3(0,0,0),
 		};
 		string names[]={
-			"grpa2228",
-			"grp2544",
-			"object_library/city_templates/map_2d_blackpoly/map_city_00_01",
-			"grp2555",
-			"grp2561",
-			"grp2575",
-			"grp2578",
-			"grp2582",
-			"grpsound2583",
-			"grpsound2584",
-			"grp2585",
-			"grp2586",
-			"grp2587",
-			"grp2588",
+			"grpa2228","grp2544",
+			"object_library/city_templates/map_2d_blackpoly/map_city_00_01","grp2555",
+			"grp2561","grp2575",
+			"grp2578","grp2582",
+			"grpsound2583","grpsound2584",
+			"grp2585","grp2586",
+			"grp2587","grp2588",
 		};
 		int ids[]=
 		{
+			19000,
+			19001,
+			19002,
+			19003,
+			19004,
+			19005,
+			19006,
+			19007,
+			19008,
+			19009,
+			19010,
+			19011,
+			19012,
+			19013,
+			/*
 			17806, // 2228 -> def_id 17805, client subs 1
 			18127,
 			18248,
@@ -123,6 +121,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 			18233,
 			18234,
 			18235,
+*/
 
 		};
 		for(int i=0; i<13; i++)

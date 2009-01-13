@@ -61,6 +61,7 @@ u16 pktAuthServerList::serializefrom(GrowingBuffer &buf)
 void pktAuthServerList::add_game_server(u8 id,const ACE_INET_Addr &addr,u8 unk1,u8 unk2,u16 num_players,u16 max_players, u8 is_online)
 {
 	serverEntry entry;
+	memset(&entry,0,sizeof(serverEntry));
 	entry.id = id;
 	entry.address=addr;
 	entry.unk1=unk1;

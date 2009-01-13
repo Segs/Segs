@@ -1025,6 +1025,8 @@ void MapCostume::SendCostumeString_Cached( BitStream &tgt,const string &src ) co
 #ifdef HASH_LOADING
 	cache_idx=cache_lookup(color);
 #endif
+	if(src.size())
+		cache_idx=atoi(src.c_str()+5);
 	tgt.StoreBits(1,(cache_idx||src.size()==0));
 	if(cache_idx||src.size()==0)
 	{
