@@ -27,7 +27,7 @@ void pktCS_ServerUpdate::dependent_dump()
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    computerData%s\n"),computerData.c_str()));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkString%s\n"),unkString.c_str()));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkString2%s\n"),unkString2.c_str()));
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    tickcount 0x%08x;\n"),developerID));
+	//ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    tickcount 0x%08x;\n"),tick));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    developerString %s\n"),developerString.c_str()));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
 }

@@ -394,6 +394,9 @@
     <type_ref name="CurrentAttribs" type="0x415" offset="0x40"	param="0x168" sub_ref="LiveAttribs"/>
     <type_ref name="MaxAttribs"     type="0x415" offset="0x310"	param="0x168" sub_ref="LiveAttribs"/>
     <type_ref name="SendLevels"	    type="0x415" offset="0x0"	param="0xA58" sub_ref="LiveLevels"/>
+    <type_ref name="ExperiencePoints" type="0x5" offset="0x8"	param="0x10" sub_ref="0"/>
+    <type_ref name="ExperienceDebt"   type="0x5" offset="0xC"	param="0x10" sub_ref="0"/>
+    <type_ref name="InfluencePoints"  type="0x5" offset="0x10"	param="0x10" sub_ref="0"/>
 </structure>
 
 </structures>

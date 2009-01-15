@@ -48,6 +48,7 @@ void pktMap_Server_EntitiesResp::serializeto( BitStream &tgt ) const
 	m_client->getCurrentMap()->m_entities.sendDeletes(tgt);
 	if(m_opcode==3)
 	{
+		m_client->getCharEntity()->m_char.m_ent=m_client->getCharEntity();
 		m_client->getCharEntity()->m_char.serializeto(tgt);
 	}
 	else
@@ -55,10 +56,10 @@ void pktMap_Server_EntitiesResp::serializeto( BitStream &tgt ) const
 		m_client->getCharEntity()->m_char.sendFullStats(tgt);
 	}
 	storePowerInfoUpdate(tgt);
-	storePowerModeUpdate(tgt);
-	storeBadgeUpdate(tgt);
-	storeGenericinventoryUpdate(tgt);
-	storeInventionUpdate(tgt);
+	//storePowerModeUpdate(tgt);
+	//storeBadgeUpdate(tgt);
+	//storeGenericinventoryUpdate(tgt);
+	//storeInventionUpdate(tgt);
 	storeTeamList(tgt);
 	storeSuperStats(tgt);
 	storeGroupDyn(tgt);
@@ -325,7 +326,6 @@ bool pktCS_SendEntity::IsCostumePartName_NotSet( string &str )
 
 void pktMap_Server_EntitiesResp::sendControlState(BitStream &bs) const
 {
-	sendServerPhysicsPositions(bs);
 	sendServerControlState(bs);
 }
 void pktMap_Server_EntitiesResp::sendServerPhysicsPositions(BitStream &bs) const
@@ -370,6 +370,8 @@ void pktMap_Server_EntitiesResp::storeInventionUpdate(BitStream &bs)const
 }
 void pktMap_Server_EntitiesResp::storeTeamList(BitStream &bs) const
 {
+	bs.StoreBits(1,0);
+	bs.StoreBits(1,0);
 	bs.StoreBits(1,0);
 }
 void pktMap_Server_EntitiesResp::storeSuperStats(BitStream &bs) const

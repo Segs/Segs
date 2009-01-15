@@ -21,7 +21,7 @@ void EntityStorage::StorePlayer( MapClient *client,Entity *player_ent )
 
 void EntityManager::sendDebuggedEntities( BitStream &tgt ) const
 {
-	tgt.StorePackedBits(10,0); // index of debugged entity
+	tgt.StorePackedBits(10,13); // index of debugged entity
 }
 
 void EntityManager::sendGlobalEntDebugInfo( BitStream &tgt ) const

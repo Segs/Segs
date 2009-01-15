@@ -89,13 +89,13 @@ void Entity::storePosition(BitStream &bs) const
 {
 //	float x = pos.vals.x;
 	u32 packed;
-	u32 diff; // changed bits are '1'
+	u32 diff=0; // changed bits are '1'
 	bs.StoreBits(3,7); // frank -> 7,-60.5,0,180
 	for(int i=0; i<3; i++)
 	{
 		packed = quantize_float(pos.v[i]);
 		packed = packed<0xFFFFFF ? packed : 0xFFFFFF;
-		diff = packed ^ prev_pos[i]; // changed bits are '1'
+		//diff = packed ^ prev_pos[i]; // changed bits are '1'
 		bs.StoreBits(24,packed);
 	}
 }
@@ -274,7 +274,7 @@ MobEntity::MobEntity()
 }
 void Entity::sendXLuency(BitStream &bs,float val) const
 {
-	storeBitsConditional(bs,8,min(u8(val*255),255));
+	storeBitsConditional(bs,8,min(u8(val*255),255)); // upto here everything is ok
 }
 void Entity::sendTitles(BitStream &bs) const
 {
@@ -463,7 +463,7 @@ void Entity::serializeto( BitStream &bs ) const
 	if(m_rare_bits)
 	{
 		sendCostumes(bs);
-		sendXLuency(bs,1.0f);
+		sendXLuency(bs,0.5f);
 		sendTitles(bs);
 	}
 	if(m_pchar_things)
@@ -476,19 +476,8 @@ void Entity::serializeto( BitStream &bs ) const
 	{
 		sendOnOddSend(bs,m_odd_send);
 		sendWhichSideOfTheForce(bs);
-		/*
-		sendAllyID(bs);
-		bs.StoreBits(1,m_is_villian);
-		sendPvP(bs);
-		*/
 		sendEntCollision(bs);
 		sendNoDrawOnClient(bs);
-		/*
-		sendContactOrPnpc(bs);
-		bs.StoreBits(1,entReceiveAlwaysCon);
-		bs.StoreBits(1,entReceiveSeeThroughWalls);
-		sendPetName(bs);
-		*/
 		sendAFK(bs);
 		sendOtherSupergroupInfo(bs);
 		sendLogoutUpdate(bs);
@@ -574,11 +563,14 @@ void Entity::dump()
 
 Entity::Entity() : m_char(0)
 {
+	field_60=0;
+	field_64=0;
 	field_78=0;
 	m_state_mode_send=0;
 	m_state_mode=0;
 	m_seq_update=0;
 	m_has_titles=false;
+	m_SG_info=false;
 }
 
 PowerPool_Info Avatar::get_power_info( BitStream &src )
@@ -596,7 +588,6 @@ void Avatar::sendTray(BitStream &bs) const
 void Avatar::sendTrayMode(BitStream &bs) const
 {
 	bs.StoreBits(1,0);
-	bs.StoreBits(1,1);
 }
 void Avatar::sendEntStrings(BitStream &bs) const
 {
@@ -618,7 +609,7 @@ void Avatar::sendWindow(BitStream &bs) const
 		bs.StorePackedBits(1,0);
 		bs.StorePackedBits(1,0);
 	}
-	storeFloatConditional(bs,1.0f);
+	//storeFloatConditional(bs,1.0f);
 }
 void Avatar::sendTeamBuffMode(BitStream &bs) const
 {
@@ -626,15 +617,17 @@ void Avatar::sendTeamBuffMode(BitStream &bs) const
 }
 void Avatar::sendDockMode(BitStream &bs) const
 {
-	bs.StoreBits(32,0);
-	bs.StoreBits(32,0);
+	bs.StoreBits(32,0); // unused on the client
+	bs.StoreBits(32,0); // 
 }
 void Avatar::sendChatSettings(BitStream &bs) const
 {
 	int i;
+	bs.StoreFloat(0.8); // window transparency ?
 	bs.StorePackedBits(1,1);
 	bs.StorePackedBits(1,2);
 	bs.StorePackedBits(1,3);
+/*
 	bs.StorePackedBits(1,4);
 	bs.StorePackedBits(1,5);
 	bs.StorePackedBits(1,6);
@@ -659,6 +652,7 @@ void Avatar::sendChatSettings(BitStream &bs) const
 		bs.StoreString("TestChat2");
 		bs.StorePackedBits(1,1);
 	}
+*/
 }
 void Avatar::sendDescription(BitStream &bs) const
 {
@@ -668,12 +662,10 @@ void Avatar::sendDescription(BitStream &bs) const
 }
 void Avatar::sendTitles(BitStream &bs) const
 {
-	bs.StorePackedBits(5,0);
-	bs.StoreString("Titles1");
-	bs.StoreString("Titles2");
-	bs.StoreString("Titles3");
-	bs.StoreBits(32,0); //player type
-	bs.StoreString("Titles4");
+	bs.StoreBits(1,1);
+	bs.StoreString("Tz1");
+	bs.StoreString("Tz2");
+	bs.StoreString("Tz3");
 }
 void Avatar::sendKeybinds(BitStream &bs) const
 {
@@ -714,15 +706,15 @@ void Avatar::serializeto(BitStream &bs) const
 	}
 	sendTray(bs);
 	sendTrayMode(bs);
-	bs.StoreString("Name"); // maxlength 32
+	bs.StoreString(m_ent->m_name); // maxlength 32
 	sendEntStrings(bs);
-	for(int i=0; i<70; i++)
+	for(int i=0; i<35; i++)
 	{
-		bs.StorePackedBits(1,70); // window index
+		bs.StorePackedBits(1,i); // window index
 		sendWindow(bs);
 	}
-	bs.StoreBits(10,0); // lfg
-	bs.StoreBits(1,0); // super group mode
+//	bs.StoreBits(10,0); // lfg
+//	bs.StoreBits(1,0); // super group mode
 	bs.StoreBits(1,0); // pent->player_ppp.field_540
 	bs.StoreBits(1,0); // pEnt->player_ppp.field_984C
 	sendTeamBuffMode(bs);
@@ -730,7 +722,8 @@ void Avatar::serializeto(BitStream &bs) const
 	sendChatSettings(bs);
 	sendTitles(bs);
 	sendDescription(bs);
-	bs.StoreString("Comment");
+	u8 auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	bs.StoreBitArray(auth_data,128);
 	sendKeybinds(bs);
 	bs.StoreBits(1,m_full_options);
 	if(m_full_options)
@@ -743,14 +736,8 @@ void Avatar::serializeto(BitStream &bs) const
 		bs.StoreFloat(m_options.mouselook_scalefactor);
 		bs.StoreFloat(m_options.degrees_for_turns);
 	}
-    for(int i=0; i<8; i++)
-    {
-        bs.StorePackedBits(9,0);
-    }
 	bs.StoreBits(1,m_first_person_view_toggle);
-	bs.StoreBits(2,m_player_collisions);
 	sendFriendList(bs);
-	bs.StoreBits(1,0);
 }
 Avatar::Avatar(Entity *ent)
 {
@@ -856,12 +843,11 @@ void Avatar::send_character(BitStream &bs) const
 void Avatar::sendFullStats(BitStream &bs) const
 {
 	// if sendAbsolutoOverride 
-	bs.StoreBits(1,1);
 
 	// this uses the character schema from the xml -> FullStats and children
 
 	// CurrentAttributes
-	bs.StoreBits(1,1); // has more data
+	bs.StoreBits(1,1);
 	bs.StorePackedBits(1,0); // CurrentAttribs entry idx
 	{
 			// nested into CurrentAttribs:LiveAttribs
@@ -953,20 +939,88 @@ void Avatar::sendFullStats(BitStream &bs) const
 		}
 		bs.StoreBits(1,0); // nest out
 	}
+	bs.StoreBits(1,1); // has more data
+	bs.StorePackedBits(1,3); // Experience
+	{
+		// field type 0x5, param 16
+		if(1) // absolute values
+		{
+			bs.StorePackedBits(16,1); // 
+		}
+		else
+		{
+			// StoreOptionalSigned(
+			// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+			// send prev_lev-new_lev
+		}
+	}
+	bs.StoreBits(1,1); // has more data
+	bs.StorePackedBits(1,4); // ExperienceDebt
+	{
+		// field type 0x5, param 16
+		if(1) // absolute values
+		{
+			bs.StorePackedBits(16,1); // 
+		}
+		else
+		{
+			// StoreOptionalSigned(
+			// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+			// send prev_lev-new_lev
+		}
+	}
+	bs.StoreBits(1,1); // has more data
+	bs.StorePackedBits(1,5); // Influence
+	{
+		// field type 0x5, param 16
+		if(1) // absolute values
+		{
+			bs.StorePackedBits(16,0); // 
+		}
+		else
+		{
+			// StoreOptionalSigned(
+			// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+			// send prev_lev-new_lev
+		}
+	}
 	bs.StoreBits(1,0); // has more data, nest out from the root
 }
 void Avatar::sendBuffs(BitStream &bs) const
 {
 	size_t num_buffs=0;
 	bs.StorePackedBits(5,num_buffs);
-	for(size_t idx; idx<num_buffs; ++idx)
+	for(size_t idx=0; idx<num_buffs; ++idx)
 	{
 		sendPower(bs,0,0,0);
 	}
 }
-void Avatar::sendOptions(BitStream &) const
+void Avatar::sendOptions(BitStream &bs) const
 {
-    ACE_ASSERT(!"Not implemented yet\n");
+	bs.StoreFloat(m_options.mouselook_scalefactor);//MouseFlt1
+	bs.StoreFloat(m_options.degrees_for_turns);//MouseFlt2
+	bs.StoreBits(1,m_options.mouse_invert);//MouseSet1 
+	bs.StoreBits(1,0);//g_DimChatWindow 
+	bs.StoreBits(1,0); //g_DimNavWindow
+	bs.StoreBits(1,1);//g_ToolTips
+	bs.StoreBits(1,1);//g_AllowProfanity
+	bs.StoreBits(1,1);//g_ChatBalloons
+	bs.StoreBits(3,0);//dword_729E58
+	bs.StoreBits(3,0);//dword_729E5C
+	bs.StoreBits(3,0);//dword_729E60
+	bs.StoreBits(3,0);//dword_729E68
+	bs.StoreBits(3,0);//dword_729E6C
+	bs.StoreBits(3,0);//dword_729E70
+	bs.StoreBits(3,0);//dword_729E74
+	bs.StoreBits(3,0);//dword_729E78
+	bs.StoreBits(3,0);//dword_729E7C
+	bs.StorePackedBits(5,2);//v2 = 
+//	if ( v1 >= 5 )
+//	{
+//		word_91A7A4 = v2;
+//		word_91A7A0 = v2;
+//	}
+
 }
 
 
