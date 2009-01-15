@@ -380,78 +380,75 @@ void Entity::sendLogoutUpdate(BitStream &bs) const
 
 void Entity::serializeto( BitStream &bs ) const
 {
+	//////////////////////////////////////////////////////////////////////////
+
 	// entity creation
 	bs.StoreBits(1,m_create); // checkEntCreate_varD14
-	bs.StoreBits(1,var_129C); // checkEntCreate_var_129C / ends creation destroys seq and returns NULL
+	if(m_create)
+	{
+		bs.StoreBits(1,var_129C); // checkEntCreate_var_129C / ends creation destroys seq and returns NULL
 
-	if(var_129C)
-		return;
-	bs.StorePackedBits(12,field_64);//  this will be put in  of created entity
-	bs.StorePackedBits(2,m_type);
-	if(m_type==ENT_PLAYER)
-	{
-		bs.StoreBits(1,m_create_player);
-		if(m_create_player)
-			bs.StorePackedBits(1,0x123); // var_1190: this will be put in field_C8 of created entity 
-		bs.StorePackedBits(20,0);//bs.StorePackedBits(20,m_db_id);
-	}
-	else
-	{
-		bool val=false;
-		bs.StoreBits(1,val);
-		if(val)
+		if(var_129C)
+			return;
+		bs.StorePackedBits(12,field_64);//  this will be put in  of created entity
+		bs.StorePackedBits(2,m_type);
+		if(m_type==ENT_PLAYER)
 		{
-			bs.StorePackedBits(12,m_idx);
-			bs.StorePackedBits(12,m_idx);
+			bs.StoreBits(1,m_create_player);
+			if(m_create_player)
+				bs.StorePackedBits(1,0x123); // var_1190: this will be put in field_C8 of created entity 
+			bs.StorePackedBits(20,0);//bs.StorePackedBits(20,m_db_id);
 		}
-	}
-	if(m_type==ENT_PLAYER || m_type==ENT_CRITTER)
-	{
-		bs.StorePackedBits(1,m_origin_idx);
-		bs.StorePackedBits(1,m_class_idx);
-		bool val=false;
-		bs.StoreBits(1,val);
-		if(val)
+		else
 		{
-			bs.StoreBits(1,0);
-			storeStringConditional(bs,"");
-			storeStringConditional(bs,"");
-			storeStringConditional(bs,"");
+			bool val=false;
+			bs.StoreBits(1,val);
+			if(val)
+			{
+				bs.StorePackedBits(12,0); // entity idx
+				bs.StorePackedBits(12,0); // entity idx
+			}
+		}
+		if(m_type==ENT_PLAYER || m_type==ENT_CRITTER)
+		{
+			bs.StorePackedBits(1,m_origin_idx);
+			bs.StorePackedBits(1,m_class_idx);
+			bool val=false;
+			bs.StoreBits(1,val);
+			if(val)
+			{
+				bs.StoreBits(1,0); // entplayer_flgFE0
+				storeStringConditional(bs,"");
+				storeStringConditional(bs,"");
+				storeStringConditional(bs,"");
+			}
 		}
 		bs.StoreBits(1,m_hasname);
 		if(m_hasname)
-		{
 			bs.StoreString(m_name);
+		bs.StoreBits(1,0); //var_94 if set Entity.field_1818/field_1840=0 else field_1818/field_1840 = 255,2
+		bs.StoreBits(32,field_60); // this will be put in field_60 of created entity 
+		bs.StoreBits(1,m_hasgroup_name);
+		if(m_hasgroup_name)
+		{
+			bs.StorePackedBits(2,0);// this will be put in field_1830 of created entity 
+			bs.StoreString(m_group_name);
 		}
 	}
-	bs.StoreBits(1,0); //var_94 if set Entity.field_1818/field_1840=0 else field_1818/field_1840 = 255,2
-	bs.StoreBits(32,field_60); // this will be put in field_60 of created entity 
-	bs.StoreBits(1,m_hasgroup_name);
-	if(m_hasgroup_name)
-	{
-		bs.StorePackedBits(2,0);// this will be put in field_1830 of created entity 
-		bs.StoreString(m_name);
-	}
-
-	//if(m_classname_override)
-	/*
-	bs.StoreBits(1,false);
-	if(false)
-	{
-	bs.StoreString(m_override_name);
-	}
-	*/
+	// End of entrecv_442C60
+	//////////////////////////////////////////////////////////////////////////
 	// creation ends here
-	bs.StoreBits(1,var_C); //var_C
 
-	if(var_C)
+	bs.StoreBits(1,might_have_rare); //var_C
+
+	if(might_have_rare)
 	{
 		bs.StoreBits(1,m_rare_bits);
 	}
 	if(m_rare_bits)
 		sendStateMode(bs);
 	storePosUpdate(bs);
-	if(var_C)
+	if(might_have_rare)
 	{
 		sendSeqMoveUpdate(bs);
 	}
@@ -479,19 +476,19 @@ void Entity::serializeto( BitStream &bs ) const
 	{
 		sendOnOddSend(bs,m_odd_send);
 		sendWhichSideOfTheForce(bs);
-/*
+		/*
 		sendAllyID(bs);
 		bs.StoreBits(1,m_is_villian);
 		sendPvP(bs);
-*/
+		*/
 		sendEntCollision(bs);
 		sendNoDrawOnClient(bs);
-/*
+		/*
 		sendContactOrPnpc(bs);
 		bs.StoreBits(1,entReceiveAlwaysCon);
 		bs.StoreBits(1,entReceiveSeeThroughWalls);
 		sendPetName(bs);
-*/
+		*/
 		sendAFK(bs);
 		sendOtherSupergroupInfo(bs);
 		sendLogoutUpdate(bs);
@@ -697,17 +694,24 @@ void Avatar::sendFriendList(BitStream &bs) const
 void Avatar::serializeto(BitStream &bs) const
 {
 	u8 arr[16]={0};
-	bs.StorePackedBits(1,0);
-	bs.StorePackedBits(1,0);
-	bs.StorePackedBits(2,0);
-	bs.StorePackedBits(1,0);
-	bs.StoreBitArray(arr,128);
-	bs.StoreBits(1,0); //player type
+	//////////////////////////////////////////////////////////////////////////
+	// character send
+	//////////////////////////////////////////////////////////////////////////
 	send_character(bs);
-	Entity::sendAllyID(bs);
-	Entity::sendPvP(bs);
+	//////////////////////////////////////////////////////////////////////////
+	// full stats
+	//////////////////////////////////////////////////////////////////////////
 	sendFullStats(bs);
+
 	sendBuffs(bs);
+	bool has_sidekick=false;
+	bs.StoreBits(1,has_sidekick);
+	if(has_sidekick)
+	{
+		bool is_mentor=false; // this flag might mean something totally different :)
+		bs.StoreBits(1,is_mentor);
+		bs.StorePackedBits(20,0); // sidekick partner idx -> 10240
+	}
 	sendTray(bs);
 	sendTrayMode(bs);
 	bs.StoreString("Name"); // maxlength 32
@@ -772,16 +776,64 @@ void sendPowers(BitStream &bs)
 	bs.StorePackedBits(4,0); // count
 	for(int i=0; i<0; i++)
 	{
+		size_t num_powers=0;
 		bs.StorePackedBits(5,0);
-		bs.StorePackedBits(4,0);
-		sendPower(bs,0,0,0);
-	}
+		bs.StorePackedBits(4,num_powers);
+		for(size_t idx=0; idx<num_powers; ++idx)
+		{
+			size_t num_somethings=0;
+			sendPower(bs,0,0,0);
 
+			bs.StorePackedBits(5,0);
+			bs.StoreFloat(1.0);
+			bs.StorePackedBits(4,num_somethings);
+
+			for(size_t idx2=0; idx2<num_somethings; ++idx2)
+			{
+				sendPower(bs,0,0,0);
+				bs.StorePackedBits(5,0);
+				bs.StorePackedBits(2,0);
+			}
+		}
+	}
 }
-void sendUnk1(BitStream &bs)
+void sendPowers_main_tray(BitStream &bs)
 {
-	bs.StorePackedBits(3,0); // count
-	bs.StorePackedBits(3,0);
+	size_t max_num_cols=3;
+	size_t max_num_rows=1;
+	bs.StorePackedBits(3,max_num_cols); // count
+	bs.StorePackedBits(3,max_num_rows); // count
+	for(int i=0; i<max_num_cols; i++)
+	{
+		for(size_t idx=0; idx<max_num_rows; ++idx)
+		{
+			bool is_power=false;
+			bs.StoreBits(1,is_power);
+			if(is_power)
+			{
+				sendPower(bs,0,0,0);
+			}
+		}
+	}
+}
+
+void sendBoosts(BitStream &bs)
+{
+	size_t num_boosts=0;
+	bs.StorePackedBits(5,num_boosts); // count
+	for(size_t idx=0; idx<num_boosts; ++idx)
+	{
+		bool set_boost=false;
+		bs.StorePackedBits(3,0); // bost idx
+		bs.uStoreBits(1,set_boost); // 1 set, 0 clear
+		if(set_boost)
+		{
+			sendPower(bs,0,0,0);
+			bs.StorePackedBits(5,0); // bost idx
+			bs.StorePackedBits(2,0); // bost idx
+		}
+	}
+	// boosts
 }
 void sendUnk2(BitStream &bs)
 {
@@ -798,27 +850,119 @@ void Avatar::send_character(BitStream &bs) const
 	bs.StorePackedBits(5,0); // ?
 	// powers/stats ?
 	sendPowers(bs);
-	sendUnk1(bs);
-	sendUnk2(bs);
-	sendUnk3(bs);	
+	sendPowers_main_tray(bs);
+	sendBoosts(bs);
 }
 void Avatar::sendFullStats(BitStream &bs) const
 {
+	// if sendAbsolutoOverride 
 	bs.StoreBits(1,1);
-	bs.StorePackedBits(1,0);
-	{
-		// CurrentAttributes
-		bs.StoreBits(1,1);
-		bs.StorePackedBits(1,0); // hitpoints
-			bs.StorePackedBits(6,100*10);
-		bs.StoreBits(1,0);
 
+	// this uses the character schema from the xml -> FullStats and children
+
+	// CurrentAttributes
+	bs.StoreBits(1,1); // has more data
+	bs.StorePackedBits(1,0); // CurrentAttribs entry idx
+	{
+			// nested into CurrentAttribs:LiveAttribs
+			bs.StoreBits(1,1); // has more data
+			bs.StorePackedBits(1,0); // HitPoints entry
+			// field type 0xA, param 2
+			// Type15_Params 2 1.0 1.0 7
+			if(1) // absolute values
+			{
+				bs.StorePackedBits(7,45); // character health/1.0
+			}
+			else
+			{
+				// StoreOptionalSigned(
+					// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+			}
+			bs.StoreBits(1,1); // has more data
+			bs.StorePackedBits(1,0); // EndurancePoints entry
+			// field type 0xA, param 2
+			if(1) // absolute values
+			{
+				bs.StorePackedBits(7,45); // character end/1.0
+			}
+			else
+			{
+				// StoreOptionalSigned(
+				// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+			}
+			bs.StoreBits(1,0); // nest out
 	}
-	bs.StoreBits(1,0);
+	bs.StoreBits(1,1); // has more data
+	bs.StorePackedBits(1,1); // MaxAttribs entry idx
+	{
+		// nested into MaxAttribs:LiveAttribs
+		bs.StoreBits(1,1); // has more data
+		bs.StorePackedBits(1,0); // HitPoints entry
+		// field type 0xA, param 2
+		// Type15_Params 2 1.0 1.0 7
+		if(1) // absolute values
+		{
+			bs.StorePackedBits(7,45); // character health/1.0
+		}
+		else
+		{
+			// StoreOptionalSigned(
+			// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+		}
+		bs.StoreBits(1,1); // has more data
+		bs.StorePackedBits(1,0); // EndurancePoints entry
+		// field type 0xA, param 2
+		if(1) // absolute values
+		{
+			bs.StorePackedBits(7,45); // character end/1.0
+		}
+		else
+		{
+			// StoreOptionalSigned(
+			// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+		}
+		bs.StoreBits(1,0); // nest out
+	}
+	bs.StoreBits(1,1); // has more data
+	bs.StorePackedBits(1,2); // SendLevels entry idx
+	{
+		// nested into SendLevels:LiveLevels
+		bs.StoreBits(1,1); // has more data
+		bs.StorePackedBits(1,0); // Level entry
+		// field type 0x5, param 4
+		if(1) // absolute values
+		{
+			bs.StorePackedBits(4,1); // 
+		}
+		else
+		{
+			// StoreOptionalSigned(
+			// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+			// send prev_lev-new_lev
+		}
+		bs.StoreBits(1,1); // has more data
+		bs.StorePackedBits(1,0); // CombatLevel entry
+		if(1) // absolute values
+		{
+			bs.StorePackedBits(4,1); 
+		}
+		else
+		{
+			// StoreOptionalSigned(
+			// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+		}
+		bs.StoreBits(1,0); // nest out
+	}
+	bs.StoreBits(1,0); // has more data, nest out from the root
 }
 void Avatar::sendBuffs(BitStream &bs) const
 {
-	bs.StorePackedBits(5,0);
+	size_t num_buffs=0;
+	bs.StorePackedBits(5,num_buffs);
+	for(size_t idx; idx<num_buffs; ++idx)
+	{
+		sendPower(bs,0,0,0);
+	}
 }
 void Avatar::sendOptions(BitStream &) const
 {

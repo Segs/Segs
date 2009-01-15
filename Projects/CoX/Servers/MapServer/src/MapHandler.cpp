@@ -90,23 +90,9 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 			"grp2585","grp2586",
 			"grp2587","grp2588",
 		};
+/*
 		int ids[]=
 		{
-			19000,
-			19001,
-			19002,
-			19003,
-			19004,
-			19005,
-			19006,
-			19007,
-			19008,
-			19009,
-			19010,
-			19011,
-			19012,
-			19013,
-			/*
 			17806, // 2228 -> def_id 17805, client subs 1
 			18127,
 			18248,
@@ -121,12 +107,10 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 			18233,
 			18234,
 			18235,
-*/
-
 		};
 		for(int i=0; i<13; i++)
 			res->m_refs.push_back(MapRef(ids[i],names[i],positions[i],Vector3(0.0,0.0,0.0)));
-		res->m_crc.resize(res->m_trays.size());
+			res->m_crc.resize(res->m_trays.size());
 		Matrix4x3 mat;
 		for(size_t j=0; j<sizeof(Matrix4x3)/4; j++)
 		{
@@ -135,6 +119,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		mat.row1.vals.x = mat.row2.vals.y = mat.row3.vals.z= 1.0;
 		res->ref_crc=0;
 		res->ref_count=11;
+*/
 		res->unkn1=1;
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
 		res->unkn2=1;
@@ -169,7 +154,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		pent = new MobEntity;
 		pent->m_idx=1;
 		pent->m_create=true;
-		pent->var_C=true;
+		pent->might_have_rare=true;
 		pent->var_129C=true; // will break entity-receiving loop
 		m_client->getCurrentMap()->m_entities.m_entlist.push_back(pent);
 
@@ -181,116 +166,6 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		res->unkn2=true; // default parameters for first flags
 
 /*
-		MobEntity door1;
-		door1.m_idx=0x68;
-		door1.m_create=true;
-		door1.var_129C=false;
-		door1.field_64=0x6A;
-		door1.m_type=8;
-		door1.m_hasname=true;
-		door1.m_name="Dr";
-		door1.field_60=0x00003D96;
-		door1.m_hasgroup_name=false;
-		door1.var_C=true;
-		door1.m_rare_bits=true;
-		door1.m_state_mode_send=true;
-		door1.m_state_mode=0;
-		door1.pos = Vector3(685.0f,-95.9531f,539.016f);
-												//0x100,0xE,
-		door1.qrot= Quaternion().FromNormalized(0.0f,-0.996312f,0.0f);
-		door1.m_seq_update=true;
-		door1.m_seq_upd_num1=0;
-		door1.m_seq_upd_num2=0;
-		door1.m_pchar_things=0;
-		door1.m_costume->m_costume_type=2;
-		door1.m_costume->costume_type_idx_P=0x356;
-		door1.m_costume->costume_sub_idx_P =0;
-		//xluency=1
-		door1.m_odd_send=false;
-		door1.m_is_villian=false;
-		door1.m_contact=false;
-		door1.entReceiveAlwaysCon=false;
-		door1.entReceiveSeeThroughWalls=false;
-		door1.m_SG_info=true;
-		door1.field_78=0;
-
-		MobEntity door2;
-		door2.m_idx=0x69;
-		door2.m_create=true;
-		door2.var_129C=false;
-		door2.field_64=0x6B;
-		door2.m_type=8;
-		door2.m_hasname=true;
-		door2.m_name="Dr";
-		door2.field_60=0x0000622D;
-		door2.m_hasgroup_name=false;
-		door2.var_C=true;
-		door2.m_rare_bits=true;
-		door2.m_state_mode_send=true;
-		door2.m_state_mode=0;
-		door2.pos = Vector3(195.52f,-96.0f,591.672f);
-											//0x100,0x7F,0x100
-		door2.qrot= Quaternion().FromNormalized(0.0f,-0.711432f,0.0f);
-		door2.m_seq_update=true;
-		door2.m_seq_upd_num1=0;
-		door2.m_seq_upd_num2=0;
-		door2.m_pchar_things=0;
-		door2.m_costume->m_costume_type=2;
-		door2.m_costume->costume_type_idx_P=0x356;
-		door2.m_costume->costume_sub_idx_P =0;
-		//door2.m_ragdol_num_bones=0;
-		//xluency=1
-		door2.m_odd_send=false;
-		door2.m_is_villian=false;
-		door2.m_contact=false;
-		door2.entReceiveAlwaysCon=false;
-		door2.entReceiveSeeThroughWalls=false;
-		door2.m_SG_info=true;
-		door2.field_78=0;
-*/
-/*
-		PlayerEntity m_player1;
-		m_player1.m_idx=0x6A;
-		m_player1.m_create=true;
-		m_player1.var_129C=false;
-		m_player1.field_60=0x579C;
-		m_player1.field_68=0x17D8;
-		m_player1.m_type=2;
-		m_player1.m_create_player=0;
-		m_player1.m_player_villain=0;
-		m_player1.m_origin_idx=0;
-		m_player1.m_class_idx=3;
-		m_player1.m_selector1=1;
-		m_player1.m_num_titles=0;
-		m_player1.m_hasname=true;
-		m_player1.m_name="Jubal Early";
-		m_player1.field_60=0x00001AC3;
-		m_player1.var_C=true;
-		m_player1.m_rare_bits=true;
-		m_player1.m_state_mode_send=true;
-		m_player1.m_state_mode=0;
-		m_player1.pos = Vector3(-65.0625f,0.0f,189.531f);
-		//0x100,0x1F0,0x100
-		m_player1.qrot= Quaternion().FromNormalized(0.0f,0.99518f,0.0f);
-		m_player1.m_seq_update=true;
-		m_player1.m_seq_upd_num1=0x2A;
-		m_player1.m_seq_upd_num2=0;
-		m_player1.m_pchar_things=1;
-		m_player1.m_num_fx=1;
-		m_player1.m_fx1.push_back(2);
-		m_player1.m_fx2.push_back(0xAE4C);
-		m_player1.m_costume = new NpcC;
-		m_player1.m_costume->costume_type_idx_P=0x356;
-		m_player1.m_costume->costume_sub_idx_P =0;
-		//door2.m_ragdol_num_bones=0;
-		//xluency=1
-		m_player1.m_odd_send=false;
-		m_player1.m_is_villian=false;
-		m_player1.m_contact=false;
-		m_player1.entReceiveAlwaysCon=false;
-		m_player1.entReceiveSeeThroughWalls=false;
-		m_player1.m_SG_info=true;
-		m_player1.field_78=0;
 */
 //		res->unkn3=false;
 /*

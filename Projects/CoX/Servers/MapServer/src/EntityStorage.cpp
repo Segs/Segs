@@ -45,7 +45,7 @@ void EntityManager::sendEntities( BitStream &tgt ) const
 	Entity *pEnt = NULL;
 	list<Entity *>::const_iterator iter = m_entlist.begin();
 	int last_idx;
-	int delta;// sending delta between entities -> 
+	int delta;// sending delta between entities idxs -> 
 	if(iter!=m_entlist.end())
 	{
 		pEnt = *iter;

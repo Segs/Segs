@@ -128,16 +128,16 @@ public:
 	}
 	void serializeto(BitStream &tgt) const
 	{
-		for(int i=0; i<num_trays; i++)
-			tgt.StoreBits(32,m_trays[i].unkn0);
+		tgt.StoreBits(32,unkn1);
+		tgt.StoreBits(32,unkn2);
 		for(int bar_num=0; bar_num<9; bar_num++)
 			m_trays[bar_num].serializeto(tgt);
 		bool m_c = false;
 		tgt.StoreBits(1,m_c);
-		if(m_c)
+		if(m_c) // selected ???
 		{
-			tgt.StoreBits(32,m_power_rel1);
-			tgt.StoreBits(32,m_power_rel2);
+			tgt.StoreBits(32,m_power_rel1); // array of powersets index
+			tgt.StoreBits(32,m_power_rel2); // array of powers idx ?
 		}
 	}
 	void serializefrom(BitStream &src)
@@ -306,7 +306,7 @@ public:
 		Quaternion qrot;
 		Vector3 pos;
 		u32 prev_pos[3];
-		bool m_selector1,m_pchar_things,var_C          ,m_hasname  ,m_hasgroup_name,m_classname_override;
+		bool m_selector1,m_pchar_things,might_have_rare          ,m_hasname  ,m_hasgroup_name,m_classname_override;
 		bool m_create   ,m_hasRagdoll  ,m_create_player,m_rare_bits;
 		int current_client_packet_id;
 		string m_name, m_group_name, m_override_name;

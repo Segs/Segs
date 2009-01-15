@@ -120,13 +120,13 @@
 <structure name="GeoSet">
     <type_ref name="DisplayName"    type="0x6"      offset="0x4"    param="0x0"     sub_ref="0x0"/>
     <type_ref name="BodyPart"       type="0x6"      offset="0x8"    param="0x0"     sub_ref="0x0"/>
-    <type_ref name="Type"   		type="0x5"  	offset="0xC"    param="0x0"     sub_ref="0x0"/>
-    <type_ref name="info"   		type="0x15"  	offset="0x238"  param="0x18"    sub_ref="GeoSetInfo"/>
-    <type_ref name="mask"   		type="0x15"  	offset="0x234"  param="0x8"     sub_ref="GeoSetMask"/>
-    <type_ref name="masks"   		type="0x12"  	offset="0x22C"  param="0x0"     sub_ref="0x0"/>
-    <type_ref name="masknames" 		type="0x12"  	offset="0x230"  param="0x0"     sub_ref="0x0"/>
-    <type_ref name="EndGeoSet"		type="0x2"  	offset="0x0"    param="0x0"	    sub_ref="0x0"/>
-    <type_ref name="End"			type="0x2"      offset="0x0"    param="0x0"     sub_ref="0x0"/>
+    <type_ref name="Type"   		    type="0x5"  	offset="0xC"    param="0x0"     sub_ref="0x0"/>
+    <type_ref name="info"   		    type="0x15"  	offset="0x238"  param="0x18"    sub_ref="GeoSetInfo"/>
+    <type_ref name="mask"   		    type="0x15"  	offset="0x234"  param="0x8"     sub_ref="GeoSetMask"/>
+    <type_ref name="masks"   		    type="0x12"  	offset="0x22C"  param="0x0"     sub_ref="0x0"/>
+    <type_ref name="masknames" 		  type="0x12"  	offset="0x230"  param="0x0"     sub_ref="0x0"/>
+    <type_ref name="EndGeoSet"		  type="0x2"  	offset="0x0"    param="0x0"	    sub_ref="0x0"/>
+    <type_ref name="End"			      type="0x2"      offset="0x0"    param="0x0"     sub_ref="0x0"/>
 </structure>
 <structure name="GeoSetInfo">
     <type_ref name="DisplayName"    type="0x6"      offset="0x0"    param="0x0"     sub_ref="0x0"/>
@@ -378,6 +378,22 @@
     <type_ref name="NearFade"	type="0x0A" offset="0x0C"	param="0x0" sub_ref="0x0"/>
     <type_ref name="Scale"		type="0x0A" offset="0x10"	param="0x0" sub_ref="0x0"/>
     <type_ref name="End"		type="0x2"	offset="0x0"	param="0x0" sub_ref="0x0"/>
+</structure>
+
+<structure name="LiveAttribs">
+    <type_ref name="HitPoints"  type="0x0A" offset="0x60"	param="0x2" sub_ref="0x0"/>
+    <type_ref name="Endurance"	type="0x0A" offset="0x64"	param="0x2" sub_ref="0x0"/>
+</structure>
+<structure name="LiveLevels">
+    <type_ref name="Level"          type="0x5" offset="0x0"	param="0x4" sub_ref="LiveAttribs"/>
+    <type_ref name="CombatLevel"    type="0x5" offset="0x4"	param="0x4" sub_ref="LiveAttribs"/>
+</structure>
+<!-- for type 5 param says how many PackedBits are to be read/written-->
+<!-- for type 0x400 probably means that sub structures have offsets relative to parent-->
+<structure name="FullStats">
+    <type_ref name="CurrentAttribs" type="0x415" offset="0x40"	param="0x168" sub_ref="LiveAttribs"/>
+    <type_ref name="MaxAttribs"     type="0x415" offset="0x310"	param="0x168" sub_ref="LiveAttribs"/>
+    <type_ref name="SendLevels"	    type="0x415" offset="0x0"	param="0xA58" sub_ref="LiveLevels"/>
 </structure>
 
 </structures>

@@ -20,6 +20,7 @@ void pktMap_Server_EntitiesResp::serializeto( BitStream &tgt ) const
 {
 	tgt.StoreBits(1,entReceiveUpdate);
 	sendCommands(tgt);
+
 	tgt.StoreBits(32,abs_time);
 	//tgt.StoreBits(32,db_time);
 
@@ -27,7 +28,8 @@ void pktMap_Server_EntitiesResp::serializeto( BitStream &tgt ) const
 	if(unkn2==0) 
 	{
 		tgt.StoreBits(1,debug_info);
-		if(selector1==0) 
+		tgt.StoreBits(1,selector1);
+		if(selector1==1) 
 		{
 			tgt.StoreBits(2,dword_A655C0);
 			tgt.StoreBits(2,BinTrees_PPP);
@@ -41,9 +43,17 @@ void pktMap_Server_EntitiesResp::serializeto( BitStream &tgt ) const
 		m_client->getCurrentMap()->m_entities.sendDebuggedEntities(tgt);
 		m_client->getCurrentMap()->m_entities.sendGlobalEntDebugInfo(tgt);
 	}
+	sendServerPhysicsPositions(tgt);
 	sendControlState(tgt);
 	m_client->getCurrentMap()->m_entities.sendDeletes(tgt);
-// 	m_client->getCharEntity()->m_char.serializeto(tgt);
+	if(m_opcode==3)
+	{
+		m_client->getCharEntity()->m_char.serializeto(tgt);
+	}
+	else
+	{
+		m_client->getCharEntity()->m_char.sendFullStats(tgt);
+	}
 	storePowerInfoUpdate(tgt);
 	storePowerModeUpdate(tgt);
 	storeBadgeUpdate(tgt);
@@ -73,7 +83,7 @@ void pktMap_Server_EntitiesResp::dependent_dump( void )
 	if(unkn2==0) 
 	{
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    debug_info 0x%08x\n"),debug_info));
-		if(selector1==0) 
+		if(selector1==1) 
 		{
 			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    dword_A655C0 0x%08x\n"),dword_A655C0));
 			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    BinTrees_PPP 0x%08x\n"),BinTrees_PPP));
@@ -198,13 +208,9 @@ void pktMap_Server_SceneResp::serializeto( BitStream &tgt ) const
 		0x64CCCC31,0x535B08CC};
 
 	//			ACE_TRACE(!"Hold yer horses!");
+	// overriding defs
 	tgt.StorePackedBits(1,-1); // finisher
-	for(size_t idx=0; idx<m_refs.size(); idx++)
-	{
-
-		tgt.StorePackedBits(1,idx); // next element idx 
-		m_refs[idx].serializeto(tgt);
-	}
+	// overriding groups
 	tgt.StorePackedBits(1,-1); // fake it all the way
 	return;
 	if(0)
@@ -232,10 +238,13 @@ void pktMap_Server_SceneResp::serializeto( BitStream &tgt ) const
 		}
 		tgt.StorePackedBits(1,-1); // finisher
 	}
-	for(size_t i=0; i<m_refs.size(); i++)
+	if(0)
 	{
-		tgt.StorePackedBits(1,0); // next element idx 
-		m_refs[i].serializeto(tgt);
+		for(size_t i=0; i<m_refs.size(); i++)
+		{
+			tgt.StorePackedBits(1,0); // next element idx 
+			m_refs[i].serializeto(tgt);
+		}
 	}
 	tgt.StorePackedBits(1,~0); // finishing marker,-1
 	tgt.StorePackedBits(1,0xD8); //unused
@@ -316,13 +325,11 @@ bool pktCS_SendEntity::IsCostumePartName_NotSet( string &str )
 
 void pktMap_Server_EntitiesResp::sendControlState(BitStream &bs) const
 {
-	bs.StoreBits(1,0); // sendFuturePushList
 	sendServerPhysicsPositions(bs);
 	sendServerControlState(bs);
 }
 void pktMap_Server_EntitiesResp::sendServerPhysicsPositions(BitStream &bs) const
 {
-	bs.StoreBits(1,0); 
 	bs.StoreBits(1,0); 
 	bs.StoreBits(1,0); 
 }
