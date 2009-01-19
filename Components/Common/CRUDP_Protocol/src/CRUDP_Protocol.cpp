@@ -88,8 +88,11 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
 	//src.GetBits(1); //unknown flag
 	//src.Get_2_10_24_32(); // ordered_id
 	src.ByteAlign();
-	src.PopFront(src.GetDataSize()-src.GetReadableDataSize()); //this shifts the stream so it now begins at last read position i.e. Real packet payload
-	res->setContents(src); // leaving out the whole header
+	// how much data did we actually read
+	size_t bits_left=bitlength-src.GetReadPos();
+//	src.PopFront(src.GetDataSize()-src.GetReadableDataSize()); //this shifts the stream so it now begins at last read position i.e. Real packet payload
+	res->StoreBitArray(src.read_ptr(),bits_left);
+	//res->setContents(src); // leaving out the whole header
 	PushRecvPacket(res);
 }
 void CrudP_Protocol::parseAcks(BitStream &src,CrudP_Packet *tgt)

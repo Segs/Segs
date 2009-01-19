@@ -215,6 +215,7 @@ public:
 //	bool IsCurByteFull()		const {	return (m_bitPos >= BITS_PER_BYTE);								};
 	
 	void SetReadPos(u32 pos)	{	m_read_off  = pos >> 3;		m_read_bit_off  = (u8)(pos & 0x7);};
+	size_t GetReadPos()			{	return (m_read_off<<3)  + m_read_bit_off;};
 	void SetWritePos(u32 pos)	{	m_write_off = pos >> 3;		m_write_bit_off = (u8)(pos & 0x7);};
 	
 	void SetByteLength(u32 length);
