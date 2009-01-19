@@ -348,7 +348,7 @@ void BitStream::GetBitArrayWithDebugInfo(u8 *array,size_t nBytes)
 
 void BitStream::GetBitArray(u8 *tgt, size_t nBits)
 {
-	ByteAlign();
+	ByteAlign(true,false);
 	u32 nBytes(nBits>>3);
 	GetBytes(tgt,nBytes);
 }
@@ -377,8 +377,8 @@ void BitStream::GetString(string &str)
 	u32 bitsLeft = BITS_LEFT(m_read_bit_off);
 	u8 chr;
 	do {
-		chr  = ((u8 *)m_buf)[m_read_off]  >> m_read_bit_off;
-		chr	|= ((u8 *)m_buf)[++m_read_off] << bitsLeft;
+		chr  = m_buf[m_read_off]  >> m_read_bit_off;
+		chr	|= m_buf[++m_read_off] << bitsLeft;
 		str += chr;
 
 		if(GetReadableBits()<8) 
@@ -447,12 +447,19 @@ void BitStream::UseByteAlignedMode(bool toggle)
 }
 
 
-void BitStream::ByteAlign()
+void BitStream::ByteAlign( bool read_part,bool write_part )
 {
 	//	If bitPos is 0, we're already aligned
-	m_write_off += (m_write_bit_off>0);
-	m_read_off  += (m_read_bit_off>0);
-	m_read_bit_off=m_write_bit_off=0;
+	if(write_part)
+	{
+		m_write_off += (m_write_bit_off>0);
+		m_write_bit_off=0;
+	}
+	if(read_part)
+	{
+		m_read_off  += (m_read_bit_off>0);
+		m_read_bit_off=0;
+	}
 }
 
 /*

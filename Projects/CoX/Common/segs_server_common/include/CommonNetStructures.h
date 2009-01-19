@@ -172,7 +172,10 @@ public:
 	// Part 2 : Head
 	// Part 3 : Gloves
 	// Part 4 : Boots
-	CostumePart(){}
+	CostumePart():m_type(0),m_generic(false)
+	{
+		m_colors[0]=m_colors[1]=m_colors[2]=m_colors[3]=0;
+	}
 	CostumePart(int type,const string &a,const string &b,const string &c,const string &d,u32 c1,u32 c2,u32 c3,u32 c4)
 		:m_type(type),name_0(a),name_1(b),name_2(c),name_3(d)
 	{

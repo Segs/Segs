@@ -220,7 +220,7 @@ public:
 	
 	void SetByteLength(u32 length);
 	void UseByteAlignedMode(bool toggle);
-	void ByteAlign();
+	void ByteAlign(bool read_part=true,bool write_part=true);
 	void Reset();
 
 	u32 GetPackedBitsLength(u32 nBits, u32 dataBits) const;

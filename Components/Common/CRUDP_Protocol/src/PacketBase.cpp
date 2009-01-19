@@ -36,6 +36,8 @@ GamePacket *ControlPacketFactory::PacketFromStream(u8 opcode, BitStream &bs) con
 	GamePacket *res=NULL;
 	if(opcode==0)
 	{
+		if(bs.GetReadableBits()==0)
+			return new pktIdle();
 		u8 command_opcode = bs.GetPackedBits(1);
 		switch(command_opcode)
 		{

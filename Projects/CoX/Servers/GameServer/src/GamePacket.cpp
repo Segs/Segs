@@ -129,10 +129,10 @@ void pktCS_MapServerAddr_Query::dependent_dump( void )
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_character_index 0x%08x\n"),m_character_index));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_map_server_ip 0x%08x\n"),m_map_server_ip));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_map_number 0x%08x\n"),m_mapnumber));
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_unkn2 0x%08x\n"),m_charVillain));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_char_name %s\n"),m_char_name.c_str()));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
 }
+
 
 void pktCS_MapServerAddr_Query::serializefrom( BitStream &src )
 {

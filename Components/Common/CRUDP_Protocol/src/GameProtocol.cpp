@@ -42,17 +42,16 @@ void GameProtocol<SERIALIZER_TYPE>::Received(CrudP_Packet *pak)
 {
 	GamePacket *gp;
 	ACE_ASSERT(pak);
-	gp = this->serializefrom(pak);
-	if(gp)
+	
+	while(pak->GetStream()->GetReadableBits() && (gp = this->serializefrom(pak)))
 	{
 		m_handler->ReceivePacket(gp);
 		delete gp;
 	}
-	else
+	if(pak->GetStream()->GetReadableBits())
 	{
-//		pak->dump();
+		ACE_ASSERT(!"bits_are_left");
 	}
-//	delete pak;
 	//PacketFactory::Destroy(pak);
 }
 template<class SERIALIZER_TYPE>
