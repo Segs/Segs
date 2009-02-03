@@ -23,7 +23,7 @@ IF (WIN32) #Windows
     SET(OGRE_LIBRARIES debug OgreMain_d optimized OgreMain)
 ELSE (WIN32) #Unix
     FIND_PACKAGE(PkgConfig)
-    PKG_SEARCH_MODULE(OGRE /usr/pack/ogre-1.4.5-sd/i686-debian-linux3.1/lib/pkgconfig) # tardis specific hack
+    PKG_SEARCH_MODULE(OGRE OGRE)
     SET(OGRE_INCLUDE_DIR ${OGRE_INCLUDE_DIRS})
     SET(OGRE_LIB_DIR ${OGRE_LIBDIR})
     SET(OGRE_LIBRARIES ${OGRE_LIBRARIES} CACHE STRING "")
