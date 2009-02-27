@@ -274,7 +274,7 @@ MobEntity::MobEntity()
 }
 void Entity::sendXLuency(BitStream &bs,float val) const
 {
-	storeBitsConditional(bs,8,min(u8(val*255),255)); // upto here everything is ok
+	storeBitsConditional(bs,8,min(static_cast<int>(u8(val*255)),255)); // upto here everything is ok
 }
 void Entity::sendTitles(BitStream &bs) const
 {
