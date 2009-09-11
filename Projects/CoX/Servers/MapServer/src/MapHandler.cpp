@@ -43,7 +43,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 		setClient(m_server->ClientExpected(getTargetAddr(),in_pak->m_cookie));
 		if(in_pak->m_new_character)
 		{
-			in_pak->get_new_character(static_cast<PlayerEntity *>(m_client->getCharEntity()));
+			m_client->setCharEntity(in_pak->get_new_character());
 		}
 		else
 		{
@@ -185,7 +185,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 	if(pak->m_opcode==6)
 	{
 		pak->dump();
-		m_proto->SendPacket(new pktIdle);
+		m_proto->SendPacket(new pktSC_Connected);
 		return true;
 	}
 	pak->dump();

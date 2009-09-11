@@ -48,6 +48,7 @@ void CrudP_Protocol::clearQueues(bool recv_queue,bool send_queue)
 	}
 	if(send_queue)
 	{
+		ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
 		for_each(unsent_packets.begin(),unsent_packets.end(),PacketDestroyer);	
 	}
 }
@@ -288,6 +289,7 @@ void CrudP_Protocol::PacketSibDestroyer(const pair<int,pPacketStorage> &a)
 void CrudP_Protocol::PacketAck(u32 id)
 {
 	//TODO: sort + binary search for id
+	ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
 	ipPacketStorage iter = unsent_packets.begin();
 	while(iter!=unsent_packets.end())
 	{
@@ -393,6 +395,7 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
 			fwrite(res->GetBuffer(),1,res->GetReadableDataSize(),fp);
 			fclose(fp);
 #endif
+			ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
             unsent_packets.push_back(pkt);
             ACE_Message_Block *msg=new ACE_Message_Block((char *)m_client,sizeof(m_client));
             msg->wr_ptr(sizeof(m_client));
@@ -450,7 +453,8 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
 		fwrite(res->GetBuffer(),1,res->GetReadableDataSize(),fp);
 		fclose(fp);
 #endif
-        unsent_packets.push_back(p);
+		ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
+		unsent_packets.push_back(p);
         ACE_Message_Block *msg=new ACE_Message_Block((char *)m_client,sizeof(m_client));
         msg->wr_ptr(sizeof(ACE_INET_Addr));
         m_queue->enqueue_tail(msg);
@@ -458,6 +462,7 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
 }
 size_t CrudP_Protocol::GetUnsentPackets(list<CrudP_Packet *> &res)
 {
+	ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
 	res.assign(unsent_packets.begin(),unsent_packets.end());
 	return unsent_packets.size();
 }

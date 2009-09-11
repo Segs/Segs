@@ -256,9 +256,7 @@ void pktMap_Server_SceneResp::serializeto( BitStream &tgt ) const
 
 pktCS_SendEntity::pktCS_SendEntity() : m_newchar_optional(0)
 {
-	m_unkn1=0;
 	m_opcode=9;//after this packet it expects opcode 5
-	arr_size=0;
 }
 void pktCS_SendEntity::serializefrom( BitStream &src )
 {
@@ -267,18 +265,13 @@ void pktCS_SendEntity::serializefrom( BitStream &src )
 	m_new_character=src.GetBits(1);
 	if(m_new_character)
 	{
-		m_newchar_optional=src;
+		m_ent = new PlayerEntity();
+		((PlayerEntity*)m_ent)->serializefrom_newchar(src);
 	}
 }
-void pktCS_SendEntity::get_new_character(PlayerEntity *ent)
+Entity *pktCS_SendEntity::get_new_character()
 {
-	ACE_ASSERT(m_new_character);
-	m_ent = ent;
-	ent->serializefrom_newchar(m_newchar_optional);
-	arr_size = m_newchar_optional.GetReadableBits()>>3;
-	if(arr_size>512)
-		arr_size = 512;
-	m_newchar_optional.GetBitArray((u8*)arr,arr_size<<3); // unused junk, really
+	return m_ent;
 }
 
 void pktCS_SendEntity::serializeto( BitStream &tgt ) const
@@ -288,16 +281,11 @@ void pktCS_SendEntity::serializeto( BitStream &tgt ) const
 	tgt.StoreBits(1,m_new_character);
 	if(m_new_character)
 	{
-		tgt.StorePackedBits(1,m_unkn1);
-		tgt.StoreBits(1,m_unkn2);
-		tgt.StoreString(m_sunkn1);
-		tgt.StoreString(m_sunkn2);
 	}
 }
 
 void pktCS_SendEntity::DumpEntity()
 {
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_unkn1 0x%08x\n"),m_unkn1));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_b %d\n"),m_b));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    //------------Build Info-------\n")));
 	if(m_ent)

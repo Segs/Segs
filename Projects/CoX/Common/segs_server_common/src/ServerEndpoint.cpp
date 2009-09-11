@@ -76,6 +76,7 @@ int ServerEndpoint::handle_output(ACE_HANDLE)
 {
 	ACE_Message_Block *mb;
 	ACE_Time_Value nowait (ACE_OS::gettimeofday ());
+	ACE_Guard<ACE_Thread_Mutex> grd(m_send_sema);
 	while (-1 != getq(mb, &nowait))
 	{
 		if(mb->length()>=sizeof(void *))

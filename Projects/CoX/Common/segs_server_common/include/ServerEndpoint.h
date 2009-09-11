@@ -66,6 +66,7 @@ class PacketFactory;
 class ServerEndpoint : public ACE_Svc_Handler<ACE_SOCK_DGRAM, ACE_MT_SYNCH>
 {
 	typedef ACE_Svc_Handler<ACE_SOCK_DGRAM, ACE_MT_SYNCH> super;
+	ACE_Thread_Mutex m_send_sema;
 public:
 	ServerEndpoint(const ACE_INET_Addr &local_addr);
 	// main processing interface, all this class needs to process client requests

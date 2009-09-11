@@ -157,11 +157,13 @@ bool MapServer::startup()
 void MapServer::AssociatePlayerWithMap( u64 player_id,const std::string &name,int map_number )
 {
 	MapClient *client=m_clients.getById(player_id);
+/*
 	if(client->getCharEntity()==0)
 	{
 		client->setCharEntity(new PlayerEntity);
 		client->getCharEntity()->m_name=name;
 	}
+*/
 	client->setCurrentMap(getMapByNum(map_number));
 }
 SEGSMap * MapServer::getMapByNum(int num)

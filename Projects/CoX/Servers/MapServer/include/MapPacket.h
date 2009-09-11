@@ -129,26 +129,16 @@ protected:
 virtual void	dependent_dump(void);
 		bool	IsCostumePartName_NotSet(string &str);
 public:
-				pktCS_SendEntity();
-virtual void	serializefrom(BitStream &src);
-virtual void	serializeto(BitStream &tgt) const;
-		void	get_new_character(PlayerEntity *ent);
+					pktCS_SendEntity();
+virtual void		serializefrom(BitStream &src);
+virtual void		serializeto(BitStream &tgt) const;
+		Entity *	get_new_character();
 public:
-		Entity *m_ent;
-		u32		m_power_rel1,m_power_rel2;
-		u8		arr[512];
-		size_t	arr_size;
-		u32		m_cookie;
-		bool	m_city_of_developers;
-		bool	m_new_character,m_b,m_c,m_d;
-		u32		m_unkn1;
-		u32		m_unkn2;
-		u32		m_unkn3;
-		u32		m_unkn4;
-		u32		m_unkn5;
-		std::string m_sunkn1;
-		std::string m_sunkn2;
-		std::string m_sunkn3;
+		Entity *	m_ent;
+		u32			m_power_rel1,m_power_rel2;
+		u32			m_cookie;
+		bool		m_city_of_developers;
+		bool		m_new_character,m_b,m_c,m_d;
 };
 class pktSC_Connect : public GamePacket
 {
@@ -260,6 +250,88 @@ public:
 		tgt.StorePackedBits(1,unkn1);
 	}
 	bool unkn1;
+};
+class pktCS_UIWindowState : public GamePacket
+{
+protected:
+	virtual void dependent_dump(void)
+	{
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktCS_UIWindowState\n%I{\n")));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    window_idx 0x%08x\n"),window_idx));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    color_PP 0x%08x\n"),color_PP));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    field_0 0x%08x\n"),field_0));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    field_10 0x%08x\n"),field_10));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    field_14 0x%08x\n"),field_14));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    field_18 0x%08x\n"),field_18));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    field_20 0x%08x\n"),field_20));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    field_24 0x%08x\n"),field_24));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    field_4 0x%08x\n"),field_4));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    field_8 0x%08x\n"),field_8));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    field_C 0x%08x\n"),field_C));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
+	}
+	size_t color_PP;
+	size_t field_0;
+	bool field_10;
+	size_t field_14;
+	int field_18;
+	size_t field_20;
+	size_t field_24;
+	size_t field_4;
+	size_t field_8;
+	size_t field_C;
+	size_t window_idx;
+public:
+	pktCS_UIWindowState()
+	{
+		m_opcode=14;
+		field_8=field_C=0;
+	}
+	virtual void serializefrom(BitStream &src)
+	{
+		window_idx=src.GetPackedBits(1);
+		field_0=src.GetPackedBits(1);
+		field_4=src.GetPackedBits(1);
+		size_t res=src.GetPackedBits(1);
+		if(res==4)
+			field_18 = 2;
+		field_24=res;
+		field_14=src.GetPackedBits(1);
+		color_PP=src.GetPackedBits(1);
+		field_20=src.GetPackedBits(1);
+		bool has_field_10=src.GetBits(1);
+		field_10=has_field_10=has_field_10;
+		if ( has_field_10 )
+		{
+			field_8=src.GetPackedBits(1);
+			field_C=src.GetPackedBits(1);
+		}
+	}
+	virtual void serializeto(BitStream &tgt) const
+	{
+/*
+		tgt.StorePackedBits(1, window_idx);
+		tgt.StorePackedBits(1, a2->field_0);
+		tgt.StorePackedBits(1, a2->field_4);
+		if ( a2->field_18 == 2 )
+			tgt.StorePackedBits(1, 4);
+		else
+			tgt.StorePackedBits(1, a2->field_24);
+		tgt.StorePackedBits(1, a2->field_14);
+		tgt.StorePackedBits(1, a2->color_PP);
+		tgt.StorePackedBits(1, a2->field_20);
+		if ( a2->field_10 )
+		{
+			tgt.StoreBits(1, 1);
+			tgt.StorePackedBits(1, a2->field_8);
+			result = tgt.StorePackedBits(1, a2->field_C);
+		}
+		else
+		{
+			result = tgt.StoreBits(1, 0);
+		}
+*/
+	}
 };
 class pktMap_Client_RequestEntities : public GamePacket
 {
@@ -523,8 +595,6 @@ protected:
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktMap_Character_6\n%I{\n")));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    mapserver_cookie 0x%08x\n"),mapserver_cookie));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    console_enabled 0x%08x\n"),console_enabled));
-		for(size_t i=0; i<16; i++)
-			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    final_password_hash[%d]:0x%08x;\n"),i,final_password_hash[i]));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
 	}
 public:
@@ -536,17 +606,14 @@ public:
 	{
 		mapserver_cookie = src.GetPackedBits(1);
 		console_enabled = src.GetPackedBits(1);
-		src.GetBitArray(final_password_hash,128);
 	}
 	virtual void serializeto(BitStream &tgt) const
 	{
 		tgt.StorePackedBits(1,mapserver_cookie);
 		tgt.StorePackedBits(1,console_enabled);
-		tgt.StoreBitArray(final_password_hash,128);
 	}
 	u32 mapserver_cookie;
 	u32 console_enabled;
-	u8 final_password_hash[16];
 };
 class pktMap_Client_InputState : public GamePacket
 {
@@ -557,9 +624,6 @@ protected:
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    contain_control_update 0x%08x\n"),contain_control_update));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    has_target 0x%08x\n"),has_target));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    target_idx 0x%08x\n"),target_idx));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    input_send 0x%08x\n"),input_send));
-		if(input_send) {
-		}
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
 	}
 public:
@@ -570,11 +634,27 @@ public:
 	virtual void serializefrom(BitStream &src)
 	{
 		contain_control_update = src.GetBits(1);
+		if(contain_control_update)
+		{
+			ACE_ASSERT(!"Not Implemented");
+		}
 		has_target = src.GetBits(1);
 		target_idx = src.GetPackedBits(14);
-		input_send = src.GetBits(1);
-		if(input_send) {
+		while(src.GetBits(1))
+		{
+			ACE_ASSERT(!"Not Implemented");
+
+		};
+		u8 opt_idx;
+		// options set
+		while(opt_idx = src.GetPackedBits(1))
+		{
+			ACE_ASSERT(!"Not Implemented");
 		}
+		//what follows is a bitstream of many packets that are concatenated into this packet 
+		// but it is put as an bitarray so it's byte aligned
+		// TODO: Check if any other packet is followed by g_pak
+		src.ByteAlign(true,false);
 	}
 	virtual void serializeto(BitStream &tgt) const
 	{
@@ -582,6 +662,7 @@ public:
 		tgt.StoreBits(1,has_target);
 		tgt.StorePackedBits(14,target_idx);
 		tgt.StoreBits(1,input_send);
+
 		if(input_send) {
 		}
 	}
@@ -615,6 +696,9 @@ public:
 			res = new pktMap_Character_6; break;
 		case 9:
 			res = new pktCS_SendEntity; break;
+		case 14:
+			res = new pktCS_UIWindowState; break;
+			
 		default:
 			res = new UnknownGamePacket; break;
 		}

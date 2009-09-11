@@ -67,7 +67,7 @@ private:
 		list<u32> recv_acks; // each sucessful receive will store it's acl here
 	// we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup 
 		hmSibStorage sibling_map;
-
+		ACE_Thread_Mutex m_packets_mutex;
 		ACE_Message_Queue_Base *m_queue;
 
 		CrudP_Packet *		mergeSiblings(int id);
