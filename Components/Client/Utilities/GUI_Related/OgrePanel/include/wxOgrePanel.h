@@ -2,7 +2,7 @@
 #include <wx/control.h>
 #include <wx/panel.h>
 #include <wx/timer.h>
-#include <ogre/Ogre.h>
+#include <Ogre.h>
 
 class wxOgrePanel : public wxPanel
 {

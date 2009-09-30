@@ -1,7 +1,7 @@
 #include "Example01.h"
 #include "LoginDialog.h"
 #include <ace/Reactor.h>
-#include <ogre/OgreException.h>
+#include <OgreException.h>
 wx_thr thr; // creating instance of wx_thr, maybe it should be a singleton ? 
             // Remember: this thread is started from ACE_Main::run_i()
 
@@ -25,7 +25,7 @@ bool ExampleClient::OnInit()
     LoginDialog* login_test = new LoginDialog(NULL, wxID_ANY, wxEmptyString);
     SetTopWindow(login_test);
     login_test->ShowModal();
-    OnExit();
+    OnExit(); 
     return false;
 }
 int ExampleClient::OnExit()

@@ -19,7 +19,7 @@ class OgreInitializer
 		NameValuePairList a;
 		a.insert(std::pair<String,String>("externalWindowHandle",StringConverter::toString( (size_t) m_frm->GetHandle() )));
 		RenderSystem *sys = m_root->getRenderSystem();
-		RenderWindow *m_ren = sys->createRenderWindow(String("OgreRenderWindow_00"),1,1,false,&a);
+		RenderWindow *m_ren = sys->_createRenderWindow(String("OgreRenderWindow_00"),1,1,false,&a);
 		MaterialManager::getSingleton().initialise();
 		m_frm->Show(false);
 	}
@@ -109,7 +109,7 @@ void wxOgrePanel::createOgreRenderWindow()
 	a.insert(std::pair<String,String>("externalWindowHandle",StringConverter::toString( (size_t) this->GetHandle() )));
 	GetSize(&width, &height);
 	m_unique_name = StringConverter::toString((size_t) GetId());
-	m_RenderWindow = sys->createRenderWindow(String("OgreRenderWindow")+m_unique_name,width,height,false,&a);
+	m_RenderWindow = sys->_createRenderWindow(String("OgreRenderWindow")+m_unique_name,width,height,false,&a);
 	m_Root = OgreInitializer::root();
 	createSceneManager();
 	createCamera();

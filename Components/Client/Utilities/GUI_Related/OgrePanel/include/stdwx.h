@@ -13,5 +13,5 @@
 
 #include <wx/wx.h>
 #include <wx/control.h>
-#include <Ogre/Ogre.h>
+#include <Ogre.h>
 // TODO: reference additional headers your program requires here

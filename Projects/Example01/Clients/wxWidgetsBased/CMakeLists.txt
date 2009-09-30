@@ -17,6 +17,7 @@ SET(target_INCLUDE_DIR
 )
 
 FIND_PACKAGE(wxWidgets REQUIRED base core)
+FIND_PACKAGE(OGRE REQUIRED)
 FIND_PACKAGE(ACE REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
  
@@ -39,10 +40,14 @@ ADD_DEFINITIONS(
 )
 
 SEGS_ADD_COMPONENT(Auth SOURCE)
-
+LINK_DIRECTORIES(${OGRE_LIB_DIR})
+SET(target_INCLUDE_DIR ${target_INCLUDE_DIR}
+    ${OGRE_INCLUDE_DIR}
+    ${ACE_path}
+    ${Boost_INCLUDE_DIRS}
+    ${wxWidgets_INCLUDE_DIRS}
+)
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
-INCLUDE_DIRECTORIES(${wxWidgets_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(${ACE_path})
 
 SET (target_SOURCES
 ${target_CPP}
@@ -60,5 +65,6 @@ TARGET_LINK_LIBRARIES(segs_client_example_01 segs_common
 						${ACE_lib} 
 						${ZLIB_LIBRARIES}
 						${CMAKE_THREAD_LIBS_INIT}
+						${OGRE_LIBRARIES}
                         ${wxWidgets_LIBRARIES}) 
 ADD_DEPENDENCIES(segs_client_example_01 authserver_lib segs_common gameserver_lib) 
