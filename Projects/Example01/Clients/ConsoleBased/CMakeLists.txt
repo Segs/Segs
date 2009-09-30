@@ -1,5 +1,5 @@
 SET(target_CPP
-#${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
 SET(target_INCLUDE
 #${CMAKE_CURRENT_SOURCE_DIR}/include/Avatar.h
