@@ -39,7 +39,11 @@ ADD_DEFINITIONS(
   -D__WXDEBUG__
 )
 
+SET(target_DEPENDS "")
+
 SEGS_ADD_COMPONENT(Auth SOURCE)
+SEGS_ADD_COMPONENT(OgrePanel LIB)
+
 LINK_DIRECTORIES(${OGRE_LIB_DIR})
 SET(target_INCLUDE_DIR ${target_INCLUDE_DIR}
     ${OGRE_INCLUDE_DIR}
@@ -47,6 +51,7 @@ SET(target_INCLUDE_DIR ${target_INCLUDE_DIR}
     ${Boost_INCLUDE_DIRS}
     ${wxWidgets_INCLUDE_DIRS}
 )
+
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 
 SET (target_SOURCES
@@ -62,9 +67,10 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 TARGET_LINK_LIBRARIES(segs_client_example_01 segs_common 
+						${target_DEPENDS} 
 						${ACE_lib} 
 						${ZLIB_LIBRARIES}
 						${CMAKE_THREAD_LIBS_INIT}
 						${OGRE_LIBRARIES}
                         ${wxWidgets_LIBRARIES}) 
-ADD_DEPENDENCIES(segs_client_example_01 authserver_lib segs_common gameserver_lib) 
+ADD_DEPENDENCIES(segs_client_example_01 segs_common ${target_DEPENDS} ) 
