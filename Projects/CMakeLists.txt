@@ -14,3 +14,8 @@ IF(BUILD_Examples)
 ENDIF(BUILD_Examples)
 
 
+
+SET(BUILD_ChampionsOnline TRUE CACHE BOOL "Build ChampionsOnline?")
+IF(BUILD_ChampionsOnline)
+	ADD_SUBDIRECTORY(ChampionsOnline)
+ENDIF(BUILD_ChampionsOnline)

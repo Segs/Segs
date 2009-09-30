@@ -37,7 +37,7 @@ ${target_INCLUDE}
     # name is the same as the subdir name is the same as the component name
     def add_subdir(name,prefix="",optional=false)
         build_name = name
-        build_name = prefix+"_"+name if !prefix.nil?
+        build_name = prefix+"_"+name if !prefix.nil? && prefix.size>0
         
         fp = File.open(File.join(@current_path,"CMakeLists.txt"),"a+")
         fp <<"\n"
