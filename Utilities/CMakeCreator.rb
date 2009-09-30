@@ -28,7 +28,7 @@ ${target_INCLUDE}
 )
 '
         fp<<"#ADD_LIBRARY(#{name} STATIC ${target_SOURCES})\n"
-        fp<<"SEGS_REGISTER_COMPONENT(#{name} ${target_INCLUDE_DIR} ${target_CPP} ${target_INCLUDE} )\n"
+        fp<<"SEGS_REGISTER_COMPONENT(#{name} \"${target_INCLUDE_DIR}\" \"${target_CPP}\" \"${target_INCLUDE}\" )\n"
         fp.close()
     end
     def parent_dir(path) # returns absolute path of given path

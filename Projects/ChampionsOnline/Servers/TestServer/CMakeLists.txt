@@ -12,4 +12,4 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 #ADD_LIBRARY(ChampionsOnline_TestServer STATIC ${target_SOURCES})
-SEGS_REGISTER_COMPONENT(ChampionsOnline_TestServer ${target_INCLUDE_DIR} ${target_CPP} ${target_INCLUDE} )
+SEGS_REGISTER_COMPONENT(ChampionsOnline_TestServer "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
