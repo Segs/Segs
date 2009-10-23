@@ -358,6 +358,7 @@ void pktMap_Server_EntitiesResp::storeInventionUpdate(BitStream &bs)const
 }
 void pktMap_Server_EntitiesResp::storeTeamList(BitStream &bs) const
 {
+	//storePackedBitsConditional(bs,20,0);
 	bs.StoreBits(1,0);
 	bs.StoreBits(1,0);
 	bs.StoreBits(1,0);

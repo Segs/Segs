@@ -541,9 +541,9 @@ protected:
 	virtual void dependent_dump(void);
 	MapClient *m_client;
 public:
-	pktMap_Server_EntitiesResp(MapClient *cl)
+	pktMap_Server_EntitiesResp(MapClient *cl,bool t1)
 	{
-		m_opcode=3;
+		m_opcode=t1 ? 2 : 3;
 		m_client = cl;
 		abs_time=db_time=0;
 

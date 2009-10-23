@@ -128,7 +128,15 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 	}
 	if(pak->m_opcode==5)
 	{
-		pktMap_Server_EntitiesResp * res = new pktMap_Server_EntitiesResp(m_client);
+		// sending packet 3 first
+		pktMap_Server_EntitiesResp * res2 = new pktMap_Server_EntitiesResp(m_client,false);
+		res2->entReceiveUpdate=false;
+		res2->unkn1=false;
+		res2->m_num_commands=0;
+		res2->abs_time = (u32)time(NULL);
+		res2->unkn2=true; // default parameters for first flags
+
+		pktMap_Server_EntitiesResp * res = new pktMap_Server_EntitiesResp(m_client,true);
 		//pktMap_Server_Connect* res = new pktMap_Server_Connect;
 		Entity *pent = m_client->getCharEntity(); //new Entity;//EntityManager::CreatePlayer();
 		if(pent)
@@ -150,14 +158,8 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 
 			m_client->getCurrentMap()->m_entities.m_entlist.push_back(pent);
 		}
-
-		pent = new MobEntity;
-		pent->m_idx=1;
-		pent->m_create=true;
-		pent->might_have_rare=true;
-		pent->var_129C=true; // will break entity-receiving loop
-		m_client->getCurrentMap()->m_entities.m_entlist.push_back(pent);
-
+		m_proto->SendPacket(res2);
+	
 		res->entReceiveUpdate=false;
 //		res->m_resp=1;
 		res->unkn1=false;

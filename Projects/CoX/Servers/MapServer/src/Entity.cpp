@@ -474,7 +474,7 @@ void Entity::serializeto( BitStream &bs ) const
 	}
 	if(m_rare_bits)
 	{
-		sendOnOddSend(bs,m_odd_send);
+		sendOnOddSend(bs,m_odd_send); // is one on client end
 		sendWhichSideOfTheForce(bs);
 		sendEntCollision(bs);
 		sendNoDrawOnClient(bs);
@@ -865,7 +865,7 @@ void Avatar::sendFullStats(BitStream &bs) const
 					// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
 			}
 			bs.StoreBits(1,1); // has more data
-			bs.StorePackedBits(1,0); // EndurancePoints entry
+			bs.StorePackedBits(1,1); // EndurancePoints entry
 			// field type 0xA, param 2
 			if(1) // absolute values
 			{
@@ -883,30 +883,30 @@ void Avatar::sendFullStats(BitStream &bs) const
 	{
 		// nested into MaxAttribs:LiveAttribs
 		bs.StoreBits(1,1); // has more data
-		bs.StorePackedBits(1,0); // HitPoints entry
-		// field type 0xA, param 2
-		// Type15_Params 2 1.0 1.0 7
-		if(1) // absolute values
-		{
-			bs.StorePackedBits(7,45); // character health/1.0
-		}
-		else
-		{
-			// StoreOptionalSigned(
-			// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-		}
+			bs.StorePackedBits(1,0); // HitPoints entry
+			// field type 0xA, param 2
+			// Type15_Params 2 1.0 1.0 7
+			if(1) // absolute values
+			{
+				bs.StorePackedBits(7,45); // character health/1.0
+			}
+			else
+			{
+				// StoreOptionalSigned(
+				// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+			}
 		bs.StoreBits(1,1); // has more data
-		bs.StorePackedBits(1,0); // EndurancePoints entry
-		// field type 0xA, param 2
-		if(1) // absolute values
-		{
-			bs.StorePackedBits(7,45); // character end/1.0
-		}
-		else
-		{
-			// StoreOptionalSigned(
-			// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-		}
+			bs.StorePackedBits(1,1); // EndurancePoints entry
+			// field type 0xA, param 2
+			if(1) // absolute values
+			{
+				bs.StorePackedBits(7,45); // character end/1.0
+			}
+			else
+			{
+				// StoreOptionalSigned(
+				// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+			}
 		bs.StoreBits(1,0); // nest out
 	}
 	bs.StoreBits(1,1); // has more data
@@ -914,29 +914,29 @@ void Avatar::sendFullStats(BitStream &bs) const
 	{
 		// nested into SendLevels:LiveLevels
 		bs.StoreBits(1,1); // has more data
-		bs.StorePackedBits(1,0); // Level entry
-		// field type 0x5, param 4
-		if(1) // absolute values
-		{
-			bs.StorePackedBits(4,1); // 
-		}
-		else
-		{
-			// StoreOptionalSigned(
-			// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-			// send prev_lev-new_lev
-		}
+			bs.StorePackedBits(1,0); // Level entry
+			// field type 0x5, param 4
+			if(1) // absolute values
+			{
+				bs.StorePackedBits(4,1); // 
+			}
+			else
+			{
+				// StoreOptionalSigned(
+				// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+				// send prev_lev-new_lev
+			}
 		bs.StoreBits(1,1); // has more data
-		bs.StorePackedBits(1,0); // CombatLevel entry
-		if(1) // absolute values
-		{
-			bs.StorePackedBits(4,1); 
-		}
-		else
-		{
-			// StoreOptionalSigned(
-			// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-		}
+			bs.StorePackedBits(1,1); // CombatLevel entry
+			if(1) // absolute values
+			{
+				bs.StorePackedBits(4,1); 
+			}
+			else
+			{
+				// StoreOptionalSigned(
+				// Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+			}
 		bs.StoreBits(1,0); // nest out
 	}
 	bs.StoreBits(1,1); // has more data

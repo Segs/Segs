@@ -63,6 +63,10 @@ void EntityManager::sendEntities( BitStream &tgt ) const
 		pEnt->serializeto(tgt);
 		iter++;
 	}
+	// last entity marker
+	tgt.StorePackedBits(1,0); // next ent
+	tgt.StoreBits(1,1); // create/update -> create
+	tgt.StoreBits(1,1); // empty entity. will finish the receiving loop 
 }
 
 Entity * EntityManager::CreatePlayer()
