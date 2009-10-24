@@ -59,6 +59,11 @@ AuthPacket *AuthFSM_Default::ReceivedPacket(AuthConnection *conn,AuthPacket *pkt
 				break;
 			pktAuthLogin *auth_pkt = static_cast<pktAuthLogin *>(pkt);
             ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) User %s trying to login from %s.\n"),auth_pkt->username,caller->peer().get_host_addr()));
+			if(strlen(auth_pkt->username)<=2)
+			{
+				result = auth_error(2,2); // invalid account
+				break;
+			}
 			// step 3b: retrieving client's info
 			client = ServerManager::instance()->GetAuthServer()->GetClientByLogin(auth_pkt->username);
 			if(!client)
@@ -142,8 +147,7 @@ AuthPacket *AuthFSM_Default::ReceivedPacket(AuthConnection *conn,AuthPacket *pkt
 	case CLIENT_AWAITING_DISCONNECT:
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : Recv packet while in non-receiving mood\n")));
 	default: //-fallthrough
-		result = AuthPacketFactory::PacketForType(SMSG_AUTH_ERROR);
-		static_cast<pktAuthErrorPacket*>(result)->setError(2,rand()%33);
+		result = auth_error(2,rand()%33);
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
 		break;
 
@@ -196,6 +200,7 @@ AuthPacket * AuthFSM_Default::BuildServerListPacket( void )
 	}
 	return result;
 }
+//! AuthFSM_Default::ExpectingPacket returns an error packet when expected packet type and received packet type differ.
 AuthPacket * AuthFSM_Default::ExpectingPacket(eAuthPacketType expect_type,eAuthPacketType recv_type,char *waiting_for)
 {
 	if(expect_type!=recv_type)
