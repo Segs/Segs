@@ -20,8 +20,8 @@ enum
 	CTRL_KEY_REQUEST,
 	CTRL_KEY_REPLY,
 	CTRL_CONNECTED,	//	?
-	CTRL_UNK5,
-	CTRL_DISCONNECT,
+	CTRL_DISCONNECT_REQ,
+	CTRL_DISCONNECT_ACK,
 	CTRL_RESIZE,		//	?
 	CTRL_UNK8,
 	CTRL_UNK9,
@@ -48,6 +48,9 @@ GamePacket *ControlPacketFactory::PacketFromStream(u8 opcode, BitStream &bs) con
 			break;
 		case CTRL_IDLE:
 			res= new pktIdle();
+			break;
+		case CTRL_DISCONNECT_REQ:
+			res = new pktCS_Diconnect();
 			break;
 		default:
 			res=new UnknownControlPacket;
@@ -103,7 +106,7 @@ pktSC_Connected::pktSC_Connected()
 pktSC_Diconnect::pktSC_Diconnect()
 {
 	m_opcode=0;
-	m_comm_opcode=(u8)CTRL_DISCONNECT;
+	m_comm_opcode=(u8)CTRL_DISCONNECT_ACK;
 }
 void pktSC_Diconnect::dependent_dump()
 {
@@ -226,4 +229,16 @@ GamePacket * PacketFactory::PacketFromStream( BitStream &bs ) const
 {
 	s32 opcode=bs.GetPackedBits(1);
 	return this->PacketFromStream((u8)opcode,bs);
+}
+
+pktCS_Diconnect::pktCS_Diconnect()
+{
+	m_opcode=0;
+	m_comm_opcode=(u8)CTRL_DISCONNECT_REQ;
+}
+
+void pktCS_Diconnect::dependent_dump()
+{
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IClient Disconnect Request Packet\n{\n")));
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
 }

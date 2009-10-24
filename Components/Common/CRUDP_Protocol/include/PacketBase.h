@@ -39,7 +39,7 @@ protected:
 public:
 	virtual ~UnknownGamePacket(){}
 	UnknownGamePacket();	
-	virtual void serializefrom(BitStream &src);;
+	virtual void serializefrom(BitStream &src);
 	virtual void serializeto(BitStream &) const {ACE_ASSERT(false);};
 	u32 vals[32];
 	u8 arr[512];
@@ -99,6 +99,17 @@ public:
 	pktSC_Connected();
 	virtual void serializefrom(BitStream &) {}
 	virtual void serializeto(BitStream &) const {}
+};
+class pktCS_Diconnect : public ControlPacket
+{
+protected:
+	virtual void dependent_dump();
+public:
+	virtual ~pktCS_Diconnect(){}
+	pktCS_Diconnect();
+	virtual void serializefrom(BitStream &) {}
+	virtual void serializeto(BitStream &) const {}
+
 };
 class pktSC_Diconnect : public ControlPacket
 

@@ -51,6 +51,21 @@ bool CharacterHandler::ReceivePacket(GamePacket *pak)
 	pak->dump();
 	switch(pak->getType())
 	{
+	case 0: // control codes 
+		{
+			ControlPacket * ctrl_pak = static_cast<ControlPacket *>(pak);//CTRL_DISCONNECT_REQ
+			if(ctrl_pak->m_comm_opcode==CTRL_DISCONNECT_REQ)
+			{
+				if(m_client)
+				{
+					if(m_client)
+						m_server->disconnectClient(m_client);
+					m_client=0;
+					m_proto->SendPacket(new pktSC_Diconnect);
+				}
+			}
+
+		}
 	case 2:
 		{
 			//Character *act;

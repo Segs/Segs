@@ -8,6 +8,7 @@
  */
 
 #include <iostream>
+#include <string>
 #include <stdlib.h>
 #define ACE_NTRACE 0
 #include <ace/ACE.h>
@@ -105,17 +106,57 @@ static bool CreateServers()
 	ServerManager::instance()->AddMapServer(map_instance);
 	return true;
 };
+class CommandLineContents
+{
+public:
+	std::string config_file;
+	CommandLineContents() : config_file("local_1.cfg")
+	{
 
+	}
+	int parse_cmdline(int argc, ACE_TCHAR *argv[])
+	{
+		static const ACE_TCHAR options[] = ACE_TEXT (":f:");
+		ACE_Get_Opt cmd_opts (argc, argv, options);
+		if (cmd_opts.long_option(ACE_TEXT ("config"), 'f', ACE_Get_Opt::ARG_REQUIRED) == -1)
+			return -1;
+		int option;
+		while ((option = cmd_opts ()) != EOF)
+		{
+			switch (option) 
+			{
+			case 'f':
+				{
+					ACE_TCHAR *val=cmd_opts.opt_arg();
+					if(val)
+						config_file = std::string(val);
+					break;
+				}
+			case ':':
+				ACE_ERROR_RETURN
+					((LM_ERROR, ACE_TEXT ("-%c requires an argument\n"), cmd_opts.opt_opt ()), -1);
+			default:
+				ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("Parse error.\n")), -1);
+			}
+		}
+		return 0;
+	}
+};
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
-//	int opt;
+
+	g_logging_object.init_file_log();
+
+	CommandLineContents cmdl;
+	if( -1 == cmdl.parse_cmdline(argc,argv))
+		return -1;
+
 	const size_t N_THREADS = 4;
 	ACE_TP_Reactor threaded_reactor; 
 	ACE_Reactor new_reactor(&threaded_reactor); //create concrete reactor
 	auto_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes
 	
 	ServerStopper st; // it'll register itself with current reactor, and shut it down on sigint
-	g_logging_object.init_file_log();
 	ACE_LOG_MSG->clr_flags(ACE_Log_Msg::STDERR);
 	ACE_LOG_MSG->set_flags(ACE_Log_Msg::MSG_CALLBACK);
 	ACE_LOG_MSG->priority_mask (LM_DEBUG |LM_ERROR | LM_WARNING| LM_NOTICE | LM_INFO , ACE_Log_Msg::PROCESS);
@@ -133,7 +174,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 	ACE_Thread_Manager::instance()->spawn_n(N_THREADS, event_loop, ACE_Reactor::instance()); 
 	bool no_err=true;
 	no_err=CreateServers();
-	no_err=ServerManager::instance()->LoadConfiguration(".");
+	no_err=ServerManager::instance()->LoadConfiguration(cmdl.config_file);
 	if(no_err)
 		no_err=ServerManager::instance()->StartLocalServers();
 	if(no_err)

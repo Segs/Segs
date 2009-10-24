@@ -17,17 +17,17 @@ GameServerInterface *ServerManagerC::GetGameServer(size_t idx)
 ServerManagerC::ServerManagerC() : m_adminserv(NULL),m_authserv(NULL)
 {
 }
-bool ServerManagerC::LoadConfiguration(const std::string &config_file_path)
+bool ServerManagerC::LoadConfiguration(const std::string &config_file_full_path)
 {
-	m_adminserv->ReadConfig(config_file_path+"/local_1.cfg");
-	m_authserv->ReadConfig(config_file_path+"/local_1.cfg");
+	m_adminserv->ReadConfig(config_file_full_path);
+	m_authserv->ReadConfig(config_file_full_path);
 	for(size_t idx=0; idx<m_GameServers.size(); idx++)
 	{
-		m_GameServers[idx]->ReadConfig(config_file_path+"/local_1.cfg");
+		m_GameServers[idx]->ReadConfig(config_file_full_path);
 	}
 	for(size_t idx=0; idx<m_MapServers.size(); idx++)
 	{
-		m_MapServers[idx]->ReadConfig(config_file_path+"/local_1.cfg");
+		m_MapServers[idx]->ReadConfig(config_file_full_path);
 	}
 	return true;
 }
