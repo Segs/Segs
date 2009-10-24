@@ -17,17 +17,17 @@
 #include "AdminServerInterface.h"
 #include "ServerManager.h"
 #include "AuthServer.h"
-/*
-typedef enum
+// instances of this class are used to bind lifetime of the packet that is passed to them with their own
+// => when PacketGuard constructed on stack is destroyed ( it goes out of scope, exception is thrown, etc.)
+// it will ensure that the relevant packet is also destroyed.
+class PacketGuard
 {
-	AUTH_OK = 0,
-	AUTH_ACCOUNT_BLOCKED,
-	AUTH_WRONG_LOGINPASS,
-	AUTH_ALREADY_LOGGEDIN,
-	AUTH_UNAVAILABLE_SERVER,
-	AUTH_KICKED_FROM_GAME 
-} eAuthError;
-*/
+	AuthPacket *m_guarded_packet;
+public:
+	PacketGuard(AuthPacket *pkt) : m_guarded_packet(pkt) {};
+	~PacketGuard() {AuthPacketFactory::Destroy(m_guarded_packet);}
+};
+
 AuthPacket *AuthFSM_Default::auth_error(char a,char b)
 {
 	AuthPacket *result = AuthPacketFactory::PacketForType(SMSG_AUTH_ERROR);
@@ -36,124 +36,32 @@ AuthPacket *AuthFSM_Default::auth_error(char a,char b)
 }
 AuthPacket *AuthFSM_Default::ReceivedPacket(AuthConnection *conn,AuthPacket *pkt)
 {
+	PacketGuard packet_guard(pkt);
 	AuthConnection_ServerSide *caller = static_cast<AuthConnection_ServerSide *>(conn);
-	AuthPacket *result = NULL;
-	AdminServerInterface *adminserv;
-	adminserv = ServerManager::instance()->GetAdminServer();
-	ACE_ASSERT(adminserv);
-	if(!adminserv)
-	{
-		// we cannot do much without that
-		AuthPacketFactory::Destroy(pkt);
-		result = AuthPacketFactory::PacketForType(SMSG_AUTH_ERROR);
-		static_cast<pktAuthErrorPacket*>(result)->setError(2,4);
-		return result;
-	}
 	switch((eClientState)caller->getClientState())
 	{
 	case CLIENT_CONNECTED: //step 3 of ClientScenario1
-		{
-			AuthClient *client = NULL;
-			result=ExpectingPacket(pkt->GetPacketType(),CMSG_AUTH_LOGIN,"login attempt");
-			if(result)
-				break;
-			pktAuthLogin *auth_pkt = static_cast<pktAuthLogin *>(pkt);
-            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) User %s trying to login from %s.\n"),auth_pkt->username,caller->peer().get_host_addr()));
-			if(strlen(auth_pkt->username)<=2)
-			{
-				result = auth_error(2,2); // invalid account
-				break;
-			}
-			// step 3b: retrieving client's info
-			client = ServerManager::instance()->GetAuthServer()->GetClientByLogin(auth_pkt->username);
-			if(!client)
-			{ // step 3c: creating a new account
-				adminserv->SaveAccount(auth_pkt->username,auth_pkt->password); // Autocreate/save account to DB
-				client = ServerManager::instance()->GetAuthServer()->GetClientByLogin(auth_pkt->username);
-			}
-			ACE_ASSERT(client);
-			caller->setClient(client);
-			//client->
-			AuthServer::eAuthError err = AuthServer::AUTH_WRONG_LOGINPASS; // this is default for case we don't have that client
-			if(client)
-			{
-				ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),client->getId()));
-				// step 3d: checking if this account is blocked
-				if(client->AccountBlocked())
-					err = AuthServer::AUTH_ACCOUNT_BLOCKED;
-				else if(client->isLoggedIn())
-				{
-					// step 3e: asking game server connection check
-					client->forceGameServerConnectionCheck();
-					err = AuthServer::AUTH_ALREADY_LOGGEDIN;
-				}
-				else if(client->getState()==AuthClient::NOT_LOGGEDIN)
-					err = AuthServer::AUTH_OK;
-			}
-			if(
-				(err==AuthServer::AUTH_OK) &&
-				(adminserv->ValidPassword(client,auth_pkt->password)) &&
-				(adminserv->Login(client,caller->peer())) // this might fail somehow
-			   )
-			{
-				client->setState(AuthClient::LOGGED_IN);
-				result = AuthPacketFactory::PacketForType(PKT_AUTH_LOGIN_SUCCESS);
-				caller->setClientState((int)CLIENT_AUTHORIZED);
-				caller->setClient(client);
-				ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : succeeded\n")));
-			}
-			else
-			{
-				result = auth_error(2,err);
-				ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
-			}
-			break;
-		}
+
+		return AuthorizationRequested(pkt, caller);
+
 	case CLIENT_AUTHORIZED:
-		{
-			result=ExpectingPacket(pkt->GetPacketType(),CMSG_AUTH_REQUEST_SERVER_LIST,"server list request");
-			if(result)
-				break;
-			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client requesting server list\n")));
-			result = BuildServerListPacket();
-			caller->setClientState((int)CLIENT_SERVSELECT);
-			break;
-		}
+
+		return ServerListRequest(pkt, caller);
 	case CLIENT_SERVSELECT:
-		{
-			result=ExpectingPacket(pkt->GetPacketType(),CMSG_AUTH_SELECT_DBSERVER,"db server selection");
-			if(result)
-				break;
-			pktAuthSelectServer *serv_select = static_cast<pktAuthSelectServer *>(pkt);
-			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client selected server %d!\n"),serv_select->serverId));
-			pktAuthSelectServerResponse *res_pkt=static_cast<pktAuthSelectServerResponse *>(AuthPacketFactory::PacketForType(PKT_SELECT_SERVER_RESPONSE));
-			GameServerInterface *gs = ServerManager::instance()->GetGameServer(serv_select->serverId-1);
-			if(!gs)
-			{
-				ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client selected non existant server !\n")));
-				result = AuthPacketFactory::PacketForType(SMSG_AUTH_ERROR);
-				static_cast<pktAuthErrorPacket*>(result)->setError(2,rand()%33);
-				break;
-			}
-			u32 res_cookie = gs->ExpectClient(caller->peer(),caller->getClient()->getId(),caller->getClient()->getAccessLevel());
-			caller->getClient()->setSelectedServer(gs);
-			res_pkt->cookie=0xCAFEF00D;
-			res_pkt->db_server_cookie=res_cookie;
-			result = res_pkt;
-			caller->setClientState((int)CLIENT_AWAITING_DISCONNECT);
-		}
-		break;
+
+		return ServerSelected(pkt, caller);
+
 	case CLIENT_UNCONNECTED:
 	case CLIENT_AWAITING_DISCONNECT:
+
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : Recv packet while in non-receiving mood\n")));
 	default: //-fallthrough
-		result = auth_error(2,rand()%33);
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
-		break;
 
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
+		return auth_error(2,rand()%33);
 	}
-	AuthPacketFactory::Destroy(pkt);
-	return result;
+	ACE_ASSERT(!"never reached");
+	return 0;
 }
 AuthPacket *AuthFSM_Default::ConnectionEstablished(AuthConnection *conn)
 {
@@ -209,4 +117,116 @@ AuthPacket * AuthFSM_Default::ExpectingPacket(eAuthPacketType expect_type,eAuthP
 		return auth_error(2,AuthServer::AUTH_UNKN_ERROR);
 	}
 	return 0;
+}
+
+AuthPacket * AuthFSM_Default::NoAdminServer()
+{
+	AuthPacket *result = NULL;
+	result = AuthPacketFactory::PacketForType(SMSG_AUTH_ERROR);
+	static_cast<pktAuthErrorPacket*>(result)->setError(2,4);
+	return result;
+}
+
+AuthPacket * AuthFSM_Default::ServerListRequest( AuthPacket * pkt, AuthConnection_ServerSide * caller )
+{
+	AuthPacket *result = NULL;
+	result=ExpectingPacket(pkt->GetPacketType(),CMSG_AUTH_REQUEST_SERVER_LIST,"server list request");
+	if(result)
+		return result;
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client requesting server list\n")));
+	caller->setClientState((int)CLIENT_SERVSELECT);
+	return BuildServerListPacket();
+}
+
+AuthPacket * AuthFSM_Default::ServerSelected( AuthPacket * pkt, AuthConnection_ServerSide * caller )
+{
+	AuthPacket *result = NULL;
+	result=ExpectingPacket(pkt->GetPacketType(),CMSG_AUTH_SELECT_DBSERVER,"db server selection");
+	if(result)
+		return result;
+	pktAuthSelectServer *serv_select = static_cast<pktAuthSelectServer *>(pkt);
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client selected server %d!\n"),serv_select->serverId));
+	pktAuthSelectServerResponse *res_pkt=static_cast<pktAuthSelectServerResponse *>(AuthPacketFactory::PacketForType(PKT_SELECT_SERVER_RESPONSE));
+	GameServerInterface *gs = ServerManager::instance()->GetGameServer(serv_select->serverId-1);
+	if(!gs)
+	{
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client selected non existant server !\n")));
+		result = AuthPacketFactory::PacketForType(SMSG_AUTH_ERROR);
+		static_cast<pktAuthErrorPacket*>(result)->setError(2,rand()%33);
+		return result;
+	}
+	u32 res_cookie = gs->ExpectClient(caller->peer(),caller->getClient()->getId(),caller->getClient()->getAccessLevel());
+	caller->getClient()->setSelectedServer(gs);
+	res_pkt->cookie=0xCAFEF00D;
+	res_pkt->db_server_cookie=res_cookie;
+	caller->setClientState((int)CLIENT_AWAITING_DISCONNECT);
+	return res_pkt;
+}
+
+AuthPacket * AuthFSM_Default::AuthorizationRequested( AuthPacket * pkt, AuthConnection_ServerSide * caller )
+{
+	{
+		AuthPacket *result = NULL;
+		AuthClient *client = NULL;
+		AdminServerInterface *adminserv;
+		adminserv = ServerManager::instance()->GetAdminServer();
+		ACE_ASSERT(adminserv);
+		if(!adminserv)
+		{
+			// we cannot do much without that
+			return NoAdminServer();
+		}
+
+		result=ExpectingPacket(pkt->GetPacketType(),CMSG_AUTH_LOGIN,"login attempt");
+		if(result)
+			return result;
+		pktAuthLogin *auth_pkt = static_cast<pktAuthLogin *>(pkt);
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) User %s trying to login from %s.\n"),auth_pkt->username,caller->peer().get_host_addr()));
+		if(strlen(auth_pkt->username)<=2)
+			return auth_error(2,2); // invalid account
+
+		// step 3b: retrieving client's info
+		client = ServerManager::instance()->GetAuthServer()->GetClientByLogin(auth_pkt->username);
+		if(!client)
+		{ // step 3c: creating a new account
+			adminserv->SaveAccount(auth_pkt->username,auth_pkt->password); // Autocreate/save account to DB
+			client = ServerManager::instance()->GetAuthServer()->GetClientByLogin(auth_pkt->username);
+		}
+		ACE_ASSERT(client);
+		caller->setClient(client);
+		AuthServer::eAuthError err = AuthServer::AUTH_WRONG_LOGINPASS; // this is default for case we don't have that client
+		if(client)
+		{
+			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),client->getId()));
+			// step 3d: checking if this account is blocked
+			if(client->AccountBlocked())
+				err = AuthServer::AUTH_ACCOUNT_BLOCKED;
+			else if(client->isLoggedIn())
+			{
+				// step 3e: asking game server connection check
+				client->forceGameServerConnectionCheck();
+				err = AuthServer::AUTH_ALREADY_LOGGEDIN;
+			}
+			else if(client->getState()==AuthClient::NOT_LOGGEDIN)
+				err = AuthServer::AUTH_OK;
+		}
+		if(
+			(err==AuthServer::AUTH_OK) &&
+			(adminserv->ValidPassword(client,auth_pkt->password)) &&
+			(adminserv->Login(client,caller->peer())) // this might fail somehow
+			)
+		{
+			client->setState(AuthClient::LOGGED_IN);
+			result = AuthPacketFactory::PacketForType(PKT_AUTH_LOGIN_SUCCESS);
+			caller->setClientState((int)CLIENT_AUTHORIZED);
+			caller->setClient(client);
+			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : succeeded\n")));
+			return result;
+		}
+		else
+		{
+			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
+			return auth_error(2,err);
+		}
+	}
 }
