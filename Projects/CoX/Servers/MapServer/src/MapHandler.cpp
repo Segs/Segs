@@ -154,6 +154,8 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 			pent->m_hasgroup_name=false;
 			pent->m_pchar_things=false;
 			pent->m_rare_bits = true;
+			pent->pos.vals.x=1.0f;
+			pent->pos.vals.y=1.0f;
 //			pent->m_costume->m_costume_type=2; // npc costume for now
 
 			m_client->getCurrentMap()->m_entities.m_entlist.push_back(pent);

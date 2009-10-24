@@ -290,8 +290,8 @@ public:
 	virtual void serializefrom(BitStream &src)
 	{
 		window_idx=src.GetPackedBits(1);
-		field_0=src.GetPackedBits(1);
-		field_4=src.GetPackedBits(1);
+		field_0=src.GetPackedBits(1); //width
+		field_4=src.GetPackedBits(1); //height
 		size_t res=src.GetPackedBits(1);
 		if(res==4)
 			field_18 = 2;
@@ -636,7 +636,11 @@ public:
 		contain_control_update = src.GetBits(1);
 		if(contain_control_update)
 		{
-			ACE_ASSERT(!"Not Implemented");
+			s8 csc_delta_bits = src.GetBits(5);
+			s16 a3 = src.GetBits(16); // count of some sort ?
+			//if v3
+				rev403720(a3, src, csc_delta_bits); 
+			rev403720(a3, src, csc_delta_bits);
 		}
 		has_target = src.GetBits(1);
 		target_idx = src.GetPackedBits(14);
@@ -655,6 +659,64 @@ public:
 		// but it is put as an bitarray so it's byte aligned
 		// TODO: Check if any other packet is followed by g_pak
 		src.ByteAlign(true,false);
+	}
+
+	void rev403720( s16 a3, BitStream &src, s8 csc_delta_bits )
+	{
+		bool only_first=false;
+		while(a3--)
+		{
+			u32 a2_filed_4=8;
+			if(src.GetBits(1)==0)
+				a2_filed_4 = src.GetBits(4);
+			if(src.GetBits(1)==0)
+				src.GetBits(csc_delta_bits);
+			else
+				src.GetBits(2);
+			switch(a2_filed_4)
+			{
+			case 0: case 1: case 2: case 3:
+			case 4: case 5:
+				//pakSendBits(a1, 1, val_18 & 1);
+				src.GetBits(1);
+				break;
+			case 6:
+			case 7:
+				//pakSendBits(a1, 11, val_18 & 0x7FF);
+				src.GetBits(11);
+				break;
+			case 8:
+				src.GetBits(1);
+				if(only_first)
+				{
+					src.GetPackedBits(8); // val_18 - x
+					src.GetPackedBits(8); // val_1C - y
+
+				}
+				else
+				{
+					only_first=true;
+					src.GetBits(32); // val_18
+					src.GetPackedBits(10); // val_18 - val_1C
+				}
+				// x = val_18
+				// y = val_1C
+				if(src.GetBits(1))
+				{
+					src.GetBits(8); // field_20
+				}
+				break;
+			case 9:
+				src.GetBits(8);
+				break;
+			case 10:
+				src.GetBits(1);
+				break;
+			default:
+				ACE_ASSERT(0);
+				break;
+			}
+		}
 	}
 	virtual void serializeto(BitStream &tgt) const
 	{
