@@ -1,6 +1,7 @@
 # $Id: CMakeLists.txt 294 2006-10-12 17:52:28Z nemerle $
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Character.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/HashStorage.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CharacterClient.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CharacterDatabase.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/ClientHandler.cpp
@@ -10,6 +11,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/GameServerEndpoint.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Character.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/HashStorage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CharacterClient.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CharacterDatabase.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/ClientHandler.h
