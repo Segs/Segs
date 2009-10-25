@@ -16,7 +16,7 @@
 #include "MapClient.h"
 #include "SEGSMap.h"
 #include "Entity.h"
-void pktMap_Server_EntitiesResp::serializeto( BitStream &tgt ) const
+void pktSC_EntitiesResp::serializeto( BitStream &tgt ) const
 {
 	tgt.StoreBits(1,entReceiveUpdate);
 	sendCommands(tgt);
@@ -73,9 +73,9 @@ void pktMap_Server_EntitiesResp::serializeto( BitStream &tgt ) const
 	}
 }
 
-void pktMap_Server_EntitiesResp::dependent_dump( void )
+void pktSC_EntitiesResp::dependent_dump( void )
 {
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktMap_Server_EntitiesResp\n%I{\n")));
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktSC_EntitiesResp\n%I{\n")));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    entReceiveUpdate 0x%08x\n"),entReceiveUpdate));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_command_idx 0x%08x\n"),m_command_idx));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    abs_time 0x%08x\n"),abs_time));
@@ -190,7 +190,7 @@ void Power::serializeto( BitStream &tgt ) const
 	}
 }
 
-void pktMap_Server_SceneResp::serializeto( BitStream &tgt ) const
+void pktSC_SceneResp::serializeto( BitStream &tgt ) const
 {
 	tgt.StorePackedBits(1,undos_PP);
 	tgt.StoreBits(1,var_14);
@@ -312,26 +312,26 @@ bool pktCS_SendEntity::IsCostumePartName_NotSet( string &str )
 	return ((str.length()==0) || (ACE_OS::strcasecmp(str.c_str(),"None")==0));
 }
 
-void pktMap_Server_EntitiesResp::sendControlState(BitStream &bs) const
+void pktSC_EntitiesResp::sendControlState(BitStream &bs) const
 {
 	sendServerControlState(bs);
 }
-void pktMap_Server_EntitiesResp::sendServerPhysicsPositions(BitStream &bs) const
+void pktSC_EntitiesResp::sendServerPhysicsPositions(BitStream &bs) const
 {
 	bs.StoreBits(1,0); 
 	bs.StoreBits(1,0); 
 }
-void pktMap_Server_EntitiesResp::sendServerControlState(BitStream &bs) const
+void pktSC_EntitiesResp::sendServerControlState(BitStream &bs) const
 {
 	bs.StoreBits(1,0); 
 	bs.StoreBits(1,0); 
 }
-void pktMap_Server_EntitiesResp::storePowerInfoUpdate(BitStream &bs) const
+void pktSC_EntitiesResp::storePowerInfoUpdate(BitStream &bs) const
 {
 	bs.StoreBits(1,0);
 	bs.StoreBits(1,0);
 }
-void pktMap_Server_EntitiesResp::storePowerModeUpdate(BitStream &bs) const
+void pktSC_EntitiesResp::storePowerModeUpdate(BitStream &bs) const
 {
 	bs.StoreBits(1,0);
 	if(false)
@@ -343,31 +343,31 @@ void pktMap_Server_EntitiesResp::storePowerModeUpdate(BitStream &bs) const
 		}
 	}
 }
-void pktMap_Server_EntitiesResp::storeBadgeUpdate(BitStream &bs) const
+void pktSC_EntitiesResp::storeBadgeUpdate(BitStream &bs) const
 {
 	bs.StoreBits(1,0);
 	bs.StoreBits(1,0);
 }
-void pktMap_Server_EntitiesResp::storeGenericinventoryUpdate(BitStream &bs)const
+void pktSC_EntitiesResp::storeGenericinventoryUpdate(BitStream &bs)const
 {
 	bs.StorePackedBits(1,0);
 }
-void pktMap_Server_EntitiesResp::storeInventionUpdate(BitStream &bs)const
+void pktSC_EntitiesResp::storeInventionUpdate(BitStream &bs)const
 {
 	bs.StorePackedBits(1,0);
 }
-void pktMap_Server_EntitiesResp::storeTeamList(BitStream &bs) const
+void pktSC_EntitiesResp::storeTeamList(BitStream &bs) const
 {
 	//storePackedBitsConditional(bs,20,0);
 	bs.StoreBits(1,0);
 	bs.StoreBits(1,0);
 	bs.StoreBits(1,0);
 }
-void pktMap_Server_EntitiesResp::storeSuperStats(BitStream &bs) const
+void pktSC_EntitiesResp::storeSuperStats(BitStream &bs) const
 {
 	bs.StorePackedBits(1,0);
 }
-void pktMap_Server_EntitiesResp::storeGroupDyn(BitStream &bs) const
+void pktSC_EntitiesResp::storeGroupDyn(BitStream &bs) const
 {
 	bs.StorePackedBits(1,0);
 }

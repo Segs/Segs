@@ -67,7 +67,7 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 	}
 	if(pak->m_opcode==3)
 	{
-		pktMap_Server_SceneResp *res = new pktMap_Server_SceneResp;
+		pktSC_SceneResp *res = new pktSC_SceneResp;
 		res->undos_PP=0;
 		res->var_14=1;
 		res->m_outdoor_map=1;//0;
@@ -129,14 +129,14 @@ bool MapHandler::ReceivePacket(GamePacket *pak)
 	if(pak->m_opcode==5)
 	{
 		// sending packet 3 first
-		pktMap_Server_EntitiesResp * res2 = new pktMap_Server_EntitiesResp(m_client,false);
+		pktSC_EntitiesResp * res2 = new pktSC_EntitiesResp(m_client,false);
 		res2->entReceiveUpdate=false;
 		res2->unkn1=false;
 		res2->m_num_commands=0;
 		res2->abs_time = (u32)time(NULL);
 		res2->unkn2=true; // default parameters for first flags
 
-		pktMap_Server_EntitiesResp * res = new pktMap_Server_EntitiesResp(m_client,true);
+		pktSC_EntitiesResp * res = new pktSC_EntitiesResp(m_client,true);
 		//pktMap_Server_Connect* res = new pktMap_Server_Connect;
 		Entity *pent = m_client->getCharEntity(); //new Entity;//EntityManager::CreatePlayer();
 		if(pent)

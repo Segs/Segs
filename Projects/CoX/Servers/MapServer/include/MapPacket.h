@@ -333,16 +333,16 @@ public:
 */
 	}
 };
-class pktMap_Client_RequestEntities : public GamePacket
+class pktCS_RequestEntities : public GamePacket
 {
 protected:
 	virtual void dependent_dump(void)
 	{
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktMap_Client_RequestEntities\n%I{\n")));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktCS_RequestEntities\n%I{\n")));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
 	}
 public:
-	pktMap_Client_RequestEntities()
+	pktCS_RequestEntities()
 	{
 		m_opcode=5;
 	}
@@ -397,12 +397,12 @@ public:
 	}
 
 };
-class pktMap_Server_SceneResp : public GamePacket
+class pktSC_SceneResp : public GamePacket
 {
 protected:
 	virtual void dependent_dump(void)
 	{
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktMap_Server_SceneResp\n%I{\n")));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktSC_SceneResp\n%I{\n")));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    undos_PP 0x%08x\n"),undos_PP));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    var_14 0x%08x\n"),var_14));
 		if(var_14)
@@ -437,7 +437,7 @@ protected:
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
 	}
 public:
-	pktMap_Server_SceneResp()
+	pktSC_SceneResp()
 	{
 		m_opcode=6;
 	}
@@ -535,13 +535,13 @@ public:
 	int m_map_number;
 	bool unkn2;
 };
-class pktMap_Server_EntitiesResp : public GamePacket
+class pktSC_EntitiesResp : public GamePacket
 {
 protected:
 	virtual void dependent_dump(void);
 	MapClient *m_client;
 public:
-	pktMap_Server_EntitiesResp(MapClient *cl,bool t1)
+	pktSC_EntitiesResp(MapClient *cl,bool t1)
 	{
 		m_opcode=t1 ? 2 : 3;
 		m_client = cl;
@@ -587,18 +587,18 @@ public:
 	u32 m_num_commands2;
 	string m_commands2[15];
 };
-class pktMap_Character_6 : public GamePacket
+class pktCS_Character_6 : public GamePacket
 {
 protected:
 	virtual void dependent_dump(void)
 	{
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktMap_Character_6\n%I{\n")));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktCS_Character_6\n%I{\n")));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    mapserver_cookie 0x%08x\n"),mapserver_cookie));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    console_enabled 0x%08x\n"),console_enabled));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
 	}
 public:
-	pktMap_Character_6()
+	pktCS_Character_6()
 	{
 		m_opcode=6;
 	}
@@ -615,19 +615,19 @@ public:
 	u32 mapserver_cookie;
 	u32 console_enabled;
 };
-class pktMap_Client_InputState : public GamePacket
+class pktCS_InputState : public GamePacket
 {
 protected:
 	virtual void dependent_dump(void)
 	{
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktMap_Client_InputState\n%I{\n")));
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktCS_InputState\n%I{\n")));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    contain_control_update 0x%08x\n"),contain_control_update));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    has_target 0x%08x\n"),has_target));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    target_idx 0x%08x\n"),target_idx));
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
 	}
 public:
-	pktMap_Client_InputState()
+	pktCS_InputState()
 	{
 		m_opcode=2;
 	}
@@ -747,15 +747,15 @@ public:
 		case COMM_CONNECT:
 			res = new pktCS_Connect; break;
 		case 2:
-			res = new pktMap_Client_InputState; break;
+			res = new pktCS_InputState; break;
 		case 3:
 			res = new pktCS_RequestScene; break;
 		case 4:
 			res = new pktCS_RequestShortcuts; break;
 		case 5:
-			res = new pktMap_Client_RequestEntities; break;
+			res = new pktCS_RequestEntities; break;
 		case 6:
-			res = new pktMap_Character_6; break;
+			res = new pktCS_Character_6; break;
 		case 9:
 			res = new pktCS_SendEntity; break;
 		case 14:
