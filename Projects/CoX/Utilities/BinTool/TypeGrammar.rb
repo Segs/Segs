@@ -206,9 +206,17 @@ class EnumType < Type
             key+=1
         end
     end
-
+    def enum_name(idx)
+        @values[idx]
+    end
     def init_val(into,name,offset,val)
         into.set_val(offset,CreatedField.new(offset,name,val))
+    end
+    def read_from(stream)
+        res=stream.read_int()        
+    end
+    def create_instance(init_val=nil)
+        CreatedEnum.new(self,init_val)
     end
 
 end
@@ -412,8 +420,10 @@ class StructureType < Type
         deb = false
         start = stream.bytes_left
         self.each_non_compound {|val|
-            next if(val.referenced_type.type_id==2)
-            next if(val.referenced_type.type_id==1)
+            if(val.referenced_type.is_a?(PrimitiveType))
+                next if(val.referenced_type.type_id==2)
+                next if(val.referenced_type.type_id==1)
+            end
             offset   = val.offset
             read_val = val.referenced_type.read_from(stream)
             tgt_struct.create_instance_of(val,read_val)
@@ -495,7 +505,16 @@ class CreatedBitfield
         visitor.visit_bf(self)
     end
 end
-
+class CreatedEnum
+    attr_reader :type,:value
+    def initialize(type,value)
+        @type,@value = type,type.enum_name(value.to_i)
+        raise "Unknown enum field" if @value.nil?
+    end
+    def serialize_out(visitor)
+        visitor.visit_en(self)
+    end
+end
 class CreatedField
     attr_reader :name,:value,:offset
     attr_writer :value
@@ -616,6 +635,10 @@ class XMLWriter
         @tgt_stream << indent() << "<type=\"#{prim.type.name}\" value=\"#{val_s}\" \\>\n"
     end
     def visit_bf(prim)
+        val_s = prim.value.to_s()
+        @tgt_stream << indent() << "<type=\"#{prim.type.name}\" value=\"#{val_s}\" \\>\n"
+    end
+    def visit_en(prim)
         val_s = prim.value.to_s()
         @tgt_stream << indent() << "<type=\"#{prim.type.name}\" value=\"#{val_s}\" \\>\n"
     end
