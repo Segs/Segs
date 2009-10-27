@@ -215,8 +215,8 @@ class EnumType < Type
     def read_from(stream)
         res=stream.read_int()        
     end
-    def create_instance(init_val=nil)
-        CreatedEnum.new(self,init_val)
+    def create_instance(init_val=nil,name=nil)
+        CreatedEnum.new(self,init_val,name)
     end
 
 end
@@ -257,8 +257,8 @@ class BitfieldType < Type
             end
         end
     end
-    def create_instance(init_val=nil)
-        CreatedBitfield.new(self,init_val)
+    def create_instance(init_val=nil,name=nil)
+        CreatedBitfield.new(self,init_val,name)
     end
 
 end
@@ -349,8 +349,8 @@ class PrimitiveType < Type
             return "some_type"
         end
     end
-    def create_instance(init_val=nil)
-        CreatedPrimitive.new(self,init_val)
+    def create_instance(init_val=nil,name=nil)
+        CreatedPrimitive.new(self,init_val,name)
     end
 end
 class StructTypeField
@@ -359,7 +359,7 @@ class StructTypeField
     def initialize(name,type,flags,offset,init_to)
         @name,@referenced_type,@flags,@offset,@init_to = name,type,flags,offset.to_i(0),init_to
         if(@referenced_type.is_a?(PrimitiveType))
-           @init_to= CreatedPrimitive.new(@referenced_type,init_to)
+           @init_to= CreatedPrimitive.new(@referenced_type,init_to,name)
         end
     end
     def read_from(stream,tgt_struct,sub_size)
@@ -392,7 +392,8 @@ class StructureType < Type
         raise "unresolved types !" if !@bound
         @entries.each {|e| yield e }
     end
-    def create_instance(init_val=nil)
+    def create_instance(init_val=nil,name=nil)
+        p name
         CreatedStructure.new(self,0,@name)
     end
 
@@ -488,27 +489,29 @@ class StructureType < Type
     end
 end
 class CreatedPrimitive
-    attr_reader :type,:value
-    def initialize(type,value)
-        @type,@value = type,value
+    attr_reader :type,:value,:name
+    def initialize(type,value,name)
+        @type,@value,@name = type,value,name
     end
     def serialize_out(visitor)
         visitor.visit_primitive(self)
     end
 end
 class CreatedBitfield
-    attr_reader :type,:value
-    def initialize(type,value)
+    attr_reader :type,:value,:name
+    def initialize(type,value,name)
         @type,@value = type,value
+        @name = name
     end
     def serialize_out(visitor)
         visitor.visit_bf(self)
     end
 end
 class CreatedEnum
-    attr_reader :type,:value
-    def initialize(type,value)
+    attr_reader :type,:value,:name
+    def initialize(type,value,name)
         @type,@value = type,type.enum_name(value.to_i)
+        @name = name
         raise "Unknown enum field" if @value.nil?
     end
     def serialize_out(visitor)
@@ -543,7 +546,7 @@ class CreatedStructure
         of = template.offset
         @values[of/4] ||= {}
         @values[of/4][template.name] ||= []
-        instance = template.referenced_type.create_instance(init_value)
+        instance = template.referenced_type.create_instance(init_value,template.name)
         @values[of/4][template.name] << instance
         instance
     end
@@ -579,6 +582,7 @@ class XMLWriter
         ("\t"*@indent)
     end
     def enter_structure(typename,name)
+        p "Entering struct #{typename} name=#{name}"
         @tgt_stream << indent() << "<struct type=\"#{typename}\" sub_name=\"#{name}\">\n"
         @indent+=1
     end
@@ -588,8 +592,9 @@ class XMLWriter
         @tgt_stream << indent() << "</struct>\n"
     end
     def visit_field(field)
+        p field
         if field.value!=nil && !(field.value.is_a?(CreatedPrimitive) && field.value.value=="")
-            @tgt_stream << indent() << "<field name=\"#{field.name}\" type=\"#{field.value.type.name}\" "
+            @tgt_stream << indent() << "<field type=\"#{field.value.type.name}\" name=\"#{field.name}\" "
             output_value(field.value)
             @tgt_stream << "/>\n"
 #            field.value.serialize_out(self)
@@ -632,15 +637,15 @@ class XMLWriter
         else
             val_s = prim.value.to_s()
         end        
-        @tgt_stream << indent() << "<type=\"#{prim.type.name}\" value=\"#{val_s}\" \\>\n"
+        @tgt_stream << indent() << "<type=\"#{prim.type.name}\" name=\"#{prim.name}\" value=\"#{val_s}\" \\>\n"
     end
     def visit_bf(prim)
         val_s = prim.value.to_s()
-        @tgt_stream << indent() << "<type=\"#{prim.type.name}\" value=\"#{val_s}\" \\>\n"
+        @tgt_stream << indent() << "<type=\"#{prim.type.name}\" name=\"#{prim.name}\" value=\"#{val_s}\" \\>\n"
     end
     def visit_en(prim)
         val_s = prim.value.to_s()
-        @tgt_stream << indent() << "<type=\"#{prim.type.name}\" value=\"#{val_s}\" \\>\n"
+        @tgt_stream << indent() << "<type=\"#{prim.type.name}\" name=\"#{prim.name}\" value=\"#{val_s}\" \\>\n"
     end
     def visit_bitfield(bf)
         p "visiting bitfield"
