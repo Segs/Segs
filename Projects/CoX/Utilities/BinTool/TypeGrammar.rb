@@ -7,6 +7,17 @@ include REXML
 TEMPLATES={}
 structures={}
 FILETYPES=[]
+class Dir
+    def self.mk_full_path(path)
+        parts = path.split('/')
+        wd=Dir.pwd
+        parts.each {|k|
+            Dir.mkdir(k) if not File.exists?(k)
+            Dir.chdir(k)
+        }
+        Dir.chdir(wd)
+    end
+end
 class TypeVisitor
     
     def initialize
@@ -393,7 +404,6 @@ class StructureType < Type
         @entries.each {|e| yield e }
     end
     def create_instance(init_val=nil,name=nil)
-        p name
         CreatedStructure.new(self,0,@name)
     end
 
@@ -552,7 +562,16 @@ class CreatedStructure
     end
 
     def serialize_out(visitor)
-        visitor.enter_structure(@type.name,@name)
+        fname = ""
+        if(not @values[0].nil? and !@values[0][""].nil? )
+            begin
+                fname = @values[0][""][0].value if @values[0][""][0].type.type_id==3
+            rescue Exception => e
+                p @values[0][""]
+                throw "z"
+            end
+        end
+        visitor.enter_structure(@type.name,@name,fname)
         @values.each {|entry|
             next if entry==nil
             entry.each {|name,same_name_entries|
@@ -581,7 +600,7 @@ class XMLWriter
     def indent()
         ("\t"*@indent)
     end
-    def enter_structure(typename,name)
+    def enter_structure(typename,name,fname=nil)
         p "Entering struct #{typename} name=#{name}"
         @tgt_stream << indent() << "<struct type=\"#{typename}\" sub_name=\"#{name}\">\n"
         @indent+=1
@@ -652,6 +671,56 @@ class XMLWriter
     end
     def visit_enum()
         p "visiting enum"
+    end
+end
+class TrickTxtWriter
+    attr_reader :resulting_files
+    def initialize(tgt_stream,srcs)
+        @indent=0
+        @srcs=srcs
+        @tgt_stream=""
+        @resulting_files = {}
+    end
+    def indent()
+        ("\t"*@indent)
+    end
+    def enter_structure(typename,name,fname)
+        if(!fname.nil?  && fname.size>0)
+            @resulting_files[fname] ||= ""
+            @tgt_stream=@resulting_files[fname]
+            @tgt_stream<<"\n"
+        end
+        @tgt_stream << indent() << "#{typename}\n"
+        @indent+=1
+    end
+    def leave_structure(struct)
+        @indent-=1
+        @tgt_stream << indent() << "\n"
+    end
+    def visit_primitive(prim)
+        return if(prim.type.type_id==0x2)
+        return if(prim.type.type_id==0x3)
+        val_s = ""
+        if(prim.value.is_a?(Array))
+            val_s = "["+prim.value.join(",")+"]"
+        else
+            val_s = prim.value.to_s()
+        end        
+        @tgt_stream << indent() << "#{prim.name} \"#{val_s}\" \n"
+    end
+    def visit_bf(prim)
+        val_s = prim.value.to_s()
+        @tgt_stream << indent() << "#{prim.name} \"#{val_s}\" \n"
+    end
+    def visit_en(prim)
+        val_s = prim.value.to_s()
+        @tgt_stream << indent() << "#{prim.name} \"#{val_s}\" \n"
+    end
+    def create_files
+        @resulting_files.each {|k,v|
+            Dir.mk_full_path(File.dirname(k))
+            File.open(k,"w") {|fp| fp<<v}
+        }
     end
 end
 class BinFile
@@ -745,8 +814,9 @@ class Serializer
         res = CreatedStructure.new(@template,0,file)
 
         @template.read_from(@bf,res,@bf.bytes_left())
-        serializer = XMLWriter.new(File.new(tgtfilename,"w"),@data_blocks)
+        serializer = TrickTxtWriter.new(File.new(tgtfilename,"w"),@data_blocks) # XMLWriter
         res.serialize_out(serializer)
+        serializer.create_files()
     end
     def serialize_to(structures,file)
     end
