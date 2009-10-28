@@ -172,7 +172,8 @@ class TypeStorage
                 attr = t_ref.attributes
                 obj = TypeStorage.instance.get_type(attr['sub_ref'])
                 type_id = 0xFF & attr['type'].to_i(0)
-                t_flags = attr['type'].to_i(0) & 0xFF00 #>>8
+                t_flags = (attr['type'].to_i(0) & 0xFF00) #>> 8
+                p t_flags
                 if(obj==nil)
                     if(type_id==0x15 ) #|| type_id==0x16 || type_id==0x13)
                         obj=TypeRef.new(attr['type'],attr['sub_ref'])
@@ -184,6 +185,7 @@ class TypeStorage
                 
                 }
         }
+        
     end
 end
 class Type
@@ -226,8 +228,8 @@ class EnumType < Type
     def read_from(stream)
         res=stream.read_int()        
     end
-    def create_instance(init_val=nil,name=nil)
-        CreatedEnum.new(self,init_val,name)
+    def create_instance(init_val=nil,name=nil,flags=nil)
+        CreatedEnum.new(self,init_val,name,flags)
     end
 
 end
@@ -268,8 +270,8 @@ class BitfieldType < Type
             end
         end
     end
-    def create_instance(init_val=nil,name=nil)
-        CreatedBitfield.new(self,init_val,name)
+    def create_instance(init_val=nil,name=nil,flags=nil)
+        CreatedBitfield.new(self,init_val,name,flags)
     end
 
 end
@@ -360,17 +362,17 @@ class PrimitiveType < Type
             return "some_type"
         end
     end
-    def create_instance(init_val=nil,name=nil)
-        CreatedPrimitive.new(self,init_val,name)
+    def create_instance(init_val=nil,name=nil,flags=nil)
+        CreatedPrimitive.new(self,init_val,name,flags)
     end
 end
 class StructTypeField
     attr_accessor :referenced_type,:offset,:init_to
-    attr_reader   :name
+    attr_reader   :name,:flags
     def initialize(name,type,flags,offset,init_to)
         @name,@referenced_type,@flags,@offset,@init_to = name,type,flags,offset.to_i(0),init_to
         if(@referenced_type.is_a?(PrimitiveType))
-           @init_to= CreatedPrimitive.new(@referenced_type,init_to,name)
+           @init_to= CreatedPrimitive.new(@referenced_type,init_to,name,flags)
         end
     end
     def read_from(stream,tgt_struct,sub_size)
@@ -403,7 +405,7 @@ class StructureType < Type
         raise "unresolved types !" if !@bound
         @entries.each {|e| yield e }
     end
-    def create_instance(init_val=nil,name=nil)
+    def create_instance(init_val=nil,name=nil,flags=nil)
         CreatedStructure.new(self,0,@name)
     end
 
@@ -432,7 +434,7 @@ class StructureType < Type
         start = stream.bytes_left
         self.each_non_compound {|val|
             if(val.referenced_type.is_a?(PrimitiveType))
-                next if(val.referenced_type.type_id==2)
+                # next if(val.referenced_type.type_id==2)
                 next if(val.referenced_type.type_id==1)
             end
             offset   = val.offset
@@ -499,18 +501,18 @@ class StructureType < Type
     end
 end
 class CreatedPrimitive
-    attr_reader :type,:value,:name
-    def initialize(type,value,name)
-        @type,@value,@name = type,value,name
+    attr_reader :type,:value,:name,:flags
+    def initialize(type,value,name,flags)
+        @type,@value,@name,@flags = type,value,name,flags
     end
     def serialize_out(visitor)
         visitor.visit_primitive(self)
     end
 end
 class CreatedBitfield
-    attr_reader :type,:value,:name
-    def initialize(type,value,name)
-        @type,@value = type,value
+    attr_reader :type,:value,:name,:flags
+    def initialize(type,value,name,flags)
+        @type,@value,@flags = type,value,flags
         @name = name
     end
     def serialize_out(visitor)
@@ -518,9 +520,9 @@ class CreatedBitfield
     end
 end
 class CreatedEnum
-    attr_reader :type,:value,:name
-    def initialize(type,value,name)
-        @type,@value = type,type.enum_name(value.to_i)
+    attr_reader :type,:value,:name,:numeric,:flags
+    def initialize(type,value,name,flags)
+        @type,@value,@numeric,@flags = type,type.enum_name(value.to_i),value.to_i,flags
         @name = name
         raise "Unknown enum field" if @value.nil?
     end
@@ -556,7 +558,7 @@ class CreatedStructure
         of = template.offset
         @values[of/4] ||= {}
         @values[of/4][template.name] ||= []
-        instance = template.referenced_type.create_instance(init_value,template.name)
+        instance = template.referenced_type.create_instance(init_value,template.name,template.flags)
         @values[of/4][template.name] << instance
         instance
     end
@@ -690,31 +692,44 @@ class TrickTxtWriter
             @tgt_stream=@resulting_files[fname]
             @tgt_stream<<"\n"
         end
-        @tgt_stream << indent() << "#{typename}\n"
+        @tgt_stream << indent() << "#{typename}"
         @indent+=1
     end
     def leave_structure(struct)
         @indent-=1
-        @tgt_stream << indent() << "\n"
+        #@tgt_stream << indent() << "\n"
     end
     def visit_primitive(prim)
-        return if(prim.type.type_id==0x2)
+        #p prim if(prim.type.type_id==0x2)
+        #return if(prim.type.type_id==0x2)
         return if(prim.type.type_id==0x3)
+        @tgt_stream <<"\n" if (prim.flags&0x200)==0
         val_s = ""
         if(prim.value.is_a?(Array))
-            val_s = "["+prim.value.join(",")+"]"
+            val_s = ""+prim.value.join(",")+""
+            @tgt_stream << indent() << "#{prim.name} #{val_s} "
         else
-            val_s = prim.value.to_s()
-        end        
-        @tgt_stream << indent() << "#{prim.name} \"#{val_s}\" \n"
+            if(prim.value==nil)
+                @tgt_stream << indent() << prim.name
+                return
+            end
+            val_s = prim.value.to_s() 
+            if(prim.value.is_a?(String))
+                @tgt_stream << indent() << "#{prim.name} \"#{val_s}\" "
+            else
+                @tgt_stream << indent() << "#{prim.name} #{val_s} "
+            end
+        end
     end
     def visit_bf(prim)
+        @tgt_stream <<"\n" if (prim.flags&0x200)==0
         val_s = prim.value.to_s()
-        @tgt_stream << indent() << "#{prim.name} \"#{val_s}\" \n"
+        @tgt_stream << indent() << "#{prim.name} \"#{val_s}\" "
     end
     def visit_en(prim)
-        val_s = prim.value.to_s()
-        @tgt_stream << indent() << "#{prim.name} \"#{val_s}\" \n"
+        @tgt_stream <<"\n" if (prim.flags&0x200)==0
+        val_s = prim.numeric.to_s()
+        @tgt_stream << indent() << "#{prim.name} \"#{val_s}\" "
     end
     def create_files
         @resulting_files.each {|k,v|

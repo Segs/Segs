@@ -160,7 +160,7 @@
     <type_ref name=""           type="0x206"    offset="0x4"    param="0x0"      sub_ref="0x0"/>
     <type_ref name=""           type="0x3"      offset="0x0"    param="0x0"      sub_ref="0x0"/>
     <type_ref name="Gloss"      type="0xA"      offset="0x3C"   param="0x1"      sub_ref="0x0"/>
-    <type_ref name="Surface"    type="0x206"    offset="0x38"   param="0x0"      sub_ref="0x0"/>
+    <type_ref name="Surface"    type="0x6"      offset="0x38"   param="0x0"      sub_ref="0x0"/>
     <type_ref name="Fade"       type="0x0B"     offset="0x14"   param="0x0"      sub_ref="0x0"/>
     <type_ref name="ScaleST0"   type="0x0B"     offset="0x1C"   param="0x0"      sub_ref="0x0"/>
     <type_ref name="ScaleST1"   type="0x0B"     offset="0x24"   param="0x0"      sub_ref="0x0"/>
