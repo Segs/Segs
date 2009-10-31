@@ -363,7 +363,7 @@ class PrimitiveType < Type
         end
     end
     def create_instance(init_val=nil,name=nil,flags=nil)
-        CreatedPrimitive.new(self,init_val,name,flags)
+        PrimitiveInstance.new(self,init_val,name,flags)
     end
 end
 class StructTypeField
@@ -372,7 +372,7 @@ class StructTypeField
     def initialize(name,type,flags,offset,init_to)
         @name,@referenced_type,@flags,@offset,@init_to = name,type,flags,offset.to_i(0),init_to
         if(@referenced_type.is_a?(PrimitiveType))
-           @init_to= CreatedPrimitive.new(@referenced_type,init_to,name,flags)
+           @init_to= PrimitiveInstance.new(@referenced_type,init_to,name,flags)
         end
     end
     def read_from(stream,tgt_struct,sub_size)
@@ -500,7 +500,7 @@ class StructureType < Type
         offset_sorted.each {|entr| visitor.visit_struct_field(entr) }
     end
 end
-class CreatedPrimitive
+class PrimitiveInstance
     attr_reader :type,:value,:name,:flags
     def initialize(type,value,name,flags)
         @type,@value,@name,@flags = type,value,name,flags
@@ -556,6 +556,7 @@ class CreatedStructure
     end
     def create_instance_of(template,init_value=nil)
         of = template.offset
+        of = 0x333 if template.referenced_type.is_a?(PrimitiveType) && template.referenced_type.type_id==2
         @values[of/4] ||= {}
         @values[of/4][template.name] ||= []
         instance = template.referenced_type.create_instance(init_value,template.name,template.flags)
@@ -614,7 +615,7 @@ class XMLWriter
     end
     def visit_field(field)
         p field
-        if field.value!=nil && !(field.value.is_a?(CreatedPrimitive) && field.value.value=="")
+        if field.value!=nil && !(field.value.is_a?(PrimitiveInstance) && field.value.value=="")
             @tgt_stream << indent() << "<field type=\"#{field.value.type.name}\" name=\"#{field.name}\" "
             output_value(field.value)
             @tgt_stream << "/>\n"
