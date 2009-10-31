@@ -9,6 +9,7 @@
 
 #include "Avatar.h"
 #include "Auth.h"
+class GameView;
 class LoginDialog: public wxDialog,public AuthObserver
 {
 public:
@@ -34,7 +35,7 @@ protected:
     wxTextCtrl* m_server_response;
     wxButton* m_btn_login;
     wxButton* m_btn_cancel;
-	wxPanel *m_world;
+	GameView *m_world;
     // end wxGlade
 
 	AuthInterface *m_endpoint;

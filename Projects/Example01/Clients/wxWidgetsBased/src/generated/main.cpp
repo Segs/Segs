@@ -31,7 +31,7 @@ bool ExampleClient::OnInit()
 int ExampleClient::OnExit()
 {
     ACE_Reactor::instance ()->end_reactor_event_loop();
-    return 0;
+    return wxApp::OnExit();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -57,7 +57,6 @@ int main(int argc, char **argv)
     int argc=0;
     char *argv[]={0};
 #else
-    //        thr.set_args(hInstance, hPrevInstance, lpCmdLine,nCmdShow); this needs implementation for *nix'es 
 #endif
     try{
         ACE_Main m;

@@ -5,11 +5,13 @@ SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/generated/main.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/generated/LoginDialog.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Avatar.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/GameView.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/generated/LoginDialog.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Avatar.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Example01.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/GameView.h
 )
 SET(target_INCLUDE_DIR 
 	${CMAKE_CURRENT_SOURCE_DIR}/include

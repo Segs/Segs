@@ -7,7 +7,7 @@
 #include "AuthPacket.h"
 #include "AuthProtocol.h"
 #include "AuthConnection_ClientSide.h"
-
+#include "GameView.h"
 
 LoginDialog::LoginDialog(wxWindow* parent, int id, const wxString& title, const wxPoint& pos, const wxSize& size, long style):
     wxDialog(parent, id, title, pos, size, wxDEFAULT_DIALOG_STYLE)
@@ -18,7 +18,7 @@ LoginDialog::LoginDialog(wxWindow* parent, int id, const wxString& title, const 
     m_server_response = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(120,200), wxTE_MULTILINE);
     m_btn_login = new wxButton(this, wxID_ANY, wxT("Login"));
     m_btn_cancel = new wxButton(this, wxID_CANCEL, wxEmptyString);
-	m_world = new wxOgrePanel(this,wxID_ANY);
+	m_world = new GameView(this,wxID_ANY);
 	m_txt_login->Enable(false);
 	m_txt_passw->Enable(false);
     Auth_Client_Connector cntr;
@@ -34,7 +34,7 @@ BEGIN_EVENT_TABLE(LoginDialog, wxDialog)
     // begin wxGlade: LoginDialog::event_table
     EVT_TEXT_ENTER(wxID_ANY, LoginDialog::OnSetLogin)
     EVT_TEXT_ENTER(wxID_ANY, LoginDialog::OnSetPassword)
-	EVT_PAINT(LoginDialog::OnMyPaint)
+	//EVT_PAINT(LoginDialog::OnMyPaint)
     EVT_BUTTON(wxID_ANY, LoginDialog::OnLogin)
     // end wxGlade
 END_EVENT_TABLE();

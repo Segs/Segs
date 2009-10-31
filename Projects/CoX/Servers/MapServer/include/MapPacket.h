@@ -633,6 +633,12 @@ public:
 	}
 	virtual void serializefrom(BitStream &src)
 	{
+		while(src.GetReadableBits()>8)
+			src.GetBits(8);
+		src.ByteAlign();
+		while(src.GetReadableBits()>0)
+			src.GetBits(1);
+		return;
 		contain_control_update = src.GetBits(1);
 		if(contain_control_update)
 		{
