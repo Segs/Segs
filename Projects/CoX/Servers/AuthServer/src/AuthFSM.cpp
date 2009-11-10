@@ -210,12 +210,14 @@ AuthPacket * AuthFSM_Default::AuthorizationRequested( AuthPacket * pkt, AuthConn
 			else if(client->getState()==AuthClient::NOT_LOGGEDIN)
 				err = AuthServer::AUTH_OK;
 		}
+		// if there were no errors and the provided password is valid and admin server has logged us in.
 		if(
 			(err==AuthServer::AUTH_OK) &&
 			(adminserv->ValidPassword(client,auth_pkt->password)) &&
 			(adminserv->Login(client,caller->peer())) // this might fail somehow
 			)
 		{
+			// inform the client of the successful login attempt 
 			client->setState(AuthClient::LOGGED_IN);
 			result = AuthPacketFactory::PacketForType(PKT_AUTH_LOGIN_SUCCESS);
 			caller->setClientState((int)CLIENT_AUTHORIZED);

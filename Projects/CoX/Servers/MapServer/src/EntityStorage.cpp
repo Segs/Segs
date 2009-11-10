@@ -56,6 +56,7 @@ void EntityManager::sendEntities( BitStream &tgt ) const
 	}
 	while(iter!=m_entlist.end())
 	{
+		ACE_ASSERT(!"Only one for now");
 		pEnt = *iter;
 		delta = pEnt->getIdx()-last_idx -1;
 		tgt.StorePackedBits(1,delta);
