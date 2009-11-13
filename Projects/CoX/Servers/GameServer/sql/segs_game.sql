@@ -63,10 +63,8 @@ CREATE INDEX fki_
 CREATE TABLE costume
 (
   id serial NOT NULL,
-  floats_14 float4[] NOT NULL,
-  arr7 int4[] NOT NULL,
-  character_id int4 NOT NULL,
-  costume_index int2 NOT NULL,
+  character_id integer NOT NULL,
+  costume_index smallint NOT NULL,
   CONSTRAINT costume_pkey PRIMARY KEY (id),
   CONSTRAINT costume_character_id_fkey FOREIGN KEY (character_id)
       REFERENCES characters (id) MATCH SIMPLE

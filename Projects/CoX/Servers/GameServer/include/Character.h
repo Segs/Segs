@@ -35,15 +35,7 @@ public:
 	{
 		tgt.StorePackedBits(1,(u32)m_parts.size());
 		for(size_t i=0; i<m_parts.size(); i++)
-		{
-			//tgt.StoreBits(32,m_parts[i].m_type);
-			tgt.StoreString(m_parts[i].name_0);
-			tgt.StoreString(m_parts[i].name_1);
-			tgt.StoreString(m_parts[i].name_2);
-			tgt.StoreString(m_parts[i].name_3);
-			tgt.StorePackedBits(32,m_parts[i].m_colors[0]);
-			tgt.StorePackedBits(32,m_parts[i].m_colors[1]);
-		}
+			m_parts[i].serializeto_charsel(tgt);
 	}
 	void serializefrom(BitStream &src)
 	{
@@ -58,10 +50,6 @@ public:
 	// Database related
 	//////////////////////////////////////////////////////////////////////////
 	u64		m_id;
-	u32		m_face_ints_vec[7];
-	size_t	m_face_used_ints; // this value is forced to by <= sizeof(m_face_ints_vec)  by Database's getColIntArray return value; 
-	float	m_floats_vec[8];
-	size_t	m_used_floats;
 };
 
 class Character : public NetStructure

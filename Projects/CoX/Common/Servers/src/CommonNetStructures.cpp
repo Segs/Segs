@@ -198,7 +198,7 @@ void CostumePart::serializefrom( BitStream &bs )
 	}
 }
 
-void CostumePart::serializeto_charsel( BitStream &bs )
+void CostumePart::serializeto_charsel( BitStream &bs ) const
 {
 	// character selection needs to get part names as strings
 	bs.StoreString(name_0);

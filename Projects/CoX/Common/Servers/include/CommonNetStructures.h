@@ -67,7 +67,6 @@ public:
 	TransformStruct(const Vector3 &a,const Vector3 &b,const Vector3 &c,bool set1,bool set2,bool set3) :
 	  v1(a),v2(b),v3(c),v1_set(set1),v2_set(set3),v3_set(set3)
 	{
-
 	}
 	TransformStruct() {v1_set=v2_set=v3_set=false;}
 	Vector3 v1;
@@ -116,7 +115,7 @@ public:
 	// Part 2 : Head
 	// Part 3 : Gloves
 	// Part 4 : Boots
-	CostumePart(bool full_part):m_type(0),m_full_part(full_part)
+	CostumePart(bool full_part,size_t part_type=0):m_type(part_type),m_full_part(full_part)
 	{
 		m_colors[0]=m_colors[1];
 	}
@@ -128,7 +127,7 @@ public:
 	};
 	void serializeto(BitStream &bs) const;
 	void serializefrom(BitStream &bs);
-	void serializeto_charsel(BitStream &bs);
+	void serializeto_charsel(BitStream &bs) const;
 	int m_type; // arms/legs etc..
 	string name_0,name_1,name_2,name_3,name_4,name_5,name_6;
 	bool m_full_part;

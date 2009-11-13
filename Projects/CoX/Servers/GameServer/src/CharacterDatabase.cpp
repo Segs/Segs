@@ -106,8 +106,6 @@ bool CharacterDatabase::fill( CharacterCostume *c)
 			ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
 	}
 	DbResultRow r=results.getRow(0);
-	c->m_face_used_ints = r.getColIntArray("arr7",c->m_face_ints_vec,ARRAYSIZE(c->m_face_ints_vec));
-	c->m_used_floats = r.getColFloatArray("floats_14",c->m_floats_vec,ARRAYSIZE(c->m_floats_vec));
 	query.str("");
 	query<<"SELECT * FROM costume_part WHERE costume_id="<<r.getColInt32("id");
 	// this will overwrite underlying object therefore 'r' will become useless
@@ -116,13 +114,17 @@ bool CharacterDatabase::fill( CharacterCostume *c)
 	for(size_t i=0; i<results.num_rows(); i++)
 	{
 		r=results.getRow(i);
-		c->m_parts.push_back(CostumePart(r.getColInt32("part_type"),r.getColString("name_0"),
-											r.getColString("name_1"),
-											r.getColString("name_2"),
-											r.getColString("name_3"),
-											r.getColInt32("color_0"),
-											r.getColInt32("color_1")
-										));
+		CostumePart part(true,r.getColInt32("part_type"));
+		part.name_0=r.getColString("name_0");
+		part.name_1=r.getColString("name_1");
+		part.name_2=r.getColString("name_2");
+		part.name_3=r.getColString("name_3");
+		part.name_4=r.getColString("name_4");
+		part.name_5=r.getColString("name_5");
+		part.name_6=r.getColString("name_6");
+		part.m_colors[0]=r.getColInt32("color_0");
+		part.m_colors[1]=r.getColInt32("color_1");
+		c->m_parts.push_back(part);
 	}
 	return true;
 /*
