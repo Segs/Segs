@@ -379,7 +379,7 @@ public:
 		m_idx = src.GetPackedBits(1);
 		if(m_idx<0) return;
 		src.GetString(m_name);
-		recvTransformMatrix(src,m_matrix);
+		getTransformMatrix(src,m_matrix);
 	}
 	void serializeto(BitStream &tgt) const
 	{
@@ -387,11 +387,11 @@ public:
 		//tgt.StoreString(m_name);
 		if(reduced_transform)
 		{
-			SendTransformMatrix(tgt,m_transforms);
+			storeTransformMatrix(tgt,m_transforms);
 		}
 		else
 		{
-			SendTransformMatrix(tgt,m_matrix);
+			storeTransformMatrix(tgt,m_matrix);
 		}
 
 	}

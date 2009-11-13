@@ -4,6 +4,7 @@ SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/ServerProtocolHandler.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AdminServerInterface.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthServerInterface.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/CommonNetStructures.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/GameServerInterface.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapServerInterface.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/NetManager.cpp
