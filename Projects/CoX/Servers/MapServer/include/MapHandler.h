@@ -18,11 +18,18 @@ class MapServer;
 class IClient;
 class MapHandler : public ServerCommandHandler
 {
-	MapClient *m_client;
-	MapServer *m_server;
+		MapClient *	m_client;
+		MapServer *	m_server;
+		bool		onEntityReceived( GamePacket * pak );
+		bool		onCommandsRequested(GamePacket *pak);
+		bool		onSceneRequested(GamePacket *pak);
+		bool		onInputStateChange(GamePacket *pak);
+		bool		onEntitiesRequested(GamePacket *pak);
+
 public:
 					MapHandler(MapServer *srv);
-virtual	bool		ReceivePacket(GamePacket *pak);
+
+		bool		ReceivePacket(GamePacket *pak);
 		MapServer * getServer() const { return m_server; }
 		void		setServer(MapServer * val) { m_server = val; }
 		void		setClient(IClient *cl);
