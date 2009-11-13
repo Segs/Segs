@@ -223,10 +223,6 @@ virtual void	serializefrom(BitStream &){ACE_ASSERT(false);};
 };
 class MapCostume : public Costume
 {
-	vector<string> stringcache;
-	u32 stringcachecount_bitlength;
-	vector<u32> colorcache;
-	u32 colorcachecount_bitlength;
 	bool costume_sends_nonquantized_floats;
 	union
 	{
@@ -243,19 +239,11 @@ protected:
 		int		costume_type_idx_P;
 		int		costume_sub_idx_P;
 		void	GetCostume(BitStream &src);
-		void	GetCostumeString(BitStream &src,string &tgt);
-		u32		GetCostumeColor(BitStream &src);
-		void	GetCostumeString_Cached(BitStream &src,string &tgt);
-		u32		GetCostumeColor_Cached(BitStream &src);
-		void	SendCostumeString_Cached(BitStream &tgt,const string &src) const;
-		void	SendCostumeColor_Cached(BitStream &tgt,u32 color) const;
 		void	SendCommon(BitStream &bs) const;
 public:
 				~MapCostume(){}
 				MapCostume()
 				{
-					stringcachecount_bitlength=0;
-					colorcachecount_bitlength=0;
 				}
 		void	clear_cache();
 		void	serializefrom(BitStream &);

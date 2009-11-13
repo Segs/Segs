@@ -121,9 +121,8 @@ bool CharacterDatabase::fill( CharacterCostume *c)
 											r.getColString("name_2"),
 											r.getColString("name_3"),
 											r.getColInt32("color_0"),
-											r.getColInt32("color_1"),
-											r.getColInt32("color_2"),
-											r.getColInt32("color_3") ));
+											r.getColInt32("color_1")
+										));
 	}
 	return true;
 /*

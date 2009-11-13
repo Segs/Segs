@@ -70,6 +70,10 @@ public:
 	void					checkClientConnection(u64 id);
 	bool					isClientConnected(u64 id);
 	int						createLinkedAccount(u64 auth_account_id,const std::string &username);
+	//////////////////////////////////////////////////////////////////////////
+	// Interface used by Map server to add new character
+	//////////////////////////////////////////////////////////////////////////
+	//bool					newCharacter(u64 id,Entity *character);
 	//bool					getCharacterData(u64 id,
 protected:
 	IGameServer *m_instance;

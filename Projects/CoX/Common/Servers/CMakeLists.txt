@@ -51,7 +51,7 @@ INCLUDE_DIRECTORIES(${PGSQL_path})
 INCLUDE_DIRECTORIES(${ACE_path})
 INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 
-ADD_LIBRARY(segs_server_common STATIC ${target_SOURCES})
-ADD_DEPENDENCIES(segs_server_common ${target_DEPENDS})
+ADD_LIBRARY(cox_server_common STATIC ${target_SOURCES})
+ADD_DEPENDENCIES(cox_server_common ${target_DEPENDS})
 
-SEGS_REGISTER_COMPONENT(segs_server_common "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
+SEGS_REGISTER_COMPONENT(cox_server_common "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )

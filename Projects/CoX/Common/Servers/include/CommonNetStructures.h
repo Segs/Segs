@@ -11,6 +11,8 @@
 #pragma once
 
 #include <ace/Log_Msg.h>
+#include <string>
+#include <sstream>
 #include "BitStream.h"
 class Quaternion
 {
@@ -77,7 +79,14 @@ public:
 
 class NetStructure // this represents an interface all structures that are traversing the network should implement
 {
+		std::vector<string> stringcache;
+		std::vector<u32>	colorcache;
+static const u32					stringcachecount_bitlength=12;
+static const u32					colorcachecount_bitlength=10;
 public:
+	NetStructure()
+	{
+	}
 	virtual ~NetStructure(){}
 	virtual void serializeto(BitStream &bs) const =0;
 	virtual void serializefrom(BitStream &bs)=0;
@@ -161,9 +170,76 @@ public:
 			ACE_ASSERT(!"PACKED ARRAY RECEIVED!");
 		bs.GetBitArray((u8*)&src,12*4*8);
 	}
+	void sendColor_Cached(BitStream &bs,u32 col) const
+	{
+		int cache_idx=0;
+		if(col)
+			ACE_ASSERT(!"Color cache lookup requested");
+		bs.StoreBits(1,(cache_idx||col==0));
+		if(cache_idx||col==0)
+		{
+			bs.StorePackedBits(colorcachecount_bitlength,cache_idx);
+		}
+		else
+		{
+			bs.StoreBits(32,col);
+		}
+
+	}
+	void sendString_Cached(BitStream &bs,const std::string & str) const
+	{
+		int cache_idx=0;
+		if(str.size())
+			ACE_ASSERT(!"string cache lookup requested");
+		bs.StoreBits(1,(cache_idx||str.size()==0));
+		if(cache_idx||str.size()==0)
+			bs.StorePackedBits(stringcachecount_bitlength,cache_idx);
+		else
+			bs.StoreString(str);
+	}
+	u32 recvColor_Cached(BitStream &bs)
+	{
+		bool in_hash= bs.GetBits(1);
+		if(in_hash)
+		{
+			u16 hash_key =bs.GetBits(colorcachecount_bitlength);
+			return 0xFFFFFFFF; 
+		}
+		else
+		{
+			// update cache
+			return bs.GetBits(32);
+		}
+
+		return 0;
+	}
+	std::string recvString_Cached(BitStream &bs)
+	{
+		std::ostringstream strm;
+		std::string tgt;
+		bool in_cache= bs.GetBits(1);
+		if(in_cache)
+		{
+			if(stringcache.size()==1)
+			{
+				return stringcache[0];
+			}
+			int in_cache_idx = bs.GetPackedBits(stringcachecount_bitlength);
+			strm <<"Hash:"<<(int)in_cache_idx;
+			tgt=strm.str();
+			//tgt = stringcache[in_cache_idx];
+			tgt.push_back(0);
+		}
+		else
+		{
+			bs.GetString(tgt);
+			stringcache.push_back(tgt);
+		}
+		return tgt;
+	}
 };
 
-class CostumePart
+class CostumePart : public NetStructure
 {
 public:
 	// Part 6 : Hair
@@ -172,22 +248,58 @@ public:
 	// Part 2 : Head
 	// Part 3 : Gloves
 	// Part 4 : Boots
-	CostumePart():m_type(0),m_generic(false)
+	CostumePart(bool full_part):m_type(0),m_full_part(full_part)
 	{
-		m_colors[0]=m_colors[1]=m_colors[2]=m_colors[3]=0;
+		m_colors[0]=m_colors[1];
 	}
-	CostumePart(int type,const string &a,const string &b,const string &c,const string &d,u32 c1,u32 c2,u32 c3,u32 c4)
+	CostumePart(int type,const string &a,const string &b,const string &c,const string &d,u32 c1,u32 c2)
 		:m_type(type),name_0(a),name_1(b),name_2(c),name_3(d)
 	{
 		m_colors[0]=c1;
 		m_colors[1]=c2;
-		m_colors[2]=c3;
-		m_colors[3]=c4;
 	};
+	void serializeto(BitStream &bs) const
+	{
+		sendString_Cached(bs,name_0);
+		sendString_Cached(bs,name_1);
+		sendString_Cached(bs,name_2);
+		sendColor_Cached(bs,m_colors[0]);
+		sendColor_Cached(bs,m_colors[1]);
+		if(m_full_part)
+		{
+			sendString_Cached(bs,name_3);
+			sendString_Cached(bs,name_4);
+			sendString_Cached(bs,name_5);
+		}
+	}
+	void serializefrom(BitStream &bs)
+	{
+		name_0=recvString_Cached(bs);
+		name_1=recvString_Cached(bs);
+		name_2=recvString_Cached(bs);
+		m_colors[0]=recvColor_Cached(bs);
+		m_colors[1]=recvColor_Cached(bs);
+		if(m_full_part)
+		{
+			name_3=recvString_Cached(bs);
+			name_4=recvString_Cached(bs);
+			name_5=recvString_Cached(bs);
+		}
+	}
+	void serializeto_charsel(BitStream &bs)
+	{
+		// character selection needs to get part names as strings
+		bs.StoreString(name_0);
+		bs.StoreString(name_1);
+		bs.StoreString(name_2);
+		bs.StoreString(name_6);
+		bs.StoreBits(32,m_colors[0]);
+		bs.StoreBits(32,m_colors[1]);
+	}
 	int m_type; // arms/legs etc..
-	string name_0,name_1,name_2,name_3,name_4,name_5;
-	bool m_generic;
-	u32 m_colors[4];
+	string name_0,name_1,name_2,name_3,name_4,name_5,name_6;
+	bool m_full_part;
+	u32 m_colors[2];
 };
 
 class Costume : public NetStructure

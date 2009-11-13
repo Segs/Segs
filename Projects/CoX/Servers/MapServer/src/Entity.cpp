@@ -1038,18 +1038,8 @@ void MapCostume::GetCostume( BitStream &src )
 	m_num_parts = src.GetPackedBits(4);
 	for(int costume_part=0; costume_part<m_num_parts;costume_part++)
 	{
-		CostumePart part;
-		GetCostumeString_Cached(src,part.name_0);
-		GetCostumeString_Cached(src,part.name_1);
-		GetCostumeString_Cached(src,part.name_2);
-		part.m_colors[0] = GetCostumeColor_Cached(src);
-		part.m_colors[1] = GetCostumeColor_Cached(src);
-		if(m_non_default_costme_p)
-		{
-			GetCostumeString(src,part.name_3);
-			GetCostumeString(src,part.name_4);
-			GetCostumeString(src,part.name_5);
-		}
+		CostumePart part(m_non_default_costme_p);
+		part.serializefrom(src);
 		m_parts.push_back(part);
 	}
 }
@@ -1064,7 +1054,7 @@ void MapCostume::dump()
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    ****** %d Parts *******\n"),m_num_parts));		
 	for(int i=0; i<m_num_parts; i++)
 	{
-		if(m_parts[i].m_generic)
+		if(m_parts[i].m_full_part)
 			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),m_parts[i].name_0.c_str(),
 			m_parts[i].name_1.c_str(),m_parts[i].name_2.c_str(),m_parts[i].name_3.c_str(),
 			m_parts[i].m_colors[0],m_parts[i].m_colors[1],
@@ -1078,95 +1068,6 @@ void MapCostume::dump()
 			));		
 	}
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    *************\n")));
-}
-
-void MapCostume::GetCostumeString_Cached( BitStream &src,string &tgt )
-{
-	ostringstream strm;
-	bool in_cache= src.GetBits(1);
-	if(in_cache)
-	{
-		if(stringcache.size()==1)
-		{
-			tgt = stringcache[0];
-			return;
-		}
-		int in_cache_idx = src.GetPackedBits(12);
-		strm <<"Hash:"<<(int)in_cache_idx;
-		tgt=strm.str();
-		tgt.push_back(0);
-		//tgt = stringcache[in_cache_idx];
-	}
-	else
-	{
-		src.GetString(tgt);
-		stringcache.push_back(tgt);
-	}
-}
-
-void MapCostume::GetCostumeString( BitStream &src,string &tgt )
-{
-	int name_in_hash= src.GetBits(1);
-	if(name_in_hash)
-	{
-		int part_idx=0;
-		//if(hash_map.find(name)!=hash_map.end())
-		//{
-		//	var_4C = 1;
-		//	part_idx = hash_map[name];
-		//}
-		//GetHashTableMaxIndexBits() const 12
-		char buf[128]={0};
-		part_idx=src.GetPackedBits(12);
-		sprintf(buf,"0x%08x\0",part_idx);
-		tgt= buf;
-	}
-	else
-		src.GetString(tgt);
-}
-
-u32 MapCostume::GetCostumeColor( BitStream &src )
-{
-	bool in_hash= src.GetBits(1);
-	if(in_hash)
-	{
-		u16 hash_key =src.GetBits(9);
-		return 0xFFFFFFFF; 
-	}
-	else
-	{
-		return src.GetBits(32);
-	}
-}
-
-u32 MapCostume::GetCostumeColor_Cached( BitStream &src )
-{
-	bool in_cache= src.GetBits(1);
-	u32 tgt;
-	if(in_cache)
-	{
-		if(colorcache.size()==1)
-		{
-			tgt = colorcache[0];
-			return tgt;
-		}
-		int in_cache_idx = src.GetPackedBits(10);
-		tgt = 0xBAD00000|in_cache_idx;
-	}
-	else
-	{
-		tgt = src.GetBits(32);
-		colorcache.push_back(tgt);
-	}
-	return tgt;
-}
-
-void MapCostume::clear_cache()
-{
-	stringcachecount_bitlength=0;
-	colorcachecount_bitlength=0;
-	stringcache.clear();
-	colorcache.clear();
 }
 
 void MapCostume::serializefrom( BitStream &src )
@@ -1203,52 +1104,6 @@ void MapCostume::SendCommon(BitStream &bs) const
 	for(int costume_part=0; costume_part<m_num_parts;costume_part++)
 	{
 		CostumePart part=m_parts[costume_part];
-		SendCostumeString_Cached(bs,part.name_0);
-		SendCostumeString_Cached(bs,part.name_1);
-		SendCostumeString_Cached(bs,part.name_2);
-		SendCostumeColor_Cached(bs,part.m_colors[0]);
-		SendCostumeColor_Cached(bs,part.m_colors[1]);
-		if(m_non_default_costme_p)
-		{
-			SendCostumeString_Cached(bs,part.name_0);
-			SendCostumeString_Cached(bs,part.name_1);
-			SendCostumeString_Cached(bs,part.name_2);
-		}
-	}
-}
-
-void MapCostume::SendCostumeString_Cached( BitStream &tgt,const string &src ) const
-{
-	int cache_idx=0;
-#ifdef HASH_LOADING
-	cache_idx=cache_lookup(color);
-#endif
-	if(src.size())
-		cache_idx=atoi(src.c_str()+5);
-	tgt.StoreBits(1,(cache_idx||src.size()==0));
-	if(cache_idx||src.size()==0)
-	{
-		tgt.StorePackedBits(12,cache_idx);
-	}
-	else
-	{
-		tgt.StoreString(src);
-	}
-}
-
-void MapCostume::SendCostumeColor_Cached( BitStream &tgt,u32 color ) const
-{
-	int cache_idx=0;
-#ifdef HASH_LOADING
-	cache_idx=cache_lookup(color);
-#endif
-	tgt.StoreBits(1,(cache_idx||color==0));
-	if(cache_idx||color==0)
-	{
-		tgt.StorePackedBits(10,cache_idx);
-	}
-	else
-	{
-		tgt.StoreBits(32,color);
+		part.serializeto(bs);
 	}
 }

@@ -40,26 +40,10 @@ public:
 			tgt.StoreString(m_parts[i].name_0);
 			tgt.StoreString(m_parts[i].name_1);
 			tgt.StoreString(m_parts[i].name_2);
-//			tgt.StoreString("");
 			tgt.StoreString(m_parts[i].name_3);
 			tgt.StorePackedBits(32,m_parts[i].m_colors[0]);
 			tgt.StorePackedBits(32,m_parts[i].m_colors[1]);
-/*
-			for(u8 j=0; j<4; j++)
-				tgt.StorePackedBits(32,m_parts[i].m_colors[j]);
-*/
 		}
-/*
-		tgt.StorePackedBits(1,8); // number of floats 0-8
-		tgt.StorePackedBits(1,m_face_used_ints); // number of packeds 0-7
-		for(size_t i=0; i<m_used_floats; i++)
-			tgt.StoreFloat(m_floats_vec[i]);
-	    // m_floats[0] Height
-		// 
-		tgt.StorePackedBits(1,1);
-		for(size_t i=0; i<m_face_used_ints; i++)
-			tgt.StorePackedBits(1,m_face_ints_vec[i]); // each value here get's unpacked into 3 Floats on the client
-*/
 	}
 	void serializefrom(BitStream &src)
 	{
