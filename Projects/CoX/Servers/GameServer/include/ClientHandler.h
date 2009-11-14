@@ -25,12 +25,19 @@ private:
 		bool				sendNotAuthorized();
 		bool				sendAllowConnection();
 		bool				sendWrongVersion(u32 version);
+		// 'event' handlers
+		void				onCharacterUpdate	( GamePacket * pak );
+		void				onCharacterDelete	( GamePacket * pak );
+		void				onOnterMap			( GamePacket * pak );
+		bool				onServerUpdate		( GamePacket * pak );
+
 public:
 							CharacterHandler(GameServer *);
 virtual						~CharacterHandler();
 
 virtual bool				ReceivePacket(GamePacket *pak);
-		CharacterDatabase *	getDb();
+
+CharacterDatabase *	getDb();
 		void				setClient(IClient *cl);
 };
 

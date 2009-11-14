@@ -66,112 +66,21 @@ bool CharacterHandler::ReceivePacket(GamePacket *pak)
 			}
 
 		}
-	case 2:
+	case CMSG_SERVER_UPDATE:
 		{
-			//Character *act;
-			pktCS_ServerUpdate * su_pak = (pktCS_ServerUpdate * )pak;
-			pktSC_Character * char_pak;
-			pak->dump();
-			m_client = m_server->ClientExpected(getTargetAddr(),su_pak);
-			if(su_pak->m_build_date!=supported_version)
-			{
-				return sendWrongVersion(su_pak->m_build_date);
-			}
-			if(!m_client)
-			{
-				return sendNotAuthorized();
-			}
-			m_client->setHandler(this);
-			if(!m_client->serializeFromDb())
-			{
-				return sendNotAuthorized(); //TODO: send db error here
-			}
-			m_client->getCharsFromDb();
-			pktSC_CharSlots *res = new pktSC_CharSlots;
-			vector<pktSC_Character *> characters_to_send;
-			res->setLast_played_idx(0); //m_client->getLastPlayedCharSlot();
-
-			for(size_t i=0; i<m_client->getMaxSlots(); i++)
-			{
-				res->addCharacter(m_client->getCharacter(i));
-				if(res->m_characters[i]->isEmpty())
-					continue;
-				char_pak = new pktSC_Character;
-				char_pak->m_slot_idx=i;
-				char_pak->m_costume=res->m_characters[i]->m_costume;
-				characters_to_send.push_back(char_pak);
-			}
-			srand((u32)time(NULL));
-			res->m_unknown_new=rand()&0xFF;
-			res->setAuthreservations(4); // slots 0-3 are playable slots
-			res->setLast_played_idx(4); // last playable
-			for(int i=0; i<16; i++)
-				res->m_clientinfo[i]=0xFF;//rand()&0xFF;
-			u32 VALENTINE_enabled = 1<<16; // Event_Valentine_Accessories
-			u32 CrabSpiderRED_enabled = 1<<18;
-			u32 BloodWidow_enabled = 1<<19;  // +WolfspiderRed
-			u32 mystichelm_enabled = 1<<20;  // +Mystic
-			u32 CrabSpider_enabled = 1<<21;
-			u32 segsDVD_enabled   = 1<<22;
-			u32 villain_enabled  = 1<<23;		
-			u32 spec_flag1		 = 4<<24; // 3 bits : 1 - EB, 2 - GameStop,3 - BestBuy, 4 - Generic
-			u32 DVD_Edition		 = 1<<27;
-			u32 warshade_enabled = 1<<28;
-			u32 hero_enabled	 = 1<<31;
-
-			((client_info*)&(res->m_clientinfo))->unk_2=hero_enabled|warshade_enabled|villain_enabled|CrabSpiderRED_enabled|BloodWidow_enabled|mystichelm_enabled|segsDVD_enabled|VALENTINE_enabled|spec_flag1|DVD_Edition;
-			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("0x%08x;\n"),((client_info*)&(res->m_clientinfo))->unk_2));
-			res->dump();
-			m_proto->SendPacket(res);
-			for(size_t i=0; i<characters_to_send.size(); i++)
-				m_proto->SendPacket(characters_to_send[i]);
-			break;
+			return onServerUpdate(pak);
 		}
-	case 3:
+	case CMSG_ENTER_MAP_QUERY:
 		{
-			pktCS_MapServerAddr_Query *query = (pktCS_MapServerAddr_Query *)pak;
-			// expects packet with op 4 in return
-			pktSC_MapServerAddr *res=new pktSC_MapServerAddr;
-			//res->m_error_number=0; name already taken
-			res->m_map_cookie=1; // problem in database system
-			if(ServerManager::instance()->MapServerCount()>0)
-			{
-				MapServerInterface *map_iface = ServerManager::instance()->GetMapServer(0);
-				res->m_map_cookie = map_iface->ExpectClient(getTargetAddr(),m_client->getId(),m_client->getAccessLevel());//0 -> invalid name. 1 -> game databes problem detected
-				res->m_address		= map_iface->getAddress();
-				map_iface->AssociatePlayerWithMap(m_client->getId(),query->m_char_name,query->m_mapnumber);
-				m_proto->SendPacket(res);
-				break;
-			}
-			pktSC_EnterGameError *entry_error = new pktSC_EnterGameError();
-			entry_error->m_error = "There are no available Map Servers.";
-			m_proto->SendPacket(entry_error);
-			break;
+			onOnterMap(pak);
 		}
-	case 4:
+	case CMSG_CHARACTER_DELETE:
 		{
-			pktCS_CharDelete *del= (pktCS_CharDelete *)pak;
-			//m_client->deleteCharacter(del->)
-			ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Ye gods, a deletion attempt ! %d:%s;\n"),del->m_index,del->m_char_name.c_str()));
-			pktSC_EnterGameError *res = new pktSC_EnterGameError();
-			//res->m_error = "\"No\" \"Test\"<b>MapServers</b> available.";
-			//res->m_error = "P1071721040";
-			//res->m_error = "\"UnknownAuthCode\", \"12\"";
-			//res->m_error = "\"%d\" \"PlayerLevel\"";
-			m_proto->SendPacket(res);
-			break;
+			onCharacterDelete(pak);
 		}
-	case 5: // Update ? disconnect request ? clients waits for packet 6 after this
+	case CMSG_CHARACTER_UPDATE:
 		{	
-			pktCS_CharUpdate *up = static_cast<pktCS_CharUpdate *>(pak);
-			ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Char update req! %d;\n"),up->m_index));
-			ACE_ASSERT(m_client->getMaxSlots()>up->m_index);
-			
-			pktSC_Character *res = new pktSC_Character;
-			res->m_slot_idx	= up->m_index;
-			res->m_costume	= m_client->getCharacter(up->m_index)->m_costume;
-			m_proto->SendPacket(res); 
-			break;
+			onCharacterUpdate(pak);
 		}
 	default:
 		pak->dump();
@@ -224,4 +133,74 @@ bool CharacterHandler::sendWrongVersion(u32 version)
 CharacterDatabase * CharacterHandler::getDb()
 {
 	return m_server->getDb();
+}
+
+bool CharacterHandler::onServerUpdate( GamePacket * pak )
+{
+	pktCS_ServerUpdate * su_pak = (pktCS_ServerUpdate * )pak;
+	pak->dump();
+	m_client = m_server->ClientExpected(getTargetAddr(),su_pak);
+	if(su_pak->m_build_date!=supported_version)
+		return sendWrongVersion(su_pak->m_build_date);
+
+	if(!m_client)
+		return sendNotAuthorized();
+
+	m_client->setHandler(this);
+
+	if(!m_client->serializeFromDb())
+		return sendNotAuthorized(); //TODO: send db error here
+
+	m_client->getCharsFromDb();
+	m_proto->SendPacket(new pktSC_CharSlots(m_client));
+	break;
+}
+
+void CharacterHandler::onOnterMap( GamePacket * pak )
+{
+	pktCS_MapServerAddr_Query *query = (pktCS_MapServerAddr_Query *)pak;
+	// expects packet with op 4 in return
+	pktSC_MapServerAddr *res=new pktSC_MapServerAddr;
+	//res->m_error_number=0; name already taken
+	res->m_map_cookie=1; // problem in database system
+	if(ServerManager::instance()->MapServerCount()>0)
+	{
+		MapServerInterface *map_iface = ServerManager::instance()->GetMapServer(0);
+		res->m_map_cookie = map_iface->ExpectClient(getTargetAddr(),m_client->getId(),m_client->getAccessLevel());//0 -> invalid name. 1 -> game databes problem detected
+		res->m_address		= map_iface->getAddress();
+		map_iface->AssociatePlayerWithMap(m_client->getId(),query->m_char_name,query->m_mapnumber);
+		m_proto->SendPacket(res);
+		break;
+	}
+	pktSC_EnterGameError *entry_error = new pktSC_EnterGameError();
+	entry_error->m_error = "There are no available Map Servers.";
+	m_proto->SendPacket(entry_error);
+	break;
+}
+
+void CharacterHandler::onCharacterDelete( GamePacket * pak )
+{
+	pktCS_CharDelete *del= (pktCS_CharDelete *)pak;
+	//m_client->deleteCharacter(del->)
+	ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Ye gods, a deletion attempt ! %d:%s;\n"),del->m_index,del->m_char_name.c_str()));
+	pktSC_EnterGameError *res = new pktSC_EnterGameError();
+	//res->m_error = "\"No\" \"Test\"<b>MapServers</b> available.";
+	//res->m_error = "P1071721040";
+	//res->m_error = "\"UnknownAuthCode\", \"12\"";
+	//res->m_error = "\"%d\" \"PlayerLevel\"";
+	m_proto->SendPacket(res);
+	break;
+}
+
+void CharacterHandler::onCharacterUpdate( GamePacket * pak )
+{
+	pktCS_CharUpdate *up = static_cast<pktCS_CharUpdate *>(pak);
+	ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Char update req! %d;\n"),up->m_index));
+	ACE_ASSERT(m_client->getMaxSlots()>up->m_index);
+
+	pktSC_Character *res = new pktSC_Character;
+	res->m_slot_idx	= up->m_index;
+	res->m_costume	= m_client->getCharacter(up->m_index)->getCurrentCostume();
+	m_proto->SendPacket(res); 
+	break;
 }
