@@ -95,8 +95,8 @@ CREATE TABLE costume_part
   color_1 int4 NOT NULL,
   color_1_idx integer NOT NULL,
   color_2 int4 NOT NULL,
-  color_2 int4 NOT NULL,
-  color_3_idx integer NOT NULL,
+  color_2_idx integer NOT NULL,
+  color_3 int4 NOT NULL,
   color_3_idx integer NOT NULL,
   CONSTRAINT costume_part_pkey PRIMARY KEY (id),
   CONSTRAINT costume_part_character_id_fkey FOREIGN KEY (costume_id)
