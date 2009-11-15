@@ -21,6 +21,9 @@ class AuthServer
 		client_link.post_event AuthorizationProtocolVersion.new(self,30206)
 	end
 	def on_disconnect(ev)
+		if(ev.link.state!=:waiting_for_disconnect)
+			# premature disconnect
+		end
 		ev.link.state = :disconnected
 	end
 	# self posted events	
@@ -64,6 +67,7 @@ class AuthServer
 			ev.link.post_event AuthError.new(self,2,AuthServer::AUTH_UNKN_ERROR)
 			return
 		end
+		ev.link.state = :waiting_for_cookies
 		game_server.post_event ExpectClient.new(self,ev.link.addr,ev.link.client_id,ev.link.access_level)
 		# as can be seen, we do not send anything to the client from here
 	end
@@ -76,6 +80,11 @@ class AuthServer
 			# client might have disappeared before we receive response from GameServer
 			return
 		end
+		if(client_link.state!=:waiting_for_cookies)
+			client_link.post_event AuthError.new(self,2,AuthServer::AUTH_UNKN_ERROR)
+			return
+		end
+		client_link.state = :waiting_for_disconnect
 		client_link.post_event ServerResponse.new(self,ev.client,ev.db_cookie,ev.server_cookie)
 	end
 end
