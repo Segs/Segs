@@ -23,8 +23,8 @@
 
 #include <ace/Acceptor.h>
 #include <ace/SOCK_Acceptor.h>
-class AuthClientService;
-typedef ACE_Acceptor<AuthClientService, ACE_SOCK_ACCEPTOR> ClientAcceptor;
+class AuthLink;
+typedef ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR> ClientAcceptor;
 
 // segs includes
 #include "Client.h"

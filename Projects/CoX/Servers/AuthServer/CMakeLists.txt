@@ -2,17 +2,15 @@
 
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthClient.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/AuthClientServicer.cpp 
-${CMAKE_CURRENT_SOURCE_DIR}/src/AuthConnection_ServerSide.cpp 
-${CMAKE_CURRENT_SOURCE_DIR}/src/AuthFSM.cpp 
+${CMAKE_CURRENT_SOURCE_DIR}/src/AuthLink.cpp 
+${CMAKE_CURRENT_SOURCE_DIR}/src/AuthHandler.cpp 
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthServer.cpp 
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthClient.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/AuthClientServicer.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/AuthFSM.h 
+${CMAKE_CURRENT_SOURCE_DIR}/include/AuthLink.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/AuthHandler.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthServer.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/AuthConnection_ServerSide.h
 )
 SET (authserver_standaloneSRCS 
 ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)

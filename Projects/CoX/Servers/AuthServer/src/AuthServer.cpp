@@ -10,7 +10,8 @@
 // segs includes
 #include "ConfigExtension.h"
 #include "AuthServer.h"
-#include "AuthClientServicer.h"
+#include "AuthLink.h"
+#include "AuthHandler.h"
 #include "AuthClient.h"
 #include "InterfaceManager.h"
 
@@ -66,6 +67,8 @@ bool AuthServer::ReadConfig(const std::string &inipath)
  */
 bool AuthServer::Run()
 {
+    AuthLink::g_target = new AuthHandler;
+    AuthLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
 	if (m_acceptor->open(m_location) == -1)
 	{
 		ACE_ERROR_RETURN ((LM_ERROR, ACE_TEXT ("%p\n"),ACE_TEXT ("Opening the Acceptor failed")), false);

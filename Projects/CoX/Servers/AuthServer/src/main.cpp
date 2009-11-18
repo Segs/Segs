@@ -32,7 +32,6 @@
 #include <ace/streams.h> //Included to enable file logging 
 
 //#include "Auth.h"
-#include "AuthClientServicer.h"
 #include "ServerManager.h"
 #include "server_support.h"
 #include "version.h"
