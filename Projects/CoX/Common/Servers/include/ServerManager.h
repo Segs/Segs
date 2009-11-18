@@ -28,34 +28,35 @@ using namespace std;
 class ServerManagerC
 {
 public:
-	ServerManagerC(void);
-	virtual ~ServerManagerC(void){};
+    typedef deque<GameServerInterface *> dGameServer;
 
-	bool LoadConfiguration(const std::string &config_file_path); // this loads this process configuration
-	bool StartLocalServers(void); //! this function will create all server instances local to this process
-	bool CreateServerConnections(void); //! using configuration info, this will connect all remote servers to their local proxy objects
-	void StopLocalServers(void);
+                                ServerManagerC(void);
+virtual                         ~ServerManagerC(void){};
 
-	virtual AdminServerInterface *	GetAdminServer(void);
-	virtual AuthServerInterface *	GetAuthServer(void);
-	virtual GameServerInterface *	GetGameServer(size_t idx); //! If called from standalone MapServer it contains it's controlling GameServer interface
-	virtual MapServerInterface *	GetMapServer(size_t idx);
+	    bool                    LoadConfiguration(const std::string &config_file_path); // this loads this process configuration
+	    bool                    StartLocalServers(void); //! this function will create all server instances local to this process
+	    bool                    CreateServerConnections(void); //! using configuration info, this will connect all remote servers to their local proxy objects
+	    void                    StopLocalServers(void);
+
+virtual AdminServerInterface *	GetAdminServer(void);
+virtual AuthServerInterface *	GetAuthServer(void);
+virtual GameServerInterface *	GetGameServer(size_t idx); //! If called from standalone MapServer it contains it's controlling GameServer interface
+virtual MapServerInterface *	GetMapServer(size_t idx);
 	
-			void	SetAuthServer(IAuthServer *srv);
-			void	SetAdminServer(IAdminServer *srv);
-	virtual size_t	GameServerCount(void);;
-	virtual void	AddGameServer(IGameServer *srv);
-//	virtual void	RemoveGameServer(IGameServer *srv);
+            void                SetAuthServer(IAuthServer *srv);
+            void                SetAdminServer(IAdminServer *srv);
+virtual     size_t              GameServerCount(void);
+virtual     void	            AddGameServer(IGameServer *srv);
+            const dGameServer * getGameServerList() const {return &m_GameServers;};
 
-	virtual size_t	MapServerCount(void);
-	virtual void	AddMapServer(IMapServer *srv);
-//	virtual void	RemoveMapServer(IMapServer *srv);
+virtual     size_t              MapServerCount(void);
+virtual     void                AddMapServer(IMapServer *srv);
 
 protected:
-	deque<GameServerInterface *> m_GameServers;
-	deque<MapServerInterface *> m_MapServers;
-	AuthServerInterface *m_authserv;
-	AdminServerInterface *m_adminserv;
+            dGameServer         m_GameServers;
+            deque<MapServerInterface *> m_MapServers;
+            AuthServerInterface *m_authserv;
+            AdminServerInterface *m_adminserv;
 };
 typedef ACE_Singleton<ServerManagerC,ACE_Thread_Mutex> ServerManager;
 

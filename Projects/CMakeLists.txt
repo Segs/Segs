@@ -1,6 +1,6 @@
 # $Id: CMakeLists.txt 306 2007-01-23 12:16:25Z nemerle $
 SET(BUILD_CoX TRUE CACHE BOOL "Should the CoX emulation be built?")
-SET(BUILD_Examples TRUE CACHE BOOL "Should the Example Projects be built?")
+SET(BUILD_Examples FALSE CACHE BOOL "Should the Example Projects be built?")
 
 IF(BUILD_CoX)
 	ADD_SUBDIRECTORY(CoX)
@@ -15,11 +15,7 @@ ENDIF(BUILD_Examples)
 
 
 
-SET(BUILD_ChampionsOnline TRUE CACHE BOOL "Build ChampionsOnline?")
+SET(BUILD_ChampionsOnline FALSE CACHE BOOL "Build ChampionsOnline?")
 IF(BUILD_ChampionsOnline)
 	ADD_SUBDIRECTORY(ChampionsOnline)
 ENDIF(BUILD_ChampionsOnline)
-SET(BUILD_Dust TRUE CACHE BOOL "Build Dust?")
-IF(BUILD_Dust)
-	ADD_SUBDIRECTORY(Dust)
-ENDIF(BUILD_Dust)
