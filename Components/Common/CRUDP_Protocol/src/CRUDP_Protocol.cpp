@@ -166,13 +166,6 @@ void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
 	recv_acks.push_back(a->GetSequenceNumber());
 	if(!a->HasSiblings())
 	{
-//		if(setIds.find(a->m_seqNo)!=setIds.end())
-//		{
-			// duplicate
-			//PacketFactory::destroy(a);
-//			return;
-//		}
-//		else setIds.insert(a->m_seqNo)
 		avail_packets.push_back(a);
 	}
 	else
