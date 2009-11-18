@@ -357,7 +357,7 @@ void AuthPacketCodec::XorCodeBuf(unsigned char *buffer,size_t  length)
 {
     if (!xor_enc_key) 
         return;
-    unsigned char *Key = (unsigned char *)&xor_enc_key;
+    const unsigned char *Key = (unsigned char *)&xor_enc_key;
     *buffer ^= *Key;
     for(size_t  i=1; i<length; i++)
         buffer[i] ^= buffer[i-1] ^ Key[i&7];
@@ -368,7 +368,7 @@ void AuthPacketCodec::XorDecodeBuf(unsigned char *buffer,size_t  length)
 {
     if (!xor_dec_key) 
         return;
-    unsigned char *Key = (unsigned char *)&xor_dec_key;
+    const unsigned char *Key = (unsigned char *)&xor_dec_key;
     unsigned char prev = *buffer;
     unsigned char decoded;
     *buffer ^= *Key;

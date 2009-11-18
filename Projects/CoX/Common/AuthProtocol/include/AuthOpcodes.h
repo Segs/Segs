@@ -13,7 +13,7 @@
 #define AUTHOPCODES_H
 
 #include "Base.h"
-typedef enum 
+enum eAuthPacketType
 { 
     SMSG_AUTHVERSION				=	0x00,
 //    SMSG_AUTH_ALREADY_LOGGED_IN		=	0x01,
@@ -27,6 +27,6 @@ typedef enum
     PKT_SELECT_SERVER_RESPONSE,
 	SMSG_AUTH_ERROR,
 	MSG_AUTH_UNKNOWN //always last
-} eAuthPacketType;
+};
 
 #endif // AUTHOPCODES_H

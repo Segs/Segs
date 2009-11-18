@@ -1,40 +1,39 @@
 
 # $Id:$
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/src/AuthConnection.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/AuthPacket.cpp 
+${CMAKE_CURRENT_SOURCE_DIR}/src/AuthEventFactory.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthPacketCodec.cpp 
-${CMAKE_CURRENT_SOURCE_DIR}/src/AuthProtocol.cpp 
-${CMAKE_CURRENT_SOURCE_DIR}/src/packets/authserverlist.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/packets/authlogin.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/Events/ServerListResponse.cpp
 )
 SET(target_INCLUDE
-${CMAKE_CURRENT_SOURCE_DIR}/include/AuthConnection.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/AuthEvents.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/AuthEventFactory.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthOpcodes.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/AuthPacket.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthPacketCodec.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/AuthProtocol.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authversion.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authlogin.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authloginresponse.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authrequestserverlist.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authserverlist.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authselectserver.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets/authselectserverresponse.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/AuthorizationProtocolVersion.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/AuthorizationError.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/DbError.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/ServerSelectRequest.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/ServerSelectResponse.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/LoginResponse.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/LoginRequest.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/ServerListResponse.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/ServerListRequest.h
 )
 FIND_PACKAGE(Boost)
 
 SET(target_INCLUDE_DIR 
 	"${CMAKE_CURRENT_SOURCE_DIR}/include" 
-	"${CMAKE_CURRENT_SOURCE_DIR}/include/Packets"
+	"${CMAKE_CURRENT_SOURCE_DIR}/include/Events"
 	${Boost_INCLUDE_DIRS}
 )
 # add components here
+SEGS_ADD_COMPONENT(EventSystem LIB)
 # end of additional components
 
 INCLUDE_DIRECTORIES(
 ${target_INCLUDE_DIR}
-${CMAKE_CURRENT_SOURCE_DIR}/include/Packets
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/
 )
 
 SET (target_SOURCES
