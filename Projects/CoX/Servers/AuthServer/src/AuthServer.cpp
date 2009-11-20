@@ -13,8 +13,6 @@
 #include "AuthLink.h"
 #include "AuthHandler.h"
 #include "AuthClient.h"
-#include "InterfaceManager.h"
-
 
 /*!
  * @class AuthServer
@@ -81,7 +79,7 @@ bool AuthServer::Run()
  * @param reason the value that should be stored the persistent log.
  * @return bool, if it's false, we failed to close down cleanly
  */
-bool AuthServer::ShutDown(const std::string &reason/* ="No particular reason" */)
+bool AuthServer::ShutDown(const std::string &/* ="No particular reason" */)
 {
 	m_acceptor->close();
 	m_running=false;
@@ -106,7 +104,7 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
 	res= m_client_pool.construct();							// construct a new instance
 	res->setLogin(login);									// set login
 	adminserv->FillClientInfo(res);							// and ask AdminServer to fill in the rest
-	if(res->getId()<=0)										// check if object is filled in correctly, by validating it's db id.
+	if(res->getId()==0)										// check if object is filled in correctly, by validating it's db id.
 	{
 		m_client_pool.free(res);							// if it is not. Free object and return NULL.
 		return NULL;
@@ -121,9 +119,8 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
  * @param  version MapServer version
  * @param  passw server password
  */
-ServerHandle<IAdminServer> AuthServer::AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const string &passw)
+ServerHandle<IAdminServer> AuthServer::AuthenticateMapServer(const ServerHandle<IMapServer> &map_h,int version,const string &passw)
 {
     // we need to ask our adminserver the key it's 
-//    AdminServerInterface *i_admin = InterfaceManager::instance()->get(ServerHandle<AdminServer>(0)); // trying local only
     return ServerHandle<IAdminServer>(0);
 }

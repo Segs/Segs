@@ -1,6 +1,5 @@
 #include <stdarg.h>
-#include "Client.h"
-#include "MapPacket.h"
+#include "MapClient.h"
 #include "MapHandler.h"
 #include "Entity.h"
 MapClient::MapClient() : m_ent(NULL)
@@ -22,6 +21,7 @@ void MapClient::SendCommand(NetCommand *command,...)
 	ACE_ASSERT(!"Not implemented yet");
 }
 // This packet tells us to fill in client data from db/create a new character
+/*
 GamePacket * MapClient::HandleClientPacket( pktCS_SendEntity *ent )
 {
 	// Client sends us it's entity 
@@ -55,3 +55,4 @@ GamePacket * MapClient::HandleClientPacket( pktCS_SendEntity *ent )
 	return res;
 
 }
+*/

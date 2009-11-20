@@ -7,6 +7,8 @@ class AuthorizationError : public AuthLinkEvent
 public:
 	AuthorizationError() : AuthLinkEvent(evAuthorizationError),m_error_type(0)
 	{}
+	AuthorizationError(EventProcessor *evsrc,u32 err) : AuthLinkEvent(evAuthorizationError,evsrc),m_error_type(err)
+    {}
 	void init(EventProcessor *ev_src,u32 error_type) {m_error_type=error_type; m_event_source=ev_src;}
 	void serializeto(GrowingBuffer &buf) const
 	{

@@ -4,25 +4,40 @@
 #include "AuthClient.h"
 #include "AdminServerInterface.h"
 #include "ServerManager.h"
-
+#include "InternalEvents.h"
 void AuthHandler::dispatch( SEGSEvent *ev )
 {
     ACE_ASSERT(ev);
 	switch(ev->type())
 	{
-	case SEGSEvent::evAuthConnect:
-		on_connect(static_cast<ConnectEvent *>(ev)); break;
-	case SEGSEvent::evLogin:
-		on_login(static_cast<LoginRequest *>(ev)); break;
-    case SEGSEvent::evServerListRequest:
-        on_server_list_request(static_cast<ServerListRequest *>(ev)); break;
-    case SEGSEvent::evServerSelectRequest:
-        on_server_selected(static_cast<ServerSelectRequest *>(ev)); break;
-    case SEGSEvent::evAuthDisconnect:
-        on_disconnect(static_cast<DisconnectEvent *>(ev)); break;
+	case SEGSEvent::evConnect:
+		on_connect(static_cast<ConnectEvent *>(ev)); 
+        break;
+	case evLogin:
+		on_login(static_cast<LoginRequest *>(ev));
+        break;
+    case evServerListRequest:
+        on_server_list_request(static_cast<ServerListRequest *>(ev)); 
+        break;
+    case evServerSelectRequest:
+        on_server_selected(static_cast<ServerSelectRequest *>(ev)); 
+        break;
+    case SEGSEvent::evDisconnect:
+        on_disconnect(static_cast<DisconnectEvent *>(ev)); 
+        break;
+    //////////////////////////////////////////////////////////////////////////
+    //  Events from other servers
+    //////////////////////////////////////////////////////////////////////////
+    case Internal_EventTypes::evClientExpected:
+        on_client_expected(static_cast<ClientExpected *>(ev)); break;
 	default:
 		ACE_ASSERT(!"Unknown event encountered in dispatch.");
 	}
+}
+SEGSEvent *AuthHandler::dispatch_sync( SEGSEvent * )
+{
+    ACE_ASSERT(!"No sync events known");
+    return 0;
 }
 
 void AuthHandler::on_connect( ConnectEvent *ev )
@@ -48,6 +63,7 @@ void AuthHandler::on_disconnect( DisconnectEvent *ev )
     {
         lnk->client()->setState(AuthClient::NOT_LOGGEDIN);
         adminserv->Logout(lnk->client());
+        m_link_store[lnk->client()->getId()] = 0;
         //if(lnk->m_state!=AuthLink::CLIENT_AWAITING_DISCONNECT)
     }
     else
@@ -57,21 +73,15 @@ void AuthHandler::on_disconnect( DisconnectEvent *ev )
 }
 void AuthHandler::no_admin_server(EventProcessor *lnk)
 {
-    AuthorizationError*ev=new AuthorizationError;
-    ev->init(this,4);
-    lnk->putq(ev);
+    lnk->putq(new AuthorizationError(this,4));
 }
 void AuthHandler::unknown_error(EventProcessor *lnk)
 {
-    AuthorizationError*ev=new AuthorizationError;
-    ev->init(this,AUTH_UNKN_ERROR);
-    lnk->putq(ev);
+    lnk->putq(new AuthorizationError(this,AUTH_UNKN_ERROR));
 }
 void AuthHandler::auth_error(EventProcessor *lnk,u32 code)
 {
-    AuthorizationError*ev=new AuthorizationError;
-    ev->init(this,code);
-    lnk->putq(ev);
+    lnk->putq(new AuthorizationError(this,code));
 }
 void AuthHandler::on_login( LoginRequest *ev )
 {
@@ -113,7 +123,7 @@ void AuthHandler::on_login( LoginRequest *ev )
         else if(client->isLoggedIn())
         {
             // step 3e: asking game server connection check
-            client->forceGameServerConnectionCheck();
+            //client->forceGameServerConnectionCheck();
             err = AUTH_ALREADY_LOGGEDIN;
         }
         else if(client->getState()==AuthClient::NOT_LOGGEDIN)
@@ -131,10 +141,13 @@ void AuthHandler::on_login( LoginRequest *ev )
         client->setState(AuthClient::LOGGED_IN);
         lnk->m_state = AuthLink::AUTHORIZED;
         lnk->putq(new LoginResponse());
-        return;
+        m_link_store[client->getId()] = lnk; // remember client link
     }
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
-    return auth_error(lnk,err);
+    else
+    {
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
+        auth_error(lnk,err);
+    }
 }
 void AuthHandler::on_server_list_request( ServerListRequest *ev )
 {
@@ -160,16 +173,28 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
     }
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client selected server %d!\n"),ev->m_server_id));
     GameServerInterface *gs = ServerManager::instance()->GetGameServer(ev->m_server_id-1);
+    gs->event_target();
     if(!gs)
     {
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client selected non existant server !\n")));
         auth_error(lnk,rand()%33);
         return;
     }
-    ServerSelectResponse *res_evt=new ServerSelectResponse;
-    u32 res_cookie = gs->ExpectClient(lnk->peer_addr(),lnk->client()->getId(),lnk->client()->getAccessLevel());
-    lnk->client()->setSelectedServer(gs);
-    res_evt->init(this,0xCAFEF00D,res_cookie);
+    AuthClient *cl= lnk->client();
+    cl->setSelectedServer(gs);
+
+    ExpectClient *cl_ev=new ExpectClient(this,cl->getId(),cl->getAccessLevel(),cl->getPeer());
+    gs->event_target()->putq(cl_ev); // sending request to game server
+    // client's state will not change until we get response from GameServer
+}
+void AuthHandler::on_client_expected(ClientExpected *ev)
+{
+    if(m_link_store.find(ev->client_id)==m_link_store.end())
+    {
+        ACE_ASSERT(!"client disconnected before receiving game cookie");
+        return;
+    }
+    AuthLink *lnk = m_link_store[ev->client_id];
     lnk->m_state = AuthLink::CLIENT_AWAITING_DISCONNECT;
-    lnk->putq(res_evt);
+    lnk->putq(new ServerSelectResponse(this,0xCAFEF00D,ev->cookie));
 }

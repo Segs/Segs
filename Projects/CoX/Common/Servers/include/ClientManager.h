@@ -43,7 +43,7 @@ class ClientStore
 	hash_map<u32,CLIENT_CLASS *> m_expected_clients;
 	hash_map<u64,CLIENT_CLASS *> m_clients; // this maps client's id to it's object
 	hash_map<u32,CLIENT_CLASS *> m_connected_clients_cookie; // this maps client's id to it's object
-	hash_map<u64,u32> m_id_to_cookie; // client cookie is only usefull in this context
+	hash_map<u64,u32> m_id_to_cookie; // client cookie is only useful in this context
 	u32 create_cookie(const ACE_INET_Addr &from,u64 id)
 	{
 		u64 res = ((from.hash()+id&0xFFFFFFFF)^(id>>32));

@@ -1,5 +1,12 @@
 #pragma once
 class EventProcessor;
+
+// Helper defines to ease the definition of event types
+#define BEGINE_EVENTS(parent_class) static const int base = parent_class::evLAST_EVENT;
+#define BEGINE_EVENTS_INTERNAL() static const int base = 1000;
+#define EVENT_DECL(name,cnt) static const int name = base+cnt+1;
+#define END_EVENTS(cnt) static const int evLAST_EVENT=base+cnt+1;
+
 class SEGSEvent
 {
 protected:
@@ -13,19 +20,9 @@ protected:
 public:
 	enum {
 		evFinish=0, // this event will finish the Processor that receives it
-		evContinue=1,
-		evAuthConnect=3,
-        evAuthDisconnect,
-		evAuthProtocolVersion,
-		evAuthorizationError,
-		evServerSelectRequest,
-		evDbError,
-		evLogin,
-		evLoginResponse,
-		evServerListResponse,
-		evServerListRequest,
-		evServerSelectResponse,
-        evLAST_EVENT=0xFFFFFFFF
+        evConnect,  // on the link level this means a new connection, higher level handlers are also notified by this event
+        evDisconnect,
+        evLAST_EVENT
 	};
 	SEGSEvent(size_t evtype,EventProcessor *ev_src=0) : m_event_source(ev_src),m_type(evtype)
 	{

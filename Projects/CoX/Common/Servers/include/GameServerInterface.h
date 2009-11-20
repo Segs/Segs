@@ -17,12 +17,12 @@
 #include "Base.h"
 #include "RoamingServer.h"
 #include "ServerHandle.h"
+class EventProcessor;
 class IMapServer;
 // this is a proxy for calling GameServer services
 class IGameServer : public RoamingServer
 {
 public:
-virtual u32						ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)=0;
 virtual const ACE_INET_Addr &	getAddress()=0;
 virtual std::string				getName(void)=0;
 virtual u8						getId(void)=0;
@@ -30,12 +30,10 @@ virtual u16						getCurrentPlayers(void)=0;
 virtual u16						getMaxPlayers()=0;
 virtual u8						getUnkn1(void)=0;
 virtual u8						getUnkn2(void)=0;
-virtual void					checkClientConnection(u64 id)=0;
-virtual bool					isClientConnected(u64 id)=0;
 virtual int						getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)=0;
 virtual bool					isMapServerReady(const ServerHandle<IMapServer> &h_map)=0;
 virtual int						createLinkedAccount(u64 auth_account_id,const std::string &username)=0;
-
+virtual EventProcessor *        event_target()=0;
 };
 
 class GameServerInterface : public IGameServer
@@ -62,13 +60,12 @@ public:
 	u8						getUnkn2();
 	std::string				getName();
 
+    EventProcessor *        event_target(); // this is the main communication point for the Game Server instance
+
 	//////////////////////////////////////////////////////////////////////////
 	// This method is used by auth server to tell us that a new authorized client will show up
 	// We return an identification cookie, that will be used to verify the validity of given connection 
 	//////////////////////////////////////////////////////////////////////////
-	u32						ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level);
-	void					checkClientConnection(u64 id);
-	bool					isClientConnected(u64 id);
 	int						createLinkedAccount(u64 auth_account_id,const std::string &username);
 	//////////////////////////////////////////////////////////////////////////
 	// Interface used by Map server to add new character

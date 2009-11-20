@@ -15,21 +15,18 @@
 #include <list>
 //#include "Opcodes.h"
 
-class Net;
 class PacketCollector;
 static const u32 maxPacketSize    = 0x5C0;
 static const u32 packetHeaderSize = 8;
 class CrudP_Packet
 {
 public:
-	friend class Net;
 	friend class PacketCollector;
 
 	CrudP_Packet();
 	explicit CrudP_Packet(const CrudP_Packet &);
 	CrudP_Packet(BitStream *stream, bool hasDebugInfo);
 	~CrudP_Packet();
-	//void serializeandsend(Net *netptr);
 
 	u32  GetBits(u32 nBits);
 	void GetBitArray(u32 nBytes, u8 *array);
@@ -49,24 +46,19 @@ public:
 	void SetFinalized() { m_finalized = true; };
 
 	//	Accessors
-	////////////////
-	u8  *GetBuffer()       const { return (u8 *)m_stream->GetBuffer();	 };
-//	u32  GetBytePosition() const { return m_stream->GetBytePosition();	 };
-//	u32  GetBitPosition()  const { return m_stream->GetBitPosition();	 };
-	size_t  GetPacketLength() const { return m_stream->GetReadableDataSize();};
-//	u32  GetBitLength()	   const { return m_stream->GetBitLength();		 };
-//	u32  GetBufferLength() const { return m_stream->GetBufferLength();	 };
-	BitStream *GetStream()		 { return m_stream;						 };
-	bool HasDebugInfo()    const { return m_hasDebugInfo;				 };
-	bool getIsCompressed() const { return m_compressed;					 };
-	bool HasSiblings()	   const { return (m_numSibs > 0);				 };
-	bool IsFinalized()	   const { return m_finalized;					 };
+	//////////////////////////////////////////////////////////////////////////
+	u8  *       GetBuffer()       const { return (u8 *)m_stream->GetBuffer();	 };
+	size_t      GetPacketLength() const { return m_stream->GetReadableDataSize();};
+	BitStream * GetStream()		 { return m_stream;						 };
+	bool        HasDebugInfo()    const { return m_hasDebugInfo;				 };
+	bool        getIsCompressed() const { return m_compressed;					 };
+	bool        HasSiblings()	   const { return (m_numSibs > 0);				 };
+	bool        IsFinalized()	   const { return m_finalized;					 };
 
 	u32  GetPackedBitsLength(u32 len, u32 dataBits) { return m_stream->GetPackedBitsLength(len, dataBits); };
 	void SetBufferLength(u32 length) { m_stream->SetByteLength(length); };
-//	void SetPosition(u32 pos) { m_stream->SetPosition(pos); };
 
-	u32 GetSequenceNumber()		const { return m_seqNo;  };
+    u32 GetSequenceNumber()		const { return m_seqNo;  };
 	u32 GetSiblingPosition()	const { return m_sibPos; };
 	u32 getNumSibs()			const { return m_numSibs;}
 	u32 getSibId()				const { return m_sibId;}
@@ -84,28 +76,12 @@ public:
 	{
 		m_acks.insert(id);
 	}
-	u32 getNextAck()
-	{
-		u32 res = *m_acks.begin();
-		m_acks.erase(m_acks.begin());
-		return res;
-	}
+	u32 getNextAck();
 	size_t getNumAcks()
 	{
 		return m_acks.size();
 	}	
-	void dump()
-	{
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CrudP_Packet debug dump:\n")));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tChecksum 0x%08x\n"),m_checksum));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSeqence Number 0x%08x\n"),m_seqNo));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSiblings %d\n"),m_numSibs));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tDebug info : %d \n"),(int)m_hasDebugInfo));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tContains %d acks\n"),getNumAcks()));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tCompressed %d\n"),m_compressed));
-		ACE_HEX_DUMP((LM_DEBUG,(char *)m_stream->read_ptr(),m_stream->GetReadableDataSize(),"contents"));
-		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CrudP_Packet debug complete\n")));
-	}
+	void dump();
 	u32 m_checksum;
 protected:
 

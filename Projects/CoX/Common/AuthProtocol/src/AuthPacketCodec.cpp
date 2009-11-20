@@ -10,7 +10,6 @@
 //#include <stdio.h>
 
 #include "AuthPacketCodec.h"
-//#include <crypto++/modes.h>
 static void scrunch(const unsigned char *, unsigned long *);
 static void unscrun(const unsigned long *, unsigned char *);
 static void desfunc(register unsigned long *block,const register unsigned long *keys);

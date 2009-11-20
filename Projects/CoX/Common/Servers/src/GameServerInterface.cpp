@@ -65,21 +65,6 @@ const ACE_INET_Addr &GameServerInterface::getAddress()
 	ACE_ASSERT(m_instance);
 	return m_instance->getAddress();
 }
-u32 GameServerInterface::ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)
-{
-	ACE_ASSERT(m_instance);
-	return m_instance->ExpectClient(from,id,access_level);
-}
-void GameServerInterface::checkClientConnection(u64 id)
-{
-	ACE_ASSERT(m_instance);
-	m_instance->checkClientConnection(id);
-}
-bool GameServerInterface::isClientConnected(u64 id)
-{
-	ACE_ASSERT(m_instance);
-	return m_instance->isClientConnected(id);
-}
 int	GameServerInterface::getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
 {
 	ACE_ASSERT(m_instance);
@@ -95,4 +80,9 @@ int GameServerInterface::createLinkedAccount( u64 auth_account_id,const std::str
 {
 	ACE_ASSERT(m_instance);
 	return m_instance->createLinkedAccount(auth_account_id,username);
+}
+EventProcessor * GameServerInterface::event_target()
+{
+    ACE_ASSERT(m_instance);
+    return m_instance->event_target();
 }

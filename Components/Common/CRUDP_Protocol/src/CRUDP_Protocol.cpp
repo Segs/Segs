@@ -25,15 +25,10 @@ bool CrudP_Protocol::PacketSibCompare(const CrudP_Packet *a,const CrudP_Packet *
 }
 CrudP_Protocol::~CrudP_Protocol()
 {
-	m_client=NULL;
 	delete m_codec;
-	delete m_layer;
-	m_layer = NULL;
 	m_codec=NULL;
-	m_queue=NULL;
 }
-CrudP_Protocol::CrudP_Protocol() :	m_client(NULL),send_seq(0),recv_seq(0),
-									m_codec(NULL),m_layer(NULL),m_queue(NULL)
+CrudP_Protocol::CrudP_Protocol() :	send_seq(0),recv_seq(0),m_codec(NULL)
 {
 }
 void CrudP_Protocol::clearQueues(bool recv_queue,bool send_queue)
@@ -90,10 +85,9 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
 	//src.Get_2_10_24_32(); // ordered_id
 	src.ByteAlign();
 	// how much data did we actually read
-	size_t bits_left=bitlength-src.GetReadPos();
+	size_t bits_left=(bitlength-src.GetReadPos())+1;
 //	src.PopFront(src.GetDataSize()-src.GetReadableDataSize()); //this shifts the stream so it now begins at last read position i.e. Real packet payload
 	res->StoreBitArray(src.read_ptr(),bits_left);
-	//res->setContents(src); // leaving out the whole header
 	PushRecvPacket(res);
 }
 void CrudP_Protocol::parseAcks(BitStream &src,CrudP_Packet *tgt)
@@ -118,6 +112,7 @@ void CrudP_Protocol::parseAcks(BitStream &src,CrudP_Packet *tgt)
 void CrudP_Protocol::storeAcks(BitStream &bs)
 {
 	//TODO: sort + binary search for id
+    ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
 	if(recv_acks.size()==0)
 	{
 		bs.StorePackedBits(1,0);
@@ -156,10 +151,8 @@ bool CrudP_Protocol::allSiblingsAvailable(int sibling_group_id)
 }
 void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
 {
-#ifdef LOG_PACKETS
-	char pack_num[256];
-#endif 
-	for(size_t i=0; i<a->getNumAcks(); i++)
+    ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
+    for(size_t i=0; i<a->getNumAcks(); i++)
 	{	
 		PacketAck(a->getNextAck()); // endpoint acknowledged those packets
 	}
@@ -180,21 +173,6 @@ void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
 			avail_packets.push_back(mergeSiblings(a->getSibId()));
 		}
 	}
-	// now pass all available packets to higher layer
-	// this reuses argument variable 'a'
-	while(NULL!=(a=RecvPacket(false)))
-	{
-#ifdef LOG_PACKETS
-		ACE_OS::itoa(a->GetSequenceNumber(),pack_num,10);
-		string log_name=string("logfile_o_")+pack_num+string(".pak");
-		FILE *fp=fopen(log_name.c_str(),"wb");
-		fwrite(a->GetBuffer(),1,a->GetPacketLength(),fp);
-		fclose(fp);
-#endif
-
-		m_layer->Received(a);
-	}
-
 }
 CrudP_Packet *CrudP_Protocol::mergeSiblings(int id)
 {
@@ -329,9 +307,6 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
     
 	// p is just a thin wrapper around the payload
 	// Todo: Implement packet splits
-#ifdef LOG_PACKETS
-	char pack_num[256];
-#endif
     if(p->GetStream()->GetReadableDataSize()>1200)
     {
         static int sib_id=0;
@@ -381,18 +356,8 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
             m_codec->Encrypt((u8*)&head[1],fixedlen-4);//res->GetReadableDataSize()
             delete pkt->GetStream();
             pkt->SetStream(res);
-#ifdef LOG_PACKETS
-			ACE_OS::itoa(p->GetSequenceNumber(),pack_num,10);
-			string log_name=string("logfile_")+pack_num+string(".pak");
-			FILE *fp=fopen(log_name.c_str(),"wb");
-			fwrite(res->GetBuffer(),1,res->GetReadableDataSize(),fp);
-			fclose(fp);
-#endif
 			ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
             unsent_packets.push_back(pkt);
-            ACE_Message_Block *msg=new ACE_Message_Block((char *)m_client,sizeof(m_client));
-            msg->wr_ptr(sizeof(m_client));
-            m_queue->enqueue_tail(msg);
         }
     }
     else
@@ -439,18 +404,8 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
         m_codec->Encrypt((u8*)&head[1],fixedlen-4);//res->GetReadableDataSize()
         delete p->GetStream();
         p->SetStream(res);
-#ifdef LOG_PACKETS
-		ACE_OS::itoa(p->GetSequenceNumber(),pack_num,10);
-		string log_name=string("logfile_")+pack_num+string(".pak");
-		FILE *fp=fopen(log_name.c_str(),"wb");
-		fwrite(res->GetBuffer(),1,res->GetReadableDataSize(),fp);
-		fclose(fp);
-#endif
 		ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
 		unsent_packets.push_back(p);
-        ACE_Message_Block *msg=new ACE_Message_Block((char *)m_client,sizeof(m_client));
-        msg->wr_ptr(sizeof(ACE_INET_Addr));
-        m_queue->enqueue_tail(msg);
     }
 }
 size_t CrudP_Protocol::GetUnsentPackets(list<CrudP_Packet *> &res)

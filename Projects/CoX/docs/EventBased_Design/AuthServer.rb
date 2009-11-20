@@ -1,5 +1,5 @@
 
-class AuthServer
+class AuthServer < EventProcessor
 	# low level events, posted by network layer
 	def on_packet(ev)
 		cl=@clients.find_link_ip(ev.src_addr)
@@ -71,6 +71,7 @@ class AuthServer
 		game_server.post_event ExpectClient.new(self,ev.link.addr,ev.link.client_id,ev.link.access_level)
 		# as can be seen, we do not send anything to the client from here
 	end
+	############################################################################
 	# event posted by Game server
 	def on_expecting_client(ev) 
 		# now game server is expecting the client

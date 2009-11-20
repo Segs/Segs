@@ -13,8 +13,6 @@
 #include "InterfaceManager.h"
 #include "MapServer.h"
 #include "ConfigExtension.h"
-#include "MapServerEndpoint.h"
-//#include "Net.h"
 #include "AdminServerInterface.h"
 #include "MapClient.h"
 
@@ -46,11 +44,20 @@ bool MapServer::Run(void)
 		ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Game server already running\n") ));
 		return true;
 	}
-	m_handled_worlds[0]=new SEGSMap("City_00_01");
 	ACE_ASSERT(m_max_maps>0); // we have to have a world to run
-	m_endpoint = new MapServerEndpoint(m_listen_point,this);
+
+    m_handler = new Map2Handler;
+    m_handler->set_server(this);
+    MapLink::g_target = m_handler;
+    MapLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
+
+	m_endpoint = new ServerEndpoint<MapLink>(m_listen_point); //,this
+    MapLink::g_link_target = m_endpoint;
+
 	if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
 		ACE_ERROR_RETURN ((LM_ERROR, "ACE_Reactor::register_handler"),false);
+    if (m_endpoint->open() == -1) // will register notifications with current reactor
+        ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
 	if(!startup())
 		return false;
 	m_online = true;
@@ -103,20 +110,6 @@ bool MapServer::ShutDown(const std::string &reason)
 	delete m_endpoint;
 	return true;
 }
-// This method is called by Game Server, to notify this MapServer that a client 
-// with given source ip/port,id and access_level will be connecting here soon
-// In return caller gets an unique client identifier. which is used later on to retrieve appropriate 
-// client object
-u32 MapServer::ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)
-{
-	return 2+m_clients.ExpectClient(from,id,access_level); // 2 is because 0,1 returns are reserved for : InvalidName,DatabaseProblem
-}
-
-MapClient * MapServer::ClientExpected(ACE_INET_Addr &from,u32 cookie)
-{
-	MapClient * res = m_clients.getExpectedByCookie(cookie-2); // reversing cookie incremental
-	return res;
-}
 /**
 * @return int Maximum number of handled Map threads
 */
@@ -153,20 +146,4 @@ bool MapServer::startup()
 	}
 	return m_i_game->MapServerReady(h_me); // inform game server that we are ready.
 #endif
-}
-void MapServer::AssociatePlayerWithMap( u64 player_id,const std::string &name,int map_number )
-{
-	MapClient *client=m_clients.getById(player_id);
-/*
-	if(client->getCharEntity()==0)
-	{
-		client->setCharEntity(new PlayerEntity);
-		client->getCharEntity()->m_name=name;
-	}
-*/
-	client->setCurrentMap(getMapByNum(map_number));
-}
-SEGSMap * MapServer::getMapByNum(int num)
-{
-	return m_handled_worlds[num];
 }

@@ -112,9 +112,9 @@ int _AdminServer::SaveAccount(const char *username, const char *password)
 	FillClientInfo(&tmp);
 	// also register this account on all currently available gameserver
 	// they really should check for sync with AdminDb on startup
-	for(int idx=0; idx<ServerManager::instance()->GameServerCount(); idx++)
+	for(size_t idx=0; idx<ServerManager::instance()->GameServerCount(); idx++)
 	{
-		if(0!=ServerManager::instance()->GetGameServer(idx)->createLinkedAccount(tmp.getId(),username));
+		if(0!=ServerManager::instance()->GetGameServer(idx)->createLinkedAccount(tmp.getId(),username))
 			res=2;
 	}
 	return res;   // Add the given account

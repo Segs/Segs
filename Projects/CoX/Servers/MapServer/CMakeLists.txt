@@ -4,21 +4,25 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/SEGSMap.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapClient.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapHandler.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapServer.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/MapServerEndpoint.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/MapPacket.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/Events/NewEntity.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityStorage.cpp
-#../../Common/src/RoamingServer.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/MapEventFactory.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/MapLink.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/NetCommandManager.cpp
 )
 SET(target_INCLUDE
+${CMAKE_CURRENT_SOURCE_DIR}/include/NetCommandManager.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/SEGSMap.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityStorage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapClient.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/MapPacket.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/MapServer.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/MapServerEndpoint.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapHandler.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/MapLink.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/MapEvents.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/MapRef.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/MapServer.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/NewEntity.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)

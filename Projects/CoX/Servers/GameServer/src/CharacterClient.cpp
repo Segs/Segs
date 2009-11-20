@@ -9,8 +9,7 @@
 #include "CharacterClient.h"
 #include "Character.h"
 #include "CharacterDatabase.h"
-#include "ClientHandler.h"
-
+#include "GameServer.h"
 CharacterClient::~CharacterClient()
 {
 	reset();
@@ -22,10 +21,10 @@ size_t CharacterClient::getMaxSlots()
 
 bool CharacterClient::getCharsFromDb()
 {
+	Character *act=0;
+	CharacterDatabase * m_db = m_server->getDb();//m_handler->getDb();
 
-	Character *act;
-	CharacterDatabase * m_db = m_handler->getDb();
-	m_characters.resize(m_max_slots);
+    m_characters.resize(m_max_slots);
 	if(m_characters[0]==0)
 		m_characters[0] = act = new Character;
 	else
@@ -33,7 +32,7 @@ bool CharacterClient::getCharsFromDb()
 	act->setIndex(0);
 	act->setAccountId(m_game_server_acc_id);
 	m_db->fill(act);
-		for(size_t i=1; i<m_characters.size(); i++)
+	for(size_t i=1; i<m_characters.size(); i++)
 	{
 		if(m_characters[i]) //even more reuse
 		{
@@ -63,6 +62,6 @@ void CharacterClient::reset()
 
 bool CharacterClient::serializeFromDb()
 {
-	CharacterDatabase * m_db = m_handler->getDb();
+	CharacterDatabase * m_db = m_server->getDb();
 	return m_db->fill(this);
 }

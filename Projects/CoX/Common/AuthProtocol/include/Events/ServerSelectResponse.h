@@ -6,7 +6,12 @@ class ServerSelectResponse : public AuthLinkEvent
 public:
 	ServerSelectResponse():AuthLinkEvent(evServerSelectResponse),db_server_cookie(-1),m_cookie(-1),m_unk2(-1)
 	{}
-	void serializefrom(GrowingBuffer &buf)
+    ServerSelectResponse(EventProcessor *ev_src,u32 cookie,u32 dbcookie) : AuthLinkEvent(evServerSelectResponse,ev_src),
+                                                                            db_server_cookie(dbcookie),
+                                                                            m_cookie(cookie),
+                                                                            m_unk2(0)
+    {}
+    void serializefrom(GrowingBuffer &buf)
 	{
 		ACE_ASSERT(buf.GetReadableDataSize()>=10);
 		u8 op;

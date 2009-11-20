@@ -25,15 +25,6 @@ bool MapServerInterface::ShutDown(const std::string &reason)
 	ACE_ASSERT(m_instance);
 	return m_instance->ShutDown(reason);
 }
-u32 MapServerInterface::ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)
-{
-	return m_instance->ExpectClient(from,id,access_level);
-}
-void MapServerInterface::AssociatePlayerWithMap( u64 player_id,const std::string &name,int map_number )
-{
-	m_instance->AssociatePlayerWithMap(player_id, name,map_number);
-}
-
 bool MapServerInterface::Online()
 { 
 	ACE_ASSERT(m_instance);
@@ -43,4 +34,10 @@ const ACE_INET_Addr &MapServerInterface::getAddress()
 { 
 	ACE_ASSERT(m_instance);
 	return m_instance->getAddress();
+}
+
+EventProcessor * MapServerInterface::event_target()
+{
+    ACE_ASSERT(m_instance);
+    return m_instance->event_target();
 }

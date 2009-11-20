@@ -7,33 +7,39 @@
  * $Id: MapHandler.h 319 2007-01-26 17:03:18Z nemerle $
  */
 
-// Inclusion guards
 #pragma once
-#ifndef MAPHANDLER_H
-#define MAPHANDLER_H
+#include <map>
+#include "InternalEvents.h"
+#include "EventProcessor.h"
+#include "ClientManager.h"
+#include "MapEvents.h"
 
-#include "ServerProtocolHandler.h"
+class SEGSMap;
 class MapClient;
 class MapServer;
 class IClient;
-class MapHandler : public ServerCommandHandler
+class Map2Handler : public EventProcessor
 {
-		MapClient *	m_client;
-		MapServer *	m_server;
-		bool		onEntityReceived( GamePacket * pak );
-		bool		onCommandsRequested(GamePacket *pak);
-		bool		onSceneRequested(GamePacket *pak);
-		bool		onInputStateChange(GamePacket *pak);
-		bool		onEntitiesRequested(GamePacket *pak);
-
 public:
-					MapHandler(MapServer *srv);
+	void        set_server(MapServer *s) {m_server=s;}
+                Map2Handler();
+protected:
+	void        dispatch(SEGSEvent *ev);
+	SEGSEvent * dispatch_sync( SEGSEvent *ev );
+    //////////////////////////////////////////////////////////////////////////
+    //
+    void        on_disconnect(DisconnectRequest<MapLinkEvent> *ev);
+    void        on_idle(IdleEvent<MapLinkEvent> *ev);
+    void        on_connection_request(ConnectRequest<MapLinkEvent> *ev);
+    void        on_shortcuts_request(ShortcutsRequest *ev);
+    void        on_scene_request(SceneRequest *ev);
+    void        on_entities_request(EntitiesRequest *ev);
 
-		bool		ReceivePacket(GamePacket *pak);
-		MapServer * getServer() const { return m_server; }
-		void		setServer(MapServer * val) { m_server = val; }
-		void		setClient(IClient *cl);
-
+	//////////////////////////////////////////////////////////////////////////
+	// Server <-> Server events
+	void        on_expect_client(ExpectMapClient *ev);
+    void        on_create_map_entity(NewEntity *ent);
+    ClientStore<MapClient> m_clients;
+	MapServer *m_server;
+    std::map<int,SEGSMap *> m_handled_worlds;//! the worlds run by this server
 };
-
-#endif // MAPHANDLER_H

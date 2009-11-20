@@ -35,9 +35,12 @@ using namespace stdext;
 #include <ace/Reactor_Notification_Strategy.h>
 
 #include "Base.h"
-#include "CRUDP_Protocol.h"
 #include "ClientManager.h"
 #include "MapServerInterface.h"
+#include "ServerEndpoint.h"
+#include "MapLink.h"
+#include "MapEvents.h"
+#include "MapHandler.h"
 
 #define MAPSERVER_VERSION 1
 
@@ -48,39 +51,39 @@ class SEGSMap;
 class MapServer : public IMapServer
 {
 public:
-	MapServer(void);
-	virtual ~MapServer(void);
+	                            MapServer(void);
+virtual                         ~MapServer(void);
 
-	virtual bool	Run(void);
-	virtual bool	ReadConfig(const std::string &name);
-	int		getMaxHandledMaps();
+virtual bool	                Run(void);
+virtual bool	                ReadConfig(const std::string &name);
+    	int		                getMaxHandledMaps();
 
-	bool ShutDown(const std::string &reason="No particular reason");
-	void Online(bool s ) {m_online=s;}
-	bool Online(void) { return m_online;}
-	const ACE_INET_Addr &getAddress() {return m_location;};
-	u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level);
-	void AssociatePlayerWithMap(u64 player_id,const std::string &name,int map_number); //! this method tells this server that packets of this player should go to given Map 
-	// not in the interface
-	MapClient * ClientExpected(ACE_INET_Addr &from,u32 cookie);
-	GameServerInterface *getGameInterface(){return m_i_game;}
+	    bool                    ShutDown(const std::string &reason="No particular reason");
+	    void                    Online(bool s ) {m_online=s;}
+	    bool                    Online(void) { return m_online;}
+	    const ACE_INET_Addr &   getAddress() {return m_location;};
+	    u32                     ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level);
+	    void                    AssociatePlayerWithMap(u64 player_id,const std::string &name,int map_number); //! this method tells this server that packets of this player should go to given Map 
+        EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
+                                // not in the interface
+	    MapClient *             ClientExpected(ACE_INET_Addr &from,u32 cookie);
+
+    	GameServerInterface *   getGameInterface(){return m_i_game;}
 private:
-	SEGSMap *getMapByNum(int num);
-	bool startup(); // MapServerStartup sequence diagram entry point.
+	    bool                    startup(); // MapServerStartup sequence diagram entry point.
 protected:
-	u8 m_id;
-	bool m_online;
+	    u8                      m_id;
+	    bool                    m_online;
 
-	size_t m_max_maps;
-	GameServerInterface *m_i_game;// GameServer access proxy object
+	    size_t                  m_max_maps;
+	    GameServerInterface *   m_i_game;// GameServer access proxy object
 
-	std::string m_serverName;
+	    std::string             m_serverName;
 
-	ClientStore<MapClient> m_clients;
-	std::map<int,SEGSMap *> m_handled_worlds;//! the worlds run by this server
-	ACE_INET_Addr m_location; //! this value is sent to the clients
-	ACE_INET_Addr m_listen_point; //! this is used as a listening endpoint
-	MapServerEndpoint	*m_endpoint;
+	    ACE_INET_Addr           m_location; //! this value is sent to the clients
+	    ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
+	    ServerEndpoint<MapLink>	*m_endpoint;
+        Map2Handler *            m_handler;
 };
 
 #endif // MAPSERVER_H

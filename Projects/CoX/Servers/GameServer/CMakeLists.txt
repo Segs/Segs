@@ -4,20 +4,20 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/Character.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/HashStorage.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CharacterClient.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CharacterDatabase.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/ClientHandler.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/GamePacket.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/GameHandler.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/GameServer.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/GameServerEndpoint.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/GameEvents.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/GameLink.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Character.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/HashStorage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CharacterClient.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CharacterDatabase.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/ClientHandler.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/GameServer.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/GamePacket.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/GameServerEndpoint.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/GameHandler.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/GameEvents.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/GameLink.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)

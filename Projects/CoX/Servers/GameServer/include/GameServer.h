@@ -35,19 +35,19 @@ using namespace stdext;
 
 #include "Base.h"
 #include "CRUDP_Protocol.h"
-#include "ClientManager.h"
 #include "RoamingServer.h"
-//#include "MapServer.h"
-class Net;
-class GameServerEndpoint;
-class CharacterClient;
+#include "ServerEndpoint.h"
+#include "GameEvents.h"
+
+class GameHandler;
 class pktCS_ServerUpdate;
 class CharacterDatabase;
+typedef list< ServerHandle<MapServer> > lMapServerHandles;
 class GameServer : public IGameServer
 {
 public:
-	~GameServer(void);
-	GameServer(void);
+	                        ~GameServer(void);
+	                        GameServer(void);
 	bool					ReadConfig(const std::string &configpath); // later name will be used to read GameServer specific configuration
 	bool					Run(void);
 	bool					ShutDown(const std::string &reason="No particular reason");
@@ -72,26 +72,21 @@ public:
 
 	int						createLinkedAccount(u64 auth_account_id,const std::string &username); // Part of exposed db interface.
 
-	u32						ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level);
-	void					checkClientConnection(u64 id);
-	CharacterClient *		ClientExpected(ACE_INET_Addr &from,pktCS_ServerUpdate *pak);
-	bool					isClientConnected(u64 id); //! This function will check if given client is available in clientstore, and it's packet backlog.
-	void					disconnectClient(IClient *cl);
+    EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
 protected:
-	u32 GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver
-	list< ServerHandle<MapServer> > GetMapsHandling(const std::string &mapname);
+	u32                     GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver
+	lMapServerHandles       GetMapsHandling(const std::string &mapname);
 	bool m_online;
-	hash_set<u32> waiting_for_client; // this hash_set holds all client cookies we wait for
-	ClientStore<CharacterClient> m_clients;
-	u8 m_id;
-	u16 m_current_players;
-	u16 m_max_players;
-	u8 m_unk1,m_unk2;
-	std::string m_serverName;
-	ACE_INET_Addr m_location; // this value is sent to the clients
-	ACE_INET_Addr m_listen_point; // this is used as a listening endpoint
-	GameServerEndpoint	*m_endpoint;
-	CharacterDatabase   *m_database; // we might consider making database connection a singleton wrapper
+	u8                      m_id;
+	u16                     m_current_players;
+	u16                     m_max_players;
+	u8                      m_unk1,m_unk2;
+	std::string             m_serverName;
+	ACE_INET_Addr           m_location; // this value is sent to the clients
+	ACE_INET_Addr           m_listen_point; // this is used as a listening endpoint
+	ServerEndpoint<GameLink>	*m_endpoint;
+	CharacterDatabase   *   m_database; // we might consider making database connection a singleton wrapper
+    GameHandler *           m_handler;
 };
 
 #endif // GAMESERVER_H

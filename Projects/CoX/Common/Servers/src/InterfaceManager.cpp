@@ -8,11 +8,11 @@ InterfaceManagerC::~InterfaceManagerC(void)
 {
 }
 
-AdminServerInterface *InterfaceManagerC::get(const ServerHandle<IAdminServer> &h_serv) const
+AdminServerInterface *InterfaceManagerC::get(const ServerHandle<IAdminServer> &) const
 {
 	return 0;
 }
-AuthServerInterface *InterfaceManagerC::get(const ServerHandle<IAuthServer> &h_serv) const
+AuthServerInterface *InterfaceManagerC::get(const ServerHandle<IAuthServer> &) const
 {
 	return 0;
 }

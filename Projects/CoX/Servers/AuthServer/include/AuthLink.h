@@ -67,10 +67,15 @@ public:
     void            client(AuthClient *c) {m_client=c;}
     void            init_crypto(int vers,u32 seed) {set_protocol_version(vers); m_codec.SetXorKey(seed);}
 protected:
-                	
+    SEGSEvent *     dispatch_sync( SEGSEvent *ev )
+                    {
+                        ACE_ASSERT(!"No sync events known");
+                        return 0;
+                    }
+
 	stream_type     peer_;  /// Maintain connection with client.
     addr_type       m_peer_addr;
 	bool		    send_buffer();
-	void		    encode_buffer(AuthLinkEvent *ev,size_t start);
+	void		    encode_buffer(const AuthLinkEvent *ev,size_t start);
     void		    set_protocol_version(int vers);
 };

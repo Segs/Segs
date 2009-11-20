@@ -16,6 +16,7 @@
 #include <ace/OS_NS_time.h>
 #include "ServerManager.h"
 #include "Client.h"
+#include "MapLink.h"
 #include <vector>
 #include <map>
 
@@ -30,43 +31,46 @@ class IMapClient: public IClient
 {
 public:
 
-	virtual void			AddShortcut(int index, NetCommand *command)=0; // part of user app model
-	virtual NetCommand *	GetCommand(int index)=0; // part of user app model
-	virtual void			SendCommand(NetCommand *command,...)=0; // part of user app model
-	virtual void			setCurrentMap(SEGSMap *pmap)=0;
-	virtual SEGSMap *		getCurrentMap()=0;
-	virtual void			setCharEntity(Entity *ent)=0;
-	virtual Entity *		getCharEntity()=0;
+    virtual void            AddShortcut(int index, NetCommand *command)=0; // part of user app model
+    virtual NetCommand *    GetCommand(int index)=0; // part of user app model
+    virtual void            SendCommand(NetCommand *command,...)=0; // part of user app model
+    virtual void            current_map(SEGSMap *pmap)=0;
+    virtual SEGSMap *       current_map()=0;
+    virtual void            char_entity(Entity *ent)=0;
+    virtual Entity *        char_entity()=0;
 
 };
 class pktCS_SendEntity;
 class GamePacket;
 class MapClient : public IMapClient
 {
-	//MapHandler *m_handler;
-	u64 m_game_server_acc_id;
-	friend class CharacterDatabase;
-	void setGameServerAccountId(u64 id){m_game_server_acc_id=id;}
-	std::map<int,NetCommand *> m_shortcuts;
-	SEGSMap * m_current_map;
-	Entity *m_ent;
-public:
-	MapClient();
-	virtual ~MapClient(){};
+    friend class CharacterDatabase;
+    typedef std::map<int,NetCommand *> mNetCommands;
 
-	GamePacket *	HandleClientPacket(pktCS_SendEntity *ent);
-	void			AddShortcut(int index, NetCommand *command);
-	NetCommand *	GetCommand(int index) {return m_shortcuts[index];}
-	void			SendCommand(NetCommand *command,...);
-	void			setCurrentMap(SEGSMap *pmap){m_current_map=pmap;}
-	SEGSMap *		getCurrentMap(){return m_current_map;}
-	void			setCharEntity(Entity *ent){m_ent=ent;}
-	Entity *		getCharEntity(){return m_ent;}
-	//void			setHandler(MapHandler *) {m_hamdler=}
-//	void setHandler(MapHandler * val) { m_handler = val; }
-//	bool serializeFromDb();
-//	bool getCharsFromDb();
-	void reset();
+    u64                     m_game_server_acc_id;
+    void                    setGameServerAccountId(u64 id){m_game_server_acc_id=id;}
+    mNetCommands            m_shortcuts;
+    SEGSMap *               m_current_map;
+    Entity *                m_ent;
+    MapLink *               m_link;
+    std::string             m_name; // stored here for quick lookups
+public:
+                            MapClient();
+virtual                     ~MapClient(){};
+
+        GamePacket *        HandleClientPacket(pktCS_SendEntity *ent);
+        void                AddShortcut(int index, NetCommand *command);
+        NetCommand *        GetCommand(int index) {return m_shortcuts[index];}
+        void                SendCommand(NetCommand *command,...);
+        void                current_map(SEGSMap *pmap){m_current_map=pmap;}
+        SEGSMap *            current_map(){return m_current_map;}
+        void                char_entity(Entity *ent){m_ent=ent;}
+        Entity *            char_entity(){return m_ent;}
+        void                reset();
+        MapLink *           link() const { return m_link; }
+        void                link(MapLink * val) { m_link = val; }
+        const std::string & name() const { return m_name; }
+        void                name(const std::string &val) { m_name = val; }
 };
 
 #endif // MAPCLIENT_H

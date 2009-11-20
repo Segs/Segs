@@ -11,12 +11,9 @@
 #include <ace/Message_Block.h>
 #include "ConfigExtension.h"
 #include "GameServer.h"
-#include "GameServerEndpoint.h"
-#include "GamePacket.h"
-#include "CharacterClient.h"
 #include "CharacterDatabase.h"
 #include "AdminServerInterface.h"
-
+#include "GameHandler.h"
 GameServer::GameServer(void) : 
 	m_id(0),
 	m_current_players(0),
@@ -50,9 +47,20 @@ bool GameServer::Run()
 	{
 		ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: database connection failure\n"),false);
 	}
-	m_endpoint = new GameServerEndpoint(m_listen_point,this);
+    m_handler = new GameHandler;
+    m_handler->set_server(this);
+    GameLink::g_target = m_handler;
+    GameLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
+
+    m_endpoint = new ServerEndpoint<GameLink>(m_listen_point); //,this
+
+    GameLink::g_link_target = m_endpoint;
+
 	if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
 		ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ACE_Reactor::register_handle\n"),false);
+    if (m_endpoint->open() == -1) // will register notifications with current reactor
+        ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
+
 	m_online = true;
 	return true;
 }
@@ -112,61 +120,6 @@ bool GameServer::ShutDown(const std::string &reason)
 	delete m_endpoint;
 	return true;
 }
-// This method is called by authentication service, to notify this GameServer that a client 
-// with given source ip/port,id and access_level has just logged in.
-// If given client is not already logged in
-//		This method will create a new CharacterClient object, put it in m_expected_clients collection, and return a key (u32) 
-//		that will be used by the client during connection
-//		Also this will set m_expected_clients cleaning timer if it isn't set already
-// If given client is logged in ( it can be found here, or any other GameServer )
-//		
-// In return caller gets an unique client identifier. which is used later on to retrieve appropriate 
-// client object
-u32 GameServer::ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)
-{
-	return m_clients.ExpectClient(from,id,access_level);
-}
-CharacterClient * GameServer::ClientExpected(ACE_INET_Addr &from,pktCS_ServerUpdate *pak)
-{
-	CharacterClient * res = m_clients.getExpectedByCookie(pak->authCookie);
-	if(0==res)
-		return res;
-	if(res->getState()==IClient::CLIENT_EXPECTED)
-	{
-		m_clients.connectedClient(pak->authCookie);
-		res->setState(IClient::CLIENT_CONNECTED);
-	}
-	// if (res->getExpectedPeer()==from)
-	return res;
-}
-/*
-u32 GameServer::GetClientCookie(const ACE_INET_Addr &client_addr)
-{
-	static u32 cookie=0;
-	if(!m_endpoint)
-	{
-		ACE_ASSERT(ACE_TEXT("(%P|%t) Server not running yet\n") );
-		return true;
-	}
-//	my_endpoint->
-	return client_addr.get_ip_address()+(cookie++);
-}
-*/
-void GameServer::checkClientConnection(u64 id)
-{
-	CharacterClient *client = m_clients.getById(id);
-	if(client)
-	{
-		client->getState();
-	}
-//	m_clients.getById(id)->;
-// empty for now, later on it will use client store to get the client, and then check it's packet backlog
-//
-}
-bool GameServer::isClientConnected(u64 id)
-{
-	return m_clients.getById(id)!=NULL;
-}
 int GameServer::getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
 {
 	return 0;
@@ -211,12 +164,8 @@ CharacterDatabase * GameServer::getDb()
 	return m_database;
 }
 //
-void GameServer::disconnectClient( IClient *cl )
-{
-	m_clients.removeById(cl->getId());
-}
-
 int GameServer::createLinkedAccount(u64 auth_account_id,const std::string &username)
 {
 	return m_database->CreateLinkedAccount(auth_account_id,username);
 }
+

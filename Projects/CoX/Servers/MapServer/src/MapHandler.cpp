@@ -8,146 +8,117 @@
  */
 
 #include "MapHandler.h"
-#include "MapPacket.h"
-#include "GameProtocol.h"
-#include "PacketCodec.h"
+#include "MapClient.h"
 #include "ServerManager.h"
 #include "MapServer.h"
 #include "SEGSMap.h"
 #include "Entity.h"
-//#include "Character.h"
-MapHandler::MapHandler(MapServer *srv):m_server(srv)
-{
-	m_client=0;
-}
-bool MapHandler::ReceivePacket(GamePacket *pak)
-{
+#include "SEGSMap.h"
 
-	ACE_ASSERT(m_server);
-	if(ReceiveControlPacket((ControlPacket *)pak))
-	{
-		return true;
-	}
-	if(pak->getType()==COMM_CONNECT) // let's try not to overburden our servers
-	{
-		pak->dump();
-		pktSC_Connected *res = new pktSC_Connected;
-		m_proto->SendPacket(res);
-		
-		return true;
-	}
-	switch (pak->m_opcode)
-	{
-	case 2:
-		return onInputStateChange(pak);
-	case 3:
-		return onSceneRequested(pak);
-	case 4:
-		return onCommandsRequested(pak);
-	case 5:
-		return onEntitiesRequested(pak);
-	case 6:
-		{
-			// after successfully receiving entities, client sends packet 6
-			// it contains cookie, and a flag stating if the client has debugging console enabled
-			pak->dump();
-			m_proto->SendPacket(new pktSC_Connected);
-			return true;
-		}
-	case 9:
-		return onEntityReceived(pak);
-	default:
-		pak->dump();
-		m_proto->SendPacket(new pktIdle);
-		return false;
-	}
-}
-static void FillCommands()
+Map2Handler::Map2Handler()
 {
-	NetCommandManager *cmd_manager = NetCommandManagerSingleton::instance();
-	{
-		NetCommand::Argument arg1={1,NULL};
-		NetCommand::Argument arg_1float={3,NULL};
-		vector<NetCommand::Argument> args;
-		args.push_back(arg1);
-		vector<NetCommand::Argument> fargs;
-		fargs.push_back(arg_1float);
-		cmd_manager->addCommand(new NetCommand(9,"controldebug",args));
-		cmd_manager->addCommand(new NetCommand(9,"nostrafe",args));
-		cmd_manager->addCommand(new NetCommand(9,"alwaysmobile",args));
-		cmd_manager->addCommand(new NetCommand(9,"repredict",args));
-		cmd_manager->addCommand(new NetCommand(9,"neterrorcorrection",args));
-		cmd_manager->addCommand(new NetCommand(9,"speed_scale",fargs));
-		cmd_manager->addCommand(new NetCommand(9,"svr_lag",args));
-		cmd_manager->addCommand(new NetCommand(9,"svr_lag_vary",args));
-		cmd_manager->addCommand(new NetCommand(9,"svr_pl",args));
-		cmd_manager->addCommand(new NetCommand(9,"svr_oo_packets",args));
-		cmd_manager->addCommand(new NetCommand(9,"client_pos_id",args));
-		cmd_manager->addCommand(new NetCommand(9,"atest0",args));
-		cmd_manager->addCommand(new NetCommand(9,"atest1",args));
-		cmd_manager->addCommand(new NetCommand(9,"atest2",args));
-		cmd_manager->addCommand(new NetCommand(9,"atest3",args));
-		cmd_manager->addCommand(new NetCommand(9,"atest4",args));
-		cmd_manager->addCommand(new NetCommand(9,"atest5",args));
-		cmd_manager->addCommand(new NetCommand(9,"atest6",args));
-		cmd_manager->addCommand(new NetCommand(9,"atest7",args));
-		cmd_manager->addCommand(new NetCommand(9,"atest8",args));
-		cmd_manager->addCommand(new NetCommand(9,"atest9",args));
-		cmd_manager->addCommand(new NetCommand(9,"predict",args));
-		cmd_manager->addCommand(new NetCommand(9,"notimeout",args)); // unknown-10,argtype-1
-		cmd_manager->addCommand(new NetCommand(9,"selected_ent_server_index",args));
-		cmd_manager->addCommand(new NetCommand(9,"record_motion",args));
-
-		cmd_manager->addCommand(new NetCommand(9,"time",fargs)); // unknown = 12
-		cmd_manager->addCommand(new NetCommand(9,"timescale",fargs)); // unknown = 13
-		cmd_manager->addCommand(new NetCommand(9,"timestepscale",fargs)); // unknown = 14
-		cmd_manager->addCommand(new NetCommand(9,"pause",args)); 
-		cmd_manager->addCommand(new NetCommand(9,"disablegurneys",args));
-		cmd_manager->addCommand(new NetCommand(9,"nodynamiccollisions",args));
-		cmd_manager->addCommand(new NetCommand(9,"noentcollisions",args));
-		cmd_manager->addCommand(new NetCommand(9,"pvpmap",args)); // unknown 16
-	}
-}
-void MapHandler::setClient(IClient *cl)
-{
-	m_client=static_cast<MapClient *>(cl);
+    m_handled_worlds[0]=new SEGSMap("City_00_01");
 }
 
-bool MapHandler::onEntityReceived( GamePacket * pak )
+
+void Map2Handler::dispatch(SEGSEvent *ev)
 {
-	pktCS_SendEntity *in_pak = (pktCS_SendEntity *)pak;
-	setClient(m_server->ClientExpected(getTargetAddr(),in_pak->m_cookie));
-	if(in_pak->m_new_character)
+	ACE_ASSERT(ev);
+	switch(ev->type())
 	{
-		m_client->setCharEntity(in_pak->get_new_character());
-		// store character in db
+    case Internal_EventTypes::evExpectClient:
+        on_expect_client(static_cast<ExpectMapClient *>(ev));
+        break;
+    case MapEventTypes::evIdle:
+        on_idle((IdleEvent<MapLinkEvent> *)ev);
+        break;
+    case MapEventTypes::evDisconnectRequest:
+        on_disconnect((DisconnectRequest<MapLinkEvent> *)ev);
+        break;
+    case MapEventTypes::evConnectRequest:
+        on_connection_request((ConnectRequest<MapLinkEvent> *)ev);
+        break;
+    case MapEventTypes::evEntityEnteringMap:
+        on_create_map_entity((NewEntity *)ev);
+        break;
+    case MapEventTypes::evShortcutsRequest:
+        on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
+        break;
+    case MapEventTypes::evSceneRequest:
+        on_scene_request(static_cast<SceneRequest *>(ev));
+        break;
+    case MapEventTypes::evEntitiesRequest:
+        on_entities_request(static_cast<EntitiesRequest *>(ev));
+        break;
+    case MapEventTypes::evUnknownEvent:
+        break;
 	}
-	else
-	{
-		// get from db by id
-	}
-	in_pak->dump();
-	//m_client->setHandler(this);
-	ACE_ASSERT(m_client!=0);
-	// pktSC_Connect is created inside HandleClientPacket
-	m_proto->SendPacket(m_client->HandleClientPacket(in_pak));
-	return true;
+}
+void Map2Handler::on_idle(IdleEvent<MapLinkEvent> *ev)
+{
+    MapLink * lnk = (MapLink *)ev->src();
+    // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
+    lnk->putq(new IdleEvent<MapLinkEvent>);
+}
+void Map2Handler::on_disconnect(DisconnectRequest<MapLinkEvent> *ev)
+{
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *client = (MapClient *)lnk->client_data();
+    if(client)
+    {
+        lnk->client_data(0);
+        m_clients.removeById(client->getId());
+    }
+    lnk->putq(new DisconnectResponse<MapLinkEvent>);
+    lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
+}
+void Map2Handler::on_connection_request(ConnectRequest<MapLinkEvent> *ev)
+{
+    ev->src()->putq(new ConnectResponse<MapLinkEvent>);
+}
+void Map2Handler::on_expect_client( ExpectMapClient *ev )
+{
+    u32 cookie = 0; // name in use
+    // TODO: handle contention while creating 2 character with the same from different clients
+    // TODO: SELECT account_id from characters where name=ev->m_character_name
+    if(m_handled_worlds.find(ev->m_map_id)==m_handled_worlds.end())
+    {
+
+    }
+    else if(true) // check if (character does not exist || character exists and is owned by this client )
+    {
+        cookie    = 2+m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
+        // 0 name already taken
+        // 1 problem in database system
+        MapClient *cl = m_clients.getExpectedByCookie(cookie-2);
+        cl->name(ev->m_character_name);
+        cl->current_map(m_handled_worlds[ev->m_map_id]);
+    }
+	ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
+}
+void Map2Handler::on_create_map_entity(NewEntity *ev)
+{
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *cl = m_clients.getExpectedByCookie(ev->m_cookie-2);
+    ACE_ASSERT(cl);
+    cl->link(lnk);    
+    lnk->client_data((void *)cl);
+    lnk->putq(new MapInstanceConnected(this,1,""));
 }
 
-bool MapHandler::onCommandsRequested( GamePacket *pak )
+void Map2Handler::on_shortcuts_request(ShortcutsRequest *ev)
 {
-	//m_proto->SendPacket(m_client->handleClientPacket(in_pak));
-	pktSC_CmdShortcuts *res = new pktSC_CmdShortcuts;
-	res->m_client=m_client;
-	((pktSC_CmdShortcuts*)res)->m_num_shortcuts2=0;
-	m_proto->SendPacket(res);
-	return true;
+    MapLink * lnk = (MapLink *)ev->src();
+    Shortcuts *res=new Shortcuts;
+    res->m_client=(MapClient *)lnk->client_data();
+    // TODO: use the access level and send proper commands
+    lnk->putq(res);
 }
-
-bool MapHandler::onSceneRequested(GamePacket *)
+void Map2Handler::on_scene_request(SceneRequest *ev)
 {
-	pktSC_SceneResp *res = new pktSC_SceneResp;
-	res->undos_PP=0;
+    MapLink * lnk = (MapLink *)ev->src();
+    Scene *res=new Scene;
+    res->undos_PP=0;
 	res->var_14=1;
 	res->m_outdoor_map=1;//0;
 	res->m_map_number=1;
@@ -185,102 +156,15 @@ bool MapHandler::onSceneRequested(GamePacket *)
 	res->unkn1=1;
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
 	res->unkn2=1;
-	m_proto->SendPacket(res);
-	return true;
+    lnk->putq(res);
+}
+void Map2Handler::on_entities_request(EntitiesRequest *ev)
+{
+    // start map timer on this event
 }
 
-bool MapHandler::onInputStateChange(GamePacket *)
+SEGSEvent * Map2Handler::dispatch_sync( SEGSEvent *ev )
 {
-	// sending packet 3 first
-	pktSC_EntitiesResp * res2 = new pktSC_EntitiesResp(m_client,true); // sending packet 2, 3 is full update, and clears all ents in client
-	res2->entReceiveUpdate=false;
-	res2->unkn1=false;
-	res2->m_num_commands=0;
-	res2->abs_time = (u32)time(NULL);
-	res2->unkn2=true; // default parameters for first flags
-
-	//pktSC_EntitiesResp * res = new pktSC_EntitiesResp(m_client,true);
-	//pktMap_Server_Connect* res = new pktMap_Server_Connect;
-	Entity *pent = m_client->getCharEntity(); //new Entity;//EntityManager::CreatePlayer();
-	if(pent)
-	{
-		pent->m_idx=0;
-		pent->m_create=false;
-		pent->var_129C=false;
-		pent->m_type = 2; //PLAYER
-		pent->m_create_player=false;
-		pent->m_player_villain=false;
-		pent->m_origin_idx=pent->m_class_idx=0;
-		pent->m_selector1=false;
-		pent->m_hasname = true;
-		//pent->m_name ="Dummy001";
-		pent->m_hasgroup_name=false;
-		pent->m_pchar_things=false;
-		pent->m_rare_bits = false;
-		pent->pos.vals.x+=8-(rand()&0xF);
-		pent->pos.vals.y=8-(rand()&0xF);
-		//			pent->m_costume->m_costume_type=2; // npc costume for now
-	}
-	m_proto->SendPacket(res2);
-
-	//res->entReceiveUpdate=false;
-	//		res->m_resp=1;
-	//res->unkn1=false;
-	//res->m_num_commands=0;
-	//res->abs_time = (u32)time(NULL);
-	//res->unkn2=true; // default parameters for first flags
-
-	/*
-	*/
-	//m_proto->SendPacket(res);
-	return true;
-}
-
-bool MapHandler::onEntitiesRequested( GamePacket *pak )
-{
-	// sending packet 3 first
-	pktSC_EntitiesResp * res2 = new pktSC_EntitiesResp(m_client,false);
-	res2->entReceiveUpdate=false;
-	res2->unkn1=false;
-	res2->m_num_commands=0;
-	res2->abs_time = (u32)time(NULL);
-	res2->unkn2=true; // default parameters for first flags
-
-	pktSC_EntitiesResp * res = new pktSC_EntitiesResp(m_client,true);
-	//pktMap_Server_Connect* res = new pktMap_Server_Connect;
-	Entity *pent = m_client->getCharEntity(); //new Entity;//EntityManager::CreatePlayer();
-	if(pent)
-	{
-		pent->m_idx=0;
-		pent->m_create=true;
-		pent->var_129C=false;
-		pent->m_type = 2; //PLAYER
-		pent->m_create_player=true;
-		pent->m_player_villain=false;
-		pent->m_origin_idx=pent->m_class_idx=0;
-		pent->m_selector1=false;
-		pent->m_hasname = true;
-		//pent->m_name ="Dummy001";
-		pent->m_hasgroup_name=false;
-		pent->m_pchar_things=false;
-		pent->m_rare_bits = true;
-		pent->pos.vals.x=1.0f;
-		pent->pos.vals.y=1.0f;
-		//			pent->m_costume->m_costume_type=2; // npc costume for now
-
-		m_client->getCurrentMap()->m_entities.m_entlist.push_back(pent);
-	}
-	m_proto->SendPacket(res2);
-
-	res->entReceiveUpdate=false;
-	//		res->m_resp=1;
-	res->unkn1=false;
-	res->m_num_commands=0;
-	res->abs_time = (u32)time(NULL);
-	res->unkn2=true; // default parameters for first flags
-
-	/*
-	*/
-	m_proto->SendPacket(res);
-	return true;
+    ACE_ASSERT(!"NO SYNC HANDLING");
+    return 0;
 }

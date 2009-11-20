@@ -6,16 +6,19 @@
 
 EventProcessor *AuthLink::g_target=0;
 
-AuthLink::AuthLink() : m_received_bytes_storage(0x1000,0,40),
+AuthLink::AuthLink() :  m_client(0),
+                        m_received_bytes_storage(0x1000,0,40),
                         m_unsent_bytes_storage(0x200,0,40),
-                        m_notifier(0, this, ACE_Event_Handler::WRITE_MASK),
-                        m_client(0)
+                        m_protocol_version(-1),
+                        m_state(INITIAL),
+                        m_notifier(0, this, ACE_Event_Handler::WRITE_MASK)
+                        
 {
 	ACE_ASSERT(g_target);
 }
 AuthLink::~AuthLink( void )
 {
-
+    m_client=0;
 }
 eAuthPacketType AuthLink::OpcodeToType( u8 opcode,bool direction /*= false */ ) const
 {
@@ -36,9 +39,10 @@ eAuthPacketType AuthLink::OpcodeToType( u8 opcode,bool direction /*= false */ ) 
 		return CMSG_AUTH_REQUEST_SERVER_LIST;
 	case 6:
 		return CMSG_AUTH_LOGIN;
+    default:
+        return MSG_AUTH_UNKNOWN;
 	}
 	return MSG_AUTH_UNKNOWN;
-
 }
 
 SEGSEvent * AuthLink::bytes_to_event() 
@@ -70,7 +74,7 @@ SEGSEvent * AuthLink::bytes_to_event()
 			continue;
 		}
 		// A catch !
-		if(evt->type() == SEGSEvent::evLogin) // Is tis' on of those pesky AuthLogin Packets ?!!?
+		if(evt->type() == evLogin) // Is tis' on of those pesky AuthLogin Packets ?!!?
 		{
 			// Bring out the Codec Cannon, an' load it with Des
 			m_codec.DesDecode(static_cast<u8*>(&tmp[1]),24); // It'll crack it's chitinous armor
@@ -131,7 +135,7 @@ int AuthLink::handle_output( ACE_HANDLE /*= ACE_INVALID_HANDLE*/ )
 			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Error sent, closing connection\n")));
 			return -1;
 		}
-		if(ev->type()==ContinueEvent::evContinue) // we have asked ourselves to send leftovers
+		if(ev->type()==evContinue) // we have asked ourselves to send leftovers
 		{
 			ACE_ASSERT(m_unsent_bytes_storage.GetReadableDataSize() > 0); // be sure we have some
 		}
@@ -154,9 +158,11 @@ int AuthLink::handle_output( ACE_HANDLE /*= ACE_INVALID_HANDLE*/ )
 	return 0;
 }
 
-void AuthLink::encode_buffer(AuthLinkEvent *ev,size_t start)
+void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
 {
-
+    ACE_ASSERT(ev);
+    if(ev==0)
+        return;
 	// remember the location we'll put the packet size into
     u16 *packet_size = reinterpret_cast<u16 *>(m_unsent_bytes_storage.write_ptr()); 
 	// put 0 as size for now
@@ -167,16 +173,14 @@ void AuthLink::encode_buffer(AuthLinkEvent *ev,size_t start)
 	ev->serializeto(m_unsent_bytes_storage);
 	// calculate the number of stored bytes, and set it in packet_size
 	*packet_size = (m_unsent_bytes_storage.GetDataSize() - actual_packet_start) - 1; // -1 because opcode is not counted toward packet size
-	// every packet, but the authorization protocol, is encrypted
-	if(ev->type()!=SEGSEvent::evAuthProtocolVersion)
-	{
+
+    // every packet, but the authorization protocol, is encrypted
+	if(ev->type()!=evAuthProtocolVersion)
 		m_codec.XorCodeBuf(static_cast<u8 *>(m_unsent_bytes_storage.GetBuffer())+start+2,m_unsent_bytes_storage.GetDataSize()-2); // opcode gets encrypted
-	}
-	// additional encryption of login details
-	if(ev->type()==SEGSEvent::evLogin) 
-	{
+
+    // additional encryption of login details
+	if(ev->type()==evLogin) 
 		m_codec.DesCode(m_unsent_bytes_storage.GetBuffer()+start+3,24); //only part of packet is encrypted with des
-	}
 }
 
 bool AuthLink::send_buffer()
@@ -200,9 +204,10 @@ static u64 KeyPrepare(const char *co_string)
 {
 	u64 t = 0;
 	char *p_llt = (char *)&t;
-	//    long tmp_codingval = CodingValue;
 	int index = 0;
-
+    ACE_ASSERT(co_string);
+    if(!co_string)
+        return t;
 	while(co_string[0])
 	{
 		char val = co_string[0];
@@ -239,7 +244,7 @@ int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 
 }
 
-void AuthLink::dispatch( SEGSEvent *ev )
+void AuthLink::dispatch( SEGSEvent * )
 {
     ACE_ASSERT(!"Should not be called");
 }

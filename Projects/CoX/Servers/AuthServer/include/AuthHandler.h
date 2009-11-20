@@ -5,6 +5,7 @@
 #include <ace/Addr.h>
 #include <map>
 #include "AuthLink.h"
+#include "InternalEvents.h"
 #include "AuthEvents.h"
 #include "EventProcessor.h"
 
@@ -12,7 +13,7 @@ class AuthHandler : public EventProcessor
 {
 	typedef ACE_Guard<ACE_Thread_Mutex> MTGuard;
 	ACE_Thread_Mutex m_store_mutex;
-	std::map<ACE_INET_Addr,AuthLink *> m_link_store;
+	std::map<u64,AuthLink *> m_link_store;
     // function that send messages into the link
     void no_admin_server(EventProcessor *lnk);
     void unknown_error(EventProcessor *lnk);
@@ -23,6 +24,7 @@ class AuthHandler : public EventProcessor
     void on_login( LoginRequest *ev );
     void on_server_list_request( ServerListRequest *ev );
     void on_server_selected(ServerSelectRequest *ev);
+    void on_client_expected(ClientExpected *ev);
 public:
     typedef enum
     {
@@ -41,5 +43,6 @@ public:
     } eAuthError; // this is a public type so other servers can pass us valid errors
 
 	void dispatch(SEGSEvent *ev);
-};
+    SEGSEvent *dispatch_sync(SEGSEvent *ev);
+};    
 typedef ACE_Singleton<AuthHandler,ACE_Thread_Mutex> AuthHandlerG;

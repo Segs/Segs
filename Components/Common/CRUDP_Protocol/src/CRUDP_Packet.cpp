@@ -9,7 +9,6 @@
 
 #include "Base.h"
 #include "CRUDP_Packet.h"
-//#include "Net.h"
 
 CrudP_Packet::CrudP_Packet()
 { 
@@ -179,4 +178,24 @@ void CrudP_Packet::setContents(const BitStream &t)
 		*m_stream = t;
 	else
 		m_stream = new BitStream(t);
+}
+
+void CrudP_Packet::dump()
+{
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CrudP_Packet debug dump:\n")));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tChecksum 0x%08x\n"),m_checksum));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSeqence Number 0x%08x\n"),m_seqNo));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSiblings %d\n"),m_numSibs));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tDebug info : %d \n"),(int)m_hasDebugInfo));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tContains %d acks\n"),getNumAcks()));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tCompressed %d\n"),m_compressed));
+    ACE_HEX_DUMP((LM_DEBUG,(char *)m_stream->read_ptr(),m_stream->GetReadableDataSize(),"contents"));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CrudP_Packet debug complete\n")));
+}
+
+u32 CrudP_Packet::getNextAck()
+{
+    u32 res = *m_acks.begin();
+    m_acks.erase(m_acks.begin());
+    return res;
 }

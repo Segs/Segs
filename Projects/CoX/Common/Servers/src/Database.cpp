@@ -171,7 +171,7 @@ size_t DbResultRow::getColFloatArray(const char *column_name,float *arr,size_t a
 	while(res && idx<arr_size)
 	{
 		res++;
-		arr[idx++]=atof(res);
+		arr[idx++]=(float)atof(res);
 		res=strchr(res,',');
 	}
 	return idx;
