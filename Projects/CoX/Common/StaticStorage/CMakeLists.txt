@@ -1,0 +1,28 @@
+# $Id: CMakeLists.txt 301 2006-12-26 15:50:44Z nemerle $
+
+SET(target_CPP
+${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp
+)
+SET(target_INCLUDE
+${CMAKE_CURRENT_SOURCE_DIR}/include/Filesystem.h
+)
+
+FIND_PACKAGE(ACE REQUIRED)
+FIND_PACKAGE(ZLIB REQUIRED)
+
+SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+SET(target_DEPENDS "")
+
+SET (target_SOURCES
+${target_CPP}
+${target_INCLUDE}
+)
+
+INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${ACE_path})
+INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
+
+ADD_LIBRARY(static_storage STATIC ${target_SOURCES})
+#ADD_DEPENDENCIES(static_storage ${target_DEPENDS})
+
+SEGS_REGISTER_COMPONENT(static_storage "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
