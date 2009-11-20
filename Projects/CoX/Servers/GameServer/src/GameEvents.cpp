@@ -11,6 +11,7 @@
 #include "GameEvents.h"
 #include "CharacterClient.h"
 #include "Character.h"
+#include "Costume.h"
 // SpecHash<std::string,val>
 // 
 // get hash index of given key
@@ -98,7 +99,7 @@ void UpdateCharacter::serializefrom( BitStream &bs )
 void CharacterResponse::serializeto( BitStream &bs ) const
 {
     ACE_ASSERT(m_client->getCharacter(m_index));
-    CharacterCostume *c=m_client->getCharacter(m_index)->m_costume;
+    CharacterCostume *c=static_cast<CharacterCostume *>(m_client->getCharacter(m_index)->getCurrentCostume());
     bs.StorePackedBits(1,6); // opcode 
     bs.StorePackedBits(1,m_index);
     if(c)

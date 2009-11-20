@@ -3,7 +3,6 @@
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AdminServerInterface.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthServerInterface.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/CommonNetStructures.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/GameServerInterface.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapServerInterface.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/ServerSupport.cpp
@@ -18,7 +17,6 @@ SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AdminServerInterface.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AuthServerInterface.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Client.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/CommonNetStructures.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/GameServerInterface.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapServerInterface.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/ServerHandle.h
@@ -41,6 +39,7 @@ SET(target_DEPENDS "")
 
 SEGS_ADD_COMPONENT(segs_common LIB)
 SEGS_ADD_COMPONENT(EventSystem LIB)
+SEGS_ADD_COMPONENT(network_structures LIB)
 
 SET (target_SOURCES
 ${target_CPP}

@@ -18,6 +18,13 @@ class PowerPool_Info
 {
 public:
     int id[3];
+    void serializefrom( BitStream &src )
+    {
+        id[0] = src.GetPackedBits(3);
+        id[1] = src.GetPackedBits(3);
+        id[2] = src.GetPackedBits(3);
+    }
+
 };
 
 class Power

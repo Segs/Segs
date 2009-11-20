@@ -1,6 +1,7 @@
 #pragma once
 #include "CommonNetStructures.h"
 #include "Powers.h"
+#include "Costume.h"
 class PosUpdate
 {
 public:
@@ -62,35 +63,7 @@ virtual void	serializefrom(BitStream &){ACE_ASSERT(false);};
 		void	DumpBuildInfo();
 
 };
-class MapCostume : public Costume
-{
-	bool costume_sends_nonquantized_floats;
-	union
-	{
-		struct{
-			float m_height;
-			float m_physique;
-		} split;
-		float m_floats[30];
-	};
 
-
-protected:
-		u8		m_costume_type;
-		int		costume_type_idx_P;
-		int		costume_sub_idx_P;
-		void	GetCostume(BitStream &src);
-		void	SendCommon(BitStream &bs) const;
-public:
-				~MapCostume(){}
-				MapCostume()
-				{
-				}
-		void	clear_cache();
-		void	serializefrom(BitStream &);
-		void	serializeto(BitStream &bs) const;
-		void	dump();
-};
 class Entity : public NetStructure
 {
 public:

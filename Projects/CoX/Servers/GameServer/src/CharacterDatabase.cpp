@@ -14,6 +14,7 @@
 #include <ace/Log_Msg.h>
 #include "CharacterClient.h"
 #include "Character.h"
+#include "Costume.h"
 
 // UserToken,
 int CharacterDatabase::AddCharacter(const std::string &username, const std::string &charname)
@@ -73,19 +74,19 @@ bool CharacterDatabase::fill( Character *c)
 	c->setOrigin(STR_OR_EMPTY(r.getColString("origin")));
 	c->m_villain=r.getColBool("villain");
 	// appearance related.	
-	c->setBodyType(r.getColInt32("bodytype")); // 0
-	c->setFace_bits(r.getColInt32("face_bits")); // this is the skin color
+	c->body_type(r.getColInt32("bodytype")); // 0
+	c->face_bits(r.getColInt32("face_bits")); // this is the skin color
 	c->setMapName(STR_OR_EMPTY(r.getColString("current_map"))); // "V_City_00_01.txt"
 	c->m_unkn1=r.getColFloat("unkn1");//20.0f
 	c->m_unkn2=r.getColFloat("unkn2");//30.0f;
 	c->m_unkn3=r.getColInt32("unkn3");//1;//rand()|(rand()<<16); // can enter map ??
 	c->m_unkn4=r.getColInt32("unkn4");//1;//0x7FFFFFFF^rand();
 	c->setLastCostumeId(r.getColInt32("last_costume_id"));	
-
-	c->m_costume=new CharacterCostume;
-	c->m_costume->setSlotIndex(0);
-	c->m_costume->setCharacterId(r.getColInt32("id"));
-	return fill(c->m_costume);
+    CharacterCostume *main_costume = new CharacterCostume;
+    main_costume->setSlotIndex(0);
+    main_costume->setCharacterId(r.getColInt32("id"));
+    c->m_costumes.push_back(main_costume);
+	return fill(main_costume);
 }
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(x) (sizeof(x)/sizeof(x[1]))

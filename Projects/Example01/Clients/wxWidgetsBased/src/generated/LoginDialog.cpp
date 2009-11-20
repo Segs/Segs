@@ -4,9 +4,7 @@
 #include "LoginDialog.h"
 #include "Avatar.h"
 #include "Buffer.h"
-#include "AuthPacket.h"
-#include "AuthProtocol.h"
-#include "AuthConnection_ClientSide.h"
+#include "AuthEvents.h"
 #include "GameView.h"
 
 LoginDialog::LoginDialog(wxWindow* parent, int id, const wxString& title, const wxPoint& pos, const wxSize& size, long style):
