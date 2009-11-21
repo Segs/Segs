@@ -77,8 +77,6 @@ public:
 
 class NetStructure // this represents an interface all structures that are traversing the network should implement
 {
-static			std::vector<std::string> stringcache;
-static			std::vector<u32>	colorcache;
 static const	u32					stringcachecount_bitlength=12;
 static const	u32					colorcachecount_bitlength=10;
 public:

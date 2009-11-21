@@ -68,5 +68,7 @@ u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &k
     index_tgt = hash_index;
     return res;
 }
-ColorHash z;
-StringHash y;
+template
+class CoXHashMap<std::string>;
+template
+class CoXGenericHashMap<u32,u32,IntCompare>;

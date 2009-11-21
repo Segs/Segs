@@ -7,6 +7,8 @@
  * $Id$
  */
 #include "CommonNetStructures.h"
+#include "Filesystem.h"
+#include "CoXHash.h"
 std::vector<std::string> NetStructure::stringcache;
 std::vector<u32>	NetStructure::colorcache;
 
@@ -100,9 +102,12 @@ void NetStructure::getTransformMatrix( BitStream &bs,Matrix4x3 &src )
 
 void NetStructure::storeCached_Color( BitStream &bs,u32 col )
 {
-	int cache_idx=0;
-	if(col)
-		ACE_ASSERT(!"Color cache lookup requested");
+    u32 cache_idx=0;
+    u32 prev_val=0;
+    if(col && ColorsHash::instance()->find_index(col,cache_idx,prev_val,false))
+    {
+        cache_idx+=1;
+    }
 	bs.StoreBits(1,(cache_idx||col==0));
 	if(cache_idx||col==0)
 	{
@@ -116,10 +121,13 @@ void NetStructure::storeCached_Color( BitStream &bs,u32 col )
 
 void NetStructure::storeCached_String( BitStream &bs,const std::string & str )
 {
-	int cache_idx=0;
-	if(str.size())
-		ACE_ASSERT(!"string cache lookup requested");
-	bs.StoreBits(1,(cache_idx||str.size()==0));
+    u32 cache_idx=0;
+    u32 prev_val=0;
+    if(str.size() && PartsHash::instance()->find_index(str,cache_idx,prev_val,false))
+    {
+        cache_idx+=1;
+    }
+    bs.StoreBits(1,(cache_idx||str.size()==0));
 	if(cache_idx||str.size()==0)
 		bs.StorePackedBits(stringcachecount_bitlength,cache_idx);
 	else
@@ -131,14 +139,14 @@ u32 NetStructure::getCached_Color( BitStream &bs )
 	bool in_hash= bs.GetBits(1);
 	if(in_hash)
 	{
-		u16 hash_key =bs.GetBits(colorcachecount_bitlength);
-		return 0xFFFFFFFF; 
+		u16 hash_idx =bs.GetBits(colorcachecount_bitlength);
+        u32 *kv = ColorsHash::instance()->key_for_idx(hash_idx);
+        if(kv)
+            return *kv;
+        return 0;
 	}
 	else
-	{
-		// update cache
 		return bs.GetBits(32);
-	}
 
 	return 0;
 }
@@ -146,25 +154,18 @@ u32 NetStructure::getCached_Color( BitStream &bs )
 std::string NetStructure::getCached_String( BitStream &bs )
 {
 	std::ostringstream strm;
-	std::string tgt;
+	std::string tgt("");
 	bool in_cache= bs.GetBits(1);
 	if(in_cache)
 	{
-		if(stringcache.size()==1)
-		{
-			return stringcache[0];
-		}
 		int in_cache_idx = bs.GetPackedBits(stringcachecount_bitlength);
-		strm <<"Hash:"<<(int)in_cache_idx;
-		tgt=strm.str();
-		//tgt = stringcache[in_cache_idx];
-		tgt.push_back(0);
+        std::string *kv = PartsHash::instance()->key_for_idx(in_cache_idx);
+        if(kv)
+            tgt=*kv;
+        return tgt;
 	}
 	else
-	{
 		bs.GetString(tgt);
-		stringcache.push_back(tgt);
-	}
 	return tgt;
 }
 

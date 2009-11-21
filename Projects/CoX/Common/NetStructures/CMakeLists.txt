@@ -21,7 +21,7 @@ SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
 
 SEGS_ADD_COMPONENT(segs_common LIB)
-
+SEGS_ADD_COMPONENT(static_storage LIB)
 SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}

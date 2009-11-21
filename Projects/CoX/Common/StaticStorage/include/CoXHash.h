@@ -97,6 +97,7 @@ protected:
 
     JenkinsHash<KEY> hash;
 public:
+    CoxHashCommon(){}
     void resize(size_t new_size)
     {
         u32 entry_idx;
@@ -139,6 +140,14 @@ public:
 
         return &m_storage[entry_idx];
     }
+    KEY *key_for_idx(u32 idx)
+    {
+        idx-=1;
+        if(idx >= 0 && idx < m_storage.size())
+            if(m_storage[idx].key_hash!=0)
+                return &m_storage[idx].stored_key;
+        return 0;
+    }
     virtual u32 find_index(const KEY &key, u32 &index_tgt, u32 &key_tgt, bool a5)=0;
     virtual u32 next_size(u32 sz)=0;
 
@@ -153,7 +162,7 @@ class CoXHashMap : public CoxHashCommon<std::string,VALUE>
         SINGLE_BYTE = 0x20,
     };
 public:
-    CoXHashMap();
+    CoXHashMap(){};
     u32 find_index(const std::string &key, u32 &index_tgt, u32 &key_tgt, bool a5);
     u32 next_size(u32 sz)
     {
@@ -192,7 +201,7 @@ class CoXGenericHashMap : public CoxHashCommon<KEY,VALUE>
 {
     COMPARE_FUNCTOR comp;
 public:
-    CoXGenericHashMap();
+    CoXGenericHashMap(){};
     u32 next_size(u32 sz)
     {
         size_t idx;
@@ -259,7 +268,7 @@ public:
 };
 
 typedef CoXHashMap<std::string> StringHash;
-typedef CoXGenericHashMap<u32,u32,IntCompare> ColorHash;
+typedef CoXGenericHashMap<u32,u32,IntCompare> ColorHash_impl;
 
 typedef ACE_Singleton<StringHash,ACE_Null_Mutex> PartsHash;
-typedef ACE_Singleton<ColorHash,ACE_Null_Mutex> ColorsHash;
+typedef ACE_Singleton<ColorHash_impl,ACE_Null_Mutex> ColorsHash;
