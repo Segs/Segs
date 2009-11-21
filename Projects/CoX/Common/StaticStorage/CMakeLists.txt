@@ -2,9 +2,11 @@
 
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/CoXHash.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Filesystem.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/CoXHash.h
 )
 
 FIND_PACKAGE(ACE REQUIRED)
@@ -12,6 +14,8 @@ FIND_PACKAGE(ZLIB REQUIRED)
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
+
+SEGS_ADD_COMPONENT(Globals SOURCE)
 
 SET (target_SOURCES
 ${target_CPP}
