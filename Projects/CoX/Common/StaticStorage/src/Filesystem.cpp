@@ -58,7 +58,7 @@ void WorldData_impl::fill_hashes()
             add_colors(orig->m_skin_palette);
             for(int region_idx=orig->m_regions.size()-1; region_idx>=0; --region_idx)
             {
-                RegionEntry *region=(RegionEntry *)orig->m_regions[idx];
+                RegionEntry *region=(RegionEntry *)orig->m_regions[region_idx];
                 m_strings.insert_entry(region->m_name,"");
                 for(int bone_idx=region->m_bonsets.size()-1; bone_idx>=0; --bone_idx)
                 {

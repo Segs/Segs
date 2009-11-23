@@ -60,7 +60,7 @@ u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &k
             res = 1;
             break;
         }
-        if(0==tmp_key.compare(m_storage[hash_index].stored_key)) // this does not handle wide characters ?
+        if(0==key.compare(m_storage[hash_index].stored_key)) // this does not handle wide characters ?
         {
             res = 1;
             break;
