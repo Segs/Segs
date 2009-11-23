@@ -75,7 +75,7 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     ACE_ASSERT(m_client->getMaxSlots()>0);
     for(size_t i=0; i<m_client->getMaxSlots(); i++)
     {
-        m_client->getCharacter(i)->serializeto(tgt);
+        m_client->getCharacter(i)->serializetoCharsel(tgt);
     }
     tgt.StoreBitArray(m_clientinfo,128);
 }
@@ -99,11 +99,13 @@ void UpdateCharacter::serializefrom( BitStream &bs )
 void CharacterResponse::serializeto( BitStream &bs ) const
 {
     ACE_ASSERT(m_client->getCharacter(m_index));
-    CharacterCostume *c=static_cast<CharacterCostume *>(m_client->getCharacter(m_index)->getCurrentCostume());
+    CharacterCostume *c=0;
+    if(m_client->getCharacter(m_index)->getName().compare("EMPTY")!=0) // actual character was read from db
+        c=static_cast<CharacterCostume *>(m_client->getCharacter(m_index)->getCurrentCostume());
     bs.StorePackedBits(1,6); // opcode 
     bs.StorePackedBits(1,m_index);
     if(c)
-        c->serializeto(bs);
+        c->storeCharselParts(bs);
     else
         bs.StorePackedBits(1,0); // 0 parts
 

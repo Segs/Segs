@@ -53,16 +53,16 @@ public:
 	float m_floats[8];
 	vector<CostumePart> m_parts;
 	u32 m_body_type;
-    
-    void storeCharselParts(BitStream &bs)
+    Costume()
     {
-        bs.StorePackedBits(1,m_num_parts);
-        for(int costume_part=0; costume_part<m_num_parts;costume_part++)
-            m_parts[costume_part].serializeto_charsel(bs);
+        m_height=m_physique=1.0f;
+        a=0;
+        m_num_parts=0;
     }
+    void storeCharselParts(BitStream &bs);
     void storeCharsel(BitStream &bs)
     {
-        bs.StorePackedBits(3,m_body_type); // 0:male normal
+        bs.StorePackedBits(1,m_body_type); // 0:male normal
         bs.StoreFloat(m_height);
         bs.StoreFloat(m_physique);
         bs.StoreBits(32,a); // rgb ?
@@ -110,6 +110,9 @@ class CharacterCostume : public Costume
     u8  m_slot_index;
     u64 m_character_id; //! Character to whom this costume belongs
 public:
+
+    static CharacterCostume NullCostume;
+
     u8 getSlotIndex() const { return m_slot_index; }
     void setSlotIndex(u8 val) { m_slot_index = val; }
     u64 getCharacterId() const { return m_character_id; }

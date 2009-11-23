@@ -13,7 +13,8 @@
 
 Character::Character()
 {
-	m_multiple_costumes=false;
+    m_unkn3=0;
+    m_multiple_costumes=false;
 	m_current_costume_idx=0;
 	m_current_costume_set=false;
 	m_supergroup_costume=false;
@@ -28,7 +29,7 @@ void Character::reset()
 	m_origin="EMPTY";
 	m_villain=0;
 	m_mapName="EMPTY";
-
+    m_unkn3=0;
 	m_multiple_costumes=false;
 	m_current_costume_idx=0;
 	m_current_costume_set=false;
@@ -100,8 +101,13 @@ void Character::serializetoCharsel( BitStream &bs )
 	bs.StoreString(m_name);
 	bs.StoreString(m_archetype);
 	bs.StoreString(m_origin);
-	ACE_ASSERT(m_costumes.size()>0);
-	m_costumes[m_current_costume_set]->storeCharsel(bs);
+    if(m_costumes.size()==0)
+    {
+        ACE_ASSERT(m_name.compare("EMPTY")==0); // only empty characters can have no costumes
+        CharacterCostume::NullCostume.storeCharsel(bs);
+    }
+    else
+    	m_costumes[m_current_costume_set]->storeCharsel(bs);
 	bs.StoreString(m_mapName);
 	bs.StorePackedBits(1,rand());
 }
