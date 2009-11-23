@@ -95,9 +95,10 @@ protected:
     size_t in_use;
     u32 m_flags;
 
-    JenkinsHash<KEY> hash;
+    static JenkinsHash<KEY> hash;
 public:
-    CoxHashCommon(){}
+    CoxHashCommon() : in_use(0),m_flags(0)
+    {}
     void resize(size_t new_size)
     {
         u32 entry_idx;
@@ -137,7 +138,7 @@ public:
         m_storage[entry_idx].stored_key = k;
         m_storage[entry_idx].stored_val = v;
         m_storage[entry_idx].key_hash = prev_val;
-
+        in_use++;
         return &m_storage[entry_idx];
     }
     KEY *key_for_idx(int idx)
@@ -148,7 +149,7 @@ public:
                 return &m_storage[idx].stored_key;
         return 0;
     }
-    virtual u32 find_index(const KEY &key, u32 &index_tgt, u32 &key_tgt, bool a5)=0;
+    virtual u32 find_index(const KEY &key, u32 &index_tgt, u32 &key_tgt, bool a5) const=0;
     virtual u32 next_size(u32 sz)=0;
 
 };
@@ -163,7 +164,7 @@ class CoXHashMap : public CoxHashCommon<std::string,VALUE>
     };
 public:
     CoXHashMap(){};
-    u32 find_index(const std::string &key, u32 &index_tgt, u32 &key_tgt, bool a5);
+    u32 find_index(const std::string &key, u32 &index_tgt, u32 &key_tgt, bool a5) const;
     u32 next_size(u32 sz)
     {
         if(sz==0)
@@ -199,7 +200,8 @@ struct IntCompare
 template<class KEY,class VALUE,class COMPARE_FUNCTOR>
 class CoXGenericHashMap : public CoxHashCommon<KEY,VALUE>
 {
-    COMPARE_FUNCTOR comp;
+protected:
+    static COMPARE_FUNCTOR comp;
 public:
     CoXGenericHashMap(){};
     u32 next_size(u32 sz)
@@ -228,47 +230,8 @@ public:
             m_storage.resize(32);
         }
     }
-    u32 find_index(const KEY &needle,u32 &entry_idx,u32 &prev_val_out,bool a5)
-    {
-        u32 result;
-        u32 prev_val;
-        u32 h_idx=hash(needle,0);
-        prev_val = h_idx;
-        u32 entry_to_try = h_idx % m_storage.size();
-        if(entry_to_try==0)
-            return 2;
-        while(true)
-        {
-                if(m_storage[entry_to_try].key_hash==0) // || a5 && m_storage[entry_to_try].entry_flags&1
-                {
-                    result=0; // not in table
-                    break;
-                }
-                if(m_storage[entry_to_try].key_hash==prev_val) // if hashes are the same
-                {
-                    // if!(entry_flags&1)
-                    if(0==comp(needle,m_storage[entry_to_try].stored_key)) // check the keys
-                    {
-                        result = 1; // found
-                        break;
-                    }
-                }
-                prev_val = hash(needle,prev_val);
-                entry_to_try = h_idx % m_storage.size();
-                if(!prev_val)
-                {
-                    result = 2;
-                    break;
-                }
-        }
-        entry_idx=entry_to_try;
-        prev_val_out = prev_val;
-        return result;
-    }
+    u32 find_index(const KEY &needle,u32 &entry_idx,u32 &prev_val_out,bool a5) const;
 };
 
 typedef CoXHashMap<std::string> StringHash;
-typedef CoXGenericHashMap<u32,u32,IntCompare> ColorHash_impl;
-
-typedef ACE_Singleton<StringHash,ACE_Null_Mutex> PartsHash;
-typedef ACE_Singleton<ColorHash_impl,ACE_Null_Mutex> ColorsHash;
+typedef CoXGenericHashMap<u32,u32,IntCompare> ColorHash;

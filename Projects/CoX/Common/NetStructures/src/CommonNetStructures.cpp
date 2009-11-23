@@ -102,7 +102,7 @@ void NetStructure::storeCached_Color( BitStream &bs,u32 col )
 {
     u32 cache_idx=0;
     u32 prev_val=0;
-    if(col && ColorsHash::instance()->find_index(col,cache_idx,prev_val,false))
+    if(col && WorldData::instance()->colors().find_index(col,cache_idx,prev_val,false))
     {
         cache_idx+=1;
     }
@@ -121,7 +121,7 @@ void NetStructure::storeCached_String( BitStream &bs,const std::string & str )
 {
     u32 cache_idx=0;
     u32 prev_val=0;
-    if(str.size() && PartsHash::instance()->find_index(str,cache_idx,prev_val,false))
+    if(str.size() && WorldData::instance()->strings().find_index(str,cache_idx,prev_val,false))
     {
         cache_idx+=1;
     }
@@ -138,7 +138,7 @@ u32 NetStructure::getCached_Color( BitStream &bs )
 	if(in_hash)
 	{
 		u16 hash_idx =bs.GetBits(colorcachecount_bitlength);
-        u32 *kv = ColorsHash::instance()->key_for_idx(hash_idx);
+        u32 *kv = WorldData::instance()->colors().key_for_idx(hash_idx);
         if(kv)
             return *kv;
         return 0;
@@ -157,7 +157,7 @@ std::string NetStructure::getCached_String( BitStream &bs )
 	if(in_cache)
 	{
 		int in_cache_idx = bs.GetPackedBits(stringcachecount_bitlength);
-        std::string *kv = PartsHash::instance()->key_for_idx(in_cache_idx);
+        std::string *kv = WorldData::instance()->strings().key_for_idx(in_cache_idx);
         if(kv)
             tgt=*kv;
         return tgt;

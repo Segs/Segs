@@ -49,6 +49,9 @@ bool GameServer::Run()
     WorldData::instance()->read_costumes("./data/");
     WorldData::instance()->read_colors("./data/");
     ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) All game data read\n") ));
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Filling hashes .. ") ));
+    WorldData::instance()->fill_hashes();
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("Hashes filled\n") ));
     if(0!=m_database->OpenConnection())
 	{
 		ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: database connection failure\n"),false);

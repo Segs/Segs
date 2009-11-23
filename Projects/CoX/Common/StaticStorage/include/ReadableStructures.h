@@ -125,9 +125,10 @@ struct ColorStorage : public BinReadable
 
     std::vector<BinReadable *> m_colors;
 
-    static u32 color_to_4ub(const ColorEntry &e)
+    static u32 color_to_4ub(const ColorEntry *e)
     {
-        return ((u32)e.rgb.v[0]) | (((u32)e.rgb.v[1])<<8) | (((u32)e.rgb.v[2])<<16) | (0xFF<<24);
+        const Vec3 &rgb(e->rgb);
+        return ((u32)rgb.v[0]) | (((u32)rgb.v[1])<<8) | (((u32)rgb.v[2])<<16) | (0xFF<<24);
     }
 };
 struct GeoSetInfoEntry : public BinReadable
@@ -201,7 +202,6 @@ struct CostumeEntry  : public BinReadable
 {
     DECL_READABLE(CostumeEntry);
     std::string m_name;
-    Vec3 rgb;
     std::vector<BinReadable *> m_origins;
     static void build_schema();
 };

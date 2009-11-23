@@ -9,13 +9,21 @@
 #include <ace/OS.h>
 #include "CoXHash.h"
 
+template<class KEY,class VALUE,class COMPARE_FUNCTOR>
+COMPARE_FUNCTOR CoXGenericHashMap<KEY, VALUE,COMPARE_FUNCTOR>::comp;
+
 u32 JenkinsHash<std::string>::operator()(const std::string &val,u32 prev_val)
 {
     return hash((const u8 *)val.c_str(),val.size(),prev_val);
 }
 
+
+template<class KEY,class VALUE>
+JenkinsHash<KEY> CoxHashCommon<KEY, VALUE>::hash;
+
+
 template<class VALUE>
-u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &key_tgt, bool a5)
+u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &key_tgt, bool a5) const
 {
     int HashValue;
     int hash_index;
@@ -68,7 +76,46 @@ u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &k
     index_tgt = hash_index;
     return res;
 }
+template<class KEY,class VALUE,class COMPARE_FUNCTOR>
+u32 CoXGenericHashMap<KEY, VALUE, COMPARE_FUNCTOR>::find_index( const KEY &needle,u32 &entry_idx,u32 &prev_val_out,bool a5 ) const
+{
+    u32 result;
+    u32 prev_val;
+    u32 h_idx=hash(needle,0);
+    prev_val = h_idx;
+    u32 entry_to_try = h_idx % m_storage.size();
+    if(entry_to_try==0)
+        return 2;
+    while(true)
+    {
+        if(m_storage[entry_to_try].key_hash==0) // || a5 && m_storage[entry_to_try].entry_flags&1
+        {
+            result=0; // not in table
+            break;
+        }
+        if(m_storage[entry_to_try].key_hash==prev_val) // if hashes are the same
+        {
+            // if!(entry_flags&1)
+            if(0==comp(needle,m_storage[entry_to_try].stored_key)) // check the keys
+            {
+                result = 1; // found
+                break;
+            }
+        }
+        prev_val = hash(needle,prev_val);
+        entry_to_try = prev_val % m_storage.size();
+        if(!prev_val)
+        {
+            result = 2;
+            break;
+        }
+    }
+    entry_idx=entry_to_try;
+    prev_val_out = prev_val;
+    return result;
+}
 template
 class CoXHashMap<std::string>;
 template
 class CoXGenericHashMap<u32,u32,IntCompare>;
+
