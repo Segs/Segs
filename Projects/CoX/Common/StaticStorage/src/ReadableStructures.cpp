@@ -373,7 +373,7 @@ bool ClassSchema::read( BinReadable &tgt,Store *s ) const
     bool result=true;
     size_t field_idx;
     s->prepare();
-    for(size_t field_idx=0; field_idx<m_fields.size(); ++field_idx)
+    for(field_idx=0; field_idx<m_fields.size(); ++field_idx)
     {
         result &= m_fields[field_idx].read_non_nested(tgt,s);
     }

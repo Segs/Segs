@@ -30,9 +30,9 @@ ENDMACRO(SEGS_ADD_COMPONENT)
 
 MACRO(SEGS_REGISTER_COMPONENT name include_dir sources includes )
 
-    IF(${${name}_VISITED})
-		MESSAGE(ERROR " Component ${component_name} already registered.")
-    ELSE(${${name}_VISITED})
+    IF(${name}_VISITED)
+		#MESSAGE(ERROR " Component ${component_name} already registered.")
+    ELSE(${name}_VISITED)
 
         SET(${name}_VISITED TRUE CACHE INTERNAL "")
         SET(${name}_INCLUDE_DIR ${include_dir} CACHE INTERNAL "")
@@ -40,6 +40,6 @@ MACRO(SEGS_REGISTER_COMPONENT name include_dir sources includes )
         SET(${name}_CPP ${sources} CACHE INTERNAL "")	
         SET(${name}_INCLUDE ${includes} CACHE INTERNAL "")
         SET(${name}_SOURCES ${${name}_CPP} ${${name}_INCLUDE} CACHE INTERNAL "")
-    ENDIF(${${name}_VISITED})
+    ENDIF(${name}_VISITED)
     
 ENDMACRO(SEGS_REGISTER_COMPONENT)
