@@ -12,28 +12,25 @@
 #include <vector>
 #include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>
+#include <fstream>
+#include <map>
+
 #include "types.h"
+
 #include "CoXHash.h"
-
-class ColorStorage
-{
-    struct ColorEntry
-    {
-        float r,g,b;
-    };
-    std::vector<ColorEntry> m_colors;
-public:
-    static u32 color_to_4ub(const ColorEntry &e)
-    {
-        return ((u32)e.r) | (((u32)e.g)<<8) | (((u32)e.b)<<16) | (0xFF<<24);
-    }
-
-};
+#include "ReadableStructures.h"
 
 class WorldData_impl
 {
+    ColorStorage m_supergroup_colors;
+    CostumeStorage m_costumes;
+
 public:
-    bool read_costume_part_names(const std::string &src_filename);
-    bool read_costume_part_color(const std::string &src_filename);
+    bool read_costumes(const std::string &src_filename);
+    bool read_colors(const std::string &src_filename);
+    void fill_hashes()
+    {
+
+    }
 };
 typedef ACE_Singleton<WorldData_impl,ACE_Thread_Mutex> WorldData;

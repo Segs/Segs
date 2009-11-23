@@ -20,6 +20,7 @@ SET(target_DEPENDS "")
 
 SEGS_ADD_COMPONENT(AuthProtocol SOURCE)
 SEGS_ADD_COMPONENT(cox_server_common LIB)
+SEGS_ADD_COMPONENT(static_storage LIB)
 SEGS_ADD_COMPONENT(adminserver_lib LIB)
 SEGS_ADD_COMPONENT(gameserver_lib LIB)
 SEGS_ADD_COMPONENT(mapserver_lib LIB)

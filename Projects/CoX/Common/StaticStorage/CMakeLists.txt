@@ -2,10 +2,15 @@
 
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/ReadableStructures.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CoXHash.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/DataStorage.cpp
+
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Filesystem.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/ReadableStructures.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/DataStorage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CoXHash.h
 )
 

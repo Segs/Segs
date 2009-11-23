@@ -42,7 +42,6 @@
 #include "MapServer.h"
 #include "GameServer.h"
 //////////////////////////////////////////////////////////////////////////
-
 class LogCallback : public ACE_Log_Msg_Callback
 {
 	std::ofstream m_tgt_file_stream;
@@ -143,7 +142,6 @@ public:
 };
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
-
 	g_logging_object.init_file_log();
 
 	CommandLineContents cmdl;

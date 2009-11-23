@@ -9,8 +9,6 @@
 #include "CommonNetStructures.h"
 #include "Filesystem.h"
 #include "CoXHash.h"
-std::vector<std::string> NetStructure::stringcache;
-std::vector<u32>	NetStructure::colorcache;
 
 void NetStructure::storeBitsConditional( BitStream &bs,int numbits,int bits )
 {

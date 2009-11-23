@@ -14,6 +14,8 @@
 #include "CharacterDatabase.h"
 #include "AdminServerInterface.h"
 #include "GameHandler.h"
+#include "Filesystem.h"
+
 GameServer::GameServer(void) : 
 	m_id(0),
 	m_current_players(0),
@@ -43,7 +45,11 @@ bool GameServer::Run()
 		ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Game server already running\n") ));
 		return true;
 	}
-	if(0!=m_database->OpenConnection())
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading game data\n") ));
+    WorldData::instance()->read_costumes("./data/");
+    WorldData::instance()->read_colors("./data/");
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) All game data read\n") ));
+    if(0!=m_database->OpenConnection())
 	{
 		ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: database connection failure\n"),false);
 	}

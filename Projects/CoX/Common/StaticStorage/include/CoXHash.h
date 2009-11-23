@@ -140,10 +140,10 @@ public:
 
         return &m_storage[entry_idx];
     }
-    KEY *key_for_idx(u32 idx)
+    KEY *key_for_idx(int idx)
     {
         idx-=1;
-        if(idx >= 0 && idx < m_storage.size())
+        if(idx >= 0 && idx < (int)m_storage.size())
             if(m_storage[idx].key_hash!=0)
                 return &m_storage[idx].stored_key;
         return 0;
