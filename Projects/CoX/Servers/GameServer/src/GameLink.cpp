@@ -9,6 +9,6 @@
 #include <ace/INET_Addr.h>
 #include "EventProcessor.h"
 #include "GameEvents.h"
-#include "CRUD_Link.inl"
+#include "crud_link.inl"
 template
 class CRUDLink<GameEventFactory>;

@@ -13,10 +13,11 @@
 #include "AuthPacketCodec.h"
 #include "Buffer.h"
 #include "EventProcessor.h"
+#include "AuthOpcodes.h"
 
 class SEGSEvent;
 class AuthClient;
-enum eAuthPacketType;
+
 // AuthLinks are created when connection is accepted.
 // They serve as one of the primary event sources in the system, the other being Timers
 // Whenever new bytes are received, the AuthLink tries to convert them into proper higher level Events,

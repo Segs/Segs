@@ -73,6 +73,7 @@ struct JenkinsHash
         return hash((const u8 *)&val,sizeof(V),prev_val);
     }
 };
+//extern template struct JenkinsHash<std::string>;
 #undef mix
 
 template<class KEY,class VALUE>

@@ -1,6 +1,6 @@
 
-#include "AuthLink.h"
 #include "AuthOpcodes.h"
+#include "AuthLink.h"
 #include "AuthHandler.h"
 #include "AuthEventFactory.h"
 

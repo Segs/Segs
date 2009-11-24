@@ -11,7 +11,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/ServerHandle.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/ServerManager.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/InterfaceManager.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Database.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/CRUD_Link.cpp
+#${CMAKE_CURRENT_SOURCE_DIR}/src/CRUD_Link.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AdminServerInterface.h

@@ -21,6 +21,7 @@
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
 #include "EventProcessor.h"
+#include "CRUD_Events.h"
 #include "Base.h"
 #ifndef WIN32
 #include <ext/hash_map>
