@@ -119,9 +119,9 @@ u32 CoXGenericHashMap<KEY, VALUE, COMPARE_FUNCTOR>::find_index( const KEY &needl
 // Implicit instantiations
 
 // somehow this is needed on VC
-template<>
+template
 JenkinsHash<std::string> CoxHashCommon<std::string, std::string>::hash;
-template<>
+template
 JenkinsHash<u32> CoxHashCommon<u32, u32>::hash;
 
 template
