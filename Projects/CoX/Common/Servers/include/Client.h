@@ -15,9 +15,9 @@
 #include <string>
 #include <ace/OS_NS_time.h>
 #include "ServerManager.h"
-#include "CharacterDatabase.h"
+#include "AccountInfo.h"
 class Entity;
-class Client // this should really be a simple 1-1 join between account info and connection, where depending on server only the link changes
+class ClientLinkState
 {
 public:
     typedef enum
@@ -28,24 +28,38 @@ public:
         LOGGED_IN,
         CLIENT_CONNECTED,
     } eClientState;
-    Client(){}
-	u32				hash_id() {return m_peer_addr.get_ip_address()^m_peer_addr.get_port_number();}
-	void			setPeer(const ACE_INET_Addr &peer){m_peer_addr=peer;}
-	ACE_INET_Addr &	getPeer() {return m_peer_addr;}
+public:
+                        ClientLinkState():m_state(CLIENT_DISCONNECTED){}
+    u32				    hash_id() {return m_peer_addr.get_ip_address()^m_peer_addr.get_port_number();}
+    void			    setState(eClientState s) {m_state=s;}
+    eClientState	    getState() {return m_state;}
+    void			    setPeer(const ACE_INET_Addr &peer){m_peer_addr=peer;}
+    ACE_INET_Addr &	    getPeer() {return m_peer_addr;}
+    EventProcessor *    link() const { return m_link; }
+    void		        link(EventProcessor * val) { m_link = val; }
 
-    string			getLogin()	const	{return m_account_info.login();}
-    void			setState(eClientState s) {m_state=s;}
-    eClientState	getState() {return m_state;}
-    bool            account_blocked() {return m_account_info.access_level()==0;}
-    AccountInfo &   account_info() {return m_account_info;}
 protected:
-    ACE_INET_Addr m_peer_addr;
-    eClientState m_state;
-    AccountInfo m_account_info;
+    ACE_INET_Addr   m_peer_addr;
+    eClientState    m_state;
+    EventProcessor *m_link;
 };
-class CharacterData
+class ClientSession
 {
+public:
+    string              getLogin()	const	{return m_account_info.login();}
+    bool                account_blocked() {return m_account_info.access_level()==0;}
+    AccountInfo &       account_info() {return m_account_info;}
+    ClientLinkState &   link_state() {return m_link;}
+protected:
+    ClientLinkState     m_link;
+    AccountInfo         m_account_info;
+};
+class Client // this should really be a simple 1-1 join between account info and connection, where depending on server only the link changes
+{
+public:
 
+protected:
+    AccountInfo m_account_info;
 };
 
 #endif // CLIENT_H

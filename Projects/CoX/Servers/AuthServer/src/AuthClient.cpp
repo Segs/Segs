@@ -13,9 +13,8 @@
 	
 	This is a Client model extended with functions useful to authorization process.
 */
-AuthClient::AuthClient() :m_game_server(NULL),m_state(NOT_LOGGED_IN)
+AuthClient::AuthClient() :m_game_server(NULL)
 {
-    memset(m_password,0,14);
 }
 
 /*! 
@@ -39,7 +38,7 @@ bool AuthClient::isLoggedIn()
 {
 	GameServerInterface *gs=NULL;
 	ServerManagerC *sm =ServerManager::instance();
-	if(getState()==LOGGED_IN) // easiest way out
+    if(m_link.getState()==ClientLinkState::LOGGED_IN) // easiest way out
 	{
 		return true;
 	}
@@ -50,16 +49,11 @@ bool AuthClient::isLoggedIn()
 		ACE_ASSERT(gs!=NULL);
         if(0==gs) // something screwy happened 
             return false;
-        ClientConnectionQuery *query = new ClientConnectionQuery(0,m_account_info.account_server_id());
+        ClientConnectionQuery * query = new ClientConnectionQuery(0,m_account_info.account_server_id());
         ClientConnectionResponse *resp = (ClientConnectionResponse *)gs->event_target()->dispatch_sync(query);
         bool still_connected = resp->last_comm!=ACE_Time_Value::max_time;
         resp->release();
         return still_connected;
 	}
 	return false; //
-}
-
-void AuthClient::setState( eClientState state )
-{
-	m_state=state;
 }

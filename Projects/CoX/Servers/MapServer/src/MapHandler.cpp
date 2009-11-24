@@ -102,7 +102,7 @@ void Map2Handler::on_create_map_entity(NewEntity *ev)
     MapClient *cl = m_clients.getExpectedByCookie(ev->m_cookie-2);
     ACE_ASSERT(cl);
     cl->entity(ev->m_ent);
-    cl->link(lnk);    
+    cl->link_state().link(lnk);    
     if(ev->m_new_character)
     {
         cl->db_create();

@@ -90,7 +90,7 @@ void GameHandler::on_update_server(UpdateServer *ev)
     }
     m_clients.connectedClient(ev->authCookie);
     ((GameLink *)ev->src())->client_data((void *)cl); // store client object in link
-	cl->link((GameLink *)ev->src()); // store link in client
+	cl->link_state().link((GameLink *)ev->src()); // store link in client
 
     CharacterSlots *slots_event=new CharacterSlots;  
     slots_event->set_client(cl); // at this point pointer to the client is held in event, if it's destroyed somewhere else KA-BOOM!!
@@ -130,7 +130,7 @@ void GameHandler::on_client_expected(ClientExpected *ev)
     // this is the case when we cannot use ev->src(), because it is not GameLink, but a MapHandler
     // we need to get a link from client_id
 	CharacterClient *cl=m_clients.getById(ev->client_id);
-	GameLink *lnk = cl->link();
+	GameLink *lnk = (GameLink *)cl->link_state().link();
 	MapServerAddrResponse *r_ev=new MapServerAddrResponse;
 	r_ev->m_map_cookie  = ev->cookie;
 	r_ev->m_address		= ev->m_connection_addr;
@@ -181,7 +181,7 @@ void GameHandler::checkClientConnection(u64 id)
     CharacterClient *client = m_clients.getById(id);
     if(client)
     {
-        client->getState();
+        client->link_state().getState();
     }
     //	m_clients.getById(id)->;
     // empty for now, later on it will use client store to get the client, and then check it's packet backlog

@@ -24,14 +24,13 @@ class MapHandler;
 class SEGSMap;
 class NetCommand;
 class GamePacket;
-class MapClient : public Client
+class MapClient : public ClientSession
 {
     friend class CharacterDatabase;
     typedef std::map<int,NetCommand *> mNetCommands;
     mNetCommands            m_shortcuts;
     SEGSMap *               m_current_map;
     Entity *                m_ent;
-    MapLink *               m_link;
     std::string             m_name; // current character name, stored here for quick lookups
 public:
                             MapClient();
@@ -45,8 +44,6 @@ virtual                     ~MapClient(){};
         void                char_entity(Entity *ent){m_ent=ent;}
         Entity *            char_entity(){return m_ent;}
         void                reset();
-        MapLink *           link() const { return m_link; }
-        void                link(MapLink * val) { m_link = val; }
         const std::string & name() const { return m_name; }
         void                name(const std::string &val) { m_name = val; }
         void                entity(Entity * val);

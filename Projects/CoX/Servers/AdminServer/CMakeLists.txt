@@ -3,10 +3,12 @@
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AdminServer.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AdminDatabase.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/AccountInfo.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CharacterDatabase.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CharacterDatabase.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/AccountInfo.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AdminDatabase.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/AdminServer.h
 )

@@ -26,7 +26,6 @@ using namespace stdext;
 #include "CRUDP_Packet.h"
 using namespace std;
 class PacketCodecNull;
-class Client;
 /*
 	Cryptic Reliable UDP 
 	CrudP 

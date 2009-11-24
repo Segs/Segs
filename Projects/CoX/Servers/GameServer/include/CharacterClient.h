@@ -24,11 +24,10 @@
 class Character;
 class GameServer;
 //class CharacterHandler;
-class CharacterClient : public Client
+class CharacterClient : public ClientSession
 {
 		GameServer *			    m_server;
         ACE_Time_Value              m_last_activity;
-		GameLink *					m_link; // convenience pointer
 public:
 					CharacterClient(){}
 virtual				~CharacterClient();
@@ -39,8 +38,6 @@ virtual				~CharacterClient();
 		size_t		max_slots();
 		void		reset();
         void        connection_update() {m_last_activity = ACE_OS::gettimeofday();}
-		GameLink *	link() const { return m_link; }
-		void		link(GameLink * val) { m_link = val; }
 };
 
 #endif // CHARACTERCLIENT_H

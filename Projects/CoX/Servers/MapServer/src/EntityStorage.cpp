@@ -7,11 +7,7 @@
  * $Id: EntityStorage.cpp 301 2006-12-26 15:50:44Z nemerle $
  */
 
-#include "MapHandler.h"
 #include "Entity.h"
-#include "GameProtocol.h"
-#include "PacketCodec.h"
-#include "ServerManager.h"
 #include "EntityStorage.h"
 //EntityManager ent_mgr;
 void EntityStorage::StorePlayer( MapClient *client,Entity *player_ent )

@@ -9,7 +9,6 @@
 
 //#include "GameProtocol.h"
 #include "PacketCodec.h"
-#include "GameProtocol.h"
 #include "CRUDP_Protocol.h"
 #include <ace/Log_Msg.h>
 #include <zlib.h>

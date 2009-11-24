@@ -15,8 +15,6 @@
 #include <ace/INET_Addr.h>
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
-#include "GameProtocol.h"
-#include "GameProtocolHandler.h"
 #include "Client.h"
 #ifndef WIN32
 #include <ext/hash_map>
@@ -97,7 +95,7 @@ public:
 		exp = new CLIENT_CLASS;
 		exp->account_info().access_level(access_level);
 		exp->account_info().account_server_id(id);
-		exp->setState(Client::CLIENT_EXPECTED);
+		exp->link_state().setState(ClientLinkState::CLIENT_EXPECTED);
 		m_expected_clients[cook] = exp;
 		m_clients[id] = exp;
 		m_id_to_cookie[id]=cook;

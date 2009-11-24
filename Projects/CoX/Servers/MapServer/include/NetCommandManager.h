@@ -7,12 +7,10 @@
  * $Id$
  */
 #pragma once
+#include <ace/Singleton.h>
+#include <ace/Thread_Mutex.h>
 #include "Entity.h"
-#include "GameProtocol.h"
-#include "PacketCodec.h"
-#include "ServerManager.h"
-#include "EntityStorage.h"
-
+class MapClient;
 class NetCommand
 {
 	float normalizedCircumferenceToFloat(int number,int numbits)
