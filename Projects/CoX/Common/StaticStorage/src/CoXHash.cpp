@@ -13,7 +13,7 @@ template<class KEY,class VALUE,class COMPARE_FUNCTOR>
 COMPARE_FUNCTOR CoXGenericHashMap<KEY, VALUE,COMPARE_FUNCTOR>::comp;
 
 template<>
-u32 JenkinsHash<std::string>::operator()(const std::string &val,u32 prev_val)
+u32 JenkinsHash<std::string>::operator()(const std::string &val,u32 prev_val) const
 {
     return hash((const u8 *)val.c_str(),val.size(),prev_val);
 }
@@ -115,6 +115,15 @@ u32 CoXGenericHashMap<KEY, VALUE, COMPARE_FUNCTOR>::find_index( const KEY &needl
     prev_val_out = prev_val;
     return result;
 }
+//////////////////////////////////////////////////////////////////////////
+// Implicit instantiations
+
+// somehow this is needed on VC
+template<>
+JenkinsHash<std::string> CoxHashCommon<std::string, std::string>::hash;
+template<>
+JenkinsHash<u32> CoxHashCommon<u32, u32>::hash;
+
 template
 class CoXHashMap<std::string>;
 template

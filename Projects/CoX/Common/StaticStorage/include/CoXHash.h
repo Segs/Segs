@@ -68,7 +68,7 @@ struct JenkinsHash
         mix(a,b,c);
         return c;
     }
-    u32 operator()(const V &val,u32 prev_val)
+    u32 operator()(const V &val,u32 prev_val) const
     {
         return hash((const u8 *)&val,sizeof(V),prev_val);
     }
