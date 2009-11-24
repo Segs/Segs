@@ -99,6 +99,10 @@ protected:
 public:
     CoxHashCommon() : in_use(0),m_flags(0)
     {}
+    virtual ~CoxHashCommon() {}
+    virtual u32 find_index(const KEY &key, u32 &index_tgt, u32 &key_tgt, bool a5) const=0;
+    virtual u32 next_size(u32 sz)=0;
+
     void resize(size_t new_size)
     {
         u32 entry_idx;
@@ -149,9 +153,12 @@ public:
                 return &m_storage[idx].stored_key;
         return 0;
     }
-    virtual u32 find_index(const KEY &key, u32 &index_tgt, u32 &key_tgt, bool a5) const=0;
-    virtual u32 next_size(u32 sz)=0;
-
+    void init(size_t sz,u32 flags)
+    {
+        m_flags=flags;
+        in_use=0;
+        m_storage.resize(next_size(sz)); // reserve hash map entries
+    }
 };
 template<class VALUE>
 class CoXHashMap : public CoxHashCommon<std::string,VALUE>
@@ -181,13 +188,6 @@ public:
             bit<<=1;
         return bit;
     }
-    void init(size_t sz,u32 flags)
-    {
-        m_flags=flags;
-        in_use=0;
-        m_storage.resize(next_size(sz)); // reserve hash map entries
-    }
-
 };
 struct IntCompare
 {
@@ -223,11 +223,11 @@ public:
     {
         if(sz>0)
         {
-            m_storage.resize(next_size(sz)); // reserve hash map entries
+            this->m_storage.resize(next_size(sz)); // reserve hash map entries
         }
         else
         {
-            m_storage.resize(32);
+            this->m_storage.resize(32);
         }
     }
     u32 find_index(const KEY &needle,u32 &entry_idx,u32 &prev_val_out,bool a5) const;
