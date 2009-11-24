@@ -25,8 +25,8 @@ void Character::reset()
 {
 	m_level=0;
 	m_name="EMPTY";
-	m_archetype="EMPTY";
-	m_origin="EMPTY";
+	m_class_name="EMPTY";
+	m_origin_name="EMPTY";
 	m_villain=0;
 	m_mapName="EMPTY";
     m_unkn3=0;
@@ -41,15 +41,15 @@ void Character::reset()
 
 bool Character::isEmpty()
 {
-	return (0==ACE_OS::strcasecmp(m_name.c_str(),"EMPTY")&&(0==ACE_OS::strcasecmp(m_archetype.c_str(),"EMPTY")));
+	return (0==ACE_OS::strcasecmp(m_name.c_str(),"EMPTY")&&(0==ACE_OS::strcasecmp(m_class_name.c_str(),"EMPTY")));
 }
 
 void Character::serializefrom( BitStream &src)
 {
 	m_level = src.GetPackedBits(1);
 	src.GetString(m_name);
-	src.GetString(m_archetype);
-	src.GetString(m_origin);
+	src.GetString(m_class_name);
+	src.GetString(m_origin_name);
 	m_unkn1 =src.GetFloat();
 	m_unkn2 =src.GetFloat();
 	src.GetString(m_mapName);
@@ -60,8 +60,8 @@ void Character::serializeto( BitStream &tgt) const
 {
 	tgt.StorePackedBits(1,m_level);
 	tgt.StoreString(m_name);
-	tgt.StoreString(m_archetype);
-	tgt.StoreString(m_origin);
+	tgt.StoreString(m_class_name);
+	tgt.StoreString(m_origin_name);
 
 	//tgt.StorePackedBits(1,m_villain);
 	tgt.StoreString(m_mapName);
@@ -84,8 +84,9 @@ bool Character::serializeFromDB( u64 user_id,u32 slot_index )
 
 void Character::GetCharBuildInfo(BitStream &src)
 {
-	src.GetString(m_archetype);
-	src.GetString(m_origin);
+    m_level=1;
+    src.GetString(m_class_name);
+	src.GetString(m_origin_name);
     PowerPool_Info primary,secondary;
     primary.serializefrom(src);
     secondary.serializefrom(src);
@@ -99,8 +100,8 @@ void Character::serializetoCharsel( BitStream &bs )
 {
 	bs.StorePackedBits(1,m_level);
 	bs.StoreString(m_name);
-	bs.StoreString(m_archetype);
-	bs.StoreString(m_origin);
+	bs.StoreString(m_class_name);
+	bs.StoreString(m_origin_name);
     if(m_costumes.size()==0)
     {
         ACE_ASSERT(m_name.compare("EMPTY")==0); // only empty characters can have no costumes
@@ -112,7 +113,7 @@ void Character::serializetoCharsel( BitStream &bs )
 	bs.StorePackedBits(1,rand());
 }
 
-Costume * Character::getCurrentCostume()
+Costume * Character::getCurrentCostume() const
 {
 	ACE_ASSERT(m_costumes.size()>0);
 	if(m_current_costume_set)
@@ -121,32 +122,40 @@ Costume * Character::getCurrentCostume()
 		return m_costumes[0];
 }
 
-void Character::serialize_all_costumes( BitStream &bs ) const
+void Character::serialize_costumes( BitStream &bs,bool all_costumes ) const
 {
-	bs.StoreBits(1,m_current_costume_set);
-	if(m_current_costume_set)
-	{
-		bs.StoreBits(32,m_current_costume_idx);
-		bs.StoreBits(32,m_costumes.size());
-	}
-	bs.StoreBits(1,m_multiple_costumes);
-	if(m_multiple_costumes)
-	{
-		for(size_t idx=0; idx<=m_costumes.size(); idx++)
-		{
-			m_costumes[idx]->serializeto(bs);
-		}
-	}
-	else
-	{
-		m_costumes[m_current_costume_idx]->serializeto(bs);
-	}
-	bs.StoreBits(1,m_supergroup_costume);
-	if(m_supergroup_costume)
-	{
-		m_sg_costume->serializeto(bs);
-		bs.StoreBits(1,m_using_sg_costume);
-	}
+    // full costume 
+    if(all_costumes) // this is only sent to the current player
+    {
+        bs.StoreBits(1,m_current_costume_set);
+        if(m_current_costume_set)
+        {
+            bs.StoreBits(32,m_current_costume_idx);
+            bs.StoreBits(32,m_costumes.size());
+        }
+        bs.StoreBits(1,m_multiple_costumes);
+        if(m_multiple_costumes)
+        {
+            for(size_t idx=0; idx<=m_costumes.size(); idx++)
+            {
+                m_costumes[idx]->serializeto(bs);
+            }
+        }
+        else
+        {
+            m_costumes[m_current_costume_idx]->serializeto(bs);
+        }
+        bs.StoreBits(1,m_supergroup_costume);
+        if(m_supergroup_costume)
+        {
+            m_sg_costume->serializeto(bs);
+            bs.StoreBits(1,m_using_sg_costume);
+        }
+    }
+    else // other player's costumes we're sending only their current.
+    {
+        getCurrentCostume()->serializeto(bs);
+    }
 }
 void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
 {
@@ -161,4 +170,24 @@ void Character::DumpBuildInfo()
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    origin: %s\n"),m_origin_name.c_str()));
 	DumpPowerPoolInfo(m_powers[0]);
 	DumpPowerPoolInfo(m_powers[1]);
+}
+
+void Character::dump()
+{
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    //---------------Tray------------------\n")));
+    m_trays.dump();
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    //---------------Costume---------------\n")));
+//    if(getCurrentCostume())
+//        getCurrentCostume()->dump();
+
+}
+
+void Character::recv_initial_costume( BitStream &src )
+{
+    ACE_ASSERT(m_costumes.size()==0);
+    MapCostume *res=new MapCostume;
+    m_current_costume_idx=0;
+    res->serializefrom(src);
+    m_costumes.push_back(res);
+
 }

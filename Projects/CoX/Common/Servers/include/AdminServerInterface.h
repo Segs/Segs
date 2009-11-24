@@ -32,7 +32,7 @@ using namespace __gnu_cxx;
 // this is interface for calling AdminServer services, currently it's an Interface pattern
 // in future it can be a Remote Proxy
 
-class IClient;
+class AccountInfo;
 
 class IMapServer;
 class IGameServer;
@@ -40,13 +40,13 @@ class IGameServer;
 class IAdminServer : public RoamingServer
 {
 public:
-virtual	bool                        Logout(const IClient *client) const=0;
-virtual	bool                        Login(const IClient *client,const ACE_INET_Addr &client_addr)=0;
-virtual	bool                        ValidPassword(const IClient *client, const char *password)=0;
+virtual	bool                        Logout(const AccountInfo &client) const=0;
+virtual	bool                        Login(const AccountInfo &client,const ACE_INET_Addr &client_addr)=0;
+virtual	bool                        ValidPassword(const AccountInfo &client, const char *password)=0;
 
-virtual	void                        FillClientInfo(IClient *client)=0;
+virtual	void                        fill_account_info(AccountInfo &client)=0;
 virtual	int                         SaveAccount(const char *username, const char *password)=0;
-virtual	int                         RemoveAccount(IClient *client)=0;
+virtual	int                         RemoveAccount(AccountInfo &client)=0;
 
 virtual	int                         AddIPBan(const ACE_INET_Addr &client_addr)=0;
 virtual	int                         GetBlockedIpList(std::list<int> &)=0;
@@ -72,11 +72,11 @@ public:
 
 
 	int GetBlockedIpList(std::list<int> &addreses); // called from auth server during user authentication, might be useful for automatical firewall rules update
-	void FillClientInfo(IClient *); 
-	bool Login(IClient  *client,const ACE_INET_Addr &client_addr); // Records given 'client' as logged in from 'addr'.
+	void FillClientInfo(AccountInfo &); 
+	bool Login(AccountInfo &client,const ACE_INET_Addr &client_addr); // Records given 'client' as logged in from 'addr'.
     int	 SaveAccount(const char *username, const char *password);  // Save account
-	bool Logout(IClient  *client); // Records given 'client' as logged out in from 'addr'.
-	bool ValidPassword(const IClient *client, const char *password); // If 'pass' is a valid password for client, return true
+	bool Logout(AccountInfo &client); // Records given 'client' as logged out in from 'addr'.
+	bool ValidPassword(const AccountInfo &client, const char *password); // If 'pass' is a valid password for client, return true
 	void InvalidGameServerConnection(const ACE_INET_Addr &from);
 	void RunCommand(const char *); //magical entry point to internal workings of all the servers ??
 protected:

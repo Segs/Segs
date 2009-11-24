@@ -379,7 +379,8 @@ void BitStream::GetString(string &str)
 	do {
 		chr  = m_buf[m_read_off]  >> m_read_bit_off;
 		chr	|= m_buf[++m_read_off] << bitsLeft;
-		str += chr;
+        if(chr)
+		    str += chr;
 
 		if(GetReadableBits()<8) 
 		{

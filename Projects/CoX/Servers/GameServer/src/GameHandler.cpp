@@ -83,7 +83,7 @@ void GameHandler::on_update_server(UpdateServer *ev)
         ev->src()->putq(new GameEntryError(this,"We are very sorry but your client version is not supported."));
         return;
     }
-    if(!cl->serializeFromDb())
+    if(!cl->getCharsFromDb())
     {
         ev->src()->putq(new GameEntryError(this,"DB error encountered!"));
         return;
@@ -91,8 +91,8 @@ void GameHandler::on_update_server(UpdateServer *ev)
     m_clients.connectedClient(ev->authCookie);
     ((GameLink *)ev->src())->client_data((void *)cl); // store client object in link
 	cl->link((GameLink *)ev->src()); // store link in client
-    CharacterSlots *slots_event=new CharacterSlots;
-    cl->getCharsFromDb();
+
+    CharacterSlots *slots_event=new CharacterSlots;  
     slots_event->set_client(cl); // at this point pointer to the client is held in event, if it's destroyed somewhere else KA-BOOM!!
     ev->src()->putq(slots_event);
 }
@@ -115,7 +115,7 @@ void GameHandler::on_disconnect(DisconnectRequest<GameLinkEvent> *ev)
     if(client)
     {
         lnk->client_data(0);
-        m_clients.removeById(client->getId());
+        m_clients.removeById(client->account_info().account_server_id());
     }
     lnk->putq(new DisconnectResponse<GameLinkEvent>);
     lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
@@ -151,7 +151,8 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
         return;
     }
     EventProcessor *map_handler=ServerManager::instance()->GetMapServer(0)->event_target();
-	map_handler->putq(new ExpectMapClient(this,client->getId(),client->getAccessLevel(),lnk->peer_addr(),ev->m_char_name,ev->m_mapnumber));
+    AccountInfo &acc_inf(client->account_info());
+	map_handler->putq(new ExpectMapClient(this,acc_inf.game_server_id(),acc_inf.access_level(),lnk->peer_addr(),ev->m_char_name,ev->m_mapnumber));
 }
 void GameHandler::on_unknown_link_event(GameUnknownRequest *ev)
 {
@@ -190,9 +191,9 @@ bool GameHandler::isClientConnected(u64 id)
 {
     return m_clients.getById(id)!=NULL;
 }
-void GameHandler::disconnectClient( IClient *cl ) // forced disconnect, should be an event ?
+void GameHandler::disconnectClient( AccountInfo & cl )
 {
-    m_clients.removeById(cl->getId());
+    m_clients.removeById(cl.account_server_id()); // we're storing clients by their account server ids
 }
 
 

@@ -12,13 +12,15 @@
 #include "AdminDatabase.h"
 #include "Client.h"
 #include "ConfigExtension.h"
+#include "CharacterDatabase.h"
 // AdminServer should pull client data from database or from it's local, in-memory cache
 // currently there is no such thing, and 'client-cache' is just a hash-map
 
 // Defined constructor
 _AdminServer::_AdminServer(void) : m_running(false)
 {
-	m_db=new AdminDatabase;
+	m_db        = new AdminDatabase;
+    m_char_db   = new CharacterDatabase;
 }
 
 // Defined destructor
@@ -40,22 +42,37 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
 	if (config_importer.import_config (inipath.c_str()) == -1)
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Unable to open config file : %s\n"), inipath.c_str()),false);
 	ACE_Configuration_Section_Key root;
-	if(-1==config.open_section(config.root_section(),"AdminServer",1,root))
+    ACE_Configuration_Section_Key account_db_config;
+    ACE_Configuration_Section_Key character_db_config;
+    if(-1==config.open_section(config.root_section(),"AdminServer",1,root))
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [AdminServer] section\n"), inipath.c_str()),false);
-	string dbhost,dbname,dbuser,dbpass;
-	config.get_string_value(root,ACE_TEXT("db_host"),dbhost,"127.0.0.1");
-	config.get_string_value(root,ACE_TEXT("db_name"),dbname,"none");
-	config.get_string_value(root,ACE_TEXT("db_user"),dbuser,"none");
-	config.get_string_value(root,ACE_TEXT("db_pass"),dbpass,"none");
+    if(-1==config.open_section(root,"AccountDatabase",1,account_db_config))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [AccountDatabase] section\n"), inipath.c_str()),false);
+    string dbhost,dbname,dbuser,dbpass;
+	config.get_string_value(account_db_config,ACE_TEXT("db_host"),dbhost,"127.0.0.1");
+	config.get_string_value(account_db_config,ACE_TEXT("db_name"),dbname,"none");
+	config.get_string_value(account_db_config,ACE_TEXT("db_user"),dbuser,"none");
+	config.get_string_value(account_db_config,ACE_TEXT("db_pass"),dbpass,"none");
 
 	m_db->setConnectionConfiguration(dbhost.c_str(),dbname.c_str(),dbuser.c_str(),dbpass.c_str());
-	return true;
+
+    if(-1==config.open_section(root,"CharacterDatabase",1,character_db_config))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [CharacterDatabase] section\n"), inipath.c_str()),false);
+
+    config.get_string_value(character_db_config,ACE_TEXT("db_host"),dbhost,"127.0.0.1");
+    config.get_string_value(character_db_config,ACE_TEXT("db_name"),dbname,"none");
+    config.get_string_value(character_db_config,ACE_TEXT("db_user"),dbuser,"none");
+    config.get_string_value(character_db_config,ACE_TEXT("db_pass"),dbpass,"none");
+    m_char_db->setConnectionConfiguration(dbhost.c_str(),dbname.c_str(),dbuser.c_str(),dbpass.c_str());
+    return true;
 }
 bool _AdminServer::Run()
 {
 	if(m_db->OpenConnection())
 		return false;
-	m_running=true;
+    if(m_char_db->OpenConnection())
+        return false;
+    m_running=true;
 	return true;
 }
 bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" */)
@@ -63,32 +80,35 @@ bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" 
 	bool res;
 	ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
 	m_running=false;
-	res=m_db->CloseConnection()==0;
+	res  =  m_db->CloseConnection()==0;
+    res &=	m_char_db->CloseConnection();
+
 	delete m_db;
+    delete m_char_db;
 	return res;
 }
-void _AdminServer::FillClientInfo(IClient *client)
+void _AdminServer::fill_account_info( AccountInfo &client )
 {
-	if((client->getLogin().size()>0) && (client->getId()==0)) // existing client
+	if((client.login().size()>0) && (client.account_server_id()==0)) // existing client
 	{
-		if(m_db->GetAccountByName(client,client->getLogin())==0)
+		if(m_db->GetAccountByName(client,client.login())==0)
 			return;
 	}
-	if(client->getId()) // existing client
+	if(client.account_server_id()) // existing client
 	{
-		if(m_db->GetAccountById(client,client->getId())==0)
+		if(m_db->GetAccountById(client,client.account_server_id())==0)
 			return;
 	}
 
 }
-bool _AdminServer::Login(const IClient *client,const ACE_INET_Addr &client_addr)
+bool _AdminServer::Login(const AccountInfo &client,const ACE_INET_Addr &client_addr)
 {
 	// Here we should log to the Db, a Login event for that client
 	//client->setState(AuthClient::LOGGED_IN); modifying this should be done in AuthServer
 	return true;
 }
 
-bool _AdminServer::Logout(const IClient *client) const
+bool _AdminServer::Logout(const AccountInfo &client) const
 {
 	// Here we should log to the Db, a Logout event for that client
 	//if(client)
@@ -96,9 +116,9 @@ bool _AdminServer::Logout(const IClient *client) const
 	return true;
 }
 
-bool _AdminServer::ValidPassword(const IClient *client ,const char *pass)
+bool _AdminServer::ValidPassword( const AccountInfo &client, const char *password )
 {
-	return m_db->ValidPassword(client->getLogin().c_str(),pass);
+	return m_db->ValidPassword(client.login().c_str(),password);
 }
 
 int _AdminServer::SaveAccount(const char *username, const char *password) 
@@ -107,22 +127,26 @@ int _AdminServer::SaveAccount(const char *username, const char *password)
 
 	if(res!=0)
 		return res;
-	IClient tmp;
-	tmp.setLogin(username); // Fix if username is preprocessed before db entry in AddAccount
-	FillClientInfo(&tmp);
-	// also register this account on all currently available gameserver
+	AccountInfo tmp;
+	tmp.login(username); // Fix if username is preprocessed before db entry in AddAccount
+	fill_account_info(tmp);
+	// also register this account on all currently available gameservers
 	// they really should check for sync with AdminDb on startup
-	for(size_t idx=0; idx<ServerManager::instance()->GameServerCount(); idx++)
-	{
-		if(0!=ServerManager::instance()->GetGameServer(idx)->createLinkedAccount(tmp.getId(),username))
-			res=2;
-	}
+	//for(size_t idx=0; idx<ServerManager::instance()->GameServerCount(); idx++)
+	//{
+    // TODO: support multiple game servers.
+        if(0!=m_char_db->CreateLinkedAccount(tmp.account_server_id(),username))
+            res=2;
+	//}
 	return res;   // Add the given account
 }
 
-int _AdminServer::RemoveAccount(IClient *client)
+int _AdminServer::RemoveAccount(AccountInfo &client)
 {
-	return m_db->RemoveAccountByID(client->getId());
+    int res = m_db->RemoveAccountByID(client.account_server_id());
+    if(0==res)
+        res = m_char_db->remove_account(client.game_server_id());
+    return res;
 }
 
 /*

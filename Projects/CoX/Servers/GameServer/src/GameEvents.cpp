@@ -71,9 +71,9 @@ void GameEntryError::serializefrom( BitStream &tgt )
 void CharacterSlots::serializeto( BitStream &tgt ) const
 {
     tgt.StorePackedBits(1, 2); //opcode
-    tgt.StorePackedBits(1,static_cast<u32>(m_client->getMaxSlots()));
-    ACE_ASSERT(m_client->getMaxSlots()>0);
-    for(size_t i=0; i<m_client->getMaxSlots(); i++)
+    tgt.StorePackedBits(1,static_cast<u32>(m_client->max_slots()));
+    ACE_ASSERT(m_client->max_slots()>0);
+    for(size_t i=0; i<m_client->max_slots(); i++)
     {
         m_client->getCharacter(i)->serializetoCharsel(tgt);
     }
@@ -103,7 +103,10 @@ void CharacterResponse::serializeto( BitStream &bs ) const
     if(m_client->getCharacter(m_index)->getName().compare("EMPTY")!=0) // actual character was read from db
         c=static_cast<CharacterCostume *>(m_client->getCharacter(m_index)->getCurrentCostume());
     bs.StorePackedBits(1,6); // opcode 
-    bs.StorePackedBits(1,m_index);
+    if(c)
+        bs.StorePackedBits(1,m_index);
+    else
+        bs.StorePackedBits(1,-1);
     if(c)
         c->storeCharselParts(bs);
     else

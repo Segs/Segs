@@ -142,7 +142,7 @@ void NetCommandManager::SendCommandShortcutsWorker( MapClient *client,BitStream 
 }
 void NetCommandManager::SendCommandShortcuts( MapClient *client,BitStream &tgt,const vector<NetCommand *> &commands2 )
 {
-    switch(client->getAccessLevel())
+    switch(client->account_info().access_level())
     {
     case 0:
     case 1:

@@ -30,16 +30,18 @@ public:
 class Costume;
 class Character : public NetStructure
 {
-    friend class CharacterDatabase;
+        friend class CharacterDatabase;
+
+        PowerPool_Info	get_power_info(BitStream &src);
+
 		vector<PowerPool_Info> m_powers;
-		PowerTrayGroup m_trays;
-		std::string m_class_name;
-		std::string m_origin_name;
-		bool m_full_options;
-		ClientOptions m_options;
-		bool m_first_person_view_toggle;
-		u8 m_player_collisions;
-		void			GetCharBuildInfo(BitStream &src);
+		PowerTrayGroup  m_trays;
+		std::string     m_class_name;
+		std::string     m_origin_name;
+		bool            m_full_options;
+		ClientOptions   m_options;
+		bool            m_first_person_view_toggle;
+		u8              m_player_collisions;
 		float			m_unkn1,m_unkn2;
 		u32				m_unkn3,m_unkn4;
 public:
@@ -50,10 +52,6 @@ public:
 		void			setLevel(u32 val) { m_level = val; }
 const	std::string &	getName() const { return m_name; }
 		void			setName(const std::string &val); 
-const	std::string &	getArchetype() const { return m_archetype; }
-		void			setArchetype(std::string val) { m_archetype = val; }
-const	std::string &	getOrigin() const { return m_origin; }
-		void			setOrigin(const std::string &val) { m_origin = val; }
 const	std::string &	getMapName() const { return m_mapName; }
 		void			setMapName(const std::string &val) { m_mapName = val; }
 		u8				getIndex() const { return m_index; }
@@ -69,23 +67,24 @@ const	std::string &	getMapName() const { return m_mapName; }
 		bool			serializeFromDB(u64 user_id,u32 slot_index);
 		void			serializefrom(BitStream &buffer);
 		void			serializeto(BitStream &buffer) const;
-		void			serialize_all_costumes(BitStream &buffer) const;
+		void			serialize_costumes(BitStream &buffer,bool all_costumes=true) const;
 		void			serializetoCharsel(BitStream &bs);
-		Costume *		getCurrentCostume();
+        void			GetCharBuildInfo(BitStream &src); // serialize from char creation
+        void            recv_initial_costume(BitStream &src);
+		Costume *		getCurrentCostume() const;
 		void			DumpPowerPoolInfo( const PowerPool_Info &pool_info );
 		void			DumpBuildInfo();
-        void            body_type(u32){};
         void            face_bits(u32){};
+        void            dump();
+        
 
 protected:
-		u64 m_owner_account_id;
-		u64 m_last_costume_id;
-		u8	m_index;
-		u32 m_level;
-		std::string m_name;
-		std::string m_archetype;
-		std::string m_origin;
-		std::string m_mapName;
+		u64                 m_owner_account_id;
+		u64                 m_last_costume_id;
+		u8                  m_index;
+		u32                 m_level;
+		std::string         m_name;
+		std::string         m_mapName;
 		bool				m_villain;
 		vector<Costume *>	m_costumes;
 		Costume *			m_sg_costume;

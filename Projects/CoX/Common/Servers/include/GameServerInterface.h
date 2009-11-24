@@ -32,7 +32,6 @@ virtual u8						getUnkn1(void)=0;
 virtual u8						getUnkn2(void)=0;
 virtual int						getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)=0;
 virtual bool					isMapServerReady(const ServerHandle<IMapServer> &h_map)=0;
-virtual int						createLinkedAccount(u64 auth_account_id,const std::string &username)=0;
 virtual EventProcessor *        event_target()=0;
 };
 
@@ -62,16 +61,6 @@ public:
 
     EventProcessor *        event_target(); // this is the main communication point for the Game Server instance
 
-	//////////////////////////////////////////////////////////////////////////
-	// This method is used by auth server to tell us that a new authorized client will show up
-	// We return an identification cookie, that will be used to verify the validity of given connection 
-	//////////////////////////////////////////////////////////////////////////
-	int						createLinkedAccount(u64 auth_account_id,const std::string &username);
-	//////////////////////////////////////////////////////////////////////////
-	// Interface used by Map server to add new character
-	//////////////////////////////////////////////////////////////////////////
-	//bool					newCharacter(u64 id,Entity *character);
-	//bool					getCharacterData(u64 id,
 protected:
 	IGameServer *m_instance;
 };

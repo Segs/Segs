@@ -14,54 +14,24 @@ CharacterClient::~CharacterClient()
 {
 	reset();
 }
-size_t CharacterClient::getMaxSlots()
+size_t CharacterClient::max_slots()
 {
-	return m_max_slots;
+	return m_account_info.max_slots();
 }
 
 bool CharacterClient::getCharsFromDb()
 {
-	Character *act=0;
-	CharacterDatabase * m_db = m_server->getDb();//m_handler->getDb();
-
-    m_characters.resize(m_max_slots);
-	if(m_characters[0]==0)
-		m_characters[0] = act = new Character;
-	else
-		act = m_characters[0]; //reuse existing object
-	act->setIndex(0);
-	act->setAccountId(m_game_server_acc_id);
-	m_db->fill(act);
-	for(size_t i=1; i<m_characters.size(); i++)
-	{
-		if(m_characters[i]) //even more reuse
-		{
-			m_characters[i]->reset();
-			continue;
-		}
-		m_characters[i] = new Character;
-		m_characters[i]->reset();
-	}
-	return true;
+    
+    return m_account_info.fill_game_db(0); // fill the game related info using given game server db
 }
 
 Character * CharacterClient::getCharacter( size_t idx )
 {
-	ACE_ASSERT(idx<m_characters.size());
-	return m_characters[idx];
+    return m_account_info.get_character(idx);
 }
 
 void CharacterClient::reset()
 {
-	for(size_t i=0; i<m_characters.size(); i++)
-	{
-		delete m_characters[i];
-		m_characters[i]=0;
-	}
+    m_account_info.reset();
 }
 
-bool CharacterClient::serializeFromDb()
-{
-	CharacterDatabase * m_db = m_server->getDb();
-	return m_db->fill(this);
-}

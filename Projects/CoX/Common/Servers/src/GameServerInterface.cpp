@@ -75,12 +75,6 @@ bool GameServerInterface::isMapServerReady(const ServerHandle<IMapServer> &h_map
 	ACE_ASSERT(m_instance);
 	return m_instance->isMapServerReady(h_map);
 }
-
-int GameServerInterface::createLinkedAccount( u64 auth_account_id,const std::string &username )
-{
-	ACE_ASSERT(m_instance);
-	return m_instance->createLinkedAccount(auth_account_id,username);
-}
 EventProcessor * GameServerInterface::event_target()
 {
     ACE_ASSERT(m_instance);

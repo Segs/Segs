@@ -20,11 +20,11 @@ int AdminServerInterface::GetBlockedIpList(std::list<int> &addreses) // called f
 {
 	return m_server->GetBlockedIpList(addreses);
 }
-bool AdminServerInterface::Login(IClient  *client,const ACE_INET_Addr &client_addr) // Records given 'client' as logged in from 'addr'.
+bool AdminServerInterface::Login(AccountInfo &client,const ACE_INET_Addr &client_addr) // Records given 'client' as logged in from 'addr'.
 {
 	return m_server->Login(client,client_addr);
 }
-bool AdminServerInterface::Logout(IClient  *client)
+bool AdminServerInterface::Logout(AccountInfo &client)
 {
 	return m_server->Logout(client);
 }
@@ -32,7 +32,7 @@ int AdminServerInterface::SaveAccount(const char *username, const char *password
 {
         return m_server->SaveAccount(username, password);
 }
-bool AdminServerInterface::ValidPassword(const IClient *client, const char *password)
+bool AdminServerInterface::ValidPassword(const AccountInfo &client, const char *password)
 {
 	return m_server->ValidPassword(client, password);
 }
@@ -40,9 +40,9 @@ void AdminServerInterface::InvalidGameServerConnection(const ACE_INET_Addr &from
 {
 	return m_server->InvalidGameServerConnection(from);
 }
-void AdminServerInterface::FillClientInfo(IClient *client)
+void AdminServerInterface::FillClientInfo(AccountInfo &client)
 {
-	return m_server->FillClientInfo(client);
+	return m_server->fill_account_info(client);
 }
 bool AdminServerInterface::Run()
 {

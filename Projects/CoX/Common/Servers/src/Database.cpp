@@ -70,11 +70,23 @@ bool Database::execQuery(const string &q)// for insert/update/delete queries, no
 	char *err = PQresultErrorMessage(m_result);
 	if(err&&err[0])
 	{
-		PQclear(m_result);
-		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: query %s failed. %s.\n"), q.c_str(),err),false);	
+		ACE_ERROR((LM_ERROR, ACE_TEXT ("(%P|%t) Database: query %s failed. \n %s \n"), q.c_str(),err));	
+        PQclear(m_result);
+        return false;
 	}
 	PQclear(m_result);
 	return true;
+}
+
+s64 Database::next_id( const std::string &tab_name )
+{
+    DbResults results;
+    bool res=execQuery("SELECT NEXTVAL('"+tab_name+"_id_seq');",results);
+    if(res==false)
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database::next_id failed: %s.\n"),results.m_msg),-1);
+    else if (results.num_rows()!=1)
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database::next_id returned wrong number of results.\n")),-1);
+    return results.getRow(0).getColInt64("NEXTVAL");
 }
 DbResults::DbResults()
 {
@@ -123,7 +135,9 @@ s32 DbResultRow::getColInt32(const char *column_name)
 	{
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),-1);	
 	}
-	return ACE_OS::atoi(res);
+    s32 result;
+    sscanf(res,ACE_INT32_FORMAT_SPECIFIER,&result);
+	return result;
 }
 s64 DbResultRow::getColInt64(const char *column_name)
 {
@@ -132,7 +146,9 @@ s64 DbResultRow::getColInt64(const char *column_name)
 	{
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),-1);	
 	}
-	return strtol(res,0,0);
+    s64 result;
+    sscanf(res,ACE_INT64_FORMAT_SPECIFIER,&result);
+    return result;
 }
 float DbResultRow::getColFloat(const char *column_name)
 {

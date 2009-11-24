@@ -21,9 +21,9 @@ class GameServerInterface;
 // skeleton class used during authentication
 class AuthClient : public Client
 {
+
 public:
 	AuthClient();
-	bool			AccountBlocked() {return m_access_level==0; }
 	tm				getCreationDate() const		{return m_creation_date;}
 	void			setCreationDate(tm &new_date) {m_creation_date=new_date;} 
 	u8 *			getPassword() const			{return (u8 *)m_password;}

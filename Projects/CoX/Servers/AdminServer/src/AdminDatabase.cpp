@@ -100,20 +100,20 @@ bool AdminDatabase::ValidPassword(const char *username, const char *password)
 	PQfreemem(binary_password);
 	return res;
 	}
-int AdminDatabase::GetAccountByName(IClient *client, const string &login)
+int AdminDatabase::GetAccountByName(AccountInfo &client, const string &login)
 {
 	stringstream query;
 	query<<"SELECT * FROM accounts WHERE username='"<<login<<"'"<<endl;
 	return GetAccount(client,query.str());
 }
-int AdminDatabase::GetAccountById(IClient *client, u64 id)
+int AdminDatabase::GetAccountById(AccountInfo &client, u64 id)
 {
 	stringstream query;
 	query<<"SELECT * FROM accounts WHERE id='"<<id<<"'";
 	return GetAccount(client,query.str());
 }
 
-int AdminDatabase::GetAccount(IClient *client,const string &query)
+int AdminDatabase::GetAccount(AccountInfo &client,const string &query)
 {
 	PGresult *pResult = PQexec(pConnection,query.c_str());   // Send our query to the PostgreSQL db server to process
 	char *res_msg = PQresultErrorMessage(pResult);
@@ -130,8 +130,8 @@ int AdminDatabase::GetAccount(IClient *client,const string &query)
 	}
 	struct tm creation;
 	// FIXME: This should be _atoi64 or atoll
-	client->setId((unsigned int)atoi(PQgetvalue(pResult,0,0))); 
-	client->setLogin(PQgetvalue(pResult,0,1)); 
+	client.m_acc_server_acc_id = ((unsigned int)atoi(PQgetvalue(pResult,0,0))); 
+	client.m_login = (PQgetvalue(pResult,0,1)); 
 
 	u8 *binary_password;
 	size_t unescaped_len;
@@ -139,8 +139,7 @@ int AdminDatabase::GetAccount(IClient *client,const string &query)
 //	client->setPassword(binary_password);
 //	ACE_ASSERT(unescaped_len<=16);
 //	PQfreemem(binary_password);
-
-	client->setAccessLevel(atoi(PQgetvalue(pResult,0,2))); 
+    client.m_access_level = atoi(PQgetvalue(pResult,0,2)); 
 	(void)ACE_OS::strptime(PQgetvalue(pResult,0,3),"%Y-%m-%d %T",&creation);
 //	client->setCreationDate(creation); 
 	PQclear(pResult); // Clear result

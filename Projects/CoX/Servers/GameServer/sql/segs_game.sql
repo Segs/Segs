@@ -23,27 +23,21 @@ COMMENT ON COLUMN accounts.account_id IS 'references account database';
 CREATE TABLE characters
 (
   id serial NOT NULL,
-  char_level int2 NOT NULL DEFAULT 0,
-  slot_index int2 NOT NULL DEFAULT 0,
-  account_id int4 NOT NULL,
-  char_name varchar(32) NOT NULL,
-  archetype varchar(32) NOT NULL,
-  origin varchar(32) NOT NULL,
-  bodytype int4 NOT NULL,
-  face_bits int4 NOT NULL,
-  current_map varchar(128) NOT NULL,
-  villain bool NOT NULL,
-  unkn1 float4 NOT NULL,
-  unkn2 float4 NOT NULL,
-  unkn3 int4 NOT NULL DEFAULT 1,
-  unkn4 int4 NOT NULL DEFAULT 1,
-  last_costume_id int4,
+  char_level smallint NOT NULL DEFAULT 0,
+  slot_index smallint NOT NULL DEFAULT 0,
+  account_id integer NOT NULL,
+  char_name character varying(32) NOT NULL,
+  archetype character varying(32) NOT NULL,
+  origin character varying(32) NOT NULL,
+  bodytype integer NOT NULL,
+  current_map character varying(128) NOT NULL,
+  last_costume_id integer DEFAULT 0,
   CONSTRAINT character_pkey PRIMARY KEY (id),
   CONSTRAINT character_account_id_fkey FOREIGN KEY (account_id)
       REFERENCES accounts (id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT character_account_id_key UNIQUE (account_id, slot_index)
-) 
+)
 WITHOUT OIDS;
 ALTER TABLE characters OWNER TO segsadmin;
 
@@ -70,7 +64,7 @@ CREATE TABLE costume
       REFERENCES characters (id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT costume_character_id_key UNIQUE (character_id, costume_index)
-) 
+)
 WITHOUT OIDS;
 ALTER TABLE costume OWNER TO segsadmin;
 
@@ -80,30 +74,22 @@ ALTER TABLE costume OWNER TO segsadmin;
 CREATE TABLE costume_part
 (
   id serial NOT NULL,
-  costume_id int4 NOT NULL,
-  part_type int4 NOT NULL DEFAULT 0,
-  name_0 varchar(256),
-  name_0_idx integer NOT NULL,
-  name_1 varchar(256),
-  name_1_idx integer NOT NULL,
-  name_2 varchar(256),
-  name_2_idx integer NOT NULL,
-  name_3 varchar(256),
-  name_3_idx integer NOT NULL,
-  color_0 int4 NOT NULL,
-  color_0_idx integer NOT NULL,
-  color_1 int4 NOT NULL,
-  color_1_idx integer NOT NULL,
-  color_2 int4 NOT NULL,
-  color_2_idx integer NOT NULL,
-  color_3 int4 NOT NULL,
-  color_3_idx integer NOT NULL,
+  costume_id integer NOT NULL,
+  part_type integer NOT NULL DEFAULT 0,
+  name_0 character varying(256),
+  name_1 character varying(256),
+  name_2 character varying(256),
+  name_3 character varying(256),
+  color_0 bigint NOT NULL,
+  color_1 bigint NOT NULL,
+  color_2 integer NOT NULL DEFAULT 0,
+  color_3 integer NOT NULL DEFAULT 0,
   CONSTRAINT costume_part_pkey PRIMARY KEY (id),
   CONSTRAINT costume_part_character_id_fkey FOREIGN KEY (costume_id)
       REFERENCES costume (id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT costume_part_costume_id_key UNIQUE (costume_id, part_type)
-) 
+)
 WITHOUT OIDS;
 ALTER TABLE costume_part OWNER TO segsadmin;
 ALTER TABLE characters ADD CONSTRAINT characters_last_costume_id_fkey FOREIGN KEY (last_costume_id) REFERENCES costume (id) ON UPDATE SET NULL ON DELETE SET NULL;

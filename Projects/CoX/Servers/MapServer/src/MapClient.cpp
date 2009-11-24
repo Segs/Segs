@@ -20,6 +20,25 @@ void MapClient::SendCommand(NetCommand *command,...)
 {
 	ACE_ASSERT(!"Not implemented yet");
 }
+
+bool MapClient::db_create()
+{
+    PlayerEntity * entity_p = (PlayerEntity *)m_ent;
+    account_info().fill_game_db(0);
+    Character * new_char = account_info().create_new_character();
+    if(!new_char)
+        return false;
+    *new_char = m_ent->m_char;
+    new_char->setName(m_name);
+    account_info().store_new_character(new_char);
+    return true;
+}
+
+void MapClient::entity( Entity * val )
+{
+    m_ent = val; 
+    m_ent->m_char.setName(m_name); // this is used because the new characters are passed to us nameless
+}
 // This packet tells us to fill in client data from db/create a new character
 /*
 GamePacket * MapClient::HandleClientPacket( pktCS_SendEntity *ent )

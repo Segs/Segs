@@ -66,6 +66,25 @@ public:
 	bool execQuery(const string &q); // for queries without results
 	int OpenConnection(void);
 	int CloseConnection(void);
+    s64 next_id(const std::string &tab_name);
 };
+class DbTransactionGuard
+{
+    Database &m_db;
+    bool proper_commit;
+public:
+    DbTransactionGuard(Database &db) : m_db(db),proper_commit(false)
+    {
+        m_db.execQuery("BEGIN;");
+    }
+    void commit() {proper_commit=true;}
+    ~DbTransactionGuard()
+    {
+        if(proper_commit)
+            m_db.execQuery("COMMIT;");
+        else
+            m_db.execQuery("ROLLBACK;");
+    }
 
+};
 #endif // DATABASE_H

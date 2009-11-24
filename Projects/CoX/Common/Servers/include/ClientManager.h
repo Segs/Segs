@@ -79,7 +79,7 @@ public:
 		return NULL;
 	}
 
-	u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u16 access_level)
+    u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u8 access_level)
 	{
 		CLIENT_CLASS * exp;
 		u32 cook = create_cookie(from,id);
@@ -95,9 +95,9 @@ public:
 			return ~0; // invalid cookie
 		}
 		exp = new CLIENT_CLASS;
-		exp->setAccessLevel(access_level);
-		exp->setId(id);
-		exp->setState(IClient::CLIENT_EXPECTED);
+		exp->account_info().access_level(access_level);
+		exp->account_info().account_server_id(id);
+		exp->setState(Client::CLIENT_EXPECTED);
 		m_expected_clients[cook] = exp;
 		m_clients[id] = exp;
 		m_id_to_cookie[id]=cook;

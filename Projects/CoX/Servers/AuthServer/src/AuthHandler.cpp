@@ -61,9 +61,9 @@ void AuthHandler::on_disconnect( DisconnectEvent *ev )
     adminserv = ServerManager::instance()->GetAdminServer();
     if(lnk->client())
     {
-        lnk->client()->setState(AuthClient::NOT_LOGGEDIN);
-        adminserv->Logout(lnk->client());
-        m_link_store[lnk->client()->getId()] = 0;
+        lnk->client()->setState(AuthClient::NOT_LOGGED_IN);
+        adminserv->Logout(lnk->client()->account_info());
+        m_link_store[lnk->client()->account_info().account_server_id()] = 0;
         //if(lnk->m_state!=AuthLink::CLIENT_AWAITING_DISCONNECT)
     }
     else
@@ -112,13 +112,14 @@ void AuthHandler::on_login( LoginRequest *ev )
         client = ServerManager::instance()->GetAuthServer()->GetClientByLogin(ev->login);
     }
     ACE_ASSERT(client);
-    lnk->client(client); // now link knows what client it's responsible for
-    eAuthError err = AUTH_WRONG_LOGINPASS; // this is default for case we don't have that client
+    AccountInfo & acc_inf(client->account_info());  // all the account info you can eat!
+    lnk->client(client);                            // now link knows what client it's responsible for
+    eAuthError err = AUTH_WRONG_LOGINPASS;          // this is default for case we don't have that client
     if(client)
     {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),client->getId()));
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),acc_inf.account_server_id()));
         // step 3d: checking if this account is blocked
-        if(client->AccountBlocked())
+        if(client->account_blocked())
             err = AUTH_ACCOUNT_BLOCKED;
         else if(client->isLoggedIn())
         {
@@ -126,14 +127,14 @@ void AuthHandler::on_login( LoginRequest *ev )
             //client->forceGameServerConnectionCheck();
             err = AUTH_ALREADY_LOGGEDIN;
         }
-        else if(client->getState()==AuthClient::NOT_LOGGEDIN)
+        else if(client->getState()==AuthClient::NOT_LOGGED_IN)
             err = AUTH_OK;
     }
     // if there were no errors and the provided password is valid and admin server has logged us in.
     if(
         (err==AUTH_OK) &&
-        (adminserv->ValidPassword(client,ev->password)) &&
-        (adminserv->Login(client,lnk->peer_addr())) // this might fail somehow
+        (adminserv->ValidPassword(acc_inf,ev->password)) &&
+        (adminserv->Login(acc_inf,lnk->peer_addr())) // this might fail somehow
         )
     {
         // inform the client of the successful login attempt 
@@ -141,7 +142,7 @@ void AuthHandler::on_login( LoginRequest *ev )
         client->setState(AuthClient::LOGGED_IN);
         lnk->m_state = AuthLink::AUTHORIZED;
         lnk->putq(new LoginResponse());
-        m_link_store[client->getId()] = lnk; // remember client link
+        m_link_store[acc_inf.account_server_id()] = lnk; // remember client link
     }
     else
     {
@@ -182,8 +183,8 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
     }
     AuthClient *cl= lnk->client();
     cl->setSelectedServer(gs);
-
-    ExpectClient *cl_ev=new ExpectClient(this,cl->getId(),cl->getAccessLevel(),cl->getPeer());
+    AccountInfo &acc_inf(cl->account_info());
+    ExpectClient *cl_ev=new ExpectClient(this,acc_inf.account_server_id(),acc_inf.access_level(),cl->getPeer());
     gs->event_target()->putq(cl_ev); // sending request to game server
     // client's state will not change until we get response from GameServer
 }

@@ -102,14 +102,14 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
 	adminserv = ServerManager::instance()->GetAdminServer();
 	ACE_ASSERT(adminserv);
 	res= m_client_pool.construct();							// construct a new instance
-	res->setLogin(login);									// set login
-	adminserv->FillClientInfo(res);							// and ask AdminServer to fill in the rest
-	if(res->getId()==0)										// check if object is filled in correctly, by validating it's db id.
+	res->account_info().login(login);						// set login
+	adminserv->FillClientInfo(res->account_info());			// and ask AdminServer to fill in the rest
+	if(res->account_info().account_server_id()==0)		    // check if object is filled in correctly, by validating it's db id.
 	{
 		m_client_pool.free(res);							// if it is not. Free object and return NULL.
 		return NULL;
 	}
-	m_clients[res->getLogin()]=res;							// store valid object in the cache
+	m_clients[res->account_info().login()]=res;             // store valid object in the cache
 	return res;
 }
 /**

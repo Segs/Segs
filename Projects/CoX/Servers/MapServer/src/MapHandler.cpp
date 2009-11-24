@@ -67,7 +67,7 @@ void Map2Handler::on_disconnect(DisconnectRequest<MapLinkEvent> *ev)
     if(client)
     {
         lnk->client_data(0);
-        m_clients.removeById(client->getId());
+        m_clients.removeById(client->account_info().account_server_id());
     }
     lnk->putq(new DisconnectResponse<MapLinkEvent>);
     lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
@@ -101,7 +101,12 @@ void Map2Handler::on_create_map_entity(NewEntity *ev)
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl = m_clients.getExpectedByCookie(ev->m_cookie-2);
     ACE_ASSERT(cl);
+    cl->entity(ev->m_ent);
     cl->link(lnk);    
+    if(ev->m_new_character)
+    {
+        cl->db_create();
+    }
     lnk->client_data((void *)cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
 }

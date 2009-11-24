@@ -20,10 +20,10 @@
 #include "types.h"
 #include "Database.h"
 
-class IClient;
+class AccountInfo;
 class AdminDatabase : public Database
 {
-	int GetAccount(IClient *client,const std::string &query);
+	int GetAccount(AccountInfo & client,const std::string &query);
 public:
 	int GetAccounts(void) const;
 	// Access levels 
@@ -35,8 +35,8 @@ public:
 	int RemoveAccountByName(char *username);
 	int GetBanFlag(const char *username);
 	bool ValidPassword(const char *username, const char *password);
-	int GetAccountByName(IClient *to_fill,const std::string &login);
-	int GetAccountById(IClient *to_fill,u64 id);
+	int GetAccountByName(AccountInfo &to_fill,const std::string &login);
+	int GetAccountById(AccountInfo &to_fill,u64 id);
 };
 
 #endif // ADMINDATABASE_H

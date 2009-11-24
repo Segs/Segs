@@ -26,7 +26,6 @@ GameServer::GameServer(void) :
 	m_endpoint(NULL),
 	m_online(false)
 {
-	m_database = new CharacterDatabase;
 }
 
 GameServer::~GameServer(void)
@@ -52,10 +51,7 @@ bool GameServer::Run()
     ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Filling hashes .. ") ));
     WorldData::instance()->fill_hashes();
     ACE_DEBUG((LM_WARNING,ACE_TEXT("Hashes filled\n") ));
-    if(0!=m_database->OpenConnection())
-	{
-		ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: database connection failure\n"),false);
-	}
+
     m_handler = new GameHandler;
     m_handler->set_server(this);
     GameLink::g_target = m_handler;
@@ -96,13 +92,6 @@ bool GameServer::ReadConfig(const std::string &inipath)
 	config.get_addr(root,ACE_TEXT("location_addr"),m_location,ACE_INET_Addr(7002,"127.0.0.1"));
 	config.get_string_value(root,ACE_TEXT("server_name"),m_serverName,"unnamed");
 	config.get_integer_value(root,ACE_TEXT("max_players"),m_max_players,600);
-	string gamedb_host,gamedb_name,gamedb_user,gamedb_pass;
-	config.get_string_value(root,ACE_TEXT("db_host"),gamedb_host,"127.0.0.1");
-	config.get_string_value(root,ACE_TEXT("db_name"),gamedb_name,"none");
-	config.get_string_value(root,ACE_TEXT("db_user"),gamedb_user,"none");
-	config.get_string_value(root,ACE_TEXT("db_pass"),gamedb_pass,"none");
-
-	m_database->setConnectionConfiguration(gamedb_host.c_str(),gamedb_name.c_str(),gamedb_user.c_str(),gamedb_pass.c_str());
 
 	m_current_players = 0;
 	m_id = 1;
@@ -118,7 +107,6 @@ bool GameServer::ShutDown(const std::string &reason)
 		ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Server not running yet\n") ));
 		return true;
 	}
-	m_database->CloseConnection();
 	m_online = false;
 	ACE_DEBUG((LM_WARNING,ACE_TEXT ("(%P|%t) Shutting down game server because : %s\n"), reason.c_str()));
 	if (ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
@@ -168,13 +156,5 @@ u8 GameServer::getUnkn2( void )
 	return m_unk2;
 }
 
-CharacterDatabase * GameServer::getDb()
-{
-	return m_database;
-}
 //
-int GameServer::createLinkedAccount(u64 auth_account_id,const std::string &username)
-{
-	return m_database->CreateLinkedAccount(auth_account_id,username);
-}
 

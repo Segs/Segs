@@ -18,31 +18,25 @@
 #include "ServerManager.h"
 #include "Client.h"
 #include "GameLink.h"
+#include "CharacterDatabase.h"
 #include <vector>
 // skeleton class used during authentication
 class Character;
 class GameServer;
 //class CharacterHandler;
-class CharacterClient : public IClient
+class CharacterClient : public Client
 {
-    	friend class CharacterDatabase;
-		std::vector<Character *>	m_characters;
 		GameServer *			    m_server;
-		u8							m_max_slots;
-		u64							m_game_server_acc_id;
         ACE_Time_Value              m_last_activity;
 		GameLink *					m_link; // convenience pointer
-		void						setMaxSlots(u8 maxs) {m_max_slots=maxs;};
-		void						setGameServerAccountId(u64 id){m_game_server_acc_id=id;}
 public:
 					CharacterClient(){}
 virtual				~CharacterClient();
 		void		setServer(GameServer * val) { m_server = val; }
 		Character *	getCharacter(size_t idx);
 
-        bool		serializeFromDb();
 		bool		getCharsFromDb();
-		size_t		getMaxSlots();
+		size_t		max_slots();
 		void		reset();
         void        connection_update() {m_last_activity = ACE_OS::gettimeofday();}
 		GameLink *	link() const { return m_link; }

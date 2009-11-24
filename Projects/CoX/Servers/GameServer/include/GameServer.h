@@ -85,7 +85,6 @@ protected:
 	ACE_INET_Addr           m_location; // this value is sent to the clients
 	ACE_INET_Addr           m_listen_point; // this is used as a listening endpoint
 	ServerEndpoint<GameLink>	*m_endpoint;
-	CharacterDatabase   *   m_database; // we might consider making database connection a singleton wrapper
     GameHandler *           m_handler;
 };
 

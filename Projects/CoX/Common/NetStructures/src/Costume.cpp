@@ -53,7 +53,7 @@ void CostumePart::serializeto_charsel( BitStream &bs ) const
 CharacterCostume CharacterCostume::NullCostume;
 void Costume::storeCharselParts( BitStream &bs )
 {
-    bs.StorePackedBits(1,m_num_parts);
-    for(int costume_part=0; costume_part<m_num_parts;costume_part++)
+    bs.StorePackedBits(1,m_parts.size());
+    for(int costume_part=0; costume_part<m_parts.size();costume_part++)
         m_parts[costume_part].serializeto_charsel(bs);
 }

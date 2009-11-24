@@ -44,7 +44,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     void        checkClientConnection(u64 id);
     bool        isClientConnected(u64 id);
-    void        disconnectClient( IClient *cl );
+    void disconnectClient( AccountInfo & cl );
     hash_set<u32>           waiting_for_client; // this hash_set holds all client cookies we wait for
     ClientStore<CharacterClient> m_clients;
     GameServer *m_server;

@@ -216,7 +216,7 @@ void MobEntity::sendCostumes( BitStream &bs ) const
 	}
 }
 
-void PlayerEntity::sendCostumes(BitStream &bs) const
+void Entity::sendCostumes(BitStream &bs) const
 {
 	storePackedBitsConditional(bs,2,m_costume_type);
 	if(m_costume_type!=1)
@@ -224,49 +224,24 @@ void PlayerEntity::sendCostumes(BitStream &bs) const
 		ACE_ASSERT(false);
 		return;
 	}
-	if(m_type==ENT_PLAYER)
-	{
-		bs.StoreBits(1,m_current_costume_set);
-		if(m_current_costume_set)
-		{
-			bs.StoreBits(32,m_current_costume_idx);
-			bs.StoreBits(32,m_costumes.size());
-		}
-		bs.StoreBits(1,m_multiple_costumes);
-		if(m_multiple_costumes)
-		{
-			for(size_t idx=0; idx<=m_costumes.size(); idx++)
-			{
-				m_costumes[idx]->serializeto(bs);
-			}
-		}
-		else
-		{
-			m_costumes[m_current_costume_idx]->serializeto(bs);
-		}
-		//m_costume=m_costumes[m_current_costume_idx]; // this is only set if ent!=playerPtr
-	}
-	else
-	{
-		m_costume->serializeto(bs); // m_costume is the costume that is rendered
-	}
-	bs.StoreBits(1,m_supergroup_costume);
-	if(m_supergroup_costume)
-	{
-		m_sg_costume->serializeto(bs);
-		bs.StoreBits(1,m_using_sg_costume);
-	}
+    switch(m_type)
+    {
+    case ENT_PLAYER: // client value 1
+        m_char.serialize_costumes(bs,true); // we're always sending full info
+        break;
+    case 3: // client value 2 top level defs from VillainCostume ?
+        bs.StorePackedBits(12,1); // npc costume type idx ?
+        bs.StorePackedBits(1,1); // npc costume idx ?
+        break;
+    case ENT_CRITTER: // client val 4
+        bs.StoreString("Unknown");
+        break;
+    }
 }
 
 PlayerEntity::PlayerEntity()
 {
 	m_costume_type=1;
-	m_multiple_costumes=false;
-	m_current_costume_idx=0;
-	m_current_costume_set=false;
-	m_supergroup_costume=false;
-	m_sg_costume=0;
-	m_using_sg_costume=false;
 }
 MobEntity::MobEntity()
 {
@@ -283,9 +258,9 @@ void Entity::sendTitles(BitStream &bs) const
 	{
 		if(m_type==ENT_PLAYER)
 		{
-			bs.StoreString(m_name);
+			bs.StoreString(m_char.getName());
 			bs.StoreBits(1,0); // ent_player2->flag_F4
-			storeStringConditional(bs,"");//max 32 chars
+			storeStringConditional(bs,"");//max 32 chars // warcry ?
 			storeStringConditional(bs,"");//max 32 chars
 			storeStringConditional(bs,"");//max 128 chars
 		}
@@ -425,7 +400,7 @@ void Entity::serializeto( BitStream &bs ) const
 		}
 		bs.StoreBits(1,m_hasname);
 		if(m_hasname)
-			bs.StoreString(m_name);
+			bs.StoreString(m_char.getName());
 		bs.StoreBits(1,0); //var_94 if set Entity.field_1818/field_1840=0 else field_1818/field_1840 = 255,2
 		bs.StoreBits(32,field_60); // this will be put in field_60 of created entity 
 		bs.StoreBits(1,m_hasgroup_name);
@@ -507,17 +482,7 @@ bool Entity::update_rot( int axis ) const /* returns true if given axis needs up
 		return true;
 	return false;
 }
-
-void Avatar::GetCharBuildInfo( BitStream &src )
-{
-	src.GetString(m_class_name);
-	src.GetString(m_origin_name);
-	m_powers.push_back(get_power_info(src)); // primary_powerset power
-	m_powers.push_back(get_power_info(src)); // secondary_powerset power
-	m_trays.serializefrom(src);
-
-}
-
+/*
 void Avatar::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
 {
 	for(int i=0; i<3; i++)
@@ -525,7 +490,9 @@ void Avatar::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Pool_id[%d]: 0x%08x\n"),i,pool_info.id[i]));
 	}
 }
+*/
 
+/*
 void Avatar::DumpBuildInfo()
 {
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    class: %s\n"),m_class_name.c_str()));
@@ -533,14 +500,13 @@ void Avatar::DumpBuildInfo()
 	DumpPowerPoolInfo(m_powers[0]);
 	DumpPowerPoolInfo(m_powers[1]);
 }
+*/
 
 void PlayerEntity::serializefrom_newchar( BitStream &src )
 {
 	int val = src.GetPackedBits(1); //2
 	m_char.GetCharBuildInfo(src);
-	m_costume = new MapCostume;
-	m_costume->serializefrom(src);
-	m_costumes.push_back(m_costume);
+    m_char.recv_initial_costume(src);
 	int t = src.GetBits(1); // The -> 1
 	src.GetString(m_battle_cry);
 	src.GetString(m_character_description);
@@ -555,13 +521,10 @@ void Entity::InsertUpdate( PosUpdate pup )
 
 void Entity::dump()
 {
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    //---------------Tray------------------\n")));
-	m_char.m_trays.dump();
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    //---------------Costume---------------\n")));
-	m_costume->dump();
+	m_char.dump();
 }
 
-Entity::Entity() : m_char(0)
+Entity::Entity()
 {
 	field_60=0;
 	field_64=0;
@@ -573,6 +536,7 @@ Entity::Entity() : m_char(0)
 	m_SG_info=false;
 }
 
+/*
 PowerPool_Info Avatar::get_power_info( BitStream &src )
 {
 	PowerPool_Info res;
@@ -581,10 +545,13 @@ PowerPool_Info Avatar::get_power_info( BitStream &src )
 	res.id[2] = src.GetPackedBits(3);
 	return res;
 }
+*/
+/*
 void Avatar::sendTray(BitStream &bs) const
 {
 	m_trays.serializeto(bs);
 }
+*/
 void Avatar::sendTrayMode(BitStream &bs) const
 {
 	bs.StoreBits(1,0);
@@ -683,6 +650,7 @@ void Avatar::sendFriendList(BitStream &bs) const
 	bs.StorePackedBits(1,0);
 	bs.StorePackedBits(1,0);
 }
+/*
 void Avatar::serializeto(BitStream &bs) const
 {
 	u8 arr[16]={0};
@@ -752,6 +720,7 @@ Avatar::Avatar(Entity *ent)
 	m_origin_name= "Science";
 
 }
+*/
 void sendPower(BitStream &bs,int a,int b,int c)
 {
 	bs.StorePackedBits(3,a);
@@ -830,6 +799,7 @@ void sendUnk3(BitStream &bs) // inventory ?
 {
 	bs.StorePackedBits(3,0); // count
 }
+/*
 void Avatar::send_character(BitStream &bs) const
 {
 	bs.StoreString(m_class_name); // class name
@@ -840,6 +810,7 @@ void Avatar::send_character(BitStream &bs) const
 	sendPowers_main_tray(bs);
 	sendBoosts(bs);
 }
+*/
 void Avatar::sendFullStats(BitStream &bs) const
 {
 	// if sendAbsolutoOverride 
@@ -995,6 +966,7 @@ void Avatar::sendBuffs(BitStream &bs) const
 		sendPower(bs,0,0,0);
 	}
 }
+/*
 void Avatar::sendOptions(BitStream &bs) const
 {
 	bs.StoreFloat(m_options.mouselook_scalefactor);//MouseFlt1
@@ -1023,6 +995,7 @@ void Avatar::sendOptions(BitStream &bs) const
 
 }
 
+*/
 
 
 void MapCostume::GetCostume( BitStream &src )

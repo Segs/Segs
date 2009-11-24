@@ -27,6 +27,7 @@ SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
 
 SEGS_ADD_COMPONENT(cox_server_common LIB)
+SEGS_ADD_COMPONENT(adminserver_lib LIB) # used to access character db
 
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 
