@@ -7,7 +7,7 @@ IF(BUILD_CoX)
 ENDIF(BUILD_CoX)
 
 IF(BUILD_Examples)
-	SET(BUILD_Example01 TRUE CACHE BOOL "Should the first example be built?")
+	SET(BUILD_Example01 FALSE CACHE BOOL "Should the first example be built?")
     IF(BUILD_Example01)
         ADD_SUBDIRECTORY(Example01)
     ENDIF(BUILD_Example01)
