@@ -27,17 +27,15 @@ class GameServer;
 class CharacterClient : public ClientSession
 {
 		GameServer *			    m_server;
-        ACE_Time_Value              m_last_activity;
 public:
-					CharacterClient(){}
-virtual				~CharacterClient();
-		void		setServer(GameServer * val) { m_server = val; }
-		Character *	getCharacter(size_t idx);
+					    CharacterClient(){}
+virtual				    ~CharacterClient();
+		void		    setServer(GameServer * val) { m_server = val; }
+		Character *	    getCharacter(size_t idx);
 
-		bool		getCharsFromDb();
-		size_t		max_slots();
-		void		reset();
-        void        connection_update() {m_last_activity = ACE_OS::gettimeofday();}
+		bool		    getCharsFromDb();
+		size_t		    max_slots();
+		void		    reset();
 };
 
 #endif // CHARACTERCLIENT_H

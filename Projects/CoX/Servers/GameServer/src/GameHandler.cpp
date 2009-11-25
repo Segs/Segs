@@ -183,6 +183,8 @@ void GameHandler::checkClientConnection(u64 id)
     {
         client->link_state().getState();
     }
+    GameLink * lnk = (GameLink *)client->link_state().link();
+    ACE_Time_Value inactive=lnk->inactivity_time();
     //	m_clients.getById(id)->;
     // empty for now, later on it will use client store to get the client, and then check it's packet backlog
     //

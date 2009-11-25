@@ -116,10 +116,13 @@ bool AdminDatabase::GetAccountById( AccountInfo &to_fill,u64 id )
 bool AdminDatabase::GetAccount( AccountInfo & client,const std::string &query )
 {
     DbResults results;
+    client.m_acc_server_acc_id = 0;
+
     if(!execQuery(query,results))
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminDatabase::GetAccount query %s failed. %s.\n"), query.c_str(),results.m_msg),false);
     if(results.num_rows()!=1)
         return false;
+
     DbResultRow r=results.getRow(0);
 	struct tm creation;
 	client.m_acc_server_acc_id  = (u64)r.getColInt64("id"); 
@@ -128,7 +131,6 @@ bool AdminDatabase::GetAccount( AccountInfo & client,const std::string &query )
     creation                    = r.getTimestamp("creation_date");
 //	client->setCreationDate(creation); 
 	return 0;
-
 }
 
 int AdminDatabase::RemoveAccountByID( u64 id )

@@ -70,6 +70,7 @@ int CRUDLink<EVENT_FACTORY>::handle_output( ACE_HANDLE )
             return -1;
         case SEGSEvent::evConnect:
             m_peer_addr=static_cast<ConnectEvent *>(ev)->src_addr;
+            connection_update();
             break;
         case SEGSEvent::evDisconnect:
             putq(new SEGSEvent(SEGSEvent::evFinish)); // close the link
@@ -78,6 +79,7 @@ int CRUDLink<EVENT_FACTORY>::handle_output( ACE_HANDLE )
             {
                 PacketEvent *pkt_ev = static_cast<PacketEvent *>(ev);
                 event_for_packet(pkt_ev);
+                connection_update(); // we've received some bytes -> connection update
                 break;
             }
         default:
@@ -112,5 +114,4 @@ void CRUDLink<EVENT_FACTORY>::received_block( BitStream &bytes )
     {
         putq(new PacketEvent(g_link_target,pkt,peer_addr()));
     }
-
 }
