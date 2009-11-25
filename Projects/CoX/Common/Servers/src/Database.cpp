@@ -38,6 +38,7 @@ int Database::OpenConnection(void) // Opens connection to the database server
 	else
 	{
 		ACE_DEBUG ((LM_INFO,"Connected to %s database server version %i.\n",PQdb(pConnection), PQserverVersion(pConnection)));
+        this->on_connected();
 	}
 	return 0;
 }
@@ -46,6 +47,7 @@ int Database::CloseConnection(void) // Closes connection to the database server
 {
 	PQfinish(pConnection);    // Close our connection to the PostgreSQL db server
 	ACE_DEBUG((LM_INFO,"Connection to PostgreSQL database server closed.\n"));
+    pConnection=0;
 	return 0;
 }
 
@@ -87,6 +89,12 @@ s64 Database::next_id( const std::string &tab_name )
     else if (results.num_rows()!=1)
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database::next_id returned wrong number of results.\n")),-1);
     return results.getRow(0).getColInt64("NEXTVAL");
+}
+
+Database::~Database()
+{
+    if(pConnection)
+        CloseConnection();
 }
 DbResults::DbResults()
 {
@@ -204,4 +212,61 @@ struct tm DbResultRow::getTimestamp( const char *column_name )
     }
     (void)ACE_OS::strptime(res,"%Y-%m-%d %T",&ts_result);
     return ts_result;
+}
+
+bool PreparedQuery::prepare(const std::string &query,size_t num_params)
+{
+    char prep_name[32];
+    m_param_count = num_params;
+    ACE_OS::unique_name(this,prep_name,32);
+    m_query_name=std::string("segs_q")+prep_name;
+    PGresult * q_res = PQprepare(m_conn,m_query_name.c_str(),query.c_str(),m_param_count,0);
+    char *err = PQresultErrorMessage(q_res);
+    bool res = !(err&&err[0]); // return false if err is set
+    PQclear(q_res);
+    return res;
+}
+
+bool PreparedQuery::execute(PreparedArgs &args,DbResults &res )
+{
+    ACE_ASSERT(args.m_params.size()==m_param_count);
+    std::vector<const char *> values;
+    for(size_t idx=0; idx<args.m_params.size(); ++idx)
+        values.push_back(args.m_params[idx].c_str());
+    res.m_result=PQexecPrepared(m_conn,m_query_name.c_str(),m_param_count,&values[0],&args.m_lengths[0],&args.m_formats[0],1);
+    if(!res.m_result)
+        return false;
+    res.m_msg = PQresultErrorMessage(res.m_result);
+
+    if(res.m_msg&&res.m_msg[0])
+        return false;
+    return true;
+}
+void PreparedArgs::set_param( size_t idx,const u8 *bytes,size_t len,bool binary )
+{
+    m_params.push_back(std::string((char *)bytes,len));
+    m_lengths.push_back(len);
+    m_formats.push_back(binary ? 1 : 0);
+}
+
+void PreparedArgs::set_param( size_t idx,const std::string &str )
+{
+    m_params.push_back(str);
+    m_lengths.push_back(str.size());
+    m_formats.push_back(0);
+}
+
+void PreparedArgs::set_param( size_t idx,u16 v )
+{
+    u16 rv = ACE_HTONS(v);
+    m_params.push_back(std::string((char *)&rv,2));
+    m_lengths.push_back(2);
+    m_formats.push_back(1);
+}
+void PreparedArgs::set_param( size_t idx,u32 v )
+{
+    u32 rv = ACE_HTONL(v);
+    m_params.push_back(std::string((char *)&rv,4));
+    m_lengths.push_back(4);
+    m_formats.push_back(1);
 }

@@ -29,7 +29,7 @@ public:
         CLIENT_CONNECTED,
     } eClientState;
 public:
-                        ClientLinkState():m_state(CLIENT_DISCONNECTED){}
+                        ClientLinkState():m_state(NOT_LOGGED_IN){}
     u32				    hash_id() {return m_peer_addr.get_ip_address()^m_peer_addr.get_port_number();}
     void			    setState(eClientState s) {m_state=s;}
     eClientState	    getState() {return m_state;}

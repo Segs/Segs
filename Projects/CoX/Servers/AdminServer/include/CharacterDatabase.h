@@ -24,8 +24,9 @@ class Character;
 class AccountInfo;
 class CharacterDatabase : public Database
 {
+    void    on_connected() {;} //prepare statements here
 public:
-	int     CreateLinkedAccount(u64 auth_account_id,const std::string &username);
+	bool     CreateLinkedAccount(u64 auth_account_id,const std::string &username); // returns true on success
 	int     AddCharacter(const std::string &username, const std::string &charname);
 	int     RemoveCharacter(char *username, char *charname);
     bool    create(AccountInfo *);

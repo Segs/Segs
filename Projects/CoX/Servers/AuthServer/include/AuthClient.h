@@ -23,7 +23,7 @@ class AuthClient : public ClientSession
 {
 
 public:
-	AuthClient();
+	                AuthClient();
 	bool			isLoggedIn();
 	void			forceGameServerConnectionCheck();
 	void			setSelectedServer(IGameServer *gs){m_game_server=gs;};

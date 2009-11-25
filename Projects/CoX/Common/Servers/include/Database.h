@@ -50,24 +50,43 @@ public:
 	size_t num_rows() {return PQntuples(m_result);};
 	DbResultRow getRow(size_t row);
 };
-
 class Database
 {
 protected:
-	std::string connect_string;
-	PGconn *pConnection;     // Pointer to our PostgreSQL connection structure
-	//PGresult *pResult;       // Pointer to PostgreSQL result
+	    std::string connect_string;
+	    PGconn *    pConnection;     // Pointer to our PostgreSQL connection structure
 public:
 	// Constructor/Destructor
-	Database();
-	//~Database(void);
-	// Simple test to verify our database exists and is available 
-	void setConnectionConfiguration(const char *host,const char *db,const char *user,const char *passw);
-	bool execQuery(const string &q,DbResults &res);
-	bool execQuery(const string &q); // for queries without results
-	int OpenConnection(void);
-	int CloseConnection(void);
-    s64 next_id(const std::string &tab_name);
+    	                Database();
+                        virtual ~Database();
+	    void            setConnectionConfiguration(const char *host,const char *db,const char *user,const char *passw);
+	    bool            execQuery(const string &q,DbResults &res);
+	    bool            execQuery(const string &q); // for queries without results
+	    int             OpenConnection(void);
+	    int             CloseConnection(void);
+        s64             next_id(const std::string &tab_name);
+        PGconn *        get_conn() {return pConnection;}
+virtual void            on_connected() = 0;
+};
+struct PreparedArgs
+{
+    std::vector<std::string> m_params;
+    std::vector<int>        m_lengths;
+    std::vector<int>        m_formats;
+    void                    set_param(size_t idx,const u8 *bytes,size_t len,bool binary);
+    void                    set_param(size_t idx,const std::string &str);
+    void                    set_param(size_t idx,u16);
+    void                    set_param(size_t idx,u32);
+};
+class PreparedQuery
+{
+    PGconn *                m_conn;
+    std::string             m_query_name;
+    size_t                  m_param_count;
+public:
+                            PreparedQuery(Database &db) : m_conn(db.get_conn()) {};
+    bool                    prepare(const std::string &query,size_t num_params);
+    bool                    execute(PreparedArgs &args,DbResults &res);
 };
 class DbTransactionGuard
 {

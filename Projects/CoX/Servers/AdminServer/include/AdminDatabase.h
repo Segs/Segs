@@ -7,10 +7,7 @@
  * $Id: AdminDatabase.h 267 2006-09-18 04:46:30Z nemerle $
  */
 
-// Inclusion guards
 #pragma once
-#ifndef ADMINDATABASE_H
-#define ADMINDATABASE_H
 
 // ACE Logging
 #include <string>
@@ -24,19 +21,20 @@ class AccountInfo;
 class AdminDatabase : public Database
 {
     bool    GetAccount(AccountInfo & client,const std::string &query);
+    PreparedQuery *m_add_account_query;
 public:
+            AdminDatabase();
 	int     GetAccounts(void) const;
 	// Access levels 
 	// 0 - lowest of low
 	//
 	// 0x7FFF - server gods
-	int     AddAccount(const char *username, const char *password, u16 access_level=1);
+	bool    AddAccount(const char *username, const char *password, u16 access_level=1); //return true if success 
 	int     RemoveAccountByID(u64 id);
 	int     RemoveAccountByName(char *username);
 	int     GetBanFlag(const char *username);
 	bool    ValidPassword(const char *username, const char *password);
     bool    GetAccountByName(AccountInfo &to_fill,const std::string &login);
     bool    GetAccountById(AccountInfo &to_fill,u64 id);
-};
-
-#endif // ADMINDATABASE_H
+    void    on_connected();
+};    

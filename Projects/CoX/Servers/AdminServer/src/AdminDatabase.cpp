@@ -14,29 +14,29 @@
 #include <ace/OS_NS_time.h>
 #include <ace/Log_Msg.h>
 #include "Client.h"
+AdminDatabase::AdminDatabase()
+{
 
+}
 int AdminDatabase::GetAccounts(void) const
 {
 	return 0;
 }
 
-int AdminDatabase::AddAccount(const char *username, const char *password,u16 access_level) // Add account and password to the database server
+bool AdminDatabase::AddAccount(const char *username, const char *password,u16 access_level) // Add account and password to the database server
 {
-	std::stringstream query;
+    PreparedArgs args;
 	u8 res=0;
-	size_t escaped_len;
-	u8 *escaped_pass = PQescapeBytea((u8 *)password,14,&escaped_len);
-
-	query<<"INSERT INTO accounts (username,passw,access_level) VALUES ('"<<username<<"','"<<escaped_pass<<"',"<<access_level<<")";
-	PQfreemem(escaped_pass);
-	PGresult *pResult = PQexec(pConnection,query.str().c_str());   // Send our query to the PostgreSQL db server to process
-	if (PQresultErrorMessage(pResult)[0] != 0)
-	{
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Result status: %s\n"),PQresultErrorMessage(pResult))); // Why the query failed
-		res=1;
-	}
-	PQclear(pResult); // Clear result
-	return res;
+    args.set_param(0,std::string(username));
+    args.set_param(1,(u8*)password,14,true);
+    args.set_param(2,access_level);
+    DbResults query_res;
+    if(false==m_add_account_query->execute(args,query_res)) // Send our query to the PostgreSQL db server to process
+    {
+        ACE_ERROR((LM_ERROR,ACE_TEXT ("Result status: %s\n"),query_res.m_msg)); // Why the query failed
+        return false;
+    }
+	return true;
 }
 
 /*
@@ -130,10 +130,16 @@ bool AdminDatabase::GetAccount( AccountInfo & client,const std::string &query )
     client.m_access_level       = r.getColInt16("access_level"); 
     creation                    = r.getTimestamp("creation_date");
 //	client->setCreationDate(creation); 
-	return 0;
+	return true;
 }
 
 int AdminDatabase::RemoveAccountByID( u64 id )
 {
 	return 0;
+}
+
+void AdminDatabase::on_connected()
+{
+    m_add_account_query = new PreparedQuery(*this);
+    m_add_account_query->prepare("INSERT INTO accounts (username,passw,access_level) VALUES ($1,$2,$3);",3);
 }

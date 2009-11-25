@@ -81,7 +81,7 @@ bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" 
 	ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
 	m_running=false;
 	res  =  m_db->CloseConnection()==0;
-    res &=	m_char_db->CloseConnection();
+    res &=	m_char_db->CloseConnection()==0;
 
 	delete m_db;
     delete m_char_db;
@@ -122,11 +122,11 @@ bool _AdminServer::ValidPassword( const AccountInfo &client, const char *passwor
 
 int _AdminServer::SaveAccount(const char *username, const char *password) 
 {
-	int res = m_db->AddAccount(username, password);
+    int res=0;
+	if(false==m_db->AddAccount(username, password))
+        return 1;
 
-	if(res!=0)
-		return res;
-	AccountInfo tmp;
+    AccountInfo tmp;
 	tmp.login(username); // Fix if username is preprocessed before db entry in AddAccount
 	fill_account_info(tmp);
 	// also register this account on all currently available gameservers
@@ -134,7 +134,7 @@ int _AdminServer::SaveAccount(const char *username, const char *password)
 	//for(size_t idx=0; idx<ServerManager::instance()->GameServerCount(); idx++)
 	//{
     // TODO: support multiple game servers.
-        if(0!=m_char_db->CreateLinkedAccount(tmp.account_server_id(),username))
+        if(!m_char_db->CreateLinkedAccount(tmp.account_server_id(),username))
             res=2;
 	//}
 	return res;   // Add the given account

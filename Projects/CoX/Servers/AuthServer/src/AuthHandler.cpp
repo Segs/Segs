@@ -118,6 +118,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     ACE_ASSERT(client);
     AccountInfo & acc_inf(client->account_info());  // all the account info you can eat!
     lnk->client(client);                            // now link knows what client it's responsible for
+    client->link_state().link(lnk);                 // and client knows what link it's using
     eAuthError err = AUTH_WRONG_LOGINPASS;          // this is default for case we don't have that client
     if(client)
     {
