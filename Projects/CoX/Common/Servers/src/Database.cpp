@@ -192,3 +192,16 @@ size_t DbResultRow::getColFloatArray(const char *column_name,float *arr,size_t a
 	}
 	return idx;
 }
+
+struct tm DbResultRow::getTimestamp( const char *column_name )
+{
+    struct tm ts_result={};
+    const char *res = getColString(column_name);
+    if(!res)
+    {
+        ACE_ERROR((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name));
+        return ts_result;
+    }
+    (void)ACE_OS::strptime(res,"%Y-%m-%d %T",&ts_result);
+    return ts_result;
+}

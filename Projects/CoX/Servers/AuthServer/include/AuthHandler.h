@@ -11,20 +11,25 @@
 
 class AuthHandler : public EventProcessor
 {
+protected:
 	typedef ACE_Guard<ACE_Thread_Mutex> MTGuard;
 	ACE_Thread_Mutex m_store_mutex;
 	std::map<u64,AuthLink *> m_link_store;
+    //////////////////////////////////////////////////////////////////////////
     // function that send messages into the link
-    void no_admin_server(EventProcessor *lnk);
-    void unknown_error(EventProcessor *lnk);
-    void auth_error(EventProcessor *lnk,u32 code);
-    // incoming event handlers
-    void on_connect(ConnectEvent *ev);
-    void on_disconnect(DisconnectEvent *ev);
-    void on_login( LoginRequest *ev );
-    void on_server_list_request( ServerListRequest *ev );
-    void on_server_selected(ServerSelectRequest *ev);
-    void on_client_expected(ClientExpected *ev);
+    void        no_admin_server(EventProcessor *lnk);
+    void        unknown_error(EventProcessor *lnk);
+    void        auth_error(EventProcessor *lnk,u32 code);
+    //////////////////////////////////////////////////////////////////////////
+    // incoming link level event handlers
+    void        on_connect(ConnectEvent *ev);
+    void        on_disconnect(DisconnectEvent *ev);
+    void        on_login( LoginRequest *ev );
+    void        on_server_list_request( ServerListRequest *ev );
+    void        on_server_selected(ServerSelectRequest *ev);
+    //////////////////////////////////////////////////////////////////////////
+    // Server <-> server event handlers
+    void        on_client_expected(ClientExpected *ev);
 public:
     typedef enum
     {
@@ -42,7 +47,7 @@ public:
         AUTH_UNKN_ERROR
     } eAuthError; // this is a public type so other servers can pass us valid errors
 
-	void dispatch(SEGSEvent *ev);
-    SEGSEvent *dispatch_sync(SEGSEvent *ev);
+	void        dispatch(SEGSEvent *ev);
+    SEGSEvent * dispatch_sync(SEGSEvent *ev);
 };    
 typedef ACE_Singleton<AuthHandler,ACE_Thread_Mutex> AuthHandlerG;

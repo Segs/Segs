@@ -32,7 +32,7 @@ int AdminDatabase::AddAccount(const char *username, const char *password,u16 acc
 	PGresult *pResult = PQexec(pConnection,query.str().c_str());   // Send our query to the PostgreSQL db server to process
 	if (PQresultErrorMessage(pResult)[0] != 0)
 	{
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Result status: %s\n"),PQresultErrorMessage(pResult))); // Why the query failed
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Result status: %s\n"),PQresultErrorMessage(pResult))); // Why the query failed
 		res=1;
 	}
 	PQclear(pResult); // Clear result
@@ -79,70 +79,54 @@ int AdminDatabase::GetBanFlag(const char *username)
 
 bool AdminDatabase::ValidPassword(const char *username, const char *password)
 {
+    std::stringstream query;
 	bool res=false;
-	static char SQLStmt[256]; // Variable to hold our query
-	sprintf(SQLStmt, "SELECT passw FROM accounts WHERE username = '%s'",username);
-	u8 *binary_password;
-	size_t unescaped_len;
+    u8 *binary_password;
+    size_t unescaped_len;
+	query<<"SELECT passw FROM accounts WHERE username = '"<<username<<"';";
 
-	PGresult *pResult = PQexec(pConnection,SQLStmt);   // Send our query to the PostgreSQL db server to process
+	PGresult *pResult = PQexec(pConnection,query.str().c_str());   // Send our query to the PostgreSQL db server to process
 	char *res_msg = PQresultErrorMessage(pResult);
 	if(res_msg&&(res_msg[0]!=0))
 	{
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Result status: %s\n"),PQresultErrorMessage(pResult))); // Why the query failed
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Result status: %s\n"),PQresultErrorMessage(pResult))); // Why the query failed
 		return res;
 	}
-	binary_password=PQunescapeBytea((u8 *)PQgetvalue(pResult,0,0),&unescaped_len);
+    binary_password=PQunescapeBytea((u8 *)PQgetvalue(pResult,0,0),&unescaped_len);
 	ACE_ASSERT(unescaped_len<=16);
-		PQclear(pResult); // Clear result
+    PQclear(pResult); // Clear result
 	if (memcmp(binary_password,password,unescaped_len) == 0)
 		res = true;
 	PQfreemem(binary_password);
 	return res;
 	}
-int AdminDatabase::GetAccountByName(AccountInfo &client, const string &login)
+bool AdminDatabase::GetAccountByName( AccountInfo &to_fill,const std::string &login )
 {
 	stringstream query;
-	query<<"SELECT * FROM accounts WHERE username='"<<login<<"'"<<endl;
-	return GetAccount(client,query.str());
+	query<<"SELECT * FROM accounts WHERE username='"<<login<<"';";
+	return GetAccount(to_fill,query.str());
 }
-int AdminDatabase::GetAccountById(AccountInfo &client, u64 id)
+bool AdminDatabase::GetAccountById( AccountInfo &to_fill,u64 id )
 {
 	stringstream query;
-	query<<"SELECT * FROM accounts WHERE id='"<<id<<"'";
-	return GetAccount(client,query.str());
+	query<<"SELECT * FROM accounts WHERE id='"<<id<<"';";
+	return GetAccount(to_fill,query.str());
 }
 
-int AdminDatabase::GetAccount(AccountInfo &client,const string &query)
+bool AdminDatabase::GetAccount( AccountInfo & client,const std::string &query )
 {
-	PGresult *pResult = PQexec(pConnection,query.c_str());   // Send our query to the PostgreSQL db server to process
-	char *res_msg = PQresultErrorMessage(pResult);
-	if(res_msg&&(res_msg[0]!=0))
-	{
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Result status: %s\n"),res_msg)); // Why the query failed
-		PQclear(pResult); // Clear result
-		return 1;
-	}
-	if (PQntuples(pResult)!=1)
-	{
-		PQclear(pResult); // Clear result
-		return 1; // too much, or too little rows
-	}
+    DbResults results;
+    if(!execQuery(query,results))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminDatabase::GetAccount query %s failed. %s.\n"), query.c_str(),results.m_msg),false);
+    if(results.num_rows()!=1)
+        return false;
+    DbResultRow r=results.getRow(0);
 	struct tm creation;
-	// FIXME: This should be _atoi64 or atoll
-	client.m_acc_server_acc_id = ((unsigned int)atoi(PQgetvalue(pResult,0,0))); 
-	client.m_login = (PQgetvalue(pResult,0,1)); 
-
-	u8 *binary_password;
-	size_t unescaped_len;
-//	binary_password=PQunescapeBytea((u8 *)PQgetvalue(pResult,0,4),&unescaped_len);
-//	client->setPassword(binary_password);
-//	ACE_ASSERT(unescaped_len<=16);
-//	PQfreemem(binary_password);
-    client.m_access_level = atoi(PQgetvalue(pResult,0,2)); 
-	(void)ACE_OS::strptime(PQgetvalue(pResult,0,3),"%Y-%m-%d %T",&creation);
+	client.m_acc_server_acc_id  = (u64)r.getColInt64("id"); 
+	client.m_login              = r.getColString("username"); 
+    client.m_access_level       = r.getColInt16("access_level"); 
+    creation                    = r.getTimestamp("creation_date");
 //	client->setCreationDate(creation); 
-	PQclear(pResult); // Clear result
 	return 0;
 
 }

@@ -87,9 +87,12 @@ void AuthHandler::on_login( LoginRequest *ev )
 {
 	AuthLink *lnk=static_cast<AuthLink *>(ev->src());
     AdminServerInterface *adminserv;
+    AuthServerInterface *authserv;
     AuthClient *client = NULL;
-    adminserv = ServerManager::instance()->GetAdminServer();
+    adminserv   = ServerManager::instance()->GetAdminServer();
+    authserv    = ServerManager::instance()->GetAuthServer();
     ACE_ASSERT(adminserv);
+    ACE_ASSERT(authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
     if(!adminserv)
     {
         // we cannot do much without that
@@ -105,11 +108,12 @@ void AuthHandler::on_login( LoginRequest *ev )
     if(strlen(ev->login)<=2)
         return auth_error(lnk,AUTH_ACCOUNT_BLOCKED); // invalid account
 
-    client = ServerManager::instance()->GetAuthServer()->GetClientByLogin(ev->login);
-    if(!client)
-    { // step 3c: creating a new account
+    client = authserv->GetClientByLogin(ev->login);
+    // TODO: Version 0.3 will need to use admin tools instead of creating accounts willy-nilly
+    if(!client) // no client exists, create one ( step 3c )
+    { 
         adminserv->SaveAccount(ev->login,ev->password); // Autocreate/save account to DB
-        client = ServerManager::instance()->GetAuthServer()->GetClientByLogin(ev->login);
+        client = authserv->GetClientByLogin(ev->login);
     }
     ACE_ASSERT(client);
     AccountInfo & acc_inf(client->account_info());  // all the account info you can eat!

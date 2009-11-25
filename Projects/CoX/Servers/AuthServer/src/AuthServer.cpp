@@ -102,8 +102,12 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
 	adminserv = ServerManager::instance()->GetAdminServer();
 	ACE_ASSERT(adminserv);
 	res= m_client_pool.construct();							// construct a new instance
-	res->account_info().login(login);						// set login
-	adminserv->FillClientInfo(res->account_info());			// and ask AdminServer to fill in the rest
+	res->account_info().login(login);						// set login and ask AdminServer to fill in the rest
+	if(adminserv->FillClientInfo(res->account_info()))      // Can we fill the client account info from db ?
+    {
+        m_client_pool.free(res);							// nope ? Free object and return NULL.
+        return NULL;
+    }
 	if(res->account_info().account_server_id()==0)		    // check if object is filled in correctly, by validating it's db id.
 	{
 		m_client_pool.free(res);							// if it is not. Free object and return NULL.

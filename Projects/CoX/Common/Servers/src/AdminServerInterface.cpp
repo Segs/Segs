@@ -40,7 +40,7 @@ void AdminServerInterface::InvalidGameServerConnection(const ACE_INET_Addr &from
 {
 	return m_server->InvalidGameServerConnection(from);
 }
-void AdminServerInterface::FillClientInfo(AccountInfo &client)
+bool AdminServerInterface::FillClientInfo(AccountInfo &client)
 {
 	return m_server->fill_account_info(client);
 }

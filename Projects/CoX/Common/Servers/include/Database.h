@@ -37,6 +37,7 @@ public:
 			float		getColFloat(const char *column_name);
 			size_t		getColIntArray(const char *column_name,u32 *arr,size_t arr_size); // returns the actual number of values
 			size_t		getColFloatArray(const char *column_name,float *arr,size_t arr_size);
+            struct tm   getTimestamp(const char *column_name);
 };
 class DbResults
 {

@@ -87,18 +87,17 @@ bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" 
     delete m_char_db;
 	return res;
 }
-void _AdminServer::fill_account_info( AccountInfo &client )
+bool _AdminServer::fill_account_info( AccountInfo &client )
 {
 	if((client.login().size()>0) && (client.account_server_id()==0)) // existing client
 	{
-		if(m_db->GetAccountByName(client,client.login())==0)
-			return;
+		return m_db->GetAccountByName(client,client.login());
 	}
 	if(client.account_server_id()) // existing client
 	{
-		if(m_db->GetAccountById(client,client.account_server_id())==0)
-			return;
+		return m_db->GetAccountById(client,client.account_server_id());
 	}
+    return false;
 
 }
 bool _AdminServer::Login(const AccountInfo &client,const ACE_INET_Addr &client_addr)

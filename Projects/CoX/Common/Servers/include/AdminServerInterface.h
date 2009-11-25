@@ -44,7 +44,7 @@ virtual	bool                        Logout(const AccountInfo &client) const=0;
 virtual	bool                        Login(const AccountInfo &client,const ACE_INET_Addr &client_addr)=0;
 virtual	bool                        ValidPassword(const AccountInfo &client, const char *password)=0;
 
-virtual	void                        fill_account_info(AccountInfo &client)=0;
+virtual	bool                        fill_account_info(AccountInfo &client)=0;
 virtual	int                         SaveAccount(const char *username, const char *password)=0;
 virtual	int                         RemoveAccount(AccountInfo &client)=0;
 
@@ -71,14 +71,14 @@ public:
     int GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server);
 
 
-	int GetBlockedIpList(std::list<int> &addreses); // called from auth server during user authentication, might be useful for automatical firewall rules update
-	void FillClientInfo(AccountInfo &); 
-	bool Login(AccountInfo &client,const ACE_INET_Addr &client_addr); // Records given 'client' as logged in from 'addr'.
-    int	 SaveAccount(const char *username, const char *password);  // Save account
-	bool Logout(AccountInfo &client); // Records given 'client' as logged out in from 'addr'.
-	bool ValidPassword(const AccountInfo &client, const char *password); // If 'pass' is a valid password for client, return true
-	void InvalidGameServerConnection(const ACE_INET_Addr &from);
-	void RunCommand(const char *); //magical entry point to internal workings of all the servers ??
+	int     GetBlockedIpList(std::list<int> &addreses); // called from auth server during user authentication, might be useful for automatical firewall rules update
+	bool    FillClientInfo(AccountInfo &); 
+	bool    Login(AccountInfo &client,const ACE_INET_Addr &client_addr); // Records given 'client' as logged in from 'addr'.
+    int	    SaveAccount(const char *username, const char *password);  // Save account
+	bool    Logout(AccountInfo &client); // Records given 'client' as logged out in from 'addr'.
+	bool    ValidPassword(const AccountInfo &client, const char *password); // If 'pass' is a valid password for client, return true
+	void    InvalidGameServerConnection(const ACE_INET_Addr &from);
+	void    RunCommand(const char *); //magical entry point to internal workings of all the servers ??
 protected:
 	IAdminServer *m_server;
 };

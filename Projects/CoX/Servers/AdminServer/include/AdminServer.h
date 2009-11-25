@@ -47,7 +47,7 @@ public:
 	bool                        Login(const AccountInfo &client,const ACE_INET_Addr &client_addr); // Records given client as logged in.
     bool                        ValidPassword(const AccountInfo &client, const char *password); // Verifies entered password matches stored password
 
-    void                        fill_account_info(AccountInfo &client);// Refresh client object from database
+    bool                        fill_account_info(AccountInfo &client);// Refresh client object from database
 	int                         SaveAccount(const char *username, const char *password); // Save user account credentials to storage
 	int                         RemoveAccount(AccountInfo &client); // Removes account from database via id #
 
