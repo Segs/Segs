@@ -59,6 +59,7 @@ CREATE TABLE costume
   id serial NOT NULL,
   character_id integer NOT NULL,
   costume_index smallint NOT NULL,
+  skin_color bigint,
   CONSTRAINT costume_pkey PRIMARY KEY (id),
   CONSTRAINT costume_character_id_fkey FOREIGN KEY (character_id)
       REFERENCES characters (id) MATCH SIMPLE
