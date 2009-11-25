@@ -152,7 +152,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     }
     EventProcessor *map_handler=ServerManager::instance()->GetMapServer(0)->event_target();
     AccountInfo &acc_inf(client->account_info());
-	map_handler->putq(new ExpectMapClient(this,acc_inf.game_server_id(),acc_inf.access_level(),lnk->peer_addr(),ev->m_char_name,ev->m_mapnumber));
+	map_handler->putq(new ExpectMapClient(this,acc_inf.account_server_id(),acc_inf.access_level(),lnk->peer_addr(),ev->m_char_name,ev->m_mapnumber));
 }
 void GameHandler::on_unknown_link_event(GameUnknownRequest *ev)
 {

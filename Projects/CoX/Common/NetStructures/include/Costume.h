@@ -79,16 +79,6 @@ public:
 class MapCostume : public Costume
 {
     bool costume_sends_nonquantized_floats;
-    union
-    {
-        struct{
-            float m_height;
-            float m_physique;
-        } split;
-        float m_floats[30];
-    };
-
-
 protected:
     u8		m_costume_type;
     int		costume_type_idx_P;

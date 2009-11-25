@@ -1004,8 +1004,8 @@ void MapCostume::GetCostume( BitStream &src )
 	m_body_type = src.GetPackedBits(3); // 0:male normal
 	a = src.GetBits(32); // rgb ?
 
-	split.m_height = src.GetFloat();
-	split.m_physique = src.GetFloat();
+	m_height = src.GetFloat();
+	m_physique = src.GetFloat();
 
 	m_non_default_costme_p = src.GetBits(1);
 	m_num_parts = src.GetPackedBits(4);
@@ -1022,8 +1022,8 @@ void MapCostume::dump()
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Costume \n")));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    body type: 0x%08x\n"),m_body_type));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    a: 0x%08x\n"),a));
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Height %f\n"),split.m_height));			
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Physique %f\n"),split.m_physique));			
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Height %f\n"),m_height));			
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Physique %f\n"),m_physique));			
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    ****** %d Parts *******\n"),m_num_parts));		
 	for(int i=0; i<m_num_parts; i++)
 	{
@@ -1069,8 +1069,8 @@ void MapCostume::SendCommon(BitStream &bs) const
 	bs.StorePackedBits(3,m_body_type); // 0:male normal
 	bs.StoreBits(32,a); // rgb ?
 
-	bs.StoreFloat(split.m_height);
-	bs.StoreFloat(split.m_physique);
+	bs.StoreFloat(m_height);
+	bs.StoreFloat(m_physique);
 
 	bs.StoreBits(1,m_non_default_costme_p);
 	bs.StorePackedBits(4,m_num_parts);

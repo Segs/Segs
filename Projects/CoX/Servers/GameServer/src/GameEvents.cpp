@@ -77,7 +77,7 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     {
         m_client->getCharacter(i)->serializetoCharsel(tgt);
     }
-    tgt.StoreBitArray(m_clientinfo,128);
+    //tgt.StoreBitArray(m_clientinfo,128);
 }
 
 void CharacterSlots::serializefrom( BitStream &src )
@@ -106,11 +106,12 @@ void CharacterResponse::serializeto( BitStream &bs ) const
     if(c)
         bs.StorePackedBits(1,m_index);
     else
-        bs.StorePackedBits(1,-1);
+        bs.StorePackedBits(1,m_index);
     if(c)
         c->storeCharselParts(bs);
     else
-        bs.StorePackedBits(1,0); // 0 parts
+        CharacterCostume::NullCostume.storeCharselParts(bs);
+//        bs.StorePackedBits(1,0); // 0 parts
 
 }
 

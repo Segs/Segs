@@ -107,6 +107,7 @@ bool CharacterDatabase::fill( CharacterCostume *c)
 			ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
 	}
 	DbResultRow r=results.getRow(0);
+    c->a = r.getColInt32("skin_color");
 	query.str("");
 	query<<"SELECT * FROM costume_part WHERE costume_id="<<r.getColInt32("id");
 	// this will overwrite underlying object therefore 'r' will become useless
@@ -176,8 +177,8 @@ bool CharacterDatabase::create( u64 gid,u8 slot,Character *c )
         return false;
 
     query.str("");
-    query<<"INSERT INTO costume (id,character_id,costume_index) VALUES ("
-        << cost_id <<","<< char_id <<","<< u32(slot) << ");";
+    query<<"INSERT INTO costume (id,character_id,costume_index,skin_color) VALUES ("
+        << cost_id <<","<< char_id <<","<< u32(slot) << ","<<u32(cst->a)<<");";
     if(!execQuery(query.str()))
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::create %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
     for(size_t idx=0; idx<cst->m_parts.size(); ++idx)
