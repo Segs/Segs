@@ -6,7 +6,7 @@
 #include "GameEvents.h"
 #include "CharacterClient.h"
 #include "GameServer.h"
-
+#include "Character.h"
 static const u32 supported_version=20040422;
 
 void GameHandler::dispatch( SEGSEvent *ev )
@@ -91,7 +91,6 @@ void GameHandler::on_update_server(UpdateServer *ev)
     m_clients.connectedClient(ev->authCookie);
     ((GameLink *)ev->src())->client_data((void *)cl); // store client object in link
 	cl->link_state().link((GameLink *)ev->src()); // store link in client
-
     CharacterSlots *slots_event=new CharacterSlots;  
     slots_event->set_client(cl); // at this point pointer to the client is held in event, if it's destroyed somewhere else KA-BOOM!!
     ev->src()->putq(slots_event);
@@ -122,6 +121,13 @@ void GameHandler::on_disconnect(DisconnectRequest<GameLinkEvent> *ev)
 }
 void GameHandler::on_delete_character(DeleteCharacter *ev)
 {
+    GameLink * lnk = (GameLink *)ev->src();
+    CharacterClient *client = (CharacterClient *)lnk->client_data();
+    Character *chr = client->getCharacter(ev->m_index);
+    if(chr && chr->getName().compare(ev->m_char_name)==0)
+    {
+        lnk->putq(new DeletionAcknowledged);
+    }
 	// check if character exists, and if it's name is the same as the one passed here
 	// if it is delete the character ( or maybe not, just mark it deleted ? )
 }
@@ -204,7 +210,9 @@ SEGSEvent *GameHandler::on_connection_query(ClientConnectionQuery *ev)
     CharacterClient *cl=m_clients.getById(ev->m_id);
     if(cl==0)
         return new ClientConnectionResponse(this,ACE_Time_Value::max_time);
-    // TODO : check when the client sent the last packet
+    // Client was not active for at least 15s. Warning this must check also map link!
+    if(((GameLink *)cl->link_state().link())->inactivity_time()>ACE_Time_Value(15,0))
+        disconnectClient(cl->account_info());
     return new ClientConnectionResponse(this,ACE_OS::gettimeofday());
 
 }

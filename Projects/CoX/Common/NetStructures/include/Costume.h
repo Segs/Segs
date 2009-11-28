@@ -55,7 +55,7 @@ public:
 	u32 m_body_type;
     Costume()
     {
-        m_height=m_physique=1.0f;
+        m_height=m_physique=0.0f;
         a=0;
         m_num_parts=0;
     }

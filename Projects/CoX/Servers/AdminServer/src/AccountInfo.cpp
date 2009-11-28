@@ -36,10 +36,12 @@ bool AccountInfo::fill_characters_db()
         if(m_characters[i]) //even more reuse
         {
             m_characters[i]->reset();
-            continue;
         }
-        m_characters[i] = new Character;
-        m_characters[i]->reset();
+        else
+            m_characters[i] = new Character;
+        m_characters[i]->setIndex(i);
+        if(!AdminServer::instance()->character_db()->fill(m_characters[i]))
+            return false;
     }
     return true;
 }

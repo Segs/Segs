@@ -28,7 +28,7 @@ void Character::reset()
 	m_class_name="EMPTY";
 	m_origin_name="EMPTY";
 	m_villain=0;
-	m_mapName="EMPTY";
+	m_mapName="";
     m_unkn3=0;
 	m_multiple_costumes=false;
 	m_current_costume_idx=0;
@@ -84,7 +84,7 @@ bool Character::serializeFromDB( u64 user_id,u32 slot_index )
 
 void Character::GetCharBuildInfo(BitStream &src)
 {
-    m_level=1;
+    m_level=0;
     src.GetString(m_class_name);
 	src.GetString(m_origin_name);
     PowerPool_Info primary,secondary;
@@ -110,7 +110,7 @@ void Character::serializetoCharsel( BitStream &bs )
     else
     	m_costumes[m_current_costume_set]->storeCharsel(bs);
 	bs.StoreString(m_mapName);
-	bs.StorePackedBits(1,rand());
+	bs.StorePackedBits(1,1);
 }
 
 Costume * Character::getCurrentCostume() const

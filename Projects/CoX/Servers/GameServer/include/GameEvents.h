@@ -32,6 +32,7 @@ public:
         EVENT_DECL(evCharacterSlots,5);
         EVENT_DECL(evCharacterResponse,6);
         EVENT_DECL(evMapAddrResponse,7);
+        EVENT_DECL(evDeleteAcknowledged,8);
 
         EVENT_DECL(evUnknownEvent,16);
         END_EVENTS(17);
@@ -196,6 +197,14 @@ public:
     void serializefrom( BitStream &src );
     void dependent_dump();
     std::string m_error;
+};
+class DeletionAcknowledged : public GameLinkEvent
+{
+public:
+    DeletionAcknowledged():GameLinkEvent(GameEventTypes::evDeleteAcknowledged)
+    {}
+    void serializeto( BitStream &tgt ) const;
+    void serializefrom( BitStream &src ) {};
 };
 class GameUnknownRequest : public GameLinkEvent
 {

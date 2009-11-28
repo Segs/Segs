@@ -106,16 +106,21 @@ void CharacterResponse::serializeto( BitStream &bs ) const
     if(c)
         bs.StorePackedBits(1,m_index);
     else
-        bs.StorePackedBits(1,m_index);
+        bs.StorePackedBits(1,-1);
     if(c)
         c->storeCharselParts(bs);
     else
-        CharacterCostume::NullCostume.storeCharselParts(bs);
-//        bs.StorePackedBits(1,0); // 0 parts
-
+    {
+        bs.StorePackedBits(1,0); // 0 parts
+    }
 }
 
 void CharacterResponse::serializefrom( BitStream &bs )
 {
     ACE_ASSERT(!"TODO");
+}
+
+void DeletionAcknowledged::serializeto( BitStream &tgt ) const
+{
+    tgt.StorePackedBits(1,5); // opcode 5
 }
