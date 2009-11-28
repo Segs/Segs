@@ -21,17 +21,15 @@
 #include "Costume.h"
 
 // UserToken,
-int CharacterDatabase::AddCharacter(const std::string &username, const std::string &charname)
+bool CharacterDatabase::remove_character(AccountInfo *c,u8 slot_idx)
 {
-	// Who,
-	// Awaiting nemerle's direction on this function
-	return 0;
-}
-
-int CharacterDatabase::RemoveCharacter(char *username, char *charname)
-{
-	// Will implement later after AddCharacter function is complete
-	return 0;
+    stringstream query;
+    DbResults results;
+    ACE_ASSERT(c!=0);
+    query << "DELETE FROM characters WHERE account_id="<<c->account_server_id()<<" AND slot_index="<<(u32)slot_idx<<";";
+    if(!execQuery(query.str(),results))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::remove_character %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
+	return true;
 }
 bool CharacterDatabase::fill( AccountInfo *c )
 {
@@ -81,7 +79,7 @@ bool CharacterDatabase::fill( Character *c)
     CharacterCostume *main_costume = new CharacterCostume;
     // appearance related.	
 	main_costume->m_body_type = r.getColInt32("bodytype"); // 0
-	c->setMapName(STR_OR_EMPTY(r.getColString("current_map"))); // "V_City_00_01.txt"
+    c->setMapName("Some map name"); // "V_City_00_01.txt" STR_OR_EMPTY(r.getColString("current_map"))
 	c->setLastCostumeId(r.getColInt32("last_costume_id"));	
     main_costume->setSlotIndex(0);
     main_costume->setCharacterId(r.getColInt32("id"));
@@ -178,7 +176,7 @@ bool CharacterDatabase::create( u64 gid,u8 slot,Character *c )
 
     query.str("");
     query<<"INSERT INTO costume (id,character_id,costume_index,skin_color) VALUES ("
-        << cost_id <<","<< char_id <<","<< u32(slot) << ","<<u32(cst->a)<<");";
+        << cost_id <<","<< char_id <<","<< u32(0) << ","<<u32(cst->a)<<");";
     if(!execQuery(query.str()))
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::create %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
     for(size_t idx=0; idx<cst->m_parts.size(); ++idx)

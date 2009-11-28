@@ -124,12 +124,17 @@ void GameHandler::on_delete_character(DeleteCharacter *ev)
     GameLink * lnk = (GameLink *)ev->src();
     CharacterClient *client = (CharacterClient *)lnk->client_data();
     Character *chr = client->getCharacter(ev->m_index);
+    // check if character exists, and if it's name is the same as the one passed here
     if(chr && chr->getName().compare(ev->m_char_name)==0)
     {
+        // if it is delete the character ( or maybe not, just mark it deleted ? )
+        client->deleteCharacter(chr);
         lnk->putq(new DeletionAcknowledged);
     }
-	// check if character exists, and if it's name is the same as the one passed here
-	// if it is delete the character ( or maybe not, just mark it deleted ? )
+    else
+    {
+        lnk->putq(new GameEntryError(this,"Given name was not the same as character name\n. Character was not deleted."));
+    }
 }
 void GameHandler::on_client_expected(ClientExpected *ev)
 {

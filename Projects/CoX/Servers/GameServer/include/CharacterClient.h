@@ -7,10 +7,7 @@
  * $Id: Client.h 253 2006-08-31 22:00:14Z malign $
  */
 
-// Inclusion guards
 #pragma once
-#ifndef CHARACTERCLIENT_H
-#define CHARACTERCLIENT_H
 
 #include <string>
 #include <ace/OS_NS_time.h>
@@ -32,10 +29,8 @@ public:
 virtual				    ~CharacterClient();
 		void		    setServer(GameServer * val) { m_server = val; }
 		Character *	    getCharacter(size_t idx);
-
+        bool            deleteCharacter(Character *chr);
 		bool		    getCharsFromDb();
 		size_t		    max_slots();
 		void		    reset();
 };
-
-#endif // CHARACTERCLIENT_H

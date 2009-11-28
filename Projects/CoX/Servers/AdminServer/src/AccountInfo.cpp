@@ -40,6 +40,7 @@ bool AccountInfo::fill_characters_db()
         else
             m_characters[i] = new Character;
         m_characters[i]->setIndex(i);
+        m_characters[i]->setAccountId(m_game_server_acc_id);
         if(!AdminServer::instance()->character_db()->fill(m_characters[i]))
             return false;
     }
@@ -101,5 +102,15 @@ bool AccountInfo::store_new_character(Character *character)
     if(false==cdb->create(m_game_server_acc_id,slot_idx,character))
         return false;
     grd.commit();
+    return true;
+}
+
+bool AccountInfo::remove_character( Character *character )
+{
+    CharacterDatabase *cdb = AdminServer::instance()->character_db();
+    u8 slot_idx=char_slot_index(character);
+    if(slot_idx==0xFF)
+        return false;
+    cdb->remove_character(this,slot_idx);
     return true;
 }

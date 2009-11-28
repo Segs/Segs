@@ -103,14 +103,15 @@ void CharacterResponse::serializeto( BitStream &bs ) const
     if(m_client->getCharacter(m_index)->getName().compare("EMPTY")!=0) // actual character was read from db
         c=static_cast<CharacterCostume *>(m_client->getCharacter(m_index)->getCurrentCostume());
     bs.StorePackedBits(1,6); // opcode 
+
     if(c)
+    {
         bs.StorePackedBits(1,m_index);
-    else
-        bs.StorePackedBits(1,-1);
-    if(c)
         c->storeCharselParts(bs);
+    }
     else
     {
+        bs.StorePackedBits(1,-1);
         bs.StorePackedBits(1,0); // 0 parts
     }
 }

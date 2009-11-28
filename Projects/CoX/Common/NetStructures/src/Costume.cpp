@@ -43,10 +43,15 @@ void CostumePart::serializefrom( BitStream &bs )
 void CostumePart::serializeto_charsel( BitStream &bs ) const
 {
     // character selection needs to get part names as strings
+    static const char *names[] = {
+        "Pants","Chest","Head","Gloves","Boots","Belt","Hair","Face","EyeDetail","ChestDetail",
+        "Shoulders","Back","WepR","Neck","UarmR",
+    };
+
     bs.StoreString(name_0);
     bs.StoreString(name_1);
     bs.StoreString(name_2);
-    bs.StoreString(name_6);
+    bs.StoreString(names[m_type]); //name_6 bonename ?
     bs.StoreBits(32,m_colors[0]);
     bs.StoreBits(32,m_colors[1]);
 }
@@ -55,5 +60,8 @@ void Costume::storeCharselParts( BitStream &bs )
 {
     bs.StorePackedBits(1,m_parts.size());
     for(int costume_part=0; costume_part<m_parts.size();costume_part++)
+    {
+        m_parts[costume_part].m_type=costume_part;
         m_parts[costume_part].serializeto_charsel(bs);
+    }
 }

@@ -57,6 +57,7 @@ public:
     Character *                 get_character(size_t idx);
     Character *                 create_new_character(); // returns 0 if no free slots are left
     bool                        store_new_character(Character *character);
+    bool                        remove_character(Character *character);
     bool                        fill_game_db(u64 game_server_idx);
     void                        reset();
 };
