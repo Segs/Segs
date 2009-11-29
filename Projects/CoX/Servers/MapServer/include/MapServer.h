@@ -47,7 +47,7 @@ using namespace stdext;
 class Net;
 class MapServerEndpoint;
 class MapClient;
-class SEGSMap;
+class CoXMap;
 class MapServer : public IMapServer
 {
 public:
@@ -83,7 +83,7 @@ protected:
 	    ACE_INET_Addr           m_location; //! this value is sent to the clients
 	    ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
 	    ServerEndpoint<MapLink>	*m_endpoint;
-        Map2Handler *            m_handler;
+        MapCommHandler *            m_handler;
 };
 
 #endif // MAPSERVER_H

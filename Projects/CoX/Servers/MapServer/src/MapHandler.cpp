@@ -11,17 +11,18 @@
 #include "MapClient.h"
 #include "ServerManager.h"
 #include "MapServer.h"
-#include "SEGSMap.h"
+#include "CoXMap.h"
 #include "Entity.h"
-#include "SEGSMap.h"
+#include "CoXMap.h"
 
-Map2Handler::Map2Handler()
+MapCommHandler::MapCommHandler()
 {
-    m_handled_worlds[0]=new SEGSMap("City_00_01");
+    m_handled_worlds[0]=new CoXMap("City_00_01");
+    m_handled_worlds[0]->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
 }
 
 
-void Map2Handler::dispatch(SEGSEvent *ev)
+void MapCommHandler::dispatch(SEGSEvent *ev)
 {
 	ACE_ASSERT(ev);
 	switch(ev->type())
@@ -54,13 +55,13 @@ void Map2Handler::dispatch(SEGSEvent *ev)
         break;
 	}
 }
-void Map2Handler::on_idle(IdleEvent<MapLinkEvent> *ev)
+void MapCommHandler::on_idle(IdleEvent<MapLinkEvent> *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
     lnk->putq(new IdleEvent<MapLinkEvent>);
 }
-void Map2Handler::on_disconnect(DisconnectRequest<MapLinkEvent> *ev)
+void MapCommHandler::on_disconnect(DisconnectRequest<MapLinkEvent> *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *client = (MapClient *)lnk->client_data();
@@ -72,18 +73,18 @@ void Map2Handler::on_disconnect(DisconnectRequest<MapLinkEvent> *ev)
     lnk->putq(new DisconnectResponse<MapLinkEvent>);
     lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
 }
-void Map2Handler::on_connection_request(ConnectRequest<MapLinkEvent> *ev)
+void MapCommHandler::on_connection_request(ConnectRequest<MapLinkEvent> *ev)
 {
     ev->src()->putq(new ConnectResponse<MapLinkEvent>);
 }
-void Map2Handler::on_expect_client( ExpectMapClient *ev )
+void MapCommHandler::on_expect_client( ExpectMapClient *ev )
 {
     u32 cookie = 0; // name in use
     // TODO: handle contention while creating 2 character with the same from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
     if(m_handled_worlds.find(ev->m_map_id)==m_handled_worlds.end())
     {
-
+        cookie = 1;
     }
     else if(true) // check if (character does not exist || character exists and is owned by this client )
     {
@@ -96,7 +97,7 @@ void Map2Handler::on_expect_client( ExpectMapClient *ev )
     }
 	ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
 }
-void Map2Handler::on_create_map_entity(NewEntity *ev)
+void MapCommHandler::on_create_map_entity(NewEntity *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl = m_clients.getExpectedByCookie(ev->m_cookie-2);
@@ -111,7 +112,7 @@ void Map2Handler::on_create_map_entity(NewEntity *ev)
     lnk->putq(new MapInstanceConnected(this,1,""));
 }
 
-void Map2Handler::on_shortcuts_request(ShortcutsRequest *ev)
+void MapCommHandler::on_shortcuts_request(ShortcutsRequest *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     Shortcuts *res=new Shortcuts;
@@ -119,7 +120,7 @@ void Map2Handler::on_shortcuts_request(ShortcutsRequest *ev)
     // TODO: use the access level and send proper commands
     lnk->putq(res);
 }
-void Map2Handler::on_scene_request(SceneRequest *ev)
+void MapCommHandler::on_scene_request(SceneRequest *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     Scene *res=new Scene;
@@ -163,12 +164,12 @@ void Map2Handler::on_scene_request(SceneRequest *ev)
 	res->unkn2=1;
     lnk->putq(res);
 }
-void Map2Handler::on_entities_request(EntitiesRequest *ev)
+void MapCommHandler::on_entities_request(EntitiesRequest *ev)
 {
     // start map timer on this event
 }
 
-SEGSEvent * Map2Handler::dispatch_sync( SEGSEvent *ev )
+SEGSEvent * MapCommHandler::dispatch_sync( SEGSEvent *ev )
 {
     ACE_ASSERT(!"NO SYNC HANDLING");
     return 0;

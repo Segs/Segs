@@ -14,15 +14,15 @@
 #include "ClientManager.h"
 #include "MapEvents.h"
 
-class SEGSMap;
+class CoXMap;
 class MapClient;
 class MapServer;
 class IClient;
-class Map2Handler : public EventProcessor
+class MapCommHandler : public EventProcessor
 {
 public:
 	void        set_server(MapServer *s) {m_server=s;}
-                Map2Handler();
+                MapCommHandler();
 protected:
 	void        dispatch(SEGSEvent *ev);
 	SEGSEvent * dispatch_sync( SEGSEvent *ev );
@@ -41,5 +41,5 @@ protected:
     void        on_create_map_entity(NewEntity *ent);
     ClientStore<MapClient> m_clients;
 	MapServer *m_server;
-    std::map<int,SEGSMap *> m_handled_worlds;//! the worlds run by this server
+    std::map<int,CoXMap *> m_handled_worlds;//! the worlds run by this server
 };

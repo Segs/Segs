@@ -16,7 +16,7 @@
 #include "AdminServerInterface.h"
 #include "MapClient.h"
 
-#include "SEGSMap.h"
+#include "CoXMap.h"
 #include "Entity.h"
 // Template instantiation
 template class ClientStore<MapClient>;
@@ -46,7 +46,7 @@ bool MapServer::Run(void)
 	}
 	ACE_ASSERT(m_max_maps>0); // we have to have a world to run
 
-    m_handler = new Map2Handler;
+    m_handler = new MapCommHandler;
     m_handler->set_server(this);
     MapLink::g_target = m_handler;
     MapLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);

@@ -1,6 +1,6 @@
 # $Id: CMakeLists.txt 306 2007-01-23 12:16:25Z nemerle $
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/src/SEGSMap.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/CoXMap.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapClient.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapHandler.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapServer.cpp
@@ -12,7 +12,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/NetCommandManager.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/NetCommandManager.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/SEGSMap.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/CoXMap.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityStorage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapClient.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapHandler.h

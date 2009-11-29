@@ -11,12 +11,14 @@
 #pragma once
 
 #include "EntityStorage.h"
-
-class SEGSMap
+#include "EventProcessor.h"
+class CoXMap : public EventProcessor
 {
 	string m_name;
 public:
-	SEGSMap(const string &name);
-	EntityManager m_entities;
+	CoXMap(const string &name);
+	EntityManager       m_entities;
+    void				dispatch(SEGSEvent *ev);
+    SEGSEvent * 		dispatch_sync(SEGSEvent *ev);
 
 };
