@@ -69,10 +69,14 @@ Section !$(DESC_Section1) sec1
   
   ; Put file there
   File "Segs.exe"
-  File "*.cfg"
+  File "calc_md5s.exe"
+  File "pigg_extract.exe"
   File "*.dll"
   File "*.txt"
-  File /r data_files
+  File "required_digests"
+  File /r tool_src
+  File /r config_files
+  File /r data
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\NSIS_Segs "Install_Dir" "$INSTDIR"
@@ -104,8 +108,14 @@ Section "Uninstall" Section3
 
   ; Remove files and uninstaller
   Delete $INSTDIR\*.*
-  Delete $INSTDIR\data_files\*.*
-  RMDir "$INSTDIR\data_files"
+  Delete $INSTDIR\config_files\*.*
+  RMDir "$INSTDIR\config_files"
+
+  Delete $INSTDIR\tool_src\*.*
+  RMDir "$INSTDIR\tool_src"
+
+  Delete $INSTDIR\data\*.*
+  RMDir "$INSTDIR\data"
 
   Delete $INSTDIR\uninstall.exe
   ; Remove shortcuts, if any
