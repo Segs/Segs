@@ -19,18 +19,18 @@ class Entity;
 class EntityManager
 {
 public:
-	Entity *m_map_entities[10240];
-	list <Entity *> m_entlist;
-	u32 m_last_ent;
-	EntityManager()
-	{
-		m_last_ent = 0;
-	}
-		void sendDebuggedEntities(BitStream &tgt) const;
-		void sendGlobalEntDebugInfo(BitStream &tgt) const;
-		void sendDeletes(BitStream &tgt) const;
-		void sendEntities(BitStream &tgt) const;
-		Entity *CreatePlayer();
+    Entity *        m_map_entities[10240];
+    list <Entity *> m_entlist;
+    u32             m_last_ent;
+                    EntityManager()
+                    {
+                        m_last_ent = 0;
+                    }
+    void            sendDebuggedEntities(BitStream &tgt) const;
+    void            sendGlobalEntDebugInfo(BitStream &tgt) const;
+    void            sendDeletes(BitStream &tgt) const;
+    void            sendEntities(BitStream &tgt) const;
+    Entity *        CreatePlayer();
 };
 
 class EntityStorage

@@ -29,11 +29,6 @@ namespace __gnu_cxx {
 using namespace stdext;
 #endif // WIN32
 
-class ClientManager
-{
-public:
-	static Client *CreateClient(){return new Client;};
-};
 template <class CLIENT_CLASS>
 class ClientStore
 {

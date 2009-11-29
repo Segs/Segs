@@ -54,12 +54,5 @@ protected:
     ClientLinkState     m_link;
     AccountInfo         m_account_info;
 };
-class Client // this should really be a simple 1-1 join between account info and connection, where depending on server only the link changes
-{
-public:
-
-protected:
-    AccountInfo m_account_info;
-};
 
 #endif // CLIENT_H
