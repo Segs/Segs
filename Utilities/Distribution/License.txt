@@ -1,4 +1,4 @@
-$Id: License.txt 139 2009-09-30 12:57:27Z nemerle $
+$Id$
 
 Software License Agreement (BSD License)
 

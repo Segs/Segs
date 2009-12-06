@@ -1,4 +1,4 @@
-$Id: Install.txt 86 2008-04-19 18:32:42Z malign $
+$Id$
 
 These instructions are for building SEGS from source. If you are using pre-built binaries,
 you can skip below and go to the configuration section.

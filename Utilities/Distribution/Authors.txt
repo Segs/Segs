@@ -1,4 +1,4 @@
-$Id: Authors.txt 86 2008-04-19 18:32:42Z malign $
+$Id$
 
 SEGS Developers
 =================
