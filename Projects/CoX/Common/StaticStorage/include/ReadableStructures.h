@@ -71,6 +71,13 @@ struct Field
         m_sub_ref(sub),
         pu32(val)
     {}
+    Field(const std::string &name,u32 type,u32 offset,u32 param,ClassSchema *sub,Vec3  BinReadable::*vec) : m_name(name),
+        m_type(type),
+        m_offset(offset),
+        m_param(param),
+        m_sub_ref(sub),
+        pvec3(vec)
+    {}
 
     void calc_crc(CrcVisitor &v) const;
     bool read_non_nested(BinReadable &tgt,Store *s) const;
@@ -112,7 +119,9 @@ public:
 #define DEF_SCHEMA(classname) \
     ClassSchema classname::m_schema(classname::create);\
     bool classname::schema_initialized=false;
-#define STR_REF(classname,variable) ((std::string BinReadable::*)&classname::variable)
+#define STR_REF(classname,variable)  ((std::string BinReadable::*)&classname::variable)
+#define ARR_REF(classname,variable)  ((std::vector<BinReadable *>  BinReadable::*)&classname::variable)
+#define VEC3_REF(classname,variable) ((Vec3 BinReadable::*)&classname::variable)
 #define U32_REF(classname,variable) ((u32 BinReadable::*)&classname::variable)
 #define ADD_FIELD(a,b,c,d,e,f) \
 {\
