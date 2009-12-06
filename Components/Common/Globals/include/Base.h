@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: Base.h 273 2006-10-02 09:43:48Z nemerle $
+ * $Id$
  */
  
 //	Base.h - This file defines all of the global includes

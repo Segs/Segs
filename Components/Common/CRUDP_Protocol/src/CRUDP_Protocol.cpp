@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: CRUDP_Protocol.cpp 259 2006-09-15 07:35:19Z nemerle $
+ * $Id$
  */
 
 //#include "GameProtocol.h"
