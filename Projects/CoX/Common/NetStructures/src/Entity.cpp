@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: Entity.cpp 289 2006-10-03 14:52:25Z nemerle $
+ * $Id$
  */
 
 #define _USE_MATH_DEFINES

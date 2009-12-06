@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: Database.cpp 301 2006-12-26 15:50:44Z nemerle $
+ * $Id$
  */
 
 // This module contains code to access our database where accounts and characters are stored

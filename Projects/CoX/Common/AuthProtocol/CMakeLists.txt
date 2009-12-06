@@ -1,5 +1,5 @@
 
-# $Id:$
+# $Id$
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthEventFactory.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthPacketCodec.cpp 

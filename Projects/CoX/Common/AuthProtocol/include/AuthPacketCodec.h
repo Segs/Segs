@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: AuthPacketCodec.h 286 2006-10-03 07:19:16Z malign $
+ * $Id$
  */
 
 // Inclusion guards

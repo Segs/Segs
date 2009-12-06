@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: swig.cpp 251 2006-08-31 21:49:27Z malign $
+ * $Id$
  */
 
 // Variables to hold our configuration values

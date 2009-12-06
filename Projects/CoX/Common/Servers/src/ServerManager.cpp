@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: ServerManager.cpp 291 2006-10-12 10:52:55Z nemerle $
+ * $Id$
  */
 
 #include "ServerManager.h"
