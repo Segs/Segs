@@ -1,4 +1,4 @@
-# $Id: CMakeLists.txt 306 2007-01-23 12:16:25Z nemerle $
+# $Id$
 SET(BUILD_CoX TRUE CACHE BOOL "Should the CoX emulation be built?")
 SET(BUILD_Examples FALSE CACHE BOOL "Should the Example Projects be built?")
 

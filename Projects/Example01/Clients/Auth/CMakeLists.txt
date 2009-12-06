@@ -1,4 +1,4 @@
-# $Id:$
+# $Id$
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Auth.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthFSM.cpp

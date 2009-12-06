@@ -4,7 +4,7 @@
 * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
 * This software is licensed! (See License.txt for details)
 *
-* $Id: AuthFSM.cpp 271 2006-10-02 04:30:50Z nemerle $
+* $Id$
 */
 
 #include <stdlib.h>
