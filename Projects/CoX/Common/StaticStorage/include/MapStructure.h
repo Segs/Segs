@@ -17,12 +17,13 @@ namespace MapStructs
     struct Def : public BinReadable
     {
         DECL_READABLE(Def);
-        std::vector<BinReadable *> m_defs;
+        std::vector<BinReadable *> m_lods;
         std::vector<BinReadable *> m_refs;
         std::vector<BinReadable *> m_root;
         std::string m_src_name;
         std::string m_obj_name;
         std::string m_type_name;
+        u32 m_flags;
         static void build_schema();
     };
     struct Ref : public BinReadable
@@ -31,6 +32,16 @@ namespace MapStructs
         std::string m_src_name;
         Vec3 m_pos;
         Vec3 m_rot;
+        static void build_schema();
+    };
+    struct Lod : public BinReadable
+    {
+        DECL_READABLE(Lod);
+        float m_far;
+        float m_far_fade;
+        float m_near;
+        float m_near_fade;
+        float m_scale;
         static void build_schema();
     };
 }

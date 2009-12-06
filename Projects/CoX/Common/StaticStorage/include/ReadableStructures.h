@@ -32,6 +32,7 @@ struct Field
         u32                         BinReadable::*pu32;
         u16                         BinReadable::*pu16;
         std::string                 BinReadable::*pstr;
+        float                       BinReadable::*pfloat;
         Vec3                        BinReadable::*pvec3;
         Vec2                        BinReadable::*pvec2;
         Color3ub                    BinReadable::*pub3;
@@ -79,6 +80,14 @@ struct Field
         pvec3(vec)
     {}
 
+    Field(const std::string &name,u32 type,u32 offset,u32 param,ClassSchema *sub,float  BinReadable::*flt) : m_name(name),
+        m_type(type),
+        m_offset(offset),
+        m_param(param),
+        m_sub_ref(sub),
+        pfloat(flt)
+    {}
+
     void calc_crc(CrcVisitor &v) const;
     bool read_non_nested(BinReadable &tgt,Store *s) const;
     bool read_nested(BinReadable &tgt,Store *s) const;
@@ -123,6 +132,7 @@ public:
 #define ARR_REF(classname,variable)  ((std::vector<BinReadable *>  BinReadable::*)&classname::variable)
 #define VEC3_REF(classname,variable) ((Vec3 BinReadable::*)&classname::variable)
 #define U32_REF(classname,variable) ((u32 BinReadable::*)&classname::variable)
+#define FLT_REF(classname,variable) ((float BinReadable::*)&classname::variable)
 #define ADD_FIELD(a,b,c,d,e,f) \
 {\
     Field fld(a,b,c,d,e,f);\

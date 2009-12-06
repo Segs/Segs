@@ -59,11 +59,11 @@ bool Field::read_non_nested( BinReadable &tgt,Store *s ) const
             (tgt.*pu32)=v;
         }
         break;
-    case 7:
+    case 7: // float
         {
-            u32 v;
+            float v;
             parse_ok &= s->read(v);
-            (tgt.*pu32)=v;
+            (tgt.*pfloat)=v;
         }
         break;
     case 8:

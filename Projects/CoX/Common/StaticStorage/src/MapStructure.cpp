@@ -14,6 +14,22 @@ using namespace MapStructs;
 DEF_SCHEMA(SceneStorage);
 DEF_SCHEMA(Def);
 DEF_SCHEMA(Ref);
+DEF_SCHEMA(Lod);
+
+void Lod::build_schema()
+{
+    if(schema_initialized)
+        return;
+    schema_initialized=true;
+
+    ADD_FIELD("Far"         ,0xA  ,0x0,0x0,0,FLT_REF(Lod,m_far));
+    ADD_FIELD("FarFade"     ,0xA  ,0x4,0x0,0,FLT_REF(Lod,m_far_fade));
+    ADD_FIELD("Near"        ,0xA  ,0x8,0x0,0,FLT_REF(Lod,m_near));
+    ADD_FIELD("NearFade"    ,0xA  ,0xC,0x0,0,FLT_REF(Lod,m_near_fade));
+    ADD_FIELD("Scale"       ,0xA  ,0x10,0xC,0,FLT_REF(Lod,m_scale));
+    ADD_END("End");
+}
+
 void Ref::build_schema()
 {
     if(schema_initialized)
@@ -30,9 +46,12 @@ void Def::build_schema()
 {
     if(schema_initialized)
         return;
+    Lod::build_schema();
     schema_initialized=true;
 
     ADD_FIELD(""            ,0x206  ,0x0,0x0,0,STR_REF(Def,m_src_name));
+    ADD_FIELD("Def"         ,0x15   ,0x30,0x14,&Lod::m_schema,ARR_REF(Def,m_lods));
+    ADD_FIELD("Flags"       ,0xF  ,0x34,0x0,0,U32_REF(Def,m_flags)); // bitfield
     ADD_FIELD("Obj"         ,0x6  ,0x4,0x0,0,STR_REF(Def,m_obj_name));
     ADD_FIELD("Type"        ,0x6  ,0x8,0x0,0,STR_REF(Def,m_type_name));
     ADD_END("End");
