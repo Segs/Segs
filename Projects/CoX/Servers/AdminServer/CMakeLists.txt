@@ -1,4 +1,4 @@
-# $Id: CMakeLists.txt 253 2006-08-31 22:00:14Z malign $
+# $Id$
 
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AdminServer.cpp

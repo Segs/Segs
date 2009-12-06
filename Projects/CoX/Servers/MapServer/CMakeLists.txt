@@ -1,4 +1,4 @@
-# $Id: CMakeLists.txt 306 2007-01-23 12:16:25Z nemerle $
+# $Id$
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CoXMap.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapClient.cpp

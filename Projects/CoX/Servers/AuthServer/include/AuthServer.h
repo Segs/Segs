@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: AuthServer.h 316 2007-01-25 15:17:16Z nemerle $
+ * $Id$
  */
 
 // Inclusion guards

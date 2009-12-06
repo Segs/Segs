@@ -1,4 +1,4 @@
-# $Id: CMakeLists.txt 294 2006-10-12 17:52:28Z nemerle $
+# $Id$
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/HashStorage.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CharacterClient.cpp

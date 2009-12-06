@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: EntityStorage.h 308 2007-01-25 05:14:43Z malign $
+ * $Id$
  */
 
 #pragma once

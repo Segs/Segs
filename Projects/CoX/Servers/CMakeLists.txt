@@ -1,4 +1,4 @@
-# $Id: CMakeLists.txt 270 2006-10-01 18:33:49Z nemerle $
+# $Id$
 
 SET(UNICODE )
 

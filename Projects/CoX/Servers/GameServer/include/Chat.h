@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: Chat.h 253 2006-08-31 22:00:14Z malign $
+ * $Id$
  */
 
 // Inclusion guards

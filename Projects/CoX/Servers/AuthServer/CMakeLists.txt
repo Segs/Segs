@@ -1,4 +1,4 @@
-# $Id: CMakeLists.txt 316 2007-01-25 15:17:16Z nemerle $
+# $Id$
 
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthClient.cpp

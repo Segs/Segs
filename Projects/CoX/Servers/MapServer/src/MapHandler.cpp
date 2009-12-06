@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: MapHandler.cpp 319 2007-01-26 17:03:18Z nemerle $
+ * $Id$
  */
 
 #include "MapHandler.h"
@@ -88,6 +88,7 @@ void MapCommHandler::on_expect_client( ExpectMapClient *ev )
     }
     else if(true) // check if (character does not exist || character exists and is owned by this client )
     {
+        
         cookie    = 2+m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
         // 0 name already taken
         // 1 problem in database system

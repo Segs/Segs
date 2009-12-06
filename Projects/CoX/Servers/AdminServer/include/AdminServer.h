@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: AdminServer.h 315 2007-01-25 14:17:50Z nemerle $
+ * $Id$
  */
 
 // Inclusion guards
