@@ -87,6 +87,13 @@ struct Field
         m_sub_ref(sub),
         pfloat(flt)
     {}
+    Field(const std::string &name,u32 type,u32 offset,u32 param,ClassSchema *sub,Color3ub  BinReadable::*cl) : m_name(name),
+        m_type(type),
+        m_offset(offset),
+        m_param(param),
+        m_sub_ref(sub),
+        pub3(cl)
+    {}
 
     void calc_crc(CrcVisitor &v) const;
     bool read_non_nested(BinReadable &tgt,Store *s) const;

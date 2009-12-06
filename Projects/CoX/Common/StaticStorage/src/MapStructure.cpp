@@ -15,6 +15,7 @@ DEF_SCHEMA(SceneStorage);
 DEF_SCHEMA(Def);
 DEF_SCHEMA(Ref);
 DEF_SCHEMA(Lod);
+DEF_SCHEMA(Fog);
 
 void Lod::build_schema()
 {
@@ -28,6 +29,20 @@ void Lod::build_schema()
     ADD_FIELD("NearFade"    ,0xA  ,0xC,0x0,0,FLT_REF(Lod,m_near_fade));
     ADD_FIELD("Scale"       ,0xA  ,0x10,0xC,0,FLT_REF(Lod,m_scale));
     ADD_END("End");
+}
+
+void Fog::build_schema()
+{
+    if(schema_initialized)
+        return;
+    schema_initialized=true;
+
+    ADD_FIELD(""    ,0xA  ,0x0,0x0,0,FLT_REF(Fog,m_a));
+    ADD_FIELD(""    ,0xA  ,0x4,0x0,0,FLT_REF(Fog,m_b));
+    ADD_FIELD(""    ,0xA  ,0x8,0x0,0,FLT_REF(Fog,m_c));
+    ADD_FIELD(""    ,0xD  ,0xC,0x0,0,(Color3ub BinReadable::*)&Fog::m_col1);
+    ADD_FIELD(""    ,0xD  ,0x10,0x0,0,(Color3ub BinReadable::*)&Fog::m_col2);
+    ADD_END("\n");
 }
 
 void Ref::build_schema()

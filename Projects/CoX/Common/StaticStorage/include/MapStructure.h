@@ -34,6 +34,18 @@ namespace MapStructs
         Vec3 m_rot;
         static void build_schema();
     };
+
+    struct Fog : public BinReadable
+    {
+        DECL_READABLE(Fog);
+        float m_a;
+        float m_b;
+        float m_c;
+        Color3ub m_col1;
+        Color3ub m_col2;
+        static void build_schema();
+    };
+
     struct Lod : public BinReadable
     {
         DECL_READABLE(Lod);
