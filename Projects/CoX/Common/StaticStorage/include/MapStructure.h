@@ -18,8 +18,9 @@ namespace MapStructs
     {
         DECL_READABLE(Def);
         std::vector<BinReadable *> m_lods;
-        std::vector<BinReadable *> m_refs;
-        std::vector<BinReadable *> m_root;
+        std::vector<BinReadable *> m_fogs;
+        std::vector<BinReadable *> m_beacons;
+        std::vector<BinReadable *> m_texture_replacements;
         std::string m_src_name;
         std::string m_obj_name;
         std::string m_type_name;
@@ -35,6 +36,21 @@ namespace MapStructs
         static void build_schema();
     };
 
+    struct TexReplace : public BinReadable
+    {
+        DECL_READABLE(TexReplace);
+        std::string m_name_src;
+        std::string m_name_tgt;
+        static void build_schema();
+    };
+
+    struct Beacon : public BinReadable
+    {
+        DECL_READABLE(Beacon);
+        std::string m_name;
+        float m_val; //radius?
+        static void build_schema();
+    };
     struct Fog : public BinReadable
     {
         DECL_READABLE(Fog);

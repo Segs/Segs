@@ -16,6 +16,8 @@ DEF_SCHEMA(Def);
 DEF_SCHEMA(Ref);
 DEF_SCHEMA(Lod);
 DEF_SCHEMA(Fog);
+DEF_SCHEMA(Beacon);
+DEF_SCHEMA(TexReplace);
 
 void Lod::build_schema()
 {
@@ -45,6 +47,28 @@ void Fog::build_schema()
     ADD_END("\n");
 }
 
+void Beacon::build_schema()
+{
+    if(schema_initialized)
+        return;
+    schema_initialized=true;
+
+    ADD_FIELD(""    ,0x206  ,0x0,0x0,0,STR_REF(Beacon,m_name));
+    ADD_FIELD(""    ,0x20A  ,0x4,0x0,0,FLT_REF(Beacon,m_val));
+    ADD_END("\n");
+}
+
+void TexReplace::build_schema()
+{
+    if(schema_initialized)
+        return;
+    schema_initialized=true;
+
+    ADD_FIELD(""    ,0x205  ,0x0,0x0,0,STR_REF(TexReplace,m_name_src));
+    ADD_FIELD(""    ,0x206  ,0x4,0x0,0,STR_REF(TexReplace,m_name_tgt));
+    ADD_END("\n");
+}
+
 void Ref::build_schema()
 {
     if(schema_initialized)
@@ -62,13 +86,20 @@ void Def::build_schema()
     if(schema_initialized)
         return;
     Lod::build_schema();
+    Fog::build_schema();
+    Beacon::build_schema();
+    TexReplace::build_schema();
+
     schema_initialized=true;
 
-    ADD_FIELD(""            ,0x206  ,0x0,0x0,0,STR_REF(Def,m_src_name));
-    ADD_FIELD("Def"         ,0x15   ,0x30,0x14,&Lod::m_schema,ARR_REF(Def,m_lods));
-    ADD_FIELD("Flags"       ,0xF  ,0x34,0x0,0,U32_REF(Def,m_flags)); // bitfield
-    ADD_FIELD("Obj"         ,0x6  ,0x4,0x0,0,STR_REF(Def,m_obj_name));
-    ADD_FIELD("Type"        ,0x6  ,0x8,0x0,0,STR_REF(Def,m_type_name));
+    ADD_FIELD(""            ,0x206  ,0x0    ,0x00   ,0,STR_REF(Def,m_src_name));
+    ADD_FIELD("ReplaceTex"  ,0x15   ,0x1C   ,0x08   ,&TexReplace::m_schema,ARR_REF(Def,m_texture_replacements));
+    ADD_FIELD("Beacon"      ,0x15   ,0x24   ,0x08   ,&Beacon::m_schema,ARR_REF(Def,m_beacons));
+    ADD_FIELD("Fog"         ,0x15   ,0x28   ,0x14   ,&Fog::m_schema,ARR_REF(Def,m_fogs));
+    ADD_FIELD("Lod"         ,0x15   ,0x30   ,0x14   ,&Lod::m_schema,ARR_REF(Def,m_lods));
+    ADD_FIELD("Flags"       ,0xF    ,0x34   ,0x00   ,0,U32_REF(Def,m_flags)); // bitfield
+    ADD_FIELD("Obj"         ,0x6    ,0x04   ,0x00   ,0,STR_REF(Def,m_obj_name));
+    ADD_FIELD("Type"        ,0x6    ,0x08   ,0x00   ,0,STR_REF(Def,m_type_name));
     ADD_END("End");
     ADD_END("DefEnd");
     //ADD_END("");
