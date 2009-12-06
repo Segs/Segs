@@ -1,8 +1,9 @@
-# $Id: CMakeLists.txt 301 2006-12-26 15:50:44Z nemerle $
+# $Id$
 
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CostumeStructure.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/MapStructure.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/ReadableStructures.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CoXHash.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/DataStorage.cpp
@@ -12,6 +13,7 @@ SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Filesystem.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/ReadableStructures.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CostumeStructure.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/MapStructure.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/DataStorage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CoXHash.h
 )
