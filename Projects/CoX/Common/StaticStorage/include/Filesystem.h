@@ -19,6 +19,7 @@
 
 #include "CoXHash.h"
 #include "ReadableStructures.h"
+#include "CostumeStructure.h"
 
 class WorldData_impl
 {

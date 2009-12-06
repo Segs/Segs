@@ -109,6 +109,27 @@ public:
     static BinReadable * create() {return new classname;}\
     const ClassSchema *my_schema() {return &m_schema;}
 
+#define DEF_SCHEMA(classname) \
+    ClassSchema classname::m_schema(classname::create);\
+    bool classname::schema_initialized=false;
+#define STR_REF(classname,variable) ((std::string BinReadable::*)&classname::variable)
+#define U32_REF(classname,variable) ((u32 BinReadable::*)&classname::variable)
+#define ADD_FIELD(a,b,c,d,e,f) \
+{\
+    Field fld(a,b,c,d,e,f);\
+    m_schema.add_field(fld);\
+}
+#define ADD_BASIC_FIELD(a,b,c,d,e) \
+{\
+    Field fld(a,b,c,d,e);\
+    m_schema.add_field(fld);\
+}
+#define ADD_END(a) \
+{\
+    Field fld(a,2,0,0,0);\
+    m_schema.add_field(fld);\
+}
+
 struct ColorEntry : public BinReadable
 {
     DECL_READABLE(ColorEntry);
@@ -130,84 +151,4 @@ struct ColorStorage : public BinReadable
         const Vec3 &rgb(e->rgb);
         return ((u32)rgb.v[0]) | (((u32)rgb.v[1])<<8) | (((u32)rgb.v[2])<<16) | (0xFF<<24);
     }
-};
-struct GeoSetInfoEntry : public BinReadable
-{
-    DECL_READABLE(GeoSetInfoEntry);
-
-    static void build_schema();
-
-    std::string m_display_name;
-    std::string m_geo_name;
-    std::string m_geo;
-    std::string m_tex1;
-    std::string m_tex2;
-    u32 m_devonly;
-};
-struct GeoSetMaskEntry : public BinReadable
-{
-    DECL_READABLE(GeoSetMaskEntry);
-
-    static void build_schema();
-
-    std::string m_display_name;
-    std::string m_name;
-};
-
-struct GeoSetEntry : public BinReadable
-{
-    DECL_READABLE(GeoSetEntry);
-
-    static void build_schema();
-
-    std::string m_display_name;
-    std::string m_body_part;
-    u32 m_typename;
-    std::vector<BinReadable *> m_mask_vals;
-    std::vector<BinReadable *> m_mask_infos;
-    std::vector<std::string> m_masks;
-    std::vector<std::string> m_mask_names;
-};
-
-struct BoneSetEntry : public BinReadable
-{
-    DECL_READABLE(BoneSetEntry);
-
-    static void build_schema();
-
-    std::string m_name;
-    std::string m_display_name;
-    std::vector<BinReadable *> m_geoset;
-};
-struct RegionEntry : public BinReadable
-{
-    DECL_READABLE(RegionEntry);
-    std::string m_name;
-    std::string m_display_name;
-    std::vector<BinReadable *> m_bonsets;
-    static void build_schema();
-};
-struct OriginEntry : public BinReadable
-{
-    DECL_READABLE(OriginEntry);
-
-    std::string m_name;
-    std::vector<BinReadable *> m_body_palette; //color entries
-    std::vector<BinReadable *> m_skin_palette;
-    std::vector<BinReadable *> m_regions; // RegionEntries
-
-    static void build_schema();
-};
-struct CostumeEntry  : public BinReadable
-{
-    DECL_READABLE(CostumeEntry);
-    std::string m_name;
-    std::vector<BinReadable *> m_origins;
-    static void build_schema();
-};
-struct CostumeStorage : public BinReadable
-{
-    DECL_READABLE(CostumeStorage);
-    std::vector<BinReadable *> m_costumes;
-    static void build_schema();
 };
