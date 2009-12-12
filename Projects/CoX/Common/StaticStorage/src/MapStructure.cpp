@@ -18,6 +18,7 @@ DEF_SCHEMA(Lod);
 DEF_SCHEMA(Fog);
 DEF_SCHEMA(Beacon);
 DEF_SCHEMA(TexReplace);
+DEF_SCHEMA(Sound);
 
 void Lod::build_schema()
 {
@@ -33,6 +34,20 @@ void Lod::build_schema()
     ADD_END("End");
 }
 
+void Sound::build_schema()
+{
+    if(schema_initialized)
+        return;
+    schema_initialized=true;
+
+    ADD_FIELD(""    ,0x6  ,0x0  ,0x0,0,STR_REF(Sound,m_name));
+    ADD_FIELD(""    ,0xA  ,0x0  ,0x0,0,FLT_REF(Sound,m_a));
+    ADD_FIELD(""    ,0xA  ,0x4  ,0x0,0,FLT_REF(Sound,m_b));
+    ADD_FIELD(""    ,0xA  ,0x8  ,0x0,0,FLT_REF(Sound,m_c));
+    ADD_FIELD(""    ,0xF  ,0x10 ,0x0,0,U32_REF(Def,m_flags)); // bitfield
+    ADD_END("\n");
+}
+
 void Fog::build_schema()
 {
     if(schema_initialized)
@@ -46,7 +61,16 @@ void Fog::build_schema()
     ADD_FIELD(""    ,0xD  ,0x10,0x0,0,(Color3ub BinReadable::*)&Fog::m_col2);
     ADD_END("\n");
 }
-
+void Omni::build_schema()
+{
+    if(schema_initialized)
+        return;
+    schema_initialized=true;
+    ADD_FIELD(""    ,0x20D  ,0x0,0x0,0,(Color3ub BinReadable::*)&Omni::m_color);
+    ADD_FIELD(""    ,0x20A  ,0x4,0x0,0,FLT_REF(Omni,m_val));
+    ADD_FIELD(""    ,0x20F  ,0x8,0x0,0,U32_REF(Omni,m_flags)); // bitfield
+    ADD_END("");
+}
 void Beacon::build_schema()
 {
     if(schema_initialized)
@@ -94,6 +118,8 @@ void Def::build_schema()
 
     ADD_FIELD(""            ,0x206  ,0x0    ,0x00   ,0,STR_REF(Def,m_src_name));
     ADD_FIELD("ReplaceTex"  ,0x15   ,0x1C   ,0x08   ,&TexReplace::m_schema,ARR_REF(Def,m_texture_replacements));
+    ADD_FIELD("Omni"        ,0x15   ,0x20   ,0x0C   ,&Omni::m_schema,ARR_REF(Def,m_omni));
+    ADD_FIELD("Sound"       ,0x15   ,0x18   ,0x14   ,&Sound::m_schema,ARR_REF(Def,m_sounds));
     ADD_FIELD("Beacon"      ,0x15   ,0x24   ,0x08   ,&Beacon::m_schema,ARR_REF(Def,m_beacons));
     ADD_FIELD("Fog"         ,0x15   ,0x28   ,0x14   ,&Fog::m_schema,ARR_REF(Def,m_fogs));
     ADD_FIELD("Lod"         ,0x15   ,0x30   ,0x14   ,&Lod::m_schema,ARR_REF(Def,m_lods));

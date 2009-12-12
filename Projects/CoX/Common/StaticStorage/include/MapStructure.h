@@ -20,7 +20,10 @@ namespace MapStructs
         std::vector<BinReadable *> m_lods;
         std::vector<BinReadable *> m_fogs;
         std::vector<BinReadable *> m_beacons;
+        std::vector<BinReadable *> m_sounds;
         std::vector<BinReadable *> m_texture_replacements;
+        std::vector<BinReadable *> m_omni;
+
         std::string m_src_name;
         std::string m_obj_name;
         std::string m_type_name;
@@ -44,11 +47,30 @@ namespace MapStructs
         static void build_schema();
     };
 
+    struct Omni : public BinReadable
+    {
+        DECL_READABLE(Omni);
+        float m_val;
+        u32 m_flags;
+        Color3ub m_color;
+        static void build_schema();
+    };
+
     struct Beacon : public BinReadable
     {
         DECL_READABLE(Beacon);
         std::string m_name;
         float m_val; //radius?
+        static void build_schema();
+    };
+    struct Sound : public BinReadable
+    {
+        DECL_READABLE(Sound);
+        std::string m_name;
+        float m_a;
+        float m_b;
+        float m_c;
+        u32 m_flags;
         static void build_schema();
     };
     struct Fog : public BinReadable
