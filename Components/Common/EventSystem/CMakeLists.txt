@@ -1,11 +1,13 @@
 # $Id$
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/EventProcessor.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/SEGSTimer.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/EventProcessor.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/SEGSEvent.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/LinkLevelEvent.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/SEGSTimer.h
 )
 
 FIND_PACKAGE(ACE REQUIRED)
