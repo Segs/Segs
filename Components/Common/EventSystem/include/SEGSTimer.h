@@ -22,4 +22,6 @@ public:
     void                cancel();
     void                reset();
     void                reschedule(const ACE_Time_Value &new_time);
+    EventProcessor *    target() const {return m_target;}
+    void *              data() const {return m_data;}
 };

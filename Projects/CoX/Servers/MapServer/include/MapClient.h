@@ -24,14 +24,16 @@ class MapHandler;
 class CoXMap;
 class NetCommand;
 class GamePacket;
+class SEGSTimer;
 class MapClient : public ClientSession
 {
     friend class CharacterDatabase;
     typedef std::map<int,NetCommand *> mNetCommands;
     mNetCommands            m_shortcuts;
-    CoXMap *               m_current_map;
+    CoXMap *                m_current_map;
     Entity *                m_ent;
     std::string             m_name; // current character name, stored here for quick lookups
+    SEGSTimer *             m_tick_source;
 public:
                             MapClient();
 virtual                     ~MapClient(){};

@@ -2,7 +2,7 @@
 #include "MapClient.h"
 #include "MapHandler.h"
 #include "Entity.h"
-MapClient::MapClient() : m_ent(NULL)
+MapClient::MapClient() : m_ent(0),m_tick_source(0)
 {
 
 }

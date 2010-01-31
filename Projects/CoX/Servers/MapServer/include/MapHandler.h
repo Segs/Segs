@@ -34,7 +34,7 @@ protected:
     void        on_shortcuts_request(ShortcutsRequest *ev);
     void        on_scene_request(SceneRequest *ev);
     void        on_entities_request(EntitiesRequest *ev);
-
+    void        on_timeout(TimerEvent *ev);
 	//////////////////////////////////////////////////////////////////////////
 	// Server <-> Server events
 	void        on_expect_client(ExpectMapClient *ev);

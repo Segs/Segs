@@ -9,7 +9,7 @@ SEGSTimer::SEGSTimer( EventProcessor *m_processor,void *data,const ACE_Time_Valu
 {
     schedule();
 }
-
+// TODO: Make sure there are no timeouts scheduled by this timer, maybe ACE takes care of that when timer is canceled ?
 SEGSTimer::~SEGSTimer()
 {
     cancel();
@@ -18,7 +18,7 @@ SEGSTimer::~SEGSTimer()
 void SEGSTimer::schedule()
 {
     ACE_ASSERT(m_id==-1);
-    m_id = GlobalTimerQueue::instance()->schedule(m_target,m_data,ACE_OS::gettimeofday()+m_fire_delta_time);
+    m_id = GlobalTimerQueue::instance()->schedule(m_target,this,ACE_OS::gettimeofday()+m_fire_delta_time);
 }
 
 void SEGSTimer::cancel()

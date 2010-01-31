@@ -27,6 +27,9 @@ void MapCommHandler::dispatch(SEGSEvent *ev)
 	ACE_ASSERT(ev);
 	switch(ev->type())
 	{
+    case SEGSEvent::evTimeout:
+        on_timeout(static_cast<TimerEvent *>(ev));
+        break;
     case Internal_EventTypes::evExpectClient:
         on_expect_client(static_cast<ExpectMapClient *>(ev));
         break;
@@ -170,8 +173,16 @@ void MapCommHandler::on_entities_request(EntitiesRequest *ev)
     // start map timer on this event
 }
 
+void MapCommHandler::on_timeout( TimerEvent *ev )
+{
+    //TODO: Move timer processing to per-client EventHandler ?
+    //1. Find the client that this timer corresponds to.
+    //2. Call appropriate method ( keep-alive, Entities update etc .. )
+}
+
 SEGSEvent * MapCommHandler::dispatch_sync( SEGSEvent *ev )
 {
     ACE_ASSERT(!"NO SYNC HANDLING");
     return 0;
 }
+
