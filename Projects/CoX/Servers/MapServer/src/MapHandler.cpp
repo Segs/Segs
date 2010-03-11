@@ -103,6 +103,8 @@ void MapCommHandler::on_expect_client( ExpectMapClient *ev )
 }
 void MapCommHandler::on_create_map_entity(NewEntity *ev)
 {
+    //TODO: At this point we should pre-process the NewEntity packet and let the proper CoXMapInstance handle the rest of processing
+
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl = m_clients.getExpectedByCookie(ev->m_cookie-2);
     ACE_ASSERT(cl);
@@ -118,14 +120,17 @@ void MapCommHandler::on_create_map_entity(NewEntity *ev)
 
 void MapCommHandler::on_shortcuts_request(ShortcutsRequest *ev)
 {
+    // TODO: expend this to properly access the data from :
+    // Shortcuts are part of UserData and that should be a part of Client entity which is a part of InstanceData
+    // TODO: use the access level and send proper commands
     MapLink * lnk = (MapLink *)ev->src();
     Shortcuts *res=new Shortcuts;
     res->m_client=(MapClient *)lnk->client_data();
-    // TODO: use the access level and send proper commands
     lnk->putq(res);
 }
 void MapCommHandler::on_scene_request(SceneRequest *ev)
 {
+    // TODO: Pull this up to CoXMapInstance level
     MapLink * lnk = (MapLink *)ev->src();
     Scene *res=new Scene;
     res->undos_PP=0;
@@ -170,14 +175,26 @@ void MapCommHandler::on_scene_request(SceneRequest *ev)
 }
 void MapCommHandler::on_entities_request(EntitiesRequest *ev)
 {
+    //TODO: Pull this up to CoXMapInstance
+    // this packet should start the per-client send-world-state-update timer
+    // actually I think the best place for this timer would be the map instance.
+    // so this method should call MapInstace->initial_update(MapClient *);
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *cl =(MapClient *)lnk->client_data();
+    SEGSTimer tmr;
     // start map timer on this event
 }
 
 void MapCommHandler::on_timeout( TimerEvent *ev )
 {
+    // TODO: This should send 'ping' packets on all client links to which we didn't send anything in the last time quantum
+    //
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *cl =(MapClient *)lnk->client_data();
     //TODO: Move timer processing to per-client EventHandler ?
     //1. Find the client that this timer corresponds to.
     //2. Call appropriate method ( keep-alive, Entities update etc .. )
+    //3. Maybe use one timer for all links ?
 }
 
 SEGSEvent * MapCommHandler::dispatch_sync( SEGSEvent *ev )
