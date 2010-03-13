@@ -21,6 +21,8 @@ DEF_SCHEMA(TexReplace);
 DEF_SCHEMA(Sound);
 DEF_SCHEMA(Ambient);
 DEF_SCHEMA(TintColor);
+DEF_SCHEMA(Property);
+DEF_SCHEMA(Group);
 
 void Lod::build_schema()
 {
@@ -113,7 +115,28 @@ void TexReplace::build_schema()
     ADD_FIELD(""    ,0x206  ,0x4,0x0,0,STR_REF(TexReplace,m_name_tgt));
     ADD_END("\n");
 }
+void Property::build_schema()
+{
+    if(schema_initialized)
+        return;
+    schema_initialized=true;
 
+    ADD_FIELD(""    ,0x206  ,0x0,0x0,0,STR_REF(Property,m_txt1));
+    ADD_FIELD(""    ,0x206  ,0x4,0x0,0,STR_REF(Property,m_txt2));
+    ADD_FIELD(""    ,0x205  ,0x8,0x0,0,STR_REF(Property,m_txt3));
+    ADD_END("\n");
+}
+void Group::build_schema()
+{
+    if(schema_initialized)
+        return;
+    schema_initialized=true;
+
+    ADD_FIELD(""    ,0x206  ,0x00,0x0,0,STR_REF(Group,m_name));
+    ADD_FIELD("Pos" ,0xC    ,0x04,0xC,0,VEC3_REF(Group,m_pos));
+    ADD_FIELD("Rot" ,0xC    ,0x10,0x8,0,VEC3_REF(Group,m_rot));
+    ADD_END("End");
+}
 void Ref::build_schema()
 {
     if(schema_initialized)
@@ -151,6 +174,8 @@ void Def::build_schema()
     ADD_FIELD("Ambient"     ,0x15   ,0x2C   ,0x04   ,&Ambient::m_schema,ARR_REF(Def,m_ambients));
     ADD_FIELD("Lod"         ,0x15   ,0x30   ,0x14   ,&Lod::m_schema,ARR_REF(Def,m_lods));
     ADD_FIELD("TintColor"   ,0x15   ,0x14   ,0x08   ,&TintColor::m_schema,ARR_REF(Def,m_tint_colors));
+    ADD_FIELD("Property"    ,0x15   ,0x10   ,0x0C   ,&Property::m_schema,ARR_REF(Def,m_properties));
+    ADD_FIELD("Group"       ,0x15   ,0x0C   ,0x1C   ,&Group::m_schema,ARR_REF(Def,m_groups));
     ADD_FIELD("Flags"       ,0xF    ,0x34   ,0x00   ,0,U32_REF(Def,m_flags)); // bitfield
     ADD_FIELD("Obj"         ,0x6    ,0x04   ,0x00   ,0,STR_REF(Def,m_obj_name));
     ADD_FIELD("Type"        ,0x6    ,0x08   ,0x00   ,0,STR_REF(Def,m_type_name));

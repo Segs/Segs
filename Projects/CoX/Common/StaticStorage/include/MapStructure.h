@@ -25,6 +25,8 @@ namespace MapStructs
         std::vector<BinReadable *> m_omni;
         std::vector<BinReadable *> m_ambients;
         std::vector<BinReadable *> m_tint_colors;
+        std::vector<BinReadable *> m_properties;
+        std::vector<BinReadable *> m_groups;
 
         std::string m_src_name;
         std::string m_obj_name;
@@ -106,6 +108,22 @@ namespace MapStructs
         float m_near;
         float m_near_fade;
         float m_scale;
+        static void build_schema();
+    };
+    struct Property : public BinReadable
+    {
+        DECL_READABLE(Property);
+        std::string m_txt1;
+        std::string m_txt2;
+        std::string m_txt3;
+        static void build_schema();
+    };
+    struct Group : public BinReadable
+    {
+        DECL_READABLE(Group);
+        std::string m_name;
+        Vec3 m_pos;
+        Vec3 m_rot;
         static void build_schema();
     };
 }
