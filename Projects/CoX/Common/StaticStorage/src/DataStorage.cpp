@@ -100,8 +100,7 @@ bool BinStore::open( const ClassSchema *s,const std::string &name )
     s->calc_crc(v);
     m_required_crc=v.result();
     bool result = check_bin_version_and_crc(s);
-    read_data_blocks(true);
-    return result;
+    return result && read_data_blocks(true);
 }
 
 bool BinStore::read( u32 &v )

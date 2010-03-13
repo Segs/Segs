@@ -19,6 +19,7 @@ DEF_SCHEMA(Fog);
 DEF_SCHEMA(Beacon);
 DEF_SCHEMA(TexReplace);
 DEF_SCHEMA(Sound);
+DEF_SCHEMA(Omni);
 DEF_SCHEMA(Ambient);
 DEF_SCHEMA(TintColor);
 DEF_SCHEMA(Property);
@@ -153,15 +154,16 @@ void Def::build_schema()
 {
     if(schema_initialized)
         return;
-    Lod::build_schema();
-    Fog::build_schema();
-    Beacon::build_schema();
     TexReplace::build_schema();
     Omni::build_schema();
     Sound::build_schema();
+    Beacon::build_schema();
     Fog::build_schema();
-    Lod::build_schema();
     Ambient::build_schema();
+    Lod::build_schema();
+    TintColor::build_schema();
+    Property::build_schema();
+    Group::build_schema();
 
     schema_initialized=true;
 
@@ -176,9 +178,9 @@ void Def::build_schema()
     ADD_FIELD("TintColor"   ,0x15   ,0x14   ,0x08   ,&TintColor::m_schema,ARR_REF(Def,m_tint_colors));
     ADD_FIELD("Property"    ,0x15   ,0x10   ,0x0C   ,&Property::m_schema,ARR_REF(Def,m_properties));
     ADD_FIELD("Group"       ,0x15   ,0x0C   ,0x1C   ,&Group::m_schema,ARR_REF(Def,m_groups));
+    ADD_FIELD("Type"        ,0x6    ,0x08   ,0x00   ,0,STR_REF(Def,m_type_name));
     ADD_FIELD("Flags"       ,0xF    ,0x34   ,0x00   ,0,U32_REF(Def,m_flags)); // bitfield
     ADD_FIELD("Obj"         ,0x6    ,0x04   ,0x00   ,0,STR_REF(Def,m_obj_name));
-    ADD_FIELD("Type"        ,0x6    ,0x08   ,0x00   ,0,STR_REF(Def,m_type_name));
     ADD_END("End");
     ADD_END("DefEnd");
     //ADD_END("");
@@ -192,6 +194,7 @@ void SceneStorage::build_schema()
     Def::build_schema();
     Ref::build_schema();
 
+    ADD_FIELD("Version"     ,0x5    ,0x0,0x0,0,U32_REF(SceneStorage,m_version));
     ADD_FIELD("Scenefile"   ,0x6    ,0xC,0x0,0,STR_REF(SceneStorage,m_scene_file));
     ADD_FIELD("Def"         ,0x15   ,0x4,0x8,&Def::m_schema,ARR_REF(SceneStorage,m_defs));
     ADD_FIELD("RootMod"     ,0x115  ,0x4,0x8,&Def::m_schema,ARR_REF(SceneStorage,m_defs));

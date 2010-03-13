@@ -121,7 +121,7 @@ namespace MapStructs
     struct Group : public BinReadable
     {
         DECL_READABLE(Group);
-        std::string m_name;
+        std::string m_name; // this is reference to a model name or def name
         Vec3 m_pos;
         Vec3 m_rot;
         static void build_schema();

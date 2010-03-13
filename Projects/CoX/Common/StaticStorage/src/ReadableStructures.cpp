@@ -23,7 +23,7 @@ void Field::calc_crc( CrcVisitor &v ) const
 bool Field::read_non_nested( BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
-    if(m_type&0x100)
+    if((m_type&0x100) || ((m_type&0xFF) - 3>17))
         return parse_ok;
     switch ( (m_type&0xFF) - 3 )
     {
