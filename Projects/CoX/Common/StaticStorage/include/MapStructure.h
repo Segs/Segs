@@ -23,6 +23,8 @@ namespace MapStructs
         std::vector<BinReadable *> m_sounds;
         std::vector<BinReadable *> m_texture_replacements;
         std::vector<BinReadable *> m_omni;
+        std::vector<BinReadable *> m_ambients;
+        std::vector<BinReadable *> m_tint_colors;
 
         std::string m_src_name;
         std::string m_obj_name;
@@ -46,7 +48,12 @@ namespace MapStructs
         std::string m_name_tgt;
         static void build_schema();
     };
-
+    struct Ambient : public BinReadable
+    {
+        DECL_READABLE(Ambient);
+        Color3ub m_color;
+        static void build_schema();
+    };
     struct Omni : public BinReadable
     {
         DECL_READABLE(Omni);
@@ -79,6 +86,13 @@ namespace MapStructs
         float m_a;
         float m_b;
         float m_c;
+        Color3ub m_col1;
+        Color3ub m_col2;
+        static void build_schema();
+    };
+    struct TintColor : public BinReadable
+    {
+        DECL_READABLE(TintColor);
         Color3ub m_col1;
         Color3ub m_col2;
         static void build_schema();
