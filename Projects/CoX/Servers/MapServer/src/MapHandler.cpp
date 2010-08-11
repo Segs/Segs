@@ -43,7 +43,7 @@ void MapCommHandler::dispatch(SEGSEvent *ev)
         on_connection_request((ConnectRequest<MapLinkEvent> *)ev);
         break;
     case MapEventTypes::evEntityEnteringMap:
-        on_create_map_entity((NewEntity *)ev);
+        on_create_map_entity(static_cast<NewEntity *>(ev));
         break;
     case MapEventTypes::evShortcutsRequest:
         on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
@@ -113,6 +113,8 @@ void MapCommHandler::on_create_map_entity(NewEntity *ev)
     if(ev->m_new_character)
     {
         cl->db_create();
+//        start_idle_timer(cl);
+        //cl->start_idle_timer();
     }
     lnk->client_data((void *)cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
@@ -181,8 +183,9 @@ void MapCommHandler::on_entities_request(EntitiesRequest *ev)
     // so this method should call MapInstace->initial_update(MapClient *);
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl =(MapClient *)lnk->client_data();
-    SEGSTimer tmr;
+//    SEGSTimer tmr;
     // start map timer on this event
+//    start_entity_state_update();
 }
 
 void MapCommHandler::on_timeout( TimerEvent *ev )
