@@ -7,13 +7,16 @@ FIND_PACKAGE(Qt COMPONENTS Gui Core REQUIRED)
 ################# Qt Ui related ###############################################
 include(${QT_USE_FILE})
 SET(gui_UI_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/ui/mainwindow.ui
+    ui/mainwindow.ui
+    ui/objecttreewidget.ui
 )
 SET(gui_MOC_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/mainwindow.h
+    include/mainwindow.h
+    include/objecttreewidget.h
 )
 SET(gui_SOURCES
     src/mainwindow.cpp
+    src/objecttreewidget.cpp
     ${gui_MOC_HEADERS}
 )
 QT4_WRAP_UI(gui_UI_H ${gui_UI_FILES})

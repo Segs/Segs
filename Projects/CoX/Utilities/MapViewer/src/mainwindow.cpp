@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include <ace/ACE.h>
 #include "MapStructure.h"
-
+#include "objecttreewidget.h"
 void test_reading()
 {
     SceneStorage m_scene;
@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    this->addDockWidget(Qt::LeftDockWidgetArea,new ObjectTreeWidget(this));
 
 }
 
