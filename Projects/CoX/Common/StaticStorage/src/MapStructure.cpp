@@ -30,13 +30,13 @@ void Lod::build_schema()
     if(schema_initialized)
         return;
     schema_initialized=true;
-
-    ADD_FIELD("Far"         ,0xA  ,0x0,0x0,0,FLT_REF(Lod,m_far));
-    ADD_FIELD("FarFade"     ,0xA  ,0x4,0x0,0,FLT_REF(Lod,m_far_fade));
-    ADD_FIELD("Near"        ,0xA  ,0x8,0x0,0,FLT_REF(Lod,m_near));
-    ADD_FIELD("NearFade"    ,0xA  ,0xC,0x0,0,FLT_REF(Lod,m_near_fade));
-    ADD_FIELD("Scale"       ,0xA  ,0x10,0xC,0,FLT_REF(Lod,m_scale));
-    ADD_END("End");
+    
+    m_schema.add_field("Far"         ,0xA  ,0x0, 0x0,FLT_REF(Lod,m_far));
+    m_schema.add_field("FarFade"     ,0xA  ,0x4, 0x0,FLT_REF(Lod,m_far_fade));
+    m_schema.add_field("Near"        ,0xA  ,0x8, 0x0,FLT_REF(Lod,m_near));
+    m_schema.add_field("NearFade"    ,0xA  ,0xC, 0x0,FLT_REF(Lod,m_near_fade));
+    m_schema.add_field("Scale"       ,0xA  ,0x10,0xC,FLT_REF(Lod,m_scale));
+    m_schema.add_end("End");
 }
 
 void Sound::build_schema()
@@ -45,20 +45,20 @@ void Sound::build_schema()
         return;
     schema_initialized=true;
 
-    ADD_FIELD(""    ,0x6  ,0x0  ,0x0,0,STR_REF(Sound,m_name));
-    ADD_FIELD(""    ,0xA  ,0x0  ,0x0,0,FLT_REF(Sound,m_a));
-    ADD_FIELD(""    ,0xA  ,0x4  ,0x0,0,FLT_REF(Sound,m_b));
-    ADD_FIELD(""    ,0xA  ,0x8  ,0x0,0,FLT_REF(Sound,m_c));
-    ADD_FIELD(""    ,0xF  ,0x10 ,0x0,0,U32_REF(Def,m_flags)); // bitfield
-    ADD_END("\n");
+    m_schema.add_field(""    ,0x6  ,0x0  ,0x0,STR_REF(Sound,m_name));
+    m_schema.add_field(""    ,0xA  ,0x0  ,0x0,FLT_REF(Sound,m_a));
+    m_schema.add_field(""    ,0xA  ,0x4  ,0x0,FLT_REF(Sound,m_b));
+    m_schema.add_field(""    ,0xA  ,0x8  ,0x0,FLT_REF(Sound,m_c));
+    m_schema.add_field(""    ,0xF  ,0x10 ,0x0,U32_REF(Def,m_flags)); // bitfield
+    m_schema.add_end("\n");
 }
 void Ambient::build_schema()
 {
     if(schema_initialized)
         return;
     schema_initialized=true;
-    ADD_FIELD(""    ,0x20D  ,0xC,0x0,0,(Color3ub BinReadable::*)&Ambient::m_color);
-    ADD_END("\n");
+    m_schema.add_field("",0x20D,0xC,0x0,(Color3ub BinReadable::*)&Ambient::m_color);//
+    m_schema.add_end("\n");
 }
 
 void TintColor::build_schema()
@@ -66,9 +66,9 @@ void TintColor::build_schema()
     if(schema_initialized)
         return;
     schema_initialized=true;
-    ADD_FIELD(""    ,0x20D  ,0x0,0x0,0,(Color3ub BinReadable::*)&TintColor::m_col1);
-    ADD_FIELD(""    ,0x20D  ,0x4,0x0,0,(Color3ub BinReadable::*)&TintColor::m_col2);
-    ADD_END("\n");
+    m_schema.add_field(""    ,0x20D  ,0x0,0x0,(Color3ub BinReadable::*)&TintColor::m_col1);
+    m_schema.add_field(""    ,0x20D  ,0x4,0x0,(Color3ub BinReadable::*)&TintColor::m_col2);
+    m_schema.add_end("\n");
 
 }
 
@@ -78,22 +78,22 @@ void Fog::build_schema()
         return;
     schema_initialized=true;
 
-    ADD_FIELD(""    ,0xA  ,0x0,0x0,0,FLT_REF(Fog,m_a));
-    ADD_FIELD(""    ,0xA  ,0x4,0x0,0,FLT_REF(Fog,m_b));
-    ADD_FIELD(""    ,0xA  ,0x8,0x0,0,FLT_REF(Fog,m_c));
-    ADD_FIELD(""    ,0xD  ,0xC,0x0,0,(Color3ub BinReadable::*)&Fog::m_col1);
-    ADD_FIELD(""    ,0xD  ,0x10,0x0,0,(Color3ub BinReadable::*)&Fog::m_col2);
-    ADD_END("\n");
+    m_schema.add_field(""    ,0xA  ,0x0,0x0,FLT_REF(Fog,m_a));
+    m_schema.add_field(""    ,0xA  ,0x4,0x0,FLT_REF(Fog,m_b));
+    m_schema.add_field(""    ,0xA  ,0x8,0x0,FLT_REF(Fog,m_c));
+    m_schema.add_field(""    ,0xD  ,0xC,0x0,(Color3ub BinReadable::*)&Fog::m_col1);
+    m_schema.add_field(""    ,0xD  ,0x10,0x0,(Color3ub BinReadable::*)&Fog::m_col2);
+    m_schema.add_end("\n");
 }
 void Omni::build_schema()
 {
     if(schema_initialized)
         return;
     schema_initialized=true;
-    ADD_FIELD(""    ,0x20D  ,0x0,0x0,0,(Color3ub BinReadable::*)&Omni::m_color);
-    ADD_FIELD(""    ,0x20A  ,0x4,0x0,0,FLT_REF(Omni,m_val));
-    ADD_FIELD(""    ,0x20F  ,0x8,0x0,0,U32_REF(Omni,m_flags)); // bitfield
-    ADD_END("");
+    m_schema.add_field(""    ,0x20D  ,0x0,0x0,(Color3ub BinReadable::*)&Omni::m_color);
+    m_schema.add_field(""    ,0x20A  ,0x4,0x0,FLT_REF(Omni,m_val));
+    m_schema.add_field(""    ,0x20F  ,0x8,0x0,U32_REF(Omni,m_flags)); // bitfield
+    m_schema.add_end("");
 }
 void Beacon::build_schema()
 {
@@ -101,9 +101,9 @@ void Beacon::build_schema()
         return;
     schema_initialized=true;
 
-    ADD_FIELD(""    ,0x206  ,0x0,0x0,0,STR_REF(Beacon,m_name));
-    ADD_FIELD(""    ,0x20A  ,0x4,0x0,0,FLT_REF(Beacon,m_val));
-    ADD_END("\n");
+    m_schema.add_field(""    ,0x206  ,0x0,0x0,STR_REF(Beacon,m_name));
+    m_schema.add_field(""    ,0x20A  ,0x4,0x0,FLT_REF(Beacon,m_val));
+    m_schema.add_end("\n");
 }
 
 void TexReplace::build_schema()
@@ -112,9 +112,9 @@ void TexReplace::build_schema()
         return;
     schema_initialized=true;
 
-    ADD_FIELD(""    ,0x205  ,0x0,0x0,0,STR_REF(TexReplace,m_name_src));
-    ADD_FIELD(""    ,0x206  ,0x4,0x0,0,STR_REF(TexReplace,m_name_tgt));
-    ADD_END("\n");
+    m_schema.add_field(""    ,0x205  ,0x0,0x0,STR_REF(TexReplace,m_name_src));
+    m_schema.add_field(""    ,0x206  ,0x4,0x0,STR_REF(TexReplace,m_name_tgt));
+    m_schema.add_end("\n");
 }
 void Property::build_schema()
 {
@@ -122,10 +122,10 @@ void Property::build_schema()
         return;
     schema_initialized=true;
 
-    ADD_FIELD(""    ,0x206  ,0x0,0x0,0,STR_REF(Property,m_txt1));
-    ADD_FIELD(""    ,0x206  ,0x4,0x0,0,STR_REF(Property,m_txt2));
-    ADD_FIELD(""    ,0x205  ,0x8,0x0,0,STR_REF(Property,m_txt3));
-    ADD_END("\n");
+    m_schema.add_field(""    ,0x206  ,0x0,0x0,STR_REF(Property,m_txt1));
+    m_schema.add_field(""    ,0x206  ,0x4,0x0,STR_REF(Property,m_txt2));
+    m_schema.add_field(""    ,0x205  ,0x8,0x0,STR_REF(Property,m_txt3));
+    m_schema.add_end("\n");
 }
 void Group::build_schema()
 {
@@ -133,10 +133,10 @@ void Group::build_schema()
         return;
     schema_initialized=true;
 
-    ADD_FIELD(""    ,0x206  ,0x00,0x0,0,STR_REF(Group,m_name));
-    ADD_FIELD("Pos" ,0xC    ,0x04,0xC,0,VEC3_REF(Group,m_pos));
-    ADD_FIELD("Rot" ,0xC    ,0x10,0x8,0,VEC3_REF(Group,m_rot));
-    ADD_END("End");
+    m_schema.add_field(""    ,0x206  ,0x00,0x0,STR_REF(Group,m_name));
+    m_schema.add_field("Pos" ,0xC    ,0x04,0xC,VEC3_REF(Group,m_pos));
+    m_schema.add_field("Rot" ,0xC    ,0x10,0x8,VEC3_REF(Group,m_rot));
+    m_schema.add_end("End");
 }
 void Ref::build_schema()
 {
@@ -144,10 +144,10 @@ void Ref::build_schema()
         return;
     schema_initialized=true;
 
-    ADD_FIELD(""            ,0x206  ,0x0,0x0,0,STR_REF(Ref,m_src_name));
-    ADD_FIELD("Pos"         ,0xC   ,0x4,0xC,0,VEC3_REF(Ref,m_pos));
-    ADD_FIELD("Rot"         ,0xC  ,0x10,0x8,0,VEC3_REF(Ref,m_rot));
-    //ADD_END("");
+    m_schema.add_field(""            ,0x206  ,0x0,0x0,STR_REF(Ref,m_src_name));
+    m_schema.add_field("Pos"         ,0xC   ,0x4,0xC,VEC3_REF(Ref,m_pos));
+    m_schema.add_field("Rot"         ,0xC  ,0x10,0x8,VEC3_REF(Ref,m_rot));
+    //m_schema.add_end("");
 }
 
 void Def::build_schema()
@@ -166,24 +166,23 @@ void Def::build_schema()
     Group::build_schema();
 
     schema_initialized=true;
-
-    ADD_FIELD(""            ,0x206  ,0x0    ,0x00   ,0,STR_REF(Def,m_src_name));
-    ADD_FIELD("ReplaceTex"  ,0x15   ,0x1C   ,0x08   ,&TexReplace::m_schema,ARR_REF(Def,m_texture_replacements));
-    ADD_FIELD("Omni"        ,0x15   ,0x20   ,0x0C   ,&Omni::m_schema,ARR_REF(Def,m_omni));
-    ADD_FIELD("Sound"       ,0x15   ,0x18   ,0x14   ,&Sound::m_schema,ARR_REF(Def,m_sounds));
-    ADD_FIELD("Beacon"      ,0x15   ,0x24   ,0x08   ,&Beacon::m_schema,ARR_REF(Def,m_beacons));
-    ADD_FIELD("Fog"         ,0x15   ,0x28   ,0x14   ,&Fog::m_schema,ARR_REF(Def,m_fogs));
-    ADD_FIELD("Ambient"     ,0x15   ,0x2C   ,0x04   ,&Ambient::m_schema,ARR_REF(Def,m_ambients));
-    ADD_FIELD("Lod"         ,0x15   ,0x30   ,0x14   ,&Lod::m_schema,ARR_REF(Def,m_lods));
-    ADD_FIELD("TintColor"   ,0x15   ,0x14   ,0x08   ,&TintColor::m_schema,ARR_REF(Def,m_tint_colors));
-    ADD_FIELD("Property"    ,0x15   ,0x10   ,0x0C   ,&Property::m_schema,ARR_REF(Def,m_properties));
-    ADD_FIELD("Group"       ,0x15   ,0x0C   ,0x1C   ,&Group::m_schema,ARR_REF(Def,m_groups));
-    ADD_FIELD("Type"        ,0x6    ,0x08   ,0x00   ,0,STR_REF(Def,m_type_name));
-    ADD_FIELD("Flags"       ,0xF    ,0x34   ,0x00   ,0,U32_REF(Def,m_flags)); // bitfield
-    ADD_FIELD("Obj"         ,0x6    ,0x04   ,0x00   ,0,STR_REF(Def,m_obj_name));
-    ADD_END("End");
-    ADD_END("DefEnd");
-    //ADD_END("");
+    m_schema.add_field(""   ,0x206  ,0x0    ,0x00     ,STR_REF(Def,m_src_name));
+    m_schema.add_field_nested("ReplaceTex"  ,0x15   ,0x1C   ,0x08   ,TARGETED_ARR_OF_REF(Def,TexReplace,m_texture_replacements));
+    m_schema.add_field_nested("Omni"        ,0x15   ,0x20   ,0x0C   ,TARGETED_ARR_OF_REF(Def,Omni,m_omni));
+    m_schema.add_field_nested("Sound"       ,0x15   ,0x18   ,0x14   ,TARGETED_ARR_OF_REF(Def,Sound,m_sounds));
+    m_schema.add_field_nested("Beacon"      ,0x15   ,0x24   ,0x08   ,TARGETED_ARR_OF_REF(Def,Beacon,m_beacons));
+    m_schema.add_field_nested("Fog"         ,0x15   ,0x28   ,0x14   ,TARGETED_ARR_OF_REF(Def,Fog,m_fogs));
+    m_schema.add_field_nested("Ambient"     ,0x15   ,0x2C   ,0x04   ,TARGETED_ARR_OF_REF(Def,Ambient,m_ambients));
+    m_schema.add_field_nested("Lod"         ,0x15   ,0x30   ,0x14   ,TARGETED_ARR_OF_REF(Def,Lod,m_lods));
+    m_schema.add_field_nested("TintColor"   ,0x15   ,0x14   ,0x08   ,TARGETED_ARR_OF_REF(Def,TintColor,m_tint_colors));
+    m_schema.add_field_nested("Property"    ,0x15   ,0x10   ,0x0C   ,TARGETED_ARR_OF_REF(Def,Property,m_properties));
+    m_schema.add_field_nested("Group"       ,0x15   ,0x0C   ,0x1C   ,TARGETED_ARR_OF_REF(Def,Group,m_groups));
+    m_schema.add_field("Type" ,0x6    ,0x08   ,0x00     ,STR_REF(Def,m_type_name));
+    m_schema.add_field("Flags",0xF    ,0x34   ,0x00     ,U32_REF(Def,m_flags)); // bitfield
+    m_schema.add_field("Obj"  ,0x6    ,0x04   ,0x00     ,STR_REF(Def,m_obj_name));
+    m_schema.add_end("End");
+    m_schema.add_end("DefEnd");
+    //m_schema.add_end("");
 }
 
 void SceneStorage::build_schema()
@@ -194,11 +193,10 @@ void SceneStorage::build_schema()
     Def::build_schema();
     Ref::build_schema();
 
-    ADD_FIELD("Version"     ,0x5    ,0x0,0x0,0,U32_REF(SceneStorage,m_version));
-    ADD_FIELD("Scenefile"   ,0x6    ,0xC,0x0,0,STR_REF(SceneStorage,m_scene_file));
-    ADD_FIELD("Def"         ,0x15   ,0x4,0x8,&Def::m_schema,ARR_REF(SceneStorage,m_defs));
-    ADD_FIELD("RootMod"     ,0x115  ,0x4,0x8,&Def::m_schema,ARR_REF(SceneStorage,m_defs));
-    ADD_FIELD("Ref"         ,0x15   ,0x8,0x1C,&Ref::m_schema,ARR_REF(SceneStorage,m_refs));
-
-    ADD_END("");
+    m_schema.add_field("Version"     ,0x5    ,0x0,0x0,U32_REF(SceneStorage,m_version));
+    m_schema.add_field("Scenefile"   ,0x6    ,0xC,0x0,STR_REF(SceneStorage,m_scene_file));
+    m_schema.add_field_nested("Def"         ,0x15   ,0x4,0x8 ,TARGETED_ARR_OF_REF(SceneStorage,Def,m_defs));
+    m_schema.add_field_nested("RootMod"     ,0x115  ,0x4,0x8 ,TARGETED_ARR_OF_REF(SceneStorage,Def,m_root));
+    m_schema.add_field_nested("Ref"         ,0x15   ,0x8,0x1C,TARGETED_ARR_OF_REF(SceneStorage,Ref,m_refs));
+    m_schema.add_end("");
 }

@@ -48,8 +48,8 @@ struct GeoSetEntry : public BinReadable
     std::string m_display_name;
     std::string m_body_part;
     u32 m_typename;
-    std::vector<BinReadable *> m_mask_vals;
-    std::vector<BinReadable *> m_mask_infos;
+    std::vector<GeoSetMaskEntry *> m_mask_vals;
+    std::vector<GeoSetInfoEntry *> m_mask_infos;
     std::vector<std::string> m_masks;
     std::vector<std::string> m_mask_names;
 };
@@ -62,7 +62,7 @@ struct BoneSetEntry : public BinReadable
 
     std::string m_name;
     std::string m_display_name;
-    std::vector<BinReadable *> m_geoset;
+    std::vector<GeoSetEntry *> m_geoset;
 };
 struct RegionEntry : public BinReadable
 {
@@ -87,12 +87,12 @@ struct CostumeEntry  : public BinReadable
 {
     DECL_READABLE(CostumeEntry);
     std::string m_name;
-    std::vector<BinReadable *> m_origins;
+    std::vector<OriginEntry *> m_origins;
     static void build_schema();
 };
 struct CostumeStorage : public BinReadable
 {
     DECL_READABLE(CostumeStorage);
-    std::vector<BinReadable *> m_costumes;
+    std::vector<CostumeEntry *> m_costumes;
     static void build_schema();
 };

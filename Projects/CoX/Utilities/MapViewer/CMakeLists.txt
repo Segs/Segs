@@ -37,7 +37,7 @@ SET(target_DEPENDS "")
 
 SEGS_ADD_COMPONENT(static_storage LIB)
 
-INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${target_INCLUDE_DIR} ${ACE_path})
 
 SET (target_SOURCES
 ${gui_SOURCES}

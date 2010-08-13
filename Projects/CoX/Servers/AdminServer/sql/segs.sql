@@ -1,11 +1,4 @@
-CREATE DATABASE segs WITH TEMPLATE = template0 ENCODING = 'UTF8';
-
-
-ALTER DATABASE segs OWNER TO segsadmin;
-
-connect segs
-
-CREATE TABLE accounts (
+﻿CREATE TABLE accounts (
     id integer NOT NULL,
     username character varying(32),
     access_level smallint,

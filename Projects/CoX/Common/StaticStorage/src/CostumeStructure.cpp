@@ -26,10 +26,10 @@ void CostumeEntry::build_schema()
 
     OriginEntry::build_schema();
 
-    ADD_FIELD("Name"        ,0x6 ,0x0,0x0,0,STR_REF(CostumeEntry,m_name));
-    ADD_FIELD("Origin"      ,0x15,0x4,0x10,&OriginEntry::m_schema,(std::vector<BinReadable *>  BinReadable::*)&CostumeEntry::m_origins);
-    ADD_END("End");
-    ADD_END("EndBody");
+    m_schema.add_field("Name"        ,0x6 ,0x0,0x0,STR_REF(CostumeEntry,m_name));
+    m_schema.add_field_nested("Origin",0x15,0x4,0x10,TARGETED_ARR_OF_REF(CostumeEntry,OriginEntry,m_origins));
+    m_schema.add_end("End");
+    m_schema.add_end("EndBody");
 }
 
 void CostumeStorage::build_schema()
@@ -40,7 +40,7 @@ void CostumeStorage::build_schema()
 
     CostumeEntry::build_schema();
 
-    ADD_FIELD("Costume"      ,0x15,0x0,0x8,&CostumeEntry::m_schema,(std::vector<BinReadable *>  BinReadable::*)&CostumeStorage::m_costumes);
+    m_schema.add_field_nested("Costume"      ,0x15,0x0,0x8,TARGETED_ARR_OF_REF(CostumeStorage,CostumeEntry,m_costumes));
 }
 
 void OriginEntry::build_schema()
@@ -52,12 +52,12 @@ void OriginEntry::build_schema()
     ColorStorage::build_schema();
     RegionEntry::build_schema();
 
-    ADD_FIELD("Name"        ,0x6 ,0x0,0x0 ,0,STR_REF(OriginEntry,m_name));
-    ADD_FIELD("BodyPalette" ,0x15,0x4,0x4 ,&ColorStorage::m_schema,(std::vector<BinReadable *>  BinReadable::*)&OriginEntry::m_body_palette);
-    ADD_FIELD("SkinPalette" ,0x15,0x8,0x4 ,&ColorStorage::m_schema,(std::vector<BinReadable *>  BinReadable::*)&OriginEntry::m_skin_palette);
-    ADD_FIELD("Region"      ,0x15,0xC,0x10,&RegionEntry::m_schema,(std::vector<BinReadable *>  BinReadable::*)&OriginEntry::m_regions);
-    ADD_END("End");
-    ADD_END("EndOrigin");
+    m_schema.add_field("Name"        ,0x6 ,0x0,0x0 ,STR_REF(OriginEntry,m_name));
+    m_schema.add_field_nested("BodyPalette" ,0x15,0x4,0x4 ,TARGETED_ARR_OF_REF(OriginEntry,ColorStorage,m_body_palette));
+    m_schema.add_field_nested("SkinPalette" ,0x15,0x8,0x4 ,TARGETED_ARR_OF_REF(OriginEntry,ColorStorage,m_skin_palette));
+    m_schema.add_field_nested("Region"      ,0x15,0xC,0x10,TARGETED_ARR_OF_REF(OriginEntry,RegionEntry,m_regions));
+    m_schema.add_end("End");
+    m_schema.add_end("EndOrigin");
 }
 void RegionEntry::build_schema()
 {
@@ -67,11 +67,11 @@ void RegionEntry::build_schema()
 
     BoneSetEntry::build_schema();
 
-    ADD_FIELD("Name"        ,0x6 ,0x0,0x0,0,STR_REF(RegionEntry,m_name));
-    ADD_FIELD("DisplayName" ,0x6 ,0x4,0x0,0,STR_REF(RegionEntry,m_display_name));
-    ADD_FIELD("BoneSet"     ,0x15,0xC,0x10,&BoneSetEntry::m_schema,(std::vector<BinReadable *>  BinReadable::*)&RegionEntry::m_bonsets);
-    ADD_END("End");
-    ADD_END("EndRegion");
+    m_schema.add_field("Name"        ,0x6 ,0x0,0x0,STR_REF(RegionEntry,m_name));
+    m_schema.add_field("DisplayName" ,0x6 ,0x4,0x0,STR_REF(RegionEntry,m_display_name));
+    m_schema.add_field_nested("BoneSet"     ,0x15,0xC,0x10,TARGETED_ARR_OF_REF(RegionEntry,BoneSetEntry,m_bonsets));
+    m_schema.add_end("End");
+    m_schema.add_end("EndRegion");
 }
 
 void BoneSetEntry::build_schema()
@@ -82,11 +82,11 @@ void BoneSetEntry::build_schema()
 
     GeoSetEntry::build_schema();
 
-    ADD_FIELD("Name"        ,0x6 ,0x0,0x0,0,STR_REF(BoneSetEntry,m_name));
-    ADD_FIELD("DisplayName" ,0x6 ,0x4,0x0,0,STR_REF(BoneSetEntry,m_display_name));
-    ADD_FIELD("GeoSet"      ,0x15,0xC,0x23C,&GeoSetEntry::m_schema,(std::vector<BinReadable *>  BinReadable::*)&BoneSetEntry::m_geoset);
-    ADD_END("End");
-    ADD_END("EndBoneSet");
+    m_schema.add_field("Name"        ,0x6 ,0x0,0x0,STR_REF(BoneSetEntry,m_name));
+    m_schema.add_field("DisplayName" ,0x6 ,0x4,0x0,STR_REF(BoneSetEntry,m_display_name));
+    m_schema.add_field_nested("GeoSet"      ,0x15,0xC,0x23C,TARGETED_ARR_OF_REF(BoneSetEntry,GeoSetEntry,m_geoset));
+    m_schema.add_end("End");
+    m_schema.add_end("EndBoneSet");
 }
 void GeoSetEntry::build_schema()
 {
@@ -97,16 +97,16 @@ void GeoSetEntry::build_schema()
     GeoSetMaskEntry::build_schema();
     GeoSetInfoEntry::build_schema();
 
-    ADD_FIELD("DisplayName" ,0x6 ,0x4,0x0,0,STR_REF(GeoSetEntry,m_display_name));
-    ADD_FIELD("BodyPart"    ,0x6 ,0x8,0x0,0,STR_REF(GeoSetEntry,m_body_part));
-    ADD_FIELD("Type"        ,0x5 ,0xC,0x0,0,U32_REF(GeoSetEntry,m_typename));
+    m_schema.add_field("DisplayName" ,0x6 ,0x4,0x0,STR_REF(GeoSetEntry,m_display_name));
+    m_schema.add_field("BodyPart"    ,0x6 ,0x8,0x0,STR_REF(GeoSetEntry,m_body_part));
+    m_schema.add_field("Type"        ,0x5 ,0xC,0x0,U32_REF(GeoSetEntry,m_typename));
 
-    ADD_FIELD("Info"        ,0x15,0x238,0x18,&GeoSetInfoEntry::m_schema,(std::vector<BinReadable *>  BinReadable::*)&GeoSetEntry::m_mask_infos);
-    ADD_FIELD("Mask"        ,0x15,0x234,0x8,&GeoSetMaskEntry::m_schema,(std::vector<BinReadable *>  BinReadable::*)&GeoSetEntry::m_mask_vals);
-    ADD_FIELD("Masks"       ,0x12,0x22C,0,0,(std::vector<std::string>  BinReadable::*)&GeoSetEntry::m_masks);
-    ADD_FIELD("MaskNames"   ,0x12,0x230,0,0,(std::vector<std::string>  BinReadable::*)&GeoSetEntry::m_mask_names);
-    ADD_END("End");
-    ADD_END("EndGeoSet");
+    m_schema.add_field_nested("Info" ,0x15,0x238,0x18,TARGETED_ARR_OF_REF(GeoSetEntry,GeoSetInfoEntry,m_mask_infos));
+    m_schema.add_field_nested("Mask" ,0x15,0x234,0x8,TARGETED_ARR_OF_REF(GeoSetEntry,GeoSetMaskEntry,m_mask_vals));
+    m_schema.add_field("Masks"       ,0x12,0x22C,0,(std::vector<std::string>  BinReadable::*)&GeoSetEntry::m_masks);
+    m_schema.add_field("MaskNames"   ,0x12,0x230,0,(std::vector<std::string>  BinReadable::*)&GeoSetEntry::m_mask_names);
+    m_schema.add_end("End");
+    m_schema.add_end("EndGeoSet");
 }
 
 void GeoSetInfoEntry::build_schema()
@@ -114,14 +114,14 @@ void GeoSetInfoEntry::build_schema()
     if(schema_initialized)
         return;
     schema_initialized=true;
-    ADD_FIELD("DisplayName" ,0x6 ,0x0,0x0,0,STR_REF(GeoSetInfoEntry,m_display_name));
-    ADD_FIELD("GeoName"     ,0x6 ,0x8,0x0,0,STR_REF(GeoSetInfoEntry,m_geo_name));
-    ADD_FIELD("Geo"         ,0x6 ,0x4,0x0,0,STR_REF(GeoSetInfoEntry,m_geo));
-    ADD_FIELD("Tex1"        ,0x6 ,0xC,0x0,0,STR_REF(GeoSetInfoEntry,m_tex1));
-    ADD_FIELD("Tex2"        ,0x6 ,0x10,0x0,0,STR_REF(GeoSetInfoEntry,m_tex2));
-    ADD_FIELD("DevOnly"     ,0x5 ,0x14,0x0,0,U32_REF(GeoSetInfoEntry,m_devonly));
-    ADD_END("End");
-    ADD_END("EndTex");
+    m_schema.add_field("DisplayName" ,0x6 ,0x0,0x0,STR_REF(GeoSetInfoEntry,m_display_name));
+    m_schema.add_field("GeoName"     ,0x6 ,0x8,0x0,STR_REF(GeoSetInfoEntry,m_geo_name));
+    m_schema.add_field("Geo"         ,0x6 ,0x4,0x0,STR_REF(GeoSetInfoEntry,m_geo));
+    m_schema.add_field("Tex1"        ,0x6 ,0xC,0x0,STR_REF(GeoSetInfoEntry,m_tex1));
+    m_schema.add_field("Tex2"        ,0x6 ,0x10,0x0,STR_REF(GeoSetInfoEntry,m_tex2));
+    m_schema.add_field("DevOnly"     ,0x5 ,0x14,0x0,U32_REF(GeoSetInfoEntry,m_devonly));
+    m_schema.add_end("End");
+    m_schema.add_end("EndTex");
 }
 
 void GeoSetMaskEntry::build_schema()
@@ -129,8 +129,8 @@ void GeoSetMaskEntry::build_schema()
     if(schema_initialized)
         return;
     schema_initialized=true;
-    ADD_FIELD("Name"        ,0x6 ,0x0,0x0,0,STR_REF(GeoSetMaskEntry,m_name));
-    ADD_FIELD("DisplayName" ,0x6 ,0x4,0x0,0,STR_REF(GeoSetMaskEntry,m_display_name));
-    ADD_END("End");
-    ADD_END("EndMask");
+    m_schema.add_field("Name"        ,0x6 ,0x0,0x0,STR_REF(GeoSetMaskEntry,m_name));
+    m_schema.add_field("DisplayName" ,0x6 ,0x4,0x0,STR_REF(GeoSetMaskEntry,m_display_name));
+    m_schema.add_end("End");
+    m_schema.add_end("EndMask");
 }

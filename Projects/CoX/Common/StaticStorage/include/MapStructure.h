@@ -14,19 +14,29 @@
 #include "ReadableStructures.h"
 namespace MapStructs
 {
+    struct Lod;
+    struct Fog;
+    struct Beacon;
+    struct Sound;
+    struct TexReplace;
+    struct Omni;
+    struct Ambient;
+    struct TintColor;
+    struct Property;
+    struct Group;
     struct Def : public BinReadable
     {
         DECL_READABLE(Def)
-        std::vector<BinReadable *> m_lods;
-        std::vector<BinReadable *> m_fogs;
-        std::vector<BinReadable *> m_beacons;
-        std::vector<BinReadable *> m_sounds;
-        std::vector<BinReadable *> m_texture_replacements;
-        std::vector<BinReadable *> m_omni;
-        std::vector<BinReadable *> m_ambients;
-        std::vector<BinReadable *> m_tint_colors;
-        std::vector<BinReadable *> m_properties;
-        std::vector<BinReadable *> m_groups;
+        std::vector<Lod *> m_lods;
+        std::vector<Fog *> m_fogs;
+        std::vector<Beacon *> m_beacons;
+        std::vector<Sound *> m_sounds;
+        std::vector<TexReplace *> m_texture_replacements;
+        std::vector<Omni *> m_omni;
+        std::vector<Ambient *> m_ambients;
+        std::vector<TintColor *> m_tint_colors;
+        std::vector<Property *> m_properties;
+        std::vector<Group *> m_groups;
 
         std::string m_src_name;
         std::string m_obj_name;
@@ -130,9 +140,9 @@ namespace MapStructs
 struct SceneStorage : public BinReadable
 {
     DECL_READABLE(SceneStorage)
-    std::vector<BinReadable *> m_defs;
-    std::vector<BinReadable *> m_refs;
-    std::vector<BinReadable *> m_root;
+    std::vector<MapStructs::Def *> m_defs;
+    std::vector<MapStructs::Ref *> m_refs;
+    std::vector<MapStructs::Def *> m_root;
     std::string m_scene_file;
     u32 m_version;
     static void build_schema();
