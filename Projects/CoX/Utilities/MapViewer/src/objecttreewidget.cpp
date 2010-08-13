@@ -12,3 +12,7 @@ ObjectTreeWidget::~ObjectTreeWidget()
 {
     delete ui;
 }
+void ObjectTreeWidget::set_model(QAbstractItemModel *model)
+{
+    ui->m_object_tree->setModel(model);
+}

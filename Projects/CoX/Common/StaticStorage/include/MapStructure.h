@@ -16,7 +16,7 @@ namespace MapStructs
 {
     struct Def : public BinReadable
     {
-        DECL_READABLE(Def);
+        DECL_READABLE(Def)
         std::vector<BinReadable *> m_lods;
         std::vector<BinReadable *> m_fogs;
         std::vector<BinReadable *> m_beacons;
@@ -36,7 +36,7 @@ namespace MapStructs
     };
     struct Ref : public BinReadable
     {
-        DECL_READABLE(Ref);
+        DECL_READABLE(Ref)
         std::string m_src_name;
         Vec3 m_pos;
         Vec3 m_rot;
@@ -45,20 +45,20 @@ namespace MapStructs
 
     struct TexReplace : public BinReadable
     {
-        DECL_READABLE(TexReplace);
+        DECL_READABLE(TexReplace)
         std::string m_name_src;
         std::string m_name_tgt;
         static void build_schema();
     };
     struct Ambient : public BinReadable
     {
-        DECL_READABLE(Ambient);
+        DECL_READABLE(Ambient)
         Color3ub m_color;
         static void build_schema();
     };
     struct Omni : public BinReadable
     {
-        DECL_READABLE(Omni);
+        DECL_READABLE(Omni)
         float m_val;
         u32 m_flags;
         Color3ub m_color;
@@ -67,14 +67,14 @@ namespace MapStructs
 
     struct Beacon : public BinReadable
     {
-        DECL_READABLE(Beacon);
+        DECL_READABLE(Beacon)
         std::string m_name;
         float m_val; //radius?
         static void build_schema();
     };
     struct Sound : public BinReadable
     {
-        DECL_READABLE(Sound);
+        DECL_READABLE(Sound)
         std::string m_name;
         float m_a;
         float m_b;
@@ -84,7 +84,7 @@ namespace MapStructs
     };
     struct Fog : public BinReadable
     {
-        DECL_READABLE(Fog);
+        DECL_READABLE(Fog)
         float m_a;
         float m_b;
         float m_c;
@@ -94,7 +94,7 @@ namespace MapStructs
     };
     struct TintColor : public BinReadable
     {
-        DECL_READABLE(TintColor);
+        DECL_READABLE(TintColor)
         Color3ub m_col1;
         Color3ub m_col2;
         static void build_schema();
@@ -102,7 +102,7 @@ namespace MapStructs
 
     struct Lod : public BinReadable
     {
-        DECL_READABLE(Lod);
+        DECL_READABLE(Lod)
         float m_far;
         float m_far_fade;
         float m_near;
@@ -112,7 +112,7 @@ namespace MapStructs
     };
     struct Property : public BinReadable
     {
-        DECL_READABLE(Property);
+        DECL_READABLE(Property)
         std::string m_txt1;
         std::string m_txt2;
         std::string m_txt3;
@@ -120,7 +120,7 @@ namespace MapStructs
     };
     struct Group : public BinReadable
     {
-        DECL_READABLE(Group);
+        DECL_READABLE(Group)
         std::string m_name; // this is reference to a model name or def name
         Vec3 m_pos;
         Vec3 m_rot;
@@ -129,11 +129,15 @@ namespace MapStructs
 }
 struct SceneStorage : public BinReadable
 {
-    DECL_READABLE(SceneStorage);
+    DECL_READABLE(SceneStorage)
     std::vector<BinReadable *> m_defs;
     std::vector<BinReadable *> m_refs;
     std::vector<BinReadable *> m_root;
     std::string m_scene_file;
     u32 m_version;
     static void build_schema();
+    bool has_children()
+    {
+        return 0!=(m_defs.size()+m_refs.size()+m_root.size());
+    }
 };

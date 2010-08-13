@@ -2,7 +2,7 @@
 #define OBJECTTREEWIDGET_H
 
 #include <QDockWidget>
-
+#include <QAbstractItemModel>
 namespace Ui {
     class ObjectTreeWidget;
 }
@@ -14,7 +14,7 @@ class ObjectTreeWidget : public QDockWidget
 public:
     explicit ObjectTreeWidget(QWidget *parent = 0);
     ~ObjectTreeWidget();
-
+    void set_model(QAbstractItemModel *model);
 private:
     Ui::ObjectTreeWidget *ui;
 };
