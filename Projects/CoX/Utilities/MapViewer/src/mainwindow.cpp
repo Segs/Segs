@@ -4,7 +4,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "objecttreewidget.h"
-
+#include "mapmodel.h"
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -28,7 +28,7 @@ void MainWindow::finish_viewer()
 }
 void MainWindow::load_map()
 {
-    QFileDialog dlg(this,tr("Select map file to load."));
+    QFileDialog dlg(this,tr("Select map file to load."),".");
     dlg.setFileMode(QFileDialog::ExistingFile);
     dlg.setNameFilter("CoX Map files (*.bin)");
     if(dlg.exec())

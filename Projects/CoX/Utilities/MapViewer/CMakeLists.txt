@@ -13,10 +13,12 @@ SET(gui_UI_FILES
 SET(gui_MOC_HEADERS
     include/mainwindow.h
     include/objecttreewidget.h
+    include/mapmodel.h
 )
 SET(gui_SOURCES
     src/mainwindow.cpp
     src/objecttreewidget.cpp
+    src/mapmodel.cpp
     ${gui_MOC_HEADERS}
 )
 QT4_WRAP_UI(gui_UI_H ${gui_UI_FILES})

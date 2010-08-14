@@ -56,7 +56,7 @@ namespace MapStructs
     struct TexReplace : public BinReadable
     {
         DECL_READABLE(TexReplace)
-        std::string m_name_src;
+        u32 m_src;
         std::string m_name_tgt;
         static void build_schema();
     };
@@ -125,7 +125,7 @@ namespace MapStructs
         DECL_READABLE(Property)
         std::string m_txt1;
         std::string m_txt2;
-        std::string m_txt3;
+        u32 m_val3;
         static void build_schema();
     };
     struct Group : public BinReadable
@@ -140,9 +140,10 @@ namespace MapStructs
 struct SceneStorage : public BinReadable
 {
     DECL_READABLE(SceneStorage)
-    std::vector<MapStructs::Def *> m_defs;
+    typedef std::vector<MapStructs::Def *> vDef;
+    vDef m_defs;
     std::vector<MapStructs::Ref *> m_refs;
-    std::vector<MapStructs::Def *> m_root;
+    vDef m_root;
     std::string m_scene_file;
     u32 m_version;
     static void build_schema();

@@ -30,7 +30,7 @@ void Lod::build_schema()
     if(schema_initialized)
         return;
     schema_initialized=true;
-    
+
     m_schema.add_field("Far"         ,0xA  ,0x0, 0x0,FLT_REF(Lod,m_far));
     m_schema.add_field("FarFade"     ,0xA  ,0x4, 0x0,FLT_REF(Lod,m_far_fade));
     m_schema.add_field("Near"        ,0xA  ,0x8, 0x0,FLT_REF(Lod,m_near));
@@ -112,7 +112,7 @@ void TexReplace::build_schema()
         return;
     schema_initialized=true;
 
-    m_schema.add_field(""    ,0x205  ,0x0,0x0,STR_REF(TexReplace,m_name_src));
+    m_schema.add_field(""    ,0x205  ,0x0,0x0,U32_REF(TexReplace,m_src));
     m_schema.add_field(""    ,0x206  ,0x4,0x0,STR_REF(TexReplace,m_name_tgt));
     m_schema.add_end("\n");
 }
@@ -124,7 +124,7 @@ void Property::build_schema()
 
     m_schema.add_field(""    ,0x206  ,0x0,0x0,STR_REF(Property,m_txt1));
     m_schema.add_field(""    ,0x206  ,0x4,0x0,STR_REF(Property,m_txt2));
-    m_schema.add_field(""    ,0x205  ,0x8,0x0,STR_REF(Property,m_txt3));
+    m_schema.add_field(""    ,0x205  ,0x8,0x0,U32_REF(Property,m_val3));
     m_schema.add_end("\n");
 }
 void Group::build_schema()
