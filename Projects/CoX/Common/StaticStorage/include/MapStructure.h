@@ -12,7 +12,6 @@
 #include "CoXHash.h"
 #include "DataStorage.h"
 #include "ReadableStructures.h"
-#include <osg/Node>
 
 struct TreeStore : public BinReadable
 {

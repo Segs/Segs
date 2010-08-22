@@ -26,35 +26,35 @@ void MapCommHandler::dispatch(SEGSEvent *ev)
 	ACE_ASSERT(ev);
 	switch(ev->type())
 	{
-	case SEGSEvent::evTimeout:
-		on_timeout(static_cast<TimerEvent *>(ev));
-		break;
-	case Internal_EventTypes::evExpectClient:
-		on_expect_client(static_cast<ExpectMapClient *>(ev));
-		break;
-	case MapEventTypes::evIdle:
-		on_idle((IdleEvent<MapLinkEvent> *)ev);
-		break;
-	case MapEventTypes::evDisconnectRequest:
-		on_disconnect((DisconnectRequest<MapLinkEvent> *)ev);
-		break;
-	case MapEventTypes::evConnectRequest:
-		on_connection_request((ConnectRequest<MapLinkEvent> *)ev);
-		break;
-	case MapEventTypes::evEntityEnteringMap:
+    case SEGSEvent::evTimeout:
+        on_timeout(static_cast<TimerEvent *>(ev));
+        break;
+    case Internal_EventTypes::evExpectClient:
+        on_expect_client(static_cast<ExpectMapClient *>(ev));
+        break;
+    case MapEventTypes::evIdle:
+        on_idle((IdleEvent<MapLinkEvent> *)ev);
+        break;
+    case MapEventTypes::evDisconnectRequest:
+        on_disconnect((DisconnectRequest<MapLinkEvent> *)ev);
+        break;
+    case MapEventTypes::evConnectRequest:
+        on_connection_request((ConnectRequest<MapLinkEvent> *)ev);
+        break;
+    case MapEventTypes::evEntityEnteringMap:
 		on_create_map_entity(static_cast<NewEntity *>(ev));
-		break;
-	case MapEventTypes::evShortcutsRequest:
-		on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
-		break;
-	case MapEventTypes::evSceneRequest:
-		on_scene_request(static_cast<SceneRequest *>(ev));
-		break;
-	case MapEventTypes::evEntitiesRequest:
-		on_entities_request(static_cast<EntitiesRequest *>(ev));
-		break;
-	case MapEventTypes::evUnknownEvent:
-		break;
+        break;
+    case MapEventTypes::evShortcutsRequest:
+        on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
+        break;
+    case MapEventTypes::evSceneRequest:
+        on_scene_request(static_cast<SceneRequest *>(ev));
+        break;
+    case MapEventTypes::evEntitiesRequest:
+        on_entities_request(static_cast<EntitiesRequest *>(ev));
+        break;
+    case MapEventTypes::evUnknownEvent:
+        break;
 	}
 }
 void MapCommHandler::on_idle(IdleEvent<MapLinkEvent> *ev)
@@ -98,7 +98,7 @@ void MapCommHandler::on_expect_client( ExpectMapClient *ev )
         cl->name(ev->m_character_name);
         cl->current_map(m_handled_worlds[ev->m_map_id]);
     }
-    ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
+	ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
 }
 void MapCommHandler::on_create_map_entity(NewEntity *ev)
 {
@@ -135,14 +135,14 @@ void MapCommHandler::on_scene_request(SceneRequest *ev)
     MapLink * lnk = (MapLink *)ev->src();
     SceneEvent *res=new SceneEvent;
     res->undos_PP=0;
-    res->var_14=1;
-    res->m_outdoor_map=1;//0;
-    res->m_map_number=1;
-    res->m_map_desc="maps/City_Zones/City_00_01/City_00_01.txt";
-    res->current_map_flags=1; //off 1
-    res->unkn1=1;
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
-    res->unkn2=1;
+	res->var_14=1;
+	res->m_outdoor_map=1;//0;
+	res->m_map_number=1;
+	res->m_map_desc="maps/City_Zones/City_00_01/City_00_01.txt";
+	res->current_map_flags=1; //off 1
+	res->unkn1=1;
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
+	res->unkn2=1;
     lnk->putq(res);
 }
 void MapCommHandler::on_entities_request(EntitiesRequest *ev)
