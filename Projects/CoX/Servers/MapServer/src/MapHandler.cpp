@@ -134,7 +134,7 @@ void MapCommHandler::on_scene_request(SceneRequest *ev)
 {
     // TODO: Pull this up to CoXMapInstance level
     MapLink * lnk = (MapLink *)ev->src();
-    Scene *res=new Scene;
+    SceneEvent *res=new SceneEvent;
     res->undos_PP=0;
     res->var_14=1;
     res->m_outdoor_map=1;//0;

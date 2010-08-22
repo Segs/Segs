@@ -9,7 +9,7 @@
 
 #pragma once
 #include <string>
-
+#include "CommonNetStructures.h"
 class MapRef : public NetStructure
 {
 public:

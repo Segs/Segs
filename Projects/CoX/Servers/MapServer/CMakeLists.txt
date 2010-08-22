@@ -4,11 +4,12 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/CoXMap.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapClient.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapHandler.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapServer.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/Events/NewEntity.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityStorage.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapEventFactory.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapLink.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/NetCommandManager.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/Events/NewEntity.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/Events/SceneEvent.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/NetCommandManager.h
@@ -21,6 +22,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/MapEvents.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapRef.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapServer.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Events/NewEntity.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/SceneEvent.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
