@@ -23,19 +23,19 @@ class CharacterClient;
 class GameEventTypes : public CRUD_EventTypes
 {
 public:
-        BEGINE_EVENTS(CRUD_EventTypes);
-        EVENT_DECL(evUpdateServer  ,0);
-        EVENT_DECL(evMapAddrRequest,1);
-        EVENT_DECL(evDeleteCharacter,2);
-        EVENT_DECL(evUpdateCharacter,3);
-        EVENT_DECL(evGameEntryError,4);
-        EVENT_DECL(evCharacterSlots,5);
-        EVENT_DECL(evCharacterResponse,6);
-        EVENT_DECL(evMapAddrResponse,7);
-        EVENT_DECL(evDeleteAcknowledged,8);
+        BEGINE_EVENTS(CRUD_EventTypes)
+        EVENT_DECL(evUpdateServer  ,0)
+        EVENT_DECL(evMapAddrRequest,1)
+        EVENT_DECL(evDeleteCharacter,2)
+        EVENT_DECL(evUpdateCharacter,3)
+        EVENT_DECL(evGameEntryError,4)
+        EVENT_DECL(evCharacterSlots,5)
+        EVENT_DECL(evCharacterResponse,6)
+        EVENT_DECL(evMapAddrResponse,7)
+        EVENT_DECL(evDeleteAcknowledged,8)
 
-        EVENT_DECL(evUnknownEvent,16);
-        END_EVENTS(17);
+        EVENT_DECL(evUnknownEvent,16)
+        END_EVENTS(17)
 };
 
 class MapServerAddrRequest : public GameLinkEvent
@@ -111,21 +111,21 @@ class DeleteCharacter : public GameLinkEvent
 public:
     DeleteCharacter():GameLinkEvent(GameEventTypes::evDeleteCharacter)
     {}
-	DeleteCharacter(EventProcessor *evsrc,u8 idx,const std::string &name) : GameLinkEvent(GameEventTypes::evDeleteCharacter),m_index(idx),m_char_name(name)
-	{}
+    DeleteCharacter(EventProcessor *evsrc,u8 idx,const std::string &name) : GameLinkEvent(GameEventTypes::evDeleteCharacter),m_index(idx),m_char_name(name)
+    {}
     void serializeto(BitStream &bs) const
     {
-		bs.StorePackedBits(1,4); // opcode
-		bs.StorePackedBits(1,m_index);
-		bs.StoreString(m_char_name);
+        bs.StorePackedBits(1,4); // opcode
+        bs.StorePackedBits(1,m_index);
+        bs.StoreString(m_char_name);
     }
     void serializefrom(BitStream &bs)
     {
-		m_index=bs.GetPackedBits(1);
-		bs.GetString(m_char_name);
+        m_index=bs.GetPackedBits(1);
+        bs.GetString(m_char_name);
     }
-	u8 m_index;
-	string m_char_name;
+    u8 m_index;
+    string m_char_name;
 };
 class UpdateCharacter : public GameLinkEvent
 {

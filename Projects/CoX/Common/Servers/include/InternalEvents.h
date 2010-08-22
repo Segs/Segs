@@ -6,19 +6,19 @@
 class Internal_EventTypes
 {
 public:
-    BEGINE_EVENTS_INTERNAL(); // internal events ids start at 1000
-    EVENT_DECL(evExpectClient,0);
-    EVENT_DECL(evClientExpected,1);
-    EVENT_DECL(evClientConnectionQuery,2);
-    EVENT_DECL(evClientConnectionResponse,3);
-    END_EVENTS(4);
+    BEGINE_EVENTS_INTERNAL() // internal events ids start at 1000
+    EVENT_DECL(evExpectClient,0)
+    EVENT_DECL(evClientExpected,1)
+    EVENT_DECL(evClientConnectionQuery,2)
+    EVENT_DECL(evClientConnectionResponse,3)
+    END_EVENTS(4)
 };
 
 // This tells the server that it should expect a new client connection from given address
 class ExpectClient : public SEGSEvent
 {
 public:
-    ExpectClient(EventProcessor *evsrc,u64 client_id,u16 access_level,const ACE_INET_Addr &from) : 
+    ExpectClient(EventProcessor *evsrc,u64 client_id,u16 access_level,const ACE_INET_Addr &from) :
                 SEGSEvent(Internal_EventTypes::evExpectClient,evsrc),
                 m_client_id(client_id),
                 m_access_level(access_level),
@@ -48,14 +48,14 @@ public:
 class ClientExpected : public SEGSEvent
 {
 public:
-    ClientExpected(EventProcessor *evsrc,u64 cid,u32 c,const ACE_INET_Addr &tgt) : 
+	ClientExpected(EventProcessor *evsrc,u64 cid,u32 c,const ACE_INET_Addr &tgt) :
 			SEGSEvent(Internal_EventTypes::evClientExpected,evsrc),
 			client_id(cid),
 			cookie(c),
 			m_connection_addr(tgt)
-    {}
-    u64 client_id;
-    u32 cookie;
+	{}
+	u64 client_id;
+	u32 cookie;
 	ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client
 };
 

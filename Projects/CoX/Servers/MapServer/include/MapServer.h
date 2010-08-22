@@ -14,16 +14,7 @@
 
 #include <string>
 #include <map>
-#ifndef WIN32
-#include <ext/hash_map>
-#include <ext/hash_set>
-using namespace __gnu_cxx;
-#else // WIN32
-#include <hash_map>
-#include <hash_set>
-using namespace stdext;
-#endif // WIN32
-
+#include "hashmap_selector.h"
 #include <ace/ACE.h>
 #include <ace/Synch.h>
 #include <ace/INET_Addr.h>
@@ -51,34 +42,34 @@ class CoXMap;
 class MapServer : public IMapServer
 {
 public:
-	                            MapServer(void);
+                                MapServer(void);
 virtual                         ~MapServer(void);
 
 virtual bool	                Run(void);
 virtual bool	                ReadConfig(const std::string &name);
-    	int		                getMaxHandledMaps();
+		int		                getMaxHandledMaps();
 
-	    bool                    ShutDown(const std::string &reason="No particular reason");
-	    void                    Online(bool s ) {m_online=s;}
-	    bool                    Online(void) { return m_online;}
-	    const ACE_INET_Addr &   getAddress() {return m_location;};
-        EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
-    	GameServerInterface *   getGameInterface(){return m_i_game;}
+		bool                    ShutDown(const std::string &reason="No particular reason");
+		void                    Online(bool s ) {m_online=s;}
+		bool                    Online(void) { return m_online;}
+		const ACE_INET_Addr &   getAddress() {return m_location;};
+		EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
+		GameServerInterface *   getGameInterface(){return m_i_game;}
 private:
-	    bool                    startup(); // MapServerStartup sequence diagram entry point.
+		bool                    startup(); // MapServerStartup sequence diagram entry point.
 protected:
-	    u8                      m_id;
-	    bool                    m_online;
+		u8                      m_id;
+		bool                    m_online;
 
-	    size_t                  m_max_maps;
-	    GameServerInterface *   m_i_game;// GameServer access proxy object
+		size_t                  m_max_maps;
+		GameServerInterface *   m_i_game;// GameServer access proxy object
 
-	    std::string             m_serverName;
+		std::string             m_serverName;
 
-	    ACE_INET_Addr           m_location; //! this value is sent to the clients
-	    ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
-	    ServerEndpoint<MapLink>	*m_endpoint;
-        MapCommHandler *            m_handler;
+		ACE_INET_Addr           m_location; //! this value is sent to the clients
+		ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
+		ServerEndpoint<MapLink>	*m_endpoint;
+		MapCommHandler *            m_handler;
 };
 
 #endif // MAPSERVER_H

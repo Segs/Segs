@@ -23,10 +23,8 @@
 #include "EventProcessor.h"
 #include "CRUD_Events.h"
 #include "Base.h"
+#include "hashmap_selector.h"
 #ifndef WIN32
-#include <ext/hash_map>
-#include <ext/hash_set>
-using namespace __gnu_cxx;
 class ACE_INET_Addr_Hash
 {
 public:
@@ -38,9 +36,6 @@ public:
 	};
 };
 #else
-#include <hash_map>
-#include <hash_set>
-using namespace stdext;
 class ACE_INET_Addr_Hash : public hash_compare<ACE_INET_Addr>
 {
 public:
@@ -65,9 +60,9 @@ public:
 template<class LINK_CLASS>
 class ServerEndpoint : public EventProcessor
 {
-	typedef EventProcessor super;
+    typedef EventProcessor super;
     typedef hash_map<ACE_INET_Addr,LINK_CLASS *,ACE_INET_Addr_Hash> hmAddrProto;
-    
+
     ACE_Thread_Mutex m_send_sema;
 public:
     typedef ACE_SOCK_Dgram stream_type;
@@ -81,13 +76,13 @@ private:
 	// Part of the low level ace interface, not passed on to derived classes
 	ACE_HANDLE  get_handle(void) const { return this->endpoint_.get_handle(); }
 
-	int         handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE) //! Called when input is available from the client.	
+    int         handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE) //! Called when input is available from the client.
                 {
                     u8 buf[0x2000];
-                    ACE_INET_Addr from_addr; 
+                    ACE_INET_Addr from_addr;
                     ssize_t n = this->endpoint_.recv(buf, sizeof buf,from_addr);
                     if (n == -1)
-                        ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%p\n"),"handle_input"),0); 
+                        ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%p\n"),"handle_input"),0);
                     LINK_CLASS *crud_link = getClientLink(from_addr); // get packet handling object for this connection
                     ACE_ASSERT(crud_link!=NULL);
                     BitStream wrap((u8 *)buf,n);
@@ -95,7 +90,7 @@ private:
                     return 0;
                 }
 
-	int         handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE) //! Called when output is possible.
+    int         handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE) //! Called when output is possible.
                 {
                     SEGSEvent *ev;
                     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
@@ -119,31 +114,31 @@ private:
                         }
                         ev->release();
                     }
-                    if (msg_queue()->is_empty ()) // we don't want to be woken up 
+                    if (msg_queue()->is_empty ()) // we don't want to be woken up
                         reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
                     else // unless there is something to send still
                         reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
                     return 0;
                 }
 
-                //! Called when this handler is removed from the ACE_Reactor.
+				//! Called when this handler is removed from the ACE_Reactor.
 	int         handle_close (ACE_HANDLE handle,ACE_Reactor_Mask close_mask)
-                {
-                    endpoint_.close();
-                    return 0;
-                }
+				{
+					endpoint_.close();
+					return 0;
+				}
 public:
-	int         open(void *p=NULL)
+    int         open(void *p=NULL)
                 {
                     if (super::open (p) == -1)
                         return -1;
-                    // register ourselves with the reactor, 
+                    // register ourselves with the reactor,
                     // it will call our handle_input method whenever there are
                     // new bytes available on our handle.
                     if (this->reactor () && this->reactor ()->register_handler(this,ACE_Event_Handler::READ_MASK) == -1)
                         ACE_ERROR_RETURN ((LM_ERROR,ACE_TEXT ("%p\n"),ACE_TEXT ("unable to register client handler")),-1);
 
-                    m_notifier.reactor(reactor()); // notify current reactor with write event, 
+                    m_notifier.reactor(reactor()); // notify current reactor with write event,
                     msg_queue()->notification_strategy (&m_notifier); // whenever there is a new msg on msg_queue()
                     return 0;
                 }
@@ -157,7 +152,7 @@ protected:
                     ACE_ASSERT(!"No sync events known");
                     return 0;
                 }
-	LINK_CLASS *getClientLink(const ACE_INET_Addr &from_addr)
+    LINK_CLASS *getClientLink(const ACE_INET_Addr &from_addr)
                 {
                     LINK_CLASS *res= client_links[from_addr]; // get packet handling object for this connection
                     if(res!=NULL)

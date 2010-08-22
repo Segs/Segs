@@ -12,6 +12,28 @@
 #include "CoXHash.h"
 #include "DataStorage.h"
 #include "ReadableStructures.h"
+#include <osg/Node>
+
+struct TreeStore : public BinReadable
+{
+    virtual size_t num_children() const
+    {
+        return 0;
+    }
+    virtual TreeStore *nth_child(size_t idx)
+    {
+        return 0;
+    }
+    virtual size_t idx_of_child(TreeStore *) const
+    {
+        return -1;
+    }
+    virtual std::string to_string() const
+    {
+        return "";
+    }
+};
+
 namespace MapStructs
 {
     struct Lod;
@@ -24,7 +46,7 @@ namespace MapStructs
     struct TintColor;
     struct Property;
     struct Group;
-    struct Def : public BinReadable
+    struct Def : public TreeStore
     {
         DECL_READABLE(Def)
         std::vector<Lod *> m_lods;
@@ -43,30 +65,47 @@ namespace MapStructs
         std::string m_type_name;
         u32 m_flags;
         static void build_schema();
+        virtual std::string to_string() const
+        {
+            return "Def["+m_src_name+"]";
+        }
+        virtual size_t num_children() const
+        {
+            return m_groups.size();
+        }
+        virtual TreeStore *nth_child(size_t idx)
+        {
+            return (TreeStore *)m_groups[idx];
+        }
+
     };
-    struct Ref : public BinReadable
+    struct Ref : public TreeStore
     {
         DECL_READABLE(Ref)
         std::string m_src_name;
         Vec3 m_pos;
         Vec3 m_rot;
         static void build_schema();
+        virtual std::string to_string() const
+        {
+            return "Ref["+m_src_name+"]";
+        }
     };
 
-    struct TexReplace : public BinReadable
+    struct TexReplace : public TreeStore
     {
         DECL_READABLE(TexReplace)
         u32 m_src;
         std::string m_name_tgt;
         static void build_schema();
     };
-    struct Ambient : public BinReadable
+    struct Ambient : public TreeStore
     {
         DECL_READABLE(Ambient)
         Color3ub m_color;
         static void build_schema();
     };
-    struct Omni : public BinReadable
+    struct Omni : public TreeStore
     {
         DECL_READABLE(Omni)
         float m_val;
@@ -75,14 +114,14 @@ namespace MapStructs
         static void build_schema();
     };
 
-    struct Beacon : public BinReadable
+    struct Beacon : public TreeStore
     {
         DECL_READABLE(Beacon)
         std::string m_name;
         float m_val; //radius?
         static void build_schema();
     };
-    struct Sound : public BinReadable
+    struct Sound : public TreeStore
     {
         DECL_READABLE(Sound)
         std::string m_name;
@@ -92,7 +131,7 @@ namespace MapStructs
         u32 m_flags;
         static void build_schema();
     };
-    struct Fog : public BinReadable
+    struct Fog : public TreeStore
     {
         DECL_READABLE(Fog)
         float m_a;
@@ -102,7 +141,7 @@ namespace MapStructs
         Color3ub m_col2;
         static void build_schema();
     };
-    struct TintColor : public BinReadable
+    struct TintColor : public TreeStore
     {
         DECL_READABLE(TintColor)
         Color3ub m_col1;
@@ -110,7 +149,7 @@ namespace MapStructs
         static void build_schema();
     };
 
-    struct Lod : public BinReadable
+    struct Lod : public TreeStore
     {
         DECL_READABLE(Lod)
         float m_far;
@@ -120,7 +159,7 @@ namespace MapStructs
         float m_scale;
         static void build_schema();
     };
-    struct Property : public BinReadable
+    struct Property : public TreeStore
     {
         DECL_READABLE(Property)
         std::string m_txt1;
@@ -128,7 +167,7 @@ namespace MapStructs
         u32 m_val3;
         static void build_schema();
     };
-    struct Group : public BinReadable
+    struct Group : public TreeStore
     {
         DECL_READABLE(Group)
         std::string m_name; // this is reference to a model name or def name
@@ -137,7 +176,7 @@ namespace MapStructs
         static void build_schema();
     };
 }
-struct SceneStorage : public BinReadable
+struct SceneStorage : public TreeStore
 {
     DECL_READABLE(SceneStorage)
     typedef std::vector<MapStructs::Def *> vDef;
@@ -147,8 +186,31 @@ struct SceneStorage : public BinReadable
     std::string m_scene_file;
     u32 m_version;
     static void build_schema();
-    bool has_children()
+    size_t num_children() const
     {
-        return 0!=(m_defs.size()+m_refs.size()+m_root.size());
+        return m_defs.size()+m_refs.size()+m_root.size();
+    }
+    virtual TreeStore *nth_child(size_t idx)
+    {
+        if(idx<m_defs.size())
+            return m_defs[idx];
+        idx-=m_defs.size();
+        if(idx<m_refs.size())
+            return m_refs[idx];
+        idx-=m_refs.size();
+        if(idx<m_root.size())
+            return m_root[idx];
+        return 0;
+    }
+    virtual size_t idx_of_child(TreeStore *child)
+    {
+        vDef::iterator itr=std::find(m_defs.begin(),m_defs.end(),child);
+        if(itr!=m_defs.end())
+            return itr-m_defs.begin();
+        return -1;
+    }
+    virtual std::string to_string() const
+    {
+        return m_scene_file;
     }
 };

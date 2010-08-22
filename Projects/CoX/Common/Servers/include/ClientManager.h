@@ -16,18 +16,7 @@
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
 #include "Client.h"
-#ifndef WIN32
-#include <ext/hash_map>
-#include <ext/hash_set>
-using namespace __gnu_cxx;
-namespace __gnu_cxx {
-	template<> struct hash<u64> { size_t operator()(u64 __x) const { return ((__x>>32) ^ __x) &0xFFFFFFFF; } }; 
-};
-#else
-#include <hash_map>
-#include <hash_set>
-using namespace stdext;
-#endif // WIN32
+#include "hashmap_selector.h"
 
 template <class CLIENT_CLASS>
 class ClientStore
@@ -72,7 +61,7 @@ public:
 		return NULL;
 	}
 
-    u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u8 access_level)
+	u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u8 access_level)
 	{
 		CLIENT_CLASS * exp;
 		u32 cook = create_cookie(from,id);
@@ -114,7 +103,7 @@ public:
 		// client with cookie has just connected
 		m_connected_clients_cookie[cookie]=getExpectedByCookie(cookie);
 		// so he's no longer expected
-		m_expected_clients.erase(cookie); 
+		m_expected_clients.erase(cookie);
 	}
 };
 

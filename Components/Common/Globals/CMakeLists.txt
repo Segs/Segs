@@ -5,6 +5,7 @@ SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Base.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/types.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/hashmap_selector.h
 )
 
 SET (target_SOURCES

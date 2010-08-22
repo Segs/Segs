@@ -26,8 +26,10 @@ bool BinStore::check_bin_version_and_crc(const ClassSchema *s)
 }
 std::string BinStore::read_pstr( size_t maxlen )
 {
-    u16 len;
-    read(len);
+    u16 len=0;
+    bool res=read(len);
+    if(res!=true)
+        return "";
     if(len<=maxlen)
     {
         char *buf=new char[len+1];
@@ -182,8 +184,8 @@ void BinStore::nest_in( const Field *f )
 
 void BinStore::nest_out( const Field *f )
 {
-    size_t strctsz = 4+bytes_read; //  
-    m_file_sizes.pop_back(); 
+    size_t strctsz = 4+bytes_read; //
+    m_file_sizes.pop_back();
     //(*m_file_sizes.rbegin()) -= strctsz;
 }
 

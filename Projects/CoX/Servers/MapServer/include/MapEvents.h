@@ -20,17 +20,17 @@ typedef CRUDLink_Event<MapLink> MapLinkEvent;
 class MapEventTypes : public CRUD_EventTypes
 {
 public:
-    BEGINE_EVENTS(CRUD_EventTypes);
-    EVENT_DECL(evEntityEnteringMap      ,0);
-    EVENT_DECL(evMapInstanceConnected   ,1);
-    EVENT_DECL(evShortcutsRequest       ,2);
-    EVENT_DECL(evShortcuts              ,3);
-    EVENT_DECL(evSceneRequest           ,4);
-    EVENT_DECL(evScene                  ,5);
-    EVENT_DECL(evEntitiesRequest        ,6);
-    EVENT_DECL(evEntitites              ,7);
-    EVENT_DECL(evInputState             ,8);
-    END_EVENTS(500);
+    BEGINE_EVENTS(CRUD_EventTypes)
+    EVENT_DECL(evEntityEnteringMap      ,0)
+    EVENT_DECL(evMapInstanceConnected   ,1)
+    EVENT_DECL(evShortcutsRequest       ,2)
+    EVENT_DECL(evShortcuts              ,3)
+    EVENT_DECL(evSceneRequest           ,4)
+    EVENT_DECL(evScene                  ,5)
+    EVENT_DECL(evEntitiesRequest        ,6)
+    EVENT_DECL(evEntitites              ,7)
+    EVENT_DECL(evInputState             ,8)
+    END_EVENTS(500)
 };
 //////////////////////////////////////////////////////////////////////////
 // Client -> Server
@@ -311,7 +311,7 @@ public:
             for(size_t i=1; i<m_refs.size(); i++)
             {
                 //			ACE_TRACE(!"Hold yer horses!");
-                tgt.StorePackedBits(1,0); // next element idx 
+                tgt.StorePackedBits(1,0); // next element idx
                 tgt.StoreBits(1,0);
                 if(0)
                 {
@@ -321,9 +321,9 @@ public:
                     NetStructure::storeStringConditional(tgt,"");
                     tgt.StoreString(m_trays[i]);
                     if(i<12)
-                        tgt.StoreBits(32,hashes[i]); // crc ? 
+                        tgt.StoreBits(32,hashes[i]); // crc ?
                     else
-                        tgt.StoreBits(32,0); // crc ? 
+                        tgt.StoreBits(32,0); // crc ?
                     //tgt.StoreBits(1,0);
                     tgt.StorePackedBits(1,0);
                     tgt.StorePackedBits(1,0);
@@ -335,7 +335,7 @@ public:
         {
             for(size_t i=0; i<m_refs.size(); i++)
             {
-                tgt.StorePackedBits(1,0); // next element idx 
+                tgt.StorePackedBits(1,0); // next element idx
                 m_refs[i].serializeto(tgt);
             }
         }
@@ -357,7 +357,7 @@ public:
     vector<string> m_trays;
     vector<u32> m_crc;
     vector<MapRef> m_refs;
-    int unkn1; 
+    int unkn1;
     int m_map_number;
     bool unkn2;
 };

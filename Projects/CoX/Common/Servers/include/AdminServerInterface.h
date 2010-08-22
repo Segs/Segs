@@ -13,12 +13,6 @@
 #define ADMINSERVERINTERFACE_H
 
 #include <ace/INET_Addr.h>
-#ifndef WIN32
-#include <ext/hash_map>
-using namespace __gnu_cxx;
-#else
-#include <hash_map>
-#endif // WIN32
 #include <list>
 #include "ServerHandle.h"
 #include "RoamingServer.h"
@@ -72,9 +66,9 @@ public:
 
 
 	int     GetBlockedIpList(std::list<int> &addreses); // called from auth server during user authentication, might be useful for automatical firewall rules update
-	bool    FillClientInfo(AccountInfo &); 
+	bool    FillClientInfo(AccountInfo &);
 	bool    Login(AccountInfo &client,const ACE_INET_Addr &client_addr); // Records given 'client' as logged in from 'addr'.
-    int	    SaveAccount(const char *username, const char *password);  // Save account
+	int	    SaveAccount(const char *username, const char *password);  // Save account
 	bool    Logout(AccountInfo &client); // Records given 'client' as logged out in from 'addr'.
 	bool    ValidPassword(const AccountInfo &client, const char *password); // If 'pass' is a valid password for client, return true
 	void    InvalidGameServerConnection(const ACE_INET_Addr &from);

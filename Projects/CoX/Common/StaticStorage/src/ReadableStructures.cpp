@@ -285,13 +285,13 @@ bool TemplateField< u8 * >::do_read(u8 type, BinReadable &tgt,Store *s ) const
 bool Field::read_non_nested( BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
-    if((m_type&0x100) || ((m_type&0xFF) - 3>17))
+     if((m_type&0x100) || ((m_type&0xFF) - 3>17))
         return parse_ok;
     u8 type=(m_type&0xFF) - 3;
     if(type==16)
         return parse_ok;
     return this->do_read(type,tgt,s);
-}
+ }
 bool Field::read_nested( BinReadable &tgt,Store *s ) const
 {
 

@@ -26,27 +26,18 @@
 class AuthLink;
 typedef ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR> ClientAcceptor;
 
+// Boost includes
+#include <boost/pool/object_pool.hpp>
 // segs includes
+#include "hashmap_selector.h"
+
 #include "Client.h"
 #include "Server.h"
 #include "ServerHandle.h"
 #include "AuthServerInterface.h"
 
-// Boost includes
-#include <boost/pool/object_pool.hpp>
-#include <map>
 class IClient;
-#ifndef WIN32 // If anything other than Windows, use the below headers
-#include <ext/hash_map>
-#include <ext/hash_set>
-using namespace __gnu_cxx;
-typedef std::map< std::string,AuthClient *> hmClients;
-#else         // Anything else will use the following headers
-#include <hash_map>
-#include <hash_set>
-using namespace stdext;
 typedef hash_map<std::string,AuthClient *> hmClients;
-#endif // WIN32
 class AuthClient;
 class AuthServer  : public IAuthServer
 {
@@ -73,7 +64,7 @@ public:
 	bool                        Run(void);
 	bool                        ShutDown(const std::string &reason="No particular reason");
 
-    ServerHandle<IAdminServer>   AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const string &passw); // World-cluster interface
+	ServerHandle<IAdminServer>   AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const string &passw); // World-cluster interface
 
 	AuthClient *                GetClientByLogin(const char *);
 protected:

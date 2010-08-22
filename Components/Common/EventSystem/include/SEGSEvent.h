@@ -3,10 +3,10 @@
 class EventProcessor;
 
 // Helper defines to ease the definition of event types
-#define BEGINE_EVENTS(parent_class) static const int base = parent_class::evLAST_EVENT;
-#define BEGINE_EVENTS_INTERNAL() static const int base = 1000;
-#define EVENT_DECL(name,cnt) static const int name = base+cnt+1;
-#define END_EVENTS(cnt) static const int evLAST_EVENT=base+cnt+1;
+#define BEGINE_EVENTS(parent_class) enum { base = parent_class::evLAST_EVENT,
+#define BEGINE_EVENTS_INTERNAL() enum { base = 1000,
+#define EVENT_DECL(name,cnt) name = base+cnt+1,
+#define END_EVENTS(cnt) evLAST_EVENT=base+cnt+1};
 
 class SEGSEvent
 {
@@ -21,10 +21,10 @@ protected:
 public:
 	enum {
 		evFinish=0, // this event will finish the Processor that receives it
-        evConnect,  // on the link level this means a new connection, higher level handlers are also notified by this event
-        evDisconnect,
-        evTimeout, // 
-        evLAST_EVENT
+		evConnect,  // on the link level this means a new connection, higher level handlers are also notified by this event
+		evDisconnect,
+		evTimeout, //
+		evLAST_EVENT
 	};
 	SEGSEvent(size_t evtype,EventProcessor *ev_src=0) : m_event_source(ev_src),m_type(evtype)
 	{
@@ -43,10 +43,10 @@ class TimerEvent : public SEGSEvent
     ACE_Time_Value          m_arrival_time;
     void *                  m_data;
 public:
-                            TimerEvent(const ACE_Time_Value &time, void *dat) 
-                                        : 
+                            TimerEvent(const ACE_Time_Value &time, void *dat)
+                                        :
                                         SEGSEvent(evTimeout),m_arrival_time(time),m_data(dat)
-                            {        
+                            {
                             }
     void *                  data() { return m_data; }
     const ACE_Time_Value &  arrival_time() { return m_arrival_time; }

@@ -13,15 +13,7 @@
 #define GAMESERVER_H
 
 #include <string>
-#ifndef WIN32
-#include <ext/hash_map>
-#include <ext/hash_set>
-// Hashing function for int64 is in ClientManager
-#else // WIN32
-#include <hash_map>
-#include <hash_set>
-using namespace stdext;
-#endif // WIN32
+#include "hashmap_selector.h"
 
 #include <ace/ACE.h>
 #include <ace/Synch.h>
@@ -46,15 +38,15 @@ typedef list< ServerHandle<MapServer> > lMapServerHandles;
 class GameServer : public IGameServer
 {
 public:
-	                        ~GameServer(void);
-	                        GameServer(void);
+							~GameServer(void);
+							GameServer(void);
 	bool					ReadConfig(const std::string &configpath); // later name will be used to read GameServer specific configuration
 	bool					Run(void);
 	bool					ShutDown(const std::string &reason="No particular reason");
 	void					Online(bool s ) {m_online=s;}
 	bool					Online(void) { return m_online;}
 	const ACE_INET_Addr &	getAddress() {return m_location;};
-	
+
 	// World-cluster management interface
 	int						getAccessKeyForServer(const ServerHandle<IMapServer> &h_map);
 	bool					isMapServerReady(const ServerHandle<IMapServer> &h_map);
@@ -72,7 +64,7 @@ public:
 
 	int						createLinkedAccount(u64 auth_account_id,const std::string &username); // Part of exposed db interface.
 
-    EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
+	EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
 protected:
 	u32                     GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver
 	lMapServerHandles       GetMapsHandling(const std::string &mapname);
@@ -85,7 +77,7 @@ protected:
 	ACE_INET_Addr           m_location; // this value is sent to the clients
 	ACE_INET_Addr           m_listen_point; // this is used as a listening endpoint
 	ServerEndpoint<GameLink>	*m_endpoint;
-    GameHandler *           m_handler;
+	GameHandler *           m_handler;
 };
 
 #endif // GAMESERVER_H

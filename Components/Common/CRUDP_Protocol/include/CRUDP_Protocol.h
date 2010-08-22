@@ -15,20 +15,14 @@
 #include <set>
 #include <ace/Message_Queue.h>
 #include <ace/INET_Addr.h>
-#ifndef WIN32
-#include <ext/hash_map>
-using namespace __gnu_cxx;
-#else
-#include <hash_map>
-using namespace stdext;
-#endif
+#include "hashmap_selector.h"
 #include "Base.h"
 #include "CRUDP_Packet.h"
 using namespace std;
 class PacketCodecNull;
 /*
-	Cryptic Reliable UDP 
-	CrudP 
+	Cryptic Reliable UDP
+	CrudP
 	Incoming
 		BitStream Block ->
 			Parse Header [ Checksum + Decode ]
@@ -43,11 +37,11 @@ class PacketCodecNull;
 			Split stream
 			Each block is Encoded, and Checksumed.
 			Sibling packet id is recorded in the packet
-			Packets are inserted into send queue. 
+			Packets are inserted into send queue.
 			If this queue is not scheduled for send, it's scheduled now
 
 */
-class CrudP_Protocol 
+class CrudP_Protocol
 {
 private:
 	typedef deque<CrudP_Packet *> pPacketStorage;
@@ -60,8 +54,8 @@ private:
 		PacketCodecNull *m_codec;
 		pPacketStorage avail_packets;
 		pPacketStorage unsent_packets;
-        list<u32> recv_acks; // each successful receive will store it's ack here
-	// we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup 
+		list<u32> recv_acks; // each successful receive will store it's ack here
+	// we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
 		hmSibStorage sibling_map;
 		ACE_Thread_Mutex m_packets_mutex;
 
@@ -69,12 +63,12 @@ private:
 		bool				insert_sibling(CrudP_Packet *pkt);
 static inline bool			PacketSeqCompare(const CrudP_Packet *a,const CrudP_Packet *b);
 static inline bool			PacketSibCompare(const CrudP_Packet *a,const CrudP_Packet *b);
-		bool				allSiblingsAvailable(int );
+        bool				allSiblingsAvailable(int );
 public:
                             CrudP_Protocol();
                             ~CrudP_Protocol();
-		void				setCodec(PacketCodecNull *codec){m_codec= codec;};
-		PacketCodecNull *	getCodec() const {return m_codec;};
+        void				setCodec(PacketCodecNull *codec){m_codec= codec;};
+        PacketCodecNull *	getCodec() const {return m_codec;};
 
 		size_t				UnsentPackets()    const {return unsent_packets.size();}
 		size_t				AvailablePackets() const {return avail_packets.size();}
@@ -82,7 +76,7 @@ public:
 		size_t				GetUnsentPackets(list<CrudP_Packet *> &); // this gets all as of now unacknowledged packets
 		void				ReceivedBlock(BitStream &bs); // bytes received, will create some packets in avail_packets
 
-		void				SendPacket(CrudP_Packet *p); // this might split packet 'p' into a few packets
+        void				SendPacket(CrudP_Packet *p); // this might split packet 'p' into a few packets
         CrudP_Packet *		RecvPacket(bool disregard_seq); // this get's next packet in sequence, if disregard_seq is set returned pack will be next available, an
 protected:
 		void				parseAcks(BitStream &src,CrudP_Packet *tgt);
@@ -93,4 +87,4 @@ protected:
 
 static	void				PacketDestroyer(CrudP_Packet *a);
 static	void				PacketSibDestroyer(const pair<int,pPacketStorage> &a);
-}; 
+};

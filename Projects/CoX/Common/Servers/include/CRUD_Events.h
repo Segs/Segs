@@ -8,16 +8,16 @@
 class CRUD_EventTypes
 {
 public:
-    BEGINE_EVENTS(SEGSEvent);
-    EVENT_DECL(evPacket,0);
-    EVENT_DECL(evControl,1);
-    EVENT_DECL(evDisconnectRequest,2);
-    EVENT_DECL(evIdle,3);
-    EVENT_DECL(evUnknownEvent,4);
-    EVENT_DECL(evDisconnectResponse,5);
-    EVENT_DECL(evConnectRequest,6);
-    EVENT_DECL(evConnectResponse,7);
-    END_EVENTS(8);
+    BEGINE_EVENTS(SEGSEvent)
+    EVENT_DECL(evPacket,0)
+    EVENT_DECL(evControl,1)
+    EVENT_DECL(evDisconnectRequest,2)
+    EVENT_DECL(evIdle,3)
+    EVENT_DECL(evUnknownEvent,4)
+    EVENT_DECL(evDisconnectResponse,5)
+    EVENT_DECL(evConnectRequest,6)
+    EVENT_DECL(evConnectResponse,7)
+    END_EVENTS(8)
 };
 class PacketEvent : public SEGSEvent
 {
