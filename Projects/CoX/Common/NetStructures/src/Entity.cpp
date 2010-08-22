@@ -54,7 +54,7 @@ int Entity::getOrientation(BitStream &bs)
 			if(current_client_packet_id>pkt_id_QrotUpdateVal[i])
 			{
 				pkt_id_QrotUpdateVal[i] = current_client_packet_id;
-				qrot.q[i] = fval;				
+				qrot.q[i] = fval;
 			}
 			else
 				recv_older=true;
@@ -71,7 +71,7 @@ void Entity::storeOrientation(BitStream &bs) const
 	updates = ((int)update_rot(0)) | (((int)update_rot(1))<<1) | (((int)update_rot(2))<<2);
 	storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
 	//NormalizeQuaternion(pEnt->qrot)
-	// 
+	//
 	//RestoreFourthQuatComponent(pEnt->qrot);
 	for(int i=0; i<3; i++)
 	{
@@ -224,19 +224,19 @@ void Entity::sendCostumes(BitStream &bs) const
 		ACE_ASSERT(false);
 		return;
 	}
-    switch(m_type)
-    {
-    case ENT_PLAYER: // client value 1
-        m_char.serialize_costumes(bs,true); // we're always sending full info
-        break;
-    case 3: // client value 2 top level defs from VillainCostume ?
-        bs.StorePackedBits(12,1); // npc costume type idx ?
-        bs.StorePackedBits(1,1); // npc costume idx ?
-        break;
-    case ENT_CRITTER: // client val 4
-        bs.StoreString("Unknown");
-        break;
-    }
+	switch(m_type)
+	{
+	case ENT_PLAYER: // client value 1
+		m_char.serialize_costumes(bs,true); // we're always sending full info
+		break;
+	case 3: // client value 2 top level defs from VillainCostume ?
+		bs.StorePackedBits(12,1); // npc costume type idx ?
+		bs.StorePackedBits(1,1); // npc costume idx ?
+		break;
+	case ENT_CRITTER: // client val 4
+		bs.StoreString("Unknown");
+		break;
+	}
 }
 
 PlayerEntity::PlayerEntity()
@@ -249,7 +249,7 @@ MobEntity::MobEntity()
 }
 void Entity::sendXLuency(BitStream &bs,float val) const
 {
-	storeBitsConditional(bs,8,min(static_cast<int>(u8(val*255)),255)); // upto here everything is ok
+	storeBitsConditional(bs,8,std::min<>(static_cast<int>(u8(val*255)),255)); // upto here everything is ok
 }
 void Entity::sendTitles(BitStream &bs) const
 {
@@ -348,7 +348,7 @@ void Entity::sendLogoutUpdate(BitStream &bs) const
 	bs.StoreBits(1,is_logout);
 	if(is_logout)
 	{
-		bs.StoreBits(1,0); // flags_1[1] set in entity 
+		bs.StoreBits(1,0); // flags_1[1] set in entity
 		storePackedBitsConditional(bs,5,0); // time to logout, multiplied by 30
 	}
 }
@@ -371,7 +371,7 @@ void Entity::serializeto( BitStream &bs ) const
 		{
 			bs.StoreBits(1,m_create_player);
 			if(m_create_player)
-				bs.StorePackedBits(1,0x123); // var_1190: this will be put in field_C8 of created entity 
+				bs.StorePackedBits(1,0x123); // var_1190: this will be put in field_C8 of created entity
 			bs.StorePackedBits(20,0);//bs.StorePackedBits(20,m_db_id);
 		}
 		else
@@ -402,11 +402,11 @@ void Entity::serializeto( BitStream &bs ) const
 		if(m_hasname)
 			bs.StoreString(m_char.getName());
 		bs.StoreBits(1,0); //var_94 if set Entity.field_1818/field_1840=0 else field_1818/field_1840 = 255,2
-		bs.StoreBits(32,field_60); // this will be put in field_60 of created entity 
+		bs.StoreBits(32,field_60); // this will be put in field_60 of created entity
 		bs.StoreBits(1,m_hasgroup_name);
 		if(m_hasgroup_name)
 		{
-			bs.StorePackedBits(2,0);// this will be put in field_1830 of created entity 
+			bs.StorePackedBits(2,0);// this will be put in field_1830 of created entity
 			bs.StoreString(m_group_name);
 		}
 	}
@@ -506,7 +506,7 @@ void PlayerEntity::serializefrom_newchar( BitStream &src )
 {
 	int val = src.GetPackedBits(1); //2
 	m_char.GetCharBuildInfo(src);
-    m_char.recv_initial_costume(src);
+	m_char.recv_initial_costume(src);
 	int t = src.GetBits(1); // The -> 1
 	src.GetString(m_battle_cry);
 	src.GetString(m_character_description);
@@ -585,7 +585,7 @@ void Avatar::sendTeamBuffMode(BitStream &bs) const
 void Avatar::sendDockMode(BitStream &bs) const
 {
 	bs.StoreBits(32,0); // unused on the client
-	bs.StoreBits(32,0); // 
+	bs.StoreBits(32,0); //
 }
 void Avatar::sendChatSettings(BitStream &bs) const
 {
@@ -813,7 +813,7 @@ void Avatar::send_character(BitStream &bs) const
 */
 void Avatar::sendFullStats(BitStream &bs) const
 {
-	// if sendAbsolutoOverride 
+	// if sendAbsolutoOverride
 
 	// this uses the character schema from the xml -> FullStats and children
 
@@ -889,7 +889,7 @@ void Avatar::sendFullStats(BitStream &bs) const
 			// field type 0x5, param 4
 			if(1) // absolute values
 			{
-				bs.StorePackedBits(4,1); // 
+				bs.StorePackedBits(4,1); //
 			}
 			else
 			{
@@ -901,7 +901,7 @@ void Avatar::sendFullStats(BitStream &bs) const
 			bs.StorePackedBits(1,1); // CombatLevel entry
 			if(1) // absolute values
 			{
-				bs.StorePackedBits(4,1); 
+				bs.StorePackedBits(4,1);
 			}
 			else
 			{
@@ -916,7 +916,7 @@ void Avatar::sendFullStats(BitStream &bs) const
 		// field type 0x5, param 16
 		if(1) // absolute values
 		{
-			bs.StorePackedBits(16,1); // 
+			bs.StorePackedBits(16,1); //
 		}
 		else
 		{
@@ -931,7 +931,7 @@ void Avatar::sendFullStats(BitStream &bs) const
 		// field type 0x5, param 16
 		if(1) // absolute values
 		{
-			bs.StorePackedBits(16,1); // 
+			bs.StorePackedBits(16,1); //
 		}
 		else
 		{
@@ -946,7 +946,7 @@ void Avatar::sendFullStats(BitStream &bs) const
 		// field type 0x5, param 16
 		if(1) // absolute values
 		{
-			bs.StorePackedBits(16,0); // 
+			bs.StorePackedBits(16,0); //
 		}
 		else
 		{
@@ -971,8 +971,8 @@ void Avatar::sendOptions(BitStream &bs) const
 {
 	bs.StoreFloat(m_options.mouselook_scalefactor);//MouseFlt1
 	bs.StoreFloat(m_options.degrees_for_turns);//MouseFlt2
-	bs.StoreBits(1,m_options.mouse_invert);//MouseSet1 
-	bs.StoreBits(1,0);//g_DimChatWindow 
+	bs.StoreBits(1,m_options.mouse_invert);//MouseSet1
+	bs.StoreBits(1,0);//g_DimChatWindow
 	bs.StoreBits(1,0); //g_DimNavWindow
 	bs.StoreBits(1,1);//g_ToolTips
 	bs.StoreBits(1,1);//g_AllowProfanity
@@ -986,7 +986,7 @@ void Avatar::sendOptions(BitStream &bs) const
 	bs.StoreBits(3,0);//dword_729E74
 	bs.StoreBits(3,0);//dword_729E78
 	bs.StoreBits(3,0);//dword_729E7C
-	bs.StorePackedBits(5,2);//v2 = 
+	bs.StorePackedBits(5,2);//v2 =
 //	if ( v1 >= 5 )
 //	{
 //		word_91A7A4 = v2;
@@ -1022,9 +1022,9 @@ void MapCostume::dump()
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Costume \n")));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    body type: 0x%08x\n"),m_body_type));
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    a: 0x%08x\n"),a));
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Height %f\n"),m_height));			
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Physique %f\n"),m_physique));			
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    ****** %d Parts *******\n"),m_num_parts));		
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Height %f\n"),m_height));
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Physique %f\n"),m_physique));
+	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    ****** %d Parts *******\n"),m_num_parts));
 	for(int i=0; i<m_num_parts; i++)
 	{
 		if(m_parts[i].m_full_part)
@@ -1032,13 +1032,13 @@ void MapCostume::dump()
 			m_parts[i].name_1.c_str(),m_parts[i].name_2.c_str(),m_parts[i].name_3.c_str(),
 			m_parts[i].m_colors[0],m_parts[i].m_colors[1],
 			m_parts[i].name_4.c_str(),m_parts[i].name_5.c_str()
-			));		
+			));
 		else
 			ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,0x%08x,0x%08x,%s,%s\n"),m_parts[i].name_0.c_str(),
 			m_parts[i].name_1.c_str(),m_parts[i].name_2.c_str(),m_parts[i].name_3.c_str(),
 			m_parts[i].m_colors[0],m_parts[i].m_colors[1],m_parts[i].m_colors[2],m_parts[i].m_colors[3],
 			m_parts[i].name_4.c_str(),m_parts[i].name_5.c_str()
-			));		
+			));
 	}
 	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    *************\n")));
 }

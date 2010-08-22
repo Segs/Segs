@@ -23,26 +23,25 @@
 #include "GameServerInterface.h"
 #include "MapServerInterface.h"
 
-using namespace std;
-
 class ServerManagerC
 {
 public:
-    typedef deque<GameServerInterface *> dGameServer;
+    typedef std::deque<GameServerInterface *> dGameServer;
+    typedef std::deque<MapServerInterface *> dMapServer;
 
                                 ServerManagerC(void);
 virtual                         ~ServerManagerC(void){};
 
-	    bool                    LoadConfiguration(const std::string &config_file_path); // this loads this process configuration
-	    bool                    StartLocalServers(void); //! this function will create all server instances local to this process
-	    bool                    CreateServerConnections(void); //! using configuration info, this will connect all remote servers to their local proxy objects
-	    void                    StopLocalServers(void);
+		bool                    LoadConfiguration(const std::string &config_file_path); // this loads this process configuration
+		bool                    StartLocalServers(void); //! this function will create all server instances local to this process
+		bool                    CreateServerConnections(void); //! using configuration info, this will connect all remote servers to their local proxy objects
+		void                    StopLocalServers(void);
 
 virtual AdminServerInterface *	GetAdminServer(void);
 virtual AuthServerInterface *	GetAuthServer(void);
 virtual GameServerInterface *	GetGameServer(size_t idx); //! If called from standalone MapServer it contains it's controlling GameServer interface
 virtual MapServerInterface *	GetMapServer(size_t idx);
-	
+
             void                SetAuthServer(IAuthServer *srv);
             void                SetAdminServer(IAdminServer *srv);
 virtual     size_t              GameServerCount(void);
@@ -54,7 +53,7 @@ virtual     void                AddMapServer(IMapServer *srv);
 
 protected:
             dGameServer         m_GameServers;
-            deque<MapServerInterface *> m_MapServers;
+            dMapServer          m_MapServers;
             AuthServerInterface *m_authserv;
             AdminServerInterface *m_adminserv;
 };

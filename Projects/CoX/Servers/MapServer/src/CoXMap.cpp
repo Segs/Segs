@@ -8,6 +8,7 @@
  */
 
 #include "CoXMap.h"
+using namespace std;
 CoXMap::CoXMap( const string &name ) :m_name(name)
 {
 
@@ -15,7 +16,7 @@ CoXMap::CoXMap( const string &name ) :m_name(name)
 
 void CoXMap::dispatch( SEGSEvent *ev )
 {
-    
+
 }
 
 SEGSEvent * CoXMap::dispatch_sync( SEGSEvent *ev )

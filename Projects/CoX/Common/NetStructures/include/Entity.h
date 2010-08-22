@@ -19,10 +19,10 @@ public:
 		Entity *m_ent;
 		u32 field_5A8;
 		u32 field_498;
-		std::string char_arr_10_5AC; 
+		std::string char_arr_10_5AC;
 virtual			~Avatar()
 				{
-					m_ent = NULL; // we only borrowed this pointer	    
+					m_ent = NULL; // we only borrowed this pointer
 				}
 				Avatar(Entity *m_ent);
 virtual void	serializeto(BitStream &bs) const;
@@ -63,9 +63,9 @@ public:
 		int m_num_titles;
 		int m_num_fx;
 		bool m_has_titles;
-		vector<u8> m_fx1;
-		vector<u32> m_fx2;
-		vector<u8> m_fx3;
+		std::vector<u8> m_fx1;
+		std::vector<u32> m_fx2;
+		std::vector<u8> m_fx3;
 		u8		m_costume_type;
 		int		m_state_mode;
 		bool	m_state_mode_send;
@@ -78,11 +78,11 @@ public:
 		int m_seq_upd_num2;
 		PosUpdate m_pos_updates[64];
 		size_t m_update_idx;
-		string m_battle_cry;
-		string m_character_description;
+		std::string m_battle_cry;
+		std::string m_character_description;
 		u32 field_E30;
 		bool var_B4;
-		
+
 		Character   m_char;
 
 		bool        entReceiveAlwaysCon;
@@ -94,7 +94,7 @@ public:
 		bool        m_selector1,m_pchar_things,might_have_rare          ,m_hasname  ,m_hasgroup_name,m_classname_override;
 		bool        m_create   ,m_hasRagdoll  ,m_create_player,m_rare_bits;
 		int         current_client_packet_id;
-        std::string m_group_name, m_override_name;
+		std::string m_group_name, m_override_name;
 		u8                      m_origin_idx,m_class_idx;
 		u8                      m_type;
 		u32                     m_idx;
@@ -105,7 +105,7 @@ public:
 		u32                     var_1190;
 		bool                    var_129C;
 
-						        Entity();
+								Entity();
 virtual					        ~Entity(){}
 		void			        dump();
 		u32				        getIdx() const {return m_idx;}
@@ -122,17 +122,17 @@ virtual	void			        sendCostumes(BitStream &bs) const;
 static	void			        sendAllyID(BitStream &bs);
 static	void			        sendPvP(BitStream &bs);
 		void			        sendEntCollision(BitStream &bs) const;
-		void			        sendNoDrawOnClient(BitStream &bs)const; 
-		void			        sendContactOrPnpc(BitStream &bs)const; 
-		void			        sendPetName(BitStream &bs)const; 
-		void			        sendAFK(BitStream &bs)const; 
-		void			        sendOtherSupergroupInfo(BitStream &bs)const; 
-		void			        sendLogoutUpdate(BitStream &bs)const; 
+		void			        sendNoDrawOnClient(BitStream &bs)const;
+		void			        sendContactOrPnpc(BitStream &bs)const;
+		void			        sendPetName(BitStream &bs)const;
+		void			        sendAFK(BitStream &bs)const;
+		void			        sendOtherSupergroupInfo(BitStream &bs)const;
+		void			        sendLogoutUpdate(BitStream &bs)const;
 
-		void			        storePosition(BitStream &bs) const;	
+		void			        storePosition(BitStream &bs) const;
 		void			        storeOrientation(BitStream &bs) const;
 		void			        storeUnknownBinTree(BitStream &bs) const;
-		void			        storePosUpdate(BitStream &bs) const;	
+		void			        storePosUpdate(BitStream &bs) const;
 		int			        	getOrientation(BitStream &bs);
 virtual void			        serializefrom(BitStream &){};
 		bool			        update_rot(int axis) const; // returns true if given axis needs updating;
@@ -142,7 +142,7 @@ virtual void			        serializefrom(BitStream &){};
 		void			        sendTargetUpdate(BitStream &bs) const;
 		void                    sendWhichSideOfTheForce(BitStream &bs) const;
 		void                    sendBuffs(BitStream &bs) const;
-        const std::string &     name() {return m_char.getName();}
+		const std::string &     name() {return m_char.getName();}
 };
 class MobEntity : public Entity
 {

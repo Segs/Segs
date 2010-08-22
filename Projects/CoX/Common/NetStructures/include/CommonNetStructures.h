@@ -22,7 +22,7 @@ public:
 		q[1]=b;
 		q[2]=c;
 		float res = (a*a+b*b+c*c)-1;
-		q[3]= max((float)0,res);
+		q[3]= std::max<>((float)0,res);
 		return *this;
 	}
 	Quaternion()
@@ -31,12 +31,12 @@ public:
 	}
 	union
 	{
-		struct 
+		struct
 		{
 			float x,y,z,amount;
 		} vals;
 		float q[4];
-	};	
+	};
 };
 class Vector3
 {
@@ -93,7 +93,7 @@ public:
 	static void			storeFloatConditional(BitStream &bs,float val);
 	static void			storeFloatPacked(BitStream &bs,float val);
 	static int			getPackedBitsConditional(BitStream &bs,int numbits);
-	static void			storeStringConditional(BitStream &bs,const string &str);
+	static void			storeStringConditional(BitStream &bs,const std::string &str);
 	static void			storeTransformMatrix(BitStream &tgt,const Matrix4x3 &src);
 	static void			storeTransformMatrix(BitStream &tgt,const TransformStruct &src);
 

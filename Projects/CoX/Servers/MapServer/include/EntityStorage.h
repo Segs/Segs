@@ -18,9 +18,10 @@ class CoXMap;
 class Entity;
 class EntityManager
 {
+    typedef std::list <Entity *> lEntity;
 public:
     Entity *        m_map_entities[10240];
-    list <Entity *> m_entlist;
+    lEntity         m_entlist;
     u32             m_last_ent;
                     EntityManager()
                     {

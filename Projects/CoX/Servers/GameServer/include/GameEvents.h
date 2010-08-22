@@ -125,7 +125,7 @@ public:
         bs.GetString(m_char_name);
     }
     u8 m_index;
-    string m_char_name;
+    std::string m_char_name;
 };
 class UpdateCharacter : public GameLinkEvent
 {

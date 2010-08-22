@@ -27,7 +27,7 @@ public:
 	{
 		m_colors[0]=m_colors[1];
 	}
-	CostumePart(int type,const string &a,const string &b,const string &c,const string &d,u32 c1,u32 c2)
+	CostumePart(int type,const std::string &a,const std::string &b,const std::string &c,const std::string &d,u32 c1,u32 c2)
 		:m_type(type),name_0(a),name_1(b),name_2(c),name_3(d)
 	{
 		m_colors[0]=c1;
@@ -37,7 +37,7 @@ public:
 	void serializefrom(BitStream &bs);
 	void serializeto_charsel(BitStream &bs) const;
 	int m_type; // arms/legs etc..
-	string name_0,name_1,name_2,name_3,name_4,name_5,name_6;
+	std::string name_0,name_1,name_2,name_3,name_4,name_5,name_6;
 	bool m_full_part;
 	u32 m_colors[2];
 };
@@ -47,12 +47,12 @@ class Costume : public NetStructure
 public:
     float m_height;
     float m_physique;
-	u32 a,b;
-	bool m_non_default_costme_p;
-	int m_num_parts;
-	float m_floats[8];
-	vector<CostumePart> m_parts;
-	u32 m_body_type;
+    u32 a,b;
+    bool m_non_default_costme_p;
+    int m_num_parts;
+    float m_floats[8];
+    std::vector<CostumePart> m_parts;
+    u32 m_body_type;
     Costume()
     {
         m_height=m_physique=0.0f;

@@ -9,7 +9,7 @@
 #include "CommonNetStructures.h"
 #include "Filesystem.h"
 #include "CoXHash.h"
-
+using namespace std;
 void NetStructure::storeBitsConditional( BitStream &bs,int numbits,int bits )
 {
 	bs.StoreBits(1,bits!=0);
@@ -106,15 +106,15 @@ void NetStructure::storeCached_Color( BitStream &bs,u32 col )
     {
         cache_idx+=1;
     }
-	bs.StoreBits(1,(cache_idx||col==0));
-	if(cache_idx||col==0)
-	{
-		bs.StorePackedBits(colorcachecount_bitlength,cache_idx);
-	}
-	else
-	{
-		bs.StoreBits(32,col);
-	}
+    bs.StoreBits(1,(cache_idx||col==0));
+    if(cache_idx||col==0)
+    {
+        bs.StorePackedBits(colorcachecount_bitlength,cache_idx);
+    }
+    else
+    {
+        bs.StoreBits(32,col);
+    }
 }
 
 void NetStructure::storeCached_String( BitStream &bs,const std::string & str )
@@ -126,10 +126,10 @@ void NetStructure::storeCached_String( BitStream &bs,const std::string & str )
         cache_idx+=1;
     }
     bs.StoreBits(1,(cache_idx||str.size()==0));
-	if(cache_idx||str.size()==0)
-		bs.StorePackedBits(stringcachecount_bitlength,cache_idx);
-	else
-		bs.StoreString(str);
+    if(cache_idx||str.size()==0)
+        bs.StorePackedBits(stringcachecount_bitlength,cache_idx);
+    else
+        bs.StoreString(str);
 }
 
 u32 NetStructure::getCached_Color( BitStream &bs )
@@ -138,10 +138,10 @@ u32 NetStructure::getCached_Color( BitStream &bs )
 	if(in_hash)
 	{
 		u16 hash_idx =bs.GetBits(colorcachecount_bitlength);
-        u32 *kv = WorldData::instance()->colors().key_for_idx(hash_idx);
-        if(kv)
-            return *kv;
-        return 0;
+		u32 *kv = WorldData::instance()->colors().key_for_idx(hash_idx);
+		if(kv)
+			return *kv;
+		return 0;
 	}
 	else
 		return bs.GetBits(32);
@@ -157,10 +157,10 @@ std::string NetStructure::getCached_String( BitStream &bs )
 	if(in_cache)
 	{
 		int in_cache_idx = bs.GetPackedBits(stringcachecount_bitlength);
-        std::string *kv = WorldData::instance()->strings().key_for_idx(in_cache_idx);
-        if(kv)
-            tgt=*kv;
-        return tgt;
+		std::string *kv = WorldData::instance()->strings().key_for_idx(in_cache_idx);
+		if(kv)
+			tgt=*kv;
+		return tgt;
 	}
 	else
 		bs.GetString(tgt);

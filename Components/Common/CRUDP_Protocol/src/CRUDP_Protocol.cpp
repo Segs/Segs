@@ -14,6 +14,29 @@
 #include <zlib.h>
 //#include <ace/OS_NS
 //#define LOG_PACKETS 1
+
+/*
+	Cryptic Reliable UDP
+	CrudP
+	Incoming
+		BitStream Block ->
+			Parse Header [ Checksum + Decode ]
+			Remove from send queue packets acknowledged by this header
+			if seq_no < min_recv_seq, reject packet
+			Store/Join
+			Record packet's seq_no in ack_list
+			Sort according to sequence num
+			if next packet in sequence is available, pass it to higher layer. and record min_recv_seq
+	Outgoing
+		BitStream ->
+			Split stream
+			Each block is Encoded, and Checksumed.
+			Sibling packet id is recorded in the packet
+			Packets are inserted into send queue.
+			If this queue is not scheduled for send, it's scheduled now
+
+*/
+
 bool CrudP_Protocol::PacketSeqCompare(const CrudP_Packet *a,const CrudP_Packet *b)
 {
 	return a->GetSequenceNumber()<b->GetSequenceNumber();
@@ -119,7 +142,7 @@ void CrudP_Protocol::storeAcks(BitStream &bs)
     }
     recv_acks.sort();
     recv_acks.unique();
-    list<u32>::iterator iter = recv_acks.begin();
+    std::list<u32>::iterator iter = recv_acks.begin();
     u32 last_ack = 0;
     u32 num_acks = (u32)((recv_acks.size()>16) ? 16:recv_acks.size());
     bs.StorePackedBits(1,num_acks);
@@ -255,7 +278,7 @@ void CrudP_Protocol::PacketDestroyer(CrudP_Packet *a)
 {
 	delete a;
 }
-void CrudP_Protocol::PacketSibDestroyer(const pair<int,pPacketStorage> &a)
+void CrudP_Protocol::PacketSibDestroyer(const std::pair<int,pPacketStorage> &a)
 {
 	for_each(a.second.begin(),a.second.end(),&CrudP_Protocol::PacketDestroyer);
 }
@@ -412,7 +435,7 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
     }
 }
 //! this gets all currently unacknowledged packets
-size_t CrudP_Protocol::GetUnsentPackets(list<CrudP_Packet *> &res)
+size_t CrudP_Protocol::GetUnsentPackets(std::list<CrudP_Packet *> &res)
 {
 	ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
 	res.assign(unsent_packets.begin(),unsent_packets.end());

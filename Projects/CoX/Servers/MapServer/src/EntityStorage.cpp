@@ -12,7 +12,7 @@
 //EntityManager ent_mgr;
 void EntityStorage::StorePlayer( MapClient *client,Entity *player_ent )
 {
-	
+
 }
 
 void EntityManager::sendDebuggedEntities( BitStream &tgt ) const
@@ -39,9 +39,9 @@ void EntityManager::sendDeletes( BitStream &tgt ) const
 void EntityManager::sendEntities( BitStream &tgt ) const
 {
 	Entity *pEnt = NULL;
-	list<Entity *>::const_iterator iter = m_entlist.begin();
+	std::list<Entity *>::const_iterator iter = m_entlist.begin();
 	int last_idx;
-	int delta;// sending delta between entities idxs -> 
+	int delta;// sending delta between entities idxs ->
 	if(iter!=m_entlist.end())
 	{
 		pEnt = *iter;
@@ -63,7 +63,7 @@ void EntityManager::sendEntities( BitStream &tgt ) const
 	// last entity marker
 	tgt.StorePackedBits(1,0); // next ent
 	tgt.StoreBits(1,1); // create/update -> create
-	tgt.StoreBits(1,1); // empty entity. will finish the receiving loop 
+	tgt.StoreBits(1,1); // empty entity. will finish the receiving loop
 }
 
 Entity * EntityManager::CreatePlayer()

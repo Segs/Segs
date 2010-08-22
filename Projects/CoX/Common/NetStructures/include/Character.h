@@ -31,10 +31,11 @@ class Costume;
 class Character : public NetStructure
 {
         friend class CharacterDatabase;
-
+        typedef std::vector<PowerPool_Info> vPowerPool;
+        typedef std::vector<Costume *> vCostume;
         PowerPool_Info	get_power_info(BitStream &src);
 
-		vector<PowerPool_Info> m_powers;
+		vPowerPool		m_powers;
 		PowerTrayGroup  m_trays;
 		std::string     m_class_name;
 		std::string     m_origin_name;
@@ -51,7 +52,7 @@ public:
 		u32				getLevel() const { return m_level; }
 		void			setLevel(u32 val) { m_level = val; }
 const	std::string &	getName() const { return m_name; }
-		void			setName(const std::string &val); 
+		void			setName(const std::string &val);
 const	std::string &	getMapName() const { return m_mapName; }
 		void			setMapName(const std::string &val) { m_mapName = val; }
 		u8				getIndex() const { return m_index; }
@@ -69,14 +70,14 @@ const	std::string &	getMapName() const { return m_mapName; }
 		void			serializeto(BitStream &buffer) const;
 		void			serialize_costumes(BitStream &buffer,bool all_costumes=true) const;
 		void			serializetoCharsel(BitStream &bs);
-        void			GetCharBuildInfo(BitStream &src); // serialize from char creation
-        void            recv_initial_costume(BitStream &src);
+		void			GetCharBuildInfo(BitStream &src); // serialize from char creation
+		void            recv_initial_costume(BitStream &src);
 		Costume *		getCurrentCostume() const;
 		void			DumpPowerPoolInfo( const PowerPool_Info &pool_info );
 		void			DumpBuildInfo();
-        void            face_bits(u32){};
-        void            dump();
-        
+		void            face_bits(u32){};
+		void            dump();
+
 
 protected:
 		u64                 m_owner_account_id;
@@ -86,7 +87,7 @@ protected:
 		std::string         m_name;
 		std::string         m_mapName;
 		bool				m_villain;
-		vector<Costume *>	m_costumes;
+		vCostume			m_costumes;
 		Costume *			m_sg_costume;
 		u32					m_current_costume_idx;
 		bool				m_current_costume_set;

@@ -11,7 +11,7 @@
 #include "CRUDP_Packet.h"
 
 CrudP_Packet::CrudP_Packet()
-{ 
+{
 	m_stream		= new BitStream(maxPacketSize);
 	m_hasDebugInfo	= false;
 	m_finalized		= false;
@@ -50,7 +50,7 @@ CrudP_Packet::CrudP_Packet(const CrudP_Packet &from)
 
 }
 CrudP_Packet::~CrudP_Packet()
-{ 
+{
 	if(m_stream) delete m_stream;
 }
 
@@ -69,7 +69,7 @@ bool CrudP_Packet::ParseHeader()
 	u32 bitLength = GetBits(32);	//	We don't really need this value for anything
 	m_checksum    = GetBits(32);
 	u32 realcsum  = Checksum(GetBuffer() + packetHeaderSize, GetPacketLength() - packetHeaderSize);
-	
+
 	if(m_checksum != realcsum)
 	{
 		LOG("CrudP_Packet") << "CrudP_Packet buffer checksum failed";
@@ -86,7 +86,7 @@ bool CrudP_Packet::ParseHeader()
 		m_sibId  = GetBits(32);
 	}
 
-    return true;
+	return true;
 }
 */
 
@@ -138,7 +138,7 @@ u32 CrudP_Packet::GetBits(u32 nBits)
 	if(m_hasDebugInfo)
 		return m_stream->GetBitsWithDebugInfo(nBits);
 	else
-		return m_stream->GetBits(nBits); 
+		return m_stream->GetBits(nBits);
 }
 
 void CrudP_Packet::GetBitArray(u32 nBytes, u8 *array)
@@ -149,20 +149,20 @@ void CrudP_Packet::GetBitArray(u32 nBytes, u8 *array)
 		return m_stream->GetBitArray(array,nBytes);
 };
 
-u32 CrudP_Packet::GetPackedBits(u32 nBits) 
-{ 
+u32 CrudP_Packet::GetPackedBits(u32 nBits)
+{
 	if(m_hasDebugInfo)
 		return m_stream->GetPackedBitsWithDebugInfo(nBits);
 	else
-		return m_stream->GetPackedBits(nBits); 
+		return m_stream->GetPackedBits(nBits);
 }
 
-void CrudP_Packet::GetString(string &tgt) 
+void CrudP_Packet::GetString(std::string &tgt)
 {
 	if(m_hasDebugInfo)
 		m_stream->GetStringWithDebugInfo(tgt);
 	else
-		m_stream->GetString(tgt); 
+		m_stream->GetString(tgt);
 }
 
 f32 CrudP_Packet::GetFloat()

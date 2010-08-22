@@ -17,7 +17,7 @@ Description: BitStream's main constructor, initializes various internal
 values and buffers
 ************************************************************************/
 BitStream::BitStream(u32 size) : GrowingBuffer(0xFFFFFFFF,7,size)
-{ 
+{
 	m_byteAligned    = false;
 	Reset();
 };
@@ -61,7 +61,7 @@ BitStream &BitStream::operator =(const BitStream &bs)
 			memcpy(m_buf,bs.m_buf,m_write_off); // copy up to write point
 		m_byteAligned	 = bs.m_byteAligned;
 		m_read_bit_off   = bs.m_read_bit_off;
-		m_write_bit_off  = bs.m_write_bit_off;		
+		m_write_bit_off  = bs.m_write_bit_off;
 	}
 	return *this;
 }
@@ -270,7 +270,7 @@ s32 BitStream::GetBitsWithDebugInfo(u32 nBits)
 s32 BitStream::GetBits(u32 nBits)
 {
 	s32 tgt;
-	if(nBits>GetReadableBits()) 
+	if(nBits>GetReadableBits())
 		return false;
 	if(IsByteAligned())
 		nBits= BYTE_ALIGN(nBits);
@@ -289,7 +289,7 @@ s32 BitStream::uGetBits(u32 nBits)
 	r>>=m_read_bit_off; // starting at the top
 	tgt = s32(r & (~1ull)>>(64-nBits));
 	read_ptr((m_read_bit_off+nBits)>>3);
-	m_read_bit_off = (m_read_bit_off+nBits)&0x7; 
+	m_read_bit_off = (m_read_bit_off+nBits)&0x7;
 	return tgt;
 }
 
@@ -301,7 +301,7 @@ Description: Retrieves an indefinite(though always less than 32) number
 			 the bits are packed.  I don't yet fully understand this
 			 "packed bits" concept
 
-TODO: Learn more about this format and write a better description, and 
+TODO: Learn more about this format and write a better description, and
 	  if necessary, a better implementation
 ************************************************************************/
 s32 BitStream::GetPackedBitsWithDebugInfo(u32 minbits)
@@ -310,7 +310,16 @@ s32 BitStream::GetPackedBitsWithDebugInfo(u32 minbits)
 	/*u32 datalength =*/ (void)GetPackedBits(5);
 	return GetPackedBits(minbits);
 }
+/************************************************************************
+Function:	 GetPackedBits/GetPackedBitsWithDebugInfo
+Description: Retrieves an indefinite(though always less than 32) number
+			 of bits.  It determines how many to retrieve based on how
+			 the bits are packed.  I don't yet fully understand this
+			 "packed bits" concept
 
+TODO: Learn more about this format and write a better description, and
+	  if necessary, a better implementation
+************************************************************************/
 s32 BitStream::GetPackedBits(u32 minbits)
 {
 	if(IsByteAligned())	return GetBits(32);
@@ -327,7 +336,7 @@ s32 BitStream::GetPackedBits(u32 minbits)
 		accumulator += bitMask;
 
 		if(minbits > BITS_PER_DWORD) minbits = BITS_PER_DWORD;
-	} 
+	}
 
 	return -1;
 }
@@ -345,7 +354,12 @@ void BitStream::GetBitArrayWithDebugInfo(u8 *array,size_t nBytes)
 	/*u32 datalength =*/ (void)GetPackedBits(5);
 	GetBitArray(array,nBytes);
 }
-
+/************************************************************************
+Function:	 GetBitArray/GetBitArrayWithDebugInfo
+Description: Retrieves a client-specified "array" of bits.  The main
+			 difference between this function, and the GetBits function
+			 is that this one can potentially retrieve more than 32 bits
+************************************************************************/
 void BitStream::GetBitArray(u8 *tgt, size_t nBits)
 {
 	ByteAlign(true,false);
@@ -359,16 +373,20 @@ Function:	 GetString/GetStringWithDebugInfo
 Description: Retrieves a null-terminated C-style string from the bit
 			 stream
 ************************************************************************/
-void BitStream::GetStringWithDebugInfo(string &str)
+void BitStream::GetStringWithDebugInfo(std::string &str)
 {
 	if(GetBits(3) != BS_STRING)	return;
 	/*u32 datalength =*/ (void)GetPackedBits(5);
 	GetString(str);
 }
-
-void BitStream::GetString(string &str)
+/************************************************************************
+Function:	 GetString/GetStringWithDebugInfo
+Description: Retrieves a null-terminated C-style string from the bit
+			 stream
+************************************************************************/
+void BitStream::GetString(std::string &str)
 {
-	if(GetReadableBits()<8) 
+	if(GetReadableBits()<8)
 	{
 		m_last_err = 1;
 		return;
@@ -379,10 +397,10 @@ void BitStream::GetString(string &str)
 	do {
 		chr  = m_buf[m_read_off]  >> m_read_bit_off;
 		chr	|= m_buf[++m_read_off] << bitsLeft;
-        if(chr)
-		    str += chr;
+		if(chr)
+			str += chr;
 
-		if(GetReadableBits()<8) 
+		if(GetReadableBits()<8)
 		{
 			m_last_err = 1;
 			return;
@@ -402,7 +420,11 @@ f32 BitStream::GetFloatWithDebugInfo()
 	/*u32 datalength =*/ (void)GetPackedBits(5);
 	return GetFloat();
 }
-
+/************************************************************************
+Function:	 GetFloat/GetFloatWithDebugInfo()
+Description: Retrieves a floating-point value from the bit stream.  This
+			 will always be a 32-bit value.
+************************************************************************/
 f32 BitStream::GetFloat()
 {
 	f32 res;
@@ -487,7 +509,7 @@ u32 BitStream::GetBitsLength(u32 nBits, u32 dataBits) const
 	//	value for nBits
 	u32 numbits = IsByteAligned() ? BYTE_ALIGN(nBits) : nBits;
 	assert(numbits <= BITS_PER_DWORD);
-	
+
 	u32 bitsAdded = 0;
 	for(u32 bits = 0; numbits; numbits -= bits)
 	{
@@ -517,7 +539,7 @@ BitStream::BitStream(u8* arr,u32 bit_size)
 	m_byteLength     = BITS_TO_BYTES(bit_size);
 	m_bitLength      = bit_size;
 	m_byteAligned    = false;
-	
+
 }*/
 void BitStream::CompressAndStoreString(const char *str)
 {
@@ -531,7 +553,7 @@ void BitStream::CompressAndStoreString(const char *str)
 	StoreBitArray(buf,len << 3);	//	Store compressed string
 	delete [] buf;
 }
-void BitStream::GetAndDecompressString(string &tgt)
+void BitStream::GetAndDecompressString(std::string &tgt)
 {
 	u32 decompLen = 0;
 

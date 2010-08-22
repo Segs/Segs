@@ -1,4 +1,4 @@
-/* 
+/*
  * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
@@ -14,28 +14,29 @@
 #include <ace/OS_NS_time.h>
 #include <ace/Log_Msg.h>
 #include "Client.h"
+using namespace std;
 AdminDatabase::AdminDatabase()
 {
 
 }
 int AdminDatabase::GetAccounts(void) const
 {
-	return 0;
+    return 0;
 }
 
 bool AdminDatabase::AddAccount(const char *username, const char *password,u16 access_level) // Add account and password to the database server
 {
-    PreparedArgs args;
+	PreparedArgs args;
 	u8 res=0;
-    args.set_param(0,std::string(username));
-    args.set_param(1,(u8*)password,14,true);
-    args.set_param(2,access_level);
-    DbResults query_res;
-    if(false==m_add_account_query->execute(args,query_res)) // Send our query to the PostgreSQL db server to process
-    {
-        ACE_ERROR((LM_ERROR,ACE_TEXT ("Result status: %s\n"),query_res.m_msg)); // Why the query failed
-        return false;
-    }
+	args.set_param(0,std::string(username));
+	args.set_param(1,(u8*)password,14,true);
+	args.set_param(2,access_level);
+	DbResults query_res;
+	if(false==m_add_account_query->execute(args,query_res)) // Send our query to the PostgreSQL db server to process
+	{
+		ACE_ERROR((LM_ERROR,ACE_TEXT ("Result status: %s\n"),query_res.m_msg)); // Why the query failed
+		return false;
+	}
 	return true;
 }
 
@@ -79,22 +80,22 @@ int AdminDatabase::GetBanFlag(const char *username)
 
 bool AdminDatabase::ValidPassword(const char *username, const char *password)
 {
-    std::stringstream query;
+	std::stringstream query;
 	bool res=false;
-    u8 *binary_password;
-    size_t unescaped_len;
+	u8 *binary_password;
+	size_t unescaped_len;
 	query<<"SELECT passw FROM accounts WHERE username = '"<<username<<"';";
 
 	PGresult *pResult = PQexec(pConnection,query.str().c_str());   // Send our query to the PostgreSQL db server to process
 	char *res_msg = PQresultErrorMessage(pResult);
 	if(res_msg&&(res_msg[0]!=0))
 	{
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Result status: %s\n"),PQresultErrorMessage(pResult))); // Why the query failed
+		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Result status: %s\n"),PQresultErrorMessage(pResult))); // Why the query failed
 		return res;
 	}
-    binary_password=PQunescapeBytea((u8 *)PQgetvalue(pResult,0,0),&unescaped_len);
+	binary_password=PQunescapeBytea((u8 *)PQgetvalue(pResult,0,0),&unescaped_len);
 	ACE_ASSERT(unescaped_len<=16);
-    PQclear(pResult); // Clear result
+	PQclear(pResult); // Clear result
 	if (memcmp(binary_password,password,unescaped_len) == 0)
 		res = true;
 	PQfreemem(binary_password);
@@ -123,13 +124,13 @@ bool AdminDatabase::GetAccount( AccountInfo & client,const std::string &query )
     if(results.num_rows()!=1)
         return false;
 
-    DbResultRow r=results.getRow(0);
+	DbResultRow r=results.getRow(0);
 	struct tm creation;
-	client.m_acc_server_acc_id  = (u64)r.getColInt64("id"); 
-	client.m_login              = r.getColString("username"); 
-    client.m_access_level       = r.getColInt16("access_level"); 
-    creation                    = r.getTimestamp("creation_date");
-//	client->setCreationDate(creation); 
+	client.m_acc_server_acc_id  = (u64)r.getColInt64("id");
+	client.m_login              = r.getColString("username");
+	client.m_access_level       = r.getColInt16("access_level");
+	creation                    = r.getTimestamp("creation_date");
+//	client->setCreationDate(creation);
 	return true;
 }
 

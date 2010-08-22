@@ -14,11 +14,10 @@
 #include "EventProcessor.h"
 class CoXMap : public EventProcessor
 {
-	string m_name;
+	std::string m_name;
 public:
-	CoXMap(const string &name);
 	EntityManager       m_entities;
-    void				dispatch(SEGSEvent *ev);
-    SEGSEvent * 		dispatch_sync(SEGSEvent *ev);
-
+						CoXMap(const std::string &name);
+	void				dispatch(SEGSEvent *ev);
+	SEGSEvent * 		dispatch_sync(SEGSEvent *ev);
 };

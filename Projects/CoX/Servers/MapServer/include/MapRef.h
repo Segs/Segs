@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include <string>
 
 class MapRef : public NetStructure
 {
@@ -16,9 +17,9 @@ public:
 	bool reduced_transform;
 	Matrix4x3 m_matrix;
 	TransformStruct m_transforms;
-	string m_name;
-	MapRef(int idx,Matrix4x3 &mat,string name) : m_idx(idx),m_matrix(mat),m_name(name){reduced_transform=false;}
-	MapRef(int idx,string name,Vector3 &pos,Vector3 &rot) : m_idx(idx),m_name(name)
+	std::string m_name;
+	MapRef(int idx,Matrix4x3 &mat,std::string name) : m_idx(idx),m_matrix(mat),m_name(name){reduced_transform=false;}
+	MapRef(int idx,std::string name,Vector3 &pos,Vector3 &rot) : m_idx(idx),m_name(name)
 	{
 		reduced_transform=true;
 		m_transforms=TransformStruct(pos,rot,Vector3(),true,true,false);

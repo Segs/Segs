@@ -157,8 +157,8 @@ public:
     }
     u32 m_num_shortcuts2;
     //vector<NetCommand *> m_commands;
-    vector<NetCommand *> m_commands2;  // m_commands2 will get filled after we know more about them
-    vector<std::string>  m_shortcuts2;
+    std::vector<NetCommand *> m_commands2;  // m_commands2 will get filled after we know more about them
+    std::vector<std::string>  m_shortcuts2;
     MapClient *m_client;
 };
 #include "MapRef.h"
@@ -236,7 +236,7 @@ public:
         if(!src.GetBits(1))
             return;
         ACE_ASSERT(0);
-        string def_filename;
+        std::string def_filename;
         src.GetString(def_filename);
     }
 
@@ -345,7 +345,7 @@ public:
         tgt.StoreBits(32,0); //unused - crc ?
         tgt.StoreBits(32,ref_crc); // 0x3f6057cf
     }
-    string m_map_desc;
+    std::string m_map_desc;
     int ref_count;
     int ref_crc;
     int var_4;
@@ -354,9 +354,9 @@ public:
     size_t num_base_elems;
     int undos_PP;
     bool var_14;
-    vector<string> m_trays;
-    vector<u32> m_crc;
-    vector<MapRef> m_refs;
+    std::vector<std::string> m_trays;
+    std::vector<u32> m_crc;
+    std::vector<MapRef> m_refs;
     int unkn1;
     int m_map_number;
     bool unkn2;

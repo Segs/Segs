@@ -32,34 +32,34 @@ class Power
 public:
 	int entry_type;
 	int unkn1,unkn2;
-	string sunkn1;
-	string sunkn2;
-	string sunkn3;
+	std::string sunkn1;
+	std::string sunkn2;
+	std::string sunkn3;
 	void serializeto(BitStream &tgt) const
-    {
-        tgt.StoreBits(4,entry_type);
-        switch(entry_type)
-        {
-        case 1:
-            tgt.StoreBits(32,unkn1); //powersetIdx
-            tgt.StoreBits(32,unkn2);
-            break;
-        case 2:
-            tgt.StorePackedBits(3,unkn1);
-            tgt.StorePackedBits(3,unkn2);
-            break;
-        case 6:
-        case 12:
-            tgt.StoreString(sunkn1);
-            tgt.StoreString(sunkn2);
-            tgt.StoreString(sunkn3);
-            break;
-        case 0:
-            break;
-        default:
-            ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Unknown tray entry type %d\n"),entry_type));
-        }
-    }
+	{
+		tgt.StoreBits(4,entry_type);
+		switch(entry_type)
+		{
+		case 1:
+			tgt.StoreBits(32,unkn1); //powersetIdx
+			tgt.StoreBits(32,unkn2);
+			break;
+		case 2:
+			tgt.StorePackedBits(3,unkn1);
+			tgt.StorePackedBits(3,unkn2);
+			break;
+		case 6:
+		case 12:
+			tgt.StoreString(sunkn1);
+			tgt.StoreString(sunkn2);
+			tgt.StoreString(sunkn3);
+			break;
+		case 0:
+			break;
+		default:
+			ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Unknown tray entry type %d\n"),entry_type));
+		}
+	}
 
 	void serializefrom(BitStream &src)
 	{

@@ -1,4 +1,4 @@
-/* 
+/*
  * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
@@ -19,7 +19,7 @@
 #include "AdminServer.h"
 #include "Character.h"
 #include "Costume.h"
-
+using namespace std;
 // UserToken,
 bool CharacterDatabase::remove_character(AccountInfo *c,u8 slot_idx)
 {
@@ -29,7 +29,7 @@ bool CharacterDatabase::remove_character(AccountInfo *c,u8 slot_idx)
     query << "DELETE FROM characters WHERE account_id="<<c->account_server_id()<<" AND slot_index="<<(u32)slot_idx<<";";
     if(!execQuery(query.str(),results))
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::remove_character %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
-	return true;
+    return true;
 }
 bool CharacterDatabase::fill( AccountInfo *c )
 {
@@ -77,14 +77,14 @@ bool CharacterDatabase::fill( Character *c)
 	c->m_origin_name= (STR_OR_EMPTY(r.getColString("origin")));
 
     CharacterCostume *main_costume = new CharacterCostume;
-    // appearance related.	
-	main_costume->m_body_type = r.getColInt32("bodytype"); // 0
+    // appearance related.
+    main_costume->m_body_type = r.getColInt32("bodytype"); // 0
     c->setMapName("Some map name"); // "V_City_00_01.txt" STR_OR_EMPTY(r.getColString("current_map"))
-	c->setLastCostumeId(r.getColInt32("last_costume_id"));	
+    c->setLastCostumeId(r.getColInt32("last_costume_id"));
     main_costume->setSlotIndex(0);
     main_costume->setCharacterId(r.getColInt32("id"));
     c->m_costumes.push_back(main_costume);
-	return fill(main_costume);
+    return fill(main_costume);
 }
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(x) (sizeof(x)/sizeof(x[1]))
@@ -105,7 +105,7 @@ bool CharacterDatabase::fill( CharacterCostume *c)
 			ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
 	}
 	DbResultRow r=results.getRow(0);
-    c->a = r.getColInt32("skin_color");
+	c->a = r.getColInt32("skin_color");
 	query.str("");
 	query<<"SELECT * FROM costume_part WHERE costume_id="<<r.getColInt32("id");
 	// this will overwrite underlying object therefore 'r' will become useless
@@ -119,7 +119,7 @@ bool CharacterDatabase::fill( CharacterCostume *c)
 		part.name_1=STR_OR_VERY_EMPTY(r.getColString("name_1"));
 		part.name_2=STR_OR_VERY_EMPTY(r.getColString("name_2"));
 		part.name_3=STR_OR_VERY_EMPTY(r.getColString("name_3"));
-        part.name_4=STR_OR_VERY_EMPTY(r.getColString("name_4"));
+		part.name_4=STR_OR_VERY_EMPTY(r.getColString("name_4"));
 		part.name_5=STR_OR_VERY_EMPTY(r.getColString("name_5"));
 		part.name_6=STR_OR_VERY_EMPTY(r.getColString("name_6"));
 		part.m_colors[0]=r.getColInt32("color_0");
@@ -139,7 +139,7 @@ bool CharacterDatabase::CreateLinkedAccount( u64 auth_account_id,const std::stri
 	DbResults results;
 	ACE_ASSERT(auth_account_id>0);
 	ACE_ASSERT(username.size()>2);
-	
+
 	query<<"INSERT INTO accounts  (account_id,max_slots) VALUES ("<<auth_account_id<<",2);";
 	if(!execQuery(query.str(),results))
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
@@ -148,7 +148,7 @@ bool CharacterDatabase::CreateLinkedAccount( u64 auth_account_id,const std::stri
 
 int CharacterDatabase::remove_account( u64 acc_serv_id )
 {
-    return 0;
+	return 0;
 }
 //TODO: SQL String sanitization
 bool CharacterDatabase::create( u64 gid,u8 slot,Character *c )

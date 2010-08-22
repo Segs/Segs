@@ -25,7 +25,7 @@ public:
 		int type;
 		void *targetvar;
 	};
-	NetCommand(int acl,const std::string &name,vector<Argument> &args):m_arguments(args)
+	NetCommand(int acl,const std::string &name,std::vector<Argument> &args):m_arguments(args)
 	{
 		m_required_access_level=acl;
 		m_name=name;
@@ -34,17 +34,22 @@ public:
 	int clientside_idx;
 	int m_required_access_level;
 	std::string m_name;
-	vector<Argument> m_arguments;
+	std::vector<Argument> m_arguments;
 
 };
 class NetCommandManager
 {
 	std::map<std::string,NetCommand *> m_name_to_command;
-	vector<NetCommand *> m_commands_level0;
-	void            SendCommandShortcutsWorker(MapClient *client,BitStream &tgt,const vector<NetCommand *> &commands,const vector<NetCommand *> &commands2);
+	std::vector<NetCommand *> m_commands_level0;
+	void            SendCommandShortcutsWorker(MapClient *client,
+											   BitStream &tgt,
+											   const std::vector<NetCommand *> &commands,
+											   const std::vector<NetCommand *> &commands2);
 public:
-	void            SendCommandShortcuts(MapClient *client,BitStream &tgt,const vector<NetCommand *> &commands2);
+	void            SendCommandShortcuts(MapClient *client,
+										 BitStream &tgt,
+										 const std::vector<NetCommand *> &commands2);
 	NetCommand *    getCommandByName(const std::string &name);
-	void addCommand(NetCommand *cmd);
+	void			addCommand(NetCommand *cmd);
 };
-typedef ACE_Singleton<NetCommandManager,ACE_Thread_Mutex> NetCommandManagerSingleton; // AdminServer Interface 
+typedef ACE_Singleton<NetCommandManager,ACE_Thread_Mutex> NetCommandManagerSingleton; // AdminServer Interface

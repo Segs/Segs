@@ -6,7 +6,7 @@
  *
  * $Id$
  */
- 
+
 //	Base.h - This file defines all of the global includes
 //	constants, typdefs, structs, etc. throughout the project
 //	Base.h is to be included in every source file.
@@ -28,9 +28,6 @@
 #include <vector>
 #include <string>
 #include <map>
-
-using namespace std;
-
 
 //segs Includes
 #include "types.h"

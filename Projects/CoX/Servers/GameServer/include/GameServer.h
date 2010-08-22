@@ -34,7 +34,7 @@
 class GameHandler;
 class pktCS_ServerUpdate;
 class CharacterDatabase;
-typedef list< ServerHandle<MapServer> > lMapServerHandles;
+typedef std::list< ServerHandle<MapServer> > lMapServerHandles;
 class GameServer : public IGameServer
 {
 public:

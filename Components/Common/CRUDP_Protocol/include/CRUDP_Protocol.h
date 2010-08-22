@@ -18,46 +18,23 @@
 #include "hashmap_selector.h"
 #include "Base.h"
 #include "CRUDP_Packet.h"
-using namespace std;
 class PacketCodecNull;
-/*
-	Cryptic Reliable UDP
-	CrudP
-	Incoming
-		BitStream Block ->
-			Parse Header [ Checksum + Decode ]
-			Remove from send queue packets acknowledged by this header
-			if seq_no < min_recv_seq, reject packet
-			Store/Join
-			Record packet's seq_no in ack_list
-			Sort according to sequence num
-			if next packet in sequence is available, pass it to higher layer. and record min_recv_seq
-	Outgoing
-		BitStream ->
-			Split stream
-			Each block is Encoded, and Checksumed.
-			Sibling packet id is recorded in the packet
-			Packets are inserted into send queue.
-			If this queue is not scheduled for send, it's scheduled now
-
-*/
 class CrudP_Protocol
 {
 private:
-	typedef deque<CrudP_Packet *> pPacketStorage;
+	typedef std::deque<CrudP_Packet *> pPacketStorage;
 	typedef pPacketStorage::iterator ipPacketStorage ;
 	typedef hash_map<int,pPacketStorage> hmSibStorage;
 	//	set<u32> seen_seq;
-		u32 send_seq;
-		u32 recv_seq;
+		u32					send_seq;
+		u32					recv_seq;
 
-		PacketCodecNull *m_codec;
-		pPacketStorage avail_packets;
-		pPacketStorage unsent_packets;
-		list<u32> recv_acks; // each successful receive will store it's ack here
-		// we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
-		hmSibStorage sibling_map;
-		ACE_Thread_Mutex m_packets_mutex;
+		PacketCodecNull *	m_codec;
+		pPacketStorage		avail_packets;
+		pPacketStorage		unsent_packets;
+		std::list<u32>		recv_acks; // each successful receive will store it's ack here
+		hmSibStorage		sibling_map; // we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
+		ACE_Thread_Mutex	m_packets_mutex;
 
 		CrudP_Packet *		mergeSiblings(int id);
 		bool				insert_sibling(CrudP_Packet *pkt);
@@ -73,7 +50,7 @@ public:
 		size_t				UnsentPackets()    const {return unsent_packets.size();}
 		size_t				AvailablePackets() const {return avail_packets.size();}
 
-		size_t				GetUnsentPackets(list<CrudP_Packet *> &);
+		size_t				GetUnsentPackets(std::list<CrudP_Packet *> &);
 		void				ReceivedBlock(BitStream &bs); // bytes received, will create some packets in avail_packets
 
         void				SendPacket(CrudP_Packet *p); // this might split packet 'p' into a few packets
@@ -86,5 +63,5 @@ protected:
 		void				clearQueues(bool recv,bool send); // clears out the recv/send queues
 
 static	void				PacketDestroyer(CrudP_Packet *a);
-static	void				PacketSibDestroyer(const pair<int,pPacketStorage> &a);
+static	void				PacketSibDestroyer(const std::pair<int,pPacketStorage> &a);
 };

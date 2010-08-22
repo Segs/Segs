@@ -31,7 +31,7 @@ public:
 	u32  GetBits(u32 nBits);
 	void GetBitArray(u32 nBytes, u8 *array);
 	u32  GetPackedBits(u32 nBits);
-	void GetString(string &str);
+	void GetString(std::string &str);
 
 	f32  GetFloat();
 	void StoreBits(u32 nBits, u32 dataBits)		  {		m_stream->StoreBits(nBits, dataBits);		};
@@ -58,7 +58,7 @@ public:
 	u32  GetPackedBitsLength(u32 len, u32 dataBits) { return m_stream->GetPackedBitsLength(len, dataBits); };
 	void SetBufferLength(u32 length) { m_stream->SetByteLength(length); };
 
-    u32 GetSequenceNumber()		const { return m_seqNo;  };
+	u32 GetSequenceNumber()		const { return m_seqNo;  };
 	u32 GetSiblingPosition()	const { return m_sibPos; };
 	u32 getNumSibs()			const { return m_numSibs;}
 	u32 getSibId()				const { return m_sibId;}
@@ -80,7 +80,7 @@ public:
 	size_t getNumAcks()
 	{
 		return m_acks.size();
-	}	
+	}
 	void dump();
 	u32 m_checksum;
 protected:
@@ -93,7 +93,7 @@ protected:
 	u32 m_sibPos;
 	std::set<u32> m_acks;
 };
-typedef list<CrudP_Packet *> lCrudP_Packet;
-typedef vector<CrudP_Packet *> vCrudP_Packet;
-typedef vCrudP_Packet::iterator ivCrudP_Packet; 
+typedef std::list<CrudP_Packet *> lCrudP_Packet;
+typedef std::vector<CrudP_Packet *> vCrudP_Packet;
+typedef vCrudP_Packet::iterator ivCrudP_Packet;
 
