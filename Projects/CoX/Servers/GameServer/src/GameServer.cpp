@@ -16,15 +16,15 @@
 #include "GameHandler.h"
 #include "Filesystem.h"
 
-GameServer::GameServer(void) : 
+GameServer::GameServer(void) :
+	m_online(false),
 	m_id(0),
 	m_current_players(0),
 	m_max_players(0),
 	m_unk1(0),
 	m_unk2(0),
 	m_serverName(""),
-	m_endpoint(NULL),
-	m_online(false)
+	m_endpoint(NULL)
 {
 }
 
@@ -35,7 +35,7 @@ GameServer::~GameServer(void)
 		ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK);
 		delete m_endpoint;
 	}
-	
+
 }
 bool GameServer::Run()
 {
@@ -44,13 +44,13 @@ bool GameServer::Run()
 		ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Game server already running\n") ));
 		return true;
 	}
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading game data\n") ));
-    WorldData::instance()->read_costumes("./data/");
-    WorldData::instance()->read_colors("./data/");
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) All game data read\n") ));
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Filling hashes .. ") ));
-    WorldData::instance()->fill_hashes();
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("Hashes filled\n") ));
+	ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading game data\n") ));
+	WorldData::instance()->read_costumes("./data/");
+	WorldData::instance()->read_colors("./data/");
+	ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) All game data read\n") ));
+	ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Filling hashes .. ") ));
+	WorldData::instance()->fill_hashes();
+	ACE_DEBUG((LM_WARNING,ACE_TEXT("Hashes filled\n") ));
 
     m_handler = new GameHandler;
     m_handler->set_server(this);
@@ -63,8 +63,8 @@ bool GameServer::Run()
 
 	if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
 		ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ACE_Reactor::register_handle\n"),false);
-    if (m_endpoint->open() == -1) // will register notifications with current reactor
-        ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
+	if (m_endpoint->open() == -1) // will register notifications with current reactor
+		ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
 
 	m_online = true;
 	return true;

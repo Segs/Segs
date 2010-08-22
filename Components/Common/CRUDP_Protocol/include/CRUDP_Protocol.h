@@ -55,7 +55,7 @@ private:
 		pPacketStorage avail_packets;
 		pPacketStorage unsent_packets;
 		list<u32> recv_acks; // each successful receive will store it's ack here
-	// we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
+		// we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
 		hmSibStorage sibling_map;
 		ACE_Thread_Mutex m_packets_mutex;
 
@@ -73,16 +73,16 @@ public:
 		size_t				UnsentPackets()    const {return unsent_packets.size();}
 		size_t				AvailablePackets() const {return avail_packets.size();}
 
-		size_t				GetUnsentPackets(list<CrudP_Packet *> &); // this gets all as of now unacknowledged packets
+		size_t				GetUnsentPackets(list<CrudP_Packet *> &);
 		void				ReceivedBlock(BitStream &bs); // bytes received, will create some packets in avail_packets
 
         void				SendPacket(CrudP_Packet *p); // this might split packet 'p' into a few packets
-        CrudP_Packet *		RecvPacket(bool disregard_seq); // this get's next packet in sequence, if disregard_seq is set returned pack will be next available, an
+        CrudP_Packet *		RecvPacket(bool disregard_seq);
 protected:
 		void				parseAcks(BitStream &src,CrudP_Packet *tgt);
 		void				storeAcks(BitStream &bs);
 		void				PushRecvPacket(CrudP_Packet *a); // this will try to join packet 'a' with it's siblings
-		void				PacketAck(u32); // this acknowledges that packet with id was successfully received => acknowledged packet is removed from send queue
+		void				PacketAck(u32);
 		void				clearQueues(bool recv,bool send); // clears out the recv/send queues
 
 static	void				PacketDestroyer(CrudP_Packet *a);

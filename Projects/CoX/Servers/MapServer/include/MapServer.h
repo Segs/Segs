@@ -41,8 +41,11 @@ class MapClient;
 class CoXMap;
 class MapServer : public IMapServer
 {
+
+typedef ServerEndpoint<MapLink> MapLinkEndpoint;
+
 public:
-                                MapServer(void);
+								MapServer(void);
 virtual                         ~MapServer(void);
 
 virtual bool	                Run(void);
@@ -68,8 +71,8 @@ protected:
 
 		ACE_INET_Addr           m_location; //! this value is sent to the clients
 		ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
-		ServerEndpoint<MapLink>	*m_endpoint;
-		MapCommHandler *            m_handler;
+		MapLinkEndpoint	*		m_endpoint;
+		MapCommHandler *		m_handler;
 };
 
 #endif // MAPSERVER_H

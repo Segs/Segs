@@ -28,7 +28,7 @@ class ClientStore
 	hash_map<u64,u32> m_id_to_cookie; // client cookie is only useful in this context
 	u32 create_cookie(const ACE_INET_Addr &from,u64 id)
 	{
-		u64 res = ((from.hash()+id&0xFFFFFFFF)^(id>>32));
+		u64 res = ((from.hash()+id)&0xFFFFFFFF)^(id>>32);
 		ACE_DEBUG ((LM_WARNING,ACE_TEXT ("(%P|%t) create_cookie still needs a good algorithm.0x%08x\n"),res));
 		return (u32)res;
 	};

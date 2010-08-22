@@ -75,7 +75,7 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
         return false;
     int num_data_blocks;
     read_internal(num_data_blocks);
-    for (size_t blk_idx=0; blk_idx<num_data_blocks; ++blk_idx)
+    for (int blk_idx=0; blk_idx<num_data_blocks; ++blk_idx)
     {
         FileEntry fe;
         fe.name = read_pstr(260);
@@ -182,9 +182,9 @@ void BinStore::nest_in( const Field *f )
 
 }
 
-void BinStore::nest_out( const Field *f )
+void BinStore::nest_out( const Field * )
 {
-    size_t strctsz = 4+bytes_read; //
+    //size_t strctsz = 4+bytes_read;
     m_file_sizes.pop_back();
     //(*m_file_sizes.rbegin()) -= strctsz;
 }

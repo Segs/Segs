@@ -27,35 +27,35 @@ void MapCommHandler::dispatch(SEGSEvent *ev)
 	ACE_ASSERT(ev);
 	switch(ev->type())
 	{
-    case SEGSEvent::evTimeout:
-        on_timeout(static_cast<TimerEvent *>(ev));
-        break;
-    case Internal_EventTypes::evExpectClient:
-        on_expect_client(static_cast<ExpectMapClient *>(ev));
-        break;
-    case MapEventTypes::evIdle:
-        on_idle((IdleEvent<MapLinkEvent> *)ev);
-        break;
-    case MapEventTypes::evDisconnectRequest:
-        on_disconnect((DisconnectRequest<MapLinkEvent> *)ev);
-        break;
-    case MapEventTypes::evConnectRequest:
-        on_connection_request((ConnectRequest<MapLinkEvent> *)ev);
-        break;
-    case MapEventTypes::evEntityEnteringMap:
-        on_create_map_entity(static_cast<NewEntity *>(ev));
-        break;
-    case MapEventTypes::evShortcutsRequest:
-        on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
-        break;
-    case MapEventTypes::evSceneRequest:
-        on_scene_request(static_cast<SceneRequest *>(ev));
-        break;
-    case MapEventTypes::evEntitiesRequest:
-        on_entities_request(static_cast<EntitiesRequest *>(ev));
-        break;
-    case MapEventTypes::evUnknownEvent:
-        break;
+	case SEGSEvent::evTimeout:
+		on_timeout(static_cast<TimerEvent *>(ev));
+		break;
+	case Internal_EventTypes::evExpectClient:
+		on_expect_client(static_cast<ExpectMapClient *>(ev));
+		break;
+	case MapEventTypes::evIdle:
+		on_idle((IdleEvent<MapLinkEvent> *)ev);
+		break;
+	case MapEventTypes::evDisconnectRequest:
+		on_disconnect((DisconnectRequest<MapLinkEvent> *)ev);
+		break;
+	case MapEventTypes::evConnectRequest:
+		on_connection_request((ConnectRequest<MapLinkEvent> *)ev);
+		break;
+	case MapEventTypes::evEntityEnteringMap:
+		on_create_map_entity(static_cast<NewEntity *>(ev));
+		break;
+	case MapEventTypes::evShortcutsRequest:
+		on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
+		break;
+	case MapEventTypes::evSceneRequest:
+		on_scene_request(static_cast<SceneRequest *>(ev));
+		break;
+	case MapEventTypes::evEntitiesRequest:
+		on_entities_request(static_cast<EntitiesRequest *>(ev));
+		break;
+	case MapEventTypes::evUnknownEvent:
+		break;
 	}
 }
 void MapCommHandler::on_idle(IdleEvent<MapLinkEvent> *ev)
@@ -91,7 +91,7 @@ void MapCommHandler::on_expect_client( ExpectMapClient *ev )
     }
     else if(true) // check if (character does not exist || character exists and is owned by this client )
     {
-        
+
         cookie    = 2+m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
         // 0 name already taken
         // 1 problem in database system
@@ -99,7 +99,7 @@ void MapCommHandler::on_expect_client( ExpectMapClient *ev )
         cl->name(ev->m_character_name);
         cl->current_map(m_handled_worlds[ev->m_map_id]);
     }
-	ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
+    ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
 }
 void MapCommHandler::on_create_map_entity(NewEntity *ev)
 {
@@ -109,7 +109,7 @@ void MapCommHandler::on_create_map_entity(NewEntity *ev)
     MapClient *cl = m_clients.getExpectedByCookie(ev->m_cookie-2);
     ACE_ASSERT(cl);
     cl->entity(ev->m_ent);
-    cl->link_state().link(lnk);    
+    cl->link_state().link(lnk);
     if(ev->m_new_character)
     {
         cl->db_create();
@@ -136,43 +136,14 @@ void MapCommHandler::on_scene_request(SceneRequest *ev)
     MapLink * lnk = (MapLink *)ev->src();
     Scene *res=new Scene;
     res->undos_PP=0;
-	res->var_14=1;
-	res->m_outdoor_map=1;//0;
-	res->m_map_number=1;
-	res->m_map_desc="maps/City_Zones/City_00_01/City_00_01.txt";
-	res->current_map_flags=1; //off 1
-	Vector3 positions[]=
-	{
-		Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),
-		Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),
-		Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0),
-		Vector3(0,0,0),Vector3(0,0,0),
-	};
-	string names[]={
-		"grpa2228","grp2544",
-		"object_library/city_templates/map_2d_blackpoly/map_city_00_01","grp2555",
-		"grp2561","grp2575",
-		"grp2578","grp2582",
-		"grpsound2583","grpsound2584",
-		"grp2585","grp2586",
-		"grp2587","grp2588",
-	};
-	/*
-	for(int i=0; i<13; i++)
-	res->m_refs.push_back(MapRef(ids[i],names[i],positions[i],Vector3(0.0,0.0,0.0)));
-	res->m_crc.resize(res->m_trays.size());
-	Matrix4x3 mat;
-	for(size_t j=0; j<sizeof(Matrix4x3)/4; j++)
-	{
-		((float *)&mat.row1)[j]=0.0f;
-	}
-	mat.row1.vals.x = mat.row2.vals.y = mat.row3.vals.z= 1.0;
-	res->ref_crc=0;
-	res->ref_count=11;
-	*/
-	res->unkn1=1;
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
-	res->unkn2=1;
+    res->var_14=1;
+    res->m_outdoor_map=1;//0;
+    res->m_map_number=1;
+    res->m_map_desc="maps/City_Zones/City_00_01/City_00_01.txt";
+    res->current_map_flags=1; //off 1
+    res->unkn1=1;
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
+    res->unkn2=1;
     lnk->putq(res);
 }
 void MapCommHandler::on_entities_request(EntitiesRequest *ev)

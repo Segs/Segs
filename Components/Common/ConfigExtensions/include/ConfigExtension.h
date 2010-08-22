@@ -57,8 +57,8 @@ public:
 			value.set(default_val);
 			return -1;
 		}
-		ssize_t pos = res.rfind(':');
-		if((pos<=0) || (pos>=res.length())) // invalid addr
+		ACE_TString::size_type pos = res.rfind(':');
+		if(ACE_TString::npos==pos) // invalid addr
 		{
 			value=default_val;
 			return -1;

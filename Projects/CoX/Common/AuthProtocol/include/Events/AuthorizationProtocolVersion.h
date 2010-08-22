@@ -4,11 +4,14 @@
 class AuthorizationProtocolVersion : public AuthLinkEvent
 {
 	u32		m_seed;
-	u32	m_proto_vers;
+	u32		m_proto_vers;
 public:
 	AuthorizationProtocolVersion() : AuthLinkEvent(evAuthProtocolVersion),m_seed(1),m_proto_vers(0)
 	{}
-	AuthorizationProtocolVersion(EventProcessor *ev_src,u32 version_id,u32 seed) : AuthLinkEvent(evAuthProtocolVersion,ev_src),m_proto_vers(version_id),m_seed(seed)
+	AuthorizationProtocolVersion(EventProcessor *ev_src,u32 version_id,u32 seed) :
+		AuthLinkEvent(evAuthProtocolVersion,ev_src),
+		m_seed(seed),
+		m_proto_vers(version_id)
 	{}
 	void init(EventProcessor *ev_src,u32 version_id,u32 seed) {m_proto_vers=version_id;m_event_source=ev_src; m_seed=seed;}
 	void serializeto(GrowingBuffer &buf) const

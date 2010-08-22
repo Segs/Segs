@@ -21,13 +21,13 @@
 // Template instantiation
 template class ClientStore<MapClient>;
 
-MapServer::MapServer(void) : 
+MapServer::MapServer(void) :
 m_id(0),
 m_endpoint(NULL),
 m_online(false),
 m_max_maps(2)
 {
-	
+
 }
 MapServer::~MapServer(void)
 {
@@ -51,13 +51,13 @@ bool MapServer::Run(void)
     MapLink::g_target = m_handler;
     MapLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
 
-	m_endpoint = new ServerEndpoint<MapLink>(m_listen_point); //,this
+    m_endpoint = new ServerEndpoint<MapLink>(m_listen_point); //,this
     MapLink::g_link_target = m_endpoint;
 
 	if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
 		ACE_ERROR_RETURN ((LM_ERROR, "ACE_Reactor::register_handler"),false);
-    if (m_endpoint->open() == -1) // will register notifications with current reactor
-        ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
+	if (m_endpoint->open() == -1) // will register notifications with current reactor
+		ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
 	if(!startup())
 		return false;
 	m_online = true;
@@ -126,7 +126,7 @@ bool MapServer::startup()
 	return true;
 	AuthServerInterface *i_auth;
 	AdminServerInterface *i_admin;
-	GameServerInterface *i_game;
+	//GameServerInterface *i_game;
 
 	ServerHandle<IMapServer> h_me(m_listen_point,m_id);
 

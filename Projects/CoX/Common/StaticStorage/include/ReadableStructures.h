@@ -136,21 +136,6 @@ public:
 #define U32_REF(classname,variable) ((u32 BinReadable::*)&classname::variable)
 #define FLT_REF(classname,variable) ((float BinReadable::*)&classname::variable)
 #define ADD_STR_FIELD(a,b,c,d,e,f) m_schema.add_field(new StringField(a,b,c,d,e,f));
-//#define ADD_FIELD(a,b,c,d,e,f) \
-//{\
-//    Field fld(a,b,c,d,e,f);\
-//    m_schema.add_field(fld);\
-//}
-#define ADD_BASIC_FIELD(a,b,c,d,e) \
-{\
-    Field fld(a,b,c,d,e);\
-    m_schema.add_field(fld);\
-}
-#define ADD_END(a) \
-{\
-    Field fld(a,2,0,0,0);\
-    m_schema.add_field(fld);\
-}
 
 struct ColorEntry : public BinReadable
 {

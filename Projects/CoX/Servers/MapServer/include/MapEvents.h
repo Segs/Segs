@@ -213,13 +213,13 @@ public:
             m_crc[idx] = src.GetBits(32);
             if(!src.GetBits(1))
             {
-                int var_14=0;
-                int var_10;
-                while(var_10=src.GetPackedBits(1)-1>=0)
+                int tmp2=0;
+                int tmp;
+                while((tmp=src.GetPackedBits(1)-1)>=0)
                 {
-                    //					if(!var_14)
-                    //						var_14=syb_599950(var_4);
-                    groupnetrecv_5927C0(src,var_10,var_14);
+                    //					if(!tmp2)
+                    //						tmp2=syb_599950(var_4);
+                    groupnetrecv_5927C0(src,tmp,tmp2);
                 }
             }
             else

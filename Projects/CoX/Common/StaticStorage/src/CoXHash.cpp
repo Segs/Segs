@@ -45,11 +45,11 @@ u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &k
         hash_index = HashValue & (this->m_storage.size() - 1);
         if ( !HashValue )
         {
-            //VfPrintfWrapper("Invalid HashValue %i generated while looking for index of key \"%s\"\n", 0, key);
+            //("Invalid HashValue %i generated while looking for index of key \"%s\"\n", 0, key);
             res = 2;
             break;
         }
-        if (!this->m_storage[hash_index].key_hash || a5 && this->m_storage[hash_index].entry_flags & 1)
+        if (!this->m_storage[hash_index].key_hash || a5 && (this->m_storage[hash_index].entry_flags & 1))
         {
             res = 0;
             break;
@@ -68,7 +68,7 @@ u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &k
         }
         if ( !(this->m_flags & SKIP_CLASHES) )
         {
-            //VfPrintfWrapper("Hash value conflict!  Both \"%s\" and \"%s\" produced a hash value of %i\n",v6->entries_array[hash_index].key,key,*((_DWORD *)&v6->str_tab + 4 * hash_index));
+            //("Hash value conflict!  Both \"%s\" and \"%s\" produced a hash value of %i\n");
             res = 2;
             break;
         }
