@@ -21,7 +21,7 @@
 
 // skeleton class used during authentication
 class MapHandler;
-class CoXMap;
+class MapInstance;
 class NetCommand;
 class GamePacket;
 class SEGSTimer;
@@ -30,7 +30,7 @@ class MapClient : public ClientSession
     friend class CharacterDatabase;
     typedef std::map<int,NetCommand *> mNetCommands;
     mNetCommands            m_shortcuts;
-    CoXMap *                m_current_map;
+    MapInstance *           m_current_map;
     Entity *                m_ent;
     std::string             m_name; // current character name, stored here for quick lookups
     SEGSTimer *             m_tick_source;
@@ -41,8 +41,8 @@ virtual                     ~MapClient(){};
         void                AddShortcut(int index, NetCommand *command);
         NetCommand *        GetCommand(int index) {return m_shortcuts[index];}
         void                SendCommand(NetCommand *command,...);
-        void                current_map(CoXMap *pmap){m_current_map=pmap;}
-        CoXMap *            current_map(){return m_current_map;}
+        void                current_map(MapInstance *pmap){m_current_map=pmap;}
+        MapInstance *            current_map(){return m_current_map;}
         void                char_entity(Entity *ent){m_ent=ent;}
         Entity *            char_entity(){return m_ent;}
         void                reset();

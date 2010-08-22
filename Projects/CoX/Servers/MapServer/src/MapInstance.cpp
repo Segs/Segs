@@ -7,19 +7,19 @@
  * $Id$
  */
 
-#include "CoXMap.h"
+#include "MapInstance.h"
 using namespace std;
-CoXMap::CoXMap( const string &name ) :m_name(name)
+MapInstance::MapInstance( const string &name ) :m_name(name)
 {
 
 }
 
-void CoXMap::dispatch( SEGSEvent *ev )
+void MapInstance::dispatch( SEGSEvent *ev )
 {
 
 }
 
-SEGSEvent * CoXMap::dispatch_sync( SEGSEvent *ev )
+SEGSEvent * MapInstance::dispatch_sync( SEGSEvent *ev )
 {
     return 0;
 }

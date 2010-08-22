@@ -14,7 +14,7 @@
 #include <list>
 
 class MapClient;
-class CoXMap;
+class MapInstance;
 class Entity;
 class EntityManager
 {
@@ -41,5 +41,5 @@ public:
 	void StorePlayer(MapClient *client,Entity *player_ent); // stores player avatar
 	Entity *CreatePlayer(MapClient *client,int avatar_id); // retrieves client avatar from storage
 
-	Entity * CreateInstance(CoXMap *target_world,u64 id); // will create a new instance of given entity, bound to given map
+	Entity * CreateInstance(MapInstance *target_world,u64 id); // will create a new instance of given entity, bound to given map
 };

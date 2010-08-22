@@ -16,7 +16,7 @@
 #include "AdminServerInterface.h"
 #include "MapClient.h"
 
-#include "CoXMap.h"
+#include "MapInstance.h"
 #include "Entity.h"
 // Template instantiation
 template class ClientStore<MapClient>;

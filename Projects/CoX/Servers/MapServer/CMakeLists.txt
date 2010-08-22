@@ -1,6 +1,8 @@
 # $Id$
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/src/CoXMap.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/MapManager.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/MapTemplate.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/MapInstance.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapClient.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapHandler.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/MapServer.cpp
@@ -13,7 +15,9 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/SceneEvent.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/NetCommandManager.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/CoXMap.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/MapManager.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/MapTemplate.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/MapInstance.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityStorage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapClient.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapHandler.h

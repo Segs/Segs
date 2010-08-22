@@ -38,7 +38,7 @@
 class Net;
 class MapServerEndpoint;
 class MapClient;
-class CoXMap;
+class MapInstance;
 class MapServer : public IMapServer
 {
 

@@ -11,13 +11,12 @@
 #include "MapClient.h"
 #include "ServerManager.h"
 #include "MapServer.h"
-#include "CoXMap.h"
+#include "MapInstance.h"
 #include "Entity.h"
-#include "CoXMap.h"
 
 MapCommHandler::MapCommHandler()
 {
-    m_handled_worlds[0]=new CoXMap("City_00_01");
+    m_handled_worlds[0]=new MapInstance("City_00_01");
     m_handled_worlds[0]->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
 }
 
