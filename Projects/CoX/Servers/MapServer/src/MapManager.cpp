@@ -4,23 +4,34 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: CoXMap.cpp 235 2010-08-22 16:27:50Z nemerle $
+ * $Id$
  */
 
 #include "MapManager.h"
-#include "MapManager.h"
+#include "MapTemplate.h"
 using namespace std;
-MapInstance::MapInstance( const string &name ) :m_name(name)
+MapManger::MapManger( ) : m_max_instances(2)
 {
-
+}
+//! \brief Loads all templates available in given directory, will populate m_templates attribute
+bool MapManger::load_templates( const std::string &template_directory )
+{
+    return false;
+}
+//! \brief Retrieves template specified by it's id
+MapTemplate * MapManger::get_template( u32 id )
+{
+    if(m_templates.find(id)==m_templates.end())
+        return 0;
+    return m_templates[id];
 }
 
-void MapInstance::dispatch( SEGSEvent *ev )
+size_t MapManger::num_templates()
 {
-
+    return m_templates.size();
 }
 
-SEGSEvent * MapInstance::dispatch_sync( SEGSEvent *ev )
+size_t MapManger::max_instances()
 {
-    return 0;
+    return m_max_instances;
 }

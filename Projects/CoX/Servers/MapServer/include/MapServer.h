@@ -9,8 +9,6 @@
 
 // Inclusion guards
 #pragma once
-#ifndef MAPSERVER_H
-#define MAPSERVER_H
 
 #include <string>
 #include <map>
@@ -32,7 +30,7 @@
 #include "MapLink.h"
 #include "MapEvents.h"
 #include "MapHandler.h"
-
+#include "MapManager.h"
 #define MAPSERVER_VERSION 1
 
 class Net;
@@ -50,7 +48,6 @@ virtual                         ~MapServer(void);
 
 virtual bool	                Run(void);
 virtual bool	                ReadConfig(const std::string &name);
-    	int		                getMaxHandledMaps();
 
 	    bool                    ShutDown(const std::string &reason="No particular reason");
 	    void                    Online(bool s ) {m_online=s;}
@@ -63,8 +60,7 @@ private:
 protected:
 	    u8                      m_id;
 	    bool                    m_online;
-
-	    size_t                  m_max_maps;
+        MapManger               m_manager;
 	    GameServerInterface *   m_i_game;// GameServer access proxy object
 
 	    std::string             m_serverName;
@@ -72,7 +68,5 @@ protected:
 	    ACE_INET_Addr           m_location; //! this value is sent to the clients
 	    ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
 		MapLinkEndpoint	*		m_endpoint;
-        MapCommHandler *            m_handler;
+        MapCommHandler *        m_handler;
 };
-
-#endif // MAPSERVER_H

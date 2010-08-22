@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id: CoXMap.h 235 2010-08-22 16:27:50Z nemerle $
+ * $Id$
  */
 
 // Inclusion guards

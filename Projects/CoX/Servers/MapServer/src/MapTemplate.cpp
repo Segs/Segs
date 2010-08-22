@@ -9,3 +9,15 @@
 
 #include "MapTemplate.h"
 #include "MapInstance.h"
+
+MapInstance * MapTemplate::get_instance()
+{
+    if(m_instances.size()==0)
+        m_instances.push_back(new MapInstance("Map name")); // should be replaced with proper cloning of map structure
+    return m_instances.front();       
+}
+
+size_t MapTemplate::num_instances()
+{
+    return m_instances.size();
+}

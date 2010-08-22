@@ -24,8 +24,7 @@ template class ClientStore<MapClient>;
 MapServer::MapServer(void) :
 m_id(0),
 m_endpoint(NULL),
-m_online(false),
-m_max_maps(2)
+m_online(false)
 {
 
 }
@@ -44,7 +43,8 @@ bool MapServer::Run(void)
 		ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Game server already running\n") ));
 		return true;
 	}
-	ACE_ASSERT(m_max_maps>0); // we have to have a world to run
+    
+	ACE_ASSERT(m_manager.num_templates()>0); // we have to have a world to run
 
     m_handler = new MapCommHandler;
     m_handler->set_server(this);
@@ -58,10 +58,7 @@ bool MapServer::Run(void)
 		ACE_ERROR_RETURN ((LM_ERROR, "ACE_Reactor::register_handler"),false);
 	if (m_endpoint->open() == -1) // will register notifications with current reactor
 		ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
-	if(!startup())
-		return false;
-	m_online = true;
-	return true;
+    return startup();
 }
 /**
  * @return bool (false means an error occurred )
@@ -110,13 +107,6 @@ bool MapServer::ShutDown(const std::string &reason)
 	delete m_endpoint;
 	return true;
 }
-/**
-* @return int Maximum number of handled Map threads
-*/
-int MapServer::getMaxHandledMaps()
-{
-	return m_max_maps;
-}
 
 /**
 * Processing according to MapServerStartup sequence diagram.
@@ -137,6 +127,8 @@ bool MapServer::startup()
 		//Auth failure, Errors could be passed here by async AuthServer->MapServer calls
 		return false;
 	}
+
+    m_online = true;
 #if 0
 	m_i_game=InterfaceManager::instance()->get(i_admin->RegisterMapServer(h_me));
 	if(!m_i_game)
