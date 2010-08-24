@@ -20,6 +20,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
     ACE_ASSERT(ev);
     switch(ev->type())
     {
+    case SEGSEvent::evTimeout:
+        on_timeout(static_cast<TimerEvent *>(ev));
+        break;
     case MapEventTypes::evSceneRequest:
         on_scene_request(static_cast<SceneRequest *>(ev));
         break;
@@ -59,4 +62,9 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     //    SEGSTimer tmr;
     // start map timer on this event
     //    start_entity_state_update();
+}
+//! Handle instance-wide timers
+void MapInstance::on_timeout(TimerEvent *ev)
+{
+    
 }

@@ -29,4 +29,5 @@ public:
 protected:
     void            on_scene_request(SceneRequest *ev);
     void            on_entities_request(EntitiesRequest *ev);
+    void            on_timeout(TimerEvent *ev);
 };
