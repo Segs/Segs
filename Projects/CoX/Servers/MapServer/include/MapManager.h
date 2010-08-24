@@ -20,12 +20,12 @@ class MapTemplate;
 */
 class MapManger
 {
-    std::map<u32,MapTemplate *> m_templates;
+	std::map<u32,MapTemplate *> m_templates;
     size_t                      m_max_instances; // how many maps can we instantiate
 public:
                     MapManger();
     bool            load_templates(const std::string &template_directory);
-    MapTemplate *   get_template(u32 id);
+	MapTemplate *   get_template(u32 id);
     size_t          num_templates();
     size_t          max_instances();
 };

@@ -48,10 +48,8 @@ void MapCommHandler::dispatch(SEGSEvent *ev)
         on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
         break;
     case MapEventTypes::evSceneRequest:
-        on_scene_request(static_cast<SceneRequest *>(ev));
-        break;
     case MapEventTypes::evEntitiesRequest:
-        on_entities_request(static_cast<EntitiesRequest *>(ev));
+        on_instance_event(ev);
         break;
     case MapEventTypes::evUnknownEvent:
         break;
@@ -119,7 +117,15 @@ void MapCommHandler::on_create_map_entity(NewEntity *ev)
     lnk->client_data((void *)cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
 }
-
+//! Routing events to their proper client's instance
+void MapCommHandler::on_instance_event(SEGSEvent *ev)
+{
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *cl =  (MapClient *)lnk->client_data();
+    ACE_ASSERT(0!=cl);
+    // forced dispatch
+    cl->current_map()->dispatch(ev);
+}
 void MapCommHandler::on_shortcuts_request(ShortcutsRequest *ev)
 {
     // TODO: expend this to properly access the data from :
@@ -130,34 +136,7 @@ void MapCommHandler::on_shortcuts_request(ShortcutsRequest *ev)
     res->m_client=(MapClient *)lnk->client_data();
     lnk->putq(res);
 }
-void MapCommHandler::on_scene_request(SceneRequest *ev)
-{
-    // TODO: Pull this up to CoXMapInstance level
-    MapLink * lnk = (MapLink *)ev->src();
-    SceneEvent *res=new SceneEvent;
-    res->undos_PP=0;
-    res->var_14=1;
-    res->m_outdoor_map=1;//0;
-    res->m_map_number=1;
-    res->m_map_desc="maps/City_Zones/City_00_01/City_00_01.txt";
-    res->current_map_flags=1; //off 1
-    res->unkn1=1;
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
-    res->unkn2=1;
-    lnk->putq(res);
-}
-void MapCommHandler::on_entities_request(EntitiesRequest *ev)
-{
-    //TODO: Pull this up to CoXMapInstance
-    // this packet should start the per-client send-world-state-update timer
-    // actually I think the best place for this timer would be the map instance.
-    // so this method should call MapInstace->initial_update(MapClient *);
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *cl =(MapClient *)lnk->client_data();
-//    SEGSTimer tmr;
-    // start map timer on this event
-//    start_entity_state_update();
-}
+
 
 void MapCommHandler::on_timeout( TimerEvent *ev )
 {
