@@ -43,30 +43,31 @@ class MapServer : public IMapServer
 typedef ServerEndpoint<MapLink> MapLinkEndpoint;
 
 public:
-	                            MapServer(void);
+                                MapServer(void);
 virtual                         ~MapServer(void);
 
 virtual bool	                Run(void);
 virtual bool	                ReadConfig(const std::string &name);
 
-	    bool                    ShutDown(const std::string &reason="No particular reason");
-	    void                    Online(bool s ) {m_online=s;}
-	    bool                    Online(void) { return m_online;}
-	    const ACE_INET_Addr &   getAddress() {return m_location;};
+        bool                    ShutDown(const std::string &reason="No particular reason");
+        void                    Online(bool s ) {m_online=s;}
+        bool                    Online(void) { return m_online;}
+        const ACE_INET_Addr &   getAddress() {return m_location;};
         EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
-    	GameServerInterface *   getGameInterface(){return m_i_game;}
+        GameServerInterface *   getGameInterface(){return m_i_game;}
+        MapManger &             map_manager() {return m_manager;}
 private:
-	    bool                    startup(); // MapServerStartup sequence diagram entry point.
+        bool                    startup(); // MapServerStartup sequence diagram entry point.
 protected:
-	    u8                      m_id;
-	    bool                    m_online;
+        u8                      m_id;
+        bool                    m_online;
         MapManger               m_manager;
-	    GameServerInterface *   m_i_game;// GameServer access proxy object
+        GameServerInterface *   m_i_game;// GameServer access proxy object
 
-	    std::string             m_serverName;
+        std::string             m_serverName;
 
-	    ACE_INET_Addr           m_location; //! this value is sent to the clients
-	    ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
-		MapLinkEndpoint	*		m_endpoint;
+        ACE_INET_Addr           m_location; //! this value is sent to the clients
+        ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
+        MapLinkEndpoint	*		m_endpoint;
         MapCommHandler *        m_handler;
 };

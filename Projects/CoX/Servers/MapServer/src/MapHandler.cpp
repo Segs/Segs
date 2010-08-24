@@ -12,20 +12,20 @@
 #include "ServerManager.h"
 #include "MapServer.h"
 #include "MapInstance.h"
+#include "MapManager.h"
+#include "MapTemplate.h"
 #include "Entity.h"
 
 MapCommHandler::MapCommHandler()
 {
-    m_handled_worlds[0]=new MapInstance("City_00_01");
-    m_handled_worlds[0]->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
 }
 
 
 void MapCommHandler::dispatch(SEGSEvent *ev)
 {
-	ACE_ASSERT(ev);
-	switch(ev->type())
-	{
+    ACE_ASSERT(ev);
+    switch(ev->type())
+    {
     case SEGSEvent::evTimeout:
         on_timeout(static_cast<TimerEvent *>(ev));
         break;
@@ -42,7 +42,7 @@ void MapCommHandler::dispatch(SEGSEvent *ev)
         on_connection_request((ConnectRequest<MapLinkEvent> *)ev);
         break;
     case MapEventTypes::evEntityEnteringMap:
-		on_create_map_entity(static_cast<NewEntity *>(ev));
+        on_create_map_entity(static_cast<NewEntity *>(ev));
         break;
     case MapEventTypes::evShortcutsRequest:
         on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
@@ -55,7 +55,7 @@ void MapCommHandler::dispatch(SEGSEvent *ev)
         break;
     case MapEventTypes::evUnknownEvent:
         break;
-	}
+    }
 }
 void MapCommHandler::on_idle(IdleEvent<MapLinkEvent> *ev)
 {
@@ -84,7 +84,8 @@ void MapCommHandler::on_expect_client( ExpectMapClient *ev )
     u32 cookie = 0; // name in use
     // TODO: handle contention while creating 2 character with the same from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
-    if(m_handled_worlds.find(ev->m_map_id)==m_handled_worlds.end())
+    MapTemplate *tpl=m_server->map_manager().get_template(ev->m_map_id);
+    if(0==tpl)
     {
         cookie = 1;
     }
@@ -96,9 +97,9 @@ void MapCommHandler::on_expect_client( ExpectMapClient *ev )
         // 1 problem in database system
         MapClient *cl = m_clients.getExpectedByCookie(cookie-2);
         cl->name(ev->m_character_name);
-        cl->current_map(m_handled_worlds[ev->m_map_id]);
+        cl->current_map(tpl->get_instance());
     }
-	ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
+    ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
 }
 void MapCommHandler::on_create_map_entity(NewEntity *ev)
 {
@@ -135,14 +136,14 @@ void MapCommHandler::on_scene_request(SceneRequest *ev)
     MapLink * lnk = (MapLink *)ev->src();
     SceneEvent *res=new SceneEvent;
     res->undos_PP=0;
-	res->var_14=1;
-	res->m_outdoor_map=1;//0;
-	res->m_map_number=1;
-	res->m_map_desc="maps/City_Zones/City_00_01/City_00_01.txt";
-	res->current_map_flags=1; //off 1
-	res->unkn1=1;
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
-	res->unkn2=1;
+    res->var_14=1;
+    res->m_outdoor_map=1;//0;
+    res->m_map_number=1;
+    res->m_map_desc="maps/City_Zones/City_00_01/City_00_01.txt";
+    res->current_map_flags=1; //off 1
+    res->unkn1=1;
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
+    res->unkn2=1;
     lnk->putq(res);
 }
 void MapCommHandler::on_entities_request(EntitiesRequest *ev)

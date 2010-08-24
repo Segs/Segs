@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include <algorithm>
 #include "types.h"
 #include "CoXHash.h"
 #include "DataStorage.h"
@@ -32,6 +33,7 @@ struct TreeStore : public BinReadable
         return "";
     }
 };
+
 
 namespace MapStructs
 {
