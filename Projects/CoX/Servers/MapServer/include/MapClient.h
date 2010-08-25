@@ -29,11 +29,11 @@ class MapClient : public ClientSession
 {
     friend class CharacterDatabase;
     typedef std::map<int,NetCommand *> mNetCommands;
-    mNetCommands            m_shortcuts;
-    MapInstance *           m_current_map;
-    Entity *                m_ent;
-    std::string             m_name; // current character name, stored here for quick lookups
-    SEGSTimer *             m_tick_source;
+        mNetCommands        m_shortcuts;
+        MapInstance *       m_current_map;
+        Entity *            m_ent;
+        std::string         m_name; // current character name, stored here for quick lookups
+        SEGSTimer *         m_tick_source;
 public:
                             MapClient();
 virtual                     ~MapClient(){};
@@ -42,7 +42,7 @@ virtual                     ~MapClient(){};
         NetCommand *        GetCommand(int index) {return m_shortcuts[index];}
         void                SendCommand(NetCommand *command,...);
         void                current_map(MapInstance *pmap){m_current_map=pmap;}
-        MapInstance *            current_map(){return m_current_map;}
+        MapInstance *       current_map(){return m_current_map;}
         void                char_entity(Entity *ent){m_ent=ent;}
         Entity *            char_entity(){return m_ent;}
         void                reset();

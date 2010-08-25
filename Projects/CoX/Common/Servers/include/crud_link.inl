@@ -12,7 +12,7 @@ EventProcessor *CRUDLink<EVENT_FACTORY>::g_link_target=0;
 // these are basically CRUDP_Packets preprocessed by CRUDP_Protocol
 
 // ServerEndpoint gets new input -> Bytes -> CRUDP_Protocol -> pushq(PacketEvent)
-// ACE_Reactor knows to wake CRUDLink up, as there are new events
+// ACE_Reactor knows to wake CRUDLink up, whenever there are new events
 
 template<class EVENT_FACTORY>
 void CRUDLink<EVENT_FACTORY>::event_for_packet(SEGSEvent *ev)
@@ -120,3 +120,4 @@ void CRUDLink<EVENT_FACTORY>::received_block( BitStream &bytes )
     if(recv_count>0)
         connection_update(); //update the last time we've seen packets on this link
 }
+

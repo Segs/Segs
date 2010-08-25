@@ -141,6 +141,7 @@ public:
 };
 #include "Events/SceneEvent.h"
 #include "NetCommandManager.h"
+#include "Events/EntitiesResponse.h"
 class Shortcuts : public MapLinkEvent
 {
 public:
