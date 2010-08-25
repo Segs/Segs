@@ -191,3 +191,149 @@ void Character::recv_initial_costume( BitStream &src )
     m_costumes.push_back(res);
 
 }
+void Character::sendFullStats(BitStream &bs) const
+{
+    // if sendAbsolutoOverride
+
+    // this uses the character schema from the xml -> FullStats and children
+
+    // CurrentAttributes
+    bs.StoreBits(1,1);
+    bs.StorePackedBits(1,0); // CurrentAttribs entry idx
+    {
+            // nested into CurrentAttribs:LiveAttribs
+            bs.StoreBits(1,1); // has more data
+            bs.StorePackedBits(1,0); // HitPoints entry
+            // field type 0xA, param 2
+            // Type15_Params 2 1.0 1.0 7
+            if(1) // absolute values
+            {
+                bs.StorePackedBits(7,45); // character health/1.0
+            }
+            else
+            {
+                // StoreOptionalSigned(
+                    // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+            }
+            bs.StoreBits(1,1); // has more data
+            bs.StorePackedBits(1,1); // EndurancePoints entry
+            // field type 0xA, param 2
+            if(1) // absolute values
+            {
+                bs.StorePackedBits(7,45); // character end/1.0
+            }
+            else
+            {
+                // StoreOptionalSigned(
+                // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+            }
+            bs.StoreBits(1,0); // nest out
+    }
+    bs.StoreBits(1,1); // has more data
+    bs.StorePackedBits(1,1); // MaxAttribs entry idx
+    {
+        // nested into MaxAttribs:LiveAttribs
+        bs.StoreBits(1,1); // has more data
+            bs.StorePackedBits(1,0); // HitPoints entry
+            // field type 0xA, param 2
+            // Type15_Params 2 1.0 1.0 7
+            if(1) // absolute values
+            {
+                bs.StorePackedBits(7,45); // character health/1.0
+            }
+            else
+            {
+                // StoreOptionalSigned(
+                // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+            }
+        bs.StoreBits(1,1); // has more data
+            bs.StorePackedBits(1,1); // EndurancePoints entry
+            // field type 0xA, param 2
+            if(1) // absolute values
+            {
+                bs.StorePackedBits(7,45); // character end/1.0
+            }
+            else
+            {
+                // StoreOptionalSigned(
+                // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+            }
+        bs.StoreBits(1,0); // nest out
+    }
+    bs.StoreBits(1,1); // has more data
+    bs.StorePackedBits(1,2); // SendLevels entry idx
+    {
+        // nested into SendLevels:LiveLevels
+        bs.StoreBits(1,1); // has more data
+            bs.StorePackedBits(1,0); // Level entry
+            // field type 0x5, param 4
+            if(1) // absolute values
+            {
+                bs.StorePackedBits(4,1); //
+            }
+            else
+            {
+                // StoreOptionalSigned(
+                // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+                // send prev_lev-new_lev
+            }
+        bs.StoreBits(1,1); // has more data
+            bs.StorePackedBits(1,1); // CombatLevel entry
+            if(1) // absolute values
+            {
+                bs.StorePackedBits(4,1);
+            }
+            else
+            {
+                // StoreOptionalSigned(
+                // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+            }
+        bs.StoreBits(1,0); // nest out
+    }
+    bs.StoreBits(1,1); // has more data
+    bs.StorePackedBits(1,3); // Experience
+    {
+        // field type 0x5, param 16
+        if(1) // absolute values
+        {
+            bs.StorePackedBits(16,1); //
+        }
+        else
+        {
+            // StoreOptionalSigned(
+            // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+            // send prev_lev-new_lev
+        }
+    }
+    bs.StoreBits(1,1); // has more data
+    bs.StorePackedBits(1,4); // ExperienceDebt
+    {
+        // field type 0x5, param 16
+        if(1) // absolute values
+        {
+            bs.StorePackedBits(16,1); //
+        }
+        else
+        {
+            // StoreOptionalSigned(
+            // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+            // send prev_lev-new_lev
+        }
+    }
+    bs.StoreBits(1,1); // has more data
+    bs.StorePackedBits(1,5); // Influence
+    {
+        // field type 0x5, param 16
+        if(1) // absolute values
+        {
+            bs.StorePackedBits(16,0); //
+        }
+        else
+        {
+            // StoreOptionalSigned(
+            // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
+            // send prev_lev-new_lev
+        }
+    }
+    bs.StoreBits(1,0); // has more data, nest out from the root
+}

@@ -77,7 +77,7 @@ const	std::string &	getMapName() const { return m_mapName; }
         void			DumpBuildInfo();
         void            face_bits(u32){};
         void            dump();
-
+        void            sendFullStats(BitStream &bs) const;
 
 protected:
         u64                 m_owner_account_id;

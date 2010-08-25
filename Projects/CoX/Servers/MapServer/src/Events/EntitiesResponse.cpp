@@ -49,7 +49,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     }
     else
     {
-        //FIXME: m_client->char_entity()->m_char.sendFullStats(tgt);
+        m_client->char_entity()->m_char.sendFullStats(tgt);
     }
     storePowerInfoUpdate(tgt);
     //storePowerModeUpdate(tgt);
