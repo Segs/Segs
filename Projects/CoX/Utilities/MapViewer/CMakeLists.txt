@@ -1,7 +1,7 @@
 # $Id: CMakeLists.txt 216 2009-12-06 19:37:58Z nemerle $
-
 FIND_PACKAGE(ACE REQUIRED)
-FIND_PACKAGE(OpenSceneGraph REQUIRED osgUtil)
+#SET(OpenSceneGraph_DEBUG TRUE)
+FIND_PACKAGE(OpenSceneGraph REQUIRED osgUtil osgText osgViewer)
 FIND_PACKAGE(Qt COMPONENTS Gui Core REQUIRED)
 
 ################# Qt Ui related ###############################################
@@ -14,17 +14,21 @@ SET(gui_MOC_HEADERS
     include/mainwindow.h
     include/objecttreewidget.h
     include/mapmodel.h
+    include/CompositeViewerQOSG.h
+    include/QOSGWidget.h
 )
 SET(gui_SOURCES
     src/mainwindow.cpp
     src/objecttreewidget.cpp
     src/mapmodel.cpp
+    src/CompositeViewerQOSG.cpp
+    src/QOSGWidget.cpp
     ${gui_MOC_HEADERS}
 )
 QT4_WRAP_UI(gui_UI_H ${gui_UI_FILES})
 QT4_WRAP_CPP(gui_MOC_SRC ${gui_MOC_HEADERS})
 qt4_automoc(${gui_SOURCES})
-###############################################################################
+################################################################################
 
 INCLUDE_DIRECTORIES(${OPENSCENEGRAPH_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}) # to access moc compiled headers

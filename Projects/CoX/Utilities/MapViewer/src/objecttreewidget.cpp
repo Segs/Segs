@@ -15,4 +15,5 @@ ObjectTreeWidget::~ObjectTreeWidget()
 void ObjectTreeWidget::set_model(QAbstractItemModel *model)
 {
     ui->m_object_tree->setModel(model);
+//    ui->m_object_tree->setRootIndex();
 }

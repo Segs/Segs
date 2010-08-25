@@ -2,6 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <osg/Node>
+
+class CompositeViewerQOSG;
+class MapModel;
+class ViewQOSG;
 
 namespace Ui {
     class MainWindow;
@@ -20,6 +25,8 @@ public slots:
 private:
     Ui::MainWindow *ui;
     MapModel *m_model;
+    CompositeViewerQOSG *m_viewer;
+    osg::ref_ptr<ViewQOSG> view1;
 };
 
 #endif // MAINWINDOW_H
