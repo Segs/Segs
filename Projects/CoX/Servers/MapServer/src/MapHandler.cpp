@@ -142,6 +142,11 @@ void MapCommHandler::on_timeout( TimerEvent *ev )
 {
     // TODO: This should send 'ping' packets on all client links to which we didn't send
     // anything in the last time quantum
+    // 1. Find all links that have inactivity_time() > ping_time && <disconnect_time
+    // For each found link
+    //   If there is no ping_pending on this link, add a ping event to queue
+    // 2. Find all links with inactivity_time() >= disconnect_time
+    //   Disconnect given link.
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl =(MapClient *)lnk->client_data();
 }
