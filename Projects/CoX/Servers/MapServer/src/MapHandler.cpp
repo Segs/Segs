@@ -140,14 +140,10 @@ void MapCommHandler::on_shortcuts_request(ShortcutsRequest *ev)
 
 void MapCommHandler::on_timeout( TimerEvent *ev )
 {
-    // TODO: This should send 'ping' packets on all client links to which we didn't send anything in the last time quantum
-    //
+    // TODO: This should send 'ping' packets on all client links to which we didn't send
+    // anything in the last time quantum
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl =(MapClient *)lnk->client_data();
-    //TODO: Move timer processing to per-client EventHandler ?
-    //1. Find the client that this timer corresponds to.
-    //2. Call appropriate method ( keep-alive, Entities update etc .. )
-    //3. Maybe use one timer for all links ?
 }
 
 SEGSEvent * MapCommHandler::dispatch_sync( SEGSEvent *ev )

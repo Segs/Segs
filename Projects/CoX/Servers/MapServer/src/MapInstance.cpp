@@ -66,5 +66,11 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
 //! Handle instance-wide timers
 void MapInstance::on_timeout(TimerEvent *ev)
 {
-    
+    // This is handling instance-wide timers
+
+    // simulation_engine->tick()
+    //TODO: Move timer processing to per-client EventHandler ?
+    //1. Find the client that this timer corresponds to.
+    //2. Call appropriate method ( keep-alive, Entities update etc .. )
+    //3. Maybe use one timer for all links ?
 }

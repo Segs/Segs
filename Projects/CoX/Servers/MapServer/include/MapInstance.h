@@ -20,12 +20,12 @@ class EntitiesRequest;
 
 class MapInstance : public EventProcessor
 {
-	std::string m_name;
+    std::string m_name;
 public:
-	EntityManager	m_entities;
-					MapInstance(const std::string &name);
-	void			dispatch(SEGSEvent *ev);
-	SEGSEvent * 	dispatch_sync(SEGSEvent *ev);
+    EntityManager	m_entities;
+                    MapInstance(const std::string &name);
+    void			dispatch(SEGSEvent *ev);
+    SEGSEvent * 	dispatch_sync(SEGSEvent *ev);
 protected:
     void            on_scene_request(SceneRequest *ev);
     void            on_entities_request(EntitiesRequest *ev);
