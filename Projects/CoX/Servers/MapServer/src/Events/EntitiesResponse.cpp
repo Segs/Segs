@@ -4,6 +4,7 @@
 #include "MapClient.h"
 #include "MapHandler.h"
 #include "MapInstance.h"
+//! EntitiesResponse is sent to a client to inform it about the current world state.
 EntitiesResponse::EntitiesResponse(MapClient *cl, bool inc) :
     MapLinkEvent(MapEventTypes::evEntitites),
     m_incremental(inc)
@@ -13,6 +14,7 @@ EntitiesResponse::EntitiesResponse(MapClient *cl, bool inc) :
 }
 void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
+    EntityManager &ent_manager=m_client->current_map()->m_entities;
     tgt.StorePackedBits(1,m_incremental ? 2 : 3); // opcode
     tgt.StoreBits(1,entReceiveUpdate);
     sendCommands(tgt);
@@ -33,17 +35,24 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     }
 
     //else debug_info = false;
-    m_client->current_map()->m_entities.sendEntities(tgt);
+    ent_manager.sendEntities(tgt);
     if(debug_info&&!unkn2)
     {
-        m_client->current_map()->m_entities.sendDebuggedEntities(tgt);
-        m_client->current_map()->m_entities.sendGlobalEntDebugInfo(tgt);
+        ent_manager.sendDebuggedEntities(tgt);
+        ent_manager.sendGlobalEntDebugInfo(tgt);
     }
-    sendServerPhysicsPositions(tgt);
-    sendControlState(tgt);
-    m_client->current_map()->m_entities.sendDeletes(tgt);
+    sendServerPhysicsPositions(tgt); // These are not client specific ?
+    sendControlState(tgt);// These are not client specific ?
+    ent_manager.sendDeletes(tgt);
+    // Client specific part
+    sendClientData(tgt);
+}
+void EntitiesResponse::sendClientData(BitStream &tgt) const
+{
+
     if(!m_incremental)
     {
+        // initial character update = level/name/class/origin/map_name
         //m_client->char_entity()->m_char.m_ent=m_client->char_entity();
         m_client->char_entity()->m_char.serializeto(tgt);
     }

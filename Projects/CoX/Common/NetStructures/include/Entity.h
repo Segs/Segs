@@ -91,7 +91,8 @@ public:
         Quaternion  qrot;
         Vector3     pos;
         u32         prev_pos[3];
-        bool        m_selector1,m_pchar_things,might_have_rare          ,m_hasname  ,m_hasgroup_name,m_classname_override;
+        bool        m_selector1,m_pchar_things,might_have_rare,
+                    m_hasname  ,m_hasgroup_name,m_classname_override;
         bool        m_create   ,m_hasRagdoll  ,m_create_player,m_rare_bits;
         int         current_client_packet_id;
         std::string m_group_name, m_override_name;

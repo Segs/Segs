@@ -43,7 +43,6 @@ SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
-
 ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
 ADD_DEPENDENCIES(mapserver_lib ${target_DEPENDS})
 

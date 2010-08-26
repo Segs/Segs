@@ -8,6 +8,7 @@
 
 class MapClient;
 typedef CRUDLink_Event<MapLink> MapLinkEvent;
+
 class EntitiesResponse : public MapLinkEvent
 {
 protected:
@@ -23,17 +24,6 @@ public:
         tgt.StorePackedBits(1,m_num_commands);
     }
     virtual void serializeto(BitStream &tgt) const;
-    void sendServerPhysicsPositions(BitStream &bs) const;
-    void sendControlState(BitStream &bs) const;
-    void sendServerControlState(BitStream &bs) const;
-    void storePowerInfoUpdate(BitStream &bs) const;
-    void storePowerModeUpdate(BitStream &bs) const;
-    void storeBadgeUpdate(BitStream &bs) const;
-    void storeGenericinventoryUpdate(BitStream &bs) const;
-    void storeInventionUpdate(BitStream &bs) const;
-    void storeTeamList(BitStream &bs) const;
-    void storeSuperStats(BitStream &bs) const;
-    void storeGroupDyn(BitStream &bs) const;
 
     bool entReceiveUpdate;
     bool unkn1;
@@ -53,4 +43,17 @@ public:
     std::string m_commands[15];
     u32 m_num_commands2;
     std::string m_commands2[15];
+private:
+    void sendClientData(BitStream &bs) const;
+    void sendServerPhysicsPositions(BitStream &bs) const;
+    void sendControlState(BitStream &bs) const;
+    void sendServerControlState(BitStream &bs) const;
+    void storePowerInfoUpdate(BitStream &bs) const;
+    void storePowerModeUpdate(BitStream &bs) const;
+    void storeBadgeUpdate(BitStream &bs) const;
+    void storeGenericinventoryUpdate(BitStream &bs) const;
+    void storeInventionUpdate(BitStream &bs) const;
+    void storeTeamList(BitStream &bs) const;
+    void storeSuperStats(BitStream &bs) const;
+    void storeGroupDyn(BitStream &bs) const;
 };

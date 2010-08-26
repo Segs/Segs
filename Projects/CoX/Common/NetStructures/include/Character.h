@@ -28,6 +28,7 @@ public:
     float degrees_for_turns;
 };
 class Costume;
+
 class Character : public NetStructure
 {
         friend class CharacterDatabase;
