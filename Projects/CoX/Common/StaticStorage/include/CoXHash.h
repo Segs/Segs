@@ -82,7 +82,7 @@ class CoxHashCommon
 protected:
     struct HashEntry
     {
-        HashEntry() : key_hash(0)
+        HashEntry() : key_hash(0),entry_flags(0)
         {
         }
         u32 key_hash;

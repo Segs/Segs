@@ -19,10 +19,10 @@ Database::Database()
 {
 	pConnection=0;
 };
-void Database::setConnectionConfiguration(const char *host,const char *db,const char *user,const char *passw)
+void Database::setConnectionConfiguration(const char *host,const char *port,const char *db,const char *user,const char *passw)
 {
 	std::stringstream res;
-	res <<"host="<<host<<" dbname="<<db<<" user="<<user<<" password="<<passw;
+	res <<"host="<<host<< " port="<<port<<" dbname="<<db<<" user="<<user<<" password="<<passw;
 	connect_string=res.str();
 
 }
@@ -38,7 +38,7 @@ int Database::OpenConnection(void) // Opens connection to the database server
 	else
 	{
 		ACE_DEBUG ((LM_INFO,"Connected to %s database server version %i.\n",PQdb(pConnection), PQserverVersion(pConnection)));
-        this->on_connected();
+		this->on_connected();
 	}
 	return 0;
 }
@@ -47,7 +47,7 @@ int Database::CloseConnection(void) // Closes connection to the database server
 {
 	PQfinish(pConnection);    // Close our connection to the PostgreSQL db server
 	ACE_DEBUG((LM_INFO,"Connection to PostgreSQL database server closed.\n"));
-    pConnection=0;
+	pConnection=0;
 	return 0;
 }
 
@@ -68,13 +68,13 @@ bool Database::execQuery(const string &q)// for insert/update/delete queries, no
 {
 	PGresult *m_result = PQexec(pConnection,q.c_str());   // Send our query to the PostgreSQL db server to process
 	if(!m_result)
-		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: query %s failed. ERR_FATAL.\n"), q.c_str()),false);	
+		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: query %s failed. ERR_FATAL.\n"), q.c_str()),false);
 	char *err = PQresultErrorMessage(m_result);
 	if(err&&err[0])
 	{
-		ACE_ERROR((LM_ERROR, ACE_TEXT ("(%P|%t) Database: query %s failed. \n %s \n"), q.c_str(),err));	
-        PQclear(m_result);
-        return false;
+		ACE_ERROR((LM_ERROR, ACE_TEXT ("(%P|%t) Database: query %s failed. \n %s \n"), q.c_str(),err));
+		PQclear(m_result);
+		return false;
 	}
 	PQclear(m_result);
 	return true;
@@ -132,7 +132,7 @@ bool DbResultRow::getColBool(const char *column_name)
 	const char *res = getColString(column_name);
 	if(!res)
 	{
-		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),false);	
+		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),false);
 	}
 	return toupper(res[0])=='T';
 }
@@ -141,10 +141,10 @@ s32 DbResultRow::getColInt32(const char *column_name)
 	const char *res = getColString(column_name);
 	if(!res)
 	{
-		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),-1);	
+		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),-1);
 	}
-    s32 result;
-    sscanf(res,ACE_INT32_FORMAT_SPECIFIER,&result);
+	s32 result;
+	sscanf(res,ACE_INT32_FORMAT_SPECIFIER,&result);
 	return result;
 }
 s64 DbResultRow::getColInt64(const char *column_name)
@@ -152,20 +152,20 @@ s64 DbResultRow::getColInt64(const char *column_name)
 	const char *res = getColString(column_name);
 	if(!res)
 	{
-		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),-1);	
+		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),-1);
 	}
-    s64 result;
-    sscanf(res,ACE_INT64_FORMAT_SPECIFIER,&result);
-    return result;
+	s64 result;
+	sscanf(res,ACE_INT64_FORMAT_SPECIFIER,&result);
+	return result;
 }
 float DbResultRow::getColFloat(const char *column_name)
 {
 	const char *res = getColString(column_name);
 	if(!res)
 	{
-		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),0); // 
+		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),0); //
 	}
-	
+
 	return (float)atof(res);
 }
 size_t DbResultRow::getColIntArray(const char *column_name,u32 *arr,size_t arr_size)

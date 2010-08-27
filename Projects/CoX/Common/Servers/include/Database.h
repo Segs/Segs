@@ -37,7 +37,7 @@ public:
 			float		getColFloat(const char *column_name);
 			size_t		getColIntArray(const char *column_name,u32 *arr,size_t arr_size); // returns the actual number of values
 			size_t		getColFloatArray(const char *column_name,float *arr,size_t arr_size);
-            struct tm   getTimestamp(const char *column_name);
+			struct tm   getTimestamp(const char *column_name);
 };
 class DbResults
 {
@@ -53,17 +53,17 @@ public:
 class Database
 {
 protected:
-	    std::string connect_string;
-	    PGconn *    pConnection;     // Pointer to our PostgreSQL connection structure
+		std::string connect_string;
+		PGconn *    pConnection;     // Pointer to our PostgreSQL connection structure
 public:
-	// Constructor/Destructor
-    	                Database();
+    // Constructor/Destructor
+                        Database();
                         virtual ~Database();
-	    void            setConnectionConfiguration(const char *host,const char *db,const char *user,const char *passw);
-	    bool            execQuery(const string &q,DbResults &res);
-	    bool            execQuery(const string &q); // for queries without results
-	    int             OpenConnection(void);
-	    int             CloseConnection(void);
+        void            setConnectionConfiguration(const char *host,const char *port,const char *db,const char *user,const char *passw);
+        bool            execQuery(const string &q,DbResults &res);
+        bool            execQuery(const string &q); // for queries without results
+        int             OpenConnection(void);
+        int             CloseConnection(void);
         s64             next_id(const std::string &tab_name);
         PGconn *        get_conn() {return pConnection;}
 virtual void            on_connected() = 0;
