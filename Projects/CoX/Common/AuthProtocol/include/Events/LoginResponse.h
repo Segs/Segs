@@ -1,4 +1,5 @@
 #pragma once
+#include <cstring>
 #include "AuthEvents.h"
 
 class LoginResponse : public AuthLinkEvent
@@ -8,7 +9,10 @@ class LoginResponse : public AuthLinkEvent
 	u32 unk1, unk2, unk3;
 public:
 	LoginResponse() : AuthLinkEvent(evLoginResponse),unk1(0), unk2(0), unk3(0)
-	{}
+	{
+		memset(unkArray1,0,8);
+		memset(unkArray2,0,8);
+	}
 	void serializeto(GrowingBuffer &buf) const
 	{
 		buf.uPut((u8)3); // packet code

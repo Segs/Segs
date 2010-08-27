@@ -4,6 +4,7 @@
 #include <ace/SOCK_Stream.h>
 #include <ace/Message_Queue.h>
 #include <ace/Message_Block.h>
+#include <ace/Thread_Mutex.h>
 #include <ace/Event_Handler.h>
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
@@ -65,10 +66,10 @@ protected:
 	stream_type     peer_;  //! Maintain connection with client.
 	addr_type       m_peer_addr;
 	eState		    m_state;
+	ACE_Thread_Mutex *m_buffer_mutex;
 
     SEGSEvent *     dispatch_sync( SEGSEvent *ev );
     ACE_HANDLE      get_handle (void) const {return peer_.get_handle();}
-
     bool		    send_buffer();
     void		    encode_buffer(const AuthLinkEvent *ev,size_t start);
     void		    set_protocol_version(int vers);

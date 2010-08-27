@@ -14,10 +14,12 @@ AuthLink::AuthLink() :  m_client(0),
                         m_state(INITIAL)
 
 {
+    m_buffer_mutex = new ACE_Thread_Mutex;
     ACE_ASSERT(g_target);
 }
 AuthLink::~AuthLink( void )
 {
+    delete m_buffer_mutex;
     m_client=0;
 }
 /**
@@ -124,6 +126,7 @@ int AuthLink::handle_input( ACE_HANDLE )
 		ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Connection closed\n")));
 		return -1;
 	}
+	ACE_Guard<ACE_Thread_Mutex> guard_buffer(*m_buffer_mutex);
 	m_received_bytes_storage.PutBytes((u8 *)buffer,recv_cnt);
 	m_received_bytes_storage.ResetReading();
 	// early out optimization
