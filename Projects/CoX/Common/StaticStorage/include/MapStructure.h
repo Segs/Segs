@@ -20,7 +20,7 @@ struct TreeStore : public BinReadable
     {
         return 0;
     }
-    virtual TreeStore *nth_child(size_t idx)
+    virtual TreeStore *nth_child(size_t )
     {
         return 0;
     }

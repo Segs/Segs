@@ -76,7 +76,7 @@ public:
         tgt.StorePackedBits(1, 0); //ctrl opcode
         tgt.StorePackedBits(1, 4); //opcode
     }
-    void serializefrom(BitStream &src)
+    void serializefrom(BitStream &)
     {
     }
 };
@@ -90,6 +90,8 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
+        bs.GetPackedBits(1);
+        bs.GetPackedBits(1);
     }
     void serializeto(BitStream &bs) const
     {
@@ -107,6 +109,8 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
+        bs.GetPackedBits(1);
+        bs.GetPackedBits(1);
     }
     void serializeto(BitStream &bs) const
     {
@@ -142,11 +146,11 @@ public:
     typedef EVENT_CLASS event_type;
     static EVENT_CLASS *EventFromStream(BitStream &bs)
     {
-        u8 opcode = bs.GetPackedBits(1);
+        s32 opcode = bs.GetPackedBits(1);
         EVENT_CLASS *ev=0;
         if(opcode!=0)
             return ev;
-        u8 control_opcode = bs.GetPackedBits(1);
+        s32 control_opcode = bs.GetPackedBits(1);
         switch(control_opcode)
         {
         case 0: // CTRL_IDLE

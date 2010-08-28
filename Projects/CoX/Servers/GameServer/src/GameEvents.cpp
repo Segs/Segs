@@ -15,7 +15,7 @@
 // SpecHash<std::string,val>
 //
 // get hash index of given key
-u32 get_hash_idx(const std::string &key)
+u32 get_hash_idx(const std::string &)
 {
 	return 0;
 }
@@ -50,7 +50,7 @@ void UpdateServer::serializeto( BitStream &tgt ) const
 void UpdateServer::serializefrom( BitStream &src )
 {
     m_build_date = src.GetPackedBits(1);
-    u32 t = src.GetPackedBits(1);
+    /*u32 t =*/ src.GetPackedBits(1);
     src.GetString(currentVersion);
     src.GetBitArray(clientInfo,128);
     authID = src.GetPackedBits(1);
@@ -80,7 +80,7 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     //tgt.StoreBitArray(m_clientinfo,128);
 }
 
-void CharacterSlots::serializefrom( BitStream &src )
+void CharacterSlots::serializefrom( BitStream &)
 {
 
 }

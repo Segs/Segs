@@ -56,7 +56,7 @@ public:
                         return ACE_OS::gettimeofday()-m_last_activity;
                     }
 protected:
-    SEGSEvent *     dispatch_sync( SEGSEvent *ev )
+    SEGSEvent *     dispatch_sync( SEGSEvent * )
                     {
                         ACE_ASSERT(!"No sync events known");
                         return 0;

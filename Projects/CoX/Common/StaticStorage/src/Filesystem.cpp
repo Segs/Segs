@@ -47,6 +47,7 @@ void WorldData_impl::fill_hashes()
     m_colors.init(557);
     m_strings.init(4096,0x3D);
     add_colors(m_supergroup_colors.m_colors);
+    //TODO: Use reverse iterators here ?
     for(int idx=m_costume_store.m_costumes.size()-1; idx>=0; --idx)
     {
         CostumeEntry *ce=(CostumeEntry *)m_costume_store.m_costumes[idx];

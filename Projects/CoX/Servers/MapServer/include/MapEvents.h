@@ -119,7 +119,10 @@ public:
     MapInstanceConnected():MapLinkEvent(MapEventTypes::evMapInstanceConnected)
     {
     }
-    MapInstanceConnected(EventProcessor *evsrc,u32 resp,const std::string &err) : MapLinkEvent(MapEventTypes::evMapInstanceConnected),m_resp(resp),m_fatal_error(err)
+    MapInstanceConnected(EventProcessor *evsrc,u32 resp,const std::string &err) :
+            MapLinkEvent(MapEventTypes::evMapInstanceConnected,evsrc),
+            m_resp(resp),
+            m_fatal_error(err)
     {
     }
     void serializeto(BitStream &bs) const
@@ -153,7 +156,7 @@ public:
         bs.StorePackedBits(1,4); // opcode
         NetCommandManagerSingleton::instance()->SendCommandShortcuts(m_client,bs,m_commands2);
     }
-    void serializefrom(BitStream &src)
+    void serializefrom(BitStream &)
     {
         ACE_ASSERT(!"TODO");
     }

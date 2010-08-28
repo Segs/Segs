@@ -100,7 +100,7 @@ int CRUDLink<EVENT_FACTORY>::handle_output( ACE_HANDLE )
 }
 
 template<class EVENT_FACTORY>
-void CRUDLink<EVENT_FACTORY>::dispatch( SEGSEvent *ev )
+void CRUDLink<EVENT_FACTORY>::dispatch( SEGSEvent * )
 {
     ACE_ASSERT(!"Should not be called");
 }

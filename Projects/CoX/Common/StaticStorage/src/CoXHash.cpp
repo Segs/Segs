@@ -37,7 +37,7 @@ u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &k
         if ( key.size() >= 0x1000 )
             return 0;
         for(size_t idx=0; idx<key.size(); idx++)
-            tmp_key[idx]=toupper(tmp_key[idx]);
+            tmp_key[idx]=char(toupper(tmp_key[idx]));
     }
     while ( 1 )
     {

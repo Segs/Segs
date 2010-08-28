@@ -5,7 +5,7 @@ typedef ACE_Singleton<Thread_Timer_Queue,ACE_Thread_Mutex> GlobalTimerQueue;
 
 SEGSTimer::SEGSTimer( EventProcessor *m_processor,void *data,const ACE_Time_Value &fire_delta_time ) 
                     : 
-                    m_id(-1),m_target(m_processor),m_fire_delta_time(fire_delta_time)
+                    m_id(-1),m_data(data),m_target(m_processor),m_fire_delta_time(fire_delta_time)
 {
     schedule();
 }

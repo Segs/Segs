@@ -8,6 +8,7 @@
  */
 
 #include "BitStream.h"
+#include <cstring>
 #include <ace/Log_Msg.h>
 #include <zlib.h>
 // bitstream buffer is padded-out by 7 bytes, to allow safe 64bit reads/writes by new routines

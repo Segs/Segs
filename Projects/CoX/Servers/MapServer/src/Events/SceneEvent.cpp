@@ -62,7 +62,7 @@ void SceneEvent::getGrpElem(BitStream &src,int idx)
             reqWorldUpdateIfPak(src);
     }
 }
-void SceneEvent::reqWorldUpdateIfPak(BitStream &src)
+void SceneEvent::reqWorldUpdateIfPak(BitStream &)
 {
     //src.GetBits(1);
     ACE_ASSERT(0);

@@ -112,7 +112,7 @@ public:
         old_entries.assign(m_storage.begin(),m_storage.end());
         m_storage.clear();
         in_use=0;
-        m_storage.resize(this->next_size(new_size));
+        m_storage.resize(size_t(this->next_size(new_size)));
         for(size_t idx=0; idx<old_entries.size(); ++idx)
         {
             if(old_entries[idx].key_hash==0) // || 0==old_entries[idx].entry_flags&1
@@ -158,7 +158,7 @@ public:
     {
         m_flags=flags;
         in_use=0;
-        m_storage.resize(next_size(sz)); // reserve hash map entries
+        m_storage.resize(size_t(next_size(sz))); // reserve hash map entries
     }
 };
 template<class VALUE>
@@ -224,7 +224,7 @@ public:
     {
         if(sz>0)
         {
-            this->m_storage.resize(next_size(sz)); // reserve hash map entries
+            this->m_storage.resize(size_t(next_size(sz))); // reserve hash map entries
         }
         else
         {

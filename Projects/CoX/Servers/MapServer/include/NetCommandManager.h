@@ -16,7 +16,9 @@ class NetCommand
 	float normalizedCircumferenceToFloat(int number,int numbits)
 	{
 		// something like this : ((number*3.141592)/(1<<numbits))-3.141592
-		return 0.0f;
+        float f=((float(number)*3.141592f)/(1<<numbits))-3.141592f;
+        f=0.0f; // since i'm not sure about correctness of the above
+		return f;
 	}
 public:
 

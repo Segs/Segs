@@ -32,8 +32,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
     }
 }
 
-SEGSEvent * MapInstance::dispatch_sync( SEGSEvent *ev )
+SEGSEvent * MapInstance::dispatch_sync( SEGSEvent * )
 {
+    ACE_ASSERT(!"No sync dipatchable events here");
     return 0;
 }
 void MapInstance::on_scene_request(SceneRequest *ev)
@@ -59,6 +60,7 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     // so this method should call MapInstace->initial_update(MapClient *);
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl =(MapClient *)lnk->client_data();
+    (void)cl; //TODO: actually use the MapClient instance
     //    SEGSTimer tmr;
     // start map timer on this event
     //    start_entity_state_update();
@@ -66,6 +68,7 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
 //! Handle instance-wide timers
 void MapInstance::on_timeout(TimerEvent *ev)
 {
+    (void)ev;
     // This is handling instance-wide timers
 
     // simulation_engine->tick()

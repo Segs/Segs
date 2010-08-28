@@ -79,6 +79,7 @@ private:
 
     int         handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE) //! Called when input is available from the client.
                 {
+                    (void)fd;
                     u8 buf[0x2000];
                     ACE_INET_Addr from_addr;
                     ssize_t n = this->endpoint_.recv(buf, sizeof buf,from_addr);
@@ -93,6 +94,7 @@ private:
 
     int         handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE) //! Called when output is possible.
                 {
+                    (void)fd;
                     SEGSEvent *ev;
                     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
                     while (-1 != getq(ev, &nowait))
@@ -123,7 +125,7 @@ private:
                 }
 
 				//! Called when this handler is removed from the ACE_Reactor.
-	int         handle_close (ACE_HANDLE handle,ACE_Reactor_Mask close_mask)
+	int         handle_close (ACE_HANDLE /*handle*/,ACE_Reactor_Mask /*close_mask*/)
 				{
 					endpoint_.close();
 					return 0;
@@ -148,7 +150,7 @@ protected:
                 {
                     ACE_ASSERT(!"All events are dispatched from handle_* methods");
                 }
-    SEGSEvent * dispatch_sync( SEGSEvent *ev )
+    SEGSEvent * dispatch_sync( SEGSEvent *)
                 {
                     ACE_ASSERT(!"No sync events known");
                     return 0;

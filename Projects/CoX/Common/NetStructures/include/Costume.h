@@ -27,7 +27,7 @@ public:
 	{
 		m_colors[0]=m_colors[1];
 	}
-	CostumePart(int type,const std::string &a,const std::string &b,const std::string &c,const std::string &d,u32 c1,u32 c2)
+	CostumePart(u8 type,const std::string &a,const std::string &b,const std::string &c,const std::string &d,u32 c1,u32 c2)
 		:m_type(type),name_0(a),name_1(b),name_2(c),name_3(d)
 	{
 		m_colors[0]=c1;

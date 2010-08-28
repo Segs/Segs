@@ -111,7 +111,7 @@ class DeleteCharacter : public GameLinkEvent
 public:
     DeleteCharacter():GameLinkEvent(GameEventTypes::evDeleteCharacter)
     {}
-    DeleteCharacter(EventProcessor *evsrc,u8 idx,const std::string &name) : GameLinkEvent(GameEventTypes::evDeleteCharacter),m_index(idx),m_char_name(name)
+    DeleteCharacter(EventProcessor *evsrc,u8 idx,const std::string &name) : GameLinkEvent(GameEventTypes::evDeleteCharacter,evsrc),m_index(idx),m_char_name(name)
     {}
     void serializeto(BitStream &bs) const
     {
@@ -142,7 +142,7 @@ class CharacterResponse : public GameLinkEvent
 public:
     CharacterResponse():GameLinkEvent(GameEventTypes::evCharacterResponse)
     {}
-    CharacterResponse(EventProcessor *src,u8 idx,CharacterClient *c) : GameLinkEvent(GameEventTypes::evCharacterResponse)
+    CharacterResponse(EventProcessor *src,u8 idx,CharacterClient *c) : GameLinkEvent(GameEventTypes::evCharacterResponse,src)
     {
         m_index=idx;
         m_client=c;
@@ -204,7 +204,7 @@ public:
     DeletionAcknowledged():GameLinkEvent(GameEventTypes::evDeleteAcknowledged)
     {}
     void serializeto( BitStream &tgt ) const;
-    void serializefrom( BitStream &src ) {};
+    void serializefrom( BitStream &) {};
 };
 class GameUnknownRequest : public GameLinkEvent
 {
@@ -236,7 +236,7 @@ public:
             return ev;
         bs.SetReadPos(read_pos); // rewind the stream
 
-        u8 opcode = bs.GetPackedBits(1);
+        s32 opcode = bs.GetPackedBits(1);
         switch(opcode)
         {
         case 1:
