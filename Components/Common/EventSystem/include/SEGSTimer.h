@@ -15,8 +15,9 @@ protected:
     void *              m_data;
     EventProcessor *    m_target;
     ACE_Time_Value      m_fire_delta_time;
+    bool                m_one_shot;
 public:
-                        SEGSTimer(EventProcessor *m_processor,void *data,const ACE_Time_Value &fire_delta_time);
+                        SEGSTimer(EventProcessor *m_processor,void *data,const ACE_Time_Value &fire_delta_time,bool one_shot=true);
                         ~SEGSTimer();
     void                schedule();
     void                cancel();
@@ -24,4 +25,5 @@ public:
     void                reschedule(const ACE_Time_Value &new_time);
     EventProcessor *    target() const {return m_target;}
     void *              data() const {return m_data;}
+    void                schedule_repeatable(); 
 };

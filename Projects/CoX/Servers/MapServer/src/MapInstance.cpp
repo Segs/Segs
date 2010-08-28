@@ -9,6 +9,8 @@
 
 #include "MapInstance.h"
 #include "MapEvents.h"
+#include "MapClient.h"
+#include "SEGSTimer.h"
 using namespace std;
 MapInstance::MapInstance( const string &name ) :m_name(name)
 {
@@ -39,7 +41,6 @@ SEGSEvent * MapInstance::dispatch_sync( SEGSEvent * )
 }
 void MapInstance::on_scene_request(SceneRequest *ev)
 {
-    // TODO: Pull this up to CoXMapInstance level
     MapLink * lnk = (MapLink *)ev->src();
     SceneEvent *res=new SceneEvent;
     res->undos_PP=0;
@@ -60,15 +61,28 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     // so this method should call MapInstace->initial_update(MapClient *);
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl =(MapClient *)lnk->client_data();
+    EntitiesResponse *res=new EntitiesResponse(cl,false); // initial world update -> current state
+    m_clients.push_back(cl); // add to the list of clients interested in world updates
+    if(m_world_update_timer==0)
+        m_world_update_timer = new SEGSTimer(this,0,ACE_Time_Value(0,100),false); // repeatable timer
     (void)cl; //TODO: actually use the MapClient instance
     //    SEGSTimer tmr;
     // start map timer on this event
     //    start_entity_state_update();
+    lnk->putq(res);
 }
 //! Handle instance-wide timers
 void MapInstance::on_timeout(TimerEvent *ev)
 {
-    (void)ev;
+    MapClient *cl;
+    vector<MapClient *>::iterator iter=m_clients.begin();
+    vector<MapClient *>::iterator end=m_clients.end();
+    for(;iter!=end; ++iter)
+    {
+        cl=*iter;
+        EntitiesResponse *res=new EntitiesResponse(cl,true); // incremental world update = op 2
+        cl->link()->putq(res);
+    }
     // This is handling instance-wide timers
 
     // simulation_engine->tick()

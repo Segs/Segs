@@ -17,10 +17,12 @@
 
 class SceneRequest;
 class EntitiesRequest;
-
+class SEGSTimer;
 class MapInstance : public EventProcessor
 {
-    std::string m_name;
+    std::string     m_name;
+    SEGSTimer *     m_world_update_timer;
+    std::vector<MapClient *> m_clients;
 public:
     EntityManager	m_entities;
                     MapInstance(const std::string &name);

@@ -46,6 +46,7 @@ virtual                     ~MapClient(){};
         void                char_entity(Entity *ent){m_ent=ent;}
         Entity *            char_entity(){return m_ent;}
         void                reset();
+        MapLink *           link() {return static_cast<MapLink *>(m_link.link());}
         const std::string & name() const { return m_name; }
         void                name(const std::string &val) { m_name = val; }
         void                entity(Entity * val);

@@ -3,11 +3,15 @@
 typedef ACE_Thread_Timer_Queue_Adapter<ACE_Timer_List> Thread_Timer_Queue;
 typedef ACE_Singleton<Thread_Timer_Queue,ACE_Thread_Mutex> GlobalTimerQueue;
 
-SEGSTimer::SEGSTimer( EventProcessor *m_processor,void *data,const ACE_Time_Value &fire_delta_time ) 
+SEGSTimer::SEGSTimer( EventProcessor *m_processor,void *data,const ACE_Time_Value &fire_delta_time, bool one_shot) 
                     : 
-                    m_id(-1),m_data(data),m_target(m_processor),m_fire_delta_time(fire_delta_time)
+                    m_id(-1),m_data(data),m_target(m_processor),m_fire_delta_time(fire_delta_time),m_one_shot(one_shot)
 {
-    schedule();
+    if(m_one_shot)
+        schedule();
+    else
+        schedule_repeatable();
+
 }
 // TODO: Make sure there are no timeouts scheduled by this timer, maybe ACE takes care of that when timer is canceled ?
 SEGSTimer::~SEGSTimer()
@@ -31,7 +35,10 @@ void SEGSTimer::cancel()
 void SEGSTimer::reset()
 {
     cancel();
-    schedule();
+    if(m_one_shot)
+        schedule();
+    else
+        schedule_repeatable();
 }
 
 void SEGSTimer::reschedule( const ACE_Time_Value &new_time )
@@ -39,4 +46,10 @@ void SEGSTimer::reschedule( const ACE_Time_Value &new_time )
     cancel();
     m_fire_delta_time = new_time;
     schedule();
+}
+
+void SEGSTimer::schedule_repeatable()
+{
+    ACE_ASSERT(m_id==-1);
+    m_id = GlobalTimerQueue::instance()->schedule(m_target,this,ACE_OS::gettimeofday()+m_fire_delta_time,m_fire_delta_time);
 }

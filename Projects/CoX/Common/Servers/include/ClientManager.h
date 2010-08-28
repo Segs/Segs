@@ -74,7 +74,7 @@ public:
 		if(getByCookie(cook)) // already connected ?!
 		{
 			//
-			return ~0; // invalid cookie
+			return ~0U; // invalid cookie
 		}
 		exp = new CLIENT_CLASS;
 		exp->account_info().access_level(access_level);
