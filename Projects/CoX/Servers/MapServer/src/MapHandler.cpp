@@ -101,7 +101,7 @@ void MapCommHandler::on_expect_client( ExpectMapClient *ev )
 }
 void MapCommHandler::on_create_map_entity(NewEntity *ev)
 {
-    //TODO: At this point we should preprocess the NewEntity packet and let the proper CoXMapInstance handle the rest of processing
+    //TODO: At this point we should pre-process the NewEntity packet and let the proper CoXMapInstance handle the rest of processing
 
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl = m_clients.getExpectedByCookie(ev->m_cookie-2);
@@ -114,6 +114,7 @@ void MapCommHandler::on_create_map_entity(NewEntity *ev)
 //        start_idle_timer(cl);
         //cl->start_idle_timer();
     }
+    cl->current_map()->create_entity(cl->char_entity());
     lnk->client_data((void *)cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
 }

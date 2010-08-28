@@ -11,12 +11,16 @@
 #include "MapEvents.h"
 #include "MapClient.h"
 #include "SEGSTimer.h"
+#include "Entity.h"
 using namespace std;
 MapInstance::MapInstance( const string &name ) :m_name(name)
 {
 
 }
-
+void MapInstance::create_entity(Entity *ent)
+{
+    *((PlayerEntity *)m_entities.CreatePlayer())=*((PlayerEntity *)ent);
+}
 void MapInstance::dispatch( SEGSEvent *ev )
 {
     ACE_ASSERT(ev);

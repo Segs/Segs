@@ -28,6 +28,9 @@ public:
                     MapInstance(const std::string &name);
     void			dispatch(SEGSEvent *ev);
     SEGSEvent * 	dispatch_sync(SEGSEvent *ev);
+
+    void            create_entity(Entity* ent);
+
 protected:
     void            on_scene_request(SceneRequest *ev);
     void            on_entities_request(EntitiesRequest *ev);

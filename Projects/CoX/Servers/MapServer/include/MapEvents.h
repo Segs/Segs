@@ -148,7 +148,7 @@ public:
 class Shortcuts : public MapLinkEvent
 {
 public:
-    Shortcuts():MapLinkEvent(MapEventTypes::evShortcuts)
+    Shortcuts():MapLinkEvent(MapEventTypes::evShortcuts),m_num_shortcuts2(0)
     {
     }
     void serializeto(BitStream &bs) const

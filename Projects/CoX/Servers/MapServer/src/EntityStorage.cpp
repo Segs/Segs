@@ -42,6 +42,7 @@ void EntityManager::sendEntities( BitStream &tgt ) const
 	std::list<Entity *>::const_iterator iter = m_entlist.begin();
 	int last_idx;
 	int delta;// sending delta between entities idxs ->
+	ACE_ASSERT(m_entlist.size()>0 && "Attempting to send empty entity list, the client will hang!");
 	if(iter!=m_entlist.end())
 	{
 		pEnt = *iter;
