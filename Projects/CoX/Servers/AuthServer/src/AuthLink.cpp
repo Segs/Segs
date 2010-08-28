@@ -9,11 +9,12 @@ EventProcessor *AuthLink::g_target=0;
 AuthLink::AuthLink() :  m_client(0),
                         m_received_bytes_storage(0x1000,0,40),
                         m_unsent_bytes_storage(0x200,0,40),
-                        m_notifier(0, this, ACE_Event_Handler::WRITE_MASK), // notify 'this' object on WRITE events
+                        m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK), 
                         m_protocol_version(-1),
                         m_state(INITIAL)
 
 {
+	m_notifier.event_handler(this); // notify 'this' object on WRITE events
     m_buffer_mutex = new ACE_Thread_Mutex;
     ACE_ASSERT(g_target);
 }

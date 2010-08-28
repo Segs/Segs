@@ -68,9 +68,10 @@ public:
     typedef ACE_SOCK_Dgram stream_type;
     typedef ACE_INET_Addr addr_type;
 
-                ServerEndpoint(const ACE_INET_Addr &local_addr) :   m_notifier(0, this, ACE_Event_Handler::WRITE_MASK),
+                ServerEndpoint(const ACE_INET_Addr &local_addr) :   m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK),
                                                                     endpoint_ (local_addr)
                 {
+					m_notifier.event_handler(this);
                 }
 private:
 	// Part of the low level ace interface, not passed on to derived classes

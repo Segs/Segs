@@ -128,7 +128,7 @@ bool AdminDatabase::GetAccount( AccountInfo & client,const std::string &query )
 	struct tm creation;
 	client.m_acc_server_acc_id  = (u64)r.getColInt64("id");
 	client.m_login              = r.getColString("username");
-	client.m_access_level       = r.getColInt16("access_level");
+	client.m_access_level       = u8(r.getColInt16("access_level"));
 	creation                    = r.getTimestamp("creation_date");
 //	client->setCreationDate(creation);
 	return true;

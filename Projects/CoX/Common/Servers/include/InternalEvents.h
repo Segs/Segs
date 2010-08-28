@@ -18,7 +18,7 @@ public:
 class ExpectClient : public SEGSEvent
 {
 public:
-    ExpectClient(EventProcessor *evsrc,u64 client_id,u16 access_level,const ACE_INET_Addr &from) :
+    ExpectClient(EventProcessor *evsrc,u64 client_id,u8 access_level,const ACE_INET_Addr &from) :
                 SEGSEvent(Internal_EventTypes::evExpectClient,evsrc),
                 m_client_id(client_id),
                 m_access_level(access_level),
@@ -26,7 +26,7 @@ public:
     {
     }
     u64 m_client_id;
-    u16 m_access_level;
+    u8 m_access_level;
     ACE_INET_Addr m_from_addr;
 };
 class ExpectMapClient : public ExpectClient
@@ -35,7 +35,7 @@ public:
     ExpectMapClient(
             EventProcessor *evsrc,
             u64 client_id,
-            u16 access_level,
+            u8 access_level,
             const ACE_INET_Addr &from,
             const std::string &name,
             u32 map_id) : ExpectClient(evsrc,client_id,access_level,from),m_character_name(name),m_map_id(map_id)

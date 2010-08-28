@@ -34,8 +34,9 @@ static  EventProcessor *g_link_target;       //! All outgoing events are posted 
 static  EventProcessor *g_target;			//! All incoming events are posted here
 
 public:
-                    CRUDLink() :  m_notifier(0, this, ACE_Event_Handler::WRITE_MASK)
+                    CRUDLink() :  m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK)
                     {
+						m_notifier.event_handler(this);
                         ACE_ASSERT(g_target);
                         m_protocol.setCodec(new PacketCodecNull);
                     }
