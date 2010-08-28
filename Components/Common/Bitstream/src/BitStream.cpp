@@ -16,7 +16,7 @@ Function:	 BitStream
 Description: BitStream's main constructor, initializes various internal
 values and buffers
 ************************************************************************/
-BitStream::BitStream(u32 size) : GrowingBuffer(0xFFFFFFFF,7,size)
+BitStream::BitStream(size_t size) : GrowingBuffer(0xFFFFFFFF,7,size)
 {
 	m_byteAligned    = false;
 	Reset();
@@ -37,7 +37,7 @@ BitStream::BitStream(const BitStream &bs) : GrowingBuffer(bs)
 	m_write_bit_off  = bs.m_write_bit_off;
 	m_safe_area = 7;
 }
-BitStream::BitStream(u8 *arr,u32 size) : GrowingBuffer(arr,size,false)
+BitStream::BitStream(u8 *arr,size_t size) : GrowingBuffer(arr,size,false)
 {
 	m_byteAligned	= false;
 	m_read_bit_off  = 0;
@@ -183,9 +183,9 @@ void BitStream::StoreBitArrayWithDebugInfo(const u8 *array,u32 nBits)
 	StoreBitArray(array,nBits);
 }
 
-void BitStream::StoreBitArray(const u8 *src,u32 nBits)
+void BitStream::StoreBitArray(const u8 *src,size_t nBits)
 {
-	u32 nBytes = BITS_TO_BYTES(nBits);
+	size_t nBytes = BITS_TO_BYTES(nBits);
 	ACE_ASSERT(src);
 	ByteAlign();
 	PutBytes(src,nBytes);
@@ -363,7 +363,7 @@ Description: Retrieves a client-specified "array" of bits.  The main
 void BitStream::GetBitArray(u8 *tgt, size_t nBits)
 {
 	ByteAlign(true,false);
-	u32 nBytes(nBits>>3);
+	size_t nBytes(nBits>>3);
 	GetBytes(tgt,nBytes);
 }
 
@@ -543,11 +543,11 @@ BitStream::BitStream(u8* arr,u32 bit_size)
 }*/
 void BitStream::CompressAndStoreString(const char *str)
 {
-	u32 decompLen = strlen(str) + 1;
+	size_t decompLen = strlen(str) + 1;
 
-	u32 len = ((u32)(decompLen * 1.0125)) + 12;
+	uLongf len = (decompLen * 1.0125) + 12;
 	u8 *buf = new u8[len];
-	compress2(buf, (uLongf *)&len, (const Bytef *)str, decompLen, 5);
+	compress2(buf, &len, (const Bytef *)str, decompLen, 5);
 	StorePackedBits(1, len);		//	Store compressed len
 	StorePackedBits(1, decompLen);	//	Store decompressed len
 	StoreBitArray(buf,len << 3);	//	Store compressed string

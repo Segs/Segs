@@ -53,7 +53,7 @@ void Character::serializefrom( BitStream &src)
     m_unkn1 =src.GetFloat();
     m_unkn2 =src.GetFloat();
     src.GetString(m_mapName);
-    u32 unkn3 = src.GetPackedBits(1);
+    /*u32 unkn3 =*/ src.GetPackedBits(1);
     //u32 unkn4 = src.GetBits(32);
 }
 void Character::serializeto( BitStream &tgt) const
@@ -77,7 +77,7 @@ void Character::setName( const std::string &val )
         m_name = "EMPTY";
 }
 
-bool Character::serializeFromDB( u64 user_id,u32 slot_index )
+bool Character::serializeFromDB( u64 /*user_id*/,u32 /*slot_index*/ )
 {
     return false;
 }
@@ -131,7 +131,7 @@ void Character::serialize_costumes( BitStream &bs,bool all_costumes ) const
         if(m_current_costume_set)
         {
             bs.StoreBits(32,m_current_costume_idx);
-            bs.StoreBits(32,m_costumes.size());
+            bs.StoreBits(32,u32(m_costumes.size()));
         }
         bs.StoreBits(1,m_multiple_costumes);
         if(m_multiple_costumes)

@@ -65,7 +65,7 @@ class TransformStruct
 {
 public:
 	TransformStruct(const Vector3 &a,const Vector3 &b,const Vector3 &c,bool set1,bool set2,bool set3) :
-	  v1(a),v2(b),v3(c),v1_set(set1),v2_set(set3),v3_set(set3)
+	  v1(a),v2(b),v3(c),v1_set(set1),v2_set(set2),v3_set(set3)
 	{
 	}
 	TransformStruct() {v1_set=v2_set=v3_set=false;}

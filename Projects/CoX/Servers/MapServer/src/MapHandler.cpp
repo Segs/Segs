@@ -151,7 +151,7 @@ void MapCommHandler::on_timeout( TimerEvent *ev )
     MapClient *cl =(MapClient *)lnk->client_data();
 }
 
-SEGSEvent * MapCommHandler::dispatch_sync( SEGSEvent *ev )
+SEGSEvent * MapCommHandler::dispatch_sync( SEGSEvent * )
 {
     ACE_ASSERT(!"NO SYNC HANDLING");
     return 0;

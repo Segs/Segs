@@ -102,14 +102,14 @@ bool _AdminServer::fill_account_info( AccountInfo &client )
 	return false;
 
 }
-bool _AdminServer::Login(const AccountInfo &client,const ACE_INET_Addr &client_addr)
+bool _AdminServer::Login(const AccountInfo &,const ACE_INET_Addr &)
 {
 	// Here we should log to the Db, a Login event for that client
 	//client->setState(AuthClient::LOGGED_IN); modifying this should be done in AuthServer
 	return true;
 }
 
-bool _AdminServer::Logout(const AccountInfo &client) const
+bool _AdminServer::Logout(const AccountInfo &) const
 {
 	// Here we should log to the Db, a Logout event for that client
 	//if(client)

@@ -196,7 +196,7 @@ void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
         }
     }
 }
-CrudP_Packet *CrudP_Protocol::mergeSiblings(int id)
+CrudP_Packet *CrudP_Protocol::mergeSiblings(u32 id)
 {
 	pPacketStorage &storage=sibling_map[id];
 	ACE_ASSERT(storage.size()>=1); // wtf ??
@@ -418,7 +418,7 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
         res->StoreBitArray((u8*)p->GetStream()->read_ptr(),p->GetStream()->GetReadableBits());
         res->ResetReading();
         u32 *head =  (u32 *)res->read_ptr();
-        head[0] = res->GetReadableBits();
+        head[0] = u32(res->GetReadableBits());
         res->ByteAlign();
         size_t length =res->GetReadableDataSize();
         size_t fixedlen=((length + 3) & ~7) + 4;

@@ -11,7 +11,7 @@ class EventProcessor;
 class SEGSTimer
 {
 protected:
-    int                 m_id;
+    long                m_id;
     void *              m_data;
     EventProcessor *    m_target;
     ACE_Time_Value      m_fire_delta_time;

@@ -12,20 +12,21 @@
 #ifdef WIN32
 #include "xmmintrin.h"
 #else
-#define _copysign(x,y) ((x)* ((y<0.0)? -1.0 : 1.0))
+#define _copysign(x,y) ((x)* ((y<0.0f)? -1.0f : 1.0f))
 #endif
 #include "Entity.h"
 #include <limits>
 #include <sstream>
+static const float F_PI = float(M_PI); // to prevent double <-> float conversion warnings
 float AngleDequantize(int value,int numb_bits)
 {
     int max_val = 1<<numb_bits;
-    float v = M_PI*((float)value/max_val) - M_PI/2;
-    if(v<(-M_PI/2))
+    float v = F_PI*(float(value)/max_val) - F_PI/2;
+    if(v<(-F_PI/2))
         return -1.0f;
-    else if(v>(M_PI/2))
+    else if(v>(F_PI/2))
         return 1.0f;
-    else if(v<0.00001)
+    else if(v<0.00001f)
         return 0.0f;
     return sinf(v);
 }
@@ -33,10 +34,10 @@ u32 AngleQuantize(float value,int numb_bits)
 {
     int max_val = 1<<numb_bits;
     float v = fabs(value)>1.0f ? _copysign(1.0f,value) : value ;
-    v  = (asinf(v)+M_PI)/(2*M_PI); // maps -1..1 to 0..1
+    v  = (asinf(v)+F_PI)/(2*F_PI); // maps -1..1 to 0..1
     v *= max_val;
 //	assert(v<=max_val);
-    return (u32)v;
+    return u32(v);
 }
 int Entity::getOrientation(BitStream &bs)
 {
@@ -68,7 +69,7 @@ void Entity::storeOrientation(BitStream &bs) const
 {
     // if(updateNeeded())
     u8 updates;
-    updates = ((int)update_rot(0)) | (((int)update_rot(1))<<1) | (((int)update_rot(2))<<2);
+    updates = ((u8)update_rot(0)) | (((u8)update_rot(1))<<1) | (((u8)update_rot(2))<<2);
     storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
     //NormalizeQuaternion(pEnt->qrot)
     //
@@ -89,7 +90,7 @@ void Entity::storePosition(BitStream &bs) const
 {
 //	float x = pos.vals.x;
     u32 packed;
-    u32 diff=0; // changed bits are '1'
+    //u32 diff=0; // changed bits are '1'
     bs.StoreBits(3,7); // frank -> 7,-60.5,0,180
     for(int i=0; i<3; i++)
     {
@@ -504,10 +505,10 @@ void Avatar::DumpBuildInfo()
 
 void PlayerEntity::serializefrom_newchar( BitStream &src )
 {
-    int val = src.GetPackedBits(1); //2
+    /*int val =*/ src.GetPackedBits(1); //2
     m_char.GetCharBuildInfo(src);
     m_char.recv_initial_costume(src);
-    int t = src.GetBits(1); // The -> 1
+    /*int t =*/ src.GetBits(1); // The -> 1
     src.GetString(m_battle_cry);
     src.GetString(m_character_description);
 }
@@ -589,8 +590,8 @@ void Avatar::sendDockMode(BitStream &bs) const
 }
 void Avatar::sendChatSettings(BitStream &bs) const
 {
-    int i;
-    bs.StoreFloat(0.8); // window transparency ?
+    //int i;
+    bs.StoreFloat(0.8f); // window transparency ?
     bs.StorePackedBits(1,1);
     bs.StorePackedBits(1,2);
     bs.StorePackedBits(1,3);
@@ -732,12 +733,12 @@ void sendPowers(BitStream &bs)
     bs.StorePackedBits(4,0); // count
     for(int i=0; i<0; i++)
     {
-        size_t num_powers=0;
+        u32 num_powers=0;
         bs.StorePackedBits(5,0);
-        bs.StorePackedBits(4,num_powers);
-        for(size_t idx=0; idx<num_powers; ++idx)
+        bs.StorePackedBits(4,u32(num_powers));
+        for(u32 idx=0; idx<num_powers; ++idx)
         {
-            size_t num_somethings=0;
+            u32 num_somethings=0;
             sendPower(bs,0,0,0);
 
             bs.StorePackedBits(5,0);
@@ -755,11 +756,11 @@ void sendPowers(BitStream &bs)
 }
 void sendPowers_main_tray(BitStream &bs)
 {
-    size_t max_num_cols=3;
-    size_t max_num_rows=1;
+    u32 max_num_cols=3;
+    u32 max_num_rows=1;
     bs.StorePackedBits(3,max_num_cols); // count
     bs.StorePackedBits(3,max_num_rows); // count
-    for(int i=0; i<max_num_cols; i++)
+    for(u32 i=0; i<max_num_cols; i++)
     {
         for(size_t idx=0; idx<max_num_rows; ++idx)
         {
@@ -775,7 +776,7 @@ void sendPowers_main_tray(BitStream &bs)
 
 void sendBoosts(BitStream &bs)
 {
-    size_t num_boosts=0;
+    u32 num_boosts=0;
     bs.StorePackedBits(5,num_boosts); // count
     for(size_t idx=0; idx<num_boosts; ++idx)
     {
@@ -813,7 +814,7 @@ void Avatar::send_character(BitStream &bs) const
 */
 void Avatar::sendBuffs(BitStream &bs) const
 {
-    size_t num_buffs=0;
+    u32 num_buffs=0;
     bs.StorePackedBits(5,num_buffs);
     for(size_t idx=0; idx<num_buffs; ++idx)
     {

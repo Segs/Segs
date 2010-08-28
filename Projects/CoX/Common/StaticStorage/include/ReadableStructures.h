@@ -42,8 +42,8 @@ struct MiscField : public Field
     MiscField(const std::string &name,u32 type,u32 offset,u32 param,ClassSchema *sub) : Field(name,type,offset,param,sub)
     {}
 protected:
-    bool do_read(u8 type,BinReadable &tgt,Store *s) const {ACE_ASSERT("Misc field read attempted"); return false;}
-    bool do_read_nested(BinReadable &tgt,Store *s) const {ACE_ASSERT("Nested read attempt on non nested value!"); return false;}
+    bool do_read(u8 ,BinReadable &,Store *) const {ACE_ASSERT("Misc field read attempted"); return false;}
+    bool do_read_nested(BinReadable &,Store *) const {ACE_ASSERT("Nested read attempt on non nested value!"); return false;}
 
 };
 struct NonNestableField : public Field
@@ -52,7 +52,7 @@ struct NonNestableField : public Field
         Field(name,type,offset,param,sub)
     {}
 protected:
-    virtual bool do_read_nested(BinReadable &tgt,Store *s) const {ACE_ASSERT("Nested read attempt on non nested value!");return false;}
+    virtual bool do_read_nested(BinReadable &,Store *) const {ACE_ASSERT("Nested read attempt on non nested value!");return false;}
     virtual bool do_read(u8 type,BinReadable &tgt,Store *s) const=0;
 };
 template<class T>
@@ -65,7 +65,7 @@ struct TemplateField : public NonNestableField
     {}
 protected:
     bool do_read(u8 type,BinReadable &tgt,Store *s) const;
-    bool do_read_nested(BinReadable &tgt,Store *s) const {ACE_ASSERT("Nested read attempt on non nested value!"); return false;}
+    bool do_read_nested(BinReadable &,Store *) const {ACE_ASSERT("Nested read attempt on non nested value!"); return false;}
 };
 template<class T>
 struct NestedTemplateField : public Field
@@ -76,7 +76,7 @@ struct NestedTemplateField : public Field
         pval(val)
     {}
 protected:
-    bool do_read(u8 type,BinReadable &tgt,Store *s) const {ACE_ASSERT("Plain field read attempted on nested field."); return false;}
+    bool do_read(u8 ,BinReadable &,Store *) const {ACE_ASSERT("Plain field read attempted on nested field."); return false;}
     bool do_read_nested(BinReadable &tgt,Store *s) const;
 
 };

@@ -41,12 +41,12 @@ public:
                     }
                     ~CRUDLink(void){};
 
-	int			    open(void * = 0); //!< Called when we start to service a new connection, here we tell reactor to wake us when queue() is not empty.
+    int			    open(void * = 0); //!< Called when we start to service a new connection, here we tell reactor to wake us when queue() is not empty.
     CrudP_Protocol *get_proto() {return &m_protocol;}
     int             handle_output( ACE_HANDLE = ACE_INVALID_HANDLE );
     void            received_block(BitStream &bytes);
     void            dispatch(SEGSEvent *ev);
-	stream_type &   peer() {return peer_;}
+    stream_type &   peer() {return peer_;}
     addr_type &     peer_addr() {return m_peer_addr;}
     void *          client_data() {return m_link_data;}
     void            client_data(void *d) {m_link_data=d;}
@@ -60,7 +60,7 @@ protected:
                         ACE_ASSERT(!"No sync events known");
                         return 0;
                     }
-    int             handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
+    int             handle_close(ACE_HANDLE , ACE_Reactor_Mask )
                     {
                         return 0;
                     }
@@ -71,7 +71,7 @@ protected:
                         m_last_activity = ACE_OS::gettimeofday();
                     }
     CrudP_Protocol  m_protocol;
-	stream_type     peer_;  /// Maintain connection with client.
+    stream_type     peer_;  /// Maintain connection with client.
     addr_type       m_peer_addr;
     void *          m_link_data;
 };

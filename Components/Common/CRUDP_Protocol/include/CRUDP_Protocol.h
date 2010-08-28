@@ -36,7 +36,7 @@ private:
 		hmSibStorage		sibling_map; // we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
 		ACE_Thread_Mutex	m_packets_mutex;
 
-		CrudP_Packet *		mergeSiblings(int id);
+		CrudP_Packet *		mergeSiblings(u32 id);
 		bool				insert_sibling(CrudP_Packet *pkt);
 static inline bool			PacketSeqCompare(const CrudP_Packet *a,const CrudP_Packet *b);
 static inline bool			PacketSibCompare(const CrudP_Packet *a,const CrudP_Packet *b);

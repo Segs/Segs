@@ -23,7 +23,7 @@ public:
 	// Part 2 : Head
 	// Part 3 : Gloves
 	// Part 4 : Boots
-	CostumePart(bool full_part,size_t part_type=0):m_type(part_type),m_full_part(full_part)
+	CostumePart(bool full_part,u8 part_type=0):m_type(part_type),m_full_part(full_part)
 	{
 		m_colors[0]=m_colors[1];
 	}
@@ -36,7 +36,7 @@ public:
 	void serializeto(BitStream &bs) const;
 	void serializefrom(BitStream &bs);
 	void serializeto_charsel(BitStream &bs) const;
-	int m_type; // arms/legs etc..
+	u8 m_type; // arms/legs etc..
 	std::string name_0,name_1,name_2,name_3,name_4,name_5,name_6;
 	bool m_full_part;
 	u32 m_colors[2];

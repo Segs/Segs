@@ -21,7 +21,7 @@ AdminDatabase::AdminDatabase()
 }
 int AdminDatabase::GetAccounts(void) const
 {
-    return 0;
+	return 0;
 }
 
 bool AdminDatabase::AddAccount(const char *username, const char *password,u16 access_level) // Add account and password to the database server
@@ -134,7 +134,7 @@ bool AdminDatabase::GetAccount( AccountInfo & client,const std::string &query )
 	return true;
 }
 
-int AdminDatabase::RemoveAccountByID( u64 id )
+int AdminDatabase::RemoveAccountByID( u64 )
 {
 	return 0;
 }

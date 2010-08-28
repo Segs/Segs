@@ -124,7 +124,9 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-
+        //TODO: check this
+        bs.GetPackedBits(1);
+        bs.GetPackedBits(1);
     }
     void serializeto(BitStream &bs) const
     {

@@ -13,7 +13,7 @@
 #include "Character.h"
 #include "Costume.h"
 // SpecHash<std::string,val>
-// 
+//
 // get hash index of given key
 u32 get_hash_idx(const std::string &key)
 {
@@ -22,7 +22,7 @@ u32 get_hash_idx(const std::string &key)
 
 void UpdateServer::dependent_dump()
 {
-	ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IGame:pktCS_ServerUpdate\n%I{\n")));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IGame:pktCS_ServerUpdate\n%I{\n")));
 
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    buildDate %08d;\n"),m_build_date));
         //		u8 clientInfo[16];
@@ -82,7 +82,7 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
 
 void CharacterSlots::serializefrom( BitStream &src )
 {
-    
+
 }
 
 void UpdateCharacter::serializeto( BitStream &bs ) const
@@ -102,7 +102,7 @@ void CharacterResponse::serializeto( BitStream &bs ) const
     CharacterCostume *c=0;
     if(m_client->getCharacter(m_index)->getName().compare("EMPTY")!=0) // actual character was read from db
         c=static_cast<CharacterCostume *>(m_client->getCharacter(m_index)->getCurrentCostume());
-    bs.StorePackedBits(1,6); // opcode 
+    bs.StorePackedBits(1,6); // opcode
 
     if(c)
     {
@@ -118,6 +118,7 @@ void CharacterResponse::serializeto( BitStream &bs ) const
 
 void CharacterResponse::serializefrom( BitStream &bs )
 {
+    bs;
     ACE_ASSERT(!"TODO");
 }
 

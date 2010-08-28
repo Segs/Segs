@@ -48,14 +48,14 @@ public:
 	Description: BitStream's main constructor, initializes various internal
 				 values and buffers
 	************************************************************************/
-	BitStream(u32 size);
+	BitStream(size_t size);
 
 	/************************************************************************
 	Function:	 BitStream
 	Description: BitStream's constructor, initializes various internal
 				 values and buffers
 	************************************************************************/
-	BitStream(u8 *from,u32 bitsize);
+	BitStream(u8 *from,size_t bitsize);
 
 	/************************************************************************
 	Function:	 BitStream (copy constructor)
@@ -118,7 +118,7 @@ public:
 				 main difference between StoreBitArray and StoreBits, is
 				 that StoreBitArray can accept more than 32 bits at a time
 	************************************************************************/
-	void StoreBitArray(const u8 *array,u32 nBits);
+	void StoreBitArray(const u8 *array,size_t nBits);
 	void StoreBitArrayWithDebugInfo(const u8 *array,u32 nBits);
 
 	/************************************************************************

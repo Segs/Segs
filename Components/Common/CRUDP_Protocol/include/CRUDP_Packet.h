@@ -35,7 +35,7 @@ public:
 
 	f32  GetFloat();
 	void StoreBits(u32 nBits, u32 dataBits)		  {		m_stream->StoreBits(nBits, dataBits);		};
-	void StoreBitArray(u8 *array, u32 nBits)	  {		m_stream->StoreBitArray(array,nBits);		};
+	void StoreBitArray(u8 *array, size_t nBits)	  {		m_stream->StoreBitArray(array,nBits);		};
 	void StorePackedBits(u32 nBits, u32 dataBits) {		m_stream->StorePackedBits(nBits, dataBits); };
 	void StoreString(const char *str)			  {		m_stream->StoreString(str);					};
 	void CompressAndStoreString(const char *str);

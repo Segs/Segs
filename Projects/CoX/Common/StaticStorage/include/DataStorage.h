@@ -20,7 +20,7 @@ class BinReadable;
 class CrcVisitor
 {
 public:
-    void digest(const char *,size_t s)
+    void digest(const char *,size_t)
     {
 
     }
