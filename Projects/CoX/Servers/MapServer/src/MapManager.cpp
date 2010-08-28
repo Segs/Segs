@@ -17,7 +17,7 @@ MapManger::MapManger( ) : m_max_instances(2)
 bool MapManger::load_templates( const std::string &template_directory )
 {
     //TODO: actually implement this
-    m_templates[1] = new MapTemplate("tutorial.bin");
+    m_templates[0] = new MapTemplate("tutorial.bin");
     return true;
 }
 //! \brief Retrieves template specified by it's id

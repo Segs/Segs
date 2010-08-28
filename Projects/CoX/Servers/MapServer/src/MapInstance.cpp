@@ -64,7 +64,9 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     EntitiesResponse *res=new EntitiesResponse(cl,false); // initial world update -> current state
     m_clients.push_back(cl); // add to the list of clients interested in world updates
     if(m_world_update_timer==0)
+    {
         m_world_update_timer = new SEGSTimer(this,0,ACE_Time_Value(0,100),false); // repeatable timer
+    }
     (void)cl; //TODO: actually use the MapClient instance
     //    SEGSTimer tmr;
     // start map timer on this event

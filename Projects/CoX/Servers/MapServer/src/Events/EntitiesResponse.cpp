@@ -1,4 +1,5 @@
 #include <ace/Assert.h>
+#include "Entity.h"
 #include "Events/EntitiesResponse.h"
 #include "MapEvents.h"
 #include "MapClient.h"

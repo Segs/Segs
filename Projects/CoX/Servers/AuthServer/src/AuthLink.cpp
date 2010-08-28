@@ -23,6 +23,12 @@ AuthLink::~AuthLink( void )
     delete m_buffer_mutex;
     m_client=0;
 }
+void AuthLink::init_crypto(int vers,u32 seed)
+{
+    ACE_Guard<ACE_Thread_Mutex> guard_buffer(*m_buffer_mutex); // Prevent modifying the buffer while the key is beeing changed
+    set_protocol_version(vers);
+    m_codec.SetXorKey(seed);
+}
 /**
   \brief Convert opcode byte to corresponding packet type
   \arg opcode packet opcode byte
@@ -71,7 +77,7 @@ SEGSEvent * AuthLink::bytes_to_event()
 		}
 		// this might be a live packet in there
 		tmp = (u8 *)&(m_received_bytes_storage.GetBuffer()[2]);
-
+        
 		m_codec.XorDecodeBuf(tmp, packet_size+1); // Let's see what's in those murky waters
 		eAuthPacketType recv_type = OpcodeToType(tmp[0]);
 		AuthLinkEvent *evt = AuthEventFactory::EventForType(recv_type); // Crow's nest, report !

@@ -26,6 +26,7 @@ class AuthClient;
 // Each AuthLink serves as a Client's connection context
 class AuthLink : public EventProcessor
 {
+    
     typedef EventProcessor super;
     friend class AuthHandler; // auth handler changes our m_state variable
     enum eState
@@ -55,7 +56,7 @@ public:
 	addr_type &     peer_addr() {return m_peer_addr;}
 	AuthClient *    client() {return m_client;}
 	void            client(AuthClient *c) {m_client=c;}
-	void            init_crypto(int vers,u32 seed) {set_protocol_version(vers); m_codec.SetXorKey(seed);}
+	void            init_crypto(int vers,u32 seed);
 protected:
 	AuthClient *	m_client;
 	AuthPacketCodec m_codec;

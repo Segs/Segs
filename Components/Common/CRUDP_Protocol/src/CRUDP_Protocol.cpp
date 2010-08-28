@@ -286,7 +286,6 @@ void CrudP_Protocol::PacketSibDestroyer(const std::pair<int,pPacketStorage> &a)
 void CrudP_Protocol::PacketAck(u32 id)
 {
 	//TODO: sort + binary search for id
-	ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
 	ipPacketStorage iter = unsent_packets.begin();
 	while(iter!=unsent_packets.end())
 	{

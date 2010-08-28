@@ -7,9 +7,11 @@
  * $Id$
  */
 #pragma once
+#include <vector>
 #include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>
-#include "Entity.h"
+#include "BitStream.h"
+
 class MapClient;
 class NetCommand
 {
