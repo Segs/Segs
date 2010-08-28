@@ -15,7 +15,7 @@ COMPARE_FUNCTOR CoXGenericHashMap<KEY, VALUE,COMPARE_FUNCTOR>::comp;
 template<>
 u32 JenkinsHash<std::string>::operator()(const std::string &val,u32 prev_val) const
 {
-    return hash((const u8 *)val.c_str(),val.size(),prev_val);
+    return hash((const u8 *)val.c_str(),u32(val.size()),prev_val);
 }
 
 
@@ -26,7 +26,7 @@ JenkinsHash<KEY> CoxHashCommon<KEY, VALUE>::hash;
 template<class VALUE>
 u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &key_tgt, bool a5) const
 {
-    int HashValue;
+    u32 HashValue;
     int hash_index;
     u32 res;
     std::string tmp_key;
@@ -42,7 +42,7 @@ u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &k
     while ( 1 )
     {
         HashValue = this->hash(tmp_key,HashValue);
-        hash_index = HashValue & (this->m_storage.size() - 1);
+        hash_index = HashValue & (int(this->m_storage.size()) - 1);
         if ( !HashValue )
         {
             //("Invalid HashValue %i generated while looking for index of key \"%s\"\n", 0, key);
@@ -78,7 +78,7 @@ u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &k
     return res;
 }
 template<class KEY,class VALUE,class COMPARE_FUNCTOR>
-u32 CoXGenericHashMap<KEY, VALUE, COMPARE_FUNCTOR>::find_index( const KEY &needle,u32 &entry_idx,u32 &prev_val_out,bool a5 ) const
+u32 CoXGenericHashMap<KEY, VALUE, COMPARE_FUNCTOR>::find_index( const KEY &needle,u32 &entry_idx,u32 &prev_val_out,bool /*a5*/ ) const
 {
     u32 result;
     u32 prev_val;

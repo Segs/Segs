@@ -27,7 +27,7 @@ public:
 		buf.uPut(m_cookie);
 		buf.uPut(m_unk2);
 	}
-    void init(EventProcessor *ev_src,u32 cookie,u32 dbcookie) {m_cookie=cookie; db_server_cookie=dbcookie;m_unk2=0;}
+    void init(EventProcessor *ev_src,u32 cookie,u32 dbcookie) {m_cookie=cookie; db_server_cookie=dbcookie;m_unk2=0; m_event_source=ev_src;}
     u32 db_server_cookie;
 	u32 m_cookie;
 	u8 m_unk2;

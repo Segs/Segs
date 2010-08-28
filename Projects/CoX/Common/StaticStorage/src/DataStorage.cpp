@@ -9,7 +9,7 @@
 #include <ace/OS.h>
 #include "DataStorage.h"
 #include "ReadableStructures.h"
-bool BinStore::check_bin_version_and_crc(const ClassSchema *s)
+bool BinStore::check_bin_version_and_crc(const ClassSchema *)
 {
     std::string tgt;
     u32 crc_from_file;
@@ -70,7 +70,7 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
     int sz;
     read_internal(sz);
 
-    size_t read_start = int(m_str.tellg());
+    std::ifstream::pos_type read_start = m_str.tellg();
     if(hdr.compare("Files1")||sz<=0)
         return false;
     int num_data_blocks;
@@ -82,9 +82,9 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
         read_internal(fe.date);
         m_entries.push_back(fe);
     }
-    size_t read_end = size_t(m_str.tellg());
+    std::ifstream::pos_type read_end = m_str.tellg();
     m_str.seekg(0,std::ios_base::end);
-    m_file_sizes.push_back(size_t(m_str.tellg())-read_end);
+    m_file_sizes.push_back(m_str.tellg()-read_end);
     m_str.seekg(read_end,std::ios_base::beg);
 
     return (sz==(read_end-read_start));
@@ -153,7 +153,7 @@ u32 BinStore::read_header( std::string &name,size_t maxlen )
     name = read_pstr(maxlen);
     u32 res;
     if(4!=read_internal(res) || res==0)
-        return ~0;
+        return ~0U;
     return res;
 }
 
@@ -177,7 +177,7 @@ bool BinStore::nesting_name( std::string &name )
     return true;
 }
 
-void BinStore::nest_in( const Field *f )
+void BinStore::nest_in( const Field * )
 {
 
 }
@@ -191,7 +191,7 @@ void BinStore::nest_out( const Field * )
 
 void BinStore::fixup()
 {
-    size_t nonmult4 = ((int(m_str.tellg()) + 3) & ~3) - int(m_str.tellg());
+    std::ifstream::pos_type nonmult4 = ((m_str.tellg() + std::ifstream::pos_type(3)) & ~3) - m_str.tellg();
     if(nonmult4)
     {
         m_str.seekg(nonmult4,std::ios_base::cur);

@@ -104,7 +104,7 @@ public:
     virtual u32 find_index(const KEY &key, u32 &index_tgt, u32 &key_tgt, bool a5) const=0;
     virtual u32 next_size(u32 sz)=0;
 
-    void resize(size_t new_size)
+    void resize(u32 new_size)
     {
         u32 entry_idx;
         u32 prev_val;
@@ -154,7 +154,7 @@ public:
                 return &m_storage[idx].stored_key;
         return 0;
     }
-    void init(size_t sz,u32 flags)
+    void init(u32 sz,u32 flags)
     {
         m_flags=flags;
         in_use=0;
@@ -177,7 +177,7 @@ public:
     {
         if(sz==0)
             return 0;
-        u32 bit=1<<31;
+        u32 bit=1U<<31;
         int highest_bit;
         for(highest_bit=31; highest_bit>=0; --highest_bit)
         {
@@ -220,7 +220,7 @@ public:
                 break;
         return prime_sizes[idx];
     }
-    void init(size_t sz)
+    void init(u32 sz)
     {
         if(sz>0)
         {

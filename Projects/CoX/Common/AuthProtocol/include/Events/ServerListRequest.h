@@ -4,7 +4,7 @@
 class ServerListRequest : public AuthLinkEvent
 {
 public:
-	ServerListRequest() : AuthLinkEvent(evServerListRequest),unk1(-1)
+	ServerListRequest() : AuthLinkEvent(evServerListRequest),unk1(0xFF)
 	{}
 	void serializeto(GrowingBuffer &buf) const
 	{

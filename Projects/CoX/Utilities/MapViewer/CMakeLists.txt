@@ -1,4 +1,4 @@
-# $Id: CMakeLists.txt 216 2009-12-06 19:37:58Z nemerle $
+# $Id$
 FIND_PACKAGE(ACE REQUIRED)
 #SET(OpenSceneGraph_DEBUG TRUE)
 FIND_PACKAGE(OpenSceneGraph REQUIRED osgUtil osgText osgViewer)

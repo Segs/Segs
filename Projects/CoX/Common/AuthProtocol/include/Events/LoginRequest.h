@@ -6,7 +6,7 @@ class LoginRequest : public AuthLinkEvent
 public:
 	LoginRequest() : AuthLinkEvent(evLogin),unkval1(0),unkval2(0)
 	{}
-	void serializeto(GrowingBuffer &buf) const
+	void serializeto(GrowingBuffer &) const
 	{
 		ACE_ASSERT(!"Not implemented");
 	}

@@ -11,7 +11,6 @@ class ViewQOSG;
 namespace Ui {
     class MainWindow;
 }
-class MapModel;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

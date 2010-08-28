@@ -26,7 +26,7 @@ struct TreeStore : public BinReadable
     }
     virtual size_t idx_of_child(TreeStore *) const
     {
-        return -1;
+        return ~0UL;
     }
     virtual std::string to_string() const
     {
@@ -208,7 +208,7 @@ struct SceneStorage : public TreeStore
         vDef::iterator itr=std::find(m_defs.begin(),m_defs.end(),child);
         if(itr!=m_defs.end())
             return itr-m_defs.begin();
-        return -1;
+        return ~0UL;
     }
     virtual std::string to_string() const
     {
