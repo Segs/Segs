@@ -15,6 +15,7 @@
 #include "MapManager.h"
 #include "MapTemplate.h"
 #include "Entity.h"
+#include "SEGSTimer.h"
 
 MapCommHandler::MapCommHandler()
 {

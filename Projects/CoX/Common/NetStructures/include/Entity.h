@@ -142,8 +142,9 @@ virtual void			        serializefrom(BitStream &){};
         void			        sendCharacterStats(BitStream &bs) const;
         void			        sendTargetUpdate(BitStream &bs) const;
         void                    sendWhichSideOfTheForce(BitStream &bs) const;
-        void                    sendBuffs(BitStream &bs) const;
+        void                    sendBuffsConditional(BitStream &bs) const;
         const std::string &     name() {return m_char.getName();}
+        void                    sendBuffs(BitStream &bs) const;
 };
 class MobEntity : public Entity
 {
@@ -161,6 +162,6 @@ public:
                             PlayerEntity();
 virtual						~PlayerEntity(){}
         void				serializefrom_newchar(BitStream &src);
-
-
+        void                sendCostumes( BitStream &bs ) const;
+        void                serialize_full( BitStream &tgt );
 };

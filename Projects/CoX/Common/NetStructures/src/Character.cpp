@@ -68,6 +68,23 @@ void Character::serializeto( BitStream &tgt) const
     tgt.StorePackedBits(1,m_unkn3);
     //tgt.StorePackedBits(32,m_unkn4); // if != 0 UpdateCharacter is called
 }
+void Character::sendWindow(BitStream &bs) const
+{
+    bs.StorePackedBits(1,0);
+    bs.StorePackedBits(1,0);
+    bs.StorePackedBits(1,0); // visible ?
+    bs.StorePackedBits(1,0);
+    bs.StorePackedBits(1,0);
+    bs.StorePackedBits(1,0);
+    bool a=false;
+    bs.StoreBits(1,a);
+    if(a)
+    {
+        bs.StorePackedBits(1,0);
+        bs.StorePackedBits(1,0);
+    }
+    //storeFloatConditional(bs,1.0f);
+}
 
 void Character::setName( const std::string &val )
 {
@@ -75,6 +92,14 @@ void Character::setName( const std::string &val )
         m_name = val;
     else
         m_name = "EMPTY";
+}
+void Character::sendTray(BitStream &bs)
+{
+    m_trays.serializeto(bs);
+}
+void Character::sendTrayMode(BitStream &bs) const
+{
+    bs.StoreBits(1,0);
 }
 
 bool Character::serializeFromDB( u64 /*user_id*/,u32 /*slot_index*/ )
@@ -94,6 +119,76 @@ void Character::GetCharBuildInfo(BitStream &src)
     m_powers.push_back(primary); // primary_powerset power
     m_powers.push_back(secondary); // secondary_powerset power
     m_trays.serializefrom(src);
+}
+void Character::SendCharBuildInfo(BitStream &bs) const
+{
+    PowerPool_Info null_power;
+    null_power.id[0]=null_power.id[1]=null_power.id[2]=0;
+    bs.StoreString(m_class_name); // class name
+    bs.StoreString(m_origin_name); // origin name
+    bs.StorePackedBits(5,0); // ?
+    {
+        //m_powers[0].serializeto(bs);
+        //m_powers[1].serializeto(bs);
+        int count=0;
+        bs.StorePackedBits(4,count); // count
+        for(int i=0; i<count; i++)
+        {
+            u32 num_powers=0;
+            bs.StorePackedBits(5,0);
+            bs.StorePackedBits(4,u32(num_powers));
+            for(u32 idx=0; idx<num_powers; ++idx)
+            {
+                u32 num_somethings=0;
+
+                //sendPower(bs,0,0,0);
+                m_powers[idx].serializeto(bs);
+                bs.StorePackedBits(5,0);
+                bs.StoreFloat(1.0);
+                bs.StorePackedBits(4,num_somethings);
+
+                for(size_t idx2=0; idx2<num_somethings; ++idx2)
+                {
+                    //sendPower(bs,0,0,0);
+                    m_powers[idx2].serializeto(bs);
+                    bs.StorePackedBits(5,0);
+                    bs.StorePackedBits(2,0);
+                }
+            }
+        }
+    }
+    // main tray powers/stats ?
+    {
+        u32 max_num_cols=3;
+        u32 max_num_rows=1;
+        bs.StorePackedBits(3,max_num_cols); // count
+        bs.StorePackedBits(3,max_num_rows); // count
+        for(u32 i=0; i<max_num_cols; i++)
+        {
+            for(size_t idx=0; idx<max_num_rows; ++idx)
+            {
+                bool is_power=false;
+                bs.StoreBits(1,is_power);
+                if(is_power)
+                    null_power.serializeto(bs);
+            }
+        }
+    }
+    // boosts
+    u32 num_boosts=0;
+    bs.StorePackedBits(5,num_boosts); // count
+    for(size_t idx=0; idx<num_boosts; ++idx)
+    {
+        bool set_boost=false;
+        bs.StorePackedBits(3,0); // bost idx
+        bs.uStoreBits(1,set_boost); // 1 set, 0 clear
+        if(set_boost)
+        {
+            null_power.serializeto(bs);
+            bs.StorePackedBits(5,0); // bost idx
+            bs.StorePackedBits(2,0); // bost idx
+        }
+    }
 }
 
 void Character::serializetoCharsel( BitStream &bs )
@@ -220,7 +315,7 @@ void Character::sendFullStats(BitStream &bs) const
             // field type 0xA, param 2
             if(1) // absolute values
             {
-                bs.StorePackedBits(7,45); // character end/1.0
+                bs.StorePackedBits(7,46); // character end/1.0
             }
             else
             {
@@ -239,7 +334,7 @@ void Character::sendFullStats(BitStream &bs) const
             // Type15_Params 2 1.0 1.0 7
             if(1) // absolute values
             {
-                bs.StorePackedBits(7,45); // character health/1.0
+                bs.StorePackedBits(7,47); // character health/1.0
             }
             else
             {
@@ -251,7 +346,7 @@ void Character::sendFullStats(BitStream &bs) const
             // field type 0xA, param 2
             if(1) // absolute values
             {
-                bs.StorePackedBits(7,45); // character end/1.0
+                bs.StorePackedBits(7,48); // character end/1.0
             }
             else
             {
@@ -336,4 +431,128 @@ void Character::sendFullStats(BitStream &bs) const
         }
     }
     bs.StoreBits(1,0); // has more data, nest out from the root
+}
+
+void Character::sendWindows( BitStream &bs ) const
+{
+    for(int i=0; i<35; i++)
+    {
+        bs.StorePackedBits(1,i); // window index
+        sendWindow(bs);
+    }
+}
+void Character::sendTeamBuffMode(BitStream &bs) const
+{
+    bs.StoreBits(1,0);
+}
+void Character::sendDockMode(BitStream &bs) const
+{
+    bs.StoreBits(32,0); // unused on the client
+    bs.StoreBits(32,0); //
+}
+void Character::sendChatSettings(BitStream &bs) const
+{
+    //int i;
+    bs.StoreFloat(0.8f); // window transparency ?
+    bs.StorePackedBits(1,1);
+    bs.StorePackedBits(1,2);
+    bs.StorePackedBits(1,3);
+/*
+    bs.StorePackedBits(1,4);
+    bs.StorePackedBits(1,5);
+    bs.StorePackedBits(1,6);
+    for(i=0; i<5; i++)
+    {
+        bs.StorePackedBits(1,1);
+        bs.StorePackedBits(1,2);
+        bs.StorePackedBits(1,3);
+        bs.StoreFloat(1.0f);
+    }
+    for(i=0; i<10; i++)
+    {
+        bs.StoreString("TestChat1");
+        bs.StorePackedBits(1,1);
+        bs.StorePackedBits(1,2);
+        bs.StorePackedBits(1,3);
+        bs.StorePackedBits(1,4);
+        bs.StorePackedBits(1,5);
+    }
+    for(i=0; i<10; i++)
+    {
+        bs.StoreString("TestChat2");
+        bs.StorePackedBits(1,1);
+    }
+*/
+}
+void Character::sendDescription(BitStream &bs) const
+{
+    bs.StoreString("Desc1");
+    bs.StoreString("Desc2");
+
+}
+void Character::sendTitles(BitStream &bs) const
+{
+    bs.StoreBits(1,1);
+    bs.StoreString("Tz1");
+    bs.StoreString("Tz2");
+    bs.StoreString("Tz3");
+}
+void Character::sendKeybinds(BitStream &bs) const
+{
+    bs.StoreString("Keybinds");
+    for(int i=0; i<256; i++)
+    {
+        bs.StoreString(""); //w = +forward
+        bs.StoreBits(32,0);
+        bs.StoreBits(32,0);
+    }
+
+}
+void Character::sendFriendList(BitStream &bs) const
+{
+    bs.StorePackedBits(1,0);
+    bs.StorePackedBits(1,0);
+}
+void Character::sendOptionsFull(BitStream &bs) const
+{
+    bs.StoreFloat(m_options.mouselook_scalefactor);//MouseFlt1
+    bs.StoreFloat(m_options.degrees_for_turns);//MouseFlt2
+    bs.StoreBits(1,m_options.mouse_invert);//MouseSet1
+    bs.StoreBits(1,0);//g_DimChatWindow
+    bs.StoreBits(1,0); //g_DimNavWindow
+    bs.StoreBits(1,1);//g_ToolTips
+    bs.StoreBits(1,1);//g_AllowProfanity
+    bs.StoreBits(1,1);//g_ChatBalloons
+    bs.StoreBits(3,0);//dword_729E58
+    bs.StoreBits(3,0);//dword_729E5C
+    bs.StoreBits(3,0);//dword_729E60
+    bs.StoreBits(3,0);//dword_729E68
+    bs.StoreBits(3,0);//dword_729E6C
+    bs.StoreBits(3,0);//dword_729E70
+    bs.StoreBits(3,0);//dword_729E74
+    bs.StoreBits(3,0);//dword_729E78
+    bs.StoreBits(3,0);//dword_729E7C
+    bs.StorePackedBits(5,2);//v2 =
+    //	if ( v1 >= 5 )
+    //	{
+    //		word_91A7A4 = v2;
+    //		word_91A7A0 = v2;
+    //	}
+
+}
+
+void Character::sendOptions( BitStream &bs ) const
+{
+    bs.StoreBits(1,m_full_options);
+    if(m_full_options)
+    {
+        sendOptionsFull(bs);
+    }
+    else
+    {
+        bs.StoreBits(1,m_options.mouse_invert);
+        bs.StoreFloat(m_options.mouselook_scalefactor);
+        bs.StoreFloat(m_options.degrees_for_turns);
+    }
+    bs.StoreBits(1,m_first_person_view_toggle);
 }

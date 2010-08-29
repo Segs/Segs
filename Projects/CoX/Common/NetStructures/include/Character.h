@@ -72,6 +72,7 @@ const	std::string &	getMapName() const { return m_mapName; }
         void			serialize_costumes(BitStream &buffer,bool all_costumes=true) const;
         void			serializetoCharsel(BitStream &bs);
         void			GetCharBuildInfo(BitStream &src); // serialize from char creation
+        void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src);
         Costume *		getCurrentCostume() const;
         void			DumpPowerPoolInfo( const PowerPool_Info &pool_info );
@@ -79,7 +80,20 @@ const	std::string &	getMapName() const { return m_mapName; }
         void            face_bits(u32){};
         void            dump();
         void            sendFullStats(BitStream &bs) const;
-
+        //TODO: move these to some kind of Player info class 
+        void            sendTray(BitStream &bs); 
+        void            sendTrayMode(BitStream &bs) const;
+        void            sendWindows(BitStream &bs) const;
+        void            sendWindow(BitStream &bs) const;
+        void            sendTeamBuffMode(BitStream &bs) const;
+        void            sendDockMode(BitStream &bs) const;
+        void            sendChatSettings(BitStream &bs) const;
+        void            sendDescription(BitStream &bs) const;
+        void            sendTitles(BitStream &bs) const;
+        void            sendKeybinds(BitStream &bs) const;
+        void            sendFriendList(BitStream &bs) const;
+        void            sendOptions( BitStream &bs ) const;
+        void            sendOptionsFull(BitStream &bs) const;
 protected:
         u64                 m_owner_account_id;
         u64                 m_last_costume_id;

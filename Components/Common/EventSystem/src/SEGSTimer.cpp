@@ -1,7 +1,5 @@
 #include "SEGSTimer.h"
 #include "EventProcessor.h"
-typedef ACE_Thread_Timer_Queue_Adapter<ACE_Timer_List> Thread_Timer_Queue;
-typedef ACE_Singleton<Thread_Timer_Queue,ACE_Thread_Mutex> GlobalTimerQueue;
 
 SEGSTimer::SEGSTimer( EventProcessor *m_processor,void *data,const ACE_Time_Value &fire_delta_time, bool one_shot) 
                     : 

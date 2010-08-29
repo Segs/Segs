@@ -24,7 +24,12 @@ public:
         id[1] = src.GetPackedBits(3);
         id[2] = src.GetPackedBits(3);
     }
-
+    void serializeto( BitStream &src ) const
+    {
+        src.StorePackedBits(3,id[0]);
+        src.StorePackedBits(3,id[1]);
+        src.StorePackedBits(3,id[2]);
+    }
 };
 
 class Power

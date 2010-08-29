@@ -13,13 +13,13 @@
 #include "SEGSTimer.h"
 #include "Entity.h"
 using namespace std;
-MapInstance::MapInstance( const string &name ) :m_name(name)
+MapInstance::MapInstance( const string &name ) :m_name(name),m_world_update_timer(0)
 {
 
 }
 void MapInstance::create_entity(Entity *ent)
 {
-    *((PlayerEntity *)m_entities.CreatePlayer())=*((PlayerEntity *)ent);
+    m_entities.InsertPlayer(ent);
 }
 void MapInstance::dispatch( SEGSEvent *ev )
 {
@@ -69,10 +69,29 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     m_clients.push_back(cl); // add to the list of clients interested in world updates
     if(m_world_update_timer==0)
     {
-        m_world_update_timer = new SEGSTimer(this,0,ACE_Time_Value(0,100),false); // repeatable timer
+        // 50ms interval timer
+        m_world_update_timer = new SEGSTimer(this,0,ACE_Time_Value(0,200000),false); // repeatable timer
     }
-    (void)cl; //TODO: actually use the MapClient instance
-    //    SEGSTimer tmr;
+    res->entReceiveUpdate=false;
+    res->unkn1=false;
+    res->m_num_commands=0;
+    res->abs_time = (u32)time(NULL);
+    res->unkn2=true; // default parameters for first flags
+/*
+    res->m_create=true;
+    res->var_129C=false;
+    res->m_type = 2; //PLAYER
+    res->m_create_player=true;
+    res->m_player_villain=false;
+    res->m_origin_idx=pent->m_class_idx=0;
+    res->m_selector1=false;
+    res->m_hasname = true;
+    res->m_hasgroup_name=false;
+    res->m_pchar_things=false;
+    res->m_rare_bits = true;
+*/
+    //			pent->m_costume->m_costume_type=2; // npc costume for now
+
     // start map timer on this event
     //    start_entity_state_update();
     lnk->putq(res);
@@ -83,12 +102,17 @@ void MapInstance::on_timeout(TimerEvent *ev)
     MapClient *cl;
     vector<MapClient *>::iterator iter=m_clients.begin();
     vector<MapClient *>::iterator end=m_clients.end();
+    static bool only_first=true;
     for(;iter!=end; ++iter)
     {
         cl=*iter;
+        float delta;
+        cl->char_entity()->pos.v[0]+=(1.0 - ((rand()&0xFF)/128.0f))/25.0f;
+        cl->char_entity()->m_create=only_first;
         EntitiesResponse *res=new EntitiesResponse(cl,true); // incremental world update = op 2
         cl->link()->putq(res);
     }
+    only_first=true;
     // This is handling instance-wide timers
 
     // simulation_engine->tick()

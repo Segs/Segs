@@ -27,3 +27,5 @@ public:
     void *              data() const {return m_data;}
     void                schedule_repeatable(); 
 };
+typedef ACE_Thread_Timer_Queue_Adapter<ACE_Timer_List> Thread_Timer_Queue;
+typedef ACE_Singleton<Thread_Timer_Queue,ACE_Thread_Mutex> GlobalTimerQueue;

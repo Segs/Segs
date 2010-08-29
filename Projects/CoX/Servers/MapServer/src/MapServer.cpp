@@ -18,6 +18,7 @@
 
 #include "MapInstance.h"
 #include "Entity.h"
+#include "SEGSTimer.h"
 // Template instantiation
 template class ClientStore<MapClient>;
 
@@ -116,6 +117,8 @@ bool MapServer::ShutDown(const std::string &reason)
 */
 bool MapServer::startup()
 {
+    //FIXME: global timer queue should be activated in some central place!
+    GlobalTimerQueue::instance()->activate();
     return true;
     AuthServerInterface *i_auth;
     AdminServerInterface *i_admin;

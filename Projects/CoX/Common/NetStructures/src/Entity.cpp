@@ -104,7 +104,8 @@ void Entity::storePosUpdate(BitStream &bs) const
 {
     storePosition(bs);
     // if(is_update)
-    if(false)
+    
+    if(!m_create)
     {
         bs.StoreBits(1,0); // not extra_info
     }
@@ -135,7 +136,14 @@ void Entity::sendSeqMoveUpdate(BitStream &bs) const
 }
 void Entity::sendSeqTriggeredMoves(BitStream &bs) const
 {
-    bs.StorePackedBits(1,0); // num moves
+    u32 num_moves=0;
+    bs.StorePackedBits(1,num_moves); // num moves
+    for (u32 idx = 0; idx < num_moves; ++idx )
+    {
+        bs.StorePackedBits(16,0); // 2
+        bs.StorePackedBits(6,0); //0
+        storePackedBitsConditional(bs,16,0); // 1
+    }
 }
 void Entity::sendNetFx(BitStream &bs) const
 {
@@ -242,7 +250,24 @@ void Entity::sendCostumes(BitStream &bs) const
 
 PlayerEntity::PlayerEntity()
 {
+    pos.v[1]=32.0;
+    pos.v[2]=12.0;
     m_costume_type=1;
+    m_create=true;
+    var_129C=false;
+    m_type = 2; //PLAYER
+    m_create_player=true;
+    m_player_villain=false;
+    m_origin_idx=m_class_idx=0;
+    m_selector1=false;
+    m_hasname = true;
+    m_hasgroup_name=false;
+    m_pchar_things=false;
+    m_rare_bits = true;
+}
+void PlayerEntity::sendCostumes( BitStream &bs ) const
+{
+    Entity::sendCostumes(bs);
 }
 MobEntity::MobEntity()
 {
@@ -445,7 +470,7 @@ void Entity::serializeto( BitStream &bs ) const
     if(m_pchar_things)
     {
         sendCharacterStats(bs);
-        sendBuffs(bs);
+        sendBuffsConditional(bs);
         sendTargetUpdate(bs);
     }
     if(m_rare_bits)
@@ -461,7 +486,15 @@ void Entity::serializeto( BitStream &bs ) const
 }
 void Entity::sendBuffs(BitStream &bs) const
 {
+    bs.StorePackedBits(5,0);
+}
+void Entity::sendBuffsConditional(BitStream &bs) const
+{
     bs.StoreBits(1,0); // nothing here for now
+    if(0)
+    {
+        sendBuffs(bs);
+    }
 }
 void Entity::sendCharacterStats(BitStream &bs) const
 {
@@ -512,7 +545,20 @@ void PlayerEntity::serializefrom_newchar( BitStream &src )
     src.GetString(m_battle_cry);
     src.GetString(m_character_description);
 }
-
+void PlayerEntity::serialize_full( BitStream &tgt )
+{
+    m_char.SendCharBuildInfo(tgt);
+    m_char.sendFullStats(tgt);
+    sendBuffs(tgt);
+    bool has_sidekick=false;
+    tgt.StoreBits(1,has_sidekick);
+    if(has_sidekick)
+    {
+        bool is_mentor=false; // this flag might mean something totally different :)
+        tgt.StoreBits(1,is_mentor);
+        tgt.StorePackedBits(20,0); // sidekick partner idx -> 10240
+    }
+}
 void Entity::InsertUpdate( PosUpdate pup )
 {
     m_update_idx++;
@@ -548,166 +594,6 @@ PowerPool_Info Avatar::get_power_info( BitStream &src )
 }
 */
 /*
-void Avatar::sendTray(BitStream &bs) const
-{
-    m_trays.serializeto(bs);
-}
-*/
-void Avatar::sendTrayMode(BitStream &bs) const
-{
-    bs.StoreBits(1,0);
-}
-void Avatar::sendEntStrings(BitStream &bs) const
-{
-    bs.StoreString(m_ent->m_battle_cry); //max 128
-    bs.StoreString(m_ent->m_character_description); //max 1024
-}
-void Avatar::sendWindow(BitStream &bs) const
-{
-    bs.StorePackedBits(1,0);
-    bs.StorePackedBits(1,0);
-    bs.StorePackedBits(1,0); // visible ?
-    bs.StorePackedBits(1,0);
-    bs.StorePackedBits(1,0);
-    bs.StorePackedBits(1,0);
-    bool a=false;
-    bs.StoreBits(1,a);
-    if(a)
-    {
-        bs.StorePackedBits(1,0);
-        bs.StorePackedBits(1,0);
-    }
-    //storeFloatConditional(bs,1.0f);
-}
-void Avatar::sendTeamBuffMode(BitStream &bs) const
-{
-    bs.StoreBits(1,0);
-}
-void Avatar::sendDockMode(BitStream &bs) const
-{
-    bs.StoreBits(32,0); // unused on the client
-    bs.StoreBits(32,0); //
-}
-void Avatar::sendChatSettings(BitStream &bs) const
-{
-    //int i;
-    bs.StoreFloat(0.8f); // window transparency ?
-    bs.StorePackedBits(1,1);
-    bs.StorePackedBits(1,2);
-    bs.StorePackedBits(1,3);
-/*
-    bs.StorePackedBits(1,4);
-    bs.StorePackedBits(1,5);
-    bs.StorePackedBits(1,6);
-    for(i=0; i<5; i++)
-    {
-        bs.StorePackedBits(1,1);
-        bs.StorePackedBits(1,2);
-        bs.StorePackedBits(1,3);
-        bs.StoreFloat(1.0f);
-    }
-    for(i=0; i<10; i++)
-    {
-        bs.StoreString("TestChat1");
-        bs.StorePackedBits(1,1);
-        bs.StorePackedBits(1,2);
-        bs.StorePackedBits(1,3);
-        bs.StorePackedBits(1,4);
-        bs.StorePackedBits(1,5);
-    }
-    for(i=0; i<10; i++)
-    {
-        bs.StoreString("TestChat2");
-        bs.StorePackedBits(1,1);
-    }
-*/
-}
-void Avatar::sendDescription(BitStream &bs) const
-{
-    bs.StoreString("Desc1");
-    bs.StoreString("Desc2");
-
-}
-void Avatar::sendTitles(BitStream &bs) const
-{
-    bs.StoreBits(1,1);
-    bs.StoreString("Tz1");
-    bs.StoreString("Tz2");
-    bs.StoreString("Tz3");
-}
-void Avatar::sendKeybinds(BitStream &bs) const
-{
-    bs.StoreString("Keybinds");
-    for(int i=0; i<256; i++)
-    {
-        bs.StoreString(""); //w = +forward
-        bs.StoreBits(32,0);
-        bs.StoreBits(32,0);
-    }
-
-}
-void Avatar::sendFriendList(BitStream &bs) const
-{
-    bs.StorePackedBits(1,0);
-    bs.StorePackedBits(1,0);
-}
-/*
-void Avatar::serializeto(BitStream &bs) const
-{
-    u8 arr[16]={0};
-    //////////////////////////////////////////////////////////////////////////
-    // character send
-    //////////////////////////////////////////////////////////////////////////
-    send_character(bs);
-    //////////////////////////////////////////////////////////////////////////
-    // full stats
-    //////////////////////////////////////////////////////////////////////////
-    sendFullStats(bs);
-
-    sendBuffs(bs);
-    bool has_sidekick=false;
-    bs.StoreBits(1,has_sidekick);
-    if(has_sidekick)
-    {
-        bool is_mentor=false; // this flag might mean something totally different :)
-        bs.StoreBits(1,is_mentor);
-        bs.StorePackedBits(20,0); // sidekick partner idx -> 10240
-    }
-    sendTray(bs);
-    sendTrayMode(bs);
-    bs.StoreString(m_ent->m_name); // maxlength 32
-    sendEntStrings(bs);
-    for(int i=0; i<35; i++)
-    {
-        bs.StorePackedBits(1,i); // window index
-        sendWindow(bs);
-    }
-//	bs.StoreBits(10,0); // lfg
-//	bs.StoreBits(1,0); // super group mode
-    bs.StoreBits(1,0); // pent->player_ppp.field_540
-    bs.StoreBits(1,0); // pEnt->player_ppp.field_984C
-    sendTeamBuffMode(bs);
-    sendDockMode(bs);
-    sendChatSettings(bs);
-    sendTitles(bs);
-    sendDescription(bs);
-    u8 auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    bs.StoreBitArray(auth_data,128);
-    sendKeybinds(bs);
-    bs.StoreBits(1,m_full_options);
-    if(m_full_options)
-    {
-        sendOptions(bs);
-    }
-    else
-    {
-        bs.StoreBits(1,m_options.mouse_invert);
-        bs.StoreFloat(m_options.mouselook_scalefactor);
-        bs.StoreFloat(m_options.degrees_for_turns);
-    }
-    bs.StoreBits(1,m_first_person_view_toggle);
-    sendFriendList(bs);
-}
 Avatar::Avatar(Entity *ent)
 {
     m_ent = ent;
@@ -774,7 +660,7 @@ void sendPowers_main_tray(BitStream &bs)
     }
 }
 
-void sendBoosts(BitStream &bs)
+static void sendBoosts(BitStream &bs)
 {
     u32 num_boosts=0;
     bs.StorePackedBits(5,num_boosts); // count
@@ -821,37 +707,6 @@ void Avatar::sendBuffs(BitStream &bs) const
         sendPower(bs,0,0,0);
     }
 }
-/*
-void Avatar::sendOptions(BitStream &bs) const
-{
-    bs.StoreFloat(m_options.mouselook_scalefactor);//MouseFlt1
-    bs.StoreFloat(m_options.degrees_for_turns);//MouseFlt2
-    bs.StoreBits(1,m_options.mouse_invert);//MouseSet1
-    bs.StoreBits(1,0);//g_DimChatWindow
-    bs.StoreBits(1,0); //g_DimNavWindow
-    bs.StoreBits(1,1);//g_ToolTips
-    bs.StoreBits(1,1);//g_AllowProfanity
-    bs.StoreBits(1,1);//g_ChatBalloons
-    bs.StoreBits(3,0);//dword_729E58
-    bs.StoreBits(3,0);//dword_729E5C
-    bs.StoreBits(3,0);//dword_729E60
-    bs.StoreBits(3,0);//dword_729E68
-    bs.StoreBits(3,0);//dword_729E6C
-    bs.StoreBits(3,0);//dword_729E70
-    bs.StoreBits(3,0);//dword_729E74
-    bs.StoreBits(3,0);//dword_729E78
-    bs.StoreBits(3,0);//dword_729E7C
-    bs.StorePackedBits(5,2);//v2 =
-//	if ( v1 >= 5 )
-//	{
-//		word_91A7A4 = v2;
-//		word_91A7A0 = v2;
-//	}
-
-}
-
-*/
-
 
 void MapCostume::GetCostume( BitStream &src )
 {

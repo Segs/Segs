@@ -31,6 +31,7 @@ public:
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
     void            sendDeletes(BitStream &tgt) const;
     void            sendEntities(BitStream &tgt) const;
+    void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
 };
 

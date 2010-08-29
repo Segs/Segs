@@ -66,11 +66,17 @@ void EntityManager::sendEntities( BitStream &tgt ) const
 	tgt.StoreBits(1,1); // create/update -> create
 	tgt.StoreBits(1,1); // empty entity. will finish the receiving loop
 }
-
+void EntityManager::InsertPlayer(Entity *ent)
+{
+    m_map_entities[m_last_ent++] = ent;
+    ent->m_idx = m_last_ent-1;
+    m_entlist.push_back(ent);
+}
 Entity * EntityManager::CreatePlayer()
 {
 	Entity *res = new PlayerEntity;
 	m_map_entities[m_last_ent++] = res;
 	m_entlist.push_back(res);
-	return res;
+    res->m_idx = m_last_ent-1;
+    return res;
 }
