@@ -1,8 +1,13 @@
 # Find the ACE headers and library
 
-IF (ACE_path AND ACE_lib)
+SET(ACE_debug_lib FALSE CACHE BOOL "Use debug version of ACE")
+SET(ACELIB_extension "")
+IF(ACE_debug_lib)
+	SET(ACELIB_extension "d")
+ENDIF(ACE_debug_lib)
+IF (ACE_path AND ACE_lib_path)
     SET(ACE_FIND_QUIETLY TRUE)
-ENDIF (ACE_path AND ACE_lib)
+ENDIF (ACE_path AND ACE_lib_path)
 
 FIND_PATH(ACE_path ace/ACE.h
   /usr/local/include/ace
@@ -11,29 +16,24 @@ FIND_PATH(ACE_path ace/ACE.h
   ${MAIN_INCLUDE_PATH}/ace
 )
 
-FIND_LIBRARY(ACE_lib 
-	NAMES ACE ACEd libACE
+FIND_PATH(ACE_lib_path NAMES ACE.lib libACE.so
 	PATHS 
 		/usr/lib 
 		/usr/local/lib 
-		/usr/lib /ACEd
-		/usr/local/lib/ACEd 
 		${MAIN_LIB_PATH}
-		${MAIN_LIB_PATH}/ACE
-		${MAIN_LIB_PATH}/ACEd
 		${ACE_path}/lib
-	DOC "Path to ACE framework library"]
+	DOC "Path to ACE framework library"
 )
 
-IF (ACE_path AND ACE_lib)
+IF (ACE_path AND ACE_lib_path)
    SET(ACE_FOUND TRUE)
-ELSE (ACE_path AND ACE_lib)
+ELSE (ACE_path AND ACE_lib_path)
    SET(ACE_FOUND FALSE)
-ENDIF (ACE_path AND ACE_lib)
+ENDIF (ACE_path AND ACE_lib_path)
 
 IF (ACE_FOUND)
   IF (NOT ACE_FIND_QUIETLY)
-    MESSAGE(STATUS "Found ACE: ${ACE_lib}")
+    MESSAGE(STATUS "Found ACE: ${ACE_lib_path}")
   ENDIF (NOT ACE_FIND_QUIETLY)
 ELSE (ACE_FOUND)
   IF (ACE_FIND_REQUIRED)
@@ -41,4 +41,16 @@ ELSE (ACE_FOUND)
   ENDIF (ACE_FIND_REQUIRED)
 ENDIF (ACE_FOUND)
 
-MARK_AS_ADVANCED(ACE_path ACE_lib)
+MARK_AS_ADVANCED(ACE_path ACE_lib_path)
+LINK_DIRECTORIES(${ACE_lib_path})
+FUNCTION(
+ACE_ADD_LIBRARIES target)
+	FOREACH(libname ${ARGN})
+		TARGET_LINK_LIBRARIES(${target} 
+			optimized
+				${libname}
+			debug
+				${libname}${ACELIB_extension}
+		)
+	ENDFOREACH()
+ENDFUNCTION()

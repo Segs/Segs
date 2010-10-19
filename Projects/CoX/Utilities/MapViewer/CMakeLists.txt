@@ -57,11 +57,12 @@ ${gui_MOC_SRC} ${gui_UI_H}
 
 ADD_EXECUTABLE(mapviewer ${target_SOURCES})
 
+ACE_ADD_LIBRARIES(mapviewer ACE)
 TARGET_LINK_LIBRARIES(mapviewer   ${target_DEPENDS}
-    ${ACE_lib}
     ${CMAKE_THREAD_LIBS_INIT}
     ${OPENSCENEGRAPH_LIBRARIES}
     ${QT_LIBRARIES}
 )
+
 ADD_DEPENDENCIES(mapviewer ${target_DEPENDS})
 

@@ -16,10 +16,13 @@ ADD_DEFINITIONS(
   -D_LIB
 )
 
-SEGS_ADD_COMPONENT(Auth SOURCE)
+#SEGS_ADD_COMPONENT(Auth SOURCE)
 
-INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
-INCLUDE_DIRECTORIES(${ACE_path})
+INCLUDE_DIRECTORIES(
+	${MAIN_INCLUDE_PATH}
+	${target_INCLUDE_DIR}
+	${ACE_path}
+)
 
 SET (target_SOURCES
 ${target_CPP}
@@ -32,10 +35,11 @@ IF(WIN32)
 ELSE(WIN32)
 	ADD_EXECUTABLE( segs_client_example_01_cli ${target_SOURCES} )
 ENDIF(WIN32)
-
+ACE_ADD_LIBRARIES(segs_client_example_01_cli ACE)
 TARGET_LINK_LIBRARIES(segs_client_example_01_cli segs_common 
-						${ACE_lib} 
 						${ZLIB_LIBRARIES}
-						${CMAKE_THREAD_LIBS_INIT})
+						${CMAKE_THREAD_LIBS_INIT}
+						ws2_32
+						)
 						
 ADD_DEPENDENCIES(segs_client_example_01_cli authserver_lib segs_common gameserver_lib) 

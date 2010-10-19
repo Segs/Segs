@@ -12,23 +12,23 @@
 
 GrowingBuffer::GrowingBuffer(u8 *buf, size_t size,bool become_owner)
 {
-	m_buf		= NULL;
-	m_size		= 0;
-	m_safe_area = 0;
-	m_last_err	= 0;
-	m_write_off=m_read_off = 0;
-	m_max_size	= size>DEFAULT_MAX_SIZE ? size:DEFAULT_MAX_SIZE;
-	if(become_owner)
-	{
-		m_buf  = buf;
-		m_size = size;
-		Reset();
-	}
-	else
-	{
-		ACE_ASSERT(resize(size)==0);
-		uPutBytes(buf,size);
-	}
+    m_buf		= NULL;
+    m_size		= 0;
+    m_safe_area = 0;
+    m_last_err	= 0;
+    m_write_off=m_read_off = 0;
+    m_max_size	= size>DEFAULT_MAX_SIZE ? size:DEFAULT_MAX_SIZE;
+    if(become_owner)
+    {
+        m_buf  = buf;
+        m_size = size;
+        Reset();
+    }
+    else
+    {
+        ACE_ASSERT(resize(size)==0);
+        uPutBytes(buf,size);
+    }
 }
 
 GrowingBuffer::GrowingBuffer(size_t max_size,u8 safe_area,size_t pre_alloc_size)
@@ -188,27 +188,4 @@ int GrowingBuffer::resize(size_t accommodate_size)
 	}
 	return 0;
 }
-/*
-void test()
-{
-	static GrowingBuffer t(6);
-	t.Put((u32)10);
-	t.Put(1311);
-	t.Put(12);
-	ACE_ASSERT(t.getLastError()!=0);
-	t.ResetError();
-	u32 res,tres;
-	t.Get(res);
-	t.Get(tres);
-	t.Get(res);
-	ACE_ASSERT(t.getLastError()!=0);
-	t.Put(res+tres);
-	// unchecked tests
-	t.Reset();
-	t.uPut((u32)16);
-	t.uPut(16);
-	t.uGet(res);
-	t.uPut(tres);
-	t.uPut(res+tres);
-}
-*/
+
