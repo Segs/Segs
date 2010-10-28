@@ -7,7 +7,7 @@
 #include <memory>
 #include <iostream>
 #include <msgpack.hpp>
-
+	
 class ActiveObj : public ACE_Task<ACE_MT_SYNCH>
 {
 public:
