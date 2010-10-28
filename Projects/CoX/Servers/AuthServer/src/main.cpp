@@ -84,7 +84,7 @@ LogCallback g_logging_object;
 
 static ACE_THR_FUNC_RETURN event_loop (void *arg) 
 { 
-	ACE_Reactor *reactor = ACE_static_cast (ACE_Reactor *, arg); 
+	ACE_Reactor *reactor = static_cast<ACE_Reactor *>(arg); 
 	ACE_LOG_MSG->clr_flags(ACE_Log_Msg::STDERR);
 	ACE_LOG_MSG->set_flags(ACE_Log_Msg::MSG_CALLBACK);
 	ACE_LOG_MSG->priority_mask (LM_DEBUG |LM_ERROR | LM_WARNING| LM_NOTICE | LM_INFO , ACE_Log_Msg::PROCESS);
