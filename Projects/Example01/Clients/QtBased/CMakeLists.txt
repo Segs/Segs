@@ -3,16 +3,16 @@ FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
 
 SET(gui_HEADERS
-#   include/filename.h
+	include/clientwindow.h
 )
 SET(gui_UI_FILES
-#	ui/connectionstatsusdlg.ui
+	ui/clientwindow.ui
 )
 
 SET(gui_MOC_HEADERS ${gui_HEADERS}
 )
 SET(gui_SOURCES
-#    src/main.cpp
+    src/clientwindow.cpp
     ${gui_MOC_HEADERS}
 )
 
