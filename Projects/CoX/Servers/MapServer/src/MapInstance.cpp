@@ -63,19 +63,25 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     // this packet should start the per-client send-world-state-update timer
     // actually I think the best place for this timer would be the map instance.
     // so this method should call MapInstace->initial_update(MapClient *);
+	static int timecount=0;
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl =(MapClient *)lnk->client_data();
+	srand(time(0));
+	cl->char_entity()->pos.v[0]=-60.5;
+	cl->char_entity()->pos.v[1]=0;
+	cl->char_entity()->pos.v[2]=180;
+//	cl->char_entity()->
     EntitiesResponse *res=new EntitiesResponse(cl,false); // initial world update -> current state
     m_clients.push_back(cl); // add to the list of clients interested in world updates
     if(m_world_update_timer==0)
     {
         // 50ms interval timer
-        m_world_update_timer = new SEGSTimer(this,0,ACE_Time_Value(0,200000),false); // repeatable timer
+        m_world_update_timer = new SEGSTimer(this,0,ACE_Time_Value(0,500000),false); // repeatable timer
     }
     res->entReceiveUpdate=false;
     res->unkn1=false;
     res->m_num_commands=0;
-    res->abs_time = (u32)time(NULL);
+    res->abs_time = (u32)timecount++;
     res->unkn2=true; // default parameters for first flags
 /*
     res->m_create=true;
@@ -107,7 +113,6 @@ void MapInstance::on_timeout(TimerEvent *ev)
     {
         cl=*iter;
         float delta;
-        cl->char_entity()->pos.v[0]+=(1.0 - ((rand()&0xFF)/128.0f))/25.0f;
         cl->char_entity()->m_create=only_first;
         EntitiesResponse *res=new EntitiesResponse(cl,true); // incremental world update = op 2
         cl->link()->putq(res);

@@ -23,10 +23,7 @@ public:
     Entity *        m_map_entities[10240];
     lEntity         m_entlist;
     u32             m_last_ent;
-                    EntityManager()
-                    {
-                        m_last_ent = 0;
-                    }
+                    EntityManager();
     void            sendDebuggedEntities(BitStream &tgt) const;
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
     void            sendDeletes(BitStream &tgt) const;

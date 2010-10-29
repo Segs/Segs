@@ -113,7 +113,7 @@ void Entity::storePosUpdate(BitStream &bs) const
 }
 void Entity::storeUnknownBinTree(BitStream &bs) const
 {
-    bs.StoreBits(1,1);
+    bs.StoreBits(1,0);
 
 }
 void Entity::sendStateMode(BitStream &bs) const
@@ -250,8 +250,6 @@ void Entity::sendCostumes(BitStream &bs) const
 
 PlayerEntity::PlayerEntity()
 {
-    pos.v[1]=32.0;
-    pos.v[2]=12.0;
     m_costume_type=1;
     m_create=true;
     var_129C=false;
@@ -581,6 +579,9 @@ Entity::Entity()
     m_seq_update=0;
     m_has_titles=false;
     m_SG_info=false;
+    pos.v[0]=-60.5;
+    pos.v[1]=180;
+    pos.v[2]=0;
 }
 
 /*

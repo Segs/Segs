@@ -61,9 +61,10 @@ protected:
                         ACE_ASSERT(!"No sync events known");
                         return 0;
                     }
-    int             handle_close(ACE_HANDLE , ACE_Reactor_Mask )
+    int             handle_close(ACE_HANDLE h, ACE_Reactor_Mask c)
                     {
-                        return 0;
+						reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
+                        return EventProcessor::handle_close(h,c);
                     }
     void            event_for_packet(SEGSEvent *pak_ev);
     void            packets_for_event(SEGSEvent *c_ev); // Handler posted this event to us, we will pack it into packets and post it to the link target
