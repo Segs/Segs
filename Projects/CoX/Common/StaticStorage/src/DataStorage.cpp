@@ -6,7 +6,7 @@
  *
  * $Id$
  */
-#include <ace/OS.h>
+#include <ace/ACE.h>
 #include "DataStorage.h"
 #include "ReadableStructures.h"
 bool BinStore::check_bin_version_and_crc(const ClassSchema *)

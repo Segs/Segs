@@ -3,17 +3,19 @@
 // Constructors/Destructors
 //
 /**
-	Constructs 'local' server handle, attempt to pass it to remote server will result in X
+    Constructs 'local' server handle, attempt to pass it to remote server will result in X
 */
 template<class SERVER_CLASS>
-ServerHandle<SERVER_CLASS>::ServerHandle(SERVER_CLASS *impl ) : m_address(),m_id(-1),m_server(impl) {};
+ServerHandle<SERVER_CLASS>::ServerHandle(SERVER_CLASS *impl ) : m_address(),m_id(-1),m_server(impl)
+{}
 
 /**
-	Constructs 'remote' server handle, this can be passed to local server ( InterfaceManager will identify proper local server and fill m_server)
-	otherwise InterfaceManager will connect to given address, check if server with given id exists, and create interface object of *RemoteInterface class.
+    Constructs 'remote' server handle, this can be passed to local server ( InterfaceManager will identify proper local server and fill m_server)
+    otherwise InterfaceManager will connect to given address, check if server with given id exists, and create interface object of *RemoteInterface class.
 */
 template<class SERVER_CLASS>
-ServerHandle<SERVER_CLASS>::ServerHandle(const ACE_INET_Addr &addr,int id) : m_address(addr),m_id(id),m_server(0) {};
+ServerHandle<SERVER_CLASS>::ServerHandle(const ACE_INET_Addr &addr,int id) : m_address(addr),m_id(id),m_server(0)
+{}
 
 /**
  * Set the value of m_address
@@ -43,7 +45,8 @@ ACE_INET_Addr ServerHandle<SERVER_CLASS>::getAddress ( )
  * @param new_var the new value of m_id
  */
 template<class SERVER_CLASS>
-void ServerHandle<SERVER_CLASS>::setId ( int new_var ) {
+void ServerHandle<SERVER_CLASS>::setId ( int new_var )
+{
     m_id = new_var;
 }
 
@@ -53,7 +56,8 @@ void ServerHandle<SERVER_CLASS>::setId ( int new_var ) {
  * @return the value of m_id
  */
 template<class SERVER_CLASS>
-int ServerHandle<SERVER_CLASS>::getId ( ) {
+int ServerHandle<SERVER_CLASS>::getId ( )
+{
     return m_id;
 }
 
@@ -63,7 +67,8 @@ int ServerHandle<SERVER_CLASS>::getId ( ) {
  * @param new_var the new value of m_server
  */
 template<class SERVER_CLASS>
-void ServerHandle<SERVER_CLASS>::setServer ( SERVER_CLASS * new_var ) {
+void ServerHandle<SERVER_CLASS>::setServer ( SERVER_CLASS * new_var )
+{
     m_server = new_var;
 }
 

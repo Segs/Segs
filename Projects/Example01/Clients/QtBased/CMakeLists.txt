@@ -22,6 +22,7 @@ QT4_AUTOMOC(${gui_SOURCES})
 #QT4_ADD_RESOURCES(gui_RES_SOURCES resources/filename.qrc)
 
 SET(target_CPP
+    src/main.cpp
     ${gui_RES_SOURCES}
     ${gui_SOURCES}
      ${gui_MOC_SRC}
@@ -46,16 +47,16 @@ INCLUDE_DIRECTORIES(
 )
 # WIN32
 ADD_EXECUTABLE(StickHeoroes_client ${target_CPP} ${gui_UI_H})
-ADD_DEPENDENCIES(StickHeoroes_client ${target_DEPENDS})
-TARGET_LINK_LIBRARIES(ArgosClientThin 
+#ADD_DEPENDENCIES(StickHeoroes_client ${target_DEPENDS})
+TARGET_LINK_LIBRARIES(StickHeoroes_client 
 #    glew32
     ${target_DEPENDS}
     ${QT_LIBRARIES}
 #    ${QT_QTMAIN_LIBRARY}
     opengl32
     glu32
-    optimized
-	${QT_QTMAIN_LIBRARY}
+#    optimized
+#	${QT_QTMAIN_LIBRARY}
 #    optimized
 #	OIS_static
 #    debug

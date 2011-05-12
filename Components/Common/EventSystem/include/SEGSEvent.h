@@ -11,32 +11,32 @@ class EventProcessor;
 class SEGSEvent
 {
 protected:
-	EventProcessor *m_event_source;
-	size_t m_type;
+    EventProcessor *m_event_source;
+    size_t m_type;
 
     virtual ~SEGSEvent()
     {
         m_event_source=0;
     }
 public:
-	enum {
-		evFinish=0, // this event will finish the Processor that receives it
-		evConnect,  // on the link level this means a new connection, higher level handlers are also notified by this event
-		evDisconnect,
-		evTimeout, //
-		evLAST_EVENT
-	};
-	SEGSEvent(size_t evtype,EventProcessor *ev_src=0) : m_event_source(ev_src),m_type(evtype)
-	{
+    enum {
+        evFinish=0, // this event will finish the Processor that receives it
+        evConnect,  //! on the link level this means a new connection, higher level handlers are also notified by this event
+        evDisconnect,
+        evTimeout, //
+        evLAST_EVENT
+    };
+    SEGSEvent(size_t evtype,EventProcessor *ev_src=0) : m_event_source(ev_src),m_type(evtype)
+    {
 
-	}
-	void release()
-	{
-		delete this;
-	}
-	void				src(EventProcessor *ev_src) {m_event_source=ev_src;}
-	EventProcessor *	src() {return m_event_source;}
-	size_t              type() const {return m_type;}
+    }
+    void                    release()
+                            {
+                                delete this;
+                            }
+    void                    src(EventProcessor *ev_src) {m_event_source=ev_src;}
+    EventProcessor *        src() {return m_event_source;}
+    size_t                  type() const {return m_type;}
 };
 class TimerEvent : public SEGSEvent
 {

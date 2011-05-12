@@ -6,13 +6,13 @@
 *
 * $Id$
 */
-#include <ace/OS.h>
+#include <ace/ACE.h>
 #include "HashStorage.h"
 
 // SpecHash<std::string,val>
-// 
+//
 // get hash index of given key
 u32 get_hash_idx(const std::string &key)
 {
-	return 0;
+    return 0;
 }

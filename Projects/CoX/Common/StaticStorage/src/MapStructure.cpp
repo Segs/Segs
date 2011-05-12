@@ -6,7 +6,7 @@
  *
  * $Id$
  */
-#include <ace/OS.h>
+#include <ace/ACE.h>
 #include "MapStructure.h"
 
 using namespace MapStructs;

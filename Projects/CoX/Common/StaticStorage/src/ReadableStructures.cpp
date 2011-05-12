@@ -6,7 +6,7 @@
  *
  * $Id$
  */
-#include <ace/OS.h>
+#include <ace/ACE.h>
 #include "ReadableStructures.h"
 using namespace std;
 DEF_SCHEMA(ColorEntry);

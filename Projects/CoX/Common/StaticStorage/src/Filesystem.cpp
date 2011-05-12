@@ -6,7 +6,7 @@
  *
  * $Id$
  */
-#include <ace/OS.h>
+#include <ace/ACE.h>
 #include "Filesystem.h"
 #include "CoXHash.h"
 bool WorldData_impl::read_costumes( const std::string &directory_path )

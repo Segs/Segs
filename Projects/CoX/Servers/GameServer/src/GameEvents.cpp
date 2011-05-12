@@ -6,7 +6,7 @@
 *
 * $Id$
 */
-#include <ace/OS.h>
+#include <ace/ACE.h>
 #include "HashStorage.h"
 #include "GameEvents.h"
 #include "CharacterClient.h"
@@ -17,7 +17,7 @@
 // get hash index of given key
 u32 get_hash_idx(const std::string &)
 {
-	return 0;
+    return 0;
 }
 
 void UpdateServer::dependent_dump()

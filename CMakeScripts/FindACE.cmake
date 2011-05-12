@@ -2,9 +2,17 @@
 
 SET(ACE_debug_lib FALSE CACHE BOOL "Use debug version of ACE")
 SET(ACELIB_extension "")
-IF(ACE_debug_lib)
-	SET(ACELIB_extension "d")
-ENDIF(ACE_debug_lib)
+
+# TODO: Handle other 'debug-like' configurations here
+IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    SET(ACE_debug_lib TRUE)
+ENDIF()
+
+IF(CMAKE_CXX_COMPILER MATCHES cl)
+	IF(ACE_debug_lib)
+    	SET(ACELIB_extension "d")
+	ENDIF()
+ENDIF()
 IF (ACE_path AND ACE_lib_path)
     SET(ACE_FIND_QUIETLY TRUE)
 ENDIF (ACE_path AND ACE_lib_path)
@@ -17,12 +25,12 @@ FIND_PATH(ACE_path ace/ACE.h
 )
 
 FIND_PATH(ACE_lib_path NAMES ACE.lib libACE.so
-	PATHS 
-		/usr/lib 
-		/usr/local/lib 
-		${MAIN_LIB_PATH}
-		${ACE_path}/lib
-	DOC "Path to ACE framework library"
+    PATHS
+        /usr/lib
+        /usr/local/lib
+        ${MAIN_LIB_PATH}
+        ${ACE_path}/lib
+    DOC "Path to ACE framework library"
 )
 
 IF (ACE_path AND ACE_lib_path)
@@ -45,12 +53,12 @@ MARK_AS_ADVANCED(ACE_path ACE_lib_path)
 LINK_DIRECTORIES(${ACE_lib_path})
 FUNCTION(
 ACE_ADD_LIBRARIES target)
-	FOREACH(libname ${ARGN})
-		TARGET_LINK_LIBRARIES(${target} 
-			optimized
-				${libname}
-			debug
-				${libname}${ACELIB_extension}
-		)
-	ENDFOREACH()
+    FOREACH(libname ${ARGN})
+        TARGET_LINK_LIBRARIES(${target}
+            optimized
+                ${libname}
+            debug
+                ${libname}${ACELIB_extension}
+        )
+    ENDFOREACH()
 ENDFUNCTION()

@@ -6,7 +6,7 @@
  *
  * $Id$
  */
-#include <ace/OS.h>
+#include <ace/ACE.h>
 #include "CostumeStructure.h"
 
 DEF_SCHEMA(CostumeStorage);

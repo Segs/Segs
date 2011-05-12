@@ -6,7 +6,7 @@
  *
  * $Id$
  */
-#include <ace/OS.h>
+#include <ace/ACE.h>
 #include "CoXHash.h"
 
 template<class KEY,class VALUE,class COMPARE_FUNCTOR>

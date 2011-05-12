@@ -13,17 +13,17 @@
 #define SERVER_SUPPORT_H
 
 #include <ace/Reactor.h>
-#include <ace/OS.h>
+#include <ace/ACE.h>
 #include <ace/Event_Handler.h>
 
 // this event stops main processing loop of the whole server
-class ServerStopper : public ACE_Event_Handler 
+class ServerStopper : public ACE_Event_Handler
 {
 public:
-	ServerStopper(int signum = SIGINT);
+    ServerStopper(int signum = SIGINT);
 
-	// Called when object is signaled by OS.
-	virtual int handle_signal (int signum,siginfo_t * = 0,ucontext_t * = 0);
+    // Called when object is signaled by OS.
+    virtual int handle_signal (int signum,siginfo_t * = 0,ucontext_t * = 0);
 };
 
 #endif // SERVER_SUPPORT_H

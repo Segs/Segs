@@ -6,7 +6,7 @@
  *
  * $Id$
  */
-#include <ace/OS.h>
+#include <ace/OS_NS_strings.h>
 #include "BitStream.h"
 #include "Character.h"
 #include "Costume.h"
