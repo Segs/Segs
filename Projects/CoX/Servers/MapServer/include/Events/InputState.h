@@ -12,14 +12,15 @@
 #include "MapEvents.h" 
 class InputState : public MapLinkEvent
 {
+    uint8_t m_csc_deltabits;
+    bool m_send_deltas;
 public:
-    InputState():MapLinkEvent(MapEventTypes::evInputState)
-    {
-
-    }
+    InputState() : MapLinkEvent(MapEventTypes::evInputState)
+    {}
     void serializeto(BitStream &) const;
-    void serializefrom(BitStream &);
-    Entity *	m_ent;
-    u32			m_cookie;
-    bool		m_new_character;
+    void partial_2(BitStream &bs);
+    void partial(BitStream &bs);
+    void serializefrom(BitStream &bs);
+    void recv_client_opts(BitStream &bs);
 };
+
