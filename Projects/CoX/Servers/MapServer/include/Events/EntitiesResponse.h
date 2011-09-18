@@ -15,7 +15,8 @@ protected:
     MapClient *m_client;
     bool m_incremental; //  if true then this is incremental update
 public:
-    EntitiesResponse(MapClient *cl,bool inc);
+    EntitiesResponse(MapClient *cl);
+    void is_incremental(bool v) {m_incremental=v;}
     virtual void serializefrom(BitStream &)
     {
     }
@@ -29,15 +30,15 @@ public:
     bool unkn1;
     bool unkn2;
     bool debug_info;
-    bool selector1;
+    bool m_interpolating;
     u32 abs_time;
     u32 db_time;
     u32 u1;
     u32 u2;
     u32 u3;
     u16 m_debug_idx;
-    u8 dword_A655C0;
-    u8 BinTrees_PPP;
+    u8 m_interpolation_level;
+    u8 m_interpolation_bits;
     u32 m_num_commands;
     u32 m_command_idx[15];
     std::string m_commands[15];

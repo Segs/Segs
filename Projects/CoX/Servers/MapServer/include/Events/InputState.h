@@ -10,10 +10,10 @@
 #pragma once
 // if this file is included stand-alone this will pull in common definitions
 #include "MapEvents.h" 
-class NewEntity : public MapLinkEvent
+class InputState : public MapLinkEvent
 {
 public:
-    NewEntity():MapLinkEvent(MapEventTypes::evEntityEnteringMap)
+    InputState():MapLinkEvent(MapEventTypes::evInputState)
     {
 
     }
