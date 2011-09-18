@@ -6,35 +6,47 @@
 #include "MapHandler.h"
 #include "MapInstance.h"
 //! EntitiesResponse is sent to a client to inform it about the current world state.
-EntitiesResponse::EntitiesResponse(MapClient *cl, bool inc) :
-    MapLinkEvent(MapEventTypes::evEntitites),
-    m_incremental(inc)
+EntitiesResponse::EntitiesResponse(MapClient *cl) :
+    MapLinkEvent(MapEventTypes::evEntitites)
 {
     m_num_commands = 0;
     m_client = cl;
     abs_time=db_time=0;
-    unkn2=true;
+    unkn2=false;
+    debug_info=false;
+    m_incremental=false;
+    //m_interpolation_level
 
 }
 void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
     EntityManager &ent_manager=m_client->current_map()->m_entities;
-    tgt.StorePackedBits(1,m_incremental ? 2 : 3); // opcode
-    tgt.StoreBits(1,entReceiveUpdate);
+
+
+    tgt.StorePackedBits(1,m_incremental ? 2 : 3); // opcode  3 - full update.
+
+    tgt.StoreBits(1,entReceiveUpdate); // passed to Entity::EntReceive as a parameter
+
     sendCommands(tgt);
 
     tgt.StoreBits(32,abs_time);
     //tgt.StoreBits(32,db_time);
 
     tgt.StoreBits(1,unkn2);
-    if(unkn2==0)
+    if(unkn2)
+    {
+        //g_debug_info 0
+        //interpolation level 2
+        //g_bitcount_rel 1
+    }
+    else
     {
         tgt.StoreBits(1,debug_info);
-        tgt.StoreBits(1,selector1);
-        if(selector1==1)
+        tgt.StoreBits(1,m_interpolating);
+        if(m_interpolating==1)
         {
-            tgt.StoreBits(2,dword_A655C0);
-            tgt.StoreBits(2,BinTrees_PPP);
+            tgt.StoreBits(2,m_interpolation_level);
+            tgt.StoreBits(2,m_interpolation_bits);
         }
     }
 
@@ -42,7 +54,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     ent_manager.sendEntities(tgt);
     if(debug_info&&!unkn2)
     {
-        ent_manager.sendDebuggedEntities(tgt);
+        ent_manager.sendDebuggedEntities(tgt); // while loop, sending entity id's and debug info for each
         ent_manager.sendGlobalEntDebugInfo(tgt);
     }
     sendServerPhysicsPositions(tgt); // These are not client specific ?
@@ -57,6 +69,9 @@ void EntitiesResponse::sendClientData(BitStream &tgt) const
     Character &player_char=ent->m_char;
     if(!m_incremental)
     {
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending Character to client: full\n")));
+
+        //full_update - > receiveCharacterFromServer
         // initial character update = level/name/class/origin/map_name
         //m_client->char_entity()->m_char.m_ent=m_client->char_entity();
         ent->serialize_full(tgt);
@@ -82,6 +97,7 @@ void EntitiesResponse::sendClientData(BitStream &tgt) const
     }
     else
     {
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending Character to client: stats-only\n")));
         ent->m_char.sendFullStats(tgt);
     }
     storePowerInfoUpdate(tgt);
@@ -107,13 +123,53 @@ void EntitiesResponse::sendControlState(BitStream &bs) const
 }
 void EntitiesResponse::sendServerPhysicsPositions(BitStream &bs) const
 {
+    static int idx=0;
+    if(false)
+    {
     bs.StoreBits(1,0);
     bs.StoreBits(1,0);
 }
+    else
+{
+        bool full_update=true;
+        bs.StoreBits(1,full_update); // sending full update
+        if(full_update==false)
+        {
+            // this is a part of || statement, so if full_update==true, the second bit is not received
+            bs.StoreBits(1,1); // copy state from previous step
+        }
+        bs.StoreBits(16,idx++);
+        if(full_update)
+        {
+            bs.StoreFloat(-60.5f); // server position
+            bs.StoreFloat(0.0f);
+            bs.StoreFloat(180.0f);
+            bs.StoreBits(1,0); // Vector3 - no data - StoreFloatOptional
+    bs.StoreBits(1,0);
+    bs.StoreBits(1,0);
+        }
+
+    }
+
+}
+
 void EntitiesResponse::sendServerControlState(BitStream &bs) const
 {
-    bs.StoreBits(1,0);
-    bs.StoreBits(1,0);
+    bool update_part_1=false;
+    bool update_part_2=false;
+    bs.StoreBits(1,update_part_1);
+    if(update_part_1)
+    {
+        bs.StoreBits(8,0); // value stored in control state field_134
+        bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); // field_13C
+        //...
+    }
+    bs.StoreBits(1,update_part_2);
+    if(update_part_2)
+    {
+        bs.StorePackedBits(1,0); // compared to client_pos_id
+        //...
+    }
 }
 void EntitiesResponse::storePowerInfoUpdate(BitStream &bs) const
 {
