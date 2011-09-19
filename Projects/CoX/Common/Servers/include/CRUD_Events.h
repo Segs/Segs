@@ -1,3 +1,12 @@
+/*
+ * Super Entity Game Server
+ * http://segs.sf.net/
+ * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ *
+ * $Id$
+ */
+
 #pragma once
 #include <ace/Assert.h>
 #include "CRUDP_Protocol.h"
@@ -8,7 +17,7 @@
 class CRUD_EventTypes
 {
 public:
-    BEGINE_EVENTS(SEGSEvent)
+    BEGINE_EVENTS(SEGS_EventTypes)
     EVENT_DECL(evPacket,0)
     EVENT_DECL(evControl,1)
     EVENT_DECL(evDisconnectRequest,2)
@@ -31,20 +40,18 @@ public:
     const u8 *bytes() const {return m_pkt->GetStream()->read_ptr();}
     size_t size() const {return m_pkt->GetStream()->GetReadableDataSize();}
 };
-template<class LINK>
-class CRUDLink_Event : public LinkLevelEvent<BitStream,LINK>
+class CRUDLink_Event : public SerializableEvent<BitStream>
 {
 public:
-    CRUDLink_Event(size_t evtype,EventProcessor *ev_src=0) : LinkLevelEvent<BitStream,LINK>(evtype,ev_src)
+    CRUDLink_Event(size_t evtype,EventProcessor *ev_src=0) : SerializableEvent<BitStream>(evtype,ev_src)//,LINK
     {}
     size_t seq_number;
 };
 
-template<class LINK_EVENT>
-class ConnectRequest : public LINK_EVENT
+class ConnectRequest : public CRUDLink_Event
 {
 public:
-    ConnectRequest():LINK_EVENT(CRUD_EventTypes::evConnectRequest)
+    ConnectRequest():CRUDLink_Event(CRUD_EventTypes::evConnectRequest)
     {
 
     }
@@ -63,11 +70,10 @@ public:
     u32 m_version;
 };
 
-template<class LINK_EVENT>
-class ConnectResponse : public LINK_EVENT
+class ConnectResponse : public CRUDLink_Event
 {
 public:
-    ConnectResponse() : LINK_EVENT(CRUD_EventTypes::evConnectResponse)
+    ConnectResponse() : CRUDLink_Event(CRUD_EventTypes::evConnectResponse)
     {
 
     }
@@ -80,11 +86,10 @@ public:
     {
     }
 };
-template<class LINK_EVENT>
-class DisconnectRequest : public LINK_EVENT
+class DisconnectRequest : public CRUDLink_Event
 {
 public:
-    DisconnectRequest() : LINK_EVENT(CRUD_EventTypes::evDisconnectRequest)
+    DisconnectRequest() : CRUDLink_Event(CRUD_EventTypes::evDisconnectRequest)
     {
 
     }
@@ -99,11 +104,10 @@ public:
         bs.StorePackedBits(1,5);
     }
 };
-template<class LINK_EVENT>
-class DisconnectResponse : public LINK_EVENT
+class DisconnectResponse : public CRUDLink_Event
 {
 public:
-    DisconnectResponse() : LINK_EVENT(CRUD_EventTypes::evDisconnectResponse)
+    DisconnectResponse() : CRUDLink_Event(CRUD_EventTypes::evDisconnectResponse)
     {
 
     }
@@ -118,11 +122,10 @@ public:
         bs.StorePackedBits(1,6);
     }
 };
-template<class LINK_EVENT>
-class IdleEvent : public LINK_EVENT
+class IdleEvent : public CRUDLink_Event
 {
 public:
-    IdleEvent() : LINK_EVENT(CRUD_EventTypes::evIdle)
+    IdleEvent() : CRUDLink_Event(CRUD_EventTypes::evIdle)
     {
 
     }
@@ -139,31 +142,24 @@ public:
     }
 
 };
-template<class EVENT_CLASS>
+
 class CRUD_EventFactory
 {
 public:
-    typedef EVENT_CLASS event_type;
-    static EVENT_CLASS *EventFromStream(BitStream &bs)
+    static CRUDLink_Event *EventFromStream(BitStream &bs)
     {
         s32 opcode = bs.GetPackedBits(1);
-        EVENT_CLASS *ev=0;
         if(opcode!=0)
-            return ev;
+            return 0;
         s32 control_opcode = bs.GetPackedBits(1);
         switch(control_opcode)
         {
-        case 0: // CTRL_IDLE
-            ev = new IdleEvent<EVENT_CLASS>();
-            // link control event
-            break;
-        case 5: //CTRL_DISCONNECT_REQ
-            ev = new DisconnectRequest<EVENT_CLASS>();
-            break;
+        case 0: return new IdleEvent(); // CTRL_IDLE
+        case 5: return new DisconnectRequest(); //CTRL_DISCONNECT_REQ
         default:
             ACE_ASSERT(!"Unknown control packet");
             break;
         }
-        return ev;
+        return 0;
     }
 };

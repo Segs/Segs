@@ -26,22 +26,22 @@ public:
         CLIENT_EXPECTED,
         NOT_LOGGED_IN,
         LOGGED_IN,
-        CLIENT_CONNECTED,
+        CLIENT_CONNECTED
     } eClientState;
 public:
                         ClientLinkState():m_state(NOT_LOGGED_IN){}
-    u32				    hash_id() {return m_peer_addr.get_ip_address()^m_peer_addr.get_port_number();}
-    void			    setState(eClientState s) {m_state=s;}
-    eClientState	    getState() {return m_state;}
-    void			    setPeer(const ACE_INET_Addr &peer){m_peer_addr=peer;}
-    ACE_INET_Addr &	    getPeer() {return m_peer_addr;}
+    u32                 hash_id() {return m_peer_addr.get_ip_address()^m_peer_addr.get_port_number();}
+    void                setState(eClientState s) {m_state=s;}
+    eClientState        getState() {return m_state;}
+    void                setPeer(const ACE_INET_Addr &peer){m_peer_addr=peer;}
+    ACE_INET_Addr &     getPeer() {return m_peer_addr;}
     EventProcessor *    link() const { return m_link; }
-    void		        link(EventProcessor * val) { m_link = val; }
+    void                link(EventProcessor * val) { m_link = val; }
 
 protected:
-    ACE_INET_Addr   m_peer_addr;
-    eClientState    m_state;
-    EventProcessor *m_link;
+    ACE_INET_Addr       m_peer_addr;
+    eClientState        m_state;
+    EventProcessor *    m_link;
 };
 class ClientSession
 {

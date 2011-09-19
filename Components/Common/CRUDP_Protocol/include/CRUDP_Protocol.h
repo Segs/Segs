@@ -22,46 +22,46 @@ class PacketCodecNull;
 class CrudP_Protocol
 {
 private:
-	typedef std::deque<CrudP_Packet *> pPacketStorage;
-	typedef pPacketStorage::iterator ipPacketStorage ;
-	typedef hash_map<int,pPacketStorage> hmSibStorage;
-	//	set<u32> seen_seq;
-		u32					send_seq;
-		u32					recv_seq;
+    typedef std::deque<CrudP_Packet *> pPacketStorage;
+    typedef pPacketStorage::iterator ipPacketStorage ;
+    typedef hash_map<int,pPacketStorage> hmSibStorage;
 
-		PacketCodecNull *	m_codec;
-		pPacketStorage		avail_packets;
-		pPacketStorage		unsent_packets;
-		std::list<u32>		recv_acks; // each successful receive will store it's ack here
-		hmSibStorage		sibling_map; // we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
-		ACE_Thread_Mutex	m_packets_mutex;
+        u32                 send_seq;
+        u32                 recv_seq;
 
-		CrudP_Packet *		mergeSiblings(u32 id);
-		bool				insert_sibling(CrudP_Packet *pkt);
-static inline bool			PacketSeqCompare(const CrudP_Packet *a,const CrudP_Packet *b);
-static inline bool			PacketSibCompare(const CrudP_Packet *a,const CrudP_Packet *b);
-        bool				allSiblingsAvailable(int );
+        PacketCodecNull *   m_codec;
+        pPacketStorage      avail_packets;
+        pPacketStorage      unsent_packets;
+        std::list<u32>      recv_acks; // each successful receive will store it's ack here
+        hmSibStorage        sibling_map; // we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
+        ACE_Thread_Mutex    m_packets_mutex;
+
+        CrudP_Packet *      mergeSiblings(u32 id);
+        bool                insert_sibling(CrudP_Packet *pkt);
+static  bool                PacketSeqCompare(const CrudP_Packet *a,const CrudP_Packet *b);
+static  bool                PacketSibCompare(const CrudP_Packet *a,const CrudP_Packet *b);
+        bool                allSiblingsAvailable(int );
 public:
                             CrudP_Protocol();
                             ~CrudP_Protocol();
-        void				setCodec(PacketCodecNull *codec){m_codec= codec;};
-        PacketCodecNull *	getCodec() const {return m_codec;};
+        void                setCodec(PacketCodecNull *codec){m_codec= codec;}
+        PacketCodecNull *   getCodec() const {return m_codec;}
 
-		size_t				UnsentPackets()    const {return unsent_packets.size();}
-		size_t				AvailablePackets() const {return avail_packets.size();}
+        size_t              UnsentPackets()    const {return unsent_packets.size();}
+        size_t              AvailablePackets() const {return avail_packets.size();}
 
-		size_t				GetUnsentPackets(std::list<CrudP_Packet *> &);
-		void				ReceivedBlock(BitStream &bs); // bytes received, will create some packets in avail_packets
+        size_t              GetUnsentPackets(std::list<CrudP_Packet *> &);
+        void                ReceivedBlock(BitStream &bs); // bytes received, will create some packets in avail_packets
 
-        void				SendPacket(CrudP_Packet *p); // this might split packet 'p' into a few packets
-        CrudP_Packet *		RecvPacket(bool disregard_seq);
+        void                SendPacket(CrudP_Packet *p); // this might split packet 'p' into a few packets
+        CrudP_Packet *      RecvPacket(bool disregard_seq);
 protected:
-		void				parseAcks(BitStream &src,CrudP_Packet *tgt);
-		void				storeAcks(BitStream &bs);
-		void				PushRecvPacket(CrudP_Packet *a); // this will try to join packet 'a' with it's siblings
-		void				PacketAck(u32);
-		void				clearQueues(bool recv,bool send); // clears out the recv/send queues
+        void                parseAcks(BitStream &src,CrudP_Packet *tgt);
+        void                storeAcks(BitStream &bs);
+        void                PushRecvPacket(CrudP_Packet *a); // this will try to join packet 'a' with it's siblings
+        void                PacketAck(u32);
+        void                clearQueues(bool recv,bool send); // clears out the recv/send queues
 
-static	void				PacketDestroyer(CrudP_Packet *a);
-static	void				PacketSibDestroyer(const std::pair<int,pPacketStorage> &a);
+static	void                PacketDestroyer(CrudP_Packet *a);
+static	void                PacketSibDestroyer(const std::pair<int,pPacketStorage> &a);
 };

@@ -8,31 +8,31 @@
 void AuthHandler::dispatch( SEGSEvent *ev )
 {
     ACE_ASSERT(ev);
-	switch(ev->type())
-	{
-	case SEGSEvent::evConnect:
-		on_connect(static_cast<ConnectEvent *>(ev)); 
+        switch(ev->type())
+        {
+        case SEGS_EventTypes::evConnect:
+                on_connect(static_cast<ConnectEvent *>(ev));
         break;
-	case evLogin:
-		on_login(static_cast<LoginRequest *>(ev));
+        case evLogin:
+                on_login(static_cast<LoginRequest *>(ev));
         break;
     case evServerListRequest:
-        on_server_list_request(static_cast<ServerListRequest *>(ev)); 
+        on_server_list_request(static_cast<ServerListRequest *>(ev));
         break;
     case evServerSelectRequest:
-        on_server_selected(static_cast<ServerSelectRequest *>(ev)); 
+        on_server_selected(static_cast<ServerSelectRequest *>(ev));
         break;
-    case SEGSEvent::evDisconnect:
-        on_disconnect(static_cast<DisconnectEvent *>(ev)); 
+    case SEGS_EventTypes::evDisconnect:
+        on_disconnect(static_cast<DisconnectEvent *>(ev));
         break;
     //////////////////////////////////////////////////////////////////////////
     //  Events from other servers
     //////////////////////////////////////////////////////////////////////////
     case Internal_EventTypes::evClientExpected:
         on_client_expected(static_cast<ClientExpected *>(ev)); break;
-	default:
-		ACE_ASSERT(!"Unknown event encountered in dispatch.");
-	}
+        default:
+                ACE_ASSERT(!"Unknown event encountered in dispatch.");
+        }
 }
 SEGSEvent *AuthHandler::dispatch_sync( SEGSEvent * )
 {
@@ -42,17 +42,17 @@ SEGSEvent *AuthHandler::dispatch_sync( SEGSEvent * )
 
 void AuthHandler::on_connect( ConnectEvent *ev )
 {
-	// TODO: guard for link state update ?
-	AuthLink *lnk=static_cast<AuthLink *>(ev->src());
-	ACE_ASSERT(lnk!=0);
-	if(lnk->m_state!=AuthLink::INITIAL)
-	{
-		ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),	ACE_TEXT ("Multiple connection attempts from the same addr/port")));
-	}
-	lnk->m_state=AuthLink::CONNECTED;
+        // TODO: guard for link state update ?
+        AuthLink *lnk=static_cast<AuthLink *>(ev->src());
+        ACE_ASSERT(lnk!=0);
+        if(lnk->m_state!=AuthLink::INITIAL)
+        {
+                ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),	ACE_TEXT ("Multiple connection attempts from the same addr/port")));
+        }
+        lnk->m_state=AuthLink::CONNECTED;
     u32 seed = rand();
     lnk->init_crypto(30206,seed);
-	lnk->putq(new AuthorizationProtocolVersion(this,30206,seed));
+        lnk->putq(new AuthorizationProtocolVersion(this,30206,seed));
 }
 void AuthHandler::on_disconnect( DisconnectEvent *ev )
 {
@@ -85,7 +85,7 @@ void AuthHandler::auth_error(EventProcessor *lnk,u32 code)
 }
 void AuthHandler::on_login( LoginRequest *ev )
 {
-	AuthLink *lnk=static_cast<AuthLink *>(ev->src());
+        AuthLink *lnk=static_cast<AuthLink *>(ev->src());
     AdminServerInterface *adminserv;
     AuthServerInterface *authserv;
     AuthClient *client = NULL;
@@ -111,7 +111,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     client = authserv->GetClientByLogin(ev->login);
     // TODO: Version 0.3 will need to use admin tools instead of creating accounts willy-nilly
     if(!client) // no client exists, create one ( step 3c )
-    { 
+    {
         adminserv->SaveAccount(ev->login,ev->password); // Autocreate/save account to DB
         client = authserv->GetClientByLogin(ev->login);
     }
@@ -142,7 +142,7 @@ void AuthHandler::on_login( LoginRequest *ev )
         (adminserv->Login(acc_inf,lnk->peer_addr())) // this might fail somehow
         )
     {
-        // inform the client of the successful login attempt 
+        // inform the client of the successful login attempt
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : succeeded\n")));
         client->link_state().setState(ClientLinkState::LOGGED_IN);
         lnk->m_state = AuthLink::AUTHORIZED;

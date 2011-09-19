@@ -19,14 +19,14 @@ class GameHandler : public EventProcessor
 public:
     void        set_server(GameServer *s) {m_server=s;}
 protected:
-	void        dispatch(SEGSEvent *ev);
+        void        dispatch(SEGSEvent *ev);
     SEGSEvent * dispatch_sync( SEGSEvent *ev );
 
     //////////////////////////////////////////////////////////////////////////
     // Link events
-    void        on_idle(IdleEvent<GameLinkEvent> *ev);
-    void        on_disconnect(DisconnectRequest<GameLinkEvent> *ev);
-    void        on_connection_request(ConnectRequest<GameLinkEvent> *ev);
+    void        on_idle(IdleEvent *ev);
+    void        on_disconnect(DisconnectRequest *ev);
+    void        on_connection_request(ConnectRequest *ev);
 
     void        on_update_server(UpdateServer *ev);
     void        on_update_character(UpdateCharacter *ev);
@@ -36,7 +36,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Server <-> Server events
     void        on_expect_client(ExpectClient *ev);		// from AuthServer
-	void        on_client_expected(ClientExpected *ev); // from MapServer
+        void        on_client_expected(ClientExpected *ev); // from MapServer
 
     // synchronous event
     SEGSEvent * on_connection_query(ClientConnectionQuery *ev);

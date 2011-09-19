@@ -6,7 +6,7 @@
 class Internal_EventTypes
 {
 public:
-    BEGINE_EVENTS_INTERNAL() // internal events ids start at 1000
+    BEGINE_EVENTS_INTERNAL()
     EVENT_DECL(evExpectClient,0)
     EVENT_DECL(evClientExpected,1)
     EVENT_DECL(evClientConnectionQuery,2)
@@ -48,15 +48,15 @@ public:
 class ClientExpected : public SEGSEvent
 {
 public:
-	ClientExpected(EventProcessor *evsrc,u64 cid,u32 c,const ACE_INET_Addr &tgt) :
-			SEGSEvent(Internal_EventTypes::evClientExpected,evsrc),
-			client_id(cid),
-			cookie(c),
-			m_connection_addr(tgt)
-	{}
-	u64 client_id;
-	u32 cookie;
-	ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client
+        ClientExpected(EventProcessor *evsrc,u64 cid,u32 c,const ACE_INET_Addr &tgt) :
+                        SEGSEvent(Internal_EventTypes::evClientExpected,evsrc),
+                        client_id(cid),
+                        cookie(c),
+                        m_connection_addr(tgt)
+        {}
+        u64 client_id;
+        u32 cookie;
+        ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client
 };
 
 // Called synchronously this query is used to retrieve client's connection status.

@@ -7,7 +7,7 @@
 #include "MapLink.h"
 
 class MapClient;
-typedef CRUDLink_Event<MapLink> MapLinkEvent;
+typedef CRUDLink_Event MapLinkEvent; //<MapLink>
 
 class EntitiesResponse : public MapLinkEvent
 {

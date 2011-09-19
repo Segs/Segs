@@ -16,7 +16,7 @@
 #include "GameLink.h"
 #include "InternalEvents.h"
 #include "opcodes/ControlCodes.h"
-typedef CRUDLink_Event<GameLink> GameLinkEvent;
+typedef CRUDLink_Event GameLinkEvent;
 
 class CharacterClient;
 
@@ -67,7 +67,7 @@ class MapServerAddrResponse : public GameLinkEvent
 public:
     MapServerAddrResponse() : GameLinkEvent(GameEventTypes::evMapAddrResponse)
     {
-
+        unused1=unused2=unused3=unused4=0;
     }
     void serializefrom(BitStream &src)
     {
@@ -204,54 +204,15 @@ public:
     DeletionAcknowledged():GameLinkEvent(GameEventTypes::evDeleteAcknowledged)
     {}
     void serializeto( BitStream &tgt ) const;
-    void serializefrom( BitStream &) {};
+    void serializefrom( BitStream &) {}
 };
 class GameUnknownRequest : public GameLinkEvent
 {
 public:
     GameUnknownRequest():GameLinkEvent(GameEventTypes::evUnknownEvent)
-    {
-
-    }
+    { }
     void serializeto(BitStream &) const
-    {
-
-    }
+    { }
     void serializefrom(BitStream &)
-    {
-
-    }
-};
-// TODO: Is GameEventFactory a misleading name, since this class is not a factory for 'all' game events ?
-class GameEventFactory : public CRUD_EventFactory<GameLinkEvent>
-{
-public:
-    static GameLinkEvent *EventFromStream(BitStream &bs)
-    {
-        GameLinkEvent *ev;
-
-        size_t read_pos = bs.GetReadPos();
-        ev = CRUD_EventFactory<GameLinkEvent>::EventFromStream(bs);
-        if(ev) // base class created the event
-            return ev;
-        bs.SetReadPos(read_pos); // rewind the stream
-
-        s32 opcode = bs.GetPackedBits(1);
-        switch(opcode)
-        {
-        case 1:
-            ev = new ConnectRequest<GameLinkEvent>; break;
-        case 2:
-            ev = new UpdateServer; break;
-        case 3:
-            ev = new MapServerAddrRequest; break;
-        case 4:
-            ev = new DeleteCharacter; break;
-        case 5:
-            ev = new UpdateCharacter; break;
-        default:
-            ev = new GameUnknownRequest; break;
-        }
-        return ev;
-    }
+    { }
 };

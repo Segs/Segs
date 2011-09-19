@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project
+ * Super Entity Game Server Project 
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -80,9 +80,9 @@ void EntityManager::InsertPlayer(Entity *ent)
 }
 Entity * EntityManager::CreatePlayer()
 {
-	Entity *res = new PlayerEntity;
-	m_map_entities[m_last_ent++] = res;
-	m_entlist.push_back(res);
+    Entity *res = new PlayerEntity;
+    m_map_entities[m_last_ent++] = res;
+    m_entlist.push_back(res);
     res->m_idx = m_last_ent-1;
     return res;
 }

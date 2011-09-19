@@ -37,47 +37,48 @@ class CharacterDatabase;
 typedef std::list< ServerHandle<MapServer> > lMapServerHandles;
 class GameServer : public IGameServer
 {
+    typedef ServerEndpoint<GameLink> GameLinkEndpoint;
 public:
-							~GameServer(void);
-							GameServer(void);
-	bool					ReadConfig(const std::string &configpath); // later name will be used to read GameServer specific configuration
-	bool					Run(void);
-	bool					ShutDown(const std::string &reason="No particular reason");
-	void					Online(bool s ) {m_online=s;}
-	bool					Online(void) { return m_online;}
-	const ACE_INET_Addr &	getAddress() {return m_location;};
+                                ~GameServer(void);
+                                GameServer(void);
+        bool                    ReadConfig(const std::string &configpath); // later name will be used to read GameServer specific configuration
+        bool                    Run(void);
+        bool                    ShutDown(const std::string &reason="No particular reason");
+        void                    Online(bool s ) {m_online=s;}
+        bool                    Online(void) { return m_online;}
+        const ACE_INET_Addr &	getAddress() {return m_location;}
 
-	// World-cluster management interface
-	int						getAccessKeyForServer(const ServerHandle<IMapServer> &h_map);
-	bool					isMapServerReady(const ServerHandle<IMapServer> &h_map);
+        // World-cluster management interface
+        int                     getAccessKeyForServer(const ServerHandle<IMapServer> &h_map);
+        bool                    isMapServerReady(const ServerHandle<IMapServer> &h_map);
 
-	ServerHandle<IMapServer> GetMapHandle(const std::string &mapname);
+        ServerHandle<IMapServer> GetMapHandle(const std::string &mapname);
 
 
-	std::string				getName(void);
-	u8						getId(void);
-	u16						getCurrentPlayers(void);
-	u16						getMaxPlayers();
-	u8						getUnkn1(void);
-	u8						getUnkn2(void);
-	CharacterDatabase *		getDb();
+        std::string             getName(void);
+        u8                      getId(void);
+        u16                     getCurrentPlayers(void);
+        u16                     getMaxPlayers();
+        u8                      getUnkn1(void);
+        u8                      getUnkn2(void);
+        CharacterDatabase *     getDb();
 
-	int						createLinkedAccount(u64 auth_account_id,const std::string &username); // Part of exposed db interface.
+        int                     createLinkedAccount(u64 auth_account_id,const std::string &username); // Part of exposed db interface.
+        EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
 
-	EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
 protected:
-	u32                     GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver
-	lMapServerHandles       GetMapsHandling(const std::string &mapname);
-	bool m_online;
-	u8                      m_id;
-	u16                     m_current_players;
-	u16                     m_max_players;
-	u8                      m_unk1,m_unk2;
-	std::string             m_serverName;
-	ACE_INET_Addr           m_location; // this value is sent to the clients
-	ACE_INET_Addr           m_listen_point; // this is used as a listening endpoint
-	ServerEndpoint<GameLink>	*m_endpoint;
-	GameHandler *           m_handler;
+        u32                     GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver
+        lMapServerHandles       GetMapsHandling(const std::string &mapname);
+        bool                    m_online;
+        u8                      m_id;
+        u16                     m_current_players;
+        u16                     m_max_players;
+        u8                      m_unk1,m_unk2;
+        std::string             m_serverName;
+        ACE_INET_Addr           m_location; // this value is sent to the clients
+        ACE_INET_Addr           m_listen_point; // the server binds here
+        GameLinkEndpoint *      m_endpoint;
+        GameHandler *           m_handler;
 };
 
 #endif // GAMESERVER_H

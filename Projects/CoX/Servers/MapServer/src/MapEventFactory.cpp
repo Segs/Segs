@@ -11,37 +11,23 @@
 
 MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
 {
-    MapLinkEvent *ev=0;
     size_t read_pos = bs.GetReadPos();
 
-    ev = CRUD_EventFactory<MapLinkEvent>::EventFromStream(bs);
+    MapLinkEvent *ev = CRUD_EventFactory::EventFromStream(bs);
     if(ev) // base class created the event
-    {
         return ev;
-    }
-    bs.SetReadPos(read_pos); // rewind the stream
+
+    bs.SetReadPos(read_pos); // rewind the stream and retry
     u8 opcode = bs.GetPackedBits(1);
     switch(opcode)
     {
-    case 1:
-        ev = new ConnectRequest<MapLinkEvent>; break;
-    case 9:
-        ev = new NewEntity; 
-        break;
-    case 2:
-        ev = new InputState;
-        break;
-    case 4:
-        ev = new ShortcutsRequest;
-        break;
-    case 3:
-        ev = new SceneRequest;
-        break;
-    case 5:
-        ev = new EntitiesRequest;
-        break;
-    default:
-        ev = new MapUnknownRequest;
+    case 1: return new ConnectRequest;
+    case 9: return new NewEntity;
+    case 2: return new InputState;
+    case 4: return new ShortcutsRequest;
+    case 3: return new SceneRequest;
+    case 5: return new EntitiesRequest;
+    default: return new MapUnknownRequest;
     }
-    return ev;
+    return 0;
 }

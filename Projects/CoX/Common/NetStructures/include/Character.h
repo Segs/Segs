@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project
+ * Super Entity Game Server Project 
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -77,7 +77,7 @@ const	std::string &	getMapName() const { return m_mapName; }
         Costume *		getCurrentCostume() const;
         void			DumpPowerPoolInfo( const PowerPool_Info &pool_info );
         void			DumpBuildInfo();
-        void            face_bits(u32){};
+        void            face_bits(u32){}
         void            dump();
         void            sendFullStats(BitStream &bs) const;
         //TODO: move these to some kind of Player info class 

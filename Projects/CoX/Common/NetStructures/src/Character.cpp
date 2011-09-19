@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project
+ * Super Entity Game Server Project 
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -20,6 +20,7 @@ Character::Character()
     m_supergroup_costume=false;
     m_sg_costume=0;
     m_using_sg_costume=false;
+    m_full_options = false;
 }
 void Character::reset()
 {
@@ -36,6 +37,8 @@ void Character::reset()
     m_supergroup_costume=false;
     m_sg_costume=0;
     m_using_sg_costume=false;
+    m_first_person_view_toggle=false;
+    m_full_options = false;
 
 }
 

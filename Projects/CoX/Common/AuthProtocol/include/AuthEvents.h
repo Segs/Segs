@@ -6,10 +6,10 @@ class AuthLink;
 
 //! all events that know how to read from
 //  and write to the buffer inherit from this
-typedef LinkLevelEvent<GrowingBuffer,AuthLink> AuthLinkEvent;
+typedef SerializableEvent<GrowingBuffer> AuthLinkEvent;
 enum AuthEventTypes
 {
-    evContinue=SEGSEvent::evLAST_EVENT,
+    evContinue=SEGS_EventTypes::evLAST_EVENT,
     evAuthProtocolVersion,
     evAuthorizationError,
     evServerSelectRequest,
@@ -18,14 +18,14 @@ enum AuthEventTypes
     evLoginResponse,
     evServerListResponse,
     evServerListRequest,
-    evServerSelectResponse,
+    evServerSelectResponse
 
 };
 class ContinueEvent : public SEGSEvent // this event is posted from AuthLink to AuthLink, it means there are leftover unsent bytes.
 {
 public:
-	ContinueEvent() : SEGSEvent(evContinue)
-	{}
+        ContinueEvent() : SEGSEvent(evContinue)
+        {}
 };
 
 #include "Events/AuthorizationError.h"

@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project
+ * Super Entity Game Server Project 
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -134,3 +134,4 @@ void GeoSetMaskEntry::build_schema()
     m_schema.add_end("End");
     m_schema.add_end("EndMask");
 }
+

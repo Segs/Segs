@@ -9,5 +9,5 @@
 
 #pragma once
 #include "CRUD_Link.h"
-class GameEventFactory;
+#include "GameEventFactory.h"
 typedef CRUDLink<GameEventFactory> GameLink;

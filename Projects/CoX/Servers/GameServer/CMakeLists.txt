@@ -5,6 +5,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/CharacterClient.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/GameHandler.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/GameServer.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/GameEvents.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/GameEventFactory.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/GameLink.cpp
 )
 SET(target_INCLUDE
@@ -12,6 +13,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/HashStorage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CharacterClient.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/GameServer.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/GameHandler.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/GameEventFactory.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/GameEvents.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/GameLink.h
 )

@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project
+ * Super Entity Game Server Project 
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -11,13 +11,13 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <map>
 #include <ace/OS_NS_time.h>
 #include "ServerManager.h"
 #include "Client.h"
 #include "MapLink.h"
 #include "CharacterDatabase.h"
-#include <vector>
-#include <map>
 
 // skeleton class used during authentication
 class MapHandler;
@@ -36,7 +36,7 @@ class MapClient : public ClientSession
         SEGSTimer *         m_tick_source;
 public:
                             MapClient();
-virtual                     ~MapClient(){};
+virtual                     ~MapClient(){}
 
         void                AddShortcut(int index, NetCommand *command);
         NetCommand *        GetCommand(int index) {return m_shortcuts[index];}

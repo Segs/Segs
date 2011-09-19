@@ -23,12 +23,12 @@ class AuthClient : public ClientSession
 {
 
 public:
-	                AuthClient();
-	bool			isLoggedIn();
-	void			forceGameServerConnectionCheck();
-	void			setSelectedServer(IGameServer *gs){m_game_server=gs;};
+    AuthClient();
+    bool			isLoggedIn();
+    void			forceGameServerConnectionCheck();
+    void			setSelectedServer(IGameServer *gs){m_game_server=gs;}
 protected:
-	IGameServer *   m_game_server; //!< every auth client knows where it is connected.
+    IGameServer *   m_game_server; //!< every auth client knows where it is connected.
 
 };
 

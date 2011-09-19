@@ -20,14 +20,14 @@ static unsigned long KnL[32] = { 0L };
 
 static unsigned short bytebit[8] = {
 0200, 0100, 040, 020, 010, 04, 02, 01 };
-static unsigned long bigbyte[24] = 
+static unsigned long bigbyte[24] =
 {
     0x800000L, 0x400000L, 0x200000L, 0x100000L,
     0x80000L, 0x40000L, 0x20000L, 0x10000L,
     0x8000L, 0x4000L, 0x2000L, 0x1000L,
     0x800L, 0x400L, 0x200L, 0x100L,
     0x80L, 0x40L, 0x20L, 0x10L,
-    0x8L, 0x4L, 0x2L, 0x1L 
+    0x8L, 0x4L, 0x2L, 0x1L
 };
 /* Use the key schedule specified in the Standard (ANSI X3.92-1981). */
 static unsigned char pc1[56] = {
@@ -292,7 +292,7 @@ static void desfunc(register unsigned long *block,const register unsigned long *
     leftt ^= work;
     right ^= work;
     leftt = ((leftt << 1) | ((leftt >> 31) & 1L)) & 0xffffffffL;
-    for( round = 0; round < 8; round++ ) 
+    for( round = 0; round < 8; round++ )
     {
         work = (right << 28) | (right >> 4);
         work ^= *keys++;
@@ -350,11 +350,11 @@ void AuthPacketCodec::SetDesKey(u64 key)
 
 AuthPacketCodec::AuthPacketCodec()
 {
-	SetXorKey(-1);
+        SetXorKey(-1);
 }
 void AuthPacketCodec::XorCodeBuf(unsigned char *buffer,size_t  length)
 {
-    if (!xor_enc_key) 
+    if (!xor_enc_key)
         return;
     const unsigned char *Key = (unsigned char *)&xor_enc_key;
     *buffer ^= *Key;
@@ -365,7 +365,7 @@ void AuthPacketCodec::XorCodeBuf(unsigned char *buffer,size_t  length)
 
 void AuthPacketCodec::XorDecodeBuf(unsigned char *buffer,size_t  length)
 {
-    if (!xor_dec_key) 
+    if (!xor_dec_key)
         return;
     const unsigned char *Key = (unsigned char *)&xor_dec_key;
     unsigned char prev = *buffer;

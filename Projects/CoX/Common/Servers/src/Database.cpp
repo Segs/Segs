@@ -11,7 +11,7 @@
 #include <sstream>
 #include <ace/Log_Msg.h>
 #include <ace/OS_NS_time.h>
-#include <ace/OS_NS_thread.h>
+#include <ace/OS_NS_Thread.h>
 // segs Includes
 #include "Database.h"
 #include <string.h>

@@ -6,7 +6,7 @@
 #include "CRUD_Events.h"
 #include "MapLink.h"
 
-typedef CRUDLink_Event<MapLink> MapLinkEvent;
+typedef CRUDLink_Event MapLinkEvent; //<MapLink>
 class SceneEvent : public MapLinkEvent
 {
     void dependent_dump(void);

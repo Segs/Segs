@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project
+ * Super Entity Game Server Project 
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -118,6 +118,8 @@ void Entity::storeUnknownBinTree(BitStream &bs) const
 }
 void Entity::sendStateMode(BitStream &bs) const
 {
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending state mode\n")));
+
     bs.StoreBits(1,m_state_mode_send); // no state mode
     if(m_state_mode_send)
     {
@@ -126,6 +128,7 @@ void Entity::sendStateMode(BitStream &bs) const
 }
 void Entity::sendSeqMoveUpdate(BitStream &bs) const
 {
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq mode update %d\n"),m_seq_update));
     bs.StoreBits(1,m_seq_update); // no seq update
     if(m_seq_update)
     {
@@ -137,6 +140,7 @@ void Entity::sendSeqMoveUpdate(BitStream &bs) const
 void Entity::sendSeqTriggeredMoves(BitStream &bs) const
 {
     u32 num_moves=0;
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq triggeted moves %d\n"),num_moves));
     bs.StorePackedBits(1,num_moves); // num moves
     for (u32 idx = 0; idx < num_moves; ++idx )
     {
@@ -261,7 +265,8 @@ PlayerEntity::PlayerEntity()
     m_hasname = true;
     m_hasgroup_name=false;
     m_pchar_things=false;
-    m_rare_bits = true;
+
+    might_have_rare=m_rare_bits = true;
 }
 void PlayerEntity::sendCostumes( BitStream &bs ) const
 {
@@ -385,6 +390,8 @@ void Entity::serializeto( BitStream &bs ) const
     bs.StoreBits(1,m_create); // checkEntCreate_varD14
     if(m_create)
     {
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending create entity\n")));
+
         bs.StoreBits(1,var_129C); // checkEntCreate_var_129C / ends creation destroys seq and returns NULL
 
         if(var_129C)
@@ -395,7 +402,7 @@ void Entity::serializeto( BitStream &bs ) const
         {
             bs.StoreBits(1,m_create_player);
             if(m_create_player)
-                bs.StorePackedBits(1,0x123); // var_1190: this will be put in field_C8 of created entity
+                bs.StorePackedBits(1,0x123); // var_1190: this will be put in field_C8 of created entity, also will return send_g_pak_packed_1_4
             bs.StorePackedBits(20,0);//bs.StorePackedBits(20,m_db_id);
         }
         else
@@ -417,9 +424,9 @@ void Entity::serializeto( BitStream &bs ) const
             if(val)
             {
                 bs.StoreBits(1,0); // entplayer_flgFE0
-                storeStringConditional(bs,"");
-                storeStringConditional(bs,"");
-                storeStringConditional(bs,"");
+                storeStringConditional(bs,""); //title1
+                storeStringConditional(bs,""); //title2
+                storeStringConditional(bs,""); //title3
             }
         }
         bs.StoreBits(1,m_hasname);
@@ -441,18 +448,19 @@ void Entity::serializeto( BitStream &bs ) const
     bs.StoreBits(1,might_have_rare); //var_C
 
     if(might_have_rare)
-    {
         bs.StoreBits(1,m_rare_bits);
-    }
+
     if(m_rare_bits)
         sendStateMode(bs);
+
     storePosUpdate(bs);
+
     if(might_have_rare)
-    {
         sendSeqMoveUpdate(bs);
-    }
+
     if(m_rare_bits)
         sendSeqTriggeredMoves(bs);
+
     // NPC -> m_pchar_things=0 ?
     bs.StoreBits(1,m_pchar_things);
     if(m_pchar_things)
@@ -545,9 +553,9 @@ void PlayerEntity::serializefrom_newchar( BitStream &src )
 }
 void PlayerEntity::serialize_full( BitStream &tgt )
 {
-    m_char.SendCharBuildInfo(tgt);
-    m_char.sendFullStats(tgt);
-    sendBuffs(tgt);
+    m_char.SendCharBuildInfo(tgt); //FIXEDOFFSET_pchar->character_Receive
+    m_char.sendFullStats(tgt); //Entity::receiveFullStats(&FullStatsTokens, pak, FIXEDOFFSET_pchar, pkt_id_fullAttrDef, 1);
+    sendBuffs(tgt); //FIXEDOFFSET_pchar->character_ReceiveBuffs(pak,0);
     bool has_sidekick=false;
     tgt.StoreBits(1,has_sidekick);
     if(has_sidekick)

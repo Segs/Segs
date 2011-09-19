@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project
+ * Super Entity Game Server Project 
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -24,10 +24,10 @@ class MapInstance : public EventProcessor
     SEGSTimer *     m_world_update_timer;
     std::vector<MapClient *> m_clients;
 public:
-    EntityManager	m_entities;
+    EntityManager   m_entities;
                     MapInstance(const std::string &name);
-    void			dispatch(SEGSEvent *ev);
-    SEGSEvent * 	dispatch_sync(SEGSEvent *ev);
+    void            dispatch(SEGSEvent *ev);
+    SEGSEvent *     dispatch_sync(SEGSEvent *ev);
 
     void            create_entity(Entity* ent);
 

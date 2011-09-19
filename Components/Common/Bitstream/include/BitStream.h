@@ -11,9 +11,9 @@
 Class:		 BitStream
 Author:		 Darawk
 Description: The BitStream class allows it's user to manipulate data in
-			 terms of individual bits, thus allowing said data to achieve
-			 much greater levels of density.  It abstracts the nuts and
-			 bolts of this functionality away from it's user.
+                         terms of individual bits, thus allowing said data to achieve
+                         much greater levels of density.  It abstracts the nuts and
+                         bolts of this functionality away from it's user.
 ************************************************************************/
 #pragma once
 #include "Base.h"
@@ -43,173 +43,86 @@ class BitStream : public GrowingBuffer
 {
 public:
 
-	/************************************************************************
-	Function:	 BitStream
-	Description: BitStream's main constructor, initializes various internal
-				 values and buffers
-	************************************************************************/
-	BitStream(size_t size);
+        BitStream(size_t size);
+        BitStream(u8 *from,size_t bitsize);
 
-	/************************************************************************
-	Function:	 BitStream
-	Description: BitStream's constructor, initializes various internal
-				 values and buffers
-	************************************************************************/
-	BitStream(u8 *from,size_t bitsize);
+        BitStream(const BitStream &bs);
+        BitStream &operator=(const BitStream &bs);
 
-	/************************************************************************
-	Function:	 BitStream (copy constructor)
-	Description: BitStream's copy constructor.  The copy constructor creates
-				 a deep copy of a BitStream, by copying the old buffer into
-				 a new one. Only explicit copying allowed. Compiler will
-				 complain if some method will try to pass BitStream by value.
-	************************************************************************/
-	BitStream(const BitStream &bs);
-	BitStream &operator=(const BitStream &bs);
+        ~BitStream();
 
+        void StoreBits(u32 nBits, u32 dataBits);
+        void StoreBits_4_10_24_32(u32 dataBits)
+        {
+                //TODO: always full, fix this later
+                StoreBits(2,3);
+                StoreBits(32,dataBits);
+        }
+        void uStoreBits(u32 nBits, u32 dataBits);
+        void StoreBitsWithDebugInfo(u32 nBits, u32 dataBits);
 
-	/************************************************************************
-	Function:	 ~BitStream
-	Description: BitStream's destructor, de-allocates allocated memory and
-				 cleans up anything else that BitStream has left behind.
-	************************************************************************/
-	~BitStream();
+        void StoreFloat(f32 val);
+        void StoreFloatWithDebugInfo(f32 val);
 
-	/************************************************************************
-	*************************************************************************
-							Functions to store bits
-	*************************************************************************
-	************************************************************************/
+        void StorePackedBits(u32 nBits, u32 dataBits);
+        void StorePackedBitsWithDebugInfo(u32 nBits, u32 dataBits);
 
-	/***********************grr*************************************************
-	Function:	 StoreBits/StoreBitsWithDebugInfo
-	Description: Stores a client-specified number of bits into the bit-
-				 stream buffer.  The bits to store come from the dataBits
-				 argument, starting from the least significant bit, to the
-				 most significant bit
-	************************************************************************/
-	void StoreBits(u32 nBits, u32 dataBits);
-	void StoreBits_4_10_24_32(u32 dataBits)
-	{
-		//TODO: always full, fix this later
-		StoreBits(2,3);
-		StoreBits(32,dataBits);
-	}
-	void uStoreBits(u32 nBits, u32 dataBits);
-	void StoreBitsWithDebugInfo(u32 nBits, u32 dataBits);
+        void StoreBitArray(const u8 *array,size_t nBits);
+        void StoreBitArrayWithDebugInfo(const u8 *array,u32 nBits);
 
-	void StoreFloat(f32 val);
-	void StoreFloatWithDebugInfo(f32 val);
-	/************************************************************************
-	Function:	 StorePackedBits/StorePackedBitsWithDebugInfo
-	Description: Stores bits in a special "packed" format.  Though i've
-				 written a working implementation of it, I don't entirely
-				 understand how it works
+        void StoreString(const char *str);
+        void StoreString(const std::string &str){StoreString(str.c_str());}
+        void StoreStringWithDebugInfo(const char *str);
 
-	 TODO: Learn more about the "packed bits" format, and write a better
-		   description of it, and if necessary a better implementation
-	************************************************************************/
-	void StorePackedBits(u32 nBits, u32 dataBits);
-	void StorePackedBitsWithDebugInfo(u32 nBits, u32 dataBits);
+        s32 GetBits(u32 nBits);
+        s32 GetBits_2_10_24_32()
+        {
+                static const int numbits[]={2,10,24,32};
+                int type=GetBits(2);
+                return GetBits(numbits[type]);
+        }
+        s32 uGetBits(u32 nBits);
+        s32 GetBitsWithDebugInfo(u32 nBits);
 
-	/************************************************************************
-	Function:	 StoreBitArray/StoreBitArrayWithDebugInfo
-	Description: Stores an array of bits in the bit stream buffer.  The
-				 main difference between StoreBitArray and StoreBits, is
-				 that StoreBitArray can accept more than 32 bits at a time
-	************************************************************************/
-	void StoreBitArray(const u8 *array,size_t nBits);
-	void StoreBitArrayWithDebugInfo(const u8 *array,u32 nBits);
+        s32 GetPackedBits(u32 minbits);
+        s32 GetPackedBitsWithDebugInfo(u32 minbits);
 
-	/************************************************************************
-	Function:	 StoreString/StoreStringWithDebugInfo
-	Description: Stores a NULL terminated C-style string in the bit stream
-				 buffer.  It includes the NULL terminator.
-	************************************************************************/
-	void StoreString(const char *str);
-	void StoreString(const std::string &str){StoreString(str.c_str());};
-	void StoreStringWithDebugInfo(const char *str);
+        void GetBitArray(u8 *array,size_t nBits);
+        void GetBitArrayWithDebugInfo(u8 *array,size_t nBits);
 
+        void GetString(std::string &str);
+        void GetStringWithDebugInfo(std::string &str);
 
-	/************************************************************************
-	*************************************************************************
-							Functions to retrieve bits
-	*************************************************************************
-	************************************************************************/
+        f32 GetFloat();
+        f32 GetFloatWithDebugInfo();
+        s64 Get64Bits();
 
-	/************************************************************************
-	Function:	 GetBits/GetBitsWithDebugInfo
-	Description: Retrieves a client-specified number of bits from the bit
-				 stream
-	************************************************************************/
-	s32 GetBits(u32 nBits);
-	s32 GetBits_2_10_24_32()
-	{
-		static const int numbits[]={2,10,24,32};
-		int type=GetBits(2);
-		return GetBits(numbits[type]);
-	}
-	s32 uGetBits(u32 nBits);
-	s32 GetBitsWithDebugInfo(u32 nBits);
+        size_t GetWritableBits()    const { return (GetAvailSize()<<3)-m_write_bit_off;}
+        size_t GetReadableBits()    const { return (GetReadableDataSize()<<3)+(m_write_bit_off-m_read_bit_off);}
+        size_t	  GetAvailSize()    const
+        {
+                ssize_t res = (ssize_t)((m_size-m_write_off)-(m_write_bit_off!=0));
+                return (size_t)std::max<>((ssize_t)0,res);
+        }
 
-	s32 GetPackedBits(u32 minbits);
-	s32 GetPackedBitsWithDebugInfo(u32 minbits);
+        bool IsByteAligned()            const { return m_byteAligned;}
 
-	void GetBitArray(u8 *array,size_t nBits);
-	void GetBitArrayWithDebugInfo(u8 *array,size_t nBits);
+        void SetReadPos(u32 pos)    {   m_read_off  = pos >> 3; m_read_bit_off  = (u8)(pos & 0x7);}
+        size_t GetReadPos()         {   return (m_read_off<<3)  + m_read_bit_off;}
+        void SetWritePos(u32 pos)   {   m_write_off = pos >> 3; m_write_bit_off = (u8)(pos & 0x7);}
 
-	void GetString(std::string &str);
-	void GetStringWithDebugInfo(std::string &str);
+        void SetByteLength(u32 length);
+        void UseByteAlignedMode(bool toggle);
+        void ByteAlign(bool read_part=true,bool write_part=true);
+        void Reset();
 
-	f32 GetFloat();
-	f32 GetFloatWithDebugInfo();
-
-
-	/************************************************************************
-	*************************************************************************
-									Accessors
-	*************************************************************************
-	************************************************************************/
-//	u32 GetBitLength()			const {	return m_bitLength;												};
-	size_t GetWritableBits()		const { return (GetAvailSize()<<3)-m_write_bit_off;};
-	size_t GetReadableBits()		const { return (GetReadableDataSize()<<3)+(m_write_bit_off-m_read_bit_off);};
-	size_t	  GetAvailSize()		const
-	{
-		ssize_t res = (ssize_t)((m_size-m_write_off)-(m_write_bit_off!=0));
-		return (size_t)std::max<>((ssize_t)0,res);
-	}
-
-//	u32 GetByteLength()			const {	return m_byteLength + BITS_TO_BYTES(m_bitPos);					};
-//	u32 GetBufferLength()		const {	return m_allocatedBytes;										};
-//	u32 GetBitPosition()		const {	return BYTES_TO_BITS(m_bytePos) + m_bitPos;						};
-//	u32 GetBytePosition()		const {	return m_bytePos;												};
-//	u32 GetBitsLeftInByte()		const {	return BITS_PER_BYTE - m_bitPos;								};
-
-	bool IsByteAligned()		const {	return m_byteAligned;											};
-//	bool IsCurByteFull()		const {	return (m_bitPos >= BITS_PER_BYTE);								};
-
-	void SetReadPos(u32 pos)	{	m_read_off  = pos >> 3;		m_read_bit_off  = (u8)(pos & 0x7);};
-	size_t GetReadPos()			{	return (m_read_off<<3)  + m_read_bit_off;};
-	void SetWritePos(u32 pos)	{	m_write_off = pos >> 3;		m_write_bit_off = (u8)(pos & 0x7);};
-
-	void SetByteLength(u32 length);
-	void UseByteAlignedMode(bool toggle);
-	void ByteAlign(bool read_part=true,bool write_part=true);
-	void Reset();
-
-	u32 GetPackedBitsLength(u32 nBits, u32 dataBits) const;
-	u32 GetBitsLength(u32 nBits, u32 dataBits)       const;
-	/************************************************************************
-	Function:	 shift_left
-	Description: Shifts all contents of the buffer a given amount left
-	************************************************************************/
-	void shift_left(u32 amount);
-	void CompressAndStoreString(const char *str);
-	void GetAndDecompressString(std::string &tgt);
+        u32 GetPackedBitsLength(u32 nBits, u32 dataBits) const;
+        u32 GetBitsLength(u32 nBits, u32 dataBits)       const;
+        void CompressAndStoreString(const char *str);
+        void GetAndDecompressString(std::string &tgt);
 
 private:
-	bool m_byteAligned;
-	u8 m_read_bit_off;
-	u8 m_write_bit_off;
-//	bool IsOverflow() const { return (GetBitPosition() > GetBitLength()); };
+        bool m_byteAligned;
+        u8 m_read_bit_off;
+        u8 m_write_bit_off;
 };

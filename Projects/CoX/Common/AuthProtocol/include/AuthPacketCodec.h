@@ -15,7 +15,7 @@
 #include "types.h"
 #include <stdlib.h>
 
-typedef struct 
+typedef struct
 {
     unsigned long ek[32];
     unsigned long dk[32];
@@ -30,7 +30,7 @@ class AuthPacketCodec
 {
 public:
     AuthPacketCodec();
-    ~AuthPacketCodec(){};
+    ~AuthPacketCodec(){}
     void SetXorKey(int key);
     void SetDesKey(u64 key);
     int Code(unsigned char *buffer,size_t size);

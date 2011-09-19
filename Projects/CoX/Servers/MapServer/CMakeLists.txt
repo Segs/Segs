@@ -26,6 +26,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/MapLink.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapEvents.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapRef.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/MapServer.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/MapEventFactory.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Events/NewEntity.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Events/SceneEvent.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Events/EntitiesResponse.h

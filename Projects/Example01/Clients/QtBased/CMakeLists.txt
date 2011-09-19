@@ -1,5 +1,5 @@
 FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
-
+FIND_PACKAGE(OpenGL)
 include(${QT_USE_FILE})
 
 SET(gui_HEADERS
@@ -43,6 +43,7 @@ SET(target_DEPENDS "")
 
 INCLUDE_DIRECTORIES(
     ${target_INCLUDE_DIR}
+    ${OPENGL_INCLUDE_DIR}
 #    ${ACE_PATH}
 )
 # WIN32
@@ -53,8 +54,7 @@ TARGET_LINK_LIBRARIES(StickHeoroes_client
     ${target_DEPENDS}
     ${QT_LIBRARIES}
 #    ${QT_QTMAIN_LIBRARY}
-    opengl32
-    glu32
+    ${OPENGL_LIBRARIES}
 #    optimized
 #	${QT_QTMAIN_LIBRARY}
 #    optimized
