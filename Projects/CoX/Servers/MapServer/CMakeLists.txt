@@ -13,6 +13,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/NetCommandManager.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/NewEntity.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/SceneEvent.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/EntitiesResponse.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/Events/InputState.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/NetCommandManager.h
@@ -30,6 +31,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/MapEventFactory.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Events/NewEntity.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Events/SceneEvent.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Events/EntitiesResponse.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/InputState.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/Events/Shortcuts.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)

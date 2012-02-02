@@ -14,6 +14,8 @@ class InputState : public MapLinkEvent
 {
     uint8_t m_csc_deltabits;
     bool m_send_deltas;
+    u64 m_perf_cntr;
+    u64 m_perf_cntr2;
 public:
     InputState() : MapLinkEvent(MapEventTypes::evInputState)
     {}
@@ -23,4 +25,3 @@ public:
     void serializefrom(BitStream &bs);
     void recv_client_opts(BitStream &bs);
 };
-

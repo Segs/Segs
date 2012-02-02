@@ -34,6 +34,6 @@ public:
 protected:
     void getGrpElem(BitStream &src,int idx);
     void reqWorldUpdateIfPak(BitStream &src);
-    void groupnetrecv_5927C0(BitStream &src,int a,int b);
+    void groupnetrecv_5(BitStream &src,int a,int b);
 };
 

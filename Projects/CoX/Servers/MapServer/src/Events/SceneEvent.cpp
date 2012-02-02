@@ -53,9 +53,7 @@ void SceneEvent::getGrpElem(BitStream &src,int idx)
             int tmp;
             while((tmp=src.GetPackedBits(1)-1)>=0)
             {
-                //					if(!tmp2)
-                //						tmp2=syb_599950(var_4);
-                groupnetrecv_5927C0(src,tmp,tmp2);
+                groupnetrecv_5(src,tmp,tmp2);
             }
         }
         else
@@ -67,7 +65,7 @@ void SceneEvent::reqWorldUpdateIfPak(BitStream &)
     //src.GetBits(1);
     ACE_ASSERT(0);
 }
-void SceneEvent::groupnetrecv_5927C0(BitStream &src,int a,int b)
+void SceneEvent::groupnetrecv_5(BitStream &src,int a,int b)
 {
     if(!src.GetBits(1))
         return;
@@ -79,7 +77,7 @@ void SceneEvent::groupnetrecv_5927C0(BitStream &src,int a,int b)
 void SceneEvent::serializefrom(BitStream &src)
 {
     unkn1=false;
-    bool IAmAnArtist;
+    //bool IAmAnArtist=false;
     undos_PP = src.GetPackedBits(1);
     var_14 = src.GetBits(1);
     if(var_14)
@@ -89,7 +87,6 @@ void SceneEvent::serializefrom(BitStream &src)
         unkn1 = src.GetPackedBits(1);
         if(unkn1)
         {
-            IAmAnArtist=false;
             //IAmAnArtist=isDevelopmentMode())
         }
         src.GetString(m_map_desc);

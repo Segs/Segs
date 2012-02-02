@@ -17,7 +17,7 @@ void InputState::serializeto(BitStream &) const
 void InputState::partial_2(BitStream &bs)
 {
     u8 control_id;
-    u16 v6;
+    //u16 v6;
     do
     {
         if(bs.GetBits(1))
@@ -25,9 +25,9 @@ void InputState::partial_2(BitStream &bs)
         else
             control_id=bs.GetBits(4);
         if(bs.GetBits(1)) // time related , (control timestamp ?)
-            v6=bs.GetBits(2);
+            /*v6=*/bs.GetBits(2);
         else
-            v6=bs.GetBits(m_csc_deltabits);
+            /*v6=*/bs.GetBits(m_csc_deltabits);
         switch(control_id)
         {
         case 6:
@@ -73,7 +73,7 @@ void InputState::partial(BitStream &bs)
     if(has_csc_mumble_listP)
     {
         m_csc_deltabits=bs.GetBits(5);
-        u16 a3_bits=bs.GetBits(16);//ControlStateChange::field_8 or OptRel::field_19A8
+        /*u16 a3_bits=*/bs.GetBits(16);//ControlStateChange::field_8 or OptRel::field_19A8
         partial_2(bs);
     }
     for(int idx=0; idx<6; ++idx)
@@ -103,10 +103,10 @@ void InputState::serializefrom(BitStream &bs)
             {
                 bs.GetFloat(); //v7->field_1C
             }
-            u64 perf_cntr = bs.Get64Bits(); //v7->perf_cntr1 - *((_QWORD *)v6 + 1)
+            m_perf_cntr = bs.Get64Bits(); //v7->perf_cntr1 - *((_QWORD *)v6 + 1)
             if(bs.GetBits(1)) // perf freq changed
             {
-                u64 perf_cntr2 = bs.Get64Bits(); //v7->perf_freq - *((_QWORD *)v6 + 2)
+                m_perf_cntr2 = bs.Get64Bits(); //v7->perf_freq - *((_QWORD *)v6 + 2)
             }
         }
         else
@@ -118,8 +118,8 @@ void InputState::serializefrom(BitStream &bs)
             {
                 bs.GetFloat(); //v7->field_1C
             }
-            u64 perf_cntr = bs.Get64Bits(); //v7->perf_cntr1
-            u64 perf_cntr2 = bs.Get64Bits(); //v7->perf_freq
+            m_perf_cntr = bs.Get64Bits(); //v7->perf_cntr1
+            m_perf_cntr2 = bs.Get64Bits(); //v7->perf_freq
         }
     }
     recv_client_opts(bs); // g_pak contents will follow

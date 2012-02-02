@@ -459,8 +459,6 @@ f32 BitStream::GetFloatWithDebugInfo()
 
 s64 BitStream::Get64Bits()
 {
-    signed int l_byte_count; // [sp+4h] [bp-10h]@1
-    int *v4; // [sp+8h] [bp-Ch]@1
     s64 result=0;
     u32 *res_ptr=(u32 *)&result;
     u8 byte_count=GetBits(3);
