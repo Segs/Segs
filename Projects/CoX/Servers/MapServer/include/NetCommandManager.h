@@ -43,17 +43,17 @@ public:
 };
 class NetCommandManager
 {
+typedef std::vector<NetCommand *> vNetCommand;
 	std::map<std::string,NetCommand *> m_name_to_command;
-	std::vector<NetCommand *> m_commands_level0;
-	void            SendCommandShortcutsWorker(MapClient *client,
-											   BitStream &tgt,
-											   const std::vector<NetCommand *> &commands,
-											   const std::vector<NetCommand *> &commands2);
+        vNetCommand m_commands_level0;
+        void            serializeto(BitStream &tgt,
+                                    const vNetCommand &commands,
+                                    const vNetCommand &commands2);
 public:
-	void            SendCommandShortcuts(MapClient *client,
-										 BitStream &tgt,
-										 const std::vector<NetCommand *> &commands2);
-	NetCommand *    getCommandByName(const std::string &name);
-	void			addCommand(NetCommand *cmd);
+        void            SendCommandShortcuts(MapClient *client,
+                                             BitStream &tgt,
+                                             const std::vector<NetCommand *> &commands2);
+        NetCommand *    getCommandByName(const std::string &name);
+        void            addCommand(NetCommand *cmd);
 };
 typedef ACE_Singleton<NetCommandManager,ACE_Thread_Mutex> NetCommandManagerSingleton; // AdminServer Interface

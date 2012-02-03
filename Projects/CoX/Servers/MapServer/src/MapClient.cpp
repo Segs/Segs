@@ -23,7 +23,6 @@ void MapClient::SendCommand(NetCommand *command,...)
 
 bool MapClient::db_create()
 {
-    PlayerEntity * entity_p = (PlayerEntity *)m_ent;
     account_info().fill_game_db(0);
     Character * new_char = account_info().create_new_character();
     if(!new_char)

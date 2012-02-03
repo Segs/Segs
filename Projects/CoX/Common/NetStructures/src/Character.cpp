@@ -559,3 +559,39 @@ void Character::sendOptions( BitStream &bs ) const
     }
     bs.StoreBits(1,m_first_person_view_toggle);
 }
+
+#define ADD_OPT(type,var) \
+{\
+    ClientOption o;\
+    o.m_args.push_back(ClientOption::Arg(type,&var));\
+    m_opts.push_back(o);\
+}
+
+void ClientOptions::init()
+{
+    ADD_OPT(1,control_debug);
+    ADD_OPT(1,no_strafe);
+    ADD_OPT(1,alwaysmobile);
+    ADD_OPT(1,repredict);
+    ADD_OPT(1,neterrorcorrection);
+    ADD_OPT(3,speed_scale);
+    ADD_OPT(1,svr_lag);
+    ADD_OPT(1,svr_lag_vary);
+    ADD_OPT(1,svr_pl);
+    ADD_OPT(1,svr_oo_packets);
+    ADD_OPT(1,client_pos_id);
+    ADD_OPT(1,atest0);
+    ADD_OPT(1,atest1);
+    ADD_OPT(1,atest2);
+    ADD_OPT(1,atest3);
+    ADD_OPT(1,atest4);
+    ADD_OPT(1,atest5);
+    ADD_OPT(1,atest6);
+    ADD_OPT(1,atest7);
+    ADD_OPT(1,atest8);
+    ADD_OPT(1,atest9);
+    ADD_OPT(1,predict);
+    ADD_OPT(1,notimeout);
+    ADD_OPT(1,selected_ent_server_index);
+}
+#undef ADD_OPT

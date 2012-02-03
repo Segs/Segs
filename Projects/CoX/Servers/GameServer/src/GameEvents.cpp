@@ -118,7 +118,7 @@ void CharacterResponse::serializeto( BitStream &bs ) const
 
 void CharacterResponse::serializefrom( BitStream &bs )
 {
-    bs;
+    bs.GetPackedBits(1);
     ACE_ASSERT(!"TODO");
 }
 

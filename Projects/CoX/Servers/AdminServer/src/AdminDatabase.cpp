@@ -27,10 +27,9 @@ int AdminDatabase::GetAccounts(void) const
 bool AdminDatabase::AddAccount(const char *username, const char *password,u16 access_level) // Add account and password to the database server
 {
 	PreparedArgs args;
-	u8 res=0;
-	args.set_param(0,std::string(username));
-	args.set_param(1,(u8*)password,14,true);
-	args.set_param(2,access_level);
+        args.add_param(std::string(username));
+        args.add_param((u8*)password,14,true);
+        args.add_param(access_level);
 	DbResults query_res;
 	if(false==m_add_account_query->execute(args,query_res)) // Send our query to the PostgreSQL db server to process
 	{

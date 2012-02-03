@@ -14,9 +14,10 @@ MapManger::MapManger( ) : m_max_instances(2)
 {
 }
 //! \brief Loads all templates available in given directory, will populate m_templates attribute
-bool MapManger::load_templates( const std::string &template_directory )
+bool MapManger::load_templates( const std::string &/*template_directory*/ )
 {
-    //TODO: actually implement this
+    //TODO: actually implement this, use boost path support ?
+    // (template_directory / "tutorial.bin")
     m_templates[0] = new MapTemplate("tutorial.bin");
     return true;
 }

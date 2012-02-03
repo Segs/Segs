@@ -146,7 +146,7 @@ bool CharacterDatabase::CreateLinkedAccount( u64 auth_account_id,const std::stri
 	return true;
 }
 
-int CharacterDatabase::remove_account( u64 acc_serv_id )
+int CharacterDatabase::remove_account( u64 /*acc_serv_id*/ )
 {
 	return 0;
 }

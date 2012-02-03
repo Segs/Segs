@@ -73,10 +73,10 @@ struct PreparedArgs
     std::vector<std::string> m_params;
     std::vector<int>        m_lengths;
     std::vector<int>        m_formats;
-    void                    set_param(size_t idx,const u8 *bytes,size_t len,bool binary);
-    void                    set_param(size_t idx,const std::string &str);
-    void                    set_param(size_t idx,u16);
-    void                    set_param(size_t idx,u32);
+    void                    add_param(const u8 *bytes, size_t len, bool binary);
+    void                    add_param(const std::string &str);
+    void                    add_param(u16);
+    void                    add_param(u32);
 };
 class PreparedQuery
 {

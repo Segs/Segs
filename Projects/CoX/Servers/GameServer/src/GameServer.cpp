@@ -117,11 +117,11 @@ bool GameServer::ShutDown(const std::string &reason)
 	delete m_endpoint;
 	return true;
 }
-int GameServer::getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
+int GameServer::getAccessKeyForServer(const ServerHandle<IMapServer> &/*h_map*/)
 {
 	return 0;
 }
-bool GameServer::isMapServerReady(const ServerHandle<IMapServer> &h_map)
+bool GameServer::isMapServerReady(const ServerHandle<IMapServer> &/*h_map*/)
 {
 	return false;
 }

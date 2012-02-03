@@ -18,7 +18,7 @@
 #include "RoamingServer.h"
 class MapServer;
 class EventProcessor;
-// this is a proxy for calling GameServer services
+// this is a proxy for calling MapServer services
 class IMapServer : public RoamingServer
 {
 public:
@@ -29,8 +29,8 @@ virtual EventProcessor *        event_target()=0;
 class MapServerInterface : public Server
 {
 public:
-	                        MapServerInterface(IMapServer *mi) : m_instance(mi){};
-	                        ~MapServerInterface(void){};
+                                MapServerInterface(IMapServer *mi) : m_instance(mi){}
+                                ~MapServerInterface(void){}
 
 	bool                    ReadConfig(const std::string &name); // later name will be used to read GameServer specific configuration
 	bool                    Run(void);
@@ -38,10 +38,10 @@ public:
 	bool                    isLocal(){return true;} // this method returns true if this interface is a local ( same process )
 	bool                    Online();
 	EventProcessor *        event_target();
-    const ACE_INET_Addr &   getAddress();
+        const ACE_INET_Addr &   getAddress();
 
 protected:
-	IMapServer *m_instance;
+        IMapServer *            m_instance;
 };
 
 #endif // MAPSERVERINTERFACE_H

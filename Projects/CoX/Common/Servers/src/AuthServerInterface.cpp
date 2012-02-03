@@ -39,7 +39,7 @@ bool AuthServerInterface::ShutDown(const std::string &reason)
 {
 	return m_server->ShutDown(reason);
 }
-ServerHandle<IAdminServer> AuthServerInterface::AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw)
+ServerHandle<IAdminServer> AuthServerInterface::AuthenticateMapServer(const tMapHandle &map, int version, const std::string &passw)
 {
     return m_server->AuthenticateMapServer(map,version,passw);
 }

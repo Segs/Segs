@@ -25,18 +25,18 @@ class AuthServerInterface;
 class RoamingServer : public Server
 {
 public:
-virtual							~RoamingServer(){}
+virtual         ~RoamingServer(){}
 
-virtual bool					ReadConfig(const std::string &configpath)=0;
-virtual bool					Run(void) = 0;
-virtual bool					ShutDown(const std::string &reason)=0;
-virtual bool					Online()=0;
+virtual bool    ReadConfig(const std::string &configpath)=0;
+virtual bool    Run(void) = 0;
+virtual bool    ShutDown(const std::string &reason)=0;
+virtual bool    Online()=0;
 
 protected:
 		AuthServerInterface *	getAuthServer();
 private:
-		ACE_INET_Addr			m_authaddr;
-		std::string				m_passw;
+                ACE_INET_Addr           m_authaddr;
+                std::string             m_passw;
 };
 
 #endif // ROAMINGSERVER_H

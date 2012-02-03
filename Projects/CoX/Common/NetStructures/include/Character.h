@@ -19,13 +19,46 @@
 #include "BitStream.h"
 #include "Powers.h"
 #define MAX_CHARACTER_SLOTS 8
-
+struct ClientOption
+{
+    struct Arg
+    {
+        Arg(int t,void *v) : type(t),tgt(v){}
+        int type;
+        void *tgt;
+    };
+    std::vector<Arg> m_args;
+};
 class ClientOptions
 {
+    std::vector<ClientOption> m_opts;
+    void init();
 public:
-    bool mouse_invert;
-    float mouselook_scalefactor;
-    float degrees_for_turns;
+    ClientOptions()
+    {
+        init();
+    }
+    bool    mouse_invert;
+    float   mouselook_scalefactor;
+    float   degrees_for_turns;
+    int32_t control_debug;
+    int32_t no_strafe;
+    int32_t alwaysmobile;// 1- player is always mobile (can't be immobilized by powers)
+    int32_t repredict;   //1 - client is out of sync with server, asking for new physics state info.
+    int32_t neterrorcorrection;
+    float   speed_scale;
+    int32_t svr_lag,svr_lag_vary,svr_pl,svr_oo_packets,client_pos_id;
+    int32_t atest0,atest1,atest2,atest3,atest4,atest5,atest6,atest7,atest8,atest9;
+    int32_t predict,notimeout,selected_ent_server_index;
+    ClientOption *get(int idx)
+    {
+        if(idx<0)
+            return 0;
+        if(idx>=0)
+            ACE_ASSERT(!"Unknown option requested!!");
+        return &m_opts[idx];
+    }
+
 };
 class Costume;
 

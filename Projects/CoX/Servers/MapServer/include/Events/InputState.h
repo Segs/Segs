@@ -14,8 +14,9 @@ class InputState : public MapLinkEvent
 {
     uint8_t m_csc_deltabits;
     bool m_send_deltas;
-    u64 m_perf_cntr;
-    u64 m_perf_cntr2;
+    u64 m_perf_cntr_diff;
+    u64 m_perf_freq_diff;
+    u16 controlBits;
 public:
     InputState() : MapLinkEvent(MapEventTypes::evInputState)
     {}

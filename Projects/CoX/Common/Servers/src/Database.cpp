@@ -204,7 +204,7 @@ size_t DbResultRow::getColFloatArray(const char *column_name,float *arr,size_t a
 
 struct tm DbResultRow::getTimestamp( const char *column_name )
 {
-    struct tm ts_result={};
+    struct tm ts_result;
     const char *res = getColString(column_name);
     if(!res)
     {
@@ -243,28 +243,28 @@ bool PreparedQuery::execute(PreparedArgs &args,DbResults &res )
         return false;
     return true;
 }
-void PreparedArgs::set_param( size_t idx,const u8 *bytes,size_t len,bool binary )
+void PreparedArgs::add_param( const u8 *bytes,size_t len,bool binary )
 {
     m_params.push_back(std::string((char *)bytes,len));
     m_lengths.push_back(len);
     m_formats.push_back(binary ? 1 : 0);
 }
 
-void PreparedArgs::set_param( size_t idx,const std::string &str )
+void PreparedArgs::add_param( const std::string &str )
 {
     m_params.push_back(str);
     m_lengths.push_back(str.size());
     m_formats.push_back(0);
 }
 
-void PreparedArgs::set_param( size_t idx,u16 v )
+void PreparedArgs::add_param( u16 v )
 {
     u16 rv = ACE_HTONS(v);
     m_params.push_back(std::string((char *)&rv,2));
     m_lengths.push_back(2);
     m_formats.push_back(1);
 }
-void PreparedArgs::set_param( size_t idx,u32 v )
+void PreparedArgs::add_param( u32 v )
 {
     u32 rv = ACE_HTONL(v);
     m_params.push_back(std::string((char *)&rv,4));
