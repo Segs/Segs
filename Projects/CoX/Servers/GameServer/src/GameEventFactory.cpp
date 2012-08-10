@@ -11,7 +11,7 @@ GameLinkEvent *GameEventFactory::EventFromStream(BitStream &bs)
         return ev;
     bs.SetReadPos(read_pos); // otherwise rewind the stream and retry
 
-    s32 opcode = bs.GetPackedBits(1);
+    int32_t opcode = bs.GetPackedBits(1);
     switch(opcode)
     {
     case 1: return new ConnectRequest;

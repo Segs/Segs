@@ -292,7 +292,7 @@ Function:	 GetBits/GetBitsWithDebugInfo
 Description: Retrieves a client-specified number of bits from the bit
                          stream
 ************************************************************************/
-s32 BitStream::GetBitsWithDebugInfo(u32 nBits)
+int32_t BitStream::GetBitsWithDebugInfo(u32 nBits)
 {
         if(GetBits(3) != BS_BITS)	return 0;
         /*u32 datalength =*/ (void)GetPackedBits(5);
@@ -303,9 +303,9 @@ Function:	 GetBits/GetBitsWithDebugInfo
 Description: Retrieves a client-specified number of bits from the bit
                          stream
 ************************************************************************/
-s32 BitStream::GetBits(u32 nBits)
+int32_t BitStream::GetBits(u32 nBits)
 {
-        s32 tgt;
+        int32_t tgt;
         if(nBits>GetReadableBits())
                 return false;
         if(IsByteAligned())
@@ -313,17 +313,17 @@ s32 BitStream::GetBits(u32 nBits)
         tgt = uGetBits(nBits);
         return tgt;
 }
-s32 BitStream::uGetBits(u32 nBits)
+int32_t BitStream::uGetBits(u32 nBits)
 {
         unsigned long long *tp,r;
-        s32 tgt;
+        int32_t tgt;
         ACE_ASSERT(nBits<=32);
         ACE_ASSERT(GetReadableBits()>=nBits);
         ACE_ASSERT(m_read_off+7<(m_size+m_safe_area));
         tp = (u64 *)read_ptr();
         r = *tp;//swap64(*tp);
         r>>=m_read_bit_off; // starting at the top
-        tgt = s32(r & (~1ull)>>(64-nBits));
+        tgt = int32_t(r & (~1ull)>>(64-nBits));
         read_ptr((m_read_bit_off+nBits)>>3);
         m_read_bit_off = (m_read_bit_off+nBits)&0x7;
         return tgt;
@@ -340,7 +340,7 @@ Description: Retrieves an indefinite(though always less than 32) number
 TODO: Learn more about this format and write a better description, and
           if necessary, a better implementation
 ************************************************************************/
-s32 BitStream::GetPackedBitsWithDebugInfo(u32 minbits)
+int32_t BitStream::GetPackedBitsWithDebugInfo(u32 minbits)
 {
         if(GetBits(3) != BS_PACKEDBITS) return 0;
         /*u32 datalength =*/ (void)GetPackedBits(5);
@@ -356,7 +356,7 @@ Description: Retrieves an indefinite(though always less than 32) number
 TODO: Learn more about this format and write a better description, and
           if necessary, a better implementation
 ************************************************************************/
-s32 BitStream::GetPackedBits(u32 minbits)
+int32_t BitStream::GetPackedBits(u32 minbits)
 {
         if(IsByteAligned())	return GetBits(32);
 
@@ -484,7 +484,7 @@ f32 BitStream::GetFloat()
                 Get(res);
         else
         {
-                s32 to_convert = GetBits(32);
+                int32_t to_convert = GetBits(32);
                 res = *(reinterpret_cast<float *>(&to_convert));
                 ACE_ASSERT(res==(*((f32 *)&to_convert)));
         }

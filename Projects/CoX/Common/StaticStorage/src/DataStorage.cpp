@@ -168,7 +168,7 @@ bool BinStore::prepare_nested()
 bool BinStore::nesting_name( std::string &name )
 {
     u32 expected_size = read_header(name,12000);
-    if(expected_size == ~0)
+    if(expected_size == ~0UL)
         return false;
     bytes_to_read = expected_size;
     if(m_file_sizes.size()>0)

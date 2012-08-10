@@ -170,8 +170,9 @@ class CoXHashMap : public CoxHashCommon<std::string,VALUE>
         CHECK_COLLISIONS = 8,
         SINGLE_BYTE = 0x20,
     };
+    typedef CoxHashCommon<std::string,VALUE> super;
 public:
-    CoXHashMap(){};
+    CoXHashMap(){}
     u32 find_index(const std::string &key, u32 &index_tgt, u32 &key_tgt, bool a5) const;
     u32 next_size(u32 sz)
     {

@@ -74,18 +74,18 @@ public:
         void StoreString(const std::string &str){StoreString(str.c_str());}
         void StoreStringWithDebugInfo(const char *str);
 
-        s32 GetBits(u32 nBits);
-        s32 GetBits_2_10_24_32()
+        int32_t GetBits(u32 nBits);
+        int32_t GetBits_2_10_24_32()
         {
                 static const int numbits[]={2,10,24,32};
                 int type=GetBits(2);
                 return GetBits(numbits[type]);
         }
-        s32 uGetBits(u32 nBits);
-        s32 GetBitsWithDebugInfo(u32 nBits);
+        int32_t uGetBits(u32 nBits);
+        int32_t GetBitsWithDebugInfo(u32 nBits);
 
-        s32 GetPackedBits(u32 minbits);
-        s32 GetPackedBitsWithDebugInfo(u32 minbits);
+        int32_t GetPackedBits(u32 minbits);
+        int32_t GetPackedBitsWithDebugInfo(u32 minbits);
 
         void GetBitArray(u8 *array,size_t nBits);
         void GetBitArrayWithDebugInfo(u8 *array,size_t nBits);

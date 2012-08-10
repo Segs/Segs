@@ -43,9 +43,10 @@ struct Color3ub
     u8 v[3];
 };
 struct Field;
-class Store
+class Store // base class for walking data storage
 {
 public:
+    virtual ~Store() {}
     virtual void    prepare()=0;
     virtual std::string read_str(size_t maxlen)=0;
     virtual bool    read_bytes(char *buffer,size_t sz)=0;
@@ -61,7 +62,7 @@ public:
     virtual bool    end_encountered()=0; // returns true if we should nest-out
 };
 class ClassSchema;
-class BinStore : public Store
+class BinStore : public Store // binary storage
 {
     u32 m_required_crc;
     std::ifstream m_str;
@@ -88,14 +89,16 @@ class BinStore : public Store
     std::vector<u32> m_file_sizes; // implicit stack
 
     std::string read_pstr(size_t maxlen);
-    void skip_pstr();
-    bool read_data_blocks(bool file_data_blocks);
-    bool check_bin_version_and_crc(const ClassSchema *s);
-    u32 current_fsize() {return *m_file_sizes.rbegin();}
-    u32 read_header(std::string &name,size_t maxlen);
+    void        skip_pstr();
+    bool        read_data_blocks(bool file_data_blocks);
+    bool        check_bin_version_and_crc(const ClassSchema *s);
+    u32         current_fsize() {return *m_file_sizes.rbegin();}
+    u32         read_header(std::string &name,size_t maxlen);
     void        fixup();
 public:
                 BinStore(){}
+virtual         ~BinStore() {}
+
     bool        read(u32 &v);
     bool        read(float &v);
     bool        read_bytes(char *tgt,size_t sz);

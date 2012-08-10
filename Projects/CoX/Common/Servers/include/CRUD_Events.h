@@ -148,10 +148,10 @@ class CRUD_EventFactory
 public:
     static CRUDLink_Event *EventFromStream(BitStream &bs)
     {
-        s32 opcode = bs.GetPackedBits(1);
+        int32_t opcode = bs.GetPackedBits(1);
         if(opcode!=0)
             return 0;
-        s32 control_opcode = bs.GetPackedBits(1);
+        int32_t control_opcode = bs.GetPackedBits(1);
         switch(control_opcode)
         {
         case 0: return new IdleEvent(); // CTRL_IDLE

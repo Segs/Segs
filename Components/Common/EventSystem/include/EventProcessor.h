@@ -7,7 +7,7 @@ class EventProcessor : public ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvent>
 {
 typedef ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvent> super;
 
-        EventProcessor *m_target;
+
 public:
         int             open(void *args /* = 0 */);
         int             handle_timeout(const ACE_Time_Value &current_time, const void *act /* = 0 */);

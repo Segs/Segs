@@ -32,7 +32,7 @@ public:
 	{
 		m_colors[0]=c1;
 		m_colors[1]=c2;
-	};
+        }
 	void serializeto(BitStream &bs) const;
 	void serializefrom(BitStream &bs);
 	void serializeto_charsel(BitStream &bs) const;

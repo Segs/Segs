@@ -14,7 +14,7 @@ GameServerInterface *ServerManagerC::GetGameServer(size_t idx)
         return NULL;
     return m_GameServers[idx];
 }
-ServerManagerC::ServerManagerC() : m_adminserv(NULL),m_authserv(NULL)
+ServerManagerC::ServerManagerC() : m_authserv(NULL),m_adminserv(NULL)
 {
 }
 bool ServerManagerC::LoadConfiguration(const std::string &config_file_full_path)

@@ -49,19 +49,20 @@ u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &k
             res = 2;
             break;
         }
-        if (!this->m_storage[hash_index].key_hash || a5 && (this->m_storage[hash_index].entry_flags & 1))
+        const typename super::HashEntry &entry(this->m_storage[hash_index]);
+        if ( !entry.key_hash || (a5 && (entry.entry_flags & 1)) )
         {
             res = 0;
             break;
         }
-        if ( HashValue != this->m_storage[hash_index].key_hash && !(this->m_storage[hash_index].entry_flags & 1) )
+        if ( HashValue != entry.key_hash && !(entry.entry_flags & 1) )
             continue;
         if ( !(this->m_flags & HAS_KEY_NAMES) || !(this->m_flags & CHECK_COLLISIONS) )
         {
             res = 1;
             break;
         }
-        if(0==key.compare(this->m_storage[hash_index].stored_key)) // this does not handle wide characters ?
+        if(0==key.compare(entry.stored_key)) // this does not handle wide characters ?
         {
             res = 1;
             break;

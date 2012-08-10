@@ -203,9 +203,9 @@ struct SceneStorage : public TreeStore
             return m_root[idx];
         return 0;
     }
-    virtual size_t idx_of_child(TreeStore *child)
+    virtual size_t idx_of_child(TreeStore *child) const
     {
-        vDef::iterator itr=std::find(m_defs.begin(),m_defs.end(),child);
+        vDef::const_iterator itr=std::find(m_defs.begin(),m_defs.end(),child);
         if(itr!=m_defs.end())
             return itr-m_defs.begin();
         return ~0UL;

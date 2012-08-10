@@ -30,8 +30,8 @@ public:
 	DbResultRow() : m_result(0),m_row(0){}
 
 	const char *		getColString(const char *column_name);
-			s16			getColInt16(const char *column_name);
-			s32			getColInt32(const char *column_name);
+			int16_t			getColInt16(const char *column_name);
+			int32_t			getColInt32(const char *column_name);
 			s64			getColInt64(const char *column_name);
 			bool		getColBool(const char *column_name);
 			float		getColFloat(const char *column_name);

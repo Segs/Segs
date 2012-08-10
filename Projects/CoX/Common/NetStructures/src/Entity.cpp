@@ -753,9 +753,9 @@ void MapCostume::dump()
             m_parts[i].name_4.c_str(),m_parts[i].name_5.c_str()
             ));
         else
-            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,0x%08x,0x%08x,%s,%s\n"),m_parts[i].name_0.c_str(),
+            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),m_parts[i].name_0.c_str(),
             m_parts[i].name_1.c_str(),m_parts[i].name_2.c_str(),m_parts[i].name_3.c_str(),
-            m_parts[i].m_colors[0],m_parts[i].m_colors[1],m_parts[i].m_colors[2],m_parts[i].m_colors[3],
+            m_parts[i].m_colors[0],m_parts[i].m_colors[1],
             m_parts[i].name_4.c_str(),m_parts[i].name_5.c_str()
             ));
     }

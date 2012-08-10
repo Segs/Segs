@@ -124,9 +124,9 @@ const char *DbResultRow::getColString(const char *column_name)
         return NULL;
     return PQgetvalue(m_result,m_row,field_no);
 }
-s16 DbResultRow::getColInt16(const char *column_name)
+int16_t DbResultRow::getColInt16(const char *column_name)
 {
-    return (s16)getColInt32(column_name);
+    return (int16_t)getColInt32(column_name);
 }
 bool DbResultRow::getColBool(const char *column_name)
 {
@@ -137,14 +137,14 @@ bool DbResultRow::getColBool(const char *column_name)
     }
     return toupper(res[0])=='T';
 }
-s32 DbResultRow::getColInt32(const char *column_name)
+int32_t DbResultRow::getColInt32(const char *column_name)
 {
     const char *res = getColString(column_name);
     if(!res)
     {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),-1);
     }
-    s32 result;
+    int32_t result;
     sscanf(res,ACE_INT32_FORMAT_SPECIFIER,&result);
     return result;
 }
