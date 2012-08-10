@@ -1,11 +1,12 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "BitStream.h"
-#include "MapRef.h"
+#include <stdint.h>
 #include "CRUD_Events.h"
 #include "MapLink.h"
 
+class BitStream;
+class MapRef;
 typedef CRUDLink_Event MapLinkEvent; //<MapLink>
 class SceneEvent : public MapLinkEvent
 {
@@ -17,7 +18,7 @@ public:
     void    serializeto(BitStream &tgt) const;
 
     std::string m_map_desc;
-    int ref_count;
+    uint32_t ref_count;
     int ref_crc;
     int var_4;
     bool m_outdoor_map;

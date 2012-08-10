@@ -19,8 +19,8 @@ values and buffers
 ************************************************************************/
 BitStream::BitStream(size_t size) : GrowingBuffer(0xFFFFFFFF,7,size)
 {
-	m_byteAligned    = false;
-	Reset();
+    m_byteAligned    = false;
+    Reset();
 };
 
 
@@ -33,10 +33,10 @@ a new one.
 BitStream::BitStream(const BitStream &bs) : GrowingBuffer(bs)
 {
 
-	m_byteAligned	 = bs.m_byteAligned;
-	m_read_bit_off   = bs.m_read_bit_off;
-	m_write_bit_off  = bs.m_write_bit_off;
-	m_safe_area = 7;
+    m_byteAligned	 = bs.m_byteAligned;
+    m_read_bit_off   = bs.m_read_bit_off;
+    m_write_bit_off  = bs.m_write_bit_off;
+    m_safe_area = 7;
 }
 /************************************************************************
 Function:	 BitStream
@@ -45,31 +45,31 @@ Description: BitStream's constructor, initializes various internal
 ************************************************************************/
 BitStream::BitStream(u8 *arr,size_t size) : GrowingBuffer(arr,size,false)
 {
-	m_byteAligned	= false;
-	m_read_bit_off  = 0;
-	m_write_bit_off = 0;
-	m_safe_area = 7;
+    m_byteAligned	= false;
+    m_read_bit_off  = 0;
+    m_write_bit_off = 0;
+    m_safe_area = 7;
 }
 BitStream &BitStream::operator =(const BitStream &bs)
 {
-	if(this!=&bs)
-	{
-		delete		[] m_buf;
-		m_safe_area = bs.m_safe_area;
-		m_size		= bs.m_size;
-		m_buf		= new u8[m_size];
-		ACE_ASSERT(m_buf!=NULL);
-		m_last_err	= bs.m_last_err;
-		m_write_off = bs.m_write_off;
-		m_read_off  = bs.m_read_off;
-		m_max_size	= bs.m_max_size;
-		if(NULL!=m_buf)
-			memcpy(m_buf,bs.m_buf,m_write_off); // copy up to write point
-		m_byteAligned	 = bs.m_byteAligned;
-		m_read_bit_off   = bs.m_read_bit_off;
-		m_write_bit_off  = bs.m_write_bit_off;
-	}
-	return *this;
+    if(this!=&bs)
+    {
+        delete		[] m_buf;
+        m_safe_area = bs.m_safe_area;
+        m_size		= bs.m_size;
+        m_buf		= new u8[m_size];
+        ACE_ASSERT(m_buf!=NULL);
+        m_last_err	= bs.m_last_err;
+        m_write_off = bs.m_write_off;
+        m_read_off  = bs.m_read_off;
+        m_max_size	= bs.m_max_size;
+        if(NULL!=m_buf)
+            memcpy(m_buf,bs.m_buf,m_write_off); // copy up to write point
+        m_byteAligned	 = bs.m_byteAligned;
+        m_read_bit_off   = bs.m_read_bit_off;
+        m_write_bit_off  = bs.m_write_bit_off;
+    }
+    return *this;
 }
 /************************************************************************
 Function:	 ~BitStream
@@ -83,22 +83,22 @@ BitStream::~BitStream()
 
 /************************************************************************
 *************************************************************************
-						Functions to store bits
+                                                Functions to store bits
 *************************************************************************
 ************************************************************************/
 
 /************************************************************************
 Function:	 StoreBits/StoreBitsWithDebugInfo
 Description: Stores a client-specified number of bits into the bit-
-			 stream buffer.  The bits to store come from the dataBits
-			 argument, starting from the least significant bit, to the
-			 most significant bit
+                         stream buffer.  The bits to store come from the dataBits
+                         argument, starting from the least significant bit, to the
+                         most significant bit
 ************************************************************************/
 void BitStream::StoreBitsWithDebugInfo(u32 nBits, u32 dataBits)
 {
-	StoreBits(3, BS_BITS);
-	StorePackedBits(5, nBits);
-	StoreBits(dataBits, nBits);
+    StoreBits(3, BS_BITS);
+    StorePackedBits(5, nBits);
+    StoreBits(dataBits, nBits);
 }
 /***********************grr*************************************************
 Function:	 StoreBits/StoreBitsWithDebugInfo
@@ -109,62 +109,62 @@ Description: Stores a client-specified number of bits into the bit-
 ************************************************************************/
 void BitStream::StoreBits(u32 nBits, u32 dataBits)
 {
-	ACE_ASSERT(nBits <= BITS_PER_DWORD);
+    ACE_ASSERT(nBits <= BITS_PER_DWORD);
 
-	if(nBits>GetWritableBits())
-	{
-		size_t new_size = m_size+(nBits>>3);
-		// growing to accommodate !
-		if(resize(new_size+7)==-1)
-		{
-			m_last_err = 1;
-			return;
-		}
-	}
-	//	If this stream is byte-aligned, then we'll need to use a byte-aligned
-	//	value for nBits
-	if(IsByteAligned())
-	{
-		if(nBits!=32) // mask out non-needed
-			dataBits &= (1<<nBits)-1;
-		nBits = BYTE_ALIGN(nBits);
-	}
-	uStoreBits(nBits,dataBits);
+    if(nBits>GetWritableBits())
+    {
+        size_t new_size = m_size+(nBits>>3);
+        // growing to accommodate !
+        if(resize(new_size+7)==-1)
+        {
+            m_last_err = 1;
+            return;
+        }
+    }
+    //	If this stream is byte-aligned, then we'll need to use a byte-aligned
+    //	value for nBits
+    if(IsByteAligned())
+    {
+        if(nBits!=32) // mask out non-needed
+            dataBits &= (1<<nBits)-1;
+        nBits = BYTE_ALIGN(nBits);
+    }
+    uStoreBits(nBits,dataBits);
 }
 void BitStream::uStoreBits(u32 nBits, u32 dataBits)
 {
-	u64 *tp,r;
-	ACE_ASSERT(nBits<=32);
-	ACE_ASSERT(m_write_off+7<(m_size+m_safe_area));
-	tp = (u64 *)write_ptr();
-	r = dataBits;
-	u64 mask_ = BIT_MASK(nBits)<<m_write_bit_off; // all bits in the mask are those that'll change
-	(*tp) = (r<<m_write_bit_off)|((*tp)&~mask_); // put those bits in
-	write_ptr((m_write_bit_off+nBits)>>3); //advance
-	m_write_bit_off = (m_write_bit_off+nBits)&0x7;
+    u64 *tp,r;
+    ACE_ASSERT(nBits<=32);
+    ACE_ASSERT(m_write_off+7<(m_size+m_safe_area));
+    tp = (u64 *)write_ptr();
+    r = dataBits;
+    u64 mask_ = BIT_MASK(nBits)<<m_write_bit_off; // all bits in the mask are those that'll change
+    (*tp) = (r<<m_write_bit_off)|((*tp)&~mask_); // put those bits in
+    write_ptr((m_write_bit_off+nBits)>>3); //advance
+    m_write_bit_off = (m_write_bit_off+nBits)&0x7;
 }
 
 /************************************************************************
 Function:	 StorePackedBits/StorePackedBitsWithDebugInfo
 Description: Stores bits in a special "packed" format.  Though i've
-			 written a working implementation of it, I don't entirely
-			 understand how it works
+                         written a working implementation of it, I don't entirely
+                         understand how it works
 
 TODO: Learn more about the "packed bits" format, and write a better
-	  description of it, and if necessary a better implementation
+          description of it, and if necessary a better implementation
 ************************************************************************/
 void BitStream::StorePackedBitsWithDebugInfo(u32 nBits, u32 dataBits)
 {
-	StoreBits(3, BS_PACKEDBITS);
-	StorePackedBits(5, nBits);
-	StorePackedBits(nBits, dataBits);
+    StoreBits(3, BS_PACKEDBITS);
+    StorePackedBits(5, nBits);
+    StorePackedBits(nBits, dataBits);
 }
 /*
-	Masks: 1,3,15,255
-	store 1,4 -> Store(1,1) 3,Store(2,3) -> 1110000
-	store 1,18 -> Store(1,1) 17,Store(2,3) 14 -> 1111110
-	store 2,18 -> Store(2,3) 15,Store(4,15) 0 -> 11 1111 00000000
-	store 3,18 -> Store(3,7) 11, 111 001011
+        Masks: 1,3,15,255
+        store 1,4 -> Store(1,1) 3,Store(2,3) -> 1110000
+        store 1,18 -> Store(1,1) 17,Store(2,3) 14 -> 1111110
+        store 2,18 -> Store(2,3) 15,Store(4,15) 0 -> 11 1111 00000000
+        store 3,18 -> Store(3,7) 11, 111 001011
 */
 /**
   @fn StorePackedBits
@@ -178,31 +178,31 @@ void BitStream::StorePackedBitsWithDebugInfo(u32 nBits, u32 dataBits)
 */
 void BitStream::StorePackedBits(u32 nBits, u32 dataBits)
 {
-	if(IsByteAligned())	return StoreBits(32, dataBits);
+    if(IsByteAligned())	return StoreBits(32, dataBits);
 
-	while((nBits < 32) && (dataBits >= BIT_MASK(nBits)))
-	{
-		dataBits -= BIT_MASK(nBits);
-		StoreBits(nBits, BIT_MASK(nBits));
-		nBits *= 2;
-		if(nBits > 32) nBits = 32;
-	}
+    while((nBits < 32) && (dataBits >= BIT_MASK(nBits)))
+    {
+        dataBits -= BIT_MASK(nBits);
+        StoreBits(nBits, BIT_MASK(nBits));
+        nBits *= 2;
+        if(nBits > 32) nBits = 32;
+    }
 
-	StoreBits(nBits, dataBits);
+    StoreBits(nBits, dataBits);
 }
 
 
 /************************************************************************
 Function:	 StoreBitArray/StoreBitArrayWithDebugInfo
 Description: Stores an array of bits in the bit stream buffer.  The
-			 main difference between StoreBitArray and StoreBits, is
-			 that StoreBitArray can accept more than 32 bits at a time
+                         main difference between StoreBitArray and StoreBits, is
+                         that StoreBitArray can accept more than 32 bits at a time
 ************************	************************************************/
 void BitStream::StoreBitArrayWithDebugInfo(const u8 *array,u32 nBits)
 {
-	StoreBits(3, BS_BITARRAY);
-	StorePackedBits(5, nBits);
-	StoreBitArray(array,nBits);
+    StoreBits(3, BS_BITARRAY);
+    StorePackedBits(5, nBits);
+    StoreBitArray(array,nBits);
 }
 /************************************************************************
 Function:	 StoreBitArray/StoreBitArrayWithDebugInfo
@@ -212,32 +212,32 @@ Description: Stores an array of bits in the bit stream buffer.  The
 ************************************************************************/
 void BitStream::StoreBitArray(const u8 *src,size_t nBits)
 {
-	size_t nBytes = BITS_TO_BYTES(nBits);
-	ACE_ASSERT(src);
-	ByteAlign();
-	PutBytes(src,nBytes);
-	m_buf[m_write_off] = 0;
-	if(nBits&7) // unaligned !
-	{
-		m_write_off--;
-		m_write_bit_off = nBits&7;
-	}
+    size_t nBytes = BITS_TO_BYTES(nBits);
+    ACE_ASSERT(src);
+    ByteAlign();
+    PutBytes(src,nBytes);
+    m_buf[m_write_off] = 0;
+    if(nBits&7) // unaligned !
+    {
+        m_write_off--;
+        m_write_bit_off = nBits&7;
+    }
 }
 
 
 /************************************************************************
 Function:	 StoreString/StoreStringWithDebugInfo
 Description: Stores a NULL terminated C-style string in the bit stream
-			 buffer.  It includes the NULL terminator.
+                         buffer.  It includes the NULL terminator.
 ************************************************************************/
 void BitStream::StoreStringWithDebugInfo(const char *str)
 {
-	StoreBits(3, BS_STRING);
-	size_t str_length=0;
-	if(str)
-		str_length=strlen(str);
-	StorePackedBits(5, (u32)str_length);
-	StoreString(str);
+    StoreBits(3, BS_STRING);
+    size_t str_length=0;
+    if(str)
+        str_length=strlen(str);
+    StorePackedBits(5, (u32)str_length);
+    StoreString(str);
 }
 /************************************************************************
 Function:	 StoreString/StoreStringWithDebugInfo
@@ -247,36 +247,37 @@ Description: Stores a NULL terminated C-style string in the bit stream
 
 void BitStream::StoreString(const char *str)
 {
-        //	strlen(str) + 1, because we want to include
-        //	the NULL byte.
-        if(IsByteAligned())
-        {
-                PutString(str);
-                return;
-        }
-        size_t len = 1;
-        if(str)
-                len+=strlen(str);
-        u32 idx;
-        u8	rshift = 8-m_write_bit_off;
-        if(len>GetAvailSize())
-        {
-                if(resize(m_write_off+len)==-1) // space exhausted
-                {
-                        m_last_err = 1;
-                        return;
-                }
-        }
-        for(idx = 0; idx < len; idx++)
-        {
-                u8 upperbits   = ((u16)((u8 *)str)[idx]) << m_write_bit_off;
-                u8 lowerbits   = ((u8 *)str)[idx] >> rshift;
-                u8 mask = (0xFF>> rshift);
-                m_buf[m_write_off + idx] = (m_buf[m_write_off + idx] & mask) | upperbits;
-                m_buf[m_write_off + idx + 1] = lowerbits;
-        }
+    if(!str) // nothing to do ?
+        return;
 
-        m_write_off  += idx;
+    //	strlen(str) + 1, because we want to include
+    //	the NULL byte.
+    if(IsByteAligned())
+    {
+        PutString(str);
+        return;
+    }
+    size_t len = strlen(str)+1;
+    u32 idx;
+    u8	rshift = 8-m_write_bit_off;
+    if(len>GetAvailSize())
+    {
+        if(resize(m_write_off+len)==-1) // space exhausted
+        {
+            m_last_err = 1;
+            return;
+        }
+    }
+    for(idx = 0; idx < len; idx++)
+    {
+        u8 upperbits   = ((u16)((u8 *)str)[idx]) << m_write_bit_off;
+        u8 lowerbits   = ((u8 *)str)[idx] >> rshift;
+        u8 mask = (0xFF>> rshift);
+        m_buf[m_write_off + idx] = (m_buf[m_write_off + idx] & mask) | upperbits;
+        m_buf[m_write_off + idx + 1] = lowerbits;
+    }
+
+    m_write_off  += idx;
 }
 
 
@@ -294,9 +295,9 @@ Description: Retrieves a client-specified number of bits from the bit
 ************************************************************************/
 int32_t BitStream::GetBitsWithDebugInfo(u32 nBits)
 {
-        if(GetBits(3) != BS_BITS)	return 0;
-        /*u32 datalength =*/ (void)GetPackedBits(5);
-        return GetBits(nBits);
+    if(GetBits(3) != BS_BITS)	return 0;
+    /*u32 datalength =*/ (void)GetPackedBits(5);
+    return GetBits(nBits);
 }
 /************************************************************************
 Function:	 GetBits/GetBitsWithDebugInfo
@@ -305,28 +306,28 @@ Description: Retrieves a client-specified number of bits from the bit
 ************************************************************************/
 int32_t BitStream::GetBits(u32 nBits)
 {
-        int32_t tgt;
-        if(nBits>GetReadableBits())
-                return false;
-        if(IsByteAligned())
-                nBits= BYTE_ALIGN(nBits);
-        tgt = uGetBits(nBits);
-        return tgt;
+    int32_t tgt;
+    if(nBits>GetReadableBits())
+        return false;
+    if(IsByteAligned())
+        nBits= BYTE_ALIGN(nBits);
+    tgt = uGetBits(nBits);
+    return tgt;
 }
 int32_t BitStream::uGetBits(u32 nBits)
 {
-        unsigned long long *tp,r;
-        int32_t tgt;
-        ACE_ASSERT(nBits<=32);
-        ACE_ASSERT(GetReadableBits()>=nBits);
-        ACE_ASSERT(m_read_off+7<(m_size+m_safe_area));
-        tp = (u64 *)read_ptr();
-        r = *tp;//swap64(*tp);
-        r>>=m_read_bit_off; // starting at the top
-        tgt = int32_t(r & (~1ull)>>(64-nBits));
-        read_ptr((m_read_bit_off+nBits)>>3);
-        m_read_bit_off = (m_read_bit_off+nBits)&0x7;
-        return tgt;
+    unsigned long long *tp,r;
+    int32_t tgt;
+    ACE_ASSERT(nBits<=32);
+    ACE_ASSERT(GetReadableBits()>=nBits);
+    ACE_ASSERT(m_read_off+7<(m_size+m_safe_area));
+    tp = (u64 *)read_ptr();
+    r = *tp;//swap64(*tp);
+    r>>=m_read_bit_off; // starting at the top
+    tgt = int32_t(r & (~1ull)>>(64-nBits));
+    read_ptr((m_read_bit_off+nBits)>>3);
+    m_read_bit_off = (m_read_bit_off+nBits)&0x7;
+    return tgt;
 }
 
 
@@ -342,9 +343,9 @@ TODO: Learn more about this format and write a better description, and
 ************************************************************************/
 int32_t BitStream::GetPackedBitsWithDebugInfo(u32 minbits)
 {
-        if(GetBits(3) != BS_PACKEDBITS) return 0;
-        /*u32 datalength =*/ (void)GetPackedBits(5);
-        return GetPackedBits(minbits);
+    if(GetBits(3) != BS_PACKEDBITS) return 0;
+    /*u32 datalength =*/ (void)GetPackedBits(5);
+    return GetPackedBits(minbits);
 }
 /************************************************************************
 Function:	 GetPackedBits/GetPackedBitsWithDebugInfo
@@ -358,23 +359,23 @@ TODO: Learn more about this format and write a better description, and
 ************************************************************************/
 int32_t BitStream::GetPackedBits(u32 minbits)
 {
-        if(IsByteAligned())	return GetBits(32);
+    if(IsByteAligned())	return GetBits(32);
 
-        u32 accumulator = 0;
-        while(GetReadableBits()>0)
-        {
-                u32 bits    = GetBits(minbits);
-                u32 bitMask = BIT_MASK(minbits);
+    u32 accumulator = 0;
+    while(GetReadableBits()>0)
+    {
+        u32 bits    = GetBits(minbits);
+        u32 bitMask = BIT_MASK(minbits);
 
-                if(bits < bitMask || minbits == BITS_PER_DWORD) return bits + accumulator;
+        if(bits < bitMask || minbits == BITS_PER_DWORD) return bits + accumulator;
 
-                minbits     *= 2;
-                accumulator += bitMask;
+        minbits     *= 2;
+        accumulator += bitMask;
 
-                if(minbits > BITS_PER_DWORD) minbits = BITS_PER_DWORD;
-        }
+        if(minbits > BITS_PER_DWORD) minbits = BITS_PER_DWORD;
+    }
 
-        return -1;
+    return -1;
 }
 
 
@@ -386,9 +387,9 @@ Description: Retrieves a client-specified "array" of bits.  The main
 ************************************************************************/
 void BitStream::GetBitArrayWithDebugInfo(u8 *array,size_t nBytes)
 {
-        if(GetBits(3) != BS_BITARRAY) return;
-        /*u32 datalength =*/ (void)GetPackedBits(5);
-        GetBitArray(array,nBytes);
+    if(GetBits(3) != BS_BITARRAY) return;
+    /*u32 datalength =*/ (void)GetPackedBits(5);
+    GetBitArray(array,nBytes);
 }
 /************************************************************************
 Function:	 GetBitArray/GetBitArrayWithDebugInfo
@@ -398,9 +399,9 @@ Description: Retrieves a client-specified "array" of bits.  The main
 ************************************************************************/
 void BitStream::GetBitArray(u8 *tgt, size_t nBits)
 {
-        ByteAlign(true,false);
-        size_t nBytes(nBits>>3);
-        GetBytes(tgt,nBytes);
+    ByteAlign(true,false);
+    size_t nBytes(nBits>>3);
+    GetBytes(tgt,nBytes);
 }
 
 
@@ -411,9 +412,9 @@ Description: Retrieves a null-terminated C-style string from the bit
 ************************************************************************/
 void BitStream::GetStringWithDebugInfo(std::string &str)
 {
-        if(GetBits(3) != BS_STRING)	return;
-        /*u32 datalength =*/ (void)GetPackedBits(5);
-        GetString(str);
+    if(GetBits(3) != BS_STRING)	return;
+    /*u32 datalength =*/ (void)GetPackedBits(5);
+    GetString(str);
 }
 /************************************************************************
 Function:	 GetString/GetStringWithDebugInfo
@@ -422,26 +423,26 @@ Description: Retrieves a null-terminated C-style string from the bit
 ************************************************************************/
 void BitStream::GetString(std::string &str)
 {
+    if(GetReadableBits()<8)
+    {
+        m_last_err = 1;
+        return;
+    }
+    str.clear();
+    u32 bitsLeft = BITS_LEFT(m_read_bit_off);
+    u8 chr;
+    do {
+        chr  = m_buf[m_read_off]  >> m_read_bit_off;
+        chr	|= m_buf[++m_read_off] << bitsLeft;
+        if(chr)
+            str += chr;
+
         if(GetReadableBits()<8)
         {
-                m_last_err = 1;
-                return;
+            m_last_err = 1;
+            return;
         }
-        str.clear();
-        u32 bitsLeft = BITS_LEFT(m_read_bit_off);
-        u8 chr;
-        do {
-                chr  = m_buf[m_read_off]  >> m_read_bit_off;
-                chr	|= m_buf[++m_read_off] << bitsLeft;
-                if(chr)
-                        str += chr;
-
-                if(GetReadableBits()<8)
-                {
-                        m_last_err = 1;
-                        return;
-                }
-        } while(chr != '\0');
+    } while(chr != '\0');
 }
 
 
@@ -452,9 +453,9 @@ Description: Retrieves a floating-point value from the bit stream.  This
 ************************************************************************/
 f32 BitStream::GetFloatWithDebugInfo()
 {
-        if(GetBits(3) != BS_F32) return 0;
-        /*u32 datalength =*/ (void)GetPackedBits(5);
-        return GetFloat();
+    if(GetBits(3) != BS_F32) return 0;
+    /*u32 datalength =*/ (void)GetPackedBits(5);
+    return GetFloat();
 }
 
 s64 BitStream::Get64Bits()
@@ -464,9 +465,9 @@ s64 BitStream::Get64Bits()
     u8 byte_count=GetBits(3);
     if ( byte_count > 4 )
     {
-      result=GetBits(32);
-      byte_count-=4;
-      res_ptr+=1;
+        result=GetBits(32);
+        byte_count-=4;
+        res_ptr+=1;
     }
 
     *res_ptr=GetBits(8*byte_count);
@@ -479,62 +480,62 @@ Description: Retrieves a floating-point value from the bit stream.  This
 ************************************************************************/
 f32 BitStream::GetFloat()
 {
-        f32 res;
-        if(IsByteAligned())
-                Get(res);
-        else
-        {
-                int32_t to_convert = GetBits(32);
-                res = *(reinterpret_cast<float *>(&to_convert));
-                ACE_ASSERT(res==(*((f32 *)&to_convert)));
-        }
-        return res;
+    f32 res;
+    if(IsByteAligned())
+        Get(res);
+    else
+    {
+        int32_t to_convert = GetBits(32);
+        res = *(reinterpret_cast<float *>(&to_convert));
+        ACE_ASSERT(res==(*((f32 *)&to_convert)));
+    }
+    return res;
 }
 void BitStream::StoreFloatWithDebugInfo(f32 val)
 {
-        StoreBits(3,BS_F32);
-        StoreBits(5,32);
-        StoreBits(32,*(reinterpret_cast<u32 *>(&val)));
-        //StoreBits(32,*((u32 *)&val));
+    StoreBits(3,BS_F32);
+    StoreBits(5,32);
+    StoreBits(32,*(reinterpret_cast<u32 *>(&val)));
+    //StoreBits(32,*((u32 *)&val));
 }
 
 void BitStream::StoreFloat(f32 val)
 {
-        if(IsByteAligned())
-                Put(val);
-        else
-                StoreBits(32,*(reinterpret_cast<u32 *>(&val)));
-//		StoreBits(32,*((u32 *)&val));
+    if(IsByteAligned())
+        Put(val);
+    else
+        StoreBits(32,*(reinterpret_cast<u32 *>(&val)));
+    //		StoreBits(32,*((u32 *)&val));
 }
 
 
 
 void BitStream::Reset()
 {
-        GrowingBuffer::Reset();
-        m_write_bit_off=m_read_bit_off=0;
+    GrowingBuffer::Reset();
+    m_write_bit_off=m_read_bit_off=0;
 }
 
 void BitStream::UseByteAlignedMode(bool toggle)
 {
-        m_byteAligned = toggle;
-        if(m_byteAligned) ByteAlign();
+    m_byteAligned = toggle;
+    if(m_byteAligned) ByteAlign();
 }
 
 
 void BitStream::ByteAlign( bool read_part,bool write_part )
 {
-        //	If bitPos is 0, we're already aligned
-        if(write_part)
-        {
-                m_write_off += (m_write_bit_off>0);
-                m_write_bit_off=0;
-        }
-        if(read_part)
-        {
-                m_read_off  += (m_read_bit_off>0);
-                m_read_bit_off=0;
-        }
+    //	If bitPos is 0, we're already aligned
+    if(write_part)
+    {
+        m_write_off += (m_write_bit_off>0);
+        m_write_bit_off=0;
+    }
+    if(read_part)
+    {
+        m_read_off  += (m_read_bit_off>0);
+        m_read_bit_off=0;
+    }
 }
 
 /*
@@ -578,7 +579,7 @@ u32 BitStream::GetBitsLength(u32 nBits, u32 dataBits) const
 
 void BitStream::SetByteLength(u32 /*byteLength*/)
 {
-        ACE_ASSERT(!"Not implemented!");
+    ACE_ASSERT(!"Not implemented!");
 }
 /*
 BitStream::BitStream(u8* arr,u32 bit_size)
@@ -595,28 +596,28 @@ BitStream::BitStream(u8* arr,u32 bit_size)
 }*/
 void BitStream::CompressAndStoreString(const char *str)
 {
-        size_t decompLen = strlen(str) + 1;
+    size_t decompLen = strlen(str) + 1;
 
-        uLongf len = (decompLen * 1.0125) + 12;
-        u8 *buf = new u8[len];
-        compress2(buf, &len, (const Bytef *)str, decompLen, 5);
-        StorePackedBits(1, len);		//	Store compressed len
-        StorePackedBits(1, decompLen);	//	Store decompressed len
-        StoreBitArray(buf,len << 3);	//	Store compressed string
-        delete [] buf;
+    uLongf len = (decompLen * 1.0125) + 12;
+    u8 *buf = new u8[len];
+    compress2(buf, &len, (const Bytef *)str, decompLen, 5);
+    StorePackedBits(1, len);		//	Store compressed len
+    StorePackedBits(1, decompLen);	//	Store decompressed len
+    StoreBitArray(buf,len << 3);	//	Store compressed string
+    delete [] buf;
 }
 void BitStream::GetAndDecompressString(std::string &tgt)
 {
-        u32 decompLen = 0;
+    u32 decompLen = 0;
 
-        u32 len = 0;
-        len		  = GetPackedBits(1);		//	Store compressed len
-        decompLen = GetPackedBits(1);		//	decompressed len
-        u8 *dst = new u8[decompLen];
-        u8 *src = new u8[len];
-        GetBitArray(src,len<<3);
-        uncompress(dst,(uLongf *)&decompLen,src,len);
-        tgt.assign((char *)dst,decompLen);
-        delete [] src;
-        delete [] dst;
+    u32 len = 0;
+    len		  = GetPackedBits(1);		//	Store compressed len
+    decompLen = GetPackedBits(1);		//	decompressed len
+    u8 *dst = new u8[decompLen];
+    u8 *src = new u8[len];
+    GetBitArray(src,len<<3);
+    uncompress(dst,(uLongf *)&decompLen,src,len);
+    tgt.assign((char *)dst,decompLen);
+    delete [] src;
+    delete [] dst;
 }

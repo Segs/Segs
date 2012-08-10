@@ -15,10 +15,10 @@
 // SpecHash<std::string,val>
 //
 // get hash index of given key
-u32 get_hash_idx(const std::string &)
-{
-    return 0;
-}
+//u32 get_hash_idx(const std::string &)
+//{
+//    return 0;
+//}
 
 void UpdateServer::dependent_dump()
 {

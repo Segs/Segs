@@ -139,7 +139,7 @@ void InputState::recv_client_opts(BitStream &bs)
     entry=opts.get(opt_idx);
     while(entry!=0)
     {
-        for(int i=0; i<entry->m_args.size(); i++)
+        for(size_t i=0; i<entry->m_args.size(); i++)
         {
             ClientOption::Arg &arg=entry->m_args[i];
             switch ( arg.type )

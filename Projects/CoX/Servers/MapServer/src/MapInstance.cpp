@@ -99,10 +99,10 @@ void MapInstance::on_timeout(TimerEvent *ev)
     {
         cl=*iter;
         cl->char_entity()->m_create=only_first;
-        ACE_ASSERT(cl->char_entity()->pos.v[0]==-60.5);
-        cl->char_entity()->pos.v[0]=-60.5;
-        cl->char_entity()->pos.v[1]=0;
-        cl->char_entity()->pos.v[2]=180;
+        ACE_ASSERT(cl->char_entity()->pos.x==-60.5);
+        cl->char_entity()->pos.x=-60.5;
+        cl->char_entity()->pos.y=0;
+        cl->char_entity()->pos.z=180;
         cl->char_entity()->qrot.vals.x=1.0f;
         cl->char_entity()->qrot.vals.amount=1.0f;// - (rand()&0xFF)/255.0;
         EntitiesResponse *res=new EntitiesResponse(cl);

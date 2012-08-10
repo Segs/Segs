@@ -9,6 +9,7 @@
 
 // This module contains code to access our database where accounts and characters are stored
 #include <sstream>
+#include <inttypes.h>
 #include <ace/Log_Msg.h>
 #include <ace/OS_NS_time.h>
 #include <ace/OS_NS_Thread.h>
@@ -156,7 +157,7 @@ s64 DbResultRow::getColInt64(const char *column_name)
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),-1);
     }
     s64 result;
-    sscanf(res,ACE_INT64_FORMAT_SPECIFIER,&result);
+    sscanf(res,SCNd64,&result);
     return result;
 }
 float DbResultRow::getColFloat(const char *column_name)
