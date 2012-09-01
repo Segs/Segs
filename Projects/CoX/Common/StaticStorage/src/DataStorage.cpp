@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -168,7 +168,7 @@ bool BinStore::prepare_nested()
 bool BinStore::nesting_name( std::string &name )
 {
     u32 expected_size = read_header(name,12000);
-    if(expected_size == ~0UL)
+    if(expected_size == u32(~0))
         return false;
     bytes_to_read = expected_size;
     if(m_file_sizes.size()>0)
