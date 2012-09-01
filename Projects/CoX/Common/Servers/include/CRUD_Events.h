@@ -157,7 +157,7 @@ public:
         case 0: return new IdleEvent(); // CTRL_IDLE
         case 5: return new DisconnectRequest(); //CTRL_DISCONNECT_REQ
         default:
-            ACE_ASSERT(!"Unknown control packet");
+            assert(!"Unknown control packet");
             break;
         }
         return 0;

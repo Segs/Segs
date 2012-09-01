@@ -19,7 +19,7 @@ public:
 	{
 		u8 op;
 		buf.uGet(op);
-		ACE_ASSERT(op==1);
+		assert(op==1);
 		buf.uGet(m_error_type);
 	}
 };

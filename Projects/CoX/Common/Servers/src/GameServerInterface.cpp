@@ -6,77 +6,77 @@
  *
  * $Id$
  */
-
+#include <cassert>
 #include "GameServerInterface.h"
 #include <ace/Log_Msg.h>
 
 bool GameServerInterface::Run()
 {
-	ACE_ASSERT(m_instance);
-	return m_instance->Run();
+        assert(m_instance);
+        return m_instance->Run();
 }
 bool GameServerInterface::ReadConfig(const std::string &name)
 {
-	ACE_ASSERT(m_instance);
-	return m_instance->ReadConfig(name);
+        assert(m_instance);
+        return m_instance->ReadConfig(name);
 }
 bool GameServerInterface::ShutDown(const std::string &reason)
 {
-	ACE_ASSERT(m_instance);
-	return m_instance->ShutDown(reason);
+        assert(m_instance);
+        return m_instance->ShutDown(reason);
 }
 bool GameServerInterface::Online()
-{ 
-	ACE_ASSERT(m_instance);
-	return m_instance->Online();
+{
+        assert(m_instance);
+        return m_instance->Online();
 }
 u8 GameServerInterface::getId()
-{ 
-	ACE_ASSERT(m_instance);
-	return m_instance->getId();
+{
+        assert(m_instance);
+        return m_instance->getId();
 }
 u16 GameServerInterface::getCurrentPlayers()
-{ 
-	ACE_ASSERT(m_instance);
-	return m_instance->getCurrentPlayers();
+{
+        assert(m_instance);
+        return m_instance->getCurrentPlayers();
 }
 u16 GameServerInterface::getMaxPlayers()
-{ 
-	ACE_ASSERT(m_instance);
-	return m_instance->getMaxPlayers();
+{
+        assert(m_instance);
+        return m_instance->getMaxPlayers();
 }
 u8 GameServerInterface::getUnkn1()
-{ 
-	ACE_ASSERT(m_instance);
-	return m_instance->getUnkn1();
+{
+        assert(m_instance);
+        return m_instance->getUnkn1();
 }
 u8 GameServerInterface::getUnkn2()
-{ 
-	ACE_ASSERT(m_instance);
-	return m_instance->getUnkn2();
+{
+        assert(m_instance);
+        return m_instance->getUnkn2();
 }
 std::string GameServerInterface::getName()
-{ 
-	ACE_ASSERT(m_instance);
-	return m_instance->getName();
+{
+        assert(m_instance);
+        return m_instance->getName();
 }
 const ACE_INET_Addr &GameServerInterface::getAddress()
-{ 
-	ACE_ASSERT(m_instance);
-	return m_instance->getAddress();
+{
+        assert(m_instance);
+        return m_instance->getAddress();
 }
 int	GameServerInterface::getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
 {
-	ACE_ASSERT(m_instance);
-	return m_instance->getAccessKeyForServer(h_map);
+        assert(m_instance);
+        return m_instance->getAccessKeyForServer(h_map);
 }
 bool GameServerInterface::isMapServerReady(const ServerHandle<IMapServer> &h_map)
 {
-	ACE_ASSERT(m_instance);
-	return m_instance->isMapServerReady(h_map);
+        assert(m_instance);
+        return m_instance->isMapServerReady(h_map);
 }
 EventProcessor * GameServerInterface::event_target()
 {
-    ACE_ASSERT(m_instance);
+    assert(m_instance);
     return m_instance->event_target();
 }

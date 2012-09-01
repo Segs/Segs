@@ -202,7 +202,7 @@ void Character::serializetoCharsel( BitStream &bs )
     bs.StoreString(m_origin_name);
     if(m_costumes.size()==0)
     {
-        ACE_ASSERT(m_name.compare("EMPTY")==0); // only empty characters can have no costumes
+        assert(m_name.compare("EMPTY")==0); // only empty characters can have no costumes
         CharacterCostume::NullCostume.storeCharsel(bs);
     }
     else
@@ -213,7 +213,7 @@ void Character::serializetoCharsel( BitStream &bs )
 
 Costume * Character::getCurrentCostume() const
 {
-    ACE_ASSERT(m_costumes.size()>0);
+    assert(m_costumes.size()>0);
     if(m_current_costume_set)
         return m_costumes[m_current_costume_idx];
     else
@@ -282,7 +282,7 @@ void Character::dump()
 
 void Character::recv_initial_costume( BitStream &src )
 {
-    ACE_ASSERT(m_costumes.size()==0);
+    assert(m_costumes.size()==0);
     MapCostume *res=new MapCostume;
     m_current_costume_idx=0;
     res->serializefrom(src);

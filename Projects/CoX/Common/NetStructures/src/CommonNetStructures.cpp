@@ -94,7 +94,7 @@ void NetStructure::storeTransformMatrix( BitStream &tgt,const TransformStruct &s
 void NetStructure::getTransformMatrix( BitStream &bs,Matrix4x3 &src )
 {
 	if(bs.GetBits(1))
-		ACE_ASSERT(!"PACKED ARRAY RECEIVED!");
+		assert(!"PACKED ARRAY RECEIVED!");
 	bs.GetBitArray((u8*)&src,12*4*8);
 }
 

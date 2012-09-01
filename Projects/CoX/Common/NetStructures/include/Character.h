@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -11,11 +11,11 @@
 #pragma once
 
 //* Another small step toward a real Character server.
+#include <cassert>
+#include <string>
 
-#pragma once
 #include "types.h"
 #include "CommonNetStructures.h"
-#include <string>
 #include "BitStream.h"
 #include "Powers.h"
 #define MAX_CHARACTER_SLOTS 8
@@ -55,7 +55,7 @@ public:
         if(idx<0)
             return 0;
         if(idx>=0)
-            ACE_ASSERT(!"Unknown option requested!!");
+            assert(!"Unknown option requested!!");
         return &m_opts[idx];
     }
 
@@ -113,8 +113,8 @@ const	std::string &	getMapName() const { return m_mapName; }
         void            face_bits(u32){}
         void            dump();
         void            sendFullStats(BitStream &bs) const;
-        //TODO: move these to some kind of Player info class 
-        void            sendTray(BitStream &bs); 
+        //TODO: move these to some kind of Player info class
+        void            sendTray(BitStream &bs);
         void            sendTrayMode(BitStream &bs) const;
         void            sendWindows(BitStream &bs) const;
         void            sendWindow(BitStream &bs) const;

@@ -11,7 +11,7 @@
 
 void InputState::serializeto(BitStream &) const
 {
-    ACE_ASSERT(!"Not implemented");
+    assert(!"Not implemented");
 }
 
 void InputState::partial_2(BitStream &bs)

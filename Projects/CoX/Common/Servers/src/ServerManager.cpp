@@ -6,7 +6,7 @@
  *
  * $Id$
  */
-
+#include <cassert>
 #include "ServerManager.h"
 GameServerInterface *ServerManagerC::GetGameServer(size_t idx)
 {
@@ -74,14 +74,14 @@ bool ServerManagerC::CreateServerConnections()
 void ServerManagerC::RemoveGameServer(IGameServer *srv)
 {
     deque<GameServerInterface *>::iterator iter = find(m_GameServers.begin(),m_GameServers.end(),srv);
-    ACE_ASSERT(iter!=m_GameServers.end());
+    assert(iter!=m_GameServers.end());
     delete *iter;
     m_GameServers.erase(iter);
 };
 void ServerManagerC::RemoveMapServer(MapServerInterface *srv)
 {
     deque<MapServerInterface *>::iterator iter = find(m_MapServers.begin(),m_MapServers.end(),srv);
-    ACE_ASSERT(iter!=m_MapServers.end());
+    assert(iter!=m_MapServers.end());
     delete *iter;
     m_MapServers.erase(iter);
 };
@@ -115,11 +115,11 @@ void ServerManagerC::AddMapServer( IMapServer *srv )
 
 void ServerManagerC::SetAuthServer( IAuthServer *srv )
 {
-    ACE_ASSERT(m_authserv==0);
+    assert(m_authserv==0);
     m_authserv=new AuthServerInterface(srv);
 }
 void ServerManagerC::SetAdminServer( IAdminServer *srv )
 {
-    ACE_ASSERT(m_adminserv==0);
+    assert(m_adminserv==0);
     m_adminserv=new AdminServerInterface(srv);
 }

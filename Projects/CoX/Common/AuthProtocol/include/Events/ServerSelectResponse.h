@@ -13,7 +13,7 @@ public:
     {}
     void serializefrom(GrowingBuffer &buf)
 	{
-		ACE_ASSERT(buf.GetReadableDataSize()>=10);
+		assert(buf.GetReadableDataSize()>=10);
 		u8 op;
 		buf.uGet(op);
 		buf.uGet(db_server_cookie);

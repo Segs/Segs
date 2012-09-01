@@ -63,13 +63,13 @@ void SceneEvent::getGrpElem(BitStream &src,int idx)
 void SceneEvent::reqWorldUpdateIfPak(BitStream &)
 {
     //src.GetBits(1);
-    ACE_ASSERT(0);
+    assert(0);
 }
 void SceneEvent::groupnetrecv_5(BitStream &src,int a,int b)
 {
     if(!src.GetBits(1))
         return;
-    ACE_ASSERT(0);
+    assert(0);
     std::string def_filename;
     src.GetString(def_filename);
 }
@@ -111,7 +111,7 @@ void SceneEvent::serializefrom(BitStream &src)
     } while(r.m_idx>=0);
     src.GetPackedBits(1); //unused
     ref_count = src.GetPackedBits(1);
-    ACE_ASSERT(ref_count==m_refs.size());
+    assert(ref_count==m_refs.size());
     src.GetBits(32); //unused - crc ?
     ref_crc=src.GetBits(32); // 0x3f6057cf
 }

@@ -30,7 +30,7 @@ AuthLinkEvent *AuthEventFactory::EventForType(eAuthPacketType type)
 }
 void AuthEventFactory::Destroy(AuthLinkEvent *what)
 {
-    ACE_ASSERT(what);
+    assert(what);
     what->release();
 //	delete what;
 }

@@ -8,9 +8,9 @@
  */
 
 //#include "GameProtocol.h"
+#include <cassert>
 #include "PacketCodec.h"
 #include "CRUDP_Protocol.h"
-#include <ace/Log_Msg.h>
 #include <zlib.h>
 //#include <ace/OS_NS
 //#define LOG_PACKETS 1
@@ -77,7 +77,7 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
     u32 bitlength,checksum,sibcount;
 
     src.Get(bitlength);
-    ACE_ASSERT(src.GetReadableBits()>=bitlength-32);
+    assert(src.GetReadableBits()>=bitlength-32);
     if(!m_codec)
         return; // later on we might allow codec-less operation ?
     m_codec->Decrypt((u8 *)src.read_ptr(),src.GetReadableDataSize());
@@ -198,14 +198,14 @@ void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
 CrudP_Packet *CrudP_Protocol::mergeSiblings(u32 id)
 {
     pPacketStorage &storage=sibling_map[id];
-    ACE_ASSERT(storage.size()>=1); // wtf ??
+    assert(storage.size()>=1); // wtf ??
     BitStream *pkt_bs,*bs=new BitStream(32);
     CrudP_Packet *res= new CrudP_Packet(*storage[0]); //copy packet info from first sibling
     for(u32 i = 0; i < storage.size(); i++)
     {
         //	Skip duplicate siblings
         //if(i > 0 && storage[i]->getSibPos() == storage[i-1]->getSibPos()) continue;
-        ACE_ASSERT(storage[i]->getSibId() == id);
+        assert(storage[i]->getSibId() == id);
         pkt_bs = storage[i]->GetStream();
         bs->PutBytes(pkt_bs->read_ptr(),pkt_bs->GetReadableDataSize());
         delete storage[i];
@@ -227,7 +227,7 @@ bool CrudP_Protocol::insert_sibling(CrudP_Packet *pkt)
     {
         if(storage[pkt->getSibPos()]->getSibId()!=pkt->getSibId())
         {
-            ACE_ASSERT(!"m_sibPos is same, but Id differs!");
+            assert(!"m_sibPos is same, but Id differs!");
         }
         return false;
     }
@@ -262,7 +262,7 @@ CrudP_Packet *CrudP_Protocol::RecvPacket(bool disregard_seq)
     }
     if(iter==avail_packets.end())
         return NULL;
-    ACE_ASSERT(pkt);
+    assert(pkt);
     if(disregard_seq)
         return pkt;
     if(pkt->GetSequenceNumber()!=recv_seq+1) // nope this packet is not a next one in the sequence

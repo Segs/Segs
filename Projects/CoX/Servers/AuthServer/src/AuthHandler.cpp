@@ -7,7 +7,7 @@
 #include "InternalEvents.h"
 void AuthHandler::dispatch( SEGSEvent *ev )
 {
-    ACE_ASSERT(ev);
+    assert(ev);
         switch(ev->type())
         {
         case SEGS_EventTypes::evConnect:
@@ -31,12 +31,12 @@ void AuthHandler::dispatch( SEGSEvent *ev )
     case Internal_EventTypes::evClientExpected:
         on_client_expected(static_cast<ClientExpected *>(ev)); break;
         default:
-                ACE_ASSERT(!"Unknown event encountered in dispatch.");
+                assert(!"Unknown event encountered in dispatch.");
         }
 }
 SEGSEvent *AuthHandler::dispatch_sync( SEGSEvent * )
 {
-    ACE_ASSERT(!"No sync events known");
+    assert(!"No sync events known");
     return 0;
 }
 
@@ -44,7 +44,7 @@ void AuthHandler::on_connect( ConnectEvent *ev )
 {
         // TODO: guard for link state update ?
         AuthLink *lnk=static_cast<AuthLink *>(ev->src());
-        ACE_ASSERT(lnk!=0);
+        assert(lnk!=0);
         if(lnk->m_state!=AuthLink::INITIAL)
         {
                 ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),	ACE_TEXT ("Multiple connection attempts from the same addr/port")));
@@ -91,8 +91,8 @@ void AuthHandler::on_login( LoginRequest *ev )
     AuthClient *client = NULL;
     adminserv   = ServerManager::instance()->GetAdminServer();
     authserv    = ServerManager::instance()->GetAuthServer();
-    ACE_ASSERT(adminserv);
-    ACE_ASSERT(authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
+    assert(adminserv);
+    assert(authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
     if(!adminserv)
     {
         // we cannot do much without that
@@ -115,7 +115,7 @@ void AuthHandler::on_login( LoginRequest *ev )
         adminserv->SaveAccount(ev->login,ev->password); // Autocreate/save account to DB
         client = authserv->GetClientByLogin(ev->login);
     }
-    ACE_ASSERT(client);
+    assert(client);
     AccountInfo & acc_inf(client->account_info());  // all the account info you can eat!
     lnk->client(client);                            // now link knows what client it's responsible for
     client->link_state().link(lnk);                 // and client knows what link it's using
@@ -197,7 +197,7 @@ void AuthHandler::on_client_expected(ClientExpected *ev)
 {
     if(m_link_store.find(ev->client_id)==m_link_store.end())
     {
-        ACE_ASSERT(!"client disconnected before receiving game cookie");
+        assert(!"client disconnected before receiving game cookie");
         return;
     }
     AuthLink *lnk = m_link_store[ev->client_id];

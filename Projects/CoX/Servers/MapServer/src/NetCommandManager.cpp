@@ -104,7 +104,7 @@ int NetCommand::serializefrom( BitStream &bs )
 
 void NetCommandManager::addCommand( NetCommand *cmd )
 {
-    ACE_ASSERT(m_name_to_command.find(cmd->m_name)==m_name_to_command.end());
+    assert(m_name_to_command.find(cmd->m_name)==m_name_to_command.end());
     m_name_to_command[cmd->m_name]=cmd;
     m_commands_level0.push_back(cmd);
 }
@@ -148,6 +148,6 @@ void NetCommandManager::SendCommandShortcuts( MapClient *client,BitStream &tgt,c
             serializeto(tgt,m_commands_level0,commands2);
             break;
         default:
-            ACE_ASSERT(false);
+            assert(false);
     }
 }

@@ -23,7 +23,7 @@ void MapInstance::create_entity(Entity *ent)
 }
 void MapInstance::dispatch( SEGSEvent *ev )
 {
-    ACE_ASSERT(ev);
+    assert(ev);
     switch(ev->type())
     {
     case SEGS_EventTypes::evTimeout:
@@ -40,7 +40,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
 
 SEGSEvent * MapInstance::dispatch_sync( SEGSEvent * )
 {
-    ACE_ASSERT(!"No sync dipatchable events here");
+    assert(!"No sync dipatchable events here");
     return 0;
 }
 void MapInstance::on_scene_request(SceneRequest *ev)
@@ -99,7 +99,7 @@ void MapInstance::on_timeout(TimerEvent *ev)
     {
         cl=*iter;
         cl->char_entity()->m_create=only_first;
-        ACE_ASSERT(cl->char_entity()->pos.x==-60.5);
+        assert(cl->char_entity()->pos.x==-60.5);
         cl->char_entity()->pos.x=-60.5;
         cl->char_entity()->pos.y=0;
         cl->char_entity()->pos.z=180;

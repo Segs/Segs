@@ -10,7 +10,7 @@
 #include "Entity.h"
 void NewEntity::serializeto( BitStream & ) const
 {
-    ACE_ASSERT(!"TODO");
+    assert(!"TODO");
 }
 
 void NewEntity::serializefrom( BitStream &bs )

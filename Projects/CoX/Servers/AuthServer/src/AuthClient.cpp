@@ -6,6 +6,7 @@
  *
  * $Id$
  */
+#include <cassert>
 #include "AuthClient.h"
 #include "InternalEvents.h"
 /*! \class AuthClient
@@ -24,7 +25,7 @@ AuthClient::AuthClient() :m_game_server(NULL)
 /*
 void AuthClient::forceGameServerConnectionCheck()
 {
-        //ACE_ASSERT(m_game_server!=NULL);
+        //assert(m_game_server!=NULL);
         if(m_game_server)
                 m_game_server->checkClientConnection(m_id);
 }
@@ -46,7 +47,7 @@ bool AuthClient::isLoggedIn()
         for(size_t i=0; i<sm->MapServerCount(); i++)
         {
                 gs=sm->GetGameServer(i);
-                ACE_ASSERT(gs!=NULL);
+                assert(gs!=NULL);
         if(0==gs) // something screwy happened
             return false;
         ClientConnectionQuery * query = new ClientConnectionQuery(0,m_account_info.account_server_id());

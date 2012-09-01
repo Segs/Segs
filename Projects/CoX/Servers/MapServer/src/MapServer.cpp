@@ -45,7 +45,7 @@ bool MapServer::Run(void)
         return true;
     }
 
-    ACE_ASSERT(m_manager.num_templates()>0); // we have to have a world to run
+    assert(m_manager.num_templates()>0); // we have to have a world to run
 
     m_handler = new MapCommHandler;
     m_handler->set_server(this);

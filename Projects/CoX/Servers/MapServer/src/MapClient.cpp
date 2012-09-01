@@ -18,7 +18,7 @@ void MapClient::AddShortcut(int index, NetCommand *command)
 }
 void MapClient::SendCommand(NetCommand *command,...)
 {
-    ACE_ASSERT(!"Not implemented yet");
+    assert(!"Not implemented yet");
 }
 
 bool MapClient::db_create()
@@ -47,7 +47,7 @@ GamePacket * MapClient::HandleClientPacket( pktCS_SendEntity *ent )
     //	At this point we either got a new character, or an old one.
     if(ent->m_new_character)
     {
-        ACE_ASSERT(ent->m_ent);
+        assert(ent->m_ent);
         //	character_ent = in_pak->m_ent;
         //	m_server->m_i_game->newCharacter(m_client->getId(),character_ent);
     }

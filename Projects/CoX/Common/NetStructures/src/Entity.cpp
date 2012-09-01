@@ -215,7 +215,7 @@ void MobEntity::sendCostumes( BitStream &bs ) const
     storePackedBitsConditional(bs,2,m_costume_type);
     if((m_costume_type!=2)&&(m_costume_type!=4))
     {
-        ACE_ASSERT(false);
+        assert(false);
         return;
     }
     if(m_costume_type==2)
@@ -234,7 +234,7 @@ void Entity::sendCostumes(BitStream &bs) const
     storePackedBitsConditional(bs,2,m_costume_type);
     if(m_costume_type!=1)
     {
-        ACE_ASSERT(false);
+        assert(false);
         return;
     }
     switch(m_type)

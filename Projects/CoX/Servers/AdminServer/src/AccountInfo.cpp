@@ -49,7 +49,7 @@ bool AccountInfo::fill_characters_db()
 
 Character * AccountInfo::get_character(size_t idx)
 {
-    ACE_ASSERT(idx<m_characters.size());
+    assert(idx<m_characters.size());
     return m_characters[idx];
 }
 

@@ -7,16 +7,16 @@
 EventProcessor *AuthLink::g_target=0;
 
 AuthLink::AuthLink() :  m_client(0),
-                        m_received_bytes_storage(0x1000,0,40),
-                        m_unsent_bytes_storage(0x200,0,40),
-                        m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK),
-                        m_protocol_version(-1),
-                        m_state(INITIAL)
+    m_received_bytes_storage(0x1000,0,40),
+    m_unsent_bytes_storage(0x200,0,40),
+    m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK),
+    m_protocol_version(-1),
+    m_state(INITIAL)
 
 {
-        m_notifier.event_handler(this); // notify 'this' object on WRITE events
+    m_notifier.event_handler(this); // notify 'this' object on WRITE events
     m_buffer_mutex = new ACE_Thread_Mutex;
-    ACE_ASSERT(g_target);
+    assert(g_target);
 }
 AuthLink::~AuthLink( void )
 {
@@ -36,67 +36,67 @@ void AuthLink::init_crypto(int vers,u32 seed)
 */
 eAuthPacketType AuthLink::OpcodeToType( u8 opcode,bool direction /*= false */ ) const
 {
-        switch(opcode)
-        {
+    switch(opcode)
+    {
         case 0:
-                if(direction)
-                        return SMSG_AUTHVERSION;
-                else
-                        return CMSG_AUTH_LOGIN;
+            if(direction)
+                return SMSG_AUTHVERSION;
+            else
+                return CMSG_AUTH_LOGIN;
         case 2:
-                return CMSG_AUTH_SELECT_DBSERVER;
+            return CMSG_AUTH_SELECT_DBSERVER;
         case 3:
-                return CMSG_DB_CONN_FAILURE;
+            return CMSG_DB_CONN_FAILURE;
         case 4:
-                return CMSG_AUTH_LOGIN;
+            return CMSG_AUTH_LOGIN;
         case 5:
-                return CMSG_AUTH_REQUEST_SERVER_LIST;
+            return CMSG_AUTH_REQUEST_SERVER_LIST;
         case 6:
-                return CMSG_AUTH_LOGIN;
+            return CMSG_AUTH_LOGIN;
         default:
-                return MSG_AUTH_UNKNOWN;
-        }
-        return MSG_AUTH_UNKNOWN;
+            return MSG_AUTH_UNKNOWN;
+    }
+    return MSG_AUTH_UNKNOWN;
 }
 //! tries to convert the available bytes into a valid AuthHandler LinkLevelEvent.
 SEGSEvent * AuthLink::bytes_to_event()
 {
-        u16  packet_size(0);
-        u8 * tmp(NULL);
+    u16  packet_size(0);
+    u8 * tmp(NULL);
 
-        while(true) // we loop and loop and loop loopy loop through the buffery contents!
+    while(true) // we loop and loop and loop loopy loop through the buffery contents!
+    {
+        if(m_received_bytes_storage.GetReadableDataSize()<=2) // no more bytes for us, so we'll go hungry for a while
+            return NULL;
+        // And the skies are clear on the Packet Fishing Waters
+        m_received_bytes_storage.uGet(packet_size);	// Ah ha! I smell packet in there!
+        if(m_received_bytes_storage.GetReadableDataSize()<packet_size) // tis' a false trail capt'n !
         {
-                if(m_received_bytes_storage.GetReadableDataSize()<=2) // no more bytes for us, so we'll go hungry for a while
-                        return NULL;
-                // And the skies are clear on the Packet Fishing Waters
-                m_received_bytes_storage.uGet(packet_size);	// Ah ha! I smell packet in there!
-                if(m_received_bytes_storage.GetReadableDataSize()<packet_size) // tis' a false trail capt'n !
-                {
-                        m_received_bytes_storage.PopFront(1); // Crew, Dead Slow Ahead ! we're in hunting mode !
-                        continue;
-                }
-                // this might be a live packet in there
-                tmp = (u8 *)&(m_received_bytes_storage.GetBuffer()[2]);
-
-                m_codec.XorDecodeBuf(tmp, packet_size+1); // Let's see what's in those murky waters
-                eAuthPacketType recv_type = OpcodeToType(tmp[0]);
-                AuthLinkEvent *evt = AuthEventFactory::EventForType(recv_type); // Crow's nest, report !
-                if(!evt)
-                {
-                        if(m_received_bytes_storage.GetReadableDataSize()>2) // False alarm Skipper!
-                                m_received_bytes_storage.uGet(packet_size); // On to next adventure crew. Slow Ahead !
-                        continue;
-                }
-                // A catch !
-                if(evt->type() == evLogin) // Is tis' on of those pesky AuthLogin Packets ?!!?
-                {
-                        // Bring out the Codec Cannon, an' load it with Des
-                        m_codec.DesDecode(static_cast<u8*>(&tmp[1]),24); // It'll crack it's chitinous armor
-                }
-                evt->serializefrom(m_received_bytes_storage);
-                m_received_bytes_storage.PopFront(packet_size+3); //Let's sail away from this depleted fishery.
-                return evt; // And throw our catch to the Cook.
+            m_received_bytes_storage.PopFront(1); // Crew, Dead Slow Ahead ! we're in hunting mode !
+            continue;
         }
+        // this might be a live packet in there
+        tmp = (u8 *)&(m_received_bytes_storage.GetBuffer()[2]);
+
+        m_codec.XorDecodeBuf(tmp, packet_size+1); // Let's see what's in those murky waters
+        eAuthPacketType recv_type = OpcodeToType(tmp[0]);
+        AuthLinkEvent *evt = AuthEventFactory::EventForType(recv_type); // Crow's nest, report !
+        if(!evt)
+        {
+            if(m_received_bytes_storage.GetReadableDataSize()>2) // False alarm Skipper!
+                m_received_bytes_storage.uGet(packet_size); // On to next adventure crew. Slow Ahead !
+            continue;
+        }
+        // A catch !
+        if(evt->type() == evLogin) // Is tis' on of those pesky AuthLogin Packets ?!!?
+        {
+            // Bring out the Codec Cannon, an' load it with Des
+            m_codec.DesDecode(static_cast<u8*>(&tmp[1]),24); // It'll crack it's chitinous armor
+        }
+        evt->serializefrom(m_received_bytes_storage);
+        m_received_bytes_storage.PopFront(packet_size+3); //Let's sail away from this depleted fishery.
+        return evt; // And throw our catch to the Cook.
+    }
 }
 /**
     \brief Called when we start to service a new connection, here we tell reactor to wake us when queue() is not empty.
@@ -125,68 +125,71 @@ int AuthLink::open (void *p)
 */
 int AuthLink::handle_input( ACE_HANDLE )
 {
-        const size_t INPUT_SIZE = 4096;
-        char buffer[INPUT_SIZE];
-        ssize_t recv_cnt;
-        if ((recv_cnt = peer_.recv(buffer, sizeof(buffer))) <= 0)
-        {
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Connection closed\n")));
-                return -1;
-        }
-        ACE_Guard<ACE_Thread_Mutex> guard_buffer(*m_buffer_mutex);
-        m_received_bytes_storage.PutBytes((u8 *)buffer,recv_cnt);
-        m_received_bytes_storage.ResetReading();
-        // early out optimization
-        if(m_received_bytes_storage.GetReadableDataSize()<2)
-                return 0; // if not enough data even for the simplest of packets
+    const size_t INPUT_SIZE = 4096;
+    char buffer[INPUT_SIZE];
+    ssize_t recv_cnt;
+    if ((recv_cnt = peer_.recv(buffer, sizeof(buffer))) <= 0)
+    {
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Connection closed\n")));
+        return -1;
+    }
+    ACE_Guard<ACE_Thread_Mutex> guard_buffer(*m_buffer_mutex);
+    m_received_bytes_storage.PutBytes((u8 *)buffer,recv_cnt);
+    m_received_bytes_storage.ResetReading();
+    // early out optimization
+    if(m_received_bytes_storage.GetReadableDataSize()<2)
+        return 0; // if not enough data even for the simplest of packets
 
-        // For now BytesEvent will copy the buffer contents
-        SEGSEvent *s_event=bytes_to_event(); // convvert raw bytes into higher level event
-        //TODO: what about partially received events ?
+    // For now BytesEvent will copy the buffer contents
+    SEGSEvent *s_event=bytes_to_event(); // convert raw bytes into higher level event
+    //TODO: what about partially received events ?
+    if(s_event)
+    {
         s_event->src(this); // allows upper levels to post responses to us
         g_target->putq(s_event);
-        return 0;
+    }
+    return 0;
 }
 /**
         \brief Called from ACEReactor when there are events in our queue()
 */
 int AuthLink::handle_output( ACE_HANDLE /*= ACE_INVALID_HANDLE*/ )
 {
-        SEGSEvent *ev;
-        ACE_Time_Value nowait (ACE_OS::gettimeofday ());
-        while (-1 != getq(ev, &nowait))
+    SEGSEvent *ev;
+    ACE_Time_Value nowait (ACE_OS::gettimeofday ());
+    while (-1 != getq(ev, &nowait))
+    {
+        if(ev->type()==SEGS_EventTypes::evFinish)
         {
-                if(ev->type()==SEGS_EventTypes::evFinish)
-                {
-                        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Error sent, closing connection\n")));
-                        return -1;
-                }
-                if(ev->type()==evContinue) // we have asked ourselves to send leftovers
-                {
-                        ACE_ASSERT(m_unsent_bytes_storage.GetReadableDataSize() > 0); // be sure we have some
-                }
-                else
-                {
-                        size_t start_offset=m_unsent_bytes_storage.GetReadableDataSize();
-                        encode_buffer(static_cast<AuthLinkEvent *>(ev),start_offset);
-                }
-                if(!send_buffer()) // trying to send the contents of the buffer
-                {
-                        ev->release(); // we have failed somehow
-                        break;
-                }
-                ev->release();
+            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Error sent, closing connection\n")));
+            return -1;
         }
-        if (msg_queue()->is_empty ()) // we don't want to be woken up
-                reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
-        else // unless there is something to send still
-                reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
-        return 0;
+        if(ev->type()==evContinue) // we have asked ourselves to send leftovers
+        {
+            assert(m_unsent_bytes_storage.GetReadableDataSize() > 0); // be sure we have some
+        }
+        else
+        {
+            size_t start_offset=m_unsent_bytes_storage.GetReadableDataSize();
+            encode_buffer(static_cast<AuthLinkEvent *>(ev),start_offset);
+        }
+        if(!send_buffer()) // trying to send the contents of the buffer
+        {
+            ev->release(); // we have failed somehow
+            break;
+        }
+        ev->release();
+    }
+    if (msg_queue()->is_empty ()) // we don't want to be woken up
+        reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
+    else // unless there is something to send still
+        reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
+    return 0;
 }
 
 void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
 {
-    ACE_ASSERT(ev);
+    assert(ev);
     if(ev==0)
         return;
     // remember the location we'll put the packet size into
@@ -200,64 +203,64 @@ void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
     // calculate the number of stored bytes, and set it in packet_size
     *packet_size = (m_unsent_bytes_storage.GetDataSize() - actual_packet_start) - 1; // -1 because opcode is not counted toward packet size
 
-        // every packet, but the authorization protocol, is encrypted
-        if(ev->type()!=evAuthProtocolVersion)
-                m_codec.XorCodeBuf(static_cast<u8 *>(m_unsent_bytes_storage.GetBuffer())+start+2,m_unsent_bytes_storage.GetDataSize()-2); // opcode gets encrypted
+    // every packet, but the authorization protocol, is encrypted
+    if(ev->type()!=evAuthProtocolVersion)
+        m_codec.XorCodeBuf(static_cast<u8 *>(m_unsent_bytes_storage.GetBuffer())+start+2,m_unsent_bytes_storage.GetDataSize()-2); // opcode gets encrypted
 
-        // additional encryption of login details
-        if(ev->type()==evLogin)
-                m_codec.DesCode(m_unsent_bytes_storage.GetBuffer()+start+3,24); //only part of packet is encrypted with des
+    // additional encryption of login details
+    if(ev->type()==evLogin)
+        m_codec.DesCode(m_unsent_bytes_storage.GetBuffer()+start+3,24); //only part of packet is encrypted with des
 }
 
 bool AuthLink::send_buffer()
 {
-        ssize_t send_cnt = peer_.send(m_unsent_bytes_storage.read_ptr(), m_unsent_bytes_storage.GetReadableDataSize());
-        if (send_cnt == -1)
-                ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),	ACE_TEXT ("send")));
-        else
-        {
-                m_unsent_bytes_storage.PopFront(send_cnt); // this many bytes were read
-        }
-        if (m_unsent_bytes_storage.GetReadableDataSize() > 0) // and still there is something left
-        {
-                ungetq(new ContinueEvent);
-                return false; // couldn't send all
-        }
-        return true;
+    ssize_t send_cnt = peer_.send(m_unsent_bytes_storage.read_ptr(), m_unsent_bytes_storage.GetReadableDataSize());
+    if (send_cnt == -1)
+        ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),	ACE_TEXT ("send")));
+    else
+    {
+        m_unsent_bytes_storage.PopFront(send_cnt); // this many bytes were read
+    }
+    if (m_unsent_bytes_storage.GetReadableDataSize() > 0) // and still there is something left
+    {
+        ungetq(new ContinueEvent);
+        return false; // couldn't send all
+    }
+    return true;
 }
 
 static u64 KeyPrepare(const char *co_string)
 {
-        u64 t = 0;
-        char *p_llt = (char *)&t;
-        int index = 0;
-        ACE_ASSERT(co_string);
-        if(!co_string)
-                return t;
-        while(co_string[0])
-        {
-                char val = co_string[0];
-                if( index >= 40 )
-                        break;
-                p_llt[index&7] = (p_llt[index&7] ^ val);
-                co_string ++;
-                index ++;
-        }
+    u64 t = 0;
+    char *p_llt = (char *)&t;
+    int index = 0;
+    assert(co_string);
+    if(!co_string)
         return t;
+    while(co_string[0])
+    {
+        char val = co_string[0];
+        if( index >= 40 )
+            break;
+        p_llt[index&7] = (p_llt[index&7] ^ val);
+        co_string ++;
+        index ++;
+    }
+    return t;
 }
 
 void AuthLink::set_protocol_version( int vers )
 {
-        static char key_30207[] = {	0x39, 0x3D, 0x33, 0x2A, 0x32, 0x3B, 0x78, 0x5D,
-                                                                0x31, 0x31, 0x73, 0x61, 0x3B, 0x2F, 0x34, 0x73,
-                                                                0x64, 0x2E, 0x25, 0x2B, 0x24, 0x40, 0x61, 0x2A,
-                                                                0x27, 0x21, 0x32, 0x7A, 0x30, 0x7E, 0x67, 0x60,
-                                                                0x7B, 0x7A, 0x5D, 0x3F, 0x6E, 0x38, 0x28, 0};
-        m_protocol_version = vers;
-        if(m_protocol_version==30206)
-                m_codec.SetDesKey(KeyPrepare("TEST\0\0\0"));
-        else
-                m_codec.SetDesKey(KeyPrepare((char *)key_30207));
+    static char key_30207[] = {	0x39, 0x3D, 0x33, 0x2A, 0x32, 0x3B, 0x78, 0x5D,
+                                0x31, 0x31, 0x73, 0x61, 0x3B, 0x2F, 0x34, 0x73,
+                                0x64, 0x2E, 0x25, 0x2B, 0x24, 0x40, 0x61, 0x2A,
+                                0x27, 0x21, 0x32, 0x7A, 0x30, 0x7E, 0x67, 0x60,
+                                0x7B, 0x7A, 0x5D, 0x3F, 0x6E, 0x38, 0x28, 0};
+    m_protocol_version = vers;
+    if(m_protocol_version==30206)
+        m_codec.SetDesKey(KeyPrepare("TEST\0\0\0"));
+    else
+        m_codec.SetDesKey(KeyPrepare((char *)key_30207));
 }
 /**
   \brief Called when this handler is removed from the ACE_Reactor.
@@ -274,10 +277,10 @@ int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 
 void AuthLink::dispatch( SEGSEvent *ev )
 {
-    ACE_ASSERT(!"Should not be called");
+    assert(!"Should not be called");
 }
 SEGSEvent *AuthLink::dispatch_sync(SEGSEvent *ev)
 {
-    ACE_ASSERT(!"No sync events known");
+    assert(!"No sync events known");
     return 0;
 }

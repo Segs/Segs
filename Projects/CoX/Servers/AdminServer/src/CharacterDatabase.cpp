@@ -25,7 +25,7 @@ bool CharacterDatabase::remove_character(AccountInfo *c,u8 slot_idx)
 {
     stringstream query;
     DbResults results;
-    ACE_ASSERT(c!=0);
+    assert(c!=0);
     query << "DELETE FROM characters WHERE account_id="<<c->account_server_id()<<" AND slot_index="<<(u32)slot_idx<<";";
     if(!execQuery(query.str(),results))
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::remove_character %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
@@ -36,7 +36,7 @@ bool CharacterDatabase::fill( AccountInfo *c )
 	stringstream query;
 	DbResults results;
 
-	ACE_ASSERT(c&&c->account_server_id());
+	assert(c&&c->account_server_id());
 	query<<"SELECT * FROM accounts WHERE account_id="<<c->account_server_id();
 
 	if(!execQuery(query.str(),results))
@@ -58,7 +58,7 @@ bool CharacterDatabase::fill( Character *c)
 {
 	stringstream query;
 	DbResults results;
-	ACE_ASSERT(c&&c->getAccountId());
+	assert(c&&c->getAccountId());
 	query<<"SELECT * FROM characters WHERE account_id="<<c->getAccountId()<<" AND slot_index="<<(u16)c->getIndex();
 	if(!execQuery(query.str(),results))
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
@@ -94,7 +94,7 @@ bool CharacterDatabase::fill( CharacterCostume *c)
 {
 	stringstream query;
 	DbResults results;
-	ACE_ASSERT(c&&c->getCharacterId());
+	assert(c&&c->getCharacterId());
 	query<<"SELECT * FROM costume WHERE character_id="<<c->getCharacterId()<<" AND costume_index="<<(u16)c->getSlotIndex();
 	if(!execQuery(query.str(),results))
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
@@ -137,8 +137,8 @@ bool CharacterDatabase::CreateLinkedAccount( u64 auth_account_id,const std::stri
 {
 	stringstream query;
 	DbResults results;
-	ACE_ASSERT(auth_account_id>0);
-	ACE_ASSERT(username.size()>2);
+	assert(auth_account_id>0);
+	assert(username.size()>2);
 
 	query<<"INSERT INTO accounts  (account_id,max_slots) VALUES ("<<auth_account_id<<",2);";
 	if(!execQuery(query.str(),results))
@@ -155,9 +155,9 @@ bool CharacterDatabase::create( u64 gid,u8 slot,Character *c )
 {
     stringstream query;
     DbResults results;
-    ACE_ASSERT(gid>0);
-    ACE_ASSERT(c);
-    ACE_ASSERT(slot<8);
+    assert(gid>0);
+    assert(c);
+    assert(slot<8);
     s64 char_id = next_id("characters");
     if(char_id==-1)
         return false;

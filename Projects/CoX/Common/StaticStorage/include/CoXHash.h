@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include <cassert>
 #include <string>
 #include <vector>
 #include <ace/Singleton.h>
@@ -118,7 +119,7 @@ public:
             if(old_entries[idx].key_hash==0) // || 0==old_entries[idx].entry_flags&1
                 continue;
             if(find_index(old_entries[idx].stored_key,entry_idx,prev_val,1)==2)
-                ACE_ASSERT(0);
+                assert(0);
             m_storage[entry_idx] = old_entries[idx];
             m_storage[entry_idx].key_hash = prev_val;
             in_use++;

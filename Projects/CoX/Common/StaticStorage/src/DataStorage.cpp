@@ -160,7 +160,7 @@ u32 BinStore::read_header( std::string &name,size_t maxlen )
 bool BinStore::prepare_nested()
 {
     bool result= bytes_to_read==bytes_read;
-    ACE_ASSERT(bytes_to_read==bytes_read);
+    assert(bytes_to_read==bytes_read);
     bytes_to_read = *m_file_sizes.rbegin();
     return result;
 }

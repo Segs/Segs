@@ -303,12 +303,12 @@ bool Field::read_nested( BinReadable &tgt,Store *s ) const
         }
     case 0x17:
         {
-            ACE_ASSERT(!"Not implemented nested read");
+            assert(!"Not implemented nested read");
         }
         break;
     case 0x13:
         {
-            ACE_ASSERT(!"Not implemented nested read");
+            assert(!"Not implemented nested read");
         }
         break;
     }
@@ -361,7 +361,7 @@ bool ClassSchema::read( BinReadable &tgt,Store *s ) const
         field_idx=res.second;
         // find Field by name
         if(field_idx==0)
-            ACE_ASSERT(!"unknown field referenced.");
+            assert(!"unknown field referenced.");
         // create instance of field value here ?
         result &= m_fields[field_idx-1]->read_nested(tgt,s);
     }

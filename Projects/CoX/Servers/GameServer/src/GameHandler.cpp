@@ -11,7 +11,7 @@ static const u32 supported_version=20040422;
 
 void GameHandler::dispatch( SEGSEvent *ev )
 {
-    ACE_ASSERT(ev);
+    assert(ev);
     ACE_DEBUG((LM_WARNING,ACE_TEXT("GameHandler link event %d\n"),ev->type()));
         switch(ev->type())
         {
@@ -51,7 +51,7 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case SEGS_EventTypes::evDisconnect:
         break;
         default:
-                ACE_ASSERT(!"Unknown event encountered in dispatch.");
+                assert(!"Unknown event encountered in dispatch.");
         }
 }
 SEGSEvent * GameHandler::dispatch_sync( SEGSEvent *ev )
@@ -100,7 +100,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
     CharacterClient *client = lnk->client_data();
-    ACE_ASSERT(client);
+    assert(client);
     ev->src()->putq(new CharacterResponse(this,ev->m_index,client));
 }
 void GameHandler::on_idle(IdleEvent *ev)

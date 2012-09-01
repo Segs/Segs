@@ -100,7 +100,7 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
 	if(iter!=m_clients.end())									// if found
 		return ((*iter).second);							//	return cached object
 	adminserv = ServerManager::instance()->GetAdminServer();
-	ACE_ASSERT(adminserv);
+	assert(adminserv);
 	res= m_client_pool.construct();							// construct a new instance
 	res->account_info().login(login);						// set login and ask AdminServer to fill in the rest
 	if( !adminserv->FillClientInfo(res->account_info()) )   // Can we fill the client account info from db ?

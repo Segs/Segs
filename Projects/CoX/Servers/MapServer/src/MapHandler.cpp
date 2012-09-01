@@ -24,7 +24,7 @@ MapCommHandler::MapCommHandler()
 
 void MapCommHandler::dispatch(SEGSEvent *ev)
 {
-    ACE_ASSERT(ev);
+    assert(ev);
     switch(ev->type())
     {
     case SEGS_EventTypes::evTimeout:
@@ -107,8 +107,8 @@ void MapCommHandler::on_create_map_entity(NewEntity *ev)
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl = m_clients.getExpectedByCookie(ev->m_cookie-2);
 
-    ACE_ASSERT(cl);
-    ACE_ASSERT(ev->m_ent);
+    assert(cl);
+    assert(ev->m_ent);
 
     cl->entity(ev->m_ent);
     cl->link_state().link(lnk);
@@ -127,7 +127,7 @@ void MapCommHandler::on_instance_event(SEGSEvent *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl =  lnk->client_data();
-    ACE_ASSERT(0!=cl);
+    assert(0!=cl);
     // forced dispatch
     cl->current_map()->dispatch(ev);
 }
@@ -158,7 +158,7 @@ void MapCommHandler::on_timeout( TimerEvent *ev )
 
 SEGSEvent * MapCommHandler::dispatch_sync( SEGSEvent * )
 {
-    ACE_ASSERT(!"NO SYNC HANDLING");
+    assert(!"NO SYNC HANDLING");
     return 0;
 }
 

@@ -9,20 +9,11 @@ IF(CMAKE_CXX_COMPILER MATCHES cl)
      ENDIF(CMAKE_GENERATOR STREQUAL "Visual Studio 8 2005")
 ENDIF (CMAKE_CXX_COMPILER MATCHES cl)
 
-# just testing 
+# just testing
 OPTION(BUILD_SEPARATE "When set to 1 this will build each server as a separate executable file" ON)
 
 
 # BOOST
-FIND_PATH(BOOST_path object_pool.hpp
-   /usr/local/include/boost
-   /usr/local/include/boost/pool
-   /usr/include/boost
-   /usr/include/boost/pool
-   /include/boost
-   /include/boost/pool
-)
-
 FIND_PACKAGE(ACE REQUIRED) # ACE framework
 FIND_PACKAGE(POSTGRE REQUIRED) # PostgreSQL
 FIND_PACKAGE(ZLIB REQUIRED)
@@ -33,8 +24,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${ACE_path})
 INCLUDE_DIRECTORIES(${PGSQL_path})
-INCLUDE_DIRECTORIES(${BOOST_path})
-
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
 ADD_SUBDIRECTORY(AdminServer)
 ADD_SUBDIRECTORY(GameServer)

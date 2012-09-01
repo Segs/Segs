@@ -8,13 +8,13 @@ public:
 	{}
 	void serializeto(GrowingBuffer &) const
 	{
-		ACE_ASSERT(!"Not implemented");
+		assert(!"Not implemented");
 	}
 	void serializefrom(GrowingBuffer &buf)
 	{
 		u8 packet_code;
 		buf.uGet(packet_code);
-		ACE_ASSERT(packet_code==0);
+		assert(packet_code==0);
 		buf.uGetBytes((u8 *)login, sizeof(login));
 		buf.uGetBytes((u8 *)password, sizeof(password));
 		buf.uGet(unkval1);

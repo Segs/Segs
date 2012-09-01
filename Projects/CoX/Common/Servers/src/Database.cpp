@@ -8,6 +8,7 @@
  */
 
 // This module contains code to access our database where accounts and characters are stored
+#include <cassert>
 #include <sstream>
 #include <inttypes.h>
 #include <ace/Log_Msg.h>
@@ -231,7 +232,7 @@ bool PreparedQuery::prepare(const std::string &query,size_t num_params)
 
 bool PreparedQuery::execute(PreparedArgs &args,DbResults &res )
 {
-    ACE_ASSERT(args.m_params.size()==m_param_count);
+    assert(args.m_params.size()==m_param_count);
     std::vector<const char *> values;
     for(size_t idx=0; idx<args.m_params.size(); ++idx)
         values.push_back(args.m_params[idx].c_str());

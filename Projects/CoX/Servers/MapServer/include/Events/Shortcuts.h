@@ -24,7 +24,7 @@ public:
     }
     void serializefrom(BitStream &)
     {
-        ACE_ASSERT(!"TODO");
+        assert(!"TODO");
     }
     u32 m_num_shortcuts2;
     //vector<NetCommand *> m_commands;

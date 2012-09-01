@@ -6,38 +6,38 @@
  *
  * $Id$
  */
-
+#include <cassert>
 #include "MapServerInterface.h"
 #include <ace/Log_Msg.h>
 
 bool MapServerInterface::Run()
 {
-	ACE_ASSERT(m_instance);
-	return m_instance->Run();
+        assert(m_instance);
+        return m_instance->Run();
 }
 bool MapServerInterface::ReadConfig(const std::string &name)
 {
-	ACE_ASSERT(m_instance);
-	return m_instance->ReadConfig(name);
+        assert(m_instance);
+        return m_instance->ReadConfig(name);
 }
 bool MapServerInterface::ShutDown(const std::string &reason)
 {
-	ACE_ASSERT(m_instance);
-	return m_instance->ShutDown(reason);
+        assert(m_instance);
+        return m_instance->ShutDown(reason);
 }
 bool MapServerInterface::Online()
-{ 
-	ACE_ASSERT(m_instance);
-	return m_instance->Online();
+{
+        assert(m_instance);
+        return m_instance->Online();
 }
 const ACE_INET_Addr &MapServerInterface::getAddress()
-{ 
-	ACE_ASSERT(m_instance);
-	return m_instance->getAddress();
+{
+        assert(m_instance);
+        return m_instance->getAddress();
 }
 
 EventProcessor * MapServerInterface::event_target()
 {
-    ACE_ASSERT(m_instance);
+    assert(m_instance);
     return m_instance->event_target();
 }

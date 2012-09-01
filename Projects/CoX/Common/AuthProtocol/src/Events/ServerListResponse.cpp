@@ -3,7 +3,7 @@
 
 void ServerListResponse::serializeto( GrowingBuffer &buf ) const
 {
-    ACE_ASSERT(m_serv_list);
+    assert(m_serv_list);
     buf.uPut((u8)4);
     buf.uPut((u8)m_serv_list->size());
     buf.uPut((u8)1); //preferred server number
@@ -26,5 +26,5 @@ void ServerListResponse::serializefrom( GrowingBuffer &buf )
 {
     u8 op;
     buf.uGet(op);
-    ACE_ASSERT(!"TODO");
+    assert(!"TODO");
 }

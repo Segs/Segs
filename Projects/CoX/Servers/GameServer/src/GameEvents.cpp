@@ -72,7 +72,7 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
 {
     tgt.StorePackedBits(1, 2); //opcode
     tgt.StorePackedBits(1,static_cast<u32>(m_client->max_slots()));
-    ACE_ASSERT(m_client->max_slots()>0);
+    assert(m_client->max_slots()>0);
     for(size_t i=0; i<m_client->max_slots(); i++)
     {
         m_client->getCharacter(i)->serializetoCharsel(tgt);
@@ -98,7 +98,7 @@ void UpdateCharacter::serializefrom( BitStream &bs )
 
 void CharacterResponse::serializeto( BitStream &bs ) const
 {
-    ACE_ASSERT(m_client->getCharacter(m_index));
+    assert(m_client->getCharacter(m_index));
     CharacterCostume *c=0;
     if(m_client->getCharacter(m_index)->getName().compare("EMPTY")!=0) // actual character was read from db
         c=static_cast<CharacterCostume *>(m_client->getCharacter(m_index)->getCurrentCostume());
@@ -119,7 +119,7 @@ void CharacterResponse::serializeto( BitStream &bs ) const
 void CharacterResponse::serializefrom( BitStream &bs )
 {
     bs.GetPackedBits(1);
-    ACE_ASSERT(!"TODO");
+    assert(!"TODO");
 }
 
 void DeletionAcknowledged::serializeto( BitStream &tgt ) const

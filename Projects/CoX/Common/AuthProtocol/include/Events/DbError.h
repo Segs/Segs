@@ -17,7 +17,7 @@ public:
 	{
 		u8 op;
 		buf.uGet(op);
-		ACE_ASSERT(op==3);
+		assert(op==3);
 		buf.uGetBytes(m_err_arr,8);
 	}
 };

@@ -37,7 +37,7 @@ public:
                     CRUDLink() :  m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK)
                     {
                         m_notifier.event_handler(this);
-                        ACE_ASSERT(g_target);
+                        assert(g_target);
                         m_protocol.setCodec(new PacketCodecNull);
                     }
                     ~CRUDLink(void){}
@@ -48,7 +48,7 @@ public:
     void            received_block(BitStream &bytes);
     void            dispatch(SEGSEvent *)
                     {
-                        ACE_ASSERT(!"Should not be called");
+                        assert(!"Should not be called");
                     }
     stream_type &   peer() {return peer_;}
     addr_type &     peer_addr() {return m_peer_addr;}
@@ -63,7 +63,7 @@ public:
 protected:
     SEGSEvent *     dispatch_sync( SEGSEvent * )
                     {
-                        ACE_ASSERT(!"No sync events known");
+                        assert(!"No sync events known");
                         return 0;
                     }
 

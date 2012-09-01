@@ -6,11 +6,12 @@
  *
  * $Id$
  */
+#include <cstring>
+#include <cassert>
+#include <zlib.h>
 
 #include "BitStream.h"
-#include <cstring>
-#include <ace/Log_Msg.h>
-#include <zlib.h>
+
 // bitstream buffer is padded-out by 7 bytes, to allow safe 64bit reads/writes by new routines
 /************************************************************************
 Function:	 BitStream
@@ -21,7 +22,7 @@ BitStream::BitStream(size_t size) : GrowingBuffer(0xFFFFFFFF,7,size)
 {
     m_byteAligned    = false;
     Reset();
-};
+}
 
 
 /************************************************************************
@@ -58,7 +59,7 @@ BitStream &BitStream::operator =(const BitStream &bs)
         m_safe_area = bs.m_safe_area;
         m_size		= bs.m_size;
         m_buf		= new u8[m_size];
-        ACE_ASSERT(m_buf!=NULL);
+        assert(m_buf!=NULL);
         m_last_err	= bs.m_last_err;
         m_write_off = bs.m_write_off;
         m_read_off  = bs.m_read_off;
@@ -109,7 +110,7 @@ Description: Stores a client-specified number of bits into the bit-
 ************************************************************************/
 void BitStream::StoreBits(u32 nBits, u32 dataBits)
 {
-    ACE_ASSERT(nBits <= BITS_PER_DWORD);
+    assert(nBits <= BITS_PER_DWORD);
 
     if(nBits>GetWritableBits())
     {
@@ -134,8 +135,8 @@ void BitStream::StoreBits(u32 nBits, u32 dataBits)
 void BitStream::uStoreBits(u32 nBits, u32 dataBits)
 {
     u64 *tp,r;
-    ACE_ASSERT(nBits<=32);
-    ACE_ASSERT(m_write_off+7<(m_size+m_safe_area));
+    assert(nBits<=32);
+    assert(m_write_off+7<(m_size+m_safe_area));
     tp = (u64 *)write_ptr();
     r = dataBits;
     u64 mask_ = BIT_MASK(nBits)<<m_write_bit_off; // all bits in the mask are those that'll change
@@ -213,7 +214,7 @@ Description: Stores an array of bits in the bit stream buffer.  The
 void BitStream::StoreBitArray(const u8 *src,size_t nBits)
 {
     size_t nBytes = BITS_TO_BYTES(nBits);
-    ACE_ASSERT(src);
+    assert(src);
     ByteAlign();
     PutBytes(src,nBytes);
     m_buf[m_write_off] = 0;
@@ -318,9 +319,9 @@ int32_t BitStream::uGetBits(u32 nBits)
 {
     unsigned long long *tp,r;
     int32_t tgt;
-    ACE_ASSERT(nBits<=32);
-    ACE_ASSERT(GetReadableBits()>=nBits);
-    ACE_ASSERT(m_read_off+7<(m_size+m_safe_area));
+    assert(nBits<=32);
+    assert(GetReadableBits()>=nBits);
+    assert(m_read_off+7<(m_size+m_safe_area));
     tp = (u64 *)read_ptr();
     r = *tp;//swap64(*tp);
     r>>=m_read_bit_off; // starting at the top
@@ -487,7 +488,7 @@ f32 BitStream::GetFloat()
     {
         int32_t to_convert = GetBits(32);
         res = *(reinterpret_cast<float *>(&to_convert));
-        ACE_ASSERT(res==(*((f32 *)&to_convert)));
+        assert(res==(*((f32 *)&to_convert)));
     }
     return res;
 }
@@ -579,7 +580,7 @@ u32 BitStream::GetBitsLength(u32 nBits, u32 dataBits) const
 
 void BitStream::SetByteLength(u32 /*byteLength*/)
 {
-    ACE_ASSERT(!"Not implemented!");
+    assert(!"Not implemented!");
 }
 /*
 BitStream::BitStream(u8* arr,u32 bit_size)
