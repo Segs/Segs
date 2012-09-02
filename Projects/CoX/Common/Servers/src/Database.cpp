@@ -10,7 +10,12 @@
 // This module contains code to access our database where accounts and characters are stored
 #include <cassert>
 #include <sstream>
+#ifdef LINUX // forgive me brothers for i have sinned
 #include <inttypes.h>
+#else
+#define SCNd32 "d"
+#define SCNd64 "I64d"
+#endif
 #include <ace/Log_Msg.h>
 #include <ace/OS_NS_time.h>
 #include <ace/OS_NS_Thread.h>

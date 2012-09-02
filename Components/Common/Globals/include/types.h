@@ -12,6 +12,7 @@
 //	This header defines the data types that will be used in this code.  I(Darawk)
 //	*believe* credit for these goes to CatId...but i'm not sure.
 #pragma once
+#include <stdint.h>
 //////// Typedefs
 
 #ifdef WIN32

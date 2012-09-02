@@ -9,13 +9,14 @@
 
 /************************************************************************
 Class:		 BitStream
-Author:		 Darawk
+Author:		 Darawk,nemerle
 Description: The BitStream class allows it's user to manipulate data in
                          terms of individual bits, thus allowing said data to achieve
                          much greater levels of density.  It abstracts the nuts and
                          bolts of this functionality away from it's user.
 ************************************************************************/
 #pragma once
+#include <stdint.h>
 #include "Base.h"
 #include "Buffer.h"
 

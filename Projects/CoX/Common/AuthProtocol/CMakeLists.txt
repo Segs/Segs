@@ -20,13 +20,13 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/Events/LoginRequest.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Events/ServerListResponse.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Events/ServerListRequest.h
 )
-set(Boost_ADDITIONAL_VERSIONS "1.51" "1.51.0")
-FIND_PACKAGE(Boost COMPONENTS system REQUIRED)
+#set(Boost_ADDITIONAL_VERSIONS "1.51" "1.51.0")
+#FIND_PACKAGE(Boost REQUIRED)
 
 SET(target_INCLUDE_DIR
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
         "${CMAKE_CURRENT_SOURCE_DIR}/include/Events"
-        ${Boost_INCLUDE_DIRS}
+#       ${Boost_INCLUDE_DIRS}
 )
 # add components here
 SEGS_ADD_COMPONENT(EventSystem LIB)

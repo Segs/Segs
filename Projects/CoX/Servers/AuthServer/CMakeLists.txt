@@ -35,7 +35,7 @@ ${target_INCLUDE}
 FIND_PACKAGE(ACE REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
 FIND_PACKAGE(POSTGRE REQUIRED)
-#FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LiBRARIES is not a cache variable, so we  have to do this here again
+#FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LIBRARIES is not a cache variable, so we  have to do this here again
 
 ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
 
@@ -48,7 +48,7 @@ IF(BUILD_SEPARATE)
         ${PGSQL_lib}
         ${ZLIB_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
-        #${Boost_LIBRARIES}
+#        ${Boost_LIBRARIES}
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
 ENDIF(BUILD_SEPARATE)
