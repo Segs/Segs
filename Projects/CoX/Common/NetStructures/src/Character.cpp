@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -562,7 +562,7 @@ void Character::sendOptions( BitStream &bs ) const
 
 #define ADD_OPT(type,var) \
 {\
-    ClientOption o;\
+    ClientOption o(#var);\
     o.m_args.push_back(ClientOption::Arg(type,&var));\
     m_opts.push_back(o);\
 }
