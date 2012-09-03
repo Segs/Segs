@@ -1,5 +1,4 @@
-#ifndef _COMPOSITE_VIEWER_QOSG_HPP_
-#define _COMPOSITE_VIEWER_QOSG_HPP_
+#pragma once
 
 #include <QtCore/QTimer>
 #include <QtGui/QWidget>

@@ -15,9 +15,7 @@
 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 *  THE SOFTWARE.
 */
-#ifndef _QOSG_WIDGET_HPP_
-#define _QOSG_WIDGET_HPP_
-
+#pragma once
 
 #include <QtCore/QString>
 //#include <QtCore/QTimer>

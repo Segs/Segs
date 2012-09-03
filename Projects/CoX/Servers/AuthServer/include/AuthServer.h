@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef AUTHSERVER_H
-#define AUTHSERVER_H
 
 #include <list>
 #include <string>

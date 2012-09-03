@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef GAMESERVERINTERFACE_H
-#define GAMESERVERINTERFACE_H
 
 #include <ace/INET_Addr.h>
 #include <string>

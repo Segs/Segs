@@ -7,7 +7,6 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
 
 // ACE Logging

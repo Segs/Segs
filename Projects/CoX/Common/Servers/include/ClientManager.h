@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef CLIENTMANAGER_H
-#define CLIENTMANAGER_H
 
 #include <ace/INET_Addr.h>
 #include <ace/Singleton.h>

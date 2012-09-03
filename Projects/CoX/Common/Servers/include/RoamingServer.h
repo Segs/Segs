@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef ROAMINGSERVER_H
-#define ROAMINGSERVER_H
 
 #include <string>
 #include <ace/INET_Addr.h>

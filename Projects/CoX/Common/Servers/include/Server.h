@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef SERVER_H
-#define SERVER_H
 
 #include <string>
 // this class represents very high level interface to all servers

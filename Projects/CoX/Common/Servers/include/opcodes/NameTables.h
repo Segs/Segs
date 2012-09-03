@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef NAMETABLES_H
-#define NAMETABLES_H
 
 typedef unsigned long int uint32;
 

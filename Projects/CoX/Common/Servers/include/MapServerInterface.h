@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef MAPSERVERINTERFACE_H
-#define MAPSERVERINTERFACE_H
 
 #include <ace/INET_Addr.h>
 #include <string>

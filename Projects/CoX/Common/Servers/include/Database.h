@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef DATABASE_H
-#define DATABASE_H
 
 // ACE Logging
 #include <string>

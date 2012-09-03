@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef AUTHSERVERINTERFACE_H
-#define AUTHSERVERINTERFACE_H
 
 #include <ace/INET_Addr.h>
 #include <list>

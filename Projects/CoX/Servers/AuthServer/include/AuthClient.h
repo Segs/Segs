@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef AUTHCLIENT_H
-#define AUTHCLIENT_H
 
 #include <string>
 #include <ace/OS_NS_time.h>

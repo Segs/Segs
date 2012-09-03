@@ -1,5 +1,4 @@
-#ifndef CLIENTWINDOW_H
-#define CLIENTWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 

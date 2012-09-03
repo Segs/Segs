@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef ADMINSERVER_H
-#define ADMINSERVER_H
 
 #include <list>
 #include <string>

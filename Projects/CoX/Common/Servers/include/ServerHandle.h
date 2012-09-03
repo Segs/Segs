@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef SERVERHANDLE_H
-#define SERVERHANDLE_H
 
 #include <string>
 #include <ace/INET_Addr.h>

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <wx/control.h>
 #include <wx/panel.h>
 #include <wx/timer.h>

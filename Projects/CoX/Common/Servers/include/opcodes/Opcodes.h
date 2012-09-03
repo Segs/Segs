@@ -7,13 +7,10 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef OPCODES_H
-#define OPCODES_H
- 
+
 // City of Heroes Client/Server Opcodes
-typedef enum 
+typedef enum
 {
  COMM_CONTROLCOMMAND				=	0x00,
  COMM_CONNECT					=	0x01,

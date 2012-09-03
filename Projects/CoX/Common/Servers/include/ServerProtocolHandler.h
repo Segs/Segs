@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef SERVERPROTOCOLHANDLER_H
-#define SERVERPROTOCOLHANDLER_H
 
 #include "GameProtocolHandler.h"
 

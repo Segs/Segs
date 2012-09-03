@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef GAMESERVER_H
-#define GAMESERVER_H
 
 #include <string>
 #include "hashmap_selector.h"

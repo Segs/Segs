@@ -7,7 +7,6 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
 
 //* Another small step toward a real Character server.

@@ -15,10 +15,7 @@ Description: Defines an enumerated list of control codes, which are a
 			 to the game-play itself.
 ************************************************************************/
 
-// Inclusion guards
 #pragma once
-#ifndef CONTROLCODES_H
-#define CONTROLCODES_H
 
 typedef enum 
 {

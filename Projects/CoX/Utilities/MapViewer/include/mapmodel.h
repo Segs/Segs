@@ -1,5 +1,4 @@
-#ifndef MAPMODEL_H
-#define MAPMODEL_H
+#pragma once
 
 #include <QAbstractItemModel>
 #include <QModelIndex>

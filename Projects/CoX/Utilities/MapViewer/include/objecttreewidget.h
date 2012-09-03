@@ -1,5 +1,4 @@
-#ifndef OBJECTTREEWIDGET_H
-#define OBJECTTREEWIDGET_H
+#pragma once
 
 #include <QDockWidget>
 #include <QAbstractItemModel>

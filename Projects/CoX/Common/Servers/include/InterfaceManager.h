@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef INTERFACEMANAGER_H
-#define INTERFACEMANAGER_H
 
 #include <ace/Singleton.h>
 #include <ace/Synch.h>

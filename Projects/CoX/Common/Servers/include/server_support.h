@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef SERVER_SUPPORT_H
-#define SERVER_SUPPORT_H
 
 #include <ace/Reactor.h>
 #include <ace/ACE.h>

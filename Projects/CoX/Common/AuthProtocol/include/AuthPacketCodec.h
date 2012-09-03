@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef AUTHPACKETCODEC_H
-#define AUTHPACKETCODEC_H
 
 #include "types.h"
 #include <stdlib.h>

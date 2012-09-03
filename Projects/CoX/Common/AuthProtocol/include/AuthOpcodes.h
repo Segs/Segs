@@ -7,10 +7,7 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
-#ifndef AUTHOPCODES_H
-#define AUTHOPCODES_H
 
 #include "Base.h"
 enum eAuthPacketType
