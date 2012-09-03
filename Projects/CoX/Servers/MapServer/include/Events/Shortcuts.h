@@ -26,7 +26,7 @@ public:
     {
         assert(!"TODO");
     }
-    u32 m_num_shortcuts2;
+    uint32_t m_num_shortcuts2;
     //vector<NetCommand *> m_commands;
     std::vector<NetCommand *> m_commands2;  // m_commands2 will get filled after we know more about them
     std::vector<std::string>  m_shortcuts2;

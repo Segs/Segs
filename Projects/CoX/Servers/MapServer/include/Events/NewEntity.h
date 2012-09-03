@@ -20,6 +20,6 @@ public:
     void serializeto(BitStream &) const;
     void serializefrom(BitStream &);
     Entity *	m_ent;
-    u32			m_cookie;
+    uint32_t		m_cookie;
     bool		m_new_character;
 };

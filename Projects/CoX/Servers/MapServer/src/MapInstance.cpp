@@ -83,7 +83,7 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     res->entReceiveUpdate=false;
     res->unkn1=false;
     res->m_num_commands=0;
-    res->abs_time = (u32)timecount++;
+    res->abs_time = (uint32_t)timecount++;
     res->unkn2=true; // default parameters for first flags
     lnk->putq(res);
 }

@@ -27,7 +27,7 @@ public:
     int undos_PP;
     bool var_14;
     std::vector<std::string> m_trays;
-    std::vector<u32> m_crc;
+    std::vector<uint32_t> m_crc;
     std::vector<MapRef> m_refs;
     int unkn1;
     int m_map_number;

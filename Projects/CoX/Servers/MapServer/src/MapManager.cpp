@@ -22,7 +22,7 @@ bool MapManger::load_templates( const std::string &/*template_directory*/ )
     return true;
 }
 //! \brief Retrieves template specified by it's id
-MapTemplate * MapManger::get_template( u32 id )
+MapTemplate * MapManger::get_template( uint32_t id )
 {
     if(m_templates.find(id)==m_templates.end())
         return 0;

@@ -12,16 +12,16 @@ public:
 	}
 	void serializefrom(GrowingBuffer &buf)
 	{
-		u8 packet_code;
+		uint8_t packet_code;
 		buf.uGet(packet_code);
 		assert(packet_code==0);
-		buf.uGetBytes((u8 *)login, sizeof(login));
-		buf.uGetBytes((u8 *)password, sizeof(password));
+		buf.uGetBytes((uint8_t *)login, sizeof(login));
+		buf.uGetBytes((uint8_t *)password, sizeof(password));
 		buf.uGet(unkval1);
 		buf.uGet(unkval2);
 	}
 	char login[14];
 	char password[14];
-	u32 unkval1;
-	u16 unkval2;
+	uint32_t unkval1;
+	uint16_t unkval2;
 };

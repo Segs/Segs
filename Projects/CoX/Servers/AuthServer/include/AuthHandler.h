@@ -14,12 +14,12 @@ class AuthHandler : public EventProcessor
 protected:
 	typedef ACE_Guard<ACE_Thread_Mutex> MTGuard;
 	ACE_Thread_Mutex m_store_mutex;
-	std::map<u64,AuthLink *> m_link_store;
+	std::map<uint64_t,AuthLink *> m_link_store;
     //////////////////////////////////////////////////////////////////////////
     // function that send messages into the link
     void        no_admin_server(EventProcessor *lnk);
     void        unknown_error(EventProcessor *lnk);
-    void        auth_error(EventProcessor *lnk,u32 code);
+    void        auth_error(EventProcessor *lnk,uint32_t code);
     //////////////////////////////////////////////////////////////////////////
     // incoming link level event handlers
     void        on_connect(ConnectEvent *ev);

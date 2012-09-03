@@ -23,7 +23,7 @@ AuthLink::~AuthLink( void )
     delete m_buffer_mutex;
     m_client=0;
 }
-void AuthLink::init_crypto(int vers,u32 seed)
+void AuthLink::init_crypto(int vers,uint32_t seed)
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(*m_buffer_mutex); // Prevent modifying the buffer while the key is beeing changed
     set_protocol_version(vers);
@@ -34,7 +34,7 @@ void AuthLink::init_crypto(int vers,u32 seed)
   \arg opcode packet opcode byte
   \arg direction if this is false then the packet is from server to client, other way around otherwise
 */
-eAuthPacketType AuthLink::OpcodeToType( u8 opcode,bool direction /*= false */ ) const
+eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode,bool direction /*= false */ ) const
 {
     switch(opcode)
     {
@@ -61,8 +61,8 @@ eAuthPacketType AuthLink::OpcodeToType( u8 opcode,bool direction /*= false */ ) 
 //! tries to convert the available bytes into a valid AuthHandler LinkLevelEvent.
 SEGSEvent * AuthLink::bytes_to_event()
 {
-    u16  packet_size(0);
-    u8 * tmp(NULL);
+    uint16_t  packet_size(0);
+    uint8_t * tmp(NULL);
 
     while(true) // we loop and loop and loop loopy loop through the buffery contents!
     {
@@ -76,7 +76,7 @@ SEGSEvent * AuthLink::bytes_to_event()
             continue;
         }
         // this might be a live packet in there
-        tmp = (u8 *)&(m_received_bytes_storage.GetBuffer()[2]);
+        tmp = (uint8_t *)&(m_received_bytes_storage.GetBuffer()[2]);
 
         m_codec.XorDecodeBuf(tmp, packet_size+1); // Let's see what's in those murky waters
         eAuthPacketType recv_type = OpcodeToType(tmp[0]);
@@ -91,7 +91,7 @@ SEGSEvent * AuthLink::bytes_to_event()
         if(evt->type() == evLogin) // Is tis' on of those pesky AuthLogin Packets ?!!?
         {
             // Bring out the Codec Cannon, an' load it with Des
-            m_codec.DesDecode(static_cast<u8*>(&tmp[1]),24); // It'll crack it's chitinous armor
+            m_codec.DesDecode(static_cast<uint8_t*>(&tmp[1]),24); // It'll crack it's chitinous armor
         }
         evt->serializefrom(m_received_bytes_storage);
         m_received_bytes_storage.PopFront(packet_size+3); //Let's sail away from this depleted fishery.
@@ -134,7 +134,7 @@ int AuthLink::handle_input( ACE_HANDLE )
         return -1;
     }
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(*m_buffer_mutex);
-    m_received_bytes_storage.PutBytes((u8 *)buffer,recv_cnt);
+    m_received_bytes_storage.PutBytes((uint8_t *)buffer,recv_cnt);
     m_received_bytes_storage.ResetReading();
     // early out optimization
     if(m_received_bytes_storage.GetReadableDataSize()<2)
@@ -193,9 +193,9 @@ void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
     if(ev==0)
         return;
     // remember the location we'll put the packet size into
-    u16 *packet_size = reinterpret_cast<u16 *>(m_unsent_bytes_storage.write_ptr());
+    uint16_t *packet_size = reinterpret_cast<uint16_t *>(m_unsent_bytes_storage.write_ptr());
     // put 0 as size for now
-    m_unsent_bytes_storage.uPut((u16)0);
+    m_unsent_bytes_storage.uPut((uint16_t)0);
     // remember start location
     size_t actual_packet_start = m_unsent_bytes_storage.GetDataSize();
     // store bytes
@@ -205,7 +205,7 @@ void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
 
     // every packet, but the authorization protocol, is encrypted
     if(ev->type()!=evAuthProtocolVersion)
-        m_codec.XorCodeBuf(static_cast<u8 *>(m_unsent_bytes_storage.GetBuffer())+start+2,m_unsent_bytes_storage.GetDataSize()-2); // opcode gets encrypted
+        m_codec.XorCodeBuf(static_cast<uint8_t *>(m_unsent_bytes_storage.GetBuffer())+start+2,m_unsent_bytes_storage.GetDataSize()-2); // opcode gets encrypted
 
     // additional encryption of login details
     if(ev->type()==evLogin)
@@ -229,9 +229,9 @@ bool AuthLink::send_buffer()
     return true;
 }
 
-static u64 KeyPrepare(const char *co_string)
+static uint64_t KeyPrepare(const char *co_string)
 {
-    u64 t = 0;
+    uint64_t t = 0;
     char *p_llt = (char *)&t;
     int index = 0;
     assert(co_string);

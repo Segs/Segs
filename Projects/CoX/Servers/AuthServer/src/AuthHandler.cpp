@@ -50,7 +50,7 @@ void AuthHandler::on_connect( ConnectEvent *ev )
                 ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),	ACE_TEXT ("Multiple connection attempts from the same addr/port")));
         }
         lnk->m_state=AuthLink::CONNECTED;
-    u32 seed = rand();
+    uint32_t seed = rand();
     lnk->init_crypto(30206,seed);
         lnk->putq(new AuthorizationProtocolVersion(this,30206,seed));
 }
@@ -79,7 +79,7 @@ void AuthHandler::unknown_error(EventProcessor *lnk)
 {
     lnk->putq(new AuthorizationError(this,AUTH_UNKN_ERROR));
 }
-void AuthHandler::auth_error(EventProcessor *lnk,u32 code)
+void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
 {
     lnk->putq(new AuthorizationError(this,code));
 }

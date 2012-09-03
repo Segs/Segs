@@ -15,7 +15,7 @@
 // SpecHash<std::string,val>
 //
 // get hash index of given key
-//u32 get_hash_idx(const std::string &)
+//uint32_t get_hash_idx(const std::string &)
 //{
 //    return 0;
 //}
@@ -25,10 +25,10 @@ void UpdateServer::dependent_dump()
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IGame:pktCS_ServerUpdate\n%I{\n")));
 
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    buildDate %08d;\n"),m_build_date));
-        //		u8 clientInfo[16];
+        //		uint8_t clientInfo[16];
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    localMapServer %d\n"),localMapServer));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    currentVersion %s\n"),currentVersion.c_str()));
-        //		u8 segsHash[16];
+        //		uint8_t segsHash[16];
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    authId 0x%08x;\n"),authID));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    authCookie 0x%08x;\n"),authCookie));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    accountName%s\n"),accountName.c_str()));
@@ -50,7 +50,7 @@ void UpdateServer::serializeto( BitStream &tgt ) const
 void UpdateServer::serializefrom( BitStream &src )
 {
     m_build_date = src.GetPackedBits(1);
-    /*u32 t =*/ src.GetPackedBits(1);
+    /*uint32_t t =*/ src.GetPackedBits(1);
     src.GetString(currentVersion);
     src.GetBitArray(clientInfo,128);
     authID = src.GetPackedBits(1);
@@ -71,7 +71,7 @@ void GameEntryError::serializefrom( BitStream &tgt )
 void CharacterSlots::serializeto( BitStream &tgt ) const
 {
     tgt.StorePackedBits(1, 2); //opcode
-    tgt.StorePackedBits(1,static_cast<u32>(m_client->max_slots()));
+    tgt.StorePackedBits(1,static_cast<uint32_t>(m_client->max_slots()));
     assert(m_client->max_slots()>0);
     for(size_t i=0; i<m_client->max_slots(); i++)
     {

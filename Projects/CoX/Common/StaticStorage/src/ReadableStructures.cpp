@@ -20,7 +20,7 @@ void Field::calc_crc( CrcVisitor &v ) const
         m_sub_ref->calc_crc(v);
 }
 template<>
-bool TemplateField<std::string>::do_read(u8 type, BinReadable &tgt,Store *s ) const
+bool TemplateField<std::string>::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
     switch ( type )
@@ -48,7 +48,7 @@ bool TemplateField<std::string>::do_read(u8 type, BinReadable &tgt,Store *s ) co
 }
 
 template <>
-bool TemplateField<Vec3>::do_read(u8 type, BinReadable &tgt,Store *s ) const
+bool TemplateField<Vec3>::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
     switch ( type )
@@ -69,7 +69,7 @@ bool TemplateField<Vec3>::do_read(u8 type, BinReadable &tgt,Store *s ) const
     return parse_ok;
 }
 template <>
-bool TemplateField<u32>::do_read(u8 type, BinReadable &tgt,Store *s ) const
+bool TemplateField<uint32_t>::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
     switch ( type )
@@ -78,26 +78,26 @@ bool TemplateField<u32>::do_read(u8 type, BinReadable &tgt,Store *s ) const
     case 2:
     case 12:
         {
-            u32 v;
+            uint32_t v;
             parse_ok &= s->read(v);
             (tgt.*pval)=v;
         }
         break;
     case 6:
         {
-            u32 v;
+            uint32_t v;
             parse_ok &= s->read(v);
             (tgt.*pval)=v;
         }
         break;
     default:
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Unexpected field type:%d expected a u32.\n"), type),false);
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Unexpected field type:%d expected a uint32_t.\n"), type),false);
         break;
     }
     return parse_ok;
 }
 template <>
-bool TemplateField<float>::do_read(u8 type, BinReadable &tgt,Store *s ) const
+bool TemplateField<float>::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
     switch ( type )
@@ -116,7 +116,7 @@ bool TemplateField<float>::do_read(u8 type, BinReadable &tgt,Store *s ) const
     return parse_ok;
 }
 template <>
-bool TemplateField<Vec2>::do_read(u8 type, BinReadable &tgt,Store *s ) const
+bool TemplateField<Vec2>::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
     switch ( type )
@@ -136,7 +136,7 @@ bool TemplateField<Vec2>::do_read(u8 type, BinReadable &tgt,Store *s ) const
     return parse_ok;
 }
 template <>
-bool TemplateField<Color3ub>::do_read(u8 type, BinReadable &tgt,Store *s ) const
+bool TemplateField<Color3ub>::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
     switch ( type )
@@ -158,14 +158,14 @@ bool TemplateField<Color3ub>::do_read(u8 type, BinReadable &tgt,Store *s ) const
     return parse_ok;
 }
 template <>
-bool TemplateField<u16>::do_read(u8 type, BinReadable &tgt,Store *s ) const
+bool TemplateField<uint16_t>::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
     switch ( type )
     {
     case 11:
         {
-            u16 v;
+            uint16_t v;
             parse_ok &= s->read(v);
             (tgt.*pval) = v;
             s->fixup();
@@ -178,15 +178,15 @@ bool TemplateField<u16>::do_read(u8 type, BinReadable &tgt,Store *s ) const
     return parse_ok;
 }
 template <>
-bool TemplateField< vector<u32> >::do_read(u8 type, BinReadable &tgt,Store *s ) const
+bool TemplateField< vector<uint32_t> >::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
     switch ( type )
     {
     case 13:
         {
-            vector<u32> &res((tgt.*pval));
-            u32 to_read = 0;
+            vector<uint32_t> &res((tgt.*pval));
+            uint32_t to_read = 0;
             parse_ok &= s->read(to_read);
             res.clear();
             if ( 0==to_read)
@@ -199,7 +199,7 @@ bool TemplateField< vector<u32> >::do_read(u8 type, BinReadable &tgt,Store *s ) 
         }
         break;
     default:
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Unexpected field type:%d expected a vector of u32.\n"), type),false);
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Unexpected field type:%d expected a vector of uint32_t.\n"), type),false);
         break;
     }
     return parse_ok;
@@ -207,7 +207,7 @@ bool TemplateField< vector<u32> >::do_read(u8 type, BinReadable &tgt,Store *s ) 
 
 
 template <>
-bool TemplateField< vector<float> >::do_read(u8 type, BinReadable &tgt,Store *s ) const
+bool TemplateField< vector<float> >::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
     switch ( type )
@@ -215,7 +215,7 @@ bool TemplateField< vector<float> >::do_read(u8 type, BinReadable &tgt,Store *s 
     case 14:
         {
             vector<float> &res((tgt.*pval));
-            u32 to_read = 0;
+            uint32_t to_read = 0;
             parse_ok &= s->read(to_read);
             res.clear();
             if ( 0==to_read)
@@ -234,7 +234,7 @@ bool TemplateField< vector<float> >::do_read(u8 type, BinReadable &tgt,Store *s 
     return parse_ok;
 }
 template <>
-bool TemplateField< vector<string> >::do_read(u8 type, BinReadable &tgt,Store *s ) const
+bool TemplateField< vector<string> >::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
     switch ( type )
@@ -242,7 +242,7 @@ bool TemplateField< vector<string> >::do_read(u8 type, BinReadable &tgt,Store *s
     case 15:
         {
             vector<string> &res((tgt.*pval));
-            u32 to_read = 0;
+            uint32_t to_read = 0;
             parse_ok &= s->read(to_read);
             res.clear();
             if ( 0==to_read)
@@ -261,17 +261,17 @@ bool TemplateField< vector<string> >::do_read(u8 type, BinReadable &tgt,Store *s
     return parse_ok;
 }
 template <>
-bool TemplateField< u8 * >::do_read(u8 type, BinReadable &tgt,Store *s ) const
+bool TemplateField< uint8_t * >::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
     bool parse_ok=true;
     switch ( type )
     {
     case 17:
         {
-            u8 *v = (tgt.*pval);
+            uint8_t *v = (tgt.*pval);
             if(v)
                 delete [] v;
-            (tgt.*pval) = new u8 [m_param];
+            (tgt.*pval) = new uint8_t [m_param];
             parse_ok &= s->read_bytes((char *)(tgt.*pval),m_param);
             s->fixup();
         }
@@ -287,7 +287,7 @@ bool Field::read_non_nested( BinReadable &tgt,Store *s ) const
     bool parse_ok=true;
      if((m_type&0x100) || ((m_type&0xFF) - 3>17))
         return parse_ok;
-    u8 type=(m_type&0xFF) - 3;
+    uint8_t type=(m_type&0xFF) - 3;
     if(type==16)
         return parse_ok;
     return this->do_read(type,tgt,s);

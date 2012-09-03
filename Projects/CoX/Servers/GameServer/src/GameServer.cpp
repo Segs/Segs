@@ -131,27 +131,27 @@ std::string GameServer::getName( void )
 	return m_serverName;
 }
 
-u8 GameServer::getId( void )
+uint8_t GameServer::getId( void )
 {
 	return m_id;
 }
 
-u16 GameServer::getCurrentPlayers( void )
+uint16_t GameServer::getCurrentPlayers( void )
 {
 	return m_current_players;
 }
 
-u16 GameServer::getMaxPlayers()
+uint16_t GameServer::getMaxPlayers()
 {
 	return m_max_players;
 }
 
-u8 GameServer::getUnkn1( void )
+uint8_t GameServer::getUnkn1( void )
 {
 	return m_unk1;
 }
 
-u8 GameServer::getUnkn2( void )
+uint8_t GameServer::getUnkn2( void )
 {
 	return m_unk2;
 }

@@ -65,7 +65,7 @@ void NetStructure::storeStringConditional( BitStream &bs,const string &str )
 void NetStructure::storeTransformMatrix( BitStream &tgt,const Matrix4x3 &src )
 {
 	tgt.StoreBits(1,0); // no packed matrices for now
-	tgt.StoreBitArray((u8*)&src,12*4*8);
+	tgt.StoreBitArray((uint8_t*)&src,12*4*8);
 }
 
 void NetStructure::storeTransformMatrix( BitStream &tgt,const TransformStruct &src )
@@ -95,13 +95,13 @@ void NetStructure::getTransformMatrix( BitStream &bs,Matrix4x3 &src )
 {
 	if(bs.GetBits(1))
 		assert(!"PACKED ARRAY RECEIVED!");
-	bs.GetBitArray((u8*)&src,12*4*8);
+	bs.GetBitArray((uint8_t*)&src,12*4*8);
 }
 
-void NetStructure::storeCached_Color( BitStream &bs,u32 col )
+void NetStructure::storeCached_Color( BitStream &bs,uint32_t col )
 {
-    u32 cache_idx=0;
-    u32 prev_val=0;
+    uint32_t cache_idx=0;
+    uint32_t prev_val=0;
     if(col && WorldData::instance()->colors().find_index(col,cache_idx,prev_val,false))
     {
         cache_idx+=1;
@@ -119,8 +119,8 @@ void NetStructure::storeCached_Color( BitStream &bs,u32 col )
 
 void NetStructure::storeCached_String( BitStream &bs,const std::string & str )
 {
-    u32 cache_idx=0;
-    u32 prev_val=0;
+    uint32_t cache_idx=0;
+    uint32_t prev_val=0;
     if(str.size() && WorldData::instance()->strings().find_index(str,cache_idx,prev_val,false))
     {
         cache_idx+=1;
@@ -132,13 +132,13 @@ void NetStructure::storeCached_String( BitStream &bs,const std::string & str )
         bs.StoreString(str);
 }
 
-u32 NetStructure::getCached_Color( BitStream &bs )
+uint32_t NetStructure::getCached_Color( BitStream &bs )
 {
 	bool in_hash= bs.GetBits(1);
 	if(in_hash)
 	{
-		u16 hash_idx =bs.GetBits(colorcachecount_bitlength);
-		u32 *kv = WorldData::instance()->colors().key_for_idx(hash_idx);
+		uint16_t hash_idx =bs.GetBits(colorcachecount_bitlength);
+		uint32_t *kv = WorldData::instance()->colors().key_for_idx(hash_idx);
 		if(kv)
 			return *kv;
 		return 0;

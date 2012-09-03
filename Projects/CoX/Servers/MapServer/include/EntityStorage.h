@@ -22,7 +22,7 @@ class EntityManager
 public:
     Entity *        m_map_entities[10240];
     lEntity         m_entlist;
-    u32             m_last_ent;
+    uint32_t        m_last_ent;
                     EntityManager();
     void            sendDebuggedEntities(BitStream &tgt) const;
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
@@ -39,5 +39,5 @@ public:
 	void StorePlayer(MapClient *client,Entity *player_ent); // stores player avatar
 	Entity *CreatePlayer(MapClient *client,int avatar_id); // retrieves client avatar from storage
 
-	Entity * CreateInstance(MapInstance *target_world,u64 id); // will create a new instance of given entity, bound to given map
+	Entity * CreateInstance(MapInstance *target_world,uint64_t id); // will create a new instance of given entity, bound to given map
 };

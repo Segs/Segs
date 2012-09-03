@@ -66,9 +66,9 @@ void CrudP_Packet::serializeandsend(Net *netptr)
 /*
 bool CrudP_Packet::ParseHeader()
 {
- u32 bitLength = GetBits(32);	//	We don't really need this value for anything
+ uint32_t bitLength = GetBits(32);	//	We don't really need this value for anything
  m_checksum    = GetBits(32);
- u32 realcsum  = Checksum(GetBuffer() + packetHeaderSize, GetPacketLength() - packetHeaderSize);
+ uint32_t realcsum  = Checksum(GetBuffer() + packetHeaderSize, GetPacketLength() - packetHeaderSize);
 
  if(m_checksum != realcsum)
  {
@@ -110,12 +110,12 @@ void CrudP_Packet::BuildHeader()
 */
 
 /*
-u32 CrudP_Packet::Checksum(u8 *buf, u32 length)
+uint32_t CrudP_Packet::Checksum(uint8_t *buf, uint32_t length)
 {
- u16 v1 = 1, v2 = 0;
- u32 sum1 = v1, sum2 = v2;
+ uint16_t v1 = 1, v2 = 0;
+ uint32_t sum1 = v1, sum2 = v2;
 
- for(u32 i = 0; i < length; i++)
+ for(uint32_t i = 0; i < length; i++)
  {
   sum1 += buf[i];
   sum2 += sum1;
@@ -125,15 +125,15 @@ u32 CrudP_Packet::Checksum(u8 *buf, u32 length)
 
  sum2 %= 0xFFF1;
 
- v1 = (u16)sum1;
- v2 = (u16)sum2;
+ v1 = (uint16_t)sum1;
+ v2 = (uint16_t)sum2;
 
  return MAKELONG(htons(v2), htons(v1));
 }
 */
 
 
-u32 CrudP_Packet::GetBits(u32 nBits)
+uint32_t CrudP_Packet::GetBits(uint32_t nBits)
 {
     if(m_hasDebugInfo)
         return m_stream->GetBitsWithDebugInfo(nBits);
@@ -141,7 +141,7 @@ u32 CrudP_Packet::GetBits(u32 nBits)
         return m_stream->GetBits(nBits);
 }
 
-void CrudP_Packet::GetBitArray(u32 nBytes, u8 *array)
+void CrudP_Packet::GetBitArray(uint32_t nBytes, uint8_t *array)
 {
     if(m_hasDebugInfo)
         return m_stream->GetBitArrayWithDebugInfo(array,nBytes);
@@ -149,7 +149,7 @@ void CrudP_Packet::GetBitArray(u32 nBytes, u8 *array)
         return m_stream->GetBitArray(array,nBytes);
 };
 
-u32 CrudP_Packet::GetPackedBits(u32 nBits)
+uint32_t CrudP_Packet::GetPackedBits(uint32_t nBits)
 {
     if(m_hasDebugInfo)
         return m_stream->GetPackedBitsWithDebugInfo(nBits);
@@ -165,7 +165,7 @@ void CrudP_Packet::GetString(std::string &tgt)
         m_stream->GetString(tgt);
 }
 
-f32 CrudP_Packet::GetFloat()
+float CrudP_Packet::GetFloat()
 {
     if(m_hasDebugInfo)
         return m_stream->GetFloatWithDebugInfo();
@@ -193,9 +193,9 @@ void CrudP_Packet::dump()
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CrudP_Packet debug complete\n")));
 }
 
-u32 CrudP_Packet::getNextAck()
+uint32_t CrudP_Packet::getNextAck()
 {
-    u32 res = *m_acks.begin();
+    uint32_t res = *m_acks.begin();
     m_acks.erase(m_acks.begin());
     return res;
 }

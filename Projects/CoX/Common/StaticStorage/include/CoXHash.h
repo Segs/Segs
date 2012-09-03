@@ -31,9 +31,9 @@
 template<class V>
 struct JenkinsHash
 {
-    static u32 hash(const u8 *k,u32 length,u32 initval)
+    static uint32_t hash(const uint8_t *k,uint32_t length,uint32_t initval)
     {
-        register u32 a,b,c,len;
+        register uint32_t a,b,c,len;
 
         /* Set up the internal state */
         len = length;
@@ -42,9 +42,9 @@ struct JenkinsHash
         /*---------------------------------------- handle most of the key */
         while (len >= 12)
         {
-            a += (k[0] +((u32)k[1]<<8) +((u32)k[2]<<16) +((u32)k[3]<<24));
-            b += (k[4] +((u32)k[5]<<8) +((u32)k[6]<<16) +((u32)k[7]<<24));
-            c += (k[8] +((u32)k[9]<<8) +((u32)k[10]<<16)+((u32)k[11]<<24));
+            a += (k[0] +((uint32_t)k[1]<<8) +((uint32_t)k[2]<<16) +((uint32_t)k[3]<<24));
+            b += (k[4] +((uint32_t)k[5]<<8) +((uint32_t)k[6]<<16) +((uint32_t)k[7]<<24));
+            c += (k[8] +((uint32_t)k[9]<<8) +((uint32_t)k[10]<<16)+((uint32_t)k[11]<<24));
             mix(a,b,c);
             k += 12; len -= 12;
         }
@@ -52,26 +52,26 @@ struct JenkinsHash
         c += length;
         switch(len)              /* all the case statements fall through */
         {
-        case 11: c+=((u32)k[10]<<24);
-        case 10: c+=((u32)k[9]<<16);
-        case 9 : c+=((u32)k[8]<<8);
+        case 11: c+=((uint32_t)k[10]<<24);
+        case 10: c+=((uint32_t)k[9]<<16);
+        case 9 : c+=((uint32_t)k[8]<<8);
             /* the first byte of c is reserved for the length */
-        case 8 : b+=((u32)k[7]<<24);
-        case 7 : b+=((u32)k[6]<<16);
-        case 6 : b+=((u32)k[5]<<8);
+        case 8 : b+=((uint32_t)k[7]<<24);
+        case 7 : b+=((uint32_t)k[6]<<16);
+        case 6 : b+=((uint32_t)k[5]<<8);
         case 5 : b+=k[4];
-        case 4 : a+=((u32)k[3]<<24);
-        case 3 : a+=((u32)k[2]<<16);
-        case 2 : a+=((u32)k[1]<<8);
+        case 4 : a+=((uint32_t)k[3]<<24);
+        case 3 : a+=((uint32_t)k[2]<<16);
+        case 2 : a+=((uint32_t)k[1]<<8);
         case 1 : a+=k[0];
             /* case 0: nothing left to add */
         }
         mix(a,b,c);
         return c;
     }
-    u32 operator()(const V &val,u32 prev_val) const
+    uint32_t operator()(const V &val,uint32_t prev_val) const
     {
-        return hash((const u8 *)&val,sizeof(V),prev_val);
+        return hash((const uint8_t *)&val,sizeof(V),prev_val);
     }
 };
 //extern template struct JenkinsHash<std::string>;
@@ -86,29 +86,29 @@ protected:
         HashEntry() : key_hash(0),entry_flags(0)
         {
         }
-        u32 key_hash;
+        uint32_t key_hash;
         KEY stored_key;
         VALUE stored_val;
-        u32 entry_flags;
+        uint32_t entry_flags;
     };
     std::vector<HashEntry> m_storage;
 
     size_t max_size;
     size_t in_use;
-    u32 m_flags;
+    uint32_t m_flags;
 
     static JenkinsHash<KEY> hash;
 public:
     CoxHashCommon() : in_use(0),m_flags(0)
     {}
     virtual ~CoxHashCommon() {}
-    virtual u32 find_index(const KEY &key, u32 &index_tgt, u32 &key_tgt, bool a5) const=0;
-    virtual u32 next_size(u32 sz)=0;
+    virtual uint32_t find_index(const KEY &key, uint32_t &index_tgt, uint32_t &key_tgt, bool a5) const=0;
+    virtual uint32_t next_size(uint32_t sz)=0;
 
-    void resize(u32 new_size)
+    void resize(uint32_t new_size)
     {
-        u32 entry_idx;
-        u32 prev_val;
+        uint32_t entry_idx;
+        uint32_t prev_val;
         std::vector<HashEntry> old_entries;
         old_entries.assign(m_storage.begin(),m_storage.end());
         m_storage.clear();
@@ -128,11 +128,11 @@ public:
     HashEntry *insert_entry(const KEY &k,VALUE v)
     {
         size_t watermark = (m_storage.size()*3)/4; // when we are filled upt 75% of our capacity
-        u32 entry_idx=0;
-        u32 prev_val=0;
+        uint32_t entry_idx=0;
+        uint32_t prev_val=0;
         if((in_use+0)>=watermark || in_use>=m_storage.size())
         {
-            u32 factor=1;
+            uint32_t factor=1;
             if ( in_use >= watermark || in_use >= m_storage.size() - 1 )
                 factor=2;
             resize(factor*m_storage.size());
@@ -155,7 +155,7 @@ public:
                 return &m_storage[idx].stored_key;
         return 0;
     }
-    void init(u32 sz,u32 flags)
+    void init(uint32_t sz,uint32_t flags)
     {
         m_flags=flags;
         in_use=0;
@@ -174,12 +174,12 @@ class CoXHashMap : public CoxHashCommon<std::string,VALUE>
     typedef CoxHashCommon<std::string,VALUE> super;
 public:
     CoXHashMap(){}
-    u32 find_index(const std::string &key, u32 &index_tgt, u32 &key_tgt, bool a5) const;
-    u32 next_size(u32 sz)
+    uint32_t find_index(const std::string &key, uint32_t &index_tgt, uint32_t &key_tgt, bool a5) const;
+    uint32_t next_size(uint32_t sz)
     {
         if(sz==0)
             return 0;
-        u32 bit=1U<<31;
+        uint32_t bit=1U<<31;
         int highest_bit;
         for(highest_bit=31; highest_bit>=0; --highest_bit)
         {
@@ -194,7 +194,7 @@ public:
 };
 struct IntCompare
 {
-    bool operator()(u32 a,u32 b)
+    bool operator()(uint32_t a,uint32_t b)
     {
         return a!=b;
     }
@@ -207,10 +207,10 @@ protected:
     static COMPARE_FUNCTOR comp;
 public:
     CoXGenericHashMap(){};
-    u32 next_size(u32 sz)
+    uint32_t next_size(uint32_t sz)
     {
         size_t idx;
-        static u32 prime_sizes[] = {
+        static uint32_t prime_sizes[] = {
             11,     19,     37,     73,     109,    163,    251,    367,
             557,    823,    1237,   1861,   2777,   4177,   6247,   9371,
             14057,  21089,  31627,  47431,  71143,  106721, 160073, 240101,
@@ -222,7 +222,7 @@ public:
                 break;
         return prime_sizes[idx];
     }
-    void init(u32 sz)
+    void init(uint32_t sz)
     {
         if(sz>0)
         {
@@ -233,8 +233,8 @@ public:
             this->m_storage.resize(32);
         }
     }
-    u32 find_index(const KEY &needle,u32 &entry_idx,u32 &prev_val_out,bool a5) const;
+    uint32_t find_index(const KEY &needle,uint32_t &entry_idx,uint32_t &prev_val_out,bool a5) const;
 };
 
 typedef CoXHashMap<std::string> StringHash;
-typedef CoXGenericHashMap<u32,u32,IntCompare> ColorHash;
+typedef CoXGenericHashMap<uint32_t,uint32_t,IntCompare> ColorHash;

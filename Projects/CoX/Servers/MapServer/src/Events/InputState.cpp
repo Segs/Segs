@@ -16,9 +16,9 @@ void InputState::serializeto(BitStream &) const
 
 void InputState::partial_2(BitStream &bs)
 {
-    u8 control_id;
-    //u16 v6;
-    u16 time_since_prev;
+    uint8_t control_id;
+    //uint16_t v6;
+    uint16_t time_since_prev;
     do
     {
         if(bs.GetBits(1))
@@ -75,7 +75,7 @@ void InputState::partial(BitStream &bs)
     if(has_csc_mumble_listP)
     {
         m_csc_deltabits=bs.GetBits(5); // number of bits in max_time_diff_ms
-        /*u16 a3_bits=*/bs.GetBits(16);//ControlStateChange::field_8 or OptRel::field_19A8
+        /*uint16_t a3_bits=*/bs.GetBits(16);//ControlStateChange::field_8 or OptRel::field_19A8
         partial_2(bs);
     }
     controlBits = 0;

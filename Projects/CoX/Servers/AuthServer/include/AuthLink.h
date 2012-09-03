@@ -56,7 +56,7 @@ static EventProcessor * g_target;				//! All links post their messages to the sa
 	addr_type &     peer_addr() {return m_peer_addr;}
 	AuthClient *    client() {return m_client;}
 	void            client(AuthClient *c) {m_client=c;}
-	void            init_crypto(int vers,u32 seed);
+	void            init_crypto(int vers,uint32_t seed);
 protected:
 	AuthClient *	m_client;
 	AuthPacketCodec m_codec;
@@ -74,6 +74,6 @@ protected:
         bool            send_buffer();
         void            encode_buffer(const AuthLinkEvent *ev,size_t start);
         void            set_protocol_version(int vers);
-        eAuthPacketType OpcodeToType( u8 opcode,bool direction = false ) const;
+        eAuthPacketType OpcodeToType( uint8_t opcode,bool direction = false ) const;
         SEGSEvent *     bytes_to_event();
 };

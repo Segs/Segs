@@ -23,11 +23,11 @@ public:
 	// Part 2 : Head
 	// Part 3 : Gloves
 	// Part 4 : Boots
-	CostumePart(bool full_part,u8 part_type=0):m_type(part_type),m_full_part(full_part)
+	CostumePart(bool full_part,uint8_t part_type=0):m_type(part_type),m_full_part(full_part)
 	{
 		m_colors[0]=m_colors[1];
 	}
-	CostumePart(u8 type,const std::string &a,const std::string &b,const std::string &c,const std::string &d,u32 c1,u32 c2)
+	CostumePart(uint8_t type,const std::string &a,const std::string &b,const std::string &c,const std::string &d,uint32_t c1,uint32_t c2)
 		:m_type(type),name_0(a),name_1(b),name_2(c),name_3(d)
 	{
 		m_colors[0]=c1;
@@ -36,10 +36,10 @@ public:
 	void serializeto(BitStream &bs) const;
 	void serializefrom(BitStream &bs);
 	void serializeto_charsel(BitStream &bs) const;
-	u8 m_type; // arms/legs etc..
+	uint8_t m_type; // arms/legs etc..
 	std::string name_0,name_1,name_2,name_3,name_4,name_5,name_6;
 	bool m_full_part;
-	u32 m_colors[2];
+	uint32_t m_colors[2];
 };
 
 class Costume : public NetStructure
@@ -47,12 +47,12 @@ class Costume : public NetStructure
 public:
     float m_height;
     float m_physique;
-    u32 a,b;
+    uint32_t a,b;
     bool m_non_default_costme_p;
     int m_num_parts;
     float m_floats[8];
     std::vector<CostumePart> m_parts;
-    u32 m_body_type;
+    uint32_t m_body_type;
     Costume()
     {
         m_height=m_physique=0.0f;
@@ -80,7 +80,7 @@ class MapCostume : public Costume
 {
     bool costume_sends_nonquantized_floats;
 protected:
-    u8		m_costume_type;
+    uint8_t		m_costume_type;
     int		costume_type_idx_P;
     int		costume_sub_idx_P;
     void	GetCostume(BitStream &src);
@@ -97,26 +97,26 @@ public:
 };
 class CharacterCostume : public Costume
 {
-    u8  m_slot_index;
-    u64 m_character_id; //! Character to whom this costume belongs
+    uint8_t  m_slot_index;
+    uint64_t m_character_id; //! Character to whom this costume belongs
 public:
 
     static CharacterCostume NullCostume;
 
-    u8 getSlotIndex() const { return m_slot_index; }
-    void setSlotIndex(u8 val) { m_slot_index = val; }
-    u64 getCharacterId() const { return m_character_id; }
-    void setCharacterId(u64 val) { m_character_id = val; }
+    uint8_t getSlotIndex() const { return m_slot_index; }
+    void setSlotIndex(uint8_t val) { m_slot_index = val; }
+    uint64_t getCharacterId() const { return m_character_id; }
+    void setCharacterId(uint64_t val) { m_character_id = val; }
 
     void serializeto(BitStream &tgt) const
     {
-        tgt.StorePackedBits(1,(u32)m_parts.size());
+        tgt.StorePackedBits(1,(uint32_t)m_parts.size());
         for(size_t i=0; i<m_parts.size(); i++)
             m_parts[i].serializeto_charsel(tgt);
     }
     void serializefrom(BitStream &src)
     {
-        u32 num_parts;
+        uint32_t num_parts;
         num_parts =  src.GetPackedBits(1);
         for(size_t i=0; i<num_parts; i++)
         {
@@ -126,5 +126,5 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Database related
     //////////////////////////////////////////////////////////////////////////
-    u64		m_id;
+    uint64_t	m_id;
 };

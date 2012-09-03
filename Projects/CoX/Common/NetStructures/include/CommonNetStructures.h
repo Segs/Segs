@@ -77,8 +77,8 @@ public:
 
 class NetStructure // this represents an interface all structures that are traversing the network should implement
 {
-static const	u32					stringcachecount_bitlength=12;
-static const	u32					colorcachecount_bitlength=10;
+static const	uint32_t				stringcachecount_bitlength=12;
+static const	uint32_t				colorcachecount_bitlength=10;
 public:
         NetStructure()
         {
@@ -98,8 +98,8 @@ public:
         static void			storeTransformMatrix(BitStream &tgt,const TransformStruct &src);
 
         static void			getTransformMatrix(BitStream &bs,Matrix4x3 &src);
-        static void			storeCached_Color(BitStream &bs,u32 col);
+        static void			storeCached_Color(BitStream &bs,uint32_t col);
         static void			storeCached_String(BitStream &bs,const std::string & str);
-        static u32			getCached_Color(BitStream &bs);
+        static uint32_t			getCached_Color(BitStream &bs);
         static std::string	getCached_String(BitStream &bs);
 };

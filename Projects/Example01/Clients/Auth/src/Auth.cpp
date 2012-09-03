@@ -26,7 +26,7 @@ int Auth_Handler::handle_input (ACE_HANDLE)
 	ssize_t recv_cnt = this->peer ().recv (buf, sizeof (buf) - 1);
 	if (recv_cnt > 0)
 	{
-		m_conn->ReceivedBytes(reinterpret_cast<u8 *>(buf),recv_cnt);
+		m_conn->ReceivedBytes(reinterpret_cast<uint8_t *>(buf),recv_cnt);
 		return 0;
 	}
 	if (recv_cnt == 0 || ACE_OS::last_error () != EWOULDBLOCK)

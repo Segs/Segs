@@ -37,7 +37,7 @@ void WorldData_impl::add_colors(const std::vector<BinReadable *> &clr)
     for(size_t idx=0; idx<clr.size(); ++idx)
     {
         ColorEntry * entry=(ColorEntry *)clr[idx];
-        u32 color=ColorStorage::color_to_4ub(entry);
+        uint32_t color=ColorStorage::color_to_4ub(entry);
         m_colors.insert_entry(color,color);
     }
 

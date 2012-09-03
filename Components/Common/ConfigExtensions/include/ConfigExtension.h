@@ -16,7 +16,7 @@
 class StringsBasedCfg : public ACE_Configuration_Heap
 {
 public:
-	int get_integer_value(const ACE_Configuration_Section_Key& key,const ACE_TCHAR* name,u16& value,u16 default_val)
+	int get_integer_value(const ACE_Configuration_Section_Key& key,const ACE_TCHAR* name,uint16_t& value,uint16_t default_val)
 	{
 		ACE_TString res;
 		if(-1==ACE_Configuration_Heap::get_string_value(key,name,res))
@@ -24,7 +24,7 @@ public:
 			value=default_val;
 			return -1;
 		}
-		value = (u16)strtoul(res.c_str(),0,0);
+		value = (uint16_t)strtoul(res.c_str(),0,0);
 		return 0;
 	}
 	int get_string_value(const ACE_Configuration_Section_Key& key, const ACE_TCHAR* name, std::string& value,const std::string &default_val)
@@ -52,7 +52,7 @@ public:
 			value=default_val;
 			return -1;
 		}
-		value.set((u16)strtoul(res.substr(pos+1,ACE_TString::npos).c_str(),0,0),res.substr(0,pos).c_str());
+		value.set((uint16_t)strtoul(res.substr(pos+1,ACE_TString::npos).c_str(),0,0),res.substr(0,pos).c_str());
 		return 0;
 	}
 };

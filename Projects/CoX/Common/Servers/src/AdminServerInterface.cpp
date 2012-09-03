@@ -68,18 +68,18 @@ int AdminServerInterface::GetAccessKeyForServer(const ServerHandle<IMapServer> &
 /*
 void hashtest()
 {
-	u8 hash[16] = {0};
+	uint8_t hash[16] = {0};
 	//HashPassword(password, hash, sizeof(hash)); for now just set some arbitrary values in 'hash'
-	char szSeed[(sizeof(u32) * 3) + 1] = {0};
+	char szSeed[(sizeof(uint32_t) * 3) + 1] = {0};
 	itoa(AuthNet::GetSeed(), szSeed, 10); //GetSeed() is just a func that returns int, set it to whatever you like
 	MD5 md5;
-	u8 digest[MD5::DIGESTSIZE];
+	uint8_t digest[MD5::DIGESTSIZE];
 	md5.Update(hash, sizeof(hash)); 
-	md5.Update((u8 *)szSeed, strlen(szSeed)); 
+	md5.Update((uint8_t *)szSeed, strlen(szSeed)); 
 	md5.Final(digest);// this is garble-2
 	/ *
 		garble1 ->  md5.Update(hash, sizeof(hash)); md5.Final(garble1);
-		garble2 ->  md5.Update(hash, sizeof(hash)); md5.Update((u8 *)szSeed, strlen(szSeed)); md5.Final(garble2);
+		garble2 ->  md5.Update(hash, sizeof(hash)); md5.Update((uint8_t *)szSeed, strlen(szSeed)); md5.Final(garble2);
 		garble3 ->  md5.Update(garble1, sizeof(garble1)); md5.Final(garble3);
 		Important thing, check if garble3==garble2
 	* /

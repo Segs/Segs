@@ -3,21 +3,21 @@
 
 class AuthorizationError : public AuthLinkEvent
 {
-	u32 m_error_type;
+	uint32_t m_error_type;
 public:
 	AuthorizationError() : AuthLinkEvent(evAuthorizationError),m_error_type(0)
 	{}
-	AuthorizationError(EventProcessor *evsrc,u32 err) : AuthLinkEvent(evAuthorizationError,evsrc),m_error_type(err)
+	AuthorizationError(EventProcessor *evsrc,uint32_t err) : AuthLinkEvent(evAuthorizationError,evsrc),m_error_type(err)
     {}
-	void init(EventProcessor *ev_src,u32 error_type) {m_error_type=error_type; m_event_source=ev_src;}
+	void init(EventProcessor *ev_src,uint32_t error_type) {m_error_type=error_type; m_event_source=ev_src;}
 	void serializeto(GrowingBuffer &buf) const
 	{
-		buf.uPut((u8)1);
+		buf.uPut((uint8_t)1);
 		buf.uPut(m_error_type);
 	}
 	void serializefrom(GrowingBuffer &buf)
 	{
-		u8 op;
+		uint8_t op;
 		buf.uGet(op);
 		assert(op==1);
 		buf.uGet(m_error_type);

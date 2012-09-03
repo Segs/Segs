@@ -7,7 +7,7 @@
 #include "CharacterClient.h"
 #include "GameServer.h"
 #include "Character.h"
-static const u32 supported_version=20040422;
+static const uint32_t supported_version=20040422;
 
 void GameHandler::dispatch( SEGSEvent *ev )
 {
@@ -175,7 +175,7 @@ void GameHandler::on_unknown_link_event(GameUnknownRequest *)
 // This method is called by authentication service, to notify this GameServer that a client
 // with given source ip/port,id and access_level has just logged in.
 // If given client is not already logged in
-//		This method will create a new CharacterClient object, put it in m_expected_clients collection, and return a key (u32)
+//		This method will create a new CharacterClient object, put it in m_expected_clients collection, and return a key (uint32_t)
 //		that will be used by the client during connection
 //		Also this will set m_expected_clients cleaning timer if it isn't set already
 // If given client is logged in ( it can be found here, or any other GameServer )
@@ -184,12 +184,12 @@ void GameHandler::on_unknown_link_event(GameUnknownRequest *)
 // client object
 void GameHandler::on_expect_client( ExpectClient *ev )
 {
-    u32 cookie = m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
+    uint32_t cookie = m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
     // let the client object know how can it access database
     m_clients.getExpectedByCookie(cookie)->setServer(this->m_server);
         ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
 }
-void GameHandler::checkClientConnection(u64 id)
+void GameHandler::checkClientConnection(uint64_t id)
 {
     CharacterClient *client = m_clients.getById(id);
     if(client)
@@ -202,7 +202,7 @@ void GameHandler::checkClientConnection(u64 id)
     // empty for now, later on it will use client store to get the client, and then check it's packet backlog
     //
 }
-bool GameHandler::isClientConnected(u64 id)
+bool GameHandler::isClientConnected(uint64_t id)
 {
     return m_clients.getById(id)!=NULL;
 }

@@ -27,7 +27,7 @@ public:
     } eClientState;
 public:
                         ClientLinkState():m_state(NOT_LOGGED_IN){}
-    u32                 hash_id() {return m_peer_addr.get_ip_address()^m_peer_addr.get_port_number();}
+    uint32_t                 hash_id() {return m_peer_addr.get_ip_address()^m_peer_addr.get_port_number();}
     void                setState(eClientState s) {m_state=s;}
     eClientState        getState() {return m_state;}
     void                setPeer(const ACE_INET_Addr &peer){m_peer_addr=peer;}

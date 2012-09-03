@@ -8,12 +8,12 @@
  */
 
 #include "PacketCodec.h"
-u32 PacketCodecNull::Checksum(const u8 *buf,size_t size)
+uint32_t PacketCodecNull::Checksum(const uint8_t *buf,size_t size)
 {
-    u16 v1 = 1, v2 = 0;
-    u32 sum1 = v1, sum2 = v2;
+    uint16_t v1 = 1, v2 = 0;
+    uint32_t sum1 = v1, sum2 = v2;
 
-    for(u32 i = 0; i < size; i++)
+    for(uint32_t i = 0; i < size; i++)
     {
         sum1 += buf[i];
         sum2 += sum1;
@@ -23,8 +23,8 @@ u32 PacketCodecNull::Checksum(const u8 *buf,size_t size)
 
     sum2 %= 0xFFF1;
 
-    v1 = (u16)sum1;
-    v2 = (u16)sum2;
-    return  (((u32)ACE_HTONS(v1))<<16)|ACE_HTONS(v2) ;
+    v1 = (uint16_t)sum1;
+    v2 = (uint16_t)sum2;
+    return  (((uint32_t)ACE_HTONS(v1))<<16)|ACE_HTONS(v2) ;
     //return MAKELONG(htons(v2), htons(v1));
 }

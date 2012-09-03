@@ -25,12 +25,12 @@ class CharacterDatabase : public Database
 {
     void    on_connected() {;} //prepare statements here
 public:
-	bool     CreateLinkedAccount(u64 auth_account_id,const std::string &username); // returns true on success
+	bool     CreateLinkedAccount(uint64_t auth_account_id,const std::string &username); // returns true on success
     bool    create(AccountInfo *);
-    bool    create(u64 gid,u8 slot,Character *c);
+    bool    create(uint64_t gid,uint8_t slot,Character *c);
 	bool    fill( AccountInfo *); //! 
 	bool    fill( Character *); //! Will call fill(CharacterCostume)
 	bool    fill( CharacterCostume *); 
-    int     remove_account(u64 acc_serv_id); //will remove given account, TODO add logging feature 
-    bool    remove_character(AccountInfo *,u8 slot_idx);
+    int     remove_account(uint64_t acc_serv_id); //will remove given account, TODO add logging feature 
+    bool    remove_character(AccountInfo *,uint8_t slot_idx);
 };

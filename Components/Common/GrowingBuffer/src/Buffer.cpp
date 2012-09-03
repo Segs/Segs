@@ -11,7 +11,7 @@
 
 #include "Buffer.h"
 
-GrowingBuffer::GrowingBuffer(u8 *buf, size_t size,bool become_owner)
+GrowingBuffer::GrowingBuffer(uint8_t *buf, size_t size,bool become_owner)
 {
     m_buf		= NULL;
     m_size		= 0;
@@ -32,7 +32,7 @@ GrowingBuffer::GrowingBuffer(u8 *buf, size_t size,bool become_owner)
     }
 }
 
-GrowingBuffer::GrowingBuffer(size_t max_size,u8 safe_area,size_t pre_alloc_size)
+GrowingBuffer::GrowingBuffer(size_t max_size,uint8_t safe_area,size_t pre_alloc_size)
 {
         m_buf = NULL;
         m_safe_area = safe_area;
@@ -42,7 +42,7 @@ GrowingBuffer::GrowingBuffer(size_t max_size,u8 safe_area,size_t pre_alloc_size)
         m_write_off=m_read_off=0;
         if(pre_alloc_size)
         {
-                m_buf = new u8[m_size+m_safe_area];
+                m_buf = new uint8_t[m_size+m_safe_area];
         memset(m_buf,0,m_size);
                 assert(m_buf!=NULL);
         }
@@ -51,7 +51,7 @@ GrowingBuffer::GrowingBuffer(size_t max_size,u8 safe_area,size_t pre_alloc_size)
 GrowingBuffer::GrowingBuffer(const GrowingBuffer &from)
 {
         m_size		= from.m_size;
-        m_buf		= new u8[m_size];
+        m_buf		= new uint8_t[m_size];
         assert(m_buf!=NULL);
         m_last_err	= 0;
         m_write_off = from.m_write_off;
@@ -71,15 +71,15 @@ GrowingBuffer::~GrowingBuffer()
 void GrowingBuffer::PutString(const char *t)
 {
         size_t len = strlen(t)+1;
-        PutBytes(reinterpret_cast<const u8 *>(t),len);
+        PutBytes(reinterpret_cast<const uint8_t *>(t),len);
 }
 void GrowingBuffer::uPutString(const char *t)
 {
         size_t len = strlen(t);
-        uPutBytes(reinterpret_cast<const u8 *>(t),len);
+        uPutBytes(reinterpret_cast<const uint8_t *>(t),len);
 }
 
-void GrowingBuffer::PutBytes(const u8 *t, size_t len)
+void GrowingBuffer::PutBytes(const uint8_t *t, size_t len)
 {
         if(m_write_off+len>m_size)
                 if(resize(m_write_off+len)==-1) // space exhausted
@@ -89,7 +89,7 @@ void GrowingBuffer::PutBytes(const u8 *t, size_t len)
                 }
         uPutBytes(t,len);
 }
-void GrowingBuffer::uPutBytes(const u8 *t, size_t len)
+void GrowingBuffer::uPutBytes(const uint8_t *t, size_t len)
 {
         if(!(m_buf&&t))
                 return;
@@ -111,22 +111,22 @@ void GrowingBuffer::GetString(char *t)
                 m_last_err = 1;
                 return;
         }
-        uGetBytes(reinterpret_cast<u8 *>(t),len);
+        uGetBytes(reinterpret_cast<uint8_t *>(t),len);
 }
 void GrowingBuffer::uGetString(char *t)
 {
         size_t len(strlen((char *)&m_buf[m_read_off]));
-        uGetBytes(reinterpret_cast<u8 *>(t),len);
+        uGetBytes(reinterpret_cast<uint8_t *>(t),len);
 }
 
-bool GrowingBuffer::GetBytes(u8 *t, size_t len)
+bool GrowingBuffer::GetBytes(uint8_t *t, size_t len)
 {
         if(len>GetReadableDataSize())
                 return false;
         uGetBytes(t,len);
         return true;
 }
-void GrowingBuffer::uGetBytes(u8 *t, size_t len)
+void GrowingBuffer::uGetBytes(uint8_t *t, size_t len)
 {
         memcpy(t,&m_buf[m_read_off],len);
         m_read_off += len;
@@ -176,7 +176,7 @@ int GrowingBuffer::resize(size_t accommodate_size)
         }
         if(new_size>m_size)
         {
-                u8 *tmp = new u8[new_size+m_safe_area];
+                uint8_t *tmp = new uint8_t[new_size+m_safe_area];
                 if(NULL==tmp)
                         return -2;
                 assert(m_write_off<=m_size); // just to be sure

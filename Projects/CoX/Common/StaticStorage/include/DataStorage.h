@@ -24,7 +24,7 @@ public:
     {
 
     }
-    u32 result()
+    uint32_t result()
     {
         return 0;
     }
@@ -40,7 +40,7 @@ struct Vec2
 };
 struct Color3ub
 {
-    u8 v[3];
+    uint8_t v[3];
 };
 struct Field;
 class Store // base class for walking data storage
@@ -50,9 +50,9 @@ public:
     virtual void    prepare()=0;
     virtual std::string read_str(size_t maxlen)=0;
     virtual bool    read_bytes(char *buffer,size_t sz)=0;
-    virtual bool    read(u32 &v)=0;
-    virtual bool    read(u16 &v)=0;
-    virtual bool    read(u8 &v)=0;
+    virtual bool    read(uint32_t &v)=0;
+    virtual bool    read(uint16_t &v)=0;
+    virtual bool    read(uint8_t &v)=0;
     virtual bool    read(float &v)=0;
     virtual void    fixup()=0;
     virtual bool    prepare_nested()=0;
@@ -64,7 +64,7 @@ public:
 class ClassSchema;
 class BinStore : public Store // binary storage
 {
-    u32 m_required_crc;
+    uint32_t m_required_crc;
     std::ifstream m_str;
     template<class V>
     size_t read_internal(V &res)
@@ -81,29 +81,29 @@ class BinStore : public Store // binary storage
     }
     struct FileEntry {
         std::string name;
-        u32 date;
+        uint32_t date;
     };
     std::vector<FileEntry> m_entries;
     size_t bytes_read;
-    u32 bytes_to_read;
-    std::vector<u32> m_file_sizes; // implicit stack
+    uint32_t bytes_to_read;
+    std::vector<uint32_t> m_file_sizes; // implicit stack
 
     std::string read_pstr(size_t maxlen);
     void        skip_pstr();
     bool        read_data_blocks(bool file_data_blocks);
     bool        check_bin_version_and_crc(const ClassSchema *s);
-    u32         current_fsize() {return *m_file_sizes.rbegin();}
-    u32         read_header(std::string &name,size_t maxlen);
+    uint32_t    current_fsize() {return *m_file_sizes.rbegin();}
+    uint32_t    read_header(std::string &name,size_t maxlen);
     void        fixup();
 public:
                 BinStore(){}
 virtual         ~BinStore() {}
 
-    bool        read(u32 &v);
+    bool        read(uint32_t &v);
     bool        read(float &v);
     bool        read_bytes(char *tgt,size_t sz);
-    bool        read(u16 &v);
-    bool        read(u8 &v);
+    bool        read(uint16_t &v);
+    bool        read(uint8_t &v);
     std::string read_str(size_t maxlen);
     void        prepare();
     bool        prepare_nested();

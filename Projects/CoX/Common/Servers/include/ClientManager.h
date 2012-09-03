@@ -19,27 +19,27 @@ template <class CLIENT_CLASS>
 class ClientStore
 {
         //	boost::object_pool<CLIENT_CLASS> m_pool;
-        hash_map<u32,CLIENT_CLASS *> m_expected_clients;
-        hash_map<u64,CLIENT_CLASS *> m_clients; // this maps client's id to it's object
-        hash_map<u32,CLIENT_CLASS *> m_connected_clients_cookie; // this maps client's id to it's object
-        hash_map<u64,u32> m_id_to_cookie; // client cookie is only useful in this context
-        u32 create_cookie(const ACE_INET_Addr &from,u64 id)
+        hash_map<uint32_t,CLIENT_CLASS *> m_expected_clients;
+        hash_map<uint64_t,CLIENT_CLASS *> m_clients; // this maps client's id to it's object
+        hash_map<uint32_t,CLIENT_CLASS *> m_connected_clients_cookie; // this maps client's id to it's object
+        hash_map<uint64_t,uint32_t> m_id_to_cookie; // client cookie is only useful in this context
+        uint32_t create_cookie(const ACE_INET_Addr &from,uint64_t id)
         {
-                u64 res = ((from.hash()+id)&0xFFFFFFFF)^(id>>32);
+                uint64_t res = ((from.hash()+id)&0xFFFFFFFF)^(id>>32);
                 ACE_DEBUG ((LM_WARNING,ACE_TEXT ("(%P|%t) create_cookie still needs a good algorithm.0x%08x\n"),res));
-                return (u32)res;
+                return (uint32_t)res;
         }
 
 public:
 
-        CLIENT_CLASS *getById(u64 id)
+        CLIENT_CLASS *getById(uint64_t id)
         {
                 if(m_clients.find(id)==m_clients.end())
                         return NULL;
                 return m_clients[id];
         }
 
-        CLIENT_CLASS *getByCookie(u32 cookie)
+        CLIENT_CLASS *getByCookie(uint32_t cookie)
         {
                 if(m_connected_clients_cookie.find(cookie)!=m_connected_clients_cookie.end())
                 {
@@ -48,7 +48,7 @@ public:
                 return NULL;
         }
 
-        CLIENT_CLASS *getExpectedByCookie(u32 cookie)
+        CLIENT_CLASS *getExpectedByCookie(uint32_t cookie)
         {
                 // we got cookie check if it's an expected client
                 if(m_expected_clients.find(cookie)!=m_expected_clients.end())
@@ -58,10 +58,10 @@ public:
                 return NULL;
         }
 
-        u32 ExpectClient(const ACE_INET_Addr &from,u64 id,u8 access_level)
+        uint32_t ExpectClient(const ACE_INET_Addr &from,uint64_t id,uint8_t access_level)
         {
                 CLIENT_CLASS * exp;
-                u32 cook = create_cookie(from,id);
+                uint32_t cook = create_cookie(from,id);
                 // if we already expect this client
                 if(m_expected_clients.find(cook)!=m_expected_clients.end())
                 {
@@ -82,11 +82,11 @@ public:
                 m_id_to_cookie[id]=cook;
                 return cook;
         }
-        void removeById(u64 id)
+        void removeById(uint64_t id)
         {
                 ACE_ASSERT(getById(id)!=0);
                 CLIENT_CLASS *cl=getById(id);
-                u32 cookie = m_id_to_cookie[id];
+                uint32_t cookie = m_id_to_cookie[id];
 
                 m_id_to_cookie.erase(id);
                 m_expected_clients.erase(cookie);
@@ -95,7 +95,7 @@ public:
 
                 delete cl;
         }
-        void connectedClient(u32 cookie)
+        void connectedClient(uint32_t cookie)
         {
                 // client with cookie has just connected
                 m_connected_clients_cookie[cookie]=getExpectedByCookie(cookie);

@@ -67,7 +67,7 @@ AccountInfo::AccountInfo() : m_access_level(0),m_acc_server_acc_id(0),m_game_ser
     
 }
 
-bool AccountInfo::fill_game_db( u64 )
+bool AccountInfo::fill_game_db( uint64_t )
 {
     if(!AdminServer::instance()->character_db()->fill(this)) // read basic facts
         return false;
@@ -83,18 +83,18 @@ Character * AccountInfo::create_new_character()
     }
     return 0;
 }
-u8 AccountInfo::char_slot_index(Character *c)
+uint8_t AccountInfo::char_slot_index(Character *c)
 {
     for(size_t i=0; i<m_characters.size(); i++)
     {
         if(m_characters[i]==c)
-            return u8(i);
+            return uint8_t(i);
     }
     return ~1;
 }
 bool AccountInfo::store_new_character(Character *character)
 {
-    u8 slot_idx=char_slot_index(character);
+    uint8_t slot_idx=char_slot_index(character);
     if(slot_idx==0xFF)
         return false;
     CharacterDatabase *cdb = AdminServer::instance()->character_db();
@@ -108,7 +108,7 @@ bool AccountInfo::store_new_character(Character *character)
 bool AccountInfo::remove_character( Character *character )
 {
     CharacterDatabase *cdb = AdminServer::instance()->character_db();
-    u8 slot_idx=char_slot_index(character);
+    uint8_t slot_idx=char_slot_index(character);
     if(slot_idx==0xFF)
         return false;
     cdb->remove_character(this,slot_idx);

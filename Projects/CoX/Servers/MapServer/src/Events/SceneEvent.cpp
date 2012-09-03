@@ -128,7 +128,7 @@ void SceneEvent::serializeto(BitStream &tgt) const
     }
     //tgt.StoreBits(1,current_map_flags);
     //tgt.StorePackedBits(1,m_trays.size());
-    u32 hashes[] = {0x00000000,0xAFD34459,0xE63A2B76,0xFBBAD9D4,
+    uint32_t hashes[] = {0x00000000,0xAFD34459,0xE63A2B76,0xFBBAD9D4,
         0x9AE0A9D4,0x06BDEF70,0xA47A21F8,0x5FBF835D,
         0xFF25F3F6,0x70E6C422,0xF1CCC459,0xCBD35A55,
         0x64CCCC31,0x535B08CC};

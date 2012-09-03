@@ -29,7 +29,7 @@ public:
     AuthPacketCodec();
     ~AuthPacketCodec(){}
     void SetXorKey(int key);
-    void SetDesKey(u64 key);
+    void SetDesKey(uint64_t key);
     int Code(unsigned char *buffer,size_t size);
     int Decode(unsigned char *buffer,size_t size);
     void XorCodeBuf(unsigned char *buffer,size_t length);

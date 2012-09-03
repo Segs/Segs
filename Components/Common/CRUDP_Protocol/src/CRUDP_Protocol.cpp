@@ -74,17 +74,17 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
     CrudP_Packet *res=NULL;
     if(src.GetReadableDataSize()<12)
         return;
-    u32 bitlength,checksum,sibcount;
+    uint32_t bitlength,checksum,sibcount;
 
     src.Get(bitlength);
     assert(src.GetReadableBits()>=bitlength-32);
     if(!m_codec)
         return; // later on we might allow codec-less operation ?
-    m_codec->Decrypt((u8 *)src.read_ptr(),src.GetReadableDataSize());
+    m_codec->Decrypt((uint8_t *)src.read_ptr(),src.GetReadableDataSize());
 
     src.Get(checksum);
 
-    u32 realcsum  = PacketCodecNull::Checksum((u8*)src.read_ptr(),src.GetReadableDataSize());
+    uint32_t realcsum  = PacketCodecNull::Checksum((uint8_t*)src.read_ptr(),src.GetReadableDataSize());
     if(realcsum!=checksum)
     {
         return;
@@ -113,12 +113,12 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
 }
 void CrudP_Protocol::parseAcks(BitStream &src,CrudP_Packet *tgt)
 {
-    u32 numUniqueAcks = src.GetPackedBits(1);
+    uint32_t numUniqueAcks = src.GetPackedBits(1);
     if(numUniqueAcks  == 0) return;
 
-    u32 firstAck = src.GetBits(32);
+    uint32_t firstAck = src.GetBits(32);
     tgt->addAck(firstAck);
-    for(u32 i = 1; i < numUniqueAcks; i++)
+    for(uint32_t i = 1; i < numUniqueAcks; i++)
     {
         //	The first sequence number is sent in it's entirety.  Every subsequent
         //	number is sent as a delta between it, and it's predecessor.  This is
@@ -141,9 +141,9 @@ void CrudP_Protocol::storeAcks(BitStream &bs)
     }
     recv_acks.sort();
     recv_acks.unique();
-    std::list<u32>::iterator iter = recv_acks.begin();
-    u32 last_ack = 0;
-    u32 num_acks = (u32)((recv_acks.size()>16) ? 16:recv_acks.size());
+    std::list<uint32_t>::iterator iter = recv_acks.begin();
+    uint32_t last_ack = 0;
+    uint32_t num_acks = (uint32_t)((recv_acks.size()>16) ? 16:recv_acks.size());
     bs.StorePackedBits(1,num_acks);
 
     last_ack = *iter;
@@ -195,13 +195,13 @@ void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
         }
     }
 }
-CrudP_Packet *CrudP_Protocol::mergeSiblings(u32 id)
+CrudP_Packet *CrudP_Protocol::mergeSiblings(uint32_t id)
 {
     pPacketStorage &storage=sibling_map[id];
     assert(storage.size()>=1); // wtf ??
     BitStream *pkt_bs,*bs=new BitStream(32);
     CrudP_Packet *res= new CrudP_Packet(*storage[0]); //copy packet info from first sibling
-    for(u32 i = 0; i < storage.size(); i++)
+    for(uint32_t i = 0; i < storage.size(); i++)
     {
         //	Skip duplicate siblings
         //if(i > 0 && storage[i]->getSibPos() == storage[i-1]->getSibPos()) continue;
@@ -282,7 +282,7 @@ void CrudP_Protocol::PacketSibDestroyer(const std::pair<int,pPacketStorage> &a)
     for_each(a.second.begin(),a.second.end(),&CrudP_Protocol::PacketDestroyer);
 }
 //! this acknowledges that packet with id was successfully received => acknowledged packet is removed from send queue
-void CrudP_Protocol::PacketAck(u32 id)
+void CrudP_Protocol::PacketAck(uint32_t id)
 {
     //TODO: sort + binary search for id
     ipPacketStorage iter = unsent_packets.begin();
@@ -312,17 +312,17 @@ vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
     {
         act = new CrudP_Packet;
         //act->GetStream()->PutBytes(src.GetStream()->read_ptr(),src.GetStream()->GetReadableDataSize());
-        act->GetStream()->StoreBitArray((u8 *)src.GetStream()->read_ptr(),(u32)src.GetStream()->GetReadableBits());
+        act->GetStream()->StoreBitArray((uint8_t *)src.GetStream()->read_ptr(),(uint32_t)src.GetStream()->GetReadableBits());
         act->setSibPos(i);
         res.push_back(act);
     }
     return res;
 
 }
-u8 * compressStream(BitStream &stream)
+uint8_t * compressStream(BitStream &stream)
 {
     uLongf comp_length =(uLongf )(12+1.1*stream.GetReadableDataSize());
-    u8 *dest= new u8[comp_length];
+    uint8_t *dest= new uint8_t[comp_length];
     compress(dest,&comp_length,stream.read_ptr(),stream.GetReadableDataSize());
     return dest;
 }
@@ -341,14 +341,14 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
         for(ivCrudP_Packet iter=split_packets.begin(); iter!=split_packets.end(); iter++)
         {
             pkt = *iter;
-            pkt->setNumSibs((u32)split_packets.size());
+            pkt->setNumSibs((uint32_t)split_packets.size());
             pkt->setSibId(sib_id);
             pkt->m_checksum	= 0;
             pkt->setSeqNo(++send_seq);
             block_size = pkt->GetStream()->GetReadableDataSize();
-            BitStream *res =new BitStream((u32)(block_size+64));
-            res->Put((u32)0); // readable bits holder
-            res->Put((u32)0); // checksum placeholder
+            BitStream *res =new BitStream((uint32_t)(block_size+64));
+            res->Put((uint32_t)0); // readable bits holder
+            res->Put((uint32_t)0); // checksum placeholder
             res->StoreBits(1,pkt->HasDebugInfo());
             res->StoreBits(32,pkt->GetSequenceNumber());
             res->StorePackedBits(1,pkt->getNumSibs()); // sibling count
@@ -365,19 +365,19 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
                 res->StoreBits_4_10_24_32(0); // instead of  zero we have to put ordered_id here, whatever that is
             }
             res->ByteAlign();
-            res->StoreBitArray((u8*)pkt->GetStream()->read_ptr(),(u32)pkt->GetStream()->GetReadableBits());
+            res->StoreBitArray((uint8_t*)pkt->GetStream()->read_ptr(),(uint32_t)pkt->GetStream()->GetReadableBits());
             res->ResetReading();
-            u32 *head =  (u32 *)res->read_ptr();
-            head[0] = (u32)res->GetReadableBits();
+            uint32_t *head =  (uint32_t *)res->read_ptr();
+            head[0] = (uint32_t)res->GetReadableBits();
             res->ByteAlign();
             size_t length =res->GetReadableDataSize();
             size_t fixedlen=((length + 3) & ~7) + 4;
             while(res->GetReadableDataSize()<fixedlen)
             {
-                res->Put((u8)0);
+                res->Put((uint8_t)0);
             }
-            head[1] = m_codec->Checksum((u8*)&head[2],fixedlen-8); // this is safe because all bitstreams have padding
-            m_codec->Encrypt((u8*)&head[1],fixedlen-4);//res->GetReadableDataSize()
+            head[1] = m_codec->Checksum((uint8_t*)&head[2],fixedlen-8); // this is safe because all bitstreams have padding
+            m_codec->Encrypt((uint8_t*)&head[1],fixedlen-4);//res->GetReadableDataSize()
             delete pkt->GetStream();
             pkt->SetStream(res);
             ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
@@ -394,7 +394,7 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
 
         BitStream *res =new BitStream(p->GetStream()->GetReadableDataSize()+64);
         memset(res->read_ptr(),0,64);
-        res->Put((u32)p->GetStream()->GetReadableBits());
+        res->Put((uint32_t)p->GetStream()->GetReadableBits());
         res->Put(p->m_checksum);
 
         res->StoreBits(1,p->HasDebugInfo());
@@ -413,19 +413,19 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
             res->StoreBits_4_10_24_32(0); // instead of  zero we have to put ordered_id here, whatever that is
         }
         res->ByteAlign();
-        res->StoreBitArray((u8*)p->GetStream()->read_ptr(),p->GetStream()->GetReadableBits());
+        res->StoreBitArray((uint8_t*)p->GetStream()->read_ptr(),p->GetStream()->GetReadableBits());
         res->ResetReading();
-        u32 *head =  (u32 *)res->read_ptr();
-        head[0] = u32(res->GetReadableBits());
+        uint32_t *head =  (uint32_t *)res->read_ptr();
+        head[0] = uint32_t(res->GetReadableBits());
         res->ByteAlign();
         size_t length =res->GetReadableDataSize();
         size_t fixedlen=((length + 3) & ~7) + 4;
         while(res->GetReadableDataSize()<fixedlen)
         {
-            res->Put((u8)0);
+            res->Put((uint8_t)0);
         }
-        head[1] = m_codec->Checksum((u8*)&head[2],fixedlen-8); // this is safe because all bitstreams have padding
-        m_codec->Encrypt((u8*)&head[1],fixedlen-4);//res->GetReadableDataSize()
+        head[1] = m_codec->Checksum((uint8_t*)&head[2],fixedlen-8); // this is safe because all bitstreams have padding
+        m_codec->Encrypt((uint8_t*)&head[1],fixedlen-4);//res->GetReadableDataSize()
         delete p->GetStream();
         p->SetStream(res);
         ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);

@@ -42,10 +42,10 @@ protected:
     SEGSEvent * on_connection_query(ClientConnectionQuery *ev);
 
     //////////////////////////////////////////////////////////////////////////
-    void        checkClientConnection(u64 id);
-    bool        isClientConnected(u64 id);
+    void        checkClientConnection(uint64_t id);
+    bool        isClientConnected(uint64_t id);
     void disconnectClient( AccountInfo & cl );
-    hash_set<u32>           waiting_for_client; // this hash_set holds all client cookies we wait for
+    hash_set<uint32_t>           waiting_for_client; // this hash_set holds all client cookies we wait for
     ClientStore<CharacterClient> m_clients;
     GameServer *m_server;
 

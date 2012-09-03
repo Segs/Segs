@@ -64,7 +64,7 @@ namespace MapStructs
         std::string m_src_name;
         std::string m_obj_name;
         std::string m_type_name;
-        u32 m_flags;
+        uint32_t m_flags;
         static void build_schema();
         virtual std::string to_string() const
         {
@@ -96,7 +96,7 @@ namespace MapStructs
     struct TexReplace : public TreeStore
     {
         DECL_READABLE(TexReplace)
-        u32 m_src;
+        uint32_t m_src;
         std::string m_name_tgt;
         static void build_schema();
     };
@@ -110,7 +110,7 @@ namespace MapStructs
     {
         DECL_READABLE(Omni)
         float m_val;
-        u32 m_flags;
+        uint32_t m_flags;
         Color3ub m_color;
         static void build_schema();
     };
@@ -129,7 +129,7 @@ namespace MapStructs
         float m_a;
         float m_b;
         float m_c;
-        u32 m_flags;
+        uint32_t m_flags;
         static void build_schema();
     };
     struct Fog : public TreeStore
@@ -165,7 +165,7 @@ namespace MapStructs
         DECL_READABLE(Property)
         std::string m_txt1;
         std::string m_txt2;
-        u32 m_val3;
+        uint32_t m_val3;
         static void build_schema();
     };
     struct Group : public TreeStore
@@ -185,7 +185,7 @@ struct SceneStorage : public TreeStore
     std::vector<MapStructs::Ref *> m_refs;
     vDef m_root;
     std::string m_scene_file;
-    u32 m_version;
+    uint32_t m_version;
     static void build_schema();
     size_t num_children() const
     {

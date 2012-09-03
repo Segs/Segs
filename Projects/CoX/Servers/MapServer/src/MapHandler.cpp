@@ -80,7 +80,7 @@ void MapCommHandler::on_connection_request(ConnectRequest *ev)
 }
 void MapCommHandler::on_expect_client( ExpectMapClient *ev )
 {
-    u32 cookie = 0; // name in use
+    uint32_t cookie = 0; // name in use
     // TODO: handle contention while creating 2 character with the same name from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
     MapTemplate *tpl=m_server->map_manager().get_template(ev->m_map_id);

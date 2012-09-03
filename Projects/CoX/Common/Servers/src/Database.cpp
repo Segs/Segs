@@ -88,7 +88,7 @@ bool Database::execQuery(const string &q)// for insert/update/delete queries, no
     return true;
 }
 
-s64 Database::next_id( const std::string &tab_name )
+int64_t Database::next_id( const std::string &tab_name )
 {
     DbResults results;
     bool res=execQuery("SELECT NEXTVAL('"+tab_name+"_id_seq');",results);
@@ -155,14 +155,14 @@ int32_t DbResultRow::getColInt32(const char *column_name)
     sscanf(res, "%" SCNd32,&result);
     return result;
 }
-s64 DbResultRow::getColInt64(const char *column_name)
+int64_t DbResultRow::getColInt64(const char *column_name)
 {
     const char *res = getColString(column_name);
     if(!res)
     {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),-1);
     }
-    s64 result;
+    int64_t result;
     sscanf(res,"%" SCNd64,&result);
     return result;
 }
@@ -176,7 +176,7 @@ float DbResultRow::getColFloat(const char *column_name)
 
     return (float)atof(res);
 }
-size_t DbResultRow::getColIntArray(const char *column_name,u32 *arr,size_t arr_size)
+size_t DbResultRow::getColIntArray(const char *column_name,uint32_t *arr,size_t arr_size)
 {
     size_t idx=0;
     const char *res = getColString(column_name);
@@ -250,7 +250,7 @@ bool PreparedQuery::execute(PreparedArgs &args,DbResults &res )
         return false;
     return true;
 }
-void PreparedArgs::add_param( const u8 *bytes,size_t len,bool binary )
+void PreparedArgs::add_param( const uint8_t *bytes,size_t len,bool binary )
 {
     m_params.push_back(std::string((char *)bytes,len));
     m_lengths.push_back(len);
@@ -264,16 +264,16 @@ void PreparedArgs::add_param( const std::string &str )
     m_formats.push_back(0);
 }
 
-void PreparedArgs::add_param( u16 v )
+void PreparedArgs::add_param( uint16_t v )
 {
-    u16 rv = ACE_HTONS(v);
+    uint16_t rv = ACE_HTONS(v);
     m_params.push_back(std::string((char *)&rv,2));
     m_lengths.push_back(2);
     m_formats.push_back(1);
 }
-void PreparedArgs::add_param( u32 v )
+void PreparedArgs::add_param( uint32_t v )
 {
-    u32 rv = ACE_HTONL(v);
+    uint32_t rv = ACE_HTONL(v);
     m_params.push_back(std::string((char *)&rv,4));
     m_lengths.push_back(4);
     m_formats.push_back(1);

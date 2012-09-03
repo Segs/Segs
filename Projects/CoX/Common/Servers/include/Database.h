@@ -29,10 +29,10 @@ public:
 	const char *		getColString(const char *column_name);
 			int16_t			getColInt16(const char *column_name);
 			int32_t			getColInt32(const char *column_name);
-			s64			getColInt64(const char *column_name);
+			int64_t			getColInt64(const char *column_name);
 			bool		getColBool(const char *column_name);
 			float		getColFloat(const char *column_name);
-			size_t		getColIntArray(const char *column_name,u32 *arr,size_t arr_size); // returns the actual number of values
+			size_t		getColIntArray(const char *column_name,uint32_t *arr,size_t arr_size); // returns the actual number of values
 			size_t		getColFloatArray(const char *column_name,float *arr,size_t arr_size);
 			struct tm   getTimestamp(const char *column_name);
 };
@@ -61,7 +61,7 @@ public:
         bool            execQuery(const string &q); // for queries without results
         int             OpenConnection(void);
         int             CloseConnection(void);
-        s64             next_id(const std::string &tab_name);
+        int64_t         next_id(const std::string &tab_name);
         PGconn *        get_conn() {return pConnection;}
 virtual void            on_connected() = 0;
 };
@@ -70,10 +70,10 @@ struct PreparedArgs
     std::vector<std::string> m_params;
     std::vector<int>        m_lengths;
     std::vector<int>        m_formats;
-    void                    add_param(const u8 *bytes, size_t len, bool binary);
+    void                    add_param(const uint8_t *bytes, size_t len, bool binary);
     void                    add_param(const std::string &str);
-    void                    add_param(u16);
-    void                    add_param(u32);
+    void                    add_param(uint16_t);
+    void                    add_param(uint32_t);
 };
 class PreparedQuery
 {

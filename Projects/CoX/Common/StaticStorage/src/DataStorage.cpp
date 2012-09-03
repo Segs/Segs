@@ -12,7 +12,7 @@
 bool BinStore::check_bin_version_and_crc(const ClassSchema *)
 {
     std::string tgt;
-    u32 crc_from_file;
+    uint32_t crc_from_file;
     char magic_contents[8];
     m_str.read(magic_contents,8);
     read(crc_from_file);
@@ -26,7 +26,7 @@ bool BinStore::check_bin_version_and_crc(const ClassSchema *)
 }
 std::string BinStore::read_pstr( size_t maxlen )
 {
-    u16 len=0;
+    uint16_t len=0;
     bool res=read(len);
     if(res!=true)
         return "";
@@ -50,7 +50,7 @@ std::string BinStore::read_pstr( size_t maxlen )
 
 void BinStore::skip_pstr()
 {
-    u16 len=0;
+    uint16_t len=0;
     read(len);
     m_str.seekg(len,std::ios_base::cur);
 }
@@ -60,7 +60,7 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
     if(!file_data_blocks)
     {
         skip_pstr();
-        u32 v;
+        uint32_t v;
         read(v);
         if(v)
             m_str.seekg(v,std::ios_base::cur);
@@ -105,7 +105,7 @@ bool BinStore::open( const ClassSchema *s,const std::string &name )
     return result && read_data_blocks(true);
 }
 
-bool BinStore::read( u32 &v )
+bool BinStore::read( uint32_t &v )
 {
     size_t res = read_internal(v);
     return res==4;
@@ -117,13 +117,13 @@ bool BinStore::read( float &v )
     return res==4;
 }
 
-bool BinStore::read( u16 &v )
+bool BinStore::read( uint16_t &v )
 {
     size_t res = read_internal(v);
     return res==2;
 }
 
-bool BinStore::read( u8 &v )
+bool BinStore::read( uint8_t &v )
 {
     size_t res = read_internal(v);
     return res==1;
@@ -148,10 +148,10 @@ void BinStore::prepare()
     bytes_read=0;
 }
 
-u32 BinStore::read_header( std::string &name,size_t maxlen )
+uint32_t BinStore::read_header( std::string &name,size_t maxlen )
 {
     name = read_pstr(maxlen);
-    u32 res;
+    uint32_t res;
     if(4!=read_internal(res) || res==0)
         return ~0U;
     return res;
@@ -167,13 +167,13 @@ bool BinStore::prepare_nested()
 
 bool BinStore::nesting_name( std::string &name )
 {
-    u32 expected_size = read_header(name,12000);
-    if(expected_size == u32(~0))
+    uint32_t expected_size = read_header(name,12000);
+    if(expected_size == uint32_t(~0))
         return false;
     bytes_to_read = expected_size;
     if(m_file_sizes.size()>0)
         (*m_file_sizes.rbegin())-=bytes_to_read;
-    m_file_sizes.push_back(bytes_to_read); // the size of structure being read. + sizeof(u32)
+    m_file_sizes.push_back(bytes_to_read); // the size of structure being read. + sizeof(uint32_t)
     return true;
 }
 

@@ -57,9 +57,9 @@ public:
         src.GetString(m_char_name);
 
     }
-    u32 m_map_server_ip;
-    u32 m_character_index;
-    u32 m_mapnumber;
+    uint32_t m_map_server_ip;
+    uint32_t m_character_index;
+    uint32_t m_mapnumber;
     std::string m_char_name;
 };
 class MapServerAddrResponse : public GameLinkEvent
@@ -71,8 +71,8 @@ public:
     }
     void serializefrom(BitStream &src)
     {
-        u16 port;
-        u32 ipaddr;
+        uint16_t port;
+        uint32_t ipaddr;
         unused1			= src.GetPackedBits(1);
         unused2			= src.GetPackedBits(1);
         ipaddr			= src.GetPackedBits(1);
@@ -84,8 +84,8 @@ public:
     }
     void serializeto(BitStream &tgt) const
     {
-        u16 port;
-        u32 ipaddr;
+        uint16_t port;
+        uint32_t ipaddr;
         ipaddr			= htonl(m_address.get_ip_address());
         port			= m_address.get_port_number();
         tgt.StorePackedBits(1,4); //opcode
@@ -97,21 +97,21 @@ public:
         tgt.StorePackedBits(1,unused4);
         tgt.StorePackedBits(1,m_map_cookie); // this should be 0 if there was an error ( like "InvalidName" )
     }
-    u8 unused1;
-    u8 unused2;
-    u8 unused3;
-    u8 unused4;
+    uint8_t unused1;
+    uint8_t unused2;
+    uint8_t unused3;
+    uint8_t unused4;
     ACE_INET_Addr m_address;
     // 0 - Name already taken.
     // 1 - Problem detected in the game database system
-    u32 m_map_cookie;
+    uint32_t m_map_cookie;
 };
 class DeleteCharacter : public GameLinkEvent
 {
 public:
     DeleteCharacter():GameLinkEvent(GameEventTypes::evDeleteCharacter)
     {}
-    DeleteCharacter(EventProcessor *evsrc,u8 idx,const std::string &name) : GameLinkEvent(GameEventTypes::evDeleteCharacter,evsrc),m_index(idx),m_char_name(name)
+    DeleteCharacter(EventProcessor *evsrc,uint8_t idx,const std::string &name) : GameLinkEvent(GameEventTypes::evDeleteCharacter,evsrc),m_index(idx),m_char_name(name)
     {}
     void serializeto(BitStream &bs) const
     {
@@ -124,7 +124,7 @@ public:
         m_index=bs.GetPackedBits(1);
         bs.GetString(m_char_name);
     }
-    u8 m_index;
+    uint8_t m_index;
     std::string m_char_name;
 };
 class UpdateCharacter : public GameLinkEvent
@@ -135,14 +135,14 @@ public:
     }
     void serializeto(BitStream &bs) const;
     void serializefrom(BitStream &bs);
-    u8 m_index;
+    uint8_t m_index;
 };
 class CharacterResponse : public GameLinkEvent
 {
 public:
     CharacterResponse():GameLinkEvent(GameEventTypes::evCharacterResponse)
     {}
-    CharacterResponse(EventProcessor *src,u8 idx,CharacterClient *c) : GameLinkEvent(GameEventTypes::evCharacterResponse,src)
+    CharacterResponse(EventProcessor *src,uint8_t idx,CharacterClient *c) : GameLinkEvent(GameEventTypes::evCharacterResponse,src)
     {
         m_index=idx;
         m_client=c;
@@ -150,7 +150,7 @@ public:
     void set_client(CharacterClient *c) {m_client=c;}
     void serializeto(BitStream &bs) const;
     void serializefrom(BitStream &bs);
-    u8 m_index;
+    uint8_t m_index;
     CharacterClient *m_client;
 };
 
@@ -164,10 +164,10 @@ public:
     void dependent_dump();
 
 
-    u32 m_build_date;
+    uint32_t m_build_date;
     std::string currentVersion;
-    u8 clientInfo[16];
-    u32 authID, authCookie;
+    uint8_t clientInfo[16];
+    uint32_t authID, authCookie;
     std::string accountName;
     bool localMapServer;
 };
@@ -181,8 +181,8 @@ public:
     void serializefrom( BitStream &src );
     void dependent_dump();
 
-    u32 m_unknown_new;
-    u8 m_clientinfo[16];
+    uint32_t m_unknown_new;
+    uint8_t m_clientinfo[16];
     CharacterClient *m_client;
 };
 

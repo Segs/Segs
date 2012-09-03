@@ -27,7 +27,7 @@ struct GeoSetInfoEntry : public BinReadable
     std::string m_geo;
     std::string m_tex1;
     std::string m_tex2;
-    u32 m_devonly;
+    uint32_t m_devonly;
 };
 struct GeoSetMaskEntry : public BinReadable
 {
@@ -47,7 +47,7 @@ struct GeoSetEntry : public BinReadable
 
     std::string m_display_name;
     std::string m_body_part;
-    u32 m_typename;
+    uint32_t m_typename;
     std::vector<GeoSetMaskEntry *> m_mask_vals;
     std::vector<GeoSetInfoEntry *> m_mask_infos;
     std::vector<std::string> m_masks;

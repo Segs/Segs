@@ -340,7 +340,7 @@ static void desfunc(register unsigned long *block,const register unsigned long *
     *block = leftt;
     return;
 }
-void AuthPacketCodec::SetDesKey(u64 key)
+void AuthPacketCodec::SetDesKey(uint64_t key)
 {
     deskey((unsigned char *)&key,EN0);
     cpkey(m_tDesContext.ek);

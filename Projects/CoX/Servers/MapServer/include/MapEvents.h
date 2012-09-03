@@ -101,7 +101,7 @@ public:
     MapInstanceConnected():MapLinkEvent(MapEventTypes::evMapInstanceConnected)
     {
     }
-    MapInstanceConnected(EventProcessor *evsrc,u32 resp,const std::string &err) :
+    MapInstanceConnected(EventProcessor *evsrc,uint32_t resp,const std::string &err) :
             MapLinkEvent(MapEventTypes::evMapInstanceConnected,evsrc),
             m_resp(resp),
             m_fatal_error(err)
@@ -120,7 +120,7 @@ public:
         if(m_resp==0)
             src.GetString(m_fatal_error);
     }
-    u32         m_resp;
+    uint32_t         m_resp;
     std::string m_fatal_error;
 
 };

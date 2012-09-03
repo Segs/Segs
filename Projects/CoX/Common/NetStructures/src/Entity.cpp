@@ -30,14 +30,14 @@ float AngleDequantize(int value,int numb_bits)
         return 0.0f;
     return sinf(v);
 }
-u32 AngleQuantize(float value,int numb_bits)
+uint32_t AngleQuantize(float value,int numb_bits)
 {
     int max_val = 1<<numb_bits;
     float v = fabs(value)>1.0f ? _copysign(1.0f,value) : value ;
     v  = (asinf(v)+F_PI)/(2*F_PI); // maps -1..1 to 0..1
     v *= max_val;
 //	assert(v<=max_val);
-    return u32(v);
+    return uint32_t(v);
 }
 int Entity::getOrientation(BitStream &bs)
 {
@@ -68,8 +68,8 @@ int Entity::getOrientation(BitStream &bs)
 void Entity::storeOrientation(BitStream &bs) const
 {
     // if(updateNeeded())
-    u8 updates;
-    updates = ((u8)update_rot(0)) | (((u8)update_rot(1))<<1) | (((u8)update_rot(2))<<2);
+    uint8_t updates;
+    updates = ((uint8_t)update_rot(0)) | (((uint8_t)update_rot(1))<<1) | (((uint8_t)update_rot(2))<<2);
     storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
     //NormalizeQuaternion(pEnt->qrot)
     //
@@ -82,15 +82,15 @@ void Entity::storeOrientation(BitStream &bs) const
         }
     }
 }
-static inline u32 quantize_float(float v)
+static inline uint32_t quantize_float(float v)
 {
-    return u32(floorf(v*64)+0x800000);
+    return uint32_t(floorf(v*64)+0x800000);
 }
 void Entity::storePosition(BitStream &bs) const
 {
 //	float x = pos.vals.x;
-    u32 packed;
-    //u32 diff=0; // changed bits are '1'
+    uint32_t packed;
+    //uint32_t diff=0; // changed bits are '1'
     bs.StoreBits(3,7); // frank -> 7,-60.5,0,180
     for(int i=0; i<3; i++)
     {
@@ -139,10 +139,10 @@ void Entity::sendSeqMoveUpdate(BitStream &bs) const
 }
 void Entity::sendSeqTriggeredMoves(BitStream &bs) const
 {
-    u32 num_moves=0;
+    uint32_t num_moves=0;
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq triggeted moves %d\n"),num_moves));
     bs.StorePackedBits(1,num_moves); // num moves
-    for (u32 idx = 0; idx < num_moves; ++idx )
+    for (uint32_t idx = 0; idx < num_moves; ++idx )
     {
         bs.StorePackedBits(16,0); // 2
         bs.StorePackedBits(6,0); //0
@@ -278,7 +278,7 @@ MobEntity::MobEntity()
 }
 void Entity::sendXLuency(BitStream &bs,float val) const
 {
-    storeBitsConditional(bs,8,std::min<>(static_cast<int>(u8(val*255)),255)); // upto here everything is ok
+    storeBitsConditional(bs,8,std::min<>(static_cast<int>(uint8_t(val*255)),255)); // upto here everything is ok
 }
 void Entity::sendTitles(BitStream &bs) const
 {
@@ -628,12 +628,12 @@ void sendPowers(BitStream &bs)
     bs.StorePackedBits(4,0); // count
     for(int i=0; i<0; i++)
     {
-        u32 num_powers=0;
+        uint32_t num_powers=0;
         bs.StorePackedBits(5,0);
-        bs.StorePackedBits(4,u32(num_powers));
-        for(u32 idx=0; idx<num_powers; ++idx)
+        bs.StorePackedBits(4,uint32_t(num_powers));
+        for(uint32_t idx=0; idx<num_powers; ++idx)
         {
-            u32 num_somethings=0;
+            uint32_t num_somethings=0;
             sendPower(bs,0,0,0);
 
             bs.StorePackedBits(5,0);
@@ -651,11 +651,11 @@ void sendPowers(BitStream &bs)
 }
 void sendPowers_main_tray(BitStream &bs)
 {
-    u32 max_num_cols=3;
-    u32 max_num_rows=1;
+    uint32_t max_num_cols=3;
+    uint32_t max_num_rows=1;
     bs.StorePackedBits(3,max_num_cols); // count
     bs.StorePackedBits(3,max_num_rows); // count
-    for(u32 i=0; i<max_num_cols; i++)
+    for(uint32_t i=0; i<max_num_cols; i++)
     {
         for(size_t idx=0; idx<max_num_rows; ++idx)
         {
@@ -671,7 +671,7 @@ void sendPowers_main_tray(BitStream &bs)
 
 static void sendBoosts(BitStream &bs)
 {
-    u32 num_boosts=0;
+    uint32_t num_boosts=0;
     bs.StorePackedBits(5,num_boosts); // count
     for(size_t idx=0; idx<num_boosts; ++idx)
     {
@@ -709,7 +709,7 @@ void Avatar::send_character(BitStream &bs) const
 */
 void Avatar::sendBuffs(BitStream &bs) const
 {
-    u32 num_buffs=0;
+    uint32_t num_buffs=0;
     bs.StorePackedBits(5,num_buffs);
     for(size_t idx=0; idx<num_buffs; ++idx)
     {

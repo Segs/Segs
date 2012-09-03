@@ -152,7 +152,7 @@ class PowerTrayGroup
 {
 	static const int num_trays=2; // was 3, displayed trays
 	PowerTray m_trays[9];
-	u32 m_power_rel1,m_power_rel2;
+	uint32_t m_power_rel1,m_power_rel2;
 	bool m_c;
 	int unkn1,unkn2;
 public:

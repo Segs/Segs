@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -19,12 +19,12 @@ class MapTemplate;
 */
 class MapManger
 {
-	std::map<u32,MapTemplate *> m_templates;
+	std::map<uint32_t,MapTemplate *> m_templates;
     size_t                      m_max_instances; // how many maps can we instantiate
 public:
                     MapManger();
     bool            load_templates(const std::string &template_directory);
-	MapTemplate *   get_template(u32 id);
+	MapTemplate *   get_template(uint32_t id);
     size_t          num_templates();
     size_t          max_instances();
 };

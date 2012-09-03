@@ -17,8 +17,8 @@ class Avatar : public NetStructure //! not to be confuzzled with GameServer's Ch
 {
 public:
         Entity *m_ent;
-        u32 field_5A8;
-        u32 field_498;
+        uint32_t field_5A8;
+        uint32_t field_498;
         std::string char_arr_10_5AC;
 virtual			~Avatar()
                 {
@@ -63,10 +63,10 @@ public:
         int m_num_titles;
         int m_num_fx;
         bool m_has_titles;
-        std::vector<u8> m_fx1;
-        std::vector<u32> m_fx2;
-        std::vector<u8> m_fx3;
-        u8		m_costume_type;
+        std::vector<uint8_t> m_fx1;
+        std::vector<uint32_t> m_fx2;
+        std::vector<uint8_t> m_fx3;
+        uint8_t		m_costume_type;
         int		m_state_mode;
         bool	m_state_mode_send;
         bool	m_odd_send;
@@ -80,7 +80,7 @@ public:
         size_t m_update_idx;
         std::string m_battle_cry;
         std::string m_character_description;
-        u32 field_E30;
+        uint32_t field_E30;
         bool var_B4;
 
         Character   m_char;
@@ -90,26 +90,26 @@ public:
         int         pkt_id_QrotUpdateVal[3];
         Quaternion  qrot;
         Vector3     pos;
-        u32         prev_pos[3];
+        uint32_t    prev_pos[3];
         bool        m_selector1,m_pchar_things,might_have_rare,
                     m_hasname  ,m_hasgroup_name,m_classname_override;
         bool        m_create   ,m_hasRagdoll  ,m_create_player,m_rare_bits;
         int         current_client_packet_id;
         std::string m_group_name, m_override_name;
-        u8                      m_origin_idx,m_class_idx;
-        u8                      m_type;
-        u32                     m_idx;
-        u32                     var_8C;
-        u32                     var_90;
+        uint8_t                 m_origin_idx,m_class_idx;
+        uint8_t                 m_type;
+        uint32_t                m_idx;
+        uint32_t                var_8C;
+        uint32_t                var_90;
         bool                    player_type;
         bool                    m_player_villain;
-        u32                     var_1190;
+        uint32_t                var_1190;
         bool                    var_129C;
 
                                 Entity();
 virtual					        ~Entity(){}
         void			        dump();
-        u32				        getIdx() const {return m_idx;}
+        uint32_t		        getIdx() const {return m_idx;}
 virtual void			        serializeto(BitStream &bs)const;
         void			        sendStateMode(BitStream &bs) const;
         void			        sendOnOddSend(BitStream &bs,bool is_odd=true) const;

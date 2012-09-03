@@ -58,7 +58,7 @@ virtual bool                    ReadConfig(const std::string &name);
 private:
         bool                    startup(); // MapServerStartup sequence diagram entry point.
 protected:
-        u8                      m_id;
+        uint8_t                 m_id;
         bool                    m_online;
         MapManger               m_manager;
         GameServerInterface *   m_i_game;// GameServer access proxy object

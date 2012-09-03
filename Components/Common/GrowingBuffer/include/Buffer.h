@@ -23,9 +23,9 @@ public:
 		//////////////////////////////////////////////////////////////////////////
 	
 explicit			GrowingBuffer(const GrowingBuffer &); // copy constructor
-					GrowingBuffer(u8 *buf, size_t size,bool become_owner);
+					GrowingBuffer(uint8_t *buf, size_t size,bool become_owner);
 					//! this constructs an empty growing buffer, and optionally pre-allocates storage space
-					GrowingBuffer(size_t max_size,u8 safe_area,size_t current_size); 
+					GrowingBuffer(size_t max_size,uint8_t safe_area,size_t current_size); 
 					~GrowingBuffer();
 
 		//			Public methods
@@ -35,14 +35,14 @@ explicit			GrowingBuffer(const GrowingBuffer &); // copy constructor
 					/* Unchecked functions are faster, but assume that they can read/write without violating the buffer, or their arguments*/
 		
 		void		PutString(const char *t);
-		void		PutBytes(const u8 *t, size_t len);
+		void		PutBytes(const uint8_t *t, size_t len);
 		void		GetString(char *t); //! Warning: this function argument must be a valid character array which size must be at least the same as retrieved string's
-		bool		GetBytes(u8 *t, size_t len);
+		bool		GetBytes(uint8_t *t, size_t len);
 
 inline	void		uGetString(char *t);
-		void		uGetBytes(u8 *t,size_t len);
+		void		uGetBytes(uint8_t *t,size_t len);
 inline  void		uPutString(const char *t);
-	void			uPutBytes(const u8 *t,size_t len);
+	void			uPutBytes(const uint8_t *t,size_t len);
 template<typename T> 
 		void		Put(const T &val)
 		{
@@ -95,13 +95,13 @@ inline	T		ruGet(void)
 		size_t		GetAvailSize() const	{ return (m_size-m_write_off);}
 		size_t		GetDataSize() const		{ return m_write_off; }; //writing point gives actual size of readable data
 		size_t		GetReadableDataSize() const { return m_write_off-m_read_off; }; //this much data can be read still
-		u8 *		GetBuffer() const		{ return m_buf; };
-		u32			getLastError() const	{ return m_last_err;}
-		void		setLastError(u32 val)	{ m_last_err=val;}
+		uint8_t *	GetBuffer() const		{ return m_buf; };
+		uint32_t	getLastError() const	{ return m_last_err;}
+		void		setLastError(uint32_t val)	{ m_last_err=val;}
 
-		u8 *		read_ptr()				{ return m_buf+m_read_off;}
+		uint8_t *	read_ptr()				{ return m_buf+m_read_off;}
 		void		read_ptr(int off)		{ m_read_off+=off;}
-		u8 *		write_ptr()				{ return m_buf+m_write_off;}
+		uint8_t *	write_ptr()				{ return m_buf+m_write_off;}
 		void		write_ptr(int off)		{ m_write_off+=off;}
 	
 		void		Reset(void)				{m_read_off=m_write_off=m_last_err=0;}
@@ -110,13 +110,13 @@ inline	T		ruGet(void)
 		void		ResetContents(void)		{memset(m_buf,0,m_size);}
 protected:
 		GrowingBuffer & operator=(const GrowingBuffer &);
-		u8			m_safe_area;
+		uint8_t		m_safe_area;
 		size_t		m_write_off;
 		size_t		m_read_off;
 		size_t		m_size;
 		size_t		m_max_size;
-		u8 *		m_buf;
-		u32			m_last_err;
+		uint8_t *	m_buf;
+		uint32_t	m_last_err;
 		int			resize(size_t accommodate_size); //! this method will try to resize GrowingBuffer to accommodate_size elements (in reality it preallocates a 'few' more )
 	// if the new size is 0, then internal buffer object is deleted, freeing all memory
 	// Warning: when buffer is growing, only it's part that contains any valid data is copied (i.e. from start, to write_off )

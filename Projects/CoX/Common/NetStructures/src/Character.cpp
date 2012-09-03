@@ -56,8 +56,8 @@ void Character::serializefrom( BitStream &src)
     m_unkn1 =src.GetFloat();
     m_unkn2 =src.GetFloat();
     src.GetString(m_mapName);
-    /*u32 unkn3 =*/ src.GetPackedBits(1);
-    //u32 unkn4 = src.GetBits(32);
+    /*uint32_t unkn3 =*/ src.GetPackedBits(1);
+    //uint32_t unkn4 = src.GetBits(32);
 }
 void Character::serializeto( BitStream &tgt) const
 {
@@ -105,7 +105,7 @@ void Character::sendTrayMode(BitStream &bs) const
     bs.StoreBits(1,0);
 }
 
-bool Character::serializeFromDB( u64 /*user_id*/,u32 /*slot_index*/ )
+bool Character::serializeFromDB( uint64_t /*user_id*/,uint32_t /*slot_index*/ )
 {
     return false;
 }
@@ -137,12 +137,12 @@ void Character::SendCharBuildInfo(BitStream &bs) const
         bs.StorePackedBits(4,count); // count
         for(int i=0; i<count; i++)
         {
-            u32 num_powers=0;
+            uint32_t num_powers=0;
             bs.StorePackedBits(5,0);
-            bs.StorePackedBits(4,u32(num_powers));
-            for(u32 idx=0; idx<num_powers; ++idx)
+            bs.StorePackedBits(4,uint32_t(num_powers));
+            for(uint32_t idx=0; idx<num_powers; ++idx)
             {
-                u32 num_somethings=0;
+                uint32_t num_somethings=0;
 
                 //sendPower(bs,0,0,0);
                 m_powers[idx].serializeto(bs);
@@ -162,11 +162,11 @@ void Character::SendCharBuildInfo(BitStream &bs) const
     }
     // main tray powers/stats ?
     {
-        u32 max_num_cols=3;
-        u32 max_num_rows=1;
+        uint32_t max_num_cols=3;
+        uint32_t max_num_rows=1;
         bs.StorePackedBits(3,max_num_cols); // count
         bs.StorePackedBits(3,max_num_rows); // count
-        for(u32 i=0; i<max_num_cols; i++)
+        for(uint32_t i=0; i<max_num_cols; i++)
         {
             for(size_t idx=0; idx<max_num_rows; ++idx)
             {
@@ -178,7 +178,7 @@ void Character::SendCharBuildInfo(BitStream &bs) const
         }
     }
     // boosts
-    u32 num_boosts=0;
+    uint32_t num_boosts=0;
     bs.StorePackedBits(5,num_boosts); // count
     for(size_t idx=0; idx<num_boosts; ++idx)
     {
@@ -229,7 +229,7 @@ void Character::serialize_costumes( BitStream &bs,bool all_costumes ) const
         if(m_current_costume_set)
         {
             bs.StoreBits(32,m_current_costume_idx);
-            bs.StoreBits(32,u32(m_costumes.size()));
+            bs.StoreBits(32,uint32_t(m_costumes.size()));
         }
         bs.StoreBits(1,m_multiple_costumes);
         if(m_multiple_costumes)

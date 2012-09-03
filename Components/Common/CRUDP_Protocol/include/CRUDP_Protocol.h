@@ -26,17 +26,17 @@ private:
     typedef pPacketStorage::iterator ipPacketStorage ;
     typedef hash_map<int,pPacketStorage> hmSibStorage;
 
-        u32                 send_seq;
-        u32                 recv_seq;
+        uint32_t                 send_seq;
+        uint32_t                 recv_seq;
 
         PacketCodecNull *   m_codec;
         pPacketStorage      avail_packets;
         pPacketStorage      unsent_packets;
-        std::list<u32>      recv_acks; // each successful receive will store it's ack here
+        std::list<uint32_t>      recv_acks; // each successful receive will store it's ack here
         hmSibStorage        sibling_map; // we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
         ACE_Thread_Mutex    m_packets_mutex;
 
-        CrudP_Packet *      mergeSiblings(u32 id);
+        CrudP_Packet *      mergeSiblings(uint32_t id);
         bool                insert_sibling(CrudP_Packet *pkt);
 static  bool                PacketSeqCompare(const CrudP_Packet *a,const CrudP_Packet *b);
 static  bool                PacketSibCompare(const CrudP_Packet *a,const CrudP_Packet *b);
@@ -59,7 +59,7 @@ protected:
         void                parseAcks(BitStream &src,CrudP_Packet *tgt);
         void                storeAcks(BitStream &bs);
         void                PushRecvPacket(CrudP_Packet *a); // this will try to join packet 'a' with it's siblings
-        void                PacketAck(u32);
+        void                PacketAck(uint32_t);
         void                clearQueues(bool recv,bool send); // clears out the recv/send queues
 
 static	void                PacketDestroyer(CrudP_Packet *a);

@@ -37,7 +37,7 @@ public:
     }
     CrudP_Packet *m_pkt;
     ACE_INET_Addr target;
-    const u8 *bytes() const {return m_pkt->GetStream()->read_ptr();}
+    const uint8_t *bytes() const {return m_pkt->GetStream()->read_ptr();}
     size_t size() const {return m_pkt->GetStream()->GetReadableDataSize();}
 };
 class CRUDLink_Event : public SerializableEvent<BitStream>
@@ -66,8 +66,8 @@ public:
         m_tickcount = src.GetPackedBits(1);
         m_version = src.GetPackedBits(1);
     }
-    u32 m_tickcount;
-    u32 m_version;
+    uint32_t m_tickcount;
+    uint32_t m_version;
 };
 
 class ConnectResponse : public CRUDLink_Event

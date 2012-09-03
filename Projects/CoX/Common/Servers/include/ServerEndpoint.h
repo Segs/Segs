@@ -78,14 +78,14 @@ private:
         int         handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE) //! Called when input is available from the client.
                     {
                         (void)fd;
-                        u8 buf[0x2000];
+                        uint8_t buf[0x2000];
                         ACE_INET_Addr from_addr;
                         ssize_t n = this->endpoint_.recv(buf, sizeof buf,from_addr);
                         if (n == -1)
                             ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%p\n"),"handle_input"),0);
                         LINK_CLASS *crud_link = getClientLink(from_addr); // get packet handling object for this connection
                         ACE_ASSERT(crud_link!=NULL);
-                        BitStream wrap((u8 *)buf,n);
+                        BitStream wrap((uint8_t *)buf,n);
                         crud_link->received_block((BitStream &)wrap);
                         return 0;
                     }

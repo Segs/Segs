@@ -53,24 +53,24 @@ public:
 
 
         std::string             getName(void);
-        u8                      getId(void);
-        u16                     getCurrentPlayers(void);
-        u16                     getMaxPlayers();
-        u8                      getUnkn1(void);
-        u8                      getUnkn2(void);
+        uint8_t                 getId(void);
+        uint16_t                getCurrentPlayers(void);
+        uint16_t                getMaxPlayers();
+        uint8_t                 getUnkn1(void);
+        uint8_t                 getUnkn2(void);
         CharacterDatabase *     getDb();
 
-        int                     createLinkedAccount(u64 auth_account_id,const std::string &username); // Part of exposed db interface.
+        int                     createLinkedAccount(uint64_t auth_account_id,const std::string &username); // Part of exposed db interface.
         EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
 
 protected:
-        u32                     GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver
+        uint32_t                GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver
         lMapServerHandles       GetMapsHandling(const std::string &mapname);
         bool                    m_online;
-        u8                      m_id;
-        u16                     m_current_players;
-        u16                     m_max_players;
-        u8                      m_unk1,m_unk2;
+        uint8_t                 m_id;
+        uint16_t                m_current_players;
+        uint16_t                m_max_players;
+        uint8_t                 m_unk1,m_unk2;
         std::string             m_serverName;
         ACE_INET_Addr           m_location; // this value is sent to the clients
         ACE_INET_Addr           m_listen_point; // the server binds here

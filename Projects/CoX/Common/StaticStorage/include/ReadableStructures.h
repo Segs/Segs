@@ -23,60 +23,60 @@ class ClassSchema;
 struct Field
 {
     std::string m_name;
-    u32 m_type;
-    u32 m_offset;
-    u32 m_param;
+    uint32_t m_type;
+    uint32_t m_offset;
+    uint32_t m_param;
     ClassSchema *m_sub_ref;
-    Field(const std::string &name,u32 type,u32 offset,u32 param,ClassSchema *sub) : m_name(name),m_type(type),m_offset(offset),m_param(param),m_sub_ref(sub)
+    Field(const std::string &name,uint32_t type,uint32_t offset,uint32_t param,ClassSchema *sub) : m_name(name),m_type(type),m_offset(offset),m_param(param),m_sub_ref(sub)
     {}
     void calc_crc(CrcVisitor &v) const;
     virtual bool read_non_nested(BinReadable &tgt,Store *s) const;
     virtual bool read_nested(BinReadable &tgt,Store *s) const;
 protected:
-    virtual bool do_read(u8 type,BinReadable &tgt,Store *s) const=0;
+    virtual bool do_read(uint8_t type,BinReadable &tgt,Store *s) const=0;
     virtual bool do_read_nested(BinReadable &tgt,Store *s) const=0;
 };
 //! MiscField's are used to mark end of structures
 struct MiscField : public Field
 {
-    MiscField(const std::string &name,u32 type,u32 offset,u32 param,ClassSchema *sub) : Field(name,type,offset,param,sub)
+    MiscField(const std::string &name,uint32_t type,uint32_t offset,uint32_t param,ClassSchema *sub) : Field(name,type,offset,param,sub)
     {}
 protected:
-    bool do_read(u8 ,BinReadable &,Store *) const {assert("Misc field read attempted"); return false;}
+    bool do_read(uint8_t ,BinReadable &,Store *) const {assert("Misc field read attempted"); return false;}
     bool do_read_nested(BinReadable &,Store *) const {assert("Nested read attempt on non nested value!"); return false;}
 
 };
 struct NonNestableField : public Field
 {
-    NonNestableField(const std::string &name,u32 type,u32 offset,u32 param,ClassSchema *sub) :
+    NonNestableField(const std::string &name,uint32_t type,uint32_t offset,uint32_t param,ClassSchema *sub) :
         Field(name,type,offset,param,sub)
     {}
 protected:
     virtual bool do_read_nested(BinReadable &,Store *) const {assert("Nested read attempt on non nested value!");return false;}
-    virtual bool do_read(u8 type,BinReadable &tgt,Store *s) const=0;
+    virtual bool do_read(uint8_t type,BinReadable &tgt,Store *s) const=0;
 };
 template<class T>
 struct TemplateField : public NonNestableField
 {
     T                 BinReadable::*pval;
-    TemplateField(const std::string &name,u32 type,u32 offset,u32 param,ClassSchema *sub,T BinReadable::*val) :
+    TemplateField(const std::string &name,uint32_t type,uint32_t offset,uint32_t param,ClassSchema *sub,T BinReadable::*val) :
     NonNestableField(name,type,offset,param,sub),
         pval(val)
     {}
 protected:
-    bool do_read(u8 type,BinReadable &tgt,Store *s) const;
+    bool do_read(uint8_t type,BinReadable &tgt,Store *s) const;
     bool do_read_nested(BinReadable &,Store *) const {assert("Nested read attempt on non nested value!"); return false;}
 };
 template<class T>
 struct NestedTemplateField : public Field
 {
     std::vector<T *> BinReadable::*pval;
-    NestedTemplateField(const std::string &name,u32 type,u32 offset,u32 param,ClassSchema *sub,std::vector<T *> BinReadable::*val) :
+    NestedTemplateField(const std::string &name,uint32_t type,uint32_t offset,uint32_t param,ClassSchema *sub,std::vector<T *> BinReadable::*val) :
         Field(name,type,offset,param,sub),
         pval(val)
     {}
 protected:
-    bool do_read(u8 ,BinReadable &,Store *) const {assert("Plain field read attempted on nested field."); return false;}
+    bool do_read(uint8_t ,BinReadable &,Store *) const {assert("Plain field read attempted on nested field."); return false;}
     bool do_read_nested(BinReadable &tgt,Store *s) const;
 
 };
@@ -94,12 +94,12 @@ public:
     BinReadable * create_instance() {return m_constructor();}
     Field &operator[](size_t idx) {return *m_fields[idx];}
     template<class T>
-    void add_field_nested(const std::string &name,u32 type,u32 offset,u32 param,ClassSchema *sub,std::vector<T *> BinReadable::*val)
+    void add_field_nested(const std::string &name,uint32_t type,uint32_t offset,uint32_t param,ClassSchema *sub,std::vector<T *> BinReadable::*val)
     {
         internal_add_field(new NestedTemplateField<T>(name,type,offset,param,sub,val));
     }
     template<class T>
-    void add_field(const std::string &name,u32 type,u32 offset,u32 param,T BinReadable::*val)
+    void add_field(const std::string &name,uint32_t type,uint32_t offset,uint32_t param,T BinReadable::*val)
     {
         internal_add_field(new TemplateField<T>(name,type,offset,param,0,val));
     }
@@ -133,7 +133,7 @@ public:
 #define ARR_OF_REF(classname,storedclass,variable)  ((std::vector<storedclass *>  BinReadable::*)&classname::variable)
 #define TARGETED_ARR_OF_REF(classname,storedclass,variable)  (&storedclass::m_schema),((std::vector<storedclass *>  BinReadable::*)&classname::variable)
 #define VEC3_REF(classname,variable) ((Vec3 BinReadable::*)&classname::variable)
-#define U32_REF(classname,variable) ((u32 BinReadable::*)&classname::variable)
+#define U32_REF(classname,variable) ((uint32_t BinReadable::*)&classname::variable)
 #define FLT_REF(classname,variable) ((float BinReadable::*)&classname::variable)
 #define ADD_STR_FIELD(a,b,c,d,e,f) m_schema.add_field(new StringField(a,b,c,d,e,f));
 
@@ -153,10 +153,10 @@ struct ColorStorage : public BinReadable
 
     std::vector<BinReadable *> m_colors;
 
-    static u32 color_to_4ub(const ColorEntry *e)
+    static uint32_t color_to_4ub(const ColorEntry *e)
     {
         const Vec3 &rgb(e->rgb);
-        return ((u32)rgb.v[0]) | (((u32)rgb.v[1])<<8) | (((u32)rgb.v[2])<<16) | (0xFF<<24);
+        return ((uint32_t)rgb.v[0]) | (((uint32_t)rgb.v[1])<<8) | (((uint32_t)rgb.v[2])<<16) | (0xFF<<24);
     }
 };
 

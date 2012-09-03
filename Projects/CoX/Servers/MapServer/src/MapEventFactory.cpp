@@ -18,7 +18,7 @@ MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
         return ev;
 
     bs.SetReadPos(read_pos); // rewind the stream and retry
-    u8 opcode = bs.GetPackedBits(1);
+    uint8_t opcode = bs.GetPackedBits(1);
     switch(opcode)
     {
     case 1: return new ConnectRequest;

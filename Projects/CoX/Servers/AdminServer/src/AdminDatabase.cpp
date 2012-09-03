@@ -25,11 +25,11 @@ int AdminDatabase::GetAccounts(void) const
         return 0;
 }
 
-bool AdminDatabase::AddAccount(const char *username, const char *password,u16 access_level) // Add account and password to the database server
+bool AdminDatabase::AddAccount(const char *username, const char *password,uint16_t access_level) // Add account and password to the database server
 {
         PreparedArgs args;
         args.add_param(std::string(username));
-        args.add_param((u8*)password,14,true);
+        args.add_param((uint8_t*)password,14,true);
         args.add_param(access_level);
         DbResults query_res;
         if(false==m_add_account_query->execute(args,query_res)) // Send our query to the PostgreSQL db server to process
@@ -41,7 +41,7 @@ bool AdminDatabase::AddAccount(const char *username, const char *password,u16 ac
 }
 
 /*
-int AdminDatabase::RemoveAccountByID(u64 id) // Remove account by it's id #
+int AdminDatabase::RemoveAccountByID(uint64_t id) // Remove account by it's id #
 {
         std::stringstream query;
         query<<"DELETE FROM accounts WHERE id = "<<id;
@@ -82,7 +82,7 @@ bool AdminDatabase::ValidPassword(const char *username, const char *password)
 {
         std::stringstream query;
         bool res=false;
-        u8 *binary_password;
+        uint8_t *binary_password;
         size_t unescaped_len;
         query<<"SELECT passw FROM accounts WHERE username = '"<<username<<"';";
 
@@ -93,7 +93,7 @@ bool AdminDatabase::ValidPassword(const char *username, const char *password)
                 ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Result status: %s\n"),PQresultErrorMessage(pResult))); // Why the query failed
                 return res;
         }
-        binary_password=PQunescapeBytea((u8 *)PQgetvalue(pResult,0,0),&unescaped_len);
+        binary_password=PQunescapeBytea((uint8_t *)PQgetvalue(pResult,0,0),&unescaped_len);
         assert(unescaped_len<=16);
         PQclear(pResult); // Clear result
         if (memcmp(binary_password,password,unescaped_len) == 0)
@@ -107,7 +107,7 @@ bool AdminDatabase::GetAccountByName( AccountInfo &to_fill,const std::string &lo
         query<<"SELECT * FROM accounts WHERE username='"<<login<<"';";
         return GetAccount(to_fill,query.str());
 }
-bool AdminDatabase::GetAccountById( AccountInfo &to_fill,u64 id )
+bool AdminDatabase::GetAccountById( AccountInfo &to_fill,uint64_t id )
 {
         stringstream query;
         query<<"SELECT * FROM accounts WHERE id='"<<id<<"';";
@@ -126,15 +126,15 @@ bool AdminDatabase::GetAccount( AccountInfo & client,const std::string &query )
 
         DbResultRow r=results.getRow(0);
         struct tm creation;
-        client.m_acc_server_acc_id  = (u64)r.getColInt64("id");
+        client.m_acc_server_acc_id  = (uint64_t)r.getColInt64("id");
         client.m_login              = r.getColString("username");
-        client.m_access_level       = u8(r.getColInt16("access_level"));
+        client.m_access_level       = uint8_t(r.getColInt16("access_level"));
         creation                    = r.getTimestamp("creation_date");
 //	client->setCreationDate(creation);
         return true;
 }
 
-int AdminDatabase::RemoveAccountByID( u64 )
+int AdminDatabase::RemoveAccountByID( uint64_t )
 {
         return 0;
 }

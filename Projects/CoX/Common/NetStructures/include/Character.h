@@ -75,30 +75,30 @@ class Character : public NetStructure
         bool            m_full_options;
         ClientOptions   m_options;
         bool            m_first_person_view_toggle;
-        u8              m_player_collisions;
-        float			m_unkn1,m_unkn2;
-        u32				m_unkn3,m_unkn4;
+        uint8_t         m_player_collisions;
+        float		m_unkn1,m_unkn2;
+        uint32_t	m_unkn3,m_unkn4;
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
 // Getters and setters
-        u32				getLevel() const { return m_level; }
-        void			setLevel(u32 val) { m_level = val; }
+        uint32_t		getLevel() const { return m_level; }
+        void			setLevel(uint32_t val) { m_level = val; }
 const	std::string &	getName() const { return m_name; }
         void			setName(const std::string &val);
 const	std::string &	getMapName() const { return m_mapName; }
         void			setMapName(const std::string &val) { m_mapName = val; }
-        u8				getIndex() const { return m_index; }
-        void			setIndex(u8 val) { m_index = val; }
-        u64				getAccountId() const { return m_owner_account_id; }
-        void			setAccountId(u64 val) { m_owner_account_id = val; }
-        u64				getLastCostumeId() const { return m_last_costume_id; }
-        void			setLastCostumeId(u64 val) { m_last_costume_id = val; }
+        uint8_t				getIndex() const { return m_index; }
+        void			setIndex(uint8_t val) { m_index = val; }
+        uint64_t			getAccountId() const { return m_owner_account_id; }
+        void			setAccountId(uint64_t val) { m_owner_account_id = val; }
+        uint64_t			getLastCostumeId() const { return m_last_costume_id; }
+        void			setLastCostumeId(uint64_t val) { m_last_costume_id = val; }
 //
 //////////////////////////////////////////////////////////////////////////
         void			reset();
         bool			isEmpty();
-        bool			serializeFromDB(u64 user_id,u32 slot_index);
+        bool			serializeFromDB(uint64_t user_id,uint32_t slot_index);
         void			serializefrom(BitStream &buffer);
         void			serializeto(BitStream &buffer) const;
         void			serialize_costumes(BitStream &buffer,bool all_costumes=true) const;
@@ -109,7 +109,7 @@ const	std::string &	getMapName() const { return m_mapName; }
         Costume *		getCurrentCostume() const;
         void			DumpPowerPoolInfo( const PowerPool_Info &pool_info );
         void			DumpBuildInfo();
-        void            face_bits(u32){}
+        void            face_bits(uint32_t){}
         void            dump();
         void            sendFullStats(BitStream &bs) const;
         //TODO: move these to some kind of Player info class
@@ -127,18 +127,18 @@ const	std::string &	getMapName() const { return m_mapName; }
         void            sendOptions( BitStream &bs ) const;
         void            sendOptionsFull(BitStream &bs) const;
 protected:
-        u64                 m_owner_account_id;
-        u64                 m_last_costume_id;
-        u8                  m_index;
-        u32                 m_level;
+        uint64_t            m_owner_account_id;
+        uint64_t            m_last_costume_id;
+        uint8_t             m_index;
+        uint32_t            m_level;
         std::string         m_name;
         std::string         m_mapName;
         bool				m_villain;
         vCostume			m_costumes;
         Costume *			m_sg_costume;
-        u32					m_current_costume_idx;
+        uint32_t			m_current_costume_idx;
         bool				m_current_costume_set;
-        u32					m_num_costumes;
+        uint32_t			m_num_costumes;
         bool				m_multiple_costumes; // has more then 1 costume
         bool				m_supergroup_costume; // player has a sg costume
         bool				m_using_sg_costume; // player uses sg costume currently

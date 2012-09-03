@@ -13,9 +13,9 @@ template<class KEY,class VALUE,class COMPARE_FUNCTOR>
 COMPARE_FUNCTOR CoXGenericHashMap<KEY, VALUE,COMPARE_FUNCTOR>::comp;
 
 template<>
-u32 JenkinsHash<std::string>::operator()(const std::string &val,u32 prev_val) const
+uint32_t JenkinsHash<std::string>::operator()(const std::string &val,uint32_t prev_val) const
 {
-    return hash((const u8 *)val.c_str(),u32(val.size()),prev_val);
+    return hash((const uint8_t *)val.c_str(),uint32_t(val.size()),prev_val);
 }
 
 
@@ -24,11 +24,11 @@ JenkinsHash<KEY> CoxHashCommon<KEY, VALUE>::hash;
 
 
 template<class VALUE>
-u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &key_tgt, bool a5) const
+uint32_t CoXHashMap<VALUE>::find_index(const std::string &key, uint32_t &index_tgt, uint32_t &key_tgt, bool a5) const
 {
-    u32 HashValue;
+    uint32_t HashValue;
     int hash_index;
-    u32 res;
+    uint32_t res;
     std::string tmp_key;
     HashValue = 0;
     tmp_key = key;
@@ -79,13 +79,13 @@ u32 CoXHashMap<VALUE>::find_index(const std::string &key, u32 &index_tgt, u32 &k
     return res;
 }
 template<class KEY,class VALUE,class COMPARE_FUNCTOR>
-u32 CoXGenericHashMap<KEY, VALUE, COMPARE_FUNCTOR>::find_index( const KEY &needle,u32 &entry_idx,u32 &prev_val_out,bool /*a5*/ ) const
+uint32_t CoXGenericHashMap<KEY, VALUE, COMPARE_FUNCTOR>::find_index( const KEY &needle,uint32_t &entry_idx,uint32_t &prev_val_out,bool /*a5*/ ) const
 {
-    u32 result;
-    u32 prev_val;
-    u32 h_idx=this->hash(needle,0);
+    uint32_t result;
+    uint32_t prev_val;
+    uint32_t h_idx=this->hash(needle,0);
     prev_val = h_idx;
-    u32 entry_to_try = h_idx % this->m_storage.size();
+    uint32_t entry_to_try = h_idx % this->m_storage.size();
     if(entry_to_try==0)
         return 2;
     while(true)
@@ -123,10 +123,10 @@ u32 CoXGenericHashMap<KEY, VALUE, COMPARE_FUNCTOR>::find_index( const KEY &needl
 template
 JenkinsHash<std::string> CoxHashCommon<std::string, std::string>::hash;
 template
-JenkinsHash<u32> CoxHashCommon<u32, u32>::hash;
+JenkinsHash<uint32_t> CoxHashCommon<uint32_t, uint32_t>::hash;
 
 template
 class CoXHashMap<std::string>;
 template
-class CoXGenericHashMap<u32,u32,IntCompare>;
+class CoXGenericHashMap<uint32_t,uint32_t,IntCompare>;
 

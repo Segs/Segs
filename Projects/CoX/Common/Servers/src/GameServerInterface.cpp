@@ -30,27 +30,27 @@ bool GameServerInterface::Online()
         assert(m_instance);
         return m_instance->Online();
 }
-u8 GameServerInterface::getId()
+uint8_t GameServerInterface::getId()
 {
         assert(m_instance);
         return m_instance->getId();
 }
-u16 GameServerInterface::getCurrentPlayers()
+uint16_t GameServerInterface::getCurrentPlayers()
 {
         assert(m_instance);
         return m_instance->getCurrentPlayers();
 }
-u16 GameServerInterface::getMaxPlayers()
+uint16_t GameServerInterface::getMaxPlayers()
 {
         assert(m_instance);
         return m_instance->getMaxPlayers();
 }
-u8 GameServerInterface::getUnkn1()
+uint8_t GameServerInterface::getUnkn1()
 {
         assert(m_instance);
         return m_instance->getUnkn1();
 }
-u8 GameServerInterface::getUnkn2()
+uint8_t GameServerInterface::getUnkn2()
 {
         assert(m_instance);
         return m_instance->getUnkn2();

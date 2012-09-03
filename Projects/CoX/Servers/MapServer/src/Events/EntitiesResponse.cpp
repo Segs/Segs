@@ -89,7 +89,7 @@ void EntitiesResponse::sendClientData(BitStream &tgt) const
         player_char.sendChatSettings(tgt);
         player_char.sendTitles(tgt);
         player_char.sendDescription(tgt);
-        u8 auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+        uint8_t auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
         tgt.StoreBitArray(auth_data,128);
         player_char.sendKeybinds(tgt);
         player_char.sendOptions(tgt);

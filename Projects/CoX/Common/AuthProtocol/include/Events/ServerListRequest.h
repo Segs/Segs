@@ -8,18 +8,18 @@ public:
 	{}
 	void serializeto(GrowingBuffer &buf) const
 	{
-		buf.uPut((u8)5);
+		buf.uPut((uint8_t)5);
 		buf.uPutBytes(unkArrayFromLoginResponse, sizeof(unkArrayFromLoginResponse));
 		buf.uPut(unk1);	
 	}
 	void serializefrom(GrowingBuffer &buf)
 	{
-		u8 op;
+		uint8_t op;
 		buf.uGet(op);
 		buf.uGetBytes(unkArrayFromLoginResponse,8);
 		buf.uGet(unk1);
 	}
 
-	u8 unkArrayFromLoginResponse[8];
-	u8 unk1;
+	uint8_t unkArrayFromLoginResponse[8];
+	uint8_t unk1;
 };
