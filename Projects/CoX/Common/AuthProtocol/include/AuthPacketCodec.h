@@ -42,5 +42,3 @@ private:
     long long xor_enc_key; //key for encryption
     long long xor_dec_key; //key for decryption
 };
-
-#endif // AUTHPACKETCODEC_H

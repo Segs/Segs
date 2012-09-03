@@ -7,7 +7,6 @@
  * $Id$
  */
 
-// Inclusion guards
 #pragma once
 #include <string>
 #include <vector>

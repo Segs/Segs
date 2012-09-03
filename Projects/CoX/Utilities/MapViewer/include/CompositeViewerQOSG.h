@@ -23,5 +23,3 @@ protected:
     QTimer _timer;
 
 }; // CompositeViewerQOSG
-
-#endif // _COMPOSITE_VIEWER_QOSG_HPP_

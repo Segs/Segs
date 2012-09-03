@@ -29,5 +29,3 @@ inline const char* LookupName(uint32 id, NameTableEntry *table)
 }
 
 extern NameTableEntry OpcodeNames[];
-
-#endif // NAMETABLES_H

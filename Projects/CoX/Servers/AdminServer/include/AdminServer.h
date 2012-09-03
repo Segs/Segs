@@ -69,5 +69,3 @@ protected:
     CharacterDatabase *         m_char_db;
 };
 typedef ACE_Singleton<_AdminServer,ACE_Thread_Mutex> AdminServer; // AdminServer Interface
-
-#endif // ADMINSERVER_H

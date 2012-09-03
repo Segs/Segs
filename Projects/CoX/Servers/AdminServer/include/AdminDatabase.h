@@ -37,4 +37,4 @@ public:
     bool    GetAccountByName(AccountInfo &to_fill,const std::string &login);
     bool    GetAccountById(AccountInfo &to_fill,u64 id);
     void    on_connected();
-};    
+};

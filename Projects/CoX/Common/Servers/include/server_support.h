@@ -22,5 +22,3 @@ public:
     // Called when object is signaled by OS.
     virtual int handle_signal (int signum,siginfo_t * = 0,ucontext_t * = 0);
 };
-
-#endif // SERVER_SUPPORT_H

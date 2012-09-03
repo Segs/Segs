@@ -49,5 +49,5 @@ public:
 
 	void        dispatch(SEGSEvent *ev);
     SEGSEvent * dispatch_sync(SEGSEvent *ev);
-};    
+};
 typedef ACE_Singleton<AuthHandler,ACE_Thread_Mutex> AuthHandlerG;

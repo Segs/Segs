@@ -96,4 +96,3 @@ protected:
 typedef std::list<CrudP_Packet *> lCrudP_Packet;
 typedef std::vector<CrudP_Packet *> vCrudP_Packet;
 typedef vCrudP_Packet::iterator ivCrudP_Packet;
-

@@ -35,5 +35,3 @@ private:
                 ACE_INET_Addr           m_authaddr;
                 std::string             m_passw;
 };
-
-#endif // ROAMINGSERVER_H

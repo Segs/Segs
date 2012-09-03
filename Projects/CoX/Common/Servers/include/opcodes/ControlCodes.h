@@ -17,7 +17,7 @@ Description: Defines an enumerated list of control codes, which are a
 
 #pragma once
 
-typedef enum 
+typedef enum
 {
 	CTRL_IDLE = 0x00,
 	CTRL_CONNECT,
@@ -37,7 +37,7 @@ typedef enum
 
 /*
 //	For use with CTRL_NET_CMD
-static const char *netCommands[] = 
+static const char *netCommands[] =
 {
 	"autosave",
 	"group",
@@ -62,5 +62,3 @@ static const char *netCommands[] =
 	"ungroupall"
 };
 */
-
-#endif // CONTROLCODES_H

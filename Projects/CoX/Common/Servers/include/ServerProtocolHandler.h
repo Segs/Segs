@@ -18,5 +18,3 @@ public:
 	//! this is abstract, because each specific server can use different Client class
 	virtual void			setClient(IClient *cl) = 0; //! used to link a handler with underlying client object
 };
-
-#endif // SERVERPROTOCOLHANDLER_H

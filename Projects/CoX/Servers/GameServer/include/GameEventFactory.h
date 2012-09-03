@@ -11,4 +11,3 @@ public:
     typedef CharacterClient tClientData ; //!< typedef used by CRUDLink to store per-connection data
     static GameLinkEvent *EventFromStream(BitStream &bs);
 };
-

@@ -40,5 +40,3 @@ public:
 protected:
         IMapServer *            m_instance;
 };
-
-#endif // MAPSERVERINTERFACE_H

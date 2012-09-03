@@ -28,5 +28,3 @@ public:
 	AuthServerInterface *get(const ServerHandle<IAuthServer> &h_serv) const;
 };
 typedef ACE_Singleton<InterfaceManagerC,ACE_Thread_Mutex> InterfaceManager;
-
-#endif // INTERFACEMANAGER_H

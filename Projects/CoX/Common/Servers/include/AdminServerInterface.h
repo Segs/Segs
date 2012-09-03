@@ -73,5 +73,3 @@ public:
 protected:
 	IAdminServer *m_server;
 };
-
-#endif // ADMINSERVERINTERFACE_H

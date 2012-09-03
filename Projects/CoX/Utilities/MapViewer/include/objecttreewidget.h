@@ -17,5 +17,3 @@ public:
 private:
     Ui::ObjectTreeWidget *ui;
 };
-
-#endif // OBJECTTREEWIDGET_H

@@ -133,5 +133,3 @@ typedef enum
  SERVER_BASE_CREATE				=	0x76,
  SERVER_CMD_COUNT				=	0x77,
 } eGameOpcode;
-
-#endif // OPCODES_H

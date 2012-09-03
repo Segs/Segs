@@ -77,5 +77,3 @@ protected:
         GameLinkEndpoint *      m_endpoint;
         GameHandler *           m_handler;
 };
-
-#endif // GAMESERVER_H

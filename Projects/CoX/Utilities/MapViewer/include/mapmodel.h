@@ -24,5 +24,3 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
 protected:
 };
-
-#endif // MAPMODEL_H

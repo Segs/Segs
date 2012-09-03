@@ -28,5 +28,3 @@ protected:
     IGameServer *   m_game_server; //!< every auth client knows where it is connected.
 
 };
-
-#endif // AUTHCLIENT_H

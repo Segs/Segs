@@ -51,5 +51,3 @@ protected:
     ClientLinkState     m_link;
     AccountInfo         m_account_info;
 };
-
-#endif // CLIENT_H

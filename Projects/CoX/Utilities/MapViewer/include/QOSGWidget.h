@@ -159,4 +159,3 @@ protected:
 
 extern void setupManipulatorAndHandler(osgViewer::View & viewer
                                        /*, osg::ArgumentParser & arguments*/);
-#endif // _QOSG_WIDGET_HPP_

@@ -46,5 +46,3 @@ public:
 protected:
 	IAuthServer *m_server;
 };
-
-#endif // AUTHSERVERINTERFACE_H

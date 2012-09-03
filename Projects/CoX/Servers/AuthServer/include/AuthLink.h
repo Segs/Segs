@@ -25,7 +25,7 @@ class AuthClient;
 // And posts them to g_target
 // Each AuthLink serves as a Client's connection context
 class AuthLink : public EventProcessor
-{    
+{
     typedef EventProcessor super;
     typedef ACE_Reactor_Notification_Strategy tNotifyStrategy;
     friend class AuthHandler; // auth handler changes our m_state variable

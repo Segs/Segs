@@ -37,4 +37,3 @@ protected:
     void reqWorldUpdateIfPak(BitStream &src);
     void groupnetrecv_5(BitStream &src,int a,int b);
 };
-

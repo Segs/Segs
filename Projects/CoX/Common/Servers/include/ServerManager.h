@@ -55,5 +55,3 @@ protected:
             AdminServerInterface *m_adminserv;
 };
 typedef ACE_Singleton<ServerManagerC,ACE_Thread_Mutex> ServerManager;
-
-#endif // SERVERMANAGER_H

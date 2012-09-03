@@ -9,7 +9,7 @@
 
 #pragma once
 // if this file is included stand-alone this will pull in common definitions
-#include "MapEvents.h" 
+#include "MapEvents.h"
 #include "NetCommandManager.h"
 class Shortcuts : public MapLinkEvent
 {

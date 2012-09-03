@@ -19,5 +19,3 @@ virtual bool    ReadConfig(const std::string &name)=0;
 virtual bool    Run(void)=0;
 virtual bool    ShutDown(const std::string &reason="No particular reason")=0;
 };
-
-#endif // SERVER_H

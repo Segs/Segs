@@ -26,5 +26,3 @@ private:
     CompositeViewerQOSG *m_viewer;
     osg::ref_ptr<ViewQOSG> view1;
 };
-
-#endif // MAINWINDOW_H

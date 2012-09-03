@@ -23,5 +23,3 @@ class Chat
    int TeamSay(char *charname, char *team[7], char *message);
    int GenericSpeech(char *charname, int channel, char *message);
 };
-
-#endif // CHAT_H

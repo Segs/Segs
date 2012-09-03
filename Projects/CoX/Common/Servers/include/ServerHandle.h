@@ -37,5 +37,3 @@ private:
 	int m_id; //! Remote host uses this to identify it's servers.
 	SERVER_CLASS * m_server; //! Set only if the handle is for same process server (i.e. thread)
 };
-
-#endif // SERVERHANDLE_H

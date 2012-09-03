@@ -72,5 +72,3 @@ protected:
     hmClients                               m_clients;      //!< mapping from string:login to client's object
     //boost::object_pool<AuthClient>          m_client_pool;  //!< pool used to efficiently construct new client objects.
 };
-
-#endif // AUTHSERVER_H

@@ -61,5 +61,3 @@ public:
 protected:
 	IGameServer *m_instance;
 };
-
-#endif // GAMESERVERINTERFACE_H

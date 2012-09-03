@@ -17,5 +17,3 @@ public:
 private:
     Ui::ClientWindow *ui;
 };
-
-#endif // CLIENTWINDOW_H

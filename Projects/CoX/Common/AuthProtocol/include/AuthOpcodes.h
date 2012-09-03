@@ -11,11 +11,11 @@
 
 #include "Base.h"
 enum eAuthPacketType
-{ 
+{
     SMSG_AUTHVERSION				=	0x00,
 //    SMSG_AUTH_ALREADY_LOGGED_IN		=	0x01,
 //    SMSG_AUTH_INVALID_PASSWORD		=	0x02,
-    CMSG_AUTH_SELECT_DBSERVER		=	0x02,	
+    CMSG_AUTH_SELECT_DBSERVER		=	0x02,
     PKT_AUTH_LOGIN_SUCCESS,
 	CMSG_DB_CONN_FAILURE,
     CMSG_AUTH_LOGIN,
@@ -25,5 +25,3 @@ enum eAuthPacketType
 	SMSG_AUTH_ERROR,
 	MSG_AUTH_UNKNOWN //always last
 };
-
-#endif // AUTHOPCODES_H

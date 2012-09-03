@@ -103,5 +103,3 @@ public:
                 m_expected_clients.erase(cookie);
         }
 };
-
-#endif // CLIENTMANAGER_H
