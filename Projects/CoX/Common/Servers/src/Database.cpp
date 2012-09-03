@@ -231,6 +231,10 @@ bool PreparedQuery::prepare(const std::string &query,size_t num_params)
     PGresult * q_res = PQprepare(m_conn,m_query_name.c_str(),query.c_str(),m_param_count,0);
     char *err = PQresultErrorMessage(q_res);
     bool res = !(err&&err[0]); // return false if err is set
+    if(!res)
+    {
+      ACE_ERROR((LM_ERROR, ACE_TEXT ("(%P|%t) Database: PQprepare(): %s.\n"), err));
+    }
     PQclear(q_res);
     return res;
 }

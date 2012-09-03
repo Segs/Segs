@@ -142,6 +142,6 @@ int AdminDatabase::RemoveAccountByID( uint64_t )
 void AdminDatabase::on_connected()
 {
     m_add_account_query = new PreparedQuery(*this);
-    if(!(m_add_account_query->prepare("INSERT INTO accounts (username,passw,access_level) VALUES ($1,$2,$3);",3))
+    if(!(m_add_account_query->prepare("INSERT INTO accounts (username,passw,access_level) VALUES ($1,$2,$3);",3)))
       abort();
 }
