@@ -60,8 +60,11 @@ public:
     virtual bool    read(uint8_t &v)=0;
     virtual bool    read(float &v)=0;
     virtual bool    read(Vec2 &v)=0;
-    virtual bool    read(std::vector<std::string> &res)=0;
+    virtual bool    read(Vec3 &v)=0;
+    virtual bool    read(std::vector<uint32_t> &res)=0;
     virtual bool    read(std::vector<float> &res)=0;
+    virtual bool    read(std::vector<std::string> &res)=0;
+    virtual bool    read(uint8_t *&val, uint32_t length)=0;
 
     virtual void    fixup()=0;
     virtual bool    prepare_nested()=0;
@@ -108,15 +111,18 @@ public:
                 BinStore(){}
 virtual         ~BinStore() {}
 
+    bool        read_bytes(char *tgt,size_t sz);
+    std::string read_str(size_t maxlen);
     bool        read(uint32_t &v);
     bool        read(float &v);
-    bool        read_bytes(char *tgt,size_t sz);
     bool        read(uint16_t &v);
     bool        read(uint8_t &v);
     bool        read(Vec2 &v);
-    std::string read_str(size_t maxlen);
-    bool        read(std::vector<std::string> &res);
+    bool        read(Vec3 &v);
+    bool        read(std::vector<uint32_t> &v);
     bool        read(std::vector<float> &res);
+    bool        read(std::vector<std::string> &res);
+    bool        read(uint8_t *&val, uint32_t length);
     void        prepare();
     bool        prepare_nested();
     bool        nesting_name(std::string &name);
