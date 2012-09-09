@@ -128,6 +128,14 @@ bool BinStore::read( uint8_t &v )
     size_t res = read_internal(v);
     return res==1;
 }
+
+bool BinStore::read(Vec2 &val)
+{
+    bool parse_ok=true;
+    parse_ok &= read(val.v[0]);
+    parse_ok &= read(val.v[1]);
+    return parse_ok;
+}
 bool BinStore::read_bytes( char *tgt,size_t sz )
 {
     m_str.read(tgt,sz);

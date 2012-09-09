@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -32,7 +32,11 @@ public:
 
 struct Vec3
 {
+    union
+    {
     float v[3];
+    struct { float x,y,z;};
+    };
 };
 struct Vec2
 {
@@ -54,6 +58,7 @@ public:
     virtual bool    read(uint16_t &v)=0;
     virtual bool    read(uint8_t &v)=0;
     virtual bool    read(float &v)=0;
+    virtual bool    read(Vec2 &v)=0;
     virtual void    fixup()=0;
     virtual bool    prepare_nested()=0;
     virtual bool    nesting_name(std::string &name)=0;
@@ -104,6 +109,7 @@ virtual         ~BinStore() {}
     bool        read_bytes(char *tgt,size_t sz);
     bool        read(uint16_t &v);
     bool        read(uint8_t &v);
+    bool        read(Vec2 &v);
     std::string read_str(size_t maxlen);
     void        prepare();
     bool        prepare_nested();

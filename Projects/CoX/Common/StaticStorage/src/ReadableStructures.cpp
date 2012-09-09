@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -118,22 +118,9 @@ bool TemplateField<float>::do_read(uint8_t type, BinReadable &tgt,Store *s ) con
 template <>
 bool TemplateField<Vec2>::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
-    bool parse_ok=true;
-    switch ( type )
-    {
-    case 8:
-        {
-            Vec2 val;
-            parse_ok &= s->read(val.v[0]);
-            parse_ok &= s->read(val.v[1]);
-            (tgt.*pval) = val;
-        }
-        break;
-    default:
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Unexpected field type:%d expected a float.\n"), type),false);
-        break;
-    }
-    return parse_ok;
+    if(type==8)
+        return s->read((tgt.*pval));
+    ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Unexpected field type:%d expected a float.\n"), type),false);
 }
 template <>
 bool TemplateField<Color3ub>::do_read(uint8_t type, BinReadable &tgt,Store *s ) const

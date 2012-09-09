@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -181,8 +181,9 @@ struct SceneStorage : public TreeStore
 {
     DECL_READABLE(SceneStorage)
     typedef std::vector<MapStructs::Def *> vDef;
+    typedef std::vector<MapStructs::Ref *> vRef;
     vDef m_defs;
-    std::vector<MapStructs::Ref *> m_refs;
+    vRef m_refs;
     vDef m_root;
     std::string m_scene_file;
     uint32_t m_version;
