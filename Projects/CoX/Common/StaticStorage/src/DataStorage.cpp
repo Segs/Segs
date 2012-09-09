@@ -136,6 +136,36 @@ bool BinStore::read(Vec2 &val)
     parse_ok &= read(val.v[1]);
     return parse_ok;
 }
+bool BinStore::read(std::vector<std::string> &res)
+{
+    bool parse_ok=true;
+    uint32_t to_read = 0;
+    parse_ok &= read(to_read);
+    res.clear();
+    if ( 0==to_read)
+        return parse_ok;
+    for(size_t idx = 0; idx < to_read; ++idx)
+    {
+        res.push_back(read_str(12000));
+        //parse_ok &= res[idx].size()>0; TODO handle string read errors
+    }
+    return parse_ok;
+}
+bool BinStore::read(std::vector<float> &res)
+{
+    bool parse_ok=true;
+    uint32_t to_read = 0;
+    parse_ok &= read(to_read);
+    res.clear();
+    if ( 0==to_read)
+        return parse_ok;
+    for(size_t idx = 0; idx < to_read; ++idx)
+    {
+        res.push_back(0);
+        parse_ok &= read(res[idx]);
+    }
+    return parse_ok;
+}
 bool BinStore::read_bytes( char *tgt,size_t sz )
 {
     m_str.read(tgt,sz);

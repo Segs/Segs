@@ -54,11 +54,15 @@ public:
     virtual void    prepare()=0;
     virtual std::string read_str(size_t maxlen)=0;
     virtual bool    read_bytes(char *buffer,size_t sz)=0;
+
     virtual bool    read(uint32_t &v)=0;
     virtual bool    read(uint16_t &v)=0;
     virtual bool    read(uint8_t &v)=0;
     virtual bool    read(float &v)=0;
     virtual bool    read(Vec2 &v)=0;
+    virtual bool    read(std::vector<std::string> &res)=0;
+    virtual bool    read(std::vector<float> &res)=0;
+
     virtual void    fixup()=0;
     virtual bool    prepare_nested()=0;
     virtual bool    nesting_name(std::string &name)=0;
@@ -111,6 +115,8 @@ virtual         ~BinStore() {}
     bool        read(uint8_t &v);
     bool        read(Vec2 &v);
     std::string read_str(size_t maxlen);
+    bool        read(std::vector<std::string> &res);
+    bool        read(std::vector<float> &res);
     void        prepare();
     bool        prepare_nested();
     bool        nesting_name(std::string &name);

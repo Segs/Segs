@@ -196,56 +196,16 @@ bool TemplateField< vector<uint32_t> >::do_read(uint8_t type, BinReadable &tgt,S
 template <>
 bool TemplateField< vector<float> >::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
-    bool parse_ok=true;
-    switch ( type )
-    {
-    case 14:
-        {
-            vector<float> &res((tgt.*pval));
-            uint32_t to_read = 0;
-            parse_ok &= s->read(to_read);
-            res.clear();
-            if ( 0==to_read)
-                break;
-            for(size_t idx = 0; idx < to_read; ++idx)
-            {
-                res.push_back(0);
-                parse_ok &= s->read(res[idx]);
-            }
-        }
-        break;
-    default:
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Unexpected field type:%d expected a vector of floats.\n"), type),false);
-        break;
-    }
-    return parse_ok;
+    if(type==14)
+        return s->read((tgt.*pval));
+    ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Unexpected field type:%d expected a vector of floats.\n"), type),false);
 }
 template <>
 bool TemplateField< vector<string> >::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
 {
-    bool parse_ok=true;
-    switch ( type )
-    {
-    case 15:
-        {
-            vector<string> &res((tgt.*pval));
-            uint32_t to_read = 0;
-            parse_ok &= s->read(to_read);
-            res.clear();
-            if ( 0==to_read)
-                break;
-            for(size_t idx = 0; idx < to_read; ++idx)
-            {
-                res.push_back(s->read_str(12000));
-                //parse_ok &= res[idx].size()>0; TODO handle string read errors
-            }
-        }
-        break;
-    default:
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Unexpected field type:%d expected a vector of strings.\n"), type),false);
-        break;
-    }
-    return parse_ok;
+    if(type==15)
+        return s->read((tgt.*pval));
+    ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Unexpected field type:%d expected a vector of strings.\n"), type),false);
 }
 template <>
 bool TemplateField< uint8_t * >::do_read(uint8_t type, BinReadable &tgt,Store *s ) const
