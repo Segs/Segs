@@ -19,7 +19,7 @@ MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
 
     bs.SetReadPos(read_pos); // rewind the stream and retry
     uint8_t opcode = bs.GetPackedBits(1);
-    switch(opcode)
+    switch(opcode) // this is the actual clientside packet Opcode
     {
     case 1: return new ConnectRequest;
     case 9: return new NewEntity;
@@ -27,6 +27,7 @@ MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
     case 4: return new ShortcutsRequest;
     case 3: return new SceneRequest;
     case 5: return new EntitiesRequest;
+    case 40: return new CombineRequest;
     default: return new MapUnknownRequest;
     }
     return 0;

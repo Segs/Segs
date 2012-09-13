@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -30,6 +30,7 @@ public:
     EVENT_DECL(evEntitiesRequest        ,6)
     EVENT_DECL(evEntitites              ,7)
     EVENT_DECL(evInputState             ,8)
+    EVENT_DECL(evCombineRequest         ,40)
     END_EVENTS(500)
 };
 //////////////////////////////////////////////////////////////////////////
@@ -90,7 +91,43 @@ public:
     void serializefrom(BitStream &)
     {
     }
+};
+class CombineRequest : public MapLinkEvent
+{
+public:
+    struct PowerEntry
+    {
+        int powerset_array_index;
+        int powerset_index;
+        int index;
+    };
+    PowerEntry first_power;
+    PowerEntry second_power;
+    CombineRequest() : MapLinkEvent(MapEventTypes::evCombineRequest)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,40); // opcode
+        assert(false); // since we will not send CombineRequest to anyone :)
+    }
+    // now to make this useful ;)
 
+    void getPowerForCombinde(BitStream &bs,PowerEntry &entry)
+    {
+        // first bit tells us if we have full/partial?? data
+        // here we can do a small refactoring, because in both branches of if/else, the last set value is index.
+        if(bs.GetBits(1))
+        {
+            entry.powerset_array_index = bs.GetPackedBits(1);
+            entry.powerset_index = bs.GetPackedBits(1);
+        }
+        entry.index = bs.GetPackedBits(1);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        getPowerForCombinde(bs,first_power);
+        getPowerForCombinde(bs,second_power);
+    }
 };
 #include "Events/InputState.h"
 //////////////////////////////////////////////////////////////////////////

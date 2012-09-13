@@ -21,6 +21,7 @@ void MapInstance::create_entity(Entity *ent)
 {
     m_entities.InsertPlayer(ent);
 }
+// Here we would add the handler call in case we get evCombineRequest :)
 void MapInstance::dispatch( SEGSEvent *ev )
 {
     assert(ev);
@@ -119,4 +120,8 @@ void MapInstance::on_timeout(TimerEvent *ev)
     //1. Find the client that this timer corresponds to.
     //2. Call appropriate method ( keep-alive, Entities update etc .. )
     //3. Maybe use one timer for all links ?
+}
+void MapInstance::on_combine_boosts(CombineRequest *req)
+{
+    //TODO: do something here !
 }

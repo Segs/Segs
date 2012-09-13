@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -15,6 +15,7 @@
 #include "EventProcessor.h"
 
 class SceneRequest;
+class CombineRequest;
 class EntitiesRequest;
 class SEGSTimer;
 class MapInstance : public EventProcessor
@@ -34,4 +35,5 @@ protected:
     void            on_scene_request(SceneRequest *ev);
     void            on_entities_request(EntitiesRequest *ev);
     void            on_timeout(TimerEvent *ev);
+    void            on_combine_boosts(CombineRequest *);
 };
