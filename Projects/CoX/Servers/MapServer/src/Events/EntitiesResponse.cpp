@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include <ace/Assert.h>
 #include "Entity.h"
 #include "Events/EntitiesResponse.h"
@@ -97,7 +99,7 @@ void EntitiesResponse::sendClientData(BitStream &tgt) const
     }
     else
     {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending Character to client: stats-only\n")));
+        //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending Character to client: stats-only\n")));
         ent->m_char.sendFullStats(tgt);
     }
     storePowerInfoUpdate(tgt);
@@ -126,11 +128,11 @@ void EntitiesResponse::sendServerPhysicsPositions(BitStream &bs) const
     static int idx=0;
     if(false)
     {
-    bs.StoreBits(1,0);
-    bs.StoreBits(1,0);
-}
+        bs.StoreBits(1,0);
+        bs.StoreBits(1,0);
+    }
     else
-{
+    {
         bool full_update=true;
         bs.StoreBits(1,full_update); // sending full update
         if(full_update==false)
@@ -145,30 +147,59 @@ void EntitiesResponse::sendServerPhysicsPositions(BitStream &bs) const
             bs.StoreFloat(0.0f);
             bs.StoreFloat(180.0f);
             bs.StoreBits(1,0); // Vector3 - no data - StoreFloatOptional
-    bs.StoreBits(1,0);
-    bs.StoreBits(1,0);
+            bs.StoreBits(1,0);
+            bs.StoreBits(1,0);
         }
 
     }
 
 }
-
+struct EntWalkRel
+{
+    int v[5];
+};
+struct CscCommon_Sub28
+{
+    EntWalkRel a,b;
+};
 void EntitiesResponse::sendServerControlState(BitStream &bs) const
 {
-    bool update_part_1=false;
+    Vector3 pos(-60.5,0,180);
+    Vector3 zeroes;
+    // user entity
+    Entity *ent = m_client->char_entity();
+    CscCommon_Sub28 struct_csc;
+    bool update_part_1=true;
     bool update_part_2=false;
     bs.StoreBits(1,update_part_1);
     if(update_part_1)
     {
         bs.StoreBits(8,0); // value stored in control state field_134
-        bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); // field_13C
-        //...
+        NetStructure::storeVector(bs,pos);
+
+//        bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); // Vector3
+        bs.StoreFloat(0.0f);
+        bs.StoreBitArray((uint8_t *)&struct_csc,sizeof(CscCommon_Sub28)*8);
+        bs.StoreFloat(0.0f);
+        bs.StoreBits(1,0); // key push bits ??
+        bs.StoreBits(1,0); // key push bits ??
+        bs.StoreBits(1,0); // key push bits ??
+        bs.StoreBits(1,0); // key push bits ??
+        bs.StoreBits(1,0); // key push bits ??
+        bs.StoreBits(1,0); // key push bits ??
     }
+    // Used to force the client to a position/speed/pitch/rotation by server
     bs.StoreBits(1,update_part_2);
     if(update_part_2)
     {
-        bs.StorePackedBits(1,0); // compared to client_pos_id
-        //...
+        bs.StorePackedBits(1,0); // sets g_client_pos_id_rel
+        NetStructure::storeVector(bs,pos);
+        NetStructure::storeVectorConditional(bs,zeroes);  // vector3 -> speed ? likely
+
+        NetStructure::storeFloatConditional(bs,0); // Pitch not used ?
+        NetStructure::storeFloatConditional(bs,ent->inp_state.pyr.x); // Pitch
+        NetStructure::storeFloatConditional(bs,0); // Roll
+        bs.StorePackedBits(1,0); // sets the lowest bit in CscCommon::flags
     }
 }
 void EntitiesResponse::storePowerInfoUpdate(BitStream &bs) const
@@ -216,7 +247,7 @@ void EntitiesResponse::storeInventionUpdate(BitStream &bs)const
 }
 void EntitiesResponse::storeTeamList(BitStream &bs) const
 {
-    int team_id=0; // 
+    int team_id=0; //
     NetStructure::storePackedBitsConditional(bs,20,team_id);
     //storePackedBitsConditional(bs,20,0);
     bs.StoreBits(1,0);

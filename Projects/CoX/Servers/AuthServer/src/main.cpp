@@ -147,7 +147,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     if( -1 == cmdl.parse_cmdline(argc,argv))
         return -1;
 
-    const size_t N_THREADS = 4;
+    const size_t N_THREADS = 1;
     ACE_TP_Reactor threaded_reactor;
     ACE_Reactor new_reactor(&threaded_reactor); //create concrete reactor
     auto_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes

@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -34,7 +34,7 @@ uint32_t AngleQuantize(float value,int numb_bits)
 {
     int max_val = 1<<numb_bits;
     float v = fabs(value)>1.0f ? _copysign(1.0f,value) : value ;
-    v  = (asinf(v)+F_PI)/(2*F_PI); // maps -1..1 to 0..1
+    v  = (asinf(v)+M_PI)/(2*F_PI); // maps -1..1 to 0..1
     v *= max_val;
 //	assert(v<=max_val);
     return uint32_t(v);
@@ -104,7 +104,7 @@ void Entity::storePosUpdate(BitStream &bs) const
 {
     storePosition(bs);
     // if(is_update)
-    
+
     if(!m_create)
     {
         bs.StoreBits(1,0); // not extra_info
@@ -118,7 +118,7 @@ void Entity::storeUnknownBinTree(BitStream &bs) const
 }
 void Entity::sendStateMode(BitStream &bs) const
 {
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending state mode\n")));
+    //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending state mode\n")));
 
     bs.StoreBits(1,m_state_mode_send); // no state mode
     if(m_state_mode_send)
@@ -128,7 +128,7 @@ void Entity::sendStateMode(BitStream &bs) const
 }
 void Entity::sendSeqMoveUpdate(BitStream &bs) const
 {
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq mode update %d\n"),m_seq_update));
+    //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq mode update %d\n"),m_seq_update));
     bs.StoreBits(1,m_seq_update); // no seq update
     if(m_seq_update)
     {
@@ -140,7 +140,7 @@ void Entity::sendSeqMoveUpdate(BitStream &bs) const
 void Entity::sendSeqTriggeredMoves(BitStream &bs) const
 {
     uint32_t num_moves=0;
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq triggeted moves %d\n"),num_moves));
+    //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq triggeted moves %d\n"),num_moves));
     bs.StorePackedBits(1,num_moves); // num moves
     for (uint32_t idx = 0; idx < num_moves; ++idx )
     {
@@ -494,6 +494,12 @@ void Entity::sendBuffs(BitStream &bs) const
 {
     bs.StorePackedBits(5,0);
 }
+
+void Entity::setInputState(Vector3 &pos,Vector3 pyr)
+{
+    inp_state.pos=pos;
+    inp_state.pyr=pyr;
+}
 void Entity::sendBuffsConditional(BitStream &bs) const
 {
     bs.StoreBits(1,0); // nothing here for now
@@ -583,7 +589,7 @@ Entity::Entity()
     field_64=0;
     field_78=0;
     m_state_mode_send=0;
-    m_state_mode=0;
+    m_state_mode=0; // TODO: remove this later on, testing now.
     m_seq_update=0;
     m_has_titles=false;
     m_SG_info=false;

@@ -191,7 +191,7 @@ ServerHandle<IGameServer> _AdminServer::RegisterMapServer(const ServerHandle<IMa
  * @return int
  * @param  map_h
  */
-int _AdminServer::GetAccessKeyForServer(const ServerHandle<IMapServer> &map_h)
+int _AdminServer::GetAccessKeyForServer(const ServerHandle<IMapServer> &/*map_h*/)
 {
     return 0;
 }

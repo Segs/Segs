@@ -18,6 +18,7 @@ class SceneRequest;
 class CombineRequest;
 class EntitiesRequest;
 class SEGSTimer;
+class InputState;
 class MapInstance : public EventProcessor
 {
     std::string     m_name;
@@ -36,4 +37,5 @@ protected:
     void            on_entities_request(EntitiesRequest *ev);
     void            on_timeout(TimerEvent *ev);
     void            on_combine_boosts(CombineRequest *);
+    void            on_input_state(InputState *st);
 };

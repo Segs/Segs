@@ -77,29 +77,31 @@ public:
 
 class NetStructure // this represents an interface all structures that are traversing the network should implement
 {
-static const	uint32_t				stringcachecount_bitlength=12;
-static const	uint32_t				colorcachecount_bitlength=10;
+static const	uint32_t    stringcachecount_bitlength=12;
+static const	uint32_t    colorcachecount_bitlength=10;
 public:
-        NetStructure()
-        {
-        }
-        virtual ~NetStructure(){}
-        virtual void		serializeto(BitStream &bs) const =0;
-        virtual void		serializefrom(BitStream &bs)=0;
-        size_t bits_used; // this reflects how many bits given operation affected
-        static void			storeBitsConditional(BitStream &bs,int numbits,int bits);
-        static int			getBitsConditional(BitStream &bs,int numbits);
-        static void			storePackedBitsConditional(BitStream &bs,int numbits,int bits);
-        static void			storeFloatConditional(BitStream &bs,float val);
-        static void			storeFloatPacked(BitStream &bs,float val);
-        static int			getPackedBitsConditional(BitStream &bs,int numbits);
-        static void			storeStringConditional(BitStream &bs,const std::string &str);
-        static void			storeTransformMatrix(BitStream &tgt,const Matrix4x3 &src);
-        static void			storeTransformMatrix(BitStream &tgt,const TransformStruct &src);
+                            NetStructure()
+                            {
+                            }
+    virtual                 ~NetStructure(){}
+    virtual void            serializeto(BitStream &bs) const =0;
+    virtual void            serializefrom(BitStream &bs)=0;
+            size_t          bits_used; // this reflects how many bits given operation affected
+    static  void            storeBitsConditional(BitStream &bs,int numbits,int bits);
+    static  int             getBitsConditional(BitStream &bs,int numbits);
+    static  void            storePackedBitsConditional(BitStream &bs,int numbits,int bits);
+    static  void            storeFloatConditional(BitStream &bs,float val);
+    static  void            storeFloatPacked(BitStream &bs,float val);
+    static  int             getPackedBitsConditional(BitStream &bs,int numbits);
+    static  void            storeStringConditional(BitStream &bs,const std::string &str);
+    static  void            storeVector(BitStream &bs, Vector3 &vec);
+    static  void            storeVectorConditional(BitStream &bs, Vector3 &vec);
+    static  void            storeTransformMatrix(BitStream &tgt,const Matrix4x3 &src);
+    static  void            storeTransformMatrix(BitStream &tgt,const TransformStruct &src);
 
-        static void			getTransformMatrix(BitStream &bs,Matrix4x3 &src);
-        static void			storeCached_Color(BitStream &bs,uint32_t col);
-        static void			storeCached_String(BitStream &bs,const std::string & str);
-        static uint32_t			getCached_Color(BitStream &bs);
-        static std::string	getCached_String(BitStream &bs);
+    static  void            getTransformMatrix(BitStream &bs,Matrix4x3 &src);
+    static  void            storeCached_Color(BitStream &bs,uint32_t col);
+    static  void            storeCached_String(BitStream &bs,const std::string & str);
+    static  uint32_t        getCached_Color(BitStream &bs);
+    static  std::string     getCached_String(BitStream &bs);
 };

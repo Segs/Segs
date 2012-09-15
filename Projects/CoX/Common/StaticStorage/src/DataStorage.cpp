@@ -147,7 +147,7 @@ bool BinStore::read(Vec3 &val)
 }
 bool BinStore::read(uint8_t *&val, uint32_t length)
 {
-    bool parse_ok;
+    bool parse_ok=true;
     if(val)
         delete [] val;
     val = new uint8_t [length];

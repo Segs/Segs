@@ -12,90 +12,102 @@
 using namespace std;
 void NetStructure::storeBitsConditional( BitStream &bs,int numbits,int bits )
 {
-	bs.StoreBits(1,bits!=0);
-	if(bits)
-		bs.StoreBits(numbits,bits);
+        bs.StoreBits(1,bits!=0);
+        if(bits)
+                bs.StoreBits(numbits,bits);
 }
 
 int NetStructure::getBitsConditional( BitStream &bs,int numbits )
 {
-	if(bs.GetBits(1))
-	{
-		return bs.GetBits(numbits);
-	}
-	return 0;
+        if(bs.GetBits(1))
+        {
+                return bs.GetBits(numbits);
+        }
+        return 0;
 }
 
 void NetStructure::storePackedBitsConditional( BitStream &bs,int numbits,int bits )
 {
-	bs.StoreBits(1,bits!=0);
-	if(bits)
-		bs.StorePackedBits(numbits,bits);
+        bs.StoreBits(1,bits!=0);
+        if(bits)
+                bs.StorePackedBits(numbits,bits);
+}
+void NetStructure::storeVector( BitStream &bs,Vector3 &vec )
+{
+    bs.StoreFloat(vec.x);
+    bs.StoreFloat(vec.y);
+    bs.StoreFloat(vec.z);
+}
+void NetStructure::storeVectorConditional( BitStream &bs,Vector3 &vec )
+{
+    storeFloatConditional(bs,vec.x);
+    storeFloatConditional(bs,vec.y);
+    storeFloatConditional(bs,vec.z);
 }
 
 void NetStructure::storeFloatConditional( BitStream &bs,float val )
 {
-	bs.StoreBits(1,val!=0.0);
-	if(val!=0.0)
-		bs.StoreFloat(val);
+        bs.StoreBits(1,val!=0.0);
+        if(val!=0.0)
+                bs.StoreFloat(val);
 }
 
 void NetStructure::storeFloatPacked( BitStream &bs,float val )
 {
-	bs.StoreBits(1,0);
-	bs.StoreFloat(val);
+        bs.StoreBits(1,0);
+        bs.StoreFloat(val);
 }
 
 int NetStructure::getPackedBitsConditional( BitStream &bs,int numbits )
 {
-	if(bs.GetBits(1))
-	{
-		return bs.GetPackedBits(numbits);
-	}
-	return 0;
+        if(bs.GetBits(1))
+        {
+                return bs.GetPackedBits(numbits);
+        }
+        return 0;
 }
 
 void NetStructure::storeStringConditional( BitStream &bs,const string &str )
 {
-	bs.StoreBits(1,str.size()>0);
-	if(str.size()>0)
-		bs.StoreString(str);
+        bs.StoreBits(1,str.size()>0);
+        if(str.size()>0)
+                bs.StoreString(str);
 }
 
 void NetStructure::storeTransformMatrix( BitStream &tgt,const Matrix4x3 &src )
 {
-	tgt.StoreBits(1,0); // no packed matrices for now
-	tgt.StoreBitArray((uint8_t*)&src,12*4*8);
+        tgt.StoreBits(1,0); // no packed matrices for now
+        tgt.StoreBitArray((uint8_t*)&src,12*4*8);
 }
 
 void NetStructure::storeTransformMatrix( BitStream &tgt,const TransformStruct &src )
 {
-	tgt.StoreBits(1,1); // partial
-	tgt.StoreBits(1,src.v1_set ? 1:0);
-	tgt.StoreBits(1,src.v2_set ? 1:0);
-	tgt.StoreBits(1,src.v3_set ? 1:0);
-	if(src.v1_set)
-	{
-		for(int i=0; i<3; i++)
-			storeFloatPacked(tgt,src.v1.v[i]);
-	}
-	if(src.v2_set)
-	{
-		for(int i=0; i<3; i++)
-			storeFloatPacked(tgt,src.v2.v[i]);
-	}
-	if(src.v3_set)
-	{
-		for(int i=0; i<3; i++)
-			storeFloatPacked(tgt,src.v3.v[i]);
-	}
+        tgt.StoreBits(1,1); // partial
+        tgt.StoreBits(1,src.v1_set ? 1:0);
+        tgt.StoreBits(1,src.v2_set ? 1:0);
+        tgt.StoreBits(1,src.v3_set ? 1:0);
+        if(src.v1_set)
+        {
+                for(int i=0; i<3; i++)
+                        storeFloatPacked(tgt,src.v1.v[i]);
+        }
+        if(src.v2_set)
+        {
+                for(int i=0; i<3; i++)
+                        storeFloatPacked(tgt,src.v2.v[i]);
+        }
+        if(src.v3_set)
+        {
+                for(int i=0; i<3; i++)
+                        storeFloatPacked(tgt,src.v3.v[i]);
+        }
 }
 
 void NetStructure::getTransformMatrix( BitStream &bs,Matrix4x3 &src )
 {
-	if(bs.GetBits(1))
-		assert(!"PACKED ARRAY RECEIVED!");
-	bs.GetBitArray((uint8_t*)&src,12*4*8);
+        if(bs.GetBits(1))
+                assert(!"PACKED ARRAY RECEIVED!");
+        bs.GetBitArray((uint8_t*)&src,12*4*8);
 }
 
 void NetStructure::storeCached_Color( BitStream &bs,uint32_t col )
@@ -134,36 +146,36 @@ void NetStructure::storeCached_String( BitStream &bs,const std::string & str )
 
 uint32_t NetStructure::getCached_Color( BitStream &bs )
 {
-	bool in_hash= bs.GetBits(1);
-	if(in_hash)
-	{
-		uint16_t hash_idx =bs.GetBits(colorcachecount_bitlength);
-		uint32_t *kv = WorldData::instance()->colors().key_for_idx(hash_idx);
-		if(kv)
-			return *kv;
-		return 0;
-	}
-	else
-		return bs.GetBits(32);
+        bool in_hash= bs.GetBits(1);
+        if(in_hash)
+        {
+                uint16_t hash_idx =bs.GetBits(colorcachecount_bitlength);
+                uint32_t *kv = WorldData::instance()->colors().key_for_idx(hash_idx);
+                if(kv)
+                        return *kv;
+                return 0;
+        }
+        else
+                return bs.GetBits(32);
 
-	return 0;
+        return 0;
 }
 
 std::string NetStructure::getCached_String( BitStream &bs )
 {
-	std::ostringstream strm;
-	std::string tgt("");
-	bool in_cache= bs.GetBits(1);
-	if(in_cache)
-	{
-		int in_cache_idx = bs.GetPackedBits(stringcachecount_bitlength);
-		std::string *kv = WorldData::instance()->strings().key_for_idx(in_cache_idx);
-		if(kv)
-			tgt=*kv;
-		return tgt;
-	}
-	else
-		bs.GetString(tgt);
-	return tgt;
+        std::ostringstream strm;
+        std::string tgt("");
+        bool in_cache= bs.GetBits(1);
+        if(in_cache)
+        {
+                int in_cache_idx = bs.GetPackedBits(stringcachecount_bitlength);
+                std::string *kv = WorldData::instance()->strings().key_for_idx(in_cache_idx);
+                if(kv)
+                        tgt=*kv;
+                return tgt;
+        }
+        else
+                bs.GetString(tgt);
+        return tgt;
 }
 

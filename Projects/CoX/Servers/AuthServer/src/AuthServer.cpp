@@ -126,7 +126,7 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
  * @param  version MapServer version
  * @param  passw server password
  */
-ServerHandle<IAdminServer> AuthServer::AuthenticateMapServer(const ServerHandle<IMapServer> &map_h,int version,const string &passw)
+ServerHandle<IAdminServer> AuthServer::AuthenticateMapServer(const ServerHandle<IMapServer> &/*map_h*/,int /*version*/,const string &/*passw*/)
 {
     return ServerHandle<IAdminServer>(0);
 }

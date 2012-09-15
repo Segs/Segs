@@ -275,11 +275,11 @@ int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 
 }
 
-void AuthLink::dispatch( SEGSEvent *ev )
+void AuthLink::dispatch( SEGSEvent */*ev*/ )
 {
     assert(!"Should not be called");
 }
-SEGSEvent *AuthLink::dispatch_sync(SEGSEvent *ev)
+SEGSEvent *AuthLink::dispatch_sync(SEGSEvent */*ev*/)
 {
     assert(!"No sync events known");
     return 0;

@@ -56,7 +56,7 @@ public:
     tClientData *   client_data() {return m_link_data;}
     void            client_data(tClientData *d) {m_link_data=d;}
 
-    ACE_Time_Value  inactivity_time() //! return the amount of time this client wasn't sending anything
+    ACE_Time_Value  inactivity_time() const //! return the amount of time this client wasn't sending anything
                     {
                         return ACE_OS::gettimeofday()-m_last_activity;
                     }

@@ -15,7 +15,7 @@ public:
     int a;
     int b;
 };
-
+class InputState;
 class Entity;
 class Avatar : public NetStructure //! not to be confuzzled with GameServer's Character :)
 {
@@ -55,6 +55,12 @@ virtual void	serializeto(BitStream &bs) const;
 class Entity : public NetStructure
 {
 public:
+        struct currentInputState
+        {
+            Vector3 pos;
+            Vector3 pyr;
+        };
+        currentInputState inp_state;
         enum
         {
             ENT_PLAYER=2,
@@ -111,52 +117,53 @@ public:
         bool                    var_129C;
 
                                 Entity();
-virtual					        ~Entity(){}
-        void			        dump();
-        uint32_t		        getIdx() const {return m_idx;}
-virtual void			        serializeto(BitStream &bs)const;
-        void			        sendStateMode(BitStream &bs) const;
-        void			        sendOnOddSend(BitStream &bs,bool is_odd=true) const;
-        void			        sendSeqMoveUpdate(BitStream &bs) const;
-        void			        sendSeqTriggeredMoves(BitStream &bs) const;
-        void			        sendNetFx(BitStream &bs) const;
-virtual	void			        sendCostumes(BitStream &bs) const;
-        void			        sendXLuency(BitStream &bs,float xluency) const;
-        void			        sendTitles(BitStream &bs) const;
-        void			        sendRagDoll(BitStream &bs) const;
-static	void			        sendAllyID(BitStream &bs);
-static	void			        sendPvP(BitStream &bs);
-        void			        sendEntCollision(BitStream &bs) const;
-        void			        sendNoDrawOnClient(BitStream &bs)const;
-        void			        sendContactOrPnpc(BitStream &bs)const;
-        void			        sendPetName(BitStream &bs)const;
-        void			        sendAFK(BitStream &bs)const;
-        void			        sendOtherSupergroupInfo(BitStream &bs)const;
-        void			        sendLogoutUpdate(BitStream &bs)const;
+virtual                         ~Entity(){}
+        void                    dump();
+        uint32_t                getIdx() const {return m_idx;}
+virtual void                    serializeto(BitStream &bs)const;
+        void                    sendStateMode(BitStream &bs) const;
+        void                    sendOnOddSend(BitStream &bs,bool is_odd=true) const;
+        void                    sendSeqMoveUpdate(BitStream &bs) const;
+        void                    sendSeqTriggeredMoves(BitStream &bs) const;
+        void                    sendNetFx(BitStream &bs) const;
+virtual	void                    sendCostumes(BitStream &bs) const;
+        void                    sendXLuency(BitStream &bs,float xluency) const;
+        void                    sendTitles(BitStream &bs) const;
+        void                    sendRagDoll(BitStream &bs) const;
+static	void                    sendAllyID(BitStream &bs);
+static	void                    sendPvP(BitStream &bs);
+        void                    sendEntCollision(BitStream &bs) const;
+        void                    sendNoDrawOnClient(BitStream &bs)const;
+        void                    sendContactOrPnpc(BitStream &bs)const;
+        void                    sendPetName(BitStream &bs)const;
+        void                    sendAFK(BitStream &bs)const;
+        void                    sendOtherSupergroupInfo(BitStream &bs)const;
+        void                    sendLogoutUpdate(BitStream &bs)const;
 
-        void			        storePosition(BitStream &bs) const;
-        void			        storeOrientation(BitStream &bs) const;
-        void			        storeUnknownBinTree(BitStream &bs) const;
-        void			        storePosUpdate(BitStream &bs) const;
-        int			        	getOrientation(BitStream &bs);
-virtual void			        serializefrom(BitStream &){};
-        bool			        update_rot(int axis) const; // returns true if given axis needs updating;
+        void                    storePosition(BitStream &bs) const;
+        void                    storeOrientation(BitStream &bs) const;
+        void                    storeUnknownBinTree(BitStream &bs) const;
+        void                    storePosUpdate(BitStream &bs) const;
+        int                     getOrientation(BitStream &bs);
+virtual void                    serializefrom(BitStream &){}
+        bool                    update_rot(int axis) const; // returns true if given axis needs updating;
 
-        void			        InsertUpdate(PosUpdate pup);
-        void			        sendCharacterStats(BitStream &bs) const;
-        void			        sendTargetUpdate(BitStream &bs) const;
+        void                    InsertUpdate(PosUpdate pup);
+        void                    sendCharacterStats(BitStream &bs) const;
+        void                    sendTargetUpdate(BitStream &bs) const;
         void                    sendWhichSideOfTheForce(BitStream &bs) const;
         void                    sendBuffsConditional(BitStream &bs) const;
         const std::string &     name() {return m_char.getName();}
         void                    sendBuffs(BitStream &bs) const;
+        void                    setInputState(Vector3 &pos, Vector3 pyr);
 };
 class MobEntity : public Entity
 {
-        std::string		m_costume_seq;
+        std::string     m_costume_seq;
 public:
                         MobEntity();
-virtual					~MobEntity(){}
-virtual	void			sendCostumes(BitStream &bs) const;
+virtual                 ~MobEntity(){}
+virtual	void            sendCostumes(BitStream &bs) const;
 
 
 };
@@ -164,8 +171,8 @@ class PlayerEntity : public MobEntity
 {
 public:
                             PlayerEntity();
-virtual						~PlayerEntity(){}
-        void				serializefrom_newchar(BitStream &src);
+virtual                     ~PlayerEntity(){}
+        void                serializefrom_newchar(BitStream &src);
         void                sendCostumes( BitStream &bs ) const;
         void                serialize_full( BitStream &tgt );
 };

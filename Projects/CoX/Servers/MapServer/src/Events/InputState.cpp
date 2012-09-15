@@ -6,6 +6,8 @@
  *
  * $Id$
  */
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include "types.h"
 #include "Events/InputState.h"
 #include "Entity.h"
@@ -26,58 +28,65 @@ void InputState::partial_2(BitStream &bs)
             control_id=8;
         else
             control_id=bs.GetBits(4);
+
         if(bs.GetBits(1)) //
             time_since_prev=bs.GetBits(2)+32;
         else
             time_since_prev=bs.GetBits(m_csc_deltabits);
-        if(control_id!=8)
-            fprintf(stderr,"CtrlId %d  : %d\n",control_id,time_since_prev);
         switch(control_id)
         {
             case 0: case 1: case 2:
             case 3: case 4: case 5:
                 // field_38 bits , control_id is the number of the bit
+                fprintf(stderr,"CtrlId %d  : %d - ",control_id,time_since_prev);
                 v = bs.GetBits(1);
-//                fprintf(stderr,"P2_%d : %d\n",control_id,v);
+                fprintf(stderr,"P2[%d]:%d\n",control_id,v);
                 break;
             case 6:
             case 7:
+            {
                 v = bs.GetBits(11);
-//                fprintf(stderr,"P2_timerel_18 : %d\n",v);
+                // v = (x+pi)*(2048/2pi)
+                // x = (v*(pi/1024))-pi
+                float recovered = (float(v)/2048.0f)*(2*M_PI) - M_PI;
+                fprintf(stderr,"Pyr %f : %f \n",camera_pyr.x,camera_pyr.y);
+                if(control_id==6) //TODO: use camera_pyr.v[] here ?
+                    camera_pyr.x = recovered;
+                else
+                    camera_pyr.y = recovered;
                 break;
+            }
             case 8:
                 v = bs.GetBits(1);
-//                fprintf(stderr,"P2_8_1 : %d\n",v);
+//                fprintf(stderr,"\tCTRL_8[%d] ",v);
                 if ( m_send_deltas )
                 {
-//                    bs.GetPackedBits(8);  //a2->timerel_18 - X
-//                    bs.GetPackedBits(8);  //a2->timerel_1C - Y;
-                    v=bs.GetPackedBits(8);
-//                    fprintf(stderr,"P2_8_32_8 : %d\n",v);
-                    v=bs.GetPackedBits(8);
-//                    fprintf(stderr,"P2_8_10_8 : %d\n",v);
+                    m_t1=bs.GetPackedBits(8);
+                    m_t2=bs.GetPackedBits(8);
                 }
                 else
                 {
                     m_send_deltas = true;
-                    v=bs.GetBits(32);
-//                    fprintf(stderr,"P2_8_32 : %d\n",v); //pak->SendBits(32, a2->timerel_18);
-                    v=bs.GetPackedBits(10);
-//                    fprintf(stderr,"P2_8_10 : %d\n",v);
-                    ; //pak->SendPackedBits(10, a2->timerel_18 - a2->timerel_1C);
+                    m_t1=bs.GetBits(32);
+                    m_t2=bs.GetPackedBits(10);
                 }
+//                fprintf(stderr,"[%d, ",t1);
+//                fprintf(stderr,",%d] ",t2);
                 if(bs.GetBits(1))
                 {
                     v=bs.GetBits(8);
+//                    fprintf(stderr,"CTRL_8C[%d] ",v);
 //                    fprintf(stderr,"P2_8_opt : %d\n",v);
                 }
                 break;
             case 9:
                  //a2->timerel_18
-                fprintf(stderr,"P2_9 : %d\n",bs.GetBits(8));
+                //fprintf(stderr,"CtrlId %d  : %d - ",control_id,time_since_prev);
+                fprintf(stderr,"%d\n",bs.GetBits(8));
                 break;
             case 10:
-                fprintf(stderr,"P2_10 : %d\n",bs.GetBits(1)); //a2->timerel_18 & 1
+                fprintf(stderr,"CtrlId %d  : %d - ",control_id,time_since_prev);
+                fprintf(stderr,"%d\n",bs.GetBits(1)); //a2->timerel_18 & 1
                 break;
             default:
                 assert(!"Unknown control_id");
@@ -90,25 +99,29 @@ void InputState::extended_input(BitStream &bs)
 {
     if(bs.GetBits(1)) // list of partial_2 follows
     {
-        m_csc_deltabits=bs.GetBits(5); // number of bits in max_time_diff_ms
-        /*uint16_t a3_bits=*/bs.GetBits(16);//ControlStateChange::field_8 or OptRel::field_19A8
+        m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
+        someOtherbits = bs.GetBits(16);//ControlStateChange::field_8 or OptRel::field_19A8
         current_state_P = 0;
+#ifdef DEBUG_INPUT
+        fprintf(stderr,"CSC_DELTA[%x-%x] : ",m_csc_deltabits,someOtherbits);
+#endif
         partial_2(bs);
 
     }
     controlBits = 0;
     for(int idx=0; idx<6; ++idx)
         controlBits |= (bs.GetBits(1))<<idx;
+#ifdef DEBUG_INPUT
     fprintf(stderr,"E input %x : ",controlBits);
+#endif
     if(bs.GetBits(1))//if ( abs(s_prevTime - ms_time) < 1000 )
     {
-        int v;
-        v = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[0]);
-        fprintf(stderr,"%x : ",v);
-        v =bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[1]);
-        fprintf(stderr,"%x : ",v);
+        m_A_ang11_propably = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[0]);
+        m_B_ang11_propably = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[1]);
+#ifdef DEBUG_INPUT
+        fprintf(stderr,"%x : %x",v1,v2);
+#endif
     }
-    fprintf(stderr,"\n");
 }
 struct ControlState
 {
@@ -151,19 +164,28 @@ struct ControlState
     }
     void dump()
     {
-        fprintf(stderr,"%d,%d, [%f,%f]\n",field0,time_res,timestep,time_rel1C);
+#ifdef DEBUG_INPUT
+        fprintf(stderr,"CSC: %d,%d, [%f,%f]",field0,time_res,timestep,time_rel1C);
+        fprintf(stderr, "(%lld %lld)",m_perf_cntr_diff,m_perf_freq_diff);
+#endif
     }
 };
 void InputState::serializefrom(BitStream &bs)
 {
     m_send_deltas=false;
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Input state received\n")));
+#ifdef DEBUG_INPUT
+    fprintf(stderr,"I:");
+#endif
     if(bs.GetBits(1))
         extended_input(bs);
 
     bool has_targeted_entity = bs.GetBits(1);
     int tgt_idx=bs.GetPackedBits(14); // targeted entity server index
     int ctrl_idx=0;
+#ifdef DEBUG_INPUT
+    fprintf(stderr,"T:[%d]",has_targeted_entity);
+    fprintf(stderr,"TI:[%d]",tgt_idx);
+#endif
     ControlState prev_fld;
     while(bs.GetBits(1)) // receive control state array entries ?
     {
@@ -181,6 +203,9 @@ void InputState::serializefrom(BitStream &bs)
         ctrl_idx++;
     }
     recv_client_opts(bs); // g_pak contents will follow
+#ifdef DEBUG_INPUT
+    fprintf(stderr,"\n");
+#endif
 }
 //TODO: use generic ReadableStructures here ?
 void InputState::recv_client_opts(BitStream &bs)
@@ -190,6 +215,7 @@ void InputState::recv_client_opts(BitStream &bs)
     int opt_idx=0;
     int some_idx = bs.GetPackedBits(1);
     entry=opts.get(opt_idx);
+    Vector3 vec;
     while(some_idx!=0)
     {
         for(size_t i=0; i<entry->m_args.size(); i++)
@@ -197,12 +223,12 @@ void InputState::recv_client_opts(BitStream &bs)
             ClientOption::Arg &arg=entry->m_args[i];
             switch ( arg.type )
             {
-                case 1:
+                case ClientOption::t_int:
                 {
                     *((int32_t *)arg.tgt) = bs.GetPackedBits(1);
                     break;
                 }
-                case 3:
+                case ClientOption::t_float:
                 {
                     *((float *)arg.tgt)=bs.GetFloat();
                     break;
@@ -212,7 +238,7 @@ void InputState::recv_client_opts(BitStream &bs)
                     printf("Quant:%d\n",bs.GetBits(14)); //quantized angle
                     break;
                 }
-                case 2:
+                case ClientOption::t_string:
                 case 4:
                 {
                     std::string v;
@@ -223,7 +249,7 @@ void InputState::recv_client_opts(BitStream &bs)
                 {
                     for (int j = 0; j < 3; ++j )
                     {
-                        float v=bs.GetFloat();
+                        vec.v[j] = bs.GetFloat();
                     }
                     break;
                 }

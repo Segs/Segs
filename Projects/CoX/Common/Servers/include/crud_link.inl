@@ -29,6 +29,22 @@ void CRUDLink<EVENT_FACTORY>::event_for_packet(SEGSEvent *ev)
     res->src(this);
     res->seq_number = pak->GetSequenceNumber();
     g_target->putq(res);
+//    while(pak->GetStream()->GetReadableBits()>=3)
+//    {
+
+//        fprintf(stderr,"pak->GetStream()->GetReadableBits() = %d\n",pak->GetStream()->GetReadableBits());
+//        fprintf(stderr,"next packet type = %d\n",pak->GetStream()->GetPackedBits(1));
+//        if()
+//        CRUDLink_Event *res = EVENT_FACTORY::EventFromStream(*pak->GetStream());
+//        if(!res)
+//        {
+//            ACE_ERROR((LM_ERROR, ACE_TEXT ("%p EventFromStream returned NULL\n")));
+//        }
+//        res->serializefrom(*pak->GetStream());
+//        res->src(this);
+//        res->seq_number = pak->GetSequenceNumber();
+//        g_target->putq(res);
+//    }
 }
 
 template<class EVENT_FACTORY>

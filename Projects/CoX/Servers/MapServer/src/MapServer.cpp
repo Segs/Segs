@@ -1,5 +1,5 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
@@ -50,7 +50,8 @@ bool MapServer::Run(void)
     m_handler = new MapCommHandler;
     m_handler->set_server(this);
     MapLink::g_target = m_handler;
-    MapLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
+    //MapLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
+    MapLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
 
     m_endpoint = new ServerEndpoint<MapLink>(m_listen_point); //,this
     MapLink::g_link_target = m_endpoint;

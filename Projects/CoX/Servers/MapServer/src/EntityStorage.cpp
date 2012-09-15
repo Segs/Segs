@@ -16,11 +16,6 @@ EntityManager::EntityManager()
         m_last_ent = 1;
 }
 
-void EntityStorage::StorePlayer( MapClient *client,Entity *player_ent )
-{
-
-}
-
 void EntityManager::sendDebuggedEntities( BitStream &tgt ) const
 {
         tgt.StorePackedBits(10,0); // index of debugged entity

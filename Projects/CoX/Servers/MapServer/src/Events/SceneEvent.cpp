@@ -65,7 +65,7 @@ void SceneEvent::reqWorldUpdateIfPak(BitStream &)
     //src.GetBits(1);
     assert(0);
 }
-void SceneEvent::groupnetrecv_5(BitStream &src,int a,int b)
+void SceneEvent::groupnetrecv_5(BitStream &src,int /*a*/,int /*b*/)
 {
     if(!src.GetBits(1))
         return;

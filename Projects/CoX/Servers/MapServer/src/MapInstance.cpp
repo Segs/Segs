@@ -36,6 +36,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
     case MapEventTypes::evEntitiesRequest:
         on_entities_request(static_cast<EntitiesRequest *>(ev));
         break;
+    case MapEventTypes::evInputState:
+        on_input_state(static_cast<InputState *>(ev));
+        break;
     }
 }
 
@@ -89,8 +92,9 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     lnk->putq(res);
 }
 //! Handle instance-wide timers
-void MapInstance::on_timeout(TimerEvent *ev)
+void MapInstance::on_timeout(TimerEvent */*ev*/)
 {
+    //TODO: consider TimerEvent source here ?
     MapClient *cl;
     vector<MapClient *>::iterator iter=m_clients.begin();
     vector<MapClient *>::iterator end=m_clients.end();
@@ -121,7 +125,16 @@ void MapInstance::on_timeout(TimerEvent *ev)
     //2. Call appropriate method ( keep-alive, Entities update etc .. )
     //3. Maybe use one timer for all links ?
 }
-void MapInstance::on_combine_boosts(CombineRequest *req)
+void MapInstance::on_combine_boosts(CombineRequest */*req*/)
 {
+    //TODO: do something here !
+}
+void MapInstance::on_input_state(InputState *st)
+{
+    MapLink * lnk = (MapLink *)st->src();
+    MapClient *cl = lnk->client_data();
+    Entity *ent = cl->char_entity();
+    Vector3 pos;
+    ent->setInputState(pos,st->pyr());
     //TODO: do something here !
 }
