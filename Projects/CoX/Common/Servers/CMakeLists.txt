@@ -28,6 +28,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/ServerManager.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/Database.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CRUD_Link.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CRUD_Events.h
+${CMAKE_CURRENT_SOURCE_DIR}/include/crud_link.inl
 )
 
 FIND_PACKAGE(POSTGRE REQUIRED)

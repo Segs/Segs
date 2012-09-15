@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include <unordered_map>
 #include <deque>
 #include <algorithm>
 #include <list>
@@ -15,7 +16,6 @@
 #include <set>
 #include <ace/Message_Queue.h>
 #include <ace/INET_Addr.h>
-#include "hashmap_selector.h"
 #include "Base.h"
 #include "CRUDP_Packet.h"
 class PacketCodecNull;
@@ -24,7 +24,7 @@ class CrudP_Protocol
 private:
     typedef std::deque<CrudP_Packet *> pPacketStorage;
     typedef pPacketStorage::iterator ipPacketStorage ;
-    typedef hash_map<int,pPacketStorage> hmSibStorage;
+    typedef std::unordered_map<int,pPacketStorage> hmSibStorage;
 
         uint32_t                 send_seq;
         uint32_t                 recv_seq;

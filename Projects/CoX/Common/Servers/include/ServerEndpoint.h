@@ -22,8 +22,9 @@
 #include "EventProcessor.h"
 #include "CRUD_Events.h"
 #include "Base.h"
-#include "hashmap_selector.h"
-#if !defined WIN32 || defined __MINGW32__
+#include <unordered_map>
+#include <unordered_set>
+
 class ACE_INET_Addr_Hash
 {
 public:
@@ -34,22 +35,6 @@ public:
             return Key.get_ip_address()^(Key.get_port_number()<<8);
         }
 };
-#else
-class ACE_INET_Addr_Hash : public hash_compare<ACE_INET_Addr>
-{
-public:
-        ACE_INET_Addr_Hash( ){};
-        //hash_compare( Traits pred );
-        size_t operator( )( const ACE_INET_Addr& Key ) const
-        {
-                return Key.get_ip_address()^(Key.get_port_number()<<8);
-        };
-        bool operator()( const ACE_INET_Addr& _Key1, const ACE_INET_Addr& _Key2 ) const
-        {
-                return _Key1 < _Key2;
-        }
-};
-#endif // WIN32
 
 
 
@@ -60,7 +45,7 @@ template<class LINK_CLASS>
 class ServerEndpoint : public EventProcessor
 {
     typedef EventProcessor super;
-    typedef hash_map<ACE_INET_Addr,LINK_CLASS *,ACE_INET_Addr_Hash> hmAddrProto;
+    typedef std::unordered_map<ACE_INET_Addr,LINK_CLASS *,ACE_INET_Addr_Hash> hmAddrProto;
 public:
     typedef ACE_SOCK_Dgram stream_type;
     typedef ACE_INET_Addr addr_type;

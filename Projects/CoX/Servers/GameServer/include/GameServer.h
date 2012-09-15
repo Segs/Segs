@@ -10,7 +10,6 @@
 #pragma once
 
 #include <string>
-#include "hashmap_selector.h"
 
 #include <ace/ACE.h>
 #include <ace/Synch.h>

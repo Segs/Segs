@@ -9,20 +9,22 @@
 
 #pragma once
 
+#include <unordered_map>
 #include <ace/INET_Addr.h>
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
+
 #include "Client.h"
-#include "hashmap_selector.h"
 
 template <class CLIENT_CLASS>
 class ClientStore
 {
         //	boost::object_pool<CLIENT_CLASS> m_pool;
-        hash_map<uint32_t,CLIENT_CLASS *> m_expected_clients;
-        hash_map<uint64_t,CLIENT_CLASS *> m_clients; // this maps client's id to it's object
-        hash_map<uint32_t,CLIENT_CLASS *> m_connected_clients_cookie; // this maps client's id to it's object
-        hash_map<uint64_t,uint32_t> m_id_to_cookie; // client cookie is only useful in this context
+        std::unordered_map<uint32_t,CLIENT_CLASS *> m_expected_clients;
+        std::unordered_map<uint64_t,CLIENT_CLASS *> m_clients; // this maps client's id to it's object
+        std::unordered_map<uint32_t,CLIENT_CLASS *> m_connected_clients_cookie; // this maps client's id to it's object
+        std::unordered_map<uint64_t,uint32_t> m_id_to_cookie; // client cookie is only useful in this context
+
         uint32_t create_cookie(const ACE_INET_Addr &from,uint64_t id)
         {
                 uint64_t res = ((from.hash()+id)&0xFFFFFFFF)^(id>>32);

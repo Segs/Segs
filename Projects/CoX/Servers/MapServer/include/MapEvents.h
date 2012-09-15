@@ -30,6 +30,7 @@ public:
     EVENT_DECL(evEntitiesRequest        ,6)
     EVENT_DECL(evEntitites              ,7)
     EVENT_DECL(evInputState             ,8)
+    EVENT_DECL(evChatMessage            ,20)
     EVENT_DECL(evCombineRequest         ,40)
     END_EVENTS(500)
 };
@@ -135,32 +136,33 @@ public:
 class MapInstanceConnected : public MapLinkEvent
 {
 public:
-    MapInstanceConnected():MapLinkEvent(MapEventTypes::evMapInstanceConnected)
-    {
-    }
-    MapInstanceConnected(EventProcessor *evsrc,uint32_t resp,const std::string &err) :
-            MapLinkEvent(MapEventTypes::evMapInstanceConnected,evsrc),
-            m_resp(resp),
-            m_fatal_error(err)
-    {
-    }
-    void serializeto(BitStream &bs) const
-    {
-        bs.StorePackedBits(1,5); //opcode
-        bs.StorePackedBits(1,m_resp);
-        if(m_resp)
-            bs.StoreString(m_fatal_error);
-    }
-    void serializefrom(BitStream &src)
-    {
-        m_resp = src.GetPackedBits(1);
-        if(m_resp==0)
-            src.GetString(m_fatal_error);
-    }
-    uint32_t         m_resp;
+                MapInstanceConnected():MapLinkEvent(MapEventTypes::evMapInstanceConnected)
+                {}
+                MapInstanceConnected(EventProcessor *evsrc,uint32_t resp,const std::string &err) :
+                        MapLinkEvent(MapEventTypes::evMapInstanceConnected,evsrc),
+                        m_resp(resp),
+                        m_fatal_error(err)
+                {}
+
+    void        serializeto(BitStream &bs) const
+                {
+                    bs.StorePackedBits(1,5); //opcode
+                    bs.StorePackedBits(1,m_resp);
+                    if(m_resp)
+                        bs.StoreString(m_fatal_error);
+                }
+    void        serializefrom(BitStream &src)
+                {
+                    m_resp = src.GetPackedBits(1);
+                    if(m_resp==0)
+                        src.GetString(m_fatal_error);
+                }
+    uint32_t    m_resp;
     std::string m_fatal_error;
 
 };
+
+#include "Events/ChatMessage.h"
 #include "Events/SceneEvent.h"
 #include "Events/EntitiesResponse.h"
 #include "Events/Shortcuts.h"

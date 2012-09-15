@@ -1,9 +1,10 @@
 #pragma once
+#include <map>
+#include <unordered_set>
 #include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
 #include <ace/Addr.h>
-#include <map>
 #include "ClientManager.h"
 #include "GameLink.h"
 #include "GameEvents.h"
@@ -14,12 +15,13 @@ class CharacterClient;
 class GameServer;
 class GameHandler : public EventProcessor
 {
+    typedef std::unordered_set<uint32_t> sIds;
     // function that send messages into the link
     // incoming event handlers
 public:
     void        set_server(GameServer *s) {m_server=s;}
 protected:
-        void        dispatch(SEGSEvent *ev);
+        void    dispatch(SEGSEvent *ev);
     SEGSEvent * dispatch_sync( SEGSEvent *ev );
 
     //////////////////////////////////////////////////////////////////////////
@@ -36,7 +38,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Server <-> Server events
     void        on_expect_client(ExpectClient *ev);		// from AuthServer
-        void        on_client_expected(ClientExpected *ev); // from MapServer
+    void        on_client_expected(ClientExpected *ev); // from MapServer
 
     // synchronous event
     SEGSEvent * on_connection_query(ClientConnectionQuery *ev);
@@ -44,9 +46,9 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     void        checkClientConnection(uint64_t id);
     bool        isClientConnected(uint64_t id);
-    void disconnectClient( AccountInfo & cl );
-    hash_set<uint32_t>           waiting_for_client; // this hash_set holds all client cookies we wait for
-    ClientStore<CharacterClient> m_clients;
+    void        disconnectClient( AccountInfo & cl );
+    sIds        waiting_for_client; // this hash_set holds all client cookies we wait for
+    ClientStore<CharacterClient>    m_clients;
     GameServer *m_server;
 
 };
