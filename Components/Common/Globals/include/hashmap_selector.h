@@ -7,7 +7,7 @@
  * $Id$
  */
 #pragma once
-#ifndef WIN32
+#if !defined WIN32 || defined __MINGW32__
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
 #define hash_map std::tr1::unordered_map

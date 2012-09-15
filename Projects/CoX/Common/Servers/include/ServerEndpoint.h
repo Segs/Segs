@@ -23,7 +23,7 @@
 #include "CRUD_Events.h"
 #include "Base.h"
 #include "hashmap_selector.h"
-#ifndef WIN32
+#if !defined WIN32 || defined __MINGW32__
 class ACE_INET_Addr_Hash
 {
 public:
