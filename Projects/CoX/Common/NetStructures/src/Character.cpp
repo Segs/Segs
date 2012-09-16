@@ -502,7 +502,7 @@ void Character::sendTitles(BitStream &bs) const
 }
 void Character::sendKeybinds(BitStream &bs) const
 {
-    bs.StoreString("default"); // keybinding profile name
+    bs.StoreString("Default"); // keybinding profile name
     for(int i=0; i<256; i++)
     {
         if(i==0)
