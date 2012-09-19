@@ -105,6 +105,8 @@ int CRUDLink<EVENT_FACTORY>::handle_output( ACE_HANDLE )
             break;
         }
         ev->release();
+        //TODO: check how getq works when nowait is before now() ??
+        //nowait = ACE_OS::gettimeofday();
     }
     // Now if our message queue is empty, we will wait unitl m_notifier awakens us.
     if (msg_queue()->is_empty ()) // we don't want to be woken up
