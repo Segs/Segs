@@ -163,14 +163,12 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     version.getAuthVersion();
     version.getCopyright();
     ACE_DEBUG((LM_ERROR,ACE_TEXT("main\n")));
-    /*
-        AuthServerTP server_pool;
-        server_pool.activate(THR_NEW_LWP|THR_JOINABLE,4);
-*/
+
     ACE_Thread_Manager::instance()->spawn_n(N_THREADS, event_loop, ACE_Reactor::instance());
     bool no_err=true;
     no_err=CreateServers();
-    no_err=ServerManager::instance()->LoadConfiguration(cmdl.config_file);
+    if(no_err)
+        no_err=ServerManager::instance()->LoadConfiguration(cmdl.config_file);
     if(no_err)
         no_err=ServerManager::instance()->StartLocalServers();
     if(no_err)
