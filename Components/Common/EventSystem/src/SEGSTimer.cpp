@@ -16,6 +16,8 @@ SEGSTimer::SEGSTimer( EventProcessor *m_processor,void *data,const ACE_Time_Valu
 SEGSTimer::~SEGSTimer()
 {
     cancel();
+    m_target = 0;
+    m_data = 0;
 }
 
 void SEGSTimer::schedule()

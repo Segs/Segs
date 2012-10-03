@@ -1,7 +1,7 @@
 # $Id$
 FIND_PACKAGE(ACE REQUIRED)
 #SET(OpenSceneGraph_DEBUG TRUE)
-FIND_PACKAGE(OpenSceneGraph REQUIRED osgUtil osgText osgViewer)
+FIND_PACKAGE(OpenSceneGraph REQUIRED osgUtil osgText osgViewer osgGA)
 FIND_PACKAGE(Qt COMPONENTS Gui Core REQUIRED)
 
 ################# Qt Ui related ###############################################
