@@ -22,12 +22,18 @@ void InputState::partial_2(BitStream &bs)
     //uint16_t v6;
     uint16_t time_since_prev;
     int v;
+    static char *control_name[] = {"FORWARD",
+                                   "BACK",
+                                   "LEFT",
+                                   "RIGHT",
+                                   "UP",
+                                   "DOWN"};
     do
     {
         if(bs.GetBits(1))
-            control_id=8;
+            control_id = 8;
         else
-            control_id=bs.GetBits(4);
+            control_id = bs.GetBits(4);
 
         if(bs.GetBits(1)) //
             time_since_prev=bs.GetBits(2)+32;
@@ -38,9 +44,9 @@ void InputState::partial_2(BitStream &bs)
             case 0: case 1: case 2:
             case 3: case 4: case 5:
                 // field_38 bits , control_id is the number of the bit
-                fprintf(stderr,"CtrlId %d  : %d - ",control_id,time_since_prev);
-                v = bs.GetBits(1);
-                fprintf(stderr,"P2[%d]:%d\n",control_id,v);
+                fprintf(stderr,"%s  : %d - ",control_name[control_id],time_since_prev);
+                v = bs.GetBits(1); // press release
+                fprintf(stderr,"%d\n",v);
                 break;
             case 6:
             case 7:
