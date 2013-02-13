@@ -10,11 +10,11 @@
 #include "server_support.h"
 ServerStopper::ServerStopper(int signum) // when instantiated adds itself to current reactor
 {
-	ACE_Reactor::instance()->register_handler(signum, this);
+    ACE_Reactor::instance()->register_handler(signum, this);
 }
 
-int ServerStopper::handle_signal (int, siginfo_t *, ucontext_t *)
+int ServerStopper::handle_signal (int, siginfo_t *s_i, ucontext_t *u_c)
 {
-	ACE_Reactor::instance()->end_reactor_event_loop();
-	return 0;
+    exit(0); //TODO: this is not graceful :(
+    return 0;
 }

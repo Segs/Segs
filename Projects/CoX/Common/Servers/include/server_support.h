@@ -12,6 +12,7 @@
 #include <ace/Reactor.h>
 #include <ace/ACE.h>
 #include <ace/Event_Handler.h>
+#include <ace/OS_NS_signal.h>
 
 // this event stops main processing loop of the whole server
 class ServerStopper : public ACE_Event_Handler

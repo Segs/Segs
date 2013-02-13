@@ -6,6 +6,7 @@
  *
  * $Id$
  */
+//#define ACE_NTRACE 0
 
 #include <iostream>
 #include <string>
@@ -21,7 +22,6 @@
 #include <ace/INET_Addr.h>
 #include <ace/SOCK_Connector.h>
 #include <ace/SOCK_Acceptor.h>
-#define ACE_NTRACE 0
 
 #include <ace/Reactor.h>
 #include <ace/TP_Reactor.h>
@@ -86,7 +86,7 @@ static ACE_THR_FUNC_RETURN event_loop (void *arg)
     ACE_Reactor *reactor = static_cast<ACE_Reactor *>(arg);
     ACE_LOG_MSG->clr_flags(ACE_Log_Msg::STDERR);
     ACE_LOG_MSG->set_flags(ACE_Log_Msg::MSG_CALLBACK);
-    ACE_LOG_MSG->priority_mask (LM_DEBUG |LM_ERROR | LM_WARNING| LM_NOTICE | LM_INFO , ACE_Log_Msg::PROCESS);
+    ACE_LOG_MSG->priority_mask (LM_DEBUG |LM_ERROR | LM_WARNING| LM_NOTICE | LM_INFO| LM_TRACE , ACE_Log_Msg::PROCESS);
     ACE_LOG_MSG->msg_callback(&g_logging_object);
 
     reactor->owner (ACE_OS::thr_self ());
@@ -141,6 +141,9 @@ public:
 };
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
+    ACE_Sig_Set interesting_signals;
+    interesting_signals.sig_add(SIGINT);
+    interesting_signals.sig_add(SIGHUP);
     g_logging_object.init_file_log();
 
     CommandLineContents cmdl;
@@ -153,6 +156,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     auto_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes
 
     ServerStopper st; // it'll register itself with current reactor, and shut it down on sigint
+    new_reactor.register_handler(interesting_signals,&st);
     ACE_LOG_MSG->clr_flags(ACE_Log_Msg::STDERR);
     ACE_LOG_MSG->set_flags(ACE_Log_Msg::MSG_CALLBACK);
     ACE_LOG_MSG->priority_mask (LM_DEBUG |LM_ERROR | LM_WARNING| LM_NOTICE | LM_INFO , ACE_Log_Msg::PROCESS);
