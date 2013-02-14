@@ -4,7 +4,7 @@ SET(ACE_debug_lib FALSE CACHE BOOL "Use debug version of ACE")
 SET(ACELIB_extension "")
 
 # TODO: Handle other 'debug-like' configurations here
-IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+IF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     SET(ACE_debug_lib TRUE)
 ENDIF()
 
