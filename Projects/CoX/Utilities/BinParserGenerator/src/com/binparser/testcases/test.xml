@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<file><structure name="SceneStorage"><field mod="ads" name="sceneFile" type="string"/><field name="defs" type="array&lt;Def&gt;"/><field name="key3" type="value3"/></structure>
+	<structure name="TestStorage">
+		<field name=""></field>
+	</structure></file>

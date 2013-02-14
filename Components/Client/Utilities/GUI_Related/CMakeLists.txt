@@ -1,0 +1,5 @@
+# $Id$
+
+#ADD_SUBDIRECTORY(OgrePanel)
+#ADD_SUBDIRECTORY(OgreDShow)
+#ADD_SUBDIRECTORY(Goblin)

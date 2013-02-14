@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<file>
+    <structure name="SceneStorage">
+        <field name="version" type="unsigned int"/>
+        <field mod="4" name="scenefile" type="string"/>
+        <field name="defs" type="array&lt;Def&gt;"/>
+        <field name="mods" type="array&lt;Def&gt;"/>
+        <field name="refs" type="array&lt;Ref&gt;"/>
+   </structure>
+    <structure name="GeoSetInfo">
+        <field mod="6" name="display_name" type="string"/>
+        <field mod="6" name="geo_name" type="string"/>
+        <field mod="6" name="geo" type="string"/>
+        <field mod="6" name="tex1" type="string"/>
+        <field name="dev_only2" type="unsigned int"/>
+   </structure>
+</file>
