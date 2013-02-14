@@ -1,4 +1,3 @@
-# $Id$
 FIND_PACKAGE(ACE REQUIRED)
 #SET(OpenSceneGraph_DEBUG TRUE)
 FIND_PACKAGE(OpenSceneGraph REQUIRED osgUtil osgText osgViewer osgGA)

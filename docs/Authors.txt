@@ -1,5 +1,3 @@
-$Id$
-
 SEGS Developers
 =================
 malign     (malign AT users.sourceforge.net)

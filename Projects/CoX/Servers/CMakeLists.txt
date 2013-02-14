@@ -1,5 +1,3 @@
-# $Id$
-
 SET(UNICODE )
 
 # just testing

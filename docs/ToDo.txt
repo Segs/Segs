@@ -1,5 +1,3 @@
-$Id$
-
 64-bit support? (Fixed? Most 32-bit specific pointers were resolved.)
 Test the software under heavy user load.
 Attempt to monitor system resources when software is in operation and record data.

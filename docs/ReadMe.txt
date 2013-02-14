@@ -1,5 +1,3 @@
-$Id$
-
 SEGS is the Super Entity Game Server. It is a free, open source (under the terms of the BSD License),
 cross-platform, and object-oriented suite of protocols and services. SEGS is written in C++ and allows
 developers to write MMORPG clients with a focus on the superhero-theme. These clients can easily interface

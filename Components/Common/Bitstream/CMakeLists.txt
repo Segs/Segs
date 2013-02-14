@@ -1,6 +1,5 @@
-# $Id$
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/src/BitStream.cpp 
+${CMAKE_CURRENT_SOURCE_DIR}/src/BitStream.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/include/BitStream.h

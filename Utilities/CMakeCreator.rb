@@ -13,8 +13,8 @@ class CMakeFile
         p @current_path
         raise "CMakeLists.txt already exists" if File::exists?(File.join(@current_path,"CMakeLists.txt"))
         fp = File.open(File.join(@current_path,"CMakeLists.txt"),"w")
-        fp<<'# $Id$
-SET(target_CPP
+        fp<<'
+        SET(target_CPP
 )
 SET(target_INCLUDE
 )

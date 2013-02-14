@@ -4,7 +4,6 @@
 * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
 * This software is licensed! (See License.txt for details)
 *
-* $Id$
 */
 
 const char *VersionString="\nsegs v0.2.0 (The People!)\n";
@@ -17,16 +16,16 @@ const char *CopyrightString="\nSuper Entity Game Server\nhttp://segs.sf.net/\nCo
 // Contains version information for the various server modules
 class VersionInfo
 {
-	// Con/Destructors
+    // Con/Destructors
 public:
-	VersionInfo();
-	~VersionInfo();
+    VersionInfo();
+    ~VersionInfo();
 
-	char getAdminVersion(void) const;
-	char getAuthVersion(void) const;
-	char getGameVersion(void) const;
-	char getMapVersion(void) const;
-	char getCopyright(void) const;
+    char getAdminVersion(void) const;
+    char getAuthVersion(void) const;
+    char getGameVersion(void) const;
+    char getMapVersion(void) const;
+    char getCopyright(void) const;
 };
 
 VersionInfo::VersionInfo()
@@ -39,12 +38,12 @@ VersionInfo::~VersionInfo()
 
 char VersionInfo::getAuthVersion(void) const
 {
-	ACE_DEBUG ((LM_INFO, VersionString));   //Will print to console and file
-	return 0; 
+    ACE_DEBUG ((LM_INFO, VersionString));   //Will print to console and file
+    return 0;
 }
 
 char VersionInfo::getCopyright(void) const
 {
-	ACE_DEBUG ((LM_INFO, CopyrightString));   //Will print to console and file
-	return 0;
+    ACE_DEBUG ((LM_INFO, CopyrightString));   //Will print to console and file
+    return 0;
 }

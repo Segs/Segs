@@ -1,5 +1,3 @@
-$Id$
-
 SEGS Developers
 =================
 nemerle    (nemerle AT users.sourceforge.net)

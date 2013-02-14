@@ -1,10 +1,9 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 
 #include <sstream>
@@ -64,7 +63,7 @@ void AccountInfo::reset()
 
 AccountInfo::AccountInfo() : m_access_level(0),m_acc_server_acc_id(0),m_game_server_acc_id(0),m_max_slots(0)
 {
-    
+
 }
 
 bool AccountInfo::fill_game_db( uint64_t )

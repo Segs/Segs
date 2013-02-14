@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 
 #pragma once
@@ -20,38 +19,38 @@ using std::string;
 class DbResultRow
 {
 protected:
-	PGresult *m_result;
-	size_t m_row;
+    PGresult *m_result;
+    size_t m_row;
 public:
-	DbResultRow(PGresult *a,size_t r) : m_result(a),m_row(r){}
-	DbResultRow() : m_result(0),m_row(0){}
+    DbResultRow(PGresult *a,size_t r) : m_result(a),m_row(r){}
+    DbResultRow() : m_result(0),m_row(0){}
 
-	const char *		getColString(const char *column_name);
-			int16_t			getColInt16(const char *column_name);
-			int32_t			getColInt32(const char *column_name);
-			int64_t			getColInt64(const char *column_name);
-			bool		getColBool(const char *column_name);
-			float		getColFloat(const char *column_name);
-			size_t		getColIntArray(const char *column_name,uint32_t *arr,size_t arr_size); // returns the actual number of values
-			size_t		getColFloatArray(const char *column_name,float *arr,size_t arr_size);
-			struct tm   getTimestamp(const char *column_name);
+    const char *		getColString(const char *column_name);
+            int16_t			getColInt16(const char *column_name);
+            int32_t			getColInt32(const char *column_name);
+            int64_t			getColInt64(const char *column_name);
+            bool		getColBool(const char *column_name);
+            float		getColFloat(const char *column_name);
+            size_t		getColIntArray(const char *column_name,uint32_t *arr,size_t arr_size); // returns the actual number of values
+            size_t		getColFloatArray(const char *column_name,float *arr,size_t arr_size);
+            struct tm   getTimestamp(const char *column_name);
 };
 class DbResults
 {
 public:
-	PGresult *m_result;
-	char *m_msg;
-	DbResults();
-	~DbResults();
+    PGresult *m_result;
+    char *m_msg;
+    DbResults();
+    ~DbResults();
 
-	size_t num_rows() {return PQntuples(m_result);};
-	DbResultRow getRow(size_t row);
+    size_t num_rows() {return PQntuples(m_result);};
+    DbResultRow getRow(size_t row);
 };
 class Database
 {
 protected:
-		std::string connect_string;
-		PGconn *    pConnection;     // Pointer to our PostgreSQL connection structure
+        std::string connect_string;
+        PGconn *    pConnection;     // Pointer to our PostgreSQL connection structure
 public:
     // Constructor/Destructor
                         Database();

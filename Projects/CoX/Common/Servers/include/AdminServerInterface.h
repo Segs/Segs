@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 
 #pragma once
@@ -27,49 +26,49 @@ class AccountInfo;
 
 class IMapServer;
 class IGameServer;
-
 class IAdminServer : public RoamingServer
 {
+        typedef ServerHandle<IGameServer> hGameServer;
 public:
-virtual	bool                        Logout(const AccountInfo &client) const=0;
-virtual	bool                        Login(const AccountInfo &client,const ACE_INET_Addr &client_addr)=0;
-virtual	bool                        ValidPassword(const AccountInfo &client, const char *password)=0;
+virtual	bool            Logout(const AccountInfo &client) const=0;
+virtual	bool            Login(const AccountInfo &client,const ACE_INET_Addr &client_addr)=0;
+virtual	bool            ValidPassword(const AccountInfo &client, const char *password)=0;
 
-virtual	bool                        fill_account_info(AccountInfo &client)=0;
-virtual	int                         SaveAccount(const char *username, const char *password)=0;
-virtual	int                         RemoveAccount(AccountInfo &client)=0;
+virtual	bool            fill_account_info(AccountInfo &client)=0;
+virtual	int             SaveAccount(const char *username, const char *password)=0;
+virtual	int             RemoveAccount(AccountInfo &client)=0;
 
-virtual	int                         AddIPBan(const ACE_INET_Addr &client_addr)=0;
-virtual	int                         GetBlockedIpList(std::list<int> &)=0;
-virtual	void                        InvalidGameServerConnection(const ACE_INET_Addr &)=0;
+virtual	int             AddIPBan(const ACE_INET_Addr &client_addr)=0;
+virtual	int             GetBlockedIpList(std::list<int> &)=0;
+virtual	void            InvalidGameServerConnection(const ACE_INET_Addr &)=0;
 
-virtual	ServerHandle<IGameServer>   RegisterMapServer(const ServerHandle<IMapServer> &map_h )=0;
-virtual	int                         GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server )=0;
-
-
+virtual	hGameServer     RegisterMapServer(const ServerHandle<IMapServer> &map_h )=0;
+virtual	int             GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server )=0;
 };
+
 class AdminServerInterface : public Server
 {
+        typedef ServerHandle<IGameServer> hGameServer;
 public:
-	AdminServerInterface(IAdminServer *srv);
-	~AdminServerInterface(void);
+                        AdminServerInterface(IAdminServer *srv);
+                        ~AdminServerInterface(void);
 
-	bool ReadConfig(const std::string &name);
-	bool Run(void);
-	bool ShutDown(const std::string &reason);
+        bool            ReadConfig(const std::string &name);
+        bool            Run(void);
+        bool            ShutDown(const std::string &reason);
 
-    ServerHandle<IGameServer> RegisterMapServer(const ServerHandle<IMapServer> &map_h);
-    int GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server);
+        hGameServer     RegisterMapServer(const ServerHandle<IMapServer> &map_h);
+        int             GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server);
 
 
-	int     GetBlockedIpList(std::list<int> &addreses); // called from auth server during user authentication, might be useful for automatical firewall rules update
-	bool    FillClientInfo(AccountInfo &);
-	bool    Login(AccountInfo &client,const ACE_INET_Addr &client_addr); // Records given 'client' as logged in from 'addr'.
-	int	    SaveAccount(const char *username, const char *password);  // Save account
-	bool    Logout(AccountInfo &client); // Records given 'client' as logged out in from 'addr'.
-	bool    ValidPassword(const AccountInfo &client, const char *password); // If 'pass' is a valid password for client, return true
-	void    InvalidGameServerConnection(const ACE_INET_Addr &from);
-	void    RunCommand(const char *); //magical entry point to internal workings of all the servers ??
+        int             GetBlockedIpList(std::list<int> &addreses);
+        bool            FillClientInfo(AccountInfo &);
+        bool            Login(AccountInfo &client,const ACE_INET_Addr &client_addr);
+        int             SaveAccount(const char *username, const char *password);
+        bool            Logout(AccountInfo &client);
+        bool            ValidPassword(const AccountInfo &client, const char *password);
+        void            InvalidGameServerConnection(const ACE_INET_Addr &from);
+        void            RunCommand(const char *);
 protected:
-	IAdminServer *m_server;
+        IAdminServer *  m_server;
 };
