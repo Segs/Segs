@@ -1,5 +1,3 @@
-# $Id$
-
 SET(UNICODE TRUE)
 
 ADD_SUBDIRECTORY(Common)
