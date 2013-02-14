@@ -4,10 +4,10 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 #include <cassert>
 #include "ServerManager.h"
+//! If called from standalone MapServer it contains it's controlling GameServer interface
 GameServerInterface *ServerManagerC::GetGameServer(size_t idx)
 {
     if(idx>m_GameServers.size())
@@ -17,6 +17,7 @@ GameServerInterface *ServerManagerC::GetGameServer(size_t idx)
 ServerManagerC::ServerManagerC() : m_authserv(NULL),m_adminserv(NULL)
 {
 }
+//! this loads this process configuration
 bool ServerManagerC::LoadConfiguration(const std::string &config_file_full_path)
 {
     m_adminserv->ReadConfig(config_file_full_path);
@@ -31,8 +32,9 @@ bool ServerManagerC::LoadConfiguration(const std::string &config_file_full_path)
     }
     return true;
 }
-bool ServerManagerC::StartLocalServers()
 
+//! this function will create all server instances local to this process
+bool ServerManagerC::StartLocalServers()
 {
     m_adminserv->Run();
     m_authserv->Run();
@@ -66,6 +68,7 @@ AuthServerInterface *ServerManagerC::GetAuthServer(void)
 {
     return m_authserv;
 }
+//! using configuration info, this will connect all remote servers to their local proxy objects
 bool ServerManagerC::CreateServerConnections()
 {
     return true; // for now, this is just a stub

@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 
 #pragma once
@@ -17,29 +16,29 @@
 class CostumePart : public NetStructure
 {
 public:
-	// Part 6 : Hair
-	// Part 0 : Lower Body
-	// Part 1 : Upper Body
-	// Part 2 : Head
-	// Part 3 : Gloves
-	// Part 4 : Boots
-	CostumePart(bool full_part,uint8_t part_type=0):m_type(part_type),m_full_part(full_part)
-	{
-		m_colors[0]=m_colors[1];
-	}
-	CostumePart(uint8_t type,const std::string &a,const std::string &b,const std::string &c,const std::string &d,uint32_t c1,uint32_t c2)
-		:m_type(type),name_0(a),name_1(b),name_2(c),name_3(d)
-	{
-		m_colors[0]=c1;
-		m_colors[1]=c2;
+    // Part 6 : Hair
+    // Part 0 : Lower Body
+    // Part 1 : Upper Body
+    // Part 2 : Head
+    // Part 3 : Gloves
+    // Part 4 : Boots
+    CostumePart(bool full_part,uint8_t part_type=0):m_type(part_type),m_full_part(full_part)
+    {
+        m_colors[0]=m_colors[1];
+    }
+    CostumePart(uint8_t type,const std::string &a,const std::string &b,const std::string &c,const std::string &d,uint32_t c1,uint32_t c2)
+        :m_type(type),name_0(a),name_1(b),name_2(c),name_3(d)
+    {
+        m_colors[0]=c1;
+        m_colors[1]=c2;
         }
-	void serializeto(BitStream &bs) const;
-	void serializefrom(BitStream &bs);
-	void serializeto_charsel(BitStream &bs) const;
-	uint8_t m_type; // arms/legs etc..
-	std::string name_0,name_1,name_2,name_3,name_4,name_5,name_6;
-	bool m_full_part;
-	uint32_t m_colors[2];
+    void serializeto(BitStream &bs) const;
+    void serializefrom(BitStream &bs);
+    void serializeto_charsel(BitStream &bs) const;
+    uint8_t m_type; // arms/legs etc..
+    std::string name_0,name_1,name_2,name_3,name_4,name_5,name_6;
+    bool m_full_part;
+    uint32_t m_colors[2];
 };
 
 class Costume : public NetStructure

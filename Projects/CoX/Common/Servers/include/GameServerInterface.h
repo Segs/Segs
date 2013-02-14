@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 
 #pragma once
@@ -35,29 +34,29 @@ virtual EventProcessor *        event_target()=0;
 class GameServerInterface : public IGameServer
 {
 public:
-	GameServerInterface(IGameServer *mi) : m_instance(mi){};
-	~GameServerInterface(void){};
-	//uint32_t GetClientCookie(const ACE_INET_Addr &client_addr);
-	bool					ReadConfig(const std::string &name); //! later name will be used to read GameServer specific configuration
-	bool					Run(void);
-	bool					ShutDown(const std::string &reason);
+    GameServerInterface(IGameServer *mi) : m_instance(mi){};
+    ~GameServerInterface(void){};
+    //uint32_t GetClientCookie(const ACE_INET_Addr &client_addr);
+    bool					ReadConfig(const std::string &name); //! later name will be used to read GameServer specific configuration
+    bool					Run(void);
+    bool					ShutDown(const std::string &reason);
 
-	int						getAccessKeyForServer(const ServerHandle<IMapServer> &h_map);
-	bool					isMapServerReady(const ServerHandle<IMapServer> &h_map);
+    int						getAccessKeyForServer(const ServerHandle<IMapServer> &h_map);
+    bool					isMapServerReady(const ServerHandle<IMapServer> &h_map);
 
-	bool					isLocal(){return true;} //! this method returns true if this interface is a local ( same process )
-	bool					Online();
-	const ACE_INET_Addr &	getAddress();
+    bool					isLocal(){return true;} //! this method returns true if this interface is a local ( same process )
+    bool					Online();
+    const ACE_INET_Addr &	getAddress();
 
-	uint8_t						getId();
-	uint16_t					getCurrentPlayers();
-	uint16_t					getMaxPlayers();
-	uint8_t						getUnkn1();
-	uint8_t						getUnkn2();
-	std::string				getName();
+    uint8_t						getId();
+    uint16_t					getCurrentPlayers();
+    uint16_t					getMaxPlayers();
+    uint8_t						getUnkn1();
+    uint8_t						getUnkn2();
+    std::string				getName();
 
     EventProcessor *        event_target(); // this is the main communication point for the Game Server instance
 
 protected:
-	IGameServer *m_instance;
+    IGameServer *m_instance;
 };

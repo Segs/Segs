@@ -1,4 +1,3 @@
-# $Id$
 OPTION(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
 IF(BUILD_COX_MAP_VIEWER)
   ADD_SUBDIRECTORY(MapViewer)

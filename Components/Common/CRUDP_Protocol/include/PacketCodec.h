@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 
 /************************************************************************
@@ -31,12 +30,12 @@ using namespace CryptoPP;
 #endif
 #include "Base.h"
 
-class PacketCodecNull 
+class PacketCodecNull
 {
 public:
-	static uint32_t  Checksum(const uint8_t *buf,size_t size);
-	void Decrypt(uint8_t * /*arr*/,size_t /*size*/){};
-	void Encrypt(uint8_t * /*arr*/,size_t /*size*/){};
-	void StartEncryption(uint8_t * /*other_public_key*/){};
+    static uint32_t  Checksum(const uint8_t *buf,size_t size);
+    void Decrypt(uint8_t * /*arr*/,size_t /*size*/){};
+    void Encrypt(uint8_t * /*arr*/,size_t /*size*/){};
+    void StartEncryption(uint8_t * /*other_public_key*/){};
 
 };

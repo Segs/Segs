@@ -1,4 +1,3 @@
-# $Id$
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/EventProcessor.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/SEGSTimer.cpp

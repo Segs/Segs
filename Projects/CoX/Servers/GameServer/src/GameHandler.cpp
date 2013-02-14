@@ -187,7 +187,7 @@ void GameHandler::on_expect_client( ExpectClient *ev )
     uint32_t cookie = m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
     // let the client object know how can it access database
     m_clients.getExpectedByCookie(cookie)->setServer(this->m_server);
-        ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
+    ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
 }
 void GameHandler::checkClientConnection(uint64_t id)
 {
