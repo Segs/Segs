@@ -1,4 +1,3 @@
-# $Id$
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Auth.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/AuthFSM.cpp
@@ -20,5 +19,5 @@ ${target_INCLUDE}
 )
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 
-#ADD_LIBRARY(Auth STATIC ${target_SOURCES})
+ADD_LIBRARY(AuthEx1 STATIC ${target_SOURCES})
 SEGS_REGISTER_COMPONENT(Auth "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
