@@ -166,6 +166,8 @@ void EntitiesResponse::sendServerControlState(BitStream &bs) const
 {
     Vector3 pos(-60.5,0,180);
     Vector3 zeroes;
+    bool m_flying=false;
+    bool m_dazed=false;
     // user entity
     Entity *ent = m_client->char_entity();
     CscCommon_Sub28 struct_csc;
@@ -174,15 +176,15 @@ void EntitiesResponse::sendServerControlState(BitStream &bs) const
     bs.StoreBits(1,update_part_1);
     if(update_part_1)
     {
-        bs.StoreBits(8,0); // value stored in control state field_134
+        bs.StoreBits(8,rand()&0xFF); // value stored in control state field_134
         NetStructure::storeVector(bs,pos);
 
 //        bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); // Vector3
-        bs.StoreFloat(0.0f);
+        bs.StoreFloat(0.5f); // speed rel back
         bs.StoreBitArray((uint8_t *)&struct_csc,sizeof(CscCommon_Sub28)*8);
         bs.StoreFloat(0.0f);
-        bs.StoreBits(1,0); // key push bits ??
-        bs.StoreBits(1,0); // key push bits ??
+        bs.StoreBits(1,m_flying); // key push bits ??
+        bs.StoreBits(1,m_dazed); // key push bits ??
         bs.StoreBits(1,0); // key push bits ??
         bs.StoreBits(1,0); // key push bits ??
         bs.StoreBits(1,0); // key push bits ??

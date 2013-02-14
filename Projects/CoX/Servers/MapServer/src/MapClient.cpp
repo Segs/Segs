@@ -12,7 +12,6 @@ void MapClient::AddShortcut(int index, NetCommand *command)
     if(m_shortcuts.find(index)!=m_shortcuts.end())
     {
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Replacing command %d %s->%s\n"),index,m_shortcuts[index]->m_name.c_str(),command->m_name.c_str()));
-
     }
     m_shortcuts[index]=command;
 }

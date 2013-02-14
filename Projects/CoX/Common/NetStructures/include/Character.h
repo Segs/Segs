@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 
 #pragma once
@@ -25,6 +24,8 @@ struct ClientOption
         t_int = 1,
         t_string = 2,
         t_float = 3,
+        t_quant_angle = 5,
+        t_vec3 = 7,
         t_unknown
     };
     struct Arg

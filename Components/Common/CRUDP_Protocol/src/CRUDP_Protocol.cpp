@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 
 //#include "GameProtocol.h"
@@ -72,8 +71,10 @@ void CrudP_Protocol::clearQueues(bool recv_queue,bool send_queue)
 void CrudP_Protocol::ReceivedBlock(BitStream &src)
 {
     CrudP_Packet *res=NULL;
+    //fprintf(stderr,"Recv block %d\n",src.GetReadableDataSize());
     if(src.GetReadableDataSize()<12)
         return;
+
     uint32_t bitlength,checksum,sibcount;
 
     src.Get(bitlength);
@@ -87,6 +88,7 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
     uint32_t realcsum  = PacketCodecNull::Checksum((uint8_t*)src.read_ptr(),src.GetReadableDataSize());
     if(realcsum!=checksum)
     {
+        ACE_ERROR((LM_WARNING,ACE_TEXT("Checksum error.\n")));
         return;
     }
     res	= new CrudP_Packet; //PacketFactory::newDataPacket;
