@@ -1,3 +1,7 @@
+# common cmake build directories
+build/
+bld/
+
 # Compiled Object files
 *.slo
 *.lo
