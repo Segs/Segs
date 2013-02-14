@@ -4,7 +4,7 @@
 * Copyright (c) 2009 Super Entity Game Server Team (see Authors.txt)
 * This software is licensed! (See License.txt for details)
 *
-* $Id$
+
 */
 #include <ace/ACE.h>
 #include "HashStorage.h"
@@ -98,10 +98,11 @@ void UpdateCharacter::serializefrom( BitStream &bs )
 
 void CharacterResponse::serializeto( BitStream &bs ) const
 {
-    assert(m_client->getCharacter(m_index));
+    Character *indexed_character = m_client->getCharacter(m_index);
     CharacterCostume *c=0;
-    if(m_client->getCharacter(m_index)->getName().compare("EMPTY")!=0) // actual character was read from db
-        c=static_cast<CharacterCostume *>(m_client->getCharacter(m_index)->getCurrentCostume());
+    assert(indexed_character);
+    if(indexed_character->getName().compare("EMPTY")!=0) // actual character was read from db
+        c=static_cast<CharacterCostume *>(indexed_character->getCurrentCostume());
     bs.StorePackedBits(1,6); // opcode
 
     if(c)

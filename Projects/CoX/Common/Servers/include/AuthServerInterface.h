@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 
 #pragma once
@@ -39,10 +38,10 @@ public:
         bool        Run(void);
         bool        ShutDown(const std::string &reason);
 
-	AuthClient *GetClientByLogin(const char *);
+    AuthClient *GetClientByLogin(const char *);
 
         tAdminHandle AuthenticateMapServer(const tMapHandle &map,int version,const std::string &passw);
 
 protected:
-	IAuthServer *m_server;
+    IAuthServer *m_server;
 };

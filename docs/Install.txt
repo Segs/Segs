@@ -1,5 +1,3 @@
-$Id$
-
 These instructions are for building SEGS from source. If you are using pre-built binaries,
 you can skip below and go to the configuration section.
 

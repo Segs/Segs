@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
+ 
  */
 
 #include "Entity.h"
@@ -54,7 +54,7 @@ void EntityManager::sendEntities( BitStream &tgt ) const
         }
         while(iter!=m_entlist.end())
         {
-                assert(!"Only one for now");
+                //assert(!"Only one for now");
                 pEnt = *iter;
                 delta = pEnt->getIdx()-last_idx -1;
                 tgt.StorePackedBits(1,delta);

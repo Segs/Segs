@@ -1,4 +1,3 @@
-# $Id$
 ADD_SUBDIRECTORY(StaticStorage)
 ADD_SUBDIRECTORY(NetStructures)
 ADD_SUBDIRECTORY(Servers)

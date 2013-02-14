@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 
 #pragma once
@@ -29,12 +28,12 @@ public:
                                 MapServerInterface(IMapServer *mi) : m_instance(mi){}
                                 ~MapServerInterface(void){}
 
-	bool                    ReadConfig(const std::string &name); // later name will be used to read GameServer specific configuration
-	bool                    Run(void);
-	bool                    ShutDown(const std::string &reason);
-	bool                    isLocal(){return true;} // this method returns true if this interface is a local ( same process )
-	bool                    Online();
-	EventProcessor *        event_target();
+    bool                    ReadConfig(const std::string &name); // later name will be used to read GameServer specific configuration
+    bool                    Run(void);
+    bool                    ShutDown(const std::string &reason);
+    bool                    isLocal(){return true;} // this method returns true if this interface is a local ( same process )
+    bool                    Online();
+    EventProcessor *        event_target();
         const ACE_INET_Addr &   getAddress();
 
 protected:

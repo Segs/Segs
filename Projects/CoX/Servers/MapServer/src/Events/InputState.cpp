@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -22,7 +21,7 @@ void InputState::partial_2(BitStream &bs)
     //uint16_t v6;
     uint16_t time_since_prev;
     int v;
-    static char *control_name[] = {"FORWARD",
+    static const char *control_name[] = {"FORWARD",
                                    "BACK",
                                    "LEFT",
                                    "RIGHT",
@@ -239,7 +238,7 @@ void InputState::recv_client_opts(BitStream &bs)
                     *((float *)arg.tgt)=bs.GetFloat();
                     break;
                 }
-                case 5:
+                case ClientOption::t_quant_angle:
                 {
                     printf("Quant:%d\n",bs.GetBits(14)); //quantized angle
                     break;
@@ -251,7 +250,7 @@ void InputState::recv_client_opts(BitStream &bs)
                     bs.GetString(v);
                     break;
                 }
-                case 7:
+                case ClientOption::t_vec3:
                 {
                     for (int j = 0; j < 3; ++j )
                     {

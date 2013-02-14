@@ -1,5 +1,3 @@
-$Id$
-
 SEGS: CoX Project End-User License Agreement / Legal Stuff
 
 SEGS: CoX Project has been built with education as the main target. Thus, you may 

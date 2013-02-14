@@ -1,4 +1,3 @@
-# $Id$
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CRUDP_Packet.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CRUDP_Protocol.cpp

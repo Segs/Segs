@@ -1,5 +1,3 @@
-# $Id$
-
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/CostumeStructure.cpp

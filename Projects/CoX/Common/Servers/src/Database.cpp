@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- * $Id$
  */
 
 // This module contains code to access our database where accounts and characters are stored
@@ -26,7 +25,7 @@
 Database::Database()
 {
     pConnection=0;
-};
+}
 void Database::setConnectionConfiguration(const char *host,const char *port,const char *db,const char *user,const char *passw)
 {
     std::stringstream res;
@@ -119,8 +118,6 @@ DbResultRow DbResults::getRow(size_t row)
         return DbResultRow(); // uninitialized row is returned here
     return DbResultRow(m_result,row);
 }
-
-
 
 const char *DbResultRow::getColString(const char *column_name)
 {
