@@ -31,6 +31,6 @@ virtual bool    Online()=0;
 protected:
         AuthServerInterface *	getAuthServer();
 private:
-                ACE_INET_Addr           m_authaddr;
-                std::string             m_passw;
+        ACE_INET_Addr           m_authaddr;
+        std::string             m_passw;
 };
