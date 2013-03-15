@@ -22,6 +22,13 @@ public:
     }
     void sendCommands(BitStream &tgt) const
     {
+        static int hour = 10;
+        tgt.StorePackedBits(1,1); // use 'time' shortcut
+        tgt.StoreFloat((hour++)/10.0f);
+        tgt.StorePackedBits(1,2); // use 'time scale' shortcut
+        tgt.StoreFloat(8.0f);
+        tgt.StorePackedBits(1,3); // use 'time step scale' shortcut
+        tgt.StoreFloat(4.0f);
         tgt.StorePackedBits(1,m_num_commands);
     }
     virtual void serializeto(BitStream &tgt) const;
@@ -33,9 +40,6 @@ public:
     bool m_interpolating;
     uint32_t abs_time;
     uint32_t db_time;
-    uint32_t u1;
-    uint32_t u2;
-    uint32_t u3;
     uint16_t m_debug_idx;
     uint8_t m_interpolation_level;
     uint8_t m_interpolation_bits;

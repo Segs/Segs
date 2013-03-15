@@ -22,7 +22,7 @@ SEGS_ADD_COMPONENT(static_storage LIB)
 SEGS_ADD_COMPONENT(adminserver_lib LIB)
 SEGS_ADD_COMPONENT(gameserver_lib LIB)
 SEGS_ADD_COMPONENT(mapserver_lib LIB)
-
+SEGS_ADD_COMPONENT(MRuby LIB)
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 
 SET (target_SOURCES
@@ -30,9 +30,7 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 
-FIND_PACKAGE(ACE REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
-FIND_PACKAGE(POSTGRE REQUIRED)
 #FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LIBRARIES is not a cache variable, so we  have to do this here again
 
 ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
@@ -43,7 +41,8 @@ IF(BUILD_SEPARATE)
         ACE_ADD_LIBRARIES(authserver ACE)
     TARGET_LINK_LIBRARIES(authserver
         ${target_DEPENDS} authserver_lib
-        ${PGSQL_lib}
+        ${PostgreSQL_LIBRARIES}
+        ${MRuby_LIBRARY}
         ${ZLIB_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
 #        ${Boost_LIBRARIES}

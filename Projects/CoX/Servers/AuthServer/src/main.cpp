@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 //#define ACE_NTRACE 0
 
@@ -41,6 +41,9 @@
 #include "MapServer.h"
 #include "GameServer.h"
 //////////////////////////////////////////////////////////////////////////
+
+/** \brief The LogCallback class
+*/
 class LogCallback : public ACE_Log_Msg_Callback
 {
     std::ofstream m_tgt_file_stream;
@@ -139,8 +142,11 @@ public:
         return 0;
     }
 };
+#include "MRubyEngine.h"
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
+//    MRubyEngine za;
+//    za.initialize();
     ACE_Sig_Set interesting_signals;
     interesting_signals.sig_add(SIGINT);
     interesting_signals.sig_add(SIGHUP);

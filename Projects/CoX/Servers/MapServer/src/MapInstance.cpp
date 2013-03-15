@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #include "MapInstance.h"
@@ -55,7 +55,8 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->var_14=1;
     res->m_outdoor_map=1;//0;
     res->m_map_number=1;
-    res->m_map_desc="maps/City_Zones/City_00_01/City_00_01.txt";
+    //"maps/City_Zones/City_00_01/City_00_01.txt";
+    res->m_map_desc="maps/City_Zones/City_01_01/City_01_01.txt";
     res->current_map_flags=1; //off 1
     res->unkn1=1;
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
@@ -71,9 +72,11 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl = lnk->client_data();
     srand(time(0));
-    cl->char_entity()->pos.v[0]=-60.5;
-    cl->char_entity()->pos.v[1]=0;
-    cl->char_entity()->pos.v[2]=180;
+    cl->char_entity()->pos.x=128.0; //-60.5;
+    cl->char_entity()->pos.y=16; //0;
+    cl->char_entity()->pos.z=-198; //180;
+    cl->char_entity()->qrot.vals.x=1.0f;
+    cl->char_entity()->qrot.vals.amount=1.0f;// - (rand()&0xFF)/255.0;
 
     m_clients.push_back(cl); // add to the list of clients interested in world updates
     if(m_world_update_timer==0) // start map timer on this event
@@ -88,7 +91,7 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     res->unkn1=false;
     res->m_num_commands=0;
     res->abs_time = (uint32_t)timecount++;
-    res->unkn2=true; // default parameters for first flags
+    res->unkn2=false; // default parameters for first flags
     lnk->putq(res);
 }
 //! Handle instance-wide timers
@@ -103,13 +106,16 @@ void MapInstance::on_timeout(TimerEvent */*ev*/)
     for(;iter!=end; ++iter)
     {
         cl=*iter;
-        cl->char_entity()->m_create=only_first;
-        assert(cl->char_entity()->pos.x==-60.5);
-        cl->char_entity()->pos.x=-60.5;
-        cl->char_entity()->pos.y=0;
-        cl->char_entity()->pos.z=180;
+        cl->char_entity()->pos.x=128.0; //-60.5;
+        cl->char_entity()->pos.y=16; //0;
+        cl->char_entity()->pos.z=-198; //180;
+
+//        cl->char_entity()->pos.x=-60.5;
+//        cl->char_entity()->pos.y=0+(rand()&0xFF)/255.0;
+//        cl->char_entity()->pos.z=180;
         cl->char_entity()->qrot.vals.x=1.0f;
         cl->char_entity()->qrot.vals.amount=1.0f;// - (rand()&0xFF)/255.0;
+        cl->char_entity()->m_create=only_first;
         EntitiesResponse *res=new EntitiesResponse(cl);
         res->entReceiveUpdate=true;
         res->is_incremental(true); // incremental world update = op 2
@@ -136,5 +142,6 @@ void MapInstance::on_input_state(InputState *st)
     Entity *ent = cl->char_entity();
     Vector3 pos;
     ent->setInputState(pos,st->pyr());
+    ent->m_input_ack = st->someOtherbits;
     //TODO: do something here !
 }
