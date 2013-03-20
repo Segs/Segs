@@ -24,6 +24,7 @@ public:
                 break;
             }
         }
+        return 0;
     }
     ACE_Future<int> ping();
 private:
