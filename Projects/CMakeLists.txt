@@ -1,5 +1,5 @@
-SET(BUILD_CoX TRUE CACHE BOOL "Should the CoX emulation be built?")
-SET(BUILD_Examples FALSE CACHE BOOL "Should the Example Projects be built?")
+OPTION(BUILD_CoX "Should the CoX emulation be built?" ON )
+OPTION(BUILD_Examples "Should the Example Projects be built?" OFF)
 
 IF(BUILD_CoX)
         ADD_SUBDIRECTORY(CoX)

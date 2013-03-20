@@ -90,7 +90,6 @@ public:
         size_t m_update_idx;
         std::string m_battle_cry;
         std::string m_character_description;
-        uint32_t field_E30;
         bool var_B4;
 
         Character   m_char;
@@ -109,11 +108,9 @@ public:
         uint8_t                 m_origin_idx,m_class_idx;
         uint8_t                 m_type;
         uint32_t                m_idx;
-        uint32_t                var_8C;
-        uint32_t                var_90;
+        uint32_t                m_input_ack;
         bool                    player_type;
         bool                    m_player_villain;
-        uint32_t                var_1190;
         bool                    var_129C;
 
                                 Entity();

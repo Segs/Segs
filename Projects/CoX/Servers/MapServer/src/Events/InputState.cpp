@@ -121,8 +121,8 @@ void InputState::extended_input(BitStream &bs)
 #endif
     if(bs.GetBits(1))//if ( abs(s_prevTime - ms_time) < 1000 )
     {
-        m_A_ang11_propably = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[0]);
-        m_B_ang11_propably = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[1]);
+        m_A_ang11_probably = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[0]);
+        m_B_ang11_probably = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[1]);
 #ifdef DEBUG_INPUT
         fprintf(stderr,"%x : %x",v1,v2);
 #endif
@@ -219,7 +219,7 @@ void InputState::recv_client_opts(BitStream &bs)
     ClientOption *entry;
     int opt_idx=0;
     int some_idx = bs.GetPackedBits(1);
-    entry=opts.get(opt_idx);
+    entry=opts.get(opt_idx)-1;
     Vector3 vec;
     while(some_idx!=0)
     {
@@ -262,7 +262,7 @@ void InputState::recv_client_opts(BitStream &bs)
                     continue;
             }
         }
-        some_idx = bs.GetPackedBits(1);
+        some_idx = bs.GetPackedBits(1)-1;
         opt_idx++;
         entry=opts.get(opt_idx);
     }

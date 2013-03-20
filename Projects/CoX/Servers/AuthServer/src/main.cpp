@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 //#define ACE_NTRACE 0
 
@@ -41,6 +41,9 @@
 #include "MapServer.h"
 #include "GameServer.h"
 //////////////////////////////////////////////////////////////////////////
+
+/** \brief The LogCallback class
+*/
 class LogCallback : public ACE_Log_Msg_Callback
 {
     std::ofstream m_tgt_file_stream;

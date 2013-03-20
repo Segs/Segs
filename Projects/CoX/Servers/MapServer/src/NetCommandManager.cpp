@@ -18,40 +18,40 @@ static void FillCommands()
     args.push_back(arg1);
     vector<NetCommand::Argument> fargs;
     fargs.push_back(arg_1float);
-    cmd_manager->addCommand(new NetCommand(9,"controldebug",args));
-    cmd_manager->addCommand(new NetCommand(9,"nostrafe",args));
-    cmd_manager->addCommand(new NetCommand(9,"alwaysmobile",args));
-    cmd_manager->addCommand(new NetCommand(9,"repredict",args));
-    cmd_manager->addCommand(new NetCommand(9,"neterrorcorrection",args));
-    cmd_manager->addCommand(new NetCommand(9,"speed_scale",fargs));
-    cmd_manager->addCommand(new NetCommand(9,"svr_lag",args));
-    cmd_manager->addCommand(new NetCommand(9,"svr_lag_vary",args));
-    cmd_manager->addCommand(new NetCommand(9,"svr_pl",args));
-    cmd_manager->addCommand(new NetCommand(9,"svr_oo_packets",args));
-    cmd_manager->addCommand(new NetCommand(9,"client_pos_id",args));
-    cmd_manager->addCommand(new NetCommand(9,"atest0",args));
-    cmd_manager->addCommand(new NetCommand(9,"atest1",args));
-    cmd_manager->addCommand(new NetCommand(9,"atest2",args));
-    cmd_manager->addCommand(new NetCommand(9,"atest3",args));
-    cmd_manager->addCommand(new NetCommand(9,"atest4",args));
-    cmd_manager->addCommand(new NetCommand(9,"atest5",args));
-    cmd_manager->addCommand(new NetCommand(9,"atest6",args));
-    cmd_manager->addCommand(new NetCommand(9,"atest7",args));
-    cmd_manager->addCommand(new NetCommand(9,"atest8",args));
-    cmd_manager->addCommand(new NetCommand(9,"atest9",args));
-    cmd_manager->addCommand(new NetCommand(9,"predict",args));
-    cmd_manager->addCommand(new NetCommand(9,"notimeout",args)); // unknown-10,argtype-1
-    cmd_manager->addCommand(new NetCommand(9,"selected_ent_server_index",args));
-    cmd_manager->addCommand(new NetCommand(9,"record_motion",args));
+//    cmd_manager->addCommand(new NetCommand(9,"controldebug",args));
+//    cmd_manager->addCommand(new NetCommand(9,"nostrafe",args));
+//    cmd_manager->addCommand(new NetCommand(9,"alwaysmobile",args));
+//    cmd_manager->addCommand(new NetCommand(9,"repredict",args));
+//    cmd_manager->addCommand(new NetCommand(9,"neterrorcorrection",args));
+//    cmd_manager->addCommand(new NetCommand(9,"speed_scale",fargs));
+//    cmd_manager->addCommand(new NetCommand(9,"svr_lag",args));
+//    cmd_manager->addCommand(new NetCommand(9,"svr_lag_vary",args));
+//    cmd_manager->addCommand(new NetCommand(9,"svr_pl",args));
+//    cmd_manager->addCommand(new NetCommand(9,"svr_oo_packets",args));
+//    cmd_manager->addCommand(new NetCommand(9,"client_pos_id",args));
+//    cmd_manager->addCommand(new NetCommand(9,"atest0",args));
+//    cmd_manager->addCommand(new NetCommand(9,"atest1",args));
+//    cmd_manager->addCommand(new NetCommand(9,"atest2",args));
+//    cmd_manager->addCommand(new NetCommand(9,"atest3",args));
+//    cmd_manager->addCommand(new NetCommand(9,"atest4",args));
+//    cmd_manager->addCommand(new NetCommand(9,"atest5",args));
+//    cmd_manager->addCommand(new NetCommand(9,"atest6",args));
+//    cmd_manager->addCommand(new NetCommand(9,"atest7",args));
+//    cmd_manager->addCommand(new NetCommand(9,"atest8",args));
+//    cmd_manager->addCommand(new NetCommand(9,"atest9",args));
+//    cmd_manager->addCommand(new NetCommand(9,"predict",args));
+//    cmd_manager->addCommand(new NetCommand(9,"notimeout",args)); // unknown-10,argtype-1
+//    cmd_manager->addCommand(new NetCommand(9,"selected_ent_server_index",args));
+//    cmd_manager->addCommand(new NetCommand(9,"record_motion",args));
 
-    cmd_manager->addCommand(new NetCommand(9,"time",fargs)); // unknown = 12
-    cmd_manager->addCommand(new NetCommand(9,"timescale",fargs)); // unknown = 13
-    cmd_manager->addCommand(new NetCommand(9,"timestepscale",fargs)); // unknown = 14
-    cmd_manager->addCommand(new NetCommand(9,"pause",args));
-    cmd_manager->addCommand(new NetCommand(9,"disablegurneys",args));
-    cmd_manager->addCommand(new NetCommand(9,"nodynamiccollisions",args));
-    cmd_manager->addCommand(new NetCommand(9,"noentcollisions",args));
-    cmd_manager->addCommand(new NetCommand(9,"pvpmap",args)); // unknown 16
+    cmd_manager->addCommand(new NetCommand(3,"time",fargs)); // unknown = 12
+    cmd_manager->addCommand(new NetCommand(3,"timescale",fargs)); // unknown = 13
+    cmd_manager->addCommand(new NetCommand(3,"timestepscale",fargs)); // unknown = 14
+    cmd_manager->addCommand(new NetCommand(3,"pause",args));
+    cmd_manager->addCommand(new NetCommand(3,"disablegurneys",args));
+//    cmd_manager->addCommand(new NetCommand(9,"nodynamiccollisions",args));
+//    cmd_manager->addCommand(new NetCommand(9,"noentcollisions",args));
+//    cmd_manager->addCommand(new NetCommand(9,"pvpmap",args)); // unknown 16
 }
 int NetCommand::serializefrom( BitStream &bs )
 {
@@ -138,6 +138,12 @@ void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands,
 }
 void NetCommandManager::SendCommandShortcuts( MapClient *client,BitStream &tgt,const vector<NetCommand *> &commands2 )
 {
+    static bool initialized=false;
+    if(!initialized)  {
+        initialized=true;
+        FillCommands();
+    }
+
     switch(client->account_info().access_level())
     {
         case 0:
