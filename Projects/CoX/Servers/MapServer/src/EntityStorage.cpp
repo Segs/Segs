@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #include "Entity.h"
@@ -19,11 +19,22 @@ EntityManager::EntityManager()
 void EntityManager::sendDebuggedEntities( BitStream &tgt ) const
 {
         tgt.StorePackedBits(10,0); // index of debugged entity
+        return ;
+        //Send debug info
+
 }
 
 void EntityManager::sendGlobalEntDebugInfo( BitStream &tgt ) const
 {
         tgt.StoreBits(1,0); // nothing here for now
+        // first while loop here
+        tgt.StoreBits(1,0);
+        // second while loop here
+        tgt.StoreBits(1,0);
+        // if here
+        // players in zone and such
+        tgt.StoreBits(1,0);
+        // third while loop here
 }
 
 void EntityManager::sendDeletes( BitStream &tgt ) const

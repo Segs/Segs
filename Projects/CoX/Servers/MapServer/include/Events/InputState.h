@@ -11,6 +11,7 @@
 #include "CommonNetStructures.h"
 class InputState : public MapLinkEvent
 {
+public:
     uint8_t m_csc_deltabits;
     bool m_send_deltas;
     uint16_t controlBits;
@@ -18,7 +19,7 @@ class InputState : public MapLinkEvent
     void *current_state_P;
     Vector3 camera_pyr;
     int m_t1,m_t2;
-    int m_A_ang11_propably,m_B_ang11_propably;
+    int m_A_ang11_probably,m_B_ang11_probably;
 
 public:
     InputState() : MapLinkEvent(MapEventTypes::evInputState)

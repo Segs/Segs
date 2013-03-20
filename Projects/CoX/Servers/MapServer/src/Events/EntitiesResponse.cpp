@@ -15,8 +15,11 @@ EntitiesResponse::EntitiesResponse(MapClient *cl) :
     m_client = cl;
     abs_time=db_time=0;
     unkn2=false;
-    debug_info=false;
+    debug_info=true;
     m_incremental=false;
+    m_interpolating=true;
+    m_interpolation_level = 2;
+    m_interpolation_bits=1;
     //m_interpolation_level
 
 }
@@ -126,33 +129,24 @@ void EntitiesResponse::sendControlState(BitStream &bs) const
 void EntitiesResponse::sendServerPhysicsPositions(BitStream &bs) const
 {
     static int idx=0;
-    if(false)
-    {
-        bs.StoreBits(1,0);
-        bs.StoreBits(1,0);
-    }
-    else
-    {
-        bool full_update=true;
-        bs.StoreBits(1,full_update); // sending full update
-        if(full_update==false)
-        {
-            // this is a part of || statement, so if full_update==true, the second bit is not received
-            bs.StoreBits(1,1); // copy state from previous step
-        }
-        bs.StoreBits(16,idx++);
-        if(full_update)
-        {
-            bs.StoreFloat(-60.5f); // server position
-            bs.StoreFloat(0.0f);
-            bs.StoreFloat(180.0f);
-            bs.StoreBits(1,0); // Vector3 - no data - StoreFloatOptional
-            bs.StoreBits(1,0);
-            bs.StoreBits(1,0);
-        }
+    Entity * target = m_client->char_entity();
+    bool full_update = true;
+    bool has_control_id = true;
 
+    bs.StoreBits(1,full_update);
+    if( !full_update )
+        bs.StoreBits(1,has_control_id);
+    if( full_update || has_control_id)
+        bs.StoreBits(16,idx++); //target->m_input_ack
+    if(full_update)
+    {
+        bs.StoreFloat(target->pos.x); // server position
+        bs.StoreFloat(target->pos.y);
+        bs.StoreFloat(target->pos.z);
+        NetStructure::storeFloatConditional(bs,0.0f); // PYR rotation ?
+        NetStructure::storeFloatConditional(bs,0.0f);
+        NetStructure::storeFloatConditional(bs,0.0f);
     }
-
 }
 struct EntWalkRel
 {
@@ -164,20 +158,22 @@ struct CscCommon_Sub28
 };
 void EntitiesResponse::sendServerControlState(BitStream &bs) const
 {
-    Vector3 pos(-60.5,0,180);
+    Vector3 spd(0.5,0.5,0.5);
     Vector3 zeroes;
     bool m_flying=false;
     bool m_dazed=false;
     // user entity
     Entity *ent = m_client->char_entity();
     CscCommon_Sub28 struct_csc;
+    memset(&struct_csc,0,sizeof(struct_csc));
     bool update_part_1=true;
     bool update_part_2=false;
     bs.StoreBits(1,update_part_1);
     if(update_part_1)
     {
         bs.StoreBits(8,rand()&0xFF); // value stored in control state field_134
-        NetStructure::storeVector(bs,pos);
+        // This is entity speed vector !!
+        NetStructure::storeVector(bs,spd);
 
 //        bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); // Vector3
         bs.StoreFloat(0.5f); // speed rel back
@@ -195,7 +191,7 @@ void EntitiesResponse::sendServerControlState(BitStream &bs) const
     if(update_part_2)
     {
         bs.StorePackedBits(1,0); // sets g_client_pos_id_rel
-        NetStructure::storeVector(bs,pos);
+        NetStructure::storeVector(bs,spd);
         NetStructure::storeVectorConditional(bs,zeroes);  // vector3 -> speed ? likely
 
         NetStructure::storeFloatConditional(bs,0); // Pitch not used ?

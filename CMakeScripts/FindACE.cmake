@@ -17,16 +17,23 @@ IF (ACE_path AND ACE_lib_path)
     SET(ACE_FIND_QUIETLY TRUE)
 ENDIF (ACE_path AND ACE_lib_path)
 
-FIND_PATH(ACE_path ace/ACE.h
-  /opt/local/include/ace
-  /usr/local/include/ace
-  /usr/include/ace
-  ${MAIN_INCLUDE_PATH}
-  ${MAIN_INCLUDE_PATH}/ace
+FIND_PATH(ACE_path
+    NAMES
+        ace/ACE.h
+    PATHS
+        ${PROJECT_SOURCE_DIR}/3rd_party/naked_ace/
+        /opt/local/include/ace
+        /usr/local/include/ace
+        /usr/include/ace
+        ${MAIN_INCLUDE_PATH}
+        ${MAIN_INCLUDE_PATH}/ace
+    DOC "Path to ACE framework root directory"
+    NO_DEFAULT_PATH
 )
 
 FIND_PATH(ACE_lib_path NAMES ACE.lib libACE.so libACE.dylib
     PATHS
+        ${PROJECT_SOURCE_DIR}/3rd_party/naked_ace/out/lib
         /opt/local/lib
         /usr/lib
         /usr/local/lib
