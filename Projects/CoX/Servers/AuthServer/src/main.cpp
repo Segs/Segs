@@ -142,11 +142,8 @@ public:
         return 0;
     }
 };
-#include "MRubyEngine.h"
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
-//    MRubyEngine za;
-//    za.initialize();
     ACE_Sig_Set interesting_signals;
     interesting_signals.sig_add(SIGINT);
     interesting_signals.sig_add(SIGHUP);
