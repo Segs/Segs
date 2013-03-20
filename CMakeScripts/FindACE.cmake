@@ -18,14 +18,16 @@ IF (ACE_path AND ACE_lib_path)
 ENDIF (ACE_path AND ACE_lib_path)
 
 FIND_PATH(ACE_path ace/ACE.h
+  /opt/local/include/ace
   /usr/local/include/ace
   /usr/include/ace
   ${MAIN_INCLUDE_PATH}
   ${MAIN_INCLUDE_PATH}/ace
 )
 
-FIND_PATH(ACE_lib_path NAMES ACE.lib libACE.so
+FIND_PATH(ACE_lib_path NAMES ACE.lib libACE.so libACE.dylib
     PATHS
+        /opt/local/lib
         /usr/lib
         /usr/local/lib
         ${MAIN_LIB_PATH}
