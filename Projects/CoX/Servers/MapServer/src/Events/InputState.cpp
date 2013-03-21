@@ -7,7 +7,6 @@
  */
 #define _USE_MATH_DEFINES
 #include <cmath>
-#include "types.h"
 #include "Events/InputState.h"
 #include "Entity.h"
 void InputState::serializeto(BitStream &) const

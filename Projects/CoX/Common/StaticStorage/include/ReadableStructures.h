@@ -13,7 +13,6 @@
 #include <ace/Thread_Mutex.h>
 #include <fstream>
 #include <map>
-#include "types.h"
 #include "CoXHash.h"
 #include "DataStorage.h"
 class BinReadable;

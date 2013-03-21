@@ -10,7 +10,6 @@
 
 // ACE Logging
 #include <string>
-#include "types.h"
 #include <libpq-fe.h>
 #include <vector>
 #include <string>

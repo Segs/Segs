@@ -13,7 +13,6 @@
 #include <ace/Log_Msg.h>
 #include <ace/Singleton.h>
 
-#include "types.h"
 #include "Database.h"
 class IClient;
 class CharacterClient;

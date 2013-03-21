@@ -16,7 +16,8 @@ Description: The BitStream class allows it's user to manipulate data in
 ************************************************************************/
 #pragma once
 #include <stdint.h>
-#include "Base.h"
+#include <string>
+#include <vector>
 #include "Buffer.h"
 
 //	Constants

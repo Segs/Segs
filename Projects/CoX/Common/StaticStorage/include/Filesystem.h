@@ -14,8 +14,6 @@
 #include <fstream>
 #include <map>
 
-#include "types.h"
-
 #include "CoXHash.h"
 #include "ReadableStructures.h"
 #include "CostumeStructure.h"
