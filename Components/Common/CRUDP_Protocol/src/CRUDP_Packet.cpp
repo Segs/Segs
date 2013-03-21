@@ -6,7 +6,6 @@
  *
  */
 
-#include "Base.h"
 #include "CRUDP_Packet.h"
 
 CrudP_Packet::CrudP_Packet()

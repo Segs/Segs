@@ -8,7 +8,6 @@
 
 #pragma once
 #include <algorithm>
-#include "types.h"
 #include "CoXHash.h"
 #include "DataStorage.h"
 #include "ReadableStructures.h"

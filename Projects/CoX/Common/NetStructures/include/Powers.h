@@ -7,7 +7,6 @@
  */
 
 #pragma once
-#include "types.h"
 #include "CommonNetStructures.h"
 #include <string>
 #include "BitStream.h"

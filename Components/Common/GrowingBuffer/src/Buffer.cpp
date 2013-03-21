@@ -6,6 +6,7 @@
  *
  */
 #include <cassert>
+#include <string>
 #include <ace/Log_Msg.h>
 
 #include "Buffer.h"

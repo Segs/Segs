@@ -14,6 +14,7 @@ the user.
 ************************************************************************/
 #pragma once
 #include <deque>
+#include <stdint.h>
 #ifdef USE_REAL_CODING
 #include <crypto++/cryptlib.h>
 #include <crypto++/modes.h>
@@ -28,7 +29,6 @@ extern "C"
 }
 using namespace CryptoPP;
 #endif
-#include "Base.h"
 
 class PacketCodecNull
 {

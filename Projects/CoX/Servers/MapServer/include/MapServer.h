@@ -22,7 +22,6 @@
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
 
-#include "Base.h"
 #include "ClientManager.h"
 #include "MapServerInterface.h"
 #include "ServerEndpoint.h"

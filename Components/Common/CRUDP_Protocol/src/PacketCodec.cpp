@@ -7,6 +7,8 @@
  */
 
 #include "PacketCodec.h"
+#include <ace/Message_Block.h>
+
 uint32_t PacketCodecNull::Checksum(const uint8_t *buf,size_t size)
 {
     uint16_t v1 = 1, v2 = 0;

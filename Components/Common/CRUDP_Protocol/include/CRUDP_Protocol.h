@@ -15,7 +15,6 @@
 #include <set>
 #include <ace/Message_Queue.h>
 #include <ace/INET_Addr.h>
-#include "Base.h"
 #include "CRUDP_Packet.h"
 class PacketCodecNull;
 class CrudP_Protocol
