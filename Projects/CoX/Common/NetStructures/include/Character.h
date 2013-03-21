@@ -12,7 +12,6 @@
 #include <cassert>
 #include <string>
 
-#include "types.h"
 #include "CommonNetStructures.h"
 #include "BitStream.h"
 #include "Powers.h"

@@ -21,7 +21,6 @@
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
 
-#include "Base.h"
 #include "CRUDP_Protocol.h"
 #include "RoamingServer.h"
 #include "ServerEndpoint.h"

@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "types.h"
 #include "BitStream.h"
 #include <list>
 

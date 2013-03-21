@@ -3,9 +3,6 @@
 #include "Powers.h"
 #include "Costume.h"
 #include "Character.h"
-#include "math_constants.h"
-
-
 
 class PosUpdate
 {

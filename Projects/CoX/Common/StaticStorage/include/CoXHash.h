@@ -13,7 +13,6 @@
 #include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>
 #include <ace/Null_Mutex.h>
-#include "types.h"
 
 #define mix(a,b,c) \
 { \

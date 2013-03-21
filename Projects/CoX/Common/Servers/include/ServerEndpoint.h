@@ -20,7 +20,6 @@
 #include <ace/Reactor_Notification_Strategy.h>
 #include "EventProcessor.h"
 #include "CRUD_Events.h"
-#include "Base.h"
 #include <unordered_map>
 #include <unordered_set>
 
