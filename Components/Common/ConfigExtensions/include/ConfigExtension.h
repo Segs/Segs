@@ -11,7 +11,6 @@
 #include <ace/Configuration.h>
 #include <ace/Configuration_Import_Export.h>
 #include <ace/INET_Addr.h>
-#include "types.h"
 class StringsBasedCfg : public ACE_Configuration_Heap
 {
 public:

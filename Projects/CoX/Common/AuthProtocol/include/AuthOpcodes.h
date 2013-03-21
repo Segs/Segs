@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "Base.h"
 enum eAuthPacketType
 {
     SMSG_AUTHVERSION				=	0x00,

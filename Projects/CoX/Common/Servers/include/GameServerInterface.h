@@ -10,7 +10,6 @@
 
 #include <ace/INET_Addr.h>
 #include <string>
-#include "Base.h"
 #include "RoamingServer.h"
 #include "ServerHandle.h"
 class EventProcessor;

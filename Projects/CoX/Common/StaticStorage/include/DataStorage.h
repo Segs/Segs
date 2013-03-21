@@ -13,7 +13,6 @@
 #include <ace/Thread_Mutex.h>
 #include <fstream>
 #include <map>
-#include "types.h"
 #include "CoXHash.h"
 class BinReadable;
 class CrcVisitor

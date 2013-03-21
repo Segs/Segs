@@ -7,6 +7,7 @@
  
  */
 #pragma once
+#include <map>
 #include <vector>
 #include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>

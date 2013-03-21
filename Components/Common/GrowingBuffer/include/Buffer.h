@@ -7,7 +7,6 @@
  */
 
 #pragma once
-#include "Base.h"
 #include <ace/Message_Block.h>
 
 // Warning those classes aren't thread-safe!
