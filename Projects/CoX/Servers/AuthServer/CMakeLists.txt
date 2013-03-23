@@ -41,16 +41,17 @@ ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
 IF(BUILD_SEPARATE)
         ADD_DEFINITIONS(-DSEPARATE)
         ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
-        ACE_ADD_LIBRARIES(authserver ACE)
     TARGET_LINK_LIBRARIES(authserver
         ${target_DEPENDS} authserver_lib
         ${PostgreSQL_LIBRARIES}
         ${MRuby_LIBRARY}
         ${ZLIB_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
+        ${ACE_LIBRARIES}
 #        ${Boost_LIBRARIES}
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
+    ADD_DEPENDENCIES(authserver ACE_BUILD)
 ENDIF(BUILD_SEPARATE)
 
 SEGS_REGISTER_COMPONENT(authserver_lib "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )

@@ -14,6 +14,7 @@ the user.
 ************************************************************************/
 #pragma once
 #include <deque>
+#include <cstddef>
 #include <stdint.h>
 #ifdef USE_REAL_CODING
 #include <crypto++/cryptlib.h>

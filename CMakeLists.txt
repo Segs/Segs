@@ -22,9 +22,22 @@ SET(PostgreSQL_ADDITIONAL_VERSIONS "9.2")
 ########################################################################################
 # Prerequisites
 ########################################################################################
+include(ExternalProject)
+ExternalProject_Add(
+   ACE_BUILD
+   SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/naked_ace
+   UPDATE_COMMAND ""
+   BINARY_DIR ${PROJECT_SOURCE_DIR}/3rd_party/naked_ace/bld
+   INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
+   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+)
+link_directories(${PROJECT_SOURCE_DIR}/3rd_party/lib)
+include_directories(${PROJECT_SOURCE_DIR}/3rd_party/include)
+SET(ACE_PATH ${PROJECT_SOURCE_DIR}/3rd_party)
+SET(ACE_LIBRARIES ACE)
 
-find_package(ACE REQUIRED) # ACE framework
 find_package(Threads REQUIRED)
+find_package(ZLIB REQUIRED)
 find_package(PostgreSQL REQUIRED) # PostgreSQL
 if(SCRIPTING_ENGINE)
     find_package(MRuby REQUIRED) # MRuby
