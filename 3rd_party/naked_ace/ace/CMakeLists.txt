@@ -769,7 +769,7 @@ SET(ACE_include_HEADERS
   Basic_Stats.h
   Basic_Stats.inl
   Basic_Types.h
-  Basic_Types.inl
+#  Basic_Types.inl
   Bound_Ptr.h
   Bound_Ptr.inl
   CDR_Base.h
@@ -801,6 +801,8 @@ SET(ACE_include_HEADERS
   Codeset_Registry.h
   Codeset_Registry.inl
   Codeset_Symbols.h
+  Condition_Attributes.h
+  Condition_Attributes.inl
   Condition_Recursive_Thread_Mutex.h
   Condition_T.cpp
   Condition_T.h
@@ -861,6 +863,8 @@ SET(ACE_include_HEADERS
   Env_Value_T.inl
   Event.h
   Event.inl
+  Event_Base.h
+  Event_Base.inl
   Event_Handler.h
   Event_Handler.inl
   Event_Handler_Handle_Timeout_Upcall.h
@@ -1406,6 +1410,9 @@ SET(ACE_include_HEADERS
   Time_Policy_T.inl
   Time_Value.h
   Time_Value.inl
+  Time_Value_T.h
+  Time_Value_T.inl
+  Time_Value_T.cpp
   Timeprobe.h
   Timeprobe.inl
   Timeprobe_T.cpp
@@ -1492,9 +1499,9 @@ SET(ACE_include_HEADERS
   ace_wchar.h
   ace_wchar.inl
   checked_iterator.h
-  config-WinCE.h
-  config-aix-5.x.h
-  config-aix-7.h
+#  config-WinCE.h
+#  config-aix-5.x.h
+#  config-aix-7.h
   config-all.h
   config-android.h
   config-cygwin32.h
@@ -1524,25 +1531,25 @@ SET(ACE_include_HEADERS
   config-posix.h
   config-qnx.h
   config-rtems.h
-  config-suncc-common.h
-  config-sunos5.10.h
-  config-sunos5.11.h
-  config-sunos5.4-g++.h
-  config-sunos5.4-sunc++-4.x.h
-  config-sunos5.5.h
-  config-sunos5.6.h
-  config-sunos5.7.h
-  config-sunos5.8.h
-  config-sunos5.9.h
-  config-tandem-nsk-mips-v2.h
-  config-tandem-nsk-mips-v3.h
-  config-vxworks.h
-  config-vxworks6.4.h
-  config-vxworks6.5.h
-  config-vxworks6.6.h
-  config-vxworks6.7.h
-  config-vxworks6.8.h
-  config-vxworks6.9.h
+#  config-suncc-common.h
+#  config-sunos5.10.h
+#  config-sunos5.11.h
+#  config-sunos5.4-g++.h
+#  config-sunos5.4-sunc++-4.x.h
+#  config-sunos5.5.h
+#  config-sunos5.6.h
+#  config-sunos5.7.h
+#  config-sunos5.8.h
+#  config-sunos5.9.h
+#  config-tandem-nsk-mips-v2.h
+#  config-tandem-nsk-mips-v3.h
+#  config-vxworks.h
+#  config-vxworks6.4.h
+#  config-vxworks6.5.h
+#  config-vxworks6.6.h
+#  config-vxworks6.7.h
+#  config-vxworks6.8.h
+#  config-vxworks6.9.h
   config-win32-cegcc.h
   config-win32-common.h
   config-win32-dmc.h
@@ -1564,11 +1571,19 @@ SET(ACE_include_HEADERS
 )
 
 ADD_DEFINITIONS(-DACE_BUILD_DLL -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1)
-#${ACE_include_HEADERS}
 ADD_LIBRARY(ACE SHARED ${libACE_la_SOURCES})
+
+install(TARGETS ACE
+        RUNTIME DESTINATION lib
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+)
+install(FILES ${ACE_include_HEADERS} DESTINATION include/ace)
+install(DIRECTORY os_include DESTINATION include/ace)
+
 IF(WIN32)
-TARGET_LINK_LIBRARIES(ACE ws2_32 mswsock netapi32 iphlpapi)
+    TARGET_LINK_LIBRARIES(ACE ws2_32 mswsock netapi32 iphlpapi)
 ENDIF()
 IF(UNIX)
-TARGET_LINK_LIBRARIES(ACE pthread rt)
+    TARGET_LINK_LIBRARIES(ACE pthread rt dl)
 ENDIF()
