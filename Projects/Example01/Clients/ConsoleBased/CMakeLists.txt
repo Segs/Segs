@@ -8,8 +8,6 @@ SET(target_INCLUDE_DIR
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-FIND_PACKAGE(ACE REQUIRED)
-FIND_PACKAGE(ZLIB REQUIRED)
 FIND_PACKAGE(MsgPack REQUIRED)
 ADD_DEFINITIONS(
   -D_CRT_SECURE_NO_WARNINGS
@@ -37,11 +35,11 @@ ELSE(WIN32)
         ADD_EXECUTABLE( segs_client_example_01_cli ${target_SOURCES} )
 ENDIF(WIN32)
 
-ACE_ADD_LIBRARIES(segs_client_example_01_cli ACE)
 TARGET_LINK_LIBRARIES(segs_client_example_01_cli segs_common
                                                 ${ZLIB_LIBRARIES}
                                                 ${CMAKE_THREAD_LIBS_INIT}
                                                 ${MsgPack_LIBRARY}
+                                                ${ACE_LIBRARIES}
                                                 )
 
 ADD_DEPENDENCIES(segs_client_example_01_cli authserver_lib segs_common gameserver_lib)

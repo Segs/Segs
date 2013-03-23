@@ -1,6 +1,8 @@
 # common cmake build directories
 build/
 bld/
+3rd_party/include
+3rd_party/lib
 
 # Compiled Object files
 *.slo
