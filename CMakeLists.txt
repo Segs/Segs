@@ -31,17 +31,36 @@ ExternalProject_Add(
    INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
 )
-link_directories(${PROJECT_SOURCE_DIR}/3rd_party/lib)
-include_directories(${PROJECT_SOURCE_DIR}/3rd_party/include)
 SET(ACE_PATH ${PROJECT_SOURCE_DIR}/3rd_party)
 SET(ACE_LIBRARIES ACE)
 
 find_package(Threads REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(PostgreSQL REQUIRED) # PostgreSQL
+########################################################################################
+# Optional components
+########################################################################################
 if(SCRIPTING_ENGINE)
-    find_package(MRuby REQUIRED) # MRuby
+    FIND_PACKAGE(Ruby REQUIRED)
+    ExternalProject_Add(
+        MRUBY_BUILD
+        DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}/3rd_party/mruby
+        GIT_REPOSITORY git://github.com/mruby/mruby.git
+        GIT_TAG master # will have to set it to a specific git-hash in the future.
+        UPDATE_COMMAND ""
+        CONFIGURE_COMMAND ""
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/mruby
+        BUILD_COMMAND ${RUBY_EXECUTABLE} ./minirake
+        BUILD_IN_SOURCE 1
+        INSTALL_COMMAND ""
+        INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
+    )
+    SET(MRuby_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/mruby/include)
+    LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/3rd_party/mruby/build/host/lib)
+    SET(MRuby_LIBRARIES mruby)
 endif()
+link_directories(${PROJECT_SOURCE_DIR}/3rd_party/lib)
+include_directories(${PROJECT_SOURCE_DIR}/3rd_party/include)
 
 include(SEGS_Components)
 
