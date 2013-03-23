@@ -37,12 +37,9 @@ SET(ACE_LIBRARIES ACE)
 find_package(Threads REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(PostgreSQL REQUIRED) # PostgreSQL
-
-
 ########################################################################################
 # Optional components
 ########################################################################################
-
 if(SCRIPTING_ENGINE)
     FIND_PACKAGE(Ruby REQUIRED)
     ExternalProject_Add(
@@ -62,7 +59,6 @@ if(SCRIPTING_ENGINE)
     LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/3rd_party/mruby/build/host/lib)
     SET(MRuby_LIBRARIES mruby)
 endif()
-
 link_directories(${PROJECT_SOURCE_DIR}/3rd_party/lib)
 include_directories(${PROJECT_SOURCE_DIR}/3rd_party/include)
 

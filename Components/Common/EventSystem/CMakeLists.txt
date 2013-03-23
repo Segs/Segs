@@ -9,6 +9,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/LinkLevelEvent.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/SEGSTimer.h
 )
 
+
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 SEGS_ADD_COMPONENT(Globals SOURCE)
