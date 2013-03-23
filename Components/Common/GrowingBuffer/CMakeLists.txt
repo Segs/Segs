@@ -16,6 +16,3 @@ ${target_INCLUDE}
 )
 
 SEGS_REGISTER_COMPONENT(GrowingBuffer "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
-
-
-
