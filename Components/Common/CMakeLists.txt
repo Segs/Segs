@@ -1,12 +1,11 @@
-ADD_SUBDIRECTORY(Globals) # includes each project should really have version numbers, types etc.
+if(ENABLE_SCRIPTING_ENGINE)
+    ADD_SUBDIRECTORY(Scripting)
+endif()
 ADD_SUBDIRECTORY(ConfigExtensions) # contains extensions to ACE's config file processing
 ADD_SUBDIRECTORY(EventSystem)
 ADD_SUBDIRECTORY(GrowingBuffer)
 ADD_SUBDIRECTORY(Bitstream)
 ADD_SUBDIRECTORY(CRUDP_Protocol)
-if(SCRIPTING_ENGINE)
-    ADD_SUBDIRECTORY(Scripting)
-endif()
 
 
 

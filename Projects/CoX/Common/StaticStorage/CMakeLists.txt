@@ -16,11 +16,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/DataStorage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/include/CoXHash.h
 )
 
-
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
-
-SEGS_ADD_COMPONENT(Globals SOURCE)
 
 SET (target_SOURCES
 ${target_CPP}
