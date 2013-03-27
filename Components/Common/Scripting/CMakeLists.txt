@@ -21,7 +21,9 @@ TARGET_LINK_LIBRARIES(MRuby ${MRuby_LIBRARIES})
 
 SEGS_REGISTER_COMPONENT(MRuby "${target_INCLUDE_DIR}" ${target_CPP} ${target_INCLUDE} )
 
-
+if(ENABLE_TESTS)
+add_subdirectory(tests)
+endif()
 
 
 

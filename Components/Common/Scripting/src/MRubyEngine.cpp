@@ -15,6 +15,16 @@
 #include <sstream>
 
 #include "MRubyEngine.h"
+static constexpr const char * initialization_code = {
+    "class Kernel\n"
+    "  def require(filename)\n"
+    "    @@loaded_files ||= {}\n"
+    "    return @@loaded_files[filename] if @@loaded_files.include?(filename)\n"
+    "    @@loaded_files[filename] = nil # prevent infinite require loop\n"
+    "    @@loaded_files[filename] = c_require(filename)\n"
+    "  end\n"
+    "end\n"
+};
 
 void split(const std::string &str,char split_by,std::vector<std::string> &result)
 {
