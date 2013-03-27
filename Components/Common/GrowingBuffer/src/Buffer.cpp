@@ -218,6 +218,7 @@ int GrowingBuffer::resize(size_t accommodate_size)
 void test(void) {
 
 }
+#ifdef SCRIPTING_ENABLED
 #include "MRubyEngine.h"
 WRAP_FUNCTION(test)
 WRAP_METHOD(GrowingBuffer,PutBytes)
@@ -235,5 +236,4 @@ void GrowingBuffer::registerClass(MRubyEngine *mrb)
 void init_GrowingBuffer_wrapper(mrb_state * mrb) {
 
 }
-#ifdef SCRIPTING_ENABLED
 #endif
