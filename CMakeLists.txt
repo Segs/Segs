@@ -17,6 +17,7 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
 SET(UNICODE TRUE)
 
 OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" OFF)
+OPTION(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 
 SET(PostgreSQL_ADDITIONAL_VERSIONS "9.2")
 ########################################################################################
@@ -27,7 +28,6 @@ ExternalProject_Add(
    ACE_BUILD
    SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/naked_ace
    UPDATE_COMMAND ""
-   BINARY_DIR ${PROJECT_SOURCE_DIR}/3rd_party/naked_ace/bld
    INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
 )
@@ -62,7 +62,19 @@ if(ENABLE_SCRIPTING_ENGINE)
     LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/3rd_party/mruby/build/host/lib)
     SET(MRuby_LIBRARIES mruby)
 endif()
-
+if(ENABLE_TESTS)
+    enable_testing()
+    ExternalProject_Add(
+        GMOCK_BUILD
+        DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
+        URL http://googlemock.googlecode.com/files/gmock-1.6.0.zip
+        UPDATE_COMMAND ""
+        PATCH_COMMAND patch -N -t -p1 < ../gmock.patch
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
+        INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+    )
+endif()
 link_directories(${PROJECT_SOURCE_DIR}/3rd_party/lib)
 include_directories(${PROJECT_SOURCE_DIR}/3rd_party/include)
 include_directories(${PROJECT_SOURCE_DIR}/include)
