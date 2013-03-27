@@ -9,6 +9,7 @@
 #include <mruby.h>
 #include <string>
 #include <ace/Dirent.h>
+#include "WrapperGenerator.h"
 struct mrbc_context;
 //TODO: Move FileLocator into it's own component -> consider more fleshed-out Filesystem Layer ?
 class FileLocator
@@ -25,6 +26,30 @@ public:
     {}
     bool file_exists(const char *fname);
 };
+class Object {
+
+};
+class Class {
+    mrb_state *m_state;
+public:
+    Class(mrb_state *s,RClass *v) : m_rb_class(v) {}
+    template<typename F>
+    Class &define_method(const char *name,F f) {
+        //TODO: create proper argc
+        mrb_define_class_method(m_state,m_rb_class,name,f,0);
+        return *this;
+    }
+    template<typename T>
+    Class &define_constructor()
+    {
+        //mrb_define_singleton_method(m_state,m_rb_class,"initialize",&TypeBinding<T>::initialize,0);
+        return *this;
+    }
+    void fin(){}
+protected:
+    RClass *m_rb_class;
+};
+
 class MRubyEngine
 {
 typedef void (*fInitFunc)(mrb_state *);
@@ -32,19 +57,19 @@ typedef void (*fInitFunc)(mrb_state *);
         mrbc_context* m_ctx;
 public:
         mrb_state *m_state;
-        static constexpr const char * initialization_code = {
-            "class Kernel\n"
-            "  def require(filename)\n"
-            "    @@loaded_files ||= {}\n"
-            "    return @@loaded_files[filename] if @@loaded_files.include?(filename)\n"
-            "    @@loaded_files[filename] = nil # prevent infinite require loop\n"
-            "    @@loaded_files[filename] = c_require(filename)\n"
-            "  end\n"
-            "end\n"
-        };
                 MRubyEngine() : m_file_locator(".") {}
         void    initialize();
         void    initialize_methods();
+
+        template<typename T>
+        Class   define_class(RClass * superclass=nullptr)
+        {
+            if(nullptr==superclass)
+                superclass=m_state->object_class;
+            auto v = mrb_define_class(m_state,T::name, superclass);
+            return Class(m_state,v);
+        }
+
 static mrb_value c_require(mrb_state *state,mrb_value self);
 private:
         bool    try_shared_object(const char *mod_name);
