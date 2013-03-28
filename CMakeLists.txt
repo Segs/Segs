@@ -74,6 +74,7 @@ if(ENABLE_TESTS)
         INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
     )
+    set(GTest_LIBRARIES gtest gtest_main)
 endif()
 link_directories(${PROJECT_SOURCE_DIR}/3rd_party/lib)
 include_directories(${PROJECT_SOURCE_DIR}/3rd_party/include)

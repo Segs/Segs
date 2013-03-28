@@ -16,7 +16,7 @@
 
 #include "MRubyEngine.h"
 static constexpr const char * initialization_code = {
-    "class Kernel\n"
+    "module Kernel\n"
     "  def require(filename)\n"
     "    @@loaded_files ||= {}\n"
     "    return @@loaded_files[filename] if @@loaded_files.include?(filename)\n"
@@ -70,21 +70,30 @@ bool FileLocator::file_exists(const char *fname)
     return false;
 }
 
-void MRubyEngine::initialize()
+bool MRubyEngine::initialize()
 {
-    mrb_parser_state *p;
-    m_state=mrb_open();
-    m_state->ud = this; //NOTICE: this is a hack, ud is mainly used in custom allocator  mruby
+    bool result=true;
+    m_state = mrb_open();
+    m_state->ud = this; //NOTICE: this is a hack, ud is mainly used in custom allocator mruby
     initialize_methods();
-    mrbc_context* ctx =  mrbc_context_new(m_state);
-    ctx->capture_errors=1;
-    mrb_load_string_cxt(m_state,initialization_code,ctx);
+    m_ctx =  mrbc_context_new(m_state);
+    m_ctx->capture_errors=1;
+    mrb_load_string_cxt(m_state,initialization_code,m_ctx);
     if(m_state->exc) {
         mrb_p(m_state,mrb_obj_value(m_state->exc));
+        result = false;
     }
-
-    mrb_close(m_state);
-    exit(0);
+    return result;
+}
+MRubyEngine::~MRubyEngine()
+{
+    if(m_state)
+    {
+        mrbc_context_free(m_state,m_ctx);
+        m_ctx = nullptr;
+        mrb_close(m_state);
+        m_state = nullptr;
+    }
 }
 void MRubyEngine::initialize_methods()
 {
@@ -147,3 +156,16 @@ bool    MRubyEngine::try_ruby_file(const char *mod_name)
         return true;
     }
 }
+class ScriptTypeError {
+
+};
+template<>
+int fromRuby(mrb_state * mrb, mrb_value self) {
+    mrb_value v = mrb_to_int(mrb,self);
+    if(mrb->exc)
+        throw ScriptTypeError();
+    return mrb_fixnum(v);
+}
+
+template<typename TYPE>
+static mrb_value toRuby(mrb_state * mrb, TYPE self);
