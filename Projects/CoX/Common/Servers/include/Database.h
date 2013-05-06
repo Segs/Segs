@@ -13,6 +13,7 @@
 #include <libpq-fe.h>
 #include <vector>
 #include <string>
+#include <stdint.h>
 using std::vector;
 using std::string;
 class DbResultRow

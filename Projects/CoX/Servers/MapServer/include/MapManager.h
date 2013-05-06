@@ -11,6 +11,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <stdint.h>
 class MapTemplate;
 /**
   \class MapManger

@@ -7,6 +7,8 @@
  */
 
 #pragma once
+#include <stdint.h>
+#include <string>
 #include <ace/Message_Block.h>
 class MRubyEngine;
 // Warning those classes aren't thread-safe!
@@ -15,12 +17,14 @@ class MRubyEngine;
 // Template functions are part of include file to avoid the need of explicit instantiation of templates.
 class GrowingBuffer
 {
-
-static  constexpr size_t DEFAULT_MAX_SIZE = 0x10000; //64K should be enough for everyone :P
-
+#ifdef _MSC_VER
+#define DEFAULT_MAX_SIZE 0x10000
+#else
+static  constexpr size_t        DEFAULT_MAX_SIZE = 0x10000; //64K should be enough for everyone :P
+static  constexpr const char *  name = "GrowingBuffer"; // used by script bindings
+#endif
 public:
 
-static  constexpr const char * name = "GrowingBuffer"; // used by script bindings
             //              Con/De-struction
             //////////////////////////////////////////////////////////////////////////
 
