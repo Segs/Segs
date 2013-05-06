@@ -31,7 +31,7 @@ ExternalProject_Add(
    INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
 )
-SET(ACE_PATH ${PROJECT_SOURCE_DIR}/3rd_party)
+SET(ACE_path ${PROJECT_SOURCE_DIR}/3rd_party)
 SET(ACE_LIBRARIES ACE)
 
 find_package(Threads REQUIRED)
@@ -44,6 +44,7 @@ find_package(PostgreSQL REQUIRED) # PostgreSQL
 ########################################################################################
 
 if(ENABLE_SCRIPTING_ENGINE)
+    ADD_DEFINITIONS(-DSCRIPTING_ENABLED=1)
     FIND_PACKAGE(Ruby REQUIRED)
     ExternalProject_Add(
         MRUBY_BUILD
@@ -62,6 +63,7 @@ if(ENABLE_SCRIPTING_ENGINE)
     LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/3rd_party/mruby/build/host/lib)
     SET(MRuby_LIBRARIES mruby)
 endif()
+
 if(ENABLE_TESTS)
     enable_testing()
     ExternalProject_Add(
@@ -74,7 +76,7 @@ if(ENABLE_TESTS)
         INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
     )
-    set(GTest_LIBRARIES gtest gtest_main)
+    set(GTest_LIBRARIES gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 endif()
 link_directories(${PROJECT_SOURCE_DIR}/3rd_party/lib)
 include_directories(${PROJECT_SOURCE_DIR}/3rd_party/include)
