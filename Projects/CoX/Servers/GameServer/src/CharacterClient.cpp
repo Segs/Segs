@@ -37,5 +37,8 @@ void CharacterClient::reset()
 
 bool CharacterClient::deleteCharacter( Character *chr )
 {
-    return m_account_info.remove_character(chr);
+    bool res = m_account_info.remove_character(chr);
+    if(res)
+        chr->reset();
+    return res;
 }

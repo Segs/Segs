@@ -7,6 +7,7 @@
  
  */
 
+#include "AdminServer.h"
 #include "MapHandler.h"
 #include "MapClient.h"
 #include "ServerManager.h"
@@ -50,10 +51,12 @@ void MapCommHandler::dispatch(SEGSEvent *ev)
         break;
     case MapEventTypes::evSceneRequest:
     case MapEventTypes::evEntitiesRequest:
+        case MapEventTypes::evInputState:
+        case MapEventTypes::evUnknownEvent:
         on_instance_event(ev);
         break;
-    case MapEventTypes::evUnknownEvent:
-        break;
+        default:
+            assert(!"Unhandled event type Maybe it should be passed to instance ??");
     }
 }
 void MapCommHandler::on_idle(IdleEvent *ev)
@@ -80,25 +83,47 @@ void MapCommHandler::on_connection_request(ConnectRequest *ev)
 }
 void MapCommHandler::on_expect_client( ExpectMapClient *ev )
 {
-    uint32_t cookie = 0; // name in use
     // TODO: handle contention while creating 2 character with the same name from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
+    uint32_t cookie = 0; // name in use
     MapTemplate *tpl=m_server->map_manager().get_template(ev->m_map_id);
+    MapClient *cl = 0;
     if(0==tpl)
     {
-        cookie = 1;
+        ev->src()->putq(new ClientExpected(this,ev->m_client_id,1,m_server->getAddress()));
+        return;
     }
-    else if(true) // check if (character does not exist || character exists and is owned by this client )
+    CharacterDatabase * char_db=AdminServer::instance()->character_db();
+    if(!ev->char_from_db)
     {
 
+        // attempt to create a new character, let's see if the name is taken
+        if(char_db->named_character_exists(ev->m_character_name))
+        {
+            ev->src()->putq(new ClientExpected(this,ev->m_client_id,0,m_server->getAddress()));
+            return;
+        }
+    }
         cookie    = 2+m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
-        // 0 name already taken
-        // 1 problem in database system
-        MapClient *cl = m_clients.getExpectedByCookie(cookie-2);
+    cl = m_clients.getExpectedByCookie(cookie-2);
         cl->name(ev->m_character_name);
         cl->current_map(tpl->get_instance());
+    if(ev->char_from_db)
+    {
+        Entity *ent = new PlayerEntity;
+        ent->fillFromCharacter(ev->char_from_db);
+        cl->char_entity(ent);
     }
     ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
+    //    else if(true) // check if (character does not exist || character exists and is owned by this client )
+    //    {
+
+    //        cookie    = 2+m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
+    //        MapClient *cl = m_clients.getExpectedByCookie(cookie-2);
+    //        cl->name(ev->m_character_name);
+    //        cl->current_map(tpl->get_instance());
+    //        ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
+    //    }
 }
 void MapCommHandler::on_create_map_entity(NewEntity *ev)
 {
@@ -108,17 +133,17 @@ void MapCommHandler::on_create_map_entity(NewEntity *ev)
     MapClient *cl = m_clients.getExpectedByCookie(ev->m_cookie-2);
 
     assert(cl);
-    assert(ev->m_ent);
-
-    cl->entity(ev->m_ent);
     cl->link_state().link(lnk);
     if(ev->m_new_character)
     {
+        assert(ev->m_ent);
+        cl->entity(ev->m_ent);
         cl->db_create();
 //        start_idle_timer(cl);
         //cl->start_idle_timer();
     }
-    cl->current_map()->create_entity(cl->char_entity());
+    assert(cl->char_entity());
+    cl->current_map()->enqueue_client(cl);
     lnk->client_data(cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
 }

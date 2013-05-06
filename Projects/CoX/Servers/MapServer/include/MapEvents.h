@@ -131,6 +131,7 @@ public:
     }
 };
 #include "Events/InputState.h"
+#include "Events/ChatMessage.h"
 //////////////////////////////////////////////////////////////////////////
 // Server -> Client events
 class MapInstanceConnected : public MapLinkEvent

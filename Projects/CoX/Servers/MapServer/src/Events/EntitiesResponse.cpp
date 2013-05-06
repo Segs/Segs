@@ -9,9 +9,8 @@
 #include "MapInstance.h"
 //! EntitiesResponse is sent to a client to inform it about the current world state.
 EntitiesResponse::EntitiesResponse(MapClient *cl) :
-    MapLinkEvent(MapEventTypes::evEntitites)
+    MapLinkEvent(MapEventTypes::evEntitites), m_finalized_into(2048)
 {
-    m_num_commands = 0;
     m_client = cl;
     abs_time=db_time=0;
     unkn2=false;
@@ -23,7 +22,7 @@ EntitiesResponse::EntitiesResponse(MapClient *cl) :
     //m_interpolation_level
 
 }
-void EntitiesResponse::serializeto( BitStream &tgt ) const
+void EntitiesResponse::serializeto_internal( BitStream &tgt ) const
 {
     EntityManager &ent_manager=m_client->current_map()->m_entities;
 
@@ -67,6 +66,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     ent_manager.sendDeletes(tgt);
     // Client specific part
     sendClientData(tgt);
+    //FIXME: Most Server messages must follow entity update.
 }
 void EntitiesResponse::sendClientData(BitStream &tgt) const
 {
@@ -88,7 +88,7 @@ void EntitiesResponse::sendClientData(BitStream &tgt) const
         tgt.StoreString(ent->m_character_description); //max 1024
         player_char.sendWindows(tgt);
         tgt.StoreBits(1,0); // lfg related
-        tgt.StoreBits(1,0); // pEnt->player_ppp.field_984C
+        tgt.StoreBits(1,0); // a2->ent_player2->field_AC
         player_char.sendTeamBuffMode(tgt);
         player_char.sendDockMode(tgt);
         player_char.sendChatSettings(tgt);
@@ -128,7 +128,6 @@ void EntitiesResponse::sendControlState(BitStream &bs) const
 }
 void EntitiesResponse::sendServerPhysicsPositions(BitStream &bs) const
 {
-    static int idx=0;
     Entity * target = m_client->char_entity();
     bool full_update = true;
     bool has_control_id = true;
@@ -136,8 +135,9 @@ void EntitiesResponse::sendServerPhysicsPositions(BitStream &bs) const
     bs.StoreBits(1,full_update);
     if( !full_update )
         bs.StoreBits(1,has_control_id);
+    fprintf(stderr,"Phys: send %d ",target->m_input_ack);
     if( full_update || has_control_id)
-        bs.StoreBits(16,idx++); //target->m_input_ack
+        bs.StoreBits(16,target->m_input_ack); //target->m_input_ack
     if(full_update)
     {
         bs.StoreFloat(target->pos.x); // server position
@@ -150,7 +150,9 @@ void EntitiesResponse::sendServerPhysicsPositions(BitStream &bs) const
 }
 struct EntWalkRel
 {
-    int v[5];
+    float v[3];
+    float gravitational_constant;
+    float max_speed;
 };
 struct CscCommon_Sub28
 {
@@ -158,7 +160,7 @@ struct CscCommon_Sub28
 };
 void EntitiesResponse::sendServerControlState(BitStream &bs) const
 {
-    Vector3 spd(0.5,0.5,0.5);
+    Vector3 spd(1,80,1);
     Vector3 zeroes;
     bool m_flying=false;
     bool m_dazed=false;
@@ -166,19 +168,29 @@ void EntitiesResponse::sendServerControlState(BitStream &bs) const
     Entity *ent = m_client->char_entity();
     CscCommon_Sub28 struct_csc;
     memset(&struct_csc,0,sizeof(struct_csc));
+    static int vla=1;
+    int g=rand()&0xff;
+    for(int i=0; i<3; ++i)
+        struct_csc.a.v[i] = g+vla;
+    vla+=1;
+    struct_csc.b.max_speed = struct_csc.a.max_speed = 5.0f;
+    struct_csc.b.gravitational_constant = struct_csc.a.gravitational_constant = 3.0f;
+    //    for(int i=3; i<5; ++i)
+    //        struct_csc.a.v[i] = rand()&0xf;
     bool update_part_1=true;
     bool update_part_2=false;
     bs.StoreBits(1,update_part_1);
     if(update_part_1)
     {
-        bs.StoreBits(8,rand()&0xFF); // value stored in control state field_134
+        //rand()&0xFF
+        bs.StoreBits(8,vla); // value stored in control state field_134
+        // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
         // This is entity speed vector !!
         NetStructure::storeVector(bs,spd);
 
-//        bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); bs.StoreFloat(0.0f); // Vector3
-        bs.StoreFloat(0.5f); // speed rel back
+        bs.StoreFloat(1.0f); // speed rel back
         bs.StoreBitArray((uint8_t *)&struct_csc,sizeof(CscCommon_Sub28)*8);
-        bs.StoreFloat(0.0f);
+        bs.StoreFloat(0.1f);
         bs.StoreBits(1,m_flying); // key push bits ??
         bs.StoreBits(1,m_dazed); // key push bits ??
         bs.StoreBits(1,0); // key push bits ??
@@ -264,5 +276,6 @@ void EntitiesResponse::storeSuperStats(BitStream &bs) const
 void EntitiesResponse::storeGroupDyn(BitStream &bs) const
 {
     bs.StorePackedBits(1,0);
+    // if less then zero, then the data will be zlib uncompressed on the client.
 }
 
