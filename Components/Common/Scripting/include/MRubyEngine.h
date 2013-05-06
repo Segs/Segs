@@ -7,6 +7,7 @@
  *
  */
 #include <mruby.h>
+#include <mruby/compile.h>
 #include <string>
 #include <ace/Dirent.h>
 #include "WrapperGenerator.h"
@@ -39,15 +40,15 @@ public:
         mrb_define_class_method(m_state,m_rb_class,name,f,0);
         return *this;
     }
-    template<typename T>
-    Class &define_constructor()
-    {
-        //mrb_define_singleton_method(m_state,m_rb_class,"initialize",&TypeBinding<T>::initialize,0);
-        return *this;
-    }
-    void fin(){}
+                template<typename T>
+        Class & define_constructor()
+        {
+            //mrb_define_singleton_method(m_state,m_rb_class,"initialize",&TypeBinding<T>::initialize,0);
+            return *this;
+        }
+        void fin(){}
 protected:
-    RClass *m_rb_class;
+        RClass *m_rb_class;
 };
 
 class MRubyEngine
@@ -56,22 +57,28 @@ typedef void (*fInitFunc)(mrb_state *);
         FileLocator m_file_locator;
         mrbc_context* m_ctx;
 public:
-        mrb_state *m_state;
-                MRubyEngine() : m_file_locator(".") {}
-        void    initialize();
-        void    initialize_methods();
+        mrb_state * m_state;
+                    MRubyEngine() : m_file_locator(".") {}
+                    ~MRubyEngine();
+        bool        initialize();
 
-        template<typename T>
-        Class   define_class(RClass * superclass=nullptr)
-        {
-            if(nullptr==superclass)
-                superclass=m_state->object_class;
-            auto v = mrb_define_class(m_state,T::name, superclass);
-            return Class(m_state,v);
-        }
-
-static mrb_value c_require(mrb_state *state,mrb_value self);
+                    template<typename T>
+        Class       define_class(RClass * superclass=nullptr)
+                    {
+                        if(nullptr==superclass)
+                            superclass=m_state->object_class;
+                        auto v = mrb_define_class(m_state,T::name, superclass);
+                        return Class(m_state,v);
+                    }
+                    template<typename RET_TYPE>
+        RET_TYPE    eval_code(const char *code)
+                    {
+                        mrb_value res= mrb_load_string_cxt(m_state,code,m_ctx);
+                        return fromRuby<RET_TYPE>(m_state,res);
+                    }
+static  mrb_value   c_require(mrb_state *state,mrb_value self);
 private:
-        bool    try_shared_object(const char *mod_name);
-        bool    try_ruby_file(const char *mod_name);
+        void        initialize_methods();
+        bool        try_shared_object(const char *mod_name);
+        bool        try_ruby_file(const char *mod_name);
 };

@@ -10,6 +10,8 @@
 #include <cassert>
 #include <string>
 #include <vector>
+#include <stdint.h>
+
 #include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>
 #include <ace/Null_Mutex.h>

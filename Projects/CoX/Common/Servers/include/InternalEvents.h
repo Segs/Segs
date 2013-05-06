@@ -3,6 +3,7 @@
 #include <ace/Time_Value.h>
 #include "CRUDP_Protocol.h"
 #include "EventProcessor.h"
+class Character;
 class Internal_EventTypes
 {
 public:
@@ -32,14 +33,21 @@ public:
 class ExpectMapClient : public ExpectClient
 {
 public:
-    ExpectMapClient(
-            EventProcessor *evsrc,
-            uint64_t client_id,
-            uint8_t access_level,
-            const ACE_INET_Addr &from,
-            const std::string &name,
-            uint32_t map_id) : ExpectClient(evsrc,client_id,access_level,from),m_character_name(name),m_map_id(map_id)
-    {}
+    ExpectMapClient(EventProcessor *evsrc,  uint64_t client_id, uint8_t access_level,const ACE_INET_Addr &from) :
+                ExpectClient(evsrc,client_id,access_level,from)
+    {
+        m_map_id = 0;
+        m_slot_idx=0;
+    }
+    void setValues(uint16_t slot_idx, const std::string &name, uint32_t map_id,Character *char_f=0)
+    {
+        m_slot_idx  =   slot_idx;
+        m_character_name = name;
+        m_map_id    = map_id;
+        char_from_db=char_f;
+    }
+    Character *char_from_db;
+    uint16_t m_slot_idx;
     std::string m_character_name;
     uint32_t m_map_id;
 };
