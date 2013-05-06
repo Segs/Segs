@@ -158,14 +158,26 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     if(!client)
         return; // TODO:  return some kind of error.
 
+    Character * selected_slot = client->getCharacter(ev->m_character_index);
+    if(selected_slot->isEmpty())
+        selected_slot = nullptr; // passing a null to map server to indicate a new character is being created.
     if(ServerManager::instance()->MapServerCount()<=0)
     {
         lnk->putq(new GameEntryError(this,"There are no available Map Servers."));
         return;
     }
-    EventProcessor *map_handler=ServerManager::instance()->GetMapServer(0)->event_target(); //TODO: this should handle multiple map servers
+    //TODO: this should handle multiple map servers, for now it doesn't care and always connects to the first one.
+    EventProcessor *map_handler=ServerManager::instance()->GetMapServer(0)->event_target();
     AccountInfo &acc_inf(client->account_info());
-        map_handler->putq(new ExpectMapClient(this,acc_inf.account_server_id(),acc_inf.access_level(),lnk->peer_addr(),ev->m_char_name,ev->m_mapnumber));
+    ExpectMapClient * expect_client = new ExpectMapClient(this,acc_inf.account_server_id(),acc_inf.access_level(),
+                                                          lnk->peer_addr());
+    if(selected_slot )
+    {
+        ACE_ASSERT(selected_slot->getName()==ev->m_char_name || !"Server-Client character synchronization failure!");
+    }
+    expect_client->setValues(ev->m_character_index, ev->m_char_name, ev->m_mapnumber,selected_slot);
+    fprintf(stderr," Telling map server to expect a client with character %s,%d\n",ev->m_char_name.c_str(),ev->m_character_index);
+    map_handler->putq(expect_client);
 }
 void GameHandler::on_unknown_link_event(GameUnknownRequest *)
 {

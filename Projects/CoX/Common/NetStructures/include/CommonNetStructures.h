@@ -52,6 +52,13 @@ public:
                         float x,y,z;
                 };
         };
+        const Vector3 &operator+=(const Vector3 &rhs)
+        {
+            x+=rhs.x;
+            y+=rhs.y;
+            z+=rhs.z;
+            return *this;
+        }
 };
 typedef struct
 {

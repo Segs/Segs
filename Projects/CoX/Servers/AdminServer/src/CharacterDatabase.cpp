@@ -30,6 +30,19 @@ bool CharacterDatabase::remove_character(AccountInfo *c,uint8_t slot_idx)
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::remove_character %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
     return true;
 }
+bool CharacterDatabase::named_character_exists(const string &name)
+{
+    std::stringstream query;
+    DbResults results;
+    query<<"SELECT exists (SELECT 1 FROM characters WHERE char_name = '"<<name<<"' LIMIT 1);";
+
+    if(!execQuery(query.str(),results))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::named_character_exists query %s failed. %s.\n"), query.str().c_str(),
+                          results.m_msg),false);
+    assert(results.num_rows()==1);
+    DbResultRow r=results.getRow(0);
+    return r.getColBool("exists");
+}
 bool CharacterDatabase::fill( AccountInfo *c )
 {
     stringstream query;

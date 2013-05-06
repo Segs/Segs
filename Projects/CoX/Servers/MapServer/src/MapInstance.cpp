@@ -8,6 +8,7 @@
  */
 
 #include "MapInstance.h"
+#include "version.h"
 #include "MapEvents.h"
 #include "MapClient.h"
 #include "SEGSTimer.h"
@@ -17,9 +18,10 @@ MapInstance::MapInstance( const string &name ) :m_name(name),m_world_update_time
 {
 
 }
-void MapInstance::create_entity(Entity *ent)
+void MapInstance::enqueue_client(MapClient *clnt)
 {
-    m_entities.InsertPlayer(ent);
+    m_entities.InsertPlayer(clnt->char_entity());
+    //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
 // Here we would add the handler call in case we get evCombineRequest :)
 void MapInstance::dispatch( SEGSEvent *ev )
@@ -63,36 +65,29 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->unkn2=1;
     lnk->putq(res);
 }
-static int timecount=0;
+static uint32_t timecount=1;
 void MapInstance::on_entities_request(EntitiesRequest *ev)
 {
     // this packet should start the per-client send-world-state-update timer
     // actually I think the best place for this timer would be the map instance.
     // so this method should call MapInstace->initial_update(MapClient *);
     MapLink * lnk = (MapLink *)ev->src();
-    MapClient *cl = lnk->client_data();
     srand(time(0));
-    cl->char_entity()->pos.x=128.0; //-60.5;
-    cl->char_entity()->pos.y=16; //0;
-    cl->char_entity()->pos.z=-198; //180;
-    cl->char_entity()->qrot.vals.x=1.0f;
-    cl->char_entity()->qrot.vals.amount=1.0f;// - (rand()&0xFF)/255.0;
-
-    m_clients.push_back(cl); // add to the list of clients interested in world updates
-    if(m_world_update_timer==0) // start map timer on this event
-    {
-        // 50ms interval timer
-        m_world_update_timer = new SEGSTimer(this,0,ACE_Time_Value(0,500000),false); // repeatable timer
-    }
+    MapClient *cl = lnk->client_data();
+    // this sends the initial  'world', but without this client
 
     EntitiesResponse *res=new EntitiesResponse(cl); // initial world update -> current state
     res->is_incremental(false); //redundant
-    res->entReceiveUpdate=false;
-    res->unkn1=false;
-    res->m_num_commands=0;
+    res->entReceiveUpdate=true; //false;
     res->abs_time = (uint32_t)timecount++;
-    res->unkn2=false; // default parameters for first flags
+    res->finalize();
     lnk->putq(res);
+    m_clients.push_back(cl); // add to the list of clients interested in world updates
+    if(m_world_update_timer==0) // start map timer on this event
+    {
+        // 500ms interval timer
+        m_world_update_timer = new SEGSTimer(this,0,ACE_Time_Value(0,500*1000),false); // repeatable timer
+    }
 }
 //! Handle instance-wide timers
 void MapInstance::on_timeout(TimerEvent */*ev*/)
@@ -103,26 +98,36 @@ void MapInstance::on_timeout(TimerEvent */*ev*/)
     vector<MapClient *>::iterator end=m_clients.end();
     static bool only_first=true;
     timecount+=30;
+    static int resendtxt=0;
+    resendtxt++;
     for(;iter!=end; ++iter)
     {
         cl=*iter;
-        cl->char_entity()->pos.x=128.0; //-60.5;
-        cl->char_entity()->pos.y=16; //0;
-        cl->char_entity()->pos.z=-198; //180;
-
-//        cl->char_entity()->pos.x=-60.5;
-//        cl->char_entity()->pos.y=0+(rand()&0xFF)/255.0;
-//        cl->char_entity()->pos.z=180;
-        cl->char_entity()->qrot.vals.x=1.0f;
-        cl->char_entity()->qrot.vals.amount=1.0f;// - (rand()&0xFF)/255.0;
-        cl->char_entity()->m_create=only_first;
         EntitiesResponse *res=new EntitiesResponse(cl);
+        if(cl->char_entity()->m_create==true) {
+            res->is_incremental(false); // incremental world update = op 3
+        }
+        else {
+            res->is_incremental(true); // incremental world update = op 2
+        }
         res->entReceiveUpdate=true;
-        res->is_incremental(true); // incremental world update = op 2
         res->abs_time = timecount;
+        res->finalize();
         cl->link()->putq(res);
+        if(resendtxt==10){
+
+            std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion();
+            ChatMessage *msg = ChatMessage::adminMessage(welcome_msg.c_str() );
+            cl->link()->putq(msg);
+        }
+        if(cl->char_entity()->m_create==true)
+            cl->char_entity()->m_create=false;
     }
     only_first=false;
+    if(resendtxt==10)
+    {
+        resendtxt=0;
+    }
     // This is handling instance-wide timers
 
     // simulation_engine->tick()
@@ -140,8 +145,9 @@ void MapInstance::on_input_state(InputState *st)
     MapLink * lnk = (MapLink *)st->src();
     MapClient *cl = lnk->client_data();
     Entity *ent = cl->char_entity();
-    Vector3 pos;
-    ent->setInputState(pos,st->pyr());
+    if(st->has_input_commit_guess)
     ent->m_input_ack = st->someOtherbits;
+    ent->pos += st->pos_delta;
+    ent->inp_state.pyr=st->pyr();
     //TODO: do something here !
 }

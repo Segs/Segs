@@ -438,7 +438,7 @@ void BitStream::GetString(std::string &str)
         if(chr)
             str += chr;
 
-        if(GetReadableBits()<8)
+        if((chr!='\0') && GetReadableBits()<8)
         {
             m_last_err = 1;
             return;

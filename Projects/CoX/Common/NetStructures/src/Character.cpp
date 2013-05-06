@@ -76,8 +76,8 @@ void Character::sendWindow(BitStream &bs) const
     bs.StorePackedBits(1,0);
     bs.StorePackedBits(1,0); // visible ?
     bs.StorePackedBits(1,0);
-    bs.StorePackedBits(1,0);
-    bs.StorePackedBits(1,0);
+    bs.StorePackedBits(1,0); // color
+    bs.StorePackedBits(1,0); // alpha
     bool a=false;
     bs.StoreBits(1,a);
     if(a)
@@ -132,6 +132,7 @@ void Character::SendCharBuildInfo(BitStream &bs) const
     {
         //m_powers[0].serializeto(bs);
         //m_powers[1].serializeto(bs);
+        // TODO: this is character powers related, refactor it out of here.
         int count=0;
         bs.StorePackedBits(4,count); // count
         for(int i=0; i<count; i++)
@@ -329,7 +330,7 @@ void Character::sendFullStats(BitStream &bs) const
     bs.StoreBits(1,1); // has more data
     bs.StorePackedBits(1,1); // MaxAttribs entry idx
     {
-        // nested into MaxAttribs:LiveAttribs
+        // nested into MaxAttribs:MaxAttribs
         bs.StoreBits(1,1); // has more data
             bs.StorePackedBits(1,0); // HitPoints entry
             // field type 0xA, param 2
@@ -455,10 +456,10 @@ void Character::sendDockMode(BitStream &bs) const
 void Character::sendChatSettings(BitStream &bs) const
 {
     //int i;
-    bs.StoreFloat(0.8f); // window transparency ?
-    bs.StorePackedBits(1,1);
-    bs.StorePackedBits(1,2);
-    bs.StorePackedBits(1,3);
+    bs.StoreFloat(0.8f); // chat window transparency
+    bs.StorePackedBits(1,(1<<19)-1); // bitmask of channels (top window )
+    bs.StorePackedBits(1,0); // bitmask of channels (bottom )
+    bs.StorePackedBits(1,10); // selected channel, Local=10, 11 broadcast,
 /*
     bs.StorePackedBits(1,4);
     bs.StorePackedBits(1,5);

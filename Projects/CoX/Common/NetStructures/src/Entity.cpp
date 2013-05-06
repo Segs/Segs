@@ -99,14 +99,28 @@ void Entity::storePosition(BitStream &bs) const
         bs.StoreBits(24,packed);
     }
 }
+struct BinTreeEntry {
+    uint8_t x,y,z,d;
+};
+struct BinTreeBase {
+    BinTreeEntry arr[7];
+};
 void Entity::storePosUpdate(BitStream &bs) const
 {
+    bool extra_info = false;
+    bool move_instantly = false;
     storePosition(bs);
     // if(is_update)
 
     if(!m_create)
     {
-        bs.StoreBits(1,0); // not extra_info
+        bs.StoreBits(1,extra_info); // not extra_info
+        if(extra_info) {
+            bs.StoreBits(1,move_instantly);
+            // Bintree sending happens here
+            storeUnknownBinTree(bs);
+        }
+        // if extra_inf
     }
     storeOrientation(bs);
 }
@@ -143,9 +157,9 @@ void Entity::sendSeqTriggeredMoves(BitStream &bs) const
     bs.StorePackedBits(1,num_moves); // num moves
     for (uint32_t idx = 0; idx < num_moves; ++idx )
     {
-        bs.StorePackedBits(16,0); // 2
-        bs.StorePackedBits(6,0); //0
-        storePackedBitsConditional(bs,16,0); // 1
+        bs.StorePackedBits(16,0); // 2  EntityStoredMoveP->field_2
+        bs.StorePackedBits(6,0); //0  EntityStoredMoveP->field_0
+        storePackedBitsConditional(bs,16,0); // 1 EntityStoredMoveP->field_1
     }
 }
 void Entity::sendNetFx(BitStream &bs) const
@@ -154,30 +168,21 @@ void Entity::sendNetFx(BitStream &bs) const
     //NetFx.serializeto();
     for(int i=0; i<m_num_fx; i++)
     {
-        bs.StoreBits(8,m_fx1[i]); // net_id
-        bs.StoreBits(32,m_fx2[i]); // command
+        bs.StoreBits(8,m_fx1[i]); // command
+        bs.StoreBits(32,m_fx2[i]); // NetID
         bs.StoreBits(1,0);
-        storePackedBitsConditional(bs,10,0xCB8);
-/*
-        storeBitsConditional(bs,4,0);
-        storePackedBitsConditional(bs,12,0xCB8);
-        bs.StoreBits(1,0);
-        if(false)
-        {
-            bs.StoreBits(32,0);
-        }
-*/
-        storeBitsConditional(bs,4,0);
-        storeBitsConditional(bs,32,0);
-        storeFloatConditional(bs,0.0);
-        storeFloatConditional(bs,10.0);
-        storeBitsConditional(bs,4,10);
-        storeBitsConditional(bs,32,0);
+        storePackedBitsConditional(bs,10,0xCB8); // handle
+        storeBitsConditional(bs,4,0); // client timer
+        storeBitsConditional(bs,32,0); // clientTriggerFx
+        storeFloatConditional(bs,0.0); // duration
+        storeFloatConditional(bs,10.0); // radius
+        storeBitsConditional(bs,4,10);  // power
+        storeBitsConditional(bs,32,0);  // debris
         int val=0;
-        storeBitsConditional(bs,2,val);
+        storeBitsConditional(bs,2,val); // origiType
         if(val==1)
         {
-            bs.StoreFloat(0.0);
+            bs.StoreFloat(0.0); // origin Pos
             bs.StoreFloat(0.0);
             bs.StoreFloat(0.0);
         }
@@ -189,21 +194,21 @@ void Entity::sendNetFx(BitStream &bs) const
             }
             else
             {
-                storePackedBitsConditional(bs,8,0);
-                bs.StorePackedBits(2,0);
+                storePackedBitsConditional(bs,8,0); // origin entity
+                bs.StorePackedBits(2,0); // bone id
 
             }
         }
-        storeBitsConditional(bs,2,0);
+        storeBitsConditional(bs,2,0); // target type
         if(false)
         {
-            bs.StoreFloat(0);
+            bs.StoreFloat(0); // targetPos
             bs.StoreFloat(0);
             bs.StoreFloat(0);
         }
         else
         {
-            storePackedBitsConditional(bs,12,0x19b);
+            storePackedBitsConditional(bs,12,0x19b); // target entity
         }
     }
 }
@@ -265,6 +270,7 @@ PlayerEntity::PlayerEntity()
     m_hasgroup_name=false;
     m_pchar_things=false;
 
+    m_char.reset();
     might_have_rare=m_rare_bits = true;
 }
 void PlayerEntity::sendCostumes( BitStream &bs ) const
@@ -381,14 +387,10 @@ void Entity::sendLogoutUpdate(BitStream &bs) const
     }
 }
 
-void Entity::serializeto( BitStream &bs ) const
+void Entity::storeCreation( BitStream &bs) const
 {
-    //////////////////////////////////////////////////////////////////////////
 
     // entity creation
-    bs.StoreBits(1,m_create); // checkEntCreate_varD14
-    if(m_create)
-    {
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending create entity\n")));
 
         bs.StoreBits(1,var_129C); // checkEntCreate_var_129C / ends creation destroys seq and returns NULL
@@ -401,8 +403,8 @@ void Entity::serializeto( BitStream &bs ) const
         {
             bs.StoreBits(1,m_create_player);
             if(m_create_player)
-                bs.StorePackedBits(1,0x123); // var_1190: this will be put in field_C8 of created entity, also will return send_g_pak_packed_1_4
-            bs.StorePackedBits(20,0);//bs.StorePackedBits(20,m_db_id);
+                bs.StorePackedBits(1,0); // var_1190: this will be put in field_C8 of created entity, also will return send_g_pak_packed_1_4
+            bs.StorePackedBits(20,intptr_t(this)&0xFFFFF);//bs.StorePackedBits(20,m_db_id);
         }
         else
         {
@@ -431,7 +433,9 @@ void Entity::serializeto( BitStream &bs ) const
         bs.StoreBits(1,m_hasname);
         if(m_hasname)
             bs.StoreString(m_char.getName());
-        bs.StoreBits(1,0); //var_94 if set Entity.field_1818/field_1840=0 else field_1818/field_1840 = 255,2
+        bs.StoreBits(1,1); //var_94 if set Entity.field_1818/field_1840=0 else field_1818/field_1840 = 255,2
+        // the following is used as an input to LCG float generator, generated float (0-1) is used as
+        // linear interpolation factor betwwen scale_min and scale_max
         bs.StoreBits(32,field_60); // this will be put in field_60 of created entity
         bs.StoreBits(1,m_hasgroup_name);
         if(m_hasgroup_name)
@@ -440,7 +444,12 @@ void Entity::serializeto( BitStream &bs ) const
             bs.StoreString(m_group_name);
         }
     }
-    // End of entrecv_442C60
+void Entity::serializeto( BitStream &bs ) const
+{
+    //////////////////////////////////////////////////////////////////////////
+    bs.StoreBits(1,m_create);
+    if(m_create)
+        storeCreation(bs);
     //////////////////////////////////////////////////////////////////////////
     // creation ends here
 
@@ -494,10 +503,11 @@ void Entity::sendBuffs(BitStream &bs) const
     bs.StorePackedBits(5,0);
 }
 
-void Entity::setInputState(Vector3 &pos,Vector3 pyr)
+void Entity::fillFromCharacter(Character *f)
 {
-    inp_state.pos=pos;
-    inp_state.pyr=pyr;
+    m_char = *f;
+    m_hasname = true;
+    //TODO: map class/origin name to Entity's class/orign indices.
 }
 void Entity::sendBuffsConditional(BitStream &bs) const
 {
@@ -567,7 +577,7 @@ void PlayerEntity::serialize_full( BitStream &tgt )
     {
         bool is_mentor=false; // this flag might mean something totally different :)
         tgt.StoreBits(1,is_mentor);
-        tgt.StorePackedBits(20,0); // sidekick partner idx -> 10240
+        tgt.StorePackedBits(20,0); // sidekick partner db_id -> 10240
     }
 }
 void Entity::InsertUpdate( PosUpdate pup )

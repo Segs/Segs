@@ -14,6 +14,8 @@ class EntitiesResponse : public MapLinkEvent
 protected:
     MapClient *m_client;
     bool m_incremental; //  if true then this is incremental update
+    bool finalized = false;
+    mutable BitStream m_finalized_into;
 public:
     EntitiesResponse(MapClient *cl);
     void is_incremental(bool v) {m_incremental=v;}
@@ -29,12 +31,27 @@ public:
         tgt.StoreFloat(8.0f);
         tgt.StorePackedBits(1,3); // use 'time step scale' shortcut
         tgt.StoreFloat(4.0f);
-        tgt.StorePackedBits(1,m_num_commands);
+        tgt.StorePackedBits(1,0);
     }
-    virtual void serializeto(BitStream &tgt) const;
+    virtual void serializeto(BitStream &tgt) const
+    {
+        assert(finalized);
+        int size=m_finalized_into.GetReadableBits();
+        while(size>32) {
+            tgt.StoreBits(32,m_finalized_into.GetBits(32));
+            size-=32;
+        }
+        tgt.StoreBits(size,m_finalized_into.GetBits(size));
+    }
+    void serializeto_internal(BitStream &tgt) const;
+    void finalize() {
+        assert(!finalized);
+        serializeto_internal(m_finalized_into);
+        finalized = true;
+    }
 
     bool entReceiveUpdate;
-    bool unkn1;
+    //bool unkn1;
     bool unkn2;
     bool debug_info;
     bool m_interpolating;
@@ -43,7 +60,6 @@ public:
     uint16_t m_debug_idx;
     uint8_t m_interpolation_level;
     uint8_t m_interpolation_bits;
-    uint32_t m_num_commands;
     uint32_t m_command_idx[15];
     std::string m_commands[15];
     uint32_t m_num_commands2;
