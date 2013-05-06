@@ -82,6 +82,11 @@ void EntityManager::InsertPlayer(Entity *ent)
 {
     m_map_entities[m_last_ent++] = ent;
     ent->m_idx = m_last_ent-1;
+    ent->pos.x=128.0; //-60.5;
+    ent->pos.y=16; //0;
+    ent->pos.z=-198; //180;
+    ent->qrot.vals.x=1.0f;
+    ent->qrot.vals.amount=1.0f;// - (rand()&0xFF)/255.0;
     m_entlist.push_back(ent);
 }
 Entity * EntityManager::CreatePlayer()

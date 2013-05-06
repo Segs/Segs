@@ -6,6 +6,7 @@
  *
  */
 #define _USE_MATH_DEFINES
+#define DEBUG_INPUT
 #include <cmath>
 #include "Events/InputState.h"
 #include "Entity.h"
@@ -13,7 +14,25 @@ void InputState::serializeto(BitStream &) const
 {
     assert(!"Not implemented");
 }
+void InputState::processDirectionControl(int dir,int prev_time,int press_release)
+{
+    if(press_release)
+    {
+        fprintf(stderr,"pressed\n");
+        switch(dir)
+        {
+            case 0: pos_delta.z+=20.0f; break;
+            case 1: pos_delta.z-=20.0f; break;
+            case 2: pos_delta.x+=20.0f; break;
+            case 3: pos_delta.x-=20.0f; break;
+            case 4: pos_delta.y+=20.0f; break;
+            case 5: pos_delta.y-=20.0f; break;
+        }
+    }
+    else
+        fprintf(stderr,"released\n");
 
+}
 void InputState::partial_2(BitStream &bs)
 {
     uint8_t control_id;
@@ -39,12 +58,11 @@ void InputState::partial_2(BitStream &bs)
             time_since_prev=bs.GetBits(m_csc_deltabits);
         switch(control_id)
         {
-            case 0: case 1: case 2:
-            case 3: case 4: case 5:
-                // field_38 bits , control_id is the number of the bit
+            case 0: case 1:
+            case 2: case 3:
+            case 4: case 5:
                 fprintf(stderr,"%s  : %d - ",control_name[control_id],time_since_prev);
-                v = bs.GetBits(1); // press release
-                fprintf(stderr,"%d\n",v);
+                processDirectionControl(control_id,time_since_prev,bs.GetBits(1));
                 break;
             case 6:
             case 7:
@@ -53,16 +71,16 @@ void InputState::partial_2(BitStream &bs)
                 // v = (x+pi)*(2048/2pi)
                 // x = (v*(pi/1024))-pi
                 float recovered = (float(v)/2048.0f)*(2*M_PI) - M_PI;
-                fprintf(stderr,"Pyr %f : %f \n",camera_pyr.x,camera_pyr.y);
                 if(control_id==6) //TODO: use camera_pyr.v[] here ?
                     camera_pyr.x = recovered;
                 else
                     camera_pyr.y = recovered;
+                fprintf(stderr,"Pyr %f : %f \n",camera_pyr.x,camera_pyr.y);
                 break;
             }
             case 8:
                 v = bs.GetBits(1);
-//                fprintf(stderr,"\tCTRL_8[%d] ",v);
+                fprintf(stderr," C8[%d] ",v);
                 if ( m_send_deltas )
                 {
                     m_t1=bs.GetPackedBits(8);
@@ -74,22 +92,20 @@ void InputState::partial_2(BitStream &bs)
                     m_t1=bs.GetBits(32);
                     m_t2=bs.GetPackedBits(10);
                 }
-//                fprintf(stderr,"[%d, ",t1);
-//                fprintf(stderr,",%d] ",t2);
+                fprintf(stderr,"t1:t2 [%d,%d] ",m_t1,m_t2);
                 if(bs.GetBits(1))
                 {
                     v=bs.GetBits(8);
-//                    fprintf(stderr,"CTRL_8C[%d] ",v);
-//                    fprintf(stderr,"P2_8_opt : %d\n",v);
+                    fprintf(stderr,"v [%d] ",v);
                 }
                 break;
             case 9:
                  //a2->timerel_18
                 //fprintf(stderr,"CtrlId %d  : %d - ",control_id,time_since_prev);
-                fprintf(stderr,"%d\n",bs.GetBits(8));
+                fprintf(stderr,"C9:%d ",bs.GetBits(8));
                 break;
             case 10:
-                fprintf(stderr,"CtrlId %d  : %d - ",control_id,time_since_prev);
+                fprintf(stderr,"C10 : %d - ",time_since_prev);
                 fprintf(stderr,"%d\n",bs.GetBits(1)); //a2->timerel_18 & 1
                 break;
             default:
@@ -101,7 +117,8 @@ void InputState::partial_2(BitStream &bs)
 
 void InputState::extended_input(BitStream &bs)
 {
-    if(bs.GetBits(1)) // list of partial_2 follows
+    has_input_commit_guess = bs.GetBits(1);
+    if(has_input_commit_guess) // list of partial_2 follows
     {
         m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
         someOtherbits = bs.GetBits(16);//ControlStateChange::field_8 or OptRel::field_19A8
@@ -116,6 +133,7 @@ void InputState::extended_input(BitStream &bs)
     for(int idx=0; idx<6; ++idx)
         controlBits |= (bs.GetBits(1))<<idx;
 #ifdef DEBUG_INPUT
+    if(controlBits)
     fprintf(stderr,"E input %x : ",controlBits);
 #endif
     if(bs.GetBits(1))//if ( abs(s_prevTime - ms_time) < 1000 )
@@ -123,7 +141,7 @@ void InputState::extended_input(BitStream &bs)
         m_A_ang11_probably = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[0]);
         m_B_ang11_probably = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[1]);
 #ifdef DEBUG_INPUT
-        fprintf(stderr,"%x : %x",v1,v2);
+        fprintf(stderr,"%f : %f",m_A_ang11_probably/2048.0,m_A_ang11_probably/2048.0);
 #endif
     }
 }
@@ -178,7 +196,7 @@ void InputState::serializefrom(BitStream &bs)
 {
     m_send_deltas=false;
 #ifdef DEBUG_INPUT
-    fprintf(stderr,"I:");
+    fprintf(stderr,"\nI:");
 #endif
     if(bs.GetBits(1))
         extended_input(bs);
@@ -188,6 +206,7 @@ void InputState::serializefrom(BitStream &bs)
     int ctrl_idx=0;
 #ifdef DEBUG_INPUT
     fprintf(stderr,"T:[%d]",has_targeted_entity);
+    if(has_targeted_entity)
     fprintf(stderr,"TI:[%d]",tgt_idx);
 #endif
     ControlState prev_fld;

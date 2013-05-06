@@ -61,7 +61,7 @@ public:
         enum
         {
             ENT_PLAYER=2,
-            ENT_CRITTER=4,
+            ENT_CRITTER=4
         };
         int field_64;
         int field_60;
@@ -149,7 +149,9 @@ virtual void                    serializefrom(BitStream &){}
         void                    sendBuffsConditional(BitStream &bs) const;
         const std::string &     name() {return m_char.getName();}
         void                    sendBuffs(BitStream &bs) const;
-        void                    setInputState(Vector3 &pos, Vector3 pyr);
+        void                    fillFromCharacter(Character *f);
+private:
+        void                    storeCreation(BitStream & bs) const;
 };
 class MobEntity : public Entity
 {

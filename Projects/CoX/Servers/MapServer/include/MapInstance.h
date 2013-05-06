@@ -24,13 +24,14 @@ class MapInstance : public EventProcessor
     std::string     m_name;
     SEGSTimer *     m_world_update_timer;
     std::vector<MapClient *> m_clients;
+    std::vector<MapClient *> m_queued_clients;
 public:
     EntityManager   m_entities;
                     MapInstance(const std::string &name);
     void            dispatch(SEGSEvent *ev);
     SEGSEvent *     dispatch_sync(SEGSEvent *ev);
 
-    void            create_entity(Entity* ent);
+    void            enqueue_client(MapClient *clnt);
 
 protected:
     void            on_scene_request(SceneRequest *ev);

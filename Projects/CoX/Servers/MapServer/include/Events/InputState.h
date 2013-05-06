@@ -21,6 +21,9 @@ public:
     int m_t1,m_t2;
     int m_A_ang11_probably,m_B_ang11_probably;
 
+    bool has_input_commit_guess;
+    Vector3 pos_delta;
+    void processDirectionControl(int dir, int prev_time, int press_release);
 public:
     InputState() : MapLinkEvent(MapEventTypes::evInputState)
     {}

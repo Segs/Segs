@@ -9,6 +9,7 @@
 // This module contains code to access our database where accounts and characters are stored
 #include <cassert>
 #include <sstream>
+#include <string.h>
 #ifdef LINUX // forgive me brothers for i have sinned
 #include <inttypes.h>
 #else
@@ -18,9 +19,9 @@
 #include <ace/Log_Msg.h>
 #include <ace/OS_NS_time.h>
 #include <ace/OS_NS_Thread.h>
+
 // segs Includes
 #include "Database.h"
-#include <string.h>
 // Our PostgreSQL connection information
 Database::Database()
 {
