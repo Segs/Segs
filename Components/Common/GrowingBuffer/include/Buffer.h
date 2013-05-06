@@ -21,6 +21,7 @@ class GrowingBuffer
 #define DEFAULT_MAX_SIZE 0x10000
 #else
 static  constexpr size_t        DEFAULT_MAX_SIZE = 0x10000; //64K should be enough for everyone :P
+public:
 static  constexpr const char *  name = "GrowingBuffer"; // used by script bindings
 #endif
 public:
