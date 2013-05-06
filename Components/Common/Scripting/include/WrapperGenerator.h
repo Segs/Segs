@@ -197,6 +197,9 @@ struct TypeBinding  {
             return p->m_p;
         return nullptr;
     }
+    static mrb_value toRuby(mrb_state * mrb, TYPE *self) {
+        return mrb_nil_value();
+    }
     static TYPE *wrapped_constructor(mrb_state * mrb, mrb_value self) {
         //ArgMapper::extract_args_and_call_method
     }
@@ -205,6 +208,12 @@ struct TypeBinding  {
 };
 template<class T>
 constexpr mrb_data_type TypeBinding<T>::binding;
+
+template<typename TYPE>
+TYPE fromRuby(mrb_state * mrb, mrb_value self);
+
+template<typename TYPE>
+mrb_value toRuby(mrb_state * mrb, TYPE self);
 
 
 #define WRAP_FUNCTION(name) mrb_value wrap##_##name(mrb_state * mrb,mrb_value self) \
