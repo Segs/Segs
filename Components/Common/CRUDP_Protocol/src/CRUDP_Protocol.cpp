@@ -328,84 +328,31 @@ uint8_t * compressStream(BitStream &stream)
     compress(dest,&comp_length,stream.read_ptr(),stream.GetReadableDataSize());
     return dest;
 }
-void CrudP_Protocol::SendPacket(CrudP_Packet *p)
+void CrudP_Protocol::SendLargePacket(CrudP_Packet *p)
 {
-
-    // p is just a thin wrapper around the payload
-    // Todo: Implement packet splits
-    if(p->GetStream()->GetReadableDataSize()>1200)
+    static int sib_id=0;
+    size_t block_size;
+    vCrudP_Packet split_packets = packetSplit(*p,1200);
+    CrudP_Packet *pkt;
+    ++sib_id;
+    for(ivCrudP_Packet iter=split_packets.begin(); iter!=split_packets.end(); iter++)
     {
-        static int sib_id=0;
-        size_t block_size;
-        vCrudP_Packet split_packets = packetSplit(*p,1200);
-        CrudP_Packet *pkt;
-        ++sib_id;
-        for(ivCrudP_Packet iter=split_packets.begin(); iter!=split_packets.end(); iter++)
+        pkt = *iter;
+        pkt->setNumSibs((uint32_t)split_packets.size());
+        pkt->setSibId(sib_id);
+        pkt->m_checksum	= 0;
+        pkt->setSeqNo(++send_seq);
+        block_size = pkt->GetStream()->GetReadableDataSize();
+        BitStream *res =new BitStream((uint32_t)(block_size+64));
+        res->Put((uint32_t)0); // readable bits holder
+        res->Put((uint32_t)0); // checksum placeholder
+        res->StoreBits(1,pkt->HasDebugInfo());
+        res->StoreBits(32,pkt->GetSequenceNumber());
+        res->StorePackedBits(1,pkt->getNumSibs()); // sibling count
+        if(pkt->getNumSibs())
         {
-            pkt = *iter;
-            pkt->setNumSibs((uint32_t)split_packets.size());
-            pkt->setSibId(sib_id);
-            pkt->m_checksum	= 0;
-            pkt->setSeqNo(++send_seq);
-            block_size = pkt->GetStream()->GetReadableDataSize();
-            BitStream *res =new BitStream((uint32_t)(block_size+64));
-            res->Put((uint32_t)0); // readable bits holder
-            res->Put((uint32_t)0); // checksum placeholder
-            res->StoreBits(1,pkt->HasDebugInfo());
-            res->StoreBits(32,pkt->GetSequenceNumber());
-            res->StorePackedBits(1,pkt->getNumSibs()); // sibling count
-            if(pkt->getNumSibs())
-            {
-                res->StorePackedBits(1,pkt->getSibPos());
-                res->StoreBits(32,pkt->getSibId());
-            }
-            storeAcks(*res);
-            res->StoreBits(1,(int)p->getIsCompressed());
-            res->StoreBits(1,0); // HasOrderedId
-            if(false)
-            {
-                res->StoreBits_4_10_24_32(0); // instead of  zero we have to put ordered_id here, whatever that is
-            }
-            res->ByteAlign();
-            res->StoreBitArray((uint8_t*)pkt->GetStream()->read_ptr(),(uint32_t)pkt->GetStream()->GetReadableBits());
-            res->ResetReading();
-            uint32_t *head =  (uint32_t *)res->read_ptr();
-            head[0] = (uint32_t)res->GetReadableBits();
-            res->ByteAlign();
-            size_t length =res->GetReadableDataSize();
-            size_t fixedlen=((length + 3) & ~7) + 4;
-            while(res->GetReadableDataSize()<fixedlen)
-            {
-                res->Put((uint8_t)0);
-            }
-            head[1] = m_codec->Checksum((uint8_t*)&head[2],fixedlen-8); // this is safe because all bitstreams have padding
-            m_codec->Encrypt((uint8_t*)&head[1],fixedlen-4);//res->GetReadableDataSize()
-            delete pkt->GetStream();
-            pkt->SetStream(res);
-            ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
-            unsent_packets.push_back(pkt);
-        }
-    }
-    else
-    {
-        p->setNumSibs(0);
-        p->setSibId(0);
-        p->m_checksum	= 0;
-        p->setSeqNo(++send_seq);
-        p->setSibPos(0);
-
-        BitStream *res =new BitStream(p->GetStream()->GetReadableDataSize()+64);
-        memset(res->read_ptr(),0,64);
-        res->Put((uint32_t)p->GetStream()->GetReadableBits());
-        res->Put(p->m_checksum);
-
-        res->StoreBits(1,p->HasDebugInfo());
-        res->StoreBits(32,p->GetSequenceNumber());
-        res->StorePackedBits(1,p->getNumSibs()); // sibling count
-        if(p->getNumSibs())
-        {
-            res->StorePackedBits(1,p->getSibPos());
-            res->StoreBits(32,p->getSibId());
+            res->StorePackedBits(1,pkt->getSibPos());
+            res->StoreBits(32,pkt->getSibId());
         }
         storeAcks(*res);
         res->StoreBits(1,(int)p->getIsCompressed());
@@ -415,10 +362,10 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
             res->StoreBits_4_10_24_32(0); // instead of  zero we have to put ordered_id here, whatever that is
         }
         res->ByteAlign();
-        res->StoreBitArray((uint8_t*)p->GetStream()->read_ptr(),p->GetStream()->GetReadableBits());
+        res->StoreBitArray((uint8_t*)pkt->GetStream()->read_ptr(),(uint32_t)pkt->GetStream()->GetReadableBits());
         res->ResetReading();
         uint32_t *head =  (uint32_t *)res->read_ptr();
-        head[0] = uint32_t(res->GetReadableBits());
+        head[0] = (uint32_t)res->GetReadableBits();
         res->ByteAlign();
         size_t length =res->GetReadableDataSize();
         size_t fixedlen=((length + 3) & ~7) + 4;
@@ -428,10 +375,72 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
         }
         head[1] = m_codec->Checksum((uint8_t*)&head[2],fixedlen-8); // this is safe because all bitstreams have padding
         m_codec->Encrypt((uint8_t*)&head[1],fixedlen-4);//res->GetReadableDataSize()
-        delete p->GetStream();
-        p->SetStream(res);
+        delete pkt->GetStream();
+        pkt->SetStream(res);
         ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
-        unsent_packets.push_back(p);
+        unsent_packets.push_back(pkt);
+    }
+}
+
+void CrudP_Protocol::SendSmallPacket(CrudP_Packet *p)
+{
+    p->setNumSibs(0);
+    p->setSibId(0);
+    p->m_checksum	= 0;
+    p->setSeqNo(++send_seq);
+    p->setSibPos(0);
+
+    BitStream *res =new BitStream(p->GetStream()->GetReadableDataSize()+64);
+    memset(res->read_ptr(),0,64);
+    res->Put((uint32_t)p->GetStream()->GetReadableBits());
+    res->Put(p->m_checksum);
+
+    res->StoreBits(1,p->HasDebugInfo());
+    res->StoreBits(32,p->GetSequenceNumber());
+    res->StorePackedBits(1,p->getNumSibs()); // sibling count
+    if(p->getNumSibs())
+    {
+        res->StorePackedBits(1,p->getSibPos());
+        res->StoreBits(32,p->getSibId());
+    }
+    storeAcks(*res);
+    res->StoreBits(1,(int)p->getIsCompressed());
+    res->StoreBits(1,0); // HasOrderedId
+    if(false)
+    {
+        res->StoreBits_4_10_24_32(0); // instead of  zero we have to put ordered_id here, whatever that is
+    }
+    res->ByteAlign();
+    res->StoreBitArray((uint8_t*)p->GetStream()->read_ptr(),p->GetStream()->GetReadableBits());
+    res->ResetReading();
+    uint32_t *head =  (uint32_t *)res->read_ptr();
+    head[0] = uint32_t(res->GetReadableBits());
+    res->ByteAlign();
+    size_t length =res->GetReadableDataSize();
+    size_t fixedlen=((length + 3) & ~7) + 4;
+    while(res->GetReadableDataSize()<fixedlen)
+    {
+        res->Put((uint8_t)0);
+    }
+    head[1] = m_codec->Checksum((uint8_t*)&head[2],fixedlen-8); // this is safe because all bitstreams have padding
+    m_codec->Encrypt((uint8_t*)&head[1],fixedlen-4);//res->GetReadableDataSize()
+    delete p->GetStream();
+    p->SetStream(res);
+    ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
+    unsent_packets.push_back(p);
+}
+
+void CrudP_Protocol::SendPacket(CrudP_Packet *p)
+{
+    // p is just a thin wrapper around the payload
+    // Todo: Implement packet splits
+    if(p->GetStream()->GetReadableDataSize()>1200)
+    {
+        SendLargePacket(p);
+    }
+    else
+    {
+        SendSmallPacket(p);
     }
 }
 //! this gets all currently unacknowledged packets

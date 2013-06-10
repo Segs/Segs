@@ -20,17 +20,17 @@ class PacketCodecNull;
 class CrudP_Protocol
 {
 private:
-    typedef std::deque<CrudP_Packet *> pPacketStorage;
-    typedef pPacketStorage::iterator ipPacketStorage ;
-    typedef std::unordered_map<int,pPacketStorage> hmSibStorage;
+        typedef std::deque<CrudP_Packet *> pPacketStorage;
+        typedef pPacketStorage::iterator ipPacketStorage ;
+        typedef std::unordered_map<int,pPacketStorage> hmSibStorage;
 
-        uint32_t                 send_seq;
-        uint32_t                 recv_seq;
+        uint32_t            send_seq;
+        uint32_t            recv_seq;
 
         PacketCodecNull *   m_codec;
         pPacketStorage      avail_packets;
         pPacketStorage      unsent_packets;
-        std::list<uint32_t>      recv_acks; // each successful receive will store it's ack here
+        std::list<uint32_t> recv_acks; // each successful receive will store it's ack here
         hmSibStorage        sibling_map; // we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
         ACE_Thread_Mutex    m_packets_mutex;
 
@@ -54,6 +54,8 @@ public:
         void                SendPacket(CrudP_Packet *p); // this might split packet 'p' into a few packets
         CrudP_Packet *      RecvPacket(bool disregard_seq);
 protected:
+        void                sendLargePacket(CrudP_Packet *p);
+        void                sendSmallPacket(CrudP_Packet *p);
         void                parseAcks(BitStream &src,CrudP_Packet *tgt);
         void                storeAcks(BitStream &bs);
         void                PushRecvPacket(CrudP_Packet *a); // this will try to join packet 'a' with it's siblings
