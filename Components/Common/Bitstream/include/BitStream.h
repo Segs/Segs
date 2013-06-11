@@ -28,7 +28,7 @@ Description: The BitStream class allows it's user to manipulate data in
 #define BS_F32         7
 
 #define BITS_PER_BYTE  8
-#define BITS_PER_DWORD (BITS_PER_BYTE * sizeof(uint32_t))
+#define BITS_PER_DWORD (BITS_PER_BYTE * uint32_t(sizeof(uint32_t)))
 
 
 //	Macros

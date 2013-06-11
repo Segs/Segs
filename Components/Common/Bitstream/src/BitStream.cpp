@@ -166,32 +166,34 @@ void BitStream::StorePackedBitsWithDebugInfo(uint32_t nBits, uint32_t dataBits)
         store 2,18 -> Store(2,3) 15,Store(4,15) 0 -> 11 1111 00000000
         store 3,18 -> Store(3,7) 11, 111 001011
 */
+#define MAX_VALUE_THAT_CAN_BE_STORED(x) ((uint32_t)((1 << (x)) - 1))
+#define N_ONES(n) ((uint32_t)((1 << (n)) - 1))
 /**
   @fn StorePackedBits
   @fn StorePackedBitsWithDebugInfo
-   Stores bits in a special "packed" format.  Though i've
-   written a working implementation of it, I don't entirely
-   understand how it works
 
- TODO: Learn more about the "packed bits" format, and write a better
-           description of it, and if necessary a better implementation
+ Stores the given \a dataBits value in the bitstream, using the following packing algorithm:
+    while value to send is larger then the maximal value that can be written using \a nBits
+      reduce the value to send by maximal value that can be written using nBits
+      store nBits in the stream to mark that the actual value is larger
+      and increase nBits two times, making sure it doesn't grow larger then sizoef(int)*8
+    after exiting the loop, send the leftover value
 */
 void BitStream::StorePackedBits(uint32_t nBits, uint32_t dataBits)
 {
     if(IsByteAligned())	return StoreBits(32, dataBits);
 
-    while((nBits < 32) && (dataBits >= BIT_MASK(nBits)))
+    while((nBits < 32) && (dataBits >= MAX_VALUE_THAT_CAN_BE_STORED(nBits)))
     {
-        dataBits -= BIT_MASK(nBits);
-        StoreBits(nBits, BIT_MASK(nBits));
-        nBits *= 2;
-        if(nBits > 32) nBits = 32;
+        dataBits -= MAX_VALUE_THAT_CAN_BE_STORED(nBits);
+        StoreBits(nBits, N_ONES(nBits));
+        nBits = std::min(nBits * 2,BITS_PER_DWORD);
     }
 
     StoreBits(nBits, dataBits);
 }
-
-
+#undef N_ONES
+#undef MAX_VALUE_THAT_CAN_BE_STORED
 /************************************************************************
 Function:	 StoreBitArray/StoreBitArrayWithDebugInfo
 Description: Stores an array of bits in the bit stream buffer.  The
@@ -332,15 +334,20 @@ int32_t BitStream::uGetBits(uint32_t nBits)
 }
 
 
-/************************************************************************
-Function:	 GetPackedBits/GetPackedBitsWithDebugInfo
-Description: Retrieves an indefinite(though always less than 32) number
-                         of bits.  It determines how many to retrieve based on how
-                         the bits are packed.  I don't yet fully understand this
-                         "packed bits" concept
+/************************************************************************//**
+\fn	 GetPackedBits
+\fn  GetPackedBitsWithDebugInfo
+ Retrieves an indefinite( up to 32) number of bits.
+ The algorithm that determines the encoding of the value is as follows:
 
-TODO: Learn more about this format and write a better description, and
-          if necessary, a better implementation
+ set result to 0
+ while there are bits available
+    read minbits bits, and add them to result
+    if the last read bits are all 1s, or the number of bits is equal to bit length of integer
+        return the result
+    otherwise
+        increase the minbits two times, taking care not to allow it to exceed the bit length of integer
+
 ************************************************************************/
 int32_t BitStream::GetPackedBitsWithDebugInfo(uint32_t minbits)
 {
@@ -348,16 +355,6 @@ int32_t BitStream::GetPackedBitsWithDebugInfo(uint32_t minbits)
     /*uint32_t datalength =*/ (void)GetPackedBits(5);
     return GetPackedBits(minbits);
 }
-/************************************************************************
-Function:	 GetPackedBits/GetPackedBitsWithDebugInfo
-Description: Retrieves an indefinite(though always less than 32) number
-                         of bits.  It determines how many to retrieve based on how
-                         the bits are packed.  I don't yet fully understand this
-                         "packed bits" concept
-
-TODO: Learn more about this format and write a better description, and
-          if necessary, a better implementation
-************************************************************************/
 int32_t BitStream::GetPackedBits(uint32_t minbits)
 {
     if(IsByteAligned())	return GetBits(32);
