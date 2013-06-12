@@ -22,10 +22,9 @@
 // Template instantiation
 template class ClientStore<MapClient>;
 
-MapServer::MapServer(void) :
-m_id(0),
-m_online(false),
-m_endpoint(NULL)
+MapServer::MapServer(void) : m_id(0),
+    m_online(false),
+    m_endpoint(NULL)
 {
 
 }
@@ -63,8 +62,8 @@ bool MapServer::Run(void)
     return startup();
 }
 /**
- * @return bool (false means an error occurred )
  * @param  inipath Doc at RoamingServer::ReadConfig
+ * @return bool (false means an error occurred )
  */
 bool MapServer::ReadConfig(const std::string &inipath)
 {

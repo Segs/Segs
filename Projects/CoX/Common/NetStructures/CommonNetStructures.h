@@ -9,75 +9,76 @@
 #pragma once
 
 #include <ace/Log_Msg.h>
+#include <osg/Vec3>
 #include <string>
 #include <sstream>
 #include "BitStream.h"
-class Quaternion
-{
-public:
-        Quaternion &FromNormalized(float a,float b,float c)
-        {
-                q[0]=a;
-                q[1]=b;
-                q[2]=c;
-                float res = (a*a+b*b+c*c)-1;
-                q[3]= std::max<>((float)0,res);
-                return *this;
-        }
-        Quaternion()
-        {
-                q[0]=q[1]=q[2]=q[3]=0.0;
-        }
-        union
-        {
-                struct
-                {
-                        float x,y,z,amount;
-                } vals;
-                float q[4];
-        };
-};
-class Vector3
-{
-public:
-        Vector3(float x=0.0f,float y=0.0f,float z=0.0f)
-        {
-                v[0]=x;
-                v[1]=y;
-                v[2]=z;
-        }
-        union {
-                float v[3];
-                struct {
-                        float x,y,z;
-                };
-        };
-        const Vector3 &operator+=(const Vector3 &rhs)
-        {
-            x+=rhs.x;
-            y+=rhs.y;
-            z+=rhs.z;
-            return *this;
-        }
-};
+//class Quaternion
+//{
+//public:
+//        Quaternion &FromNormalized(float a,float b,float c)
+//        {
+//                q[0]=a;
+//                q[1]=b;
+//                q[2]=c;
+//                float res = (a*a+b*b+c*c)-1;
+//                q[3]= std::max<>((float)0,res);
+//                return *this;
+//        }
+//        Quaternion()
+//        {
+//                q[0]=q[1]=q[2]=q[3]=0.0;
+//        }
+//        union
+//        {
+//                struct
+//                {
+//                        float x,y,z,amount;
+//                } vals;
+//                float q[4];
+//        };
+//};
+//class Vector3
+//{
+//public:
+//        Vector3(float x=0.0f,float y=0.0f,float z=0.0f)
+//        {
+//                v[0]=x;
+//                v[1]=y;
+//                v[2]=z;
+//        }
+//        union {
+//                float v[3];
+//                struct {
+//                        float x,y,z;
+//                };
+//        };
+//        const Vector3 &operator+=(const Vector3 &rhs)
+//        {
+//            x+=rhs.x;
+//            y+=rhs.y;
+//            z+=rhs.z;
+//            return *this;
+//        }
+//};
 typedef struct
 {
-        Vector3 row1;
-        Vector3 row2;
-        Vector3 row3;
-        Vector3 row4;
+        osg::Vec3 row1;
+        osg::Vec3 row2;
+        osg::Vec3 row3;
+        osg::Vec3 row4;
 } Matrix4x3;
 class TransformStruct
 {
 public:
-        TransformStruct(const Vector3 &a,const Vector3 &b,const Vector3 &c,bool set1,bool set2,bool set3) :
+        TransformStruct(const osg::Vec3 &a,const osg::Vec3 &b,const osg::Vec3 &c,bool set1,bool set2,bool set3) :
           v1(a),v2(b),v3(c),v1_set(set1),v2_set(set2),v3_set(set3)
         {
         }
         TransformStruct() {v1_set=v2_set=v3_set=false;}
-        Vector3 v1;
-        Vector3 v2;
-        Vector3 v3;
+        osg::Vec3 v1;
+        osg::Vec3 v2;
+        osg::Vec3 v3;
         bool v1_set,v2_set,v3_set;
 };
 
@@ -100,8 +101,8 @@ public:
     static  void            storeFloatPacked(BitStream &bs,float val);
     static  int             getPackedBitsConditional(BitStream &bs,int numbits);
     static  void            storeStringConditional(BitStream &bs,const std::string &str);
-    static  void            storeVector(BitStream &bs, Vector3 &vec);
-    static  void            storeVectorConditional(BitStream &bs, Vector3 &vec);
+    static  void            storeVector(BitStream &bs, osg::Vec3 &vec);
+    static  void            storeVectorConditional(BitStream &bs, osg::Vec3 &vec);
     static  void            storeTransformMatrix(BitStream &tgt,const Matrix4x3 &src);
     static  void            storeTransformMatrix(BitStream &tgt,const TransformStruct &src);
 

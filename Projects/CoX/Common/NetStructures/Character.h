@@ -45,6 +45,7 @@ public:
     ClientOptions()
     {
         init();
+        mouselook_scalefactor=0.6;
     }
     bool    mouse_invert;
     float   mouselook_scalefactor;

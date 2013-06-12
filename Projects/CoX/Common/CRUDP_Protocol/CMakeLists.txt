@@ -1,22 +1,22 @@
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/src/CRUDP_Packet.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/CRUDP_Protocol.cpp
-#${CMAKE_CURRENT_SOURCE_DIR}/src/GameProtocol.cpp
-#${CMAKE_CURRENT_SOURCE_DIR}/src/GameProtocolHandler.cpp
-#${CMAKE_CURRENT_SOURCE_DIR}/src/PacketBase.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/PacketCodec.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/CRUDP_Packet.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/CRUDP_Protocol.cpp
+#${CMAKE_CURRENT_SOURCE_DIR}/GameProtocol.cpp
+#${CMAKE_CURRENT_SOURCE_DIR}/GameProtocolHandler.cpp
+#${CMAKE_CURRENT_SOURCE_DIR}/PacketBase.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/PacketCodec.cpp
 )
 SET(target_INCLUDE
-${CMAKE_CURRENT_SOURCE_DIR}/include/CRUDP_Packet.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/CRUDP_Protocol.h
-#${CMAKE_CURRENT_SOURCE_DIR}/include/GameProtocol.h
-#${CMAKE_CURRENT_SOURCE_DIR}/include/GameProtocolHandler.h
-#${CMAKE_CURRENT_SOURCE_DIR}/include/PacketBase.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/PacketCodec.h
+${CMAKE_CURRENT_SOURCE_DIR}/CRUDP_Packet.h
+${CMAKE_CURRENT_SOURCE_DIR}/CRUDP_Protocol.h
+#${CMAKE_CURRENT_SOURCE_DIR}/GameProtocol.h
+#${CMAKE_CURRENT_SOURCE_DIR}/GameProtocolHandler.h
+#${CMAKE_CURRENT_SOURCE_DIR}/PacketBase.h
+${CMAKE_CURRENT_SOURCE_DIR}/PacketCodec.h
 )
 
 
-SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 SEGS_ADD_COMPONENT(Bitstream SOURCE)
 

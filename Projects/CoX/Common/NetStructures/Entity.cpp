@@ -5,7 +5,6 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-
 #define _USE_MATH_DEFINES
 #include <math.h>
 #ifdef WIN32
@@ -16,7 +15,9 @@
 #include "Entity.h"
 #include <limits>
 #include <sstream>
+
 static const float F_PI = float(M_PI); // to prevent double <-> float conversion warnings
+
 float AngleDequantize(int value,int numb_bits)
 {
     int max_val = 1<<numb_bits;
@@ -54,7 +55,7 @@ int Entity::getOrientation(BitStream &bs)
             if(current_client_packet_id>pkt_id_QrotUpdateVal[i])
             {
                 pkt_id_QrotUpdateVal[i] = current_client_packet_id;
-                qrot.q[i] = fval;
+                qrot[i] = fval;
             }
             else
                 recv_older=true;
@@ -77,7 +78,7 @@ void Entity::storeOrientation(BitStream &bs) const
     {
         if(update_rot(i))
         {
-            bs.StoreBits(9,AngleQuantize(qrot.q[i],9));	 // normalized quat, 4th param is recoverable from the first 3
+            bs.StoreBits(9,AngleQuantize(qrot[i],9));	 // normalized quat, 4th param is recoverable from the first 3
         }
     }
 }
@@ -93,7 +94,7 @@ void Entity::storePosition(BitStream &bs) const
     bs.StoreBits(3,7); // frank -> 7,-60.5,0,180
     for(int i=0; i<3; i++)
     {
-        packed = quantize_float(pos.v[i]);
+        packed = quantize_float(pos[i]);
         packed = packed<0xFFFFFF ? packed : 0xFFFFFF;
         //diff = packed ^ prev_pos[i]; // changed bits are '1'
         bs.StoreBits(24,packed);
@@ -602,9 +603,7 @@ Entity::Entity()
     m_seq_update=0;
     m_has_titles=false;
     m_SG_info=false;
-    pos.v[0]=-60.5;
-    pos.v[1]=180;
-    pos.v[2]=0;
+    pos = osg::Vec3(-60.5,180,0);
 }
 
 /*
@@ -722,15 +721,15 @@ void Avatar::send_character(BitStream &bs) const
     sendBoosts(bs);
 }
 */
-void Avatar::sendBuffs(BitStream &bs) const
-{
-    uint32_t num_buffs=0;
-    bs.StorePackedBits(5,num_buffs);
-    for(size_t idx=0; idx<num_buffs; ++idx)
-    {
-        sendPower(bs,0,0,0);
-    }
-}
+//void Avatar::sendBuffs(BitStream &bs) const
+//{
+//    uint32_t num_buffs=0;
+//    bs.StorePackedBits(5,num_buffs);
+//    for(size_t idx=0; idx<num_buffs; ++idx)
+//    {
+//        sendPower(bs,0,0,0);
+//    }
+//}
 
 void MapCostume::GetCostume( BitStream &src )
 {

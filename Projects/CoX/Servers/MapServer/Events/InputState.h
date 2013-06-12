@@ -9,21 +9,11 @@
 // if this file is included stand-alone this will pull in common definitions
 #include "MapEvents.h"
 #include "CommonNetStructures.h"
+#include "Entity.h"
 class InputState : public MapLinkEvent
 {
 public:
-    uint8_t m_csc_deltabits;
-    bool m_send_deltas;
-    uint16_t controlBits;
-    uint16_t someOtherbits;
-    void *current_state_P;
-    Vector3 camera_pyr;
-    int m_t1,m_t2;
-    int m_A_ang11_probably,m_B_ang11_probably;
-
-    bool has_input_commit_guess;
-    Vector3 pos_delta;
-    void processDirectionControl(int dir, int prev_time, int press_release);
+    InputStateStorage m_data;
 public:
     InputState() : MapLinkEvent(MapEventTypes::evInputState)
     {}
@@ -32,5 +22,5 @@ public:
     void extended_input(BitStream &bs);
     void serializefrom(BitStream &bs);
     void recv_client_opts(BitStream &bs);
-    Vector3 &pyr() {return camera_pyr;}
+    osg::Vec3 &pyr() {return m_data.camera_pyr;}
 };

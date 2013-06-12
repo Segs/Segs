@@ -328,7 +328,7 @@ uint8_t * compressStream(BitStream &stream)
     compress(dest,&comp_length,stream.read_ptr(),stream.GetReadableDataSize());
     return dest;
 }
-void CrudP_Protocol::SendLargePacket(CrudP_Packet *p)
+void CrudP_Protocol::sendLargePacket(CrudP_Packet *p)
 {
     static int sib_id=0;
     size_t block_size;
@@ -382,7 +382,7 @@ void CrudP_Protocol::SendLargePacket(CrudP_Packet *p)
     }
 }
 
-void CrudP_Protocol::SendSmallPacket(CrudP_Packet *p)
+void CrudP_Protocol::sendSmallPacket(CrudP_Packet *p)
 {
     p->setNumSibs(0);
     p->setSibId(0);
@@ -436,11 +436,11 @@ void CrudP_Protocol::SendPacket(CrudP_Packet *p)
     // Todo: Implement packet splits
     if(p->GetStream()->GetReadableDataSize()>1200)
     {
-        SendLargePacket(p);
+        sendLargePacket(p);
     }
     else
     {
-        SendSmallPacket(p);
+        sendSmallPacket(p);
     }
 }
 //! this gets all currently unacknowledged packets

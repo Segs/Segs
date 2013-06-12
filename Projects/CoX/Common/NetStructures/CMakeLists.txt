@@ -1,22 +1,23 @@
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/src/Character.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/CommonNetStructures.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/Costume.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/Character.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/CommonNetStructures.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/Costume.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/Entity.cpp
 )
 SET(target_INCLUDE
-${CMAKE_CURRENT_SOURCE_DIR}/include/CommonNetStructures.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Powers.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Character.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Costume.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
+${CMAKE_CURRENT_SOURCE_DIR}/CommonNetStructures.h
+${CMAKE_CURRENT_SOURCE_DIR}/Powers.h
+${CMAKE_CURRENT_SOURCE_DIR}/Character.h
+${CMAKE_CURRENT_SOURCE_DIR}/Costume.h
+${CMAKE_CURRENT_SOURCE_DIR}/Entity.h
 )
 
 
-SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(target_DEPENDS "")
 
-SEGS_ADD_COMPONENT(segs_common LIB)
+#SEGS_ADD_COMPONENT(segs_common LIB)
+SEGS_ADD_COMPONENT(CRUDP_Protocol SOURCE)
 SEGS_ADD_COMPONENT(static_storage LIB)
 SET (target_SOURCES
 ${target_CPP}

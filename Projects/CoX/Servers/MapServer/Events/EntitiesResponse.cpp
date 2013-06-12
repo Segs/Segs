@@ -24,7 +24,8 @@ EntitiesResponse::EntitiesResponse(MapClient *cl) :
 }
 void EntitiesResponse::serializeto_internal( BitStream &tgt ) const
 {
-    EntityManager &ent_manager=m_client->current_map()->m_entities;
+    MapInstance *mi = m_client->current_map();
+    EntityManager &ent_manager(mi->m_entities);
 
 
     tgt.StorePackedBits(1,m_incremental ? 2 : 3); // opcode  3 - full update.
@@ -140,9 +141,8 @@ void EntitiesResponse::sendServerPhysicsPositions(BitStream &bs) const
         bs.StoreBits(16,target->m_input_ack); //target->m_input_ack
     if(full_update)
     {
-        bs.StoreFloat(target->pos.x); // server position
-        bs.StoreFloat(target->pos.y);
-        bs.StoreFloat(target->pos.z);
+        for(int i=0; i<3; ++i)
+            bs.StoreFloat(target->pos[i]); // server position
         NetStructure::storeFloatConditional(bs,0.0f); // PYR rotation ?
         NetStructure::storeFloatConditional(bs,0.0f);
         NetStructure::storeFloatConditional(bs,0.0f);
@@ -160,20 +160,17 @@ struct CscCommon_Sub28
 };
 void EntitiesResponse::sendServerControlState(BitStream &bs) const
 {
-    Vector3 spd(1,80,1);
-    Vector3 zeroes;
+    osg::Vec3 spd(1,1,1);
+    osg::Vec3 zeroes;
     bool m_flying=false;
     bool m_dazed=false;
     // user entity
     Entity *ent = m_client->char_entity();
     CscCommon_Sub28 struct_csc;
     memset(&struct_csc,0,sizeof(struct_csc));
-    static int vla=1;
-    int g=rand()&0xff;
     for(int i=0; i<3; ++i)
-        struct_csc.a.v[i] = g+vla;
-    vla+=1;
-    struct_csc.b.max_speed = struct_csc.a.max_speed = 5.0f;
+        struct_csc.a.v[i] = 1.5;
+    struct_csc.b.max_speed = struct_csc.a.max_speed = 1.5f;
     struct_csc.b.gravitational_constant = struct_csc.a.gravitational_constant = 3.0f;
     //    for(int i=3; i<5; ++i)
     //        struct_csc.a.v[i] = rand()&0xf;
@@ -183,7 +180,7 @@ void EntitiesResponse::sendServerControlState(BitStream &bs) const
     if(update_part_1)
     {
         //rand()&0xFF
-        bs.StoreBits(8,vla); // value stored in control state field_134
+        bs.StoreBits(8,1); // value stored in control state field_134
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
         // This is entity speed vector !!
         NetStructure::storeVector(bs,spd);
@@ -207,7 +204,7 @@ void EntitiesResponse::sendServerControlState(BitStream &bs) const
         NetStructure::storeVectorConditional(bs,zeroes);  // vector3 -> speed ? likely
 
         NetStructure::storeFloatConditional(bs,0); // Pitch not used ?
-        NetStructure::storeFloatConditional(bs,ent->inp_state.pyr.x); // Pitch
+        NetStructure::storeFloatConditional(bs,ent->inp_state.camera_pyr.y()); // Pitch
         NetStructure::storeFloatConditional(bs,0); // Roll
         bs.StorePackedBits(1,0); // sets the lowest bit in CscCommon::flags
     }

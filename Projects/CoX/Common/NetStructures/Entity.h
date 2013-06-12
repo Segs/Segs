@@ -1,52 +1,44 @@
 #pragma once
+#include <osg/Vec3>
+#include <osg/Quat>
 #include "CommonNetStructures.h"
 #include "Powers.h"
 #include "Costume.h"
 #include "Character.h"
-
+//#include "Events/InputState.h"
 class PosUpdate
 {
 public:
-    Vector3 posvec;
-    Quaternion quat;
+    osg::Vec3 posvec;
+    osg::Quat quat;
     int a;
     int b;
 };
-class InputState;
-class Entity;
-class Avatar : public NetStructure //! not to be confuzzled with GameServer's Character :)
+class InputStateStorage
 {
 public:
-        Entity *m_ent;
-        uint32_t field_5A8;
-        uint32_t field_498;
-        std::string char_arr_10_5AC;
-virtual			~Avatar()
-                {
-                    m_ent = NULL; // we only borrowed this pointer
-                }
-                Avatar(Entity *m_ent);
-virtual void	serializeto(BitStream &bs) const;
+    InputStateStorage() {
+        for(int i=0; i<3; ++i) {
+            pos_delta_valid[i]=false;
+            pyr_valid[i]=false;
+        }
+    }
+    uint8_t m_csc_deltabits;
+    bool m_send_deltas;
+    uint16_t controlBits;
+    uint16_t someOtherbits;
+    void *current_state_P;
+    osg::Vec3 camera_pyr;
+    int m_t1,m_t2;
+    int m_A_ang11_probably,m_B_ang11_probably;
 
-        void	send_character(BitStream &bs)const;
-        void	sendFullStats(BitStream &bs)const;
-        void	sendBuffs(BitStream &bs)const;
-        void	sendTray(BitStream &bs)const;
-        void	sendTrayMode(BitStream &bs)const;
-        void	sendEntStrings(BitStream &bs)const;
-        void	sendWindow(BitStream &bs)const;
-        void	sendTeamBuffMode(BitStream &bs)const;
-        void	sendDockMode(BitStream &bs)const;
-        void	sendChatSettings(BitStream &bs)const;
-        void	sendTitles(BitStream &bs)const;
-        void	sendDescription(BitStream &bs)const;
-        void	sendKeybinds(BitStream &bs)const;
-        void	sendOptions(BitStream &bs)const;
-        void	sendFriendList(BitStream &bs)const;
-        void	GetCharBuildInfo(BitStream &src);
-        void	DumpPowerPoolInfo(const PowerPool_Info &pool_info);
-        void	DumpBuildInfo();
-
+    bool has_input_commit_guess;
+    bool pos_delta_valid[3];
+    bool pyr_valid[3];
+    osg::Vec3 pos_delta;
+    osg::Quat direction;
+    InputStateStorage & operator=(const InputStateStorage &other);
+    void processDirectionControl(int dir, int prev_time, int press_release);
 };
 
 class Entity : public NetStructure
@@ -54,10 +46,10 @@ class Entity : public NetStructure
 public:
         struct currentInputState
         {
-            Vector3 pos;
-            Vector3 pyr;
+            osg::Vec3 pos;
+            osg::Vec3 pyr; //TODO: convert to quat
         };
-        currentInputState inp_state;
+        InputStateStorage inp_state;
         enum
         {
             ENT_PLAYER=2,
@@ -94,8 +86,8 @@ public:
         bool        entReceiveAlwaysCon;
         bool        entReceiveSeeThroughWalls;
         int         pkt_id_QrotUpdateVal[3];
-        Quaternion  qrot;
-        Vector3     pos;
+        osg::Quat   qrot;
+        osg::Vec3   pos;
         uint32_t    prev_pos[3];
         bool        m_selector1,m_pchar_things,might_have_rare,
                     m_hasname  ,m_hasgroup_name,m_classname_override;

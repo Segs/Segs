@@ -5,7 +5,6 @@ ADD_SUBDIRECTORY(ConfigExtensions) # contains extensions to ACE's config file pr
 ADD_SUBDIRECTORY(EventSystem)
 ADD_SUBDIRECTORY(GrowingBuffer)
 ADD_SUBDIRECTORY(Bitstream)
-ADD_SUBDIRECTORY(CRUDP_Protocol)
 
 
 
