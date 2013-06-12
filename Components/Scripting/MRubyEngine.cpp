@@ -166,6 +166,3 @@ int fromRuby(mrb_state * mrb, mrb_value self) {
         throw ScriptTypeError();
     return mrb_fixnum(v);
 }
-
-template<typename TYPE>
-static mrb_value toRuby(mrb_state * mrb, TYPE self);

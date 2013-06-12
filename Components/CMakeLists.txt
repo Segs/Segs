@@ -1,9 +1,12 @@
-ADD_SUBDIRECTORY(Common)
- # this must be first here, as both Client, and Server Components can depend on Common
+if(ENABLE_SCRIPTING_ENGINE)
+    ADD_SUBDIRECTORY(Scripting)
+endif()
+ADD_SUBDIRECTORY(ConfigExtensions) # contains extensions to ACE's config file processing
+ADD_SUBDIRECTORY(EventSystem)
+ADD_SUBDIRECTORY(GrowingBuffer)
+ADD_SUBDIRECTORY(Bitstream)
+ADD_SUBDIRECTORY(CRUDP_Protocol)
 
-# Only build example client if set to ON during configuration
-IF(BUILD_Example01)
-  ADD_SUBDIRECTORY(Client)
-ENDIF(BUILD_Example01)
 
-ADD_SUBDIRECTORY(Server)
+
+
