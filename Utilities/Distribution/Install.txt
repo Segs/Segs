@@ -22,11 +22,6 @@ PostGreSQL:
 We make use of the PostGreSQL database for account, character and persistent object storage.
 PostGreSQL can be obtained here: http://www.postgresql.org/download/  
 
-SWIG (optional for now!):
-SWIG is the Simplified Wrapper and Interface Generator.
-SWIG allows SEGS to mesh with higher level scripting languages such as Ruby and Python.
-SWIG can be obatained here: http://www.swig.org/download.html
-
 zlib:
 zlib is a compression library SEGS makes use of for packing data.
 zlib can be obtained here: http://www.zlib.net/
