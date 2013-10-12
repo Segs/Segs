@@ -12,6 +12,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/NetCommandManager.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/NewEntity.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/SceneEvent.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/EntitiesResponse.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/Events/ChatMessage.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/InputState.cpp
 )
 SET(target_INCLUDE
@@ -29,6 +30,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/MapServer.h
 ${CMAKE_CURRENT_SOURCE_DIR}/MapEventFactory.h
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/NewEntity.h
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/SceneEvent.h
+${CMAKE_CURRENT_SOURCE_DIR}/Events/ChatMessage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/EntitiesResponse.h
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/InputState.h
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/Shortcuts.h
