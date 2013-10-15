@@ -1,22 +1,22 @@
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/CostumeStructure.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/MapStructure.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/ReadableStructures.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/CoXHash.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/DataStorage.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/Filesystem.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/CostumeStructure.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/MapStructure.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/ReadableStructures.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/CoXHash.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/DataStorage.cpp
 
 )
 SET(target_INCLUDE
-${CMAKE_CURRENT_SOURCE_DIR}/include/Filesystem.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/ReadableStructures.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/CostumeStructure.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/MapStructure.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/DataStorage.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/CoXHash.h
+${CMAKE_CURRENT_SOURCE_DIR}/Filesystem.h
+${CMAKE_CURRENT_SOURCE_DIR}/ReadableStructures.h
+${CMAKE_CURRENT_SOURCE_DIR}/CostumeStructure.h
+${CMAKE_CURRENT_SOURCE_DIR}/MapStructure.h
+${CMAKE_CURRENT_SOURCE_DIR}/DataStorage.h
+${CMAKE_CURRENT_SOURCE_DIR}/CoXHash.h
 )
 
-SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(target_DEPENDS "")
 
 SET (target_SOURCES
