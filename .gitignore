@@ -1,8 +1,12 @@
 # common cmake build directories
-build/
+build*/
 bld/
+out/
 3rd_party/include
 3rd_party/lib
+
+#IDE generated project files
+*.user
 
 # Compiled Object files
 *.slo

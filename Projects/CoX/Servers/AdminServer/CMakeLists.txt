@@ -1,17 +1,17 @@
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/src/AdminServer.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/AdminDatabase.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/AccountInfo.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/CharacterDatabase.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/AdminServer.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/AdminDatabase.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/AccountInfo.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/CharacterDatabase.cpp
 )
 SET(target_INCLUDE
-${CMAKE_CURRENT_SOURCE_DIR}/include/CharacterDatabase.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/AccountInfo.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/AdminDatabase.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/AdminServer.h
+${CMAKE_CURRENT_SOURCE_DIR}/CharacterDatabase.h
+${CMAKE_CURRENT_SOURCE_DIR}/AccountInfo.h
+${CMAKE_CURRENT_SOURCE_DIR}/AdminDatabase.h
+${CMAKE_CURRENT_SOURCE_DIR}/AdminServer.h
 )
 
-SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(target_DEPENDS "")
 
 SEGS_ADD_COMPONENT(cox_server_common LIB)

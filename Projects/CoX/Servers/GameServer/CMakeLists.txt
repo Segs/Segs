@@ -1,23 +1,23 @@
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/src/HashStorage.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/CharacterClient.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/GameHandler.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/GameServer.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/GameEvents.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/GameEventFactory.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/GameLink.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/HashStorage.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/CharacterClient.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/GameHandler.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/GameServer.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/GameEvents.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/GameEventFactory.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/GameLink.cpp
 )
 SET(target_INCLUDE
-${CMAKE_CURRENT_SOURCE_DIR}/include/HashStorage.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/CharacterClient.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/GameServer.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/GameHandler.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/GameEventFactory.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/GameEvents.h
-${CMAKE_CURRENT_SOURCE_DIR}/include/GameLink.h
+${CMAKE_CURRENT_SOURCE_DIR}/HashStorage.h
+${CMAKE_CURRENT_SOURCE_DIR}/CharacterClient.h
+${CMAKE_CURRENT_SOURCE_DIR}/GameServer.h
+${CMAKE_CURRENT_SOURCE_DIR}/GameHandler.h
+${CMAKE_CURRENT_SOURCE_DIR}/GameEventFactory.h
+${CMAKE_CURRENT_SOURCE_DIR}/GameEvents.h
+${CMAKE_CURRENT_SOURCE_DIR}/GameLink.h
 )
 
-SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(target_DEPENDS "")
 
 SEGS_ADD_COMPONENT(cox_server_common LIB)

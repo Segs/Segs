@@ -1,3 +1,6 @@
+FIND_PACKAGE(OpenSceneGraph REQUIRED osgUtil )
+include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
+
 ADD_SUBDIRECTORY(Common)
 ADD_SUBDIRECTORY(Utilities)
 ADD_SUBDIRECTORY(Servers)
