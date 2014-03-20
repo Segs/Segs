@@ -4,7 +4,7 @@ PROJECT(SEGS)
 IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
     add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
 ELSE()
-   SET(CMAKE_CXX_FLAGS "-Wall -std=c++11"  )
+   SET(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++11"  )
 endif()
 add_definitions(-D__STDC_FORMAT_MACROS)
 
@@ -26,6 +26,7 @@ SET(PostgreSQL_ADDITIONAL_VERSIONS "9.2")
 include(ExternalProject)
 ExternalProject_Add(
    ACE_BUILD
+   URL http://nemerle.eu/naked_ace.tar.gz
    SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/naked_ace
    UPDATE_COMMAND ""
    INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
