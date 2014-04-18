@@ -5,11 +5,12 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <cstring>
-#include <cassert>
-#include <zlib.h>
 
 #include "BitStream.h"
+#include <zlib.h>
+#include <cstring>
+#include <cassert>
+
 
 // bitstream buffer is padded-out by 7 bytes, to allow safe 64bit reads/writes by new routines
 /************************************************************************
@@ -321,9 +322,10 @@ int32_t BitStream::uGetBits(uint32_t nBits)
     unsigned long long r;
     uint64_t *tp;
     int32_t tgt;
-    assert(nBits<=32);
+    assert((nBits>0) && nBits<=32);
     assert(GetReadableBits()>=nBits);
     assert(m_read_off+7<(m_size+m_safe_area));
+    nBits = ((nBits-1) &0x1F)+1; // make sure the nBits range is 1-32
     tp = (uint64_t *)read_ptr();
     r = *tp;//swap64(*tp);
     r>>=m_read_bit_off; // starting at the top
@@ -478,7 +480,7 @@ Description: Retrieves a floating-point value from the bit stream.  This
 ************************************************************************/
 float BitStream::GetFloat()
 {
-    float res;
+    float res=0.0f;
     if(IsByteAligned())
         Get(res);
     else

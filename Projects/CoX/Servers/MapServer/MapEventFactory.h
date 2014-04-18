@@ -8,7 +8,7 @@ class MapClient;
 class MapEventFactory : public CRUD_EventFactory
 {
 public:
-    static MapLinkEvent *EventFromStream(BitStream &bs);
+    static MapLinkEvent *EventFromStream(BitStream &bs, bool follower=false);
     typedef MapClient tClientData;
 };
 typedef CRUDLink<MapEventFactory> MapLink;

@@ -98,8 +98,8 @@ static ACE_THR_FUNC_RETURN event_loop (void *arg)
 }
 static bool CreateServers()
 {
-    GameServer *game_instance		= new GameServer;
-    MapServer * map_instance		= new MapServer;
+    GameServer *game_instance       = new GameServer;
+    MapServer * map_instance        = new MapServer;
     ServerManager::instance()->SetAdminServer(AdminServer::instance());
     ServerManager::instance()->SetAuthServer(new AuthServer);
     ServerManager::instance()->AddGameServer(game_instance);

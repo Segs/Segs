@@ -94,7 +94,7 @@ public:
     void	serializeto(BitStream &bs) const;
     void	dump();
 };
-class CharacterCostume : public Costume
+class CharacterCostume : public MapCostume
 {
     uint8_t  m_slot_index;
     uint64_t m_character_id; //! Character to whom this costume belongs
@@ -107,21 +107,21 @@ public:
     uint64_t getCharacterId() const { return m_character_id; }
     void setCharacterId(uint64_t val) { m_character_id = val; }
 
-    void serializeto(BitStream &tgt) const
-    {
-        tgt.StorePackedBits(1,(uint32_t)m_parts.size());
-        for(size_t i=0; i<m_parts.size(); i++)
-            m_parts[i].serializeto_charsel(tgt);
-    }
-    void serializefrom(BitStream &src)
-    {
-        uint32_t num_parts;
-        num_parts =  src.GetPackedBits(1);
-        for(size_t i=0; i<num_parts; i++)
-        {
+//    void serializeto(BitStream &tgt) const
+//    {
+//        tgt.StorePackedBits(1,(uint32_t)m_parts.size());
+//        for(size_t i=0; i<m_parts.size(); i++)
+//            m_parts[i].serializeto_charsel(tgt);
+//    }
+//    void serializefrom(BitStream &src)
+//    {
+//        uint32_t num_parts;
+//        num_parts =  src.GetPackedBits(1);
+//        for(size_t i=0; i<num_parts; i++)
+//        {
 
-        }
-    }
+//        }
+//    }
     //////////////////////////////////////////////////////////////////////////
     // Database related
     //////////////////////////////////////////////////////////////////////////

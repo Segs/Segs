@@ -1,7 +1,8 @@
 #include <stdarg.h>
 #include "MapClient.h"
-#include "MapHandler.h"
+//#include "MapHandler.h"
 #include "Entity.h"
+#include "NetCommandManager.h"
 MapClient::MapClient() : m_ent(0),m_tick_source(0)
 {
 
@@ -43,27 +44,27 @@ GamePacket * MapClient::HandleClientPacket( pktCS_SendEntity *ent )
 {
     // Client sends us it's entity
     GameServerInterface *giface = ServerManager::instance()->GetGameServer(0);
-    //	At this point we either got a new character, or an old one.
+    //  At this point we either got a new character, or an old one.
     if(ent->m_new_character)
     {
         assert(ent->m_ent);
-        //	character_ent = in_pak->m_ent;
-        //	m_server->m_i_game->newCharacter(m_client->getId(),character_ent);
+        //character_ent = in_pak->m_ent;
+        //m_server->m_i_game->newCharacter(m_client->getId(),character_ent);
     }
     else
     {
-        //		Ask game server to provide us with character data object.
+        //  Ask game server to provide us with character data object.
         //Entity * character_ent = m_server->getGameInterface()->getCharacterData(m_client->getId());
 
     }
-    //		If this fails: call m_i_gameserver->NewCharacter(client->id);
+    //  If this fails: call m_i_gameserver->NewCharacter(client->id);
     //if(!character_ent)
     //{
     //}
-    //	Embed character data in m_client object.
-    //		m_client->setCharEntity(character_ent);
+    //  Embed character data in m_client object.
+    //  m_client->setCharEntity(character_ent);
     //character_ent->
-    //	Create initial routing for all relevant packets to appropriate Map thread.
+    //Create initial routing for all relevant packets to appropriate Map thread.
     //
 
     pktSC_Connect *res = new pktSC_Connect;

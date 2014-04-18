@@ -5,8 +5,9 @@
 #include "EntityStorage.h"
 
 class World {
+    float           m_time_of_day; // hour of the day in 24h format
 public:
-    World(EntityManager &em) : ref_ent_mager(em) {}
+    World(EntityManager &em) : ref_ent_mager(em),m_time_of_day(8.0f) {} // start at 8am
     void addPlayer(Entity *ent) {
         ref_ent_mager.InsertPlayer(ent);
     }
@@ -17,6 +18,9 @@ public:
         }
         else
             delta = tick_timer - prev_tick_time;
+        m_time_of_day+= 30*((float(delta.msec())/1000.0f)/(60.0*60)); // 1 sec of real time is 30s of ingame time
+        if(m_time_of_day>=24.0f)
+            m_time_of_day-=24.0f;
         timecount+=delta.msec();
         prev_tick_time = tick_timer;
         // TODO: use active entity list here
@@ -26,16 +30,10 @@ public:
             updateEntity(ref_ent_mager.m_map_entities[i],delta);
         }
     }
+    float time_of_day() const {return m_time_of_day;}
     uint32_t timecount=1;
 protected:
-    void updateEntity(Entity *e,const ACE_Time_Value &dT) {
-        if(e->inp_state.pos_delta.length2()) {
-            // todo: take into account time between updates
-            osg::Matrix za(osg::Matrix::rotate(e->inp_state.direction));
-
-            e->pos += ((za*e->inp_state.pos_delta)*dT.msec())/50.0f;
-        }
-    }
+    void updateEntity(Entity *e,const ACE_Time_Value &dT);
     EntityManager &ref_ent_mager;
     ACE_Time_Value prev_tick_time;
 };

@@ -113,8 +113,8 @@ int AuthLink::open (void *p)
     if (this->reactor () && this->reactor ()->register_handler(this,ACE_Event_Handler::READ_MASK) == -1)
         ACE_ERROR_RETURN ((LM_ERROR,ACE_TEXT ("%p\n"),ACE_TEXT ("unable to register client handler")),-1);
     // m_notifier will tell reactor to wake us when new packet is ready for sending
-    m_notifier.reactor(reactor());						// notify reactor with write event,
-    msg_queue()->notification_strategy (&m_notifier);	// whenever there is a new event on msg_queue() we will be notified
+    m_notifier.reactor(reactor());                      // notify reactor with write event,
+    msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue() we will be notified
     //TODO: consider using sync query here.
     g_target->putq(new ConnectEvent(this,m_peer_addr)); // also, inform the AuthHandler of our existence
     return 0;

@@ -118,6 +118,7 @@ bool CharacterDatabase::fill( CharacterCostume *c)
     }
     DbResultRow r=results.getRow(0);
     c->a = r.getColInt32("skin_color");
+    c->m_non_default_costme_p = false;
     query.str("");
     query<<"SELECT * FROM costume_part WHERE costume_id="<<r.getColInt32("id");
     // this will overwrite underlying object therefore 'r' will become useless
@@ -126,20 +127,23 @@ bool CharacterDatabase::fill( CharacterCostume *c)
     for(size_t i=0; i<results.num_rows(); i++)
     {
         r=results.getRow(i);
-        CostumePart part(true,r.getColInt32("part_type"));
+        bool full_part=c->m_non_default_costme_p;
+        CostumePart part(full_part,r.getColInt32("part_type"));
         part.name_0=STR_OR_VERY_EMPTY(r.getColString("name_0"));
         part.name_1=STR_OR_VERY_EMPTY(r.getColString("name_1"));
         part.name_2=STR_OR_VERY_EMPTY(r.getColString("name_2"));
-        part.name_3=STR_OR_VERY_EMPTY(r.getColString("name_3"));
-        part.name_4=STR_OR_VERY_EMPTY(r.getColString("name_4"));
-        part.name_5=STR_OR_VERY_EMPTY(r.getColString("name_5"));
-        part.name_6=STR_OR_VERY_EMPTY(r.getColString("name_6"));
         part.m_colors[0]=r.getColInt32("color_0");
         part.m_colors[1]=r.getColInt32("color_1");
+        if(c->m_non_default_costme_p) {
+            part.name_3=STR_OR_VERY_EMPTY(r.getColString("name_3"));
+            part.name_4=STR_OR_VERY_EMPTY(r.getColString("name_4"));
+            part.name_5=STR_OR_VERY_EMPTY(r.getColString("name_5"));
+            part.name_6=STR_OR_VERY_EMPTY(r.getColString("name_6"));
+        }
         c->m_parts.push_back(part);
     }
     return true;
-/*
+    /*
 INSERT INTO costume_part(costume_id,part_type,name_0,name_1,name_2,name_3,color_0,color_1,color_2,color_3)
 VALUES(,,'','','','',0,0,0,0);
 */
@@ -175,9 +179,9 @@ bool CharacterDatabase::create( uint64_t gid,uint8_t slot,Character *c )
         return false;
 
     query<<"INSERT INTO characters  (id,char_level,slot_index,account_id,char_name,archetype,origin,bodytype,current_map) VALUES ("\
-                << char_id <<","<< c->m_level <<","<< uint32_t(slot) <<",'"<< gid <<"','"<< c->m_name <<"','"\
-                << c->m_class_name <<"','"<< c->m_origin_name <<"','"<< c->getCurrentCostume()->m_body_type <<"','"<< c->m_mapName <<"'"\
-            <<");";
+        << char_id <<","<< c->m_level <<","<< uint32_t(slot) <<",'"<< gid <<"','"<< c->m_name <<"','"\
+        << c->m_class_name <<"','"<< c->m_origin_name <<"','"<< c->getCurrentCostume()->m_body_type <<"','"<< c->m_mapName <<"'"\
+        <<");";
     if(!execQuery(query.str()))
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::create %s failed. %s.\n"), query.str().c_str(),results.m_msg),false);
     // create costume
@@ -197,9 +201,9 @@ bool CharacterDatabase::create( uint64_t gid,uint8_t slot,Character *c )
         query.str("");
         // prt.m_type is not filled by the client ?
         query<<"INSERT INTO costume_part (costume_id,part_type,name_0,name_1,name_2,name_3,color_0,color_1) VALUES ("\
-                    << cost_id <<","<< idx <<",'"\
-                    << prt.name_0 <<"','"<< prt.name_1 <<"','"<<prt.name_2 <<"','"<<prt.name_3 <<"',"\
-                    << prt.m_colors[0] <<","<< prt.m_colors[1] << ");";
+            << cost_id <<","<< idx <<",'"\
+            << prt.name_0 <<"','"<< prt.name_1 <<"','"<<prt.name_2 <<"','"<<prt.name_3 <<"',"\
+            << prt.m_colors[0] <<","<< prt.m_colors[1] << ");";
         fprintf(stderr,"%s\n",query.str().c_str());
         fflush(stderr);
         if(!execQuery(query.str()))

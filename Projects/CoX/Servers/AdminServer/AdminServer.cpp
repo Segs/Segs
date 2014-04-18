@@ -82,7 +82,7 @@ bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" 
         ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
         m_running=false;
         res  =  m_db->CloseConnection()==0;
-        res &=	m_char_db->CloseConnection()==0;
+        res &=  m_char_db->CloseConnection()==0;
 
     delete m_db;
     delete m_char_db;
@@ -112,7 +112,7 @@ bool _AdminServer::Logout(const AccountInfo &) const
 {
         // Here we should log to the Db, a Logout event for that client
         //if(client)
-        //	client->setState(AuthClient::NOT_LOGGEDIN);
+        //  client->setState(AuthClient::NOT_LOGGEDIN);
         return true;
 }
 
@@ -186,7 +186,7 @@ ServerHandle<IGameServer> _AdminServer::RegisterMapServer(const ServerHandle<IMa
 
 /**
  * Idea: All GetAccessKeyForServer methods create a new 'allowed access' entry in their callers table.
- *		 So each call using Handle, is marked/encoded with it, and can be verified as valid.
+ *       So each call using Handle, is marked/encoded with it, and can be verified as valid.
  * @return int
  * @param  map_h
  */

@@ -16,6 +16,12 @@
 #include "CRUDP_Packet.h"
 #include "PacketCodec.h"
 class SEGSEvent;
+class IMessageSerializer {
+    SEGSEvent * EventFromStream(BitStream &bs);
+};
+struct LinkData {
+
+};
 template<class EVENT_FACTORY>
 class CRUDLink : public EventProcessor
 {

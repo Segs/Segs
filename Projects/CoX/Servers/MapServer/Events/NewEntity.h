@@ -13,13 +13,13 @@
 class NewEntity : public MapLinkEvent
 {
 public:
-    NewEntity():MapLinkEvent(MapEventTypes::evEntityEnteringMap)
-    {
+                NewEntity():MapLinkEvent(MapEventTypes::evEntityEnteringMap)
+                {
 
-    }
-    void serializeto(BitStream &) const;
-    void serializefrom(BitStream &);
-    Entity *	m_ent;
-    uint32_t		m_cookie;
-    bool		m_new_character;
+                }
+    void        serializeto(BitStream &) const;
+    void        serializefrom(BitStream &);
+    Entity *    m_ent;
+    uint32_t    m_cookie;
+    bool        m_new_character;
 };

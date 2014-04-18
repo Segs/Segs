@@ -14,11 +14,14 @@ Description: The BitStream class allows it's user to manipulate data in
                          much greater levels of density.  It abstracts the nuts and
                          bolts of this functionality away from it's user.
 ************************************************************************/
+
 #pragma once
-#include <stdint.h>
+
+#include "Buffer.h"
+
+#include <cstdint>
 #include <string>
 #include <vector>
-#include "Buffer.h"
 
 //	Constants
 #define BS_BITS        3
@@ -44,7 +47,7 @@ class BitStream : public GrowingBuffer
 {
 public:
 
-        BitStream(size_t size);
+        explicit BitStream(size_t size);
         BitStream(uint8_t *from,size_t bitsize);
 
         BitStream(const BitStream &bs);

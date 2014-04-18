@@ -43,7 +43,7 @@ static unsigned char pc2[48] = {
     43, 48, 38, 55, 33, 52, 45, 41, 49, 35, 28, 31 };
 static void deskey(const unsigned char *key,short edf) /* Thanks to James Gillogly & Phil Karn! */
 {
-    register int i, j, l, m, n;
+    int i, j, l, m, n;
     unsigned char pc1m[56], pcr[56];
     unsigned long kn[32];
     for ( j = 0; j < 56; j++ ) {
@@ -76,9 +76,9 @@ static void deskey(const unsigned char *key,short edf) /* Thanks to James Gillog
 }
 static void cookey(register unsigned long *raw1)
 {
-    register unsigned long *cook, *raw0;
+    unsigned long *cook, *raw0;
     unsigned long dough[32];
-    register int i;
+    int i;
     cook = dough;
     for( i = 0; i < 16; i++, raw1++ ) {
         raw0 = raw1++;
@@ -96,14 +96,14 @@ static void cookey(register unsigned long *raw1)
 }
 static void cpkey(register unsigned long *into)
 {
-    register unsigned long *from, *endp;
+    unsigned long *from, *endp;
     from = KnL, endp = &KnL[32];
     while( from < endp ) *into++ = *from++;
     return;
 }
 static void usekey(const register unsigned long *from)
 {
-    register unsigned long *to, *endp;
+    unsigned long *to, *endp;
     to = KnL, endp = &KnL[32];
     while( to < endp ) *to++ = *from++;
     return;
@@ -270,8 +270,8 @@ static unsigned long SP8[64] = {
     0x00001040L, 0x00040040L, 0x10000000L, 0x10041000L };
 static void desfunc(register unsigned long *block,const register unsigned long *keys)
 {
-    register unsigned long fval, work, right, leftt;
-    register int round;
+    unsigned long fval, work, right, leftt;
+    int round;
     leftt = block[0];
     right = block[1];
     work = ((leftt >> 4) ^ right) & 0x0f0f0f0fL;
@@ -345,7 +345,7 @@ void AuthPacketCodec::SetDesKey(uint64_t key)
     cpkey(m_tDesContext.ek);
     deskey((unsigned char *)&key,DE1);
     cpkey(m_tDesContext.dk);
-};
+}
 
 AuthPacketCodec::AuthPacketCodec()
 {

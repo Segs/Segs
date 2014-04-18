@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #pragma once
@@ -41,7 +41,7 @@ public:
         bool                    ShutDown(const std::string &reason="No particular reason");
         void                    Online(bool s ) {m_online=s;}
         bool                    Online(void) { return m_online;}
-        const ACE_INET_Addr &	getAddress() {return m_location;}
+        const ACE_INET_Addr &   getAddress() {return m_location;}
 
         // World-cluster management interface
         int                     getAccessKeyForServer(const ServerHandle<IMapServer> &h_map);

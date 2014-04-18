@@ -54,7 +54,7 @@ public:
     bool                        ReadConfig(const std::string &name); // later name will be used to read GameServer specific configuration
     bool                        Run(void);
     bool                        ShutDown(const std::string &reason="No particular reason");
-    bool						Online(void);
+    bool                        Online(void);
     // Internal World-cluster interface
     ServerHandle<IGameServer>   RegisterMapServer(const ServerHandle<IMapServer> &map_h );
     int                         GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server );

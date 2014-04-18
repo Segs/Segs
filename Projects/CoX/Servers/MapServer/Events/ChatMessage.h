@@ -58,4 +58,5 @@ public:
         void        do_serialize(BitStream &bs) const;
         void        serializefrom(BitStream &src);
 static  ChatMessage *adminMessage(const char *msg);
+static  ChatMessage *localMessage(const char *msg,Entity *src);
 };

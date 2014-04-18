@@ -29,7 +29,7 @@ virtual bool    ShutDown(const std::string &reason)=0;
 virtual bool    Online()=0;
 
 protected:
-        AuthServerInterface *	getAuthServer();
+        AuthServerInterface *   getAuthServer();
 private:
         ACE_INET_Addr           m_authaddr;
         std::string             m_passw;

@@ -33,10 +33,10 @@ virtual                         ~ServerManagerC(void){}
         bool                    CreateServerConnections(void);
         void                    StopLocalServers(void);
 
-virtual AdminServerInterface *	GetAdminServer(void);
-virtual AuthServerInterface *	GetAuthServer(void);
-virtual GameServerInterface *	GetGameServer(size_t idx);
-virtual MapServerInterface *	GetMapServer(size_t idx);
+virtual AdminServerInterface *  GetAdminServer(void);
+virtual AuthServerInterface *   GetAuthServer(void);
+virtual GameServerInterface *   GetGameServer(size_t idx);
+virtual MapServerInterface *    GetMapServer(size_t idx);
 
         void                    SetAuthServer(IAuthServer *srv);
         void                    SetAdminServer(IAdminServer *srv);

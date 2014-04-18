@@ -28,7 +28,8 @@ bool AccountInfo::fill_characters_db()
         act = m_characters[0]; //reuse existing object
     act->setIndex(0);
     act->setAccountId(m_game_server_acc_id);
-    if(!AdminServer::instance()->character_db()->fill(act))
+    CharacterDatabase *char_db = AdminServer::instance()->character_db();
+    if(!char_db->fill(act))
         return false;
     for(size_t i=1; i<m_characters.size(); i++)
     {

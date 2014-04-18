@@ -6,15 +6,20 @@
  *
  */
 #define _USE_MATH_DEFINES
+#include "Entity.h"
+
 #include <math.h>
 #ifdef WIN32
 #include "xmmintrin.h"
 #else
 #define _copysign(x,y) ((x)* ((y<0.0f)? -1.0f : 1.0f))
 #endif
-#include "Entity.h"
 #include <limits>
 #include <sstream>
+//#define LOG_
+//TODO: this file needs to know the MapInstance's WorldSimulation rate - Maybe extract it as a configuration object ?
+
+#define WORLD_UPDATE_TICKS_PER_SECOND 30
 
 static const float F_PI = float(M_PI); // to prevent double <-> float conversion warnings
 
@@ -379,12 +384,17 @@ void Entity::sendOtherSupergroupInfo(BitStream &bs) const
 }
 void Entity::sendLogoutUpdate(BitStream &bs) const
 {
-    bool is_logout=false;
-    bs.StoreBits(1,is_logout);
-    if(is_logout)
+    if(m_logout_sent) {
+        bs.StoreBits(1,false);
+        return;
+    }
+    bs.StoreBits(1,m_is_logging_out);
+    if(m_is_logging_out)
     {
+        m_logout_sent = true;
         bs.StoreBits(1,0); // flags_1[1] set in entity
-        storePackedBitsConditional(bs,5,0); // time to logout, multiplied by 30
+        storePackedBitsConditional(bs,5,m_time_till_logout/(1000)); // time to logout, multiplied by 30
+        printf("LOGOUT TIME %d\n",m_time_till_logout);
     }
 }
 
@@ -398,14 +408,16 @@ void Entity::storeCreation( BitStream &bs) const
 
         if(var_129C)
             return;
-        bs.StorePackedBits(12,field_64);//  this will be put in  of created entity
+
+        //bs.StorePackedBits(12,field_64);//  this will be put in  of created entity
+        bs.StorePackedBits(12,m_idx);//  this will be put in  of created entity
         bs.StorePackedBits(2,m_type);
         if(m_type==ENT_PLAYER)
         {
             bs.StoreBits(1,m_create_player);
             if(m_create_player)
-                bs.StorePackedBits(1,0); // var_1190: this will be put in field_C8 of created entity, also will return send_g_pak_packed_1_4
-            bs.StorePackedBits(20,intptr_t(this)&0xFFFFF);//bs.StorePackedBits(20,m_db_id);
+                bs.StorePackedBits(1,m_access_level);
+            bs.StorePackedBits(20,m_idx);//bs.StorePackedBits(20,m_db_id); //intptr_t(this)&0xFFFFF
         }
         else
         {
@@ -447,6 +459,9 @@ void Entity::storeCreation( BitStream &bs) const
     }
 void Entity::serializeto( BitStream &bs ) const
 {
+#ifdef LOG_
+    printf("Serializing entity with idx %d\n",m_idx);
+#endif
     //////////////////////////////////////////////////////////////////////////
     bs.StoreBits(1,m_create);
     if(m_create)
@@ -509,6 +524,15 @@ void Entity::fillFromCharacter(Character *f)
     m_char = *f;
     m_hasname = true;
     //TODO: map class/origin name to Entity's class/orign indices.
+}
+/**
+ *  This will mark the Entity as being in logging out state
+ *  \arg time_till_logout is time in seconds untill logout is done
+ */
+void Entity::beginLogout(uint16_t time_till_logout)
+{
+    m_is_logging_out = true;
+    m_time_till_logout = time_till_logout*1000;
 }
 void Entity::sendBuffsConditional(BitStream &bs) const
 {
@@ -595,6 +619,9 @@ void Entity::dump()
 
 Entity::Entity()
 {
+    m_logout_sent = false;
+    m_input_ack = 0;
+    m_access_level = 9; // enables access to all deve
     field_60=0;
     field_64=0;
     field_78=0;
@@ -784,19 +811,6 @@ void MapCostume::serializeto( BitStream &bs ) const
 {
     SendCommon(bs);
 }
-class FullCostume : public MapCostume
-{
-public:
-    void serializeto( BitStream &bs ) const
-    {
-        storePackedBitsConditional(bs,2,1);
-        bs.StoreBits(1,0);
-        if(false)
-        {
-        }
-        bs.StoreBits(1,0);
-    }
-};
 void MapCostume::SendCommon(BitStream &bs) const
 {
     bs.StorePackedBits(3,m_body_type); // 0:male normal
@@ -806,8 +820,10 @@ void MapCostume::SendCommon(BitStream &bs) const
     bs.StoreFloat(m_physique);
 
     bs.StoreBits(1,m_non_default_costme_p);
-    bs.StorePackedBits(4,m_num_parts);
-    for(int costume_part=0; costume_part<m_num_parts;costume_part++)
+    //m_num_parts = m_parts.size();
+    assert(!m_parts.empty());
+    bs.StorePackedBits(4,m_parts.size());
+    for(int costume_part=0; costume_part<m_parts.size();costume_part++)
     {
         CostumePart part=m_parts[costume_part];
         part.serializeto(bs);

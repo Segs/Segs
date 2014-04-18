@@ -30,3 +30,12 @@ ChatMessage *ChatMessage::adminMessage(const char *msg)
     res->m_msg = msg;
     return res;
 }
+
+ChatMessage *ChatMessage::localMessage(const char *msg, Entity *src)
+{
+    ChatMessage * res = new ChatMessage;
+    res->m_channel_type = CHAT_Broadcast;
+    res->m_source_player_id=src->getIdx();
+    res->m_msg = msg;
+    return res;
+}

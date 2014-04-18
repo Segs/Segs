@@ -9,6 +9,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <unordered_set>
 #include <ace/INET_Addr.h>
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
@@ -18,12 +19,16 @@
 template <class CLIENT_CLASS>
 class ClientStore
 {
+public:
+typedef std::unordered_set<CLIENT_CLASS *> vClients;
+typedef typename vClients::iterator          ivClients;
+protected:
         //	boost::object_pool<CLIENT_CLASS> m_pool;
         std::unordered_map<uint32_t,CLIENT_CLASS *> m_expected_clients;
         std::unordered_map<uint64_t,CLIENT_CLASS *> m_clients; // this maps client's id to it's object
         std::unordered_map<uint32_t,CLIENT_CLASS *> m_connected_clients_cookie; // this maps client's id to it's object
         std::unordered_map<uint64_t,uint32_t> m_id_to_cookie; // client cookie is only useful in this context
-
+        vClients m_active_clients;
         uint32_t create_cookie(const ACE_INET_Addr &from,uint64_t id)
         {
                 uint64_t res = ((from.hash()+id)&0xFFFFFFFF)^(id>>32);
@@ -32,6 +37,8 @@ class ClientStore
         }
 
 public:
+        ivClients       begin() { return m_active_clients.begin();}
+        ivClients       end() { return m_active_clients.end();}
 
         CLIENT_CLASS *getById(uint64_t id)
         {
@@ -88,7 +95,7 @@ public:
                 ACE_ASSERT(getById(id)!=0);
                 CLIENT_CLASS *cl=getById(id);
                 uint32_t cookie = m_id_to_cookie[id];
-
+                m_active_clients.erase(cl);
                 m_id_to_cookie.erase(id);
                 m_expected_clients.erase(cookie);
                 m_connected_clients_cookie.erase(cookie);
@@ -102,5 +109,12 @@ public:
                 m_connected_clients_cookie[cookie]=getExpectedByCookie(cookie);
                 // so he's no longer expected
                 m_expected_clients.erase(cookie);
+        }
+
+        void addToActiveClients(CLIENT_CLASS *cl) {
+            m_active_clients.insert(cl);
+        }
+        size_t num_active_clients() const {
+            return m_active_clients.size();
         }
 };
