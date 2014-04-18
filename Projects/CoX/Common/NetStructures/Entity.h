@@ -112,9 +112,9 @@ virtual                     ~Entity(){}
         void                dump();
         uint32_t            getIdx() const {return m_idx;}
 virtual void                serializeto(BitStream &bs)const;
-virtual	void                sendCostumes(BitStream &bs) const;
-static	void                sendAllyID(BitStream &bs);
-static	void                sendPvP(BitStream &bs);
+virtual void                sendCostumes(BitStream &bs) const;
+static  void                sendAllyID(BitStream &bs);
+static  void                sendPvP(BitStream &bs);
 
 virtual void                serializefrom(BitStream &) {assert(false);}
         bool                update_rot(int axis) const; // returns true if given axis needs updating;
@@ -157,7 +157,7 @@ class MobEntity : public Entity
 public:
                         MobEntity();
 virtual                 ~MobEntity(){}
-virtual	void            sendCostumes(BitStream &bs) const;
+virtual void            sendCostumes(BitStream &bs) const;
 
 
 };

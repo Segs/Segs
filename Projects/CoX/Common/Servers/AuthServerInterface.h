@@ -19,11 +19,11 @@ class IAdminServer;
 class IAuthServer : public Server
 {
 public:
-virtual	bool                            ReadConfig(const std::string &name)=0;
-virtual	bool                            Run(void)=0;
-virtual	bool                            ShutDown(const std::string &reason)=0;
-virtual	AuthClient *                    GetClientByLogin(const char *)=0;
-virtual	ServerHandle<IAdminServer>	AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw)=0;
+virtual bool                        ReadConfig(const std::string &name)=0;
+virtual bool                        Run(void)=0;
+virtual bool                        ShutDown(const std::string &reason)=0;
+virtual AuthClient *                GetClientByLogin(const char *)=0;
+virtual ServerHandle<IAdminServer>  AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw)=0;
 };
 
 class AuthServerInterface : public Server

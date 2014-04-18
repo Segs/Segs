@@ -51,14 +51,13 @@ GrowingBuffer::GrowingBuffer(size_t max_size,uint8_t safe_area,size_t pre_alloc_
 }
 GrowingBuffer::GrowingBuffer(const GrowingBuffer &from)
 {
-    m_size		= from.m_size;
-    m_buf		= new uint8_t[m_size];
-    assert(m_buf!=NULL);
-    m_last_err	= 0;
+    m_size      = from.m_size;
+    m_buf       = new uint8_t[m_size];
+    m_last_err  = 0;
     m_write_off = from.m_write_off;
     m_safe_area = from.m_safe_area;
     m_read_off  = from.m_read_off;
-    m_max_size	= from.m_max_size;
+    m_max_size  = from.m_max_size;
     if(m_buf&&from.m_buf)
         memcpy(m_buf,from.m_buf,m_write_off); // copy up to write point
 

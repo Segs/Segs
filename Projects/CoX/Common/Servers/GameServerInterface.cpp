@@ -64,7 +64,7 @@ const ACE_INET_Addr &GameServerInterface::getAddress()
         assert(m_instance);
         return m_instance->getAddress();
 }
-int	GameServerInterface::getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
+int GameServerInterface::getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
 {
         assert(m_instance);
         return m_instance->getAccessKeyForServer(h_map);

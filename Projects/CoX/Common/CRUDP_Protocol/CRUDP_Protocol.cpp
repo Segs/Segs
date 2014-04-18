@@ -49,12 +49,12 @@ CrudP_Protocol::~CrudP_Protocol()
     delete m_codec;
     m_codec=NULL;
 }
-CrudP_Protocol::CrudP_Protocol() :	send_seq(0),recv_seq(0),m_codec(NULL)
+CrudP_Protocol::CrudP_Protocol() :  send_seq(0),recv_seq(0),m_codec(NULL)
 {
 }
 void CrudP_Protocol::clearQueues(bool recv_queue,bool send_queue)
 {
-    //	seen_seq.clear();
+    //  seen_seq.clear();
     if(recv_queue)
     {
         for_each(avail_packets.begin(),avail_packets.end(),PacketDestroyer);
@@ -91,7 +91,7 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
         ACE_ERROR((LM_WARNING,ACE_TEXT("Checksum error.\n")));
         return;
     }
-    res	= new CrudP_Packet; //PacketFactory::newDataPacket;
+    res = new CrudP_Packet; //PacketFactory::newDataPacket;
     res->m_checksum = realcsum;
     res->SetHasDebugInfo((bool)src.uGetBits(1));
     res->setSeqNo(src.uGetBits(32));
@@ -109,7 +109,7 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
     src.ByteAlign();
     // how much data did we actually read
     size_t bits_left=(bitlength-src.GetReadPos())+1;
-    //	src.PopFront(src.GetDataSize()-src.GetReadableDataSize()); //this shifts the stream so it now begins at last read position i.e. Real packet payload
+    //  src.PopFront(src.GetDataSize()-src.GetReadableDataSize()); //this shifts the stream so it now begins at last read position i.e. Real packet payload
     res->StoreBitArray(src.read_ptr(),bits_left);
     PushRecvPacket(res);
 }
@@ -122,12 +122,12 @@ void CrudP_Protocol::parseAcks(BitStream &src,CrudP_Packet *tgt)
     tgt->addAck(firstAck);
     for(uint32_t i = 1; i < numUniqueAcks; i++)
     {
-        //	The first sequence number is sent in it's entirety.  Every subsequent
-        //	number is sent as a delta between it, and it's predecessor.  This is
-        //	a clever way of compressing the ack table, because if you have the
-        //	first ack in the sequence, all you need is the delta to the next one
-        //	to calculate it, and the Packed Bits format achieves much higher
-        //	compression ratios with smaller values
+        //  The first sequence number is sent in it's entirety.  Every subsequent
+        //  number is sent as a delta between it, and it's predecessor.  This is
+        //  a clever way of compressing the ack table, because if you have the
+        //  first ack in the sequence, all you need is the delta to the next one
+        //  to calculate it, and the Packed Bits format achieves much higher
+        //  compression ratios with smaller values
         firstAck += src.GetPackedBits(1) + 1;
         tgt->addAck(firstAck);
     }
@@ -205,7 +205,7 @@ CrudP_Packet *CrudP_Protocol::mergeSiblings(uint32_t id)
     CrudP_Packet *res= new CrudP_Packet(*storage[0]); //copy packet info from first sibling
     for(uint32_t i = 0; i < storage.size(); i++)
     {
-        //	Skip duplicate siblings
+        //Skip duplicate siblings
         //if(i > 0 && storage[i]->getSibPos() == storage[i-1]->getSibPos()) continue;
         assert(storage[i]->getSibId() == id);
         pkt_bs = storage[i]->GetStream();
@@ -340,7 +340,7 @@ void CrudP_Protocol::sendLargePacket(CrudP_Packet *p)
         pkt = *iter;
         pkt->setNumSibs((uint32_t)split_packets.size());
         pkt->setSibId(sib_id);
-        pkt->m_checksum	= 0;
+        pkt->m_checksum = 0;
         pkt->setSeqNo(++send_seq);
         block_size = pkt->GetStream()->GetReadableDataSize();
         BitStream *res =new BitStream((uint32_t)(block_size+64));
@@ -386,7 +386,7 @@ void CrudP_Protocol::sendSmallPacket(CrudP_Packet *p)
 {
     p->setNumSibs(0);
     p->setSibId(0);
-    p->m_checksum	= 0;
+    p->m_checksum = 0;
     p->setSeqNo(++send_seq);
     p->setSibPos(0);
 

@@ -12,9 +12,9 @@
 class AuthHandler : public EventProcessor
 {
 protected:
-	typedef ACE_Guard<ACE_Thread_Mutex> MTGuard;
-	ACE_Thread_Mutex m_store_mutex;
-	std::map<uint64_t,AuthLink *> m_link_store;
+    typedef ACE_Guard<ACE_Thread_Mutex> MTGuard;
+    ACE_Thread_Mutex m_store_mutex;
+    std::map<uint64_t,AuthLink *> m_link_store;
     //////////////////////////////////////////////////////////////////////////
     // function that send messages into the link
     void        no_admin_server(EventProcessor *lnk);
@@ -47,7 +47,7 @@ public:
         AUTH_UNKN_ERROR
     } eAuthError; // this is a public type so other servers can pass us valid errors
 
-	void        dispatch(SEGSEvent *ev);
+    void        dispatch(SEGSEvent *ev);
     SEGSEvent * dispatch_sync(SEGSEvent *ev);
 };
 typedef ACE_Singleton<AuthHandler,ACE_Thread_Mutex> AuthHandlerG;

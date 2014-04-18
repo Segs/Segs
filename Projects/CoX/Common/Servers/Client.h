@@ -42,10 +42,10 @@ protected:
 class ClientSession
 {
 public:
-    string              getLogin()	const	{return m_account_info.login();}
-    bool                account_blocked() {return m_account_info.access_level()==0;}
-    AccountInfo &       account_info() {return m_account_info;}
-    ClientLinkState &   link_state() {return m_link;}
+    string              getLogin()  const   { return m_account_info.login();}
+    bool                account_blocked()   { return m_account_info.access_level()==0;}
+    AccountInfo &       account_info()      { return m_account_info;}
+    ClientLinkState &   link_state()        { return m_link;}
 protected:
     ClientLinkState     m_link;
     AccountInfo         m_account_info;

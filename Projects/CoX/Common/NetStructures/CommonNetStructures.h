@@ -84,8 +84,8 @@ public:
 
 class NetStructure // this represents an interface all structures that are traversing the network should implement
 {
-static const	uint32_t    stringcachecount_bitlength=12;
-static const	uint32_t    colorcachecount_bitlength=10;
+static const    uint32_t    stringcachecount_bitlength=12;
+static const    uint32_t    colorcachecount_bitlength=10;
 public:
                             NetStructure()
                             {

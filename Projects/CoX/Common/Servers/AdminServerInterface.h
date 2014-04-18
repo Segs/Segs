@@ -16,7 +16,7 @@
 /* Design consideration:                                                */
 /* Current implementation gets knowledge it shouldn't possess,          */
 /* AdminServerInterface::GetClientByLogin returns all details known     */
-/* about given client.													*/
+/* about given client.                                                  */
 /************************************************************************/
 
 // this is interface for calling AdminServer services, currently it's an Interface pattern
@@ -30,20 +30,20 @@ class IAdminServer : public RoamingServer
 {
         typedef ServerHandle<IGameServer> hGameServer;
 public:
-virtual	bool            Logout(const AccountInfo &client) const=0;
-virtual	bool            Login(const AccountInfo &client,const ACE_INET_Addr &client_addr)=0;
-virtual	bool            ValidPassword(const AccountInfo &client, const char *password)=0;
+virtual bool            Logout(const AccountInfo &client) const=0;
+virtual bool            Login(const AccountInfo &client,const ACE_INET_Addr &client_addr)=0;
+virtual bool            ValidPassword(const AccountInfo &client, const char *password)=0;
 
-virtual	bool            fill_account_info(AccountInfo &client)=0;
-virtual	int             SaveAccount(const char *username, const char *password)=0;
-virtual	int             RemoveAccount(AccountInfo &client)=0;
+virtual bool            fill_account_info(AccountInfo &client)=0;
+virtual int             SaveAccount(const char *username, const char *password)=0;
+virtual int             RemoveAccount(AccountInfo &client)=0;
 
-virtual	int             AddIPBan(const ACE_INET_Addr &client_addr)=0;
-virtual	int             GetBlockedIpList(std::list<int> &)=0;
-virtual	void            InvalidGameServerConnection(const ACE_INET_Addr &)=0;
+virtual int             AddIPBan(const ACE_INET_Addr &client_addr)=0;
+virtual int             GetBlockedIpList(std::list<int> &)=0;
+virtual void            InvalidGameServerConnection(const ACE_INET_Addr &)=0;
 
-virtual	hGameServer     RegisterMapServer(const ServerHandle<IMapServer> &map_h )=0;
-virtual	int             GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server )=0;
+virtual hGameServer     RegisterMapServer(const ServerHandle<IMapServer> &map_h )=0;
+virtual int             GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server )=0;
 };
 
 class AdminServerInterface : public Server

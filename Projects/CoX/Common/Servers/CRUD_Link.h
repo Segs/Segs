@@ -28,7 +28,7 @@ class CRUDLink : public EventProcessor
 protected:
 typedef typename EVENT_FACTORY::tClientData tClientData;
 typedef EventProcessor                      super;
-        ACE_Reactor_Notification_Strategy   m_notifier;	// our queue will use this to inform the reactor of it's new elements
+        ACE_Reactor_Notification_Strategy   m_notifier; // our queue will use this to inform the reactor of it's new elements
         ACE_HANDLE                          get_handle (void) const {return peer_.get_handle();}
         ACE_Time_Value                      m_last_activity; // last link activity time
 

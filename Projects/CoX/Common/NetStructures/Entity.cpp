@@ -41,7 +41,7 @@ uint32_t AngleQuantize(float value,int numb_bits)
     float v = fabs(value)>1.0f ? _copysign(1.0f,value) : value ;
     v  = (asinf(v)+M_PI)/(2*F_PI); // maps -1..1 to 0..1
     v *= max_val;
-//	assert(v<=max_val);
+//  assert(v<=max_val);
     return uint32_t(v);
 }
 int Entity::getOrientation(BitStream &bs)
@@ -83,7 +83,7 @@ void Entity::storeOrientation(BitStream &bs) const
     {
         if(update_rot(i))
         {
-            bs.StoreBits(9,AngleQuantize(qrot[i],9));	 // normalized quat, 4th param is recoverable from the first 3
+            bs.StoreBits(9,AngleQuantize(qrot[i],9));   // normalized quat, 4th param is recoverable from the first 3
         }
     }
 }
@@ -93,7 +93,7 @@ static inline uint32_t quantize_float(float v)
 }
 void Entity::storePosition(BitStream &bs) const
 {
-//	float x = pos.vals.x;
+// float x = pos.vals.x;
     uint32_t packed;
     //uint32_t diff=0; // changed bits are '1'
     bs.StoreBits(3,7); // frank -> 7,-60.5,0,180

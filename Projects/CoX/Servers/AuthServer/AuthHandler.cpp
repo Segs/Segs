@@ -47,7 +47,7 @@ void AuthHandler::on_connect( ConnectEvent *ev )
         assert(lnk!=0);
         if(lnk->m_state!=AuthLink::INITIAL)
         {
-                ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),	ACE_TEXT ("Multiple connection attempts from the same addr/port")));
+                ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),  ACE_TEXT ("Multiple connection attempts from the same addr/port")));
         }
         lnk->m_state=AuthLink::CONNECTED;
     uint32_t seed = rand();

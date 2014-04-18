@@ -5,6 +5,6 @@
 class AuthEventFactory
 {
 public:
-	static AuthLinkEvent *EventForType(eAuthPacketType type);
-	static void Destroy(AuthLinkEvent *what);
+static  AuthLinkEvent * EventForType(eAuthPacketType type);
+static  void            Destroy(AuthLinkEvent *what);
 };

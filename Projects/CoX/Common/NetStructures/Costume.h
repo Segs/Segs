@@ -77,22 +77,22 @@ public:
 };
 class MapCostume : public Costume
 {
-    bool costume_sends_nonquantized_floats;
+        bool    costume_sends_nonquantized_floats;
 protected:
-    uint8_t		m_costume_type;
-    int		costume_type_idx_P;
-    int		costume_sub_idx_P;
-    void	GetCostume(BitStream &src);
-    void	SendCommon(BitStream &bs) const;
+        uint8_t m_costume_type;
+        int     costume_type_idx_P;
+        int     costume_sub_idx_P;
+        void    GetCostume(BitStream &src);
+        void    SendCommon(BitStream &bs) const;
 public:
-    ~MapCostume(){}
-    MapCostume()
-    {
-    }
-    void	clear_cache();
-    void	serializefrom(BitStream &);
-    void	serializeto(BitStream &bs) const;
-    void	dump();
+                ~MapCostume(){}
+                MapCostume()
+                {
+                }
+        void    clear_cache();
+        void    serializefrom(BitStream &);
+        void    serializeto(BitStream &bs) const;
+        void    dump();
 };
 class CharacterCostume : public MapCostume
 {
@@ -125,5 +125,5 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Database related
     //////////////////////////////////////////////////////////////////////////
-    uint64_t	m_id;
+    uint64_t    m_id;
 };

@@ -69,7 +69,7 @@ SEGSEvent * AuthLink::bytes_to_event()
         if(m_received_bytes_storage.GetReadableDataSize()<=2) // no more bytes for us, so we'll go hungry for a while
             return NULL;
         // And the skies are clear on the Packet Fishing Waters
-        m_received_bytes_storage.uGet(packet_size);	// Ah ha! I smell packet in there!
+        m_received_bytes_storage.uGet(packet_size); // Ah ha! I smell packet in there!
         if(m_received_bytes_storage.GetReadableDataSize()<packet_size) // tis' a false trail capt'n !
         {
             m_received_bytes_storage.PopFront(1); // Crew, Dead Slow Ahead ! we're in hunting mode !
@@ -216,7 +216,7 @@ bool AuthLink::send_buffer()
 {
     ssize_t send_cnt = peer_.send(m_unsent_bytes_storage.read_ptr(), m_unsent_bytes_storage.GetReadableDataSize());
     if (send_cnt == -1)
-        ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),	ACE_TEXT ("send")));
+        ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"), ACE_TEXT ("send")));
     else
     {
         m_unsent_bytes_storage.PopFront(send_cnt); // this many bytes were read
@@ -251,7 +251,7 @@ static uint64_t KeyPrepare(const char *co_string)
 
 void AuthLink::set_protocol_version( int vers )
 {
-    static char key_30207[] = {	0x39, 0x3D, 0x33, 0x2A, 0x32, 0x3B, 0x78, 0x5D,
+    static char key_30207[] = { 0x39, 0x3D, 0x33, 0x2A, 0x32, 0x3B, 0x78, 0x5D,
                                 0x31, 0x31, 0x73, 0x61, 0x3B, 0x2F, 0x34, 0x73,
                                 0x64, 0x2E, 0x25, 0x2B, 0x24, 0x40, 0x61, 0x2A,
                                 0x27, 0x21, 0x32, 0x7A, 0x30, 0x7E, 0x67, 0x60,

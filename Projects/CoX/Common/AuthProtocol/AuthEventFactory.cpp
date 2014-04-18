@@ -32,6 +32,6 @@ void AuthEventFactory::Destroy(AuthLinkEvent *what)
 {
     assert(what);
     what->release();
-    //	delete what;
+    //delete what;
 }
 
