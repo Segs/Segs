@@ -12,7 +12,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/AdminServer.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-SET(target_DEPENDS "")
+SET(target_DEPENDS )
 
 SEGS_ADD_COMPONENT(cox_server_common LIB)
 
@@ -25,7 +25,7 @@ ${target_INCLUDE}
 
 ADD_LIBRARY(adminserver_lib STATIC ${target_SOURCES})
 
-TARGET_LINK_LIBRARIES(adminserver_lib ${target_DEPENDS})
-ADD_DEPENDENCIES(adminserver_lib ${target_DEPENDS})
+TARGET_LINK_LIBRARIES(adminserver_lib ${target_DEPENDS} ${SQLite_LIBRARIES})
+ADD_DEPENDENCIES(adminserver_lib ${target_DEPENDS} ${SQLite_BUILD})
 
 SEGS_REGISTER_COMPONENT(adminserver_lib "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )

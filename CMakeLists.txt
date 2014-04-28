@@ -35,6 +35,17 @@ ExternalProject_Add(
 SET(ACE_path ${PROJECT_SOURCE_DIR}/3rd_party)
 SET(ACE_LIBRARIES ACE)
 
+ExternalProject_add(
+   SQLite_BUILD
+   SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/naked_sqlite
+   DOWNLOAD_COMMAND ""
+   UPDATE_COMMAND ""
+   INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
+   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+)
+SET(SQLite_path ${PROJECT_SOURCE_DIR}/3rd_party)
+SET(SQLite_LIBRARIES sqlite)
+
 find_package(Threads REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(PostgreSQL REQUIRED) # PostgreSQL
