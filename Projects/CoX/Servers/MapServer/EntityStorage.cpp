@@ -81,7 +81,7 @@ void EntityManager::sendEntities( BitStream &tgt,int self_idx,bool is_incrementa
         pEnt = *iter;
         pEnt->m_create_player = (pEnt->getIdx()==self_idx);
         delta = pEnt->getIdx()-last_idx -1;
-        printf("Delta is %d\n",0);
+        //printf("Delta is %d\n",0);
 
         tgt.StorePackedBits(1,delta);
         last_idx = pEnt->getIdx();

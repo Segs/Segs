@@ -87,7 +87,7 @@ BitStream::~BitStream()
 ************************************************************************/
 
 /************************************************************************
-Function:	 StoreBits/StoreBitsWithDebugInfo
+Function:    StoreBits/StoreBitsWithDebugInfo
 Description: Stores a client-specified number of bits into the bit-
                          stream buffer.  The bits to store come from the dataBits
                          argument, starting from the least significant bit, to the
@@ -381,7 +381,7 @@ int32_t BitStream::GetPackedBits(uint32_t minbits)
 
 
 /************************************************************************
-Function:	 GetBitArray/GetBitArrayWithDebugInfo
+Function:    GetBitArray/GetBitArrayWithDebugInfo
 Description: Retrieves a client-specified "array" of bits.  The main
                          difference between this function, and the GetBits function
                          is that this one can potentially retrieve more than 32 bits
@@ -449,7 +449,7 @@ void BitStream::GetString(std::string &str)
 
 
 /************************************************************************
-Function:	 GetFloat/GetFloatWithDebugInfo()
+Function:    GetFloat/GetFloatWithDebugInfo()
 Description: Retrieves a floating-point value from the bit stream.  This
                          will always be a 32-bit value.
 ************************************************************************/
@@ -513,7 +513,7 @@ void BitStream::StoreFloat(float val)
         Put(val);
     else
         StoreBits(32,*(reinterpret_cast<uint32_t *>(&val)));
-    //		StoreBits(32,*((uint32_t *)&val));
+    //  StoreBits(32,*((uint32_t *)&val));
 }
 
 
@@ -533,7 +533,7 @@ void BitStream::UseByteAlignedMode(bool toggle)
 
 void BitStream::ByteAlign( bool read_part,bool write_part )
 {
-    //	If bitPos is 0, we're already aligned
+    //If bitPos is 0, we're already aligned
     if(write_part)
     {
         m_write_off += (m_write_bit_off>0);
@@ -549,7 +549,8 @@ void BitStream::ByteAlign( bool read_part,bool write_part )
 /*
 uint32_t BitStream::GetPackedBitsLength(uint32_t nBits, uint32_t dataBits) const
 {
-        if(IsByteAligned())	return GetBitsLength(32, dataBits);
+        if(IsByteAligned())
+            return GetBitsLength(32, dataBits);
 
         uint32_t length = 0;
         for(nBits; nBits < 32 && dataBits >= BIT_MASK(nBits); nBits)
@@ -566,17 +567,17 @@ uint32_t BitStream::GetPackedBitsLength(uint32_t nBits, uint32_t dataBits) const
 
 uint32_t BitStream::GetBitsLength(uint32_t nBits, uint32_t dataBits) const
 {
-        //	If this stream is byte-aligned, then we'll need to use a byte-aligned
-        //	value for nBits
+        //If this stream is byte-aligned, then we'll need to use a byte-aligned
+        //value for nBits
         uint32_t numbits = IsByteAligned() ? BYTE_ALIGN(nBits) : nBits;
         assert(numbits <= BITS_PER_DWORD);
 
         uint32_t bitsAdded = 0;
         for(uint32_t bits = 0; numbits; numbits -= bits)
         {
-                //	If we still have more bits left to copy than are left in
-                //	this byte, then we only copy the number of bits left in
-                //	the current byte.
+                //If we still have more bits left to copy than are left in
+                //this byte, then we only copy the number of bits left in
+                //the current byte.
                 bits       = numbits >= BITS_LEFT() ? GetBitsLeftInByte() : numbits;
                 bitsAdded += bits;
         }

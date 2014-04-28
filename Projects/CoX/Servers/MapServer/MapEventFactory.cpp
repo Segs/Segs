@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #include "MapEvents.h"
@@ -24,13 +24,16 @@ void processCommon(int op,BitStream &bs) {
             break;
         }
         case 102: {
-            FILE *fp = fopen("dump.bin","wb");
             int sz = bs.GetReadableBits()/8;
+            if(sz!=0) {
+            FILE *fp = fopen("dump.bin","wb");
+
             uint8_t *g = new uint8_t(sz);
             bs.GetBitArray(g,bs.GetReadableBits());
             fwrite(g,sz,1,fp);
             fclose(fp);
             exit(0);
+            }
         }
             break;
     }
