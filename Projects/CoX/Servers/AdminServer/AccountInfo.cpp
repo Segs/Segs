@@ -98,7 +98,7 @@ bool AccountInfo::store_new_character(Character *character)
     if(slot_idx==0xFF)
         return false;
     CharacterDatabase *cdb = AdminServer::instance()->character_db();
-    DbTransactionGuard grd(*cdb);
+    DbTransactionGuard grd(*cdb->getDb());
     if(false==cdb->create(m_game_server_acc_id,slot_idx,character))
         return false;
     grd.commit();
