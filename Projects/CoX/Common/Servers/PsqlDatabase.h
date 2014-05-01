@@ -8,8 +8,11 @@
 
 #pragma once
 #include "Database.h"
-#include <libpq-fe.h>
-
+extern		"C"
+{
+typedef struct pg_conn PGconn;
+typedef struct pg_result PGresult;
+}
 class PSqlPreparedQuery : public IPreparedQuery
 {
         PGconn *    m_conn;
@@ -28,7 +31,7 @@ public:
                     PSqlDbResults();
                     ~PSqlDbResults();
 
-        size_t      num_rows() {return PQntuples(m_result);}
+        size_t      num_rows();
         IResultRow *getRow(size_t row);
         const char *message() { return m_msg; }
         bool        isError() const {
@@ -60,8 +63,8 @@ public:
                     PSqlDatabase();
 virtual             ~PSqlDatabase();
         void        setConnectionConfiguration(const char *host,const char *port,const char *db,const char *user,const char *passw);
-        bool        execQuery(const string &q,DbResults &res);
-        bool        execQuery(const string &q); // for queries without results
+        bool        execQuery(const std::string &q,DbResults &res);
+        bool        execQuery(const std::string &q); // for queries without results
         int         OpenConnection(IDataBaseCallbacks *c);
         int         CloseConnection(void);
         int64_t     next_id(const std::string &tab_name);

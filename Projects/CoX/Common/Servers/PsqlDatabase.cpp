@@ -12,6 +12,7 @@
 #include <ace/Log_Msg.h>
 #include <ace/OS_NS_time.h>
 #include <ace/OS_NS_Thread.h>
+#include <libpq-fe.h>
 
 // Our PostgreSQL connection information
 PSqlDatabase::PSqlDatabase()
@@ -273,6 +274,11 @@ PSqlDbResults::PSqlDbResults()
 PSqlDbResults::~PSqlDbResults()
 {
     PQclear(m_result);
+}
+
+size_t PSqlDbResults::num_rows()
+{
+    return PQntuples(m_result);
 }
 
 IResultRow *PSqlDbResults::getRow(size_t row)

@@ -1,3 +1,5 @@
+find_package(PostgreSQL REQUIRED) # PostgreSQL
+
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/AdminServerInterface.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthServerInterface.cpp
@@ -33,7 +35,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/PsqlDatabase.h
 
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-SET(target_DEPENDS "")
+SET(target_DEPENDS ${PostgreSQL_LIBRARIES})
 SEGS_ADD_COMPONENT(ConfigExtensions SOURCE)
 SEGS_ADD_COMPONENT(EventSystem LIB)
 SEGS_ADD_COMPONENT(network_structures LIB)
