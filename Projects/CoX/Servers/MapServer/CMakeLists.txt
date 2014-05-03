@@ -37,7 +37,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/Events/Shortcuts.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-SET(target_DEPENDS "")
+SET(target_DEPENDS "osg")
 
 SEGS_ADD_COMPONENT(cox_server_common LIB)
 SEGS_ADD_COMPONENT(adminserver_lib LIB) # used to access character db
@@ -49,7 +49,7 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
-ADD_DEPENDENCIES(mapserver_lib ${target_DEPENDS})
+ADD_DEPENDENCIES(mapserver_lib ${target_DEPENDS} OSG_BUILD)
 
 SEGS_REGISTER_COMPONENT(mapserver_lib "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
 
