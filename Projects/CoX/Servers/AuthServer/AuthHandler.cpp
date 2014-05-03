@@ -8,31 +8,35 @@
 void AuthHandler::dispatch( SEGSEvent *ev )
 {
     assert(ev);
-        switch(ev->type())
-        {
+    switch(ev->type())
+    {
         case SEGS_EventTypes::evConnect:
-                on_connect(static_cast<ConnectEvent *>(ev));
-        break;
+            on_connect(static_cast<ConnectEvent *>(ev));
+            break;
         case evLogin:
-                on_login(static_cast<LoginRequest *>(ev));
-        break;
-    case evServerListRequest:
-        on_server_list_request(static_cast<ServerListRequest *>(ev));
-        break;
-    case evServerSelectRequest:
-        on_server_selected(static_cast<ServerSelectRequest *>(ev));
-        break;
-    case SEGS_EventTypes::evDisconnect:
-        on_disconnect(static_cast<DisconnectEvent *>(ev));
-        break;
-    //////////////////////////////////////////////////////////////////////////
-    //  Events from other servers
-    //////////////////////////////////////////////////////////////////////////
-    case Internal_EventTypes::evClientExpected:
-        on_client_expected(static_cast<ClientExpected *>(ev)); break;
+            on_login(static_cast<LoginRequest *>(ev));
+            break;
+        case evServerListRequest:
+            on_server_list_request(static_cast<ServerListRequest *>(ev));
+            break;
+        case evServerSelectRequest:
+            on_server_selected(static_cast<ServerSelectRequest *>(ev));
+            break;
+        case evDbError:
+            // client sends this on exit sometimes ?
+            on_disconnect(static_cast<DisconnectEvent *>(ev));
+            break;
+        case SEGS_EventTypes::evDisconnect:
+            on_disconnect(static_cast<DisconnectEvent *>(ev));
+            break;
+            //////////////////////////////////////////////////////////////////////////
+            //  Events from other servers
+            //////////////////////////////////////////////////////////////////////////
+        case Internal_EventTypes::evClientExpected:
+            on_client_expected(static_cast<ClientExpected *>(ev)); break;
         default:
-                assert(!"Unknown event encountered in dispatch.");
-        }
+            assert(!"Unknown event encountered in dispatch.");
+    }
 }
 SEGSEvent *AuthHandler::dispatch_sync( SEGSEvent * )
 {
@@ -42,17 +46,17 @@ SEGSEvent *AuthHandler::dispatch_sync( SEGSEvent * )
 
 void AuthHandler::on_connect( ConnectEvent *ev )
 {
-        // TODO: guard for link state update ?
-        AuthLink *lnk=static_cast<AuthLink *>(ev->src());
-        assert(lnk!=0);
-        if(lnk->m_state!=AuthLink::INITIAL)
-        {
-                ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),  ACE_TEXT ("Multiple connection attempts from the same addr/port")));
-        }
-        lnk->m_state=AuthLink::CONNECTED;
+    // TODO: guard for link state update ?
+    AuthLink *lnk=static_cast<AuthLink *>(ev->src());
+    assert(lnk!=0);
+    if(lnk->m_state!=AuthLink::INITIAL)
+    {
+        ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),  ACE_TEXT ("Multiple connection attempts from the same addr/port")));
+    }
+    lnk->m_state=AuthLink::CONNECTED;
     uint32_t seed = rand();
     lnk->init_crypto(30206,seed);
-        lnk->putq(new AuthorizationProtocolVersion(this,30206,seed));
+    lnk->putq(new AuthorizationProtocolVersion(this,30206,seed));
 }
 void AuthHandler::on_disconnect( DisconnectEvent *ev )
 {
@@ -85,25 +89,19 @@ void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
 }
 void AuthHandler::on_login( LoginRequest *ev )
 {
-        AuthLink *lnk=static_cast<AuthLink *>(ev->src());
-    AdminServerInterface *adminserv;
-    AuthServerInterface *authserv;
+    AdminServerInterface *adminserv = ServerManager::instance()->GetAdminServer();
+    AuthServerInterface *authserv = ServerManager::instance()->GetAuthServer();
     AuthClient *client = NULL;
-    adminserv   = ServerManager::instance()->GetAdminServer();
-    authserv    = ServerManager::instance()->GetAuthServer();
+    AuthLink *lnk = static_cast<AuthLink *>(ev->src());
     assert(adminserv);
     assert(authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
+
     if(!adminserv)
-    {
-        // we cannot do much without that
-        no_admin_server(lnk);
-        return;
-    }
+        return no_admin_server(lnk); // we cannot do much without that
+
     if(lnk->m_state!=AuthLink::CONNECTED)
-    {
-        unknown_error(lnk);
-        return;
-    }
+        return unknown_error(lnk);
+
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) User %s trying to login from %s.\n"),ev->login,lnk->peer_addr().get_host_addr()));
     if(strlen(ev->login)<=2)
         return auth_error(lnk,AUTH_ACCOUNT_BLOCKED); // invalid account
@@ -115,12 +113,17 @@ void AuthHandler::on_login( LoginRequest *ev )
         adminserv->SaveAccount(ev->login,ev->password); // Autocreate/save account to DB
         client = authserv->GetClientByLogin(ev->login);
     }
-    assert(client);
+    if(!client) {
+        ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) User %s from %s - couldn't get/create account.\n"),ev->login,lnk->peer_addr().get_host_addr()));
+        return auth_error(lnk,AUTH_DATABASE_ERROR);
+    }
+
     AccountInfo & acc_inf(client->account_info());  // all the account info you can eat!
     lnk->client(client);                            // now link knows what client it's responsible for
     client->link_state().link(lnk);                 // and client knows what link it's using
     eAuthError err = AUTH_WRONG_LOGINPASS;          // this is default for case we don't have that client
-    if(client)
+    bool no_errors=false;                           // this flag is set if there were no errors during client pre-processing
+    if(client) // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
     {
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),acc_inf.account_server_id()));
         // step 3d: checking if this account is blocked
@@ -129,18 +132,18 @@ void AuthHandler::on_login( LoginRequest *ev )
         else if(client->isLoggedIn())
         {
             // step 3e: asking game server connection check
-            //client->forceGameServerConnectionCheck();
+            // TODO: client->forceGameServerConnectionCheck();
             err = AUTH_ALREADY_LOGGEDIN;
         }
         else if(client->link_state().getState()==ClientLinkState::NOT_LOGGED_IN)
-            err = AUTH_OK;
+            no_errors = true;
     }
     // if there were no errors and the provided password is valid and admin server has logged us in.
     if(
-        (err==AUTH_OK) &&
-        (adminserv->ValidPassword(acc_inf,ev->password)) &&
-        (adminserv->Login(acc_inf,lnk->peer_addr())) // this might fail somehow
-        )
+            no_errors &&
+            adminserv->ValidPassword(acc_inf,ev->password) &&
+            adminserv->Login(acc_inf,lnk->peer_addr()) // this might fail somehow
+            )
     {
         // inform the client of the successful login attempt
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : succeeded\n")));

@@ -33,10 +33,14 @@ protected:
 public:
     typedef enum
     {
-        AUTH_OK = 0,
+        AUTH_SERVER_OFFLINE = -1,
+        //AUTH_OK = 0,
+        AUTH_ACCOUNT_BLOCKED = 0,
         AUTH_DATABASE_ERROR = 1,
-        AUTH_ACCOUNT_BLOCKED,
+        AUTH_INVALID_ACCOUNT = 2, // no client side message
         AUTH_WRONG_LOGINPASS = 3,
+        // 5- SSN not available
+        // 6 - no server list
         AUTH_ALREADY_LOGGEDIN = 7,
         AUTH_UNAVAILABLE_SERVER = 8,
         AUTH_KICKED_FROM_GAME = 11,
