@@ -2,7 +2,7 @@
 #include "ServerEndpoint.h"
 #include "PacketCodec.h"
 #include "CRUD_Events.h"
-
+//#define LOG_
 template<class EVENT_FACTORY>
 EventProcessor *CRUDLink<EVENT_FACTORY>::g_target=0;
 template<class EVENT_FACTORY>
@@ -29,22 +29,28 @@ void CRUDLink<EVENT_FACTORY>::event_for_packet(SEGSEvent *ev)
     res->src(this);
     res->seq_number = pak->GetSequenceNumber();
     g_target->putq(res);
-//    while(pak->GetStream()->GetReadableBits()>=3)
-//    {
+    pak->GetStream()->ByteAlign();
+    while(pak->GetStream()->GetReadableBits()>1)
+    {
+        uint32_t pos =pak->GetStream()->GetReadPos();
+#ifdef LOG_
+        fprintf(stderr,"pak->GetStream()->GetReadableBits() = %d [%d]\n",pak->GetStream()->GetReadableBits(),pak->GetStream()->GetPackedBits(1));
+#endif
+        pak->GetStream()->SetReadPos(pos);
 
-//        fprintf(stderr,"pak->GetStream()->GetReadableBits() = %d\n",pak->GetStream()->GetReadableBits());
-//        fprintf(stderr,"next packet type = %d\n",pak->GetStream()->GetPackedBits(1));
-//        if()
-//        CRUDLink_Event *res = EVENT_FACTORY::EventFromStream(*pak->GetStream());
-//        if(!res)
-//        {
-//            ACE_ERROR((LM_ERROR, ACE_TEXT ("%p EventFromStream returned NULL\n")));
-//        }
-//        res->serializefrom(*pak->GetStream());
-//        res->src(this);
-//        res->seq_number = pak->GetSequenceNumber();
-//        g_target->putq(res);
-//    }
+        res = EVENT_FACTORY::EventFromStream(*pak->GetStream(),true);
+        if(!res)
+        {
+            ACE_ERROR((LM_ERROR, ACE_TEXT ("%p EventFromStream returned NULL\n")));
+            break;
+        }
+        if(res==(void*)1)
+            continue;
+        res->serializefrom(*pak->GetStream());
+        res->src(this);
+        res->seq_number = pak->GetSequenceNumber();
+        g_target->putq(res);
+    }
 }
 
 template<class EVENT_FACTORY>
@@ -72,7 +78,7 @@ int CRUDLink<EVENT_FACTORY>::open (void *p)
     if (EventProcessor::open (p) == -1)
         return -1;
     m_notifier.reactor(reactor());  // notify reactor with write event,
-    msg_queue()->notification_strategy (&m_notifier);	// whenever there is a new event on msg_queue()
+    msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue()
     connection_update(); // record first activity time.
     return 0;
 }
@@ -86,23 +92,23 @@ int CRUDLink<EVENT_FACTORY>::handle_output( ACE_HANDLE )
     {
         switch(ev->type())
         {
-        case SEGS_EventTypes::evFinish:
-            ev->release();
-            return -1;
-        case SEGS_EventTypes::evConnect:
-            m_peer_addr=static_cast<ConnectEvent *>(ev)->src_addr;
-            connection_update();
-            break;
-        case SEGS_EventTypes::evDisconnect:
-            putq(new SEGSEvent(SEGS_EventTypes::evFinish)); // close the link
-            break;
-        case CRUD_EventTypes::evPacket: // CRUDP_Protocol has posted a pre-parsed packet to us
-            event_for_packet(static_cast<PacketEvent *>(ev));
-            connection_update(); // we've received some bytes -> connection update
-            break;
-        default:
-            packets_for_event(static_cast<CRUDLink_Event *>(ev));
-            break;
+            case SEGS_EventTypes::evFinish:
+                ev->release();
+                return -1;
+            case SEGS_EventTypes::evConnect:
+                m_peer_addr=static_cast<ConnectEvent *>(ev)->src_addr;
+                connection_update();
+                break;
+            case SEGS_EventTypes::evDisconnect:
+                putq(new SEGSEvent(SEGS_EventTypes::evFinish)); // close the link
+                break;
+            case CRUD_EventTypes::evPacket: // CRUDP_Protocol has posted a pre-parsed packet to us
+                event_for_packet(static_cast<PacketEvent *>(ev));
+                connection_update(); // we've received some bytes -> connection update
+                break;
+            default:
+                packets_for_event(static_cast<CRUDLink_Event *>(ev));
+                break;
         }
         ev->release();
         //TODO: check how getq works when nowait is before now() ??

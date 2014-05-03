@@ -27,13 +27,13 @@
 #include "ServerEndpoint.h"
 #include "MapLink.h"
 #include "MapEvents.h"
-#include "MapHandler.h"
 #include "MapManager.h"
 
 class Net;
 class MapServerEndpoint;
 class MapClient;
 class MapInstance;
+
 class MapServer : public IMapServer
 {
 static const int                MAPSERVER_VERSION=1;
@@ -66,6 +66,6 @@ protected:
 
         ACE_INET_Addr           m_location; //! this value is sent to the clients
         ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
-        MapLinkEndpoint	*       m_endpoint;
-        MapCommHandler *        m_handler;
+        MapLinkEndpoint *       m_endpoint;
+        MapInstance *           m_handler;
 };

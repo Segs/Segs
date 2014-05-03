@@ -192,8 +192,8 @@ void SceneStorage::build_schema()
     Def::build_schema();
     Ref::build_schema();
 
-    m_schema.add_field("Version"     ,0x5    ,0x0,0x0,U32_REF(SceneStorage,m_version));
-    m_schema.add_field("Scenefile"   ,0x6    ,0xC,0x0,STR_REF(SceneStorage,m_scene_file));
+    m_schema.add_field("Version"            ,0x5    ,0x0,0x0,U32_REF(SceneStorage,m_version));
+    m_schema.add_field("Scenefile"          ,0x6    ,0xC,0x0,STR_REF(SceneStorage,m_scene_file));
     m_schema.add_field_nested("Def"         ,0x15   ,0x4,0x8 ,TARGETED_ARR_OF_REF(SceneStorage,Def,m_defs));
     m_schema.add_field_nested("RootMod"     ,0x115  ,0x4,0x8 ,TARGETED_ARR_OF_REF(SceneStorage,Def,m_root));
     m_schema.add_field_nested("Ref"         ,0x15   ,0x8,0x1C,TARGETED_ARR_OF_REF(SceneStorage,Ref,m_refs));

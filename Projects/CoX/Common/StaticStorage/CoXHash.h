@@ -33,7 +33,7 @@ struct JenkinsHash
 {
     static uint32_t hash(const uint8_t *k,uint32_t length,uint32_t initval)
     {
-        register uint32_t a,b,c,len;
+        uint32_t a,b,c,len;
 
         /* Set up the internal state */
         len = length;

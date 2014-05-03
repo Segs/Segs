@@ -30,8 +30,14 @@ public:
     EVENT_DECL(evEntitiesRequest        ,6)
     EVENT_DECL(evEntitites              ,7)
     EVENT_DECL(evInputState             ,8)
+    EVENT_DECL(evClientQuit             ,9)
+    EVENT_DECL(evForceLogout            ,10)
     EVENT_DECL(evChatMessage            ,20)
     EVENT_DECL(evCombineRequest         ,40)
+    EVENT_DECL(evConsoleCommand         ,100)
+    EVENT_DECL(evMiniMapState           ,101)
+    EVENT_DECL(evCookieRequest          ,106)
+    EVENT_DECL(evWindowState            ,114)
     END_EVENTS(500)
 };
 //////////////////////////////////////////////////////////////////////////
@@ -93,6 +99,131 @@ public:
     {
     }
 };
+class ClientQuit : public MapLinkEvent {
+public:
+    int reason;
+    ClientQuit():MapLinkEvent(MapEventTypes::evClientQuit)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,7); // opcode
+    }
+    void serializefrom(BitStream &bs)
+    {
+        reason = bs.GetPackedBits(1);
+        // TODO: try to differentiate between quit/logout ?
+    }
+
+};
+class ForcedLogout: public MapLinkEvent {
+public:
+    std::string reason;
+    ForcedLogout(const std::string &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason) {
+
+    }
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,12); // opcode
+        bs.StoreString(reason); // opcode
+    }
+    void serializefrom(BitStream &bs)
+    {
+        bs.GetString(reason);
+    }
+};
+
+class CookieRequest : public MapLinkEvent
+{
+public:
+    uint32_t cookie;
+    uint32_t console;
+    CookieRequest():MapLinkEvent(MapEventTypes::evCookieRequest)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,6); // opcode
+    }
+    void serializefrom(BitStream &bs)
+    {
+        cookie = bs.GetPackedBits(1);
+        console = bs.GetPackedBits(1);
+    }
+};
+class ConsoleCommand : public MapLinkEvent {
+public:
+    std::string contents;
+    ConsoleCommand():MapLinkEvent(MapEventTypes::evConsoleCommand)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,0); // opcode - Warning -> exactly the same as Connect
+    }
+    void serializefrom(BitStream &bs)
+    {
+        bs.GetString(contents);
+    }
+
+};
+
+class MiniMapState : public MapLinkEvent {
+
+public:
+    uint32_t tile_idx;
+    MiniMapState():MapLinkEvent(MapEventTypes::evMiniMapState)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,1); // opcode - Warning -> exactly the same as Connect
+    }
+    void serializefrom(BitStream &bs)
+    {
+        tile_idx=bs.GetPackedBits(8);
+    }
+
+};
+class WindowState : public MapLinkEvent
+{
+public:
+    uint32_t window_idx;
+    struct WindowS {
+        uint32_t field_0;
+        uint32_t field_4;
+        uint32_t field_8;
+        uint32_t field_C;
+        uint32_t field_14;
+        uint32_t field_18;
+        uint32_t field_24;
+        uint32_t color;
+        uint32_t alpha;
+    };
+    WindowS wnd;
+    WindowState():MapLinkEvent(MapEventTypes::evWindowState)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,14); // opcode
+    }
+    void serializefrom(BitStream &bs)
+    {
+        window_idx = bs.GetPackedBits(1);
+
+        wnd.field_0 = bs.GetPackedBits(1);
+        wnd.field_4 = bs.GetPackedBits(1);
+        uint32_t val = bs.GetPackedBits(1);
+        if(val==4)
+            wnd.field_18 = 2;
+        wnd.field_24 = val;
+
+        wnd.field_14 = bs.GetPackedBits(1);
+        wnd.color = bs.GetPackedBits(1);
+        wnd.alpha = bs.GetPackedBits(1);
+        if(bs.GetBits(1)) {
+            wnd.field_8 = bs.GetPackedBits(1);
+            wnd.field_C = bs.GetPackedBits(1);
+        }
+    }
+};
+
 class CombineRequest : public MapLinkEvent
 {
 public:
@@ -137,27 +268,27 @@ public:
 class MapInstanceConnected : public MapLinkEvent
 {
 public:
-                MapInstanceConnected():MapLinkEvent(MapEventTypes::evMapInstanceConnected)
-                {}
-                MapInstanceConnected(EventProcessor *evsrc,uint32_t resp,const std::string &err) :
-                        MapLinkEvent(MapEventTypes::evMapInstanceConnected,evsrc),
-                        m_resp(resp),
-                        m_fatal_error(err)
-                {}
+    MapInstanceConnected():MapLinkEvent(MapEventTypes::evMapInstanceConnected)
+    {}
+    MapInstanceConnected(EventProcessor *evsrc,uint32_t resp,const std::string &err) :
+        MapLinkEvent(MapEventTypes::evMapInstanceConnected,evsrc),
+        m_resp(resp),
+        m_fatal_error(err)
+    {}
 
     void        serializeto(BitStream &bs) const
-                {
-                    bs.StorePackedBits(1,5); //opcode
-                    bs.StorePackedBits(1,m_resp);
-                    if(m_resp)
-                        bs.StoreString(m_fatal_error);
-                }
+    {
+        bs.StorePackedBits(1,5); //opcode
+        bs.StorePackedBits(1,m_resp);
+        if(m_resp)
+            bs.StoreString(m_fatal_error);
+    }
     void        serializefrom(BitStream &src)
-                {
-                    m_resp = src.GetPackedBits(1);
-                    if(m_resp==0)
-                        src.GetString(m_fatal_error);
-                }
+    {
+        m_resp = src.GetPackedBits(1);
+        if(m_resp==0)
+            src.GetString(m_fatal_error);
+    }
     uint32_t    m_resp;
     std::string m_fatal_error;
 

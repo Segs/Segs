@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #pragma once
@@ -26,16 +26,18 @@ public:
     void            sendDebuggedEntities(BitStream &tgt) const;
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
     void            sendDeletes(BitStream &tgt) const;
-    void            sendEntities(BitStream &tgt) const;
+    void            sendEntities(BitStream &tgt, int self_idx, bool is_incremental) const;
     void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
+    void            removeEntityFromActiveList(Entity *ent);
+    size_t          active_entities() { return m_entlist.size(); }
 };
 
 class EntityStorage
 {
 public:
-//	void NewPlayer(MapClient *client,Entity *player_ent); // stores fresh player avatar
-//	void StorePlayer(MapClient *client,Entity *player_ent); // stores player avatar
+//  void NewPlayer(MapClient *client,Entity *player_ent); // stores fresh player avatar
+//  void StorePlayer(MapClient *client,Entity *player_ent); // stores player avatar
         Entity *    CreatePlayer(MapClient *client,int avatar_id); // retrieves client avatar from storage
 
         Entity *    CreateInstance(MapInstance *target_world,uint64_t id); // will create a new instance of given entity, bound to given map

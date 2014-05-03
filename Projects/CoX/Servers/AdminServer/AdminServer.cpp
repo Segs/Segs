@@ -12,6 +12,8 @@
 #include "Client.h"
 #include "ConfigExtension.h"
 #include "CharacterDatabase.h"
+#include "PsqlDatabase.h"
+
 // AdminServer should pull client data from database or from it's local, in-memory cache
 // currently there is no such thing, and 'client-cache' is just a hash-map
 
@@ -47,14 +49,15 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
                 ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [AdminServer] section\n"), inipath.c_str()),false);
         if(-1==config.open_section(root,"AccountDatabase",1,account_db_config))
                 ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [AccountDatabase] section\n"), inipath.c_str()),false);
-        string dbhost,dbname,dbuser,dbpass,dbport;
+        std::string dbhost,dbname,dbuser,dbpass,dbport;
         config.get_string_value(account_db_config,ACE_TEXT("db_host"),dbhost,"127.0.0.1");
         config.get_string_value(account_db_config,ACE_TEXT("db_port"),dbport,"5432");
         config.get_string_value(account_db_config,ACE_TEXT("db_name"),dbname,"none");
         config.get_string_value(account_db_config,ACE_TEXT("db_user"),dbuser,"none");
         config.get_string_value(account_db_config,ACE_TEXT("db_pass"),dbpass,"none");
-
-        m_db->setConnectionConfiguration(dbhost.c_str(),dbport.c_str(),dbname.c_str(),dbuser.c_str(),dbpass.c_str());
+        PSqlDatabase *db1 = new PSqlDatabase;
+        db1->setConnectionConfiguration(dbhost.c_str(),dbport.c_str(),dbname.c_str(),dbuser.c_str(),dbpass.c_str());
+        m_db->setDb(db1);
 
     if(-1==config.open_section(root,"CharacterDatabase",1,character_db_config))
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [CharacterDatabase] section\n"), inipath.c_str()),false);
@@ -64,14 +67,16 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
         config.get_string_value(character_db_config,ACE_TEXT("db_name"),dbname,"none");
         config.get_string_value(character_db_config,ACE_TEXT("db_user"),dbuser,"none");
         config.get_string_value(character_db_config,ACE_TEXT("db_pass"),dbpass,"none");
-        m_char_db->setConnectionConfiguration(dbhost.c_str(),dbport.c_str(),dbname.c_str(),dbuser.c_str(),dbpass.c_str());
+        PSqlDatabase *db2 = new PSqlDatabase;
+        db2->setConnectionConfiguration(dbhost.c_str(),dbport.c_str(),dbname.c_str(),dbuser.c_str(),dbpass.c_str());
+        m_char_db->setDb(db2);
         return true;
 }
 bool _AdminServer::Run()
 {
-        if(m_db->OpenConnection())
+        if(m_db->getDb()->OpenConnection(m_db))
                 return false;
-        if(m_char_db->OpenConnection())
+        if(m_char_db->getDb()->OpenConnection(m_char_db))
                 return false;
         m_running=true;
         return true;
@@ -81,8 +86,8 @@ bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" 
         bool res;
         ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
         m_running=false;
-        res  =  m_db->CloseConnection()==0;
-        res &=	m_char_db->CloseConnection()==0;
+        res  =  m_db->getDb()->CloseConnection()==0;
+        res &=  m_char_db->getDb()->CloseConnection()==0;
 
     delete m_db;
     delete m_char_db;
@@ -112,7 +117,7 @@ bool _AdminServer::Logout(const AccountInfo &) const
 {
         // Here we should log to the Db, a Logout event for that client
         //if(client)
-        //	client->setState(AuthClient::NOT_LOGGEDIN);
+        //  client->setState(AuthClient::NOT_LOGGEDIN);
         return true;
 }
 
@@ -186,7 +191,7 @@ ServerHandle<IGameServer> _AdminServer::RegisterMapServer(const ServerHandle<IMa
 
 /**
  * Idea: All GetAccessKeyForServer methods create a new 'allowed access' entry in their callers table.
- *		 So each call using Handle, is marked/encoded with it, and can be verified as valid.
+ *       So each call using Handle, is marked/encoded with it, and can be verified as valid.
  * @return int
  * @param  map_h
  */

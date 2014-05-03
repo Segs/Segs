@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #pragma once
@@ -73,21 +73,19 @@ public:
     {
         uint16_t port;
         uint32_t ipaddr;
-        unused1			= src.GetPackedBits(1);
-        unused2			= src.GetPackedBits(1);
-        ipaddr			= src.GetPackedBits(1);
-        unused3			= src.GetPackedBits(1);
-        port			= src.GetPackedBits(1);
-        unused4			= src.GetPackedBits(1);
-        m_map_cookie	= src.GetPackedBits(1);
+        unused1         = src.GetPackedBits(1);
+        unused2         = src.GetPackedBits(1);
+        ipaddr          = src.GetPackedBits(1);
+        unused3         = src.GetPackedBits(1);
+        port            = src.GetPackedBits(1);
+        unused4         = src.GetPackedBits(1);
+        m_map_cookie    = src.GetPackedBits(1);
         m_address.set(port,ntohl(ipaddr));
     }
     void serializeto(BitStream &tgt) const
     {
-        uint16_t port;
-        uint32_t ipaddr;
-        ipaddr			= htonl(m_address.get_ip_address());
-        port			= m_address.get_port_number();
+        uint32_t ipaddr = htonl(m_address.get_ip_address());
+        uint16_t port   = m_address.get_port_number();
         tgt.StorePackedBits(1,4); //opcode
         tgt.StorePackedBits(1,unused1);
         tgt.StorePackedBits(1,unused2);

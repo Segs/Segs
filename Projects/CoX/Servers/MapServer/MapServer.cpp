@@ -4,18 +4,19 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 //#include <ace/SOCK_Stream.h>
 #include "ServerManager.h"
 #include <ace/Message_Block.h>
+
 #include "InterfaceManager.h"
 #include "MapServer.h"
 #include "ConfigExtension.h"
 #include "AdminServerInterface.h"
 #include "MapClient.h"
-
+#include "MapTemplate.h"
 #include "MapInstance.h"
 #include "Entity.h"
 #include "SEGSTimer.h"
@@ -45,12 +46,10 @@ bool MapServer::Run(void)
     }
 
     assert(m_manager.num_templates()>0); // we have to have a world to run
-
-    m_handler = new MapCommHandler;
-    m_handler->set_server(this);
+    m_handler = m_manager.get_template(0)->get_instance();
     MapLink::g_target = m_handler;
-    //MapLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
-    MapLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
+    m_handler->set_server(this);
+
 
     m_endpoint = new ServerEndpoint<MapLink>(m_listen_point); //,this
     MapLink::g_link_target = m_endpoint;
@@ -68,7 +67,7 @@ bool MapServer::Run(void)
 bool MapServer::ReadConfig(const std::string &inipath)
 {
     StringsBasedCfg config;
-    ACE_Ini_ImpExp	config_importer(config);
+    ACE_Ini_ImpExp  config_importer(config);
     ACE_Configuration_Section_Key root;
     std::string map_templates_dir;
 

@@ -4,7 +4,7 @@
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 // segs includes
@@ -96,18 +96,17 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
 {
     AuthClient *res=NULL;
     AdminServerInterface *adminserv;                            // this will be used in case when we don't have this client in the cache
-    hmClients::const_iterator iter = m_clients.find(login);	// searching for the client in cache
-    if(iter!=m_clients.end())					// if found
-        return ((*iter).second);                                //	return cached object
+    hmClients::const_iterator iter = m_clients.find(login); // searching for the client in cache
+    if(iter!=m_clients.end())               // if found
+        return ((*iter).second);                                //  return cached object
     adminserv = ServerManager::instance()->GetAdminServer();
     assert(adminserv);
-    res= new AuthClient;
-    //res= m_client_pool.construct();				// construct a new instance
+    res= new AuthClient; //res= m_client_pool.construct();      // construct a new instance
     res->account_info().login(login);                           // set login and ask AdminServer to fill in the rest
     if( !adminserv->FillClientInfo(res->account_info()) )       // Can we fill the client account info from db ?
     {
         delete res;
-        //m_client_pool.free(res);                                // nope ? Free object and return NULL.
+        //m_client_pool.free(res);                              // nope ? Free object and return NULL.
         return NULL;
     }
     if(res->account_info().account_server_id()==0)              // check if object is filled in correctly, by validating it's db id.

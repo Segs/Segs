@@ -545,11 +545,11 @@ void Character::sendOptionsFull(BitStream &bs) const
     bs.StoreBits(3,0);//dword_729E78
     bs.StoreBits(3,0);//dword_729E7C
     bs.StorePackedBits(5,2);//v2 =
-    //	if ( v1 >= 5 )
-    //	{
-    //		word_91A7A4 = v2;
-    //		word_91A7A0 = v2;
-    //	}
+    //  if ( v1 >= 5 )
+    //  {
+    //      word_91A7A4 = v2;
+    //      word_91A7A0 = v2;
+    //  }
 
 }
 

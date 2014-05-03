@@ -44,7 +44,6 @@ IF(BUILD_SEPARATE)
         ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
     TARGET_LINK_LIBRARIES(authserver
         ${target_DEPENDS} authserver_lib
-        ${PostgreSQL_LIBRARIES}
         ${MRuby_LIBRARY}
         ${ZLIB_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}

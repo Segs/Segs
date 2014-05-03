@@ -145,7 +145,7 @@ public:
 class CRUD_EventFactory
 {
 public:
-    static CRUDLink_Event *EventFromStream(BitStream &bs)
+    static CRUDLink_Event *EventFromStream(BitStream &bs, bool follower=false)
     {
         int32_t opcode = bs.GetPackedBits(1);
         if(opcode!=0)
@@ -156,9 +156,9 @@ public:
         case 0: return new IdleEvent(); // CTRL_IDLE
         case 5: return new DisconnectRequest(); //CTRL_DISCONNECT_REQ
         default:
-            assert(!"Unknown control packet");
             break;
         }
+        ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled control event type %d\n"),control_opcode));
         return 0;
     }
 };

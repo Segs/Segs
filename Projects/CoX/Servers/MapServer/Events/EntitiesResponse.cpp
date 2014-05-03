@@ -5,12 +5,14 @@
 #include "Events/EntitiesResponse.h"
 #include "MapEvents.h"
 #include "MapClient.h"
-#include "MapHandler.h"
+//#include "MapHandler.h"
 #include "MapInstance.h"
+//#define LOG_
 //! EntitiesResponse is sent to a client to inform it about the current world state.
 EntitiesResponse::EntitiesResponse(MapClient *cl) :
     MapLinkEvent(MapEventTypes::evEntitites), m_finalized_into(2048)
 {
+    m_map_time_of_day = 10;
     m_client = cl;
     abs_time=db_time=0;
     unkn2=false;
@@ -54,9 +56,9 @@ void EntitiesResponse::serializeto_internal( BitStream &tgt ) const
             tgt.StoreBits(2,m_interpolation_bits);
         }
     }
-
+    ;
     //else debug_info = false;
-    ent_manager.sendEntities(tgt);
+    ent_manager.sendEntities(tgt,m_client->char_entity()->getIdx(),m_incremental);
     if(debug_info&&!unkn2)
     {
         ent_manager.sendDebuggedEntities(tgt); // while loop, sending entity id's and debug info for each
@@ -136,7 +138,9 @@ void EntitiesResponse::sendServerPhysicsPositions(BitStream &bs) const
     bs.StoreBits(1,full_update);
     if( !full_update )
         bs.StoreBits(1,has_control_id);
+#ifdef LOG_
     fprintf(stderr,"Phys: send %d ",target->m_input_ack);
+#endif
     if( full_update || has_control_id)
         bs.StoreBits(16,target->m_input_ack); //target->m_input_ack
     if(full_update)

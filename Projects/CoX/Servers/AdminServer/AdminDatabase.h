@@ -16,10 +16,11 @@
 #include "Database.h"
 
 class AccountInfo;
-class AdminDatabase : public Database
+class AdminDatabase : public IDataBaseCallbacks
 {
+    Database *m_db;
     bool    GetAccount(AccountInfo & client,const std::string &query);
-    PreparedQuery *m_add_account_query;
+    IPreparedQuery *m_add_account_query;
 public:
             AdminDatabase();
     int     GetAccounts(void) const;
@@ -34,5 +35,7 @@ public:
     bool    ValidPassword(const char *username, const char *password);
     bool    GetAccountByName(AccountInfo &to_fill,const std::string &login);
     bool    GetAccountById(AccountInfo &to_fill,uint64_t id);
-    void    on_connected();
+    void    setDb(Database *db) {m_db=db;}
+    Database *getDb() {return m_db;}
+    void    on_connected(Database *db);
 };

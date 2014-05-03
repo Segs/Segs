@@ -12,9 +12,9 @@
 class AuthHandler : public EventProcessor
 {
 protected:
-	typedef ACE_Guard<ACE_Thread_Mutex> MTGuard;
-	ACE_Thread_Mutex m_store_mutex;
-	std::map<uint64_t,AuthLink *> m_link_store;
+    typedef ACE_Guard<ACE_Thread_Mutex> MTGuard;
+    ACE_Thread_Mutex m_store_mutex;
+    std::map<uint64_t,AuthLink *> m_link_store;
     //////////////////////////////////////////////////////////////////////////
     // function that send messages into the link
     void        no_admin_server(EventProcessor *lnk);
@@ -33,10 +33,14 @@ protected:
 public:
     typedef enum
     {
-        AUTH_OK = 0,
+        AUTH_SERVER_OFFLINE = -1,
+        //AUTH_OK = 0,
+        AUTH_ACCOUNT_BLOCKED = 0,
         AUTH_DATABASE_ERROR = 1,
-        AUTH_ACCOUNT_BLOCKED,
+        AUTH_INVALID_ACCOUNT = 2, // no client side message
         AUTH_WRONG_LOGINPASS = 3,
+        // 5- SSN not available
+        // 6 - no server list
         AUTH_ALREADY_LOGGEDIN = 7,
         AUTH_UNAVAILABLE_SERVER = 8,
         AUTH_KICKED_FROM_GAME = 11,
@@ -47,7 +51,7 @@ public:
         AUTH_UNKN_ERROR
     } eAuthError; // this is a public type so other servers can pass us valid errors
 
-	void        dispatch(SEGSEvent *ev);
+    void        dispatch(SEGSEvent *ev);
     SEGSEvent * dispatch_sync(SEGSEvent *ev);
 };
 typedef ACE_Singleton<AuthHandler,ACE_Thread_Mutex> AuthHandlerG;

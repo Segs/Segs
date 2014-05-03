@@ -19,9 +19,10 @@ class CharacterClient;
 class CharacterCostume;
 class Character;
 class AccountInfo;
-class CharacterDatabase : public Database
+class CharacterDatabase : public IDataBaseCallbacks
 {
-    void    on_connected() {;} //prepare statements here
+    Database *m_db;
+    void    on_connected(Database *db) {m_db = db;} //prepare statements here
 public:
     bool    CreateLinkedAccount(uint64_t auth_account_id,const std::string &username); // returns true on success
     bool    create(AccountInfo *);
@@ -32,4 +33,6 @@ public:
     int     remove_account(uint64_t acc_serv_id); //will remove given account, TODO add logging feature
     bool    remove_character(AccountInfo *,uint8_t slot_idx);
     bool    named_character_exists(const std::string &name);
+    void    setDb(Database *db) {m_db=db;}
+    Database *getDb() {return m_db;}
 };

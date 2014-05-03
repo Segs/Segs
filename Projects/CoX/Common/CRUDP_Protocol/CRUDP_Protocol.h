@@ -62,6 +62,6 @@ protected:
         void                PacketAck(uint32_t);
         void                clearQueues(bool recv,bool send); // clears out the recv/send queues
 
-static	void                PacketDestroyer(CrudP_Packet *a);
-static	void                PacketSibDestroyer(const std::pair<int,pPacketStorage> &a);
+static  void                PacketDestroyer(CrudP_Packet *a);
+static  void                PacketSibDestroyer(const std::pair<int,pPacketStorage> &a);
 };

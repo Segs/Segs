@@ -24,13 +24,12 @@ public:
     }
     void sendCommands(BitStream &tgt) const
     {
-        static int hour = 10;
         tgt.StorePackedBits(1,1); // use 'time' shortcut
-        tgt.StoreFloat((hour++)/10.0f);
+        tgt.StoreFloat(float(m_map_time_of_day)*10.0f);
         tgt.StorePackedBits(1,2); // use 'time scale' shortcut
-        tgt.StoreFloat(8.0f);
-        tgt.StorePackedBits(1,3); // use 'time step scale' shortcut
         tgt.StoreFloat(4.0f);
+        tgt.StorePackedBits(1,3); // use 'time step scale' shortcut
+        tgt.StoreFloat(2.0f);
         tgt.StorePackedBits(1,0);
     }
     virtual void serializeto(BitStream &tgt) const
@@ -51,6 +50,7 @@ public:
     }
 
     bool entReceiveUpdate;
+    float m_map_time_of_day;
     //bool unkn1;
     bool unkn2;
     bool debug_info;

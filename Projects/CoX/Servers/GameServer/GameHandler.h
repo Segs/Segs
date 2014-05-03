@@ -37,7 +37,7 @@ protected:
     void        on_unknown_link_event(GameUnknownRequest *ev);
     //////////////////////////////////////////////////////////////////////////
     // Server <-> Server events
-    void        on_expect_client(ExpectClient *ev);		// from AuthServer
+    void        on_expect_client(ExpectClient *ev);     // from AuthServer
     void        on_client_expected(ClientExpected *ev); // from MapServer
 
     // synchronous event

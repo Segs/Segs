@@ -133,7 +133,7 @@ void SceneEvent::serializeto(BitStream &tgt) const
         0xFF25F3F6,0x70E6C422,0xF1CCC459,0xCBD35A55,
         0x64CCCC31,0x535B08CC};
 
-    //			ACE_TRACE(!"Hold yer horses!");
+    //      ACE_TRACE(!"Hold yer horses!");
     // overriding defs
     tgt.StorePackedBits(1,-1); // finisher
     // overriding groups
@@ -143,7 +143,7 @@ void SceneEvent::serializeto(BitStream &tgt) const
     {
         for(size_t i=1; i<m_refs.size(); i++)
         {
-            //			ACE_TRACE(!"Hold yer horses!");
+            //          ACE_TRACE(!"Hold yer horses!");
             tgt.StorePackedBits(1,0); // next element idx
             tgt.StoreBits(1,0);
             if(0)

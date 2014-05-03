@@ -92,7 +92,7 @@ bool GameServer::ReadConfig(const std::string &inipath)
         config.get_addr(root,ACE_TEXT("listen_addr"),m_listen_point,ACE_INET_Addr(7002,"0.0.0.0"));
         config.get_addr(root,ACE_TEXT("location_addr"),m_location,ACE_INET_Addr(7002,"127.0.0.1"));
         config.get_string_value(root,ACE_TEXT("server_name"),m_serverName,"unnamed");
-        config.get_integer_value(root,ACE_TEXT("max_players"),m_max_players,600);
+        config.get_integer_value_with_default(root,ACE_TEXT("max_players"),m_max_players,600);
 
         m_current_players = 0;
         m_id = 1;

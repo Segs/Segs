@@ -37,6 +37,9 @@ public:
     std::string sunkn1;
     std::string sunkn2;
     std::string sunkn3;
+    Power() {
+        entry_type = 0;
+    }
     void serializeto(BitStream &tgt) const
     {
         tgt.StoreBits(4,entry_type);

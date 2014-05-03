@@ -31,10 +31,10 @@ virtual void    do_serialize(BitStream &bs) const =0;
 };
 class ChatMessage : public GameCommand
 {
-        int         m_source_player_id;
-        signed int  m_channel_type;
-        std::string m_msg;
 public:
+    int         m_source_player_id;
+    signed int  m_channel_type;
+    std::string m_msg;
         enum        eChatTypes
                     {
                         CHAT_UNKNOWN1 = 1,
@@ -55,26 +55,8 @@ public:
                     ChatMessage():GameCommand(MapEventTypes::evChatMessage)
                     {
                     }
-        void        do_serialize(BitStream &bs) const
-                    {
-                            bs.StorePackedBits(1,20);
-                        bs.StorePackedBits(10,m_source_player_id);
-                        bs.StorePackedBits(3,m_channel_type);
-                        bs.StoreString(m_msg);
-                            bs.StorePackedBits(1,0); // no messages follow
-                    }
-        void        serializefrom(BitStream &src)
-                    {
-                        m_source_player_id = src.GetPackedBits(10);
-                        m_channel_type = src.GetPackedBits(3);
-                        src.GetString(m_msg);
-                    }
-static  ChatMessage *adminMessage(const char *msg)
-                    {
-                        ChatMessage * res = new ChatMessage;
-                        res->m_channel_type = CHAT_Admin;
-                        res->m_source_player_id=1;
-                        res->m_msg = msg;
-                        return res;
-                    }
+        void        do_serialize(BitStream &bs) const;
+        void        serializefrom(BitStream &src);
+static  ChatMessage *adminMessage(const char *msg);
+static  ChatMessage *localMessage(const char *msg,Entity *src);
 };

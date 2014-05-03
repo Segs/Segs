@@ -12,6 +12,6 @@ public:
         int             open(void *args /* = 0 */);
         int             handle_timeout(const ACE_Time_Value &current_time, const void *act /* = 0 */);
         int             svc(void);
-virtual	void            dispatch(SEGSEvent *ev)=0;
-virtual	SEGSEvent *     dispatch_sync(SEGSEvent *ev)=0;
+virtual void            dispatch(SEGSEvent *ev)=0;
+virtual SEGSEvent *     dispatch_sync(SEGSEvent *ev)=0;
 };

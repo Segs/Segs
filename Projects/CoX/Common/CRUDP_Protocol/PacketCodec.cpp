@@ -12,14 +12,15 @@
 uint32_t PacketCodecNull::Checksum(const uint8_t *buf,size_t size)
 {
     uint16_t v1 = 1, v2 = 0;
-    uint32_t sum1 = v1, sum2 = v2;
+    uint32_t sum1 = 1, sum2 = 0;
 
     for(uint32_t i = 0; i < size; i++)
     {
         sum1 += buf[i];
         sum2 += sum1;
 
-        if(sum1 >= 0xFFF1) sum1 -= 0xFFF1;
+        if(sum1 >= 0xFFF1)
+            sum1 -= 0xFFF1;
     }
 
     sum2 %= 0xFFF1;

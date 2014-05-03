@@ -55,7 +55,7 @@ CrudP_Packet::~CrudP_Packet()
 /*
 void CrudP_Packet::serializeandsend(Net *netptr)
 {
- serializeto();				//	Fills in the data of the packet
+ serializeto();         //  Fills in the data of the packet
  netptr->SendPacket(this);
 }
 */
@@ -64,7 +64,7 @@ void CrudP_Packet::serializeandsend(Net *netptr)
 /*
 bool CrudP_Packet::ParseHeader()
 {
- uint32_t bitLength = GetBits(32);	//	We don't really need this value for anything
+ uint32_t bitLength = GetBits(32);  //  We don't really need this value for anything
  m_checksum    = GetBits(32);
  uint32_t realcsum  = Checksum(GetBuffer() + packetHeaderSize, GetPacketLength() - packetHeaderSize);
 
@@ -80,7 +80,7 @@ bool CrudP_Packet::ParseHeader()
 
  if(m_numSibs > 0)
  {
-  m_sibPos = GetPackedBits(1);		//	The purpose/name of this value is currently unknown
+  m_sibPos = GetPackedBits(1);      //  The purpose/name of this value is currently unknown
   m_sibId  = GetBits(32);
  }
 
@@ -91,7 +91,7 @@ bool CrudP_Packet::ParseHeader()
 /*
 void CrudP_Packet::BuildHeader()
 {
- //	Reserve space for the final bitLength and checksum
+ // Reserve space for the final bitLength and checksum
  StoreBits(32, 0);
  StoreBits(32, 0);
 

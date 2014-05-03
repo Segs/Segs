@@ -146,7 +146,7 @@ void GameHandler::on_client_expected(ClientExpected *ev)
         GameLink *lnk = (GameLink *)cl->link_state().link();
         MapServerAddrResponse *r_ev=new MapServerAddrResponse;
         r_ev->m_map_cookie  = ev->cookie;
-        r_ev->m_address		= ev->m_connection_addr;
+        r_ev->m_address     = ev->m_connection_addr;
         lnk->putq(r_ev);
 
 }
@@ -187,9 +187,9 @@ void GameHandler::on_unknown_link_event(GameUnknownRequest *)
 // This method is called by authentication service, to notify this GameServer that a client
 // with given source ip/port,id and access_level has just logged in.
 // If given client is not already logged in
-//		This method will create a new CharacterClient object, put it in m_expected_clients collection, and return a key (uint32_t)
-//		that will be used by the client during connection
-//		Also this will set m_expected_clients cleaning timer if it isn't set already
+//  This method will create a new CharacterClient object, put it in m_expected_clients collection, and return a key (uint32_t)
+//  that will be used by the client during connection
+//  Also this will set m_expected_clients cleaning timer if it isn't set already
 // If given client is logged in ( it can be found here, or any other GameServer )
 //
 // In return caller gets an unique client identifier. which is used later on to retrieve appropriate
@@ -210,7 +210,7 @@ void GameHandler::checkClientConnection(uint64_t id)
     }
     //GameLink * lnk = (GameLink *)client->link_state().link();
     //    ACE_Time_Value inactive=lnk->inactivity_time();
-    //	m_clients.getById(id)->;
+    //  m_clients.getById(id)->;
     // empty for now, later on it will use client store to get the client, and then check it's packet backlog
     //
 }

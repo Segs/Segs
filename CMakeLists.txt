@@ -4,7 +4,7 @@ PROJECT(SEGS)
 IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
     add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
 ELSE()
-   SET(CMAKE_CXX_FLAGS "-Wall -std=c++11"  )
+   SET(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++11"  )
 endif()
 add_definitions(-D__STDC_FORMAT_MACROS)
 
@@ -26,6 +26,7 @@ SET(PostgreSQL_ADDITIONAL_VERSIONS "9.2")
 include(ExternalProject)
 ExternalProject_Add(
    ACE_BUILD
+   URL http://nemerle.eu/naked_ace.tar.gz
    SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/naked_ace
    UPDATE_COMMAND ""
    INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
@@ -34,10 +35,31 @@ ExternalProject_Add(
 SET(ACE_path ${PROJECT_SOURCE_DIR}/3rd_party)
 SET(ACE_LIBRARIES ACE)
 
+ExternalProject_Add(
+   OSG_BUILD
+   URL http://nemerle.eu/naked_osg.tar.gz
+   SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/naked_osg
+   UPDATE_COMMAND ""
+   INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
+   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DBUILD_OSG_APPLICATIONS:BOOL=OFF -DOSG_GL1_AVAILABLE:BOOL=OFF -DOSG_GL2_AVAILABLE:BOOL=OFF -DOSG_GL_DISPLAYLISTS_AVAILABLE:BOOL=OFF -DOSG_GL_FIXED_FUNCTION_AVAILABLE:BOOL=OFF -DOSG_GL_MATRICES_AVAILABLE:BOOL=OFF -DOSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE:BOOL=OFF -DOSG_GL_VERTEX_FUNCS_AVAILABLE:BOOL=OFF -DOSG_USE_QT:BOOL=OFF -DLIB_POSTFIX=
+)
+SET(OSG_path ${PROJECT_SOURCE_DIR}/3rd_party)
+
+
+ExternalProject_add(
+   SQLite_BUILD
+   SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/naked_sqlite
+   DOWNLOAD_COMMAND ""
+   UPDATE_COMMAND ""
+   INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
+   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+)
+SET(SQLite_path ${PROJECT_SOURCE_DIR}/3rd_party)
+SET(SQLite_LIBRARIES sqlite)
+
 find_package(Threads REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(PostgreSQL REQUIRED) # PostgreSQL
-
+link_directories(${PostgreSQL_LIBRARY_DIRS})
 
 ########################################################################################
 # Optional components

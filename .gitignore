@@ -4,6 +4,7 @@ bld/
 out/
 3rd_party/include
 3rd_party/lib
+3rd_party/bin
 
 #IDE generated project files
 *.user

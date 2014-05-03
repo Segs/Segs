@@ -5,8 +5,8 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#define _USE_MATH_DEFINES
-#define DEBUG_INPUT
+
+//#define DEBUG_INPUT
 #include <cmath>
 #include "Events/InputState.h"
 #include "Entity.h"
@@ -132,8 +132,8 @@ void InputState::partial_2(BitStream &bs)
         else
             control_id = bs.GetBits(4);
 
-        if(bs.GetBits(1)) //
-            time_since_prev=bs.GetBits(2)+32;
+        if(bs.GetBits(1))
+            time_since_prev=bs.GetBits(2)+32; // delta from prev event
         else
             time_since_prev=bs.GetBits(m_data.m_csc_deltabits);
         switch(control_id)
@@ -141,7 +141,9 @@ void InputState::partial_2(BitStream &bs)
             case 0: case 1:
             case 2: case 3:
             case 4: case 5:
+#ifdef DEBUG_INPUT
                 fprintf(stderr,"%s  : %d - ",control_name[control_id],time_since_prev);
+#endif
                 m_data.processDirectionControl(control_id,time_since_prev,bs.GetBits(1));
                 break;
             case 6:
@@ -161,33 +163,49 @@ void InputState::partial_2(BitStream &bs)
             }
             case 8:
                 v = bs.GetBits(1);
+#ifdef DEBUG_INPUT
                 fprintf(stderr," C8[%d] ",v);
+#endif
                 if ( m_data.m_send_deltas )
                 {
-                    m_data.m_t1=bs.GetPackedBits(8);
-                    m_data.m_t2=bs.GetPackedBits(8);
+                    m_data.m_t1=bs.GetPackedBits(8);   // value - previous_value
+                    m_data.m_t2=bs.GetPackedBits(8);   // time - previous_time
                 }
                 else
                 {
                     m_data.m_send_deltas = true;
-                    m_data.m_t1=bs.GetBits(32);
-                    m_data.m_t2=bs.GetPackedBits(10);
+                    m_data.m_t1=bs.GetBits(32);       // value
+                    m_data.m_t2=bs.GetPackedBits(10); // value - time
                 }
+#ifdef DEBUG_INPUT
                 fprintf(stderr,"t1:t2 [%d,%d] ",m_data.m_t1,m_data.m_t2);
+#endif
                 if(bs.GetBits(1))
                 {
-                    v=bs.GetBits(8);
-                    fprintf(stderr,"v [%d] ",v);
+                    m_data.field_20=bs.GetBits(8);
+#ifdef DEBUG_INPUT
+                fprintf(stderr,"v [%d] ",v);
+#endif
                 }
                 break;
             case 9:
+            {
                 //a2->timerel_18
                 //fprintf(stderr,"CtrlId %d  : %d - ",control_id,time_since_prev);
-                fprintf(stderr,"C9:%d ",bs.GetBits(8));
+                uint8_t s=bs.GetBits(8);
+#ifdef DEBUG_INPUT
+                fprintf(stderr,"C9:%d ",s);
+#endif
+            }
                 break;
-            case 10:
+            case 10: {
+                uint8_t s=bs.GetBits(1);
+
+#ifdef DEBUG_INPUT
                 fprintf(stderr,"C10 : %d - ",time_since_prev);
-                fprintf(stderr,"%d\n",bs.GetBits(1)); //a2->timerel_18 & 1
+                fprintf(stderr,"%d\n",s); //a2->timerel_18 & 1
+#endif
+            }
                 break;
             default:
                 assert(!"Unknown control_id");

@@ -1,10 +1,10 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #pragma once
@@ -23,14 +23,14 @@ class GameServer;
 //class CharacterHandler;
 class CharacterClient : public ClientSession
 {
-		GameServer *			    m_server;
+        GameServer *    m_server;
 public:
-					    CharacterClient(){}
-virtual				    ~CharacterClient();
-		void		    setServer(GameServer * val) { m_server = val; }
-		Character *	    getCharacter(size_t idx);
+                        CharacterClient(){}
+virtual                 ~CharacterClient();
+        void            setServer(GameServer * val) { m_server = val; }
+        Character *     getCharacter(size_t idx);
         bool            deleteCharacter(Character *chr);
-		bool		    getCharsFromDb();
-		size_t		    max_slots();
-		void		    reset();
+        bool            getCharsFromDb();
+        size_t          max_slots();
+        void            reset();
 };

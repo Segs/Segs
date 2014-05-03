@@ -11,15 +11,15 @@
 
 #include "Buffer.h"
 
-GrowingBuffer::GrowingBuffer(uint8_t *buf, size_t size,bool become_owner)
+GrowingBuffer::GrowingBuffer(uint8_t *buf, size_t size, bool take_ownership)
 {
-    m_buf		= NULL;
-    m_size		= 0;
+    m_buf       = NULL;
+    m_size      = 0;
     m_safe_area = 0;
-    m_last_err	= 0;
-    m_write_off=m_read_off = 0;
-    m_max_size	= size>DEFAULT_MAX_SIZE ? size:DEFAULT_MAX_SIZE;
-    if(become_owner)
+    m_last_err  = 0;
+    m_write_off = m_read_off = 0;
+    m_max_size  = size>DEFAULT_MAX_SIZE ? size:DEFAULT_MAX_SIZE;
+    if(take_ownership)
     {
         m_buf  = buf;
         m_size = size;
@@ -51,14 +51,13 @@ GrowingBuffer::GrowingBuffer(size_t max_size,uint8_t safe_area,size_t pre_alloc_
 }
 GrowingBuffer::GrowingBuffer(const GrowingBuffer &from)
 {
-    m_size		= from.m_size;
-    m_buf		= new uint8_t[m_size];
-    assert(m_buf!=NULL);
-    m_last_err	= 0;
+    m_size      = from.m_size;
+    m_buf       = new uint8_t[m_size];
+    m_last_err  = 0;
     m_write_off = from.m_write_off;
     m_safe_area = from.m_safe_area;
     m_read_off  = from.m_read_off;
-    m_max_size	= from.m_max_size;
+    m_max_size  = from.m_max_size;
     if(m_buf&&from.m_buf)
         memcpy(m_buf,from.m_buf,m_write_off); // copy up to write point
 
@@ -190,8 +189,10 @@ int GrowingBuffer::resize(size_t accommodate_size)
     assert(accommodate_size<0x100000);
     new_size = new_size>m_max_size ? m_max_size : new_size;
     // fix read/write indexers ( it'll happen only if new size is less then current size)
-    if(m_read_off>new_size)	 m_read_off		= new_size;
-    if(m_write_off>new_size) m_write_off	= new_size;
+    if(m_read_off>new_size)
+        m_read_off  = new_size;
+    if(m_write_off>new_size)
+        m_write_off = new_size;
 
     if(0==new_size) // requested freeing of internal buffer
     {
@@ -230,7 +231,7 @@ void GrowingBuffer::registerClass(MRubyEngine *mrb)
             define_method("name",&wrap_test).
             define_method("put_bytes",&wrap_GrowingBuffer_PutBytes).
             define_method("put_string",&wrap_GrowingBuffer_PutString).
-    fin();
+            fin();
 }
 
 void init_GrowingBuffer_wrapper(mrb_state * mrb) {
