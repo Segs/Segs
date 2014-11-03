@@ -1,4 +1,3 @@
-find_package(PostgreSQL REQUIRED) # PostgreSQL
 
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/AdminServerInterface.cpp
@@ -11,7 +10,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/ServerHandle.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/ServerManager.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/InterfaceManager.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Database.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/PsqlDatabase.cpp
 #${CMAKE_CURRENT_SOURCE_DIR}/CRUD_Link.cpp
 )
 SET(target_INCLUDE
@@ -30,19 +28,25 @@ ${CMAKE_CURRENT_SOURCE_DIR}/Database.h
 ${CMAKE_CURRENT_SOURCE_DIR}/CRUD_Link.h
 ${CMAKE_CURRENT_SOURCE_DIR}/CRUD_Events.h
 ${CMAKE_CURRENT_SOURCE_DIR}/crud_link.inl
-${CMAKE_CURRENT_SOURCE_DIR}/PsqlDatabase.h
 )
 
+find_package(PostgreSQL REQUIRED) # PostgreSQL
+SET(PsqlDbPlugin_SOURCES
+${CMAKE_CURRENT_SOURCE_DIR}/PsqlDatabase.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/PsqlDatabase.h
+
+)
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(target_DEPENDS ${PostgreSQL_LIBRARIES})
-SEGS_ADD_COMPONENT(ConfigExtensions SOURCE)
+SEGS_ADD_COMPONENT(ConfigExtensions LIB)
 SEGS_ADD_COMPONENT(EventSystem LIB)
 SEGS_ADD_COMPONENT(network_structures LIB)
 
 SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
+${PsqlDbPlugin_SOURCES}
 )
 
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
@@ -53,4 +57,4 @@ INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 ADD_LIBRARY(cox_server_common STATIC ${target_SOURCES})
 ADD_DEPENDENCIES(cox_server_common ${target_DEPENDS})
 
-SEGS_REGISTER_COMPONENT(cox_server_common "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
+SEGS_REGISTER_COMPONENT(cox_server_common "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

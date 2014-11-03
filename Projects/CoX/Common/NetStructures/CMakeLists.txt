@@ -17,7 +17,7 @@ SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(target_DEPENDS "")
 
 #SEGS_ADD_COMPONENT(segs_common LIB)
-SEGS_ADD_COMPONENT(CRUDP_Protocol SOURCE)
+SEGS_ADD_COMPONENT(CRUDP_Protocol LIB)
 SEGS_ADD_COMPONENT(static_storage LIB)
 SET (target_SOURCES
 ${target_CPP}
@@ -29,6 +29,7 @@ INCLUDE_DIRECTORIES(${ACE_path})
 INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 
 ADD_LIBRARY(network_structures STATIC ${target_SOURCES})
-ADD_DEPENDENCIES(network_structures ${target_DEPENDS})
 
-SEGS_REGISTER_COMPONENT(network_structures "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
+ADD_DEPENDENCIES(network_structures ${target_DEPENDS} OSG_BUILD)
+
+SEGS_REGISTER_COMPONENT(network_structures "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

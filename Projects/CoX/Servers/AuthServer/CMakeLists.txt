@@ -16,7 +16,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
 
-SEGS_ADD_COMPONENT(AuthProtocol SOURCE)
+SEGS_ADD_COMPONENT(AuthProtocol LIB)
 SEGS_ADD_COMPONENT(cox_server_common LIB)
 SEGS_ADD_COMPONENT(static_storage LIB)
 SEGS_ADD_COMPONENT(adminserver_lib LIB)
@@ -29,30 +29,29 @@ endif()
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 
 SET (target_SOURCES
-${target_CPP}
-${target_INCLUDE}
+  ${target_CPP}
+  ${target_INCLUDE}
 )
 
 FIND_PACKAGE(ZLIB REQUIRED)
-
+message(${target_DEPENDS})
 #FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LIBRARIES is not a cache variable, so we  have to do this here again
 
 ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
 
 IF(BUILD_SEPARATE)
-        ADD_DEFINITIONS(-DSEPARATE)
-        ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
+    ADD_DEFINITIONS(-DSEPARATE)
+    ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
     TARGET_LINK_LIBRARIES(authserver
-        ${target_DEPENDS} authserver_lib
+        authserver_lib ${target_DEPENDS}
         ${MRuby_LIBRARY}
         ${ZLIB_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
         ${ACE_LIBRARIES}
         ${OPENSCENEGRAPH_LIBRARIES}
-#        ${Boost_LIBRARIES}
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
     ADD_DEPENDENCIES(authserver ACE_BUILD)
 ENDIF(BUILD_SEPARATE)
 
-SEGS_REGISTER_COMPONENT(authserver_lib "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
+SEGS_REGISTER_COMPONENT(authserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

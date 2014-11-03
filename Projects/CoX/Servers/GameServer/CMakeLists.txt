@@ -32,4 +32,4 @@ ${target_INCLUDE}
 ADD_LIBRARY(gameserver_lib STATIC ${target_SOURCES})
 ADD_DEPENDENCIES(gameserver_lib ${target_DEPENDS})
 
-SEGS_REGISTER_COMPONENT(gameserver_lib "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
+SEGS_REGISTER_COMPONENT(gameserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
