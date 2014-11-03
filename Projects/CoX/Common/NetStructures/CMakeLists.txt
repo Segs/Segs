@@ -29,6 +29,6 @@ INCLUDE_DIRECTORIES(${ACE_path})
 INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 
 ADD_LIBRARY(network_structures STATIC ${target_SOURCES})
-ADD_DEPENDENCIES(network_structures ${target_DEPENDS})
+ADD_DEPENDENCIES(network_structures ${target_DEPENDS} OSG_BUILD)
 
 SEGS_REGISTER_COMPONENT(network_structures "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
