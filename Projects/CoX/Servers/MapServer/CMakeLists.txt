@@ -51,5 +51,5 @@ ${target_INCLUDE}
 ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
 ADD_DEPENDENCIES(mapserver_lib ${target_DEPENDS} OSG_BUILD)
 
-SEGS_REGISTER_COMPONENT(mapserver_lib "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
+SEGS_REGISTER_COMPONENT(mapserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
 

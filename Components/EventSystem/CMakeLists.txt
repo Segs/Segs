@@ -23,6 +23,6 @@ INCLUDE_DIRECTORIES(${ACE_path})
 ADD_LIBRARY(EventSystem STATIC ${target_SOURCES})
 add_dependencies(EventSystem ACE_BUILD)
 
-SEGS_REGISTER_COMPONENT(EventSystem "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
+SEGS_REGISTER_COMPONENT(EventSystem "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
 
 

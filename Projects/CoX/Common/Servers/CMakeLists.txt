@@ -39,7 +39,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/PsqlDatabase.h
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(target_DEPENDS ${PostgreSQL_LIBRARIES})
-SEGS_ADD_COMPONENT(ConfigExtensions SOURCE)
+SEGS_ADD_COMPONENT(ConfigExtensions LIB)
 SEGS_ADD_COMPONENT(EventSystem LIB)
 SEGS_ADD_COMPONENT(network_structures LIB)
 
@@ -57,4 +57,4 @@ INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 ADD_LIBRARY(cox_server_common STATIC ${target_SOURCES})
 ADD_DEPENDENCIES(cox_server_common ${target_DEPENDS})
 
-SEGS_REGISTER_COMPONENT(cox_server_common "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
+SEGS_REGISTER_COMPONENT(cox_server_common "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

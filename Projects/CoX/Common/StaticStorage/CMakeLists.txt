@@ -31,4 +31,4 @@ INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 ADD_LIBRARY(static_storage STATIC ${target_SOURCES})
 #ADD_DEPENDENCIES(static_storage ${target_DEPENDS})
 
-SEGS_REGISTER_COMPONENT(static_storage "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
+SEGS_REGISTER_COMPONENT(static_storage "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

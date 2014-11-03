@@ -18,16 +18,15 @@ ${CMAKE_CURRENT_SOURCE_DIR}/Events/LoginRequest.h
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/ServerListResponse.h
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/ServerListRequest.h
 )
-#set(Boost_ADDITIONAL_VERSIONS "1.51" "1.51.0")
-#FIND_PACKAGE(Boost REQUIRED)
 
 SET(target_INCLUDE_DIR
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${CMAKE_CURRENT_SOURCE_DIR}/Events"
-#       ${Boost_INCLUDE_DIRS}
 )
+
 # add components here
 SEGS_ADD_COMPONENT(EventSystem LIB)
+SEGS_ADD_COMPONENT(Bitstream LIB)
 # end of additional components
 
 INCLUDE_DIRECTORIES(
@@ -40,6 +39,6 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 
-#ADD_LIBRARY(AuthProtocol STATIC ${target_SOURCES})
+ADD_LIBRARY(AuthProtocol STATIC ${target_SOURCES})
 
-SEGS_REGISTER_COMPONENT(AuthProtocol "${target_INCLUDE_DIR}" "${target_CPP}" "${target_INCLUDE}" )
+SEGS_REGISTER_COMPONENT(AuthProtocol "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

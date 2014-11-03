@@ -169,7 +169,22 @@ void AuthHandler::on_server_list_request( ServerListRequest *ev )
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client requesting server list\n")));
     lnk->m_state = AuthLink::CLIENT_SERVSELECT;
     ServerListResponse *r=new ServerListResponse;
-    r->set_server_list(ServerManager::instance()->getGameServerList());
+    const ServerManagerC::dGameServer *servers = ServerManager::instance()->getGameServerList();
+    std::deque<GameServerInfo> info;
+    for(size_t idx=0; idx<servers->size(); ++idx) {
+        GameServerInfo inf;
+        GameServerInterface *iface = servers->at(idx);
+        inf.id=iface->getId();
+        inf.addr = iface->getAddress().get_ip_address();
+        inf.port = iface->getAddress().get_port_number();
+        inf.unknown_1 = iface->getUnkn1();
+        inf.unknown_2 = iface->getUnkn2();
+        inf.current_players = iface->getCurrentPlayers();
+        inf.max_players = iface->getMaxPlayers();
+        inf.online = iface->Online();
+        info.push_back(inf);
+    }
+    r->set_server_list(info);
     lnk->putq(r);
 }
 void AuthHandler::on_server_selected(ServerSelectRequest *ev)
