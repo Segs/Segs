@@ -13,7 +13,6 @@ MACRO(SEGS_ADD_COMPONENT component_name LINK_TYPE)
                         SET(target_DEPENDS ${target_DEPENDS} ${component_name})
                         GET_GLOBAL_AND_APPEND(target_INCLUDE_DIR ${component_name}_INCLUDE_DIR)
                         GET_GLOBAL_AND_APPEND(target_DEPENDS ${component_name}_DEPENDS)
-
                 ELSE("${LINK_TYPE}" STREQUAL "LIB")
 
                         MESSAGE(ERROR " Unknown component linking mode ${LINK_TYPE}")
@@ -35,9 +34,7 @@ MACRO(SEGS_REGISTER_COMPONENT name include_dir includes )
                 SET_PROPERTY(GLOBAL PROPERTY ${name}_VISITED TRUE)
                 SET_PROPERTY(GLOBAL PROPERTY ${name}_INCLUDE_DIR ${include_dir})
                 SET_PROPERTY(GLOBAL PROPERTY ${name}_DEPENDS ${target_DEPENDS})
-                SET_PROPERTY(GLOBAL PROPERTY ${name}_CPP ${sources})
                 SET_PROPERTY(GLOBAL PROPERTY ${name}_INCLUDE ${includes})
-                SET_PROPERTY(GLOBAL PROPERTY ${name}_SOURCES ${${name}_CPP} ${${name}_INCLUDE})
         ENDIF(visited)
 
 ENDMACRO(SEGS_REGISTER_COMPONENT)

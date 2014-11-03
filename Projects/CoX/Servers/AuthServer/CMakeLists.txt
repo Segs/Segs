@@ -34,10 +34,12 @@ SET (target_SOURCES
 )
 
 FIND_PACKAGE(ZLIB REQUIRED)
-message(${target_DEPENDS})
+
 #FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LIBRARIES is not a cache variable, so we  have to do this here again
 
 ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
+
+find_package(PostgreSQL REQUIRED) # PostgreSQL
 
 IF(BUILD_SEPARATE)
     ADD_DEFINITIONS(-DSEPARATE)
@@ -48,7 +50,7 @@ IF(BUILD_SEPARATE)
         ${ZLIB_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
         ${ACE_LIBRARIES}
-        ${OPENSCENEGRAPH_LIBRARIES}
+        ${PostgreSQL_LIBRARIES} ${OPENSCENEGRAPH_LIBRARIES}
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
     ADD_DEPENDENCIES(authserver ACE_BUILD)
