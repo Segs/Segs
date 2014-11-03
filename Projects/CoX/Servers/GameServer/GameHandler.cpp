@@ -69,6 +69,7 @@ SEGSEvent * GameHandler::dispatch_sync( SEGSEvent *ev )
 void GameHandler::on_connection_request(ConnectRequest *ev)
 {
     // TODO: disallow connects if server is overloaded
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("CLIENT VERSION %d\n"),ev->m_version));
     ev->src()->putq(new ConnectResponse);
 }
 void GameHandler::on_update_server(UpdateServer *ev)
