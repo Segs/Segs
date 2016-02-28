@@ -52,7 +52,7 @@ IF(BUILD_SEPARATE)
         ${CMAKE_DL_LIBS}
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
-    ADD_DEPENDENCIES(authserver ACE_BUILD Zlib_BUILD)
+    ADD_DEPENDENCIES(authserver ACE_BUILD Zlib_BUILD OSG_BUILD)
 ENDIF(BUILD_SEPARATE)
 
 SEGS_REGISTER_COMPONENT(authserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
