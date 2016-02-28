@@ -159,10 +159,10 @@ void AdminDatabase::on_connected(Database *db)
 {
     if(!m_db)
         m_db=db;
-    m_add_account_query = db->prepare("INSERT INTO accounts (username,passw,access_level) VALUES (?,?,?);",3);
+    m_add_account_query = db->prepare("INSERT INTO accounts (username,passw,access_level) VALUES ($1,$2,$3);",3);
     if(!m_add_account_query)
         abort();
-    m_prepared_select_account_by_username = db->prepare("SELECT * FROM accounts WHERE username=?",1);
-    m_prepared_select_account_by_id = db->prepare("SELECT * FROM accounts WHERE id=?",1);
-    m_prepared_select_account_passw = db->prepare("SELECT passw FROM accounts WHERE username = ?",1);
+    m_prepared_select_account_by_username = db->prepare("SELECT * FROM accounts WHERE username=$1",1);
+    m_prepared_select_account_by_id = db->prepare("SELECT * FROM accounts WHERE id=$1",1);
+    m_prepared_select_account_passw = db->prepare("SELECT passw FROM accounts WHERE username = $1",1);
 }

@@ -35,20 +35,20 @@ CharacterDatabase::~CharacterDatabase()
 void CharacterDatabase::on_connected(Database *db) {
     m_db = db;
     if(db) {
-        m_prepared_fill = db->prepare("SELECT * FROM costume WHERE character_id=? AND costume_index=?",2);
-        m_prepared_account_insert = db->prepareInsert("INSERT INTO accounts  (account_id,max_slots) VALUES (?,2)",1);
+        m_prepared_fill = db->prepare("SELECT * FROM costume WHERE character_id=$1 AND costume_index=$2",2);
+        m_prepared_account_insert = db->prepareInsert("INSERT INTO accounts  (account_id,max_slots) VALUES ($1,2)",1);
         m_prepared_char_insert = db->prepareInsert(
                     "INSERT INTO characters  "
                     "(char_level,slot_index,account_id,char_name,archetype,origin,bodytype,current_map) "
                     "VALUES "
-                    "(?,?,?,?,?,?,?,?)",8);
+                    "($1,$2,$3,$4,$5,$6,$7,$8)",8);
         m_prepared_costume_insert = db->prepareInsert(
                     "INSERT INTO costume (character_id,costume_index,skin_color,parts) VALUES "
-                    "(?,?,?,?)",4);
-        m_prepared_char_select = db->prepare("SELECT * FROM characters WHERE account_id=? AND slot_index=?",2);
-        m_prepared_account_select = db->prepare("SELECT * FROM accounts WHERE account_id=?",1);
-        m_prepared_char_exists = db->prepare("SELECT exists (SELECT 1 FROM characters WHERE char_name = '?' LIMIT 1)",1);
-        m_prepared_char_delete = db->prepare("DELETE FROM characters WHERE account_id=? AND slot_index=?",2);
+                    "($1,$2,$3,$4)",4);
+        m_prepared_char_select = db->prepare("SELECT * FROM characters WHERE account_id=$1 AND slot_index=$2",2);
+        m_prepared_account_select = db->prepare("SELECT * FROM accounts WHERE account_id=$1",1);
+        m_prepared_char_exists = db->prepare("SELECT exists (SELECT 1 FROM characters WHERE char_name = $1 LIMIT 1)",1);
+        m_prepared_char_delete = db->prepare("DELETE FROM characters WHERE account_id=$1 AND slot_index=$2",2);
     }
 }
 

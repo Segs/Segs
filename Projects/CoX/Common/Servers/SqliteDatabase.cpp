@@ -273,9 +273,12 @@ int64_t SqliteDatabase::next_id(const std::string &tab_name)
 IPreparedQuery *SqliteDatabase::prepare(const std::string &query, size_t num_params)
 {
     const char *unusedChars;
+    std::string fixedquery=query;
+    std::replace(fixedquery.begin(),fixedquery.end(),'$','?');
+
     SqlitePreparedQuery resp(query);
     resp.m_db_iface  = m_db_iface;
-    if(SQLITE_OK!=sqlite3_prepare_v2(m_db_iface,query.c_str(),query.size(),&resp.m_sqlite_query,&unusedChars)) {
+    if(SQLITE_OK!=sqlite3_prepare_v2(m_db_iface,fixedquery.c_str(),fixedquery.size(),&resp.m_sqlite_query,&unusedChars)) {
         ACE_ERROR((LM_ERROR, ACE_TEXT ("(%P|%t) SQLITE_Database: prepare failed %s\n"),sqlite3_errmsg(m_db_iface)));
         return NULL;
     }
@@ -285,6 +288,7 @@ IPreparedQuery *SqliteDatabase::prepareInsert(const std::string &query, size_t n
 {
     //
     std::string modquery = query + ";SELECT last_insert_rowid();";
+    std::replace(modquery.begin(),modquery.end(),'$','?');
     const char *unusedChars;
     SqlitePreparedQuery resp(modquery);
     resp.m_db_iface  = m_db_iface;
