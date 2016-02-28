@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server Project
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -19,9 +19,13 @@ class AccountInfo;
 class AdminDatabase : public IDataBaseCallbacks
 {
     Database *m_db;
-    bool    GetAccount(AccountInfo & client,const std::string &query);
+    bool    GetAccount(AccountInfo & client, DbResults &query);
     IPreparedQuery *m_add_account_query;
+    IPreparedQuery *m_prepared_select_account_by_id;
+    IPreparedQuery *m_prepared_select_account_passw;
+    IPreparedQuery *m_prepared_select_account_by_username;
 public:
+virtual     ~AdminDatabase();
             AdminDatabase();
     int     GetAccounts(void) const;
     // Access levels

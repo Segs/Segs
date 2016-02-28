@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server Project
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -13,6 +13,7 @@
 #include "ConfigExtension.h"
 #include "CharacterDatabase.h"
 #include "PsqlDatabase.h"
+#include "SqliteDatabase.h"
 
 // AdminServer should pull client data from database or from it's local, in-memory cache
 // currently there is no such thing, and 'client-cache' is just a hash-map
@@ -49,25 +50,40 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
                 ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [AdminServer] section\n"), inipath.c_str()),false);
         if(-1==config.open_section(root,"AccountDatabase",1,account_db_config))
                 ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [AccountDatabase] section\n"), inipath.c_str()),false);
-        std::string dbhost,dbname,dbuser,dbpass,dbport;
+        std::string dbhost,dbname,dbuser,dbpass,dbport,dbdriver;
+        config.get_string_value(account_db_config,ACE_TEXT("db_driver"),dbdriver,"sqlite");
         config.get_string_value(account_db_config,ACE_TEXT("db_host"),dbhost,"127.0.0.1");
         config.get_string_value(account_db_config,ACE_TEXT("db_port"),dbport,"5432");
-        config.get_string_value(account_db_config,ACE_TEXT("db_name"),dbname,"none");
+        config.get_string_value(account_db_config,ACE_TEXT("db_name"),dbname,"segs");
         config.get_string_value(account_db_config,ACE_TEXT("db_user"),dbuser,"none");
         config.get_string_value(account_db_config,ACE_TEXT("db_pass"),dbpass,"none");
-        PSqlDatabase *db1 = new PSqlDatabase;
+        Database *db1;
+        if(dbdriver=="pgsql") {
+            db1 = new PSqlDatabase;
+        }
+        else {
+            db1 = new SqliteDatabase;
+        }
         db1->setConnectionConfiguration(dbhost.c_str(),dbport.c_str(),dbname.c_str(),dbuser.c_str(),dbpass.c_str());
         m_db->setDb(db1);
 
     if(-1==config.open_section(root,"CharacterDatabase",1,character_db_config))
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [CharacterDatabase] section\n"), inipath.c_str()),false);
 
+        config.get_string_value(character_db_config,ACE_TEXT("db_driver"),dbdriver,"sqlite");
         config.get_string_value(character_db_config,ACE_TEXT("db_host"),dbhost,"127.0.0.1");
         config.get_string_value(character_db_config,ACE_TEXT("db_port"),dbport,"5432");
-        config.get_string_value(character_db_config,ACE_TEXT("db_name"),dbname,"none");
+        config.get_string_value(character_db_config,ACE_TEXT("db_name"),dbname,"segs_game");
         config.get_string_value(character_db_config,ACE_TEXT("db_user"),dbuser,"none");
         config.get_string_value(character_db_config,ACE_TEXT("db_pass"),dbpass,"none");
-        PSqlDatabase *db2 = new PSqlDatabase;
+        Database *db2;
+        if(dbdriver=="pgsql") {
+            db2 = new PSqlDatabase;
+        }
+        else {
+            db2 = new SqliteDatabase;
+        }
+
         db2->setConnectionConfiguration(dbhost.c_str(),dbport.c_str(),dbname.c_str(),dbuser.c_str(),dbpass.c_str());
         m_char_db->setDb(db2);
         return true;
@@ -83,14 +99,16 @@ bool _AdminServer::Run()
 }
 bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" */)
 {
-        bool res;
-        ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
-        m_running=false;
-        res  =  m_db->getDb()->CloseConnection()==0;
-        res &=  m_char_db->getDb()->CloseConnection()==0;
+    bool res;
+    ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
+    m_running=false;
+    res  =  m_db->getDb()->CloseConnection()==0;
+    res &=  m_char_db->getDb()->CloseConnection()==0;
 
     delete m_db;
     delete m_char_db;
+    m_db= NULL;
+    m_char_db= NULL;
     return res;
 }
 bool _AdminServer::fill_account_info( AccountInfo &client )

@@ -87,9 +87,14 @@ int64_t PSqlDatabase::next_id( const std::string &tab_name )
     bool res=execQuery("SELECT NEXTVAL('"+tab_name+"_id_seq');",results);
     if(res==false)
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database::next_id failed: %s.\n"),results.message()),-1);
-    else if (results.num_rows()!=1)
+    else {
+        DbResultRow r = results.nextRow();
+        if(r.valid()) {
+            return r.getColInt64("NEXTVAL");
+        }
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database::next_id returned wrong number of results.\n")),-1);
-    return results.getRow(0).getColInt64("NEXTVAL");
+    }
+    return -1;
 }
 
 PSqlDatabase::~PSqlDatabase()
@@ -97,6 +102,18 @@ PSqlDatabase::~PSqlDatabase()
     if(pConnection)
         CloseConnection();
 }
+
+IPreparedQuery *PSqlDatabase::prepareInsert(const std::string &query,size_t num_params)
+{
+    std::string modquery = query + " returning id";
+
+    PSqlPreparedQuery *res = new PSqlPreparedQuery(*this);
+    if(res->prepare(modquery,num_params))
+        return res;
+    delete res;
+    return NULL;
+}
+
 IPreparedQuery *PSqlDatabase::prepare(const std::string &query,size_t num_params)
 {
     PSqlPreparedQuery *res = new PSqlPreparedQuery(*this);
@@ -109,6 +126,7 @@ IPreparedQuery *PSqlDatabase::prepare(const std::string &query,size_t num_params
 bool PSqlPreparedQuery::prepare(const std::string &query,size_t num_params)
 {
     char prep_name[32];
+    m_query_text = query;
     m_param_count = num_params;
     ACE_OS::unique_name(this,prep_name,32);
     m_query_name=std::string("segs_q")+prep_name;
@@ -170,12 +188,24 @@ int32_t PSqlResultRow::getColInt32(const char *column_name)
     return result;
 }
 
+
 int64_t PSqlResultRow::getColInt64(const char *column_name)
 {
     const char *res = getColString(column_name);
     if(!res)
     {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name),-1);
+    }
+    int64_t result;
+    sscanf(res,"%" SCNd64,&result);
+    return result;
+}
+int64_t PSqlResultRow::getColInt64(int colidx)
+{
+    const char *res = PQgetvalue(m_result,m_row,colidx);
+    if(!res)
+    {
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column idx:%d.\n"), colidx),-1);
     }
     int64_t result;
     sscanf(res,"%" SCNd64,&result);
@@ -266,6 +296,7 @@ tm PSqlResultRow::getTimestamp(const char *column_name)
 
 PSqlDbResults::PSqlDbResults()
 {
+    m_current_row = 0;
     m_result=NULL;
     m_msg = NULL;
 
@@ -276,12 +307,9 @@ PSqlDbResults::~PSqlDbResults()
     PQclear(m_result);
 }
 
-size_t PSqlDbResults::num_rows()
+IResultRow *PSqlDbResults::nextRow()
 {
-    return PQntuples(m_result);
-}
-
-IResultRow *PSqlDbResults::getRow(size_t row)
-{
-    return new PSqlResultRow(m_result,row);
+    if(m_current_row>=PQntuples(m_result))
+        return NULL;
+    return new PSqlResultRow(m_result,m_current_row++);
 }

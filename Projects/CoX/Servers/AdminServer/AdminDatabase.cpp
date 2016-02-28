@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server Project
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -36,6 +36,7 @@ bool AdminDatabase::AddAccount(const char *username, const char *password,uint16
         ACE_ERROR((LM_ERROR,ACE_TEXT ("Result status: %s\n"),query_res.message())); // Why the query failed
         return false;
     }
+    query_res.nextRow(); // sqlite3 needs this to call _step function
     return true;
 }
 
@@ -79,15 +80,17 @@ int AdminDatabase::GetBanFlag(const char *username)
 
 bool AdminDatabase::ValidPassword(const char *username, const char *password)
 {
-    std::stringstream query;
-    bool res=false;
-    query<<"SELECT passw FROM accounts WHERE username = '"<<username<<"';";
     DbResults qres;
-    if(!m_db->execQuery(query.str(),qres)) {
+    PreparedArgs user_args;
+    bool res=false;
+
+    user_args.add_param(username);
+
+    if(!m_prepared_select_account_passw->execute(user_args,qres)) {
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Result status: %s\n"),qres.message())); // Why the query failed
         return res;
     }
-    IResultRow::vBinData passb = qres.getRow(0).getColBinary("passw");
+    IResultRow::vBinData passb = qres.nextRow().getColBinary("passw");
     assert(passb.size()<=16);
     if (memcmp(&passb[0],password,passb.size()) == 0)
         res = true;
@@ -95,28 +98,40 @@ bool AdminDatabase::ValidPassword(const char *username, const char *password)
 }
 bool AdminDatabase::GetAccountByName( AccountInfo &to_fill,const std::string &login )
 {
-    stringstream query;
-    query<<"SELECT * FROM accounts WHERE username='"<<login<<"';";
-    return GetAccount(to_fill,query.str());
+    DbResults results;
+    PreparedArgs id_arg;
+
+    id_arg.add_param(login);
+
+    to_fill.m_acc_server_acc_id = 0;
+
+    if(!m_prepared_select_account_by_username->execute(id_arg,results))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminDatabase::GetAccount query %s failed. %s.\n"),
+                          m_prepared_select_account_by_username->prepared_sql().c_str(),results.message()),false);
+
+    return GetAccount(to_fill,results);
 }
 bool AdminDatabase::GetAccountById( AccountInfo &to_fill,uint64_t id )
 {
-    stringstream query;
-    query<<"SELECT * FROM accounts WHERE id='"<<id<<"';";
-    return GetAccount(to_fill,query.str());
+    DbResults results;
+    PreparedArgs id_arg;
+
+    id_arg.add_param(id);
+
+    to_fill.m_acc_server_acc_id = 0;
+
+    if(!m_prepared_select_account_by_id->execute(id_arg,results))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminDatabase::GetAccount query %s failed. %s.\n"),
+                          m_prepared_select_account_by_id->prepared_sql().c_str(),results.message()),false);
+
+    return GetAccount(to_fill,results);
 }
 
-bool AdminDatabase::GetAccount( AccountInfo & client,const std::string &query )
+bool AdminDatabase::GetAccount( AccountInfo & client,DbResults &results )
 {
-    DbResults results;
-    client.m_acc_server_acc_id = 0;
-
-    if(!m_db->execQuery(query,results))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminDatabase::GetAccount query %s failed. %s.\n"), query.c_str(),results.message()),false);
-    if(results.num_rows()!=1)
+    DbResultRow r=results.nextRow();
+    if(!r.valid()) // TODO: handle case of multiple accounts with same name ?
         return false;
-
-    DbResultRow r=results.getRow(0);
     struct tm creation;
     client.m_acc_server_acc_id  = (uint64_t)r.getColInt64("id");
     client.m_login              = r.getColString("username");
@@ -124,6 +139,15 @@ bool AdminDatabase::GetAccount( AccountInfo & client,const std::string &query )
     creation                    = r.getTimestamp("creation_date");
     //  client->setCreationDate(creation);
     return true;
+}
+
+AdminDatabase::~AdminDatabase()
+{
+    delete m_add_account_query;
+    delete m_prepared_select_account_by_id;
+    delete m_prepared_select_account_passw;
+    delete m_prepared_select_account_by_username;
+
 }
 
 int AdminDatabase::RemoveAccountByID( uint64_t )
@@ -135,7 +159,10 @@ void AdminDatabase::on_connected(Database *db)
 {
     if(!m_db)
         m_db=db;
-    m_add_account_query = db->prepare("INSERT INTO accounts (username,passw,access_level) VALUES ($1,$2,$3);",3);
+    m_add_account_query = db->prepare("INSERT INTO accounts (username,passw,access_level) VALUES (?,?,?);",3);
     if(!m_add_account_query)
         abort();
+    m_prepared_select_account_by_username = db->prepare("SELECT * FROM accounts WHERE username=?",1);
+    m_prepared_select_account_by_id = db->prepare("SELECT * FROM accounts WHERE id=?",1);
+    m_prepared_select_account_passw = db->prepare("SELECT passw FROM accounts WHERE username = ?",1);
 }
