@@ -74,8 +74,9 @@ LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/lib)
 
 find_package(Threads REQUIRED)
 
-
+if(PostgreSQL_FOUND)
 link_directories(${PostgreSQL_LIBRARY_DIRS})
+endif()
 
 ########################################################################################
 # Optional components
