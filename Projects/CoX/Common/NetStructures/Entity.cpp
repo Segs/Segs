@@ -1,19 +1,15 @@
 /*
  * Super Entity Game Server Project
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
 #define _USE_MATH_DEFINES
 #include "Entity.h"
 
-#include <math.h>
-#ifdef WIN32
-#include "xmmintrin.h"
-#else
-#define _copysign(x,y) ((x)* ((y<0.0f)? -1.0f : 1.0f))
-#endif
+#include <algorithm>
+#include <cmath>
 #include <limits>
 #include <sstream>
 //#define LOG_
@@ -38,7 +34,8 @@ float AngleDequantize(int value,int numb_bits)
 uint32_t AngleQuantize(float value,int numb_bits)
 {
     int max_val = 1<<numb_bits;
-    float v = fabs(value)>1.0f ? _copysign(1.0f,value) : value ;
+
+    float v = fabs(value)>1.0f ? std::copysign(1.0f,value) : value ;
     v  = (asinf(v)+M_PI)/(2*F_PI); // maps -1..1 to 0..1
     v *= max_val;
 //  assert(v<=max_val);

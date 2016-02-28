@@ -1,5 +1,8 @@
 #include "ServerListResponse.h"
 
+#ifdef _MSC_VER
+#include <ciso646>
+#endif
 void ServerListResponse::serializeto( GrowingBuffer &buf ) const
 {
     assert(not m_serv_list.empty());

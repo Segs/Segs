@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server Project
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -9,7 +9,6 @@
 // segs includes
 #include <cstdlib>
 #include <cstdio>
-#include <sstream>
 #include <ace/OS_NS_time.h>
 #include <ace/Log_Msg.h>
 
@@ -18,45 +17,94 @@
 #include "AdminServer.h"
 #include "Character.h"
 #include "Costume.h"
+
 using namespace std;
+
+CharacterDatabase::~CharacterDatabase()
+{
+    delete m_prepared_account_select;
+    delete m_prepared_account_insert;
+    delete m_prepared_char_insert;
+    delete m_prepared_char_exists;
+    delete m_prepared_char_delete;
+    delete m_prepared_char_select;
+    delete m_prepared_fill;
+    delete m_prepared_costume_insert;
+}
+
+void CharacterDatabase::on_connected(Database *db) {
+    m_db = db;
+    if(db) {
+        m_prepared_fill = db->prepare("SELECT * FROM costume WHERE character_id=$1 AND costume_index=$2",2);
+        m_prepared_account_insert = db->prepareInsert("INSERT INTO accounts  (account_id,max_slots) VALUES ($1,2)",1);
+        m_prepared_char_insert = db->prepareInsert(
+                    "INSERT INTO characters  "
+                    "(char_level,slot_index,account_id,char_name,archetype,origin,bodytype,current_map) "
+                    "VALUES "
+                    "($1,$2,$3,$4,$5,$6,$7,$8)",8);
+        m_prepared_costume_insert = db->prepareInsert(
+                    "INSERT INTO costume (character_id,costume_index,skin_color,parts) VALUES "
+                    "($1,$2,$3,$4)",4);
+        m_prepared_char_select = db->prepare("SELECT * FROM characters WHERE account_id=$1 AND slot_index=$2",2);
+        m_prepared_account_select = db->prepare("SELECT * FROM accounts WHERE account_id=$1",1);
+        m_prepared_char_exists = db->prepare("SELECT exists (SELECT 1 FROM characters WHERE char_name = $1 LIMIT 1)",1);
+        m_prepared_char_delete = db->prepare("DELETE FROM characters WHERE account_id=$1 AND slot_index=$2",2);
+    }
+}
+
+
 // UserToken,
 bool CharacterDatabase::remove_character(AccountInfo *c,uint8_t slot_idx)
 {
-    stringstream query;
     DbResults results;
+    PreparedArgs remove_args;
     assert(c!=0);
-    query << "DELETE FROM characters WHERE account_id="<<c->account_server_id()<<" AND slot_index="<<(uint32_t)slot_idx<<";";
-    if(!m_db->execQuery(query.str(),results))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::remove_character %s failed. %s.\n"), query.str().c_str(),results.message()),false);
+    remove_args.add_param(c->account_server_id());
+    remove_args.add_param((uint32_t)slot_idx);
+    if(!m_prepared_char_delete->execute(remove_args,results))
+    {
+        ACE_ERROR_RETURN((LM_ERROR,
+                          ACE_TEXT("(%P|%t) CharacterDatabase::remove_character %s failed. %s.\n"),
+                          m_prepared_char_delete->prepared_sql().c_str(),results.message()),false);
+    }
+    results.nextRow();
+
     return true;
 }
 bool CharacterDatabase::named_character_exists(const string &name)
 {
-    std::stringstream query;
     DbResults results;
-    query<<"SELECT exists (SELECT 1 FROM characters WHERE char_name = '"<<name<<"' LIMIT 1);";
+    PreparedArgs exist_arg;
 
-    if(!m_db->execQuery(query.str(),results))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::named_character_exists query %s failed. %s.\n"), query.str().c_str(),
-                          results.message()),false);
-    assert(results.num_rows()==1);
-    DbResultRow r=results.getRow(0);
+    exist_arg.add_param(name);
+    if(!m_prepared_char_exists->execute(exist_arg,results))
+    {
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::named_character_exists query %s failed. %s.\n"),
+                          m_prepared_char_exists->prepared_sql().c_str(),results.message()),false);
+    }
+
+    DbResultRow r=results.nextRow();
+    assert(r.valid()); // TODO: handle case of multiple accounts with same name ?
+
     return r.getColBool("exists");
 }
 bool CharacterDatabase::fill( AccountInfo *c )
 {
-    stringstream query;
     DbResults results;
 
     assert(c&&c->account_server_id());
-    query<<"SELECT * FROM accounts WHERE account_id="<<c->account_server_id();
+    PreparedArgs acc_arg;
+    acc_arg.add_param(c->account_server_id());
 
-    if(!m_db->execQuery(query.str(),results))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.message()),false);
-    if(results.num_rows()!=1)
+
+    if(!m_prepared_account_select->execute(acc_arg,results))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"),
+                          m_prepared_account_select->prepared_sql().c_str(),results.message()),false);
+
+    DbResultRow r=results.nextRow();
+    if(!r.valid()) // TODO: handle case of multiple accounts with same name ?
         return false;
 
-    DbResultRow r=results.getRow(0);
     c->max_slots((uint8_t)r.getColInt16("max_slots"));
     c->game_server_id((uint64_t)r.getColInt64("id"));
 
@@ -68,21 +116,24 @@ bool CharacterDatabase::fill( AccountInfo *c )
 #define STR_OR_VERY_EMPTY(c) ((c!=0) ? c:"")
 bool CharacterDatabase::fill( Character *c)
 {
-    stringstream query;
     DbResults results;
     assert(c&&c->getAccountId());
-    query<<"SELECT * FROM characters WHERE account_id="<<c->getAccountId()<<" AND slot_index="<<(uint16_t)c->getIndex();
-    if(!m_db->execQuery(query.str(),results))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.message()),false);
-    if(results.num_rows()==0)
+
+    PreparedArgs arg_char;
+    arg_char.add_param(c->getAccountId());
+    arg_char.add_param((uint16_t)c->getIndex());
+    if(!m_prepared_char_select->execute(arg_char,results))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"),
+                          m_prepared_char_select->prepared_sql().c_str(),results.message()),false);
+    DbResultRow r=results.nextRow();
+    if(!r.valid())
     {
         c->reset(); // empty slot
         return true;
     }
-    else if (results.num_rows()>1)
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query returned wrong number of results. %s failed.\n"), query.str().c_str()),false);
+//    else if (results.num_rows()>1)
+//        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query returned wrong number of results. %s failed.\n"), query.str().c_str()),false);
 
-    DbResultRow r=results.getRow(0);
     c->setLevel((uint8_t)r.getColInt16("char_level"));
     c->setName(STR_OR_EMPTY(r.getColString("char_name")));
     c->m_class_name = (STR_OR_EMPTY(r.getColString("archetype")));
@@ -104,61 +155,53 @@ bool CharacterDatabase::fill( Character *c)
 #endif
 bool CharacterDatabase::fill( CharacterCostume *c)
 {
-    stringstream query;
     DbResults results;
+    PreparedArgs q_args;
+
     assert(c&&c->getCharacterId());
-    query<<"SELECT * FROM costume WHERE character_id="<<c->getCharacterId()<<" AND costume_index="<<(uint16_t)c->getSlotIndex();
-    if(!m_db->execQuery(query.str(),results))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.message()),false);
-    if(results.num_rows()!=1) // retry with the first one
+
+    q_args.add_param(c->getCharacterId());
+    q_args.add_param((uint16_t)c->getSlotIndex());
+    if(!m_prepared_fill->execute(q_args,results))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"),
+                          m_prepared_fill->prepared_sql().c_str(),results.message()),false);
+
+    DbResultRow r=results.nextRow();
+    if(!r.valid()) // retry with the first one
     {
-        query<<"SELECT * FROM costume WHERE character_id="<<c->getCharacterId()<<" AND costume_index=0";
-        if(!m_db->execQuery(query.str(),results))
-            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.message()),false);
-    }
-    DbResultRow r=results.getRow(0);
-    c->a = r.getColInt32("skin_color");
-    c->m_non_default_costme_p = false;
-    query.str("");
-    query<<"SELECT * FROM costume_part WHERE costume_id="<<r.getColInt32("id");
-    // this will overwrite underlying object therefore 'r' will become useless
-    if(!m_db->execQuery(query.str(),results))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.message()),false);
-    for(size_t i=0; i<results.num_rows(); i++)
-    {
-        r=results.getRow(i);
-        bool full_part=c->m_non_default_costme_p;
-        CostumePart part(full_part,r.getColInt32("part_type"));
-        part.name_0=STR_OR_VERY_EMPTY(r.getColString("name_0"));
-        part.name_1=STR_OR_VERY_EMPTY(r.getColString("name_1"));
-        part.name_2=STR_OR_VERY_EMPTY(r.getColString("name_2"));
-        part.m_colors[0]=r.getColInt32("color_0");
-        part.m_colors[1]=r.getColInt32("color_1");
-        if(c->m_non_default_costme_p) {
-            part.name_3=STR_OR_VERY_EMPTY(r.getColString("name_3"));
-            part.name_4=STR_OR_VERY_EMPTY(r.getColString("name_4"));
-            part.name_5=STR_OR_VERY_EMPTY(r.getColString("name_5"));
-            part.name_6=STR_OR_VERY_EMPTY(r.getColString("name_6"));
+        PreparedArgs q2_args;
+        q2_args.add_param(c->getCharacterId());
+        q2_args.add_param((uint32_t)0); // get first costume
+
+        if(!m_prepared_fill->execute(q2_args,results))
+            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"),
+                              m_prepared_fill->prepared_sql().c_str(),results.message()),false);
+        r = results.nextRow();
+        if(!r.valid()) {
+            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill no costu,es.\n")),false);
+            return false;
         }
-        c->m_parts.push_back(part);
     }
+    c->a = r.getColInt32("skin_color");
+    std::string serialized_parts= r.getColString("parts");
+    c->serializeFromDb(serialized_parts);
+    c->m_non_default_costme_p = false;
     return true;
-    /*
-INSERT INTO costume_part(costume_id,part_type,name_0,name_1,name_2,name_3,color_0,color_1,color_2,color_3)
-VALUES(,,'','','','',0,0,0,0);
-*/
 }
 
 bool CharacterDatabase::CreateLinkedAccount( uint64_t auth_account_id,const std::string &username )
 {
-    stringstream query;
-    DbResults results;
-    assert(auth_account_id>0);
-    assert(username.size()>2);
 
-    query<<"INSERT INTO accounts  (account_id,max_slots) VALUES ("<<auth_account_id<<",2);";
-    if(!m_db->execQuery(query.str(),results))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"), query.str().c_str(),results.message()),false);
+    DbResults results;
+    //assert(auth_account_id>0);  sqlite3 autogenerated values start from 0
+    assert(username.size()>2);
+    PreparedArgs acc_args;
+    acc_args.add_param(auth_account_id);
+
+    if(!m_prepared_account_insert->execute(acc_args,results))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query %s failed. %s.\n"),
+                          m_prepared_account_insert->prepared_sql().c_str(),results.message()),false);
+    results.nextRow();
     return true;
 }
 
@@ -174,42 +217,47 @@ bool CharacterDatabase::create( uint64_t gid,uint8_t slot,Character *c )
     assert(gid>0);
     assert(c);
     assert(slot<8);
-    int64_t char_id = m_db->next_id("characters");
-    if(char_id==-1)
-        return false;
-
-    query<<"INSERT INTO characters  (id,char_level,slot_index,account_id,char_name,archetype,origin,bodytype,current_map) VALUES ("\
-        << char_id <<","<< c->m_level <<","<< uint32_t(slot) <<",'"<< gid <<"','"<< c->m_name <<"','"\
-        << c->m_class_name <<"','"<< c->m_origin_name <<"','"<< c->getCurrentCostume()->m_body_type <<"','"<< c->m_mapName <<"'"\
-        <<");";
-    if(!m_db->execQuery(query.str()))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::create %s failed. %s.\n"), query.str().c_str(),results.message()),false);
-    // create costume
     Costume *cst = c->getCurrentCostume();
-    int64_t cost_id = m_db->next_id("costume");
-    if(cost_id==-1)
-        return false;
-
-    query.str("");
-    query<<"INSERT INTO costume (id,character_id,costume_index,skin_color) VALUES ("
-        << cost_id <<","<< char_id <<","<< uint32_t(0) << ","<<uint32_t(cst->a)<<");";
-    if(!m_db->execQuery(query.str()))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::create %s failed. %s.\n"), query.str().c_str(),results.message()),false);
-    for(size_t idx=0; idx<cst->m_parts.size(); ++idx)
-    {
-        CostumePart &prt(cst->m_parts[idx]);
-        query.str("");
-        // prt.m_type is not filled by the client ?
-        query<<"INSERT INTO costume_part (costume_id,part_type,name_0,name_1,name_2,name_3,color_0,color_1) VALUES ("\
-            << cost_id <<","<< idx <<",'"\
-            << prt.name_0 <<"','"<< prt.name_1 <<"','"<<prt.name_2 <<"','"<<prt.name_3 <<"',"\
-            << prt.m_colors[0] <<","<< prt.m_colors[1] << ");";
-        fprintf(stderr,"%s\n",query.str().c_str());
-        fflush(stderr);
-        if(!m_db->execQuery(query.str()))
-            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::create %s failed. %s.\n"), query.str().c_str(),results.message()),false);
-
+    if(!cst) {
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::create cannot insert char without costume.\n"))
+                         ,false);
     }
+    assert(m_prepared_char_insert);
+    std::string stringgid;
+    std::ostringstream o(stringgid);
+    o << gid;
+    PreparedArgs insertargs;
+    insertargs.add_param( c->m_level);
+    insertargs.add_param( uint32_t(slot));
+    insertargs.add_param( stringgid);
+    insertargs.add_param( c->m_name);
+    insertargs.add_param( c->m_class_name);
+    insertargs.add_param( c->m_origin_name);
+    insertargs.add_param( c->getCurrentCostume()->m_body_type);
+    insertargs.add_param( c->m_mapName);
+
+    if(!m_prepared_char_insert->execute(insertargs,results))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::create %s failed. %s.\n"),
+                          m_prepared_char_insert->prepared_sql().c_str(),results.message()),false);
+    DbResultRow insert_r =results.nextRow();
+    if(!insert_r.valid()) {
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::create failed to get insert id\n")),false);
+    }
+    uint64_t char_id = insert_r.getColInt64(0);
+
+    // create costume
+
+    std::string costume_parts;
+    cst->serializeToDb(costume_parts);
+    PreparedArgs costumetargs;
+    costumetargs.add_param(uint64_t(char_id));
+    costumetargs.add_param(uint32_t(0));
+    costumetargs.add_param(uint32_t(cst->a));
+    costumetargs.add_param(costume_parts);
+
+    if(!m_prepared_costume_insert->execute(costumetargs,results))
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::create %s failed. %s.\n"), query.str().c_str(),results.message()),false);
+    results.nextRow();
     return true;
 }
 #ifdef DEFINED_ARRAYSIZE

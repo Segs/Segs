@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server
  * http://segs.sf.net/
- * Copyright (c) 2006 - 2014 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -15,24 +15,25 @@ typedef struct pg_result PGresult;
 }
 class PSqlPreparedQuery : public IPreparedQuery
 {
-        PGconn *    m_conn;
+        PGconn *    m_conn; // not owned by this object
         std::string m_query_name;
         size_t      m_param_count;
 public:
+virtual             ~PSqlPreparedQuery() {}
                     PSqlPreparedQuery(Database &db) : m_conn((PGconn *)db.conn()) {}
         bool        prepare(const std::string &query,size_t num_params);
         bool        execute(PreparedArgs &args,DbResults &res);
 };
 class PSqlDbResults : public IResult
 {
+    int m_current_row;
 public:
         PGresult *  m_result;
         char *      m_msg;
                     PSqlDbResults();
                     ~PSqlDbResults();
 
-        size_t      num_rows();
-        IResultRow *getRow(size_t row);
+        IResultRow *nextRow();
         const char *message() { return m_msg; }
         bool        isError() const {
             return (m_msg!=NULL)&&(m_msg[0]);
@@ -43,11 +44,12 @@ class PSqlResultRow : public IResultRow {
         int         m_row;
         PGresult *  m_result;
 public:
-                    PSqlResultRow(PGresult *r,int row) : m_result(r), m_row(row) {}
+                    PSqlResultRow(PGresult *r,int row) : m_row(row),m_result(r) {}
         const char *getColString(const char *column_name);
         int16_t     getColInt16(const char *column_name);
         int32_t     getColInt32(const char *column_name);
         int64_t     getColInt64(const char *column_name);
+        int64_t     getColInt64(int colidx);
         bool        getColBool(const char *column_name);
         float       getColFloat(const char *column_name);
         tm          getTimestamp(const char *column_name);
@@ -71,4 +73,5 @@ virtual             ~PSqlDatabase();
         PGconn *    get_conn() {return pConnection;}
         void *      conn() {return pConnection; }
         IPreparedQuery *prepare(const std::string &query, size_t num_params);
+        IPreparedQuery *prepareInsert(const std::string &query, size_t num_params);
 };

@@ -8,6 +8,7 @@ out/
 
 #IDE generated project files
 *.user
+*.user.*
 
 # Compiled Object files
 *.slo

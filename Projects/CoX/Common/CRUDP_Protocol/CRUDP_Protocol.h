@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -47,7 +47,7 @@ public:
 
         size_t              UnsentPackets()    const {return unsent_packets.size();}
         size_t              AvailablePackets() const {return avail_packets.size();}
-
+        size_t              UnackedPacketCount() const { return recv_acks.size(); }
         size_t              GetUnsentPackets(std::list<CrudP_Packet *> &);
         void                ReceivedBlock(BitStream &bs); // bytes received, will create some packets in avail_packets
 

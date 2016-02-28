@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server
  * http://segs.sf.net/
- * Copyright (c) 2006 - 2014 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -24,11 +24,20 @@ protected:
         IResultRow *    m_impl;
 public:
                         DbResultRow(IResultRow *a) : m_impl(a) {}
-
+                        DbResultRow(DbResultRow &&other) : m_impl(other.m_impl) { other.m_impl=NULL; }
+                        ~DbResultRow() { delete m_impl; }
+        DbResultRow &   operator=(DbResultRow && from) {
+                            delete m_impl;
+                            m_impl = NULL;
+                            std::swap(m_impl,from.m_impl);
+                            return *this;
+                        }
+        bool            valid() const                         { return m_impl!=NULL;}
         const char *    getColString(const char *column_name) { return m_impl->getColString(column_name);}
         int16_t         getColInt16(const char *column_name)  { return m_impl->getColInt16(column_name);}
         int32_t         getColInt32(const char *column_name)  { return m_impl->getColInt32(column_name);}
         int64_t         getColInt64(const char *column_name)  { return m_impl->getColInt64(column_name);}
+        int64_t         getColInt64(int col)                  { return m_impl->getColInt64(col);}
         bool            getColBool(const char *column_name)   { return m_impl->getColBool(column_name);}
         float           getColFloat(const char *column_name)  { return m_impl->getColFloat(column_name);}
         struct tm       getTimestamp(const char *column_name) { return m_impl->getTimestamp(column_name);}
@@ -41,9 +50,9 @@ class DbResults
 public:
         IResult *   m_impl;
         DbResults() : m_impl(NULL) {}
+        ~DbResults() { delete m_impl; }
         const char *message() {return m_impl->message();}
-        size_t      num_rows() {return m_impl->num_rows();}
-        DbResultRow getRow(size_t row) { assert(row<num_rows()); return DbResultRow(m_impl->getRow(row));}
+        DbResultRow nextRow() { return DbResultRow(m_impl->nextRow());}
 };
 
 class Database
@@ -57,6 +66,7 @@ virtual int             OpenConnection(IDataBaseCallbacks *)=0;
 virtual int             CloseConnection(void)=0;
 virtual int64_t         next_id(const std::string &tab_name)=0;
 virtual IPreparedQuery *prepare(const std::string &query,size_t num_params)=0;
+virtual IPreparedQuery *prepareInsert(const std::string &query,size_t num_params)=0;
 virtual void *          conn() = 0; //!< get underlying db connection object
 
 };
@@ -71,6 +81,7 @@ struct PreparedArgs
         void                add_param(const std::string &str);
         void                add_param(uint16_t);
         void                add_param(uint32_t);
+        void                add_param(uint64_t);
 };
 class DbTransactionGuard
 {

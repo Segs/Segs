@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -31,17 +31,22 @@ void PreparedArgs::add_param( const std::string &str )
     m_formats.push_back(0);
 }
 
+//FIXME : encoding ints in std::string - stinky code.
 void PreparedArgs::add_param( uint16_t v )
 {
-    uint16_t rv = ACE_HTONS(v);
-    m_params.push_back(std::string((char *)&rv,2));
+    m_params.push_back(std::string((char *)&v,2));
     m_lengths.push_back(2);
     m_formats.push_back(1);
 }
 void PreparedArgs::add_param( uint32_t v )
 {
-    uint32_t rv = ACE_HTONL(v);
-    m_params.push_back(std::string((char *)&rv,4));
+    m_params.push_back(std::string((char *)&v,4));
     m_lengths.push_back(4);
+    m_formats.push_back(1);
+}
+void PreparedArgs::add_param( uint64_t v )
+{
+    m_params.push_back(std::string((char *)&v,8));
+    m_lengths.push_back(8);
     m_formats.push_back(1);
 }
