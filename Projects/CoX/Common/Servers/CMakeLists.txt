@@ -30,15 +30,16 @@ ${CMAKE_CURRENT_SOURCE_DIR}/CRUD_Events.h
 ${CMAKE_CURRENT_SOURCE_DIR}/crud_link.inl
 )
 
-find_package(PostgreSQL REQUIRED) # PostgreSQL
-SET(PsqlDbPlugin_SOURCES
-${CMAKE_CURRENT_SOURCE_DIR}/PsqlDatabase.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/PsqlDatabase.h
-)
+if(PostgreSQL_FOUND)
+    SET(PsqlDbPlugin_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/PsqlDatabase.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/PsqlDatabase.h
+    )
+endif()
 
 SET(SqliteDbPlugin_SOURCES
-${CMAKE_CURRENT_SOURCE_DIR}/SqliteDatabase.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/SqliteDatabase.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/SqliteDatabase.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SqliteDatabase.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})

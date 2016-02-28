@@ -59,7 +59,12 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
         config.get_string_value(account_db_config,ACE_TEXT("db_pass"),dbpass,"none");
         Database *db1;
         if(dbdriver=="pgsql") {
+#ifdef HAVE_POSTGRES
             db1 = new PSqlDatabase;
+#else
+            ACE_DEBUG((LM_INFO,"PostgreSQL support was not selected during compilation.\n"));
+            db1 = new SqliteDatabase;
+#endif
         }
         else {
             db1 = new SqliteDatabase;
@@ -78,7 +83,12 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
         config.get_string_value(character_db_config,ACE_TEXT("db_pass"),dbpass,"none");
         Database *db2;
         if(dbdriver=="pgsql") {
+#ifdef HAVE_POSTGRES
             db2 = new PSqlDatabase;
+#else
+            ACE_DEBUG((LM_INFO,"PostgreSQL support was not selected during compilation.\n"));
+            db2 = new SqliteDatabase;
+#endif
         }
         else {
             db2 = new SqliteDatabase;
