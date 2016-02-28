@@ -8,6 +8,7 @@
 #define _USE_MATH_DEFINES
 #include "Entity.h"
 
+#include <algorithm>
 #include <math.h>
 #ifdef WIN32
 #include "xmmintrin.h"
