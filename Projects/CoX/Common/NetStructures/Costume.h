@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -66,6 +66,9 @@ public:
         bs.StoreFloat(m_physique);
         bs.StoreBits(32,a); // rgb ?
     }
+    void serializeToDb(std::string &tgt);
+    void serializeFromDb(const std::string &src);
+
 #if 0
 0 male SM
 1 female SF
