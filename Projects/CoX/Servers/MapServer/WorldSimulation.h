@@ -1,6 +1,8 @@
 #pragma once
 #include <osg/Matrix>
 #include <osg/Vec3>
+#include <ace/Time_Value.h>
+
 #include "Entity.h"
 #include "EntityStorage.h"
 

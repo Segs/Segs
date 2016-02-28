@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -11,6 +11,7 @@
 #include <cstring>
 #include <cassert>
 
+#include <algorithm>
 
 // bitstream buffer is padded-out by 7 bytes, to allow safe 64bit reads/writes by new routines
 /************************************************************************
@@ -69,6 +70,7 @@ BitStream &BitStream::operator =(const BitStream &bs)
     m_byteAligned    = bs.m_byteAligned;
     m_read_bit_off   = bs.m_read_bit_off;
     m_write_bit_off  = bs.m_write_bit_off;
+    return *this;
 }
 /************************************************************************
 Function:    ~BitStream
@@ -221,7 +223,7 @@ void BitStream::StoreBitArray(const uint8_t *src,size_t nBits)
     m_buf[m_write_off] = 0;
     if(nBits&7) // unaligned !
     {
-        m_write_off--;
+        //m_write_off--;
         m_write_bit_off = nBits&7;
     }
 }
@@ -478,8 +480,8 @@ int64_t BitStream::Get64Bits()
 
 size_t BitStream::GetAvailSize() const
 {
-    ssize_t res = (ssize_t)((m_size-m_write_off)-(m_write_bit_off!=0));
-    return (size_t)std::max<>((ssize_t)0,res);
+    int64_t res = (int64_t)((m_size-m_write_off)-(m_write_bit_off!=0));
+    return (size_t)std::max<>((int64_t)0,res);
 }
 /************************************************************************
 Function:    GetFloat/GetFloatWithDebugInfo()

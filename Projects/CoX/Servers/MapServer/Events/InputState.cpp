@@ -7,6 +7,7 @@
  */
 
 //#define DEBUG_INPUT
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include "Events/InputState.h"
 #include "Entity.h"
