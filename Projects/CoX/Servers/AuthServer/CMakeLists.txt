@@ -37,8 +37,6 @@ SET (target_SOURCES
 
 ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
 
-find_package(PostgreSQL REQUIRED) # PostgreSQL
-
 IF(BUILD_SEPARATE)
     ADD_DEFINITIONS(-DSEPARATE)
     ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
