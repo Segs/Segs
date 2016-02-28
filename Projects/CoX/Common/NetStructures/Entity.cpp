@@ -9,12 +9,7 @@
 #include "Entity.h"
 
 #include <algorithm>
-#include <math.h>
-#ifdef WIN32
-#include "xmmintrin.h"
-#else
-#define _copysign(x,y) ((x)* ((y<0.0f)? -1.0f : 1.0f))
-#endif
+#include <cmath>
 #include <limits>
 #include <sstream>
 //#define LOG_
@@ -39,7 +34,8 @@ float AngleDequantize(int value,int numb_bits)
 uint32_t AngleQuantize(float value,int numb_bits)
 {
     int max_val = 1<<numb_bits;
-    float v = fabs(value)>1.0f ? _copysign(1.0f,value) : value ;
+
+    float v = fabs(value)>1.0f ? std::copysign(1.0f,value) : value ;
     v  = (asinf(v)+M_PI)/(2*F_PI); // maps -1..1 to 0..1
     v *= max_val;
 //  assert(v<=max_val);

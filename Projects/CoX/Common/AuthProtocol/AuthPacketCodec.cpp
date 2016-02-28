@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server Project
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -9,6 +9,7 @@
 //#include <stdio.h>
 
 #include "AuthPacketCodec.h"
+
 static void scrunch(const unsigned char *, unsigned long *);
 static void unscrun(const unsigned long *, unsigned char *);
 static void desfunc(register unsigned long *block,const register unsigned long *keys);
@@ -381,7 +382,7 @@ void AuthPacketCodec::XorDecodeBuf(unsigned char *buffer,size_t  length)
 
 void AuthPacketCodec::DesCode(unsigned char *in_block,size_t size) const
 {
-    size_t blocks=size>>=3;
+    size_t blocks=size>>3;
     unsigned long work[2];
     unsigned char *cp;
     cp = in_block;
@@ -417,7 +418,7 @@ int AuthPacketCodec::Decode(unsigned char *buffer,size_t  size)
 }
 void AuthPacketCodec::DesDecode(unsigned char *in_block,size_t size) const
 {
-    size_t blocks = size>>=3;
+    size_t blocks = size>>3;
     unsigned long work[2];
     unsigned char *cp;
     cp = in_block;

@@ -9,6 +9,7 @@
 #pragma once
 #include <stdint.h>
 #include <string>
+#include <cstring>
 class MRubyEngine;
 // Warning those classes aren't thread-safe!
 // maybe this should derive from ACE_Data_Block/Message_Block ?

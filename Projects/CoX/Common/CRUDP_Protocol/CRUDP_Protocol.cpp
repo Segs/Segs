@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -389,7 +389,6 @@ void CrudP_Protocol::sendSmallPacket(CrudP_Packet *p)
     p->m_checksum = 0;
     p->setSeqNo(++send_seq);
     p->setSibPos(0);
-
     BitStream *res =new BitStream(p->GetStream()->GetReadableDataSize()+64);
     memset(res->read_ptr(),0,64);
     res->Put((uint32_t)p->GetStream()->GetReadableBits());
