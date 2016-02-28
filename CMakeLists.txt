@@ -57,8 +57,21 @@ ExternalProject_add(
 SET(SQLite_path ${PROJECT_SOURCE_DIR}/3rd_party)
 SET(SQLite_LIBRARIES sqlite)
 
+ExternalProject_add(
+   Zlib_BUILD
+   SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/zlib
+   DOWNLOAD_COMMAND ""
+   UPDATE_COMMAND ""
+   INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
+   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+)
+SET(ZLIB_path ${PROJECT_SOURCE_DIR}/3rd_party)
+SET(ZLIB_INCLUDE_DIR ${ZLIB_path}/include)
+SET(ZLIB_LIBRARIES z)
+
+
 find_package(Threads REQUIRED)
-find_package(ZLIB REQUIRED)
+
 find_package(OpenSceneGraph REQUIRED)
 link_directories(${PostgreSQL_LIBRARY_DIRS})
 

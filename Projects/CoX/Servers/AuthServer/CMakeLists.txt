@@ -33,8 +33,6 @@ SET (target_SOURCES
   ${target_INCLUDE}
 )
 
-FIND_PACKAGE(ZLIB REQUIRED)
-
 #FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LIBRARIES is not a cache variable, so we  have to do this here again
 
 ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
@@ -51,9 +49,10 @@ IF(BUILD_SEPARATE)
         ${CMAKE_THREAD_LIBS_INIT}
         ${ACE_LIBRARIES}
         ${PostgreSQL_LIBRARIES} ${OPENSCENEGRAPH_LIBRARIES}
+        ${CMAKE_DL_LIBS}
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
-    ADD_DEPENDENCIES(authserver ACE_BUILD)
+    ADD_DEPENDENCIES(authserver ACE_BUILD Zlib_BUILD)
 ENDIF(BUILD_SEPARATE)
 
 SEGS_REGISTER_COMPONENT(authserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
