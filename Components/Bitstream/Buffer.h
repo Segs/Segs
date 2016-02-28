@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -9,7 +9,6 @@
 #pragma once
 #include <stdint.h>
 #include <string>
-#include <ace/Message_Block.h>
 class MRubyEngine;
 // Warning those classes aren't thread-safe!
 // maybe this should derive from ACE_Data_Block/Message_Block ?
