@@ -314,7 +314,7 @@ vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
     {
         act = new CrudP_Packet;
         //act->GetStream()->PutBytes(src.GetStream()->read_ptr(),src.GetStream()->GetReadableDataSize());
-        act->GetStream()->StoreBitArray((uint8_t *)src.GetStream()->read_ptr(),(uint32_t)src.GetStream()->GetReadableBits());
+        act->GetStream()->StoreBitArray_Unaligned((uint8_t *)src.GetStream()->read_ptr(),(uint32_t)src.GetStream()->GetReadableBits());
         act->setSibPos(i);
         res.push_back(act);
     }
@@ -362,7 +362,7 @@ void CrudP_Protocol::sendLargePacket(CrudP_Packet *p)
             res->StoreBits_4_10_24_32(0); // instead of  zero we have to put ordered_id here, whatever that is
         }
         res->ByteAlign();
-        res->StoreBitArray((uint8_t*)pkt->GetStream()->read_ptr(),(uint32_t)pkt->GetStream()->GetReadableBits());
+        res->StoreBitArray_Unaligned((uint8_t*)pkt->GetStream()->read_ptr(),(uint32_t)pkt->GetStream()->GetReadableBits());
         res->ResetReading();
         uint32_t *head =  (uint32_t *)res->read_ptr();
         head[0] = (uint32_t)res->GetReadableBits();

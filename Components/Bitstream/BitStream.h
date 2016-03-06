@@ -72,6 +72,7 @@ public:
         void StorePackedBitsWithDebugInfo(uint32_t nBits, uint32_t dataBits);
 
         void StoreBitArray(const uint8_t *array,size_t nBits);
+        void StoreBitArray_Unaligned(const uint8_t *src, size_t nBits);
         void StoreBitArrayWithDebugInfo(const uint8_t *array,uint32_t nBits);
 
         void StoreString(const char *str);
