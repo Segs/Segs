@@ -148,7 +148,11 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLineEdit" name="selectedConfigFile"/>
+            <widget class="QLineEdit" name="selectedConfigFile">
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -209,7 +213,7 @@
      <x>0</x>
      <y>0</y>
      <width>861</width>
-     <height>27</height>
+     <height>28</height>
     </rect>
    </property>
   </widget>

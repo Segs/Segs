@@ -208,13 +208,32 @@ void BitStream::StoreBitArrayWithDebugInfo(const uint8_t *array,uint32_t nBits)
     StorePackedBits(5, nBits);
     StoreBitArray(array,nBits);
 }
-/************************************************************************
-Function:    StoreBitArray/StoreBitArrayWithDebugInfo
-Description: Stores an array of bits in the bit stream buffer.  The
-                         main difference between StoreBitArray and StoreBits, is
-                         that StoreBitArray can accept more than 32 bits at a time
-************************************************************************/
+/**
+ * @brief BitStream::StoreBitArray
+ * Stores an array of bits in the bit stream buffer.  The
+ * main difference between StoreBitArray and StoreBits, is
+ * that StoreBitArray can accept more than 32 bits at a time
+ * @param src
+ * @param nBits
+ */
 void BitStream::StoreBitArray(const uint8_t *src,size_t nBits)
+{
+    size_t nBytes = BITS_TO_BYTES(nBits);
+    assert(src);
+    ByteAlign();
+    PutBytes(src,nBytes);
+    m_buf[m_write_off] = 0;
+}
+/**
+ * @brief BitStream::StoreBitArray
+ * Stores an array of bits in the bit stream buffer.  The
+ * main difference between StoreBitArray and StoreBits, is
+ * that StoreBitArray can accept more than 32 bits at a time
+ * @note The stream *end* is *not* aligned to 8 bits - mainly needed to send the correct number of readable bits
+ * @param src
+ * @param nBits
+ */
+void BitStream::StoreBitArray_Unaligned(const uint8_t *src,size_t nBits)
 {
     size_t nBytes = BITS_TO_BYTES(nBits);
     assert(src);
@@ -223,7 +242,7 @@ void BitStream::StoreBitArray(const uint8_t *src,size_t nBits)
     m_buf[m_write_off] = 0;
     if(nBits&7) // unaligned !
     {
-        //m_write_off--;
+        m_write_off--;
         m_write_bit_off = nBits&7;
     }
 }

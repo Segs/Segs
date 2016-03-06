@@ -16,6 +16,7 @@
 class CostumePart : public NetStructure
 {
 public:
+    explicit CostumePart() {} // used by serializer
     // Part 6 : Hair
     // Part 0 : Lower Body
     // Part 1 : Upper Body
@@ -27,7 +28,7 @@ public:
         m_colors[0]=m_colors[1];
     }
     CostumePart(uint8_t type,const std::string &a,const std::string &b,const std::string &c,const std::string &d,uint32_t c1,uint32_t c2)
-        :m_type(type),name_0(a),name_1(b),name_2(c),name_3(d)
+        :m_type(type),m_geometry(a),m_texture_1(b),m_texture_2(c),name_3(d)
     {
         m_colors[0]=c1;
         m_colors[1]=c2;
@@ -36,7 +37,7 @@ public:
     void serializefrom(BitStream &bs);
     void serializeto_charsel(BitStream &bs) const;
     uint8_t m_type; // arms/legs etc..
-    std::string name_0,name_1,name_2,name_3,name_4,name_5,name_6;
+    std::string m_geometry,m_texture_1,m_texture_2,name_3,name_4,name_5,name_6;
     bool m_full_part;
     uint32_t m_colors[2];
 };

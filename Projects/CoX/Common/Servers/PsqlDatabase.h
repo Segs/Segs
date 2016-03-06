@@ -22,7 +22,8 @@ public:
 virtual             ~PSqlPreparedQuery() {}
                     PSqlPreparedQuery(Database &db) : m_conn((PGconn *)db.conn()) {}
         bool        prepare(const std::string &query,size_t num_params);
-        bool        execute(PreparedArgs &args,DbResults &res);
+        bool        execute(PreparedArgs &args,DbResults &res) override;
+        int64_t     executeInsert(PreparedArgs &args,DbResults &res) override;
 };
 class PSqlDbResults : public IResult
 {

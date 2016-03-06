@@ -223,27 +223,21 @@ bool CharacterDatabase::create( uint64_t gid,uint8_t slot,Character *c )
                          ,false);
     }
     assert(m_prepared_char_insert);
-    std::string stringgid;
-    std::ostringstream o(stringgid);
+    std::ostringstream o;
     o << gid;
     PreparedArgs insertargs;
     insertargs.add_param( c->m_level);
     insertargs.add_param( uint32_t(slot));
-    insertargs.add_param( stringgid);
+    insertargs.add_param( o.str());
     insertargs.add_param( c->m_name);
     insertargs.add_param( c->m_class_name);
     insertargs.add_param( c->m_origin_name);
     insertargs.add_param( c->getCurrentCostume()->m_body_type);
     insertargs.add_param( c->m_mapName);
-
-    if(!m_prepared_char_insert->execute(insertargs,results))
+    int64_t char_id = m_prepared_char_insert->executeInsert(insertargs,results);
+    if(-1==char_id)
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::create %s failed. %s.\n"),
                           m_prepared_char_insert->prepared_sql().c_str(),results.message()),false);
-    DbResultRow insert_r =results.nextRow();
-    if(!insert_r.valid()) {
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::create failed to get insert id\n")),false);
-    }
-    uint64_t char_id = insert_r.getColInt64(0);
 
     // create costume
 

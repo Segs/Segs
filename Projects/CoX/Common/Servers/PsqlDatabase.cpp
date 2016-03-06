@@ -159,6 +159,13 @@ bool PSqlPreparedQuery::execute(PreparedArgs &args,DbResults &res )
     return q_error ? false : true;
 }
 
+int64_t PSqlPreparedQuery::executeInsert(PreparedArgs &args, DbResults &res)
+{
+    if(!execute(args,res))
+        return -1;
+    return res.nextRow().getColInt64(0);
+}
+
 
 
 const char *PSqlResultRow::getColString(const char *column_name)

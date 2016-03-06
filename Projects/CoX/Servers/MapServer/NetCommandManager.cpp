@@ -127,14 +127,15 @@ void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands,
             tgt.StoreString(commands[i]->m_name);
         }
     }
-    tgt.StorePackedBits(1,(uint32_t)commands2.size());
-    if(commands2.size()>0)
-    {
-        for(uint32_t i=0; i<(uint32_t)commands2.size(); i++)
-        {
-            tgt.StoreString(commands2[i]->m_name);
-        }
-    }
+//    tgt.StorePackedBits(1,(uint32_t)commands2.size());
+//    if(commands2.size()>0)
+//    {
+//        for(uint32_t i=0; i<(uint32_t)commands2.size(); i++)
+//        {
+//            tgt.StoreString(commands2[i]->m_name);
+//        }
+//    }
+    tgt.StorePackedBits(1,~0);
 }
 void NetCommandManager::SendCommandShortcuts( MapClient *client,BitStream &tgt,const vector<NetCommand *> &commands2 )
 {
