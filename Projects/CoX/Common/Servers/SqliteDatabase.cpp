@@ -149,6 +149,8 @@ public:
             sqlite3_finalize(m_sqlite_query);
         m_sqlite_query = nullptr;
         m_db_iface=nullptr;
+        executing = false;
+        std::swap(executing,from.executing);
         std::swap(from.m_sqlite_query,m_sqlite_query);
         std::swap(from.m_db_iface,m_db_iface);
     }
@@ -197,6 +199,12 @@ public:
         executing=true;
         return true;
     }
+    int64_t executeInsert(PreparedArgs &args, DbResults &res) override {
+        if(!execute(args,res))
+            return -1;
+        res.nextRow();
+        return sqlite3_last_insert_rowid(m_db_iface);
+    }
 };
 
 }
@@ -235,7 +243,14 @@ bool SqliteDatabase::execQuery(const std::string &q, DbResults &res)
 
 bool SqliteDatabase::execQuery(const std::string &q)
 {
-    assert(false);
+    if (q != "BEGIN" && q != "COMMIT;" && q != "ROLLBACK;") {
+        ACE_ERROR((LM_ERROR, ACE_TEXT("(%P|%t) Non transaction query encountered (%s)- not supported in SQLITE_Database\n"),q.c_str() ));
+        return false;
+    }
+    int res = sqlite3_exec(m_db_iface, q.c_str(), NULL, NULL, NULL);
+    if(res!=SQLITE_OK) {
+        const char *msg = sqlite3_errmsg(m_db_iface);
+    }
     return false;
 }
 
@@ -252,8 +267,9 @@ int SqliteDatabase::OpenConnection(IDataBaseCallbacks *cb)
         exit(1); // Exit SEGS to make the user corrects the problem
     }
     ACE_DEBUG ((LM_INFO,"SQLLite connection created to %s\n",m_filename.c_str()));
+    int enabling_foreign_keys = sqlite3_exec(m_db_iface,"PRAGMA foreign_keys = ON",NULL,NULL,NULL);
     cb->on_connected(this);
-    return 0;
+    return enabling_foreign_keys==SQLITE_OK ? 0 : -1;
 }
 
 int SqliteDatabase::CloseConnection()
@@ -287,7 +303,7 @@ IPreparedQuery *SqliteDatabase::prepare(const std::string &query, size_t num_par
 IPreparedQuery *SqliteDatabase::prepareInsert(const std::string &query, size_t num_params)
 {
     //
-    std::string modquery = query + ";SELECT last_insert_rowid();";
+    std::string modquery = query;
     std::replace(modquery.begin(),modquery.end(),'$','?');
     const char *unusedChars;
     SqlitePreparedQuery resp(modquery);

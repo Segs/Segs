@@ -38,4 +38,5 @@ public:
     virtual ~IPreparedQuery() {}
     virtual const std::string &prepared_sql() { return m_query_text; }
     virtual bool            execute(PreparedArgs &args,DbResults &res)=0;
+    virtual int64_t         executeInsert(PreparedArgs &args,DbResults &res)=0;
 };

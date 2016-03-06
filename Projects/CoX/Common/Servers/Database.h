@@ -90,7 +90,7 @@ class DbTransactionGuard
 public:
     DbTransactionGuard(Database &db) : m_db(db),proper_commit(false)
     {
-        m_db.execQuery("BEGIN;");
+        m_db.execQuery("BEGIN");
     }
     void commit() {proper_commit=true;}
     ~DbTransactionGuard()
