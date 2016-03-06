@@ -155,7 +155,7 @@ class PowerTrayGroup
     PowerTray m_trays[9];
     uint32_t m_power_rel1,m_power_rel2;
     bool m_c;
-    int unkn1,unkn2;
+    int primary_tray_idx,secondary_tray_idx;
 public:
     PowerTrayGroup()
     {
@@ -164,8 +164,8 @@ public:
     }
     void serializeto(BitStream &tgt) const
     {
-        tgt.StoreBits(32,unkn1);
-        tgt.StoreBits(32,unkn2);
+        tgt.StoreBits(32,primary_tray_idx);
+        tgt.StoreBits(32,secondary_tray_idx);
         for(int bar_num=0; bar_num<9; bar_num++)
             m_trays[bar_num].serializeto(tgt);
         bool m_c = false;
@@ -178,8 +178,8 @@ public:
     }
     void serializefrom(BitStream &src)
     {
-        unkn1 = src.GetBits(32);
-        unkn2 = src.GetBits(32);
+        primary_tray_idx = src.GetBits(32);
+        secondary_tray_idx = src.GetBits(32);
         for(int bar_num=0; bar_num<9; bar_num++)
         {
             m_trays[bar_num].serializefrom(src);
@@ -193,8 +193,8 @@ public:
     }
     void dump()
     {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn1: 0x%08x\n"),unkn1));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn2: 0x%08x\n"),unkn2));
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn1: 0x%08x\n"),primary_tray_idx));
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn2: 0x%08x\n"),secondary_tray_idx));
         for(int bar_num=0; bar_num<9; bar_num++)
         {
             if(m_trays[bar_num].setPowers()==0)

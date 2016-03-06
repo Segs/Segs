@@ -784,17 +784,18 @@ void MapCostume::dump()
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    ****** %d Parts *******\n"),m_num_parts));
     for(int i=0; i<m_num_parts; i++)
     {
-        if(m_parts[i].m_full_part)
-            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),m_parts[i].name_0.c_str(),
-            m_parts[i].name_1.c_str(),m_parts[i].name_2.c_str(),m_parts[i].name_3.c_str(),
-            m_parts[i].m_colors[0],m_parts[i].m_colors[1],
-            m_parts[i].name_4.c_str(),m_parts[i].name_5.c_str()
+        const CostumePart &cp(m_parts[i]);
+        if(cp.m_full_part)
+            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),cp.m_geometry.c_str(),
+            cp.m_texture_1.c_str(),cp.m_texture_2.c_str(),cp.name_3.c_str(),
+            cp.m_colors[0],cp.m_colors[1],
+            cp.name_4.c_str(),cp.name_5.c_str()
             ));
         else
-            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),m_parts[i].name_0.c_str(),
-            m_parts[i].name_1.c_str(),m_parts[i].name_2.c_str(),m_parts[i].name_3.c_str(),
-            m_parts[i].m_colors[0],m_parts[i].m_colors[1],
-            m_parts[i].name_4.c_str(),m_parts[i].name_5.c_str()
+            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),cp.m_geometry.c_str(),
+            cp.m_texture_1.c_str(),cp.m_texture_2.c_str(),cp.name_3.c_str(),
+            cp.m_colors[0],cp.m_colors[1],
+            cp.name_4.c_str(),cp.name_5.c_str()
             ));
     }
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    *************\n")));
@@ -823,6 +824,8 @@ void MapCostume::SendCommon(BitStream &bs) const
     for(int costume_part=0; costume_part<m_parts.size();costume_part++)
     {
         CostumePart part=m_parts[costume_part];
+        // TODO: this is bad code, it's purpose is to NOT send all part strings if m_non_default_costme_p is false
+        part.m_full_part = m_non_default_costme_p;
         part.serializeto(bs);
     }
 }
