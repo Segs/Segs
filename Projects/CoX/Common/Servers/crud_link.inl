@@ -60,6 +60,7 @@ void CRUDLink<EVENT_FACTORY>::packets_for_event(SEGSEvent *ev)
     CRUDLink_Event *c_ev =static_cast<CRUDLink_Event *>(ev);
     CrudP_Packet *res   = new CrudP_Packet;
     ACE_ASSERT(res);
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) packets_for_event %s\n"),typeid(*ev).name()));
 
     c_ev->serializeto(*res->GetStream()); // serialize packet into res packet
     // create one or more properly formated CrudP_Packets in the protocol object
@@ -71,6 +72,7 @@ void CRUDLink<EVENT_FACTORY>::packets_for_event(SEGSEvent *ev)
         g_link_target->putq(new PacketEvent(this,*packets.begin(),peer_addr()));
         packets.pop_front();
     }
+    connection_sent_packet(); // data was sent, update
 }
 template<class EVENT_FACTORY>
 int CRUDLink<EVENT_FACTORY>::open (void *p)
@@ -80,6 +82,7 @@ int CRUDLink<EVENT_FACTORY>::open (void *p)
     m_notifier.reactor(reactor());  // notify reactor with write event,
     msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue()
     connection_update(); // record first activity time.
+    connection_sent_packet();
     return 0;
 }
 
@@ -113,6 +116,7 @@ int CRUDLink<EVENT_FACTORY>::handle_output( ACE_HANDLE )
         ev->release();
         //TODO: check how getq works when nowait is before now() ??
         //nowait = ACE_OS::gettimeofday();
+        // consider breaking out of this loop after processing N messages ?
     }
     // Now if our message queue is empty, we will wait unitl m_notifier awakens us.
     if (msg_queue()->is_empty ()) // we don't want to be woken up

@@ -18,8 +18,10 @@ class GameHandler : public EventProcessor
     typedef std::unordered_set<uint32_t> sIds;
     // function that send messages into the link
     // incoming event handlers
+    class SEGSTimer *     m_link_checker=nullptr;
 public:
     void        set_server(GameServer *s) {m_server=s;}
+    void        start();
 protected:
         void    dispatch(SEGSEvent *ev);
     SEGSEvent * dispatch_sync( SEGSEvent *ev );
@@ -39,6 +41,11 @@ protected:
     // Server <-> Server events
     void        on_expect_client(ExpectClient *ev);     // from AuthServer
     void        on_client_expected(ClientExpected *ev); // from MapServer
+
+    //////////////////////////////////////////////////////////////////////////
+    // Internal events
+    void        on_check_links();
+    void        on_timeout(TimerEvent *ev);
 
     // synchronous event
     SEGSEvent * on_connection_query(ClientConnectionQuery *ev);

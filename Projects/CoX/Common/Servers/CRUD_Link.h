@@ -30,8 +30,8 @@ typedef typename EVENT_FACTORY::tClientData tClientData;
 typedef EventProcessor                      super;
         ACE_Reactor_Notification_Strategy   m_notifier; // our queue will use this to inform the reactor of it's new elements
         ACE_HANDLE                          get_handle (void) const {return peer_.get_handle();}
-        ACE_Time_Value                      m_last_activity; // last link activity time
-
+        ACE_Time_Value                      m_last_recv_activity; // last link activity time
+        ACE_Time_Value                      m_last_send_activity; // last send activity on the link
 public:
 
 typedef ACE_SOCK_Dgram  stream_type;
@@ -62,10 +62,15 @@ public:
     tClientData *   client_data() {return m_link_data;}
     void            client_data(tClientData *d) {m_link_data=d;}
 
-    ACE_Time_Value  inactivity_time() const //! return the amount of time this client wasn't sending anything
+    ACE_Time_Value  client_last_seen_packets() const //! return the amount of time this client wasn't sending anything
                     {
-                        return ACE_OS::gettimeofday()-m_last_activity;
+                        return ACE_OS::gettimeofday()-m_last_recv_activity;
                     }
+    ACE_Time_Value  last_sent_packets() const //! return the amount of time this client wasn't sending anything
+                    {
+                        return ACE_OS::gettimeofday()-m_last_send_activity;
+                    }
+    size_t          client_packets_waiting_for_ack() const { return m_protocol.UnackedPacketCount(); }
 protected:
     SEGSEvent *     dispatch_sync( SEGSEvent * )
                     {
@@ -82,7 +87,11 @@ protected:
     void            packets_for_event(SEGSEvent *c_ev); // Handler posted this event to us, we will pack it into packets and post it to the link target
     void            connection_update() //! Connection updates are done only when new data is available on the link
                     {
-                        m_last_activity = ACE_OS::gettimeofday();
+                        m_last_recv_activity = ACE_OS::gettimeofday();
+                    }
+    void            connection_sent_packet() //! Connection updates are done only when new data is sent on the link
+                    {
+                        m_last_send_activity = ACE_OS::gettimeofday();
                     }
     CrudP_Protocol  m_protocol;
     stream_type     peer_;  /// Maintain connection with client.

@@ -7,14 +7,32 @@
 #include "CharacterClient.h"
 #include "GameServer.h"
 #include "Character.h"
+#include "SEGSTimer.h"
+
 static const uint32_t supported_version=20040422;
+namespace {
+enum {
+    Link_Idle_Timer   = 1
+};
+const ACE_Time_Value link_update_interval(0,500*1000);
+const ACE_Time_Value maximum_time_without_packets(0,1000*1000);
+const constexpr int MinPacketsToAck=5;
+}
+
+void GameHandler::start() {
+    ACE_ASSERT(m_link_checker==nullptr);
+    m_link_checker = new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false);
+}
 
 void GameHandler::dispatch( SEGSEvent *ev )
 {
     assert(ev);
     ACE_DEBUG((LM_WARNING,ACE_TEXT("GameHandler link event %d\n"),ev->type()));
-        switch(ev->type())
-        {
+    switch(ev->type())
+    {
+    case SEGS_EventTypes::evTimeout:
+        on_timeout(static_cast<TimerEvent *>(ev));
+        break;
     case GameEventTypes::evIdle:
         on_idle(static_cast<IdleEvent*>(ev));
         break;
@@ -43,16 +61,16 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case Internal_EventTypes::evExpectClient:
         on_expect_client(static_cast<ExpectClient *>(ev));
         break;
-        case Internal_EventTypes::evClientExpected:
-                on_client_expected(static_cast<ClientExpected *>(ev));
-                break;
-        case SEGS_EventTypes::evConnect:
+    case Internal_EventTypes::evClientExpected:
+        on_client_expected(static_cast<ClientExpected *>(ev));
+        break;
+    case SEGS_EventTypes::evConnect:
         break;
     case SEGS_EventTypes::evDisconnect:
         break;
-        default:
-                assert(!"Unknown event encountered in dispatch.");
-        }
+    default:
+        assert(!"Unknown event encountered in dispatch.");
+    }
 }
 SEGSEvent * GameHandler::dispatch_sync( SEGSEvent *ev )
 {
@@ -107,8 +125,36 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
 void GameHandler::on_idle(IdleEvent *ev)
 {
     // idle for idle 'strategy'
-    GameLink * lnk = (GameLink *)ev->src();
-    lnk->putq(new IdleEvent);
+//    GameLink * lnk = (GameLink *)ev->src();
+//    lnk->putq(new IdleEvent);
+}
+void GameHandler::on_check_links() {
+    for(CharacterClient * c : m_clients) {
+        GameLink * client_link = (GameLink *)c->link_state().link();
+        // Send at least one packet within maximum_time_without_packets
+        if(client_link->last_sent_packets()>maximum_time_without_packets) {
+            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+        } else if(client_link->client_packets_waiting_for_ack()>MinPacketsToAck) {
+            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+        }
+    }
+}
+void GameHandler::on_timeout(TimerEvent *ev)
+{
+    // TODO: This should send 'ping' packets on all client links to which we didn't send
+    // anything in the last time quantum
+    // 1. Find all links that have inactivity_time() > ping_time && <disconnect_time
+    // For each found link
+    //   If there is no ping_pending on this link, add a ping event to queue
+    // 2. Find all links with inactivity_time() >= disconnect_time
+    //   Disconnect given link.
+
+    int timer_id = (intptr_t)ev->data();
+    switch (timer_id) {
+        case Link_Idle_Timer:
+            on_check_links();
+            break;
+    }
 }
 void GameHandler::on_disconnect(DisconnectRequest *ev)
 {
@@ -231,7 +277,7 @@ SEGSEvent *GameHandler::on_connection_query(ClientConnectionQuery *ev)
     if(cl==0)
         return new ClientConnectionResponse(this,ACE_Time_Value::max_time);
     // Client was not active for at least 15s. Warning this must check also map link!
-    if(((GameLink *)cl->link_state().link())->inactivity_time()>ACE_Time_Value(15,0))
+    if(((GameLink *)cl->link_state().link())->client_last_seen_packets()>ACE_Time_Value(15,0))
         disconnectClient(cl->account_info());
     return new ClientConnectionResponse(this,ACE_OS::gettimeofday());
 

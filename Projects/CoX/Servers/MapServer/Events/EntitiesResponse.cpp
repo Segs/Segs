@@ -162,6 +162,7 @@ struct CscCommon_Sub28
 {
     EntWalkRel a,b;
 };
+//static_assert(sizeof(CscCommon_Sub28)==320/8,"Required since it's sent as an bit array");
 void EntitiesResponse::sendServerControlState(BitStream &bs) const
 {
     osg::Vec3 spd(1,1,1);
