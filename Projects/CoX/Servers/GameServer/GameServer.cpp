@@ -1,10 +1,10 @@
 /*
  * Super Entity Game Server Project
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #include "ServerManager.h"
@@ -56,6 +56,7 @@ bool GameServer::Run()
     m_handler->set_server(this);
     GameLink::g_target = m_handler;
     GameLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
+    m_handler->start();
     //GameLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
 
     m_endpoint = new ServerEndpoint<GameLink>(m_listen_point); //,this
