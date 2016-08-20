@@ -38,23 +38,23 @@ eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode,bool direction /*= false 
 {
     switch(opcode)
     {
-        case 0:
-            if(direction)
-                return SMSG_AUTHVERSION;
-            else
-                return CMSG_AUTH_LOGIN;
-        case 2:
-            return CMSG_AUTH_SELECT_DBSERVER;
-        case 3:
-            return CMSG_DB_CONN_FAILURE;
-        case 4:
+    case 0:
+        if(direction)
+            return SMSG_AUTHVERSION;
+        else
             return CMSG_AUTH_LOGIN;
-        case 5:
-            return CMSG_AUTH_REQUEST_SERVER_LIST;
-        case 6:
-            return CMSG_AUTH_LOGIN;
-        default:
-            return MSG_AUTH_UNKNOWN;
+    case 2:
+        return CMSG_AUTH_SELECT_DBSERVER;
+    case 3:
+        return CMSG_DB_CONN_FAILURE;
+    case 4:
+        return CMSG_AUTH_LOGIN;
+    case 5:
+        return CMSG_AUTH_REQUEST_SERVER_LIST;
+    case 6:
+        return CMSG_AUTH_LOGIN;
+    default:
+        return MSG_AUTH_UNKNOWN;
     }
     return MSG_AUTH_UNKNOWN;
 }
@@ -76,7 +76,7 @@ SEGSEvent * AuthLink::bytes_to_event()
             continue;
         }
         // this might be a live packet in there
-        tmp = (uint8_t *)&(m_received_bytes_storage.GetBuffer()[2]);
+        tmp = m_received_bytes_storage.GetBuffer()+2;
 
         m_codec.XorDecodeBuf(tmp, packet_size+1); // Let's see what's in those murky waters
         eAuthPacketType recv_type = OpcodeToType(tmp[0]);
@@ -91,7 +91,7 @@ SEGSEvent * AuthLink::bytes_to_event()
         if(evt->type() == evLogin) // Is tis' on of those pesky AuthLogin Packets ?!!?
         {
             // Bring out the Codec Cannon, an' load it with Des
-            m_codec.DesDecode(static_cast<uint8_t*>(&tmp[1]),24); // It'll crack it's chitinous armor
+            m_codec.DesDecode(tmp+1,30); // It'll crack it's chitinous armor
         }
         evt->serializefrom(m_received_bytes_storage);
         m_received_bytes_storage.PopFront(packet_size+3); //Let's sail away from this depleted fishery.
@@ -197,19 +197,19 @@ void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
     // put 0 as size for now
     m_unsent_bytes_storage.uPut((uint16_t)0);
     // remember start location
-    size_t actual_packet_start = m_unsent_bytes_storage.GetDataSize();
+    size_t actual_packet_start = m_unsent_bytes_storage.GetReadableDataSize();
     // store bytes
     ev->serializeto(m_unsent_bytes_storage);
     // calculate the number of stored bytes, and set it in packet_size
-    *packet_size = (m_unsent_bytes_storage.GetDataSize() - actual_packet_start) - 1; // -1 because opcode is not counted toward packet size
+    *packet_size = (m_unsent_bytes_storage.GetReadableDataSize() - actual_packet_start) - 1; // -1 because opcode is not counted toward packet size
 
     // every packet, but the authorization protocol, is encrypted
     if(ev->type()!=evAuthProtocolVersion)
-        m_codec.XorCodeBuf(static_cast<uint8_t *>(m_unsent_bytes_storage.GetBuffer())+start+2,m_unsent_bytes_storage.GetDataSize()-2); // opcode gets encrypted
+        m_codec.XorCodeBuf(m_unsent_bytes_storage.read_ptr()+actual_packet_start,m_unsent_bytes_storage.GetReadableDataSize()-actual_packet_start); // opcode gets encrypted
 
     // additional encryption of login details
     if(ev->type()==evLogin)
-        m_codec.DesCode(m_unsent_bytes_storage.GetBuffer()+start+3,24); //only part of packet is encrypted with des
+        m_codec.DesCode(m_unsent_bytes_storage.read_ptr()+actual_packet_start+1,30); //only part of packet is encrypted with des
 }
 
 bool AuthLink::send_buffer()
@@ -219,7 +219,7 @@ bool AuthLink::send_buffer()
         ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"), ACE_TEXT ("send")));
     else
     {
-        m_unsent_bytes_storage.PopFront(send_cnt); // this many bytes were read
+        m_unsent_bytes_storage.PopFront(send_cnt); // this many bytes were sent
     }
     if (m_unsent_bytes_storage.GetReadableDataSize() > 0) // and still there is something left
     {
@@ -258,7 +258,7 @@ void AuthLink::set_protocol_version( int vers )
                                 0x7B, 0x7A, 0x5D, 0x3F, 0x6E, 0x38, 0x28, 0};
     m_protocol_version = vers;
     if(m_protocol_version==30206)
-        m_codec.SetDesKey(KeyPrepare("TEST\0\0\0"));
+        m_codec.SetDesKey(KeyPrepare("TEST"));
     else
         m_codec.SetDesKey(KeyPrepare((char *)key_30207));
 }
