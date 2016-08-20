@@ -31,17 +31,17 @@ void NetStructure::storePackedBitsConditional( BitStream &bs,int numbits,int bit
     if(bits)
         bs.StorePackedBits(numbits,bits);
 }
-void NetStructure::storeVector( BitStream &bs,osg::Vec3 &vec )
+void NetStructure::storeVector( BitStream &bs,glm::vec3 &vec )
 {
-    bs.StoreFloat(vec.x());
-    bs.StoreFloat(vec.y());
-    bs.StoreFloat(vec.z());
+    bs.StoreFloat(vec.x);
+    bs.StoreFloat(vec.y);
+    bs.StoreFloat(vec.z);
 }
-void NetStructure::storeVectorConditional(BitStream &bs, osg::Vec3 &vec )
+void NetStructure::storeVectorConditional(BitStream &bs, glm::vec3 &vec )
 {
-    storeFloatConditional(bs,vec.x());
-    storeFloatConditional(bs,vec.y());
-    storeFloatConditional(bs,vec.z());
+    storeFloatConditional(bs,vec.x);
+    storeFloatConditional(bs,vec.y);
+    storeFloatConditional(bs,vec.z);
 }
 
 void NetStructure::storeFloatConditional( BitStream &bs,float val )

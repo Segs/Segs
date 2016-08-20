@@ -54,8 +54,9 @@ void AuthHandler::on_connect( ConnectEvent *ev )
         ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),  ACE_TEXT ("Multiple connection attempts from the same addr/port")));
     }
     lnk->m_state=AuthLink::CONNECTED;
-    uint32_t seed = rand();
+    uint32_t seed = 0x1; //TODO: rand()
     lnk->init_crypto(30206,seed);
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Crypto seed %08x\n"), seed ));
     lnk->putq(new AuthorizationProtocolVersion(this,30206,seed));
 }
 void AuthHandler::on_disconnect( DisconnectEvent *ev )

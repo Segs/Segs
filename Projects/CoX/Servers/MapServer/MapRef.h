@@ -4,12 +4,9 @@
  * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
  */
-
 #pragma once
 #include <string>
-#include <osg/Matrix>
 #include "CommonNetStructures.h"
 class MapRef : public NetStructure
 {
@@ -26,10 +23,10 @@ public:
     {
         reduced_transform=false;
     }
-    MapRef(int idx,std::string name,osg::Vec3 &pos,osg::Vec3 &rot) : m_idx(idx),m_name(name)
+    MapRef(int idx,std::string name,glm::vec3 &pos,glm::vec3 &rot) : m_idx(idx),m_name(name)
     {
         reduced_transform=true;
-        m_transforms=TransformStruct(pos,rot,osg::Vec3(),true,true,false);
+        m_transforms=TransformStruct(pos,rot,glm::vec3(),true,true,false);
     }
     MapRef(): m_idx(0),m_name(""){}
     void dump(void)

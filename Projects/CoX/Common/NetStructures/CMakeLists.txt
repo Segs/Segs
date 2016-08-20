@@ -30,6 +30,6 @@ INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 
 ADD_LIBRARY(network_structures STATIC ${target_SOURCES})
 
-ADD_DEPENDENCIES(network_structures ${target_DEPENDS} OSG_BUILD cereal_IMP)
+ADD_DEPENDENCIES(network_structures ${target_DEPENDS} cereal_IMP)
 
 SEGS_REGISTER_COMPONENT(network_structures "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

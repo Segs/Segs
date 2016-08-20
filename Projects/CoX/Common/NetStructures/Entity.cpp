@@ -627,7 +627,7 @@ Entity::Entity()
     m_seq_update=0;
     m_has_titles=false;
     m_SG_info=false;
-    pos = osg::Vec3(-60.5,180,0);
+    pos = glm::vec3(-60.5f,180.0f,0.0f);
 }
 
 /*

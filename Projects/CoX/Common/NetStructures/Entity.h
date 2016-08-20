@@ -1,6 +1,6 @@
 #pragma once
-#include <osg/Vec3>
-#include <osg/Quat>
+#include <glm/vec3.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include "CommonNetStructures.h"
 #include "Powers.h"
 #include "Costume.h"
@@ -9,8 +9,8 @@
 class PosUpdate
 {
 public:
-    osg::Vec3 posvec;
-    osg::Quat quat;
+    glm::vec3 posvec;
+    glm::quat quat;
     int a;
     int b;
 };
@@ -28,7 +28,7 @@ public:
     uint16_t controlBits;
     uint16_t someOtherbits;
     void *current_state_P;
-    osg::Vec3 camera_pyr;
+    glm::vec3 camera_pyr;
     int m_t1,m_t2;
     uint8_t field_20;
     int m_A_ang11_probably,m_B_ang11_probably;
@@ -36,8 +36,8 @@ public:
     bool has_input_commit_guess;
     bool pos_delta_valid[3];
     bool pyr_valid[3];
-    osg::Vec3 pos_delta;
-    osg::Quat direction;
+    glm::vec3 pos_delta;
+    glm::quat direction;
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
 };
@@ -47,8 +47,8 @@ class Entity : public NetStructure
 public:
         struct currentInputState
         {
-            osg::Vec3 pos;
-            osg::Vec3 pyr; //TODO: convert to quat
+            glm::vec3 pos;
+            glm::vec3 pyr; //TODO: convert to quat
         };
         InputStateStorage   inp_state;
         enum
@@ -91,8 +91,8 @@ mutable bool                m_logout_sent;
         bool                entReceiveAlwaysCon;
         bool                entReceiveSeeThroughWalls;
         int                 pkt_id_QrotUpdateVal[3];
-        osg::Quat           qrot;
-        osg::Vec3           pos;
+        glm::quat           qrot;
+        glm::vec3           pos;
         uint32_t            prev_pos[3];
         bool                m_selector1,m_pchar_things,might_have_rare,
                             m_hasname  ,m_hasgroup_name,m_classname_override;
