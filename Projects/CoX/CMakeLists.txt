@@ -1,6 +1,3 @@
-#FIND_PACKAGE(OpenSceneGraph REQUIRED osgUtil )
-#include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
-
 find_package(PostgreSQL) # PostgreSQL
 if(PostgreSQL_FOUND)
     add_definitions(-DHAVE_POSTGRES)

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <ace/Log_Msg.h>
-#include <osg/Vec3>
+#include <glm/vec3.hpp>
 #include <string>
 #include <sstream>
 #include "BitStream.h"
@@ -63,22 +63,22 @@
 //};
 typedef struct
 {
-        osg::Vec3 row1;
-        osg::Vec3 row2;
-        osg::Vec3 row3;
-        osg::Vec3 row4;
+        glm::vec3 row1;
+        glm::vec3 row2;
+        glm::vec3 row3;
+        glm::vec3 row4;
 } Matrix4x3;
 class TransformStruct
 {
 public:
-        TransformStruct(const osg::Vec3 &a,const osg::Vec3 &b,const osg::Vec3 &c,bool set1,bool set2,bool set3) :
+        TransformStruct(const glm::vec3 &a,const glm::vec3 &b,const glm::vec3 &c,bool set1,bool set2,bool set3) :
           v1(a),v2(b),v3(c),v1_set(set1),v2_set(set2),v3_set(set3)
         {
         }
         TransformStruct() {v1_set=v2_set=v3_set=false;}
-        osg::Vec3 v1;
-        osg::Vec3 v2;
-        osg::Vec3 v3;
+        glm::vec3 v1;
+        glm::vec3 v2;
+        glm::vec3 v3;
         bool v1_set,v2_set,v3_set;
 };
 
@@ -101,8 +101,8 @@ public:
     static  void            storeFloatPacked(BitStream &bs,float val);
     static  int             getPackedBitsConditional(BitStream &bs,int numbits);
     static  void            storeStringConditional(BitStream &bs,const std::string &str);
-    static  void            storeVector(BitStream &bs, osg::Vec3 &vec);
-    static  void            storeVectorConditional(BitStream &bs, osg::Vec3 &vec);
+    static  void            storeVector(BitStream &bs, glm::vec3 &vec);
+    static  void            storeVectorConditional(BitStream &bs, glm::vec3 &vec);
     static  void            storeTransformMatrix(BitStream &tgt,const Matrix4x3 &src);
     static  void            storeTransformMatrix(BitStream &tgt,const TransformStruct &src);
 

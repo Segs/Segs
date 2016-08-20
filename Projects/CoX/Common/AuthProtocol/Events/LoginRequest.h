@@ -6,7 +6,7 @@ class LoginRequest : public AuthLinkEvent
 public:
     LoginRequest() : AuthLinkEvent(evLogin),unkval1(0),unkval2(0)
     {}
-    void serializeto(GrowingBuffer &) const
+    void serializeto(GrowingBuffer &buf) const
     {
         assert(!"Not implemented");
     }
@@ -21,7 +21,7 @@ public:
         buf.uGet(unkval2);
     }
     char login[14];
-    char password[14];
+    char password[16];
     uint32_t unkval1;
     uint16_t unkval2;
 };
