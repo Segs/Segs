@@ -10,6 +10,7 @@
 
 // ACE Logging
 #include <string>
+#include <vector>
 
 class IClient;
 class CharacterClient;

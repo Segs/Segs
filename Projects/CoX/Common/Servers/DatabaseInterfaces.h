@@ -2,6 +2,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <vector>
 #include <QtCore/QDateTime>
 struct PreparedArgs;
 class Database;

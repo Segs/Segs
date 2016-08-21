@@ -253,16 +253,16 @@ float PSqlResultRow::getColFloat(const char *column_name)
     return (float)atof(res);
 }
 
-tm PSqlResultRow::getTimestamp(const char *column_name)
+QDateTime PSqlResultRow::getTimestamp(const char *column_name)
 {
-    struct tm ts_result;
+    QDateTime ts_result;
     const char *res = getColString(column_name);
     if(!res)
     {
         ACE_ERROR((LM_ERROR, ACE_TEXT ("(%P|%t) Database: unknown column:%s.\n"), column_name));
         return ts_result;
     }
-    (void)ACE_OS::strptime(res,"%Y-%m-%d %T",&ts_result);
+    ts_result = QDateTime::fromString(res,"yyyy-M-d h:m:s");
     return ts_result;
 }
 

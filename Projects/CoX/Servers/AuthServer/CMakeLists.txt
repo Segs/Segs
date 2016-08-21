@@ -47,12 +47,13 @@ IF(BUILD_SEPARATE)
         ${ACE_LIBRARIES}
         ${PostgreSQL_LIBRARIES}
         ${CMAKE_DL_LIBS}
-        ws2_32
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
-    ADD_DEPENDENCIES(authserver ACE_BUILD Zlib_BUILD)
+    ADD_DEPENDENCIES(authserver ACE_BUILD)
     qt5_use_modules(authserver Core)
-
+    IF(MINGW)
+    target_link_libraries(authserver ws2_32)
+    ENDIF()
 ENDIF(BUILD_SEPARATE)
 
 SEGS_REGISTER_COMPONENT(authserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
