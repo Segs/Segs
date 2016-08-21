@@ -7,15 +7,13 @@
  */
 
 #pragma once
+#include "CRUDP_Packet.h"
+
 #include <unordered_map>
 #include <deque>
-#include <algorithm>
 #include <list>
-#include <map>
-#include <set>
-#include <ace/Message_Queue.h>
+#include <ace/Thread_Mutex.h>
 #include <ace/INET_Addr.h>
-#include "CRUDP_Packet.h"
 class PacketCodecNull;
 class CrudP_Protocol
 {

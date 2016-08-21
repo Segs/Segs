@@ -8,12 +8,9 @@
 
 #pragma once
 
-// ACE Logging
-#include <string>
-#include <ace/Log_Msg.h>
-#include <ace/Singleton.h>
-
 #include "Database.h"
+
+#include <string>
 
 class AccountInfo;
 class AdminDatabase : public IDataBaseCallbacks

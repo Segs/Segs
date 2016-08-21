@@ -10,6 +10,7 @@
 #include "BitStream.h"
 #include "Costume.h"
 
+#include <ace/Log_Msg.h>
 #include <QtCore/QString>
 
 Character::Character()

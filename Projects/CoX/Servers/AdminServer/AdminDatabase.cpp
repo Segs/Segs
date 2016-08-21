@@ -12,7 +12,6 @@
 #include "AdminDatabase.h"
 #include "Client.h"
 
-#include <ace/OS_NS_time.h>
 #include <ace/Log_Msg.h>
 #include <QtCore/QDateTime>
 #include <cassert>

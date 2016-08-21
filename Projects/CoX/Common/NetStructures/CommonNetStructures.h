@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <ace/Log_Msg.h>
 #include <glm/vec3.hpp>
 #include <string>
 #include <sstream>

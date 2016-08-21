@@ -10,8 +10,6 @@
 
 // ACE Logging
 #include <string>
-#include <ace/Log_Msg.h>
-#include <ace/Singleton.h>
 
 #include "Database.h"
 class IClient;

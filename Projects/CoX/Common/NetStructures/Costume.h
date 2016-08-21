@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <ace/Log_Msg.h>
-#include <string>
-#include <sstream>
-#include "BitStream.h"
 #include "CommonNetStructures.h"
+#include "BitStream.h"
+
+#include <string>
+
 class CostumePart : public NetStructure
 {
 public:

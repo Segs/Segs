@@ -5,8 +5,8 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <ace/ACE.h>
 #include "Costume.h"
+
 #include "BitStream.h"
 
 void CostumePart::serializeto( BitStream &bs ) const

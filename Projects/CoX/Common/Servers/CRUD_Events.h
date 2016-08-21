@@ -7,12 +7,12 @@
  */
 
 #pragma once
-#include <ace/Assert.h>
 #include "CRUDP_Protocol.h"
 #include "LinkLevelEvent.h"
 #include "Buffer.h"
 #include "EventProcessor.h"
 #include "CRUDP_Packet.h"
+#include <ace/Log_Msg.h>
 class CRUD_EventTypes
 {
 public:

@@ -6,8 +6,11 @@
  *
  */
 #pragma once
-#include <string>
 #include "CommonNetStructures.h"
+
+#include <ace/Log_Msg.h>
+#include <string>
+
 class MapRef : public NetStructure
 {
 public:

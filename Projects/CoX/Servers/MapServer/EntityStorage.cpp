@@ -9,6 +9,8 @@
 
 #include "Entity.h"
 #include "EntityStorage.h"
+
+#include <algorithm>
 //EntityManager ent_mgr;
 
 EntityManager::EntityManager()

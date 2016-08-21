@@ -2,6 +2,7 @@ SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/Character.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/CommonNetStructures.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Costume.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/Powers.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Entity.cpp
 )
 SET(target_INCLUDE

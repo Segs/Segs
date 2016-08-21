@@ -7,14 +7,13 @@
  */
 
 #pragma once
+#include "DataStorage.h"
+#include "CoXHash.h"
+
 #include <string>
 #include <vector>
-#include <ace/Singleton.h>
-#include <ace/Thread_Mutex.h>
 #include <fstream>
 #include <map>
-#include "CoXHash.h"
-#include "DataStorage.h"
 class BinReadable;
 class CrcVisitor;
 class ClassSchema;
