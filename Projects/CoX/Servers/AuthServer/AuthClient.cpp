@@ -5,13 +5,18 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <cassert>
 #include "AuthClient.h"
-#include "InternalEvents.h"
-/*! \class AuthClient
-        \brief A skeleton class used during authentication.
 
-        This is a Client model extended with functions useful to authorization process.
+#include "AdminServer/AccountInfo.h"
+#include "InternalEvents.h"
+#include "ServerManager.h"
+
+#include <cassert>
+
+/*! \class AuthClient
+    \brief A skeleton class used during authentication.
+
+    This is a Client model extended with functions useful to authorization process.
 */
 AuthClient::AuthClient() :m_game_server(NULL)
 {
@@ -49,7 +54,7 @@ bool AuthClient::isLoggedIn()
         assert(gs!=NULL);
         if(0==gs) // something screwy happened
             return false;
-        ClientConnectionQuery * query = new ClientConnectionQuery(0,m_account_info.account_server_id());
+        ClientConnectionQuery * query = new ClientConnectionQuery(0,m_account_info->account_server_id());
         ClientConnectionResponse *resp = (ClientConnectionResponse *)gs->event_target()->dispatch_sync(query);
         bool still_connected = resp->last_comm!=ACE_Time_Value::max_time;
         resp->release();

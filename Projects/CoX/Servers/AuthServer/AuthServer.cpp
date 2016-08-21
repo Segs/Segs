@@ -8,8 +8,12 @@
  */
 
 // segs includes
-#include "ConfigExtension.h"
 #include "AuthServer.h"
+
+#include "ConfigExtension.h"
+#include "AdminServer/AccountInfo.h"
+#include "AdminServerInterface.h"
+#include "ServerManager.h"
 #include "AuthLink.h"
 #include "AuthHandler.h"
 #include "AuthClient.h"
@@ -125,7 +129,7 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
  * @param  version MapServer version
  * @param  passw server password
  */
-ServerHandle<IAdminServer> AuthServer::AuthenticateMapServer(const ServerHandle<IMapServer> &/*map_h*/,int /*version*/,const string &/*passw*/)
+ServerHandle<IAdminServer> AuthServer::AuthenticateMapServer(const ServerHandle<IMapServer> &/*map_h*/,int /*version*/,const std::string &/*passw*/)
 {
     return ServerHandle<IAdminServer>(0);
 }

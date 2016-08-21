@@ -53,7 +53,7 @@ public:
         int64_t     getColInt64(int colidx);
         bool        getColBool(const char *column_name);
         float       getColFloat(const char *column_name);
-        tm          getTimestamp(const char *column_name);
+        QDateTime   getTimestamp(const char *column_name);
         vBinData    getColBinary(const char *column_name);
 };
 class PSqlDatabase : public Database

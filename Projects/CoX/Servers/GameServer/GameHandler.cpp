@@ -1,5 +1,6 @@
 #include "GameHandler.h"
 #include "GameEvents.h"
+#include "AdminServer/AccountInfo.h"
 #include "AdminServerInterface.h"
 #include "ServerManager.h"
 #include "GameLink.h"

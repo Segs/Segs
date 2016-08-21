@@ -5,7 +5,6 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <ace/ACE.h>
 #include "CoXHash.h"
 
 template<class KEY,class VALUE,class COMPARE_FUNCTOR>

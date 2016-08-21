@@ -4,6 +4,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/AdminServerInterface.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthServerInterface.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/GameServerInterface.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/MapServerInterface.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/Client.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/ServerSupport.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/RoamingServer.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/ServerHandle.cpp
@@ -64,5 +65,5 @@ INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 
 ADD_LIBRARY(cox_server_common STATIC ${target_SOURCES})
 ADD_DEPENDENCIES(cox_server_common ${target_DEPENDS})
-
+qt5_use_modules(cox_server_common Core)
 SEGS_REGISTER_COMPONENT(cox_server_common "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

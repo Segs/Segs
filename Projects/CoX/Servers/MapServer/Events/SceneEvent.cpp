@@ -1,6 +1,8 @@
-#include <ace/Assert.h>
 #include "Events/SceneEvent.h"
 #include "MapEvents.h"
+
+#include <ace/Log_Msg.h>
+
 SceneEvent::SceneEvent():MapLinkEvent(MapEventTypes::evScene)
 {
 }
@@ -60,6 +62,7 @@ void SceneEvent::getGrpElem(BitStream &src,int idx)
             reqWorldUpdateIfPak(src);
     }
 }
+
 void SceneEvent::reqWorldUpdateIfPak(BitStream &)
 {
     //src.GetBits(1);

@@ -5,7 +5,7 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <ace/ACE.h>
+#include <ace/Log_Msg.h>
 #include "DataStorage.h"
 #include "ReadableStructures.h"
 bool BinStore::check_bin_version_and_crc(const ClassSchema *)

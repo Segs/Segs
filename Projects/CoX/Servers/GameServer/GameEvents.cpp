@@ -6,7 +6,7 @@
 *
 
 */
-#include <ace/ACE.h>
+#include <ace/Log_Msg.h>
 #include "HashStorage.h"
 #include "GameEvents.h"
 #include "CharacterClient.h"

@@ -5,15 +5,19 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <cassert>
-#include <sstream>
-#include <ace/OS_NS_time.h>
-#include <ace/Log_Msg.h>
-
 // segs includes
 #include "AdminServer.h"
+
+#include "AccountInfo.h"
 #include "AdminDatabase.h"
 #include "Client.h"
+
+#include <ace/OS_NS_time.h>
+#include <ace/Log_Msg.h>
+#include <QtCore/QDateTime>
+#include <cassert>
+#include <sstream>
+
 
 using namespace std;
 AdminDatabase::AdminDatabase()
@@ -132,7 +136,7 @@ bool AdminDatabase::GetAccount( AccountInfo & client,DbResults &results )
     DbResultRow r=results.nextRow();
     if(!r.valid()) // TODO: handle case of multiple accounts with same name ?
         return false;
-    struct tm creation;
+    QDateTime creation;
     client.m_acc_server_acc_id  = (uint64_t)r.getColInt64("id");
     client.m_login              = r.getColString("username");
     client.m_access_level       = uint8_t(r.getColInt16("access_level"));

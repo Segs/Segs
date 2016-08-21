@@ -25,22 +25,6 @@ ExternalProject_add(
 SET(SQLite_path ${ThirdParty_Install_Dir} PARENT_SCOPE)
 SET(SQLite_LIBRARIES sqlite PARENT_SCOPE)
 
-ExternalProject_add(
-   Zlib_BUILD
-   SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/zlib
-   DOWNLOAD_COMMAND ""
-   UPDATE_COMMAND ""
-   INSTALL_DIR ${ThirdParty_Install_Dir}
-   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-)
-SET(ZLIB_path ${ThirdParty_Install_Dir} PARENT_SCOPE)
-SET(ZLIB_INCLUDE_DIR ${ZLIB_path}/include PARENT_SCOPE)
-IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
-    SET(ZLIB_LIBRARIES zlibd PARENT_SCOPE)
-ELSE()
-    SET(ZLIB_LIBRARIES z PARENT_SCOPE)
-endif()
-
 ########################################################################################
 # Optional components
 ########################################################################################

@@ -1,5 +1,4 @@
 #pragma once
-#include <ace/SOCK_Stream.h>
 #include "LinkLevelEvent.h"
 #include "Buffer.h"
 class AuthLink;

@@ -7,13 +7,15 @@
  */
 #pragma once
 
+#include "DatabaseInterfaces.h"
+
 #include <string>
 #include <cassert>
 #include <vector>
 #include <string>
 #include <stdint.h>
+#include <QtCore/QDateTime>
 
-#include "DatabaseInterfaces.h"
 using std::vector;
 using std::string;
 
@@ -40,7 +42,7 @@ public:
         int64_t         getColInt64(int col)                  { return m_impl->getColInt64(col);}
         bool            getColBool(const char *column_name)   { return m_impl->getColBool(column_name);}
         float           getColFloat(const char *column_name)  { return m_impl->getColFloat(column_name);}
-        struct tm       getTimestamp(const char *column_name) { return m_impl->getTimestamp(column_name);}
+        QDateTime       getTimestamp(const char *column_name) { return m_impl->getTimestamp(column_name);}
         IResultRow::vBinData    getColBinary(const char *column_name) { return m_impl->getColBinary(column_name); }
 
 };

@@ -31,7 +31,7 @@ class ConsoleCommand;
 class ClientQuit;
 class ConnectRequest;
 
-
+class MapServer;
 class SEGSTimer;
 class InputState;
 class World;

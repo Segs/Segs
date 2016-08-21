@@ -7,13 +7,12 @@
  */
 
 #pragma once
+#include "CoXHash.h"
+
 #include <string>
 #include <vector>
-#include <ace/Singleton.h>
-#include <ace/Thread_Mutex.h>
 #include <fstream>
 #include <map>
-#include "CoXHash.h"
 class BinReadable;
 class CrcVisitor
 {

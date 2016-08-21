@@ -9,6 +9,8 @@
 
 #include "NetCommandManager.h"
 #include "MapClient.h"
+#include "AdminServer/AccountInfo.h"
+
 static void FillCommands()
 {
     NetCommandManager *cmd_manager = NetCommandManagerSingleton::instance();

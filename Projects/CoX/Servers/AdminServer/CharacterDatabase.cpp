@@ -7,10 +7,6 @@
  */
 
 // segs includes
-#include <cstdlib>
-#include <cstdio>
-#include <ace/OS_NS_time.h>
-#include <ace/Log_Msg.h>
 
 #include "CharacterDatabase.h"
 #include "AccountInfo.h"
@@ -18,6 +14,9 @@
 #include "Character.h"
 #include "Costume.h"
 
+#include <cstdlib>
+#include <cstdio>
+#include <ace/Log_Msg.h>
 using namespace std;
 
 CharacterDatabase::~CharacterDatabase()

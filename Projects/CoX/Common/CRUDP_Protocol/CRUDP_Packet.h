@@ -7,7 +7,6 @@
  */
 
 #pragma once
-#include <ace/Log_Msg.h>
 #include "BitStream.h"
 #include <set>
 #include <list>

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <QtCore/QDateTime>
 struct PreparedArgs;
 class Database;
 class DbResults;
@@ -16,7 +17,7 @@ public:
     virtual int64_t         getColInt64(int colidx)=0;
     virtual bool            getColBool(const char *column_name)=0;
     virtual float           getColFloat(const char *column_name)=0;
-    virtual struct tm       getTimestamp(const char *column_name)=0;
+    virtual QDateTime       getTimestamp(const char *column_name)=0;
     virtual vBinData        getColBinary(const char *column_name)=0;
 };
 class IResult {

@@ -8,7 +8,9 @@
 
 // segs includes
 #include "AdminServer.h"
+
 #include "AdminDatabase.h"
+#include "AccountInfo.h"
 #include "Client.h"
 #include "ConfigExtension.h"
 #include "CharacterDatabase.h"

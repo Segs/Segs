@@ -8,7 +8,6 @@
  */
 
 #pragma once
-#include <ace/Assert.h>
 #include "LinkLevelEvent.h"
 #include "BitStream.h"
 #include "CRUD_Link.h"

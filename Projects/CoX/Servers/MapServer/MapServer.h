@@ -9,30 +9,18 @@
 
 #pragma once
 
-#include <string>
-#include <map>
-
-#include <ace/ACE.h>
-#include <ace/Synch.h>
-#include <ace/INET_Addr.h>
-#include <ace/SOCK_Dgram.h>
-#include <ace/Message_Queue.h>
-#include <ace/Message_Block.h>
-#include <ace/Event_Handler.h>
-#include <ace/Svc_Handler.h>
-#include <ace/Reactor_Notification_Strategy.h>
-
-#include "ClientManager.h"
 #include "MapServerInterface.h"
 #include "ServerEndpoint.h"
 #include "MapLink.h"
-#include "MapEvents.h"
 #include "MapManager.h"
+
+#include <string>
 
 class Net;
 class MapServerEndpoint;
 class MapClient;
 class MapInstance;
+class GameServerInterface;
 
 class MapServer : public IMapServer
 {

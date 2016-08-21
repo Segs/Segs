@@ -5,10 +5,12 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <ace/OS_NS_strings.h>
-#include "BitStream.h"
 #include "Character.h"
+
+#include "BitStream.h"
 #include "Costume.h"
+
+#include <QtCore/QString>
 
 Character::Character()
 {
@@ -43,7 +45,8 @@ void Character::reset()
 
 bool Character::isEmpty()
 {
-    return (0==ACE_OS::strcasecmp(m_name.c_str(),"EMPTY")&&(0==ACE_OS::strcasecmp(m_class_name.c_str(),"EMPTY")));
+    return ( 0==QString::fromStdString(m_name).compare("EMPTY",Qt::CaseInsensitive)&&
+            (0==QString::fromStdString(m_class_name).compare("EMPTY",Qt::CaseInsensitive)));
 }
 
 void Character::serializefrom( BitStream &src)

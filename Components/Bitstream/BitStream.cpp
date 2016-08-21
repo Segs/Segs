@@ -7,10 +7,11 @@
  */
 
 #include "BitStream.h"
+
 #include <zlib.h>
+#include <QByteArray>
 #include <cstring>
 #include <cassert>
-
 #include <algorithm>
 
 // bitstream buffer is padded-out by 7 bytes, to allow safe 64bit reads/writes by new routines
@@ -629,12 +630,11 @@ void BitStream::CompressAndStoreString(const char *str)
     size_t decompLen = strlen(str) + 1;
 
     uLongf len = (decompLen * 1.0125) + 12;
-    uint8_t *buf = new uint8_t[len];
-    compress2(buf, &len, (const Bytef *)str, decompLen, 5);
+    QByteArray ba = qCompress(reinterpret_cast<const uint8_t *>(str),decompLen,5);
+    len = ba.size();
     StorePackedBits(1, len);        //  Store compressed len
     StorePackedBits(1, decompLen);  //  Store decompressed len
-    StoreBitArray(buf,len << 3);    //  Store compressed string
-    delete [] buf;
+    StoreBitArray((const uint8_t *)ba.data(),len << 3);    //  Store compressed string
 }
 void BitStream::GetAndDecompressString(std::string &tgt)
 {
@@ -643,11 +643,9 @@ void BitStream::GetAndDecompressString(std::string &tgt)
     uint32_t len = 0;
     len         = GetPackedBits(1);     //  Store compressed len
     decompLen   = GetPackedBits(1);     //  decompressed len
-    uint8_t *dst = new uint8_t[decompLen];
     uint8_t *src = new uint8_t[len];
     GetBitArray(src,len<<3);
-    uncompress(dst,(uLongf *)&decompLen,src,len);
-    tgt.assign((char *)dst,decompLen);
+    QByteArray ba=qUncompress(src,len);
+    tgt.assign((const char *)ba.data(),ba.size());
     delete [] src;
-    delete [] dst;
 }

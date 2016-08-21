@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.10)
 
 PROJECT(SEGS)
 IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
-    add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX)
+    add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX -DACE_BUILD_DLL)
 ELSE()
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11"  )
 endif()
@@ -29,6 +29,7 @@ add_subdirectory(3rd_party)
 LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/lib)
 
 find_package(Threads REQUIRED)
+find_package(Qt5Core REQUIRED)
 
 if(PostgreSQL_FOUND)
 link_directories(${PostgreSQL_LIBRARY_DIRS})

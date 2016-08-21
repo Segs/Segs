@@ -7,12 +7,10 @@
 
  */
 
-//#include <ace/SOCK_Stream.h>
-#include "ServerManager.h"
-#include <ace/Message_Block.h>
-
-#include "InterfaceManager.h"
 #include "MapServer.h"
+
+#include "ServerManager.h"
+#include "InterfaceManager.h"
 #include "ConfigExtension.h"
 #include "AdminServerInterface.h"
 #include "MapClient.h"
@@ -20,6 +18,8 @@
 #include "MapInstance.h"
 #include "Entity.h"
 #include "SEGSTimer.h"
+
+#include <ace/Log_Msg.h>
 // Template instantiation
 template class ClientStore<MapClient>;
 

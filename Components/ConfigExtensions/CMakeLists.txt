@@ -14,6 +14,7 @@ ${target_INCLUDE}
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(ConfigExtensions ${target_SOURCES})
+qt5_use_modules(ConfigExtensions Core)
 SEGS_REGISTER_COMPONENT(ConfigExtensions "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
 
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})

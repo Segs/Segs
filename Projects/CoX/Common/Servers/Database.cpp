@@ -7,15 +7,12 @@
  */
 
 // This module contains code to access our database where accounts and characters are stored
+// segs Includes
+#include "Database.h"
+
 #include <cassert>
 #include <sstream>
 #include <string.h>
-#include <ace/Log_Msg.h>
-#include <ace/OS_NS_time.h>
-#include <ace/OS_NS_Thread.h>
-
-// segs Includes
-#include "Database.h"
 
 void PreparedArgs::add_param( const uint8_t *bytes,size_t len,bool binary )
 {

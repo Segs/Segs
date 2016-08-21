@@ -29,7 +29,7 @@ INCLUDE_DIRECTORIES(${ACE_path})
 INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 
 ADD_LIBRARY(network_structures STATIC ${target_SOURCES})
-
+qt5_use_modules(network_structures Core)
 ADD_DEPENDENCIES(network_structures ${target_DEPENDS} cereal_IMP)
 
 SEGS_REGISTER_COMPONENT(network_structures "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

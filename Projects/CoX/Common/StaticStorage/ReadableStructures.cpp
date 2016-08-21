@@ -5,8 +5,10 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <ace/ACE.h>
 #include "ReadableStructures.h"
+
+#include <ace/Log_Msg.h>
+
 using namespace std;
 DEF_SCHEMA(ColorEntry);
 DEF_SCHEMA(ColorStorage);

@@ -7,11 +7,14 @@
  */
 
 //#include "GameProtocol.h"
-#include <cassert>
-#include "PacketCodec.h"
 #include "CRUDP_Protocol.h"
+
+#include "PacketCodec.h"
+
+#include <cassert>
 #include <zlib.h>
-//#include <ace/OS_NS
+#include <ace/Guard_T.h>
+#include <ace/Log_Msg.h>
 //#define LOG_PACKETS 1
 
 /*
@@ -321,13 +324,13 @@ vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
     return res;
 
 }
-uint8_t * compressStream(BitStream &stream)
-{
-    uLongf comp_length =(uLongf )(12+1.1*stream.GetReadableDataSize());
-    uint8_t *dest= new uint8_t[comp_length];
-    compress(dest,&comp_length,stream.read_ptr(),stream.GetReadableDataSize());
-    return dest;
-}
+//uint8_t * compressStream(BitStream &stream)
+//{
+//    uLongf comp_length =(uLongf )(12+1.1*stream.GetReadableDataSize());
+//    uint8_t *dest= new uint8_t[comp_length];
+//    compress(dest,&comp_length,stream.read_ptr(),stream.GetReadableDataSize());
+//    return dest;
+//}
 void CrudP_Protocol::sendLargePacket(CrudP_Packet *p)
 {
     static int sib_id=0;

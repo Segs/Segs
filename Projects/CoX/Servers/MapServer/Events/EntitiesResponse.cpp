@@ -1,13 +1,14 @@
 #define _USE_MATH_DEFINES
-#include <cmath>
-#include <ace/Assert.h>
-#include "Entity.h"
 #include "Events/EntitiesResponse.h"
+
+#include "Entity.h"
 #include "MapEvents.h"
 #include "MapClient.h"
 //#include "MapHandler.h"
 #include "MapInstance.h"
-//#define LOG_
+
+#include <cmath>
+
 //! EntitiesResponse is sent to a client to inform it about the current world state.
 EntitiesResponse::EntitiesResponse(MapClient *cl) :
     MapLinkEvent(MapEventTypes::evEntitites), m_finalized_into(2048)

@@ -12,10 +12,6 @@
 #include <vector>
 #include <stdint.h>
 
-#include <ace/Singleton.h>
-#include <ace/Thread_Mutex.h>
-#include <ace/Null_Mutex.h>
-
 #define mix(a,b,c) \
 { \
     a -= b; a -= c; a ^= (c>>13); \

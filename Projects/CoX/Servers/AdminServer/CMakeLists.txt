@@ -27,5 +27,5 @@ ADD_LIBRARY(adminserver_lib STATIC ${target_SOURCES})
 
 TARGET_LINK_LIBRARIES(adminserver_lib ${target_DEPENDS} ${SQLite_LIBRARIES})
 ADD_DEPENDENCIES(adminserver_lib ${target_DEPENDS} ${SQLite_BUILD})
-
+qt5_use_modules(adminserver_lib Core)
 SEGS_REGISTER_COMPONENT(adminserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

@@ -61,7 +61,7 @@ virtual                             ~AuthServer();
         bool                        Run(void);
         bool                        ShutDown(const std::string &reason="No particular reason");
 
-        ServerHandle<IAdminServer>  AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const string &passw); // World-cluster interface
+        ServerHandle<IAdminServer>  AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw); // World-cluster interface
         AuthClient *                GetClientByLogin(const char *);
 protected:
 

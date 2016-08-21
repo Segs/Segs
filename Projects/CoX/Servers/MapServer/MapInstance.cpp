@@ -8,6 +8,7 @@
  */
 #include "MapInstance.h"
 #include "AdminServer.h"
+#include "AdminServer/AccountInfo.h"
 #include "version.h"
 #include "MapEvents.h"
 #include "MapClient.h"

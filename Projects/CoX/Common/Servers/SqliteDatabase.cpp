@@ -1,9 +1,9 @@
 #include "SqliteDatabase.h"
 
+#include <QtCore/QDate>
+#include <QtCore/QDateTime>
 #include <sqlite/sqlite3.h>
 #include <ace/Log_Msg.h>
-#include <ace/OS_NS_time.h>
-#include <ace/OS_NS_Thread.h>
 #include <map>
 
 namespace {
@@ -79,14 +79,12 @@ public:
             return 0;
         return sqlite3_column_double(m_query,idx);
     }
-    tm getTimestamp(const char *column_name) override
+    QDateTime getTimestamp(const char *column_name) override
     {
-        struct tm ts_result;
         int idx = column_idx_or_error(column_name);
         if(idx==-1)
-            return ts_result;
-        (void)ACE_OS::strptime((const char *)sqlite3_column_text(m_query,idx),"%Y-%m-%d %T",&ts_result);
-        return ts_result;
+            return QDateTime();
+        return QDateTime::fromString((const char *)sqlite3_column_text(m_query,idx),"yyyy-M-d h:m:s");
     }
     vBinData getColBinary(const char *column_name) override
     {

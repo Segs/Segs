@@ -36,21 +36,23 @@ SET (target_SOURCES
 #FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LIBRARIES is not a cache variable, so we  have to do this here again
 
 ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
-
+qt5_use_modules(authserver_lib Core)
 IF(BUILD_SEPARATE)
     ADD_DEFINITIONS(-DSEPARATE)
     ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
     TARGET_LINK_LIBRARIES(authserver
         authserver_lib ${target_DEPENDS}
         ${MRuby_LIBRARY}
-        ${ZLIB_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
         ${ACE_LIBRARIES}
-        ${PostgreSQL_LIBRARIES} ${OPENSCENEGRAPH_LIBRARIES}
+        ${PostgreSQL_LIBRARIES}
         ${CMAKE_DL_LIBS}
+        ws2_32
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
     ADD_DEPENDENCIES(authserver ACE_BUILD Zlib_BUILD)
+    qt5_use_modules(authserver Core)
+
 ENDIF(BUILD_SEPARATE)
 
 SEGS_REGISTER_COMPONENT(authserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

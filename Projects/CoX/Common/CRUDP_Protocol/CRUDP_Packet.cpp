@@ -8,6 +8,9 @@
 
 #include "CRUDP_Packet.h"
 
+#include <ace/Log_Msg.h>
+#include <QtCore/QDebug>
+
 CrudP_Packet::CrudP_Packet()
 {
     m_stream        = new BitStream(maxPacketSize);
@@ -187,7 +190,7 @@ void CrudP_Packet::dump()
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tDebug info : %d \n"),(int)m_hasDebugInfo));
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tContains %d acks\n"),getNumAcks()));
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tCompressed %d\n"),m_compressed));
-    ACE_HEX_DUMP((LM_DEBUG,(char *)m_stream->read_ptr(),m_stream->GetReadableDataSize(),"contents"));
+    //ACE_HEX_DUMP((LM_DEBUG,(char *)m_stream->read_ptr(),m_stream->GetReadableDataSize(),"contents"));
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CrudP_Packet debug complete\n")));
 }
 

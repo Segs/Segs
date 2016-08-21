@@ -7,6 +7,8 @@
  */
 
 #pragma once
+#include "Client.h"
+#include "AdminServer/AccountInfo.h"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -14,7 +16,6 @@
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
 
-#include "Client.h"
 
 template <class CLIENT_CLASS>
 class ClientStore
