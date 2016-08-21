@@ -1,16 +1,14 @@
 #pragma once
-#include <map>
-#include <unordered_set>
-#include <ace/Singleton.h>
-#include <ace/Thread_Mutex.h>
-#include <ace/Guard_T.h>
-#include <ace/Addr.h>
 #include "ClientManager.h"
 #include "GameLink.h"
 #include "GameEvents.h"
 #include "EventProcessor.h"
 #include "InternalEvents.h"
 
+#include <map>
+#include <unordered_set>
+#include <ace/Singleton.h>
+#include <ace/Thread_Mutex.h>
 class CharacterClient;
 class GameServer;
 class GameHandler : public EventProcessor

@@ -8,16 +8,14 @@
  */
 
 #pragma once
-
-#include <string>
-#include <vector>
-#include <map>
-#include <ace/OS_NS_time.h>
 #include "ServerManager.h"
 #include "Client.h"
 #include "MapLink.h"
 #include "CharacterDatabase.h"
 
+#include <string>
+#include <vector>
+#include <map>
 // skeleton class used during authentication
 class MapHandler;
 class MapInstance;

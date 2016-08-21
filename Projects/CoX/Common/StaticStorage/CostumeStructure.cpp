@@ -5,7 +5,6 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <ace/ACE.h>
 #include "CostumeStructure.h"
 
 DEF_SCHEMA(CostumeStorage);
