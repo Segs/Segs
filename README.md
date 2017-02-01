@@ -6,3 +6,4 @@ project targeting super-hero related games. We aim to provide a comprehensive se
 components.
 * Our [redmine](http://redmine.nemerle.eu/projects/segs "redmine").
 * Our target [coding style](http://github.com/Segs/Segs/blob/master/docs/CodingStyle.txt.md "style").
+* Lord Ozi shall rise again.
