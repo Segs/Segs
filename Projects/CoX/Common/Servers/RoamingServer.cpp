@@ -2,6 +2,11 @@
 #include "ServerHandle.h"
 #include "InterfaceManager.h"
 #include "ConfigExtension.h"
+
+#include <QtCore/QSettings>
+#include <QtCore/QString>
+#include <QtCore/QFile>
+#include <QtCore/QDebug>
 /**
  * @return int
  * @param  configpath This is a platform specific path to a config file containing
@@ -9,19 +14,28 @@
  */
 bool RoamingServer::ReadConfig(const std::string &inipath)
 {
-    StringsBasedCfg config;
-    ACE_Ini_ImpExp  config_importer(config);
-    ACE_Configuration_Section_Key root;
-    if (config.open () == -1)
+    if (!QFile::exists(inipath.c_str()))
     {
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("%p\n"), ACE_TEXT ("config")),false);
+        qCritical() << "Config file" << inipath.c_str() <<"does not exist.";
+        return false;
     }
-    if (config_importer.import_config (inipath.c_str()) == -1)
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) RoamingServer: Unable to open config file : %s\n"), inipath.c_str()),false);
-    if(-1==config.open_section(config.root_section(),"RoamingServer",1,root))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) RoamingServer: Config file %s is missing [RoamingServer] section\n"), inipath.c_str()),false);
-    config.get_addr(root,ACE_TEXT("location_addr"),m_authaddr,ACE_INET_Addr(2106,"127.0.0.1"));
-    config.get_string_value(root,ACE_TEXT("auth_pass"),m_passw,"");
+    QSettings config(inipath.c_str(),QSettings::IniFormat);
+    config.beginGroup("RoamingServer");
+    if(!config.contains("location_addr"))
+        qDebug() << "Config file is missing 'location_addr' entry, will try to use default";
+
+    QString location_addr = config.value("location_addr","127.0.0.1:2106").toString();
+    if(!parseAddress(location_addr,m_authaddr))
+    {
+        qCritical() << "Badly formed IP address" << location_addr;
+        return false;
+    }
+    if(!config.contains("auth_pass")) {
+        qDebug() << "Config file is missing 'auth_pass' entry, will try to use default";
+    }
+    m_passw = config.value("auth_pass","").toString().toStdString();
+
+    config.endGroup();
     return true;
 }
 

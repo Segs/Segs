@@ -18,6 +18,11 @@
 #include "AuthHandler.h"
 #include "AuthClient.h"
 
+#include <QtCore/QSettings>
+#include <QtCore/QString>
+#include <QtCore/QFile>
+#include <QtCore/QDebug>
+
 /*!
  * @class AuthServer
  * @brief main class of the authentication server.
@@ -48,19 +53,21 @@ bool AuthServer::ReadConfig(const std::string &inipath)
 {
     if(m_running)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AuthServer: Already initialized and running\n") ),false);
-    StringsBasedCfg config;
-    if (config.open () == -1)
+    if (!QFile::exists(inipath.c_str()))
     {
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("%p\n"), ACE_TEXT ("config")),false);
+        qCritical() << "Config file" << inipath.c_str() <<"does not exist.";
+        return false;
     }
-    ACE_Ini_ImpExp config_importer (config);
-    ACE_Configuration_Section_Key root;
-    if (config_importer.import_config (inipath.c_str()) == -1)
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AuthServer: Unable to open config file : %s\n"), inipath.c_str()),false);
-    if(-1==config.open_section(config.root_section(),"AuthServer",1,root))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("%p AuthServer: Config file %s is missing [AuthServer] section\n"), inipath.c_str()),false);
+    QSettings config(inipath.c_str(),QSettings::IniFormat);
 
-    config.get_addr(root,ACE_TEXT ("listen_addr"),m_location,ACE_INET_Addr(2106,"127.0.0.1"));
+    config.beginGroup("AuthServer");
+    QString location_addr = config.value("listen_addr","127.0.0.1:2106").toString();
+    if(!parseAddress(location_addr,m_location))
+    {
+        qCritical() << "Badly formed IP address" << location_addr;
+        return false;
+    }
+    config.endGroup();
     return true;
 }
 /*!

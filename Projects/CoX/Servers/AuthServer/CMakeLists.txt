@@ -44,7 +44,7 @@ IF(BUILD_SEPARATE)
         authserver_lib ${target_DEPENDS}
         ${MRuby_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
-        ${ACE_LIBRARIES}
+        ace_IMP
         ${PostgreSQL_LIBRARIES}
         ${CMAKE_DL_LIBS}
     )
