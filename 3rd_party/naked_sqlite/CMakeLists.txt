@@ -12,5 +12,8 @@ ENDIF()
 IF(APPLE) # warning this is not foolproof
     SET(OS_NAME macosx)
 ENDIF()
+IF(MSVC)
+	set(CMAKE_DEBUG_POSTFIX "d")
+ENDIF()
 
 ADD_SUBDIRECTORY( sqlite )

@@ -12,7 +12,6 @@
 #include "PacketCodec.h"
 
 #include <cassert>
-#include <zlib.h>
 #include <ace/Guard_T.h>
 #include <ace/Log_Msg.h>
 //#define LOG_PACKETS 1

@@ -1,8 +1,8 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
 PROJECT(SEGS)
-IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
-    add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX -DACE_BUILD_DLL)
+IF(MSVC)
+    add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX)
 ELSE()
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11"  )
 endif()
@@ -27,7 +27,7 @@ SET(PostgreSQL_ADDITIONAL_VERSIONS "9.2")
 ########################################################################################
 set(ThirdParty_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/3rd_party/built)
 add_subdirectory(3rd_party)
-
+add_definitions(-DACE_HAS_DLL=1) #FIXME: this should be set by per-target add_definitions
 LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/lib)
 
 find_package(Threads REQUIRED)

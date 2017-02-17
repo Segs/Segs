@@ -37,6 +37,29 @@ _AdminServer::~_AdminServer(void)
 {
     (void)ShutDown();
 }
+static void createDefaultConfigEntries(const std::string &inipath) {
+    QSettings config(inipath.c_str(),QSettings::IniFormat);
+
+    config.beginGroup("AdminServer");
+        config.beginGroup("AccountDatabase");
+            config.setValue("db_driver","sqlite");
+            config.value("db_host","127.0.0.1").toString();
+            config.value("db_port","5432").toString();
+            config.value("db_name","segs").toString();
+            config.value("db_user","none").toString();
+            config.value("db_pass","none").toString();
+        config.endGroup();
+        config.beginGroup("CharacterDatabase");
+            config.setValue("db_driver","sqlite");
+            config.value("db_host","127.0.0.1").toString();
+            config.value("db_port","5432").toString();
+            config.value("db_name","segs_game").toString();
+            config.value("db_user","none").toString();
+            config.value("db_pass","none").toString();
+        config.endGroup();
+    config.endGroup();
+
+}
 bool _AdminServer::ReadConfig(const std::string &inipath)
 {
     if(m_running)
@@ -48,7 +71,6 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
         return false;
     }
     QSettings config(inipath.c_str(),QSettings::IniFormat);
-
     config.beginGroup("AdminServer");
 
     config.beginGroup("AccountDatabase");
@@ -58,6 +80,7 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
     QString dbname = config.value("db_name","segs").toString();
     QString dbuser = config.value("db_user","none").toString();
     QString dbpass = config.value("db_pass","none").toString();
+    config.endGroup();
     Database *db1;
     if(dbdriver=="pgsql") {
 #ifdef HAVE_POSTGRES
@@ -72,7 +95,7 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
     }
     db1->setConnectionConfiguration(qPrintable(dbhost),qPrintable(dbport),qPrintable(dbname),qPrintable(dbuser),qPrintable(dbpass));
     m_db->setDb(db1);
-    config.endGroup();
+
     config.beginGroup("CharacterDatabase");
     dbdriver = config.value("db_driver","sqlite").toString();
     dbhost = config.value("db_host","127.0.0.1").toString();
@@ -80,7 +103,7 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
     dbname = config.value("db_name","segs_game").toString();
     dbuser = config.value("db_user","none").toString();
     dbpass = config.value("db_pass","none").toString();
-
+    config.endGroup();
     Database *db2;
     if(dbdriver=="pgsql") {
 #ifdef HAVE_POSTGRES
@@ -96,7 +119,6 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
 
     db2->setConnectionConfiguration(qPrintable(dbhost),qPrintable(dbport),qPrintable(dbname),qPrintable(dbuser),qPrintable(dbpass));
     m_char_db->setDb(db2);
-    config.endGroup();
     return true;
 }
 bool _AdminServer::Run()

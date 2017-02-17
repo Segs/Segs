@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <stdlib.h>
+#include <memory>
 #include <ace/ACE.h>
 #include <ace/Get_Opt.h>
 #include <ace/ACE.h>
@@ -156,7 +157,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     const size_t N_THREADS = 1;
     ACE_TP_Reactor threaded_reactor;
     ACE_Reactor new_reactor(&threaded_reactor); //create concrete reactor
-    auto_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes
+    std::unique_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes
 
     ServerStopper st; // it'll register itself with current reactor, and shut it down on sigint
     new_reactor.register_handler(interesting_signals,&st);
