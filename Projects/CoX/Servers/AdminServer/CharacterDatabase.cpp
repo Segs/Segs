@@ -177,7 +177,7 @@ bool CharacterDatabase::fill( CharacterCostume *c)
                               m_prepared_fill->prepared_sql().c_str(),results.message()),false);
         r = results.nextRow();
         if(!r.valid()) {
-            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill no costu,es.\n")),false);
+            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill no costumes.\n")),false);
             return false;
         }
     }
