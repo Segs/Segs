@@ -1,18 +1,34 @@
 include(ExternalProject)
+function(encode_lib_name basename)
+    if(UNIX)
+        set(${basename}_LIBRARY_STATIC lib${basename}.a PARENT_SCOPE)
+        set(${basename}_LIBRARY_SHARED lib${basename}.so PARENT_SCOPE)
+        set(${basename}_LIBRARY_STATIC_D lib${basename}.a PARENT_SCOPE)
+        set(${basename}_LIBRARY_SHARED_D lib${basename}.so PARENT_SCOPE)
+    elseif(MSVC)
+        set(${basename}_LIBRARY_STATIC ${basename}.lib PARENT_SCOPE)
+        set(${basename}_LIBRARY_SHARED ${basename}.lib PARENT_SCOPE)
+        set(${basename}_LIBRARY_STATIC_D ${basename}d.lib PARENT_SCOPE)
+        set(${basename}_LIBRARY_SHARED_D ${basename}d.dll PARENT_SCOPE)
+    elseif(MINGW)
+        set(${basename}_LIBRARY_STATIC lib${basename}.a PARENT_SCOPE)
+        set(${basename}_LIBRARY_SHARED ${basename}.dll PARENT_SCOPE)
+        set(${basename}_LIBRARY_STATIC_D lib${basename}.a PARENT_SCOPE)
+        set(${basename}_LIBRARY_SHARED_D ${basename}.dll PARENT_SCOPE)
+    endif()
+endfunction()
+function(libname tgt basename)
+    encode_lib_name(${basename})
+    set(${tgt}_LIBRARY_STATIC ${ThirdParty_Install_Dir}/lib/${${basename}_LIBRARY_STATIC} PARENT_SCOPE)
+    set(${tgt}_LIBRARY_SHARED ${ThirdParty_Install_Dir}/lib/${${basename}_LIBRARY_SHARED} PARENT_SCOPE)
+    set(${tgt}_LIBRARY_STATIC_D ${ThirdParty_Install_Dir}/lib/${${basename}_LIBRARY_STATIC_D} PARENT_SCOPE)
+    set(${tgt}_LIBRARY_SHARED_D ${ThirdParty_Install_Dir}/lib/${${basename}_LIBRARY_SHARED_D} PARENT_SCOPE)
+endfunction()
+
+link_directories(${ThirdParty_Install_Dir}/lib)
 
 include(ExternalProject_CEREAL.cmake)
-
-
-ExternalProject_Add(
-   ACE_BUILD
-   URL http://nemerle.eu/naked_ace.tar.gz
-   SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/naked_ace
-   UPDATE_COMMAND ""
-   INSTALL_DIR ${ThirdParty_Install_Dir}
-   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-)
-SET(ACE_path ${ThirdParty_Install_Dir} PARENT_SCOPE)
-SET(ACE_LIBRARIES ACE PARENT_SCOPE)
+include(ExternalProject_ACE.cmake)
 
 ExternalProject_add(
    SQLite_BUILD
