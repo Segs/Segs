@@ -31,6 +31,7 @@ INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 SET (target_SOURCES
   ${target_CPP}
   ${target_INCLUDE}
+  $<TARGET_OBJECTS:gameData>
 )
 
 #FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LIBRARIES is not a cache variable, so we  have to do this here again

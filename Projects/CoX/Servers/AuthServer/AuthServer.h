@@ -7,10 +7,16 @@
  */
 
 #pragma once
+// segs includes
 
-#include <unordered_map>
-#include <list>
-#include <string>
+#include "Client.h"
+#include "Server.h"
+#include "ServerHandle.h"
+#include "AuthServerInterface.h"
+
+// QT includes
+#include <QtCore/QHash>
+#include <QtCore/QString>
 
 // ACE includes
 #include <ace/ACE.h>
@@ -20,17 +26,14 @@
 #include <ace/Acceptor.h>
 #include <ace/SOCK_Acceptor.h>
 
-// segs includes
-
-#include "Client.h"
-#include "Server.h"
-#include "ServerHandle.h"
-#include "AuthServerInterface.h"
+#include <unordered_map>
+#include <list>
+#include <string>
 
 class AuthLink;
 typedef ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR> ClientAcceptor;
 class IClient;
-typedef std::unordered_map<std::string,AuthClient *> hmClients;
+typedef QHash<QString,AuthClient *> hmClients;
 class AuthClient;
 class AuthServer  : public IAuthServer
 {

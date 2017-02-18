@@ -8,6 +8,7 @@
 #include "CommonNetStructures.h"
 #include "Filesystem.h"
 #include "CoXHash.h"
+#include <QtCore/QString>
 using namespace std;
 void NetStructure::storeBitsConditional( BitStream &bs,int numbits,int bits )
 {
@@ -66,7 +67,7 @@ int NetStructure::getPackedBitsConditional( BitStream &bs,int numbits )
     return 0;
 }
 
-void NetStructure::storeStringConditional( BitStream &bs,const string &str )
+void NetStructure::storeStringConditional( BitStream &bs,const QString &str )
 {
     bs.StoreBits(1,str.size()>0);
     if(str.size()>0)
@@ -128,7 +129,7 @@ void NetStructure::storeCached_Color( BitStream &bs,uint32_t col )
     }
 }
 
-void NetStructure::storeCached_String( BitStream &bs,const std::string & str )
+void NetStructure::storeCached_String( BitStream &bs,const QString & str )
 {
     uint32_t cache_idx=0;
     uint32_t prev_val=0;
@@ -160,15 +161,15 @@ uint32_t NetStructure::getCached_Color( BitStream &bs )
     return 0;
 }
 
-std::string NetStructure::getCached_String( BitStream &bs )
+QString NetStructure::getCached_String( BitStream &bs )
 {
     std::ostringstream strm;
-    std::string tgt("");
+    QString tgt("");
     bool in_cache= bs.GetBits(1);
     if(in_cache)
     {
         int in_cache_idx = bs.GetPackedBits(stringcachecount_bitlength);
-        std::string *kv = WorldData::instance()->strings().key_for_idx(in_cache_idx);
+        QString *kv = WorldData::instance()->strings().key_for_idx(in_cache_idx);
         if(kv)
             tgt=*kv;
         return tgt;

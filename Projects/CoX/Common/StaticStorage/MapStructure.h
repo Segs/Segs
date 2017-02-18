@@ -10,9 +10,8 @@
 #include <algorithm>
 #include "CoXHash.h"
 #include "DataStorage.h"
-#include "ReadableStructures.h"
 
-struct TreeStore : public BinReadable
+struct TreeStore
 {
     virtual size_t num_children() const
     {
@@ -47,7 +46,6 @@ namespace MapStructs
     struct Group;
     struct Def : public TreeStore
     {
-        DECL_READABLE(Def)
         std::vector<Lod *> m_lods;
         std::vector<Fog *> m_fogs;
         std::vector<Beacon *> m_beacons;
@@ -80,7 +78,6 @@ namespace MapStructs
     };
     struct Ref : public TreeStore
     {
-        DECL_READABLE(Ref)
         std::string m_src_name;
         Vec3 m_pos;
         Vec3 m_rot;
@@ -93,20 +90,17 @@ namespace MapStructs
 
     struct TexReplace : public TreeStore
     {
-        DECL_READABLE(TexReplace)
         uint32_t m_src;
         std::string m_name_tgt;
         static void build_schema();
     };
     struct Ambient : public TreeStore
     {
-        DECL_READABLE(Ambient)
         Color3ub m_color;
         static void build_schema();
     };
     struct Omni : public TreeStore
     {
-        DECL_READABLE(Omni)
         float m_val;
         uint32_t m_flags;
         Color3ub m_color;
@@ -132,7 +126,6 @@ namespace MapStructs
     };
     struct Fog : public TreeStore
     {
-        DECL_READABLE(Fog)
         float m_a;
         float m_b;
         float m_c;
@@ -142,7 +135,6 @@ namespace MapStructs
     };
     struct TintColor : public TreeStore
     {
-        DECL_READABLE(TintColor)
         Color3ub m_col1;
         Color3ub m_col2;
         static void build_schema();
@@ -150,7 +142,6 @@ namespace MapStructs
 
     struct Lod : public TreeStore
     {
-        DECL_READABLE(Lod)
         float m_far;
         float m_far_fade;
         float m_near;
@@ -160,7 +151,6 @@ namespace MapStructs
     };
     struct Property : public TreeStore
     {
-        DECL_READABLE(Property)
         std::string m_txt1;
         std::string m_txt2;
         uint32_t m_val3;
@@ -168,7 +158,6 @@ namespace MapStructs
     };
     struct Group : public TreeStore
     {
-        DECL_READABLE(Group)
         std::string m_name; // this is reference to a model name or def name
         Vec3 m_pos;
         Vec3 m_rot;
@@ -177,7 +166,6 @@ namespace MapStructs
 }
 struct SceneStorage : public TreeStore
 {
-    DECL_READABLE(SceneStorage)
     typedef std::vector<MapStructs::Def *> vDef;
     typedef std::vector<MapStructs::Ref *> vRef;
     vDef m_defs;

@@ -11,7 +11,7 @@
 #include <string>
 #include <ace/INET_Addr.h>
 //#include "ServerManager.h"
-
+class QString;
 class Entity;
 class EventProcessor;
 class AccountInfo;
@@ -46,7 +46,7 @@ class ClientSession
 public:
     ClientSession();
     virtual ~ClientSession();
-    std::string         getLogin()  const;
+    QString             getLogin()  const;
     bool                account_blocked();
     AccountInfo &       account_info()      { return *m_account_info;}
     ClientLinkState &   link_state()        { return m_link;}

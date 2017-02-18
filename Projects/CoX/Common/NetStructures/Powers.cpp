@@ -62,7 +62,7 @@ void Power::Dump()
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("[(0x%x,0x%x)]"),unkn1,unkn2));
         break;
     case 6: case 12:
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("[(%s,%s,%s)]"),sunkn1.c_str(),sunkn2.c_str(),sunkn3.c_str()));
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("[(%s,%s,%s)]"),qPrintable(sunkn1),qPrintable(sunkn2),qPrintable(sunkn3)));
         break;
     case 0:
         break;

@@ -22,7 +22,7 @@ Description: The BitStream class allows it's user to manipulate data in
 #include <cstdint>
 #include <string>
 #include <vector>
-
+class QString;
 //  Constants
 #define BS_BITS        3
 #define BS_PACKEDBITS  4
@@ -76,7 +76,7 @@ public:
         void StoreBitArrayWithDebugInfo(const uint8_t *array,uint32_t nBits);
 
         void StoreString(const char *str);
-        void StoreString(const std::string &str){StoreString(str.c_str());}
+        void StoreString(const QString &str);
         void StoreStringWithDebugInfo(const char *str);
 
         int32_t GetBits(uint32_t nBits);
@@ -95,8 +95,8 @@ public:
         void GetBitArray(uint8_t *array,size_t nBits);
         void GetBitArrayWithDebugInfo(uint8_t *array,size_t nBits);
 
-        void GetString(std::string &str);
-        void GetStringWithDebugInfo(std::string &str);
+        void GetString(QString &str);
+        void GetStringWithDebugInfo(QString &str);
 
         float   GetFloat();
         float   GetFloatWithDebugInfo();

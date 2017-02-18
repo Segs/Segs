@@ -9,6 +9,7 @@
 #pragma once
 
 // ACE Logging
+#include <QtCore/QString>
 #include <string>
 #include <vector>
 
@@ -25,7 +26,7 @@ class AccountInfo
     friend class CharacterDatabase;
     friend class AdminDatabase;
 
-    std::string                 m_login;
+    QString                     m_login;
     uint8_t                     m_access_level;
     uint64_t                    m_acc_server_acc_id;
 
@@ -42,8 +43,8 @@ public:
 
     uint8_t                     access_level() const { return m_access_level; }
     void                        access_level(uint8_t val) { m_access_level = val; }
-    const std::string &         login() const {return m_login;}
-    void                        login(const std::string & v){m_login=v;}
+    const QString &             login() const {return m_login;}
+    void                        login(const QString & v){m_login=v;}
 
     uint64_t                    account_server_id() const {return m_acc_server_acc_id;}
     void                        account_server_id(const uint64_t &v) {m_acc_server_acc_id=v;}

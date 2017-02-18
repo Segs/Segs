@@ -44,7 +44,6 @@ link_directories(${ThirdParty_Install_Dir}/lib)
 
 include(ExternalProject_CEREAL.cmake)
 include(ExternalProject_ACE.cmake)
-include(ExternalProject_SQLITE.cmake)
 
 ########################################################################################
 # Optional components

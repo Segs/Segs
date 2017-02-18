@@ -8,7 +8,8 @@
 
 #include "BitStream.h"
 
-#include <QByteArray>
+#include <QtCore/QByteArray>
+#include <QtCore/QString>
 #include <cstring>
 #include <cassert>
 #include <algorithm>
@@ -303,6 +304,11 @@ void BitStream::StoreString(const char *str)
     m_write_off  += idx;
 }
 
+void BitStream::StoreString(const QString &str)
+{
+    StoreString(qPrintable(str));
+}
+
 
 /************************************************************************
 *************************************************************************
@@ -432,7 +438,7 @@ Function:    GetString/GetStringWithDebugInfo
 Description: Retrieves a null-terminated C-style string from the bit
                          stream
 ************************************************************************/
-void BitStream::GetStringWithDebugInfo(std::string &str)
+void BitStream::GetStringWithDebugInfo(QString &str)
 {
     if(GetBits(3) != BS_STRING)
         return;
@@ -444,7 +450,7 @@ Function:    GetString/GetStringWithDebugInfo
 Description: Retrieves a null-terminated C-style string from the bit
                          stream
 ************************************************************************/
-void BitStream::GetString(std::string &str)
+void BitStream::GetString(QString &str)
 {
     if(GetReadableBits()<8)
     {

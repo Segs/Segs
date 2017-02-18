@@ -11,9 +11,9 @@ template<class KEY,class VALUE,class COMPARE_FUNCTOR>
 COMPARE_FUNCTOR CoXGenericHashMap<KEY, VALUE,COMPARE_FUNCTOR>::comp;
 
 template<>
-uint32_t JenkinsHash<std::string>::operator()(const std::string &val,uint32_t prev_val) const
+uint32_t JenkinsHash<QString>::operator()(const QString &val,uint32_t prev_val) const
 {
-    return hash((const uint8_t *)val.c_str(),uint32_t(val.size()),prev_val);
+    return hash((const uint8_t *)qPrintable(val),uint32_t(val.size()),prev_val);
 }
 
 
@@ -22,20 +22,19 @@ JenkinsHash<KEY> CoxHashCommon<KEY, VALUE>::hash;
 
 
 template<class VALUE>
-uint32_t CoXHashMap<VALUE>::find_index(const std::string &key, uint32_t &index_tgt, uint32_t &key_tgt, bool a5) const
+uint32_t CoXHashMap<VALUE>::find_index(const QString &key, uint32_t &index_tgt, uint32_t &key_tgt, bool a5) const
 {
     uint32_t HashValue;
     int hash_index;
     uint32_t res;
-    std::string tmp_key;
+    QString tmp_key;
     HashValue = 0;
     tmp_key = key;
     if ( (this->m_flags & SINGLE_BYTE) )
     {
         if ( key.size() >= 0x1000 )
             return 0;
-        for(size_t idx=0; idx<key.size(); idx++)
-            tmp_key[idx]=char(toupper(tmp_key[idx]));
+        tmp_key=tmp_key.toUpper();
     }
     while ( 1 )
     {
@@ -124,7 +123,7 @@ template
 JenkinsHash<uint32_t> CoxHashCommon<uint32_t, uint32_t>::hash;
 
 template
-class CoXHashMap<std::string>;
+class CoXHashMap<QString>;
 template
 class CoXGenericHashMap<uint32_t,uint32_t,IntCompare>;
 

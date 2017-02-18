@@ -25,7 +25,7 @@ ${target_INCLUDE}
 
 ADD_LIBRARY(adminserver_lib STATIC ${target_SOURCES})
 
-TARGET_LINK_LIBRARIES(adminserver_lib ${target_DEPENDS} sqlite_IMP)
-ADD_DEPENDENCIES(adminserver_lib ${target_DEPENDS} sqlite_IMP)
+TARGET_LINK_LIBRARIES(adminserver_lib ${target_DEPENDS})
+ADD_DEPENDENCIES(adminserver_lib ${target_DEPENDS})
 qt5_use_modules(adminserver_lib Core)
 SEGS_REGISTER_COMPONENT(adminserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

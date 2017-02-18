@@ -28,7 +28,7 @@ public:
     uint32_t  GetBits(uint32_t nBits);
     void GetBitArray(uint32_t nBytes, uint8_t *array);
     uint32_t  GetPackedBits(uint32_t nBits);
-    void GetString(std::string &str);
+    void GetString(QString &str);
 
     float  GetFloat();
     void StoreBits(uint32_t nBits, uint32_t dataBits)   { m_stream->StoreBits(nBits, dataBits); }

@@ -31,7 +31,7 @@ ChatMessage *ChatMessage::adminMessage(const char *msg)
     return res;
 }
 
-ChatMessage *ChatMessage::localMessage(const char *msg, Entity *src)
+ChatMessage *ChatMessage::localMessage(const QString &msg, Entity *src)
 {
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_Broadcast;

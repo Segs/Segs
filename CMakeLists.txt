@@ -21,7 +21,6 @@ SET(UNICODE TRUE)
 OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" OFF)
 OPTION(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 
-SET(PostgreSQL_ADDITIONAL_VERSIONS "9.2")
 ########################################################################################
 # Prerequisites
 ########################################################################################
@@ -32,10 +31,7 @@ LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/lib)
 
 find_package(Threads REQUIRED)
 find_package(Qt5Core REQUIRED)
-
-if(PostgreSQL_FOUND)
-link_directories(${PostgreSQL_LIBRARY_DIRS})
-endif()
+find_package(Qt5Sql REQUIRED)
 
 link_directories(${ThirdParty_Install_Dir}/lib)
 include_directories(${ThirdParty_Install_Dir}/include)

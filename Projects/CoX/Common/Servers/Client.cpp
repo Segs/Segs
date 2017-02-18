@@ -19,7 +19,7 @@ ClientSession::~ClientSession()
     delete m_account_info;
 }
 
-std::string ClientSession::getLogin() const   {
+QString ClientSession::getLogin() const   {
     return m_account_info->login();
 }
 

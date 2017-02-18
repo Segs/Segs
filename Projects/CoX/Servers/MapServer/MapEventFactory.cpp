@@ -18,9 +18,9 @@ void processCommon(int op,BitStream &bs) {
             ACE_DEBUG ((LM_WARNING,ACE_TEXT ("G-Packed ? \n")));
             break;
         case 100: {
-            std::string cmd;
+            QString cmd;
             bs.GetString(cmd);
-            printf("DevConsole command %s\n",cmd.c_str());
+            printf("DevConsole command %s\n",qPrintable(cmd));
             break;
         }
         case 102: {

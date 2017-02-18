@@ -158,7 +158,7 @@ uint32_t CrudP_Packet::GetPackedBits(uint32_t nBits)
         return m_stream->GetPackedBits(nBits);
 }
 
-void CrudP_Packet::GetString(std::string &tgt)
+void CrudP_Packet::GetString(QString &tgt)
 {
     if(m_hasDebugInfo)
         m_stream->GetStringWithDebugInfo(tgt);

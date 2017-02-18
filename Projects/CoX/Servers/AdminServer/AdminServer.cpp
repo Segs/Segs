@@ -14,13 +14,15 @@
 #include "Client.h"
 #include "ConfigExtension.h"
 #include "CharacterDatabase.h"
-#include "PsqlDatabase.h"
-#include "SqliteDatabase.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
+#include <QtCore/QStringList>
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlQuery>
+#include <QtSql/QSqlError>
 
 // AdminServer should pull client data from database or from it's local, in-memory cache
 // currently there is no such thing, and 'client-cache' is just a hash-map
@@ -42,7 +44,7 @@ static void createDefaultConfigEntries(const std::string &inipath) {
 
     config.beginGroup("AdminServer");
         config.beginGroup("AccountDatabase");
-            config.setValue("db_driver","sqlite");
+            config.setValue("db_driver","QSQLITE");
             config.value("db_host","127.0.0.1").toString();
             config.value("db_port","5432").toString();
             config.value("db_name","segs").toString();
@@ -50,7 +52,7 @@ static void createDefaultConfigEntries(const std::string &inipath) {
             config.value("db_pass","none").toString();
         config.endGroup();
         config.beginGroup("CharacterDatabase");
-            config.setValue("db_driver","sqlite");
+            config.setValue("db_driver","QSQLITE");
             config.value("db_host","127.0.0.1").toString();
             config.value("db_port","5432").toString();
             config.value("db_name","segs_game").toString();
@@ -74,69 +76,76 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
     config.beginGroup("AdminServer");
 
     config.beginGroup("AccountDatabase");
-    QString dbdriver = config.value("db_driver","sqlite").toString();
+    QString dbdriver = config.value("db_driver","QSQLITE").toString();
     QString dbhost = config.value("db_host","127.0.0.1").toString();
-    QString dbport = config.value("db_port","5432").toString();
+    int dbport = config.value("db_port","5432").toInt();
     QString dbname = config.value("db_name","segs").toString();
     QString dbuser = config.value("db_user","none").toString();
     QString dbpass = config.value("db_pass","none").toString();
     config.endGroup();
-    Database *db1;
-    if(dbdriver=="pgsql") {
-#ifdef HAVE_POSTGRES
-        db1 = new PSqlDatabase;
-#else
-        ACE_DEBUG((LM_INFO,"PostgreSQL support was not selected during compilation.\n"));
-        db1 = new SqliteDatabase;
-#endif
+    QSqlDatabase *db1;
+    QStringList driver_list {"QSQLITE","QPSQL"};
+    if(!driver_list.contains(dbdriver.toUpper())) {
+        qWarning() << "Database driver" << dbdriver << " not supported";
     }
-    else {
-        db1 = new SqliteDatabase;
-    }
-    db1->setConnectionConfiguration(qPrintable(dbhost),qPrintable(dbport),qPrintable(dbname),qPrintable(dbuser),qPrintable(dbpass));
+    db1 = new QSqlDatabase(QSqlDatabase::addDatabase(dbdriver.toUpper(),"AccountDatabase"));
+    db1->setHostName(dbhost);
+    db1->setPort(dbport);
+    db1->setDatabaseName(dbname);
+    db1->setUserName(dbuser);
+    db1->setPassword(dbpass);
     m_db->setDb(db1);
 
     config.beginGroup("CharacterDatabase");
-    dbdriver = config.value("db_driver","sqlite").toString();
+    dbdriver = config.value("db_driver","QSQLITE").toString();
     dbhost = config.value("db_host","127.0.0.1").toString();
-    dbport = config.value("db_port","5432").toString();
+    dbport = config.value("db_port","5432").toInt();
     dbname = config.value("db_name","segs_game").toString();
     dbuser = config.value("db_user","none").toString();
     dbpass = config.value("db_pass","none").toString();
     config.endGroup();
-    Database *db2;
-    if(dbdriver=="pgsql") {
-#ifdef HAVE_POSTGRES
-        db2 = new PSqlDatabase;
-#else
-        ACE_DEBUG((LM_INFO,"PostgreSQL support was not selected during compilation.\n"));
-        db2 = new SqliteDatabase;
-#endif
+    QSqlDatabase *db2;
+    if(!driver_list.contains(dbdriver.toUpper())) {
+        qWarning() << "Database driver" << dbdriver << " not supported";
     }
-    else {
-        db2 = new SqliteDatabase;
-    }
-
-    db2->setConnectionConfiguration(qPrintable(dbhost),qPrintable(dbport),qPrintable(dbname),qPrintable(dbuser),qPrintable(dbpass));
+    db2 = new QSqlDatabase(QSqlDatabase::addDatabase(dbdriver,"CharacterDatabase"));
+    db2->setHostName(dbhost);
+    db2->setPort(dbport);
+    db2->setDatabaseName(dbname);
+    db2->setUserName(dbuser);
+    db2->setPassword(dbpass);
     m_char_db->setDb(db2);
     return true;
 }
 bool _AdminServer::Run()
 {
-    if(m_db->getDb()->OpenConnection(m_db))
+    if(!m_db->getDb()->open())
         return false;
-    if(m_char_db->getDb()->OpenConnection(m_char_db))
+    m_db->getDb()->exec("PRAGMA foreign_keys = ON");
+    if(m_db->getDb()->lastError().isValid()) {
+        qWarning() << m_db->getDb()->lastError();
         return false;
+    }
+    m_db->on_connected(m_db->getDb());
+
+    if(!m_char_db->getDb()->open())
+        return false;
+    m_char_db->getDb()->exec("PRAGMA foreign_keys = ON");
+    if(m_char_db->getDb()->lastError().isValid()) {
+        qWarning() << m_char_db->getDb()->lastError();
+        return false;
+    }
+    m_char_db->on_connected(m_char_db->getDb());
     m_running=true;
     return true;
 }
 bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" */)
 {
-    bool res;
+    bool res=true;
     ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
     m_running=false;
-    res  =  m_db->getDb()->CloseConnection()==0;
-    res &=  m_char_db->getDb()->CloseConnection()==0;
+    m_db->getDb()->close();
+    m_char_db->getDb()->close();
 
     delete m_db;
     delete m_char_db;
@@ -174,7 +183,7 @@ bool _AdminServer::Logout(const AccountInfo &) const
 
 bool _AdminServer::ValidPassword( const AccountInfo &client, const char *password )
 {
-    return m_db->ValidPassword(client.login().c_str(),password);
+    return m_db->ValidPassword(qPrintable(client.login()),password);
 }
 
 int _AdminServer::SaveAccount(const char *username, const char *password)

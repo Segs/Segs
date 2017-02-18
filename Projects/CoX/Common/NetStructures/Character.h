@@ -7,14 +7,16 @@
  */
 
 #pragma once
-
 //* Another small step toward a real Character server.
-#include <cassert>
-#include <string>
 
 #include "CommonNetStructures.h"
 #include "BitStream.h"
 #include "Powers.h"
+
+#include <QtCore/QString>
+#include <cassert>
+#include <string>
+
 #define MAX_CHARACTER_SLOTS 8
 struct ClientOption
 {
@@ -78,8 +80,8 @@ typedef std::vector<Costume *> vCostume;
 
         vPowerPool      m_powers;
         PowerTrayGroup  m_trays;
-        std::string     m_class_name;
-        std::string     m_origin_name;
+        QString         m_class_name;
+        QString         m_origin_name;
         bool            m_full_options;
         ClientOptions   m_options;
         bool            m_first_person_view_toggle;
@@ -92,10 +94,10 @@ public:
 // Getters and setters
         uint32_t        getLevel() const { return m_level; }
         void            setLevel(uint32_t val) { m_level = val; }
-const   std::string &   getName() const { return m_name; }
-        void            setName(const std::string &val);
-const   std::string &   getMapName() const { return m_mapName; }
-        void            setMapName(const std::string &val) { m_mapName = val; }
+const   QString &       getName() const { return m_name; }
+        void            setName(const QString &val);
+const   QString &       getMapName() const { return m_mapName; }
+        void            setMapName(const QString &val) { m_mapName = val; }
         uint8_t         getIndex() const { return m_index; }
         void            setIndex(uint8_t val) { m_index = val; }
         uint64_t        getAccountId() const { return m_owner_account_id; }
@@ -140,8 +142,8 @@ protected:
         uint64_t        m_last_costume_id;
         uint8_t         m_index;
         uint32_t        m_level;
-        std::string     m_name;
-        std::string     m_mapName;
+        QString         m_name;
+        QString         m_mapName;
         bool            m_villain;
         vCostume        m_costumes;
         Costume *       m_sg_costume;

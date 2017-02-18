@@ -109,7 +109,7 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
     AdminServerInterface *adminserv;                            // this will be used in case when we don't have this client in the cache
     hmClients::const_iterator iter = m_clients.find(login); // searching for the client in cache
     if(iter!=m_clients.end())               // if found
-        return ((*iter).second);                                //  return cached object
+        return (*iter);                                //  return cached object
     adminserv = ServerManager::instance()->GetAdminServer();
     assert(adminserv);
     res= new AuthClient; //res= m_client_pool.construct();      // construct a new instance

@@ -1,8 +1,9 @@
 #pragma once
-#include <ace/INET_Addr.h>
-#include <ace/Time_Value.h>
 #include "CRUDP_Protocol.h"
 #include "EventProcessor.h"
+#include <ace/INET_Addr.h>
+#include <ace/Time_Value.h>
+#include <QtCore/QString>
 class Character;
 class Internal_EventTypes
 {
@@ -39,7 +40,7 @@ public:
         m_map_id = 0;
         m_slot_idx=0;
     }
-    void setValues(uint16_t slot_idx, const std::string &name, uint32_t map_id,Character *char_f=0)
+    void setValues(uint16_t slot_idx, const QString &name, uint32_t map_id,Character *char_f=0)
     {
         m_slot_idx  =   slot_idx;
         m_character_name = name;
@@ -48,7 +49,7 @@ public:
     }
     Character *char_from_db;
     uint16_t m_slot_idx;
-    std::string m_character_name;
+    QString m_character_name;
     uint32_t m_map_id;
 };
 // This event informs the server that given client is now expected on another server

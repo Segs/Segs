@@ -8,7 +8,7 @@
 
 #pragma once
 #include "CommonNetStructures.h"
-#include <string>
+#include <QtCore/QString>
 #include "BitStream.h"
 
 class PowerPool_Info
@@ -24,9 +24,9 @@ class Power
 public:
     int entry_type;
     int unkn1,unkn2;
-    std::string sunkn1;
-    std::string sunkn2;
-    std::string sunkn3;
+    QString sunkn1;
+    QString sunkn2;
+    QString sunkn3;
     Power() {
         entry_type = 0;
     }

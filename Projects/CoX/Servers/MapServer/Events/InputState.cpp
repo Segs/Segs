@@ -369,7 +369,7 @@ void InputState::recv_client_opts(BitStream &bs)
                 case ClientOption::t_string:
                 case 4:
                 {
-                    std::string v;
+                    QString v;
                     bs.GetString(v);
                     break;
                 }

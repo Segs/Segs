@@ -13,6 +13,9 @@
 #include "CRUD_Link.h"
 #include "CRUD_Events.h"
 #include "MapLink.h"
+
+#include <QtCore/QString>
+
 class Entity;
 typedef CRUDLink_Event MapLinkEvent; //<MapLink>
 
@@ -116,8 +119,8 @@ public:
 };
 class ForcedLogout: public MapLinkEvent {
 public:
-    std::string reason;
-    ForcedLogout(const std::string &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason) {
+    QString reason;
+    ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason) {
 
     }
     void serializeto(BitStream &bs) const
@@ -150,7 +153,7 @@ public:
 };
 class ConsoleCommand : public MapLinkEvent {
 public:
-    std::string contents;
+    QString contents;
     ConsoleCommand():MapLinkEvent(MapEventTypes::evConsoleCommand)
     {}
     void serializeto(BitStream &bs) const
@@ -269,7 +272,7 @@ class MapInstanceConnected : public MapLinkEvent
 public:
     MapInstanceConnected():MapLinkEvent(MapEventTypes::evMapInstanceConnected)
     {}
-    MapInstanceConnected(EventProcessor *evsrc,uint32_t resp,const std::string &err) :
+    MapInstanceConnected(EventProcessor *evsrc,uint32_t resp,const QString &err) :
         MapLinkEvent(MapEventTypes::evMapInstanceConnected,evsrc),
         m_resp(resp),
         m_fatal_error(err)
@@ -289,7 +292,7 @@ public:
             src.GetString(m_fatal_error);
     }
     uint32_t    m_resp;
-    std::string m_fatal_error;
+    QString m_fatal_error;
 
 };
 

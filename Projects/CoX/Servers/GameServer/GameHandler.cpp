@@ -224,7 +224,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
         ACE_ASSERT(selected_slot->getName()==ev->m_char_name || !"Server-Client character synchronization failure!");
     }
     expect_client->setValues(ev->m_character_index, ev->m_char_name, ev->m_mapnumber,selected_slot);
-    fprintf(stderr," Telling map server to expect a client with character %s,%d\n",ev->m_char_name.c_str(),ev->m_character_index);
+    fprintf(stderr," Telling map server to expect a client with character %s,%d\n",qPrintable(ev->m_char_name),ev->m_character_index);
     map_handler->putq(expect_client);
 }
 void GameHandler::on_unknown_link_event(GameUnknownRequest *)

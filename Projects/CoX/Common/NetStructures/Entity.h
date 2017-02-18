@@ -82,8 +82,8 @@ mutable bool                m_logout_sent;
         int                 m_seq_upd_num2;
         PosUpdate           m_pos_updates[64];
         size_t              m_update_idx;
-        std::string         m_battle_cry;
-        std::string         m_character_description;
+        QString             m_battle_cry;
+        QString             m_character_description;
         bool                var_B4;
 
         Character           m_char;
@@ -98,7 +98,7 @@ mutable bool                m_logout_sent;
                             m_hasname  ,m_hasgroup_name,m_classname_override;
         bool                m_create   ,m_hasRagdoll  ,m_create_player,m_rare_bits;
         int                 current_client_packet_id;
-        std::string         m_group_name, m_override_name;
+        QString             m_group_name, m_override_name;
         uint8_t             m_origin_idx,m_class_idx;
         uint8_t             m_type;
         uint32_t            m_idx;
@@ -120,7 +120,7 @@ virtual void                serializefrom(BitStream &) {assert(false);}
         bool                update_rot(int axis) const; // returns true if given axis needs updating;
 
         void                InsertUpdate(PosUpdate pup);
-        const std::string & name() {return m_char.getName();}
+        const QString &     name() const {return m_char.getName();}
         void                sendBuffs(BitStream &bs) const;
         void                fillFromCharacter(Character *f);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
@@ -153,7 +153,7 @@ private:
 };
 class MobEntity : public Entity
 {
-        std::string     m_costume_seq;
+        QString         m_costume_seq;
 public:
                         MobEntity();
 virtual                 ~MobEntity(){}

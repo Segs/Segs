@@ -7,11 +7,14 @@
  
  */
 #pragma once
-#include <map>
-#include <vector>
+#include "BitStream.h"
+
 #include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>
-#include "BitStream.h"
+#include <QtCore/QString>
+#include <QtCore/QHash>
+#include <map>
+#include <vector>
 
 class MapClient;
 class NetCommand
@@ -30,7 +33,7 @@ public:
         int type;
         void *targetvar;
     };
-    NetCommand(int acl,const std::string &name,std::vector<Argument> &args):m_arguments(args)
+    NetCommand(int acl,const QString &name,std::vector<Argument> &args):m_arguments(args)
     {
         m_required_access_level=acl;
         m_name=name;
@@ -38,14 +41,14 @@ public:
     int serializefrom(BitStream &bs);
     int clientside_idx;
     int m_required_access_level;
-    std::string m_name;
+    QString m_name;
     std::vector<Argument> m_arguments;
 
 };
 class NetCommandManager
 {
     typedef std::vector<NetCommand *> vNetCommand;
-    std::map<std::string,NetCommand *> m_name_to_command;
+    QHash<QString,NetCommand *> m_name_to_command;
     vNetCommand m_commands_level0;
     void            serializeto(BitStream &tgt,
                                 const vNetCommand &commands,
@@ -54,7 +57,7 @@ public:
     void            SendCommandShortcuts(MapClient *client,
                                          BitStream &tgt,
                                          const std::vector<NetCommand *> &commands2);
-    NetCommand *    getCommandByName(const std::string &name);
+    NetCommand *    getCommandByName(const QString &name);
     void            addCommand(NetCommand *cmd);
 };
 typedef ACE_Singleton<NetCommandManager,ACE_Thread_Mutex> NetCommandManagerSingleton; // AdminServer Interface
