@@ -91,4 +91,4 @@ struct Costume2_Data
     std::vector<CostumeOrigin_Data *> m_Origins;
 };
 
-typedef std::vector<Costume2_Data *> CostumeSet_Data;
+typedef std::vector<Costume2_Data> CostumeSet_Data;

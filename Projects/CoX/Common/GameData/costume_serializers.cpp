@@ -4,19 +4,19 @@
 #include "Common/GameData/costume_definitions.h"
 #include "DataStorage.h"
 
-//static CharAttr_Nested1 stru_6EC4F8[3] = {
+//static Serialization_Template Color_Token[3] = {
 //    { "", TOKEN_VEC3_LIST, 0},
 //    { "\n", TOKEN_END},
 //    { ""},
 //};
-//static CharAttr_Nested1 Palette_Tokens[4] = {
-//    { "Color", TOKEN_SUB_TABLE, 0, 0xC, stru_6EC4F8},
+//static Serialization_Template Palette_Tokens[4] = {
+//    { "Color", TOKEN_SUB_TABLE, 0, 0xC, Color_Token},
 //    { "End", TOKEN_END},
 //    { "EndPalette", TOKEN_END},
 //    { ""},
 //};
 
-//static CharAttr_Nested1 Info_Tokens[9] = {
+//static Serialization_Template Info_Tokens[9] = {
 //    { "DisplayName", TOKEN_STRING, 0},
 //    { "GeoName", TOKEN_STRING, 8},
 //    { "Geo", TOKEN_STRING, 4},
@@ -29,14 +29,14 @@
 //};
 
 
-//static CharAttr_Nested1 Mask_Tokens[5] = {
+//static Serialization_Template Mask_Tokens[5] = {
 //    { "Name", TOKEN_STRING, 0},
 //    { "displayName", TOKEN_STRING, 4},
 //    { "End", TOKEN_END},
 //    { "EndMask", TOKEN_END},
 //    { ""},
 //};
-//static CharAttr_Nested1 GeoSet_Tokens[10] = {
+//static Serialization_Template GeoSet_Tokens[10] = {
 //    { "DisplayName", TOKEN_STRING, 4},
 //    { "BodyPart", TOKEN_STRING, 8},
 //    { "Type", TOKEN_ENUM, 0x0C},
@@ -48,7 +48,7 @@
 //    { "EndGeoSet", TOKEN_END, 0},
 //    { "", TOKEN_INVALID, 0},
 //};
-//static CharAttr_Nested1 BoneSet_Tokens[7] = {
+//static Serialization_Template BoneSet_Tokens[7] = {
 //    { "Name", TOKEN_STRING},
 //    { "DisplayName", TOKEN_STRING, 4, 0},
 //    { "GeoSet", TOKEN_SUB_TABLE, 0xC, 0x23C, GeoSet_Tokens},
@@ -58,7 +58,7 @@
 //    { ""},
 //};
 
-//static CharAttr_Nested1 Region_Tokens[6] = {
+//static Serialization_Template Region_Tokens[6] = {
 //    { "Name", TOKEN_STRING, 0},
 //    { "DisplayName", TOKEN_STRING, 4},
 //    { "BoneSet", TOKEN_SUB_TABLE, 0xC, 0x10, BoneSet_Tokens},
@@ -66,7 +66,7 @@
 //    { "End", TOKEN_END, 0},
 //    { ""},
 //};
-//static CharAttr_Nested1 Origin_Tokens[7] = {
+//static Serialization_Template Origin_Tokens[7] = {
 //    { "Name", TOKEN_STRING, 0},
 //    { "BodyPalette", TOKEN_SUB_TABLE, offsetof(CostumeOrigin_Data,m_BodyPalette), 4, Palette_Tokens},
 //    { "SkinPalette", TOKEN_SUB_TABLE, offsetof(CostumeOrigin_Data,m_SkinPalette), 4, Palette_Tokens},
@@ -75,19 +75,19 @@
 //    { "EndOrigin", TOKEN_END},
 //    { "", TOKEN_INVALID},
 //};
-//static CharAttr_Nested1 stru_6EC9F0[5] = {
+//static Serialization_Template Costume2_Tokens[5] = {
 //    { "Name", TOKEN_STRING, offsetof(Costume2_Data,m_Name)},
 //    { "Origin", TOKEN_SUB_TABLE, offsetof(Costume2_Data,m_Origins), 0x10, Origin_Tokens},
 //    { "End", TOKEN_END},
 //    { "EndBody", TOKEN_END},
 //    { ""},
 //};
-//static CharAttr_Nested1 Costumes_Token[2] = {
-//    { "Costume", TOKEN_SUB_TABLE, 0, sizeof(Costume2_Data), stru_6EC9F0},
+//static Serialization_Template Costumes_Token[2] = {
+//    { "Costume", TOKEN_SUB_TABLE, 0, sizeof(Costume2_Data), Costume2_Tokens},
 //    { "", TOKEN_INVALID},
 //};
 
-//static CharAttr_Nested1 stru_6EC330[13] = {
+//static Serialization_Template TailorCost_Tokens[13] = {
 //    { "MinLevel", TOKEN_ENUM, 0},
 //    { "MaxLevel", TOKEN_ENUM, 4},
 //    { "EntryFee", TOKEN_ENUM, 8},
@@ -102,8 +102,8 @@
 //    { "End", TOKEN_END},
 //    { "", TOKEN_INVALID},
 //};
-//static CharAttr_Nested1 TailCost_Tokens[2] = {
-//    { "TailorCostSet", TOKEN_SUB_TABLE, 0, 0x2C, stru_6EC330},
+//static Serialization_Template TailorCostSet_Tokens[2] = {
+//    { "TailorCostSet", TOKEN_SUB_TABLE, 0, 0x2C, TailorCost_Tokens},
 //    { "", TOKEN_INVALID},
 //};
 
@@ -375,9 +375,9 @@ bool loadFrom(BinStore * s, CostumeSet_Data * target)
     {
         s->nest_in();
         if(_name.compare("Costume")==0) {
-            Costume2_Data *nt = new Costume2_Data;
-            ok &= loadFrom(s,nt);
-            target->push_back(nt);
+            Costume2_Data nt;
+            ok &= loadFrom(s,&nt);
+            target->emplace_back(nt);
         } else
             assert(!"unknown field referenced.");
         s->nest_out();

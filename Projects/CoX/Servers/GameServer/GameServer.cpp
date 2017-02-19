@@ -14,7 +14,7 @@
 #include "CharacterDatabase.h"
 #include "AdminServerInterface.h"
 #include "GameHandler.h"
-#include "Filesystem.h"
+#include "Common/GameData/WorldData.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>

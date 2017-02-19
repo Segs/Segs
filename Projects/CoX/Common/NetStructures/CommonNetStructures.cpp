@@ -6,8 +6,8 @@
  *
  */
 #include "CommonNetStructures.h"
-#include "Filesystem.h"
-#include "CoXHash.h"
+#include "Common/GameData/WorldData.h"
+#include "Common/GameData/CoXHash.h"
 #include <QtCore/QString>
 using namespace std;
 void NetStructure::storeBitsConditional( BitStream &bs,int numbits,int bits )

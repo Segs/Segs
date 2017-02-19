@@ -18,7 +18,6 @@ SET(target_DEPENDS "")
 
 SEGS_ADD_COMPONENT(AuthProtocol LIB)
 SEGS_ADD_COMPONENT(cox_server_common LIB)
-SEGS_ADD_COMPONENT(static_storage LIB)
 SEGS_ADD_COMPONENT(adminserver_lib LIB)
 SEGS_ADD_COMPONENT(gameserver_lib LIB)
 SEGS_ADD_COMPONENT(mapserver_lib LIB)
@@ -31,7 +30,6 @@ INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 SET (target_SOURCES
   ${target_CPP}
   ${target_INCLUDE}
-  $<TARGET_OBJECTS:gameData>
 )
 
 #FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LIBRARIES is not a cache variable, so we  have to do this here again
@@ -42,7 +40,7 @@ IF(BUILD_SEPARATE)
     ADD_DEFINITIONS(-DSEPARATE)
     ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
     TARGET_LINK_LIBRARIES(authserver
-        authserver_lib ${target_DEPENDS}
+        authserver_lib ${target_DEPENDS} gameData
         ${MRuby_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
         ace_IMP

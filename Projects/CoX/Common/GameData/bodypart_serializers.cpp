@@ -4,7 +4,7 @@
 
 #include "DataStorage.h"
 
-//CharAttr_Nested1 stru_6EC138[11] = {
+//Serialization_Template BodyPart_Tokens[11] = {
 //    { "Name", TOKEN_STRING, 0, 0},
 //    { "BoneCount", TOKEN_ENUM, 0x10, 0},
 //    { "InfluenceCost", TOKEN_ENUM, 0x14},
@@ -17,10 +17,10 @@
 //    { "End", TOKEN_END},
 //    { },
 //};
-//CharAttr_Nested1 BodyPart_Tokens[2] = {
-//    { "BodyPart", TOKEN_SUB_TABLE, 0, 36, stru_6EC138 },
+//Serialization_Template AllBodyParts_Tokens[2] = {
+//    { "BodyPart", TOKEN_SUB_TABLE, 0, 36, BodyPart_Tokens },
 //    {0}
-//}; // idb
+//};
 
 namespace {
 bool loadFrom(BinStore *s,BodyPart_Data *target) {

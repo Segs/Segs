@@ -5,8 +5,8 @@
  * This software is licensed! (See License.txt for details)
  *
  */
+#include "WorldData.h"
 #include "DataStorage.h"
-#include "Filesystem.h"
 #include "Common/GameData/costume_serializers.h"
 
 #include <ace/ACE.h>
@@ -67,11 +67,11 @@ void WorldData_impl::fill_hashes()
     //TODO: Use reverse iterators here ?
     for(int idx=m_costume_store.size()-1; idx>=0; --idx)
     {
-        Costume2_Data *ce=m_costume_store[idx];
-        m_strings.insert_entry(ce->m_Name,"");
-        for(int orign_idx=ce->m_Origins.size()-1; orign_idx>=0; --orign_idx)
+        Costume2_Data &ce(m_costume_store[idx]);
+        m_strings.insert_entry(ce.m_Name,"");
+        for(int orign_idx=ce.m_Origins.size()-1; orign_idx>=0; --orign_idx)
         {
-            CostumeOrigin_Data *orig=ce->m_Origins[orign_idx];
+            CostumeOrigin_Data *orig=ce.m_Origins[orign_idx];
             add_colors(orig->m_BodyPalette[0]->m_Colors);
             add_colors(orig->m_SkinPalette[0]->m_Colors);
             for(int region_idx=orig->m_Region.size()-1; region_idx>=0; --region_idx)
