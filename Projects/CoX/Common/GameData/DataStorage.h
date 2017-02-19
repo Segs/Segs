@@ -9,6 +9,7 @@
 #pragma once
 
 #include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
 #include <string>
 #include <vector>
 #include <QtCore/QString>
@@ -19,10 +20,7 @@
 struct RGBA;
 
 typedef glm::vec3 Vec3;
-struct Vec2
-{
-    float v[2];
-};
+typedef glm::vec2 Vec2;
 class BinStore // binary storage
 {
     QFile m_str;

@@ -1,6 +1,7 @@
 #pragma once
 #include "Colors.h"
 #include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
@@ -71,6 +72,15 @@ void serialize(Archive & archive, glm::vec3 & m)
     for( int i=0; i<3; ++i )
       archive( m[i] );
 }
+template<class Archive>
+void serialize(Archive & archive, glm::vec2 & m)
+{
+    int size=2;
+    archive( make_size_tag( size ) ); // this is new
+    for( int i=0; i<2; ++i )
+      archive( m[i] );
+}
+
 template<class Archive>
 void serialize(Archive & archive, RGBA & m)
 {

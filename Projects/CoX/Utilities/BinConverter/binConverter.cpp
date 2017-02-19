@@ -8,6 +8,8 @@
 //#include "Common/GameData/seq_serializers.h"
 //#include "Common/GameData/def_serializers.h"
 //#include "Common/GameData/particlesys_serializers.h"
+#include "Common/GameData/map_serializers.h"
+#include "Common/GameData/map_definitions.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -31,6 +33,7 @@ enum BinType {
     eBodyParts,
     ePaletteSets,
     eGroupEmblems,
+    eZones,
 };
 static const QHash<uint32_t,BinType> knownSerializers = {
 //    {levelsdebts_i0_requiredCrc         , eLevelsDebts},
@@ -45,7 +48,8 @@ static const QHash<uint32_t,BinType> knownSerializers = {
     {costumesets_i0_requiredCrc         , eCostumeSets},
     {bodyparts_i0_requiredCrc           , eBodyParts},
     {palette_i0_requiredCrc             , ePaletteSets},
-    {geoset_i0_requiredCrc              , eGroupEmblems }
+    {geoset_i0_requiredCrc              , eGroupEmblems },
+    {zones_i0_requiredCrc               , eZones},
 };
 BinType getLoader(const QString &fname)
 {
@@ -135,6 +139,7 @@ int main(int argc,char **argv)
         case eBodyParts:    doConvert(doLoad<AllBodyParts_Data>(binfile),target_basename,json_output); break;
         case eGroupEmblems: doConvert(doLoad<GeoSet_Data>(binfile),target_basename,json_output); break;
         case ePaletteSets:  doConvert(doLoad<Pallette_Data>(binfile),target_basename,json_output); break;
+        case eZones:        doConvert(doLoadRef<AllMaps_Data>(binfile),target_basename,json_output); break;
         default:
             break;
     }

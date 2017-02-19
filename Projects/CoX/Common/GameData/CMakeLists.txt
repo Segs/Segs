@@ -9,6 +9,8 @@ set(GAMEDATA_SRC
     costume_serializers.cpp
     costume_serializers.h
     #def_serializers.cpp
+    map_serializers.cpp
+    map_serializers.h
     #seq_serializers.cpp
     #seq_serializers.h
     shop_serializers.cpp
@@ -17,6 +19,7 @@ set(GAMEDATA_SRC
     #titles_serializers.h
     #particle_definitions.h
     shop_definitions.h
+    map_definitions.h
     costume_definitions.h
     bodypart_definitions.h
 

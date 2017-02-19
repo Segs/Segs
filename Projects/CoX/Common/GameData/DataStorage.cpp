@@ -145,8 +145,8 @@ bool BinStore::read( uint8_t &v )
 bool BinStore::read(Vec2 &val)
 {
     bool parse_ok=true;
-    parse_ok &= read(val.v[0]);
-    parse_ok &= read(val.v[1]);
+    parse_ok &= read(val[0]);
+    parse_ok &= read(val[1]);
     return parse_ok;
 }
 
