@@ -4,6 +4,8 @@ set(GAMEDATA_SRC
     serialization_common.h
     bodypart_serializers.cpp
     bodypart_serializers.h
+    scenegraph_serializers.h
+    scenegraph_serializers.cpp
     #particlesys_serializers.cpp
     #particlesys_serializers.h
     costume_serializers.cpp
@@ -18,6 +20,7 @@ set(GAMEDATA_SRC
     #titles_serializers.cpp
     #titles_serializers.h
     #particle_definitions.h
+    scenegraph_definitions.h
     shop_definitions.h
     map_definitions.h
     costume_definitions.h

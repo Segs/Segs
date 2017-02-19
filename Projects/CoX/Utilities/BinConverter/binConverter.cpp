@@ -3,6 +3,8 @@
 #include "Common/GameData/costume_serializers.h"
 #include "Common/GameData/costume_definitions.h"
 
+#include "Common/GameData/scenegraph_serializers.h"
+#include "Common/GameData/scenegraph_definitions.h"
 #include "Common/GameData/bodypart_serializers.h"
 #include "Common/GameData/shop_serializers.h"
 //#include "Common/GameData/seq_serializers.h"
@@ -34,6 +36,7 @@ enum BinType {
     ePaletteSets,
     eGroupEmblems,
     eZones,
+    eSceneGraph,
 };
 static const QHash<uint32_t,BinType> knownSerializers = {
 //    {levelsdebts_i0_requiredCrc         , eLevelsDebts},
@@ -50,6 +53,7 @@ static const QHash<uint32_t,BinType> knownSerializers = {
     {palette_i0_requiredCrc             , ePaletteSets},
     {geoset_i0_requiredCrc              , eGroupEmblems },
     {zones_i0_requiredCrc               , eZones},
+    {scenegraph_i0_requiredCrc              , eSceneGraph},
 };
 BinType getLoader(const QString &fname)
 {
@@ -102,6 +106,7 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(bodyparts_i0_requiredCrc,16)<<"> Body part data - 'BodyParts.bin'";
     qDebug()<<"   I0<"<<QString::number(geoset_i0_requiredCrc,16)<<"> Supergroup emblem data - 'supergroupEmblems.bin'";
     qDebug()<<"   I0<"<<QString::number(palette_i0_requiredCrc,16)<<"> Color palette data - 'supergroupColors.bin'";
+    qDebug()<<"   I0<"<<QString::number(scenegraph_i0_requiredCrc,16)<<"> Scene graph - 'geobin/*'";
     qDebug()<<"I0 - issue 0 ";
     qDebug()<<"Numbers in brackets are file CRCs - bytes 8 to 13 in the bin.";
 }
@@ -140,6 +145,7 @@ int main(int argc,char **argv)
         case eGroupEmblems: doConvert(doLoad<GeoSet_Data>(binfile),target_basename,json_output); break;
         case ePaletteSets:  doConvert(doLoad<Pallette_Data>(binfile),target_basename,json_output); break;
         case eZones:        doConvert(doLoadRef<AllMaps_Data>(binfile),target_basename,json_output); break;
+        case eSceneGraph:   doConvert(doLoadRef<SceneGraph_Data>(binfile),target_basename,json_output); break;
         default:
             break;
     }
