@@ -4,13 +4,13 @@
 #include "Common/GameData/costume_definitions.h"
 #include "DataStorage.h"
 
-//static Serialization_Template Color_Token[3] = {
+//static Serialization_Template ColorValue_Tokens[3] = {
 //    { "", TOKEN_VEC3_LIST, 0},
 //    { "\n", TOKEN_END},
 //    { ""},
 //};
 //static Serialization_Template Palette_Tokens[4] = {
-//    { "Color", TOKEN_SUB_TABLE, 0, 0xC, Color_Token},
+//    { "Color", TOKEN_SUB_TABLE, 0, 0xC, ColorValue_Tokens},
 //    { "End", TOKEN_END},
 //    { "EndPalette", TOKEN_END},
 //    { ""},
@@ -134,25 +134,25 @@ bool loadFrom(BinStore *s,ColorEntry_Data *target)
     ok &= s->prepare_nested();
     return ok && s->end_encountered();
 }
-bool loadFrom(BinStore *s,GeoSet_Info_Data *target)
+bool loadFrom(BinStore *s,GeoSet_Info_Data &target)
 {
     s->prepare();
     bool ok = true;
-    ok &= s->read(target->m_DisplayName);
-    ok &= s->read(target->m_GeoName);
-    ok &= s->read(target->m_Geo);
-    ok &= s->read(target->m_Tex1);
-    ok &= s->read(target->m_Tex2);
-    ok &= s->read(target->m_DevOnly);
+    ok &= s->read(target.m_DisplayName);
+    ok &= s->read(target.m_GeoName);
+    ok &= s->read(target.m_Geo);
+    ok &= s->read(target.m_Tex1);
+    ok &= s->read(target.m_Tex2);
+    ok &= s->read(target.m_DevOnly);
     ok &= s->prepare_nested();
     return ok && s->end_encountered();
 }
-bool loadFrom(BinStore *s,GeoSet_Mask_Data *target)
+bool loadFrom(BinStore *s,GeoSet_Mask_Data &target)
 {
     s->prepare();
     bool ok = true;
-    ok &= s->read(target->m_Name);
-    ok &= s->read(target->m_DisplayName);
+    ok &= s->read(target.m_Name);
+    ok &= s->read(target.m_DisplayName);
     ok &= s->prepare_nested();
     return ok && s->end_encountered();
 }
@@ -169,9 +169,8 @@ bool loadFrom(BinStore *s,BoneSet_Data *target)
     while(s->nesting_name(_name))
     {
         if(_name.compare("GeoSet")==0) {
-            GeoSet_Data *nt = new GeoSet_Data;
-            ok &= loadFrom(s,nt);
-            target->m_GeoSets.push_back(nt);
+            target->m_GeoSets.emplace_back();
+            ok &= loadFrom(s,&target->m_GeoSets.back());
         } else
             assert(!"unknown field referenced.");
         s->nest_out();
@@ -194,9 +193,8 @@ bool loadFrom(BinStore *s,Region_Data *target)
     {
         s->nest_in();
         if(_name.compare("BoneSet")==0) {
-            BoneSet_Data *nt = new BoneSet_Data;
-            ok &= loadFrom(s,nt);
-            target->m_BoneSets.push_back(nt);
+            target->m_BoneSets.emplace_back();
+            ok &= loadFrom(s,&target->m_BoneSets.back());
         } else
             assert(!"unknown field referenced.");
         s->nest_out();
@@ -217,17 +215,17 @@ bool loadFrom(BinStore *s,CostumeOrigin_Data *target)
     {
         s->nest_in();
         if(_name.compare("BodyPalette")==0) {
-            Pallette_Data *nt = new Pallette_Data;
-            ok &= loadFrom(s,nt);
-            target->m_BodyPalette.push_back(nt);
+            Pallette_Data nt;
+            ok &= loadFrom(s,&nt);
+            target->m_BodyPalette.emplace_back(nt);
         } else if(_name.compare("SkinPalette")==0) {
-            Pallette_Data *nt = new Pallette_Data;
-            ok &= loadFrom(s,nt);
-            target->m_SkinPalette.push_back(nt);
+            Pallette_Data nt;
+            ok &= loadFrom(s,&nt);
+            target->m_SkinPalette.emplace_back(nt);
         } else if(_name.compare("Region")==0) {
-            Region_Data *nt = new Region_Data;
-            ok &= loadFrom(s,nt);
-            target->m_Region.push_back(nt);
+            Region_Data nt;
+            ok &= loadFrom(s,&nt);
+            target->m_Region.emplace_back(nt);
         } else
             assert(!"unknown field referenced.");
         s->nest_out();
@@ -248,8 +246,8 @@ bool loadFrom(BinStore *s,Costume2_Data *target)
     {
         s->nest_in();
         if(_name.compare("Origin")==0) {
-            CostumeOrigin_Data *nt = new CostumeOrigin_Data;
-            ok &= loadFrom(s,nt);
+            CostumeOrigin_Data nt;
+            ok &= loadFrom(s,&nt);
             target->m_Origins.push_back(nt);
         } else
             assert(!"unknown field referenced.");
@@ -267,12 +265,12 @@ void serialize(Archive & archive, ColorEntry_Data & m)
 }
 
 template<class Archive>
-void serialize(Archive & archive, Pallette_Data & m)
+static void serialize(Archive & archive, Pallette_Data & m)
 {
     archive(cereal::make_nvp("Colors",m.m_Colors));
 }
 template<class Archive>
-void serialize(Archive & archive, TailorCost_Data & m)
+static void serialize(Archive & archive, TailorCost_Data & m)
 {
     archive(cereal::make_nvp("MinLevel",m.m_MinLevel));
     archive(cereal::make_nvp("MaxLevel",m.m_MaxLevel));
@@ -303,13 +301,11 @@ bool loadFrom(BinStore *s,GeoSet_Data *target)
     {
         s->nest_in();
         if(_name.compare("Info")==0) {
-            GeoSet_Info_Data *nt = new GeoSet_Info_Data;
-            ok &= loadFrom(s,nt);
-            target->m_Infos.push_back(nt);
+            target->m_Infos.push_back({});
+            ok &= loadFrom(s,target->m_Infos.back());
         } else if(_name.compare("Mask")==0) {
-            GeoSet_Mask_Data *nt = new GeoSet_Mask_Data;
-            ok &= loadFrom(s,nt);
-            target->m_Masks.push_back(nt);
+            target->m_Masks.push_back({});
+            ok &= loadFrom(s,target->m_Masks.back());
         } else
             assert(!"unknown field referenced.");
         s->nest_out();
@@ -392,9 +388,65 @@ void saveTo(const AllTailorCosts_Data & target, const QString & baseName, bool t
     commonSaveTo(target,"TailorCosts",baseName,text_format);
 }
 
+template<class Archive>
+static void serialize(Archive & archive, GeoSet_Mask_Data & m)
+{
+    archive(cereal::make_nvp("Name",m.m_Name));
+    archive(cereal::make_nvp("DisplayName",m.m_DisplayName));
+}
+template<class Archive>
+static void serialize(Archive & archive, GeoSet_Info_Data & m)
+{
+    archive(cereal::make_nvp("DisplayName",m.m_DisplayName));
+    archive(cereal::make_nvp("GeoName",m.m_GeoName));
+    archive(cereal::make_nvp("Geo",m.m_Geo));
+    archive(cereal::make_nvp("m_Tex1",m.m_Tex1));
+    archive(cereal::make_nvp("m_Tex2",m.m_Tex2));
+    archive(cereal::make_nvp("DevOnly",m.m_DevOnly));
+}
+template<class Archive>
+static void serialize(Archive & archive, GeoSet_Data & m)
+{
+    archive(cereal::make_nvp("Displayname",m.m_Displayname));
+    archive(cereal::make_nvp("BodyPart",m.m_BodyPart));
+    archive(cereal::make_nvp("Type",m.m_Type));
+    archive(cereal::make_nvp("MaskStrings",m.m_MaskStrings));
+    archive(cereal::make_nvp("MaskNames",m.m_MaskNames));
+    archive(cereal::make_nvp("Infos",m.m_Infos));
+    archive(cereal::make_nvp("Masks",m.m_Masks));
+}
+template<class Archive>
+static void serialize(Archive & archive, BoneSet_Data & m)
+{
+    archive(cereal::make_nvp("Name",m.m_Name));
+    archive(cereal::make_nvp("Displayname",m.m_Displayname));
+    archive(cereal::make_nvp("GeoSets",m.m_GeoSets));
+}
+template<class Archive>
+static void serialize(Archive & archive, Region_Data & m)
+{
+    archive(cereal::make_nvp("Name",m.m_Name));
+    archive(cereal::make_nvp("Displayname",m.m_Displayname));
+    archive(cereal::make_nvp("BoneSets",m.m_BoneSets));
+}
+template<class Archive>
+static void serialize(Archive & archive, CostumeOrigin_Data & m)
+{
+    archive(cereal::make_nvp("Name",m.m_Name));
+    archive(cereal::make_nvp("BodyPalette",m.m_BodyPalette));
+    archive(cereal::make_nvp("SkinPalette",m.m_SkinPalette));
+    archive(cereal::make_nvp("Region",m.m_Region));
+}
+template<class Archive>
+static void serialize(Archive & archive, Costume2_Data & m)
+{
+    archive(cereal::make_nvp("Name",m.m_Name));
+    archive(cereal::make_nvp("Origins",m.m_Origins));
+}
+
 void saveTo(const CostumeSet_Data & target, const QString & baseName, bool text_format)
 {
-    assert(false);
+    commonSaveTo(target,"Costumes",baseName,text_format);
 }
 
 void saveTo(const Pallette_Data & target, const QString & baseName, bool text_format)
@@ -404,5 +456,5 @@ void saveTo(const Pallette_Data & target, const QString & baseName, bool text_fo
 
 void saveTo(const GeoSet_Data & target, const QString & baseName, bool text_format)
 {
-    assert(false);
+    commonSaveTo(target,"GeoSet",baseName,text_format);
 }

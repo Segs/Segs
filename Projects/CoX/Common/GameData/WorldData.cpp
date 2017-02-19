@@ -71,51 +71,51 @@ void WorldData_impl::fill_hashes()
         m_strings.insert_entry(ce.m_Name,"");
         for(int orign_idx=ce.m_Origins.size()-1; orign_idx>=0; --orign_idx)
         {
-            CostumeOrigin_Data *orig=ce.m_Origins[orign_idx];
-            add_colors(orig->m_BodyPalette[0]->m_Colors);
-            add_colors(orig->m_SkinPalette[0]->m_Colors);
-            for(int region_idx=orig->m_Region.size()-1; region_idx>=0; --region_idx)
+            CostumeOrigin_Data &orig(ce.m_Origins[orign_idx]);
+            add_colors(orig.m_BodyPalette[0].m_Colors);
+            add_colors(orig.m_SkinPalette[0].m_Colors);
+            for(int region_idx=orig.m_Region.size()-1; region_idx>=0; --region_idx)
             {
-                Region_Data *region = orig->m_Region[region_idx];
-                m_strings.insert_entry(region->m_Name,"");
-                for(int bone_idx=region->m_BoneSets.size()-1; bone_idx>=0; --bone_idx)
+                Region_Data &region(orig.m_Region[region_idx]);
+                m_strings.insert_entry(region.m_Name,"");
+                for(int bone_idx=region.m_BoneSets.size()-1; bone_idx>=0; --bone_idx)
                 {
-                    BoneSet_Data *bset=region->m_BoneSets[bone_idx];
-                    m_strings.insert_entry(bset->m_Name,"");
-                    m_strings.insert_entry(bset->m_Displayname,"");
+                    BoneSet_Data &bset(region.m_BoneSets[bone_idx]);
+                    m_strings.insert_entry(bset.m_Name,"");
+                    m_strings.insert_entry(bset.m_Displayname,"");
 
-                    for(int geo_idx=bset->m_GeoSets.size()-1; geo_idx>=0; --geo_idx)
+                    for(int geo_idx=bset.m_GeoSets.size()-1; geo_idx>=0; --geo_idx)
                     {
-                        GeoSet_Data *geo_set = bset->m_GeoSets[geo_idx];
-                        m_strings.insert_entry(geo_set->m_Displayname,"");
-                        m_strings.insert_entry(geo_set->m_BodyPart,"");
-                        for(int info_idx=geo_set->m_Infos.size()-1; info_idx>=0; --info_idx)
+                        GeoSet_Data &geo_set(bset.m_GeoSets[geo_idx]);
+                        m_strings.insert_entry(geo_set.m_Displayname,"");
+                        m_strings.insert_entry(geo_set.m_BodyPart,"");
+                        for(int info_idx=geo_set.m_Infos.size()-1; info_idx>=0; --info_idx)
                         {
-                            GeoSet_Info_Data *info = geo_set->m_Infos[info_idx];
-                            m_strings.insert_entry(info->m_DisplayName,"");
-                            m_strings.insert_entry(info->m_GeoName,"");
-                            m_strings.insert_entry(info->m_Geo,"");
-                            m_strings.insert_entry(info->m_Tex1,"");
-                            m_strings.insert_entry(info->m_Tex2,"");
+                            const GeoSet_Info_Data &info(geo_set.m_Infos[info_idx]);
+                            m_strings.insert_entry(info.m_DisplayName,"");
+                            m_strings.insert_entry(info.m_GeoName,"");
+                            m_strings.insert_entry(info.m_Geo,"");
+                            m_strings.insert_entry(info.m_Tex1,"");
+                            m_strings.insert_entry(info.m_Tex2,"");
                         }
-                        for(int name_idx=geo_set->m_MaskNames.size()-1; name_idx>=0; --name_idx)
+                        for(int name_idx=geo_set.m_MaskNames.size()-1; name_idx>=0; --name_idx)
                         {
-                            m_strings.insert_entry(geo_set->m_MaskNames[name_idx],"");
+                            m_strings.insert_entry(geo_set.m_MaskNames[name_idx],"");
                         }
-                        for(int name_idx=geo_set->m_MaskStrings.size()-1; name_idx>=0; --name_idx)
+                        for(int name_idx=geo_set.m_MaskStrings.size()-1; name_idx>=0; --name_idx)
                         {
-                            m_strings.insert_entry(geo_set->m_MaskStrings[name_idx],"");
+                            m_strings.insert_entry(geo_set.m_MaskStrings[name_idx],"");
                         }
-                        for(int mask_idx=geo_set->m_Masks.size()-1; mask_idx>=0; --mask_idx)
+                        for(int mask_idx=geo_set.m_Masks.size()-1; mask_idx>=0; --mask_idx)
                         {
-                            GeoSet_Mask_Data *mask = geo_set->m_Masks[mask_idx];
-                            m_strings.insert_entry(mask->m_Name,"");
-                            m_strings.insert_entry(mask->m_DisplayName,"");
+                            GeoSet_Mask_Data &mask(geo_set.m_Masks[mask_idx]);
+                            m_strings.insert_entry(mask.m_Name,"");
+                            m_strings.insert_entry(mask.m_DisplayName,"");
                         }
                     }
                 }
             }
-            m_strings.insert_entry(orig->m_Name,"");
+            m_strings.insert_entry(orig.m_Name,"");
         }
     }
 }

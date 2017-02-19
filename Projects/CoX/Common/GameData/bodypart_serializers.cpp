@@ -25,6 +25,7 @@
 namespace {
 bool loadFrom(BinStore *s,BodyPart_Data *target) {
     bool ok = true;
+    s->prepare();
     ok &= s->read(target->m_Name);
     ok &= s->read(target->m_BoneCount);
     ok &= s->read(target->m_InfluenceCost);
@@ -54,6 +55,7 @@ void serialize(Archive & archive, BodyPart_Data & m)
 
 bool loadFrom(BinStore * s, AllBodyParts_Data * target)
 {
+    s->prepare();
     bool ok = s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;

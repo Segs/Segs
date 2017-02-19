@@ -50,6 +50,8 @@ struct RGB
     }
 };
 #pragma pack(pop)
+static_assert(sizeof(RGB)==3,"sizeof(RGB)==3");
+
 struct RGBA
 {
     union
@@ -98,4 +100,4 @@ struct RGBA
 //static_assert(offsetof(RGBA,b)==2,"");
 //static_assert(offsetof(RGBA,a)==3,"");
 
-//static_assert(sizeof(RGBA)==4,"z");
+static_assert(sizeof(RGBA)==4,"sizeof(RGBA)==4");

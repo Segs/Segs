@@ -42,6 +42,4 @@ typedef std::vector<Shop_Data> AllShops_Data;
 struct ShopDeptName_Data {
     QString m_Names;
 };
-struct AllShopDepts_Data {
-    std::vector<ShopDeptName_Data> m_Departments;
-};
+typedef std::vector<ShopDeptName_Data> AllShopDepts_Data;

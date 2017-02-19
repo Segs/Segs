@@ -219,27 +219,28 @@ bool loadFrom(BinStore * s, AllShopDepts_Data *target)
         if(_name.compare("Department")==0) {
             ShopDeptName_Data nt;
             ok &= loadFrom(s,&nt);
-            target->m_Departments.push_back(nt);
+            target->push_back(nt);
         } else
             assert(!"unknown field referenced.");
         s->nest_out();
     }
     return ok;
 }
+
 template<class Archive>
-void serialize(Archive & archive, ShopBuySell_Data & m)
+static void serialize(Archive & archive, ShopBuySell_Data & m)
 {
     archive(cereal::make_nvp("Department",m.m_Department));
     archive(cereal::make_nvp("Markup",m.m_Markup));
 }
 template<class Archive>
-void serialize(Archive & archive, ShopItem_Data & m)
+static void serialize(Archive & archive, ShopItem_Data & m)
 {
     archive(cereal::make_nvp("Name",m.m_Name));
 }
 
 template<class Archive>
-void serialize(Archive & archive, Shop_Data & m)
+static void serialize(Archive & archive, Shop_Data & m)
 {
     archive(cereal::make_nvp("Name",m.m_Name));
     archive(cereal::make_nvp("Sells",m.m_Sells));
@@ -252,12 +253,37 @@ void saveTo(const AllShops_Data & target, const QString & baseName, bool text_fo
     commonSaveTo(target,"AllShops",baseName,text_format);
 }
 
-void saveTo(const AllShopItems_Data & target, const QString & baseName, bool text_format)
+template<class Archive>
+static void serialize(Archive & archive, ItemPower_Data & m)
 {
-
+    archive(cereal::make_nvp("PowerCategory",m.m_PowerCategory));
+    archive(cereal::make_nvp("PowerSet",m.m_PowerSet));
+    archive(cereal::make_nvp("Power",m.m_Power));
+    archive(cereal::make_nvp("Level",m.m_Level));
+    archive(cereal::make_nvp("Remove",m.m_Remove));
+}
+template<class Archive>
+static void serialize(Archive & archive, ShopItemInfo_Data & m)
+{
+    archive(cereal::make_nvp("Name",m.m_Name));
+    archive(cereal::make_nvp("Sell",m.m_Sell));
+    archive(cereal::make_nvp("Buy",m.m_Buy));
+    archive(cereal::make_nvp("CountPerStore",m.m_CountPerStore));
+    archive(cereal::make_nvp("Departments",m.m_Departments));
+    archive(cereal::make_nvp("Power",m.m_Power));
 }
 
+void saveTo(const AllShopItems_Data & target, const QString & baseName, bool text_format)
+{
+    commonSaveTo(target,"AllShopItems",baseName,text_format);
+}
+
+template<class Archive>
+static void serialize(Archive & archive, ShopDeptName_Data & m)
+{
+    archive(cereal::make_nvp("Name",m.m_Names));
+}
 void saveTo(const AllShopDepts_Data & target, const QString & baseName, bool text_format)
 {
-
+    commonSaveTo(target,"AllShopDepts",baseName,text_format);
 }

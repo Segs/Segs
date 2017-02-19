@@ -47,7 +47,6 @@ struct GeoSet_Info_Data
 };
 struct GeoSet_Data
 {
-    int res;
     QString m_Displayname;
     QString m_BodyPart;
     int m_Type;
@@ -58,37 +57,37 @@ struct GeoSet_Data
     float timing2;
     std::vector<QString> m_MaskStrings;
     std::vector<QString> m_MaskNames;
-    std::vector<GeoSet_Mask_Data *> m_Masks;
-    std::vector<GeoSet_Info_Data *> m_Infos;
+    std::vector<GeoSet_Mask_Data> m_Masks;
+    std::vector<GeoSet_Info_Data> m_Infos;
 };
 struct BoneSet_Data
 {
     QString m_Name;
     QString m_Displayname;
+    std::vector<GeoSet_Data> m_GeoSets;
     int rs; // selected geoset index?
-    std::vector<GeoSet_Data *> m_GeoSets;
 };
 
 struct Region_Data
 {
     QString m_Name;
     QString m_Displayname;
-    int rs;
-    std::vector<BoneSet_Data *>m_BoneSets;
+    std::vector<BoneSet_Data> m_BoneSets;
+    int rs; // selected boneset
 };
 
 struct CostumeOrigin_Data
 {
     QString m_Name; // Name of the group Male/Female/Huge/BasicFemale ...
-    std::vector<Pallette_Data *> m_BodyPalette;
-    std::vector<Pallette_Data *> m_SkinPalette;
-    std::vector<Region_Data *>   m_Region;
+    std::vector<Pallette_Data> m_BodyPalette;
+    std::vector<Pallette_Data> m_SkinPalette;
+    std::vector<Region_Data>   m_Region;
 };
 
 struct Costume2_Data
 {
     QString m_Name;
-    std::vector<CostumeOrigin_Data *> m_Origins;
+    std::vector<CostumeOrigin_Data> m_Origins;
 };
 
 typedef std::vector<Costume2_Data> CostumeSet_Data;
