@@ -112,7 +112,7 @@ bool AdminDatabase::GetAccountByName( AccountInfo &to_fill,const QString &login 
 bool AdminDatabase::GetAccountById( AccountInfo &to_fill,uint64_t id )
 {
     to_fill.m_acc_server_acc_id = 0;
-    m_prepared_select_account_by_id.bindValue(0,id);
+    m_prepared_select_account_by_id.bindValue(0,quint64(id));
     if(!m_prepared_select_account_by_id.exec()) {
         qDebug() << "SQL_ERROR:"<<m_prepared_select_account_by_id.lastError();
         return false;
