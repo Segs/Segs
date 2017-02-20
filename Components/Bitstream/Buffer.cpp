@@ -5,11 +5,11 @@
  * This software is licensed! (See License.txt for details)
  *
  */
+#include "Buffer.h"
+
 #include <cassert>
 #include <string>
-#include <ace/Log_Msg.h>
 
-#include "Buffer.h"
 
 GrowingBuffer::GrowingBuffer(uint8_t *buf, size_t size, bool take_ownership)
 {

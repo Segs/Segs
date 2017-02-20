@@ -5,15 +5,14 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-
 #pragma once
 
-#include <string>
-#include <ace/OS_NS_time.h>
-#include "ServerManager.h"
 #include "Client.h"
-class GameServerInterface;
 
+#include <string>
+
+class GameServerInterface;
+class IGameServer;
 // skeleton class used during authentication
 class AuthClient : public ClientSession
 {

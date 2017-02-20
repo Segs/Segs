@@ -8,12 +8,21 @@
 
 // segs includes
 #include "AdminServer.h"
+
 #include "AdminDatabase.h"
+#include "AccountInfo.h"
 #include "Client.h"
 #include "ConfigExtension.h"
 #include "CharacterDatabase.h"
-#include "PsqlDatabase.h"
-#include "SqliteDatabase.h"
+
+#include <QtCore/QSettings>
+#include <QtCore/QString>
+#include <QtCore/QStringList>
+#include <QtCore/QFile>
+#include <QtCore/QDebug>
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlQuery>
+#include <QtSql/QSqlError>
 
 // AdminServer should pull client data from database or from it's local, in-memory cache
 // currently there is no such thing, and 'client-cache' is just a hash-map
@@ -28,92 +37,115 @@ _AdminServer::_AdminServer(void) : m_running(false)
 // Defined destructor
 _AdminServer::~_AdminServer(void)
 {
-        (void)ShutDown();
+    (void)ShutDown();
+}
+static void createDefaultConfigEntries(const std::string &inipath) {
+    QSettings config(inipath.c_str(),QSettings::IniFormat);
+
+    config.beginGroup("AdminServer");
+        config.beginGroup("AccountDatabase");
+            config.setValue("db_driver","QSQLITE");
+            config.value("db_host","127.0.0.1").toString();
+            config.value("db_port","5432").toString();
+            config.value("db_name","segs").toString();
+            config.value("db_user","none").toString();
+            config.value("db_pass","none").toString();
+        config.endGroup();
+        config.beginGroup("CharacterDatabase");
+            config.setValue("db_driver","QSQLITE");
+            config.value("db_host","127.0.0.1").toString();
+            config.value("db_port","5432").toString();
+            config.value("db_name","segs_game").toString();
+            config.value("db_user","none").toString();
+            config.value("db_pass","none").toString();
+        config.endGroup();
+    config.endGroup();
+
 }
 bool _AdminServer::ReadConfig(const std::string &inipath)
 {
-        if(m_running)
-                ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AdminServer: Already initialized and running\n") ),false);
+    if(m_running)
+        ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AdminServer: Already initialized and running\n") ),false);
 
-        StringsBasedCfg config;
-        if (config.open () == -1)
-        {
-                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("%p\n"), ACE_TEXT ("config")),false);
-        }
-        ACE_Ini_ImpExp config_importer (config);
-        if (config_importer.import_config (inipath.c_str()) == -1)
-                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Unable to open config file : %s\n"), inipath.c_str()),false);
-        ACE_Configuration_Section_Key root;
-        ACE_Configuration_Section_Key account_db_config;
-        ACE_Configuration_Section_Key character_db_config;
-        if(-1==config.open_section(config.root_section(),"AdminServer",1,root))
-                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [AdminServer] section\n"), inipath.c_str()),false);
-        if(-1==config.open_section(root,"AccountDatabase",1,account_db_config))
-                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [AccountDatabase] section\n"), inipath.c_str()),false);
-        std::string dbhost,dbname,dbuser,dbpass,dbport,dbdriver;
-        config.get_string_value(account_db_config,ACE_TEXT("db_driver"),dbdriver,"sqlite");
-        config.get_string_value(account_db_config,ACE_TEXT("db_host"),dbhost,"127.0.0.1");
-        config.get_string_value(account_db_config,ACE_TEXT("db_port"),dbport,"5432");
-        config.get_string_value(account_db_config,ACE_TEXT("db_name"),dbname,"segs");
-        config.get_string_value(account_db_config,ACE_TEXT("db_user"),dbuser,"none");
-        config.get_string_value(account_db_config,ACE_TEXT("db_pass"),dbpass,"none");
-        Database *db1;
-        if(dbdriver=="pgsql") {
-#ifdef HAVE_POSTGRES
-            db1 = new PSqlDatabase;
-#else
-            ACE_DEBUG((LM_INFO,"PostgreSQL support was not selected during compilation.\n"));
-            db1 = new SqliteDatabase;
-#endif
-        }
-        else {
-            db1 = new SqliteDatabase;
-        }
-        db1->setConnectionConfiguration(dbhost.c_str(),dbport.c_str(),dbname.c_str(),dbuser.c_str(),dbpass.c_str());
-        m_db->setDb(db1);
+    if (!QFile::exists(inipath.c_str()))
+    {
+        qCritical() << "Config file" << inipath.c_str() <<"does not exist.";
+        return false;
+    }
+    QSettings config(inipath.c_str(),QSettings::IniFormat);
+    config.beginGroup("AdminServer");
 
-    if(-1==config.open_section(root,"CharacterDatabase",1,character_db_config))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminServer: Config file %s is missing [CharacterDatabase] section\n"), inipath.c_str()),false);
+    config.beginGroup("AccountDatabase");
+    QString dbdriver = config.value("db_driver","QSQLITE").toString();
+    QString dbhost = config.value("db_host","127.0.0.1").toString();
+    int dbport = config.value("db_port","5432").toInt();
+    QString dbname = config.value("db_name","segs").toString();
+    QString dbuser = config.value("db_user","none").toString();
+    QString dbpass = config.value("db_pass","none").toString();
+    config.endGroup();
+    QSqlDatabase *db1;
+    QStringList driver_list {"QSQLITE","QPSQL"};
+    if(!driver_list.contains(dbdriver.toUpper())) {
+        qWarning() << "Database driver" << dbdriver << " not supported";
+    }
+    db1 = new QSqlDatabase(QSqlDatabase::addDatabase(dbdriver.toUpper(),"AccountDatabase"));
+    db1->setHostName(dbhost);
+    db1->setPort(dbport);
+    db1->setDatabaseName(dbname);
+    db1->setUserName(dbuser);
+    db1->setPassword(dbpass);
+    m_db->setDb(db1);
 
-        config.get_string_value(character_db_config,ACE_TEXT("db_driver"),dbdriver,"sqlite");
-        config.get_string_value(character_db_config,ACE_TEXT("db_host"),dbhost,"127.0.0.1");
-        config.get_string_value(character_db_config,ACE_TEXT("db_port"),dbport,"5432");
-        config.get_string_value(character_db_config,ACE_TEXT("db_name"),dbname,"segs_game");
-        config.get_string_value(character_db_config,ACE_TEXT("db_user"),dbuser,"none");
-        config.get_string_value(character_db_config,ACE_TEXT("db_pass"),dbpass,"none");
-        Database *db2;
-        if(dbdriver=="pgsql") {
-#ifdef HAVE_POSTGRES
-            db2 = new PSqlDatabase;
-#else
-            ACE_DEBUG((LM_INFO,"PostgreSQL support was not selected during compilation.\n"));
-            db2 = new SqliteDatabase;
-#endif
-        }
-        else {
-            db2 = new SqliteDatabase;
-        }
-
-        db2->setConnectionConfiguration(dbhost.c_str(),dbport.c_str(),dbname.c_str(),dbuser.c_str(),dbpass.c_str());
-        m_char_db->setDb(db2);
-        return true;
+    config.beginGroup("CharacterDatabase");
+    dbdriver = config.value("db_driver","QSQLITE").toString();
+    dbhost = config.value("db_host","127.0.0.1").toString();
+    dbport = config.value("db_port","5432").toInt();
+    dbname = config.value("db_name","segs_game").toString();
+    dbuser = config.value("db_user","none").toString();
+    dbpass = config.value("db_pass","none").toString();
+    config.endGroup();
+    QSqlDatabase *db2;
+    if(!driver_list.contains(dbdriver.toUpper())) {
+        qWarning() << "Database driver" << dbdriver << " not supported";
+    }
+    db2 = new QSqlDatabase(QSqlDatabase::addDatabase(dbdriver,"CharacterDatabase"));
+    db2->setHostName(dbhost);
+    db2->setPort(dbport);
+    db2->setDatabaseName(dbname);
+    db2->setUserName(dbuser);
+    db2->setPassword(dbpass);
+    m_char_db->setDb(db2);
+    return true;
 }
 bool _AdminServer::Run()
 {
-        if(m_db->getDb()->OpenConnection(m_db))
-                return false;
-        if(m_char_db->getDb()->OpenConnection(m_char_db))
-                return false;
-        m_running=true;
-        return true;
+    if(!m_db->getDb()->open())
+        return false;
+    m_db->getDb()->exec("PRAGMA foreign_keys = ON");
+    if(m_db->getDb()->lastError().isValid()) {
+        qWarning() << m_db->getDb()->lastError();
+        return false;
+    }
+    m_db->on_connected(m_db->getDb());
+
+    if(!m_char_db->getDb()->open())
+        return false;
+    m_char_db->getDb()->exec("PRAGMA foreign_keys = ON");
+    if(m_char_db->getDb()->lastError().isValid()) {
+        qWarning() << m_char_db->getDb()->lastError();
+        return false;
+    }
+    m_char_db->on_connected(m_char_db->getDb());
+    m_running=true;
+    return true;
 }
 bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" */)
 {
-    bool res;
+    bool res=true;
     ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
     m_running=false;
-    res  =  m_db->getDb()->CloseConnection()==0;
-    res &=  m_char_db->getDb()->CloseConnection()==0;
+    m_db->getDb()->close();
+    m_char_db->getDb()->close();
 
     delete m_db;
     delete m_char_db;
@@ -123,55 +155,55 @@ bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" 
 }
 bool _AdminServer::fill_account_info( AccountInfo &client )
 {
-        if((client.login().size()>0) && (client.account_server_id()==0)) // existing client
-        {
-                return m_db->GetAccountByName(client,client.login());
-        }
-        if(client.account_server_id()) // existing client
-        {
-                return m_db->GetAccountById(client,client.account_server_id());
-        }
-        return false;
+    if((client.login().size()>0) && (client.account_server_id()==0)) // existing client
+    {
+        return m_db->GetAccountByName(client,client.login());
+    }
+    if(client.account_server_id()) // existing client
+    {
+        return m_db->GetAccountById(client,client.account_server_id());
+    }
+    return false;
 
 }
 bool _AdminServer::Login(const AccountInfo &,const ACE_INET_Addr &)
 {
-        // Here we should log to the Db, a Login event for that client
-        //client->setState(AuthClient::LOGGED_IN); modifying this should be done in AuthServer
-        return true;
+    // Here we should log to the Db, a Login event for that client
+    //client->setState(AuthClient::LOGGED_IN); modifying this should be done in AuthServer
+    return true;
 }
 
 bool _AdminServer::Logout(const AccountInfo &) const
 {
-        // Here we should log to the Db, a Logout event for that client
-        //if(client)
-        //  client->setState(AuthClient::NOT_LOGGEDIN);
-        return true;
+    // Here we should log to the Db, a Logout event for that client
+    //if(client)
+    //  client->setState(AuthClient::NOT_LOGGEDIN);
+    return true;
 }
 
 bool _AdminServer::ValidPassword( const AccountInfo &client, const char *password )
 {
-        return m_db->ValidPassword(client.login().c_str(),password);
+    return m_db->ValidPassword(qPrintable(client.login()),password);
 }
 
 int _AdminServer::SaveAccount(const char *username, const char *password)
 {
-        int res=0;
-        if(false==m_db->AddAccount(username, password))
-                return 1;
+    int res=0;
+    if(false==m_db->AddAccount(username, password))
+        return 1;
 
-        AccountInfo tmp;
-        tmp.login(username); // Fix if username is preprocessed before db entry in AddAccount
-        fill_account_info(tmp);
-        // also register this account on all currently available gameservers
-        // they really should check for sync with AdminDb on startup
-        //for(size_t idx=0; idx<ServerManager::instance()->GameServerCount(); idx++)
-        //{
-        // TODO: support multiple game servers.
-                if(!m_char_db->CreateLinkedAccount(tmp.account_server_id(),username))
-                        res=2;
-        //}
-        return res;   // Add the given account
+    AccountInfo tmp;
+    tmp.login(username); // Fix if username is preprocessed before db entry in AddAccount
+    fill_account_info(tmp);
+    // also register this account on all currently available gameservers
+    // they really should check for sync with AdminDb on startup
+    //for(size_t idx=0; idx<ServerManager::instance()->GameServerCount(); idx++)
+    //{
+    // TODO: support multiple game servers.
+    if(!m_char_db->CreateLinkedAccount(tmp.account_server_id(),username))
+        res=2;
+    //}
+    return res;   // Add the given account
 }
 
 int _AdminServer::RemoveAccount(AccountInfo &client)
@@ -200,8 +232,8 @@ bool AdminServer::AccountBlocked(const char *login) const
 
 int _AdminServer::AddIPBan(const ACE_INET_Addr &client_addr)
 {
-        m_ban_list.push_back(client_addr);
-        return 0;
+    m_ban_list.push_back(client_addr);
+    return 0;
 }
 
 /**
@@ -212,8 +244,8 @@ int _AdminServer::AddIPBan(const ACE_INET_Addr &client_addr)
  */
 ServerHandle<IGameServer> _AdminServer::RegisterMapServer(const ServerHandle<IMapServer> &/*map_h*/)
 {
-        // For each server, find number of free Map handlers, and player occupancy ( servers with low number of Maps, and low occupancy should be prioritized)
-        return ServerHandle<IGameServer>(0);
+    // For each server, find number of free Map handlers, and player occupancy ( servers with low number of Maps, and low occupancy should be prioritized)
+    return ServerHandle<IGameServer>(0);
 }
 
 

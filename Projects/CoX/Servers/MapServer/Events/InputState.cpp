@@ -11,11 +11,12 @@
 #include <cmath>
 #include "Events/InputState.h"
 #include "Entity.h"
-static osg::Quat QuaternionFromYawPitchRoll(const osg::Vec3 &pyr)
+
+static glm::quat QuaternionFromYawPitchRoll(const glm::vec3 &pyr)
 {
-    float pitch(pyr.x());
-    float yaw(pyr.y());
-    float roll(pyr.z());
+    float pitch(pyr.x);
+    float yaw(pyr.y);
+    float roll(pyr.z);
 
     float rollOver2 = roll * 0.5f;
     float sinRollOver2 = (float)sin((double)rollOver2);
@@ -33,16 +34,16 @@ static osg::Quat QuaternionFromYawPitchRoll(const osg::Vec3 &pyr)
     // Attitude = Pitch
     // Bank = Roll
 
-    osg::Quat result;
+    glm::quat result;
     //result.X = cosYawOver2 * cosPitchOver2 * cosRollOver2 + sinYawOver2 * sinPitchOver2 * sinRollOver2;
     //result.Y = cosYawOver2 * cosPitchOver2 * sinRollOver2 - sinYawOver2 * sinPitchOver2 * cosRollOver2;
     //result.Z = cosYawOver2 * sinPitchOver2 * cosRollOver2 + sinYawOver2 * cosPitchOver2 * sinRollOver2;
     //result.W = sinYawOver2 * cosPitchOver2 * cosRollOver2 - cosYawOver2 * sinPitchOver2 * sinRollOver2;
 
-    result.w() = cosYawOver2 * cosPitchOver2 * cosRollOver2 - sinYawOver2 * sinPitchOver2 * sinRollOver2;
-    result.x() = sinYawOver2 * sinPitchOver2 * cosRollOver2 + cosYawOver2 * cosPitchOver2 * sinRollOver2;
-    result.y() = sinYawOver2 * cosPitchOver2 * cosRollOver2 + cosYawOver2 * sinPitchOver2 * sinRollOver2;
-    result.z() = cosYawOver2 * sinPitchOver2 * cosRollOver2 - sinYawOver2 * cosPitchOver2 * sinRollOver2;
+    result.w = cosYawOver2 * cosPitchOver2 * cosRollOver2 - sinYawOver2 * sinPitchOver2 * sinRollOver2;
+    result.x = sinYawOver2 * sinPitchOver2 * cosRollOver2 + cosYawOver2 * cosPitchOver2 * sinRollOver2;
+    result.y = sinYawOver2 * cosPitchOver2 * cosRollOver2 + cosYawOver2 * sinPitchOver2 * sinRollOver2;
+    result.z = cosYawOver2 * sinPitchOver2 * cosRollOver2 - sinYawOver2 * cosPitchOver2 * sinRollOver2;
 
     return result;
 }
@@ -64,15 +65,19 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
 
     for(int i=0; i<3; ++i)
         if(other.pos_delta_valid[i])
-            pos_delta._v[i] = other.pos_delta._v[i];
+            pos_delta[i] = other.pos_delta[i];
     bool update_needed=false;
     for(int i=0; i<3; ++i)
         if(other.pyr_valid[i]) {
-            camera_pyr._v[i] = other.camera_pyr._v[i];
+            camera_pyr[i] = other.camera_pyr[i];
             update_needed = true;
         }
     if(update_needed) {
-        direction = osg::Quat(camera_pyr[0], osg::X_AXIS, camera_pyr[1], -osg::Y_AXIS, 0, osg::Z_AXIS);
+        direction = glm::angleAxis(camera_pyr[0], glm::vec3(1, 0, 0)) *
+                    glm::angleAxis(camera_pyr[1], glm::vec3(0,-1, 0)) *
+                    glm::angleAxis(camera_pyr[2], glm::vec3(0, 0, 1))
+                ;
+        //direction = glm::quat(camera_pyr[0], osg::X_AXIS, camera_pyr[1], -osg::Y_AXIS, 0, osg::Z_AXIS);
         //direction = QuaternionFromYawPitchRoll(camera_pyr);
     }
     return *this;
@@ -159,7 +164,7 @@ void InputState::partial_2(BitStream &bs)
                     m_data.camera_pyr[0] = recovered;
                 else
                     m_data.camera_pyr[1] = recovered;
-                fprintf(stderr,"Pyr %f : %f \n",m_data.camera_pyr.x(),m_data.camera_pyr.y());
+                fprintf(stderr,"Pyr %f : %f \n",m_data.camera_pyr.x,m_data.camera_pyr.y);
                 break;
             }
             case 8:
@@ -338,7 +343,7 @@ void InputState::recv_client_opts(BitStream &bs)
     int opt_idx=0;
     int some_idx = bs.GetPackedBits(1);
     entry=opts.get(opt_idx)-1;
-    osg::Vec3 vec;
+    glm::vec3 vec;
     while(some_idx!=0)
     {
         for(size_t i=0; i<entry->m_args.size(); i++)
@@ -364,7 +369,7 @@ void InputState::recv_client_opts(BitStream &bs)
                 case ClientOption::t_string:
                 case 4:
                 {
-                    std::string v;
+                    QString v;
                     bs.GetString(v);
                     break;
                 }
@@ -385,4 +390,3 @@ void InputState::recv_client_opts(BitStream &bs)
         entry=opts.get(opt_idx);
     }
 }
-

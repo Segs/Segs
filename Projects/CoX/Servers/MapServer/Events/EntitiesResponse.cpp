@@ -1,13 +1,14 @@
 #define _USE_MATH_DEFINES
-#include <cmath>
-#include <ace/Assert.h>
-#include "Entity.h"
 #include "Events/EntitiesResponse.h"
+
+#include "Entity.h"
 #include "MapEvents.h"
 #include "MapClient.h"
 //#include "MapHandler.h"
 #include "MapInstance.h"
-//#define LOG_
+
+#include <cmath>
+
 //! EntitiesResponse is sent to a client to inform it about the current world state.
 EntitiesResponse::EntitiesResponse(MapClient *cl) :
     MapLinkEvent(MapEventTypes::evEntitites), m_finalized_into(2048)
@@ -165,8 +166,8 @@ struct CscCommon_Sub28
 //static_assert(sizeof(CscCommon_Sub28)==320/8,"Required since it's sent as an bit array");
 void EntitiesResponse::sendServerControlState(BitStream &bs) const
 {
-    osg::Vec3 spd(1,1,1);
-    osg::Vec3 zeroes;
+    glm::vec3 spd(1,1,1);
+    glm::vec3 zeroes;
     bool m_flying=false;
     bool m_dazed=false;
     // user entity
@@ -209,7 +210,7 @@ void EntitiesResponse::sendServerControlState(BitStream &bs) const
         NetStructure::storeVectorConditional(bs,zeroes);  // vector3 -> speed ? likely
 
         NetStructure::storeFloatConditional(bs,0); // Pitch not used ?
-        NetStructure::storeFloatConditional(bs,ent->inp_state.camera_pyr.y()); // Pitch
+        NetStructure::storeFloatConditional(bs,ent->inp_state.camera_pyr.y); // Pitch
         NetStructure::storeFloatConditional(bs,0); // Roll
         bs.StorePackedBits(1,0); // sets the lowest bit in CscCommon::flags
     }

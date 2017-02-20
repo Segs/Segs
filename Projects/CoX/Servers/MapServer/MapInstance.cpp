@@ -8,6 +8,7 @@
  */
 #include "MapInstance.h"
 #include "AdminServer.h"
+#include "AdminServer/AccountInfo.h"
 #include "version.h"
 #include "MapEvents.h"
 #include "MapClient.h"
@@ -365,10 +366,10 @@ void MapInstance::on_window_state(WindowState * ev){
 void MapInstance::on_console_command(ConsoleCommand * ev){
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    printf("Console command received %s\n",ev->contents.c_str());
+    printf("Console command received %s\n",qPrintable(ev->contents));
     if(ev->contents[0]=='l') {
         // send the message to everyone on this map
-        const char *chat_content = ev->contents.c_str()+2;
+        const QString chat_content = ev->contents.mid(2);
         ClientStore<MapClient>::ivClients iter=m_clients.begin();
         ClientStore<MapClient>::ivClients end=m_clients.end();
         for(;iter!=end; ++iter) {

@@ -7,12 +7,10 @@
 
  */
 
-//#include <ace/SOCK_Stream.h>
-#include "ServerManager.h"
-#include <ace/Message_Block.h>
-
-#include "InterfaceManager.h"
 #include "MapServer.h"
+
+#include "ServerManager.h"
+#include "InterfaceManager.h"
 #include "ConfigExtension.h"
 #include "AdminServerInterface.h"
 #include "MapClient.h"
@@ -20,6 +18,12 @@
 #include "MapInstance.h"
 #include "Entity.h"
 #include "SEGSTimer.h"
+
+#include <ace/Log_Msg.h>
+#include <QtCore/QSettings>
+#include <QtCore/QString>
+#include <QtCore/QFile>
+#include <QtCore/QDebug>
 // Template instantiation
 template class ClientStore<MapClient>;
 
@@ -66,10 +70,13 @@ bool MapServer::Run(void)
  */
 bool MapServer::ReadConfig(const std::string &inipath)
 {
-    StringsBasedCfg config;
-    ACE_Ini_ImpExp  config_importer(config);
-    ACE_Configuration_Section_Key root;
-    std::string map_templates_dir;
+    if (!QFile::exists(inipath.c_str()))
+    {
+        qCritical() << "Config file" << inipath.c_str() <<"does not exist.";
+        return false;
+    }
+    QSettings config(inipath.c_str(),QSettings::IniFormat);
+    config.beginGroup("MapServer");
 
     if(m_endpoint)
     {
@@ -77,21 +84,26 @@ bool MapServer::ReadConfig(const std::string &inipath)
         ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) MapServer already initialized and running\n") ));
         return true;
     }
-    if (config.open () == -1)
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) MapServer: %p\n"), ACE_TEXT ("config")),false);
-    if (config_importer.import_config (inipath.c_str()) == -1)
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) MapServer: Unable to open config file : %s\n"), inipath.c_str()),false);
-    if(-1==config.open_section(config.root_section(),"MapServer",1,root))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) MapServer: Config file %s is missing [MapServer] section\n"), inipath.c_str()),false);
-    if(!RoamingServer::ReadConfig(inipath))
+    //TODO: this should read a properly nested MapServer/RoamingServer block, instead of reading ini-'global' [RoamingServer]
+    if(!RoamingServer::ReadConfig(inipath)) // try to read control channel configuration
         return false;
 
-    config.get_addr(root,ACE_TEXT("listen_addr"),m_listen_point,ACE_INET_Addr(7002,"0.0.0.0"));
-    config.get_addr(root,ACE_TEXT("location_addr"),m_location,ACE_INET_Addr(7002,"127.0.0.1"));
-    config.get_addr(root,ACE_TEXT("location_addr"),m_location,ACE_INET_Addr(7002,"127.0.0.1"));
-    config.get_string_value(root,ACE_TEXT("maps"),map_templates_dir,".");
+    QString listen_addr = config.value("listen_addr","0.0.0.0:7003").toString();
+    QString location_addr = config.value("location_addr","127.0.0.1:7003").toString();
+    QString map_templates_dir = config.value("maps",".").toString();
+    if(!parseAddress(listen_addr,m_listen_point))
+    {
+        qCritical() << "Badly formed IP address" << listen_addr;
+        return false;
+    }
+    if(!parseAddress(location_addr,m_location))
+    {
+        qCritical() << "Badly formed IP address" << location_addr;
+        return false;
+    }
+
     m_online = false;
-    return m_manager.load_templates(map_templates_dir);
+    return m_manager.load_templates(qPrintable(map_templates_dir));
 }
 bool MapServer::ShutDown(const std::string &reason)
 {

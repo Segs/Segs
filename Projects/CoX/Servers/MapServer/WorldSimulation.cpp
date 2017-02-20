@@ -1,14 +1,14 @@
 #include "WorldSimulation.h"
 #include "MapInstance.h"
 
-
+#include <glm/gtx/vector_query.hpp>
 
 void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
-    if(e->inp_state.pos_delta.length2()) {
+    if(glm::length2(e->inp_state.pos_delta)) {
         // todo: take into account time between updates
-        osg::Matrix za(osg::Matrix::rotate(e->inp_state.direction));
+        glm::mat3 za = static_cast<glm::mat3>(e->inp_state.direction); // quat to mat4x4 conversion
 
-        e->pos += ((za*e->inp_state.pos_delta)*dT.msec())/50.0f;
+        e->pos += ((za*e->inp_state.pos_delta)*float(dT.msec()))/50.0f;
     }
     if(e->m_is_logging_out) {
         e->m_time_till_logout -= dT.msec();

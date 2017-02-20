@@ -8,6 +8,7 @@
 #define _USE_MATH_DEFINES
 #include "Entity.h"
 
+#include <ace/Log_Msg.h>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -627,7 +628,7 @@ Entity::Entity()
     m_seq_update=0;
     m_has_titles=false;
     m_SG_info=false;
-    pos = osg::Vec3(-60.5,180,0);
+    pos = glm::vec3(-60.5f,180.0f,0.0f);
 }
 
 /*
@@ -786,16 +787,16 @@ void MapCostume::dump()
     {
         const CostumePart &cp(m_parts[i]);
         if(cp.m_full_part)
-            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),cp.m_geometry.c_str(),
-            cp.m_texture_1.c_str(),cp.m_texture_2.c_str(),cp.name_3.c_str(),
+            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),qPrintable(cp.m_geometry),
+            qPrintable(cp.m_texture_1),qPrintable(cp.m_texture_2),qPrintable(cp.name_3),
             cp.m_colors[0],cp.m_colors[1],
-            cp.name_4.c_str(),cp.name_5.c_str()
+            qPrintable(cp.name_4),qPrintable(cp.name_5)
             ));
         else
-            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),cp.m_geometry.c_str(),
-            cp.m_texture_1.c_str(),cp.m_texture_2.c_str(),cp.name_3.c_str(),
+            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),qPrintable(cp.m_geometry),
+            qPrintable(cp.m_texture_1),qPrintable(cp.m_texture_2),qPrintable(cp.name_3),
             cp.m_colors[0],cp.m_colors[1],
-            cp.name_4.c_str(),cp.name_5.c_str()
+            qPrintable(cp.name_4),qPrintable(cp.name_5)
             ));
     }
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    *************\n")));

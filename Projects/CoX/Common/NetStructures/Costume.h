@@ -8,11 +8,12 @@
 
 #pragma once
 
-#include <ace/Log_Msg.h>
-#include <string>
-#include <sstream>
-#include "BitStream.h"
 #include "CommonNetStructures.h"
+#include "BitStream.h"
+
+#include <QtCore/QString>
+#include <string>
+
 class CostumePart : public NetStructure
 {
 public:
@@ -27,7 +28,7 @@ public:
     {
         m_colors[0]=m_colors[1];
     }
-    CostumePart(uint8_t type,const std::string &a,const std::string &b,const std::string &c,const std::string &d,uint32_t c1,uint32_t c2)
+    CostumePart(uint8_t type,const QString &a,const QString &b,const QString &c,const QString &d,uint32_t c1,uint32_t c2)
         :m_type(type),m_geometry(a),m_texture_1(b),m_texture_2(c),name_3(d)
     {
         m_colors[0]=c1;
@@ -37,7 +38,7 @@ public:
     void serializefrom(BitStream &bs);
     void serializeto_charsel(BitStream &bs) const;
     uint8_t m_type; // arms/legs etc..
-    std::string m_geometry,m_texture_1,m_texture_2,name_3,name_4,name_5,name_6;
+    QString m_geometry,m_texture_1,m_texture_2,name_3,name_4,name_5,name_6;
     bool m_full_part;
     uint32_t m_colors[2];
 };
@@ -67,8 +68,8 @@ public:
         bs.StoreFloat(m_physique);
         bs.StoreBits(32,a); // rgb ?
     }
-    void serializeToDb(std::string &tgt);
-    void serializeFromDb(const std::string &src);
+    void serializeToDb(QString &tgt);
+    void serializeFromDb(const QString &src);
 
 #if 0
 0 male SM

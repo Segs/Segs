@@ -7,9 +7,11 @@
  */
 
 #pragma once
-#include <string>
+
 #include "MapEvents.h"
 #include "MapLink.h"
+
+#include <QtCore/QString>
 //TODO: those must support chaining
 
 class GameCommand : public MapLinkEvent {
@@ -34,7 +36,7 @@ class ChatMessage : public GameCommand
 public:
     int         m_source_player_id;
     signed int  m_channel_type;
-    std::string m_msg;
+    QString     m_msg;
         enum        eChatTypes
                     {
                         CHAT_UNKNOWN1 = 1,
@@ -58,5 +60,5 @@ public:
         void        do_serialize(BitStream &bs) const;
         void        serializefrom(BitStream &src);
 static  ChatMessage *adminMessage(const char *msg);
-static  ChatMessage *localMessage(const char *msg,Entity *src);
+static  ChatMessage *localMessage(const QString &msg, Entity *src);
 };

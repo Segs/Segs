@@ -5,25 +5,22 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-
 #pragma once
-
-// ACE Logging
-#include <string>
-#include <ace/Log_Msg.h>
-#include <ace/Singleton.h>
 
 #include "Database.h"
 
+#include <QtSql/QSqlQuery>
+
+class QSqlDatabase;
 class AccountInfo;
-class AdminDatabase : public IDataBaseCallbacks
+class AdminDatabase
 {
-    Database *m_db;
-    bool    GetAccount(AccountInfo & client, DbResults &query);
-    IPreparedQuery *m_add_account_query;
-    IPreparedQuery *m_prepared_select_account_by_id;
-    IPreparedQuery *m_prepared_select_account_passw;
-    IPreparedQuery *m_prepared_select_account_by_username;
+    QSqlDatabase *m_db;
+    bool        GetAccount(AccountInfo & client, QSqlQuery &query);
+    QSqlQuery m_add_account_query;
+    QSqlQuery m_prepared_select_account_by_id;
+    QSqlQuery m_prepared_select_account_passw;
+    QSqlQuery m_prepared_select_account_by_username;
 public:
 virtual     ~AdminDatabase();
             AdminDatabase();
@@ -37,9 +34,9 @@ virtual     ~AdminDatabase();
     int     RemoveAccountByName(char *username);
     int     GetBanFlag(const char *username);
     bool    ValidPassword(const char *username, const char *password);
-    bool    GetAccountByName(AccountInfo &to_fill,const std::string &login);
+    bool    GetAccountByName(AccountInfo &to_fill, const QString &login);
     bool    GetAccountById(AccountInfo &to_fill,uint64_t id);
-    void    setDb(Database *db) {m_db=db;}
-    Database *getDb() {return m_db;}
-    void    on_connected(Database *db);
+    void    setDb(QSqlDatabase *db) {m_db=db;}
+    QSqlDatabase *getDb() {return m_db;}
+    void    on_connected(QSqlDatabase *db);
 };

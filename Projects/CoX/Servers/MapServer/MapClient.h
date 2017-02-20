@@ -8,16 +8,15 @@
  */
 
 #pragma once
-
-#include <string>
-#include <vector>
-#include <map>
-#include <ace/OS_NS_time.h>
 #include "ServerManager.h"
 #include "Client.h"
 #include "MapLink.h"
 #include "CharacterDatabase.h"
 
+#include <QtCore/QString>
+#include <string>
+#include <vector>
+#include <map>
 // skeleton class used during authentication
 class MapHandler;
 class MapInstance;
@@ -31,7 +30,7 @@ class MapClient : public ClientSession
         mNetCommands        m_shortcuts;
         MapInstance *       m_current_map;
         Entity *            m_ent;
-        std::string         m_name; // current character name, stored here for quick lookups
+        QString             m_name; // current character name, stored here for quick lookups
         SEGSTimer *         m_tick_source;
 public:
                             MapClient();
@@ -46,8 +45,8 @@ virtual                     ~MapClient(){}
         Entity *            char_entity(){return m_ent;}
         void                reset();
         MapLink *           link() {return static_cast<MapLink *>(m_link.link());}
-        const std::string & name() const { return m_name; }
-        void                name(const std::string &val) { m_name = val; }
+        const QString &     name() const { return m_name; }
+        void                name(const QString &val) { m_name = val; }
         void                entity(Entity * val);
         bool                db_create(); // creates a new character from Entity data
 };

@@ -1,6 +1,8 @@
-#include <ace/Assert.h>
 #include "Events/SceneEvent.h"
 #include "MapEvents.h"
+
+#include <ace/Log_Msg.h>
+
 SceneEvent::SceneEvent():MapLinkEvent(MapEventTypes::evScene)
 {
 }
@@ -15,14 +17,14 @@ void SceneEvent::dependent_dump(void)
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_outdoor_map 0x%08x\n"),m_outdoor_map));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_map_number 0x%08x\n"),m_map_number));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn1 0x%08x\n"),unkn1));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_map_desc %s\n"),m_map_desc.c_str()));
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_map_desc %s\n"),qPrintable(m_map_desc)));
     }
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    flag_dword_151D5D8 0x%08x\n"),current_map_flags));
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    num_base_elems 0x%08x\n"),num_base_elems));
     for(size_t i=0; i<num_base_elems; i++)
     {
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn2 0x%08x\n"),unkn2));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_trays[i] %s\n"),m_trays[i].c_str()));
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_trays[i] %s\n"),qPrintable(m_trays[i])));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_crc[i] 0x%08x\n"),m_crc[i]));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn2 0x%08x\n"),unkn2));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn1 0x%08x\n"),unkn1));
@@ -30,7 +32,7 @@ void SceneEvent::dependent_dump(void)
     if(num_base_elems!=0)
     {
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn2 0x%08x\n"),unkn2));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_trays[0] %s\n"),m_trays[0].c_str()));
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_trays[0] %s\n"),qPrintable(m_trays[0])));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_crc[0] 0x%08x\n"),m_crc[0]));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn2 0x%08x\n"),unkn2));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn1 0x%08x\n"),unkn1));
@@ -60,6 +62,7 @@ void SceneEvent::getGrpElem(BitStream &src,int idx)
             reqWorldUpdateIfPak(src);
     }
 }
+
 void SceneEvent::reqWorldUpdateIfPak(BitStream &)
 {
     //src.GetBits(1);
@@ -70,7 +73,7 @@ void SceneEvent::groupnetrecv_5(BitStream &src,int /*a*/,int /*b*/)
     if(!src.GetBits(1))
         return;
     assert(0);
-    std::string def_filename;
+    QString def_filename;
     src.GetString(def_filename);
 }
 

@@ -1,6 +1,6 @@
 #pragma once
-#include <osg/Matrix>
-#include <osg/Vec3>
+#include <glm/matrix.hpp>
+#include <glm/vec3.hpp>
 #include <ace/Time_Value.h>
 
 #include "Entity.h"

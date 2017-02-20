@@ -6,23 +6,21 @@
  *
  */
 
-#include <sstream>
-#include <ace/OS_NS_time.h>
-#include <ace/Log_Msg.h>
-
 // segs includes
 #include "AdminServer.h"
 #include "CharacterDatabase.h"
+#include "Database.h"
 #include "AccountInfo.h"
 #include "Character.h"
 #include "Costume.h"
 
+#include <sstream>
 
 bool AccountInfo::fill_characters_db()
 {
     Character *act=0;
     m_characters.resize(m_max_slots);
-    if(m_characters[0]==0)
+    if(m_characters[0]==NULL)
         m_characters[0] = act = new Character;
     else
         act = m_characters[0]; //reuse existing object
@@ -90,7 +88,7 @@ uint8_t AccountInfo::char_slot_index(Character *c)
         if(m_characters[i]==c)
             return uint8_t(i);
     }
-    return ~1;
+    return ~1u;
 }
 bool AccountInfo::store_new_character(Character *character)
 {

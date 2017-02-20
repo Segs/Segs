@@ -5,15 +5,22 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <cassert>
-#include <sstream>
-#include <ace/OS_NS_time.h>
-#include <ace/Log_Msg.h>
-
 // segs includes
 #include "AdminServer.h"
+
+#include "AccountInfo.h"
 #include "AdminDatabase.h"
 #include "Client.h"
+
+#include <ace/Log_Msg.h>
+#include <QtCore/QDebug>
+#include <QtCore/QDateTime>
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlQuery>
+#include <QtSql/QSqlError>
+#include <cassert>
+#include <sstream>
+
 
 using namespace std;
 AdminDatabase::AdminDatabase()
@@ -26,17 +33,14 @@ int AdminDatabase::GetAccounts(void) const
 
 bool AdminDatabase::AddAccount(const char *username, const char *password,uint16_t access_level) // Add account and password to the database server
 {
-    PreparedArgs args;
-    args.add_param(std::string(username));
-    args.add_param((uint8_t*)password,14,true);
-    args.add_param(access_level);
-    DbResults query_res;
-    if(false==m_add_account_query->execute(args,query_res)) // Send our query to the PostgreSQL db server to process
+    m_add_account_query.bindValue(0,username);
+    m_add_account_query.bindValue(1,QByteArray::fromRawData(password,14));
+    m_add_account_query.bindValue(2,access_level);
+    if(false==m_add_account_query.exec()) // Send our query to the PostgreSQL db server to process
     {
-        ACE_ERROR((LM_ERROR,ACE_TEXT ("Result status: %s\n"),query_res.message())); // Why the query failed
+        qDebug() << "SQL_ERROR:"<<m_add_account_query.lastError(); // Why the query failed
         return false;
     }
-    query_res.nextRow(); // sqlite3 needs this to call _step function
     return true;
 }
 
@@ -80,74 +84,58 @@ int AdminDatabase::GetBanFlag(const char *username)
 
 bool AdminDatabase::ValidPassword(const char *username, const char *password)
 {
-    DbResults qres;
-    PreparedArgs user_args;
     bool res=false;
+    m_prepared_select_account_passw.bindValue(0,username);
 
-    user_args.add_param(username);
-
-    if(!m_prepared_select_account_passw->execute(user_args,qres)) {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Result status: %s\n"),qres.message())); // Why the query failed
-        return res;
+    if(!m_prepared_select_account_passw.exec()) {
+        qDebug() << "SQL_ERROR:"<<m_prepared_select_account_passw.lastError(); // Why the query failed
+        return false;
     }
-    IResultRow::vBinData passb = qres.nextRow().getColBinary("passw");
+    if(!m_prepared_select_account_passw.next())
+        return false;
+    QByteArray passb = m_prepared_select_account_passw.value("passw").toByteArray();
     assert(passb.size()<=16);
-    if (memcmp(&passb[0],password,passb.size()) == 0)
+    if (memcmp(passb.data(),password,passb.size()) == 0)
         res = true;
     return res;
 }
-bool AdminDatabase::GetAccountByName( AccountInfo &to_fill,const std::string &login )
+bool AdminDatabase::GetAccountByName( AccountInfo &to_fill,const QString &login )
 {
-    DbResults results;
-    PreparedArgs id_arg;
-
-    id_arg.add_param(login);
-
     to_fill.m_acc_server_acc_id = 0;
-
-    if(!m_prepared_select_account_by_username->execute(id_arg,results))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminDatabase::GetAccount query %s failed. %s.\n"),
-                          m_prepared_select_account_by_username->prepared_sql().c_str(),results.message()),false);
-
-    return GetAccount(to_fill,results);
+    m_prepared_select_account_by_username.bindValue(0,login);
+    if(!m_prepared_select_account_by_username.exec()) {
+        qDebug() << "SQL_ERROR:"<<m_prepared_select_account_by_id.lastError();
+        return false;
+    }
+    return GetAccount(to_fill,m_prepared_select_account_by_username);
 }
 bool AdminDatabase::GetAccountById( AccountInfo &to_fill,uint64_t id )
 {
-    DbResults results;
-    PreparedArgs id_arg;
-
-    id_arg.add_param(id);
-
     to_fill.m_acc_server_acc_id = 0;
+    m_prepared_select_account_by_id.bindValue(0,quint64(id));
+    if(!m_prepared_select_account_by_id.exec()) {
+        qDebug() << "SQL_ERROR:"<<m_prepared_select_account_by_id.lastError();
+        return false;
+    }
 
-    if(!m_prepared_select_account_by_id->execute(id_arg,results))
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) AdminDatabase::GetAccount query %s failed. %s.\n"),
-                          m_prepared_select_account_by_id->prepared_sql().c_str(),results.message()),false);
-
-    return GetAccount(to_fill,results);
+    return GetAccount(to_fill,m_prepared_select_account_by_id);
 }
 
-bool AdminDatabase::GetAccount( AccountInfo & client,DbResults &results )
+bool AdminDatabase::GetAccount( AccountInfo & client, QSqlQuery &results )
 {
-    DbResultRow r=results.nextRow();
-    if(!r.valid()) // TODO: handle case of multiple accounts with same name ?
+    if(!results.next()) // TODO: handle case of multiple accounts with same name ?
         return false;
-    struct tm creation;
-    client.m_acc_server_acc_id  = (uint64_t)r.getColInt64("id");
-    client.m_login              = r.getColString("username");
-    client.m_access_level       = uint8_t(r.getColInt16("access_level"));
-    creation                    = r.getTimestamp("creation_date");
+    QDateTime creation;
+    client.m_acc_server_acc_id  = results.value("id").toULongLong();
+    client.m_login              = results.value("username").toString();
+    client.m_access_level       = results.value("access_level").toUInt();
+    creation                    = results.value("creation_date").toDateTime();
     //  client->setCreationDate(creation);
     return true;
 }
 
 AdminDatabase::~AdminDatabase()
 {
-    delete m_add_account_query;
-    delete m_prepared_select_account_by_id;
-    delete m_prepared_select_account_passw;
-    delete m_prepared_select_account_by_username;
-
 }
 
 int AdminDatabase::RemoveAccountByID( uint64_t )
@@ -155,14 +143,29 @@ int AdminDatabase::RemoveAccountByID( uint64_t )
     return 0;
 }
 
-void AdminDatabase::on_connected(Database *db)
+void AdminDatabase::on_connected(QSqlDatabase *db)
 {
     if(!m_db)
         m_db=db;
-    m_add_account_query = db->prepare("INSERT INTO accounts (username,passw,access_level) VALUES ($1,$2,$3);",3);
-    if(!m_add_account_query)
-        abort();
-    m_prepared_select_account_by_username = db->prepare("SELECT * FROM accounts WHERE username=$1",1);
-    m_prepared_select_account_by_id = db->prepare("SELECT * FROM accounts WHERE id=$1",1);
-    m_prepared_select_account_passw = db->prepare("SELECT passw FROM accounts WHERE username = $1",1);
+    m_add_account_query = QSqlQuery(*db);
+    m_prepared_select_account_by_username = QSqlQuery(*db);
+    m_prepared_select_account_by_id = QSqlQuery(*db);
+    m_prepared_select_account_passw = QSqlQuery(*db);
+
+    if(!m_add_account_query.prepare("INSERT INTO accounts (username,passw,access_level) VALUES (?,?,?);")) {
+        qDebug() << "SQL_ERROR:"<<m_add_account_query.lastError();
+        return;
+    }
+    if(!m_prepared_select_account_by_username.prepare("SELECT * FROM accounts WHERE username=?;")) {
+        qDebug() << "SQL_ERROR:"<<m_prepared_select_account_by_username.lastError();
+        return;
+    }
+    if(!m_prepared_select_account_by_id.prepare("SELECT * FROM accounts WHERE id=?;")) {
+        qDebug() << "SQL_ERROR:"<<m_prepared_select_account_by_id.lastError();
+        return;
+    }
+    if(!m_prepared_select_account_passw.prepare("SELECT passw FROM accounts WHERE username = ?;")) {
+        qDebug() << "SQL_ERROR:"<<m_prepared_select_account_passw.lastError();
+        return;
+    }
 }

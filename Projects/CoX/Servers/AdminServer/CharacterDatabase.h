@@ -10,28 +10,28 @@
 
 // ACE Logging
 #include <string>
-#include <ace/Log_Msg.h>
-#include <ace/Singleton.h>
 
-#include "Database.h"
+
+#include <QtSql/QSqlQuery>
 class IClient;
+class QSqlQuery;
 class CharacterClient;
 class CharacterCostume;
 class Character;
 class AccountInfo;
-class CharacterDatabase : public IDataBaseCallbacks
+class CharacterDatabase
 {
-        Database *      m_db;
-        IPreparedQuery *m_prepared_account_select;
-        IPreparedQuery *m_prepared_account_insert;
-        IPreparedQuery *m_prepared_char_insert;
-        IPreparedQuery *m_prepared_char_exists;
-        IPreparedQuery *m_prepared_char_delete;
-        IPreparedQuery *m_prepared_char_select;
-        IPreparedQuery *m_prepared_fill;
-        IPreparedQuery *m_prepared_costume_insert;
+        QSqlDatabase * m_db;
 
-        void        on_connected(Database *db); //prepare statements here
+        QSqlQuery m_prepared_account_select;
+        QSqlQuery m_prepared_account_insert;
+        QSqlQuery m_prepared_char_insert;
+        QSqlQuery m_prepared_char_exists;
+        QSqlQuery m_prepared_char_delete;
+        QSqlQuery m_prepared_char_select;
+        QSqlQuery m_prepared_fill;
+        QSqlQuery m_prepared_costume_insert;
+
 public:
 virtual             ~CharacterDatabase();
         bool        CreateLinkedAccount(uint64_t auth_account_id,const std::string &username); // returns true on success
@@ -42,7 +42,8 @@ virtual             ~CharacterDatabase();
         bool        fill( CharacterCostume *);
         int         remove_account(uint64_t acc_serv_id); //will remove given account, TODO add logging feature
         bool        remove_character(AccountInfo *,uint8_t slot_idx);
-        bool        named_character_exists(const std::string &name);
-        void        setDb(Database *db) {m_db=db;}
-        Database *  getDb() {return m_db;}
+        bool        named_character_exists(const QString &name);
+        void        setDb(QSqlDatabase *db) {m_db=db;}
+        QSqlDatabase *getDb() {return m_db;}
+        void        on_connected(QSqlDatabase *db); //prepare statements here
 };

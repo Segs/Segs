@@ -5,10 +5,13 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <ace/OS_NS_strings.h>
-#include "BitStream.h"
 #include "Character.h"
+
+#include "BitStream.h"
 #include "Costume.h"
+
+#include <ace/Log_Msg.h>
+#include <QtCore/QString>
 
 Character::Character()
 {
@@ -43,7 +46,8 @@ void Character::reset()
 
 bool Character::isEmpty()
 {
-    return (0==ACE_OS::strcasecmp(m_name.c_str(),"EMPTY")&&(0==ACE_OS::strcasecmp(m_class_name.c_str(),"EMPTY")));
+    return ( 0==m_name.compare("EMPTY",Qt::CaseInsensitive)&&
+            (0==m_class_name.compare("EMPTY",Qt::CaseInsensitive)));
 }
 
 void Character::serializefrom( BitStream &src)
@@ -88,7 +92,7 @@ void Character::sendWindow(BitStream &bs) const
     //storeFloatConditional(bs,1.0f);
 }
 
-void Character::setName( const std::string &val )
+void Character::setName(const QString &val )
 {
     if(val.length()>0)
         m_name = val;
@@ -264,8 +268,8 @@ void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
 }
 void Character::DumpBuildInfo()
 {
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    class: %s\n"),m_class_name.c_str()));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    origin: %s\n"),m_origin_name.c_str()));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    class: %s\n"),qPrintable(m_class_name)));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    origin: %s\n"),qPrintable(m_origin_name)));
     DumpPowerPoolInfo(m_powers[0]);
     DumpPowerPoolInfo(m_powers[1]);
 }
