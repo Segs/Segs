@@ -97,16 +97,19 @@ void GameHandler::on_update_server(UpdateServer *ev)
     if(cl==0)
     {
         ev->src()->putq(new GameEntryError(this,"Unauthorized !"));
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("GameEntryError : Unauthorized !\n")));
         return;
     }
     if(ev->m_build_date!=supported_version)
     {
         ev->src()->putq(new GameEntryError(this,"We are very sorry but your client version is not supported."));
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("GameEntryError : Client version !\n")));
         return;
     }
     if(!cl->getCharsFromDb())
     {
         ev->src()->putq(new GameEntryError(this,"DB error encountered!"));
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("GameEntryError : getCharsFromDb error !\n")));
         return;
     }
     m_clients.connectedClient(ev->authCookie);
