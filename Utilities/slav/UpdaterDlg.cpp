@@ -34,6 +34,7 @@ void UpdaterDlg::onDownloadProgressed(const QString &fname, quint64 bytes, quint
 
 void UpdaterDlg::onUpdateAvailable(AppVersionManifest *manifest, const QString &changelog)
 {
+    // EIther a
     auto resp=QMessageBox::information(this,tr("Update for %1 - %2 is available")
                                        .arg(manifest->m_associated_server ? manifest->m_associated_server->m_name : "SLAV" )
                                        .arg(manifest->m_version),
@@ -41,7 +42,7 @@ void UpdaterDlg::onUpdateAvailable(AppVersionManifest *manifest, const QString &
                                        QMessageBox::Ok|QMessageBox::Cancel);
     if(resp==QMessageBox::Ok)
     {
-        emit updateForServer(nullptr);
+        emit requestUpdateForServer(nullptr);
     }
 
 }

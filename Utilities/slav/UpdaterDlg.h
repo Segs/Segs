@@ -5,6 +5,7 @@
 #include <vector>
 
 struct ProjectDescriptor;
+struct ServerDescriptor;
 class AppVersionManifest;
 
 namespace Ui {
@@ -23,7 +24,7 @@ public Q_SLOTS:
     void onDownloadProgressed(const QString &fname,quint64 bytes,quint64 overall);
     void onUpdateAvailable(AppVersionManifest * manifest, const QString &changelog);
 signals:
-    void updateForServer(struct ServerDescriptor *sd);
+    void requestUpdateForServer(ServerDescriptor *sd);
 private:
     Ui::UpdaterDlg *ui;
 };

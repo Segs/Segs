@@ -58,7 +58,8 @@ bool AuthClient::isLoggedIn()
         ClientConnectionResponse *resp = (ClientConnectionResponse *)gs->event_target()->dispatch_sync(query);
         bool still_connected = resp->last_comm!=ACE_Time_Value::max_time;
         resp->release();
-        return still_connected;
+        if(still_connected)
+            return still_connected;
     }
     return false; //
 }
