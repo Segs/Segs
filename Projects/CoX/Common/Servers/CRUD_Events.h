@@ -150,7 +150,8 @@ public:
         int32_t opcode = bs.GetPackedBits(1);
         if(opcode!=0)
             return 0;
-        int32_t control_opcode = bs.GetPackedBits(1);
+        // it seems idle commands can be shortened to only contain opcode==0.
+        int32_t control_opcode = bs.GetReadableBits()==0 ? 0 : bs.GetPackedBits(1);
         switch(control_opcode)
         {
         case 0: return new IdleEvent(); // CTRL_IDLE

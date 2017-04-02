@@ -53,7 +53,7 @@ static const QHash<uint32_t,BinType> knownSerializers = {
     {palette_i0_requiredCrc             , ePaletteSets},
     {geoset_i0_requiredCrc              , eGroupEmblems },
     {zones_i0_requiredCrc               , eZones},
-    {scenegraph_i0_requiredCrc              , eSceneGraph},
+    {scenegraph_i0_requiredCrc          , eSceneGraph},
 };
 BinType getLoader(const QString &fname)
 {

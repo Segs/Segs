@@ -252,7 +252,7 @@ void InputState::extended_input(BitStream &bs)
 }
 struct ControlState
 {
-    int field0;
+    int client_timenow;
     int time_res;
     float timestep;
     float time_rel1C;
@@ -261,7 +261,7 @@ struct ControlState
     // recover actual ControlState from network data and previous entry
     void serializefrom_delta(BitStream &bs,const ControlState &prev)
     {
-        field0   = bs.GetPackedBits(1); // field_0 diff next-current
+        client_timenow   = bs.GetPackedBits(1); // field_0 diff next-current
         time_res = bs.GetPackedBits(1); // time to next state ?
         timestep = bs.GetFloat(); // next state's timestep
 
@@ -269,22 +269,22 @@ struct ControlState
         if(bs.GetBits(1)) //timestep!=time_rel1C
             time_rel1C = bs.GetFloat();
 
-        m_perf_cntr_diff = bs.Get64Bits(); //next_state->ticks - current_state->ticks
+        m_perf_cntr_diff = bs.Get64Bits(); //current_state->ticks - prev_state->ticks
         if(bs.GetBits(1))
         {
-            // perf freq changed between current and next
+            // perf freq changed between current and prev
             m_perf_freq_diff = bs.Get64Bits();
         }
     }
     void serializefrom_base(BitStream &bs)
     {
-        field0   = bs.GetBits(32); //field_0
-        time_res = bs.GetBits(32); // get_time_resl
-        timestep = bs.GetFloat(); //v7->timestep
+        client_timenow   = bs.GetBits(32); // result of time(NULL)
+        time_res = bs.GetBits(32); // result of timeGetTime()
+        timestep = bs.GetFloat(); //client global TIMESTEP - per frame time
 
         time_rel1C = timestep;
         if(bs.GetBits(1)) //timestep!=time_rel1C
-            time_rel1C = bs.GetFloat();
+            time_rel1C = bs.GetFloat(); // simulation timestep ?
 
         m_perf_cntr_diff = bs.Get64Bits(); //next_state->ticks - current_state->ticks
         m_perf_cntr_diff = bs.Get64Bits(); //v7->perf_cntr1

@@ -94,7 +94,7 @@ void Entity::storePosition(BitStream &bs) const
 // float x = pos.vals.x;
     uint32_t packed;
     //uint32_t diff=0; // changed bits are '1'
-    bs.StoreBits(3,7); // frank -> 7,-60.5,0,180
+    bs.StoreBits(3,7);
     for(int i=0; i<3; i++)
     {
         packed = quantize_float(pos[i]);
@@ -114,10 +114,10 @@ void Entity::storePosUpdate(BitStream &bs) const
     bool extra_info = false;
     bool move_instantly = false;
     storePosition(bs);
-    // if(is_update)
-
     if(!m_create)
     {
+        // if position has changed
+        // prepare interpolation table, given previous position
         bs.StoreBits(1,extra_info); // not extra_info
         if(extra_info) {
             bs.StoreBits(1,move_instantly);
