@@ -33,8 +33,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/crud_link.inl
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(target_DEPENDS "")
 
-SEGS_ADD_COMPONENT(ConfigExtensions LIB)
-SEGS_ADD_COMPONENT(EventSystem LIB)
 SEGS_ADD_COMPONENT(network_structures LIB)
 
 SET (target_SOURCES

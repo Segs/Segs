@@ -10,6 +10,8 @@
 #include "BitStream.h"
 #include <set>
 #include <list>
+#include <vector>
+#include <stdint.h>
 //#include "Opcodes.h"
 
 class PacketCollector;

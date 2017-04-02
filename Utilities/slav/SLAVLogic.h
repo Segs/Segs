@@ -20,7 +20,7 @@ class SLAVLogic : public QObject
 public:
     explicit SLAVLogic(QObject *parent = 0);
 
-    void connectUI(class UpdaterDlg *dlg);
+    void connectUI();
     void start();
 signals:
     // Notifying the UI

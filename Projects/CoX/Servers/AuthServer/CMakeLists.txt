@@ -40,7 +40,8 @@ IF(BUILD_SEPARATE)
     ADD_DEFINITIONS(-DSEPARATE)
     ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
     TARGET_LINK_LIBRARIES(authserver
-        authserver_lib ${target_DEPENDS} gameData
+        authserver_lib  ${target_DEPENDS} gameData
+        SEGS_Components
         ${MRuby_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
         ace_IMP

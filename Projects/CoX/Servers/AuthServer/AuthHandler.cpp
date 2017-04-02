@@ -127,21 +127,20 @@ void AuthHandler::on_login( LoginRequest *ev )
     client->link_state().link(lnk);                 // and client knows what link it's using
     eAuthError err = AUTH_WRONG_LOGINPASS;          // this is default for case we don't have that client
     bool no_errors=false;                           // this flag is set if there were no errors during client pre-processing
-    if(client) // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
+    // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),acc_inf.account_server_id()));
+    // step 3d: checking if this account is blocked
+    if(client->account_blocked())
+        err = AUTH_ACCOUNT_BLOCKED;
+    else if(client->isLoggedIn())
     {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),acc_inf.account_server_id()));
-        // step 3d: checking if this account is blocked
-        if(client->account_blocked())
-            err = AUTH_ACCOUNT_BLOCKED;
-        else if(client->isLoggedIn())
-        {
-            // step 3e: asking game server connection check
-            // TODO: client->forceGameServerConnectionCheck();
-            err = AUTH_ALREADY_LOGGEDIN;
-        }
-        else if(client->link_state().getState()==ClientLinkState::NOT_LOGGED_IN)
-            no_errors = true;
+        // step 3e: asking game server connection check
+        // TODO: client->forceGameServerConnectionCheck();
+        err = AUTH_ALREADY_LOGGEDIN;
     }
+    else if(client->link_state().getState()==ClientLinkState::NOT_LOGGED_IN)
+        no_errors = true;
+
     // if there were no errors and the provided password is valid and admin server has logged us in.
     if(
             no_errors &&

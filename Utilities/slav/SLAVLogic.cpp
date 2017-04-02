@@ -13,6 +13,10 @@
 #include <QtCore/QDebug>
 #include <QtCore/QCryptographicHash>
 #include <QThread>
+namespace {
+    AppVersionManifest slav_manifest;
+
+}
 
 SLAVLogic::SLAVLogic(QObject *parent) : QObject(parent)
 {
@@ -22,11 +26,11 @@ SLAVLogic::SLAVLogic(QObject *parent) : QObject(parent)
 
     connect(m_serv_conn,&ServerConnection::downloadProgress,m_ui_impl,&UpdaterDlg::onDownloadProgressed);
     connect(m_serv_conn,&ServerConnection::retrievedManifest,this,&SLAVLogic::onManifestReceived);
-    connectUI(m_ui_impl);
+    connectUI();
 
 }
 
-void SLAVLogic::connectUI(UpdaterDlg *dlg)
+void SLAVLogic::connectUI()
 {
     connect(this,&SLAVLogic::needUpdate,m_ui_impl,&UpdaterDlg::onUpdateAvailable);
 }
@@ -35,7 +39,12 @@ void SLAVLogic::start()
     if(needToOverwriteBaseInstall()) {
         createBackupIfNeeded();
         copyFilesOverBase();
-
+        //restartBaseInstall();
+    }
+    QFile slav_manifest_file("./slav.manifest");
+    if(slav_manifest_file.open(QFile::ReadOnly))
+    {
+        loadFrom(slav_manifest,slav_manifest_file.readAll());
     }
     m_ui_impl->show();
     m_serv_conn->onRequestAppData();
@@ -113,6 +122,7 @@ void SLAVLogic::calculateHashes(AppVersionManifest *manifest)
 {
     QThread* thread = new QThread(this);
     FileSignatureWorker* worker = new FileSignatureWorker();
+    worker->setDataToProcess(manifest);
     worker->moveToThread(thread);
     connect(worker, &FileSignatureWorker::error, this, &SLAVLogic::onThreadError);
     connect(worker, &FileSignatureWorker::progress , this, &SLAVLogic::onHashingProgress);

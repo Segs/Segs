@@ -154,5 +154,7 @@ bool MapServer::startup()
         return false;
     }
     return m_i_game->MapServerReady(h_me); // inform game server that we are ready.
+#else
+    return true;
 #endif
 }

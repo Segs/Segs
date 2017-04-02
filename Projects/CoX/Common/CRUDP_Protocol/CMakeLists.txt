@@ -18,8 +18,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/PacketCodec.h
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-SEGS_ADD_COMPONENT(Bitstream LIB)
-
 SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}

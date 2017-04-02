@@ -39,7 +39,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 include(SEGS_Components)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common/include)
+include_directories(Components)
 
 add_subdirectory(Components)
 add_subdirectory(Utilities)
