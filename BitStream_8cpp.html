@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>SEGS: Main Page</title>
+<title>SEGS: Components/BitStream.cpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -37,9 +37,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li class="current"><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
+      <li class="current"><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -58,7 +58,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
-</div><!-- top -->
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>File&#160;List</span></a></li>
+      <li><a href="globals.html"><span>File&#160;Members</span></a></li>
+    </ul>
+  </div>
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -73,11 +78,65 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_08f45fe6822aeb4ce2bc268e3b1361be.html">Components</a></li>  </ul>
+</div>
+</div><!-- top -->
 <div class="header">
+  <div class="summary">
+<a href="#define-members">Macros</a>  </div>
   <div class="headertitle">
-<div class="title">SEGS Documentation</div>  </div>
+<div class="title">BitStream.cpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><code>#include &quot;<a class="el" href="BitStream_8h_source.html">BitStream.h</a>&quot;</code><br/>
+<code>#include &lt;QtCore/QByteArray&gt;</code><br/>
+<code>#include &lt;QtCore/QString&gt;</code><br/>
+<code>#include &lt;cstring&gt;</code><br/>
+<code>#include &lt;cassert&gt;</code><br/>
+<code>#include &lt;algorithm&gt;</code><br/>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a4edb5a7696379a16cdc2e4330a72b78c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="BitStream_8cpp.html#a4edb5a7696379a16cdc2e4330a72b78c">MAX_VALUE_THAT_CAN_BE_STORED</a>(x)&#160;&#160;&#160;((uint32_t)((1 &lt;&lt; (x)) - 1))</td></tr>
+<tr class="separator:a4edb5a7696379a16cdc2e4330a72b78c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d632d34889b3f505948ba1ff1ed3a25"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="BitStream_8cpp.html#a2d632d34889b3f505948ba1ff1ed3a25">N_ONES</a>(n)&#160;&#160;&#160;((uint32_t)((1 &lt;&lt; (n)) - 1))</td></tr>
+<tr class="separator:a2d632d34889b3f505948ba1ff1ed3a25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="a4edb5a7696379a16cdc2e4330a72b78c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MAX_VALUE_THAT_CAN_BE_STORED</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">x</td><td>)</td>
+          <td>&#160;&#160;&#160;((uint32_t)((1 &lt;&lt; (x)) - 1))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2d632d34889b3f505948ba1ff1ed3a25"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define N_ONES</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">n</td><td>)</td>
+          <td>&#160;&#160;&#160;((uint32_t)((1 &lt;&lt; (n)) - 1))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
