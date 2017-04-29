@@ -1,0 +1,103 @@
+These instructions are for building SEGS from source. If you are using pre-built binaries,
+you can skip below and go to the configuration section.
+
+* SEGS pre-requisites...
+
+ACE:
+ACE is the Adaptive Communication Environment. It is used to make portability easy for us
+developers. It enables it so we do not have to mess around with proprietary network
+functions under Windows and Linux and instead use one call for both platforms.
+ACE can be obtained here: http://download.dre.vanderbilt.edu/
+
+Boost:
+Boost is also a set of portable C++ libraries that SEGS makes use of.
+Boost can be obtained here: http://sourceforge.net/project/showfiles.php?group_id=7586
+
+CMake:
+CMake is the cross-platform make utility. It generates makefiles for multiple platforms.
+It simplifies the compilation and linking of SEGS based on platform.
+CMake can be obtained here: http://www.cmake.org/HTML/Download.html
+
+PostGreSQL: 
+We make use of the PostGreSQL database for account, character and persistent object storage.
+PostGreSQL can be obtained here: http://www.postgresql.org/download/  
+
+zlib:
+zlib is a compression library SEGS makes use of for packing data.
+zlib can be obtained here: http://www.zlib.net/
+
+* You will also need a C++ compiler and linker of course. Visual Studio and gcc + ld are known to work.
+  You are welcome to try your own compiler. Let us know if it works and we'll add it to our list
+  of known good compilers.
+
+Visual Studio Express can be obtained here: http://msdn.microsoft.com/vstudio/express/downloads/
+Visual Studio contains its own linker.
+
+The GNU Compiler Collection can be obtained here: http://gcc.gnu.org/
+
+The GNU linker is part of the binutils collection of tools and can be obtained here: 
+http://www.gnu.org/software/binutils/
+
+You may also be able to obtain much of this software if you are using a package manager such as Cygwin's
+builtin package selection screen, apt-get, pkgsrc, portage, ports, rpm, yast, yum, etc.
+
+* Building SEGS...
+  Once you have all of the above software, you will need to obtain the SEGS source. This can be
+  retrieved via SVN:  svn co https://segs.svn.sourceforge.net/svnroot/segs segs
+  
+You can use TortoiseSVN or Subversion on the command line to grab the SEGS sources.
+TortoiseSVN is a GUI client that can be obtained here: http://tortoisesvn.tigris.org/
+Subversion can be obtained here: http://subversion.tigris.org/
+
+Once you have obtained the source, traverse to the top-level directory and issue:
+
+user@bleh% ccmake .
+
+This will bring up a graphical interface where you must define your paths to the required
+software defined above.
+
+Once these paths are set, you can generate a makefile by typing the 'G' key.
+If there are errors, ensure the paths to the headers and libraries are correct and try again.
+
+cmake should have generated a makefile tailored for your system.
+Exit out of the cmake interface by typing the 'Q' key.
+
+You should now be able to use the generated makefile to compile and link SEGS.
+
+user@bleh% make
+...
+
+If all goes well, you will have working SEGS binary(s).
+(authserver only at this stage in development)
+
+* Importing the database schemas...
+
+You must import the database schemas into your PostGreSQL database server before SEGS
+will function properly. First, you'll need to create a new database on the server named "segs".
+Also, create the SEGS user and grant it access to the "segs" database you just created.
+Next, we'll need to import the segs.sql file into our new database we just created. This sql
+file can be found under the AdminServer/sql directory:
+
+user@bleh% psql segs segsuser < segs.sql
+...
+
+Next, you'll need to create the SEGS GameServer database. Create another database on the server
+named "segs_game". You can grant the same SEGS user permission to this database to simplify things.
+You will also need to import the sql file found under the GameServer/sql directory:
+
+user@bleh% psql segs_game segsuser < segs_game.sql
+
+* Configuring SEGS...
+1. Check if your client version is properly patched.
+   - Put the calc_md5s.exe in your client directory ( the same that contains CityOfHeroes.exe ) and run it.
+   - This will produce digests file, compare it's contents to required_digests that came with the server.
+   - if all piggs and client exe checksum match, then proceed to step 2.
+2. Extract costume.bin and supergroupColors.bin to the server's 'data' directory
+   - copy pigg_extract.exe to client directory and run it.
+   - from the resulting 'piggs_unbound/bin' directory copy required files to server's 'data' directory.
+3. Configure the server
+   - copy the configuration template from the 'config_files' directory to the location where the main SEGS binary(s)
+	reside. The file name is "local_1.cfg".
+   - edit the configuration file per your needs. Once everything is configured, you should have a running SEGS server.
+
+Enjoy!

@@ -1,0 +1,16 @@
+namespace cpp StickWorld
+namespace ruby StickWorld
+
+include 'stickworld_common.idl'
+
+service GameServer
+{
+    i32 login( string login,string passw), // returns >0 value if login succeeded
+}
+service ChatServer
+{
+    void subscribe(i64 my_id),
+    oneway void publish(ChatMessage x),
+    void unsubscribe(i64 my_id),
+}
+
