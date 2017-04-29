@@ -1,8 +1,0 @@
-namespace cpp StickWorld
-namespace ruby StickWorld
-
-struct ChatMessage {
-    1: required i64 source_id;
-    2: required i64 timestamp;
-    3: required string message;
-}

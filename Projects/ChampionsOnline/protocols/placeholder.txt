@@ -1,1 +1,0 @@
-This directory will contain protocol documentation for this project

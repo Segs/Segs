@@ -1,7 +1,0 @@
-SEGS: CoX Project End-User License Agreement / Legal Stuff
-
-SEGS: CoX Project has been built with education as the main target. Thus, you may 
-only use the source code and binary releases provided by the project for 
-educational purposes. You are not allowed to use SEGS: CoX Project for any 
-commercial purpose, and you are not allowed to use SEGS: CoX Project for hosting
-servers for public usage.

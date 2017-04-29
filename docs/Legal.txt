@@ -1,3 +1,0 @@
-Some of SEGS sub-Projects have additional restrictions put on them.
-If given project documentation directory contains file named 'Legal.txt'
-then it's contents override SEGS's default legal rules, for that single Project only.
