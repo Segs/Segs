@@ -4,6 +4,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/CommonNetStructures.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Costume.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Powers.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Entity.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/CommonNetStructures.h

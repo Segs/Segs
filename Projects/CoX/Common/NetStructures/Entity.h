@@ -6,13 +6,94 @@
 #include "Costume.h"
 #include "Character.h"
 //#include "Events/InputState.h"
+struct AngleRadians
+{
+    static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
+    float toDeg() { return AngleRadians((v*180.0f)/ float(M_PI)).v;}
+    explicit AngleRadians(float x=0.0f) : v(x) {}
+    AngleRadians operator-(const AngleRadians&ot) const
+    {
+        AngleRadians result(v);
+        return result-=ot;
+    }
+    AngleRadians operator-() const {
+        return AngleRadians(-v);
+    }
+    float operator/(AngleRadians &other) const {
+        return v/other.v;
+    }
+    AngleRadians operator+(const AngleRadians &ot) const
+    {
+        AngleRadians result(v);
+        result+=ot;
+        result.fixup();
+        return result;
+    }
+    AngleRadians operator*(float scale) const
+    {
+        return AngleRadians(v*scale);
+    }
+    AngleRadians &operator*=(float scale)
+    {
+        v*=scale;
+        return *this;
+    }
+    AngleRadians &operator+=(const AngleRadians &ot)
+    {
+        v += ot.v;
+        fixup();
+        return *this;
+    }
+    AngleRadians &operator-=(const AngleRadians &ot)
+    {
+        v -= ot.v;
+        fixup();
+        return *this;
+    }
+    bool operator==(float other) const { return v == other; }
+    bool operator==(const AngleRadians &other) const { return v == other.v; }
+    bool operator!=(const AngleRadians &other) const { return v != other.v; }
+    AngleRadians &fixup() {
+        if ( v > float(M_PI))
+            v -= 2* float(M_PI);
+        if ( v <= -float(M_PI))
+            v += 2* float(M_PI);
+        return *this;
+    }
+    bool operator<( const AngleRadians &o) const {
+        return v<o.v;
+    }
+    bool operator>( const AngleRadians &o) const {
+        return v>o.v;
+    }
+    AngleRadians lerp(AngleRadians towards,float factor) const {
+
+        float v3(towards.v - v);
+        if ( v3 > float(M_PI))
+            v3 = v3 - 2 * float(M_PI);
+        if ( v3 <= -float(M_PI))
+            v3 = v3 + 2 * float(M_PI);
+        return AngleRadians(v3 * factor + v);
+
+    }
+    //    operator float()
+    //    { return v;}
+    float v;
+    int toIntegerForm() const
+    {
+        return int((v + float(M_PI)) * 2048.0f / (2* float(M_PI)) + 0.5f);
+    }
+    explicit operator float() const {
+        return v;
+    }
+};
 class PosUpdate
 {
 public:
     glm::vec3 posvec;
-    glm::quat quat;
-    int a;
-    int b;
+    AngleRadians PitchYawRoll[3];
+    //glm::quat quat;
+    int m_timestamp;
 };
 class InputStateStorage
 {
@@ -82,6 +163,14 @@ mutable bool                m_logout_sent;
         int                 m_seq_upd_num2;
         PosUpdate           m_pos_updates[64];
         size_t              m_update_idx;
+        void addPosUpdate(const PosUpdate &p) {
+            m_update_idx = (m_update_idx+1) % 64;
+            m_pos_updates[m_update_idx] = p;
+        }
+        std::vector<PosUpdate> interpResults;
+        void addInterp(const PosUpdate &p) {
+            interpResults.emplace_back(p);
+        }
         QString             m_battle_cry;
         QString             m_character_description;
         bool                var_B4;
