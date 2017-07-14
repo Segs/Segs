@@ -32,15 +32,15 @@
 #include <ace/OS_main.h> //Included to enable file logging
 #include <ace/streams.h> //Included to enable file logging
 //#include "Auth.h"
-#include "ServerManager.h"
-#include "server_support.h"
+#include "Servers/ServerManager.h"
+#include "Servers/server_support.h"
 #include "version.h"
 //////////////////////////////////////////////////////////////////////////
 
-#include "AdminServer.h"
+#include "Servers/AdminServer/AdminServer.h"
 #include "AuthServer.h"
-#include "MapServer.h"
-#include "GameServer.h"
+#include "Servers/MapServer/MapServer.h"
+#include "Servers/GameServer/GameServer.h"
 //////////////////////////////////////////////////////////////////////////
 
 /** \brief The LogCallback class

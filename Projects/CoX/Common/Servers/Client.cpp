@@ -19,8 +19,12 @@ ClientSession::~ClientSession()
     delete m_account_info;
 }
 
-QString ClientSession::getLogin() const   {
+QString ClientSession::getLogin() const
+{
     return m_account_info->login();
 }
 
-bool ClientSession::account_blocked()   { return m_account_info->access_level()==0;}
+bool ClientSession::account_blocked()
+{
+    return m_account_info->access_level()==0;
+}

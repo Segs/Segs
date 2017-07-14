@@ -1,13 +1,14 @@
 #pragma once
+#include "AuthLink.h"
+#include "Servers/InternalEvents.h"
+#include "AuthProtocol/AuthEvents.h"
+#include "EventProcessor.h"
+
 #include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
 #include <ace/Addr.h>
 #include <map>
-#include "AuthLink.h"
-#include "InternalEvents.h"
-#include "AuthEvents.h"
-#include "EventProcessor.h"
 
 class AuthHandler : public EventProcessor
 {

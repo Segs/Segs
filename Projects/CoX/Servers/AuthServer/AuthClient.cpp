@@ -8,8 +8,8 @@
 #include "AuthClient.h"
 
 #include "AdminServer/AccountInfo.h"
-#include "InternalEvents.h"
-#include "ServerManager.h"
+#include "Common/Servers/InternalEvents.h"
+#include "Common/Servers/ServerManager.h"
 
 #include <cassert>
 

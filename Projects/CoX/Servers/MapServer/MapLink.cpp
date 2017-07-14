@@ -9,6 +9,5 @@
 #include <ace/INET_Addr.h>
 #include "EventProcessor.h"
 #include "MapEvents.h"
-#include "crud_link.inl"
-template
-class CRUDLink<MapEventFactory>;
+
+MapEventFactory MapLink::m_factory;

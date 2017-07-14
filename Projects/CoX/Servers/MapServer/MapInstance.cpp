@@ -158,7 +158,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
         Entity *ent = client->char_entity();
         assert(ent);
         m_entities.removeEntityFromActiveList(ent);
-        lnk->client_data(0);
+        lnk->set_client_data(nullptr);
         m_clients.removeById(client->account_info().account_server_id());
         delete ent;
     }
@@ -228,7 +228,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     }
     assert(cl->char_entity());
     cl->current_map()->enqueue_client(cl);
-    lnk->client_data(cl);
+    lnk->set_client_data(cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
 }
 void MapInstance::on_scene_request(SceneRequest *ev)

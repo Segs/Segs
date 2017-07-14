@@ -1,6 +1,5 @@
 #pragma once
-#include "CRUD_Events.h"
-#include "CRUD_Link.h"
+#include "Common/CRUDP_Protocol/CRUD_Events.h"
 
 typedef CRUDLink_Event MapLinkEvent;
 class MapClient;
@@ -8,8 +7,8 @@ class MapClient;
 class MapEventFactory : public CRUD_EventFactory
 {
 public:
-    static MapLinkEvent *EventFromStream(BitStream &bs, bool follower=false);
-    typedef MapClient tClientData;
+    MapLinkEvent *EventFromStream(BitStream &bs, bool follower=false) override;
 };
-typedef CRUDLink<MapEventFactory> MapLink;
+
+
 

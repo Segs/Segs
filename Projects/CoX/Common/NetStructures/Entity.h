@@ -6,6 +6,7 @@
 #include "Costume.h"
 #include "Character.h"
 //#include "Events/InputState.h"
+
 struct AngleRadians
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
@@ -87,6 +88,7 @@ struct AngleRadians
         return v;
     }
 };
+
 class PosUpdate
 {
 public:
@@ -171,6 +173,7 @@ mutable bool                m_logout_sent;
         void addInterp(const PosUpdate &p) {
             interpResults.emplace_back(p);
         }
+
         QString             m_battle_cry;
         QString             m_character_description;
         bool                var_B4;

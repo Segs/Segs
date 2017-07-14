@@ -12,8 +12,8 @@
 
 #include "ConfigExtension.h"
 #include "AdminServer/AccountInfo.h"
-#include "AdminServerInterface.h"
-#include "ServerManager.h"
+#include "Common/Servers/AdminServerInterface.h"
+#include "Common/Servers/ServerManager.h"
 #include "AuthLink.h"
 #include "AuthHandler.h"
 #include "AuthClient.h"

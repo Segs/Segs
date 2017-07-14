@@ -1,12 +1,6 @@
 #include "CRUD_Link.h"
-#include "ServerEndpoint.h"
-#include "PacketCodec.h"
+
 #include "CRUD_Events.h"
-//#define LOG_
-template<class EVENT_FACTORY>
-EventProcessor *CRUDLink<EVENT_FACTORY>::g_target=0;
-template<class EVENT_FACTORY>
-EventProcessor *CRUDLink<EVENT_FACTORY>::g_link_target=0;
 
 // CRUD link receives messages from ServerEndpoint,
 // these are basically CRUDP_Packets preprocessed by CRUDP_Protocol
@@ -14,13 +8,15 @@ EventProcessor *CRUDLink<EVENT_FACTORY>::g_link_target=0;
 // ServerEndpoint gets new input -> Bytes -> CRUDP_Protocol -> pushq(PacketEvent)
 // ACE_Reactor knows to wake CRUDLink up, whenever there are new events
 
-template<class EVENT_FACTORY>
-void CRUDLink<EVENT_FACTORY>::event_for_packet(SEGSEvent *ev)
+///
+/// \brief CRUDLink::event_for_packet - convert incoming packet into higher level events and push them to our target()
+/// \param pak_ev - received packet
+///
+void CRUDLink::event_for_packet(PacketEvent * pak_ev)
 {
-    PacketEvent * pak_ev=static_cast<PacketEvent *>(ev);
     CrudP_Packet *pak=pak_ev->m_pkt;
     // switch this to while, maybe many events are coming from single packet ?
-    CRUDLink_Event *res = EVENT_FACTORY::EventFromStream(*pak->GetStream());
+    CRUDLink_Event *res = factory().EventFromStream(*pak->GetStream());
     if(!res)
     {
         ACE_ERROR((LM_ERROR, ACE_TEXT ("%p EventFromStream returned NULL\n")));
@@ -28,7 +24,7 @@ void CRUDLink<EVENT_FACTORY>::event_for_packet(SEGSEvent *ev)
     res->serializefrom(*pak->GetStream());
     res->src(this);
     res->seq_number = pak->GetSequenceNumber();
-    g_target->putq(res);
+    target()->putq(res);
     pak->GetStream()->ByteAlign();
     while(pak->GetStream()->GetReadableBits()>1)
     {
@@ -38,7 +34,7 @@ void CRUDLink<EVENT_FACTORY>::event_for_packet(SEGSEvent *ev)
 #endif
         pak->GetStream()->SetReadPos(pos);
 
-        res = EVENT_FACTORY::EventFromStream(*pak->GetStream(),true);
+        res = factory().EventFromStream(*pak->GetStream(),true);
         if(!res)
         {
             ACE_ERROR((LM_ERROR, ACE_TEXT ("%p EventFromStream returned NULL\n")));
@@ -49,12 +45,14 @@ void CRUDLink<EVENT_FACTORY>::event_for_packet(SEGSEvent *ev)
         res->serializefrom(*pak->GetStream());
         res->src(this);
         res->seq_number = pak->GetSequenceNumber();
-        g_target->putq(res);
+        target()->putq(res);
     }
 }
-
-template<class EVENT_FACTORY>
-void CRUDLink<EVENT_FACTORY>::packets_for_event(SEGSEvent *ev)
+///
+/// \brief CRUDLink::packets_for_event - convert event to 1-n packets and push them to our net_layer()
+/// \param ev - an event that we've received from our downstream.
+///
+void CRUDLink::packets_for_event(SEGSEvent *ev)
 {
     lCrudP_Packet packets;
     CRUDLink_Event *c_ev =static_cast<CRUDLink_Event *>(ev);
@@ -69,13 +67,12 @@ void CRUDLink<EVENT_FACTORY>::packets_for_event(SEGSEvent *ev)
     // wrap all packets as PacketEvents and put them on link queue
     while(cnt--)
     {
-        g_link_target->putq(new PacketEvent(this,*packets.begin(),peer_addr()));
+        net_layer()->putq(new PacketEvent(this,*packets.begin(),peer_addr()));
         packets.pop_front();
     }
     connection_sent_packet(); // data was sent, update
 }
-template<class EVENT_FACTORY>
-int CRUDLink<EVENT_FACTORY>::open (void *p)
+int CRUDLink::open (void *p)
 {
     if (EventProcessor::open (p) == -1)
         return -1;
@@ -85,9 +82,7 @@ int CRUDLink<EVENT_FACTORY>::open (void *p)
     connection_sent_packet();
     return 0;
 }
-
-template<class EVENT_FACTORY>
-int CRUDLink<EVENT_FACTORY>::handle_output( ACE_HANDLE )
+int CRUDLink::handle_output( ACE_HANDLE )
 {
     SEGSEvent *ev;
     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
@@ -116,7 +111,7 @@ int CRUDLink<EVENT_FACTORY>::handle_output( ACE_HANDLE )
         ev->release();
         //TODO: check how getq works when nowait is before now() ??
         //nowait = ACE_OS::gettimeofday();
-        // consider breaking out of this loop after processing N messages ?
+        //TODO: consider breaking out of this loop after processing N messages ?
     }
     // Now if our message queue is empty, we will wait unitl m_notifier awakens us.
     if (msg_queue()->is_empty ()) // we don't want to be woken up
@@ -125,9 +120,11 @@ int CRUDLink<EVENT_FACTORY>::handle_output( ACE_HANDLE )
         reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
     return 0;
 }
-
-template<class EVENT_FACTORY>
-void CRUDLink<EVENT_FACTORY>::received_block( BitStream &bytes )
+///
+/// \brief CRUDLink::received_block - convert incoming bytes to PacketEvent's
+/// \param bytes - raw data to convert into packets.
+///
+void CRUDLink::received_block( BitStream &bytes )
 {
     size_t recv_count=0; // count of proper packets
     CrudP_Packet *pkt;
@@ -137,7 +134,7 @@ void CRUDLink<EVENT_FACTORY>::received_block( BitStream &bytes )
     pkt=m_protocol.RecvPacket(false);
     while(pkt)
     {
-        putq(new PacketEvent(g_link_target,pkt,peer_addr()));
+        putq(new PacketEvent(net_layer(),pkt,peer_addr()));
         ++recv_count;
         pkt=m_protocol.RecvPacket(false);
     }

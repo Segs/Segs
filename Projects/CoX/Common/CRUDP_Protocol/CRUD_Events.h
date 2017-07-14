@@ -145,7 +145,7 @@ public:
 class CRUD_EventFactory
 {
 public:
-    static CRUDLink_Event *EventFromStream(BitStream &bs, bool follower=false)
+    virtual CRUDLink_Event *EventFromStream(BitStream &bs, bool follower=false)
     {
         int32_t opcode = bs.GetPackedBits(1);
         if(opcode!=0)

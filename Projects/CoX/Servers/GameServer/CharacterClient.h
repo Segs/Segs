@@ -10,7 +10,7 @@
 
 #include "ServerManager.h"
 #include "Client.h"
-#include "GameLink.h"
+//#include "GameLink.h"
 #include "CharacterDatabase.h"
 #include <string>
 #include <vector>

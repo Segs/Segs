@@ -9,10 +9,10 @@
 #pragma once
 // segs includes
 
-#include "Client.h"
-#include "Server.h"
-#include "ServerHandle.h"
-#include "AuthServerInterface.h"
+#include "Common/Servers/Client.h"
+#include "Common/Servers/Server.h"
+#include "Common/Servers/ServerHandle.h"
+#include "Common/Servers/AuthServerInterface.h"
 
 // QT includes
 #include <QtCore/QHash>

@@ -1,8 +1,8 @@
 
-#include "AuthOpcodes.h"
 #include "AuthLink.h"
 #include "AuthHandler.h"
-#include "AuthEventFactory.h"
+#include "AuthProtocol/AuthOpcodes.h"
+#include "AuthProtocol/AuthEventFactory.h"
 
 EventProcessor *AuthLink::g_target=0;
 

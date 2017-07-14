@@ -10,11 +10,11 @@
 #pragma once
 #include "LinkLevelEvent.h"
 #include "BitStream.h"
-#include "CRUD_Link.h"
-#include "CRUD_Events.h"
 #include "GameLink.h"
-#include "InternalEvents.h"
-#include "opcodes/ControlCodes.h"
+#include "CRUDP_Protocol/CRUD_Link.h"
+#include "CRUDP_Protocol/CRUD_Events.h"
+#include "Servers/InternalEvents.h"
+#include "Servers/opcodes/ControlCodes.h"
 
 #include <QtCore/QString>
 
@@ -26,14 +26,14 @@ class GameEventTypes : public CRUD_EventTypes
 {
 public:
         BEGINE_EVENTS(CRUD_EventTypes)
-        EVENT_DECL(evUpdateServer  ,0)
-        EVENT_DECL(evMapAddrRequest,1)
-        EVENT_DECL(evDeleteCharacter,2)
-        EVENT_DECL(evUpdateCharacter,3)
-        EVENT_DECL(evGameEntryError,4)
-        EVENT_DECL(evCharacterSlots,5)
-        EVENT_DECL(evCharacterResponse,6)
-        EVENT_DECL(evMapAddrResponse,7)
+        EVENT_DECL(evUpdateServer,      0)
+        EVENT_DECL(evMapAddrRequest,    1)
+        EVENT_DECL(evDeleteCharacter,   2)
+        EVENT_DECL(evUpdateCharacter,   3)
+        EVENT_DECL(evGameEntryError,    4)
+        EVENT_DECL(evCharacterSlots,    5)
+        EVENT_DECL(evCharacterResponse, 6)
+        EVENT_DECL(evMapAddrResponse,   7)
         EVENT_DECL(evDeleteAcknowledged,8)
 
         EVENT_DECL(evUnknownEvent,16)

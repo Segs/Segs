@@ -8,6 +8,24 @@
  */
 
 #pragma once
-#include "CRUD_Link.h"
+#include "Common/CRUDP_Protocol/CRUD_Link.h"
 #include "MapEventFactory.h"
-typedef CRUDLink<MapEventFactory> MapLink;
+struct MapLink : public CRUDLink
+{
+    MapLink(EventProcessor *tgt,EventProcessor *linktgt) : CRUDLink() {
+        m_net_layer = linktgt;
+        m_target = tgt;
+        assert(tgt);
+    }
+    MapClient * client_data() {return static_cast<MapClient *>(m_link_data);}
+
+
+    // CRUDLink interface
+protected:
+    CRUD_EventFactory &factory() override
+    {
+        return m_factory;
+    }
+    static MapEventFactory m_factory;
+
+};
