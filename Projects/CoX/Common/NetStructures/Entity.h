@@ -140,8 +140,7 @@ public:
             ENT_CRITTER=4
         };
         int                 m_access_level;
-        int                 field_64;
-        int                 field_60;
+        int                 field_60; // Sequencer uses this as a seed for random bone scale
         int                 field_68;
         int                 field_78;
         int                 m_num_titles;
@@ -194,10 +193,13 @@ mutable bool                m_logout_sent;
         uint8_t             m_origin_idx,m_class_idx;
         uint8_t             m_type;
         uint32_t            m_idx;
+        uint32_t            m_db_id;
         uint32_t            m_input_ack;
         bool                player_type;
         bool                m_player_villain;
         bool                var_129C;
+        int                 ownerEntityId = 0;
+        int                 creatorEntityId = 0;
 
                             Entity();
 virtual                     ~Entity(){}

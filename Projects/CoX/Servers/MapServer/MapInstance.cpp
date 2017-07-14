@@ -321,7 +321,8 @@ void MapInstance::sendState() {
             char buf[256];
             printf("Sending msg to client %p\n",cl);
             std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion();
-            std::snprintf(buf,256,"There are %d active entites and %d clients",m_entities.active_entities(),num_active_clients());
+            std::snprintf(buf, 256, "There are %d active entites and %d clients", m_entities.active_entities(),
+                          num_active_clients());
             welcome_msg += buf;
             ChatMessage *msg = ChatMessage::adminMessage(buf );
             cl->link()->putq(msg);
