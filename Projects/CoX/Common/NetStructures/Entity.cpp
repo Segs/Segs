@@ -616,6 +616,15 @@ void Entity::dump()
     m_char.dump();
 }
 
+void Entity::addPosUpdate(const PosUpdate & p) {
+    m_update_idx = (m_update_idx+1) % 64;
+    m_pos_updates[m_update_idx] = p;
+}
+
+void Entity::addInterp(const PosUpdate & p) {
+    interpResults.emplace_back(p);
+}
+
 Entity::Entity()
 {
     m_logout_sent = false;
