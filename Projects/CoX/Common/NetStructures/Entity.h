@@ -164,14 +164,7 @@ mutable bool                m_logout_sent;
         int                 m_seq_upd_num2;
         PosUpdate           m_pos_updates[64];
         size_t              m_update_idx;
-        void addPosUpdate(const PosUpdate &p) {
-            m_update_idx = (m_update_idx+1) % 64;
-            m_pos_updates[m_update_idx] = p;
-        }
         std::vector<PosUpdate> interpResults;
-        void addInterp(const PosUpdate &p) {
-            interpResults.emplace_back(p);
-        }
 
         QString             m_battle_cry;
         QString             m_character_description;
@@ -204,6 +197,9 @@ mutable bool                m_logout_sent;
                             Entity();
 virtual                     ~Entity(){}
         void                dump();
+        void                addPosUpdate(const PosUpdate &p);
+        void                addInterp(const PosUpdate &p);
+
         uint32_t            getIdx() const {return m_idx;}
 virtual void                serializeto(BitStream &bs)const;
 virtual void                sendCostumes(BitStream &bs) const;

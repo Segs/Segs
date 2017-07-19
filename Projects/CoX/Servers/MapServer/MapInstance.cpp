@@ -80,7 +80,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case MapEventTypes::evClientQuit:
             on_client_quit(static_cast<ClientQuit*>(ev));
-
+//TODO: fallthrough here ???
         case MapEventTypes::evEntitiesRequest:
             on_entities_request(static_cast<EntitiesRequest *>(ev));
             break;
