@@ -153,7 +153,7 @@ void GameHandler::on_timeout(TimerEvent *ev)
     // 2. Find all links with inactivity_time() >= disconnect_time
     //   Disconnect given link.
 
-    int timer_id = (intptr_t)ev->data();
+    intptr_t timer_id = (intptr_t)ev->data();
     switch (timer_id) {
         case Link_Idle_Timer:
             on_check_links();

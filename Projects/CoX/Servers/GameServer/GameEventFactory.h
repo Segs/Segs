@@ -9,5 +9,5 @@ class GameEventFactory : public CRUD_EventFactory
 {
 public:
     typedef CharacterClient tClientData ; //!< typedef used by CRUDLink to store per-connection data
-    GameLinkEvent *EventFromStream(BitStream &bs,bool followe=false) override;
+    GameLinkEvent *EventFromStream(BitStream &bs) override;
 };

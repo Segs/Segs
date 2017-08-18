@@ -16,6 +16,7 @@
 #include <QtCore/QString>
 #include <cassert>
 #include <string>
+#include <vector>
 
 #define MAX_CHARACTER_SLOTS 8
 struct ClientOption
@@ -64,7 +65,7 @@ public:
     ClientOption *get(int idx)
     {
         if(idx<0)
-            return 0;
+            return nullptr;
         assert((size_t(idx)<m_opts.size()) && "Unknown option requested!!");
         return &m_opts[idx];
     }
@@ -109,8 +110,8 @@ const   QString &       getMapName() const { return m_mapName; }
         void            reset();
         bool            isEmpty();
         bool            serializeFromDB(uint64_t user_id,uint32_t slot_index);
-        void            serializefrom(BitStream &buffer);
-        void            serializeto(BitStream &buffer) const;
+        void            serializefrom(BitStream &buffer) override;
+        void            serializeto(BitStream &buffer) const override;
         void            serialize_costumes(BitStream &buffer,bool all_costumes=true) const;
         void            serializetoCharsel(BitStream &bs);
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
@@ -153,7 +154,7 @@ protected:
         bool            m_multiple_costumes; // has more then 1 costume
         bool            m_supergroup_costume; // player has a sg costume
         bool            m_using_sg_costume; // player uses sg costume currently
-        typedef enum _CharBodyType
+        enum CharBodyType
         {
             TYPE_MALE,
             TYPE_FEMALE,
@@ -161,5 +162,5 @@ protected:
             TYPE_UNUSED2,
             TYPE_HUGE,
             TYPE_NOARMS
-        } CharBodyType, *pCharBodyType;
+        };
 };

@@ -12,7 +12,7 @@
 #include "BitStream.h"
 
 #include <QtCore/QString>
-#include <string>
+#include <vector>
 
 class CostumePart : public NetStructure
 {

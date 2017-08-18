@@ -1,6 +1,6 @@
 #include "GameEventFactory.h"
 #include "GameEvents.h"
-GameLinkEvent *GameEventFactory::EventFromStream(BitStream &bs, bool followe)
+GameLinkEvent *GameEventFactory::EventFromStream(BitStream &bs)
 {
     GameLinkEvent *ev;
 

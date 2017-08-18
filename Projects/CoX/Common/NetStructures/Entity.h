@@ -1,11 +1,12 @@
 #pragma once
-#include <glm/vec3.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include "CommonNetStructures.h"
 #include "Powers.h"
 #include "Costume.h"
 #include "Character.h"
-//#include "Events/InputState.h"
+
+#include <glm/vec3.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <cmath>
 
 struct AngleRadians
 {

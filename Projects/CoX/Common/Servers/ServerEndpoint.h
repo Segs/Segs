@@ -160,14 +160,14 @@ protected:
                         if(nullptr == res)
                             return nullptr;
                         res->putq(new ConnectEvent(this,from_addr)); // and inform it of a new connection
-                        client_links[from_addr]	= res;
+                        client_links[from_addr] = res;
                         // schedule timeout timer here!!
                         return res;
                     }
 
         hmAddrProto client_links;
         ACE_Reactor_Notification_Strategy m_notifier;
-        ACE_SOCK_Dgram endpoint_;	// Wrapper for sending/receiving dgrams.
+        ACE_SOCK_Dgram endpoint_;   // Wrapper for sending/receiving dgrams.
         ACE_Thread_Mutex m_send_sema;
         EventProcessor *m_downstream; //!< All created links will have this as their downstream target
 };

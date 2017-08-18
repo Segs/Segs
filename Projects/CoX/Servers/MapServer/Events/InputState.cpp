@@ -287,7 +287,7 @@ struct ControlState
             time_rel1C = bs.GetFloat(); // simulation timestep ?
 
         m_perf_cntr_diff = bs.Get64Bits(); //next_state->ticks - current_state->ticks
-        m_perf_cntr_diff = bs.Get64Bits(); //v7->perf_cntr1
+        m_perf_freq_diff = bs.Get64Bits(); //v7->perf_cntr1
     }
     void dump()
     {
@@ -331,6 +331,11 @@ void InputState::serializefrom(BitStream &bs)
         ctrl_idx++;
     }
     recv_client_opts(bs); // g_pak contents will follow
+    int command_bitcount = bs.GetReadableBits();
+    BitStream command_stream((command_bitcount+7)/8);
+    bs.GetBitArray(command_stream.write_ptr(),command_bitcount);
+    command_stream.SetWritePos(command_bitcount);
+    assert(command_stream.GetReadableBits()==command_bitcount);
 #ifdef DEBUG_INPUT
     fprintf(stderr,"\n");
 #endif

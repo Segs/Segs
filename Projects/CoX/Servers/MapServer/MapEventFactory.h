@@ -7,7 +7,8 @@ class MapClient;
 class MapEventFactory : public CRUD_EventFactory
 {
 public:
-    MapLinkEvent *EventFromStream(BitStream &bs, bool follower=false) override;
+    MapLinkEvent *EventFromStream(BitStream &bs) override;
+    static MapLinkEvent *CommandEventFromStream(BitStream &bs);
 };
 
 

@@ -25,7 +25,7 @@ public:
         NOT_LOGGED_IN,
         LOGGED_IN,
         CLIENT_CONNECTED
-    } ;
+    };
 public:
                         ClientLinkState():m_state(NOT_LOGGED_IN){}
     uint32_t            hash_id() {return m_peer_addr.get_ip_address()^m_peer_addr.get_port_number();}

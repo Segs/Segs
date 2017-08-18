@@ -259,4 +259,5 @@ int runTest() {
     }
     errsum = errsum/9.0f;
     printf("After transition - L1 error is %f %f %f\n",errsum.x,errsum.y,errsum.z);
+    return 0;
 }

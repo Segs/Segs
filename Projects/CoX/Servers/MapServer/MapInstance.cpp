@@ -18,6 +18,7 @@
 #include "Entity.h"
 #include "WorldSimulation.h"
 #include "InternalEvents.h"
+#include <QtCore/QDebug>
 
 namespace {
 enum {
@@ -81,7 +82,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case MapEventTypes::evClientQuit:
             on_client_quit(static_cast<ClientQuit*>(ev));
-//TODO: fallthrough here ???
+            break;
         case MapEventTypes::evEntitiesRequest:
             on_entities_request(static_cast<EntitiesRequest *>(ev));
             break;
@@ -101,7 +102,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
             on_console_command(static_cast<ConsoleCommand *>(ev));
             break;
         default:
-            fprintf(stderr,"Unhandled event type %d\n",ev->type());
+            fprintf(stderr,"Unhandled event type %zu\n",ev->type());
             //ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled event type %d\n"),ev->type()));
     }
 }
@@ -109,7 +110,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
 SEGSEvent * MapInstance::dispatch_sync( SEGSEvent * )
 {
     assert(!"No sync dipatchable events here");
-    return 0;
+    return nullptr;
 }
 void MapInstance::on_idle(IdleEvent *ev)
 {
@@ -140,14 +141,6 @@ void MapInstance::on_client_quit(ClientQuit*ev) {
     // process client removal -> sending delete event to all clients etc.
     assert(client && client->char_entity());
     client->char_entity()->beginLogout(10);
-//    if(client)
-//    {
-//        lnk->client_data(0);
-//        //m_clients.erase(find(m_clients.begin(),m_clients.end(),client));
-//        //todo: notify all clients about entity removal
-//        m_clients.removeById(client->account_info().account_server_id());
-//    }
-//    lnk->putq(new ForcedLogout("Client logout/disconnect not handled properly yet"));
 
 }
 void MapInstance::on_disconnect(DisconnectRequest *ev)
@@ -158,6 +151,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     {
         Entity *ent = client->char_entity();
         assert(ent);
+        //todo: notify all clients about entity removal
         m_entities.removeEntityFromActiveList(ent);
         lnk->set_client_data(nullptr);
         m_clients.removeById(client->account_info().account_server_id());
@@ -168,12 +162,12 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
 }
 void MapInstance::on_expect_client( ExpectMapClient *ev )
 {
-    // TODO: handle contention while creating 2 character with the same name from different clients
+    // TODO: handle contention while creating 2 characters with the same name from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
     uint32_t cookie = 0; // name in use
     MapTemplate *tpl=m_server->map_manager().get_template(ev->m_map_id);
-    MapClient *cl = 0;
-    if(0==tpl)
+    MapClient *cl = nullptr;
+    if(nullptr==tpl)
     {
         ev->src()->putq(new ClientExpected(this,ev->m_client_id,1,m_server->getAddress()));
         return;
@@ -237,15 +231,15 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     MapLink * lnk = (MapLink *)ev->src();
     SceneEvent *res=new SceneEvent;
     res->undos_PP=0;
-    res->var_14=1;
-    res->m_outdoor_mission_map=0;
+    res->var_14=true;
+    res->m_outdoor_mission_map=false;
     res->m_map_number=1;
     //"maps/City_Zones/City_00_01/City_00_01.txt";
     res->m_map_desc="maps/City_Zones/City_01_01/City_01_01.txt";
-    res->current_map_flags=1; //off 1
+    res->current_map_flags=true; //off 1
     res->unkn1=1;
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
-    res->unkn2=1;
+    res->unkn2=true;
     lnk->putq(res);
 }
 void MapInstance::on_entities_request(EntitiesRequest *ev)
@@ -254,7 +248,7 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     // actually I think the best place for this timer would be the map instance.
     // so this method should call MapInstace->initial_update(MapClient *);
     MapLink * lnk = (MapLink *)ev->src();
-    srand(time(0));
+    srand(time(nullptr));
     MapClient *cl = lnk->client_data();
     assert(cl);
     // this sends the initial  'world', but without this client
@@ -279,7 +273,7 @@ void MapInstance::on_timeout(TimerEvent *ev)
     // 2. Find all links with inactivity_time() >= disconnect_time
     //   Disconnect given link.
 
-    int timer_id = (intptr_t)ev->data();
+    intptr_t timer_id = (intptr_t)ev->data();
     switch (timer_id) {
         case World_Update_Timer:
             m_world->update(ev->arrival_time());
@@ -293,7 +287,6 @@ void MapInstance::sendState() {
 
     if(num_active_clients()==0)
         return;
-    MapClient *cl;
 
     ClientStore<MapClient>::ivClients iter=m_clients.begin();
     ClientStore<MapClient>::ivClients end=m_clients.end();
@@ -304,7 +297,7 @@ void MapInstance::sendState() {
     for(;iter!=end; ++iter)
     {
         bool send_startup_admin = false;
-        cl=*iter;
+        MapClient *cl = *iter;
         EntitiesResponse *res=new EntitiesResponse(cl);
         res->m_map_time_of_day = m_world->time_of_day();
 
@@ -351,12 +344,29 @@ void MapInstance::on_combine_boosts(CombineRequest */*req*/)
 }
 void MapInstance::on_input_state(InputState *st)
 {
-    MapLink * lnk = (MapLink *)st->src();
-    MapClient *cl = lnk->client_data();
-    Entity *ent = cl->char_entity();
-    if(st->m_data.has_input_commit_guess)
+    MapLink *  lnk = (MapLink *)st->src();
+    MapClient *cl  = lnk->client_data();
+    Entity *   ent = cl->char_entity();
+    if (st->m_data.has_input_commit_guess)
         ent->m_input_ack = st->m_data.someOtherbits;
-    ent->inp_state=st->m_data;
+    ent->inp_state = st->m_data;
+
+    // Input state messages can be followed by multiple commands.
+    assert(st->m_user_commands.GetReadableBits()<32*1024*8); // simple sanity check ?
+    // here we will try to extract all of them and put them on our processing queue
+    while(st->m_user_commands.GetReadableBits()>1) {
+        MapLinkEvent *ev = MapEventFactory::CommandEventFromStream(st->m_user_commands);
+        if(!ev)
+            break;
+        // copy source packet seq number to created command
+        ev->seq_number = st->seq_number;
+        ev->src(st->src());
+        // post the event to ourselves for dispatch
+        putq(ev);
+    }
+    if(st->m_user_commands.GetReadableBits()!=0)
+        qDebug() << "Not all bits were consumed";
+
     //TODO: do something here !
 }
 void MapInstance::on_cookie_confirm(CookieRequest * ev){
@@ -373,8 +383,8 @@ void MapInstance::on_console_command(ConsoleCommand * ev){
     if(ev->contents[0]=='l') {
         // send the message to everyone on this map
         const QString chat_content = ev->contents.mid(2);
-        ClientStore<MapClient>::ivClients iter=m_clients.begin();
-        ClientStore<MapClient>::ivClients end=m_clients.end();
+        auto iter=m_clients.begin();
+        auto end=m_clients.end();
         for(;iter!=end; ++iter) {
             MapClient *cl=*iter;
             ChatMessage *msg = ChatMessage::localMessage(chat_content,src->char_entity());
