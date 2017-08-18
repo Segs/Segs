@@ -17,7 +17,12 @@
 #include <cassert>
 #include <string>
 #include <vector>
-
+enum WindowVisibility : uint32_t {
+  wv_HideAlways = 0,
+  wv_Always = 1,
+  wv_OnMouseOver = 2,
+  wv_Selected = 4,
+};
 #define MAX_CHARACTER_SLOTS 8
 struct ClientOption
 {
@@ -26,8 +31,11 @@ struct ClientOption
         t_int = 1,
         t_string = 2,
         t_float = 3,
+        t_sentence=4,
         t_quant_angle = 5,
+        t_mat4 = 6,
         t_vec3 = 7,
+        t_date = 9,
         t_unknown
     };
     struct Arg
@@ -38,7 +46,7 @@ struct ClientOption
     };
     std::string name;
     std::vector<Arg> m_args;
-    ClientOption(const char *v) : name(v) {}
+    //ClientOption(const char *v) : name(v) {}
 };
 class ClientOptions
 {
@@ -48,7 +56,7 @@ public:
     ClientOptions()
     {
         init();
-        mouselook_scalefactor=0.6;
+        mouselook_scalefactor=0.6f;
     }
     bool    mouse_invert;
     float   mouselook_scalefactor;
@@ -62,6 +70,21 @@ public:
     int32_t svr_lag,svr_lag_vary,svr_pl,svr_oo_packets,client_pos_id;
     int32_t atest0,atest1,atest2,atest3,atest4,atest5,atest6,atest7,atest8,atest9;
     int32_t predict,notimeout,selected_ent_server_index;
+    bool m_ChatWindow_fading;
+    bool m_NavWindow_fading;
+    bool showTooltips=true;
+    bool allowProfanity=true;
+    bool chatBallons=true;
+    WindowVisibility showArchetype=wv_OnMouseOver;
+    WindowVisibility showSupergroup=wv_OnMouseOver;
+    WindowVisibility showPlayerName=wv_OnMouseOver;
+    WindowVisibility showPlayerBars=wv_OnMouseOver;
+    WindowVisibility showVillainName=wv_OnMouseOver;
+    WindowVisibility showVillainBars=wv_OnMouseOver;
+    WindowVisibility showPlayerReticles=wv_OnMouseOver;
+    WindowVisibility showVillainReticles=wv_OnMouseOver;
+    WindowVisibility showAssistReticles=wv_OnMouseOver;
+    uint8_t chatFontSize=0;
     ClientOption *get(int idx)
     {
         if(idx<0)
