@@ -1,5 +1,6 @@
 #pragma once
 #include <ace/Time_Value.h>
+#include <typeinfo>
 class EventProcessor;
 
 // Helper defines to ease the definition of event types
