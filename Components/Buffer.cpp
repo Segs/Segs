@@ -113,23 +113,6 @@ void GrowingBuffer::GetString(char *t)
     }
     uGetBytes(reinterpret_cast<uint8_t *>(t),len);
 }
-std::string GrowingBuffer::GetString()
-{
-    size_t len = 0;
-    if(GetReadableDataSize()==0)
-    {
-        m_last_err = 1;
-        return "";
-    }
-    len = strlen((char *)&m_buf[m_read_off]);
-    if((0==len) || len>GetReadableDataSize())
-    {
-        m_last_err = 1;
-        return "";
-    }
-    std::string res((char *)&m_buf[m_read_off]);
-    return res;
-}
 void GrowingBuffer::uGetString(char *t)
 {
     size_t len(strlen((char *)&m_buf[m_read_off]));

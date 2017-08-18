@@ -5,25 +5,17 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-
 #pragma once
+
 #include <stdint.h>
-#include <string>
 #include <cstring>
-class MRubyEngine;
 // Warning those classes aren't thread-safe!
 // maybe this should derive from ACE_Data_Block/Message_Block ?
 
 // Template functions are part of include file to avoid the need of explicit instantiation of templates.
 class GrowingBuffer
 {
-#ifdef _MSC_VER
-#define DEFAULT_MAX_SIZE 0x10000
-#else
 static  constexpr size_t        DEFAULT_MAX_SIZE = 0x10000; //64K should be enough for everyone :P
-public:
-static  constexpr const char *  name = "GrowingBuffer"; // used by script bindings
-#endif
 public:
 
             //              Con/De-struction
@@ -43,7 +35,6 @@ explicit                    GrowingBuffer(const GrowingBuffer &); // copy constr
             void            PutString(const char *t);
             void            PutBytes(const uint8_t *t, size_t len);
             void            GetString(char *t);
-            std::string     GetString();
             bool            GetBytes(uint8_t *t, size_t len);
 
 inline      void            uGetString(char *t);
@@ -115,7 +106,6 @@ inline      T               ruGet(void)
             void            ResetReading(void)          {m_read_off=0;}
             void            ResetWriting(void)          {m_write_off=0;} //will start at the beginning and overwrite existing contents
             void            ResetContents(void)         {memset(m_buf,0,m_size);}
-            void            registerClass(MRubyEngine *);
 protected:
             GrowingBuffer & operator=(const GrowingBuffer &);
             uint8_t         m_safe_area;
