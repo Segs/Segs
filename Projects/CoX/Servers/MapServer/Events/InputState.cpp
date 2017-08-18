@@ -340,6 +340,13 @@ void InputState::serializefrom(BitStream &bs)
     fprintf(stderr,"\n");
 #endif
 }
+static float dequantize(uint16_t val,int bitcount) {
+    float z=val;
+    z = z/(1<<bitcount);
+    z *= 6.283185307179586;
+    z -= M_PI;
+    return z;
+}
 //TODO: use generic ReadableStructures here ?
 void InputState::recv_client_opts(BitStream &bs)
 {
@@ -366,7 +373,9 @@ void InputState::recv_client_opts(BitStream &bs)
                 }
                 case ClientOption::t_quant_angle:
                 {
-                    printf("Quant:%d\n",bs.GetBits(14)); //quantized angle
+                    float * tgt_angle = (float *)arg.tgt;
+                    *tgt_angle = dequantize(bs.GetBits(14),14);
+                    printf("Quant angle res:%f\n",*tgt_angle); //quantized angle
                     break;
                 }
                 case ClientOption::t_string:
