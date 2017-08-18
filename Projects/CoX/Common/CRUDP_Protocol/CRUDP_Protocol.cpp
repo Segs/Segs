@@ -138,7 +138,7 @@ void CrudP_Protocol::storeAcks(BitStream &bs)
 {
     //TODO: sort + binary search for id
     ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
-    if(recv_acks.size()==0)
+    if(recv_acks.empty())
     {
         bs.StorePackedBits(1,0);
         return;
@@ -358,11 +358,6 @@ void CrudP_Protocol::sendLargePacket(CrudP_Packet *p)
         }
         storeAcks(*res);
         res->StoreBits(1,(int)p->getIsCompressed());
-        res->StoreBits(1,0); // HasOrderedId
-        if(false)
-        {
-            res->StoreBits_4_10_24_32(0); // instead of  zero we have to put ordered_id here, whatever that is
-        }
         res->ByteAlign();
         res->StoreBitArray_Unaligned((uint8_t*)pkt->GetStream()->read_ptr(),(uint32_t)pkt->GetStream()->GetReadableBits());
         res->ResetReading();
@@ -370,7 +365,7 @@ void CrudP_Protocol::sendLargePacket(CrudP_Packet *p)
         head[0] = (uint32_t)res->GetReadableBits();
         res->ByteAlign();
         size_t length =res->GetReadableDataSize();
-        size_t fixedlen=((length + 3) & ~7) + 4;
+        size_t fixedlen=((length + 3) & ~7U) + 4;
         while(res->GetReadableDataSize()<fixedlen)
         {
             res->Put((uint8_t)0);
@@ -395,22 +390,12 @@ void CrudP_Protocol::sendSmallPacket(CrudP_Packet *p)
     memset(res->read_ptr(),0,64);
     res->Put((uint32_t)p->GetStream()->GetReadableBits());
     res->Put(p->m_checksum);
-
     res->StoreBits(1,p->HasDebugInfo());
     res->StoreBits(32,p->GetSequenceNumber());
-    res->StorePackedBits(1,p->getNumSibs()); // sibling count
-    if(p->getNumSibs())
-    {
-        res->StorePackedBits(1,p->getSibPos());
-        res->StoreBits(32,p->getSibId());
-    }
+    assert(!p->HasSiblings());
+    res->StorePackedBits(1,0); // sibling count
     storeAcks(*res);
     res->StoreBits(1,(int)p->getIsCompressed());
-    res->StoreBits(1,0); // HasOrderedId
-    if(false)
-    {
-        res->StoreBits_4_10_24_32(0); // instead of  zero we have to put ordered_id here, whatever that is
-    }
     res->ByteAlign();
     res->StoreBitArray((uint8_t*)p->GetStream()->read_ptr(),p->GetStream()->GetReadableBits());
     res->ResetReading();
@@ -418,7 +403,7 @@ void CrudP_Protocol::sendSmallPacket(CrudP_Packet *p)
     head[0] = uint32_t(res->GetReadableBits());
     res->ByteAlign();
     size_t length =res->GetReadableDataSize();
-    size_t fixedlen=((length + 3) & ~7) + 4;
+    size_t fixedlen=((length + 3) & ~7U) + 4;
     while(res->GetReadableDataSize()<fixedlen)
     {
         res->Put((uint8_t)0);
@@ -430,19 +415,16 @@ void CrudP_Protocol::sendSmallPacket(CrudP_Packet *p)
     ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
     unsent_packets.push_back(p);
 }
-
-void CrudP_Protocol::SendPacket(CrudP_Packet *p)
+///
+/// \brief Send the given packet through the link, if large payload split it into mulitple CRUDP packets
+/// \param packet
+///
+void CrudP_Protocol::SendPacket(CrudP_Packet *packet)
 {
-    // p is just a thin wrapper around the payload
-    // Todo: Implement packet splits
-    if(p->GetStream()->GetReadableDataSize()>1200)
-    {
-        sendLargePacket(p);
-    }
+    if(packet->GetStream()->GetReadableDataSize()>1200)
+        sendLargePacket(packet);
     else
-    {
-        sendSmallPacket(p);
-    }
+        sendSmallPacket(packet);
 }
 //! this gets all currently unacknowledged packets
 size_t CrudP_Protocol::GetUnsentPackets(std::list<CrudP_Packet *> &res)
