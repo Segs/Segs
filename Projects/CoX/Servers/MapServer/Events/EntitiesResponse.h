@@ -49,7 +49,7 @@ virtual void serializeto(BitStream &tgt) const
             serializeto_internal(m_finalized_into);
             finalized = true;
         }
-
+        const char *info() override { return m_incremental ? "Entities_Incremental" : "Entities_Full"; }
         bool        entReceiveUpdate;
         float       m_map_time_of_day;
         //bool unkn1;

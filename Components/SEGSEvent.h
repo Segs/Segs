@@ -39,6 +39,7 @@ public:
         void            src(EventProcessor *ev_src) {m_event_source=ev_src;}
         EventProcessor *src() {return m_event_source;}
         size_t          type() const {return m_type;}
+virtual const char *    info() {return typeid(*this).name();}
 };
 class TimerEvent : public SEGSEvent
 {

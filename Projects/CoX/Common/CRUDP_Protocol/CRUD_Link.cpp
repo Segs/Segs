@@ -58,7 +58,7 @@ void CRUDLink::packets_for_event(SEGSEvent *ev)
     CRUDLink_Event *c_ev =static_cast<CRUDLink_Event *>(ev);
     CrudP_Packet *res   = new CrudP_Packet;
     ACE_ASSERT(res);
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) packets_for_event %s\n"),typeid(*ev).name()));
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) packets_for_event %s\n"),ev->info()));
 
     c_ev->serializeto(*res->GetStream()); // serialize packet into res packet
     // create one or more properly formated CrudP_Packets in the protocol object
