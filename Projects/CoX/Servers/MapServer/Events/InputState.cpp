@@ -345,15 +345,13 @@ void InputState::recv_client_opts(BitStream &bs)
 {
     ClientOptions opts;
     ClientOption *entry;
-    int opt_idx=0;
-    int some_idx = bs.GetPackedBits(1);
-    entry=opts.get(opt_idx)-1;
+    int cmd_idx = bs.GetPackedBits(1);
     glm::vec3 vec;
-    while(some_idx!=0)
+    while((cmd_idx = bs.GetPackedBits(1))!=0)
     {
-        for(size_t i=0; i<entry->m_args.size(); i++)
+        entry=opts.get(cmd_idx-1);
+        for(ClientOption::Arg &arg : entry->m_args)
         {
-            ClientOption::Arg &arg=entry->m_args[i];
             switch ( arg.type )
             {
                 case ClientOption::t_int:
@@ -372,7 +370,7 @@ void InputState::recv_client_opts(BitStream &bs)
                     break;
                 }
                 case ClientOption::t_string:
-                case 4:
+                case ClientOption::t_sentence:
                 {
                     QString v;
                     bs.GetString(v);
@@ -390,8 +388,5 @@ void InputState::recv_client_opts(BitStream &bs)
                     continue;
             }
         }
-        some_idx = bs.GetPackedBits(1)-1;
-        opt_idx++;
-        entry=opts.get(opt_idx);
     }
 }
