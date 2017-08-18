@@ -332,11 +332,11 @@ vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
 //}
 void CrudP_Protocol::sendLargePacket(CrudP_Packet *p)
 {
-    static int sib_id=0;
     size_t block_size;
     vCrudP_Packet split_packets = packetSplit(*p,1200);
     CrudP_Packet *pkt;
-    ++sib_id;
+    int sib_id=send_seq+1;
+
     for(ivCrudP_Packet iter=split_packets.begin(); iter!=split_packets.end(); iter++)
     {
         pkt = *iter;
