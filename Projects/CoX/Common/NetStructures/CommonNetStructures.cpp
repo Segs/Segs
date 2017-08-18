@@ -9,6 +9,7 @@
 #include "Common/GameData/WorldData.h"
 #include "Common/GameData/CoXHash.h"
 #include <QtCore/QString>
+#include <sstream>
 using namespace std;
 void NetStructure::storeBitsConditional( BitStream &bs,int numbits,int bits )
 {

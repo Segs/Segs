@@ -21,6 +21,7 @@ private:
         typedef std::deque<CrudP_Packet *> pPacketStorage;
         typedef pPacketStorage::iterator ipPacketStorage ;
         typedef std::unordered_map<int,pPacketStorage> hmSibStorage;
+        friend void PacketSibDestroyer(const std::pair<int, pPacketStorage> &a);
 
         uint32_t            send_seq;
         uint32_t            recv_seq;
@@ -59,7 +60,4 @@ protected:
         void                PushRecvPacket(CrudP_Packet *a); // this will try to join packet 'a' with it's siblings
         void                PacketAck(uint32_t);
         void                clearQueues(bool recv,bool send); // clears out the recv/send queues
-
-static  void                PacketDestroyer(CrudP_Packet *a);
-static  void                PacketSibDestroyer(const std::pair<int,pPacketStorage> &a);
 };

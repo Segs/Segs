@@ -32,7 +32,7 @@ public:
     uint32_t  GetPackedBits(uint32_t nBits);
     void GetString(QString &str);
 
-    float  GetFloat();
+    float GetFloat();
     void StoreBits(uint32_t nBits, uint32_t dataBits)   { m_stream->StoreBits(nBits, dataBits); }
     void StoreBitArray(uint8_t *array, size_t nBits)    { m_stream->StoreBitArray(array,nBits); }
     void StorePackedBits(uint32_t nBits, uint32_t dataBits) { m_stream->StorePackedBits(nBits, dataBits); }
@@ -62,6 +62,8 @@ public:
     uint32_t getNumSibs()           const   { return m_numSibs;}
     uint32_t getSibId()             const   { return m_sibId;}
     uint32_t getSibPos()            const   { return m_sibPos;}
+    size_t   getNumAcks()           const   { return m_acks.size(); }
+
     void ByteAlign()                        { m_stream->ByteAlign(); }
     void SetStream(BitStream *stream)       { m_stream = stream; }
     void SetHasDebugInfo(bool hasDebugInfo) { m_hasDebugInfo = hasDebugInfo; }
@@ -72,10 +74,8 @@ public:
     void setSibPos(uint32_t n)              { m_sibPos=n; }
     void setContents(const BitStream &t);
     void addAck(uint32_t id)                { m_acks.insert(id); }
-    size_t getNumAcks()                     { return m_acks.size(); }
     uint32_t getNextAck();
-    void dump();
-    uint32_t m_checksum;
+    void dump() const;
 protected:
 
     BitStream *m_stream;

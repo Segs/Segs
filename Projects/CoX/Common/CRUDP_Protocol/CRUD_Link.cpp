@@ -20,33 +20,14 @@ void CRUDLink::event_for_packet(PacketEvent * pak_ev)
     if(!res)
     {
         ACE_ERROR((LM_ERROR, ACE_TEXT ("%p EventFromStream returned NULL\n")));
+        return;
     }
     res->serializefrom(*pak->GetStream());
     res->src(this);
     res->seq_number = pak->GetSequenceNumber();
     target()->putq(res);
-    pak->GetStream()->ByteAlign();
-    while(pak->GetStream()->GetReadableBits()>1)
-    {
-        uint32_t pos =pak->GetStream()->GetReadPos();
-#ifdef LOG_
-        fprintf(stderr,"pak->GetStream()->GetReadableBits() = %d [%d]\n",pak->GetStream()->GetReadableBits(),pak->GetStream()->GetPackedBits(1));
-#endif
-        pak->GetStream()->SetReadPos(pos);
-
-        res = factory().EventFromStream(*pak->GetStream(),true);
-        if(!res)
-        {
-            ACE_ERROR((LM_ERROR, ACE_TEXT ("%p EventFromStream returned NULL\n")));
-            break;
-        }
-        if(res==(void*)1)
-            continue;
-        res->serializefrom(*pak->GetStream());
-        res->src(this);
-        res->seq_number = pak->GetSequenceNumber();
-        target()->putq(res);
-    }
+    if(pak->GetStream()->GetReadableBits()>1)
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) leftover bits in packet: %s\n"),res->info()));
 }
 ///
 /// \brief CRUDLink::packets_for_event - convert event to 1-n packets and push them to our net_layer()
@@ -127,11 +108,10 @@ int CRUDLink::handle_output( ACE_HANDLE )
 void CRUDLink::received_block( BitStream &bytes )
 {
     size_t recv_count=0; // count of proper packets
-    CrudP_Packet *pkt;
     // Fill the protocol with 'raw' bit stream
     m_protocol.ReceivedBlock(bytes);
     // now try to get actual packets
-    pkt=m_protocol.RecvPacket(false);
+    CrudP_Packet *pkt = m_protocol.RecvPacket(false);
     while(pkt)
     {
         putq(new PacketEvent(net_layer(),pkt,peer_addr()));

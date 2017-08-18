@@ -42,7 +42,7 @@ public:
 class CRUDLink_Event : public SerializableEvent<BitStream>
 {
 public:
-    CRUDLink_Event(size_t evtype,EventProcessor *ev_src=0) : SerializableEvent<BitStream>(evtype,ev_src)//,LINK
+    CRUDLink_Event(size_t evtype,EventProcessor *ev_src=nullptr) : SerializableEvent<BitStream>(evtype,ev_src)//,LINK
     {}
     size_t seq_number;
 };
@@ -54,13 +54,13 @@ public:
     {
 
     }
-    void serializeto(BitStream &tgt) const
+    void serializeto(BitStream &tgt) const override
     {
         tgt.StorePackedBits(1, 1); // opcode 1
         tgt.StorePackedBits(1, m_tickcount);
         tgt.StorePackedBits(1, m_version);
     }
-    void serializefrom(BitStream &src)
+    void serializefrom(BitStream &src) override
     {
         m_tickcount = src.GetPackedBits(1);
         m_version = src.GetPackedBits(1);
@@ -76,12 +76,12 @@ public:
     {
 
     }
-    void serializeto(BitStream &tgt) const
+    void serializeto(BitStream &tgt) const override
     {
         tgt.StorePackedBits(1, 0); //ctrl opcode
         tgt.StorePackedBits(1, 4); //opcode
     }
-    void serializefrom(BitStream &)
+    void serializefrom(BitStream &) override
     {
     }
 };
@@ -92,12 +92,12 @@ public:
     {
 
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         bs.GetPackedBits(1);
         bs.GetPackedBits(1);
     }
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,0);
         bs.StorePackedBits(1,5);
@@ -110,12 +110,12 @@ public:
     {
 
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         bs.GetPackedBits(1);
         bs.GetPackedBits(1);
     }
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,0);
         bs.StorePackedBits(1,6);
@@ -128,13 +128,13 @@ public:
     {
 
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         //TODO: check this
         bs.GetPackedBits(1);
         bs.GetPackedBits(1);
     }
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,0);
         bs.StorePackedBits(1,0);
@@ -145,11 +145,11 @@ public:
 class CRUD_EventFactory
 {
 public:
-    virtual CRUDLink_Event *EventFromStream(BitStream &bs, bool follower=false)
+    virtual CRUDLink_Event *EventFromStream(BitStream &bs)
     {
         int32_t opcode = bs.GetPackedBits(1);
         if(opcode!=0)
-            return 0;
+            return nullptr;
         // it seems idle commands can be shortened to only contain opcode==0.
         int32_t control_opcode = bs.GetReadableBits()==0 ? 0 : bs.GetPackedBits(1);
         switch(control_opcode)
@@ -160,6 +160,6 @@ public:
             break;
         }
         ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled control event type %d\n"),control_opcode));
-        return 0;
+        return nullptr;
     }
 };
