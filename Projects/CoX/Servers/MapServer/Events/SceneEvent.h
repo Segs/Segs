@@ -23,7 +23,7 @@ public:
     uint32_t ref_count;
     int ref_crc;
     int var_4;
-    bool m_outdoor_map;
+    bool m_outdoor_mission_map;
     bool current_map_flags;
     size_t num_base_elems;
     int undos_PP;

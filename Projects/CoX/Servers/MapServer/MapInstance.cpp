@@ -18,6 +18,7 @@
 #include "Entity.h"
 #include "WorldSimulation.h"
 #include "InternalEvents.h"
+
 namespace {
 enum {
     World_Update_Timer   = 1,
@@ -237,7 +238,7 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     SceneEvent *res=new SceneEvent;
     res->undos_PP=0;
     res->var_14=1;
-    res->m_outdoor_map=1;//0;
+    res->m_outdoor_mission_map=0;
     res->m_map_number=1;
     //"maps/City_Zones/City_00_01/City_00_01.txt";
     res->m_map_desc="maps/City_Zones/City_01_01/City_01_01.txt";
@@ -257,13 +258,13 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     MapClient *cl = lnk->client_data();
     assert(cl);
     // this sends the initial  'world', but without this client
-
     EntitiesResponse *res=new EntitiesResponse(cl); // initial world update -> current state
     res->m_map_time_of_day = m_world->time_of_day();
     res->is_incremental(false); //redundant
     res->entReceiveUpdate=true; //false;
     res->abs_time = m_world->timecount;
     res->finalize();
+    assert(lnk==cl->link());
     lnk->putq(res);
     m_clients.addToActiveClients(cl); // add to the list of clients interested in world updates
 }
@@ -299,6 +300,7 @@ void MapInstance::sendState() {
     static bool only_first=true;
     static int resendtxt=0;
     resendtxt++;
+
     for(;iter!=end; ++iter)
     {
         bool send_startup_admin = false;
