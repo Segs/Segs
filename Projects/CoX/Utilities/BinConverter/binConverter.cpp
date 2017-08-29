@@ -2,7 +2,8 @@
 #include "Common/GameData/shop_definitions.h"
 #include "Common/GameData/costume_serializers.h"
 #include "Common/GameData/costume_definitions.h"
-
+#include "Common/GameData/attrib_serializers.h"
+#include "Common/GameData/attrib_definitions.h"
 #include "Common/GameData/scenegraph_serializers.h"
 #include "Common/GameData/scenegraph_definitions.h"
 #include "Common/GameData/bodypart_serializers.h"
@@ -36,6 +37,7 @@ enum BinType {
     ePaletteSets,
     eGroupEmblems,
     eZones,
+    eAttribNames,
     eSceneGraph,
 };
 static const QHash<uint32_t,BinType> knownSerializers = {
@@ -53,6 +55,7 @@ static const QHash<uint32_t,BinType> knownSerializers = {
     {palette_i0_requiredCrc             , ePaletteSets},
     {geoset_i0_requiredCrc              , eGroupEmblems },
     {zones_i0_requiredCrc               , eZones},
+    {attribnames_i0_requiredCrc         , eAttribNames},
     {scenegraph_i0_requiredCrc          , eSceneGraph},
 };
 BinType getLoader(const QString &fname)
@@ -101,6 +104,7 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(shoplist_i0_requiredCrc,16)<<"> Shops data - 'stores.bin'";
     qDebug()<<"   I0<"<<QString::number(shopitems_i0_requiredCrc,16)<<"> Shops items- 'items.bin'";
     qDebug()<<"   I0<"<<QString::number(shopdepts_i0_requiredCrc,16)<<"> Shop department names data - 'depts.bin'";
+    qDebug()<<"   I0<"<<QString::number(attribnames_i0_requiredCrc,16)<<"> Attrib definitions - 'attrib_names.bin'";
     qDebug()<<"   I0<"<<QString::number(tailorcosts_i0_requiredCrc,16)<<"> Tailoring cost data - 'tailorcost.bin'";
     qDebug()<<"   I0<"<<QString::number(costumesets_i0_requiredCrc,16)<<"> Costume part data - 'costume.bin'";
     qDebug()<<"   I0<"<<QString::number(bodyparts_i0_requiredCrc,16)<<"> Body part data - 'BodyParts.bin'";
@@ -145,6 +149,7 @@ int main(int argc,char **argv)
         case eGroupEmblems: doConvert(doLoad<GeoSet_Data>(binfile),target_basename,json_output); break;
         case ePaletteSets:  doConvert(doLoad<Pallette_Data>(binfile),target_basename,json_output); break;
         case eZones:        doConvert(doLoadRef<AllMaps_Data>(binfile),target_basename,json_output); break;
+        case eAttribNames:  doConvert(doLoadRef<AttribNames_Data>(binfile),target_basename,json_output); break;
         case eSceneGraph:   doConvert(doLoadRef<SceneGraph_Data>(binfile),target_basename,json_output); break;
         default:
             break;
