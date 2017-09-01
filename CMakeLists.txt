@@ -24,6 +24,7 @@ OPTION(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 ########################################################################################
 # Prerequisites
 ########################################################################################
+include(3rdparty_support)
 set(ThirdParty_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/3rd_party/built)
 add_subdirectory(3rd_party)
 add_definitions(-DACE_HAS_DLL=1) #FIXME: this should be set by per-target add_definitions
