@@ -24,20 +24,14 @@ find_package(Qt5Core REQUIRED)
 #    src/QOSGWidget.cpp
 #)
 
-#INCLUDE_DIRECTORIES(${target_INCLUDE_DIR} ${ACE_path})
-
-#SET (target_SOURCES
-#${gui_SOURCES}
-#${target_CPP}
-#${target_INCLUDE}
-#${gui_MOC_SRC} ${gui_UI_H}
-#)
-
-#ADD_EXECUTABLE(mapviewer ${target_SOURCES})
-ADD_EXECUTABLE(mapviewer src/main.cpp)
-#ACE_ADD_LIBRARIES(mapviewer ACE)
+set(SOURCES
+    src/MapViewerApp.cpp
+    src/MapViewerApp.h
+    src/main.cpp
+)
+ADD_EXECUTABLE(mapviewer ${SOURCES})
 TARGET_LINK_LIBRARIES(mapviewer
     Lutefisk3D
+    ACE
 )
 qt5_use_modules(mapviewer Core)
-#ADD_DEPENDENCIES(mapviewer ${target_DEPENDS})
