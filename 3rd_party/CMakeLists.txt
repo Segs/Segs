@@ -2,7 +2,9 @@ link_directories(${ThirdParty_Install_Dir}/lib)
 
 include(ExternalProject_CEREAL.cmake)
 include(ExternalProject_ACE.cmake)
-
+if(BUILD_COX_MAP_VIEWER)
+include(ExternalProject_Lutefisk3D.cmake)
+endif()
 ########################################################################################
 # Optional components
 ########################################################################################

@@ -1,5 +1,3 @@
-add_subdirectory(3rd_party)
-
 #FIND_PACKAGE(ACE REQUIRED)
 find_package(Qt5Core REQUIRED)
 
@@ -31,7 +29,7 @@ set(SOURCES
 )
 ADD_EXECUTABLE(mapviewer ${SOURCES})
 TARGET_LINK_LIBRARIES(mapviewer
-    Lutefisk3D
+    lutefisk3d_IMP
     ACE
 )
 qt5_use_modules(mapviewer Core)
