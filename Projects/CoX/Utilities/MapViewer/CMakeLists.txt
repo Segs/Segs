@@ -33,3 +33,8 @@ TARGET_LINK_LIBRARIES(mapviewer
     ACE
 )
 qt5_use_modules(mapviewer Core)
+
+add_custom_command(TARGET mapviewer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${ThirdParty_Install_Dir}/share/Lutefisk3D/CoreData ${EXECUTABLE_OUTPUT_PATH}/CoreData
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${EXECUTABLE_OUTPUT_PATH}/Data
+)
