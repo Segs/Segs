@@ -24,7 +24,7 @@ void CRUDLink::event_for_packet(PacketEvent * pak_ev)
     }
     res->serializefrom(*pak->GetStream());
     res->src(this);
-    res->seq_number = pak->GetSequenceNumber();
+    res->m_seq_number = pak->GetSequenceNumber();
     target()->putq(res);
     if(pak->GetStream()->GetReadableBits()>1)
         ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) leftover bits in packet: %s\n"),res->info()));
