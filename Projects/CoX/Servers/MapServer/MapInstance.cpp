@@ -101,6 +101,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evConsoleCommand:
             on_console_command(static_cast<ConsoleCommand *>(ev));
             break;
+        case MapEventTypes::evChatDividerMoved:
+            on_command_chat_divider_moved(static_cast<ChatDividerMoved *>(ev));
+            break;
         default:
             fprintf(stderr,"Unhandled event type %zu\n",ev->type());
             //ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled event type %d\n"),ev->type()));
@@ -256,7 +259,7 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     res->m_map_time_of_day = m_world->time_of_day();
     res->is_incremental(false); //redundant
     res->entReceiveUpdate=true; //false;
-    res->abs_time = m_world->timecount;
+    res->abs_time = 30*100*m_world->sim_frame_time/1000.0f;
     res->finalize();
     assert(lnk==cl->link());
     lnk->putq(res);
@@ -309,7 +312,7 @@ void MapInstance::sendState() {
             res->is_incremental(true); // incremental world update = op 2
         }
         res->entReceiveUpdate = true;
-        res->abs_time = m_world->timecount;
+        res->abs_time = 30*100*(m_world->sim_frame_time/1000.0f);
         res->finalize();
         cl->link()->putq(res);
         if(send_startup_admin) {
@@ -358,8 +361,9 @@ void MapInstance::on_input_state(InputState *st)
         MapLinkEvent *ev = MapEventFactory::CommandEventFromStream(st->m_user_commands);
         if(!ev)
             break;
+        ev->serializefrom(st->m_user_commands);
         // copy source packet seq number to created command
-        ev->seq_number = st->seq_number;
+        ev->m_seq_number = st->m_seq_number;
         ev->src(st->src());
         // post the event to ourselves for dispatch
         putq(ev);
@@ -391,4 +395,8 @@ void MapInstance::on_console_command(ConsoleCommand * ev){
             cl->link()->putq(msg);
         }
     }
+}
+void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
+{
+    qDebug() << "Chat divider moved to "<<ev->m_position; //"for player" <<
 }

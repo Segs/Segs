@@ -4,7 +4,7 @@
  * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #pragma once
@@ -30,11 +30,12 @@ class NewEntity;
 class ConsoleCommand;
 class ClientQuit;
 class ConnectRequest;
-
+class ChatDividerMoved;
 class MapServer;
 class SEGSTimer;
 class InputState;
 class World;
+
 class MapInstance : public EventProcessor
 {
         std::string     m_name;
@@ -75,4 +76,5 @@ protected:
         void            on_console_command(ConsoleCommand *ev);
         void            on_client_quit(ClientQuit *ev);
         void            on_connection_request(ConnectRequest *ev);
+        void            on_command_chat_divider_moved(ChatDividerMoved *ev);
 };

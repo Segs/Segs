@@ -44,7 +44,8 @@ class CRUDLink_Event : public SerializableEvent<BitStream>
 public:
     CRUDLink_Event(size_t evtype,EventProcessor *ev_src=nullptr) : SerializableEvent<BitStream>(evtype,ev_src)//,LINK
     {}
-    size_t seq_number;
+    size_t m_seq_number;
+    bool m_reliable=true;
 };
 
 class ConnectRequest : public CRUDLink_Event
