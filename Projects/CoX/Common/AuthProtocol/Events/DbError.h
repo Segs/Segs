@@ -1,5 +1,5 @@
 #pragma once
-#include "AuthEvents.h"
+#include "AuthProtocol/AuthEvents.h"
 
 class DbError : public AuthLinkEvent
 {

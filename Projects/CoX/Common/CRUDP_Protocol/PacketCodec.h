@@ -35,8 +35,8 @@ class PacketCodecNull
 {
 public:
     static uint32_t  Checksum(const uint8_t *buf,size_t size);
-    void Decrypt(uint8_t * /*arr*/,size_t /*size*/){};
-    void Encrypt(uint8_t * /*arr*/,size_t /*size*/){};
+    void Decrypt(uint8_t * /*arr*/,size_t /*size*/){}
+    void Encrypt(uint8_t * /*arr*/,size_t /*size*/){}
     void StartEncryption(uint8_t * /*other_public_key*/){}
 
 };

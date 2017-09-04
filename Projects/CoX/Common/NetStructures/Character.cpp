@@ -531,30 +531,26 @@ void Character::sendFriendList(BitStream &bs) const
 }
 void Character::sendOptionsFull(BitStream &bs) const
 {
-    bs.StoreFloat(m_options.mouselook_scalefactor);//MouseFlt1
-    bs.StoreFloat(m_options.degrees_for_turns);//MouseFlt2
-    bs.StoreBits(1,m_options.mouse_invert);//MouseSet1
-    bs.StoreBits(1,0);//g_DimChatWindow
-    bs.StoreBits(1,0); //g_DimNavWindow
-    bs.StoreBits(1,1);//g_ToolTips
-    bs.StoreBits(1,1);//g_AllowProfanity
-    bs.StoreBits(1,1);//g_ChatBalloons
-    bs.StoreBits(3,0);//dword_729E58
-    bs.StoreBits(3,0);//dword_729E5C
-    bs.StoreBits(3,0);//dword_729E60
-    bs.StoreBits(3,0);//dword_729E68
-    bs.StoreBits(3,0);//dword_729E6C
-    bs.StoreBits(3,0);//dword_729E70
-    bs.StoreBits(3,0);//dword_729E74
-    bs.StoreBits(3,0);//dword_729E78
-    bs.StoreBits(3,0);//dword_729E7C
-    bs.StorePackedBits(5,2);//v2 =
-    //  if ( v1 >= 5 )
-    //  {
-    //      word_91A7A4 = v2;
-    //      word_91A7A0 = v2;
-    //  }
+    bs.StoreFloat(m_options.mouselook_scalefactor);
+    bs.StoreFloat(m_options.degrees_for_turns);
+    bs.StoreBits(1,m_options.mouse_invert);
+    bs.StoreBits(1,m_options.m_ChatWindow_fading);
+    bs.StoreBits(1,m_options.m_NavWindow_fading);
+    bs.StoreBits(1,m_options.showTooltips);
+    bs.StoreBits(1,m_options.allowProfanity);
+    bs.StoreBits(1,m_options.chatBallons);//g_ChatBalloons
 
+    bs.StoreBits(3,m_options.showArchetype);
+    bs.StoreBits(3,m_options.showSupergroup);
+    bs.StoreBits(3,m_options.showPlayerName);
+    bs.StoreBits(3,m_options.showPlayerBars);
+    bs.StoreBits(3,m_options.showVillainName);
+    bs.StoreBits(3,m_options.showVillainBars);
+    bs.StoreBits(3,m_options.showPlayerReticles);
+    bs.StoreBits(3,m_options.showVillainReticles);
+    bs.StoreBits(3,m_options.showAssistReticles);
+
+    bs.StorePackedBits(5,m_options.chatFontSize); // value only used on client if >=5
 }
 
 void Character::sendOptions( BitStream &bs ) const
@@ -572,39 +568,36 @@ void Character::sendOptions( BitStream &bs ) const
     }
     bs.StoreBits(1,m_first_person_view_toggle);
 }
-
-#define ADD_OPT(type,var) \
-{\
-    ClientOption o(#var);\
-    o.m_args.push_back(ClientOption::Arg(type,&var));\
-    m_opts.push_back(o);\
-}
+#define CLIENT_OPT(type,var)\
+    ClientOption {#var,{{type,&var}} }
 
 void ClientOptions::init()
 {
-    ADD_OPT(1,control_debug);
-    ADD_OPT(1,no_strafe);
-    ADD_OPT(1,alwaysmobile);
-    ADD_OPT(1,repredict);
-    ADD_OPT(1,neterrorcorrection);
-    ADD_OPT(3,speed_scale);
-    ADD_OPT(1,svr_lag);
-    ADD_OPT(1,svr_lag_vary);
-    ADD_OPT(1,svr_pl);
-    ADD_OPT(1,svr_oo_packets);
-    ADD_OPT(1,client_pos_id);
-    ADD_OPT(1,atest0);
-    ADD_OPT(1,atest1);
-    ADD_OPT(1,atest2);
-    ADD_OPT(1,atest3);
-    ADD_OPT(1,atest4);
-    ADD_OPT(1,atest5);
-    ADD_OPT(1,atest6);
-    ADD_OPT(1,atest7);
-    ADD_OPT(1,atest8);
-    ADD_OPT(1,atest9);
-    ADD_OPT(1,predict);
-    ADD_OPT(1,notimeout);
-    ADD_OPT(1,selected_ent_server_index);
+    m_opts = {
+        CLIENT_OPT(ClientOption::t_int,control_debug),
+        CLIENT_OPT(ClientOption::t_int,no_strafe),
+        CLIENT_OPT(ClientOption::t_int,alwaysmobile),
+        CLIENT_OPT(ClientOption::t_int,repredict),
+        CLIENT_OPT(ClientOption::t_int,neterrorcorrection),
+        CLIENT_OPT(ClientOption::t_float,speed_scale),
+        CLIENT_OPT(ClientOption::t_int,svr_lag),
+        CLIENT_OPT(ClientOption::t_int,svr_lag_vary),
+        CLIENT_OPT(ClientOption::t_int,svr_pl),
+        CLIENT_OPT(ClientOption::t_int,svr_oo_packets),
+        CLIENT_OPT(ClientOption::t_int,client_pos_id),
+        CLIENT_OPT(ClientOption::t_int,atest0),
+        CLIENT_OPT(ClientOption::t_int,atest1),
+        CLIENT_OPT(ClientOption::t_int,atest2),
+        CLIENT_OPT(ClientOption::t_int,atest3),
+        CLIENT_OPT(ClientOption::t_int,atest4),
+        CLIENT_OPT(ClientOption::t_int,atest5),
+        CLIENT_OPT(ClientOption::t_int,atest6),
+        CLIENT_OPT(ClientOption::t_int,atest7),
+        CLIENT_OPT(ClientOption::t_int,atest8),
+        CLIENT_OPT(ClientOption::t_int,atest9),
+        CLIENT_OPT(ClientOption::t_int,predict),
+        CLIENT_OPT(ClientOption::t_int,notimeout),
+        CLIENT_OPT(ClientOption::t_int,selected_ent_server_index),
+    };
 }
 #undef ADD_OPT

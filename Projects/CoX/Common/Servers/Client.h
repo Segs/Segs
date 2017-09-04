@@ -18,14 +18,14 @@ class AccountInfo;
 class ClientLinkState
 {
 public:
-    typedef enum
+    enum eClientState
     {
         CLIENT_DISCONNECTED=0,
         CLIENT_EXPECTED,
         NOT_LOGGED_IN,
         LOGGED_IN,
         CLIENT_CONNECTED
-    } eClientState;
+    };
 public:
                         ClientLinkState():m_state(NOT_LOGGED_IN){}
     uint32_t            hash_id() {return m_peer_addr.get_ip_address()^m_peer_addr.get_port_number();}
@@ -52,5 +52,5 @@ public:
     ClientLinkState &   link_state()        { return m_link;}
 protected:
     ClientLinkState     m_link;
-    AccountInfo         *m_account_info;
+    AccountInfo *       m_account_info;
 };

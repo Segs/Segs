@@ -45,7 +45,7 @@ bool loadFrom(BinStore *s, DefOmni_Data &target)
     s->prepare();
     ok &= s->read(target.omniColor);
     ok &= s->read(target.Size);
-    ok &= s->read(target.omni_bf);
+    ok &= s->read(target.isNegative);
     ok &= s->prepare_nested();
     assert(ok);
     assert(s->end_encountered());
@@ -243,7 +243,7 @@ static void serialize(Archive & archive, DefOmni_Data & m)
 {
     archive(cereal::make_nvp("Color",m.omniColor));
     archive(cereal::make_nvp("Size",m.Size));
-    archive(cereal::make_nvp("Flags",m.omni_bf));
+    archive(cereal::make_nvp("Flags",m.isNegative));
 }
 
 template<class Archive>
@@ -308,7 +308,7 @@ static void serialize(Archive & archive, Def_Data & m)
     archive(cereal::make_nvp("Type",m.type));
     archive(cereal::make_nvp("Flags",m.flags));
 
-    archive(cereal::make_nvp("Location",m.p_Grp));
+    archive(cereal::make_nvp("Groups",m.p_Grp));
     archive(cereal::make_nvp("Properties",m.p_Property));
     archive(cereal::make_nvp("Tints",m.p_TintColor));
     archive(cereal::make_nvp("Sounds",m.p_Sound));

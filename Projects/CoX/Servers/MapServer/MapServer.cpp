@@ -51,12 +51,11 @@ bool MapServer::Run(void)
 
     assert(m_manager.num_templates()>0); // we have to have a world to run
     m_handler = m_manager.get_template(0)->get_instance();
-    MapLink::g_target = m_handler;
     m_handler->set_server(this);
 
 
     m_endpoint = new ServerEndpoint<MapLink>(m_listen_point); //,this
-    MapLink::g_link_target = m_endpoint;
+    m_endpoint->set_downstream(m_handler);
 
     if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
         ACE_ERROR_RETURN ((LM_ERROR, "ACE_Reactor::register_handler"),false);

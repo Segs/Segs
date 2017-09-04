@@ -92,8 +92,7 @@ bool CharacterDatabase::named_character_exists(const QString &name)
     if(!m_prepared_char_exists.next())
         return false;
     // TODO: handle case of multiple accounts with same name ?
-
-    return m_prepared_char_exists.value("exists").toBool();
+    return m_prepared_char_exists.value(0).toBool();
 }
 bool CharacterDatabase::fill( AccountInfo *c )
 {

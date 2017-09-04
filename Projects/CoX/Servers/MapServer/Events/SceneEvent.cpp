@@ -14,7 +14,7 @@ void SceneEvent::dependent_dump(void)
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    var_14 0x%08x\n"),var_14));
     if(var_14)
     {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_outdoor_map 0x%08x\n"),m_outdoor_map));
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_outdoor_map 0x%08x\n"),m_outdoor_mission_map));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_map_number 0x%08x\n"),m_map_number));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn1 0x%08x\n"),unkn1));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_map_desc %s\n"),qPrintable(m_map_desc)));
@@ -85,7 +85,7 @@ void SceneEvent::serializefrom(BitStream &src)
     var_14 = src.GetBits(1);
     if(var_14)
     {
-        m_outdoor_map = src.GetBits(1);
+        m_outdoor_mission_map = src.GetBits(1);
         m_map_number = src.GetPackedBits(1);
         unkn1 = src.GetPackedBits(1);
         if(unkn1)
@@ -126,7 +126,7 @@ void SceneEvent::serializeto(BitStream &tgt) const
     if(var_14)
     {
         tgt.StoreString(m_map_desc);
-        tgt.StoreBits(1,m_outdoor_map);
+        tgt.StoreBits(1,m_outdoor_mission_map);
         tgt.StorePackedBits(1,m_map_number);
     }
     //tgt.StoreBits(1,current_map_flags);

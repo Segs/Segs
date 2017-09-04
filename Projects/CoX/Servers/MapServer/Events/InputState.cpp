@@ -287,7 +287,7 @@ struct ControlState
             time_rel1C = bs.GetFloat(); // simulation timestep ?
 
         m_perf_cntr_diff = bs.Get64Bits(); //next_state->ticks - current_state->ticks
-        m_perf_cntr_diff = bs.Get64Bits(); //v7->perf_cntr1
+        m_perf_freq_diff = bs.Get64Bits(); //v7->perf_cntr1
     }
     void dump()
     {
@@ -331,24 +331,34 @@ void InputState::serializefrom(BitStream &bs)
         ctrl_idx++;
     }
     recv_client_opts(bs); // g_pak contents will follow
+    int command_bitcount = bs.GetReadableBits();
+    BitStream command_stream((command_bitcount+7)/8);
+    bs.GetBitArray(command_stream.write_ptr(),command_bitcount);
+    command_stream.SetWritePos(command_bitcount);
+    assert(command_stream.GetReadableBits()==command_bitcount);
 #ifdef DEBUG_INPUT
     fprintf(stderr,"\n");
 #endif
+}
+static float dequantize(uint16_t val,int bitcount) {
+    float z=val;
+    z = z/(1<<bitcount);
+    z *= 6.283185307179586;
+    z -= M_PI;
+    return z;
 }
 //TODO: use generic ReadableStructures here ?
 void InputState::recv_client_opts(BitStream &bs)
 {
     ClientOptions opts;
     ClientOption *entry;
-    int opt_idx=0;
-    int some_idx = bs.GetPackedBits(1);
-    entry=opts.get(opt_idx)-1;
+    int cmd_idx = bs.GetPackedBits(1);
     glm::vec3 vec;
-    while(some_idx!=0)
+    while((cmd_idx = bs.GetPackedBits(1))!=0)
     {
-        for(size_t i=0; i<entry->m_args.size(); i++)
+        entry=opts.get(cmd_idx-1);
+        for(ClientOption::Arg &arg : entry->m_args)
         {
-            ClientOption::Arg &arg=entry->m_args[i];
             switch ( arg.type )
             {
                 case ClientOption::t_int:
@@ -363,11 +373,13 @@ void InputState::recv_client_opts(BitStream &bs)
                 }
                 case ClientOption::t_quant_angle:
                 {
-                    printf("Quant:%d\n",bs.GetBits(14)); //quantized angle
+                    float * tgt_angle = (float *)arg.tgt;
+                    *tgt_angle = dequantize(bs.GetBits(14),14);
+                    printf("Quant angle res:%f\n",*tgt_angle); //quantized angle
                     break;
                 }
                 case ClientOption::t_string:
-                case 4:
+                case ClientOption::t_sentence:
                 {
                     QString v;
                     bs.GetString(v);
@@ -385,8 +397,5 @@ void InputState::recv_client_opts(BitStream &bs)
                     continue;
             }
         }
-        some_idx = bs.GetPackedBits(1)-1;
-        opt_idx++;
-        entry=opts.get(opt_idx);
     }
 }

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include "Client.h"
+#include "Common/Servers/Client.h"
 
 #include <string>
 

@@ -113,7 +113,7 @@ void GameHandler::on_update_server(UpdateServer *ev)
         return;
     }
     m_clients.connectedClient(ev->authCookie);
-    ((GameLink *)ev->src())->client_data(cl); // store client object in link
+    ((GameLink *)ev->src())->set_client_data(cl); // store client object in link
         cl->link_state().link((GameLink *)ev->src()); // store link in client
     CharacterSlots *slots_event=new CharacterSlots;
     slots_event->set_client(cl); // at this point pointer to the client is held in event, if it's destroyed somewhere else KA-BOOM!!
@@ -153,7 +153,7 @@ void GameHandler::on_timeout(TimerEvent *ev)
     // 2. Find all links with inactivity_time() >= disconnect_time
     //   Disconnect given link.
 
-    int timer_id = (intptr_t)ev->data();
+    intptr_t timer_id = (intptr_t)ev->data();
     switch (timer_id) {
         case Link_Idle_Timer:
             on_check_links();
@@ -166,7 +166,7 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
     CharacterClient *client = lnk->client_data();
     if(client)
     {
-        lnk->client_data(0);
+        lnk->set_client_data(0);
         m_clients.removeById(client->account_info().account_server_id());
     }
     lnk->putq(new DisconnectResponse);

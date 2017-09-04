@@ -1,4 +1,12 @@
 #pragma once
+
+#include "LinkLevelEvent.h"
+#include "Buffer.h"
+#include "EventProcessor.h"
+#include "AuthProtocol/AuthEvents.h"
+#include "AuthProtocol/AuthPacketCodec.h"
+#include "AuthProtocol/AuthOpcodes.h"
+
 #include <ace/ACE.h>
 #include <ace/Synch.h>
 #include <ace/SOCK_Stream.h>
@@ -8,14 +16,6 @@
 #include <ace/Event_Handler.h>
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
-
-#include "LinkLevelEvent.h"
-#include "AuthEvents.h"
-#include "AuthPacketCodec.h"
-#include "Buffer.h"
-#include "EventProcessor.h"
-#include "AuthOpcodes.h"
-
 class SEGSEvent;
 class AuthClient;
 

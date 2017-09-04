@@ -1,12 +1,16 @@
 #pragma once
-#include "AuthEvents.h"
+#include "AuthProtocol/AuthEvents.h"
 
 class ServerSelectRequest : public AuthLinkEvent
 {
 public:
     ServerSelectRequest() : AuthLinkEvent(evServerSelectRequest),m_server_id(0)
     {}
-    void init(EventProcessor *ev_src,uint8_t server_id) {m_server_id=server_id; m_event_source=ev_src;}
+    void init(EventProcessor *ev_src,uint8_t server_id)
+    {
+        m_server_id    = server_id;
+        m_event_source = ev_src;
+    }
     void serializefrom(GrowingBuffer &buf)
     {
         uint8_t op;

@@ -20,8 +20,6 @@ Description: The BitStream class allows it's user to manipulate data in
 #include "Buffer.h"
 
 #include <cstdint>
-#include <string>
-#include <vector>
 class QString;
 //  Constants
 #define BS_BITS        3
@@ -107,9 +105,9 @@ public:
         size_t  GetAvailSize()      const;
         bool    IsByteAligned()     const   { return m_byteAligned;}
 
-        void    SetReadPos(uint32_t pos)    { m_read_off  = pos >> 3; m_read_bit_off  = (uint8_t)(pos & 0x7);}
+        void    SetReadPos(uint32_t pos)    { m_read_off  = pos >> 3; m_read_bit_off  = uint8_t(pos & 0x7);}
         size_t  GetReadPos()                { return (m_read_off<<3)  + m_read_bit_off;}
-        void    SetWritePos(uint32_t pos)   { m_write_off = pos >> 3; m_write_bit_off = (uint8_t)(pos & 0x7);}
+        void    SetWritePos(uint32_t pos)   { m_write_off = pos >> 3; m_write_bit_off = uint8_t(pos & 0x7);}
 
         void    SetByteLength(uint32_t length);
         void    UseByteAlignedMode(bool toggle);
@@ -119,7 +117,7 @@ public:
         uint32_t GetPackedBitsLength(uint32_t nBits, uint32_t dataBits) const;
         uint32_t GetBitsLength(uint32_t nBits, uint32_t dataBits)       const;
         void CompressAndStoreString(const char *str);
-        void GetAndDecompressString(std::string &tgt);
+        void GetAndDecompressString(QString &tgt);
 
 private:
         bool m_byteAligned;

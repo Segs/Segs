@@ -3,6 +3,25 @@
 
 #include <glm/gtx/vector_query.hpp>
 
+void World::update(const ACE_Time_Value &tick_timer) {
+    ACE_Time_Value delta;
+    if(prev_tick_time==ACE_Time_Value::zero) {
+        delta = ACE_Time_Value(0,33*1000);
+    }
+    else
+        delta = tick_timer - prev_tick_time;
+    m_time_of_day+= 30*((float(delta.msec())/1000.0f)/(60.0*60)); // 1 sec of real time is 30s of ingame time
+    if(m_time_of_day>=24.0f)
+        m_time_of_day-=24.0f;
+    sim_frame_time = delta.msec()/1000.0f;
+    prev_tick_time = tick_timer;
+    // TODO: use active entity list here
+    for(int i=1; i<10240; ++i) {
+        if(ref_ent_mager.m_map_entities[i]==nullptr)
+            break;
+        updateEntity(ref_ent_mager.m_map_entities[i],delta);
+    }
+}
 void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
     if(glm::length2(e->inp_state.pos_delta)) {
         // todo: take into account time between updates

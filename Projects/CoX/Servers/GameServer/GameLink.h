@@ -8,6 +8,25 @@
  */
 
 #pragma once
-#include "CRUD_Link.h"
+#include "Common/CRUDP_Protocol/CRUD_Link.h"
 #include "GameEventFactory.h"
-typedef CRUDLink<GameEventFactory> GameLink;
+
+struct GameLink : public CRUDLink
+{
+    GameLink(EventProcessor *tgt,EventProcessor *net_layer) : CRUDLink() {
+        m_net_layer = net_layer;
+        m_target = tgt;
+        assert(tgt);
+    }
+    CharacterClient * client_data() {return static_cast<CharacterClient *>(m_link_data);}
+
+
+    // CRUDLink interface
+protected:
+    CRUD_EventFactory &factory() override
+    {
+        return m_factory;
+    }
+    static GameEventFactory m_factory;
+
+};

@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "MapServerInterface.h"
-#include "ServerEndpoint.h"
+#include "Common/Servers/MapServerInterface.h"
+#include "Common/Servers/ServerEndpoint.h"
 #include "MapLink.h"
 #include "MapManager.h"
 

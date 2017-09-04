@@ -4,7 +4,7 @@
  * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #pragma once
@@ -34,7 +34,8 @@ public:
     EVENT_DECL(evInputState             ,8)
     EVENT_DECL(evClientQuit             ,9)
     EVENT_DECL(evForceLogout            ,10)
-    EVENT_DECL(evChatMessage            ,20)
+    EVENT_DECL(evChatMessage            ,20)    // command_id + 20
+    EVENT_DECL(evChatDividerMoved       ,36)
     EVENT_DECL(evCombineRequest         ,40)
     EVENT_DECL(evConsoleCommand         ,100)
     EVENT_DECL(evMiniMapState           ,101)
@@ -297,6 +298,7 @@ public:
 };
 
 #include "Events/ChatMessage.h"
+#include "Events/ChatDividerMoved.h"
 #include "Events/SceneEvent.h"
 #include "Events/EntitiesResponse.h"
 #include "Events/Shortcuts.h"

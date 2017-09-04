@@ -19,7 +19,7 @@ protected:
 public:
     EntitiesResponse(MapClient *cl);
         void is_incremental(bool v) {m_incremental=v;}
-virtual void serializefrom(BitStream &)
+virtual void serializefrom(BitStream &) override
         {
         }
         void sendCommands(BitStream &tgt) const
@@ -32,7 +32,7 @@ virtual void serializefrom(BitStream &)
             tgt.StoreFloat(2.0f);
             tgt.StorePackedBits(1,0);
         }
-virtual void serializeto(BitStream &tgt) const
+virtual void serializeto(BitStream &tgt) const override
         {
             assert(finalized);
             int size=m_finalized_into.GetReadableBits();
@@ -49,7 +49,7 @@ virtual void serializeto(BitStream &tgt) const
             serializeto_internal(m_finalized_into);
             finalized = true;
         }
-
+        const char *info() override { return m_incremental ? "Entities_Incremental" : "Entities_Full"; }
         bool        entReceiveUpdate;
         float       m_map_time_of_day;
         //bool unkn1;

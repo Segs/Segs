@@ -7,8 +7,9 @@
  */
 
 #pragma once
+#include "EventProcessor.h"
+#include "Common/CRUDP_Protocol/CRUD_Events.h"
 
-#include <string>
 #include <ace/ACE.h>
 #include <ace/Synch.h>
 #include <ace/INET_Addr.h>
@@ -18,8 +19,8 @@
 #include <ace/Event_Handler.h>
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
-#include "EventProcessor.h"
-#include "CRUD_Events.h"
+
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -128,6 +129,7 @@ public:
                         msg_queue()->notification_strategy (&m_notifier); // whenever there is a new msg on msg_queue()
                         return 0;
                     }
+        void        set_downstream(EventProcessor *ds) { m_downstream = ds;}
 protected:
         void        dispatch(SEGSEvent *)
                     {
@@ -138,27 +140,34 @@ protected:
                         ACE_ASSERT(!"No sync events known");
                         return 0;
                     }
-        LINK_CLASS *getClientLink(const ACE_INET_Addr &from_addr)
-                    {
-                        LINK_CLASS *res= client_links[from_addr]; // get packet handling object for this connection
-                        if(res!=NULL)
-                            return res;
-
-                        res = new LINK_CLASS; // create a new client handler
+        LINK_CLASS *createLinkInstance() {
+                        LINK_CLASS *res = new LINK_CLASS(m_downstream,this); // create a new client handler
                         res->reactor(reactor());
                         if(-1==res->open())
                         {
                             delete res;
                             return 0;
                         }
+                        return res;
+                    }
+        LINK_CLASS *getClientLink(const ACE_INET_Addr &from_addr)
+                    {
+                        LINK_CLASS *res= client_links[from_addr]; // get packet handling object for this connection
+                        if(res!=NULL)
+                            return res;
+
+                        res = createLinkInstance(); // create a new client handler
+                        if(nullptr == res)
+                            return nullptr;
                         res->putq(new ConnectEvent(this,from_addr)); // and inform it of a new connection
-                        client_links[from_addr]	= res;
+                        client_links[from_addr] = res;
                         // schedule timeout timer here!!
                         return res;
                     }
 
         hmAddrProto client_links;
         ACE_Reactor_Notification_Strategy m_notifier;
-        ACE_SOCK_Dgram endpoint_;	// Wrapper for sending/receiving dgrams.
+        ACE_SOCK_Dgram endpoint_;   // Wrapper for sending/receiving dgrams.
         ACE_Thread_Mutex m_send_sema;
+        EventProcessor *m_downstream; //!< All created links will have this as their downstream target
 };

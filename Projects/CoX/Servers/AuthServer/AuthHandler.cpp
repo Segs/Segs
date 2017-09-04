@@ -1,12 +1,12 @@
 #include "AuthHandler.h"
 
 #include "AuthLink.h"
-#include "AuthEvents.h"
+#include "AuthProtocol/AuthEvents.h"
 #include "AuthClient.h"
 #include "AdminServer/AccountInfo.h"
-#include "AdminServerInterface.h"
-#include "ServerManager.h"
-#include "InternalEvents.h"
+#include "Servers/AdminServerInterface.h"
+#include "Servers/ServerManager.h"
+#include "Servers/InternalEvents.h"
 
 void AuthHandler::dispatch( SEGSEvent *ev )
 {

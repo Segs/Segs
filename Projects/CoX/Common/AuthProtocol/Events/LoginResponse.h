@@ -1,6 +1,6 @@
 #pragma once
 #include <cstring>
-#include "AuthEvents.h"
+#include "AuthProtocol/AuthEvents.h"
 
 class LoginResponse : public AuthLinkEvent
 {
@@ -31,5 +31,5 @@ public:
         buf.uGet(unk1);
         buf.uGet(unk2);
         buf.uGet(unk3);
-    };
+    }
 };

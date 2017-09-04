@@ -649,17 +649,16 @@ static QByteArray uncompr_zip(QByteArray &compressed_data,uint32_t size_uncom) {
     compressed_data.prepend( char((size_uncom >> 24) & 0xFF));
     return qUncompress(compressed_data);
 }
-void BitStream::GetAndDecompressString(std::string &tgt)
+void BitStream::GetAndDecompressString(QString &tgt)
 {
     uint32_t decompLen = 0;
-
     uint32_t len = 0;
+
     len         = GetPackedBits(1);     //  Store compressed len
     decompLen   = GetPackedBits(1);     //  decompressed len
     uint8_t *src = new uint8_t[len];
     GetBitArray(src,len<<3);
     QByteArray compr_data((const char *)src,len);
-    QByteArray ba=uncompr_zip(compr_data,decompLen);
-    tgt.assign((const char *)ba.data(),ba.size());
+    tgt = uncompr_zip(compr_data,decompLen);
     delete [] src;
 }

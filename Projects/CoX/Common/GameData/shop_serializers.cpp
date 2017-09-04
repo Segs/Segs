@@ -4,56 +4,6 @@
 #include "Common/GameData/shop_definitions.h"
 #include "DataStorage.h"
 
-//static Serialization_Template ShopItem_Tokens[9] = {
-//    { "{", TOKEN_START},
-//    { "Name", TOKEN_STRING_LIST, 0},
-//    { "Power", TOKEN_SUB_TABLE_400, 4, 0x14, PowerTokens},
-//    { "Sell", TOKEN_ENUM, 0x18},
-//    { "Buy", TOKEN_ENUM, 0x1C},
-//    { "CountPerStore", TOKEN_ENUM, 0x20},
-//    { "Departments", TOKEN_INT_VECTOR, 0x24},
-//    { "}", TOKEN_END},
-//    { ""}
-//};
-//static Serialization_Template StoreItems_Tokens[2] = {
-//    { "Item", TOKEN_SUB_TABLE, 0, 44, ShopItem_Tokens },
-//    { ""}
-//};
-//static Serialization_Template DeptName_Tokens[3] =
-//{
-//    { "Name", TOKEN_STRING_LIST, 4},
-//    { "\n", TOKEN_END},
-//    { }
-//};
-//static Serialization_Template Depts_Tokens[2] =
-//{
-//    { "Department", TOKEN_SUB_TABLE, 0, 8, DeptName_Tokens },
-//    { }
-//};
-//static Serialization_Template BuySell_Tokens[4] = {
-//    { "Department", TOKEN_VAL_LIST, 0},
-//    { "Markup", TOKEN_VAL2_LIST, 4},
-//    { "\n", TOKEN_END},
-//    { }
-//};
-//static Serialization_Template ItemName_Tokens[3] = {
-//    { "Name", TOKEN_STRING_LIST, 0},
-//    { "\n", TOKEN_END},
-//    { },
-//};
-//static Serialization_Template Store_Tokens[7] = {
-//    { "{", TOKEN_START},
-//    { "Name", TOKEN_STRING_LIST, 0},
-//    { "Sell", TOKEN_SUB_TABLE, 4, 8, BuySell_Tokens},
-//    { "Buy", TOKEN_SUB_TABLE, 8, 8, BuySell_Tokens},
-//    { "Item", TOKEN_SUB_TABLE, 0xC, 4, ItemName_Tokens},
-//    { "}", TOKEN_END},
-//    { },
-//};
-//static Serialization_Template AllStores_Tokens[2] = {
-//    { "Store", TOKEN_SUB_TABLE, 0, 16, Store_Tokens },
-//    { }
-//};
 
 namespace {
 
@@ -65,7 +15,7 @@ bool loadFrom(BinStore *s,ShopBuySell_Data &target)
     ok &= s->read(target.m_Markup);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
-    return(s->end_encountered());
+    return s->end_encountered();
 }
 bool loadFrom(BinStore *s,ShopItem_Data &target)
 {
@@ -74,7 +24,7 @@ bool loadFrom(BinStore *s,ShopItem_Data &target)
     ok &= s->read(target.m_Name);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
-    return(s->end_encountered());
+    return s->end_encountered();
 }
 bool loadFrom(BinStore *s,ShopDeptName_Data *target)
 {
@@ -83,7 +33,7 @@ bool loadFrom(BinStore *s,ShopDeptName_Data *target)
     ok &= s->read(target->m_Names);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
-    return(s->end_encountered());
+    return s->end_encountered();
 }
 bool loadFrom(BinStore *s,Shop_Data &target)
 {
@@ -128,7 +78,7 @@ bool loadFrom(BinStore *s,ItemPower_Data *target)
     ok &= s->read(target->m_Remove);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
-    return (s->end_encountered());
+    return s->end_encountered();
 }
 bool loadFrom(BinStore *s,ShopItemInfo_Data *target)
 {

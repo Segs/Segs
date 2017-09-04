@@ -9,8 +9,6 @@
 #pragma once
 
 #include <glm/vec3.hpp>
-#include <string>
-#include <sstream>
 #include "BitStream.h"
 class QString;
 typedef struct

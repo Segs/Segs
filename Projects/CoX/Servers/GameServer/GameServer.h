@@ -21,9 +21,9 @@
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
 
-#include "CRUDP_Protocol.h"
-#include "RoamingServer.h"
-#include "ServerEndpoint.h"
+#include "Common/CRUDP_Protocol/CRUDP_Protocol.h"
+#include "Common/Servers/RoamingServer.h"
+#include "Common/Servers/ServerEndpoint.h"
 #include "GameEvents.h"
 
 class GameHandler;
@@ -74,4 +74,5 @@ protected:
         ACE_INET_Addr           m_listen_point; // the server binds here
         GameLinkEndpoint *      m_endpoint;
         GameHandler *           m_handler;
+        GameLink *              m_game_link;
 };

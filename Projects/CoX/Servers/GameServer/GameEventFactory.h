@@ -1,6 +1,6 @@
 #pragma once
-#include "CRUD_Events.h"
-#include "CRUD_Link.h"
+#include "CRUDP_Protocol/CRUD_Events.h"
+#include "Common/CRUDP_Protocol/CRUD_Link.h"
 typedef CRUDLink_Event GameLinkEvent;
 class CharacterClient;
 
@@ -9,5 +9,5 @@ class GameEventFactory : public CRUD_EventFactory
 {
 public:
     typedef CharacterClient tClientData ; //!< typedef used by CRUDLink to store per-connection data
-    static GameLinkEvent *EventFromStream(BitStream &bs,bool followe=false);
+    GameLinkEvent *EventFromStream(BitStream &bs) override;
 };

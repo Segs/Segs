@@ -16,11 +16,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
 
-SEGS_ADD_COMPONENT(AuthProtocol LIB)
-SEGS_ADD_COMPONENT(cox_server_common LIB)
-SEGS_ADD_COMPONENT(adminserver_lib LIB)
-SEGS_ADD_COMPONENT(gameserver_lib LIB)
-SEGS_ADD_COMPONENT(mapserver_lib LIB)
 if(ENABLE_SCRIPTING_ENGINE)
     SEGS_ADD_COMPONENT(MRuby LIB)
 endif()
@@ -40,7 +35,13 @@ IF(BUILD_SEPARATE)
     ADD_DEFINITIONS(-DSEPARATE)
     ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
     TARGET_LINK_LIBRARIES(authserver
-        authserver_lib  ${target_DEPENDS} gameData
+        authserver_lib
+        adminserver_lib
+        gameserver_lib
+        mapserver_lib
+        cox_server_common
+        AuthProtocol
+        ${target_DEPENDS} gameData
         SEGS_Components
         ${MRuby_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
@@ -48,12 +49,12 @@ IF(BUILD_SEPARATE)
         ${PostgreSQL_LIBRARIES}
         ${CMAKE_DL_LIBS}
     )
-    ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
+    ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib adminserver_lib)
     ADD_DEPENDENCIES(authserver ACE_BUILD)
     qt5_use_modules(authserver Core)
     IF(MINGW)
-    target_link_libraries(authserver ws2_32)
+        target_link_libraries(authserver ws2_32)
     ENDIF()
 ENDIF(BUILD_SEPARATE)
 
-SEGS_REGISTER_COMPONENT(authserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
+#SEGS_REGISTER_COMPONENT(authserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

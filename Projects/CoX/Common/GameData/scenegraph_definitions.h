@@ -44,16 +44,13 @@ struct DefLod_Data
     float FarFade;
     float Near;
     float NearFade;
-    int Scale;
+    float Scale;
 };
 struct DefOmni_Data
 {
-    enum {
-        Negative=1,
-    };
     uint32_t omniColor;
-    int Size;
-    int omni_bf;
+    float Size;
+    int isNegative;
 };
 struct DefBeacon_Data
 {

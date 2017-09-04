@@ -24,7 +24,7 @@ public:
 typedef std::unordered_set<CLIENT_CLASS *> vClients;
 typedef typename vClients::iterator          ivClients;
 protected:
-        //	boost::object_pool<CLIENT_CLASS> m_pool;
+        //  boost::object_pool<CLIENT_CLASS> m_pool;
         std::unordered_map<uint32_t,CLIENT_CLASS *> m_expected_clients;
         std::unordered_map<uint64_t,CLIENT_CLASS *> m_clients; // this maps client's id to it's object
         std::unordered_map<uint32_t,CLIENT_CLASS *> m_connected_clients_cookie; // this maps client's id to it's object

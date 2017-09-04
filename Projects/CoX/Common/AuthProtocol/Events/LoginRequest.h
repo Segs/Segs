@@ -1,12 +1,12 @@
 #pragma once
-#include "AuthEvents.h"
+#include "AuthProtocol/AuthEvents.h"
 
 class LoginRequest : public AuthLinkEvent
 {
 public:
     LoginRequest() : AuthLinkEvent(evLogin),unkval1(0),unkval2(0)
     {}
-    void serializeto(GrowingBuffer &buf) const
+    void serializeto(GrowingBuffer &/*buf*/) const
     {
         assert(!"Not implemented");
     }
