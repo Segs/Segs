@@ -41,6 +41,38 @@ void commonSaveTo(const T & target, const char *classname, const QString & baseN
     }
     tgt_fle.write(tgt.str().c_str(),tgt.str().size());
 }
+template<class T>
+bool commonReadFrom(const QString &crl_path,const char *classname, T &target) {
+    QFile ifl(crl_path);
+    if(crl_path.endsWith("json") || crl_path.endsWith("crl_json")) {
+        if(!ifl.open(QFile::ReadOnly|QFile::Text))
+        {
+            qWarning() << "Failed to open" << crl_path;
+            return false;
+        }
+
+        std::istringstream istr(ifl.readAll().toStdString());
+
+        cereal::JSONInputArchive arc(istr);
+        arc(cereal::make_nvp(classname,target));
+    }
+    else if(crl_path.endsWith(".crl.bin"))
+    {
+        if(!ifl.open(QFile::ReadOnly))
+        {
+            qWarning() << "Failed to open" << crl_path;
+            return false;
+        }
+        std::istringstream istr(ifl.readAll().toStdString());
+
+        cereal::BinaryInputArchive arc(istr);
+        arc(cereal::make_nvp(classname,target));
+    }
+    else {
+        qWarning() << "Invalid serialized data extension in" <<crl_path;
+    }
+    return true;
+}
 
 namespace cereal {
 inline void epilogue(BinaryOutputArchive &, QString const &) { }
@@ -67,7 +99,7 @@ template<class Archive> inline void CEREAL_LOAD_FUNCTION_NAME(Archive & ar, ::QS
 template<class Archive>
 void serialize(Archive & archive, glm::vec3 & m)
 {
-    int size=3;
+    size_type size=3;
     archive( make_size_tag( size ) ); // this is new
     for( int i=0; i<3; ++i )
       archive( m[i] );
@@ -75,7 +107,7 @@ void serialize(Archive & archive, glm::vec3 & m)
 template<class Archive>
 void serialize(Archive & archive, glm::vec2 & m)
 {
-    int size=2;
+    size_type size=2;
     archive( make_size_tag( size ) ); // this is new
     for( int i=0; i<2; ++i )
       archive( m[i] );
