@@ -23,7 +23,16 @@ typedef glm::vec3 Vec3;
 typedef glm::vec2 Vec2;
 class BinStore // binary storage
 {
+    struct FileEntry {
+        QString name;
+        uint32_t date=0;
+    };
     QFile m_str;
+    size_t bytes_read=0;
+    uint32_t bytes_to_read=0;
+    std::vector<uint32_t> m_file_sizes; // implicit stack
+    std::vector<FileEntry> m_entries;
+
     template<class V>
     size_t read_internal(V &res)
     {
@@ -37,10 +46,6 @@ class BinStore // binary storage
         }
         return sizeof(V);
     }
-    size_t bytes_read=0;
-    uint32_t bytes_to_read=0;
-    std::vector<uint32_t> m_file_sizes; // implicit stack
-
     QString     read_pstr(size_t maxlen);
     void        skip_pstr();
     bool        read_data_blocks(bool file_data_blocks);
@@ -48,13 +53,7 @@ class BinStore // binary storage
     uint32_t    current_fsize() {return *m_file_sizes.rbegin();}
     uint32_t    read_header(QString & name, size_t maxlen);
     void        fixup();
-    struct FileEntry {
-        QString name;
-        uint32_t date;
-    };
-    std::vector<FileEntry> m_entries;
 public:
-    ~BinStore() {}
 
     QString     source_name() {
         return read_str(12000);

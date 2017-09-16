@@ -340,3 +340,8 @@ void saveTo(const SceneGraph_Data &target, const QString &baseName, bool text_fo
 {
     commonSaveTo(target,"SceneGraph",baseName,text_format);
 }
+
+bool loadFrom(const QString &filepath, SceneGraph_Data &target)
+{
+    return commonReadFrom(filepath,"SceneGraph",target);
+}

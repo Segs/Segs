@@ -124,7 +124,7 @@ bool loadFrom(BinStore *s, Parse_CharAttrib &target)
     s->read(target.m_InterruptTime);
     s->read(target.m_EnduranceDiscount);
     ok &= s->prepare_nested(); // will update the file size left
-    assert(ok & s->end_encountered());
+    assert(ok && s->end_encountered());
     return ok;
 }
 bool loadFrom(BinStore *s, Parse_CharAttribMax &target)
@@ -184,6 +184,6 @@ bool loadFrom(BinStore *s, Parse_CharAttribMax &target)
     s->read(target.m_InterruptTime);
     s->read(target.m_EnduranceDiscount);
     ok &= s->prepare_nested(); // will update the file size left
-    assert(ok & s->end_encountered());
+    assert(ok && s->end_encountered());
     return ok;
 }

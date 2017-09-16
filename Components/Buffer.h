@@ -98,6 +98,7 @@ inline      T               ruGet(void)
             void            setLastError(uint32_t val)  { m_last_err=val;}
 
             uint8_t *       read_ptr()                  { return m_buf+m_read_off;}
+            const uint8_t * read_ptr() const            { return m_buf+m_read_off;}
             void            read_ptr(int off)           { m_read_off+=off;}
             uint8_t *       write_ptr()                 { return m_buf+m_write_off;}
             void            write_ptr(int off)          { m_write_off+=off;}
