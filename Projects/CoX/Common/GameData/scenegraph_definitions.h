@@ -7,8 +7,8 @@
 struct GroupLoc_Data
 {
   QString name;
-  glm::vec3 pos;
-  glm::vec3 rot;
+  glm::vec3 pos {0,0,0};
+  glm::vec3 rot {0,0,0};
 };
 struct GroupProperty_Data
 {
@@ -90,8 +90,8 @@ struct Def_Data
 struct Ref_Data
 {
     QString name;
-    glm::vec3 pos;
-    glm::vec3 rot;
+    glm::vec3 pos {0,0,0};
+    glm::vec3 rot {0,0,0};
 };
 struct SceneGraph_Data
 {

@@ -2,6 +2,8 @@ find_package(Qt5Core REQUIRED)
 set(GAMEDATA_SRC
     Colors.h
     serialization_common.h
+    anim_serializers.cpp
+    anim_serializers.h
     attrib_serializers.cpp
     attrib_serializers.h
     bodypart_serializers.cpp
@@ -19,6 +21,8 @@ set(GAMEDATA_SRC
     #seq_serializers.h
     shop_serializers.cpp
     shop_serializers.h
+    trick_serializers.cpp
+    trick_serializers.h
     #titles_serializers.cpp
     #titles_serializers.h
     #particle_definitions.h

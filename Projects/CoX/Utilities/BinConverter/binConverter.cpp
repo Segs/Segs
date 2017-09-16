@@ -8,6 +8,8 @@
 #include "Common/GameData/scenegraph_definitions.h"
 #include "Common/GameData/bodypart_serializers.h"
 #include "Common/GameData/shop_serializers.h"
+#include "Common/GameData/trick_definitions.h"
+#include "Common/GameData/trick_serializers.h"
 //#include "Common/GameData/seq_serializers.h"
 //#include "Common/GameData/def_serializers.h"
 //#include "Common/GameData/particlesys_serializers.h"
@@ -39,6 +41,7 @@ enum BinType {
     eZones,
     eAttribNames,
     eSceneGraph,
+    eTrickDefinitions,
 };
 static const QHash<uint32_t,BinType> knownSerializers = {
 //    {levelsdebts_i0_requiredCrc         , eLevelsDebts},
@@ -57,6 +60,7 @@ static const QHash<uint32_t,BinType> knownSerializers = {
     {zones_i0_requiredCrc               , eZones},
     {attribnames_i0_requiredCrc         , eAttribNames},
     {scenegraph_i0_requiredCrc          , eSceneGraph},
+    {tricks_i0_requiredCrc              , eTrickDefinitions},
 };
 BinType getLoader(const QString &fname)
 {
@@ -111,6 +115,7 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(geoset_i0_requiredCrc,16)<<"> Supergroup emblem data - 'supergroupEmblems.bin'";
     qDebug()<<"   I0<"<<QString::number(palette_i0_requiredCrc,16)<<"> Color palette data - 'supergroupColors.bin'";
     qDebug()<<"   I0<"<<QString::number(scenegraph_i0_requiredCrc,16)<<"> Scene graph - 'geobin/*'";
+    qDebug()<<"   I0<"<<QString::number(tricks_i0_requiredCrc,16)<<"> Trick definitions- 'tricks.bin'";
     qDebug()<<"I0 - issue 0 ";
     qDebug()<<"Numbers in brackets are file CRCs - bytes 8 to 13 in the bin.";
 }
@@ -151,6 +156,7 @@ int main(int argc,char **argv)
         case eZones:        doConvert(doLoadRef<AllMaps_Data>(binfile),target_basename,json_output); break;
         case eAttribNames:  doConvert(doLoadRef<AttribNames_Data>(binfile),target_basename,json_output); break;
         case eSceneGraph:   doConvert(doLoadRef<SceneGraph_Data>(binfile),target_basename,json_output); break;
+        case eTrickDefinitions: doConvert(doLoad<AllTricks_Data>(binfile),target_basename,json_output); break;
         default:
             break;
     }
