@@ -1,0 +1,3 @@
+<material>
+    <technique name="Techniques/DiffCohAddAlpha.xml"/>
+</material>
