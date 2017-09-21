@@ -45,7 +45,7 @@ enum TrickFlags  : uint32_t
     NotSelectable =  0x80000000,
 };
 
-struct Parser_Texture
+struct TextureModifiers
 {
     QString   src_file;
     QString   name;
@@ -75,7 +75,7 @@ struct TrickNode
     RGBA TintColor1;
     uint32_t _TrickFlags=0;
     float SortBias=0;
-    struct GeomTrick *info=nullptr;
+    struct GeometryModifiers *info=nullptr;
     bool isFlag(TrickFlags v) const {
         return (_TrickFlags & uint32_t(v))!=0;
     }
@@ -99,7 +99,7 @@ enum GroupFlags : uint32_t
     KeyLight         = 0x2000,
     SewerWaterVolume = 0x4000,
 };
-struct GeomTrick
+struct GeometryModifiers
 {
     QString                       src_name;
     QString                       name;
@@ -126,6 +126,6 @@ struct GeomTrick
 
 struct AllTricks_Data
 {
-    std::vector<Parser_Texture> texture_trick;
-    std::vector<GeomTrick>   geom_tricks;
+    std::vector<TextureModifiers>  texture_mods;
+    std::vector<GeometryModifiers> geometry_mods;
 };
