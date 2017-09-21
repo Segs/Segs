@@ -13,6 +13,8 @@ class StaticModel;
 class Vector3;
 class Drawable;
 }
+struct ConvertedSceneGraph;
+
 class MapViewerApp : public QObject, public Urho3D::Application
 {
     Q_OBJECT
@@ -23,6 +25,8 @@ public:
 public:
     void Setup() override;
     void Start() override;
+public slots:
+    void loadSelectedSceneGraph(const QString &path);
 signals:
     void cameraLocationChanged(float x,float y,float z);
 private:
@@ -31,6 +35,7 @@ private:
     void CreateConsoleAndDebugHud();
     void prepareSideWindow();
     void prepareCursor();
+    bool Raycast(float maxDistance);
     void HandlePostRenderUpdate(float ts);
     void HandleKeyUp(int key, int scancode, unsigned buttons, int qualifiers);
     void HandleKeyDown(int key, int scancode, unsigned buttons, int qualifiers, bool repeat);
@@ -41,8 +46,10 @@ private:
     // Camera params
     float yaw_=0;
     float pitch_=0;
+    std::unique_ptr<ConvertedSceneGraph> m_coh_scene;
+    std::unordered_map<void *,Urho3D::Node *> m_converted_nodes;
     SideWindow *m_sidewindow=nullptr;
-
+    Urho3D::Drawable *m_selected_drawable=nullptr;
 };
 
 #endif // MAPVIEWERAPP_H

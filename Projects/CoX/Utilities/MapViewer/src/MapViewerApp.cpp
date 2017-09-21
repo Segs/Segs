@@ -113,6 +113,7 @@ void MapViewerApp::prepareSideWindow()
     m_sidewindow->resize(graphics->GetWindowPosition().x_-20,graphics->GetHeight());
     m_sidewindow->show();
     connect(this,&MapViewerApp::cameraLocationChanged,m_sidewindow,&SideWindow::onCameraPositionChanged);
+    connect(m_sidewindow,&SideWindow::scenegraphSelected,this,&MapViewerApp::loadSelectedSceneGraph);
 }
 void MapViewerApp::prepareCursor()
 {
@@ -155,6 +156,17 @@ void MapViewerApp::Start()
     preloadTextureNames();
     prepareSideWindow();
 }
+void MapViewerApp::loadSelectedSceneGraph(const QString &path)
+{
+    m_selected_drawable = nullptr;
+    for(auto v : m_converted_nodes)
+    {
+        m_scene->RemoveChild(v.second);
+    }
+    m_converted_nodes.clear();
+    m_coh_scene.reset(new ConvertedSceneGraph);
+    loadSceneGraph(*m_coh_scene,path);
+}
 void MapViewerApp::HandleKeyUp(int key,int scancode,unsigned buttons,int qualifiers)
 {
     // Close console (if open) or exit when ESC is pressed
@@ -181,6 +193,34 @@ void MapViewerApp::HandleKeyDown(int key,int scancode,unsigned buttons,int quali
         screenshot.SavePNG("Data/Screenshot_" +
                            Time::GetTimeStamp().replace(':', '_').replace('.', '_').replace(' ', '_') + ".png");
     }
+}
+bool MapViewerApp::Raycast(float maxDistance)
+{
+    Vector3 hitPos;
+    Drawable* hitDrawable = nullptr;
+
+    UI* ui = m_context->m_UISystem.get();
+    IntVector2 pos = ui->GetCursorPosition();
+    // Check the cursor is visible and there is no UI element in front of the cursor
+    if (!ui->GetCursor()->IsVisible() || ui->GetElementAt(pos, true))
+        return false;
+
+    Graphics* graphics = m_context->m_Graphics.get();
+    Camera* camera = m_camera_node->GetComponent<Camera>();
+    Ray cameraRay = camera->GetScreenRay((float)pos.x_ / graphics->GetWidth(), (float)pos.y_ / graphics->GetHeight());
+    // Pick only geometry objects, not eg. zones or lights, only get the first (closest) hit
+    std::vector<RayQueryResult> results;
+    RayOctreeQuery query(results, cameraRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY);
+    m_scene->GetComponent<Octree>()->RaycastSingle(query);
+    if (results.size())
+    {
+        RayQueryResult& result = results[0];
+        hitPos = result.position_;
+        hitDrawable = result.drawable_;
+        m_selected_drawable = hitDrawable;
+    }
+    m_selected_drawable = nullptr;
+    return false;
 }
 void MapViewerApp::HandleUpdate(float timeStep)
 {
@@ -239,8 +279,13 @@ void MapViewerApp::HandleUpdate(float timeStep)
         Vector3 pos=m_camera_node->GetPosition();
         emit cameraLocationChanged(pos.x_,pos.y_,pos.z_);
     }
+    if (ui->GetCursor()->IsVisible() && input->GetMouseButtonPress(MOUSEB_LEFT))
+        Raycast(8500);
 }
 void MapViewerApp::HandlePostRenderUpdate(float ts)
 {
     // If draw debug mode is enabled, draw viewport debug geometry. Disable depth test so that we can see the effect of occlusion
+    if (m_selected_drawable) {
+        m_selected_drawable->DrawDebugGeometry(m_scene->GetComponent<DebugRenderer>(),true);
+    }
 }

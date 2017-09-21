@@ -26,4 +26,7 @@ enum class CoHBlendMode : uint8_t
 namespace Urho3D {
     class Texture;
 }
+struct ConvertedSceneGraph {
+};
+bool loadSceneGraph(ConvertedSceneGraph &conv,const QString &path);
 
