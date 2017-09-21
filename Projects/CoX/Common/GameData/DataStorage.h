@@ -80,7 +80,7 @@ public:
     bool        nesting_name(QString & name);
     void        nest_in() {  }
     void        nest_out() { m_file_sizes.pop_back(); }
-    bool        end_encountered();
+    bool        end_encountered() const;
     bool        open(const QString & name, uint32_t required_crc);
     bool        findAndOpen(const QString & name, uint32_t reqcrc=0);
 };

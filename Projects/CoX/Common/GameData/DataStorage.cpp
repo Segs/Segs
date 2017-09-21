@@ -305,7 +305,7 @@ void BinStore::fixup()
     }
 }
 
-bool BinStore::end_encountered()
+bool BinStore::end_encountered() const
 {
     return (*m_file_sizes.rbegin())==0;
 }

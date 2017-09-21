@@ -1,0 +1,3 @@
+<technique vs="LitSolid" ps="ColorBlendDual" psdefines="DIFFMAP">
+    <pass name="alpha" depthwrite="false" blend="addalpha" />
+</technique>
