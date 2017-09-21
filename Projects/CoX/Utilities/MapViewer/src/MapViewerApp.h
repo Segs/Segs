@@ -5,6 +5,7 @@
 #include <memory>
 #include <QObject>
 
+class SideWindow; // Qt side window
 namespace Urho3D {
 class Node;
 class Scene;
@@ -17,6 +18,14 @@ class MapViewerApp : public QObject, public Urho3D::Application
     Q_OBJECT
 public:
     MapViewerApp(Urho3D::Context *ctx);
+    ~MapViewerApp() override;
+    // Application interface
+public:
+    void Setup() override;
+    void Start() override;
+private:
+    SideWindow *m_sidewindow=nullptr;
+
 };
 
 #endif // MAPVIEWERAPP_H
