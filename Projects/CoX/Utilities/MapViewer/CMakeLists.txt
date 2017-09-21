@@ -28,6 +28,9 @@ set(SOURCES
     src/MapViewerApp.h
     src/PiggTools.cpp
     src/PiggTools.h
+    src/CoHSceneConverter.h
+    src/CohTextureConverter.cpp
+    src/CohTextureConverter.h
     src/main.cpp
 )
 ADD_EXECUTABLE(mapviewer ${SOURCES})

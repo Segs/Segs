@@ -6,7 +6,7 @@
 #include "DataStorage.h"
 
 namespace {
-bool loadFrom(BinStore * s, Parser_Texture & target)
+bool loadFrom(BinStore * s, TextureModifiers & target)
 {
     bool ok=true;
     s->prepare();
@@ -25,7 +25,7 @@ bool loadFrom(BinStore * s, Parser_Texture & target)
     assert(s->end_encountered());
     return ok;
 }
-bool loadFrom(BinStore * s, GeomTrick & target)
+bool loadFrom(BinStore * s, GeometryModifiers & target)
 {
     bool ok=true;
     s->prepare();
@@ -82,11 +82,11 @@ bool loadFrom(BinStore * s, AllTricks_Data *target)
     {
         s->nest_in();
         if(_name.compare("Trick")==0) {
-            target->geom_tricks.emplace_back();
-            ok &= loadFrom(s,target->geom_tricks.back());
+            target->geometry_mods.emplace_back();
+            ok &= loadFrom(s,target->geometry_mods.back());
         } else if(_name.compare("Texture")==0) {
-            target->texture_trick.emplace_back();
-            ok &= loadFrom(s,target->texture_trick.back());
+            target->texture_mods.emplace_back();
+            ok &= loadFrom(s,target->texture_mods.back());
         } else
             assert(!"unknown field referenced.");
         s->nest_out();
@@ -96,7 +96,7 @@ bool loadFrom(BinStore * s, AllTricks_Data *target)
 }
 
 template<class Archive>
-static void serialize(Archive & archive, Parser_Texture & m)
+static void serialize(Archive & archive, TextureModifiers & m)
 {
     archive(cereal::make_nvp("name",m.name));
     archive(cereal::make_nvp("src_file",m.src_file));
@@ -121,7 +121,7 @@ static void serialize(Archive & archive, TrickNode & m)
     archive(cereal::make_nvp("TintColor1",m.TintColor1));
 }
 template<class Archive>
-static void serialize(Archive & archive, GeomTrick & m)
+static void serialize(Archive & archive, GeometryModifiers & m)
 {
     archive(cereal::make_nvp("Name",m.name));
     archive(cereal::make_nvp("SrcName",m.src_name));
@@ -146,8 +146,8 @@ static void serialize(Archive & archive, GeomTrick & m)
 template<class Archive>
 static void serialize(Archive & archive, AllTricks_Data & m)
 {
-    archive(cereal::make_nvp("Texture",m.texture_trick));
-    archive(cereal::make_nvp("Geometry",m.geom_tricks));
+    archive(cereal::make_nvp("Texture",m.texture_mods));
+    archive(cereal::make_nvp("Geometry",m.geometry_mods));
 }
 void saveTo(const AllTricks_Data &target, const QString &baseName, bool text_format)
 {
