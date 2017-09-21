@@ -31,6 +31,9 @@ set(SOURCES
     src/CoHSceneConverter.h
     src/CohTextureConverter.cpp
     src/CohTextureConverter.h
+    src/SideWindow.cpp
+    src/SideWindow.h
+    src/SideWindow.ui
     src/main.cpp
 )
 ADD_EXECUTABLE(mapviewer ${SOURCES})

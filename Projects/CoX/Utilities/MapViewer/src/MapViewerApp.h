@@ -23,10 +23,13 @@ public:
 public:
     void Setup() override;
     void Start() override;
+signals:
+    void cameraLocationChanged(float x,float y,float z);
 private:
     void CreateBaseScene();
     void SetupViewport();
     void CreateConsoleAndDebugHud();
+    void prepareSideWindow();
     void prepareCursor();
     void HandlePostRenderUpdate(float ts);
     void HandleKeyUp(int key, int scancode, unsigned buttons, int qualifiers);

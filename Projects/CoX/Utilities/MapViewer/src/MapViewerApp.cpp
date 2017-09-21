@@ -1,5 +1,7 @@
 #include "MapViewerApp.h"
+#include "CoHSceneConverter.h"
 #include "CohTextureConverter.h"
+#include "SideWindow.h"
 
 #include <Lutefisk3D/Core/Context.h>
 #include <Lutefisk3D/Core/CoreEvents.h>
@@ -103,6 +105,15 @@ void MapViewerApp::CreateConsoleAndDebugHud()
     DebugHud* debugHud = engine_->CreateDebugHud();
     debugHud->SetDefaultStyle(xmlFile);
 }
+void MapViewerApp::prepareSideWindow()
+{
+    Graphics *graphics = m_context->m_Graphics.get();
+    m_sidewindow = new SideWindow(nullptr);
+    m_sidewindow->move(0,graphics->GetWindowPosition().y_);
+    m_sidewindow->resize(graphics->GetWindowPosition().x_-20,graphics->GetHeight());
+    m_sidewindow->show();
+    connect(this,&MapViewerApp::cameraLocationChanged,m_sidewindow,&SideWindow::onCameraPositionChanged);
+}
 void MapViewerApp::prepareCursor()
 {
     ResourceCache* cache = m_context->m_ResourceCache.get();
@@ -138,8 +149,11 @@ void MapViewerApp::Start()
     g_coreSignals.update.Connect(this,&MapViewerApp::HandleUpdate);
     g_coreSignals.postRenderUpdate.Connect(this,&MapViewerApp::HandlePostRenderUpdate);
 
-    preloadTextureNames();
+    Input* input = m_context->m_InputSystem.get();
+    input->SetMouseMode(MM_FREE);//,MM_RELATIVE
 
+    preloadTextureNames();
+    prepareSideWindow();
 }
 void MapViewerApp::HandleKeyUp(int key,int scancode,unsigned buttons,int qualifiers)
 {
@@ -221,7 +235,10 @@ void MapViewerApp::HandleUpdate(float timeStep)
         m_camera_node->Translate(Vector3::DOWN * MOVE_SPEED * timeStep * 5);
         cameraLocationUpdated = true;
     }
-
+    if(cameraLocationUpdated) {
+        Vector3 pos=m_camera_node->GetPosition();
+        emit cameraLocationChanged(pos.x_,pos.y_,pos.z_);
+    }
 }
 void MapViewerApp::HandlePostRenderUpdate(float ts)
 {
