@@ -1,5 +1,6 @@
 #include "MapViewerApp.h"
 #include "CoHSceneConverter.h"
+#include "CohModelConverter.h"
 #include "CohTextureConverter.h"
 #include "SideWindow.h"
 
@@ -53,8 +54,8 @@ void MapViewerApp::CreateBaseScene()
     // Create a basic plane, a light and a camera
     ResourceCache* cache = m_context->m_ResourceCache.get();
     m_scene = new Scene(m_context);
-    Octree *oct=m_scene->CreateComponent<Octree>();
     m_scene->CreateComponent<DebugRenderer>();
+    Octree *oct=m_scene->CreateComponent<Octree>();
     oct->SetSize(BoundingBox(-32767,32768),8);
 
     Node* zoneNode = m_scene->CreateChild("Zone");
@@ -113,6 +114,7 @@ void MapViewerApp::prepareSideWindow()
     m_sidewindow->resize(graphics->GetWindowPosition().x_-20,graphics->GetHeight());
     m_sidewindow->show();
     connect(this,&MapViewerApp::cameraLocationChanged,m_sidewindow,&SideWindow::onCameraPositionChanged);
+    connect(this,&MapViewerApp::modelSelected,m_sidewindow,&SideWindow::onModelSelected);
     connect(m_sidewindow,&SideWindow::scenegraphSelected,this,&MapViewerApp::loadSelectedSceneGraph);
 }
 void MapViewerApp::prepareCursor()
@@ -153,6 +155,8 @@ void MapViewerApp::Start()
     Input* input = m_context->m_InputSystem.get();
     input->SetMouseMode(MM_FREE);//,MM_RELATIVE
 
+    if(!prepareGeoLookupArray())
+        return;
     preloadTextureNames();
     prepareSideWindow();
 }
@@ -217,9 +221,16 @@ bool MapViewerApp::Raycast(float maxDistance)
         RayQueryResult& result = results[0];
         hitPos = result.position_;
         hitDrawable = result.drawable_;
-        m_selected_drawable = hitDrawable;
+        Variant stored = result.node_->GetVar("CoHModel");
+        if(stored!=Variant::EMPTY)
+        {
+            m_selected_drawable = hitDrawable;
+            emit modelSelected((ConvertedModel *)stored.GetVoidPtr(),hitDrawable);
+        }
+        return true;
     }
     m_selected_drawable = nullptr;
+    emit modelSelected(nullptr,nullptr);
     return false;
 }
 void MapViewerApp::HandleUpdate(float timeStep)

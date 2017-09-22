@@ -49,6 +49,14 @@ void SideWindow::onModelSelected(ConvertedModel *m, Urho3D::Drawable *d)
 {
     if(m) 
     {
+        auto parts = m->name.split("__");
+        ui->txtModelName->setText(parts.front());
+        if(parts.size()>2)
+            qDebug() << "Too many double underscores in name:"<<m->name;
+        if(parts.size()==2)
+            ui->txtTrickName->setText(parts.back());
+        else
+            ui->txtTrickName->setText("none");
     }
     else
     {

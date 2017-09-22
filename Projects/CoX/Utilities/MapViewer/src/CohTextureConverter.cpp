@@ -35,9 +35,9 @@ struct TexFileHdr
 };
 #pragma pack(pop)
 
-QHash<QString, QString> s_texture_paths;
-QSet<QString> s_missing_textures;
-QHash<QString, TextureWrapper > s_loaded_textures;
+QSet<QString>                  s_missing_textures;
+QHash<QString, QString>        s_texture_paths; // map from texture name to actual file path
+QHash<QString, TextureWrapper> s_loaded_textures;
 
 TextureModifiers *modFromTextureName(const QString &texpath)
 {
@@ -164,8 +164,7 @@ TextureWrapper tryLoadTexture(Urho3D::Context *ctx,const QString &fname)
     TextureWrapper &res(s_loaded_textures[lookupstring]);
     if(res.base) // we have an Urho3D texture already, nothing to do.
         return res;
-    QFileInfo actualFile(actualPath);
-    QDir converted("./converted");
+
     QFile src_tex(actualPath);
     if (!src_tex.exists() || !src_tex.open(QFile::ReadOnly))
     {
@@ -180,13 +179,16 @@ TextureWrapper tryLoadTexture(Urho3D::Context *ctx,const QString &fname)
         return res;
     }
     QString originalname = QString(src_tex.read(hdr.header_size - sizeof(TexFileHdr)));
-    QFileInfo fi(originalname);
-    converted.mkpath(fi.path());
-    QByteArray data = src_tex.readAll();
-    VectorBuffer vbuf(data.data(),data.size());
-    QFile tgt(converted.filePath(originalname));
+
+    QDir converted_dir("./converted");
+    QString converted_path(converted_dir.filePath(originalname));
+    QFile tgt(converted_path);
     if (!tgt.exists() && tgt.open(QFile::WriteOnly))
     {
+        // save extracted texture into a local directory
+        converted_dir.mkpath(QFileInfo(originalname).path());
+        QByteArray data = src_tex.readAll();
+        VectorBuffer vbuf(data.data(),data.size());
         tgt.write(data);
         tgt.close();
         res.base = new Texture2D(ctx);
@@ -194,11 +196,12 @@ TextureWrapper tryLoadTexture(Urho3D::Context *ctx,const QString &fname)
             res.base->EndLoad();
     }
     else // a pre-converted texture file exists, load it instead
-        res.base = rcache->GetResource<Texture2D>(converted.filePath(originalname));
+        res.base = rcache->GetResource<Texture2D>(converted_path);
     return res;
 }
 void preloadTextureNames()
 {
+    //TODO: store texture headers into an array, and only rescan directories when forced ?
     QDirIterator iter(basepath+"texture_library", QDir::Files, QDirIterator::Subdirectories);
     while (iter.hasNext()) {
         QString fpath = iter.next();

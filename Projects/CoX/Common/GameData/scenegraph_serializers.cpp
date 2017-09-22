@@ -130,7 +130,7 @@ bool loadFrom(BinStore *s, GroupLoc_Data &target)
     return ok;
 }
 
-bool loadFrom(BinStore *s, Def_Data &target)
+bool loadFrom(BinStore *s, SceneGraphNode_Data &target)
 {
     bool ok = true;
     s->prepare();
@@ -182,7 +182,7 @@ bool loadFrom(BinStore *s, Def_Data &target)
     }
     return ok;
 }
-bool loadFrom(BinStore *s, Ref_Data &target)
+bool loadFrom(BinStore *s, SceneRootNode_Data &target)
 {
     bool ok = true;
     s->prepare();
@@ -301,7 +301,7 @@ static void serialize(Archive & archive, GroupLoc_Data & m)
     archive(cereal::make_nvp("Rotation",m.rot));
 }
 template<class Archive>
-static void serialize(Archive & archive, Def_Data & m)
+static void serialize(Archive & archive, SceneGraphNode_Data & m)
 {
     archive(cereal::make_nvp("Name",m.name));
     archive(cereal::make_nvp("Object",m.p_Obj));
@@ -320,7 +320,7 @@ static void serialize(Archive & archive, Def_Data & m)
     archive(cereal::make_nvp("Lods",m.p_Lod));
 }
 template<class Archive>
-static void serialize(Archive & archive, Ref_Data & m)
+static void serialize(Archive & archive, SceneRootNode_Data & m)
 {
     archive(cereal::make_nvp("Name",m.name));
     archive(cereal::make_nvp("Position",m.pos));
