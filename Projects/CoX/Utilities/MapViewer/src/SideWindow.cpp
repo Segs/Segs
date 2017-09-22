@@ -3,6 +3,7 @@
 
 #include "MapViewerApp.h"
 #include "CoHSceneConverter.h"
+#include "CohModelConverter.h"
 
 #include <QtWidgets/QFileDialog>
 #include <QtCore/QDebug>

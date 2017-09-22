@@ -26,13 +26,18 @@ enum class CoHBlendMode : uint8_t
 namespace Urho3D {
     class Texture;
 }
-struct ConvertedModel
-{
-    QString name;
-};
+struct ConvertedModel;
 struct ConvertedNode
 {
     QString name;
+    QString dir;
+    ConvertedModel *model;
+    float lod_near;
+    float lod_far;
+    float lod_near_fade;
+    float lod_far_fade;
+    float lod_scale;
+    bool lod_fromtrick=false;
 };
 struct ConvertedRootNode
 {
