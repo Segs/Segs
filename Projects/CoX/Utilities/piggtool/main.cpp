@@ -199,7 +199,7 @@ int main(int argc, char **argv)
         parser.showHelp(0);
     }
 
-    const QString pigg_name = parser.positionalArguments().first();
+    const QString pigg_name = parser.positionalArguments().constFirst();
     PiggFile hdr;
     loadPigg(pigg_name,hdr);
     if(parser.isSet("l")) {
