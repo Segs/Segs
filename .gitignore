@@ -6,6 +6,8 @@ out/
 3rd_party/include
 3rd_party/lib
 3rd_party/bin
+3rd_party/gmock
+3rd_party/naked_ace/
 
 #IDE generated project files
 *.user
