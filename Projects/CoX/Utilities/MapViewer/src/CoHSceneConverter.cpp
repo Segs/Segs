@@ -1,4 +1,6 @@
 #include "CoHSceneConverter.h"
+#include "CohModelConverter.h"
+#include "CohTextureConverter.h"
 
 #include "GameData/DataStorage.h"
 #include "GameData/scenegraph_serializers.h"
@@ -29,6 +31,17 @@ namespace
 {
 AllTricks_Data g_tricks_store;
 QHash<QString,GeometryModifiers *> tricks_string_hash_tab;
+
+inline QByteArray uncompr_zip(char *comp_data,int size_comprs,uint32_t size_uncom) {
+    QByteArray compressed_data;
+    compressed_data.reserve(size_comprs+4);
+    compressed_data.append( char((size_uncom >> 24) & 0xFF));
+    compressed_data.append( char((size_uncom >> 16) & 0xFF));
+    compressed_data.append( char((size_uncom >> 8) & 0xFF));
+    compressed_data.append( char((size_uncom >> 0) & 0xFF));
+    compressed_data.append(comp_data,size_comprs);
+    return qUncompress(compressed_data);
+}
 QString buildBaseName(QString path) 
 {
     QStringList z = path.split(QDir::separator());

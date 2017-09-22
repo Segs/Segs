@@ -59,8 +59,9 @@ static const QHash<uint32_t,BinType> knownSerializers = {
     {geoset_i0_requiredCrc              , eGroupEmblems },
     {zones_i0_requiredCrc               , eZones},
     {attribnames_i0_requiredCrc         , eAttribNames},
-    {scenegraph_i0_requiredCrc          , eSceneGraph},
+    {scenegraph_i0_2_requiredCrc        , eSceneGraph},
     {tricks_i0_requiredCrc              , eTrickDefinitions},
+    {tricks_i2_requiredCrc              , eTrickDefinitions},
 };
 BinType getLoader(const QString &fname)
 {
@@ -114,9 +115,9 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(bodyparts_i0_requiredCrc,16)<<"> Body part data - 'BodyParts.bin'";
     qDebug()<<"   I0<"<<QString::number(geoset_i0_requiredCrc,16)<<"> Supergroup emblem data - 'supergroupEmblems.bin'";
     qDebug()<<"   I0<"<<QString::number(palette_i0_requiredCrc,16)<<"> Color palette data - 'supergroupColors.bin'";
-    qDebug()<<"   I0<"<<QString::number(scenegraph_i0_requiredCrc,16)<<"> Scene graph - 'geobin/*'";
+    qDebug()<<"   I0-2<"<<QString::number(scenegraph_i0_2_requiredCrc,16)<<"> Scene graph - 'geobin/*'";
     qDebug()<<"   I0<"<<QString::number(tricks_i0_requiredCrc,16)<<"> Trick definitions- 'tricks.bin'";
-    qDebug()<<"I0 - issue 0 ";
+    qDebug()<<"   I2<"<<QString::number(tricks_i2_requiredCrc,16)<<"> Trick definitions- 'tricks.bin'";
     qDebug()<<"Numbers in brackets are file CRCs - bytes 8 to 13 in the bin.";
 }
 }

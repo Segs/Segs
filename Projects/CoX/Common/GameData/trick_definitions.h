@@ -98,6 +98,8 @@ enum GroupFlags : uint32_t
     ParentFade       = 0x1000,
     KeyLight         = 0x2000,
     SewerWaterVolume = 0x4000,
+    RedWaterVolume   = 0x8000, // only in I2
+    MaterialVolume   =0x10000, // only in I2
 };
 struct GeometryModifiers
 {

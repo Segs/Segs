@@ -50,7 +50,7 @@ struct GeoSet_Data
     QString m_Displayname;
     QString m_BodyPart;
     int m_Type;
-    int flag1;
+    int isOpen;
     int sel_info_idx; // m_Infos index
     int sel_mask_idx; // Mask or MaskString index
     float timing1;
@@ -65,7 +65,7 @@ struct BoneSet_Data
     QString m_Name;
     QString m_Displayname;
     std::vector<GeoSet_Data> m_GeoSets;
-    int rs; // selected geoset index?
+    int rs=0; // selected geoset index?
 };
 
 struct Region_Data
@@ -73,7 +73,7 @@ struct Region_Data
     QString m_Name;
     QString m_Displayname;
     std::vector<BoneSet_Data> m_BoneSets;
-    int rs; // selected boneset
+    int rs=0; // selected boneset
 };
 
 struct CostumeOrigin_Data
