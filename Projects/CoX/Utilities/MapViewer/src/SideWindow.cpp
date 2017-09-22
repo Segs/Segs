@@ -12,6 +12,8 @@ SideWindow::SideWindow(QWidget *parent) :
     ui(new Ui::SideWindow)
 {
     ui->setupUi(this);
+    ui->txtModelName->setText("none");
+    ui->txtTrickName->setText("none");
 }
 
 SideWindow::~SideWindow()
@@ -43,7 +45,17 @@ void SideWindow::onCameraPositionChanged(float x, float y, float z)
                                .arg(y, 5, 'f', 2, QChar(' '))
                                .arg(z, 5, 'f', 2, QChar(' ')));
 }
-
+void SideWindow::onModelSelected(ConvertedModel *m, Urho3D::Drawable *d)
+{
+    if(m) 
+    {
+    }
+    else
+    {
+        ui->txtModelName->setText("none");
+        ui->txtTrickName->setText("none");
+    }
+}
 void SideWindow::on_actionLoad_Scene_Graph_triggered()
 {
     QString fl = QFileDialog::getOpenFileName(this,"Select a scenegraph .bin file to load",basepath,"Scenegraphs (*.bin)");

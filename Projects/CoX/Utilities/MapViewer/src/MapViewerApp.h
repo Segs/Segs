@@ -14,6 +14,8 @@ class Vector3;
 class Drawable;
 }
 struct ConvertedSceneGraph;
+struct ConvertedNode;
+struct ConvertedModel;
 
 class MapViewerApp : public QObject, public Urho3D::Application
 {
@@ -29,6 +31,8 @@ public slots:
     void loadSelectedSceneGraph(const QString &path);
 signals:
     void cameraLocationChanged(float x,float y,float z);
+    void nodeSelected(ConvertedNode *def,Urho3D::Node *n);
+    void modelSelected(ConvertedModel *model,Urho3D::Drawable*m);
 private:
     void CreateBaseScene();
     void SetupViewport();

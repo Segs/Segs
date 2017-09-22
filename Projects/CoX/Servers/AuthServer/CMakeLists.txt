@@ -31,6 +31,7 @@ SET (target_SOURCES
 
 ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
 qt5_use_modules(authserver_lib Core)
+add_dependencies(authserver_lib ace_IMP)
 IF(BUILD_SEPARATE)
     ADD_DEFINITIONS(-DSEPARATE)
     ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})

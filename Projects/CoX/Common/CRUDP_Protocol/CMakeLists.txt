@@ -32,7 +32,7 @@ INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 
 ADD_LIBRARY(CRUDP_Protocol STATIC ${target_SOURCES})
 qt5_use_modules(CRUDP_Protocol Core)
-
+add_dependencies(CRUDP_Protocol ace_IMP)
 SEGS_REGISTER_COMPONENT(CRUDP_Protocol "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
 
 
