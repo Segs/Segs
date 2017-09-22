@@ -37,7 +37,11 @@ struct ConvertedNode
 struct ConvertedRootNode
 {
 };
-struct ConvertedSceneGraph {
+struct ConvertedSceneGraph
+{
+    int last_node_id=0; // used to create new number suffixes for generic nodes
+    QHash<QString,ConvertedNode *> name_to_def;
+    std::vector<ConvertedNode *> all_converted_defs;
 };
 bool loadSceneGraph(ConvertedSceneGraph &conv,const QString &path);
 bool prepareGeoLookupArray();
