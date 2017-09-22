@@ -17,6 +17,8 @@ extern QString basepath;
 
 using namespace Urho3D;
 
+// for every directory in the texture's path we can hava a modifier.
+QHash<QString,TextureModifiers *> g_texture_path_to_mod;
 namespace
 {
 #pragma pack(push, 1)
@@ -47,6 +49,14 @@ TextureModifiers *modFromTextureName(const QString &texpath)
             break;
         }
         split.pop_front();
+    }
+    // scan from the back of the texture path, until a modifier is found.
+    while(!split.empty())
+    {
+        auto val = g_texture_path_to_mod.value(split.back().toString().toLower(),nullptr);
+        if(val)
+            return val;
+        split.pop_back();
     }
     return nullptr;
 }
@@ -135,6 +145,57 @@ void loadTexHeader(const QString &fname)
     }
     s_loaded_textures[lookupstring] = res;
 }
+}
+TextureWrapper tryLoadTexture(Urho3D::Context *ctx,const QString &fname)
+{
+    ResourceCache *rcache=ctx->m_ResourceCache.get();
+    QFileInfo tex_path(fname);
+    QString lookupstring=tex_path.baseName().toLower();
+    QString actualPath = s_texture_paths.value(lookupstring);
+    if(actualPath.isEmpty())
+    {
+        if(!s_missing_textures.contains(lookupstring))
+        {
+            qDebug() << "Missing texture" << fname;
+            s_missing_textures.insert(lookupstring);
+        }
+        return TextureWrapper();
+    }
+    TextureWrapper &res(s_loaded_textures[lookupstring]);
+    if(res.base) // we have an Urho3D texture already, nothing to do.
+        return res;
+    QFileInfo actualFile(actualPath);
+    QDir converted("./converted");
+    QFile src_tex(actualPath);
+    if (!src_tex.exists() || !src_tex.open(QFile::ReadOnly))
+    {
+        qWarning() << actualPath<<" is not readable";
+        return res;
+    }
+    TexFileHdr hdr;
+    src_tex.read((char *)&hdr, sizeof(TexFileHdr));
+    if (0 != memcmp(hdr.magic, "TX2", 3))
+    {
+        qWarning() << "Unrecognized texture format.";
+        return res;
+    }
+    QString originalname = QString(src_tex.read(hdr.header_size - sizeof(TexFileHdr)));
+    QFileInfo fi(originalname);
+    converted.mkpath(fi.path());
+    QByteArray data = src_tex.readAll();
+    VectorBuffer vbuf(data.data(),data.size());
+    QFile tgt(converted.filePath(originalname));
+    if (!tgt.exists() && tgt.open(QFile::WriteOnly))
+    {
+        tgt.write(data);
+        tgt.close();
+        res.base = new Texture2D(ctx);
+        if (res.base->BeginLoad(vbuf))
+            res.base->EndLoad();
+    }
+    else // a pre-converted texture file exists, load it instead
+        res.base = rcache->GetResource<Texture2D>(converted.filePath(originalname));
+    return res;
 }
 void preloadTextureNames()
 {

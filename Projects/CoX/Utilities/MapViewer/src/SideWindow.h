@@ -13,6 +13,8 @@ class StaticModel;
 class Vector3;
 class Drawable;
 }
+struct ConvertedSceneGraph;
+struct ConvertedNode;
 struct ConvertedModel;
 
 class MapViewerApp;
@@ -30,6 +32,7 @@ signals:
     void scenegraphSelected(const QString &path);
 public slots:
     void onCameraPositionChanged(float x,float y,float z);
+    void onModelSelected(ConvertedModel *m,Urho3D::Drawable *d);
 private slots:
     void on_actionLoad_Scene_Graph_triggered();
 

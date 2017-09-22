@@ -27,7 +27,7 @@ SET(target_INCLUDE
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-SET(target_DEPENDS "")
+SET(target_DEPENDS ace_IMP)
 
 SEGS_ADD_COMPONENT(network_structures LIB)
 
