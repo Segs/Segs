@@ -6,15 +6,15 @@
 
 struct GroupLoc_Data
 {
-  QString name;
-  glm::vec3 pos {0,0,0};
-  glm::vec3 rot {0,0,0};
+    QString name;
+    glm::vec3 pos {0,0,0};
+    glm::vec3 rot {0,0,0};
 };
 struct GroupProperty_Data
 {
-  QString propName;
-  QString propValue;
-  int propertyType; // 1 - propValue contains float radius, 0 propValue is plain string
+    QString propName;
+    QString propValue;
+    int propertyType; // 1 - propValue contains float radius, 0 propValue is plain string
 };
 struct TintColor_Data
 {

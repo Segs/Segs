@@ -170,6 +170,35 @@ void MapViewerApp::loadSelectedSceneGraph(const QString &path)
     m_converted_nodes.clear();
     m_coh_scene.reset(new ConvertedSceneGraph);
     loadSceneGraph(*m_coh_scene,path);
+    addNextModel();
+}
+void MapViewerApp::addNextModel()
+{
+    for(ConvertedRootNode * ref : m_coh_scene->refs ) {
+        if(m_converted_nodes.find(ref)!=m_converted_nodes.end())
+            continue;
+        Node* boxNode = convertedNodeToLutefisk(ref->node,ref->mat,m_context,17);
+        m_scene->AddChild(boxNode);
+        //m_camera_node->SetPosition(ref->mat.Translation());
+        m_converted_nodes[ref] = boxNode;
+    }
+    if(m_coh_scene->refs.empty()) {
+        static float offset=0;
+        for(auto iter=m_coh_scene->all_converted_defs.rbegin(); iter!=m_coh_scene->all_converted_defs.rend(); ++iter) {
+            if(m_converted_nodes.find(*iter)!=m_converted_nodes.end())
+                continue;
+            Node* boxNode = convertedNodeToLutefisk(*iter,Urho3D::Matrix3x4::IDENTITY,m_context,17);
+            if(boxNode) {
+                m_scene->AddChild(boxNode);
+                m_converted_nodes[*iter] = boxNode;
+                boxNode->Translate({0,0,offset});
+                offset+=(*iter)->m_bbox.size().z_;
+                m_camera_node->SetPosition({0,0,offset});
+                emit cameraLocationChanged(0,0,offset);
+                break;
+            }
+        }
+    }
 }
 void MapViewerApp::HandleKeyUp(int key,int scancode,unsigned buttons,int qualifiers)
 {
@@ -177,6 +206,23 @@ void MapViewerApp::HandleKeyUp(int key,int scancode,unsigned buttons,int qualifi
     if (key == KEY_ESCAPE)
     {
         engine_->Exit();
+    }
+    else if(key==KEY_KP_PLUS)
+    {
+        addNextModel();
+    }
+    else if(key==KEY_KP_MINUS)
+    {
+
+    }
+    if(key>='1' && key<='8') {
+        int layernum = key-'1';
+        if(layernum>=m_coh_scene->refs.size())
+            return;
+        auto ref_to_toggle = m_coh_scene->refs[layernum];
+        Node *v = m_converted_nodes[ref_to_toggle];
+        if(v)
+            v->SetDeepEnabled(!v->IsEnabled());
     }
 }
 void MapViewerApp::HandleKeyDown(int key,int scancode,unsigned buttons,int qualifiers, bool repeat)

@@ -27,28 +27,48 @@ namespace Urho3D {
     class Texture;
 }
 struct ConvertedModel;
+struct NodeChild
+{
+
+    Urho3D::Matrix3x4 m_matrix;
+    struct ConvertedNode *m_def=nullptr;
+};
 struct ConvertedNode
 {
+    std::vector<NodeChild> children;
     QString name;
     QString dir;
-    ConvertedModel *model;
-    float lod_near;
-    float lod_far;
-    float lod_near_fade;
-    float lod_far_fade;
-    float lod_scale;
+    ConvertedModel *model=nullptr;
+    struct GeoStoreDef *geoset_info=nullptr;
+    Urho3D::BoundingBox m_bbox;
+    Urho3D::Vector3 center;
+    float radius=0;
+    float vis_dist=0;
+    float lod_near=0;
+    float lod_far=0;
+    float lod_near_fade=0;
+    float lod_far_fade=0;
+    float lod_scale=0;
+    float shadow_dist=0;
+    int lod_autogen = 0;
+    bool in_use = false;
     bool lod_fromtrick=false;
 };
 struct ConvertedRootNode
 {
+    Urho3D::Matrix3x4 mat;
+    ConvertedNode *node = nullptr;
+    uint32_t index_in_roots_array=0;
+
+
 };
 struct ConvertedSceneGraph
 {
     int last_node_id=0; // used to create new number suffixes for generic nodes
-    QHash<QString,ConvertedNode *> name_to_def;
     std::vector<ConvertedNode *> all_converted_defs;
+    std::vector<ConvertedRootNode *> refs;
+    QHash<QString,ConvertedNode *> name_to_node;
 };
 bool loadSceneGraph(ConvertedSceneGraph &conv,const QString &path);
-bool prepareGeoLookupArray();
-
+Urho3D::Node * convertedNodeToLutefisk(ConvertedNode *def, Urho3D::Matrix3x4 mat, Urho3D::Context *ctx, int depth);
 

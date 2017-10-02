@@ -5,8 +5,15 @@
 struct ConvertedNode;
 struct ConvertedGeoSet;
 struct GeometryModifiers;
-struct DefChild;
 struct ModelModifiers;
+
+struct GeoStoreDef
+{
+    QString geopath;        //!< a path to a .geo file
+    QStringList entries;    //!< the names of models contained in a geoset
+    bool loaded;
+};
+
 enum class CoHBlendMode : uint8_t;
 #pragma pack(push, 1)
 struct DeltaPack
@@ -48,10 +55,11 @@ struct ConvertedModel
     Urho3D::Vector3 scale;
     Urho3D::Vector3 m_min;
     Urho3D::Vector3 m_max;
+    ptrdiff_t boneinfo_offset=0;
     ConvertedGeoSet *geoset;
     PackBlock packed_data;
     std::vector<TextureBind> texture_bind_info;
-    void *vbo=nullptr;
+    struct VBOPointers *vbo=nullptr;
     ModelModifiers *trck_node=nullptr;
 };
 struct ConvertedGeoSet
@@ -66,8 +74,10 @@ struct ConvertedGeoSet
     bool data_loaded=false;
 };
 
-Urho3D::StaticModel *convertToLutefiskModel(Urho3D::Context *ctx, Urho3D::Node *tgtnode, ConvertedNode *def);
+Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, ConvertedNode *node);
 ConvertedModel * groupModelFind(const QString &a1);
 bool prepareGeoLookupArray();
 GeometryModifiers *findGeomModifier(const QString &modelname, const QString &trick_path);
+GeoStoreDef * groupGetFileEntryPtr(const QString &a1);
+ConvertedGeoSet * geosetLoad(const QString &m);
 #endif // COHMODELCONVERTER_H

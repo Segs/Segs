@@ -25,15 +25,29 @@ extern QString basepath;
 
 using namespace Urho3D;
 
-namespace {
-AllTricks_Data g_tricks_store;
-// name of the geometry is constructed from actual name and an optional modifer name
-struct GeoStoreDef
+// convenience struct for triangle index access
+struct Vector3i
 {
-    QString geopath;
-    QStringList entries;
-    bool loaded;
+    uint32_t xi,yi,zi;
+    uint32_t operator[](int idx) const { return ((const uint32_t *)this)[idx];}
 };
+struct VBOPointers
+{
+    Vector3 *pos=nullptr;
+    Vector3 *norm=nullptr;
+    Vector2 *uv1=nullptr;
+    Vector2 *uv2=nullptr;
+    std::vector<Vector3i> *triangles = nullptr;
+    std::vector<TextureWrapper> assigned_textures;
+};
+
+// Start of anonymous namespace
+namespace {
+enum UnpackMode {
+    UNPACK_FLOATS=0,
+    UNPACK_INTS=1,
+};
+// name of the geometry is constructed from actual name and an optional modifer name
 struct TexBlockInfo
 {
     uint32_t size1;
@@ -87,10 +101,14 @@ struct Model32
     int             geoset_list_idx;
     PackInfo        pack_data[7];
 };
-static QHash<QString,GeoStoreDef> s_dir_to_geoset;
-static QHash<QString,GeoStoreDef *> s_modelname_to_geostore;
+
+AllTricks_Data s_tricks_store;
+/// this map is used too lookup converted models by the ConvertedModel pointer
+std::unordered_map<ConvertedModel *,Urho3D::SharedPtr<Model>> s_coh_model_to_renderable;
+QHash<QString,GeoStoreDef> s_dir_to_geoset;
+QHash<QString,GeoStoreDef *> s_modelname_to_geostore;
 QHash<QString,GeometryModifiers *> tricks_string_hash_tab;
-static QHash<QString,ConvertedGeoSet *> s_name_to_geoset;
+QHash<QString,ConvertedGeoSet *> s_name_to_geoset;
 
 inline QByteArray uncompr_zip(char *comp_data,int size_comprs,uint32_t size_uncom)
 {
@@ -157,8 +175,8 @@ static void setupTrick(GeometryModifiers *a1)
         a1->node._TrickFlags |= ScrollST1;
     if (!a1->StAnim.empty())
     {
-//        if (setStAnim(&a1->StAnim.front()))
-//            a1->node._TrickFlags |= STAnimate;
+        //        if (setStAnim(&a1->StAnim.front()))
+        //            a1->node._TrickFlags |= STAnimate;
     }
     if (a1->GroupFlags & VisTray)
         a1->ObjFlags |= 0x400;
@@ -191,22 +209,16 @@ bool loadTricksBin()
             qCritical() << "Failed to open original bin:" << fname;
             return false;
         }
-        if (!loadFrom(&binfile, &g_tricks_store))
+        if (!loadFrom(&binfile, &s_tricks_store))
         {
             qCritical() << "Failed to open data from original bin:" << fname;
             return false;
         }
     }
-    trickLoadPostProcess(0,&g_tricks_store);
+    trickLoadPostProcess(0,&s_tricks_store);
     return true;
 }
 
-GeoStoreDef * groupGetFileEntryPtr(const QString &a1)
-{
-    QString key = a1.mid(a1.lastIndexOf('/')+1);
-    key = key.mid(0,key.indexOf("__"));
-    return s_modelname_to_geostore.value(key,nullptr);
-}
 void convertTextureNames(const int *a1, std::vector<QString> &a2)
 {
     int   num_textures          = a1[0];
@@ -231,6 +243,7 @@ static ConvertedModel *convertAndInsertModel(ConvertedGeoSet &tgt, Model32 *v)
     z->flags             = v->flg1;
     z->visibility_radius = v->radius;
     z->num_textures      = v->num_textures;
+    z->boneinfo_offset   = v->boneinfo;
     z->blend_mode        = CoHBlendMode(v->blend_mode);
     z->vertex_count      = v->vertex_count;
     z->model_tri_count   = v->model_tri_count;
@@ -309,23 +322,17 @@ static ConvertedGeoSet *findAndPrepareGeoSet(const QString &fname)
     ConvertedGeoSet *geoset = nullptr;
     QFile fp;
     fp.setFileName(basepath+fname);
-    if (fp.open(QFile::ReadOnly)) {
+    if (fp.open(QFile::ReadOnly))
+    {
         geoset = new ConvertedGeoSet;
         geoset->geopath = fname;
         geosetLoadHeader(fp, geoset);
         fp.seek(0);
         s_name_to_geoset[fname] = geoset;
     } else {
-        qCritical() <<"Cant find .geo file"<<fname;
+        qCritical() <<"Can't find .geo file"<<fname;
     }
     return geoset;
-}
-ConvertedGeoSet * geosetLoad(const QString &m)
-{
-    ConvertedGeoSet * res = s_name_to_geoset.value(m,nullptr);
-    if(res)
-        return res;
-    return findAndPrepareGeoSet(m);
 }
 ConvertedModel *modelFind(const QString &model_name, const QString &filename)
 {
@@ -342,27 +349,681 @@ ConvertedModel *modelFind(const QString &model_name, const QString &filename)
     ConvertedGeoSet *geoset = geosetLoad(filename);
     if (!geoset) // failed to load the geometry set
         return nullptr;
-    QStringRef name_without_mods=&model_name;
-    int name_end_idx  = model_name.indexOf("__");
-    if (name_end_idx != -1)
-        name_without_mods = name_without_mods.mid(0,name_end_idx);
+    int end_of_name_idx  = model_name.indexOf("__");
+    if (end_of_name_idx == -1)
+        end_of_name_idx = model_name.size();
+    QStringRef basename(model_name.midRef(0, end_of_name_idx));
 
     for (ConvertedModel *m : geoset->subs)
     {
         QString geo_name = m->name;
-        bool subs_in_place = (geo_name.size() <= name_end_idx || geo_name.midRef(name_end_idx).startsWith("__"));
-        if (!geo_name.isEmpty()) {
-            if (subs_in_place && geo_name.startsWith(name_without_mods, Qt::CaseInsensitive))
-                ptr_sub = m; // TODO: return immediately ?
-        }
+        if (geo_name.isEmpty())
+            continue;
+        bool subs_in_place = (geo_name.size() <= end_of_name_idx || geo_name.midRef(end_of_name_idx).startsWith("__"));
+        if (subs_in_place && geo_name.startsWith(basename, Qt::CaseInsensitive))
+            ptr_sub = m; // TODO: return immediately
     }
     return ptr_sub;
 
 }
-} // end of anonymus namespace
-Urho3D::StaticModel *convertToLutefiskModel(Urho3D::Context *ctx, Urho3D::Node *tgtnode, ConvertedNode *def) 
+void initLoadedModel(Urho3D::Context *ctx,Urho3D::Model *m,ConvertedModel *model,const std::vector<TextureWrapper> &textures)
 {
-    return nullptr;
+    model->blend_mode = CoHBlendMode::MULTIPLY_REG;
+    bool isgeo=false;
+    if(model->name.startsWith("GEO_",Qt::CaseInsensitive))
+    {
+        model->flags |= 0x4000;
+        isgeo = true;
+        if ( model->name.contains("eyes",Qt::CaseInsensitive) )
+        {
+            if ( !model->trck_node )
+                model->trck_node = new ModelModifiers;
+            model->trck_node->_TrickFlags |= DoubleSided;
+        }
+    }
+    assert(model->num_textures==model->texture_bind_info.size());
+    for(TextureBind tbind : model->texture_bind_info)
+    {
+        const TextureWrapper &texb(textures[tbind.tex_idx]);
+        if (!isgeo)
+        {
+            TextureWrapper seltex     = texb;
+            uint32_t       extra_flag = 0;
+            if (texb.info)
+            {
+                auto blend = CoHBlendMode(texb.info->BlendType);
+                if (blend == CoHBlendMode::ADDGLOW || blend == CoHBlendMode::COLORBLEND_DUAL ||
+                    blend == CoHBlendMode::ALPHADETAIL)
+                    seltex = tryLoadTexture(ctx, texb.detailname);
+                if (seltex.base && seltex.flags & TextureWrapper::ALPHA)
+                    extra_flag = 1;
+            }
+            model->flags |= extra_flag;
+        }
+        if ( texb.flags & TextureWrapper::DUAL )
+        {
+            model->flags |= 0x40;
+            if ( texb.BlendType != CoHBlendMode::MULTIPLY )
+                model->blend_mode = texb.BlendType;
+        }
+        if ( !texb.bumpmap.isEmpty() )
+        {
+            auto wrap(tryLoadTexture(ctx,texb.bumpmap));
+            if ( wrap.flags & TextureWrapper::BUMPMAP )
+            {
+                model->flags |= 0x800;
+                model->blend_mode = (model->blend_mode == CoHBlendMode::COLORBLEND_DUAL) ?
+                            CoHBlendMode::BUMPMAP_COLORBLEND_DUAL : CoHBlendMode::BUMPMAP_MULTIPLY;
+            }
+            if ( texb.flags & TextureWrapper::CUBEMAPFACE || (wrap.flags & TextureWrapper::CUBEMAPFACE) )
+                model->flags |= 0x2000;
+        }
+    }
+    if ( model->trck_node && model->trck_node->info)
+    {
+
+        model->flags |= model->trck_node->info->ObjFlags;
+    }
+    if ( model->blend_mode == CoHBlendMode::COLORBLEND_DUAL || model->blend_mode == CoHBlendMode::BUMPMAP_COLORBLEND_DUAL )
+    {
+        if ( !model->trck_node )
+            model->trck_node = new ModelModifiers;
+        model->trck_node->_TrickFlags |= SetColor;
+    }
+    if ( model->blend_mode == CoHBlendMode::ADDGLOW )
+    {
+        if ( !model->trck_node )
+            model->trck_node = new ModelModifiers;
+        model->trck_node->_TrickFlags |= SetColor | NightLight;
+    }
+    if ( !model->packed_data.norms.uncomp_size ) // no normals
+        model->flags |= 4; // only ambient light
+    if ( model->trck_node  && model->trck_node->_TrickFlags & Additive )
+        model->flags |= 1; // alpha pass
+    if ( model->flags & 0x400 ) // force opaque
+        model->flags &= ~1;
+    if ( model->trck_node && model->trck_node->info)
+    {
+        if ( model->trck_node->info->blend_mode )
+            model->blend_mode = CoHBlendMode(model->trck_node->info->blend_mode);
+    }
+    if(m)
+        s_coh_model_to_renderable[model] = m;
+}
+ptrdiff_t unpackedDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, uint32_t num_entries, UnpackMode v_type)
+{
+    uint32_t     idx;
+    float        float_acc[3] = {0, 0, 0};
+    int          int_acc[3]   = {0, 0, 0};
+    float *      float_tgt;
+    int          bit_offset;
+    uint8_t *    data_src;
+    int          processed_val = 0;
+    int *        delta_flags;
+    unsigned int extracted_2bits_;
+    float        scaling_val;
+    uint32_t     entry_idx;
+    float        inv_scale;
+
+    bit_offset  = 0;
+    scaling_val = 1.0;
+    float_tgt   = (float *)tgt_buf;
+    delta_flags = (int *)data;
+    data_src    = &data[(entry_size * 2 * num_entries + 7) / 8];
+    inv_scale   = (float)(1 << *data_src);
+    data_src++;
+    if (inv_scale != 0.0f)
+        scaling_val = 1.0f / inv_scale;
+    for (entry_idx = 0; entry_idx < num_entries; ++entry_idx)
+    {
+        for (idx = 0; idx < entry_size; ++idx)
+        {
+            extracted_2bits_ = ((unsigned int)delta_flags[bit_offset >> 5] >> (bit_offset & 0x1F)) & 3;
+            bit_offset += 2;
+            switch (extracted_2bits_)
+            {
+            case 0: processed_val = 0; break;
+            case 1: processed_val = *data_src++ - 127; break;
+            case 2:
+                processed_val = ((data_src[1] << 8) | *data_src) - 32767;
+                data_src += 2;
+                break;
+            case 3:
+                processed_val = (data_src[3] << 24) | (data_src[2] << 16) | (data_src[1] << 8) | *data_src;
+                data_src += 4;
+                break;
+            default: break;
+            }
+            switch (v_type)
+            {
+            case UNPACK_FLOATS:
+            {
+                float extracted_val;
+                if (extracted_2bits_ == 3)
+                    extracted_val = *(float *)&processed_val;
+                else
+                    extracted_val = (float)processed_val * scaling_val;
+                float_acc[idx] += extracted_val;
+                *float_tgt = float_acc[idx];
+                ++float_tgt;
+                break;
+            }
+            case UNPACK_INTS:
+            {
+                int_acc[idx] += processed_val + 1;
+                *tgt_buf = int_acc[idx];
+                ++tgt_buf;
+                break;
+            }
+            }
+        }
+    }
+    return data_src - data;
+}
+
+void geoUnpackDeltas(DeltaPack *a1, uint8_t *target, int entry_size, uint32_t num_entries, UnpackMode type)
+{
+    if (0 == a1->uncomp_size)
+        return;
+    ptrdiff_t consumed_bytes;
+    if (a1->compressed_size)
+    {
+        QByteArray unpacked = uncompr_zip((char *)a1->compressed_data, a1->compressed_size, a1->uncomp_size);
+        consumed_bytes = unpackedDeltaPack((int *)target, (uint8_t *)unpacked.data(), entry_size, num_entries, type);
+    }
+    else
+    {
+        consumed_bytes = unpackedDeltaPack((int *)target, (uint8_t *)a1->compressed_data, entry_size, num_entries, type);
+    }
+}
+inline void geoUnpackDeltas(DeltaPack *a1, Vector3 *unpacked_data, uint32_t num_entries)
+{
+    geoUnpackDeltas(a1, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_FLOATS);
+}
+inline void geoUnpackDeltas(DeltaPack *a1, Vector3i *unpacked_data, uint32_t num_entries)
+{
+    geoUnpackDeltas(a1, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_INTS);
+}
+
+void *fillVbo(ConvertedModel *model)
+{
+    VBOPointers &vbo(*model->vbo);
+    model->vbo->triangles = new std::vector<Vector3i>;
+    std::vector<Vector3i> &triangles(*model->vbo->triangles);
+    triangles.resize(model->model_tri_count);//, 1, ".\\render\\model_cache.c", 138);
+    geoUnpackDeltas(&model->packed_data.tris, triangles.data(), model->model_tri_count);
+    vbo.triangles= &triangles;
+    uint32_t total_size = 0;
+    uint32_t Vertices3D_bytes = sizeof(Vector3) * model->vertex_count;
+    total_size += Vertices3D_bytes;
+    if (model->packed_data.norms.uncomp_size)
+        total_size += Vertices3D_bytes;
+    if ( model->packed_data.sts.uncomp_size )
+        total_size += 2*sizeof(Vector2) * model->vertex_count;
+
+    float *v12 = (float *)calloc(total_size, 1);
+    float *databuf=v12;
+    vbo.pos = (Vector3 *)v12;
+
+    v12 += Vertices3D_bytes/sizeof(float);
+    geoUnpackDeltas(&model->packed_data.verts, vbo.pos, model->vertex_count);
+    if (model->packed_data.norms.uncomp_size)
+    {
+        vbo.norm = (Vector3 *)v12;
+        v12 += Vertices3D_bytes/sizeof(float);
+        geoUnpackDeltas(&model->packed_data.norms, vbo.norm, model->vertex_count);
+    }
+    if (model->packed_data.sts.uncomp_size)
+    {
+        vbo.uv1 = (Vector2 *)v12;
+        v12 += model->vertex_count * sizeof(Vector2)/sizeof(float);
+        geoUnpackDeltas(&model->packed_data.sts, (uint8_t *)vbo.uv1, 2, model->vertex_count, UNPACK_FLOATS);
+        vbo.uv2 = (Vector2 *)v12;
+        v12 += model->vertex_count * sizeof(Vector2)/sizeof(float);
+        memcpy(vbo.uv2, vbo.uv1, sizeof(Vector2) * model->vertex_count);
+    }
+    return databuf;
+}
+void modelFixup(ConvertedModel *model,VBOPointers &vbo)
+{
+    if (vbo.norm && (model->flags & 0x10))
+    {
+        for (uint32_t i = 0; i<model->vertex_count; ++i)
+            vbo.norm[i] = Vector3(1, -1, 1);
+    }
+
+    if ( !vbo.uv1)
+        return;
+
+    bool texture_scaling_used = false;
+    for (uint32_t i = 0; i < model->vertex_count; ++i )
+    {
+        vbo.uv1[i].y_ = 1.0f - vbo.uv1[i].y_;
+    }
+    if ( vbo.uv2 )
+    {
+        for (uint32_t i = 0; i < model->vertex_count; ++i)
+        {
+            vbo.uv2[i].y_ = 1.0f - vbo.uv2[i].y_;
+        }
+    }
+    for(const TextureWrapper &tex : vbo.assigned_textures)
+    {
+        if(!tex.info)
+            continue;
+
+        if ( 1.0f != tex.scaleUV0.x_ || 1.0f != tex.scaleUV0.y_ ||
+             1.0f != tex.scaleUV1.x_ || 1.0f != tex.scaleUV1.y_ )
+            texture_scaling_used = true;
+    }
+    if ( !texture_scaling_used )
+        return;
+
+    std::vector<bool> vertex_uv_was_scaled(model->vertex_count);
+    uint32_t triangle_offset = 0;
+    for (uint32_t j = 0; j < model->num_textures; ++j )
+    {
+        const TextureWrapper &tex(vbo.assigned_textures[j]);
+        const uint32_t bind_tri_count = model->texture_bind_info[j].tri_count;
+        if(!tex.info)
+            continue;
+        Vector2 scaletex0 = tex.scaleUV0;
+        Vector2 scaletex1 = tex.scaleUV1;
+        for (uint32_t v19 = 0; v19 < bind_tri_count; ++v19)
+        {
+            Vector3i tri((*vbo.triangles)[v19+triangle_offset]);
+            for(int vnum=0; vnum<3; ++vnum)
+            {
+                const uint32_t vert_idx = tri[vnum];
+                if (vertex_uv_was_scaled[vert_idx])
+                    continue;
+                vertex_uv_was_scaled[vert_idx] = true;
+                vbo.uv2[vert_idx].x_ *= scaletex0.x_;
+                vbo.uv2[vert_idx].y_ *= scaletex0.y_;
+                vbo.uv1[vert_idx].x_ *= scaletex1.x_;
+                vbo.uv1[vert_idx].y_ *= scaletex1.y_;
+            }
+        }
+        triangle_offset += bind_tri_count;
+    }
+}
+void reportUnhandled(const QString &message)
+{
+    static QSet<QString> already_reported;
+    if(already_reported.contains(message))
+        return;
+    qDebug() << message;
+    already_reported.insert(message);
+}
+float *combineBuffers(VBOPointers *meshdata,ConvertedModel *mdl)
+{
+    size_t num_floats = mdl->vertex_count*3;
+    if(meshdata->norm)
+        num_floats += mdl->vertex_count*3;
+    if(meshdata->uv1)
+        num_floats += mdl->vertex_count*2;
+    if(meshdata->uv2)
+        num_floats += mdl->vertex_count*2;
+
+    float *res = new float[num_floats];
+    int off=0;
+    for(uint32_t i=0; i<mdl->vertex_count; ++i) {
+        res[off++] = meshdata->pos[i].x_;
+        res[off++] = meshdata->pos[i].y_;
+        res[off++] = meshdata->pos[i].z_;
+        if(meshdata->norm) {
+            res[off++] = meshdata->norm[i].x_;
+            res[off++] = meshdata->norm[i].y_;
+            res[off++] = meshdata->norm[i].z_;
+        }
+        if(meshdata->uv1)
+        {
+            res[off++] = meshdata->uv1[i].x_;
+            res[off++] = meshdata->uv1[i].y_;
+        }
+        if(meshdata->uv2)
+        {
+            res[off++] = meshdata->uv2[i].x_;
+            res[off++] = meshdata->uv2[i].y_;
+        }
+    }
+    return res;
+}
+void modelCreateObjectFromModel(Urho3D::Context *ctx,ConvertedModel *model,std::vector<TextureWrapper> &textures)
+{
+    initLoadedModel(ctx,nullptr,model,textures);
+    model->vbo = new VBOPointers;
+    VBOPointers &vbo(*model->vbo);
+    vbo.assigned_textures.reserve(textures.size());
+    for(TextureBind tbind : model->texture_bind_info)
+    {
+        TextureWrapper &texb(textures[tbind.tex_idx]);
+        vbo.assigned_textures.emplace_back(texb);
+    }
+    void *databuf = fillVbo(model);
+    modelFixup(model,vbo);
+
+
+    SharedPtr<Urho3D::Model> fromScratchModel(new Urho3D::Model(ctx));
+    SharedPtr<VertexBuffer> vb(new VertexBuffer(ctx));
+    SharedPtr<IndexBuffer> ib(new IndexBuffer(ctx));
+    std::vector<VertexElement> vertex_elements;
+    vertex_elements.push_back(VertexElement(TYPE_VECTOR3, SEM_POSITION));
+    if(model->packed_data.norms.uncomp_size)
+        vertex_elements.push_back(VertexElement(TYPE_VECTOR3, SEM_NORMAL));
+    if(vbo.uv1)
+        vertex_elements.push_back(VertexElement(TYPE_VECTOR2, SEM_TEXCOORD));
+    if(vbo.uv2)
+        vertex_elements.push_back(VertexElement(TYPE_VECTOR2, SEM_TEXCOORD));
+    float *combined = combineBuffers(&vbo,model);
+    free(databuf);
+    vb->SetShadowed(true);
+    vb->SetSize(model->vertex_count, vertex_elements);
+    vb->SetData(combined);
+    delete [] combined;
+    ib->SetShadowed(true);
+    ib->SetSize(model->model_tri_count*3, true);
+    ib->SetData(vbo.triangles->data());
+    fromScratchModel->SetVertexBuffers({vb},{},{});
+    fromScratchModel->SetIndexBuffers({ib});
+    BoundingBox bbox(model->m_min,model->m_max);
+    unsigned geom_count = model->texture_bind_info.size();
+    fromScratchModel->SetNumGeometries(geom_count);
+    unsigned face_offset=0;
+    for(unsigned i=0; i<geom_count; ++i)
+    {
+        const TextureBind &tbind(model->texture_bind_info[i]);
+        fromScratchModel->SetNumGeometryLodLevels(i, 1);
+        SharedPtr<Geometry> geom(new Geometry(ctx));
+        geom->SetVertexBuffer(0, vb);
+        geom->SetIndexBuffer(ib);
+        geom->SetDrawRange(TRIANGLE_LIST, face_offset, tbind.tri_count*3);
+        fromScratchModel->SetGeometry(i, 0, geom);
+        face_offset+=tbind.tri_count*3;
+    }
+    assert(face_offset==model->model_tri_count*3);
+    fromScratchModel->SetBoundingBox(bbox);
+    s_coh_model_to_renderable[model] = fromScratchModel;
+}
+void addModelData(Urho3D::Context *ctx,ConvertedGeoSet *geoset)
+{
+    std::vector<TextureWrapper> v2 = getModelTextures(ctx,geoset->tex_names);
+    for(ConvertedModel * model : geoset->subs)
+    {
+        modelCreateObjectFromModel(ctx,model, v2);
+    }
+}
+void fixupDataPtr(DeltaPack &a, uint8_t *b)
+{
+    if (a.uncomp_size)
+        a.compressed_data = b + a.buffer_offset;
+}
+
+void geosetLoadData(Urho3D::Context *ctx,QFile &fp, ConvertedGeoSet *geoset)
+{
+    int buffer;
+    fp.seek(0);
+    fp.read((char *)&buffer, 4);
+    fp.seek(buffer + 8);
+    geoset->m_geo_data.resize(geoset->geo_data_size); //, 1, "\\src\\Common\\seq\\anim.c", 496);
+    fp.read(geoset->m_geo_data.data(), geoset->geo_data_size);
+    uint8_t *buffer_b = (uint8_t *)geoset->m_geo_data.data();
+
+    for (uint32_t i = 0; i < geoset->subs.size(); ++i) {
+        ConvertedModel *current_sub = geoset->subs[i];
+        fixupDataPtr(current_sub->packed_data.tris, buffer_b);
+        fixupDataPtr(current_sub->packed_data.verts, buffer_b);
+        fixupDataPtr(current_sub->packed_data.norms, buffer_b);
+        fixupDataPtr(current_sub->packed_data.sts, buffer_b);
+        fixupDataPtr(current_sub->packed_data.grid, buffer_b);
+        fixupDataPtr(current_sub->packed_data.weights, buffer_b);
+        fixupDataPtr(current_sub->packed_data.matidxs, buffer_b);
+        if (current_sub->boneinfo_offset)
+        {
+            qCritical() << "Models with bones are not supported yet, bother SEGS devs to fix that";
+            assert(false);
+        }
+    }
+    if (!geoset->subs.empty())
+        addModelData(ctx,geoset);
+    geoset->data_loaded = true;
+}
+
+Urho3D::Model *buildModel(Urho3D::Context *ctx,ConvertedModel *mdl)
+{
+    ResourceCache* cache = ctx->m_ResourceCache.get();
+    auto parts=mdl->geoset->geopath.split('/');
+    while(!parts.isEmpty())
+    {
+        QString str=parts.takeFirst();
+        if(str.compare(QLatin1Literal("object_library"),Qt::CaseInsensitive)==0)
+            break;
+    }
+    QString cache_path="converted/Models/"+parts.join('/')+"/"+mdl->name+".mdl";
+    if(cache->Exists(cache_path))
+    {
+        auto lf3d_model=cache->GetResource<Model>(cache_path);
+        if(lf3d_model)
+        {
+            std::vector<TextureWrapper> v2 = getModelTextures(ctx,mdl->geoset->tex_names);
+            initLoadedModel(ctx,lf3d_model,mdl,v2);
+            return lf3d_model;
+        }
+    }
+    QFile fl(basepath+mdl->geoset->geopath);
+    if(!fl.exists() || !fl.open(QFile::ReadOnly) || s_coh_model_to_renderable.size()>5000)
+    {
+        if(s_coh_model_to_renderable.size()<=3) // this will report first few missing geometry files
+        {
+            qDebug() << "Missing geo file" << basepath+mdl->geoset->geopath;
+        }
+        return nullptr;
+    }
+    if(!mdl->geoset->data_loaded) {
+        geosetLoadData(ctx,fl,mdl->geoset);
+    }
+    QDir modeldir("converted/Models");
+    modeldir.mkpath(parts.join('/'));
+    auto res=s_coh_model_to_renderable[mdl];
+    File model_res(ctx,cache_path,FILE_WRITE);
+    res->Save(model_res);
+    return res;
+}
+
+void convertMaterial(Urho3D::Context *ctx,ConvertedModel *mdl,StaticModel* boxObject)
+{
+    ModelModifiers *  model_trick = mdl ? mdl->trck_node : nullptr;
+    ResourceCache *   cache       = ctx->m_ResourceCache.get();
+    SharedPtr<Material> result;
+    QString model_base_name = mdl->name.split("__").front();
+    //result = cache->GetResource<Material>("Materials/WireFrame.xml");
+    bool isDoubleSided = model_trick && model_trick->isFlag(DoubleSided);
+    if(model_trick&&model_trick->isFlag(ColorOnly)) {
+        result = result->Clone(result->GetName()+"Colored");
+        result->SetShaderParameter("MatDiffColor",Vector4(1.0, 1.0, 0.2f, 1.0f));
+    }
+    // Select material based on the model blend state
+    // Modify material based on the applied model tricks
+    Color onlyColor;
+    Vector4 tint1 = {1,1,1,1}; // Shader Constant 0
+    Vector4 tint2 = {1,1,1,1}; // Shader Constant 1
+    CullMode targetCulling=CULL_CCW;
+    CompareMode depthTest = CMP_LESSEQUAL;
+    float alphaRef = 0.0f;
+    bool depthWrite = true;
+    bool isAdditive=false;
+    if(model_trick && model_trick->_TrickFlags)
+    {
+        auto tflags = model_trick->_TrickFlags;
+        if ( tflags & Additive )
+        {
+            isAdditive = true;
+        }
+        if ( tflags & ColorOnly )
+            onlyColor = Color(model_trick->TintColor0.r/255.0f, model_trick->TintColor0.g/255.0f, model_trick->TintColor0.b/255.0f, model_trick->TintColor0.a/255.0f);
+        if ( tflags & DoubleSided )
+            targetCulling = CULL_NONE;
+        if ( tflags & NoZTest )
+        {
+            // simulate disabled Z test
+            depthTest = CMP_ALWAYS;
+            depthWrite = false;
+        }
+        if(tflags & NoZWrite)
+            depthWrite = false;
+        if ( tflags & SetColor )
+        {
+            glm::vec3 tnt0=model_trick->TintColor0.to3Floats();
+            glm::vec3 tnt1=model_trick->TintColor1.to3Floats();
+            tint1 = Vector4(tnt0.r,tnt0.g,tnt0.b,1.0f);
+            tint1 = Vector4(tnt1.r,tnt1.g,tnt1.b,1.0f);
+        }
+        if ( tflags & (ReflectTex0 | ReflectTex1) ) {
+            reportUnhandled("Unhandled cubemap reflection");
+        }
+        if ( tflags & AlphaRef ) {
+            //qDebug() << "Unhandled alpha ref";
+            alphaRef = model_trick->info->AlphaRef;
+        }
+        if ( tflags & TexBias )
+            reportUnhandled("Unhandled TexBias");
+    }
+    auto whitetex = tryLoadTexture(ctx,"white.tga");
+    QStringList vertex_defines;
+    QStringList pixel_defines;
+    SharedPtr<Material> preconverted;
+    if(cache->Exists("./converted/Materials/"+model_base_name+"_mtl.xml"))
+        preconverted = cache->GetResource<Material>("./converted/Materials/"+model_base_name+"_mtl.xml");
+    bool noLightAngle= mdl->flags & 0x10;
+    if(!preconverted) {
+        if(mdl->flags&0x100)
+        {
+            preconverted = cache->GetResource<Material>("Materials/DefaultVegetation.xml")->Clone();
+        }
+        else {
+            if(noLightAngle)
+                preconverted = cache->GetResource<Material>("Materials/NoLightAngle.xml")->Clone();
+            else
+                preconverted = cache->GetResource<Material>("Materials/TexturedDual.xml")->Clone();
+
+        }
+    }
+    else {
+        preconverted=preconverted->Clone();
+    }
+    pixel_defines << "DIFFMAP" << "ALPHAMASK";
+    switch(mdl->blend_mode)
+    {
+    case CoHBlendMode::MULTIPLY:
+        pixel_defines << "COH_MULTIPLY";
+        break;
+    case CoHBlendMode::MULTIPLY_REG:
+        if(!depthWrite && isAdditive) {
+            preconverted = cache->GetResource<Material>("Materials/AddAlpha.xml")->Clone();
+            preconverted->SetCullMode(CULL_NONE);
+        }
+        pixel_defines << "COH_MULTIPLY_REG";
+        break;
+    case CoHBlendMode::COLORBLEND_DUAL:
+        pixel_defines << "COH_COLOR_BLEND_DUAL";
+        break;
+    case CoHBlendMode::ADDGLOW:
+        pixel_defines << "COH_ADDGLOW";
+        break;
+    case CoHBlendMode::ALPHADETAIL:
+        qDebug() << "unhandled ALPHADETAIL";
+        break;
+    case CoHBlendMode::BUMPMAP_MULTIPLY:
+        preconverted = cache->GetResource<Material>("Materials/TexturedDualBump.xml")->Clone();
+        pixel_defines << "COH_MULTIPLY";
+        break;
+    case CoHBlendMode::BUMPMAP_COLORBLEND_DUAL:
+        preconverted = cache->GetResource<Material>("Materials/TexturedDualBump.xml")->Clone();
+        pixel_defines << "COH_COLOR_BLEND_DUAL";
+        break;
+    }
+    if(model_trick && model_trick->isFlag(SetColor)) {
+        reportUnhandled("SetColor unhandled");
+    }
+    if(mdl->flags&0x100) {
+        preconverted->SetVertexShaderDefines("TRANSLUCENT");
+        pixel_defines<<"TRANSLUCENT";
+        preconverted->SetShaderParameter("AlphaRef",0.4f);
+        tint1.w_ = 254/255.0f;
+    }
+    else if(alphaRef!=0.0f)
+        preconverted->SetShaderParameter("AlphaRef",alphaRef);
+    preconverted->SetShaderParameter("Col1",tint1);
+    preconverted->SetShaderParameter("Col2",tint2);
+    preconverted->SetPixelShaderDefines(pixel_defines.join(' '));
+    if(isDoubleSided)
+        preconverted->SetCullMode(CULL_NONE);
+
+    // int mode= dualTexture ? 4 : 5
+    unsigned geomidx=0;
+    for(auto & texbind : mdl->texture_bind_info) {
+        const QString &texname(mdl->geoset->tex_names[texbind.tex_idx]);
+        TextureWrapper tex = tryLoadTexture(ctx,texname);
+        if(tex.base) {
+            result = preconverted->Clone();
+            result->SetTexture(TU_DIFFUSE,tex.base);
+            if(tex.info) {
+                if(!tex.info->Blend.isEmpty())
+                {
+                    TextureWrapper detail = tryLoadTexture(ctx,tex.info->Blend);
+                    result->SetTexture(TU_CUSTOM1,detail.base);
+                }
+                else
+                    result->SetTexture(TU_CUSTOM1,whitetex.base);
+
+                if(!tex.info->BumpMap.isEmpty())
+                {
+                    TextureWrapper normal = tryLoadTexture(ctx,tex.info->BumpMap);
+                    result->SetTexture(TU_NORMAL,normal.base);
+                }
+            }
+            else
+                result->SetTexture(TU_CUSTOM1,whitetex.base);
+
+            boxObject->SetMaterial(geomidx,result);
+        }
+        geomidx++;
+    }
+
+}
+
+} // end of anonymus namespace
+Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, ConvertedNode *node)
+{
+    ConvertedModel *mdl = node->model;
+    ModelModifiers *model_trick = mdl->trck_node;
+    if(model_trick) {
+        if(model_trick->isFlag(NoDraw)) {
+            //qDebug() << mdl->name << "Set as no draw";
+            return nullptr;
+        }
+        if(model_trick->isFlag(EditorVisible)) {
+            //qDebug() << mdl->name << "Set as editor model";
+            return nullptr;
+        }
+        if(model_trick && model_trick->isFlag(CastShadow)) {
+            //qDebug() << "Not converting shadow models"<<mdl->name;
+            return nullptr;
+        }
+        if(model_trick && model_trick->isFlag(ParticleSys)) {
+            qDebug() << "Not converting particle sys:"<<mdl->name;
+            return nullptr;
+        }
+    }
+    StaticModel* boxObject = tgtnode->CreateComponent<StaticModel>();
+    auto modelptr = buildModel(ctx,mdl);
+    if(!modelptr)
+        return nullptr;
+    boxObject->SetDrawDistance(node->lod_far+node->lod_far_fade);
+    modelptr->SetName(mdl->name);
+    boxObject->SetModel(modelptr);
+    convertMaterial(ctx,mdl,boxObject);
+    return boxObject;
 }
 
 ConvertedModel *groupModelFind(const QString & a1)
@@ -384,15 +1045,14 @@ bool prepareGeoLookupArray()
     for(const QByteArray &entr : defnames.readAll().split('\0'))
         defnames_arr.push_back(entr);
     QString lookup_str;
-    QString geo_path;
-    GeoStoreDef *current_geosetinf;
+    GeoStoreDef *current_geosetinf=nullptr;
     for (QString str : defnames_arr )
     {
-        str.replace("CHUNKS.geo","Chunks.geo");
+        str.replace("CHUNKS.geo","Chunks.geo"); // original paths are case insensitive
         int last_slash = str.lastIndexOf('/');
         if(-1!=last_slash)
         {
-            geo_path = str.mid(0,last_slash);
+            QString geo_path = str.mid(0,last_slash);
             lookup_str = geo_path.toLower();
             current_geosetinf = &s_dir_to_geoset[lookup_str];
             current_geosetinf->geopath = geo_path;
@@ -415,4 +1075,18 @@ GeometryModifiers *findGeomModifier(const QString &modelname, const QString &tri
         return result;
     qDebug() << "Can't find modifier for" << trick_path<<modelname;
     return nullptr;
+}
+GeoStoreDef * groupGetFileEntryPtr(const QString &a1)
+{
+    QString key = a1.mid(a1.lastIndexOf('/')+1);
+    key = key.mid(0,key.indexOf("__"));
+    return s_modelname_to_geostore.value(key,nullptr);
+}
+/// load the given geoset, used when loading scene-subgraph and nodes
+ConvertedGeoSet * geosetLoad(const QString &m)
+{
+    ConvertedGeoSet * res = s_name_to_geoset.value(m,nullptr);
+    if(res)
+        return res;
+    return findAndPrepareGeoSet(m);
 }

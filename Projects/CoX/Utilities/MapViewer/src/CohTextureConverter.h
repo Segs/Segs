@@ -8,7 +8,7 @@
 
 struct TextureModifiers;
 class QString;
-namespace Urho3D 
+namespace Urho3D
 {
 class Texture;
 class Context;
@@ -49,3 +49,4 @@ enum TexOpt : uint32_t
 extern QHash<QString,TextureModifiers *> g_texture_path_to_mod;
 TextureWrapper tryLoadTexture(Urho3D::Context *ctx, const QString &fname);
 void preloadTextureNames();
+std::vector<TextureWrapper> getModelTextures(Urho3D::Context *ctx,std::vector<QString> &a1);

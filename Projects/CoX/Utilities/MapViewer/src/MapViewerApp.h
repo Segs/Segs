@@ -27,6 +27,7 @@ public:
 public:
     void Setup() override;
     void Start() override;
+    void addNextModel();
 public slots:
     void loadSelectedSceneGraph(const QString &path);
 signals:
@@ -50,8 +51,10 @@ private:
     // Camera params
     float yaw_=0;
     float pitch_=0;
+    // conversion results
     std::unique_ptr<ConvertedSceneGraph> m_coh_scene;
     std::unordered_map<void *,Urho3D::Node *> m_converted_nodes;
+    // UI helper variables
     SideWindow *m_sidewindow=nullptr;
     Urho3D::Drawable *m_selected_drawable=nullptr;
 };
