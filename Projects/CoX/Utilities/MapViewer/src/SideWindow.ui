@@ -139,12 +139,24 @@
     </property>
     <addaction name="actionLoad_Scene_Graph"/>
    </widget>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="actionSet_data_paths"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuOptions"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLoad_Scene_Graph">
    <property name="text">
     <string>Load Scene Graph</string>
+   </property>
+  </action>
+  <action name="actionSet_data_paths">
+   <property name="text">
+    <string>Set data paths</string>
    </property>
   </action>
  </widget>

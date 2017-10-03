@@ -37,6 +37,9 @@ set(SOURCES
     src/SideWindow.cpp
     src/SideWindow.h
     src/SideWindow.ui
+    src/DataPathsDialog.cpp
+    src/DataPathsDialog.h
+    src/DataPathsDialog.ui
     src/main.cpp
 )
 ADD_EXECUTABLE(mapviewer ${SOURCES})

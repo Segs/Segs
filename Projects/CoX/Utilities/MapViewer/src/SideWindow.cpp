@@ -4,6 +4,7 @@
 #include "MapViewerApp.h"
 #include "CoHSceneConverter.h"
 #include "CohModelConverter.h"
+#include "DataPathsDialog.h"
 
 #include <QtWidgets/QFileDialog>
 #include <QtCore/QDebug>
@@ -67,6 +68,12 @@ void SideWindow::onModelSelected(ConvertedModel *m, Urho3D::Drawable *d)
 }
 void SideWindow::on_actionLoad_Scene_Graph_triggered()
 {
-    QString fl = QFileDialog::getOpenFileName(this,"Select a scenegraph .bin file to load",basepath,"Scenegraphs (*.bin)");
+    QString fl = QFileDialog::getOpenFileName(this,"Select a scenegraph .bin file to load",basepath+"/geobin","Scenegraphs (*.bin)");
     emit scenegraphSelected(fl);
+}
+
+void SideWindow::on_actionSet_data_paths_triggered()
+{
+    DataPathsDialog dlg;
+    dlg.exec();
 }

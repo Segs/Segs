@@ -36,6 +36,8 @@ public slots:
 private slots:
     void on_actionLoad_Scene_Graph_triggered();
 
+    void on_actionSet_data_paths_triggered();
+
 private:
     MapViewerApp *m_map_viewer;
     Ui::SideWindow *ui;
