@@ -127,6 +127,7 @@ bool explodizeThePiggs(const QStringList &piggfiles,const QString &tgtpath,QProg
 }
 bool acquireAndExplodePiggs()
 {
+    bool dialog_shown=false;
     QProgressDialog generic_progress_dlg;
     QStringList piggs_to_explodize;
     bool all_piggs_valid=false;
@@ -145,10 +146,15 @@ bool acquireAndExplodePiggs()
             QString file = every_pigg.next();
             if(!isThatPiggRequired(file))
                 continue;
-            if(!checkPiggCrc(file,generic_progress_dlg)) {
-                QMessageBox::critical(nullptr, "Error",
-                                      QString("The '%1' looks strange ( does not match the known one )").arg(file));
-                //break;
+            if(!checkPiggCrc(file,generic_progress_dlg))
+            {
+                if(!dialog_shown) {
+                    QMessageBox::critical(nullptr, "Error",
+                                          QString("The '%1' looks strange ( does not match the known one )").arg(file));
+                }
+                else {
+                    qWarning() << QString("The '%1' looks strange ( does not match the known one )").arg(file);
+                }
             }
             else
                 piggs_to_explodize << file;

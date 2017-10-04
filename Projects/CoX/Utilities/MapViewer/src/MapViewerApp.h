@@ -27,13 +27,15 @@ public:
 public:
     void Setup() override;
     void Start() override;
-    void addNextModel();
 public slots:
     void loadSelectedSceneGraph(const QString &path);
+    void onDisplayNode(ConvertedNode *n, bool rootnode);
+    void onNodeSelected(ConvertedNode *n);
 signals:
     void cameraLocationChanged(float x,float y,float z);
     void nodeSelected(ConvertedNode *def,Urho3D::Node *n);
     void modelSelected(ConvertedModel *model,Urho3D::Drawable*m);
+    void scenegraphLoaded(const ConvertedSceneGraph &);
 private:
     void CreateBaseScene();
     void SetupViewport();
@@ -47,6 +49,8 @@ private:
     void HandleUpdate(float ts);
 
     Urho3D::SharedPtr<Urho3D::Node> m_camera_node;
+    Urho3D::SharedPtr<Urho3D::Node> m_currently_shown_node;
+    ConvertedNode *m_current_selected_node=nullptr;
     Urho3D::SharedPtr<Urho3D::Scene> m_scene;
     // Camera params
     float yaw_=0;

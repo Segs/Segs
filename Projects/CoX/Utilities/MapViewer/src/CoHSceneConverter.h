@@ -2,6 +2,7 @@
 
 #include <Lutefisk3D/Math/Matrix3x4.h>
 #include <Lutefisk3D/Math/BoundingBox.h>
+#include <Lutefisk3D/Container/Ptr.h>
 
 #include <vector>
 #include <QString>
@@ -11,7 +12,10 @@ namespace Urho3D {
 class Node;
 class Context;
 };
-
+enum {
+    CONVERT_MINIMAL,
+    CONVERT_EDITOR_MARKERS,
+};
 enum class CoHBlendMode : uint8_t
 {
     MULTIPLY                = 0,
@@ -42,6 +46,7 @@ struct ConvertedNode
     struct GeoStoreDef *geoset_info=nullptr;
     Urho3D::BoundingBox m_bbox;
     Urho3D::Vector3 center;
+    Urho3D::WeakPtr<Urho3D::Node> m_lutefisk_result;
     float radius=0;
     float vis_dist=0;
     float lod_near=0;
@@ -70,5 +75,6 @@ struct ConvertedSceneGraph
     QHash<QString,ConvertedNode *> name_to_node;
 };
 bool loadSceneGraph(ConvertedSceneGraph &conv,const QString &path);
-Urho3D::Node * convertedNodeToLutefisk(ConvertedNode *def, Urho3D::Matrix3x4 mat, Urho3D::Context *ctx, int depth);
+
+Urho3D::Node * convertedNodeToLutefisk(ConvertedNode *def, const Urho3D::Matrix3x4 & mat, Urho3D::Context *ctx, int depth, int opt=CONVERT_MINIMAL);
 

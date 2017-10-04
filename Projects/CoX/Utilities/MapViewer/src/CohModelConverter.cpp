@@ -37,7 +37,7 @@ struct VBOPointers
     Vector3 *norm=nullptr;
     Vector2 *uv1=nullptr;
     Vector2 *uv2=nullptr;
-    std::vector<Vector3i> *triangles = nullptr;
+    std::vector<Vector3i> triangles;
     std::vector<TextureWrapper> assigned_textures;
 };
 
@@ -548,11 +548,9 @@ inline void geoUnpackDeltas(DeltaPack *a1, Vector3i *unpacked_data, uint32_t num
 void *fillVbo(ConvertedModel *model)
 {
     VBOPointers &vbo(*model->vbo);
-    model->vbo->triangles = new std::vector<Vector3i>;
-    std::vector<Vector3i> &triangles(*model->vbo->triangles);
+    std::vector<Vector3i> &triangles(model->vbo->triangles);
     triangles.resize(model->model_tri_count);//, 1, ".\\render\\model_cache.c", 138);
     geoUnpackDeltas(&model->packed_data.tris, triangles.data(), model->model_tri_count);
-    vbo.triangles= &triangles;
     uint32_t total_size = 0;
     uint32_t Vertices3D_bytes = sizeof(Vector3) * model->vertex_count;
     total_size += Vertices3D_bytes;
@@ -631,7 +629,7 @@ void modelFixup(ConvertedModel *model,VBOPointers &vbo)
         Vector2 scaletex1 = tex.scaleUV1;
         for (uint32_t v19 = 0; v19 < bind_tri_count; ++v19)
         {
-            Vector3i tri((*vbo.triangles)[v19+triangle_offset]);
+            Vector3i tri(vbo.triangles[v19+triangle_offset]);
             for(int vnum=0; vnum<3; ++vnum)
             {
                 const uint32_t vert_idx = tri[vnum];
@@ -723,7 +721,7 @@ void modelCreateObjectFromModel(Urho3D::Context *ctx,ConvertedModel *model,std::
     delete [] combined;
     ib->SetShadowed(true);
     ib->SetSize(model->model_tri_count*3, true);
-    ib->SetData(vbo.triangles->data());
+    ib->SetData(vbo.triangles.data());
     fromScratchModel->SetVertexBuffers({vb},{},{});
     fromScratchModel->SetIndexBuffers({ib});
     BoundingBox bbox(model->m_min,model->m_max);
@@ -838,9 +836,10 @@ void convertMaterial(Urho3D::Context *ctx,ConvertedModel *mdl,StaticModel* boxOb
     QString model_base_name = mdl->name.split("__").front();
     //result = cache->GetResource<Material>("Materials/WireFrame.xml");
     bool isDoubleSided = model_trick && model_trick->isFlag(DoubleSided);
-    if(model_trick&&model_trick->isFlag(ColorOnly)) {
-        result = result->Clone(result->GetName()+"Colored");
-        result->SetShaderParameter("MatDiffColor",Vector4(1.0, 1.0, 0.2f, 1.0f));
+    if(model_trick&&model_trick->isFlag(ColorOnly))
+    {
+//        result = result->Clone(result->GetName()+"Colored");
+//        result->SetShaderParameter("MatDiffColor",Vector4(1.0, 1.0, 0.2f, 1.0f));
     }
     // Select material based on the model blend state
     // Modify material based on the applied model tricks
@@ -993,7 +992,7 @@ void convertMaterial(Urho3D::Context *ctx,ConvertedModel *mdl,StaticModel* boxOb
 }
 
 } // end of anonymus namespace
-Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, ConvertedNode *node)
+Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, ConvertedNode *node, int opt)
 {
     ConvertedModel *mdl = node->model;
     ModelModifiers *model_trick = mdl->trck_node;
@@ -1002,7 +1001,7 @@ Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node
             //qDebug() << mdl->name << "Set as no draw";
             return nullptr;
         }
-        if(model_trick->isFlag(EditorVisible)) {
+        if(opt!=CONVERT_EDITOR_MARKERS && model_trick->isFlag(EditorVisible)) {
             //qDebug() << mdl->name << "Set as editor model";
             return nullptr;
         }
@@ -1015,10 +1014,10 @@ Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node
             return nullptr;
         }
     }
-    StaticModel* boxObject = tgtnode->CreateComponent<StaticModel>();
     auto modelptr = buildModel(ctx,mdl);
     if(!modelptr)
         return nullptr;
+    StaticModel* boxObject = tgtnode->CreateComponent<StaticModel>();
     boxObject->SetDrawDistance(node->lod_far+node->lod_far_fade);
     modelptr->SetName(mdl->name);
     boxObject->SetModel(modelptr);

@@ -418,7 +418,7 @@ void addRoot(ConvertedSceneGraph &conv,const SceneRootNode_Data &refload, NameLi
     }
     auto ref = newRef(conv);
     ref->node = def;
-    rotationFromYPR(ref->mat,Vector3(&refload.rot[0]));
+    rotationFromYPR(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z});
     ref->mat.SetTranslation(Vector3(&refload.pos[0]));
 }
 void PostProcessScene(SceneGraph_Data &scenegraph,ConvertedSceneGraph &conv,NameList &renamer,const QString &name)
@@ -471,36 +471,38 @@ bool loadSceneGraph(ConvertedSceneGraph &conv,const QString &path)
     return true;
 }
 //TODO: convert this from recursive function into iterative one.
-Urho3D::Node * convertedNodeToLutefisk(ConvertedNode *def,Urho3D::Matrix3x4 mat,Context *ctx,int depth)
+Urho3D::Node * convertedNodeToLutefisk(ConvertedNode *conv_node, const Urho3D::Matrix3x4 &mat, Context *ctx, int depth, int opt)
 {
     ResourceCache* cache = ctx->m_ResourceCache.get();
     Urho3D::Node * node = new Node(ctx);
     const std::vector<NodeChild> &children_arr();
-    node->SetName(def->name);
+    node->SetName(conv_node->name);
     node->SetTransform(mat);
-    if(def->model)
+    conv_node->m_lutefisk_result = node;
+    if(conv_node->model)
     {
         //assert(def->children.empty());
-        StaticModel* conv_model = convertedModelToLutefisk(ctx,node,def);
+        StaticModel* conv_model = convertedModelToLutefisk(ctx,node,conv_node,opt);
         if(!conv_model)
         {
             delete node;
             return nullptr;
         }
-        node->SetVar("CoHModel",def->model);
+        node->SetVar("CoHNode",conv_node);
+        node->SetVar("CoHModel",conv_node->model);
         // some nodes contain both a model and children nodes
         //return node;
     }
 
     if (depth > 0)
     {
-        node->SetVar("CoHDef",def);
-        for(NodeChild &d : def->children)
+        node->SetVar("CoHNode",conv_node);
+        for(NodeChild &d : conv_node->children)
         {
             //this is used to reject models for farther lods
             if(d.m_def->model && d.m_def->lod_near!=0.0f)
                 continue;
-            Urho3D::Node *newNode = convertedNodeToLutefisk(d.m_def, d.m_matrix, ctx, depth - 1); // recursive call
+            Urho3D::Node *newNode = convertedNodeToLutefisk(d.m_def, d.m_matrix, ctx, depth - 1,opt); // recursive call
             if (newNode)
                 node->AddChild(newNode);
         }
@@ -510,7 +512,7 @@ Urho3D::Node * convertedNodeToLutefisk(ConvertedNode *def,Urho3D::Matrix3x4 mat,
     {
         auto    boxTextNode = node->CreateChild("BoxText");
         Text3D *boxText     = boxTextNode->CreateComponent<Text3D>();
-        boxText->SetText(QString("Group %1\n(%2)").arg(def->name).arg(mat.Translation().ToString()));
+        boxText->SetText(QString("Group %1\n(%2)").arg(conv_node->name).arg(mat.Translation().ToString()));
         boxText->SetFont(cache->GetResource<Font>("Fonts/BlueHighway.sdf"), 18);
         boxText->SetColor(Color::RED);
         boxText->SetFaceCameraMode(FC_ROTATE_Y);
