@@ -111,7 +111,7 @@ static void serialize(Archive & archive, TextureModifiers & m)
     archive(cereal::make_nvp("Flags",m.Flags));
 }
 template<class Archive>
-static void serialize(Archive & archive, TrickNode & m)
+static void serialize(Archive & archive, ModelModifiers & m)
 {
     archive(cereal::make_nvp("TrickFlags",m._TrickFlags));
     archive(cereal::make_nvp("SortBias",m.SortBias));

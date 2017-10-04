@@ -6,15 +6,15 @@
 
 struct GroupLoc_Data
 {
-  QString name;
-  glm::vec3 pos {0,0,0};
-  glm::vec3 rot {0,0,0};
+    QString name;
+    glm::vec3 pos {0,0,0};
+    glm::vec3 rot {0,0,0};
 };
 struct GroupProperty_Data
 {
-  QString propName;
-  QString propValue;
-  int propertyType; // 1 - propValue contains float radius, 0 propValue is plain string
+    QString propName;
+    QString propValue;
+    int propertyType; // 1 - propValue contains float radius, 0 propValue is plain string
 };
 struct TintColor_Data
 {
@@ -70,7 +70,7 @@ struct DefAmbient_Data
     uint32_t clr;
 };
 
-struct Def_Data
+struct SceneGraphNode_Data
 {
     QString name;
     QString p_Obj;
@@ -87,7 +87,7 @@ struct Def_Data
     std::vector<DefAmbient_Data> p_Ambient;
     std::vector<DefLod_Data> p_Lod;
 };
-struct Ref_Data
+struct SceneRootNode_Data
 {
     QString name;
     glm::vec3 pos {0,0,0};
@@ -96,7 +96,7 @@ struct Ref_Data
 struct SceneGraph_Data
 {
     int Version;
-    std::vector<Def_Data> Def;
-    std::vector<Ref_Data> Ref;
+    std::vector<SceneGraphNode_Data> Def;
+    std::vector<SceneRootNode_Data> Ref;
     QString Scenefile;
 };

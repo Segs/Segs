@@ -3,6 +3,8 @@
 
 #include <QtWidgets/QMainWindow>
 
+#include <QAbstractItemModel>
+
 namespace Ui {
 class SideWindow;
 }
@@ -30,15 +32,25 @@ protected:
     void changeEvent(QEvent *e);
 signals:
     void scenegraphSelected(const QString &path);
+    void nodeSelected(ConvertedNode *n);
+    void nodeDisplayRequest(ConvertedNode *n,bool isroot);
 public slots:
     void onCameraPositionChanged(float x,float y,float z);
     void onModelSelected(ConvertedModel *m,Urho3D::Drawable *d);
+    void onScenegraphLoaded(const ConvertedSceneGraph &sc);
 private slots:
     void on_actionLoad_Scene_Graph_triggered();
+
+    void on_actionSet_data_paths_triggered();
+
+    void on_nodeList_clicked(const QModelIndex &index);
+
+    void on_nodeList_doubleClicked(const QModelIndex &index);
 
 private:
     MapViewerApp *m_map_viewer;
     Ui::SideWindow *ui;
+    QAbstractItemModel *m_model;
 };
 
 #endif // SIDEWINDOW_H

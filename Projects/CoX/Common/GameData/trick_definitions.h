@@ -66,7 +66,7 @@ struct ColorList
     int count; // count of color 'key frames'
     float scale;
 };
-struct TrickNode
+struct ModelModifiers
 {
     glm::vec2 ScrollST0;
     glm::vec2 ScrollST1;
@@ -98,12 +98,14 @@ enum GroupFlags : uint32_t
     ParentFade       = 0x1000,
     KeyLight         = 0x2000,
     SewerWaterVolume = 0x4000,
+    RedWaterVolume   = 0x8000, // only in I2
+    MaterialVolume   =0x10000, // only in I2
 };
 struct GeometryModifiers
 {
     QString                       src_name;
     QString                       name;
-    TrickNode                     node;
+    ModelModifiers                node;
     int                           GfxFlags;
     uint32_t                      ObjFlags;
     uint32_t                      GroupFlags;

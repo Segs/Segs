@@ -105,26 +105,26 @@ bool AuthServer::ShutDown(const std::string &/* ="No particular reason" */)
  */
 AuthClient *AuthServer::GetClientByLogin(const char *login)
 {
-    AuthClient *res=NULL;
+    AuthClient *res=nullptr;
     AdminServerInterface *adminserv;                            // this will be used in case when we don't have this client in the cache
-    hmClients::const_iterator iter = m_clients.find(login); // searching for the client in cache
-    if(iter!=m_clients.end())               // if found
+    hmClients::const_iterator iter = m_clients.constFind(login); // searching for the client in cache
+    if(iter!=m_clients.cend())               // if found
         return (*iter);                                //  return cached object
     adminserv = ServerManager::instance()->GetAdminServer();
     assert(adminserv);
-    res= new AuthClient; //res= m_client_pool.construct();      // construct a new instance
+    res = new AuthClient; //res= m_client_pool.construct();      // construct a new instance
     res->account_info().login(login);                           // set login and ask AdminServer to fill in the rest
     if( !adminserv->FillClientInfo(res->account_info()) )       // Can we fill the client account info from db ?
     {
         delete res;
         //m_client_pool.free(res);                              // nope ? Free object and return NULL.
-        return NULL;
+        return nullptr;
     }
     if(res->account_info().account_server_id()==0)              // check if object is filled in correctly, by validating it's db id.
     {
         delete res;
         //m_client_pool.free(res);                                // if it is not. Free object and return NULL.
-        return NULL;
+        return nullptr;
     }
     m_clients[res->account_info().login()]=res;                 // store valid object in the cache
     return res;

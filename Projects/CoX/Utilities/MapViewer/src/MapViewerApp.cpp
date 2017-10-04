@@ -1,5 +1,6 @@
 #include "MapViewerApp.h"
 #include "CoHSceneConverter.h"
+#include "CohModelConverter.h"
 #include "CohTextureConverter.h"
 #include "SideWindow.h"
 
@@ -53,8 +54,8 @@ void MapViewerApp::CreateBaseScene()
     // Create a basic plane, a light and a camera
     ResourceCache* cache = m_context->m_ResourceCache.get();
     m_scene = new Scene(m_context);
-    Octree *oct=m_scene->CreateComponent<Octree>();
     m_scene->CreateComponent<DebugRenderer>();
+    Octree *oct=m_scene->CreateComponent<Octree>();
     oct->SetSize(BoundingBox(-32767,32768),8);
 
     Node* zoneNode = m_scene->CreateChild("Zone");
@@ -82,6 +83,7 @@ void MapViewerApp::CreateBaseScene()
     m_camera_node = m_scene->CreateChild("Camera");
     Camera *cam = m_camera_node->CreateComponent<Camera>();
     m_camera_node->SetPosition(Vector3(0.0f, 5.0f, 0.0f));
+    emit cameraLocationChanged(0.0f, 5.0f, 0.0f);
     cam->SetFarClip(1500);
 }
 void MapViewerApp::SetupViewport() {
@@ -113,7 +115,12 @@ void MapViewerApp::prepareSideWindow()
     m_sidewindow->resize(graphics->GetWindowPosition().x_-20,graphics->GetHeight());
     m_sidewindow->show();
     connect(this,&MapViewerApp::cameraLocationChanged,m_sidewindow,&SideWindow::onCameraPositionChanged);
+    connect(this,&MapViewerApp::modelSelected,m_sidewindow,&SideWindow::onModelSelected);
+    connect(this,&MapViewerApp::scenegraphLoaded,m_sidewindow,&SideWindow::onScenegraphLoaded);
     connect(m_sidewindow,&SideWindow::scenegraphSelected,this,&MapViewerApp::loadSelectedSceneGraph);
+    connect(m_sidewindow,&SideWindow::nodeDisplayRequest,this,&MapViewerApp::onDisplayNode);
+    connect(m_sidewindow,&SideWindow::nodeSelected,this,&MapViewerApp::onNodeSelected);
+    m_sidewindow->setMapViewer(this);
 }
 void MapViewerApp::prepareCursor()
 {
@@ -153,6 +160,8 @@ void MapViewerApp::Start()
     Input* input = m_context->m_InputSystem.get();
     input->SetMouseMode(MM_FREE);//,MM_RELATIVE
 
+    if(!prepareGeoLookupArray())
+        return;
     preloadTextureNames();
     prepareSideWindow();
 }
@@ -166,6 +175,50 @@ void MapViewerApp::loadSelectedSceneGraph(const QString &path)
     m_converted_nodes.clear();
     m_coh_scene.reset(new ConvertedSceneGraph);
     loadSceneGraph(*m_coh_scene,path);
+    emit scenegraphLoaded(*m_coh_scene);
+}
+void MapViewerApp::onNodeSelected(ConvertedNode * n)
+{
+    m_current_selected_node = n;
+}
+void MapViewerApp::onDisplayNode(ConvertedNode *n,bool rootnode)
+{
+    if(nullptr==n)
+    {
+        if (m_currently_shown_node)
+            m_currently_shown_node->SetEnabledRecursive(false);
+        m_currently_shown_node = nullptr;
+        return;
+    }
+    auto  iter = m_converted_nodes.find(n);
+    Node *boxNode;
+    if (iter == m_converted_nodes.end())
+    {
+        boxNode = convertedNodeToLutefisk(n, Matrix3x4::IDENTITY, m_context, 17,rootnode ? CONVERT_MINIMAL : CONVERT_EDITOR_MARKERS);
+        m_scene->AddChild(boxNode);
+        m_converted_nodes[n] = boxNode;
+    }
+    else
+        boxNode = iter->second;
+    // Look at selected node
+    if(boxNode!=nullptr)
+    {
+        m_camera_node->LookAt(boxNode->GetWorldPosition());
+        Vector3 nodecenter=n->m_bbox.Center();
+        Vector3 dir = (m_camera_node->GetWorldPosition() - nodecenter).Normalized();
+        Vector3 newpos = nodecenter + dir*n->m_bbox.size().Length()*1.5f;
+        //m_camera_node->SetPosition(newpos);
+        Quaternion camrot=m_camera_node->GetRotation();
+        pitch_=camrot.PitchAngle();
+        yaw_=camrot.YawAngle();
+    }
+    if(boxNode==m_currently_shown_node || nullptr==boxNode)
+        return;
+    if (m_currently_shown_node)
+        m_currently_shown_node->SetEnabledRecursive(false);
+    boxNode->SetEnabledRecursive(true);
+    m_currently_shown_node = boxNode;
+
 }
 void MapViewerApp::HandleKeyUp(int key,int scancode,unsigned buttons,int qualifiers)
 {
@@ -173,6 +226,15 @@ void MapViewerApp::HandleKeyUp(int key,int scancode,unsigned buttons,int qualifi
     if (key == KEY_ESCAPE)
     {
         engine_->Exit();
+    }
+    if(key>='1' && key<='8') {
+        int layernum = key-'1';
+        if(layernum>=m_coh_scene->refs.size())
+            return;
+        auto ref_to_toggle = m_coh_scene->refs[layernum];
+        Node *v = m_converted_nodes[ref_to_toggle];
+        if(v)
+            v->SetDeepEnabled(!v->IsEnabled());
     }
 }
 void MapViewerApp::HandleKeyDown(int key,int scancode,unsigned buttons,int qualifiers, bool repeat)
@@ -217,9 +279,17 @@ bool MapViewerApp::Raycast(float maxDistance)
         RayQueryResult& result = results[0];
         hitPos = result.position_;
         hitDrawable = result.drawable_;
-        m_selected_drawable = hitDrawable;
+        Variant stored = result.node_->GetVar("CoHModel");
+        Variant stored_node = result.node_->GetVar("CoHNode");
+        if(stored!=Variant::EMPTY)
+        {
+            m_selected_drawable = hitDrawable;
+            emit modelSelected((ConvertedModel *)stored.GetVoidPtr(),hitDrawable);
+        }
+        return true;
     }
     m_selected_drawable = nullptr;
+    emit modelSelected(nullptr,nullptr);
     return false;
 }
 void MapViewerApp::HandleUpdate(float timeStep)
@@ -287,5 +357,12 @@ void MapViewerApp::HandlePostRenderUpdate(float ts)
     // If draw debug mode is enabled, draw viewport debug geometry. Disable depth test so that we can see the effect of occlusion
     if (m_selected_drawable) {
         m_selected_drawable->DrawDebugGeometry(m_scene->GetComponent<DebugRenderer>(),true);
+    }
+    if(m_current_selected_node) {
+        BoundingBox bbox(m_current_selected_node->m_bbox);
+        auto weak_node(m_current_selected_node->m_lutefisk_result);
+        if(weak_node)
+            bbox.Transform(weak_node->GetWorldTransform());
+        m_scene->GetComponent<DebugRenderer>()->AddBoundingBox(bbox,Color::BLUE,false);
     }
 }
