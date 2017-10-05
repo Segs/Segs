@@ -1,26 +1,6 @@
 #FIND_PACKAGE(ACE REQUIRED)
 find_package(Qt5Core REQUIRED)
 
-################# Qt Ui related ###############################################
-#include(${QT_USE_FILE})
-#SET(gui_UI_FILES
-#    ui/mainwindow.ui
-#    ui/objecttreewidget.ui
-#)
-#SET(gui_MOC_HEADERS
-#    include/mainwindow.h
-#    include/objecttreewidget.h
-#    include/mapmodel.h
-#    include/CompositeViewerQOSG.h
-#    include/QOSGWidget.h
-#)
-#SET(gui_SOURCES
-#    src/mainwindow.cpp
-#    src/objecttreewidget.cpp
-#    src/mapmodel.cpp
-#    src/CompositeViewerQOSG.cpp
-#)
-
 set(CMAKE_AUTOUIC TRUE)
 set(CMAKE_AUTOMOC TRUE)
 set(SOURCES

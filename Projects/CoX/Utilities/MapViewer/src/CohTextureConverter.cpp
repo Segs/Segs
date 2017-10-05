@@ -150,8 +150,8 @@ TextureWrapper tryLoadTexture(Urho3D::Context *ctx,const QString &fname)
 {
     ResourceCache *rcache=ctx->m_ResourceCache.get();
     QFileInfo tex_path(fname);
-    QString lookupstring=tex_path.baseName().toLower();
-    QString actualPath = s_texture_paths.value(lookupstring);
+    QString lookupstring = tex_path.baseName().toLower();
+    QString actualPath   = s_texture_paths.value(lookupstring);
     if(actualPath.isEmpty())
     {
         if(!s_missing_textures.contains(lookupstring))
