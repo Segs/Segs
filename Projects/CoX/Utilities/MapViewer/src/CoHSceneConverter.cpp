@@ -278,8 +278,7 @@ bool nodeCalculateBounds(ConvertedNode *group)
     {
         bbox.Clear();
     }
-    Vector3 v29x = bbox.size();
-    group->radius = v29x.Length() * 0.5f;
+    group->radius = bbox.size().Length() * 0.5f;
     group->m_bbox = bbox;
     group->center = bbox.Center(); // center
     for ( NodeChild & child : group->children )
@@ -290,8 +289,6 @@ bool nodeCalculateBounds(ConvertedNode *group)
     }
     if ( maxrad != 0.0f )
         group->radius = maxrad;
-    Vector3 v7x = group->m_bbox.size();
-    float boxlen = v7x.Length() / 2.0f;
     group->radius = std::max(geometry_radius,group->radius);
     return group->radius == 0.0f && !group->children.empty();
 }

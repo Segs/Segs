@@ -190,7 +190,7 @@ static void setupTrick(GeometryModifiers *a1)
     }
     tricks_string_hash_tab[a1->name.toLower()]=a1;
 }
-static void  trickLoadPostProcess(int a1, AllTricks_Data *a2)
+static void  trickLoadPostProcess(AllTricks_Data *a2)
 {
     g_texture_path_to_mod.clear();
     tricks_string_hash_tab.clear();
@@ -215,7 +215,7 @@ bool loadTricksBin()
             return false;
         }
     }
-    trickLoadPostProcess(0,&s_tricks_store);
+    trickLoadPostProcess(&s_tricks_store);
     return true;
 }
 
@@ -230,13 +230,13 @@ void convertTextureNames(const int *a1, std::vector<QString> &a2)
         a2.push_back(start_of_strings_area + indices[idx]);
     }
 }
-std::vector<TextureBind> convertTexBinds(int cnt, uint8_t *data)
+std::vector<TextureBind> convertTexBinds(int cnt, const uint8_t *data)
 {
     std::vector<TextureBind> res;
-    res.assign((TextureBind *)data,((TextureBind *)data)+cnt);
+    res.assign((const TextureBind *)data,((const TextureBind *)data)+cnt);
     return res;
 }
-static ConvertedModel *convertAndInsertModel(ConvertedGeoSet &tgt, Model32 *v)
+static ConvertedModel *convertAndInsertModel(ConvertedGeoSet &tgt, const Model32 *v)
 {
     ConvertedModel *z = new ConvertedModel;
 
@@ -279,8 +279,8 @@ void  addModelStubs(ConvertedGeoSet *geoset)
 void geosetLoadHeader(QFile &fp, ConvertedGeoSet *geoset)
 {
     unsigned int anm_hdr_size;
-    const char * stream_pos_0;
-    const char * stream_pos_1;
+    const uint8_t * stream_pos_0;
+    const uint8_t * stream_pos_1;
     uint32_t headersize;
     fp.read((char *)&anm_hdr_size, 4u);
     anm_hdr_size -= 4;
@@ -289,7 +289,7 @@ void geosetLoadHeader(QFile &fp, ConvertedGeoSet *geoset)
     QByteArray zipmem = fp.read(anm_hdr_size);
     QByteArray unc_arr = uncompr_zip(zipmem.data(), anm_hdr_size, headersize);
 
-    const char * mem = unc_arr.data();
+    const uint8_t * mem = (const uint8_t *)unc_arr.data();
 
     const TexBlockInfo *info = (const TexBlockInfo *)mem;
     geoset->geo_data_size = info->size1;
@@ -297,22 +297,21 @@ void geosetLoadHeader(QFile &fp, ConvertedGeoSet *geoset)
     convertTextureNames((const int *)(mem + sizeof(TexBlockInfo)), geoset->tex_names);
     stream_pos_0            = mem + info->texname_blocksize + sizeof(TexBlockInfo);
     stream_pos_1            = stream_pos_0 + info->bone_names_size;
-    GeosetHeader32 *header32  = (GeosetHeader32 *)(stream_pos_1 + info->tex_binds_size);
-    Model32 *     ptr_subs  = (Model32 *)(stream_pos_1 + info->tex_binds_size + sizeof(GeosetHeader32));
+    const GeosetHeader32 *header32  = (const GeosetHeader32 *)(stream_pos_1 + info->tex_binds_size);
+    const Model32 *     ptr_subs  = (Model32 *)(stream_pos_1 + info->tex_binds_size + sizeof(GeosetHeader32));
     geoset->parent_geoset = geoset;
     geoset->name = header32->name;
     for (int idx = 0; idx < header32->num_subs; ++idx) {
-        Model32 *v6 = &ptr_subs[idx];
-        v6->vbo     = 0;
+        const Model32 *v6 = &ptr_subs[idx];
         std::vector<TextureBind> binds;
         if (info->tex_binds_size) {
-            binds = convertTexBinds(v6->num_textures, v6->texture_bind_offsets + (uint8_t *)stream_pos_1);
+            binds = convertTexBinds(v6->num_textures, v6->texture_bind_offsets + stream_pos_1);
         }
         ConvertedModel *m    = convertAndInsertModel(*geoset, v6);
         m->texture_bind_info = binds;
         m->geoset       = geoset;
         m->vbo          = nullptr;
-        m->name         = QString(stream_pos_0 + v6->bone_name_offset);
+        m->name         = QString((const char *)stream_pos_0 + v6->bone_name_offset);
     }
     if (!geoset->subs.empty())
         addModelStubs(geoset);
@@ -521,7 +520,7 @@ ptrdiff_t unpackedDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, ui
     return data_src - data;
 }
 
-void geoUnpackDeltas(DeltaPack *a1, uint8_t *target, int entry_size, uint32_t num_entries, UnpackMode type)
+void geoUnpackDeltas(DeltaPack *a1, uint8_t *target, uint32_t entry_size, uint32_t num_entries, UnpackMode type)
 {
     if (0 == a1->uncomp_size)
         return;
