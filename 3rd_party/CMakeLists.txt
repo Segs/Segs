@@ -11,6 +11,7 @@ endif()
 
 if(ENABLE_SCRIPTING_ENGINE)
     include(ExternalProject_LUA.cmake)
+    include(ExternalProject_SOL2.cmake)
 endif()
 
 if(ENABLE_TESTS)

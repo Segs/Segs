@@ -31,14 +31,13 @@ ACE_Time_Value resend_interval(0,250*1000);
 }
 
 using namespace std;
-MapInstance::MapInstance( const string &name ) :m_name(name),m_world_update_timer(nullptr)
+MapInstance::MapInstance(const string &name) : m_name(name), m_world_update_timer(nullptr)
 {
     m_world = new World(m_entities);
-#ifdef SCRIPTING_ENABLED
-    m_scripting_interface = new ScriptingInterface;
-#endif
+    m_scripting_interface.reset(new ScriptingEngine);
 }
-void MapInstance::start() {
+void MapInstance::start()
+{
     assert(m_world_update_timer==nullptr);
     m_world_update_timer = new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false); // world simulation ticks
     m_resend_timer = new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false); // state broadcast ticks
@@ -403,32 +402,3 @@ void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {
     qDebug() << "Chat divider moved to "<<ev->m_position; //"for player" <<
 }
-#ifdef SCRIPTING_ENABLED
-static const luaL_Reg loadedlibs[] = {{"_G", luaopen_base},
-                                      //{LUA_LOADLIBNAME, luaopen_package},
-                                      {LUA_COLIBNAME, luaopen_coroutine},
-                                      {LUA_TABLIBNAME, luaopen_table},
-                                      //{LUA_IOLIBNAME, luaopen_io},
-                                      //{LUA_OSLIBNAME, luaopen_os},
-                                      {LUA_STRLIBNAME, luaopen_string},
-                                      {LUA_MATHLIBNAME, luaopen_math},
-                                      {LUA_UTF8LIBNAME, luaopen_utf8},
-                                      {LUA_DBLIBNAME, luaopen_debug},
-                                      {nullptr, nullptr}};
-
-static void luaL_customlibs(lua_State *L)
-{
-    const luaL_Reg *lib;
-    /* "require" functions from 'loadedlibs' and set results to global table */
-    for (lib = loadedlibs; lib->func; lib++)
-    {
-        luaL_requiref(L, lib->name, lib->func, 1);
-        lua_pop(L, 1); /* remove lib */
-    }
-}
-ScriptingInterface::ScriptingInterface()
-{
-    m_interpreter_state = luaL_newstate();
-    luaL_customlibs(m_interpreter_state);
-}
-#endif

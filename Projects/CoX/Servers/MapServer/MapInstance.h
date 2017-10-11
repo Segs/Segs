@@ -12,11 +12,10 @@
 #include "EntityStorage.h"
 #include "EventProcessor.h"
 #include "ClientManager.h"
+#include "ScriptingEngine.h"
 #include <map>
+#include <memory>
 #include <vector>
-#ifdef SCRIPTING_ENABLED
-#include <lua/lua.hpp>
-#endif
 #define WORLD_UPDATE_TICKS_PER_SECOND 30
 
 class IdleEvent;
@@ -37,17 +36,9 @@ class MapServer;
 class SEGSTimer;
 class InputState;
 class World;
-struct ScriptingInterface
-{
-    ScriptingInterface();
-#ifdef SCRIPTING_ENABLED
-        lua_State *     m_interpreter_state;
-#endif
-
-};
 class MapInstance : public EventProcessor
 {
-    ScriptingInterface *   m_scripting_interface;
+    std::unique_ptr<ScriptingEngine> m_scripting_interface;
     std::string            m_name;
     SEGSTimer *            m_world_update_timer;
     SEGSTimer *            m_resend_timer;
