@@ -39,6 +39,7 @@ MapInstance::MapInstance(const string &name) : m_name(name), m_world_update_time
 void MapInstance::start()
 {
     assert(m_world_update_timer==nullptr);
+    m_scripting_interface->registerTypes();
     m_world_update_timer = new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false); // world simulation ticks
     m_resend_timer = new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false); // state broadcast ticks
 }

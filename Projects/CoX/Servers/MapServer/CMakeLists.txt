@@ -1,8 +1,13 @@
+if(ENABLE_SCRIPTING_ENGINE)
+    set(SCRIPTING_CPP ${CMAKE_CURRENT_SOURCE_DIR}/ScriptingEngine.cpp)
+else()
+    set(SCRIPTING_CPP ${CMAKE_CURRENT_SOURCE_DIR}/ScriptingEngine_Null.cpp)
+endif()
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/MapManager.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/MapTemplate.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/MapInstance.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/ScriptingEngine.cpp
+${SCRIPTING_CPP}
 ${CMAKE_CURRENT_SOURCE_DIR}/MapClient.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/MapServer.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/EntityStorage.cpp
