@@ -71,7 +71,6 @@ public:
 
         void appendBitStream(const BitStream &src) { StoreBitArray(src.read_ptr(),src.GetReadableBits());}
         void StoreBitArray(const uint8_t *array,size_t nBits);
-        void StoreBitArray_Unaligned(const uint8_t *src, size_t nBits);
         void StoreBitArrayWithDebugInfo(const uint8_t *array,uint32_t nBits);
 
         void StoreString(const char *str);
@@ -109,11 +108,13 @@ public:
         void    SetReadPos(uint32_t pos)    { m_read_off  = pos >> 3; m_read_bit_off  = uint8_t(pos & 0x7);}
         size_t  GetReadPos()                { return (m_read_off<<3)  + m_read_bit_off;}
         void    SetWritePos(uint32_t pos)   { m_write_off = pos >> 3; m_write_bit_off = uint8_t(pos & 0x7);}
+        size_t  GetWritePos()               { return (m_write_off<<3)  + m_write_bit_off;}
 
         void    SetByteLength(uint32_t length);
         void    UseByteAlignedMode(bool toggle);
         void    ByteAlign(bool read_part=true,bool write_part=true);
-        void    Reset();
+        void    ResetReading() { m_read_bit_off=0; m_read_off=0; }
+        void    ResetOffsets();
 
         uint32_t GetPackedBitsLength(uint32_t nBits, uint32_t dataBits) const;
         uint32_t GetBitsLength(uint32_t nBits, uint32_t dataBits)       const;

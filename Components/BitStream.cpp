@@ -23,7 +23,7 @@ values and buffers
 BitStream::BitStream(size_t size) : GrowingBuffer(0xFFFFFFFF,7,size)
 {
     m_byteAligned    = false;
-    Reset();
+    ResetOffsets();
 }
 
 
@@ -221,29 +221,11 @@ void BitStream::StoreBitArray(const uint8_t *src,size_t nBits)
 {
     size_t nBytes = BITS_TO_BYTES(nBits);
     assert(src);
-    ByteAlign();
+    ByteAlign(false,true);
     PutBytes(src,nBytes);
-    m_buf[m_write_off] = 0;
-}
-/**
- * @brief BitStream::StoreBitArray
- * Stores an array of bits in the bit stream buffer.  The
- * main difference between StoreBitArray and StoreBits, is
- * that StoreBitArray can accept more than 32 bits at a time
- * @note The stream *end* is *not* aligned to 8 bits - mainly needed to send the correct number of readable bits
- * @param src
- * @param nBits
- */
-void BitStream::StoreBitArray_Unaligned(const uint8_t *src,size_t nBits)
-{
-    size_t nBytes = BITS_TO_BYTES(nBits);
-    assert(src);
-    ByteAlign();
-    PutBytes(src,nBytes);
-    m_buf[m_write_off] = 0;
-    if(nBits&7) // unaligned !
-    {
-        m_write_off--;
+    // nBits is not a multiple of 8, fixup
+    if(nBits&7) {
+        --m_write_off;
         m_write_bit_off = nBits&7;
     }
 }
@@ -544,7 +526,7 @@ void BitStream::StoreFloat(float val)
 
 
 
-void BitStream::Reset()
+void BitStream::ResetOffsets()
 {
     GrowingBuffer::Reset();
     m_write_bit_off=m_read_bit_off=0;

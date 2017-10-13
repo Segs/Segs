@@ -51,6 +51,10 @@ private:
         PacketCodecNull *   m_codec = nullptr;
         pPacketStorage      avail_packets;
         pPacketStorage      unsent_packets;
+        pPacketStorage      unacked_packets;
+        pPacketStorage      reliable_packets;
+        FixedSizePacketQueue<16384> send_queue;
+        FixedSizePacketQueue<16384> retransmit_queue;
         std::list<uint32_t> recv_acks; // each successful receive will store it's ack here
         hmSibStorage        sibling_map; // we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
         ACE_Thread_Mutex    m_packets_mutex;
@@ -60,6 +64,7 @@ private:
 static  bool                PacketSeqCompare(const CrudP_Packet *a,const CrudP_Packet *b);
 static  bool                PacketSibCompare(const CrudP_Packet *a,const CrudP_Packet *b);
         bool                allSiblingsAvailable(uint32_t sibid);
+        bool                addToSendQueue(CrudP_Packet *pak);
 public:
                             ~CrudP_Protocol();
         void                setCodec(PacketCodecNull *codec){m_codec= codec;}

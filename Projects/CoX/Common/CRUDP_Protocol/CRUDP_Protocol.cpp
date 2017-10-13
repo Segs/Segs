@@ -126,16 +126,17 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
     }
     parseAcks(src,res);
     res->SetIsCompressed(src.GetBits(1));
-    src.ByteAlign();
+    src.ByteAlign(true,false);
     // how much data did we actually read
-    size_t bits_left=(bitlength-src.GetReadPos())+1;
+    size_t bits_left=(bitlength-src.GetReadPos());
     res->StoreBitArray(src.read_ptr(),bits_left);
     PushRecvPacket(res);
 }
 void CrudP_Protocol::parseAcks(BitStream &src,CrudP_Packet *tgt)
 {
     uint32_t numUniqueAcks = src.GetPackedBits(1);
-    if(numUniqueAcks  == 0) return;
+    if(numUniqueAcks  == 0)
+        return;
 
     uint32_t firstAck = src.GetBits(32);
     tgt->addAck(firstAck);
@@ -180,9 +181,9 @@ void CrudP_Protocol::storeAcks(BitStream &bs)
     }
     recv_acks.erase(recv_acks.begin(),iter);
 }
-bool CrudP_Protocol::allSiblingsAvailable(uint32_t sibling_group_id)
+bool CrudP_Protocol::allSiblingsAvailable(uint32_t sibid)
 {
-    pPacketStorage &storage = sibling_map[sibling_group_id];
+    pPacketStorage &storage = sibling_map[sibid];
     size_t avail=0;
     for(size_t i=0; i<storage.size(); i++)
     {
@@ -257,7 +258,7 @@ bool CrudP_Protocol::insert_sibling(CrudP_Packet *pkt)
     First.  if there are no packets in avail_packets return nullptr
     Second. if first available packet sequence number is the same as the last popped one was, remove this duplicate
     Third.  if first available packet sequence number is the one we want (recv_seq+1) we pop it from storage,
-            strip it's shell, and return only a BitStreamDbg,BitStreamPlain copy of it's payload
+            strip it's shell, and return only a Dbg/Plain BitStream copy of it's payload
 */
 CrudP_Packet *CrudP_Protocol::RecvPacket(bool disregard_seq)
 {
@@ -306,7 +307,7 @@ vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
 {
     vCrudP_Packet res;
     CrudP_Packet *act;
-    int sib_idx = 0;
+    uint32_t sib_idx = 0;
     BitStream* bit_stream = src.GetStream();
 
     while(bit_stream->GetReadableDataSize()>block_size)
@@ -314,26 +315,21 @@ vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
         act = new CrudP_Packet;
         act->GetStream()->PutBytes(bit_stream->read_ptr(),block_size);
         act->setSibPos(sib_idx++);
+        act->SetReliabilty(src.isReliable());
         bit_stream->read_ptr(int(block_size));
         res.push_back(act);
     }
     if(bit_stream->GetReadableDataSize()>0) // store leftover
     {
         act = new CrudP_Packet;
-        act->GetStream()->StoreBitArray_Unaligned(bit_stream->read_ptr(),bit_stream->GetReadableBits());
+        act->GetStream()->appendBitStream(*bit_stream);
         act->setSibPos(sib_idx);
+        act->SetReliabilty(src.isReliable());
         res.push_back(act);
     }
     return res;
 
 }
-//uint8_t * compressStream(BitStream &stream)
-//{
-//    uLongf comp_length =(uLongf )(12+1.1*stream.GetReadableDataSize());
-//    uint8_t *dest= new uint8_t[comp_length];
-//    compress(dest,&comp_length,stream.read_ptr(),stream.GetReadableDataSize());
-//    return dest;
-//}
 void CrudP_Protocol::sendLargePacket(CrudP_Packet *p)
 {
     vCrudP_Packet split_packets = packetSplit(*p,1200);
@@ -360,7 +356,7 @@ void CrudP_Protocol::sendLargePacket(CrudP_Packet *p)
         storeAcks(*res);
         res->StoreBits(1,p->getIsCompressed());
         res->ByteAlign();
-        res->StoreBitArray_Unaligned(pkt->GetStream()->read_ptr(),pkt->GetStream()->GetReadableBits());
+        res->appendBitStream(*pkt->GetStream());
         res->ResetReading();
         uint32_t *head =  (uint32_t *)res->read_ptr();
         head[0] = uint32_t(res->GetReadableBits());
