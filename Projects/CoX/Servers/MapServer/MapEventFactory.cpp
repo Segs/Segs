@@ -51,6 +51,8 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
             return new IdleEvent;
         case 1: return new MiniMapState;
         case 14: return new WindowState;
+        /*case 22: new KeybindProfileSelected; */
+        /*case 37: new TargetChatChannelSelected; */
     }
     ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled command event type %d\n"),opcode));
     return nullptr;

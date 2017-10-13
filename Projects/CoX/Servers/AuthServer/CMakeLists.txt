@@ -16,12 +16,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
 
-if(ENABLE_SCRIPTING_ENGINE)
-    SEGS_ADD_COMPONENT(MRuby LIB)
-endif()
-
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
-
 SET (target_SOURCES
   ${target_CPP}
   ${target_INCLUDE}
@@ -44,7 +39,7 @@ IF(BUILD_SEPARATE)
         AuthProtocol
         ${target_DEPENDS} gameData
         SEGS_Components
-        ${MRuby_LIBRARY}
+        ${SCRIPTING_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
         ace_IMP
         ${PostgreSQL_LIBRARIES}

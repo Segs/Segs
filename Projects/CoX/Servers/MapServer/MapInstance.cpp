@@ -31,12 +31,15 @@ ACE_Time_Value resend_interval(0,250*1000);
 }
 
 using namespace std;
-MapInstance::MapInstance( const string &name ) :m_name(name),m_world_update_timer(nullptr)
+MapInstance::MapInstance(const string &name) : m_name(name), m_world_update_timer(nullptr)
 {
     m_world = new World(m_entities);
+    m_scripting_interface.reset(new ScriptingEngine);
 }
-void MapInstance::start() {
+void MapInstance::start()
+{
     assert(m_world_update_timer==nullptr);
+    m_scripting_interface->registerTypes();
     m_world_update_timer = new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false); // world simulation ticks
     m_resend_timer = new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false); // state broadcast ticks
 }
@@ -384,7 +387,16 @@ void MapInstance::on_console_command(ConsoleCommand * ev){
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
     printf("Console command received %s\n",qPrintable(ev->contents));
-    if(ev->contents[0]=='l') {
+    if(ev->contents[0]=='l')
+    {
+        //TODO: fix this hacky way of calling scripting engine
+        //TODO: restrict scripting access to GM's and such
+        if(ev->contents.midRef(2).startsWith("exec:{"))
+        {
+            QString code = ev->contents.mid(8,ev->contents.size()-1);
+            m_scripting_interface->runScript(src,code,"user provided script");
+            return;
+        }
         // send the message to everyone on this map
         const QString chat_content = ev->contents.mid(2);
         auto iter=m_clients.begin();

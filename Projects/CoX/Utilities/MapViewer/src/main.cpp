@@ -205,12 +205,6 @@ int main(int argc,char **argv)
         if(!acquireAndExplodePiggs())
             return -1;
     }
-    //multiplart model with gloss object_library/Streets/elements/Parked_Cars/Parked_Truck/Parked_Truck.bin
-    //model with alpha object_library/Nature/Trees/oval/oval.bin
-    //maps/City_Zones/City_01_01/City_01_01.bin
-    //object_library/Nature/Trees/conifers/conifers.bin
-    //object_library/Streets/elements/kiosks/kiosks.bin
-    //object_library/Buildings/Style/deco/Deco1/Deco1.bin
     Urho3D::ParseArguments(argc, argv);
     auto context = std::make_shared<Context>();
     MapViewerApp app(context.get());
