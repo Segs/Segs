@@ -393,7 +393,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev){
         //TODO: restrict scripting access to GM's and such
         if(ev->contents.midRef(2).startsWith("exec:{"))
         {
-            QString code = ev->contents.mid(8,ev->contents.size()-1);
+            QString code = ev->contents.mid(8,ev->contents.size()-9);
             m_scripting_interface->runScript(src,code,"user provided script");
             return;
         }

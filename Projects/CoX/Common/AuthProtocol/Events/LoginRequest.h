@@ -14,7 +14,10 @@ public:
     {
         uint8_t packet_code;
         buf.uGet(packet_code);
-        assert(packet_code==0);
+        if(packet_code!=0)
+        {
+            //assert(packet_code==0);
+        }
         buf.uGetBytes((uint8_t *)login, sizeof(login));
         buf.uGetBytes((uint8_t *)password, sizeof(password));
         buf.uGet(unkval1);

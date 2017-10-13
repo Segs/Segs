@@ -7,11 +7,18 @@
 
  */
 //#define ACE_NTRACE 0
+//#include "Auth.h"
+#include "Servers/ServerManager.h"
+#include "Servers/server_support.h"
+#include "version.h"
+//////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <string>
-#include <stdlib.h>
-#include <memory>
+#include "Servers/AdminServer/AdminServer.h"
+#include "AuthServer.h"
+#include "Servers/MapServer/MapServer.h"
+#include "Servers/GameServer/GameServer.h"
+//////////////////////////////////////////////////////////////////////////
+
 #include <ace/ACE.h>
 #include <ace/Get_Opt.h>
 #include <ace/ACE.h>
@@ -31,17 +38,11 @@
 #include <ace/Reactor.h>
 #include <ace/OS_main.h> //Included to enable file logging
 #include <ace/streams.h> //Included to enable file logging
-//#include "Auth.h"
-#include "Servers/ServerManager.h"
-#include "Servers/server_support.h"
-#include "version.h"
-//////////////////////////////////////////////////////////////////////////
-
-#include "Servers/AdminServer/AdminServer.h"
-#include "AuthServer.h"
-#include "Servers/MapServer/MapServer.h"
-#include "Servers/GameServer/GameServer.h"
-//////////////////////////////////////////////////////////////////////////
+#include <QtCore/QCoreApplication>
+#include <iostream>
+#include <string>
+#include <stdlib.h>
+#include <memory>
 
 /** \brief The LogCallback class
 */
@@ -145,6 +146,7 @@ public:
 };
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
+    QCoreApplication q_app(argc,argv);
     ACE_Sig_Set interesting_signals;
     interesting_signals.sig_add(SIGINT);
     interesting_signals.sig_add(SIGHUP);
