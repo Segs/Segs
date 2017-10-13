@@ -152,7 +152,8 @@ public:
         console = bs.GetPackedBits(1);
     }
 };
-class ConsoleCommand : public MapLinkEvent {
+class ConsoleCommand : public MapLinkEvent
+{
 public:
     QString contents;
     ConsoleCommand():MapLinkEvent(MapEventTypes::evConsoleCommand)

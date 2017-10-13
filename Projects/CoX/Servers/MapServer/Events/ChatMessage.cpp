@@ -22,7 +22,7 @@ void ChatMessage::serializefrom(BitStream &src)
     src.GetString(m_msg);
 }
 
-ChatMessage *ChatMessage::adminMessage(const char *msg)
+ChatMessage *ChatMessage::adminMessage(const QString &msg)
 {
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_Admin;

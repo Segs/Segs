@@ -387,7 +387,15 @@ void MapInstance::on_console_command(ConsoleCommand * ev){
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
     printf("Console command received %s\n",qPrintable(ev->contents));
-    if(ev->contents[0]=='l') {
+    if(ev->contents[0]=='l')
+    {
+        //TODO: fix this hacky way of calling scripting engine
+        //TODO: restrict scripting access to GM's and such
+        if(ev->contents.midRef(2).startsWith("exec:{"))
+        {
+            m_scripting_interface->runScript(src,ev->contents.mid(8,ev->contents.size()-1),"user provided script");
+            return;
+        }
         // send the message to everyone on this map
         const QString chat_content = ev->contents.mid(2);
         auto iter=m_clients.begin();
