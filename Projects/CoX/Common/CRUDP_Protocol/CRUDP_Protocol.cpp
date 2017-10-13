@@ -15,7 +15,7 @@
 #include <ace/Guard_T.h>
 #include <ace/Log_Msg.h>
 #include <QDebug>
-
+using namespace std::chrono;
 /**
  Cryptic Reliable UDP
  CrudP
@@ -118,6 +118,7 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
         ACE_ERROR((LM_WARNING,ACE_TEXT("Checksum error.\n")));
         return;
     }
+    m_last_activity = steady_clock::now();
     CrudP_Packet *res = new CrudP_Packet; //PacketFactory::newDataPacket;
     res->SetHasDebugInfo(bool(src.uGetBits(1)));
     res->setSeqNo(src.uGetBits(32));
@@ -277,7 +278,7 @@ CrudP_Packet *CrudP_Protocol::RecvPacket(bool disregard_seq)
     if(0==avail_packets.size())
         return nullptr;
     sort(avail_packets.begin(),avail_packets.end(),&CrudP_Protocol::PacketSeqCompare);
-    ipPacketStorage iter = avail_packets.begin();
+    auto iter = avail_packets.begin();
     // duplicate/old_packet removal
     while(iter!=avail_packets.end())
     {
@@ -402,13 +403,13 @@ void CrudP_Protocol::sendRaw(CrudP_Packet *pak,lCrudP_Packet &tgt )
 }
 bool CrudP_Protocol::addToSendQueue(CrudP_Packet *pak)
 {
-    if(send_queue.isFull())
+    if (send_queue.isFull())
         return false;
 
     pak->setSeqNo(++send_seq);
     pak->setLastSend(steady_clock::now());
     {
-    ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
+        ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
         send_queue.push_back(pak);
     }
     return true;
@@ -444,9 +445,25 @@ bool CrudP_Protocol::SendPacket(CrudP_Packet *packet)
     delete packet; // at this point the packet is of no use anymore, since it was split.
     return true;
 }
+///
+/// \brief CrudP_Protocol::isUnresponsiveLink
+/// \return true if any packet in the reliable packets array is older than 300ms
+///
 bool CrudP_Protocol::isUnresponsiveLink()
 {
-    // TODO: implement this
+
+    if(m_last_activity == timepoint())
+        return false; // we don't know if we're unresponsive yet.
+    auto time_now = steady_clock::now();
+    //TODO: make the 15seconds a parameter ?
+    long seconds_since_last=duration_cast<seconds>(time_now-m_last_activity).count();
+    if(seconds_since_last < 15)
+        return false; // client didn't send anything in less than 15 s, give it a bit more time
+    for(CrudP_Packet * pkt : reliable_packets)
+    {
+        if(duration_cast<milliseconds>(time_now - pkt->creationTime()).count() >= 300)
+            return true;
+    }
     return false;
 }
 bool CrudP_Protocol::batchSend(lCrudP_Packet &tgt)

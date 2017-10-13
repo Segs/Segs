@@ -65,6 +65,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case SEGS_EventTypes::evTimeout:
             on_timeout(static_cast<TimerEvent *>(ev));
             break;
+        case SEGS_EventTypes::evDisconnect:
+            on_link_lost(ev);
+        break;
         case MapEventTypes::evIdle:
             on_idle(static_cast<IdleEvent *>(ev));
             break;
@@ -148,6 +151,22 @@ void MapInstance::on_client_quit(ClientQuit*ev) {
     assert(client && client->char_entity());
     client->char_entity()->beginLogout(10);
 
+}
+void MapInstance::on_link_lost(SEGSEvent *ev)
+{
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *client = lnk->client_data();
+    if(client)
+    {
+        Entity *ent = client->char_entity();
+        assert(ent);
+        //todo: notify all clients about entity removal
+        m_entities.removeEntityFromActiveList(ent);
+        lnk->set_client_data(nullptr);
+        m_clients.removeById(client->account_info().account_server_id());
+        delete ent;
+    }
+    lnk->putq(new DisconnectEvent(this));
 }
 void MapInstance::on_disconnect(DisconnectRequest *ev)
 {

@@ -80,6 +80,7 @@ public:
     void addAck(uint32_t id)                { m_acks.insert(id); }
     uint32_t getNextAck();
     void dump() const;
+    time_point creationTime() const         { return m_creation_time; }
     time_point lastSend() const             { return m_xfer_time; }
     void setLastSend(time_point t)          { m_xfer_time=t; }
     void incRetransmits()                   { m_retransmit_count++;}
@@ -92,6 +93,7 @@ protected:
     uint32_t m_numSibs;
     uint32_t m_sibId;
     uint32_t m_sibPos;
+    time_point m_creation_time = std::chrono::steady_clock::now();
     time_point m_xfer_time;
     uint32_t m_retransmit_count;
     std::set<uint32_t> m_acks;

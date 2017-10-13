@@ -51,7 +51,7 @@ void CRUDLink::event_for_packet(PacketEvent * pak_ev)
 ///
 void CRUDLink::packets_for_event(SEGSEvent *ev)
 {
-    lCrudP_Packet packets;
+    lCrudP_Packet packets_to_send;
     CRUDLink_Event *c_ev =static_cast<CRUDLink_Event *>(ev);
     CrudP_Packet *res   = new CrudP_Packet;
     ACE_ASSERT(res);
@@ -62,9 +62,13 @@ void CRUDLink::packets_for_event(SEGSEvent *ev)
     // create one or more properly formated CrudP_Packets in the protocol object
     qDebug() << "Adding packets for"<<c_ev->info();
     m_protocol.SendPacket(res);
-    m_protocol.batchSend(packets);
+    if(false==m_protocol.batchSend(packets_to_send))
+    {
+        // link is unresponsive, tell our target object
+        target()->putq(new SEGSEvent(SEGS_EventTypes::evDisconnect,this));
+    }
     // wrap all packets as PacketEvents and put them on link queue
-    for(CrudP_Packet *pkt : packets)
+    for(CrudP_Packet *pkt : packets_to_send)
     {
         net_layer()->putq(new PacketEvent(this,pkt,peer_addr()));
     }

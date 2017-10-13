@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <deque>
 #include <list>
+#include <chrono>
 #include <ace/Thread_Mutex.h>
 #include <ace/INET_Addr.h>
 
@@ -38,9 +39,10 @@ class PacketCodecNull;
 class CrudP_Protocol
 {
 private:
-        typedef std::deque<CrudP_Packet *> pPacketStorage;
-        typedef pPacketStorage::iterator ipPacketStorage ;
-        typedef std::unordered_map<uint32_t,pPacketStorage> hmSibStorage;
+        using timepoint = std::chrono::steady_clock::time_point;
+        using pPacketStorage = std::deque<CrudP_Packet *>;
+        using hmSibStorage = std::unordered_map<uint32_t,pPacketStorage>;
+
         friend void PacketSibDestroyer(const std::pair<int, pPacketStorage> &a);
         static constexpr const int max_packet_data_size = 1272;
 
@@ -58,6 +60,8 @@ private:
         hmSibStorage        sibling_map; // we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
         ACE_Thread_Mutex    m_packets_mutex;
         bool                m_compression_allowed=false;
+        timepoint           m_last_activity;
+
         CrudP_Packet *      mergeSiblings(uint32_t id);
         bool                insert_sibling(CrudP_Packet *pkt);
 static  bool                PacketSeqCompare(const CrudP_Packet *a,const CrudP_Packet *b);

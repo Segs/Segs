@@ -99,7 +99,7 @@ void ServerManagerC::RemoveMapServer(MapServerInterface *srv)
 MapServerInterface *ServerManagerC::GetMapServer(size_t idx)
 {
     if(idx>m_MapServers.size())
-        return NULL;
+        return nullptr;
     return m_MapServers[idx];
 };
 
