@@ -49,9 +49,15 @@ void ScriptingEngine::registerTypes()
         "name", sol::property(&Contact::getName, &Contact::setName),
         "display_name", &Contact::m_display_name
     );
+    m_private->m_lua.new_usertype<MapClient>( "MapClient",
+        "new", sol::no_constructor, // The client links are not constructible from the script side.
+        "admin_chat_message", sendAdminMessage
+    );
+
 }
 int ScriptingEngine::runScript(MapClient * client, const QString &script_contents, const char *script_name)
 {
+    m_private->m_lua["client"] = client;
     sol::load_result load_res=m_private->m_lua.load(script_contents.toStdString(),script_name);
     if(!load_res.valid())
     {

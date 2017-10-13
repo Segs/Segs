@@ -1,8 +1,10 @@
 #define _USE_MATH_DEFINES
 #define DEBUG_INPUT
-#include <cmath>
+#include "ChatMessage.h"
 #include "Events/InputState.h"
 #include "Entity.h"
+#include "MapClient.h"
+#include <cmath>
 
 
 
@@ -38,4 +40,10 @@ ChatMessage *ChatMessage::localMessage(const QString &msg, Entity *src)
     res->m_source_player_id=src->getIdx();
     res->m_msg = msg;
     return res;
+}
+
+void sendAdminMessage(MapClient * tgt, const char * msg)
+{
+    if(tgt)
+        tgt->link()->putq(ChatMessage::adminMessage(msg));
 }

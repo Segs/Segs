@@ -64,3 +64,4 @@ public:
 static  ChatMessage *adminMessage(const QString & msg);
 static  ChatMessage *localMessage(const QString &msg, Entity *src);
 };
+extern void sendAdminMessage(MapClient *tgt,const char *msg);
