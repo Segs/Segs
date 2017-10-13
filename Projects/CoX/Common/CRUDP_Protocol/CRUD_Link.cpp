@@ -62,12 +62,11 @@ void CRUDLink::packets_for_event(SEGSEvent *ev)
     // create one or more properly formated CrudP_Packets in the protocol object
     qDebug() << "Adding packets for"<<c_ev->info();
     m_protocol.SendPacket(res);
-    size_t cnt=m_protocol.GetUnsentPackets(packets);
+    m_protocol.batchSend(packets);
     // wrap all packets as PacketEvents and put them on link queue
-    while(cnt--)
+    for(CrudP_Packet *pkt : packets)
     {
-        net_layer()->putq(new PacketEvent(this,*packets.begin(),peer_addr()));
-        packets.pop_front();
+        net_layer()->putq(new PacketEvent(this,pkt,peer_addr()));
     }
     connection_sent_packet(); // data was sent, update
 }

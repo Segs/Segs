@@ -50,7 +50,6 @@ private:
 
         PacketCodecNull *   m_codec = nullptr;
         pPacketStorage      avail_packets;
-        pPacketStorage      unsent_packets;
         pPacketStorage      unacked_packets;
         pPacketStorage      reliable_packets;
         FixedSizePacketQueue<16384> send_queue;
@@ -70,17 +69,19 @@ public:
         void                setCodec(PacketCodecNull *codec){m_codec= codec;}
         PacketCodecNull *   getCodec() const {return m_codec;}
 
-        size_t              UnsentPackets()    const {return unsent_packets.size();}
         size_t              AvailablePackets() const {return avail_packets.size();}
         size_t              UnackedPacketCount() const { return recv_acks.size(); }
         size_t              GetUnsentPackets(std::list<CrudP_Packet *> &);
         void                ReceivedBlock(BitStream &bs); // bytes received, will create some packets in avail_packets
 
-        void                SendPacket(CrudP_Packet *p); // this might split packet 'p' into a few packets
+        bool                SendPacket(CrudP_Packet *p); // this might split packet 'p' into a few packets
         CrudP_Packet *      RecvPacket(bool disregard_seq);
+        bool                batchSend(lCrudP_Packet &tgt);
+        bool                isUnresponsiveLink();
 protected:
-        void                sendLargePacket(CrudP_Packet *p);
-        void                sendSmallPacket(CrudP_Packet *p);
+        void                sendRaw(CrudP_Packet *pak,lCrudP_Packet &tgt);
+        void                processRetransmits();
+        CrudP_Packet *      wrapPacket(CrudP_Packet *p);
         void                parseAcks(BitStream &src,CrudP_Packet *tgt);
         void                storeAcks(BitStream &bs);
         void                PushRecvPacket(CrudP_Packet *a); // this will try to join packet 'a' with it's siblings
