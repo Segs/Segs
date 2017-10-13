@@ -293,15 +293,24 @@ CrudP_Packet *CrudP_Protocol::RecvPacket(bool disregard_seq)
 //! this acknowledges that packet with id was successfully received => acknowledged packet is removed from send queue
 void CrudP_Protocol::PacketAck(uint32_t id)
 {
-    //TODO: sort + binary search for id
-    ipPacketStorage iter = unsent_packets.begin();
-    while(iter!=unsent_packets.end())
+    for (CrudP_Packet *&v6 : reliable_packets )
     {
-        if((*iter)->GetSequenceNumber()==id)
-            iter=unsent_packets.erase(iter);
-        else
-            ++iter;
+        if ( !v6 || v6->GetSequenceNumber() != id)
+            continue;
+        //todo: update ping times here ( basically calculate time before packet's xmit and now
+        if ( !retransmit_queue.empty() )
+        {
+            auto iter = std::find(retransmit_queue.begin(),retransmit_queue.end(),v6);
+            // check if our packet is already in retransmit_queue, if so, remove it from there.
+            if ( iter!=retransmit_queue.end() )
+                retransmit_queue.erase(iter);
     }
+        delete v6;
+        v6 = nullptr;
+        break;
+    }
+    // if we get here it means we got ACK for packet we don't have in our
+    // reliable_packets
 }
 vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
 {
