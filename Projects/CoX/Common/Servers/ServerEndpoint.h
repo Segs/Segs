@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server
  * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006-2017 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -35,11 +35,11 @@ public:
         }
 };
 
-
-
-// This class represents a UDP packet router
-// when it receives any bytes it will pass them to appropriate LINK
-// when it receives PacketEvent's it sends the bytes over the UDP to target address
+class SEGSEvent;
+class ILink;
+// This class represents a UDP port<->Client link router
+// when it receives any bytes it will pass them to appropriate ILink instance
+// when it receives PacketEvents from ILink it sends the bytes over the UDP to associated address
 template<class LINK_CLASS>
 class ServerEndpoint : public EventProcessor
 {

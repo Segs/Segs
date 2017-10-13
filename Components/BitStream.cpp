@@ -428,8 +428,7 @@ Description: Retrieves a client-specified "array" of bits.  The main
 void BitStream::GetBitArray(uint8_t *tgt, size_t nBits)
 {
     ByteAlign(true,false);
-    size_t nBytes(nBits>>3);
-    GetBytes(tgt,nBytes);
+    GetBytes(tgt,BITS_TO_BYTES(nBits));
 }
 
 
