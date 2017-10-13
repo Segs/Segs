@@ -8,6 +8,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerSupport.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RoamingServer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerHandle.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ServerEndpoint.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/InterfaceManager.cpp
 )
@@ -18,6 +19,7 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/GameServerInterface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/MapServerInterface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerHandle.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ServerEndpoint.h
     ${CMAKE_CURRENT_SOURCE_DIR}/server_support.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Server.h
     ${CMAKE_CURRENT_SOURCE_DIR}/RoamingServer.h

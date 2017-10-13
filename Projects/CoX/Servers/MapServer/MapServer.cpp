@@ -54,7 +54,7 @@ bool MapServer::Run(void)
     m_handler->set_server(this);
 
 
-    m_endpoint = new ServerEndpoint<MapLink>(m_listen_point); //,this
+    m_endpoint = new MapLinkEndpoint(m_listen_point); //,this
     m_endpoint->set_downstream(m_handler);
 
     if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)

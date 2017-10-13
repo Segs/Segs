@@ -62,7 +62,7 @@ bool GameServer::Run()
     m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
     m_handler->start();
 
-    m_endpoint = new ServerEndpoint<GameLink>(m_listen_point); //,this
+    m_endpoint = new GameLinkEndpoint(m_listen_point); //,this
     m_endpoint->set_downstream(m_handler);
 
     if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)

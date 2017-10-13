@@ -2,11 +2,25 @@
 
 #include "CRUD_Events.h"
 
+#include <QDebug>
+#include <set>
+
 // CRUD link receives messages from ServerEndpoint,
 // these are basically CRUDP_Packets preprocessed by CRUDP_Protocol
 
 // ServerEndpoint gets new input -> Bytes -> CRUDP_Protocol -> pushq(PacketEvent)
 // ACE_Reactor knows to wake CRUDLink up, whenever there are new events
+std::set<CRUDLink *> all_links;
+CRUDLink::CRUDLink() :  m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK)
+{
+    m_notifier.event_handler(this);
+    m_protocol.setCodec(new PacketCodecNull);
+    all_links.insert(this);
+}
+
+CRUDLink::~CRUDLink() {
+    all_links.erase(this);
+}
 
 ///
 /// \brief CRUDLink::event_for_packet - convert incoming packet into higher level events and push them to our target()
@@ -26,8 +40,9 @@ void CRUDLink::event_for_packet(PacketEvent * pak_ev)
     res->src(this);
     res->m_seq_number = pak->GetSequenceNumber();
     target()->putq(res);
-    if(pak->GetStream()->GetReadableBits()>1)
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) leftover bits in packet: %s\n"),res->info()));
+    if(pak->GetStream()->GetReadableBits()>1) {
+        qDebug() << res->info() << "left" << pak->GetStream()->GetReadableBits() <<"bits";
+    }
 }
 ///
 /// \brief CRUDLink::packets_for_event - convert event to 1-n packets and push them to our net_layer()
@@ -43,6 +58,7 @@ void CRUDLink::packets_for_event(SEGSEvent *ev)
 
     c_ev->serializeto(*res->GetStream()); // serialize packet into res packet
     // create one or more properly formated CrudP_Packets in the protocol object
+    qDebug() << "Adding packets for"<<c_ev->info();
     m_protocol.SendPacket(res);
     size_t cnt=m_protocol.GetUnsentPackets(packets);
     // wrap all packets as PacketEvents and put them on link queue
@@ -53,6 +69,8 @@ void CRUDLink::packets_for_event(SEGSEvent *ev)
     }
     connection_sent_packet(); // data was sent, update
 }
+//! Called when we start to service a new connection, here we tell reactor to wake us
+//! when queue() is not empty.
 int CRUDLink::open (void *p)
 {
     if (EventProcessor::open (p) == -1)

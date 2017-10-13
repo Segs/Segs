@@ -1,6 +1,7 @@
 #pragma once
 #include "CRUDP_Protocol.h"
 #include "EventProcessor.h"
+#include "Common/CRUDP_Protocol/ILink.h"
 #include "PacketCodec.h"
 
 #include <ace/ACE.h>
@@ -19,12 +20,12 @@ class SEGSEvent;
 class PacketEvent;
 class CRUD_EventFactory;
 
-class CRUDLink : public EventProcessor
+class CRUDLink : public ILink
 {
 protected:
-typedef EventProcessor                      super;
+typedef ILink                               super;
         ACE_Reactor_Notification_Strategy   m_notifier; // our queue will use this to inform the reactor of it's new elements
-        ACE_HANDLE                          get_handle (void) const {return peer_.get_handle();}
+        ACE_HANDLE                          get_handle (void) const override {return peer_.get_handle();}
         ACE_Time_Value                      m_last_recv_activity; // last link activity time
         ACE_Time_Value                      m_last_send_activity; // last send activity on the link
 public:
@@ -33,12 +34,8 @@ typedef ACE_SOCK_Dgram  stream_type;
 typedef ACE_INET_Addr   addr_type;
 
 public:
-                    CRUDLink() :  m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK)
-                    {
-                        m_notifier.event_handler(this);
-                        m_protocol.setCodec(new PacketCodecNull);
-                    }
-virtual             ~CRUDLink() = default;
+                    CRUDLink();
+virtual             ~CRUDLink();
 
     int             open(void * = 0); //!< Called when we start to service a new connection, here we tell reactor to wake us when queue() is not empty.
     CrudP_Protocol *get_proto() {return &m_protocol;}
