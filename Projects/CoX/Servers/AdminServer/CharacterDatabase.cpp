@@ -25,6 +25,8 @@ using namespace std;
 
 CharacterDatabase::~CharacterDatabase()
 {
+    if(m_db)
+        m_db->close();
 }
 static bool prepQuery(QSqlQuery &qr,const QString &txt) {
     if(!qr.prepare(txt)) {

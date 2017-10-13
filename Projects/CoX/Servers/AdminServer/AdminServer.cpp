@@ -141,16 +141,16 @@ bool _AdminServer::Run()
 }
 bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" */)
 {
+    if(!m_running)
+        return true;
     bool res=true;
     ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
     m_running=false;
-    m_db->getDb()->close();
-    m_char_db->getDb()->close();
 
     delete m_db;
     delete m_char_db;
-    m_db= NULL;
-    m_char_db= NULL;
+    m_db      = nullptr;
+    m_char_db = nullptr;
     return res;
 }
 bool _AdminServer::fill_account_info( AccountInfo &client )

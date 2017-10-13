@@ -23,7 +23,7 @@
 
 
 using namespace std;
-AdminDatabase::AdminDatabase()
+AdminDatabase::AdminDatabase() : m_db(nullptr)
 {
 }
 int AdminDatabase::GetAccounts(void) const
@@ -136,6 +136,8 @@ bool AdminDatabase::GetAccount( AccountInfo & client, QSqlQuery &results )
 
 AdminDatabase::~AdminDatabase()
 {
+    if(m_db)
+        m_db->close();
 }
 
 int AdminDatabase::RemoveAccountByID( uint64_t )

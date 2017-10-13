@@ -20,17 +20,17 @@ ServerManagerC::ServerManagerC() : m_authserv(NULL),m_adminserv(NULL)
 //! this loads this process configuration
 bool ServerManagerC::LoadConfiguration(const std::string &config_file_full_path)
 {
-    m_adminserv->ReadConfig(config_file_full_path);
-    m_authserv->ReadConfig(config_file_full_path);
+    bool loaded_ok = m_adminserv->ReadConfig(config_file_full_path);
+    loaded_ok &= m_authserv->ReadConfig(config_file_full_path);
     for(size_t idx=0; idx<m_GameServers.size(); idx++)
     {
-        m_GameServers[idx]->ReadConfig(config_file_full_path);
+        loaded_ok &= m_GameServers[idx]->ReadConfig(config_file_full_path);
     }
     for(size_t idx=0; idx<m_MapServers.size(); idx++)
     {
-        m_MapServers[idx]->ReadConfig(config_file_full_path);
+        loaded_ok &= m_MapServers[idx]->ReadConfig(config_file_full_path);
     }
-    return true;
+    return loaded_ok;
 }
 
 //! this function will create all server instances local to this process
@@ -55,6 +55,13 @@ void ServerManagerC::StopLocalServers()
     for(size_t i=0; i<m_GameServers.size(); i++)
     {
         if(!m_GameServers[i]->ShutDown("Full system shutdown"))
+        {
+            // Log it
+        }
+    }
+    for(size_t i=0; i<m_MapServers.size(); i++)
+    {
+        if(!m_MapServers[i]->ShutDown("Full system shutdown"))
         {
             // Log it
         }
