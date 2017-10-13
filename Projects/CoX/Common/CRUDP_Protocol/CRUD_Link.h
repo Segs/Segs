@@ -37,11 +37,11 @@ public:
                     CRUDLink();
 virtual             ~CRUDLink();
 
-    int             open(void * = 0); //!< Called when we start to service a new connection, here we tell reactor to wake us when queue() is not empty.
+    int             open(void * = 0) override;
     CrudP_Protocol *get_proto() {return &m_protocol;}
-    int             handle_output( ACE_HANDLE = ACE_INVALID_HANDLE );
-    void            received_block(BitStream &bytes);
-    void            dispatch(SEGSEvent *)
+    int             handle_output( ACE_HANDLE = ACE_INVALID_HANDLE ) override;
+    void            received_block(BitStream &bytes) override;
+    void            dispatch(SEGSEvent *) override
                     {
                         assert(!"Should not be called");
                     }
@@ -59,13 +59,13 @@ virtual             ~CRUDLink();
                     }
     size_t          client_packets_waiting_for_ack() const { return m_protocol.UnackedPacketCount(); }
 protected:
-    SEGSEvent *     dispatch_sync( SEGSEvent * )
+    SEGSEvent *     dispatch_sync( SEGSEvent * ) override
                     {
                         assert(!"No sync events known");
                         return 0;
                     }
 
-    int             handle_close(ACE_HANDLE h, ACE_Reactor_Mask c)
+    int             handle_close(ACE_HANDLE h, ACE_Reactor_Mask c) override
                     {
                         reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
                         return EventProcessor::handle_close(h,c);

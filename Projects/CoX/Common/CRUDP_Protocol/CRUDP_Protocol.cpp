@@ -14,25 +14,16 @@
 #include <cassert>
 #include <ace/Guard_T.h>
 #include <ace/Log_Msg.h>
-//#define LOG_PACKETS 1
+#include <QDebug>
 
-void PacketDestroyer(CrudP_Packet *a)
-{
-    delete a;
-}
-void PacketSibDestroyer(const std::pair<int, CrudP_Protocol::pPacketStorage> &a)
-{
-    for_each(a.second.begin(), a.second.end(), PacketDestroyer);
-}
-
-/*
+/**
  Cryptic Reliable UDP
  CrudP
  Incoming
   BitStream Block ->
    Parse Header [ Checksum + Decode ]
-   Remove from send queue packets acknowledged by this header
-   if seq_no < min_recv_seq, reject packet
+   Remove from reliable packet list those acknowledged by this header
+   if seq_no < min_recv_seq, reject packet [out of order packet]
    Store/Join
    Record packet's seq_no in ack_list
    Sort according to sequence num
@@ -46,6 +37,34 @@ void PacketSibDestroyer(const std::pair<int, CrudP_Protocol::pPacketStorage> &a)
    If this queue is not scheduled for send, it's scheduled now
 
 */
+using namespace std::chrono;
+namespace  {
+void PacketDestroyer(CrudP_Packet *a)
+{
+    delete a;
+}
+int getPacketResendDelay(signed int attempts, int ping, int before_first)
+{
+    int delay;
+
+    if ( before_first )
+        delay = 3 * ping / 2;
+    else
+        delay = 4 * ping;
+    attempts = std::min(2,attempts);
+    switch(attempts) {
+    case 0: delay*=4; break;
+    case 1: delay*=2; break;
+    case 2:        break;
+    }
+    return std::min(std::max(delay,250),5000);
+}
+
+} // end of anonymous namespace
+void PacketSibDestroyer(const std::pair<int, CrudP_Protocol::pPacketStorage> &a)
+{
+    for_each(a.second.begin(), a.second.end(), PacketDestroyer);
+}
 
 bool CrudP_Protocol::PacketSeqCompare(const CrudP_Packet *a,const CrudP_Packet *b)
 {
@@ -60,10 +79,7 @@ CrudP_Protocol::~CrudP_Protocol()
     delete m_codec;
     m_codec= nullptr;
 }
-CrudP_Protocol::CrudP_Protocol() :  send_seq(0),recv_seq(0),m_codec(nullptr)
-{
-}
-void CrudP_Protocol::clearQueues(bool recv_queue,bool send_queue)
+void CrudP_Protocol::clearQueues(bool recv_queue,bool clear_send_queue)
 {
     //  seen_seq.clear();
     if(recv_queue)
@@ -73,7 +89,7 @@ void CrudP_Protocol::clearQueues(bool recv_queue,bool send_queue)
         sibling_map.clear();
         avail_packets.clear();
     }
-    if(send_queue)
+    if(clear_send_queue)
     {
         ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
         for_each(unsent_packets.begin(),unsent_packets.end(),PacketDestroyer);
@@ -164,7 +180,7 @@ void CrudP_Protocol::storeAcks(BitStream &bs)
     }
     recv_acks.erase(recv_acks.begin(),iter);
 }
-bool CrudP_Protocol::allSiblingsAvailable(int sibling_group_id)
+bool CrudP_Protocol::allSiblingsAvailable(uint32_t sibling_group_id)
 {
     pPacketStorage &storage = sibling_map[sibling_group_id];
     size_t avail=0;

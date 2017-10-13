@@ -41,7 +41,7 @@ void UpdateServer::serializeto( BitStream &tgt ) const
     tgt.StorePackedBits(1, m_build_date);
     tgt.StorePackedBits(1, 0); // flags
     tgt.StoreString(currentVersion);
-    tgt.StoreBitArray(clientInfo,0x80);
+    tgt.StoreBitArray(clientInfo,sizeof(clientInfo)*8);
     tgt.StorePackedBits(1, authID);
     tgt.StoreBits(32, authCookie);
     tgt.StoreString(accountName);
@@ -52,7 +52,7 @@ void UpdateServer::serializefrom( BitStream &src )
     m_build_date = src.GetPackedBits(1);
     /*uint32_t t =*/ src.GetPackedBits(1);
     src.GetString(currentVersion);
-    src.GetBitArray(clientInfo,128);
+    src.GetBitArray(clientInfo,sizeof(clientInfo)*8);
     authID = src.GetPackedBits(1);
     authCookie = src.GetBits(32);
     src.GetString(accountName);

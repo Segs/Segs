@@ -40,7 +40,8 @@ void CRUDLink::event_for_packet(PacketEvent * pak_ev)
     res->src(this);
     res->m_seq_number = pak->GetSequenceNumber();
     target()->putq(res);
-    if(pak->GetStream()->GetReadableBits()>1) {
+    if(pak->GetStream()->GetReadableBits()>1)
+    {
         qDebug() << res->info() << "left" << pak->GetStream()->GetReadableBits() <<"bits";
     }
 }
@@ -57,6 +58,7 @@ void CRUDLink::packets_for_event(SEGSEvent *ev)
     ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) packets_for_event %s\n"),ev->info()));
 
     c_ev->serializeto(*res->GetStream()); // serialize packet into res packet
+    res->SetReliabilty(c_ev->m_reliable);
     // create one or more properly formated CrudP_Packets in the protocol object
     qDebug() << "Adding packets for"<<c_ev->info();
     m_protocol.SendPacket(res);

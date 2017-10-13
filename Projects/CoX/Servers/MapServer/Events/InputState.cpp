@@ -353,8 +353,8 @@ void InputState::recv_client_opts(BitStream &bs)
 {
     ClientOptions opts;
     ClientOption *entry;
-    int cmd_idx = bs.GetPackedBits(1);
     glm::vec3 vec;
+    int cmd_idx;
     while((cmd_idx = bs.GetPackedBits(1))!=0)
     {
         entry=opts.get(cmd_idx-1);
