@@ -336,6 +336,7 @@ void InputState::serializefrom(BitStream &bs)
     bs.GetBitArray(command_stream.write_ptr(),command_bitcount);
     command_stream.SetWritePos(command_bitcount);
     assert(command_stream.GetReadableBits()==command_bitcount);
+    m_user_commands  = command_stream;
 #ifdef DEBUG_INPUT
     fprintf(stderr,"\n");
 #endif
