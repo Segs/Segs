@@ -28,14 +28,14 @@
 // currently there is no such thing, and 'client-cache' is just a hash-map
 
 // Defined constructor
-_AdminServer::_AdminServer(void) : m_running(false)
+_AdminServer::_AdminServer() : m_running(false)
 {
     m_db        = new AdminDatabase;
     m_char_db   = new CharacterDatabase;
 }
 
 // Defined destructor
-_AdminServer::~_AdminServer(void)
+_AdminServer::~_AdminServer()
 {
     (void)ShutDown();
 }
@@ -245,7 +245,7 @@ int _AdminServer::AddIPBan(const ACE_INET_Addr &client_addr)
 ServerHandle<IGameServer> _AdminServer::RegisterMapServer(const ServerHandle<IMapServer> &/*map_h*/)
 {
     // For each server, find number of free Map handlers, and player occupancy ( servers with low number of Maps, and low occupancy should be prioritized)
-    return ServerHandle<IGameServer>(0);
+    return ServerHandle<IGameServer>(nullptr);
 }
 
 
@@ -260,7 +260,7 @@ int _AdminServer::GetAccessKeyForServer(const ServerHandle<IMapServer> &/*map_h*
     return 0;
 }
 
-bool _AdminServer::Online( void )
+bool _AdminServer::Online( )
 {
     return m_running;
 }

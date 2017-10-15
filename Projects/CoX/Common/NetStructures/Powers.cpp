@@ -91,9 +91,9 @@ void PowerTrayGroup::serializefrom(BitStream &src)
 {
     primary_tray_idx = src.GetBits(32);
     secondary_tray_idx = src.GetBits(32);
-    for(int bar_num=0; bar_num<9; bar_num++)
+    for(PowerTray &tray : m_trays)
     {
-        m_trays[bar_num].serializefrom(src);
+        tray.serializefrom(src);
     }
     m_c = src.GetBits(1);
     if(m_c)
@@ -127,36 +127,36 @@ Power *PowerTray::getPower(size_t idx)
 {
     if(idx<10)
         return &m_powers[idx];
-    return NULL;
+    return nullptr;
 }
 
 int PowerTray::setPowers()
 {
     int res=0;
-    for(int i=0; i<10; i++)
+    for(const Power &pow : m_powers)
     {
-        res += (m_powers[i].entry_type!=0);
+        res += (pow.entry_type!=0);
     }
     return res;
 }
 
 void PowerTray::serializefrom(BitStream &src)
 {
-    for(int power_slot=0; power_slot<10; power_slot++)
-        m_powers[power_slot].serializefrom(src);
+    for(Power &pow : m_powers)
+        pow.serializefrom(src);
 }
 
 void PowerTray::serializeto(BitStream &tgt) const
 {
-    for(int power_slot=0; power_slot<10; power_slot++)
-        m_powers[power_slot].serializeto(tgt);
+    for(const Power &pow : m_powers)
+        pow.serializeto(tgt);
 }
 
 void PowerTray::Dump()
 {
-    for(int power_slot=0; power_slot<10; power_slot++)
+    for(Power &pow : m_powers)
     {
-        m_powers[power_slot].Dump();
+        pow.Dump();
     }
 
 }

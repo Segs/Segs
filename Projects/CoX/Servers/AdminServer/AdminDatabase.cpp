@@ -26,7 +26,7 @@ using namespace std;
 AdminDatabase::AdminDatabase() : m_db(nullptr)
 {
 }
-int AdminDatabase::GetAccounts(void) const
+int AdminDatabase::GetAccounts() const
 {
     return 0;
 }

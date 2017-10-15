@@ -14,7 +14,7 @@ int ServerEndpoint::handle_input(ACE_HANDLE /*fd*/) //! Called when input is ava
     if (n == -1)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%p\n"),"handle_input"),0);
     ILink *crud_link = getClientLink(from_addr); // get packet handling object for this connection
-    ACE_ASSERT(crud_link!=NULL);
+    ACE_ASSERT(crud_link!=nullptr);
     BitStream wrap((uint8_t *)buf,n);
     crud_link->received_block(wrap);
     return 0;

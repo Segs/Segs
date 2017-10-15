@@ -536,7 +536,7 @@ void Entity::beginLogout(uint16_t time_till_logout)
 void Entity::sendBuffsConditional(BitStream &bs) const
 {
     bs.StoreBits(1,0); // nothing here for now
-    if(0)
+    if(false)
     {
         sendBuffs(bs);
     }

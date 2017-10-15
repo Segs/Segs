@@ -4,12 +4,12 @@
 #include "AuthProtocol/AuthOpcodes.h"
 #include "AuthProtocol/AuthEventFactory.h"
 
-EventProcessor *AuthLink::g_target=0;
+EventProcessor *AuthLink::g_target=nullptr;
 
-AuthLink::AuthLink() :  m_client(0),
+AuthLink::AuthLink() :  m_client(nullptr),
     m_received_bytes_storage(0x1000,0,40),
     m_unsent_bytes_storage(0x200,0,40),
-    m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK),
+    m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK),
     m_protocol_version(-1),
     m_state(INITIAL)
 
@@ -18,10 +18,10 @@ AuthLink::AuthLink() :  m_client(0),
     m_buffer_mutex = new ACE_Thread_Mutex;
     assert(g_target);
 }
-AuthLink::~AuthLink( void )
+AuthLink::~AuthLink( )
 {
     delete m_buffer_mutex;
-    m_client=0;
+    m_client=nullptr;
 }
 void AuthLink::init_crypto(int vers,uint32_t seed)
 {
@@ -62,12 +62,12 @@ eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode,bool direction /*= false 
 SEGSEvent * AuthLink::bytes_to_event()
 {
     uint16_t  packet_size(0);
-    uint8_t * tmp(NULL);
+    uint8_t * tmp(nullptr);
 
     while(true) // we loop and loop and loop loopy loop through the buffery contents!
     {
         if(m_received_bytes_storage.GetReadableDataSize()<=2) // no more bytes for us, so we'll go hungry for a while
-            return NULL;
+            return nullptr;
         // And the skies are clear on the Packet Fishing Waters
         m_received_bytes_storage.uGet(packet_size); // Ah ha! I smell packet in there!
         if(m_received_bytes_storage.GetReadableDataSize()<packet_size) // tis' a false trail capt'n !
@@ -190,7 +190,7 @@ int AuthLink::handle_output( ACE_HANDLE /*= ACE_INVALID_HANDLE*/ )
 void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
 {
     assert(ev);
-    if(ev==0)
+    if(ev==nullptr)
         return;
     // remember the location we'll put the packet size into
     uint16_t *packet_size = reinterpret_cast<uint16_t *>(m_unsent_bytes_storage.write_ptr());
@@ -268,7 +268,7 @@ void AuthLink::set_protocol_version( int vers )
 int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 {
     // client handle was closed, posting disconnect event with higher priority
-    g_target->msg_queue()->enqueue_prio(new DisconnectEvent(this),0,100);
+    g_target->msg_queue()->enqueue_prio(new DisconnectEvent(this),nullptr,100);
     if (close_mask == ACE_Event_Handler::WRITE_MASK)
         return 0;
     return super::handle_close (handle, close_mask);
@@ -282,5 +282,5 @@ void AuthLink::dispatch( SEGSEvent */*ev*/ )
 SEGSEvent *AuthLink::dispatch_sync(SEGSEvent */*ev*/)
 {
     assert(!"No sync events known");
-    return 0;
+    return nullptr;
 }

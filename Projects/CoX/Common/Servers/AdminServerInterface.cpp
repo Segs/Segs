@@ -11,9 +11,9 @@ AdminServerInterface::AdminServerInterface(IAdminServer *srv) : m_server(srv)
 {
 }
 
-AdminServerInterface::~AdminServerInterface(void)
+AdminServerInterface::~AdminServerInterface()
 {
-    m_server=0;
+    m_server=nullptr;
 }
 //! \brief Called from auth server during user authentication, might be useful for automatical firewall rules update
 int AdminServerInterface::GetBlockedIpList(std::list<int> &addreses)

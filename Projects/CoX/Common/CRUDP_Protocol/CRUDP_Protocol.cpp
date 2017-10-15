@@ -190,9 +190,9 @@ bool CrudP_Protocol::allSiblingsAvailable(uint32_t sibid)
 {
     pPacketStorage &storage = sibling_map[sibid];
     size_t avail=0;
-    for(size_t i=0; i<storage.size(); i++)
+    for(CrudP_Packet *pak : storage)
     {
-        avail+= (storage[i]!= nullptr);
+        avail+= (pak != nullptr);
     }
     return avail==storage.size();
 }
@@ -230,14 +230,14 @@ CrudP_Packet *CrudP_Protocol::mergeSiblings(uint32_t id)
     assert(storage.size()>=1); // wtf ??
     BitStream *bs=new BitStream(32);
     CrudP_Packet *res= new CrudP_Packet(*storage[0]); //copy packet info from first sibling
-    for(uint32_t i = 0; i < storage.size(); i++)
+    for(CrudP_Packet *pak : storage)
     {
         //Skip duplicate siblings
         //if(i > 0 && storage[i]->getSibPos() == storage[i-1]->getSibPos()) continue;
-        assert(storage[i]->getSibId() == id);
-        BitStream *pkt_bs = storage[i]->GetStream();
+        assert(pak->getSibId() == id);
+        BitStream *pkt_bs = pak->GetStream();
         bs->PutBytes(pkt_bs->read_ptr(),pkt_bs->GetReadableDataSize());
-        delete storage[i];
+        delete pak;
         //PacketFactory::Delete(storage[i])
     }
     res->SetStream(bs);
@@ -397,7 +397,6 @@ void CrudP_Protocol::sendRaw(CrudP_Packet *pak,lCrudP_Packet &tgt )
     }
     uint32_t *head = (uint32_t*)wrapped->GetStream()->read_ptr();
     head[1] = m_codec->Checksum((uint8_t*)&head[2],fixedlen-8); // this is safe because all bitstreams have padding
-    qDebug() << "To send"<<head[0]<<"bytes pkt HASH:"<<head[1];
     m_codec->Encrypt((uint8_t*)&head[1],fixedlen-4);//res->GetReadableDataSize()
     tgt.push_back(wrapped);
 }

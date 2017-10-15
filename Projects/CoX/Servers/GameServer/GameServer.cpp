@@ -21,7 +21,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
-GameServer::GameServer(void) :
+GameServer::GameServer() :
     m_online(false),
     m_id(0),
     m_current_players(0),
@@ -33,7 +33,7 @@ GameServer::GameServer(void) :
 {
 }
 
-GameServer::~GameServer(void)
+GameServer::~GameServer()
 {
     if(ACE_Reactor::instance())
     {
@@ -135,17 +135,17 @@ bool GameServer::isMapServerReady(const ServerHandle<IMapServer> &/*h_map*/)
     return false;
 }
 
-std::string GameServer::getName( void )
+std::string GameServer::getName( )
 {
     return m_serverName;
 }
 
-uint8_t GameServer::getId( void )
+uint8_t GameServer::getId( )
 {
     return m_id;
 }
 
-uint16_t GameServer::getCurrentPlayers( void )
+uint16_t GameServer::getCurrentPlayers( )
 {
     return m_current_players;
 }
@@ -155,12 +155,12 @@ uint16_t GameServer::getMaxPlayers()
     return m_max_players;
 }
 
-uint8_t GameServer::getUnkn1( void )
+uint8_t GameServer::getUnkn1( )
 {
     return m_unk1;
 }
 
-uint8_t GameServer::getUnkn2( void )
+uint8_t GameServer::getUnkn2( )
 {
     return m_unk2;
 }

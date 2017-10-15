@@ -98,6 +98,6 @@ protected:
     uint32_t m_retransmit_count;
     std::set<uint32_t> m_acks;
 };
-typedef std::list<CrudP_Packet *> lCrudP_Packet;
-typedef std::vector<CrudP_Packet *> vCrudP_Packet;
-typedef vCrudP_Packet::iterator ivCrudP_Packet;
+using lCrudP_Packet = std::list<CrudP_Packet *>;
+using vCrudP_Packet = std::vector<CrudP_Packet *>;
+using ivCrudP_Packet = vCrudP_Packet::iterator;

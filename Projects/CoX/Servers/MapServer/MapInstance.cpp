@@ -341,7 +341,7 @@ void MapInstance::sendState() {
             char buf[256];
             printf("Sending msg to client %p\n",cl);
             std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion();
-            std::snprintf(buf, 256, "There are %d active entites and %d clients", m_entities.active_entities(),
+            std::snprintf(buf, 256, "There are %zu active entites and %zu clients", m_entities.active_entities(),
                           num_active_clients());
             welcome_msg += buf;
             ChatMessage *msg = ChatMessage::adminMessage(buf );
@@ -379,7 +379,8 @@ void MapInstance::on_input_state(InputState *st)
     // Input state messages can be followed by multiple commands.
     assert(st->m_user_commands.GetReadableBits()<32*1024*8); // simple sanity check ?
     // here we will try to extract all of them and put them on our processing queue
-    while(st->m_user_commands.GetReadableBits()>1) {
+    while(st->m_user_commands.GetReadableBits()>1)
+    {
         MapLinkEvent *ev = MapEventFactory::CommandEventFromStream(st->m_user_commands);
         if(!ev)
             break;

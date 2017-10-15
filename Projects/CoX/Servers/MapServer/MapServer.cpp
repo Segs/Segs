@@ -27,13 +27,13 @@
 // Template instantiation
 template class ClientStore<MapClient>;
 
-MapServer::MapServer(void) : m_id(0),
+MapServer::MapServer() : m_id(0),
     m_online(false),
     m_endpoint(NULL)
 {
 
 }
-MapServer::~MapServer(void)
+MapServer::~MapServer()
 {
     if(ACE_Reactor::instance())
     {
@@ -41,7 +41,7 @@ MapServer::~MapServer(void)
         delete m_endpoint;
     }
 }
-bool MapServer::Run(void)
+bool MapServer::Run()
 {
     if(m_endpoint)
     {

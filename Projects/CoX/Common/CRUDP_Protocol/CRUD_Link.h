@@ -23,33 +23,33 @@ class CRUD_EventFactory;
 class CRUDLink : public ILink
 {
 protected:
-typedef ILink                               super;
+using super = ILink;
         ACE_Reactor_Notification_Strategy   m_notifier; // our queue will use this to inform the reactor of it's new elements
         ACE_HANDLE                          get_handle (void) const override {return peer_.get_handle();}
         ACE_Time_Value                      m_last_recv_activity; // last link activity time
         ACE_Time_Value                      m_last_send_activity; // last send activity on the link
 public:
 
-typedef ACE_SOCK_Dgram  stream_type;
-typedef ACE_INET_Addr   addr_type;
+using stream_type = ACE_SOCK_Dgram;
+using addr_type = ACE_INET_Addr;
 
 public:
                     CRUDLink();
-virtual             ~CRUDLink();
+                    ~CRUDLink() override;
 
-    int             open(void * = 0) override;
-    CrudP_Protocol *get_proto() {return &m_protocol;}
+    int             open(void * = nullptr) override;
     int             handle_output( ACE_HANDLE = ACE_INVALID_HANDLE ) override;
     void            received_block(BitStream &bytes) override;
     void            dispatch(SEGSEvent *) override
                     {
                         assert(!"Should not be called");
                     }
-    stream_type &   peer() {return peer_;}
-    addr_type &     peer_addr() {return m_peer_addr;}
-    void            set_client_data(void *d) {m_link_data=d;}
+    CrudP_Protocol *get_proto() { return &m_protocol; }
+    stream_type &   peer() { return peer_; }
+    addr_type &     peer_addr() { return m_peer_addr; }
+    void            set_client_data(void *d) { m_link_data = d; }
 
-    ACE_Time_Value  client_last_seen_packets() const //! return the amount of time this client wasn't sending anything
+    ACE_Time_Value  client_last_seen_packets() const //! return the amount of time this client hasn't received anything
                     {
                         return ACE_OS::gettimeofday()-m_last_recv_activity;
                     }
@@ -62,24 +62,14 @@ protected:
     SEGSEvent *     dispatch_sync( SEGSEvent * ) override
                     {
                         assert(!"No sync events known");
-                        return 0;
+                        return nullptr;
                     }
 
-    int             handle_close(ACE_HANDLE h, ACE_Reactor_Mask c) override
-                    {
-                        reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
-                        return EventProcessor::handle_close(h,c);
-                    }
+    int             handle_close(ACE_HANDLE h, ACE_Reactor_Mask c) override;
     void            event_for_packet(PacketEvent *pak_ev);
-    void            packets_for_event(SEGSEvent *c_ev); // Handler posted this event to us, we will pack it into packets and post it to the link target
-    void            connection_update() //! Connection updates are done only when new data is available on the link
-                    {
-                        m_last_recv_activity = ACE_OS::gettimeofday();
-                    }
-    void            connection_sent_packet() //! Connection updates are done only when new data is sent on the link
-                    {
-                        m_last_send_activity = ACE_OS::gettimeofday();
-                    }
+    void            packets_for_event(SEGSEvent *c_ev);
+    void            connection_update();
+    void            connection_sent_packet();
     EventProcessor *target() { return m_target; }
     EventProcessor *net_layer() { return m_net_layer; }
 virtual CRUD_EventFactory &factory() = 0;
@@ -88,7 +78,7 @@ virtual CRUD_EventFactory &factory() = 0;
     stream_type     peer_;  /// Maintain connection with client.
     addr_type       m_peer_addr;
     void *          m_link_data;
-    EventProcessor *m_net_layer;      //! All outgoing events are posted here
-    EventProcessor *m_target;           //! All incoming events are posted here
+    EventProcessor *m_net_layer;      //! All outgoing events are put here
+    EventProcessor *m_target;         //! All incoming events are put here
 
 };

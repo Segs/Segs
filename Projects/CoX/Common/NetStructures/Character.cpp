@@ -20,7 +20,7 @@ Character::Character()
     m_current_costume_idx=0;
     m_current_costume_set=false;
     m_supergroup_costume=false;
-    m_sg_costume=0;
+    m_sg_costume=nullptr;
     m_using_sg_costume=false;
     m_full_options = false;
 }
@@ -30,14 +30,14 @@ void Character::reset()
     m_name="EMPTY";
     m_class_name="EMPTY";
     m_origin_name="EMPTY";
-    m_villain=0;
+    m_villain=false;
     m_mapName="";
     m_unkn3=0;
     m_multiple_costumes=false;
     m_current_costume_idx=0;
     m_current_costume_set=false;
     m_supergroup_costume=false;
-    m_sg_costume=0;
+    m_sg_costume=nullptr;
     m_using_sg_costume=false;
     m_first_person_view_toggle=false;
     m_full_options = false;
@@ -308,7 +308,7 @@ void Character::sendFullStats(BitStream &bs) const
             bs.StorePackedBits(1,0); // HitPoints entry
             // field type 0xA, param 2
             // Type15_Params 2 1.0 1.0 7
-            if(1) // absolute values
+            if(true) // absolute values
             {
                 bs.StorePackedBits(7,45); // character health/1.0
             }
@@ -320,7 +320,7 @@ void Character::sendFullStats(BitStream &bs) const
             bs.StoreBits(1,1); // has more data
             bs.StorePackedBits(1,1); // EndurancePoints entry
             // field type 0xA, param 2
-            if(1) // absolute values
+            if(true) // absolute values
             {
                 bs.StorePackedBits(7,46); // character end/1.0
             }
@@ -339,7 +339,7 @@ void Character::sendFullStats(BitStream &bs) const
             bs.StorePackedBits(1,0); // HitPoints entry
             // field type 0xA, param 2
             // Type15_Params 2 1.0 1.0 7
-            if(1) // absolute values
+            if(true) // absolute values
             {
                 bs.StorePackedBits(7,47); // character health/1.0
             }
@@ -351,7 +351,7 @@ void Character::sendFullStats(BitStream &bs) const
         bs.StoreBits(1,1); // has more data
             bs.StorePackedBits(1,1); // EndurancePoints entry
             // field type 0xA, param 2
-            if(1) // absolute values
+            if(true) // absolute values
             {
                 bs.StorePackedBits(7,48); // character end/1.0
             }
@@ -369,7 +369,7 @@ void Character::sendFullStats(BitStream &bs) const
         bs.StoreBits(1,1); // has more data
             bs.StorePackedBits(1,0); // Level entry
             // field type 0x5, param 4
-            if(1) // absolute values
+            if(true) // absolute values
             {
                 bs.StorePackedBits(4,1); //
             }
@@ -381,7 +381,7 @@ void Character::sendFullStats(BitStream &bs) const
             }
         bs.StoreBits(1,1); // has more data
             bs.StorePackedBits(1,1); // CombatLevel entry
-            if(1) // absolute values
+            if(true) // absolute values
             {
                 bs.StorePackedBits(4,1);
             }
@@ -396,7 +396,7 @@ void Character::sendFullStats(BitStream &bs) const
     bs.StorePackedBits(1,3); // Experience
     {
         // field type 0x5, param 16
-        if(1) // absolute values
+        if(true) // absolute values
         {
             bs.StorePackedBits(16,1); //
         }
@@ -411,7 +411,7 @@ void Character::sendFullStats(BitStream &bs) const
     bs.StorePackedBits(1,4); // ExperienceDebt
     {
         // field type 0x5, param 16
-        if(1) // absolute values
+        if(true) // absolute values
         {
             bs.StorePackedBits(16,1); //
         }
@@ -426,7 +426,7 @@ void Character::sendFullStats(BitStream &bs) const
     bs.StorePackedBits(1,5); // Influence
     {
         // field type 0x5, param 16
-        if(1) // absolute values
+        if(true) // absolute values
         {
             bs.StorePackedBits(16,0); //
         }

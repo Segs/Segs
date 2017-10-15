@@ -1,10 +1,10 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #pragma once
@@ -26,14 +26,14 @@ class SEGSTimer;
 class MapClient : public ClientSession
 {
     friend class CharacterDatabase;
-    typedef std::map<int,NetCommand *> mNetCommands;
+    using mNetCommands = std::map<int,NetCommand *>;
+
         mNetCommands        m_shortcuts;
         MapInstance *       m_current_map;
-        Entity *            m_ent;
+        Entity *            m_ent = nullptr;
         QString             m_name; // current character name, stored here for quick lookups
-        SEGSTimer *         m_tick_source;
+        SEGSTimer *         m_tick_source = nullptr;
 public:
-                            MapClient();
 virtual                     ~MapClient(){}
 
         void                AddShortcut(int index, NetCommand *command);

@@ -11,10 +11,10 @@
 GameServerInterface *ServerManagerC::GetGameServer(size_t idx)
 {
     if(idx>m_GameServers.size())
-        return NULL;
+        return nullptr;
     return m_GameServers[idx];
 }
-ServerManagerC::ServerManagerC() : m_authserv(NULL),m_adminserv(NULL)
+ServerManagerC::ServerManagerC() : m_authserv(nullptr),m_adminserv(nullptr)
 {
 }
 //! this loads this process configuration
@@ -22,13 +22,13 @@ bool ServerManagerC::LoadConfiguration(const std::string &config_file_full_path)
 {
     bool loaded_ok = m_adminserv->ReadConfig(config_file_full_path);
     loaded_ok &= m_authserv->ReadConfig(config_file_full_path);
-    for(size_t idx=0; idx<m_GameServers.size(); idx++)
+    for(GameServerInterface * serv : m_GameServers)
     {
-        loaded_ok &= m_GameServers[idx]->ReadConfig(config_file_full_path);
+        loaded_ok &= serv->ReadConfig(config_file_full_path);
     }
-    for(size_t idx=0; idx<m_MapServers.size(); idx++)
+    for(MapServerInterface *serv : m_MapServers)
     {
-        loaded_ok &= m_MapServers[idx]->ReadConfig(config_file_full_path);
+        loaded_ok &= serv->ReadConfig(config_file_full_path);
     }
     return loaded_ok;
 }
@@ -38,40 +38,40 @@ bool ServerManagerC::StartLocalServers()
 {
     m_adminserv->Run();
     m_authserv->Run();
-    for(size_t i=0; i<m_GameServers.size(); i++)
+    for(GameServerInterface * serv : m_GameServers)
     {
-        if(!m_GameServers[i]->Run())
+        if(!serv->Run())
             return false;
     }
-    for(size_t i=0; i<m_MapServers.size(); i++)
+    for(MapServerInterface *serv : m_MapServers)
     {
-        if(!m_MapServers[i]->Run())
+        if(!serv->Run())
             return false;
     }
     return true;
 }
 void ServerManagerC::StopLocalServers()
 {
-    for(size_t i=0; i<m_GameServers.size(); i++)
+    for(GameServerInterface * serv : m_GameServers)
     {
-        if(!m_GameServers[i]->ShutDown("Full system shutdown"))
+        if(!serv->ShutDown("Full system shutdown"))
         {
             // Log it
         }
     }
-    for(size_t i=0; i<m_MapServers.size(); i++)
+    for(MapServerInterface *serv : m_MapServers)
     {
-        if(!m_MapServers[i]->ShutDown("Full system shutdown"))
+        if(!serv->ShutDown("Full system shutdown"))
         {
             // Log it
         }
     }
 }
-AdminServerInterface *ServerManagerC::GetAdminServer(void)
+AdminServerInterface *ServerManagerC::GetAdminServer()
 {
     return m_adminserv;
 }
-AuthServerInterface *ServerManagerC::GetAuthServer(void)
+AuthServerInterface *ServerManagerC::GetAuthServer()
 {
     return m_authserv;
 }
@@ -108,12 +108,12 @@ void ServerManagerC::AddGameServer( IGameServer *srv )
     m_GameServers.push_back(new GameServerInterface(srv));
 }
 
-size_t ServerManagerC::GameServerCount( void )
+size_t ServerManagerC::GameServerCount( )
 {
     return m_GameServers.size();
 }
 
-size_t ServerManagerC::MapServerCount( void )
+size_t ServerManagerC::MapServerCount( )
 {
     return m_MapServers.size();
 }
@@ -125,11 +125,11 @@ void ServerManagerC::AddMapServer( IMapServer *srv )
 
 void ServerManagerC::SetAuthServer( IAuthServer *srv )
 {
-    assert(m_authserv==0);
+    assert(m_authserv==nullptr);
     m_authserv=new AuthServerInterface(srv);
 }
 void ServerManagerC::SetAdminServer( IAdminServer *srv )
 {
-    assert(m_adminserv==0);
+    assert(m_adminserv==nullptr);
     m_adminserv=new AdminServerInterface(srv);
 }

@@ -11,7 +11,7 @@
 // ServerEndpoint gets new input -> Bytes -> CRUDP_Protocol -> pushq(PacketEvent)
 // ACE_Reactor knows to wake CRUDLink up, whenever there are new events
 std::set<CRUDLink *> all_links;
-CRUDLink::CRUDLink() :  m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK)
+CRUDLink::CRUDLink() :  m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK)
 {
     m_notifier.event_handler(this);
     m_protocol.setCodec(new PacketCodecNull);
@@ -48,31 +48,41 @@ void CRUDLink::event_for_packet(PacketEvent * pak_ev)
 ///
 /// \brief CRUDLink::packets_for_event - convert event to 1-n packets and push them to our net_layer()
 /// \param ev - an event that we've received from our downstream.
-///
 void CRUDLink::packets_for_event(SEGSEvent *ev)
 {
-    lCrudP_Packet packets_to_send;
-    CRUDLink_Event *c_ev =static_cast<CRUDLink_Event *>(ev);
-    CrudP_Packet *res   = new CrudP_Packet;
-    ACE_ASSERT(res);
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) packets_for_event %s\n"),ev->info()));
+    lCrudP_Packet   packets_to_send;
+    CRUDLink_Event *c_ev = static_cast<CRUDLink_Event *>(ev);
+    CrudP_Packet *  res  = new CrudP_Packet;
 
     c_ev->serializeto(*res->GetStream()); // serialize packet into res packet
     res->SetReliabilty(c_ev->m_reliable);
     // create one or more properly formated CrudP_Packets in the protocol object
-    qDebug() << "Adding packets for"<<c_ev->info();
+    // qDebug() << "Adding packets for"<<c_ev->info();
     m_protocol.SendPacket(res);
-    if(false==m_protocol.batchSend(packets_to_send))
+    if (false == m_protocol.batchSend(packets_to_send))
     {
         // link is unresponsive, tell our target object
-        target()->putq(new SEGSEvent(SEGS_EventTypes::evDisconnect,this));
+        target()->putq(new SEGSEvent(SEGS_EventTypes::evDisconnect, this));
+        return;
     }
     // wrap all packets as PacketEvents and put them on link queue
-    for(CrudP_Packet *pkt : packets_to_send)
+    for (CrudP_Packet *pkt : packets_to_send)
     {
-        net_layer()->putq(new PacketEvent(this,pkt,peer_addr()));
+        net_layer()->putq(new PacketEvent(this, pkt, peer_addr()));
     }
     connection_sent_packet(); // data was sent, update
+}
+
+//! Connection updates are done only when new data is available on the link
+void CRUDLink::connection_update()
+{
+    m_last_recv_activity = ACE_OS::gettimeofday();
+}
+
+//! Connection updates are done only when new data is sent on the link
+void CRUDLink::connection_sent_packet()
+{
+    m_last_send_activity = ACE_OS::gettimeofday();
 }
 //! Called when we start to service a new connection, here we tell reactor to wake us
 //! when queue() is not empty.
@@ -143,5 +153,11 @@ void CRUDLink::received_block( BitStream &bytes )
     }
     if(recv_count>0)
         connection_update(); //update the last time we've seen packets on this link
+}
+
+int CRUDLink::handle_close(ACE_HANDLE h, ACE_Reactor_Mask c)
+{
+    reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
+    return EventProcessor::handle_close(h,c);
 }
 

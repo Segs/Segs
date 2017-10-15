@@ -78,7 +78,7 @@ void CharacterDatabase::on_connected(QSqlDatabase *db)
 // UserToken,
 bool CharacterDatabase::remove_character(AccountInfo *c,uint8_t slot_idx)
 {
-    assert(c!=0);
+    assert(c!=nullptr);
     m_prepared_char_delete.bindValue(0,quint64(c->account_server_id()));
     m_prepared_char_delete.bindValue(1,(uint32_t)slot_idx);
     if(!doIt(m_prepared_char_delete))
