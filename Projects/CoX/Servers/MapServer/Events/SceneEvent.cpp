@@ -7,7 +7,7 @@ SceneEvent::SceneEvent():MapLinkEvent(MapEventTypes::evScene)
 {
 }
 
-void SceneEvent::dependent_dump(void)
+void SceneEvent::dependent_dump()
 {
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktSC_SceneResp\n%I{\n")));
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    undos_PP 0x%08x\n"),undos_PP));

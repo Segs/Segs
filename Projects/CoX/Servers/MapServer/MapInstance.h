@@ -63,6 +63,7 @@ public:
 
 protected:
     void on_expect_client(ExpectMapClient *ev);
+    void on_link_lost(SEGSEvent *ev);
     void on_disconnect(DisconnectRequest *ev);
     void on_scene_request(SceneRequest *ev);
     void on_entities_request(EntitiesRequest *ev);

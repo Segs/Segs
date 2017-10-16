@@ -4,9 +4,9 @@
 #include <glm/common.hpp>
 #include <glm/glm.hpp>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
 #include <cmath>
 #include <utility>
 #include <array>
@@ -48,8 +48,8 @@ static void buildErrorTable() {
         {
             s_coding_sequence[i] = s_coding_sequence[i-1] + s_coding_sequence[i-3];
         }
-        for (int j = 0; j < 131; ++j )
-            s_coding_sequence[j] = std::sqrt(s_coding_sequence[j]) / 20.0f;
+        for (float &v : s_coding_sequence )
+            v = std::sqrt(v) / 20.0f;
     }
 };
 float get_interpolator_perturbation(int16_t a1,int level)

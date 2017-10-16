@@ -32,9 +32,19 @@ class pktCS_ServerUpdate;
 class CharacterDatabase;
 class MapServer;
 typedef std::list< ServerHandle<MapServer> > lMapServerHandles;
+class GameLinkEndpoint : public ServerEndpoint
+{
+public:
+    GameLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
+    ~GameLinkEndpoint()=default;
+protected:
+    ILink *createLink(EventProcessor *down) override
+    {
+        return new GameLink(down,this);
+    }
+};
 class GameServer : public IGameServer
 {
-    typedef ServerEndpoint<GameLink> GameLinkEndpoint;
 public:
                                 ~GameServer(void);
                                 GameServer(void);

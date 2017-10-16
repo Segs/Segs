@@ -81,12 +81,13 @@ void GrowingBuffer::uPutString(const char *t)
 
 void GrowingBuffer::PutBytes(const uint8_t *t, size_t len)
 {
-    if(m_write_off+len>m_size)
+    if(m_write_off+len>m_size) {
         if(resize(m_write_off+len)==-1) // space exhausted
         {
             m_last_err = 1;
             return;
         }
+    }
     uPutBytes(t,len);
 }
 void GrowingBuffer::uPutBytes(const uint8_t *t, size_t len)

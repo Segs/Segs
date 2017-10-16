@@ -12,7 +12,7 @@ ServerStopper::ServerStopper(int signum) // when instantiated adds itself to cur
     ACE_Reactor::instance()->register_handler(signum, this);
 }
 
-int ServerStopper::handle_signal (int, siginfo_t *s_i, ucontext_t *u_c)
+int ServerStopper::handle_signal (int, siginfo_t */*s_i*/, ucontext_t */*u_c*/)
 {
     exit(0); //TODO: this is not graceful :(
     return 0;

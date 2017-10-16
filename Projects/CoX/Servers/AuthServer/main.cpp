@@ -7,7 +7,6 @@
 
  */
 //#define ACE_NTRACE 0
-//#include "Auth.h"
 #include "Servers/ServerManager.h"
 #include "Servers/server_support.h"
 #include "version.h"
@@ -96,7 +95,9 @@ static ACE_THR_FUNC_RETURN event_loop (void *arg)
 
     reactor->owner (ACE_OS::thr_self ());
     reactor->run_reactor_event_loop ();
-    return 0;
+    ServerManager::instance()->GetAdminServer()->ShutDown("No reason");
+    ServerManager::instance()->StopLocalServers();
+    return nullptr;
 }
 static bool CreateServers()
 {

@@ -27,6 +27,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Link events
     void        on_idle(IdleEvent *ev);
+    void        on_link_lost(SEGSEvent *ev);
     void        on_disconnect(DisconnectRequest *ev);
     void        on_connection_request(ConnectRequest *ev);
 

@@ -1,26 +1,26 @@
 #include "Common/GameData/DataStorage.h"
-#include "Common/GameData/shop_definitions.h"
-#include "Common/GameData/costume_serializers.h"
-#include "Common/GameData/costume_definitions.h"
-#include "Common/GameData/attrib_serializers.h"
 #include "Common/GameData/attrib_definitions.h"
-#include "Common/GameData/scenegraph_serializers.h"
-#include "Common/GameData/scenegraph_definitions.h"
+#include "Common/GameData/attrib_serializers.h"
 #include "Common/GameData/bodypart_serializers.h"
+#include "Common/GameData/costume_definitions.h"
+#include "Common/GameData/costume_serializers.h"
+#include "Common/GameData/map_definitions.h"
+#include "Common/GameData/map_serializers.h"
+#include "Common/GameData/scenegraph_definitions.h"
+#include "Common/GameData/scenegraph_serializers.h"
+#include "Common/GameData/shop_definitions.h"
 #include "Common/GameData/shop_serializers.h"
 #include "Common/GameData/trick_definitions.h"
 #include "Common/GameData/trick_serializers.h"
 //#include "Common/GameData/seq_serializers.h"
 //#include "Common/GameData/def_serializers.h"
 //#include "Common/GameData/particlesys_serializers.h"
-#include "Common/GameData/map_serializers.h"
-#include "Common/GameData/map_definitions.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
-#include <QtCore/QMap>
 #include <QtCore/QFile>
-#include <QFileInfo>
+#include <QtCore/QFileInfo>
+#include <QtCore/QMap>
 
 namespace {
 enum BinType {
@@ -43,7 +43,7 @@ enum BinType {
     eSceneGraph,
     eTrickDefinitions,
 };
-static const QHash<uint32_t,BinType> knownSerializers = {
+const QHash<uint32_t,BinType> knownSerializers = {
 //    {levelsdebts_i0_requiredCrc         , eLevelsDebts},
 //    {combining_i0_requiredCrc           , eCombineChances},
 //    {boosteffectiveness_i0_requiredCrc  , eBoostEffectiveness},
@@ -79,18 +79,18 @@ BinType getLoader(const QString &fname)
     return knownSerializers.value(template_hash,eInvalid);
 }
 template<class T>
-T * doLoad(BinStore &bs) {
+T * doLoad(BinStore *bs) {
     T *res = new T;
-    if(!loadFrom(&bs,res)) {
+    if(!loadFrom(bs,res)) {
         delete res;
         res = nullptr;
     }
     return res;
 }
 template<class T>
-T * doLoadRef(BinStore &bs) {
+T * doLoadRef(BinStore *bs) {
     T *res = new T;
-    if(!loadFrom(&bs,*res)) {
+    if(!loadFrom(bs,*res)) {
         delete res;
         res = nullptr;
     }
@@ -120,7 +120,8 @@ void showSupportedBinTypes()
     qDebug()<<"   I2<"<<QString::number(tricks_i2_requiredCrc,16)<<"> Trick definitions- 'tricks.bin'";
     qDebug()<<"Numbers in brackets are file CRCs - bytes 8 to 13 in the bin.";
 }
-}
+} // end of anonymous namespace
+
 int main(int argc,char **argv)
 {
     QCoreApplication app(argc,argv);
@@ -140,24 +141,25 @@ int main(int argc,char **argv)
     bool json_output=true;
     if(app.arguments().size()>2)
         json_output = app.arguments()[2].toInt()!=0;
+
     switch(bin_type) {
 //        case eLevelsDebts:    doConvert(doLoad<LevelExpAndDebt>(binfile),target_basename,json_output); break;
 //        case eCombineChances: doConvert(doLoad<Parse_Combining>(binfile),target_basename,json_output); break;
 //        case eBoostEffectiveness: doConvert(doLoad<Parse_Effectiveness>(binfile),target_basename,json_output); break;
 //        case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(binfile),target_basename,json_output); break;
-        case eShops:        doConvert(doLoadRef<AllShops_Data>(binfile),target_basename,json_output); break;
-        case eShopItems:    doConvert(doLoad<AllShopItems_Data>(binfile),target_basename,json_output); break;
-        case eShopDepts:    doConvert(doLoad<AllShopDepts_Data>(binfile),target_basename,json_output); break;
-//        case eSequencers:   doConvert(doLoad<SequencerList>(binfile),target_basename,json_output); break;
-        case eTailorCosts:  doConvert(doLoad<AllTailorCosts_Data>(binfile),target_basename,json_output); break;
-        case eCostumeSets:  doConvert(doLoad<CostumeSet_Data>(binfile),target_basename,json_output); break;
-        case eBodyParts:    doConvert(doLoad<AllBodyParts_Data>(binfile),target_basename,json_output); break;
-        case eGroupEmblems: doConvert(doLoad<GeoSet_Data>(binfile),target_basename,json_output); break;
-        case ePaletteSets:  doConvert(doLoad<Pallette_Data>(binfile),target_basename,json_output); break;
-        case eZones:        doConvert(doLoadRef<AllMaps_Data>(binfile),target_basename,json_output); break;
-        case eAttribNames:  doConvert(doLoadRef<AttribNames_Data>(binfile),target_basename,json_output); break;
-        case eSceneGraph:   doConvert(doLoadRef<SceneGraph_Data>(binfile),target_basename,json_output); break;
-        case eTrickDefinitions: doConvert(doLoad<AllTricks_Data>(binfile),target_basename,json_output); break;
+        case eShops:        doConvert(doLoadRef<AllShops_Data>(&binfile),target_basename,json_output); break;
+        case eShopItems:    doConvert(doLoad<AllShopItems_Data>(&binfile),target_basename,json_output); break;
+        case eShopDepts:    doConvert(doLoad<AllShopDepts_Data>(&binfile),target_basename,json_output); break;
+//        case eSequencers:   doConvert(doLoad<SequencerList>(&binfile),target_basename,json_output); break;
+        case eTailorCosts:  doConvert(doLoad<AllTailorCosts_Data>(&binfile),target_basename,json_output); break;
+        case eCostumeSets:  doConvert(doLoad<CostumeSet_Data>(&binfile),target_basename,json_output); break;
+        case eBodyParts:    doConvert(doLoad<AllBodyParts_Data>(&binfile),target_basename,json_output); break;
+        case eGroupEmblems: doConvert(doLoad<GeoSet_Data>(&binfile),target_basename,json_output); break;
+        case ePaletteSets:  doConvert(doLoad<Pallette_Data>(&binfile),target_basename,json_output); break;
+        case eZones:        doConvert(doLoadRef<AllMaps_Data>(&binfile),target_basename,json_output); break;
+        case eAttribNames:  doConvert(doLoadRef<AttribNames_Data>(&binfile),target_basename,json_output); break;
+        case eSceneGraph:   doConvert(doLoadRef<SceneGraph_Data>(&binfile),target_basename,json_output); break;
+        case eTrickDefinitions: doConvert(doLoad<AllTricks_Data>(&binfile),target_basename,json_output); break;
         default:
             break;
     }

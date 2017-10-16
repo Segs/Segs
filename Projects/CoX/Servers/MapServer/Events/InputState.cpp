@@ -331,12 +331,13 @@ void InputState::serializefrom(BitStream &bs)
         ctrl_idx++;
     }
     recv_client_opts(bs); // g_pak contents will follow
-    int command_bitcount = bs.GetReadableBits();
-    BitStream command_stream((command_bitcount+7)/8);
-    bs.GetBitArray(command_stream.write_ptr(),command_bitcount);
-    command_stream.SetWritePos(command_bitcount);
-    assert(command_stream.GetReadableBits()==command_bitcount);
-    m_user_commands  = command_stream;
+    bs.ByteAlign(true,false);
+    if(bs.GetReadableBits()>0) {
+        m_user_commands.Reset();
+        m_user_commands.appendBitStream(bs);
+        // all remaining bits were moved to m_user_commands.
+        bs.SetReadPos(bs.GetWritePos());
+    }
 #ifdef DEBUG_INPUT
     fprintf(stderr,"\n");
 #endif
@@ -353,8 +354,8 @@ void InputState::recv_client_opts(BitStream &bs)
 {
     ClientOptions opts;
     ClientOption *entry;
-    int cmd_idx = bs.GetPackedBits(1);
     glm::vec3 vec;
+    int cmd_idx;
     while((cmd_idx = bs.GetPackedBits(1))!=0)
     {
         entry=opts.get(cmd_idx-1);

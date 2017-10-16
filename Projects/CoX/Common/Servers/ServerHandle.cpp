@@ -14,7 +14,7 @@ ServerHandle<SERVER_CLASS>::ServerHandle(SERVER_CLASS *impl ) : m_address(),m_id
     otherwise InterfaceManager will connect to given address, check if server with given id exists, and create interface object of *RemoteInterface class.
 */
 template<class SERVER_CLASS>
-ServerHandle<SERVER_CLASS>::ServerHandle(const ACE_INET_Addr &addr,int id) : m_address(addr),m_id(id),m_server(0)
+ServerHandle<SERVER_CLASS>::ServerHandle(const ACE_INET_Addr &addr,int id) : m_address(addr),m_id(id),m_server(nullptr)
 {}
 
 /**

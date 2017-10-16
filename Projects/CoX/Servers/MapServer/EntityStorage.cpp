@@ -56,34 +56,14 @@ void EntityManager::sendDeletes( BitStream &tgt ) const
  */
 void EntityManager::sendEntities( BitStream &tgt,int self_idx,bool is_incremental ) const
 {
-    Entity *pEnt = NULL;
-    std::list<Entity *>::const_iterator iter = m_entlist.begin();
-    int last_idx;
-    int delta;// sending delta between entities idxs ->
+    int last_idx=-1;
+    int delta;
+    // sending delta between entities idxs ->
     assert(m_entlist.size()>0 && "Attempting to send empty entity list, the client will hang!");
-    if(iter!=m_entlist.end())
+    for(Entity *pEnt : m_entlist)
     {
-        pEnt = *iter;
         pEnt->m_create_player = (pEnt->getIdx()==self_idx);
-        tgt.StorePackedBits(1,pEnt->getIdx());
-        last_idx = pEnt->getIdx();
-        if(!is_incremental) {
-            bool prev_state = pEnt->m_create;
-            pEnt->m_create=true;
-            pEnt->serializeto(tgt);
-            pEnt->m_create= prev_state;
-        }
-        else
-            pEnt->serializeto(tgt);
-        iter++;
-    }
-    while(iter!=m_entlist.end())
-    {
-        //assert(!"Only one for now");
-        pEnt = *iter;
-        pEnt->m_create_player = (pEnt->getIdx()==self_idx);
-        delta = pEnt->getIdx()-last_idx -1;
-        //printf("Delta is %d\n",0);
+        delta = (last_idx==-1) ? pEnt->getIdx() : (pEnt->getIdx()-last_idx -1);
 
         tgt.StorePackedBits(1,delta);
         last_idx = pEnt->getIdx();
@@ -95,7 +75,6 @@ void EntityManager::sendEntities( BitStream &tgt,int self_idx,bool is_incrementa
         }
         else
             pEnt->serializeto(tgt);
-        iter++;
     }
     // last entity marker
     tgt.StorePackedBits(1,0); // next ent

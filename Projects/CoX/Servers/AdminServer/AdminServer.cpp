@@ -28,14 +28,14 @@
 // currently there is no such thing, and 'client-cache' is just a hash-map
 
 // Defined constructor
-_AdminServer::_AdminServer(void) : m_running(false)
+_AdminServer::_AdminServer() : m_running(false)
 {
     m_db        = new AdminDatabase;
     m_char_db   = new CharacterDatabase;
 }
 
 // Defined destructor
-_AdminServer::~_AdminServer(void)
+_AdminServer::~_AdminServer()
 {
     (void)ShutDown();
 }
@@ -141,16 +141,16 @@ bool _AdminServer::Run()
 }
 bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" */)
 {
+    if(!m_running)
+        return true;
     bool res=true;
     ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
     m_running=false;
-    m_db->getDb()->close();
-    m_char_db->getDb()->close();
 
     delete m_db;
     delete m_char_db;
-    m_db= NULL;
-    m_char_db= NULL;
+    m_db      = nullptr;
+    m_char_db = nullptr;
     return res;
 }
 bool _AdminServer::fill_account_info( AccountInfo &client )
@@ -245,7 +245,7 @@ int _AdminServer::AddIPBan(const ACE_INET_Addr &client_addr)
 ServerHandle<IGameServer> _AdminServer::RegisterMapServer(const ServerHandle<IMapServer> &/*map_h*/)
 {
     // For each server, find number of free Map handlers, and player occupancy ( servers with low number of Maps, and low occupancy should be prioritized)
-    return ServerHandle<IGameServer>(0);
+    return ServerHandle<IGameServer>(nullptr);
 }
 
 
@@ -260,7 +260,7 @@ int _AdminServer::GetAccessKeyForServer(const ServerHandle<IMapServer> &/*map_h*
     return 0;
 }
 
-bool _AdminServer::Online( void )
+bool _AdminServer::Online( )
 {
     return m_running;
 }

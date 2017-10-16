@@ -705,13 +705,13 @@ void modelCreateObjectFromModel(Urho3D::Context *ctx,ConvertedModel *model,std::
     SharedPtr<VertexBuffer> vb(new VertexBuffer(ctx));
     SharedPtr<IndexBuffer> ib(new IndexBuffer(ctx));
     std::vector<VertexElement> vertex_elements;
-    vertex_elements.push_back(VertexElement(TYPE_VECTOR3, SEM_POSITION));
+    vertex_elements.emplace_back(TYPE_VECTOR3, SEM_POSITION);
     if(model->packed_data.norms.uncomp_size)
-        vertex_elements.push_back(VertexElement(TYPE_VECTOR3, SEM_NORMAL));
+        vertex_elements.emplace_back(TYPE_VECTOR3, SEM_NORMAL);
     if(vbo.uv1)
-        vertex_elements.push_back(VertexElement(TYPE_VECTOR2, SEM_TEXCOORD));
+        vertex_elements.emplace_back(TYPE_VECTOR2, SEM_TEXCOORD);
     if(vbo.uv2)
-        vertex_elements.push_back(VertexElement(TYPE_VECTOR2, SEM_TEXCOORD));
+        vertex_elements.emplace_back(TYPE_VECTOR2, SEM_TEXCOORD);
     float *combined = combineBuffers(&vbo,model);
     free(databuf);
     vb->SetShadowed(true);
@@ -766,8 +766,8 @@ void geosetLoadData(Urho3D::Context *ctx,QFile &fp, ConvertedGeoSet *geoset)
     fp.read(geoset->m_geo_data.data(), geoset->geo_data_size);
     uint8_t *buffer_b = (uint8_t *)geoset->m_geo_data.data();
 
-    for (uint32_t i = 0; i < geoset->subs.size(); ++i) {
-        ConvertedModel *current_sub = geoset->subs[i];
+    for (ConvertedModel *current_sub : geoset->subs)
+    {
         fixupDataPtr(current_sub->packed_data.tris, buffer_b);
         fixupDataPtr(current_sub->packed_data.verts, buffer_b);
         fixupDataPtr(current_sub->packed_data.norms, buffer_b);

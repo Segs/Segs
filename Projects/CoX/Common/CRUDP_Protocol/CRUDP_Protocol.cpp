@@ -14,25 +14,16 @@
 #include <cassert>
 #include <ace/Guard_T.h>
 #include <ace/Log_Msg.h>
-//#define LOG_PACKETS 1
-
-void PacketDestroyer(CrudP_Packet *a)
-{
-    delete a;
-}
-void PacketSibDestroyer(const std::pair<int, CrudP_Protocol::pPacketStorage> &a)
-{
-    for_each(a.second.begin(), a.second.end(), PacketDestroyer);
-}
-
-/*
+#include <QDebug>
+using namespace std::chrono;
+/**
  Cryptic Reliable UDP
  CrudP
  Incoming
   BitStream Block ->
    Parse Header [ Checksum + Decode ]
-   Remove from send queue packets acknowledged by this header
-   if seq_no < min_recv_seq, reject packet
+   Remove from reliable packet list those acknowledged by this header
+   if seq_no < min_recv_seq, reject packet [out of order packet]
    Store/Join
    Record packet's seq_no in ack_list
    Sort according to sequence num
@@ -46,6 +37,34 @@ void PacketSibDestroyer(const std::pair<int, CrudP_Protocol::pPacketStorage> &a)
    If this queue is not scheduled for send, it's scheduled now
 
 */
+using namespace std::chrono;
+namespace  {
+void PacketDestroyer(CrudP_Packet *a)
+{
+    delete a;
+}
+int getPacketResendDelay(signed int attempts, int ping, int before_first)
+{
+    int delay;
+
+    if ( before_first )
+        delay = 3 * ping / 2;
+    else
+        delay = 4 * ping;
+    attempts = std::min(2,attempts);
+    switch(attempts) {
+    case 0: delay*=4; break;
+    case 1: delay*=2; break;
+    case 2:        break;
+    }
+    return std::min(std::max(delay,250),5000);
+}
+
+} // end of anonymous namespace
+void PacketSibDestroyer(const std::pair<int, CrudP_Protocol::pPacketStorage> &a)
+{
+    for_each(a.second.begin(), a.second.end(), PacketDestroyer);
+}
 
 bool CrudP_Protocol::PacketSeqCompare(const CrudP_Packet *a,const CrudP_Packet *b)
 {
@@ -60,10 +79,7 @@ CrudP_Protocol::~CrudP_Protocol()
     delete m_codec;
     m_codec= nullptr;
 }
-CrudP_Protocol::CrudP_Protocol() :  send_seq(0),recv_seq(0),m_codec(nullptr)
-{
-}
-void CrudP_Protocol::clearQueues(bool recv_queue,bool send_queue)
+void CrudP_Protocol::clearQueues(bool recv_queue,bool clear_send_queue)
 {
     //  seen_seq.clear();
     if(recv_queue)
@@ -73,10 +89,14 @@ void CrudP_Protocol::clearQueues(bool recv_queue,bool send_queue)
         sibling_map.clear();
         avail_packets.clear();
     }
-    if(send_queue)
+    if(clear_send_queue)
     {
         ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
-        for_each(unsent_packets.begin(),unsent_packets.end(),PacketDestroyer);
+        for_each(send_queue.begin(),send_queue.end(),PacketDestroyer);
+        for_each(reliable_packets.begin(),reliable_packets.end(),PacketDestroyer);
+        retransmit_queue.clear();
+        reliable_packets.clear();
+        send_queue.clear();
     }
 }
 void CrudP_Protocol::ReceivedBlock(BitStream &src)
@@ -98,6 +118,7 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
         ACE_ERROR((LM_WARNING,ACE_TEXT("Checksum error.\n")));
         return;
     }
+    m_last_activity = steady_clock::now();
     CrudP_Packet *res = new CrudP_Packet; //PacketFactory::newDataPacket;
     res->SetHasDebugInfo(bool(src.uGetBits(1)));
     res->setSeqNo(src.uGetBits(32));
@@ -110,16 +131,17 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
     }
     parseAcks(src,res);
     res->SetIsCompressed(src.GetBits(1));
-    src.ByteAlign();
+    src.ByteAlign(true,false);
     // how much data did we actually read
-    size_t bits_left=(bitlength-src.GetReadPos())+1;
+    size_t bits_left=(bitlength-src.GetReadPos());
     res->StoreBitArray(src.read_ptr(),bits_left);
     PushRecvPacket(res);
 }
 void CrudP_Protocol::parseAcks(BitStream &src,CrudP_Packet *tgt)
 {
     uint32_t numUniqueAcks = src.GetPackedBits(1);
-    if(numUniqueAcks  == 0) return;
+    if(numUniqueAcks  == 0)
+        return;
 
     uint32_t firstAck = src.GetBits(32);
     tgt->addAck(firstAck);
@@ -164,13 +186,13 @@ void CrudP_Protocol::storeAcks(BitStream &bs)
     }
     recv_acks.erase(recv_acks.begin(),iter);
 }
-bool CrudP_Protocol::allSiblingsAvailable(int sibling_group_id)
+bool CrudP_Protocol::allSiblingsAvailable(uint32_t sibid)
 {
-    pPacketStorage &storage = sibling_map[sibling_group_id];
+    pPacketStorage &storage = sibling_map[sibid];
     size_t avail=0;
-    for(size_t i=0; i<storage.size(); i++)
+    for(CrudP_Packet *pak : storage)
     {
-        avail+= (storage[i]!= nullptr);
+        avail+= (pak != nullptr);
     }
     return avail==storage.size();
 }
@@ -181,6 +203,12 @@ void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
     {
         PacketAck(a->getNextAck()); // endpoint acknowledged those packets
     }
+    // clean up acked packets from reliable_packets
+    auto first_invalid =
+        std::remove_if(reliable_packets.begin(), reliable_packets.end(),
+                       [](CrudP_Packet *p) -> bool { return p == nullptr; });
+    reliable_packets.erase(first_invalid,reliable_packets.end());
+
     recv_acks.push_back(a->GetSequenceNumber());
     if(!a->HasSiblings())
     {
@@ -202,14 +230,14 @@ CrudP_Packet *CrudP_Protocol::mergeSiblings(uint32_t id)
     assert(storage.size()>=1); // wtf ??
     BitStream *bs=new BitStream(32);
     CrudP_Packet *res= new CrudP_Packet(*storage[0]); //copy packet info from first sibling
-    for(uint32_t i = 0; i < storage.size(); i++)
+    for(CrudP_Packet *pak : storage)
     {
         //Skip duplicate siblings
         //if(i > 0 && storage[i]->getSibPos() == storage[i-1]->getSibPos()) continue;
-        assert(storage[i]->getSibId() == id);
-        BitStream *pkt_bs = storage[i]->GetStream();
+        assert(pak->getSibId() == id);
+        BitStream *pkt_bs = pak->GetStream();
         bs->PutBytes(pkt_bs->read_ptr(),pkt_bs->GetReadableDataSize());
-        delete storage[i];
+        delete pak;
         //PacketFactory::Delete(storage[i])
     }
     res->SetStream(bs);
@@ -241,7 +269,7 @@ bool CrudP_Protocol::insert_sibling(CrudP_Packet *pkt)
     First.  if there are no packets in avail_packets return nullptr
     Second. if first available packet sequence number is the same as the last popped one was, remove this duplicate
     Third.  if first available packet sequence number is the one we want (recv_seq+1) we pop it from storage,
-            strip it's shell, and return only a BitStreamDbg,BitStreamPlain copy of it's payload
+            strip it's shell, and return only a Dbg/Plain BitStream copy of it's payload
 */
 CrudP_Packet *CrudP_Protocol::RecvPacket(bool disregard_seq)
 {
@@ -250,7 +278,7 @@ CrudP_Packet *CrudP_Protocol::RecvPacket(bool disregard_seq)
     if(0==avail_packets.size())
         return nullptr;
     sort(avail_packets.begin(),avail_packets.end(),&CrudP_Protocol::PacketSeqCompare);
-    ipPacketStorage iter = avail_packets.begin();
+    auto iter = avail_packets.begin();
     // duplicate/old_packet removal
     while(iter!=avail_packets.end())
     {
@@ -276,21 +304,30 @@ CrudP_Packet *CrudP_Protocol::RecvPacket(bool disregard_seq)
 //! this acknowledges that packet with id was successfully received => acknowledged packet is removed from send queue
 void CrudP_Protocol::PacketAck(uint32_t id)
 {
-    //TODO: sort + binary search for id
-    ipPacketStorage iter = unsent_packets.begin();
-    while(iter!=unsent_packets.end())
+    for (CrudP_Packet *&v6 : reliable_packets )
     {
-        if((*iter)->GetSequenceNumber()==id)
-            iter=unsent_packets.erase(iter);
-        else
-            ++iter;
+        if ( !v6 || v6->GetSequenceNumber() != id)
+            continue;
+        //todo: update ping times here ( basically calculate time before packet's xmit and now
+        if ( !retransmit_queue.empty() )
+        {
+            // check if our packet is already in retransmit_queue, if so, remove it from there.
+            auto iter = std::find(retransmit_queue.begin(),retransmit_queue.end(),v6);
+            if ( iter!=retransmit_queue.end() )
+                retransmit_queue.erase(iter);
     }
+        delete v6;
+        v6 = nullptr;
+        break;
+    }
+    // if we get here it means we got ACK for packet we don't have in our
+    // reliable_packets
 }
 vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
 {
     vCrudP_Packet res;
     CrudP_Packet *act;
-    int sib_idx = 0;
+    uint32_t sib_idx = 0;
     BitStream* bit_stream = src.GetStream();
 
     while(bit_stream->GetReadableDataSize()>block_size)
@@ -298,122 +335,197 @@ vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
         act = new CrudP_Packet;
         act->GetStream()->PutBytes(bit_stream->read_ptr(),block_size);
         act->setSibPos(sib_idx++);
+        act->SetReliabilty(src.isReliable());
         bit_stream->read_ptr(int(block_size));
         res.push_back(act);
     }
     if(bit_stream->GetReadableDataSize()>0) // store leftover
     {
         act = new CrudP_Packet;
-        act->GetStream()->StoreBitArray_Unaligned(bit_stream->read_ptr(),bit_stream->GetReadableBits());
+        act->GetStream()->appendBitStream(*bit_stream);
         act->setSibPos(sib_idx);
+        act->SetReliabilty(src.isReliable());
         res.push_back(act);
     }
     return res;
 
 }
-//uint8_t * compressStream(BitStream &stream)
-//{
-//    uLongf comp_length =(uLongf )(12+1.1*stream.GetReadableDataSize());
-//    uint8_t *dest= new uint8_t[comp_length];
-//    compress(dest,&comp_length,stream.read_ptr(),stream.GetReadableDataSize());
-//    return dest;
-//}
-void CrudP_Protocol::sendLargePacket(CrudP_Packet *p)
+//! create a copy of the packet and then wrap it's content in protocol related parts.
+CrudP_Packet *CrudP_Protocol::wrapPacket(CrudP_Packet *_p)
 {
-    vCrudP_Packet split_packets = packetSplit(*p,1200);
-    uint32_t sib_count = uint32_t(split_packets.size());
-    int sib_id=send_seq+1;
-
-    for(CrudP_Packet *pkt : split_packets)
+    int cmd=-1;
+    if ( 0==_p->getSibId())
     {
-        pkt->setNumSibs(sib_count);
-        pkt->setSibId(sib_id);
-        pkt->setSeqNo(++send_seq);
-        size_t block_size = pkt->GetStream()->GetReadableDataSize();
-        BitStream *res =new BitStream(block_size+16*sizeof(uint32_t));
-        res->Put(uint32_t(0)); // readable bits holder
-        res->Put(uint32_t(0)); // checksum placeholder
-        res->StoreBits(1,pkt->HasDebugInfo());
-        res->StoreBits(32,pkt->GetSequenceNumber());
-        res->StorePackedBits(1,pkt->getNumSibs()); // sibling count
-        if(pkt->getNumSibs())
-        {
-            res->StorePackedBits(1,pkt->getSibPos());
-            res->StoreBits(32,pkt->getSibId());
+        _p->GetStream()->ResetReading();
+        cmd = _p->GetPackedBits(1);
+        _p->GetStream()->ResetReading();
         }
-        storeAcks(*res);
-        res->StoreBits(1,p->getIsCompressed());
-        res->ByteAlign();
-        res->StoreBitArray_Unaligned(pkt->GetStream()->read_ptr(),pkt->GetStream()->GetReadableBits());
-        res->ResetReading();
-        uint32_t *head =  (uint32_t *)res->read_ptr();
-        head[0] = uint32_t(res->GetReadableBits());
-        res->ByteAlign();
-        size_t length =res->GetReadableDataSize();
-        size_t fixedlen=((length + 3) & ~7U) + 4;
-        while(res->GetReadableDataSize()<fixedlen)
-        {
-            res->Put(uint8_t(0));
+    BitStream *strm =new BitStream(_p->GetStream()->GetReadableDataSize()+64);
+    memset(strm->read_ptr(),0,64);
+    strm->Put<uint32_t>(0); // bitlength placeholder
+    strm->Put<uint32_t>(0); // checksum placeholder
+    strm->StoreBits(1,_p->HasDebugInfo());
+    strm->StoreBits(32,_p->GetSequenceNumber());
+    strm->StorePackedBits(1,_p->getNumSibs()); // sibling count
+    if(_p->HasSiblings()) {
+        strm->StorePackedBits(1,_p->getSibPos());
+        strm->StoreBits(32,_p->getSibId());
         }
-        head[1] = m_codec->Checksum((uint8_t*)&head[2],fixedlen-2*sizeof(uint32_t)); // this is safe because all bitstreams have padding
-        m_codec->Encrypt((uint8_t*)&head[1],fixedlen - sizeof(uint32_t));// encrypt everything except length
-        delete pkt->GetStream();
-        pkt->SetStream(res);
-        ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
-        unsent_packets.push_back(pkt);
-    }
-}
+    storeAcks(*strm);
+    if(cmd!=1)
+        strm->StoreBits(1,_p->getIsCompressed());
+    strm->ByteAlign();
+    strm->appendBitStream(*_p->GetStream());
+    strm->ResetReading();
+    uint32_t *head =  (uint32_t *)strm->read_ptr();
+    head[0] = uint32_t(strm->GetReadableBits());
 
-void CrudP_Protocol::sendSmallPacket(CrudP_Packet *p)
+    CrudP_Packet *res = new CrudP_Packet(*_p);
+    res->SetStream(strm);
+    return res;
+    }
+void CrudP_Protocol::sendRaw(CrudP_Packet *pak,lCrudP_Packet &tgt )
 {
-    p->setNumSibs(0);
-    p->setSibId(0);
-    p->setSeqNo(++send_seq);
-    p->setSibPos(0);
-    BitStream *res =new BitStream(p->GetStream()->GetReadableDataSize()+64);
-    memset(res->read_ptr(),0,64);
-    res->Put<uint32_t>(p->GetStream()->GetReadableBits());
-    res->Put<uint32_t>(0); // checksum placeholder
-    res->StoreBits(1,p->HasDebugInfo());
-    res->StoreBits(32,p->GetSequenceNumber());
-    assert(!p->HasSiblings());
-    res->StorePackedBits(1,0); // sibling count
-    storeAcks(*res);
-    res->StoreBits(1,p->getIsCompressed());
-    res->ByteAlign();
-    res->StoreBitArray((uint8_t*)p->GetStream()->read_ptr(),p->GetStream()->GetReadableBits());
-    res->ResetReading();
-    uint32_t *head =  (uint32_t *)res->read_ptr();
-    head[0] = uint32_t(res->GetReadableBits());
-    res->ByteAlign();
-    size_t length =res->GetReadableDataSize();
-    size_t fixedlen=((length + 3) & ~7U) + 4;
-    while(res->GetReadableDataSize()<fixedlen)
-    {
-        res->Put<uint8_t>(0);
+    CrudP_Packet *wrapped = wrapPacket(pak);
+
+    wrapped->GetStream()->ByteAlign();
+    size_t length =wrapped->GetStream()->GetReadableDataSize();
+    size_t fixedlen=((length + 3) & ~7u) + 4;
+    while(wrapped->GetStream()->GetReadableDataSize()<fixedlen)
+{
+        wrapped->GetStream()->Put<uint8_t>(0);
     }
+    uint32_t *head = (uint32_t*)wrapped->GetStream()->read_ptr();
     head[1] = m_codec->Checksum((uint8_t*)&head[2],fixedlen-8); // this is safe because all bitstreams have padding
     m_codec->Encrypt((uint8_t*)&head[1],fixedlen-4);//res->GetReadableDataSize()
-    delete p->GetStream();
-    p->SetStream(res);
-    ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
-    unsent_packets.push_back(p);
+    tgt.push_back(wrapped);
+}
+bool CrudP_Protocol::addToSendQueue(CrudP_Packet *pak)
+{
+    if (send_queue.isFull())
+        return false;
+
+    pak->setSeqNo(++send_seq);
+    pak->setLastSend(steady_clock::now());
+    {
+        ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
+        send_queue.push_back(pak);
+    }
+    return true;
 }
 ///
-/// \brief Send the given packet through the link, if large payload split it into mulitple CRUDP packets
+/// \brief add the given packet to the send queue of this link, if large payload - split it into mulitple CRUDP packets
 /// \param packet
-///
-void CrudP_Protocol::SendPacket(CrudP_Packet *packet)
+bool CrudP_Protocol::SendPacket(CrudP_Packet *packet)
 {
-    if(packet->GetStream()->GetReadableDataSize()>1200)
-        sendLargePacket(packet);
-    else
-        sendSmallPacket(packet);
+    if (m_compression_allowed && packet->compressRequested())
+    {
+        assert(false);
+        // compress the bitstream here.
+    }
+    if (packet->GetStream()->GetReadableDataSize() < max_packet_data_size)
+    {
+        bool res = addToSendQueue(packet);
+        if (!res)
+            delete packet;
+        return res;
+    }
+    // this is a large packet, split it, and put parts on send queue
+    vCrudP_Packet split_packets = packetSplit(*packet, max_packet_data_size);
+    uint32_t      sib_count     = uint32_t(split_packets.size());
+    uint32_t      sib_id        = ++sibling_id;
+    for (CrudP_Packet *packet_part : split_packets)
+    {
+        packet_part->setNumSibs(sib_count);
+        packet_part->setSibId(sib_id);
+        if (!addToSendQueue(packet_part))
+            delete packet_part;
+    }
+    delete packet; // at this point the packet is of no use anymore, since it was split.
+    return true;
 }
-//! this gets all currently unacknowledged packets
-size_t CrudP_Protocol::GetUnsentPackets(std::list<CrudP_Packet *> &res)
+///
+/// \brief CrudP_Protocol::isUnresponsiveLink
+/// \return true if any packet in the reliable packets array is older than 300ms
+///
+bool CrudP_Protocol::isUnresponsiveLink()
 {
-    ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
-    res.assign(unsent_packets.begin(),unsent_packets.end());
-    return unsent_packets.size();
+
+    if(m_last_activity == timepoint())
+        return false; // we don't know if we're unresponsive yet.
+    auto time_now = steady_clock::now();
+    //TODO: make the 15seconds a parameter ?
+    long seconds_since_last=duration_cast<seconds>(time_now-m_last_activity).count();
+    if(seconds_since_last < 15)
+        return false; // client didn't send anything in less than 15 s, give it a bit more time
+    for(CrudP_Packet * pkt : reliable_packets)
+    {
+        if(duration_cast<milliseconds>(time_now - pkt->creationTime()).count() >= 300)
+            return true;
+    }
+    return false;
+}
+bool CrudP_Protocol::batchSend(lCrudP_Packet &tgt)
+{
+    if (isUnresponsiveLink())
+    {
+        qDebug() << "Unresponsive link";
+        return false;
+    }
+    // move some packaets from reliable_packets to retransmit_queue
+    processRetransmits();
+    // first handle retransmit queue
+    CrudP_Packet *pak;
+    if (!retransmit_queue.empty())
+    {
+        while ((pak = retransmit_queue.front()) != nullptr)
+        {
+            qDebug() << "Retrans packet with id" << pak->GetSequenceNumber();
+            sendRaw(pak, tgt);
+            retransmit_queue.pop_front();
+        }
+    }
+    if (send_queue.empty())
+        return true;
+    // than handle the main queue
+    while ((pak = send_queue.front()) != nullptr)
+    {
+        sendRaw(pak, tgt);
+        send_queue.pop_front();
+        if (pak->isReliable())
+        {
+            if (!reliable_packets.empty())
+                assert(pak->GetSequenceNumber() > reliable_packets.back()->GetSequenceNumber());
+            reliable_packets.push_back(pak);
+        } else
+            delete pak;
+    }
+    return true;
+}
+///
+/// \brief Finds packets that need to be retransmitted and wraps them in protocol related bits
+/// \param res containter for resulting packets
+///
+void CrudP_Protocol::processRetransmits()
+{
+    if (reliable_packets.empty())
+        return;
+    auto now       = steady_clock::now();
+    int  ping_time = 50;
+
+    int first_packet_id = reliable_packets.front()->GetSequenceNumber();
+    for (CrudP_Packet *pkt : reliable_packets)
+    {
+        if (retransmit_queue.isFull())
+            break;
+        int resend_period =
+            getPacketResendDelay(pkt->retransmitCount(), ping_time, pkt->GetSequenceNumber() < first_packet_id);
+        long milliseconds_since_xfer = duration_cast<milliseconds>(now - pkt->lastSend()).count();
+        if (milliseconds_since_xfer <= resend_period)
+            continue;
+        retransmit_queue.push_back(pkt);
+        pkt->setLastSend(steady_clock::now());
+        // todo: record packet send time in protocol instance ?
+        pkt->incRetransmits();
+    }
 }
