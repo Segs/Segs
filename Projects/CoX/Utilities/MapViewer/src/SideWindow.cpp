@@ -3,6 +3,7 @@
 
 #include "MapViewerApp.h"
 #include "CoHSceneConverter.h"
+#include "CoHModelLoader.h"
 #include "CohModelConverter.h"
 #include "DataPathsDialog.h"
 
@@ -11,6 +12,7 @@
 #include <QtCore/QStringListModel>
 #include <QStandardItemModel>
 #include <Lutefisk3D/Graphics/Material.h>
+#include <Lutefisk3D/Graphics/StaticModel.h>
 #include <Lutefisk3D/Resource/JSONFile.h>
 #include <Lutefisk3D/Resource/XMLFile.h>
 #include <Lutefisk3D/IO/VectorBuffer.h>

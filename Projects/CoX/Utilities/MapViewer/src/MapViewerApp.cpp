@@ -1,5 +1,6 @@
 #include "MapViewerApp.h"
 #include "CoHSceneConverter.h"
+#include "CoHModelLoader.h"
 #include "CohModelConverter.h"
 #include "CohTextureConverter.h"
 #include "SideWindow.h"

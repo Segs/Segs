@@ -8,6 +8,8 @@ set(SOURCES
     src/MapViewerApp.h
     src/PiggTools.cpp
     src/PiggTools.h
+    src/CoHModelLoader.cpp
+    src/CoHModelLoader.h
     src/CohModelConverter.cpp
     src/CohModelConverter.h
     src/CoHSceneConverter.cpp
