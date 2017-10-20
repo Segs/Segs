@@ -7,11 +7,17 @@
 
  */
 //#define ACE_NTRACE 0
+#include "Servers/ServerManager.h"
+#include "Servers/server_support.h"
+#include "version.h"
+//////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <string>
-#include <stdlib.h>
-#include <memory>
+#include "Servers/AdminServer/AdminServer.h"
+#include "AuthServer.h"
+#include "Servers/MapServer/MapServer.h"
+#include "Servers/GameServer/GameServer.h"
+//////////////////////////////////////////////////////////////////////////
+
 #include <ace/ACE.h>
 #include <ace/Get_Opt.h>
 #include <ace/ACE.h>
@@ -31,17 +37,11 @@
 #include <ace/Reactor.h>
 #include <ace/OS_main.h> //Included to enable file logging
 #include <ace/streams.h> //Included to enable file logging
-//#include "Auth.h"
-#include "Servers/ServerManager.h"
-#include "Servers/server_support.h"
-#include "version.h"
-//////////////////////////////////////////////////////////////////////////
-
-#include "Servers/AdminServer/AdminServer.h"
-#include "AuthServer.h"
-#include "Servers/MapServer/MapServer.h"
-#include "Servers/GameServer/GameServer.h"
-//////////////////////////////////////////////////////////////////////////
+#include <QtCore/QCoreApplication>
+#include <iostream>
+#include <string>
+#include <stdlib.h>
+#include <memory>
 
 /** \brief The LogCallback class
 */
@@ -95,7 +95,9 @@ static ACE_THR_FUNC_RETURN event_loop (void *arg)
 
     reactor->owner (ACE_OS::thr_self ());
     reactor->run_reactor_event_loop ();
-    return 0;
+    ServerManager::instance()->GetAdminServer()->ShutDown("No reason");
+    ServerManager::instance()->StopLocalServers();
+    return nullptr;
 }
 static bool CreateServers()
 {
@@ -145,6 +147,7 @@ public:
 };
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
+    QCoreApplication q_app(argc,argv);
     ACE_Sig_Set interesting_signals;
     interesting_signals.sig_add(SIGINT);
     interesting_signals.sig_add(SIGHUP);

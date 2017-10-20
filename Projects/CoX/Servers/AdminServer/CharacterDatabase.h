@@ -21,7 +21,7 @@ class Character;
 class AccountInfo;
 class CharacterDatabase
 {
-        QSqlDatabase * m_db;
+        QSqlDatabase * m_db = nullptr;
 
         QSqlQuery m_prepared_account_select;
         QSqlQuery m_prepared_account_insert;

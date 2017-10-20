@@ -21,6 +21,8 @@ CrudP_Packet::CrudP_Packet()
     m_numSibs       = 0;
     m_sibId         = 0;
     m_sibPos        = 0;
+    m_reliable      = true;
+    m_retransmit_count = 0;
 }
 
 CrudP_Packet::CrudP_Packet(BitStream *stream, bool hasDebugInfo)
@@ -33,6 +35,8 @@ CrudP_Packet::CrudP_Packet(BitStream *stream, bool hasDebugInfo)
     m_numSibs       = 0;
     m_sibId         = 0;
     m_sibPos        = 0;
+    m_reliable      = true;
+    m_retransmit_count = 0;
 
 }
 CrudP_Packet::CrudP_Packet(const CrudP_Packet &from)
@@ -45,11 +49,14 @@ CrudP_Packet::CrudP_Packet(const CrudP_Packet &from)
     m_numSibs       = from.m_numSibs;
     m_sibId         = from.m_sibId;
     m_sibPos        = from.m_sibPos;
+    m_reliable      = from.m_reliable;
+    m_retransmit_count = from.m_retransmit_count;
+    m_xfer_time     = from.m_xfer_time;
 
 }
 CrudP_Packet::~CrudP_Packet()
 {
-    if(m_stream) delete m_stream;
+    delete m_stream;
 }
 
 uint32_t CrudP_Packet::GetBits(uint32_t nBits)

@@ -1558,17 +1558,17 @@ namespace sol {
 // beginning of sol/compatibility/version.hpp
 
 #ifdef SOL_USING_CXX_LUA
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
+#include <lua/lua.h>
+#include <lua/lualib.h>
+#include <lua/lauxlib.h>
 #ifdef SOL_USING_CXX_LUAJIT
-#include <luajit.h>
+#include <lua/luajit.h>
 #endif // C++ LuaJIT ... whatever that means
 #ifndef SOL_EXCEPTIONS_SAFE_PROPAGATION
 #define SOL_EXCEPTIONS_SAFE_PROPAGATION
 #endif // Exceptions can be propagated safely using C++-compiled Lua
 #else
-#include <lua.hpp>
+#include <lua/lua.hpp>
 #endif // C++ Mangling for Lua
 
 #ifdef LUAJIT_VERSION

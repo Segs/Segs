@@ -35,7 +35,7 @@ typedef ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR> ClientAcceptor;
 class IClient;
 typedef QHash<QString,AuthClient *> hmClients;
 class AuthClient;
-class AuthServer  : public IAuthServer
+class AuthServer final : public IAuthServer
 {
 //boost::object_pool<AuthClient>          m_client_pool;  //!< pool used to efficiently construct new client objects.
     typedef hmClients::iterator         ihmClients; //!< helper typedef for iterators to m_clients store

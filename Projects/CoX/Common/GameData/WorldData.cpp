@@ -25,6 +25,7 @@ bool WorldData_impl::read_costumes( const QString &directory_path )
     BinStore costumes_store;
     if(!costumes_store.open(directory_path+"costume.bin",costumesets_i0_requiredCrc)) {
         ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Couldn't load Costume!!\n") ));
+        return false;
     }
 
     bool res=loadFrom(&costumes_store,&m_costume_store);
@@ -39,8 +40,10 @@ bool WorldData_impl::read_colors( const QString &directory_path )
 {
     ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading Supergroup colors ... ") ));
     BinStore sg_color_store;
-    if(!sg_color_store.open(directory_path+"supergroupColors.bin",palette_i0_requiredCrc)) {
+    if(!sg_color_store.open(directory_path+"supergroupColors.bin",palette_i0_requiredCrc))
+    {
         ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Couldn't load Supergroup colors!!\n") ));
+        return false;
     }
 
     bool res=loadFrom(&sg_color_store,&m_supergroup_colors);

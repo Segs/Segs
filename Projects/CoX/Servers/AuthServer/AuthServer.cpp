@@ -32,13 +32,13 @@
  */
 
 
-AuthServer::AuthServer(void)
+AuthServer::AuthServer()
 {
     m_acceptor = new ClientAcceptor;
     m_running=false;
 }
 
-AuthServer::~AuthServer(void)
+AuthServer::~AuthServer()
 {
 
     ShutDown();
@@ -138,5 +138,5 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
  */
 ServerHandle<IAdminServer> AuthServer::AuthenticateMapServer(const ServerHandle<IMapServer> &/*map_h*/,int /*version*/,const std::string &/*passw*/)
 {
-    return ServerHandle<IAdminServer>(0);
+    return ServerHandle<IAdminServer>(nullptr);
 }

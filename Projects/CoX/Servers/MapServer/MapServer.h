@@ -22,11 +22,20 @@ class MapClient;
 class MapInstance;
 class GameServerInterface;
 
+class MapLinkEndpoint : public ServerEndpoint
+{
+public:
+    MapLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
+    ~MapLinkEndpoint()=default;
+protected:
+    ILink *createLink(EventProcessor *down) override
+    {
+        return new MapLink(down,this);
+    }
+};
 class MapServer : public IMapServer
 {
 static const int                MAPSERVER_VERSION=1;
-
-typedef ServerEndpoint<MapLink> MapLinkEndpoint;
 
 public:
                                 MapServer(void);

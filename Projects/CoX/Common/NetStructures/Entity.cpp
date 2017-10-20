@@ -536,7 +536,7 @@ void Entity::beginLogout(uint16_t time_till_logout)
 void Entity::sendBuffsConditional(BitStream &bs) const
 {
     bs.StoreBits(1,0); // nothing here for now
-    if(0)
+    if(false)
     {
         sendBuffs(bs);
     }
@@ -627,16 +627,7 @@ void Entity::addInterp(const PosUpdate & p) {
 
 Entity::Entity()
 {
-    m_logout_sent = false;
-    m_input_ack = 0;
     m_access_level = 9; // enables access to all deve
-    field_60=0;
-    field_78=0;
-    m_state_mode_send=0;
-    m_state_mode=0; // TODO: remove this later on, testing now.
-    m_seq_update=0;
-    m_has_titles=false;
-    m_SG_info=false;
     pos = glm::vec3(-60.5f,180.0f,0.0f);
 }
 

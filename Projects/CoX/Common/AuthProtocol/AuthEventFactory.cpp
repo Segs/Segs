@@ -24,9 +24,9 @@ AuthLinkEvent *AuthEventFactory::EventForType(eAuthPacketType type)
         case PKT_SELECT_SERVER_RESPONSE:
             return new ServerSelectResponse();
         case MSG_AUTH_UNKNOWN:
-            return NULL;
+            return nullptr;
     }
-    return NULL;
+    return nullptr;
 }
 void AuthEventFactory::Destroy(AuthLinkEvent *what)
 {

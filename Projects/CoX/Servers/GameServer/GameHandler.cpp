@@ -67,7 +67,8 @@ void GameHandler::dispatch( SEGSEvent *ev )
         break;
     case SEGS_EventTypes::evConnect:
         break;
-    case SEGS_EventTypes::evDisconnect:
+    case SEGS_EventTypes::evDisconnect: // link layer tells us that a link is not responsive/dead
+        on_link_lost(ev);
         break;
     default:
         assert(!"Unknown event encountered in dispatch.");
@@ -166,10 +167,21 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
     CharacterClient *client = lnk->client_data();
     if(client)
     {
-        lnk->set_client_data(0);
+        lnk->set_client_data(nullptr);
         m_clients.removeById(client->account_info().account_server_id());
     }
     lnk->putq(new DisconnectResponse);
+    lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
+}
+void GameHandler::on_link_lost(SEGSEvent *ev)
+{
+    GameLink * lnk = (GameLink *)ev->src();
+    CharacterClient *client = lnk->client_data();
+    if(client)
+    {
+        lnk->set_client_data(nullptr);
+        m_clients.removeById(client->account_info().account_server_id());
+    }
     lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
 }
 void GameHandler::on_delete_character(DeleteCharacter *ev)

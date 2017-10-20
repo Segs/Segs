@@ -65,6 +65,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case SEGS_EventTypes::evTimeout:
             on_timeout(static_cast<TimerEvent *>(ev));
             break;
+        case SEGS_EventTypes::evDisconnect:
+            on_link_lost(ev);
+        break;
         case MapEventTypes::evIdle:
             on_idle(static_cast<IdleEvent *>(ev));
             break;
@@ -148,6 +151,22 @@ void MapInstance::on_client_quit(ClientQuit*ev) {
     assert(client && client->char_entity());
     client->char_entity()->beginLogout(10);
 
+}
+void MapInstance::on_link_lost(SEGSEvent *ev)
+{
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *client = lnk->client_data();
+    if(client)
+    {
+        Entity *ent = client->char_entity();
+        assert(ent);
+        //todo: notify all clients about entity removal
+        m_entities.removeEntityFromActiveList(ent);
+        lnk->set_client_data(nullptr);
+        m_clients.removeById(client->account_info().account_server_id());
+        delete ent;
+    }
+    lnk->putq(new DisconnectEvent(this));
 }
 void MapInstance::on_disconnect(DisconnectRequest *ev)
 {
@@ -322,7 +341,7 @@ void MapInstance::sendState() {
             char buf[256];
             printf("Sending msg to client %p\n",cl);
             std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion();
-            std::snprintf(buf, 256, "There are %d active entites and %d clients", m_entities.active_entities(),
+            std::snprintf(buf, 256, "There are %zu active entites and %zu clients", m_entities.active_entities(),
                           num_active_clients());
             welcome_msg += buf;
             ChatMessage *msg = ChatMessage::adminMessage(buf );
@@ -360,7 +379,8 @@ void MapInstance::on_input_state(InputState *st)
     // Input state messages can be followed by multiple commands.
     assert(st->m_user_commands.GetReadableBits()<32*1024*8); // simple sanity check ?
     // here we will try to extract all of them and put them on our processing queue
-    while(st->m_user_commands.GetReadableBits()>1) {
+    while(st->m_user_commands.GetReadableBits()>1)
+    {
         MapLinkEvent *ev = MapEventFactory::CommandEventFromStream(st->m_user_commands);
         if(!ev)
             break;
@@ -393,7 +413,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev){
         //TODO: restrict scripting access to GM's and such
         if(ev->contents.midRef(2).startsWith("exec:{"))
         {
-            QString code = ev->contents.mid(8,ev->contents.size()-1);
+            QString code = ev->contents.mid(8,ev->contents.size()-9);
             m_scripting_interface->runScript(src,code,"user provided script");
             return;
         }

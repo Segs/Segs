@@ -11,10 +11,10 @@ AuthServerInterface::AuthServerInterface(IAuthServer *server) : m_server(server)
 {
 }
 
-AuthServerInterface::~AuthServerInterface(void)
+AuthServerInterface::~AuthServerInterface()
 {
     delete m_server;
-    m_server=NULL;
+    m_server=nullptr;
 }
 /*
 void AuthServerInterface::SendError(int error) // called from auth server during user authentication, might be useful for automatical firewall rules update

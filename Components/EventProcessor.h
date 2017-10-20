@@ -9,7 +9,7 @@ typedef ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvent> super;
 
 
 public:
-        int             open(void *args /* = 0 */);
+        int             open(void *args = nullptr);
         int             handle_timeout(const ACE_Time_Value &current_time, const void *act /* = 0 */);
         int             svc(void);
 virtual void            dispatch(SEGSEvent *ev)=0;

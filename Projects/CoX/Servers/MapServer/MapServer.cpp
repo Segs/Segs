@@ -27,13 +27,13 @@
 // Template instantiation
 template class ClientStore<MapClient>;
 
-MapServer::MapServer(void) : m_id(0),
+MapServer::MapServer() : m_id(0),
     m_online(false),
     m_endpoint(NULL)
 {
 
 }
-MapServer::~MapServer(void)
+MapServer::~MapServer()
 {
     if(ACE_Reactor::instance())
     {
@@ -41,7 +41,7 @@ MapServer::~MapServer(void)
         delete m_endpoint;
     }
 }
-bool MapServer::Run(void)
+bool MapServer::Run()
 {
     if(m_endpoint)
     {
@@ -54,7 +54,7 @@ bool MapServer::Run(void)
     m_handler->set_server(this);
 
 
-    m_endpoint = new ServerEndpoint<MapLink>(m_listen_point); //,this
+    m_endpoint = new MapLinkEndpoint(m_listen_point); //,this
     m_endpoint->set_downstream(m_handler);
 
     if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
