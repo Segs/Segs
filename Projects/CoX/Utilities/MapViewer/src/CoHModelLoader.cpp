@@ -461,7 +461,7 @@ std::unique_ptr<VBOPointers> fillVbo(const ConvertedModel &model)
     }
     if (model.packed_data.sts.uncomp_size)
     {
-        vbo->uv1.reserve(model.vertex_count);
+        vbo->uv1.resize(model.vertex_count);
         geoUnpackDeltas(&model.packed_data.sts, (uint8_t *)vbo->uv1.data(), 2, model.vertex_count, UNPACK_FLOATS);
         vbo->uv2 = vbo->uv1;
     }
