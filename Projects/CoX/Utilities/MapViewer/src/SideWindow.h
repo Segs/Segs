@@ -15,8 +15,8 @@ class StaticModel;
 class Vector3;
 class Drawable;
 }
-struct ConvertedSceneGraph;
-struct ConvertedNode;
+struct CoHSceneGraph;
+struct CoHNode;
 struct ConvertedModel;
 
 class MapViewerApp;
@@ -32,12 +32,12 @@ protected:
     void changeEvent(QEvent *e);
 signals:
     void scenegraphSelected(const QString &path);
-    void nodeSelected(ConvertedNode *n);
-    void nodeDisplayRequest(ConvertedNode *n,bool isroot);
+    void nodeSelected(CoHNode *n);
+    void nodeDisplayRequest(CoHNode *n,bool isroot);
 public slots:
     void onCameraPositionChanged(float x,float y,float z);
     void onModelSelected(ConvertedModel *m,Urho3D::Drawable *d);
-    void onScenegraphLoaded(const ConvertedSceneGraph &sc);
+    void onScenegraphLoaded(const CoHSceneGraph &sc);
 private slots:
     void on_actionLoad_Scene_Graph_triggered();
 

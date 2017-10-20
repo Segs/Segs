@@ -13,8 +13,8 @@ class StaticModel;
 class Vector3;
 class Drawable;
 }
-struct ConvertedSceneGraph;
-struct ConvertedNode;
+struct CoHSceneGraph;
+struct CoHNode;
 struct ConvertedModel;
 
 class MapViewerApp : public QObject, public Urho3D::Application
@@ -29,13 +29,13 @@ public:
     void Start() override;
 public slots:
     void loadSelectedSceneGraph(const QString &path);
-    void onDisplayNode(ConvertedNode *n, bool rootnode);
-    void onNodeSelected(ConvertedNode *n);
+    void onDisplayNode(CoHNode *n, bool rootnode);
+    void onNodeSelected(CoHNode *n);
 signals:
     void cameraLocationChanged(float x,float y,float z);
-    void nodeSelected(ConvertedNode *def,Urho3D::Node *n);
+    void nodeSelected(CoHNode *def,Urho3D::Node *n);
     void modelSelected(ConvertedModel *model,Urho3D::Drawable*m);
-    void scenegraphLoaded(const ConvertedSceneGraph &);
+    void scenegraphLoaded(const CoHSceneGraph &);
 private:
     void CreateBaseScene();
     void SetupViewport();
@@ -50,13 +50,13 @@ private:
 
     Urho3D::SharedPtr<Urho3D::Node> m_camera_node;
     Urho3D::SharedPtr<Urho3D::Node> m_currently_shown_node;
-    ConvertedNode *m_current_selected_node=nullptr;
+    CoHNode *m_current_selected_node=nullptr;
     Urho3D::SharedPtr<Urho3D::Scene> m_scene;
     // Camera params
     float yaw_=0;
     float pitch_=0;
     // conversion results
-    std::unique_ptr<ConvertedSceneGraph> m_coh_scene;
+    std::unique_ptr<CoHSceneGraph> m_coh_scene;
     std::unordered_map<void *,Urho3D::Node *> m_converted_nodes;
     // UI helper variables
     SideWindow *m_sidewindow=nullptr;

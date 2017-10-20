@@ -43,6 +43,9 @@ struct VBOPointers
 
 // Start of anonymous namespace
 namespace {
+glm::vec3 fromUrho(Vector3 v) { return {v.x_,v.y_,v.z_};}
+Vector3 toUrho(glm::vec3 v) { return {v.x,v.y,v.z};}
+
 enum UnpackMode {
     UNPACK_FLOATS=0,
     UNPACK_INTS=1,
@@ -85,7 +88,7 @@ struct Model32
     uint32_t        model_tri_count;
     int             texture_bind_offsets;
     int             unpacked_1;
-    Vector3         grid_pos;
+    glm::vec3       grid_pos;
     float           grid_size;
     float           grid_invsize;
     float           grid_tag;
@@ -95,9 +98,9 @@ struct Model32
     int             bone_name_offset;
     int             num_altpivots;
     int             extra;
-    Vector3         m_scale;
-    Vector3         m_min;
-    Vector3         m_max;
+    glm::vec3       m_scale;
+    glm::vec3       m_min;
+    glm::vec3       m_max;
     int             geoset_list_idx;
     PackInfo        pack_data[7];
 };
@@ -723,7 +726,8 @@ void modelCreateObjectFromModel(Urho3D::Context *ctx,ConvertedModel *model,std::
     ib->SetData(vbo.triangles.data());
     fromScratchModel->SetVertexBuffers({vb},{},{});
     fromScratchModel->SetIndexBuffers({ib});
-    BoundingBox bbox(model->m_min,model->m_max);
+
+    BoundingBox bbox(toUrho(model->m_min),toUrho(model->m_max));
     unsigned geom_count = model->texture_bind_info.size();
     fromScratchModel->SetNumGeometries(geom_count);
     unsigned face_offset=0;
@@ -991,7 +995,7 @@ void convertMaterial(Urho3D::Context *ctx,ConvertedModel *mdl,StaticModel* boxOb
 }
 
 } // end of anonymus namespace
-Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, ConvertedNode *node, int opt)
+Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, CoHNode *node, int opt)
 {
     ConvertedModel *mdl = node->model;
     ModelModifiers *model_trick = mdl->trck_node;

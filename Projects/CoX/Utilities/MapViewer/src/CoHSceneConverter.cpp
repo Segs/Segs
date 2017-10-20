@@ -25,9 +25,10 @@
 
 using namespace Urho3D;
 extern QString basepath;
-
 namespace
 {
+glm::vec3 fromUrho(Vector3 v) { return {v.x_,v.y_,v.z_};}
+Vector3 toUrho(glm::vec3 v) { return {v.x,v.y,v.z};}
 struct NameList
 {
     QHash<QString,QString> new_names; // map from old node name to a new name
@@ -35,7 +36,7 @@ struct NameList
 };
 static NameList my_name_list;
 
-bool groupFileLoadFromName(ConvertedSceneGraph &conv,const QString &a1);
+bool groupFileLoadFromName(CoHSceneGraph &conv,const QString &a1);
 
 void rotationFromYPR(Matrix3x4 & a1, const Vector3 &pyr)
 {
@@ -59,13 +60,13 @@ void rotationFromYPR(Matrix3x4 & a1, const Vector3 &pyr)
     a1.SetRotation(rotmat);
 }
 
-ConvertedNode *newDef(ConvertedSceneGraph &scene)
+CoHNode *newDef(CoHSceneGraph &scene)
 {
-    ConvertedNode *res = new ConvertedNode;
+    CoHNode *res = new CoHNode;
     scene.all_converted_defs.emplace_back(res);
     return res;
 }
-ConvertedRootNode *newRef(ConvertedSceneGraph &scene)
+ConvertedRootNode *newRef(CoHSceneGraph &scene)
 {
     size_t idx;
     for(idx=0; idx<scene.refs.size(); ++idx)
@@ -103,7 +104,7 @@ bool LoadScene(const QString &fname,SceneGraph_Data &scenegraph)
     }
     return true;
 }
-ConvertedNode * getNodeByName(const ConvertedSceneGraph &conv,const QString &a1)
+CoHNode * getNodeByName(const CoHSceneGraph &conv,const QString &a1)
 {
     QString filename;
     int idx = a1.lastIndexOf('/');
@@ -113,7 +114,7 @@ ConvertedNode * getNodeByName(const ConvertedSceneGraph &conv,const QString &a1)
         filename = a1.mid(idx+1);
     return conv.name_to_node.value(filename.toLower(),nullptr);
 }
-QString  groupMakeName(ConvertedSceneGraph &conv,const QString &base)
+QString  groupMakeName(CoHSceneGraph &conv,const QString &base)
 {
     QString buf;
     do
@@ -130,7 +131,7 @@ bool groupInLibSub(const QString &a1)
 }
 
 // Create new names for any 'numbered' scene nodes
-QString groupRename(ConvertedSceneGraph &conv,NameList &memory, const QString &oldname, bool is_def)
+QString groupRename(CoHSceneGraph &conv,NameList &memory, const QString &oldname, bool is_def)
 {
     QString str;
     str = oldname.contains('/') ? oldname : memory.basename+'/'+oldname;
@@ -164,7 +165,7 @@ QString groupRename(ConvertedSceneGraph &conv,NameList &memory, const QString &o
     memory.new_names[querystring] = tgt;
     return tgt;
 }
-void  groupApplyModifiers(ConvertedNode *group)
+void  groupApplyModifiers(CoHNode *group)
 {
 
     ConvertedModel *a1 = group->model;
@@ -189,7 +190,7 @@ void  groupApplyModifiers(ConvertedNode *group)
             v4->LodScale != 0.0f)
         group->lod_fromtrick = true;
 }
-void setNodeNameAndPath(ConvertedSceneGraph &scene,ConvertedNode *a2, QString obj_path)
+void setNodeNameAndPath(CoHSceneGraph &scene,CoHNode *a2, QString obj_path)
 {
     QString result;
     size_t strlenobjec = strlen("object_library");
@@ -210,7 +211,7 @@ void setNodeNameAndPath(ConvertedSceneGraph &scene,ConvertedNode *a2, QString ob
     if ( key.position() != 0 )
         a2->dir = result.mid(0,key.position()-1);
 }
-void addChildNodes(ConvertedSceneGraph &conv,const SceneGraphNode_Data &a1, ConvertedNode *node, NameList &a3)
+void addChildNodes(CoHSceneGraph &conv,const SceneGraphNode_Data &a1, CoHNode *node, NameList &a3)
 {
     if ( a1.p_Grp.empty() )
         return;
@@ -235,7 +236,7 @@ void addChildNodes(ConvertedSceneGraph &conv,const SceneGraphNode_Data &a1, Conv
         }
     }
 }
-void addLod(const std::vector<DefLod_Data> &a1, ConvertedNode *a2)
+void addLod(const std::vector<DefLod_Data> &a1, CoHNode *a2)
 {
     if(a1.empty())
         return;
@@ -249,7 +250,7 @@ void addLod(const std::vector<DefLod_Data> &a1, ConvertedNode *a2)
     a2->lod_near      = v2.Near;
     a2->lod_near_fade = v2.NearFade;
 }
-bool nodeCalculateBounds(ConvertedNode *group)
+bool nodeCalculateBounds(CoHNode *group)
 {
     float geometry_radius=0.0f;
     float maxrad=0.0f;
@@ -261,15 +262,15 @@ bool nodeCalculateBounds(ConvertedNode *group)
     if ( group->model )
     {
         model = group->model;
-        bbox.Merge(model->m_min);
-        bbox.Merge(model->m_max);
+        bbox.Merge(toUrho(model->m_min));
+        bbox.Merge(toUrho(model->m_max));
 
         geometry_radius = bbox.size().Length() * 0.5f;
         set = 1;
     }
     for ( NodeChild & child : group->children )
     {
-        Vector3 dst(child.m_matrix * child.m_def->center);
+        Vector3 dst(child.m_matrix * Vector3{child.m_def->center.x,child.m_def->center.y,child.m_def->center.z});
         bbox.Merge(dst+Vector3(child.m_def->radius,child.m_def->radius,child.m_def->radius));
         bbox.Merge(dst-Vector3(child.m_def->radius,child.m_def->radius,child.m_def->radius));
         set = 1;
@@ -280,11 +281,11 @@ bool nodeCalculateBounds(ConvertedNode *group)
     }
     group->radius = bbox.size().Length() * 0.5f;
     group->m_bbox = bbox;
-    group->center = bbox.Center(); // center
+    group->center = fromUrho(bbox.Center()); // center
     for ( NodeChild & child : group->children )
     {
-        Vector3 toChildCenter = child.m_matrix * child.m_def->center - group->center;
-        float r = toChildCenter.Length() + child.m_def->radius;
+        glm::vec3 toChildCenter = fromUrho(child.m_matrix * toUrho(child.m_def->center)) - group->center;
+        float r = glm::length(toChildCenter) + child.m_def->radius;
         maxrad = std::max(maxrad,r);
     }
     if ( maxrad != 0.0f )
@@ -292,10 +293,10 @@ bool nodeCalculateBounds(ConvertedNode *group)
     group->radius = std::max(geometry_radius,group->radius);
     return group->radius == 0.0f && !group->children.empty();
 }
-void  nodeSetVisBounds(ConvertedNode *group)
+void  nodeSetVisBounds(CoHNode *group)
 {
     //TODO: fix this
-    Vector3 dv;
+    glm::vec3 dv;
     float maxrad = 0.0;
     float maxvis = 0.0;
     if ( !group )
@@ -306,7 +307,7 @@ void  nodeSetVisBounds(ConvertedNode *group)
     {
         ConvertedModel *v1 = group->model;
         dv = v1->m_max - v1->m_min;
-        maxrad = dv.Length() * 0.5f + group->shadow_dist;
+        maxrad = glm::length(dv) * 0.5f + group->shadow_dist;
         if ( group->lod_far == 0.0f )
         {
             group->lod_far = (maxrad + 10.0f) * 10.0f;
@@ -317,21 +318,21 @@ void  nodeSetVisBounds(ConvertedNode *group)
     }
     for (NodeChild &entr : group->children)
     {
-        dv = entr.m_matrix * entr.m_def->center;
+        dv = fromUrho(entr.m_matrix * toUrho(entr.m_def->center));
         dv -= group->center;
-        maxrad = std::max(maxrad,dv.Length() + entr.m_def->radius + entr.m_def->shadow_dist);
-        maxvis = std::max(maxvis,dv.Length() + entr.m_def->vis_dist * entr.m_def->lod_scale);
+        maxrad = std::max(maxrad,glm::length(dv) + entr.m_def->radius + entr.m_def->shadow_dist);
+        maxvis = std::max(maxvis,glm::length(dv) + entr.m_def->vis_dist * entr.m_def->lod_scale);
     }
     if ( group->shadow_dist == 0.0f )
         group->shadow_dist = maxrad - group->radius;
     group->vis_dist = maxvis;
 }
-bool addNode(ConvertedSceneGraph &conv,const SceneGraphNode_Data &defload, NameList &renamer)
+bool addNode(CoHSceneGraph &conv,const SceneGraphNode_Data &defload, NameList &renamer)
 {
     if (defload.p_Grp.empty() && defload.p_Obj.isEmpty())
         return false;
     QString obj_path = groupRename(conv,renamer, defload.name, 1);
-    ConvertedNode * a1 = getNodeByName(conv,obj_path);
+    CoHNode * a1 = getNodeByName(conv,obj_path);
     if ( !a1 )
         a1 = newDef(conv);
     if ( !defload.p_Obj.isEmpty() )
@@ -357,13 +358,13 @@ bool addNode(ConvertedSceneGraph &conv,const SceneGraphNode_Data &defload, NameL
     nodeSetVisBounds(a1);
     return true;
 }
-void  loadSubgraph(const QString &filename,ConvertedSceneGraph &conv)
+void  loadSubgraph(const QString &filename,CoHSceneGraph &conv)
 {
     geosetLoad(filename); // load given subgraph's root geoset
     QFileInfo fi(filename);
     loadSceneGraph(conv,fi.path()+"/"+fi.completeBaseName()+".txt");
 }
-bool groupLoadRequiredLibsForNode(ConvertedNode *node,ConvertedSceneGraph &conv)
+bool groupLoadRequiredLibsForNode(CoHNode *node,CoHSceneGraph &conv)
 {
     GeoStoreDef *gf;
 
@@ -388,7 +389,7 @@ bool groupLoadRequiredLibsForNode(ConvertedNode *node,ConvertedSceneGraph &conv)
     }
     return true;
 }
-bool groupFileLoadFromName(ConvertedSceneGraph &conv,const QString &a1)
+bool groupFileLoadFromName(CoHSceneGraph &conv,const QString &a1)
 {
     GeoStoreDef *v3 = groupGetFileEntryPtr(a1);
     if ( !v3 )
@@ -401,7 +402,7 @@ bool groupFileLoadFromName(ConvertedSceneGraph &conv,const QString &a1)
     groupLoadRequiredLibsForNode(getNodeByName(conv,a1),conv);
     return 1;
 }
-void addRoot(ConvertedSceneGraph &conv,const SceneRootNode_Data &refload, NameList &namelist)
+void addRoot(CoHSceneGraph &conv,const SceneRootNode_Data &refload, NameList &namelist)
 {
     QString newname = groupRename(conv,namelist, refload.name, 0);
     auto *def = getNodeByName(conv,newname);
@@ -418,7 +419,7 @@ void addRoot(ConvertedSceneGraph &conv,const SceneRootNode_Data &refload, NameLi
     rotationFromYPR(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z});
     ref->mat.SetTranslation(Vector3(&refload.pos[0]));
 }
-void PostProcessScene(SceneGraph_Data &scenegraph,ConvertedSceneGraph &conv,NameList &renamer,const QString &name)
+void PostProcessScene(SceneGraph_Data &scenegraph,CoHSceneGraph &conv,NameList &renamer,const QString &name)
 {
     for (const SceneGraphNode_Data & node_dat : scenegraph.Def )
         addNode(conv,node_dat, renamer);
@@ -456,7 +457,7 @@ QString mapNameToPath(const QString &a1)
     return buf;
 }
 }
-bool loadSceneGraph(ConvertedSceneGraph &conv,const QString &path)
+bool loadSceneGraph(CoHSceneGraph &conv,const QString &path)
 {
     QString binName = mapNameToPath(path);
     NameList my_name_list;
@@ -468,7 +469,7 @@ bool loadSceneGraph(ConvertedSceneGraph &conv,const QString &path)
     return true;
 }
 //TODO: convert this from recursive function into iterative one.
-Urho3D::Node * convertedNodeToLutefisk(ConvertedNode *conv_node, const Urho3D::Matrix3x4 &mat, Context *ctx, int depth, int opt)
+Urho3D::Node * convertedNodeToLutefisk(CoHNode *conv_node, const Urho3D::Matrix3x4 &mat, Context *ctx, int depth, int opt)
 {
     ResourceCache* cache = ctx->m_ResourceCache.get();
     Urho3D::Node * node = new Node(ctx);

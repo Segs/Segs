@@ -1,8 +1,8 @@
 #ifndef COHMODELCONVERTER_H
 #define COHMODELCONVERTER_H
 #include <Lutefisk3D/Graphics/StaticModel.h>
-
-struct ConvertedNode;
+#include <glm/vec3.hpp>
+struct CoHNode;
 struct ConvertedGeoSet;
 struct GeometryModifiers;
 struct ModelModifiers;
@@ -49,9 +49,9 @@ struct ConvertedModel
     CoHBlendMode             blend_mode;
     uint32_t                 vertex_count;
     uint32_t                 model_tri_count;
-    Urho3D::Vector3          scale;
-    Urho3D::Vector3          m_min;
-    Urho3D::Vector3          m_max;
+    glm::vec3                scale;
+    glm::vec3                m_min;
+    glm::vec3                m_max;
     ptrdiff_t                boneinfo_offset = 0;
     ConvertedGeoSet *        geoset;
     PackBlock                packed_data;
@@ -71,7 +71,7 @@ struct ConvertedGeoSet
     bool                          data_loaded = false;
 };
 
-Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, ConvertedNode *node,int opt);
+Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, CoHNode *node,int opt);
 ConvertedModel * groupModelFind(const QString &a1);
 bool prepareGeoLookupArray();
 GeometryModifiers *findGeomModifier(const QString &modelname, const QString &trick_path);
