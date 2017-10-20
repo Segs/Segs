@@ -86,9 +86,13 @@ struct ConvertedGeoSet
     uint32_t                      geo_data_size;
     bool                          data_loaded = false;
 };
+void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader, ConvertedModel *model,
+                     const std::vector<TextureWrapper> &textures);
+
 ConvertedModel * groupModelFind(const QString &a1);
 bool prepareGeoLookupArray();
 GeometryModifiers *findGeomModifier(const QString &modelname, const QString &trick_path);
 GeoStoreDef * groupGetFileEntryPtr(const QString &a1);
 ConvertedGeoSet * geosetLoad(const QString &m);
 float *combineBuffers(VBOPointers &meshdata,ConvertedModel *mdl);
+void geosetLoadData(class QFile &fp, ConvertedGeoSet *geoset);

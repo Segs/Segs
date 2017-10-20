@@ -342,88 +342,6 @@ ConvertedModel *modelFind(const QString &model_name, const QString &filename)
     return ptr_sub;
 
 }
-void initLoadedModel(Urho3D::Context *ctx,ConvertedModel *model,const std::vector<TextureWrapper> &textures)
-{
-    model->blend_mode = CoHBlendMode::MULTIPLY_REG;
-    bool isgeo=false;
-    if(model->name.startsWith("GEO_",Qt::CaseInsensitive))
-    {
-        model->flags |= 0x4000;
-        isgeo = true;
-        if ( model->name.contains("eyes",Qt::CaseInsensitive) )
-        {
-            if ( !model->trck_node )
-                model->trck_node = new ModelModifiers;
-            model->trck_node->_TrickFlags |= DoubleSided;
-        }
-    }
-    assert(model->num_textures==model->texture_bind_info.size());
-    for(TextureBind tbind : model->texture_bind_info)
-    {
-        const TextureWrapper &texb(textures[tbind.tex_idx]);
-        if (!isgeo)
-        {
-            TextureWrapper seltex     = texb;
-            uint32_t       extra_flag = 0;
-            if (texb.info)
-            {
-                auto blend = CoHBlendMode(texb.info->BlendType);
-                if (blend == CoHBlendMode::ADDGLOW || blend == CoHBlendMode::COLORBLEND_DUAL ||
-                    blend == CoHBlendMode::ALPHADETAIL)
-                    seltex = tryLoadTexture(ctx, texb.detailname);
-                if (seltex.base && seltex.flags & TextureWrapper::ALPHA)
-                    extra_flag = 1;
-            }
-            model->flags |= extra_flag;
-        }
-        if ( texb.flags & TextureWrapper::DUAL )
-        {
-            model->flags |= 0x40;
-            if ( texb.BlendType != CoHBlendMode::MULTIPLY )
-                model->blend_mode = texb.BlendType;
-        }
-        if ( !texb.bumpmap.isEmpty() )
-        {
-            auto wrap(tryLoadTexture(ctx,texb.bumpmap));
-            if ( wrap.flags & TextureWrapper::BUMPMAP )
-            {
-                model->flags |= 0x800;
-                model->blend_mode = (model->blend_mode == CoHBlendMode::COLORBLEND_DUAL) ?
-                            CoHBlendMode::BUMPMAP_COLORBLEND_DUAL : CoHBlendMode::BUMPMAP_MULTIPLY;
-            }
-            if ( texb.flags & TextureWrapper::CUBEMAPFACE || (wrap.flags & TextureWrapper::CUBEMAPFACE) )
-                model->flags |= 0x2000;
-        }
-    }
-    if ( model->trck_node && model->trck_node->info)
-    {
-
-        model->flags |= model->trck_node->info->ObjFlags;
-    }
-    if ( model->blend_mode == CoHBlendMode::COLORBLEND_DUAL || model->blend_mode == CoHBlendMode::BUMPMAP_COLORBLEND_DUAL )
-    {
-        if ( !model->trck_node )
-            model->trck_node = new ModelModifiers;
-        model->trck_node->_TrickFlags |= SetColor;
-    }
-    if ( model->blend_mode == CoHBlendMode::ADDGLOW )
-    {
-        if ( !model->trck_node )
-            model->trck_node = new ModelModifiers;
-        model->trck_node->_TrickFlags |= SetColor | NightLight;
-    }
-    if ( !model->packed_data.norms.uncomp_size ) // no normals
-        model->flags |= 4; // only ambient light
-    if ( model->trck_node  && model->trck_node->_TrickFlags & Additive )
-        model->flags |= 1; // alpha pass
-    if ( model->flags & 0x400 ) // force opaque
-        model->flags &= ~1;
-    if ( model->trck_node && model->trck_node->info)
-    {
-        if ( model->trck_node->info->blend_mode )
-            model->blend_mode = CoHBlendMode(model->trck_node->info->blend_mode);
-    }
-}
 ptrdiff_t unpackedDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, uint32_t num_entries, UnpackMode v_type)
 {
     uint32_t     idx;
@@ -626,7 +544,9 @@ void fixupDataPtr(DeltaPack &a, uint8_t *b)
         a.compressed_data = b + a.buffer_offset;
 }
 
-void geosetLoadData(Urho3D::Context *ctx,QFile &fp, ConvertedGeoSet *geoset)
+} // end of anonymus namespace
+
+void geosetLoadData(QFile &fp, ConvertedGeoSet *geoset)
 {
     int buffer;
     fp.seek(0);
@@ -653,9 +573,6 @@ void geosetLoadData(Urho3D::Context *ctx,QFile &fp, ConvertedGeoSet *geoset)
     }
     geoset->data_loaded = true;
 }
-
-} // end of anonymus namespace
-
 ConvertedModel *groupModelFind(const QString & a1)
 {
     QString model_name=a1.mid(a1.lastIndexOf('/')+1);
@@ -761,4 +678,86 @@ float *combineBuffers(VBOPointers &meshdata,ConvertedModel *mdl)
         }
     }
     return res;
+}
+void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader,ConvertedModel *model,const std::vector<TextureWrapper> &textures)
+{
+    model->blend_mode = CoHBlendMode::MULTIPLY_REG;
+    bool isgeo=false;
+    if(model->name.startsWith("GEO_",Qt::CaseInsensitive))
+    {
+        model->flags |= 0x4000;
+        isgeo = true;
+        if ( model->name.contains("eyes",Qt::CaseInsensitive) )
+        {
+            if ( !model->trck_node )
+                model->trck_node = new ModelModifiers;
+            model->trck_node->_TrickFlags |= DoubleSided;
+        }
+    }
+    assert(model->num_textures==model->texture_bind_info.size());
+    for(TextureBind tbind : model->texture_bind_info)
+    {
+        const TextureWrapper &texb(textures[tbind.tex_idx]);
+        if (!isgeo)
+        {
+            TextureWrapper seltex     = texb;
+            uint32_t       extra_flag = 0;
+            if (texb.info)
+            {
+                auto blend = CoHBlendMode(texb.info->BlendType);
+                if (blend == CoHBlendMode::ADDGLOW || blend == CoHBlendMode::COLORBLEND_DUAL ||
+                    blend == CoHBlendMode::ALPHADETAIL)
+                    seltex = funcloader(texb.detailname);
+                if (seltex.base && seltex.flags & TextureWrapper::ALPHA)
+                    extra_flag = 1;
+            }
+            model->flags |= extra_flag;
+        }
+        if ( texb.flags & TextureWrapper::DUAL )
+        {
+            model->flags |= 0x40;
+            if ( texb.BlendType != CoHBlendMode::MULTIPLY )
+                model->blend_mode = texb.BlendType;
+        }
+        if ( !texb.bumpmap.isEmpty() )
+        {
+            auto wrap(funcloader(texb.bumpmap));
+            if ( wrap.flags & TextureWrapper::BUMPMAP )
+            {
+                model->flags |= 0x800;
+                model->blend_mode = (model->blend_mode == CoHBlendMode::COLORBLEND_DUAL) ?
+                            CoHBlendMode::BUMPMAP_COLORBLEND_DUAL : CoHBlendMode::BUMPMAP_MULTIPLY;
+            }
+            if ( texb.flags & TextureWrapper::CUBEMAPFACE || (wrap.flags & TextureWrapper::CUBEMAPFACE) )
+                model->flags |= 0x2000;
+        }
+    }
+    if ( model->trck_node && model->trck_node->info)
+    {
+
+        model->flags |= model->trck_node->info->ObjFlags;
+    }
+    if ( model->blend_mode == CoHBlendMode::COLORBLEND_DUAL || model->blend_mode == CoHBlendMode::BUMPMAP_COLORBLEND_DUAL )
+    {
+        if ( !model->trck_node )
+            model->trck_node = new ModelModifiers;
+        model->trck_node->_TrickFlags |= SetColor;
+    }
+    if ( model->blend_mode == CoHBlendMode::ADDGLOW )
+    {
+        if ( !model->trck_node )
+            model->trck_node = new ModelModifiers;
+        model->trck_node->_TrickFlags |= SetColor | NightLight;
+    }
+    if ( !model->packed_data.norms.uncomp_size ) // no normals
+        model->flags |= 4; // only ambient light
+    if ( model->trck_node  && model->trck_node->_TrickFlags & Additive )
+        model->flags |= 1; // alpha pass
+    if ( model->flags & 0x400 ) // force opaque
+        model->flags &= ~1;
+    if ( model->trck_node && model->trck_node->info)
+    {
+        if ( model->trck_node->info->blend_mode )
+            model->blend_mode = CoHBlendMode(model->trck_node->info->blend_mode);
+    }
 }

@@ -66,136 +66,6 @@ AllTricks_Data s_tricks_store;
 std::unordered_map<ConvertedModel *,Urho3D::SharedPtr<Model>> s_coh_model_to_renderable;
 QHash<QString,ConvertedGeoSet *> s_name_to_geoset;
 
-static void setupTexOpt(TextureModifiers *tex)
-{
-    if (tex->ScaleST0.x == 0.0f)
-        tex->ScaleST0.x = 1.0f;
-    if (tex->ScaleST0.y == 0.0f)
-        tex->ScaleST0.y = 1.0f;
-    if (tex->ScaleST1.x == 0.0f)
-        tex->ScaleST1.x = 1.0f;
-    if (tex->ScaleST1.y == 0.0f)
-        tex->ScaleST1.y = 1.0f;
-    if (tex->Fade.x != 0.0f || tex->Fade.y != 0.0f)
-        tex->Flags |= uint32_t(TexOpt::FADE);
-    if (!tex->Blend.isEmpty())
-        tex->Flags |= uint32_t(TexOpt::DUAL);
-    if (!tex->Surface.isEmpty())
-    {
-        //qDebug() <<"Has surface"<<tex->Surface;
-    }
-
-    tex->name = tex->name.mid(0,tex->name.lastIndexOf('.')); // cut last extension part
-    if(tex->name.startsWith('/'))
-        tex->name.remove(0,1);
-    auto iter = g_texture_path_to_mod.find(tex->name.toLower());
-    if (iter!=g_texture_path_to_mod.end())
-    {
-        qDebug() << "duplicate texture info: "<<tex->name;
-        return;
-    }
-    g_texture_path_to_mod[tex->name.toLower()] = tex;
-}
-void convertTextureNames(const int *a1, std::vector<QString> &a2)
-{
-    int   num_textures          = a1[0];
-    const int * indices         = a1 + 1;
-    const char *start_of_strings_area = (const char *)a1 + num_textures * 4 + sizeof(int);
-    for (int idx = 0; idx < num_textures; ++idx)
-    {
-        // fixup the offsets by adding the end of index area
-        a2.push_back(start_of_strings_area + indices[idx]);
-    }
-}
-std::vector<TextureBind> convertTexBinds(int cnt, const uint8_t *data)
-{
-    std::vector<TextureBind> res;
-    res.assign((const TextureBind *)data,((const TextureBind *)data)+cnt);
-    return res;
-}
-void initLoadedModel(Urho3D::Context *ctx,ConvertedModel *model,const std::vector<TextureWrapper> &textures)
-{
-    model->blend_mode = CoHBlendMode::MULTIPLY_REG;
-    bool isgeo=false;
-    if(model->name.startsWith("GEO_",Qt::CaseInsensitive))
-    {
-        model->flags |= 0x4000;
-        isgeo = true;
-        if ( model->name.contains("eyes",Qt::CaseInsensitive) )
-        {
-            if ( !model->trck_node )
-                model->trck_node = new ModelModifiers;
-            model->trck_node->_TrickFlags |= DoubleSided;
-        }
-    }
-    assert(model->num_textures==model->texture_bind_info.size());
-    for(TextureBind tbind : model->texture_bind_info)
-    {
-        const TextureWrapper &texb(textures[tbind.tex_idx]);
-        if (!isgeo)
-        {
-            TextureWrapper seltex     = texb;
-            uint32_t       extra_flag = 0;
-            if (texb.info)
-            {
-                auto blend = CoHBlendMode(texb.info->BlendType);
-                if (blend == CoHBlendMode::ADDGLOW || blend == CoHBlendMode::COLORBLEND_DUAL ||
-                    blend == CoHBlendMode::ALPHADETAIL)
-                    seltex = tryLoadTexture(ctx, texb.detailname);
-                if (seltex.base && seltex.flags & TextureWrapper::ALPHA)
-                    extra_flag = 1;
-            }
-            model->flags |= extra_flag;
-        }
-        if ( texb.flags & TextureWrapper::DUAL )
-        {
-            model->flags |= 0x40;
-            if ( texb.BlendType != CoHBlendMode::MULTIPLY )
-                model->blend_mode = texb.BlendType;
-        }
-        if ( !texb.bumpmap.isEmpty() )
-        {
-            auto wrap(tryLoadTexture(ctx,texb.bumpmap));
-            if ( wrap.flags & TextureWrapper::BUMPMAP )
-            {
-                model->flags |= 0x800;
-                model->blend_mode = (model->blend_mode == CoHBlendMode::COLORBLEND_DUAL) ?
-                            CoHBlendMode::BUMPMAP_COLORBLEND_DUAL : CoHBlendMode::BUMPMAP_MULTIPLY;
-            }
-            if ( texb.flags & TextureWrapper::CUBEMAPFACE || (wrap.flags & TextureWrapper::CUBEMAPFACE) )
-                model->flags |= 0x2000;
-        }
-    }
-    if ( model->trck_node && model->trck_node->info)
-    {
-
-        model->flags |= model->trck_node->info->ObjFlags;
-    }
-    if ( model->blend_mode == CoHBlendMode::COLORBLEND_DUAL || model->blend_mode == CoHBlendMode::BUMPMAP_COLORBLEND_DUAL )
-    {
-        if ( !model->trck_node )
-            model->trck_node = new ModelModifiers;
-        model->trck_node->_TrickFlags |= SetColor;
-    }
-    if ( model->blend_mode == CoHBlendMode::ADDGLOW )
-    {
-        if ( !model->trck_node )
-            model->trck_node = new ModelModifiers;
-        model->trck_node->_TrickFlags |= SetColor | NightLight;
-    }
-    if ( !model->packed_data.norms.uncomp_size ) // no normals
-        model->flags |= 4; // only ambient light
-    if ( model->trck_node  && model->trck_node->_TrickFlags & Additive )
-        model->flags |= 1; // alpha pass
-    if ( model->flags & 0x400 ) // force opaque
-        model->flags &= ~1;
-    if ( model->trck_node && model->trck_node->info)
-    {
-        if ( model->trck_node->info->blend_mode )
-            model->blend_mode = CoHBlendMode(model->trck_node->info->blend_mode);
-    }
-}
-
 void reportUnhandled(const QString &message)
 {
     static QSet<QString> already_reported;
@@ -206,7 +76,7 @@ void reportUnhandled(const QString &message)
 }
 void modelCreateObjectFromModel(Urho3D::Context *ctx,ConvertedModel *model,std::vector<TextureWrapper> &textures)
 {
-    initLoadedModel(ctx,model,textures);
+    initLoadedModel([ctx](const QString &v) -> TextureWrapper { return tryLoadTexture(ctx, v); }, model, textures);
     std::unique_ptr<VBOPointers> vbo(getVBO(*model));
     vbo->assigned_textures.reserve(textures.size());
     for(TextureBind tbind : model->texture_bind_info)
@@ -264,42 +134,6 @@ void addModelData(Urho3D::Context *ctx,ConvertedGeoSet *geoset)
         modelCreateObjectFromModel(ctx,model, v2);
     }
 }
-void fixupDataPtr(DeltaPack &a, uint8_t *b)
-{
-    if (a.uncomp_size)
-        a.compressed_data = b + a.buffer_offset;
-}
-
-void geosetLoadData(Urho3D::Context *ctx,QFile &fp, ConvertedGeoSet *geoset)
-{
-    int buffer;
-    fp.seek(0);
-    fp.read((char *)&buffer, 4);
-    fp.seek(buffer + 8);
-    geoset->m_geo_data.resize(geoset->geo_data_size); //, 1, "\\src\\Common\\seq\\anim.c", 496);
-    fp.read(geoset->m_geo_data.data(), geoset->geo_data_size);
-    uint8_t *buffer_b = (uint8_t *)geoset->m_geo_data.data();
-
-    for (ConvertedModel *current_sub : geoset->subs)
-    {
-        fixupDataPtr(current_sub->packed_data.tris, buffer_b);
-        fixupDataPtr(current_sub->packed_data.verts, buffer_b);
-        fixupDataPtr(current_sub->packed_data.norms, buffer_b);
-        fixupDataPtr(current_sub->packed_data.sts, buffer_b);
-        fixupDataPtr(current_sub->packed_data.grid, buffer_b);
-        fixupDataPtr(current_sub->packed_data.weights, buffer_b);
-        fixupDataPtr(current_sub->packed_data.matidxs, buffer_b);
-        if (current_sub->boneinfo_offset)
-        {
-            qCritical() << "Models with bones are not supported yet, bother SEGS devs to fix that";
-            assert(false);
-        }
-    }
-    if (!geoset->subs.empty())
-        addModelData(ctx,geoset);
-    geoset->data_loaded = true;
-}
-
 Urho3D::Model *buildModel(Urho3D::Context *ctx,ConvertedModel *mdl)
 {
     ResourceCache* cache = ctx->m_ResourceCache.get();
@@ -317,7 +151,7 @@ Urho3D::Model *buildModel(Urho3D::Context *ctx,ConvertedModel *mdl)
         if(lf3d_model)
         {
             std::vector<TextureWrapper> v2 = getModelTextures(ctx,mdl->geoset->tex_names);
-            initLoadedModel(ctx,mdl,v2);
+            initLoadedModel([ctx](const QString &v) -> TextureWrapper { return tryLoadTexture(ctx, v); },mdl,v2);
             s_coh_model_to_renderable[mdl] = lf3d_model;
             return lf3d_model;
         }
@@ -332,7 +166,7 @@ Urho3D::Model *buildModel(Urho3D::Context *ctx,ConvertedModel *mdl)
         return nullptr;
     }
     if(!mdl->geoset->data_loaded) {
-        geosetLoadData(ctx,fl,mdl->geoset);
+        geosetLoadData(fl,mdl->geoset);
         if (!mdl->geoset->subs.empty())
             addModelData(ctx,mdl->geoset);
 
