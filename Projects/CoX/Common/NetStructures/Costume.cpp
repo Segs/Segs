@@ -5,9 +5,10 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <ace/ACE.h>
 #include "Costume.h"
+
 #include "BitStream.h"
+#include "Common/GameData/serialization_common.h"
 
 void CostumePart::serializeto( BitStream &bs ) const
 {
@@ -65,10 +66,6 @@ void Costume::storeCharselParts( BitStream &bs )
     }
 }
 
-#include <cereal/cereal.hpp>
-#include <cereal/archives/json.hpp>
-#include <cereal/types/vector.hpp>
-#include <cereal/types/string.hpp>
 
 template<class Archive>
 void serialize(Archive &arc, CostumePart &cp) {
@@ -89,7 +86,7 @@ void serialize(Archive &arc, Costume &c) {
     arc(c.m_parts);
 }
 
-void Costume::serializeToDb(std::string &tgt)
+void Costume::serializeToDb(QString &tgt)
 {
 // for now only parts are serialized
     // format is a simple [[]]
@@ -98,15 +95,15 @@ void Costume::serializeToDb(std::string &tgt)
         cereal::JSONOutputArchive ar( ostr );
         ar(*this);
     }
-    tgt = ostr.str();
+    tgt = QString::fromStdString(ostr.str());
 }
 
-void Costume::serializeFromDb(const std::string &src)
+void Costume::serializeFromDb(const QString &src)
 {
-    if(src.empty())
+    if(src.isEmpty())
         return;
     std::istringstream istr;
-    istr.str(src);
+    istr.str(src.toStdString());
     {
         cereal::JSONInputArchive ar(istr);
         ar(*this);

@@ -9,9 +9,8 @@ void ServerListResponse::serializeto( GrowingBuffer &buf ) const
     buf.uPut((uint8_t)4);
     buf.uPut((uint8_t)m_serv_list.size());
     buf.uPut((uint8_t)1); //preferred server number
-    for(size_t i=0; i<m_serv_list.size(); i++)
+    for(const GameServerInfo &srv : m_serv_list)
     {
-        const GameServerInfo &srv(m_serv_list[i]);
         buf.Put(srv.id);
         uint32_t addr= srv.addr;
         buf.Put((uint32_t)ACE_SWAP_LONG(addr)); //must be network byte order

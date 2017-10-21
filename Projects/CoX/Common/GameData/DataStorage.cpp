@@ -1,0 +1,311 @@
+/*
+ * Super Entity Game Server Project
+ * http://segs.sf.net/
+ * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ *
+ */
+#include "DataStorage.h"
+#include "Common/GameData/Colors.h"
+#include <QtCore/QFile>
+#include <QtCore/QString>
+#include <QtCore/QFileInfo>
+
+bool BinStore::check_bin_version_and_crc(uint32_t req_crc)
+{
+    QString tgt;
+    uint32_t crc_from_file;
+    char magic_contents[8];
+    m_str.read(magic_contents,8);
+    read(crc_from_file);
+    tgt=read_pstr(4096);
+    if ( 0!=strncmp(magic_contents,"CrypticS",8) || tgt.midRef(0,6)!="Parse4" || (req_crc!=0 && crc_from_file != req_crc) ) //
+    {
+        m_str.close();
+        return false;
+    }
+    return true;
+}
+QString BinStore::read_pstr( size_t maxlen )
+{
+    uint16_t len=0;
+    if(read(len)!=true)
+        return "";
+    if(len<=maxlen)
+    {
+        char *buf=new char[len+1];
+        m_str.read(buf,len);
+        buf[len]=0;
+        QString res=buf;
+        delete [] buf;
+        if(m_file_sizes.size()>0)
+        {
+            (*m_file_sizes.rbegin())-=len;
+            bytes_read+=len;
+        }
+        fixup();
+        return res;
+    }
+    return "";
+}
+
+void BinStore::skip_pstr()
+{
+    uint16_t len=0;
+    read(len);
+    m_str.seek(len+m_str.pos());
+}
+
+bool BinStore::read_data_blocks( bool file_data_blocks )
+{
+    if(!file_data_blocks)
+    {
+        skip_pstr();
+        uint32_t v;
+        read(v);
+        if(v)
+            m_str.seek(v+m_str.pos());
+        return true;
+    }
+    QString hdr=read_pstr(20);
+    int sz;
+    read_internal(sz);
+
+    quint64 read_start = m_str.pos();
+    if(hdr.compare("Files1")||sz<=0)
+        return false;
+    int num_data_blocks;
+    read_internal(num_data_blocks);
+    for (int blk_idx=0; blk_idx<num_data_blocks; ++blk_idx)
+    {
+        FileEntry fe;
+        fe.name = read_pstr(260);
+        read_internal(fe.date);
+        m_entries.push_back(fe);
+    }
+    quint64 read_end = m_str.pos();
+    m_file_sizes.push_back(m_str.size()-read_end);
+    return (sz==(read_end-read_start));
+}
+
+bool BinStore::open(const QString &name,uint32_t required_crc )
+{
+    if(!m_str.isOpen())
+    {
+        m_str.setFileName(name);
+        if(!m_str.open(QFile::ReadOnly))
+            return false;
+    }
+    bool result = check_bin_version_and_crc(required_crc);
+    return result && read_data_blocks(true);
+}
+
+bool BinStore::findAndOpen(const QString & name,uint32_t reqcrc)
+{
+    QString local_path = "bin/"+name;
+    if(!QFile::exists(local_path))
+        return false;
+    if(!m_str.isOpen())
+    {
+        m_str.setFileName(name);
+        if(!m_str.open(QFile::ReadOnly))
+            return false;
+    }
+    return check_bin_version_and_crc(reqcrc) && read_data_blocks(true);
+}
+
+bool BinStore::read( uint32_t &v )
+{
+    size_t res = read_internal(v);
+    return res==4;
+}
+bool BinStore::read( int32_t &v )
+{
+    size_t res = read_internal(v);
+    return res==4;
+}
+bool BinStore::read( float &v )
+{
+    size_t res = read_internal(v);
+    return res==4;
+}
+
+bool BinStore::read( uint16_t &v )
+{
+    size_t res = read_internal(v);
+    return res==2;
+}
+
+bool BinStore::read( uint8_t &v )
+{
+    size_t res = read_internal(v);
+    return res==1;
+}
+
+bool BinStore::read(Vec2 &val)
+{
+    bool parse_ok=true;
+    parse_ok &= read(val[0]);
+    parse_ok &= read(val[1]);
+    return parse_ok;
+}
+
+bool BinStore::read(Vec3 &val)
+{
+    bool parse_ok=true;
+    parse_ok &= read(val[0]);
+    parse_ok &= read(val[1]);
+    parse_ok &= read(val[2]);
+    return parse_ok;
+}
+
+bool BinStore::read(RGBA & rgb)
+{
+    bool parse_ok=true;
+    for(int i=0; i<3; ++i)
+        parse_ok &= read(rgb.v[i]);
+    rgb.v[3] = 0;
+    uint8_t skipped;
+    read(skipped);
+    return parse_ok;
+}
+bool BinStore::read(uint8_t *&val, uint32_t length)
+{
+    bool parse_ok=true;
+    if(val)
+        delete [] val;
+    val = new uint8_t [length];
+    parse_ok &= read_bytes((char *)val,length);
+    fixup();
+    return parse_ok;
+}
+bool BinStore::read(QString &val)
+{
+    val=this->read_str(12000);
+    return true;
+}
+bool BinStore::read(std::vector<QString> &res)
+{
+    bool parse_ok=true;
+    uint32_t to_read = 0;
+    parse_ok &= read(to_read);
+    if ( 0==to_read)
+        return parse_ok;
+    for(size_t idx = 0; idx < to_read; ++idx)
+    {
+        res.push_back(read_str(12000));
+        //parse_ok &= res[idx].size()>0; TODO handle string read errors
+    }
+    return parse_ok;
+}
+bool BinStore::read(std::vector<uint32_t> &res)
+{
+    bool parse_ok=true;
+    uint32_t to_read = 0;
+    parse_ok &= read(to_read);
+    res.clear();
+    if ( 0==to_read)
+        return parse_ok;
+    for(size_t idx = 0; idx < to_read; ++idx)
+    {
+        res.push_back(0);
+        parse_ok &= read(res[idx]);
+    }
+    return parse_ok;
+}
+bool BinStore::read(std::vector<int32_t> &res)
+{
+    bool parse_ok=true;
+    uint32_t to_read = 0;
+    parse_ok &= read(to_read);
+    res.clear();
+    if ( 0==to_read)
+        return parse_ok;
+    for(size_t idx = 0; idx < to_read; ++idx)
+    {
+        res.push_back(0);
+        parse_ok &= read(res[idx]);
+    }
+    return parse_ok;
+}
+bool BinStore::read(std::vector<float> &res)
+{
+    bool parse_ok=true;
+    uint32_t to_read = 0;
+    parse_ok &= read(to_read);
+    res.clear();
+    if ( 0==to_read)
+        return parse_ok;
+    for(size_t idx = 0; idx < to_read; ++idx)
+    {
+        res.push_back(0);
+        parse_ok &= read(res[idx]);
+    }
+    return parse_ok;
+}
+bool BinStore::read_bytes( char *tgt,size_t sz )
+{
+    m_str.read(tgt,sz);
+    bytes_read+=sz;
+    return true;
+}
+
+QString BinStore::read_str( size_t maxlen )
+{
+    QString result(read_pstr(maxlen));
+    fixup();
+    return result;
+}
+
+void BinStore::prepare()
+{
+    read_internal(bytes_to_read);
+    bytes_read=0;
+}
+
+uint32_t BinStore::read_header( QString &name,size_t maxlen )
+{
+    name = read_pstr(maxlen);
+    uint32_t res;
+    if(4!=read_internal(res) || res==0)
+        return ~0U;
+    return res;
+}
+
+bool BinStore::prepare_nested()
+{
+    bool result= bytes_to_read==bytes_read;
+    assert(bytes_to_read==bytes_read);
+    bytes_to_read = *m_file_sizes.rbegin();
+    return result;
+}
+
+bool BinStore::nesting_name(QString &name)
+{
+    uint32_t expected_size = read_header(name,12000);
+    if(expected_size == uint32_t(~0))
+        return false;
+    bytes_to_read = expected_size;
+    if(m_file_sizes.size()>0)
+        (*m_file_sizes.rbegin())-=bytes_to_read;
+    m_file_sizes.push_back(bytes_to_read); // the size of structure being read. + sizeof(uint32_t)
+    return true;
+}
+
+void BinStore::fixup()
+{
+    qint64 nonmult4 = ((m_str.pos() + 3) & ~3) - m_str.pos();
+    if(nonmult4)
+    {
+        m_str.seek(nonmult4+m_str.pos());
+        bytes_read+=nonmult4;
+        if(m_file_sizes.size()>0)
+            (*m_file_sizes.rbegin())-=nonmult4;
+
+    }
+}
+
+bool BinStore::end_encountered() const
+{
+    return (*m_file_sizes.rbegin())==0;
+}

@@ -1,10 +1,10 @@
 #pragma once
-#include "AuthEvents.h"
+#include "AuthProtocol/AuthEvents.h"
 
 class ServerSelectResponse : public AuthLinkEvent
 {
 public:
-    ServerSelectResponse():AuthLinkEvent(evServerSelectResponse),db_server_cookie(-1),m_cookie(-1),m_unk2(-1)
+    ServerSelectResponse():AuthLinkEvent(evServerSelectResponse),db_server_cookie(~0U),m_cookie(~0U),m_unk2(0xFF)
     {}
     ServerSelectResponse(EventProcessor *ev_src,uint32_t cookie,uint32_t dbcookie) : AuthLinkEvent(evServerSelectResponse,ev_src),
         db_server_cookie(dbcookie),
@@ -27,7 +27,13 @@ public:
         buf.uPut(m_cookie);
         buf.uPut(m_unk2);
     }
-    void init(EventProcessor *ev_src,uint32_t cookie,uint32_t dbcookie) {m_cookie=cookie; db_server_cookie=dbcookie;m_unk2=0; m_event_source=ev_src;}
+    void init(EventProcessor *ev_src, uint32_t cookie, uint32_t dbcookie)
+    {
+        m_cookie         = cookie;
+        db_server_cookie = dbcookie;
+        m_unk2           = 0;
+        m_event_source   = ev_src;
+    }
     uint32_t db_server_cookie;
     uint32_t m_cookie;
     uint8_t m_unk2;

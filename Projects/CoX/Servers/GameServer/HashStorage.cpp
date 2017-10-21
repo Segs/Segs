@@ -6,7 +6,7 @@
 *
 
 */
-#include <ace/ACE.h>
+
 #include "HashStorage.h"
 
 // SpecHash<std::string,val>

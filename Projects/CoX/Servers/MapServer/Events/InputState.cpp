@@ -11,11 +11,12 @@
 #include <cmath>
 #include "Events/InputState.h"
 #include "Entity.h"
-static osg::Quat QuaternionFromYawPitchRoll(const osg::Vec3 &pyr)
+
+static glm::quat QuaternionFromYawPitchRoll(const glm::vec3 &pyr)
 {
-    float pitch(pyr.x());
-    float yaw(pyr.y());
-    float roll(pyr.z());
+    float pitch(pyr.x);
+    float yaw(pyr.y);
+    float roll(pyr.z);
 
     float rollOver2 = roll * 0.5f;
     float sinRollOver2 = (float)sin((double)rollOver2);
@@ -33,16 +34,16 @@ static osg::Quat QuaternionFromYawPitchRoll(const osg::Vec3 &pyr)
     // Attitude = Pitch
     // Bank = Roll
 
-    osg::Quat result;
+    glm::quat result;
     //result.X = cosYawOver2 * cosPitchOver2 * cosRollOver2 + sinYawOver2 * sinPitchOver2 * sinRollOver2;
     //result.Y = cosYawOver2 * cosPitchOver2 * sinRollOver2 - sinYawOver2 * sinPitchOver2 * cosRollOver2;
     //result.Z = cosYawOver2 * sinPitchOver2 * cosRollOver2 + sinYawOver2 * cosPitchOver2 * sinRollOver2;
     //result.W = sinYawOver2 * cosPitchOver2 * cosRollOver2 - cosYawOver2 * sinPitchOver2 * sinRollOver2;
 
-    result.w() = cosYawOver2 * cosPitchOver2 * cosRollOver2 - sinYawOver2 * sinPitchOver2 * sinRollOver2;
-    result.x() = sinYawOver2 * sinPitchOver2 * cosRollOver2 + cosYawOver2 * cosPitchOver2 * sinRollOver2;
-    result.y() = sinYawOver2 * cosPitchOver2 * cosRollOver2 + cosYawOver2 * sinPitchOver2 * sinRollOver2;
-    result.z() = cosYawOver2 * sinPitchOver2 * cosRollOver2 - sinYawOver2 * cosPitchOver2 * sinRollOver2;
+    result.w = cosYawOver2 * cosPitchOver2 * cosRollOver2 - sinYawOver2 * sinPitchOver2 * sinRollOver2;
+    result.x = sinYawOver2 * sinPitchOver2 * cosRollOver2 + cosYawOver2 * cosPitchOver2 * sinRollOver2;
+    result.y = sinYawOver2 * cosPitchOver2 * cosRollOver2 + cosYawOver2 * sinPitchOver2 * sinRollOver2;
+    result.z = cosYawOver2 * sinPitchOver2 * cosRollOver2 - sinYawOver2 * cosPitchOver2 * sinRollOver2;
 
     return result;
 }
@@ -64,15 +65,19 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
 
     for(int i=0; i<3; ++i)
         if(other.pos_delta_valid[i])
-            pos_delta._v[i] = other.pos_delta._v[i];
+            pos_delta[i] = other.pos_delta[i];
     bool update_needed=false;
     for(int i=0; i<3; ++i)
         if(other.pyr_valid[i]) {
-            camera_pyr._v[i] = other.camera_pyr._v[i];
+            camera_pyr[i] = other.camera_pyr[i];
             update_needed = true;
         }
     if(update_needed) {
-        direction = osg::Quat(camera_pyr[0], osg::X_AXIS, camera_pyr[1], -osg::Y_AXIS, 0, osg::Z_AXIS);
+        direction = glm::angleAxis(camera_pyr[0], glm::vec3(1, 0, 0)) *
+                    glm::angleAxis(camera_pyr[1], glm::vec3(0,-1, 0)) *
+                    glm::angleAxis(camera_pyr[2], glm::vec3(0, 0, 1))
+                ;
+        //direction = glm::quat(camera_pyr[0], osg::X_AXIS, camera_pyr[1], -osg::Y_AXIS, 0, osg::Z_AXIS);
         //direction = QuaternionFromYawPitchRoll(camera_pyr);
     }
     return *this;
@@ -159,7 +164,7 @@ void InputState::partial_2(BitStream &bs)
                     m_data.camera_pyr[0] = recovered;
                 else
                     m_data.camera_pyr[1] = recovered;
-                fprintf(stderr,"Pyr %f : %f \n",m_data.camera_pyr.x(),m_data.camera_pyr.y());
+                fprintf(stderr,"Pyr %f : %f \n",m_data.camera_pyr.x,m_data.camera_pyr.y);
                 break;
             }
             case 8:
@@ -247,7 +252,7 @@ void InputState::extended_input(BitStream &bs)
 }
 struct ControlState
 {
-    int field0;
+    int client_timenow;
     int time_res;
     float timestep;
     float time_rel1C;
@@ -256,7 +261,7 @@ struct ControlState
     // recover actual ControlState from network data and previous entry
     void serializefrom_delta(BitStream &bs,const ControlState &prev)
     {
-        field0   = bs.GetPackedBits(1); // field_0 diff next-current
+        client_timenow   = bs.GetPackedBits(1); // field_0 diff next-current
         time_res = bs.GetPackedBits(1); // time to next state ?
         timestep = bs.GetFloat(); // next state's timestep
 
@@ -264,25 +269,25 @@ struct ControlState
         if(bs.GetBits(1)) //timestep!=time_rel1C
             time_rel1C = bs.GetFloat();
 
-        m_perf_cntr_diff = bs.Get64Bits(); //next_state->ticks - current_state->ticks
+        m_perf_cntr_diff = bs.Get64Bits(); //current_state->ticks - prev_state->ticks
         if(bs.GetBits(1))
         {
-            // perf freq changed between current and next
+            // perf freq changed between current and prev
             m_perf_freq_diff = bs.Get64Bits();
         }
     }
     void serializefrom_base(BitStream &bs)
     {
-        field0   = bs.GetBits(32); //field_0
-        time_res = bs.GetBits(32); // get_time_resl
-        timestep = bs.GetFloat(); //v7->timestep
+        client_timenow   = bs.GetBits(32); // result of time(NULL)
+        time_res = bs.GetBits(32); // result of timeGetTime()
+        timestep = bs.GetFloat(); //client global TIMESTEP - per frame time
 
         time_rel1C = timestep;
         if(bs.GetBits(1)) //timestep!=time_rel1C
-            time_rel1C = bs.GetFloat();
+            time_rel1C = bs.GetFloat(); // simulation timestep ?
 
         m_perf_cntr_diff = bs.Get64Bits(); //next_state->ticks - current_state->ticks
-        m_perf_cntr_diff = bs.Get64Bits(); //v7->perf_cntr1
+        m_perf_freq_diff = bs.Get64Bits(); //v7->perf_cntr1
     }
     void dump()
     {
@@ -326,24 +331,36 @@ void InputState::serializefrom(BitStream &bs)
         ctrl_idx++;
     }
     recv_client_opts(bs); // g_pak contents will follow
+    bs.ByteAlign(true,false);
+    if(bs.GetReadableBits()>0) {
+        m_user_commands.Reset();
+        m_user_commands.appendBitStream(bs);
+        // all remaining bits were moved to m_user_commands.
+        bs.SetReadPos(bs.GetWritePos());
+    }
 #ifdef DEBUG_INPUT
     fprintf(stderr,"\n");
 #endif
+}
+static float dequantize(uint16_t val,int bitcount) {
+    float z=val;
+    z = z/(1<<bitcount);
+    z *= 6.283185307179586;
+    z -= M_PI;
+    return z;
 }
 //TODO: use generic ReadableStructures here ?
 void InputState::recv_client_opts(BitStream &bs)
 {
     ClientOptions opts;
     ClientOption *entry;
-    int opt_idx=0;
-    int some_idx = bs.GetPackedBits(1);
-    entry=opts.get(opt_idx)-1;
-    osg::Vec3 vec;
-    while(some_idx!=0)
+    glm::vec3 vec;
+    int cmd_idx;
+    while((cmd_idx = bs.GetPackedBits(1))!=0)
     {
-        for(size_t i=0; i<entry->m_args.size(); i++)
+        entry=opts.get(cmd_idx-1);
+        for(ClientOption::Arg &arg : entry->m_args)
         {
-            ClientOption::Arg &arg=entry->m_args[i];
             switch ( arg.type )
             {
                 case ClientOption::t_int:
@@ -358,13 +375,15 @@ void InputState::recv_client_opts(BitStream &bs)
                 }
                 case ClientOption::t_quant_angle:
                 {
-                    printf("Quant:%d\n",bs.GetBits(14)); //quantized angle
+                    float * tgt_angle = (float *)arg.tgt;
+                    *tgt_angle = dequantize(bs.GetBits(14),14);
+                    printf("Quant angle res:%f\n",*tgt_angle); //quantized angle
                     break;
                 }
                 case ClientOption::t_string:
-                case 4:
+                case ClientOption::t_sentence:
                 {
-                    std::string v;
+                    QString v;
                     bs.GetString(v);
                     break;
                 }
@@ -380,9 +399,5 @@ void InputState::recv_client_opts(BitStream &bs)
                     continue;
             }
         }
-        some_idx = bs.GetPackedBits(1)-1;
-        opt_idx++;
-        entry=opts.get(opt_idx);
     }
 }
-

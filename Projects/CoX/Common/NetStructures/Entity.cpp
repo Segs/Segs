@@ -8,6 +8,7 @@
 #define _USE_MATH_DEFINES
 #include "Entity.h"
 
+#include <ace/Log_Msg.h>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -93,7 +94,7 @@ void Entity::storePosition(BitStream &bs) const
 // float x = pos.vals.x;
     uint32_t packed;
     //uint32_t diff=0; // changed bits are '1'
-    bs.StoreBits(3,7); // frank -> 7,-60.5,0,180
+    bs.StoreBits(3,7);
     for(int i=0; i<3; i++)
     {
         packed = quantize_float(pos[i]);
@@ -113,10 +114,10 @@ void Entity::storePosUpdate(BitStream &bs) const
     bool extra_info = false;
     bool move_instantly = false;
     storePosition(bs);
-    // if(is_update)
-
     if(!m_create)
     {
+        // if position has changed
+        // prepare interpolation table, given previous position
         bs.StoreBits(1,extra_info); // not extra_info
         if(extra_info) {
             bs.StoreBits(1,move_instantly);
@@ -261,17 +262,18 @@ void Entity::sendCostumes(BitStream &bs) const
 
 PlayerEntity::PlayerEntity()
 {
-    m_costume_type=1;
-    m_create=true;
-    var_129C=false;
-    m_type = 2; //PLAYER
-    m_create_player=true;
-    m_player_villain=false;
-    m_origin_idx=m_class_idx=0;
-    m_selector1=false;
-    m_hasname = true;
-    m_hasgroup_name=false;
-    m_pchar_things=false;
+    m_costume_type   = 1;
+    m_create         = true;
+    var_129C         = false;
+    m_type           = 2; // PLAYER
+    m_create_player  = true;
+    m_player_villain = false;
+    m_origin_idx     = 0;
+    m_class_idx      = 0;
+    m_selector1      = false;
+    m_hasname        = true;
+    m_hasgroup_name  = false;
+    m_pchar_things   = false;
 
     m_char.reset();
     might_have_rare=m_rare_bits = true;
@@ -291,24 +293,23 @@ void Entity::sendXLuency(BitStream &bs,float val) const
 void Entity::sendTitles(BitStream &bs) const
 {
     bs.StoreBits(1,m_has_titles); // no titles
-    if(m_has_titles)
+    if(!m_has_titles)
+        return;
+    if(m_type==ENT_PLAYER)
     {
-        if(m_type==ENT_PLAYER)
-        {
-            bs.StoreString(m_char.getName());
-            bs.StoreBits(1,0); // ent_player2->flag_F4
-            storeStringConditional(bs,"");//max 32 chars // warcry ?
-            storeStringConditional(bs,"");//max 32 chars
-            storeStringConditional(bs,"");//max 128 chars
-        }
-        else // unused
-        {
-            bs.StoreString("");
-            bs.StoreBits(1,0);
-            storeStringConditional(bs,"");
-            storeStringConditional(bs,"");
-            storeStringConditional(bs,"");
-        }
+        bs.StoreString(m_char.getName());
+        bs.StoreBits(1,0); // ent_player2->flag_F4
+        storeStringConditional(bs,"");//max 32 chars // warcry ?
+        storeStringConditional(bs,"");//max 32 chars
+        storeStringConditional(bs,"");//max 128 chars
+    }
+    else // unused
+    {
+        bs.StoreString("");
+        bs.StoreBits(1,0);
+        storeStringConditional(bs,"");
+        storeStringConditional(bs,"");
+        storeStringConditional(bs,"");
     }
 }
 void Entity::sendRagDoll(BitStream &bs) const
@@ -406,7 +407,6 @@ void Entity::storeCreation( BitStream &bs) const
         if(var_129C)
             return;
 
-        //bs.StorePackedBits(12,field_64);//  this will be put in  of created entity
         bs.StorePackedBits(12,m_idx);//  this will be put in  of created entity
         bs.StorePackedBits(2,m_type);
         if(m_type==ENT_PLAYER)
@@ -414,7 +414,7 @@ void Entity::storeCreation( BitStream &bs) const
             bs.StoreBits(1,m_create_player);
             if(m_create_player)
                 bs.StorePackedBits(1,m_access_level);
-            bs.StorePackedBits(20,m_idx);//bs.StorePackedBits(20,m_db_id); //intptr_t(this)&0xFFFFF
+            bs.StorePackedBits(20,m_idx);//TODO: should be bs.StorePackedBits(20,m_db_id);
         }
         else
         {
@@ -422,19 +422,19 @@ void Entity::storeCreation( BitStream &bs) const
             bs.StoreBits(1,val);
             if(val)
             {
-                bs.StorePackedBits(12,0); // entity idx
-                bs.StorePackedBits(12,0); // entity idx
+                bs.StorePackedBits(12,ownerEntityId); // entity idx
+                bs.StorePackedBits(12,creatorEntityId); // entity idx
             }
         }
         if(m_type==ENT_PLAYER || m_type==ENT_CRITTER)
         {
             bs.StorePackedBits(1,m_origin_idx);
             bs.StorePackedBits(1,m_class_idx);
-            bool val=false;
-            bs.StoreBits(1,val);
-            if(val)
+            bool hasTitle=false;
+            bs.StoreBits(1,hasTitle);
+            if(hasTitle)
             {
-                bs.StoreBits(1,0); // entplayer_flgFE0
+                bs.StoreBits(1,0); // likely an index to a title prefix ( 1 - The )
                 storeStringConditional(bs,""); //title1
                 storeStringConditional(bs,""); //title2
                 storeStringConditional(bs,""); //title3
@@ -443,14 +443,16 @@ void Entity::storeCreation( BitStream &bs) const
         bs.StoreBits(1,m_hasname);
         if(m_hasname)
             bs.StoreString(m_char.getName());
-        bs.StoreBits(1,1); //var_94 if set Entity.field_1818/field_1840=0 else field_1818/field_1840 = 255,2
+        bool fadin = true;
+        bs.StoreBits(1,fadin); // Is entity being faded in ?
         // the following is used as an input to LCG float generator, generated float (0-1) is used as
         // linear interpolation factor betwwen scale_min and scale_max
         bs.StoreBits(32,field_60); // this will be put in field_60 of created entity
         bs.StoreBits(1,m_hasgroup_name);
         if(m_hasgroup_name)
         {
-            bs.StorePackedBits(2,0);// this will be put in field_1830 of created entity
+            int rank=0; // rank in the group ?
+            bs.StorePackedBits(2,rank);// this will be put in field_1830 of created entity
             bs.StoreString(m_group_name);
         }
     }
@@ -534,7 +536,7 @@ void Entity::beginLogout(uint16_t time_till_logout)
 void Entity::sendBuffsConditional(BitStream &bs) const
 {
     bs.StoreBits(1,0); // nothing here for now
-    if(0)
+    if(false)
     {
         sendBuffs(bs);
     }
@@ -614,20 +616,19 @@ void Entity::dump()
     m_char.dump();
 }
 
+void Entity::addPosUpdate(const PosUpdate & p) {
+    m_update_idx = (m_update_idx+1) % 64;
+    m_pos_updates[m_update_idx] = p;
+}
+
+void Entity::addInterp(const PosUpdate & p) {
+    interpResults.emplace_back(p);
+}
+
 Entity::Entity()
 {
-    m_logout_sent = false;
-    m_input_ack = 0;
     m_access_level = 9; // enables access to all deve
-    field_60=0;
-    field_64=0;
-    field_78=0;
-    m_state_mode_send=0;
-    m_state_mode=0; // TODO: remove this later on, testing now.
-    m_seq_update=0;
-    m_has_titles=false;
-    m_SG_info=false;
-    pos = osg::Vec3(-60.5,180,0);
+    pos = glm::vec3(-60.5f,180.0f,0.0f);
 }
 
 /*
@@ -786,16 +787,16 @@ void MapCostume::dump()
     {
         const CostumePart &cp(m_parts[i]);
         if(cp.m_full_part)
-            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),cp.m_geometry.c_str(),
-            cp.m_texture_1.c_str(),cp.m_texture_2.c_str(),cp.name_3.c_str(),
+            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),qPrintable(cp.m_geometry),
+            qPrintable(cp.m_texture_1),qPrintable(cp.m_texture_2),qPrintable(cp.name_3),
             cp.m_colors[0],cp.m_colors[1],
-            cp.name_4.c_str(),cp.name_5.c_str()
+            qPrintable(cp.name_4),qPrintable(cp.name_5)
             ));
         else
-            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),cp.m_geometry.c_str(),
-            cp.m_texture_1.c_str(),cp.m_texture_2.c_str(),cp.name_3.c_str(),
+            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),qPrintable(cp.m_geometry),
+            qPrintable(cp.m_texture_1),qPrintable(cp.m_texture_2),qPrintable(cp.name_3),
             cp.m_colors[0],cp.m_colors[1],
-            cp.name_4.c_str(),cp.name_5.c_str()
+            qPrintable(cp.name_4),qPrintable(cp.name_5)
             ));
     }
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    *************\n")));

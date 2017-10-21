@@ -9,14 +9,18 @@
 
 #include "NetCommandManager.h"
 #include "MapClient.h"
+#include "AdminServer/AccountInfo.h"
+
+#include <vector>
+
 static void FillCommands()
 {
     NetCommandManager *cmd_manager = NetCommandManagerSingleton::instance();
     NetCommand::Argument arg1={1,NULL};
     NetCommand::Argument arg_1float={3,NULL};
-    vector<NetCommand::Argument> args;
+    std::vector<NetCommand::Argument> args;
     args.push_back(arg1);
-    vector<NetCommand::Argument> fargs;
+    std::vector<NetCommand::Argument> fargs;
     fargs.push_back(arg_1float);
 //    cmd_manager->addCommand(new NetCommand(9,"controldebug",args));
 //    cmd_manager->addCommand(new NetCommand(9,"nostrafe",args));
@@ -64,27 +68,27 @@ int NetCommand::serializefrom( BitStream &bs )
                 int res=bs.GetPackedBits(1);
                 if(m_arguments[i].targetvar)
                     *((int *)m_arguments[i].targetvar) = res;
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %d\n"),m_name.c_str(),i,res));
+                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %d\n"),qPrintable(m_name),i,res));
                 break;
             }
             case 2:
             case 4:
             {
-                std::string res;
+                QString res;
                 bs.GetString(res); // postprocessed
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %s\n"),m_name.c_str(),i,res.c_str()));
+                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %s\n"),qPrintable(m_name),i,qPrintable(res)));
                 break;
             }
             case 3:
             {
                 float res = bs.GetFloat();
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %f\n"),m_name.c_str(),i,res));
+                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %f\n"),qPrintable(m_name),i,res));
                 break;
             }
             case 5:
             {
                 float res1 = normalizedCircumferenceToFloat(bs.GetBits(14),14);
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %s\n"),m_name.c_str(),i,res1));
+                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %s\n"),qPrintable(m_name),i,res1));
                 break;
             }
             case 6:
@@ -94,7 +98,7 @@ int NetCommand::serializefrom( BitStream &bs )
                 float res1 = bs.GetFloat();
                 float res2 = bs.GetFloat();
                 float res3 = bs.GetFloat();
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %f,%f,%f\n"),m_name.c_str(),i,res1,res2,res3));
+                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %f,%f,%f\n"),qPrintable(m_name),i,res1,res2,res3));
                 break;
             }
         }
@@ -109,7 +113,7 @@ void NetCommandManager::addCommand( NetCommand *cmd )
     m_commands_level0.push_back(cmd);
 }
 
-NetCommand * NetCommandManager::getCommandByName( const std::string &name )
+NetCommand * NetCommandManager::getCommandByName( const QString &name )
 {
     return m_name_to_command[name];
 }
@@ -117,7 +121,7 @@ void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands,
 {
     if(commands.size()==0)
     {
-        tgt.StorePackedBits(1,~0);//0xFFFFFFFF
+        tgt.StorePackedBits(1,~0u);//0xFFFFFFFF
     }
     else
     {
@@ -135,9 +139,9 @@ void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands,
 //            tgt.StoreString(commands2[i]->m_name);
 //        }
 //    }
-    tgt.StorePackedBits(1,~0);
+    tgt.StorePackedBits(1,~0u);
 }
-void NetCommandManager::SendCommandShortcuts( MapClient *client,BitStream &tgt,const vector<NetCommand *> &commands2 )
+void NetCommandManager::SendCommandShortcuts( MapClient *client,BitStream &tgt,const std::vector<NetCommand *> &commands2 )
 {
     static bool initialized=false;
     if(!initialized)  {

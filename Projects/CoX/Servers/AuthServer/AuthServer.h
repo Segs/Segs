@@ -7,10 +7,16 @@
  */
 
 #pragma once
+// segs includes
 
-#include <unordered_map>
-#include <list>
-#include <string>
+#include "Common/Servers/Client.h"
+#include "Common/Servers/Server.h"
+#include "Common/Servers/ServerHandle.h"
+#include "Common/Servers/AuthServerInterface.h"
+
+// QT includes
+#include <QtCore/QHash>
+#include <QtCore/QString>
 
 // ACE includes
 #include <ace/ACE.h>
@@ -20,19 +26,16 @@
 #include <ace/Acceptor.h>
 #include <ace/SOCK_Acceptor.h>
 
-// segs includes
-
-#include "Client.h"
-#include "Server.h"
-#include "ServerHandle.h"
-#include "AuthServerInterface.h"
+#include <unordered_map>
+#include <list>
+#include <string>
 
 class AuthLink;
 typedef ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR> ClientAcceptor;
 class IClient;
-typedef std::unordered_map<std::string,AuthClient *> hmClients;
+typedef QHash<QString,AuthClient *> hmClients;
 class AuthClient;
-class AuthServer  : public IAuthServer
+class AuthServer final : public IAuthServer
 {
 //boost::object_pool<AuthClient>          m_client_pool;  //!< pool used to efficiently construct new client objects.
     typedef hmClients::iterator         ihmClients; //!< helper typedef for iterators to m_clients store
@@ -61,7 +64,7 @@ virtual                             ~AuthServer();
         bool                        Run(void);
         bool                        ShutDown(const std::string &reason="No particular reason");
 
-        ServerHandle<IAdminServer>  AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const string &passw); // World-cluster interface
+        ServerHandle<IAdminServer>  AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw); // World-cluster interface
         AuthClient *                GetClientByLogin(const char *);
 protected:
 

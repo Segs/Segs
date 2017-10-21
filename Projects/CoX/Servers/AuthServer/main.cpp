@@ -7,10 +7,17 @@
 
  */
 //#define ACE_NTRACE 0
+#include "Servers/ServerManager.h"
+#include "Servers/server_support.h"
+#include "version.h"
+//////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <string>
-#include <stdlib.h>
+#include "Servers/AdminServer/AdminServer.h"
+#include "AuthServer.h"
+#include "Servers/MapServer/MapServer.h"
+#include "Servers/GameServer/GameServer.h"
+//////////////////////////////////////////////////////////////////////////
+
 #include <ace/ACE.h>
 #include <ace/Get_Opt.h>
 #include <ace/ACE.h>
@@ -30,17 +37,11 @@
 #include <ace/Reactor.h>
 #include <ace/OS_main.h> //Included to enable file logging
 #include <ace/streams.h> //Included to enable file logging
-//#include "Auth.h"
-#include "ServerManager.h"
-#include "server_support.h"
-#include "version.h"
-//////////////////////////////////////////////////////////////////////////
-
-#include "AdminServer.h"
-#include "AuthServer.h"
-#include "MapServer.h"
-#include "GameServer.h"
-//////////////////////////////////////////////////////////////////////////
+#include <QtCore/QCoreApplication>
+#include <iostream>
+#include <string>
+#include <stdlib.h>
+#include <memory>
 
 /** \brief The LogCallback class
 */
@@ -94,7 +95,9 @@ static ACE_THR_FUNC_RETURN event_loop (void *arg)
 
     reactor->owner (ACE_OS::thr_self ());
     reactor->run_reactor_event_loop ();
-    return 0;
+    ServerManager::instance()->GetAdminServer()->ShutDown("No reason");
+    ServerManager::instance()->StopLocalServers();
+    return nullptr;
 }
 static bool CreateServers()
 {
@@ -144,6 +147,7 @@ public:
 };
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
+    QCoreApplication q_app(argc,argv);
     ACE_Sig_Set interesting_signals;
     interesting_signals.sig_add(SIGINT);
     interesting_signals.sig_add(SIGHUP);
@@ -156,7 +160,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     const size_t N_THREADS = 1;
     ACE_TP_Reactor threaded_reactor;
     ACE_Reactor new_reactor(&threaded_reactor); //create concrete reactor
-    auto_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes
+    std::unique_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes
 
     ServerStopper st; // it'll register itself with current reactor, and shut it down on sigint
     new_reactor.register_handler(interesting_signals,&st);

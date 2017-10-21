@@ -18,9 +18,9 @@
 #include <ace/Synch.h>
 
 // segs includes
-#include "Server.h"
-#include "ServerHandle.h"
-#include "AdminServerInterface.h"
+#include "Common/Servers/Server.h"
+#include "Common/Servers/ServerHandle.h"
+#include "Common/Servers/AdminServerInterface.h"
 
 class AdminDatabase;
 class CharacterDatabase;

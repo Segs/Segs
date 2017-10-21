@@ -6,7 +6,7 @@
 *
 
 */
-#include <ace/ACE.h>
+#include <ace/Log_Msg.h>
 #include "HashStorage.h"
 #include "GameEvents.h"
 #include "CharacterClient.h"
@@ -27,11 +27,11 @@ void UpdateServer::dependent_dump()
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    buildDate %08d;\n"),m_build_date));
         //uint8_t clientInfo[16];
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    localMapServer %d\n"),localMapServer));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    currentVersion %s\n"),currentVersion.c_str()));
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    currentVersion %s\n"),qPrintable(currentVersion)));
         //uint8_t segsHash[16];
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    authId 0x%08x;\n"),authID));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    authCookie 0x%08x;\n"),authCookie));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    accountName%s\n"),accountName.c_str()));
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    accountName%s\n"),qPrintable(accountName)));
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
 }
 
@@ -41,7 +41,7 @@ void UpdateServer::serializeto( BitStream &tgt ) const
     tgt.StorePackedBits(1, m_build_date);
     tgt.StorePackedBits(1, 0); // flags
     tgt.StoreString(currentVersion);
-    tgt.StoreBitArray(clientInfo,0x80);
+    tgt.StoreBitArray(clientInfo,sizeof(clientInfo)*8);
     tgt.StorePackedBits(1, authID);
     tgt.StoreBits(32, authCookie);
     tgt.StoreString(accountName);
@@ -52,7 +52,7 @@ void UpdateServer::serializefrom( BitStream &src )
     m_build_date = src.GetPackedBits(1);
     /*uint32_t t =*/ src.GetPackedBits(1);
     src.GetString(currentVersion);
-    src.GetBitArray(clientInfo,128);
+    src.GetBitArray(clientInfo,sizeof(clientInfo)*8);
     authID = src.GetPackedBits(1);
     authCookie = src.GetBits(32);
     src.GetString(accountName);

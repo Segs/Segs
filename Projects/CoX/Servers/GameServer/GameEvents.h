@@ -8,14 +8,16 @@
  */
 
 #pragma once
-#include <string>
 #include "LinkLevelEvent.h"
 #include "BitStream.h"
-#include "CRUD_Link.h"
-#include "CRUD_Events.h"
 #include "GameLink.h"
-#include "InternalEvents.h"
-#include "opcodes/ControlCodes.h"
+#include "CRUDP_Protocol/CRUD_Link.h"
+#include "CRUDP_Protocol/CRUD_Events.h"
+#include "Servers/InternalEvents.h"
+#include "Servers/opcodes/ControlCodes.h"
+
+#include <QtCore/QString>
+
 typedef CRUDLink_Event GameLinkEvent;
 
 class CharacterClient;
@@ -24,14 +26,14 @@ class GameEventTypes : public CRUD_EventTypes
 {
 public:
         BEGINE_EVENTS(CRUD_EventTypes)
-        EVENT_DECL(evUpdateServer  ,0)
-        EVENT_DECL(evMapAddrRequest,1)
-        EVENT_DECL(evDeleteCharacter,2)
-        EVENT_DECL(evUpdateCharacter,3)
-        EVENT_DECL(evGameEntryError,4)
-        EVENT_DECL(evCharacterSlots,5)
-        EVENT_DECL(evCharacterResponse,6)
-        EVENT_DECL(evMapAddrResponse,7)
+        EVENT_DECL(evUpdateServer,      0)
+        EVENT_DECL(evMapAddrRequest,    1)
+        EVENT_DECL(evDeleteCharacter,   2)
+        EVENT_DECL(evUpdateCharacter,   3)
+        EVENT_DECL(evGameEntryError,    4)
+        EVENT_DECL(evCharacterSlots,    5)
+        EVENT_DECL(evCharacterResponse, 6)
+        EVENT_DECL(evMapAddrResponse,   7)
         EVENT_DECL(evDeleteAcknowledged,8)
 
         EVENT_DECL(evUnknownEvent,16)
@@ -60,7 +62,7 @@ public:
     uint32_t m_map_server_ip;
     uint32_t m_character_index;
     uint32_t m_mapnumber;
-    std::string m_char_name;
+    QString m_char_name;
 };
 class MapServerAddrResponse : public GameLinkEvent
 {
@@ -109,7 +111,7 @@ class DeleteCharacter : public GameLinkEvent
 public:
     DeleteCharacter():GameLinkEvent(GameEventTypes::evDeleteCharacter)
     {}
-    DeleteCharacter(EventProcessor *evsrc,uint8_t idx,const std::string &name) : GameLinkEvent(GameEventTypes::evDeleteCharacter,evsrc),m_index(idx),m_char_name(name)
+    DeleteCharacter(EventProcessor *evsrc,uint8_t idx,const QString &name) : GameLinkEvent(GameEventTypes::evDeleteCharacter,evsrc),m_index(idx),m_char_name(name)
     {}
     void serializeto(BitStream &bs) const
     {
@@ -123,7 +125,7 @@ public:
         bs.GetString(m_char_name);
     }
     uint8_t m_index;
-    std::string m_char_name;
+    QString m_char_name;
 };
 class UpdateCharacter : public GameLinkEvent
 {
@@ -163,10 +165,10 @@ public:
 
 
     uint32_t m_build_date;
-    std::string currentVersion;
+    QString currentVersion;
     uint8_t clientInfo[16];
     uint32_t authID, authCookie;
-    std::string accountName;
+    QString accountName;
     bool localMapServer;
 };
 class CharacterSlots : public GameLinkEvent
@@ -189,12 +191,12 @@ class GameEntryError : public GameLinkEvent
 public:
     GameEntryError():GameLinkEvent(GameEventTypes::evGameEntryError)
     {}
-    GameEntryError(EventProcessor *evsrc,const std::string &erstr):GameLinkEvent(GameEventTypes::evGameEntryError,evsrc),m_error(erstr)
+    GameEntryError(EventProcessor *evsrc,const QString &erstr):GameLinkEvent(GameEventTypes::evGameEntryError,evsrc),m_error(erstr)
     {}
     void serializeto( BitStream &tgt ) const;
     void serializefrom( BitStream &src );
     void dependent_dump();
-    std::string m_error;
+    QString m_error;
 };
 class DeletionAcknowledged : public GameLinkEvent
 {

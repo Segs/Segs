@@ -19,8 +19,8 @@ class AdminServerInterface;
 class InterfaceManagerC
 {
 public:
-    InterfaceManagerC(void);
-    ~InterfaceManagerC(void);
+    InterfaceManagerC(void) = default;
+    ~InterfaceManagerC(void) = default;
     // If the handle is a local one, InterfaceManager will only search in local server repository.
     // If the handle is a remote one, we check if h_serv.m_addr.isLocal() ^. If h_serv.m_id==-1 we return first matching server.
     AdminServerInterface *get(const ServerHandle<IAdminServer> &h_serv) const;

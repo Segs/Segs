@@ -4,16 +4,18 @@
  * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #pragma once
-#include <ace/Assert.h>
 #include "LinkLevelEvent.h"
 #include "BitStream.h"
 #include "CRUD_Link.h"
 #include "CRUD_Events.h"
 #include "MapLink.h"
+
+#include <QtCore/QString>
+
 class Entity;
 typedef CRUDLink_Event MapLinkEvent; //<MapLink>
 
@@ -32,7 +34,8 @@ public:
     EVENT_DECL(evInputState             ,8)
     EVENT_DECL(evClientQuit             ,9)
     EVENT_DECL(evForceLogout            ,10)
-    EVENT_DECL(evChatMessage            ,20)
+    EVENT_DECL(evChatMessage            ,20)    // command_id + 20
+    EVENT_DECL(evChatDividerMoved       ,36)
     EVENT_DECL(evCombineRequest         ,40)
     EVENT_DECL(evConsoleCommand         ,100)
     EVENT_DECL(evMiniMapState           ,101)
@@ -117,8 +120,8 @@ public:
 };
 class ForcedLogout: public MapLinkEvent {
 public:
-    std::string reason;
-    ForcedLogout(const std::string &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason) {
+    QString reason;
+    ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason) {
 
     }
     void serializeto(BitStream &bs) const
@@ -149,9 +152,10 @@ public:
         console = bs.GetPackedBits(1);
     }
 };
-class ConsoleCommand : public MapLinkEvent {
+class ConsoleCommand : public MapLinkEvent
+{
 public:
-    std::string contents;
+    QString contents;
     ConsoleCommand():MapLinkEvent(MapEventTypes::evConsoleCommand)
     {}
     void serializeto(BitStream &bs) const
@@ -270,7 +274,7 @@ class MapInstanceConnected : public MapLinkEvent
 public:
     MapInstanceConnected():MapLinkEvent(MapEventTypes::evMapInstanceConnected)
     {}
-    MapInstanceConnected(EventProcessor *evsrc,uint32_t resp,const std::string &err) :
+    MapInstanceConnected(EventProcessor *evsrc,uint32_t resp,const QString &err) :
         MapLinkEvent(MapEventTypes::evMapInstanceConnected,evsrc),
         m_resp(resp),
         m_fatal_error(err)
@@ -290,11 +294,12 @@ public:
             src.GetString(m_fatal_error);
     }
     uint32_t    m_resp;
-    std::string m_fatal_error;
+    QString m_fatal_error;
 
 };
 
 #include "Events/ChatMessage.h"
+#include "Events/ChatDividerMoved.h"
 #include "Events/SceneEvent.h"
 #include "Events/EntitiesResponse.h"
 #include "Events/Shortcuts.h"

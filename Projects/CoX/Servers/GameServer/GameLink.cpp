@@ -6,9 +6,10 @@
  *
  
  */
-#include <ace/INET_Addr.h>
+#include "GameLink.h"
 #include "EventProcessor.h"
 #include "GameEvents.h"
-#include "crud_link.inl"
-template
-class CRUDLink<GameEventFactory>;
+
+#include <ace/INET_Addr.h>
+
+GameEventFactory GameLink::m_factory;

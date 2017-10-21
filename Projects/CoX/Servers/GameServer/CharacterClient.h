@@ -6,16 +6,13 @@
  *
 
  */
-
 #pragma once
 
-#include <string>
-#include <ace/OS_NS_time.h>
-#include <ace/OS_NS_sys_time.h>
 #include "ServerManager.h"
 #include "Client.h"
-#include "GameLink.h"
+//#include "GameLink.h"
 #include "CharacterDatabase.h"
+#include <string>
 #include <vector>
 // skeleton class used during authentication
 class Character;

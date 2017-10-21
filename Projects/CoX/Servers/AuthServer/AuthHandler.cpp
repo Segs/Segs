@@ -1,10 +1,13 @@
 #include "AuthHandler.h"
+
 #include "AuthLink.h"
-#include "AuthEvents.h"
+#include "AuthProtocol/AuthEvents.h"
 #include "AuthClient.h"
-#include "AdminServerInterface.h"
-#include "ServerManager.h"
-#include "InternalEvents.h"
+#include "AdminServer/AccountInfo.h"
+#include "Servers/AdminServerInterface.h"
+#include "Servers/ServerManager.h"
+#include "Servers/InternalEvents.h"
+
 void AuthHandler::dispatch( SEGSEvent *ev )
 {
     assert(ev);
@@ -41,21 +44,22 @@ void AuthHandler::dispatch( SEGSEvent *ev )
 SEGSEvent *AuthHandler::dispatch_sync( SEGSEvent * )
 {
     assert(!"No sync events known");
-    return 0;
+    return nullptr;
 }
 
 void AuthHandler::on_connect( ConnectEvent *ev )
 {
     // TODO: guard for link state update ?
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
-    assert(lnk!=0);
+    assert(lnk!=nullptr);
     if(lnk->m_state!=AuthLink::INITIAL)
     {
         ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),  ACE_TEXT ("Multiple connection attempts from the same addr/port")));
     }
     lnk->m_state=AuthLink::CONNECTED;
-    uint32_t seed = rand();
+    uint32_t seed = 0x1; //TODO: rand()
     lnk->init_crypto(30206,seed);
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Crypto seed %08x\n"), seed ));
     lnk->putq(new AuthorizationProtocolVersion(this,30206,seed));
 }
 void AuthHandler::on_disconnect( DisconnectEvent *ev )
@@ -67,7 +71,7 @@ void AuthHandler::on_disconnect( DisconnectEvent *ev )
     {
         lnk->client()->link_state().setState(ClientLinkState::NOT_LOGGED_IN);
         adminserv->Logout(lnk->client()->account_info());
-        m_link_store[lnk->client()->account_info().account_server_id()] = 0;
+        m_link_store[lnk->client()->account_info().account_server_id()] = nullptr;
         //if(lnk->m_state!=AuthLink::CLIENT_AWAITING_DISCONNECT)
     }
     else
@@ -91,7 +95,7 @@ void AuthHandler::on_login( LoginRequest *ev )
 {
     AdminServerInterface *adminserv = ServerManager::instance()->GetAdminServer();
     AuthServerInterface *authserv = ServerManager::instance()->GetAuthServer();
-    AuthClient *client = NULL;
+    AuthClient *client = nullptr;
     AuthLink *lnk = static_cast<AuthLink *>(ev->src());
     assert(adminserv);
     assert(authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
@@ -123,21 +127,20 @@ void AuthHandler::on_login( LoginRequest *ev )
     client->link_state().link(lnk);                 // and client knows what link it's using
     eAuthError err = AUTH_WRONG_LOGINPASS;          // this is default for case we don't have that client
     bool no_errors=false;                           // this flag is set if there were no errors during client pre-processing
-    if(client) // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
+    // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),acc_inf.account_server_id()));
+    // step 3d: checking if this account is blocked
+    if(client->account_blocked())
+        err = AUTH_ACCOUNT_BLOCKED;
+    else if(client->isLoggedIn())
     {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),acc_inf.account_server_id()));
-        // step 3d: checking if this account is blocked
-        if(client->account_blocked())
-            err = AUTH_ACCOUNT_BLOCKED;
-        else if(client->isLoggedIn())
-        {
-            // step 3e: asking game server connection check
-            // TODO: client->forceGameServerConnectionCheck();
-            err = AUTH_ALREADY_LOGGEDIN;
-        }
-        else if(client->link_state().getState()==ClientLinkState::NOT_LOGGED_IN)
-            no_errors = true;
+        // step 3e: asking game server connection check
+        // TODO: client->forceGameServerConnectionCheck();
+        err = AUTH_ALREADY_LOGGEDIN;
     }
+    else if(client->link_state().getState()==ClientLinkState::NOT_LOGGED_IN)
+        no_errors = true;
+
     // if there were no errors and the provided password is valid and admin server has logged us in.
     if(
             no_errors &&

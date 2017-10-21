@@ -1,23 +1,25 @@
 /*
  * Super Entity Game Server
  * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2017 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
 
 #pragma once
-#include <ace/Log_Msg.h>
 #include "BitStream.h"
 #include <set>
 #include <list>
-//#include "Opcodes.h"
+#include <vector>
+#include <stdint.h>
+#include <chrono>
 
 class PacketCollector;
-static const uint32_t maxPacketSize    = 0x5C0;
+static const uint32_t maxPacketSize    = 1472;
 static const uint32_t packetHeaderSize = 8;
 class CrudP_Packet
 {
+    using time_point = std::chrono::steady_clock::time_point;
 public:
     friend class PacketCollector;
 
@@ -29,9 +31,9 @@ public:
     uint32_t  GetBits(uint32_t nBits);
     void GetBitArray(uint32_t nBytes, uint8_t *array);
     uint32_t  GetPackedBits(uint32_t nBits);
-    void GetString(std::string &str);
+    void GetString(QString &str);
 
-    float  GetFloat();
+    float GetFloat();
     void StoreBits(uint32_t nBits, uint32_t dataBits)   { m_stream->StoreBits(nBits, dataBits); }
     void StoreBitArray(uint8_t *array, size_t nBits)    { m_stream->StoreBitArray(array,nBits); }
     void StorePackedBits(uint32_t nBits, uint32_t dataBits) { m_stream->StorePackedBits(nBits, dataBits); }
@@ -53,6 +55,8 @@ public:
     bool        getIsCompressed()   const   { return m_compressed;                  }
     bool        HasSiblings()       const   { return m_numSibs > 0;                 }
     bool        IsFinalized()       const   { return m_finalized;                   }
+    bool        isReliable()        const   { return m_reliable;                    }
+    bool        compressRequested() const   { return m_compress_on_send;            }
 
     void SetBufferLength(uint32_t length)   { m_stream->SetByteLength(length); }
 
@@ -61,30 +65,39 @@ public:
     uint32_t getNumSibs()           const   { return m_numSibs;}
     uint32_t getSibId()             const   { return m_sibId;}
     uint32_t getSibPos()            const   { return m_sibPos;}
+    size_t   getNumAcks()           const   { return m_acks.size(); }
+
     void ByteAlign()                        { m_stream->ByteAlign(); }
     void SetStream(BitStream *stream)       { m_stream = stream; }
     void SetHasDebugInfo(bool hasDebugInfo) { m_hasDebugInfo = hasDebugInfo; }
     void SetIsCompressed(bool compressed)   { m_compressed = compressed; }
+    void SetReliabilty(bool r)              { m_reliable = r; }
     void setSeqNo(uint32_t n)               { m_seqNo=n; }
     void setNumSibs(uint32_t n)             { m_numSibs=n; }
     void setSibId(uint32_t n)               { m_sibId=n; }
     void setSibPos(uint32_t n)              { m_sibPos=n; }
     void setContents(const BitStream &t);
     void addAck(uint32_t id)                { m_acks.insert(id); }
-    size_t getNumAcks()                     { return m_acks.size(); }
     uint32_t getNextAck();
-    void dump();
-    uint32_t m_checksum;
+    void dump() const;
+    time_point creationTime() const         { return m_creation_time; }
+    time_point lastSend() const             { return m_xfer_time; }
+    void setLastSend(time_point t)          { m_xfer_time=t; }
+    void incRetransmits()                   { m_retransmit_count++;}
+    uint32_t retransmitCount() const        { return m_retransmit_count; }
 protected:
 
     BitStream *m_stream;
-    bool m_hasDebugInfo, m_compressed, m_finalized;
+    bool m_hasDebugInfo, m_compressed, m_finalized,m_reliable,m_compress_on_send=false;
     uint32_t m_seqNo;
     uint32_t m_numSibs;
     uint32_t m_sibId;
     uint32_t m_sibPos;
+    time_point m_creation_time = std::chrono::steady_clock::now();
+    time_point m_xfer_time;
+    uint32_t m_retransmit_count;
     std::set<uint32_t> m_acks;
 };
-typedef std::list<CrudP_Packet *> lCrudP_Packet;
-typedef std::vector<CrudP_Packet *> vCrudP_Packet;
-typedef vCrudP_Packet::iterator ivCrudP_Packet;
+using lCrudP_Packet = std::list<CrudP_Packet *>;
+using vCrudP_Packet = std::vector<CrudP_Packet *>;
+using ivCrudP_Packet = vCrudP_Packet::iterator;

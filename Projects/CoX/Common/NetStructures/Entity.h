@@ -1,18 +1,102 @@
 #pragma once
-#include <osg/Vec3>
-#include <osg/Quat>
 #include "CommonNetStructures.h"
 #include "Powers.h"
 #include "Costume.h"
 #include "Character.h"
-//#include "Events/InputState.h"
+
+#include <glm/vec3.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <cmath>
+
+struct AngleRadians
+{
+    static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
+    float toDeg() { return AngleRadians((v*180.0f)/ float(M_PI)).v;}
+    explicit AngleRadians(float x=0.0f) : v(x) {}
+    AngleRadians operator-(const AngleRadians&ot) const
+    {
+        AngleRadians result(v);
+        return result-=ot;
+    }
+    AngleRadians operator-() const {
+        return AngleRadians(-v);
+    }
+    float operator/(AngleRadians &other) const {
+        return v/other.v;
+    }
+    AngleRadians operator+(const AngleRadians &ot) const
+    {
+        AngleRadians result(v);
+        result+=ot;
+        result.fixup();
+        return result;
+    }
+    AngleRadians operator*(float scale) const
+    {
+        return AngleRadians(v*scale);
+    }
+    AngleRadians &operator*=(float scale)
+    {
+        v*=scale;
+        return *this;
+    }
+    AngleRadians &operator+=(const AngleRadians &ot)
+    {
+        v += ot.v;
+        fixup();
+        return *this;
+    }
+    AngleRadians &operator-=(const AngleRadians &ot)
+    {
+        v -= ot.v;
+        fixup();
+        return *this;
+    }
+    bool operator==(float other) const { return v == other; }
+    bool operator==(const AngleRadians &other) const { return v == other.v; }
+    bool operator!=(const AngleRadians &other) const { return v != other.v; }
+    AngleRadians &fixup() {
+        if ( v > float(M_PI))
+            v -= 2* float(M_PI);
+        if ( v <= -float(M_PI))
+            v += 2* float(M_PI);
+        return *this;
+    }
+    bool operator<( const AngleRadians &o) const {
+        return v<o.v;
+    }
+    bool operator>( const AngleRadians &o) const {
+        return v>o.v;
+    }
+    AngleRadians lerp(AngleRadians towards,float factor) const {
+
+        float v3(towards.v - v);
+        if ( v3 > float(M_PI))
+            v3 = v3 - 2 * float(M_PI);
+        if ( v3 <= -float(M_PI))
+            v3 = v3 + 2 * float(M_PI);
+        return AngleRadians(v3 * factor + v);
+
+    }
+    //    operator float()
+    //    { return v;}
+    float v;
+    int toIntegerForm() const
+    {
+        return int((v + float(M_PI)) * 2048.0f / (2* float(M_PI)) + 0.5f);
+    }
+    explicit operator float() const {
+        return v;
+    }
+};
+
 class PosUpdate
 {
 public:
-    osg::Vec3 posvec;
-    osg::Quat quat;
-    int a;
-    int b;
+    glm::vec3 posvec;
+    AngleRadians PitchYawRoll[3];
+    //glm::quat quat;
+    int m_timestamp;
 };
 class InputStateStorage
 {
@@ -28,7 +112,7 @@ public:
     uint16_t controlBits;
     uint16_t someOtherbits;
     void *current_state_P;
-    osg::Vec3 camera_pyr;
+    glm::vec3 camera_pyr;
     int m_t1,m_t2;
     uint8_t field_20;
     int m_A_ang11_probably,m_B_ang11_probably;
@@ -36,8 +120,8 @@ public:
     bool has_input_commit_guess;
     bool pos_delta_valid[3];
     bool pyr_valid[3];
-    osg::Vec3 pos_delta;
-    osg::Quat direction;
+    glm::vec3 pos_delta;
+    glm::quat direction;
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
 };
@@ -47,8 +131,8 @@ class Entity : public NetStructure
 public:
         struct currentInputState
         {
-            osg::Vec3 pos;
-            osg::Vec3 pyr; //TODO: convert to quat
+            glm::vec3 pos;
+            glm::vec3 pyr; //TODO: convert to quat
         };
         InputStateStorage   inp_state;
         enum
@@ -57,8 +141,7 @@ public:
             ENT_CRITTER=4
         };
         int                 m_access_level;
-        int                 field_64;
-        int                 field_60;
+        int                 field_60; // Sequencer uses this as a seed for random bone scale
         int                 field_68;
         int                 field_78;
         int                 m_num_titles;
@@ -82,8 +165,10 @@ mutable bool                m_logout_sent;
         int                 m_seq_upd_num2;
         PosUpdate           m_pos_updates[64];
         size_t              m_update_idx;
-        std::string         m_battle_cry;
-        std::string         m_character_description;
+        std::vector<PosUpdate> interpResults;
+
+        QString             m_battle_cry;
+        QString             m_character_description;
         bool                var_B4;
 
         Character           m_char;
@@ -91,25 +176,31 @@ mutable bool                m_logout_sent;
         bool                entReceiveAlwaysCon;
         bool                entReceiveSeeThroughWalls;
         int                 pkt_id_QrotUpdateVal[3];
-        osg::Quat           qrot;
-        osg::Vec3           pos;
+        glm::quat           qrot;
+        glm::vec3           pos;
         uint32_t            prev_pos[3];
         bool                m_selector1,m_pchar_things,might_have_rare,
                             m_hasname  ,m_hasgroup_name,m_classname_override;
         bool                m_create   ,m_hasRagdoll  ,m_create_player,m_rare_bits;
         int                 current_client_packet_id;
-        std::string         m_group_name, m_override_name;
+        QString             m_group_name, m_override_name;
         uint8_t             m_origin_idx,m_class_idx;
         uint8_t             m_type;
         uint32_t            m_idx;
+        uint32_t            m_db_id;
         uint32_t            m_input_ack;
         bool                player_type;
         bool                m_player_villain;
         bool                var_129C;
+        int                 ownerEntityId = 0;
+        int                 creatorEntityId = 0;
 
                             Entity();
 virtual                     ~Entity(){}
         void                dump();
+        void                addPosUpdate(const PosUpdate &p);
+        void                addInterp(const PosUpdate &p);
+
         uint32_t            getIdx() const {return m_idx;}
 virtual void                serializeto(BitStream &bs)const;
 virtual void                sendCostumes(BitStream &bs) const;
@@ -120,7 +211,7 @@ virtual void                serializefrom(BitStream &) {assert(false);}
         bool                update_rot(int axis) const; // returns true if given axis needs updating;
 
         void                InsertUpdate(PosUpdate pup);
-        const std::string & name() {return m_char.getName();}
+        const QString &     name() const {return m_char.getName();}
         void                sendBuffs(BitStream &bs) const;
         void                fillFromCharacter(Character *f);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
@@ -153,7 +244,7 @@ private:
 };
 class MobEntity : public Entity
 {
-        std::string     m_costume_seq;
+        QString         m_costume_seq;
 public:
                         MobEntity();
 virtual                 ~MobEntity(){}

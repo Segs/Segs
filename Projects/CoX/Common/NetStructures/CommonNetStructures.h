@@ -8,77 +8,27 @@
 
 #pragma once
 
-#include <ace/Log_Msg.h>
-#include <osg/Vec3>
-#include <string>
-#include <sstream>
+#include <glm/vec3.hpp>
 #include "BitStream.h"
-//class Quaternion
-//{
-//public:
-//        Quaternion &FromNormalized(float a,float b,float c)
-//        {
-//                q[0]=a;
-//                q[1]=b;
-//                q[2]=c;
-//                float res = (a*a+b*b+c*c)-1;
-//                q[3]= std::max<>((float)0,res);
-//                return *this;
-//        }
-//        Quaternion()
-//        {
-//                q[0]=q[1]=q[2]=q[3]=0.0;
-//        }
-//        union
-//        {
-//                struct
-//                {
-//                        float x,y,z,amount;
-//                } vals;
-//                float q[4];
-//        };
-//};
-//class Vector3
-//{
-//public:
-//        Vector3(float x=0.0f,float y=0.0f,float z=0.0f)
-//        {
-//                v[0]=x;
-//                v[1]=y;
-//                v[2]=z;
-//        }
-//        union {
-//                float v[3];
-//                struct {
-//                        float x,y,z;
-//                };
-//        };
-//        const Vector3 &operator+=(const Vector3 &rhs)
-//        {
-//            x+=rhs.x;
-//            y+=rhs.y;
-//            z+=rhs.z;
-//            return *this;
-//        }
-//};
+class QString;
 typedef struct
 {
-        osg::Vec3 row1;
-        osg::Vec3 row2;
-        osg::Vec3 row3;
-        osg::Vec3 row4;
+        glm::vec3 row1;
+        glm::vec3 row2;
+        glm::vec3 row3;
+        glm::vec3 row4;
 } Matrix4x3;
 class TransformStruct
 {
 public:
-        TransformStruct(const osg::Vec3 &a,const osg::Vec3 &b,const osg::Vec3 &c,bool set1,bool set2,bool set3) :
+        TransformStruct(const glm::vec3 &a,const glm::vec3 &b,const glm::vec3 &c,bool set1,bool set2,bool set3) :
           v1(a),v2(b),v3(c),v1_set(set1),v2_set(set2),v3_set(set3)
         {
         }
         TransformStruct() {v1_set=v2_set=v3_set=false;}
-        osg::Vec3 v1;
-        osg::Vec3 v2;
-        osg::Vec3 v3;
+        glm::vec3 v1;
+        glm::vec3 v2;
+        glm::vec3 v3;
         bool v1_set,v2_set,v3_set;
 };
 
@@ -100,15 +50,15 @@ public:
     static  void            storeFloatConditional(BitStream &bs,float val);
     static  void            storeFloatPacked(BitStream &bs,float val);
     static  int             getPackedBitsConditional(BitStream &bs,int numbits);
-    static  void            storeStringConditional(BitStream &bs,const std::string &str);
-    static  void            storeVector(BitStream &bs, osg::Vec3 &vec);
-    static  void            storeVectorConditional(BitStream &bs, osg::Vec3 &vec);
+    static  void            storeStringConditional(BitStream &bs, const QString &str);
+    static  void            storeVector(BitStream &bs, glm::vec3 &vec);
+    static  void            storeVectorConditional(BitStream &bs, glm::vec3 &vec);
     static  void            storeTransformMatrix(BitStream &tgt,const Matrix4x3 &src);
     static  void            storeTransformMatrix(BitStream &tgt,const TransformStruct &src);
 
     static  void            getTransformMatrix(BitStream &bs,Matrix4x3 &src);
     static  void            storeCached_Color(BitStream &bs,uint32_t col);
-    static  void            storeCached_String(BitStream &bs,const std::string & str);
+    static  void            storeCached_String(BitStream &bs, const QString &str);
     static  uint32_t        getCached_Color(BitStream &bs);
-    static  std::string     getCached_String(BitStream &bs);
+    static  QString         getCached_String(BitStream &bs);
 };

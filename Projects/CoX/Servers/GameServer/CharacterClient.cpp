@@ -10,34 +10,36 @@
 #include "Character.h"
 #include "CharacterDatabase.h"
 #include "GameServer.h"
+#include "AdminServer/AccountInfo.h"
+
 CharacterClient::~CharacterClient()
 {
     reset();
 }
 size_t CharacterClient::max_slots()
 {
-    return m_account_info.max_slots();
+    return m_account_info->max_slots();
 }
 
 bool CharacterClient::getCharsFromDb()
 {
 
-    return m_account_info.fill_game_db(0); // fill the game related info using given game server db
+    return m_account_info->fill_game_db(0); // fill the game related info using given game server db
 }
 
 Character * CharacterClient::getCharacter( size_t idx )
 {
-    return m_account_info.get_character(idx);
+    return m_account_info->get_character(idx);
 }
 
 void CharacterClient::reset()
 {
-    m_account_info.reset();
+    m_account_info->reset();
 }
 
 bool CharacterClient::deleteCharacter( Character *chr )
 {
-    bool res = m_account_info.remove_character(chr);
+    bool res = m_account_info->remove_character(chr);
     if(res)
         chr->reset();
     return res;

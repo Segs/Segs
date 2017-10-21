@@ -1,5 +1,5 @@
 #pragma once
-#include "AuthEvents.h"
+#include "AuthProtocol/AuthEvents.h"
 
 class AuthorizationProtocolVersion : public AuthLinkEvent
 {
@@ -13,7 +13,11 @@ public:
                             m_seed(seed),
                             m_proto_vers(version_id)
                         {}
-        void            init(EventProcessor *ev_src,uint32_t version_id,uint32_t seed) {m_proto_vers=version_id;m_event_source=ev_src; m_seed=seed;}
+        void            init(EventProcessor *ev_src,uint32_t version_id,uint32_t seed)
+                        {
+                            m_proto_vers=version_id;
+                            m_event_source=ev_src; m_seed=seed;
+                        }
         void            serializeto(GrowingBuffer &buf) const
                         {
                             buf.uPut((uint8_t)0);

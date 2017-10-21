@@ -1,18 +1,15 @@
-#include <stdarg.h>
 #include "MapClient.h"
-//#include "MapHandler.h"
+#include "AdminServer/AccountInfo.h"
 #include "Entity.h"
 #include "NetCommandManager.h"
-MapClient::MapClient() : m_ent(0),m_tick_source(0)
-{
 
-}
+#include <cstdarg>
 
 void MapClient::AddShortcut(int index, NetCommand *command)
 {
     if(m_shortcuts.find(index)!=m_shortcuts.end())
     {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Replacing command %d %s->%s\n"),index,m_shortcuts[index]->m_name.c_str(),command->m_name.c_str()));
+        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("Replacing command %d %s->%s\n"),index,qPrintable(m_shortcuts[index]->m_name),qPrintable(command->m_name)));
     }
     m_shortcuts[index]=command;
 }

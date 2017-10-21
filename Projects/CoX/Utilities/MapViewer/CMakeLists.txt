@@ -1,67 +1,36 @@
-FIND_PACKAGE(ACE REQUIRED)
-#SET(OpenSceneGraph_DEBUG TRUE)
-FIND_PACKAGE(OpenSceneGraph REQUIRED osgUtil osgText osgViewer osgGA)
-FIND_PACKAGE(Qt COMPONENTS Gui Core REQUIRED)
+#FIND_PACKAGE(ACE REQUIRED)
+find_package(Qt5Core REQUIRED)
 
-################# Qt Ui related ###############################################
-include(${QT_USE_FILE})
-SET(gui_UI_FILES
-    ui/mainwindow.ui
-    ui/objecttreewidget.ui
+set(CMAKE_AUTOUIC TRUE)
+set(CMAKE_AUTOMOC TRUE)
+set(SOURCES
+    src/MapViewerApp.cpp
+    src/MapViewerApp.h
+    src/PiggTools.cpp
+    src/PiggTools.h
+    src/CohModelConverter.cpp
+    src/CohModelConverter.h
+    src/CoHSceneConverter.cpp
+    src/CoHSceneConverter.h
+    src/CohTextureConverter.cpp
+    src/CohTextureConverter.h
+    src/SideWindow.cpp
+    src/SideWindow.h
+    src/SideWindow.ui
+    src/DataPathsDialog.cpp
+    src/DataPathsDialog.h
+    src/DataPathsDialog.ui
+    src/main.cpp
 )
-SET(gui_MOC_HEADERS
-    include/mainwindow.h
-    include/objecttreewidget.h
-    include/mapmodel.h
-    include/CompositeViewerQOSG.h
-    include/QOSGWidget.h
+ADD_EXECUTABLE(mapviewer ${SOURCES})
+TARGET_LINK_LIBRARIES(mapviewer
+    lutefisk3d_IMP
+    ACE
+    gameData cereal_IMP
 )
-SET(gui_SOURCES
-    src/mainwindow.cpp
-    src/objecttreewidget.cpp
-    src/mapmodel.cpp
-    src/CompositeViewerQOSG.cpp
-    src/QOSGWidget.cpp
-    ${gui_MOC_HEADERS}
+qt5_use_modules(mapviewer Core Widgets  )
+
+add_custom_command(TARGET mapviewer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${ThirdParty_Install_Dir}/share/Lutefisk3D/CoreData ${EXECUTABLE_OUTPUT_PATH}/CoreData
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Data ${EXECUTABLE_OUTPUT_PATH}/Data
 )
-QT4_WRAP_UI(gui_UI_H ${gui_UI_FILES})
-QT4_WRAP_CPP(gui_MOC_SRC ${gui_MOC_HEADERS})
-qt4_automoc(${gui_SOURCES})
-################################################################################
-
-INCLUDE_DIRECTORIES(${OPENSCENEGRAPH_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}) # to access moc compiled headers
-
-SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/src/LoadMap.cpp
-)
-SET(target_INCLUDE
-)
-SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-SET(target_DEPENDS "")
-
-SEGS_ADD_COMPONENT(static_storage LIB)
-
-INCLUDE_DIRECTORIES(${target_INCLUDE_DIR} ${ACE_path})
-
-SET (target_SOURCES
-${gui_SOURCES}
-${target_CPP}
-${target_INCLUDE}
-${gui_MOC_SRC} ${gui_UI_H}
-)
-
-
-
-
-ADD_EXECUTABLE(mapviewer ${target_SOURCES})
-
-ACE_ADD_LIBRARIES(mapviewer ACE)
-TARGET_LINK_LIBRARIES(mapviewer   ${target_DEPENDS}
-    ${CMAKE_THREAD_LIBS_INIT}
-    ${OPENSCENEGRAPH_LIBRARIES}
-    ${QT_LIBRARIES}
-)
-
-ADD_DEPENDENCIES(mapviewer ${target_DEPENDS})
-

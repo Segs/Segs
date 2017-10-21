@@ -5,4 +5,26 @@
  * This software is licensed! (See License.txt for details)
  *
  */
+#include "Client.h"
 
+#include "Servers/AdminServer/AccountInfo.h"
+
+ClientSession::ClientSession()
+{
+    m_account_info = new AccountInfo;
+}
+
+ClientSession::~ClientSession()
+{
+    delete m_account_info;
+}
+
+QString ClientSession::getLogin() const
+{
+    return m_account_info->login();
+}
+
+bool ClientSession::account_blocked()
+{
+    return m_account_info->access_level()==0;
+}

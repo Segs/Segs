@@ -6,21 +6,20 @@
  *
  */
 #pragma once
-// if this file is included stand-alone this will pull in common definitions
 #include "MapEvents.h"
-#include "CommonNetStructures.h"
 #include "Entity.h"
 class InputState : public MapLinkEvent
 {
 public:
     InputStateStorage m_data;
 public:
-    InputState() : MapLinkEvent(MapEventTypes::evInputState)
+    InputState() : MapLinkEvent(MapEventTypes::evInputState),m_user_commands(0)
     {}
     void serializeto(BitStream &) const;
     void partial_2(BitStream &bs);
     void extended_input(BitStream &bs);
     void serializefrom(BitStream &bs);
     void recv_client_opts(BitStream &bs);
-    osg::Vec3 &pyr() {return m_data.camera_pyr;}
+    glm::vec3 &pyr() {return m_data.camera_pyr;}
+    BitStream m_user_commands;
 };
