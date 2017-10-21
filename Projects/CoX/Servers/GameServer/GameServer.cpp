@@ -49,9 +49,9 @@ bool GameServer::Run()
         ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Game server already running\n") ));
         return true;
     }
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading game data\n") ));
-    WorldData::instance()->read_costumes("./data/");
-    WorldData::instance()->read_colors("./data/");
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading game data from ./data/bin/ folder\n") ));
+    WorldData::instance()->read_costumes("./data/bin/");
+    WorldData::instance()->read_colors("./data/bin/");
     ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) All game data read\n") ));
     ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Filling hashes .. ") ));
     WorldData::instance()->fill_hashes();
