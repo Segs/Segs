@@ -21,36 +21,36 @@ static uint32_t color_to_4ub(const glm::vec3 &rgb)
 }
 bool WorldData_impl::read_costumes( const QString &directory_path )
 {
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading Costumes ... ") ));
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading ./data/bin/costume.bin ... ") ));
     BinStore costumes_store;
     if(!costumes_store.open(directory_path+"costume.bin",costumesets_i0_requiredCrc)) {
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Couldn't load Costume!!\n") ));
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Couldn't load ./data/bin/costume.bin!!\n") ));
         return false;
     }
 
     bool res=loadFrom(&costumes_store,&m_costume_store);
     if(res)
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("Done.\n") ));
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("Costumes loaded.\n") ));
     else
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("Failed!\n") ));
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("Loading costumes failed!\n") ));
     return res;
 }
 
 bool WorldData_impl::read_colors( const QString &directory_path )
 {
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading Supergroup colors ... ") ));
+    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading ./data/bin/supergroupColors.bin ... ") ));
     BinStore sg_color_store;
     if(!sg_color_store.open(directory_path+"supergroupColors.bin",palette_i0_requiredCrc))
     {
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Couldn't load Supergroup colors!!\n") ));
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Couldn't load ./data/bin/supergroupColors.bin!!\n") ));
         return false;
     }
 
     bool res=loadFrom(&sg_color_store,&m_supergroup_colors);
     if(res)
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("Done.\n") ));
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("Supergroup colors loaded.\n") ));
     else
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("Failed!\n") ));
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("Loading supergroup colors failed!\n") ));
     return res;
 }
 void WorldData_impl::add_colors(const std::vector<ColorEntry_Data> &clr)
