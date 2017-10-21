@@ -24,7 +24,7 @@ bool WorldData_impl::read_costumes( const QString &directory_path )
     ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading ./data/bin/costume.bin ... ") ));
     BinStore costumes_store;
     if(!costumes_store.open(directory_path+"costume.bin",costumesets_i0_requiredCrc)) {
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Couldn't load ./data/bin/costume.bin!!\n") ));
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Couldn't load ./data/bin/costume.bin!!\n  Using piggtool, ensure that bin.pigg has been extracted to ./data/ \n") ));
         return false;
     }
 
@@ -42,7 +42,7 @@ bool WorldData_impl::read_colors( const QString &directory_path )
     BinStore sg_color_store;
     if(!sg_color_store.open(directory_path+"supergroupColors.bin",palette_i0_requiredCrc))
     {
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Couldn't load ./data/bin/supergroupColors.bin!!\n") ));
+        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Couldn't load ./data/bin/supergroupColors.bin!!\n  Using piggtool, ensure that bin.pigg has been extracted to ./data/ \n") ));
         return false;
     }
 
