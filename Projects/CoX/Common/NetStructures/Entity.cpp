@@ -493,7 +493,7 @@ void Entity::serializeto( BitStream &bs ) const
     if(m_rare_bits)
     {
         sendCostumes(bs);
-        sendXLuency(bs,0.5f);
+        sendXLuency(bs,translucency);
         sendTitles(bs);
     }
     if(m_pchar_things)

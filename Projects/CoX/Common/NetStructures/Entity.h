@@ -194,9 +194,9 @@ mutable bool                m_logout_sent;
         bool                var_129C;
         int                 ownerEntityId = 0;
         int                 creatorEntityId = 0;
-
+        float               translucency = 0.5f;
                             Entity();
-virtual                     ~Entity(){}
+virtual                     ~Entity() = default;
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
         void                addInterp(const PosUpdate &p);
