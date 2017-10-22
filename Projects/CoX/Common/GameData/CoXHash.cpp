@@ -94,7 +94,6 @@ uint32_t CoXGenericHashMap<KEY, VALUE, COMPARE_FUNCTOR>::find_index( const KEY &
         }
         if(this->m_storage[entry_to_try].key_hash==prev_val) // if hashes are the same
         {
-            // if!(entry_flags&1)
             if(0==this->comp(needle,this->m_storage[entry_to_try].stored_key)) // check the keys
             {
                 result = 1; // found
