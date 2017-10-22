@@ -110,8 +110,11 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evChatDividerMoved:
             on_command_chat_divider_moved(static_cast<ChatDividerMoved *>(ev));
             break;
+        case MapEventTypes::evMiniMapState:
+            on_minimap_state(static_cast<MiniMapState *>(ev));
+            break;
         default:
-            fprintf(stderr,"Unhandled MapEventTypes %zu\n",MapEventTypes::base - ev->type());
+            fprintf(stderr,"Unhandled MapEventTypes %zu\n",ev->type()-MapEventTypes::base);
             //ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled event type %d\n"),ev->type()));
     }
 }
@@ -403,20 +406,20 @@ void MapInstance::on_window_state(WindowState * ev){
     printf("Received window state %d - %d\n",ev->window_idx,ev->wnd.field_24);
 
 }
-void MapInstance::on_console_command(ConsoleCommand * ev) {
+void MapInstance::on_console_command(ConsoleCommand * ev)
+{
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
     printf("Console command received %s\n",qPrintable(ev->contents));
-    if(ev->contents[0]=='l')
+    if(ev->contents.startsWith("script "))
     {
-        //TODO: fix this hacky way of calling scripting engine
         //TODO: restrict scripting access to GM's and such
-        if(ev->contents.midRef(2).startsWith("exec:{"))
-        {
-            QString code = ev->contents.mid(8,ev->contents.size()-9);
-            m_scripting_interface->runScript(src,code,"user provided script");
-            return;
-        }
+        QString code = ev->contents.mid(7,ev->contents.size()-7);
+        m_scripting_interface->runScript(src,code,"user provided script");
+        return;
+    }
+    else if(ev->contents[0]=='l')
+    {
         // send the message to everyone on this map
         const QString chat_content = ev->contents.mid(2);
         auto iter=m_clients.begin();
@@ -431,4 +434,10 @@ void MapInstance::on_console_command(ConsoleCommand * ev) {
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {
     qDebug() << "Chat divider moved to "<<ev->m_position; //"for player" <<
+}
+void MapInstance::on_minimap_state(MiniMapState *ev)
+{
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    qDebug() << "MiniMapState tile "<<ev->tile_idx; //"for player" <<
 }

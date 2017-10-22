@@ -32,10 +32,13 @@ class ConsoleCommand;
 class ClientQuit;
 class ConnectRequest;
 class ChatDividerMoved;
+class MiniMapState;
+
 class MapServer;
 class SEGSTimer;
 class InputState;
 class World;
+
 class MapInstance : public EventProcessor
 {
     std::unique_ptr<ScriptingEngine> m_scripting_interface;
@@ -81,4 +84,5 @@ protected:
     void on_client_quit(ClientQuit *ev);
     void on_connection_request(ConnectRequest *ev);
     void on_command_chat_divider_moved(ChatDividerMoved *ev);
+    void on_minimap_state(MiniMapState *ev);
 };
