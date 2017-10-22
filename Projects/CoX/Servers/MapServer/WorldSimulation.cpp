@@ -43,16 +43,17 @@ float animateValue(float v,float start,float target,float length,float dT)
 }
 void World::effectsStep(Entity *e,uint32_t msec)
 {
-    if(e->m_is_fading) {
-        float before=e->translucency;
-        if(e->m_fading_direction==FadeDirection::In)
-        {
-            e->translucency = animateValue(before,1.0,0.02f,580.0f,float(msec)/50.0f);
+    if(e->m_is_fading)
+    {
+        float target=0.0f;
+        float start=1.0f;
+        if(e->m_fading_direction!=FadeDirection::In)
+        { // must be fading out, so our target is 100% transparency.
+            target = 1;
+            start = 0;
         }
-        else {
-            e->translucency = animateValue(e->translucency,0.02,1.0,580.0f,float(msec)/50.0f);
-        }
-        if(std::abs(e->translucency-before)<std::numeric_limits<float>::epsilon())
+        e->translucency = animateValue(e->translucency,start,target,380.0f,float(msec)/50.0f);
+        if(std::abs(e->translucency-target)<std::numeric_limits<float>::epsilon())
             e->m_is_fading = false;
     }
 }
