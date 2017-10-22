@@ -1,10 +1,11 @@
 #pragma once
 
-#include <QHash>
-#include <vector>
 #include <Lutefisk3D/Container/Ptr.h>
 #include <Lutefisk3D/Graphics/Texture.h>
 #include <Lutefisk3D/Math/Vector2.h>
+#include <glm/vec2.hpp>
+#include <QHash>
+#include <vector>
 
 struct TextureModifiers;
 class QString;
@@ -34,8 +35,8 @@ struct TextureWrapper
     QString detailname;
     QString bumpmap;
     int flags {0};
-    Urho3D::Vector2 scaleUV0 {0,0};
-    Urho3D::Vector2 scaleUV1 {0,0};
+    glm::vec2 scaleUV0 {0,0};
+    glm::vec2 scaleUV1 {0,0};
     CoHBlendMode BlendType = CoHBlendMode(0);
     TextureModifiers *info {nullptr};
 };

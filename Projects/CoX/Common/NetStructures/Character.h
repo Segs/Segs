@@ -113,7 +113,7 @@ typedef std::vector<Costume *> vCostume;
         float           m_unkn1,m_unkn2;
         uint32_t        m_unkn3,m_unkn4;
 public:
-                                Character();
+                        Character();
 //////////////////////////////////////////////////////////////////////////
 // Getters and setters
         uint32_t        getLevel() const { return m_level; }
@@ -132,7 +132,6 @@ const   QString &       getMapName() const { return m_mapName; }
 //////////////////////////////////////////////////////////////////////////
         void            reset();
         bool            isEmpty();
-        bool            serializeFromDB(uint64_t user_id,uint32_t slot_index);
         void            serializefrom(BitStream &buffer) override;
         void            serializeto(BitStream &buffer) const override;
         void            serialize_costumes(BitStream &buffer,bool all_costumes=true) const;

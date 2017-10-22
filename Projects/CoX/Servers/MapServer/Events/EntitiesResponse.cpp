@@ -33,7 +33,7 @@ void EntitiesResponse::serializeto_internal( BitStream &tgt ) const
 
     tgt.StorePackedBits(1,m_incremental ? 2 : 3); // opcode  3 - full update.
 
-    tgt.StoreBits(1,entReceiveUpdate); // passed to Entity::EntReceive as a parameter
+    tgt.StoreBits(1,ent_major_update); // passed to Entity::EntReceive as a parameter
 
     sendCommands(tgt);
 
@@ -72,7 +72,7 @@ void EntitiesResponse::serializeto_internal( BitStream &tgt ) const
     sendClientData(tgt);
     //FIXME: Most Server messages must follow entity update.
 }
-void EntitiesResponse::sendClientData(BitStream &tgt) const
+void EntitiesResponse::sendClientData(BitStream &bs) const
 {
     PlayerEntity *ent=static_cast<PlayerEntity *>(m_client->char_entity());
     Character &player_char=ent->m_char;
@@ -83,47 +83,53 @@ void EntitiesResponse::sendClientData(BitStream &tgt) const
         //full_update - > receiveCharacterFromServer
         // initial character update = level/name/class/origin/map_name
         //m_client->char_entity()->m_char.m_ent=m_client->char_entity();
-        ent->serialize_full(tgt);
-        player_char.sendTray(tgt);
-        player_char.sendTrayMode(tgt);
-        tgt.StoreString(ent->name()); // maxlength 32
+        PUTDEBUG("CharacterFromServer");
+        ent->serialize_full(bs);
+        PUTDEBUG("before tray");
+        player_char.sendTray(bs);
+        PUTDEBUG("before traymode");
+        player_char.sendTrayMode(bs);
+        bs.StoreString(ent->name()); // maxlength 32
 
-        tgt.StoreString(ent->m_battle_cry); //max 128
-        tgt.StoreString(ent->m_character_description); //max 1024
-        player_char.sendWindows(tgt);
-        tgt.StoreBits(1,0); // lfg related
-        tgt.StoreBits(1,0); // a2->ent_player2->field_AC
-        player_char.sendTeamBuffMode(tgt);
-        player_char.sendDockMode(tgt);
-        player_char.sendChatSettings(tgt);
-        player_char.sendTitles(tgt);
-        player_char.sendDescription(tgt);
+        bs.StoreString(ent->m_battle_cry); //max 128
+        bs.StoreString(ent->m_character_description); //max 1024
+        PUTDEBUG("before windows");
+        player_char.sendWindows(bs);
+        bs.StoreBits(1,0); // lfg related
+        bs.StoreBits(1,0); // a2->ent_player2->field_AC
+        player_char.sendTeamBuffMode(bs);
+        player_char.sendDockMode(bs);
+        player_char.sendChatSettings(bs);
+        player_char.sendTitles(bs);
+        player_char.sendDescription(bs);
         uint8_t auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-        tgt.StoreBitArray(auth_data,128);
-        player_char.sendKeybinds(tgt);
-        player_char.sendOptions(tgt);
-        player_char.sendFriendList(tgt);
+        PUTDEBUG("before auth data");
+        bs.StoreBitArray(auth_data,128);
+        player_char.sendKeybinds(bs);
+        player_char.sendOptions(bs);
+        PUTDEBUG("before friend list");
+        player_char.sendFriendList(bs);
     }
     else
     {
         //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending Character to client: stats-only\n")));
-        ent->m_char.sendFullStats(tgt);
+        ent->m_char.sendFullStats(bs);
     }
-    storePowerInfoUpdate(tgt);
+    storePowerInfoUpdate(bs);
     //storePowerModeUpdate(tgt);
     //storeBadgeUpdate(tgt);
     //storeGenericinventoryUpdate(tgt);
     //storeInventionUpdate(tgt);
-    storeTeamList(tgt);
-    storeSuperStats(tgt);
-    storeGroupDyn(tgt);
+    storeTeamList(bs);
+    storeSuperStats(bs);
+    storeGroupDyn(bs);
     bool additional=false;
-    tgt.StoreBits(1,additional);
+    bs.StoreBits(1,additional);
     if(additional)
     {
-        tgt.StoreFloat(0.1f);
-        tgt.StoreFloat(0.2f); // camera_yaw
-        tgt.StoreFloat(0.3f);
+        bs.StoreFloat(0.1f);
+        bs.StoreFloat(0.2f); // camera_yaw
+        bs.StoreFloat(0.3f);
     }
 }
 void EntitiesResponse::sendControlState(BitStream &bs) const

@@ -31,7 +31,6 @@ MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
         case 6: return new CookieRequest;
         case 7: return new ClientQuit;
         case 9: return new NewEntity;
-        case 40: return new CombineRequest;
             //   default: return new MapUnknownRequest;
     }
     ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled event type %d\n"),opcode));
@@ -42,7 +41,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
 {
     uint16_t opcode = bs.GetPackedBits(1);
 
-    switch(opcode) // this is the actual clientside packet Opcode
+    switch(opcode)
     {
         case 0:
             if(bs.GetReadableBits()>=8) // at least 1 char readable ?
@@ -51,6 +50,8 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
             return new IdleEvent;
         case 1: return new MiniMapState;
         case 14: return new WindowState;
+        case 40: return new CombineRequest;
+        /*case 21: new KeybindProfileReset; */
         /*case 22: new KeybindProfileSelected; */
         /*case 37: new TargetChatChannelSelected; */
     }

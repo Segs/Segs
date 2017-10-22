@@ -3,6 +3,7 @@
 
 #include "MapViewerApp.h"
 #include "CoHSceneConverter.h"
+#include "CoHModelLoader.h"
 #include "CohModelConverter.h"
 #include "DataPathsDialog.h"
 
@@ -11,6 +12,7 @@
 #include <QtCore/QStringListModel>
 #include <QStandardItemModel>
 #include <Lutefisk3D/Graphics/Material.h>
+#include <Lutefisk3D/Graphics/StaticModel.h>
 #include <Lutefisk3D/Resource/JSONFile.h>
 #include <Lutefisk3D/Resource/XMLFile.h>
 #include <Lutefisk3D/IO/VectorBuffer.h>
@@ -106,7 +108,7 @@ void SideWindow::onModelSelected(ConvertedModel *m, Urho3D::Drawable *d)
         ui->matDescriptionTxt->clear();
     }
 }
-static QStandardItem * fillModel(ConvertedNode *node)
+static QStandardItem * fillModel(CoHNode *node)
 {
     QStandardItem *root = new QStandardItem;
     root->setData(node->name + ": Children("+QString::number(node->children.size())+")",Qt::DisplayRole);
@@ -120,7 +122,7 @@ static QStandardItem * fillModel(ConvertedNode *node)
     }
     return root;
 }
-void SideWindow::onScenegraphLoaded(const ConvertedSceneGraph & sc)
+void SideWindow::onScenegraphLoaded(const CoHSceneGraph & sc)
 {
     QStandardItemModel *m=new QStandardItemModel();
     QStandardItem *item = m->invisibleRootItem();
@@ -165,14 +167,14 @@ void SideWindow::on_actionSet_data_paths_triggered()
 void SideWindow::on_nodeList_clicked(const QModelIndex &index)
 {
     QVariant v=m_model->data(index,Qt::UserRole);
-    ConvertedNode *n = (ConvertedNode *)v.value<void *>();
+    CoHNode *n = (CoHNode *)v.value<void *>();
     emit nodeSelected(n);
     if(!n)
         return;
 
     QModelIndex parent_idx = m_model->parent(index);
     QVariant parentv = m_model->data(m_model->parent(index),Qt::UserRole);
-    ConvertedNode *parent_node = (ConvertedNode *)parentv.value<void *>();
+    CoHNode *parent_node = (CoHNode *)parentv.value<void *>();
     if(!parent_node)
         return;
     for(auto chld : parent_node->children)
@@ -195,7 +197,7 @@ void SideWindow::on_nodeList_doubleClicked(const QModelIndex &index)
     {
         void *val = v.value<void *>();
         if(val) {
-            ConvertedNode *n = (ConvertedNode *)val;
+            CoHNode *n = (CoHNode *)val;
             emit nodeDisplayRequest(n,isroot.value<bool>());
             return;
         }

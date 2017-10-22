@@ -480,7 +480,7 @@ bool CrudP_Protocol::batchSend(lCrudP_Packet &tgt)
     {
         while ((pak = retransmit_queue.front()) != nullptr)
         {
-            qDebug() << "Retrans packet with id" << pak->GetSequenceNumber();
+            //qDebug() << "Retrans packet with id" << pak->GetSequenceNumber();
             sendRaw(pak, tgt);
             retransmit_queue.pop_front();
         }

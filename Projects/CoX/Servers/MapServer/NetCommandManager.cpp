@@ -16,8 +16,8 @@
 static void FillCommands()
 {
     NetCommandManager *cmd_manager = NetCommandManagerSingleton::instance();
-    NetCommand::Argument arg1={1,NULL};
-    NetCommand::Argument arg_1float={3,NULL};
+    NetCommand::Argument arg1={1,nullptr};
+    NetCommand::Argument arg_1float={3,nullptr};
     std::vector<NetCommand::Argument> args;
     args.push_back(arg1);
     std::vector<NetCommand::Argument> fargs;
@@ -48,14 +48,14 @@ static void FillCommands()
 //    cmd_manager->addCommand(new NetCommand(9,"selected_ent_server_index",args));
 //    cmd_manager->addCommand(new NetCommand(9,"record_motion",args));
 
-    cmd_manager->addCommand(new NetCommand(3,"time",fargs)); // unknown = 12
-    cmd_manager->addCommand(new NetCommand(3,"timescale",fargs)); // unknown = 13
-    cmd_manager->addCommand(new NetCommand(3,"timestepscale",fargs)); // unknown = 14
+    cmd_manager->addCommand(new NetCommand(3,"time",fargs));
+    cmd_manager->addCommand(new NetCommand(3,"timescale",fargs));
+    cmd_manager->addCommand(new NetCommand(3,"timestepscale",fargs));
     cmd_manager->addCommand(new NetCommand(3,"pause",args));
     cmd_manager->addCommand(new NetCommand(3,"disablegurneys",args));
 //    cmd_manager->addCommand(new NetCommand(9,"nodynamiccollisions",args));
 //    cmd_manager->addCommand(new NetCommand(9,"noentcollisions",args));
-//    cmd_manager->addCommand(new NetCommand(9,"pvpmap",args)); // unknown 16
+//    cmd_manager->addCommand(new NetCommand(9,"pvpmap",args));
 }
 int NetCommand::serializefrom( BitStream &bs )
 {

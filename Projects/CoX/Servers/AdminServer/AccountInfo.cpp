@@ -81,19 +81,19 @@ Character * AccountInfo::create_new_character()
     }
     return nullptr;
 }
-uint8_t AccountInfo::char_slot_index(Character *c)
+int8_t AccountInfo::char_slot_index(Character *c)
 {
     for(size_t i=0; i<m_characters.size(); i++)
     {
         if(m_characters[i]==c)
-            return uint8_t(i);
+            return int8_t(i);
     }
-    return ~1u;
+    return -1;
 }
 bool AccountInfo::store_new_character(Character *character)
 {
-    uint8_t slot_idx=char_slot_index(character);
-    if(slot_idx==0xFF)
+    int8_t slot_idx=char_slot_index(character);
+    if(slot_idx==-1)
         return false;
     CharacterDatabase *cdb = AdminServer::instance()->character_db();
     DbTransactionGuard grd(*cdb->getDb());
@@ -106,8 +106,8 @@ bool AccountInfo::store_new_character(Character *character)
 bool AccountInfo::remove_character( Character *character )
 {
     CharacterDatabase *cdb = AdminServer::instance()->character_db();
-    uint8_t slot_idx=char_slot_index(character);
-    if(slot_idx==0xFF)
+    int8_t slot_idx=char_slot_index(character);
+    if(slot_idx==-1)
         return false;
     cdb->remove_character(this,slot_idx);
     return true;

@@ -48,7 +48,7 @@ class Costume : public NetStructure
 public:
     float m_height;
     float m_physique;
-    uint32_t a,b;
+    uint32_t skin_color,b;
     bool m_non_default_costme_p;
     int m_num_parts;
     float m_floats[8];
@@ -57,7 +57,7 @@ public:
     Costume()
     {
         m_height=m_physique=0.0f;
-        a=0;
+        skin_color=0;
         m_num_parts=0;
     }
     void storeCharselParts(BitStream &bs);
@@ -66,7 +66,7 @@ public:
         bs.StorePackedBits(1,m_body_type); // 0:male normal
         bs.StoreFloat(m_height);
         bs.StoreFloat(m_physique);
-        bs.StoreBits(32,a); // rgb ?
+        bs.StoreBits(32,skin_color); // rgb ?
     }
     void serializeToDb(QString &tgt);
     void serializeFromDb(const QString &src);

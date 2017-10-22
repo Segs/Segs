@@ -20,6 +20,13 @@ Description: The BitStream class allows it's user to manipulate data in
 #include "Buffer.h"
 
 #include <cstdint>
+
+#ifdef CUSTOM_CLIENT_CODE
+#define PUTDEBUG(x) bs.StoreString(x);
+#else
+#define PUTDEBUG(x) ;
+#endif
+
 class QString;
 //  Constants
 #define BS_BITS        3

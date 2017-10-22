@@ -65,7 +65,11 @@ void Character::serializefrom( BitStream &src)
 void Character::serializeto( BitStream &tgt) const
 {
     tgt.StorePackedBits(1,m_level);
+    assert(!m_name.isEmpty());
     tgt.StoreString(m_name);
+    if(m_name!="EMPTY")
+        assert(!m_class_name.isEmpty() && !m_origin_name.isEmpty());
+
     tgt.StoreString(m_class_name);
     tgt.StoreString(m_origin_name);
 
@@ -82,12 +86,14 @@ void Character::sendWindow(BitStream &bs) const
     bs.StorePackedBits(1,0);
     bs.StorePackedBits(1,0); // color
     bs.StorePackedBits(1,0); // alpha
-    bool a=false;
-    bs.StoreBits(1,a);
-    if(a)
+    bool draggable=false;
+    bs.StoreBits(1,draggable);
+    if(draggable)
     {
-        bs.StorePackedBits(1,0);
-        bs.StorePackedBits(1,0);
+        int width=0;
+        int height=0;
+        bs.StorePackedBits(1,width);
+        bs.StorePackedBits(1,height);
     }
     //storeFloatConditional(bs,1.0f);
 }
@@ -101,16 +107,12 @@ void Character::setName(const QString &val )
 }
 void Character::sendTray(BitStream &bs)
 {
+
     m_trays.serializeto(bs);
 }
 void Character::sendTrayMode(BitStream &bs) const
 {
     bs.StoreBits(1,0);
-}
-
-bool Character::serializeFromDB( uint64_t /*user_id*/,uint32_t /*slot_index*/ )
-{
-    return false;
 }
 
 void Character::GetCharBuildInfo(BitStream &src)
@@ -132,7 +134,9 @@ void Character::SendCharBuildInfo(BitStream &bs) const
     null_power.id[0]=null_power.id[1]=null_power.id[2]=0;
     bs.StoreString(m_class_name); // class name
     bs.StoreString(m_origin_name); // origin name
-    bs.StorePackedBits(5,0); // ?
+    bs.StorePackedBits(5,0); // related to power level  ?
+    PUTDEBUG("SendCharBuildInfo after plevel");
+
     {
         //m_powers[0].serializeto(bs);
         //m_powers[1].serializeto(bs);
@@ -164,15 +168,16 @@ void Character::SendCharBuildInfo(BitStream &bs) const
             }
         }
     }
-    // main tray powers/stats ?
+    PUTDEBUG("SendCharBuildInfo after powers");
+    // main tray inspirations
     {
         uint32_t max_num_cols=3;
         uint32_t max_num_rows=1;
         bs.StorePackedBits(3,max_num_cols); // count
         bs.StorePackedBits(3,max_num_rows); // count
-        for(uint32_t i=0; i<max_num_cols; i++)
+        for(uint32_t col=0; col<max_num_cols; col++)
         {
-            for(size_t idx=0; idx<max_num_rows; ++idx)
+            for(size_t row=0; row<max_num_rows; ++row)
             {
                 bool is_power=false;
                 bs.StoreBits(1,is_power);
@@ -181,6 +186,7 @@ void Character::SendCharBuildInfo(BitStream &bs) const
             }
         }
     }
+    PUTDEBUG("SendCharBuildInfo after inspirations");
     // boosts
     uint32_t num_boosts=0;
     bs.StorePackedBits(5,num_boosts); // count
@@ -188,14 +194,17 @@ void Character::SendCharBuildInfo(BitStream &bs) const
     {
         bool set_boost=false;
         bs.StorePackedBits(3,0); // bost idx
-        bs.uStoreBits(1,set_boost); // 1 set, 0 clear
+        bs.StoreBits(1,set_boost); // 1 set, 0 clear
         if(set_boost)
         {
+            int level=0;
+            int num_combines=0;
             null_power.serializeto(bs);
-            bs.StorePackedBits(5,0); // bost idx
-            bs.StorePackedBits(2,0); // bost idx
+            bs.StorePackedBits(5,level); // bost idx
+            bs.StorePackedBits(2,num_combines); // bost idx
         }
     }
+    PUTDEBUG("SendCharBuildInfo after boosts");
 }
 
 void Character::serializetoCharsel( BitStream &bs )

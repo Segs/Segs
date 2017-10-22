@@ -1,5 +1,6 @@
 #include "MapViewerApp.h"
 #include "CoHSceneConverter.h"
+#include "CoHModelLoader.h"
 #include "CohModelConverter.h"
 #include "CohTextureConverter.h"
 #include "SideWindow.h"
@@ -173,15 +174,15 @@ void MapViewerApp::loadSelectedSceneGraph(const QString &path)
         m_scene->RemoveChild(v.second);
     }
     m_converted_nodes.clear();
-    m_coh_scene.reset(new ConvertedSceneGraph);
+    m_coh_scene.reset(new CoHSceneGraph);
     loadSceneGraph(*m_coh_scene,path);
     emit scenegraphLoaded(*m_coh_scene);
 }
-void MapViewerApp::onNodeSelected(ConvertedNode * n)
+void MapViewerApp::onNodeSelected(CoHNode * n)
 {
     m_current_selected_node = n;
 }
-void MapViewerApp::onDisplayNode(ConvertedNode *n,bool rootnode)
+void MapViewerApp::onDisplayNode(CoHNode *n,bool rootnode)
 {
     if(nullptr==n)
     {

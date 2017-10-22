@@ -11,6 +11,17 @@
 #include <QtCore/QString>
 #include "BitStream.h"
 
+enum class TrayItemType : uint32_t
+{
+    None                    = 0,
+    Power                   = 1,
+    Inspiration             = 2,
+    BodyItem                = 3,
+    SpecializationPower     = 4,
+    SpecializationInventory = 5,
+    Macro                   = 6,
+    Count                   = 7,
+};
 class PowerPool_Info
 {
 public:
@@ -22,14 +33,11 @@ public:
 class Power
 {
 public:
-    int entry_type;
-    int unkn1,unkn2;
-    QString sunkn1;
-    QString sunkn2;
-    QString sunkn3;
-    Power() {
-        entry_type = 0;
-    }
+    TrayItemType entry_type=TrayItemType(0);
+    int powerset_idx,power_idx;
+    QString command;
+    QString short_name;
+    QString icon_name;
     void serializeto(BitStream &tgt) const;
     void serializefrom(BitStream &src);
 
@@ -38,8 +46,6 @@ public:
 class PowerTray
 {
 public:
-    int unkn0;
-    int unkn1;
     Power m_powers[10];
     Power *getPower(size_t idx);
     int setPowers();
@@ -51,13 +57,14 @@ class PowerTrayGroup
 {
     static const int num_trays=2; // was 3, displayed trays
     PowerTray m_trays[9];
-    uint32_t m_power_rel1,m_power_rel2;
+    uint32_t m_default_powerset_idx,m_default_power_idx;
     bool m_c;
-    int primary_tray_idx,secondary_tray_idx;
+    int primary_tray_idx=0;
+    int secondary_tray_idx=1;
 public:
     PowerTrayGroup()
     {
-        m_power_rel1=m_power_rel2=0;
+        m_default_powerset_idx=m_default_power_idx=0;
         m_c=false;
     }
     void serializeto(BitStream &tgt) const;

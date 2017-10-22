@@ -17,7 +17,6 @@
 //TODO: this file needs to know the MapInstance's WorldSimulation rate - Maybe extract it as a configuration object ?
 
 #define WORLD_UPDATE_TICKS_PER_SECOND 30
-
 static const float F_PI = float(M_PI); // to prevent double <-> float conversion warnings
 
 float AngleDequantize(int value,int numb_bits)
@@ -66,7 +65,7 @@ int Entity::getOrientation(BitStream &bs)
     }
     //RestoreFourthQuatComponent(pEnt->qrot);
     //NormalizeQuaternion(pEnt->qrot)
-        return recv_older==false;
+    return recv_older==false;
 }
 void Entity::storeOrientation(BitStream &bs) const
 {
@@ -114,7 +113,7 @@ void Entity::storePosUpdate(BitStream &bs) const
     bool extra_info = false;
     bool move_instantly = false;
     storePosition(bs);
-    if(!m_create)
+    if(!m_change_existence_state)
     {
         // if position has changed
         // prepare interpolation table, given previous position
@@ -135,13 +134,14 @@ void Entity::storeUnknownBinTree(BitStream &bs) const
 }
 void Entity::sendStateMode(BitStream &bs) const
 {
-    //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending state mode\n")));
-
+    PUTDEBUG("before sendStateMode");
     bs.StoreBits(1,m_state_mode_send); // no state mode
     if(m_state_mode_send)
     {
         storePackedBitsConditional(bs,3,m_state_mode);
+        PUTDEBUG("after sendStateMode 1");
     }
+    PUTDEBUG("after sendStateMode 2");
 }
 void Entity::sendSeqMoveUpdate(BitStream &bs) const
 {
@@ -216,27 +216,6 @@ void Entity::sendNetFx(BitStream &bs) const
         }
     }
 }
-void MobEntity::sendCostumes( BitStream &bs ) const
-{
-    int npc_costume_type_idx=0;
-    int costume_idx=0;
-    storePackedBitsConditional(bs,2,m_costume_type);
-    if((m_costume_type!=2)&&(m_costume_type!=4))
-    {
-        assert(false);
-        return;
-    }
-    if(m_costume_type==2)
-    {
-        bs.StorePackedBits(12,npc_costume_type_idx);
-        bs.StorePackedBits(1,costume_idx);
-    }
-    else
-    {
-        bs.StoreString(m_costume_seq);
-    }
-}
-
 void Entity::sendCostumes(BitStream &bs) const
 {
     storePackedBitsConditional(bs,2,m_costume_type);
@@ -247,24 +226,24 @@ void Entity::sendCostumes(BitStream &bs) const
     }
     switch(m_type)
     {
-    case ENT_PLAYER: // client value 1
-        m_char.serialize_costumes(bs,true); // we're always sending full info
-        break;
-    case 3: // client value 2 top level defs from VillainCostume ?
-        bs.StorePackedBits(12,1); // npc costume type idx ?
-        bs.StorePackedBits(1,1); // npc costume idx ?
-        break;
-    case ENT_CRITTER: // client val 4
-        bs.StoreString("Unknown");
-        break;
+        case ENT_PLAYER: // client value 1
+            m_char.serialize_costumes(bs,true); // we're always sending full info
+            break;
+        case 3: // client value 2 top level defs from VillainCostume ?
+            bs.StorePackedBits(12,1); // npc costume type idx ?
+            bs.StorePackedBits(1,1); // npc costume idx ?
+            break;
+        case ENT_CRITTER: // client val 4
+            bs.StoreString("Unknown");
+            break;
     }
 }
 
 PlayerEntity::PlayerEntity()
 {
     m_costume_type   = 1;
-    m_create         = true;
-    var_129C         = false;
+    m_change_existence_state         = true;
+    m_destroyed         = false;
     m_type           = 2; // PLAYER
     m_create_player  = true;
     m_player_villain = false;
@@ -276,19 +255,12 @@ PlayerEntity::PlayerEntity()
     m_pchar_things   = false;
 
     m_char.reset();
-    might_have_rare=m_rare_bits = true;
+    might_have_rare = m_rare_bits = true;
 }
-void PlayerEntity::sendCostumes( BitStream &bs ) const
-{
-    Entity::sendCostumes(bs);
-}
-MobEntity::MobEntity()
-{
-    m_costume_type=2;
-}
+
 void Entity::sendXLuency(BitStream &bs,float val) const
 {
-    storeBitsConditional(bs,8,std::min<>(static_cast<int>(uint8_t(val*255)),255)); // upto here everything is ok
+    storeBitsConditional(bs,8,std::min(static_cast<int>(uint8_t(val*255)),255));
 }
 void Entity::sendTitles(BitStream &bs) const
 {
@@ -398,75 +370,76 @@ void Entity::sendLogoutUpdate(BitStream &bs) const
 
 void Entity::storeCreation( BitStream &bs) const
 {
-
     // entity creation
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending create entity\n")));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending create entity\n")));
 
-        bs.StoreBits(1,var_129C); // checkEntCreate_var_129C / ends creation destroys seq and returns NULL
+    bs.StoreBits(1,m_destroyed); // ends creation destroys seq and returns NULL
 
-        if(var_129C)
-            return;
+    if(m_destroyed)
+        return;
 
-        bs.StorePackedBits(12,m_idx);//  this will be put in  of created entity
-        bs.StorePackedBits(2,m_type);
-        if(m_type==ENT_PLAYER)
+    bs.StorePackedBits(12,m_idx);//  this will be put in  of created entity
+    PUTDEBUG("after id");
+    bs.StorePackedBits(2,m_type);
+    if(m_type==ENT_PLAYER)
+    {
+        bs.StoreBits(1,m_create_player);
+        if(m_create_player)
+            bs.StorePackedBits(1,m_access_level);
+        bs.StorePackedBits(20,m_idx);//TODO: should be bs.StorePackedBits(20,m_db_id);
+    }
+    else
+    {
+        bool val=false;
+        bs.StoreBits(1,val);
+        if(val)
         {
-            bs.StoreBits(1,m_create_player);
-            if(m_create_player)
-                bs.StorePackedBits(1,m_access_level);
-            bs.StorePackedBits(20,m_idx);//TODO: should be bs.StorePackedBits(20,m_db_id);
-        }
-        else
-        {
-            bool val=false;
-            bs.StoreBits(1,val);
-            if(val)
-            {
-                bs.StorePackedBits(12,ownerEntityId); // entity idx
-                bs.StorePackedBits(12,creatorEntityId); // entity idx
-            }
-        }
-        if(m_type==ENT_PLAYER || m_type==ENT_CRITTER)
-        {
-            bs.StorePackedBits(1,m_origin_idx);
-            bs.StorePackedBits(1,m_class_idx);
-            bool hasTitle=false;
-            bs.StoreBits(1,hasTitle);
-            if(hasTitle)
-            {
-                bs.StoreBits(1,0); // likely an index to a title prefix ( 1 - The )
-                storeStringConditional(bs,""); //title1
-                storeStringConditional(bs,""); //title2
-                storeStringConditional(bs,""); //title3
-            }
-        }
-        bs.StoreBits(1,m_hasname);
-        if(m_hasname)
-            bs.StoreString(m_char.getName());
-        bool fadin = true;
-        bs.StoreBits(1,fadin); // Is entity being faded in ?
-        // the following is used as an input to LCG float generator, generated float (0-1) is used as
-        // linear interpolation factor betwwen scale_min and scale_max
-        bs.StoreBits(32,field_60); // this will be put in field_60 of created entity
-        bs.StoreBits(1,m_hasgroup_name);
-        if(m_hasgroup_name)
-        {
-            int rank=0; // rank in the group ?
-            bs.StorePackedBits(2,rank);// this will be put in field_1830 of created entity
-            bs.StoreString(m_group_name);
+            bs.StorePackedBits(12,ownerEntityId); // entity idx
+            bs.StorePackedBits(12,creatorEntityId); // entity idx
         }
     }
+    PUTDEBUG("after creatorowner");
+    if(m_type==ENT_PLAYER || m_type==ENT_CRITTER)
+    {
+        bs.StorePackedBits(1,m_origin_idx);
+        bs.StorePackedBits(1,m_class_idx);
+        bool hasTitle=false;
+        bs.StoreBits(1,hasTitle);
+        if(hasTitle)
+        {
+            bs.StoreBits(1,0); // likely an index to a title prefix ( 1 - The )
+            storeStringConditional(bs,""); //title1
+            storeStringConditional(bs,""); //title2
+            storeStringConditional(bs,""); //title3
+        }
+    }
+    bs.StoreBits(1,m_hasname);
+    if(m_hasname)
+        bs.StoreString(m_char.getName());
+    PUTDEBUG("after names");
+    bool fadin = true;
+    bs.StoreBits(1,fadin); // Is entity being faded in ?
+    // the following is used as an input to LCG float generator, generated float (0-1) is used as
+    // linear interpolation factor betwwen scale_min and scale_max
+    bs.StoreBits(32,m_randSeed);
+    bs.StoreBits(1,m_hasgroup_name);
+    if(m_hasgroup_name)
+    {
+        int rank=0; // rank in the group ?
+        bs.StorePackedBits(2,rank);// this will be put in field_1830 of created entity
+        bs.StoreString(m_group_name);
+    }
+    PUTDEBUG("end storeCreation");
+}
 void Entity::serializeto( BitStream &bs ) const
 {
-#ifdef LOG_
-    printf("Serializing entity with idx %d\n",m_idx);
-#endif
     //////////////////////////////////////////////////////////////////////////
-    bs.StoreBits(1,m_create);
-    if(m_create)
+    bs.StoreBits(1,m_change_existence_state);
+    if(m_change_existence_state)
         storeCreation(bs);
     //////////////////////////////////////////////////////////////////////////
     // creation ends here
+    PUTDEBUG("before entReceiveStateMode");
 
     bs.StoreBits(1,might_have_rare); //var_C
 
@@ -476,6 +449,7 @@ void Entity::serializeto( BitStream &bs ) const
     if(m_rare_bits)
         sendStateMode(bs);
 
+    PUTDEBUG("before entReceivePosUpdate");
     storePosUpdate(bs);
 
     if(might_have_rare)
@@ -493,7 +467,7 @@ void Entity::serializeto( BitStream &bs ) const
     if(m_rare_bits)
     {
         sendCostumes(bs);
-        sendXLuency(bs,0.5f);
+        sendXLuency(bs,translucency);
         sendTitles(bs);
     }
     if(m_pchar_things)
@@ -590,18 +564,21 @@ void PlayerEntity::serializefrom_newchar( BitStream &src )
     src.GetString(m_battle_cry);
     src.GetString(m_character_description);
 }
-void PlayerEntity::serialize_full( BitStream &tgt )
+void PlayerEntity::serialize_full( BitStream &bs )
 {
-    m_char.SendCharBuildInfo(tgt); //FIXEDOFFSET_pchar->character_Receive
-    m_char.sendFullStats(tgt); //Entity::receiveFullStats(&FullStatsTokens, pak, FIXEDOFFSET_pchar, pkt_id_fullAttrDef, 1);
-    sendBuffs(tgt); //FIXEDOFFSET_pchar->character_ReceiveBuffs(pak,0);
+    m_char.SendCharBuildInfo(bs); //FIXEDOFFSET_pchar->character_Receive
+    PUTDEBUG("PlayerEntity::serialize_full before sendFullStats");
+    m_char.sendFullStats(bs); //Entity::receiveFullStats(&FullStatsTokens, pak, FIXEDOFFSET_pchar, pkt_id_fullAttrDef, 1);
+    PUTDEBUG("PlayerEntity::serialize_full before sendBuffs");
+    sendBuffs(bs); //FIXEDOFFSET_pchar->character_ReceiveBuffs(pak,0);
+    PUTDEBUG("PlayerEntity::serialize_full before sidekick");
     bool has_sidekick=false;
-    tgt.StoreBits(1,has_sidekick);
+    bs.StoreBits(1,has_sidekick);
     if(has_sidekick)
     {
         bool is_mentor=false; // this flag might mean something totally different :)
-        tgt.StoreBits(1,is_mentor);
-        tgt.StorePackedBits(20,0); // sidekick partner db_id -> 10240
+        bs.StoreBits(1,is_mentor);
+        bs.StorePackedBits(20,0); // sidekick partner db_id -> 10240
     }
 }
 void Entity::InsertUpdate( PosUpdate pup )
@@ -760,7 +737,7 @@ void MapCostume::GetCostume( BitStream &src )
 {
     this->m_costume_type = 1;
     m_body_type = src.GetPackedBits(3); // 0:male normal
-    a = src.GetBits(32); // rgb ?
+    skin_color = src.GetBits(32); // rgb ?
 
     m_height = src.GetFloat();
     m_physique = src.GetFloat();
@@ -779,7 +756,7 @@ void MapCostume::dump()
 {
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Costume \n")));
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    body type: 0x%08x\n"),m_body_type));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    a: 0x%08x\n"),a));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    a: 0x%08x\n"),skin_color));
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Height %f\n"),m_height));
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Physique %f\n"),m_physique));
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    ****** %d Parts *******\n"),m_num_parts));
@@ -788,16 +765,16 @@ void MapCostume::dump()
         const CostumePart &cp(m_parts[i]);
         if(cp.m_full_part)
             ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),qPrintable(cp.m_geometry),
-            qPrintable(cp.m_texture_1),qPrintable(cp.m_texture_2),qPrintable(cp.name_3),
-            cp.m_colors[0],cp.m_colors[1],
-            qPrintable(cp.name_4),qPrintable(cp.name_5)
-            ));
+                        qPrintable(cp.m_texture_1),qPrintable(cp.m_texture_2),qPrintable(cp.name_3),
+                        cp.m_colors[0],cp.m_colors[1],
+                    qPrintable(cp.name_4),qPrintable(cp.name_5)
+                    ));
         else
             ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),qPrintable(cp.m_geometry),
-            qPrintable(cp.m_texture_1),qPrintable(cp.m_texture_2),qPrintable(cp.name_3),
-            cp.m_colors[0],cp.m_colors[1],
-            qPrintable(cp.name_4),qPrintable(cp.name_5)
-            ));
+                        qPrintable(cp.m_texture_1),qPrintable(cp.m_texture_2),qPrintable(cp.name_3),
+                        cp.m_colors[0],cp.m_colors[1],
+                    qPrintable(cp.name_4),qPrintable(cp.name_5)
+                    ));
     }
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    *************\n")));
 }
@@ -813,7 +790,7 @@ void MapCostume::serializeto( BitStream &bs ) const
 void MapCostume::SendCommon(BitStream &bs) const
 {
     bs.StorePackedBits(3,m_body_type); // 0:male normal
-    bs.StoreBits(32,a); // rgb ?
+    bs.StoreBits(32,skin_color); // rgb ?
 
     bs.StoreFloat(m_height);
     bs.StoreFloat(m_physique);

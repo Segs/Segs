@@ -97,7 +97,7 @@ static ACE_THR_FUNC_RETURN event_loop (void *arg)
     reactor->run_reactor_event_loop ();
     ServerManager::instance()->GetAdminServer()->ShutDown("No reason");
     ServerManager::instance()->StopLocalServers();
-    return nullptr;
+    return (ACE_THR_FUNC_RETURN)nullptr;
 }
 static bool CreateServers()
 {

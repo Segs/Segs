@@ -76,7 +76,7 @@ void CharacterDatabase::on_connected(QSqlDatabase *db)
 
 
 // UserToken,
-bool CharacterDatabase::remove_character(AccountInfo *c,uint8_t slot_idx)
+bool CharacterDatabase::remove_character(AccountInfo *c,int8_t slot_idx)
 {
     assert(c!=nullptr);
     m_prepared_char_delete.bindValue(0,quint64(c->account_server_id()));
@@ -175,7 +175,7 @@ bool CharacterDatabase::fill( CharacterCostume *c)
             return false;
         }
     }
-    c->a = m_prepared_fill.value("skin_color").toUInt();
+    c->skin_color = m_prepared_fill.value("skin_color").toUInt();
     QString serialized_parts= m_prepared_fill.value("parts").toString();
     c->serializeFromDb(serialized_parts);
     c->m_non_default_costme_p = false;
@@ -228,7 +228,7 @@ bool CharacterDatabase::create( uint64_t gid,uint8_t slot,Character *c )
     cst->serializeToDb(costume_parts);
     m_prepared_costume_insert.bindValue(0,quint64(char_id));
     m_prepared_costume_insert.bindValue(1,uint32_t(0));
-    m_prepared_costume_insert.bindValue(2,uint32_t(cst->a));
+    m_prepared_costume_insert.bindValue(2,uint32_t(cst->skin_color));
     m_prepared_costume_insert.bindValue(3,costume_parts);
 
     if(!doIt(m_prepared_costume_insert))

@@ -29,7 +29,7 @@ template class ClientStore<MapClient>;
 
 MapServer::MapServer() : m_id(0),
     m_online(false),
-    m_endpoint(NULL)
+    m_endpoint(nullptr)
 {
 
 }
