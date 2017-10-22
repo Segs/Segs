@@ -3,7 +3,8 @@
 
 #include <glm/gtx/vector_query.hpp>
 
-void World::update(const ACE_Time_Value &tick_timer) {
+void World::update(const ACE_Time_Value &tick_timer)
+{
     ACE_Time_Value delta;
     if(prev_tick_time==ACE_Time_Value::zero) {
         delta = ACE_Time_Value(0,33*1000);
@@ -22,13 +23,42 @@ void World::update(const ACE_Time_Value &tick_timer) {
         updateEntity(ref_ent_mager.m_map_entities[i],delta);
     }
 }
-void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
+void World::physicsStep(Entity *e,uint32_t msec)
+{
     if(glm::length2(e->inp_state.pos_delta)) {
         // todo: take into account time between updates
         glm::mat3 za = static_cast<glm::mat3>(e->inp_state.direction); // quat to mat4x4 conversion
 
-        e->pos += ((za*e->inp_state.pos_delta)*float(dT.msec()))/50.0f;
+        e->pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
     }
+}
+float animateValue(float v,float start,float target,float length,float dT)
+{
+    float range=target-start;
+    float current_pos = (v-start)/range;
+    float accumulated_time = length*current_pos;
+    accumulated_time = std::min(length,accumulated_time+dT);
+    float res = start + (accumulated_time/length) * range;
+    return res;
+}
+void World::effectsStep(Entity *e,uint32_t msec)
+{
+    if(e->m_is_fading) {
+        float before=e->translucency;
+        if(e->m_fading_direction==FadeDirection::In)
+        {
+            e->translucency = animateValue(before,1.0,0.02f,580.0f,float(msec)/50.0f);
+        }
+        else {
+            e->translucency = animateValue(e->translucency,0.02,1.0,580.0f,float(msec)/50.0f);
+        }
+        if(std::abs(e->translucency-before)<std::numeric_limits<float>::epsilon())
+            e->m_is_fading = false;
+    }
+}
+void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
+    physicsStep(e,dT.msec());
+    effectsStep(e,dT.msec());
     if(e->m_is_logging_out) {
         e->m_time_till_logout -= dT.msec();
         if(e->m_time_till_logout<0)
