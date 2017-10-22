@@ -50,7 +50,7 @@ virtual void serializeto(BitStream &tgt) const override
             finalized = true;
         }
         const char *info() override { return m_incremental ? "Entities_Incremental" : "Entities_Full"; }
-        bool        entReceiveUpdate;
+        bool        ent_major_update;
         float       m_map_time_of_day;
         //bool unkn1;
         bool        unkn2;

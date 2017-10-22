@@ -54,32 +54,33 @@ void EntityManager::sendDeletes( BitStream &tgt ) const
  *  \par self_idx index of the entity that is receiving the packet, this is used to prevent marking every entity as a current player
  *
  */
-void EntityManager::sendEntities( BitStream &tgt,int self_idx,bool is_incremental ) const
+void EntityManager::sendEntities( BitStream &bs,int self_idx,bool is_incremental ) const
 {
-    int last_idx=-1;
+    int prev_idx=-1;
     int delta;
     // sending delta between entities idxs ->
     assert(m_entlist.size()>0 && "Attempting to send empty entity list, the client will hang!");
     for(Entity *pEnt : m_entlist)
     {
         pEnt->m_create_player = (pEnt->getIdx()==self_idx);
-        delta = (last_idx==-1) ? pEnt->getIdx() : (pEnt->getIdx()-last_idx -1);
+        delta = (prev_idx==-1) ? pEnt->getIdx() : (pEnt->getIdx()-prev_idx -1);
 
-        tgt.StorePackedBits(1,delta);
-        last_idx = pEnt->getIdx();
+        bs.StorePackedBits(1,delta);
+        prev_idx = pEnt->getIdx();
         if(!is_incremental) {
-            bool prev_state = pEnt->m_create;
-            pEnt->m_create=true;
-            pEnt->serializeto(tgt);
-            pEnt->m_create= prev_state;
+            bool prev_state = pEnt->m_change_existence_state;
+            pEnt->m_change_existence_state=true;
+            pEnt->serializeto(bs);
+            pEnt->m_change_existence_state= prev_state;
         }
         else
-            pEnt->serializeto(tgt);
+            pEnt->serializeto(bs);
+        PUTDEBUG("end of entity");
     }
     // last entity marker
-    tgt.StorePackedBits(1,0); // next ent
-    tgt.StoreBits(1,1); // create/update -> create
-    tgt.StoreBits(1,1); // empty entity. will finish the receiving loop
+    bs.StorePackedBits(1,0); // next ent
+    bs.StoreBits(1,1); // create/upte -> create
+    bs.StoreBits(1,1); // empty entity. will finish the receiving loop
 }
 void EntityManager::InsertPlayer(Entity *ent)
 {
@@ -102,5 +103,6 @@ void EntityManager::removeEntityFromActiveList(Entity *ent)
 {
     auto iter = std::find(m_entlist.begin(),m_entlist.end(),ent);
     assert(iter!=m_entlist.end());
+    m_map_entities[ent->m_idx] = nullptr;
     m_entlist.erase(iter);
 }

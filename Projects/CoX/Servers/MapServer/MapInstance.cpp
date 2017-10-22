@@ -111,7 +111,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
             on_command_chat_divider_moved(static_cast<ChatDividerMoved *>(ev));
             break;
         default:
-            fprintf(stderr,"Unhandled event type %zu\n",ev->type());
+            fprintf(stderr,"Unhandled MapEventTypes %zu\n",MapEventTypes::base - ev->type());
             //ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled event type %d\n"),ev->type()));
     }
 }
@@ -280,7 +280,7 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     EntitiesResponse *res=new EntitiesResponse(cl); // initial world update -> current state
     res->m_map_time_of_day = m_world->time_of_day();
     res->is_incremental(false); //redundant
-    res->entReceiveUpdate=true; //false;
+    res->ent_major_update=true; //false;
     res->abs_time = 30*100*m_world->sim_frame_time/1000.0f;
     res->finalize();
     assert(lnk==cl->link());
@@ -326,14 +326,14 @@ void MapInstance::sendState() {
         EntitiesResponse *res=new EntitiesResponse(cl);
         res->m_map_time_of_day = m_world->time_of_day();
 
-        if(cl->char_entity()->m_create==true) {
+        if(cl->char_entity()->m_change_existence_state==true) {
             res->is_incremental(false); // incremental world update = op 3
             send_startup_admin = true;
         }
         else {
             res->is_incremental(true); // incremental world update = op 2
         }
-        res->entReceiveUpdate = true;
+        res->ent_major_update = true;
         res->abs_time = 30*100*(m_world->sim_frame_time/1000.0f);
         res->finalize();
         cl->link()->putq(res);
@@ -347,8 +347,8 @@ void MapInstance::sendState() {
             ChatMessage *msg = ChatMessage::adminMessage(buf );
             cl->link()->putq(msg);
         }
-        if(cl->char_entity()->m_create==true)
-            cl->char_entity()->m_create=false;
+        if(cl->char_entity()->m_change_existence_state==true)
+            cl->char_entity()->m_change_existence_state=false;
     }
     only_first=false;
     if(resendtxt==15)
@@ -403,7 +403,7 @@ void MapInstance::on_window_state(WindowState * ev){
     printf("Received window state %d - %d\n",ev->window_idx,ev->wnd.field_24);
 
 }
-void MapInstance::on_console_command(ConsoleCommand * ev){
+void MapInstance::on_console_command(ConsoleCommand * ev) {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
     printf("Console command received %s\n",qPrintable(ev->contents));

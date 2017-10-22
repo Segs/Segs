@@ -7,7 +7,6 @@
 #include <glm/vec3.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <cmath>
-
 struct AngleRadians
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
@@ -125,7 +124,10 @@ public:
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
 };
-
+enum class FadeDirection {
+    In,
+    Out
+};
 class Entity : public NetStructure
 {
 public:
@@ -141,7 +143,7 @@ public:
             ENT_CRITTER=4
         };
         int                 m_access_level;
-        int                 field_60; // Sequencer uses this as a seed for random bone scale
+        int                 m_randSeed; // Sequencer uses this as a seed for random bone scale
         int                 field_68;
         int                 field_78;
         int                 m_num_titles;
@@ -179,29 +181,35 @@ mutable bool                m_logout_sent;
         glm::quat           qrot;
         glm::vec3           pos;
         uint32_t            prev_pos[3];
-        bool                m_selector1,m_pchar_things,might_have_rare,
-                            m_hasname  ,m_hasgroup_name,m_classname_override;
-        bool                m_create   ,m_hasRagdoll  ,m_create_player,m_rare_bits;
+        bool                m_selector1;
+        bool m_pchar_things;
+        bool might_have_rare;
+        bool m_hasname;
+        bool m_hasgroup_name;
+        bool m_classname_override;
+        bool                m_change_existence_state   ,m_hasRagdoll  ,m_create_player,m_rare_bits;
         int                 current_client_packet_id;
         QString             m_group_name, m_override_name;
         uint8_t             m_origin_idx,m_class_idx;
         uint8_t             m_type;
-        uint32_t            m_idx;
+        int32_t             m_idx;
         uint32_t            m_db_id;
         uint32_t            m_input_ack;
         bool                player_type;
         bool                m_player_villain;
-        bool                var_129C;
+        bool                m_destroyed;
         int                 ownerEntityId = 0;
         int                 creatorEntityId = 0;
-        float               translucency = 0.5f;
+        float               translucency = 1.f;
+        bool                m_is_fading = true;
+        FadeDirection       m_fading_direction=FadeDirection::In;
                             Entity();
 virtual                     ~Entity() = default;
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
         void                addInterp(const PosUpdate &p);
 
-        uint32_t            getIdx() const {return m_idx;}
+        int32_t             getIdx() const {return m_idx;}
 virtual void                serializeto(BitStream &bs)const;
 virtual void                sendCostumes(BitStream &bs) const;
 static  void                sendAllyID(BitStream &bs);
@@ -242,22 +250,17 @@ private:
         void                storePosUpdate(BitStream &bs) const;
         void                storeUnknownBinTree(BitStream &bs) const;
 };
-class MobEntity : public Entity
+class NpcEntity : public Entity
 {
-        QString         m_costume_seq;
-public:
-                        MobEntity();
-virtual                 ~MobEntity(){}
-virtual void            sendCostumes(BitStream &bs) const;
-
-
+    NpcEntity()
+    {
+        m_costume_type=2;
+    }
 };
-class PlayerEntity : public MobEntity
+class PlayerEntity : public Entity
 {
 public:
                             PlayerEntity();
-virtual                     ~PlayerEntity(){}
         void                serializefrom_newchar(BitStream &src);
-        void                sendCostumes( BitStream &bs ) const;
-        void                serialize_full( BitStream &tgt );
+        void                serialize_full(BitStream &bs );
 };

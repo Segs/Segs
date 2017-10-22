@@ -41,7 +41,7 @@ virtual             ~CharacterDatabase();
         bool        fill( Character *); //! Will call fill(CharacterCostume)
         bool        fill( CharacterCostume *);
         int         remove_account(uint64_t acc_serv_id); //will remove given account, TODO add logging feature
-        bool        remove_character(AccountInfo *,uint8_t slot_idx);
+        bool        remove_character(AccountInfo *, int8_t slot_idx);
         bool        named_character_exists(const QString &name);
         void        setDb(QSqlDatabase *db) {m_db=db;}
         QSqlDatabase *getDb() {return m_db;}
