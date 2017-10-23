@@ -125,7 +125,7 @@ public:
         size_t watermark = (m_storage.size()*3)/4; // when we are filled upt 75% of our capacity
         uint32_t entry_idx=0;
         uint32_t prev_val=0;
-        if((in_use+0)>=watermark || in_use>=m_storage.size())
+        if(in_use>=watermark || in_use>=m_storage.size())
         {
             uint32_t factor=1;
             if ( in_use >= watermark || in_use >= m_storage.size() - 1 )
@@ -201,7 +201,7 @@ class CoXGenericHashMap : public CoxHashCommon<KEY,VALUE>
 protected:
     static COMPARE_FUNCTOR comp;
 public:
-    CoXGenericHashMap(){};
+    CoXGenericHashMap() = default;
     uint32_t next_size(uint32_t sz)
     {
         size_t idx;
