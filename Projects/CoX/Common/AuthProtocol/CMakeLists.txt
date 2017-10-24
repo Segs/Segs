@@ -40,4 +40,3 @@ ${target_INCLUDE}
 ADD_LIBRARY(AuthProtocol STATIC ${target_SOURCES})
 set_property(TARGET AuthProtocol PROPERTY POSITION_INDEPENDENT_CODE ON)
 ADD_DEPENDENCIES(AuthProtocol SEGS_Components)
-SEGS_REGISTER_COMPONENT(AuthProtocol "${target_INCLUDE_DIR}" "${target_INCLUDE}" )

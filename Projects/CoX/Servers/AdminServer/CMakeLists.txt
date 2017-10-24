@@ -10,22 +10,14 @@ ${CMAKE_CURRENT_SOURCE_DIR}/AccountInfo.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AdminDatabase.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AdminServer.h
 )
-
-SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-SET(target_DEPENDS )
-
-SEGS_ADD_COMPONENT(cox_server_common LIB)
-
-INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
-
 SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
-
 ADD_LIBRARY(adminserver_lib STATIC ${target_SOURCES})
+TARGET_LINK_LIBRARIES(adminserver_lib PUBLIC cox_server_common network_structures)
+target_include_directories(adminserver_lib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+get_target_property(zxx adminserver_lib INCLUDE_DIRECTORIES)
+message(${zxx})
 
-TARGET_LINK_LIBRARIES(adminserver_lib ${target_DEPENDS})
-ADD_DEPENDENCIES(adminserver_lib ${target_DEPENDS})
-qt5_use_modules(adminserver_lib Core)
-SEGS_REGISTER_COMPONENT(adminserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
+qt5_use_modules(adminserver_lib LINK_PUBLIC Core)

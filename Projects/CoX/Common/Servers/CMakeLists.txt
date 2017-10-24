@@ -31,8 +31,6 @@ SET(target_INCLUDE
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(target_DEPENDS ace_IMP)
 
-SEGS_ADD_COMPONENT(network_structures LIB)
-
 SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
@@ -42,6 +40,6 @@ INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${ACE_path})
 
 ADD_LIBRARY(cox_server_common STATIC ${target_SOURCES})
-ADD_DEPENDENCIES(cox_server_common ${target_DEPENDS})
-qt5_use_modules(cox_server_common Core Sql)
-SEGS_REGISTER_COMPONENT(cox_server_common "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
+target_link_libraries(cox_server_common INTERFACE ace_IMP)
+set_target_properties(cox_server_common PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${target_INCLUDE_DIR})
+qt5_use_modules(cox_server_common LINK_PUBLIC Core Sql)

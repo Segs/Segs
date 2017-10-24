@@ -47,9 +47,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/Events/Shortcuts.h
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-SEGS_ADD_COMPONENT(cox_server_common LIB)
-SEGS_ADD_COMPONENT(adminserver_lib LIB) # used to access character db
-
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR} .)
 
 SET (target_SOURCES
@@ -57,11 +54,10 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
+target_link_libraries(mapserver_lib PUBLIC adminserver_lib CRUDP_Protocol)
 qt5_use_modules(mapserver_lib LINK_PUBLIC Core)
-ADD_DEPENDENCIES(mapserver_lib ${target_DEPENDS})
 if(ENABLE_SCRIPTING_ENGINE)
     target_compile_definitions(mapserver_lib PUBLIC -DSCRIPTING_ENABLED=1)
     target_link_libraries(mapserver_lib INTERFACE lua_IMP sol2_IMP)
 endif()
-SEGS_REGISTER_COMPONENT(mapserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
 

@@ -16,9 +16,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/Entity.h
 
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-SET(target_DEPENDS "")
 
-SEGS_ADD_COMPONENT(CRUDP_Protocol LIB)
 SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
@@ -29,7 +27,7 @@ INCLUDE_DIRECTORIES(${ACE_path})
 INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 
 ADD_LIBRARY(network_structures STATIC ${target_SOURCES})
-qt5_use_modules(network_structures Core)
-ADD_DEPENDENCIES(network_structures ${target_DEPENDS} cereal_IMP CRUDP_Protocol)
+set_target_properties(network_structures PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
 
-SEGS_REGISTER_COMPONENT(network_structures "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
+qt5_use_modules(network_structures LINK_PUBLIC Core)
+ADD_DEPENDENCIES(network_structures cereal_IMP CRUDP_Protocol)
