@@ -136,12 +136,12 @@ void Entity::sendStateMode(BitStream &bs) const
 {
     PUTDEBUG("before sendStateMode");
     bs.StoreBits(1,m_state_mode_send); // no state mode
+    PUTDEBUG("before sendStateMode 2");
     if(m_state_mode_send)
     {
         storePackedBitsConditional(bs,3,m_state_mode);
-        PUTDEBUG("after sendStateMode 1");
     }
-    PUTDEBUG("after sendStateMode 2");
+    PUTDEBUG("after sendStateMode");
 }
 void Entity::sendSeqMoveUpdate(BitStream &bs) const
 {

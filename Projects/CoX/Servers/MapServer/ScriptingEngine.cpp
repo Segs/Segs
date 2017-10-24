@@ -12,14 +12,17 @@
 int luaopen_package(lua_State *)
 {
     assert(false && "functionality removed");
+    return 0;
 }
 int luaopen_io(lua_State *)
 {
     assert(false && "functionality removed");
+    return 0;
 }
 int luaopen_os(lua_State *)
 {
     assert(false && "functionality removed");
+    return 0;
 }
 
 struct ScriptingEngine::ScriptingEnginePrivate
