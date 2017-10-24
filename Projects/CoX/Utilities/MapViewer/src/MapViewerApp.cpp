@@ -49,6 +49,8 @@ void MapViewerApp::Setup()
 {
     engineParameters_[EP_FULL_SCREEN]  = false;
     engineParameters_[EP_WINDOW_TITLE] = m_appName;
+    //Force the data directory names to use mapviewer_data/ root
+    engineParameters_[EP_RESOURCE_PATHS] = "mapviewer_data/Data;mapviewer_data/CoreData";
 }
 void MapViewerApp::CreateBaseScene()
 {
