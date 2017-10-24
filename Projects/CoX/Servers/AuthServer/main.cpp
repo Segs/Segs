@@ -113,7 +113,7 @@ class CommandLineContents
 {
 public:
     std::string config_file;
-    CommandLineContents() : config_file("local_1.cfg")
+    CommandLineContents() : config_file("settings.cfg")
     {
 
     }
