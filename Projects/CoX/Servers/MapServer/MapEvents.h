@@ -104,7 +104,7 @@ public:
 };
 class ClientQuit : public MapLinkEvent {
 public:
-    int reason;
+    int abort_disconnect;
     ClientQuit():MapLinkEvent(MapEventTypes::evClientQuit)
     {}
     void serializeto(BitStream &bs) const
@@ -113,12 +113,12 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        reason = bs.GetPackedBits(1);
+        abort_disconnect = bs.GetPackedBits(1);
         // TODO: try to differentiate between quit/logout ?
     }
 
 };
-class ForcedLogout: public MapLinkEvent {
+class ForcedLogout : public MapLinkEvent {
 public:
     QString reason;
     ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason) {
