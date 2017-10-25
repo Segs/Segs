@@ -146,7 +146,7 @@ void MapInstance::on_shortcuts_request(ShortcutsRequest *ev)
     lnk->putq(res);
 }
 void MapInstance::on_client_quit(ClientQuit*ev) {
-    if(ev->reason!=0)
+    if(ev->abort_disconnect!=0)
         printf("Client quit\n");
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *client = lnk->client_data();

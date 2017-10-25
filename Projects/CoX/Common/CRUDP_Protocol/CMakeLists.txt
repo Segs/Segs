@@ -32,8 +32,9 @@ INCLUDE_DIRECTORIES(${ACE_path})
 INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
 
 ADD_LIBRARY(CRUDP_Protocol STATIC ${target_SOURCES})
-qt5_use_modules(CRUDP_Protocol Core)
+target_include_directories(CRUDP_Protocol INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+
+qt5_use_modules(CRUDP_Protocol LINK_PUBLIC Core)
 add_dependencies(CRUDP_Protocol ace_IMP)
-SEGS_REGISTER_COMPONENT(CRUDP_Protocol "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
 
 

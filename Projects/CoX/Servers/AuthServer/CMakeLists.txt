@@ -53,5 +53,3 @@ IF(BUILD_SEPARATE)
         target_link_libraries(authserver ws2_32)
     ENDIF()
 ENDIF(BUILD_SEPARATE)
-
-#SEGS_REGISTER_COMPONENT(authserver_lib "${target_INCLUDE_DIR}" "${target_INCLUDE}" )
