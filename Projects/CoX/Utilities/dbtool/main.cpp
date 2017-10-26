@@ -13,18 +13,30 @@
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc,argv);
+    QCoreApplication::setApplicationName("segs-dbtool");
+    QCoreApplication::setApplicationVersion("0.1");
+    
     QCommandLineParser parser;
-    parser.setApplicationDescription("dbtool utility");
-    parser.addOptions({
-        {"new", "Create fresh database from "},
-    });
-    parser.addPositionalArgument("output", "File to process");
+    parser.setApplicationDescription("SEGS database management utility");
     parser.addHelpOption();
+    parser.addVersionOption();
+    
+    parser.addPositionalArgument("file", QCoreApplication::translate("main", "The file to open."));
+    
+    // A boolean option with multiple names (-f, --force)
+    QCommandLineOption forceOption(QStringList() << "f" << "force",
+            QCoreApplication::translate("main", "Overwrite existing files."));
+    parser.addOption(forceOption);
 
     parser.process(app);
     if(parser.positionalArguments().isEmpty() || parser.optionNames().isEmpty()) {
         parser.showHelp(0);
     }
+    
+    const QStringList args = parser.positionalArguments();
+    // source is args.at(0), destination is args.at(1)
+
+    bool force = parser.isSet(forceOption);
     
     /* PSUEDO CODE
     if(weAreNotRunningFromServerDir())
