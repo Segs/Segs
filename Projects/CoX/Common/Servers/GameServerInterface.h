@@ -30,6 +30,7 @@ virtual uint8_t                 getUnkn2(void)=0;
 virtual int                     getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)=0;
 virtual bool                    isMapServerReady(const ServerHandle<IMapServer> &h_map)=0;
 virtual EventProcessor *        event_target()=0;
+virtual int                     getMaxAccountSlots() const = 0;
 };
 
 class GameServerInterface : public IGameServer
@@ -57,6 +58,7 @@ public:
         std::string             getName();
 
         EventProcessor *        event_target(); // this is the main communication point for the Game Server instance
+        int                     getMaxAccountSlots() const ;
 
 protected:
         IGameServer *           m_instance;

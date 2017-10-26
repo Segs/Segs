@@ -22,49 +22,57 @@
 #include "Common/Servers/ServerHandle.h"
 #include "Common/Servers/AdminServerInterface.h"
 
+#include <ace/Acceptor.h>
+#include <ace/SOCK_Acceptor.h>
+
+class AdminLink;
+typedef ACE_Acceptor<AdminLink, ACE_SOCK_ACCEPTOR> AdminClientAcceptor;
+
 class AdminDatabase;
 class CharacterDatabase;
 class IGameServer;
 class IMapServer;
 class AccountInfo;
 //! The AdminServer class handles administrative functions such as account saving, account banning, etcetera.
-class _AdminServer : public IAdminServer
+class _AdminServer final : public IAdminServer
 {
 public:
 
     // Constructor/Destructor
                                 _AdminServer(void);
-                                ~_AdminServer(void);
+                                ~_AdminServer(void) override;
 
     // Client handling related interface
-    int                         GetBlockedIpList(std::list<int> &); // Called from auth server during user authentication, might be useful for automatical firewall rules update
+    int                         GetBlockedIpList(std::list<int> &) override;
 
-    bool                        Logout(const AccountInfo &client) const; // Client logout
-    bool                        Login(const AccountInfo &client,const ACE_INET_Addr &client_addr); // Records given client as logged in.
-    bool                        ValidPassword(const AccountInfo &client, const char *password); // Verifies entered password matches stored password
+    bool                        Logout(const AccountInfo &client) const override;
+    bool                        Login(const AccountInfo &client,const ACE_INET_Addr &client_addr) override;
+    bool                        ValidPassword(const AccountInfo &client, const char *password) override;
 
-    bool                        fill_account_info(AccountInfo &client);// Refresh client object from database
-    int                         SaveAccount(const char *username, const char *password); // Save user account credentials to storage
-    int                         RemoveAccount(AccountInfo &client); // Removes account from database via id #
+    bool                        fill_account_info(AccountInfo &client) override;
+    int                         SaveAccount(const char *username, const char *password) override;
+    int                         RemoveAccount(AccountInfo &client) override; // Removes account from database via id #
 
     //bool AccountBlocked(const char *login) const; // Check if account is blocked.
-    int                         AddIPBan(const ACE_INET_Addr &client_addr); // Add client's IP to the banlist.
-    void                        InvalidGameServerConnection(const ACE_INET_Addr &);
+    int                         AddIPBan(const ACE_INET_Addr &client_addr) override;
+    void                        InvalidGameServerConnection(const ACE_INET_Addr &) override;
 
-    bool                        ReadConfig(const std::string &name); // later name will be used to read GameServer specific configuration
-    bool                        Run(void);
-    bool                        ShutDown(const std::string &reason="No particular reason");
-    bool                        Online(void);
+    bool                        ReadConfig(const std::string &name) override;
+    bool                        Run(void) override;
+    bool                        ShutDown(const std::string &reason="No particular reason") override;
+    bool                        Online(void) override;
     // Internal World-cluster interface
-    ServerHandle<IGameServer>   RegisterMapServer(const ServerHandle<IMapServer> &map_h );
-    int                         GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server );
+    ServerHandle<IGameServer>   RegisterMapServer(const ServerHandle<IMapServer> &map_h ) override;
+    int                         GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server ) override;
     // Internal Admin server interface
     CharacterDatabase *         character_db(){return m_char_db;}
 
 protected:
-    bool                        m_running;
-    std::list<ACE_INET_Addr>    m_ban_list;
-    AdminDatabase *             m_db;
-    CharacterDatabase *         m_char_db;
+    AdminClientAcceptor *       m_acceptor;     //!< ace acceptor wrapping AuthClientService
+    ACE_INET_Addr               m_location;     //!< address this server will bind at.
+    bool                        m_running;      //!< true if this server is running
+    std::list<ACE_INET_Addr>    m_ban_list;     //!< list of banned IP addresses
+    AdminDatabase *             m_db;           //!< account database access object
+    CharacterDatabase *         m_char_db;      //!< character database access object
 };
 typedef ACE_Singleton<_AdminServer,ACE_Thread_Mutex> AdminServer; // AdminServer Interface
