@@ -12,6 +12,7 @@
 #include "AdminDatabase.h"
 #include "AdminLink.h"
 #include "AccountInfo.h"
+#include "Character.h"
 #include "Client.h"
 #include "ConfigExtension.h"
 #include "CharacterDatabase.h"
@@ -108,6 +109,8 @@ bool _AdminServer::ReadConfig(const std::string &inipath)
     dbname = config.value("db_name","segs_game").toString();
     dbuser = config.value("db_user","none").toString();
     dbpass = config.value("db_pass","none").toString();
+    QSettings chardb_config(QSettings::IniFormat,QSettings::UserScope,"SEGS","CharacterDatabase");
+    chardb_config.setValue("max_char_slots",config.value("max_char_slots",MAX_CHARACTER_SLOTS).toInt());
     config.endGroup();
     QSqlDatabase *db2;
     if(!driver_list.contains(dbdriver.toUpper())) {
