@@ -38,6 +38,25 @@ int main(int argc, char **argv)
 
     bool force = parser.isSet(forceOption);
     
+    bool fileExists(QString path) {
+      QFileInfo check_file(path);
+      return check_file.exists() && check_file.isFile();
+    }
+    
+    // Check if dbtool is being run from server directory
+    if(fileExists("authserver")) {
+        qDebug() << "SEGS dbtool must be run from the SEGS root folder (where authserver resides)";
+        system("pause");
+        return 0;
+    }
+    // Check if database already exists
+    if(fileExists("segs.sql") && fileExists("segs_game.sql")) {
+        qDebug() << "SEGS databases already exist. Run dbtool with -f option to overwrite existing databases. THIS CANNOT BE UNDONE.";
+        system("pause");
+        return 0;
+    }
+    
+    
     /* PSUEDO CODE
     if(weAreNotRunningFromServerDir())
         return RUN_US_FROM_SERVER_DIR;
