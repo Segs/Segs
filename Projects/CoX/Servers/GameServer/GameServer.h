@@ -69,9 +69,9 @@ public:
         uint8_t                 getUnkn1(void);
         uint8_t                 getUnkn2(void);
         CharacterDatabase *     getDb();
-
         int                     createLinkedAccount(uint64_t auth_account_id,const std::string &username); // Part of exposed db interface.
         EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
+        int                     getMaxAccountSlots() const;
 
 protected:
         uint32_t                GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver

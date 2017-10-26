@@ -79,3 +79,9 @@ EventProcessor * GameServerInterface::event_target()
     assert(m_instance);
     return m_instance->event_target();
 }
+
+int GameServerInterface::getMaxAccountSlots() const
+{
+    assert(m_instance);
+    return m_instance->getMaxAccountSlots();
+}

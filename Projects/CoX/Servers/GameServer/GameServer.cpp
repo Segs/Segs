@@ -165,5 +165,10 @@ uint8_t GameServer::getUnkn2( )
     return m_unk2;
 }
 
+int GameServer::getMaxAccountSlots() const
+{
+    assert("implement me");
+}
+
 //
 

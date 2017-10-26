@@ -10,10 +10,12 @@
 #include "AdminServer.h"
 
 #include "AdminDatabase.h"
+#include "AdminLink.h"
 #include "AccountInfo.h"
 #include "Client.h"
 #include "ConfigExtension.h"
 #include "CharacterDatabase.h"
+#include "ServerManager.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
@@ -32,6 +34,8 @@ _AdminServer::_AdminServer() : m_running(false)
 {
     m_db        = new AdminDatabase;
     m_char_db   = new CharacterDatabase;
+    m_acceptor = new AdminClientAcceptor;
+
 }
 
 // Defined destructor
@@ -62,6 +66,7 @@ static void createDefaultConfigEntries(const std::string &inipath) {
     config.endGroup();
 
 }
+/// later name will be used to read GameServer specific configuration
 bool _AdminServer::ReadConfig(const std::string &inipath)
 {
     if(m_running)
@@ -153,6 +158,7 @@ bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" 
     m_char_db = nullptr;
     return res;
 }
+/// Refresh client object from database
 bool _AdminServer::fill_account_info( AccountInfo &client )
 {
     if((client.login().size()>0) && (client.account_server_id()==0)) // existing client
@@ -166,6 +172,7 @@ bool _AdminServer::fill_account_info( AccountInfo &client )
     return false;
 
 }
+/// \note will record given client as logged in.
 bool _AdminServer::Login(const AccountInfo &,const ACE_INET_Addr &)
 {
     // Here we should log to the Db, a Login event for that client
@@ -180,12 +187,13 @@ bool _AdminServer::Logout(const AccountInfo &) const
     //  client->setState(AuthClient::NOT_LOGGEDIN);
     return true;
 }
-
+/// Verifies entered password matches stored password
 bool _AdminServer::ValidPassword( const AccountInfo &client, const char *password )
 {
     return m_db->ValidPassword(qPrintable(client.login()),password);
 }
 
+/// Save user account credentials to storage
 int _AdminServer::SaveAccount(const char *username, const char *password)
 {
     int res=0;
@@ -200,6 +208,9 @@ int _AdminServer::SaveAccount(const char *username, const char *password)
     //for(size_t idx=0; idx<ServerManager::instance()->GameServerCount(); idx++)
     //{
     // TODO: support multiple game servers.
+    GameServerInterface *igs = ServerManager::instance()->GetGameServer(0);
+    if(!igs)
+        return -1;
     if(!m_char_db->CreateLinkedAccount(tmp.account_server_id(),username))
         res=2;
     //}
@@ -229,7 +240,7 @@ bool AdminServer::AccountBlocked(const char *login) const
         return true; // Account is blocked, or there is no such account. Deny them access.
 }
 */
-
+/// Add client's IP to the banlist.
 int _AdminServer::AddIPBan(const ACE_INET_Addr &client_addr)
 {
     m_ban_list.push_back(client_addr);
@@ -269,7 +280,7 @@ void _AdminServer::InvalidGameServerConnection( const ACE_INET_Addr & )
 {
 
 }
-
+/// Called from auth server during user authentication, might be useful for automatical firewall rules update
 int _AdminServer::GetBlockedIpList( std::list<int> & ) /* Called from auth server during user authentication, might be useful for automatical firewall rules update */
 {
     return 0;
