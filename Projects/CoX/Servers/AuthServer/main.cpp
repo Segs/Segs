@@ -19,7 +19,6 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <ace/ACE.h>
-#include <ace/Get_Opt.h>
 #include <ace/ACE.h>
 #include <ace/Singleton.h>
 #include <ace/Null_Mutex.h>
@@ -37,7 +36,12 @@
 #include <ace/Reactor.h>
 #include <ace/OS_main.h> //Included to enable file logging
 #include <ace/streams.h> //Included to enable file logging
+
 #include <QtCore/QCoreApplication>
+#include <QSettings>
+#include <QCommandLineParser>
+#include <QDebug>
+
 #include <iostream>
 #include <string>
 #include <stdlib.h>
@@ -109,53 +113,39 @@ static bool CreateServers()
     ServerManager::instance()->AddMapServer(map_instance);
     return true;
 };
-class CommandLineContents
+void setSettingDefaults()
 {
-public:
-    std::string config_file;
-    CommandLineContents() : config_file("settings.cfg")
-    {
-
-    }
-    int parse_cmdline(int argc, ACE_TCHAR *argv[])
-    {
-        static const ACE_TCHAR options[] = ACE_TEXT (":f:");
-        ACE_Get_Opt cmd_opts (argc, argv, options);
-        if (cmd_opts.long_option(ACE_TEXT ("config"), 'f', ACE_Get_Opt::ARG_REQUIRED) == -1)
-            return -1;
-        int option;
-        while ((option = cmd_opts ()) != EOF)
-        {
-            switch (option)
-            {
-                case 'f':
-                {
-                    ACE_TCHAR *val=cmd_opts.opt_arg();
-                    if(val)
-                        config_file = std::string(val);
-                    break;
-                }
-                case ':':
-                    ACE_ERROR_RETURN
-                            ((LM_ERROR, ACE_TEXT ("-%c requires an argument\n"), cmd_opts.opt_opt ()), -1);
-                default:
-                    ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("Parse error.\n")), -1);
-            }
-        }
-        return 0;
-    }
-};
+    // here we should setup the default QSettings locations and such
+}
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
     QCoreApplication q_app(argc,argv);
+    QCoreApplication::setOrganizationDomain("segs.nemerle.eu");
+    QCoreApplication::setOrganizationName("SEGS Project");
+    QCoreApplication::setApplicationName("segs_server");
+    QCoreApplication::setApplicationVersion(VersionInfo::getAuthVersion());
+
+    setSettingDefaults();
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("SEGS - CoX server");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addOptions({
+                          {{"f","config"},
+                            "Use the provided settings file, default value is <settings.cfg>",
+                           "filename","settings.cfg"}
+                      });
+    parser.process(q_app);
+    if(parser.isSet("help")||parser.isSet("version"))
+        return 0;
+
+    QString config_file_path = parser.value("config");
     ACE_Sig_Set interesting_signals;
     interesting_signals.sig_add(SIGINT);
     interesting_signals.sig_add(SIGHUP);
-    g_logging_object.init_file_log();
 
-    CommandLineContents cmdl;
-    if( -1 == cmdl.parse_cmdline(argc,argv))
-        return -1;
+    g_logging_object.init_file_log();
 
     const size_t N_THREADS = 1;
     ACE_TP_Reactor threaded_reactor;
@@ -170,16 +160,17 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     ACE_LOG_MSG->msg_callback(&g_logging_object);
 
     // Print out startup copyright messages
-    VersionInfo version;
-    version.getAuthVersion();
-    version.getCopyright();
+
+    qDebug().noquote() << VersionInfo::getCopyright();
+    qDebug().noquote() << VersionInfo::getAuthVersion();
+
     ACE_DEBUG((LM_ERROR,ACE_TEXT("main\n")));
 
     ACE_Thread_Manager::instance()->spawn_n(N_THREADS, event_loop, ACE_Reactor::instance());
     bool no_err=true;
     no_err=CreateServers();
     if(no_err)
-        no_err=ServerManager::instance()->LoadConfiguration(cmdl.config_file);
+        no_err=ServerManager::instance()->LoadConfiguration(config_file_path.toStdString());
     if(no_err)
         no_err=ServerManager::instance()->StartLocalServers();
     if(no_err)
