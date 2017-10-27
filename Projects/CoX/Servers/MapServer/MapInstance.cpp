@@ -418,10 +418,10 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         m_scripting_interface->runScript(src,code,"user provided script");
         return;
     }
-    else if(ev->contents[0]=='l')
+    else if(ev->contents[0]=='l' || ev->contents.startsWith("local "))
     {
-        // send the message to everyone on this map
-        const QString chat_content = ev->contents.mid(2);
+        // TODO: Limit by range from source to achieve true "local" chat
+        const QString chat_content = ev->contents.remove(0,ev->contents.indexOf(" "));
         auto iter=m_clients.begin();
         auto end=m_clients.end();
         for(;iter!=end; ++iter) {
@@ -430,14 +430,28 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             cl->link()->putq(msg);
         }
     }
+    else if(ev->contents[0]=='b' || ev->contents.startsWith("broadcast "))
+    {
+        // send the message to everyone on this map
+        const QString chat_content = ev->contents.remove(0,ev->contents.indexOf(" "));
+        auto iter=m_clients.begin();
+        auto end=m_clients.end();
+        for(;iter!=end; ++iter) {
+            MapClient *cl=*iter;
+            ChatMessage *msg = ChatMessage::broadcastMessage(chat_content,src->char_entity());
+            cl->link()->putq(msg);
+        }
+    }
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {
-    qDebug() << "Chat divider moved to "<<ev->m_position; //"for player" <<
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    qDebug() << "Chat divider moved to "<<ev->m_position << " for player" << src;
 }
 void MapInstance::on_minimap_state(MiniMapState *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    qDebug() << "MiniMapState tile "<<ev->tile_idx; //"for player" <<
+    qDebug() << "MiniMapState tile "<<ev->tile_idx << " for player" << src;
 }
