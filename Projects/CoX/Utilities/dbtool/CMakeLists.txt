@@ -7,10 +7,11 @@ ELSE()
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
 ENDIF()
 find_package(Qt5Core)
+find_package(QtSql)
 
 set(tool_SRC
     main.cpp
 )
 add_executable(dbtool ${tool_SRC})
 qt5_use_modules(dbtool Core)
-target_link_libraries(dbtool Qt5::Core)
+target_link_libraries(dbtool Qt5::Core Qt5::Sql)
