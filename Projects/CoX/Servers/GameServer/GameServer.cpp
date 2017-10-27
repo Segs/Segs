@@ -91,6 +91,7 @@ bool GameServer::ReadConfig(const std::string &inipath)
     QString location_addr = config.value("location_addr","127.0.0.1:7002").toString();
     m_serverName = config.value("server_name","unnamed").toString().toStdString();
     m_max_players = config.value("max_players",600).toUInt();
+    m_max_account_slots = config.value("max_account_slots",MAX_ACCOUNT_SLOTS).toUInt();
     if(!parseAddress(listen_addr,m_listen_point))
     {
         qCritical() << "Badly formed IP address" << listen_addr;
@@ -155,6 +156,11 @@ uint16_t GameServer::getMaxPlayers()
     return m_max_players;
 }
 
+int GameServer::getMaxAccountSlots() const
+{
+    return m_max_account_slots;
+}
+
 uint8_t GameServer::getUnkn1( )
 {
     return m_unk1;
@@ -164,11 +170,5 @@ uint8_t GameServer::getUnkn2( )
 {
     return m_unk2;
 }
-
-int GameServer::getMaxAccountSlots() const
-{
-    assert("implement me");
-}
-
 //
 

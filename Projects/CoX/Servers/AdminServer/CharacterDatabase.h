@@ -34,7 +34,7 @@ class CharacterDatabase
 
 public:
 virtual             ~CharacterDatabase();
-        bool        CreateLinkedAccount(uint64_t auth_account_id,const std::string &username); // returns true on success
+        bool        CreateLinkedAccount(uint64_t auth_account_id,const std::string &username,int max_account_slots); // returns true on success
         bool        create(AccountInfo *);
         bool        create(uint64_t gid,uint8_t slot,Character *c);
         bool        fill( AccountInfo *); //!x
