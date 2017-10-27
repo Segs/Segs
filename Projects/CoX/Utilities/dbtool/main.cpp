@@ -9,6 +9,16 @@
 #include <QtCore/QDebug>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QCommandLineParser>
+#include <QtCore/QtSql>
+#include <QtCore/QDebug>
+#include <QtCore/QSqlDatabase>
+#include <QtCore/QSqlError>
+
+QTextStream& qStdOut()
+{
+    static QTextStream ts( stdout );
+    return ts;
+}
 
 int main(int argc, char **argv)
 {
@@ -21,12 +31,16 @@ int main(int argc, char **argv)
     parser.addHelpOption();
     parser.addVersionOption();
     
-    parser.addPositionalArgument("file", QCoreApplication::translate("main", "The file to open."));
+    parser.addPositionalArgument("file", QCoreApplication::translate("main", "Database Script file to import."));
     
-    // A boolean option with multiple names (-f, --force)
-    QCommandLineOption forceOption(QStringList() << "f" << "force",
-            QCoreApplication::translate("main", "Overwrite existing files."));
-    parser.addOption(forceOption);
+    parser.addOptions({
+        // A boolean option with a single name (-p)
+        {"p",
+            QCoreApplication::translate("main", "Show progress during copy")},
+        // Force the tool to overwrite the existing database (-f, --force)
+        {{"f", "force"},
+            QCoreApplication::translate("main", "Overwrite existing database files. THIS CANNOT BE UNDONE.")},
+    });
 
     parser.process(app);
     if(parser.positionalArguments().isEmpty() || parser.optionNames().isEmpty()) {
@@ -45,35 +59,31 @@ int main(int argc, char **argv)
     
     // Check if dbtool is being run from server directory
     if(fileExists("authserver")) {
-        qDebug() << "SEGS dbtool must be run from the SEGS root folder (where authserver resides)";
+        qStdOut() << "SEGS dbtool must be run from the SEGS root folder (where authserver resides)";
         system("pause");
         return 0;
     }
     // Check if database already exists
-    if(fileExists("segs.sql") && fileExists("segs_game.sql")) {
-        qDebug() << "SEGS databases already exist. Run dbtool with -f option to overwrite existing databases. THIS CANNOT BE UNDONE.";
+    if((fileExists("segs.sql") || fileExists("segs_game.sql")) && !force) {
+        qStdOut() << "SEGS databases already exist. Run dbtool with -f option to overwrite existing databases. THIS CANNOT BE UNDONE.";
         system("pause");
         return 0;
     }
     
-    
-    /* PSUEDO CODE
-    if(weAreNotRunningFromServerDir())
-        return RUN_US_FROM_SERVER_DIR;
-    if(databaseFilesAreHere())
-        return NOTHING_TO_DO;
-    // create auth server account db
-    QString path = SEGS_ACCOUNTS_DB_PATH;
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    // Should probably classify this so we can call it twice, once for segs and again for segs_game
+    QString path = "./segs.sql";
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE"); //not dbConnection
     db.setDatabaseName(path);
     db.open();
-    QSqlQuery query;
-    QFile db_template("segs.sql");
+    QSqlQuery qry;
+    QFile db_template("./db/segs.sql");
     if(db_template.open(QFile::ReadOnly)
         query.exec(db_template.ReadAll());
-    db.close();
-    */
+       
+    //...
     
+    // Close our db
+    db.close();
     system("pause");
     return 0;
 }
