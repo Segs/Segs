@@ -67,6 +67,25 @@ int Entity::getOrientation(BitStream &bs)
     //NormalizeQuaternion(pEnt->qrot)
     return recv_older==false;
 }
+static void toEulerAngle(const glm::quat& q, float& roll, float& pitch, float& yaw)
+{
+    // roll (x-axis rotation)
+    float sinr = 2.0f * (q.w * q.x + q.y * q.z);
+    float cosr = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
+    roll = std::atan2(sinr, cosr);
+
+    // pitch (y-axis rotation)
+    float sinp = 2.0f * (q.w * q.y - q.z * q.x);
+        if (std::abs(sinp) >= 1)
+            pitch = std::copysign(float(M_PI / 2), sinp); // use 90 degrees if out of range
+        else
+        pitch = std::asin(sinp);
+
+    // yaw (z-axis rotation)
+    float siny = 2.0f * (q.w * q.z + q.x * q.y);
+    float cosy = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
+    yaw = std::atan2(siny, cosy);
+}
 void Entity::storeOrientation(BitStream &bs) const
 {
     // if(updateNeeded())
@@ -76,11 +95,13 @@ void Entity::storeOrientation(BitStream &bs) const
     //NormalizeQuaternion(pEnt->qrot)
     //
     //RestoreFourthQuatComponent(pEnt->qrot);
+    float pyr_angles[3];
+    toEulerAngle(qrot,pyr_angles[0],pyr_angles[1],pyr_angles[2]);
     for(int i=0; i<3; i++)
     {
         if(update_rot(i))
         {
-            bs.StoreBits(9,AngleQuantize(qrot[i],9));   // normalized quat, 4th param is recoverable from the first 3
+            bs.StoreBits(9,AngleQuantize(pyr_angles[i],9));   // normalized quat, 4th param is recoverable from the first 3
         }
     }
 }
@@ -806,4 +827,11 @@ void MapCostume::SendCommon(BitStream &bs) const
         part.m_full_part = m_non_default_costme_p;
         part.serializeto(bs);
     }
+}
+
+void abortLogout(Entity *e)
+{
+    e->m_logout_sent = false;
+    e->m_is_logging_out = false;
+    e->m_time_till_logout = 0;
 }
