@@ -67,17 +67,17 @@ static void createDefaultConfigEntries(const std::string &inipath) {
 
 }
 /// later name will be used to read GameServer specific configuration
-bool _AdminServer::ReadConfig(const std::string &inipath)
+bool _AdminServer::ReadConfig(const QString &inipath)
 {
     if(m_running)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AdminServer: Already initialized and running\n") ),false);
 
-    if (!QFile::exists(inipath.c_str()))
+    if (!QFile::exists(inipath))
     {
-        qCritical() << "Config file" << inipath.c_str() <<"does not exist.";
+        qCritical() << "Config file" << inipath <<"does not exist.";
         return false;
     }
-    QSettings config(inipath.c_str(),QSettings::IniFormat);
+    QSettings config(inipath,QSettings::IniFormat);
     config.beginGroup("AdminServer");
 
     config.beginGroup("AccountDatabase");
@@ -144,12 +144,12 @@ bool _AdminServer::Run()
     m_running=true;
     return true;
 }
-bool _AdminServer::ShutDown(const std::string &reason/* ="No particular reason" */)
+bool _AdminServer::ShutDown(const QString &reason/* ="No particular reason" */)
 {
     if(!m_running)
         return true;
     bool res=true;
-    ACE_DEBUG ((LM_TRACE,ACE_TEXT("(%P|%t) Shutting down AdminServer %s\n"),reason.c_str()));
+    qInfo() << "Shutting down AdminServer:"<<reason;
     m_running=false;
 
     delete m_db;

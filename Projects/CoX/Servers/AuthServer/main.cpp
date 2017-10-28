@@ -105,12 +105,13 @@ static ACE_THR_FUNC_RETURN event_loop (void *arg)
 }
 static bool CreateServers()
 {
-    GameServer *game_instance       = new GameServer;
-    MapServer * map_instance        = new MapServer;
-    ServerManager::instance()->SetAdminServer(AdminServer::instance());
-    ServerManager::instance()->SetAuthServer(new AuthServer);
-    ServerManager::instance()->AddGameServer(game_instance);
-    ServerManager::instance()->AddMapServer(map_instance);
+    auto server_manger = ServerManager::instance();
+    GameServer *game_instance   = new GameServer;
+    MapServer * map_instance    = new MapServer;
+    server_manger->SetAdminServer(AdminServer::instance());
+    server_manger->SetAuthServer(new AuthServer);
+    server_manger->AddGameServer(game_instance);
+    server_manger->AddMapServer(map_instance);
     return true;
 };
 void setSettingDefaults()
@@ -170,7 +171,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     bool no_err=true;
     no_err=CreateServers();
     if(no_err)
-        no_err=ServerManager::instance()->LoadConfiguration(config_file_path.toStdString());
+        no_err=ServerManager::instance()->LoadConfiguration(config_file_path);
     if(no_err)
         no_err=ServerManager::instance()->StartLocalServers();
     if(no_err)

@@ -12,14 +12,14 @@
  * @param  configpath This is a platform specific path to a config file containing
  * general RoamingServer vars.
  */
-bool RoamingServer::ReadConfig(const std::string &inipath)
+bool RoamingServer::ReadConfig(const QString &inipath) 
 {
-    if (!QFile::exists(inipath.c_str()))
+    if (!QFile::exists(inipath))
     {
-        qCritical() << "Config file" << inipath.c_str() <<"does not exist.";
+        qCritical() << "Config file" << inipath <<"does not exist.";
         return false;
     }
-    QSettings config(inipath.c_str(),QSettings::IniFormat);
+    QSettings config(inipath,QSettings::IniFormat);
     config.beginGroup("RoamingServer");
     if(!config.contains("location_addr"))
         qDebug() << "Config file is missing 'location_addr' entry, will try to use default";
@@ -33,7 +33,7 @@ bool RoamingServer::ReadConfig(const std::string &inipath)
     if(!config.contains("auth_pass")) {
         qDebug() << "Config file is missing 'auth_pass' entry, will try to use default";
     }
-    m_passw = config.value("auth_pass","").toString().toStdString();
+    m_passw = config.value("auth_pass","").toString();
 
     config.endGroup();
     return true;

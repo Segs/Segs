@@ -56,11 +56,11 @@ bool AdminServerInterface::Run()
 {
     return m_server->Run();
 }
-bool AdminServerInterface::ReadConfig(const std::string &name)
+bool AdminServerInterface::ReadConfig(const QString &name)
 {
     return m_server->ReadConfig(name);
 }
-bool AdminServerInterface::ShutDown(const std::string &reason)
+bool AdminServerInterface::ShutDown(const QString &reason)
 {
     return m_server->ShutDown(reason);
 }
@@ -73,23 +73,3 @@ int AdminServerInterface::GetAccessKeyForServer(const ServerHandle<IMapServer> &
     return m_server->GetAccessKeyForServer(h_server);
 }
 
-/*
-void hashtest()
-{
-    uint8_t hash[16] = {0};
-    //HashPassword(password, hash, sizeof(hash)); for now just set some arbitrary values in 'hash'
-    char szSeed[(sizeof(uint32_t) * 3) + 1] = {0};
-    itoa(AuthNet::GetSeed(), szSeed, 10); //GetSeed() is just a func that returns int, set it to whatever you like
-    MD5 md5;
-    uint8_t digest[MD5::DIGESTSIZE];
-    md5.Update(hash, sizeof(hash));
-    md5.Update((uint8_t *)szSeed, strlen(szSeed));
-    md5.Final(digest);// this is garble-2
-    / *
-        garble1 ->  md5.Update(hash, sizeof(hash)); md5.Final(garble1);
-        garble2 ->  md5.Update(hash, sizeof(hash)); md5.Update((uint8_t *)szSeed, strlen(szSeed)); md5.Final(garble2);
-        garble3 ->  md5.Update(garble1, sizeof(garble1)); md5.Final(garble3);
-        Important thing, check if garble3==garble2
-    * /
-}
-*/

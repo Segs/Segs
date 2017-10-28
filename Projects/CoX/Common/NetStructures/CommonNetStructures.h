@@ -10,14 +10,16 @@
 
 #include <glm/vec3.hpp>
 #include "BitStream.h"
+#include "Common/GameData/CoXHash.h"
+
 class QString;
-typedef struct
+struct Matrix4x3
 {
         glm::vec3 row1;
         glm::vec3 row2;
         glm::vec3 row3;
         glm::vec3 row4;
-} Matrix4x3;
+};
 class TransformStruct
 {
 public:
@@ -32,33 +34,30 @@ public:
         bool v1_set,v2_set,v3_set;
 };
 
-class NetStructure // this represents an interface all structures that are traversing the network should implement
+///
+/// \brief The ColorAndPartPacker class is responsible for packing/unpacking colors and part names from BitStream
+///
+class ColorAndPartPacker
 {
-static const    uint32_t    stringcachecount_bitlength=12;
-static const    uint32_t    colorcachecount_bitlength=10;
 public:
-                            NetStructure()
-                            {
-                            }
-    virtual                 ~NetStructure(){}
-    virtual void            serializeto(BitStream &bs) const =0;
-    virtual void            serializefrom(BitStream &bs)=0;
-            size_t          bits_used; // this reflects how many bits given operation affected
-    static  void            storeBitsConditional(BitStream &bs,int numbits,int bits);
-    static  int             getBitsConditional(BitStream &bs,int numbits);
-    static  void            storePackedBitsConditional(BitStream &bs,int numbits,int bits);
-    static  void            storeFloatConditional(BitStream &bs,float val);
-    static  void            storeFloatPacked(BitStream &bs,float val);
-    static  int             getPackedBitsConditional(BitStream &bs,int numbits);
-    static  void            storeStringConditional(BitStream &bs, const QString &str);
-    static  void            storeVector(BitStream &bs, glm::vec3 &vec);
-    static  void            storeVectorConditional(BitStream &bs, glm::vec3 &vec);
-    static  void            storeTransformMatrix(BitStream &tgt,const Matrix4x3 &src);
-    static  void            storeTransformMatrix(BitStream &tgt,const TransformStruct &src);
-
-    static  void            getTransformMatrix(BitStream &bs,Matrix4x3 &src);
-    static  void            storeCached_Color(BitStream &bs,uint32_t col);
-    static  void            storeCached_String(BitStream &bs, const QString &str);
-    static  uint32_t        getCached_Color(BitStream &bs);
-    static  QString         getCached_String(BitStream &bs);
+    virtual void packColor(uint32_t c,BitStream &into)=0;
+    virtual void unpackColor(BitStream &from,uint32_t &tgt)=0;
+    virtual void packPartname(const QString &c,BitStream &into)=0;
+    virtual void unpackPartname(BitStream &from,QString &tgt)=0;
 };
+extern  void        storeBitsConditional(BitStream &bs,int numbits,int bits);
+extern  int         getBitsConditional(BitStream &bs,int numbits);
+extern  void        storePackedBitsConditional(BitStream &bs,int numbits,int bits);
+extern  void        storeFloatConditional(BitStream &bs,float val);
+extern  void        storeFloatPacked(BitStream &bs,float val);
+extern  int         getPackedBitsConditional(BitStream &bs,int numbits);
+extern  void        storeStringConditional(BitStream &bs, const QString &str);
+extern  void        storeVector(BitStream &bs, glm::vec3 &vec);
+extern  void        storeVectorConditional(BitStream &bs, glm::vec3 &vec);
+extern  void        storeTransformMatrix(BitStream &tgt,const Matrix4x3 &src);
+extern  void        storeTransformMatrix(BitStream &tgt,const TransformStruct &src);
+extern  void        getTransformMatrix(BitStream &bs,Matrix4x3 &src);
+extern  void        storeCached_Color(BitStream &bs, uint32_t col, ColorHash &color_hash, uint32_t bitcount);
+extern  void        storeCached_String(BitStream &bs, const QString &str,const StringHash &string_hash, uint32_t bitc);
+extern  uint32_t    getCached_Color(BitStream &bs,ColorHash &color_hash, uint32_t bitcount);
+extern  QString     getCached_String(BitStream &bs, const StringHash &string_hash, uint32_t bitcount);

@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include <string>
+#include <QString>
 // this class represents very high level interface to all servers
 class Server
 {
 public:
-virtual         ~Server(){}
-virtual bool    ReadConfig(const std::string &name)=0;
+virtual         ~Server() = default;
+virtual bool    ReadConfig(const QString &name)=0;
 virtual bool    Run(void)=0;
-virtual bool    ShutDown(const std::string &reason="No particular reason")=0;
+virtual bool    ShutDown(const QString &reason="No particular reason")=0;
 };

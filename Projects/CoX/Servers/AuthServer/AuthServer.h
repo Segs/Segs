@@ -27,8 +27,6 @@
 #include <ace/SOCK_Acceptor.h>
 
 #include <unordered_map>
-#include <list>
-#include <string>
 
 class AuthLink;
 typedef ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR> ClientAcceptor;
@@ -41,7 +39,7 @@ class AuthServer final : public IAuthServer
     typedef hmClients::iterator         ihmClients; //!< helper typedef for iterators to m_clients store
     typedef hmClients::const_iterator   cihmClients; //!< helper typedef for const iterators to m_clients store
 public:
-    typedef enum
+    enum eAuthError
     {
         AUTH_OK = 0,
         AUTH_DATABASE_ERROR = 1,
@@ -55,17 +53,17 @@ public:
         AUTH_ACCOUNT_TIME_EXPIRED = 18,
         AUTH_NO_PAID_TIME_REMAINS = 19,
         AUTH_UNKN_ERROR
-    } eAuthError; // this is a public type so other servers can pass us valid errors
+    }; // this is a public type so other servers can pass us valid errors
 
                                     AuthServer();
 virtual                             ~AuthServer();
 
-        bool                        ReadConfig(const std::string &name); // later name will be used to read GameServer specific configuration
-        bool                        Run(void);
-        bool                        ShutDown(const std::string &reason="No particular reason");
+        bool                        ReadConfig(const QString &name) override;
+        bool                        Run(void) override;
+        bool                        ShutDown(const QString &reason="No particular reason") override;
 
-        ServerHandle<IAdminServer>  AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw); // World-cluster interface
-        AuthClient *                GetClientByLogin(const char *);
+        ServerHandle<IAdminServer>  AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw) override;
+        AuthClient *                GetClientByLogin(const char *) override;
 protected:
 
         ClientAcceptor *            m_acceptor;     //!< ace acceptor wrapping AuthClientService

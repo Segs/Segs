@@ -27,9 +27,9 @@ public:
                                 MapServerInterface(IMapServer *mi) : m_instance(mi){}
                                 ~MapServerInterface(void){}
 
-    bool                    ReadConfig(const std::string &name); // later name will be used to read GameServer specific configuration
+    bool                    ReadConfig(const QString &name); // later name will be used to read GameServer specific configuration
     bool                    Run(void);
-    bool                    ShutDown(const std::string &reason);
+    bool                    ShutDown(const QString &reason);
     bool                    isLocal(){return true;} // this method returns true if this interface is a local ( same process )
     bool                    Online();
     EventProcessor *        event_target();

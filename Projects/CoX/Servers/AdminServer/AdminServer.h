@@ -57,9 +57,9 @@ public:
     int                         AddIPBan(const ACE_INET_Addr &client_addr) override;
     void                        InvalidGameServerConnection(const ACE_INET_Addr &) override;
 
-    bool                        ReadConfig(const std::string &name) override;
+    bool                        ReadConfig(const QString &name) override;
     bool                        Run(void) override;
-    bool                        ShutDown(const std::string &reason="No particular reason") override;
+    bool                        ShutDown(const QString &reason="No particular reason") override;
     bool                        Online(void) override;
     // Internal World-cluster interface
     ServerHandle<IGameServer>   RegisterMapServer(const ServerHandle<IMapServer> &map_h ) override;

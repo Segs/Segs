@@ -21,7 +21,7 @@ class IGameServer : public RoamingServer
 {
 public:
 virtual const ACE_INET_Addr &   getAddress()=0;
-virtual std::string             getName(void)=0;
+virtual QString                 getName(void)=0;
 virtual uint8_t                 getId(void)=0;
 virtual uint16_t                getCurrentPlayers(void)=0;
 virtual uint16_t                getMaxPlayers()=0;
@@ -39,9 +39,9 @@ public:
                                 GameServerInterface(IGameServer *mi) : m_instance(mi){}
                                 ~GameServerInterface(void){}
         //uint32_t GetClientCookie(const ACE_INET_Addr &client_addr);
-        bool                    ReadConfig(const std::string &name); //! later name will be used to read GameServer specific configuration
+        bool                    ReadConfig(const QString &name); //! later name will be used to read GameServer specific configuration
         bool                    Run(void);
-        bool                    ShutDown(const std::string &reason);
+        bool                    ShutDown(const QString &reason);
 
         int                     getAccessKeyForServer(const ServerHandle<IMapServer> &h_map);
         bool                    isMapServerReady(const ServerHandle<IMapServer> &h_map);
@@ -55,7 +55,7 @@ public:
         uint16_t                getMaxPlayers();
         uint8_t                 getUnkn1();
         uint8_t                 getUnkn2();
-        std::string             getName();
+        QString                 getName();
 
         EventProcessor *        event_target(); // this is the main communication point for the Game Server instance
         int                     getMaxAccountSlots() const ;

@@ -6,7 +6,7 @@ IF(MSVC)
 ELSE()
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
 ENDIF()
-find_package(Qt5Core)
+find_package(Qt5 COMPONENTS Core REQUIRED)
 
 add_executable(binConverter
     binConverter.cpp

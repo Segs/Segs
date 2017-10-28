@@ -12,6 +12,7 @@
 #include "version.h"
 #include "MapEvents.h"
 #include "MapClient.h"
+#include "MapManager.h"
 #include "MapTemplate.h"
 #include "MapServer.h"
 #include "SEGSTimer.h"
@@ -145,14 +146,16 @@ void MapInstance::on_shortcuts_request(ShortcutsRequest *ev)
     res->m_client  = lnk->client_data();
     lnk->putq(res);
 }
-void MapInstance::on_client_quit(ClientQuit*ev) {
-    if(ev->abort_disconnect!=0)
-        printf("Client quit\n");
+void MapInstance::on_client_quit(ClientQuit*ev)
+{
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *client = lnk->client_data();
     // process client removal -> sending delete event to all clients etc.
     assert(client && client->char_entity());
-    client->char_entity()->beginLogout(10);
+    if(ev->abort_disconnect)
+        abortLogout(client->char_entity());
+    else
+        client->char_entity()->beginLogout(10);
 
 }
 void MapInstance::on_link_lost(SEGSEvent *ev)

@@ -7,14 +7,26 @@
 
  */
 
-#include "ServerManager.h"
-#include <ace/Message_Block.h>
-#include "ConfigExtension.h"
 #include "GameServer.h"
+
+#include "GameServerData.h"
+#include "ServerManager.h"
+#include "ConfigExtension.h"
 #include "CharacterDatabase.h"
 #include "AdminServerInterface.h"
 #include "GameHandler.h"
-#include "Common/GameData/WorldData.h"
+#include "Common/CRUDP_Protocol/CRUDP_Protocol.h"
+#include "Common/Servers/RoamingServer.h"
+
+#include <ace/ACE.h>
+#include <ace/Synch.h>
+#include <ace/INET_Addr.h>
+#include <ace/SOCK_Dgram.h>
+#include <ace/Message_Queue.h>
+#include <ace/Message_Block.h>
+#include <ace/Event_Handler.h>
+#include <ace/Svc_Handler.h>
+#include <ace/Reactor_Notification_Strategy.h>
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
@@ -24,112 +36,142 @@
 namespace {
     const constexpr int MaxAccountSlots=8;
 }
+GameServer *g_GlobalGameServer=nullptr;
 
-GameServer::GameServer() :
-    m_online(false),
-    m_id(0),
-    m_current_players(0),
-    m_max_players(0),
-    m_unk1(0),
-    m_unk2(0),
-    m_serverName(""),
-    m_endpoint(NULL)
+class GameServer::PrivateData
 {
+public:
+    QString                 m_serverName="";
+    GameServerData          m_runtime_data;
+    GameLinkEndpoint *      m_endpoint=nullptr;
+    GameHandler *           m_handler=nullptr;
+    GameLink *              m_game_link=nullptr;
+    bool                    m_online=false;
+    uint8_t                 m_id=0;
+    uint16_t                m_current_players=0;
+    int                     m_max_account_slots;
+    uint16_t                m_max_players=0;
+    uint8_t                 m_unk1=0;
+    uint8_t                 m_unk2=0;
+    ACE_INET_Addr           m_location; // this value is sent to the clients
+    ACE_INET_Addr           m_listen_point; // the server binds here
+
+    bool ShutDown(const QString &reason)
+    {
+        if(!m_endpoint)
+        {
+            qWarning() << "Server not running yet";
+            return true;
+        }
+        m_online = false;
+        qWarning() << "Shutting down game server because : "<<reason;
+        if (ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
+        {
+            delete m_endpoint;
+            qCritical() << "ACE_Reactor::remove_handler failed";
+            return false;
+        }
+        delete m_endpoint;
+        return true;
+
+    }
+};
+
+GameServer::GameServer() : d(new PrivateData)
+{
+    assert(g_GlobalGameServer==nullptr && "Only one GameServer instance per process allowed");
+    g_GlobalGameServer = this;
 }
 
 GameServer::~GameServer()
 {
     if(ACE_Reactor::instance())
     {
-        ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK);
-        delete m_endpoint;
+        ACE_Reactor::instance()->remove_handler(d->m_endpoint,ACE_Event_Handler::READ_MASK);
+        delete d->m_endpoint;
     }
 
 }
 bool GameServer::Run()
 {
-    if(m_endpoint)
+    if(d->m_endpoint)
     {
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Game server already running\n") ));
+        qWarning() << "Game server already running";
         return true;
     }
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Reading game data from ./data/bin/ folder\n") ));
-    WorldData::instance()->read_costumes("./data/bin/");
-    WorldData::instance()->read_colors("./data/bin/");
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) All game data read\n") ));
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Filling hashes .. ") ));
-    WorldData::instance()->fill_hashes();
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("Hashes filled\n") ));
 
-    m_handler = new GameHandler;
-    m_handler->set_server(this);
-    m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
-    m_handler->start();
+    d->m_handler = new GameHandler;
+    d->m_handler->set_server(this);
+    d->m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
+    d->m_handler->start();
 
-    m_endpoint = new GameLinkEndpoint(m_listen_point); //,this
-    m_endpoint->set_downstream(m_handler);
+    d->m_endpoint = new GameLinkEndpoint(d->m_listen_point); //,this
+    d->m_endpoint->set_downstream(d->m_handler);
 
-    if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
+    if (ACE_Reactor::instance()->register_handler(d->m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ACE_Reactor::register_handle\n"),false);
-    if (m_endpoint->open() == -1) // will register notifications with current reactor
+    if (d->m_endpoint->open() == -1) // will register notifications with current reactor
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
 
-    m_online = true;
+    d->m_online = true;
     return true;
 }
-bool GameServer::ReadConfig(const std::string &inipath)
+// later name will be used to read GameServer specific configuration
+bool GameServer::ReadConfig(const QString &inipath)
 {
-    if(m_endpoint)
+    if(d->m_endpoint)
     {
         ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Game server already initialized and running\n") ));
         return true;
     }
-    if (!QFile::exists(inipath.c_str()))
+    if (!QFile::exists(inipath))
     {
-        qCritical() << "Config file" << inipath.c_str() <<"does not exist.";
+        qCritical() << "Config file" << inipath <<"does not exist.";
         return false;
     }
-    QSettings config(inipath.c_str(),QSettings::IniFormat);
+    QSettings config(inipath,QSettings::IniFormat);
     config.beginGroup("GameServer");
     QString listen_addr = config.value("listen_addr","0.0.0.0:7002").toString();
     QString location_addr = config.value("location_addr","127.0.0.1:7002").toString();
-    m_serverName = config.value("server_name","unnamed").toString().toStdString();
-    m_max_players = config.value("max_players",600).toUInt();
-    m_max_account_slots = config.value("max_account_slots",MaxAccountSlots).toUInt();
-    if(!parseAddress(listen_addr,m_listen_point))
+    d->m_serverName = config.value("server_name","unnamed").toString();
+    d->m_max_players = config.value("max_players",600).toUInt();
+    d->m_max_account_slots = config.value("max_account_slots",MaxAccountSlots).toInt();
+    if(!parseAddress(listen_addr,d->m_listen_point))
     {
         qCritical() << "Badly formed IP address" << listen_addr;
         return false;
     }
-    if(!parseAddress(location_addr,m_location))
+    if(!parseAddress(location_addr,d->m_location))
     {
         qCritical() << "Badly formed IP address" << location_addr;
         return false;
     }
 
-    m_current_players = 0;
-    m_id = 1;
-    m_unk1=m_unk2=0;
-    m_online = false;
+    d->m_current_players = 0;
+    d->m_id = 1;
+    d->m_unk1=d->m_unk2=0;
+    d->m_online = false;
     //m_db = new GameServerDb("");
     return true;
 }
-bool GameServer::ShutDown(const std::string &reason)
+bool GameServer::ShutDown(const QString &reason)
 {
-    if(!m_endpoint)
-    {
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Server not running yet\n") ));
-        return true;
-    }
-    m_online = false;
-    ACE_DEBUG((LM_WARNING,ACE_TEXT ("(%P|%t) Shutting down game server because : %s\n"), reason.c_str()));
-    if (ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
-    {
-        delete m_endpoint;
-        ACE_ERROR_RETURN ((LM_ERROR, "ACE_Reactor::remove_handler"),false);
-    }
-    delete m_endpoint;
-    return true;
+    return d->ShutDown(reason);
+}
+
+void GameServer::Online(bool s)
+{
+    d->m_online=s;
+}
+
+bool GameServer::Online()
+{
+    return d->m_online;
+}
+
+const ACE_INET_Addr &GameServer::getAddress()
+{
+    return d->m_location;
 }
 int GameServer::getAccessKeyForServer(const ServerHandle<IMapServer> &/*h_map*/)
 {
@@ -140,38 +182,46 @@ bool GameServer::isMapServerReady(const ServerHandle<IMapServer> &/*h_map*/)
     return false;
 }
 
-std::string GameServer::getName( )
+QString GameServer::getName( )
 {
-    return m_serverName;
+    return d->m_serverName;
 }
 
 uint8_t GameServer::getId( )
 {
-    return m_id;
+    return d->m_id;
 }
 
 uint16_t GameServer::getCurrentPlayers( )
 {
-    return m_current_players;
+    return d->m_current_players;
 }
 
 uint16_t GameServer::getMaxPlayers()
 {
-    return m_max_players;
+    return d->m_max_players;
 }
 
 int GameServer::getMaxAccountSlots() const
 {
-    return m_max_account_slots;
+    return d->m_max_account_slots;
 }
 
 uint8_t GameServer::getUnkn1( )
 {
-    return m_unk1;
+    return d->m_unk1;
 }
 
 uint8_t GameServer::getUnkn2( )
 {
-    return m_unk2;
+    return d->m_unk2;
 }
-//
+
+EventProcessor *GameServer::event_target()
+{
+    return (EventProcessor *)d->m_handler;
+}
+GameServerData &GameServer::runtimeData()
+{
+    return d->m_runtime_data;
+}

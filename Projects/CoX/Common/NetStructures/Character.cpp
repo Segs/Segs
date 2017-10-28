@@ -233,7 +233,7 @@ Costume * Character::getCurrentCostume() const
         return m_costumes[0];
 }
 
-void Character::serialize_costumes( BitStream &bs,bool all_costumes ) const
+void Character::serialize_costumes(BitStream &bs, ColorAndPartPacker *packer , bool all_costumes) const
 {
     // full costume
     if(all_costumes) // this is only sent to the current player
@@ -247,25 +247,26 @@ void Character::serialize_costumes( BitStream &bs,bool all_costumes ) const
         bs.StoreBits(1,m_multiple_costumes);
         if(m_multiple_costumes)
         {
-            for(size_t idx=0; idx<=m_costumes.size(); idx++)
+            for(Costume * c : m_costumes)
             {
-                m_costumes[idx]->serializeto(bs);
+                ::serializeto(*c,bs,packer);
             }
         }
         else
         {
-            m_costumes[m_current_costume_idx]->serializeto(bs);
+            ::serializeto(*m_costumes[m_current_costume_idx],bs,packer);
         }
         bs.StoreBits(1,m_supergroup_costume);
         if(m_supergroup_costume)
         {
-            m_sg_costume->serializeto(bs);
+            ::serializeto(*m_sg_costume,bs,packer);
+
             bs.StoreBits(1,m_using_sg_costume);
         }
     }
     else // other player's costumes we're sending only their current.
     {
-        getCurrentCostume()->serializeto(bs);
+        ::serializeto(*getCurrentCostume(),bs,packer);
     }
 }
 void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
@@ -293,12 +294,12 @@ void Character::dump()
 
 }
 
-void Character::recv_initial_costume( BitStream &src )
+void Character::recv_initial_costume( BitStream &src, ColorAndPartPacker *packer )
 {
     assert(m_costumes.size()==0);
-    MapCostume *res=new MapCostume;
+    Costume *res=new Costume;
     m_current_costume_idx=0;
-    res->serializefrom(src);
+    ::serializefrom(*res,src,packer);
     m_costumes.push_back(res);
 
 }

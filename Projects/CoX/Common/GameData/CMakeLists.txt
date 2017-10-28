@@ -1,4 +1,4 @@
-find_package(Qt5Core REQUIRED)
+find_package(Qt5 COMPONENTS Core REQUIRED)
 set(GAMEDATA_SRC
     Colors.h
     serialization_common.h
@@ -39,8 +39,6 @@ set(GAMEDATA_SRC
     costume_definitions.h
     bodypart_definitions.h
 
-    WorldData.cpp
-    WorldData.h
     DataStorage.cpp
     DataStorage.h
     #TODO: move this to Components Library

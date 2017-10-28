@@ -128,8 +128,9 @@ enum class FadeDirection {
     In,
     Out
 };
-class Entity : public NetStructure
+class Entity
 {
+    friend void serializeto(const Entity &, BitStream &,ColorAndPartPacker *);
 public:
         struct currentInputState
         {
@@ -149,7 +150,7 @@ public:
         int                 m_num_titles=0;
         int                 m_num_fx;
         bool                m_is_logging_out = false;
-mutable bool                m_logout_sent;
+mutable bool                m_logout_sent=false;
         int                 m_time_till_logout; // time in miliseconds untill given entity should be marked as logged out.
         bool                m_has_titles = false;
         std::vector<uint8_t> m_fx1;
@@ -213,8 +214,7 @@ virtual                     ~Entity() = default;
         void                addInterp(const PosUpdate &p);
 
         int32_t             getIdx() const {return m_idx;}
-virtual void                serializeto(BitStream &bs)const;
-virtual void                sendCostumes(BitStream &bs) const;
+virtual void                sendCostumes(BitStream &bs, ColorAndPartPacker *packer) const;
 static  void                sendAllyID(BitStream &bs);
 static  void                sendPvP(BitStream &bs);
 
@@ -253,6 +253,7 @@ private:
         void                storePosUpdate(BitStream &bs) const;
         void                storeUnknownBinTree(BitStream &bs) const;
 };
+extern void serializeto(const Entity &, BitStream &tgt, ColorAndPartPacker *packer);
 class NpcEntity : public Entity
 {
     NpcEntity()
@@ -264,7 +265,7 @@ class PlayerEntity : public Entity
 {
 public:
                             PlayerEntity();
-        void                serializefrom_newchar(BitStream &src);
+        void                serializefrom_newchar(BitStream &src, ColorAndPartPacker *packer);
         void                serialize_full(BitStream &bs );
 };
 extern void abortLogout(Entity *e);

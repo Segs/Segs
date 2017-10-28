@@ -93,9 +93,9 @@ public:
     }
 
 };
-class Costume;
+struct Costume;
 
-class Character : public NetStructure
+class Character
 {
 friend  class CharacterDatabase;
 typedef std::vector<PowerPool_Info> vPowerPool;
@@ -131,13 +131,13 @@ const   QString &       getMapName() const { return m_mapName; }
 //////////////////////////////////////////////////////////////////////////
         void            reset();
         bool            isEmpty();
-        void            serializefrom(BitStream &buffer) override;
-        void            serializeto(BitStream &buffer) const override;
-        void            serialize_costumes(BitStream &buffer,bool all_costumes=true) const;
+        void            serializefrom(BitStream &buffer);
+        void            serializeto(BitStream &buffer) const;
+        void            serialize_costumes(BitStream &buffer, ColorAndPartPacker *packer, bool all_costumes=true) const;
         void            serializetoCharsel(BitStream &bs);
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
-        void            recv_initial_costume(BitStream &src);
+        void            recv_initial_costume(BitStream &src, ColorAndPartPacker *packer);
         Costume *       getCurrentCostume() const;
         void            DumpPowerPoolInfo( const PowerPool_Info &pool_info );
         void            DumpBuildInfo();

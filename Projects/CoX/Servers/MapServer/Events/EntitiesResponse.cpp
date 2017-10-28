@@ -154,9 +154,9 @@ void EntitiesResponse::sendServerPhysicsPositions(BitStream &bs) const
     {
         for(int i=0; i<3; ++i)
             bs.StoreFloat(target->pos[i]); // server position
-        NetStructure::storeFloatConditional(bs,0.0f); // PYR rotation ?
-        NetStructure::storeFloatConditional(bs,0.0f);
-        NetStructure::storeFloatConditional(bs,0.0f);
+        storeFloatConditional(bs,0.0f); // PYR rotation ?
+        storeFloatConditional(bs,0.0f);
+        storeFloatConditional(bs,0.0f);
     }
 }
 struct EntWalkRel
@@ -195,7 +195,7 @@ void EntitiesResponse::sendServerControlState(BitStream &bs) const
         bs.StoreBits(8,1); // value stored in control state field_134
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
         // This is entity speed vector !!
-        NetStructure::storeVector(bs,spd);
+        storeVector(bs,spd);
 
         bs.StoreFloat(1.0f); // speed rel back
         bs.StoreBitArray((uint8_t *)&struct_csc,sizeof(CscCommon_Sub28)*8);
@@ -212,12 +212,12 @@ void EntitiesResponse::sendServerControlState(BitStream &bs) const
     if(update_part_2)
     {
         bs.StorePackedBits(1,0); // sets g_client_pos_id_rel
-        NetStructure::storeVector(bs,spd);
-        NetStructure::storeVectorConditional(bs,zeroes);  // vector3 -> speed ? likely
+        storeVector(bs,spd);
+        storeVectorConditional(bs,zeroes);  // vector3 -> speed ? likely
 
-        NetStructure::storeFloatConditional(bs,0); // Pitch not used ?
-        NetStructure::storeFloatConditional(bs,ent->inp_state.camera_pyr.y); // Pitch
-        NetStructure::storeFloatConditional(bs,0); // Roll
+        storeFloatConditional(bs,0); // Pitch not used ?
+        storeFloatConditional(bs,ent->inp_state.camera_pyr.y); // Pitch
+        storeFloatConditional(bs,0); // Roll
         bs.StorePackedBits(1,0); // sets the lowest bit in CscCommon::flags
     }
 }
@@ -267,7 +267,7 @@ void EntitiesResponse::storeInventionUpdate(BitStream &bs)const
 void EntitiesResponse::storeTeamList(BitStream &bs) const
 {
     int team_id=0; //
-    NetStructure::storePackedBitsConditional(bs,20,team_id);
+    storePackedBitsConditional(bs,20,team_id);
     //storePackedBitsConditional(bs,20,0);
     bs.StoreBits(1,0);
     bs.StoreBits(1,0);

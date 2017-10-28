@@ -53,9 +53,9 @@ public:
                         AdminServerInterface(IAdminServer *srv);
                         ~AdminServerInterface(void);
 
-        bool            ReadConfig(const std::string &name);
+        bool            ReadConfig(const QString &name);
         bool            Run(void);
-        bool            ShutDown(const std::string &reason);
+        bool            ShutDown(const QString &reason);
 
         hGameServer     RegisterMapServer(const ServerHandle<IMapServer> &map_h);
         int             GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server);
