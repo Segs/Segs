@@ -87,7 +87,7 @@ void EntityManager::InsertPlayer(Entity *ent)
     m_map_entities[m_last_ent++] = ent;
     ent->m_idx = m_last_ent-1;
     ent->pos = glm::vec3(128.0,16,-198); //-60.5;
-    ent->qrot= glm::angleAxis(glm::radians(-15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    ent->qrot= glm::quat(0.0f,0.0f,0.0f,1.0f);
     m_entlist.push_back(ent);
 }
 Entity * EntityManager::CreatePlayer()
