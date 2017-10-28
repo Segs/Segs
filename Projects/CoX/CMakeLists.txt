@@ -8,29 +8,21 @@ ADD_SUBDIRECTORY(Clients)
 
 # Add README, settings.cfg, and Starter Databases
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/README.md ${EXECUTABLE_OUTPUT_PATH}/default_dbs/README.md COPYONLY)
-if(EXISTS ${EXECUTABLE_OUTPUT_PATH}/README.md)
-  # nothing else needs to be done
-else
+if(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH}/README.md)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/README.md ${EXECUTABLE_OUTPUT_PATH}/README.md COPYONLY)
 endif
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Data/settings.cfg ${EXECUTABLE_OUTPUT_PATH}/default_dbs/settings.cfg COPYONLY)
-if(EXISTS ${EXECUTABLE_OUTPUT_PATH}/settings.cfg)
-  # nothing else needs to be done
-else
+if(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH}/settings.cfg)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Data/settings.cfg ${EXECUTABLE_OUTPUT_PATH}/settings.cfg COPYONLY)
 endif
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Data/sqlite/segs ${EXECUTABLE_OUTPUT_PATH}/default_dbs/segs COPYONLY)
-if(EXISTS ${EXECUTABLE_OUTPUT_PATH}/segs)
-  # nothing else needs to be done
-else
+if(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH}/segs)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Data/sqlite/segs ${EXECUTABLE_OUTPUT_PATH}/segs COPYONLY)
 endif
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Data/sqlite/segs_game ${EXECUTABLE_OUTPUT_PATH}/default_dbs/segs_game COPYONLY)
-if(EXISTS ${EXECUTABLE_OUTPUT_PATH}/segs_game)
-  # nothing else needs to be done
-else
+if(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH}/segs_game)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Data/sqlite/segs_game ${EXECUTABLE_OUTPUT_PATH}/segs_game COPYONLY)
 endif
