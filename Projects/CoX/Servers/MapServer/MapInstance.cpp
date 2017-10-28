@@ -67,7 +67,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case SEGS_EventTypes::evDisconnect:
             on_link_lost(ev);
-        break;
+            break;
         case MapEventTypes::evIdle:
             on_idle(static_cast<IdleEvent *>(ev));
             break;
@@ -406,6 +406,51 @@ void MapInstance::on_window_state(WindowState * ev){
     printf("Received window state %d - %d\n",ev->window_idx,ev->wnd.field_24);
 
 }
+static bool isChatMessage(const QString &msg)
+{
+    return msg.startsWith("l ") || msg.startsWith("local ") ||
+            msg.startsWith("b ") || msg.startsWith("broadcast ");
+}
+static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
+{
+    if(msg.startsWith("l ") || msg.startsWith("local "))
+        return ChatMessage::CHAT_Local;
+    if(msg.startsWith("b ") || msg.startsWith("broadcast "))
+        return ChatMessage::CHAT_Local;
+    // unknown chat types are processed as local chat
+    return ChatMessage::CHAT_Local;
+}
+
+void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
+{
+    int first_space = msg_text.indexOf(' ');
+    QStringRef cmd_str(msg_text.midRef(0,first_space));
+    QStringRef msg_content(msg_text.midRef(first_space+1,-1));
+    ChatMessage::eChatTypes kind = getKindOfChatMessage(cmd_str);
+    std::vector<MapClient *> recipients;
+    switch(kind)
+    {
+        case ChatMessage::CHAT_Local:
+            // TODO: Limit by range from source to achieve true "local" chat
+            std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
+            for(MapClient * cl : recipients)
+            {
+                ChatMessage *msg = ChatMessage::localMessage(msg_content.toString(),sender->char_entity());
+                cl->link()->putq(msg);
+            }
+            break;
+        case ChatMessage::CHAT_Broadcast:
+            // send the message to everyone on this map
+            std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
+            for(MapClient * cl : recipients)
+            {
+                ChatMessage *msg = ChatMessage::broadcastMessage(msg_content.toString(),sender->char_entity());
+                cl->link()->putq(msg);
+            }
+            break;
+    }
+
+}
 void MapInstance::on_console_command(ConsoleCommand * ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
@@ -418,26 +463,20 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         m_scripting_interface->runScript(src,code,"user provided script");
         return;
     }
-    else if(ev->contents[0]=='l')
+    else if(isChatMessage(ev->contents))
     {
-        // send the message to everyone on this map
-        const QString chat_content = ev->contents.mid(2);
-        auto iter=m_clients.begin();
-        auto end=m_clients.end();
-        for(;iter!=end; ++iter) {
-            MapClient *cl=*iter;
-            ChatMessage *msg = ChatMessage::localMessage(chat_content,src->char_entity());
-            cl->link()->putq(msg);
-        }
+        process_chat(src,ev->contents);
     }
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {
-    qDebug() << "Chat divider moved to "<<ev->m_position; //"for player" <<
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    qDebug() << "Chat divider moved to "<<ev->m_position << " for player" << src;
 }
 void MapInstance::on_minimap_state(MiniMapState *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    qDebug() << "MiniMapState tile "<<ev->tile_idx; //"for player" <<
+    qDebug() << "MiniMapState tile "<<ev->tile_idx << " for player" << src;
 }

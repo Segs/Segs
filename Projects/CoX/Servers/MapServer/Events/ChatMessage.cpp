@@ -36,6 +36,15 @@ ChatMessage *ChatMessage::adminMessage(const QString &msg)
 ChatMessage *ChatMessage::localMessage(const QString &msg, Entity *src)
 {
     ChatMessage * res = new ChatMessage;
+    res->m_channel_type = CHAT_Local; // Still broadcasts because we have no way to determine local radius
+    res->m_source_player_id=src->getIdx();
+    res->m_msg = msg;
+    return res;
+}
+
+ChatMessage *ChatMessage::broadcastMessage(const QString &msg, Entity *src)
+{
+    ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_Broadcast;
     res->m_source_player_id=src->getIdx();
     res->m_msg = msg;
