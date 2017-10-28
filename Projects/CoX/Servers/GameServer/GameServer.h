@@ -27,8 +27,6 @@
 
 #include <string>
 
-#define MAX_ACCOUNT_SLOTS 8
-
 class GameHandler;
 class pktCS_ServerUpdate;
 class CharacterDatabase;
