@@ -23,7 +23,6 @@ enum WindowVisibility : uint32_t {
   wv_OnMouseOver = 2,
   wv_Selected = 4,
 };
-#define MAX_CHARACTER_SLOTS 8
 struct ClientOption
 {
     enum eType

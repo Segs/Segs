@@ -33,24 +33,29 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
+namespace {
+    const constexpr int MaxAccountSlots=8;
+}
 GameServer *g_GlobalGameServer=nullptr;
 
 class GameServer::PrivateData
 {
 public:
-    bool                    m_online=false;
-    uint8_t                 m_id=0;
-    uint16_t                m_current_players=0;
-    uint16_t                m_max_players=0;
-    uint8_t                 m_unk1=0;
-    uint8_t                 m_unk2=0;
     QString                 m_serverName="";
-    ACE_INET_Addr           m_location; // this value is sent to the clients
-    ACE_INET_Addr           m_listen_point; // the server binds here
+    GameServerData          m_runtime_data;
     GameLinkEndpoint *      m_endpoint=nullptr;
     GameHandler *           m_handler=nullptr;
     GameLink *              m_game_link=nullptr;
-    GameServerData          m_runtime_data;
+    bool                    m_online=false;
+    uint8_t                 m_id=0;
+    uint16_t                m_current_players=0;
+    int                     m_max_account_slots;
+    uint16_t                m_max_players=0;
+    uint8_t                 m_unk1=0;
+    uint8_t                 m_unk2=0;
+    ACE_INET_Addr           m_location; // this value is sent to the clients
+    ACE_INET_Addr           m_listen_point; // the server binds here
+
     bool ShutDown(const QString &reason)
     {
         if(!m_endpoint)
@@ -130,6 +135,7 @@ bool GameServer::ReadConfig(const QString &inipath)
     QString location_addr = config.value("location_addr","127.0.0.1:7002").toString();
     d->m_serverName = config.value("server_name","unnamed").toString();
     d->m_max_players = config.value("max_players",600).toUInt();
+    d->m_max_account_slots = config.value("max_account_slots",MaxAccountSlots).toInt();
     if(!parseAddress(listen_addr,d->m_listen_point))
     {
         qCritical() << "Badly formed IP address" << listen_addr;
@@ -196,6 +202,11 @@ uint16_t GameServer::getMaxPlayers()
     return d->m_max_players;
 }
 
+int GameServer::getMaxAccountSlots() const
+{
+    return d->m_max_account_slots;
+}
+
 uint8_t GameServer::getUnkn1( )
 {
     return d->m_unk1;
@@ -210,17 +221,7 @@ EventProcessor *GameServer::event_target()
 {
     return (EventProcessor *)d->m_handler;
 }
-
-int GameServer::getMaxAccountSlots() const
-{
-    assert("implement me");
-    return 2;
-}
-
 GameServerData &GameServer::runtimeData()
 {
     return d->m_runtime_data;
 }
-
-//
-
