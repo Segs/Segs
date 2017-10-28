@@ -142,7 +142,7 @@ public:
         in_use++;
         return &m_storage[entry_idx];
     }
-    KEY *key_for_idx(int idx)
+    const KEY *key_for_idx(int idx) const
     {
         idx-=1;
         if(idx >= 0 && idx < (int)m_storage.size())
