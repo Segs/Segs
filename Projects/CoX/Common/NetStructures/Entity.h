@@ -267,3 +267,4 @@ public:
         void                serializefrom_newchar(BitStream &src);
         void                serialize_full(BitStream &bs );
 };
+extern void abortLogout(Entity *e);
