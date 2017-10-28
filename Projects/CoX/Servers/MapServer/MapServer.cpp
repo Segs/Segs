@@ -14,6 +14,8 @@
 #include "ConfigExtension.h"
 #include "AdminServerInterface.h"
 #include "MapClient.h"
+#include "MapManager.h"
+#include "MapServerData.h"
 #include "MapTemplate.h"
 #include "MapInstance.h"
 #include "Entity.h"
@@ -24,14 +26,33 @@
 #include <QtCore/QString>
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
+
 // Template instantiation
 template class ClientStore<MapClient>;
+// global variables
+MapServer *g_GlobalMapServer=nullptr;
 
-MapServer::MapServer() : m_id(0),
-    m_online(false),
-    m_endpoint(nullptr)
+// anonymous namespace
+namespace
 {
+constexpr int                MAPSERVER_VERSION=1;
+} // end of anonymous namespace
+///////////////////////////////////////////////////////////////////////////////
+/// \brief The MapServer::PrivateData class - PIMPL idiom for internal
+/// MapServer data
+///
+class MapServer::PrivateData
+{
+public:
+        MapServerData   m_runtime_data;
+        MapManager      m_manager;
+};
 
+
+MapServer::MapServer() : d(new PrivateData)
+{
+    assert(g_GlobalMapServer==nullptr && "Only one GameServer instance per process allowed");
+    g_GlobalMapServer = this;
 }
 MapServer::~MapServer()
 {
@@ -45,12 +66,15 @@ bool MapServer::Run()
 {
     if(m_endpoint)
     {
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Game server already running\n") ));
+        qWarning() << "Map server already running";
         return true;
     }
-
-    assert(m_manager.num_templates()>0); // we have to have a world to run
-    m_handler = m_manager.get_template(0)->get_instance();
+    if(!d->m_runtime_data.read_runtime_data("./data/bin/"))
+    {
+        return false;
+    }
+    assert(d->m_manager.num_templates()>0); // we have to have a world to run
+    m_handler = d->m_manager.get_template(0)->get_instance();
     m_handler->set_server(this);
 
 
@@ -58,7 +82,10 @@ bool MapServer::Run()
     m_endpoint->set_downstream(m_handler);
 
     if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
-        ACE_ERROR_RETURN ((LM_ERROR, "ACE_Reactor::register_handler"),false);
+    {
+        qWarning() << "ACE_Reactor::register_handler";
+        return false;
+    }
     if (m_endpoint->open() == -1) // will register notifications with current reactor
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
     return startup();
@@ -67,14 +94,14 @@ bool MapServer::Run()
  * @param  inipath Doc at RoamingServer::ReadConfig
  * @return bool (false means an error occurred )
  */
-bool MapServer::ReadConfig(const std::string &inipath)
+bool MapServer::ReadConfig(const QString &inipath)
 {
-    if (!QFile::exists(inipath.c_str()))
+    if (!QFile::exists(inipath))
     {
-        qCritical() << "Config file" << inipath.c_str() <<"does not exist.";
+        qCritical() << "Config file" << inipath <<"does not exist.";
         return false;
     }
-    QSettings config(inipath.c_str(),QSettings::IniFormat);
+    QSettings config(inipath,QSettings::IniFormat);
     config.beginGroup("MapServer");
 
     if(m_endpoint)
@@ -102,24 +129,60 @@ bool MapServer::ReadConfig(const std::string &inipath)
     }
 
     m_online = false;
-    return m_manager.load_templates(qPrintable(map_templates_dir));
+    return d->m_manager.load_templates(qPrintable(map_templates_dir));
 }
-bool MapServer::ShutDown(const std::string &reason)
+bool MapServer::ShutDown(const QString &reason)
 {
     if(!m_endpoint)
     {
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Server not running yet\n") ));
+        qWarning() << "MapServer has not been started yet.";
         return true;
     }
     m_online = false;
-    ACE_DEBUG((LM_WARNING,ACE_TEXT ("(%P|%t) Shutting down map server because : %s\n"), reason.c_str()));
+    qWarning() << "Shutting down map server because :"<<reason;
     if (ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
     {
         delete m_endpoint;
-        ACE_ERROR_RETURN ((LM_ERROR, "ACE_Reactor::remove_handler"),false);
+        qCritical() << "ACE_Reactor::remove_handler failed";
+        return false;
     }
     delete m_endpoint;
     return true;
+}
+
+void MapServer::Online(bool s)
+{
+    m_online=s;
+}
+
+bool MapServer::Online()
+{
+    return m_online;
+}
+
+const ACE_INET_Addr &MapServer::getAddress()
+{
+    return m_location;
+}
+
+EventProcessor *MapServer::event_target()
+{
+    return (EventProcessor *)m_handler;
+}
+
+GameServerInterface *MapServer::getGameInterface()
+{
+    return m_i_game;
+}
+
+MapManager &MapServer::map_manager()
+{
+    return d->m_manager;
+}
+
+MapServerData &MapServer::runtimeData()
+{
+    return d->m_runtime_data;
 }
 
 /**

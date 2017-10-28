@@ -9,38 +9,10 @@
 
 #include "BitStream.h"
 #include "Common/GameData/serialization_common.h"
+#include <QtCore/QDebug>
 
-void CostumePart::serializeto( BitStream &bs ) const
-{
-    storeCached_String(bs,m_geometry);
-    storeCached_String(bs,m_texture_1);
-    storeCached_String(bs,m_texture_2);
-    storeCached_Color(bs,m_colors[0]);
-    storeCached_Color(bs,m_colors[1]);
-    if(m_full_part)
-    {
-        storeCached_String(bs,name_3);
-        storeCached_String(bs,name_4);
-        storeCached_String(bs,name_5);
-    }
-}
-
-void CostumePart::serializefrom( BitStream &bs )
-{
-    m_geometry=getCached_String(bs);
-    m_texture_1=getCached_String(bs);
-    m_texture_2=getCached_String(bs);
-    m_colors[0]=getCached_Color(bs);
-    m_colors[1]=getCached_Color(bs);
-    if(m_full_part)
-    {
-        name_3=getCached_String(bs);
-        name_4=getCached_String(bs);
-        name_5=getCached_String(bs);
-    }
-}
-
-void CostumePart::serializeto_charsel( BitStream &bs ) const
+namespace {
+void serializeto_charsel(const CostumePart &part, BitStream &bs )
 {
     // character selection needs to get part names as strings
     static const char *names[] = {
@@ -48,21 +20,53 @@ void CostumePart::serializeto_charsel( BitStream &bs ) const
         "Shoulders","Back","WepR","Neck","UarmR",
     };
 
-    bs.StoreString(m_geometry);
-    bs.StoreString(m_texture_1);
-    bs.StoreString(m_texture_2);
-    bs.StoreString(names[m_type]); //name_6 bonename ?
-    bs.StoreBits(32,m_colors[0]);
-    bs.StoreBits(32,m_colors[1]);
+    bs.StoreString(part.m_geometry);
+    bs.StoreString(part.m_texture_1);
+    bs.StoreString(part.m_texture_2);
+    bs.StoreString(names[part.m_type]); //name_6 bonename ?
+    bs.StoreBits(32,part.m_colors[0]);
+    bs.StoreBits(32,part.m_colors[1]);
 }
+}
+void serializeto(const CostumePart &part, BitStream &bs,ColorAndPartPacker *packingContext )
+{
+    packingContext->packPartname(part.m_geometry,bs);
+    packingContext->packPartname(part.m_texture_1,bs);
+    packingContext->packPartname(part.m_texture_2,bs);
+    packingContext->packColor(part.m_colors[0],bs);
+    packingContext->packColor(part.m_colors[1],bs);
+    if(part.m_full_part)
+    {
+        packingContext->packPartname(part.name_3,bs);
+        packingContext->packPartname(part.name_4,bs);
+        packingContext->packPartname(part.name_5,bs);
+    }
+}
+
+void serializefrom(CostumePart &part,BitStream &bs,ColorAndPartPacker *packingContext )
+{
+    packingContext->unpackPartname(bs,part.m_geometry);
+    packingContext->unpackPartname(bs,part.m_texture_1);
+    packingContext->unpackPartname(bs,part.m_texture_2);
+    packingContext->unpackColor(bs,part.m_colors[0]);
+    packingContext->unpackColor(bs,part.m_colors[1]);
+    if(part.m_full_part)
+    {
+        packingContext->unpackPartname(bs,part.name_3);
+        packingContext->unpackPartname(bs,part.name_4);
+        packingContext->unpackPartname(bs,part.name_5);
+    }
+}
+
 CharacterCostume CharacterCostume::NullCostume;
 void Costume::storeCharselParts( BitStream &bs )
 {
     bs.StorePackedBits(1,m_parts.size());
-    for(size_t costume_part=0; costume_part<m_parts.size();costume_part++)
+    uint8_t part_type=0;
+    for(CostumePart & part : m_parts)
     {
-        m_parts[costume_part].m_type=costume_part;
-        m_parts[costume_part].serializeto_charsel(bs);
+        part.m_type = part_type++;
+        serializeto_charsel(part,bs);
     }
 }
 
@@ -107,5 +111,68 @@ void Costume::serializeFromDb(const QString &src)
     {
         cereal::JSONInputArchive ar(istr);
         ar(*this);
+    }
+}
+
+void Costume::dump()
+{
+
+    qDebug().noquote() << "Costume \n";
+    qDebug().noquote() << "body type: " << m_body_type;
+    qDebug().noquote() << "skin color: "<< skin_color;
+    qDebug().noquote() << "Height " << m_height;
+    qDebug().noquote() << "Physique " << m_physique;
+    qDebug().noquote() << "****** "<< m_num_parts << " Parts *******";
+    for(int i=0; i<m_num_parts; i++)
+    {
+        const CostumePart &cp(m_parts[i]);
+        if(cp.m_full_part)
+            qDebug() << cp.m_geometry << cp.m_texture_1 << cp.m_texture_2 <<
+                        cp.m_colors[0] << cp.m_colors[1] <<
+                        cp.name_3 << cp.name_4 << cp.name_5;
+        else
+            qDebug() << cp.m_geometry << cp.m_texture_1 << cp.m_texture_2 <<
+                        cp.m_colors[0] << cp.m_colors[1];
+    }
+    qDebug().noquote() << "*************";
+}
+
+void serializeto(const Costume &costume,BitStream &bs,ColorAndPartPacker *packer)
+{
+    bs.StorePackedBits(3,costume.m_body_type); // 0:male normal
+    bs.StoreBits(32,costume.skin_color); // rgb ?
+
+    bs.StoreFloat(costume.m_height);
+    bs.StoreFloat(costume.m_physique);
+
+    bs.StoreBits(1,costume.m_non_default_costme_p);
+    //m_num_parts = m_parts.size();
+    assert(!costume.m_parts.empty());
+    bs.StorePackedBits(4,costume.m_parts.size());
+    for(int costume_part=0; costume_part<costume.m_parts.size();costume_part++)
+    {
+        CostumePart part=costume.m_parts[costume_part];
+        // TODO: this is bad code, it's purpose is to NOT send all part strings if m_non_default_costme_p is false
+        part.m_full_part = costume.m_non_default_costme_p;
+        ::serializeto(part,bs,packer);
+    }
+}
+
+void serializefrom(Costume &tgt, BitStream &src,ColorAndPartPacker *packer)
+{
+    tgt.m_body_type = src.GetPackedBits(3); // 0:male normal
+    tgt.skin_color = src.GetBits(32); // rgb
+
+    tgt.m_height = src.GetFloat();
+    tgt.m_physique = src.GetFloat();
+
+    tgt.m_non_default_costme_p = src.GetBits(1);
+    tgt.m_num_parts = src.GetPackedBits(4);
+    for(int costume_part=0; costume_part<tgt.m_num_parts;costume_part++)
+    {
+        CostumePart part;
+        part.m_full_part = tgt.m_non_default_costme_p;
+        ::serializefrom(part,src,packer);
+        tgt.m_parts.push_back(part);
     }
 }

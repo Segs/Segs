@@ -154,7 +154,7 @@ void SceneEvent::serializeto(BitStream &tgt) const
                 // old coh use it that way, first string of the 2 is optional (path), second is mandatory
                 //NetStructure::storeStringConditional(tgt,m_trays[i]);
                 //tgt.StoreString("");
-                NetStructure::storeStringConditional(tgt,"");
+                storeStringConditional(tgt,"");
                 tgt.StoreString(m_trays[i]);
                 if(i<12)
                     tgt.StoreBits(32,hashes[i]); // crc ?

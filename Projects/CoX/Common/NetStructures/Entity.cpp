@@ -237,7 +237,7 @@ void Entity::sendNetFx(BitStream &bs) const
         }
     }
 }
-void Entity::sendCostumes(BitStream &bs) const
+void Entity::sendCostumes(BitStream &bs,ColorAndPartPacker *packer) const
 {
     storePackedBitsConditional(bs,2,m_costume_type);
     if(m_costume_type!=1)
@@ -248,7 +248,7 @@ void Entity::sendCostumes(BitStream &bs) const
     switch(m_type)
     {
         case ENT_PLAYER: // client value 1
-            m_char.serialize_costumes(bs,true); // we're always sending full info
+            m_char.serialize_costumes(bs,packer,true); // we're always sending full info
             break;
         case 3: // client value 2 top level defs from VillainCostume ?
             bs.StorePackedBits(12,1); // npc costume type idx ?
@@ -383,7 +383,7 @@ void Entity::sendLogoutUpdate(BitStream &bs) const
     if(m_is_logging_out)
     {
         m_logout_sent = true;
-        bs.StoreBits(1,0); // flags_1[1] set in entity
+        bs.StoreBits(1,0); // if 1 then it means the logout was caused by low connection quality.
         storePackedBitsConditional(bs,5,m_time_till_logout/(1000)); // time to logout, multiplied by 30
         printf("LOGOUT TIME %d\n",m_time_till_logout);
     }
@@ -452,60 +452,60 @@ void Entity::storeCreation( BitStream &bs) const
     }
     PUTDEBUG("end storeCreation");
 }
-void Entity::serializeto( BitStream &bs ) const
+void serializeto(const Entity & src, BitStream &bs,ColorAndPartPacker *packer )
 {
     //////////////////////////////////////////////////////////////////////////
-    bs.StoreBits(1,m_change_existence_state);
-    if(m_change_existence_state)
-        storeCreation(bs);
+    bs.StoreBits(1,src.m_change_existence_state);
+    if(src.m_change_existence_state)
+        src.storeCreation(bs);
     //////////////////////////////////////////////////////////////////////////
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bs.StoreBits(1,might_have_rare); //var_C
+    bs.StoreBits(1,src.might_have_rare); //var_C
 
-    if(might_have_rare)
-        bs.StoreBits(1,m_rare_bits);
+    if(src.might_have_rare)
+        bs.StoreBits(1,src.m_rare_bits);
 
-    if(m_rare_bits)
-        sendStateMode(bs);
+    if(src.m_rare_bits)
+        src.sendStateMode(bs);
 
     PUTDEBUG("before entReceivePosUpdate");
-    storePosUpdate(bs);
+    src.storePosUpdate(bs);
 
-    if(might_have_rare)
-        sendSeqMoveUpdate(bs);
+    if(src.might_have_rare)
+        src.sendSeqMoveUpdate(bs);
 
-    if(m_rare_bits)
-        sendSeqTriggeredMoves(bs);
+    if(src.m_rare_bits)
+        src.sendSeqTriggeredMoves(bs);
 
     // NPC -> m_pchar_things=0 ?
-    bs.StoreBits(1,m_pchar_things);
-    if(m_pchar_things)
+    bs.StoreBits(1,src.m_pchar_things);
+    if(src.m_pchar_things)
     {
-        sendNetFx(bs);
+        src.sendNetFx(bs);
     }
-    if(m_rare_bits)
+    if(src.m_rare_bits)
     {
-        sendCostumes(bs);
-        sendXLuency(bs,translucency);
-        sendTitles(bs);
+        src.sendCostumes(bs,packer);
+        src.sendXLuency(bs,src.translucency);
+        src.sendTitles(bs);
     }
-    if(m_pchar_things)
+    if(src.m_pchar_things)
     {
-        sendCharacterStats(bs);
-        sendBuffsConditional(bs);
-        sendTargetUpdate(bs);
+        src.sendCharacterStats(bs);
+        src.sendBuffsConditional(bs);
+        src.sendTargetUpdate(bs);
     }
-    if(m_rare_bits)
+    if(src.m_rare_bits)
     {
-        sendOnOddSend(bs,m_odd_send); // is one on client end
-        sendWhichSideOfTheForce(bs);
-        sendEntCollision(bs);
-        sendNoDrawOnClient(bs);
-        sendAFK(bs);
-        sendOtherSupergroupInfo(bs);
-        sendLogoutUpdate(bs);
+        src.sendOnOddSend(bs,src.m_odd_send); // is one on client end
+        src.sendWhichSideOfTheForce(bs);
+        src.sendEntCollision(bs);
+        src.sendNoDrawOnClient(bs);
+        src.sendAFK(bs);
+        src.sendOtherSupergroupInfo(bs);
+        src.sendLogoutUpdate(bs);
     }
 }
 void Entity::sendBuffs(BitStream &bs) const
@@ -556,31 +556,12 @@ bool Entity::update_rot( int axis ) const /* returns true if given axis needs up
         return true;
     return false;
 }
-/*
-void Avatar::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
-{
-    for(int i=0; i<3; i++)
-    {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Pool_id[%d]: 0x%08x\n"),i,pool_info.id[i]));
-    }
-}
-*/
 
-/*
-void Avatar::DumpBuildInfo()
-{
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    class: %s\n"),m_class_name.c_str()));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    origin: %s\n"),m_origin_name.c_str()));
-    DumpPowerPoolInfo(m_powers[0]);
-    DumpPowerPoolInfo(m_powers[1]);
-}
-*/
-
-void PlayerEntity::serializefrom_newchar( BitStream &src )
+void PlayerEntity::serializefrom_newchar( BitStream &src,ColorAndPartPacker *packer )
 {
     /*int val =*/ src.GetPackedBits(1); //2
     m_char.GetCharBuildInfo(src);
-    m_char.recv_initial_costume(src);
+    m_char.recv_initial_costume(src,packer);
     /*int t =*/ src.GetBits(1); // The -> 1
     src.GetString(m_battle_cry);
     src.GetString(m_character_description);
@@ -629,31 +610,6 @@ Entity::Entity()
     pos = glm::vec3(-60.5f,180.0f,0.0f);
 }
 
-/*
-PowerPool_Info Avatar::get_power_info( BitStream &src )
-{
-    PowerPool_Info res;
-    res.id[0] = src.GetPackedBits(3);
-    res.id[1] = src.GetPackedBits(3);
-    res.id[2] = src.GetPackedBits(3);
-    return res;
-}
-*/
-/*
-Avatar::Avatar(Entity *ent)
-{
-    m_ent = ent;
-    m_full_options=false;
-    m_first_person_view_toggle=false;
-    m_player_collisions=0;
-    m_options.mouse_invert=false;
-    m_options.degrees_for_turns=1.0f;
-    m_options.mouselook_scalefactor=1.0f;
-    m_class_name = "Class_Blaster";
-    m_origin_name= "Science";
-
-}
-*/
 void sendPower(BitStream &bs,int a,int b,int c)
 {
     bs.StorePackedBits(3,a);
@@ -732,106 +688,10 @@ void sendUnk3(BitStream &bs) // inventory ?
 {
     bs.StorePackedBits(3,0); // count
 }
-/*
-void Avatar::send_character(BitStream &bs) const
-{
-    bs.StoreString(m_class_name); // class name
-    bs.StoreString(m_origin_name); // origin name
-    bs.StorePackedBits(5,0); // ?
-    // powers/stats ?
-    sendPowers(bs);
-    sendPowers_main_tray(bs);
-    sendBoosts(bs);
-}
-*/
-//void Avatar::sendBuffs(BitStream &bs) const
-//{
-//    uint32_t num_buffs=0;
-//    bs.StorePackedBits(5,num_buffs);
-//    for(size_t idx=0; idx<num_buffs; ++idx)
-//    {
-//        sendPower(bs,0,0,0);
-//    }
-//}
-
-void MapCostume::GetCostume( BitStream &src )
-{
-    this->m_costume_type = 1;
-    m_body_type = src.GetPackedBits(3); // 0:male normal
-    skin_color = src.GetBits(32); // rgb ?
-
-    m_height = src.GetFloat();
-    m_physique = src.GetFloat();
-
-    m_non_default_costme_p = src.GetBits(1);
-    m_num_parts = src.GetPackedBits(4);
-    for(int costume_part=0; costume_part<m_num_parts;costume_part++)
-    {
-        CostumePart part(m_non_default_costme_p);
-        part.serializefrom(src);
-        m_parts.push_back(part);
-    }
-}
-
-void MapCostume::dump()
-{
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Costume \n")));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    body type: 0x%08x\n"),m_body_type));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    a: 0x%08x\n"),skin_color));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Height %f\n"),m_height));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Physique %f\n"),m_physique));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    ****** %d Parts *******\n"),m_num_parts));
-    for(int i=0; i<m_num_parts; i++)
-    {
-        const CostumePart &cp(m_parts[i]);
-        if(cp.m_full_part)
-            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),qPrintable(cp.m_geometry),
-                        qPrintable(cp.m_texture_1),qPrintable(cp.m_texture_2),qPrintable(cp.name_3),
-                        cp.m_colors[0],cp.m_colors[1],
-                    qPrintable(cp.name_4),qPrintable(cp.name_5)
-                    ));
-        else
-            ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%s,%s,%s,%s,0x%08x,0x%08x,%s,%s\n"),qPrintable(cp.m_geometry),
-                        qPrintable(cp.m_texture_1),qPrintable(cp.m_texture_2),qPrintable(cp.name_3),
-                        cp.m_colors[0],cp.m_colors[1],
-                    qPrintable(cp.name_4),qPrintable(cp.name_5)
-                    ));
-    }
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    *************\n")));
-}
-
-void MapCostume::serializefrom( BitStream &src )
-{
-    GetCostume(src);
-}
-void MapCostume::serializeto( BitStream &bs ) const
-{
-    SendCommon(bs);
-}
-void MapCostume::SendCommon(BitStream &bs) const
-{
-    bs.StorePackedBits(3,m_body_type); // 0:male normal
-    bs.StoreBits(32,skin_color); // rgb ?
-
-    bs.StoreFloat(m_height);
-    bs.StoreFloat(m_physique);
-
-    bs.StoreBits(1,m_non_default_costme_p);
-    //m_num_parts = m_parts.size();
-    assert(!m_parts.empty());
-    bs.StorePackedBits(4,m_parts.size());
-    for(int costume_part=0; costume_part<m_parts.size();costume_part++)
-    {
-        CostumePart part=m_parts[costume_part];
-        // TODO: this is bad code, it's purpose is to NOT send all part strings if m_non_default_costme_p is false
-        part.m_full_part = m_non_default_costme_p;
-        part.serializeto(bs);
-    }
-}
 
 void abortLogout(Entity *e)
 {
     e->m_logout_sent = false;
-    e->m_is_logging_out = false;
+    e->m_is_logging_out = true; // send logout time of 0
     e->m_time_till_logout = 0;
 }

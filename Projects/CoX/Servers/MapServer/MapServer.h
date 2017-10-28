@@ -12,15 +12,16 @@
 #include "Common/Servers/MapServerInterface.h"
 #include "Common/Servers/ServerEndpoint.h"
 #include "MapLink.h"
-#include "MapManager.h"
 
-#include <string>
+#include <memory>
 
 class Net;
 class MapServerEndpoint;
 class MapClient;
 class MapInstance;
 class GameServerInterface;
+class MapServerData;
+class MapManager;
 
 class MapLinkEndpoint : public ServerEndpoint
 {
@@ -35,34 +36,35 @@ protected:
 };
 class MapServer : public IMapServer
 {
-static const int                MAPSERVER_VERSION=1;
-
+        class PrivateData;
 public:
                                 MapServer(void);
-virtual                         ~MapServer(void);
+                                ~MapServer(void) override;
 
-virtual bool                    Run(void);
-virtual bool                    ReadConfig(const std::string &name);
+        bool                    Run(void) override;
+        bool                    ReadConfig(const QString &name) override;
 
-        bool                    ShutDown(const std::string &reason="No particular reason");
-        void                    Online(bool s ) {m_online=s;}
-        bool                    Online(void) { return m_online;}
-        const ACE_INET_Addr &   getAddress() {return m_location;}
-        EventProcessor *        event_target() {return (EventProcessor *)m_handler;}
-        GameServerInterface *   getGameInterface(){return m_i_game;}
-        MapManger &             map_manager() {return m_manager;}
+        bool                    ShutDown(const QString &reason="No particular reason") override;
+        void                    Online(bool s);
+        bool                    Online(void) override;
+        const ACE_INET_Addr &   getAddress() override;
+        EventProcessor *        event_target() override;
+        GameServerInterface *   getGameInterface();
+        MapManager &            map_manager();
+        MapServerData &         runtimeData();
 private:
         bool                    startup(); // MapServerStartup sequence diagram entry point.
 protected:
-        uint8_t                 m_id;
-        bool                    m_online;
-        MapManger               m_manager;
+        std::unique_ptr<PrivateData> d;
+
+        uint8_t                 m_id = 0;
+        bool                    m_online=false;
         GameServerInterface *   m_i_game;// GameServer access proxy object
 
-        std::string             m_serverName;
-
+        QString                 m_serverName;
         ACE_INET_Addr           m_location; //! this value is sent to the clients
         ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
-        MapLinkEndpoint *       m_endpoint;
-        MapInstance *           m_handler;
+        MapLinkEndpoint *       m_endpoint = nullptr;
+        MapInstance *           m_handler = nullptr;
 };
+extern MapServer *g_GlobalMapServer;

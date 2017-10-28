@@ -7,11 +7,12 @@
 
  */
 
-#include "Entity.h"
 #include "EntityStorage.h"
+#include "Entity.h"
+#include "MapServer/MapServer.h"
+#include "MapServer/MapServerData.h"
 
 #include <algorithm>
-//EntityManager ent_mgr;
 
 EntityManager::EntityManager()
 {
@@ -58,6 +59,7 @@ void EntityManager::sendEntities( BitStream &bs,int self_idx,bool is_incremental
 {
     int prev_idx=-1;
     int delta;
+    ColorAndPartPacker *packer=g_GlobalMapServer->runtimeData().getPacker();
     // sending delta between entities idxs ->
     assert(m_entlist.size()>0 && "Attempting to send empty entity list, the client will hang!");
     for(Entity *pEnt : m_entlist)
@@ -70,11 +72,11 @@ void EntityManager::sendEntities( BitStream &bs,int self_idx,bool is_incremental
         if(!is_incremental) {
             bool prev_state = pEnt->m_change_existence_state;
             pEnt->m_change_existence_state=true;
-            pEnt->serializeto(bs);
+            serializeto(*pEnt,bs,packer);
             pEnt->m_change_existence_state= prev_state;
         }
         else
-            pEnt->serializeto(bs);
+            serializeto(*pEnt,bs,packer);
         PUTDEBUG("end of entity");
     }
     // last entity marker

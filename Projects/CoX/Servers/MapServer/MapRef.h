@@ -12,7 +12,7 @@
 #include <QtCore/QString>
 #include <string>
 
-class MapRef : public NetStructure
+class MapRef
 {
 public:
     int         m_idx;

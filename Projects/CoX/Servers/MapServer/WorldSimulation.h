@@ -9,7 +9,8 @@
 class World {
 public:
     World(EntityManager &em) : ref_ent_mager(em) {}
-    void addPlayer(Entity *ent) {
+    void addPlayer(Entity *ent)
+    {
         ref_ent_mager.InsertPlayer(ent);
     }
     void update(const ACE_Time_Value &tick_timer);

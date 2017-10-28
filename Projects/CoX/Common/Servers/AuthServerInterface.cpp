@@ -30,11 +30,11 @@ bool AuthServerInterface::Run()
 {
     return m_server->Run();
 }
-bool AuthServerInterface::ReadConfig(const std::string &name)
+bool AuthServerInterface::ReadConfig(const QString &name)
 {
     return m_server->ReadConfig(name);
 }
-bool AuthServerInterface::ShutDown(const std::string &reason)
+bool AuthServerInterface::ShutDown(const QString &reason)
 {
     return m_server->ShutDown(reason);
 }

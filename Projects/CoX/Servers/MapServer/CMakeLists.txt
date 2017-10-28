@@ -13,6 +13,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/MapServer.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/EntityStorage.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/MapEventFactory.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/MapLink.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/MapServerData.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/NetCommandManager.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/WorldSimulation.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/NewEntity.cpp

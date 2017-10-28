@@ -18,7 +18,7 @@ ServerManagerC::ServerManagerC() : m_authserv(nullptr),m_adminserv(nullptr)
 {
 }
 //! this loads this process configuration
-bool ServerManagerC::LoadConfiguration(const std::string &config_file_full_path)
+bool ServerManagerC::LoadConfiguration(const QString &config_file_full_path)
 {
     bool loaded_ok = m_adminserv->ReadConfig(config_file_full_path);
     loaded_ok &= m_authserv->ReadConfig(config_file_full_path);

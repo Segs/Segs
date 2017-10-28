@@ -49,16 +49,16 @@ AuthServer::~AuthServer()
  * @param inipath is a path to our configuration file.
  * @return bool, if it's false, this function failed somehow.
  */
-bool AuthServer::ReadConfig(const std::string &inipath)
+bool AuthServer::ReadConfig(const QString &inipath)
 {
     if(m_running)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AuthServer: Already initialized and running\n") ),false);
-    if (!QFile::exists(inipath.c_str()))
+    if (!QFile::exists(inipath))
     {
-        qCritical() << "Config file" << inipath.c_str() <<"does not exist.";
+        qCritical() << "Config file" << inipath <<"does not exist.";
         return false;
     }
-    QSettings config(inipath.c_str(),QSettings::IniFormat);
+    QSettings config(inipath,QSettings::IniFormat);
 
     config.beginGroup("AuthServer");
     QString location_addr = config.value("listen_addr","127.0.0.1:2106").toString();
@@ -90,7 +90,7 @@ bool AuthServer::Run()
  * @param reason the value that should be stored the persistent log.
  * @return bool, if it's false, we failed to close down cleanly
  */
-bool AuthServer::ShutDown(const std::string &/* ="No particular reason" */)
+bool AuthServer::ShutDown(const QString &/* ="No particular reason" */)
 {
     m_acceptor->close();
     m_running=false;

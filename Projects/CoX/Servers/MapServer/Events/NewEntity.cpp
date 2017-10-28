@@ -8,6 +8,10 @@
  */
 #include "Events/NewEntity.h"
 #include "Entity.h"
+#include "MapServer.h"
+#include "MapServerData.h"
+#include "CommonNetStructures.h"
+
 void NewEntity::serializeto( BitStream & ) const
 {
     assert(!"TODO");
@@ -21,6 +25,6 @@ void NewEntity::serializefrom( BitStream &bs )
     if(m_new_character)
     {
         m_ent = new PlayerEntity();
-        ((PlayerEntity*)m_ent)->serializefrom_newchar(bs);
+        ((PlayerEntity*)m_ent)->serializefrom_newchar(bs,g_GlobalMapServer->runtimeData().getPacker());
     }
 }

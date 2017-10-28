@@ -14,12 +14,12 @@ bool GameServerInterface::Run()
     assert(m_instance);
     return m_instance->Run();
 }
-bool GameServerInterface::ReadConfig(const std::string &name)
+bool GameServerInterface::ReadConfig(const QString &name)
 {
     assert(m_instance);
     return m_instance->ReadConfig(name);
 }
-bool GameServerInterface::ShutDown(const std::string &reason)
+bool GameServerInterface::ShutDown(const QString &reason)
 {
     assert(m_instance);
     return m_instance->ShutDown(reason);
@@ -54,7 +54,7 @@ uint8_t GameServerInterface::getUnkn2()
     assert(m_instance);
     return m_instance->getUnkn2();
 }
-std::string GameServerInterface::getName()
+QString GameServerInterface::getName()
 {
     assert(m_instance);
     return m_instance->getName();

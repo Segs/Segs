@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <string>
 #include <ace/INET_Addr.h>
+#include <QString>
 
 #include "Server.h"
 /**
@@ -21,16 +21,16 @@ class AuthServerInterface;
 class RoamingServer : public Server
 {
 public:
-virtual         ~RoamingServer(){}
+virtual         ~RoamingServer() = default;
 
-virtual bool    ReadConfig(const std::string &configpath)=0;
+virtual bool    ReadConfig(const QString &configpath)=0;
 virtual bool    Run(void) = 0;
-virtual bool    ShutDown(const std::string &reason)=0;
+virtual bool    ShutDown(const QString &reason)=0;
 virtual bool    Online()=0;
 
 protected:
         AuthServerInterface *   getAuthServer();
 private:
         ACE_INET_Addr           m_authaddr;
-        std::string             m_passw;
+        QString                 m_passw;
 };
