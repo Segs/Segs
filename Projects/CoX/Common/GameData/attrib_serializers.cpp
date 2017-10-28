@@ -61,6 +61,124 @@ static void serialize(Archive & archive, AttribNames_Data & m)
     archive(cereal::make_nvp("Boost",m.m_Boost));
     archive(cereal::make_nvp("Group",m.m_Group));
 }
+template<class Archive>
+void serialize(Archive & archive, Parse_CharAttrib & target)
+{
+    char buf[128];
+    float *damage_types = &target.m_DamageType00;
+    for(int i=0; i<24; ++i)
+    {
+        sprintf(buf,"DamageType%02d",i);
+        archive(cereal::make_nvp(buf,damage_types[i]));
+    }
+    archive(cereal::make_nvp("HitPoints",target.m_HitPoints));
+    archive(cereal::make_nvp("Endurance",target.m_Endurance));
+    archive(cereal::make_nvp("ToHit",target.m_ToHit));
+    float *defense_types = &target.m_DefenseType00;
+    for(int i=0; i<24; ++i) {
+        sprintf(buf,"DefenseType00%02d",i);
+        archive(cereal::make_nvp(buf,defense_types[i]));
+    }
+
+    archive(cereal::make_nvp("Defense",target.m_Defense));
+    archive(cereal::make_nvp("Evade",target.m_Evade));
+    archive(cereal::make_nvp("SpeedRunning",target.m_SpeedRunning));
+    archive(cereal::make_nvp("SpeedFlying",target.m_SpeedFlying));
+    archive(cereal::make_nvp("SpeedSwimming",target.m_SpeedSwimming));
+    archive(cereal::make_nvp("SpeedJumping",target.m_SpeedJumping));
+    archive(cereal::make_nvp("JumpHeight",target.m_JumpHeight));
+    archive(cereal::make_nvp("MovementControl",target.m_MovementControl));
+    archive(cereal::make_nvp("MovementFriction",target.m_MovementFriction));
+    archive(cereal::make_nvp("Stealth",target.m_Stealth));
+    archive(cereal::make_nvp("StealthRadius",target.m_StealthRadius));
+    archive(cereal::make_nvp("PerceptionRadius",target.m_PerceptionRadius));
+    archive(cereal::make_nvp("Regeneration",target.m_Regeneration));
+    archive(cereal::make_nvp("Recovery",target.m_Recovery));
+    archive(cereal::make_nvp("ThreatLevel",target.m_ThreatLevel));
+    archive(cereal::make_nvp("Taunt",target.m_Taunt));
+    archive(cereal::make_nvp("Confused",target.m_Confused));
+    archive(cereal::make_nvp("Afraid",target.m_Afraid));
+    archive(cereal::make_nvp("Held",target.m_Held));
+    archive(cereal::make_nvp("Immobilized",target.m_Immobilized));
+    archive(cereal::make_nvp("Stunned",target.m_Stunned));
+    archive(cereal::make_nvp("Sleep",target.m_Sleep));
+    archive(cereal::make_nvp("Fly",target.m_Fly));
+    archive(cereal::make_nvp("Jumppack",target.m_Jumppack));
+    archive(cereal::make_nvp("Teleport",target.m_Teleport));
+    archive(cereal::make_nvp("Untouchable",target.m_Untouchable));
+    archive(cereal::make_nvp("Intangible",target.m_Intangible));
+    archive(cereal::make_nvp("OnlyAffectsSelf",target.m_OnlyAffectsSelf));
+    archive(cereal::make_nvp("Knockup",target.m_Knockup));
+    archive(cereal::make_nvp("Knockback",target.m_Knockback));
+    archive(cereal::make_nvp("Repel",target.m_Repel));
+    archive(cereal::make_nvp("Accuracy",target.m_Accuracy));
+    archive(cereal::make_nvp("Radius",target.m_Radius));
+    archive(cereal::make_nvp("Arc",target.m_Arc));
+    archive(cereal::make_nvp("Range",target.m_Range));
+    archive(cereal::make_nvp("TimeToActivate",target.m_TimeToActivate));
+    archive(cereal::make_nvp("RechargeTime",target.m_RechargeTime));
+    archive(cereal::make_nvp("InterruptTime",target.m_InterruptTime));
+    archive(cereal::make_nvp("EnduranceDiscount",target.m_EnduranceDiscount));
+}
+template<class Archive>
+void serialize(Archive & archive, Parse_CharAttribMax & target)
+{
+    char buf[128];
+    auto *damage_types = &target.m_DamageType00;
+    for(int i=0; i<24; ++i)
+    {
+        sprintf(buf,"DamageType%02d",i);
+        archive(cereal::make_nvp(buf,damage_types[i]));
+    }
+    archive(cereal::make_nvp("HitPoints",target.m_HitPoints));
+    archive(cereal::make_nvp("Endurance",target.m_Endurance));
+    archive(cereal::make_nvp("ToHit",target.m_ToHit));
+    auto *defense_types = &target.m_DefenseType00;
+    for(int i=0; i<24; ++i) {
+        sprintf(buf,"DefenseType00%02d",i);
+        archive(cereal::make_nvp(buf,defense_types[i]));
+    }
+
+    archive(cereal::make_nvp("Defense",target.m_Defense));
+    archive(cereal::make_nvp("Evade",target.m_Evade));
+    archive(cereal::make_nvp("SpeedRunning",target.m_SpeedRunning));
+    archive(cereal::make_nvp("SpeedFlying",target.m_SpeedFlying));
+    archive(cereal::make_nvp("SpeedSwimming",target.m_SpeedSwimming));
+    archive(cereal::make_nvp("SpeedJumping",target.m_SpeedJumping));
+    archive(cereal::make_nvp("JumpHeight",target.m_JumpHeight));
+    archive(cereal::make_nvp("MovementControl",target.m_MovementControl));
+    archive(cereal::make_nvp("MovementFriction",target.m_MovementFriction));
+    archive(cereal::make_nvp("Stealth",target.m_Stealth));
+    archive(cereal::make_nvp("StealthRadius",target.m_StealthRadius));
+    archive(cereal::make_nvp("PerceptionRadius",target.m_PerceptionRadius));
+    archive(cereal::make_nvp("Regeneration",target.m_Regeneration));
+    archive(cereal::make_nvp("Recovery",target.m_Recovery));
+    archive(cereal::make_nvp("ThreatLevel",target.m_ThreatLevel));
+    archive(cereal::make_nvp("Taunt",target.m_Taunt));
+    archive(cereal::make_nvp("Confused",target.m_Confused));
+    archive(cereal::make_nvp("Afraid",target.m_Afraid));
+    archive(cereal::make_nvp("Held",target.m_Held));
+    archive(cereal::make_nvp("Immobilized",target.m_Immobilized));
+    archive(cereal::make_nvp("Stunned",target.m_Stunned));
+    archive(cereal::make_nvp("Sleep",target.m_Sleep));
+    archive(cereal::make_nvp("Fly",target.m_Fly));
+    archive(cereal::make_nvp("Jumppack",target.m_Jumppack));
+    archive(cereal::make_nvp("Teleport",target.m_Teleport));
+    archive(cereal::make_nvp("Untouchable",target.m_Untouchable));
+    archive(cereal::make_nvp("Intangible",target.m_Intangible));
+    archive(cereal::make_nvp("OnlyAffectsSelf",target.m_OnlyAffectsSelf));
+    archive(cereal::make_nvp("Knockup",target.m_Knockup));
+    archive(cereal::make_nvp("Knockback",target.m_Knockback));
+    archive(cereal::make_nvp("Repel",target.m_Repel));
+    archive(cereal::make_nvp("Accuracy",target.m_Accuracy));
+    archive(cereal::make_nvp("Radius",target.m_Radius));
+    archive(cereal::make_nvp("Arc",target.m_Arc));
+    archive(cereal::make_nvp("Range",target.m_Range));
+    archive(cereal::make_nvp("TimeToActivate",target.m_TimeToActivate));
+    archive(cereal::make_nvp("RechargeTime",target.m_RechargeTime));
+    archive(cereal::make_nvp("InterruptTime",target.m_InterruptTime));
+    archive(cereal::make_nvp("EnduranceDiscount",target.m_EnduranceDiscount));
+}
 
 void saveTo(const AttribNames_Data & target, const QString & baseName, bool text_format)
 {
@@ -79,9 +197,9 @@ bool loadFrom(BinStore *s, Parse_CharAttrib &target)
     ok &= s->read(target.m_HitPoints);
     ok &= s->read(target.m_Endurance);
     ok &= s->read(target.m_ToHit);
-    float *defence_types = &target.m_DefenseType00;
+    float *defense_types = &target.m_DefenseType00;
     for(int i=0; i<24; ++i) {
-        ok &= s->read(defence_types[i]);
+        ok &= s->read(defense_types[i]);
     }
 
     s->read(target.m_Defense);
@@ -187,3 +305,22 @@ bool loadFrom(BinStore *s, Parse_CharAttribMax &target)
     assert(ok && s->end_encountered());
     return ok;
 }
+
+//template instantiations
+template
+void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, Parse_CharAttrib & m);
+template
+void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, Parse_CharAttrib & m);
+template
+void serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive, Parse_CharAttrib & m);
+template
+void serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive, Parse_CharAttrib & m);
+
+template
+void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, Parse_CharAttribMax & m);
+template
+void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, Parse_CharAttribMax & m);
+template
+void serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive, Parse_CharAttribMax & m);
+template
+void serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive, Parse_CharAttribMax & m);

@@ -15,3 +15,8 @@ void saveTo(const AttribNames_Data &target,const QString &baseName,bool text_for
 
 bool loadFrom(BinStore *s, Parse_CharAttrib &target);
 bool loadFrom(BinStore *s, Parse_CharAttribMax &target);
+
+template<class Archive>
+void serialize(Archive & archive, Parse_CharAttrib & m);
+template<class Archive>
+void serialize(Archive & archive, Parse_CharAttribMax & m);

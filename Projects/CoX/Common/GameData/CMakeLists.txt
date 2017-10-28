@@ -10,6 +10,9 @@ set(GAMEDATA_SRC
     bodypart_serializers.h
     scenegraph_serializers.h
     scenegraph_serializers.cpp
+    charclass_definitions.h
+    charclass_serializers.cpp
+    charclass_serializers.h
     #particlesys_serializers.cpp
     #particlesys_serializers.h
     costume_serializers.cpp
