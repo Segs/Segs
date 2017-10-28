@@ -3,7 +3,6 @@
 #include "Powers.h"
 #include "Costume.h"
 #include "Character.h"
-
 #include <glm/vec3.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <cmath>
@@ -148,7 +147,7 @@ public:
         int                 field_68;
         int                 field_78;
         int                 m_num_titles=0;
-        int                 m_num_fx;
+        int                 m_num_fx=0;
         bool                m_is_logging_out = false;
 mutable bool                m_logout_sent=false;
         int                 m_time_till_logout; // time in miliseconds untill given entity should be marked as logged out.

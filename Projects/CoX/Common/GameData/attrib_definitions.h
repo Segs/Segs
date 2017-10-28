@@ -110,6 +110,8 @@ struct Parse_CharAttrib
     float m_EnduranceDiscount;
     float *begin() { return &m_DamageType00; }
     float *end() { return (&m_EnduranceDiscount)+1; }
+    const float *begin() const { return &m_DamageType00; }
+    const float *end() const { return (&m_EnduranceDiscount)+1; }
 };
 struct Parse_CharAttribMax
 {

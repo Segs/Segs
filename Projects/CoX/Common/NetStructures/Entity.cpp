@@ -273,7 +273,7 @@ PlayerEntity::PlayerEntity()
     m_selector1      = false;
     m_hasname        = true;
     m_hasgroup_name  = false;
-    m_pchar_things   = false;
+    m_pchar_things   = true;
 
     m_char.reset();
     might_have_rare = m_rare_bits = true;
@@ -538,7 +538,29 @@ void Entity::sendBuffsConditional(BitStream &bs) const
 }
 void Entity::sendCharacterStats(BitStream &bs) const
 {
-    bs.StoreBits(1,0); // nothing here for now
+    bool have_stats=true; // no stats -> dead ?
+    bool stats_changed=true;
+    bool we_have_a_buddy = false;
+    bool our_budy_is_our_mentor = false;
+    bool we_have_our_buddy_dbid=false;
+    int our_buddy_dbid = 0;
+    bs.StoreBits(1,have_stats); // nothing here for now
+    if(!have_stats)
+        return;
+    bs.StoreBits(1,stats_changed);
+    if(!stats_changed)
+        return;
+    bs.StoreBits(1,we_have_a_buddy);
+    if ( we_have_a_buddy )        // buddy info
+    {
+        bs.StoreBits(1,our_budy_is_our_mentor);
+        bs.StoreBits(1,we_have_our_buddy_dbid);
+        if(we_have_our_buddy_dbid)
+        {
+           bs.StorePackedBits(20,our_buddy_dbid);
+        }
+    }
+    serializeStats(m_char,bs,false);
 }
 void Entity::sendTargetUpdate(BitStream &bs) const
 {
@@ -546,9 +568,8 @@ void Entity::sendTargetUpdate(BitStream &bs) const
 }
 void Entity::sendWhichSideOfTheForce(BitStream &bs) const
 {
-    bs.StoreBits(1,0);
-    bs.StoreBits(1,0);
-    // flags 3 & 2 of entity flags_1
+    bs.StoreBits(1,0); // on team evil ?
+    bs.StoreBits(1,1); // on team good ?
 }
 bool Entity::update_rot( int axis ) const /* returns true if given axis needs updating */
 {
