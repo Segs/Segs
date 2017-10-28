@@ -25,7 +25,7 @@ void saveTo(const Parse_Effectiveness & target, const QString &baseName, bool te
 
 
 constexpr const static uint32_t origins_i0_requiredCrc = 0x763EA46E;
-bool loadFrom(BinStore *s,Parse_AllOrigins *target);
+bool loadFrom(BinStore *s,Parse_AllOrigins &target);
 void saveTo(const Parse_AllOrigins & target, const QString &baseName, bool text_format=false);
 
 

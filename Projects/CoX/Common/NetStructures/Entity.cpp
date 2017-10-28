@@ -422,8 +422,8 @@ void Entity::storeCreation( BitStream &bs) const
     PUTDEBUG("after creatorowner");
     if(m_type==ENT_PLAYER || m_type==ENT_CRITTER)
     {
-        bs.StorePackedBits(1,m_origin_idx);
         bs.StorePackedBits(1,m_class_idx);
+        bs.StorePackedBits(1,m_origin_idx);
         bool hasTitle=false;
         bs.StoreBits(1,hasTitle);
         if(hasTitle)
@@ -516,7 +516,7 @@ void Entity::sendBuffs(BitStream &bs) const
 void Entity::fillFromCharacter(Character *f)
 {
     m_char = *f;
-    m_hasname = true;
+    m_hasname = true;    
     //TODO: map class/origin name to Entity's class/orign indices.
 }
 /**

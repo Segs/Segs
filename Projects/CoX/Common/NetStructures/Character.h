@@ -127,6 +127,8 @@ const   QString &       getMapName() const { return m_mapName; }
         void            setAccountId(uint64_t val) { m_owner_account_id = val; }
         uint64_t        getLastCostumeId() const { return m_last_costume_id; }
         void            setLastCostumeId(uint64_t val) { m_last_costume_id = val; }
+const   QString &       getOrigin() const { return m_origin_name; }
+const   QString &       getClass() const { return m_class_name; }
 //
 //////////////////////////////////////////////////////////////////////////
         void            reset();

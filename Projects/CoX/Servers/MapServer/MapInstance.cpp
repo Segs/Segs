@@ -7,9 +7,11 @@
 
  */
 #include "MapInstance.h"
+
 #include "AdminServer.h"
 #include "AdminServer/AccountInfo.h"
 #include "version.h"
+#include "DataHelpers.h"
 #include "MapEvents.h"
 #include "MapClient.h"
 #include "MapManager.h"
@@ -19,6 +21,7 @@
 #include "Entity.h"
 #include "WorldSimulation.h"
 #include "InternalEvents.h"
+
 #include <QtCore/QDebug>
 
 namespace {
@@ -222,6 +225,8 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
     {
         Entity *ent = new PlayerEntity;
         ent->fillFromCharacter(ev->char_from_db);
+        ent->m_origin_idx = getEntityOriginIndex(true, ev->char_from_db->getOrigin());
+        ent->m_class_idx = getEntityClassIndex(true, ev->char_from_db->getClass());
         cl->char_entity(ent);
     }
     ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));

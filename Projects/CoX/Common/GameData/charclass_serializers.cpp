@@ -97,8 +97,8 @@ bool loadFrom(BinStore *s, Parse_AllCharClasses &target)
     {
         s->nest_in();
         if(_name.compare("Class")==0) {
-            target.m_classes.emplace_back();
-            ok &= loadFrom(s,target.m_classes.back());
+            target.emplace_back();
+            ok &= loadFrom(s,target.back());
         } else
             assert(!"unknown field referenced.");
         s->nest_out();
@@ -140,5 +140,5 @@ static void serialize(Archive & archive, CharClass_Data & src)
 }
 void saveTo(const Parse_AllCharClasses & target, const QString & baseName, bool text_format)
 {
-    commonSaveTo(target.m_classes,"EntityClasses",baseName,text_format);
+    commonSaveTo(target,"EntityClasses",baseName,text_format);
 }

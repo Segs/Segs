@@ -170,7 +170,7 @@ int main(int argc,char **argv)
         case eSceneGraph:   doConvert(doLoadRef<SceneGraph_Data>(&binfile),target_basename,json_output); break;
         case eTrickDefinitions: doConvert(doLoad<AllTricks_Data>(&binfile),target_basename,json_output); break;
         case eEntityClasses: doConvert(doLoadRef<Parse_AllCharClasses>(&binfile),target_basename,json_output); break;
-        case eEntityOrigins: doConvert(doLoad<Parse_AllOrigins>(&binfile),target_basename,json_output); break;
+        case eEntityOrigins: doConvert(doLoadRef<Parse_AllOrigins>(&binfile),target_basename,json_output); break;
         default:
             break;
     }
