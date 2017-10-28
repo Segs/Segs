@@ -65,6 +65,8 @@ public:
     size_t num_active_clients();
 
 protected:
+    void process_chat(MapClient *sender, const QString &msg_text);
+
     void on_expect_client(ExpectMapClient *ev);
     void on_link_lost(SEGSEvent *ev);
     void on_disconnect(DisconnectRequest *ev);
