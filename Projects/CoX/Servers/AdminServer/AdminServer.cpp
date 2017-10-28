@@ -211,7 +211,7 @@ int _AdminServer::SaveAccount(const char *username, const char *password)
     GameServerInterface *igs = ServerManager::instance()->GetGameServer(0);
     if(!igs)
         return -1;
-    if(!m_char_db->CreateLinkedAccount(tmp.account_server_id(),username))
+    if(!m_char_db->CreateLinkedAccount(tmp.account_server_id(),username,igs->getMaxAccountSlots()))
         res=2;
     //}
     return res;   // Add the given account

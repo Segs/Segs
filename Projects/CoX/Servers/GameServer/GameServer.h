@@ -80,6 +80,7 @@ protected:
         uint8_t                 m_id;
         uint16_t                m_current_players;
         uint16_t                m_max_players;
+        int                     m_max_account_slots;
         uint8_t                 m_unk1,m_unk2;
         std::string             m_serverName;
         ACE_INET_Addr           m_location; // this value is sent to the clients
