@@ -138,7 +138,7 @@ public:
             glm::vec3 pyr; //TODO: convert to quat
         };
         InputStateStorage   inp_state;
-        enum
+        enum EntType
         {
             ENT_PLAYER=2,
             ENT_CRITTER=4
@@ -194,7 +194,8 @@ mutable bool                m_logout_sent=false;
         bool                m_rare_bits = false;
         int                 current_client_packet_id;
         QString             m_group_name, m_override_name;
-        uint8_t             m_origin_idx,m_class_idx;
+        uint8_t             m_origin_idx;
+        uint8_t             m_class_idx;
         uint8_t             m_type;
         int32_t             m_idx;
         uint32_t            m_db_id;

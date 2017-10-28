@@ -10,6 +10,7 @@
 #include "Entity.h"
 #include "MapServer.h"
 #include "MapServerData.h"
+#include "DataHelpers.h"
 #include "CommonNetStructures.h"
 
 void NewEntity::serializeto( BitStream & ) const
@@ -26,5 +27,8 @@ void NewEntity::serializefrom( BitStream &bs )
     {
         m_ent = new PlayerEntity();
         ((PlayerEntity*)m_ent)->serializefrom_newchar(bs,g_GlobalMapServer->runtimeData().getPacker());
+        m_ent->m_origin_idx = getEntityOriginIndex(true, m_ent->m_char.getOrigin());
+        m_ent->m_class_idx = getEntityClassIndex(true, m_ent->m_char.getOrigin());
+
     }
 }

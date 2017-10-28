@@ -156,7 +156,7 @@ void saveTo(const Parse_Effectiveness & target, const QString & baseName, bool t
 
 }
 
-bool loadFrom(BinStore * s, Parse_AllOrigins * target)
+bool loadFrom(BinStore * s, Parse_AllOrigins &target)
 {
     s->prepare();
     bool ok = true;
@@ -169,8 +169,8 @@ bool loadFrom(BinStore * s, Parse_AllOrigins * target)
     {
         s->nest_in();
         if(_name.compare("Origin")==0) {
-            target->emplace_back();
-            ok &= loadFrom(s,&target->back());
+            target.emplace_back();
+            ok &= loadFrom(s,&target.back());
         } else
             assert(!"unknown field referenced.");
         s->nest_out();

@@ -33,8 +33,5 @@ struct CharClass_Data
     std::vector<Parse_CharAttribMax> m_ResistanceMaxTable;
 };
 
-struct Parse_AllCharClasses
-{
-    std::vector<CharClass_Data> m_classes;
-};
+using Parse_AllCharClasses = std::vector<CharClass_Data>;
 

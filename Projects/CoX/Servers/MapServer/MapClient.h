@@ -34,7 +34,7 @@ class MapClient : public ClientSession
         QString             m_name; // current character name, stored here for quick lookups
         SEGSTimer *         m_tick_source = nullptr;
 public:
-virtual                     ~MapClient(){}
+virtual                     ~MapClient() = default;
 
         void                AddShortcut(int index, NetCommand *command);
         NetCommand *        GetCommand(int index) {return m_shortcuts[index];}

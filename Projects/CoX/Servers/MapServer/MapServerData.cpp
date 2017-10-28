@@ -2,6 +2,8 @@
 
 #include "Common/GameData/DataStorage.h"
 #include "Common/GameData/costume_serializers.h"
+#include "Common/GameData/def_serializers.h"
+#include "Common/GameData/charclass_serializers.h"
 #include "NetStructures/CommonNetStructures.h"
 
 #include <QtCore/QDebug>
@@ -155,7 +157,32 @@ public:
         bs.GetString(tgt);
     }
 };
+template<class TARGET,unsigned int CRC>
+bool read_data_to(const QString &directory_path,const QString &storage,TARGET &target)
+{
+    QDebug deb=qDebug().noquote().nospace();
+    deb << "Reading "<<directory_path<<storage<<" ... ";
+    BinStore bin_store;
+    if(!bin_store.open(directory_path+storage,CRC))
+    {
+        deb << "failure";
+        qWarning().noquote() << "Couldn't load "<<storage<<" from" << directory_path;
+        qWarning().noquote() << "Using piggtool, ensure that bin.pigg has been extracted to ./data/";
+        return false;
+    }
+
+    bool res=loadFrom(&bin_store,target);
+    if(res)
+        deb << "OK";
+    else
+    {
+        deb << "failure";
+        qWarning().noquote() << "Couldn't load" << directory_path<<storage<<": wrong file format?";
+    }
+    return res;
 }
+///////////////////////////////////////////////////////////
+} // End of anonymous namespace
 
 MapServerData::MapServerData()
 {
@@ -170,10 +197,14 @@ MapServerData::~MapServerData()
 
 bool MapServerData::read_runtime_data(const QString &directory_path)
 {
-    qWarning().noquote() << "Reading map data from "<<directory_path<<" folder";
-    if (!read_costumes("./data/bin/"))
+    qWarning().noquote() << "Reading map data from"<<directory_path<<"folder";
+    if (!read_costumes(directory_path))
         return false;
-    if (!read_colors("./data/bin/"))
+    if (!read_colors(directory_path))
+        return false;
+    if (!read_origins(directory_path))
+        return false;
+    if (!read_classes(directory_path))
         return false;
     qWarning().noquote() << " All map data read";
     {
@@ -187,7 +218,7 @@ bool MapServerData::read_runtime_data(const QString &directory_path)
 
 bool MapServerData::read_costumes(const QString &directory_path)
 {
-    QDebug deb=qDebug().noquote();
+    QDebug deb=qDebug().noquote().nospace();
     deb << "Reading "<<directory_path<<"costume.bin ... ";
     BinStore costumes_store;
     if(!costumes_store.open(directory_path+"costume.bin",costumesets_i0_requiredCrc))
@@ -210,7 +241,7 @@ bool MapServerData::read_costumes(const QString &directory_path)
 }
 bool MapServerData::read_colors( const QString &directory_path )
 {
-    QDebug deb=qDebug().noquote();
+    QDebug deb=qDebug().noquote().nospace();
     deb << "Reading "<<directory_path<<"supergroupColors.bin ... ";
     BinStore sg_color_store;
     if(!sg_color_store.open(directory_path+"supergroupColors.bin",palette_i0_requiredCrc))
@@ -230,4 +261,20 @@ bool MapServerData::read_colors( const QString &directory_path )
         qWarning().noquote() << "Couldn't load" << directory_path<<"supergroupColors.bin: wrong file format?";
     }
     return res;
+}
+bool MapServerData::read_origins(const QString &directory_path)
+{
+    qDebug() << "Loading origins:";
+    if(!read_data_to<Parse_AllOrigins,origins_i0_requiredCrc>(directory_path,"origins.bin",m_player_origins))
+        return false;
+    if(!read_data_to<Parse_AllOrigins,origins_i0_requiredCrc>(directory_path,"villain_origins.bin",m_other_origins))
+        return false;
+}
+bool MapServerData::read_classes(const QString &directory_path)
+{
+    qDebug() << "Loading classes:";
+    if(!read_data_to<Parse_AllCharClasses,charclass_i0_requiredCrc>(directory_path,"classes.bin",m_player_classes))
+        return false;
+    if(!read_data_to<Parse_AllCharClasses,charclass_i0_requiredCrc>(directory_path,"villain_classes.bin",m_other_classes))
+        return false;
 }
