@@ -7,11 +7,10 @@
  */
 
 #pragma once
-//* Another small step toward a real Character server.
-
 #include "CommonNetStructures.h"
 #include "BitStream.h"
 #include "Powers.h"
+#include "Common/GameData/attrib_definitions.h"
 
 #include <QtCore/QString>
 #include <cassert>
@@ -105,7 +104,7 @@ typedef std::vector<Costume *> vCostume;
         PowerTrayGroup  m_trays;
         QString         m_class_name;
         QString         m_origin_name;
-        bool            m_full_options;
+        bool            m_full_options=false;
         ClientOptions   m_options;
         bool            m_first_person_view_toggle;
         uint8_t         m_player_collisions;
@@ -160,12 +159,18 @@ const   QString &       getClass() const { return m_class_name; }
         void            sendFriendList(BitStream &bs) const;
         void            sendOptions( BitStream &bs ) const;
         void            sendOptionsFull(BitStream &bs) const;
+        Parse_CharAttrib    m_current_attribs;
+        Parse_CharAttrib    m_max_attribs;
+        uint32_t        m_level;
+        uint32_t        m_combat_level;
+        uint32_t        m_experience_points=0;
+        uint32_t        m_experience_debt=0;
+        uint32_t        m_influence=1;
 protected:
         PowerPool_Info  get_power_info(BitStream &src);
         uint64_t        m_owner_account_id;
         uint64_t        m_last_costume_id;
         uint8_t         m_index;
-        uint32_t        m_level;
         QString         m_name;
         QString         m_mapName;
         bool            m_villain;
@@ -187,3 +192,4 @@ protected:
             TYPE_NOARMS
         };
 };
+void serializeStats(const Character &src,BitStream &bs, bool sendAbsolute);

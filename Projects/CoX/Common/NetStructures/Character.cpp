@@ -22,7 +22,10 @@ Character::Character()
     m_supergroup_costume=false;
     m_sg_costume=nullptr;
     m_using_sg_costume=false;
-    m_full_options = false;
+    m_current_attribs.m_HitPoints = 25;
+    m_max_attribs.m_HitPoints = 50;
+    m_current_attribs.m_Endurance = 33;
+    m_max_attribs.m_Endurance = 43;
 }
 void Character::reset()
 {
@@ -41,8 +44,8 @@ void Character::reset()
     m_using_sg_costume=false;
     m_first_person_view_toggle=false;
     m_full_options = false;
-
 }
+
 
 bool Character::isEmpty()
 {
@@ -303,151 +306,85 @@ void Character::recv_initial_costume( BitStream &src, ColorAndPartPacker *packer
     m_costumes.push_back(res);
 
 }
+void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool sendAbsolute)
+{
+    int field_idx=0;
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,0);
+    bs.StorePackedBits(5,src.m_HitPoints/5.0f);
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,1);
+    bs.StorePackedBits(5,src.m_Endurance/5.0f);
+    bs.StoreBits(1,0); // no more data
+}
+void serializeFullStats(const Parse_CharAttrib &src,BitStream &bs, bool sendAbsolute)
+{
+    int field_idx=0;
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,0);
+    bs.StorePackedBits(7,src.m_HitPoints);
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,1);
+    bs.StorePackedBits(7,src.m_Endurance);
+    bs.StoreBits(1,0); // no more data
+}
+void serializeLevelsStats(const Character &src,BitStream &bs, bool sendAbsolute)
+{
+    int field_idx=0;
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,0);
+    bs.StorePackedBits(4,src.m_level);
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,1);
+    bs.StorePackedBits(4,src.m_combat_level);
+    bs.StoreBits(1,0); // no more data
+}
+
+void serializeStats(const Character &src,BitStream &bs, bool sendAbsolute)
+{
+    // Send CurrentAttribs
+    // Send MaxAttribs
+    // Send levels
+    int field_idx=0;
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,field_idx++); // CurrentAttribs
+    serializeStats(src.m_current_attribs,bs,sendAbsolute);
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,field_idx++); // MaxAttribs
+    serializeStats(src.m_max_attribs,bs,sendAbsolute);
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,field_idx++); // levels
+    serializeLevelsStats(src,bs,sendAbsolute);
+    bs.StoreBits(1,0); // we have no more data
+}
+void serializeFullStats(const Character &src,BitStream &bs, bool sendAbsolute)
+{
+    int field_idx=0;
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,field_idx++); // first field is CurrentAttribs
+    serializeFullStats(src.m_current_attribs,bs,sendAbsolute);
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,field_idx++); // first field is MaxAttribs
+    serializeFullStats(src.m_max_attribs,bs,sendAbsolute);
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,field_idx++); // levels
+    serializeLevelsStats(src,bs,sendAbsolute);
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,field_idx++); // ExperiencePoints
+    bs.StorePackedBits(16,src.m_experience_points);
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,field_idx++); // ExperienceDebt
+    bs.StorePackedBits(16,src.m_experience_debt);
+    bs.StoreBits(1,1); // we have more data
+    bs.StorePackedBits(1,field_idx++); // ExperienceDebt
+    bs.StorePackedBits(16,src.m_influence);
+
+    bs.StoreBits(1,0); // we have no more data
+}
 void Character::sendFullStats(BitStream &bs) const
 {
     // if sendAbsolutoOverride
-
-    // this uses the character schema from the xml -> FullStats and children
-
-    // CurrentAttributes
-    bs.StoreBits(1,1);
-    bs.StorePackedBits(1,0); // CurrentAttribs entry idx
-    {
-            // nested into CurrentAttribs:LiveAttribs
-            bs.StoreBits(1,1); // has more data
-            bs.StorePackedBits(1,0); // HitPoints entry
-            // field type 0xA, param 2
-            // Type15_Params 2 1.0 1.0 7
-            if(true) // absolute values
-            {
-                bs.StorePackedBits(7,45); // character health/1.0
-            }
-            else
-            {
-                // StoreOptionalSigned(
-                    // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-            }
-            bs.StoreBits(1,1); // has more data
-            bs.StorePackedBits(1,1); // EndurancePoints entry
-            // field type 0xA, param 2
-            if(true) // absolute values
-            {
-                bs.StorePackedBits(7,46); // character end/1.0
-            }
-            else
-            {
-                // StoreOptionalSigned(
-                // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-            }
-            bs.StoreBits(1,0); // nest out
-    }
-    bs.StoreBits(1,1); // has more data
-    bs.StorePackedBits(1,1); // MaxAttribs entry idx
-    {
-        // nested into MaxAttribs:MaxAttribs
-        bs.StoreBits(1,1); // has more data
-            bs.StorePackedBits(1,0); // HitPoints entry
-            // field type 0xA, param 2
-            // Type15_Params 2 1.0 1.0 7
-            if(true) // absolute values
-            {
-                bs.StorePackedBits(7,47); // character health/1.0
-            }
-            else
-            {
-                // StoreOptionalSigned(
-                // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-            }
-        bs.StoreBits(1,1); // has more data
-            bs.StorePackedBits(1,1); // EndurancePoints entry
-            // field type 0xA, param 2
-            if(true) // absolute values
-            {
-                bs.StorePackedBits(7,48); // character end/1.0
-            }
-            else
-            {
-                // StoreOptionalSigned(
-                // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-            }
-        bs.StoreBits(1,0); // nest out
-    }
-    bs.StoreBits(1,1); // has more data
-    bs.StorePackedBits(1,2); // SendLevels entry idx
-    {
-        // nested into SendLevels:LiveLevels
-        bs.StoreBits(1,1); // has more data
-            bs.StorePackedBits(1,0); // Level entry
-            // field type 0x5, param 4
-            if(true) // absolute values
-            {
-                bs.StorePackedBits(4,1); //
-            }
-            else
-            {
-                // StoreOptionalSigned(
-                // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-                // send prev_lev-new_lev
-            }
-        bs.StoreBits(1,1); // has more data
-            bs.StorePackedBits(1,1); // CombatLevel entry
-            if(true) // absolute values
-            {
-                bs.StorePackedBits(4,1);
-            }
-            else
-            {
-                // StoreOptionalSigned(
-                // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-            }
-        bs.StoreBits(1,0); // nest out
-    }
-    bs.StoreBits(1,1); // has more data
-    bs.StorePackedBits(1,3); // Experience
-    {
-        // field type 0x5, param 16
-        if(true) // absolute values
-        {
-            bs.StorePackedBits(16,1); //
-        }
-        else
-        {
-            // StoreOptionalSigned(
-            // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-            // send prev_lev-new_lev
-        }
-    }
-    bs.StoreBits(1,1); // has more data
-    bs.StorePackedBits(1,4); // ExperienceDebt
-    {
-        // field type 0x5, param 16
-        if(true) // absolute values
-        {
-            bs.StorePackedBits(16,1); //
-        }
-        else
-        {
-            // StoreOptionalSigned(
-            // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-            // send prev_lev-new_lev
-        }
-    }
-    bs.StoreBits(1,1); // has more data
-    bs.StorePackedBits(1,5); // Influence
-    {
-        // field type 0x5, param 16
-        if(true) // absolute values
-        {
-            bs.StorePackedBits(16,0); //
-        }
-        else
-        {
-            // StoreOptionalSigned(
-            // Bits(1) ?( Bits(1) ? -packedBits(1) : PackedBits(1) ) : 0
-            // send prev_lev-new_lev
-        }
-    }
-    bs.StoreBits(1,0); // has more data, nest out from the root
+    serializeFullStats(*this,bs,false);
 }
 
 void Character::sendWindows( BitStream &bs ) const
