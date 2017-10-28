@@ -1,9 +1,5 @@
+find_package(Qt5 5.8.0 COMPONENTS Core Gui Widgets OpenGL Network REQUIRED)
 
-find_package(Qt5Core 5.8.0 REQUIRED)
-find_package(Qt5Gui 5.8.0 REQUIRED)
-find_package(Qt5Widgets 5.8.0 REQUIRED)
-find_package(Qt5OpenGL 5.8.0 REQUIRED)
-find_package(Qt5Network 5.8.0 REQUIRED)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOMOC ON)

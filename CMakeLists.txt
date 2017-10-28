@@ -33,8 +33,7 @@ add_definitions(-DACE_HAS_DLL=1) #FIXME: this should be set by per-target add_de
 LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/lib)
 
 find_package(Threads REQUIRED)
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Sql REQUIRED)
+find_package(Qt5 COMPONENTS Core Sql REQUIRED)
 
 link_directories(${ThirdParty_Install_Dir}/lib)
 include_directories(${ThirdParty_Install_Dir}/include)
