@@ -15,7 +15,8 @@
 #include "Common/GameData/charclass_definitions.h"
 #include "Common/GameData/charclass_serializers.h"
 //#include "Common/GameData/seq_serializers.h"
-//#include "Common/GameData/def_serializers.h"
+#include "Common/GameData/def_serializers.h"
+#include "Common/GameData/origin_definitions.h"
 //#include "Common/GameData/particlesys_serializers.h"
 
 #include <QtCore/QCoreApplication>
@@ -31,6 +32,7 @@ enum BinType {
     eCombineChances,
     eBoostEffectiveness,
     eParticleSystems,
+    eEntityOrigins,
     eEntityClasses,
     eShops,
     eShopItems,
@@ -66,6 +68,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {tricks_i0_requiredCrc              , eTrickDefinitions},
     {tricks_i2_requiredCrc              , eTrickDefinitions},
     {charclass_i0_requiredCrc           , eEntityClasses},
+    {origins_i0_requiredCrc             , eEntityOrigins},
 };
 BinType getLoader(const QString &fname)
 {
@@ -122,7 +125,8 @@ void showSupportedBinTypes()
     qDebug()<<"   I0-2<"<<QString::number(scenegraph_i0_2_requiredCrc,16)<<"> Scene graph - 'geobin/*'";
     qDebug()<<"   I0<"<<QString::number(tricks_i0_requiredCrc,16)<<"> Trick definitions- 'tricks.bin'";
     qDebug()<<"   I2<"<<QString::number(tricks_i2_requiredCrc,16)<<"> Trick definitions- 'tricks.bin'";
-    qDebug()<<"   I2<"<<QString::number(charclass_i0_requiredCrc,16)<<"> Entity class definitions- 'classes.bin' or 'villain_classes.bin'";
+    qDebug()<<"   I0<"<<QString::number(charclass_i0_requiredCrc,16)<<"> Entity class definitions- 'classes.bin' or 'villain_classes.bin'";
+    qDebug()<<"   I0<"<<QString::number(origins_i0_requiredCrc,16)<<"> Entity origin definitions- 'origins.bin' or 'villain_origins.bin'";
     qDebug()<<"Numbers in brackets are file CRCs - bytes 8 to 13 in the bin.";
 }
 } // end of anonymous namespace
@@ -166,6 +170,7 @@ int main(int argc,char **argv)
         case eSceneGraph:   doConvert(doLoadRef<SceneGraph_Data>(&binfile),target_basename,json_output); break;
         case eTrickDefinitions: doConvert(doLoad<AllTricks_Data>(&binfile),target_basename,json_output); break;
         case eEntityClasses: doConvert(doLoadRef<Parse_AllCharClasses>(&binfile),target_basename,json_output); break;
+        case eEntityOrigins: doConvert(doLoad<Parse_AllOrigins>(&binfile),target_basename,json_output); break;
         default:
             break;
     }

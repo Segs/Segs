@@ -13,6 +13,10 @@ set(GAMEDATA_SRC
     charclass_definitions.h
     charclass_serializers.cpp
     charclass_serializers.h
+    def_serializers.cpp
+    def_serializers.h
+    other_definitions.h
+    origin_definitions.h
     #particlesys_serializers.cpp
     #particlesys_serializers.h
     costume_serializers.cpp
