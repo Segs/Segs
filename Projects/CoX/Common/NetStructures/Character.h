@@ -146,7 +146,7 @@ const   QString &       getClass() const { return m_class_name; }
         void            dump();
         void            sendFullStats(BitStream &bs) const;
         //TODO: move these to some kind of Player info class
-        void            sendTray(BitStream &bs);
+        void            sendTray(BitStream &bs) const;
         void            sendTrayMode(BitStream &bs) const;
         void            sendWindows(BitStream &bs) const;
         void            sendWindow(BitStream &bs) const;

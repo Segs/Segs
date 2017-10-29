@@ -39,6 +39,5 @@ public:
 //  void NewPlayer(MapClient *client,Entity *player_ent); // stores fresh player avatar
 //  void StorePlayer(MapClient *client,Entity *player_ent); // stores player avatar
         Entity *    CreatePlayer(MapClient *client,int avatar_id); // retrieves client avatar from storage
-
         Entity *    CreateInstance(MapInstance *target_world,uint64_t id); // will create a new instance of given entity, bound to given map
 };
