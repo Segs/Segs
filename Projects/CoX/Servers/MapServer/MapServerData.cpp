@@ -269,6 +269,7 @@ bool MapServerData::read_origins(const QString &directory_path)
         return false;
     if(!read_data_to<Parse_AllOrigins,origins_i0_requiredCrc>(directory_path,"villain_origins.bin",m_other_origins))
         return false;
+    return true;
 }
 bool MapServerData::read_classes(const QString &directory_path)
 {
@@ -277,4 +278,5 @@ bool MapServerData::read_classes(const QString &directory_path)
         return false;
     if(!read_data_to<Parse_AllCharClasses,charclass_i0_requiredCrc>(directory_path,"villain_classes.bin",m_other_classes))
         return false;
+    return true;
 }

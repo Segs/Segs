@@ -21,12 +21,7 @@ virtual void serializefrom(BitStream &) override
 virtual void serializeto(BitStream &tgt) const override
         {
             assert(finalized);
-            int size=m_finalized_into.GetReadableBits();
-            while(size>32) {
-                tgt.StoreBits(32,m_finalized_into.GetBits(32));
-                size-=32;
-            }
-            tgt.StoreBits(size,m_finalized_into.GetBits(size));
+            tgt.appendBitStream(m_finalized_into);
         }
         void serializeto_internal(BitStream &tgt) const;
         void finalize()

@@ -5,12 +5,12 @@
 #include "Entity.h"
 #include "MapEvents.h"
 #include "MapClient.h"
-//#include "MapHandler.h"
 #include "MapInstance.h"
 #include "EntityUpdateCodec.h"
 
-#include <cmath>
 #include <QByteArray>
+#include <cmath>
+#include <iso646.h>
 
 namespace  {
 struct EntWalkRel
