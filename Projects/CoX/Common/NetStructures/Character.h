@@ -161,8 +161,8 @@ const   QString &       getClass() const { return m_class_name; }
         void            sendOptionsFull(BitStream &bs) const;
         Parse_CharAttrib    m_current_attribs;
         Parse_CharAttrib    m_max_attribs;
-        uint32_t        m_level;
-        uint32_t        m_combat_level;
+        uint32_t        m_level=0;
+        uint32_t        m_combat_level=0;
         uint32_t        m_experience_points=0;
         uint32_t        m_experience_debt=0;
         uint32_t        m_influence=1;

@@ -205,12 +205,12 @@ void GameHandler::on_client_expected(ClientExpected *ev)
 {
     // this is the case when we cannot use ev->src(), because it is not GameLink, but a MapHandler
     // we need to get a link from client_id
-        CharacterClient *cl=m_clients.getById(ev->client_id);
-        GameLink *lnk = (GameLink *)cl->link_state().link();
-        MapServerAddrResponse *r_ev=new MapServerAddrResponse;
-        r_ev->m_map_cookie  = ev->cookie;
-        r_ev->m_address     = ev->m_connection_addr;
-        lnk->putq(r_ev);
+    CharacterClient *cl=m_clients.getById(ev->client_id);
+    GameLink *lnk = (GameLink *)cl->link_state().link();
+    MapServerAddrResponse *r_ev=new MapServerAddrResponse;
+    r_ev->m_map_cookie  = ev->cookie;
+    r_ev->m_address     = ev->m_connection_addr;
+    lnk->putq(r_ev);
 
 }
 void GameHandler::on_map_req(MapServerAddrRequest *ev)

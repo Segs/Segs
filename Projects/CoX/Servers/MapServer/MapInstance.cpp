@@ -206,13 +206,13 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
         ev->src()->putq(new ClientExpected(this,ev->m_client_id,1,m_server->getAddress()));
         return;
     }
-    CharacterDatabase * char_db=AdminServer::instance()->character_db();
+    CharacterDatabase * char_db = AdminServer::instance()->character_db();
     if(!ev->char_from_db)
     {
-
         // attempt to create a new character, let's see if the name is taken
         if(char_db->named_character_exists(ev->m_character_name))
         {
+            // name is taken, inform by setting cookie to 0.
             ev->src()->putq(new ClientExpected(this,ev->m_client_id,0,m_server->getAddress()));
             return;
         }

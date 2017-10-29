@@ -109,7 +109,7 @@ void storePosition(const Entity &src,BitStream &bs)
     for(int i=0; i<3; i++)
     {
         packed = quantize_float(src.pos[i]);
-        packed = packed<0xFFFFFF ? packed : 0xFFFFFF;
+        packed = std::min(packed,0xFFFFFFU);
         //diff = packed ^ prev_pos[i]; // changed bits are '1'
         bs.StoreBits(24,packed);
     }
@@ -174,7 +174,10 @@ void storePosUpdate(const Entity &src,BitStream &bs)
 {
     bool extra_info = false;
     bool move_instantly = false;
+    PUTDEBUG("before entReceivePosUpdate");
+
     storePosition(src,bs);
+    PUTDEBUG("before posInterpolators");
     if(!src.m_change_existence_state)
     {
         // if position has changed
@@ -187,11 +190,16 @@ void storePosUpdate(const Entity &src,BitStream &bs)
         }
         // if extra_inf
     }
+    PUTDEBUG("before storeOrientation");
     storeOrientation(src,bs);
+    PUTDEBUG("after storeOrientation");
+
 }
 void sendSeqMoveUpdate(const Entity &src,BitStream &bs)
 {
     //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq mode update %d\n"),m_seq_update));
+    PUTDEBUG("before sendSeqMoveUpdate");
+
     bs.StoreBits(1,src.m_seq_update); // no seq update
     if(src.m_seq_update)
     {
@@ -201,6 +209,7 @@ void sendSeqMoveUpdate(const Entity &src,BitStream &bs)
 }
 void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
 {
+    PUTDEBUG("before sendSeqTriggeredMoves");
     uint32_t num_moves=0;
     //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq triggeted moves %d\n"),num_moves));
     bs.StorePackedBits(1,num_moves); // num moves
@@ -265,6 +274,7 @@ void sendCostumes(const Entity &src,BitStream &bs)
 {
     //NOTE: this will only be initialized once, and no changes later on will influence this
     static ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
+    PUTDEBUG("before sendCostumes");
     storePackedBitsConditional(bs,2,src.m_costume_type);
     if(src.m_costume_type!=1)
     {
@@ -451,7 +461,6 @@ void serializeto(const Entity & src, BitStream &bs )
     if(src.m_rare_bits)
         sendStateMode(src,bs);
 
-    PUTDEBUG("before entReceivePosUpdate");
     storePosUpdate(src,bs);
 
     if(src.might_have_rare)
@@ -461,6 +470,7 @@ void serializeto(const Entity & src, BitStream &bs )
         sendSeqTriggeredMoves(src,bs);
 
     // NPC -> m_pchar_things=0 ?
+    PUTDEBUG("before m_pchar_things");
     bs.StoreBits(1,src.m_pchar_things);
     if(src.m_pchar_things)
     {
