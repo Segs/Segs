@@ -20,7 +20,7 @@ int EventProcessor::handle_timeout( const ACE_Time_Value &current_time, const vo
     return 0;
 }
 
-int EventProcessor::svc( void )
+int EventProcessor::svc( )
 {
     SEGSEvent *mb;
 
@@ -28,7 +28,10 @@ int EventProcessor::svc( void )
     {
         if(mb->type()==0)
         {
-            mb->release();
+            if (thr_count() > 1)
+                putq(mb);
+            else
+                mb->release();
             return 0;
         }
         dispatch(mb);

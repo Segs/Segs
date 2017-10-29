@@ -5,9 +5,11 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <cassert>
 #include "ServerManager.h"
-//! If called from standalone MapServer it contains it's controlling GameServer interface
+#include <cassert>
+#include <QDebug>
+
+ //! If called from standalone MapServer it contains it's controlling GameServer interface
 GameServerInterface *ServerManagerC::GetGameServer(size_t idx)
 {
     if(idx>m_GameServers.size())
@@ -40,13 +42,19 @@ bool ServerManagerC::StartLocalServers()
     m_authserv->Run();
     for(GameServerInterface * serv : m_GameServers)
     {
-        if(!serv->Run())
+        if (!serv->Run()) 
+        {
+            qCritical() << "Failed to start game server";
             return false;
+        }
     }
     for(MapServerInterface *serv : m_MapServers)
     {
-        if(!serv->Run())
+        if (!serv->Run()) 
+        {
+            qCritical() << "Failed to start map server";
             return false;
+        }
     }
     return true;
 }
@@ -66,6 +74,7 @@ void ServerManagerC::StopLocalServers()
             // Log it
         }
     }
+    m_authserv->ShutDown("Full system shutdown");
 }
 AdminServerInterface *ServerManagerC::GetAdminServer()
 {

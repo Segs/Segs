@@ -93,6 +93,8 @@ bool AuthServer::Run()
 bool AuthServer::ShutDown(const QString &/* ="No particular reason" */)
 {
     m_acceptor->close();
+    // tell our handler to shut down too
+    AuthLink::g_target->putq(new SEGSEvent(0,nullptr));
     m_running=false;
     return true;
 }

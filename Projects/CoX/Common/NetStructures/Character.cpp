@@ -108,9 +108,8 @@ void Character::setName(const QString &val )
     else
         m_name = "EMPTY";
 }
-void Character::sendTray(BitStream &bs)
+void Character::sendTray(BitStream &bs) const
 {
-
     m_trays.serializeto(bs);
 }
 void Character::sendTrayMode(BitStream &bs) const

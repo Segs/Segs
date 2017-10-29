@@ -139,6 +139,8 @@ bool MapServer::ShutDown(const QString &reason)
         return true;
     }
     m_online = false;
+    // tell our handler to shut down too
+    m_handler->putq(new SEGSEvent(0, nullptr));
     qWarning() << "Shutting down map server because :"<<reason;
     if (ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
     {

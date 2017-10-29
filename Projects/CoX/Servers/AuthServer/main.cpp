@@ -99,8 +99,8 @@ static ACE_THR_FUNC_RETURN event_loop (void *arg)
 
     reactor->owner (ACE_OS::thr_self ());
     reactor->run_reactor_event_loop ();
-    ServerManager::instance()->GetAdminServer()->ShutDown("No reason");
     ServerManager::instance()->StopLocalServers();
+    ServerManager::instance()->GetAdminServer()->ShutDown("No reason");
     return (ACE_THR_FUNC_RETURN)nullptr;
 }
 static bool CreateServers()
@@ -168,20 +168,21 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     ACE_DEBUG((LM_ERROR,ACE_TEXT("main\n")));
 
     ACE_Thread_Manager::instance()->spawn_n(N_THREADS, event_loop, ACE_Reactor::instance());
-    bool no_err=true;
-    no_err=CreateServers();
+    bool no_err = CreateServers();
     if(no_err)
-        no_err=ServerManager::instance()->LoadConfiguration(config_file_path);
+        no_err = ServerManager::instance()->LoadConfiguration(config_file_path);
     if(no_err)
-        no_err=ServerManager::instance()->StartLocalServers();
+        no_err = ServerManager::instance()->StartLocalServers();
     if(no_err)
-        no_err=ServerManager::instance()->CreateServerConnections();
+        no_err = ServerManager::instance()->CreateServerConnections();
     if(!no_err)
     {
         ACE_Reactor::instance()->end_event_loop();
         ACE_Thread_Manager::instance()->wait();
+        ACE_Reactor::close_singleton();
         return -1;
     }
     ACE_Thread_Manager::instance()->wait();
-    return (0);
+    ACE_Reactor::close_singleton();
+    return 0;
 }

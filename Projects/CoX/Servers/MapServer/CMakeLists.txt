@@ -1,51 +1,53 @@
 if(ENABLE_SCRIPTING_ENGINE)
-    set(SCRIPTING_CPP ${CMAKE_CURRENT_SOURCE_DIR}/ScriptingEngine.cpp)
+    set(SCRIPTING_CPP ScriptingEngine.cpp)
 else()
-    set(SCRIPTING_CPP ${CMAKE_CURRENT_SOURCE_DIR}/ScriptingEngine_Null.cpp)
+    set(SCRIPTING_CPP ScriptingEngine_Null.cpp)
 endif()
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/DataHelpers.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/EntityStorage.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/Events/ChatDividerMoved.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/Events/ChatMessage.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/Events/EntitiesResponse.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/Events/InputState.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/Events/NewEntity.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/Events/SceneEvent.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/MapClient.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/MapEventFactory.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/MapInstance.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/MapLink.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/MapManager.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/MapServer.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/MapServerData.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/MapTemplate.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/NetCommandManager.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/WorldSimulation.cpp
-${SCRIPTING_CPP}
+    DataHelpers.cpp
+    EntityStorage.cpp
+    EntityUpdateCodec.cpp
+    Events/ChatDividerMoved.cpp
+    Events/ChatMessage.cpp
+    Events/EntitiesResponse.cpp
+    Events/InputState.cpp
+    Events/NewEntity.cpp
+    Events/SceneEvent.cpp
+    MapClient.cpp
+    MapEventFactory.cpp
+    MapInstance.cpp
+    MapLink.cpp
+    MapManager.cpp
+    MapServer.cpp
+    MapServerData.cpp
+    MapTemplate.cpp
+    NetCommandManager.cpp
+    WorldSimulation.cpp
+    ${SCRIPTING_CPP}
 )
 SET(target_INCLUDE
-${CMAKE_CURRENT_SOURCE_DIR}/DataHelpers.h
-${CMAKE_CURRENT_SOURCE_DIR}/EntityStorage.h
-${CMAKE_CURRENT_SOURCE_DIR}/Events/ChatDividerMoved.h
-${CMAKE_CURRENT_SOURCE_DIR}/Events/ChatMessage.h
-${CMAKE_CURRENT_SOURCE_DIR}/Events/EntitiesResponse.h
-${CMAKE_CURRENT_SOURCE_DIR}/Events/InputState.h
-${CMAKE_CURRENT_SOURCE_DIR}/Events/NewEntity.h
-${CMAKE_CURRENT_SOURCE_DIR}/Events/SceneEvent.h
-${CMAKE_CURRENT_SOURCE_DIR}/Events/Shortcuts.h
-${CMAKE_CURRENT_SOURCE_DIR}/MapClient.h
-${CMAKE_CURRENT_SOURCE_DIR}/MapEventFactory.h
-${CMAKE_CURRENT_SOURCE_DIR}/MapEvents.h
-${CMAKE_CURRENT_SOURCE_DIR}/MapInstance.h
-${CMAKE_CURRENT_SOURCE_DIR}/MapLink.h
-${CMAKE_CURRENT_SOURCE_DIR}/MapManager.h
-${CMAKE_CURRENT_SOURCE_DIR}/MapRef.h
-${CMAKE_CURRENT_SOURCE_DIR}/MapServer.h
-${CMAKE_CURRENT_SOURCE_DIR}/MapTemplate.h
-${CMAKE_CURRENT_SOURCE_DIR}/NetCommandManager.h
-${CMAKE_CURRENT_SOURCE_DIR}/ScriptingEngine.h
-${CMAKE_CURRENT_SOURCE_DIR}/WorldSimulation.h
+    DataHelpers.h
+    EntityStorage.h
+    EntityUpdateCodec.h
+    Events/ChatDividerMoved.h
+    Events/ChatMessage.h
+    Events/EntitiesResponse.h
+    Events/InputState.h
+    Events/NewEntity.h
+    Events/SceneEvent.h
+    Events/Shortcuts.h
+    MapClient.h
+    MapEventFactory.h
+    MapEvents.h
+    MapInstance.h
+    MapLink.h
+    MapManager.h
+    MapRef.h
+    MapServer.h
+    MapTemplate.h
+    NetCommandManager.h
+    ScriptingEngine.h
+    WorldSimulation.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})

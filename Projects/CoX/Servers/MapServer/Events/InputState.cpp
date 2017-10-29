@@ -164,7 +164,9 @@ void InputState::partial_2(BitStream &bs)
                     m_data.camera_pyr[0] = recovered;
                 else
                     m_data.camera_pyr[1] = recovered;
+#ifdef DEBUG_INPUT
                 fprintf(stderr,"Pyr %f : %f \n",m_data.camera_pyr.x,m_data.camera_pyr.y);
+#endif
                 break;
             }
             case 8:

@@ -133,7 +133,6 @@ enum class FadeDirection
 };
 class Entity
 {
-    friend void serializeto(const Entity &, BitStream &,ColorAndPartPacker *);
 public:
         struct currentInputState
         {
@@ -149,7 +148,7 @@ public:
         int                 m_access_level;
         int                 m_randSeed; // Sequencer uses this as a seed for random bone scale
         int                 field_68;
-        int                 field_78;
+        int                 m_SG_id;
         int                 m_num_titles=0;
         int                 m_num_fx=0;
         bool                m_is_logging_out = false;
@@ -219,7 +218,6 @@ virtual                     ~Entity() = default;
         void                addInterp(const PosUpdate &p);
 
         int32_t             getIdx() const {return m_idx;}
-        void                sendCostumes(BitStream &bs, ColorAndPartPacker *packer) const;
 static  void                sendAllyID(BitStream &bs);
 static  void                sendPvP(BitStream &bs);
 
@@ -227,42 +225,16 @@ static  void                sendPvP(BitStream &bs);
 
         void                InsertUpdate(PosUpdate pup);
         const QString &     name() const {return m_char.getName();}
-        void                sendBuffs(BitStream &bs) const;
         void                fillFromCharacter(Character *f);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 private:
         int                 getOrientation(BitStream &bs);
-        void                sendAFK(BitStream &bs)const;
-        void                sendBuffsConditional(BitStream &bs) const;
-        void                sendCharacterStats(BitStream &bs) const;
-        void                sendContactOrPnpc(BitStream &bs)const;
-        void                sendEntCollision(BitStream &bs) const;
-        void                sendLogoutUpdate(BitStream &bs)const;
-        void                sendNetFx(BitStream &bs) const;
-        void                sendNoDrawOnClient(BitStream &bs)const;
-        void                sendOnOddSend(BitStream &bs,bool is_odd=true) const;
-        void                sendOtherSupergroupInfo(BitStream &bs)const;
-        void                sendPetName(BitStream &bs)const;
-        void                sendRagDoll(BitStream &bs) const;
-        void                sendSeqMoveUpdate(BitStream &bs) const;
-        void                sendSeqTriggeredMoves(BitStream &bs) const;
-        void                sendStateMode(BitStream &bs) const;
-        void                sendTargetUpdate(BitStream &bs) const;
-        void                sendTitles(BitStream &bs) const;
-        void                sendWhichSideOfTheForce(BitStream &bs) const;
-        void                sendXLuency(BitStream &bs,float xluency) const;
-        void                storeCreation(BitStream & bs) const;
-        void                storeOrientation(BitStream &bs) const;
-        void                storePosition(BitStream &bs) const;
-        void                storePosUpdate(BitStream &bs) const;
-        void                storeUnknownBinTree(BitStream &bs) const;
 };
-extern void serializeto(const Entity &, BitStream &tgt, ColorAndPartPacker *packer);
+
 class PlayerEntity : public Entity
 {
 public:
                             PlayerEntity();
         void                serializefrom_newchar(BitStream &src, ColorAndPartPacker *packer);
-        void                serialize_full(BitStream &bs );
 };
 extern void abortLogout(Entity *e);
