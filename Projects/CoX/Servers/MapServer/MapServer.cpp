@@ -149,6 +149,8 @@ bool MapServer::ShutDown(const QString &reason)
         return false;
     }
     delete m_endpoint;
+    GlobalTimerQueue::instance()->deactivate();
+
     return true;
 }
 

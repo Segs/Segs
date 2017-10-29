@@ -56,20 +56,20 @@ public:
         init();
         mouselook_scalefactor=0.6f;
     }
-    bool    mouse_invert;
-    float   mouselook_scalefactor;
-    float   degrees_for_turns;
-    int32_t control_debug;
-    int32_t no_strafe;
-    int32_t alwaysmobile;// 1- player is always mobile (can't be immobilized by powers)
-    int32_t repredict;   //1 - client is out of sync with server, asking for new physics state info.
-    int32_t neterrorcorrection;
-    float   speed_scale;
+    bool    mouse_invert=0;
+    float   mouselook_scalefactor=0;
+    float   degrees_for_turns=0;
+    int32_t control_debug=0;
+    int32_t no_strafe=0;
+    int32_t alwaysmobile=0;// 1- player is always mobile (can't be immobilized by powers)
+    int32_t repredict=0;   //1 - client is out of sync with server, asking for new physics state info.
+    int32_t neterrorcorrection=0;
+    float   speed_scale=0;
     int32_t svr_lag,svr_lag_vary,svr_pl,svr_oo_packets,client_pos_id;
     int32_t atest0,atest1,atest2,atest3,atest4,atest5,atest6,atest7,atest8,atest9;
     int32_t predict,notimeout,selected_ent_server_index;
-    bool m_ChatWindow_fading;
-    bool m_NavWindow_fading;
+    bool m_ChatWindow_fading=0;
+    bool m_NavWindow_fading=0;
     bool showTooltips=true;
     bool allowProfanity=true;
     bool chatBallons=true;
@@ -106,10 +106,12 @@ typedef std::vector<Costume *> vCostume;
         QString         m_origin_name;
         bool            m_full_options=false;
         ClientOptions   m_options;
-        bool            m_first_person_view_toggle;
-        uint8_t         m_player_collisions;
-        float           m_unkn1,m_unkn2;
-        uint32_t        m_unkn3,m_unkn4;
+        bool            m_first_person_view_toggle=false;
+        uint8_t         m_player_collisions=0;
+        float           m_unkn1=0;
+        float           m_unkn2=0;
+        uint32_t        m_unkn3=0;
+        uint32_t        m_unkn4=0;
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
