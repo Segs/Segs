@@ -12,6 +12,7 @@
 #include "Client.h"
 #include "MapLink.h"
 #include "CharacterDatabase.h"
+#include "FixedPointValue.h"
 
 #include <QtCore/QString>
 #include <string>
@@ -23,6 +24,16 @@ class MapInstance;
 class NetCommand;
 class GamePacket;
 class SEGSTimer;
+///
+/// \brief The ClientEntityStateBelief struct represents the server's belief about the client's internal state
+/// in regards to given entity.
+///
+struct ClientEntityStateBelief
+{
+    class Entity *m_entity; // this is a link to the entity this belief is linked to.
+    Vector3_FPV position;   // we think client considers m_entity to be located here.
+};
+
 class MapClient : public ClientSession
 {
     friend class CharacterDatabase;
