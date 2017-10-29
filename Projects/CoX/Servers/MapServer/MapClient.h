@@ -38,12 +38,13 @@ class MapClient : public ClientSession
 {
     friend class CharacterDatabase;
     using mNetCommands = std::map<int,NetCommand *>;
-
+    using vBelief = std::vector<ClientEntityStateBelief>;
         mNetCommands        m_shortcuts;
         MapInstance *       m_current_map;
         Entity *            m_ent = nullptr;
         QString             m_name; // current character name, stored here for quick lookups
         SEGSTimer *         m_tick_source = nullptr;
+
 public:
 virtual                     ~MapClient() = default;
 
@@ -60,4 +61,5 @@ virtual                     ~MapClient() = default;
         void                name(const QString &val) { m_name = val; }
         void                entity(Entity * val);
         bool                db_create(); // creates a new character from Entity data
+        vBelief             m_worldstate_belief;
 };
