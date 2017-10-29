@@ -8,6 +8,7 @@ SET(target_CPP
     ConfigExtension.cpp
     EventProcessor.cpp
     SEGSTimer.cpp
+    FixedPointValue.cpp
 )
 SET(target_INCLUDE
     BitStream.h
@@ -17,6 +18,7 @@ SET(target_INCLUDE
     SEGSEvent.h
     LinkLevelEvent.h
     SEGSTimer.h
+    FixedPointValue.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
