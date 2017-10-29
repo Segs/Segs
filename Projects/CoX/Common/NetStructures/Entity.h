@@ -3,6 +3,7 @@
 #include "Powers.h"
 #include "Costume.h"
 #include "Character.h"
+#include "FixedPointValue.h"
 #include <glm/vec3.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <cmath>
@@ -99,8 +100,10 @@ public:
 class InputStateStorage
 {
 public:
-    InputStateStorage() {
-        for(int i=0; i<3; ++i) {
+    InputStateStorage()
+    {
+        for(int i=0; i<3; ++i)
+        {
             pos_delta_valid[i]=false;
             pyr_valid[i]=false;
         }
@@ -123,7 +126,8 @@ public:
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
 };
-enum class FadeDirection {
+enum class FadeDirection
+{
     In,
     Out
 };
@@ -181,6 +185,7 @@ mutable bool                m_logout_sent=false;
         glm::quat           qrot;
         glm::vec3           pos;
         uint32_t            prev_pos[3];
+        Vector3_FPV         fixedpoint_pos;
         bool                m_selector1 = false;
         bool                m_pchar_things = false;
         bool                might_have_rare = false;
@@ -214,11 +219,10 @@ virtual                     ~Entity() = default;
         void                addInterp(const PosUpdate &p);
 
         int32_t             getIdx() const {return m_idx;}
-virtual void                sendCostumes(BitStream &bs, ColorAndPartPacker *packer) const;
+        void                sendCostumes(BitStream &bs, ColorAndPartPacker *packer) const;
 static  void                sendAllyID(BitStream &bs);
 static  void                sendPvP(BitStream &bs);
 
-virtual void                serializefrom(BitStream &) {assert(false);}
         bool                update_rot(int axis) const; // returns true if given axis needs updating;
 
         void                InsertUpdate(PosUpdate pup);
@@ -254,13 +258,6 @@ private:
         void                storeUnknownBinTree(BitStream &bs) const;
 };
 extern void serializeto(const Entity &, BitStream &tgt, ColorAndPartPacker *packer);
-class NpcEntity : public Entity
-{
-    NpcEntity()
-    {
-        m_costume_type=2;
-    }
-};
 class PlayerEntity : public Entity
 {
 public:

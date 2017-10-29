@@ -113,8 +113,13 @@ void Entity::storePosition(BitStream &bs) const
 {
 // float x = pos.vals.x;
     uint32_t packed;
-    //uint32_t diff=0; // changed bits are '1'
-    bs.StoreBits(3,7);
+    uint8_t updated_bit_pos = 7;
+
+    bs.StoreBits(3,updated_bit_pos);
+
+    if(updated_bit_pos==0)
+        return; // no actual update takes place
+
     for(int i=0; i<3; i++)
     {
         packed = quantize_float(pos[i]);
@@ -264,7 +269,7 @@ PlayerEntity::PlayerEntity()
 {
     m_costume_type   = 1;
     m_change_existence_state         = true;
-    m_destroyed         = false;
+    m_destroyed      = false;
     m_type           = 2; // PLAYER
     m_create_player  = true;
     m_player_villain = false;
