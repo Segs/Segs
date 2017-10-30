@@ -348,7 +348,6 @@ void MapInstance::sendState() {
         }
         res->ent_major_update = true;
         res->abs_time = 30*100*(m_world->sim_frame_time/1000.0f);
-        res->finalize();
         cl->link()->putq(res);
         //TODO: we should send client's entity as full updates until the client sends ResumedGame command to us.
     }
