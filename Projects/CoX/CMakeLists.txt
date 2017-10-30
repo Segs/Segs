@@ -8,9 +8,6 @@ ADD_SUBDIRECTORY(Clients)
 
 # Add README, settings.cfg, and Starter Databases
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/README.md ${EXECUTABLE_OUTPUT_PATH}/default_dbs/README.md COPYONLY)
-if(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH}/README.md)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/README.md ${EXECUTABLE_OUTPUT_PATH}/README.md COPYONLY)
-endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Data/settings.cfg ${EXECUTABLE_OUTPUT_PATH}/default_dbs/settings.cfg COPYONLY)
 if(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH}/settings.cfg)
