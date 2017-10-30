@@ -47,18 +47,15 @@ public:
 
     //  Accessors
     //////////////////////////////////////////////////////////////////////////
-    uint32_t    GetPackedBitsLength(uint32_t len, uint32_t dataBits) { return m_stream->GetPackedBitsLength(len, dataBits); }
     uint8_t  *  GetBuffer()         const   { return (uint8_t *)m_stream->GetBuffer(); }
     size_t      GetPacketLength()   const   { return m_stream->GetReadableDataSize();}
     BitStream * GetStream()                 { return m_stream;                      }
-    bool        HasDebugInfo()      const   { return m_hasDebugInfo;                }
     bool        getIsCompressed()   const   { return m_compressed;                  }
     bool        HasSiblings()       const   { return m_numSibs > 0;                 }
     bool        IsFinalized()       const   { return m_finalized;                   }
     bool        isReliable()        const   { return m_reliable;                    }
     bool        compressRequested() const   { return m_compress_on_send;            }
 
-    void SetBufferLength(uint32_t length)   { m_stream->SetByteLength(length); }
 
     uint32_t GetSequenceNumber()    const   { return m_seqNo;  }
     uint32_t GetSiblingPosition()   const   { return m_sibPos; }
@@ -69,7 +66,6 @@ public:
 
     void ByteAlign()                        { m_stream->ByteAlign(); }
     void SetStream(BitStream *stream)       { m_stream = stream; }
-    void SetHasDebugInfo(bool hasDebugInfo) { m_hasDebugInfo = hasDebugInfo; }
     void SetIsCompressed(bool compressed)   { m_compressed = compressed; }
     void SetReliabilty(bool r)              { m_reliable = r; }
     void setSeqNo(uint32_t n)               { m_seqNo=n; }
@@ -88,7 +84,7 @@ public:
 protected:
 
     BitStream *m_stream;
-    bool m_hasDebugInfo, m_compressed, m_finalized,m_reliable,m_compress_on_send=false;
+    bool m_compressed, m_finalized,m_reliable,m_compress_on_send=false;
     uint32_t m_seqNo;
     uint32_t m_numSibs;
     uint32_t m_sibId;

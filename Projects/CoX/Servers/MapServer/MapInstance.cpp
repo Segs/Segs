@@ -126,6 +126,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
 SEGSEvent * MapInstance::dispatch_sync( SEGSEvent * )
 {
     assert(!"No sync dipatchable events here");
+
     return nullptr;
 }
 void MapInstance::on_idle(IdleEvent *ev)

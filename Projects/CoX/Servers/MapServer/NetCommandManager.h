@@ -23,7 +23,6 @@ class NetCommand
     {
         // something like this : ((number*3.141592)/(1<<numbits))-3.141592
         float f=((float(number)*3.141592f)/(1<<numbits))-3.141592f;
-        f=0.0f; // since i'm not sure about correctness of the above
         return f;
     }
 public:

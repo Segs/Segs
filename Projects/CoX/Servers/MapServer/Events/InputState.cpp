@@ -1,17 +1,18 @@
 /*
  * Super Entity Game Server Project
  * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2017 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
 
 //#define DEBUG_INPUT
 #define _USE_MATH_DEFINES
-#include <cmath>
 #include "Events/InputState.h"
 #include "Entity.h"
 
+#include <QDebug>
+#include <cmath>
 static glm::quat QuaternionFromYawPitchRoll(const glm::vec3 &pyr)
 {
     float pitch(pyr.x);
@@ -361,6 +362,11 @@ void InputState::recv_client_opts(BitStream &bs)
     while((cmd_idx = bs.GetPackedBits(1))!=0)
     {
         entry=opts.get(cmd_idx-1);
+        if (!entry) 
+        {
+            qWarning() << "recv_client_opts missing opt for cmd index"<<cmd_idx-1;
+            continue;
+        }
         for(ClientOption::Arg &arg : entry->m_args)
         {
             switch ( arg.type )

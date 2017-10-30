@@ -102,14 +102,16 @@ public:
     {
     }
 };
-class ClientQuit : public MapLinkEvent {
+class ClientQuit : public MapLinkEvent
+{
 public:
-    int abort_disconnect;
+    int abort_disconnect = 0;
     ClientQuit():MapLinkEvent(MapEventTypes::evClientQuit)
     {}
     void serializeto(BitStream &bs) const
     {
         bs.StorePackedBits(1,7); // opcode
+        bs.StorePackedBits(1, abort_disconnect);
     }
     void serializefrom(BitStream &bs)
     {
@@ -118,12 +120,12 @@ public:
     }
 
 };
-class ForcedLogout : public MapLinkEvent {
+class ForcedLogout : public MapLinkEvent
+{
 public:
     QString reason;
-    ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason) {
-
-    }
+    ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason)
+    {}
     void serializeto(BitStream &bs) const
     {
         bs.StorePackedBits(1,12); // opcode
@@ -169,10 +171,11 @@ public:
 
 };
 
-class MiniMapState : public MapLinkEvent {
+class MiniMapState : public MapLinkEvent 
+{
 
 public:
-    uint32_t tile_idx;
+    uint32_t tile_idx=0;
     MiniMapState():MapLinkEvent(MapEventTypes::evMiniMapState)
     {}
     void serializeto(BitStream &bs) const

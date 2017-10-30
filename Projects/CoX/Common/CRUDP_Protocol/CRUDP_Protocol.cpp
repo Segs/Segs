@@ -120,7 +120,8 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
     }
     m_last_activity = steady_clock::now();
     CrudP_Packet *res = new CrudP_Packet; //PacketFactory::newDataPacket;
-    res->SetHasDebugInfo(bool(src.uGetBits(1)));
+    bool requested_debug_mode_bitstream = src.uGetBits(1);
+    assert(false == requested_debug_mode_bitstream);
     res->setSeqNo(src.uGetBits(32));
     uint32_t sibcount = src.GetPackedBits(1);
     res->setNumSibs(sibcount);
@@ -364,7 +365,7 @@ CrudP_Packet *CrudP_Protocol::wrapPacket(CrudP_Packet *_p)
     memset(strm->read_ptr(),0,64);
     strm->Put<uint32_t>(0); // bitlength placeholder
     strm->Put<uint32_t>(0); // checksum placeholder
-    strm->StoreBits(1,_p->HasDebugInfo());
+    strm->StoreBits(1,false);
     strm->StoreBits(32,_p->GetSequenceNumber());
     strm->StorePackedBits(1,_p->getNumSibs()); // sibling count
     if(_p->HasSiblings()) {
@@ -504,7 +505,6 @@ bool CrudP_Protocol::batchSend(lCrudP_Packet &tgt)
 }
 ///
 /// \brief Finds packets that need to be retransmitted and wraps them in protocol related bits
-/// \param res containter for resulting packets
 ///
 void CrudP_Protocol::processRetransmits()
 {
@@ -513,7 +513,7 @@ void CrudP_Protocol::processRetransmits()
     auto now       = steady_clock::now();
     int  ping_time = 50;
 
-    int first_packet_id = reliable_packets.front()->GetSequenceNumber();
+    uint32_t first_packet_id = reliable_packets.front()->GetSequenceNumber();
     for (CrudP_Packet *pkt : reliable_packets)
     {
         if (retransmit_queue.isFull())
