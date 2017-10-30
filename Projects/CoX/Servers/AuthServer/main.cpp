@@ -75,7 +75,7 @@ QFile segs_log_target;
 void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     QByteArray localMsg = msg.toLocal8Bit();
-    static QTextStream stdErr(stderr);
+    static QTextStream stdOut(stdout);
     static QTextStream fileLog(&segs_log_target);
     QString message;
     switch (type)
@@ -93,12 +93,16 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
         message = "Critical: ";
         break;
     case QtFatalMsg:
-        stdErr << "Fatal error" << localMsg.constData();
+        stdOut << "Fatal error" << localMsg.constData();
         abort();
     }
-    stdErr << message << localMsg.constData() << "\n";
+    stdOut << message << localMsg.constData() << "\n";
+    stdOut.flush();
     if(type!=QtInfoMsg)
+    {
         fileLog << message << localMsg.constData() << "\n";
+        fileLog.flush();
+    }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 } // End of anonymous namespace

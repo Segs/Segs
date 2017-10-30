@@ -28,7 +28,6 @@ void GameHandler::start() {
 void GameHandler::dispatch( SEGSEvent *ev )
 {
     assert(ev);
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("GameHandler link event %d\n"),ev->type()));
     switch(ev->type())
     {
     case SEGS_EventTypes::evTimeout:
