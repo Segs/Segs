@@ -108,19 +108,21 @@ public:
             pyr_valid[i]=false;
         }
     }
-    uint8_t m_csc_deltabits;
-    bool m_send_deltas;
-    uint16_t controlBits;
-    uint16_t someOtherbits;
-    void *current_state_P;
+    uint8_t m_csc_deltabits=0;
+    bool m_send_deltas=0;
+    uint16_t controlBits=0;
+    uint16_t someOtherbits=0;
+    void *current_state_P=0;
     glm::vec3 camera_pyr;
-    int m_t1,m_t2;
-    uint8_t field_20;
-    int m_A_ang11_probably,m_B_ang11_probably;
+    int m_t1=0;
+    int m_t2=0;
+    uint8_t field_20=0;
+    int m_A_ang11_probably=0;
+    int m_B_ang11_probably=0;
 
-    bool has_input_commit_guess;
-    bool pos_delta_valid[3];
-    bool pyr_valid[3];
+    bool has_input_commit_guess=0;
+    bool pos_delta_valid[3]= {};
+    bool pyr_valid[3]= {};
     glm::vec3 pos_delta;
     glm::quat direction;
     InputStateStorage & operator=(const InputStateStorage &other);
@@ -145,20 +147,20 @@ public:
             ENT_PLAYER=2,
             ENT_CRITTER=4
         };
-        int                 m_access_level;
-        int                 m_randSeed; // Sequencer uses this as a seed for random bone scale
-        int                 field_68;
-        int                 m_SG_id;
+        int                 m_access_level=0;
+        int                 m_randSeed=0; // Sequencer uses this as a seed for random bone scale
+        int                 field_68=0;
+        int                 m_SG_id=0;
         int                 m_num_titles=0;
         int                 m_num_fx=0;
         bool                m_is_logging_out = false;
 mutable bool                m_logout_sent=false;
-        int                 m_time_till_logout; // time in miliseconds untill given entity should be marked as logged out.
+        int                 m_time_till_logout=0; // time in miliseconds untill given entity should be marked as logged out.
         bool                m_has_titles = false;
         std::vector<uint8_t> m_fx1;
         std::vector<uint32_t> m_fx2;
         std::vector<uint8_t> m_fx3;
-        uint8_t             m_costume_type;
+        uint8_t             m_costume_type=0;
         int                 m_state_mode=0;
         bool                m_state_mode_send=false;
         bool                m_odd_send=false;
@@ -169,21 +171,21 @@ mutable bool                m_logout_sent=false;
         int                 m_seq_upd_num1=0;
         int                 m_seq_upd_num2=0;
         PosUpdate           m_pos_updates[64];
-        size_t              m_update_idx;
+        size_t              m_update_idx=0;
         std::vector<PosUpdate> interpResults;
 
         QString             m_battle_cry;
         QString             m_character_description;
-        bool                var_B4;
+        bool                var_B4=0;
 
         Character           m_char;
 
         bool                entReceiveAlwaysCon = false;
         bool                entReceiveSeeThroughWalls = false;
-        int                 pkt_id_QrotUpdateVal[3];
+        int                 pkt_id_QrotUpdateVal[3] = {0};
         glm::quat           qrot;
         glm::vec3           pos;
-        uint32_t            prev_pos[3];
+        uint32_t            prev_pos[3]= {0};
         Vector3_FPV         fixedpoint_pos;
         bool                m_selector1 = false;
         bool                m_pchar_things = false;
@@ -195,14 +197,14 @@ mutable bool                m_logout_sent=false;
         bool                m_hasRagdoll = false;
         bool                m_create_player = false;
         bool                m_rare_bits = false;
-        int                 current_client_packet_id;
+        int                 current_client_packet_id= {0};
         QString             m_group_name, m_override_name;
-        uint8_t             m_origin_idx;
-        uint8_t             m_class_idx;
-        uint8_t             m_type;
-        int32_t             m_idx;
-        uint32_t            m_db_id;
-        uint32_t            m_input_ack;
+        uint8_t             m_origin_idx= {0};
+        uint8_t             m_class_idx= {0};
+        uint8_t             m_type= {0};
+        int32_t             m_idx= {0};
+        uint32_t            m_db_id= {0};
+        uint32_t            m_input_ack= {0};
         bool                player_type = false;
         bool                m_player_villain = false;
         bool                m_destroyed = false;

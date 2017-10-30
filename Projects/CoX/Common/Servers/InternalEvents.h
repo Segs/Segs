@@ -19,6 +19,7 @@ public:
 // This tells the server that it should expect a new client connection from given address
 class ExpectClient : public SEGSEvent
 {
+    ExpectClient() = delete;
 public:
     ExpectClient(EventProcessor *evsrc,uint64_t client_id,uint8_t access_level,const ACE_INET_Addr &from) :
                 SEGSEvent(Internal_EventTypes::evExpectClient,evsrc),
