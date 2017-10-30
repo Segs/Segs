@@ -53,9 +53,9 @@ int getPacketResendDelay(signed int attempts, int ping, int before_first)
         delay = 4 * ping;
     attempts = std::min(2,attempts);
     switch(attempts) {
-    case 0: delay*=4; break;
-    case 1: delay*=2; break;
-    case 2:        break;
+        case 0: delay*=4; break;
+        case 1: delay*=2; break;
+        case 2:        break;
     }
     return std::min(std::max(delay,250),5000);
 }
@@ -143,7 +143,6 @@ void CrudP_Protocol::parseAcks(BitStream &src,CrudP_Packet *tgt)
     uint32_t numUniqueAcks = src.GetPackedBits(1);
     if(numUniqueAcks  == 0)
         return;
-
     uint32_t firstAck = src.GetBits(32);
     tgt->addAck(firstAck);
     for(uint32_t i = 1; i < numUniqueAcks; i++)
@@ -200,14 +199,15 @@ bool CrudP_Protocol::allSiblingsAvailable(uint32_t sibid)
 void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
 {
     ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
-    for(size_t i=0; i<a->getNumAcks(); i++)
+    int ack_count_to_process=a->getNumAcks();
+    for(size_t i=0; i<ack_count_to_process; i++)
     {
         PacketAck(a->getNextAck()); // endpoint acknowledged those packets
     }
     // clean up acked packets from reliable_packets
     auto first_invalid =
-        std::remove_if(reliable_packets.begin(), reliable_packets.end(),
-                       [](CrudP_Packet *p) -> bool { return p == nullptr; });
+            std::remove_if(reliable_packets.begin(), reliable_packets.end(),
+                           [](CrudP_Packet *p) -> bool { return p == nullptr; });
     reliable_packets.erase(first_invalid,reliable_packets.end());
 
     recv_acks.push_back(a->GetSequenceNumber());
@@ -316,7 +316,7 @@ void CrudP_Protocol::PacketAck(uint32_t id)
             auto iter = std::find(retransmit_queue.begin(),retransmit_queue.end(),v6);
             if ( iter!=retransmit_queue.end() )
                 retransmit_queue.erase(iter);
-    }
+        }
         delete v6;
         v6 = nullptr;
         break;
@@ -360,7 +360,7 @@ CrudP_Packet *CrudP_Protocol::wrapPacket(CrudP_Packet *_p)
         _p->GetStream()->ResetReading();
         cmd = _p->GetPackedBits(1);
         _p->GetStream()->ResetReading();
-        }
+    }
     BitStream *strm =new BitStream(_p->GetStream()->GetReadableDataSize()+64);
     memset(strm->read_ptr(),0,64);
     strm->Put<uint32_t>(0); // bitlength placeholder
@@ -368,10 +368,11 @@ CrudP_Packet *CrudP_Protocol::wrapPacket(CrudP_Packet *_p)
     strm->StoreBits(1,false);
     strm->StoreBits(32,_p->GetSequenceNumber());
     strm->StorePackedBits(1,_p->getNumSibs()); // sibling count
-    if(_p->HasSiblings()) {
+    if(_p->HasSiblings())
+    {
         strm->StorePackedBits(1,_p->getSibPos());
         strm->StoreBits(32,_p->getSibId());
-        }
+    }
     storeAcks(*strm);
     if(cmd!=1)
         strm->StoreBits(1,_p->getIsCompressed());
@@ -384,7 +385,7 @@ CrudP_Packet *CrudP_Protocol::wrapPacket(CrudP_Packet *_p)
     CrudP_Packet *res = new CrudP_Packet(*_p);
     res->SetStream(strm);
     return res;
-    }
+}
 void CrudP_Protocol::sendRaw(CrudP_Packet *pak,lCrudP_Packet &tgt )
 {
     CrudP_Packet *wrapped = wrapPacket(pak);
@@ -393,7 +394,7 @@ void CrudP_Protocol::sendRaw(CrudP_Packet *pak,lCrudP_Packet &tgt )
     size_t length =wrapped->GetStream()->GetReadableDataSize();
     size_t fixedlen=((length + 3) & ~7u) + 4;
     while(wrapped->GetStream()->GetReadableDataSize()<fixedlen)
-{
+    {
         wrapped->GetStream()->Put<uint8_t>(0);
     }
     uint32_t *head = (uint32_t*)wrapped->GetStream()->read_ptr();
@@ -519,7 +520,7 @@ void CrudP_Protocol::processRetransmits()
         if (retransmit_queue.isFull())
             break;
         int resend_period =
-            getPacketResendDelay(pkt->retransmitCount(), ping_time, pkt->GetSequenceNumber() < first_packet_id);
+                getPacketResendDelay(pkt->retransmitCount(), ping_time, pkt->GetSequenceNumber() < first_packet_id);
         long milliseconds_since_xfer = duration_cast<milliseconds>(now - pkt->lastSend()).count();
         if (milliseconds_since_xfer <= resend_period)
             continue;
