@@ -229,8 +229,6 @@ static  void                sendPvP(BitStream &bs);
         const QString &     name() const {return m_char.getName();}
         void                fillFromCharacter(Character *f);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
-private:
-        int                 getOrientation(BitStream &bs);
 };
 
 class PlayerEntity : public Entity

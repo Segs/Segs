@@ -6,7 +6,7 @@ struct FixedPointValue
 {
     int32_t store;
     constexpr FixedPointValue() : store(0x800000) {}
-    constexpr FixedPointValue(float v) : store(int(v * 64.0f) + 0x800000)
+    constexpr explicit FixedPointValue(float v) : store(int(v * 64.0f) + 0x800000)
     {
 #ifndef _MSC_VER
         assert(!std::isnan(v));

@@ -376,7 +376,7 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
 }
 //! EntitiesResponse is sent to a client to inform it about the current world state.
 EntitiesResponse::EntitiesResponse(MapClient *cl) :
-    MapLinkEvent(MapEventTypes::evEntitites), m_finalized_into(2048)
+    MapLinkEvent(MapEventTypes::evEntitites)
 {
     m_map_time_of_day = 10;
     m_client = cl;
@@ -390,7 +390,7 @@ EntitiesResponse::EntitiesResponse(MapClient *cl) :
     //m_interpolation_level
 
 }
-void EntitiesResponse::serializeto_internal( BitStream &tgt ) const
+void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
     MapInstance *mi = m_client->current_map();
     EntityManager &ent_manager(mi->m_entities);

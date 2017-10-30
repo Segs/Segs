@@ -10,6 +10,8 @@
 #pragma once
 
 #include "BitStream.h"
+#include <ace/Thread_Mutex.h>
+#include <ace/Guard_T.h>
 #include <list>
 
 class MapClient;
@@ -31,6 +33,10 @@ public:
     Entity *        CreatePlayer();
     void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_entlist.size(); }
+    ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }
+
+protected:
+    mutable ACE_Thread_Mutex m_mutex; // used to prevent world state reads during updates
 };
 
 class EntityStorage

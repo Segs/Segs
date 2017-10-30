@@ -91,14 +91,9 @@ void storeUnknownBinTree(const Entity &src,BitStream &bs)
 {
     bs.StoreBits(1,0);
 }
-static inline uint32_t quantize_float(float v)
-{
-    return uint32_t(floorf(v*64)+0x800000);
-}
 void storePosition(const Entity &src,BitStream &bs)
 {
 // float x = pos.vals.x;
-    uint32_t packed;
     uint8_t updated_bit_pos = 7;
 
     bs.StoreBits(3,updated_bit_pos);
@@ -108,13 +103,12 @@ void storePosition(const Entity &src,BitStream &bs)
 
     for(int i=0; i<3; i++)
     {
-        packed = quantize_float(src.pos[i]);
-        packed = std::min(packed,0xFFFFFFU);
+        FixedPointValue fpv(src.pos[i]);
         //diff = packed ^ prev_pos[i]; // changed bits are '1'
-        bs.StoreBits(24,packed);
+        bs.StoreBits(24,fpv.store);
     }
 }
-static void toEulerAngle(const glm::quat& q, float& roll, float& pitch, float& yaw)
+void toEulerAngle(const glm::quat& q, float& roll, float& pitch, float& yaw)
 {
     // roll (x-axis rotation)
     float sinr = 2.0f * (q.w * q.x + q.y * q.z);

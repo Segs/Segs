@@ -96,7 +96,7 @@ T * doLoad(BinStore *bs) {
 }
 template<class T>
 T * doLoadRef(BinStore *bs) {
-    T *res = new T;
+    T *res = new T {};
     if(!loadFrom(bs,*res)) {
         delete res;
         res = nullptr;

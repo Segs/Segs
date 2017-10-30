@@ -33,7 +33,7 @@ class ClientQuit;
 class ConnectRequest;
 class ChatDividerMoved;
 class MiniMapState;
-
+class ClientResumedRendering;
 class MapServer;
 class SEGSTimer;
 class InputState;
@@ -87,4 +87,5 @@ protected:
     void on_connection_request(ConnectRequest *ev);
     void on_command_chat_divider_moved(ChatDividerMoved *ev);
     void on_minimap_state(MiniMapState *ev);
+    void on_client_resumed(ClientResumedRendering *ev);
 };

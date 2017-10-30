@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server
  * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2017 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
@@ -78,7 +78,7 @@ inline      void            uGet(T &val)
                                     m_read_off += sizeof(T);
                             }
                             template<typename T>
-inline      T               ruGet(void)
+inline      T               ruGet()
                             {
                                     T val = *((T *)&m_buf[m_read_off]);
                                     m_read_off += sizeof(T);
@@ -103,18 +103,18 @@ inline      T               ruGet(void)
             uint8_t *       write_ptr()                 { return m_buf+m_write_off;}
             void            write_ptr(int off)          { m_write_off+=off;}
 
-            void            Reset(void)                 {m_read_off=m_write_off=m_last_err=0;}
-            void            ResetReading(void)          {m_read_off=0;}
-            void            ResetWriting(void)          {m_write_off=0;} //will start at the beginning and overwrite existing contents
-            void            ResetContents(void)         {memset(m_buf,0,m_size);}
+            void            Reset()                     {m_read_off=m_write_off=m_last_err=0;}
+            void            ResetReading()              {m_read_off=0;}
+            void            ResetWriting()              {m_write_off=0;} //will start at the beginning and overwrite existing contents
+            void            ResetContents()             {memset(m_buf,0,m_size);}
 protected:
-            GrowingBuffer & operator=(const GrowingBuffer &);
-            uint8_t         m_safe_area;
+            GrowingBuffer & operator=(const GrowingBuffer &) = delete;
+            uint8_t *       m_buf;
             size_t          m_write_off;
             size_t          m_read_off;
             size_t          m_size;
             size_t          m_max_size;
-            uint8_t *       m_buf;
             uint32_t        m_last_err;
+            uint8_t         m_safe_area;
             int             resize(size_t accommodate_size);
 };

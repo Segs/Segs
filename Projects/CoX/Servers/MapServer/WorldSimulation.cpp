@@ -5,6 +5,7 @@
 
 void World::update(const ACE_Time_Value &tick_timer)
 {
+
     ACE_Time_Value delta;
     if(prev_tick_time==ACE_Time_Value::zero) {
         delta = ACE_Time_Value(0,33*1000);
@@ -16,6 +17,7 @@ void World::update(const ACE_Time_Value &tick_timer)
         m_time_of_day-=24.0f;
     sim_frame_time = delta.msec()/1000.0f;
     prev_tick_time = tick_timer;
+    ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_ent_mager.getEntitiesMutex());
     // TODO: use active entity list here
     for(int i=1; i<10240; ++i) {
         if(ref_ent_mager.m_map_entities[i]==nullptr)

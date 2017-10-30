@@ -13,7 +13,7 @@
 
 GrowingBuffer::GrowingBuffer(uint8_t *buf, size_t size, bool take_ownership)
 {
-    m_buf       = NULL;
+    m_buf       = nullptr;
     m_size      = 0;
     m_safe_area = 0;
     m_last_err  = 0;
@@ -35,9 +35,9 @@ GrowingBuffer::GrowingBuffer(uint8_t *buf, size_t size, bool take_ownership)
 
 GrowingBuffer::GrowingBuffer(size_t max_size,uint8_t safe_area,size_t pre_alloc_size)
 {
-    m_buf = NULL;
+    m_buf = nullptr;
     m_safe_area = safe_area;
-    m_size = (pre_alloc_size+7)&(~7);
+    m_size = (pre_alloc_size+7)&(~7U);
     m_max_size = max_size;
     m_last_err = 0;
     m_write_off=m_read_off=0;
@@ -45,7 +45,7 @@ GrowingBuffer::GrowingBuffer(size_t max_size,uint8_t safe_area,size_t pre_alloc_
     {
         m_buf = new uint8_t[m_size+m_safe_area];
         memset(m_buf,0,m_size);
-        assert(m_buf!=NULL);
+        assert(m_buf!=nullptr);
     }
     Reset();
 }
@@ -66,7 +66,7 @@ GrowingBuffer::~GrowingBuffer()
 {
     delete []m_buf;
     m_write_off=m_read_off=0;
-    m_buf = 0;
+    m_buf = nullptr;
 }
 void GrowingBuffer::PutString(const char *t)
 {
@@ -181,14 +181,14 @@ int GrowingBuffer::resize(size_t accommodate_size)
     if(0==new_size) // requested freeing of internal buffer
     {
         delete [] m_buf;
-        m_buf = NULL; // this allows us to catch calls through Unchecked methods quickly
+        m_buf = nullptr; // this allows us to catch calls through Unchecked methods quickly
         m_size= new_size;
         return 0;
     }
     if(new_size>m_size)
     {
         uint8_t *tmp = new uint8_t[new_size+m_safe_area];
-        if(NULL==tmp)
+        if(nullptr==tmp)
             return -2;
         assert(m_write_off<=m_size); // just to be sure
         if(m_write_off>1)
@@ -200,25 +200,3 @@ int GrowingBuffer::resize(size_t accommodate_size)
     }
     return 0;
 }
-void test(void) {
-
-}
-#ifdef SCRIPTING_ENABLED
-#include "MRubyEngine.h"
-WRAP_FUNCTION(test)
-WRAP_METHOD(GrowingBuffer,PutBytes)
-WRAP_METHOD(GrowingBuffer,PutString)
-void GrowingBuffer::registerClass(MRubyEngine *mrb)
-{
-    mrb->define_class<GrowingBuffer>().
-            define_constructor<GrowingBuffer>().
-            define_method("name",&wrap_test).
-            define_method("put_bytes",&wrap_GrowingBuffer_PutBytes).
-            define_method("put_string",&wrap_GrowingBuffer_PutString).
-            fin();
-}
-
-void init_GrowingBuffer_wrapper(mrb_state * mrb) {
-
-}
-#endif

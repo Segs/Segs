@@ -58,6 +58,8 @@ void EntityManager::sendDeletes( BitStream &tgt ) const
  */
 void EntityManager::sendEntities( BitStream &bs,int self_idx,bool is_incremental ) const
 {
+    ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_mutex);
+
     int prev_idx=-1;
     int delta;
     // sending delta between entities idxs ->

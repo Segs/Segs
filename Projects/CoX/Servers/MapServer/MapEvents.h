@@ -39,6 +39,7 @@ public:
     EVENT_DECL(evCombineRequest         ,40)
     EVENT_DECL(evConsoleCommand         ,100)
     EVENT_DECL(evMiniMapState           ,101)
+    EVENT_DECL(evClientResumedRendering ,104)
     EVENT_DECL(evCookieRequest          ,106)
     EVENT_DECL(evWindowState            ,114)
     END_EVENTS(500)
@@ -102,14 +103,16 @@ public:
     {
     }
 };
-class ClientQuit : public MapLinkEvent {
+class ClientQuit : public MapLinkEvent
+{
 public:
-    int abort_disconnect;
+    int abort_disconnect = 0;
     ClientQuit():MapLinkEvent(MapEventTypes::evClientQuit)
     {}
     void serializeto(BitStream &bs) const
     {
         bs.StorePackedBits(1,7); // opcode
+        bs.StorePackedBits(1, abort_disconnect);
     }
     void serializefrom(BitStream &bs)
     {
@@ -118,12 +121,12 @@ public:
     }
 
 };
-class ForcedLogout : public MapLinkEvent {
+class ForcedLogout : public MapLinkEvent
+{
 public:
     QString reason;
-    ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason) {
-
-    }
+    ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason)
+    {}
     void serializeto(BitStream &bs) const
     {
         bs.StorePackedBits(1,12); // opcode
@@ -166,13 +169,26 @@ public:
     {
         bs.GetString(contents);
     }
-
+};
+class ClientResumedRendering : public MapLinkEvent
+{
+public:
+    ClientResumedRendering():MapLinkEvent(MapEventTypes::evClientResumedRendering)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,4);
+    }
+    void serializefrom(BitStream &bs)
+    {
+    }
 };
 
-class MiniMapState : public MapLinkEvent {
+class MiniMapState : public MapLinkEvent 
+{
 
 public:
-    uint32_t tile_idx;
+    uint32_t tile_idx=0;
     MiniMapState():MapLinkEvent(MapEventTypes::evMiniMapState)
     {}
     void serializeto(BitStream &bs) const

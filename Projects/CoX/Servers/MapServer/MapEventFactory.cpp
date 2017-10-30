@@ -49,6 +49,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
             // otherwise treat as idle
             return new IdleEvent;
         case 1: return new MiniMapState;
+        case 4: return new ClientResumedRendering;
         case 14: return new WindowState;
         case 40: return new CombineRequest;
         /*case 21: new KeybindProfileReset; */
