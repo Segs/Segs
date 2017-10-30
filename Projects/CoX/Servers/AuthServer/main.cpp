@@ -22,8 +22,6 @@
 #include <ace/ACE.h>
 #include <ace/Singleton.h>
 #include <ace/Null_Mutex.h>
-#include <ace/Log_Msg.h>
-#include <ace/Log_Msg_Callback.h>
 #include <ace/Log_Record.h>
 #include <ace/INET_Addr.h>
 #include <ace/SOCK_Connector.h>
@@ -41,69 +39,24 @@
 #include <QSettings>
 #include <QCommandLineParser>
 #include <QDebug>
+#include <QFile>
 
 #include <iostream>
 #include <string>
 #include <stdlib.h>
 #include <memory>
-
-/** \brief The LogCallback class
-*/
-class LogCallback : public ACE_Log_Msg_Callback
+namespace
 {
-    std::ofstream m_tgt_file_stream;
-    ACE_Thread_Mutex m_log_lock;
-public:
-    LogCallback() : ACE_Log_Msg_Callback()
-    {
-
-    }
-    virtual ~LogCallback()
-    {
-        m_tgt_file_stream.close();
-    }
-    void init_file_log() // no need for error checking at this point
-    {
-        // Create a persistent store.
-        // Lets setup logging to a file in addtion to logging to the console
-#if defined (ACE_LACKS_IOSTREAM_TOTALLY)
-        return;
-#endif
-        ACE_Guard<ACE_Thread_Mutex> locker(m_log_lock);
-        if(m_tgt_file_stream.is_open())
-            return;
-        const char *filename = "output.log";
-        m_tgt_file_stream.open(filename, ios::out | ios::trunc);
-        if(m_tgt_file_stream.bad())
-            ACE_DEBUG((LM_WARNING,ACE_TEXT("Failed to open file for logging.\n")));
-    }
-    virtual void log (ACE_Log_Record &log_record)
-    {
-        ACE_Guard<ACE_Thread_Mutex> locker(m_log_lock);
-        log_record.print (ACE_TEXT (""), 0, std::cerr);
-        if (!m_tgt_file_stream.bad ())
-        {
-            log_record.print (ACE_TEXT (""), ACE_Log_Msg::VERBOSE, m_tgt_file_stream);
-        }
-    }
-};
-LogCallback g_logging_object;
-
-static ACE_THR_FUNC_RETURN event_loop (void *arg)
+ACE_THR_FUNC_RETURN event_loop (void *arg)
 {
     ACE_Reactor *reactor = static_cast<ACE_Reactor *>(arg);
-    ACE_LOG_MSG->clr_flags(ACE_Log_Msg::STDERR);
-    ACE_LOG_MSG->set_flags(ACE_Log_Msg::MSG_CALLBACK);
-    ACE_LOG_MSG->priority_mask (LM_DEBUG |LM_ERROR | LM_WARNING| LM_NOTICE | LM_INFO| LM_TRACE , ACE_Log_Msg::PROCESS);
-    ACE_LOG_MSG->msg_callback(&g_logging_object);
-
     reactor->owner (ACE_OS::thr_self ());
     reactor->run_reactor_event_loop ();
     ServerManager::instance()->StopLocalServers();
     ServerManager::instance()->GetAdminServer()->ShutDown("No reason");
     return (ACE_THR_FUNC_RETURN)nullptr;
 }
-static bool CreateServers()
+bool CreateServers()
 {
     auto server_manger = ServerManager::instance();
     GameServer *game_instance   = new GameServer;
@@ -118,8 +71,47 @@ void setSettingDefaults()
 {
     // here we should setup the default QSettings locations and such
 }
+QFile segs_log_target;
+void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QByteArray localMsg = msg.toLocal8Bit();
+    static QTextStream stdErr(stderr);
+    static QTextStream fileLog(&segs_log_target);
+    QString message;
+    switch (type)
+    {
+    case QtDebugMsg:
+        message = "Debug   : ";
+        break;
+    case QtInfoMsg:
+        message = "";  // no prefix for informational messages
+        break;
+    case QtWarningMsg:
+        message = "Warning : ";
+        break;
+    case QtCriticalMsg:
+        message = "Critical: ";
+        break;
+    case QtFatalMsg:
+        stdErr << "Fatal error" << localMsg.constData();
+        abort();
+    }
+    stdErr << message << localMsg.constData() << "\n";
+    if(type!=QtInfoMsg)
+        fileLog << message << localMsg.constData() << "\n";
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+} // End of anonymous namespace
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
+    segs_log_target.setFileName("output.log");
+    if(!segs_log_target.open(QFile::WriteOnly|QFile::Append))
+    {
+        qCritical() << "Failed to open log file in write mode, will procede with console only logging";
+    }
+    qInstallMessageHandler(segsLogMessageOutput);
     QCoreApplication q_app(argc,argv);
     QCoreApplication::setOrganizationDomain("segs.nemerle.eu");
     QCoreApplication::setOrganizationName("SEGS Project");
@@ -146,8 +138,6 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     interesting_signals.sig_add(SIGINT);
     interesting_signals.sig_add(SIGHUP);
 
-    g_logging_object.init_file_log();
-
     const size_t N_THREADS = 1;
     ACE_TP_Reactor threaded_reactor;
     ACE_Reactor new_reactor(&threaded_reactor); //create concrete reactor
@@ -155,15 +145,11 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 
     ServerStopper st; // it'll register itself with current reactor, and shut it down on sigint
     new_reactor.register_handler(interesting_signals,&st);
-    ACE_LOG_MSG->clr_flags(ACE_Log_Msg::STDERR);
-    ACE_LOG_MSG->set_flags(ACE_Log_Msg::MSG_CALLBACK);
-    ACE_LOG_MSG->priority_mask (LM_DEBUG |LM_ERROR | LM_WARNING| LM_NOTICE | LM_INFO , ACE_Log_Msg::PROCESS);
-    ACE_LOG_MSG->msg_callback(&g_logging_object);
 
     // Print out startup copyright messages
 
-    qDebug().noquote() << VersionInfo::getCopyright();
-    qDebug().noquote() << VersionInfo::getAuthVersion();
+    qInfo().noquote() << VersionInfo::getCopyright();
+    qInfo().noquote() << VersionInfo::getAuthVersion();
 
     ACE_DEBUG((LM_ERROR,ACE_TEXT("main\n")));
 
