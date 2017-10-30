@@ -114,6 +114,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evChatDividerMoved:
             on_command_chat_divider_moved(static_cast<ChatDividerMoved *>(ev));
             break;
+        case MapEventTypes::evClientResumedRendering:
+            on_client_resumed(static_cast<ClientResumedRendering *>(ev));
+            break;
         case MapEventTypes::evMiniMapState:
             on_minimap_state(static_cast<MiniMapState *>(ev));
             break;
@@ -289,14 +292,14 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     MapClient *cl = lnk->client_data();
     assert(cl);
     // this sends the initial  'world', but without this client
-    EntitiesResponse *res=new EntitiesResponse(cl); // initial world update -> current state
-    res->m_map_time_of_day = m_world->time_of_day();
-    res->is_incremental(false); //redundant
-    res->ent_major_update=true; //false;
-    res->abs_time = 30*100*m_world->sim_frame_time/1000.0f;
-    res->finalize();
-    assert(lnk==cl->link());
-    lnk->putq(res);
+//    EntitiesResponse *res=new EntitiesResponse(cl); // initial world update -> current state
+//    res->m_map_time_of_day = m_world->time_of_day();
+//    res->is_incremental(false); //redundant
+//    res->ent_major_update=true; //false;
+//    res->abs_time = 30*100*m_world->sim_frame_time/1000.0f;
+//    res->finalize();
+//    assert(lnk==cl->link());
+//    lnk->putq(res);
     m_clients.addToActiveClients(cl); // add to the list of clients interested in world updates
 }
 //! Handle instance-wide timers
@@ -333,14 +336,12 @@ void MapInstance::sendState() {
 
     for(;iter!=end; ++iter)
     {
-        bool send_startup_admin = false;
         MapClient *cl = *iter;
         EntitiesResponse *res=new EntitiesResponse(cl);
         res->m_map_time_of_day = m_world->time_of_day();
 
         if(cl->char_entity()->m_change_existence_state==true) {
             res->is_incremental(false); // incremental world update = op 3
-            send_startup_admin = true;
         }
         else {
             res->is_incremental(true); // incremental world update = op 2
@@ -349,18 +350,7 @@ void MapInstance::sendState() {
         res->abs_time = 30*100*(m_world->sim_frame_time/1000.0f);
         res->finalize();
         cl->link()->putq(res);
-        if(send_startup_admin) {
-            char buf[256];
-            printf("Sending msg to client %p\n",cl);
-            std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion();
-            std::snprintf(buf, 256, "There are %zu active entites and %zu clients", m_entities.active_entities(),
-                          num_active_clients());
-            welcome_msg += buf;
-            ChatMessage *msg = ChatMessage::adminMessage(buf );
-            cl->link()->putq(msg);
-        }
-        if(cl->char_entity()->m_change_existence_state==true)
-            cl->char_entity()->m_change_existence_state=false;
+        //TODO: we should send client's entity as full updates until the client sends ResumedGame command to us.
     }
     only_first=false;
     if(resendtxt==15)
@@ -488,4 +478,19 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
     qDebug() << "MiniMapState tile "<<ev->tile_idx << " for player" << src;
+}
+
+void MapInstance::on_client_resumed(ClientResumedRendering *ev)
+{
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *cl = lnk->client_data();
+    if(cl->char_entity()->m_change_existence_state==true)
+        cl->char_entity()->m_change_existence_state=false;
+    char buf[256];
+    std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
+    std::snprintf(buf, 256, "There are %zu active entites and %zu clients", m_entities.active_entities(),
+                  num_active_clients());
+    welcome_msg += buf;
+    ChatMessage *msg = ChatMessage::adminMessage(welcome_msg.c_str() );
+    cl->link()->putq(msg);
 }

@@ -39,6 +39,7 @@ public:
     EVENT_DECL(evCombineRequest         ,40)
     EVENT_DECL(evConsoleCommand         ,100)
     EVENT_DECL(evMiniMapState           ,101)
+    EVENT_DECL(evClientResumedRendering ,104)
     EVENT_DECL(evCookieRequest          ,106)
     EVENT_DECL(evWindowState            ,114)
     END_EVENTS(500)
@@ -168,7 +169,19 @@ public:
     {
         bs.GetString(contents);
     }
-
+};
+class ClientResumedRendering : public MapLinkEvent
+{
+public:
+    ClientResumedRendering():MapLinkEvent(MapEventTypes::evClientResumedRendering)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,4);
+    }
+    void serializefrom(BitStream &bs)
+    {
+    }
 };
 
 class MiniMapState : public MapLinkEvent 
