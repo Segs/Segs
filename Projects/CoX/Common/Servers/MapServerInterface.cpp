@@ -5,9 +5,8 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-#include <cassert>
 #include "MapServerInterface.h"
-#include <ace/Log_Msg.h>
+#include <cassert>
 
 bool MapServerInterface::Run()
 {

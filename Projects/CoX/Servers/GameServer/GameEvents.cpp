@@ -6,12 +6,13 @@
 *
 
 */
-#include <ace/Log_Msg.h>
 #include "HashStorage.h"
 #include "GameEvents.h"
 #include "CharacterClient.h"
 #include "Character.h"
 #include "Costume.h"
+
+#include <QtCore/QDebug>
 // SpecHash<std::string,val>
 //
 // get hash index of given key
@@ -22,17 +23,18 @@
 
 void UpdateServer::dependent_dump()
 {
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IGame:pktCS_ServerUpdate\n%I{\n")));
+    qDebug() << "Game:pktCS_ServerUpdate";
+    qDebug() << "{";
 
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    buildDate %08d;\n"),m_build_date));
-        //uint8_t clientInfo[16];
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    localMapServer %d\n"),localMapServer));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    currentVersion %s\n"),qPrintable(currentVersion)));
-        //uint8_t segsHash[16];
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    authId 0x%08x;\n"),authID));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    authCookie 0x%08x;\n"),authCookie));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    accountName%s\n"),qPrintable(accountName)));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
+    qDebug() << "    buildDate"<<m_build_date;
+    //uint8_t clientInfo[16];
+    qDebug() << "    localMapServer"<<localMapServer;
+    qDebug() << "    currentVersion"<<currentVersion;
+    //uint8_t segsHash[16];
+    qDebug().nospace() << "    authId 0x"<<QString::number(authID,16);
+    qDebug().nospace() << "    authCookie 0x"<<QString::number(authCookie,16);
+    qDebug() << "    accountName"<<accountName;
+    qDebug() << "}";
 }
 
 void UpdateServer::serializeto( BitStream &tgt ) const

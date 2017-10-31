@@ -2,6 +2,9 @@
 
 #include "CRUD_Events.h"
 
+#include <ace/Event_Handler.h>
+#include <ace/Svc_Handler.h>
+
 #include <QDebug>
 #include <set>
 
@@ -18,7 +21,8 @@ CRUDLink::CRUDLink() :  m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MA
     all_links.insert(this);
 }
 
-CRUDLink::~CRUDLink() {
+CRUDLink::~CRUDLink()
+{
     all_links.erase(this);
 }
 

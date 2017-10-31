@@ -8,7 +8,6 @@
 
 #include "CRUDP_Packet.h"
 
-#include <ace/Log_Msg.h>
 #include <QtCore/QDebug>
 
 CrudP_Packet::CrudP_Packet()
@@ -90,13 +89,11 @@ void CrudP_Packet::setContents(const BitStream &t)
 
 void CrudP_Packet::dump() const
 {
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CrudP_Packet debug dump:\n")));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSeqence Number 0x%08x\n"),m_seqNo));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSiblings %d\n"),m_numSibs));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tContains %d acks\n"),getNumAcks()));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tCompressed %d\n"),m_compressed));
-    //ACE_HEX_DUMP((LM_DEBUG,(char *)m_stream->read_ptr(),m_stream->GetReadableDataSize(),"contents"));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CrudP_Packet debug complete\n")));
+    qDebug() << "CrudP_Packet debug dump:";
+    qDebug().nospace() << "\tSeqence Number 0x" << QString::number(m_seqNo,16);
+    qDebug() << "\tSiblings "<<m_numSibs;
+    qDebug() << "\tContains "<<getNumAcks()<<"acks";
+    qDebug() << "\tCompressed"<<m_compressed;
 }
 
 uint32_t CrudP_Packet::getNextAck()

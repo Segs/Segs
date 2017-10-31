@@ -10,8 +10,8 @@
 #include "BitStream.h"
 #include "Costume.h"
 
-#include <ace/Log_Msg.h>
 #include <QtCore/QString>
+#include <QtCore/QDebug>
 
 Character::Character()
 {
@@ -275,22 +275,22 @@ void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
 {
     for(int i=0; i<3; i++)
     {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Pool_id[%d]: 0x%08x\n"),i,pool_info.id[i]));
+        qDebug().nospace().noquote() << "    Pool_id["<<i<<"]: 0x%"<<QString::number(pool_info.id[i],16);
     }
 }
 void Character::DumpBuildInfo()
 {
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    class: %s\n"),qPrintable(m_class_name)));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    origin: %s\n"),qPrintable(m_origin_name)));
+    qDebug() << "    class: "<<m_class_name;
+    qDebug() << "    origin: "<<m_origin_name;
     DumpPowerPoolInfo(m_powers[0]);
     DumpPowerPoolInfo(m_powers[1]);
 }
 
 void Character::dump()
 {
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    //---------------Tray------------------\n")));
+    qDebug() <<"    //---------------Tray------------------";
     m_trays.dump();
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    //---------------Costume---------------\n")));
+    qDebug() <<"    //---------------Costume------------------";
 //    if(getCurrentCostume())
 //        getCurrentCostume()->dump();
 
@@ -307,7 +307,6 @@ void Character::recv_initial_costume( BitStream &src, ColorAndPartPacker *packer
 }
 void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool sendAbsolute)
 {
-    int field_idx=0;
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,0);
     bs.StorePackedBits(5,src.m_HitPoints/5.0f);
@@ -318,7 +317,6 @@ void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool sendAbsolute
 }
 void serializeFullStats(const Parse_CharAttrib &src,BitStream &bs, bool sendAbsolute)
 {
-    int field_idx=0;
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,0);
     bs.StorePackedBits(7,src.m_HitPoints);

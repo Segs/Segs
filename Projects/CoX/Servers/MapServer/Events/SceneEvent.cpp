@@ -1,48 +1,10 @@
 #include "Events/SceneEvent.h"
 #include "MapEvents.h"
 
-#include <ace/Log_Msg.h>
-
 SceneEvent::SceneEvent():MapLinkEvent(MapEventTypes::evScene)
 {
 }
 
-void SceneEvent::dependent_dump()
-{
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%IpktSC_SceneResp\n%I{\n")));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    undos_PP 0x%08x\n"),undos_PP));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    var_14 0x%08x\n"),var_14));
-    if(var_14)
-    {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_outdoor_map 0x%08x\n"),m_outdoor_mission_map));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_map_number 0x%08x\n"),m_map_number));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn1 0x%08x\n"),unkn1));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_map_desc %s\n"),qPrintable(m_map_desc)));
-    }
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    flag_dword_151D5D8 0x%08x\n"),current_map_flags));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    num_base_elems 0x%08x\n"),num_base_elems));
-    for(size_t i=0; i<num_base_elems; i++)
-    {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn2 0x%08x\n"),unkn2));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_trays[i] %s\n"),qPrintable(m_trays[i])));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_crc[i] 0x%08x\n"),m_crc[i]));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn2 0x%08x\n"),unkn2));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn1 0x%08x\n"),unkn1));
-    }
-    if(num_base_elems!=0)
-    {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn2 0x%08x\n"),unkn2));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_trays[0] %s\n"),qPrintable(m_trays[0])));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_crc[0] 0x%08x\n"),m_crc[0]));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn2 0x%08x\n"),unkn2));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn1 0x%08x\n"),unkn1));
-    }
-    for(size_t i=0; i<m_refs.size(); i++)
-    {
-        m_refs[i].dump();
-    }
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I}\n")));
-}
 void SceneEvent::getGrpElem(BitStream &src,int idx)
 {
     if(src.GetBits(1))

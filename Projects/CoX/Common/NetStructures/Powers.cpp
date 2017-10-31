@@ -1,7 +1,6 @@
 #include "Powers.h"
 
-#include <ace/Log_Msg.h>
-
+#include <QDebug>
 void Power::serializeto(BitStream &tgt) const
 {
     tgt.StoreBits(4,uint32_t(entry_type));
@@ -23,7 +22,7 @@ void Power::serializeto(BitStream &tgt) const
     case TrayItemType::None:
         break;
     default:
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Unknown tray entry type %d\n"),entry_type));
+        qWarning() << "Unknown tray entry type" << uint32_t(entry_type);
     }
 }
 
@@ -48,7 +47,7 @@ void Power::serializefrom(BitStream &src)
     case TrayItemType::None:
         break;
     default:
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Unknown tray entry type %d\n"),entry_type));
+        qWarning() << " Unknown tray entry type "<<uint32_t(entry_type);
     }
 }
 
@@ -58,15 +57,15 @@ void Power::Dump()
     {
     case TrayItemType::Power:
     case TrayItemType::Inspiration:
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("[(0x%x,0x%x)]"),powerset_idx,power_idx));
+            qDebug().noquote() << "[(" << QString::number(powerset_idx,16) << ',' << QString::number(powerset_idx,16)<<")]";
         break;
     case TrayItemType::Macro:
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("[(%s,%s,%s)]"),qPrintable(command),qPrintable(short_name),qPrintable(icon_name)));
+            qDebug() << "[(" << command << ',' << short_name<<',' << icon_name<<")]";
         break;
     case TrayItemType::None:
         break;
     default:
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Unknown tray entry type %d\n"),entry_type));
+        qWarning() << " Unknown tray entry type "<<uint32_t(entry_type);
     }
 
 }
@@ -98,27 +97,28 @@ void PowerTrayGroup::serializefrom(BitStream &src)
     if(m_c)
     {
         m_default_powerset_idx= src.GetBits(32);
-        m_default_power_idx= src.GetBits(32);
+        m_default_power_idx   = src.GetBits(32);
     }
 }
 
 void PowerTrayGroup::dump()
 {
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn1: 0x%08x\n"),primary_tray_idx));
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    unkn2: 0x%08x\n"),secondary_tray_idx));
+    qDebug() << "    unkn1: 0x"<<QString::number(primary_tray_idx,16);
+    qDebug() << "    unkn2: 0x"<<QString::number(secondary_tray_idx,16);
     for(int bar_num=0; bar_num<9; bar_num++)
     {
         if(m_trays[bar_num].setPowers()==0)
             continue;
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    Tray %d ***"),bar_num));
+        QDebug non_line_breaking_debug=qDebug();
+        non_line_breaking_debug << "    Tray "<<bar_num<<" ***";
         m_trays[bar_num].Dump();
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("***\n")));
+        non_line_breaking_debug << "***";
     }
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_c %d\n"),m_c));
+    qDebug() << "    m_c "<<m_c;
     if(m_c)
     {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_power_rel1 0x%08x\n"),m_default_powerset_idx));
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%I    m_power_rel2 0x%08x\n"),m_default_power_idx));
+        qDebug() << "    m_power_rel1 0x"<<QString::number(m_default_powerset_idx,16);
+        qDebug() << "    m_power_rel2 0x"<<QString::number(m_default_power_idx,16);
     }
 }
 

@@ -35,9 +35,9 @@ public:
 class ChatMessage : public GameCommand
 {
 public:
+    QString     m_msg;
     int         m_source_player_id;
     int         m_channel_type;
-    QString     m_msg;
         enum    eChatTypes
                 {
                     CHAT_UNKNOWN1 = 1,

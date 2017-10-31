@@ -23,15 +23,15 @@ public:
 class SEGSEvent
 {
 protected:
+        const size_t    m_type;
         EventProcessor *m_event_source;
-        size_t          m_type;
 
 virtual                 ~SEGSEvent()
                         {
-                            m_event_source=0;
+                            m_event_source=nullptr;
                         }
 public:
-                        SEGSEvent(size_t evtype,EventProcessor *ev_src=0) : m_event_source(ev_src),m_type(evtype)
+                        SEGSEvent(size_t evtype,EventProcessor *ev_src=nullptr) : m_type(evtype),m_event_source(ev_src)
                         {}
         void            release()
                         {
@@ -42,17 +42,17 @@ public:
         size_t          type() const {return m_type;}
 virtual const char *    info() {return typeid(*this).name();}
 };
+
 class TimerEvent : public SEGSEvent
 {
-    ACE_Time_Value          m_arrival_time;
-    void *                  m_data;
+    ACE_Time_Value m_arrival_time;
+    void *         m_data;
+
 public:
-                            TimerEvent(const ACE_Time_Value &time, void *dat)
-                                        : SEGSEvent(SEGS_EventTypes::evTimeout),
-                                          m_arrival_time(time),
-                                          m_data(dat)
-                            {
-                            }
-    void *                  data() { return m_data; }
-    const ACE_Time_Value &  arrival_time() { return m_arrival_time; }
+    TimerEvent(const ACE_Time_Value &time, void *dat)
+        : SEGSEvent(SEGS_EventTypes::evTimeout), m_arrival_time(time), m_data(dat)
+    {
+    }
+    void *                data() { return m_data; }
+    const ACE_Time_Value &arrival_time() { return m_arrival_time; }
 };

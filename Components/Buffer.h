@@ -9,13 +9,14 @@
 
 #include <stdint.h>
 #include <cstring>
+
 // Warning those classes aren't thread-safe!
 // maybe this should derive from ACE_Data_Block/Message_Block ?
 
 // Template functions are part of include file to avoid the need of explicit instantiation of templates.
 class GrowingBuffer
 {
-static  constexpr size_t        DEFAULT_MAX_SIZE = 0x10000; //64K should be enough for everyone :P
+static  constexpr size_t    DEFAULT_MAX_SIZE = 0x10000; //64K should be enough for everyone :P
 public:
 
             //              Con/De-struction
@@ -41,27 +42,27 @@ inline      void            uGetString(char *t);
             void            uGetBytes(uint8_t *t,size_t len);
 inline      void            uPutString(const char *t);
             void            uPutBytes(const uint8_t *t,size_t len);
-                            template<typename T>
+                            template <typename T>
             void            Put(const T &val)
                             {
-                                    if(sizeof(T)>GetAvailSize())
-                                            if(resize(m_write_off+sizeof(T))==-1) // space exhausted
-                                            {
-                                                    m_last_err = 1;
-                                                    return;
-                                            }
-                                    uPut(val);
+                                if (sizeof(T) > GetAvailSize())
+                                    if (resize(m_write_off + sizeof(T)) == -1) // space exhausted
+                                    {
+                                        m_last_err = 1;
+                                        return;
+                                    }
+                                uPut(val);
                             }
 
-                            template<typename T>
+                            template <typename T>
             void            Get(T &val)
                             {
-                                    if(GetReadableDataSize()<sizeof(T))
-                                    {
-                                            m_last_err = 1;
-                                            return;
-                                    }
-                                    uGet(val);
+                                if (GetReadableDataSize() < sizeof(T))
+                                {
+                                    m_last_err = 1;
+                                    return;
+                                }
+                                uGet(val);
                             }
 
                             template<typename T>
