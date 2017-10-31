@@ -29,6 +29,9 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Database.h
     ${CMAKE_CURRENT_SOURCE_DIR}/InternalEvents.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/opcodes/ControlCodes.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/opcodes/NameTables.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/opcodes/Opcodes.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
