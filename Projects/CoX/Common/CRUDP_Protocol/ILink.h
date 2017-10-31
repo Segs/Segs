@@ -4,7 +4,8 @@
 #include "EventProcessor.h"
 
 class BitStream;
-class ILink : public EventProcessor {
+class ILink : public EventProcessor
+{
 public:
     virtual ~ILink() = default;
     virtual void received_block(BitStream &)=0;

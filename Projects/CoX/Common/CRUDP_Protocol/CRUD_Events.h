@@ -12,7 +12,7 @@
 #include "CRUDP_Protocol.h"
 #include "EventProcessor.h"
 #include "LinkLevelEvent.h"
-#include <ace/Log_Msg.h>
+
 class CRUD_EventTypes
 {
 public:

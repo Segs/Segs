@@ -132,15 +132,16 @@ void GameHandler::on_idle(IdleEvent *ev)
 //    GameLink * lnk = (GameLink *)ev->src();
 //    lnk->putq(new IdleEvent);
 }
-void GameHandler::on_check_links() {
-    for(CharacterClient * c : m_clients) {
+void GameHandler::on_check_links()
+{
+    for(CharacterClient * c : m_clients)
+    {
         GameLink * client_link = (GameLink *)c->link_state().link();
         // Send at least one packet within maximum_time_without_packets
-        if(client_link->last_sent_packets()>maximum_time_without_packets) {
+        if(client_link->last_sent_packets()>maximum_time_without_packets)
             client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
-        } else if(client_link->client_packets_waiting_for_ack()>MinPacketsToAck) {
+        else if(client_link->client_packets_waiting_for_ack()>MinPacketsToAck)
             client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
-        }
     }
 }
 void GameHandler::on_timeout(TimerEvent *ev)

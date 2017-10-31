@@ -20,14 +20,14 @@ static glm::quat QuaternionFromYawPitchRoll(const glm::vec3 &pyr)
     float roll(pyr.z);
 
     float rollOver2 = roll * 0.5f;
-    float sinRollOver2 = (float)sin((double)rollOver2);
-    float cosRollOver2 = (float)cos((double)rollOver2);
+    float sinRollOver2 = std::sin(rollOver2);
+    float cosRollOver2 = std::cos(rollOver2);
     float pitchOver2 = pitch * 0.5f;
-    float sinPitchOver2 = (float)sin((double)pitchOver2);
-    float cosPitchOver2 = (float)cos((double)pitchOver2);
+    float sinPitchOver2 = std::sin(pitchOver2);
+    float cosPitchOver2 = std::cos(pitchOver2);
     float yawOver2 = yaw * 0.5f;
-    float sinYawOver2 = (float)sin((double)yawOver2);
-    float cosYawOver2 = (float)cos((double)yawOver2);
+    float sinYawOver2 = std::sin(yawOver2);
+    float cosYawOver2 = std::cos(yawOver2);
 
     // X = PI is giving incorrect result (pitch)
 

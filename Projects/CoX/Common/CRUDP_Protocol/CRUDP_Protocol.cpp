@@ -13,7 +13,7 @@
 
 #include <cassert>
 #include <ace/Guard_T.h>
-#include <ace/Log_Msg.h>
+
 #include <QDebug>
 using namespace std::chrono;
 /**
@@ -115,7 +115,7 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
     uint32_t realcsum  = PacketCodecNull::Checksum(src.read_ptr(),src.GetReadableDataSize());
     if(realcsum!=checksum)
     {
-        ACE_ERROR((LM_WARNING,ACE_TEXT("Checksum error.\n")));
+        qWarning() << "Checksum error.";
         return;
     }
     m_last_activity = steady_clock::now();

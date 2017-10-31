@@ -21,7 +21,8 @@
 #include "Entity.h"
 #include "SEGSTimer.h"
 
-#include <ace/Log_Msg.h>
+#include <ace/Reactor.h>
+
 #include <QtCore/QSettings>
 #include <QtCore/QString>
 #include <QtCore/QFile>
