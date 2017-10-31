@@ -199,7 +199,7 @@ bool CrudP_Protocol::allSiblingsAvailable(uint32_t sibid)
 void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
 {
     ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
-    int ack_count_to_process=a->getNumAcks();
+    uint32_t ack_count_to_process=a->getNumAcks();
     for(size_t i=0; i<ack_count_to_process; i++)
     {
         PacketAck(a->getNextAck()); // endpoint acknowledged those packets

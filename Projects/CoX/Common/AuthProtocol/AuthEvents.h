@@ -4,8 +4,18 @@
 class AuthLink;
 
 //! all events that know how to read from
-//  and write to the buffer inherit from this
-typedef SerializableEvent<GrowingBuffer> AuthLinkEvent;
+//! and write to the buffer inherit from this
+class AuthLinkEvent : public SEGSEvent
+{
+protected:
+        ~AuthLinkEvent() override = default;
+public:
+        AuthLinkEvent(size_t evtype,EventProcessor *ev_src=nullptr) : SEGSEvent(evtype,ev_src)
+        {}
+        virtual void serializeto(GrowingBuffer &) const=0;
+        virtual void serializefrom(GrowingBuffer &)=0;
+};
+
 enum AuthEventTypes
 {
     evContinue=SEGS_EventTypes::evLAST_EVENT,
