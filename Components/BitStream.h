@@ -32,7 +32,7 @@ class BitStream : public GrowingBuffer
 {
 public:
 
-        explicit BitStream(size_t size);
+explicit        BitStream(size_t size);
                 BitStream(uint8_t *from,size_t bitsize);
                 BitStream(const BitStream &bs);
                 BitStream &operator=(const BitStream &bs);

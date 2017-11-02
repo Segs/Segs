@@ -44,6 +44,7 @@ set(GAMEDATA_SRC
     #TODO: move this to Components Library
     CoXHash.cpp
     CoXHash.h
+    CoHMath.h
 )
 add_library(gameData STATIC ${GAMEDATA_SRC})
 add_dependencies(gameData ace_IMP) # used for Singleton stuff.
