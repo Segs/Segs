@@ -411,9 +411,9 @@ static bool isChatMessage(const QString &msg)
 }
 static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
 {
-    if(msg.startsWith("l ") || msg.startsWith("local "))
+    if(msg.startsWith("l") || msg.startsWith("local"))
         return ChatMessage::CHAT_Local;
-    if(msg.startsWith("b ") || msg.startsWith("broadcast "))
+    if(msg.startsWith("b") || msg.startsWith("broadcast"))
         return ChatMessage::CHAT_Broadcast;
     // unknown chat types are processed as local chat
     return ChatMessage::CHAT_Local;
