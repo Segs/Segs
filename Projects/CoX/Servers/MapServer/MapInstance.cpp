@@ -23,6 +23,8 @@
 #include "InternalEvents.h"
 
 #include <QtCore/QDebug>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace {
 enum {
@@ -429,12 +431,26 @@ void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
     switch(kind)
     {
         case ChatMessage::CHAT_Local:
-            // TODO: Limit by range from source to achieve true "local" chat
+            // send only to clients within range
             std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
             for(MapClient * cl : recipients)
             {
                 ChatMessage *msg = ChatMessage::localMessage(msg_content.toString(),sender->char_entity());
-                cl->link()->putq(msg);
+                glm::vec3 senderpos = sender->char_entity()->pos;
+                glm::vec3 recpos = cl->char_entity()->pos;
+                float range = 100.0f; // range of "hearing"
+                float dist = glm::distance(senderpos,recpos);
+
+                /*
+                printf("senderpos: %f %f %f\n", senderpos.x, senderpos.y, senderpos.z);
+                printf("recpos: %f %f %f\n", recpos.x, recpos.y, recpos.z);
+                printf("sphere: %f\n", range);
+                printf("dist: %f\n", dist);
+                */
+
+                if(dist <= range) {
+                    cl->link()->putq(msg);
+                }
             }
             break;
         case ChatMessage::CHAT_Broadcast:
@@ -461,7 +477,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         m_scripting_interface->runScript(src,code,"user provided script");
         return;
     }
-    else if(isChatMessage(ev->contents))
+    else
     {
         process_chat(src,ev->contents);
     }
