@@ -14,7 +14,6 @@
 #include "Character.h"
 #include "Costume.h"
 
-#include <ace/Log_Msg.h>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlDriver>
 #include <QtCore/QDebug>

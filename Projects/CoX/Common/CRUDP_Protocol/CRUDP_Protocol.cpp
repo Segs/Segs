@@ -13,7 +13,7 @@
 
 #include <cassert>
 #include <ace/Guard_T.h>
-#include <ace/Log_Msg.h>
+
 #include <QDebug>
 using namespace std::chrono;
 /**
@@ -115,7 +115,7 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
     uint32_t realcsum  = PacketCodecNull::Checksum(src.read_ptr(),src.GetReadableDataSize());
     if(realcsum!=checksum)
     {
-        ACE_ERROR((LM_WARNING,ACE_TEXT("Checksum error.\n")));
+        qWarning() << "Checksum error.";
         return;
     }
     m_last_activity = steady_clock::now();
@@ -199,7 +199,7 @@ bool CrudP_Protocol::allSiblingsAvailable(uint32_t sibid)
 void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
 {
     ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
-    int ack_count_to_process=a->getNumAcks();
+    uint32_t ack_count_to_process=a->getNumAcks();
     for(size_t i=0; i<ack_count_to_process; i++)
     {
         PacketAck(a->getNextAck()); // endpoint acknowledged those packets

@@ -12,7 +12,6 @@
 #include "AdminDatabase.h"
 #include "Client.h"
 
-#include <ace/Log_Msg.h>
 #include <QtCore/QDebug>
 #include <QtCore/QDateTime>
 #include <QtSql/QSqlDatabase>

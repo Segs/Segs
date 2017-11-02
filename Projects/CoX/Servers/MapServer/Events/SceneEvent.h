@@ -12,7 +12,6 @@ class MapRef;
 typedef CRUDLink_Event MapLinkEvent; //<MapLink>
 class SceneEvent : public MapLinkEvent
 {
-    void dependent_dump(void);
 public:
             SceneEvent();
 

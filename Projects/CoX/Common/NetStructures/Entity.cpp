@@ -8,7 +8,6 @@
 #define _USE_MATH_DEFINES
 #include "Entity.h"
 
-#include <ace/Log_Msg.h>
 #include <algorithm>
 #include <cmath>
 #include <limits>

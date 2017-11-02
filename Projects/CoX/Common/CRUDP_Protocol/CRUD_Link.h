@@ -7,9 +7,6 @@
 #include <ace/ACE.h>
 #include <ace/Synch.h>
 #include <ace/SOCK_Dgram.h>
-#include <ace/Message_Queue.h>
-#include <ace/Event_Handler.h>
-#include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
@@ -19,6 +16,7 @@
 class SEGSEvent;
 class PacketEvent;
 class CRUD_EventFactory;
+
 
 class CRUDLink : public ILink
 {

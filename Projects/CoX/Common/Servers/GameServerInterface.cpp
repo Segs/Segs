@@ -7,7 +7,6 @@
  */
 #include <cassert>
 #include "GameServerInterface.h"
-#include <ace/Log_Msg.h>
 
 bool GameServerInterface::Run()
 {

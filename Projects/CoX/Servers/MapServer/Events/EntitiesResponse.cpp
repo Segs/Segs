@@ -25,19 +25,19 @@ struct CscCommon_Sub28
 };
 static_assert(sizeof(CscCommon_Sub28)==320/8,"Required since it's sent as an bit array");
 
-void storeSuperStats(const EntitiesResponse &src,BitStream &bs)
+void storeSuperStats(const EntitiesResponse &/*src*/,BitStream &bs)
 {
     bs.StorePackedBits(1,0);
 }
-void storeGroupDyn(const EntitiesResponse &src,BitStream &bs)
+void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
 {
-    int num_graph_nodes_changed=0;
+    uint32_t num_graph_nodes_changed=0;
     bs.StorePackedBits(1,num_graph_nodes_changed);
     if(num_graph_nodes_changed==0)
         return;
     if(num_graph_nodes_changed>0)
     {
-        for(int i=0; i<num_graph_nodes_changed; ++i)
+        for(uint32_t i=0; i<num_graph_nodes_changed; ++i)
         {
             int dynamic_group_idx=0;
             int become_invisible_and_stop_collisions=false;
@@ -57,13 +57,13 @@ void storeGroupDyn(const EntitiesResponse &src,BitStream &bs)
         bs.StoreBitArray((const uint8_t *)ba.constData(),8*ba.size());
     }
 }
-void storeTeamList(const EntitiesResponse &src,BitStream &bs)
+void storeTeamList(const EntitiesResponse &/*src*/,BitStream &bs)
 {
     int team_id=0; //
     bool mark_lfg=false;
     bool in_mission_or_taskforce_thing=false;
-    int team_leader_id = 0;
-    int team_size=0;
+    uint32_t team_leader_id = 0;
+    uint32_t team_size=0;
     storePackedBitsConditional(bs,20,team_id);
     bs.StoreBits(1,in_mission_or_taskforce_thing);
     bs.StoreBits(1,mark_lfg);
@@ -71,9 +71,9 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
     {
         bs.StoreBits(32,team_leader_id);
         bs.StorePackedBits(1,team_size);
-        for(int i=0; i<team_size; ++i)
+        for(uint32_t i=0; i<team_size; ++i)
         {
-            int team_member_dbid=0;
+            uint32_t team_member_dbid=0;
             bool team_member_is_on_the_same_map=true;
             bs.StoreBits(32,team_member_dbid);
             bs.StoreBits(1,team_member_is_on_the_same_map);
@@ -138,18 +138,18 @@ void storePowerSpec(uint32_t powerset_idx,uint32_t power_idx,BitStream &bs)
     bs.StorePackedBits(2,powerset_idx);
     bs.StorePackedBits(1,power_idx);
 }
-void storePowerInfoUpdate(const EntitiesResponse &src,BitStream &bs)
+void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
 {
     bool power_info_updates_available=false;
     bs.StoreBits(1,power_info_updates_available);
     if(power_info_updates_available)
     {
         bool remove_all_powersets_apart_from_inherent=false;
-        int num_powers_to_send=0;
+        uint32_t num_powers_to_send=0;
         bs.StoreBits(1,remove_all_powersets_apart_from_inherent);
 
         bs.StorePackedBits(1,num_powers_to_send);
-        for(int i=0; i<num_powers_to_send; ++i)
+        for(uint32_t i=0; i<num_powers_to_send; ++i)
         {
             storePowerSpec(0,0,bs);
             bool is_custom_power=false;
@@ -165,8 +165,8 @@ void storePowerInfoUpdate(const EntitiesResponse &src,BitStream &bs)
                 uint32_t level_bought=0;
                 uint32_t num_charges = 0;
                 float usage_time = 0;
-                uint32_t timing_rel; // timestamp ?
-                uint32_t count_boosts;
+                uint32_t timing_rel=0; // timestamp ?
+                uint32_t count_boosts=0;
                 bs.StorePackedBits(5,maybe_required_level);
                 bs.StorePackedBits(5,level_bought);
                 bs.StorePackedBits(3,num_charges);

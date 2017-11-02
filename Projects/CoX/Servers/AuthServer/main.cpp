@@ -29,7 +29,6 @@
 
 #include <ace/Reactor.h>
 #include <ace/TP_Reactor.h>
-#include <ace/Log_Msg.h>
 #include <ace/INET_Addr.h>
 #include <ace/Reactor.h>
 #include <ace/OS_main.h> //Included to enable file logging
@@ -45,6 +44,7 @@
 #include <string>
 #include <stdlib.h>
 #include <memory>
+#include <QLoggingCategory>
 namespace
 {
 ACE_THR_FUNC_RETURN event_loop (void *arg)
@@ -115,6 +115,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     {
         qCritical() << "Failed to open log file in write mode, will procede with console only logging";
     }
+    QLoggingCategory::setFilterRules("*.debug=true;qt.*.debug=false");
     qInstallMessageHandler(segsLogMessageOutput);
     QCoreApplication q_app(argc,argv);
     QCoreApplication::setOrganizationDomain("segs.nemerle.eu");
@@ -155,7 +156,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     qInfo().noquote() << VersionInfo::getCopyright();
     qInfo().noquote() << VersionInfo::getAuthVersion();
 
-    ACE_DEBUG((LM_ERROR,ACE_TEXT("main\n")));
+    qInfo().noquote() << "main";
 
     ACE_Thread_Manager::instance()->spawn_n(N_THREADS, event_loop, ACE_Reactor::instance());
     bool no_err = CreateServers();

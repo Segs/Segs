@@ -4,8 +4,16 @@
 #include "Buffer.h"
 #include <QString>
 
-
-typedef SerializableEvent<GrowingBuffer> AdminLinkEvent;
+class AdminLinkEvent : public SEGSEvent
+{
+protected:
+        ~AdminLinkEvent() override = default;
+public:
+        AdminLinkEvent(size_t evtype,EventProcessor *ev_src=nullptr) : SEGSEvent(evtype,ev_src)
+        {}
+        virtual void serializeto(GrowingBuffer &) const=0;
+        virtual void serializefrom(GrowingBuffer &)=0;
+};
 enum AdminEventTypes
 {
     evContinue=SEGS_EventTypes::evLAST_EVENT,
