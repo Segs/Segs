@@ -17,25 +17,6 @@
 
 #define WORLD_UPDATE_TICKS_PER_SECOND 30
 
-PlayerEntity::PlayerEntity()
-{
-    m_costume_type   = 1;
-    m_change_existence_state         = true;
-    m_destroyed      = false;
-    m_type           = 2; // PLAYER
-    m_create_player  = true;
-    m_player_villain = false;
-    m_origin_idx     = 0;
-    m_class_idx      = 0;
-    m_selector1      = false;
-    m_hasname        = true;
-    m_hasgroup_name  = false;
-    m_pchar_things   = true;
-
-    m_char.reset();
-    might_have_rare = m_rare_bits = true;
-}
-
 void Entity::sendAllyID(BitStream &bs)
 {
     bs.StorePackedBits(2,0);
@@ -66,14 +47,14 @@ void Entity::beginLogout(uint16_t time_till_logout)
     m_time_till_logout = time_till_logout*1000;
 }
 
-void PlayerEntity::serializefrom_newchar( BitStream &src,ColorAndPartPacker *packer )
+void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *packer )
 {
     /*int val =*/ src.GetPackedBits(1); //2
-    m_char.GetCharBuildInfo(src);
-    m_char.recv_initial_costume(src,packer);
+    e.m_char.GetCharBuildInfo(src);
+    e.m_char.recv_initial_costume(src,packer);
     /*int t =*/ src.GetBits(1); // The -> 1
-    src.GetString(m_battle_cry);
-    src.GetString(m_character_description);
+    src.GetString(e.m_battle_cry);
+    src.GetString(e.m_character_description);
 }
 void Entity::InsertUpdate( PosUpdate pup )
 {
@@ -104,7 +85,24 @@ Entity::Entity()
 
 void abortLogout(Entity *e)
 {
-    e->m_logout_sent = false;
-    e->m_is_logging_out = true; // send logout time of 0
+    e->m_is_logging_out = false; // send logout time of 0
     e->m_time_till_logout = 0;
+}
+
+void initializeNewPlayerEntity(Entity &e)
+{
+    e.m_costume_type   = 1;
+    e.m_destroyed      = false;
+    e.m_type           = 2; // PLAYER
+    e.m_create_player  = true;
+    e.m_player_villain = false;
+    e.m_origin_idx     = 0;
+    e.m_class_idx      = 0;
+    e.m_selector1      = false;
+    e.m_hasname        = true;
+    e.m_hasgroup_name  = false;
+    e.m_pchar_things   = true;
+
+    e.m_char.reset();
+    e.might_have_rare = e.m_rare_bits = true;
 }

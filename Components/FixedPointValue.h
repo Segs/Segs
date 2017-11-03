@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <cmath>
 #include <cassert>
+#include <glm/vec3.hpp>
 struct FixedPointValue
 {
     int32_t store;
@@ -19,4 +20,6 @@ struct FixedPointValue
 struct Vector3_FPV
 {
     FixedPointValue x,y,z;
+    Vector3_FPV() = default;
+    Vector3_FPV(glm::vec3 from) : x(from.x),y(from.y),z(from.z) {}
 };

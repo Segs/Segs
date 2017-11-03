@@ -40,20 +40,24 @@ public:
     int         m_channel_type;
         enum    eChatTypes
                 {
-                    CHAT_UNKNOWN1 = 1,
-                    CHAT_UNKNOWN2,
-                    CHAT_UNKNOWN3,
-                    CHAT_UNKNOWN4,
-                    CHAT_UNKNOWN5,
-                    CHAT_UNKNOWN6,
+                    CHAT_UNKNOWN1 = 1, //COMBAT
+                    CHAT_UNKNOWN2,     //DAMAGE
+                    CHAT_UNKNOWN3,     //SVR_COM
+                    CHAT_UNKNOWN4,     //NPC_SAYS
+                    CHAT_UNKNOWN5,     //VILLAIN_SAYS
+                    CHAT_UNKNOWN6,     //REGULAR
                     CHAT_PRIVATE,
                     CHAT_TEAM,
                     CHAT_SuperGroup,
-                    CHAT_Local, // Local chat
-                    CHAT_Broadcast,
-                    CHAT_Request,
+                    CHAT_Local = 10, // Local chat
+                    CHAT_Broadcast,  // shout
+                    CHAT_Request,    //
                     CHAT_Friend,
-                    CHAT_Admin = 14 // [Admin]{Message}
+                    CHAT_Admin = 14, // [Admin]{Message}
+                    CHAT_UserError,
+                    CHAT_DebugInfo,
+                    CHAT_Emote,
+
                 };
                 ChatMessage():GameCommand(MapEventTypes::evChatMessage)
                 {

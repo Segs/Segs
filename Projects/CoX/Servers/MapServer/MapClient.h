@@ -24,21 +24,23 @@ class MapInstance;
 class NetCommand;
 class GamePacket;
 class SEGSTimer;
+class Entity;
 ///
 /// \brief The ClientEntityStateBelief struct represents the server's belief about the client's internal state
 /// in regards to given entity.
 ///
 struct ClientEntityStateBelief
 {
-    class Entity *m_entity; // this is a link to the entity this belief is linked to.
+    const Entity *m_entity=nullptr; // this is the entity this belief is linked to.
     Vector3_FPV position;   // we think client considers m_entity to be located here.
+    bool m_is_logging_out=false;
 };
 
 class MapClient : public ClientSession
 {
     friend class CharacterDatabase;
     using mNetCommands = std::map<int,NetCommand *>;
-    using vBelief = std::vector<ClientEntityStateBelief>;
+    using vBelief = std::map<int,ClientEntityStateBelief>;
         mNetCommands        m_shortcuts;
         MapInstance *       m_current_map;
         Entity *            m_ent = nullptr;
@@ -62,4 +64,5 @@ virtual                     ~MapClient() = default;
         void                entity(Entity * val);
         bool                db_create(); // creates a new character from Entity data
         vBelief             m_worldstate_belief;
+        bool                m_in_map = false;
 };

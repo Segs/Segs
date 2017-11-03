@@ -347,7 +347,7 @@ void sendCommands(const EntitiesResponse &src,BitStream &tgt)
 }
 void sendClientData(const EntitiesResponse &src,BitStream &bs)
 {
-    PlayerEntity *ent=static_cast<PlayerEntity *>(src.m_client->char_entity());
+    Entity *ent=src.m_client->char_entity();
     Character &player_char=ent->m_char;
     if(!src.m_incremental)
     {
@@ -424,7 +424,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     }
     ;
     //else debug_info = false;
-    ent_manager.sendEntities(tgt,m_client->char_entity()->getIdx(),m_incremental);
+    ent_manager.sendEntities(tgt,m_client,m_incremental);
     if(debug_info&&!unkn2)
     {
         ent_manager.sendDebuggedEntities(tgt); // while loop, sending entity id's and debug info for each
