@@ -421,28 +421,36 @@ static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
 
 void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
 {
+    QString sender_char_name;
     int first_space = msg_text.indexOf(' ');
     QStringRef cmd_str(msg_text.midRef(0,first_space));
-    QStringRef msg_content(msg_text.midRef(first_space+1,-1));
+    QStringRef msg_content(msg_text.midRef(first_space+1,msg_text.lastIndexOf("\n")));
     ChatMessage::eChatTypes kind = getKindOfChatMessage(cmd_str);
     std::vector<MapClient *> recipients;
+    if(sender && sender->char_entity())
+        sender_char_name = sender->char_entity()->name();
+
     switch(kind)
     {
         case ChatMessage::CHAT_Local:
+        {
             // TODO: Limit by range from source to achieve true "local" chat
             std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
+            QString prepared_chat_message = QString("[%1] %2 : %3").arg("Local",sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                ChatMessage *msg = ChatMessage::localMessage(msg_content.toString(),sender->char_entity());
+                ChatMessage *msg = ChatMessage::localMessage(prepared_chat_message,sender->char_entity());
                 cl->link()->putq(msg);
             }
             break;
+        }
         case ChatMessage::CHAT_Broadcast:
             // send the message to everyone on this map
             std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
+            QString prepared_chat_message = QString("[%1] %2 : %3").arg("Broadcast",sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                ChatMessage *msg = ChatMessage::broadcastMessage(msg_content.toString(),sender->char_entity());
+                ChatMessage *msg = ChatMessage::broadcastMessage(sender_char_name + ":" +msg_content.toString(),sender->char_entity());
                 cl->link()->putq(msg);
             }
             break;
