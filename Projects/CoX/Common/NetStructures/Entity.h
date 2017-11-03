@@ -115,15 +115,16 @@ public:
     uint8_t m_csc_deltabits=0;
     bool m_send_deltas=0;
     uint16_t controlBits=0;
-    uint16_t someOtherbits=0;
+    uint16_t send_id=0;
     void *current_state_P=0;
     glm::vec3 camera_pyr;
-    int m_t1=0;
-    int m_t2=0;
-    uint8_t field_20=0;
+    int m_time_diff1=0;
+    int m_time_diff2=0;
+    uint8_t input_vel_scale=0;
     int m_A_ang11_probably=0;
     int m_B_ang11_probably=0;
-
+    uint8_t m_received_server_update_id=0;
+    bool m_no_coll = false;
     bool has_input_commit_guess=0;
     bool pos_delta_valid[3]= {};
     bool pyr_valid[3]= {};
@@ -194,6 +195,7 @@ public:
         int                 pkt_id_QrotUpdateVal[3] = {0};
         glm::quat           qrot;
         glm::vec3           pos;
+        glm::vec3           vel;
         uint32_t            prev_pos[3]= {0};
         Vector3_FPV         fixedpoint_pos;
         bool                m_selector1 = false;
