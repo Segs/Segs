@@ -35,16 +35,15 @@
 #include <ace/streams.h> //Included to enable file logging
 
 #include <QtCore/QCoreApplication>
-#include <QSettings>
-#include <QCommandLineParser>
-#include <QDebug>
-#include <QFile>
-
+#include <QtCore/QLoggingCategory>
+#include <QtCore/QSettings>
+#include <QtCore/QCommandLineParser>
+#include <QtCore/QDebug>
+#include <QtCore/QFile>
 #include <iostream>
 #include <string>
 #include <stdlib.h>
 #include <memory>
-#include <QLoggingCategory>
 namespace
 {
 ACE_THR_FUNC_RETURN event_loop (void *arg)
@@ -80,21 +79,21 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     QString message;
     switch (type)
     {
-    case QtDebugMsg:
-        message = "Debug   : ";
-        break;
-    case QtInfoMsg:
-        message = "";  // no prefix for informational messages
-        break;
-    case QtWarningMsg:
-        message = "Warning : ";
-        break;
-    case QtCriticalMsg:
-        message = "Critical: ";
-        break;
-    case QtFatalMsg:
-        stdOut << "Fatal error" << localMsg.constData();
-        abort();
+        case QtDebugMsg:
+            message = "Debug   : ";
+            break;
+        case QtInfoMsg:
+            message = "";  // no prefix for informational messages
+            break;
+        case QtWarningMsg:
+            message = "Warning : ";
+            break;
+        case QtCriticalMsg:
+            message = "Critical: ";
+            break;
+        case QtFatalMsg:
+            stdOut << "Fatal error" << localMsg.constData();
+            abort();
     }
     stdOut << message << localMsg.constData() << "\n";
     stdOut.flush();
@@ -115,7 +114,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     {
         qCritical() << "Failed to open log file in write mode, will procede with console only logging";
     }
-    QLoggingCategory::setFilterRules("*.debug=true;qt.*.debug=false");
+    QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
     qInstallMessageHandler(segsLogMessageOutput);
     QCoreApplication q_app(argc,argv);
     QCoreApplication::setOrganizationDomain("segs.nemerle.eu");
@@ -131,7 +130,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     parser.addVersionOption();
     parser.addOptions({
                           {{"f","config"},
-                            "Use the provided settings file, default value is <settings.cfg>",
+                           "Use the provided settings file, default value is <settings.cfg>",
                            "filename","settings.cfg"}
                       });
     parser.process(q_app);

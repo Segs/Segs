@@ -14,6 +14,7 @@
 #include "DataHelpers.h"
 #include "MapEvents.h"
 #include "MapClient.h"
+#include "MapServerData.h"
 #include "MapManager.h"
 #include "MapTemplate.h"
 #include "MapServer.h"
@@ -178,7 +179,6 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
         m_entities.removeEntityFromActiveList(ent);
         lnk->set_client_data(nullptr);
         m_clients.removeById(client->account_info().account_server_id());
-        delete ent;
     }
     lnk->putq(new DisconnectEvent(this));
 }
@@ -194,7 +194,6 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
         m_entities.removeEntityFromActiveList(ent);
         lnk->set_client_data(nullptr);
         m_clients.removeById(client->account_info().account_server_id());
-        delete ent;
     }
     lnk->putq(new DisconnectResponse);
     lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
@@ -228,7 +227,7 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
     cl->current_map(tpl->get_instance());
     if(ev->char_from_db)
     {
-        Entity *ent = new PlayerEntity;
+        Entity *ent = m_entities.CreatePlayer();
         ent->fillFromCharacter(ev->char_from_db);
         ent->m_origin_idx = getEntityOriginIndex(true, ev->char_from_db->getOrigin());
         ent->m_class_idx = getEntityClassIndex(true, ev->char_from_db->getClass());
@@ -256,8 +255,11 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     cl->link_state().link(lnk);
     if(ev->m_new_character)
     {
-        assert(ev->m_ent);
-        cl->entity(ev->m_ent);
+        Entity *e = m_entities.CreatePlayer();
+        fillEntityFromNewCharData(*e,ev->m_character_data,g_GlobalMapServer->runtimeData().getPacker());
+        e->m_origin_idx = getEntityOriginIndex(true, e->m_char.getOrigin());
+        e->m_class_idx = getEntityClassIndex(true, e->m_char.getOrigin());
+        cl->entity(e);
         cl->db_create();
         //        start_idle_timer(cl);
         //cl->start_idle_timer();
@@ -292,15 +294,6 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     srand(time(nullptr));
     MapClient *cl = lnk->client_data();
     assert(cl);
-    // this sends the initial  'world', but without this client
-//    EntitiesResponse *res=new EntitiesResponse(cl); // initial world update -> current state
-//    res->m_map_time_of_day = m_world->time_of_day();
-//    res->is_incremental(false); //redundant
-//    res->ent_major_update=true; //false;
-//    res->abs_time = 30*100*m_world->sim_frame_time/1000.0f;
-//    res->finalize();
-//    assert(lnk==cl->link());
-//    lnk->putq(res);
     m_clients.addToActiveClients(cl); // add to the list of clients interested in world updates
 }
 //! Handle instance-wide timers
@@ -341,16 +334,17 @@ void MapInstance::sendState() {
         EntitiesResponse *res=new EntitiesResponse(cl);
         res->m_map_time_of_day = m_world->time_of_day();
 
-        if(cl->char_entity()->m_change_existence_state==true) {
-            res->is_incremental(false); // incremental world update = op 3
+        if(cl->m_in_map==false) // send full updates until client `resumes`
+        {
+            res->is_incremental(false); // full world update = op 3
         }
-        else {
+        else
+        {
             res->is_incremental(true); // incremental world update = op 2
         }
         res->ent_major_update = true;
         res->abs_time = 30*100*(m_world->sim_frame_time/1000.0f);
         cl->link()->putq(res);
-        //TODO: we should send client's entity as full updates until the client sends ResumedGame command to us.
     }
     only_first=false;
     if(resendtxt==15)
@@ -410,11 +404,11 @@ static bool isChatMessage(const QString &msg)
     return msg.startsWith("l ") || msg.startsWith("local ") ||
             msg.startsWith("b ") || msg.startsWith("broadcast ");
 }
-static ChatMessage::eChatTypes getKindOfChatMessage(const QString &msg)
+static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
 {
-    if(msg.startsWith("l ") || msg.startsWith("local "))
+    if(msg=="l" || msg=="local")
         return ChatMessage::CHAT_Local;
-    if(msg.startsWith("b ") || msg.startsWith("broadcast "))
+    if(msg=="b" || msg=="broadcast")
         return ChatMessage::CHAT_Broadcast;
     // unknown chat types are processed as local chat
     return ChatMessage::CHAT_Local;
@@ -422,42 +416,50 @@ static ChatMessage::eChatTypes getKindOfChatMessage(const QString &msg)
 
 void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
 {
+    QString sender_char_name;
     int first_space = msg_text.indexOf(' ');
-    //QStringRef cmd_str(msg_text.midRef(0,first_space));
-    QStringRef msg_content(msg_text.midRef(first_space+1,-1));
-    ChatMessage::eChatTypes kind = getKindOfChatMessage(msg_text);
+    QStringRef cmd_str(msg_text.midRef(0,first_space));
+    QStringRef msg_content(msg_text.midRef(first_space+1,msg_text.lastIndexOf("\n")));
+    ChatMessage::eChatTypes kind = getKindOfChatMessage(cmd_str);
     std::vector<MapClient *> recipients;
+    if(sender && sender->char_entity())
+        sender_char_name = sender->char_entity()->name();
+
     switch(kind)
     {
         case ChatMessage::CHAT_Local:
+        {
             // send only to clients within range
-            std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
-            for(MapClient * cl : recipients)
+            glm::vec3 senderpos = sender->char_entity()->pos;
+            for(MapClient *cl : m_clients)
             {
-                ChatMessage *msg = ChatMessage::localMessage(msg_content.toString(),sender->char_entity());
-                glm::vec3 senderpos = sender->char_entity()->pos;
                 glm::vec3 recpos = cl->char_entity()->pos;
                 float range = 100.0f; // range of "hearing"
                 float dist = glm::distance(senderpos,recpos);
-
                 /*
                 printf("senderpos: %f %f %f\n", senderpos.x, senderpos.y, senderpos.z);
                 printf("recpos: %f %f %f\n", recpos.x, recpos.y, recpos.z);
                 printf("sphere: %f\n", range);
                 printf("dist: %f\n", dist);
                 */
-
-                if(dist <= range) {
-                    cl->link()->putq(msg);
-                }
+                if(dist<=range)
+                    recipients.push_back(cl);
+            }
+            QString prepared_chat_message = QString("%1: %2").arg(sender_char_name,msg_content.toString());
+            for(MapClient * cl : recipients)
+            {
+                ChatMessage *msg = ChatMessage::localMessage(prepared_chat_message,sender->char_entity());
+                cl->link()->putq(msg);
             }
             break;
+        }
         case ChatMessage::CHAT_Broadcast:
             // send the message to everyone on this map
             std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
+            QString prepared_chat_message = QString("%1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                ChatMessage *msg = ChatMessage::broadcastMessage(msg_content.toString(),sender->char_entity());
+                ChatMessage *msg = ChatMessage::broadcastMessage(prepared_chat_message,sender->char_entity());
                 cl->link()->putq(msg);
             }
             break;
@@ -498,8 +500,8 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl = lnk->client_data();
-    if(cl->char_entity()->m_change_existence_state==true)
-        cl->char_entity()->m_change_existence_state=false;
+    if(cl->m_in_map==false)
+        cl->m_in_map = true;
     char buf[256];
     std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
     std::snprintf(buf, 256, "There are %zu active entites and %zu clients", m_entities.active_entities(),

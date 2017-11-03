@@ -7,7 +7,8 @@ void World::update(const ACE_Time_Value &tick_timer)
 {
 
     ACE_Time_Value delta;
-    if(prev_tick_time==ACE_Time_Value::zero) {
+    if(prev_tick_time==ACE_Time_Value::zero)
+    {
         delta = ACE_Time_Value(0,33*1000);
     }
     else
@@ -18,16 +19,16 @@ void World::update(const ACE_Time_Value &tick_timer)
     sim_frame_time = delta.msec()/1000.0f;
     prev_tick_time = tick_timer;
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_ent_mager.getEntitiesMutex());
-    // TODO: use active entity list here
-    for(int i=1; i<10240; ++i) {
-        if(ref_ent_mager.m_map_entities[i]==nullptr)
-            break;
-        updateEntity(ref_ent_mager.m_map_entities[i],delta);
+
+    for(Entity * e : ref_ent_mager.m_live_entlist)
+    {
+        updateEntity(e,delta);
     }
 }
 void World::physicsStep(Entity *e,uint32_t msec)
 {
-    if(glm::length2(e->inp_state.pos_delta)) {
+    if(glm::length2(e->inp_state.pos_delta))
+    {
         // todo: take into account time between updates
         glm::mat3 za = static_cast<glm::mat3>(e->inp_state.direction); // quat to mat4x4 conversion
 
@@ -62,7 +63,8 @@ void World::effectsStep(Entity *e,uint32_t msec)
 void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
     physicsStep(e,dT.msec());
     effectsStep(e,dT.msec());
-    if(e->m_is_logging_out) {
+    if(e->m_is_logging_out)
+    {
         e->m_time_till_logout -= dT.msec();
         if(e->m_time_till_logout<0)
             e->m_time_till_logout=0;

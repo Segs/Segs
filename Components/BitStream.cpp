@@ -21,7 +21,7 @@
 
 
  //  Macros
-#define BIT_MASK(x)      ((uint32_t)((1 << (x)) - 1))
+#define BIT_MASK(x)      ((uint32_t)((1ULL << (x)) - 1))
 #define BITS_TO_BYTES(x) (((x) + 7) >> 3)
 #define BITS_LEFT(x)     (BITS_PER_BYTE - (x))
 #define BYTE_ALIGN(x)    (((x) + 7) & ~7)

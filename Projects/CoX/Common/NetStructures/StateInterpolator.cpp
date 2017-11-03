@@ -231,8 +231,9 @@ std::array<bintree_in,7> testEncVec(std::array<PosUpdate,9> vals,float min_error
     }
     return enc;
 }
-int runTest() {
-    Entity ent;
+int runTest()
+{
+    std::array<Entity,10240> entities;
     // Linear move from 0 to 2, over 10 time units
     std::array<bintree_in,7> tgt;
     std::array<PosUpdate,9> pos_vals;
@@ -248,14 +249,14 @@ int runTest() {
         t++;
     }
     tgt=testEncVec( pos_vals,0.02f );
-    ent.interpResults.clear();
+    entities.front().interpResults.clear();
     // add start and end to prime interpolator.
-    ent.addPosUpdate(pos_vals.front());
-    ent.addPosUpdate(pos_vals.back());
-    interpolate_pos_updates(&ent,tgt);
+    entities.front().addPosUpdate(pos_vals.front());
+    entities.front().addPosUpdate(pos_vals.back());
+    interpolate_pos_updates(&entities.front(),tgt);
     vec3 errsum;
     for(int i=0; i<9; ++i) {
-        errsum +=  glm::abs(ent.interpResults[i].posvec-pos_vals[i].posvec);
+        errsum +=  glm::abs(entities.front().interpResults[i].posvec-pos_vals[i].posvec);
     }
     errsum = errsum/9.0f;
     printf("After transition - L1 error is %f %f %f\n",errsum.x,errsum.y,errsum.z);

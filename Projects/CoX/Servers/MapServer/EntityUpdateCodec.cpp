@@ -91,7 +91,7 @@ void storeUnknownBinTree(const Entity &src,BitStream &bs)
 {
     bs.StoreBits(1,0);
 }
-void storePosition(const Entity &src,BitStream &bs)
+bool storePosition(const Entity &src,BitStream &bs)
 {
 // float x = pos.vals.x;
     uint8_t updated_bit_pos = 7;
@@ -99,7 +99,7 @@ void storePosition(const Entity &src,BitStream &bs)
     bs.StoreBits(3,updated_bit_pos);
 
     if(updated_bit_pos==0)
-        return; // no actual update takes place
+        return false; // no actual update takes place
 
     for(int i=0; i<3; i++)
     {
@@ -107,6 +107,7 @@ void storePosition(const Entity &src,BitStream &bs)
         //diff = packed ^ prev_pos[i]; // changed bits are '1'
         bs.StoreBits(24,fpv.store);
     }
+    return true;
 }
 void toEulerAngle(const glm::quat& q, float& roll, float& pitch, float& yaw)
 {
@@ -164,15 +165,15 @@ void storeOrientation(const Entity &src,BitStream &bs)
     }
 }
 
-void storePosUpdate(const Entity &src,BitStream &bs)
+void storePosUpdate(const Entity &src,bool just_created,BitStream &bs)
 {
     bool extra_info = false;
     bool move_instantly = false;
     PUTDEBUG("before entReceivePosUpdate");
 
-    storePosition(src,bs);
+    bool position_updated = storePosition(src,bs);
     PUTDEBUG("before posInterpolators");
-    if(!src.m_change_existence_state)
+    if(!just_created && position_updated)
     {
         // if position has changed
         // prepare interpolation table, given previous position
@@ -300,9 +301,8 @@ void sendTitles(const Entity &src,BitStream &bs)
         return;
     if(src.m_type==Entity::ENT_PLAYER)
     {
-        bool has_the_prefix=false;
         bs.StoreString(src.m_char.getName());
-        bs.StoreBits(1,has_the_prefix);
+        bs.StoreBits(1,src.m_has_the_prefix);
         storeStringConditional(bs,"");//Title 1
         storeStringConditional(bs,"");//Title 2
         storeStringConditional(bs,"");//Title 3
@@ -415,19 +415,18 @@ void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
         bs.StoreBits(32,0); // supergroup color 2
     }
 }
-void sendLogoutUpdate(const Entity &src,BitStream &bs)
+void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStream &bs)
 {
-    if(src.m_logout_sent) {
+    if(belief.m_is_logging_out==src.m_is_logging_out) // no change in logout state
+    {
         bs.StoreBits(1,false);
         return;
     }
-    bs.StoreBits(1,src.m_is_logging_out);
-    if(src.m_is_logging_out)
-    {
-        src.m_logout_sent = true;
-        bs.StoreBits(1,0); // if 1 then it means the logout was caused by low connection quality.
-        storePackedBitsConditional(bs,5,src.m_time_till_logout/(1000)); // time to logout, multiplied by 30
-    }
+    bs.StoreBits(1,true); // logout state update
+    bs.StoreBits(1,0); // if 1 then it means the logout was caused by low connection quality.
+    // we send 0 as a time to logout if this is a logout-abort
+    storePackedBitsConditional(bs,5,src.m_is_logging_out ? src.m_time_till_logout/(1000) : 0);
+    belief.m_is_logging_out = src.m_is_logging_out;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -437,12 +436,18 @@ void sendBuffs(const Entity &src,BitStream &bs)
     bs.StorePackedBits(5,0);
 }
 
-void serializeto(const Entity & src, BitStream &bs )
+void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream &bs )
 {
+    bool client_believes_ent_exists=belief.m_entity!=nullptr;
+    bool ent_exists = src.m_destroyed==false;
+    bool update_existence=client_believes_ent_exists!=ent_exists;
     //////////////////////////////////////////////////////////////////////////
-    bs.StoreBits(1,src.m_change_existence_state);
-    if(src.m_change_existence_state)
+    bs.StoreBits(1,update_existence);
+    if(update_existence)
         storeCreation(src,bs);
+    belief.m_entity = ent_exists ? &src : nullptr;
+    if(!ent_exists)
+        return;
     //////////////////////////////////////////////////////////////////////////
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
@@ -455,7 +460,7 @@ void serializeto(const Entity & src, BitStream &bs )
     if(src.m_rare_bits)
         sendStateMode(src,bs);
 
-    storePosUpdate(src,bs);
+    storePosUpdate(src,update_existence && ent_exists, bs);
 
     if(src.might_have_rare)
         sendSeqMoveUpdate(src,bs);
@@ -490,6 +495,6 @@ void serializeto(const Entity & src, BitStream &bs )
         sendNoDrawOnClient(src,bs);
         sendAFK(src,bs);
         sendOtherSupergroupInfo(src,bs);
-        sendLogoutUpdate(src,bs);
+        sendLogoutUpdate(src,belief,bs);
     }
 }

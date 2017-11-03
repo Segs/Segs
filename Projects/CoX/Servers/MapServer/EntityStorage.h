@@ -9,30 +9,47 @@
 
 #pragma once
 
-#include "BitStream.h"
+#include "Entity.h"
+
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
-#include <list>
+#include <array>
+#include <set>
+#include <deque>
 
 class MapClient;
 class MapInstance;
 class Entity;
+class BitStream;
+class EntityStore
+{
+public:
+    EntityStore();
+    std::deque<int32_t> m_free_entries;
+    std::array<Entity,10240> m_map_entities;
+    Entity *get();
+    void release(Entity *src);
+};
 class EntityManager
 {
-    typedef std::list <Entity *> lEntity;
+    struct EntityIdxCompare {
+        bool operator()(const Entity *a,const Entity *b) const {
+            return a->getIdx() < b->getIdx();
+        }
+    };
+    using lEntity = std::set<Entity *,EntityIdxCompare>;
 public:
-    Entity *        m_map_entities[10240];
-    lEntity         m_entlist;
-    uint32_t        m_last_ent;
+    EntityStore     m_store;
+    lEntity         m_live_entlist;
                     EntityManager();
     void            sendDebuggedEntities(BitStream &tgt) const;
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
-    void            sendDeletes(BitStream &tgt) const;
-    void            sendEntities(BitStream &tgt, int self_idx, bool is_incremental) const;
+    void            sendDeletes(BitStream &tgt, MapClient *client) const;
+    void            sendEntities(BitStream &tgt, MapClient *target, bool is_incremental) const;
     void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
     void            removeEntityFromActiveList(Entity *ent);
-    size_t          active_entities() { return m_entlist.size(); }
+    size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }
 
 protected:

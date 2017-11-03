@@ -25,10 +25,6 @@ void NewEntity::serializefrom( BitStream &bs )
     m_new_character=bs.GetBits(1);
     if(m_new_character)
     {
-        m_ent = new PlayerEntity();
-        ((PlayerEntity*)m_ent)->serializefrom_newchar(bs,g_GlobalMapServer->runtimeData().getPacker());
-        m_ent->m_origin_idx = getEntityOriginIndex(true, m_ent->m_char.getOrigin());
-        m_ent->m_class_idx = getEntityClassIndex(true, m_ent->m_char.getOrigin());
-
+        m_character_data.appendBitStream(bs);
     }
 }

@@ -4,9 +4,13 @@
 #include "Costume.h"
 #include "Character.h"
 #include "FixedPointValue.h"
+
 #include <glm/vec3.hpp>
 #include <glm/gtx/quaternion.hpp>
+
 #include <cmath>
+#include <array>
+
 struct AngleRadians
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
@@ -135,6 +139,12 @@ enum class FadeDirection
 };
 class Entity
 {
+    // only EntityStore can create instances of this class
+    friend class EntityStore;
+    friend class std::array<Entity,10240>;
+private:
+                            Entity();
+virtual                     ~Entity() = default;
 public:
         struct currentInputState
         {
@@ -154,7 +164,6 @@ public:
         int                 m_num_titles=0;
         int                 m_num_fx=0;
         bool                m_is_logging_out = false;
-mutable bool                m_logout_sent=false;
         int                 m_time_till_logout=0; // time in miliseconds untill given entity should be marked as logged out.
         bool                m_has_titles = false;
         std::vector<uint8_t> m_fx1;
@@ -173,7 +182,7 @@ mutable bool                m_logout_sent=false;
         PosUpdate           m_pos_updates[64];
         size_t              m_update_idx=0;
         std::vector<PosUpdate> interpResults;
-
+        bool                m_has_the_prefix=false;
         QString             m_battle_cry;
         QString             m_character_description;
         bool                var_B4=0;
@@ -193,7 +202,6 @@ mutable bool                m_logout_sent=false;
         bool                m_hasname = false;
         bool                m_hasgroup_name = false;
         bool                m_classname_override = false;
-        bool                m_change_existence_state = false;
         bool                m_hasRagdoll = false;
         bool                m_create_player = false;
         bool                m_rare_bits = false;
@@ -213,8 +221,6 @@ mutable bool                m_logout_sent=false;
         float               translucency = 1.f;
         bool                m_is_fading = true;
         FadeDirection       m_fading_direction=FadeDirection::In;
-                            Entity();
-virtual                     ~Entity() = default;
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
         void                addInterp(const PosUpdate &p);
@@ -230,11 +236,6 @@ static  void                sendPvP(BitStream &bs);
         void                fillFromCharacter(Character *f);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 };
-
-class PlayerEntity : public Entity
-{
-public:
-                            PlayerEntity();
-        void                serializefrom_newchar(BitStream &src, ColorAndPartPacker *packer);
-};
+void initializeNewPlayerEntity(Entity &e);
+void fillEntityFromNewCharData(Entity &e,BitStream &src, ColorAndPartPacker *packer);
 extern void abortLogout(Entity *e);
