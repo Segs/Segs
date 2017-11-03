@@ -445,7 +445,7 @@ void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
                 if(dist<=range)
                     recipients.push_back(cl);
             }
-            QString prepared_chat_message = QString("%1: %2").arg(sender_char_name,msg_content.toString());
+            QString prepared_chat_message = QString("[Local]%1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
                 ChatMessage *msg = ChatMessage::localMessage(prepared_chat_message,sender->char_entity());
