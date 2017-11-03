@@ -410,11 +410,11 @@ static bool isChatMessage(const QString &msg)
     return msg.startsWith("l ") || msg.startsWith("local ") ||
             msg.startsWith("b ") || msg.startsWith("broadcast ");
 }
-static ChatMessage::eChatTypes getKindOfChatMessage(const QString &msg)
+static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
 {
-    if(msg.startsWith("l ") || msg.startsWith("local "))
+    if(msg=="l" || msg=="local")
         return ChatMessage::CHAT_Local;
-    if(msg.startsWith("b ") || msg.startsWith("broadcast "))
+    if(msg=="b" || msg=="broadcast")
         return ChatMessage::CHAT_Broadcast;
     // unknown chat types are processed as local chat
     return ChatMessage::CHAT_Local;
@@ -436,26 +436,26 @@ void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
         case ChatMessage::CHAT_Local:
         {
             // send only to clients within range
-            std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
-            QString prepared_chat_message = QString("[%1] %2 : %3").arg("Local",sender_char_name,msg_content.toString());
-            for(MapClient * cl : recipients)
+            glm::vec3 senderpos = sender->char_entity()->pos;
+            for(MapClient *cl : m_clients)
             {
-                ChatMessage *msg = ChatMessage::localMessage(msg_content.toString(),sender->char_entity());
-                glm::vec3 senderpos = sender->char_entity()->pos;
                 glm::vec3 recpos = cl->char_entity()->pos;
                 float range = 100.0f; // range of "hearing"
                 float dist = glm::distance(senderpos,recpos);
-
                 /*
                 printf("senderpos: %f %f %f\n", senderpos.x, senderpos.y, senderpos.z);
                 printf("recpos: %f %f %f\n", recpos.x, recpos.y, recpos.z);
                 printf("sphere: %f\n", range);
                 printf("dist: %f\n", dist);
                 */
-
-                if(dist <= range) {
-                    cl->link()->putq(msg);
-                }
+                if(dist<=range)
+                    recipients.push_back(cl);
+            }
+            QString prepared_chat_message = QString("[%1] %2 : %3").arg("Local",sender_char_name,msg_content.toString());
+            for(MapClient * cl : recipients)
+            {
+                ChatMessage *msg = ChatMessage::localMessage(msg_content.toString(),sender->char_entity());
+                cl->link()->putq(msg);
             }
             break;
         }
