@@ -70,7 +70,7 @@ inline glm::vec3 toCoH_YPR(const glm::quat &q)
     assert(rollVal > -16.0f);
     return {pitchVal,yawVal,rollVal};
 }
-inline glm::vec3 CoHPyrFromMat(const glm::mat3 &mat)
+inline glm::vec3 CoHYprFromMat(const glm::mat3 &mat)
 {
     float pitchVal;
     float yawVal;
@@ -116,7 +116,7 @@ inline glm::vec3 CoHPyrFromMat(const glm::mat3 &mat)
     return {pitchVal,yawVal,rollVal};
 }
 
-inline glm::quat fromCoHPyr(glm::vec3 pyr)
+inline glm::quat fromCoHYpr(glm::vec3 pyr)
 {
     const float cp = std::cos(pyr.x);
     const float sp = std::sin(pyr.x);
@@ -143,7 +143,7 @@ inline glm::quat fromCoHPyr(glm::vec3 pyr)
     zc.z = std::copysign(zc.z, m01 - m10);
     return zc;
 }
-inline glm::mat3 CoHPyrToMat3(glm::vec3 pyr)
+inline glm::mat3 CoHYprToMat3(glm::vec3 pyr)
 {
     const float cp = std::cos(pyr.x);
     const float sp = std::sin(pyr.x);
