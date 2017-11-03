@@ -142,7 +142,7 @@ bool CharacterDatabase::fill( Character *c)
     CharacterCostume *main_costume = new CharacterCostume;
     // appearance related.
     main_costume->m_body_type = m_prepared_char_select.value("bodytype").toUInt(); // 0
-    c->setMapName("Some map name"); // "V_City_00_01.txt" STR_OR_EMPTY(r.getColString("current_map"))
+    c->setMapName(STR_OR_EMPTY(m_prepared_char_select.value("current_map").toString()));
     c->setLastCostumeId(m_prepared_char_select.value("last_costume_id").toUInt());
     main_costume->setSlotIndex(0);
     main_costume->setCharacterId(m_prepared_char_select.value("id").toULongLong());
