@@ -144,8 +144,8 @@ class Entity
     friend class std::array<Entity,10240>;
 private:
                             Entity();
-public:
 virtual                     ~Entity() = default;
+public:
         struct currentInputState
         {
             glm::vec3 pos;

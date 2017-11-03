@@ -179,7 +179,6 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
         m_entities.removeEntityFromActiveList(ent);
         lnk->set_client_data(nullptr);
         m_clients.removeById(client->account_info().account_server_id());
-        delete ent;
     }
     lnk->putq(new DisconnectEvent(this));
 }
@@ -195,7 +194,6 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
         m_entities.removeEntityFromActiveList(ent);
         lnk->set_client_data(nullptr);
         m_clients.removeById(client->account_info().account_server_id());
-        delete ent;
     }
     lnk->putq(new DisconnectResponse);
     lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
