@@ -432,7 +432,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     }
     sendServerPhysicsPositions(*this,tgt); // These are not client specific ?
     sendControlState(*this,tgt);// These are not client specific ?
-    ent_manager.sendDeletes(tgt);
+    ent_manager.sendDeletes(tgt,m_client);
     // Client specific part
     sendClientData(*this,tgt);
     //FIXME: Most Server messages must follow entity update.

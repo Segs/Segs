@@ -446,6 +446,8 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     if(update_existence)
         storeCreation(src,bs);
     belief.m_entity = ent_exists ? &src : nullptr;
+    if(!ent_exists)
+        return;
     //////////////////////////////////////////////////////////////////////////
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");

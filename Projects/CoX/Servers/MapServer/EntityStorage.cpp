@@ -70,14 +70,23 @@ void EntityManager::sendGlobalEntDebugInfo( BitStream &tgt ) const
     // third while loop here
 }
 
-void EntityManager::sendDeletes( BitStream &tgt ) const
-{
-    int num_to_remove=0;
-    tgt.StorePackedBits(1,num_to_remove);
-    for(int i=0; i<num_to_remove; i++)
+void EntityManager::sendDeletes( BitStream &tgt,MapClient *client ) const
+{ 
+    std::vector<int> entities_to_remove;
+    // find the entities this client believes exist, but they are no longer amongst us.
+    for(const std::pair<int,ClientEntityStateBelief> &entry : client->m_worldstate_belief)
     {
-        tgt.StorePackedBits(1,0);//index
-        tgt.StorePackedBits(1,0);//
+        if(entry.second.m_entity==nullptr)
+            continue;
+        if(m_live_entlist.end()==m_live_entlist.find((Entity *)entry.second.m_entity))
+            entities_to_remove.push_back(entry.first);
+    }
+    tgt.StorePackedBits(1,entities_to_remove.size());
+    for(int idx : entities_to_remove)
+    {
+        tgt.StorePackedBits(12,idx);//index
+        tgt.StorePackedBits(12,idx);//
+        client->m_worldstate_belief.erase(idx);
     }
 }
 /**
@@ -99,13 +108,7 @@ void EntityManager::sendEntities(BitStream& bs, MapClient *target, bool is_incre
     lEntity to_send = m_live_entlist;
     lEntity client_belief_set;
 
-    for(const auto &b : target->m_worldstate_belief)
-    {
-        client_belief_set.insert((Entity *)b.second.m_entity);
-    }
-    to_send.insert(client_belief_set.begin(),client_belief_set.end());
-
-    for (Entity* pEnt : to_send)
+    for (Entity* pEnt : m_live_entlist)
     {
         bool client_believes_this_entity_exists=client_belief_set.find(pEnt)!=client_belief_set.end();
         if(!client_believes_this_entity_exists && pEnt->m_destroyed)
@@ -119,8 +122,6 @@ void EntityManager::sendEntities(BitStream& bs, MapClient *target, bool is_incre
         if(!target->m_in_map)
             belief.m_entity = nullptr; // force full creates until client is actualy in map
         serializeto(*pEnt,belief, bs);
-        if(belief.m_entity==nullptr)
-            target->m_worldstate_belief.erase(pEnt->m_idx);
         PUTDEBUG("end of entity");
     }
 

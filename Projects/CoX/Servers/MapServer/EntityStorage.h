@@ -44,7 +44,7 @@ public:
                     EntityManager();
     void            sendDebuggedEntities(BitStream &tgt) const;
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
-    void            sendDeletes(BitStream &tgt) const;
+    void            sendDeletes(BitStream &tgt, MapClient *client) const;
     void            sendEntities(BitStream &tgt, MapClient *target, bool is_incremental) const;
     void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
