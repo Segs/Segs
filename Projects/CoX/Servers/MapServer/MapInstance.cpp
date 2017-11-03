@@ -23,8 +23,7 @@
 #include "InternalEvents.h"
 
 #include <QtCore/QDebug>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
+
 
 namespace {
 enum {
@@ -411,11 +410,11 @@ static bool isChatMessage(const QString &msg)
     return msg.startsWith("l ") || msg.startsWith("local ") ||
             msg.startsWith("b ") || msg.startsWith("broadcast ");
 }
-static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
+static ChatMessage::eChatTypes getKindOfChatMessage(const QString &msg)
 {
-    if(msg.startsWith("l") || msg.startsWith("local"))
+    if(msg.startsWith("l ") || msg.startsWith("local "))
         return ChatMessage::CHAT_Local;
-    if(msg.startsWith("b") || msg.startsWith("broadcast"))
+    if(msg.startsWith("b ") || msg.startsWith("broadcast "))
         return ChatMessage::CHAT_Broadcast;
     // unknown chat types are processed as local chat
     return ChatMessage::CHAT_Local;
@@ -424,9 +423,9 @@ static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
 void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
 {
     int first_space = msg_text.indexOf(' ');
-    QStringRef cmd_str(msg_text.midRef(0,first_space));
+    //QStringRef cmd_str(msg_text.midRef(0,first_space));
     QStringRef msg_content(msg_text.midRef(first_space+1,-1));
-    ChatMessage::eChatTypes kind = getKindOfChatMessage(cmd_str);
+    ChatMessage::eChatTypes kind = getKindOfChatMessage(msg_text);
     std::vector<MapClient *> recipients;
     switch(kind)
     {
