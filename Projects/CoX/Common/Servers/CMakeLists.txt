@@ -16,16 +16,22 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/AdminServerInterface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/AuthServerInterface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Client.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ClientManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/GameServerInterface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/MapServerInterface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerEndpoint.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerHandle.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ServerProtocolHandler.h
     ${CMAKE_CURRENT_SOURCE_DIR}/server_support.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Server.h
     ${CMAKE_CURRENT_SOURCE_DIR}/RoamingServer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/InterfaceManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Database.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/InternalEvents.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/opcodes/ControlCodes.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/opcodes/NameTables.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/opcodes/Opcodes.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
