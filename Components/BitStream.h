@@ -42,7 +42,22 @@ explicit        BitStream(size_t size);
         void    uStoreBits(uint32_t nBits, uint32_t dataBits);
         void    StoreFloat(float val);
         void    StorePackedBits(uint32_t nBits, uint32_t dataBits);
-        void    appendBitStream(const BitStream &src) { StoreBitArray(src.read_ptr(),src.GetReadableBits());}
+        void    appendBitStream(BitStream &src)
+        {
+            if((src.GetReadPos()&7)==0) // source is aligned ?
+                StoreBitArray(src.read_ptr(),src.GetReadableBits());
+            else
+            {
+                int bits_to_store=src.GetReadableBits();
+                ByteAlign(false,true);
+                while(bits_to_store>32)
+                {
+                    StoreBits(32,src.uGetBits(32));
+                    bits_to_store-=32;
+                }
+                StoreBits(bits_to_store,src.uGetBits(bits_to_store));
+            }
+        }
         void    StoreBitArray(const uint8_t *array,size_t nBits);
         void    StoreString(const char *str);
         void    StoreString(const QString &str);
