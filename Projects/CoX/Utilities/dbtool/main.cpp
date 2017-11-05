@@ -17,12 +17,6 @@
 QString segs = "segs";
 QString segs_game = "segs_game";
 
-QTextStream& qout()
-{
-    static QTextStream ts( stdout );
-    return ts;
-}
-
 bool fileExists(QString path)
 {
     QFileInfo check_file("./" + path);
@@ -89,7 +83,7 @@ int main(int argc, char **argv)
         Pause();
         return 0;
     }
-    qInfo() << "OK";
+    qDebug() << "Authserver Found!";
 
     // Check if database already exists
     qInfo() << "Checking for existing databases...";
