@@ -1,5 +1,5 @@
 /* 
-* SEGS dbtool v0.1 
+* SEGS dbtool v0.2 dated 2017-11-04
 * A database creation and management tool.
 */
 #include <iostream>
@@ -31,25 +31,42 @@ bool fileExists(QString path)
 
 void Pause(void)
 {
-    qout().flush();
-    qout() << endl << "Press ENTER to continue...";
-    qout().flush();
+    qInfo() << endl << "Press ENTER to continue...";
     std::cin.ignore(100000, '\n');  // Ignore characters until an ENTER (newline) is received.
     return;
 }
 
+void errorHandler(QtMsgType type, const char *msg)
+{
+    switch (type) {
+        case QtDebugMsg:
+            fprintf(stderr, "%s\n", msg);
+            break;
+        case QtWarningMsg:
+            fprintf(stderr, "\033[1;33mWarning\033[0m: %s\n", msg);
+            break;
+        case QtCriticalMsg:
+            fprintf(stderr, "\033[31mCritical\033[0m: %s\n", msg);
+            break;
+        case QtFatalMsg:
+            fprintf(stderr, "\033[31mFatal\033[0m: %s\n", msg);
+            abort();
+    }
+}
+
 int main(int argc, char **argv)
 {
+    qInstallMsgHandler(errorHandler);
     QCoreApplication app(argc,argv);
     QCoreApplication::setApplicationName("segs-dbtool");
-    QCoreApplication::setApplicationVersion("0.1");
+    QCoreApplication::setApplicationVersion("0.2");
     
     QCommandLineParser parser;
     parser.setApplicationDescription("SEGS database management utility");
     parser.addHelpOption();
     parser.addVersionOption();
 
-    qout() << parser.applicationDescription() << " v" << QCoreApplication::applicationVersion() << endl << endl;
+    qDebug() << parser.applicationDescription() << " v" << QCoreApplication::applicationVersion() << endl;
     
     parser.addPositionalArgument("file", QCoreApplication::translate("main", "Database Script file to import."));
     
@@ -66,53 +83,61 @@ int main(int argc, char **argv)
     bool nofile = args.isEmpty();
     
     // Check if dbtool is being run from server directory
-    qout() << "Checking current folder...";
+    qInfo() << "Checking current directory for authserver...";
     if(!fileExists("./authserver")) {
-        qout() << "SEGS dbtool must be run from the SEGS root folder (where authserver resides)" << endl;
+        qDebug() << "SEGS dbtool must be run from the SEGS root folder (where authserver resides)";
         Pause();
         return 0;
     }
-    qout() << "OK" << endl;
+    qInfo() << "OK";
 
     // Check if database already exists
-    qout() << "Checking for existing databases..." << endl;
+    qInfo() << "Checking for existing databases...";
     if((fileExists(segs) || fileExists(segs_game)) && !forced) {
         if(fileExists(segs))
-            qout() << "WARNING! Database " << segs << " already exists." << endl;
+            qWarning() << "WARNING! Database " << segs << " already exists.";
         if(fileExists(segs_game))
-            qout() << "WARNING! Database " << segs_game << " already exists." << endl;
-        qout() << "Run dbtool with -f option to overwrite existing databases. THIS CANNOT BE UNDONE." << endl;
+            qWarning() << "WARNING! Database " << segs_game << " already exists.";
+        qDebug() << "Run dbtool with -f option to overwrite existing databases. THIS CANNOT BE UNDONE.";
         Pause();
         return 0;
     }
 
-    qout() << "Creating database files...";
-    QString db_path;
+    qInfo() << "Creating database files...";
+    QStringList db_files;
     if(nofile)
-        db_path = "./input.sql";
+        db_files << "./default_dbs/segs" << "./default_dbs/segs_game";
     else
-        db_path = args.at(0);
+        db_files << args;
 
-    // Should probably classify all of this so we can call it twice, once for segs and again for segs_game
-    QSqlDatabase db = QSqlDatabase::addDatabase( "QSQLITE" );
-    db.setDatabaseName( "./output.sql" );
-
-    if( !db.open() )
+    // Let's itterate over db_files and create database files
+    for (int i = 0; i < db_files.size(); ++i)
     {
-      qDebug() << db.lastError();
-      qFatal( "Failed to connect to database." );
+        QFile db_template(db_file.at(i));
+        int last_slash = db_template.at(i).lastIndexOf('/',-1);
+        QFile db_path("./" + db_template.at(i).midRef(last_slash+1,-1)); // filename only: ./segs
+        
+        // Otherwise, import contents of db_template into db_path
+        QSqlDatabase db = QSqlDatabase::addDatabase( "QSQLITE" );
+        db.setDatabaseName( db_path );
+
+        if( !db.open() )
+        {
+            qDebug() << db.lastError();
+            qFatal() << "Failed to connect to database. Please check error messages for details.";
+            Pause();
+            return 0;
+        }
+        qDebug() << "Created new database!";
+
+        QSqlQuery qry;
+        if(db_template.open(QFile::ReadOnly))
+            qry.exec(db_template.readAll());
+
+        // Close our db
+        db.close();
+        qInfo() << "COMPLETED importing " << db_template << "!";
     }
-
-    qDebug( "Connected!" );
-    qout() << "COMPLETED!!" << endl;
-
-    QSqlQuery qry;
-    QFile db_template(segs);
-    if(db_template.open(QFile::ReadOnly))
-        qry.exec(db_template.readAll());
-
-    // Close our db
-    db.close();
 
     Pause();
     return 0;
