@@ -108,8 +108,8 @@ int main(int argc, char **argv)
     for (int i = 0; i < db_files.size(); ++i)
     {
         QFile db_template(db_file.at(i));
-        int last_slash = db_template.at(i).lastIndexOf('/',-1);
-        QFile db_path("./" + db_template.at(i).midRef(last_slash+1,-1)); // filename only: ./segs
+        int last_slash = db_file.at(i).lastIndexOf('/',-1);
+        QFile db_path("./" + db_file.at(i).midRef(last_slash+1,-1)); // filename only: ./segs
         
         // Otherwise, import contents of db_template into db_path
         QSqlDatabase db = QSqlDatabase::addDatabase( "QSQLITE" );
