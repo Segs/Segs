@@ -8,6 +8,7 @@
 #pragma once
 #include "MapEvents.h"
 #include "Entity.h"
+
 class InputState : public MapLinkEvent
 {
 public:

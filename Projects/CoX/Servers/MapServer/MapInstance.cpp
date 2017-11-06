@@ -367,9 +367,14 @@ void MapInstance::on_input_state(InputState *st)
 {
     MapLink *  lnk = (MapLink *)st->src();
     MapClient *cl  = lnk->client_data();
+    if(cl==nullptr)
+    {
+        qWarning() << "Bogus on_input_state, client is null";
+        return;
+    }
     Entity *   ent = cl->char_entity();
     if (st->m_data.has_input_commit_guess)
-        ent->m_input_ack = st->m_data.someOtherbits;
+        ent->m_input_ack = st->m_data.send_id;
     ent->inp_state = st->m_data;
 
     // Input state messages can be followed by multiple commands.

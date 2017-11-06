@@ -325,9 +325,8 @@ void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
     {
         for(int i=0; i<3; ++i)
             bs.StoreFloat(target->pos[i]); // server position
-        storeFloatConditional(bs,0.0f); // PYR rotation ?
-        storeFloatConditional(bs,0.0f);
-        storeFloatConditional(bs,0.0f);
+        for(int i=0; i<3; ++i)
+            storeFloatConditional(bs,target->vel[i]);
     }
 }
 

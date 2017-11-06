@@ -10,44 +10,19 @@
 #define _USE_MATH_DEFINES
 #include "Events/InputState.h"
 #include "Entity.h"
-
+#include "GameData/CoHMath.h"
 #include <QDebug>
 #include <cmath>
-static glm::quat QuaternionFromYawPitchRoll(const glm::vec3 &pyr)
+enum BinaryControl
 {
-    float pitch(pyr.x);
-    float yaw(pyr.y);
-    float roll(pyr.z);
-
-    float rollOver2 = roll * 0.5f;
-    float sinRollOver2 = std::sin(rollOver2);
-    float cosRollOver2 = std::cos(rollOver2);
-    float pitchOver2 = pitch * 0.5f;
-    float sinPitchOver2 = std::sin(pitchOver2);
-    float cosPitchOver2 = std::cos(pitchOver2);
-    float yawOver2 = yaw * 0.5f;
-    float sinYawOver2 = std::sin(yawOver2);
-    float cosYawOver2 = std::cos(yawOver2);
-
-    // X = PI is giving incorrect result (pitch)
-
-    // Heading = Yaw
-    // Attitude = Pitch
-    // Bank = Roll
-
-    glm::quat result;
-    //result.X = cosYawOver2 * cosPitchOver2 * cosRollOver2 + sinYawOver2 * sinPitchOver2 * sinRollOver2;
-    //result.Y = cosYawOver2 * cosPitchOver2 * sinRollOver2 - sinYawOver2 * sinPitchOver2 * cosRollOver2;
-    //result.Z = cosYawOver2 * sinPitchOver2 * cosRollOver2 + sinYawOver2 * cosPitchOver2 * sinRollOver2;
-    //result.W = sinYawOver2 * cosPitchOver2 * cosRollOver2 - cosYawOver2 * sinPitchOver2 * sinRollOver2;
-
-    result.w = cosYawOver2 * cosPitchOver2 * cosRollOver2 - sinYawOver2 * sinPitchOver2 * sinRollOver2;
-    result.x = sinYawOver2 * sinPitchOver2 * cosRollOver2 + cosYawOver2 * cosPitchOver2 * sinRollOver2;
-    result.y = sinYawOver2 * cosPitchOver2 * cosRollOver2 + cosYawOver2 * sinPitchOver2 * sinRollOver2;
-    result.z = cosYawOver2 * sinPitchOver2 * cosRollOver2 - sinYawOver2 * cosPitchOver2 * sinRollOver2;
-
-    return result;
-}
+    FORWARD=0,
+    BACKWARD=1,
+    LEFT=2,
+    RIGHT=3,
+    UP=4,
+    DOWN=5,
+    BINARY_MAX=6,
+};
 void InputState::serializeto(BitStream &) const
 {
     assert(!"Not implemented");
@@ -57,29 +32,32 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     m_csc_deltabits=other.m_csc_deltabits;
     m_send_deltas=other.m_send_deltas;
     controlBits=other.controlBits;
-    someOtherbits=other.someOtherbits;
-    m_t1=other.m_t1;
-    m_t2=other.m_t2;
+    send_id=other.send_id;
+    m_time_diff1=other.m_time_diff1;
+    m_time_diff2=other.m_time_diff2;
     m_A_ang11_probably=other.m_A_ang11_probably;
     m_B_ang11_probably=other.m_B_ang11_probably;
     has_input_commit_guess=other.has_input_commit_guess;
+    m_received_server_update_id = other.m_received_server_update_id;
+    m_no_coll = other.m_no_coll;
 
     for(int i=0; i<3; ++i)
+    {
         if(other.pos_delta_valid[i])
             pos_delta[i] = other.pos_delta[i];
+    }
     bool update_needed=false;
     for(int i=0; i<3; ++i)
-        if(other.pyr_valid[i]) {
+    {
+        if(other.pyr_valid[i])
+        {
             camera_pyr[i] = other.camera_pyr[i];
             update_needed = true;
         }
-    if(update_needed) {
-        direction = glm::angleAxis(camera_pyr[0], glm::vec3(1, 0, 0)) *
-                    glm::angleAxis(camera_pyr[1], glm::vec3(0,-1, 0)) *
-                    glm::angleAxis(camera_pyr[2], glm::vec3(0, 0, 1))
-                ;
-        //direction = glm::quat(camera_pyr[0], osg::X_AXIS, camera_pyr[1], -osg::Y_AXIS, 0, osg::Z_AXIS);
-        //direction = QuaternionFromYawPitchRoll(camera_pyr);
+    }
+    if(update_needed)
+    {
+        direction = fromCoHYpr(camera_pyr);
     }
     return *this;
 }
@@ -91,12 +69,12 @@ void InputStateStorage::processDirectionControl(int dir,int prev_time,int press_
         fprintf(stderr,"pressed\n");
         switch(dir)
         {
-            case 0: pos_delta[2] = 1.0f; break;
-            case 1: pos_delta[2] = -1.0f; break;
-            case 2: pos_delta[0] = 1.0f; break;
-            case 3: pos_delta[0] = -1.0f; break;
-            case 4: pos_delta[1] = 1.0f; break;
-            case 5: pos_delta[1] = -1.0f; break;
+            case 0: pos_delta[2] = 1.0f; break; //FORWARD
+            case 1: pos_delta[2] = -1.0f; break; //BACKWARD
+            case 2: pos_delta[0] = -1.0f; break; //LEFT
+            case 3: pos_delta[0] = 1.0f; break; //RIGHT
+            case 4: pos_delta[1] = 1.0f; break; // UP
+            case 5: pos_delta[1] = -1.0f; break; // DOWN
         }
     }
     else {
@@ -124,7 +102,7 @@ void InputState::partial_2(BitStream &bs)
 {
     uint8_t control_id;
     //uint16_t v6;
-    uint16_t time_since_prev;
+    uint16_t ms_since_prev;
     int v;
     static const char *control_name[] = {"FORWARD",
                                          "BACK",
@@ -140,25 +118,23 @@ void InputState::partial_2(BitStream &bs)
             control_id = bs.GetBits(4);
 
         if(bs.GetBits(1))
-            time_since_prev=bs.GetBits(2)+32; // delta from prev event
+            ms_since_prev=bs.GetBits(2)+32; // delta from prev event
         else
-            time_since_prev=bs.GetBits(m_data.m_csc_deltabits);
+            ms_since_prev=bs.GetBits(m_data.m_csc_deltabits);
         switch(control_id)
         {
-            case 0: case 1:
-            case 2: case 3:
-            case 4: case 5:
+            case FORWARD: case BACKWARD:
+            case LEFT: case RIGHT:
+            case UP: case DOWN:
 #ifdef DEBUG_INPUT
                 fprintf(stderr,"%s  : %d - ",control_name[control_id],time_since_prev);
 #endif
-                m_data.processDirectionControl(control_id,time_since_prev,bs.GetBits(1));
+                m_data.processDirectionControl(control_id,ms_since_prev,bs.GetBits(1));
                 break;
             case 6:
             case 7:
             {
                 v = bs.GetBits(11);
-                // v = (x+pi)*(2048/2pi)
-                // x = (v*(pi/1024))-pi
                 float recovered = (float(v)/2048.0f)*(2*M_PI) - M_PI;
                 m_data.pyr_valid[control_id==7] = true;
                 if(control_id==6) //TODO: use camera_pyr.v[] here ?
@@ -171,51 +147,35 @@ void InputState::partial_2(BitStream &bs)
                 break;
             }
             case 8:
-                v = bs.GetBits(1);
-#ifdef DEBUG_INPUT
-                fprintf(stderr," C8[%d] ",v);
-#endif
+            {
+                bool controls_disabled = bs.GetBits(1);
                 if ( m_data.m_send_deltas )
                 {
-                    m_data.m_t1=bs.GetPackedBits(8);   // value - previous_value
-                    m_data.m_t2=bs.GetPackedBits(8);   // time - previous_time
+                    m_data.m_time_diff1=bs.GetPackedBits(8);   // value - previous_value
+                    m_data.m_time_diff2=bs.GetPackedBits(8);   // time - previous_time
                 }
                 else
                 {
                     m_data.m_send_deltas = true;
-                    m_data.m_t1=bs.GetBits(32);       // value
-                    m_data.m_t2=bs.GetPackedBits(10); // value - time
+                    m_data.m_time_diff1=bs.GetBits(32);       // value
+                    m_data.m_time_diff2=bs.GetPackedBits(10); // value - time
                 }
-#ifdef DEBUG_INPUT
-                fprintf(stderr,"t1:t2 [%d,%d] ",m_data.m_t1,m_data.m_t2);
-#endif
                 if(bs.GetBits(1))
                 {
-                    m_data.field_20=bs.GetBits(8);
-#ifdef DEBUG_INPUT
-                fprintf(stderr,"v [%d] ",v);
-#endif
+                    m_data.input_vel_scale=bs.GetBits(8);
                 }
                 break;
+            }
             case 9:
             {
-                //a2->timerel_18
-                //fprintf(stderr,"CtrlId %d  : %d - ",control_id,time_since_prev);
-                uint8_t s=bs.GetBits(8);
-#ifdef DEBUG_INPUT
-                fprintf(stderr,"C9:%d ",s);
-#endif
-            }
+                m_data.m_received_server_update_id = bs.GetBits(8);
                 break;
-            case 10: {
-                uint8_t s=bs.GetBits(1);
-
-#ifdef DEBUG_INPUT
-                fprintf(stderr,"C10 : %d - ",time_since_prev);
-                fprintf(stderr,"%d\n",s); //a2->timerel_18 & 1
-#endif
             }
+            case 10:
+            {
+                m_data.m_no_coll = bs.GetBits(1);
                 break;
+            }
             default:
                 assert(!"Unknown control_id");
         }
@@ -229,7 +189,7 @@ void InputState::extended_input(BitStream &bs)
     if(m_data.has_input_commit_guess) // list of partial_2 follows
     {
         m_data.m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
-        m_data.someOtherbits = bs.GetBits(16);//ControlStateChange::field_8 or OptRel::field_19A8
+        m_data.send_id = bs.GetBits(16);
         m_data.current_state_P = 0;
 #ifdef DEBUG_INPUT
         fprintf(stderr,"CSC_DELTA[%x-%x] : ",m_data.m_csc_deltabits,m_data.someOtherbits);

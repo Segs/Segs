@@ -31,8 +31,9 @@ void World::physicsStep(Entity *e,uint32_t msec)
     {
         // todo: take into account time between updates
         glm::mat3 za = static_cast<glm::mat3>(e->inp_state.direction); // quat to mat4x4 conversion
-
+        float vel_scale = e->inp_state.input_vel_scale/255.0f;
         e->pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
+        e->vel = za*e->inp_state.pos_delta;
     }
 }
 float animateValue(float v,float start,float target,float length,float dT)
