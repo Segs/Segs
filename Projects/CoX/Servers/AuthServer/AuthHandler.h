@@ -32,7 +32,7 @@ protected:
     // Server <-> server event handlers
     void        on_client_expected(ClientExpected *ev);
 public:
-    typedef enum
+    enum eAuthError
     {
         AUTH_SERVER_OFFLINE = -1,
         //AUTH_OK = 0,
@@ -50,7 +50,7 @@ public:
         AUTH_ACCOUNT_TIME_EXPIRED = 18,
         AUTH_NO_PAID_TIME_REMAINS = 19,
         AUTH_UNKN_ERROR
-    } eAuthError; // this is a public type so other servers can pass us valid errors
+    }; // this is a public type so other servers can pass us valid errors
 
     void        dispatch(SEGSEvent *ev);
     SEGSEvent * dispatch_sync(SEGSEvent *ev);
