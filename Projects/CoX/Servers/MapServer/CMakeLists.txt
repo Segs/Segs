@@ -11,6 +11,8 @@ SET(target_CPP
     Events/ChatMessage.cpp
     Events/EntitiesResponse.cpp
     Events/InputState.cpp
+    Events/LocationVisited.cpp
+    Events/PlaqueVisited.cpp
     Events/NewEntity.cpp
     Events/SceneEvent.cpp
     MapClient.cpp
@@ -33,6 +35,8 @@ SET(target_INCLUDE
     Events/ChatMessage.h
     Events/EntitiesResponse.h
     Events/InputState.h
+    Events/LocationVisited.h
+    Events/PlaqueVisited.h
     Events/NewEntity.h
     Events/SceneEvent.h
     Events/Shortcuts.h

@@ -32,6 +32,8 @@ class ConsoleCommand;
 class ClientQuit;
 class ConnectRequest;
 class ChatDividerMoved;
+class LocationVisited;
+class PlaqueVisited;
 class MiniMapState;
 class ClientResumedRendering;
 class MapServer;
@@ -88,4 +90,6 @@ protected:
     void on_command_chat_divider_moved(ChatDividerMoved *ev);
     void on_minimap_state(MiniMapState *ev);
     void on_client_resumed(ClientResumedRendering *ev);
+    void on_location_visited(LocationVisited * ev);
+    void on_plaque_visited(PlaqueVisited * ev);
 };

@@ -122,6 +122,12 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evMiniMapState:
             on_minimap_state(static_cast<MiniMapState *>(ev));
             break;
+        case MapEventTypes::evLocationVisited:
+            on_location_visited(static_cast<LocationVisited *>(ev));
+            break;
+        case MapEventTypes::evPlaqueVisited:
+            on_plaque_visited(static_cast<PlaqueVisited *>(ev));
+            break;
         default:
             fprintf(stderr,"Unhandled MapEventTypes %zu\n",ev->type()-MapEventTypes::base);
             //ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled event type %d\n"),ev->type()));
@@ -514,4 +520,16 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     welcome_msg += buf;
     ChatMessage *msg = ChatMessage::adminMessage(welcome_msg.c_str() );
     cl->link()->putq(msg);
+}
+void MapInstance::on_location_visited(LocationVisited *ev)
+{
+    qWarning() << "Unhandled location visited event:" << ev->m_name <<
+                  QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
+}
+
+void MapInstance::on_plaque_visited(PlaqueVisited * ev)
+{
+    qWarning() << "Unhandled plaque visited event:" << ev->m_name <<
+                  QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
+
 }
