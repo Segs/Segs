@@ -122,7 +122,6 @@ int main(int argc, char **argv)
     else
         db_files = args;
 
-    QSqlDatabase db = QSqlDatabase::addDatabase( "QSQLITE" );
     // Let's itterate over db_files and create database files
     for (const QString &db_file : db_files)
     {
@@ -134,34 +133,46 @@ int main(int argc, char **argv)
 
         QFile db_template(db_file);
         int last_slash = db_file.lastIndexOf('/',-1);
-        QFile db_path("./" + db_file.midRef(last_slash+1,-1)); // filename only: ./segs
-        
+        QString db_name = db_file.midRef(last_slash+1,-1).toString(); // filename only: segs
+        QFile db_path("./" + db_name); // destination path: ./segs
+
+        QSqlDatabase db = QSqlDatabase::addDatabase( "QSQLITE" ,db_name);
         // Otherwise, import contents of db_template into db_path
         db.setDatabaseName(db_path.fileName());
+        db.setHostName("localhost");
 
         if( !db.open() )
         {
             qDebug() << db.lastError();
-            qFatal("Failed to connect to database. Please check error messages for details.");
+            qFatal("Failed to connect to databases. Please check error messages for details.");
         }
 
-        QSqlQuery qry;
+        QSqlQuery qry(db);
         if(db_template.open(QFile::ReadOnly))
         {
+            /*
             qry.prepare(db_template.readAll());
             if(!qry.exec())
             {
                 qCritical() << qry.lastError();
                 break;
             }
+            */
+
+            if (db_path.exists())
+                db_path.remove();
+
+            if(!db_template.copy(db_path.fileName()))
+                qFatal("Failed to copy database! Make sure you have proper permission to write to this directory!");
         }
 
         qInfo() << "COMPLETED importing" << db_template.fileName() << "to" << db_path.fileName();
+        // Close our db
+        db.close();
     }
-
-    // Close and remove our db
-    db.close();
-    db.removeDatabase("QSQLITE");
+    // Remove both databases
+    QSqlDatabase::removeDatabase(segs);
+    QSqlDatabase::removeDatabase(segs_game);
 
     Pause();
     return 0;
