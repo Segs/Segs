@@ -36,7 +36,9 @@ public:
     EVENT_DECL(evForceLogout            ,10)
     EVENT_DECL(evChatMessage            ,20)    // command_id + 20
     EVENT_DECL(evChatDividerMoved       ,36)
+    EVENT_DECL(evPlaqueVisited          ,39)
     EVENT_DECL(evCombineRequest         ,40)
+    EVENT_DECL(evLocationVisited        ,62)
     EVENT_DECL(evConsoleCommand         ,100)
     EVENT_DECL(evMiniMapState           ,101)
     EVENT_DECL(evClientResumedRendering ,104)
@@ -319,3 +321,5 @@ public:
 #include "Events/SceneEvent.h"
 #include "Events/EntitiesResponse.h"
 #include "Events/Shortcuts.h"
+#include "Events/PlaqueVisited.h"
+#include "Events/LocationVisited.h"

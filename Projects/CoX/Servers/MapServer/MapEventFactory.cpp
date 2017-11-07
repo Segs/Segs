@@ -51,7 +51,9 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 1: return new MiniMapState;
         case 4: return new ClientResumedRendering;
         case 14: return new WindowState;
+        case 39: return new PlaqueVisited;
         case 40: return new CombineRequest;
+        case 62: return new LocationVisited;
         /*case 21: new KeybindProfileReset; */
         /*case 22: new KeybindProfileSelected; */
         /*case 37: new TargetChatChannelSelected; */
