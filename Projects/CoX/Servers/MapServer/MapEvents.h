@@ -46,11 +46,12 @@ public:
     EVENT_DECL(evWindowState            ,114)
     EVENT_DECL(evInspirationDockMode    ,117)
     EVENT_DECL(evChatMessage            ,120)
-    EVENT_DECL(evAbortQueuedPower       ,133)
+    EVENT_DECL(evAbortQueuedPower       ,133) // this might actually mean something different
     EVENT_DECL(evChangeStance           ,136)
     EVENT_DECL(evPlaqueVisited          ,139)
     EVENT_DECL(evCombineRequest         ,140)
     EVENT_DECL(evLocationVisited        ,162)
+    EVENT_DECL(evDescriptionAndBattleCry,167)
     END_EVENTS(500)
 };
 //////////////////////////////////////////////////////////////////////////
@@ -420,6 +421,23 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
+    }
+};
+class DescriptionAndBattleCry  : public MapLinkEvent
+{
+public:
+    QString description;
+    QString battlecry;
+    DescriptionAndBattleCry():MapLinkEvent(MapEventTypes::evDescriptionAndBattleCry)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,67);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        bs.GetString(description);
+        bs.GetString(battlecry);
     }
 };
 #include "Events/ChatMessage.h"
