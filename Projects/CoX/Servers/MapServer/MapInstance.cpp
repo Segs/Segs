@@ -110,6 +110,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evEnterDoor:
             on_enter_door(static_cast<EnterDoor *>(ev));
             break;
+        case MapEventTypes::evSetDestination:
+            on_set_destination(static_cast<SetDestination *>(ev));
+            break;
         case MapEventTypes::evWindowState:
             on_window_state(static_cast<WindowState *>(ev));
             break;
@@ -565,4 +568,10 @@ void MapInstance::on_change_stance(ChangeStance * ev)
         qWarning() << "  enter stance" <<ev->powerset_index<<ev->power_index;
     else
         qWarning() << "  exit stance";
+}
+
+void MapInstance::on_set_destination(SetDestination * ev)
+{
+    qWarning() << "Unhandled set destination request";
+    qWarning() << "  index" <<ev->point_index<< "loc"<<ev->destination.x<<ev->destination.y<<ev->destination.z;
 }
