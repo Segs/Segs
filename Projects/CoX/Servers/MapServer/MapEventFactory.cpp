@@ -58,6 +58,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 36: return new ChangeStance;
         case 39: return new PlaqueVisited;
         case 40: return new CombineRequest;
+        case 56: return new EntityInfoRequest;
         case 62: return new LocationVisited;
         case 67: return new DescriptionAndBattleCry;
         /*case 21: new KeybindProfileReset; */

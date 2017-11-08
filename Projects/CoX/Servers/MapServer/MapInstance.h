@@ -98,4 +98,5 @@ protected:
     void on_set_destination(class SetDestination *ev);
     void on_abort_queued_power(class AbortQueuedPower *ev);
     void on_description_and_battlecry(class DescriptionAndBattleCry *ev);
+    void on_entity_info_request(class EntityInfoRequest *ev);
 };

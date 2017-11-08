@@ -50,6 +50,7 @@ public:
     EVENT_DECL(evChangeStance           ,136)
     EVENT_DECL(evPlaqueVisited          ,139)
     EVENT_DECL(evCombineRequest         ,140)
+    EVENT_DECL(evEntityInfoRequest      ,156)
     EVENT_DECL(evLocationVisited        ,162)
     EVENT_DECL(evDescriptionAndBattleCry,167)
     END_EVENTS(500)
@@ -438,6 +439,22 @@ public:
     {
         bs.GetString(description);
         bs.GetString(battlecry);
+    }
+};
+class EntityInfoRequest : public MapLinkEvent
+{
+public:
+    int entity_idx;
+    EntityInfoRequest():MapLinkEvent(MapEventTypes::evEntityInfoRequest)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,56);
+        bs.StorePackedBits(12,entity_idx);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        entity_idx = bs.GetPackedBits(12);
     }
 };
 #include "Events/ChatMessage.h"
