@@ -52,6 +52,7 @@ public:
     EVENT_DECL(evCombineRequest         ,140)
     EVENT_DECL(evEntityInfoRequest      ,156)
     EVENT_DECL(evLocationVisited        ,162)
+    EVENT_DECL(evClientSettings         ,165)
     EVENT_DECL(evDescriptionAndBattleCry,167)
     END_EVENTS(500)
 };
@@ -59,114 +60,113 @@ public:
 // Client -> Server
 #include "Events/NewEntity.h"
 
-class MapUnknownRequest : public MapLinkEvent
+class MapUnknownRequest final : public MapLinkEvent
 {
 public:
     MapUnknownRequest():MapLinkEvent(MapEventTypes::evUnknownEvent)
     {
-
     }
-    void serializeto(BitStream &) const
+    void serializeto(BitStream &) const override
     {
     }
-    void serializefrom(BitStream &)
+    void serializefrom(BitStream &) override
     {
     }
 };
-class ShortcutsRequest : public MapLinkEvent
+class ShortcutsRequest final : public MapLinkEvent
 {
 public:
     ShortcutsRequest():MapLinkEvent(MapEventTypes::evShortcutsRequest)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,4); // opcode
     }
-    void serializefrom(BitStream &)
+    void serializefrom(BitStream &) override
     {
     }
 };
 
-class SceneRequest : public MapLinkEvent
+class SceneRequest final : public MapLinkEvent
 {
 public:
     SceneRequest():MapLinkEvent(MapEventTypes::evSceneRequest)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,3); // opcode
     }
-    void serializefrom(BitStream &)
+    void serializefrom(BitStream &) override
     {
     }
 };
 
-class EntitiesRequest : public MapLinkEvent
+class EntitiesRequest final : public MapLinkEvent
 {
 public:
     EntitiesRequest():MapLinkEvent(MapEventTypes::evEntitiesRequest)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,5); // opcode
     }
-    void serializefrom(BitStream &)
+    void serializefrom(BitStream &) override
     {
     }
 };
-class ClientQuit : public MapLinkEvent
+class ClientQuit final : public MapLinkEvent
 {
 public:
     int abort_disconnect = 0;
     ClientQuit():MapLinkEvent(MapEventTypes::evClientQuit)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,7); // opcode
         bs.StorePackedBits(1, abort_disconnect);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         abort_disconnect = bs.GetPackedBits(1);
         // TODO: try to differentiate between quit/logout ?
     }
 
 };
-class ForcedLogout : public MapLinkEvent
+class ForcedLogout final : public MapLinkEvent
 {
 public:
     QString reason;
     ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,12); // opcode
         bs.StoreString(reason); // opcode
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         bs.GetString(reason);
     }
 };
 
-class CookieRequest : public MapLinkEvent
+class CookieRequest final : public MapLinkEvent
 {
 public:
     uint32_t cookie;
     uint32_t console;
     CookieRequest():MapLinkEvent(MapEventTypes::evCookieRequest)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,6); // opcode
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         cookie = bs.GetPackedBits(1);
         console = bs.GetPackedBits(1);
     }
 };
-class ConsoleCommand : public MapLinkEvent
+class ConsoleCommand final : public MapLinkEvent
 {
 public:
     QString contents;
@@ -181,7 +181,7 @@ public:
         bs.GetString(contents);
     }
 };
-class ClientResumedRendering : public MapLinkEvent
+class ClientResumedRendering final : public MapLinkEvent
 {
 public:
     ClientResumedRendering():MapLinkEvent(MapEventTypes::evClientResumedRendering)
@@ -195,7 +195,7 @@ public:
     }
 };
 
-class MiniMapState : public MapLinkEvent 
+class MiniMapState final : public MapLinkEvent
 {
 
 public:
@@ -212,7 +212,7 @@ public:
     }
 
 };
-class WindowState : public MapLinkEvent
+class WindowState final : public MapLinkEvent
 {
 public:
     uint32_t window_idx;
@@ -255,7 +255,7 @@ public:
     }
 };
 
-class CombineRequest : public MapLinkEvent
+class CombineRequest final : public MapLinkEvent
 {
 public:
     struct PowerEntry
@@ -296,7 +296,7 @@ public:
 #include "Events/ChatMessage.h"
 //////////////////////////////////////////////////////////////////////////
 // Server -> Client events
-class MapInstanceConnected : public MapLinkEvent
+class MapInstanceConnected final : public MapLinkEvent
 {
 public:
     MapInstanceConnected():MapLinkEvent(MapEventTypes::evMapInstanceConnected)
@@ -326,7 +326,7 @@ public:
 };
 
 
-class InspirationDockMode : public MapLinkEvent
+class InspirationDockMode final : public MapLinkEvent
 {
 public:
     uint32_t dock_mode=0;
@@ -342,7 +342,7 @@ public:
         dock_mode=bs.GetBits(32);
     }
 };
-class EnterDoor : public MapLinkEvent
+class EnterDoor final : public MapLinkEvent
 {
 public:
     bool unspecified_location;
@@ -366,7 +366,7 @@ public:
         bs.GetString(name);
     }
 };
-class ChangeStance : public MapLinkEvent
+class ChangeStance final : public MapLinkEvent
 {
 public:
     bool enter_stance;
@@ -388,7 +388,7 @@ public:
     }
 
 };
-class SetDestination : public MapLinkEvent
+class SetDestination final : public MapLinkEvent
 {
 public:
     glm::vec3 destination;
@@ -411,7 +411,7 @@ public:
         point_index   = bs.GetPackedBits(1);
     }
 };
-class AbortQueuedPower : public MapLinkEvent
+class AbortQueuedPower final : public MapLinkEvent
 {
 public:
     AbortQueuedPower():MapLinkEvent(MapEventTypes::evAbortQueuedPower)
@@ -424,7 +424,7 @@ public:
     {
     }
 };
-class DescriptionAndBattleCry  : public MapLinkEvent
+class DescriptionAndBattleCry final : public MapLinkEvent
 {
 public:
     QString description;
@@ -441,22 +441,23 @@ public:
         bs.GetString(battlecry);
     }
 };
-class EntityInfoRequest : public MapLinkEvent
+class EntityInfoRequest final : public MapLinkEvent
 {
 public:
     int entity_idx;
     EntityInfoRequest():MapLinkEvent(MapEventTypes::evEntityInfoRequest)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,56);
         bs.StorePackedBits(12,entity_idx);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         entity_idx = bs.GetPackedBits(12);
     }
 };
+#include "Events/ClientSettings.h"
 #include "Events/ChatMessage.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/SceneEvent.h"
