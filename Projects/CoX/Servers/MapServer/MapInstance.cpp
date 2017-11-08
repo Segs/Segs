@@ -143,6 +143,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evPlaqueVisited:
             on_plaque_visited(static_cast<PlaqueVisited *>(ev));
             break;
+        case MapEventTypes::evClientSettings:
+            on_client_settings(static_cast<ClientSettings *>(ev));
+            break;
         case MapEventTypes::evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
             break;
@@ -601,4 +604,10 @@ void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
     qWarning() << "Unhandled entity info requested" << ev->entity_idx;
     // TODO: send something to the client, question is, what kind of packet should be used here ??
 
+}
+
+void MapInstance::on_client_settings(ClientSettings * ev)
+{
+    qWarning() << "Unhandled client settings";
+    //TODO: serialize settings to client entry in the database.
 }

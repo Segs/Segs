@@ -9,6 +9,7 @@ SET(target_CPP
     EntityUpdateCodec.cpp
     Events/ChatDividerMoved.cpp
     Events/ChatMessage.cpp
+    Events/ClientSettings.cpp
     Events/EntitiesResponse.cpp
     Events/InputState.cpp
     Events/LocationVisited.cpp
@@ -33,6 +34,7 @@ SET(target_INCLUDE
     EntityUpdateCodec.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
+    Events/ClientSettings.h
     Events/EntitiesResponse.h
     Events/InputState.h
     Events/LocationVisited.h
