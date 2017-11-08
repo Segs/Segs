@@ -140,6 +140,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evPlaqueVisited:
             on_plaque_visited(static_cast<PlaqueVisited *>(ev));
             break;
+        case MapEventTypes::evDescriptionAndBattleCry:
+            on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
+            break;
         default:
             fprintf(stderr,"Unhandled MapEventTypes %zu\n",ev->type()-MapEventTypes::base);
             //ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled event type %d\n"),ev->type()));
@@ -582,4 +585,10 @@ void MapInstance::on_set_destination(SetDestination * ev)
 void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
 {
     qWarning() << "Unhandled abort queued power request";
+}
+
+void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
+{
+    qWarning() << "Unhandled description and battlecry request" << ev->description<<ev->battlecry;
+    // TODO: client expects us to force it to fill description and battlecry fields in UI?
 }
