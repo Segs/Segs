@@ -92,4 +92,5 @@ protected:
     void on_client_resumed(ClientResumedRendering *ev);
     void on_location_visited(LocationVisited * ev);
     void on_plaque_visited(PlaqueVisited * ev);
+    void on_inspiration_dockmode(class InspirationDockMode * ev);
 };

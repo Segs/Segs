@@ -34,6 +34,7 @@ public:
     EVENT_DECL(evInputState             ,8)
     EVENT_DECL(evClientQuit             ,9)
     EVENT_DECL(evForceLogout            ,10)
+    EVENT_DECL(evInspirationDockMode    ,17)
     EVENT_DECL(evChatMessage            ,20)    // command_id + 20
     EVENT_DECL(evChatDividerMoved       ,36)
     EVENT_DECL(evPlaqueVisited          ,39)
@@ -316,6 +317,23 @@ public:
 
 };
 
+
+class InspirationDockMode : public MapLinkEvent
+{
+public:
+    uint32_t dock_mode=0;
+    InspirationDockMode():MapLinkEvent(MapEventTypes::evInspirationDockMode)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,17);
+        bs.StoreBits(32,dock_mode);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        dock_mode=bs.GetBits(32);
+    }
+};
 #include "Events/ChatMessage.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/SceneEvent.h"
