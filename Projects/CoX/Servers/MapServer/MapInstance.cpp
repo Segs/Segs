@@ -134,6 +134,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evMiniMapState:
             on_minimap_state(static_cast<MiniMapState *>(ev));
             break;
+        case MapEventTypes::evEntityInfoRequest:
+            on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
+            break;
         case MapEventTypes::evLocationVisited:
             on_location_visited(static_cast<LocationVisited *>(ev));
             break;
@@ -591,4 +594,11 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 {
     qWarning() << "Unhandled description and battlecry request" << ev->description<<ev->battlecry;
     // TODO: client expects us to force it to fill description and battlecry fields in UI?
+}
+
+void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
+{
+    qWarning() << "Unhandled entity info requested" << ev->entity_idx;
+    // TODO: send something to the client, question is, what kind of packet should be used here ??
+
 }
