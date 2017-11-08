@@ -53,6 +53,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 9: return new EnterDoor;
         case 14: return new WindowState;
         case 17: return new InspirationDockMode;
+        case 36: return new ChangeStance;
         case 39: return new PlaqueVisited;
         case 40: return new CombineRequest;
         case 62: return new LocationVisited;

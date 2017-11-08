@@ -35,6 +35,7 @@ public:
     EVENT_DECL(evInputState             ,8)
     EVENT_DECL(evClientQuit             ,9)
     EVENT_DECL(evForceLogout            ,10)
+    EVENT_DECL(evChatDividerMoved       ,36)
     EVENT_DECL(evCombineRequest         ,40)
 // client commands
     EVENT_DECL(evConsoleCommand         ,100)
@@ -45,7 +46,7 @@ public:
     EVENT_DECL(evWindowState            ,114)
     EVENT_DECL(evInspirationDockMode    ,117)
     EVENT_DECL(evChatMessage            ,120)
-    EVENT_DECL(evChatDividerMoved       ,136)
+    EVENT_DECL(evChangeStance           ,136)
     EVENT_DECL(evPlaqueVisited          ,139)
     EVENT_DECL(evLocationVisited        ,162)
     END_EVENTS(500)
@@ -360,6 +361,28 @@ public:
         }
         bs.GetString(name);
     }
+};
+class ChangeStance : public MapLinkEvent
+{
+public:
+    bool enter_stance;
+    int powerset_index;
+    int power_index;
+    ChangeStance():MapLinkEvent(MapEventTypes::evChangeStance)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,36);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        enter_stance = bs.GetBits(1);
+        if(!enter_stance)
+            return;
+        powerset_index=bs.GetPackedBits(4);
+        power_index=bs.GetPackedBits(4);
+    }
+
 };
 #include "Events/ChatMessage.h"
 #include "Events/ChatDividerMoved.h"
