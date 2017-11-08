@@ -30,21 +30,21 @@ REQUIREMENTS AND NOTES
 Below are the utilities and libraries you'll need to compile SEGS in any environment. These are available on Linux or Windows, via your distro's package manager, or via the links below:
 
    - QT >5.8 - A cross platform application framework utilized heavily by SEGS.  
-         Available here: https://www.qt.io/download-qt-for-application-development  
+         https://www.qt.io/download-qt-for-application-development  
    - CMake >3.6 - CMake is the cross-platform make utility. It generates makefiles for multiple platforms.  
-         Available here: https://cmake.org/download/  
+         https://cmake.org/download/  
    - Git - A version control system for tracking changes in computer files and coordinating work on those files among multiple people.  
-         Available here: https://git-scm.com/download  
+         https://git-scm.com/download  
    - ACE - ACE is a communication library SEGS makes use of for networking protocols.  
-         Available here: http://www.cs.wustl.edu/~schmidt/ACE.html  
+         http://www.cs.wustl.edu/~schmidt/ACE.html  
    - Boost - A set of portable C++ libraries that SEGS makes use of for productivity.
-         Available here: http://www.boost.org/  
+         http://www.boost.org/  
    - SDL2 - Simple DirectMedia Layer 2 is a cross-platform development library designed to provide low level access to audio, keyboard, mouse, joystick, and graphics hardware via OpenGL and Direct3D. It is required by the SEGS mapviewer utility.  
-         Available here: https://www.libsdl.org/  
+         https://www.libsdl.org/  
    - zlib - zlib is a compression library SEGS makes use of for (un)packing data.  
-         Available here: http://www.zlib.net/  
+         http://www.zlib.net/  
    - _OPTIONAL:_ By default SEGS uses a local SQLite database, but optionally may be configured to use PostGreSQL.  
-         Available here: http://www.postgresql.org/download/  
+         http://www.postgresql.org/download/  
 
 For more detailed version of this guide or forums for help see the links below:
 - https://segs.nemerle.eu/
@@ -87,9 +87,11 @@ Download dependencies and tools by clicking on the links listed in the Requireme
 CONTRIBUTE TO DEVELOPMENT
 ------
 
-At this point you're ready to start the server by running the program `authserver`. Once running, start the CoX client we setup earlier and log in using any username and password combination (users are autocreated).
+Please read [CONTRIBUTE.md](./docs/CONTRIBUTE.md) and see the links below:
 
-Enjoy!
+* Our GitHub: https://github.com/Segs/Segs
+* Our Redmine: http://redmine.nemerle.eu/projects/segs
+* Our target [coding style](http://github.com/Segs/Segs/blob/master/docs/CodingStyle.txt.md "style")
 
 
 SETTING UP SEGS SERVER & PLAYING
@@ -97,9 +99,9 @@ SETTING UP SEGS SERVER & PLAYING
 
 After compiling, you'll need to setup your SEGS Server and Databases. You'll also need to download a specific version of the client compatible with SEGS.
 
-**IMPORTANT:** You can find information on setting up your SEGS server and logging in by reading the README.md located in your output directory (typically `out`). You can also read a copy of that [README.md here](./Projects/CoX/docs/README.md)
+**IMPORTANT:** You can find information on setting up and running your SEGS server by reading the README.md located in your output directory (typically `out`). You can also read a copy of that [README.md here](./Projects/CoX/docs/README.md)
 
-- Don't forget! You'll need a copy of the required CoH client from Issue 0 (release) version 0.22, which can be found through various sources online, or via magnet link: 
+- Don't forget! You'll need a copy of the required CoH client from Issue 0 (release) version 0.22, which can be found through various sources online, or via magnet link:  
   `magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f`
 
 
