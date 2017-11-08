@@ -110,6 +110,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evWindowState:
             on_window_state(static_cast<WindowState *>(ev));
             break;
+        case MapEventTypes::evInspirationDockMode:
+            on_inspiration_dockmode(static_cast<InspirationDockMode *>(ev));
+            break;
         case MapEventTypes::evConsoleCommand:
             on_console_command(static_cast<ConsoleCommand *>(ev));
             break;
@@ -532,4 +535,9 @@ void MapInstance::on_plaque_visited(PlaqueVisited * ev)
     qWarning() << "Unhandled plaque visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 
+}
+
+void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
+{
+    qWarning() << "Unhandled inspiration dock mode:" << ev->dock_mode;
 }

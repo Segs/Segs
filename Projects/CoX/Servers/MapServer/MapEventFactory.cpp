@@ -51,6 +51,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 1: return new MiniMapState;
         case 4: return new ClientResumedRendering;
         case 14: return new WindowState;
+        case 17: return new InspirationDockMode;
         case 39: return new PlaqueVisited;
         case 40: return new CombineRequest;
         case 62: return new LocationVisited;
