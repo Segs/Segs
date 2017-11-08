@@ -557,3 +557,12 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     //  if(door and player_can_enter(door)
     //    process_map_transfer(player,door->targetMap);
 }
+
+void MapInstance::on_change_stance(ChangeStance * ev)
+{
+    qWarning() << "Unhandled change stance request";
+    if(ev->enter_stance)
+        qWarning() << "  enter stance" <<ev->powerset_index<<ev->power_index;
+    else
+        qWarning() << "  exit stance";
+}
