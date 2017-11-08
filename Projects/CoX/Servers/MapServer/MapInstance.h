@@ -95,4 +95,5 @@ protected:
     void on_inspiration_dockmode(class InspirationDockMode * ev);
     void on_enter_door(class EnterDoor * ev);
     void on_change_stance(class ChangeStance *ev);
+    void on_set_destination(class SetDestination *ev);
 };

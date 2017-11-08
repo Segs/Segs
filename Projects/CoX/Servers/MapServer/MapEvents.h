@@ -36,18 +36,19 @@ public:
     EVENT_DECL(evClientQuit             ,9)
     EVENT_DECL(evForceLogout            ,10)
     EVENT_DECL(evChatDividerMoved       ,36)
-    EVENT_DECL(evCombineRequest         ,40)
 // client commands
     EVENT_DECL(evConsoleCommand         ,100)
     EVENT_DECL(evMiniMapState           ,101)
     EVENT_DECL(evClientResumedRendering ,104)
     EVENT_DECL(evCookieRequest          ,106)
     EVENT_DECL(evEnterDoor              ,109)
+    EVENT_DECL(evSetDestination         ,111)
     EVENT_DECL(evWindowState            ,114)
     EVENT_DECL(evInspirationDockMode    ,117)
     EVENT_DECL(evChatMessage            ,120)
     EVENT_DECL(evChangeStance           ,136)
     EVENT_DECL(evPlaqueVisited          ,139)
+    EVENT_DECL(evCombineRequest         ,140)
     EVENT_DECL(evLocationVisited        ,162)
     END_EVENTS(500)
 };
@@ -384,6 +385,30 @@ public:
     }
 
 };
+class SetDestination : public MapLinkEvent
+{
+public:
+    glm::vec3 destination;
+    int point_index;
+    SetDestination():MapLinkEvent(MapEventTypes::evSetDestination)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,11);
+        bs.StoreFloat(destination.x);
+        bs.StoreFloat(destination.y);
+        bs.StoreFloat(destination.z);
+        bs.StorePackedBits(1,point_index);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        destination.x = bs.GetFloat();
+        destination.y = bs.GetFloat();
+        destination.z = bs.GetFloat();
+        point_index   = bs.GetPackedBits(1);
+    }
+};
+
 #include "Events/ChatMessage.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/SceneEvent.h"
