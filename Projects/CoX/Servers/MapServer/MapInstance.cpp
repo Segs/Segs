@@ -119,6 +119,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evInspirationDockMode:
             on_inspiration_dockmode(static_cast<InspirationDockMode *>(ev));
             break;
+        case MapEventTypes::evAbortQueuedPower:
+            on_abort_queued_power(static_cast<AbortQueuedPower *>(ev));
+            break;
         case MapEventTypes::evConsoleCommand:
             on_console_command(static_cast<ConsoleCommand *>(ev));
             break;
@@ -574,4 +577,9 @@ void MapInstance::on_set_destination(SetDestination * ev)
 {
     qWarning() << "Unhandled set destination request";
     qWarning() << "  index" <<ev->point_index<< "loc"<<ev->destination.x<<ev->destination.y<<ev->destination.z;
+}
+
+void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
+{
+    qWarning() << "Unhandled abort queued power request";
 }

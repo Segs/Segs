@@ -96,4 +96,5 @@ protected:
     void on_enter_door(class EnterDoor * ev);
     void on_change_stance(class ChangeStance *ev);
     void on_set_destination(class SetDestination *ev);
+    void on_abort_queued_power(class AbortQueuedPower *ev);
 };

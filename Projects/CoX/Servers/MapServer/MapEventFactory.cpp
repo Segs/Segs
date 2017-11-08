@@ -54,6 +54,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 11: return new SetDestination;
         case 14: return new WindowState;
         case 17: return new InspirationDockMode;
+        case 33: return new AbortQueuedPower;
         case 36: return new ChangeStance;
         case 39: return new PlaqueVisited;
         case 40: return new CombineRequest;
