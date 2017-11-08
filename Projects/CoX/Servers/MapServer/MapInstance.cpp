@@ -107,6 +107,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evCookieRequest:
             on_cookie_confirm(static_cast<CookieRequest *>(ev));
             break;
+        case MapEventTypes::evEnterDoor:
+            on_enter_door(static_cast<EnterDoor *>(ev));
+            break;
         case MapEventTypes::evWindowState:
             on_window_state(static_cast<WindowState *>(ev));
             break;
@@ -540,4 +543,17 @@ void MapInstance::on_plaque_visited(PlaqueVisited * ev)
 void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
 {
     qWarning() << "Unhandled inspiration dock mode:" << ev->dock_mode;
+}
+
+void MapInstance::on_enter_door(EnterDoor *ev)
+{
+    qWarning().noquote() << "Unhandled door entry request to:" << ev->name;
+    if(ev->unspecified_location)
+        qWarning().noquote() << "    no location provided";
+    else
+        qWarning().noquote() << ev->location.x<< ev->location.y<< ev->location.z;
+    //pseudocode:
+    //  auto door = get_door(ev->name,ev->location);
+    //  if(door and player_can_enter(door)
+    //    process_map_transfer(player,door->targetMap);
 }

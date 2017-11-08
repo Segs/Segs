@@ -93,4 +93,5 @@ protected:
     void on_location_visited(LocationVisited * ev);
     void on_plaque_visited(PlaqueVisited * ev);
     void on_inspiration_dockmode(class InspirationDockMode * ev);
+    void on_enter_door(class EnterDoor * ev);
 };

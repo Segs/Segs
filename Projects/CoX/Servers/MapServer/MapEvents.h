@@ -14,6 +14,7 @@
 #include "CRUD_Events.h"
 #include "MapLink.h"
 
+#include <glm/vec3.hpp>
 #include <QtCore/QString>
 
 class Entity;
@@ -34,17 +35,19 @@ public:
     EVENT_DECL(evInputState             ,8)
     EVENT_DECL(evClientQuit             ,9)
     EVENT_DECL(evForceLogout            ,10)
-    EVENT_DECL(evInspirationDockMode    ,17)
-    EVENT_DECL(evChatMessage            ,20)    // command_id + 20
-    EVENT_DECL(evChatDividerMoved       ,36)
-    EVENT_DECL(evPlaqueVisited          ,39)
     EVENT_DECL(evCombineRequest         ,40)
-    EVENT_DECL(evLocationVisited        ,62)
+// client commands
     EVENT_DECL(evConsoleCommand         ,100)
     EVENT_DECL(evMiniMapState           ,101)
     EVENT_DECL(evClientResumedRendering ,104)
     EVENT_DECL(evCookieRequest          ,106)
+    EVENT_DECL(evEnterDoor              ,109)
     EVENT_DECL(evWindowState            ,114)
+    EVENT_DECL(evInspirationDockMode    ,117)
+    EVENT_DECL(evChatMessage            ,120)
+    EVENT_DECL(evChatDividerMoved       ,136)
+    EVENT_DECL(evPlaqueVisited          ,139)
+    EVENT_DECL(evLocationVisited        ,162)
     END_EVENTS(500)
 };
 //////////////////////////////////////////////////////////////////////////
@@ -332,6 +335,30 @@ public:
     void serializefrom(BitStream &bs)
     {
         dock_mode=bs.GetBits(32);
+    }
+};
+class EnterDoor : public MapLinkEvent
+{
+public:
+    bool unspecified_location;
+    glm::vec3 location;
+    QString name;
+    EnterDoor():MapLinkEvent(MapEventTypes::evEnterDoor)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,9);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        unspecified_location = bs.GetBits(1);
+        if(!unspecified_location)
+        {
+            location.x = bs.GetFloat();
+            location.y = bs.GetFloat();
+            location.z = bs.GetFloat();
+        }
+        bs.GetString(name);
     }
 };
 #include "Events/ChatMessage.h"
