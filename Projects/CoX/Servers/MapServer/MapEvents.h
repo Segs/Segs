@@ -46,6 +46,7 @@ public:
     EVENT_DECL(evWindowState            ,114)
     EVENT_DECL(evInspirationDockMode    ,117)
     EVENT_DECL(evChatMessage            ,120)
+    EVENT_DECL(evAbortQueuedPower       ,133)
     EVENT_DECL(evChangeStance           ,136)
     EVENT_DECL(evPlaqueVisited          ,139)
     EVENT_DECL(evCombineRequest         ,140)
@@ -408,7 +409,19 @@ public:
         point_index   = bs.GetPackedBits(1);
     }
 };
-
+class AbortQueuedPower : public MapLinkEvent
+{
+public:
+    AbortQueuedPower():MapLinkEvent(MapEventTypes::evAbortQueuedPower)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,33);
+    }
+    void serializefrom(BitStream &bs)
+    {
+    }
+};
 #include "Events/ChatMessage.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/SceneEvent.h"
