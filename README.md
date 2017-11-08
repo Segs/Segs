@@ -29,22 +29,14 @@ REQUIREMENTS AND NOTES
 
 Below are the utilities and libraries you'll need to compile SEGS in any environment. These are available on Linux or Windows, via your distro's package manager, or via the links below:
 
-   - QT >5.8 - A cross platform application framework utilized heavily by SEGS.  
-         https://www.qt.io/download-qt-for-application-development  
-   - CMake >3.6 - CMake is the cross-platform make utility. It generates makefiles for multiple platforms.  
-         https://cmake.org/download/  
-   - Git - A version control system for tracking changes in computer files and coordinating work on those files among multiple people.  
-         https://git-scm.com/download  
-   - ACE - ACE is a communication library SEGS makes use of for networking protocols.  
-         http://www.cs.wustl.edu/~schmidt/ACE.html  
-   - Boost - A set of portable C++ libraries that SEGS makes use of for productivity.
-         http://www.boost.org/  
-   - SDL2 - Simple DirectMedia Layer 2 is a cross-platform development library designed to provide low level access to audio, keyboard, mouse, joystick, and graphics hardware via OpenGL and Direct3D. It is required by the SEGS mapviewer utility.  
-         https://www.libsdl.org/  
-   - zlib - zlib is a compression library SEGS makes use of for (un)packing data.  
-         http://www.zlib.net/  
-   - _OPTIONAL:_ By default SEGS uses a local SQLite database, but optionally may be configured to use PostGreSQL.  
-         http://www.postgresql.org/download/  
+   - QT >5.8 - A cross platform application framework utilized heavily by SEGS. https://www.qt.io/download-qt-for-application-development  
+   - CMake >3.6 - CMake is the cross-platform make utility. It generates makefiles for multiple platforms. https://cmake.org/download/
+   - Git - A version control system for tracking changes in computer files and coordinating work on those files among multiple people. https://git-scm.com/download  
+   - ACE - ACE is a communication library SEGS makes use of for networking protocols. http://www.cs.wustl.edu/~schmidt/ACE.html 
+   - Boost - A set of portable C++ libraries that SEGS makes use of for productivity. http://www.boost.org/  
+   - SDL2 - Simple DirectMedia Layer 2 is a cross-platform development library designed to provide low level access to audio, keyboard, mouse, joystick, and graphics hardware via OpenGL and Direct3D. It is required by the SEGS mapviewer utility. https://www.libsdl.org/  
+   - zlib - zlib is a compression library SEGS makes use of for (un)packing data. http://www.zlib.net/  
+   - _OPTIONAL:_ By default SEGS uses a local SQLite database, but optionally may be configured to use PostGreSQL. http://www.postgresql.org/download/
 
 For more detailed version of this guide or forums for help see the links below:
 - https://segs.nemerle.eu/
