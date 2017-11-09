@@ -71,7 +71,7 @@ void EntityManager::sendGlobalEntDebugInfo( BitStream &tgt ) const
 }
 
 void EntityManager::sendDeletes( BitStream &tgt,MapClient *client ) const
-{ 
+{
     std::vector<int> entities_to_remove;
     // find the entities this client believes exist, but they are no longer amongst us.
     for(const std::pair<int,ClientEntityStateBelief> &entry : client->m_worldstate_belief)
@@ -146,6 +146,7 @@ Entity * EntityManager::CreatePlayer()
 
 void EntityManager::removeEntityFromActiveList(Entity *ent)
 {
+    ent->m_client = nullptr;
     m_live_entlist.erase(ent);
     m_store.release(ent);
 }

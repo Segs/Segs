@@ -10,7 +10,7 @@
 
 #include <cmath>
 #include <array>
-
+class MapClient;
 struct AngleRadians
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
@@ -222,6 +222,7 @@ public:
         int                 creatorEntityId = 0;
         float               translucency = 1.f;
         bool                m_is_fading = true;
+        MapClient *         m_client = nullptr;
         FadeDirection       m_fading_direction=FadeDirection::In;
         void                dump();
         void                addPosUpdate(const PosUpdate &p);

@@ -21,7 +21,9 @@ public:
 // server -> client commands
     EVENT_DECL(evFirstServerToClient    ,100)
     EVENT_DECL(evStandardDialogCmd      ,114)
+    EVENT_DECL(evInfoMessageCmd         ,115)
     EVENT_DECL(evChatMessage            ,120)
+    EVENT_DECL(evFloatingDamage         ,121)
 // client -> server commands
     EVENT_DECL(evConsoleCommand         ,200)
     EVENT_DECL(evMiniMapState           ,201)
