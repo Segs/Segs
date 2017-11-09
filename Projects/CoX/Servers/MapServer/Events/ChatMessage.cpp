@@ -14,7 +14,6 @@ void ChatMessage::serializeto(BitStream &bs) const
     bs.StorePackedBits(10,m_source_player_id);
     bs.StorePackedBits(3,m_channel_type);
     bs.StoreString(m_msg);
-    bs.StorePackedBits(1,0); // no messages follow
 }
 
 void ChatMessage::serializefrom(BitStream &src)

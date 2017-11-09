@@ -44,7 +44,7 @@ class World;
 class MapInstance : public EventProcessor
 {
     std::unique_ptr<ScriptingEngine> m_scripting_interface;
-    std::string            m_name;
+    QString                m_name;
     SEGSTimer *            m_world_update_timer;
     SEGSTimer *            m_resend_timer;
     ClientStore<MapClient> m_clients;
@@ -56,7 +56,7 @@ class MapInstance : public EventProcessor
 public:
     EntityManager m_entities;
 
-    MapInstance(const std::string &name);
+    MapInstance(const QString &name);
     virtual ~MapInstance();
     void       dispatch(SEGSEvent *ev);
     SEGSEvent *dispatch_sync(SEGSEvent *ev);

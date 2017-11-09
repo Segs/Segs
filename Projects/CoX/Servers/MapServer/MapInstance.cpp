@@ -25,6 +25,9 @@
 
 
 #include <QtCore/QDebug>
+#include <QtCore/QFile>
+#include <QtCore/QFileInfo>
+#include <QtCore/QDir>
 
 
 namespace {
@@ -35,10 +38,21 @@ enum {
 
 ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
 ACE_Time_Value resend_interval(0,250*1000);
+void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &locations_scriptname)
+{
+    if(QFile::exists(locations_scriptname))
+    {
+        lua->loadAndRunFile(locations_scriptname);
+    }
+    else
+    {
+        qWarning().noquote() << locations_scriptname <<"is missing";
+    }
+}
 }
 
 using namespace std;
-MapInstance::MapInstance(const string &name) : m_name(name), m_world_update_timer(nullptr)
+MapInstance::MapInstance(const QString &name) : m_name(name), m_world_update_timer(nullptr)
 {
     m_world = new World(m_entities);
     m_scripting_interface.reset(new ScriptingEngine);
@@ -47,6 +61,21 @@ void MapInstance::start()
 {
     assert(m_world_update_timer==nullptr);
     m_scripting_interface->registerTypes();
+    QFileInfo mapDataDirInfo("MapInstances/"+m_name);
+    if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
+    {
+        qInfo() << "Attempting to load map instance data";
+        QString locations_scriptname="MapInstances/"+m_name+'/'+"locations.lua";
+        QString plaques_scriptname="MapInstances/"+m_name+'/'+"plaques.lua";
+
+        loadAndRunLua(m_scripting_interface,locations_scriptname);
+        loadAndRunLua(m_scripting_interface,plaques_scriptname);
+    }
+    else
+    {
+        QDir::current().mkpath("MapInstances/"+m_name);
+        qWarning() << "Missing map instance data"<< "MapInstances/"+m_name;
+    }
     m_world_update_timer = new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false); // world simulation ticks
     m_resend_timer = new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false); // state broadcast ticks
 }
@@ -572,15 +601,24 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
 }
 void MapInstance::on_location_visited(LocationVisited *ev)
 {
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *cl = lnk->client_data();
+    qDebug() << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
+    auto val = m_scripting_interface->callFuncWithClientContext(cl,"location_visited",qHash(ev->m_name));
+    cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(new InfoMessageCmd(InfoType::DEBUG_INFO,val.c_str())));
+
     qWarning() << "Unhandled location visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 }
 
 void MapInstance::on_plaque_visited(PlaqueVisited * ev)
 {
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *cl = lnk->client_data();
+    qDebug() << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
+    auto val = m_scripting_interface->callFuncWithClientContext(cl,"plaque_visited",qHash(ev->m_name));
     qWarning() << "Unhandled plaque visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
-
 }
 
 void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)

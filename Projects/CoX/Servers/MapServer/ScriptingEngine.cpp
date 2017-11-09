@@ -9,6 +9,7 @@
 #include <lua/lua.hpp>
 #include <sol2/sol.hpp>
 
+#include <QtCore/QDebug>
 
 int luaopen_package(lua_State *)
 {
@@ -61,7 +62,51 @@ void ScriptingEngine::registerTypes()
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
         }
     );
+    m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
 
+}
+int ScriptingEngine::loadAndRunFile(const QString &filename)
+{
+    sol::load_result load_res=m_private->m_lua.load_file(filename.toStdString());
+    if(!load_res.valid())
+    {
+        sol::error err = load_res;
+        qCritical() << err.what();
+        return -1;
+    }
+    sol::protected_function_result script_result = load_res();
+    if(!script_result.valid())
+    {
+        sol::error err = script_result;
+        qCritical() << err.what();
+        return -1;
+    }
+    return 0;
+}
+
+std::string ScriptingEngine::callFuncWithClientContext(MapClient *client, const char *name, int arg1)
+{
+    m_private->m_lua["client"] = client;
+    return callFunc(name,arg1);
+}
+
+std::string ScriptingEngine::callFunc(const char *name, int arg1)
+{
+    sol::protected_function funcwrap = m_private->m_lua[name];
+    funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
+    if(!funcwrap.valid())
+    {
+        qCritical() << "Failed to retrieve script func:"<<name;
+        return "";
+    }
+    auto result = funcwrap(arg1);
+    if(!result.valid())
+    {
+        sol::error err = result;
+        qCritical() << "Failed to run script func:"<<name<<err.what();
+        return "";
+    }
+    return result.get<std::string>();
 }
 int ScriptingEngine::runScript(MapClient * client, const QString &script_contents, const char *script_name)
 {
@@ -100,3 +145,4 @@ int ScriptingEngine::runScript(const QString &script_contents, const char *scrip
     }
     return 0;
 }
+
