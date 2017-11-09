@@ -23,6 +23,7 @@
 #include "WorldSimulation.h"
 #include "InternalEvents.h"
 
+
 #include <QtCore/QDebug>
 
 
@@ -481,7 +482,7 @@ void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
             for(MapClient * cl : recipients)
             {
                 ChatMessage *msg = ChatMessage::localMessage(prepared_chat_message,sender->char_entity());
-                cl->link()->putq(msg);
+                cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(msg));
             }
             break;
         }
@@ -492,7 +493,7 @@ void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
             for(MapClient * cl : recipients)
             {
                 ChatMessage *msg = ChatMessage::broadcastMessage(prepared_chat_message,sender->char_entity());
-                cl->link()->putq(msg);
+                cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(msg));
             }
             break;
     }
@@ -510,9 +511,13 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         m_scripting_interface->runScript(src,code,"user provided script");
         return;
     }
-    else
+    else if(isChatMessage(ev->contents))
     {
         process_chat(src,ev->contents);
+    }
+    else if(ev->contents.startsWith("dlg ")) {
+        StandardDialogCmd *dlg = new StandardDialogCmd(ev->contents.mid(4));
+        src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
     }
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
@@ -539,8 +544,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     std::snprintf(buf, 256, "There are %zu active entites and %zu clients", m_entities.active_entities(),
                   num_active_clients());
     welcome_msg += buf;
-    ChatMessage *msg = ChatMessage::adminMessage(welcome_msg.c_str() );
-    cl->link()->putq(msg);
+    cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(welcome_msg.c_str())));
 }
 void MapInstance::on_location_visited(LocationVisited *ev)
 {

@@ -7,30 +7,12 @@
  */
 
 #pragma once
+#include "GameCommandList.h"
 
 #include "MapEvents.h"
 #include "MapLink.h"
 
 #include <QtCore/QString>
-//TODO: those must support chaining
-
-class GameCommand : public MapLinkEvent
-{
-public:
-    GameCommand(size_t evtype) : MapLinkEvent(evtype) {}
-
-    void serializeto(BitStream &bs) const
-    {
-        bs.StorePackedBits(1, 13);
-        do_serialize(bs);
-    }
-    void serializefrom(BitStream &src)
-    {
-        // TODO: trouble, we need a second GameCommand Factory at this point !
-        uint32_t game_command = src.GetPackedBits(1);
-    }
-    virtual void do_serialize(BitStream &bs) const = 0;
-};
 
 class ChatMessage : public GameCommand
 {
@@ -59,10 +41,10 @@ public:
                     CHAT_Emote,
 
                 };
-                ChatMessage():GameCommand(MapEventTypes::evChatMessage)
+                ChatMessage() : GameCommand(MapEventTypes::evChatMessage)
                 {
                 }
-        void    do_serialize(BitStream &bs) const;
+        void    serializeto(BitStream &bs) const override;
         void    serializefrom(BitStream &src);
 
 static  ChatMessage *adminMessage(const QString & msg);

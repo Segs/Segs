@@ -68,24 +68,24 @@ void storeTeamList(const EntitiesResponse &/*src*/,BitStream &bs)
     bs.StoreBits(1,in_mission_or_taskforce_thing);
     bs.StoreBits(1,mark_lfg);
     if(team_id == 0)
-		return;
+        return;
 
-	bs.StoreBits(32,team_leader_id);
-	bs.StorePackedBits(1,team_size);
-	for(uint32_t i=0; i<team_size; ++i)
-	{
-		uint32_t team_member_dbid=0;
-		bool team_member_is_on_the_same_map=true;
-		bs.StoreBits(32,team_member_dbid);
-		bs.StoreBits(1,team_member_is_on_the_same_map);
-		if(not team_member_is_on_the_same_map)
-		{
-			QString missing_team_member_name;
-			QString missing_team_member_is_on_map;
-			bs.StoreString(missing_team_member_name);
-			bs.StoreString(missing_team_member_is_on_map);
-		}
-	}
+    bs.StoreBits(32,team_leader_id);
+    bs.StorePackedBits(1,team_size);
+    for(uint32_t i=0; i<team_size; ++i)
+    {
+        uint32_t team_member_dbid=0;
+        bool team_member_is_on_the_same_map=true;
+        bs.StoreBits(32,team_member_dbid);
+        bs.StoreBits(1,team_member_is_on_the_same_map);
+        if(not team_member_is_on_the_same_map)
+        {
+            QString missing_team_member_name;
+            QString missing_team_member_is_on_map;
+            bs.StoreString(missing_team_member_name);
+            bs.StoreString(missing_team_member_is_on_map);
+        }
+    }
 }
 
 
@@ -435,5 +435,9 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     // Client specific part
     sendClientData(*this,tgt);
     //FIXME: Most Server messages must follow entity update.
+    auto v= std::move(m_client->m_contents);
+    for(const auto &command : v)
+        command->serializeto(tgt);
+    tgt.StorePackedBits(1,0); // finalize the command list
 }
 

@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include "Events/MapEventTypes.h"
 #include "LinkLevelEvent.h"
 #include "BitStream.h"
 #include "CRUD_Link.h"
@@ -20,42 +21,6 @@
 class Entity;
 typedef CRUDLink_Event MapLinkEvent; //<MapLink>
 
-class MapEventTypes : public CRUD_EventTypes
-{
-public:
-    BEGINE_EVENTS(CRUD_EventTypes)
-    EVENT_DECL(evEntityEnteringMap      ,0)
-    EVENT_DECL(evMapInstanceConnected   ,1)
-    EVENT_DECL(evShortcutsRequest       ,2)
-    EVENT_DECL(evShortcuts              ,3)
-    EVENT_DECL(evSceneRequest           ,4)
-    EVENT_DECL(evScene                  ,5)
-    EVENT_DECL(evEntitiesRequest        ,6)
-    EVENT_DECL(evEntitites              ,7)
-    EVENT_DECL(evInputState             ,8)
-    EVENT_DECL(evClientQuit             ,9)
-    EVENT_DECL(evForceLogout            ,10)
-    EVENT_DECL(evChatDividerMoved       ,36)
-// client commands
-    EVENT_DECL(evConsoleCommand         ,100)
-    EVENT_DECL(evMiniMapState           ,101)
-    EVENT_DECL(evClientResumedRendering ,104)
-    EVENT_DECL(evCookieRequest          ,106)
-    EVENT_DECL(evEnterDoor              ,109)
-    EVENT_DECL(evSetDestination         ,111)
-    EVENT_DECL(evWindowState            ,114)
-    EVENT_DECL(evInspirationDockMode    ,117)
-    EVENT_DECL(evChatMessage            ,120)
-    EVENT_DECL(evAbortQueuedPower       ,133) // this might actually mean something different
-    EVENT_DECL(evChangeStance           ,136)
-    EVENT_DECL(evPlaqueVisited          ,139)
-    EVENT_DECL(evCombineRequest         ,140)
-    EVENT_DECL(evEntityInfoRequest      ,156)
-    EVENT_DECL(evLocationVisited        ,162)
-    EVENT_DECL(evClientSettings         ,165)
-    EVENT_DECL(evDescriptionAndBattleCry,167)
-    END_EVENTS(500)
-};
 //////////////////////////////////////////////////////////////////////////
 // Client -> Server
 #include "Events/NewEntity.h"
@@ -458,7 +423,7 @@ public:
     }
 };
 #include "Events/ClientSettings.h"
-#include "Events/ChatMessage.h"
+#include "Events/GameCommandList.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/SceneEvent.h"
 #include "Events/EntitiesResponse.h"

@@ -8,9 +8,9 @@
 
 
 
-void ChatMessage::do_serialize(BitStream &bs) const
+void ChatMessage::serializeto(BitStream &bs) const
 {
-    bs.StorePackedBits(1,20);
+    bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
     bs.StorePackedBits(10,m_source_player_id);
     bs.StorePackedBits(3,m_channel_type);
     bs.StoreString(m_msg);
@@ -54,5 +54,5 @@ ChatMessage *ChatMessage::broadcastMessage(const QString &msg, Entity *src)
 void sendAdminMessage(MapClient * tgt, const char * msg)
 {
     if(tgt)
-        tgt->link()->putq(ChatMessage::adminMessage(msg));
+        tgt->link()->putq(new PreUpdateCommand(ChatMessage::adminMessage(msg)));
 }
