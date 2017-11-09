@@ -434,7 +434,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     ent_manager.sendDeletes(tgt,m_client);
     // Client specific part
     sendClientData(*this,tgt);
-    //FIXME: Most Server messages must follow entity update.
+    // Server messages follow the entity update.
     auto v= std::move(m_client->m_contents);
     for(const auto &command : v)
         command->serializeto(tgt);
