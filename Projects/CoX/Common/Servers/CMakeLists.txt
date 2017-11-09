@@ -46,6 +46,7 @@ INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${ACE_path})
 
 ADD_LIBRARY(cox_server_common STATIC ${target_SOURCES})
+add_dependencies(cox_server_common ace_IMP)
 target_link_libraries(cox_server_common INTERFACE ace_IMP)
 set_target_properties(cox_server_common PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${target_INCLUDE_DIR})
 qt5_use_modules(cox_server_common LINK_PUBLIC Core Sql)
