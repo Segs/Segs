@@ -57,7 +57,7 @@ virtual                     ~MapClient() = default;
         void                SendCommand(NetCommand *command,...);
         void                current_map(MapInstance *pmap){m_current_map=pmap;}
         MapInstance *       current_map(){return m_current_map;}
-        void                char_entity(Entity *ent){m_ent=ent;}
+        void                char_entity(Entity *ent){m_ent=ent; m_ent->m_client=this;}
         Entity *            char_entity(){return m_ent;}
         void                reset();
         MapLink *           link() {return static_cast<MapLink *>(m_link.link());}

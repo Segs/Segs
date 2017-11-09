@@ -519,6 +519,30 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         StandardDialogCmd *dlg = new StandardDialogCmd(ev->contents.mid(4));
         src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
     }
+    else if(ev->contents.startsWith("imsg ")) {
+        int first_space=ev->contents.indexOf(' ');
+        int second_space =ev->contents.indexOf(' ',first_space+1);
+        InfoMessageCmd *info;
+        if(second_space==-1) {
+            info = new InfoMessageCmd(InfoType::USER_ERROR,
+                                           "The /imsg command takes two arguments, a <b>number</b> and a <b>string</b>"
+                                           );
+        }
+        else {
+            bool ok=true;
+            int cmdType=ev->contents.midRef(first_space+1,second_space-(first_space+1)).toInt(&ok);
+            if(!ok || cmdType<1 || cmdType>21) {
+                info = new InfoMessageCmd(InfoType::USER_ERROR,
+                                               "The first /imsg argument must be a <b>number</b> between 1 and 21"
+                                               );
+            }
+            else {
+                info = new InfoMessageCmd(InfoType(cmdType),ev->contents.mid(second_space+1));
+            }
+
+        }
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    }
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {

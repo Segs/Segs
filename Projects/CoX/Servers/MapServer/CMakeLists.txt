@@ -45,6 +45,8 @@ SET(target_INCLUDE
     Events/MapEventTypes.h
     Events/SceneEvent.h
     Events/Shortcuts.h
+    Events/StandardDialogCmd.h
+    Events/InfoMessageCmd.h
     MapClient.h
     MapEventFactory.h
     MapEvents.h

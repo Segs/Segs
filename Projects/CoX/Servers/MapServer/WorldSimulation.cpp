@@ -1,6 +1,7 @@
 #include "WorldSimulation.h"
 #include "MapInstance.h"
-
+#include "MapClient.h"
+#include "Events/GameCommandList.h"
 #include <glm/gtx/vector_query.hpp>
 
 void World::update(const ACE_Time_Value &tick_timer)
@@ -23,6 +24,11 @@ void World::update(const ACE_Time_Value &tick_timer)
     for(Entity * e : ref_ent_mager.m_live_entlist)
     {
         updateEntity(e,delta);
+        if(e->m_client)
+        {
+            auto dmg = new FloatingDamage(e->m_idx,e->m_idx,1);
+            e->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingDamage>(dmg));
+        }
     }
 }
 void World::physicsStep(Entity *e,uint32_t msec)
