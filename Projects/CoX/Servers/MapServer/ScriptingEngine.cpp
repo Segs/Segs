@@ -2,9 +2,10 @@
 #include "MapClient.h"
 
 #include "Events/ChatMessage.h"
+#include "Events/StandardDialogCmd.h"
 #include "Common/NetStructures/Entity.h"
 #include "Common/NetStructures/Contact.h"
-
+#define SOL_CHECK_ARGUMENTS
 #include <lua/lua.hpp>
 #include <sol2/sol.hpp>
 
@@ -54,7 +55,11 @@ void ScriptingEngine::registerTypes()
     );
     m_private->m_lua.new_usertype<MapClient>( "MapClient",
         "new", sol::no_constructor, // The client links are not constructible from the script side.
-        "admin_chat_message", sendAdminMessage
+        "admin_chat_message", sendAdminMessage,
+        "simple_dialog", [](MapClient *cl,const char *dlgtext) {
+            auto n = new StandardDialogCmd(dlgtext);
+            cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
+        }
     );
 
 }
