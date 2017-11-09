@@ -13,6 +13,7 @@
 #include "MapLink.h"
 #include "CharacterDatabase.h"
 #include "FixedPointValue.h"
+#include "Events/GameCommandList.h"
 
 #include <QtCore/QString>
 #include <string>
@@ -41,6 +42,7 @@ class MapClient : public ClientSession
     friend class CharacterDatabase;
     using mNetCommands = std::map<int,NetCommand *>;
     using vBelief = std::map<int,ClientEntityStateBelief>;
+
         mNetCommands        m_shortcuts;
         MapInstance *       m_current_map;
         Entity *            m_ent = nullptr;
@@ -62,7 +64,9 @@ virtual                     ~MapClient() = default;
         const QString &     name() const { return m_name; }
         void                name(const QString &val) { m_name = val; }
         void                entity(Entity * val);
+        void                addCommandToSendNextUpdate(std::unique_ptr<GameCommand> &&v) { m_contents.emplace_back(std::move(v));}
         bool                db_create(); // creates a new character from Entity data
         vBelief             m_worldstate_belief;
+        std::vector<std::unique_ptr<GameCommand> > m_contents;
         bool                m_in_map = false;
 };
