@@ -20,8 +20,8 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // This file was generated with a script.
-// Generated 2017-09-24 20:50:41.761192 UTC
-// This header was generated with sol v2.18.4 (revision 2eb53ac)
+// Generated 2017-10-30 18:38:03.122522 UTC
+// This header was generated with sol v2.18.5 (revision 882f337)
 // https://github.com/ThePhD/sol2
 
 #ifndef SOL_SINGLE_INCLUDE_HPP
@@ -1147,7 +1147,14 @@ namespace sol {
 			struct is_callable : std::is_function<std::remove_pointer_t<T>> {};
 
 			template <typename T>
-			struct is_callable<T, std::enable_if_t<std::is_class<unqualified_t<T>>::value && std::is_destructible<unqualified_t<T>>::value>> {
+			struct is_callable<T, std::enable_if_t<std::is_final<unqualified_t<T>>::value 
+				&& std::is_class<unqualified_t<T>>::value
+				&&  std::is_same<decltype(void(&T::operator())), void>::value>> {
+
+			};
+
+			template <typename T>
+			struct is_callable<T, std::enable_if_t<!std::is_final<unqualified_t<T>>::value && std::is_class<unqualified_t<T>>::value && std::is_destructible<unqualified_t<T>>::value>> {
 				using yes = char;
 				using no = struct { char s[2]; };
 
@@ -1168,7 +1175,7 @@ namespace sol {
 			};
 
 			template <typename T>
-			struct is_callable<T, std::enable_if_t<std::is_class<unqualified_t<T>>::value && !std::is_destructible<unqualified_t<T>>::value>> {
+			struct is_callable<T, std::enable_if_t<!std::is_final<unqualified_t<T>>::value && std::is_class<unqualified_t<T>>::value && !std::is_destructible<unqualified_t<T>>::value>> {
 				using yes = char;
 				using no = struct { char s[2]; };
 
@@ -1558,17 +1565,17 @@ namespace sol {
 // beginning of sol/compatibility/version.hpp
 
 #ifdef SOL_USING_CXX_LUA
-#include <lua/lua.h>
-#include <lua/lualib.h>
-#include <lua/lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 #ifdef SOL_USING_CXX_LUAJIT
-#include <lua/luajit.h>
+#include <luajit.h>
 #endif // C++ LuaJIT ... whatever that means
 #ifndef SOL_EXCEPTIONS_SAFE_PROPAGATION
 #define SOL_EXCEPTIONS_SAFE_PROPAGATION
 #endif // Exceptions can be propagated safely using C++-compiled Lua
 #else
-#include <lua/lua.hpp>
+#include <lua.hpp>
 #endif // C++ Mangling for Lua
 
 #ifdef LUAJIT_VERSION
@@ -2022,38 +2029,15 @@ COMPAT53_API void luaL_requiref (lua_State *L, const char *modname,
 #endif /* No-lock fopen_s usage if possible */
 
 #if defined(_MSC_VER) && COMPAT53_FOPEN_NO_LOCK
-#include <share.h>
+#  include <share.h>
 #endif /* VC++ _fsopen for share-allowed file read */
 
 #ifndef COMPAT53_HAVE_STRERROR_R
 #  if defined(__GLIBC__) || defined(_POSIX_VERSION) || defined(__APPLE__) || \
       (!defined (__MINGW32__) && defined(__GNUC__) && (__GNUC__ < 6))
 #    define COMPAT53_HAVE_STRERROR_R 1
-#    if ((defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L) || \
-         (defined(_XOPEN_SOURCE) || _XOPEN_SOURCE >= 600)) && \
-        (!defined(_GNU_SOURCE) || !_GNU_SOURCE)
-#      ifndef COMPAT53_HAVE_STRERROR_R_XSI
-#        define COMPAT53_HAVE_STRERROR_R_XSI 1
-#      endif /* XSI-Compliant strerror_r */
-#      ifndef COMPAT53_HAVE_STRERROR_R_GNU
-#        define COMPAT53_HAVE_STRERROR_R_GNU 0
-#      endif /* GNU strerror_r */
-#    else /* XSI/Posix vs. GNU strerror_r */
-#      ifndef COMPAT53_HAVE_STRERROR_R_GNU
-#        define COMPAT53_HAVE_STRERROR_R_GNU 1
-#      endif /* GNU variant strerror_r */
-#      ifndef COMPAT53_HAVE_STRERROR_R_XSI
-#        define COMPAT53_HAVE_STRERROR_R_XSI 0
-#      endif /* XSI strerror_r */
-#    endif /* XSI/Posix vs. GNU strerror_r */
 #  else /* none of the defines matched: define to 0 */
 #    define COMPAT53_HAVE_STRERROR_R 0
-#    ifndef COMPAT53_HAVE_STRERROR_R_XSI
-#      define COMPAT53_HAVE_STRERROR_R_XSI 0
-#    endif /* XSI strerror_r */
-#    ifndef COMPAT53_HAVE_STRERROR_R_GNU
-#      define COMPAT53_HAVE_STRERROR_R_GNU 0
-#    endif /* GNU strerror_r */
 #  endif /* have strerror_r of some form */
 #endif /* strerror_r */
 
@@ -2067,33 +2051,37 @@ COMPAT53_API void luaL_requiref (lua_State *L, const char *modname,
 #endif /* strerror_s */
 
 #ifndef COMPAT53_LUA_FILE_BUFFER_SIZE
-#define COMPAT53_LUA_FILE_BUFFER_SIZE 4096
+#  define COMPAT53_LUA_FILE_BUFFER_SIZE 4096
 #endif /* Lua File Buffer Size */
 
 static char* compat53_strerror (int en, char* buff, size_t sz) {
 #if COMPAT53_HAVE_STRERROR_R
   /* use strerror_r here, because it's available on these specific platforms */
-#if COMPAT53_HAVE_STRERROR_R_XSI
-  /* XSI Compliant */
-  strerror_r(en, buff, sz);
-  return buff;
-#else
-  /* GNU-specific which returns const char* */
-  return strerror_r(en, buff, sz);
-#endif
+  if (sz > 0) {
+    buff[0] = '\0';
+    /* we don't care whether the GNU version or the XSI version is used: */
+    if (strerror_r(en, buff, sz)) {
+      /* Yes, we really DO want to ignore the return value!
+       * GCC makes that extra hard, not even a (void) cast will do. */
+    }
+    if (buff[0] == '\0') {
+      /* Buffer is unchanged, so we probably have called GNU strerror_r which
+       * returned a static constant string. Chances are that strerror will
+       * return the same static constant string and therefore be thread-safe. */
+      return strerror(en);
+    }
+  }
+  return buff; /* sz is 0 *or* strerror_r wrote into the buffer */
 #elif COMPAT53_HAVE_STRERROR_S
-  /* for MSVC and other C11 implementations, use strerror_s
-   * since it's provided by default by the libraries
-   */
+  /* for MSVC and other C11 implementations, use strerror_s since it's
+   * provided by default by the libraries */
   strerror_s(buff, sz, en);
   return buff;
 #else
-  /* fallback, but
-   * strerror is not guaranteed to be threadsafe due to modifying
-   * errno itself and some impls not locking a static buffer for it
-   * ... but most known systems have threadsafe errno: this might only change
-   * if the locale is changed out from under someone while this function is being called
-   */
+  /* fallback, but strerror is not guaranteed to be threadsafe due to modifying
+   * errno itself and some impls not locking a static buffer for it ... but most
+   * known systems have threadsafe errno: this might only change if the locale
+   * is changed out from under someone while this function is being called */
   (void)buff;
   (void)sz;
   return strerror(en);
@@ -2548,12 +2536,10 @@ COMPAT53_API int luaL_loadfilex (lua_State *L, const char *filename, const char 
      * dictate this to the user. A quick check shows that fopen_s this
      * goes back to VS 2005, and _fsopen goes back to VS 2003 .NET,
      * possibly even before that so we don't need to do any version
-     * number checks, since this has been there since forever.
-     */
+     * number checks, since this has been there since forever.  */
 
     /* TO USER: if you want the behavior of typical fopen_s/fopen,
-     * which does lock the file on VC++, define the macro used below to 0
-    */
+     * which does lock the file on VC++, define the macro used below to 0 */
 #if COMPAT53_FOPEN_NO_LOCK
     lf.f = _fsopen(filename, "r", _SH_DENYNO); /* do not lock the file in any way */
     if (lf.f == NULL)
@@ -2580,7 +2566,7 @@ COMPAT53_API int luaL_loadfilex (lua_State *L, const char *filename, const char 
     compat53_skipcomment(&lf, &c);  /* re-read initial portion */
   }
   if (c != EOF)
-    lf.buff[lf.n++] = (char)(c);  /* 'c' is the first character of the stream */
+    lf.buff[lf.n++] = (char)c;  /* 'c' is the first character of the stream */
   status = lua_load(L, &compat53_getF, &lf, lua_tostring(L, -1), mode);
   readstatus = ferror(lf.f);
   if (filename) fclose(lf.f);  /* close file (even in case of errors) */
@@ -4409,8 +4395,11 @@ namespace sol {
 #else
 		template <lua_CFunction f>
 		int static_trampoline(lua_State* L) {
+#if !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION)
 			try {
+#endif
 				return f(L);
+#if !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION)
 			}
 			catch (const char* s) {
 				lua_pushstring(L, s);
@@ -4418,12 +4407,12 @@ namespace sol {
 			catch (const std::exception& e) {
 				lua_pushstring(L, e.what());
 			}
-#if !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION)
 			catch (...) {
 				lua_pushstring(L, "caught (...) exception");
 			}
-#endif
+
 			return lua_error(L);
+#endif
 		}
 
 #ifdef SOL_NOEXCEPT_FUNCTION_TYPE
@@ -4453,8 +4442,11 @@ namespace sol {
 			if (meta::bind_traits<meta::unqualified_t<Fx>>::is_noexcept) {
 				return f(L, std::forward<Args>(args)...);
 			}
+#if !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION)
 			try {
+#endif
 				return f(L, std::forward<Args>(args)...);
+#if !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION)
 			}
 			catch (const char* s) {
 				lua_pushstring(L, s);
@@ -4462,12 +4454,12 @@ namespace sol {
 			catch (const std::exception& e) {
 				lua_pushstring(L, e.what());
 			}
-#if !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION)
 			catch (...) {
 				lua_pushstring(L, "caught (...) exception");
 			}
-#endif
+
 			return lua_error(L);
+#endif
 		}
 
 		inline int c_trampoline(lua_State* L, lua_CFunction f) {
@@ -5144,6 +5136,9 @@ namespace sol {
 	template <typename T>
 	struct is_container : detail::is_container<T> {};
 
+	template <typename T>
+	struct is_to_stringable : meta::any<meta::supports_to_string_member<meta::unqualified_t<T>>, meta::supports_adl_to_string<meta::unqualified_t<T>>, meta::supports_ostream_op<meta::unqualified_t<T>>> {};
+
 	namespace detail {
 		template <typename T, typename = void>
 		struct lua_type_of : std::integral_constant<type, type::userdata> {};
@@ -5703,19 +5698,44 @@ namespace detail {
 
 namespace sol {
 
+	inline std::string associated_type_name(lua_State* L, int index, type t) {
+		switch (t) {
+		case type::poly:
+			return "anything";
+		case type::userdata:
+		{
+			if (lua_getmetatable(L, index) == 0) {
+				break;
+			}
+			lua_pushlstring(L, "__name", 6);
+			lua_rawget(L, -2);
+			size_t sz;
+			const char* name = lua_tolstring(L, -1, &sz);
+			std::string tn(name, static_cast<std::string::size_type>(sz));
+			lua_pop(L, 2);
+			return name;
+		}
+		default:
+			break;
+		}
+		return lua_typename(L, static_cast<int>(t));
+	}
+
 	inline int type_panic_string(lua_State* L, int index, type expected, type actual, const std::string& message = "") noexcept(false) {
-		const char* err = message.empty() ? "stack index %d, expected %s, received %s" : "stack index %d, expected %s, received %s with message %s";
+		const char* err = message.empty() ? "stack index %d, expected %s, received %s" : "stack index %d, expected %s, received %s: %s";
+		std::string actualname = associated_type_name(L, index, actual);
 		return luaL_error(L, err, index,
 			expected == type::poly ? "anything" : lua_typename(L, static_cast<int>(expected)),
-			actual == type::poly ? "anything" : lua_typename(L, static_cast<int>(actual)),
+			actualname.c_str(),
 			message.c_str());
 	}
 
 	inline int type_panic_c_str(lua_State* L, int index, type expected, type actual, const char* message = nullptr) noexcept(false) {
-		const char* err = message == nullptr || (std::char_traits<char>::length(message) == 0) ? "stack index %d, expected %s, received %s" : "stack index %d, expected %s, received %s with message %s";
+		const char* err = message == nullptr || (std::char_traits<char>::length(message) == 0) ? "stack index %d, expected %s, received %s" : "stack index %d, expected %s, received %s: %s";
+		std::string actualname = associated_type_name(L, index, actual);
 		return luaL_error(L, err, index,
 			expected == type::poly ? "anything" : lua_typename(L, static_cast<int>(expected)),
-			actual == type::poly ? "anything" : lua_typename(L, static_cast<int>(actual)),
+			actualname.c_str(),
 			message);
 	}
 
@@ -5749,7 +5769,7 @@ namespace sol {
 	template <typename R, typename... Args>
 	struct argument_handler<types<R, Args...>> {
 		int operator()(lua_State* L, int index, type expected, type actual, const std::string& message) const noexcept(false) {
-			std::string addendum = " (bad argument to type expecting '";
+			std::string addendum = " (bad argument into '";
 			addendum += detail::demangle<R>();
 			addendum += "(";
 			int marker = 0;
@@ -5978,6 +5998,10 @@ namespace sol {
 			push_popper_n(lua_State* luastate, int x)
 			: L(luastate), t(x) {
 			}
+			push_popper_n(const push_popper_n&) = delete;
+			push_popper_n(push_popper_n&&) = default;
+			push_popper_n& operator=(const push_popper_n&) = delete;
+			push_popper_n& operator=(push_popper_n&&) = default;
 			~push_popper_n() {
 				lua_pop(L, t);
 			}
@@ -6087,7 +6111,7 @@ namespace sol {
 				deref();
 			}
 			if (r.ref == LUA_REFNIL) {
-				luastate = detail::pick_main_thread < main_only && !r_main_only >(r.lua_state(), r.lua_state());
+				luastate = detail::pick_main_thread < main_only && !r_main_only > (r.lua_state(), r.lua_state());
 				ref = LUA_REFNIL;
 				return;
 			}
@@ -6100,7 +6124,7 @@ namespace sol {
 				ref = luaL_ref(lua_state(), LUA_REGISTRYINDEX);
 				return;
 			}
-			luastate = detail::pick_main_thread < main_only && !r_main_only >(r.lua_state(), r.lua_state());
+			luastate = detail::pick_main_thread < main_only && !r_main_only > (r.lua_state(), r.lua_state());
 			ref = r.copy();
 		}
 
@@ -6110,7 +6134,7 @@ namespace sol {
 				deref();
 			}
 			if (r.ref == LUA_REFNIL) {
-				luastate = detail::pick_main_thread<main_only && !r_main_only>(r.lua_state(), r.lua_state());
+				luastate = detail::pick_main_thread < main_only && !r_main_only > (r.lua_state(), r.lua_state());
 				ref = LUA_REFNIL;
 				return;
 			}
@@ -6124,7 +6148,7 @@ namespace sol {
 				return;
 			}
 
-			luastate = detail::pick_main_thread < main_only && !r_main_only >(r.lua_state(), r.lua_state());
+			luastate = detail::pick_main_thread < main_only && !r_main_only > (r.lua_state(), r.lua_state());
 			ref = r.ref;
 			r.ref = LUA_NOREF;
 			r.luastate = nullptr;
@@ -6244,11 +6268,11 @@ namespace sol {
 		}
 
 		basic_reference(const basic_reference<!main_only>& o) noexcept
-		: luastate(detail::pick_main_thread<main_only && !main_only>(o.lua_state(), o.lua_state())), ref(o.copy()) {
+		: luastate(detail::pick_main_thread < main_only && !main_only > (o.lua_state(), o.lua_state())), ref(o.copy()) {
 		}
 
 		basic_reference(basic_reference<!main_only>&& o) noexcept
-		: luastate(detail::pick_main_thread<main_only && !main_only>(o.lua_state(), o.lua_state())), ref(o.ref) {
+		: luastate(detail::pick_main_thread < main_only && !main_only > (o.lua_state(), o.lua_state())), ref(o.ref) {
 			o.luastate = nullptr;
 			o.ref = LUA_NOREF;
 		}
@@ -6272,7 +6296,7 @@ namespace sol {
 			copy_assign(r);
 			return *this;
 		}
-		
+
 		template <typename Super>
 		basic_reference& operator=(proxy_base<Super>&& r);
 
@@ -6494,28 +6518,343 @@ namespace sol {
 
 		using unique_destructor = void (*)(void*);
 
-		template <typename T>
-		inline int unique_destruct(lua_State* L) {
-			void* memory = lua_touserdata(L, 1);
-			T** pointerpointer = static_cast<T**>(memory);
-			unique_destructor& dx = *static_cast<unique_destructor*>(static_cast<void*>(pointerpointer + 1));
-			(dx)(memory);
-			return 0;
+		inline void* align(std::size_t alignment, std::size_t size, void*& ptr, std::size_t& space, std::size_t& required_space) {
+			// this handels arbitrary alignments...
+			// make this into a power-of-2-only?
+			// actually can't: this is a C++14-compatible framework,
+			// power of 2 alignment is C++17
+			std::uintptr_t initial = reinterpret_cast<std::uintptr_t>(ptr);
+			std::uintptr_t offby = static_cast<std::uintptr_t>(initial % alignment);
+			std::uintptr_t padding = (alignment - offby) % alignment;
+			required_space += size + padding;
+			if (space < required_space) {
+				return nullptr;
+			}
+			ptr = static_cast<void*>(static_cast<char*>(ptr) + padding);
+			space -= padding;
+			return ptr;
+		}
+
+		inline void* align(std::size_t alignment, std::size_t size, void*& ptr, std::size_t& space) {
+			std::size_t required_space = 0;
+			return align(alignment, size, ptr, space, required_space);
+		}
+
+		template <typename... Args>
+		inline std::size_t aligned_space_for(void* alignment = nullptr) {
+			char* start = static_cast<char*>(alignment);
+			auto specific_align = [&alignment](std::size_t a, std::size_t s) {
+				std::size_t space = std::numeric_limits<std::size_t>::max();
+				alignment = align(a, s, alignment, space);
+				alignment = static_cast<void*>(static_cast<char*>(alignment) + s);
+			};
+			(void)detail::swallow{ int{}, (specific_align(std::alignment_of<Args>::value, sizeof(Args)), int{})... };
+			return static_cast<char*>(alignment) - start;
+		}
+
+		inline void* align_usertype_pointer(void* ptr) {
+			typedef std::integral_constant<bool,
+#ifdef SOL_NO_MEMORY_ALIGNMENT
+				false
+#else
+				(std::alignment_of<void*>::value > 1)
+#endif
+				>
+				use_align;
+			if (!use_align::value) {
+				return ptr;
+			}
+			std::size_t space = std::numeric_limits<std::size_t>::max();
+			return align(std::alignment_of<void*>::value, sizeof(void*), ptr, space);
+		}
+
+		inline void* align_usertype_unique_destructor(void* ptr) {
+			typedef std::integral_constant<bool,
+#ifdef SOL_NO_MEMORY_ALIGNMENT
+				false
+#else
+				(std::alignment_of<unique_destructor>::value > 1)
+#endif
+				>
+				use_align;
+			if (!use_align::value) {
+				return static_cast<void*>(static_cast<void**>(ptr) + 1);
+			}
+			ptr = align_usertype_pointer(ptr);
+			ptr = static_cast<void*>(static_cast<char*>(ptr) + sizeof(void*));
+			std::size_t space = std::numeric_limits<std::size_t>::max();
+			return align(std::alignment_of<unique_destructor>::value, sizeof(unique_destructor), ptr, space);
+		}
+
+		template <typename T, bool pre_aligned = false>
+		inline void* align_usertype_unique(void* ptr) {
+			typedef std::integral_constant<bool,
+#ifdef SOL_NO_MEMORY_ALIGNMENT
+				false
+#else
+				(std::alignment_of<T>::value > 1)
+#endif
+				>
+				use_align;
+			if (!pre_aligned) {
+				ptr = align_usertype_unique_destructor(ptr);
+				ptr = static_cast<void*>(static_cast<char*>(ptr) + sizeof(unique_destructor));
+			}
+			if (!use_align::value) {
+				return ptr;
+			}
+			std::size_t space = std::numeric_limits<std::size_t>::max();
+			return align(std::alignment_of<T>::value, sizeof(T), ptr, space);
 		}
 
 		template <typename T>
-		inline int user_alloc_destruct(lua_State* L) {
-			void* rawdata = lua_touserdata(L, 1);
-			T* data = static_cast<T*>(rawdata);
-			std::allocator<T> alloc;
-			alloc.destroy(data);
-			return 0;
+		inline void* align_user(void* ptr) {
+			typedef std::integral_constant<bool,
+#ifdef SOL_NO_MEMORY_ALIGNMENT
+				false
+#else
+				(std::alignment_of<T>::value > 1)
+#endif
+				>
+				use_align;
+			if (!use_align::value) {
+				return ptr;
+			}
+			std::size_t space = std::numeric_limits<std::size_t>::max();
+			return align(std::alignment_of<T>::value, sizeof(T), ptr, space);
+		}
+
+		template <typename T>
+		inline T** usertype_allocate_pointer(lua_State* L) {
+			typedef std::integral_constant<bool,
+#ifdef SOL_NO_MEMORY_ALIGNMENT
+				false
+#else
+				(std::alignment_of<T*>::value > 1)
+#endif
+				>
+				use_align;
+			if (!use_align::value) {
+				T** pointerpointer = static_cast<T**>(lua_newuserdata(L, sizeof(T*)));
+				return pointerpointer;
+			}
+			static const std::size_t initial_size = aligned_space_for<T*>(nullptr);
+			static const std::size_t misaligned_size = aligned_space_for<T*>(reinterpret_cast<void*>(0x1));
+
+			std::size_t allocated_size = initial_size;
+			void* unadjusted = lua_newuserdata(L, initial_size);
+			void* adjusted = align(std::alignment_of<T*>::value, sizeof(T*), unadjusted, allocated_size);
+			if (adjusted == nullptr) {
+				lua_pop(L, 1);
+				// what kind of absolute garbage trash allocator are we dealing with?
+				// whatever, add some padding in the case of MAXIMAL alignment waste...
+				allocated_size = misaligned_size;
+				unadjusted = lua_newuserdata(L, allocated_size);
+				adjusted = align(std::alignment_of<T*>::value, sizeof(T*), unadjusted, allocated_size);
+				if (adjusted == nullptr) {
+					// trash allocator can burn in hell
+					lua_pop(L, 1);
+					//luaL_error(L, "if you are the one that wrote this allocator you should feel bad for doing a worse job than malloc/realloc and should go read some books, yeah?");
+					luaL_error(L, "cannot properly align memory for '%s'", detail::demangle<T*>().data());
+				}
+			}
+			return static_cast<T**>(adjusted);
+		}
+
+		template <typename T>
+		inline T* usertype_allocate(lua_State* L) {
+			typedef std::integral_constant<bool,
+#ifdef SOL_NO_MEMORY_ALIGNMENT
+				false
+#else
+				(std::alignment_of<T*>::value > 1 || std::alignment_of<T>::value > 1)
+#endif
+				>
+				use_align;
+			if (!use_align::value) {
+				T** pointerpointer = static_cast<T**>(lua_newuserdata(L, sizeof(T*) + sizeof(T)));
+				T*& pointerreference = *pointerpointer;
+				T* allocationtarget = reinterpret_cast<T*>(pointerpointer + 1);
+				pointerreference = allocationtarget;
+				return allocationtarget;
+			}
+
+			/* the assumption is that `lua_newuserdata` -- unless someone
+			passes a specific lua_Alloc that gives us bogus, un-aligned pointers
+			-- uses malloc, which tends to hand out more or less aligned pointers to memory
+			(most of the time, anyhow)
+
+			but it's not guaranteed, so we have to do a post-adjustment check and increase padding
+
+			we do this preliminarily with compile-time stuff, to see
+			if we strike lucky with the allocator and alignment values
+
+			otherwise, we have to re-allocate the userdata and
+			over-allocate some space for additional padding because
+			compilers are optimized for aligned reads/writes
+			(and clang will barf UBsan errors on us for not being aligned)
+			*/
+			static const std::size_t initial_size = aligned_space_for<T*, T>(nullptr);
+			static const std::size_t misaligned_size = aligned_space_for<T*, T>(reinterpret_cast<void*>(0x1));
+
+			void* pointer_adjusted;
+			void* data_adjusted;
+			auto attempt_alloc = [](lua_State* L, std::size_t allocated_size, void*& pointer_adjusted, void*& data_adjusted) -> bool {
+				void* adjusted = lua_newuserdata(L, allocated_size);
+				pointer_adjusted = align(std::alignment_of<T*>::value, sizeof(T*), adjusted, allocated_size);
+				if (pointer_adjusted == nullptr) {
+					lua_pop(L, 1);
+					return false;
+				}
+				// subtract size of what we're going to allocate there
+				allocated_size -= sizeof(T*);
+				adjusted = static_cast<void*>(static_cast<char*>(pointer_adjusted) + sizeof(T*));
+				data_adjusted = align(std::alignment_of<T>::value, sizeof(T), adjusted, allocated_size);
+				if (data_adjusted == nullptr) {
+					lua_pop(L, 1);
+					return false;
+				}
+				return true;
+			};
+			bool result = attempt_alloc(L, initial_size, pointer_adjusted, data_adjusted);
+			if (!result) {
+				// we're likely to get something that fails to perform the proper allocation a second time,
+				// so we use the suggested_new_size bump to help us out here
+				pointer_adjusted = nullptr;
+				data_adjusted = nullptr;
+				result = attempt_alloc(L, misaligned_size, pointer_adjusted, data_adjusted);
+				if (!result) {
+					if (pointer_adjusted == nullptr) {
+						luaL_error(L, "aligned allocation of userdata block (pointer section) for '%s' failed", detail::demangle<T>().c_str());
+					}
+					else {
+						luaL_error(L, "aligned allocation of userdata block (data section) for '%s' failed", detail::demangle<T>().c_str());
+					}
+					return nullptr;
+				}
+			}
+
+			T** pointerpointer = reinterpret_cast<T**>(pointer_adjusted);
+			T*& pointerreference = *pointerpointer;
+			T* allocationtarget = reinterpret_cast<T*>(data_adjusted);
+			pointerreference = allocationtarget;
+			return allocationtarget;
+		}
+
+		template <typename T, typename Real>
+		inline Real* usertype_unique_allocate(lua_State* L, T**& pref, unique_destructor*& dx) {
+			typedef std::integral_constant<bool,
+#ifdef SOL_NO_MEMORY_ALIGNMENT
+				false
+#else
+				(std::alignment_of<T*>::value > 1 || std::alignment_of<unique_destructor>::value > 1 || std::alignment_of<Real>::value > 1)
+#endif
+				>
+				use_align;
+			if (!use_align::value) {
+				pref = static_cast<T**>(lua_newuserdata(L, sizeof(T*) + sizeof(detail::unique_destructor) + sizeof(Real)));
+				dx = static_cast<detail::unique_destructor*>(static_cast<void*>(pref + 1));
+				Real* mem = static_cast<Real*>(static_cast<void*>(dx + 1));
+				return mem;
+			}
+
+			static const std::size_t initial_size = aligned_space_for<T*, unique_destructor, Real>(nullptr);
+			static const std::size_t misaligned_size = aligned_space_for<T*, unique_destructor, Real>(reinterpret_cast<void*>(0x1));
+
+			void* pointer_adjusted;
+			void* dx_adjusted;
+			void* data_adjusted;
+			auto attempt_alloc = [](lua_State* L, std::size_t allocated_size, void*& pointer_adjusted, void*& dx_adjusted, void*& data_adjusted) -> bool {
+				void* adjusted = lua_newuserdata(L, allocated_size);
+				pointer_adjusted = align(std::alignment_of<T*>::value, sizeof(T*), adjusted, allocated_size);
+				if (pointer_adjusted == nullptr) {
+					lua_pop(L, 1);
+					return false;
+				}
+				allocated_size -= sizeof(T*);
+				adjusted = static_cast<void*>(static_cast<char*>(pointer_adjusted) + sizeof(T*));
+				dx_adjusted = align(std::alignment_of<unique_destructor>::value, sizeof(unique_destructor), adjusted, allocated_size);
+				if (dx_adjusted == nullptr) {
+					lua_pop(L, 1);
+					return false;
+				}
+				allocated_size -= sizeof(unique_destructor);
+				adjusted = static_cast<void*>(static_cast<char*>(dx_adjusted) + sizeof(unique_destructor));
+				data_adjusted = align(std::alignment_of<Real>::value, sizeof(Real), adjusted, allocated_size);
+				if (data_adjusted == nullptr) {
+					lua_pop(L, 1);
+					return false;
+				}
+				return true;
+			};
+			bool result = attempt_alloc(L, initial_size, pointer_adjusted, dx_adjusted, data_adjusted);
+			if (!result) {
+				// we're likely to get something that fails to perform the proper allocation a second time,
+				// so we use the suggested_new_size bump to help us out here
+				pointer_adjusted = nullptr;
+				dx_adjusted = nullptr;
+				data_adjusted = nullptr;
+				result = attempt_alloc(L, misaligned_size, pointer_adjusted, dx_adjusted, data_adjusted);
+				if (!result) {
+					if (pointer_adjusted == nullptr) {
+						luaL_error(L, "aligned allocation of userdata block (pointer section) for '%s' failed", detail::demangle<T>().c_str());
+					}
+					else if (dx_adjusted == nullptr) {
+						luaL_error(L, "aligned allocation of userdata block (deleter section) for '%s' failed", detail::demangle<Real>().c_str());
+					}
+					else {
+						luaL_error(L, "aligned allocation of userdata block (data section) for '%s' failed", detail::demangle<Real>().c_str());
+					}
+					return nullptr;
+				}
+			}
+
+			pref = static_cast<T**>(pointer_adjusted);
+			dx = static_cast<detail::unique_destructor*>(dx_adjusted);
+			Real* mem = static_cast<Real*>(data_adjusted);
+			return mem;
+		}
+
+		template <typename T>
+		inline T* user_allocate(lua_State* L) {
+			typedef std::integral_constant<bool,
+#ifdef SOL_NO_MEMORY_ALIGNMENT
+				false
+#else
+				(std::alignment_of<T>::value > 1)
+#endif
+				>
+				use_align;
+			if (!use_align::value) {
+				T* pointer = static_cast<T*>(lua_newuserdata(L, sizeof(T)));
+				return pointer;
+			}
+
+			static const std::size_t initial_size = aligned_space_for<T>(nullptr);
+			static const std::size_t misaligned_size = aligned_space_for<T>(reinterpret_cast<void*>(0x1));
+
+			std::size_t allocated_size = initial_size;
+			void* unadjusted = lua_newuserdata(L, allocated_size);
+			void* adjusted = align(std::alignment_of<T>::value, sizeof(T), unadjusted, allocated_size);
+			if (adjusted == nullptr) {
+				lua_pop(L, 1);
+				// try again, add extra space for alignment padding
+				allocated_size = misaligned_size;
+				unadjusted = lua_newuserdata(L, allocated_size);
+				adjusted = align(std::alignment_of<T>::value, sizeof(T), unadjusted, allocated_size);
+				if (adjusted == nullptr) {
+					lua_pop(L, 1);
+					luaL_error(L, "cannot properly align memory for '%s'", detail::demangle<T>().data());
+				}
+			}
+			return static_cast<T*>(adjusted);
 		}
 
 		template <typename T>
 		inline int usertype_alloc_destruct(lua_State* L) {
-			void* rawdata = lua_touserdata(L, 1);
-			T** pdata = static_cast<T**>(rawdata);
+			void* memory = lua_touserdata(L, 1);
+			memory = align_usertype_pointer(memory);
+			T** pdata = static_cast<T**>(memory);
 			T* data = *pdata;
 			std::allocator<T> alloc{};
 			alloc.destroy(data);
@@ -6523,17 +6862,36 @@ namespace sol {
 		}
 
 		template <typename T>
-		inline int cannot_destruct(lua_State* L) {
-			return luaL_error(L, "cannot call the destructor for '%s': it is either hidden (protected/private) or removed with '= delete' and thusly this type is being destroyed without properly destructing, invoking undefined behavior", detail::demangle<T>().data());
+		inline int unique_destruct(lua_State* L) {
+			void* memory = lua_touserdata(L, 1);
+			memory = align_usertype_unique_destructor(memory);
+			unique_destructor& dx = *static_cast<unique_destructor*>(memory);
+			memory = static_cast<void*>(static_cast<char*>(memory) + sizeof(unique_destructor));
+			(dx)(memory);
+			return 0;
+		}
+
+		template <typename T>
+		inline int user_alloc_destruct(lua_State* L) {
+			void* memory = lua_touserdata(L, 1);
+			memory = align_user<T>(memory);
+			T* data = static_cast<T*>(memory);
+			std::allocator<T> alloc;
+			alloc.destroy(data);
+			return 0;
 		}
 
 		template <typename T, typename Real>
 		inline void usertype_unique_alloc_destroy(void* memory) {
-			T** pointerpointer = static_cast<T**>(memory);
-			unique_destructor* dx = static_cast<unique_destructor*>(static_cast<void*>(pointerpointer + 1));
-			Real* target = static_cast<Real*>(static_cast<void*>(dx + 1));
+			memory = align_usertype_unique<Real, true>(memory);
+			Real* target = static_cast<Real*>(memory);
 			std::allocator<Real> alloc;
 			alloc.destroy(target);
+		}
+
+		template <typename T>
+		inline int cannot_destruct(lua_State* L) {
+			return luaL_error(L, "cannot call the destructor for '%s': it is either hidden (protected/private) or removed with '= delete' and thusly this type is being destroyed without properly destructing, invoking undefined behavior: please bind a usertype and specify a custom destructor to define the behavior properly", detail::demangle<T>().data());
 		}
 
 		template <typename T>
@@ -7474,7 +7832,7 @@ namespace stack {
 			}
 			if (!success) {
 				lua_pop(L, 1);
-				handler(L, index, type::userdata, indextype, "value is not a valid sol userdata of any kind");
+				handler(L, index, type::userdata, indextype, "value at this index does not properly reflect the desired type");
 				return false;
 			}
 			lua_pop(L, 1);
@@ -7522,8 +7880,8 @@ namespace stack {
 			int metatableindex = lua_gettop(L);
 			if (stack_detail::check_metatable<detail::unique_usertype<T>>(L, metatableindex)) {
 				void* memory = lua_touserdata(L, index);
-				T** pointerpointer = static_cast<T**>(memory);
-				detail::unique_destructor& pdx = *static_cast<detail::unique_destructor*>(static_cast<void*>(pointerpointer + 1));
+				memory = detail::align_usertype_unique_destructor(memory);
+				detail::unique_destructor& pdx = *static_cast<detail::unique_destructor*>(memory);
 				bool success = &detail::usertype_unique_alloc_destroy<T, X> == pdx;
 				if (!success) {
 					handler(L, index, type::userdata, indextype, "value is a userdata but is not the correct unique usertype");
@@ -7977,7 +8335,8 @@ namespace stack {
 	struct getter<light<T>> {
 		static light<T> get(lua_State* L, int index, record& tracking) {
 			tracking.use(1);
-			return light<T>(static_cast<T*>(lua_touserdata(L, index)));
+			void* memory = lua_touserdata(L, index);
+			return light<T>(static_cast<T*>(memory));
 		}
 	};
 
@@ -7985,7 +8344,9 @@ namespace stack {
 	struct getter<user<T>> {
 		static std::add_lvalue_reference_t<T> get(lua_State* L, int index, record& tracking) {
 			tracking.use(1);
-			return *static_cast<std::remove_reference_t<T>*>(lua_touserdata(L, index));
+			void* memory = lua_touserdata(L, index);
+			memory = detail::align_user<T>(memory);
+			return *static_cast<std::remove_reference_t<T>*>(memory);
 		}
 	};
 
@@ -7993,7 +8354,9 @@ namespace stack {
 	struct getter<user<T*>> {
 		static T* get(lua_State* L, int index, record& tracking) {
 			tracking.use(1);
-			return static_cast<T*>(lua_touserdata(L, index));
+			void* memory = lua_touserdata(L, index);
+			memory = detail::align_user<T*>(memory);
+			return static_cast<T*>(memory);
 		}
 	};
 
@@ -8242,15 +8605,16 @@ namespace stack {
 	struct getter<detail::as_value_tag<T>> {
 		static T* get_no_lua_nil(lua_State* L, int index, record& tracking) {
 			tracking.use(1);
-			void* rawdata = lua_touserdata(L, index);
+			void* memory = lua_touserdata(L, index);
 #ifdef SOL_ENABLE_INTEROP
 			userdata_getter<extensible<T>> ug;
 			(void)ug;
-			auto ugr = ug.get(L, index, rawdata, tracking);
+			auto ugr = ug.get(L, index, memory, tracking);
 			if (ugr.first) {
 				return ugr.second;
 			}
 #endif // interop extensibility
+			void* rawdata = detail::align_usertype_pointer(memory);
 			void** pudata = static_cast<void**>(rawdata);
 			void* udata = *pudata;
 			return get_no_lua_nil_from(L, udata, index, tracking);
@@ -8335,9 +8699,9 @@ namespace stack {
 
 		static Real& get(lua_State* L, int index, record& tracking) {
 			tracking.use(1);
-			P** pref = static_cast<P**>(lua_touserdata(L, index));
-			detail::unique_destructor* fx = static_cast<detail::unique_destructor*>(static_cast<void*>(pref + 1));
-			Real* mem = static_cast<Real*>(static_cast<void*>(fx + 1));
+			void* memory = lua_touserdata(L, index);
+			memory = detail::align_usertype_unique<Real>(memory);
+			Real* mem = static_cast<Real*>(memory);
 			return *mem;
 		}
 	};
@@ -8597,12 +8961,9 @@ namespace stack {
 			// data in the first sizeof(T*) bytes, and then however many bytes it takes to
 			// do the actual object. Things that are std::ref or plain T* are stored as
 			// just the sizeof(T*), and nothing else.
-			T** pointerpointer = static_cast<T**>(lua_newuserdata(L, sizeof(T*) + sizeof(T)));
-			T*& referencereference = *pointerpointer;
-			T* allocationtarget = reinterpret_cast<T*>(pointerpointer + 1);
-			referencereference = allocationtarget;
+			T* obj = detail::usertype_allocate<T>(L);
 			std::allocator<T> alloc{};
-			alloc.construct(allocationtarget, std::forward<Args>(args)...);
+			alloc.construct(obj, std::forward<Args>(args)...);
 			f();
 			return 1;
 		}
@@ -8627,7 +8988,7 @@ namespace stack {
 		static int push_fx(lua_State* L, F&& f, T* obj) {
 			if (obj == nullptr)
 				return stack::push(L, lua_nil);
-			T** pref = static_cast<T**>(lua_newuserdata(L, sizeof(T*)));
+			T** pref = detail::usertype_allocate_pointer<T>(L);
 			*pref = obj;
 			f();
 			return 1;
@@ -8688,9 +9049,9 @@ namespace stack {
 
 		template <typename... Args>
 		static int push_deep(lua_State* L, Args&&... args) {
-			P** pref = static_cast<P**>(lua_newuserdata(L, sizeof(P*) + sizeof(detail::unique_destructor) + sizeof(Real)));
-			detail::unique_destructor* fx = static_cast<detail::unique_destructor*>(static_cast<void*>(pref + 1));
-			Real* mem = static_cast<Real*>(static_cast<void*>(fx + 1));
+			P** pref = nullptr;
+			detail::unique_destructor* fx = nullptr;
+			Real* mem = detail::usertype_unique_allocate<P, Real>(L, pref, fx);
 			*fx = detail::usertype_unique_alloc_destroy<P, Real>;
 			detail::default_construct::construct(mem, std::forward<Args>(args)...);
 			*pref = unique_usertype_traits<T>::get(*mem);
@@ -8982,14 +9343,13 @@ namespace stack {
 		template <bool with_meta = true, typename Key, typename... Args>
 		static int push_with(lua_State* L, Key&& name, Args&&... args) {
 			// A dumb pusher
-			void* rawdata = lua_newuserdata(L, sizeof(T));
-			T* data = static_cast<T*>(rawdata);
+			T* data = detail::user_allocate<T>(L);
 			std::allocator<T> alloc;
 			alloc.construct(data, std::forward<Args>(args)...);
 			if (with_meta) {
-				lua_CFunction cdel = detail::user_alloc_destruct<T>;
 				// Make sure we have a plain GC set for this data
 				if (luaL_newmetatable(L, name) != 0) {
+					lua_CFunction cdel = detail::user_alloc_destruct<T>;
 					lua_pushcclosure(L, cdel, 0);
 					lua_setfield(L, -2, "__gc");
 				}
@@ -9040,7 +9400,7 @@ namespace stack {
 	template <>
 	struct pusher<userdata_value> {
 		static int push(lua_State* L, userdata_value data) {
-			void** ud = static_cast<void**>(lua_newuserdata(L, sizeof(void*)));
+			void** ud = detail::usertype_allocate_pointer<void>(L);
 			*ud = data.value;
 			return 1;
 		}
@@ -9065,6 +9425,33 @@ namespace stack {
 
 		static int push(lua_State* L, const char* str, std::size_t len) {
 			return push_sized(L, str, len);
+		}
+	};
+
+	template <>
+	struct pusher<char*> {
+		static int push_sized(lua_State* L, const char* str, std::size_t len) {
+			pusher<const char*> p{};
+			(void)p;
+			return p.push_sized(L, str, len);
+		}
+
+		static int push(lua_State* L, const char* str) {
+			pusher<const char*> p{};
+			(void)p;
+			return p.push(L, str);
+		}
+
+		static int push(lua_State* L, const char* strb, const char* stre) {
+			pusher<const char*> p{};
+			(void)p;
+			return p.push(L, strb, stre);
+		}
+
+		static int push(lua_State* L, const char* str, std::size_t len) {
+			pusher<const char*> p{};
+			(void)p;
+			return p.push(L, str, len);
 		}
 	};
 
@@ -9170,6 +9557,27 @@ namespace stack {
 	};
 
 	template <>
+	struct pusher<wchar_t*> {
+		static int push(lua_State* L, const wchar_t* str) {
+			pusher<const wchar_t*> p{};
+			(void)p;
+			return p.push(L, str);
+		}
+
+		static int push(lua_State* L, const wchar_t* strb, const wchar_t* stre) {
+			pusher<const wchar_t*> p{};
+			(void)p;
+			return p.push(L, strb, stre);
+		}
+
+		static int push(lua_State* L, const wchar_t* str, std::size_t len) {
+			pusher<const wchar_t*> p{};
+			(void)p;
+			return p.push(L, str, len);
+		}
+	};
+
+	template <>
 	struct pusher<const char16_t*> {
 		static int push(lua_State* L, const char16_t* u16str) {
 			return push(L, u16str, std::char_traits<char16_t>::length(u16str));
@@ -9192,6 +9600,27 @@ namespace stack {
 	};
 
 	template <>
+	struct pusher<char16_t*> {
+		static int push(lua_State* L, const char16_t* str) {
+			pusher<const char16_t*> p{};
+			(void)p;
+			return p.push(L, str);
+		}
+
+		static int push(lua_State* L, const char16_t* strb, const char16_t* stre) {
+			pusher<const char16_t*> p{};
+			(void)p;
+			return p.push(L, strb, stre);
+		}
+
+		static int push(lua_State* L, const char16_t* str, std::size_t len) {
+			pusher<const char16_t*> p{};
+			(void)p;
+			return p.push(L, str, len);
+		}
+	};
+
+	template <>
 	struct pusher<const char32_t*> {
 		static int push(lua_State* L, const char32_t* u32str) {
 			return push(L, u32str, u32str + std::char_traits<char32_t>::length(u32str));
@@ -9210,6 +9639,27 @@ namespace stack {
 			std::string u8str = convert.to_bytes(strb, stre);
 #endif // VC++ is a shit
 			return stack::push(L, u8str);
+		}
+	};
+
+	template <>
+	struct pusher<char32_t*> {
+		static int push(lua_State* L, const char32_t* str) {
+			pusher<const char32_t*> p{};
+			(void)p;
+			return p.push(L, str);
+		}
+
+		static int push(lua_State* L, const char32_t* strb, const char32_t* stre) {
+			pusher<const char32_t*> p{};
+			(void)p;
+			return p.push(L, strb, stre);
+		}
+
+		static int push(lua_State* L, const char32_t* str, std::size_t len) {
+			pusher<const char32_t*> p{};
+			(void)p;
+			return p.push(L, str, len);
 		}
 	};
 
@@ -10740,10 +11190,7 @@ namespace sol {
 			call_syntax syntax = argcount > 0 ? stack::get_call_syntax(L, &usertype_traits<T>::user_metatable()[0], 1) : call_syntax::dot;
 			argcount -= static_cast<int>(syntax);
 
-			T** pointerpointer = reinterpret_cast<T**>(lua_newuserdata(L, sizeof(T*) + sizeof(T)));
-			T*& referencepointer = *pointerpointer;
-			T* obj = reinterpret_cast<T*>(pointerpointer + 1);
-			referencepointer = obj;
+			T* obj = detail::usertype_allocate<T>(L);
 			reference userdataref(L, -1);
 			userdataref.pop();
 
@@ -11042,11 +11489,8 @@ namespace sol {
 				call_syntax syntax = argcount > 0 ? stack::get_call_syntax(L, &usertype_traits<T>::user_metatable()[0], 1) : call_syntax::dot;
 				argcount -= static_cast<int>(syntax);
 
-				T** pointerpointer = reinterpret_cast<T**>(lua_newuserdata(L, sizeof(T*) + sizeof(T)));
+				T* obj = detail::usertype_allocate<T>(L);
 				reference userdataref(L, -1);
-				T*& referencepointer = *pointerpointer;
-				T* obj = reinterpret_cast<T*>(pointerpointer + 1);
-				referencepointer = obj;
 
 				construct_match<T, Args...>(constructor_match<T, false, clean_stack>(obj), L, argcount, boost + 1 + static_cast<int>(syntax));
 
@@ -11070,12 +11514,9 @@ namespace sol {
 				template <typename Fx, std::size_t I, typename... R, typename... Args>
 				int operator()(types<Fx>, index_value<I>, types<R...> r, types<Args...> a, lua_State* L, int, int start, F& f) {
 					const auto& metakey = usertype_traits<T>::metatable();
-					T** pointerpointer = reinterpret_cast<T**>(lua_newuserdata(L, sizeof(T*) + sizeof(T)));
+					T* obj = detail::usertype_allocate<T>(L);
 					reference userdataref(L, -1);
-					T*& referencepointer = *pointerpointer;
-					T* obj = reinterpret_cast<T*>(pointerpointer + 1);
-					referencepointer = obj;
-
+					
 					auto& func = std::get<I>(f.functions);
 					stack::call_into_lua<checked, clean_stack>(r, a, L, boost + start, func, detail::implicit_wrapper<T>(obj));
 
@@ -12435,7 +12876,7 @@ namespace sol {
 		decltype(auto) tagged_get(types<T>) const {
 #ifdef SOL_CHECK_ARGUMENTS
 			if (!valid()) {
-				type_panic_c_str(L, index, type_of(L, index), type::none);
+				type_panic_c_str(L, index, type_of(L, index), type::none, "bad get from protected_function_result (is not an error)");
 			}
 #endif // Check Argument Safety
 			return stack::get<T>(L, index);
@@ -12451,7 +12892,7 @@ namespace sol {
 		error tagged_get(types<error>) const {
 #ifdef SOL_CHECK_ARGUMENTS
 			if (valid()) {
-				type_panic_c_str(L, index, type_of(L, index), type::none);
+				type_panic_c_str(L, index, type_of(L, index), type::none, "bad get from protected_function_result (is an error)");
 			}
 #endif // Check Argument Safety
 			return error(detail::direct_error, stack::get<std::string>(L, index));
@@ -12664,13 +13105,16 @@ namespace sol {
 					stack::push(lua_state(), error);
 				}
 			};
+#if !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION)
 			try {
+#endif
 #endif // No Exceptions
 				firstreturn = (std::max)(1, static_cast<int>(stacksize - n - static_cast<int>(h.valid())));
 				code = luacall(n, LUA_MULTRET, h);
 				poststacksize = lua_gettop(lua_state()) - static_cast<int>(h.valid());
 				returncount = poststacksize - (firstreturn - 1);
 #ifndef SOL_NO_EXCEPTIONS
+#if !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION)
 			}
 			// Handle C++ errors thrown from C++ functions bound inside of lua
 			catch (const char* error) {
@@ -12688,6 +13132,9 @@ namespace sol {
 				firstreturn = lua_gettop(lua_state());
 				return protected_function_result(lua_state(), firstreturn, 0, 1, call_status::runtime);
 			}
+#else
+			// do not handle exceptions: they can be propogated into C++ and keep all type information / rich information
+#endif // about as safe as possible
 #endif // No Exceptions
 			return protected_function_result(lua_state(), firstreturn, returncount, returncount, code);
 		}
@@ -13094,13 +13541,13 @@ namespace sol {
 	template <typename Table, typename Key, typename T>
 	inline bool operator!=(T&& left, const proxy<Table, Key>& right) {
 		typedef decltype(stack::get<T>(nullptr, 0)) U;
-		return right.template get<optional<U>>() == left;
+		return right.template get<optional<U>>() != left;
 	}
 
 	template <typename Table, typename Key, typename T>
 	inline bool operator!=(const proxy<Table, Key>& right, T&& left) {
 		typedef decltype(stack::get<T>(nullptr, 0)) U;
-		return right.template get<optional<U>>() == left;
+		return right.template get<optional<U>>() != left;
 	}
 
 	template <typename Table, typename Key>
@@ -14890,11 +15337,11 @@ namespace sol {
 				}
 				int p;
 				if (ip) {
-					p = stack::push_reference(L, it->first);
-				}
-				else {
 					++i.i;
 					p = stack::push_reference(L, i.i);
+				}
+				else {
+					p = stack::push_reference(L, it->first);
 				}
 				p += stack::stack_detail::push_reference<push_type>(L, detail::deref(it->second));
 				std::advance(it, 1);
@@ -15722,7 +16169,7 @@ namespace sol {
 				usertype_detail::make_length_op<T>(l, index);
 			}
 			if (fx(meta_function::to_string)) {
-				usertype_detail::make_to_string_op<T, meta::any<meta::supports_to_string_member<T>, meta::supports_adl_to_string<T>, meta::supports_ostream_op<T>>>(l, index);
+				usertype_detail::make_to_string_op<T, is_to_stringable<T>>(l, index);
 			}
 			if (fx(meta_function::call_function)) {
 				usertype_detail::make_call_op<T>(l, index);
@@ -15750,7 +16197,7 @@ namespace sol {
 					usertype_detail::insert_default_registrations<P>(l, index, fx);
 					usertype_detail::make_destructor<T>(l, index);
 					luaL_setfuncs(L, l, 0);
-					
+
 					// __type table
 					lua_createtable(L, 0, 2);
 					const std::string& name = detail::demangle<T>();
@@ -16382,7 +16829,8 @@ namespace sol {
 				umt.pop();
 
 				stack::get_field<true>(L, gcmetakey);
-				return stack::pop<light<umt_t>>(L);
+				umt_t& target_umt = stack::pop<user<umt_t>>(L);
+				return target_umt;
 			}
 
 			static int push(lua_State* L, umt_t&& umx) {
@@ -16891,7 +17339,7 @@ namespace sol {
 				stackvarmap.pop();
 
 				stack::get_field<true>(L, gcmetakey);
-				usertype_detail::simple_map& varmap = stack::pop<light<usertype_detail::simple_map>>(L);
+				usertype_detail::simple_map& varmap = stack::pop<user<usertype_detail::simple_map>>(L);
 				return varmap;
 			}
 
