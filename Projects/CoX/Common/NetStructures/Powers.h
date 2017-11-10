@@ -25,7 +25,9 @@ enum class TrayItemType : uint32_t
 class PowerPool_Info
 {
 public:
-    int id[3];
+    int category_idx;
+    int powerset_entry_idx;
+    int power_idx;
     void serializefrom( BitStream &src );
     void serializeto( BitStream &src ) const;
 };

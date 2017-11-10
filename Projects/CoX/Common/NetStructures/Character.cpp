@@ -122,9 +122,9 @@ void Character::GetCharBuildInfo(BitStream &src)
     m_level=0;
     src.GetString(m_class_name);
     src.GetString(m_origin_name);
-    PowerPool_Info primary,secondary;
-    primary.serializefrom(src);
-    secondary.serializefrom(src);
+    CharacterPower primary,secondary;
+    primary.power_id.serializefrom(src);
+    secondary.power_id.serializefrom(src);
 
     m_powers.push_back(primary); // primary_powerset power
     m_powers.push_back(secondary); // secondary_powerset power
@@ -132,40 +132,35 @@ void Character::GetCharBuildInfo(BitStream &src)
 }
 void Character::SendCharBuildInfo(BitStream &bs) const
 {
-    PowerPool_Info null_power;
-    null_power.id[0]=null_power.id[1]=null_power.id[2]=0;
+    PowerPool_Info null_power = {0,0,0};
     bs.StoreString(m_class_name); // class name
     bs.StoreString(m_origin_name); // origin name
     bs.StorePackedBits(5,0); // related to power level  ?
     PUTDEBUG("SendCharBuildInfo after plevel");
 
     {
-        //m_powers[0].serializeto(bs);
-        //m_powers[1].serializeto(bs);
         // TODO: this is character powers related, refactor it out of here.
         int count=0;
         bs.StorePackedBits(4,count); // count
         for(int i=0; i<count; i++)
         {
-            uint32_t num_powers=0;
+            uint32_t num_powers=m_powers.size();
             bs.StorePackedBits(5,0);
             bs.StorePackedBits(4,uint32_t(num_powers));
-            for(uint32_t idx=0; idx<num_powers; ++idx)
+            for(const CharacterPower &power : m_powers)
             {
-                uint32_t num_somethings=0;
-
                 //sendPower(bs,0,0,0);
-                m_powers[idx].serializeto(bs);
-                bs.StorePackedBits(5,0);
-                bs.StoreFloat(1.0);
-                bs.StorePackedBits(4,num_somethings);
+                power.power_id.serializeto(bs);
+                bs.StorePackedBits(5,power.bought_at_level);
+                bs.StoreFloat(power.range);
+                bs.StorePackedBits(4,power.boosts.size());
 
-                for(size_t idx2=0; idx2<num_somethings; ++idx2)
+                for(const CharacterPowerBoost &boost : power.boosts)
                 {
                     //sendPower(bs,0,0,0);
-                    m_powers[idx2].serializeto(bs);
-                    bs.StorePackedBits(5,0);
-                    bs.StorePackedBits(2,0);
+                    boost.boost_id.serializeto(bs);
+                    bs.StorePackedBits(5,boost.level);
+                    bs.StorePackedBits(2,boost.num_combines);
                 }
             }
         }
@@ -273,17 +268,22 @@ void Character::serialize_costumes(BitStream &bs, ColorAndPartPacker *packer , b
 }
 void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
 {
-    for(int i=0; i<3; i++)
+    for (int i = 0; i < 3; i++)
     {
-        qDebug().nospace().noquote() << "    Pool_id["<<i<<"]: 0x%"<<QString::number(pool_info.id[i],16);
+        qDebug().nospace().noquote() << "    "
+                                     << QString("Pool_id[%1]: %2 %3 %4")
+                                            .arg(i)
+                                            .arg(pool_info.category_idx)
+                                            .arg(pool_info.powerset_entry_idx)
+                                            .arg(pool_info.power_idx);
     }
 }
 void Character::DumpBuildInfo()
 {
     qDebug() << "    class: "<<m_class_name;
     qDebug() << "    origin: "<<m_origin_name;
-    DumpPowerPoolInfo(m_powers[0]);
-    DumpPowerPoolInfo(m_powers[1]);
+    DumpPowerPoolInfo(m_powers[0].power_id);
+    DumpPowerPoolInfo(m_powers[1].power_id);
 }
 
 void Character::dump()

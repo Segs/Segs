@@ -162,14 +162,14 @@ void PowerTray::Dump()
 
 void PowerPool_Info::serializefrom(BitStream &src)
 {
-    id[0] = src.GetPackedBits(3);
-    id[1] = src.GetPackedBits(3);
-    id[2] = src.GetPackedBits(3);
+    category_idx = src.GetPackedBits(3);
+    powerset_entry_idx = src.GetPackedBits(3);
+    power_idx = src.GetPackedBits(3);
 }
 
 void PowerPool_Info::serializeto(BitStream &src) const
 {
-    src.StorePackedBits(3,id[0]);
-    src.StorePackedBits(3,id[1]);
-    src.StorePackedBits(3,id[2]);
+    src.StorePackedBits(3,category_idx);
+    src.StorePackedBits(3,powerset_entry_idx);
+    src.StorePackedBits(3,power_idx);
 }
