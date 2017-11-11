@@ -46,14 +46,14 @@ INSTALLATION
 
 1. Download and extract SEGS
 
-   You can obtain the latest stable SEGS release from https://segs.nemerle.eu/download
+   You can obtain the latest stable SEGS release from https://github.com/Segs/Segs/releases
    
    _Files are available in .tar.gz and .zip formats and can be extracted using most compression tools._
 
    To download and extract the files on a typical Unix/Linux command line, use the following commands:
 
    ```
-   wget https://segs.nemerle.eu/download/segs-latest.tar.gz
+   wget https://github.com/Segs/Segs/releases/segs-latest.tar.gz
    tar -zxvf segs-latest.tar.gz
    ```
 
