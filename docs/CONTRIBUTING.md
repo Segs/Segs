@@ -160,7 +160,8 @@ SEGS can be developed locally by cloning the git repo to your local machine. For
     * :lock: `:lock:` when dealing with security
     * :arrow_up: `:arrow_up:` when upgrading dependencies
     * :arrow_down: `:arrow_down:` when downgrading dependencies
-    * :shirt: `:shirt:` when removing linter warnings
+    * :card_index: `:card_index:` when modifying the databases
+    * :scroll: `:scroll:` when modifying the LUA Scripts
 
 ### Coding Styleguide
 
