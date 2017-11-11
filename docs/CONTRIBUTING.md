@@ -35,7 +35,7 @@ This project and everyone participating in it is governed by the [SEGS Code of C
 
 > **Note:** _Please don't file an issue to ask a question._ You'll get faster results by using the resources below.
 
-We have an official message board and a FAQ and where the community chimes in with helpful advice if you have questions.
+We have an official message board and a FAQ where the community chimes in with helpful advice if you have questions.
 
 * [SEGS Official Forums](https://segs.nemerle.eu/forumz/index.php)
 * [The FAQ Thread](https://segs.nemerle.eu/forumz/viewtopic.php?f=8&t=8244)
