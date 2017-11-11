@@ -7,6 +7,7 @@ For legal information, please see [License.txt](./docs/License.txt).
 For a list of SEGS authors and contributors, please see [Authors.txt](./docs/Authors.txt).
 
 * Our [wiki](https://github.com/Segs/Segs/wiki)
+* The [Issue Queue](https://github.com/Segs/Segs/issues)
 * Our target [coding style](http://github.com/Segs/Segs/blob/master/docs/CodingStyle.txt.md "style")
 
 Basic instructions for compiling SEGS in Linux and Windows are below, however for more detailed visual instructions, visit https://segs.nemerle.eu/developers
@@ -66,7 +67,7 @@ Your distro may come with some, or all, of these packages pre-installed, and whi
 
 Download dependencies and tools by clicking on the links listed in the Requirements section above. Make sure you download the correct version for your installation of Windows. Once downloaded, navigate to your downloads folder and run each installer.
 
-NOTE: for QT, please install mingw 32bit version
+NOTE: for QT, please install **mingw 32bit version**
 
 
 BUILD SEGS
@@ -99,7 +100,7 @@ You may select the `Details` button next to MinGW if you'd like to customize the
 
 Finally, click `Configure Project`.
 
-> You may change your configuration, or select additional build options by selecting `Projects` which is the wrench icon located at the far left of QTCreator. From here you can modify settings to build the COX Map Viewer and enable the scripting engine.
+> You may change your configuration, or select additional build options by selecting `Projects` identified by the wrench icon located at the far left of QTCreator. From here you can modify settings to build the COX Map Viewer and enable the scripting engine.
 
 **3. Build All**
 
@@ -127,9 +128,12 @@ After compiling, you'll need to setup your SEGS Server and Databases. You'll als
 CONTRIBUTE TO DEVELOPMENT
 ------
 
-Please read [CONTRIBUTE.md](./docs/CONTRIBUTE.md) and see the links below:
+**SEGS needs your help!** From editing README's like this one, to coding the MapServer, there are tasks that can be tackled by contributors of all skill level!
+
+Please read [CONTRIBUTE.md](./docs/CONTRIBUTE.md) and see the links below to begin:
 
 * Our GitHub: https://github.com/Segs/Segs
+* The Issue Queue: https://github.com/Segs/Segs/issues
 * Our target [coding style](http://github.com/Segs/Segs/blob/master/docs/CodingStyle.txt.md "style")
 
 
