@@ -9,13 +9,13 @@ The following is a set of guidelines for contributing to SEGS. These are mostly 
 [Code of Conduct](#code-of-conduct)
 
 [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
-  * [IRC](#irc)
+  * [Chat with us on IRC](#chat-with-us-on-irc)
 
 [What should I know before I get started?](#what-should-i-know-before-i-get-started)
   * [SEGS and Packages](#segs-and-packages)
 
 [How Can I Contribute?](#how-can-i-contribute)
-  * [Reporting Bugs Enhancements or Features](#reporting-issues)
+  * [Reporting Bugs or Enhancements or Feature Requests](#reporting-bugs-or-enhancements-or-feature-requests)
   * [Your First Code Contribution](#your-first-code-contribution)
   * [Pull Requests](#pull-requests)
 
@@ -44,10 +44,10 @@ We have an official message board and a FAQ and where the community chimes in wi
 
 If chat is more your speed, you can join us on IRC:
 
-**Server:** irc.nemerle.eu
-**Port:** 6667
-**SSL port:** 6697
-**Channel:** #segs
+  **Server:** irc.nemerle.eu  
+  **Port:** 6667  
+  **SSL port:** 6697  
+  **Channel:** #segs  
 
 
 ## What should I know before I get started?
@@ -61,9 +61,9 @@ SEGS is a large open source project with ambitious goals and a complex code base
 
 ### Reporting Bugs or Enhancements or Feature Requests
 
-Bugs, Enhancements, and Feature Requests are tracked as [GitHub issues](https://guides.github.com/features/issues/). When creating an issue, please provide the following information by filling in [the template](ISSUE_TEMPLATE.md).
+Bugs, Enhancements, and Feature Requests are tracked as [GitHub issues](https://guides.github.com/features/issues/).
 
-This section guides you through submitting an issue for SEGS. Following these guidelines helps maintainers and the community understand your report :pencil:, reproduce the behavior :computer: :computer:, and find related reports :mag_right:.
+This section guides you through submitting an issue for SEGS. Following these guidelines helps maintainers and the community understand your report :pencil:, reproduce the behavior :computer:, and find related reports :mag_right:.
 
 Before creating issues, please check [this list](#before-submitting-an-issue) as you might find out that you don't need to create one. When you are creating an issue, please [include as many details as possible](#how-do-i-submit-a-good-issue). Fill out [the required template](ISSUE_TEMPLATE.md), the information it asks for helps us resolve issues faster.
 
@@ -112,8 +112,8 @@ Include details about your configuration and environment:
 
 Unsure where to begin contributing to SEGS? You can start by looking through these `good-first-issue` and `wishlist` issues:
 
-* [Good First Issue issues][good-first-issue] - issues which should only require a small number of lines of code, and a test or two.
-* [Wish List issues][wishlist] - issues which should be a bit more involved than `good-first-issue` issues.
+* [Good First Issue](https://github.com/Segs/Segs/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) - issues which should only require a small number of lines of code, and a test or two.
+* [Wishlist issues](https://github.com/Segs/Segs/issues?q=is%3Aopen+is%3Aissue+label%3Awishlist) - issues which should be a bit more involved than `good-first-issue` issues. These are issues that the SEGS core development team would love to implement or fix, but can't prioritize currently.
 
 Both issue lists are sorted by total number of comments. While not perfect, number of comments is a reasonable proxy for impact a given change will have.
 
@@ -121,7 +121,7 @@ If you want to read about running SEGS, try the end-user [README](./Projects/CoX
 
 #### Local development
 
-SEGS can be developed locally by cloning the git repo to your local machine. For instructions on how to do this, see the following sections in the [README](README.md):
+SEGS can be developed locally by cloning the git repo to your local machine. For instructions on how to do this, see the following sections in the development [README](./README.md):
 
 
 ### Pull Requests
@@ -148,6 +148,8 @@ SEGS can be developed locally by cloning the git repo to your local machine. For
     * :racehorse: `:racehorse:` when improving performance
     * :non-potable_water: `:non-potable_water:` when plugging memory leaks
     * :memo: `:memo:` when writing docs
+    * :card_index: `:card_index:` when modifying the databases
+    * :scroll: `:scroll:` when modifying the LUA Scripts
     * :penguin: `:penguin:` when fixing something on Linux
     * :apple: `:apple:` when fixing something on macOS
     * :checkered_flag: `:checkered_flag:` when fixing something on Windows
@@ -158,8 +160,6 @@ SEGS can be developed locally by cloning the git repo to your local machine. For
     * :lock: `:lock:` when dealing with security
     * :arrow_up: `:arrow_up:` when upgrading dependencies
     * :arrow_down: `:arrow_down:` when downgrading dependencies
-    * :card_index: `:card_index:` when modifying the databases
-    * :scroll: `:scroll:` when modifying the LUA Scripts
 
 ### Coding Styleguide
 
@@ -219,7 +219,7 @@ Headers should be clean of comments, as to allow for quick class interface scann
 
 ### Documentation Styleguide
 
-* Use [Markdown](https://daringfireball.net/projects/markdown).
+* Use [Markdown](https://daringfireball.net/projects/markdown) whenever possible.
 
 
 ## Additional Notes
@@ -228,45 +228,49 @@ Headers should be clean of comments, as to allow for quick class interface scann
 
 This section lists the labels we use to help us track and manage issues and pull requests. Most labels are used across all Atom repositories, but some are specific to `atom/atom`.
 
-[GitHub search](https://help.github.com/articles/searching-issues/) makes it easy to use labels for finding groups of issues or pull requests you're interested in. For example, you might be interested in [open issues across `Segs/Segs` and all Segs-owned packages which are labeled as bugs, but still need to be reliably reproduced](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+user%3ASegs+label%3Abug+label%3Aneeds-reproduction) or perhaps [open pull requests in `Segs/Segs` which haven't been reviewed yet](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+repo%3ASegs%2Fatom+comments%3A0). To help you find issues and pull requests, each label is listed with search links for finding open items with that label in `atom/atom` only and also across all Atom repositories. We  encourage you to read about [other search filters](https://help.github.com/articles/searching-issues/) which will help you write more focused queries.
+[GitHub search](https://help.github.com/articles/searching-issues/) makes it easy to use labels for finding groups of issues or pull requests you're interested in. For example, you might be interested in [open issues which are labeled as bugs, but still need to be reliably reproduced](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+user%3ASegs+label%3Abug+label%3Aneeds-reproduction) or perhaps [open pull requests which haven't been reviewed yet](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+repo%3ASegs%2Fatom+comments%3A0). To help you find issues and pull requests, each label is listed with search links for finding open items with that label. We  encourage you to read about [other search filters](https://help.github.com/articles/searching-issues/) which will help you write more focused queries.
 
 The labels are loosely grouped by their purpose, but it's not required that every issue have a label from every group or that an issue can't have more than one label from the same group.
 
-Please open an issue on `Segs/Segs` if you have suggestions for new labels, and if you notice some labels are missing on some repositories, then please open an issue on that repository.
+Please open an issue on `Segs/Segs` if you have suggestions for new labels.
 
 #### Type of Issue and Issue State
 
-| Label name | `Segs/Segs` :mag_right: | `Segs`‑org :mag_right: | Description |
-| --- | --- | --- | --- |
-| `enhancement` | [search][search-segs-repo-label-enhancement] | [search][search-segs-org-label-enhancement] | Feature requests. |
-| `bug` | [search][search-segs-repo-label-bug] | [search][search-segs-org-label-bug] | Confirmed bugs or reports that are very likely to be bugs. |
+| Label Name | Search :mag_right: | Description |
+| --- | --- | --- |
+| `bug` | [search][search-label-bug] | Confirmed bugs or reports that are very likely to be bugs. |
+| `enhancement` | [search][search-label-enhancement] | Feature requests. |
 
 #### Topic Categories
 
-| Label name | `Segs/Segs` :mag_right: | `Segs`‑org :mag_right: | Description |
-| --- | --- | --- | --- |
-| `windows` | [search][search-segs-repo-label-windows] | [search][search-segs-org-label-windows] | Related to SEGS running on Windows. |
-| `linux` | [search][search-segs-repo-label-linux] | [search][search-segs-org-label-linux] | Related to SEGS running on Linux. |
-
-#### `Segs/Segs` Topic Categories
-
-| Label name | `Segs/Segs` :mag_right: | `Segs`‑org :mag_right: | Description |
-| --- | --- | --- | --- |
-| `good-first-issue` | [search][search-segs-repo-label-good-first-issue] | [search][search-segs-org-label-good-first-issue] | Issues that are great for beginners, or those new to the SEGS project. |
-| `wishlist` | [search][search-segs-repo-label-wishlist] | [search][search-segs-org-label-wishlist] | Issues that the SEGS core development team would love to implement or fix, but can't prioritize currently. |
+| Label Name | Search :mag_right: | Description |
+| --- | --- | --- |
+| `good-first-issue` | [search][search-label-good-first-issue] | Issues that are great for beginners, or those new to the SEGS project. |
+| `wishlist` | [search][search-label-wishlist] | Issues that the SEGS core development team would love to implement or fix, but can't prioritize currently. |
+| `network-layer-stability` | [search][search-label-network-layer-stability] | Related to SEGS network layer. |
 
 #### Pull Request Labels
 
-| Label name | `Segs/Segs` :mag_right: | `segs`‑org :mag_right: | Description
-| --- | --- | --- | --- |
-| `work-in-progress` | [search][search-segs-repo-label-work-in-progress] | [search][search-segs-org-label-work-in-progress] | Pull requests which are still being worked on, more changes will follow. |
-| `needs-review` | [search][search-segs-repo-label-needs-review] | [search][search-segs-org-label-needs-review] | Pull requests which need code review, and approval from maintainers or SEGS core team. |
-| `under-review` | [search][search-segs-repo-label-under-review] | [search][search-segs-org-label-under-review] | Pull requests being reviewed by maintainers or SEGS core team. |
-| `requires-changes` | [search][search-segs-repo-label-requires-changes] | [search][search-segs-org-label-requires-changes] | Pull requests which need to be updated based on review comments and then reviewed again. |
-| `needs-testing` | [search][search-segs-repo-label-needs-testing] | [search][search-segs-org-label-needs-testing] | Pull requests which need manual testing. |
+| Label Name | Search :mag_right: | Description |
+| --- | --- | --- |
+| `work-in-progress` | [search][search-label-work-in-progress] | Pull requests which are still being worked on, more changes will follow. |
+| `needs-review` | [search][search-label-needs-review] | Pull requests which need code review, and approval from maintainers or SEGS core team. |
+| `under-review` | [search][search-label-under-review] | Pull requests being reviewed by maintainers or SEGS core team. |
+| `requires-changes` | [search][search-label-requires-changes] | Pull requests which need to be updated based on review comments and then reviewed again. |
+| `needs-testing` | [search][search-label-needs-testing] | Pull requests which need manual testing. |
 
-[search-segs-repo-label-enhancement]: https://github.com/issues?q=is%3Aopen+is%3Aissue+repo%3Asegs%2Fatom+label%3Aenhancement
-[search-segs-org-label-needs-testing]: https://github.com/pulls?q=is%3Aopen+is%3Apr+user%3Asegs+label%3Aneeds-testing
+[search-label-bug]: https://github.com/Segs/Segs/issues?q=is%3Aopen+is%3Aissue+label%3Abug
+[search-label-enhancement]: https://github.com/Segs/Segs/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
 
-[beginner]:https://github.com/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp-wanted+user%3Asegs+sort%3Acomments-desc+-label%3Abeginner
-[help-wanted]:https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+label%3Abeginner+label%3Ahelp-wanted+user%3Asegs+sort%3Acomments-desc
+[search-label-good-first-issue]: https://github.com/Segs/Segs/issues?q=is%3Aopen+is%3Aissue+label%3Agood-first-issue
+[search-label-wishlist]: https://github.com/Segs/Segs/issues?q=is%3Aopen+is%3Aissue+label%3Awishlist
+[search-label-network-layer-stability]: https://github.com/Segs/Segs/issues?q=is%3Aopen+is%3Aissue+label%3A%22network+layer+stability%22
+
+[search-label-work-in-progress]: https://github.com/Segs/Segs/pulls?q=is%3Aopen+is%3Apr+label%3Awork-in-progress
+[search-label-needs-review]: https://github.com/Segs/Segs/pulls?q=is%3Aopen+is%3Apr+label%3Aneeds-review
+[search-label-under-review]: https://github.com/Segs/Segs/pulls?q=is%3Aopen+is%3Apr+label%3Aunder-review
+[search-label-requires-changes]: https://github.com/Segs/Segs/pulls?q=is%3Aopen+is%3Apr+label%3Arequires-changes
+[search-label-needs-testing]: https://github.com/Segs/Segs/pulls?q=is%3Aopen+is%3Apr+label%3Aneeds-testing
+
+
+## Thank you and happy coding!
