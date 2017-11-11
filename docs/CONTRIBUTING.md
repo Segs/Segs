@@ -42,10 +42,9 @@ We have an official message board and a FAQ and where the community chimes in wi
 * [SEGS Official Forums](https://segs.nemerle.eu/forumz/index.php)
 * [The FAQ Thread](https://segs.nemerle.eu/forumz/viewtopic.php?f=8&t=8244)
 
-If chat is more your speed, you can join us on IRC:
+### Chat with us on IRC
 
-### IRC
-Feel free to chat with us using the information below.
+If chat is more your speed, you can join us on IRC:
 
 **Server:** irc.nemerle.eu
 **Port:** 6667
@@ -58,10 +57,6 @@ Feel free to chat with us using the information below.
 ### SEGS and Packages
 
 SEGS is a large open source project with ambitious goals and a complex code base. Before contributing, please read through the entirety of this guide, as it contains important information that will help ensure that your contributions are accepted and successful.
-
-## Coding Convention
-
-[Coding style](https://github.com/Segs/Segs/blob/master/docs/CodingStyle.txt.md)
 
 
 ## How Can I Contribute?
@@ -244,37 +239,35 @@ Please open an issue on `Segs/Segs` if you have suggestions for new labels, and 
 
 | Label name | `Segs/Segs` :mag_right: | `Segs`‑org :mag_right: | Description |
 | --- | --- | --- | --- |
-| `enhancement` | [search][search-atom-repo-label-enhancement] | [search][search-atom-org-label-enhancement] | Feature requests. |
-| `bug` | [search][search-atom-repo-label-bug] | [search][search-atom-org-label-bug] | Confirmed bugs or reports that are very likely to be bugs. |
+| `enhancement` | [search][search-segs-repo-label-enhancement] | [search][search-segs-org-label-enhancement] | Feature requests. |
+| `bug` | [search][search-segs-repo-label-bug] | [search][search-segs-org-label-bug] | Confirmed bugs or reports that are very likely to be bugs. |
 
 #### Topic Categories
 
 | Label name | `Segs/Segs` :mag_right: | `Segs`‑org :mag_right: | Description |
 | --- | --- | --- | --- |
-| `windows` | [search][search-atom-repo-label-windows] | [search][search-atom-org-label-windows] | Related to Atom running on Windows. |
-| `linux` | [search][search-atom-repo-label-linux] | [search][search-atom-org-label-linux] | Related to Atom running on Linux. |
+| `windows` | [search][search-segs-repo-label-windows] | [search][search-segs-org-label-windows] | Related to SEGS running on Windows. |
+| `linux` | [search][search-segs-repo-label-linux] | [search][search-segs-org-label-linux] | Related to SEGS running on Linux. |
 
 #### `Segs/Segs` Topic Categories
 
 | Label name | `Segs/Segs` :mag_right: | `Segs`‑org :mag_right: | Description |
 | --- | --- | --- | --- |
-| `editor-rendering` | [search][search-atom-repo-label-editor-rendering] | [search][search-atom-org-label-editor-rendering] | Related to language-independent aspects of rendering text (e.g. scrolling, soft wrap, and font rendering). |
-| `build-error` | [search][search-atom-repo-label-build-error] | [search][search-atom-org-label-build-error] | Related to problems with building Atom from source. |
+| `good-first-issue` | [search][search-segs-repo-label-good-first-issue] | [search][search-segs-org-label-good-first-issue] | Issues that are great for beginners, or those new to the SEGS project. |
+| `wishlist` | [search][search-segs-repo-label-wishlist] | [search][search-segs-org-label-wishlist] | Issues that the SEGS core development team would love to implement or fix, but can't prioritize currently. |
 
 #### Pull Request Labels
 
-| Label name | `atom/atom` :mag_right: | `atom`‑org :mag_right: | Description
+| Label name | `Segs/Segs` :mag_right: | `segs`‑org :mag_right: | Description
 | --- | --- | --- | --- |
-| `work-in-progress` | [search][search-atom-repo-label-work-in-progress] | [search][search-atom-org-label-work-in-progress] | Pull requests which are still being worked on, more changes will follow. |
-| `needs-review` | [search][search-atom-repo-label-needs-review] | [search][search-atom-org-label-needs-review] | Pull requests which need code review, and approval from maintainers or Atom core team. |
-| `under-review` | [search][search-atom-repo-label-under-review] | [search][search-atom-org-label-under-review] | Pull requests being reviewed by maintainers or Atom core team. |
-| `requires-changes` | [search][search-atom-repo-label-requires-changes] | [search][search-atom-org-label-requires-changes] | Pull requests which need to be updated based on review comments and then reviewed again. |
-| `needs-testing` | [search][search-atom-repo-label-needs-testing] | [search][search-atom-org-label-needs-testing] | Pull requests which need manual testing. |
+| `work-in-progress` | [search][search-segs-repo-label-work-in-progress] | [search][search-segs-org-label-work-in-progress] | Pull requests which are still being worked on, more changes will follow. |
+| `needs-review` | [search][search-segs-repo-label-needs-review] | [search][search-segs-org-label-needs-review] | Pull requests which need code review, and approval from maintainers or SEGS core team. |
+| `under-review` | [search][search-segs-repo-label-under-review] | [search][search-segs-org-label-under-review] | Pull requests being reviewed by maintainers or SEGS core team. |
+| `requires-changes` | [search][search-segs-repo-label-requires-changes] | [search][search-segs-org-label-requires-changes] | Pull requests which need to be updated based on review comments and then reviewed again. |
+| `needs-testing` | [search][search-segs-repo-label-needs-testing] | [search][search-segs-org-label-needs-testing] | Pull requests which need manual testing. |
 
-[search-atom-repo-label-enhancement]: https://github.com/issues?q=is%3Aopen+is%3Aissue+repo%3Aatom%2Fatom+label%3Aenhancement
-[search-atom-org-label-needs-testing]: https://github.com/pulls?q=is%3Aopen+is%3Apr+user%3Aatom+label%3Aneeds-testing
+[search-segs-repo-label-enhancement]: https://github.com/issues?q=is%3Aopen+is%3Aissue+repo%3Asegs%2Fatom+label%3Aenhancement
+[search-segs-org-label-needs-testing]: https://github.com/pulls?q=is%3Aopen+is%3Apr+user%3Asegs+label%3Aneeds-testing
 
-[beginner]:https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+label%3Abeginner+label%3Ahelp-wanted+user%3Aatom+sort%3Acomments-desc
-[help-wanted]:https://github.com/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp-wanted+user%3Aatom+sort%3Acomments-desc+-label%3Abeginner
-[contributing-to-official-atom-packages]:http://flight-manual.atom.io/hacking-atom/sections/contributing-to-official-atom-packages/
-[hacking-on-atom-core]: http://flight-manual.atom.io/hacking-atom/sections/hacking-on-atom-core/
+[beginner]:https://github.com/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp-wanted+user%3Asegs+sort%3Acomments-desc+-label%3Abeginner
+[help-wanted]:https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+label%3Abeginner+label%3Ahelp-wanted+user%3Asegs+sort%3Acomments-desc
