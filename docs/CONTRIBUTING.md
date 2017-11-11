@@ -13,11 +13,9 @@ The following is a set of guidelines for contributing to SEGS. These are mostly 
 
 [What should I know before I get started?](#what-should-i-know-before-i-get-started)
   * [SEGS and Packages](#segs-and-packages)
-  * [Coding Convention](#coding-convention)
 
 [How Can I Contribute?](#how-can-i-contribute)
-  * [Reporting Bugs](#reporting-bugs)
-  * [Suggesting Enhancements](#suggesting-enhancements)
+  * [Reporting Bugs Enhancements or Features](#reporting-issues)
   * [Your First Code Contribution](#your-first-code-contribution)
   * [Pull Requests](#pull-requests)
 
@@ -112,10 +110,10 @@ Include details about your configuration and environment:
 
 ### Your First Code Contribution
 
-Unsure where to begin contributing to SEGS? You can start by looking through these `good-first-issue` and `wish-list` issues:
+Unsure where to begin contributing to SEGS? You can start by looking through these `good-first-issue` and `wishlist` issues:
 
 * [Good First Issue issues][good-first-issue] - issues which should only require a small number of lines of code, and a test or two.
-* [Wish List issues][wish-list] - issues which should be a bit more involved than `good-first-issue` issues.
+* [Wish List issues][wishlist] - issues which should be a bit more involved than `good-first-issue` issues.
 
 Both issue lists are sorted by total number of comments. While not perfect, number of comments is a reasonable proxy for impact a given change will have.
 
