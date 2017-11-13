@@ -148,7 +148,7 @@ SEGS can be developed locally by cloning the git repo to your local machine. For
     * :racehorse: `:racehorse:` when improving performance
     * :non-potable_water: `:non-potable_water:` when plugging memory leaks
     * :memo: `:memo:` when writing docs
-    * :card_index: `:card_index:` when modifying the databases
+    * :card_file_box: `:card_index:` when modifying the databases
     * :scroll: `:scroll:` when modifying the LUA Scripts
     * :penguin: `:penguin:` when fixing something on Linux
     * :apple: `:apple:` when fixing something on macOS
