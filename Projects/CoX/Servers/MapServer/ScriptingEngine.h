@@ -1,7 +1,7 @@
 #ifndef SCRIPTINGENGINE_H
 #define SCRIPTINGENGINE_H
 #include <memory>
-
+#include <string>
 class QString;
 class MapClient;
 
