@@ -93,12 +93,26 @@ public:
 
 };
 struct Costume;
+struct CharacterPowerBoost
+{
+    PowerPool_Info boost_id;
+    int            level        = 0;
+    int            num_combines = 0;
+};
+struct CharacterPower
+{
+    PowerPool_Info                   power_id;
+    int                              bought_at_level = 0;
+    float                            range           = 1.0f;
+    std::vector<CharacterPowerBoost> boosts;
+};
 
 class Character
 {
-friend  class CharacterDatabase;
-typedef std::vector<PowerPool_Info> vPowerPool;
-typedef std::vector<Costume *> vCostume;
+        friend  class CharacterDatabase;
+
+        using vPowerPool = std::vector<CharacterPower>;
+        using vCostume = std::vector<Costume *>;
 
         vPowerPool      m_powers;
         PowerTrayGroup  m_trays;
