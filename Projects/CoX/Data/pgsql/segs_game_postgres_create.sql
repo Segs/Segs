@@ -2,22 +2,20 @@ CREATE TABLE "table_versions" (
 	"id" serial NOT NULL,
 	"table_name" varchar NOT NULL UNIQUE,
 	"version" integer NOT NULL DEFAULT '0',
-	"last_update" DATETIME NOT NULL DEFAULT 'CURRENT_TIMESTAMP',
+	"last_update" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT table_versions_pk PRIMARY KEY ("id")
 ) WITH (
   OIDS=FALSE
 );
 
 
-INSERT INTO "table_versions" (table_name)
-VALUES ('table_versions'),
-VALUES ('accounts'),
-VALUES ('costumes'),
-VALUES ('characters'),
-VALUES ('options'),
-VALUES ('gui'),
-VALUES ('supergroups'),
-VALUES ('progress');
+INSERT INTO table_versions VALUES(1,'table_versions',0,'2017-11-11 08:57:42');
+INSERT INTO table_versions VALUES(2,'accounts',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(3,'characters',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(4,'costume',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(5,'gui',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(6,'options',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(7,'progress',0,'2017-11-11 08:57:43');
 
 
 CREATE TABLE "accounts" (
@@ -30,7 +28,7 @@ CREATE TABLE "accounts" (
 );
 
 
-INSERT INTO "accounts" (account_id) VALUES (1);
+INSERT INTO accounts VALUES(1,1,8);
 
 
 CREATE TABLE "costumes" (
@@ -59,7 +57,7 @@ CREATE TABLE "characters" (
 	"current_map" integer NOT NULL,
 	"body_type" integer NOT NULL,
 	"last_costume_id" integer NOT NULL DEFAULT '0',
-	"last_online" DATETIME NOT NULL DEFAULT 'CURRENT_TIMESTAMP',
+	"last_online" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	"hitpoints" integer NOT NULL DEFAULT '0',
 	"endurance" integer NOT NULL DEFAULT '0',
 	"inf" integer NOT NULL DEFAULT '0',
