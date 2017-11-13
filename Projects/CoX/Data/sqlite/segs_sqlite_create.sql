@@ -1,3 +1,5 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
 CREATE TABLE `table_versions` (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `table_name` VARCHAR NOT NULL,
@@ -5,22 +7,20 @@ CREATE TABLE `table_versions` (
     `last_update` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO "table_versions" (table_name)
-VALUES ('table_versions'),
-VALUES ('accounts'),
-VALUES ('bans'),
-VALUES ('game_servers');
+INSERT INTO table_versions VALUES(1,'table_versions',0,'2017-11-11 08:55:54');
+INSERT INTO table_versions VALUES(2,'accounts',0,'2017-11-11 08:55:54');
+INSERT INTO table_versions VALUES(3,'game_servers',0,'2017-11-11 09:12:37');
+INSERT INTO table_versions VALUES(4,'bans',0,'2017-11-11 09:12:37');
 
 CREATE TABLE `accounts` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`username`	TEXT UNIQUE,
 	`access_level`	INTEGER DEFAULT 1,
-	`creation_date`	DATETIME DEFAULT CURRENT_TIMESTAMP),
+	`creation_date`	DATETIME DEFAULT CURRENT_TIMESTAMP,
 	`passw`	BLOB
 );
 
-INSERT INTO `accounts` (username,passw)
-VALUES (`segsadmin`,x`segs123`);
+INSERT INTO accounts VALUES(1,'segsadmin',1,'2017-11-11 17:41:19',X'7365677331323300000000000000');
 
 CREATE TABLE `bans` (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,3 +39,5 @@ CREATE TABLE `game_servers` (
     `name` VARCHAR NOT NULL,
     `token` INTEGER NOT NULL
 );
+COMMIT;
+

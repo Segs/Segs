@@ -1,3 +1,5 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
 CREATE TABLE `table_versions` (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `table_name` VARCHAR NOT NULL,
@@ -5,15 +7,13 @@ CREATE TABLE `table_versions` (
     `last_update` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO table_versions (table_name)
-VALUES ('table_versions'),
-VALUES ('accounts'),
-VALUES ('costumes'),
-VALUES ('characters'),
-VALUES ('options'),
-VALUES ('gui'),
-VALUES ('supergroups'),
-VALUES ('progress');
+INSERT INTO table_versions VALUES(1,'table_versions',0,'2017-11-11 08:57:42');
+INSERT INTO table_versions VALUES(2,'accounts',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(3,'characters',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(4,'costume',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(5,'gui',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(6,'options',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(7,'progress',0,'2017-11-11 08:57:43');
 
 CREATE TABLE `accounts` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,8 +21,7 @@ CREATE TABLE `accounts` (
 	`max_slots`	INTEGER NOT NULL DEFAULT 8
 );
 
-INSERT INTO accounts (account_id)
-VALUES (1);
+INSERT INTO accounts VALUES(1,1,8);
 
 CREATE TABLE `characters` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,7 +66,7 @@ CREATE TABLE `costume` (
 );
 
 CREATE TABLE `options` (
-	`id` integer PRIMARY KEY AUTOINCREMENT,
+	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
 	`character_id` INTEGER NOT NULL,
 	`option` VARCHAR,
 	`value` INTEGER,
@@ -76,8 +75,8 @@ CREATE TABLE `options` (
 );
 
 CREATE TABLE `gui` (
-	`id` integer PRIMARY KEY AUTOINCREMENT,
-	`character_id` INTEGER DEFAULT,
+	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
+	`character_id` INTEGER NOT NULL,
 	`window` INTEGER DEFAULT 0,
 	`x` INTEGER DEFAULT 0,
 	`y` INTEGER DEFAULT 0,
@@ -104,4 +103,5 @@ CREATE TABLE `progress` (
 	FOREIGN KEY(`character_id`) REFERENCES characters ( id ) ON DELETE CASCADE,
 	UNIQUE (character_id)
 );
+COMMIT;
 
