@@ -29,11 +29,11 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
     int idx=0;
     for(const CharClass_Data &classdata : classes_to_search)
     {
-        if(classdata.m_DisplayName.compare(class_name,Qt::CaseInsensitive)==0)
+        if(classdata.m_Name.compare(class_name,Qt::CaseInsensitive)==0)
             return idx;
         idx++;
     }
-    qWarning() << "Failed to locate origin index for"<<class_name;
+    qWarning() << "Failed to locate class index for"<<class_name;
     return 0;
 
 }
