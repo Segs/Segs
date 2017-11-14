@@ -422,6 +422,21 @@ public:
         entity_idx = bs.GetPackedBits(12);
     }
 };
+class SwitchViewPoint final : public MapLinkEvent
+{
+public:
+    bool new_viewpoint_is_firstperson;
+    SwitchViewPoint():MapLinkEvent(MapEventTypes::evSwitchViewPoint)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,64);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        new_viewpoint_is_firstperson = bs.GetBits(1);
+    }
+};
 #include "Events/ClientSettings.h"
 #include "Events/GameCommandList.h"
 #include "Events/ChatDividerMoved.h"

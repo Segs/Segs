@@ -60,6 +60,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 40: return new CombineRequest;
         case 56: return new EntityInfoRequest;
         case 62: return new LocationVisited;
+        case 64: return new SwitchViewPoint;
         case 65: return new ClientSettings;
         case 67: return new DescriptionAndBattleCry;
         /*case 21: new KeybindProfileReset; */

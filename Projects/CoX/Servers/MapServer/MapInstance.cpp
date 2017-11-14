@@ -173,6 +173,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evPlaqueVisited:
             on_plaque_visited(static_cast<PlaqueVisited *>(ev));
             break;
+        case MapEventTypes::evSwitchViewPoint:
+            on_switch_viewpoint(static_cast<SwitchViewPoint *>(ev));
+            break;
         case MapEventTypes::evClientSettings:
             on_client_settings(static_cast<ClientSettings *>(ev));
             break;
@@ -676,4 +679,9 @@ void MapInstance::on_client_settings(ClientSettings * ev)
 {
     qWarning() << "Unhandled client settings";
     //TODO: serialize settings to client entry in the database.
+}
+void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
+{
+    qWarning() << "Unhandled switch viewpoint to"<<ev->new_viewpoint_is_firstperson;
+
 }
