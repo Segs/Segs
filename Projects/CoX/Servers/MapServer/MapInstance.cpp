@@ -315,7 +315,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         Entity *e = m_entities.CreatePlayer();
         fillEntityFromNewCharData(*e,ev->m_character_data,g_GlobalMapServer->runtimeData().getPacker());
         e->m_origin_idx = getEntityOriginIndex(true, e->m_char.getOrigin());
-        e->m_class_idx = getEntityClassIndex(true, e->m_char.getOrigin());
+        e->m_class_idx = getEntityClassIndex(true, e->m_char.getClass());
         cl->entity(e);
         cl->db_create();
         //        start_idle_timer(cl);
