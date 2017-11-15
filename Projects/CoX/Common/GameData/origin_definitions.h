@@ -13,7 +13,7 @@ struct Parse_Origin
     int NumBonusPowers;
     int NumBonusBoostSlots;
     int NumContacts;
-    int ContactBonusLength;
+    float ContactBonusLength;
 };
 typedef std::vector<Parse_Origin> Parse_AllOrigins;
 

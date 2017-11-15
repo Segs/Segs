@@ -39,6 +39,7 @@ public:
     EVENT_DECL(evCombineRequest         ,240)
     EVENT_DECL(evEntityInfoRequest      ,256)
     EVENT_DECL(evLocationVisited        ,262)
+    EVENT_DECL(evSwitchViewPoint        ,264)
     EVENT_DECL(evClientSettings         ,265)
     EVENT_DECL(evDescriptionAndBattleCry,267)
     END_EVENTS(500)
