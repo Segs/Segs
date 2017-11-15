@@ -1,7 +1,9 @@
 #include "patch_all_the_things.h"
 #include "utils/dll_patcher.h"
-// extern patch_named_module()
+#include "renderer/RendererUtils.h"
+#include "graphics/gfx.h"
 void patch_all_the_things()
 {
-	//patch_named_module()
+    patch_gfx();
+    patch_render_utils();
 }
