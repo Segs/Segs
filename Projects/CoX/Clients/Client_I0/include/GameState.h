@@ -151,9 +151,7 @@ struct GameState
     int       version;
     char      cmd[256];
     char      unkn_108[128];
-    char      audioinfo_str[10];
-    int16_t   unkn_192;
-    int       unkn_194[29];
+    char      audioinfo_str[128];
     ViewState view;
     int       unkn_800[23];
     float     unkn_85C;
