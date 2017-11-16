@@ -16,7 +16,7 @@ __declspec(dllimport) void sysutil_5AFA70(int *total_memory,int *avail_memory);
 enum GpuVendor
 {
     ATI = 0x1002,
-    INTEL=0x1086,
+    INTEL=0x8086,
     NVIDIA=0x10DE,
 };
 enum NvidiaCards

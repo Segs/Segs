@@ -21,7 +21,7 @@ under mingw
 =========
 1. run mingw shell
 2. change the directory to the one containing CityOfPatches.def
-3. run  dlltool -d CityOfPatches.def -l libCityOfPatches.a
+3. run /usr/i686-w64-mingw32/bin/dlltool -d CityOfPatches.def -l libCityOfPatches.a
 
 
 
