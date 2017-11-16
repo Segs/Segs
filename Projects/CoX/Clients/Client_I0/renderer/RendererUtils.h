@@ -1,5 +1,5 @@
 #pragma once
-#pragma pack(push, 1)
+
 struct SysInfo_2
 {
     int total_physical_memory;
@@ -10,8 +10,14 @@ struct SysInfo_2
     float cpu_freq;
     char driver_version[256];
 };
-#pragma pack(pop)
 static_assert(sizeof(SysInfo_2)==0x214,"Struct size must be correct");
+enum eGPU
+{
+    fNV_vertex_program         = 0x1,
+    fGL_NV_register_combiners2 = 0x2,
+    fTexture_env_combine       = 0x4,
+    fATI_fragment_shader       = 0x8,
+};
 
 extern void segs_renderUtil_GetGfxCardVend(SysInfo_2 *a1);
 extern void patch_render_utils();

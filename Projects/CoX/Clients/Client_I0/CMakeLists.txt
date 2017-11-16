@@ -10,7 +10,10 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 LINK_DIRECTORIES(../patch_tools)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    include
+)
 set (CMAKE_CXX_STANDARD 17)
 if (MSVC_VERSION GREATER_EQUAL "1900")
     include(CheckCXXCompilerFlag)
@@ -20,6 +23,7 @@ if (MSVC_VERSION GREATER_EQUAL "1900")
     endif()
 endif()
 set(DLL_SOURCES
+    include/GameState.h
     renderer/RendererUtils.cpp
     renderer/RendererUtils.h
     graphics/gfx.cpp

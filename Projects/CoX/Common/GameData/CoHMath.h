@@ -4,6 +4,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <algorithm>
 
+
 // All conversion will use YPR order of rotations,
 // but the used values are passed/returned in the PYR order
 inline glm::vec3 toCoH_YPR(const glm::quat &q)
