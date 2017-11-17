@@ -141,8 +141,6 @@ struct ViewState
     int       fxprint;
     int       resetparthigh;
     int       bonescale;
-    char      unkn_5F0[4];
-    int       unkn_5F4;
 };
 
 struct GameState
@@ -153,7 +151,7 @@ struct GameState
     char      unkn_108[128];
     char      audioinfo_str[128];
     ViewState view;
-    int       unkn_800[23];
+    char      tfx[100];
     float     unkn_85C;
     int       unkn_860;
     int       checkcostume;
@@ -165,8 +163,8 @@ struct GameState
     int       unkn_87C;
     int       martinboxes;
     int       g_ImageServerMode;
-    char      unkn_888[2048];
-    char      unkn_1088[2048];
+    char      image_server_src_dir[2048];
+    char      image_server_target_dir[2048];
     int       gNoDebug;
     int       unkn_188C;
     char      unkn_1890[128];
@@ -185,8 +183,7 @@ struct GameState
     int       demodump;
     int       demoloop;
     int       demoframestats;
-    char      demo_name[4];
-    char      screenshot_name[256];
+    char      demo_name[260];
     int       can_edit;
     int       gLocalMapServer;
     int       gNoversioncheck;
@@ -225,7 +222,7 @@ struct GameState
     char      map_name[128];
     int       m_outdoor_map;
     int       m_map_number;
-    char      unkn_1F54[128];
+    char      selected_server_name[128];
     int       gE3screenshot;
     int       unkn_1FD8;
     char      driver_notice[1024];
