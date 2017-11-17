@@ -1,1 +1,1 @@
-bspatch CityOfHeroes.exe CityOfPatches.exe clientPatch.bsdiff
+bspatch CityOfHeroes.exe CityOfX.exe clientPatch.bsdiff
