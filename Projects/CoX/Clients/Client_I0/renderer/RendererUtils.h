@@ -17,6 +17,8 @@ enum eGPU
     fGL_NV_register_combiners2 = 0x2,
     fTexture_env_combine       = 0x4,
     fATI_fragment_shader       = 0x8,
+    f_GL_FragmentShader        = 0x100,
+    f_GL_VertexShader          = 0x200,
 };
 
 extern void segs_renderUtil_GetGfxCardVend(SysInfo_2 *a1);
