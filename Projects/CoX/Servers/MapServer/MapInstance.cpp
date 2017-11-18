@@ -575,6 +575,8 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(ev->contents.startsWith("smilex ")) {
         int space = ev->contents.indexOf(' ');
         QString fileName("scripts/" + ev->contents.mid(space+1));
+        if(!fileName.endsWith(".smlx"))
+                fileName.append(".smlx");
         QFile file(fileName);
         if(QFileInfo::exists(fileName) && file.open(QIODevice::ReadOnly | QIODevice::Text))
         {
