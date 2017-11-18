@@ -575,6 +575,24 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         }
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
+    else if(ev->contents.startsWith("smilex ")) {
+        int space = ev->contents.indexOf(' ');
+        QString fileName("scripts/" + ev->contents.mid(space+1));
+        if(!fileName.endsWith(".smlx"))
+                fileName.append(".smlx");
+        QFile file(fileName);
+        if(QFileInfo::exists(fileName) && file.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            QString contents(file.readAll());
+            StandardDialogCmd *dlg = new StandardDialogCmd(contents);
+            src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+        }
+        else {
+            QString errormsg = "Failed to load smilex file. \'" + file.fileName() + "\' not found.";
+            qDebug() << errormsg;
+            src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(errormsg)));
+        }
+    }
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {
