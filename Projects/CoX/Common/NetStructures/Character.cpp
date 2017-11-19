@@ -667,7 +667,7 @@ void Character::sendKeybinds(BitStream &bs) const
     binds[1] = KeybindData(COH_INPUT_APOSTROPHE,"quickchat");                       // (        Qt::Key_ParenLeft
     binds[2] = KeybindData(COH_INPUT_MINUS,"prev_tray");                            // -        Qt::Key_Minus
     binds[3] = KeybindData(COH_INPUT_MINUS,COH_KEY_GENERIC_ALT,"prev_tray_alt");    // ALT+-    Qt::AltModifier + Qt::Key_Minus
-    binds[4] = KeybindData(COH_INPUT_SLASH,"show chat$$slashchat");         // /        Qt::Key_Slash
+    binds[4] = KeybindData(COH_INPUT_SLASH,"show chat$$slashchat");                 // /        Qt::Key_Slash
     binds[5] = KeybindData(COH_INPUT_0,"powexec_slot 10");   // 0    Qt::Key_0
     binds[6] = KeybindData(COH_INPUT_1,"powexec_slot 1");    // 1    Qt::Key_1
     binds[7] = KeybindData(COH_INPUT_2,"powexec_slot 2");    // 2    Qt::Key_2
@@ -708,8 +708,8 @@ void Character::sendKeybinds(BitStream &bs) const
     binds[41] = KeybindData(COH_INPUT_7,COH_KEY_GENERIC_ALT,"powexec_altslot 7");   // ALT+7    Qt::Key_Ampersand
     binds[42] = KeybindData(COH_INPUT_8,COH_KEY_GENERIC_ALT,"powexec_altslot 8");   // ALT+8    Qt::Key_Asterisk
     binds[43] = KeybindData(COH_INPUT_9,COH_KEY_GENERIC_ALT,"powexec_altslot 9");   // ALT+9    Qt::Key_ParenLeft
-    binds[44] = KeybindData(COH_INPUT_SEMICOLON,"show chat$$beginchat ;");   // ;    Qt::Key_Semicolon
-    binds[45] = KeybindData(COH_INPUT_BACKSLASH,"menu");             // \    Qt::Key_Backslash
+    binds[44] = KeybindData(COH_INPUT_SEMICOLON,"show chat$$beginchat ;");          // ;    Qt::Key_Semicolon
+    binds[45] = KeybindData(COH_INPUT_BACKSLASH,"menu");     // \    Qt::Key_Backslash
     binds[46] = KeybindData(COH_INPUT_A,"+left");            // A    Qt::Key_A
     binds[47] = KeybindData(COH_INPUT_B,"++first");          // B    Qt::Key_B
     binds[48] = KeybindData(COH_INPUT_C,"chat");             // C    Qt::Key_C
@@ -756,44 +756,36 @@ void Character::sendKeybinds(BitStream &bs) const
     binds[89] = KeybindData(COH_INPUT_DOWNARROW,"+backward");           // down         Qt::Key_Down
     binds[90] = KeybindData(COH_INPUT_PGUP,"+camrotate");               // pageup       Qt::Key_PageUp
     binds[91] = KeybindData(COH_INPUT_PGDN,"camreset");                 // pagedown     Qt::Key_PageDown
-    //binds[92] = KeybindData(COH_INPUT_SHIFT,"unassigned");            // shift        Qt::Key_Shift
-    binds[93] = KeybindData(COH_KEY_GENERIC_CONTROL,"+alt2tray");       // leftcontrol  Qt::Key_Control
+    //binds[92] = KeybindData(COH_INPUT_LSHIFT,"unassigned");            // shift        Qt::Key_Shift
+    binds[93] = KeybindData(COH_INPUT_LCONTROL,"+alt2tray");       // leftcontrol  Qt::Key_Control
     //binds[94] = KeybindData(0x01000022,"unassigned");           // windowskey   Qt::Key_Meta
     binds[95] = KeybindData(COH_INPUT_F1,"inspexec_slot 1");        // F1   Qt::Key_F1
-    binds[96] = KeybindData(COH_INPUT_F1,"inspexec_slot 2");        // F2   Qt::Key_F2
-    binds[97] = KeybindData(COH_INPUT_F1,"inspexec_slot 3");        // F3   Qt::Key_F3
-    binds[98] = KeybindData(COH_INPUT_F1,"inspexec_slot 4");        // F4   Qt::Key_F4
-    binds[99] = KeybindData(COH_INPUT_F1,"inspexec_slot 5");        // F5   Qt::Key_F5
-    binds[100] = KeybindData(COH_INPUT_F1,"local <color white><bgcolor red>RUN!");                           // F6   Qt::Key_F6
-    binds[101] = KeybindData(COH_INPUT_F1,"say <color black><bgcolor #22aa22>Ready! $$ emote thumbsup");     // F7   Qt::Key_F7
-    binds[102] = KeybindData(COH_INPUT_F1,"local <color black><bgcolor #aaaa22>HELP! $$ emote whistle");     // F8   Qt::Key_F8
-    binds[103] = KeybindData(COH_INPUT_F1,"local <color white><bgcolor #2222aa><scale .75>level $level $archetype$$local <color white><bgcolor #2222aa>Looking for team");   // F9   Qt::Key_F9
-    binds[104] = KeybindData(COH_INPUT_F1,"say $battlecry $$ emote attack");                                 // F10  Qt::Key_F10
-    //binds[105] = KeybindData(COH_INPUT_F1,"unassigned");           // F11   Qt::Key_F11
-    //binds[106] = KeybindData(COH_INPUT_F1,"unassigned");           // F12   Qt::Key_F12
+    binds[96] = KeybindData(COH_INPUT_F2,"inspexec_slot 2");        // F2   Qt::Key_F2
+    binds[97] = KeybindData(COH_INPUT_F3,"inspexec_slot 3");        // F3   Qt::Key_F3
+    binds[98] = KeybindData(COH_INPUT_F4,"inspexec_slot 4");        // F4   Qt::Key_F4
+    binds[99] = KeybindData(COH_INPUT_F5,"inspexec_slot 5");        // F5   Qt::Key_F5
+    binds[100] = KeybindData(COH_INPUT_F6,"local <color white><bgcolor red>RUN!");                           // F6   Qt::Key_F6
+    binds[101] = KeybindData(COH_INPUT_F7,"say <color black><bgcolor #22aa22>Ready! $$ emote thumbsup");     // F7   Qt::Key_F7
+    binds[102] = KeybindData(COH_INPUT_F8,"local <color black><bgcolor #aaaa22>HELP! $$ emote whistle");     // F8   Qt::Key_F8
+    binds[103] = KeybindData(COH_INPUT_F9,"local <color white><bgcolor #2222aa><scale .75>level $level $archetype$$local <color white><bgcolor #2222aa>Looking for team");   // F9   Qt::Key_F9
+    binds[104] = KeybindData(COH_INPUT_F10,"say $battlecry $$ emote attack");                                 // F10  Qt::Key_F10
+    //binds[105] = KeybindData(COH_INPUT_F11,"unassigned");          // F11   Qt::Key_F11
+    //binds[106] = KeybindData(COH_INPUT_F12,"unassigned");          // F12   Qt::Key_F12
     binds[107] = KeybindData(COH_INPUT_LEFTARROW,"+turnleft");       // directionleft    Qt::Key_Direction_L
     binds[108] = KeybindData(COH_INPUT_RIGHTARROW,"+turnright");     // directionright   Qt::Key_Direction_R
     binds[109] = KeybindData(COH_INPUT_SPACE,"+up");                 // space            Qt::Key_Space
-    binds[110] = KeybindData(COH_INPUT_COMMA,"show chat$$beginchat /tell $target, ");      // ,        Qt::Key_Comma
-    binds[111] = KeybindData(COH_INPUT_EQUALS,"next_tray");                                // =        Qt::Key_Equal
-    binds[112] = KeybindData(COH_INPUT_EQUALS,"next_tray_alt");     // ALT+=    Qt::Key_Equal
+    binds[110] = KeybindData(COH_INPUT_COMMA,"show chat$$beginchat /tell $target, ");    // ,        Qt::Key_Comma
+    binds[111] = KeybindData(COH_INPUT_EQUALS,"next_tray");                              // =        Qt::Key_Equal
+    binds[112] = KeybindData(COH_INPUT_EQUALS,COH_KEY_GENERIC_ALT,"next_tray_alt");      // ALT+=    Qt::Key_Equal
+    binds[113] = KeybindData(COH_INPUT_MBUTTON,"+camrotate");       // MBUTTON
+    binds[114] = KeybindData(COH_INPUT_LBUTTON,COH_INPUT_RBUTTON,"+forward_mouse");      // MouseChord "left and right"
+    binds[115] = KeybindData(COH_MOUSE_SCROLL,"+camdistadjust");    // MOUSEWHEEL
+    binds[116] = KeybindData(COH_INPUT_RALT,"+alttreysticky");      // Right ALT
+    binds[117] = KeybindData(COH_INPUT_RBUTTON,"+mouse_look");      // right button
+    binds[118] = KeybindData(COH_INPUT_SPACE,"+up");                // space    Qt::Key_Space
+    binds[119] = KeybindData(COH_INPUT_TAB,COH_KEY_GENERIC_CONTROL,"target_enemy_near");    // CTRL+TAB    Qt::ControlModifier + Qt::Key_Tab
+    binds[120] = KeybindData(COH_INPUT_TAB,COH_KEY_GENERIC_SHIFT,"target_enemy_prev");      // SHIFT+TAB    Qt::ShiftModifier + Qt::Key_Tab
 
-    binds[113] = KeybindData(COH_INPUT_MBUTTON,"+camrotate");         // MBUTTON
-    binds[114] = KeybindData(COH_INPUT_RBUTTON,"+forward_mouse");     // MouseChord
-    binds[115] = KeybindData(COH_INPUT_RBUTTON,"+camdistadjust");     // MOUSEWHEEL
-    binds[116] = KeybindData(COH_INPUT_RBUTTON,"+alttreysticky");     // Right ALT
-    binds[117] = KeybindData(COH_INPUT_RBUTTON,"+mouse_look");        // right button
-    binds[118] = KeybindData(COH_INPUT_SPACE,"+up");                  // space    Qt::Key_Space
-    binds[119] = KeybindData(COH_INPUT_TAB,COH_KEY_GENERIC_CONTROL,"target_enemy_near");       // CTRL+TAB    Qt::Key_Tab
-    binds[120] = KeybindData(COH_INPUT_TAB,COH_KEY_GENERIC_SHIFT,"target_enemy_prev");      // SHIFT+TAB    Qt::Key_Tab
-
-    /* Default Config
-     *   MBUTTON "+camrotate"
-     *   MouseChord "+forward_mouse"
-     *   MOUSEWHEEL "+camdistadjust"
-     *   RALT "alttraysticky"
-     *   RBUTTON "+mouse_look"
-     */
     for(int i=0; i<COH_INPUT_LAST_NON_GENERIC; ++i)
     {
       if(binds.contains(i))
