@@ -132,6 +132,9 @@ void InputState::partial_2(BitStream &bs)
                 m_data.processDirectionControl(control_id,ms_since_prev,bs.GetBits(1));
                 break;
             case 6:
+#ifdef DEBUG_INPUT
+                fprintf(stderr,"control_id == 6\n");
+#endif
             case 7:
             {
                 v = bs.GetBits(11);
@@ -210,6 +213,7 @@ void InputState::extended_input(BitStream &bs)
         m_data.m_B_ang11_probably = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[1]);
 #ifdef DEBUG_INPUT
         fprintf(stderr,"%f : %f",m_data.m_A_ang11_probably/2048.0,m_data.m_A_ang11_probably/2048.0);
+        fprintf(stderr,"ang11 %x : %x",m_data.m_A_ang11_probably,m_data.m_A_ang11_probably);
 #endif
     }
 }

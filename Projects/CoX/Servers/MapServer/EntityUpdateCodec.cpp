@@ -1,9 +1,12 @@
+//#define DEBUG_INPUT
 #include "EntityUpdateCodec.h"
 
 #include "MapServer.h"
 #include "MapServerData.h"
 #include "MapClient.h"
 #include "Entity.h"
+//#include <glm/glm.hpp> //include for DEBUG_INPUT
+//#include <glm/ext.hpp> //include for DEBUG_INPUT
 namespace  {
 constexpr float F_PI = float(M_PI); // to prevent double <-> float conversion warnings
 
@@ -138,8 +141,8 @@ uint32_t AngleQuantize(float value,int numb_bits)
 {
     int max_val = 1<<numb_bits;
 
-    float v = std::abs(value)>1.0f ? std::copysign(1.0f,value) : value ;
-    v  = (std::asin(v)+F_PI)/(2*F_PI); // maps -1..1 to 0..1
+    float v = value;
+    v = (v+F_PI)/(2*F_PI);
     v *= max_val;
 //  assert(v<=max_val);
     return uint32_t(v);
@@ -151,17 +154,42 @@ void storeOrientation(const Entity &src,BitStream &bs)
     uint8_t updates;
     updates = ((uint8_t)update_rot(src,0)) | (((uint8_t)update_rot(src,1))<<1) | (((uint8_t)update_rot(src,2))<<2);
     storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
+#ifdef DEBUG_INPUT
+    fprintf(stderr,"\nupdates: %i\n",updates);
+#endif
     //NormalizeQuaternion(pEnt->qrot)
     //
     //RestoreFourthQuatComponent(pEnt->qrot);
     float pyr_angles[3];
-    toEulerAngle(src.qrot,pyr_angles[0],pyr_angles[1],pyr_angles[2]);
+    //toEulerAngle(src.inp_state.direction,pyr_angles[0],pyr_angles[1],pyr_angles[2]);
+    pyr_angles[0] = 0.0f;
+    pyr_angles[1] = src.inp_state.camera_pyr.y;
+    pyr_angles[2] = 0.0f;
+#ifdef DEBUG_INPUT
+    fprintf(stderr,"\n%s [%s]:\n",src.m_char.getName().data(),src.m_char.getMapName().data());
+    fprintf(stderr,"src.qrot: %s \n", glm::to_string(src.qrot).c_str());
+    fprintf(stderr,"dir: %s \n", glm::to_string(src.inp_state.direction).c_str());
+    fprintf(stderr,"camera_pyr: %s \n", glm::to_string(src.inp_state.camera_pyr).c_str());
+    fprintf(stderr,"pyr_angles: farr(%f, %f, %f)\n", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
+    fprintf(stderr,"A ang11: %x \n", src.inp_state.m_A_ang11_probably);
+    fprintf(stderr,"B ang11: %x \n", src.inp_state.m_B_ang11_probably);
+    fprintf(stderr,"vel_scale: %f \n", src.inp_state.input_vel_scale);
+#endif
     for(int i=0; i<3; i++)
     {
         if(update_rot(src,i))
         {
-            bs.StoreBits(9,AngleQuantize(pyr_angles[i],9));   // normalized quat, 4th param is recoverable from the first 3
+            uint32_t v;
+            v = AngleQuantize(pyr_angles[i],9);
+#ifdef DEBUG_INPUT
+            fprintf(stderr,"v: %d\n", v);
+#endif
+            bs.StoreBits(9,v);   // normalized quat, 4th param is recoverable from the first 3
         }
+#ifdef DEBUG_INPUT
+        else
+            fprintf(stderr,"what happened? update_rot failed.\n");
+#endif
     }
 }
 
