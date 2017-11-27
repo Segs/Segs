@@ -4,6 +4,8 @@
 #include <glm/gtc/quaternion.hpp>
 #include <algorithm>
 
+constexpr float F_PI = float(M_PI);
+
 // All conversion will use YPR order of rotations,
 // but the used values are passed/returned in the PYR order
 inline glm::vec3 toCoH_YPR(const glm::quat &q)
@@ -177,4 +179,13 @@ inline glm::mat3 CoHYprToMat3(glm::vec3 pyr)
         mat[2][2] = cy * cp;
     }
     return mat;
+}
+inline float normalizeRadAngle(float ang)
+{
+    float res = ang;
+    if ( ang > F_PI )
+        res -= 2*F_PI;
+    if ( res <= -F_PI )
+        res += 2*F_PI;
+    return res;
 }
