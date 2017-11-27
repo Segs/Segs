@@ -58,7 +58,7 @@ public:
     }
     bool    mouse_invert=0;
     float   mouselook_scalefactor=0;
-    float   degrees_for_turns=0;
+    float   degrees_for_turns=3;
     int32_t control_debug=0;
     int32_t no_strafe=0;
     int32_t alwaysmobile=0;// 1- player is always mobile (can't be immobilized by powers)

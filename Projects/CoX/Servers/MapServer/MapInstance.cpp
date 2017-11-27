@@ -64,7 +64,7 @@ void MapInstance::start()
     QFileInfo mapDataDirInfo("MapInstances/"+m_name);
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
-        qInfo() << "Attempting to load map instance data";
+        qInfo() << "Loading map instance data...";
         QString locations_scriptname="MapInstances/"+m_name+'/'+"locations.lua";
         QString plaques_scriptname="MapInstances/"+m_name+'/'+"plaques.lua";
 
@@ -74,7 +74,7 @@ void MapInstance::start()
     else
     {
         QDir::current().mkpath("MapInstances/"+m_name);
-        qWarning() << "Missing map instance data"<< "MapInstances/"+m_name;
+        qWarning() << "FAILED to load map instance data. Check to see if file exists:"<< "MapInstances/"+m_name;
     }
     m_world_update_timer = new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false); // world simulation ticks
     m_resend_timer = new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false); // state broadcast ticks
@@ -574,6 +574,24 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
 
         }
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    }
+    else if(ev->contents.startsWith("smilex ")) {
+        int space = ev->contents.indexOf(' ');
+        QString fileName("scripts/" + ev->contents.mid(space+1));
+        if(!fileName.endsWith(".smlx"))
+                fileName.append(".smlx");
+        QFile file(fileName);
+        if(QFileInfo::exists(fileName) && file.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            QString contents(file.readAll());
+            StandardDialogCmd *dlg = new StandardDialogCmd(contents);
+            src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+        }
+        else {
+            QString errormsg = "Failed to load smilex file. \'" + file.fileName() + "\' not found.";
+            qDebug() << errormsg;
+            src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(errormsg)));
+        }
     }
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
