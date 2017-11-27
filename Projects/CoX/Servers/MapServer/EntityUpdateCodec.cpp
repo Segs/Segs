@@ -6,11 +6,11 @@
 #include "MapClient.h"
 #include "Entity.h"
 #include "GameData/CoHMath.h"
+
 #ifdef DEBUG_INPUT
-// currently only needed for DEBUG_INPUT
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
+#include <glm/ext.hpp> // currently only needed for DEBUG_INPUT
 #endif
+
 namespace  {
 constexpr float F_PI = float(M_PI); // to prevent double <-> float conversion warnings
 
@@ -143,9 +143,9 @@ void storeOrientation(const Entity &src,BitStream &bs)
     fprintf(stderr,"\nupdates: %i\n",updates);
 #endif
     float pyr_angles[3];
-    //glm::vec3 vec = toCoH_YPR(src.inp_state.direction);
+    glm::vec3 vec = toCoH_YPR(src.inp_state.direction);
     pyr_angles[0] = 0.0f;
-    pyr_angles[1] = src.inp_state.camera_pyr.y; // set only yaw value
+    pyr_angles[1] = vec.y; // set only yaw value
     pyr_angles[2] = 0.0f;
 #ifdef DEBUG_INPUT
     // output everything
