@@ -214,8 +214,8 @@ public:
         };
         for(idx=0; idx<36; ++idx)
             if(prime_sizes[idx]>=sz)
-                break;
-        return prime_sizes[idx];
+                return prime_sizes[idx];
+        return prime_sizes[35];
     }
     void init(uint32_t sz)
     {
