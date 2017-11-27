@@ -6,8 +6,11 @@
 #include "MapClient.h"
 #include "Entity.h"
 #include "GameData/CoHMath.h"
-//#include <glm/glm.hpp> //include for DEBUG_INPUT
-//#include <glm/ext.hpp> //include for DEBUG_INPUT
+#ifdef DEBUG_INPUT
+// currently only needed for DEBUG_INPUT
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+#endif
 namespace  {
 constexpr float F_PI = float(M_PI); // to prevent double <-> float conversion warnings
 
