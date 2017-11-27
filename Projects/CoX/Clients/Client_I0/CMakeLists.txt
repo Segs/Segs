@@ -17,7 +17,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-SET(CMAKE_MODULE_PATH ../../../../CMakeScripts;${CMAKE_MODULE_PATH})
+SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../../../../CMakeScripts;${CMAKE_MODULE_PATH})
+MESSAGE(${CMAKE_SOURCE_DIR}/../../../../CMakeScripts)
 include(3rdparty_support)
 set(ThirdParty_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/3rd_party/built)
 
@@ -36,6 +37,8 @@ set(DLL_SOURCES
     include/GameState.h
     renderer/RendererUtils.cpp
     renderer/RendererUtils.h
+    renderer/RendererState.h
+    renderer/RendererState.cpp
     graphics/gfx.cpp
     graphics/gfx.h
 )
