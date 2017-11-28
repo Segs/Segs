@@ -184,6 +184,9 @@ public:
         size_t              m_update_idx=0;
         std::vector<PosUpdate> interpResults;
         bool                m_has_the_prefix=false;
+        QString             m_class_name;
+        QString             m_origin_name;
+        uint8_t             m_level=0;
         QString             m_battle_cry;
         QString             m_character_description;
         bool                var_B4=0;

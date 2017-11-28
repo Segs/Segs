@@ -29,7 +29,7 @@ Character::Character()
     m_supergroup_costume=false;
     m_sg_costume=nullptr;
     m_using_sg_costume=false;
-    m_current_attribs.m_HitPoints = 25;
+    m_current_attribs.m_HitPoints = 45; // setHPBase(self)
     m_max_attribs.m_HitPoints = 50;
     m_current_attribs.m_Endurance = 33;
     m_max_attribs.m_Endurance = 43;

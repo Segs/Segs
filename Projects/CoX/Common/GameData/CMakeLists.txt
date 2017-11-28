@@ -20,6 +20,7 @@ set(GAMEDATA_SRC
     keybind_serializers.cpp
     keybind_serializers.h
     keybind_definitions.h
+    hitpoints_definitions.h
     #particlesys_serializers.cpp
     #particlesys_serializers.h
     costume_serializers.cpp
