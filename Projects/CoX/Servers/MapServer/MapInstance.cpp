@@ -170,6 +170,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evLocationVisited:
             on_location_visited(static_cast<LocationVisited *>(ev));
             break;
+        case MapEventTypes::evChatReconfigure:
+            on_chat_reconfigured(static_cast<ChatReconfigure *>(ev));
+            break;
         case MapEventTypes::evPlaqueVisited:
             on_plaque_visited(static_cast<PlaqueVisited *>(ev));
             break;
@@ -702,4 +705,8 @@ void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
 {
     qWarning() << "Unhandled switch viewpoint to"<<ev->new_viewpoint_is_firstperson;
 
+}
+void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
+{
+    qWarning() << "Unhandled chat channel mask setting"<<ev->m_chat_top_flags<<ev->m_chat_bottom_flags;
 }

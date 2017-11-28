@@ -3,6 +3,7 @@
 #include "GameState.h"
 #include "utils/dll_patcher.h"
 
+#include "GL/glew.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -17,12 +18,12 @@ __declspec(dllimport) void renderUtil_fn_4DFEF0(char *videocardname,int *pci_ven
 __declspec(dllimport) void sysutil_5AFA70(int *total_memory,int *avail_memory);
 __declspec(dllimport) void ErrorfFL(const char *filename, int line);
 __declspec(dllimport) void ErrorfInternal(const char *fmt, ...);
-__declspec(dllimport) int glh_init_extensions(const char *a1);
 __declspec(dllimport) void renderUtil_SystemReport(SysInfo_2 *,char *);
 __declspec(dllimport) int VfPrintfWrapper(const char *fmt,...);
 __declspec(dllimport) int fn_581560(const char *); // << yes/no dialog
 __declspec(dllimport) void dispatch_cmd(const char *cmd);
 __declspec(dllimport) void setGlossMultiplier(float);
+__declspec(dllimport) void wcwMgmt_EnableFog(int);
 __declspec(dllimport) void renderUtil_4DFD50();
 __declspec(dllimport) void genShaderBindingsATI();
 __declspec(dllimport) void buildShader2Ati(); //ColorBlendDual
@@ -59,7 +60,7 @@ static int renderUtil_4E0C40(SysInfo_2 *sysinfo)
 
 static bool checkExt(const char *extname,int &missing)
 {
-    if ( !glh_init_extensions(extname) ) // glewIsSupported
+    if ( !glewIsSupported(extname) ) // glewIsSupported
     {
         ErrorfFL(".\\render\\renderUtil.c", 190);
         ErrorfInternal("You card or driver doesn't support %s",extname);
@@ -108,8 +109,41 @@ void segs_renderUtil_GetGfxCardVend(SysInfo_2 *sysinfo)
         strcpy(sysinfo->driver_version, "Unknown Vendor");
     }
 }
+static void segs_wcw_statemgmt_enableColorMaterial()
+{
+    glEnable(GL_COLOR_MATERIAL);
+}
+static void rendererInit()
+{
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(-4.0, 4.0, -2.704225063323975, 2.704225063323975, 4.0, 4096.0);
+    glMatrixMode(GL_MODELVIEW);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CW);
+    glEnable(GL_CULL_FACE);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_DEPTH_TEST);
+    glShadeModel(GL_SMOOTH);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.0);
+    wcwMgmt_EnableFog(1);
+    glFogf(GL_FOG_DENSITY, 0.01f);
+    glFogi(GL_FOG_MODE, GL_EXP);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glActiveTextureARB(GL_TEXTURE0);
+    glEnable(GL_TEXTURE_2D);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    glColor4f(1.0, 1.0, 1.0, 1.0);
+    glEnable(GL_LIGHT0);
+    segs_wcw_statemgmt_enableColorMaterial();
+}
 void segs_renderUtil_4E0CA0()
 {
+    glewInit();
     int extension_missing=0;
     segs_renderUtil_GetGfxCardVend(&struct_9A09A0);
     renderUtil_4E0C40(&struct_9A09A0);
@@ -126,23 +160,29 @@ void segs_renderUtil_4E0CA0()
     checkExt("GL_EXT_compiled_vertex_array",extension_missing);
     checkExt("GL_ARB_multitexture",extension_missing);
     checkExt("GL_ARB_texture_compression",extension_missing);
-    if ( glh_init_extensions("GL_NV_register_combiners") )
+    if( glewIsSupported("GL_ARB_fragment_program") && glewIsSupported("GL_ARB_vertex_program") )
+    {
+        // custom flags, using generic GL shader support
+        GPU_FLAGS = f_GL_FragmentShader | f_GL_VertexShader;
+    }
+    else if ( glewIsSupported("GL_NV_register_combiners") )
     {
         int dummy_missing=0;
         if ( checkExt("GL_NV_vertex_program",dummy_missing) )
         {
             GPU_FLAGS = fNV_vertex_program;
-            if ( glh_init_extensions("GL_NV_register_combiners2") )
+            if ( glewIsSupported("GL_NV_register_combiners2") )
                 GPU_FLAGS |= fGL_NV_register_combiners2;
         }
     }
     else
     {
-        if ( glh_init_extensions("GL_EXT_texture_env_combine") )
+        if ( glewIsSupported("GL_EXT_texture_env_combine") )
             GPU_FLAGS = fTexture_env_combine;
-        if ( glh_init_extensions("GL_EXT_vertex_shader") && glh_init_extensions("GL_ATI_fragment_shader") )
+        if ( glewIsSupported("GL_EXT_vertex_shader") && glewIsSupported("GL_ATI_fragment_shader") )
             GPU_FLAGS |= fATI_fragment_shader;
     }
+
     if ( GPU_FLAGS == 0 || extension_missing )
     {
         char Text[1024];
@@ -241,7 +281,7 @@ void segs_renderUtil_4E0CA0()
                     enableParticleVBOs, g_using_bump_maps, enableVertShaders);
 
     setGlossMultiplier(1.0f);
-    renderUtil_4DFD50(); // set default GL state.
+    rendererInit(); // set default GL state.
     if ( GPU_FLAGS & fATI_fragment_shader )
     {
         genShaderBindingsATI();
@@ -260,5 +300,7 @@ void segs_renderUtil_4E0CA0()
 void patch_render_utils()
 {
     PATCH_FUNC(renderUtil_GetGfxCardVend);
+    patchit("renderUtil_4DFD50",(void *)rendererInit);
     PATCH_FUNC(renderUtil_4E0CA0);
+    PATCH_FUNC(wcw_statemgmt_enableColorMaterial);
 }

@@ -35,6 +35,7 @@ public:
     EVENT_DECL(evInspirationDockMode    ,217)
     EVENT_DECL(evAbortQueuedPower       ,233) // this might actually mean something different
     EVENT_DECL(evChangeStance           ,236)
+    EVENT_DECL(evChatReconfigure        ,238)
     EVENT_DECL(evPlaqueVisited          ,239)
     EVENT_DECL(evCombineRequest         ,240)
     EVENT_DECL(evEntityInfoRequest      ,256)
