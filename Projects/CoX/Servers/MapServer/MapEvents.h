@@ -437,6 +437,25 @@ public:
         new_viewpoint_is_firstperson = bs.GetBits(1);
     }
 };
+class ChatReconfigure final : public MapLinkEvent
+{
+public:
+    int m_chat_top_flags;
+    int m_chat_bottom_flags;
+    ChatReconfigure():MapLinkEvent(MapEventTypes::evChatReconfigure)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,38);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        m_chat_top_flags = bs.GetPackedBits(1);
+        m_chat_bottom_flags = bs.GetPackedBits(1);
+    }
+};
+
+
 #include "Events/ClientSettings.h"
 #include "Events/GameCommandList.h"
 #include "Events/ChatDividerMoved.h"

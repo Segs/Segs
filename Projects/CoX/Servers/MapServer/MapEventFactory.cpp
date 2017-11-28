@@ -56,6 +56,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 17: return new InspirationDockMode;
         case 33: return new AbortQueuedPower;
         case 36: return new ChangeStance;
+        case 38: return new ChatReconfigure;
         case 39: return new PlaqueVisited;
         case 40: return new CombineRequest;
         case 56: return new EntityInfoRequest;
