@@ -35,6 +35,9 @@ void Entity::fillFromCharacter(Character *f)
 {
     m_char = *f;
     m_hasname = true;
+    m_class_name = f->getClass();
+    m_origin_name = f->getOrigin();
+    m_level = f->getLevel();
     //TODO: map class/origin name to Entity's class/orign indices.
 }
 /**
