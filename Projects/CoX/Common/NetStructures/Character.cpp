@@ -10,6 +10,7 @@
 #include "BitStream.h"
 #include "Costume.h"
 #include "GameData/keybind_definitions.h"
+#include "GameData/hitpoints_definitions.h"
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 
@@ -67,6 +68,9 @@ void Character::serializefrom( BitStream &src)
     src.GetString(m_origin_name);
     m_unkn1 =src.GetFloat();
     m_unkn2 =src.GetFloat();
+    qDebug() << m_unkn1;
+    qDebug() << m_unkn2;
+    
     src.GetString(m_mapName);
     /*uint32_t unkn3 =*/ src.GetPackedBits(1);
     //uint32_t unkn4 = src.GetBits(32);
@@ -85,6 +89,7 @@ void Character::serializeto( BitStream &tgt) const
     //tgt.StorePackedBits(1,m_villain);
     tgt.StoreString(m_mapName);
     tgt.StorePackedBits(1,m_unkn3);
+    qDebug() << m_unkn3;
     //tgt.StorePackedBits(32,m_unkn4); // if != 0 UpdateCharacter is called
 }
 void Character::sendWindow(BitStream &bs) const
