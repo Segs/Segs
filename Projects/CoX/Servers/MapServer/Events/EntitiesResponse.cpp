@@ -402,13 +402,13 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
     storeTeamList(src,bs);
     storeSuperStats(src,bs);
     storeGroupDyn(src,bs);
-    bool additional=false;
+    bool additional=false; // used to force the client camera direction
     bs.StoreBits(1,additional);
     if(additional)
     {
-        bs.StoreFloat(0.1f);
-        bs.StoreFloat(0.2f); // camera_yaw
-        bs.StoreFloat(0.3f);
+        bs.StoreFloat(0.0f); // force camera_pitch
+        bs.StoreFloat(0.0f); // force camera_yaw
+        bs.StoreFloat(0.0f); // force camera_roll
     }
 }
 }
