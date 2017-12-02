@@ -42,14 +42,14 @@ void storeCreation(const Entity &src, BitStream &bs)
     {
         bs.StorePackedBits(1,src.m_class_idx);
         bs.StorePackedBits(1,src.m_origin_idx);
-        bool hasTitle=false;
+        bool hasTitle=true;
         bs.StoreBits(1,hasTitle);
         if(hasTitle)
         {
-            bs.StoreBits(1,0); // likely an index to a title prefix ( 1 - The )
-            storeStringConditional(bs,""); //title1
-            storeStringConditional(bs,""); //title2
-            storeStringConditional(bs,""); //title3
+            bs.StoreBits(1,0); // likely an index to a title prefix ( 0 - None; 1 - The )
+            storeStringConditional(bs,"Title1"); //title1 - generic title (first)
+            storeStringConditional(bs,"Title2"); //title2 - origin title (second)
+            storeStringConditional(bs,"Title3"); //title3 - yellow title (special)
         }
     }
     bs.StoreBits(1,src.m_hasname);

@@ -258,10 +258,9 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
     glm::vec3 spd(1,1,1);
     glm::vec3 zeroes;
-    bool m_flying=false;
-    bool m_dazed=false;
     // user entity
     Entity *ent = src.m_client->char_entity();
+<<<<<<< HEAD
     SurfaceParams struct_csc[2];
     memset(&struct_csc,0,2*sizeof(SurfaceParams));
     struct_csc[0].traction = 1.5f;
@@ -269,6 +268,28 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     struct_csc[0].bounce = 1.5f;
     struct_csc[1].max_speed = struct_csc[0].max_speed = 1.5f;
     struct_csc[1].gravitational_constant = struct_csc[0].gravitational_constant = 3.0f;
+=======
+    bool m_Flying=ent->m_Flying;
+    bool m_Dazed=ent->m_Dazed;
+    bool m_Jumppack = ent->m_Jumppack; // jumppack effect
+    float m_BackupSpd = ent->m_BackupSpd; // backup speed default = 1.0f
+    float m_JumpHeight = ent->m_JumpHeight; // jump height default = 0.1f
+
+    // Unknown bits
+    int u1 = ent->u1; // value stored in control state field_134; default = 1
+    int u2 = ent->u2; // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
+    int u3 = ent->u3; // leaping? seems like the anim changes slightly?
+    int u4 = ent->u4; // no idea default = 0
+    int u5 = ent->u5; // sets g_client_pos_id_rel default = 0
+    int u6 = ent->u6; // // sets the lowest bit in CscCommon::flags default = 0
+
+    CscCommon_Sub28 struct_csc;
+    memset(&struct_csc,0,sizeof(struct_csc));
+    for(int i=0; i<3; ++i)
+        struct_csc.a.v[i] = 1.5;
+    struct_csc.b.max_speed = struct_csc.a.max_speed = 1.5f;
+    struct_csc.b.gravitational_constant = struct_csc.a.gravitational_constant = 3.0f;
+>>>>>>> Tracking down un-labeled bits and their purpose. Added slash commands for fly, dazed, jumpheight, and backupspd, plus more.
     //    for(int i=3; i<5; ++i)
     //        struct_csc.a.v[i] = rand()&0xf;
     uint8_t update_id=1;
@@ -278,11 +299,16 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     if(update_part_1)
     {
         //rand()&0xFF
+<<<<<<< HEAD
         bs.StoreBits(8,update_id);
+=======
+        bs.StoreBits(8,u1); // value stored in control state field_134 default = 1
+>>>>>>> Tracking down un-labeled bits and their purpose. Added slash commands for fly, dazed, jumpheight, and backupspd, plus more.
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
         // This is entity speed vector !!
         storeVector(bs,spd);
 
+<<<<<<< HEAD
         bs.StoreFloat(1.0f); // speed rel back
         bs.StoreBitArray((uint8_t *)&struct_csc,2*sizeof(SurfaceParams)*8);
         bs.StoreFloat(0.1f);
@@ -292,19 +318,32 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         bs.StoreBits(1,0); // key push bits ??
         bs.StoreBits(1,0); // key push bits ??
         bs.StoreBits(1,0); // key push bits ??
+=======
+        bs.StoreFloat(m_BackupSpd);  // Backup Speed default = 1.0f
+        bs.StoreBitArray((uint8_t *)&struct_csc,sizeof(CscCommon_Sub28)*8);
+
+        bs.StoreFloat(m_JumpHeight); // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
+        bs.StoreBits(1,m_Flying);    // is_flying flag
+        bs.StoreBits(1,m_Dazed);     // is_dazed flag (lacks overhead 'dizzy' FX)
+        bs.StoreBits(1,m_Jumppack);  // jumpack flag (lacks costume parts)
+
+        bs.StoreBits(1,u2); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
+        bs.StoreBits(1,u3); // leaping? seems like the anim changes slightly?
+        bs.StoreBits(1,u4); // no idea default = 0
+>>>>>>> Tracking down un-labeled bits and their purpose. Added slash commands for fly, dazed, jumpheight, and backupspd, plus more.
     }
     // Used to force the client to a position/speed/pitch/rotation by server
     bs.StoreBits(1,update_part_2);
     if(update_part_2)
     {
-        bs.StorePackedBits(1,0); // sets g_client_pos_id_rel
+        bs.StorePackedBits(1,u5); // sets g_client_pos_id_rel default = 0
         storeVector(bs,spd);
         storeVectorConditional(bs,zeroes);  // vector3 -> speed ? likely
 
         storeFloatConditional(bs,0); // Pitch not used ?
         storeFloatConditional(bs,ent->inp_state.camera_pyr.y); // Pitch
         storeFloatConditional(bs,0); // Roll
-        bs.StorePackedBits(1,0); // sets the lowest bit in CscCommon::flags
+        bs.StorePackedBits(1,u6); // sets the lowest bit in CscCommon::flags default = 0
     }
 }
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)

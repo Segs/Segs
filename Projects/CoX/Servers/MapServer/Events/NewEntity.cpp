@@ -12,6 +12,7 @@
 #include "MapServerData.h"
 #include "DataHelpers.h"
 #include "CommonNetStructures.h"
+#include <QtCore/QDebug>
 
 void NewEntity::serializeto( BitStream & ) const
 {
@@ -20,6 +21,7 @@ void NewEntity::serializeto( BitStream & ) const
 
 void NewEntity::serializefrom( BitStream &bs )
 {
+    // the very first time an entity is created (character creation)
     m_cookie = bs.GetPackedBits(1);
     //m_city_of_developers = src.GetBits(1);
     m_new_character=bs.GetBits(1);

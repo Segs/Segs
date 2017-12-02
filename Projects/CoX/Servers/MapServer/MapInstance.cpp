@@ -538,6 +538,8 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
+    // user entity
+    Entity *ent = src->char_entity();
     printf("Console command received %s\n",qPrintable(ev->contents));
     if(ev->contents.startsWith("script "))
     {
@@ -596,6 +598,102 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(errormsg)));
         }
     }
+    else if(ev->contents.contains("fly")) {
+        ent->toggleFly();
+
+        QString msg = "Toggling " + ev->contents;
+        qDebug() << msg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(msg)));
+    }
+    else if(ev->contents.contains("dazed")) {
+        ent->toggleDazed();
+
+        QString msg = "Toggling " + ev->contents;
+        qDebug() << msg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(msg)));
+    }
+    else if(ev->contents.contains("jumppack")) {
+        ent->toggleJumppack();
+
+        QString msg = "Toggling " + ev->contents;
+        qDebug() << msg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(msg)));
+    }
+    else if(ev->contents.startsWith("setBackupSpd ")) {
+        int space = ev->contents.indexOf(' ');
+        float val = ev->contents.mid(space+1).toFloat();
+        ent->setBackupSpd(val);
+
+        QString msg = "Set BackupSpd to: " + QString::number(val);
+        qDebug() << msg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(msg)));
+    }
+    else if(ev->contents.startsWith("setJumpHeight ")) {
+        int space = ev->contents.indexOf(' ');
+        float val = ev->contents.mid(space+1).toFloat();
+        ent->setJumpHeight(val);
+
+        QString msg = "Set JumpHeight to: " + QString::number(val);
+        qDebug() << msg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(msg)));
+    }
+    else if(ev->contents.startsWith("setu1 ")) {
+        int space = ev->contents.indexOf(' ');
+        int val = ev->contents.mid(space+1).toInt();
+        ent->setu1(val);
+
+        QString msg = "Set u1 to: " + QString::number(val);
+        qDebug() << msg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(msg)));
+    }
+    else if(ev->contents.startsWith("setu2 ")) {
+        int space = ev->contents.indexOf(' ');
+        int val = ev->contents.mid(space+1).toInt();
+        ent->setu2(val);
+
+        QString msg = "Set u2 to: " + QString::number(val);
+        qDebug() << msg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(msg)));
+    }
+    else if(ev->contents.startsWith("setu3 ")) {
+        int space = ev->contents.indexOf(' ');
+        int val = ev->contents.mid(space+1).toInt();
+        ent->setu3(val);
+
+        QString msg = "Set u3 to: " + QString::number(val);
+        qDebug() << msg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(msg)));
+    }
+    else if(ev->contents.startsWith("setu4 ")) {
+        int space = ev->contents.indexOf(' ');
+        int val = ev->contents.mid(space+1).toInt();
+        ent->setu4(val);
+
+        QString msg = "Set u4 to: " + QString::number(val);
+        qDebug() << msg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(msg)));
+    }
+    else if(ev->contents.startsWith("setu5 ")) {
+        int space = ev->contents.indexOf(' ');
+        int val = ev->contents.mid(space+1).toInt();
+        ent->setu5(val);
+
+        QString msg = "Set u5 to: " + QString::number(val);
+        qDebug() << msg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(msg)));
+    }
+    else if(ev->contents.startsWith("setu6 ")) {
+        int space = ev->contents.indexOf(' ');
+        int val = ev->contents.mid(space+1).toInt();
+        ent->setu6(val);
+
+        QString msg = "Set u6 to: " + QString::number(val);
+        qDebug() << msg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(msg)));
+    }
+    else {
+        qDebug() << "Unhandled game command:" << ev->contents;
+    }
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {
@@ -607,7 +705,7 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    qDebug() << "MiniMapState tile "<<ev->tile_idx << " for player" << src;
+    //qDebug() << "MiniMapState tile "<<ev->tile_idx << " for player" << src;
 }
 
 void MapInstance::on_client_resumed(ClientResumedRendering *ev)

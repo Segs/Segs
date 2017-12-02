@@ -178,6 +178,19 @@ public:
         bool                m_seq_update=false;
         bool                m_is_villian = false;
         bool                m_contact = false;
+        bool                m_Flying=false;
+        bool                m_Dazed=false;
+        bool                m_Jumppack=false;
+        float               m_BackupSpd=1.0f;
+        float               m_JumpHeight=0.1f;
+
+        int                 u1=1;
+        int                 u2=0;
+        int                 u3=0;
+        int                 u4=0;
+        int                 u5=0;
+        int                 u6=0;
+
         int                 m_seq_upd_num1=0;
         int                 m_seq_upd_num2=0;
         PosUpdate           m_pos_updates[64];
@@ -238,6 +251,17 @@ static  void                sendPvP(BitStream &bs);
         const QString &     name() const {return m_char.getName();}
         void                fillFromCharacter(Character *f);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
+        void                toggleFly();
+        void                toggleDazed();
+        void                toggleJumppack();
+        void                setBackupSpd(const float& val);
+        void                setJumpHeight(const float& val);
+        void                setu1(const int& val);
+        void                setu2(const int& val);
+        void                setu3(const int &val);
+        void                setu4(const int& val);
+        void                setu5(const int& val);
+        void                setu6(const int& val);
 };
 void initializeNewPlayerEntity(Entity &e);
 void fillEntityFromNewCharData(Entity &e,BitStream &src, ColorAndPartPacker *packer);
