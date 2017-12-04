@@ -166,23 +166,22 @@ public:
         int                 m_num_fx=0;
         bool                m_is_logging_out = false;
         int                 m_time_till_logout=0; // time in miliseconds untill given entity should be marked as logged out.
-        bool                m_has_titles = false;
         std::vector<uint8_t> m_fx1;
         std::vector<uint32_t> m_fx2;
         std::vector<uint8_t> m_fx3;
-        uint8_t             m_costume_type=0;
-        int                 m_state_mode=0;
-        bool                m_state_mode_send=false;
-        bool                m_odd_send=false;
+        uint8_t             m_costume_type = 0;
+        int                 m_state_mode = 0;
+        bool                m_state_mode_send = false;
+        bool                m_odd_send = false;
         bool                m_SG_info = false;
         bool                m_seq_update=false;
         bool                m_is_villian = false;
         bool                m_contact = false;
-        bool                m_Flying=false;
-        bool                m_Dazed=false;
-        bool                m_Jumppack=false;
-        float               m_BackupSpd=1.0f;
-        float               m_JumpHeight=0.1f;
+        bool                m_Flying = false;
+        bool                m_Dazed = false;
+        bool                m_Jumppack = false;
+        float               m_BackupSpd = 1.0f;
+        float               m_JumpHeight = 0.1f;
 
         int                 u1=1;
         int                 u2=0;
@@ -191,15 +190,12 @@ public:
         int                 u5=0;
         int                 u6=0;
 
-        int                 m_seq_upd_num1=0;
-        int                 m_seq_upd_num2=0;
-        PosUpdate           m_pos_updates[64];
-        size_t              m_update_idx=0;
-        std::vector<PosUpdate> interpResults;
-        bool                m_has_the_prefix=false;
-        QString             m_battle_cry;
-        QString             m_character_description;
-        bool                var_B4=0;
+        int                         m_seq_upd_num1=0;
+        int                         m_seq_upd_num2=0;
+        PosUpdate                   m_pos_updates[64];
+        size_t                      m_update_idx=0;
+        std::vector<PosUpdate>      interpResults;
+        bool                        var_B4=0;
 
         Character           m_char;
 
@@ -254,14 +250,14 @@ static  void                sendPvP(BitStream &bs);
         void                toggleFly();
         void                toggleDazed();
         void                toggleJumppack();
-        void                setBackupSpd(const float& val);
-        void                setJumpHeight(const float& val);
-        void                setu1(const int& val);
-        void                setu2(const int& val);
+        void                setBackupSpd(const float &val);
+        void                setJumpHeight(const float &val);
+        void                setu1(const int &val);
+        void                setu2(const int &val);
         void                setu3(const int &val);
-        void                setu4(const int& val);
-        void                setu5(const int& val);
-        void                setu6(const int& val);
+        void                setu4(const int &val);
+        void                setu5(const int &val);
+        void                setu6(const int &val);
 };
 void initializeNewPlayerEntity(Entity &e);
 void fillEntityFromNewCharData(Entity &e,BitStream &src, ColorAndPartPacker *packer);

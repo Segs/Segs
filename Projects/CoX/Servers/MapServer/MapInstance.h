@@ -40,6 +40,8 @@ class MapServer;
 class SEGSTimer;
 class InputState;
 class World;
+class SetTarget;
+class ChangeChatType;
 
 class MapInstance : public EventProcessor
 {
@@ -102,4 +104,6 @@ protected:
     void on_chat_reconfigured(class ChatReconfigure *ev);
     void on_switch_viewpoint(class SwitchViewPoint *ev);
     void on_client_settings(class ClientSettings *ev);
+    void on_set_target(class SetTarget *ev);
+    void on_change_chat_type(class ChangeChatType *ev);
 };

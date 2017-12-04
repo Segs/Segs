@@ -21,7 +21,6 @@ namespace {
 
 Character::Character()
 {
-    m_unkn3=0;
     m_multiple_costumes=false;
     m_current_costume_idx=0;
     m_current_costume_set=false;
@@ -41,7 +40,6 @@ void Character::reset()
     m_origin_name="EMPTY";
     m_villain=false;
     m_mapName="";
-    m_unkn3=0;
     m_multiple_costumes=false;
     m_current_costume_idx=0;
     m_current_costume_set=false;
@@ -50,6 +48,10 @@ void Character::reset()
     m_using_sg_costume=false;
     m_first_person_view_toggle=false;
     m_full_options = false;
+    m_afk = false;
+    m_afk_msg = "";
+    m_battle_cry = "";
+    m_character_description = "";
 }
 
 
@@ -59,16 +61,18 @@ bool Character::isEmpty()
             (0==m_class_name.compare("EMPTY",Qt::CaseInsensitive)));
 }
 
+/*
 void Character::serializefrom( BitStream &src)
 {
     m_level = src.GetPackedBits(1);
     src.GetString(m_name);
     src.GetString(m_class_name);
     src.GetString(m_origin_name);
-    m_unkn1 =src.GetFloat();
-    m_unkn2 =src.GetFloat();
+    src.GetFloat();
+    src.GetFloat();
     src.GetString(m_mapName);
-    /*uint32_t unkn3 =*/ src.GetPackedBits(1);
+    src.GetPackedBits(1);
+    //uint32_t unkn3 = src.GetPackedBits(1);
     //uint32_t unkn4 = src.GetBits(32);
 }
 void Character::serializeto( BitStream &tgt) const
@@ -84,9 +88,11 @@ void Character::serializeto( BitStream &tgt) const
 
     //tgt.StorePackedBits(1,m_villain);
     tgt.StoreString(m_mapName);
-    tgt.StorePackedBits(1,m_unkn3);
+    tgt.StorePackedBits(1,0);
     //tgt.StorePackedBits(32,m_unkn4); // if != 0 UpdateCharacter is called
 }
+*/
+
 void Character::sendWindow(BitStream &bs) const
 {
     bs.StorePackedBits(1,0);
@@ -114,10 +120,27 @@ void Character::setName(const QString &val )
     else
         m_name = "EMPTY";
 }
+
+void Character::setTitles(bool prefix, QString generic, QString origin, QString special)
+{
+    if(!prefix && generic.isEmpty() && origin.isEmpty() && special.isEmpty())
+    {
+        m_has_titles = false;
+        return;
+    }
+
+    m_has_titles = true;
+    m_has_the_prefix = prefix;
+    m_titles[0] = generic;
+    m_titles[1] = origin;
+    m_titles[2] = special;
+}
+
 void Character::sendTray(BitStream &bs) const
 {
     m_trays.serializeto(bs);
 }
+
 void Character::sendTrayMode(BitStream &bs) const
 {
     bs.StoreBits(1,0);
@@ -443,16 +466,27 @@ void Character::sendChatSettings(BitStream &bs) const
 }
 void Character::sendDescription(BitStream &bs) const
 {
-    bs.StoreString("Desc1");
-    bs.StoreString("Desc2");
+    bs.StoreString(m_character_description);
+    bs.StoreString(m_battle_cry);
 
+}
+void Character::toggleAFK(const QString &msg)
+{
+    if(msg.isEmpty() && m_afk == true)
+    {
+        m_afk = !m_afk;
+        return;
+    }
+
+    m_afk = !m_afk;
+    m_afk_msg = msg;
 }
 void Character::sendTitles(BitStream &bs) const
 {
-    bs.StoreBits(1,1);
-    bs.StoreString("Tz1");
-    bs.StoreString("Tz2");
-    bs.StoreString("Tz3");
+    bs.StoreBits(1,m_has_the_prefix);   // likely an index to a title prefix ( 0 - None; 1 - The )
+    bs.StoreString(m_titles[0]);        // Title 1 - generic title (first)
+    bs.StoreString(m_titles[1]);        // Title 2 - origin title (second)
+    bs.StoreString(m_titles[2]);        // Title 3 - yellow title (special)
 }
 void Character::sendKeybinds(BitStream &bs) const
 {

@@ -114,18 +114,14 @@ class Character
         using vPowerPool = std::vector<CharacterPower>;
         using vCostume = std::vector<Costume *>;
 
-        vPowerPool      m_powers;
-        PowerTrayGroup  m_trays;
-        QString         m_class_name;
-        QString         m_origin_name;
-        bool            m_full_options=false;
-        ClientOptions   m_options;
-        bool            m_first_person_view_toggle=false;
-        uint8_t         m_player_collisions=0;
-        float           m_unkn1=0;
-        float           m_unkn2=0;
-        uint32_t        m_unkn3=0;
-        uint32_t        m_unkn4=0;
+        vPowerPool              m_powers;
+        PowerTrayGroup          m_trays;
+        QString                 m_class_name;
+        QString                 m_origin_name;
+        bool                    m_full_options=false;
+        ClientOptions           m_options;
+        bool                    m_first_person_view_toggle=false;
+        uint8_t                 m_player_collisions=0;
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
@@ -144,6 +140,10 @@ const   QString &       getMapName() const { return m_mapName; }
         void            setLastCostumeId(uint64_t val) { m_last_costume_id = val; }
 const   QString &       getOrigin() const { return m_origin_name; }
 const   QString &       getClass() const { return m_class_name; }
+
+const   std::vector<QString> &  getTitles() const { return m_titles; }
+        void                    setTitles(bool prefix = false, QString generic = "", QString origin = "", QString special = "");
+
 //
 //////////////////////////////////////////////////////////////////////////
         void            reset();
@@ -177,11 +177,20 @@ const   QString &       getClass() const { return m_class_name; }
         void            sendOptionsFull(BitStream &bs) const;
         Parse_CharAttrib    m_current_attribs;
         Parse_CharAttrib    m_max_attribs;
-        uint32_t        m_level=0;
-        uint32_t        m_combat_level=0;
-        uint32_t        m_experience_points=0;
-        uint32_t        m_experience_debt=0;
-        uint32_t        m_influence=1;
+        uint32_t            m_level             = 0;
+        uint32_t            m_combat_level      = 0;
+        uint32_t            m_experience_points = 0;
+        uint32_t            m_experience_debt   = 0;
+        uint32_t            m_influence         = 1;
+        bool                m_has_the_prefix;
+        bool                m_has_titles;
+        std::vector<QString> m_titles           = {"","",""}; // Generic, Origin, Special
+        QString             m_battle_cry;
+        QString             m_character_description;
+        bool                m_afk;
+        QString             m_afk_msg;
+        void                toggleAFK(const QString &msg = "");
+
 protected:
         PowerPool_Info  get_power_info(BitStream &src);
         uint64_t        m_owner_account_id;

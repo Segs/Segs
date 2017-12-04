@@ -33,8 +33,10 @@ public:
     EVENT_DECL(evSetDestination         ,211)
     EVENT_DECL(evWindowState            ,214)
     EVENT_DECL(evInspirationDockMode    ,217)
+    EVENT_DECL(evSetTarget              ,232) // Click on another entity
     EVENT_DECL(evAbortQueuedPower       ,233) // this might actually mean something different
     EVENT_DECL(evChangeStance           ,236)
+    EVENT_DECL(evChangeChatType         ,237) // Change chat type using the letters in the chat window 'l, b, g, sg, r, f"
     EVENT_DECL(evChatReconfigure        ,238)
     EVENT_DECL(evPlaqueVisited          ,239)
     EVENT_DECL(evCombineRequest         ,240)

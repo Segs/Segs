@@ -4,6 +4,7 @@
 #include "MapServerData.h"
 #include "MapClient.h"
 #include "Entity.h"
+
 namespace  {
 constexpr float F_PI = float(M_PI); // to prevent double <-> float conversion warnings
 
@@ -11,6 +12,8 @@ void storeCreation(const Entity &src, BitStream &bs)
 {
     // entity creation
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending create entity\n")));
+
+    const Character c = src.m_char;
 
     bs.StoreBits(1,src.m_destroyed); // ends creation destroys seq and returns NULL
 
@@ -42,19 +45,18 @@ void storeCreation(const Entity &src, BitStream &bs)
     {
         bs.StorePackedBits(1,src.m_class_idx);
         bs.StorePackedBits(1,src.m_origin_idx);
-        bool hasTitle=true;
-        bs.StoreBits(1,hasTitle);
-        if(hasTitle)
+        bs.StoreBits(1,c.m_has_titles);
+        if(c.m_has_titles)
         {
-            bs.StoreBits(1,0); // likely an index to a title prefix ( 0 - None; 1 - The )
-            storeStringConditional(bs,"Title1"); //title1 - generic title (first)
-            storeStringConditional(bs,"Title2"); //title2 - origin title (second)
-            storeStringConditional(bs,"Title3"); //title3 - yellow title (special)
+            bs.StoreBits(1,c.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
+            storeStringConditional(bs,c.m_titles[0]); // Title 1 - generic title (first)
+            storeStringConditional(bs,c.m_titles[1]); // Title 2 - origin title (second)
+            storeStringConditional(bs,c.m_titles[2]); // Title 3 - yellow title (special)
         }
     }
     bs.StoreBits(1,src.m_hasname);
     if(src.m_hasname)
-        bs.StoreString(src.m_char.getName());
+        bs.StoreString(c.getName());
     PUTDEBUG("after names");
     bool fadin = true;
     bs.StoreBits(1,fadin); // Is entity being faded in ?
@@ -165,7 +167,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
     }
 }
 
-void storePosUpdate(const Entity &src,bool just_created,BitStream &bs)
+void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
 {
     bool extra_info = false;
     bool move_instantly = false;
@@ -177,6 +179,7 @@ void storePosUpdate(const Entity &src,bool just_created,BitStream &bs)
     {
         // if position has changed
         // prepare interpolation table, given previous position
+        // c.toggleAFK(); // no longer afk
         bs.StoreBits(1,extra_info); // not extra_info
         if(extra_info) {
             bs.StoreBits(1,move_instantly);
@@ -267,6 +270,7 @@ void sendNetFx(const Entity &src,BitStream &bs)
 }
 void sendCostumes(const Entity &src,BitStream &bs)
 {
+    Character c = src.m_char;
     //NOTE: this will only be initialized once, and no changes later on will influence this
     static ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
     PUTDEBUG("before sendCostumes");
@@ -279,7 +283,7 @@ void sendCostumes(const Entity &src,BitStream &bs)
     switch(src.m_type)
     {
         case Entity::ENT_PLAYER: // client value 1
-            src.m_char.serialize_costumes(bs,packer,true); // we're always sending full info
+            c.serialize_costumes(bs,packer,true); // we're always sending full info
             break;
         case 3: // client value 2 top level defs from VillainCostume ?
             bs.StorePackedBits(12,1); // npc costume type idx ?
@@ -296,16 +300,17 @@ void sendXLuency(BitStream &bs,float val)
 }
 void sendTitles(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1,src.m_has_titles); // no titles
-    if(!src.m_has_titles)
+    Character c = src.m_char;
+    bs.StoreBits(1,c.m_has_titles); // Does entity have titles?
+    if(!c.m_has_titles)
         return;
     if(src.m_type==Entity::ENT_PLAYER)
     {
-        bs.StoreString(src.m_char.getName());
-        bs.StoreBits(1,src.m_has_the_prefix);
-        storeStringConditional(bs,"");//Title 1
-        storeStringConditional(bs,"");//Title 2
-        storeStringConditional(bs,"");//Title 3
+        bs.StoreString(c.getName());
+        bs.StoreBits(1,c.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
+        storeStringConditional(bs,c.m_titles[0]); // Title 1 - generic title (first)
+        storeStringConditional(bs,c.m_titles[1]); // Title 2 - origin title (second)
+        storeStringConditional(bs,c.m_titles[2]); // Title 3 - yellow title (special)
     }
     else // unused
     {
@@ -318,10 +323,11 @@ void sendTitles(const Entity &src,BitStream &bs)
 }
 void sendCharacterStats(const Entity &src,BitStream &bs)
 {
+    Character c = src.m_char;
     bool have_stats=true; // no stats -> dead ?
     bool stats_changed=true;
     bool we_have_a_buddy = false;
-    bool our_budy_is_our_mentor = false;
+    bool our_buddy_is_our_mentor = false;
     bool we_have_our_buddy_dbid=false;
     int our_buddy_dbid = 0;
     bs.StoreBits(1,have_stats); // nothing here for now
@@ -333,14 +339,14 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
     bs.StoreBits(1,we_have_a_buddy);
     if ( we_have_a_buddy )        // buddy info
     {
-        bs.StoreBits(1,our_budy_is_our_mentor);
+        bs.StoreBits(1,our_buddy_is_our_mentor);
         bs.StoreBits(1,we_have_our_buddy_dbid);
         if(we_have_our_buddy_dbid)
         {
            bs.StorePackedBits(20,our_buddy_dbid);
         }
     }
-    serializeStats(src.m_char,bs,false);
+    serializeStats(c,bs,false);
 }
 void sendBuffsConditional(const Entity &src,BitStream &bs)
 {
@@ -389,16 +395,16 @@ void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 {
     bs.StoreBits(1,0); // 1/0 only
 }
-void sendAFK(const Entity &src,BitStream &bs)
+void sendAFK(const Entity &src, BitStream &bs)
 {
-    bool is_away=false;
-    bool away_string=false;
-    bs.StoreBits(1,is_away); // 1/0 only
-    if(is_away)
+    Character c = src.m_char;
+    bool hasMsg = 1;
+    bs.StoreBits(1,c.m_afk); // 1/0 only
+    if(c.m_afk)
     {
-        bs.StoreBits(1,away_string); // 1/0 only
-        if(away_string)
-            bs.StoreString("");
+        bs.StoreBits(1,hasMsg); // 1/0 only, 1 = has afk msg
+        if(hasMsg)
+            bs.StoreString(c.m_afk_msg);
     }
 }
 void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)

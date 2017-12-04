@@ -376,6 +376,19 @@ public:
         point_index   = bs.GetPackedBits(1);
     }
 };
+class SetTarget final : public MapLinkEvent
+{
+public:
+    SetTarget():MapLinkEvent(MapEventTypes::evSetTarget)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,32);
+    }
+    void serializefrom(BitStream &bs)
+    {
+    }
+};
 class AbortQueuedPower final : public MapLinkEvent
 {
 public:
@@ -437,6 +450,21 @@ public:
         new_viewpoint_is_firstperson = bs.GetBits(1);
     }
 };
+class ChangeChatType final : public MapLinkEvent
+{
+public:
+    int m_chat_type;
+    ChangeChatType():MapLinkEvent(MapEventTypes::evChangeChatType)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,37);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        m_chat_type = bs.GetPackedBits(1);
+    }
+};
 class ChatReconfigure final : public MapLinkEvent
 {
 public:
@@ -454,7 +482,6 @@ public:
         m_chat_bottom_flags = bs.GetPackedBits(1);
     }
 };
-
 
 #include "Events/ClientSettings.h"
 #include "Events/GameCommandList.h"
