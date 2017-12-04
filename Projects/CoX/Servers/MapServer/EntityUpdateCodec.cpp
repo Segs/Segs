@@ -13,8 +13,6 @@ void storeCreation(const Entity &src, BitStream &bs)
     // entity creation
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending create entity\n")));
 
-    const Character c = src.m_char;
-
     bs.StoreBits(1,src.m_destroyed); // ends creation destroys seq and returns NULL
 
     if(src.m_destroyed)
@@ -45,18 +43,18 @@ void storeCreation(const Entity &src, BitStream &bs)
     {
         bs.StorePackedBits(1,src.m_class_idx);
         bs.StorePackedBits(1,src.m_origin_idx);
-        bs.StoreBits(1,c.m_has_titles);
-        if(c.m_has_titles)
+        bs.StoreBits(1, src.m_char.m_has_titles);
+        if(src.m_char.m_has_titles)
         {
-            bs.StoreBits(1,c.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
-            storeStringConditional(bs,c.m_titles[0]); // Title 1 - generic title (first)
-            storeStringConditional(bs,c.m_titles[1]); // Title 2 - origin title (second)
-            storeStringConditional(bs,c.m_titles[2]); // Title 3 - yellow title (special)
+            bs.StoreBits(1, src.m_char.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
+            storeStringConditional(bs, src.m_char.m_titles[0]); // Title 1 - generic title (first)
+            storeStringConditional(bs, src.m_char.m_titles[1]); // Title 2 - origin title (second)
+            storeStringConditional(bs, src.m_char.m_titles[2]); // Title 3 - yellow title (special)
         }
     }
     bs.StoreBits(1,src.m_hasname);
     if(src.m_hasname)
-        bs.StoreString(c.getName());
+        bs.StoreString(src.m_char.getName());
     PUTDEBUG("after names");
     bool fadin = true;
     bs.StoreBits(1,fadin); // Is entity being faded in ?
@@ -270,7 +268,6 @@ void sendNetFx(const Entity &src,BitStream &bs)
 }
 void sendCostumes(const Entity &src,BitStream &bs)
 {
-    Character c = src.m_char;
     //NOTE: this will only be initialized once, and no changes later on will influence this
     static ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
     PUTDEBUG("before sendCostumes");
@@ -283,7 +280,7 @@ void sendCostumes(const Entity &src,BitStream &bs)
     switch(src.m_type)
     {
         case Entity::ENT_PLAYER: // client value 1
-            c.serialize_costumes(bs,packer,true); // we're always sending full info
+            src.m_char.serialize_costumes(bs,packer,true); // we're always sending full info
             break;
         case 3: // client value 2 top level defs from VillainCostume ?
             bs.StorePackedBits(12,1); // npc costume type idx ?
@@ -300,17 +297,17 @@ void sendXLuency(BitStream &bs,float val)
 }
 void sendTitles(const Entity &src,BitStream &bs)
 {
-    Character c = src.m_char;
-    bs.StoreBits(1,c.m_has_titles); // Does entity have titles?
-    if(!c.m_has_titles)
+    bs.StoreBits(1, src.m_char.m_has_titles); // Does entity have titles?
+    if(!src.m_char.m_has_titles)
         return;
+
     if(src.m_type==Entity::ENT_PLAYER)
     {
-        bs.StoreString(c.getName());
-        bs.StoreBits(1,c.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
-        storeStringConditional(bs,c.m_titles[0]); // Title 1 - generic title (first)
-        storeStringConditional(bs,c.m_titles[1]); // Title 2 - origin title (second)
-        storeStringConditional(bs,c.m_titles[2]); // Title 3 - yellow title (special)
+        bs.StoreString(src.m_char.getName());
+        bs.StoreBits(1, src.m_char.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
+        storeStringConditional(bs, src.m_char.m_titles[0]); // Title 1 - generic title (first)
+        storeStringConditional(bs, src.m_char.m_titles[1]); // Title 2 - origin title (second)
+        storeStringConditional(bs, src.m_char.m_titles[2]); // Title 3 - yellow title (special)
     }
     else // unused
     {
@@ -323,7 +320,6 @@ void sendTitles(const Entity &src,BitStream &bs)
 }
 void sendCharacterStats(const Entity &src,BitStream &bs)
 {
-    Character c = src.m_char;
     bool have_stats=true; // no stats -> dead ?
     bool stats_changed=true;
     bool we_have_a_buddy = false;
@@ -346,7 +342,7 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
            bs.StorePackedBits(20,our_buddy_dbid);
         }
     }
-    serializeStats(c,bs,false);
+    serializeStats(src.m_char,bs,false);
 }
 void sendBuffsConditional(const Entity &src,BitStream &bs)
 {
@@ -397,14 +393,13 @@ void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 }
 void sendAFK(const Entity &src, BitStream &bs)
 {
-    Character c = src.m_char;
     bool hasMsg = 1;
-    bs.StoreBits(1,c.m_afk); // 1/0 only
-    if(c.m_afk)
+    bs.StoreBits(1, src.m_char.m_afk); // 1/0 only
+    if(src.m_char.m_afk)
     {
         bs.StoreBits(1,hasMsg); // 1/0 only, 1 = has afk msg
         if(hasMsg)
-            bs.StoreString(c.m_afk_msg);
+            bs.StoreString(src.m_char.m_afk_msg);
     }
 }
 void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)

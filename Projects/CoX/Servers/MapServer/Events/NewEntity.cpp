@@ -12,7 +12,6 @@
 #include "MapServerData.h"
 #include "DataHelpers.h"
 #include "CommonNetStructures.h"
-#include <QtCore/QDebug>
 
 void NewEntity::serializeto( BitStream & ) const
 {

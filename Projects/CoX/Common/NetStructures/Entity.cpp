@@ -53,8 +53,8 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *pac
     e.m_char.GetCharBuildInfo(src);
     e.m_char.recv_initial_costume(src,packer);
     /*int t =*/ src.GetBits(1); // The -> 1
-    //src.GetString(e.m_char.m_battle_cry);
-    //src.GetString(e.m_char.m_character_description);
+    src.GetString(e.m_char.m_battle_cry);
+    src.GetString(e.m_char.m_character_description);
 }
 void Entity::InsertUpdate( PosUpdate pup )
 {
