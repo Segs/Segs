@@ -162,7 +162,6 @@ public:
         int                 m_randSeed=0; // Sequencer uses this as a seed for random bone scale
         int                 field_68=0;
         int                 m_SG_id=0;
-        int                 m_num_titles=0;
         int                 m_num_fx=0;
         bool                m_is_logging_out = false;
         int                 m_time_till_logout=0; // time in miliseconds untill given entity should be marked as logged out.

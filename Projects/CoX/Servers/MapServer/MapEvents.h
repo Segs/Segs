@@ -376,6 +376,7 @@ public:
         point_index   = bs.GetPackedBits(1);
     }
 };
+
 class SetTarget final : public MapLinkEvent
 {
 public:
@@ -389,6 +390,7 @@ public:
     {
     }
 };
+
 class AbortQueuedPower final : public MapLinkEvent
 {
 public:

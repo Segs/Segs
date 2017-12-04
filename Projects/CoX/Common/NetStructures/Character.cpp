@@ -61,38 +61,6 @@ bool Character::isEmpty()
             (0==m_class_name.compare("EMPTY",Qt::CaseInsensitive)));
 }
 
-/*
-void Character::serializefrom( BitStream &src)
-{
-    m_level = src.GetPackedBits(1);
-    src.GetString(m_name);
-    src.GetString(m_class_name);
-    src.GetString(m_origin_name);
-    src.GetFloat();
-    src.GetFloat();
-    src.GetString(m_mapName);
-    src.GetPackedBits(1);
-    //uint32_t unkn3 = src.GetPackedBits(1);
-    //uint32_t unkn4 = src.GetBits(32);
-}
-void Character::serializeto( BitStream &tgt) const
-{
-    tgt.StorePackedBits(1,m_level);
-    assert(!m_name.isEmpty());
-    tgt.StoreString(m_name);
-    if(m_name!="EMPTY")
-        assert(!m_class_name.isEmpty() && !m_origin_name.isEmpty());
-
-    tgt.StoreString(m_class_name);
-    tgt.StoreString(m_origin_name);
-
-    //tgt.StorePackedBits(1,m_villain);
-    tgt.StoreString(m_mapName);
-    tgt.StorePackedBits(1,0);
-    //tgt.StorePackedBits(32,m_unkn4); // if != 0 UpdateCharacter is called
-}
-*/
-
 void Character::sendWindow(BitStream &bs) const
 {
     bs.StorePackedBits(1,0);
@@ -472,21 +440,15 @@ void Character::sendDescription(BitStream &bs) const
 }
 void Character::toggleAFK(const QString &msg)
 {
-    if(msg.isEmpty() && m_afk == true)
-    {
-        m_afk = !m_afk;
-        return;
-    }
-
     m_afk = !m_afk;
     m_afk_msg = msg;
 }
 void Character::sendTitles(BitStream &bs) const
 {
-    bs.StoreBits(1,m_has_the_prefix);   // likely an index to a title prefix ( 0 - None; 1 - The )
-    bs.StoreString(m_titles[0]);        // Title 1 - generic title (first)
-    bs.StoreString(m_titles[1]);        // Title 2 - origin title (second)
-    bs.StoreString(m_titles[2]);        // Title 3 - yellow title (special)
+    bs.StoreBits(1,m_has_the_prefix);           // likely an index to a title prefix ( 0 - None; 1 - The )
+    storeStringConditional(bs, m_titles[0]);    // Title 1 - generic title (first)
+    storeStringConditional(bs, m_titles[1]);    // Title 2 - origin title (second)
+    storeStringConditional(bs, m_titles[2]);    // Title 3 - yellow title (special)
 }
 void Character::sendKeybinds(BitStream &bs) const
 {

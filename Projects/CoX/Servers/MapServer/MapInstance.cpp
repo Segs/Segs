@@ -472,12 +472,12 @@ void MapInstance::on_window_state(WindowState * ev){
 }
 static bool isChatMessage(const QString &msg)
 {
-    return msg.startsWith("l ") || msg.startsWith("local ") ||
-            msg.startsWith("b ") || msg.startsWith("broadcast ") ||
-            msg.startsWith("g ") || msg.startsWith("group ") ||
-            msg.startsWith("sg ") || msg.startsWith("supergroup ") ||
-            msg.startsWith("req ") || msg.startsWith("request ") ||
-            msg.startsWith("f ") || msg.startsWith("friends ");
+    return msg.startsWith("l ")     || msg.startsWith("local ") ||
+            msg.startsWith("b ")    || msg.startsWith("broadcast ") ||
+            msg.startsWith("g ")    || msg.startsWith("group ") ||
+            msg.startsWith("sg ")   || msg.startsWith("supergroup ") ||
+            msg.startsWith("req ")  || msg.startsWith("request ") ||
+            msg.startsWith("f ")    || msg.startsWith("friends ");
 }
 static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
 {

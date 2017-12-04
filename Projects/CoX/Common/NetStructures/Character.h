@@ -182,12 +182,12 @@ const   std::vector<QString> &  getTitles() const { return m_titles; }
         uint32_t            m_experience_points = 0;
         uint32_t            m_experience_debt   = 0;
         uint32_t            m_influence         = 1;
-        bool                m_has_the_prefix;
-        bool                m_has_titles;
+        bool                m_has_the_prefix    = false;
+        bool                m_has_titles        = false;
         std::vector<QString> m_titles           = {"","",""}; // Generic, Origin, Special
         QString             m_battle_cry;
         QString             m_character_description;
-        bool                m_afk;
+        bool                m_afk               = false;
         QString             m_afk_msg;
         void                toggleAFK(const QString &msg = "");
 

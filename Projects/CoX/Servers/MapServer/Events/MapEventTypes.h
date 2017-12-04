@@ -24,6 +24,7 @@ public:
     EVENT_DECL(evInfoMessageCmd         ,115)
     EVENT_DECL(evChatMessage            ,120)
     EVENT_DECL(evFloatingDamage         ,121)
+    EVENT_DECL(evSetTarget              ,132) // Click on another entity
 // client -> server commands
     EVENT_DECL(evConsoleCommand         ,200)
     EVENT_DECL(evMiniMapState           ,201)
@@ -33,7 +34,6 @@ public:
     EVENT_DECL(evSetDestination         ,211)
     EVENT_DECL(evWindowState            ,214)
     EVENT_DECL(evInspirationDockMode    ,217)
-    EVENT_DECL(evSetTarget              ,232) // Click on another entity
     EVENT_DECL(evAbortQueuedPower       ,233) // this might actually mean something different
     EVENT_DECL(evChangeStance           ,236)
     EVENT_DECL(evChangeChatType         ,237) // Change chat type using the letters in the chat window 'l, b, g, sg, r, f"

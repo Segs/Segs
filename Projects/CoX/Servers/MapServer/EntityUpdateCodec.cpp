@@ -177,7 +177,6 @@ void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
     {
         // if position has changed
         // prepare interpolation table, given previous position
-        // c.toggleAFK(); // no longer afk
         bs.StoreBits(1,extra_info); // not extra_info
         if(extra_info) {
             bs.StoreBits(1,move_instantly);
@@ -393,7 +392,7 @@ void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 }
 void sendAFK(const Entity &src, BitStream &bs)
 {
-    bool hasMsg = 1;
+    bool hasMsg = !src.m_char.m_afk_msg.isEmpty();
     bs.StoreBits(1, src.m_char.m_afk); // 1/0 only
     if(src.m_char.m_afk)
     {
