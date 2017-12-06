@@ -19,6 +19,7 @@ class ChatMessage : public GameCommand
 public:
     QString     m_msg;
     int         m_source_player_id;
+    int         m_target_player_id;
     int         m_channel_type;
         enum    eChatTypes
                 {
@@ -76,3 +77,4 @@ extern void sendRegularMessage(MapClient *tgt,const char *msg);
 extern void sendAdminMessage(MapClient *tgt,const char *msg);
 extern void sendErrorMessage(MapClient *tgt,const char *msg);
 extern void sendDebugMessage(MapClient *tgt,const char *msg);
+extern void sendPrivateMessage(MapClient *tgt,const char *msg);

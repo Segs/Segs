@@ -13,9 +13,10 @@
 #include "Common/GameData/attrib_definitions.h"
 
 #include <QtCore/QString>
+#include <QtCore/QVector>
 #include <cassert>
 #include <string>
-#include <vector>
+//#include <vector>
 enum WindowVisibility : uint32_t {
   wv_HideAlways = 0,
   wv_Always = 1,
@@ -127,7 +128,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Getters and setters
         uint32_t        getLevel() const { return m_level; }
-        void            setLevel(uint32_t val) { m_level = val; }
+        void            setLevel(uint32_t val);
 const   QString &       getName() const { return m_name; }
         void            setName(const QString &val);
 const   QString &       getMapName() const { return m_mapName; }
@@ -140,9 +141,10 @@ const   QString &       getMapName() const { return m_mapName; }
         void            setLastCostumeId(uint64_t val) { m_last_costume_id = val; }
 const   QString &       getOrigin() const { return m_origin_name; }
 const   QString &       getClass() const { return m_class_name; }
-
-const   std::vector<QString> &  getTitles() const { return m_titles; }
-        void                    setTitles(bool prefix = false, QString generic = "", QString origin = "", QString special = "");
+        uint32_t        getXP() const { return m_experience_points; }
+        void            setXP(uint32_t val);
+const   QString &       getTitles() const { return m_titles[3]; }
+        void            setTitles(bool prefix = false, QString generic = "", QString origin = "", QString special = "");
 
 //
 //////////////////////////////////////////////////////////////////////////
@@ -175,21 +177,35 @@ const   std::vector<QString> &  getTitles() const { return m_titles; }
         void            sendFriendList(BitStream &bs) const;
         void            sendOptions( BitStream &bs ) const;
         void            sendOptionsFull(BitStream &bs) const;
+        void            toggleAFK(const QString &msg = "");
+
         Parse_CharAttrib    m_current_attribs;
         Parse_CharAttrib    m_max_attribs;
         uint32_t            m_level             = 0;
-        uint32_t            m_combat_level      = 0;
+        uint32_t            m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
         uint32_t            m_experience_points = 0;
         uint32_t            m_experience_debt   = 0;
         uint32_t            m_influence         = 1;
         bool                m_has_the_prefix    = false;
         bool                m_has_titles        = false;
-        std::vector<QString> m_titles           = {"","",""}; // Generic, Origin, Special
+        QString             m_titles[3];        // Generic, Origin, Special
         QString             m_battle_cry;
         QString             m_character_description;
         bool                m_afk               = false;
         QString             m_afk_msg;
-        void                toggleAFK(const QString &msg = "");
+        // Experience Requirements Chart. Same for all classes.
+        uint32_t            m_experience_reqs[50]   = {
+            0,          106,        443,        1025,       1825,
+            3062,       4637,       6587,       9267,       12392,
+            15992,      20987,      27392,      34792,      43885,
+            55069,      68069,      84019,      103219,     126619,
+            154619,     190619,     235619,     291619,     360919,
+            446119,     554119,     689119,     855769,     1059169,
+            1313169,    1627769,    2014169,    2484769,    3055969,
+            3757469,    4612169,    5648769,    6898969,    8401519,
+            10094419,   12001969,   14152519,   16574419,   19304119,
+            22382119,   25852969,   29765269,   34175719,   39149119
+        };
 
 protected:
         PowerPool_Info  get_power_info(BitStream &src);

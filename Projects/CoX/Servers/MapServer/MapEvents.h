@@ -17,6 +17,7 @@
 
 #include <glm/vec3.hpp>
 #include <QtCore/QString>
+#include <QtCore/QDebug>
 
 class Entity;
 typedef CRUDLink_Event MapLinkEvent; //<MapLink>
@@ -286,7 +287,7 @@ public:
             src.GetString(m_fatal_error);
     }
     uint32_t    m_resp;
-    QString m_fatal_error;
+    QString     m_fatal_error;
 
 };
 
@@ -294,7 +295,7 @@ public:
 class InspirationDockMode final : public MapLinkEvent
 {
 public:
-    uint32_t dock_mode=0;
+    uint32_t dock_mode = 0;
     InspirationDockMode():MapLinkEvent(MapEventTypes::evInspirationDockMode)
     {}
     void serializeto(BitStream &bs) const
@@ -304,9 +305,10 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        dock_mode=bs.GetBits(32);
+        dock_mode = bs.GetBits(32);
     }
 };
+
 class EnterDoor final : public MapLinkEvent
 {
 public:
@@ -377,9 +379,29 @@ public:
     }
 };
 
+class UseInspiration final : public MapLinkEvent
+{
+public:
+    int entity_idx;
+    int boost_unk1;
+    UseInspiration():MapLinkEvent(MapEventTypes::evUseInspiration)
+    {}
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,29);
+        bs.StorePackedBits(12,entity_idx);
+    }
+    void serializefrom(BitStream &bs) override
+    {
+        entity_idx  = bs.GetPackedBits(12);
+        boost_unk1  = bs.GetAvailSize();  // How many bits!?
+    }
+};
+
 class SetTarget final : public MapLinkEvent
 {
 public:
+    int entity_idx;
     SetTarget():MapLinkEvent(MapEventTypes::evSetTarget)
     {}
     void serializeto(BitStream &bs) const
@@ -388,6 +410,7 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
+        entity_idx = bs.GetPackedBits(12);
     }
 };
 
@@ -452,11 +475,11 @@ public:
         new_viewpoint_is_firstperson = bs.GetBits(1);
     }
 };
-class ChangeChatType final : public MapLinkEvent
+class TargetChatChannelSelected final : public MapLinkEvent
 {
 public:
     int m_chat_type;
-    ChangeChatType():MapLinkEvent(MapEventTypes::evChangeChatType)
+    TargetChatChannelSelected():MapLinkEvent(MapEventTypes::evTargetChatChannelSelected)
     {}
     void serializeto(BitStream &bs) const
     {
@@ -482,6 +505,50 @@ public:
     {
         m_chat_top_flags = bs.GetPackedBits(1);
         m_chat_bottom_flags = bs.GetPackedBits(1);
+    }
+};
+class PowersDockMode final : public MapLinkEvent
+{
+public:
+    int dock_mode = 0;
+    int dock_unk1 = 0;
+    int dock_unk2 = 0;
+
+    PowersDockMode():MapLinkEvent(MapEventTypes::evPowersDockMode)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,18);
+        bs.StorePackedBits(32,dock_mode);
+        bs.StorePackedBits(32,dock_mode);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        dock_mode = bs.GetBits(32);
+        dock_unk1 = bs.GetBits(32);
+        dock_unk2 = bs.GetBits(32);
+    }
+};
+class SwitchTray final : public MapLinkEvent
+{
+public:
+    uint32_t tray1_num = 0;
+    uint32_t tray2_num = 0;
+    uint32_t tray_unk1 = 0;
+    SwitchTray():MapLinkEvent(MapEventTypes::evSwitchTray)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,8);
+        bs.StorePackedBits(32,tray1_num);
+        bs.StorePackedBits(32,tray2_num);
+        bs.StorePackedBits(1,tray_unk1);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        tray1_num = bs.GetPackedBits(32);
+        tray2_num = bs.GetPackedBits(32);
+        tray_unk1 = bs.GetPackedBits(1);
     }
 };
 

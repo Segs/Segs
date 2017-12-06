@@ -82,7 +82,7 @@ ChatMessage *ChatMessage::privateMessage(const QString &msg, Entity *src, Entity
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_PRIVATE;
     res->m_source_player_id=src->getIdx();
-    //res->m_target_player_id=tgt->getIdx();
+    res->m_target_player_id=tgt->getIdx();
     res->m_msg = msg;
     return res;
 }
@@ -238,6 +238,12 @@ void sendDebugMessage(MapClient * tgt, const char * msg)
 {
     if(tgt)
         tgt->link()->putq(new PreUpdateCommand(ChatMessage::debugMessage(msg)));
+}
+
+void sendPrivateMessage(MapClient * tgt, const char * msg)
+{
+    if(tgt)
+        tgt->link()->putq(new PreUpdateCommand(ChatMessage::privateMessage(msg)));
 }
 
 

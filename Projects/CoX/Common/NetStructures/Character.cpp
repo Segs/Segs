@@ -438,11 +438,6 @@ void Character::sendDescription(BitStream &bs) const
     bs.StoreString(m_battle_cry);
 
 }
-void Character::toggleAFK(const QString &msg)
-{
-    m_afk = !m_afk;
-    m_afk_msg = msg;
-}
 void Character::sendTitles(BitStream &bs) const
 {
     bs.StoreBits(1,m_has_the_prefix);           // likely an index to a title prefix ( 0 - None; 1 - The )
@@ -684,3 +679,27 @@ void ClientOptions::init()
     };
 }
 #undef ADD_OPT
+
+void Character::toggleAFK(const QString &msg)
+{
+    m_afk = !m_afk;
+    m_afk_msg = msg;
+}
+
+void Character::setXP(uint32_t val)
+{
+    for(int i=0; i<=50; i++)
+    {
+        if(val>=m_experience_reqs[i] && val<m_experience_reqs[i+1])
+            setLevel(i);
+    }
+    m_experience_points = val;
+}
+
+void Character::setLevel(uint32_t val)
+{
+    m_level = val;
+// The below crashes the client. Why?
+//    if(m_experience_points < m_experience_reqs[val])
+//        setXP(m_experience_reqs[val]);
+}
