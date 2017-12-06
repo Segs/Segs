@@ -226,7 +226,7 @@ Headers should be clean of comments, as to allow for quick class interface scann
 
 ### Issue and Pull Request Labels
 
-This section lists the labels we use to help us track and manage issues and pull requests. Most labels are used across all Atom repositories, but some are specific to `atom/atom`.
+This section lists the labels we use to help us track and manage issues and pull requests. Open an issue to suggest new labels.
 
 [GitHub search](https://help.github.com/articles/searching-issues/) makes it easy to use labels for finding groups of issues or pull requests you're interested in. For example, you might be interested in [open issues which are labeled as bugs, but still need to be reliably reproduced](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+user%3ASegs+label%3Abug+label%3Aneeds-reproduction) or perhaps [open pull requests which haven't been reviewed yet](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+repo%3ASegs%2Fatom+comments%3A0). To help you find issues and pull requests, each label is listed with search links for finding open items with that label. We  encourage you to read about [other search filters](https://help.github.com/articles/searching-issues/) which will help you write more focused queries.
 
@@ -272,5 +272,6 @@ Please open an issue on `Segs/Segs` if you have suggestions for new labels.
 [search-label-requires-changes]: https://github.com/Segs/Segs/pulls?q=is%3Aopen+is%3Apr+label%3Arequires-changes
 [search-label-needs-testing]: https://github.com/Segs/Segs/pulls?q=is%3Aopen+is%3Apr+label%3Aneeds-testing
 
+This documentation was built off of the amazing work at https://github.com/atom/atom/blob/master/CONTRIBUTING.md
 
 ## Thank you and happy coding!

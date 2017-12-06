@@ -15,13 +15,13 @@ Basic instructions for compiling SEGS in Linux and Windows are below, however fo
 
 CONTENTS OF THIS FILE
 ------
-- Requirements and Notes
-- Install C++ Tool Chain
-- Compile SEGS
-- Setting up SEGS Server and Playing
-- Contribute to Development
-- More information
-- FAQs
+- [Requirements and Notes](#requirements-and-notes)
+- [Install C++ Tool Chain](#install-c++-tool-chain)
+- [Compile SEGS](#compile-segs)
+- [Setting up SEGS Server and Playing](#setting-up-segs-and-playing)
+- [Contribute to Development](#contribute-to-development)
+- [More Information](#more-information)
+- [FAQs](#faqs)
 
 
 REQUIREMENTS AND NOTES
@@ -130,7 +130,7 @@ CONTRIBUTE TO DEVELOPMENT
 
 **SEGS needs your help!** From editing README's like this one, to coding the MapServer, there are tasks that can be tackled by contributors of all skill level!
 
-Please read [CONTRIBUTE.md](./docs/CONTRIBUTE.md) and see the links below to begin:
+Please read [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and see the links below to begin:
 
 * Our GitHub: https://github.com/Segs/Segs
 * The Issue Queue: https://github.com/Segs/Segs/issues
