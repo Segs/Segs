@@ -91,11 +91,9 @@ void Character::setName(const QString &val )
 
 void Character::setTitles(bool prefix, QString generic, QString origin, QString special)
 {
-    if(!prefix && generic.isEmpty() && origin.isEmpty() && special.isEmpty())
-    {
-        m_has_titles = false;
-        return;
-    }
+    m_has_titles = prefix || !generic.isEmpty() || !origin.isEmpty() || special.isEmpty();
+    if(!m_has_titles)
+      return;
 
     m_has_titles = true;
     m_has_the_prefix = prefix;
@@ -683,7 +681,8 @@ void ClientOptions::init()
 void Character::toggleAFK(const QString &msg)
 {
     m_afk = !m_afk;
-    m_afk_msg = msg;
+    if(m_afk)
+        m_afk_msg = msg;
 }
 
 void Character::setXP(uint32_t val)
@@ -699,7 +698,7 @@ void Character::setXP(uint32_t val)
 void Character::setLevel(uint32_t val)
 {
     m_level = val;
-// The below crashes the client. Why?
+// TODO: The below crashes the client. Why?
 //    if(m_experience_points < m_experience_reqs[val])
 //        setXP(m_experience_reqs[val]);
 }

@@ -77,59 +77,16 @@ void Entity::addInterp(const PosUpdate & p) {
     interpResults.emplace_back(p);
 }
 
-void Entity::toggleFly()
-{
-    m_Flying = !m_Flying;
-}
-
 void Entity::toggleDazed()
 {
     m_Dazed = !m_Dazed;
+    // TODO: toggle dazed FX above head
 }
 
 void Entity::toggleJumppack()
 {
     m_Jumppack = !m_Jumppack;
-}
-
-void Entity::setBackupSpd(const float &val)
-{
-    m_BackupSpd = val;
-}
-
-void Entity::setJumpHeight(const float &val)
-{
-    m_JumpHeight = val;
-}
-
-void Entity::setu1(const int &val)
-{
-    u1 = val;
-}
-
-void Entity::setu2(const int &val)
-{
-    u2 = val;
-}
-
-void Entity::setu3(const int &val)
-{
-    u3 = val;
-}
-
-void Entity::setu4(const int &val)
-{
-    u4 = val;
-}
-
-void Entity::setu5(const int &val)
-{
-    u5 = val;
-}
-
-void Entity::setu6(const int &val)
-{
-    u6 = val;
+    // TODO: toggle costume part for jetpack back item.
 }
 
 Entity::Entity()

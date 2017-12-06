@@ -77,4 +77,3 @@ extern void sendRegularMessage(MapClient *tgt,const char *msg);
 extern void sendAdminMessage(MapClient *tgt,const char *msg);
 extern void sendErrorMessage(MapClient *tgt,const char *msg);
 extern void sendDebugMessage(MapClient *tgt,const char *msg);
-extern void sendPrivateMessage(MapClient *tgt,const char *msg);

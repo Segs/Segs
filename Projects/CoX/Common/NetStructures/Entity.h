@@ -246,17 +246,17 @@ static  void                sendPvP(BitStream &bs);
         const QString &     name() const {return m_char.getName();}
         void                fillFromCharacter(Character *f);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
-        void                toggleFly();
+        void                toggleFly() { m_Flying = !m_Flying; }
         void                toggleDazed();
         void                toggleJumppack();
-        void                setBackupSpd(const float &val);
-        void                setJumpHeight(const float &val);
-        void                setu1(const int &val);
-        void                setu2(const int &val);
-        void                setu3(const int &val);
-        void                setu4(const int &val);
-        void                setu5(const int &val);
-        void                setu6(const int &val);
+        void                setBackupSpd(const float &val) { m_BackupSpd = val; }
+        void                setJumpHeight(const float &val) { m_JumpHeight = val; }
+        void                setu1(const int &val) { u1 = val; }
+        void                setu2(const int &val) { u2 = val; }
+        void                setu3(const int &val) { u3 = val; }
+        void                setu4(const int &val) { u4 = val; }
+        void                setu5(const int &val) { u5 = val; }
+        void                setu6(const int &val) { u6 = val; }
 };
 void initializeNewPlayerEntity(Entity &e);
 void fillEntityFromNewCharData(Entity &e,BitStream &src, ColorAndPartPacker *packer);

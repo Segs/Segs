@@ -394,7 +394,7 @@ public:
     void serializefrom(BitStream &bs) override
     {
         entity_idx  = bs.GetPackedBits(12);
-        boost_unk1  = bs.GetAvailSize();  // How many bits!?
+        boost_unk1  = bs.GetAvailSize();  // TODO: Not all bits were consumed
     }
 };
 
@@ -411,6 +411,7 @@ public:
     void serializefrom(BitStream &bs)
     {
         entity_idx = bs.GetPackedBits(12);
+        // TODO: Not all bits were consumed
     }
 };
 
@@ -524,9 +525,10 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        dock_mode = bs.GetBits(32);
-        dock_unk1 = bs.GetBits(32);
-        dock_unk2 = bs.GetBits(32);
+        dock_mode = bs.GetBits(32); // TODO: output -1
+        dock_unk1 = bs.GetBits(32); // TODO: output -1
+        dock_unk2 = bs.GetBits(32); // TODO: output -1
+        // TODO: Not all bits were consumed
     }
 };
 class SwitchTray final : public MapLinkEvent
@@ -546,9 +548,10 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        tray1_num = bs.GetPackedBits(32);
-        tray2_num = bs.GetPackedBits(32);
-        tray_unk1 = bs.GetPackedBits(1);
+        tray1_num = bs.GetPackedBits(32); // Appears to correlate to Tray1's #
+        tray2_num = bs.GetPackedBits(32); // Appears to correlate to Tray2's #
+        tray_unk1 = bs.GetPackedBits(1);  // TODO: Unused bits!?
+        // TODO: "Console command received " blank 40 times?
     }
 };
 

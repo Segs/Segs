@@ -240,10 +240,4 @@ void sendDebugMessage(MapClient * tgt, const char * msg)
         tgt->link()->putq(new PreUpdateCommand(ChatMessage::debugMessage(msg)));
 }
 
-void sendPrivateMessage(MapClient * tgt, const char * msg)
-{
-    if(tgt)
-        tgt->link()->putq(new PreUpdateCommand(ChatMessage::privateMessage(msg)));
-}
-
 

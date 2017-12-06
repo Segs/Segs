@@ -481,14 +481,16 @@ void MapInstance::on_window_state(WindowState * ev){
 }
 static bool isChatMessage(const QString &msg)
 {
-    return msg.startsWith("l ")     || msg.startsWith("local ")      ||
-            msg.startsWith("b ")    || msg.startsWith("broadcast ")  || msg.startsWith("y ")       || msg.startsWith("yell ")     ||
-            msg.startsWith("g ")    || msg.startsWith("group ")      || msg.startsWith("team ")    ||
-            msg.startsWith("sg ")   || msg.startsWith("supergroup ") ||
-            msg.startsWith("req ")  || msg.startsWith("request ")    || msg.startsWith("auction ") || msg.startsWith("sell ")     ||
-            msg.startsWith("f ")    || msg.startsWith("friends ")    ||
-            msg.startsWith("t ")    || msg.startsWith("tell ")       || msg.startsWith("w ")       || msg.startsWith("whisper ")  ||
-            msg.startsWith("p ")    || msg.startsWith("private ");
+    static const QStringList chat_prefixes = {
+            "l", "local",
+            "b", "broadcast", "y", "yell",
+            "g", "group", "sg", "supergroup",
+            "req", "request",
+            "f",
+            "t", "tell", "w", "whisper", "p", "private"
+    };
+    QString space(msg.mid(0,msg.indexOf(' ')));
+    return chat_prefixes.contains(space);
 }
 static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
 {
@@ -517,6 +519,7 @@ void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
     int first_space = msg_text.indexOf(' ');
 
     /*
+    // TODO: Add string replacements
     $archetype - the archetype of your character
     $battlecry - your character's battlecry, as entered on your character ID screen
     $level - your character's current level
@@ -525,7 +528,7 @@ void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
     $target - your currently selected target's name
     */
     // Entity *ss_target = sender->char_entity()->target;
-    // msg_text = msg_text.replace("$target",sender->char_entity()->target)
+    // msg_text = msg_text.replace("$target",sender->char_entity()->target->name())
 
     QStringRef cmd_str(msg_text.midRef(0,first_space));
     QStringRef msg_content(msg_text.midRef(first_space+1,msg_text.lastIndexOf("\n")));
@@ -594,6 +597,7 @@ void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
             // Only send the message to $target
             for(MapClient *cl : m_clients)
             {
+                // TODO: save current target to char_entity for use in instances like this
                 //if(target->getIdx() == cl->char_entity()->getIdx())
                     recipients.push_back(cl);
             }
@@ -813,7 +817,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         QString val = ev->contents.mid(space+1);
         uint32_t attrib = val.toUInt();
 
-        ent->m_char.setLevel(attrib-1); // Must be -1?
+        ent->m_char.setLevel(attrib-1); // TODO: Must be -1?
 
         QString msg = "Setting Level to: " + QString::number(attrib);
         qDebug() << msg;
@@ -823,7 +827,6 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(ev->contents.contains("whoall")) {
         QString msg = "Players on this map:\n";
 
-        // Format: character_name lvl level clvl combat_level origin archetype
         for(MapClient *cl : m_clients)
         {
             QString name        = cl->char_entity()->name();
@@ -832,6 +835,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             QString origin      = cl->char_entity()->m_char.getOrigin();
             QString archetype   = cl->char_entity()->m_char.getClass();
 
+            // Format: character_name "lvl" level "clvl" combat_level origin archetype
             msg += name + " lvl " + lvl + " clvl " + clvl + " " + origin + " " + archetype + "\n";
         }
 
@@ -941,6 +945,7 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
     //qDebug() << "MiniMapState tile "<<ev->tile_idx << " for player" << src;
+    // TODO: Save these tile #s to dbase and (presumably) load upon entering map to remove fog-of-war from map
 }
 
 void MapInstance::on_client_resumed(ClientResumedRendering *ev)
