@@ -11,7 +11,7 @@ struct Parse_PI_Schedule;
 typedef std::vector<struct Parse_Origin> Parse_AllOrigins;
 
 constexpr const static uint32_t levelsdebts_i0_requiredCrc = 0x8F0D1A87;
-bool loadFrom(BinStore *s,LevelExpAndDebt *target);
+bool loadFrom(BinStore *s,LevelExpAndDebt &target);
 void saveTo(const LevelExpAndDebt & target, const QString &baseName, bool text_format=false);
 
 constexpr const static uint32_t combining_i0_requiredCrc = 0x7F06A6D1;
