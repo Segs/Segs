@@ -16,6 +16,7 @@
 #include "Common/GameData/charclass_serializers.h"
 //#include "Common/GameData/seq_serializers.h"
 #include "Common/GameData/def_serializers.h"
+#include "Common/GameData/other_definitions.h"
 #include "Common/GameData/origin_definitions.h"
 //#include "Common/GameData/particlesys_serializers.h"
 
@@ -49,7 +50,7 @@ enum BinType {
     eTrickDefinitions,
 };
 const QHash<uint32_t,BinType> knownSerializers = {
-//    {levelsdebts_i0_requiredCrc         , eLevelsDebts},
+    {levelsdebts_i0_requiredCrc         , eLevelsDebts},
 //    {combining_i0_requiredCrc           , eCombineChances},
 //    {boosteffectiveness_i0_requiredCrc  , eBoostEffectiveness},
 //    {particlesystems_i0_requiredCrc     , eParticleSystems},
@@ -113,6 +114,7 @@ bool doConvert(T *src_struct,const QString &fname,bool text_format=false)
 void showSupportedBinTypes()
 {
     qDebug()<<"Currently supported file types ";
+    qDebug()<<"   I0<"<<QString::number(levelsdebts_i0_requiredCrc,16)<<"> Experience data - 'experience.bin'";
     qDebug()<<"   I0<"<<QString::number(shoplist_i0_requiredCrc,16)<<"> Shops data - 'stores.bin'";
     qDebug()<<"   I0<"<<QString::number(shopitems_i0_requiredCrc,16)<<"> Shops items- 'items.bin'";
     qDebug()<<"   I0<"<<QString::number(shopdepts_i0_requiredCrc,16)<<"> Shop department names data - 'depts.bin'";
@@ -152,10 +154,10 @@ int main(int argc,char **argv)
         json_output = app.arguments()[2].toInt()!=0;
 
     switch(bin_type) {
-//        case eLevelsDebts:    doConvert(doLoad<LevelExpAndDebt>(binfile),target_basename,json_output); break;
-//        case eCombineChances: doConvert(doLoad<Parse_Combining>(binfile),target_basename,json_output); break;
-//        case eBoostEffectiveness: doConvert(doLoad<Parse_Effectiveness>(binfile),target_basename,json_output); break;
-//        case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(binfile),target_basename,json_output); break;
+        case eLevelsDebts:    doConvert(doLoadRef<LevelExpAndDebt>(&binfile),target_basename,json_output); break;
+//        case eCombineChances: doConvert(doLoad<Parse_Combining>(&binfile),target_basename,json_output); break;
+//        case eBoostEffectiveness: doConvert(doLoad<Parse_Effectiveness>(&binfile),target_basename,json_output); break;
+//        case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(&binfile),target_basename,json_output); break;
         case eShops:        doConvert(doLoadRef<AllShops_Data>(&binfile),target_basename,json_output); break;
         case eShopItems:    doConvert(doLoad<AllShopItems_Data>(&binfile),target_basename,json_output); break;
         case eShopDepts:    doConvert(doLoad<AllShopDepts_Data>(&binfile),target_basename,json_output); break;

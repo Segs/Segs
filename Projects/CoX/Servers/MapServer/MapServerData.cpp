@@ -206,6 +206,8 @@ bool MapServerData::read_runtime_data(const QString &directory_path)
         return false;
     if (!read_classes(directory_path))
         return false;
+    if(!read_exp_and_debt(directory_path))
+        return false;
     qWarning().noquote() << " All map data read";
     {
         QDebug warnLine = qWarning().noquote();
@@ -214,6 +216,18 @@ bool MapServerData::read_runtime_data(const QString &directory_path)
         warnLine << "Hashes filled";
     }
     return true;
+}
+
+int MapServerData::expForLevel(int lev) const
+{
+    assert(lev>0 && lev<m_experience_and_debt_per_level.m_ExperienceRequired.size());
+    return m_experience_and_debt_per_level.m_ExperienceRequired.at(lev - 1);
+}
+
+int MapServerData::expDebtForLevel(int lev) const
+{
+    assert(lev>0 && lev<m_experience_and_debt_per_level.m_DefeatPenalty.size());
+    return m_experience_and_debt_per_level.m_DefeatPenalty.at(lev - 1);
 }
 
 bool MapServerData::read_costumes(const QString &directory_path)
@@ -277,6 +291,15 @@ bool MapServerData::read_classes(const QString &directory_path)
     if(!read_data_to<Parse_AllCharClasses,charclass_i0_requiredCrc>(directory_path,"classes.bin",m_player_classes))
         return false;
     if(!read_data_to<Parse_AllCharClasses,charclass_i0_requiredCrc>(directory_path,"villain_classes.bin",m_other_classes))
+        return false;
+    return true;
+}
+
+bool MapServerData::read_exp_and_debt(const QString &directory_path)
+{
+    qDebug() << "Loading classes:";
+    if (!read_data_to<LevelExpAndDebt, levelsdebts_i0_requiredCrc>(directory_path, "classes.bin",
+                                                                   m_experience_and_debt_per_level))
         return false;
     return true;
 }
