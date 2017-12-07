@@ -58,7 +58,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 16: return new ChatDividerMoved;
         case 17: return new InspirationDockMode;
         case 18: return new PowersDockMode;
-        case 29: return new UseInspiration;
+        case 29: return new ActivateInspiration;
         case 32: return new SetTarget;
         case 33: return new AbortQueuedPower;
         case 36: return new ChangeStance;

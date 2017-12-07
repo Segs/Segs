@@ -193,7 +193,7 @@ const   QString &       getTitles() const { return m_titles[3]; }
         QString             m_character_description;
         bool                m_afk               = false;
         QString             m_afk_msg;
-        // Experience Requirements Chart. Same for all classes.
+        // TODO: Leverage new experience bin serialization
         uint32_t            m_experience_reqs[50]   = {
             0,          106,        443,        1025,       1825,
             3062,       4637,       6587,       9267,       12392,

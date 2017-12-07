@@ -168,19 +168,21 @@ public:
         std::vector<uint8_t> m_fx1;
         std::vector<uint32_t> m_fx2;
         std::vector<uint8_t> m_fx3;
-        uint8_t             m_costume_type = 0;
-        int                 m_state_mode = 0;
-        bool                m_state_mode_send = false;
-        bool                m_odd_send = false;
-        bool                m_SG_info = false;
-        bool                m_seq_update=false;
-        bool                m_is_villian = false;
-        bool                m_contact = false;
-        bool                m_Flying = false;
-        bool                m_Dazed = false;
-        bool                m_Jumppack = false;
-        float               m_BackupSpd = 1.0f;
-        float               m_JumpHeight = 0.1f;
+        uint8_t             m_costume_type      = 0;
+        int                 m_state_mode        = 0;
+        bool                m_state_mode_send   = false;
+        bool                m_odd_send          = false;
+        bool                m_SG_info           = false;
+        bool                m_seq_update        = false;
+        bool                m_is_villian        = false;
+        bool                m_contact           = false;
+        bool                m_is_flying         = false;
+        bool                m_is_stunned        = false;
+        bool                m_has_jumppack      = false;
+        float               m_backup_spd        = 1.0f;
+        float               m_jump_height;
+        uint8_t             m_cur_chat_channel  = 10; // Default is local
+        int32_t             m_cur_target        = {0};
 
         int                 u1=1;
         int                 u2=0;
@@ -246,11 +248,11 @@ static  void                sendPvP(BitStream &bs);
         const QString &     name() const {return m_char.getName();}
         void                fillFromCharacter(Character *f);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
-        void                toggleFly() { m_Flying = !m_Flying; }
-        void                toggleDazed();
+        void                toggleFly() { m_is_flying = !m_is_flying; }
+        void                toggleStunned();
         void                toggleJumppack();
-        void                setBackupSpd(const float &val) { m_BackupSpd = val; }
-        void                setJumpHeight(const float &val) { m_JumpHeight = val; }
+        void                setBackupSpd(const float &val) { m_backup_spd = val; }
+        void                setJumpHeight(const float &val) { m_jump_height = val; }
         void                setu1(const int &val) { u1 = val; }
         void                setu2(const int &val) { u2 = val; }
         void                setu3(const int &val) { u3 = val; }

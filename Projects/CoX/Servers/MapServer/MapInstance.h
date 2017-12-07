@@ -42,7 +42,7 @@ class InputState;
 class World;
 class SetTarget;
 class TargetChatChannelSelected;
-class UseInspiration;
+class ActivateInspiration;
 class PowersDockMode;
 class SwitchTray;
 
@@ -109,7 +109,7 @@ protected:
     void on_client_settings(class ClientSettings *ev);
     void on_set_target(class SetTarget *ev);
     void on_target_chat_channel_selected(class TargetChatChannelSelected *ev);
-    void on_use_inspiration(class UseInspiration *ev);
+    void on_activate_inspiration(class ActivateInspiration *ev);
     void on_powers_dockmode(class PowersDockMode *ev);
     void on_switch_tray(class SwitchTray *ev);
 };

@@ -77,15 +77,15 @@ void Entity::addInterp(const PosUpdate & p) {
     interpResults.emplace_back(p);
 }
 
-void Entity::toggleDazed()
+void Entity::toggleStunned()
 {
-    m_Dazed = !m_Dazed;
-    // TODO: toggle dazed FX above head
+    m_is_stunned = !m_is_stunned;
+    // TODO: toggle stunned FX above head
 }
 
 void Entity::toggleJumppack()
 {
-    m_Jumppack = !m_Jumppack;
+    m_has_jumppack = !m_has_jumppack;
     // TODO: toggle costume part for jetpack back item.
 }
 

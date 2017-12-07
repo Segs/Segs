@@ -260,7 +260,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     glm::vec3 zeroes;
     // user entity
     Entity *ent = src.m_client->char_entity();
-<<<<<<< HEAD
+
     SurfaceParams struct_csc[2];
     memset(&struct_csc,0,2*sizeof(SurfaceParams));
     struct_csc[0].traction = 1.5f;
@@ -268,12 +268,12 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     struct_csc[0].bounce = 1.5f;
     struct_csc[1].max_speed = struct_csc[0].max_speed = 1.5f;
     struct_csc[1].gravitational_constant = struct_csc[0].gravitational_constant = 3.0f;
-=======
-    bool m_Flying=ent->m_Flying;
-    bool m_Dazed=ent->m_Dazed;
-    bool m_Jumppack = ent->m_Jumppack; // jumppack effect
-    float m_BackupSpd = ent->m_BackupSpd; // backup speed default = 1.0f
-    float m_JumpHeight = ent->m_JumpHeight; // jump height default = 0.1f
+
+    bool m_is_flying = ent->m_is_flying;
+    bool m_is_stunned = ent->m_is_stunned;
+    bool m_has_jumppack = ent->m_has_jumppack;  // jumppack effect
+    float m_backup_spd = ent->m_backup_spd;     // backup speed default = 1.0f
+    float m_jump_height = ent->m_jump_height;   // jump height default = 0.1f
 
     // Unknown bits
     int u1 = ent->u1; // value stored in control state field_134; default = 1
@@ -283,15 +283,6 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     int u5 = ent->u5; // sets g_client_pos_id_rel default = 0
     int u6 = ent->u6; // // sets the lowest bit in CscCommon::flags default = 0
 
-    CscCommon_Sub28 struct_csc;
-    memset(&struct_csc,0,sizeof(struct_csc));
-    for(int i=0; i<3; ++i)
-        struct_csc.a.v[i] = 1.5;
-    struct_csc.b.max_speed = struct_csc.a.max_speed = 1.5f;
-    struct_csc.b.gravitational_constant = struct_csc.a.gravitational_constant = 3.0f;
->>>>>>> Tracking down un-labeled bits and their purpose. Added slash commands for fly, dazed, jumpheight, and backupspd, plus more.
-    //    for(int i=3; i<5; ++i)
-    //        struct_csc.a.v[i] = rand()&0xf;
     uint8_t update_id=1;
     bool update_part_1=true;
     bool update_part_2=false;
@@ -299,38 +290,23 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     if(update_part_1)
     {
         //rand()&0xFF
-<<<<<<< HEAD
         bs.StoreBits(8,update_id);
-=======
-        bs.StoreBits(8,u1); // value stored in control state field_134 default = 1
->>>>>>> Tracking down un-labeled bits and their purpose. Added slash commands for fly, dazed, jumpheight, and backupspd, plus more.
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
         // This is entity speed vector !!
         storeVector(bs,spd);
 
-<<<<<<< HEAD
-        bs.StoreFloat(1.0f); // speed rel back
-        bs.StoreBitArray((uint8_t *)&struct_csc,2*sizeof(SurfaceParams)*8);
-        bs.StoreFloat(0.1f);
-        bs.StoreBits(1,m_flying); // key push bits ??
-        bs.StoreBits(1,m_dazed); // key push bits ??
-        bs.StoreBits(1,0); // key push bits ??
-        bs.StoreBits(1,0); // key push bits ??
-        bs.StoreBits(1,0); // key push bits ??
-        bs.StoreBits(1,0); // key push bits ??
-=======
-        bs.StoreFloat(m_BackupSpd);  // Backup Speed default = 1.0f
-        bs.StoreBitArray((uint8_t *)&struct_csc,sizeof(CscCommon_Sub28)*8);
 
-        bs.StoreFloat(m_JumpHeight); // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
-        bs.StoreBits(1,m_Flying);    // is_flying flag
-        bs.StoreBits(1,m_Dazed);     // is_dazed flag (lacks overhead 'dizzy' FX)
-        bs.StoreBits(1,m_Jumppack);  // jumpack flag (lacks costume parts)
+        bs.StoreFloat(m_backup_spd);  // Backup Speed default = 1.0f
+        bs.StoreBitArray((uint8_t *)&struct_csc,2*sizeof(SurfaceParams)*8);
+
+        bs.StoreFloat(m_jump_height); // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
+        bs.StoreBits(1,m_is_flying);    // is_flying flag
+        bs.StoreBits(1,m_is_stunned);     // is_stunned flag (lacks overhead 'dizzy' FX)
+        bs.StoreBits(1,m_has_jumppack);  // jumpack flag (lacks costume parts)
 
         bs.StoreBits(1,u2); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
         bs.StoreBits(1,u3); // leaping? seems like the anim changes slightly?
         bs.StoreBits(1,u4); // no idea default = 0
->>>>>>> Tracking down un-labeled bits and their purpose. Added slash commands for fly, dazed, jumpheight, and backupspd, plus more.
     }
     // Used to force the client to a position/speed/pitch/rotation by server
     bs.StoreBits(1,update_part_2);

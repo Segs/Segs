@@ -191,11 +191,14 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evSetTarget:
             on_set_target(static_cast<SetTarget *>(ev));
             break;
-        case MapEventTypes::evUseInspiration:
-            on_use_inspiration(static_cast<UseInspiration *>(ev));
+        case MapEventTypes::evActivateInspiration:
+            on_activate_inspiration(static_cast<ActivateInspiration *>(ev));
             break;
         case MapEventTypes::evSwitchTray:
             on_switch_tray(static_cast<SwitchTray *>(ev));
+            break;
+        case MapEventTypes::evTargetChatChannelSelected:
+            on_target_chat_channel_selected(static_cast<TargetChatChannelSelected *>(ev));
             break;
         default:
             fprintf(stderr,"Unhandled MapEventTypes %zu\n",ev->type()-MapEventTypes::base);
@@ -598,7 +601,7 @@ void MapInstance::process_chat(MapClient *sender,const QString &msg_text)
             for(MapClient *cl : m_clients)
             {
                 // TODO: save current target to char_entity for use in instances like this
-                //if(target->getIdx() == cl->char_entity()->getIdx())
+                if(sender->char_entity()->m_cur_target == cl->char_entity()->getIdx())
                     recipients.push_back(cl);
             }
             QString prepared_chat_message = QString("[Tell] %1: %2").arg(sender_char_name,msg_content.toString());
@@ -716,8 +719,8 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(ev->contents.contains("dazed")) {
-        ent->toggleDazed();
+    else if(ev->contents.contains("stunned")) {
+        ent->toggleStunned();
 
         QString msg = "Toggling " + ev->contents;
         qDebug() << msg;
@@ -1031,7 +1034,6 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
     if(!ev->battlecry.isNull() && !ev->description.isNull())
     {
         qWarning() << "Attempted description and battlecry request:" << ev->description << ev->battlecry;
-        // TODO: client expects us to force it to fill description and battlecry fields in UI?
         ent->m_char.m_battle_cry = ev->battlecry;
         ent->m_char.m_character_description = ev->description;
     }
@@ -1065,25 +1067,40 @@ void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
 
 void MapInstance::on_set_target(SetTarget *ev)
 {
-    qWarning() << "Unhandled set target request:" << ev->entity_idx;
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    // user entity
+    Entity *ent = src->char_entity();
+
+    qWarning() << "Unhandled set target request:" << ev->target_idx;
     // TODO: not sure what the client expects from the server here
+    ent->m_cur_target = ev->target_idx;
 }
 
 void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
 {
-    qWarning() << "Unhandled change chat type request.";
-    // TODO: not sure what the client expects from the server here
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    // user entity
+    Entity *ent = src->char_entity();
+
+    qWarning() << "Unhandled change chat type request." << ev->m_chat_type;
+    // TODO: not sure what the client expects the server to do here, but m_chat_type
+    // corresponds to the InfoType in InfoMessageCmd and eChatTypes in ChatMessage
+
+    // Passing cur_chat_channel to Entity in case we need it somewhere.
+    ent->m_cur_chat_channel = ev->m_chat_type;
 }
 
-void MapInstance::on_use_inspiration(UseInspiration *ev)
+void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
 {
-    qWarning() << "Unhandled use inspiration request." << ev->entity_idx << ev->boost_unk1;
+    qWarning() << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
     // TODO: not sure what the client expects from the server here
 }
 
 void MapInstance::on_powers_dockmode(PowersDockMode *ev)
 {
-    qWarning() << "Unhandled powers dock mode:" << ev->dock_mode << ev->dock_unk1 << ev->dock_unk2;
+    qWarning() << "Unhandled powers dock mode:" << ev->dock_mode << ev->toggle_secondary_tray;
 }
 
 void MapInstance::on_switch_tray(SwitchTray *ev)
