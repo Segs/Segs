@@ -1,3 +1,5 @@
+For more detailed information on contributing to SEGS development, please see [CONTRIBUTING.md](CONTRIBUTING.md)
+
 This document is more of a statement of intent, then statement of fact :)
 ***
 1. Use spaces instead of tabs. ( Most editors allow one to set this up so 'tab' = 4 spaces )
