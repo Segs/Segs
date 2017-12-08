@@ -297,8 +297,8 @@ bool MapServerData::read_classes(const QString &directory_path)
 
 bool MapServerData::read_exp_and_debt(const QString &directory_path)
 {
-    qDebug() << "Loading classes:";
-    if (!read_data_to<LevelExpAndDebt, levelsdebts_i0_requiredCrc>(directory_path, "classes.bin",
+    qDebug() << "Loading exp and debt tables:";
+    if (!read_data_to<LevelExpAndDebt, levelsdebts_i0_requiredCrc>(directory_path, "experience.bin",
                                                                    m_experience_and_debt_per_level))
         return false;
     return true;

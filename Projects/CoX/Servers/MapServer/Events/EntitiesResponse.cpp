@@ -13,17 +13,15 @@
 #include <iso646.h>
 
 namespace  {
-struct EntWalkRel
+struct SurfaceParams
 {
-    float v[3];
+    float traction;
+    float friction;
+    float bounce;
     float gravitational_constant;
     float max_speed;
 };
-struct CscCommon_Sub28
-{
-    EntWalkRel a,b;
-};
-static_assert(sizeof(CscCommon_Sub28)==320/8,"Required since it's sent as an bit array");
+static_assert(2*sizeof(SurfaceParams)==320/8,"Required since it's sent as an bit array");
 
 void storeSuperStats(const EntitiesResponse &/*src*/,BitStream &bs)
 {
@@ -264,27 +262,29 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     bool m_dazed=false;
     // user entity
     Entity *ent = src.m_client->char_entity();
-    CscCommon_Sub28 struct_csc;
-    memset(&struct_csc,0,sizeof(struct_csc));
-    for(int i=0; i<3; ++i)
-        struct_csc.a.v[i] = 1.5;
-    struct_csc.b.max_speed = struct_csc.a.max_speed = 1.5f;
-    struct_csc.b.gravitational_constant = struct_csc.a.gravitational_constant = 3.0f;
+    SurfaceParams struct_csc[2];
+    memset(&struct_csc,0,2*sizeof(SurfaceParams));
+    struct_csc[0].traction = 1.5f;
+    struct_csc[0].friction = 1.5f;
+    struct_csc[0].bounce = 1.5f;
+    struct_csc[1].max_speed = struct_csc[0].max_speed = 1.5f;
+    struct_csc[1].gravitational_constant = struct_csc[0].gravitational_constant = 3.0f;
     //    for(int i=3; i<5; ++i)
     //        struct_csc.a.v[i] = rand()&0xf;
+    uint8_t update_id=1;
     bool update_part_1=true;
     bool update_part_2=false;
     bs.StoreBits(1,update_part_1);
     if(update_part_1)
     {
         //rand()&0xFF
-        bs.StoreBits(8,1); // value stored in control state field_134
+        bs.StoreBits(8,update_id);
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
         // This is entity speed vector !!
         storeVector(bs,spd);
 
         bs.StoreFloat(1.0f); // speed rel back
-        bs.StoreBitArray((uint8_t *)&struct_csc,sizeof(CscCommon_Sub28)*8);
+        bs.StoreBitArray((uint8_t *)&struct_csc,2*sizeof(SurfaceParams)*8);
         bs.StoreFloat(0.1f);
         bs.StoreBits(1,m_flying); // key push bits ??
         bs.StoreBits(1,m_dazed); // key push bits ??
