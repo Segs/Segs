@@ -9,7 +9,7 @@ CREATE TABLE `table_versions` (
 
 INSERT INTO table_versions VALUES(1,'table_versions',0,'2017-11-11 08:57:42');
 INSERT INTO table_versions VALUES(2,'accounts',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(3,'characters',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(3,'characters',1,'2017-12-10 03:08:43');
 INSERT INTO table_versions VALUES(4,'costume',0,'2017-11-11 08:57:43');
 INSERT INTO table_versions VALUES(5,'gui',0,'2017-11-11 08:57:43');
 INSERT INTO table_versions VALUES(6,'options',0,'2017-11-11 08:57:43');
@@ -31,6 +31,8 @@ CREATE TABLE `characters` (
 	`char_level`	INTEGER NOT NULL DEFAULT 0,
 	`archetype`	TEXT NOT NULL,
 	`origin`	TEXT NOT NULL,
+	`description` VARCHAR(1024) NOT NULL,
+	`battlecry` VARCHAR(30) NOT NULL,
 	`bodytype`	INTEGER NOT NULL DEFAULT 4,
 	`current_map`	INTEGER NOT NULL,
 	`last_costume_id`	integer DEFAULT 0,

@@ -112,24 +112,30 @@ public:
             pyr_valid[i]=false;
         }
     }
-    uint8_t m_csc_deltabits=0;
-    bool m_send_deltas=0;
-    uint16_t controlBits=0;
-    uint16_t send_id=0;
-    void *current_state_P=0;
-    glm::vec3 camera_pyr;
-    int m_time_diff1=0;
-    int m_time_diff2=0;
-    uint8_t input_vel_scale=0;
-    int m_A_ang11_probably=0;
-    int m_B_ang11_probably=0;
-    uint8_t m_received_server_update_id=0;
-    bool m_no_coll = false;
-    bool has_input_commit_guess=0;
-    bool pos_delta_valid[3]= {};
-    bool pyr_valid[3]= {};
-    glm::vec3 pos_delta;
-    glm::quat direction;
+    uint8_t     m_csc_deltabits             = 0;
+    bool        m_send_deltas               = 0;
+    uint16_t    controlBits                 = 0;
+    uint16_t    send_id                     = 0;
+
+    void *current_state_P = 0;
+
+    glm::vec3   camera_pyr;
+    int         m_time_diff1                = 0;
+    int         m_time_diff2                = 0;
+    uint8_t     input_vel_scale             = 0;
+    int         m_A_ang11_probably          = 0;
+    int         m_B_ang11_probably          = 0;
+    uint8_t     m_received_server_update_id = 0;
+    bool        m_no_coll                   = false;
+    bool        has_input_commit_guess      = 0;
+    bool        pos_delta_valid[3]          = {};
+    bool        pyr_valid[3]                = {};
+    glm::vec3   pos_delta;
+    glm::quat   direction;
+    uint32_t    m_target_idx;
+    uint32_t    m_assist_target_idx;  // Target Assist
+    bool        m_has_target;
+
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
 };
@@ -158,87 +164,94 @@ public:
             ENT_PLAYER=2,
             ENT_CRITTER=4
         };
-        int                 m_access_level=0;
-        int                 m_randSeed=0; // Sequencer uses this as a seed for random bone scale
-        int                 field_68=0;
-        int                 m_SG_id=0;
-        int                 m_num_fx=0;
-        bool                m_is_logging_out = false;
-        int                 m_time_till_logout=0; // time in miliseconds untill given entity should be marked as logged out.
+        int                 m_access_level          = 0;
+        int                 m_randSeed              = 0; // Sequencer uses this as a seed for random bone scale
+        int                 field_68                = 0;
+        int                 m_SG_id                 = 0;
+        int                 m_num_fx                = 0;
+        bool                m_is_logging_out        = false;
+        int                 m_time_till_logout      = 0; // time in miliseconds untill given entity should be marked as logged out.
         std::vector<uint8_t> m_fx1;
         std::vector<uint32_t> m_fx2;
         std::vector<uint8_t> m_fx3;
-        uint8_t             m_costume_type      = 0;
-        int                 m_state_mode        = 0;
-        bool                m_state_mode_send   = false;
-        bool                m_odd_send          = false;
-        bool                m_SG_info           = false;
-        bool                m_seq_update        = false;
-        bool                m_is_villian        = false;
-        bool                m_contact           = false;
-        bool                m_is_flying         = false;
-        bool                m_is_stunned        = false;
-        bool                m_has_jumppack      = false;
-        float               m_backup_spd        = 1.0f;
+        uint8_t             m_costume_type          = 0;
+        int                 m_state_mode            = 0;
+        bool                m_state_mode_send       = false;
+        bool                m_odd_send              = false;
+        bool                m_SG_info               = false;
+        bool                m_seq_update            = false;
+        bool                m_is_villian            = false;
+        bool                m_contact               = false;
+        bool                m_is_flying             = false;
+        bool                m_is_stunned            = false;
+        bool                m_has_jumppack          = false;
+        bool                m_controls_disabled     = false;
+        float               m_backup_spd            = 1.0f;
         float               m_jump_height;
-        uint8_t             m_cur_chat_channel  = 10; // Default is local
-        int32_t             m_cur_target        = {0};
+        uint8_t             m_cur_chat_channel      = 10; // Default is local
+        QString             m_targeted_entity_name; // TODO: get target entity as object?
+        uint32_t            m_targeted_entity_idx   = inp_state.m_target_idx;
+        uint32_t            m_assisted_entity_idx   = inp_state.m_assist_target_idx;  // Target Assist
+        bool                m_has_targeted_entity   = (m_targeted_entity_idx) ? true : false;
+        uint8_t             m_update_id             = 1;
 
-        int                 u1=1;
-        int                 u2=0;
-        int                 u3=0;
-        int                 u4=0;
-        int                 u5=0;
-        int                 u6=0;
+        int                 u1 = 1;
+        int                 u2 = 0;
+        int                 u3 = 0;
+        int                 u4 = 0;
+        int                 u5 = 0;
+        int                 u6 = 0;
 
-        int                         m_seq_upd_num1=0;
-        int                         m_seq_upd_num2=0;
+        int                         m_seq_upd_num1      = 0;
+        int                         m_seq_upd_num2      = 0;
         PosUpdate                   m_pos_updates[64];
-        size_t                      m_update_idx=0;
+        size_t                      m_update_idx        = 0;
         std::vector<PosUpdate>      interpResults;
-        bool                        var_B4=0;
+        bool                        var_B4              = 0;
 
         Character           m_char;
 
-        bool                entReceiveAlwaysCon = false;
-        bool                entReceiveSeeThroughWalls = false;
-        int                 pkt_id_QrotUpdateVal[3] = {0};
+        bool                entReceiveAlwaysCon         = false;
+        bool                entReceiveSeeThroughWalls   = false;
+        int                 pkt_id_QrotUpdateVal[3]     = {0};
         glm::quat           qrot;
         glm::vec3           pos;
         glm::vec3           vel;
         uint32_t            prev_pos[3]= {0};
         Vector3_FPV         fixedpoint_pos;
-        bool                m_selector1 = false;
-        bool                m_pchar_things = false;
-        bool                might_have_rare = false;
-        bool                m_hasname = false;
-        bool                m_hasgroup_name = false;
-        bool                m_classname_override = false;
-        bool                m_hasRagdoll = false;
-        bool                m_create_player = false;
-        bool                m_rare_bits = false;
-        int                 current_client_packet_id= {0};
+        bool                m_selector1                 = false;
+        bool                m_pchar_things              = false;
+        bool                might_have_rare             = false;
+        bool                m_hasname                   = false;
+        bool                m_hasgroup_name             = false;
+        bool                m_classname_override        = false;
+        bool                m_hasRagdoll                = false;
+        bool                m_create_player             = false;
+        bool                m_rare_bits                 = false;
+        int                 current_client_packet_id    = {0};
         QString             m_group_name, m_override_name;
-        uint8_t             m_origin_idx= {0};
-        uint8_t             m_class_idx= {0};
-        uint8_t             m_type= {0};
-        int32_t             m_idx= {0};
-        uint32_t            m_db_id= {0};
-        uint32_t            m_input_ack= {0};
-        bool                player_type = false;
-        bool                m_player_villain = false;
-        bool                m_destroyed = false;
-        int                 ownerEntityId = 0;
-        int                 creatorEntityId = 0;
-        float               translucency = 1.f;
-        bool                m_is_fading = true;
-        MapClient *         m_client = nullptr;
-        FadeDirection       m_fading_direction=FadeDirection::In;
+        uint8_t             m_origin_idx                = {0};
+        uint8_t             m_class_idx                 = {0};
+        uint8_t             m_type                      = {0};
+        int32_t             m_idx                       = {0};
+        uint32_t            m_db_id                     = {0};
+        uint32_t            m_input_ack                 = {0};
+        bool                player_type                 = false;
+        bool                m_player_villain            = false;
+        bool                m_destroyed                 = false;
+        int                 ownerEntityId               = 0;
+        int                 creatorEntityId             = 0;
+        float               translucency                = 1.f;
+        bool                m_is_fading                 = true;
+        MapClient *         m_client                    = nullptr;
+        FadeDirection       m_fading_direction = FadeDirection::In;
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
         void                addInterp(const PosUpdate &p);
 
         int32_t             getIdx() const {return m_idx;}
+const   QString &           getTargetName() const { return m_targeted_entity_name; }
+        uint32_t            getTargetIdx() const { return m_targeted_entity_idx; }
 static  void                sendAllyID(BitStream &bs);
 static  void                sendPvP(BitStream &bs);
 
@@ -253,6 +266,8 @@ static  void                sendPvP(BitStream &bs);
         void                toggleJumppack();
         void                setBackupSpd(const float &val) { m_backup_spd = val; }
         void                setJumpHeight(const float &val) { m_jump_height = val; }
+        void                toggleControlsDisabled() { m_controls_disabled = !m_controls_disabled; }
+        void                setUpdateID(const uint8_t &val) { m_update_id = val;}
         void                setu1(const int &val) { u1 = val; }
         void                setu2(const int &val) { u2 = val; }
         void                setu3(const int &val) { u3 = val; }

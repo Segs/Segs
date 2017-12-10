@@ -66,7 +66,9 @@ void InputStateStorage::processDirectionControl(int dir,int prev_time,int press_
 {
     if(press_release)
     {
+#ifdef DEBUG_INPUT
         fprintf(stderr,"pressed\n");
+#endif
         switch(dir)
         {
             case 0: pos_delta[2] = 1.0f; break; //FORWARD
@@ -269,8 +271,8 @@ void InputState::serializefrom(BitStream &bs)
     if(bs.GetBits(1))
         extended_input(bs);
 
-    bool has_targeted_entity = bs.GetBits(1);
-    m_targeted_entity_idx = bs.GetPackedBits(14); // targeted entity server index
+    m_data.m_has_target = bs.GetBits(1);
+    m_data.m_target_idx = bs.GetPackedBits(14); // targeted entity server index
     int ctrl_idx=0;
 #ifdef DEBUG_INPUT
     fprintf(stderr,"T:[%d]",has_targeted_entity);

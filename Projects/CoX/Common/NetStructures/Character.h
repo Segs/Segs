@@ -11,6 +11,7 @@
 #include "BitStream.h"
 #include "Powers.h"
 #include "Common/GameData/attrib_definitions.h"
+#include "Common/GameData/other_definitions.h"
 
 #include <QtCore/QString>
 #include <QtCore/QVector>
@@ -128,7 +129,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Getters and setters
         uint32_t        getLevel() const { return m_level; }
-        void            setLevel(uint32_t val);
+        void            setLevel(uint32_t val) { m_level = val;}
 const   QString &       getName() const { return m_name; }
         void            setName(const QString &val);
 const   QString &       getMapName() const { return m_mapName; }
@@ -145,6 +146,10 @@ const   QString &       getClass() const { return m_class_name; }
         void            setXP(uint32_t val);
 const   QString &       getTitles() const { return m_titles[3]; }
         void            setTitles(bool prefix = false, QString generic = "", QString origin = "", QString special = "");
+        void            toggleAFK(const QString &msg = "");
+        void            toggleLFG() { m_lfg = !m_lfg; }
+        uint32_t        getInf() const { return m_influence; }
+        void            setInf(uint32_t val) {m_influence = val;};
 
 //
 //////////////////////////////////////////////////////////////////////////
@@ -177,10 +182,10 @@ const   QString &       getTitles() const { return m_titles[3]; }
         void            sendFriendList(BitStream &bs) const;
         void            sendOptions( BitStream &bs ) const;
         void            sendOptionsFull(BitStream &bs) const;
-        void            toggleAFK(const QString &msg = "");
 
         Parse_CharAttrib    m_current_attribs;
         Parse_CharAttrib    m_max_attribs;
+        LevelExpAndDebt     m_other_attribs;
         uint32_t            m_level             = 0;
         uint32_t            m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
         uint32_t            m_experience_points = 0;
@@ -193,19 +198,7 @@ const   QString &       getTitles() const { return m_titles[3]; }
         QString             m_character_description;
         bool                m_afk               = false;
         QString             m_afk_msg;
-        // TODO: Leverage new experience bin serialization
-        uint32_t            m_experience_reqs[50]   = {
-            0,          106,        443,        1025,       1825,
-            3062,       4637,       6587,       9267,       12392,
-            15992,      20987,      27392,      34792,      43885,
-            55069,      68069,      84019,      103219,     126619,
-            154619,     190619,     235619,     291619,     360919,
-            446119,     554119,     689119,     855769,     1059169,
-            1313169,    1627769,    2014169,    2484769,    3055969,
-            3757469,    4612169,    5648769,    6898969,    8401519,
-            10094419,   12001969,   14152519,   16574419,   19304119,
-            22382119,   25852969,   29765269,   34175719,   39149119
-        };
+        uint8_t             m_lfg               = 0;
 
 protected:
         PowerPool_Info  get_power_info(BitStream &src);

@@ -8,6 +8,7 @@
 #include "Character.h"
 
 #include "BitStream.h"
+#include "Entity.h"
 #include "Costume.h"
 #include "GameData/keybind_definitions.h"
 #include <QtCore/QString>
@@ -95,7 +96,6 @@ void Character::setTitles(bool prefix, QString generic, QString origin, QString 
     if(!m_has_titles)
       return;
 
-    m_has_titles = true;
     m_has_the_prefix = prefix;
     m_titles[0] = generic;
     m_titles[1] = origin;
@@ -128,9 +128,9 @@ void Character::GetCharBuildInfo(BitStream &src)
 void Character::SendCharBuildInfo(BitStream &bs) const
 {
     PowerPool_Info null_power = {0,0,0};
-    bs.StoreString(m_class_name); // class name
-    bs.StoreString(m_origin_name); // origin name
-    bs.StorePackedBits(5,0); // related to power level  ?
+    bs.StoreString(m_class_name);   // class name
+    bs.StoreString(m_origin_name);  // origin name
+    bs.StorePackedBits(5,0);        // related to power level  ?
     PUTDEBUG("SendCharBuildInfo after plevel");
 
     {
@@ -185,15 +185,15 @@ void Character::SendCharBuildInfo(BitStream &bs) const
     for(size_t idx=0; idx<num_boosts; ++idx)
     {
         bool set_boost=false;
-        bs.StorePackedBits(3,0); // bost idx
+        bs.StorePackedBits(3,0); // boost idx
         bs.StoreBits(1,set_boost); // 1 set, 0 clear
         if(set_boost)
         {
             int level=0;
             int num_combines=0;
             null_power.serializeto(bs);
-            bs.StorePackedBits(5,level); // bost idx
-            bs.StorePackedBits(2,num_combines); // bost idx
+            bs.StorePackedBits(5,level); // boost idx
+            bs.StorePackedBits(2,num_combines); // boost idx
         }
     }
     PUTDEBUG("SendCharBuildInfo after boosts");
@@ -438,10 +438,28 @@ void Character::sendDescription(BitStream &bs) const
 }
 void Character::sendTitles(BitStream &bs) const
 {
-    bs.StoreBits(1,m_has_the_prefix);           // likely an index to a title prefix ( 0 - None; 1 - The )
-    storeStringConditional(bs, m_titles[0]);    // Title 1 - generic title (first)
-    storeStringConditional(bs, m_titles[1]);    // Title 2 - origin title (second)
-    storeStringConditional(bs, m_titles[2]);    // Title 3 - yellow title (special)
+    bs.StoreBits(1, m_has_titles); // Does entity have titles?
+    if(!m_has_titles)
+        return;
+/*
+    if(m_c m_type == Entity::ENT_PLAYER)
+    {*/
+        bs.StoreString(getName());
+        bs.StoreBits(1, m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
+        storeStringConditional(bs, m_titles[0]); // Title 1 - generic title (first)
+        storeStringConditional(bs, m_titles[1]); // Title 2 - origin title (second)
+        storeStringConditional(bs, m_titles[2]); // Title 3 - yellow title (special)
+        /*
+    }
+    else // unused
+    {
+        bs.StoreString("");
+        bs.StoreBits(1,0);
+        storeStringConditional(bs,"");
+        storeStringConditional(bs,"");
+        storeStringConditional(bs,"");
+    }
+    */
 }
 void Character::sendKeybinds(BitStream &bs) const
 {
@@ -687,18 +705,10 @@ void Character::toggleAFK(const QString &msg)
 
 void Character::setXP(uint32_t val)
 {
-    for(int i=0; i<=50; i++)
-    {
-        if(val>=m_experience_reqs[i] && val<m_experience_reqs[i+1])
-            setLevel(i);
-    }
     m_experience_points = val;
-}
-
-void Character::setLevel(uint32_t val)
-{
-    m_level = val;
-// TODO: The below crashes the client. Why?
-//    if(m_experience_points < m_experience_reqs[val])
-//        setXP(m_experience_reqs[val]);
+    for(auto const& lvl: m_other_attribs.m_ExperienceRequired)
+    {
+        if(val>=lvl && val<lvl+1)
+            setLevel(lvl);
+    }
 }

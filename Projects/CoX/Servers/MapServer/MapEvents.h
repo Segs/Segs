@@ -401,11 +401,11 @@ public:
     }
 };
 
-class SetTarget final : public MapLinkEvent
+class UnqueueAll final : public MapLinkEvent
 {
 public:
-    int32_t target_idx;
-    SetTarget():MapLinkEvent(MapEventTypes::evSetTarget)
+    int32_t g_input_pak; // TODO: Not sure what this is?
+    UnqueueAll():MapLinkEvent(MapEventTypes::evUnqueueAll)
     {}
     void serializeto(BitStream &bs) const
     {
@@ -413,8 +413,7 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        target_idx = bs.GetBits(32);
-        // TODO: Not all bits were consumed
+        g_input_pak = bs.GetBits(32);
     }
 };
 

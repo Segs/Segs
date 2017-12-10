@@ -47,9 +47,13 @@ void storeCreation(const Entity &src, BitStream &bs)
         if(src.m_char.m_has_titles)
         {
             bs.StoreBits(1, src.m_char.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
-            storeStringConditional(bs, src.m_char.m_titles[0]); // Title 1 - generic title (first)
-            storeStringConditional(bs, src.m_char.m_titles[1]); // Title 2 - origin title (second)
-            storeStringConditional(bs, src.m_char.m_titles[2]); // Title 3 - yellow title (special)
+
+            bs.StoreString(src.m_char.m_titles[0]); // Title 1 - generic title (first)
+            bs.StoreString(src.m_char.m_titles[1]); // Title 2 - origin title (second)
+            bs.StoreString(src.m_char.m_titles[2]); // Title 3 - yellow title (special)
+            //storeStringConditional(bs, src.m_char.m_titles[0]); // Title 1 - generic title (first)
+            //storeStringConditional(bs, src.m_char.m_titles[1]); // Title 2 - origin title (second)
+            //storeStringConditional(bs, src.m_char.m_titles[2]); // Title 3 - yellow title (special)
         }
     }
     bs.StoreBits(1,src.m_hasname);
@@ -286,36 +290,13 @@ void sendCostumes(const Entity &src,BitStream &bs)
             bs.StorePackedBits(1,1); // npc costume idx ?
             break;
         case Entity::ENT_CRITTER: // client val 4
-            bs.StoreString("Unknown");
+            bs.StoreString("Unknown"); // TODO what is stored here?
             break;
     }
 }
 void sendXLuency(BitStream &bs,float val)
 {
     storeBitsConditional(bs,8,std::min(static_cast<int>(uint8_t(val*255)),255));
-}
-void sendTitles(const Entity &src,BitStream &bs)
-{
-    bs.StoreBits(1, src.m_char.m_has_titles); // Does entity have titles?
-    if(!src.m_char.m_has_titles)
-        return;
-
-    if(src.m_type==Entity::ENT_PLAYER)
-    {
-        bs.StoreString(src.m_char.getName());
-        bs.StoreBits(1, src.m_char.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
-        storeStringConditional(bs, src.m_char.m_titles[0]); // Title 1 - generic title (first)
-        storeStringConditional(bs, src.m_char.m_titles[1]); // Title 2 - origin title (second)
-        storeStringConditional(bs, src.m_char.m_titles[2]); // Title 3 - yellow title (special)
-    }
-    else // unused
-    {
-        bs.StoreString("");
-        bs.StoreBits(1,0);
-        storeStringConditional(bs,"");
-        storeStringConditional(bs,"");
-        storeStringConditional(bs,"");
-    }
 }
 void sendCharacterStats(const Entity &src,BitStream &bs)
 {
@@ -354,12 +335,11 @@ void sendBuffsConditional(const Entity &src,BitStream &bs)
 }
 void sendTargetUpdate(const Entity &src,BitStream &bs)
 {
-    int assist_id=0;
-    int target_id=0;
-    bool has_target_or_assists=false;
+    uint32_t assist_id = src.m_assisted_entity_idx;
+    uint32_t target_id = src.m_targeted_entity_idx;
 
-    bs.StoreBits(1,has_target_or_assists); // nothing here for now
-    if(!has_target_or_assists)
+    bs.StoreBits(1,src.m_has_targeted_entity); // TODO: test this
+    if(!src.m_has_targeted_entity)
         return;
     bs.StoreBits(1,target_id!=0);
     if(target_id!=0)
@@ -479,7 +459,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
-        sendTitles(src,bs);
+        src.m_char.sendTitles(bs);
     }
     if(src.m_pchar_things)
     {

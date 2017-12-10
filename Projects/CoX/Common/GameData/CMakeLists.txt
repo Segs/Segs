@@ -6,6 +6,7 @@ set(GAMEDATA_SRC
     anim_serializers.h
     attrib_serializers.cpp
     attrib_serializers.h
+    attrib_definitions.h
     bodypart_serializers.cpp
     bodypart_serializers.h
     scenegraph_serializers.h

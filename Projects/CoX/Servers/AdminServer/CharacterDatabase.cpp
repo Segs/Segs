@@ -137,7 +137,15 @@ bool CharacterDatabase::fill( Character *c)
     c->setLevel((uint8_t)m_prepared_char_select.value("char_level").toUInt());
     c->setName(STR_OR_EMPTY(m_prepared_char_select.value("char_name").toString()));
     c->m_class_name = (STR_OR_EMPTY(m_prepared_char_select.value("archetype").toString()));
-    c->m_origin_name= (STR_OR_EMPTY(m_prepared_char_select.value("origin").toString()));
+    c->m_origin_name = (STR_OR_EMPTY(m_prepared_char_select.value("origin").toString()));
+    c->m_character_description = (STR_OR_EMPTY(m_prepared_char_select.value("description").toString()));
+    c->m_battle_cry = (STR_OR_EMPTY(m_prepared_char_select.value("battlecry").toString()));
+    c->m_experience_debt = (m_prepared_char_select.value("xp").toUInt());
+    c->m_experience_points = (m_prepared_char_select.value("xpdebt").toUInt());
+    c->m_influence = (m_prepared_char_select.value("inf").toUInt());
+    // TODO: Pull HP & END from Entity.
+    //c->m_hitpoints = (m_prepared_char_select.value("hitpoints").toUInt());
+    //c->m_endurance = (m_prepared_char_select.value("endurance").toUInt());
 
     CharacterCostume *main_costume = new CharacterCostume;
     // appearance related.
