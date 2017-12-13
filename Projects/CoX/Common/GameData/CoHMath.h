@@ -189,3 +189,28 @@ inline float normalizeRadAngle(float ang)
         res += 2*F_PI;
     return res;
 }
+inline uint32_t countBits(uint32_t val)
+{
+    uint32_t r = 0;
+    while (val >>= 1)
+        r++;
+    
+    return r; // log2(v)
+}
+inline static float AngleDequantize(uint32_t val,int numb_bits) {
+    float v = val;
+    v = v/(1<<numb_bits);
+    v *= (2*F_PI);
+    v -= F_PI;
+    return v;
+}
+inline uint32_t AngleQuantize(float val,int numb_bits)
+{
+    int max_val = 1<<numb_bits;
+
+    float v = normalizeRadAngle(val); // ensure v falls within -pi..pi
+    v = (v+F_PI)/(2*F_PI);
+    v *= max_val;
+//  assert(v<=max_val);
+    return uint32_t(v);
+}

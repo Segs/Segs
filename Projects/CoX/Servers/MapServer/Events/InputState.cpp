@@ -7,6 +7,7 @@
  */
 
 //#define DEBUG_INPUT
+//#define DEBUG_INPUT2
 #define _USE_MATH_DEFINES
 #include "Events/InputState.h"
 #include "Entity.h"
@@ -21,7 +22,8 @@ enum BinaryControl
     RIGHT=3,
     UP=4,
     DOWN=5,
-    BINARY_MAX=6,
+    PITCH=6,
+    YAW=7,
 };
 void InputState::serializeto(BitStream &) const
 {
@@ -35,8 +37,6 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     send_id=other.send_id;
     m_time_diff1=other.m_time_diff1;
     m_time_diff2=other.m_time_diff2;
-    m_A_ang11_probably=other.m_A_ang11_probably;
-    m_B_ang11_probably=other.m_B_ang11_probably;
     has_input_commit_guess=other.has_input_commit_guess;
     m_received_server_update_id = other.m_received_server_update_id;
     m_no_coll = other.m_no_coll;
@@ -45,6 +45,9 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     {
         if(other.pos_delta_valid[i])
             pos_delta[i] = other.pos_delta[i];
+            
+        if(other.m_orientation_pyr[i])
+            m_orientation_pyr[i] = other.m_orientation_pyr[i];
     }
     bool update_needed=false;
     for(int i=0; i<3; ++i)
@@ -101,15 +104,16 @@ void InputStateStorage::processDirectionControl(int dir,int prev_time,int press_
 void InputState::partial_2(BitStream &bs)
 {
     uint8_t control_id;
-    //uint16_t v6;
     uint16_t ms_since_prev;
-    int v;
+    float v;
     static const char *control_name[] = {"FORWARD",
                                          "BACK",
                                          "LEFT",
                                          "RIGHT",
                                          "UP",
-                                         "DOWN"};
+                                         "DOWN",
+                                         "PITCH",
+                                         "YAW",};
     do
     {
         if(bs.GetBits(1))
@@ -127,25 +131,27 @@ void InputState::partial_2(BitStream &bs)
             case LEFT: case RIGHT:
             case UP: case DOWN:
 #ifdef DEBUG_INPUT
-                fprintf(stderr,"%s  : %d - ",control_name[control_id],time_since_prev);
+                fprintf(stderr,"%s  : %d - ", control_name[control_id], ms_since_prev);
 #endif
                 m_data.processDirectionControl(control_id,ms_since_prev,bs.GetBits(1));
                 break;
-            case 6:
-#ifdef DEBUG_INPUT
-                fprintf(stderr,"control_id == 6\n");
-#endif
-            case 7:
+            case PITCH: // camera pitch (Insert/Delete keybinds)
             {
-                v = bs.GetBits(11);
-                float recovered = (float(v)/2048.0f)*(2*M_PI) - M_PI;
+                v = AngleDequantize(bs.GetBits(11),11); // pitch
+                m_data.pyr_valid[control_id==6] = true;
+                m_data.camera_pyr[0] = v;
+#ifdef DEBUG_INPUT2
+                fprintf(stderr,"Pitch (%f): %f \n", m_data.m_orientation_pyr[0], m_data.camera_pyr.x);
+#endif
+                break;
+            }
+            case YAW: // camera yaw (Q or E keybinds)
+            {
+                v = AngleDequantize(bs.GetBits(11),11); // yaw
                 m_data.pyr_valid[control_id==7] = true;
-                if(control_id==6) //TODO: use camera_pyr.v[] here ?
-                    m_data.camera_pyr[0] = recovered;
-                else
-                    m_data.camera_pyr[1] = recovered;
-#ifdef DEBUG_INPUT
-                fprintf(stderr,"Pyr %f : %f \n",m_data.camera_pyr.x,m_data.camera_pyr.y);
+                m_data.camera_pyr[1] = v;
+#ifdef DEBUG_INPUT2
+                fprintf(stderr,"Yaw %f : %f \n", m_data.m_orientation_pyr[0], m_data.camera_pyr.y);
 #endif
                 break;
             }
@@ -195,7 +201,7 @@ void InputState::extended_input(BitStream &bs)
         m_data.send_id = bs.GetBits(16);
         m_data.current_state_P = 0;
 #ifdef DEBUG_INPUT
-        fprintf(stderr,"CSC_DELTA[%x-%x] : ",m_data.m_csc_deltabits,m_data.someOtherbits);
+        fprintf(stderr,"CSC_DELTA[%x-%x-%x] : ", m_data.m_csc_deltabits, m_data.send_id, m_data.current_state_P);
 #endif
         partial_2(bs);
 
@@ -209,11 +215,10 @@ void InputState::extended_input(BitStream &bs)
 #endif
     if(bs.GetBits(1))//if ( abs(s_prevTime - ms_time) < 1000 )
     {
-        m_data.m_A_ang11_probably = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[0]);
-        m_data.m_B_ang11_probably = bs.GetBits(11);//pak->SendBits(11, control_state.field_1C[1]);
+        m_data.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[0]);
+        m_data.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[1]);
 #ifdef DEBUG_INPUT
-        fprintf(stderr,"%f : %f",m_data.m_A_ang11_probably/2048.0,m_data.m_A_ang11_probably/2048.0);
-        fprintf(stderr,"ang11 %x : %x",m_data.m_A_ang11_probably,m_data.m_A_ang11_probably);
+        fprintf(stderr,"%f : %f",m_data.m_orientation_pyr[0],m_data.m_orientation_pyr[1]);;
 #endif
     }
 }
@@ -259,7 +264,7 @@ struct ControlState
     void dump()
     {
 #ifdef DEBUG_INPUT
-        fprintf(stderr,"CSC: %d,%d, [%f,%f]",field0,time_res,timestep,time_rel1C);
+        fprintf(stderr,"CSC: %d,%d, [%f,%f]",client_timenow,time_res,timestep,time_rel1C);
         fprintf(stderr, "(%lld %lld)",m_perf_cntr_diff,m_perf_freq_diff);
 #endif
     }
@@ -309,13 +314,6 @@ void InputState::serializefrom(BitStream &bs)
     fprintf(stderr,"\n");
 #endif
 }
-static float dequantize(uint16_t val,int bitcount) {
-    float z=val;
-    z = z/(1<<bitcount);
-    z *= 6.283185307179586;
-    z -= M_PI;
-    return z;
-}
 //TODO: use generic ReadableStructures here ?
 void InputState::recv_client_opts(BitStream &bs)
 {
@@ -348,8 +346,8 @@ void InputState::recv_client_opts(BitStream &bs)
                 case ClientOption::t_quant_angle:
                 {
                     float * tgt_angle = (float *)arg.tgt;
-                    *tgt_angle = dequantize(bs.GetBits(14),14);
-                    printf("Quant angle res:%f\n",*tgt_angle); //quantized angle
+                    *tgt_angle = AngleDequantize(bs.GetBits(14),14);
+                    printf("Quant angle res:%f\n",*tgt_angle); //dequantized angle
                     break;
                 }
                 case ClientOption::t_string:
