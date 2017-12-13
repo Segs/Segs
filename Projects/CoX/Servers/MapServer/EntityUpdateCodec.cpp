@@ -122,17 +122,6 @@ bool update_rot(const Entity &src, int axis ) /* returns true if given axis need
         return true;
     return false;
 }
-uint32_t AngleQuantize(float value,int numb_bits)
-{
-    int max_val = 1<<numb_bits;
-
-    float v = normalizeRadAngle(value); // ensure v falls within -pi..pi
-    v = (v+F_PI)/(2*F_PI);
-    v *= max_val;
-//  assert(v<=max_val);
-    return uint32_t(v);
-}
-
 void storeOrientation(const Entity &src,BitStream &bs)
 {
     // Check if update needed through update_rot()
@@ -154,8 +143,8 @@ void storeOrientation(const Entity &src,BitStream &bs)
     fprintf(stderr,"dir: %s \n", glm::to_string(src.inp_state.direction).c_str());
     fprintf(stderr,"camera_pyr: %s \n", glm::to_string(src.inp_state.camera_pyr).c_str());
     fprintf(stderr,"pyr_angles: farr(%f, %f, %f)\n", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
-    fprintf(stderr,"A ang11: %x \n", src.inp_state.m_A_ang11_probably);
-    fprintf(stderr,"B ang11: %x \n", src.inp_state.m_B_ang11_probably);
+    fprintf(stderr,"A ang11: %f \n", src.inp_state.m_A_ang11_probably);
+    fprintf(stderr,"B ang11: %f \n", src.inp_state.m_B_ang11_probably);
     fprintf(stderr,"vel_scale: %f \n", src.inp_state.input_vel_scale);
 #endif
     for(int i=0; i<3; i++)
