@@ -9,6 +9,7 @@ For a list of SEGS authors and contributors, please see [Authors.txt](./docs/Aut
 * Our [wiki](https://github.com/Segs/Segs/wiki)
 * The [Issue Queue](https://github.com/Segs/Segs/issues)
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide)
+* Join us on [Chat!](./docs/CONTRIBUTING.md#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 
 Basic instructions for compiling SEGS in Linux and Windows are below, however for more detailed visual instructions, visit https://segs.nemerle.eu/developers
 
@@ -135,6 +136,7 @@ Please read [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and see the links below to
 * Our GitHub: https://github.com/Segs/Segs
 * The Issue Queue: https://github.com/Segs/Segs/issues
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide))
+* Join us on [Chat!](./docs/CONTRIBUTING.md#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 
 
 MORE INFORMATION

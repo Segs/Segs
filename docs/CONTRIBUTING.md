@@ -9,6 +9,7 @@ The following is a set of guidelines for contributing to SEGS. These are mostly 
 [Code of Conduct](#code-of-conduct)
 
 [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
+  * [Chat with us on Discord](#chat-with-us-on-discord)
   * [Chat with us on IRC](#chat-with-us-on-irc)
 
 [What should I know before I get started?](#what-should-i-know-before-i-get-started)
@@ -40,9 +41,16 @@ We have an official message board and a FAQ where the community chimes in with h
 * [SEGS Official Forums](https://segs.nemerle.eu/forumz/index.php)
 * [The FAQ Thread](https://segs.nemerle.eu/forumz/viewtopic.php?f=8&t=8244)
 
+### Chat with us on Discord
+
+Chat with us on Discord! We're currently hosting a `#segs` channel on Splat Chat. You can join by clicking this link:
+ 
+ [**Click here to join SEGS Discord**](https://discord.gg/DKaEyhd)
+
+
 ### Chat with us on IRC
 
-If chat is more your speed, you can join us on IRC:
+Or if IRC chat is more your speed, you can join us on IRC:
 
   **Server:** irc.nemerle.eu  
   **Port:** 6667  
