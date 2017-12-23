@@ -151,7 +151,7 @@ void InputState::partial_2(BitStream &bs)
                 m_data.pyr_valid[control_id==7] = true;
                 m_data.camera_pyr[1] = v;
 #ifdef DEBUG_INPUT2
-                fprintf(stderr,"Yaw %f : %f \n", m_data.m_orientation_pyr[0], m_data.camera_pyr.y);
+                fprintf(stderr,"Yaw (%f): %f \n", m_data.m_orientation_pyr[1], m_data.camera_pyr.y);
 #endif
                 break;
             }
