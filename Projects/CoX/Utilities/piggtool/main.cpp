@@ -201,7 +201,10 @@ int main(int argc, char **argv)
 
     const QString pigg_name = parser.positionalArguments().constFirst();
     PiggFile hdr;
-    loadPigg(pigg_name,hdr);
+    if(!loadPigg(pigg_name,hdr))
+    {
+        qCritical() << "Failed to read"<<pigg_name;
+    }
     if(parser.isSet("l")) {
         dumpFileList(hdr);
     }
