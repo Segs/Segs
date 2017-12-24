@@ -102,7 +102,7 @@ INSTALLATION
    - Qt5Sql.dll
    - Qt5Widgets.dll
 
-7. Using the piggtool located in the main SEGS folder, extract the BIN files from bin.pigg.
+5. Using the piggtool located in the main SEGS folder, extract the BIN files from bin.pigg.
 
    SEGS requires that we extract bin.pigg to the `/data/bin/` folder. Open a command prompt console. Using the `cd` command, navigate to the SEGS folder, which should contain `piggtool.exe`. To confirm you are in the correct directory, simply enter `piggtool` in the console. If you receive a help menu about its usage, you are in the correct folder. Type the following into the console and press Enter:
 
@@ -148,7 +148,7 @@ Configuration of your SEGS server is done using the `settings.cfg` file saved in
 
    Much like the utilities, the authserver requires a `.dll` file to run. Navigate to the folder containing the build of your project. It should be named something like this: `build-Segs-Desktop_Qt_YOUR_VERSION_NUMBER_MinGW_32bit-Default`. From this folder, navigate to: `./3rd_party/built/lib/`. Copy the file `libACE.dll` to the SEGS directory.
 
-1. Setup ./settings.cfg.
+2. Setup ./settings.cfg.
 
    The settings.cfg file contains all of the configuration options for your private SEGS server. Within this file are several sections:
 
@@ -177,7 +177,7 @@ Configuration of your SEGS server is done using the `settings.cfg` file saved in
    - `listen_addr` -- This is the IP of the server that clients will connect to, followed by `:7003` which is the default listening port. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network. The port never changes.
    - `location_addr` -- This is the IP of the server where the clients will receive from the server, followed by `:7003` which is the default listening port. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network. The port never changes.
 
-2. Setup Admin Account
+3. Setup Admin Account
    SEGS comes with a default admin account setup with the login details below:
    ```
    Username: Admin
