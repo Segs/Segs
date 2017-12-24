@@ -109,7 +109,7 @@ void segs_renderUtil_GetGfxCardVend(SysInfo_2 *sysinfo)
         strcpy(sysinfo->driver_version, "Unknown Vendor");
     }
 }
-static void segs_wcw_statemgmt_enableColorMaterial()
+extern void segs_wcw_statemgmt_enableColorMaterial()
 {
     glEnable(GL_COLOR_MATERIAL);
 }
