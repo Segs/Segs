@@ -120,7 +120,7 @@ INSTALLATION
 
 7. Bypass the CohUpdater requirement.
 
-   The Issue 0 client requires that you launch the game with a program called `CohUpdater`. To bypass this, create a shortcut to CoX.exe and place it wherever you'd like. Access its properties, and in the `Target:` field, add the following: `-project SEGS`.
+   The Issue 0 client requires that you launch the game with a program called `CohUpdater.exe`. To bypass this, create a shortcut to CoX.exe and place it wherever you'd like. Access its properties, and in the `Target:` field, add the following: `-project SEGS`.
    
    If you would like to run the client in windowed mode for debugging purposes, add these optional instructions: `-fullscreen 0 -screen 1024 768`.
    
