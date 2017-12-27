@@ -752,7 +752,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(errormsg)));
         }
     }
-    else if(ev->contents.contains("fly")) {
+    else if(ev->contents == "fly") {
         ent->toggleFly();
 
         QString msg = "Toggling " + ev->contents;
@@ -760,7 +760,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(ev->contents.contains("stunned")) {
+    else if(ev->contents == "stunned") {
         ent->toggleStunned();
 
         QString msg = "Toggling " + ev->contents;
@@ -768,7 +768,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(ev->contents.contains("jumppack")) {
+    else if(ev->contents == "jumppack") {
         ent->toggleJumppack();
 
         QString msg = "Toggling " + ev->contents;
@@ -796,7 +796,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(ev->contents.startsWith("afk ") || ev->contents.contains("afk")) {
+    else if(ev->contents.startsWith("afk ") || ev->contents == "afk") {
         int space = ev->contents.indexOf(' ');
         QString val = ev->contents.mid(space+1);
         ent->m_char.toggleAFK(val);
@@ -868,7 +868,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::REGULAR, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(ev->contents.contains("whoall")) {
+    else if(ev->contents == "whoall") {
         QString msg = "Players on this map:\n";
 
         for(MapClient *cl : m_clients)
@@ -922,7 +922,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::USER_ERROR, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(ev->contents.contains("controls_disabled")) {
+    else if(ev->contents == "controls_disabled") {
         ent->toggleControlsDisabled();
 
         QString msg = "Toggling " + ev->contents;
@@ -942,7 +942,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(ev->contents.contains("lfg")) {
+    else if(ev->contents == "lfg") {
         ent->m_char.toggleLFG();
 
         QString msg = "Toggling " + ev->contents;
