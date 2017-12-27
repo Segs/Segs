@@ -89,22 +89,7 @@ INSTALLATION
    
    Navigate to the CoX folder and copy the contents of the `/piggs/` subfolder to the `/data/` directory of SEGS.
 
-4. Copy over required DLL files to SEGS.
-
-   NOTE: This step is only required on Windows.
-
-   The utilities present in the SEGS folder require several `.dll` files to operate. Navigate to your Qt installation folder and follow this path: `./Qt/YOUR_VERSION_NUMBER/mingw53_32/bin/`. Copy the following files over to the SEGS folder:
-   
-   - libgcc_s_dw2-1.dll
-   - libstdc++-6.dll
-   - libwinpthread-1.dll
-   - Qt5Core.dll
-   - Qt5Gui.dll
-   - Qt5Network.dll
-   - Qt5Sql.dll
-   - Qt5Widgets.dll
-
-5. Using the piggtool located in the main SEGS folder, extract the BIN files from bin.pigg.
+4. Using the piggtool located in the main SEGS folder, extract the BIN files from bin.pigg.
 
    SEGS requires that we extract bin.pigg to the `/data/bin/` folder. Open a command prompt console. Using the `cd` command, navigate to the SEGS folder, which should contain `piggtool`. To confirm you are in the correct directory, simply enter `piggtool` in the console. If you receive a help menu about its usage, you are in the correct folder. Type the following into the console and press Enter:
 
@@ -114,11 +99,11 @@ INSTALLATION
    
    You should then see a folder called `bin` be created in your SEGS directory. Simply move it into the `data` folder.
    
-6. Point the CoX client towards your server.
+5. Point the CoX client towards your server.
 
    Run `CoX-Auth.exe` from the CoX directory and set the IP address to that of your server. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network.
 
-7. Bypass the CohUpdater requirement.
+6. Bypass the CohUpdater requirement.
 
    The Issue 0 client requires that you launch the game with a program called `CohUpdater.exe`. To bypass this, create a shortcut to CoX.exe and place it wherever you'd like. Access its properties, and in the `Target:` field, add the following: `-project SEGS`.
    
@@ -126,7 +111,7 @@ INSTALLATION
    
    When you want to launch the client, you will need to use this shortcut.
 
-8. Continue Server Setup
+7. Continue Server Setup
    
    The client is now ready for play, but continue the server setup by following along below.
 
@@ -146,13 +131,7 @@ CONFIGURATION
 
 Configuration of your SEGS server is done using the `settings.cfg` file saved in the SEGS folder, and must be completed before running your server for the first time. See below for an exhaustive breakdown of server configuration.
 
-1. Acquire required DLL file.
-
-   NOTE: This step is only required on Windows.
-
-   Much like the utilities, the authserver requires a `.dll` file to run. Navigate to the folder containing the build of your project. It should be named something like this: `build-Segs-Desktop_Qt_YOUR_VERSION_NUMBER_MinGW_32bit-Default`. From this folder, navigate to: `./3rd_party/built/lib/`. Copy the file `libACE.dll` to the SEGS directory.
-
-2. Setup ./settings.cfg.
+1. Setup ./settings.cfg.
 
    The settings.cfg file contains all of the configuration options for your private SEGS server. Within this file are several sections:
 
@@ -181,7 +160,7 @@ Configuration of your SEGS server is done using the `settings.cfg` file saved in
    - `listen_addr` -- This is the IP of the server that clients will connect to, followed by `:7003` which is the default listening port. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network. The port never changes.
    - `location_addr` -- This is the IP of the server where the clients will receive from the server, followed by `:7003` which is the default listening port. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network. The port never changes.
 
-3. Setup Admin Account
+2. Setup Admin Account
    SEGS comes with a default admin account setup with the login details below:
    ```
    Username: Admin
