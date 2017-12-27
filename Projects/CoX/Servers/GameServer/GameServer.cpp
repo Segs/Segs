@@ -49,7 +49,7 @@ public:
     bool                    m_online=false;
     uint8_t                 m_id=0;
     uint16_t                m_current_players=0;
-    int                     m_max_account_slots;
+    int                     m_max_character_slots;
     uint16_t                m_max_players=0;
     uint8_t                 m_unk1=0;
     uint8_t                 m_unk2=0;
@@ -138,7 +138,7 @@ bool GameServer::ReadConfig(const QString &inipath)
     QString location_addr = config.value("location_addr","127.0.0.1:7002").toString();
     d->m_serverName = config.value("server_name","unnamed").toString();
     d->m_max_players = config.value("max_players",600).toUInt();
-    d->m_max_account_slots = config.value("max_account_slots",MaxAccountSlots).toInt();
+    d->m_max_character_slots = config.value("max_character_slots",MaxAccountSlots).toInt();
     if(!parseAddress(listen_addr,d->m_listen_point))
     {
         qCritical() << "Badly formed IP address" << listen_addr;
@@ -207,7 +207,7 @@ uint16_t GameServer::getMaxPlayers()
 
 int GameServer::getMaxAccountSlots() const
 {
-    return d->m_max_account_slots;
+    return d->m_max_character_slots;
 }
 
 uint8_t GameServer::getUnkn1( )
