@@ -90,16 +90,16 @@ void Character::setName(const QString &val )
         m_name = "EMPTY";
 }
 
-void Character::setTitles(bool prefix, QString generic, QString origin, QString special)
+void setTitles(Character &src, bool prefix, QString generic, QString origin, QString special)
 {
-    m_has_titles = prefix || !generic.isEmpty() || !origin.isEmpty() || special.isEmpty();
-    if(!m_has_titles)
+    src.m_has_titles = prefix || !generic.isEmpty() || !origin.isEmpty() || special.isEmpty();
+    if(!src.m_has_titles)
       return;
 
-    m_has_the_prefix = prefix;
-    m_titles[0] = generic;
-    m_titles[1] = origin;
-    m_titles[2] = special;
+    src.m_has_the_prefix = prefix;
+    src.m_titles[0] = generic;
+    src.m_titles[1] = origin;
+    src.m_titles[2] = special;
 }
 
 void Character::sendTray(BitStream &bs) const
@@ -683,19 +683,19 @@ void ClientOptions::init()
 }
 #undef ADD_OPT
 
-void Character::toggleAFK(const QString &msg)
+void toggleAFK(Character &src, const QString &msg)
 {
-    m_afk = !m_afk;
-    if(m_afk)
-        m_afk_msg = msg;
+    src.m_afk = !src.m_afk;
+    if(src.m_afk)
+        src.m_afk_msg = msg;
 }
 
-void Character::setXP(uint32_t val)
+void setXP(Character &src, uint32_t val)
 {
-    m_experience_points = val;
-    for(auto const& lvl: m_other_attribs.m_ExperienceRequired)
+    src.m_experience_points = val;
+    for(auto const& lvl: src.m_other_attribs.m_ExperienceRequired)
     {
         if(val>=lvl && val<lvl+1)
-            setLevel(lvl);
+            setLevel(src, lvl);
     }
 }

@@ -506,11 +506,11 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
     };
     Character sender_char       = sender->char_entity()->m_char;
 
-    QString  sender_class       = QString(sender_char.getClass()).remove("Class_");
+    QString  sender_class       = QString(getClass(sender_char)).remove("Class_");
     QString  sender_battlecry   = sender_char.m_battle_cry;
-    uint32_t sender_level       = sender_char.getLevel();
+    uint32_t sender_level       = getLevel(sender_char);
     QString  sender_char_name   = sender_char.getName();
-    QString  sender_origin      = sender_char.getOrigin();
+    QString  sender_origin      = getOrigin(sender_char);
     QString  target_char_name   = sender->char_entity()->getTargetName();
 
     foreach (const QString &str, replacements) {
@@ -842,13 +842,13 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         int space = ev->contents.indexOf(' ');
         QString val = ev->contents.mid(space+1);
         float attrib = val.toFloat();
-        uint32_t lvl = ent->m_char.getLevel();
+        uint32_t lvl = getLevel(ent->m_char);
         uint32_t newlvl;
 
-        ent->m_char.setXP(attrib);
+        setXP(ent->m_char, attrib);
         QString msg = "Setting XP to " + QString::number(attrib);
 
-        newlvl = ent->m_char.getLevel();
+        newlvl = getLevel(ent->m_char);
         if(newlvl != lvl)
             msg += " and LVL to " + QString::number(newlvl+1);
 
@@ -861,7 +861,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         QString val = ev->contents.mid(space+1);
         uint32_t attrib = val.toUInt();
 
-        ent->m_char.setLevel(attrib-1); // TODO: Why must this be -1?
+        setLevel(ent->m_char, attrib-1); // TODO: Why must this be -1?
 
         QString msg = "Setting Level to: " + QString::number(attrib);
         qDebug() << msg;
@@ -874,10 +874,10 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         for(MapClient *cl : m_clients)
         {
             QString name        = cl->char_entity()->name();
-            QString lvl         = QString::number(cl->char_entity()->m_char.getLevel());
+            QString lvl         = QString::number(getLevel(cl->char_entity()->m_char));
             QString clvl        = QString::number(cl->char_entity()->m_char.m_combat_level);
-            QString origin      = cl->char_entity()->m_char.getOrigin();
-            QString archetype   = QString(cl->char_entity()->m_char.getClass()).remove("Class_");
+            QString origin      = getOrigin(cl->char_entity()->m_char);
+            QString archetype   = QString(getClass(cl->char_entity()->m_char)).remove("Class_");
 
             // Format: character_name "lvl" level "clvl" combat_level origin archetype
             msg += name + " lvl " + lvl + " clvl " + clvl + " " + origin + " " + archetype + "\n";
@@ -896,7 +896,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
 
         if(ev->contents == "setTitles")
         {
-            ent->m_char.setTitles();
+            setTitles(ent->m_char);
             msg = "Titles reset to nothing";
         }
         else
@@ -914,7 +914,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
                 generic = ev->contents.mid(space2+1,space3-(space2+1));
                 origin  = ev->contents.mid(space3+1,space4-(space3+1));
                 special = ev->contents.mid(space4+1);
-                ent->m_char.setTitles(prefix, generic, origin, special);
+                setTitles(ent->m_char, prefix, generic, origin, special);
                 msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
             }
         }
@@ -923,7 +923,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
     else if(ev->contents == "controls_disabled") {
-        ent->toggleControlsDisabled();
+        toggleControlsDisabled(ent);
 
         QString msg = "Toggling " + ev->contents;
         qDebug() << msg;
@@ -935,7 +935,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         QString val = ev->contents.mid(space+1);
         uint8_t attrib = val.toUInt();
 
-        ent->setUpdateID(attrib);
+        setUpdateID(ent, attrib);
 
         QString msg = "Setting updateID to: " + QString::number(attrib);
         qDebug() << msg;
@@ -943,7 +943,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
     else if(ev->contents == "lfg") {
-        ent->m_char.toggleLFG();
+        toggleLFG(ent->m_char);
 
         QString msg = "Toggling " + ev->contents;
         qDebug() << msg;
@@ -955,7 +955,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         QString val = ev->contents.mid(space+1);
         uint32_t attrib = val.toUInt();
 
-        ent->m_char.setInf(attrib);
+        setInf(ent->m_char, attrib);
 
         QString msg = "Setting influence to: " + QString::number(attrib);
         qDebug() << msg;
@@ -966,7 +966,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(ev->contents.startsWith("setu1 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        ent->setu1(val);
+        setu1(ent, val);
 
         QString msg = "Set u1 to: " + QString::number(val);
         qDebug() << msg;
@@ -977,7 +977,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(ev->contents.startsWith("setu2 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        ent->setu2(val);
+        setu2(ent, val);
 
         QString msg = "Set u2 to: " + QString::number(val);
         qDebug() << msg;
@@ -988,7 +988,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(ev->contents.startsWith("setu3 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        ent->setu3(val);
+        setu3(ent, val);
 
         QString msg = "Set u3 to: " + QString::number(val);
         qDebug() << msg;
@@ -999,7 +999,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(ev->contents.startsWith("setu4 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        ent->setu4(val);
+        setu4(ent, val);
 
         QString msg = "Set u4 to: " + QString::number(val);
         qDebug() << msg;
@@ -1010,7 +1010,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(ev->contents.startsWith("setu5 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        ent->setu5(val);
+        setu5(ent, val);
 
         QString msg = "Set u5 to: " + QString::number(val);
         qDebug() << msg;
@@ -1021,7 +1021,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(ev->contents.startsWith("setu6 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        ent->setu6(val);
+        setu6(ent, val);
 
         QString msg = "Set u6 to: " + QString::number(val);
         qDebug() << msg;

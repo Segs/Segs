@@ -128,28 +128,13 @@ public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
 // Getters and setters
-        uint32_t        getLevel() const { return m_level; }
-        void            setLevel(uint32_t val) { m_level = val;}
 const   QString &       getName() const { return m_name; }
         void            setName(const QString &val);
 const   QString &       getMapName() const { return m_mapName; }
         void            setMapName(const QString &val) { m_mapName = val; }
         uint8_t         getIndex() const { return m_index; }
         void            setIndex(uint8_t val) { m_index = val; }
-        uint64_t        getAccountId() const { return m_owner_account_id; }
-        void            setAccountId(uint64_t val) { m_owner_account_id = val; }
-        uint64_t        getLastCostumeId() const { return m_last_costume_id; }
-        void            setLastCostumeId(uint64_t val) { m_last_costume_id = val; }
-const   QString &       getOrigin() const { return m_origin_name; }
-const   QString &       getClass() const { return m_class_name; }
-        uint32_t        getXP() const { return m_experience_points; }
-        void            setXP(uint32_t val);
-const   QString &       getTitles() const { return m_titles[3]; }
-        void            setTitles(bool prefix = false, QString generic = "", QString origin = "", QString special = "");
-        void            toggleAFK(const QString &msg = "");
-        void            toggleLFG() { m_lfg = !m_lfg; }
-        uint32_t        getInf() const { return m_influence; }
-        void            setInf(uint32_t val) {m_influence = val;};
+        
 
 //
 //////////////////////////////////////////////////////////////////////////
@@ -226,4 +211,21 @@ protected:
             TYPE_NOARMS
         };
 };
-void serializeStats(const Character &src,BitStream &bs, bool sendAbsolute);
+
+void                serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
+uint32_t            getLevel(const Character &src) { return src.m_level; }
+void                setLevel(Character &src, uint32_t val) { src.m_level = val; }
+uint64_t            getAccountId(const Character &src) { return src.m_owner_account_id; }
+void                setAccountId(Character &src, uint64_t val) { src.m_owner_account_id = val; }
+uint64_t            getLastCostumeId(const Character &src) { return src.m_last_costume_id; }
+void                setLastCostumeId(Character &src, uint64_t val) { src.m_last_costume_id = val; }
+const QString &     getOrigin(const Character &src) { return src.m_origin_name; }
+const QString &     getClass(const Character &src) { return src.m_class_name; }
+uint32_t            getXP(const Character &src) { return src.m_experience_points; }
+void                setXP(Character &src, uint32_t val);
+const QString &     getTitles(const Character &src) { return m_titles[3]; }
+void                setTitles(Character &src, bool prefix = false, QString generic = "", QString origin = "", QString special = "");
+void                toggleAFK(Character &src, const QString &msg = "");
+void                toggleLFG(Character &src) { src.m_lfg = !src.m_lfg; }
+uint32_t            getInf(const Character &src) { return src.m_influence; }
+void                setInf(Character &src, uint32_t val) { src.m_influence = val; }

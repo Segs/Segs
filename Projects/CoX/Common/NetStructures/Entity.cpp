@@ -77,18 +77,6 @@ void Entity::addInterp(const PosUpdate & p) {
     interpResults.emplace_back(p);
 }
 
-void Entity::toggleStunned()
-{
-    m_is_stunned = !m_is_stunned;
-    // TODO: toggle stunned FX above head
-}
-
-void Entity::toggleJumppack()
-{
-    m_has_jumppack = !m_has_jumppack;
-    // TODO: toggle costume part for jetpack back item.
-}
-
 Entity::Entity()
 {
     m_access_level = 9; // enables access to all deve
@@ -117,4 +105,16 @@ void initializeNewPlayerEntity(Entity &e)
 
     e.m_char.reset();
     e.might_have_rare = e.m_rare_bits = true;
+}
+
+void toggleStunned(Entity &e)
+{
+    e.m_is_stunned = !e.m_is_stunned;
+    // TODO: toggle stunned FX above head
+}
+
+void toggleJumppack(Entity &e)
+{
+    e.m_has_jumppack = !e.m_has_jumppack;
+    // TODO: toggle costume part for jetpack back item.
 }

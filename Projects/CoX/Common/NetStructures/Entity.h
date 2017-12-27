@@ -261,20 +261,21 @@ static  void                sendPvP(BitStream &bs);
         const QString &     name() const {return m_char.getName();}
         void                fillFromCharacter(Character *f);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
-        void                toggleFly() { m_is_flying = !m_is_flying; }
-        void                toggleStunned();
-        void                toggleJumppack();
-        void                setBackupSpd(const float &val) { m_backup_spd = val; }
-        void                setJumpHeight(const float &val) { m_jump_height = val; }
-        void                toggleControlsDisabled() { m_controls_disabled = !m_controls_disabled; }
-        void                setUpdateID(const uint8_t &val) { m_update_id = val;}
-        void                setu1(const int &val) { u1 = val; }
-        void                setu2(const int &val) { u2 = val; }
-        void                setu3(const int &val) { u3 = val; }
-        void                setu4(const int &val) { u4 = val; }
-        void                setu5(const int &val) { u5 = val; }
-        void                setu6(const int &val) { u6 = val; }
 };
 void initializeNewPlayerEntity(Entity &e);
 void fillEntityFromNewCharData(Entity &e,BitStream &src, ColorAndPartPacker *packer);
 extern void abortLogout(Entity *e);
+
+void    toggleFly(Entity &e) { e.m_is_flying = !e.m_is_flying; }
+void    toggleStunned(Entity &e);
+void    toggleJumppack(Entity &e);
+void    setBackupSpd(Entity &e, const float &val) { e.m_backup_spd = val; }
+void    setJumpHeight(Entity &e, const float &val) { e.m_jump_height = val; }
+void    toggleControlsDisabled(Entity &e) { e.m_controls_disabled = !e.m_controls_disabled; }
+void    setUpdateID(Entity &e, const uint8_t &val) { e.m_update_id = val;}
+void    setu1(Entity &e, const int &val) { e.u1 = val; }
+void    setu2(Entity &e, const int &val) { e.u2 = val; }
+void    setu3(Entity &e, const int &val) { e.u3 = val; }
+void    setu4(Entity &e, const int &val) { e.u4 = val; }
+void    setu5(Entity &e, const int &val) { e.u5 = val; }
+void    setu6(Entity &e, const int &val) { e.u6 = val; }
