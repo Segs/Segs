@@ -52,7 +52,6 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/dummy_folders/data ${PROJECT_SOURCE_DIR}/
 # DLL Transfers
 ########################################################################################
 if(WIN32) # ERICEDIT: If the OS is Windows:
-    file(COPY ${ThirdParty_Install_Dir}/lib/libACE.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH}) # ERICEDIT: ACE needed for authserver.
     if(MSVC) # ERICEDIT: If this is the Visual Studio version of Qt:
         # TODO: Copy the DLL files required for Visual Studio versions of the client.
     else() # ERICEDIT: Else, this is Qt creator. Copy these DLLs.
