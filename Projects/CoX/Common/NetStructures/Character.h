@@ -213,19 +213,19 @@ protected:
 };
 
 void                serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
-uint32_t            getLevel(const Character &src) { return src.m_level; }
+uint32_t            getLevel(Character &src) const { return src.m_level; }
 void                setLevel(Character &src, uint32_t val) { src.m_level = val; }
-uint64_t            getAccountId(const Character &src) { return src.m_owner_account_id; }
+uint64_t            getAccountId(Character &src) const { return src.m_owner_account_id; }
 void                setAccountId(Character &src, uint64_t val) { src.m_owner_account_id = val; }
-uint64_t            getLastCostumeId(const Character &src) { return src.m_last_costume_id; }
+uint64_t            getLastCostumeId(Character &src) const { return src.m_last_costume_id; }
 void                setLastCostumeId(Character &src, uint64_t val) { src.m_last_costume_id = val; }
-const QString &     getOrigin(const Character &src) { return src.m_origin_name; }
-const QString &     getClass(const Character &src) { return src.m_class_name; }
-uint32_t            getXP(const Character &src) { return src.m_experience_points; }
+const QString &     getOrigin(Character &src) const { return src.m_origin_name; }
+const QString &     getClass(Character &src) const { return src.m_class_name; }
+uint32_t            getXP(Character &src) const { return src.m_experience_points; }
 void                setXP(Character &src, uint32_t val);
-const QString &     getTitles(const Character &src) { return m_titles[3]; }
+const QString &     getTitles(Character &src) const { return m_titles[3]; }
 void                setTitles(Character &src, bool prefix = false, QString generic = "", QString origin = "", QString special = "");
 void                toggleAFK(Character &src, const QString &msg = "");
 void                toggleLFG(Character &src) { src.m_lfg = !src.m_lfg; }
-uint32_t            getInf(const Character &src) { return src.m_influence; }
+uint32_t            getInf(Character &src) const { return src.m_influence; }
 void                setInf(Character &src, uint32_t val) { src.m_influence = val; }

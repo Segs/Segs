@@ -511,7 +511,9 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
     uint32_t sender_level       = getLevel(sender_char);
     QString  sender_char_name   = sender_char.getName();
     QString  sender_origin      = getOrigin(sender_char);
-    QString  target_char_name   = sender->char_entity()->getTargetName();
+    QString  target_idx         = sender->char_entity()->m_target_idx;
+    Entity   tgt                = getEntityByIdx(target_idx);
+    QString  target_char_name   = tgt.getName();
 
     foreach (const QString &str, replacements) {
         if(str == "\\$archetype")
@@ -639,10 +641,11 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             // TODO: Get tgt_idx from target name.
             for(MapClient *cl : m_clients)
             {
+                if()
                 if(sender->char_entity()->m_targeted_entity_idx)
                     tgt_idx = sender->char_entity()->m_targeted_entity_idx;
 
-                if(tgt_idx == cl->char_entity()->getIdx())
+                if(tgt_idx == getIdx(cl->char_entity())
                     recipients.push_back(cl);
             }
             QString prepared_chat_message = QString("[Tell] %1: %2").arg(sender_char_name,msg_content.toString());
@@ -753,7 +756,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         }
     }
     else if(ev->contents == "fly") {
-        ent->toggleFly();
+        toggleFly(ent);
 
         QString msg = "Toggling " + ev->contents;
         qDebug() << msg;
@@ -761,7 +764,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
     else if(ev->contents == "stunned") {
-        ent->toggleStunned();
+        toggleStunned(ent);
 
         QString msg = "Toggling " + ev->contents;
         qDebug() << msg;
@@ -769,7 +772,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
     else if(ev->contents == "jumppack") {
-        ent->toggleJumppack();
+        toggleJumppack(ent);
 
         QString msg = "Toggling " + ev->contents;
         qDebug() << msg;
@@ -779,7 +782,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(ev->contents.startsWith("setBackupSpd ")) {
         int space = ev->contents.indexOf(' ');
         float val = ev->contents.mid(space+1).toFloat();
-        ent->setBackupSpd(val);
+        setBackupSpd(ent, val);
 
         QString msg = "Set BackupSpd to: " + QString::number(val);
         qDebug() << msg;
@@ -789,7 +792,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(ev->contents.startsWith("setJumpHeight ")) {
         int space = ev->contents.indexOf(' ');
         float val = ev->contents.mid(space+1).toFloat();
-        ent->setJumpHeight(val);
+        setJumpHeight(ent, val);
 
         QString msg = "Set JumpHeight to: " + QString::number(val);
         qDebug() << msg;
@@ -799,7 +802,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(ev->contents.startsWith("afk ") || ev->contents == "afk") {
         int space = ev->contents.indexOf(' ');
         QString val = ev->contents.mid(space+1);
-        ent->m_char.toggleAFK(val);
+        toggleAFK(ent->m_char, val);
 
         QString msg = "Setting afk message to: " + val;
         qDebug() << msg;

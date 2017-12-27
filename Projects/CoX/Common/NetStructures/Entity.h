@@ -189,7 +189,6 @@ public:
         float               m_backup_spd            = 1.0f;
         float               m_jump_height;
         uint8_t             m_cur_chat_channel      = 10; // Default is local
-        QString             m_targeted_entity_name; // TODO: get target entity as object?
         uint32_t            m_targeted_entity_idx   = inp_state.m_target_idx;
         uint32_t            m_assisted_entity_idx   = inp_state.m_assist_target_idx;  // Target Assist
         bool                m_has_targeted_entity   = (m_targeted_entity_idx) ? true : false;
@@ -249,9 +248,6 @@ public:
         void                addPosUpdate(const PosUpdate &p);
         void                addInterp(const PosUpdate &p);
 
-        int32_t             getIdx() const {return m_idx;}
-const   QString &           getTargetName() const { return m_targeted_entity_name; }
-        uint32_t            getTargetIdx() const { return m_targeted_entity_idx; }
 static  void                sendAllyID(BitStream &bs);
 static  void                sendPvP(BitStream &bs);
 
@@ -265,6 +261,10 @@ static  void                sendPvP(BitStream &bs);
 void initializeNewPlayerEntity(Entity &e);
 void fillEntityFromNewCharData(Entity &e,BitStream &src, ColorAndPartPacker *packer);
 extern void abortLogout(Entity *e);
+
+uint32_t    getIdx(Entity &e) const { return e.m_idx; }
+Entity      getEntityByIdx(int32_t idx);
+Entity      getEntityByName(QString &name);
 
 void    toggleFly(Entity &e) { e.m_is_flying = !e.m_is_flying; }
 void    toggleStunned(Entity &e);
