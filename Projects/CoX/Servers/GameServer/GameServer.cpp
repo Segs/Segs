@@ -205,7 +205,7 @@ uint16_t GameServer::getMaxPlayers()
     return d->m_max_players;
 }
 
-int GameServer::getMaxAccountSlots() const
+int GameServer::getMaxCharacterSlots() const
 {
     return d->m_max_character_slots;
 }
