@@ -154,7 +154,7 @@ Configuration of your SEGS server is done using the `settings.cfg` file saved in
    - `listen_addr` -- This is the IP of the server that clients will connect to, followed by `:7002` which is the default listening port. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network. The port never changes.
    - `location_addr` -- This is the IP of the server where the clients will receive from the server, followed by `:7002` which is the default listening port. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network. The port never changes.
    - `max_players` -- The maximum number of concurrent connections allowed by the server.
-   - `max_account_slots` -- This is the default number of character slots allowed for each account.
+   - `max_character_slots` -- This is the default number of character slots allowed for each account.
 
    ##### [MapServer]
    - `listen_addr` -- This is the IP of the server that clients will connect to, followed by `:7003` which is the default listening port. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network. The port never changes.
