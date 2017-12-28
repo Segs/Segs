@@ -23,6 +23,7 @@
 #include "WorldSimulation.h"
 #include "InternalEvents.h"
 
+#include <stdlib.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -618,15 +619,15 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             lowerContents.replace(0, 3, "");
         else                                                                    // Requires a different argument for the "e" command.
             lowerContents.replace(0, 2, "");
-        // Normal Emotes
+                                                                                // Normal Emotes
         if(lowerContents == "afraid" || lowerContents == "cower"
                 || lowerContents == "fear" || lowerContents == "scared")        // Afraid: Cower in fear, hold stance.
         {
             QString msg;
             if(ent->m_is_flying)                                                // Different versions when flying and on the ground.
-                msg = "Unhandled flying afraid emote";
+                msg = "Unhandled flying Afraid emote";
             else
-                msg = "Unhandled ground afraid emote";
+                msg = "Unhandled ground Afraid emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
@@ -634,49 +635,49 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         else if((lowerContents == "akimbo" || lowerContents == "wings")         // Akimbo: Stands with fists on hips looking forward, hold stance.
                 && !ent->m_is_flying)                                           // Not allowed when flying.
         {
-            QString msg = "Unhandled akimbo emote";
+            QString msg = "Unhandled Akimbo emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
         else if(lowerContents == "angry")                                       // Angry: Fists on hips and slouches forward, as if glaring or grumbling, hold stance.
         {
-            QString msg = "Unhandled angry emote";
+            QString msg = "Unhandled Angry emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
         else if(lowerContents == "atease")                                      // AtEase: Stands in the 'at ease' military position (legs spread out slightly, hands behind back) stance, hold stance.
         {
-            QString msg = "Unhandled atease emote";
+            QString msg = "Unhandled AtEase emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
         else if(lowerContents == "attack")                                      // Attack: Gives a charge! type point, fists on hips stance.
         {
-            QString msg = "Unhandled attack emote";
+            QString msg = "Unhandled Attack emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
         else if(lowerContents == "batsmash")                                    // BatSmash: Hit someone or something with a bat, repeat.
         {
-            QString msg = "Unhandled batsmash emote";
+            QString msg = "Unhandled BatSmash emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
         else if(lowerContents == "batsmashreact")                               // BatSmashReact: React as if getting hit with a bat, often used in duo with BatSmash.
         {
-            QString msg = "Unhandled batsmashreact emote";
+            QString msg = "Unhandled BatSmashReact emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
         else if(lowerContents == "bigwave" || lowerContents == "overhere")      // BigWave: Waves over the head, fists on hips stance.
         {
-            QString msg = "Unhandled bigwave emote";
+            QString msg = "Unhandled BigWave emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
@@ -684,7 +685,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         else if((lowerContents == "boombox" || lowerContents == "bb"            // BoomBox (has sound): Summons forth a boombox (it just appears) and leans over to turn it on, stands up and does a sort of dance. A random track will play.
                 || lowerContents == "dropboombox") && !ent->m_is_flying)        // Not allowed when flying.
         {
-            QString msg = "Unhandled boombox emote";
+            QString msg = "Unhandled BoomBox emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
@@ -692,17 +693,122 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         else if((lowerContents == "bow" || lowerContents == "sorry")            // Bow: Chinese/Japanese style bow with palms together, returns to normal stance.
                 && !ent->m_is_flying)                                           // Not allowed when flying.
         {
-            QString msg = "Unhandled bow emote";
+            QString msg = "Unhandled Bow emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
         else if(lowerContents == "bowdown" || lowerContents == "down")          // BowDown: Thrusts hands forward, then points down, as if ordering someone else to bow before you.
         {
-            QString msg = "Unhandled bowdown emote";
+            QString msg = "Unhandled BowDown emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(lowerContents == "burp" && !ent->m_is_flying)                   // Burp (has sound): A raunchy belch, wipes mouth with arm afterward, ape-like stance.
+        {                                                                       // Not allowed when flying.
+            QString msg = "Unhandled Burp emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(lowerContents == "cheer")                                       // Cheer: Randomly does one of 3 cheers, 1 fist raised, 2 fists raised or 2 fists lowered, repeats.
+        {
+            int rNum = rand() % 3 + 1;                                          // Randomly pick the cheer.
+            QString msg;
+            switch(rNum)
+            {
+                case 1:                                                         // 1: 1 fist raised
+                {
+                    msg = "1: Unhandled \"1 fist raised\" Cheer emote";
+                    break;
+                }
+                case 2:                                                         // 2: 2 fists raised
+                {
+                    msg = "2: Unhandled \"2 fists raised\" Cheer emote";
+                    break;
+                }
+                case 3:                                                         // 3: 2 fists lowered
+                {
+                    msg = "3: Unhandled \"2 fists lowered\" Cheer emote";
+                }
+            }
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(lowerContents == "clap")                                        // Clap (has sound): Claps hands several times, crossed arms stance.
+        {
+            QString msg = "Unhandled Clap emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(lowerContents == "coin" || lowerContents == "cointoss"
+                || lowerContents == "flipcoin")                                 // Coin: Flips a coin, randomly displays heads or tails, and hold stance. Coin image remains until stance broken.
+        {
+            int flipRes = rand() % 2;                                           // Randomly pick heads or tails.
+            QString msg;
+            switch(flipRes)
+            {
+                case 0:                                                         // 0: Heads
+                {
+                    msg = "0: Unhandled heads Coin emote";
+                    break;
+                }
+                case 1:                                                         // 1: Tails
+                {
+                    msg = "1: Unhandled tails Coin emote";
+                }
+            }
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(lowerContents == "crossarms" && !ent->m_is_flying)              // CrossArms: Crosses arms, stance (slightly different from most other crossed arm stances).
+        {                                                                       // Not allowed when flying.
+            QString msg = "Unhandled CrossArms emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(lowerContents == "dance")                                       // Dance: Randomly performs one of six dances.
+        {
+            int rDance = rand() % 6 + 1;                                        // Randomly pick the dance.
+            QString msg;
+            switch(rDance)
+            {
+                case 1:                                                         // 1: Dances with elbows by hips.
+                {
+                    msg = "1: Unhandled \"Dances with elbows by hips\" Dance emote";
+                    break;
+                }
+                case 2:                                                         // 2: Dances with fists raised.
+                {
+                    msg = "2: Unhandled \"Dances with fists raised\" Dance emote";
+                    break;
+                }
+                case 3:                                                         // 3: Swaying hands by hips, aka "Really Bad" dancing.
+                {
+                    msg = "3: Unhandled \"Swaying hands by hips, aka 'Really Bad' dancing\" Dance emote";
+                    break;
+                }
+                case 4:                                                         // 4: Swaying hands up in the air, like in a breeze.
+                {
+                    msg = "4: Unhandled \"Swaying hands up in the air, like in a breeze\" Dance emote";
+                    break;
+                }
+                case 5:                                                         // 5: As Dance4, but jumping as well.
+                {
+                    msg = "5: Unhandled \"As Dance4, but jumping as well\" Dance emote";
+                    break;
+                }
+                case 6:                                                         // 6: The monkey.
+                {
+                    msg = "6: Unhandled \"The monkey\" Dance emote";
+                    break;
+                }
+            }
         }
     }
 }
