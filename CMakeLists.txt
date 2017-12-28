@@ -24,7 +24,7 @@ OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" OFF)
 OPTION(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 OPTION(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
 
-########################################################################################
+#######################################################################################
 # Prerequisites
 ########################################################################################
 include(3rdparty_support)
