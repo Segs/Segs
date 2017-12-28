@@ -2,6 +2,9 @@ link_directories(${ThirdParty_Install_Dir}/lib)
 
 include(ExternalProject_CEREAL.cmake)
 include(ExternalProject_ACE.cmake)
+add_custom_target(libace ALL DEPENDS ${EXECUTABLE_OUTPUT_PATH}/authserver.exe)
+#add_dependencies(libace ${CMAKE_CURRENT_BINARY_DIR}/built/lib/libACE.dll)
+add_custom_command(TARGET libace POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/built/lib/libACE.dll ${EXECUTABLE_OUTPUT_PATH})
 #if(WIN32) # ERICEDIT: If the OS is Windows:
 #    file(COPY ${ThirdParty_Install_Dir}/lib/libACE.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH}) # ERICEDIT: ACE needed for authserver.
 #endif()
