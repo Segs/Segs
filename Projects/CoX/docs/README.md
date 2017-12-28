@@ -85,7 +85,7 @@ INSTALLATION
 
    The CoX client uses files ending in `.pigg` to store important game information. SEGS uses these same files to run the game world.
    
-   Once installed, navigate to the SEGS folder. If you compiled from source, this will be in the `/out/` folder wherever you saved your Qt project. If you downloaded a release version, this will be wherever you extracted it to. Create a new folder and name it `data`.
+   Once installed, navigate to the SEGS folder. If you compiled from source, this will be in the `/out/` folder wherever you saved your Qt project. If you downloaded a release version, this will be wherever you extracted it to.
    
    Navigate to the CoX folder and copy the contents of the `/piggs/` subfolder to the `/data/` directory of SEGS.
 
