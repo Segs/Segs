@@ -50,17 +50,6 @@ file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/data)
 # DLL Transfers
 ########################################################################################
 if(WIN32) # ERICEDIT: If the OS is Windows:
-#    TODO: Below are various (failed) attempts to automatically copy over libACE.dll to the output folder without having built a previous version of the project. Needs fixing.
-#    add_custom_target(
-#        aceTarget ALL
-#        COMMAND copy ${ThirdParty_Install_Dir}/lib/libACE.dll ${EXECUTABLE_OUTPUT_PATH}/libACE.dll
-#        )
-#    add_dependencies(aceTarget ace_IMP)
-#    add_custom_command(
-#        TARGET aceTarget
-#        COMMAND copy ${ThirdParty_Install_Dir}/lib/libACE.dll ${EXECUTABLE_OUTPUT_PATH}/libACE.dll
-#        VERBATIM)
-#    file(COPY ${ThirdParty_Install_Dir}/lib/libACE.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
     if(MSVC) # ERICEDIT: If this is the Visual Studio version of Qt:
         # TODO: Copy the DLL files required for Visual Studio versions of the client.
     else() # ERICEDIT: Else, this is Qt creator. Copy these DLLs.

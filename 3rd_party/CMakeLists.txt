@@ -2,14 +2,19 @@ link_directories(${ThirdParty_Install_Dir}/lib)
 
 include(ExternalProject_CEREAL.cmake)
 include(ExternalProject_ACE.cmake)
-add_custom_target(libace ALL DEPENDS ${EXECUTABLE_OUTPUT_PATH}/authserver.exe)
-#add_dependencies(libace ${CMAKE_CURRENT_BINARY_DIR}/built/lib/libACE.dll)
-add_custom_command(TARGET libace POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/built/lib/libACE.dll ${EXECUTABLE_OUTPUT_PATH})
-#if(WIN32) # ERICEDIT: If the OS is Windows:
-#    file(COPY ${ThirdParty_Install_Dir}/lib/libACE.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH}) # ERICEDIT: ACE needed for authserver.
-#endif()
+if(WIN32) # ERICEDIT: Tranfer libACE.dll to the output directory.
+    add_custom_target( # TODO: Ensure this works with MSVC versions of Qt.
+        libace ALL
+        DEPENDS ${EXECUTABLE_OUTPUT_PATH}/authserver.exe
+        )
+    add_custom_command(
+        TARGET libace
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ace_LIBRARY_SHARED} ${EXECUTABLE_OUTPUT_PATH}
+        )
+endif()
 if(BUILD_COX_MAP_VIEWER)
-include(ExternalProject_Lutefisk3D.cmake)
+    include(ExternalProject_Lutefisk3D.cmake)
 endif()
 ########################################################################################
 # Optional components
