@@ -598,29 +598,29 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(errormsg)));
         }
     }
-    ev->contents = ev->contents.toLower();                                      // ERICEDIT: Make the contents all lowercase for case-insensitivity.
-    if(ev->contents == "fly")                                                   // If the user enters "/fly":
+    QString lowerContents = ev->contents.toLower();                             // ERICEDIT: Make the contents all lowercase for case-insensitivity.
+    if(lowerContents == "fly")                                                  // If the user enters "/fly":
     {
         ent->toggleFly(ent);                                                    // Call toggleFly() from Entity.cpp.
         QString msg;                                                            // Initialize the message to display.
         if(ent->m_is_flying)                                                    // If the entity is now flying:
-            msg = "Enabling " + ev->contents;                                   // Set the message to reflect that.
+            msg = "Enabling " + lowerContents;                                  // Set the message to reflect that.
         else                                                                    // Else:
-            msg = "Disabling " + ev->contents;                                  // Set the message to reflect disabling fly.
+            msg = "Disabling " + lowerContents;                                 // Set the message to reflect disabling fly.
         qDebug() << msg;                                                        // Print out the message to the server console.
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);                   // Create the message to send to the client.
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info)); // Print the message to the client.
     }
-    else if(ev->contents.startsWith("em") || ev->contents.startsWith("e")
-            || ev->contents.startsWith("me"))                                   // ERICEDIT: This encompasses all emotes.
+    else if(lowerContents.startsWith("em") || lowerContents.startsWith("e")
+            || lowerContents.startsWith("me"))                                  // ERICEDIT: This encompasses all emotes.
     {
-        if(ev->contents.startsWith("em") || ev->contents.startsWith("me"))      // This if-else removes the prefix of the command for conciseness.
-            ev->contents.replace(0, 3, "");
+        if(lowerContents.startsWith("em") || lowerContents.startsWith("me"))    // This if-else removes the prefix of the command for conciseness.
+            lowerContents.replace(0, 3, "");
         else                                                                    // Requires a different argument for the "e" command.
-            ev->contents.replace(0, 2, "");
+            lowerContents.replace(0, 2, "");
         // Normal Emotes
-        if(ev->contents == "afraid" || ev->contents == "cower"
-                || ev->contents == "fear" || ev->contents == "scared")          // Afraid: Cower in fear, hold stance.
+        if(lowerContents == "afraid" || lowerContents == "cower"
+                || lowerContents == "fear" || lowerContents == "scared")        // Afraid: Cower in fear, hold stance.
         {
             QString msg;
             if(ent->m_is_flying)                                                // Different versions when flying and on the ground.
@@ -631,7 +631,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
-        else if((ev->contents == "akimbo" || ev->contents == "wings")           // Akimbo: Stands with fists on hips looking forward, hold stance.
+        else if((lowerContents == "akimbo" || lowerContents == "wings")         // Akimbo: Stands with fists on hips looking forward, hold stance.
                 && !ent->m_is_flying)                                           // Not allowed when flying.
         {
             QString msg = "Unhandled akimbo emote";
@@ -639,57 +639,57 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
-        else if(ev->contents == "angry")                                        // Angry: Fists on hips and slouches forward, as if glaring or grumbling, hold stance.
+        else if(lowerContents == "angry")                                       // Angry: Fists on hips and slouches forward, as if glaring or grumbling, hold stance.
         {
             QString msg = "Unhandled angry emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
-        else if(ev->contents == "atease")                                       // AtEase: Stands in the 'at ease' military position (legs spread out slightly, hands behind back) stance, hold stance.
+        else if(lowerContents == "atease")                                      // AtEase: Stands in the 'at ease' military position (legs spread out slightly, hands behind back) stance, hold stance.
         {
             QString msg = "Unhandled atease emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
-        else if(ev->contents == "attack")                                       // Attack: Gives a charge! type point, fists on hips stance.
+        else if(lowerContents == "attack")                                      // Attack: Gives a charge! type point, fists on hips stance.
         {
             QString msg = "Unhandled attack emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
-        else if(ev->contents == "batsmash")                                     // BatSmash: Hit someone or something with a bat, repeat.
+        else if(lowerContents == "batsmash")                                    // BatSmash: Hit someone or something with a bat, repeat.
         {
             QString msg = "Unhandled batsmash emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
-        else if(ev->contents == "batsmashreact")                                // BatSmashReact: React as if getting hit with a bat, often used in duo with BatSmash.
+        else if(lowerContents == "batsmashreact")                               // BatSmashReact: React as if getting hit with a bat, often used in duo with BatSmash.
         {
             QString msg = "Unhandled batsmashreact emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
-        else if(ev->contents == "bigwave" || ev->contents == "overhere")        // BigWave: Waves over the head, fists on hips stance.
+        else if(lowerContents == "bigwave" || lowerContents == "overhere")      // BigWave: Waves over the head, fists on hips stance.
         {
             QString msg = "Unhandled bigwave emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
-        else if((ev->contents == "boombox" || ev->contents == "bb"              // BoomBox (has sound): Summons forth a boombox (it just appears) and leans over to turn it on, stands up and does a sort of dance. A random track will play.
-                || ev->contents == "dropboombox") && !ent->m_is_flying)         // Not allowed when flying.
+        else if((lowerContents == "boombox" || lowerContents == "bb"            // BoomBox (has sound): Summons forth a boombox (it just appears) and leans over to turn it on, stands up and does a sort of dance. A random track will play.
+                || lowerContents == "dropboombox") && !ent->m_is_flying)        // Not allowed when flying.
         {
             QString msg = "Unhandled boombox emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
-        else if((ev->contents == "bow" || ev->contents == "sorry")              // Bow: Chinese/Japanese style bow with palms together, returns to normal stance.
+        else if((lowerContents == "bow" || lowerContents == "sorry")            // Bow: Chinese/Japanese style bow with palms together, returns to normal stance.
                 && !ent->m_is_flying)                                           // Not allowed when flying.
         {
             QString msg = "Unhandled bow emote";
@@ -697,7 +697,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
-        else if(ev->contents == "bowdown" || ev->contents == "down")            // BowDown: Thrusts hands forward, then points down, as if ordering someone else to bow before you.
+        else if(lowerContents == "bowdown" || lowerContents == "down")          // BowDown: Thrusts hands forward, then points down, as if ordering someone else to bow before you.
         {
             QString msg = "Unhandled bowdown emote";
             qDebug() << msg;
