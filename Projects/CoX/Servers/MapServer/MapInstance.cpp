@@ -769,6 +769,76 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         }
         else if(lowerContents == "dice1")                                       // Dice1: Picks up, shakes and rolls a die, displays a 1, default stance.
             msg = "Unhandled Dice1 emote";
+        else if(lowerContents == "dice2")                                       // Dice1: Picks up, shakes and rolls a die, displays a 2, default stance.
+            msg = "Unhandled Dice2 emote";
+        else if(lowerContents == "dice3")                                       // Dice1: Picks up, shakes and rolls a die, displays a 3, default stance.
+            msg = "Unhandled Dice3 emote";
+        else if(lowerContents == "dice4")                                       // Dice1: Picks up, shakes and rolls a die, displays a 4, default stance.
+            msg = "Unhandled Dice4 emote";
+        else if(lowerContents == "dice5")                                       // Dice1: Picks up, shakes and rolls a die, displays a 5, default stance.
+            msg = "Unhandled Dice5 emote";
+        else if(lowerContents == "dice6")                                       // Dice1: Picks up, shakes and rolls a die, displays a 6, default stance.
+            msg = "Unhandled Dice6 emote";
+        else if(lowerContents == "disagree")                                    // Disagree: Shakes head, crosses hand in front, then offers an alternative, crossed arms stance.
+            msg = "Unhandled Disagree emote";
+        else if(lowerContents == "drat")                                        // Drat: Raises fists up, then down, stomping at the same time, same ending stance as Frustrated.
+            msg = "Unhandled Drat emote";
+        else if(lowerContents == "explain")                                     // Explain: Hold arms out in a "wait a minute" gesture, motion alternatives, then shrug.
+            msg = "Unhandled Explain emote";
+        else if(lowerContents == "evillaugh" || lowerContents == "elaugh"
+                || lowerContents == "muahahaha" || lowerContents == "villainlaugh"
+                || lowerContents == "villainouslaugh")                          // EvilLaugh: Extremely melodramatic, overacted evil laugh.
+            msg = "Unhandled EvilLaugh emote";
+        else if(lowerContents == "fancybow" || lowerContents == "elegantbow")   // FancyBow: A much more elegant, ball-room style bow, falls into neutral forward facing stance.
+            msg = "Unhandled FancyBow emote";
+        else if(lowerContents == "flex1" || lowerContents == "flexa")           // Flex1: Fists raised, flexing arms stance, hold stance. This is called a "double biceps" pose.
+            msg = "Unhandled Flex1 emote";
+        else if(lowerContents == "flex2" || lowerContents == "flex"
+                || lowerContents == "flexb")                                    // Flex2: A side-stance flexing arms, hold stance. This is a sideways variation on the "most muscular" pose.
+            msg == "Unhandled Flex2 emote";
+        else if(lowerContents == "flex3" || lowerContents == "flexc")           // Flex3: Another side-stance, flexing arms, hold stance. This is an open variation on the "side chest" pose.
+            msg = "Unhandled Flex3 emote";
+        else if(lowerContents == "frustrated")                                  // Frustrated: Raises both fists and leans backwards, shaking fists and head, leads into a quick-breathing angry-looking stance.
+            msg = "Unhandled Frustrated emote";
+        else if(lowerContents == "grief")                                       // Grief: Falls to knees, hands on forehead, looks up and gestures a sort of "why me?" look with hands, goes into a sort of depressed slump while on knees, holds stance.
+            msg = "Unhandled Grief emote";
+        else if(lowerContents == "hi" || lowerContents == "wave")               // Hi: Simple greeting wave, fists on hips stance.
+            msg = "Unhandled Hi emote";
+        else if(lowerContents == "hmmm" || lowerContents == "plotting")         // Hmmm: Stare into the sky, rubbing chin, thinking.
+            msg = "Unhandled Hmmm emote";
+        else if(lowerContents == "jumpingjacks")                                // JumpingJacks (has sound): Does jumping jacks, repeats.
+            msg = "Unhandled JumpingJacks emote";
+        else if(lowerContents == "kneel")                                       // Kneel: Quickly kneels on both knees with hands on thighs (looks insanely uncomfortable), holds stance.
+            msg = "Unhandled Kneel emote";
+        else if(lowerContents == "laugh")                                       // Laugh: Fists on hips, tosses head back and laughs.
+            msg = "Unhandled Laugh emote";
+        else if(lowerContents == "laugh2" || lowerContents == "biglaugh"
+                || lowerContents == "laughtoo")                                 // Laugh2: Another style of laugh.
+            msg == "Unhandled Laugh2 emote";
+        else if(lowerContents == "lecture")                                     // Lecture: Waves/shakes hands in different motions in a lengthy lecture, fists on hips stance.
+            msg = "Unhandled Lecture emote";
+        else if(lowerContents == "martialarts" || lowerContents == "kata")      // MartialArts (has sound): Warm up/practice punches and blocks.
+            msg = "Unhandled MartialArts emote";
+        else if(lowerContents == "militarysalute")                              // MilitarySalute: Stands in the military-style heads-high hand on forehead salute stance.
+            msg = "Unhandled MilitarySalute emote";
+        else if(lowerContents == "newspaper" || lowerContents == "afk")         // Newspaper: Materializes a newspaper and reads it.
+            msg = "Unhandled Newspaper emote";
+        else if(lowerContents == "no" || lowerContents == "dontattack")         // No: Shakes head and waves hands in front of character, crossed arms stance.
+            msg = "Unhandled No emote";
+        else if(lowerContents == "nod")                                         // Nod: Fists on hips, nod yes, hold stance.
+            msg = "Unhandled Nod emote";
+        else if(lowerContents == "none")                                        // None: Cancels the current emote, if any, and resumes default standing animation cycle.
+            msg = "Unhandled None emote";
+        else if(lowerContents == "paper")                                       // Paper: Plays rock/paper/scissors, picking paper (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
+            msg = "Unhandled Paper emote";
+        else if(lowerContents == "plot" || lowerContents == "scheme")           // Plot: Rubs hands together while hunched over.
+            msg = "Unhandled Plot emote";
+        else if(lowerContents == "point")                                       // Point: Extends left arm and points in direction character is facing, hold stance.
+            msg = "Unhandled Point emote";
+        else if(lowerContents == "praise")                                      // Praise: Kneel prostrate and repeatedly bow in adoration.
+            msg = "Unhandled Praise emote";
+        else if(lowerContents == "protest")                                      // Praise: Kneel prostrate and repeatedly bow in adoration.
+            msg = "Unhandled Protest emote";
     }
     qDebug() << msg;                                                            // Print out the message to the server console.
     info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);                       // Create the message to send to the client.
