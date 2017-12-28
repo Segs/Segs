@@ -538,6 +538,8 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
+    Entity *ent = src->char_entity(); // user entity
+    InfoMessageCmd *info; // leverage InfoMessageCmd
     printf("Console command received %s\n",qPrintable(ev->contents));
     if(ev->contents.startsWith("script "))
     {
@@ -594,6 +596,68 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             QString errormsg = "Failed to load smilex file. \'" + file.fileName() + "\' not found.";
             qDebug() << errormsg;
             src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(errormsg)));
+        }
+    }
+    ev->contents = ev->contents.toLower();                                      // ERICEDIT: Make the contents all lowercase for case-insensitivity.
+    if(ev->contents == "fly")                                                   // If the user enters "/fly":
+    {
+        ent->toggleFly(ent);                                                    // Call toggleFly() from Entity.cpp.
+        QString msg;                                                            // Initialize the message to display.
+        if(ent->m_is_flying)                                                    // If the entity is now flying:
+            msg = "Enabling " + ev->contents;                                   // Set the message to reflect that.
+        else                                                                    // Else:
+            msg = "Disabling " + ev->contents;                                  // Set the message to reflect disabling fly.
+        qDebug() << msg;                                                        // Print out the message to the server console.
+        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);                   // Create the message to send to the client.
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info)); // Print the message to the client.
+    }
+    else if(ev->contents.startsWith("em") || ev->contents.startsWith("e")
+            || ev->contents.startsWith("me"))                                   // ERICEDIT: This encompasses all emotes.
+    {
+        if(ev->contents.startsWith("em") || ev->contents.startsWith("me"))      // This if-else removes the prefix of the command for conciseness.
+            ev->contents.replace(0, 3, "");
+        else                                                                    // Requires a different argument for the "e" command.
+            ev->contents.replace(0, 2, "");
+        if(ev->contents == "afraid" || ev->contents == "cower"
+                || ev->contents == "fear" || ev->contents == "scared")          // Afraid
+        {
+            QString msg;
+            if(ent->m_is_flying)                                                // Different versions when flying and on the ground.
+                msg = "Unhandled flying afraid emote";
+            else
+                msg = "Unhandled ground afraid emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if((ev->contents == "akimbo" || ev->contents == "wings")           // Akimbo
+                && !ent->m_is_flying)                                           // Not allowed when flying.
+        {
+            QString msg = "Unhandled akimbo emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(ev->contents == "angry")                                        // Angry
+        {
+            QString msg = "Unhandled angry emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(ev->contents == "atease")                                       // AtEase
+        {
+            QString msg = "Unhandled atease emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(ev->contents == "attack")                                       // Attack
+        {
+            QString msg = "Unhandled attack emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
     }
 }

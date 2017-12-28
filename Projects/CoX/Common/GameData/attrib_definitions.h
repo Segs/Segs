@@ -91,7 +91,7 @@ struct Parse_CharAttrib
     float m_Immobilized;
     float m_Stunned;
     float m_Sleep;
-    float m_Fly;
+    float m_is_flying;
     float m_Jumppack;
     float m_Teleport;
     float m_Untouchable;
@@ -188,7 +188,7 @@ struct Parse_CharAttribMax
     std::vector<float> m_Immobilized;
     std::vector<float> m_Stunned;
     std::vector<float> m_Sleep;
-    std::vector<float> m_Fly;
+    std::vector<float> m_is_flying;
     std::vector<float> m_Jumppack;
     std::vector<float> m_Teleport;
     std::vector<float> m_Untouchable;
