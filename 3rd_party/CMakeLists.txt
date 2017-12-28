@@ -2,9 +2,9 @@ link_directories(${ThirdParty_Install_Dir}/lib)
 
 include(ExternalProject_CEREAL.cmake)
 include(ExternalProject_ACE.cmake)
-if(WIN32) # ERICEDIT: If the OS is Windows:
-    file(COPY ${ThirdParty_Install_Dir}/lib/libACE.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH}) # ERICEDIT: ACE needed for authserver.
-endif()
+#if(WIN32) # ERICEDIT: If the OS is Windows:
+#    file(COPY ${ThirdParty_Install_Dir}/lib/libACE.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH}) # ERICEDIT: ACE needed for authserver.
+#endif()
 if(BUILD_COX_MAP_VIEWER)
 include(ExternalProject_Lutefisk3D.cmake)
 endif()
