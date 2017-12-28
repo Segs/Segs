@@ -45,8 +45,7 @@ include_directories(Components)
 add_subdirectory(Components)
 add_subdirectory(Utilities)
 add_subdirectory(Projects)
-add_subdirectory(dummy_folders) # ERICEDIT: This is my solution to automatically creating the data folder. A bit messy, but it works.
-add_subdirectory(${PROJECT_SOURCE_DIR}/dummy_folders/data ${PROJECT_SOURCE_DIR}/out) # ERICEDIT: This could also be used for other folders we need to create.
+file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/data)
 
 ########################################################################################
 # DLL Transfers
