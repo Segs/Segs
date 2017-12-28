@@ -747,9 +747,9 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         else if(lowerContents == "coin" || lowerContents == "cointoss"
                 || lowerContents == "flipcoin")                                 // Coin: Flips a coin, randomly displays heads or tails, and hold stance. Coin image remains until stance broken.
         {
-            int flipRes = rand() % 2;                                           // Randomly pick heads or tails.
+            int rFlip = rand() % 2;                                           // Randomly pick heads or tails.
             QString msg;
-            switch(flipRes)
+            switch(rFlip)
             {
                 case 0:                                                         // 0: Heads
                 {
@@ -809,6 +809,57 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
                     break;
                 }
             }
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(lowerContents == "dice" || lowerContents == "rolldice")         // Dice: Picks up, shakes and rolls a die, randomly displays the results (1-6), default stance. Die image quickly fades.
+        {
+            int rDice = rand() % 6 + 1;                                         // Randomly pick a die result.
+            QString msg;
+            switch(rDice)
+            {
+                case 1:                                                         // 1: 1
+                {
+                    msg = "1: Unhandled \"1\" Dice emote";
+                    break;
+                }
+                case 2:                                                         // 2: 2
+                {
+                    msg = "2: Unhandled \"2\" Dice emote";
+                    break;
+                }
+                case 3:                                                         // 3: 3
+                {
+                    msg = "3: Unhandled \"3\" Dice emote";
+                    break;
+                }
+                case 4:                                                         // 4: 4
+                {
+                    msg = "4: Unhandled \"4\" Dice emote";
+                    break;
+                }
+                case 5:                                                         // 5: 5
+                {
+                    msg = "5: Unhandled \"5\" Dice emote";
+                    break;
+                }
+                case 6:                                                         // 6: 6
+                {
+                    msg = "6: Unhandled \"6\" Dice emote";
+                    break;
+                }
+            }
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(lowerContents == "dice1")                                       // Dice1: Picks up, shakes and rolls a die, displays a 1, default stance.
+        {
+            QString msg = "Unhandled Dice1 emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         }
     }
 }
