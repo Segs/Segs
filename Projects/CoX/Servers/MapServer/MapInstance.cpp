@@ -837,8 +837,51 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             msg = "Unhandled Point emote";
         else if(lowerContents == "praise")                                      // Praise: Kneel prostrate and repeatedly bow in adoration.
             msg = "Unhandled Praise emote";
-        else if(lowerContents == "protest")                                      // Praise: Kneel prostrate and repeatedly bow in adoration.
+        else if(lowerContents == "protest")                                     // Protest: Hold hold up one of several randomly selected mostly unreadable protest signs.
             msg = "Unhandled Protest emote";
+        else if(lowerContents == "roar" && !ent->m_is_flying)                   // Roar: Claws air, roaring, ape-like stance.
+            msg = "Unhandled Roar emote";                                       // Not allowed when flying.
+        else if(lowerContents == "rock")                                        // Rock: Plays rock/paper/scissors, picking rock (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
+            msg = "Unhandled Rock emote";
+        else if(lowerContents == "salute")                                      // Salute: A hand-on-forehead salute, fists on hips stance.
+            msg = "Unhandled Salute emote";
+        else if(lowerContents == "scissors")                                    // Scissors: Plays rock/paper/scissors, picking scissors (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
+            msg = "Unhandled Scissors emote";
+        else if(lowerContents == "score1")                                      // Score1: Holds a black on white scorecard up, displaying a 1, holds stance.
+            msg = "Unhandled Score1 emote";
+        else if(lowerContents == "score2")                                      // Score2: Holds a black on white scorecard up, displaying a 1, holds stance.
+            msg = "Unhandled Score2 emote";
+        else if(lowerContents == "score3")                                      // Score3: Holds a black on white scorecard up, displaying a 1, holds stance.
+            msg = "Unhandled Score3 emote";
+        else if(lowerContents == "score4")                                      // Score4: Holds a black on white scorecard up, displaying a 1, holds stance.
+            msg = "Unhandled Score4 emote";
+        else if(lowerContents == "score5")                                      // Score5: Holds a black on white scorecard up, displaying a 1, holds stance.
+            msg = "Unhandled Score5 emote";
+        else if(lowerContents == "score6")                                      // Score6: Holds a black on white scorecard up, displaying a 1, holds stance.
+            msg = "Unhandled Score6 emote";
+        else if(lowerContents == "score7")                                      // Score7: Holds a black on white scorecard up, displaying a 1, holds stance.
+            msg = "Unhandled Score7 emote";
+        else if(lowerContents == "score8")                                      // Score8: Holds a black on white scorecard up, displaying a 1, holds stance.
+            msg = "Unhandled Score8 emote";
+        else if(lowerContents == "score9")                                      // Score9: Holds a black on white scorecard up, displaying a 1, holds stance.
+            msg = "Unhandled Score9 emote";
+        else if(lowerContents == "score10")                                     // Score10: Holds a black on white scorecard up, displaying a 1, holds stance.
+            msg = "Unhandled Score10 emote";
+        else if(lowerContents == "shucks")                                      // Shucks: Swings fist and head dejectedly, neutral forward facing stance (not the default stance, same as huh/shrug).
+            msg = "Unhandled Shucks emote";
+        else if(lowerContents == "sit")                                         // Sit: Sits down, legs forward, with knees bent, elbows on knees, and slightly slumped over, stance.
+            msg = "Unhandled Sit emote";
+        else if(lowerContents == "smack")                                       // Smack: Backhand slap.
+            msg = "Unhandled Smask emote";
+        else if(lowerContents == "stop" || lowerContents == "raisehand")        // Stop: Raises your right hand above your head, hold stance.
+            msg = "Unhandled Stop emote";
+        else if(lowerContents == "tarzan" || lowerContents == "beatchest")      // Tarzan: Beats chest and howls, angry-looking stance.
+        {
+            if(ent->m_is_flying)                                                // Different versions when flying and on the ground.
+                msg = "Unhandled flying Tarzan emote";
+            else
+                msg = "Unhandled ground Tarzan emote";
+        }
     }
     qDebug() << msg;                                                            // Print out the message to the server console.
     info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);                       // Create the message to send to the client.
