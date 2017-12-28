@@ -618,6 +618,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             ev->contents.replace(0, 3, "");
         else                                                                    // Requires a different argument for the "e" command.
             ev->contents.replace(0, 2, "");
+        // Normal Emotes
         if(ev->contents == "afraid" || ev->contents == "cower"
                 || ev->contents == "fear" || ev->contents == "scared")          // Afraid
         {
@@ -655,6 +656,50 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         else if(ev->contents == "attack")                                       // Attack
         {
             QString msg = "Unhandled attack emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(ev->contents == "batsmash")                                       // BatSmash
+        {
+            QString msg = "Unhandled batsmash emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(ev->contents == "batsmashreact")                                  // BatSmashReact
+        {
+            QString msg = "Unhandled batsmashreact emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(ev->contents == "bigwave" || ev->contents == "overhere")          // BigWave
+        {
+            QString msg = "Unhandled bigwave emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if((ev->contents == "boombox" || ev->contents == "bb"                // BoomBox (has sound)
+                || ev->contents == "dropboombox") && !ent->m_is_flying)           // Not allowed when flying.
+        {
+            QString msg = "Unhandled boombox emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if((ev->contents == "bow" || ev->contents == "sorry")                // Bow
+                && !ent->m_is_flying)                                             // Not allowed when flying.
+        {
+            QString msg = "Unhandled bow emote";
+            qDebug() << msg;
+            info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        }
+        else if(ev->contents == "bowdown" || ev->contents == "down")              // BowDown
+        {
+            QString msg = "Unhandled bowdown emote";
             qDebug() << msg;
             info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
             src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
