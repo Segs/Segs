@@ -131,6 +131,12 @@ CONFIGURATION
 
 Configuration of your SEGS server is done using the `settings.cfg` file saved in the SEGS folder, and must be completed before running your server for the first time. See below for an exhaustive breakdown of server configuration.
 
+1. Acquire required DLL file.
+
+NOTE: This step is only required on Windows.
+
+   Much like the utilities, the authserver requires a `.dll` file to run. Navigate to the folder containing the build of your project. It should be named something like this: `build-Segs-Desktop_Qt_YOUR_VERSION_NUMBER_MinGW_32bit-Default`. From this folder, navigate to: `./3rd_party/built/lib/`. Copy the file `libACE.dll` to the SEGS directory.
+
 1. Setup ./settings.cfg.
 
    The settings.cfg file contains all of the configuration options for your private SEGS server. Within this file are several sections:
