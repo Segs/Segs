@@ -726,7 +726,6 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
                 case 6:                                                         // 6: The monkey.
                 {
                     msg = "6: Unhandled \"The monkey\" Dance emote";
-                    break;
                 }
             }
         }
@@ -763,7 +762,6 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
                 case 6:                                                         // 6: 6
                 {
                     msg = "6: Unhandled \"6\" Dice emote";
-                    break;
                 }
             }
         }
@@ -881,6 +879,47 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
                 msg = "Unhandled flying Tarzan emote";
             else
                 msg = "Unhandled ground Tarzan emote";
+        }
+        else if(lowerContents == "taunt1" || lowerContents == "taunta")         // Taunt1: Taunts, beckoning with one hand, then slaps fist into palm, repeating stance.
+
+        {
+            if(ent->m_is_flying)                                                // Different versions when flying and on the ground.
+                msg = "Unhandled flying Taunt1 emote";
+            else
+                msg = "Unhandled ground Taunt1 emote";
+        }
+        else if(lowerContents == "taunt2" || lowerContents == "taunt"
+                || lowerContents == "tauntb")                                   // Taunt2: Taunts, beckoning with both hands, combat stance.
+        {
+            if(ent->m_is_flying)                                                // Different versions when flying and on the ground.
+                msg = "Unhandled flying Taunt2 emote";
+            else
+                msg = "Unhandled ground Taunt2 emote";
+        }
+        else if(lowerContents == "thanks" || lowerContents == "thankyou")       // Thanks: Gestures with hand, neutral forward facing stance.
+            msg = "Unhandled Thanks emote";
+        else if(lowerContents == "thewave")                                     // Thewave: Does the wave (as seen in stadiums at sporting events), neutral facing forward stance.
+            msg = "Unhandled Thewave emote";
+        else if(lowerContents == "victory")                                     // Victory: Raises hands excitedly, and then again less excitedly, and then a third time almost non-chalantly, falls into neutral forward facing stance.
+            msg = "Unhandled Victory emote";
+        else if(lowerContents == "wavefist" || lowerContents == "rooting")      // WaveFist (has sound): Waves fist, hoots and then claps (its a cheer), crossed arms stance.
+            msg = "Unhandled WaveFist emote";
+        else if(lowerContents == "welcome")                                     // Welcome: Open arms welcoming, fists on hips stance.
+            msg = "Unhandled Welcome emote";
+        else if(lowerContents == "whistle")                                     // Whistle (has sound): Whistles (sounds like a police whistle), ready-stance.
+            msg = "Unhandled Whistle emote";
+        else if(lowerContents == "winner" || lowerContents == "champion")       // Winner: Fist in fist cheer, right, and then left, neutral forward facing stance.
+            msg = "Unhandled Winner emote";
+        else if(lowerContents == "yourewelcome")                                // YoureWelcome: Bows head and gestures with hand, neutral forward facing stance.
+            msg = "Unhandled YoureWelcome emote";
+        else if(lowerContents == "yes" || lowerContents == "thumbsup")          // Yes: Big (literally) thumbs up and an affirmative nod, fists on hips stance.
+            msg = "Unhandled Yes emote";
+        else if(lowerContents == "yoga" || lowerContents == "lotus")            // Yoga: 	Sits down cross legged with hands on knees/legs, holds stance.
+        {
+            if(ent->m_is_flying)                                                // Different versions when flying and on the ground.
+                msg = "Unhandled flying Yoga emote";
+            else
+                msg = "Unhandled ground Yoga emote";
         }
     }
     qDebug() << msg;                                                            // Print out the message to the server console.
