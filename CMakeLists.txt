@@ -13,7 +13,7 @@ add_definitions(-D__STDC_FORMAT_MACROS)
 
 SET(MAIN_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/3rd_party/include CACHE PATH "Includes")
 SET(MAIN_LIB_PATH ${PROJECT_SOURCE_DIR}/3rd_party/lib CACHE PATH "Libraries")
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/out)
+SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/out) # ERICEDIT: Changed the output directory to the build directory rather than source.
 
 SET(CMAKE_INCLUDE_PATH ${MAIN_INCLUDE_PATH})
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
@@ -27,7 +27,7 @@ OPTION(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
 # Prerequisites
 ########################################################################################
 include(3rdparty_support)
-set(ThirdParty_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/3rd_party/built)
+set(ThirdParty_Install_Dir ${CMAKE_BINARY_DIR}/3rd_party/built) # ERICEDIT: Changed to CMAKE_BINARY_DIR so that this variable always points to the top level of the build directory.
 add_subdirectory(3rd_party)
 add_definitions(-DACE_HAS_DLL=1) # TODO: this should be set by per-target add_definitions
 link_directories(${PROJECT_SOURCE_DIR}/lib) # ERICEDIT: Changed to lowercase.
