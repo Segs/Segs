@@ -896,15 +896,15 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         }
         else if(lowerContents == "dice1")                                       // Dice1: Picks up, shakes and rolls a die, displays a 1, default stance.
             msg = "Unhandled Dice1 emote";
-        else if(lowerContents == "dice2")                                       // Dice1: Picks up, shakes and rolls a die, displays a 2, default stance.
+        else if(lowerContents == "dice2")                                       // Dice2: Picks up, shakes and rolls a die, displays a 2, default stance.
             msg = "Unhandled Dice2 emote";
-        else if(lowerContents == "dice3")                                       // Dice1: Picks up, shakes and rolls a die, displays a 3, default stance.
+        else if(lowerContents == "dice3")                                       // Dice3: Picks up, shakes and rolls a die, displays a 3, default stance.
             msg = "Unhandled Dice3 emote";
-        else if(lowerContents == "dice4")                                       // Dice1: Picks up, shakes and rolls a die, displays a 4, default stance.
+        else if(lowerContents == "dice4")                                       // Dice4: Picks up, shakes and rolls a die, displays a 4, default stance.
             msg = "Unhandled Dice4 emote";
-        else if(lowerContents == "dice5")                                       // Dice1: Picks up, shakes and rolls a die, displays a 5, default stance.
+        else if(lowerContents == "dice5")                                       // Dice5: Picks up, shakes and rolls a die, displays a 5, default stance.
             msg = "Unhandled Dice5 emote";
-        else if(lowerContents == "dice6")                                       // Dice1: Picks up, shakes and rolls a die, displays a 6, default stance.
+        else if(lowerContents == "dice6")                                       // Dice6: Picks up, shakes and rolls a die, displays a 6, default stance.
             msg = "Unhandled Dice6 emote";
         else if(lowerContents == "disagree")                                    // Disagree: Shakes head, crosses hand in front, then offers an alternative, crossed arms stance.
             msg = "Unhandled Disagree emote";
@@ -976,23 +976,23 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             msg = "Unhandled Scissors emote";
         else if(lowerContents == "score1")                                      // Score1: Holds a black on white scorecard up, displaying a 1, holds stance.
             msg = "Unhandled Score1 emote";
-        else if(lowerContents == "score2")                                      // Score2: Holds a black on white scorecard up, displaying a 1, holds stance.
+        else if(lowerContents == "score2")                                      // Score2: Holds a black on white scorecard up, displaying a 2, holds stance.
             msg = "Unhandled Score2 emote";
-        else if(lowerContents == "score3")                                      // Score3: Holds a black on white scorecard up, displaying a 1, holds stance.
+        else if(lowerContents == "score3")                                      // Score3: Holds a black on white scorecard up, displaying a 3, holds stance.
             msg = "Unhandled Score3 emote";
-        else if(lowerContents == "score4")                                      // Score4: Holds a black on white scorecard up, displaying a 1, holds stance.
+        else if(lowerContents == "score4")                                      // Score4: Holds a black on white scorecard up, displaying a 4, holds stance.
             msg = "Unhandled Score4 emote";
-        else if(lowerContents == "score5")                                      // Score5: Holds a black on white scorecard up, displaying a 1, holds stance.
+        else if(lowerContents == "score5")                                      // Score5: Holds a black on white scorecard up, displaying a 5, holds stance.
             msg = "Unhandled Score5 emote";
-        else if(lowerContents == "score6")                                      // Score6: Holds a black on white scorecard up, displaying a 1, holds stance.
+        else if(lowerContents == "score6")                                      // Score6: Holds a black on white scorecard up, displaying a 6, holds stance.
             msg = "Unhandled Score6 emote";
-        else if(lowerContents == "score7")                                      // Score7: Holds a black on white scorecard up, displaying a 1, holds stance.
+        else if(lowerContents == "score7")                                      // Score7: Holds a black on white scorecard up, displaying a 7, holds stance.
             msg = "Unhandled Score7 emote";
-        else if(lowerContents == "score8")                                      // Score8: Holds a black on white scorecard up, displaying a 1, holds stance.
+        else if(lowerContents == "score8")                                      // Score8: Holds a black on white scorecard up, displaying a 8, holds stance.
             msg = "Unhandled Score8 emote";
-        else if(lowerContents == "score9")                                      // Score9: Holds a black on white scorecard up, displaying a 1, holds stance.
+        else if(lowerContents == "score9")                                      // Score9: Holds a black on white scorecard up, displaying a 9, holds stance.
             msg = "Unhandled Score9 emote";
-        else if(lowerContents == "score10")                                     // Score10: Holds a black on white scorecard up, displaying a 1, holds stance.
+        else if(lowerContents == "score10")                                     // Score10: Holds a black on white scorecard up, displaying a 10, holds stance.
             msg = "Unhandled Score10 emote";
         else if(lowerContents == "shucks")                                      // Shucks: Swings fist and head dejectedly, neutral forward facing stance (not the default stance, same as huh/shrug).
             msg = "Unhandled Shucks emote";
