@@ -102,7 +102,7 @@ void serialize(Archive & archive, Parse_CharAttrib & target)
     archive(cereal::make_nvp("Immobilized",target.m_Immobilized));
     archive(cereal::make_nvp("Stunned",target.m_Stunned));
     archive(cereal::make_nvp("Sleep",target.m_Sleep));
-    archive(cereal::make_nvp("Fly",target.m_Fly));
+    archive(cereal::make_nvp("Fly",target.m_is_flying));
     archive(cereal::make_nvp("Jumppack",target.m_Jumppack));
     archive(cereal::make_nvp("Teleport",target.m_Teleport));
     archive(cereal::make_nvp("Untouchable",target.m_Untouchable));
@@ -161,7 +161,7 @@ void serialize(Archive & archive, Parse_CharAttribMax & target)
     archive(cereal::make_nvp("Immobilized",target.m_Immobilized));
     archive(cereal::make_nvp("Stunned",target.m_Stunned));
     archive(cereal::make_nvp("Sleep",target.m_Sleep));
-    archive(cereal::make_nvp("Fly",target.m_Fly));
+    archive(cereal::make_nvp("Fly",target.m_is_flying));
     archive(cereal::make_nvp("Jumppack",target.m_Jumppack));
     archive(cereal::make_nvp("Teleport",target.m_Teleport));
     archive(cereal::make_nvp("Untouchable",target.m_Untouchable));
@@ -224,7 +224,7 @@ bool loadFrom(BinStore *s, Parse_CharAttrib &target)
     s->read(target.m_Immobilized);
     s->read(target.m_Stunned);
     s->read(target.m_Sleep);
-    s->read(target.m_Fly);
+    s->read(target.m_is_flying);
     s->read(target.m_Jumppack);
     s->read(target.m_Teleport);
     s->read(target.m_Untouchable);
@@ -284,7 +284,7 @@ bool loadFrom(BinStore *s, Parse_CharAttribMax &target)
     s->read(target.m_Immobilized);
     s->read(target.m_Stunned);
     s->read(target.m_Sleep);
-    s->read(target.m_Fly);
+    s->read(target.m_is_flying);
     s->read(target.m_Jumppack);
     s->read(target.m_Teleport);
     s->read(target.m_Untouchable);

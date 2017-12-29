@@ -44,32 +44,48 @@ Note that all directories mentioned in this document are always relative to the 
 INSTALLATION
 ------
 
-1. Download and extract SEGS
+1. Choose one of two methods to download SEGS.
 
-   You can obtain the latest stable SEGS release from https://github.com/Segs/Segs/releases
-   
-   _Files are available in .tar.gz and .zip formats and can be extracted using most compression tools._
+    a. Download and compile from source. (recommended)
 
-   To download and extract the files on a typical Unix/Linux command line, use the following commands:
-
-   ```
-   wget https://github.com/Segs/Segs/releases/segs-latest.tar.gz
-   tar -zxvf segs-latest.tar.gz
-   ```
-
-   This will create a new directory segs/ containing all SEGS files and directories. Then, proceed to the section of this README titled _Configuration_
-
-2. Optionally, download and compile from source.
-
-   SEGS will compile in either Linux or Windows. The libraries you'll need to install are listed below and are availble from your distro's package manager, or via the links below:
+    SEGS will compile in either Linux or Windows. The libraries you'll need to install are listed below and are availble from your distro's package manager, or via the links below:
 
    - QT >5.8 - https://www.qt.io/download-qt-for-application-development
    - CMake >3.6 - https://cmake.org/download/
    - Git - https://git-scm.com/download
 
-   For detailed instructions, visit https://segs.nemerle.eu/developers
+    Ensure that your Qt environment is set to "Debug."
 
-3. Install CoX Client version 0.22
+    For detailed instructions, visit https://segs.nemerle.eu/developers
+
+    _**WARNING:** All ye who enter here, abandon all hope!_
+
+    You are entering the dark side of Qt configurations. There is a Qt plug-in for Microsoft Visual Studio (VS) that allows you to work with Qt projects. The plug-in is available for three VS versions:
+
+    2013: https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools
+    
+    2015: https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools2015
+    
+    2017: https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools-19123
+
+    Note that we _**do not**_ recommend the use of this plug-in, nor can we guarantee that SEGS will build and run properly in VS. We are also not offering official support for VS at this time. We attempted, and it fought us tooth and nail. If, after all this warning, you still wish to challenge the beast that is Qt Visual Studio Tools, do so _**at your own risk**._
+   
+    b. Download and extract SEGS from a stable release.
+
+    You can obtain the latest stable SEGS release from https://github.com/Segs/Segs/releases
+   
+    _Files are available in .tar.gz and .zip formats and can be extracted using most compression tools._
+
+    To download and extract the files on a typical Unix/Linux command line, use the following commands:
+
+    ```
+    wget https://github.com/Segs/Segs/releases/segs-latest.tar.gz
+    tar -zxvf segs-latest.tar.gz
+    ```
+
+    This will create a new directory segs/ containing all SEGS files and directories. Then, proceed to the section of this README titled _Configuration_.
+
+2. Install CoX Client version 0.22.
 
    SEGS will only communicate with the CoH client from Issue 0 (release) version 0.22. This can be found through various sources online, or via magnet link:
 
@@ -77,22 +93,37 @@ INSTALLATION
    magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f
    ```
 
-   After the download completes, navigate to the download folder and run CoX-Setup.exe Follow the prompts to install the Issue 0 CoX client.
+   After the download completes, navigate to the download folder and run CoX-Setup.exe. Follow the prompts to install the Issue 0 CoX client.
 
-4. Copy the PIGG files to SEGS
+3. Copy the PIGG files to SEGS.
 
-   The CoX client uses files ending `.pigg` to store important game information. SEGS uses these same files to run the game world. Once installed, navigate to the CoX folder and copy the contents the `/piggs/` subfolder to the `/data/` directory of SEGS.
+   The CoX client uses files ending in `.pigg` to store important game information. SEGS uses these same files to run the game world.
+   
+   Once installed, navigate to the SEGS output folder. If you compiled from source, this will be in the `/out/` folder wherever you built your Qt project. The build folder should be named something like: `build-PROJECT_NAME-Desktop_Qt_YOUR_VERSION_NUMBER_MinGW_32bit-Debug`. If the folder ends in "Default" instead of "Debug," then you built an incorrect Qt environment type and SEGS will not work. Ensure your Qt environment is set to "Debug." If you downloaded a release version, this will be wherever you extracted it to.
+   
+   Navigate to the CoX folder and copy the contents of the `/piggs/` subfolder to the `/data/` directory of SEGS.
 
-5. Using the piggtool located in the main SEGS folder, extract BIN files from bin.pigg
+4. Using the piggtool located in the SEGS output folder, extract the BIN files from bin.pigg.
 
-   SEGS requires that we extract bin.pigg to the `/data/bin/` folder. From the console:
+   SEGS requires that we extract bin.pigg to the `/data/bin/` folder. Open a command prompt console. Using the `cd` command, navigate to the SEGS output folder, which should contain `piggtool`. To confirm you are in the correct directory, simply enter `piggtool` in the console. If you receive a help menu about its usage, you are in the correct folder. Type the following into the console and press Enter:
 
    ```
-   ./piggtool -x PATH_TO_COH_INSTALL/piggs/bin.pigg
+   piggtool -x ./data/bin.pigg
    ```
-6. Point the CoX client towards your server.
+   
+   You should then see a folder called `bin` be created in your SEGS output directory. Simply move it into the `data` folder.
+   
+5. Point the CoX client towards your server.
 
-   Run `CoX-Auth.exe` and set the IP address to that of your server. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network.
+   Run `CoX-Auth.exe` from the CoX directory and set the IP address to that of your server. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network.
+
+6. Bypass the CohUpdater requirement.
+
+   The Issue 0 client requires that you launch the game with a program called `CohUpdater.exe`. To bypass this, create a shortcut to CoX.exe and place it wherever you'd like. Access its properties, and in the `Target:` field, add the following: `-project SEGS`.
+   
+   If you would like to run the client in windowed mode for debugging purposes, add these optional instructions: `-fullscreen 0 -screen 1024 768`.
+   
+   When you want to launch the client, you will need to use this shortcut.
 
 7. Continue Server Setup
    
@@ -114,12 +145,12 @@ CONFIGURATION
 
 Configuration of your SEGS server is done using the `settings.cfg` file saved in the SEGS folder, and must be completed before running your server for the first time. See below for an exhaustive breakdown of server configuration.
 
-1. Setup ./settings.cfg
+1. Setup ./settings.cfg.
 
    The settings.cfg file contains all of the configuration options for your private SEGS server. Within this file are several sections:
 
    ##### [AdminServer]
-   This section contains information for connecting to the SQL databases required by the server. It's broken down into two sections `AccountDatabase` and `CharacterDatabase` with the same setting variables for both. These are set to default values and likely don't need to be changed unless you're configuration is advanced. A brief summary is below:
+   This section contains information for connecting to the SQL databases required by the server. It's broken down into two sections `AccountDatabase` and `CharacterDatabase` with the same setting variables for both. These are set to default values and likely don't need to be changed unless your configuration is advanced. A brief summary is below:
    - `db_driver` -- The database engine. `QSQLITE` is the default. 
    - `db_host` -- The IP of the database host. Using the default sqlite files, this is `127.0.0.1` (localhost)
    - `db_port` -- The port to access the database. Almost always `5432`
@@ -130,7 +161,6 @@ Configuration of your SEGS server is done using the `settings.cfg` file saved in
    ##### [AuthServer]
    This section contains settings specific to the authentication server `authserver`. 
    - `listen_addr` -- This is the IP of the server that clients will connect to, followed by `:2106` which is the default listening port. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network. The port never changes.
-   - `max_character_slots` -- This is the default number of character slots allowed for each account.
 
    ##### [GameServer]
    This section contains settings 
@@ -138,6 +168,7 @@ Configuration of your SEGS server is done using the `settings.cfg` file saved in
    - `listen_addr` -- This is the IP of the server that clients will connect to, followed by `:7002` which is the default listening port. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network. The port never changes.
    - `location_addr` -- This is the IP of the server where the clients will receive from the server, followed by `:7002` which is the default listening port. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network. The port never changes.
    - `max_players` -- The maximum number of concurrent connections allowed by the server.
+   - `max_character_slots` -- This is the default number of character slots allowed for each account.
 
    ##### [MapServer]
    - `listen_addr` -- This is the IP of the server that clients will connect to, followed by `:7003` which is the default listening port. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network. The port never changes.
@@ -157,7 +188,7 @@ Configuration of your SEGS server is done using the `settings.cfg` file saved in
 START THE SERVER AND PLAY
 ------
 
-At this point you're ready to start the server by running the program `authserver`. Once running, start the CoX client we setup earlier and log in using any username and password combination (users are autocreated).
+At this point you're ready to start the server by running the program `authserver`. Once running, start the CoX client we set up earlier and log in using any username and password combination (users are autocreated).
 
 Enjoy!
 
