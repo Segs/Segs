@@ -54,7 +54,19 @@ INSTALLATION
    - CMake >3.6 - https://cmake.org/download/
    - Git - https://git-scm.com/download
 
+    Ensure that your Qt environment is set to "Debug."
+
     For detailed instructions, visit https://segs.nemerle.eu/developers
+
+    _**WARNING:** All ye who enter here, abandon all hope!_
+
+    You are entering the dark side of Qt configurations. There is a Qt plug-in for Microsoft Visual Studio (VS) that allows you to work with Qt projects. The plug-in is available for three VS versions:
+
+    2013: https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools
+    2015: https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools2015
+    2017: https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools-19123
+
+    Note that we _**do not**_ recommend the use of this plug-in, nor can we guarantee that SEGS will build and run properly in VS. We are also not offering official support for VS at this time. We attempted, and it fought us tooth and nail. If, after all this warning, you still wish to challenge the beast that is Qt Visual Studio Tools, do so _**at your own risk**._
    
     b. Download and extract SEGS from a stable release.
 
@@ -85,19 +97,19 @@ INSTALLATION
 
    The CoX client uses files ending in `.pigg` to store important game information. SEGS uses these same files to run the game world.
    
-   Once installed, navigate to the SEGS folder. If you compiled from source, this will be in the `/out/` folder wherever you saved your Qt project. If you downloaded a release version, this will be wherever you extracted it to.
+   Once installed, navigate to the SEGS output folder. If you compiled from source, this will be in the `/out/` folder wherever you built your Qt project. The build folder should be named something like: `build-PROJECT_NAME-Desktop_Qt_YOUR_VERSION_NUMBER_MinGW_32bit-Debug`. If the folder ends in "Default" instead of "Debug," then you built an incorrect Qt environment type and SEGS will not work. Ensure your Qt environment is set to "Debug." If you downloaded a release version, this will be wherever you extracted it to.
    
    Navigate to the CoX folder and copy the contents of the `/piggs/` subfolder to the `/data/` directory of SEGS.
 
-4. Using the piggtool located in the main SEGS folder, extract the BIN files from bin.pigg.
+4. Using the piggtool located in the SEGS output folder, extract the BIN files from bin.pigg.
 
-   SEGS requires that we extract bin.pigg to the `/data/bin/` folder. Open a command prompt console. Using the `cd` command, navigate to the SEGS folder, which should contain `piggtool`. To confirm you are in the correct directory, simply enter `piggtool` in the console. If you receive a help menu about its usage, you are in the correct folder. Type the following into the console and press Enter:
+   SEGS requires that we extract bin.pigg to the `/data/bin/` folder. Open a command prompt console. Using the `cd` command, navigate to the SEGS output folder, which should contain `piggtool`. To confirm you are in the correct directory, simply enter `piggtool` in the console. If you receive a help menu about its usage, you are in the correct folder. Type the following into the console and press Enter:
 
    ```
    piggtool -x ./data/bin.pigg
    ```
    
-   You should then see a folder called `bin` be created in your SEGS directory. Simply move it into the `data` folder.
+   You should then see a folder called `bin` be created in your SEGS output directory. Simply move it into the `data` folder.
    
 5. Point the CoX client towards your server.
 
@@ -130,12 +142,6 @@ CONFIGURATION
 ------
 
 Configuration of your SEGS server is done using the `settings.cfg` file saved in the SEGS folder, and must be completed before running your server for the first time. See below for an exhaustive breakdown of server configuration.
-
-1. Acquire required DLL file.
-
-NOTE: This step is only required on Windows.
-
-   Much like the utilities, the authserver requires a `.dll` file to run. Navigate to the folder containing the build of your project. It should be named something like this: `build-Segs-Desktop_Qt_YOUR_VERSION_NUMBER_MinGW_32bit-Default`. From this folder, navigate to: `./3rd_party/built/lib/`. Copy the file `libACE.dll` to the SEGS directory.
 
 1. Setup ./settings.cfg.
 
