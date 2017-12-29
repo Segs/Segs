@@ -23,13 +23,11 @@
 #include "WorldSimulation.h"
 #include "InternalEvents.h"
 
-#include <stdlib.h>
-
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
-
+#include <stdlib.h>
 
 namespace {
 enum {
