@@ -643,7 +643,112 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             msg = "Unhandled BigWave emote";
         else if((lowerContents == "boombox" || lowerContents == "bb"            // BoomBox (has sound): Summons forth a boombox (it just appears) and leans over to turn it on, stands up and does a sort of dance. A random track will play.
                 || lowerContents == "dropboombox") && !ent->m_is_flying)        // Not allowed when flying.
-            msg = "Unhandled BoomBox emote";
+        {
+            int rSong = rand() % 25 + 1;                                        // Randomly pick a song.
+            switch(rSong)
+            {
+                case 1:                                                         // 1: BBAltitude
+                {
+                    msg = "1: Unhandled \"BBAltitude\" BoomBox emote";
+                }
+                case 2:                                                         // 2: BBBeat
+                {
+                    msg = "1: Unhandled \"BBBeat\" BoomBox emote";
+                }
+                case 3:                                                         // 3: BBCatchMe
+                {
+                    msg = "1: Unhandled \"BBCatchMe\" BoomBox emote";
+                }
+                case 4:                                                         // 4: BBDance
+                {
+                    msg = "1: Unhandled \"BBDance\" BoomBox emote";
+                }
+                case 5:                                                         // 5: BBDiscoFreak
+                {
+                    msg = "1: Unhandled \"BBDiscoFreak\" BoomBox emote";
+                }
+                case 6:                                                         // 6: BBDogWalk
+                {
+                    msg = "1: Unhandled \"BBDogWalk\" BoomBox emote";
+                }
+                case 7:                                                         // 7: BBElectroVibe
+                {
+                    msg = "1: Unhandled \"BBElectroVibe\" BoomBox emote";
+                }
+                case 8:                                                         // 8: BBHeavyDude
+                {
+                    msg = "1: Unhandled \"BBHeavyDude\" BoomBox emote";
+                }
+                case 9:                                                         // 9: BBInfoOverload
+                {
+                    msg = "1: Unhandled \"BBInfoOverload\" BoomBox emote";
+                }
+                case 10:                                                        // 10: BBJumpy
+                {
+                    msg = "1: Unhandled \"BBJumpy\" BoomBox emote";
+                }
+                case 11:                                                        // 11: BBKickIt
+                {
+                    msg = "1: Unhandled \"BBKickIt\" BoomBox emote";
+                }
+                case 12:                                                        // 12: BBLooker
+                {
+                    msg = "1: Unhandled \"BBLooker\" BoomBox emote";
+                }
+                case 13:                                                        // 13: BBMeaty
+                {
+                    msg = "1: Unhandled \"BBMeaty\" BoomBox emote";
+                }
+                case 14:                                                        // 14: BBMoveOn
+                {
+                    msg = "1: Unhandled \"BBMoveOn\" BoomBox emote";
+                }
+                case 15:                                                        // 15: BBNotorious
+                {
+                    msg = "1: Unhandled \"BBNotorious\" BoomBox emote";
+                }
+                case 16:                                                        // 16: BBPeace
+                {
+                    msg = "1: Unhandled \"BBPeace\" BoomBox emote";
+                }
+                case 17:                                                        // 17: BBQuickie
+                {
+                    msg = "1: Unhandled \"BBQuickie\" BoomBox emote";
+                }
+                case 18:                                                        // 18: BBRaver
+                {
+                    msg = "1: Unhandled \"BBRaver\" BoomBox emote";
+                }
+                case 19:                                                        // 19: BBShuffle
+                {
+                    msg = "1: Unhandled \"BBShuffle\" BoomBox emote";
+                }
+                case 20:                                                        // 20: BBSpaz
+                {
+                    msg = "1: Unhandled \"BBSpaz\" BoomBox emote";
+                }
+                case 21:                                                        // 21: BBTechnoid
+                {
+                    msg = "1: Unhandled \"BBTechnoid\" BoomBox emote";
+                }
+                case 22:                                                        // 22: BBVenus
+                {
+                    msg = "1: Unhandled \"BBVenus\" BoomBox emote";
+                }
+                case 23:                                                        // 23: BBWindItUp
+                {
+                    msg = "1: Unhandled \"BBWindItUp\" BoomBox emote";
+                }
+                case 24:                                                        // 24: BBWahWah
+                {
+                    msg = "1: Unhandled \"BBWahWah\" BoomBox emote";
+                }
+                case 25:                                                        // 25: BBYellow
+                {
+                    msg = "1: Unhandled \"BBYellow\" BoomBox emote";
+                }
+            }
+        }
         else if((lowerContents == "bow" || lowerContents == "sorry")            // Bow: Chinese/Japanese style bow with palms together, returns to normal stance.
                 && !ent->m_is_flying)                                           // Not allowed when flying.
             msg = "Unhandled Bow emote";
@@ -677,17 +782,17 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         else if(lowerContents == "coin" || lowerContents == "cointoss"
                 || lowerContents == "flipcoin")                                 // Coin: Flips a coin, randomly displays heads or tails, and hold stance. Coin image remains until stance broken.
         {
-            int rFlip = rand() % 2;                                             // Randomly pick heads or tails.
+            int rFlip = rand() % 2 + 1;                                         // Randomly pick heads or tails.
             switch(rFlip)
             {
-                case 0:                                                         // 0: Heads
+                case 1:                                                         // 1: Heads
                 {
-                    msg = "0: Unhandled heads Coin emote";
+                    msg = "1: Unhandled heads Coin emote";
                     break;
                 }
-                case 1:                                                         // 1: Tails
+                case 2:                                                         // 2: Tails
                 {
-                    msg = "1: Unhandled tails Coin emote";
+                    msg = "2: Unhandled tails Coin emote";
                 }
             }
         }
@@ -920,6 +1025,61 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
                 msg = "Unhandled flying Yoga emote";
             else
                 msg = "Unhandled ground Yoga emote";
+        }
+                                                                                // Boombox Emotes
+        else if(lowerContents.startsWith("bb") && !ent->m_is_flying)            // Check if Boombox Emote.
+        {                                                                       // Not allowed when flying.
+            lowerContents.replace(0, 2, "");                                    // Remove the "BB" prefix for conciseness.
+            if(lowerContents == "altitude")                                     // BBAltitude
+                msg = "Unhandled BBAltitude emote";
+            else if(lowerContents == "beat")                                    // BBBeat
+                msg = "Unhandled BBBeat emote";
+            else if(lowerContents == "catchme")                                 // BBCatchMe
+                msg = "Unhandled BBCatchMe emote";
+            else if(lowerContents == "dance")                                   // BBDance
+                msg = "Unhandled BBDance emote";
+            else if(lowerContents == "discofreak")                              // BBDiscoFreak
+                msg = "Unhandled BBDiscoFreak emote";
+            else if(lowerContents == "dogwalk")                                 // BBDogWalk
+                msg = "Unhandled BBDogWalk emote";
+            else if(lowerContents == "electrovibe")                             // BBElectroVibe
+                msg = "Unhandled BBElectroVibe emote";
+            else if(lowerContents == "heavydude")                               // BBHeavyDude
+                msg = "Unhandled BBHeavyDude emote";
+            else if(lowerContents == "infooverload")                            // BBInfoOverload
+                msg = "Unhandled BBInfoOverload emote";
+            else if(lowerContents == "jumpy")                                   // BBJumpy
+                msg = "Unhandled BBJumpy emote";
+            else if(lowerContents == "kickit")                                  // BBKickIt
+                msg = "Unhandled BBKickIt emote";
+            else if(lowerContents == "looker")                                  // BBLooker
+                msg = "Unhandled BBLooker emote";
+            else if(lowerContents == "meaty")                                   // BBMeaty
+                msg = "Unhandled BBMeaty emote";
+            else if(lowerContents == "moveon")                                  // BBMoveOn
+                msg = "Unhandled BBMoveOn emote";
+            else if(lowerContents == "notorious")                               // BBNotorious
+                msg = "Unhandled BBNotorious emote";
+            else if(lowerContents == "peace")                                   // BBPeace
+                msg = "Unhandled BBPeace emote";
+            else if(lowerContents == "quickie")                                 // BBQuickie
+                msg = "Unhandled BBQuickie emote";
+            else if(lowerContents == "raver")                                   // BBRaver
+                msg = "Unhandled BBRaver emote";
+            else if(lowerContents == "shuffle")                                 // BBShuffle
+                msg = "Unhandled BBShuffle emote";
+            else if(lowerContents == "spaz")                                    // BBSpaz
+                msg = "Unhandled BBSpaz emote";
+            else if(lowerContents == "technoid")                                // BBTechnoid
+                msg = "Unhandled BBTechnoid emote";
+            else if(lowerContents == "venus")                                   // BBVenus
+                msg = "Unhandled BBVenus emote";
+            else if(lowerContents == "winditup")                                // BBWindItUp
+                msg = "Unhandled BBWindItUp emote";
+            else if(lowerContents == "wahwah")                                  // BBWahWah
+                msg = "Unhandled BBWahWah emote";
+            else if(lowerContents == "yellow")                                  // BBYellow
+                msg = "Unhandled BBYellow emote";
         }
     }
     qDebug() << msg;                                                            // Print out the message to the server console.
