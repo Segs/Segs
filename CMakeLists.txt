@@ -50,23 +50,9 @@ file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/data)
 # DLL Transfers
 ########################################################################################
 if(WIN32) # ERICEDIT: If the OS is Windows:
-#    if(MSVC) # ERICEDIT: If this is the Visual Studio version of Qt:
-#        # TODO: Copy the DLL files required for Visual Studio versions of the client.
-#    else() # ERICEDIT: Else, this is Qt creator. Copy these DLLs.
-#        get_target_property(QtCore_location_Release Qt5::Core LOCATION_Release) # ERICEDIT: Get the direct location of Qt5Core.dll.
-#        get_filename_component(Qt_binary_location ${QtCore_location_Release} DIRECTORY) # ERICEDIT: Remove the file name and let the directory remain.
-#        file(COPY ${Qt_binary_location}/libgcc_s_dw2-1.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
-#        file(COPY ${Qt_binary_location}/libstdc++-6.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
-#        file(COPY ${Qt_binary_location}/libwinpthread-1.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
-#        file(COPY ${QtCore_location_Release} DESTINATION ${EXECUTABLE_OUTPUT_PATH})
-#        file(COPY ${Qt_binary_location}/Qt5Gui.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
-#        file(COPY ${Qt_binary_location}/Qt5Network.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
-#        file(COPY ${Qt_binary_location}/Qt5Sql.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
-#        file(COPY ${Qt_binary_location}/Qt5Widgets.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
-#    endif()
     get_target_property(QtCore_location_Release Qt5::Core LOCATION_Release) # ERICEDIT: Get the direct location of Qt5Core.dll.
     get_filename_component(Qt_binary_location ${QtCore_location_Release} DIRECTORY) # ERICEDIT: Remove the file name and let the directory remain.
-    add_custom_target(
+    add_custom_target( # ERICEDIT: Add a target that depends on all the executable files built by SEGS.
         execTargets ALL
         DEPENDS ${EXECUTABLE_OUTPUT_PATH}/authserver.exe
         ${EXECUTABLE_OUTPUT_PATH}/binConverter.exe
@@ -75,22 +61,16 @@ if(WIN32) # ERICEDIT: If the OS is Windows:
         ${EXECUTABLE_OUTPUT_PATH}/piggtool.exe
         ${EXECUTABLE_OUTPUT_PATH}/slav.exe
         )
-    find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${Qt_binary_location} ENV Qt_binary_location)
-    add_custom_command(
+    find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${Qt_binary_location} ENV Qt_binary_location) # ERICEDIT: Find windeployqt for use in finding dependencies.
+    add_custom_command( # ERICEDIT: After building the executables, use windeployqt to transfer all dependencies to the output directory.
         TARGET execTargets
         POST_BUILD
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} --release ${EXECUTABLE_OUTPUT_PATH}/authserver.exe
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} --release ${EXECUTABLE_OUTPUT_PATH}/binConverter.exe
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} --release ${EXECUTABLE_OUTPUT_PATH}/dbtool.exe
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} --release ${EXECUTABLE_OUTPUT_PATH}/ManifestBuilder.exe
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} --release ${EXECUTABLE_OUTPUT_PATH}/piggtool.exe
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} --release ${EXECUTABLE_OUTPUT_PATH}/slav.exe
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/authserver.exe
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/binConverter.exe
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/dbtool.exe
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/ManifestBuilder.exe
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/piggtool.exe
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/slav.exe
         )
-#    file(TO_NATIVE_PATH "${QWT_DIR}/lib/*${CMAKE_SHARED_LIBRARY_SUFFIX}" copySource)
-#    # perform copy
-#    ADD_CUSTOM_COMMAND(TARGET execTargets
-#        POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy ${copySource} ${EXECUTABLE_OUTPUT_PATH}
-#    )
 endif()
 

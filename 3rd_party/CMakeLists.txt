@@ -2,12 +2,12 @@ link_directories(${ThirdParty_Install_Dir}/lib)
 
 include(ExternalProject_CEREAL.cmake)
 include(ExternalProject_ACE.cmake)
-if(WIN32) # ERICEDIT: Tranfer libACE.dll to the output directory.
-    add_custom_target( # TODO: Ensure this works with MSVC versions of Qt.
+if(WIN32) # ERICEDIT: If the OS is Windows:
+    add_custom_target( # ERICEDIT: Add a target that depends on authserver.
         libace ALL
         DEPENDS ${EXECUTABLE_OUTPUT_PATH}/authserver.exe
         )
-    add_custom_command(
+    add_custom_command( # ERICEDIT: Copy over libACE.dll to the output directory.
         TARGET libace
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ace_LIBRARY_SHARED} ${EXECUTABLE_OUTPUT_PATH}
