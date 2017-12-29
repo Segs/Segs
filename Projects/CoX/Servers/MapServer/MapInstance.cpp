@@ -1105,6 +1105,18 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             else if(lowerContents == "yellow")                                  // BBYellow
                 msg = "Unhandled BBYellow emote";
         }
+                                                                                // Unlockable Emotes
+                                                                                // TODO: Implement logic and variables for unlocking these emotes.
+        else if(lowerContents == "dice7")                                       // Dice7: Picks up, shakes and rolls a die, displays a 7, default stance.
+            msg = "Unhandled Dice7 emote";                                      // Unlocked by earning the Burkholder's Bane Badge (from the Ernesto Hess Task Force).
+        else if(lowerContents == "listenpoliceband")                            // ListenPoliceBand: Listens in on the heroes' PPD police band radio.
+            msg = "Unhandled ListenPoliceBand emote";                           // Heroes can use this without any unlock requirement. For villains, ListenStolenPoliceBand unlocks by earning the Outlaw Badge.
+        else if(lowerContents == "snowflakes"
+                || lowerContents == "throwsnowflakes")                          // Snowflakes: Throws snowflakes.
+            if(ent->m_is_flying)                                                // Different versions when flying and on the ground.
+                msg = "Unhandled flying Snowflakes emote";                      // Unlocked by purchasing from the Candy Keeper during the Winter Event.
+            else
+                msg = "Unhandled ground Snowflakes emote";
     }
     qDebug() << msg;                                                            // Print out the message to the server console.
     info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);                       // Create the message to send to the client.
