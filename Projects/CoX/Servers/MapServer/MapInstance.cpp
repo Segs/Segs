@@ -650,102 +650,126 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
                 case 1:                                                         // 1: BBAltitude
                 {
                     msg = "1: Unhandled \"BBAltitude\" BoomBox emote";
+                    break;
                 }
                 case 2:                                                         // 2: BBBeat
                 {
-                    msg = "1: Unhandled \"BBBeat\" BoomBox emote";
+                    msg = "2: Unhandled \"BBBeat\" BoomBox emote";
+                    break;
                 }
                 case 3:                                                         // 3: BBCatchMe
                 {
-                    msg = "1: Unhandled \"BBCatchMe\" BoomBox emote";
+                    msg = "3: Unhandled \"BBCatchMe\" BoomBox emote";
+                    break;
                 }
                 case 4:                                                         // 4: BBDance
                 {
-                    msg = "1: Unhandled \"BBDance\" BoomBox emote";
+                    msg = "4: Unhandled \"BBDance\" BoomBox emote";
+                    break;
                 }
                 case 5:                                                         // 5: BBDiscoFreak
                 {
-                    msg = "1: Unhandled \"BBDiscoFreak\" BoomBox emote";
+                    msg = "5: Unhandled \"BBDiscoFreak\" BoomBox emote";
+                    break;
                 }
                 case 6:                                                         // 6: BBDogWalk
                 {
-                    msg = "1: Unhandled \"BBDogWalk\" BoomBox emote";
+                    msg = "6: Unhandled \"BBDogWalk\" BoomBox emote";
+                    break;
                 }
                 case 7:                                                         // 7: BBElectroVibe
                 {
-                    msg = "1: Unhandled \"BBElectroVibe\" BoomBox emote";
+                    msg = "7: Unhandled \"BBElectroVibe\" BoomBox emote";
+                    break;
                 }
                 case 8:                                                         // 8: BBHeavyDude
                 {
-                    msg = "1: Unhandled \"BBHeavyDude\" BoomBox emote";
+                    msg = "8: Unhandled \"BBHeavyDude\" BoomBox emote";
+                    break;
                 }
                 case 9:                                                         // 9: BBInfoOverload
                 {
-                    msg = "1: Unhandled \"BBInfoOverload\" BoomBox emote";
+                    msg = "9: Unhandled \"BBInfoOverload\" BoomBox emote";
+                    break;
                 }
                 case 10:                                                        // 10: BBJumpy
                 {
-                    msg = "1: Unhandled \"BBJumpy\" BoomBox emote";
+                    msg = "10: Unhandled \"BBJumpy\" BoomBox emote";
+                    break;
                 }
                 case 11:                                                        // 11: BBKickIt
                 {
-                    msg = "1: Unhandled \"BBKickIt\" BoomBox emote";
+                    msg = "11: Unhandled \"BBKickIt\" BoomBox emote";
+                    break;
                 }
                 case 12:                                                        // 12: BBLooker
                 {
-                    msg = "1: Unhandled \"BBLooker\" BoomBox emote";
+                    msg = "12: Unhandled \"BBLooker\" BoomBox emote";
+                    break;
                 }
                 case 13:                                                        // 13: BBMeaty
                 {
-                    msg = "1: Unhandled \"BBMeaty\" BoomBox emote";
+                    msg = "13: Unhandled \"BBMeaty\" BoomBox emote";
+                    break;
                 }
                 case 14:                                                        // 14: BBMoveOn
                 {
-                    msg = "1: Unhandled \"BBMoveOn\" BoomBox emote";
+                    msg = "14: Unhandled \"BBMoveOn\" BoomBox emote";
+                    break;
                 }
                 case 15:                                                        // 15: BBNotorious
                 {
-                    msg = "1: Unhandled \"BBNotorious\" BoomBox emote";
+                    msg = "15: Unhandled \"BBNotorious\" BoomBox emote";
+                    break;
                 }
                 case 16:                                                        // 16: BBPeace
                 {
-                    msg = "1: Unhandled \"BBPeace\" BoomBox emote";
+                    msg = "16: Unhandled \"BBPeace\" BoomBox emote";
+                    break;
                 }
                 case 17:                                                        // 17: BBQuickie
                 {
-                    msg = "1: Unhandled \"BBQuickie\" BoomBox emote";
+                    msg = "17: Unhandled \"BBQuickie\" BoomBox emote";
+                    break;
                 }
                 case 18:                                                        // 18: BBRaver
                 {
-                    msg = "1: Unhandled \"BBRaver\" BoomBox emote";
+                    msg = "18: Unhandled \"BBRaver\" BoomBox emote";
+                    break;
                 }
                 case 19:                                                        // 19: BBShuffle
                 {
-                    msg = "1: Unhandled \"BBShuffle\" BoomBox emote";
+                    msg = "19: Unhandled \"BBShuffle\" BoomBox emote";
+                    break;
                 }
                 case 20:                                                        // 20: BBSpaz
                 {
-                    msg = "1: Unhandled \"BBSpaz\" BoomBox emote";
+                    msg = "20: Unhandled \"BBSpaz\" BoomBox emote";
+                    break;
                 }
                 case 21:                                                        // 21: BBTechnoid
                 {
-                    msg = "1: Unhandled \"BBTechnoid\" BoomBox emote";
+                    msg = "21: Unhandled \"BBTechnoid\" BoomBox emote";
+                    break;
                 }
                 case 22:                                                        // 22: BBVenus
                 {
-                    msg = "1: Unhandled \"BBVenus\" BoomBox emote";
+                    msg = "22: Unhandled \"BBVenus\" BoomBox emote";
+                    break;
                 }
                 case 23:                                                        // 23: BBWindItUp
                 {
-                    msg = "1: Unhandled \"BBWindItUp\" BoomBox emote";
+                    msg = "23: Unhandled \"BBWindItUp\" BoomBox emote";
+                    break;
                 }
                 case 24:                                                        // 24: BBWahWah
                 {
-                    msg = "1: Unhandled \"BBWahWah\" BoomBox emote";
+                    msg = "24: Unhandled \"BBWahWah\" BoomBox emote";
+                    break;
                 }
                 case 25:                                                        // 25: BBYellow
                 {
-                    msg = "1: Unhandled \"BBYellow\" BoomBox emote";
+                    msg = "25: Unhandled \"BBYellow\" BoomBox emote";
                 }
             }
         }
@@ -898,7 +922,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             msg = "Unhandled Flex1 emote";
         else if(lowerContents == "flex2" || lowerContents == "flex"
                 || lowerContents == "flexb")                                    // Flex2: A side-stance flexing arms, hold stance. This is a sideways variation on the "most muscular" pose.
-            msg == "Unhandled Flex2 emote";
+            msg = "Unhandled Flex2 emote";
         else if(lowerContents == "flex3" || lowerContents == "flexc")           // Flex3: Another side-stance, flexing arms, hold stance. This is an open variation on the "side chest" pose.
             msg = "Unhandled Flex3 emote";
         else if(lowerContents == "frustrated")                                  // Frustrated: Raises both fists and leans backwards, shaking fists and head, leads into a quick-breathing angry-looking stance.
@@ -917,7 +941,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             msg = "Unhandled Laugh emote";
         else if(lowerContents == "laugh2" || lowerContents == "biglaugh"
                 || lowerContents == "laughtoo")                                 // Laugh2: Another style of laugh.
-            msg == "Unhandled Laugh2 emote";
+            msg = "Unhandled Laugh2 emote";
         else if(lowerContents == "lecture")                                     // Lecture: Waves/shakes hands in different motions in a lengthy lecture, fists on hips stance.
             msg = "Unhandled Lecture emote";
         else if(lowerContents == "martialarts" || lowerContents == "kata")      // MartialArts (has sound): Warm up/practice punches and blocks.
@@ -975,7 +999,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         else if(lowerContents == "sit")                                         // Sit: Sits down, legs forward, with knees bent, elbows on knees, and slightly slumped over, stance.
             msg = "Unhandled Sit emote";
         else if(lowerContents == "smack")                                       // Smack: Backhand slap.
-            msg = "Unhandled Smask emote";
+            msg = "Unhandled Smack emote";
         else if(lowerContents == "stop" || lowerContents == "raisehand")        // Stop: Raises your right hand above your head, hold stance.
             msg = "Unhandled Stop emote";
         else if(lowerContents == "tarzan" || lowerContents == "beatchest")      // Tarzan: Beats chest and howls, angry-looking stance.
