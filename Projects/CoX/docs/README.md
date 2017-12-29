@@ -63,7 +63,9 @@ INSTALLATION
     You are entering the dark side of Qt configurations. There is a Qt plug-in for Microsoft Visual Studio (VS) that allows you to work with Qt projects. The plug-in is available for three VS versions:
 
     2013: https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools
+    
     2015: https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools2015
+    
     2017: https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools-19123
 
     Note that we _**do not**_ recommend the use of this plug-in, nor can we guarantee that SEGS will build and run properly in VS. We are also not offering official support for VS at this time. We attempted, and it fought us tooth and nail. If, after all this warning, you still wish to challenge the beast that is Qt Visual Studio Tools, do so _**at your own risk**._
