@@ -637,11 +637,9 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         {
             uint32_t tgt_idx;
 
-            // TODO: Only send the message to $target
-            // TODO: Get tgt_idx from target name.
+            // TODO: Get tgt_idx from target name or $target replacement text.
             for(MapClient *cl : m_clients)
             {
-                if()
                 if(sender->char_entity()->m_targeted_entity_idx)
                     tgt_idx = sender->char_entity()->m_targeted_entity_idx;
 
