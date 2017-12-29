@@ -1043,7 +1043,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             msg = "Unhandled YoureWelcome emote";
         else if(lowerContents == "yes" || lowerContents == "thumbsup")          // Yes: Big (literally) thumbs up and an affirmative nod, fists on hips stance.
             msg = "Unhandled Yes emote";
-        else if(lowerContents == "yoga" || lowerContents == "lotus")            // Yoga: 	Sits down cross legged with hands on knees/legs, holds stance.
+        else if(lowerContents == "yoga" || lowerContents == "lotus")            // Yoga: Sits down cross legged with hands on knees/legs, holds stance.
         {
             if(ent->m_is_flying)                                                // Different versions when flying and on the ground.
                 msg = "Unhandled flying Yoga emote";
