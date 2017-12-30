@@ -9,6 +9,7 @@ The following is a set of guidelines for contributing to SEGS. These are mostly 
 [Code of Conduct](#code-of-conduct)
 
 [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
+  * [Chat with us on Discord](#chat-with-us-on-discord)
   * [Chat with us on IRC](#chat-with-us-on-irc)
 
 [What should I know before I get started?](#what-should-i-know-before-i-get-started)
@@ -40,9 +41,16 @@ We have an official message board and a FAQ where the community chimes in with h
 * [SEGS Official Forums](https://segs.nemerle.eu/forumz/index.php)
 * [The FAQ Thread](https://segs.nemerle.eu/forumz/viewtopic.php?f=8&t=8244)
 
+### Chat with us on Discord
+
+Chat with us on Discord! We're currently hosting a `#segs` channel on Splat Chat. You can join by clicking this link:
+ 
+ [**Click here to join SEGS Discord**](https://discord.gg/DKaEyhd)
+
+
 ### Chat with us on IRC
 
-If chat is more your speed, you can join us on IRC:
+Or if IRC chat is more your speed, you can join us on IRC:
 
   **Server:** irc.nemerle.eu  
   **Port:** 6667  
@@ -212,7 +220,24 @@ and reserve enough tabs for the longest return type. i.e:
     };
 ```
 
-5. Use descriptive function/member names ( autocompletion is your friend )
+5. Use descriptive function/member names (autocompletion is your friend). Also, consider naming your variable with the following formats for consistency and readability:
+```cpp
+    #DEFINE     DEFINE_VAR                      // for DEFINE variables
+    auto        m_member_var;                   // for member variables
+    auto        s_file_scope_var;               // for file scope variables
+    auto        g_global_var;                   // for global variables.
+    auto        throw_away;                     // for single-use limited scope, or throwaway varables.
+    QString     m_underscore_separated_words;   // underscore separate words
+    int         s_dont_identify_type_in_name;   // don't identify the variable type in the name. Type may change!
+    bool        g_abbrev_are_ok_if_obvious;     // abbreviations are ok, if they are obvious.
+    
+    // real examples from source:
+    QString     m_character_description;
+    bool        m_is_flying;
+    uint32_t    m_experience_points;
+    glm::vec3   m_pos;                          // with members m_pos.x, m_pos.y, m_pos.z;
+    float       yaw;
+```
 
 6. Doxygen Comments - IMHO The place for doxygen comments is in the source file.
 Headers should be clean of comments, as to allow for quick class interface scanning

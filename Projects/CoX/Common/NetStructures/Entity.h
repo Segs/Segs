@@ -178,6 +178,7 @@ public:
         bool                m_seq_update=false;
         bool                m_is_villian = false;
         bool                m_contact = false;
+        bool                m_is_flying = false;
         int                 m_seq_upd_num1=0;
         int                 m_seq_upd_num2=0;
         PosUpdate           m_pos_updates[64];
@@ -227,6 +228,7 @@ public:
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
         void                addInterp(const PosUpdate &p);
+        void                toggleFly(Entity *e);
 
         int32_t             getIdx() const {return m_idx;}
 static  void                sendAllyID(BitStream &bs);
