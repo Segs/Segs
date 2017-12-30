@@ -262,15 +262,13 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     bool m_dazed=false;
     // user entity
     Entity *ent = src.m_client->char_entity();
-    SurfaceParams struct_csc[2];
-    memset(&struct_csc,0,2*sizeof(SurfaceParams));
-    struct_csc[0].traction = 1.5f;
-    struct_csc[0].friction = 1.5f;
-    struct_csc[0].bounce = 1.5f;
-    struct_csc[1].max_speed = struct_csc[0].max_speed = 1.5f;
-    struct_csc[1].gravitational_constant = struct_csc[0].gravitational_constant = 3.0f;
-    //    for(int i=3; i<5; ++i)
-    //        struct_csc.a.v[i] = rand()&0xf;
+    SurfaceParams surface_params[2];
+    memset(&surface_params,0,2*sizeof(SurfaceParams));
+    surface_params[0].traction = 1.5f;
+    surface_params[0].friction = 1.5f;
+    surface_params[0].bounce = 1.5f;
+    surface_params[1].max_speed = surface_params[0].max_speed = 1.5f;
+    surface_params[1].gravitational_constant = surface_params[0].gravitational_constant = 3.0f;
     uint8_t update_id=1;
     bool update_part_1=true;
     bool update_part_2=false;
@@ -284,7 +282,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         storeVector(bs,spd);
 
         bs.StoreFloat(1.0f); // speed rel back
-        bs.StoreBitArray((uint8_t *)&struct_csc,2*sizeof(SurfaceParams)*8);
+        bs.StoreBitArray((uint8_t *)&surface_params,2*sizeof(SurfaceParams)*8);
         bs.StoreFloat(0.1f);
         bs.StoreBits(1,m_flying); // key push bits ??
         bs.StoreBits(1,m_dazed); // key push bits ??
