@@ -110,7 +110,7 @@ struct Parsed_SkyScene
 extern "C" {
     __declspec(dllimport) void wcwMgmt_EnableFog(int);
     __declspec(dllimport) GfxTree_Node *gfxtree_Allocgfxtreenode(MemPool *pool);
-    __declspec(dllimport) void fn_5B7BE0(MemPool *a1);
+    __declspec(dllimport) void fn_5B7BE0(MemPool *pool);
     __declspec(dllimport) MemPool *MemPool__Alloc();
     __declspec(dllimport) void MemPool__InitPool(MemPool *mp, size_t strct_size, int struct_count, const char *fl, int ln);
     __declspec(dllimport) void gfxtree_4ECDC0();
@@ -123,7 +123,7 @@ extern "C" {
     __declspec(dllimport) bool gfxTreeNodeIsValid(GfxTree_Node *node, int id);
     __declspec(dllimport) void gfxtree_gfxTreeDelete(GfxTree_Node *node);
     __declspec(dllimport) void fn_4FB720(const char *fmt, ...);
-    __declspec(dllimport) char *strstri(const char *a1, const char *a2);
+    __declspec(dllimport) char *strstri(const char *str1, const char *str2);
     __declspec(dllimport) void gfxNodeSetAlpha(GfxTree_Node *node, char alpha, int root_only);
     __declspec(dllimport) float normalizeRadAngle(float v);
     __declspec(dllimport) void  fn_5B6740(float yaw_angle, Matrix3x3 *tgt);
@@ -314,13 +314,13 @@ void segs_setSunLight(Matrix4x3 *view_mat)
     glMaterialfv(GL_FRONT, GL_SPECULAR, &params.x);
     glMateriali(GL_FRONT, GL_SHININESS, 128);
 }
-static float fixTime(float a1)
+static float fixTime(float tm_val)
 {
-    while (a1 >= 24.0)
-        a1 = a1 - 24.0;
-    while (a1 < 0.0)
-        a1 = a1 + 24.0;
-    return a1;
+    while (tm_val >= 24.0)
+        tm_val = tm_val - 24.0;
+    while (tm_val < 0.0)
+        tm_val = tm_val + 24.0;
+    return tm_val;
 }
 static void gfxTreeInitSkyTree()
 {
@@ -592,12 +592,12 @@ static void setGlobalShadowColor(Vector4 *earlyShadowColor, Vector4 *lateShadowC
 }
 void segs_sun_sunUpdate(int init)
 {
-    float v42; // [esp+4C8h] [ebp-68h]
-    int time_idx; // [esp+4ECh] [ebp-44h]
-    int nexttime_idx; // [esp+4F4h] [ebp-3Ch]
-    float fogtimefade; // [esp+50Ch] [ebp-24h]
-    Vector3 player_offset; // [esp+518h] [ebp-18h]
-    float ratio; // [esp+52Ch] [ebp-4h]
+    float tmp; 
+    int time_idx;
+    int nexttime_idx;
+    float fogtimefade; 
+    Vector3 player_offset;
+    float ratio; 
     auto copyvs = server_visible_state;
     float _time = server_visible_state.timescale * g_TIMESTEP / 108000.0 + server_visible_state.map_time_of_day;
     _time = fixTime(_time);
@@ -725,13 +725,13 @@ void segs_sun_sunUpdate(int init)
     Parse_Sky copy = parsed_sky;
     if (_time <= (*parsed_sky.sun)->LampLightTime.y)
     {
-        v42 = std::min(1.0f,_time - ((*parsed_sky.sun)->LampLightTime.x - 1.0f));
+        tmp = std::min(1.0f,_time - ((*parsed_sky.sun)->LampLightTime.x - 1.0f));
     }
     else
     {
-        v42 = std::min((*parsed_sky.sun)->LampLightTime.y + 1.0f - _time , 1.0f);
+        tmp = std::min((*parsed_sky.sun)->LampLightTime.y + 1.0f - _time , 1.0f);
     }
-    g_sun.lamp_alpha = (1.0f - std::max(v42, 0.0f)) * 255.0f;
+    g_sun.lamp_alpha = (1.0f - std::max(tmp, 0.0f)) * 255.0f;
     setGlobalShadowColor(&early->shadowcolor, &late->shadowcolor, ratio);
     Vector3 ambient      = LinearInterpolateVectors(early->ambient, late->ambient, ratio);
     Vector3 diffuse      = LinearInterpolateVectors(early->diffuse, late->diffuse, ratio);

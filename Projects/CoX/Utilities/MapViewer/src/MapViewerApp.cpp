@@ -300,7 +300,7 @@ void MapViewerApp::HandleUpdate(float timeStep)
     Input* input = m_context->m_InputSystem.get();
     qApp->processEvents();
     UI* ui = m_context->m_UISystem.get();
-    ui->GetCursor()->SetVisible(!input->GetMouseButtonDown(MOUSEB_RIGHT));
+    ui->GetCursor()->SetVisible(!input->GetMouseButtonDown(MouseButton::RIGHT));
     input->SetMouseMode(ui->GetCursor()->IsVisible() ? MM_FREE : MM_RELATIVE);//,MM_RELATIVE
 
     // Movement speed as world units per second
@@ -318,7 +318,7 @@ void MapViewerApp::HandleUpdate(float timeStep)
         // Construct new orientation for the camera scene node from yaw and pitch. Roll is fixed to zero
         m_camera_node->SetRotation(Quaternion(pitch_, yaw_, 0.0f));
     }
-    bool shifted = input->GetKeyDown(KEY_SHIFT);
+    bool shifted = input->GetKeyDown(KEY_LEFT_SHIFT);
     if(shifted)
         timeStep *=10;
     // Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
@@ -340,11 +340,11 @@ void MapViewerApp::HandleUpdate(float timeStep)
         m_camera_node->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep * 2);
         cameraLocationUpdated = true;
     }
-    if (input->GetKeyDown(KEY_PAGEUP) || input->GetKeyDown(KEY_Q)) {
+    if (input->GetKeyDown(KEY_PAGE_UP) || input->GetKeyDown(KEY_Q)) {
         m_camera_node->Translate(Vector3::UP * MOVE_SPEED * timeStep * 5);
         cameraLocationUpdated = true;
     }
-    if (input->GetKeyDown(KEY_PAGEDOWN) || input->GetKeyDown(KEY_E)) {
+    if (input->GetKeyDown(KEY_PAGE_DOWN) || input->GetKeyDown(KEY_E)) {
         m_camera_node->Translate(Vector3::DOWN * MOVE_SPEED * timeStep * 5);
         cameraLocationUpdated = true;
     }
@@ -352,7 +352,7 @@ void MapViewerApp::HandleUpdate(float timeStep)
         Vector3 pos=m_camera_node->GetPosition();
         emit cameraLocationChanged(pos.x_,pos.y_,pos.z_);
     }
-    if (ui->GetCursor()->IsVisible() && input->GetMouseButtonPress(MOUSEB_LEFT))
+    if (ui->GetCursor()->IsVisible() && input->GetMouseButtonPress(MouseButton::LEFT))
         Raycast(8500);
 }
 void MapViewerApp::HandlePostRenderUpdate(float ts)
