@@ -73,4 +73,3 @@ if(WIN32) # ERICEDIT: If the OS is Windows:
         COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/slav.exe
         )
 endif()
-
