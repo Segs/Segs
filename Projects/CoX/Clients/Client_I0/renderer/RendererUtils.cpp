@@ -1,25 +1,27 @@
 #include "RendererUtils.h"
 
+#include "RendererState.h"
 #include "GameState.h"
 #include "utils/dll_patcher.h"
 
 #include "GL/glew.h"
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
+
+#include <cstdint>
+#include <cstdlib>
+#include <cstdio>
 #include <cstring>
 
 extern "C"
 {
 __declspec(dllimport) int64_t GetCpuMhz();
-__declspec(dllimport) int c_assert(const char *,const char *,const char *file,int);
 __declspec(dllimport) int renderUtil_GetVersion(char *,const char *driverfile);
 __declspec(dllimport) void renderUtil_fn_4DFEF0(char *videocardname,int *pci_ven,int *pci_dev);
 __declspec(dllimport) void sysutil_5AFA70(int *total_memory,int *avail_memory);
 __declspec(dllimport) void ErrorfFL(const char *filename, int line);
 __declspec(dllimport) void ErrorfInternal(const char *fmt, ...);
 __declspec(dllimport) void renderUtil_SystemReport(SysInfo_2 *,char *);
-__declspec(dllimport) int VfPrintfWrapper(const char *fmt,...);
+__declspec(dllimport) int  VfPrintfWrapper(const char *fmt,...);
+__declspec(dllimport) void  glh_init_extensions(const char *ext);
 __declspec(dllimport) int fn_581560(const char *); // << yes/no dialog
 __declspec(dllimport) void dispatch_cmd(const char *cmd);
 __declspec(dllimport) void setGlossMultiplier(float);
@@ -52,7 +54,7 @@ enum GpuVendor
 
 static int renderUtil_4E0C40(SysInfo_2 *sysinfo)
 {
-    char buf[1000];
+    char buf[1000]={0};
     segs_renderUtil_GetGfxCardVend(sysinfo);
     renderUtil_SystemReport(sysinfo, buf);
     return VfPrintfWrapper("%s", buf);
@@ -109,7 +111,7 @@ void segs_renderUtil_GetGfxCardVend(SysInfo_2 *sysinfo)
         strcpy(sysinfo->driver_version, "Unknown Vendor");
     }
 }
-static void segs_wcw_statemgmt_enableColorMaterial()
+void segs_wcw_statemgmt_enableColorMaterial()
 {
     glEnable(GL_COLOR_MATERIAL);
 }
@@ -160,9 +162,13 @@ void segs_renderUtil_4E0CA0()
     checkExt("GL_EXT_compiled_vertex_array",extension_missing);
     checkExt("GL_ARB_multitexture",extension_missing);
     checkExt("GL_ARB_texture_compression",extension_missing);
+    //glh_init_extensions("GL_EXT_compiled_vertex_array");
+    glh_init_extensions("GL_ARB_multitexture");
+    glh_init_extensions("GL_ARB_texture_compression");
     if( glewIsSupported("GL_ARB_fragment_program") && glewIsSupported("GL_ARB_vertex_program") )
     {
         // custom flags, using generic GL shader support
+        printf("Enabling GLSL support\n");
         GPU_FLAGS = f_GL_FragmentShader | f_GL_VertexShader;
     }
     else if ( glewIsSupported("GL_NV_register_combiners") )
@@ -185,16 +191,16 @@ void segs_renderUtil_4E0CA0()
 
     if ( GPU_FLAGS == 0 || extension_missing )
     {
-        char Text[1024];
-        Text[0] = 0;
-        sprintf(Text, "Detected video card or driver is currently unsupported \n %s \n", struct_9A09A0.video_card);
-        strcat(Text, "The game may run poorly or not at all with you current configuration.\n");
-        strcat(Text, "Current system requirements are NVidia GeForce 2 or better or ATI Radeon 8500 or better.\n");
-        strcat(Text, "(If your card does meet the minimum requirements, you might not have the latest drivers.\n");
-        strcat(Text, "Go to www.nvidia.com or www.ati.com to update your driver. In some cases, such as laptops,\n");
-        strcat(Text, "you may need to get the latest drivers from you computer manufacturer.)\n");
-        strcat(Text, "Do you want to continue?");
-        if ( !fn_581560(Text) )
+        char text[1024];
+        text[0] = 0;
+        sprintf(text, "Detected video card or driver is currently unsupported \n %s \n", struct_9A09A0.video_card);
+        strcat(text, "The game may run poorly or not at all with you current configuration.\n");
+        strcat(text, "Current system requirements are NVidia GeForce 2 or better or ATI Radeon 8500 or better.\n");
+        strcat(text, "(If your card does meet the minimum requirements, you might not have the latest drivers.\n");
+        strcat(text, "Go to www.nvidia.com or www.ati.com to update your driver. In some cases, such as laptops,\n");
+        strcat(text, "you may need to get the latest drivers from you computer manufacturer.)\n");
+        strcat(text, "Do you want to continue?");
+        if ( !fn_581560(text) )
             dispatch_cmd("quit");
         fn_57B710();
     }
@@ -226,30 +232,17 @@ void segs_renderUtil_4E0CA0()
         g_using_bump_maps = 0;
         enableVertShaders = 0;
     }
-    if ( !(GPU_FLAGS & (fATI_fragment_shader|fGL_NV_register_combiners2)) )
-    {
-        UsingVBOs = 0;
-        g_using_bump_maps = 0;
-        enableVertShaders = 0;
-    }
     enableParticleVBOs = 0;
     if ( !g_State.view.enableVBOs )
     {
+        assert(false);
         UsingVBOs = 0;
     }
-    else if ( !(GPU_FLAGS & fNV_vertex_program) )
-    {
-        g_State.view.enableVBOs = 0;
-        VfPrintfWrapper("!!!!!!!!!!!!!!!!! %s ", struct_9A09A0.driver_version);
-        VfPrintfWrapper(" %d ", driver_version);
-        if ( driver_version >= 0x10B1 )
-        {
-            g_State.view.enableVBOs = 1;
-        }
-    }
+    g_State.view.enableVBOs = 1;
 
     if ( g_State.view.unkn_4B4 )
     {
+        assert(false);
         UsingVBOs = 0;
     }
     if ( g_State.view.enableVBOs_particles )
@@ -268,12 +261,7 @@ void segs_renderUtil_4E0CA0()
         UsingVBOs = 0;
         g_using_bump_maps = 0;
     }
-    if ( !(GPU_FLAGS & (fATI_fragment_shader|fNV_vertex_program)) )
-    {
-        UsingVBOs = 0;
-        enableParticleVBOs = 0;
-    }
-    else if ( !UsingVBOs )
+    if ( !UsingVBOs )
     {
         enableParticleVBOs = 0;
     }
@@ -282,20 +270,11 @@ void segs_renderUtil_4E0CA0()
 
     setGlossMultiplier(1.0f);
     rendererInit(); // set default GL state.
-    if ( GPU_FLAGS & fATI_fragment_shader )
-    {
-        genShaderBindingsATI();
-        buildShader2Ati();
-        buildShader3Ati();
-        buildShader4Ati();
-        buildShader1Ati();
-        buildShader5Ati();
-        buildShader6Ati();
-    }
-    fn_4DC4B0();         // prepate nvidia gl lists with register combiners
+    //fn_4DC4B0();         // prepare nvidia gl lists with register combiners
     //TODO: we need to convert the code here to use generic pixel shaders, would have to patch all functions using blending modes
-    bump_4CEB20();       // create bump map vertex shaders
-    renderUtil_4E0BC0(); // create skinning vertex shaders
+    initializeRenderer();
+    //bump_4CEB20();       // create bump map vertex shaders
+    //renderUtil_4E0BC0(); // create skinning vertex shaders
 }
 void patch_render_utils()
 {

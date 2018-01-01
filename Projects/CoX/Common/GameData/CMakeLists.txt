@@ -50,6 +50,6 @@ set(GAMEDATA_SRC
     CoHMath.h
 )
 add_library(gameData STATIC ${GAMEDATA_SRC})
-add_dependencies(gameData ace_IMP) # used for Singleton stuff.
+add_dependencies(gameData ace_IMP cereal_IMP) # used for Singleton stuff.
 qt5_use_modules(gameData Core)
 set_property(TARGET gameData APPEND PROPERTY INCLUDE_DIRECTORIES "$<TARGET_PROPERTY:cereal_IMP,INTERFACE_INCLUDE_DIRECTORIES>")

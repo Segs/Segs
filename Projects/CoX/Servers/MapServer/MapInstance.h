@@ -102,4 +102,7 @@ protected:
     void on_chat_reconfigured(class ChatReconfigure *ev);
     void on_switch_viewpoint(class SwitchViewPoint *ev);
     void on_client_settings(class ClientSettings *ev);
+
+private:
+    void on_emote_command(QString lowerContents, Entity *ent, MapClient *src);
 };

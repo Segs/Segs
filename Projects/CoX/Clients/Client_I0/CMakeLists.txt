@@ -35,12 +35,27 @@ include_directories(
 )
 set(DLL_SOURCES
     include/GameState.h
+	renderer/Model.h
     renderer/RendererUtils.cpp
     renderer/RendererUtils.h
-    renderer/RendererState.h
+    renderer/RenderShadow.cpp
+    renderer/RenderShadow.h
     renderer/RendererState.cpp
+    renderer/RendererState.h
+    renderer/RenderModel.cpp
+    renderer/RenderModel.h
+    renderer/RenderBonedModel.cpp
+    renderer/RenderBonedModel.h
+    renderer/RenderTricks.cpp
+    renderer/RenderTricks.h
+    renderer/Texture.h
+    renderer/Texture.cpp
     graphics/gfx.cpp
     graphics/gfx.h
+    entity/entityDebug.cpp
+    entity/entityDebug.h
+    utils/helpers.cpp
+    utils/helpers.h
 )
 set(SOURCES
     ${DLL_SOURCES}
