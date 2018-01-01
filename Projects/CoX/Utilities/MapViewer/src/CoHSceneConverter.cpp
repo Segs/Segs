@@ -169,7 +169,7 @@ QString groupRename(CoHSceneGraph &conv,NameList &memory, const QString &oldname
 void  groupApplyModifiers(CoHNode *group)
 {
 
-    ConvertedModel *a1 = group->model;
+    CoHModel *a1 = group->model;
     if ( !a1 )
         return;
     const GeometryModifiers *v4 = findGeomModifier(a1->name, group->dir);
@@ -255,7 +255,7 @@ bool nodeCalculateBounds(CoHNode *group)
 {
     float geometry_radius=0.0f;
     float maxrad=0.0f;
-    ConvertedModel *model;
+    CoHModel *model;
     BoundingBox bbox;
     bool set = 0;
     if ( !group )
@@ -306,7 +306,7 @@ void  nodeSetVisBounds(CoHNode *group)
         group->lod_scale = 1.0f;
     if ( group->model )
     {
-        ConvertedModel *v1 = group->model;
+        CoHModel *v1 = group->model;
         dv = v1->m_max - v1->m_min;
         maxrad = glm::length(dv) * 0.5f + group->shadow_dist;
         if ( group->lod_far == 0.0f )
@@ -469,11 +469,14 @@ bool loadSceneGraph(CoHSceneGraph &conv,const QString &path)
     PostProcessScene(scenegraph,conv,my_name_list,path);
     return true;
 }
+extern int created_node_count;
 //TODO: convert this from recursive function into iterative one.
 Urho3D::Node * convertedNodeToLutefisk(CoHNode *conv_node, const Urho3D::Matrix3x4 &mat, Context *ctx, int depth, int opt)
 {
+    
     ResourceCache* cache = ctx->m_ResourceCache.get();
     Urho3D::Node * node = new Node(ctx);
+    created_node_count++;
     const std::vector<NodeChild> &children_arr();
     node->SetName(conv_node->name);
     node->SetTransform(mat);
@@ -508,13 +511,13 @@ Urho3D::Node * convertedNodeToLutefisk(CoHNode *conv_node, const Urho3D::Matrix3
         return node;
     }
     if (depth == 0)
-    {
+    { /*
         auto    boxTextNode = node->CreateChild("BoxText");
         Text3D *boxText     = boxTextNode->CreateComponent<Text3D>();
         boxText->SetText(QString("Group %1\n(%2)").arg(conv_node->name).arg(mat.Translation().ToString()));
         boxText->SetFont(cache->GetResource<Font>("Fonts/BlueHighway.sdf"), 18);
         boxText->SetColor(Color::RED);
-        boxText->SetFaceCameraMode(FC_ROTATE_Y);
+        boxText->SetFaceCameraMode(FC_ROTATE_Y);*/
     }
     return node;
 }

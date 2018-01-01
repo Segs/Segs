@@ -29,7 +29,7 @@ enum class CoHBlendMode : uint8_t
     BUMPMAP_COLORBLEND_DUAL = 6,
     INVALID                 = 255,
 };
-struct ConvertedModel;
+struct CoHModel;
 struct NodeChild
 {
     Urho3D::Matrix3x4 m_matrix;
@@ -40,7 +40,7 @@ struct CoHNode
     std::vector<NodeChild>        children;
     QString                       name;
     QString                       dir;
-    ConvertedModel *              model       = nullptr;
+    CoHModel *              model       = nullptr;
     struct GeoStoreDef *          geoset_info = nullptr;
     Urho3D::BoundingBox           m_bbox;
     glm::vec3                     center;

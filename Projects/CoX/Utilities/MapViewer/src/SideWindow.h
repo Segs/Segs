@@ -17,7 +17,7 @@ class Drawable;
 }
 struct CoHSceneGraph;
 struct CoHNode;
-struct ConvertedModel;
+struct CoHModel;
 
 class MapViewerApp;
 class SideWindow : public QMainWindow
@@ -36,7 +36,7 @@ signals:
     void nodeDisplayRequest(CoHNode *n,bool isroot);
 public slots:
     void onCameraPositionChanged(float x,float y,float z);
-    void onModelSelected(ConvertedModel *m,Urho3D::Drawable *d);
+    void onModelSelected(CoHModel *m,Urho3D::Drawable *d);
     void onScenegraphLoaded(const CoHSceneGraph &sc);
 private slots:
     void on_actionLoad_Scene_Graph_triggered();

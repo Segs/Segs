@@ -56,7 +56,7 @@ void SideWindow::onCameraPositionChanged(float x, float y, float z)
                                .arg(y, 5, 'f', 2, QChar(' '))
                                .arg(z, 5, 'f', 2, QChar(' ')));
 }
-void SideWindow::onModelSelected(ConvertedModel *m, Urho3D::Drawable *d)
+void SideWindow::onModelSelected(CoHModel *m, Urho3D::Drawable *d)
 {
     if(m) 
     {

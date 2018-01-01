@@ -62,8 +62,8 @@ static_assert(sizeof(PackInfo) == 12, "sizeof(PackInfo)==12");
 
 
 AllTricks_Data s_tricks_store;
-/// this map is used too lookup converted models by the ConvertedModel pointer
-std::unordered_map<ConvertedModel *,Urho3D::SharedPtr<Model>> s_coh_model_to_renderable;
+/// this map is used too lookup converted models by the CoHModel pointer
+std::unordered_map<CoHModel *,Urho3D::SharedPtr<Model>> s_coh_model_to_renderable;
 QHash<QString,ConvertedGeoSet *> s_name_to_geoset;
 
 void reportUnhandled(const QString &message)
@@ -74,7 +74,7 @@ void reportUnhandled(const QString &message)
     qDebug() << message;
     already_reported.insert(message);
 }
-void modelCreateObjectFromModel(Urho3D::Context *ctx,ConvertedModel *model,std::vector<TextureWrapper> &textures)
+void modelCreateObjectFromModel(Urho3D::Context *ctx,CoHModel *model,std::vector<TextureWrapper> &textures)
 {
     initLoadedModel([ctx](const QString &v) -> TextureWrapper { return tryLoadTexture(ctx, v); }, model, textures);
     std::unique_ptr<VBOPointers> vbo(getVBO(*model));
@@ -129,12 +129,12 @@ void modelCreateObjectFromModel(Urho3D::Context *ctx,ConvertedModel *model,std::
 void addModelData(Urho3D::Context *ctx,ConvertedGeoSet *geoset)
 {
     std::vector<TextureWrapper> v2 = getModelTextures(ctx,geoset->tex_names);
-    for(ConvertedModel * model : geoset->subs)
+    for(CoHModel * model : geoset->subs)
     {
         modelCreateObjectFromModel(ctx,model, v2);
     }
 }
-Urho3D::Model *buildModel(Urho3D::Context *ctx,ConvertedModel *mdl)
+Urho3D::Model *buildModel(Urho3D::Context *ctx,CoHModel *mdl)
 {
     ResourceCache* cache = ctx->m_ResourceCache.get();
     auto parts=mdl->geoset->geopath.split('/');
@@ -179,8 +179,15 @@ Urho3D::Model *buildModel(Urho3D::Context *ctx,ConvertedModel *mdl)
     return res;
 }
 
-void convertMaterial(Urho3D::Context *ctx,ConvertedModel *mdl,StaticModel* boxObject)
+void convertMaterial(Urho3D::Context *ctx,CoHModel *mdl,StaticModel* boxObject)
 {
+    static std::unordered_set<CoHModel *> already_converted;
+    if (already_converted.find(mdl) == already_converted.end())
+    {
+        already_converted.insert(mdl);
+    }
+    else
+        assert(false);
     ModelModifiers *  model_trick = mdl ? mdl->trck_node : nullptr;
     ResourceCache *   cache       = ctx->m_ResourceCache.get();
     SharedPtr<Material> result;
@@ -311,11 +318,14 @@ void convertMaterial(Urho3D::Context *ctx,ConvertedModel *mdl,StaticModel* boxOb
 
     // int mode= dualTexture ? 4 : 5
     unsigned geomidx=0;
-    for(auto & texbind : mdl->texture_bind_info) {
+    bool is_single_mat = mdl->texture_bind_info.size() == 1;
+    for(auto & texbind : mdl->texture_bind_info)
+    {
         const QString &texname(mdl->geoset->tex_names[texbind.tex_idx]);
         TextureWrapper tex = tryLoadTexture(ctx,texname);
-        if(tex.base) {
-            result = preconverted->Clone();
+        if(tex.base) 
+        {
+            result = is_single_mat ? preconverted : preconverted->Clone();
             result->SetTexture(TU_DIFFUSE,tex.base);
             if(tex.info) {
                 if(!tex.info->Blend.isEmpty())
@@ -336,42 +346,78 @@ void convertMaterial(Urho3D::Context *ctx,ConvertedModel *mdl,StaticModel* boxOb
                 result->SetTexture(TU_CUSTOM1,whitetex.base);
 
             boxObject->SetMaterial(geomidx,result);
+            QDir modeldir("converted/");
+            assert(modeldir.mkpath("Materials"));
+            QString cache_path("./converted/Materials/" + model_base_name + QString::number(geomidx)+"_mtl.xml");
+            auto res = s_coh_model_to_renderable[mdl];
+            File model_res(ctx, cache_path, FILE_WRITE);
+            result->Save(model_res);
         }
         geomidx++;
     }
 
 }
-
+void copyStaticModel(const Urho3D::StaticModel *src, Urho3D::StaticModel *tgt)
+{
+    tgt->SetModel(src->GetModel());
+    int geoms = src->GetNumGeometries();
+    for(int i=0; i<geoms;++i)
+    {
+        tgt->SetMaterial(i, src->GetMaterial(i));
+    }
+}
 } // end of anonymus namespace
 Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, CoHNode *node, int opt)
 {
-    ConvertedModel *mdl = node->model;
-    ModelModifiers *model_trick = mdl->trck_node;
-    if(model_trick) {
-        if(model_trick->isFlag(NoDraw)) {
-            //qDebug() << mdl->name << "Set as no draw";
-            return nullptr;
-        }
-        if(opt!=CONVERT_EDITOR_MARKERS && model_trick->isFlag(EditorVisible)) {
-            //qDebug() << mdl->name << "Set as editor model";
-            return nullptr;
-        }
-        if(model_trick && model_trick->isFlag(CastShadow)) {
-            //qDebug() << "Not converting shadow models"<<mdl->name;
-            return nullptr;
-        }
-        if(model_trick && model_trick->isFlag(ParticleSys)) {
-            qDebug() << "Not converting particle sys:"<<mdl->name;
-            return nullptr;
-        }
+    CoHModel *mdl = node->model;
+    if (mdl&&mdl->converted_model) 
+    {
+        float per_node_draw_distance = node->lod_far + node->lod_far_fade;
+        //if (mdl->converted_model->GetDrawDistance() == per_node_draw_distance) // same draw distance as default, nothing to do
+            return mdl->converted_model;
+        StaticModel* boxObject = tgtnode->CreateComponent<StaticModel>();
+        copyStaticModel(mdl->converted_model, boxObject);
+        boxObject->SetDrawDistance(node->lod_far + node->lod_far_fade);
+        return boxObject;
     }
-    auto modelptr = buildModel(ctx,mdl);
+    Model * modelptr=nullptr;
+    auto loc = s_coh_model_to_renderable.find(mdl);
+    if (loc != s_coh_model_to_renderable.end())
+        modelptr = loc->second.Get();
+    if (modelptr == nullptr) 
+    {
+        ModelModifiers *model_trick = mdl->trck_node;
+        if (model_trick) {
+            if (model_trick->isFlag(NoDraw))
+            {
+                //qDebug() << mdl->name << "Set as no draw";
+                return nullptr;
+            }
+            if (opt != CONVERT_EDITOR_MARKERS && model_trick->isFlag(EditorVisible))
+            {
+                //qDebug() << mdl->name << "Set as editor model";
+                return nullptr;
+            }
+            if (model_trick && model_trick->isFlag(CastShadow))
+            {
+                //qDebug() << "Not converting shadow models"<<mdl->name;
+                return nullptr;
+            }
+            if (model_trick && model_trick->isFlag(ParticleSys))
+            {
+                qDebug() << "Not converting particle sys:" << mdl->name;
+                return nullptr;
+            }
+        }
+        modelptr = buildModel(ctx, mdl);
+        modelptr->SetName(mdl->name);
+    }
     if(!modelptr)
         return nullptr;
     StaticModel* boxObject = tgtnode->CreateComponent<StaticModel>();
-    boxObject->SetDrawDistance(node->lod_far+node->lod_far_fade);
-    modelptr->SetName(mdl->name);
+    //boxObject->SetDrawDistance(node->lod_far+node->lod_far_fade);
     boxObject->SetModel(modelptr);
     convertMaterial(ctx,mdl,boxObject);
+    mdl->converted_model = boxObject;
     return boxObject;
 }
