@@ -184,6 +184,8 @@ void MapViewerApp::onNodeSelected(CoHNode * n)
 {
     m_current_selected_node = n;
 }
+#define MAX_GRAPH_DEPTH 80
+int created_node_count = 0;
 void MapViewerApp::onDisplayNode(CoHNode *n,bool rootnode)
 {
     if(nullptr==n)
@@ -197,7 +199,7 @@ void MapViewerApp::onDisplayNode(CoHNode *n,bool rootnode)
     Node *boxNode;
     if (iter == m_converted_nodes.end())
     {
-        boxNode = convertedNodeToLutefisk(n, Matrix3x4::IDENTITY, m_context, 17,rootnode ? CONVERT_MINIMAL : CONVERT_EDITOR_MARKERS);
+        boxNode = convertedNodeToLutefisk(n, Matrix3x4::IDENTITY, m_context, MAX_GRAPH_DEPTH,rootnode ? CONVERT_MINIMAL : CONVERT_EDITOR_MARKERS);
         m_scene->AddChild(boxNode);
         m_converted_nodes[n] = boxNode;
     }
@@ -287,7 +289,7 @@ bool MapViewerApp::Raycast(float maxDistance)
         if(stored!=Variant::EMPTY)
         {
             m_selected_drawable = hitDrawable;
-            emit modelSelected((ConvertedModel *)stored.GetVoidPtr(),hitDrawable);
+            emit modelSelected((CoHModel *)stored.GetVoidPtr(),hitDrawable);
         }
         return true;
     }

@@ -214,9 +214,9 @@ std::vector<TextureBind> convertTexBinds(int cnt, const uint8_t *data)
     res.assign((const TextureBind *)data,((const TextureBind *)data)+cnt);
     return res;
 }
-static ConvertedModel *convertAndInsertModel(ConvertedGeoSet &tgt, const Model32 *v)
+static CoHModel *convertAndInsertModel(ConvertedGeoSet &tgt, const Model32 *v)
 {
-    ConvertedModel *z = new ConvertedModel;
+    CoHModel *z = new CoHModel;
 
     z->flags             = v->flg1;
     z->visibility_radius = v->radius;
@@ -242,7 +242,7 @@ static ConvertedModel *convertAndInsertModel(ConvertedGeoSet &tgt, const Model32
 
 void  addModelStubs(ConvertedGeoSet *geoset)
 {
-    for(ConvertedModel * m : geoset->subs)
+    for(CoHModel * m : geoset->subs)
     {
         GeometryModifiers *v3 = findGeomModifier(m->name, nullptr);
         if ( v3 )
@@ -285,7 +285,7 @@ void geosetLoadHeader(QFile &fp, ConvertedGeoSet *geoset)
         if (info->tex_binds_size) {
             binds = convertTexBinds(v6->num_textures, v6->texture_bind_offsets + stream_pos_1);
         }
-        ConvertedModel *m    = convertAndInsertModel(*geoset, v6);
+        CoHModel *m    = convertAndInsertModel(*geoset, v6);
         m->texture_bind_info = binds;
         m->geoset       = geoset;
         m->name         = QString((const char *)stream_pos_0 + v6->bone_name_offset);
@@ -310,9 +310,9 @@ static ConvertedGeoSet *findAndPrepareGeoSet(const QString &fname)
     }
     return geoset;
 }
-ConvertedModel *modelFind(const QString &model_name, const QString &filename)
+CoHModel *modelFind(const QString &model_name, const QString &filename)
 {
-    ConvertedModel *ptr_sub = nullptr;
+    CoHModel *ptr_sub = nullptr;
 
     if (model_name.isEmpty() || filename.isEmpty()) {
         qCritical() << "Bad model/geometry set requested:";
@@ -330,7 +330,7 @@ ConvertedModel *modelFind(const QString &model_name, const QString &filename)
         end_of_name_idx = model_name.size();
     QStringRef basename(model_name.midRef(0, end_of_name_idx));
 
-    for (ConvertedModel *m : geoset->subs)
+    for (CoHModel *m : geoset->subs)
     {
         QString geo_name = m->name;
         if (geo_name.isEmpty())
@@ -437,7 +437,7 @@ inline void geoUnpackDeltas(const DeltaPack *a1, Vector3i *unpacked_data, uint32
     geoUnpackDeltas(a1, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_INTS);
 }
 
-std::unique_ptr<VBOPointers> fillVbo(const ConvertedModel &model)
+std::unique_ptr<VBOPointers> fillVbo(const CoHModel &model)
 {
     std::unique_ptr<VBOPointers> vbo(new VBOPointers);
     std::vector<Vector3i> &triangles(vbo->triangles);
@@ -467,7 +467,7 @@ std::unique_ptr<VBOPointers> fillVbo(const ConvertedModel &model)
     }
     return vbo;
 }
-void modelFixup(const ConvertedModel &model,VBOPointers &vbo)
+void modelFixup(const CoHModel &model,VBOPointers &vbo)
 {
     if (!vbo.norm.empty() && (model.flags & 0x10))
     {
@@ -556,7 +556,7 @@ void geosetLoadData(QFile &fp, ConvertedGeoSet *geoset)
     fp.read(geoset->m_geo_data.data(), geoset->geo_data_size);
     uint8_t *buffer_b = (uint8_t *)geoset->m_geo_data.data();
 
-    for (ConvertedModel *current_sub : geoset->subs)
+    for (CoHModel *current_sub : geoset->subs)
     {
         fixupDataPtr(current_sub->packed_data.tris, buffer_b);
         fixupDataPtr(current_sub->packed_data.verts, buffer_b);
@@ -573,7 +573,7 @@ void geosetLoadData(QFile &fp, ConvertedGeoSet *geoset)
     }
     geoset->data_loaded = true;
 }
-ConvertedModel *groupModelFind(const QString & a1)
+CoHModel *groupModelFind(const QString & a1)
 {
     QString model_name=a1.mid(a1.lastIndexOf('/')+1);
     auto val = groupGetFileEntryPtr(model_name);
@@ -638,13 +638,13 @@ ConvertedGeoSet * geosetLoad(const QString &m)
     return findAndPrepareGeoSet(m);
 }
 
-std::unique_ptr<VBOPointers> getVBO(ConvertedModel & model)
+std::unique_ptr<VBOPointers> getVBO(CoHModel & model)
 {
     std::unique_ptr<VBOPointers> databuf(fillVbo(model));
     modelFixup(model,*databuf);
     return databuf;
 }
-float *combineBuffers(VBOPointers &meshdata,ConvertedModel *mdl)
+float *combineBuffers(VBOPointers &meshdata,CoHModel *mdl)
 {
     size_t num_floats = mdl->vertex_count*3;
     if(!meshdata.norm.empty())
@@ -679,7 +679,7 @@ float *combineBuffers(VBOPointers &meshdata,ConvertedModel *mdl)
     }
     return res;
 }
-void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader,ConvertedModel *model,const std::vector<TextureWrapper> &textures)
+void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader,CoHModel *model,const std::vector<TextureWrapper> &textures)
 {
     model->blend_mode = CoHBlendMode::MULTIPLY_REG;
     bool isgeo=false;

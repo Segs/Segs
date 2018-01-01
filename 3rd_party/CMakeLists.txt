@@ -2,7 +2,7 @@ link_directories(${ThirdParty_Install_Dir}/lib)
 
 include(ExternalProject_CEREAL.cmake)
 include(ExternalProject_ACE.cmake)
-if(WIN32) # ERICEDIT: If the OS is Windows:
+if(MINGW) # ERICEDIT: If the OS is Windows:
     add_custom_target( # ERICEDIT: Add a target that depends on authserver.
         libace ALL
         DEPENDS ${EXECUTABLE_OUTPUT_PATH}/authserver.exe
