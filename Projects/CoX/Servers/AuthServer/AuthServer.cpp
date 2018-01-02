@@ -14,7 +14,7 @@
 #include "AdminServer/AccountInfo.h"
 #include "Common/Servers/AdminServerInterface.h"
 #include "Common/Servers/ServerManager.h"
-#include "AuthLink.h"
+#include "AuthProtocol/AuthLink.h"
 #include "AuthHandler.h"
 #include "AuthClient.h"
 
