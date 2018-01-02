@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
     const QStringList args = parser.positionalArguments();
     const char* arg0 = args[0].toLatin1().data();
-    const char* serverHost = args.length() >= 1 ? arg0 : SERVER_HOST; // If args.length() > 1, serverHost = arg0. Else, SERVER_HOST.
+    const char* serverHost = args.length() >= 1 ? arg0 : SERVER_HOST; // If args.length() >= 1, serverHost = arg0. Else, SERVER_HOST.
     uint16_t serverPort = args.length() >= 2 ? ACE_OS::atoi(qPrintable(args[1])) : SERVER_PORT; // If args.length() >= 2, serverPort = qPrintable(args[1]). Else, SERVER_PORT.
     int maxIterations = args.length() >= 3 ? ACE_OS::atoi(qPrintable(args[2])) : MAX_ITERATIONS; // Same format as above.
 
