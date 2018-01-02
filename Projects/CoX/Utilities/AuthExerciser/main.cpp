@@ -1,12 +1,16 @@
+#include "AuthProtocol/Events/LoginRequest.h"
+
+#include <ace/Mutex.h>
 #include <ace/SOCK_Connector.h>
 #include <ace/Log_Msg.h>
-#include <stdint.h>
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QCommandLineParser>
 #include <QtCore/QDebug>
 #include <QtCore/QFileInfo>
 #include <QtCore/QFile>
 #include <QtCore/QDir>
+#include <stdint.h>
 
 static uint16_t SERVER_PORT = ACE_DEFAULT_SERVER_PORT;
 static QString const SERVER_HOST = ACE_DEFAULT_SERVER_HOST;
@@ -33,8 +37,8 @@ int main(int argc, char** argv)
 
     const QStringList args = parser.positionalArguments(); // Grab the arguments from the parser.
     QString serverHost = args.length() >= 1 ? args[0] : SERVER_HOST; // Place them in their own variables, or use the default values if they aren't given.
-    uint16_t serverPort = args.length() >= 2 ? ACE_OS::atoi(qPrintable(args[1])) : SERVER_PORT;
-    int maxIterations = args.length() >= 3 ? ACE_OS::atoi(qPrintable(args[2])) : MAX_ITERATIONS;
+    uint16_t serverPort = args.length() >= 2 ? args[1].toInt() : SERVER_PORT;
+    int maxIterations = args.length() >= 3 ? args[2].toInt() : MAX_ITERATIONS;
 
     ACE_SOCK_Stream server;
     ACE_SOCK_Connector connector;
@@ -51,11 +55,9 @@ int main(int argc, char** argv)
     // Attempt to communicate with authserver.
     for(int i = 0; i < maxIterations; i++)
     {
-        char buf[BUFSIZ];
+        QString msg_data = QString("message = %1\n").arg(i + 1);
 
-        ACE_OS::sprintf(buf, "message = %d\n", i + 1);
-
-        if(server.send_n(buf, ACE_OS::strlen(buf)) == -1)
+        if(server.send_n(qPrintable(msg_data), msg_data.toLatin1().size()) == -1)
             ACE_ERROR_RETURN((LM_ERROR, "%p\n", "send"), -1);
         else
             ACE_OS::sleep(1);
