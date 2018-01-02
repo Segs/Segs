@@ -57,6 +57,7 @@ static  EventProcessor *g_target;               //! All links post their message
         AuthClient *    client() {return m_client;}
         void            client(AuthClient *c) {m_client=c;}
         void            init_crypto(int vers,uint32_t seed);
+        ACE_HANDLE      get_handle (void) const override {return peer_.get_handle();}
 protected:
         AuthClient *    m_client;
         AuthPacketCodec m_codec;
@@ -70,7 +71,7 @@ protected:
         ACE_Thread_Mutex *m_buffer_mutex;
 
         SEGSEvent *     dispatch_sync( SEGSEvent *ev ) override;
-        ACE_HANDLE      get_handle (void) const override {return peer_.get_handle();}
+
         bool            send_buffer();
         void            encode_buffer(const AuthLinkEvent *ev,size_t start);
         void            set_protocol_version(int vers);

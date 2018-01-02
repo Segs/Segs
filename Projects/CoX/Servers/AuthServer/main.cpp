@@ -65,7 +65,7 @@ bool CreateServers()
     server_manger->AddGameServer(game_instance);
     server_manger->AddMapServer(map_instance);
     return true;
-};
+}
 void setSettingDefaults()
 {
     // here we should setup the default QSettings locations and such
