@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     int maxIterations = args.length() >= 3 ? args[2].toInt() : MAX_ITERATIONS;
 
     AuthLink::g_target = new DummyClass();
-    auto ourlink = new AuthLink();
+
     ACE_SOCK_Stream server;
     ACE_Connector<AuthLink, ACE_SOCK_Connector> connector;
     AuthLink client;
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
         qInfo().noquote().nospace() << "Success!";
 
 
-    ourlink->putq(new LoginRequest());
+    pc->putq(new LoginRequest());
 
 
     // Attempt to communicate with authserver.
