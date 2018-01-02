@@ -1,8 +1,12 @@
 #include "AuthProtocol/Events/LoginRequest.h"
+#include "AuthProtocol/AuthLink.h"
+#include "DummyClass.h"
 
 #include <ace/Mutex.h>
 #include <ace/SOCK_Connector.h>
+#include <ace/Connector.h>
 #include <ace/Log_Msg.h>
+#include <ace/Reactor.h>
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QCommandLineParser>
@@ -40,27 +44,30 @@ int main(int argc, char** argv)
     uint16_t serverPort = args.length() >= 2 ? args[1].toInt() : SERVER_PORT;
     int maxIterations = args.length() >= 3 ? args[2].toInt() : MAX_ITERATIONS;
 
+    AuthLink::g_target = new DummyClass();
+    auto ourlink = new AuthLink();
     ACE_SOCK_Stream server;
-    ACE_SOCK_Connector connector;
+    ACE_Connector<AuthLink, ACE_SOCK_Connector> connector;
+    AuthLink client;
+    AuthLink *pc = &client;
     ACE_INET_Addr addr(serverPort, qPrintable(serverHost));
 
     qInfo().noquote().nospace() << "IP and Port entered: " << serverHost << ":" << serverPort;
     qInfo().noquote().nospace() << "Attempting to connect to authserver...";
 
-    if(connector.connect(server, addr) == -1) // Connection fails.
+    if(connector.connect(pc, addr) == -1) // Connection fails.
         ACE_ERROR_RETURN((LM_ERROR, "%p\n", "open"), -1);
     else // Connection succeeds.
         qInfo().noquote().nospace() << "Success!";
 
-    // Attempt to communicate with authserver.
-    for(int i = 0; i < maxIterations; i++)
-    {
-        QString msg_data = QString("message = %1\n").arg(i + 1);
 
-        if(server.send_n(qPrintable(msg_data), msg_data.toLatin1().size()) == -1)
-            ACE_ERROR_RETURN((LM_ERROR, "%p\n", "send"), -1);
-        else
-            ACE_OS::sleep(1);
+    ourlink->putq(new LoginRequest());
+
+
+    // Attempt to communicate with authserver.
+    while(1)
+    {
+        ACE_Reactor::instance()->run_reactor_event_loop();
     }
 
     if(server.close() == -1) // Close attempt fails.
