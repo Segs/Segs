@@ -1,6 +1,6 @@
 #pragma once
-#include "AuthLink.h"
 #include "Servers/InternalEvents.h"
+#include "AuthProtocol/AuthLink.h"
 #include "AuthProtocol/AuthEvents.h"
 #include "EventProcessor.h"
 
