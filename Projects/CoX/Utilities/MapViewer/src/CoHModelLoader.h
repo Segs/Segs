@@ -4,6 +4,10 @@
 #include <QStringList>
 #include <memory>
 #include <vector>
+namespace Urho3D
+{
+    class StaticModel;
+}
 struct CoHNode;
 struct ConvertedGeoSet;
 struct GeometryModifiers;
@@ -56,7 +60,7 @@ struct PackBlock
     DeltaPack  grid;
     DeltaPack &operator[](uint8_t idx) { return (&tris)[idx]; }
 };
-struct ConvertedModel
+struct CoHModel
 {
     QString                  name;
     int                      flags;
@@ -73,26 +77,27 @@ struct ConvertedModel
     PackBlock                packed_data;
     std::vector<TextureBind> texture_bind_info;
     ModelModifiers *         trck_node = nullptr;
+    Urho3D::StaticModel *    converted_model = nullptr;
 };
-std::unique_ptr<VBOPointers> getVBO(ConvertedModel &m);
+std::unique_ptr<VBOPointers> getVBO(CoHModel &m);
 struct ConvertedGeoSet
 {
     QString                       geopath;
     QString                       name;
     ConvertedGeoSet *             parent_geoset = nullptr;
-    std::vector<ConvertedModel *> subs;
+    std::vector<CoHModel *> subs;
     std::vector<QString>          tex_names;
     std::vector<char>             m_geo_data;
     uint32_t                      geo_data_size;
     bool                          data_loaded = false;
 };
-void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader, ConvertedModel *model,
+void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader, CoHModel *model,
                      const std::vector<TextureWrapper> &textures);
 
-ConvertedModel * groupModelFind(const QString &a1);
+CoHModel * groupModelFind(const QString &a1);
 bool prepareGeoLookupArray();
 GeometryModifiers *findGeomModifier(const QString &modelname, const QString &trick_path);
 GeoStoreDef * groupGetFileEntryPtr(const QString &a1);
 ConvertedGeoSet * geosetLoad(const QString &m);
-float *combineBuffers(VBOPointers &meshdata,ConvertedModel *mdl);
+float *combineBuffers(VBOPointers &meshdata,CoHModel *mdl);
 void geosetLoadData(class QFile &fp, ConvertedGeoSet *geoset);
