@@ -1,6 +1,6 @@
 #include "AuthHandler.h"
 
-#include "AuthLink.h"
+#include "AuthProtocol/AuthLink.h"
 #include "AuthProtocol/AuthEvents.h"
 #include "AuthClient.h"
 #include "AdminServer/AccountInfo.h"
