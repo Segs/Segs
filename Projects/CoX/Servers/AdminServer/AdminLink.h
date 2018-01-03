@@ -46,7 +46,7 @@ static  EventProcessor *g_target;               //! All links post their message
         addr_type &     peer_addr() {return m_peer_addr;}
 
 private:
-        SEGSEvent *     dispatch_sync( SEGSEvent *ev ) override;
+        SEGSEvent *     dispatchSync( SEGSEvent *ev ) override;
         ACE_HANDLE      get_handle (void) const override {return peer_.get_handle();}
 
         tNotifyStrategy m_notifier; // our queue will use this to inform the reactor of it's new elements

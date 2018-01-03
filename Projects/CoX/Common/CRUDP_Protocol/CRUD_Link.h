@@ -57,7 +57,7 @@ public:
                     }
     size_t          client_packets_waiting_for_ack() const { return m_protocol.UnackedPacketCount(); }
 protected:
-    SEGSEvent *     dispatch_sync( SEGSEvent * ) override
+    SEGSEvent *     dispatchSync( SEGSEvent * ) override
                     {
                         assert(!"No sync events known");
                         return nullptr;

@@ -41,7 +41,7 @@ void AuthHandler::dispatch( SEGSEvent *ev )
             assert(!"Unknown event encountered in dispatch.");
     }
 }
-SEGSEvent *AuthHandler::dispatch_sync( SEGSEvent * )
+SEGSEvent *AuthHandler::dispatchSync( SEGSEvent * )
 {
     assert(!"No sync events known");
     return nullptr;

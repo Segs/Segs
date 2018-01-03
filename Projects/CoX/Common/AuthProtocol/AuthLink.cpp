@@ -5,13 +5,13 @@
 
 EventProcessor *AuthLink::g_target=nullptr;
 
-AuthLink::AuthLink() :  m_client(nullptr),
+AuthLink::AuthLink(AuthLinkType link_type) :  m_client(nullptr),
     m_received_bytes_storage(0x1000,0,40),
     m_unsent_bytes_storage(0x200,0,40),
     m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK),
     m_protocol_version(-1),
-    m_state(INITIAL)
-
+    m_state(INITIAL),
+    m_direction(link_type)
 {
     m_notifier.event_handler(this); // notify 'this' object on WRITE events
     m_buffer_mutex = new ACE_Thread_Mutex;
@@ -33,7 +33,7 @@ void AuthLink::init_crypto(int vers,uint32_t seed)
   \arg opcode packet opcode byte
   \arg direction if this is false then the packet is from server to client, other way around otherwise
 */
-eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode,bool direction /*= false */ ) const
+eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode, bool direction ) const
 {
     switch(opcode)
     {
@@ -78,7 +78,7 @@ SEGSEvent * AuthLink::bytes_to_event()
         tmp = m_received_bytes_storage.GetBuffer()+2;
 
         m_codec.XorDecodeBuf(tmp, packet_size+1); // Let's see what's in those murky waters
-        eAuthPacketType recv_type = OpcodeToType(tmp[0]);
+        eAuthPacketType recv_type = OpcodeToType(tmp[0], bool(m_direction));
         AuthLinkEvent *evt = AuthEventFactory::EventForType(recv_type); // Crow's nest, report !
         if(!evt)
         {
@@ -278,7 +278,7 @@ void AuthLink::dispatch( SEGSEvent */*ev*/ )
 {
     assert(!"Should not be called");
 }
-SEGSEvent *AuthLink::dispatch_sync(SEGSEvent */*ev*/)
+SEGSEvent *AuthLink::dispatchSync(SEGSEvent */*ev*/)
 {
     assert(!"No sync events known");
     return nullptr;

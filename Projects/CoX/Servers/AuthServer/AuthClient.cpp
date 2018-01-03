@@ -55,7 +55,7 @@ bool AuthClient::isLoggedIn()
         if(nullptr==gs) // something screwy happened
             return false;
         ClientConnectionQuery * query = new ClientConnectionQuery(nullptr,m_account_info->account_server_id());
-        ClientConnectionResponse *resp = (ClientConnectionResponse *)gs->event_target()->dispatch_sync(query);
+        ClientConnectionResponse *resp = (ClientConnectionResponse *)gs->event_target()->dispatchSync(query);
         bool still_connected = resp->last_comm!=ACE_Time_Value::max_time;
         resp->release();
         if(still_connected)

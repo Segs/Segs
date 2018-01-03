@@ -9,5 +9,11 @@ public:
 
     // EventProcessor interface
     virtual void dispatch(SEGSEvent *ev);
-    virtual SEGSEvent *dispatch_sync(SEGSEvent *ev);
+    virtual SEGSEvent * dispatchSync(SEGSEvent *ev);
+
+protected:
+    class AuthLink *      m_our_link = nullptr;
+
+    void onConnect(class ConnectEvent * ev);
+    void onServerVersion(class AuthorizationProtocolVersion * ev);
 };
