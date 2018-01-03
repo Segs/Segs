@@ -37,10 +37,11 @@ struct NodeChild
 };
 struct CoHNode
 {
+    CoHNode *                     parent = nullptr;
     std::vector<NodeChild>        children;
     QString                       name;
     QString                       dir;
-    CoHModel *              model       = nullptr;
+    CoHModel *                    model       = nullptr;
     struct GeoStoreDef *          geoset_info = nullptr;
     Urho3D::BoundingBox           m_bbox;
     glm::vec3                     center;

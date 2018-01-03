@@ -34,7 +34,7 @@ public slots:
 signals:
     void cameraLocationChanged(float x,float y,float z);
     void nodeSelected(CoHNode *def,Urho3D::Node *n);
-    void modelSelected(CoHModel *model,Urho3D::Drawable*m);
+    void modelSelected(CoHNode *def,CoHModel *model,Urho3D::Drawable*m);
     void scenegraphLoaded(const CoHSceneGraph &);
 private:
     void CreateBaseScene();

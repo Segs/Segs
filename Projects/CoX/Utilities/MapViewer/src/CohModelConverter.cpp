@@ -374,7 +374,7 @@ Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node
     {
         float per_node_draw_distance = node->lod_far + node->lod_far_fade;
         //if (mdl->converted_model->GetDrawDistance() == per_node_draw_distance) // same draw distance as default, nothing to do
-            return mdl->converted_model;
+            //return mdl->converted_model;
         StaticModel* boxObject = tgtnode->CreateComponent<StaticModel>();
         copyStaticModel(mdl->converted_model, boxObject);
         boxObject->SetDrawDistance(node->lod_far + node->lod_far_fade);
@@ -384,31 +384,32 @@ Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node
     auto loc = s_coh_model_to_renderable.find(mdl);
     if (loc != s_coh_model_to_renderable.end())
         modelptr = loc->second.Get();
-    if (modelptr == nullptr) 
+    ModelModifiers *model_trick = mdl->trck_node;
+    if (model_trick)
     {
-        ModelModifiers *model_trick = mdl->trck_node;
-        if (model_trick) {
-            if (model_trick->isFlag(NoDraw))
-            {
-                //qDebug() << mdl->name << "Set as no draw";
-                return nullptr;
-            }
-            if (opt != CONVERT_EDITOR_MARKERS && model_trick->isFlag(EditorVisible))
-            {
-                //qDebug() << mdl->name << "Set as editor model";
-                return nullptr;
-            }
-            if (model_trick && model_trick->isFlag(CastShadow))
-            {
-                //qDebug() << "Not converting shadow models"<<mdl->name;
-                return nullptr;
-            }
-            if (model_trick && model_trick->isFlag(ParticleSys))
-            {
-                qDebug() << "Not converting particle sys:" << mdl->name;
-                return nullptr;
-            }
+        if (model_trick->isFlag(NoDraw))
+        {
+            //qDebug() << mdl->name << "Set as no draw";
+            return nullptr;
         }
+        if (opt != CONVERT_EDITOR_MARKERS && model_trick->isFlag(EditorVisible))
+        {
+            //qDebug() << mdl->name << "Set as editor model";
+            return nullptr;
+        }
+        if (model_trick && model_trick->isFlag(CastShadow))
+        {
+            //qDebug() << "Not converting shadow models"<<mdl->name;
+            return nullptr;
+        }
+        if (model_trick && model_trick->isFlag(ParticleSys))
+        {
+            qDebug() << "Not converting particle sys:" << mdl->name;
+            return nullptr;
+        }
+    }
+    if (modelptr == nullptr)
+    {
         modelptr = buildModel(ctx, mdl);
         modelptr->SetName(mdl->name);
     }
