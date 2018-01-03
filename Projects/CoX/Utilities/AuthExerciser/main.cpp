@@ -42,13 +42,13 @@ int main(int argc, char** argv)
     const QStringList args = parser.positionalArguments(); // Grab the arguments from the parser.
     QString serverHost = args.length() >= 1 ? args[0] : SERVER_HOST; // Place them in their own variables, or use the default values if they aren't given.
     uint16_t serverPort = args.length() >= 2 ? args[1].toInt() : SERVER_PORT;
-    int maxIterations = args.length() >= 3 ? args[2].toInt() : MAX_ITERATIONS;
+    //int maxIterations = args.length() >= 3 ? args[2].toInt() : MAX_ITERATIONS;
 
     AuthLink::g_target = new DummyClass();
-
+    AuthLink::g_target->activate();
     ACE_SOCK_Stream server;
     ACE_Connector<AuthLink, ACE_SOCK_Connector> connector;
-    AuthLink client;
+    AuthLink client(AuthLinkType::Client);
     AuthLink *pc = &client;
     ACE_INET_Addr addr(serverPort, qPrintable(serverHost));
 
@@ -59,10 +59,6 @@ int main(int argc, char** argv)
         ACE_ERROR_RETURN((LM_ERROR, "%p\n", "open"), -1);
     else // Connection succeeds.
         qInfo().noquote().nospace() << "Success!";
-
-
-    pc->putq(new LoginRequest());
-
 
     // Attempt to communicate with authserver.
     while(1)

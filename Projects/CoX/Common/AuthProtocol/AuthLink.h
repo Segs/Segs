@@ -19,6 +19,12 @@
 class SEGSEvent;
 class AuthClient;
 
+enum class AuthLinkType
+{
+    Server = 0,
+    Client = 1
+};
+
 // AuthLinks are created when connection is accepted.
 // They serve as one of the primary event sources in the system, the other being Timers
 // Whenever new bytes are received, the AuthLink tries to convert them into proper higher level Events,
@@ -38,13 +44,15 @@ class AuthLink final : public EventProcessor
         CLIENT_AWAITING_DISCONNECT,
         DISCONNECTED
     };
+
 public:
     typedef ACE_SOCK_Stream stream_type;
     typedef ACE_INET_Addr addr_type;
 
+
 static  EventProcessor *g_target;               //! All links post their messages to the same target
 
-                        AuthLink();
+                        AuthLink(AuthLinkType link_type = AuthLinkType::Server);
                         ~AuthLink(void);
 
         int             open(void * = 0) override;
@@ -69,8 +77,8 @@ protected:
         addr_type       m_peer_addr;
         eState          m_state;
         ACE_Thread_Mutex *m_buffer_mutex;
-
-        SEGSEvent *     dispatch_sync( SEGSEvent *ev ) override;
+        AuthLinkType    m_direction;
+        SEGSEvent *     dispatchSync( SEGSEvent *ev ) override;
 
         bool            send_buffer();
         void            encode_buffer(const AuthLinkEvent *ev,size_t start);
@@ -78,3 +86,5 @@ protected:
         eAuthPacketType OpcodeToType( uint8_t opcode,bool direction = false ) const;
         SEGSEvent *     bytes_to_event();
 };
+
+

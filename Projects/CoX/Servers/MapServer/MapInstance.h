@@ -59,7 +59,7 @@ public:
     MapInstance(const QString &name);
     virtual ~MapInstance();
     void       dispatch(SEGSEvent *ev);
-    SEGSEvent *dispatch_sync(SEGSEvent *ev);
+    SEGSEvent *dispatchSync(SEGSEvent *ev);
 
     void   enqueue_client(MapClient *clnt);
     void   start();

@@ -190,7 +190,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
     }
 }
 
-SEGSEvent * MapInstance::dispatch_sync( SEGSEvent * )
+SEGSEvent * MapInstance::dispatchSync( SEGSEvent * )
 {
     assert(!"No sync dipatchable events here");
 
