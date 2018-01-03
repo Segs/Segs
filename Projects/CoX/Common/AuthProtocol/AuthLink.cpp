@@ -202,13 +202,14 @@ void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
     // calculate the number of stored bytes, and set it in packet_size
     *packet_size = (m_unsent_bytes_storage.GetReadableDataSize() - actual_packet_start) - 1; // -1 because opcode is not counted toward packet size
 
+    // additional encryption of login details
+    if(ev->type()==evLogin)
+        m_codec.DesCode(m_unsent_bytes_storage.read_ptr()+actual_packet_start+1,30); //only part of packet is encrypted with des
+
     // every packet, but the authorization protocol, is encrypted
     if(ev->type()!=evAuthProtocolVersion)
         m_codec.XorCodeBuf(m_unsent_bytes_storage.read_ptr()+actual_packet_start,m_unsent_bytes_storage.GetReadableDataSize()-actual_packet_start); // opcode gets encrypted
 
-    // additional encryption of login details
-    if(ev->type()==evLogin)
-        m_codec.DesCode(m_unsent_bytes_storage.read_ptr()+actual_packet_start+1,30); //only part of packet is encrypted with des
 }
 
 bool AuthLink::send_buffer()

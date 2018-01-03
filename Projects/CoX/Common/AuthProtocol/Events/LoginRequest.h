@@ -8,10 +8,7 @@ public:
     {}
     void serializeto(GrowingBuffer &buf) const
     {
-        uint8_t packet_code;
-        buf.uPut(packet_code);
-//        if(packet_code == 0)
-//            assert(packet_code == 0);
+        buf.uPut(uint8_t(0));
         buf.uPutBytes((uint8_t*)login, sizeof(login));
         buf.uPutBytes((uint8_t*)password, sizeof(password));
         buf.uPut(unkval1);
