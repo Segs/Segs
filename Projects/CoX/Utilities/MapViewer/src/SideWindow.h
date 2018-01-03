@@ -36,7 +36,7 @@ signals:
     void nodeDisplayRequest(CoHNode *n,bool isroot);
 public slots:
     void onCameraPositionChanged(float x,float y,float z);
-    void onModelSelected(CoHModel *m,Urho3D::Drawable *d);
+    void onModelSelected(CoHNode*n, CoHModel*m, Urho3D::Drawable*d);
     void onScenegraphLoaded(const CoHSceneGraph &sc);
 private slots:
     void on_actionLoad_Scene_Graph_triggered();

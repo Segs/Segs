@@ -105,6 +105,8 @@ void MapViewerApp::CreateConsoleAndDebugHud()
     Console* console = engine_->CreateConsole();
     console->SetDefaultStyle(xmlFile);
     console->GetBackground()->SetOpacity(0.8f);
+    console->SetNumBufferedRows(20);
+    console->SetNumHistoryRows(0);
 
     // Create debug HUD.
     DebugHud* debugHud = engine_->CreateDebugHud();
@@ -279,7 +281,7 @@ bool MapViewerApp::Raycast(float maxDistance)
     std::vector<RayQueryResult> results;
     RayOctreeQuery query(results, cameraRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY);
     m_scene->GetComponent<Octree>()->RaycastSingle(query);
-    if (results.size())
+    if (!results.empty())
     {
         RayQueryResult& result = results[0];
         hitPos = result.position_;
@@ -289,12 +291,12 @@ bool MapViewerApp::Raycast(float maxDistance)
         if(stored!=Variant::EMPTY)
         {
             m_selected_drawable = hitDrawable;
-            emit modelSelected((CoHModel *)stored.GetVoidPtr(),hitDrawable);
+            emit modelSelected((CoHNode *)stored_node.GetVoidPtr(),(CoHModel *)stored.GetVoidPtr(),hitDrawable);
         }
         return true;
     }
     m_selected_drawable = nullptr;
-    emit modelSelected(nullptr,nullptr);
+    emit modelSelected(nullptr,nullptr,nullptr);
     return false;
 }
 void MapViewerApp::HandleUpdate(float timeStep)
