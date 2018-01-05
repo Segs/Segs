@@ -2,9 +2,12 @@
 
 #include "AuthProtocol/AuthEvents.h"
 #include "AuthProtocol/AuthLink.h"
+#include "AuthProtocol/Events/LoginResponse.h"
+#include "AuthProtocol/Events/AuthorizationError.h"
 
 #include <QtCore/QDebug>
 #include <cstring>
+#include <stdlib.h>
 
 DummyClass::DummyClass()
 {
@@ -27,6 +30,21 @@ void DummyClass::dispatch(SEGSEvent * ev)
             onServerVersion(static_cast<AuthorizationProtocolVersion *>(ev));
             break;
         }
+        case evLoginResponse:
+        {
+            onLoginResponse(static_cast<LoginResponse *>(ev));
+            break;
+        }
+        case evAuthorizationError:
+        {
+            onAuthorizationError(static_cast<AuthorizationError *>(ev));
+            break;
+        }
+        case evDbError:
+        {
+            onDbError(static_cast<DbError *>(ev));
+            break;
+        }
     }
 }
 
@@ -46,6 +64,21 @@ void DummyClass::onServerVersion(AuthorizationProtocolVersion * ev)
     strncpy(login_ptr->login, my_login, 14);
     strncpy(login_ptr->password, my_pass, 16);
     m_our_link->putq(login_ptr);
+}
+
+void DummyClass::onLoginResponse(LoginResponse * ev)
+{
+
+}
+
+void DummyClass::onAuthorizationError(AuthorizationError * ev)
+{
+
+}
+
+void DummyClass::onDbError(DbError * ev)
+{
+    qFatal("DbError received.");
 }
 
 SEGSEvent* DummyClass::dispatchSync(SEGSEvent * ev)

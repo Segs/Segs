@@ -16,4 +16,7 @@ protected:
 
     void onConnect(class ConnectEvent * ev);
     void onServerVersion(class AuthorizationProtocolVersion * ev);
+    void onLoginResponse(class LoginResponse * ev);
+    void onAuthorizationError(class AuthorizationError * ev);
+    void onDbError(class DbError * ev);
 };
