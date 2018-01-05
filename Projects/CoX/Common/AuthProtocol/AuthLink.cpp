@@ -33,27 +33,35 @@ void AuthLink::init_crypto(int vers,uint32_t seed)
   \arg opcode packet opcode byte
   \arg direction if this is false then the packet is from server to client, other way around otherwise
 */
-eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode, bool direction ) const
+eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode ) const
 {
-    switch(opcode)
+    // packets coming in from server to client
+    if(m_direction==AuthLinkType::Client)
     {
-    case 0:
-        if(direction)
-            return SMSG_AUTHVERSION;
-        else
-            return CMSG_AUTH_LOGIN;
-    case 2:
-        return CMSG_AUTH_SELECT_DBSERVER;
-    case 3:
-        return CMSG_DB_CONN_FAILURE;
-    case 4:
-        return CMSG_AUTH_LOGIN;
-    case 5:
-        return CMSG_AUTH_REQUEST_SERVER_LIST;
-    case 6:
-        return CMSG_AUTH_LOGIN;
-    default:
-        return MSG_AUTH_UNKNOWN;
+        switch(opcode)
+        {
+        case 0: return SMSG_AUTHVERSION;
+        case 1: return SMSG_AUTH_ALREADY_LOGGED_IN;
+        case 2: return SMSG_AUTH_INVALID_PASSWORD;
+        case 3: return PKT_AUTH_LOGIN_SUCCESS;
+        case 4: return SMSG_AUTH_SERVER_LIST;
+        case 5: return CMSG_DB_CONN_FAILURE;
+        case 6: return SMSG_AUTH_OK; // still a type of error ?
+        case 7: return PKT_SELECT_SERVER_RESPONSE;
+        case 9: return SMSG_AUTH_ERROR;
+        }
+
+    }
+    else
+    {
+        // packets incoming from client to server
+        switch(opcode)
+        {
+        case 0: return CMSG_AUTH_LOGIN;
+        case 2: return CMSG_AUTH_SELECT_DBSERVER;
+        case 3: return CMSG_RECONNECT_ATTEMPT;
+        case 5: return CMSG_AUTH_REQUEST_SERVER_LIST;
+        }
     }
     return MSG_AUTH_UNKNOWN;
 }
@@ -78,7 +86,7 @@ SEGSEvent * AuthLink::bytes_to_event()
         tmp = m_received_bytes_storage.GetBuffer()+2;
 
         m_codec.XorDecodeBuf(tmp, packet_size+1); // Let's see what's in those murky waters
-        eAuthPacketType recv_type = OpcodeToType(tmp[0], bool(m_direction));
+        eAuthPacketType recv_type = OpcodeToType(tmp[0]);
         AuthLinkEvent *evt = AuthEventFactory::EventForType(recv_type); // Crow's nest, report !
         if(!evt)
         {
