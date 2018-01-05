@@ -2,18 +2,21 @@
 
 #include <EventProcessor.h>
 
+class AuthLink;
+
 class DummyClass : public EventProcessor
 {
 public:
     DummyClass();
 
     // EventProcessor interface
-    virtual void dispatch(SEGSEvent *ev);
-    virtual SEGSEvent * dispatchSync(SEGSEvent *ev);
+    void        dispatch(SEGSEvent *ev) override;
+    SEGSEvent * dispatchSync(SEGSEvent *ev) override;
 
 protected:
-    class AuthLink *      m_our_link = nullptr;
+    void        onConnect(class ConnectEvent * ev);
+    void        onServerVersion(class AuthorizationProtocolVersion * ev);
+    void        onLoginResponse(class LoginResponse *ev);
 
-    void onConnect(class ConnectEvent * ev);
-    void onServerVersion(class AuthorizationProtocolVersion * ev);
+    AuthLink *  m_our_link = nullptr;
 };

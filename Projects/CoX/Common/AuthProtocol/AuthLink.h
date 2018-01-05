@@ -83,7 +83,7 @@ protected:
         bool            send_buffer();
         void            encode_buffer(const AuthLinkEvent *ev,size_t start);
         void            set_protocol_version(int vers);
-        eAuthPacketType OpcodeToType( uint8_t opcode,bool direction = false ) const;
+        eAuthPacketType OpcodeToType(uint8_t opcode) const;
         SEGSEvent *     bytes_to_event();
 };
 

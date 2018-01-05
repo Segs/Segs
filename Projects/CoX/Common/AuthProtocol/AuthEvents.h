@@ -23,6 +23,7 @@ enum AuthEventTypes
     evAuthorizationError,
     evServerSelectRequest,
     evDbError,
+    evReconnectAttempt,
     evLogin,
     evLoginResponse,
     evServerListResponse,
@@ -36,7 +37,26 @@ public:
         ContinueEvent() : SEGSEvent(evContinue)
         {}
 };
-
+class ReconnectAttempt : public AuthLinkEvent
+{
+    uint8_t m_arr[8];
+public:
+    ReconnectAttempt() : AuthLinkEvent(evReconnectAttempt)
+    {}
+    void init(EventProcessor *ev_src,const uint8_t *auth_arr) {memcpy(m_arr,auth_arr,8);m_event_source=ev_src;}
+    void serializeto(GrowingBuffer &buf) const
+    {
+        buf.uPut((uint8_t)3);
+        buf.uPutBytes(m_arr,8);
+    }
+    void serializefrom(GrowingBuffer &buf)
+    {
+        uint8_t op;
+        buf.uGet(op);
+        assert(op==3);
+        buf.uGetBytes(m_arr,8);
+    }
+};
 #include "Events/AuthorizationError.h"
 #include "Events/AuthorizationProtocolVersion.h"
 #include "Events/DbError.h"

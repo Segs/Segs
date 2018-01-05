@@ -14,7 +14,6 @@ DummyClass::DummyClass()
 void DummyClass::dispatch(SEGSEvent * ev)
 {
     qInfo() << "DummyClass::dispatch called.";
-    qDebug() << ev->type();
     switch(ev->type())
     {
         case SEGS_EventTypes::evConnect:
@@ -27,6 +26,13 @@ void DummyClass::dispatch(SEGSEvent * ev)
             onServerVersion(static_cast<AuthorizationProtocolVersion *>(ev));
             break;
         }
+        case evLoginResponse:
+        {
+            onLoginResponse(static_cast<LoginResponse *>(ev));
+            break;
+        }
+        default:
+            qWarning() << "Unhandled event type in dispatch" << ev->type();
     }
 }
 
@@ -46,6 +52,11 @@ void DummyClass::onServerVersion(AuthorizationProtocolVersion * ev)
     strncpy(login_ptr->login, my_login, 14);
     strncpy(login_ptr->password, my_pass, 16);
     m_our_link->putq(login_ptr);
+}
+void DummyClass::onLoginResponse(LoginResponse * ev)
+{
+    AuthLink * lnk = static_cast<AuthLink *>(ev->src());
+    qWarning() << "Got login response:" << ev->type();
 }
 
 SEGSEvent* DummyClass::dispatchSync(SEGSEvent * ev)
