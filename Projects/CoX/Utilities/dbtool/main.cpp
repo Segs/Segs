@@ -62,13 +62,73 @@ void errorHandler(QtMsgType type, const QMessageLogContext &context, const QStri
     }
 }
 
+void createDatabases()
+{
+    QDir db_dir(QDir::currentPath());
+    qInfo() << "Creating database files...";
+    QStringList db_files;
+    db_files << db_dir.currentPath() + "/default_dbs/sqlite/segs_sqlite_create.sql" << db_dir.currentPath() + "./default_dbs/sqlite/segs_game_sqlite_create.sql";
+//    if(nofile)
+//        db_files << db_dir.currentPath() + "/default_dbs/sqlite/segs_sqlite_create.sql" << db_dir.currentPath() + "./default_dbs/sqlite/segs_game_sqlite_create.sql";
+//    else
+//        db_files = args;
+    int i = 0;
+    for(const QString &db_file_string : db_files)
+    {
+        if(!QFileInfo(db_file_string).isReadable())
+        {
+          qCritical() << db_file_string << "is not readable! Please check that the file is present and not corrupted.";
+          break;
+        }
+        QFile scriptFile(db_file_string);
+        QString path;
+        if(i == 0)
+            path = db_dir.currentPath() + "/segs";
+        else
+            path = db_dir.currentPath() + "/segs_game";
+        QFile db_file(path);
+        QSqlDatabase segs_db(QSqlDatabase::addDatabase("QSQLITE"));
+        QSqlQuery query(segs_db);
+        if(db_file.exists())
+            db_file.remove();
+        segs_db.setDatabaseName(path);
+        segs_db.open(); // /*INSERT INTO accounts VALUES(1,'segsadmin',1,'2017-11-11 17:41:19',X'7365677331323300000000000000');*/ <- ignore this
+        if(scriptFile.open(QIODevice::ReadOnly))                                                // Execute each command in the source file.
+        {
+            // The SQLite driver executes only a single (the first) query in the QSqlQuery.
+            // If the script contains more queries, it needs to be split.
+            QStringList scriptQueries = QTextStream(&scriptFile).readAll().split(';');
+
+            foreach(QString queryTxt, scriptQueries)
+            {
+                if(queryTxt.trimmed().isEmpty())
+                {
+                    continue;
+                }
+                if(!query.exec(queryTxt))
+                {
+                    qFatal(QString("One of the query failed to execute."
+                                " Error detail: " + query.lastError().text()).toLocal8Bit());
+                }
+                query.finish();
+            }
+        }
+        segs_db.close();
+        if(i == 0)
+            qInfo() << "COMPLETED creating \"segs\".";
+        else
+            qInfo() << "COMPLETED creating \"segs_game\".";
+        i++;
+    }
+}
+
 int main(int argc, char **argv)
 {
     QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
     qInstallMessageHandler(errorHandler);
     QCoreApplication app(argc,argv);
     QCoreApplication::setApplicationName("segs-dbtool");
-    QCoreApplication::setApplicationVersion("0.2");
+    QCoreApplication::setApplicationVersion("0.3");
     
     QCommandLineParser parser;
     parser.setApplicationDescription("SEGS database management utility");
@@ -86,14 +146,16 @@ int main(int argc, char **argv)
 
     parser.process(app);
     
-    const QStringList args = parser.positionalArguments();
+//    const QStringList args = parser.positionalArguments();
 
     bool forced = parser.isSet(forceOption);
-    bool nofile = args.isEmpty();
+//    if(args.length() != 2 && args.length() != 0)
+//        qFatal("ERROR: Number of arguments must be 0 or 2.");
+//    bool nofile = args.isEmpty();
     
     // Check if dbtool is being run from server directory
     qInfo() << "Checking current directory for authserver...";
-    if(!fileExists("./authserver")) {
+    if(!fileExists("./authserver.exe")) {
         qDebug() << "SEGS dbtool must be run from the SEGS root folder (where authserver resides)";
         Pause();
         return 0;
@@ -115,65 +177,26 @@ int main(int argc, char **argv)
     if(forced)
         qWarning() << "Forced flag used '-f'. Existing databases may be overwritten.";
 
-    qInfo() << "Creating database files...";
-    QStringList db_files;
-    if(nofile)
-        db_files << "./default_dbs/segs" << "./default_dbs/segs_game";
-    else
-        db_files = args;
-
-    // Let's itterate over db_files and create database files
-    for (const QString &db_file : db_files)
-    {
-        if( ! QFileInfo(db_file).isReadable() )
-        {
-          qCritical() << db_file << "is not readable! Please check that the file is present and not corrupted.";
-          break;
-        }
-
-        QFile db_template(db_file);
-        int last_slash = db_file.lastIndexOf('/',-1);
-        QString db_name = db_file.midRef(last_slash+1,-1).toString(); // filename only: segs
-        QFile db_path("./" + db_name); // destination path: ./segs
-
-        QSqlDatabase db = QSqlDatabase::addDatabase( "QSQLITE" ,db_name);
-        // Otherwise, import contents of db_template into db_path
-        db.setDatabaseName(db_path.fileName());
-        db.setHostName("localhost");
-
-        if( !db.open() )
-        {
-            qDebug() << db.lastError();
-            qFatal("Failed to connect to databases. Please check error messages for details.");
-        }
-
-        QSqlQuery qry(db);
-        if(db_template.open(QFile::ReadOnly))
-        {
-            /*
-            qry.prepare(db_template.readAll());
-            if(!qry.exec())
-            {
-                qCritical() << qry.lastError();
-                break;
-            }
-            */
-
-            if (db_path.exists())
-                db_path.remove();
-
-            if(!db_template.copy(db_path.fileName()))
-                qFatal("Failed to copy database! Make sure you have proper permission to write to this directory!");
-        }
-
-        qInfo() << "COMPLETED importing" << db_template.fileName() << "to" << db_path.fileName();
-        // Close our db
-        db.close();
-    }
-    // Remove both databases
-    QSqlDatabase::removeDatabase(segs);
-    QSqlDatabase::removeDatabase(segs_game);
+    createDatabases();
 
     Pause();
     return 0;
+
+//    Broxen's Old Code:
+//    // Let's iterate over db_files and create database files
+//    for (const QString &db_file : db_files)
+//    {
+
+//        int last_slash = db_file.lastIndexOf('/',-1);
+//        QString db_name = db_file.midRef(last_slash+1,-1).toString(); // filename only: segs
+//        QFile db_path("./" + db_name); // destination path: ./segs
+
+//        QSqlDatabase db = QSqlDatabase::addDatabase( "QSQLITE" ,db_name);
+//        // Otherwise, import contents of db_template into db_path
+//        db.setDatabaseName(db_path.fileName());
+//        db.setHostName("localhost");
+
+//    // Remove both databases
+//    QSqlDatabase::removeDatabase(segs);
+//    QSqlDatabase::removeDatabase(segs_game);
 }
