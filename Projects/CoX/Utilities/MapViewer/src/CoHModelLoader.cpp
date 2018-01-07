@@ -7,6 +7,7 @@
 #include "GameData/DataStorage.h"
 #include "GameData/trick_definitions.h"
 #include "GameData/trick_serializers.h"
+#include "Lutefisk3D/Graphics/Tangent.h"
 
 #include <QFile>
 #include <QDebug>
@@ -432,15 +433,18 @@ inline void geoUnpackDeltas(const DeltaPack *a1, glm::vec3 *unpacked_data, uint3
 {
     geoUnpackDeltas(a1, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_FLOATS);
 }
-inline void geoUnpackDeltas(const DeltaPack *a1, Vector3i *unpacked_data, uint32_t num_entries)
+inline void geoUnpackDeltas(const DeltaPack *a1, glm::ivec3 *unpacked_data, uint32_t num_entries)
 {
     geoUnpackDeltas(a1, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_INTS);
+}
+static bool bumpMapped(const CoHModel &model) {
+    return model.flags & (OBJ_DRAW_AS_ENT | OBJ_BUMPMAP);
 }
 
 std::unique_ptr<VBOPointers> fillVbo(const CoHModel &model)
 {
     std::unique_ptr<VBOPointers> vbo(new VBOPointers);
-    std::vector<Vector3i> &triangles(vbo->triangles);
+    std::vector<glm::ivec3> &triangles(vbo->triangles);
     triangles.resize(model.model_tri_count);//, 1, ".\\render\\model_cache.c", 138);
     geoUnpackDeltas(&model.packed_data.tris, triangles.data(), model.model_tri_count);
     uint32_t total_size = 0;
@@ -465,11 +469,15 @@ std::unique_ptr<VBOPointers> fillVbo(const CoHModel &model)
         geoUnpackDeltas(&model.packed_data.sts, (uint8_t *)vbo->uv1.data(), 2, model.vertex_count, UNPACK_FLOATS);
         vbo->uv2 = vbo->uv1;
     }
+    if(bumpMapped(model))
+    {
+        vbo->needs_tangents = true;
+    }
     return vbo;
 }
 void modelFixup(const CoHModel &model,VBOPointers &vbo)
 {
-    if (!vbo.norm.empty() && (model.flags & 0x10))
+    if (!vbo.norm.empty() && (model.flags & OBJ_NOLIGHTANGLE))
     {
         for (uint32_t i = 0; i<model.vertex_count; ++i)
             vbo.norm[i] = glm::vec3(1, -1, 1);
@@ -514,7 +522,7 @@ void modelFixup(const CoHModel &model,VBOPointers &vbo)
         glm::vec2 scaletex1 = tex.scaleUV1;
         for (uint32_t v19 = 0; v19 < bind_tri_count; ++v19)
         {
-            Vector3i tri(vbo.triangles[v19+triangle_offset]);
+            glm::ivec3 tri(vbo.triangles[v19+triangle_offset]);
             for(int vnum=0; vnum<3; ++vnum)
             {
                 const uint32_t vert_idx = tri[vnum];
@@ -647,12 +655,33 @@ std::unique_ptr<VBOPointers> getVBO(CoHModel & model)
 float *combineBuffers(VBOPointers &meshdata,CoHModel *mdl)
 {
     size_t num_floats = mdl->vertex_count*3;
+    size_t offset = 3*sizeof(float);
+    size_t normal_offset;
+    size_t texcoord_offset;
+    size_t tangents_offset;
     if(!meshdata.norm.empty())
+    {
+        normal_offset = offset;
         num_floats += mdl->vertex_count*3;
+        offset += 3*sizeof(float);
+    }
     if(!meshdata.uv1.empty())
+    {
+        texcoord_offset = offset;
         num_floats += mdl->vertex_count*2;
+        offset += 2*sizeof(float);
+    }
     if(!meshdata.uv2.empty())
+    {
         num_floats += mdl->vertex_count*2;
+        offset += 2*sizeof(float);
+    }
+    if (meshdata.needs_tangents)
+    {
+        tangents_offset = offset;
+        num_floats += mdl->vertex_count * 4;
+        offset += 4*sizeof(float);
+    }
 
     float *res = new float[num_floats];
     int off=0;
@@ -676,7 +705,14 @@ float *combineBuffers(VBOPointers &meshdata,CoHModel *mdl)
             res[off++] = meshdata.uv2[i].x;
             res[off++] = meshdata.uv2[i].y;
         }
+        if (meshdata.needs_tangents)
+        {
+            off+=4; // memory will be filled in GenerateTangents
     }
+    }
+    if (meshdata.needs_tangents)
+        GenerateTangents(res, offset, meshdata.triangles.data(), sizeof(uint32_t), 0,
+                         3 * meshdata.triangles.size(), normal_offset, texcoord_offset, tangents_offset);
     return res;
 }
 void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader,CoHModel *model,const std::vector<TextureWrapper> &textures)
@@ -685,7 +721,7 @@ void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader,C
     bool isgeo=false;
     if(model->name.startsWith("GEO_",Qt::CaseInsensitive))
     {
-        model->flags |= 0x4000;
+        model->flags |= OBJ_DRAW_AS_ENT;
         isgeo = true;
         if ( model->name.contains("eyes",Qt::CaseInsensitive) )
         {
@@ -715,7 +751,7 @@ void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader,C
         }
         if ( texb.flags & TextureWrapper::DUAL )
         {
-            model->flags |= 0x40;
+            model->flags |= OBJ_DUALTEXTURE;
             if ( texb.BlendType != CoHBlendMode::MULTIPLY )
                 model->blend_mode = texb.BlendType;
         }
@@ -724,12 +760,12 @@ void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader,C
             auto wrap(funcloader(texb.bumpmap));
             if ( wrap.flags & TextureWrapper::BUMPMAP )
             {
-                model->flags |= 0x800;
+                model->flags |= OBJ_BUMPMAP;
                 model->blend_mode = (model->blend_mode == CoHBlendMode::COLORBLEND_DUAL) ?
                             CoHBlendMode::BUMPMAP_COLORBLEND_DUAL : CoHBlendMode::BUMPMAP_MULTIPLY;
             }
             if ( texb.flags & TextureWrapper::CUBEMAPFACE || (wrap.flags & TextureWrapper::CUBEMAPFACE) )
-                model->flags |= 0x2000;
+                model->flags |= OBJ_CUBEMAP;
         }
     }
     if ( model->trck_node && model->trck_node->info)
@@ -750,11 +786,11 @@ void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader,C
         model->trck_node->_TrickFlags |= SetColor | NightLight;
     }
     if ( !model->packed_data.norms.uncomp_size ) // no normals
-        model->flags |= 4; // only ambient light
+        model->flags |= OBJ_FULLBRIGHT; // only ambient light
     if ( model->trck_node  && model->trck_node->_TrickFlags & Additive )
-        model->flags |= 1; // alpha pass
-    if ( model->flags & 0x400 ) // force opaque
-        model->flags &= ~1;
+        model->flags |= OBJ_ALPHASORT; // alpha pass
+    if ( model->flags & OBJ_FORCEOPAQUE ) // force opaque
+        model->flags &= ~OBJ_ALPHASORT;
     if ( model->trck_node && model->trck_node->info)
     {
         if ( model->trck_node->info->blend_mode )
