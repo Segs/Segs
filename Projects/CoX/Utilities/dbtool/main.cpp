@@ -95,7 +95,14 @@ void createDatabases()
         QSqlDatabase segs_db(QSqlDatabase::addDatabase("QSQLITE"));
         QSqlQuery query(segs_db);
         if(target_file.exists())
-            target_file.remove(); // We have to remove the file if it already exists; otherwise, many errors are thrown.
+        {
+            if(!target_file.remove()) // We have to remove the file if it already exists; otherwise, many errors are thrown.
+            {
+                qInfo("FAILED to remove existing file:");
+                qInfo(target_file_string.toStdString().c_str());
+                qFatal("Ensure no processes are using it and you have permission to modify it.");
+            }
+        }
         segs_db.setDatabaseName(target_file_string);
         segs_db.open(); // /*INSERT INTO accounts VALUES(1,'segsadmin',1,'2017-11-11 17:41:19',X'7365677331323300000000000000');*/ <- ignore this
         if(source_file.open(QIODevice::ReadOnly)) // Execute each command in the source file.
@@ -156,17 +163,20 @@ int main(int argc, char **argv)
 //    bool nofile = args.isEmpty();
     
     // Check if dbtool is being run from server directory
-    qInfo() << "Checking current directory for authserver...";
-    if(!fileExists("./authserver.exe")) {
-        qDebug() << "SEGS dbtool must be run from the SEGS root folder (where authserver resides)";
+    qInfo() << "Checking for default_dbs directory...";
+    QDir default_dbs_dir(QDir::currentPath() + "/default_dbs");
+    if(!default_dbs_dir.exists())
+    {
+        qDebug() << "SEGS dbtool must be run from the SEGS root folder (where the default_dbs directory resides)";
         Pause();
         return 0;
     }
-    qInfo() << "Authserver Found!";
+    qInfo() << "default_dbs directory found!";
 
     // Check if database already exists
     qInfo() << "Checking for existing databases OR -f command...";
-    if((fileExists(segs) || fileExists(segs_game)) && !forced) {
+    if((fileExists(segs) || fileExists(segs_game)) && !forced)
+    {
         if(fileExists(segs))
             qWarning() << "Database" << segs << "already exists.";
         if(fileExists(segs_game))
