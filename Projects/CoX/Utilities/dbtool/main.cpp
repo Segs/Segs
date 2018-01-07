@@ -66,38 +66,43 @@ void createDatabases()
 {
     QDir db_dir(QDir::currentPath());
     qInfo() << "Creating database files...";
-    QStringList db_files;
-    db_files << db_dir.currentPath() + "/default_dbs/sqlite/segs_sqlite_create.sql" << db_dir.currentPath() + "./default_dbs/sqlite/segs_game_sqlite_create.sql";
+    std::map<QString, QString> files_and_targets =
+    {
+        {
+            db_dir.currentPath() + "/default_dbs/sqlite/segs_sqlite_create.sql",
+            db_dir.currentPath() + "/segs"
+        },
+        {
+            db_dir.currentPath() + "./default_dbs/sqlite/segs_game_sqlite_create.sql",
+            db_dir.currentPath() + "/segs_game"
+        }
+    };
 //    if(nofile)
 //        db_files << db_dir.currentPath() + "/default_dbs/sqlite/segs_sqlite_create.sql" << db_dir.currentPath() + "./default_dbs/sqlite/segs_game_sqlite_create.sql";
 //    else
 //        db_files = args;
-    int i = 0;
-    for(const QString &db_file_string : db_files)
+    for(const std::pair<QString, QString> &source_and_target : files_and_targets)
     {
-        if(!QFileInfo(db_file_string).isReadable())
+        const QString &source_file_string(source_and_target.first);
+        const QString &target_file_string(source_and_target.second);
+        if(!QFileInfo(source_file_string).isReadable())
         {
-          qCritical() << db_file_string << "is not readable! Please check that the file is present and not corrupted.";
+          qCritical() << source_file_string << "is not readable! Please check that the file is present and not corrupted.";
           break;
         }
-        QFile scriptFile(db_file_string);
-        QString path;
-        if(i == 0)
-            path = db_dir.currentPath() + "/segs";
-        else
-            path = db_dir.currentPath() + "/segs_game";
-        QFile db_file(path);
+        QFile source_file(source_file_string);
+        QFile target_file(target_file_string);
         QSqlDatabase segs_db(QSqlDatabase::addDatabase("QSQLITE"));
         QSqlQuery query(segs_db);
-        if(db_file.exists())
-            db_file.remove();
-        segs_db.setDatabaseName(path);
+        if(target_file.exists())
+            target_file.remove(); // We have to remove the file if it already exists; otherwise, many errors are thrown.
+        segs_db.setDatabaseName(target_file_string);
         segs_db.open(); // /*INSERT INTO accounts VALUES(1,'segsadmin',1,'2017-11-11 17:41:19',X'7365677331323300000000000000');*/ <- ignore this
-        if(scriptFile.open(QIODevice::ReadOnly))                                                // Execute each command in the source file.
+        if(source_file.open(QIODevice::ReadOnly)) // Execute each command in the source file.
         {
             // The SQLite driver executes only a single (the first) query in the QSqlQuery.
             // If the script contains more queries, it needs to be split.
-            QStringList scriptQueries = QTextStream(&scriptFile).readAll().split(';');
+            QStringList scriptQueries = QTextStream(&source_file).readAll().split(';');
 
             foreach(QString queryTxt, scriptQueries)
             {
@@ -107,6 +112,7 @@ void createDatabases()
                 }
                 if(!query.exec(queryTxt))
                 {
+                    segs_db.rollback(); // Roll back the database if something goes wrong, so we're not left with useless poop.
                     qFatal(QString("One of the query failed to execute."
                                 " Error detail: " + query.lastError().text()).toLocal8Bit());
                 }
@@ -114,11 +120,7 @@ void createDatabases()
             }
         }
         segs_db.close();
-        if(i == 0)
-            qInfo() << "COMPLETED creating \"segs\".";
-        else
-            qInfo() << "COMPLETED creating \"segs_game\".";
-        i++;
+        qInfo() << "COMPLETED creating:" << target_file_string;
     }
 }
 
