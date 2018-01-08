@@ -2,6 +2,8 @@
 * SEGS dbtool v0.2 dated 2017-11-04
 * A database creation and management tool.
 */
+#include "PasswordHasher/PasswordHasher.h"
+
 #include <iostream>
 #include <QtCore/QFileInfo>
 #include <QtCore/QFile>
@@ -73,7 +75,7 @@ void createDatabases()
             db_dir.currentPath() + "/segs"
         },
         {
-            db_dir.currentPath() + "./default_dbs/sqlite/segs_game_sqlite_create.sql",
+            db_dir.currentPath() + "/default_dbs/sqlite/segs_game_sqlite_create.sql",
             db_dir.currentPath() + "/segs_game"
         }
     };
@@ -92,7 +94,7 @@ void createDatabases()
         }
         QFile source_file(source_file_string);
         QFile target_file(target_file_string);
-        QSqlDatabase segs_db(QSqlDatabase::addDatabase("QSQLITE"));
+        QSqlDatabase segs_db = QSqlDatabase::addDatabase("QSQLITE");
         QSqlQuery query(segs_db);
         if(target_file.exists())
         {
@@ -128,6 +130,42 @@ void createDatabases()
         }
         segs_db.close();
         qInfo() << "COMPLETED creating:" << target_file_string;
+    }
+}
+
+void addAdminAccount()
+{
+    QDir db_dir(QDir::currentPath());
+    const QString &target_file_string(db_dir.currentPath() + "/segs");
+    QFile target_file(target_file_string);
+
+    QSqlDatabase segs_db = QSqlDatabase::addDatabase("QSQLITE");
+    segs_db.setDatabaseName(target_file_string);
+    segs_db.open();
+    QSqlQuery query(segs_db);
+    if(!query.prepare("INSERT INTO accounts (username,passw,access_level,salt) VALUES (?,?,?,?);"))
+    {
+        qDebug() << "SQL_ERROR:" << query.lastError();
+        return;
+    }
+
+    PasswordHasher hasher;
+    const char * username = "segsadmin";
+    const char * password = "segs123";
+    uint16_t access_level = 9;
+    QByteArray salt = hasher.generateSalt();
+    QByteArray password_array = hasher.hashPassword(password, salt);
+    query.bindValue(0, username);
+    query.bindValue(1, password_array);
+    query.bindValue(2, access_level);
+    query.bindValue(3, salt);
+
+    if(!target_file.exists())
+        qFatal("Target file could not be found. Verify its existence and try again.");
+    if(!query.exec())
+    {
+        qDebug() << "SQL_ERROR:" << query.lastError(); // Why the query failed
+        return;
     }
 }
 
@@ -190,7 +228,7 @@ int main(int argc, char **argv)
         qWarning() << "Forced flag used '-f'. Existing databases may be overwritten.";
 
     createDatabases();
-
+    addAdminAccount();
     Pause();
     return 0;
 
