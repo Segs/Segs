@@ -94,7 +94,7 @@ void createDatabases()
         }
         QFile source_file(source_file_string);
         QFile target_file(target_file_string);
-        QSqlDatabase segs_db = QSqlDatabase::addDatabase("QSQLITE");
+        QSqlDatabase segs_db(QSqlDatabase::addDatabase("QSQLITE"));
         QSqlQuery query(segs_db);
         if(target_file.exists())
         {
@@ -133,13 +133,13 @@ void createDatabases()
     }
 }
 
-void addAdminAccount()
+void addAccount(const char * username, const char * password, uint16_t access_level)
 {
     QDir db_dir(QDir::currentPath());
     const QString &target_file_string(db_dir.currentPath() + "/segs");
     QFile target_file(target_file_string);
 
-    QSqlDatabase segs_db = QSqlDatabase::addDatabase("QSQLITE");
+    QSqlDatabase segs_db(QSqlDatabase::addDatabase("QSQLITE"));
     segs_db.setDatabaseName(target_file_string);
     segs_db.open();
     QSqlQuery query(segs_db);
@@ -150,9 +150,6 @@ void addAdminAccount()
     }
 
     PasswordHasher hasher;
-    const char * username = "segsadmin";
-    const char * password = "segs123";
-    uint16_t access_level = 9;
     QByteArray salt = hasher.generateSalt();
     QByteArray password_array = hasher.hashPassword(password, salt);
     query.bindValue(0, username);
@@ -228,7 +225,7 @@ int main(int argc, char **argv)
         qWarning() << "Forced flag used '-f'. Existing databases may be overwritten.";
 
     createDatabases();
-    addAdminAccount();
+    addAccount("segsadmin", "segs123", 9);
     Pause();
     return 0;
 
