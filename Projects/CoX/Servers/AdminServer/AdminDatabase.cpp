@@ -101,7 +101,7 @@ bool AdminDatabase::ValidPassword(const char *username, const char *password)
     QByteArray passb = m_prepared_select_account_passw.value("passw").toByteArray();
     QByteArray salt = m_prepared_select_account_passw.value("salt").toByteArray();
     QByteArray hashed_password = hasher.hashPassword(password, salt);
-    if (memcmp(passb.data(),hashed_password.data(),passb.size()) == 0)
+    if (memcmp(passb,hashed_password,passb.size()) == 0)
         res = true;
     return res;
 }
