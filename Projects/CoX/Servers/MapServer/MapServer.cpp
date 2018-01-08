@@ -225,3 +225,12 @@ bool MapServer::startup()
     return true;
 #endif
 }
+
+/* TODO: get db_id by player name where player is on current map
+uint32_t MapServer::getPlayerDbId(const char *name) {
+    auto ent = find(m_live_entlist,name);
+    if(ent)
+        return ent->db_id;
+    return m_game_server->getPlayerDbId(name);
+}
+*/

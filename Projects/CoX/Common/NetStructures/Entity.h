@@ -265,6 +265,8 @@ extern void abortLogout(Entity *e);
 uint32_t    getIdx(Entity &e) const { return e.m_idx; }
 Entity      getEntityByIdx(int32_t idx);
 Entity      getEntityByName(QString &name);
+uint32_t    getDbId() const { return m_db_id; }
+void        setDbId(uint8_t val) { m_db_id = val; }
 
 void    toggleFly(Entity &e) { e.m_is_flying = !e.m_is_flying; }
 void    toggleStunned(Entity &e);

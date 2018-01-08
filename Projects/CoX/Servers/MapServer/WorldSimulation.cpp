@@ -76,4 +76,7 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
         if(e->m_time_till_logout<0)
             e->m_time_till_logout=0;
     }
+    
+    CharacterDatabase *char_db = AdminServer::instance()->character_db();
+    char_db.update(e->m_char);
 }

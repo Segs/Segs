@@ -635,23 +635,20 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         }
         case ChatMessage::CHAT_PRIVATE:
         {
-            uint32_t tgt_idx;
+            int first_comma = msg_text.indexOf(',');
+            QStringRef target_name(msg_text.midRef(first_space+1,msg_text.indexOf(',')-1)));
+            msg_content = msg_text.midRef(first_comma+1,msg_text.lastIndexOf("\n"));
 
-            // TODO: Get tgt_idx from target name or $target replacement text.
-            for(MapClient *cl : m_clients)
-            {
-                if(sender->char_entity()->m_targeted_entity_idx)
-                    tgt_idx = sender->char_entity()->m_targeted_entity_idx;
-
-                if(tgt_idx == getIdx(cl->char_entity())
-                    recipients.push_back(cl);
-            }
-            QString prepared_chat_message = QString("[Tell] %1: %2").arg(sender_char_name,msg_content.toString());
-            for(MapClient * cl : recipients)
-            {
-                info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
-                cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-            }
+            Entity *tgt = getEntityByName(target_name);
+            
+            prepared_chat_message = QString("[Tell] -->%1: %2").arg(target_name,msg_content.toString());
+            info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
+            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+            
+            prepared_chat_message = QString("[Tell] %1: %2").arg(sender_char_name,msg_content.toString());
+            info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
+            tgt->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+            
             break;
         }
         case ChatMessage::CHAT_TEAM:

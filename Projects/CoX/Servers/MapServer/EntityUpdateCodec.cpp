@@ -26,7 +26,7 @@ void storeCreation(const Entity &src, BitStream &bs)
         bs.StoreBits(1,src.m_create_player);
         if(src.m_create_player)
             bs.StorePackedBits(1,src.m_access_level);
-        bs.StorePackedBits(20,src.m_idx);//TODO: should be bs.StorePackedBits(20,m_db_id);
+        bs.StorePackedBits(20,src.m_db_id); // formerly src.m_idx
     }
     else
     {
