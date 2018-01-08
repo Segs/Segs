@@ -11,6 +11,7 @@
 #include "AccountInfo.h"
 #include "AdminDatabase.h"
 #include "Client.h"
+#include "PasswordHasher/PasswordHasher.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QDateTime>
@@ -32,9 +33,13 @@ int AdminDatabase::GetAccounts() const
 
 bool AdminDatabase::AddAccount(const char *username, const char *password,uint16_t access_level) // Add account and password to the database server
 {
+    PasswordHasher hasher;
+    QByteArray salt = hasher.generateSalt();
+    QByteArray hashed_password = hasher.hashPassword(password, salt);
     m_add_account_query.bindValue(0,username);
-    m_add_account_query.bindValue(1,QByteArray::fromRawData(password,14));
+    m_add_account_query.bindValue(1,hashed_password);
     m_add_account_query.bindValue(2,access_level);
+    m_add_account_query.bindValue(3,salt);
     if(false==m_add_account_query.exec()) // Send our query to the PostgreSQL db server to process
     {
         qDebug() << "SQL_ERROR:"<<m_add_account_query.lastError(); // Why the query failed
@@ -92,9 +97,11 @@ bool AdminDatabase::ValidPassword(const char *username, const char *password)
     }
     if(!m_prepared_select_account_passw.next())
         return false;
+    PasswordHasher hasher;
     QByteArray passb = m_prepared_select_account_passw.value("passw").toByteArray();
-    assert(passb.size()<=16);
-    if (memcmp(passb.data(),password,passb.size()) == 0)
+    QByteArray salt = m_prepared_select_account_passw.value("salt").toByteArray();
+    QByteArray hashed_password = hasher.hashPassword(password, salt);
+    if (memcmp(passb.data(),hashed_password.data(),passb.size()) == 0)
         res = true;
     return res;
 }
@@ -153,7 +160,7 @@ void AdminDatabase::on_connected(QSqlDatabase *db)
     m_prepared_select_account_by_id = QSqlQuery(*db);
     m_prepared_select_account_passw = QSqlQuery(*db);
 
-    if(!m_add_account_query.prepare("INSERT INTO accounts (username,passw,access_level) VALUES (?,?,?);")) {
+    if(!m_add_account_query.prepare("INSERT INTO accounts (username,passw,access_level,salt) VALUES (?,?,?,?);")) {
         qDebug() << "SQL_ERROR:"<<m_add_account_query.lastError();
         return;
     }
@@ -165,7 +172,7 @@ void AdminDatabase::on_connected(QSqlDatabase *db)
         qDebug() << "SQL_ERROR:"<<m_prepared_select_account_by_id.lastError();
         return;
     }
-    if(!m_prepared_select_account_passw.prepare("SELECT passw FROM accounts WHERE username = ?;")) {
+    if(!m_prepared_select_account_passw.prepare("SELECT passw,salt FROM accounts WHERE username = ?;")) {
         qDebug() << "SQL_ERROR:"<<m_prepared_select_account_passw.lastError();
         return;
     }

@@ -53,6 +53,7 @@ void DummyClass::onServerVersion(AuthorizationProtocolVersion * ev)
     strncpy(login_ptr->password, my_pass, 16);
     m_our_link->putq(login_ptr);
 }
+
 void DummyClass::onLoginResponse(LoginResponse * ev)
 {
     AuthLink * lnk = static_cast<AuthLink *>(ev->src());
