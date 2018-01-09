@@ -22,7 +22,7 @@ public:
     void        start();
 protected:
         void    dispatch(SEGSEvent *ev);
-    SEGSEvent * dispatch_sync( SEGSEvent *ev );
+    SEGSEvent * dispatchSync( SEGSEvent *ev );
 
     //////////////////////////////////////////////////////////////////////////
     // Link events

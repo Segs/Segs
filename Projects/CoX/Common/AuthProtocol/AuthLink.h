@@ -19,6 +19,12 @@
 class SEGSEvent;
 class AuthClient;
 
+enum class AuthLinkType
+{
+    Server = 0,
+    Client = 1
+};
+
 // AuthLinks are created when connection is accepted.
 // They serve as one of the primary event sources in the system, the other being Timers
 // Whenever new bytes are received, the AuthLink tries to convert them into proper higher level Events,
@@ -38,13 +44,15 @@ class AuthLink final : public EventProcessor
         CLIENT_AWAITING_DISCONNECT,
         DISCONNECTED
     };
+
 public:
     typedef ACE_SOCK_Stream stream_type;
     typedef ACE_INET_Addr addr_type;
 
+
 static  EventProcessor *g_target;               //! All links post their messages to the same target
 
-                        AuthLink();
+                        AuthLink(AuthLinkType link_type = AuthLinkType::Server);
                         ~AuthLink(void);
 
         int             open(void * = 0) override;
@@ -57,6 +65,7 @@ static  EventProcessor *g_target;               //! All links post their message
         AuthClient *    client() {return m_client;}
         void            client(AuthClient *c) {m_client=c;}
         void            init_crypto(int vers,uint32_t seed);
+        ACE_HANDLE      get_handle (void) const override {return peer_.get_handle();}
 protected:
         AuthClient *    m_client;
         AuthPacketCodec m_codec;
@@ -68,12 +77,14 @@ protected:
         addr_type       m_peer_addr;
         eState          m_state;
         ACE_Thread_Mutex *m_buffer_mutex;
+        AuthLinkType    m_direction;
+        SEGSEvent *     dispatchSync( SEGSEvent *ev ) override;
 
-        SEGSEvent *     dispatch_sync( SEGSEvent *ev ) override;
-        ACE_HANDLE      get_handle (void) const override {return peer_.get_handle();}
         bool            send_buffer();
         void            encode_buffer(const AuthLinkEvent *ev,size_t start);
         void            set_protocol_version(int vers);
-        eAuthPacketType OpcodeToType( uint8_t opcode,bool direction = false ) const;
+        eAuthPacketType OpcodeToType(uint8_t opcode) const;
         SEGSEvent *     bytes_to_event();
 };
+
+

@@ -277,16 +277,17 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     int u5 = ent->u5; // sets g_client_pos_id_rel default = 0
     int u6 = ent->u6; // // sets the lowest bit in CscCommon::flags default = 0
 
-    SurfaceParams struct_csc[2];
-    memset(&struct_csc,0,2*sizeof(SurfaceParams));
-    struct_csc[0].traction  = 1.5f;
-    struct_csc[0].friction  = 1.5f;
-    struct_csc[0].bounce    = 1.5f;
-    struct_csc[1].max_speed = struct_csc[0].max_speed = 1.5f;
-    struct_csc[1].gravitational_constant = struct_csc[0].gravitational_constant = 3.0f;
-
     bool update_part_1  = u1;       // default: true;
     bool update_part_2  = u2;       // default: false;
+
+    SurfaceParams surface_params[2];
+    memset(&surface_params,0,2*sizeof(SurfaceParams));
+    surface_params[0].traction = 1.5f;
+    surface_params[0].friction = 1.5f;
+    surface_params[0].bounce = 1.5f;
+    surface_params[1].max_speed = surface_params[0].max_speed = 1.5f;
+    surface_params[1].gravitational_constant = surface_params[0].gravitational_constant = 3.0f;
+
     bs.StoreBits(1,update_part_1);
     if(update_part_1)
     {
@@ -297,7 +298,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         storeVector(bs,spd);
 
         bs.StoreFloat(m_backup_spd);         // Backup Speed default = 1.0f
-        bs.StoreBitArray((uint8_t *)&struct_csc,2*sizeof(SurfaceParams)*8);
+        bs.StoreBitArray((uint8_t *)&surface_params,2*sizeof(SurfaceParams)*8);
 
         bs.StoreFloat(m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
         bs.StoreBits(1,m_is_flying);         // is_flying flag

@@ -64,7 +64,7 @@ public:
     MapInstance(const QString &name);
     virtual ~MapInstance();
     void       dispatch(SEGSEvent *ev);
-    SEGSEvent *dispatch_sync(SEGSEvent *ev);
+    SEGSEvent *dispatchSync(SEGSEvent *ev);
 
     void   enqueue_client(MapClient *clnt);
     void   start();
@@ -112,4 +112,7 @@ protected:
     void on_activate_inspiration(class ActivateInspiration *ev);
     void on_powers_dockmode(class PowersDockMode *ev);
     void on_switch_tray(class SwitchTray *ev);
+
+private:
+    void on_emote_command(QString lowerContents, Entity *ent, MapClient *src);
 };

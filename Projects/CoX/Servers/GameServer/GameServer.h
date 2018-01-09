@@ -60,7 +60,7 @@ public:
         CharacterDatabase *     getDb();
         int                     createLinkedAccount(uint64_t auth_account_id,const std::string &username); // Part of exposed db interface.
         EventProcessor *        event_target() override;
-        int                     getMaxAccountSlots() const override;
+        int                     getMaxCharacterSlots() const override;
         GameServerData &        runtimeData();
 protected:
         uint32_t                GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver

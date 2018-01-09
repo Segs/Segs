@@ -3,7 +3,8 @@
     username character varying(32),
     access_level smallint,
     creation_date timestamp(6) without time zone DEFAULT now() NOT NULL,
-    passw bytea
+    passw bytea,
+    salt bytea
 );
 
 ALTER TABLE public.accounts OWNER TO segsadmin;

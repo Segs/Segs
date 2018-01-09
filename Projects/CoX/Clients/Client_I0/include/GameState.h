@@ -1,18 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-struct Vector3
-{
-    float x, y, z;
-};
-struct Vector4
-{
-    float x, y, z, w;
-};
-struct Matrix4x4
-{
-    Vector4 a, b, c, d;
-};
+#include "utils/helpers.h"
 #pragma pack(push, 1)
 struct EntRef
 {
@@ -99,7 +88,7 @@ struct ViewState
     int       disableVBOs_particles;
     Vector3   fogcolor;
     int       fogdepth;
-    int       fogdist;
+    float     fogdist;
     float     fogdist2;
     float     near_far_Z;
     float     zFar;
@@ -123,7 +112,7 @@ struct ViewState
     int       restoreShadow;
     float     unkn_524;
     int       unkn_528;
-    float     unkn_52C;
+    float     client_loop_timer;
     int       tstart_ticks;
     int       unkn_534;
     int       unkn_538;

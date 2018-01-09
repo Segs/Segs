@@ -77,6 +77,11 @@ void Entity::addInterp(const PosUpdate & p) {
     interpResults.emplace_back(p);
 }
 
+void Entity::toggleFly(Entity *e)
+{
+    e->m_is_flying = !e->m_is_flying;
+}
+
 Entity::Entity()
 {
     m_access_level = 9; // enables access to all deve

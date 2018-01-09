@@ -1,11 +1,13 @@
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthEventFactory.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/AuthLink.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthPacketCodec.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/ServerListResponse.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthEvents.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthEventFactory.h
+${CMAKE_CURRENT_SOURCE_DIR}/AuthLink.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthOpcodes.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthPacketCodec.h
 ${CMAKE_CURRENT_SOURCE_DIR}/Events/AuthorizationProtocolVersion.h

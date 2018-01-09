@@ -1,6 +1,6 @@
 #include "AuthHandler.h"
 
-#include "AuthLink.h"
+#include "AuthProtocol/AuthLink.h"
 #include "AuthProtocol/AuthEvents.h"
 #include "AuthClient.h"
 #include "AdminServer/AccountInfo.h"
@@ -41,7 +41,7 @@ void AuthHandler::dispatch( SEGSEvent *ev )
             assert(!"Unknown event encountered in dispatch.");
     }
 }
-SEGSEvent *AuthHandler::dispatch_sync( SEGSEvent * )
+SEGSEvent *AuthHandler::dispatchSync( SEGSEvent * )
 {
     assert(!"No sync events known");
     return nullptr;

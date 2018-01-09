@@ -31,4 +31,16 @@ public:
                             buf.uGet(m_seed);
                             buf.uGet(m_proto_vers);
                         }
+        uint32_t        getSeed() const
+                        {
+                            return m_seed;
+                        }
+        uint32_t        getProtoVers() const
+                        {
+                            return m_proto_vers;
+                        }
 };
+
+
+
+
