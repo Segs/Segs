@@ -421,6 +421,11 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     bool client_believes_ent_exists=belief.m_entity!=nullptr;
     bool ent_exists = src.m_destroyed==false;
     bool update_existence=client_believes_ent_exists!=ent_exists;
+    bool unconditional_titles = true;
+
+    if(src.m_idx && src.m_char.getIndex()) // if ent and character
+        unconditional_titles = false;
+
     //////////////////////////////////////////////////////////////////////////
     bs.StoreBits(1,update_existence);
     if(update_existence)
@@ -459,7 +464,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
-        src.m_char.sendTitles(bs);
+        src.m_char.sendTitles(bs,unconditional_titles);
     }
     if(src.m_pchar_things)
     {

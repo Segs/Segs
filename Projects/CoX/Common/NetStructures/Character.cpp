@@ -424,17 +424,28 @@ void Character::sendDescription(BitStream &bs) const
     bs.StoreString(m_battle_cry);
 
 }
-void Character::sendTitles(BitStream &bs) const
+void Character::sendTitles(BitStream &bs, bool &unconditional) const
 {
     bs.StoreBits(1, m_has_titles); // Does entity have titles?
     if(!m_has_titles)
         return;
 
-    bs.StoreString(getName());
-    bs.StoreBits(1, m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
-    storeStringConditional(bs, m_titles[0]); // Title 1 - generic title (first)
-    storeStringConditional(bs, m_titles[1]); // Title 2 - origin title (second)
-    storeStringConditional(bs, m_titles[2]); // Title 3 - yellow title (special)
+    if(!unconditional)
+    {
+        bs.StoreString(getName());
+        bs.StoreBits(1, m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
+        storeStringConditional(bs, m_titles[0]); // Title 1 - generic title (first)
+        storeStringConditional(bs, m_titles[1]); // Title 2 - origin title (second)
+        storeStringConditional(bs, m_titles[2]); // Title 3 - yellow title (special)
+    }
+    else
+    {
+        bs.StoreString(getName());
+        bs.StoreBits(1, m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
+        bs.StoreString(m_titles[0]);             // Title 1 - generic title (first)
+        bs.StoreString(m_titles[1]);             // Title 2 - origin title (second)
+        bs.StoreString(m_titles[2]);             // Title 3 - yellow title (special)
+    }
 }
 void Character::sendKeybinds(BitStream &bs) const
 {

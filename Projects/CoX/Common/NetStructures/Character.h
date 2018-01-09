@@ -161,7 +161,7 @@ const   QString &       getName() const { return m_name; }
         void            sendDockMode(BitStream &bs) const;
         void            sendChatSettings(BitStream &bs) const;
         void            sendDescription(BitStream &bs) const;
-        void            sendTitles(BitStream &bs) const;
+        void            sendTitles(BitStream &bs, bool &unconditional) const;
         void            sendKeybinds(BitStream &bs) const;
         void            sendFriendList(BitStream &bs) const;
         void            sendOptions( BitStream &bs ) const;

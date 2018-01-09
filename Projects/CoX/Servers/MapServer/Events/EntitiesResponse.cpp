@@ -96,6 +96,9 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     src.m_char.sendFullStats(bs); //Entity::receiveFullStats(&FullStatsTokens, pak, FIXEDOFFSET_pchar, pkt_id_fullAttrDef, 1);
     PUTDEBUG("PlayerEntity::serialize_full before sendBuffs");
     sendBuffs(src,bs); //FIXEDOFFSET_pchar->character_ReceiveBuffs(pak,0);
+
+    bool unconditional = true;
+
     PUTDEBUG("PlayerEntity::serialize_full before sidekick");
     bool has_sidekick=false;
     bs.StoreBits(1,has_sidekick);
@@ -121,7 +124,7 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     player_char.sendTeamBuffMode(bs);
     player_char.sendDockMode(bs);
     player_char.sendChatSettings(bs);
-    player_char.sendTitles(bs);
+    player_char.sendTitles(bs,unconditional);    // unconditional must be true
     player_char.sendDescription(bs);
     uint8_t auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     PUTDEBUG("before auth data");
