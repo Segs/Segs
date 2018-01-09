@@ -42,6 +42,7 @@ IF(BUILD_SEPARATE)
         ace_IMP
         ${PostgreSQL_LIBRARIES}
         ${CMAKE_DL_LIBS}
+        password_hasher
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib adminserver_lib)
     ADD_DEPENDENCIES(authserver ACE_BUILD)
