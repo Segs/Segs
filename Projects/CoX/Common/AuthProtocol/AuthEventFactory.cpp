@@ -23,9 +23,12 @@ AuthLinkEvent *AuthEventFactory::EventForType(eAuthPacketType type)
             return new ServerListRequest();
         case PKT_SELECT_SERVER_RESPONSE:
             return new ServerSelectResponse();
+        case CMSG_RECONNECT_ATTEMPT:
+            return new ReconnectAttempt();
         case MSG_AUTH_UNKNOWN:
             return nullptr;
     }
+    assert(!"unimplemented auth packet type");
     return nullptr;
 }
 void AuthEventFactory::Destroy(AuthLinkEvent *what)

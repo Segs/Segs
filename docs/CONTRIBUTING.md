@@ -9,6 +9,7 @@ The following is a set of guidelines for contributing to SEGS. These are mostly 
 [Code of Conduct](#code-of-conduct)
 
 [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
+  * [Chat with us on Discord](#chat-with-us-on-discord)
   * [Chat with us on IRC](#chat-with-us-on-irc)
 
 [What should I know before I get started?](#what-should-i-know-before-i-get-started)
@@ -40,9 +41,16 @@ We have an official message board and a FAQ where the community chimes in with h
 * [SEGS Official Forums](https://segs.nemerle.eu/forumz/index.php)
 * [The FAQ Thread](https://segs.nemerle.eu/forumz/viewtopic.php?f=8&t=8244)
 
+### Chat with us on Discord
+
+Chat with us on Discord! We're currently hosting a `#segs` channel on Splat Chat. You can join by clicking this link:
+ 
+ [**Click here to join SEGS Discord**](https://discord.gg/DKaEyhd)
+
+
 ### Chat with us on IRC
 
-If chat is more your speed, you can join us on IRC:
+Or if IRC chat is more your speed, you can join us on IRC:
 
   **Server:** irc.nemerle.eu  
   **Port:** 6667  
@@ -212,7 +220,24 @@ and reserve enough tabs for the longest return type. i.e:
     };
 ```
 
-5. Use descriptive function/member names ( autocompletion is your friend )
+5. Use descriptive function/member names (autocompletion is your friend). Also, consider naming your variable with the following formats for consistency and readability:
+```cpp
+    #DEFINE     DEFINE_VAR                      // for DEFINE variables
+    auto        m_member_var;                   // for member variables
+    auto        s_file_scope_var;               // for file scope variables
+    auto        g_global_var;                   // for global variables.
+    auto        throw_away;                     // for single-use limited scope, or throwaway varables.
+    QString     m_underscore_separated_words;   // underscore separate words
+    int         s_dont_identify_type_in_name;   // don't identify the variable type in the name. Type may change!
+    bool        g_abbrev_are_ok_if_obvious;     // abbreviations are ok, if they are obvious.
+    
+    // real examples from source:
+    QString     m_character_description;
+    bool        m_is_flying;
+    uint32_t    m_experience_points;
+    glm::vec3   m_pos;                          // with members m_pos.x, m_pos.y, m_pos.z;
+    float       yaw;
+```
 
 6. Doxygen Comments - IMHO The place for doxygen comments is in the source file.
 Headers should be clean of comments, as to allow for quick class interface scanning
@@ -226,7 +251,7 @@ Headers should be clean of comments, as to allow for quick class interface scann
 
 ### Issue and Pull Request Labels
 
-This section lists the labels we use to help us track and manage issues and pull requests. Most labels are used across all Atom repositories, but some are specific to `atom/atom`.
+This section lists the labels we use to help us track and manage issues and pull requests. Open an issue to suggest new labels.
 
 [GitHub search](https://help.github.com/articles/searching-issues/) makes it easy to use labels for finding groups of issues or pull requests you're interested in. For example, you might be interested in [open issues which are labeled as bugs, but still need to be reliably reproduced](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+user%3ASegs+label%3Abug+label%3Aneeds-reproduction) or perhaps [open pull requests which haven't been reviewed yet](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+repo%3ASegs%2Fatom+comments%3A0). To help you find issues and pull requests, each label is listed with search links for finding open items with that label. We  encourage you to read about [other search filters](https://help.github.com/articles/searching-issues/) which will help you write more focused queries.
 
@@ -272,5 +297,6 @@ Please open an issue on `Segs/Segs` if you have suggestions for new labels.
 [search-label-requires-changes]: https://github.com/Segs/Segs/pulls?q=is%3Aopen+is%3Apr+label%3Arequires-changes
 [search-label-needs-testing]: https://github.com/Segs/Segs/pulls?q=is%3Aopen+is%3Apr+label%3Aneeds-testing
 
+This documentation was built off of the amazing work at https://github.com/atom/atom/blob/master/CONTRIBUTING.md
 
 ## Thank you and happy coding!

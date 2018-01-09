@@ -109,12 +109,12 @@ bool loadFrom(BinStore *s,Parse_Origin *target) {
     return ok;
 }
 }
-bool loadFrom(BinStore *s,LevelExpAndDebt * target)
+bool loadFrom(BinStore *s, LevelExpAndDebt & target)
 {
     s->prepare();
     bool ok = true;
-    ok &= s->read(target->m_ExperienceRequired);
-    ok &= s->read(target->m_DefeatPenalty);
+    ok &= s->read(target.m_ExperienceRequired);
+    ok &= s->read(target.m_DefeatPenalty);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     return ok;

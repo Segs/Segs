@@ -1,12 +1,10 @@
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthClient.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/AuthLink.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthHandler.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthServer.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthClient.h
-${CMAKE_CURRENT_SOURCE_DIR}/AuthLink.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthHandler.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthServer.h
 )
@@ -44,6 +42,7 @@ IF(BUILD_SEPARATE)
         ace_IMP
         ${PostgreSQL_LIBRARIES}
         ${CMAKE_DL_LIBS}
+        password_hasher
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib adminserver_lib)
     ADD_DEPENDENCIES(authserver ACE_BUILD)

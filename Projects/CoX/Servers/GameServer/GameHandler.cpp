@@ -73,7 +73,7 @@ void GameHandler::dispatch( SEGSEvent *ev )
         assert(!"Unknown event encountered in dispatch.");
     }
 }
-SEGSEvent * GameHandler::dispatch_sync( SEGSEvent *ev )
+SEGSEvent * GameHandler::dispatchSync( SEGSEvent *ev )
 {
     switch(ev->type())
     {

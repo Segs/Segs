@@ -17,7 +17,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-SET(CMAKE_MODULE_PATH ../../../../CMakeScripts;${CMAKE_MODULE_PATH})
+SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../../../../CMakeScripts;${CMAKE_MODULE_PATH})
+MESSAGE(${CMAKE_SOURCE_DIR}/../../../../CMakeScripts)
 include(3rdparty_support)
 set(ThirdParty_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/3rd_party/built)
 
@@ -34,10 +35,27 @@ include_directories(
 )
 set(DLL_SOURCES
     include/GameState.h
+	renderer/Model.h
     renderer/RendererUtils.cpp
     renderer/RendererUtils.h
+    renderer/RenderShadow.cpp
+    renderer/RenderShadow.h
+    renderer/RendererState.cpp
+    renderer/RendererState.h
+    renderer/RenderModel.cpp
+    renderer/RenderModel.h
+    renderer/RenderBonedModel.cpp
+    renderer/RenderBonedModel.h
+    renderer/RenderTricks.cpp
+    renderer/RenderTricks.h
+    renderer/Texture.h
+    renderer/Texture.cpp
     graphics/gfx.cpp
     graphics/gfx.h
+    entity/entityDebug.cpp
+    entity/entityDebug.h
+    utils/helpers.cpp
+    utils/helpers.h
 )
 set(SOURCES
     ${DLL_SOURCES}

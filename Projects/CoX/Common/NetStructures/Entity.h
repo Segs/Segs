@@ -182,6 +182,7 @@ public:
         bool                m_contact           = false;
         int                 m_seq_upd_num1      = 0;
         int                 m_seq_upd_num2      = 0;
+        bool                m_is_flying         = false;
         PosUpdate           m_pos_updates[64];
         size_t              m_update_idx        = 0;
         std::vector<PosUpdate> interpResults;
@@ -228,6 +229,7 @@ public:
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
         void                addInterp(const PosUpdate &p);
+        void                toggleFly(Entity *e);
 
         int32_t             getIdx() const {return m_idx;}
 static  void                sendAllyID(BitStream &bs);

@@ -105,6 +105,8 @@ void MapViewerApp::CreateConsoleAndDebugHud()
     Console* console = engine_->CreateConsole();
     console->SetDefaultStyle(xmlFile);
     console->GetBackground()->SetOpacity(0.8f);
+    console->SetNumBufferedRows(20);
+    console->SetNumHistoryRows(0);
 
     // Create debug HUD.
     DebugHud* debugHud = engine_->CreateDebugHud();
@@ -184,6 +186,8 @@ void MapViewerApp::onNodeSelected(CoHNode * n)
 {
     m_current_selected_node = n;
 }
+#define MAX_GRAPH_DEPTH 80
+int created_node_count = 0;
 void MapViewerApp::onDisplayNode(CoHNode *n,bool rootnode)
 {
     if(nullptr==n)
@@ -197,7 +201,7 @@ void MapViewerApp::onDisplayNode(CoHNode *n,bool rootnode)
     Node *boxNode;
     if (iter == m_converted_nodes.end())
     {
-        boxNode = convertedNodeToLutefisk(n, Matrix3x4::IDENTITY, m_context, 17,rootnode ? CONVERT_MINIMAL : CONVERT_EDITOR_MARKERS);
+        boxNode = convertedNodeToLutefisk(n, Matrix3x4::IDENTITY, m_context, MAX_GRAPH_DEPTH,rootnode ? CONVERT_MINIMAL : CONVERT_EDITOR_MARKERS);
         m_scene->AddChild(boxNode);
         m_converted_nodes[n] = boxNode;
     }
@@ -277,7 +281,7 @@ bool MapViewerApp::Raycast(float maxDistance)
     std::vector<RayQueryResult> results;
     RayOctreeQuery query(results, cameraRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY);
     m_scene->GetComponent<Octree>()->RaycastSingle(query);
-    if (results.size())
+    if (!results.empty())
     {
         RayQueryResult& result = results[0];
         hitPos = result.position_;
@@ -287,12 +291,12 @@ bool MapViewerApp::Raycast(float maxDistance)
         if(stored!=Variant::EMPTY)
         {
             m_selected_drawable = hitDrawable;
-            emit modelSelected((ConvertedModel *)stored.GetVoidPtr(),hitDrawable);
+            emit modelSelected((CoHNode *)stored_node.GetVoidPtr(),(CoHModel *)stored.GetVoidPtr(),hitDrawable);
         }
         return true;
     }
     m_selected_drawable = nullptr;
-    emit modelSelected(nullptr,nullptr);
+    emit modelSelected(nullptr,nullptr,nullptr);
     return false;
 }
 void MapViewerApp::HandleUpdate(float timeStep)
@@ -300,7 +304,7 @@ void MapViewerApp::HandleUpdate(float timeStep)
     Input* input = m_context->m_InputSystem.get();
     qApp->processEvents();
     UI* ui = m_context->m_UISystem.get();
-    ui->GetCursor()->SetVisible(!input->GetMouseButtonDown(MOUSEB_RIGHT));
+    ui->GetCursor()->SetVisible(!input->GetMouseButtonDown(MouseButton::RIGHT));
     input->SetMouseMode(ui->GetCursor()->IsVisible() ? MM_FREE : MM_RELATIVE);//,MM_RELATIVE
 
     // Movement speed as world units per second
@@ -318,7 +322,7 @@ void MapViewerApp::HandleUpdate(float timeStep)
         // Construct new orientation for the camera scene node from yaw and pitch. Roll is fixed to zero
         m_camera_node->SetRotation(Quaternion(pitch_, yaw_, 0.0f));
     }
-    bool shifted = input->GetKeyDown(KEY_SHIFT);
+    bool shifted = input->GetKeyDown(KEY_LEFT_SHIFT);
     if(shifted)
         timeStep *=10;
     // Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
@@ -340,11 +344,11 @@ void MapViewerApp::HandleUpdate(float timeStep)
         m_camera_node->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep * 2);
         cameraLocationUpdated = true;
     }
-    if (input->GetKeyDown(KEY_PAGEUP) || input->GetKeyDown(KEY_Q)) {
+    if (input->GetKeyDown(KEY_PAGE_UP) || input->GetKeyDown(KEY_Q)) {
         m_camera_node->Translate(Vector3::UP * MOVE_SPEED * timeStep * 5);
         cameraLocationUpdated = true;
     }
-    if (input->GetKeyDown(KEY_PAGEDOWN) || input->GetKeyDown(KEY_E)) {
+    if (input->GetKeyDown(KEY_PAGE_DOWN) || input->GetKeyDown(KEY_E)) {
         m_camera_node->Translate(Vector3::DOWN * MOVE_SPEED * timeStep * 5);
         cameraLocationUpdated = true;
     }
@@ -352,7 +356,7 @@ void MapViewerApp::HandleUpdate(float timeStep)
         Vector3 pos=m_camera_node->GetPosition();
         emit cameraLocationChanged(pos.x_,pos.y_,pos.z_);
     }
-    if (ui->GetCursor()->IsVisible() && input->GetMouseButtonPress(MOUSEB_LEFT))
+    if (ui->GetCursor()->IsVisible() && input->GetMouseButtonPress(MouseButton::LEFT))
         Raycast(8500);
 }
 void MapViewerApp::HandlePostRenderUpdate(float ts)

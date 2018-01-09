@@ -62,7 +62,7 @@ protected:
                     {
                         ACE_ASSERT(!"All events are dispatched from handle_* methods");
                     }
-        SEGSEvent * dispatch_sync( SEGSEvent *) override
+        SEGSEvent * dispatchSync( SEGSEvent *) override
                     {
                         ACE_ASSERT(!"No sync events known");
                         return 0;

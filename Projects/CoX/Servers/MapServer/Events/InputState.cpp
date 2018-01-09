@@ -279,7 +279,7 @@ void InputState::serializefrom(BitStream &bs)
         extended_input(bs);
 
     bool has_targeted_entity = bs.GetBits(1);
-    int tgt_idx=bs.GetPackedBits(14); // targeted entity server index
+    m_targeted_entity_idx = bs.GetPackedBits(14); // targeted entity server index
     int ctrl_idx=0;
 #ifdef DEBUG_INPUT
     fprintf(stderr,"T:[%d]",has_targeted_entity);

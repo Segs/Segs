@@ -1,18 +1,17 @@
-
 #include "AuthLink.h"
-#include "AuthHandler.h"
+
 #include "AuthProtocol/AuthOpcodes.h"
 #include "AuthProtocol/AuthEventFactory.h"
 
 EventProcessor *AuthLink::g_target=nullptr;
 
-AuthLink::AuthLink() :  m_client(nullptr),
+AuthLink::AuthLink(AuthLinkType link_type) :  m_client(nullptr),
     m_received_bytes_storage(0x1000,0,40),
     m_unsent_bytes_storage(0x200,0,40),
     m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK),
     m_protocol_version(-1),
-    m_state(INITIAL)
-
+    m_state(INITIAL),
+    m_direction(link_type)
 {
     m_notifier.event_handler(this); // notify 'this' object on WRITE events
     m_buffer_mutex = new ACE_Thread_Mutex;
@@ -34,27 +33,35 @@ void AuthLink::init_crypto(int vers,uint32_t seed)
   \arg opcode packet opcode byte
   \arg direction if this is false then the packet is from server to client, other way around otherwise
 */
-eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode,bool direction /*= false */ ) const
+eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode ) const
 {
-    switch(opcode)
+    // packets coming in from server to client
+    if(m_direction==AuthLinkType::Client)
     {
-    case 0:
-        if(direction)
-            return SMSG_AUTHVERSION;
-        else
-            return CMSG_AUTH_LOGIN;
-    case 2:
-        return CMSG_AUTH_SELECT_DBSERVER;
-    case 3:
-        return CMSG_DB_CONN_FAILURE;
-    case 4:
-        return CMSG_AUTH_LOGIN;
-    case 5:
-        return CMSG_AUTH_REQUEST_SERVER_LIST;
-    case 6:
-        return CMSG_AUTH_LOGIN;
-    default:
-        return MSG_AUTH_UNKNOWN;
+        switch(opcode)
+        {
+        case 0: return SMSG_AUTHVERSION;
+        case 1: return SMSG_AUTH_ALREADY_LOGGED_IN;
+        case 2: return SMSG_AUTH_INVALID_PASSWORD;
+        case 3: return PKT_AUTH_LOGIN_SUCCESS;
+        case 4: return SMSG_AUTH_SERVER_LIST;
+        case 5: return CMSG_DB_CONN_FAILURE;
+        case 6: return SMSG_AUTH_OK; // still a type of error ?
+        case 7: return PKT_SELECT_SERVER_RESPONSE;
+        case 9: return SMSG_AUTH_ERROR;
+        }
+
+    }
+    else
+    {
+        // packets incoming from client to server
+        switch(opcode)
+        {
+        case 0: return CMSG_AUTH_LOGIN;
+        case 2: return CMSG_AUTH_SELECT_DBSERVER;
+        case 3: return CMSG_RECONNECT_ATTEMPT;
+        case 5: return CMSG_AUTH_REQUEST_SERVER_LIST;
+        }
     }
     return MSG_AUTH_UNKNOWN;
 }
@@ -203,13 +210,14 @@ void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
     // calculate the number of stored bytes, and set it in packet_size
     *packet_size = (m_unsent_bytes_storage.GetReadableDataSize() - actual_packet_start) - 1; // -1 because opcode is not counted toward packet size
 
+    // additional encryption of login details
+    if(ev->type()==evLogin)
+        m_codec.DesCode(m_unsent_bytes_storage.read_ptr()+actual_packet_start+1,30); //only part of packet is encrypted with des
+
     // every packet, but the authorization protocol, is encrypted
     if(ev->type()!=evAuthProtocolVersion)
         m_codec.XorCodeBuf(m_unsent_bytes_storage.read_ptr()+actual_packet_start,m_unsent_bytes_storage.GetReadableDataSize()-actual_packet_start); // opcode gets encrypted
 
-    // additional encryption of login details
-    if(ev->type()==evLogin)
-        m_codec.DesCode(m_unsent_bytes_storage.read_ptr()+actual_packet_start+1,30); //only part of packet is encrypted with des
 }
 
 bool AuthLink::send_buffer()
@@ -279,7 +287,7 @@ void AuthLink::dispatch( SEGSEvent */*ev*/ )
 {
     assert(!"Should not be called");
 }
-SEGSEvent *AuthLink::dispatch_sync(SEGSEvent */*ev*/)
+SEGSEvent *AuthLink::dispatchSync(SEGSEvent */*ev*/)
 {
     assert(!"No sync events known");
     return nullptr;

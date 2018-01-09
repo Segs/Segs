@@ -11,6 +11,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QStringListModel>
 #include <QStandardItemModel>
+#include <Lutefisk3D/Scene/Node.h>
 #include <Lutefisk3D/Graphics/Material.h>
 #include <Lutefisk3D/Graphics/StaticModel.h>
 #include <Lutefisk3D/Resource/JSONFile.h>
@@ -56,57 +57,62 @@ void SideWindow::onCameraPositionChanged(float x, float y, float z)
                                .arg(y, 5, 'f', 2, QChar(' '))
                                .arg(z, 5, 'f', 2, QChar(' ')));
 }
-void SideWindow::onModelSelected(ConvertedModel *m, Urho3D::Drawable *d)
+void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
 {
-    if(m) 
-    {
-        ui->matDescriptionTxt->clear();
-        auto parts = m->name.split("__");
-        ui->txtModelName->setText(parts.front());
-        if(parts.size()>2)
-            qDebug() << "Too many double underscores in name:"<<m->name;
-        if(parts.size()==2)
-            ui->txtTrickName->setText(parts.back());
-        else
-            ui->txtTrickName->setText("none");
-        QString matDesc;
-        ConvertedGeoSet *geoset = m->geoset;
-        StaticModel *model = (StaticModel *)d;
-        matDesc += "<p>Geometries:<b>";
-        QSet<void *> dumpedmats;
-        for(int i=0,fin=model->GetNumGeometries(); i<fin; ++i)
-        {
-            matDesc += "<p>";
-            Material *material = model->GetMaterial(i);
-            if(dumpedmats.contains(material))
-                continue;
-            dumpedmats.insert(material);
-
-            XMLFile tgtf(d->GetContext());
-            auto root(tgtf.CreateRoot("material"));
-            material->Save(root);
-            matDesc += "Material:<b>"+ material->GetName()+"</b><br>";
-            QString jsonbuf=tgtf.ToString("&nbsp;&nbsp;");
-            jsonbuf=jsonbuf.trimmed();
-            jsonbuf.remove(0,21);
-            jsonbuf.replace("<","[");
-            jsonbuf.replace("/>","]");
-            matDesc += "<p>"+ jsonbuf.replace("\n","<br>")+"</b><br>";
-
-            matDesc += "</p>";
-        }
-        matDesc+="Textures in use<br>";
-        for(TextureBind tbind : m->texture_bind_info) {
-           matDesc += "Tex:<b>"+ geoset->tex_names[tbind.tex_idx]+"</b><br>";
-        }
-        ui->matDescriptionTxt->setHtml(matDesc);
-    }
-    else
+    if(!m) 
     {
         ui->txtModelName->setText("none");
         ui->txtTrickName->setText("none");
         ui->matDescriptionTxt->clear();
+        return;
     }
+
+    ui->matDescriptionTxt->clear();
+    auto parts = m->name.split("__");
+    ui->txtModelName->setText(parts.front());
+    if(parts.size()>2)
+        qDebug() << "Too many double underscores in name:"<<m->name;
+    if(parts.size()==2)
+        ui->txtTrickName->setText(parts.back());
+    else
+        ui->txtTrickName->setText("none");
+    QString          matDesc;
+    ConvertedGeoSet *geoset = m->geoset;
+    StaticModel *    model  = (StaticModel *)d;
+    matDesc += "<p>Geometries:<b>";
+    QSet<void *> dumpedmats;
+    for(int      i =0, fin =model->GetNumGeometries(); i<fin; ++i)
+    {
+        matDesc += "<p>";
+        Material *material = model->GetMaterial(i);
+        if(dumpedmats.contains(material))
+            continue;
+        dumpedmats.insert(material);
+
+        XMLFile tgtf(d->GetContext());
+        auto    root(tgtf.CreateRoot("material"));
+        material->Save(root);
+        matDesc += "Material:<b>"+ material->GetName()+"</b><br>";
+        QString jsonbuf =tgtf.ToString("&nbsp;&nbsp;");
+        jsonbuf         =jsonbuf.trimmed();
+        jsonbuf.remove(0,21);
+        jsonbuf.replace("<","[");
+        jsonbuf.replace("/>","]");
+        matDesc += "<p>"+ jsonbuf.replace("\n","<br>")+"</b><br>";
+
+        matDesc += "</p>";
+    }
+    matDesc+="Textures in use<br>";
+    for(TextureBind tbind : m->texture_bind_info) {
+        matDesc += "Tex:<b>"+ geoset->tex_names[tbind.tex_idx]+"</b><br>";
+    }
+    ui->matDescriptionTxt->setHtml(matDesc);
+    Urho3D::Node *     holder = d->GetNode();
+    Matrix3x4          tr     = holder->GetTransform();
+    Urho3D::Quaternion quat   = tr.Rotation();
+    ui->pitchEdt->setText(QString::number(quat.PitchAngle()));
+    ui->yawEdt->setText(QString::number(quat.YawAngle()));
+    ui->rollEdt->setText(QString::number(quat.RollAngle()));
 }
 static QStandardItem * fillModel(CoHNode *node)
 {
@@ -154,7 +160,8 @@ void SideWindow::onScenegraphLoaded(const CoHSceneGraph & sc)
 }
 void SideWindow::on_actionLoad_Scene_Graph_triggered()
 {
-    QString fl = QFileDialog::getOpenFileName(this,"Select a scenegraph .bin file to load",basepath+"/geobin","Scenegraphs (*.bin)");
+    QString fl = QFileDialog::getOpenFileName(this,"Select a scenegraph .bin file to load",basepath+"/geobin",
+        "All scenegraph formats(*.bin *.crl.*);;Scenegraphs (*.bin);;Cereal scenegraphs (*.crl.*)");
     emit scenegraphSelected(fl);
 }
 

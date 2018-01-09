@@ -2,26 +2,27 @@ SEGS - Super Entity Game Server
 ======
 SEGS is the Super Entity Game Server. It is a free, open source (under the terms of the BSD License), cross-platform, and object-oriented suite of protocols and services designed to interface with popular super hero themed MMORPG clients. SEGS is written in C++ and facilitates common MMORPG functionality such as account and character storage to a database, account and character retrieval from a database, secure client authentication, client movement in a virtual world, and client chat.
 
-For legal information, please see [License.txt](./docs/License.txt).
+For legal information, please see [LICENSE](./LICENSE).
 
 For a list of SEGS authors and contributors, please see [Authors.txt](./docs/Authors.txt).
 
 * Our [wiki](https://github.com/Segs/Segs/wiki)
 * The [Issue Queue](https://github.com/Segs/Segs/issues)
-* Our target [coding style](http://github.com/Segs/Segs/blob/master/docs/CodingStyle.txt.md "style")
+* Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide)
+* Join us on [Chat!](./docs/CONTRIBUTING.md#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 
 Basic instructions for compiling SEGS in Linux and Windows are below, however for more detailed visual instructions, visit https://segs.nemerle.eu/developers
 
 
 CONTENTS OF THIS FILE
 ------
-- Requirements and Notes
-- Install C++ Tool Chain
-- Compile SEGS
-- Setting up SEGS Server and Playing
-- Contribute to Development
-- More information
-- FAQs
+- [Requirements and Notes](#requirements-and-notes)
+- [Install C++ Tool Chain](#install-c++-tool-chain)
+- [Compile SEGS](#compile-segs)
+- [Setting up SEGS Server and Playing](#setting-up-segs-and-playing)
+- [Contribute to Development](#contribute-to-development)
+- [More Information](#more-information)
+- [FAQs](#faqs)
 
 
 REQUIREMENTS AND NOTES
@@ -130,11 +131,12 @@ CONTRIBUTE TO DEVELOPMENT
 
 **SEGS needs your help!** From editing README's like this one, to coding the MapServer, there are tasks that can be tackled by contributors of all skill level!
 
-Please read [CONTRIBUTE.md](./docs/CONTRIBUTE.md) and see the links below to begin:
+Please read [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and see the links below to begin:
 
 * Our GitHub: https://github.com/Segs/Segs
 * The Issue Queue: https://github.com/Segs/Segs/issues
-* Our target [coding style](http://github.com/Segs/Segs/blob/master/docs/CodingStyle.txt.md "style")
+* Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide))
+* Join us on [Chat!](./docs/CONTRIBUTING.md#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 
 
 MORE INFORMATION

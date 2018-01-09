@@ -21,5 +21,6 @@ enum eGPU
     f_GL_VertexShader          = 0x200,
 };
 
-extern void segs_renderUtil_GetGfxCardVend(SysInfo_2 *a1);
+extern void segs_renderUtil_GetGfxCardVend(SysInfo_2 *inf);
+extern void segs_wcw_statemgmt_enableColorMaterial();
 extern void patch_render_utils();

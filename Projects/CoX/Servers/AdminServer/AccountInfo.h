@@ -34,7 +34,7 @@ class AccountInfo
     std::vector<Character *>    m_characters;
     uint8_t                     m_max_slots;
 
-    void                        max_slots(uint8_t maxs) {m_max_slots=maxs;};
+    void                        max_slots(uint8_t maxs) {m_max_slots=maxs;}
     void                        game_server_id(uint64_t id){m_game_server_acc_id=id;}
     bool                        fill_characters_db();
     int8_t                      char_slot_index(Character *c);

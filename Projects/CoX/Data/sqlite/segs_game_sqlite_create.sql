@@ -7,13 +7,12 @@ CREATE TABLE `table_versions` (
     `last_update` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO table_versions VALUES(1,'table_versions',0,'2017-11-11 08:57:42');
-INSERT INTO table_versions VALUES(2,'accounts',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(3,'characters',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(4,'costume',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(5,'gui',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(6,'options',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(7,'progress',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(1,'db_version',0,'2018-01-06 16:27:01');
+INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
+INSERT INTO table_versions VALUES(3,'accounts',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(4,'characters',1,'2018-01-06 16:16:27');
+INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(6,'progress',0,'2017-11-11 08:57:43');
 
 CREATE TABLE `accounts` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,6 +51,8 @@ CREATE TABLE `characters` (
 	`badgetitle` VARCHAR(20),
 	`specialtitle` VARCHAR(20),
 	`supergroup_id` INTEGER DEFAULT 0,
+        `options` BLOB,
+        `gui` BLOB,
 	FOREIGN KEY(`account_id`) REFERENCES accounts ( account_id ) ON DELETE CASCADE
 );
 
@@ -63,34 +64,6 @@ CREATE TABLE `costume` (
 	`parts` blob,
 	FOREIGN KEY(`character_id`) REFERENCES characters ( id ) ON DELETE CASCADE,
 	UNIQUE (character_id, costume_index)
-);
-
-CREATE TABLE `options` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
-	`character_id` INTEGER NOT NULL,
-	`option` VARCHAR,
-	`value` INTEGER,
-	FOREIGN KEY(`character_id`) REFERENCES characters ( id ) ON DELETE CASCADE,
-	UNIQUE (character_id)
-);
-
-CREATE TABLE `gui` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
-	`character_id` INTEGER NOT NULL,
-	`window` INTEGER DEFAULT 0,
-	`x` INTEGER DEFAULT 0,
-	`y` INTEGER DEFAULT 0,
-	`sx` INTEGER DEFAULT 0,
-	`sy` INTEGER DEFAULT 0,
-	`scale` INTEGER DEFAULT 0,
-	`color1` INTEGER DEFAULT 0,
-	`color2` INTEGER DEFAULT 0,
-	`frozen` INTEGER DEFAULT 0,
-	`state` INTEGER DEFAULT 0,
-	`resizable` INTEGER DEFAULT 0,
-	`flags` INTEGER DEFAULT 0,
-	FOREIGN KEY(`character_id`) REFERENCES characters ( id ) ON DELETE CASCADE,
-	UNIQUE (character_id)
 );
 
 CREATE TABLE `progress` (
