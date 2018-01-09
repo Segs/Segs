@@ -106,15 +106,3 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_char.reset();
     e.might_have_rare = e.m_rare_bits = true;
 }
-
-void toggleStunned(Entity &e)
-{
-    e.m_is_stunned = !e.m_is_stunned;
-    // TODO: toggle stunned FX above head
-}
-
-void toggleJumppack(Entity &e)
-{
-    e.m_has_jumppack = !e.m_has_jumppack;
-    // TODO: toggle costume part for jetpack back item.
-}

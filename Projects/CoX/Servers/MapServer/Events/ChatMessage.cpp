@@ -4,6 +4,8 @@
 #include "Events/InputState.h"
 #include "Entity.h"
 #include "MapClient.h"
+#include "PlayerMethods.h"
+
 #include <cmath>
 
 

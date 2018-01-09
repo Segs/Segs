@@ -10,6 +10,7 @@
 #pragma once
 
 #include "Entity.h"
+#include "PlayerMethods.h"
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>

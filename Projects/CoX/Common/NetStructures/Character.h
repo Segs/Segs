@@ -216,19 +216,3 @@ protected:
 };
 
 void                serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
-uint32_t            getLevel(Character &src) { return src.m_level; }
-void                setLevel(Character &src, uint32_t val) { src.m_level = val; }
-uint64_t            getLastCostumeId(Character &src) { return src.m_last_costume_id; }
-void                setLastCostumeId(Character &src, uint64_t val) { src.m_last_costume_id = val; }
-const QString &     getOrigin(Character &src) { return src.m_origin_name; }
-const QString &     getClass(Character &src) { return src.m_class_name; }
-const QString &     getMapName(Character &src) { return src.m_mapName; }
-void                setMapName(Character &src, const QString &val) { src.m_mapName = val; }
-uint32_t            getXP(Character &src) { return src.m_experience_points; }
-void                setXP(Character &src, uint32_t val);
-const QString &     getTitles(Character &src) { return src.m_titles[3]; }
-void                setTitles(Character &src, bool prefix = false, QString generic = "", QString origin = "", QString special = "");
-void                toggleAFK(Character &src, const QString &msg = "");
-void                toggleLFG(Character &src) { src.m_lfg = !src.m_lfg; }
-uint32_t            getInf(Character &src) { return src.m_influence; }
-void                setInf(Character &src, uint32_t val) { src.m_influence = val; }

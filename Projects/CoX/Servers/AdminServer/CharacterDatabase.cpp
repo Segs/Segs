@@ -7,12 +7,12 @@
  */
 
 // segs includes
-
 #include "CharacterDatabase.h"
 #include "AccountInfo.h"
 #include "AdminServer.h"
 #include "Character.h"
 #include "Costume.h"
+#include "PlayerMethods.h"
 
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlDriver>
@@ -143,6 +143,7 @@ bool CharacterDatabase::fill( AccountInfo *c )
 #define STR_OR_VERY_EMPTY(c) ((c!=0) ? c:"")
 bool CharacterDatabase::fill( Character *c)
 {
+    Entity *e;
     assert(c&&c->getAccountId());
 
     m_prepared_char_select.bindValue(0,quint64(c->getAccountId()));
@@ -158,7 +159,7 @@ bool CharacterDatabase::fill( Character *c)
 //    else if (results.num_rows()>1)
 //        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query returned wrong number of results. %s failed.\n"), query.str().c_str()),false);
 
-    //setDbId(c,m_prepared_char_select.value("id").toUInt());
+    setDbId(*e,m_prepared_char_select.value("id").toUInt());
     setLevel(*c,(uint8_t)m_prepared_char_select.value("char_level").toUInt());
     c->setName(STR_OR_EMPTY(m_prepared_char_select.value("char_name").toString()));
     c->m_class_name = (STR_OR_EMPTY(m_prepared_char_select.value("archetype").toString()));
