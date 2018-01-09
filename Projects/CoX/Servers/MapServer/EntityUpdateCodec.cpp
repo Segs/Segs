@@ -143,8 +143,8 @@ void storeOrientation(const Entity &src,BitStream &bs)
     fprintf(stderr,"dir: %s \n", glm::to_string(src.inp_state.direction).c_str());
     fprintf(stderr,"camera_pyr: %s \n", glm::to_string(src.inp_state.camera_pyr).c_str());
     fprintf(stderr,"pyr_angles: farr(%f, %f, %f)\n", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
-    fprintf(stderr,"A ang11: %f \n", src.inp_state.m_A_ang11_probably);
-    fprintf(stderr,"B ang11: %f \n", src.inp_state.m_B_ang11_probably);
+    fprintf(stderr,"A ang11: %f \n", src.m_orientation_pyr[0]);
+    fprintf(stderr,"B ang11: %f \n", src.m_orientation_pyr[1]);
     fprintf(stderr,"vel_scale: %f \n", src.inp_state.input_vel_scale);
 #endif
     for(int i=0; i<3; i++)

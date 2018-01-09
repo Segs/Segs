@@ -60,7 +60,7 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     }
     if(update_needed)
     {
-        direction = fromCoHYpr(camera_pyr);
+        direction = fromCoHYpr(m_orientation_pyr);
     }
     return *this;
 }
