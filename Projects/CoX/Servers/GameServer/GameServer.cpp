@@ -229,12 +229,36 @@ GameServerData &GameServer::runtimeData()
     return d->m_runtime_data;
 }
 
-/* TODO: get db_id by player name where player is on any map.
-uint32_t GameServer::getPlayerDbId(const char *name) {
-    Entity *pEnt = find(m_live_list,name);
-    if(pEnt)
-        return pEnt->db_id;
-    else
-        qDebug() << "Entity" << name << "does not exist.";
+Entity * GameServer::getEntityByName(const QString &name)
+{
+    Entity *pEnt = nullptr;
+    EntityManager ref_em;
+
+    // Iterate through all active entities and return entity by name
+    for (auto *em : ref_em.m_live_entlist)
+    {
+        if (em->name() == name)
+            return pEnt = em;
+        else
+            qDebug() << "Entity" << name << "does not exist.";
+    }
+
+    return pEnt;
 }
-*/
+
+Entity * GameServer::getEntityByIdx(const int32_t &idx)
+{
+    Entity *pEnt = nullptr;
+    EntityManager ref_em;
+
+    // Iterate through all active entities and return entity by idx
+    for (auto *em : ref_em.m_live_entlist)
+    {
+        if (getIdx(*em) == idx)
+            return pEnt = em;
+        else
+            qDebug() << "Entity ID" << idx << "does not exist.";
+    }
+
+    return pEnt;
+}

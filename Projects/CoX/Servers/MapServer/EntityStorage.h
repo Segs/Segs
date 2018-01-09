@@ -33,8 +33,8 @@ public:
 class EntityManager
 {
     struct EntityIdxCompare {
-        bool operator()(const Entity *a,const Entity *b) const {
-            return a->getIdx() < b->getIdx();
+        bool operator()(Entity *a,Entity *b) const {
+            return getIdx(*a) < getIdx(*b);
         }
     };
     using lEntity = std::set<Entity *,EntityIdxCompare>;

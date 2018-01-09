@@ -81,8 +81,8 @@ ChatMessage *ChatMessage::privateMessage(const QString &msg, Entity *src, Entity
 {
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_PRIVATE;
-    res->m_source_player_id=src->getIdx();
-    res->m_target_player_id=tgt->getIdx();
+    res->m_source_player_id = getIdx(*src);
+    res->m_target_player_id = getIdx(*tgt);
     res->m_msg = msg;
     return res;
 }
@@ -91,7 +91,7 @@ ChatMessage *ChatMessage::teamMessage(const QString &msg, Entity *src)
 {
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_TEAM;
-    res->m_source_player_id=src->getIdx();
+    res->m_source_player_id = getIdx(*src);
     res->m_msg = msg;
     return res;
 }
@@ -100,7 +100,7 @@ ChatMessage *ChatMessage::supergroupMessage(const QString &msg, Entity *src)
 {
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_SuperGroup;
-    res->m_source_player_id=src->getIdx();
+    res->m_source_player_id = getIdx(*src);
     res->m_msg = msg;
     return res;
 }
@@ -109,7 +109,7 @@ ChatMessage *ChatMessage::localMessage(const QString &msg, Entity *src)
 {
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_Local;
-    res->m_source_player_id=src->getIdx();
+    res->m_source_player_id = getIdx(*src);
     res->m_msg = msg;
     return res;
 }
@@ -118,7 +118,7 @@ ChatMessage *ChatMessage::broadcastMessage(const QString &msg, Entity *src)
 {
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_Broadcast;
-    res->m_source_player_id=src->getIdx();
+    res->m_source_player_id = getIdx(*src);
     res->m_msg = msg;
     return res;
 }
@@ -127,7 +127,7 @@ ChatMessage *ChatMessage::requestMessage(const QString &msg, Entity *src)
 {
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_Request;
-    res->m_source_player_id=src->getIdx();
+    res->m_source_player_id = getIdx(*src);
     res->m_msg = msg;
     return res;
 }
@@ -136,7 +136,7 @@ ChatMessage *ChatMessage::friendMessage(const QString &msg, Entity *src)
 {
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_Friend;
-    res->m_source_player_id=src->getIdx();
+    res->m_source_player_id = getIdx(*src);
     res->m_msg = msg;
     return res;
 }
@@ -172,7 +172,7 @@ ChatMessage *ChatMessage::emoteMessage(const QString &msg, Entity *src)
 {
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_Emote;
-    res->m_source_player_id=src->getIdx();
+    res->m_source_player_id = getIdx(*src);
     res->m_msg = msg;
     return res;
 }
@@ -181,7 +181,7 @@ ChatMessage *ChatMessage::generalMessage(const QString &msg, Entity *src)
 {
     ChatMessage * res = new ChatMessage;
     res->m_channel_type = CHAT_GENERAL;
-    res->m_source_player_id=src->getIdx();
+    res->m_source_player_id = getIdx(*src);
     res->m_msg = msg;
     return res;
 }

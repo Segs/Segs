@@ -77,11 +77,6 @@ void Entity::addInterp(const PosUpdate & p) {
     interpResults.emplace_back(p);
 }
 
-void Entity::toggleFly(Entity *e)
-{
-    e->m_is_flying = !e->m_is_flying;
-}
-
 Entity::Entity()
 {
     m_access_level = 9; // enables access to all deve
@@ -122,23 +117,4 @@ void toggleJumppack(Entity &e)
 {
     e.m_has_jumppack = !e.m_has_jumppack;
     // TODO: toggle costume part for jetpack back item.
-}
-
-Entity getEntityByName(QString &name)
-{
-    // Iterate through all active entities and return entity by name
-    for (Entity* pEnt : m_live_entlist)
-    {
-        if (pEnt.name() == name)
-            return pEnt;
-    }
-}
-
-Entity getEntityByIdx(int32_t &idx) {
-    // Iterate through all active entities and return entity by idx
-    for (Entity* pEnt : m_live_entlist)
-    {
-        if (getIdx(pEnt) == idx)
-            return pEnt;
-    }
 }

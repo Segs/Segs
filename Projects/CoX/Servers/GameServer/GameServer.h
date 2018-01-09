@@ -12,6 +12,8 @@
 #include "Common/Servers/ServerEndpoint.h"
 #include "GameLink.h"
 #include "Common/Servers/GameServerInterface.h"
+#include "Entity.h"
+#include "MapServer/EntityStorage.h"
 
 #include <string>
 #include <memory>
@@ -62,6 +64,8 @@ public:
         EventProcessor *        event_target() override;
         int                     getMaxCharacterSlots() const override;
         GameServerData &        runtimeData();
+        Entity *                getEntityByName(const QString &name);
+        Entity *                getEntityByIdx(const int32_t &idx);
 protected:
         uint32_t                GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver
         std::unique_ptr<PrivateData> d;

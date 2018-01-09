@@ -444,9 +444,9 @@ void Character::sendTitles(BitStream &bs) const
 
     bs.StoreString(getName());
     bs.StoreBits(1, m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
-    StoreStringConditional(bs, m_titles[0]); // Title 1 - generic title (first)
-    StoreStringConditional(bs, m_titles[1]); // Title 2 - origin title (second)
-    StoreStringConditional(bs, m_titles[2]); // Title 3 - yellow title (special)
+    storeStringConditional(bs, m_titles[0]); // Title 1 - generic title (first)
+    storeStringConditional(bs, m_titles[1]); // Title 2 - origin title (second)
+    storeStringConditional(bs, m_titles[2]); // Title 3 - yellow title (special)
 }
 void Character::sendKeybinds(BitStream &bs) const
 {

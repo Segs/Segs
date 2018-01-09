@@ -18,7 +18,6 @@
 #include "MapServerData.h"
 #include "MapTemplate.h"
 #include "MapInstance.h"
-#include "Entity.h"
 #include "SEGSTimer.h"
 
 #include <ace/Reactor.h>
@@ -228,9 +227,50 @@ bool MapServer::startup()
 
 /* TODO: get db_id by player name where player is on current map
 uint32_t MapServer::getPlayerDbId(const char *name) {
-    auto ent = find(m_live_entlist,name);
+    auto ent = find(ref_ent_mager.m_live_entlist,name);
     if(ent)
         return ent->db_id;
     return m_game_server->getPlayerDbId(name);
 }
 */
+
+Entity * MapServer::getEntityByName(const QString &name)
+{
+    Entity *pEnt = nullptr;
+    EntityManager ref_em;
+
+    // Iterate through all active entities and return entity by name
+    for (auto *em : ref_em.m_live_entlist)
+    {
+        if (em->name() == name)
+            return pEnt = em;
+        else
+            qDebug() << "Entity" << name << "does not exist.";
+    }
+
+    if(pEnt)
+        return pEnt;
+
+    return g_GlobalGameServer->getEntityByName(name);
+}
+
+Entity * MapServer::getEntityByIdx(const int32_t &idx)
+{
+    Entity *pEnt = nullptr;
+    EntityManager ref_em;
+
+    // Iterate through all active entities and return entity by idx
+    for (auto *em : ref_em.m_live_entlist)
+    {
+        if (getIdx(*em) == idx)
+            return pEnt = em;
+        else
+            qDebug() << "Entity ID" << idx << "does not exist.";
+    }
+
+    if(pEnt)
+        return pEnt;
+
+    return g_GlobalGameServer->getEntityByIdx(idx);
+}
+

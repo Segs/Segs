@@ -103,11 +103,7 @@ void serialize(Archive & archive, Parse_CharAttrib & target)
     archive(cereal::make_nvp("Stunned",target.m_is_stunned));
     archive(cereal::make_nvp("Sleep",target.m_Sleep));
     archive(cereal::make_nvp("Fly",target.m_is_flying));
-<<<<<<< HEAD
     archive(cereal::make_nvp("Jumppack",target.m_has_jumppack));
-=======
-    archive(cereal::make_nvp("Jumppack",target.m_Jumppack));
->>>>>>> upstream/master
     archive(cereal::make_nvp("Teleport",target.m_Teleport));
     archive(cereal::make_nvp("Untouchable",target.m_Untouchable));
     archive(cereal::make_nvp("Intangible",target.m_Intangible));
@@ -166,11 +162,7 @@ void serialize(Archive & archive, Parse_CharAttribMax & target)
     archive(cereal::make_nvp("Stunned",target.m_is_stunned));
     archive(cereal::make_nvp("Sleep",target.m_Sleep));
     archive(cereal::make_nvp("Fly",target.m_is_flying));
-<<<<<<< HEAD
     archive(cereal::make_nvp("Jumppack",target.m_has_jumppack));
-=======
-    archive(cereal::make_nvp("Jumppack",target.m_Jumppack));
->>>>>>> upstream/master
     archive(cereal::make_nvp("Teleport",target.m_Teleport));
     archive(cereal::make_nvp("Untouchable",target.m_Untouchable));
     archive(cereal::make_nvp("Intangible",target.m_Intangible));
@@ -233,11 +225,7 @@ bool loadFrom(BinStore *s, Parse_CharAttrib &target)
     s->read(target.m_is_stunned);
     s->read(target.m_Sleep);
     s->read(target.m_is_flying);
-<<<<<<< HEAD
     s->read(target.m_has_jumppack);
-=======
-    s->read(target.m_Jumppack);
->>>>>>> upstream/master
     s->read(target.m_Teleport);
     s->read(target.m_Untouchable);
     s->read(target.m_Intangible);
@@ -297,11 +285,7 @@ bool loadFrom(BinStore *s, Parse_CharAttribMax &target)
     s->read(target.m_is_stunned);
     s->read(target.m_Sleep);
     s->read(target.m_is_flying);
-<<<<<<< HEAD
     s->read(target.m_has_jumppack);
-=======
-    s->read(target.m_Jumppack);
->>>>>>> upstream/master
     s->read(target.m_Teleport);
     s->read(target.m_Untouchable);
     s->read(target.m_Intangible);

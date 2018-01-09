@@ -18,6 +18,7 @@
 #include <QtSql/QSqlDriver>
 #include <QtCore/QDebug>
 #include <QtSql/QSqlError>
+#include <QDateTime>
 #include <cstdlib>
 #include <cstdio>
 using namespace std;
@@ -52,6 +53,8 @@ void CharacterDatabase::on_connected(QSqlDatabase *db)
     m_prepared_char_insert = QSqlQuery(*db);
     m_prepared_costume_insert = QSqlQuery(*db);
     m_prepared_char_select = QSqlQuery(*db);
+    m_prepared_char_update = QSqlQuery(*db);
+    m_prepared_costume_update = QSqlQuery(*db);
     m_prepared_account_select = QSqlQuery(*db);
     m_prepared_char_exists = QSqlQuery(*db);
     m_prepared_char_delete = QSqlQuery(*db);
@@ -155,8 +158,8 @@ bool CharacterDatabase::fill( Character *c)
 //    else if (results.num_rows()>1)
 //        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query returned wrong number of results. %s failed.\n"), query.str().c_str()),false);
 
-    c->setDbId(m_prepared_char_select.value("id").toUInt());
-    c->setLevel((uint8_t)m_prepared_char_select.value("char_level").toUInt());
+    //setDbId(c,m_prepared_char_select.value("id").toUInt());
+    setLevel(*c,(uint8_t)m_prepared_char_select.value("char_level").toUInt());
     c->setName(STR_OR_EMPTY(m_prepared_char_select.value("char_name").toString()));
     c->m_class_name = (STR_OR_EMPTY(m_prepared_char_select.value("archetype").toString()));
     c->m_origin_name = (STR_OR_EMPTY(m_prepared_char_select.value("origin").toString()));
@@ -165,14 +168,14 @@ bool CharacterDatabase::fill( Character *c)
     c->m_experience_debt = (m_prepared_char_select.value("xp").toUInt());
     c->m_experience_points = (m_prepared_char_select.value("xpdebt").toUInt());
     c->m_influence = (m_prepared_char_select.value("inf").toUInt());
-    c->m_HitPoints = (m_prepared_char_select.value("hitpoints").toUInt());
-    c->m_Endurance = (m_prepared_char_select.value("endurance").toUInt());
+    c->m_current_attribs.m_HitPoints = (m_prepared_char_select.value("hitpoints").toUInt());
+    c->m_current_attribs.m_Endurance = (m_prepared_char_select.value("endurance").toUInt());
 
     CharacterCostume *main_costume = new CharacterCostume;
     // appearance related.
     main_costume->m_body_type = m_prepared_char_select.value("bodytype").toUInt();
-    c->setMapName(STR_OR_EMPTY(m_prepared_char_select.value("current_map").toString()));
-    c->setLastCostumeId(m_prepared_char_select.value("last_costume_id").toUInt());
+    setMapName(*c,STR_OR_EMPTY(m_prepared_char_select.value("current_map").toString()));
+    setLastCostumeId(*c,m_prepared_char_select.value("last_costume_id").toUInt());
     main_costume->setSlotIndex(0);
     main_costume->setCharacterId(m_prepared_char_select.value("id").toULongLong());
     c->m_costumes.push_back(main_costume);
@@ -266,7 +269,7 @@ bool CharacterDatabase::create( uint64_t gid,uint8_t slot,Character *c )
 bool CharacterDatabase::update( Character *c )
 {
     assert(c);
-    Entity *e = c.m_client->char_entity();
+    Entity *e;
 
     QString timestamp;
     // Update last_online upon logout or disconnect only
@@ -298,31 +301,30 @@ bool CharacterDatabase::update( Character *c )
         "specialtitle=:specialtitle, supergroupid=:supergroupid "
         "WHERE id=:id "
     */
-    m_prepared_char_update.bindValue(":id", getDbId(e));
-    m_prepared_char_update.bindValue(":char_level", getLevel(c));
+    m_prepared_char_update.bindValue(":id", getDbId(*e)); // for WHERE statement only
+    m_prepared_char_update.bindValue(":char_level", getLevel(*c));
     m_prepared_char_update.bindValue(":slot_index", (uint16_t)c->getIndex());
-    m_prepared_char_update.bindValue(":account_id", quint64(getAccountId(c)));
     m_prepared_char_update.bindValue(":char_name", c->getName());
-    m_prepared_char_update.bindValue(":archetype", getClass(c));
-    m_prepared_char_update.bindValue(":origin", getOrigin(c));
+    m_prepared_char_update.bindValue(":archetype", getClass(*c));
+    m_prepared_char_update.bindValue(":origin", getOrigin(*c));
     m_prepared_char_update.bindValue(":description", c->m_character_description);
     m_prepared_char_update.bindValue(":battlecry", c->m_battle_cry);
-    m_prepared_char_update.bindValue(":current_map", c->getMapName());
+    m_prepared_char_update.bindValue(":current_map", getMapName(*c));
     m_prepared_char_update.bindValue(":bodytype", c->getCurrentCostume()->m_body_type);
-    m_prepared_char_update.bindValue(":last_costume_id", getLastCostumeId(c));
+    m_prepared_char_update.bindValue(":last_costume_id", quint64(getLastCostumeId(*c)));
     m_prepared_char_update.bindValue(":last_online", timestamp);
-    m_prepared_char_update.bindValue(":hitpoints", c->m_Hitpoints);
-    m_prepared_char_update.bindValue(":endurance", c->m_Endurance);
-    m_prepared_char_update.bindValue(":inf", getInf(c));
-    m_prepared_char_update.bindValue(":xp", getXP(c));
+    m_prepared_char_update.bindValue(":hitpoints", c->m_current_attribs.m_HitPoints);
+    m_prepared_char_update.bindValue(":endurance", c->m_current_attribs.m_Endurance);
+    m_prepared_char_update.bindValue(":inf", getInf(*c));
+    m_prepared_char_update.bindValue(":xp", getXP(*c));
     m_prepared_char_update.bindValue(":xpdebt", c->m_experience_debt);
     m_prepared_char_update.bindValue(":xppatrol", c->m_experience_patrol);
-    m_prepared_char_update.bindValue(":alignment", e->m_alignment);
+    m_prepared_char_update.bindValue(":alignment", c->m_alignment);
     m_prepared_char_update.bindValue(":posx", e->pos.x);
     m_prepared_char_update.bindValue(":posy", e->pos.y);
     m_prepared_char_update.bindValue(":posz", e->pos.z);
-    m_prepared_char_update.bindValue(":orientp", e->m_A_ang11_probably); // TODO: update after PR #166
-    m_prepared_char_update.bindValue(":orienty", e->m_B_ang11_probably); // TODO: update after PR #166
+    m_prepared_char_update.bindValue(":orientp", e->inp_state.m_A_ang11_probably); // TODO: update after PR #166
+    m_prepared_char_update.bindValue(":orienty", e->inp_state.m_B_ang11_probably); // TODO: update after PR #166
     m_prepared_char_update.bindValue(":orientr", 0);
     m_prepared_char_update.bindValue(":title", c->m_titles[0]);
     m_prepared_char_update.bindValue(":badgetitle", c->m_titles[1]);

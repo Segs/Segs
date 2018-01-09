@@ -306,8 +306,8 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
     {
         Entity *ent = m_entities.CreatePlayer();
         ent->fillFromCharacter(ev->char_from_db);
-        ent->m_origin_idx = getEntityOriginIndex(true, ev->char_from_db->getOrigin());
-        ent->m_class_idx = getEntityClassIndex(true, ev->char_from_db->getClass());
+        ent->m_origin_idx = getEntityOriginIndex(true, getOrigin(*ev->char_from_db));
+        ent->m_class_idx = getEntityClassIndex(true, getClass(*ev->char_from_db));
         cl->char_entity(ent);
     }
     ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
@@ -334,8 +334,8 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     {
         Entity *e = m_entities.CreatePlayer();
         fillEntityFromNewCharData(*e,ev->m_character_data,g_GlobalMapServer->runtimeData().getPacker());
-        e->m_origin_idx = getEntityOriginIndex(true, e->m_char.getOrigin());
-        e->m_class_idx = getEntityClassIndex(true, e->m_char.getClass());
+        e->m_origin_idx = getEntityOriginIndex(true, getOrigin(e->m_char));
+        e->m_class_idx = getEntityClassIndex(true, getClass(e->m_char));
         cl->entity(e);
         cl->db_create();
         //        start_idle_timer(cl);
@@ -510,9 +510,9 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
     uint32_t sender_level       = getLevel(sender_char);
     QString  sender_char_name   = sender_char.getName();
     QString  sender_origin      = getOrigin(sender_char);
-    QString  target_idx         = sender->char_entity()->m_target_idx;
-    Entity   tgt                = getEntityByIdx(target_idx);
-    QString  target_char_name   = tgt.getName();
+    uint32_t target_idx         = sender->char_entity()->m_targeted_entity_idx;
+    Entity   *tgt               = g_GlobalMapServer->getEntityByIdx(target_idx);
+    QString  target_char_name   = tgt->name();
 
     foreach (const QString &str, replacements) {
         if(str == "\\$archetype")
@@ -567,6 +567,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
 {
     int first_space = msg_text.indexOf(' ');
     QString sender_char_name;
+    QString prepared_chat_message;
 
     if(msg_text.contains("$")) // does it contain replacement strings?
         msg_text = process_replacement_strings(sender, msg_text);
@@ -600,7 +601,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
                 if(dist<=range)
                     recipients.push_back(cl);
             }
-            QString prepared_chat_message = QString("[Local] %1: %2").arg(sender_char_name,msg_content.toString());
+            prepared_chat_message = QString("[Local] %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
                 ChatMessage *msg = ChatMessage::localMessage(prepared_chat_message,sender->char_entity());
@@ -612,7 +613,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         {
             // send the message to everyone on this map
             std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
-            QString prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString()); // where does [Broadcast] come from? The client?
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString()); // where does [Broadcast] come from? The client?
             for(MapClient * cl : recipients)
             {
                 ChatMessage *msg = ChatMessage::broadcastMessage(prepared_chat_message,sender->char_entity());
@@ -624,7 +625,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         {
             // send the message to everyone on this map
             std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
-            QString prepared_chat_message = QString("[Request] %1: %2").arg(sender_char_name,msg_content.toString());
+            prepared_chat_message = QString("[Request] %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
                 info = new InfoMessageCmd(InfoType::REQUEST_COM, prepared_chat_message);
@@ -635,18 +636,21 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         case ChatMessage::CHAT_PRIVATE:
         {
             int first_comma = msg_text.indexOf(',');
-            QStringRef target_name(msg_text.midRef(first_space+1,msg_text.indexOf(',')-1)));
+            QStringRef target_name_ref(msg_text.midRef(first_space+1,msg_text.indexOf(',')-1));
             msg_content = msg_text.midRef(first_comma+1,msg_text.lastIndexOf("\n"));
 
-            Entity *tgt = getEntityByName(target_name);
+            QString target_name = target_name_ref.toString();
+
+            Entity *tgt = g_GlobalMapServer->getEntityByName(target_name);
+            Entity *src = sender->char_entity();
             
             prepared_chat_message = QString("[Tell] -->%1: %2").arg(target_name,msg_content.toString());
             info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
-            src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+            src->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
             
             prepared_chat_message = QString("[Tell] %1: %2").arg(sender_char_name,msg_content.toString());
             info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
-            tgt->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+            tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
             
             break;
         }
@@ -658,7 +662,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
                 if(sender->char_entity()->m_group_name == cl->char_entity()->m_group_name)
                     recipients.push_back(cl);
             }
-            QString prepared_chat_message = QString("[Team] %1: %2").arg(sender_char_name,msg_content.toString());
+            prepared_chat_message = QString("[Team] %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
                 info = new InfoMessageCmd(InfoType::TEAM_COM, prepared_chat_message);
@@ -674,7 +678,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
                 if(sender->char_entity()->m_SG_id == cl->char_entity()->m_SG_id)
                     recipients.push_back(cl);
             }
-            QString prepared_chat_message = QString("[SuperGroup] %1: %2").arg(sender_char_name,msg_content.toString());
+            prepared_chat_message = QString("[SuperGroup] %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
                 info = new InfoMessageCmd(InfoType::SUPERGROUP_COM, prepared_chat_message);
@@ -751,7 +755,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         }
     }
     else if(lowerContents == "fly") {
-        toggleFly(ent);
+        toggleFly(*ent);
 
         QString msg = "Toggling " + ev->contents;
         qDebug() << msg;
@@ -759,7 +763,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
     else if(lowerContents == "stunned") {
-        toggleStunned(ent);
+        toggleStunned(*ent);
 
         QString msg = "Toggling " + ev->contents;
         qDebug() << msg;
@@ -767,7 +771,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
     else if(lowerContents == "jumppack") {
-        toggleJumppack(ent);
+        toggleJumppack(*ent);
 
         QString msg = "Toggling " + ev->contents;
         qDebug() << msg;
@@ -777,7 +781,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(lowerContents.startsWith("setBackupSpd ")) {
         int space = ev->contents.indexOf(' ');
         float val = ev->contents.mid(space+1).toFloat();
-        setBackupSpd(ent, val);
+        setBackupSpd(*ent, val);
 
         QString msg = "Set BackupSpd to: " + QString::number(val);
         qDebug() << msg;
@@ -787,7 +791,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(lowerContents.startsWith("setJumpHeight ")) {
         int space = ev->contents.indexOf(' ');
         float val = ev->contents.mid(space+1).toFloat();
-        setJumpHeight(ent, val);
+        setJumpHeight(*ent, val);
 
         QString msg = "Set JumpHeight to: " + QString::number(val);
         qDebug() << msg;
@@ -921,7 +925,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
     else if(lowerContents == "controls_disabled") {
-        toggleControlsDisabled(ent);
+        toggleControlsDisabled(*ent);
 
         QString msg = "Toggling " + ev->contents;
         qDebug() << msg;
@@ -933,7 +937,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         QString val = ev->contents.mid(space+1);
         uint8_t attrib = val.toUInt();
 
-        setUpdateID(ent, attrib);
+        setUpdateID(*ent, attrib);
 
         QString msg = "Setting updateID to: " + QString::number(attrib);
         qDebug() << msg;
@@ -969,7 +973,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(lowerContents.startsWith("setu1 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        setu1(ent, val);
+        setu1(*ent, val);
 
         QString msg = "Set u1 to: " + QString::number(val);
         qDebug() << msg;
@@ -980,7 +984,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(lowerContents.startsWith("setu2 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        setu2(ent, val);
+        setu2(*ent, val);
 
         QString msg = "Set u2 to: " + QString::number(val);
         qDebug() << msg;
@@ -991,7 +995,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(lowerContents.startsWith("setu3 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        setu3(ent, val);
+        setu3(*ent, val);
 
         QString msg = "Set u3 to: " + QString::number(val);
         qDebug() << msg;
@@ -1002,7 +1006,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(lowerContents.startsWith("setu4 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        setu4(ent, val);
+        setu4(*ent, val);
 
         QString msg = "Set u4 to: " + QString::number(val);
         qDebug() << msg;
@@ -1013,7 +1017,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(lowerContents.startsWith("setu5 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        setu5(ent, val);
+        setu5(*ent, val);
 
         QString msg = "Set u5 to: " + QString::number(val);
         qDebug() << msg;
@@ -1024,7 +1028,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(lowerContents.startsWith("setu6 ")) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        setu6(ent, val);
+        setu6(*ent, val);
 
         QString msg = "Set u6 to: " + QString::number(val);
         qDebug() << msg;

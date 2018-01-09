@@ -11,6 +11,8 @@
 
 #include "Common/Servers/MapServerInterface.h"
 #include "Common/Servers/ServerEndpoint.h"
+#include "GameServer/GameServer.h"
+//#include "Entity.h"
 #include "MapLink.h"
 
 #include <memory>
@@ -52,6 +54,8 @@ public:
         GameServerInterface *   getGameInterface();
         MapManager &            map_manager();
         MapServerData &         runtimeData();
+        Entity *                getEntityByName(const QString &name);
+        Entity *                getEntityByIdx(const int32_t &idx);
 private:
         bool                    startup(); // MapServerStartup sequence diagram entry point.
 protected:

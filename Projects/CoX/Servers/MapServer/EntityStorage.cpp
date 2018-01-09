@@ -96,7 +96,7 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClient *client ) const
 void EntityManager::sendEntities(BitStream& bs, MapClient *target, bool is_incremental) const
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_mutex);
-    int self_idx = target->char_entity()->getIdx();
+    int self_idx = getIdx(*target->char_entity());
     int prev_idx = -1;
     int delta;
     if(m_live_entlist.empty())
@@ -113,11 +113,11 @@ void EntityManager::sendEntities(BitStream& bs, MapClient *target, bool is_incre
         bool client_believes_this_entity_exists=client_belief_set.find(pEnt)!=client_belief_set.end();
         if(!client_believes_this_entity_exists && pEnt->m_destroyed)
             continue;
-        pEnt->m_create_player = (pEnt->getIdx() == self_idx);
-        delta = (prev_idx == -1) ? pEnt->getIdx() : (pEnt->getIdx() - prev_idx - 1);
+        pEnt->m_create_player = (getIdx(*pEnt) == self_idx);
+        delta = (prev_idx == -1) ? getIdx(*pEnt) : (getIdx(*pEnt) - prev_idx - 1);
 
         bs.StorePackedBits(1, delta);
-        prev_idx = pEnt->getIdx();
+        prev_idx = getIdx(*pEnt);
         ClientEntityStateBelief &belief(target->m_worldstate_belief[pEnt->m_idx]);
         if(!target->m_in_map)
             belief.m_entity = nullptr; // force full creates until client is actualy in map

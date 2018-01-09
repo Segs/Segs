@@ -1,6 +1,7 @@
 #include "WorldSimulation.h"
 #include "MapInstance.h"
 #include "MapClient.h"
+#include "AdminServer.h"
 #include "Events/GameCommandList.h"
 #include <glm/gtx/vector_query.hpp>
 
@@ -77,6 +78,6 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
             e->m_time_till_logout=0;
     }
     
-    CharacterDatabase *char_db = AdminServer::instance()->character_db();
-    char_db.update(e->m_char);
+//    CharacterDatabase *char_db = AdminServer::instance()->character_db();
+//    char_db->update(&e->m_char);
 }
