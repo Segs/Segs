@@ -421,9 +421,9 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     bool client_believes_ent_exists=belief.m_entity!=nullptr;
     bool ent_exists = src.m_destroyed==false;
     bool update_existence=client_believes_ent_exists!=ent_exists;
-    bool unconditional_titles = true;
 
-    if(src.m_idx && src.m_char.getIndex()) // if ent and character
+    bool unconditional_titles = true; // serializeto conditional only if ent and player
+    if(src.m_type==Entity::ENT_PLAYER) // if ent and player, then conditional
         unconditional_titles = false;
 
     //////////////////////////////////////////////////////////////////////////

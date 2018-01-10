@@ -29,6 +29,10 @@ void    setu6(Entity &e, const int &val);
  */
 uint32_t            getLevel(Character &src);
 void                setLevel(Character &src, uint32_t val);
+uint32_t            getHP(Character &src);
+void                setHP(Character &src, uint32_t val);
+uint32_t            getEnd(Character &src);
+void                setEnd(Character &src, uint32_t val);
 uint64_t            getLastCostumeId(Character &src);
 void                setLastCostumeId(Character &src, uint64_t val);
 const QString &     getOrigin(Character &src);

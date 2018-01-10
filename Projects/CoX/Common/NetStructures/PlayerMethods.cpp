@@ -43,7 +43,10 @@ void toggleJumppack(Entity &e)
  * Character Methods
  */
 uint32_t            getLevel(Character &src) { return src.m_level; }
-void                setLevel(Character &src, uint32_t val) { src.m_level = val; }
+uint32_t            getHP(Character &src) { return src.m_current_attribs.m_HitPoints; }
+void                setHP(Character &src, uint32_t val) { src.m_current_attribs.m_HitPoints = val; }
+uint32_t            getEnd(Character &src) { return src.m_current_attribs.m_Endurance; }
+void                setEnd(Character &src, uint32_t val) { src.m_current_attribs.m_Endurance = val; }
 uint64_t            getLastCostumeId(Character &src) { return src.m_last_costume_id; }
 void                setLastCostumeId(Character &src, uint64_t val) { src.m_last_costume_id = val; }
 const QString &     getOrigin(Character &src) { return src.m_origin_name; }
@@ -69,8 +72,18 @@ void setXP(Character &src, uint32_t val)
     for(auto const& lvl: src.m_other_attribs.m_ExperienceRequired)
     {
         if(val>=lvl && val<lvl+1)
+        {
             setLevel(src, lvl);
+            // TODO: set max attribs based upon level.
+        }
     }
+}
+
+void setLevel(Character &src, uint32_t val)
+{
+    src.m_level = val;
+    // src.m_experience_points = expForLevel(val);
+    // TODO: set max attribs based upon level
 }
 
 void setTitles(Character &src, bool prefix, QString generic, QString origin, QString special)

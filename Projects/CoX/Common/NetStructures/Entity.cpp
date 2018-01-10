@@ -35,6 +35,7 @@ void Entity::fillFromCharacter(Character *f)
 {
     m_char = *f;
     m_hasname = true;
+    m_db_id *= m_char.m_db_id;
     //TODO: map class/origin name to Entity's class/orign indices.
 }
 /**
@@ -52,7 +53,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *pac
     /*int val =*/ src.GetPackedBits(1); //2
     e.m_char.GetCharBuildInfo(src);
     e.m_char.recv_initial_costume(src,packer);
-    /*int t =*/ src.GetBits(1); // The -> 1
+    e.m_char.m_has_the_prefix = src.GetBits(1); // The -> 1
     src.GetString(e.m_char.m_battle_cry);
     src.GetString(e.m_char.m_character_description);
 }

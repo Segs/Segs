@@ -229,6 +229,11 @@ GameServerData &GameServer::runtimeData()
     return d->m_runtime_data;
 }
 
+/*
+ * Character *chr = client->getCharacter(ev->m_index);
+    // check if character exists, and if it's name is the same as the one passed here
+    if(chr && chr->getName().compare(ev->m_char_name)==0)
+ * */
 Entity * GameServer::getEntityByName(const QString &name)
 {
     Entity *pEnt = nullptr;
@@ -254,7 +259,7 @@ Entity * GameServer::getEntityByIdx(const int32_t &idx)
     // Iterate through all active entities and return entity by idx
     for (auto *em : ref_em.m_live_entlist)
     {
-        if (getIdx(*em) == idx)
+        if (em->m_db_id == idx)
             return pEnt = em;
         else
             qDebug() << "Entity ID" << idx << "does not exist.";

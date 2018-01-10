@@ -484,6 +484,7 @@ void MapInstance::on_window_state(WindowState * ev){
 QString process_replacement_strings(MapClient *sender,const QString &msg_text)
 {
     /*
+    // $$           - newline
     // $archetype   - the archetype of your character
     // $battlecry   - your character's battlecry, as entered on your character ID screen
     // $level       - your character's current level
@@ -496,6 +497,7 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
 
     QString new_msg = msg_text;
     static const QStringList replacements = {
+        "\\$\\$"
         "\\$archetype",
         "\\$battlecry",
         "\\$level",
@@ -527,6 +529,8 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
             new_msg.replace(QRegExp(str), sender_origin);
         else if(str == "\\$target")
             new_msg.replace(QRegExp(str), target_char_name);
+        else if(str == "\\$\\$")
+            qDebug() << "need to send newline for" << str;
     }
     return new_msg;
 }
@@ -778,7 +782,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents.startsWith("setBackupSpd ")) {
+    else if(lowerContents.startsWith("setBackupSpd ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         float val = ev->contents.mid(space+1).toFloat();
         setBackupSpd(*ent, val);
@@ -788,7 +792,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents.startsWith("setJumpHeight ")) {
+    else if(lowerContents.startsWith("setJumpHeight ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         float val = ev->contents.mid(space+1).toFloat();
         setJumpHeight(*ent, val);
@@ -808,7 +812,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::EMOTE, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents.startsWith("setHP ")) {
+    else if(lowerContents.startsWith("setHP ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         QString val = ev->contents.mid(space+1);
         float attrib = val.toFloat();
@@ -817,14 +821,14 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         if(attrib > maxattrib)
             attrib = maxattrib;
 
-        ent->m_char.m_current_attribs.m_HitPoints = attrib;
+        setHP(ent->m_char,attrib);
 
         QString msg = "Setting HP to: " + QString::number(attrib) + "/" + QString::number(maxattrib);
         qDebug() << msg;
         info = new InfoMessageCmd(InfoType::REGULAR, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents.startsWith("setEnd ")) {
+    else if(lowerContents.startsWith("setEnd ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         QString val = ev->contents.mid(space+1);
         float attrib = val.toFloat();
@@ -833,14 +837,14 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         if(attrib > maxattrib)
             attrib = maxattrib;
 
-        ent->m_char.m_current_attribs.m_Endurance = attrib;
+        setEnd(ent->m_char,attrib);
 
         QString msg = "Setting Endurance to: " + QString::number(attrib) + "/" + QString::number(maxattrib);
         qDebug() << msg;
         info = new InfoMessageCmd(InfoType::REGULAR, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents.startsWith("setXP ")) {
+    else if(lowerContents.startsWith("setXP ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         QString val = ev->contents.mid(space+1);
         float attrib = val.toFloat();
@@ -858,7 +862,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::REGULAR, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents.startsWith("setLevel ")) {
+    else if(lowerContents.startsWith("setLevel ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         QString val = ev->contents.mid(space+1);
         uint32_t attrib = val.toUInt();
@@ -889,7 +893,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::SVR_COM, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents == "setTitles" || (lowerContents.startsWith("setTitles ") || lowerContents.startsWith("title_change "))) {
+    else if(lowerContents == "setTitles" || (lowerContents.startsWith("setTitles ",Qt::CaseInsensitive) || lowerContents.startsWith("title_change ",Qt::CaseInsensitive))) {
         QString msg;
         bool prefix;
         QString generic;
@@ -932,7 +936,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents.startsWith("updateID ")) {
+    else if(lowerContents.startsWith("updateID ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         QString val = ev->contents.mid(space+1);
         uint8_t attrib = val.toUInt();
@@ -952,7 +956,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents.startsWith("setInf ")) {
+    else if(lowerContents.startsWith("setInf ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         QString val = ev->contents.mid(space+1);
         uint32_t attrib = val.toUInt();
@@ -964,13 +968,13 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents.startsWith("em") || lowerContents.startsWith("e")
-            || lowerContents.startsWith("me"))                                  // ERICEDIT: This encompasses all emotes.
+    else if(lowerContents.startsWith("em ",Qt::CaseInsensitive) || lowerContents.startsWith("e ",Qt::CaseInsensitive)
+            || lowerContents.startsWith("me ",Qt::CaseInsensitive))                                  // ERICEDIT: This encompasses all emotes.
     {
         on_emote_command(lowerContents, ent, src);
     }
     // Slash commands for setting bit values
-    else if(lowerContents.startsWith("setu1 ")) {
+    else if(lowerContents.startsWith("setu1 ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
         setu1(*ent, val);
@@ -981,7 +985,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::debugMessage(msg)));
     }
-    else if(lowerContents.startsWith("setu2 ")) {
+    else if(lowerContents.startsWith("setu2 ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
         setu2(*ent, val);
@@ -992,7 +996,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::debugMessage(msg)));
     }
-    else if(lowerContents.startsWith("setu3 ")) {
+    else if(lowerContents.startsWith("setu3 ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
         setu3(*ent, val);
@@ -1003,7 +1007,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::debugMessage(msg)));
     }
-    else if(lowerContents.startsWith("setu4 ")) {
+    else if(lowerContents.startsWith("setu4 ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
         setu4(*ent, val);
@@ -1014,7 +1018,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::debugMessage(msg)));
     }
-    else if(lowerContents.startsWith("setu5 ")) {
+    else if(lowerContents.startsWith("setu5 ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
         setu5(*ent, val);
@@ -1025,7 +1029,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::debugMessage(msg)));
     }
-    else if(lowerContents.startsWith("setu6 ")) {
+    else if(lowerContents.startsWith("setu6 ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
         setu6(*ent, val);

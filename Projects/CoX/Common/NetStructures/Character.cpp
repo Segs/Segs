@@ -440,7 +440,7 @@ void Character::sendTitles(BitStream &bs, bool &unconditional) const
     }
     else
     {
-        bs.StoreString(getName());
+        //bs.StoreString(getName());
         bs.StoreBits(1, m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
         bs.StoreString(m_titles[0]);             // Title 1 - generic title (first)
         bs.StoreString(m_titles[1]);             // Title 2 - origin title (second)
