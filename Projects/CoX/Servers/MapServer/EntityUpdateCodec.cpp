@@ -43,18 +43,10 @@ void storeCreation(const Entity &src, BitStream &bs)
     {
         bs.StorePackedBits(1,src.m_class_idx);
         bs.StorePackedBits(1,src.m_origin_idx);
-        bs.StoreBits(1, src.m_char.m_has_titles);
-        if(src.m_char.m_has_titles)
-        {
-            bs.StoreBits(1, src.m_char.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
 
-            bs.StoreString(src.m_char.m_titles[0]); // Title 1 - generic title (first)
-            bs.StoreString(src.m_char.m_titles[1]); // Title 2 - origin title (second)
-            bs.StoreString(src.m_char.m_titles[2]); // Title 3 - yellow title (special)
-            //storeStringConditional(bs, src.m_char.m_titles[0]); // Title 1 - generic title (first)
-            //storeStringConditional(bs, src.m_char.m_titles[1]); // Title 2 - origin title (second)
-            //storeStringConditional(bs, src.m_char.m_titles[2]); // Title 3 - yellow title (special)
-        }
+        // Send conditional titles
+        bool unconditional_titles = false;
+        src.m_char.sendTitles(bs,unconditional_titles);
     }
     bs.StoreBits(1,src.m_hasname);
     if(src.m_hasname)

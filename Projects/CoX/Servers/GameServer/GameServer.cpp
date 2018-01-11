@@ -259,7 +259,7 @@ Entity * GameServer::getEntityByIdx(const int32_t &idx)
     // Iterate through all active entities and return entity by idx
     for (auto *em : ref_em.m_live_entlist)
     {
-        if (em->m_db_id == idx)
+        if (em->m_idx == idx)
             return pEnt = em;
         else
             qDebug() << "Entity ID" << idx << "does not exist.";

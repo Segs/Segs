@@ -13,7 +13,7 @@
  */
 uint32_t    getIdx(Entity &e) { return e.m_idx; }
 uint32_t    getDbId(Entity &e) { return e.m_db_id; }
-void        setDbId(Entity &e, uint8_t val) { e.m_db_id = val; }
+void        setDbId(Entity &e, uint8_t val) { e.m_char.m_db_id = val; e.m_db_id = val; }
 
 void    toggleFly(Entity &e) { e.m_is_flying = !e.m_is_flying; }
 void    setBackupSpd(Entity &e, const float &val) { e.m_backup_spd = val; }
@@ -82,8 +82,9 @@ void setXP(Character &src, uint32_t val)
 void setLevel(Character &src, uint32_t val)
 {
     src.m_level = val;
-    // src.m_experience_points = expForLevel(val);
     // TODO: set max attribs based upon level
+    //MapServerData map_server_data;
+    //src.m_experience_points = map_server_data.expForLevel(val);
 }
 
 void setTitles(Character &src, bool prefix, QString generic, QString origin, QString special)

@@ -27,6 +27,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
+#include <set>
+
 // Template instantiation
 template class ClientStore<MapClient>;
 // global variables
@@ -236,41 +238,66 @@ uint32_t MapServer::getPlayerDbId(const char *name) {
 
 Entity * MapServer::getEntityByName(const QString &name)
 {
+    qDebug() << "getEntityByName(" << name << ")";
+
     Entity *pEnt = nullptr;
+    EntityStore ems;
+    for(Entity &e : ems.m_map_entities)
+    {
+        if(e.name() == name)
+            return pEnt = &e;
+        else
+            qDebug() << "Entity" << name << "does not exist.";
+    }
+    /*
     EntityManager ref_em;
 
     // Iterate through all active entities and return entity by name
     for (auto *em : ref_em.m_live_entlist)
     {
+        qDebug() << "em" << em->m_idx << ":" << em->name();
         if (em->name() == name)
             return pEnt = em;
-        else
-            qDebug() << "Entity" << name << "does not exist.";
     }
-
+*/
     if(pEnt)
         return pEnt;
+    else
+        qDebug() << "Entity" << name << "does not exist.";
 
-    return g_GlobalGameServer->getEntityByName(name);
+//    return g_GlobalGameServer->getEntityByName(name);
 }
 
 Entity * MapServer::getEntityByIdx(const int32_t &idx)
 {
-    Entity *pEnt = nullptr;
+    qDebug() << "getEntityByIdx(" << idx << ")";
     EntityManager ref_em;
+    // TODO: pEnt = ref_em.m_live_entlist.find(idx);
+
+    qDebug() << "getEntityByIdx: after entity creation.";
+    //qDebug() << ref_em.m_live_entlist.value_type;
+
+/*    for (Entity * e : ref_em.m_live_entlist)
+        qDebug() << e->name();
 
     // Iterate through all active entities and return entity by idx
-    for (auto *em : ref_em.m_live_entlist)
+    for (Entity *em : ref_em.m_live_entlist)
     {
-        if (em->m_db_id == idx)
-            return pEnt = em;
+        qDebug() << "getEntityByIdx: start of iterator";
+        if (em->m_idx == idx)
+        {
+            qDebug() << "Returning Entity" << idx;
+            Entity *pEnt = em;
+            return pEnt;
+        }
         else
             qDebug() << "Entity ID" << idx << "does not exist.";
     }
 
-    if(pEnt)
-        return pEnt;
+//    if(pEnt)
+//        return pEnt;
 
     return g_GlobalGameServer->getEntityByIdx(idx);
+    // */
 }
 

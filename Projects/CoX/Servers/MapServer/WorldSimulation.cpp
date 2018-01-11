@@ -80,7 +80,7 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
     
     if(e->m_type==Entity::ENT_PLAYER)
     {
-        CharacterDatabase *char_db = AdminServer::instance()->character_db();
-            char_db->update(&e->m_char);
+//        CharacterDatabase *char_db = AdminServer::instance()->character_db();
+//            char_db->update(&e->m_char);
     }
 }

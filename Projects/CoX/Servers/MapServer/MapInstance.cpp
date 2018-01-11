@@ -497,7 +497,7 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
 
     QString new_msg = msg_text;
     static const QStringList replacements = {
-        "\\$\\$"
+        "\\$\\$",
         "\\$archetype",
         "\\$battlecry",
         "\\$level",
@@ -513,8 +513,8 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
     QString  sender_char_name   = sender_char.getName();
     QString  sender_origin      = getOrigin(sender_char);
     uint32_t target_idx         = sender->char_entity()->m_targeted_entity_idx;
-    Entity   *tgt               = g_GlobalMapServer->getEntityByIdx(target_idx);
-    QString  target_char_name   = tgt->name();
+    //Entity   *tgt               = g_GlobalMapServer->getEntityByIdx(target_idx);
+    QString  target_char_name   = "test";//tgt->name();
 
     foreach (const QString &str, replacements) {
         if(str == "\\$archetype")
@@ -530,7 +530,7 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
         else if(str == "\\$target")
             new_msg.replace(QRegExp(str), target_char_name);
         else if(str == "\\$\\$")
-            qDebug() << "need to send newline for" << str;
+            qDebug() << "need to send newline for" << str; // TODO: Need method for returning newline in str
     }
     return new_msg;
 }
@@ -645,6 +645,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
 
             QString target_name = target_name_ref.toString();
 
+            // TODO: Get entity by name
             Entity *tgt = g_GlobalMapServer->getEntityByName(target_name);
             Entity *src = sender->char_entity();
             
@@ -1039,6 +1040,58 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
         src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::debugMessage(msg)));
+    }
+    else if(lowerContents.startsWith("getEntityByIdx ",Qt::CaseInsensitive)) {
+        int space = ev->contents.indexOf(' ');
+        int val = ev->contents.mid(space+1).toInt();
+        Entity *e = g_GlobalMapServer->getEntityByIdx(val);
+
+        QString msg = "Received Entity: " + QString::number(e->m_idx) + " " + e->name();
+        qDebug() << msg;
+        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::debugMessage(msg)));
+    }
+    else if(lowerContents == "updatechar") {
+        CharacterDatabase *char_db = AdminServer::instance()->character_db();
+            char_db->update(&ent->m_char);
+
+        QString msg = "Updating Character in Database: " + ent->name();
+        qDebug() << msg;
+        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    }
+    else if(lowerContents == "chardebug") {
+        QString msg = "CharDebug\n"
+                + ent->name()
+                + "\n " + ent->m_char.m_origin_name
+                + "\n " + ent->m_char.m_class_name
+                + "\n map: " + ent->m_char.m_mapName
+                + "\n db_id: " + QString::number(ent->m_db_id) + ":" + QString::number(ent->m_char.m_db_id)
+                + "\n idx: " + QString::number(ent->m_idx)
+                + "\n access: " + QString::number(ent->m_access_level)
+                + "\n acct: " + QString::number(ent->m_char.m_account_id)
+                + "\n lvl/clvl: " + QString::number(ent->m_char.m_level) + "/" + QString::number(ent->m_char.m_combat_level)
+                + "\n inf: " + QString::number(ent->m_char.m_influence)
+                + "\n xp/debt: " + QString::number(ent->m_char.m_experience_points) + "/" + QString::number(ent->m_char.m_experience_debt)
+                + "\n lfg: " + QString::number(ent->m_char.m_lfg)
+                + "\n afk: " + QString::number(ent->m_char.m_afk);
+        qDebug() << msg;
+        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    }
+    else if(lowerContents.startsWith("setDbId ",Qt::CaseInsensitive)) {
+        int space = ev->contents.indexOf(' ');
+        int val = ev->contents.mid(space+1).toInt();
+        setDbId(*ent, val);
+
+        QString msg = "Character m_db_id = "
+                + QString::number(val) + " ("
+                + QString::number(ent->m_db_id) + ":"
+                + QString::number(ent->m_char.m_db_id) + ")";
+        qDebug() << msg;
+        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
     else {
         qDebug() << "Unhandled game command:" << ev->contents;
@@ -1572,6 +1625,15 @@ void MapInstance::on_emote_command(QString lowerContents, Entity *ent, MapClient
             msg = "Unhandled flying Snowflakes emote";                          // Unlocked by purchasing from the Candy Keeper during the Winter Event.
         else
             msg = "Unhandled ground Snowflakes emote";
+    }
+    else                                                                        // If not specific command, output EMOTE message.
+    {
+        // "CharacterName {emote message}"
+        msg = QString("%1 %2").arg(ent->name(),lowerContents);
+        qDebug() << msg;                                                            // Print out the message to the server console.
+        ChatMessage *cmsg = ChatMessage::emoteMessage(msg,src->char_entity());
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(cmsg));
+        return;
     }
     qDebug() << msg;                                                            // Print out the message to the server console.
     info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);                       // Create the message to send to the client.

@@ -2,6 +2,7 @@
 
 #include "Entity.h"
 #include "Character.h"
+//#include "../Projects/CoX/Servers/MapServer/MapServerData.h"
 
 /*
  * Entity Methods

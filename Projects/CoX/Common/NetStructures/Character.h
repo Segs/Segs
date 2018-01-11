@@ -190,8 +190,8 @@ const   QString &       getName() const { return m_name; }
         QString             m_class_name;
         QString             m_origin_name;
         QString             m_mapName;
-        uint32_t            m_account_id        = {0};
-        uint32_t            m_db_id             = {0};
+        uint32_t            m_account_id;
+        uint32_t            m_db_id;
 
 protected:
         PowerPool_Info  get_power_info(BitStream &src);

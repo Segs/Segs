@@ -7,6 +7,7 @@
  */
 #define _USE_MATH_DEFINES
 #include "Entity.h"
+#include "PlayerMethods.h"
 
 #include <algorithm>
 #include <cmath>
@@ -35,7 +36,7 @@ void Entity::fillFromCharacter(Character *f)
 {
     m_char = *f;
     m_hasname = true;
-    m_db_id *= m_char.m_db_id;
+    m_db_id = m_char.m_db_id;
     //TODO: map class/origin name to Entity's class/orign indices.
 }
 /**
@@ -50,7 +51,7 @@ void Entity::beginLogout(uint16_t time_till_logout)
 
 void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *packer )
 {
-    /*int val =*/ src.GetPackedBits(1); //2
+    /*int val =*/ src.GetPackedBits(1); //2. Possibly EntType (ENT_PLAYER)
     e.m_char.GetCharBuildInfo(src);
     e.m_char.recv_initial_costume(src,packer);
     e.m_char.m_has_the_prefix = src.GetBits(1); // The -> 1
@@ -103,6 +104,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_hasname        = true;
     e.m_hasgroup_name  = false;
     e.m_pchar_things   = true;
+    setDbId(e,e.m_char.m_db_id);
 
     e.m_char.reset();
     e.might_have_rare = e.m_rare_bits = true;

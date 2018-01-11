@@ -22,16 +22,16 @@ namespace {
 
 Character::Character()
 {
-    m_multiple_costumes=false;
-    m_current_costume_idx=0;
-    m_current_costume_set=false;
-    m_supergroup_costume=false;
-    m_sg_costume=nullptr;
-    m_using_sg_costume=false;
-    m_current_attribs.m_HitPoints = 25;
-    m_max_attribs.m_HitPoints = 50;
-    m_current_attribs.m_Endurance = 33;
-    m_max_attribs.m_Endurance = 43;
+    m_multiple_costumes             = false;
+    m_current_costume_idx           = 0;
+    m_current_costume_set           = false;
+    m_supergroup_costume            = false;
+    m_sg_costume                    = nullptr;
+    m_using_sg_costume              = false;
+    m_current_attribs.m_HitPoints   = 25;
+    m_max_attribs.m_HitPoints       = 50;
+    m_current_attribs.m_Endurance   = 33;
+    m_max_attribs.m_Endurance       = 43;
 }
 void Character::reset()
 {
@@ -49,10 +49,6 @@ void Character::reset()
     m_using_sg_costume=false;
     m_first_person_view_toggle=false;
     m_full_options = false;
-    m_afk = false;
-    m_afk_msg = "";
-    m_battle_cry = "";
-    m_character_description = "";
 }
 
 
