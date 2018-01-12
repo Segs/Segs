@@ -27,5 +27,20 @@ void ServerListResponse::serializefrom( GrowingBuffer &buf )
 {
     uint8_t op;
     buf.uGet(op);
-    assert(!"TODO");
+    uint8_t server_list_size;
+    buf.uGet(server_list_size);
+    buf.uGet(m_preferred_server_idx); //preferred server number
+    for(int i = 0; i < server_list_size; i++)
+    {
+        GameServerInfo srv;
+        buf.Get(srv.id);
+        buf.Get(srv.addr); //must be network byte order
+        buf.Get(srv.port);
+        buf.Get(srv.unknown_1);
+        buf.Get(srv.unknown_2);
+        buf.Get(srv.current_players);
+        buf.Get(srv.max_players);
+        buf.Get(srv.online);
+        m_serv_list.push_back(srv);
+    }
 }
