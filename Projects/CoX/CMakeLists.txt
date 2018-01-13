@@ -4,7 +4,7 @@ include_directories(Common)
 ADD_SUBDIRECTORY(Common)
 ADD_SUBDIRECTORY(Utilities)
 ADD_SUBDIRECTORY(Servers)
-#ADD_SUBDIRECTORY(Clients)
+ADD_SUBDIRECTORY(Clients)
 
 # Add README, settings.cfg, and Starter Databases
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/README.md ${EXECUTABLE_OUTPUT_PATH}/README.md COPYONLY)
