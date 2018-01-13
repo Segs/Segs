@@ -93,9 +93,12 @@ void modelCreateObjectFromModel(Urho3D::Context *ctx,CoHModel *model,std::vector
     if(model->packed_data.norms.uncomp_size)
         vertex_elements.emplace_back(TYPE_VECTOR3, SEM_NORMAL);
     if(!vbo->uv1.empty())
-        vertex_elements.emplace_back(TYPE_VECTOR2, SEM_TEXCOORD);
+        vertex_elements.emplace_back(TYPE_VECTOR2, SEM_TEXCOORD,0);
     if(!vbo->uv2.empty())
-        vertex_elements.emplace_back(TYPE_VECTOR2, SEM_TEXCOORD);
+        vertex_elements.emplace_back(TYPE_VECTOR2, SEM_TEXCOORD,1);
+    if (vbo->needs_tangents)
+        vertex_elements.emplace_back(TYPE_VECTOR4, SEM_TANGENT);
+
     float *combined = combineBuffers(*vbo,model);
     vb->SetShadowed(true);
     vb->SetSize(model->vertex_count, vertex_elements);
@@ -251,9 +254,9 @@ void convertMaterial(Urho3D::Context *ctx,CoHModel *mdl,StaticModel* boxObject)
     SharedPtr<Material> preconverted;
     if(cache->Exists("./converted/Materials/"+model_base_name+"_mtl.xml"))
         preconverted = cache->GetResource<Material>("./converted/Materials/"+model_base_name+"_mtl.xml");
-    bool noLightAngle= mdl->flags & 0x10;
+    bool noLightAngle= mdl->flags & OBJ_NOLIGHTANGLE;
     if(!preconverted) {
-        if(mdl->flags&0x100)
+        if(mdl->flags&OBJ_TREE)
         {
             preconverted = cache->GetResource<Material>("Materials/DefaultVegetation.xml")->Clone();
         }
@@ -279,7 +282,7 @@ void convertMaterial(Urho3D::Context *ctx,CoHModel *mdl,StaticModel* boxObject)
             preconverted = cache->GetResource<Material>("Materials/AddAlpha.xml")->Clone();
             preconverted->SetCullMode(CULL_NONE);
         }
-        pixel_defines << "COH_MULTIPLY_REG";
+        pixel_defines << "COH_MULTIPLY";
         break;
     case CoHBlendMode::COLORBLEND_DUAL:
         pixel_defines << "COH_COLOR_BLEND_DUAL";
@@ -323,7 +326,7 @@ void convertMaterial(Urho3D::Context *ctx,CoHModel *mdl,StaticModel* boxObject)
     {
         const QString &texname(mdl->geoset->tex_names[texbind.tex_idx]);
         TextureWrapper tex = tryLoadTexture(ctx,texname);
-        if(tex.base) 
+        if(tex.base)
         {
             result = is_single_mat ? preconverted : preconverted->Clone();
             result->SetTexture(TU_DIFFUSE,tex.base);
@@ -370,7 +373,7 @@ void copyStaticModel(const Urho3D::StaticModel *src, Urho3D::StaticModel *tgt)
 Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, CoHNode *node, int opt)
 {
     CoHModel *mdl = node->model;
-    if (mdl&&mdl->converted_model) 
+    if (mdl&&mdl->converted_model)
     {
         float per_node_draw_distance = node->lod_far + node->lod_far_fade;
         //if (mdl->converted_model->GetDrawDistance() == per_node_draw_distance) // same draw distance as default, nothing to do

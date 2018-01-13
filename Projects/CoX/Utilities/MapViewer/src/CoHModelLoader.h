@@ -19,19 +19,15 @@ struct GeoStoreDef
     QStringList entries;    //!< the names of models contained in a geoset
     bool loaded;
 };
-struct Vector3i
-{
-    uint32_t xi,yi,zi;
-    uint32_t operator[](int idx) const { return ((const uint32_t *)this)[idx];}
-};
 struct VBOPointers
 {
     std::vector<glm::vec3> pos;
     std::vector<glm::vec3> norm;
     std::vector<glm::vec2> uv1;
     std::vector<glm::vec2> uv2;
-    std::vector<Vector3i> triangles;
+    std::vector<glm::ivec3> triangles;
     std::vector<TextureWrapper> assigned_textures;
+    bool needs_tangents=false;
 };
 
 enum class CoHBlendMode : uint8_t;
@@ -59,6 +55,23 @@ struct PackBlock
     DeltaPack  matidxs;
     DeltaPack  grid;
     DeltaPack &operator[](uint8_t idx) { return (&tris)[idx]; }
+};
+enum ModelFlags : uint32_t
+{
+    OBJ_ALPHASORT      = 0x1,
+    OBJ_FULLBRIGHT     = 0x4,
+    OBJ_NOLIGHTANGLE   = 0x10,
+    OBJ_DUALTEXTURE    = 0x40,
+    OBJ_LOD            = 0x80,
+    OBJ_TREE           = 0x100,
+    OBJ_DUALTEX_NORMAL = 0x200,
+    OBJ_FORCEOPAQUE    = 0x400,
+    OBJ_BUMPMAP        = 0x800,
+    OBJ_WORLDFX        = 0x1000,
+    OBJ_CUBEMAP        = 0x2000,
+    OBJ_DRAW_AS_ENT    = 0x4000,
+    OBJ_STATICFX       = 0x8000,
+    OBJ_HIDE           = 0x10000,
 };
 struct CoHModel
 {
