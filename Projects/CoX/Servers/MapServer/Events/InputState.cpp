@@ -46,7 +46,7 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
         if(other.pos_delta_valid[i])
             pos_delta[i] = other.pos_delta[i];
             
-        if(other.m_orientation_pyr[i])
+        if(0==other.m_orientation_pyr[i])
             m_orientation_pyr[i] = other.m_orientation_pyr[i];
     }
     bool update_needed=false;
