@@ -24,6 +24,8 @@ enum BinaryControl
     DOWN=5,
     PITCH=6,
     YAW=7,
+    LAST_BINARY_VALUE=5,
+    LAST_QUANTIZED_VALUE=7,
 };
 void InputState::serializeto(BitStream &) const
 {
