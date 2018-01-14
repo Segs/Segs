@@ -125,7 +125,7 @@ public:
     int m_time_diff1                    = 0;
     int m_time_diff2                    = 0;
     uint8_t input_vel_scale             = 0; // TODO: Should be float?
-    float m_orientation_pyr[3]          = {}; // Stored in Radians
+    glm::vec3 m_orientation_pyr;             // Stored in Radians
     uint8_t m_received_server_update_id = 0;
     bool m_no_coll                      = false;
     bool has_input_commit_guess         = 0;
