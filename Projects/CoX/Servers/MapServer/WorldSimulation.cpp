@@ -29,6 +29,9 @@ void World::update(const ACE_Time_Value &tick_timer)
         {
             auto dmg = new FloatingDamage(e->m_idx,e->m_idx,1);
             e->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingDamage>(dmg));
+
+            //CharacterDatabase *char_db = AdminServer::instance()->character_db();
+            //char_db->update(&e->m_char);
         }
     }
 }
@@ -76,11 +79,5 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
         e->m_time_till_logout -= dT.msec();
         if(e->m_time_till_logout<0)
             e->m_time_till_logout=0;
-    }
-    
-    if(e->m_type==Entity::ENT_PLAYER)
-    {
-//        CharacterDatabase *char_db = AdminServer::instance()->character_db();
-//            char_db->update(&e->m_char);
     }
 }

@@ -331,8 +331,8 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
 {
     Entity * target = src.m_client->char_entity();
-    bool full_update = true;
-    bool has_control_id = true;
+    bool full_update = target->m_full_update; // true
+    bool has_control_id = target->m_has_control_id; // true
 
     bs.StoreBits(1,full_update);
     if( !full_update )

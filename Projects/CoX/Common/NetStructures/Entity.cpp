@@ -51,7 +51,7 @@ void Entity::beginLogout(uint16_t time_till_logout)
 
 void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *packer )
 {
-    /*int val =*/ src.GetPackedBits(1); //2. Possibly EntType (ENT_PLAYER)
+    e.m_type = src.GetPackedBits(1); //2. Possibly EntType (ENT_PLAYER)
     e.m_char.GetCharBuildInfo(src);
     e.m_char.recv_initial_costume(src,packer);
     e.m_char.m_has_the_prefix = src.GetBits(1); // The -> 1
@@ -95,7 +95,7 @@ void initializeNewPlayerEntity(Entity &e)
 {
     e.m_costume_type   = 1;
     e.m_destroyed      = false;
-    e.m_type           = 2; // PLAYER
+    e.m_type           = Entity::ENT_PLAYER; // 2
     e.m_create_player  = true;
     e.m_player_villain = false;
     e.m_origin_idx     = 0;

@@ -4,6 +4,7 @@ set(GAMEDATA_SRC
     serialization_common.h
     anim_serializers.cpp
     anim_serializers.h
+    anim_definitions.h
     attrib_serializers.cpp
     attrib_serializers.h
     attrib_definitions.h
@@ -12,6 +13,8 @@ set(GAMEDATA_SRC
     scenegraph_serializers.h
     scenegraph_serializers.cpp
     charclass_definitions.h
+    chardata_serializers.cpp
+    chardata_serializers.h
     charclass_serializers.cpp
     charclass_serializers.h
     def_serializers.cpp

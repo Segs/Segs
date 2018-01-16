@@ -327,11 +327,11 @@ void sendBuffsConditional(const Entity &src,BitStream &bs)
 }
 void sendTargetUpdate(const Entity &src,BitStream &bs)
 {
-    uint32_t assist_id = src.m_assisted_entity_idx;
-    uint32_t target_id = src.m_targeted_entity_idx;
+    uint32_t assist_id = src.inp_state.m_assist_target_idx;
+    uint32_t target_id = src.inp_state.m_target_idx;
 
-    bs.StoreBits(1,src.m_has_targeted_entity); // TODO: test this
-    if(!src.m_has_targeted_entity)
+    bs.StoreBits(1,src.inp_state.m_has_target); // TODO: test this
+    if(!src.inp_state.m_has_target)
         return;
     bs.StoreBits(1,target_id!=0);
     if(target_id!=0)

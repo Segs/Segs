@@ -52,6 +52,8 @@ public:
     void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }
+    Entity *        getEntity(const QString &name);
+    Entity *        getEntity(const int32_t &idx);
 
 protected:
     mutable ACE_Thread_Mutex m_mutex; // used to prevent world state reads during updates

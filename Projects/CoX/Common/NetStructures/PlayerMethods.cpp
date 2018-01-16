@@ -26,6 +26,9 @@ void    setu3(Entity &e, const int &val) { e.u3 = val; }
 void    setu4(Entity &e, const int &val) { e.u4 = val; }
 void    setu5(Entity &e, const int &val) { e.u5 = val; }
 void    setu6(Entity &e, const int &val) { e.u6 = val; }
+void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
+void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
+
 
 void toggleStunned(Entity &e)
 {
@@ -37,6 +40,12 @@ void toggleJumppack(Entity &e)
 {
     e.m_has_jumppack = !e.m_has_jumppack;
     // TODO: toggle costume part for jetpack back item.
+}
+
+void charUpdateDB(Entity *e)
+{
+    CharacterDatabase *char_db = AdminServer::instance()->character_db();
+        char_db->update(&e->m_char);
 }
 
 /*
@@ -54,6 +63,8 @@ const QString &     getClass(Character &src) { return src.m_class_name; }
 const QString &     getMapName(Character &src) { return src.m_mapName; }
 void                setMapName(Character &src, const QString &val) { src.m_mapName = val; }
 uint32_t            getXP(Character &src) { return src.m_experience_points; }
+uint32_t            getDebt(Character &src) { return src.m_experience_debt; }
+void                setDebt(Character &src, uint32_t val) { src.m_experience_debt = val; }
 const QString &     getTitles(Character &src) { return src.m_titles[3]; }
 void                toggleLFG(Character &src) { src.m_lfg = !src.m_lfg; }
 uint32_t            getInf(Character &src) { return src.m_influence; }

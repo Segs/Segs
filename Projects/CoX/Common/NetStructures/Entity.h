@@ -117,7 +117,7 @@ public:
     uint16_t    controlBits                 = 0;
     uint16_t    send_id                     = 0;
 
-    void *current_state_P = 0;
+    void *current_state_P                   = 0;
 
     glm::vec3   camera_pyr;
     int         m_time_diff1                = 0;
@@ -132,9 +132,9 @@ public:
     bool        pyr_valid[3]                = {};
     glm::vec3   pos_delta;
     glm::quat   direction;
-    uint32_t    m_target_idx;
-    uint32_t    m_assist_target_idx;  // Target Assist
-    bool        m_has_target;
+    uint32_t    m_target_idx                = 0;
+    uint32_t    m_assist_target_idx         = 0;  // Target Assist
+    bool        m_has_target                = false;
 
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
@@ -187,12 +187,11 @@ public:
         bool                m_has_jumppack          = false;
         bool                m_controls_disabled     = false;
         float               m_backup_spd            = 1.0f;
-        float               m_jump_height;
+        float               m_jump_height           = 1.0f;
         uint8_t             m_cur_chat_channel      = 10; // Default is local
-        uint32_t            m_targeted_entity_idx   = inp_state.m_target_idx;
-        uint32_t            m_assisted_entity_idx   = inp_state.m_assist_target_idx;  // Target Assist
-        bool                m_has_targeted_entity   = (m_targeted_entity_idx) ? true : false;
         uint8_t             m_update_id             = 1;
+        bool                m_full_update           = true; // EntityReponse sendServerPhysicsPositions
+        bool                m_has_control_id        = true; // EntityReponse sendServerPhysicsPositions
 
         int                 u1 = 1;
         int                 u2 = 0;

@@ -7,6 +7,7 @@
  */
 
 //#define DEBUG_INPUT
+//#define DEBUG_TARGET
 #define _USE_MATH_DEFINES
 #include "Events/InputState.h"
 #include "Entity.h"
@@ -29,17 +30,20 @@ void InputState::serializeto(BitStream &) const
 }
 InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
 {
-    m_csc_deltabits=other.m_csc_deltabits;
-    m_send_deltas=other.m_send_deltas;
-    controlBits=other.controlBits;
-    send_id=other.send_id;
-    m_time_diff1=other.m_time_diff1;
-    m_time_diff2=other.m_time_diff2;
-    m_A_ang11_probably=other.m_A_ang11_probably;
-    m_B_ang11_probably=other.m_B_ang11_probably;
-    has_input_commit_guess=other.has_input_commit_guess;
+    m_csc_deltabits             = other.m_csc_deltabits;
+    m_send_deltas               = other.m_send_deltas;
+    controlBits                 = other.controlBits;
+    send_id                     = other.send_id;
+    m_time_diff1                = other.m_time_diff1;
+    m_time_diff2                = other.m_time_diff2;
+    m_A_ang11_probably          = other.m_A_ang11_probably;
+    m_B_ang11_probably          = other.m_B_ang11_probably;
+    has_input_commit_guess      = other.has_input_commit_guess;
     m_received_server_update_id = other.m_received_server_update_id;
-    m_no_coll = other.m_no_coll;
+    m_no_coll                   = other.m_no_coll;
+    m_target_idx                = other.m_target_idx;
+    m_has_target                = other.m_has_target;
+    m_assist_target_idx         = other.m_assist_target_idx;
 
     for(int i=0; i<3; ++i)
     {
@@ -129,7 +133,7 @@ void InputState::partial_2(BitStream &bs)
             case LEFT: case RIGHT:
             case UP: case DOWN:
 #ifdef DEBUG_INPUT
-                fprintf(stderr,"%s  : %d - ",control_name[control_id],time_since_prev);
+                fprintf(stderr,"%s  : %d - ",control_name[control_id],ms_since_prev);
 #endif
                 m_data.processDirectionControl(control_id,ms_since_prev,bs.GetBits(1));
                 break;
@@ -194,7 +198,7 @@ void InputState::extended_input(BitStream &bs)
         m_data.send_id = bs.GetBits(16);
         m_data.current_state_P = 0;
 #ifdef DEBUG_INPUT
-        fprintf(stderr,"CSC_DELTA[%x-%x] : ",m_data.m_csc_deltabits,m_data.someOtherbits);
+        fprintf(stderr,"CSC_DELTA[%x-%x] : ",m_data.m_csc_deltabits,m_data.controlBits);
 #endif
         partial_2(bs);
 
@@ -257,7 +261,7 @@ struct ControlState
     void dump()
     {
 #ifdef DEBUG_INPUT
-        fprintf(stderr,"CSC: %d,%d, [%f,%f]",field0,time_res,timestep,time_rel1C);
+        fprintf(stderr,"CSC: %d,%d, [%f,%f]",client_timenow,time_res,timestep,time_rel1C);
         fprintf(stderr, "(%lld %lld)",m_perf_cntr_diff,m_perf_freq_diff);
 #endif
     }
@@ -274,10 +278,10 @@ void InputState::serializefrom(BitStream &bs)
     m_data.m_has_target = bs.GetBits(1);
     m_data.m_target_idx = bs.GetPackedBits(14); // targeted entity server index
     int ctrl_idx=0;
-#ifdef DEBUG_INPUT
-    fprintf(stderr,"T:[%d]",has_targeted_entity);
-    if(has_targeted_entity)
-        fprintf(stderr,"TI:[%d]",tgt_idx);
+#ifdef DEBUG_TARGET
+    fprintf(stderr,"T:[%d] ",m_data.m_has_target);
+    if(m_data.m_has_target)
+        fprintf(stderr,"TI:[%d] ",m_data.m_target_idx);
 #endif
     ControlState prev_fld;
     while(bs.GetBits(1)) // receive control state array entries ?

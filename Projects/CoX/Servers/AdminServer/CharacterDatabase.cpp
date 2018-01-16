@@ -317,7 +317,9 @@ bool CharacterDatabase::create( uint64_t gid,uint8_t slot,Character *c )
 bool CharacterDatabase::update( Character *c )
 {
     assert(c);
-    //Entity *e = g_GlobalGameServer->getEntityByIdx(c->m_gid);
+    //MapInstance *mi = src->current_map();
+    //EntityManager &ent_manager(mi->m_entities);
+    //Entity *e = ent_manager.getEntity(c->getIndex());
 
     QString timestamp;
     timestamp = QDateTime::currentDateTimeUtc().toString();

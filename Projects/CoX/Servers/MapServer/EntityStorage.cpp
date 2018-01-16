@@ -150,3 +150,32 @@ void EntityManager::removeEntityFromActiveList(Entity *ent)
     m_live_entlist.erase(ent);
     m_store.release(ent);
 }
+
+// Poll EntityManager to return Entity by Name or IDX
+Entity * EntityManager::getEntity(const QString &name)
+{
+    // Iterate through all active entities and return entity by name
+    for (Entity* pEnt : m_live_entlist)
+    {
+        if (pEnt->name() == name)
+            return pEnt;
+    }
+    qWarning() << "Entity" << name << "does not exist.";
+    return nullptr;
+}
+
+Entity * EntityManager::getEntity(const int32_t &idx)
+{
+    if(idx==0) {
+        qWarning() << "Entity" << idx << "does not exist.";
+        return nullptr;
+    }
+    // Iterate through all active entities and return entity by idx
+    for (Entity* pEnt : m_live_entlist)
+    {
+        if (pEnt->m_idx == idx)
+            return pEnt;
+    }
+    qWarning() << "Entity" << idx << "does not exist.";
+    return nullptr;
+}

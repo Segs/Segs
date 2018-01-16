@@ -2,6 +2,8 @@
 
 #include "Entity.h"
 #include "Character.h"
+#include "../Projects/CoX/Servers/AdminServer/AdminServer.h"
+#include "../Projects/CoX/Servers/AdminServer/CharacterDatabase.h"
 //#include "../Projects/CoX/Servers/MapServer/MapServerData.h"
 
 /*
@@ -10,6 +12,7 @@
 uint32_t    getIdx(Entity &e);
 uint32_t    getDbId(Entity &e);
 void        setDbId(Entity &e, uint8_t val);
+void        charUpdateDB(Entity *e);
 
 void    toggleFly(Entity &e);
 void    toggleStunned(Entity &e);
@@ -24,6 +27,8 @@ void    setu3(Entity &e, const int &val);
 void    setu4(Entity &e, const int &val);
 void    setu5(Entity &e, const int &val);
 void    setu6(Entity &e, const int &val);
+void    toggleFullUpdate(Entity &e);
+void    toggleControlId(Entity &e);
 
 /*
  * Character Methods
@@ -42,6 +47,7 @@ const QString &     getMapName(Character &src);
 void                setMapName(Character &src, const QString &val);
 uint32_t            getXP(Character &src);
 void                setXP(Character &src, uint32_t val);
+void                setDebt(Character &src, uint32_t val);
 const QString &     getTitles(Character &src);
 void                setTitles(Character &src, bool prefix = false, QString generic = "", QString origin = "", QString special = "");
 void                toggleAFK(Character &src, const QString &msg = "");

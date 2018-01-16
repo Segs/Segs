@@ -54,8 +54,6 @@ public:
         GameServerInterface *   getGameInterface();
         MapManager &            map_manager();
         MapServerData &         runtimeData();
-        Entity *                getEntityByName(const QString &name);
-        Entity *                getEntityByIdx(const int32_t &idx);
 private:
         bool                    startup(); // MapServerStartup sequence diagram entry point.
 protected:
