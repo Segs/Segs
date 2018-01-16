@@ -478,7 +478,6 @@ Urho3D::Node * convertedNodeToLutefisk(CoHNode *conv_node, const Urho3D::Matrix3
     ResourceCache* cache = ctx->m_ResourceCache.get();
     Urho3D::Node * node = new Node(ctx);
     created_node_count++;
-    const std::vector<NodeChild> &children_arr();
     node->SetName(conv_node->name);
     node->SetTransform(mat);
     conv_node->m_lutefisk_result = node;
