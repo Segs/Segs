@@ -1,15 +1,9 @@
 #pragma once
 
-#include <QString>
-
-class Parse_CharAttrib;
-class LevelExpAndDebt;
+#include <QtCore/QString>
 
 struct CharacterData
 {
-//    Parse_CharAttrib    m_current_attribs;
-//    Parse_CharAttrib    m_max_attribs;
-//    LevelExpAndDebt     m_other_attribs;
     uint32_t            m_level             = 0;
     uint32_t            m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
     uint32_t            m_experience_points = 0;
@@ -32,4 +26,5 @@ struct CharacterData
     QString             m_mapName;
     uint32_t            m_account_id;
     uint32_t            m_db_id;
+    uint32_t            m_power_level;
 };

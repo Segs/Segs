@@ -13,12 +13,16 @@ set(GAMEDATA_SRC
     scenegraph_serializers.h
     scenegraph_serializers.cpp
     charclass_definitions.h
-    chardata_serializers.cpp
-    chardata_serializers.h
     charclass_serializers.cpp
     charclass_serializers.h
+    chardata_definitions.h
+    chardata_serializers.cpp
+    chardata_serializers.h
     def_serializers.cpp
     def_serializers.h
+    entitydata_definitions.h
+    entitydata_serializers.cpp
+    entitydata_serializers.h
     other_definitions.h
     origin_definitions.h
     keybind_serializers.cpp

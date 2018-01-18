@@ -344,6 +344,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     }
     assert(cl->char_entity());
     cl->current_map()->enqueue_client(cl);
+    cl->char_entity()->m_char.m_mapName = name();
     lnk->set_client_data(cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
 }
@@ -1116,21 +1117,31 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
     else if(lowerContents == "chardebug") {
-        QString msg = "CharDebug\n"
-                + ent->name()
-                + "\n " + ent->m_char.m_origin_name
-                + "\n " + ent->m_char.m_class_name
-                + "\n map: " + ent->m_char.m_mapName
-                + "\n db_id: " + QString::number(ent->m_db_id) + ":" + QString::number(ent->m_char.m_db_id)
-                + "\n idx: " + QString::number(ent->m_idx)
-                + "\n access: " + QString::number(ent->m_access_level)
-                + "\n acct: " + QString::number(ent->m_char.m_account_id)
-                + "\n lvl/clvl: " + QString::number(ent->m_char.m_level) + "/" + QString::number(ent->m_char.m_combat_level)
-                + "\n inf: " + QString::number(ent->m_char.m_influence)
-                + "\n xp/debt: " + QString::number(ent->m_char.m_experience_points) + "/" + QString::number(ent->m_char.m_experience_debt)
-                + "\n lfg: " + QString::number(ent->m_char.m_lfg)
-                + "\n afk: " + QString::number(ent->m_char.m_afk)
-                + "\n tgt_idx: " + QString::number(ent->inp_state.m_target_idx);
+        QString msg = "CharDebug: " + ent->name()
+                + "\n  " + ent->m_char.m_origin_name
+                + "\n  " + ent->m_char.m_class_name
+                + "\n  map: " + ent->m_char.m_mapName
+                + "\n  db_id: " + QString::number(ent->m_db_id) + ":" + QString::number(ent->m_char.m_db_id)
+                + "\n  idx: " + QString::number(ent->m_idx)
+                + "\n  access: " + QString::number(ent->m_access_level)
+                + "\n  acct: " + QString::number(ent->m_char.m_account_id)
+                + "\n  lvl/clvl: " + QString::number(ent->m_char.m_level) + "/" + QString::number(ent->m_char.m_combat_level)
+                + "\n  inf: " + QString::number(ent->m_char.m_influence)
+                + "\n  xp/debt: " + QString::number(ent->m_char.m_experience_points) + "/" + QString::number(ent->m_char.m_experience_debt)
+                + "\n  lfg: " + QString::number(ent->m_char.m_lfg)
+                + "\n  afk: " + QString::number(ent->m_char.m_afk)
+                + "\n  tgt_idx: " + QString::number(ent->inp_state.m_target_idx);
+        ent->dump();
+        //qDebug().noquote() << msg;
+        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    }
+    else if(lowerContents.startsWith("setPowerLevel ",Qt::CaseInsensitive)) {
+        int space = ev->contents.indexOf(' ');
+        int val = ev->contents.mid(space+1).toInt();
+        setPowerLevel(ent->m_char, val);
+
+        QString msg = "Set m_power_level to: " + QString::number(val);
         qDebug() << msg;
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
@@ -1772,14 +1783,13 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    // user entity
     Entity *ent = src->char_entity();
 
     if(!ev->battlecry.isNull() && !ev->description.isNull())
     {
-        qWarning() << "Attempted description and battlecry request:" << ev->description << ev->battlecry;
         ent->m_char.m_battle_cry = ev->battlecry;
-        ent->m_char.m_character_description = ev->description;
+        ent->m_char.m_character_description = ev->battlecry;
+        qWarning() << "Attempted description and battlecry request:" << ev->description << ev->battlecry;
     }
     else
         qWarning() << "Unhandled description and battlecry request" << ev->description<<ev->battlecry;
@@ -1788,8 +1798,6 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
 {
     qWarning() << "Unhandled entity info requested" << ev->entity_idx;
-    // TODO: send something to the client, question is, what kind of packet should be used here ??
-
 }
 
 void MapInstance::on_client_settings(ClientSettings * ev)

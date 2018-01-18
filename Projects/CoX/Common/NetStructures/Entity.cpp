@@ -9,6 +9,7 @@
 #include "Entity.h"
 #include "PlayerMethods.h"
 
+#include <QtCore/QDebug>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -67,7 +68,16 @@ void Entity::InsertUpdate( PosUpdate pup )
 
 void Entity::dump()
 {
-    m_char.dump();
+    QString msg = "EntityDebug\n  "
+            + name()
+            + "\n  db_id: " + QString::number(m_db_id)
+            + "\n  entity idx: " + QString::number(m_idx)
+            + "\n  access level: " + QString::number(m_access_level)
+            + "\n  tgt_idx: " + QString::number(inp_state.m_target_idx);
+
+    qDebug().noquote() << msg;
+    if(m_type == Entity::ENT_PLAYER)
+        m_char.dump();
 }
 
 void Entity::addPosUpdate(const PosUpdate & p) {

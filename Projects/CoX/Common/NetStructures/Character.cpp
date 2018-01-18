@@ -40,7 +40,7 @@ void Character::reset()
     m_class_name="EMPTY";
     m_origin_name="EMPTY";
     m_villain=false;
-    m_mapName="";
+    m_mapName="EMPTY";
     m_multiple_costumes=false;
     m_current_costume_idx=0;
     m_current_costume_set=false;
@@ -98,7 +98,7 @@ void Character::sendTrayMode(BitStream &bs) const
 
 void Character::GetCharBuildInfo(BitStream &src)
 {
-    m_level=0;
+    m_level=1;
     src.GetString(m_class_name);
     src.GetString(m_origin_name);
     CharacterPower primary,secondary;
@@ -114,7 +114,7 @@ void Character::SendCharBuildInfo(BitStream &bs) const
     PowerPool_Info null_power = {0,0,0};
     bs.StoreString(m_class_name);   // class name
     bs.StoreString(m_origin_name);  // origin name
-    bs.StorePackedBits(5,0);        // related to power level  ?
+    bs.StorePackedBits(5,m_char_data.m_power_level); // related to power level  ?
     PUTDEBUG("SendCharBuildInfo after plevel");
 
     {
@@ -259,20 +259,33 @@ void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
 }
 void Character::DumpBuildInfo()
 {
-    qDebug() << "    class: "<<m_class_name;
-    qDebug() << "    origin: "<<m_origin_name;
-    DumpPowerPoolInfo(m_powers[0].power_id);
-    DumpPowerPoolInfo(m_powers[1].power_id);
+    QString msg = "CharDebug\n  "
+            + getName()
+            + "\n  " + m_origin_name
+            + "\n  " + m_class_name
+            + "\n  map: " + m_mapName
+            + "\n  db_id: " + QString::number(m_db_id)
+            + "\n  idx: " + QString::number(getIndex())
+            + "\n  acct: " + QString::number(getAccountId())
+            + "\n  lvl/clvl: " + QString::number(m_level) + "/" + QString::number(m_combat_level)
+            + "\n  inf: " + QString::number(m_influence)
+            + "\n  xp/debt: " + QString::number(m_experience_points) + "/" + QString::number(m_experience_debt)
+            + "\n  lfg: " + QString::number(m_lfg)
+            + "\n  afk: " + QString::number(m_afk);
+
+    qDebug().noquote() << msg;
+    //DumpPowerPoolInfo(m_powers[0].power_id);
+    //DumpPowerPoolInfo(m_powers[1].power_id);
 }
 
 void Character::dump()
 {
-    qDebug() <<"    //---------------Tray------------------";
+    DumpBuildInfo();
+    qDebug() <<"//------------------Tray------------------";
     m_trays.dump();
-    qDebug() <<"    //---------------Costume------------------";
-//    if(getCurrentCostume())
-//        getCurrentCostume()->dump();
-
+    qDebug() <<"//-----------------Costume-----------------";
+    if(getCurrentCostume())
+        getCurrentCostume()->dump();
 }
 
 void Character::recv_initial_costume( BitStream &src, ColorAndPartPacker *packer )
@@ -282,7 +295,6 @@ void Character::recv_initial_costume( BitStream &src, ColorAndPartPacker *packer
     m_current_costume_idx=0;
     ::serializefrom(*res,src,packer);
     m_costumes.push_back(res);
-
 }
 void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool sendAbsolute)
 {

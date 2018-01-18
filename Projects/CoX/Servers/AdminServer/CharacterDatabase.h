@@ -8,12 +8,12 @@
 
 #pragma once
 
-// ACE Logging
-#include <string>
 #include "Entity.h"
 
-
+#include <QMutex>
 #include <QtSql/QSqlQuery>
+#include <string>
+
 class IClient;
 class QSqlQuery;
 class CharacterClient;

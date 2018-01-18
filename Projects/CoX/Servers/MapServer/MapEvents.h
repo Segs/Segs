@@ -455,7 +455,6 @@ public:
     {}
     void serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,56);
         bs.StorePackedBits(12,entity_idx);
     }
     void serializefrom(BitStream &bs) override

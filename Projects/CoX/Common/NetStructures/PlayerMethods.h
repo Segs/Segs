@@ -54,3 +54,4 @@ void                toggleAFK(Character &src, const QString &msg = "");
 void                toggleLFG(Character &src);
 uint32_t            getInf(Character &src);
 void                setInf(Character &src, uint32_t val);
+void                setPowerLevel(Character &src, uint32_t val);

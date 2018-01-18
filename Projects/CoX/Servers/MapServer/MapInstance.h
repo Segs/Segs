@@ -70,6 +70,7 @@ public:
     void   start();
     void   set_server(MapServer *s) { m_server = s; }
     size_t num_active_clients();
+    const QString &     name() const { return m_name; }
 
 protected:
     void process_chat(MapClient *sender, QString &msg_text);

@@ -4,6 +4,7 @@
 #include "Costume.h"
 #include "Character.h"
 #include "FixedPointValue.h"
+#include "Common/GameData/entitydata_definitions.h"
 
 #include <glm/vec3.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -164,6 +165,7 @@ public:
             ENT_PLAYER=2,
             ENT_CRITTER=4
         };
+        EntityData          m_entity_data;
         int                 m_access_level          = 0;
         int                 m_randSeed              = 0; // Sequencer uses this as a seed for random bone scale
         int                 field_68                = 0;

@@ -69,6 +69,7 @@ const QString &     getTitles(Character &src) { return src.m_titles[3]; }
 void                toggleLFG(Character &src) { src.m_lfg = !src.m_lfg; }
 uint32_t            getInf(Character &src) { return src.m_influence; }
 void                setInf(Character &src, uint32_t val) { src.m_influence = val; }
+void                setPowerLevel(Character &src, uint32_t val) { src.m_power_level = val; }
 
 void toggleAFK(Character &src, const QString &msg)
 {
