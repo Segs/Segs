@@ -7,6 +7,7 @@
  */
 
 //#define DEBUG_INPUT
+//#define DEBUG_INPUT2
 //#define DEBUG_TARGET
 #define _USE_MATH_DEFINES
 #include "Events/InputState.h"
@@ -220,7 +221,7 @@ void InputState::extended_input(BitStream &bs)
     if(m_data.controlBits)
         fprintf(stderr,"E input %x : ",m_data.controlBits);
 #endif
-    if(bs.GetBits(1))//if ( abs(s_prevTime - ms_time) < 1000 )
+    if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )
     {
         m_data.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[0]);
         m_data.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[1]);
@@ -286,7 +287,7 @@ void InputState::serializefrom(BitStream &bs)
         extended_input(bs);
 
     m_data.m_has_target = bs.GetBits(1);
-    m_data.m_target_idx = bs.GetPackedBits(14); // targeted entity server index
+    m_data.m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
     int ctrl_idx=0;
 #ifdef DEBUG_TARGET
     fprintf(stderr,"T:[%d] ",m_data.m_has_target);

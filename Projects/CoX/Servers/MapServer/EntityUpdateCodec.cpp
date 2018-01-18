@@ -1,4 +1,5 @@
 //#define DEBUG_INPUT
+//#define DEBUG_ORIENTATION
 #include "EntityUpdateCodec.h"
 
 #include "MapServer.h"
@@ -7,7 +8,7 @@
 #include "Entity.h"
 #include "GameData/CoHMath.h"
 
-#ifdef DEBUG_INPUT
+#ifdef DEBUG_ORIENTATION
 #include <glm/ext.hpp> // currently only needed for DEBUG_INPUT
 #endif
 
@@ -131,15 +132,15 @@ void storeOrientation(const Entity &src,BitStream &bs)
     pyr_angles[0] = 0.0f;
     pyr_angles[1] = vec.y; // set only yaw value
     pyr_angles[2] = 0.0f;
-#ifdef DEBUG_INPUT
+#ifdef DEBUG_ORIENTATION
     // output everything
     fprintf(stderr,"\nPlayer: %d\n",src.m_idx);
     fprintf(stderr,"src.qrot: %s \n", glm::to_string(src.qrot).c_str());
     fprintf(stderr,"dir: %s \n", glm::to_string(src.inp_state.direction).c_str());
     fprintf(stderr,"camera_pyr: %s \n", glm::to_string(src.inp_state.camera_pyr).c_str());
     fprintf(stderr,"pyr_angles: farr(%f, %f, %f)\n", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
-    fprintf(stderr,"orient_p: %f \n", src.m_orientation_pyr[0]);
-    fprintf(stderr,"orient_y: %f \n", src.m_orientation_pyr[1]);
+    fprintf(stderr,"orient_p: %f \n", src.inp_state.m_orientation_pyr[0]);
+    fprintf(stderr,"orient_y: %f \n", src.inp_state.m_orientation_pyr[1]);
     fprintf(stderr,"vel_scale: %f \n", src.inp_state.input_vel_scale);
 #endif
     for(int i=0; i<3; i++)
