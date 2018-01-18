@@ -135,6 +135,9 @@ public:
     bool pyr_valid[3]                   = {};
     glm::vec3 pos_delta;
     glm::quat direction;
+    bool m_has_target;
+    uint32_t m_target_idx;
+    uint32_t m_assist_target_idx;
   
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);

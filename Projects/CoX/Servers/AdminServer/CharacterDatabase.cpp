@@ -182,6 +182,17 @@ bool CharacterDatabase::fill( Character *c)
     c->m_current_attribs.m_HitPoints = (m_prepared_char_select.value("hitpoints").toUInt());
     c->m_current_attribs.m_Endurance = (m_prepared_char_select.value("endurance").toUInt());
     setMapName(*c,STR_OR_EMPTY(m_prepared_char_select.value("current_map").toString()));
+
+    if(!m_prepared_char_select.value("title").isNull()
+            || !m_prepared_char_select.value("badgetitle").isNull()
+            || !m_prepared_char_select.value("specialtitle").isNull())
+    {
+        c->m_has_titles = true;
+        c->m_titles[0] = (m_prepared_char_select.value("title").toString());
+        c->m_titles[1] = (m_prepared_char_select.value("badgetitle").toString());
+        c->m_titles[2] = (m_prepared_char_select.value("specialtitle").toString());
+    }
+
     //c->m_options = (m_prepared_char_select.value("options");
     //c->m_gui = (m_prepared_char_select.value("gui");
 
