@@ -1,9 +1,15 @@
+//#define DEBUG_INPUT
 #include "EntityUpdateCodec.h"
 
 #include "MapServer.h"
 #include "MapServerData.h"
 #include "MapClient.h"
 #include "Entity.h"
+#include "GameData/CoHMath.h"
+
+#ifdef DEBUG_INPUT
+#include <glm/ext.hpp> // currently only needed for DEBUG_INPUT
+#endif
 
 namespace  {
 constexpr float F_PI = float(M_PI); // to prevent double <-> float conversion warnings
@@ -105,58 +111,47 @@ bool storePosition(const Entity &src,BitStream &bs)
     }
     return true;
 }
-void toEulerAngle(const glm::quat& q, float& roll, float& pitch, float& yaw)
-{
-    // roll (x-axis rotation)
-    float sinr = 2.0f * (q.w * q.x + q.y * q.z);
-    float cosr = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
-    roll = std::atan2(sinr, cosr);
-
-    // pitch (y-axis rotation)
-    float sinp = 2.0f * (q.w * q.y - q.z * q.x);
-        if (std::abs(sinp) >= 1)
-            pitch = std::copysign(float(M_PI / 2), sinp); // use 90 degrees if out of range
-        else
-        pitch = std::asin(sinp);
-
-    // yaw (z-axis rotation)
-    float siny = 2.0f * (q.w * q.z + q.x * q.y);
-    float cosy = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
-    yaw = std::atan2(siny, cosy);
-}
 bool update_rot(const Entity &src, int axis ) /* returns true if given axis needs updating */
 {
     if(axis==axis)
         return true;
     return false;
 }
-uint32_t AngleQuantize(float value,int numb_bits)
-{
-    int max_val = 1<<numb_bits;
-
-    float v = std::abs(value)>1.0f ? std::copysign(1.0f,value) : value ;
-    v  = (std::asin(v)+F_PI)/(2*F_PI); // maps -1..1 to 0..1
-    v *= max_val;
-//  assert(v<=max_val);
-    return uint32_t(v);
-}
-
 void storeOrientation(const Entity &src,BitStream &bs)
 {
-    // if(updateNeeded())
+    // Check if update needed through update_rot()
     uint8_t updates;
     updates = ((uint8_t)update_rot(src,0)) | (((uint8_t)update_rot(src,1))<<1) | (((uint8_t)update_rot(src,2))<<2);
     storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
-    //NormalizeQuaternion(pEnt->qrot)
-    //
-    //RestoreFourthQuatComponent(pEnt->qrot);
+#ifdef DEBUG_INPUT
+    fprintf(stderr,"\nupdates: %i\n",updates);
+#endif
     float pyr_angles[3];
-    toEulerAngle(src.qrot,pyr_angles[0],pyr_angles[1],pyr_angles[2]);
+    glm::vec3 vec = toCoH_YPR(src.inp_state.direction);
+    pyr_angles[0] = 0.0f;
+    pyr_angles[1] = vec.y; // set only yaw value
+    pyr_angles[2] = 0.0f;
+#ifdef DEBUG_INPUT
+    // output everything
+    fprintf(stderr,"\nPlayer: %d\n",src.m_idx);
+    fprintf(stderr,"src.qrot: %s \n", glm::to_string(src.qrot).c_str());
+    fprintf(stderr,"dir: %s \n", glm::to_string(src.inp_state.direction).c_str());
+    fprintf(stderr,"camera_pyr: %s \n", glm::to_string(src.inp_state.camera_pyr).c_str());
+    fprintf(stderr,"pyr_angles: farr(%f, %f, %f)\n", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
+    fprintf(stderr,"orient_p: %f \n", src.m_orientation_pyr[0]);
+    fprintf(stderr,"orient_y: %f \n", src.m_orientation_pyr[1]);
+    fprintf(stderr,"vel_scale: %f \n", src.inp_state.input_vel_scale);
+#endif
     for(int i=0; i<3; i++)
     {
         if(update_rot(src,i))
         {
-            bs.StoreBits(9,AngleQuantize(pyr_angles[i],9));   // normalized quat, 4th param is recoverable from the first 3
+            uint32_t v;
+            v = AngleQuantize(pyr_angles[i],9);
+#ifdef DEBUG_INPUT
+            fprintf(stderr,"v: %d\n", v); // does `v` fall between 0...512
+#endif
+            bs.StoreBits(9,v);
         }
     }
 }

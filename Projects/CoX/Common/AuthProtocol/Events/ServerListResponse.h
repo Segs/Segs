@@ -17,6 +17,7 @@ struct GameServerInfo
 class ServerListResponse : public AuthLinkEvent
 {
     std::deque<GameServerInfo> m_serv_list;
+    uint8_t  m_preferred_server_idx;
 public:
     ServerListResponse() : AuthLinkEvent(evServerListResponse)
     {}

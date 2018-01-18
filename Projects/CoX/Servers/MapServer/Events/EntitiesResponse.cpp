@@ -118,7 +118,7 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     PUTDEBUG("before windows");
     player_char.sendWindows(bs);
     bs.StoreBits(1,player_char.m_lfg);  // lfg related
-    bs.StoreBits(1,0);                  // a2->ent_player2->field_AC
+    bs.StoreBits(1,0);                  // SG mode
     player_char.sendTeamBuffMode(bs);
     player_char.sendDockMode(bs);
     player_char.sendChatSettings(bs);
@@ -322,10 +322,10 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         storeVector(bs,spd);
         storeVectorConditional(bs,spd);      // vector3 -> speed ? likely; was zeroes
 
-        storeFloatConditional(bs,0);         // Pitch not used ?
-        storeFloatConditional(bs,ent->inp_state.camera_pyr.y); // Pitch
-        storeFloatConditional(bs,0);         // Roll
-        bs.StorePackedBits(1,u6);            // sets the lowest bit in CscCommon::flags default = 0
+        storeFloatConditional(bs,0); // Pitch not used ?
+        storeFloatConditional(bs,ent->inp_state.camera_pyr.y); // Yaw
+        storeFloatConditional(bs,0); // Roll
+        bs.StorePackedBits(1,u6); // server side forced falling bit
     }
 }
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
