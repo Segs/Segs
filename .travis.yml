@@ -1,4 +1,4 @@
-language: cpp
+language: generic # prevent travis from overriding provided compilers.
 cache:
   directories:
     - $HOME/.ccache
