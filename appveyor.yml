@@ -9,9 +9,9 @@ environment:
   MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
   matrix:
   - CMAKE_GENERATOR: "Visual Studio 15 2017"
-    QT5: C:\Qt\5.9.1\msvc2015
+    QT5: C:\Qt\5.9.2\msvc2015
   - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
-    QT5: C:\Qt\5.9.1\msvc2017_64
+    QT5: C:\Qt\5.9.2\msvc2017_64
     
 branches:
   only:
@@ -25,10 +25,10 @@ matrix:
 
 before_build:
 - if exist "%QT5%" set Path=%QT5%\bin;%Path%
-- if exist "%QT5%" cmake -H. -Bbuild -G "%CMAKE_GENERATOR%" "-DCMAKE_PREFIX_PATH=%QT5%"
+- md build
+- cmake -H. -Bbuild -G "%CMAKE_GENERATOR%" "-DCMAKE_PREFIX_PATH=%QT5%"
 
 build_script:
-- md build
 - if "%APPVEYOR_REPO_TAG%"=="true" (set CONFIGURATION=RelWithDebInfo) else (set CONFIGURATION=Debug)
 - cmake --build build --config "%CONFIGURATION%" -- %MSBUILD_FLAGS%
 
