@@ -76,7 +76,8 @@ matrix:
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository ppa:beineri/opt-qt593-trusty -y; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+  - |
+    if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       sudo apt-get update -qq;
     else
       brew update;
@@ -84,11 +85,13 @@ before_install:
   - if [ -n "$CLANG_VERSION" ]; then sudo PATH="${PATH}" CXX="$CXX" CC="$CC" ./ci_support/install_libcxx.sh; fi
   
 install:
-  - if [ "$LIBCXX" == "On" ]; then
+  - |
+    if [ "$LIBCXX" == "On" ]; then
       CXX_FLAGS="${CXX_FLAGS} -stdlib=libc++ -nostdinc++ -cxx-isystem /usr/include/c++/v1/ -Wno-unused-command-line-argument"
       CXX_LINKER_FLAGS="${CXX_LINKER_FLAGS} -lc++abi"
     fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+  - |
+    if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       sudo apt-get install -qq qt59base qt59declarative qt59quickcontrols2; source /opt/qt59/bin/qt59-env.sh;
     else
       brew install qt5;
