@@ -19,7 +19,6 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <ace/ACE.h>
-#include <ace/ACE.h>
 #include <ace/Singleton.h>
 #include <ace/Null_Mutex.h>
 #include <ace/Log_Record.h>
@@ -30,7 +29,6 @@
 #include <ace/Reactor.h>
 #include <ace/TP_Reactor.h>
 #include <ace/INET_Addr.h>
-#include <ace/Reactor.h>
 #include <ace/OS_main.h> //Included to enable file logging
 #include <ace/streams.h> //Included to enable file logging
 
