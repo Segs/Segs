@@ -22,15 +22,15 @@ addons_shortcuts:
   addons_clang39: &clang39
     apt:
       sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-3.9' ]
-      packages: [ 'clang-3.9','libc++-dev','libc++abi-dev' ]
+      packages: [ 'clang-3.9' ]
   addons_clang40: &clang40
     apt:
       sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-4.0']
-      packages: [ 'clang-4.0','libc++-dev','libc++abi-dev' ]
+      packages: [ 'clang-4.0' ]
   addons_clang50: &clang50
     apt:
       sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-5.0']
-      packages: [ 'clang-5.0', 'clang-tidy-5.0','libc++-dev','libc++abi-dev' ]
+      packages: [ 'clang-5.0', 'clang-tidy-5.0' ]
   addons_gcc5: &gcc5
     apt:
       sources: [ 'ubuntu-toolchain-r-test' ]
@@ -46,26 +46,23 @@ addons_shortcuts:
 
 matrix:
   include:
-    - os: linux
-      compiler: "clang-3.9"
-      env: BUILD='Debug' CC=clang-3.9 CXX=clang++-3.9
-           CXXFLAGS="-stdlib=libc++ ${CXXFLAGS}"
-      addons: *clang39
-    - os: linux
-      compiler: "clang-4.0"
-      env: BUILD='Debug' CC=clang-4.0 CXX=clang++-4.0
-           CXXFLAGS="-stdlib=libc++ ${CXXFLAGS}"
-      addons: *clang40
+#    - os: linux
+#      compiler: "clang-3.9"
+#      env: CLANG_VERSION=3.9 BUILD='Debug' CC=clang-3.9 CXX=clang++-3.9  LIBCXX=On
+#      addons: *clang39
+#    - os: linux
+#      compiler: "clang-4.0"
+#      env: CLANG_VERSION=4.0 BUILD='Debug' CC=clang-4.0 CXX=clang++-4.0  LIBCXX=On
+#      addons: *clang40
     - os: linux
       compiler: "clang-5.0"
-      env: BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0
+      env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0  LIBCXX=On
            CLANG_TIDY=clang-tidy-5.0
-           CXXFLAGS="-stdlib=libc++ ${CXXFLAGS}"
       addons: *clang50
     - os: linux
       compiler: "clang-5.0"
-      env: BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0
-           CXXFLAGS="-stdlib=libc++ -fsanitize=address,undefined,integer -fno-sanitize-recover=all -fno-omit-frame-pointer  ${CXXFLAGS}"
+      env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0  LIBCXX=On
+           CXXFLAGS="-fsanitize=address,undefined,integer -fno-sanitize-recover=all -fno-omit-frame-pointer  ${CXXFLAGS}"
            LDFLAGS="-fsanitize=address,undefined,integer"
       addons: *clang50
     - os: linux
@@ -79,13 +76,21 @@ matrix:
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository ppa:beineri/opt-qt593-trusty -y; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+  - |
+    if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       sudo apt-get update -qq;
     else
       brew update;
     fi
-
+#  - if [ -n "$CLANG_VERSION" ]; then sudo PATH="${PATH}" CXX="$CXX" CC="$CC" ./ci_support/install_libcxx.sh; fi
+  
 install:
+#  - |
+#    if [ "$LIBCXX" == "On" ]; then
+#      CXX_FLAGS="${CXX_FLAGS} -stdlib=libc++ -nostdinc++ -cxx-isystem /usr/include/c++/v1/ -Wno-unused-command-line-argument";
+#      CXX_LINKER_FLAGS="${CXX_LINKER_FLAGS} -lc++abi";
+#    fi
+  - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       sudo apt-get install -qq qt59base qt59declarative qt59quickcontrols2; source /opt/qt59/bin/qt59-env.sh;
     else
@@ -98,6 +103,6 @@ install:
 script:
   - mkdir build
   - cd build
-  - cmake .. -LA -DCMAKE_BUILD_TYPE=${BUILD} -DBUILD_WITH_CCACHE=1  -DCLANG_TIDY=$(which ${CLANG_TIDY})
+  - cmake .. -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_EXE_LINKER_FLAGS="${CXX_LINKER_FLAGS}" -DBUILD_WITH_CCACHE=1  -DCLANG_TIDY=$(which ${CLANG_TIDY})
   - make VERBOSE=1
 # ctest --output-on-failure
