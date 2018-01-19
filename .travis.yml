@@ -87,8 +87,8 @@ before_install:
 install:
   - |
     if [ "$LIBCXX" == "On" ]; then
-      CXX_FLAGS="${CXX_FLAGS} -stdlib=libc++ -nostdinc++ -cxx-isystem /usr/include/c++/v1/ -Wno-unused-command-line-argument"
-      CXX_LINKER_FLAGS="${CXX_LINKER_FLAGS} -lc++abi"
+      CXX_FLAGS="${CXX_FLAGS} -stdlib=libc++ -nostdinc++ -cxx-isystem /usr/include/c++/v1/ -Wno-unused-command-line-argument";
+      CXX_LINKER_FLAGS="${CXX_LINKER_FLAGS} -lc++abi";
     fi
   - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
@@ -103,6 +103,6 @@ install:
 script:
   - mkdir build
   - cd build
-  - cmake .. -LA -DCMAKE_BUILD_TYPE=${BUILD} -DBUILD_WITH_CCACHE=1  -DCLANG_TIDY=$(which ${CLANG_TIDY})
+  - cmake .. -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_EXE_LINKER_FLAGS="${CXX_LINKER_FLAGS}" -DBUILD_WITH_CCACHE=1  -DCLANG_TIDY=$(which ${CLANG_TIDY})
   - make VERBOSE=1
 # ctest --output-on-failure
