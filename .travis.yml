@@ -22,15 +22,15 @@ addons_shortcuts:
   addons_clang39: &clang39
     apt:
       sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-3.9' ]
-      packages: [ 'clang-3.9' ]
+      packages: [ 'clang-3.9','libc++-dev','libc++abi-dev' ]
   addons_clang40: &clang40
     apt:
       sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-4.0']
-      packages: [ 'clang-4.0' ]
+      packages: [ 'clang-4.0','libc++-dev','libc++abi-dev' ]
   addons_clang50: &clang50
     apt:
       sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-5.0']
-      packages: [ 'clang-5.0', 'clang-tidy-5.0' ]
+      packages: [ 'clang-5.0', 'clang-tidy-5.0','libc++-dev','libc++abi-dev' ]
   addons_gcc5: &gcc5
     apt:
       sources: [ 'ubuntu-toolchain-r-test' ]
@@ -49,20 +49,23 @@ matrix:
     - os: linux
       compiler: "clang-3.9"
       env: BUILD='Debug' CC=clang-3.9 CXX=clang++-3.9
+           CXXFLAGS="-stdlib=libc++ ${CXXFLAGS}"
       addons: *clang39
     - os: linux
       compiler: "clang-4.0"
       env: BUILD='Debug' CC=clang-4.0 CXX=clang++-4.0
+           CXXFLAGS="-stdlib=libc++ ${CXXFLAGS}"
       addons: *clang40
     - os: linux
       compiler: "clang-5.0"
       env: BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0
            CLANG_TIDY=clang-tidy-5.0
+           CXXFLAGS="-stdlib=libc++ ${CXXFLAGS}"
       addons: *clang50
     - os: linux
       compiler: "clang-5.0"
       env: BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0
-           CXXFLAGS="-fsanitize=address,undefined,integer -fno-sanitize-recover=all -fno-omit-frame-pointer"
+           CXXFLAGS="-stdlib=libc++ -fsanitize=address,undefined,integer -fno-sanitize-recover=all -fno-omit-frame-pointer  ${CXXFLAGS}"
            LDFLAGS="-fsanitize=address,undefined,integer"
       addons: *clang50
     - os: linux
