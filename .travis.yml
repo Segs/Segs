@@ -48,23 +48,23 @@ matrix:
   include:
     - os: linux
       compiler: "clang-3.9"
-      env: BUILD='Debug' CC=clang-3.9 CXX=clang++-3.9
+      env: CLANG_VERSION=3.9 BUILD='Debug' CC=clang-3.9 CXX=clang++-3.9
            CXXFLAGS="-stdlib=libc++ ${CXXFLAGS}"
       addons: *clang39
     - os: linux
       compiler: "clang-4.0"
-      env: BUILD='Debug' CC=clang-4.0 CXX=clang++-4.0
+      env: CLANG_VERSION=4.0 BUILD='Debug' CC=clang-4.0 CXX=clang++-4.0
            CXXFLAGS="-stdlib=libc++ ${CXXFLAGS}"
       addons: *clang40
     - os: linux
       compiler: "clang-5.0"
-      env: BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0
+      env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0
            CLANG_TIDY=clang-tidy-5.0
            CXXFLAGS="-stdlib=libc++ ${CXXFLAGS}"
       addons: *clang50
     - os: linux
       compiler: "clang-5.0"
-      env: BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0
+      env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0
            CXXFLAGS="-stdlib=libc++ -fsanitize=address,undefined,integer -fno-sanitize-recover=all -fno-omit-frame-pointer  ${CXXFLAGS}"
            LDFLAGS="-fsanitize=address,undefined,integer"
       addons: *clang50
@@ -84,7 +84,8 @@ before_install:
     else
       brew update;
     fi
-
+  - if [ -n "$CLANG_VERSION" ]; then sudo PATH="${PATH}" CXX="$CXX" CC="$CC" ./ci_support/install_libcxx.sh; fi
+  
 install:
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       sudo apt-get install -qq qt59base qt59declarative qt59quickcontrols2; source /opt/qt59/bin/qt59-env.sh;
