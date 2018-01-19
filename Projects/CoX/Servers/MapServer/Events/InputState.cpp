@@ -51,9 +51,6 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     {
         if(other.pos_delta_valid[i])
             pos_delta[i] = other.pos_delta[i];
-            
-        if(0==other.m_orientation_pyr[i])
-            m_orientation_pyr[i] = other.m_orientation_pyr[i];
     }
     bool update_needed=false;
     for(int i=0; i<3; ++i)
@@ -63,6 +60,9 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
             camera_pyr[i] = other.camera_pyr[i];
             update_needed = true;
         }
+
+        if(other.m_orientation_pyr[i])
+            m_orientation_pyr[i] = other.m_orientation_pyr[i];
     }
     if(update_needed)
     {
@@ -148,7 +148,7 @@ void InputState::partial_2(BitStream &bs)
                 v = AngleDequantize(bs.GetBits(11),11); // pitch
                 m_data.pyr_valid[control_id==6] = true;
                 m_data.camera_pyr[0] = v;
-#ifdef DEBUG_INPUT2
+#ifdef DEBUG_INPUT
                 fprintf(stderr,"Pitch (%f): %f \n", m_data.m_orientation_pyr[0], m_data.camera_pyr.x);
 #endif
                 break;
@@ -158,7 +158,7 @@ void InputState::partial_2(BitStream &bs)
                 v = AngleDequantize(bs.GetBits(11),11); // yaw
                 m_data.pyr_valid[control_id==7] = true;
                 m_data.camera_pyr[1] = v;
-#ifdef DEBUG_INPUT2
+#ifdef DEBUG_INPUT
                 fprintf(stderr,"Yaw (%f): %f \n", m_data.m_orientation_pyr[1], m_data.camera_pyr.y);
 #endif
                 break;
@@ -217,7 +217,7 @@ void InputState::extended_input(BitStream &bs)
     m_data.controlBits = 0;
     for(int idx=0; idx<6; ++idx)
         m_data.controlBits |= (bs.GetBits(1))<<idx;
-#ifdef DEBUG_INPUT
+#ifdef DEBUG_INPUT2
     if(m_data.controlBits)
         fprintf(stderr,"E input %x : ",m_data.controlBits);
 #endif
@@ -225,7 +225,7 @@ void InputState::extended_input(BitStream &bs)
     {
         m_data.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[0]);
         m_data.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[1]);
-#ifdef DEBUG_INPUT
+#ifdef DEBUG_INPUT2
         fprintf(stderr,"%f : %f",m_data.m_orientation_pyr[0],m_data.m_orientation_pyr[1]);;
 #endif
     }

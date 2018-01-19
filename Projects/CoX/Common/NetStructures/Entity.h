@@ -115,6 +115,7 @@ public:
         {
             pos_delta_valid[i]=false;
             pyr_valid[i]=false;
+            orient_pyr_valid[i]=false;
         }
     }
 
@@ -133,6 +134,7 @@ public:
     bool has_input_commit_guess         = 0;
     bool pos_delta_valid[3]             = {};
     bool pyr_valid[3]                   = {};
+    bool orient_pyr_valid[3]            = {};
     glm::vec3 pos_delta;
     glm::quat direction;
     bool m_has_target;
