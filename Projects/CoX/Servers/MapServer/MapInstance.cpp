@@ -1118,18 +1118,18 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     }
     else if(lowerContents == "chardebug") {
         QString msg = "CharDebug: " + ent->name()
-                + "\n  " + ent->m_char.m_origin_name
-                + "\n  " + ent->m_char.m_class_name
-                + "\n  map: " + ent->m_char.m_mapName
-                + "\n  db_id: " + QString::number(ent->m_db_id) + ":" + QString::number(ent->m_char.m_db_id)
+                + "\n  " + ent->m_char.m_char_data.m_origin_name
+                + "\n  " + ent->m_char.m_char_data.m_class_name
+                + "\n  map: " + ent->m_char.m_char_data.m_mapName
+                + "\n  db_id: " + QString::number(ent->m_db_id) + ":" + QString::number(ent->m_char.m_char_data.m_db_id)
                 + "\n  idx: " + QString::number(ent->m_idx)
                 + "\n  access: " + QString::number(ent->m_access_level)
-                + "\n  acct: " + QString::number(ent->m_char.m_account_id)
-                + "\n  lvl/clvl: " + QString::number(ent->m_char.m_level) + "/" + QString::number(ent->m_char.m_combat_level)
-                + "\n  inf: " + QString::number(ent->m_char.m_influence)
-                + "\n  xp/debt: " + QString::number(ent->m_char.m_experience_points) + "/" + QString::number(ent->m_char.m_experience_debt)
-                + "\n  lfg: " + QString::number(ent->m_char.m_lfg)
-                + "\n  afk: " + QString::number(ent->m_char.m_afk)
+                + "\n  acct: " + QString::number(ent->m_char.m_char_data.m_account_id)
+                + "\n  lvl/clvl: " + QString::number(ent->m_char.m_char_data.m_level) + "/" + QString::number(ent->m_char.m_char_data.m_combat_level)
+                + "\n  inf: " + QString::number(ent->m_char.m_char_data.m_influence)
+                + "\n  xp/debt: " + QString::number(ent->m_char.m_char_data.m_experience_points) + "/" + QString::number(ent->m_char.m_char_data.m_experience_debt)
+                + "\n  lfg: " + QString::number(ent->m_char.m_char_data.m_lfg)
+                + "\n  afk: " + QString::number(ent->m_char.m_char_data.m_afk)
                 + "\n  tgt_idx: " + QString::number(ent->inp_state.m_target_idx);
         ent->dump();
         //qDebug().noquote() << msg;

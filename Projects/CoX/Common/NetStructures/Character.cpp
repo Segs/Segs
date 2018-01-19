@@ -22,40 +22,40 @@ namespace {
 
 Character::Character()
 {
-    m_multiple_costumes             = false;
-    m_current_costume_idx           = 0;
-    m_current_costume_set           = false;
-    m_supergroup_costume            = false;
-    m_sg_costume                    = nullptr;
-    m_using_sg_costume              = false;
-    m_current_attribs.m_HitPoints   = 25;
-    m_max_attribs.m_HitPoints       = 50;
-    m_current_attribs.m_Endurance   = 33;
-    m_max_attribs.m_Endurance       = 43;
+    m_char_data.m_multiple_costumes             = false;
+    m_char_data.m_current_costume_idx           = 0;
+    m_char_data.m_current_costume_set           = false;
+    m_char_data.m_supergroup_costume            = false;
+    m_char_data.m_sg_costume                    = nullptr;
+    m_char_data.m_using_sg_costume              = false;
+    m_char_data.m_current_attribs.m_HitPoints   = 25;
+    m_char_data.m_max_attribs.m_HitPoints       = 50;
+    m_char_data.m_current_attribs.m_Endurance   = 33;
+    m_char_data.m_max_attribs.m_Endurance       = 43;
 }
 void Character::reset()
 {
-    m_level=0;
-    m_name="EMPTY";
-    m_class_name="EMPTY";
-    m_origin_name="EMPTY";
-    m_villain=false;
-    m_mapName="EMPTY";
-    m_multiple_costumes=false;
-    m_current_costume_idx=0;
-    m_current_costume_set=false;
-    m_supergroup_costume=false;
-    m_sg_costume=nullptr;
-    m_using_sg_costume=false;
-    m_first_person_view_toggle=false;
-    m_full_options = false;
+    m_char_data.m_level=0;
+    m_char_data.m_name="EMPTY";
+    m_char_data.m_class_name="EMPTY";
+    m_char_data.m_origin_name="EMPTY";
+    m_char_data.m_villain=false;
+    m_char_data.m_mapName="EMPTY";
+    m_char_data.m_multiple_costumes=false;
+    m_char_data.m_current_costume_idx=0;
+    m_char_data.m_current_costume_set=false;
+    m_char_data.m_supergroup_costume=false;
+    m_char_data.m_sg_costume=nullptr;
+    m_char_data.m_using_sg_costume=false;
+    m_char_data.m_first_person_view_toggle=false;
+    m_char_data.m_full_options = false;
 }
 
 
 bool Character::isEmpty()
 {
-    return ( 0==m_name.compare("EMPTY",Qt::CaseInsensitive)&&
-            (0==m_class_name.compare("EMPTY",Qt::CaseInsensitive)));
+    return ( 0==m_char_data.m_name.compare("EMPTY",Qt::CaseInsensitive)&&
+            (0==m_char_data.m_class_name.compare("EMPTY",Qt::CaseInsensitive)));
 }
 
 void Character::sendWindow(BitStream &bs) const
@@ -81,9 +81,9 @@ void Character::sendWindow(BitStream &bs) const
 void Character::setName(const QString &val )
 {
     if(val.length()>0)
-        m_name = val;
+        m_char_data.m_name = val;
     else
-        m_name = "EMPTY";
+        m_char_data.m_name = "EMPTY";
 }
 
 void Character::sendTray(BitStream &bs) const
@@ -98,7 +98,7 @@ void Character::sendTrayMode(BitStream &bs) const
 
 void Character::GetCharBuildInfo(BitStream &src)
 {
-    m_level=1;
+    m_char_data.m_level=0;
     src.GetString(m_class_name);
     src.GetString(m_origin_name);
     CharacterPower primary,secondary;
@@ -185,10 +185,10 @@ void Character::SendCharBuildInfo(BitStream &bs) const
 
 void Character::serializetoCharsel( BitStream &bs )
 {
-    bs.StorePackedBits(1,m_level);
-    bs.StoreString(m_name);
-    bs.StoreString(m_class_name);
-    bs.StoreString(m_origin_name);
+    bs.StorePackedBits(1,m_char_data.m_level);
+    bs.StoreString(m_char_data.m_name);
+    bs.StoreString(m_char_data.m_class_name);
+    bs.StoreString(m_char_data.m_origin_name);
     if(m_costumes.size()==0)
     {
         assert(m_name.compare("EMPTY")==0); // only empty characters can have no costumes
@@ -196,7 +196,7 @@ void Character::serializetoCharsel( BitStream &bs )
     }
     else
         m_costumes[m_current_costume_set]->storeCharsel(bs);
-    bs.StoreString(m_mapName);
+    bs.StoreString(m_char_data.m_mapName);
     bs.StorePackedBits(1,1);
 }
 
@@ -321,7 +321,7 @@ void serializeLevelsStats(const Character &src,BitStream &bs, bool sendAbsolute)
     int field_idx=0;
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,0);
-    bs.StorePackedBits(4,src.m_level);
+    bs.StorePackedBits(4,src.m_char_data.m_level);
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,1);
     bs.StorePackedBits(4,src.m_combat_level);
