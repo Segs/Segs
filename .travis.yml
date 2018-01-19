@@ -1,0 +1,100 @@
+language: cpp
+cache:
+  directories:
+    - $HOME/.ccache
+dist: trusty
+
+notifications:
+  email: false
+    
+env:
+  global:
+    # Ubuntu version
+    - LINUX_DIST=trusty
+    - DEPS_DIR=${TRAVIS_BUILD_DIR}/deps
+    # Global build options and C++ flags
+    - CXX_FLAGS="-Wall -pedantic"
+    - CCACHE_TEMPDIR=/tmp/.ccache-temp
+    - CCACHE_COMPRESS=1
+    - CASHER_TIME_OUT=1000
+
+addons_shortcuts:
+  addons_clang39: &clang39
+    apt:
+      sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-3.9' ]
+      packages: [ 'clang-3.9','qt59-meta' ]
+  addons_clang40: &clang40
+    apt:
+      sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-4.0']
+      packages: [ 'clang-4.0','qt59-meta' ]
+  addons_clang50: &clang50
+    apt:
+      sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-5.0']
+      packages: [ 'clang-5.0', 'clang-tidy-5.0' ]
+  addons_gcc5: &gcc5
+    apt:
+      sources: [ 'ubuntu-toolchain-r-test' ]
+      packages: [ 'g++-5', 'gcc-5' ]
+  addons_gcc6: &gcc6
+    apt:
+      sources: [ 'ubuntu-toolchain-r-test' ]
+      packages: [ 'g++-6', 'gcc-6' ]
+  addons_gcc7: &gcc7
+    apt:
+      sources: [ 'ubuntu-toolchain-r-test' ]
+      packages: [ 'g++-7', 'gcc-7' ]
+
+matrix:
+  include:
+    - os: linux
+      compiler: "clang-3.9"
+      env: BUILD='Debug' CC=clang-3.9 CXX=clang++-3.9
+      addons: *clang39
+    - os: linux
+      compiler: "clang-4.0"
+      env: BUILD='Debug' CC=clang-4.0 CXX=clang++-4.0
+      addons: *clang40
+    - os: linux
+      compiler: "clang-5.0"
+      env: BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0
+           CLANG_TIDY=clang-tidy-5.0
+      addons: *clang50
+    - os: linux
+      compiler: "clang-5.0"
+      env: BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0
+           CXXFLAGS="-fsanitize=address,undefined,integer -fno-sanitize-recover=all -fno-omit-frame-pointer"
+           LDFLAGS="-fsanitize=address,undefined,integer"
+      addons: *clang50
+    - os: linux
+      compiler: "gcc-7"
+      env: BUILD='Debug' CC=gcc-7 CXX=g++-7
+      addons: *gcc7
+    - os: osx
+      osx_image: xcode9.2
+      compiler: clang
+      env: BUILD='Debug'
+
+before_install:
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository ppa:beineri/opt-qt593-trusty -y; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+      sudo apt-get update -qq;
+    else
+      brew update;
+    fi
+
+install:
+    if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+      sudo apt-get install -qq qt59base; source /opt/qt59/bin/qt59-env.sh;
+    else
+      brew install qt5;
+      brew link --force qt5;
+      export HOMEBREW_QT5_VERSION=$(brew list --versions qt5 | rev | cut -d' ' -f1 | rev);
+      ln -s /usr/local/Cellar/qt5/$HOMEBREW_QT5_VERSION/mkspecs /usr/local/mkspecs;
+    fi
+
+script:
+  - mkdir build
+  - cd build
+  - cmake .. -LA -DCMAKE_BUILD_TYPE=${BUILD} -DBUILD_WITH_CCACHE=1  -DCLANG_TIDY=$(which ${CLANG_TIDY})
+  - make VERBOSE=1
+# ctest --output-on-failure
