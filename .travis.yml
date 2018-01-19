@@ -46,14 +46,14 @@ addons_shortcuts:
 
 matrix:
   include:
-    - os: linux
-      compiler: "clang-3.9"
-      env: CLANG_VERSION=3.9 BUILD='Debug' CC=clang-3.9 CXX=clang++-3.9  LIBCXX=On
-      addons: *clang39
-    - os: linux
-      compiler: "clang-4.0"
-      env: CLANG_VERSION=4.0 BUILD='Debug' CC=clang-4.0 CXX=clang++-4.0  LIBCXX=On
-      addons: *clang40
+#    - os: linux
+#      compiler: "clang-3.9"
+#      env: CLANG_VERSION=3.9 BUILD='Debug' CC=clang-3.9 CXX=clang++-3.9  LIBCXX=On
+#      addons: *clang39
+#    - os: linux
+#      compiler: "clang-4.0"
+#      env: CLANG_VERSION=4.0 BUILD='Debug' CC=clang-4.0 CXX=clang++-4.0  LIBCXX=On
+#      addons: *clang40
     - os: linux
       compiler: "clang-5.0"
       env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0  LIBCXX=On
@@ -85,11 +85,11 @@ before_install:
 #  - if [ -n "$CLANG_VERSION" ]; then sudo PATH="${PATH}" CXX="$CXX" CC="$CC" ./ci_support/install_libcxx.sh; fi
   
 install:
-  - |
-    if [ "$LIBCXX" == "On" ]; then
-      CXX_FLAGS="${CXX_FLAGS} -stdlib=libc++ -nostdinc++ -cxx-isystem /usr/include/c++/v1/ -Wno-unused-command-line-argument";
-      CXX_LINKER_FLAGS="${CXX_LINKER_FLAGS} -lc++abi";
-    fi
+#  - |
+#    if [ "$LIBCXX" == "On" ]; then
+#      CXX_FLAGS="${CXX_FLAGS} -stdlib=libc++ -nostdinc++ -cxx-isystem /usr/include/c++/v1/ -Wno-unused-command-line-argument";
+#      CXX_LINKER_FLAGS="${CXX_LINKER_FLAGS} -lc++abi";
+#    fi
   - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       sudo apt-get install -qq qt59base qt59declarative qt59quickcontrols2; source /opt/qt59/bin/qt59-env.sh;
