@@ -59,12 +59,12 @@ matrix:
       env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0  LIBCXX=On
            CLANG_TIDY=clang-tidy-5.0
       addons: *clang50
-    - os: linux
-      compiler: "clang-5.0"
-      env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0  LIBCXX=On
-           CXXFLAGS="-fsanitize=address,undefined,integer -fno-sanitize-recover=all -fno-omit-frame-pointer  ${CXXFLAGS}"
-           LDFLAGS="-fsanitize=address,undefined,integer"
-      addons: *clang50
+#    - os: linux
+#      compiler: "clang-5.0"
+#      env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0  LIBCXX=On
+#           CXXFLAGS="-fsanitize=address,undefined,integer -fno-sanitize-recover=all -fno-omit-frame-pointer  ${CXXFLAGS}"
+#           LDFLAGS="-fsanitize=address,undefined,integer"
+#      addons: *clang50
     - os: linux
       compiler: "gcc-7"
       env: BUILD='Debug' CC=gcc-7 CXX=g++-7
