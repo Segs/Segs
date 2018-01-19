@@ -12,7 +12,13 @@ TARGET_LINK_LIBRARIES(AuthExerciser
 	ace_IMP
 	${CMAKE_DL_LIBS}
 )
-
+install(TARGETS AuthExerciser
+    DESTINATION deploy
+)
 if(MINGW)
     target_link_libraries(AuthExerciser ws2_32)
 endif()
+IF(WIN32)
+    include(Windeployqt)
+    windeployqt(AuthExerciser deploy)
+ENDIF()
