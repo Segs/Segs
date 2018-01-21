@@ -7,3 +7,12 @@ find_package(Qt5 COMPONENTS Core Quick REQUIRED)
 add_executable(${PROJECT_NAME} "main.cpp" "qml.qrc")
 
 target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Quick)
+
+
+install(TARGETS ${PROJECT_NAME}
+    DESTINATION deploy
+)
+IF(WIN32)
+    include(Windeployqt)
+    windeployqt(${PROJECT_NAME} deploy)
+ENDIF()
