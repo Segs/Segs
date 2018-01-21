@@ -1,6 +1,6 @@
 ![logo](docs/title_v1.png)
 [![master Build Status](https://travis-ci.org/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs) 
-[![master Build Status](https://ci.appveyor.com/api/projects/status/54d0u1fxe50ad80o/branch/master?svg=true)](https://ci.appveyor.com/project/Segs/Segs/branch/master)
+[![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Percentage of issues still open")
 
