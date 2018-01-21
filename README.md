@@ -1,4 +1,9 @@
-![image](docs/title_v1.png)
+![logo](docs/title_v1.png)
+[![master Build Status](https://travis-ci.org/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs) 
+[![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Percentage of issues still open")
+
 SEGS - Super Entity Game Server
 ======
 SEGS is the Super Entity Game Server. It is a free, open source (under the terms of the BSD License), cross-platform, and object-oriented suite of protocols and services designed to interface with popular super hero themed MMORPG clients. SEGS is written in C++ and facilitates common MMORPG functionality such as account and character storage to a database, account and character retrieval from a database, secure client authentication, client movement in a virtual world, and client chat.
@@ -24,7 +29,6 @@ CONTENTS OF THIS FILE
 - [Contribute to Development](#contribute-to-development)
 - [More Information](#more-information)
 - [FAQs](#faqs)
-
 
 REQUIREMENTS AND NOTES
 ------
