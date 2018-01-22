@@ -16,8 +16,8 @@
 // Getters
 uint32_t    getIdx(const Entity &e) { return e.m_idx; }
 uint32_t    getDbId(const Entity &e) { return e.m_db_id; }
-uint32_t    getTargetIdx(Entity &e) { return e.inp_state.m_target_idx; }
-uint32_t    getAssistTargetIdx(Entity &e) { return e.inp_state.m_assist_target_idx; }
+uint32_t    getTargetIdx(const Entity &e) { return e.inp_state.m_target_idx; }
+uint32_t    getAssistTargetIdx(const Entity &e) { return e.inp_state.m_assist_target_idx; }
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char.m_db_id = val; e.m_db_id = val; }
@@ -62,22 +62,22 @@ void charUpdateDB(Entity *e)
  * Character Methods
  */
 // Getter
-uint32_t    getLevel(Character &c) { return c.m_char_data.m_level; }
-uint32_t    getCombatLevel(Character &c) { return c.m_char_data.m_combat_level; }
-uint32_t    getHP(Character &c) { return c.m_current_attribs.m_HitPoints; }
-uint32_t    getEnd(Character &c) { return c.m_current_attribs.m_Endurance; }
-uint64_t    getLastCostumeId(Character &c) { return c.m_char_data.m_last_costume_id; }
-QString &   getOrigin(Character &c) { return c.m_char_data.m_origin_name; }
-QString &   getClass(Character &c) { return c.m_char_data.m_class_name; }
-QString &   getMapName(Character &c) { return c.m_char_data.m_mapName; }
-uint32_t    getXP(Character &c) { return c.m_char_data.m_experience_points; }
-uint32_t    getDebt(Character &c) { return c.m_char_data.m_experience_debt; }
-uint32_t    getPatrolXP(Character &c) { return c.m_char_data.m_experience_patrol; }
-QString &   getTitles(Character &c) { return c.m_char_data.m_titles[3]; }
-uint32_t    getInf(Character &c) { return c.m_char_data.m_influence; }
-QString &   getDescription(Character &c) { return c.m_char_data.m_character_description ; }
-QString &   getBattleCry(Character &c) { return c.m_char_data.m_battle_cry; }
-QString &   getAlignment(Character &c) { return c.m_char_data.m_alignment; }
+uint32_t            getLevel(const Character &c) { return c.m_char_data.m_level; }
+uint32_t            getCombatLevel(const Character &c) { return c.m_char_data.m_combat_level; }
+uint32_t            getHP(const Character &c) { return c.m_current_attribs.m_HitPoints; }
+uint32_t            getEnd(const Character &c) { return c.m_current_attribs.m_Endurance; }
+uint64_t            getLastCostumeId(const Character &c) { return c.m_char_data.m_last_costume_id; }
+const QString &     getOrigin(const Character &c) { return c.m_char_data.m_origin_name; }
+const QString &     getClass(const Character &c) { return c.m_char_data.m_class_name; }
+const QString &     getMapName(const Character &c) { return c.m_char_data.m_mapName; }
+uint32_t            getXP(const Character &c) { return c.m_char_data.m_experience_points; }
+uint32_t            getDebt(const Character &c) { return c.m_char_data.m_experience_debt; }
+uint32_t            getPatrolXP(const Character &c) { return c.m_char_data.m_experience_patrol; }
+const QString &     getTitles(const Character &c) { return c.m_char_data.m_titles[3]; }
+uint32_t            getInf(const Character &c) { return c.m_char_data.m_influence; }
+const QString &     getDescription(const Character &c) { return c.m_char_data.m_character_description ; }
+const QString &     getBattleCry(const Character &c) { return c.m_char_data.m_battle_cry; }
+const QString &     getAlignment(const Character &c) { return c.m_char_data.m_alignment; }
 
 // Setters
 void setLevel(Character &c, uint32_t val)

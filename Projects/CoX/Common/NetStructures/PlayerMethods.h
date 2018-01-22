@@ -39,22 +39,22 @@ void    charUpdateDB(Entity *e);
  * Character Methods
  */
 // Getters
-uint32_t      getLevel(const Character &c);
-uint32_t      getCombatLevel(const Character &c);
-uint32_t      getHP(const Character &c);
-uint32_t      getEnd(const Character &c);
-uint64_t      getLastCostumeId(const Character &c);
-QString &     getOrigin(const Character &c);
-QString &     getClass(const Character &c);
-QString &     getMapName(const Character &c);
-uint32_t      getXP(const Character &c);
-uint32_t      getDebt(const Character &c);
-uint32_t      getPatrolXP(const Character &c);
-QString &     getTitles(const Character &c);
-uint32_t      getInf(const Character &c);
-QString &     getDescription(const Character &c);
-QString &     getBattleCry(const Character &c);
-QString &     getAlignment(const Character &c);
+uint32_t            getLevel(const Character &c);
+uint32_t            getCombatLevel(const Character &c);
+uint32_t            getHP(const Character &c);
+uint32_t            getEnd(const Character &c);
+uint64_t            getLastCostumeId(const Character &c);
+const QString &     getOrigin(const Character &c);
+const QString &     getClass(const Character &c);
+const QString &     getMapName(const Character &c);
+uint32_t            getXP(const Character &c);
+uint32_t            getDebt(const Character &c);
+uint32_t            getPatrolXP(const Character &c);
+const QString &     getTitles(const Character &c);
+uint32_t            getInf(const Character &c);
+const QString &     getDescription(const Character &c);
+const QString &     getBattleCry(const Character &c);
+const QString &     getAlignment(const Character &c);
 
 
 // Setters

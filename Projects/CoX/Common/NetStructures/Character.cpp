@@ -6,12 +6,12 @@
  *
  */
 #include "Character.h"
-#include "PlayerMethods.h"
 
 #include "BitStream.h"
 #include "Entity.h"
 #include "Costume.h"
 #include "GameData/keybind_definitions.h"
+#include "PlayerMethods.h"
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 
@@ -275,7 +275,9 @@ void Character::DumpBuildInfo()
             + "\n  inf: " + QString::number(getInf(c))
             + "\n  xp/debt: " + QString::number(getXP(c)) + "/" + QString::number(getDebt(c))
             + "\n  lfg: " + QString::number(m_char_data.m_lfg)
-            + "\n  afk: " + QString::number(m_char_data.m_afk);
+            + "\n  afk: " + QString::number(m_char_data.m_afk)
+            + "\n  description: " + getDescription(c)
+            + "\n  battleCry: " + getBattleCry(c);
 
     qDebug().noquote() << msg;
     //DumpPowerPoolInfo(m_powers[0].power_id);

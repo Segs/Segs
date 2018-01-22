@@ -160,14 +160,14 @@ Entity * EntityManager::getEntity(const QString &name)
         if (pEnt->name() == name)
             return pEnt;
     }
-    qWarning() << "Entity" << name << "does not exist.";
+    qWarning() << "Entity" << name << "does not exist, or is not currently online.";
     return nullptr;
 }
 
 Entity * EntityManager::getEntity(const int32_t &idx)
 {
     if(idx==0) {
-        qWarning() << "Entity" << idx << "does not exist.";
+        qWarning() << "Entity" << idx << "does not exist, or is not currently online.";
         return nullptr;
     }
     // Iterate through all active entities and return entity by idx
@@ -176,6 +176,6 @@ Entity * EntityManager::getEntity(const int32_t &idx)
         if (pEnt->m_idx == idx)
             return pEnt;
     }
-    qWarning() << "Entity" << idx << "does not exist.";
+    qWarning() << "Entity" << idx << "does not exist, or is not currently online.";
     return nullptr;
 }

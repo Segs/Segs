@@ -12,9 +12,11 @@
 #include "AdminServer.h"
 #include "Character.h"
 #include "Costume.h"
-#include "GameServer/GameServer.h"
 #include "PlayerMethods.h"
 
+#include <iostream>
+#include <cereal/archives/json.hpp>
+#include <cereal/types/vector.hpp>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlDriver>
 #include <QtCore/QDebug>
@@ -152,6 +154,7 @@ bool CharacterDatabase::fill( AccountInfo *c )
 #define STR_OR_VERY_EMPTY(c) ((c!=0) ? c:"")
 bool CharacterDatabase::fill( Character *c)
 {
+    // TODO: Declare with Entity so that we can fill pos and orientation_pyr data.
     CharacterData *cd = &c->m_char_data;
     assert(c&&c->getAccountId());
 
@@ -381,6 +384,18 @@ bool CharacterDatabase::update( Entity *e )
     m_prepared_char_update.bindValue(":supergroup_id", cd->m_supergroup_id);
     //m_prepared_char_update.bindValue(":options", cd->m_options);
     //m_prepared_char_update.bindValue(":gui", cd->m_gui);
+
+    /*
+    std::stringstream ss;
+    {
+      cereal::JSONOutputArchive archive( ss );
+      archive( cd );
+    }
+    QString charData;
+
+    m_prepared_char_update.bindValue(":chardata", QByteArray::fromStdString(charData));
+    qDebug() << charData;
+    */
     
     if(!doIt(m_prepared_char_update))
         return false;

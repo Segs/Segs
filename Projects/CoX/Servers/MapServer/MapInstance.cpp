@@ -668,14 +668,24 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
 
             Entity *tgt = ent_manager.getEntity(target_name);
             Entity *src = sender->char_entity();
-            
-            prepared_chat_message = QString("[Tell] -->%1: %2").arg(target_name,msg_content.toString());
-            info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
-            src->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-            
-            prepared_chat_message = QString("[Tell] %1: %2").arg(sender_char_name,msg_content.toString());
-            info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
-            tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+
+            if(tgt == nullptr)
+            {
+                prepared_chat_message = QString("No player named \"%1\" currently online.").arg(target_name);
+                info = new InfoMessageCmd(InfoType::USER_ERROR, prepared_chat_message);
+                src->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                break;
+            }
+            else
+            {
+                prepared_chat_message = QString("[Tell] -->%1: %2").arg(target_name,msg_content.toString());
+                info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
+                src->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+
+                prepared_chat_message = QString("[Tell] %1: %2").arg(sender_char_name,msg_content.toString());
+                info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
+                tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+            }
             
             break;
         }
@@ -907,6 +917,18 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::REGULAR, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
+    else if(lowerContents.startsWith("setCombatLevel ",Qt::CaseInsensitive)) {
+        int space = ev->contents.indexOf(' ');
+        QString val = ev->contents.mid(space+1);
+        uint32_t attrib = val.toUInt();
+
+        setCombatLevel(ent->m_char, attrib-1); // TODO: Why must this be -1?
+
+        QString msg = "Setting Combat Level to: " + QString::number(attrib);
+        qDebug() << msg;
+        info = new InfoMessageCmd(InfoType::REGULAR, msg);
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    }
     else if(lowerContents == "whoall") {
         QString msg = "Players on this map:\n";
 
@@ -1099,13 +1121,16 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(lowerContents.startsWith("getEntity ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
+        QString msg;
 
         MapInstance *mi = src->current_map();
         EntityManager &ent_manager(mi->m_entities);
 
         Entity *e = ent_manager.getEntity(val);
-
-        QString msg = "Received Entity: " + e->name();
+        if(e == nullptr)
+            msg = "No Such Entity: " + val;
+        else
+            msg = "Received Entity: " + e->name();
         qDebug() << msg;
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
@@ -1785,16 +1810,11 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    CharacterData cd = src->char_entity()->m_char.m_char_data;
+    Character c = src->char_entity()->m_char;
 
-    if(!ev->battlecry.isNull() && !ev->description.isNull())
-    {
-        cd.m_battle_cry = ev->battlecry;
-        cd.m_character_description = ev->battlecry;
-        qWarning() << "Attempted description and battlecry request:" << ev->description << ev->battlecry;
-    }
-    else
-        qWarning() << "Unhandled description and battlecry request" << ev->description<<ev->battlecry;
+    setBattleCry(c,ev->battlecry);
+    setDescription(c,ev->description);
+    qWarning() << "Attempted description and battlecry request:" << ev->description << ev->battlecry;
 }
 
 void MapInstance::on_entity_info_request(EntityInfoRequest * ev)

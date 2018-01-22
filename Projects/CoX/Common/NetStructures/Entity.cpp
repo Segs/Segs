@@ -52,12 +52,16 @@ void Entity::beginLogout(uint16_t time_till_logout)
 
 void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *packer )
 {
+    QString description;
+    QString battlecry;
     e.m_type = src.GetPackedBits(1); //2. Possibly EntType (ENT_PLAYER)
     e.m_char.GetCharBuildInfo(src);
     e.m_char.recv_initial_costume(src,packer);
     e.m_char.m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
-    src.GetString(getBattleCry(e.m_char));
-    src.GetString(getDescription(e.m_char));
+    src.GetString(battlecry);
+    src.GetString(description);
+    setBattleCry(e.m_char,battlecry);
+    setDescription(e.m_char,description);
 }
 void Entity::InsertUpdate( PosUpdate pup )
 {
