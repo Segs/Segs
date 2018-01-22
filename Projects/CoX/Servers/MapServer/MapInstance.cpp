@@ -344,7 +344,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     }
     assert(cl->char_entity());
     cl->current_map()->enqueue_client(cl);
-    cl->char_entity()->m_char.m_mapName = name();
+    setMapName(cl->char_entity()->m_char,name());
     lnk->set_client_data(cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
 }
@@ -510,14 +510,15 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
         "\\$origin",
         "\\$target"
     };
-    Character sender_char       = sender->char_entity()->m_char;
 
-    QString  sender_class       = QString(getClass(sender_char)).remove("Class_");
-    QString  sender_battlecry   = sender_char.m_battle_cry;
-    uint32_t sender_level       = getLevel(sender_char);
-    QString  sender_char_name   = sender_char.getName();
-    QString  sender_origin      = getOrigin(sender_char);
-    uint32_t target_idx         = sender->char_entity()->inp_state.m_target_idx;
+    Character c = sender->char_entity()->m_char;
+
+    QString  sender_class       = QString(getClass(c)).remove("Class_");
+    QString  sender_battlecry   = getBattleCry(c);
+    uint32_t sender_level       = getLevel(c);
+    QString  sender_char_name   = c.getName();
+    QString  sender_origin      = getOrigin(c);
+    uint32_t target_idx         = getTargetIdx(*sender->char_entity());
     QString  target_char_name;
 
     qDebug() << "target_idx: " << sender->char_entity()->m_idx  << ":" << target_idx;
@@ -528,7 +529,7 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
         target_char_name = tgt->name();
     }
     else
-        target_char_name = sender_char.getName();
+        target_char_name = c.getName();
 
     foreach (const QString &str, replacements) {
         if(str == "\\$archetype")
@@ -911,11 +912,12 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
 
         for(MapClient *cl : m_clients)
         {
+            Character *c        = &cl->char_entity()->m_char;
             QString name        = cl->char_entity()->name();
-            QString lvl         = QString::number(getLevel(cl->char_entity()->m_char));
-            QString clvl        = QString::number(cl->char_entity()->m_char.m_combat_level);
-            QString origin      = getOrigin(cl->char_entity()->m_char);
-            QString archetype   = QString(getClass(cl->char_entity()->m_char)).remove("Class_");
+            QString lvl         = QString::number(getLevel(*c));
+            QString clvl        = QString::number(getCombatLevel(*c));
+            QString origin      = getOrigin(*c);
+            QString archetype   = QString(getClass(*c)).remove("Class_");
 
             // Format: character_name "lvl" level "clvl" combat_level origin archetype
             msg += name + " lvl " + lvl + " clvl " + clvl + " " + origin + " " + archetype + "\n";
@@ -1121,16 +1123,16 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
                 + "\n  " + ent->m_char.m_char_data.m_origin_name
                 + "\n  " + ent->m_char.m_char_data.m_class_name
                 + "\n  map: " + ent->m_char.m_char_data.m_mapName
-                + "\n  db_id: " + QString::number(ent->m_db_id) + ":" + QString::number(ent->m_char.m_char_data.m_db_id)
+                + "\n  db_id: " + QString::number(ent->m_db_id) + ":" + QString::number(ent->m_char.m_db_id)
                 + "\n  idx: " + QString::number(ent->m_idx)
                 + "\n  access: " + QString::number(ent->m_access_level)
-                + "\n  acct: " + QString::number(ent->m_char.m_char_data.m_account_id)
+                + "\n  acct: " + QString::number(ent->m_char.m_account_id)
                 + "\n  lvl/clvl: " + QString::number(ent->m_char.m_char_data.m_level) + "/" + QString::number(ent->m_char.m_char_data.m_combat_level)
                 + "\n  inf: " + QString::number(ent->m_char.m_char_data.m_influence)
                 + "\n  xp/debt: " + QString::number(ent->m_char.m_char_data.m_experience_points) + "/" + QString::number(ent->m_char.m_char_data.m_experience_debt)
                 + "\n  lfg: " + QString::number(ent->m_char.m_char_data.m_lfg)
                 + "\n  afk: " + QString::number(ent->m_char.m_char_data.m_afk)
-                + "\n  tgt_idx: " + QString::number(ent->inp_state.m_target_idx);
+                + "\n  tgt_idx: " + QString::number(getTargetIdx(*ent));
         ent->dump();
         //qDebug().noquote() << msg;
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
@@ -1139,7 +1141,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     else if(lowerContents.startsWith("setPowerLevel ",Qt::CaseInsensitive)) {
         int space = ev->contents.indexOf(' ');
         int val = ev->contents.mid(space+1).toInt();
-        setPowerLevel(ent->m_char, val);
+        setCombatLevel(ent->m_char, val);
 
         QString msg = "Set m_power_level to: " + QString::number(val);
         qDebug() << msg;
@@ -1783,12 +1785,12 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    Entity *ent = src->char_entity();
+    CharacterData cd = src->char_entity()->m_char.m_char_data;
 
     if(!ev->battlecry.isNull() && !ev->description.isNull())
     {
-        ent->m_char.m_battle_cry = ev->battlecry;
-        ent->m_char.m_character_description = ev->battlecry;
+        cd.m_battle_cry = ev->battlecry;
+        cd.m_character_description = ev->battlecry;
         qWarning() << "Attempted description and battlecry request:" << ev->description << ev->battlecry;
     }
     else

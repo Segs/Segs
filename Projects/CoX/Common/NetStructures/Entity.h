@@ -212,9 +212,6 @@ public:
         PosUpdate           m_pos_updates[64];
         size_t              m_update_idx        = 0;
         std::vector<PosUpdate> interpResults;
-        bool                m_has_the_prefix    = false;
-        QString             m_battle_cry;
-        QString             m_character_description;
 
         Character           m_char;
 

@@ -112,13 +112,13 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     PUTDEBUG("before traymode");
     player_char.sendTrayMode(bs);
 
-    bs.StoreString(src.name()); // maxlength 32
-    bs.StoreString(player_char.m_battle_cry); //max 128
-    bs.StoreString(player_char.m_character_description); //max 1024
+    bs.StoreString(src.name());                     // maxlength 32
+    bs.StoreString(getBattleCry(player_char));      //max 128
+    bs.StoreString(getDescription(player_char));    //max 1024
     PUTDEBUG("before windows");
     player_char.sendWindows(bs);
-    bs.StoreBits(1,player_char.m_lfg);  // lfg related
-    bs.StoreBits(1,0);                  // SG mode
+    bs.StoreBits(1,player_char.m_char_data.m_lfg);              // lfg related
+    bs.StoreBits(1,player_char.m_char_data.m_using_sg_costume); // SG mode
     player_char.sendTeamBuffMode(bs);
     player_char.sendDockMode(bs);
     player_char.sendChatSettings(bs);

@@ -55,9 +55,9 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *pac
     e.m_type = src.GetPackedBits(1); //2. Possibly EntType (ENT_PLAYER)
     e.m_char.GetCharBuildInfo(src);
     e.m_char.recv_initial_costume(src,packer);
-    e.m_char.m_has_the_prefix = src.GetBits(1); // The -> 1
-    src.GetString(e.m_char.m_battle_cry);
-    src.GetString(e.m_char.m_character_description);
+    e.m_char.m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
+    src.GetString(getBattleCry(e.m_char));
+    src.GetString(getDescription(e.m_char));
 }
 void Entity::InsertUpdate( PosUpdate pup )
 {
@@ -73,7 +73,12 @@ void Entity::dump()
             + "\n  db_id: " + QString::number(m_db_id)
             + "\n  entity idx: " + QString::number(m_idx)
             + "\n  access level: " + QString::number(m_access_level)
-            + "\n  tgt_idx: " + QString::number(inp_state.m_target_idx);
+            + "\n  tgt_idx: " + QString::number(inp_state.m_target_idx)
+            + "\n  m_type: " + QString::number(m_type)
+            + "\n  class idx: " + QString::number(m_class_idx)
+            + "\n  origin idx: " + QString::number(m_origin_idx)
+            + "\n  current chat channel: " + QString::number(m_cur_chat_channel)
+            + "\n  m_SG_id: " + QString::number(m_SG_id);
 
     qDebug().noquote() << msg;
     if(m_type == Entity::ENT_PLAYER)

@@ -2,24 +2,20 @@
 
 #include "Entity.h"
 #include "Character.h"
-#include "../Projects/CoX/Servers/AdminServer/AdminServer.h"
-#include "../Projects/CoX/Servers/AdminServer/CharacterDatabase.h"
-//#include "../Projects/CoX/Servers/MapServer/MapServerData.h"
 
 /*
  * Entity Methods
  */
-uint32_t    getIdx(Entity &e);
-uint32_t    getDbId(Entity &e);
-void        setDbId(Entity &e, uint8_t val);
-void        charUpdateDB(Entity *e);
+// Getters
+uint32_t    getIdx(const Entity &e);
+uint32_t    getDbId(const Entity &e);
+uint32_t    getTargetIdx(const Entity &e);
+uint32_t    getAssistTargetIdx(const Entity &e);
 
-void    toggleFly(Entity &e);
-void    toggleStunned(Entity &e);
-void    toggleJumppack(Entity &e);
+// Setters
+void    setDbId(Entity &e, uint8_t val);
 void    setBackupSpd(Entity &e, const float &val);
 void    setJumpHeight(Entity &e, const float &val);
-void    toggleControlsDisabled(Entity &e);
 void    setUpdateID(Entity &e, const uint8_t &val);
 void    setu1(Entity &e, const int &val);
 void    setu2(Entity &e, const int &val);
@@ -27,31 +23,54 @@ void    setu3(Entity &e, const int &val);
 void    setu4(Entity &e, const int &val);
 void    setu5(Entity &e, const int &val);
 void    setu6(Entity &e, const int &val);
+
+// Toggles
+void    toggleFly(Entity &e);
+void    toggleStunned(Entity &e);
+void    toggleJumppack(Entity &e);
+void    toggleControlsDisabled(Entity &e);
 void    toggleFullUpdate(Entity &e);
 void    toggleControlId(Entity &e);
+
+// Misc Methods
+void    charUpdateDB(Entity *e);
 
 /*
  * Character Methods
  */
-uint32_t            getLevel(Character &src);
-void                setLevel(Character &src, uint32_t val);
-uint32_t            getHP(Character &src);
-void                setHP(Character &src, uint32_t val);
-uint32_t            getEnd(Character &src);
-void                setEnd(Character &src, uint32_t val);
-uint64_t            getLastCostumeId(Character &src);
-void                setLastCostumeId(Character &src, uint64_t val);
-const QString &     getOrigin(Character &src);
-const QString &     getClass(Character &src);
-const QString &     getMapName(Character &src);
-void                setMapName(Character &src, const QString &val);
-uint32_t            getXP(Character &src);
-void                setXP(Character &src, uint32_t val);
-void                setDebt(Character &src, uint32_t val);
-const QString &     getTitles(Character &src);
-void                setTitles(Character &src, bool prefix = false, QString generic = "", QString origin = "", QString special = "");
-void                toggleAFK(Character &src, const QString &msg = "");
-void                toggleLFG(Character &src);
-uint32_t            getInf(Character &src);
-void                setInf(Character &src, uint32_t val);
-void                setPowerLevel(Character &src, uint32_t val);
+// Getters
+uint32_t      getLevel(const Character &c);
+uint32_t      getCombatLevel(const Character &c);
+uint32_t      getHP(const Character &c);
+uint32_t      getEnd(const Character &c);
+uint64_t      getLastCostumeId(const Character &c);
+QString &     getOrigin(const Character &c);
+QString &     getClass(const Character &c);
+QString &     getMapName(const Character &c);
+uint32_t      getXP(const Character &c);
+uint32_t      getDebt(const Character &c);
+uint32_t      getPatrolXP(const Character &c);
+QString &     getTitles(const Character &c);
+uint32_t      getInf(const Character &c);
+QString &     getDescription(const Character &c);
+QString &     getBattleCry(const Character &c);
+QString &     getAlignment(const Character &c);
+
+
+// Setters
+void    setLevel(Character &c, uint32_t val);
+void    setCombatLevel(Character &c, uint32_t val);
+void    setHP(Character &c, uint32_t val);
+void    setEnd(Character &c, uint32_t val);
+void    setLastCostumeId(Character &c, uint64_t val);
+void    setMapName(Character &c, const QString &val);
+void    setXP(Character &c, uint32_t val);
+void    setDebt(Character &c, uint32_t val);
+void    setTitles(Character &c, bool prefix = false, QString generic = "", QString origin = "", QString special = "");
+void    setInf(Character &c, uint32_t val);
+void    setDescription(Character &c, QString val);
+void    setBattleCry(Character &c, QString val);
+
+// Toggles
+void    toggleAFK(Character &c, const QString &msg = "");
+void    toggleLFG(Character &c);

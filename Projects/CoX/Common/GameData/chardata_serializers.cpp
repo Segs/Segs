@@ -34,9 +34,8 @@ void serialize(Archive & archive, CharacterData &cd)
     archive(cereal::make_nvp("Class",cd.m_class_name));
     archive(cereal::make_nvp("Origin",cd.m_origin_name));
     archive(cereal::make_nvp("MapName",cd.m_mapName));
-    archive(cereal::make_nvp("AccountID",cd.m_account_id));
-    archive(cereal::make_nvp("dbID",cd.m_db_id));
-    archive(cereal::make_nvp("PowerLevel",cd.m_power_level));
+    archive(cereal::make_nvp("SuperGroupCostume",cd.m_supergroup_costume));
+    archive(cereal::make_nvp("UsingSGCostume",cd.m_using_sg_costume));
 }
 
 void saveTo(const CharacterData & target, const QString & baseName, bool text_format)

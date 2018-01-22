@@ -6,6 +6,7 @@
  *
  */
 #include "Character.h"
+#include "PlayerMethods.h"
 
 #include "BitStream.h"
 #include "Entity.h"
@@ -22,39 +23,39 @@ namespace {
 
 Character::Character()
 {
-    m_char_data.m_multiple_costumes             = false;
-    m_char_data.m_current_costume_idx           = 0;
-    m_char_data.m_current_costume_set           = false;
-    m_char_data.m_supergroup_costume            = false;
-    m_char_data.m_sg_costume                    = nullptr;
-    m_char_data.m_using_sg_costume              = false;
-    m_char_data.m_current_attribs.m_HitPoints   = 25;
-    m_char_data.m_max_attribs.m_HitPoints       = 50;
-    m_char_data.m_current_attribs.m_Endurance   = 33;
-    m_char_data.m_max_attribs.m_Endurance       = 43;
+    m_multiple_costumes              = false;
+    m_current_costume_idx            = 0;
+    m_current_costume_set            = false;
+    m_char_data.m_supergroup_costume = false;
+    m_sg_costume                     = nullptr;
+    m_char_data.m_using_sg_costume   = false;
+    m_current_attribs.m_HitPoints    = 25;
+    m_max_attribs.m_HitPoints        = 50;
+    m_current_attribs.m_Endurance    = 33;
+    m_max_attribs.m_Endurance        = 43;
 }
 void Character::reset()
 {
     m_char_data.m_level=0;
-    m_char_data.m_name="EMPTY";
+    m_name="EMPTY";
     m_char_data.m_class_name="EMPTY";
     m_char_data.m_origin_name="EMPTY";
-    m_char_data.m_villain=false;
+    m_villain=false;
     m_char_data.m_mapName="EMPTY";
-    m_char_data.m_multiple_costumes=false;
-    m_char_data.m_current_costume_idx=0;
-    m_char_data.m_current_costume_set=false;
+    m_multiple_costumes=false;
+    m_current_costume_idx=0;
+    m_current_costume_set=false;
     m_char_data.m_supergroup_costume=false;
-    m_char_data.m_sg_costume=nullptr;
+    m_sg_costume=nullptr;
     m_char_data.m_using_sg_costume=false;
-    m_char_data.m_first_person_view_toggle=false;
-    m_char_data.m_full_options = false;
+    m_first_person_view_toggle=false;
+    m_full_options = false;
 }
 
 
 bool Character::isEmpty()
 {
-    return ( 0==m_char_data.m_name.compare("EMPTY",Qt::CaseInsensitive)&&
+    return ( 0==m_name.compare("EMPTY",Qt::CaseInsensitive)&&
             (0==m_char_data.m_class_name.compare("EMPTY",Qt::CaseInsensitive)));
 }
 
@@ -81,9 +82,9 @@ void Character::sendWindow(BitStream &bs) const
 void Character::setName(const QString &val )
 {
     if(val.length()>0)
-        m_char_data.m_name = val;
+        m_name = val;
     else
-        m_char_data.m_name = "EMPTY";
+        m_name = "EMPTY";
 }
 
 void Character::sendTray(BitStream &bs) const
@@ -99,8 +100,8 @@ void Character::sendTrayMode(BitStream &bs) const
 void Character::GetCharBuildInfo(BitStream &src)
 {
     m_char_data.m_level=0;
-    src.GetString(m_class_name);
-    src.GetString(m_origin_name);
+    src.GetString(m_char_data.m_class_name);
+    src.GetString(m_char_data.m_origin_name);
     CharacterPower primary,secondary;
     primary.power_id.serializefrom(src);
     secondary.power_id.serializefrom(src);
@@ -111,10 +112,11 @@ void Character::GetCharBuildInfo(BitStream &src)
 }
 void Character::SendCharBuildInfo(BitStream &bs) const
 {
+    Character c = *this;
     PowerPool_Info null_power = {0,0,0};
-    bs.StoreString(m_class_name);   // class name
-    bs.StoreString(m_origin_name);  // origin name
-    bs.StorePackedBits(5,m_char_data.m_power_level); // related to power level  ?
+    bs.StoreString(getClass(c));   // class name
+    bs.StoreString(getOrigin(c));  // origin name
+    bs.StorePackedBits(5,getCombatLevel(c)); // related to combat level?
     PUTDEBUG("SendCharBuildInfo after plevel");
 
     {
@@ -185,10 +187,11 @@ void Character::SendCharBuildInfo(BitStream &bs) const
 
 void Character::serializetoCharsel( BitStream &bs )
 {
-    bs.StorePackedBits(1,m_char_data.m_level);
-    bs.StoreString(m_char_data.m_name);
-    bs.StoreString(m_char_data.m_class_name);
-    bs.StoreString(m_char_data.m_origin_name);
+    Character c = *this;
+    bs.StorePackedBits(1,getLevel(c));
+    bs.StoreString(getName());
+    bs.StoreString(getClass(c));
+    bs.StoreString(getOrigin(c));
     if(m_costumes.size()==0)
     {
         assert(m_name.compare("EMPTY")==0); // only empty characters can have no costumes
@@ -196,7 +199,7 @@ void Character::serializetoCharsel( BitStream &bs )
     }
     else
         m_costumes[m_current_costume_set]->storeCharsel(bs);
-    bs.StoreString(m_char_data.m_mapName);
+    bs.StoreString(getMapName(c));
     bs.StorePackedBits(1,1);
 }
 
@@ -232,12 +235,12 @@ void Character::serialize_costumes(BitStream &bs, ColorAndPartPacker *packer , b
         {
             ::serializeto(*m_costumes[m_current_costume_idx],bs,packer);
         }
-        bs.StoreBits(1,m_supergroup_costume);
-        if(m_supergroup_costume)
+        bs.StoreBits(1,m_char_data.m_supergroup_costume);
+        if(m_char_data.m_supergroup_costume)
         {
             ::serializeto(*m_sg_costume,bs,packer);
 
-            bs.StoreBits(1,m_using_sg_costume);
+            bs.StoreBits(1,m_char_data.m_using_sg_costume);
         }
     }
     else // other player's costumes we're sending only their current.
@@ -259,19 +262,20 @@ void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
 }
 void Character::DumpBuildInfo()
 {
+    Character &c = *this;
     QString msg = "CharDebug\n  "
             + getName()
-            + "\n  " + m_origin_name
-            + "\n  " + m_class_name
-            + "\n  map: " + m_mapName
+            + "\n  " + getOrigin(c)
+            + "\n  " + getClass(c)
+            + "\n  map: " + getMapName(c)
             + "\n  db_id: " + QString::number(m_db_id)
             + "\n  idx: " + QString::number(getIndex())
             + "\n  acct: " + QString::number(getAccountId())
-            + "\n  lvl/clvl: " + QString::number(m_level) + "/" + QString::number(m_combat_level)
-            + "\n  inf: " + QString::number(m_influence)
-            + "\n  xp/debt: " + QString::number(m_experience_points) + "/" + QString::number(m_experience_debt)
-            + "\n  lfg: " + QString::number(m_lfg)
-            + "\n  afk: " + QString::number(m_afk);
+            + "\n  lvl/clvl: " + QString::number(getLevel(c)) + "/" + QString::number(getCombatLevel(c))
+            + "\n  inf: " + QString::number(getInf(c))
+            + "\n  xp/debt: " + QString::number(getXP(c)) + "/" + QString::number(getDebt(c))
+            + "\n  lfg: " + QString::number(m_char_data.m_lfg)
+            + "\n  afk: " + QString::number(m_char_data.m_afk);
 
     qDebug().noquote() << msg;
     //DumpPowerPoolInfo(m_powers[0].power_id);
@@ -318,13 +322,12 @@ void serializeFullStats(const Parse_CharAttrib &src,BitStream &bs, bool sendAbso
 }
 void serializeLevelsStats(const Character &src,BitStream &bs, bool sendAbsolute)
 {
-    int field_idx=0;
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,0);
-    bs.StorePackedBits(4,src.m_char_data.m_level);
+    bs.StorePackedBits(4,getLevel(src));
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,1);
-    bs.StorePackedBits(4,src.m_combat_level);
+    bs.StorePackedBits(4,getCombatLevel(src));
     bs.StoreBits(1,0); // no more data
 }
 
@@ -359,13 +362,13 @@ void serializeFullStats(const Character &src,BitStream &bs, bool sendAbsolute)
     serializeLevelsStats(src,bs,sendAbsolute);
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,field_idx++); // ExperiencePoints
-    bs.StorePackedBits(16,src.m_experience_points);
+    bs.StorePackedBits(16,getXP(src));
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,field_idx++); // ExperienceDebt
-    bs.StorePackedBits(16,src.m_experience_debt);
+    bs.StorePackedBits(16,getDebt(src));
     bs.StoreBits(1,1); // we have more data
-    bs.StorePackedBits(1,field_idx++); // ExperienceDebt
-    bs.StorePackedBits(16,src.m_influence);
+    bs.StorePackedBits(1,field_idx++); // Influence
+    bs.StorePackedBits(16,getInf(src));
 
     bs.StoreBits(1,0); // we have no more data
 }
@@ -428,31 +431,30 @@ void Character::sendChatSettings(BitStream &bs) const
 }
 void Character::sendDescription(BitStream &bs) const
 {
-    bs.StoreString(m_character_description);
-    bs.StoreString(m_battle_cry);
-
+    bs.StoreString(m_char_data.m_character_description);
+    bs.StoreString(m_char_data.m_battle_cry);
 }
 void Character::sendTitles(BitStream &bs, bool &unconditional) const
 {
-    bs.StoreBits(1, m_has_titles); // Does entity have titles?
-    if(!m_has_titles)
+    bs.StoreBits(1, m_char_data.m_has_titles); // Does entity have titles?
+    if(!m_char_data.m_has_titles)
         return;
 
     if(!unconditional)
     {
         bs.StoreString(getName());
-        bs.StoreBits(1, m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
-        storeStringConditional(bs, m_titles[0]); // Title 1 - generic title (first)
-        storeStringConditional(bs, m_titles[1]); // Title 2 - origin title (second)
-        storeStringConditional(bs, m_titles[2]); // Title 3 - yellow title (special)
+        bs.StoreBits(1, m_char_data.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
+        storeStringConditional(bs, m_char_data.m_titles[0]); // Title 1 - generic title (first)
+        storeStringConditional(bs, m_char_data.m_titles[1]); // Title 2 - origin title (second)
+        storeStringConditional(bs, m_char_data.m_titles[2]); // Title 3 - yellow title (special)
     }
     else
     {
         //bs.StoreString(getName());
-        bs.StoreBits(1, m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
-        bs.StoreString(m_titles[0]);             // Title 1 - generic title (first)
-        bs.StoreString(m_titles[1]);             // Title 2 - origin title (second)
-        bs.StoreString(m_titles[2]);             // Title 3 - yellow title (special)
+        bs.StoreBits(1, m_char_data.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
+        bs.StoreString(m_char_data.m_titles[0]);             // Title 1 - generic title (first)
+        bs.StoreString(m_char_data.m_titles[1]);             // Title 2 - origin title (second)
+        bs.StoreString(m_char_data.m_titles[2]);             // Title 3 - yellow title (special)
     }
 }
 void Character::sendKeybinds(BitStream &bs) const

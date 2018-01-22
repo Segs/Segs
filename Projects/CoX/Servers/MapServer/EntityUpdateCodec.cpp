@@ -323,11 +323,12 @@ void sendBuffsConditional(const Entity &src,BitStream &bs)
 }
 void sendTargetUpdate(const Entity &src,BitStream &bs)
 {
-    uint32_t assist_id = src.inp_state.m_assist_target_idx;
-    uint32_t target_id = src.inp_state.m_target_idx;
+    uint32_t assist_id  = getAssistTargetIdx(src);
+    uint32_t target_id  = getTargetIdx(src);
+    bool has_target     = src.inp_state.m_has_target;
 
-    bs.StoreBits(1,src.inp_state.m_has_target); // TODO: test this
-    if(!src.inp_state.m_has_target)
+    bs.StoreBits(1,has_target); // TODO: test this
+    if(!has_target)
         return;
     bs.StoreBits(1,target_id!=0);
     if(target_id!=0)
@@ -360,13 +361,14 @@ void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 }
 void sendAFK(const Entity &src, BitStream &bs)
 {
-    bool hasMsg = !src.m_char.m_afk_msg.isEmpty();
-    bs.StoreBits(1, src.m_char.m_afk); // 1/0 only
-    if(src.m_char.m_afk)
+    CharacterData cd = src.m_char.m_char_data;
+    bool hasMsg = !cd.m_afk_msg.isEmpty();
+    bs.StoreBits(1, cd.m_afk); // 1/0 only
+    if(cd.m_afk)
     {
         bs.StoreBits(1,hasMsg); // 1/0 only, 1 = has afk msg
         if(hasMsg)
-            bs.StoreString(src.m_char.m_afk_msg);
+            bs.StoreString(cd.m_afk_msg);
     }
 }
 void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)

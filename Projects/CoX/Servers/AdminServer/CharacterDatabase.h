@@ -43,7 +43,7 @@ virtual             ~CharacterDatabase();
         bool        fill( AccountInfo *); //!x
         bool        fill( Character *); //! Will call fill(CharacterCostume)
         bool        fill( CharacterCostume *);
-        bool        update(Character *);
+        bool        update(Entity *);
         bool        update(CharacterCostume *);
         int         remove_account(uint64_t acc_serv_id); //will remove given account, TODO add logging feature
         bool        remove_character(AccountInfo *, int8_t slot_idx);

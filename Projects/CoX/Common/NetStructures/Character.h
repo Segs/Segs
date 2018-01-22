@@ -172,6 +172,7 @@ const   QString &       getName() const { return m_name; }
         Parse_CharAttrib    m_max_attribs;
         LevelExpAndDebt     m_other_attribs;
         CharacterData       m_char_data;
+        /*
         uint32_t            m_level             = 0;
         uint32_t            m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
         uint32_t            m_experience_points = 0;
@@ -192,9 +193,9 @@ const   QString &       getName() const { return m_name; }
         QString             m_class_name;
         QString             m_origin_name;
         QString             m_mapName;
+        */
         uint32_t            m_account_id;
         uint32_t            m_db_id;
-        uint32_t            m_power_level;
 
 protected:
         PowerPool_Info  get_power_info(BitStream &src);
@@ -206,9 +207,7 @@ protected:
         uint32_t        m_current_costume_idx;
         bool            m_current_costume_set;
         uint32_t        m_num_costumes;
-        bool            m_multiple_costumes; // has more then 1 costume
-        bool            m_supergroup_costume; // player has a sg costume
-        bool            m_using_sg_costume; // player uses sg costume currently
+        bool            m_multiple_costumes;  // has more then 1 costume
         enum CharBodyType
         {
             TYPE_MALE,
