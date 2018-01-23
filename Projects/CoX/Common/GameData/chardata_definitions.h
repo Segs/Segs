@@ -20,6 +20,7 @@ struct CharacterData
     uint8_t     m_lfg               = 0;
     QString     m_alignment         = "hero";
     uint64_t    m_last_costume_id;
+    QString     m_last_online;
     QString     m_class_name;
     QString     m_origin_name;
     QString     m_mapName;

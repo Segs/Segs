@@ -277,7 +277,8 @@ void Character::DumpBuildInfo()
             + "\n  lfg: " + QString::number(m_char_data.m_lfg)
             + "\n  afk: " + QString::number(m_char_data.m_afk)
             + "\n  description: " + getDescription(c)
-            + "\n  battleCry: " + getBattleCry(c);
+            + "\n  battleCry: " + getBattleCry(c)
+            + "\n  Last Online: " + m_char_data.m_last_online;
 
     qDebug().noquote() << msg;
     //DumpPowerPoolInfo(m_powers[0].power_id);

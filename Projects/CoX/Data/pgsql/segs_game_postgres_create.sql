@@ -51,7 +51,6 @@ CREATE TABLE "characters" (
 	"char_name" varchar(20) NOT NULL,
 	"chardata" bytea NOT NULL,
 	"body_type" integer NOT NULL,
-	"last_online" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	"hitpoints" integer NOT NULL DEFAULT '0',
 	"endurance" integer NOT NULL DEFAULT '0',
 	"posx" integer NOT NULL,

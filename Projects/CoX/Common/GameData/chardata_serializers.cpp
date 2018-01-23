@@ -6,7 +6,7 @@
 
 
 template<class Archive>
-void serialize(Archive & archive, CharacterData &cd)
+void serialize(Archive & archive, CharacterData &cd, uint32_t const version)
 {
     archive(cereal::make_nvp("Level",cd.m_level));
     archive(cereal::make_nvp("CombatLevel",cd.m_combat_level));
@@ -24,6 +24,7 @@ void serialize(Archive & archive, CharacterData &cd)
     archive(cereal::make_nvp("LFG",cd.m_lfg));
     archive(cereal::make_nvp("Alignment",cd.m_alignment));
     archive(cereal::make_nvp("LastCostumeID",cd.m_last_costume_id));
+    archive(cereal::make_nvp("LastOnline",cd.m_last_online));
     archive(cereal::make_nvp("Class",cd.m_class_name));
     archive(cereal::make_nvp("Origin",cd.m_origin_name));
     archive(cereal::make_nvp("MapName",cd.m_mapName));
@@ -37,9 +38,9 @@ void saveTo(const CharacterData & target, const QString & baseName, bool text_fo
 }
 
 template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, CharacterData & m);
+void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, CharacterData & m, uint32_t const version);
 template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, CharacterData & m);
+void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, CharacterData & m, uint32_t const version);
 
 void serializeToDb(const CharacterData &data, QString &tgt)
 {

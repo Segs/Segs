@@ -30,7 +30,6 @@ CREATE TABLE `characters` (
 	`char_name`	TEXT NOT NULL,
 	`chardata`	BLOB,
 	`bodytype`	INTEGER NOT NULL DEFAULT 4,
-	`last_online`	DATETIME DEFAULT CURRENT_TIMESTAMP,
 	`hitpoints`	INTEGER DEFAULT 0,
 	`endurance`	INTEGER DEFAULT 0,
 	`posx`	INTEGER NOT NULL DEFAULT 0,
@@ -39,8 +38,8 @@ CREATE TABLE `characters` (
 	`orientp`	INTEGER NOT NULL DEFAULT 0,
 	`orienty`	INTEGER NOT NULL DEFAULT 0,
 	`orientr`	INTEGER NOT NULL DEFAULT 0,
-        `options`	BLOB,
 	`supergroup_id`	INTEGER NOT NULL DEFAULT 0,
+	`options`	BLOB,
 	FOREIGN KEY(`account_id`) REFERENCES accounts ( account_id ) ON DELETE CASCADE
 );
 

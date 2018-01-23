@@ -1163,16 +1163,6 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents.startsWith("setPowerLevel ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setCombatLevel(ent->m_char, val);
-
-        QString msg = "Set m_power_level to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
     else {
         qDebug() << "Unhandled game command:" << ev->contents;
     }
