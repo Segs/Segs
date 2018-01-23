@@ -55,6 +55,7 @@ SET(target_INCLUDE
     MapManager.h
     MapRef.h
     MapServer.h
+    MapServerData.h
     MapTemplate.h
     NetCommandManager.h
     ScriptingEngine.h

@@ -7,7 +7,9 @@
  */
 #define _USE_MATH_DEFINES
 #include "Entity.h"
+#include "PlayerMethods.h"
 
+#include <QtCore/QDebug>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -35,6 +37,7 @@ void Entity::fillFromCharacter(Character *f)
 {
     m_char = *f;
     m_hasname = true;
+    m_db_id = m_char.m_db_id;
     //TODO: map class/origin name to Entity's class/orign indices.
 }
 /**
@@ -49,12 +52,16 @@ void Entity::beginLogout(uint16_t time_till_logout)
 
 void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *packer )
 {
-    /*int val =*/ src.GetPackedBits(1); //2
+    QString description;
+    QString battlecry;
+    e.m_type = src.GetPackedBits(1); //2. Possibly EntType (ENT_PLAYER)
     e.m_char.GetCharBuildInfo(src);
     e.m_char.recv_initial_costume(src,packer);
-    /*int t =*/ src.GetBits(1); // The -> 1
-    src.GetString(e.m_battle_cry);
-    src.GetString(e.m_character_description);
+    e.m_char.m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
+    src.GetString(battlecry);
+    src.GetString(description);
+    setBattleCry(e.m_char,battlecry);
+    setDescription(e.m_char,description);
 }
 void Entity::InsertUpdate( PosUpdate pup )
 {
@@ -65,7 +72,21 @@ void Entity::InsertUpdate( PosUpdate pup )
 
 void Entity::dump()
 {
-    m_char.dump();
+    QString msg = "EntityDebug\n  "
+            + name()
+            + "\n  db_id: " + QString::number(m_db_id)
+            + "\n  entity idx: " + QString::number(m_idx)
+            + "\n  access level: " + QString::number(m_access_level)
+            + "\n  tgt_idx: " + QString::number(inp_state.m_target_idx)
+            + "\n  m_type: " + QString::number(m_type)
+            + "\n  class idx: " + QString::number(m_class_idx)
+            + "\n  origin idx: " + QString::number(m_origin_idx)
+            + "\n  current chat channel: " + QString::number(m_cur_chat_channel)
+            + "\n  m_SG_id: " + QString::number(m_SG_id);
+
+    qDebug().noquote() << msg;
+    if(m_type == Entity::ENT_PLAYER)
+        m_char.dump();
 }
 
 void Entity::addPosUpdate(const PosUpdate & p) {
@@ -75,11 +96,6 @@ void Entity::addPosUpdate(const PosUpdate & p) {
 
 void Entity::addInterp(const PosUpdate & p) {
     interpResults.emplace_back(p);
-}
-
-void Entity::toggleFly(Entity *e)
-{
-    e->m_is_flying = !e->m_is_flying;
 }
 
 Entity::Entity()
@@ -98,7 +114,7 @@ void initializeNewPlayerEntity(Entity &e)
 {
     e.m_costume_type   = 1;
     e.m_destroyed      = false;
-    e.m_type           = 2; // PLAYER
+    e.m_type           = Entity::ENT_PLAYER; // 2
     e.m_create_player  = true;
     e.m_player_villain = false;
     e.m_origin_idx     = 0;
@@ -107,6 +123,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_hasname        = true;
     e.m_hasgroup_name  = false;
     e.m_pchar_things   = true;
+    setDbId(e,e.m_char.m_db_id);
 
     e.m_char.reset();
     e.might_have_rare = e.m_rare_bits = true;

@@ -49,13 +49,20 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
             // otherwise treat as idle
             return new IdleEvent;
         case 1: return new MiniMapState;
+        //case 2: return new Unknown2; // TODO: Tray 7?? Cycle over to tray 7 to receive this opcode.
         case 4: return new ClientResumedRendering;
+        case 8: return new SwitchTray;
         case 9: return new EnterDoor;
         case 11: return new SetDestination;
         case 14: return new WindowState;
+        case 16: return new ChatDividerMoved;
         case 17: return new InspirationDockMode;
+        case 18: return new PowersDockMode;
+        case 29: return new ActivateInspiration;
+        case 32: return new UnqueueAll;
         case 33: return new AbortQueuedPower;
         case 36: return new ChangeStance;
+        case 37: return new TargetChatChannelSelected;
         case 38: return new ChatReconfigure;
         case 39: return new PlaqueVisited;
         case 40: return new CombineRequest;
@@ -66,7 +73,6 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 67: return new DescriptionAndBattleCry;
         /*case 21: new KeybindProfileReset; */
         /*case 22: new KeybindProfileSelected; */
-        /*case 37: new TargetChatChannelSelected; */
     }
     ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled command event type %d\n"),opcode));
     return nullptr;

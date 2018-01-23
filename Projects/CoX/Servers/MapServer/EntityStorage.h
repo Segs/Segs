@@ -10,6 +10,7 @@
 #pragma once
 
 #include "Entity.h"
+#include "PlayerMethods.h"
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
@@ -33,8 +34,8 @@ public:
 class EntityManager
 {
     struct EntityIdxCompare {
-        bool operator()(const Entity *a,const Entity *b) const {
-            return a->getIdx() < b->getIdx();
+        bool operator()(Entity *a,Entity *b) const {
+            return getIdx(*a) < getIdx(*b);
         }
     };
     using lEntity = std::set<Entity *,EntityIdxCompare>;
@@ -51,6 +52,8 @@ public:
     void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }
+    Entity *        getEntity(const QString &name);
+    Entity *        getEntity(const int32_t &idx);
 
 protected:
     mutable ACE_Thread_Mutex m_mutex; // used to prevent world state reads during updates

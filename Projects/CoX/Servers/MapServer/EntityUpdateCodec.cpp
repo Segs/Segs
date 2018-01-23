@@ -1,4 +1,5 @@
 //#define DEBUG_INPUT
+//#define DEBUG_ORIENTATION
 #include "EntityUpdateCodec.h"
 
 #include "MapServer.h"
@@ -7,7 +8,7 @@
 #include "Entity.h"
 #include "GameData/CoHMath.h"
 
-#ifdef DEBUG_INPUT
+#ifdef DEBUG_ORIENTATION
 #include <glm/ext.hpp> // currently only needed for DEBUG_INPUT
 #endif
 
@@ -32,7 +33,7 @@ void storeCreation(const Entity &src, BitStream &bs)
         bs.StoreBits(1,src.m_create_player);
         if(src.m_create_player)
             bs.StorePackedBits(1,src.m_access_level);
-        bs.StorePackedBits(20,src.m_idx);//TODO: should be bs.StorePackedBits(20,m_db_id);
+        bs.StorePackedBits(20,src.m_db_id); // formerly src.m_idx
     }
     else
     {
@@ -49,15 +50,10 @@ void storeCreation(const Entity &src, BitStream &bs)
     {
         bs.StorePackedBits(1,src.m_class_idx);
         bs.StorePackedBits(1,src.m_origin_idx);
-        bool hasTitle=false;
-        bs.StoreBits(1,hasTitle);
-        if(hasTitle)
-        {
-            bs.StoreBits(1,0); // likely an index to a title prefix ( 1 - The )
-            storeStringConditional(bs,""); //title1
-            storeStringConditional(bs,""); //title2
-            storeStringConditional(bs,""); //title3
-        }
+
+        // Send conditional titles
+        bool unconditional_titles = false;
+        src.m_char.sendTitles(bs,unconditional_titles);
     }
     bs.StoreBits(1,src.m_hasname);
     if(src.m_hasname)
@@ -136,15 +132,15 @@ void storeOrientation(const Entity &src,BitStream &bs)
     pyr_angles[0] = 0.0f;
     pyr_angles[1] = vec.y; // set only yaw value
     pyr_angles[2] = 0.0f;
-#ifdef DEBUG_INPUT
+#ifdef DEBUG_ORIENTATION
     // output everything
     fprintf(stderr,"\nPlayer: %d\n",src.m_idx);
     fprintf(stderr,"src.qrot: %s \n", glm::to_string(src.qrot).c_str());
     fprintf(stderr,"dir: %s \n", glm::to_string(src.inp_state.direction).c_str());
     fprintf(stderr,"camera_pyr: %s \n", glm::to_string(src.inp_state.camera_pyr).c_str());
     fprintf(stderr,"pyr_angles: farr(%f, %f, %f)\n", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
-    fprintf(stderr,"orient_p: %f \n", src.m_orientation_pyr[0]);
-    fprintf(stderr,"orient_y: %f \n", src.m_orientation_pyr[1]);
+    fprintf(stderr,"orient_p: %f \n", src.inp_state.m_orientation_pyr[0]);
+    fprintf(stderr,"orient_y: %f \n", src.inp_state.m_orientation_pyr[1]);
     fprintf(stderr,"vel_scale: %f \n", src.inp_state.input_vel_scale);
 #endif
     for(int i=0; i<3; i++)
@@ -161,7 +157,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
     }
 }
 
-void storePosUpdate(const Entity &src,bool just_created,BitStream &bs)
+void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
 {
     bool extra_info = false;
     bool move_instantly = false;
@@ -282,7 +278,7 @@ void sendCostumes(const Entity &src,BitStream &bs)
             bs.StorePackedBits(1,1); // npc costume idx ?
             break;
         case Entity::ENT_CRITTER: // client val 4
-            bs.StoreString("Unknown");
+            bs.StoreString("Unknown"); // TODO what is stored here?
             break;
     }
 }
@@ -290,34 +286,12 @@ void sendXLuency(BitStream &bs,float val)
 {
     storeBitsConditional(bs,8,std::min(static_cast<int>(uint8_t(val*255)),255));
 }
-void sendTitles(const Entity &src,BitStream &bs)
-{
-    bs.StoreBits(1,src.m_has_titles); // no titles
-    if(!src.m_has_titles)
-        return;
-    if(src.m_type==Entity::ENT_PLAYER)
-    {
-        bs.StoreString(src.m_char.getName());
-        bs.StoreBits(1,src.m_has_the_prefix);
-        storeStringConditional(bs,"");//Title 1
-        storeStringConditional(bs,"");//Title 2
-        storeStringConditional(bs,"");//Title 3
-    }
-    else // unused
-    {
-        bs.StoreString("");
-        bs.StoreBits(1,0);
-        storeStringConditional(bs,"");
-        storeStringConditional(bs,"");
-        storeStringConditional(bs,"");
-    }
-}
 void sendCharacterStats(const Entity &src,BitStream &bs)
 {
     bool have_stats=true; // no stats -> dead ?
     bool stats_changed=true;
     bool we_have_a_buddy = false;
-    bool our_budy_is_our_mentor = false;
+    bool our_buddy_is_our_mentor = false;
     bool we_have_our_buddy_dbid=false;
     int our_buddy_dbid = 0;
     bs.StoreBits(1,have_stats); // nothing here for now
@@ -329,7 +303,7 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
     bs.StoreBits(1,we_have_a_buddy);
     if ( we_have_a_buddy )        // buddy info
     {
-        bs.StoreBits(1,our_budy_is_our_mentor);
+        bs.StoreBits(1,our_buddy_is_our_mentor);
         bs.StoreBits(1,we_have_our_buddy_dbid);
         if(we_have_our_buddy_dbid)
         {
@@ -349,12 +323,12 @@ void sendBuffsConditional(const Entity &src,BitStream &bs)
 }
 void sendTargetUpdate(const Entity &src,BitStream &bs)
 {
-    int assist_id=0;
-    int target_id=0;
-    bool has_target_or_assists=false;
+    uint32_t assist_id  = getAssistTargetIdx(src);
+    uint32_t target_id  = getTargetIdx(src);
+    bool has_target     = src.inp_state.m_has_target;
 
-    bs.StoreBits(1,has_target_or_assists); // nothing here for now
-    if(!has_target_or_assists)
+    bs.StoreBits(1,has_target); // TODO: test this
+    if(!has_target)
         return;
     bs.StoreBits(1,target_id!=0);
     if(target_id!=0)
@@ -385,16 +359,16 @@ void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 {
     bs.StoreBits(1,0); // 1/0 only
 }
-void sendAFK(const Entity &src,BitStream &bs)
+void sendAFK(const Entity &src, BitStream &bs)
 {
-    bool is_away=false;
-    bool away_string=false;
-    bs.StoreBits(1,is_away); // 1/0 only
-    if(is_away)
+    CharacterData cd = src.m_char.m_char_data;
+    bool hasMsg = !cd.m_afk_msg.isEmpty();
+    bs.StoreBits(1, cd.m_afk); // 1/0 only
+    if(cd.m_afk)
     {
-        bs.StoreBits(1,away_string); // 1/0 only
-        if(away_string)
-            bs.StoreString("");
+        bs.StoreBits(1,hasMsg); // 1/0 only, 1 = has afk msg
+        if(hasMsg)
+            bs.StoreString(cd.m_afk_msg);
     }
 }
 void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
@@ -437,6 +411,11 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     bool client_believes_ent_exists=belief.m_entity!=nullptr;
     bool ent_exists = src.m_destroyed==false;
     bool update_existence=client_believes_ent_exists!=ent_exists;
+
+    bool unconditional_titles = true; // serializeto conditional only if ent and player
+    if(src.m_type==Entity::ENT_PLAYER) // if ent and player, then conditional
+        unconditional_titles = false;
+
     //////////////////////////////////////////////////////////////////////////
     bs.StoreBits(1,update_existence);
     if(update_existence)
@@ -475,7 +454,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
-        sendTitles(src,bs);
+        src.m_char.sendTitles(bs,unconditional_titles);
     }
     if(src.m_pchar_things)
     {

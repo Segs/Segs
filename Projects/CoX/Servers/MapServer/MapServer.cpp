@@ -18,7 +18,6 @@
 #include "MapServerData.h"
 #include "MapTemplate.h"
 #include "MapInstance.h"
-#include "Entity.h"
 #include "SEGSTimer.h"
 
 #include <ace/Reactor.h>
@@ -27,6 +26,8 @@
 #include <QtCore/QString>
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
+
+#include <set>
 
 // Template instantiation
 template class ClientStore<MapClient>;

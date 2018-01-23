@@ -30,6 +30,8 @@ CREATE TABLE `characters` (
 	`char_level`	INTEGER NOT NULL DEFAULT 0,
 	`archetype`	TEXT NOT NULL,
 	`origin`	TEXT NOT NULL,
+	`description` VARCHAR(1024) NOT NULL,
+	`battlecry` VARCHAR(30) NOT NULL,
 	`bodytype`	INTEGER NOT NULL DEFAULT 4,
 	`current_map`	INTEGER NOT NULL,
 	`last_costume_id`	integer DEFAULT 0,

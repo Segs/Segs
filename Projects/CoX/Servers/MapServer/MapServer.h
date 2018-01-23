@@ -11,6 +11,8 @@
 
 #include "Common/Servers/MapServerInterface.h"
 #include "Common/Servers/ServerEndpoint.h"
+#include "GameServer/GameServer.h"
+//#include "Entity.h"
 #include "MapLink.h"
 
 #include <memory>

@@ -94,7 +94,7 @@ void createDatabases()
         }
         QFile source_file(source_file_string);
         QFile target_file(target_file_string);
-        QSqlDatabase segs_db(QSqlDatabase::addDatabase("QSQLITE"));
+        QSqlDatabase segs_db(QSqlDatabase::addDatabase("QSQLITE",target_file_string));
         QSqlQuery query(segs_db);
         if(target_file.exists())
         {
@@ -228,22 +228,4 @@ int main(int argc, char **argv)
     addAccount("segsadmin", "segs123", 9);
     Pause();
     return 0;
-
-//    Broxen's Old Code:
-//    // Let's iterate over db_files and create database files
-//    for (const QString &db_file : db_files)
-//    {
-
-//        int last_slash = db_file.lastIndexOf('/',-1);
-//        QString db_name = db_file.midRef(last_slash+1,-1).toString(); // filename only: segs
-//        QFile db_path("./" + db_name); // destination path: ./segs
-
-//        QSqlDatabase db = QSqlDatabase::addDatabase( "QSQLITE" ,db_name);
-//        // Otherwise, import contents of db_template into db_path
-//        db.setDatabaseName(db_path.fileName());
-//        db.setHostName("localhost");
-
-//    // Remove both databases
-//    QSqlDatabase::removeDatabase(segs);
-//    QSqlDatabase::removeDatabase(segs_game);
 }

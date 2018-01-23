@@ -11,11 +11,14 @@
 #include "BitStream.h"
 #include "Powers.h"
 #include "Common/GameData/attrib_definitions.h"
+#include "Common/GameData/chardata_definitions.h"
+#include "Common/GameData/other_definitions.h"
 
 #include <QtCore/QString>
+#include <QtCore/QVector>
 #include <cassert>
 #include <string>
-#include <vector>
+
 enum WindowVisibility : uint32_t {
   wv_HideAlways = 0,
   wv_Always = 1,
@@ -114,36 +117,25 @@ class Character
         using vPowerPool = std::vector<CharacterPower>;
         using vCostume = std::vector<Costume *>;
 
-        vPowerPool      m_powers;
-        PowerTrayGroup  m_trays;
-        QString         m_class_name;
-        QString         m_origin_name;
-        bool            m_full_options=false;
-        ClientOptions   m_options;
-        bool            m_first_person_view_toggle=false;
-        uint8_t         m_player_collisions=0;
-        float           m_unkn1=0;
-        float           m_unkn2=0;
-        uint32_t        m_unkn3=0;
-        uint32_t        m_unkn4=0;
+        vPowerPool              m_powers;
+        PowerTrayGroup          m_trays;
+        bool                    m_full_options=false;
+        ClientOptions           m_options;
+        uint64_t                m_owner_account_id;
+        bool                    m_first_person_view_toggle=false;
+        uint8_t                 m_player_collisions=0;
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
 // Getters and setters
-        uint32_t        getLevel() const { return m_level; }
-        void            setLevel(uint32_t val) { m_level = val; }
 const   QString &       getName() const { return m_name; }
         void            setName(const QString &val);
-const   QString &       getMapName() const { return m_mapName; }
-        void            setMapName(const QString &val) { m_mapName = val; }
         uint8_t         getIndex() const { return m_index; }
         void            setIndex(uint8_t val) { m_index = val; }
         uint64_t        getAccountId() const { return m_owner_account_id; }
         void            setAccountId(uint64_t val) { m_owner_account_id = val; }
-        uint64_t        getLastCostumeId() const { return m_last_costume_id; }
-        void            setLastCostumeId(uint64_t val) { m_last_costume_id = val; }
-const   QString &       getOrigin() const { return m_origin_name; }
-const   QString &       getClass() const { return m_class_name; }
+        
+
 //
 //////////////////////////////////////////////////////////////////////////
         void            reset();
@@ -170,34 +162,31 @@ const   QString &       getClass() const { return m_class_name; }
         void            sendDockMode(BitStream &bs) const;
         void            sendChatSettings(BitStream &bs) const;
         void            sendDescription(BitStream &bs) const;
-        void            sendTitles(BitStream &bs) const;
+        void            sendTitles(BitStream &bs, bool &unconditional) const;
         void            sendKeybinds(BitStream &bs) const;
         void            sendFriendList(BitStream &bs) const;
         void            sendOptions( BitStream &bs ) const;
         void            sendOptionsFull(BitStream &bs) const;
+
         Parse_CharAttrib    m_current_attribs;
         Parse_CharAttrib    m_max_attribs;
-        uint32_t        m_level=0;
-        uint32_t        m_combat_level=0;
-        uint32_t        m_experience_points=0;
-        uint32_t        m_experience_debt=0;
-        uint32_t        m_influence=1;
+        LevelExpAndDebt     m_other_attribs;
+        CharacterData       m_char_data;
+
+        uint32_t            m_account_id;
+        uint32_t            m_db_id;
+
 protected:
         PowerPool_Info  get_power_info(BitStream &src);
-        uint64_t        m_owner_account_id;
-        uint64_t        m_last_costume_id;
         uint8_t         m_index;
         QString         m_name;
-        QString         m_mapName;
         bool            m_villain;
         vCostume        m_costumes;
         Costume *       m_sg_costume;
         uint32_t        m_current_costume_idx;
         bool            m_current_costume_set;
         uint32_t        m_num_costumes;
-        bool            m_multiple_costumes; // has more then 1 costume
-        bool            m_supergroup_costume; // player has a sg costume
-        bool            m_using_sg_costume; // player uses sg costume currently
+        bool            m_multiple_costumes;  // has more then 1 costume
         enum CharBodyType
         {
             TYPE_MALE,
@@ -208,4 +197,5 @@ protected:
             TYPE_NOARMS
         };
 };
-void serializeStats(const Character &src,BitStream &bs, bool sendAbsolute);
+
+void                serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);

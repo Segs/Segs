@@ -8,11 +8,12 @@
 
 #pragma once
 
-// ACE Logging
+#include "Entity.h"
+
+#include <QMutex>
+#include <QtSql/QSqlQuery>
 #include <string>
 
-
-#include <QtSql/QSqlQuery>
 class IClient;
 class QSqlQuery;
 class CharacterClient;
@@ -29,8 +30,10 @@ class CharacterDatabase
         QSqlQuery m_prepared_char_exists;
         QSqlQuery m_prepared_char_delete;
         QSqlQuery m_prepared_char_select;
+        QSqlQuery m_prepared_char_update;
         QSqlQuery m_prepared_fill;
         QSqlQuery m_prepared_costume_insert;
+        QSqlQuery m_prepared_costume_update;
 
 public:
 virtual             ~CharacterDatabase();
@@ -40,6 +43,8 @@ virtual             ~CharacterDatabase();
         bool        fill( AccountInfo *); //!x
         bool        fill( Character *); //! Will call fill(CharacterCostume)
         bool        fill( CharacterCostume *);
+        bool        update(Entity *);
+        bool        update(CharacterCostume *);
         int         remove_account(uint64_t acc_serv_id); //will remove given account, TODO add logging feature
         bool        remove_character(AccountInfo *, int8_t slot_idx);
         bool        named_character_exists(const QString &name);

@@ -8,6 +8,7 @@
 
 //#define DEBUG_INPUT
 //#define DEBUG_INPUT2
+//#define DEBUG_TARGET
 #define _USE_MATH_DEFINES
 #include "Events/InputState.h"
 #include "Entity.h"
@@ -33,23 +34,23 @@ void InputState::serializeto(BitStream &) const
 }
 InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
 {
-    m_csc_deltabits=other.m_csc_deltabits;
-    m_send_deltas=other.m_send_deltas;
-    controlBits=other.controlBits;
-    send_id=other.send_id;
-    m_time_diff1=other.m_time_diff1;
-    m_time_diff2=other.m_time_diff2;
-    has_input_commit_guess=other.has_input_commit_guess;
+    m_csc_deltabits             = other.m_csc_deltabits;
+    m_send_deltas               = other.m_send_deltas;
+    controlBits                 = other.controlBits;
+    send_id                     = other.send_id;
+    m_time_diff1                = other.m_time_diff1;
+    m_time_diff2                = other.m_time_diff2;
+    has_input_commit_guess      = other.has_input_commit_guess;
     m_received_server_update_id = other.m_received_server_update_id;
-    m_no_coll = other.m_no_coll;
+    m_no_coll                   = other.m_no_coll;
+    m_target_idx                = other.m_target_idx;
+    m_has_target                = other.m_has_target;
+    m_assist_target_idx         = other.m_assist_target_idx;
 
     for(int i=0; i<3; ++i)
     {
         if(other.pos_delta_valid[i])
             pos_delta[i] = other.pos_delta[i];
-            
-        if(0==other.m_orientation_pyr[i])
-            m_orientation_pyr[i] = other.m_orientation_pyr[i];
     }
     bool update_needed=false;
     for(int i=0; i<3; ++i)
@@ -59,6 +60,9 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
             camera_pyr[i] = other.camera_pyr[i];
             update_needed = true;
         }
+
+        if(other.m_orientation_pyr[i])
+            m_orientation_pyr[i] = other.m_orientation_pyr[i];
     }
     if(update_needed)
     {
@@ -71,7 +75,9 @@ void InputStateStorage::processDirectionControl(int dir,int prev_time,int press_
 {
     if(press_release)
     {
+#ifdef DEBUG_INPUT
         fprintf(stderr,"pressed\n");
+#endif
         switch(dir)
         {
             case 0: pos_delta[2] = 1.0f; break; //FORWARD
@@ -142,7 +148,7 @@ void InputState::partial_2(BitStream &bs)
                 v = AngleDequantize(bs.GetBits(11),11); // pitch
                 m_data.pyr_valid[control_id==6] = true;
                 m_data.camera_pyr[0] = v;
-#ifdef DEBUG_INPUT2
+#ifdef DEBUG_INPUT
                 fprintf(stderr,"Pitch (%f): %f \n", m_data.m_orientation_pyr[0], m_data.camera_pyr.x);
 #endif
                 break;
@@ -152,7 +158,7 @@ void InputState::partial_2(BitStream &bs)
                 v = AngleDequantize(bs.GetBits(11),11); // yaw
                 m_data.pyr_valid[control_id==7] = true;
                 m_data.camera_pyr[1] = v;
-#ifdef DEBUG_INPUT2
+#ifdef DEBUG_INPUT
                 fprintf(stderr,"Yaw (%f): %f \n", m_data.m_orientation_pyr[1], m_data.camera_pyr.y);
 #endif
                 break;
@@ -211,15 +217,15 @@ void InputState::extended_input(BitStream &bs)
     m_data.controlBits = 0;
     for(int idx=0; idx<6; ++idx)
         m_data.controlBits |= (bs.GetBits(1))<<idx;
-#ifdef DEBUG_INPUT
+#ifdef DEBUG_INPUT2
     if(m_data.controlBits)
         fprintf(stderr,"E input %x : ",m_data.controlBits);
 #endif
-    if(bs.GetBits(1))//if ( abs(s_prevTime - ms_time) < 1000 )
+    if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )
     {
         m_data.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[0]);
         m_data.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[1]);
-#ifdef DEBUG_INPUT
+#ifdef DEBUG_INPUT2
         fprintf(stderr,"%f : %f",m_data.m_orientation_pyr[0],m_data.m_orientation_pyr[1]);;
 #endif
     }
@@ -280,13 +286,13 @@ void InputState::serializefrom(BitStream &bs)
     if(bs.GetBits(1))
         extended_input(bs);
 
-    bool has_targeted_entity = bs.GetBits(1);
-    m_targeted_entity_idx = bs.GetPackedBits(14); // targeted entity server index
+    m_data.m_has_target = bs.GetBits(1);
+    m_data.m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
     int ctrl_idx=0;
-#ifdef DEBUG_INPUT
-    fprintf(stderr,"T:[%d]",has_targeted_entity);
-    if(has_targeted_entity)
-        fprintf(stderr,"TI:[%d]",tgt_idx);
+#ifdef DEBUG_TARGET
+    fprintf(stderr,"T:[%d] ",m_data.m_has_target);
+    if(m_data.m_has_target)
+        fprintf(stderr,"TI:[%d] ",m_data.m_target_idx);
 #endif
     ControlState prev_fld;
     while(bs.GetBits(1)) // receive control state array entries ?

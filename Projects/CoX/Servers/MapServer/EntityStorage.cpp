@@ -96,7 +96,7 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClient *client ) const
 void EntityManager::sendEntities(BitStream& bs, MapClient *target, bool is_incremental) const
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_mutex);
-    int self_idx = target->char_entity()->getIdx();
+    int self_idx = getIdx(*target->char_entity());
     int prev_idx = -1;
     int delta;
     if(m_live_entlist.empty())
@@ -113,11 +113,11 @@ void EntityManager::sendEntities(BitStream& bs, MapClient *target, bool is_incre
         bool client_believes_this_entity_exists=client_belief_set.find(pEnt)!=client_belief_set.end();
         if(!client_believes_this_entity_exists && pEnt->m_destroyed)
             continue;
-        pEnt->m_create_player = (pEnt->getIdx() == self_idx);
-        delta = (prev_idx == -1) ? pEnt->getIdx() : (pEnt->getIdx() - prev_idx - 1);
+        pEnt->m_create_player = (getIdx(*pEnt) == self_idx);
+        delta = (prev_idx == -1) ? getIdx(*pEnt) : (getIdx(*pEnt) - prev_idx - 1);
 
         bs.StorePackedBits(1, delta);
-        prev_idx = pEnt->getIdx();
+        prev_idx = getIdx(*pEnt);
         ClientEntityStateBelief &belief(target->m_worldstate_belief[pEnt->m_idx]);
         if(!target->m_in_map)
             belief.m_entity = nullptr; // force full creates until client is actualy in map
@@ -149,4 +149,33 @@ void EntityManager::removeEntityFromActiveList(Entity *ent)
     ent->m_client = nullptr;
     m_live_entlist.erase(ent);
     m_store.release(ent);
+}
+
+// Poll EntityManager to return Entity by Name or IDX
+Entity * EntityManager::getEntity(const QString &name)
+{
+    // Iterate through all active entities and return entity by name
+    for (Entity* pEnt : m_live_entlist)
+    {
+        if (pEnt->name() == name)
+            return pEnt;
+    }
+    qWarning() << "Entity" << name << "does not exist, or is not currently online.";
+    return nullptr;
+}
+
+Entity * EntityManager::getEntity(const int32_t &idx)
+{
+    if(idx==0) {
+        qWarning() << "Entity" << idx << "does not exist, or is not currently online.";
+        return nullptr;
+    }
+    // Iterate through all active entities and return entity by idx
+    for (Entity* pEnt : m_live_entlist)
+    {
+        if (pEnt->m_idx == idx)
+            return pEnt;
+    }
+    qWarning() << "Entity" << idx << "does not exist, or is not currently online.";
+    return nullptr;
 }

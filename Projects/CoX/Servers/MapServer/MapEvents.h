@@ -17,6 +17,7 @@
 
 #include <glm/vec3.hpp>
 #include <QtCore/QString>
+#include <QtCore/QDebug>
 
 class Entity;
 typedef CRUDLink_Event MapLinkEvent; //<MapLink>
@@ -286,7 +287,7 @@ public:
             src.GetString(m_fatal_error);
     }
     uint32_t    m_resp;
-    QString m_fatal_error;
+    QString     m_fatal_error;
 
 };
 
@@ -294,7 +295,7 @@ public:
 class InspirationDockMode final : public MapLinkEvent
 {
 public:
-    uint32_t dock_mode=0;
+    uint32_t dock_mode = 0;
     InspirationDockMode():MapLinkEvent(MapEventTypes::evInspirationDockMode)
     {}
     void serializeto(BitStream &bs) const
@@ -304,9 +305,10 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        dock_mode=bs.GetBits(32);
+        dock_mode = bs.GetBits(32);
     }
 };
+
 class EnterDoor final : public MapLinkEvent
 {
 public:
@@ -376,6 +378,45 @@ public:
         point_index   = bs.GetPackedBits(1);
     }
 };
+
+class ActivateInspiration final : public MapLinkEvent
+{
+public:
+    int insp_unk;
+    int slot_idx;
+    int row_idx;
+    ActivateInspiration():MapLinkEvent(MapEventTypes::evActivateInspiration)
+    {}
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,29);
+        bs.StorePackedBits(3,slot_idx);
+        bs.StorePackedBits(3,row_idx);
+    }
+    void serializefrom(BitStream &bs) override
+    {
+        insp_unk = bs.GetBits(29);
+        slot_idx = bs.GetPackedBits(3);
+        row_idx = bs.GetPackedBits(3);
+    }
+};
+
+class UnqueueAll final : public MapLinkEvent
+{
+public:
+    int32_t g_input_pak; // TODO: Not sure what this is?
+    UnqueueAll():MapLinkEvent(MapEventTypes::evUnqueueAll)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,32);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        g_input_pak = bs.GetBits(32);
+    }
+};
+
 class AbortQueuedPower final : public MapLinkEvent
 {
 public:
@@ -414,7 +455,6 @@ public:
     {}
     void serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,56);
         bs.StorePackedBits(12,entity_idx);
     }
     void serializefrom(BitStream &bs) override
@@ -437,6 +477,21 @@ public:
         new_viewpoint_is_firstperson = bs.GetBits(1);
     }
 };
+class TargetChatChannelSelected final : public MapLinkEvent
+{
+public:
+    uint8_t m_chat_type;
+    TargetChatChannelSelected():MapLinkEvent(MapEventTypes::evTargetChatChannelSelected)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,37);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        m_chat_type = bs.GetPackedBits(1);
+    }
+};
 class ChatReconfigure final : public MapLinkEvent
 {
 public:
@@ -454,7 +509,49 @@ public:
         m_chat_bottom_flags = bs.GetPackedBits(1);
     }
 };
+class PowersDockMode final : public MapLinkEvent
+{
+public:
+    uint32_t dock_mode = 0;
+    bool toggle_secondary_tray = 0;
 
+    PowersDockMode():MapLinkEvent(MapEventTypes::evPowersDockMode)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,18);
+        bs.StoreBits(1,toggle_secondary_tray);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        dock_mode = bs.GetBits(18);
+        toggle_secondary_tray = bs.GetBits(1);
+        // TODO: Not all bits were consumed
+    }
+};
+class SwitchTray final : public MapLinkEvent
+{
+public:
+    uint32_t tray1_num = 0;
+    uint32_t tray2_num = 0;
+    uint32_t tray_unk1 = 0;
+    SwitchTray():MapLinkEvent(MapEventTypes::evSwitchTray)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,8);
+        bs.StorePackedBits(32,tray1_num);
+        bs.StorePackedBits(32,tray2_num);
+        bs.StoreBits(1,tray_unk1);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        tray1_num = bs.GetPackedBits(32); // Appears to correlate to Tray1's #
+        tray2_num = bs.GetPackedBits(32); // Appears to correlate to Tray2's #
+        tray_unk1 = bs.GetBits(1);        // TODO: Unused bits!?
+        // TODO: "Console command received " blank 40 times?
+    }
+};
 
 #include "Events/ClientSettings.h"
 #include "Events/GameCommandList.h"

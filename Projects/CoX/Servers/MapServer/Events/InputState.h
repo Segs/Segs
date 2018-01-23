@@ -12,8 +12,7 @@
 class InputState : public MapLinkEvent
 {
 public:
-    InputStateStorage m_data;
-    uint32_t m_targeted_entity_idx;
+    InputStateStorage   m_data;
 public:
     InputState() : MapLinkEvent(MapEventTypes::evInputState),m_user_commands(0)
     {}

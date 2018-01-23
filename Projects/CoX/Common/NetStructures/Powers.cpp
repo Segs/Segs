@@ -103,8 +103,8 @@ void PowerTrayGroup::serializefrom(BitStream &src)
 
 void PowerTrayGroup::dump()
 {
-    qDebug() << "    unkn1: 0x"<<QString::number(primary_tray_idx,16);
-    qDebug() << "    unkn2: 0x"<<QString::number(secondary_tray_idx,16);
+    qDebug() << "primary_tray_idx: " << QString::number(primary_tray_idx,16);
+    qDebug() << "secondary_tray_idx: " << QString::number(secondary_tray_idx,16);
     for(int bar_num=0; bar_num<9; bar_num++)
     {
         if(m_trays[bar_num].setPowers()==0)
@@ -114,11 +114,11 @@ void PowerTrayGroup::dump()
         m_trays[bar_num].Dump();
         non_line_breaking_debug << "***";
     }
-    qDebug() << "    m_c "<<m_c;
+    qDebug() << "    m_c " << m_c;
     if(m_c)
     {
-        qDebug() << "    m_power_rel1 0x"<<QString::number(m_default_powerset_idx,16);
-        qDebug() << "    m_power_rel2 0x"<<QString::number(m_default_power_idx,16);
+        qDebug() << "    m_power_rel1 0x" << QString::number(m_default_powerset_idx,16);
+        qDebug() << "    m_power_rel2 0x" << QString::number(m_default_power_idx,16);
     }
 }
 

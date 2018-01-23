@@ -13,6 +13,7 @@
 #include "MapLink.h"
 
 #include <QtCore/QString>
+// TODO: This and eChatTypes from ChatMessage appear to be the same, can we combine?
 enum class InfoType : uint8_t {
     COMBAT         = 1,
     DAMAGE         = 2,

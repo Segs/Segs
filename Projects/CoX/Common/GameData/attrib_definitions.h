@@ -75,7 +75,7 @@ struct Parse_CharAttrib
     float m_SpeedFlying;
     float m_SpeedSwimming;
     float m_SpeedJumping;
-    float m_JumpHeight;
+    float m_jump_height;
     float m_MovementControl;
     float m_MovementFriction;
     float m_Stealth;
@@ -89,10 +89,10 @@ struct Parse_CharAttrib
     float m_Afraid;
     float m_Held;
     float m_Immobilized;
-    float m_Stunned;
+    float m_is_stunned;
     float m_Sleep;
     float m_is_flying;
-    float m_Jumppack;
+    float m_has_jumppack;
     float m_Teleport;
     float m_Untouchable;
     float m_Intangible;
@@ -172,7 +172,7 @@ struct Parse_CharAttribMax
     std::vector<float> m_SpeedFlying;
     std::vector<float> m_SpeedSwimming;
     std::vector<float> m_SpeedJumping;
-    std::vector<float> m_JumpHeight;
+    std::vector<float> m_jump_height;
     std::vector<float> m_MovementControl;
     std::vector<float> m_MovementFriction;
     std::vector<float> m_Stealth;
@@ -186,10 +186,10 @@ struct Parse_CharAttribMax
     std::vector<float> m_Afraid;
     std::vector<float> m_Held;
     std::vector<float> m_Immobilized;
-    std::vector<float> m_Stunned;
+    std::vector<float> m_is_stunned;
     std::vector<float> m_Sleep;
     std::vector<float> m_is_flying;
-    std::vector<float> m_Jumppack;
+    std::vector<float> m_has_jumppack;
     std::vector<float> m_Teleport;
     std::vector<float> m_Untouchable;
     std::vector<float> m_Intangible;
