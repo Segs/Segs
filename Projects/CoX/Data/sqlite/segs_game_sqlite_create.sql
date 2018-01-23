@@ -10,7 +10,7 @@ CREATE TABLE `table_versions` (
 INSERT INTO table_versions VALUES(1,'db_version',0,'2018-01-06 16:27:01');
 INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
 INSERT INTO table_versions VALUES(3,'accounts',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(4,'characters',1,'2018-01-06 16:16:27');
+INSERT INTO table_versions VALUES(4,'characters',1,'2018-01-22 19:16:27');
 INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
 INSERT INTO table_versions VALUES(6,'progress',0,'2017-11-11 08:57:43');
 
@@ -54,7 +54,7 @@ CREATE TABLE `characters` (
 	`specialtitle` VARCHAR(20),
 	`supergroup_id` INTEGER DEFAULT 0,
         `options` BLOB,
-        `gui` BLOB,
+        `chardata` BLOB,
 	FOREIGN KEY(`account_id`) REFERENCES accounts ( account_id ) ON DELETE CASCADE
 );
 

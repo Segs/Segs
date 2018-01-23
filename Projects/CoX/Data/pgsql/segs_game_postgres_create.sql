@@ -8,14 +8,12 @@ CREATE TABLE "table_versions" (
   OIDS=FALSE
 );
 
-
-INSERT INTO table_versions VALUES(1,'table_versions',0,'2017-11-11 08:57:42');
-INSERT INTO table_versions VALUES(2,'accounts',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(3,'characters',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(4,'costume',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(5,'gui',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(6,'options',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(7,'progress',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(1,'db_version',0,'2018-01-06 16:27:01');
+INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
+INSERT INTO table_versions VALUES(3,'accounts',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(4,'characters',1,'2018-01-22 19:16:27');
+INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(6,'progress',0,'2017-11-11 08:57:43');
 
 
 CREATE TABLE "accounts" (
@@ -75,41 +73,9 @@ CREATE TABLE "characters" (
 	"badgetitle" varchar NOT NULL DEFAULT '32',
 	"specialtitle" varchar NOT NULL DEFAULT '32',
 	"supergroup_id" integer NOT NULL,
+	"options" bytea NOT NULL,
+	"chardata" bytea NOT NULL,
 	CONSTRAINT characters_pk PRIMARY KEY ("id")
-) WITH (
-  OIDS=FALSE
-);
-
-
-
-CREATE TABLE "options" (
-	"id" serial NOT NULL,
-	"character_id" integer NOT NULL,
-	"option" varchar(32) NOT NULL,
-	"value" integer NOT NULL,
-	CONSTRAINT options_pk PRIMARY KEY ("id")
-) WITH (
-  OIDS=FALSE
-);
-
-
-
-CREATE TABLE "gui" (
-	"id" serial NOT NULL,
-	"character_id" integer NOT NULL,
-	"window" integer NOT NULL,
-	"x" integer NOT NULL,
-	"y" integer NOT NULL,
-	"sx" integer NOT NULL,
-	"sy" integer NOT NULL,
-	"scale" integer NOT NULL DEFAULT '1',
-	"color1" integer NOT NULL,
-	"color2" integer NOT NULL,
-	"frozen" integer NOT NULL DEFAULT '0',
-	"state" integer NOT NULL DEFAULT '4',
-	"resizable" integer NOT NULL DEFAULT '0',
-	"flags" integer NOT NULL DEFAULT '0',
-	CONSTRAINT gui_pk PRIMARY KEY ("id")
 ) WITH (
   OIDS=FALSE
 );
@@ -153,10 +119,6 @@ ALTER TABLE "costumes" ADD CONSTRAINT "costumes_fk0" FOREIGN KEY ("character_id"
 
 ALTER TABLE "characters" ADD CONSTRAINT "characters_fk0" FOREIGN KEY ("account_id") REFERENCES "accounts"("id");
 ALTER TABLE "characters" ADD CONSTRAINT "characters_fk1" FOREIGN KEY ("supergroup_id") REFERENCES "supergroups"("id");
-
-ALTER TABLE "options" ADD CONSTRAINT "options_fk0" FOREIGN KEY ("character_id") REFERENCES "characters"("id");
-
-ALTER TABLE "gui" ADD CONSTRAINT "gui_fk0" FOREIGN KEY ("character_id") REFERENCES "characters"("id");
 
 
 ALTER TABLE "progress" ADD CONSTRAINT "progress_fk0" FOREIGN KEY ("character_id") REFERENCES "characters"("id");

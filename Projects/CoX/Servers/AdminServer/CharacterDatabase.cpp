@@ -13,7 +13,7 @@
 #include "Character.h"
 #include "Costume.h"
 #include "PlayerMethods.h"
-#include "chardata_serializers.h"
+#include "GameData/chardata_serializers.h"
 
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlDriver>
@@ -94,7 +94,8 @@ void CharacterDatabase::on_connected(QSqlDatabase *db)
                 "posx=:posx, posy=:posy, posz=:posz, "
                 "orientp=:orientp, orienty=:orienty, orientr=:orientr, "
                 "title=:title, badgetitle=:badgetitle, "
-                "specialtitle=:specialtitle, supergroup_id=:supergroup_id "
+                "specialtitle=:specialtitle, supergroup_id=:supergroup_id, "
+                "options=:options, gui=:gui "
                 "WHERE id=:id ");
     prepQuery(m_prepared_costume_update,
                 "UPDATE costume SET "
@@ -380,13 +381,13 @@ bool CharacterDatabase::update( Entity *e )
     m_prepared_char_update.bindValue(":badgetitle", cd->m_titles[1]);
     m_prepared_char_update.bindValue(":specialtitle", cd->m_titles[2]);
     m_prepared_char_update.bindValue(":supergroup_id", cd->m_supergroup_id);
-    //m_prepared_char_update.bindValue(":options", cd->m_options);
+    m_prepared_char_update.bindValue(":options", 0); // c->m_options, which needs to be serialized.
     //m_prepared_char_update.bindValue(":gui", cd->m_gui);
 
     QString char_data;
-    serializeToDb(cd,char_data);
+    //serializeToDb(*cd,char_data); // This currently crashes the server.
 
-    m_prepared_char_update.bindValue(":chardata", char_data);
+    m_prepared_char_update.bindValue(":gui", char_data); // TODO: crashes server. :gui used for testing
     qDebug() << char_data;
     
     if(!doIt(m_prepared_char_update))
