@@ -8,8 +8,6 @@
 template<class Archive>
 void serialize(Archive & archive, CharacterData &cd)
 {
-    char buf[128];
-
     archive(cereal::make_nvp("Level",cd.m_level));
     archive(cereal::make_nvp("CombatLevel",cd.m_combat_level));
     archive(cereal::make_nvp("XP",cd.m_experience_points));
@@ -18,17 +16,12 @@ void serialize(Archive & archive, CharacterData &cd)
     archive(cereal::make_nvp("Influence",cd.m_influence));
     archive(cereal::make_nvp("HasTitles",cd.m_has_titles));
     archive(cereal::make_nvp("ThePrefix",cd.m_has_the_prefix));
-    auto *titles = &cd.m_titles;
-    for(int i=0; i<3; ++i) {
-        sprintf(buf,"Title-%d",i);
-        archive(cereal::make_nvp(buf,titles[i]));
-    }
+    archive(cereal::make_nvp("Titles",cd.m_titles));
     archive(cereal::make_nvp("BattleCry",cd.m_battle_cry));
     archive(cereal::make_nvp("Description",cd.m_character_description));
     archive(cereal::make_nvp("AFK",cd.m_afk));
     archive(cereal::make_nvp("AfkMsg",cd.m_afk_msg));
     archive(cereal::make_nvp("LFG",cd.m_lfg));
-    archive(cereal::make_nvp("SuperGroupID",cd.m_supergroup_id));
     archive(cereal::make_nvp("Alignment",cd.m_alignment));
     archive(cereal::make_nvp("LastCostumeID",cd.m_last_costume_id));
     archive(cereal::make_nvp("Class",cd.m_class_name));

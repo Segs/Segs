@@ -480,7 +480,7 @@ void MapInstance::on_cookie_confirm(CookieRequest * ev){
     printf("Received cookie confirm %x - %x\n",ev->cookie,ev->console);
 }
 void MapInstance::on_window_state(WindowState * ev){
-    printf("Received window state %d - %d\n",ev->window_idx,ev->wnd.field_24);
+    //printf("Received window state %d - %d\n",ev->window_idx,ev->wnd.field_24);
 
 }
 QString process_replacement_strings(MapClient *sender,const QString &msg_text)

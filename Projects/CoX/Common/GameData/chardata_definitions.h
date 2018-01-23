@@ -12,13 +12,12 @@ struct CharacterData
     uint32_t    m_influence         = 0;
     bool        m_has_titles        = false;
     bool        m_has_the_prefix    = false;
-    QString     m_titles[3];        // Generic, Origin, Special
+    QString     m_titles[3];             // Generic, Origin, Special
     QString     m_battle_cry;
     QString     m_character_description;
     bool        m_afk               = false;
     QString     m_afk_msg;
     uint8_t     m_lfg               = 0;
-    uint32_t    m_supergroup_id     = 0;
     QString     m_alignment         = "hero";
     uint64_t    m_last_costume_id;
     QString     m_class_name;

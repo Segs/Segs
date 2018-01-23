@@ -65,37 +65,34 @@ void CharacterDatabase::on_connected(QSqlDatabase *db)
 
     prepQuery(m_prepared_fill,"SELECT * FROM costume WHERE character_id=? AND costume_index=?");
     prepQuery(m_prepared_account_insert,"INSERT INTO accounts  (account_id,max_slots) VALUES (?,?)");
+    /*
+    ":slot_index, :account_id, :char_name, :chardata, :bodytype, :last_online, :hitpoints, :endurance, "
+    ":posx, :posy, :posz, :orientp, :orienty, :orientr, :supergroup_id, :options "
+    */
     prepQuery(m_prepared_char_insert,
                 "INSERT INTO characters  ("
-                "char_level, slot_index, account_id, char_name, archetype, origin, description, "
-                "battlecry, current_map, bodytype, last_costume_id, last_online, hitpoints, endurance, "
-                "inf, xp, xpdebt, xppatrol, alignment, posx, posy, posz, orientp, orienty, orientr, "
-                "title, badgetitle, specialtitle, supergroup_id, options, gui"
+                "slot_index, account_id, char_name, chardata, bodytype, "
+                "last_online, hitpoints, endurance, "
+                "posx, posy, posz, orientp, orienty, orientr, supergroup_id, options"
                 ") VALUES ("
-                ":char_level, :slot_index, :account_id, :char_name, :archetype, :origin, :description, "
-                ":battlecry, :current_map, :bodytype, :last_costume_id, :last_online, :hitpoints, :endurance, "
-                ":inf, :xp, :xpdebt, :xppatrol, :alignment, :posx, :posy, :posz, :orientp, :orienty, :orientr, "
-                ":title, :badgetitle, :specialtitle, :supergroup_id, :options, :gui"
+                ":slot_index, :account_id, :char_name, :chardata, :bodytype, "
+                ":last_online, :hitpoints, :endurance, "
+                ":posx, :posy, :posz, :orientp, :orienty, :orientr, :supergroup_id, :options"
                 ")");
     prepQuery(m_prepared_costume_insert,
                 "INSERT INTO costume (character_id,costume_index,skin_color,parts) VALUES "
                 "(:id,:costume_index,:skin_color,:parts)");
+    /*
+    ":id, :char_name, :chardata, :bodytype, :last_online, :hitpoints, :endurance, "
+    ":posx, :posy, :posz, :orientp, :orienty, :orientr, :supergroup_id, :options "
+    */
     prepQuery(m_prepared_char_update,
                 "UPDATE characters SET "
-                "char_level=:char_level, char_name=:char_name, "
-                "archetype=:archetype, origin=:origin, "
-                "description=:description, battlecry=:battlecry, "
-                "current_map=:current_map, bodytype=:bodytype, "
-                "last_costume_id=:last_costume_id, "
+                "char_name=:char_name, chardata=:chardata, bodytype=:bodytype, "
                 "last_online=:last_online, "
-                "hitpoints=:hitpoints, endurance=:endurance, "
-                "inf=:inf, xp=:xp, xpdebt=:xpdebt, "
-                "xppatrol=:xppatrol, alignment=:alignment, "
                 "posx=:posx, posy=:posy, posz=:posz, "
                 "orientp=:orientp, orienty=:orienty, orientr=:orientr, "
-                "title=:title, badgetitle=:badgetitle, "
-                "specialtitle=:specialtitle, supergroup_id=:supergroup_id, "
-                "options=:options, gui=:gui "
+                "supergroup_id=:supergroup_id, options=:options "
                 "WHERE id=:id ");
     prepQuery(m_prepared_costume_update,
                 "UPDATE costume SET "
@@ -173,36 +170,20 @@ bool CharacterDatabase::fill( Character *c)
     c->m_db_id = (m_prepared_char_select.value("id").toUInt());
     qDebug() << "m_db_id:" << c->m_db_id;
     c->m_account_id = (m_prepared_char_select.value("account_id").toUInt());
-    setLevel(*c,(uint8_t)m_prepared_char_select.value("char_level").toUInt());
     c->setName(STR_OR_EMPTY(m_prepared_char_select.value("char_name").toString()));
-    cd->m_class_name = (STR_OR_EMPTY(m_prepared_char_select.value("archetype").toString()));
-    cd->m_origin_name = (STR_OR_EMPTY(m_prepared_char_select.value("origin").toString()));
-    cd->m_character_description = (STR_OR_EMPTY(m_prepared_char_select.value("description").toString()));
-    cd->m_battle_cry = (STR_OR_EMPTY(m_prepared_char_select.value("battlecry").toString()));
-    cd->m_experience_debt = (m_prepared_char_select.value("xp").toUInt());
-    cd->m_experience_points = (m_prepared_char_select.value("xpdebt").toUInt());
-    cd->m_influence = (m_prepared_char_select.value("inf").toUInt());
+    c->m_supergroup_id = (m_prepared_char_select.value("supergroup_id").toUInt());
     c->m_current_attribs.m_HitPoints = (m_prepared_char_select.value("hitpoints").toUInt());
     c->m_current_attribs.m_Endurance = (m_prepared_char_select.value("endurance").toUInt());
-    setMapName(*c,STR_OR_EMPTY(m_prepared_char_select.value("current_map").toString()));
-
-    if(!m_prepared_char_select.value("title").isNull()
-            || !m_prepared_char_select.value("badgetitle").isNull()
-            || !m_prepared_char_select.value("specialtitle").isNull())
-    {
-        cd->m_has_titles = true;
-        cd->m_titles[0] = (m_prepared_char_select.value("title").toString());
-        cd->m_titles[1] = (m_prepared_char_select.value("badgetitle").toString());
-        cd->m_titles[2] = (m_prepared_char_select.value("specialtitle").toString());
-    }
 
     //cd->m_char_data.m_options = (m_prepared_char_select.value("options");
-    //cd->m_char_data.m_gui = (m_prepared_char_select.value("gui");
+    QString char_data;
+    char_data = (m_prepared_char_select.value("chardata").toString());
+    serializeFromDb(*cd,char_data);
+    qDebug().noquote() << char_data;
 
     CharacterCostume *main_costume = new CharacterCostume;
     // appearance related.
     main_costume->m_body_type = m_prepared_char_select.value("bodytype").toUInt();
-    setLastCostumeId(*c,m_prepared_char_select.value("last_costume_id").toUInt());
     main_costume->setSlotIndex(0);
     main_costume->setCharacterId(m_prepared_char_select.value("id").toULongLong());
     c->m_costumes.push_back(main_costume);
@@ -275,43 +256,29 @@ bool CharacterDatabase::create( uint64_t gid,uint8_t slot,Character *c )
     }
 
     /*
-    ":char_level, :slot_index, :account_id, :char_name, :archetype, :origin, :description, "
-    ":battlecry, :current_map, :bodytype, :last_costume_id, :last_online, :hitpoints, :endurance, "
-    ":inf, :xp, :xpdebt, :xppatrol, :alignment, :posx, :posy, :posz, :orientp, :orienty, :orientr, "
-    ":title, :badgetitle, :specialtitle, :supergroup_id, :options, :gui"
+    ":slot_index, :account_id, :char_name, :chardata, :bodytype, :last_online, :hitpoints, :endurance, "
+    ":posx, :posy, :posz, :orientp, :orienty, :orientr, :supergroup_id, :options "
     */
-
-    m_prepared_char_insert.bindValue(":char_level", cd->m_level);
     m_prepared_char_insert.bindValue(":slot_index", uint32_t(slot));
     m_prepared_char_insert.bindValue(":account_id", quint64(gid));
     m_prepared_char_insert.bindValue(":char_name", c->m_name);
-    m_prepared_char_insert.bindValue(":archetype", cd->m_class_name);
-    m_prepared_char_insert.bindValue(":origin", cd->m_origin_name);
-    m_prepared_char_insert.bindValue(":description", cd->m_character_description);
-    m_prepared_char_insert.bindValue(":battlecry", cd->m_battle_cry);
-    m_prepared_char_insert.bindValue(":current_map", cd->m_mapName);
     m_prepared_char_insert.bindValue(":bodytype", c->getCurrentCostume()->m_body_type);
-    m_prepared_char_insert.bindValue(":last_costume_id", quint64(getLastCostumeId(*c)));
     m_prepared_char_insert.bindValue(":last_online", timestamp);
     m_prepared_char_insert.bindValue(":hitpoints", c->m_current_attribs.m_HitPoints);
     m_prepared_char_insert.bindValue(":endurance", c->m_current_attribs.m_Endurance);
-    m_prepared_char_insert.bindValue(":inf", getInf(*c));
-    m_prepared_char_insert.bindValue(":xp", getXP(*c));
-    m_prepared_char_insert.bindValue(":xpdebt", cd->m_experience_debt);
-    m_prepared_char_insert.bindValue(":xppatrol", cd->m_experience_patrol);
-    m_prepared_char_insert.bindValue(":alignment", cd->m_alignment);
     m_prepared_char_insert.bindValue(":posx", 0);
     m_prepared_char_insert.bindValue(":posy", 0);
     m_prepared_char_insert.bindValue(":posz", 0);
     m_prepared_char_insert.bindValue(":orientp", 0);
     m_prepared_char_insert.bindValue(":orienty", 0);
     m_prepared_char_insert.bindValue(":orientr", 0);
-    m_prepared_char_insert.bindValue(":title", cd->m_titles[0]);
-    m_prepared_char_insert.bindValue(":badgetitle", cd->m_titles[1]);
-    m_prepared_char_insert.bindValue(":specialtitle", cd->m_titles[2]);
-    m_prepared_char_insert.bindValue(":supergroup_id", cd->m_supergroup_id);
+    m_prepared_char_insert.bindValue(":supergroup_id", uint32_t(c->m_supergroup_id));
     m_prepared_char_insert.bindValue(":options", 0);
-    m_prepared_char_insert.bindValue(":gui", 0);
+
+    QString char_data;
+    serializeToDb(*cd,char_data);
+    m_prepared_char_insert.bindValue(":chardata", char_data);
+    qDebug().noquote() << char_data;
 
     if(!doIt(m_prepared_char_insert))
         return false;
@@ -347,48 +314,29 @@ bool CharacterDatabase::update( Entity *e )
     }
 
     /*
-    ":char_level, :char_name, :archetype, :origin, :description, "
-    ":battlecry, :current_map, :bodytype, :last_costume_id, :last_online, :hitpoints, :endurance, "
-    ":inf, :xp, :xpdebt, :xppatrol, :alignment, :posx, :posy, :posz, :orientp, :orienty, :orientr, "
-    ":title, :badgetitle, :specialtitle, :supergroup_id, :options, :gui"
+    ":id, :char_name, :bodytype, :last_online, :hitpoints, :endurance, "
+    ":posx, :posy, :posz, :orientp, :orienty, :orientr, :options, :chardata"
     */
     
     m_prepared_char_update.bindValue(":id", c->m_db_id); // for WHERE statement only
-    m_prepared_char_update.bindValue(":char_level", getLevel(*c));
     m_prepared_char_update.bindValue(":char_name", c->getName());
-    m_prepared_char_update.bindValue(":archetype", getClass(*c));
-    m_prepared_char_update.bindValue(":origin", getOrigin(*c));
-    m_prepared_char_update.bindValue(":description", getDescription(*c));
-    m_prepared_char_update.bindValue(":battlecry", getBattleCry(*c));
-    m_prepared_char_update.bindValue(":current_map", getMapName(*c));
     m_prepared_char_update.bindValue(":bodytype", c->getCurrentCostume()->m_body_type);
-    m_prepared_char_update.bindValue(":last_costume_id", quint64(getLastCostumeId(*c)));
     m_prepared_char_update.bindValue(":last_online", timestamp);
     m_prepared_char_update.bindValue(":hitpoints", getHP(*c));
     m_prepared_char_update.bindValue(":endurance", getEnd(*c));
-    m_prepared_char_update.bindValue(":inf", getInf(*c));
-    m_prepared_char_update.bindValue(":xp", getXP(*c));
-    m_prepared_char_update.bindValue(":xpdebt", getDebt(*c));
-    m_prepared_char_update.bindValue(":xppatrol", getPatrolXP(*c));
-    m_prepared_char_update.bindValue(":alignment", getAlignment(*c));
     m_prepared_char_update.bindValue(":posx", e->pos.x);
     m_prepared_char_update.bindValue(":posy", e->pos.y);
     m_prepared_char_update.bindValue(":posz", e->pos.z);
     m_prepared_char_update.bindValue(":orientp", e->inp_state.m_orientation_pyr.p);
     m_prepared_char_update.bindValue(":orienty", e->inp_state.m_orientation_pyr.y);
     m_prepared_char_update.bindValue(":orientr", e->inp_state.m_orientation_pyr.r);
-    m_prepared_char_update.bindValue(":title", cd->m_titles[0]);
-    m_prepared_char_update.bindValue(":badgetitle", cd->m_titles[1]);
-    m_prepared_char_update.bindValue(":specialtitle", cd->m_titles[2]);
-    m_prepared_char_update.bindValue(":supergroup_id", cd->m_supergroup_id);
+    m_prepared_char_update.bindValue(":supergroup_id", uint32_t(c->m_supergroup_id));
     m_prepared_char_update.bindValue(":options", 0); // c->m_options, which needs to be serialized.
-    //m_prepared_char_update.bindValue(":gui", cd->m_gui);
 
     QString char_data;
-    //serializeToDb(*cd,char_data); // This currently crashes the server.
-
-    m_prepared_char_update.bindValue(":gui", char_data); // TODO: crashes server. :gui used for testing
-    qDebug() << char_data;
+    serializeToDb(*cd,char_data);
+    m_prepared_char_update.bindValue(":chardata", char_data);
+    qDebug().noquote() << char_data;
     
     if(!doIt(m_prepared_char_update))
         return false;
