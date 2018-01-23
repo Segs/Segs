@@ -13,10 +13,8 @@
 #include "Character.h"
 #include "Costume.h"
 #include "PlayerMethods.h"
+#include "chardata_serializers.h"
 
-#include <iostream>
-#include <cereal/archives/json.hpp>
-#include <cereal/types/vector.hpp>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlDriver>
 #include <QtCore/QDebug>
@@ -385,17 +383,11 @@ bool CharacterDatabase::update( Entity *e )
     //m_prepared_char_update.bindValue(":options", cd->m_options);
     //m_prepared_char_update.bindValue(":gui", cd->m_gui);
 
-    /*
-    std::stringstream ss;
-    {
-      cereal::JSONOutputArchive archive( ss );
-      archive( cd );
-    }
-    QString charData;
+    QString char_data;
+    serializeToDb(cd,char_data);
 
-    m_prepared_char_update.bindValue(":chardata", QByteArray::fromStdString(charData));
-    qDebug() << charData;
-    */
+    m_prepared_char_update.bindValue(":chardata", char_data);
+    qDebug() << char_data;
     
     if(!doIt(m_prepared_char_update))
         return false;

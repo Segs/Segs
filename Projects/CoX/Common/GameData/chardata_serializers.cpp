@@ -48,7 +48,17 @@ void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, C
 template
 void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, CharacterData & m);
 
-void serializeFromDb(CharacterData &data,const QByteArray &src)
+void serializeToDb(const CharacterData &data, QString &tgt)
+{
+    std::ostringstream ostr;
+    {
+        cereal::JSONOutputArchive ar(ostr);
+        ar(data);
+    }
+    tgt = QString::fromStdString(ostr.str());
+}
+
+void serializeFromDb(CharacterData &data,const QString &src)
 {
     if(src.isEmpty())
         return;
@@ -59,17 +69,3 @@ void serializeFromDb(CharacterData &data,const QByteArray &src)
         ar(data);
     }
 }
-
-/*
-#include <iostream>
-#include <cereal/archives/json.hpp>
-#include <cereal/types/vector.hpp>
-//......
-  std::stringstream ss;
-  {
-    cereal::JSONOutputArchive archive( ss );
-    CharacterData charData;
-    archive( charData );
-  }
-  m_prepared_char_insert.bindValue(":char_data", QByteArray::fromStdString(charData.str()));
-*/
