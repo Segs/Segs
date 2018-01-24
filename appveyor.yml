@@ -9,9 +9,9 @@ environment:
   MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
   matrix:
   - CMAKE_GENERATOR: "Visual Studio 15 2017"
-    QT5: C:\Qt\5.9.2\msvc2015
+    QT5: C:\Qt\5.10.0\msvc2015
   - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
-    QT5: C:\Qt\5.9.2\msvc2017_64
+    QT5: C:\Qt\5.10.0\msvc2017_64
     
 branches:
   only:
