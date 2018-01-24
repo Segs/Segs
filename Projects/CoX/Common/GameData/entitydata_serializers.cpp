@@ -6,7 +6,7 @@
 
 
 template<class Archive>
-void serialize(Archive & archive, EntityData &ed)
+void serialize(Archive & archive, EntityData &ed, uint32_t const version)
 {
     archive(cereal::make_nvp("OriginIdx",ed.m_origin_idx));
     archive(cereal::make_nvp("ClassIdx",ed.m_class_idx));
@@ -21,11 +21,21 @@ void saveTo(const EntityData & target, const QString & baseName, bool text_forma
 }
 
 template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, EntityData & m);
+void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, EntityData & m, uint32_t const version);
 template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, EntityData & m);
+void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, EntityData & m, uint32_t const version);
 
-void serializeFromDb(EntityData &data,const QByteArray &src)
+void serializeToDb(const EntityData &data, QString &tgt)
+{
+    std::ostringstream ostr;
+    {
+        cereal::JSONOutputArchive ar(ostr);
+        ar(data);
+    }
+    tgt = QString::fromStdString(ostr.str());
+}
+
+void serializeFromDb(EntityData &data,const QString &src)
 {
     if(src.isEmpty())
         return;
@@ -36,17 +46,3 @@ void serializeFromDb(EntityData &data,const QByteArray &src)
         ar(data);
     }
 }
-
-/*
-#include <iostream>
-#include <cereal/archives/json.hpp>
-#include <cereal/types/vector.hpp>
-//......
-  std::stringstream ss;
-  {
-    cereal::JSONOutputArchive archive( ss );
-    CharacterData charData;
-    archive( charData );
-  }
-  m_prepared_char_insert.bindValue(":char_data", QByteArray::fromStdString(charData.str()));
-*/

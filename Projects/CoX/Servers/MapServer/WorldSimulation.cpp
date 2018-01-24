@@ -2,6 +2,7 @@
 #include "MapInstance.h"
 #include "MapClient.h"
 #include "AdminServer.h"
+#include "Database.h"
 #include "Events/GameCommandList.h"
 #include <glm/gtx/vector_query.hpp>
 
@@ -80,5 +81,8 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
 
     CharacterDatabase *char_db = AdminServer::instance()->character_db();
     // TODO: Implement asynchronous database queries
-    //char_db->update(&e->m_char);
+    DbTransactionGuard grd(*char_db->getDb());
+    //if(false==char_db->update(e))
+    //    return;
+    //grd.commit();
 }
