@@ -23,9 +23,9 @@ Basic instructions for compiling SEGS in Linux and Windows are below, however fo
 CONTENTS OF THIS FILE
 ------
 - [Requirements and Notes](#requirements-and-notes)
-- [Install C++ Tool Chain](#install-c++-tool-chain)
-- [Compile SEGS](#compile-segs)
-- [Setting up SEGS Server and Playing](#setting-up-segs-and-playing)
+- [Install C++ Tool Chain](#install-c-tool-chain)
+- [Compile SEGS](#build-segs)
+- [Setting up SEGS Server and Playing](#setting-up-segs-server-and-playing)
 - [Contribute to Development](#contribute-to-development)
 - [More Information](#more-information)
 - [FAQs](#faqs)
@@ -66,14 +66,31 @@ sudo apt-get install build-essential git qt5 qt5-devel
 ```
 sudo dnf install cmake gcc gcc-c++ git-core kernel-devel qt5 qt5-devel  
 ```
+**CentOS/RHEL 6/7**
+```
+yum install git centos-release-scl-rh
+yum install devtoolset-6-gcc-c++
+source /opt/rh/devtoolset-6/enable
+```
 
-Your distro may come with some, or all, of these packages pre-installed, and while most versions of these libraries will work, you must have version 5.8+ of Qt installed.
+Your distro may come with some or all of these packages pre-installed, and while most versions of these libraries will work, you must have version 5.8+ of Qt installed. CentOS and RHEL are two such distributions that require downloading a more recent version of CMake and Qt and potentially having to build from source.
 
 **2. Installing in Windows**
 
 Download dependencies and tools by clicking on the links listed in the Requirements section above. Make sure you download the correct version for your installation of Windows. Once downloaded, navigate to your downloads folder and run each installer.
 
 NOTE: for QT, please install **mingw 32bit version**
+
+**3. Installing in FreeBSD 11.x**
+
+```
+portsnap fetch update
+pkg update
+pkg install cmake git
+cd /usr/src/ports/devel/qt5-core && make install && cd ../../database/qt5-sql && make install && cd ../qt5-sqlite3 && make install && cd ../../x11-toolkits/qt5-gui && make install && cd ../qt5-widgets && make install && cd ../../graphics/qt5-opengl && make install
+```
+
+FreeBSD should have clang/llvm already installed.
 
 
 BUILD SEGS
@@ -119,8 +136,19 @@ Now, select `Build > Build All` from the menu at the top of QTCreator. The botto
 00:00:00: The process 'cmake' exited normally.
 ```
 
+**Doing it the CLI Way**
 
-SETTING UP SEGS SERVER & PLAYING
+If you're on a headless Linux or FreeBSD server, run the following commands:
+```
+git clone https://github.com/Segs/Segs.git
+mkdir Segs/bld
+cd Segs/bld
+cmake ..
+make
+```
+
+
+SETTING UP SEGS SERVER AND PLAYING
 ------
 
 After compiling, you'll need to setup your SEGS Server and Databases. You'll also need to download a specific version of the client compatible with SEGS.
