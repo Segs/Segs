@@ -16,8 +16,8 @@
 // Getters
 uint32_t    getIdx(const Entity &e) { return e.m_idx; }
 uint32_t    getDbId(const Entity &e) { return e.m_db_id; }
-uint32_t    getTargetIdx(const Entity &e) { return e.inp_state.m_target_idx; }
-uint32_t    getAssistTargetIdx(const Entity &e) { return e.inp_state.m_assist_target_idx; }
+uint32_t    getTargetIdx(const Entity &e) { return e.m_target_idx; }
+uint32_t    getAssistTargetIdx(const Entity &e) { return e.m_assist_target_idx; }
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char.m_db_id = val; e.m_db_id = val; }

@@ -132,8 +132,6 @@ void EntityManager::sendEntities(BitStream& bs, MapClient *target, bool is_incre
 }
 void EntityManager::InsertPlayer(Entity *ent)
 {
-    ent->pos = glm::vec3(128.0,16,-198); //-60.5;
-    ent->qrot= glm::quat(1.0f,0.0f,0.0f,0.0f);
     m_live_entlist.insert(ent);
 }
 Entity * EntityManager::CreatePlayer()

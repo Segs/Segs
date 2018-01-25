@@ -345,7 +345,7 @@ void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
     if(full_update)
     {
         for(int i=0; i<3; ++i)
-            bs.StoreFloat(target->pos[i]); // server position
+            bs.StoreFloat(target->m_entity_data.pos[i]); // server position
         for(int i=0; i<3; ++i)
             storeFloatConditional(bs,target->vel[i]);
     }

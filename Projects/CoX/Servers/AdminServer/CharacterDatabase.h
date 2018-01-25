@@ -41,7 +41,8 @@ virtual             ~CharacterDatabase();
         bool        create(AccountInfo *);
         bool        create(uint64_t gid,uint8_t slot,Character *c);
         bool        fill( AccountInfo *); //!x
-        bool        fill( Character *); //! Will call fill(CharacterCostume)
+        bool        fill( Entity *e ); //! Will call fill(CharacterCostume)
+        bool        fill( Character *c ); //! Will call fill(CharacterCostume)
         bool        fill( CharacterCostume *);
         bool        update(Entity *);
         bool        update(CharacterCostume *);

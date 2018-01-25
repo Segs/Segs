@@ -76,13 +76,20 @@ void Entity::dump()
             + name()
             + "\n  db_id: " + QString::number(m_db_id)
             + "\n  entity idx: " + QString::number(m_idx)
-            + "\n  access level: " + QString::number(m_access_level)
-            + "\n  tgt_idx: " + QString::number(inp_state.m_target_idx)
+            + "\n  access level: " + QString::number(m_entity_data.m_access_level)
             + "\n  m_type: " + QString::number(m_type)
-            + "\n  class idx: " + QString::number(m_class_idx)
-            + "\n  origin idx: " + QString::number(m_origin_idx)
-            + "\n  current chat channel: " + QString::number(m_cur_chat_channel)
-            + "\n  m_SG_id: " + QString::number(m_SG_id);
+            + "\n  class idx: " + QString::number(m_entity_data.m_class_idx)
+            + "\n  origin idx: " + QString::number(m_entity_data.m_origin_idx)
+            + "\n  pos: " + QString::number(m_entity_data.pos.x) + ", "
+                          + QString::number(m_entity_data.pos.y) + ", "
+                          + QString::number(m_entity_data.pos.z)
+            + "\n  orient: " + QString::number(m_entity_data.m_orientation_pyr.p) + ", "
+                             + QString::number(m_entity_data.m_orientation_pyr.y) + ", "
+                             + QString::number(m_entity_data.m_orientation_pyr.r)
+            + "\n  target: " + QString::number(m_target_idx)
+            + "\n  assist target: " + QString::number(m_assist_target_idx)
+            + "\n  current chat channel: " + QString::number(m_entity_data.m_cur_chat_channel)
+            + "\n  m_SG_id: " + QString::number(m_supergroup.m_SG_id);
 
     qDebug().noquote() << msg;
     if(m_type == Entity::ENT_PLAYER)
@@ -100,8 +107,7 @@ void Entity::addInterp(const PosUpdate & p) {
 
 Entity::Entity()
 {
-    m_access_level = 9; // enables access to all deve
-    pos = glm::vec3(-60.5f,180.0f,0.0f);
+    m_entity_data.m_access_level = 9; // enables access to all deve
 }
 
 void abortLogout(Entity *e)
@@ -117,8 +123,8 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_type           = Entity::ENT_PLAYER; // 2
     e.m_create_player  = true;
     e.m_player_villain = false;
-    e.m_origin_idx     = 0;
-    e.m_class_idx      = 0;
+    e.m_entity_data.m_origin_idx     = 0;
+    e.m_entity_data.m_class_idx      = 0;
     e.m_selector1      = false;
     e.m_hasname        = true;
     e.m_hasgroup_name  = false;

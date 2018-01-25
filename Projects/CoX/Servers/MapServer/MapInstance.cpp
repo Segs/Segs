@@ -307,8 +307,8 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
     {
         Entity *ent = m_entities.CreatePlayer();
         ent->fillFromCharacter(ev->char_from_db);
-        ent->m_origin_idx = getEntityOriginIndex(true, getOrigin(*ev->char_from_db));
-        ent->m_class_idx = getEntityClassIndex(true, getClass(*ev->char_from_db));
+        ent->m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*ev->char_from_db));
+        ent->m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*ev->char_from_db));
         cl->char_entity(ent);
     }
     ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
@@ -335,10 +335,16 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     {
         Entity *e = m_entities.CreatePlayer();
         fillEntityFromNewCharData(*e,ev->m_character_data,g_GlobalMapServer->runtimeData().getPacker());
-        e->m_origin_idx = getEntityOriginIndex(true, getOrigin(e->m_char));
-        e->m_class_idx = getEntityClassIndex(true, getClass(e->m_char));
+        e->m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(e->m_char));
+        e->m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(e->m_char));
         cl->entity(e);
         cl->db_create();
+
+        // New Character Spawn Location
+        //e->m_entity_data.pos = glm::vec3(-60.5f,180.0f,0.0f); // ?? Starting Location
+        e->m_entity_data.pos = glm::vec3(128.0,16,-198); // Atlas Park Starting Location
+        e->direction = glm::quat(1.0f,0.0f,0.0f,0.0f);
+
         //        start_idle_timer(cl);
         //cl->start_idle_timer();
     }
@@ -455,6 +461,12 @@ void MapInstance::on_input_state(InputState *st)
     if (st->m_data.has_input_commit_guess)
         ent->m_input_ack = st->m_data.send_id;
     ent->inp_state = st->m_data;
+    // Set Target
+    ent->m_target_idx = st->m_target_idx;
+    ent->m_assist_target_idx = st->m_assist_target_idx;
+    // Set Orientation
+    ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
+    ent->direction = st->m_data.direction;
 
     // Input state messages can be followed by multiple commands.
     assert(st->m_user_commands.GetReadableBits()<32*1024*8); // simple sanity check ?
@@ -608,10 +620,10 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         case ChatMessage::CHAT_Local:
         {
             // send only to clients within range
-            glm::vec3 senderpos = sender->char_entity()->pos;
+            glm::vec3 senderpos = sender->char_entity()->m_entity_data.pos;
             for(MapClient *cl : m_clients)
             {
-                glm::vec3 recpos = cl->char_entity()->pos;
+                glm::vec3 recpos = cl->char_entity()->m_entity_data.pos;
                 float range = 50.0f; // range of "hearing". I assume this is in yards
                 float dist = glm::distance(senderpos,recpos);
                 /*
@@ -710,7 +722,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             // Only send the message to characters in sender's supergroup
             for(MapClient *cl : m_clients)
             {
-                if(sender->char_entity()->m_SG_id == cl->char_entity()->m_SG_id)
+                if(sender->char_entity()->m_supergroup.m_SG_id == cl->char_entity()->m_supergroup.m_SG_id)
                     recipients.push_back(cl);
             }
             prepared_chat_message = QString("[SuperGroup] %1: %2").arg(sender_char_name,msg_content.toString());
@@ -1026,12 +1038,12 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     }
     else if(lowerContents == "stuck") {
         // TODO: Implement true move-to-safe-location-nearby logic
-        ent->pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park starting location
+        ent->m_entity_data.pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park starting location
 
         QString msg = "Resetting location to default spawn ("
-                + QString::number(ent->pos.x) + ","
-                + QString::number(ent->pos.y) + ","
-                + QString::number(ent->pos.z) + ")";
+                + QString::number(ent->m_entity_data.pos.x) + ","
+                + QString::number(ent->m_entity_data.pos.y) + ","
+                + QString::number(ent->m_entity_data.pos.z) + ")";
         qDebug() << msg;
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
@@ -1150,7 +1162,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
                 + "\n  map: " + ent->m_char.m_char_data.m_mapName
                 + "\n  db_id: " + QString::number(ent->m_db_id) + ":" + QString::number(ent->m_char.m_db_id)
                 + "\n  idx: " + QString::number(ent->m_idx)
-                + "\n  access: " + QString::number(ent->m_access_level)
+                + "\n  access: " + QString::number(ent->m_entity_data.m_access_level)
                 + "\n  acct: " + QString::number(ent->m_char.m_account_id)
                 + "\n  lvl/clvl: " + QString::number(ent->m_char.m_char_data.m_level) + "/" + QString::number(ent->m_char.m_char_data.m_combat_level)
                 + "\n  inf: " + QString::number(ent->m_char.m_char_data.m_influence)
@@ -1848,7 +1860,7 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
     // corresponds to the InfoType in InfoMessageCmd and eChatTypes in ChatMessage
 
     // Passing cur_chat_channel to Entity in case we need it somewhere.
-    ent->m_cur_chat_channel = ev->m_chat_type;
+    ent->m_entity_data.m_cur_chat_channel = ev->m_chat_type;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)

@@ -175,7 +175,6 @@ const   QString &       getName() const { return m_name; }
 
         uint32_t            m_account_id;
         uint32_t            m_db_id;
-        uint32_t            m_supergroup_id;
 
 protected:
         PowerPool_Info  get_power_info(BitStream &src);

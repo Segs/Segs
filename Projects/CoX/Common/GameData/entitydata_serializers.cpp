@@ -4,15 +4,17 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
+CEREAL_CLASS_VERSION(EntityData, 1); // register EntityData class version
 
 template<class Archive>
 void serialize(Archive & archive, EntityData &ed, uint32_t const version)
 {
+    archive(cereal::make_nvp("AccessLevel",ed.m_access_level));
     archive(cereal::make_nvp("OriginIdx",ed.m_origin_idx));
     archive(cereal::make_nvp("ClassIdx",ed.m_class_idx));
-    archive(cereal::make_nvp("Type",ed.m_type));
-    archive(cereal::make_nvp("Idx",ed.m_idx));
-    archive(cereal::make_nvp("dbID",ed.m_db_id));
+    archive(cereal::make_nvp("CurrentChatChannel",ed.m_cur_chat_channel));
+    archive(cereal::make_nvp("Position",ed.pos));
+    archive(cereal::make_nvp("Orientation",ed.m_orientation_pyr));
 }
 
 void saveTo(const EntityData & target, const QString & baseName, bool text_format)

@@ -43,9 +43,6 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     has_input_commit_guess      = other.has_input_commit_guess;
     m_received_server_update_id = other.m_received_server_update_id;
     m_no_coll                   = other.m_no_coll;
-    m_target_idx                = other.m_target_idx;
-    m_has_target                = other.m_has_target;
-    m_assist_target_idx         = other.m_assist_target_idx;
 
     for(int i=0; i<3; ++i)
     {
@@ -286,13 +283,13 @@ void InputState::serializefrom(BitStream &bs)
     if(bs.GetBits(1))
         extended_input(bs);
 
-    m_data.m_has_target = bs.GetBits(1);
-    m_data.m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
+    m_has_target = bs.GetBits(1);
+    m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
     int ctrl_idx=0;
 #ifdef DEBUG_TARGET
-    fprintf(stderr,"T:[%d] ",m_data.m_has_target);
-    if(m_data.m_has_target)
-        fprintf(stderr,"TI:[%d] ",m_data.m_target_idx);
+    fprintf(stderr,"T:[%d] ",m_has_target);
+    if(m_has_target)
+        fprintf(stderr,"TI:[%d] ",m_target_idx);
 #endif
     ControlState prev_fld;
     while(bs.GetBits(1)) // receive control state array entries ?
