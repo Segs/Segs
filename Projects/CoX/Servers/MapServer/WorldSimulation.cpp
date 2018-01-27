@@ -86,3 +86,8 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
     //    return;
     //grd.commit();
 }
+
+void World::addPlayer(Entity *ent)
+{
+    ref_ent_mager.InsertPlayer(ent);
+}

@@ -7,10 +7,10 @@ CREATE TABLE `table_versions` (
     `last_update` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO table_versions VALUES(1,'db_version',1,'2018-01-23 10:27:01');
+INSERT INTO table_versions VALUES(1,'db_version',2,'2018-01-25 10:27:01');
 INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
 INSERT INTO table_versions VALUES(3,'accounts',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(4,'characters',2,'2018-01-23 10:16:27');
+INSERT INTO table_versions VALUES(4,'characters',3,'2018-01-25 10:16:27');
 INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
 INSERT INTO table_versions VALUES(6,'progress',0,'2017-11-11 08:57:43');
 INSERT INTO table_versions VALUES(7,'supergroups',0,'2018-01-23 10:16:43');
@@ -29,6 +29,7 @@ CREATE TABLE `characters` (
 	`slot_index`	INTEGER NOT NULL DEFAULT 0,
 	`char_name`	TEXT NOT NULL,
 	`chardata`	BLOB,
+	`entitydata`	BLOB,
 	`bodytype`	INTEGER NOT NULL DEFAULT 4,
 	`hitpoints`	INTEGER DEFAULT 0,
 	`endurance`	INTEGER DEFAULT 0,

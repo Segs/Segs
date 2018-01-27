@@ -11,7 +11,7 @@
 #include "Entity.h"
 #include "Costume.h"
 #include "GameData/keybind_definitions.h"
-#include "PlayerMethods.h"
+#include "Servers/MapServer/DataHelpers.h"
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 
@@ -33,6 +33,10 @@ Character::Character()
     m_max_attribs.m_HitPoints        = 50;
     m_current_attribs.m_Endurance    = 33;
     m_max_attribs.m_Endurance        = 43;
+    m_char_data.m_has_titles = m_char_data.m_has_the_prefix
+            || !m_char_data.m_titles[0].isEmpty()
+            || !m_char_data.m_titles[1].isEmpty()
+            || !m_char_data.m_titles[2].isEmpty();
 }
 void Character::reset()
 {
@@ -50,6 +54,7 @@ void Character::reset()
     m_char_data.m_using_sg_costume=false;
     m_first_person_view_toggle=false;
     m_full_options = false;
+    m_char_data.m_has_titles = false;
 }
 
 

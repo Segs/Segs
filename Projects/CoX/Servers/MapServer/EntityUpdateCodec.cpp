@@ -9,7 +9,7 @@
 #include "GameData/CoHMath.h"
 
 #ifdef DEBUG_ORIENTATION
-#include <glm/ext.hpp> // currently only needed for DEBUG_INPUT
+#include <glm/ext.hpp> // currently only needed for DEBUG_ORIENTATION
 #endif
 
 namespace  {
@@ -130,7 +130,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
     float pyr_angles[3];
     glm::vec3 vec = toCoH_YPR(src.direction);
     pyr_angles[0] = 0.0f;
-    pyr_angles[1] = src.m_entity_data.m_orientation_pyr.y; // set only yaw value
+    pyr_angles[1] = vec.y; // set only yaw value
     pyr_angles[2] = 0.0f;
 #ifdef DEBUG_ORIENTATION
     // output everything

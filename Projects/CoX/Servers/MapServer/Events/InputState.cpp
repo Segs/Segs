@@ -7,7 +7,7 @@
  */
 
 //#define DEBUG_INPUT
-//#define DEBUG_INPUT2
+//#define DEBUG_ORIENTATION
 //#define DEBUG_TARGET
 #define _USE_MATH_DEFINES
 #include "Events/InputState.h"
@@ -53,18 +53,19 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     for(int i=0; i<3; ++i)
     {
         if(other.pyr_valid[i])
-        {
             camera_pyr[i] = other.camera_pyr[i];
-            update_needed = true;
-        }
 
         if(other.m_orientation_pyr[i])
+        {
+#ifdef DEBUG_ORIENTATION
+    qDebug() << other.m_orientation_pyr[i];
+#endif
             m_orientation_pyr[i] = other.m_orientation_pyr[i];
+            update_needed = true;
+        }
     }
     if(update_needed)
-    {
         direction = fromCoHYpr(m_orientation_pyr);
-    }
     return *this;
 }
 
@@ -214,7 +215,7 @@ void InputState::extended_input(BitStream &bs)
     m_data.controlBits = 0;
     for(int idx=0; idx<6; ++idx)
         m_data.controlBits |= (bs.GetBits(1))<<idx;
-#ifdef DEBUG_INPUT2
+#ifdef DEBUG_INPUT
     if(m_data.controlBits)
         fprintf(stderr,"E input %x : ",m_data.controlBits);
 #endif
@@ -222,7 +223,7 @@ void InputState::extended_input(BitStream &bs)
     {
         m_data.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[0]);
         m_data.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[1]);
-#ifdef DEBUG_INPUT2
+#ifdef DEBUG_ORIENTATION
         fprintf(stderr,"%f : %f",m_data.m_orientation_pyr[0],m_data.m_orientation_pyr[1]);;
 #endif
     }

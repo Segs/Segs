@@ -23,6 +23,7 @@
 #include "EntityStorage.h"
 #include "WorldSimulation.h"
 #include "InternalEvents.h"
+#include "Database.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -307,8 +308,6 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
     {
         Entity *ent = m_entities.CreatePlayer();
         ent->fillFromCharacter(ev->char_from_db);
-        ent->m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*ev->char_from_db));
-        ent->m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*ev->char_from_db));
         cl->char_entity(ent);
     }
     ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
@@ -335,20 +334,22 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     {
         Entity *e = m_entities.CreatePlayer();
         fillEntityFromNewCharData(*e,ev->m_character_data,g_GlobalMapServer->runtimeData().getPacker());
-        e->m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(e->m_char));
-        e->m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(e->m_char));
         cl->entity(e);
         cl->db_create();
-
-        // New Character Spawn Location
-        //e->m_entity_data.pos = glm::vec3(-60.5f,180.0f,0.0f); // ?? Starting Location
-        e->m_entity_data.pos = glm::vec3(128.0,16,-198); // Atlas Park Starting Location
-        e->direction = glm::quat(1.0f,0.0f,0.0f,0.0f);
 
         //        start_idle_timer(cl);
         //cl->start_idle_timer();
     }
     assert(cl->char_entity());
+
+    // Now that we have an entity, fill it.
+    CharacterDatabase *char_db = AdminServer::instance()->character_db();
+    // TODO: Implement asynchronous database queries
+    DbTransactionGuard grd(*char_db->getDb());
+    if(false==char_db->fill(cl->char_entity()))
+        return;
+    grd.commit();
+
     cl->current_map()->enqueue_client(cl);
     setMapName(cl->char_entity()->m_char,name());
     lnk->set_client_data(cl);
@@ -465,8 +466,11 @@ void MapInstance::on_input_state(InputState *st)
     ent->m_target_idx = st->m_target_idx;
     ent->m_assist_target_idx = st->m_assist_target_idx;
     // Set Orientation
-    ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
-    ent->direction = st->m_data.direction;
+    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r) {
+        ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
+        ent->direction = st->m_data.direction;
+        //qDebug() << ent->m_entity_data.m_orientation_pyr.x << ent->m_entity_data.m_orientation_pyr.y << ent->m_entity_data.m_orientation_pyr.z;
+    }
 
     // Input state messages can be followed by multiple commands.
     assert(st->m_user_commands.GetReadableBits()<32*1024*8); // simple sanity check ?

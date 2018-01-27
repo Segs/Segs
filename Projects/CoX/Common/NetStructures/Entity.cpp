@@ -7,7 +7,7 @@
  */
 #define _USE_MATH_DEFINES
 #include "Entity.h"
-#include "PlayerMethods.h"
+#include "Servers/MapServer/DataHelpers.h"
 
 #include <QtCore/QDebug>
 #include <algorithm>
@@ -38,7 +38,8 @@ void Entity::fillFromCharacter(Character *f)
     m_char = *f;
     m_hasname = true;
     m_db_id = m_char.m_db_id;
-    //TODO: map class/origin name to Entity's class/orign indices.
+    m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*f));
+    m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*f));
 }
 /**
  *  This will mark the Entity as being in logging out state
@@ -58,10 +59,20 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *pac
     e.m_char.GetCharBuildInfo(src);
     e.m_char.recv_initial_costume(src,packer);
     e.m_char.m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
+    if(e.m_char.m_char_data.m_has_the_prefix)
+        e.m_char.m_char_data.m_has_titles = true;
     src.GetString(battlecry);
     src.GetString(description);
     setBattleCry(e.m_char,battlecry);
     setDescription(e.m_char,description);
+    e.m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(e.m_char));
+    e.m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(e.m_char));
+    setDbId(e,e.m_char.m_db_id);
+
+    // New Character Spawn Location
+    //e.m_entity_data.pos                 = glm::vec3(-60.5f,180.0f,0.0f); // Tutorial Starting Location
+    e.m_entity_data.pos                   = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting Location
+    e.direction                           = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 void Entity::InsertUpdate( PosUpdate pup )
 {
@@ -118,19 +129,20 @@ void abortLogout(Entity *e)
 
 void initializeNewPlayerEntity(Entity &e)
 {
-    e.m_costume_type   = 1;
-    e.m_destroyed      = false;
-    e.m_type           = Entity::ENT_PLAYER; // 2
-    e.m_create_player  = true;
-    e.m_player_villain = false;
-    e.m_entity_data.m_origin_idx     = 0;
-    e.m_entity_data.m_class_idx      = 0;
-    e.m_selector1      = false;
-    e.m_hasname        = true;
-    e.m_hasgroup_name  = false;
-    e.m_pchar_things   = true;
-    setDbId(e,e.m_char.m_db_id);
+    e.m_costume_type                    = 1;
+    e.m_destroyed                       = false;
+    e.m_type                            = Entity::ENT_PLAYER; // 2
+    e.m_create_player                   = true;
+    e.m_player_villain                  = false;
+    e.m_entity_data.m_origin_idx        = {0};
+    e.m_entity_data.m_class_idx         = {0};
+    e.m_selector1                       = false;
+    e.m_hasname                         = true;
+    e.m_hasgroup_name                   = false;
+    e.m_pchar_things                    = true;
+    e.m_entity_data.m_access_level        = 9;
+    e.m_entity_data.m_cur_chat_channel    = 10;   // Default is local
 
     e.m_char.reset();
-    e.might_have_rare = e.m_rare_bits = true;
+    e.might_have_rare = e.m_rare_bits   = true;
 }

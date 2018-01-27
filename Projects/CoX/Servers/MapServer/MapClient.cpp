@@ -26,7 +26,8 @@ bool MapClient::db_create()
         return false;
     *new_char = m_ent->m_char;
     new_char->setName(m_name);
-    account_info().store_new_character(new_char);
+    account_info().store_new_character(m_ent, new_char); // Must pass both entity and char.
+
     return true;
 }
 

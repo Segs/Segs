@@ -13,7 +13,8 @@
 #include "AdminServer.h"
 #include "Character.h"
 #include "Costume.h"
-#include "PlayerMethods.h"
+#include "GameData/CoHMath.h"
+#include "MapServer/DataHelpers.h"
 #include "GameData/entitydata_serializers.h"
 #include "GameData/chardata_serializers.h"
 
@@ -21,6 +22,7 @@
 #include <QtSql/QSqlDriver>
 #include <QtCore/QDebug>
 #include <QtSql/QSqlError>
+#include <glm/ext.hpp> // currently only needed for qDebug()
 #include <QDateTime>
 #include <cstdlib>
 #include <cstdio>
@@ -57,6 +59,7 @@ void CharacterDatabase::on_connected(QSqlDatabase *db)
     m_prepared_account_insert = QSqlQuery(*db);
     m_prepared_char_insert = QSqlQuery(*db);
     m_prepared_costume_insert = QSqlQuery(*db);
+    m_prepared_entity_select = QSqlQuery(*db);
     m_prepared_char_select = QSqlQuery(*db);
     m_prepared_char_update = QSqlQuery(*db);
     m_prepared_costume_update = QSqlQuery(*db);
@@ -69,28 +72,27 @@ void CharacterDatabase::on_connected(QSqlDatabase *db)
     prepQuery(m_prepared_account_insert,"INSERT INTO accounts  (account_id,max_slots) VALUES (?,?)");
     prepQuery(m_prepared_char_insert,
                 "INSERT INTO characters  ("
-                "slot_index, account_id, char_name, chardata, bodytype, "
+                "slot_index, account_id, char_name, chardata, entitydata, bodytype, "
                 "hitpoints, endurance, "
-                "posx, posy, posz, orientp, orienty, orientr, supergroup_id, options"
+                "supergroup_id, options"
                 ") VALUES ("
-                ":slot_index, :account_id, :char_name, :chardata, :bodytype, "
+                ":slot_index, :account_id, :char_name, :chardata, :entitydata, :bodytype, "
                 ":hitpoints, :endurance, "
-                ":posx, :posy, :posz, :orientp, :orienty, :orientr, :supergroup_id, :options"
+                ":supergroup_id, :options"
                 ")");
     prepQuery(m_prepared_costume_insert,
                 "INSERT INTO costume (character_id,costume_index,skin_color,parts) VALUES "
                 "(:id,:costume_index,:skin_color,:parts)");
     prepQuery(m_prepared_char_update,
                 "UPDATE characters SET "
-                "char_name=:char_name, chardata=:chardata, bodytype=:bodytype, "
-                "posx=:posx, posy=:posy, posz=:posz, "
-                "orientp=:orientp, orienty=:orienty, orientr=:orientr, "
+                "char_name=:char_name, chardata=:chardata, entitydata=:entitydata, bodytype=:bodytype, "
                 "supergroup_id=:supergroup_id, options=:options "
                 "WHERE id=:id ");
     prepQuery(m_prepared_costume_update,
                 "UPDATE costume SET "
                 "costume_index=:costume_index, skin_color=:skin_color, parts=:parts "
                 "WHERE character_id=:id ");
+    prepQuery(m_prepared_entity_select,"SELECT * FROM characters WHERE id=:id");
     prepQuery(m_prepared_char_select,"SELECT * FROM characters WHERE account_id=? AND slot_index=?");
     prepQuery(m_prepared_account_select,"SELECT * FROM accounts WHERE account_id=?");
     prepQuery(m_prepared_char_exists,"SELECT exists (SELECT 1 FROM characters WHERE char_name = $1 LIMIT 1)");
@@ -98,7 +100,6 @@ void CharacterDatabase::on_connected(QSqlDatabase *db)
 }
 
 
-// UserToken,
 bool CharacterDatabase::remove_character(AccountInfo *c,int8_t slot_idx)
 {
     assert(c!=nullptr);
@@ -147,55 +148,40 @@ bool CharacterDatabase::fill( Entity *e)
 {
     assert(e);
     EntityData *ed = &e->m_entity_data;
-
-    Character *c = &e->m_char;
-    assert(c);
-    CharacterData *cd = &c->m_char_data;
-    assert(c&&c->getAccountId());
-
-    m_prepared_char_select.bindValue(0,quint64(c->getAccountId()));
-    m_prepared_char_select.bindValue(1,(uint16_t)c->getIndex());
-    if(!doIt(m_prepared_char_select))
-        return false;
-
-    if(!m_prepared_char_select.next())
-    {
-        c->reset(); // empty slot
-        return true;
-    }
-//    else if (results.num_rows()>1)
-//        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query returned wrong number of results. %s failed.\n"), query.str().c_str()),false);
-
-    c->m_db_id = (m_prepared_char_select.value("id").toUInt());
-    c->m_account_id = (m_prepared_char_select.value("account_id").toUInt());
-    c->setName(STR_OR_EMPTY(m_prepared_char_select.value("char_name").toString()));
-    e->m_supergroup.m_SG_id = (m_prepared_char_select.value("supergroup_id").toUInt());
-    c->m_current_attribs.m_HitPoints = (m_prepared_char_select.value("hitpoints").toUInt());
-    c->m_current_attribs.m_Endurance = (m_prepared_char_select.value("endurance").toUInt());
-
-    // TODO: cd->m_char_data.m_options = (m_prepared_char_select.value("options");
-
-    QString entity_data;
-    entity_data = (m_prepared_char_select.value("entitydata").toString());
-    serializeFromDb(*ed,entity_data);
-
-    QString char_data;
-    char_data = (m_prepared_char_select.value("chardata").toString());
-    serializeFromDb(*cd,char_data);
-
 #ifdef DEBUG_DB
-    qDebug() << "m_db_id:" << c->m_db_id;
-    qDebug().noquote() << entity_data;
-    qDebug().noquote() << char_data;
+    qDebug().noquote() << e->m_db_id;
 #endif
 
-    CharacterCostume *main_costume = new CharacterCostume;
-    // appearance related.
-    main_costume->m_body_type = m_prepared_char_select.value("bodytype").toUInt();
-    main_costume->setSlotIndex(0);
-    main_costume->setCharacterId(m_prepared_char_select.value("id").toULongLong());
-    c->m_costumes.push_back(main_costume);
-    return fill(main_costume);
+    m_prepared_entity_select.bindValue(":id",quint64(e->m_char.m_db_id));
+    if(!doIt(m_prepared_entity_select))
+        return false;
+
+    if(!m_prepared_entity_select.next()) // retry with the first one
+    {
+        m_prepared_entity_select.bindValue(":id",quint64(e->m_char.m_db_id));
+        if(!doIt(m_prepared_entity_select))
+            return false;
+        if(!m_prepared_entity_select.next()) {
+            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill no matching entity.\n")),false);
+            return false;
+        }
+    }
+
+    e->m_supergroup.m_SG_id = (m_prepared_entity_select.value("supergroup_id").toUInt());
+
+    QString entity_data;
+    entity_data = (m_prepared_entity_select.value("entitydata").toString());
+    serializeFromDb(*ed,entity_data);
+
+    // Can't pass direction through cereal, so let's update it here.
+    e->direction = fromCoHYpr(ed->m_orientation_pyr);
+
+#ifdef DEBUG_DB
+    qDebug().noquote() << entity_data;
+    qDebug().noquote() << glm::to_string(ed->m_orientation_pyr).c_str();
+    qDebug().noquote() << glm::to_string(e->direction).c_str();
+#endif
+    return true;
 }
 bool CharacterDatabase::fill( Character *c)
 {
@@ -227,7 +213,7 @@ bool CharacterDatabase::fill( Character *c)
 
 #ifdef DEBUG_DB
     qDebug() << "m_db_id:" << c->m_db_id;
-    qDebug().noquote() << char_data;
+    //qDebug().noquote() << char_data;
 #endif
 
     CharacterCostume *main_costume = new CharacterCostume;
@@ -287,13 +273,14 @@ int CharacterDatabase::remove_account( uint64_t /*acc_serv_id*/ )
     return 0;
 }
 //TODO: Initialize this function with Entity instead of Character
-bool CharacterDatabase::create( uint64_t gid,uint8_t slot,Character *c )
+bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
 {
     assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
 
-    //assert(e);
-    //EntityData *ed = &e->m_entity_data;
+    assert(e);
+    EntityData *ed = &e->m_entity_data;
 
+    Character *c = &e->m_char;
     assert(gid>0);
     assert(c);
     assert(slot<8);
@@ -317,18 +304,12 @@ bool CharacterDatabase::create( uint64_t gid,uint8_t slot,Character *c )
     m_prepared_char_insert.bindValue(":bodytype", c->getCurrentCostume()->m_body_type);
     m_prepared_char_insert.bindValue(":hitpoints", c->m_current_attribs.m_HitPoints);
     m_prepared_char_insert.bindValue(":endurance", c->m_current_attribs.m_Endurance);
-    m_prepared_char_insert.bindValue(":posx", 0);
-    m_prepared_char_insert.bindValue(":posy", 0);
-    m_prepared_char_insert.bindValue(":posz", 0);
-    m_prepared_char_insert.bindValue(":orientp", 0);
-    m_prepared_char_insert.bindValue(":orienty", 0);
-    m_prepared_char_insert.bindValue(":orientr", 0);
     m_prepared_char_insert.bindValue(":supergroup_id", 0);
     m_prepared_char_insert.bindValue(":options", 0);
 
     QString entity_data;
-    //serializeToDb(*ed,entity_data);
-    m_prepared_char_update.bindValue(":entitydata", entity_data);
+    serializeToDb(*ed,entity_data);
+    m_prepared_char_insert.bindValue(":entitydata", entity_data);
 
     QString char_data;
     serializeToDb(*cd,char_data);
@@ -385,12 +366,6 @@ bool CharacterDatabase::update( Entity *e )
     m_prepared_char_update.bindValue(":bodytype", c->getCurrentCostume()->m_body_type);
     m_prepared_char_update.bindValue(":hitpoints", getHP(*c));
     m_prepared_char_update.bindValue(":endurance", getEnd(*c));
-    m_prepared_char_update.bindValue(":posx", ed->pos.x);
-    m_prepared_char_update.bindValue(":posy", ed->pos.y);
-    m_prepared_char_update.bindValue(":posz", ed->pos.z);
-    m_prepared_char_update.bindValue(":orientp", ed->m_orientation_pyr.p);
-    m_prepared_char_update.bindValue(":orienty", ed->m_orientation_pyr.y);
-    m_prepared_char_update.bindValue(":orientr", ed->m_orientation_pyr.r);
     m_prepared_char_update.bindValue(":supergroup_id", uint32_t(e->m_supergroup.m_SG_id));
     m_prepared_char_update.bindValue(":options", 0); // c->m_options, which needs to be serialized.
 
