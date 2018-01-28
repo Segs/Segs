@@ -16,15 +16,15 @@ uint32_t    getAssistTargetIdx(const Entity &e);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);
-void    setBackupSpd(Entity &e, const float &val);
-void    setJumpHeight(Entity &e, const float &val);
-void    setUpdateID(Entity &e, const uint8_t &val);
-void    setu1(Entity &e, const int &val);
-void    setu2(Entity &e, const int &val);
-void    setu3(Entity &e, const int &val);
-void    setu4(Entity &e, const int &val);
-void    setu5(Entity &e, const int &val);
-void    setu6(Entity &e, const int &val);
+void    setBackupSpd(Entity &e, float val);
+void    setJumpHeight(Entity &e, float val);
+void    setUpdateID(Entity &e, uint8_t val);
+void    setu1(Entity &e, int val);
+void    setu2(Entity &e, int val);
+void    setu3(Entity &e, int val);
+void    setu4(Entity &e, int val);
+void    setu5(Entity &e, int val);
+void    setu6(Entity &e, int val);
 
 // Toggles
 void    toggleFly(Entity &e);

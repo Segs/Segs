@@ -18,15 +18,15 @@ uint32_t    getAssistTargetIdx(const Entity &e) { return e.m_assist_target_idx; 
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char.m_db_id = val; e.m_db_id = val; }
-void    setBackupSpd(Entity &e, const float &val) { e.m_backup_spd = val; }
-void    setJumpHeight(Entity &e, const float &val) { e.m_jump_height = val; }
-void    setUpdateID(Entity &e, const uint8_t &val) { e.m_update_id = val;}
-void    setu1(Entity &e, const int &val) { e.u1 = val; }
-void    setu2(Entity &e, const int &val) { e.u2 = val; }
-void    setu3(Entity &e, const int &val) { e.u3 = val; }
-void    setu4(Entity &e, const int &val) { e.u4 = val; }
-void    setu5(Entity &e, const int &val) { e.u5 = val; }
-void    setu6(Entity &e, const int &val) { e.u6 = val; }
+void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
+void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
+void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
+void    setu1(Entity &e, int val) { e.u1 = val; }
+void    setu2(Entity &e, int val) { e.u2 = val; }
+void    setu3(Entity &e, int val) { e.u3 = val; }
+void    setu4(Entity &e, int val) { e.u4 = val; }
+void    setu5(Entity &e, int val) { e.u5 = val; }
+void    setu6(Entity &e, int val) { e.u6 = val; }
 
 // Toggles
 void    toggleFly(Entity &e) { e.m_is_flying = !e.m_is_flying; }

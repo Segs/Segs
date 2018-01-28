@@ -442,15 +442,16 @@ void Character::sendDescription(BitStream &bs) const
     bs.StoreString(m_char_data.m_character_description);
     bs.StoreString(m_char_data.m_battle_cry);
 }
-void Character::sendTitles(BitStream &bs, bool &unconditional) const
+void Character::sendTitles(BitStream &bs, bool hasname, bool conditional) const
 {
     bs.StoreBits(1, m_char_data.m_has_titles); // Does entity have titles?
     if(!m_char_data.m_has_titles)
         return;
 
-    if(!unconditional)
+    if(conditional)
     {
-        bs.StoreString(getName());
+        if(hasname)
+            bs.StoreString(getName());
         bs.StoreBits(1, m_char_data.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
         storeStringConditional(bs, m_char_data.m_titles[0]); // Title 1 - generic title (first)
         storeStringConditional(bs, m_char_data.m_titles[1]); // Title 2 - origin title (second)
@@ -458,7 +459,8 @@ void Character::sendTitles(BitStream &bs, bool &unconditional) const
     }
     else
     {
-        //bs.StoreString(getName());
+        if(hasname)
+            bs.StoreString(getName());
         bs.StoreBits(1, m_char_data.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
         bs.StoreString(m_char_data.m_titles[0]);             // Title 1 - generic title (first)
         bs.StoreString(m_char_data.m_titles[1]);             // Title 2 - origin title (second)

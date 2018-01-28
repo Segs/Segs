@@ -51,9 +51,8 @@ void storeCreation(const Entity &src, BitStream &bs)
         bs.StorePackedBits(1,src.m_entity_data.m_class_idx);
         bs.StorePackedBits(1,src.m_entity_data.m_origin_idx);
 
-        // Send conditional titles
-        bool unconditional_titles = false;
-        src.m_char.sendTitles(bs,unconditional_titles);
+        // sendTitles(BitStream &bs, bool hasname, bool conditional)
+        src.m_char.sendTitles(bs,false,true); // hasname false. We send it below
     }
     bs.StoreBits(1,src.m_hasname);
     if(src.m_hasname)
@@ -411,9 +410,9 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     bool ent_exists = src.m_destroyed==false;
     bool update_existence=client_believes_ent_exists!=ent_exists;
 
-    bool unconditional_titles = true; // serializeto conditional only if ent and player
+    bool conditional_titles;  // serializeto conditional only if not player
     if(src.m_type==Entity::ENT_PLAYER) // if ent and player, then conditional
-        unconditional_titles = false;
+        conditional_titles = true;
 
     //////////////////////////////////////////////////////////////////////////
     bs.StoreBits(1,update_existence);
@@ -453,7 +452,8 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
-        src.m_char.sendTitles(bs,unconditional_titles);
+        // sendTitles(BitStream &bs, bool hasname, bool conditional)
+        src.m_char.sendTitles(bs,true,true);
     }
     if(src.m_pchar_things)
     {

@@ -123,8 +123,8 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     player_char.sendDockMode(bs);
     player_char.sendChatSettings(bs);
 
-    bool unconditional_titles = false;
-    player_char.sendTitles(bs,unconditional_titles);    // unconditional must be false
+    // sendTitles(BitStream &bs, bool hasname, bool conditional)
+    player_char.sendTitles(bs,false,false); // both must be false
 
     player_char.sendDescription(bs);
     uint8_t auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
