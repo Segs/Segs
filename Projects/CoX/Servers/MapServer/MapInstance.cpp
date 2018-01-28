@@ -24,6 +24,7 @@
 #include "WorldSimulation.h"
 #include "InternalEvents.h"
 #include "Database.h"
+#include "Common/GameData/CoHMath.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -468,8 +469,7 @@ void MapInstance::on_input_state(InputState *st)
     // Set Orientation
     if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r) {
         ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
-        ent->direction = st->m_data.direction;
-        //qDebug() << ent->m_entity_data.m_orientation_pyr.x << ent->m_entity_data.m_orientation_pyr.y << ent->m_entity_data.m_orientation_pyr.z;
+        ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
     }
 
     // Input state messages can be followed by multiple commands.
@@ -813,6 +813,30 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
+    else if(lowerContents == "falling") {
+        toggleFalling(*ent);
+
+        QString msg = "Toggling " + ev->contents;
+        qDebug() << msg;
+        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    }
+    else if(lowerContents == "sliding") {
+        toggleSliding(*ent);
+
+        QString msg = "Toggling " + ev->contents;
+        qDebug() << msg;
+        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    }
+    else if(lowerContents == "jumping") {
+        toggleJumping(*ent);
+
+        QString msg = "Toggling " + ev->contents;
+        qDebug() << msg;
+        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    }
     else if(lowerContents == "stunned") {
         toggleStunned(*ent);
 
@@ -825,6 +849,20 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         toggleJumppack(*ent);
 
         QString msg = "Toggling " + ev->contents;
+        qDebug() << msg;
+        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    }
+    else if(lowerContents.startsWith("setSpeed ",Qt::CaseInsensitive)) {
+        QStringList args;
+        args = ev->contents.split(QRegExp(" "));
+        float v1 = args.value(1).toFloat();
+        float v2 = args.value(2).toFloat();
+        float v3 = args.value(3).toFloat();
+        setSpeed(*ent, v1, v2, v3);
+
+        args.removeAt(0); // remove command string
+        QString msg = "Set Speed to: " + args.join(" ");
         qDebug() << msg;
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
@@ -926,7 +964,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         QString val = ev->contents.mid(space+1);
         uint32_t attrib = val.toUInt();
 
-        setLevel(ent->m_char, attrib-1); // TODO: Why must this be -1?
+        setLevel(ent->m_char, attrib); // TODO: Why does this result in -1?
 
         QString msg = "Setting Level to: " + QString::number(attrib);
         qDebug() << msg;
@@ -938,7 +976,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         QString val = ev->contents.mid(space+1);
         uint32_t attrib = val.toUInt();
 
-        setCombatLevel(ent->m_char, attrib-1); // TODO: Why must this be -1?
+        setCombatLevel(ent->m_char, attrib); // TODO: Why does this result in -1?
 
         QString msg = "Setting Combat Level to: " + QString::number(attrib);
         qDebug() << msg;
@@ -971,6 +1009,8 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         QString generic;
         QString origin;
         QString special;
+        QStringList args;
+        args = ev->contents.split(QRegExp(" "));
 
         if(lowerContents == "setTitles")
         {
@@ -979,22 +1019,12 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         }
         else
         {
-            int space1      = ev->contents.indexOf(' ');
-            int space2      = ev->contents.indexOf(' ',space1+1);
-            int space3      = ev->contents.indexOf(' ',space2+1);
-            int space4      = ev->contents.indexOf(' ',space3+1);
-
-            if(space2 == -1 || space3 == -1 || space4 == -1) {
-                msg = "The /setTitle command takes four arguments, a boolean (true/false) and three strings. e.g. /setTitle 1 generic origin special";
-            }
-            else {
-                prefix  = ev->contents.mid(space1+1,space2-(space1+1)).toInt();
-                generic = ev->contents.mid(space2+1,space3-(space2+1));
-                origin  = ev->contents.mid(space3+1,space4-(space3+1));
-                special = ev->contents.mid(space4+1);
-                setTitles(ent->m_char, prefix, generic, origin, special);
-                msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
-            }
+            prefix  = !args.value(1).isEmpty();
+            generic = args.value(2);
+            origin  = args.value(3);
+            special = args.value(4);
+            setTitles(ent->m_char, prefix, generic, origin, special);
+            msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
         }
         qDebug() << msg;
         info = new InfoMessageCmd(InfoType::USER_ERROR, msg);

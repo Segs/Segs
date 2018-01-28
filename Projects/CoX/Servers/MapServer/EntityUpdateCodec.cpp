@@ -51,7 +51,7 @@ void storeCreation(const Entity &src, BitStream &bs)
         bs.StorePackedBits(1,src.m_entity_data.m_class_idx);
         bs.StorePackedBits(1,src.m_entity_data.m_origin_idx);
 
-        // sendTitles(BitStream &bs, bool hasname, bool conditional)
+        // NOTE: sendTitles(BitStream &bs, bool hasname, bool conditional)
         src.m_char.sendTitles(bs,false,true); // hasname false. We send it below
     }
     bs.StoreBits(1,src.m_hasname);
@@ -127,7 +127,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
     fprintf(stderr,"\nupdates: %i\n",updates);
 #endif
     float pyr_angles[3];
-    glm::vec3 vec = toCoH_YPR(src.direction);
+    glm::vec3 vec = toCoH_YPR(src.m_direction);
     pyr_angles[0] = 0.0f;
     pyr_angles[1] = vec.y; // set only yaw value
     pyr_angles[2] = 0.0f;
@@ -410,10 +410,6 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     bool ent_exists = src.m_destroyed==false;
     bool update_existence=client_believes_ent_exists!=ent_exists;
 
-    bool conditional_titles;  // serializeto conditional only if not player
-    if(src.m_type==Entity::ENT_PLAYER) // if ent and player, then conditional
-        conditional_titles = true;
-
     //////////////////////////////////////////////////////////////////////////
     bs.StoreBits(1,update_existence);
     if(update_existence)
@@ -452,7 +448,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
-        // sendTitles(BitStream &bs, bool hasname, bool conditional)
+        // NOTE: sendTitles(BitStream &bs, bool hasname, bool conditional)
         src.m_char.sendTitles(bs,true,true);
     }
     if(src.m_pchar_things)

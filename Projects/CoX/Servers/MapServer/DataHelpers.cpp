@@ -15,9 +15,14 @@ uint32_t    getIdx(const Entity &e) { return e.m_idx; }
 uint32_t    getDbId(const Entity &e) { return e.m_db_id; }
 uint32_t    getTargetIdx(const Entity &e) { return e.m_target_idx; }
 uint32_t    getAssistTargetIdx(const Entity &e) { return e.m_assist_target_idx; }
+glm::vec3   getSpeed(const Entity &e) { return e.m_spd; }
+float       getBackupSpd(const Entity &e) { return e.m_backup_spd; }
+float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
+uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char.m_db_id = val; e.m_db_id = val; }
+void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_spd = {v1,v2,v3}; }
 void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
 void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
 void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
@@ -30,6 +35,9 @@ void    setu6(Entity &e, int val) { e.u6 = val; }
 
 // Toggles
 void    toggleFly(Entity &e) { e.m_is_flying = !e.m_is_flying; }
+void    toggleFalling(Entity &e) { e.m_is_falling = !e.m_is_falling; }
+void    toggleJumping(Entity &e) { e.m_is_jumping = !e.m_is_jumping; }
+void    toggleSliding(Entity &e) { e.m_is_sliding = !e.m_is_sliding; }
 
 void toggleStunned(Entity &e)
 {
@@ -112,13 +120,20 @@ const QString &     getAlignment(const Character &c) { return c.m_char_data.m_al
 // Setters
 void setLevel(Character &c, uint32_t val)
 {
+    if(val>50)
+        val = 50;
     c.m_char_data.m_level = val;
     // TODO: set max attribs based upon level
     //MapServerData map_server_data;
     //c.m_experience_points = map_server_data.expForLevel(val);
 }
 
-void    setCombatLevel(Character &c, uint32_t val) { c.m_char_data.m_combat_level = val; }
+void setCombatLevel(Character &c, uint32_t val)
+{
+    if(val>50)
+        val = 50;
+    c.m_char_data.m_combat_level = val;
+}
 void    setHP(Character &c, uint32_t val) { c.m_current_attribs.m_HitPoints = val; }
 void    setEnd(Character &c, uint32_t val) { c.m_current_attribs.m_Endurance = val; }
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
@@ -141,6 +156,14 @@ void    setDebt(Character &c, uint32_t val) { c.m_char_data.m_experience_debt = 
 
 void setTitles(Character &c, bool prefix, QString generic, QString origin, QString special)
 {
+    // if "NULL", clear string
+    if(generic=="NULL")
+        generic.clear();
+    if(origin=="NULL")
+        origin.clear();
+    if(special=="NULL")
+        special.clear();
+
     c.m_char_data.m_has_titles = prefix || !generic.isEmpty() || !origin.isEmpty() || !special.isEmpty();
     if(!c.m_char_data.m_has_titles)
       return;

@@ -38,7 +38,7 @@ void World::physicsStep(Entity *e,uint32_t msec)
     if(glm::length2(e->inp_state.pos_delta))
     {
         // todo: take into account time between updates
-        glm::mat3 za = static_cast<glm::mat3>(e->inp_state.direction); // quat to mat4x4 conversion
+        glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
         float vel_scale = e->inp_state.input_vel_scale/255.0f;
         e->m_entity_data.pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
         e->vel = za*e->inp_state.pos_delta;

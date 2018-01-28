@@ -125,7 +125,7 @@ public:
     void *current_state_P               = 0;
     glm::vec3 camera_pyr;
     glm::vec3 m_orientation_pyr;             // Stored in Radians
-    glm::quat direction;
+    glm::quat m_direction;
     int m_time_diff1                    = 0;
     int m_time_diff2                    = 0;
     uint8_t input_vel_scale             = 0; // TODO: Should be float?
@@ -135,6 +135,7 @@ public:
     bool pos_delta_valid[3]             = {};
     bool pyr_valid[3]                   = {};
     glm::vec3 pos_delta;
+    bool m_controls_disabled            = false;
   
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
@@ -181,7 +182,8 @@ public:
         int32_t             m_idx                   = {0};
         uint32_t            m_db_id                 = {0};
         uint8_t             m_type                  = {0};
-        glm::quat           direction;
+        glm::quat           m_direction;
+        glm::vec3           m_spd                   = {1,1,1};
         bool                m_has_target;
         uint32_t            m_target_idx;
         uint32_t            m_assist_target_idx;
@@ -194,27 +196,31 @@ public:
         std::vector<uint8_t> m_fx1;
         std::vector<uint32_t> m_fx2;
         std::vector<uint8_t> m_fx3;
-        uint8_t             m_costume_type      = 0;
-        int                 m_state_mode        = 0;
-        bool                m_state_mode_send   = false;
-        bool                m_odd_send          = false;    
-        bool                m_seq_update        = false;
-        bool                m_is_villian        = false;
-        bool                m_contact           = false;
-        int                 m_seq_upd_num1      = 0;
-        int                 m_seq_upd_num2      = 0;
-        bool                m_is_flying         = false;
+        uint8_t             m_costume_type          = 0;
+        int                 m_state_mode            = 0;
+        bool                m_state_mode_send       = false;
+        bool                m_odd_send              = false;
+        bool                m_seq_update            = false;
+        bool                m_is_villian            = false;
+        bool                m_contact               = false;
+        int                 m_seq_upd_num1          = 0;
+        int                 m_seq_upd_num2          = 0;
+        bool                m_is_flying             = false;
         bool                m_is_stunned            = false;
+        bool                m_is_jumping            = false;
+        bool                m_is_sliding            = false;
+        bool                m_is_falling            = false;
         bool                m_has_jumppack          = false;
         bool                m_controls_disabled     = false;
         float               m_backup_spd            = 1.0f;
         float               m_jump_height           = 1.0f;
+
         uint8_t             m_update_id             = 1;
         bool                m_full_update           = true; // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = true; // EntityReponse sendServerPhysicsPositions
 
         int                 u1 = 1;
-        int                 u2 = 0;
+        int                 u2 = 1;
         int                 u3 = 0;
         int                 u4 = 0;
         int                 u5 = 0;

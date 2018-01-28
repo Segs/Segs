@@ -13,9 +13,14 @@ uint32_t    getIdx(const Entity &e);
 uint32_t    getDbId(const Entity &e);
 uint32_t    getTargetIdx(const Entity &e);
 uint32_t    getAssistTargetIdx(const Entity &e);
+glm::vec3   getSpeed(const Entity &e);
+float       getBackupSpd(const Entity &e);
+float       getJumpHeight(const Entity &e);
+uint8_t     getUpdateId(const Entity &e);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);
+void    setSpeed(Entity &e, float v1, float v2, float v3);
 void    setBackupSpd(Entity &e, float val);
 void    setJumpHeight(Entity &e, float val);
 void    setUpdateID(Entity &e, uint8_t val);
@@ -28,6 +33,9 @@ void    setu6(Entity &e, int val);
 
 // Toggles
 void    toggleFly(Entity &e);
+void    toggleFalling(Entity &e);
+void    toggleJumping(Entity &e);
+void    toggleSliding(Entity &e);
 void    toggleStunned(Entity &e);
 void    toggleJumppack(Entity &e);
 void    toggleControlsDisabled(Entity &e);

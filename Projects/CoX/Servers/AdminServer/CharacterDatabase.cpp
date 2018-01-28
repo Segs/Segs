@@ -174,12 +174,12 @@ bool CharacterDatabase::fill( Entity *e)
     serializeFromDb(*ed,entity_data);
 
     // Can't pass direction through cereal, so let's update it here.
-    e->direction = fromCoHYpr(ed->m_orientation_pyr);
+    e->m_direction = fromCoHYpr(ed->m_orientation_pyr);
 
 #ifdef DEBUG_DB
     qDebug().noquote() << entity_data;
     qDebug().noquote() << glm::to_string(ed->m_orientation_pyr).c_str();
-    qDebug().noquote() << glm::to_string(e->direction).c_str();
+    qDebug().noquote() << glm::to_string(e->m_direction).c_str();
 #endif
     return true;
 }

@@ -123,7 +123,7 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     player_char.sendDockMode(bs);
     player_char.sendChatSettings(bs);
 
-    // sendTitles(BitStream &bs, bool hasname, bool conditional)
+    // NOTE: sendTitles(BitStream &bs, bool hasname, bool conditional)
     player_char.sendTitles(bs,false,false); // both must be false
 
     player_char.sendDescription(bs);
@@ -260,29 +260,12 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
 }
 void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
-    glm::vec3 spd(1,1,1);
     glm::vec3 zeroes;
     // user entity
     Entity *ent = src.m_client->char_entity();
 
-    bool m_is_flying         = ent->m_is_flying;
-    bool m_is_stunned        = ent->m_is_stunned;
-    bool m_has_jumppack      = ent->m_has_jumppack;         // jumppack effect
-    float m_backup_spd       = ent->m_backup_spd;           // backup speed default = 1.0f
-    float m_jump_height      = ent->m_jump_height;          // jump height default = 0.1f
-    bool m_controls_disabled = ent->m_controls_disabled;
-    uint8_t update_id        = ent->m_update_id;            // update_id; value stored in control state field_134; default = 1
-
-    // Unknown bits
-    int u1 = ent->u1; // update_part_1; default true
-    int u2 = ent->u2; // update_part_2; default false
-    int u3 = ent->u3; // leaping? seems like the anim changes slightly?
-    int u4 = ent->u4; // no idea default = 0
-    int u5 = ent->u5; // sets g_client_pos_id_rel default = 0
-    int u6 = ent->u6; // // sets the lowest bit in CscCommon::flags default = 0
-
-    bool update_part_1  = u1;       // default: true;
-    bool update_part_2  = u2;       // default: false;
+    bool update_part_1  = ent->u1;       // default: true;
+    bool update_part_2  = ent->u2;       // default: false;
 
     SurfaceParams surface_params[2];
     memset(&surface_params,0,2*sizeof(SurfaceParams));
@@ -296,53 +279,52 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     if(update_part_1)
     {
         //rand()&0xFF
-        bs.StoreBits(8,update_id);
+        bs.StoreBits(8,ent->m_update_id);
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
         // This is entity speed vector !!
-        storeVector(bs,spd);
+        storeVector(bs,ent->m_spd);
 
-        bs.StoreFloat(m_backup_spd);         // Backup Speed default = 1.0f
+        bs.StoreFloat(ent->m_backup_spd);         // Backup Speed default = 1.0f
         bs.StoreBitArray((uint8_t *)&surface_params,2*sizeof(SurfaceParams)*8);
 
-        bs.StoreFloat(m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
-        bs.StoreBits(1,m_is_flying);         // is_flying flag
-        bs.StoreBits(1,m_is_stunned);        // is_stunned flag (lacks overhead 'dizzy' FX)
-        bs.StoreBits(1,m_has_jumppack);      // jumpack flag (lacks costume parts)
+        bs.StoreFloat(ent->m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
+        bs.StoreBits(1,ent->m_is_flying);         // is_flying flag
+        bs.StoreBits(1,ent->m_is_stunned);        // is_stunned flag (lacks overhead 'dizzy' FX)
+        bs.StoreBits(1,ent->m_has_jumppack);      // jumpack flag (lacks costume parts)
 
-        bs.StoreBits(1,m_controls_disabled); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
-        bs.StoreBits(1,u3);                  // leaping? seems like the anim changes slightly?
-        bs.StoreBits(1,u4);                  // no idea default = 0
+        bs.StoreBits(1,ent->m_controls_disabled); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
+        bs.StoreBits(1,ent->m_is_jumping);        // leaping? seems like the anim changes slightly?
+        bs.StoreBits(1,ent->m_is_sliding);        // sliding? default = 0
     }
-    // TODO: This entire update_part_2 section is wrong. Maybe teleport?
     // Used to force the client to a position/speed/pitch/rotation by server
     bs.StoreBits(1,update_part_2);
     if(update_part_2)
     {
-        bs.StorePackedBits(1,u5);            // sets g_client_pos_id_rel default = 0
-        storeVector(bs,spd);
-        storeVectorConditional(bs,spd);      // vector3 -> speed ? likely; was zeroes
+        bs.StorePackedBits(1,ent->inp_state.m_received_server_update_id); // sets g_client_pos_id_rel default = 0
+        storeVector(bs,ent->m_entity_data.pos);         // server-side pos
+        storeVectorConditional(bs,ent->m_spd);          // server-side spd (optional)
 
-        storeFloatConditional(bs,0); // Pitch not used ?
-        storeFloatConditional(bs,ent->inp_state.camera_pyr.y); // Yaw
-        storeFloatConditional(bs,0); // Roll
-        bs.StorePackedBits(1,u6); // server side forced falling bit
+        storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.p); // Pitch not used ?
+        storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.y); // Yaw
+        storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.r); // Roll
+        bs.StorePackedBits(1,ent->m_is_falling); // server side forced falling bit
+
+        ent->u2 = 0; // run once
     }
 }
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
 {
     Entity * target = src.m_client->char_entity();
-    bool full_update = target->m_full_update; // true
-    bool has_control_id = target->m_has_control_id; // true
 
-    bs.StoreBits(1,full_update);
-    if( !full_update )
-        bs.StoreBits(1,has_control_id);
+    bs.StoreBits(1,target->m_full_update);
+    if( !target->m_full_update )
+        bs.StoreBits(1,target->m_has_control_id);
 #ifdef LOG_
     fprintf(stderr,"Phys: send %d ",target->m_input_ack);
 #endif
-    if( full_update || has_control_id)
+    if( target->m_full_update || target->m_has_control_id)
         bs.StoreBits(16,target->m_input_ack); //target->m_input_ack
-    if(full_update)
+    if(target->m_full_update)
     {
         for(int i=0; i<3; ++i)
             bs.StoreFloat(target->m_entity_data.pos[i]); // server position
@@ -384,13 +366,13 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
     storeTeamList(src,bs);
     storeSuperStats(src,bs);
     storeGroupDyn(src,bs);
-    bool additional=false; // used to force the client camera direction
+    bool additional = ent->u3; // used to force the client camera direction
     bs.StoreBits(1,additional);
     if(additional)
     {
-        bs.StoreFloat(0.0f); // force camera_pitch
-        bs.StoreFloat(0.0f); // force camera_yaw
-        bs.StoreFloat(0.0f); // force camera_roll
+        bs.StoreFloat(ent->inp_state.camera_pyr.p); // force camera_pitch
+        bs.StoreFloat(ent->inp_state.camera_pyr.y); // force camera_yaw
+        bs.StoreFloat(ent->inp_state.camera_pyr.r); // force camera_roll
     }
 }
 }
