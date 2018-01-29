@@ -11,6 +11,7 @@ class QString;
 // Getters
 uint32_t    getIdx(const Entity &e);
 uint32_t    getDbId(const Entity &e);
+uint32_t    getAccessLevel(const Entity &e);
 uint32_t    getTargetIdx(const Entity &e);
 uint32_t    getAssistTargetIdx(const Entity &e);
 glm::vec3   getSpeed(const Entity &e);

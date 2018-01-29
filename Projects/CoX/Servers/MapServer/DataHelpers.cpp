@@ -13,6 +13,7 @@
 // Getters
 uint32_t    getIdx(const Entity &e) { return e.m_idx; }
 uint32_t    getDbId(const Entity &e) { return e.m_db_id; }
+uint32_t    getAccessLevel(const Entity &e) { return e.m_entity_data.m_access_level; }
 uint32_t    getTargetIdx(const Entity &e) { return e.m_target_idx; }
 uint32_t    getAssistTargetIdx(const Entity &e) { return e.m_assist_target_idx; }
 glm::vec3   getSpeed(const Entity &e) { return e.m_spd; }
