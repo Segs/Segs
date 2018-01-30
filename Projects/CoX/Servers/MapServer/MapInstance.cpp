@@ -1003,16 +1003,17 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         info = new InfoMessageCmd(InfoType::SVR_COM, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
-    else if(lowerContents == "setTitles" || (lowerContents.startsWith("setTitles ",Qt::CaseInsensitive) || lowerContents.startsWith("title_change ",Qt::CaseInsensitive))) {
+    else if(lowerContents == "settitles" || (lowerContents.startsWith("setTitles ",Qt::CaseInsensitive) || lowerContents.startsWith("title_change ",Qt::CaseInsensitive))) {
         QString msg;
         bool prefix;
         QString generic;
         QString origin;
         QString special;
         QStringList args;
-        args = ev->contents.split(QRegExp(" "));
 
-        if(lowerContents == "setTitles")
+        args = ev->contents.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+        if(lowerContents == "settitles")
         {
             setTitles(ent->m_char);
             msg = "Titles reset to nothing";
@@ -1893,8 +1894,8 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
     // TODO: not sure what the client expects the server to do here, but m_chat_type
     // corresponds to the InfoType in InfoMessageCmd and eChatTypes in ChatMessage
 
-    // Passing cur_chat_channel to Entity in case we need it somewhere.
-    ent->m_entity_data.m_cur_chat_channel = ev->m_chat_type;
+    // Passing cur_chat_channel to Character in case we need it somewhere.
+    ent->m_char.m_char_data.m_cur_chat_channel = ev->m_chat_type;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)

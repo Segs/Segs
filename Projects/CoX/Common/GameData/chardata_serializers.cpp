@@ -4,7 +4,7 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
-CEREAL_CLASS_VERSION(CharacterData, 1); // register CharacterData class version
+CEREAL_CLASS_VERSION(CharacterData, 2); // register CharacterData class version
 
 template<class Archive>
 void serialize(Archive & archive, CharacterData &cd, uint32_t const version)
@@ -31,6 +31,7 @@ void serialize(Archive & archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("MapName",cd.m_mapName));
     archive(cereal::make_nvp("SuperGroupCostume",cd.m_supergroup_costume));
     archive(cereal::make_nvp("UsingSGCostume",cd.m_using_sg_costume));
+    archive(cereal::make_nvp("CurrentChatChannel",cd.m_cur_chat_channel));
 }
 
 void saveTo(const CharacterData & target, const QString & baseName, bool text_format)

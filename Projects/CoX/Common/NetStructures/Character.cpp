@@ -55,6 +55,7 @@ void Character::reset()
     m_first_person_view_toggle=false;
     m_full_options = false;
     m_char_data.m_has_titles = false;
+    m_char_data.m_cur_chat_channel = 10;   // Default is local
 }
 
 
@@ -283,6 +284,7 @@ void Character::DumpBuildInfo()
             + "\n  afk: " + QString::number(m_char_data.m_afk)
             + "\n  description: " + getDescription(c)
             + "\n  battleCry: " + getBattleCry(c)
+            + "\n  current chat channel: " + QString::number(m_char_data.m_cur_chat_channel)
             + "\n  Last Online: " + m_char_data.m_last_online;
 
     qDebug().noquote() << msg;
@@ -442,26 +444,24 @@ void Character::sendDescription(BitStream &bs) const
     bs.StoreString(m_char_data.m_character_description);
     bs.StoreString(m_char_data.m_battle_cry);
 }
-void Character::sendTitles(BitStream &bs, bool hasname, bool conditional) const
+void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const
 {
     bs.StoreBits(1, m_char_data.m_has_titles); // Does entity have titles?
     if(!m_char_data.m_has_titles)
         return;
 
+    if(hasname)
+        bs.StoreString(getName());
+    bs.StoreBits(1, m_char_data.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
+
     if(conditional)
     {
-        if(hasname)
-            bs.StoreString(getName());
-        bs.StoreBits(1, m_char_data.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
         storeStringConditional(bs, m_char_data.m_titles[0]); // Title 1 - generic title (first)
         storeStringConditional(bs, m_char_data.m_titles[1]); // Title 2 - origin title (second)
         storeStringConditional(bs, m_char_data.m_titles[2]); // Title 3 - yellow title (special)
     }
     else
     {
-        if(hasname)
-            bs.StoreString(getName());
-        bs.StoreBits(1, m_char_data.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
         bs.StoreString(m_char_data.m_titles[0]);             // Title 1 - generic title (first)
         bs.StoreString(m_char_data.m_titles[1]);             // Title 2 - origin title (second)
         bs.StoreString(m_char_data.m_titles[2]);             // Title 3 - yellow title (special)

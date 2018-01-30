@@ -26,4 +26,5 @@ struct CharacterData
     QString     m_mapName;
     bool        m_supergroup_costume; // player has a sg costume
     bool        m_using_sg_costume;   // player uses sg costume currently
+    uint8_t     m_cur_chat_channel          = 10; // Default is local
 };

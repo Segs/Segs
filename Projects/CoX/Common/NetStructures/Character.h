@@ -110,6 +110,17 @@ struct CharacterPower
     std::vector<CharacterPowerBoost> boosts;
 };
 
+enum NameFlag : bool
+{
+    NoName = false,
+    HasName = true,
+};
+enum ConditionalFlag : bool
+{
+    Unconditional = false,
+    Conditional = true,
+};
+
 class Character
 {
         friend  class CharacterDatabase;
@@ -162,7 +173,7 @@ const   QString &       getName() const { return m_name; }
         void            sendDockMode(BitStream &bs) const;
         void            sendChatSettings(BitStream &bs) const;
         void            sendDescription(BitStream &bs) const;
-        void            sendTitles(BitStream &bs, bool hasname, bool conditional) const;
+        void            sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const;
         void            sendKeybinds(BitStream &bs) const;
         void            sendFriendList(BitStream &bs) const;
         void            sendOptions( BitStream &bs ) const;
