@@ -47,6 +47,7 @@ void    toggleControlId(Entity &e);
 void    charUpdateDB(Entity *e);
 int     getEntityOriginIndex(bool is_player,const QString &origin_name);
 int     getEntityClassIndex(bool is_player, const QString &class_name);
+void    sendServerMOTD(Entity *e);
 
 /*
  * Character Methods

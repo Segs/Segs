@@ -2,9 +2,13 @@
 
 #include "MapServer.h"
 #include "MapServerData.h"
+#include "MapInstance.h"
+#include "MapClient.h"
 #include "AdminServer/AdminServer.h"
 #include "AdminServer/CharacterDatabase.h"
 
+#include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #include <QtCore/QDebug>
 
 /*
@@ -94,6 +98,25 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
     qWarning() << "Failed to locate class index for"<<class_name;
     return 0;
 
+}
+
+void sendServerMOTD(Entity *e)
+{
+    MapClient *src = e->m_client;
+
+    QString fileName("scripts/motd.smlx");
+    QFile file(fileName);
+    if(QFileInfo::exists(fileName) && file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QString contents(file.readAll());
+        StandardDialogCmd *dlg = new StandardDialogCmd(contents);
+        src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+    }
+    else {
+        QString errormsg = "Failed to load MOTD file. \'" + file.fileName() + "\' not found.";
+        qDebug() << errormsg;
+        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(errormsg)));
+    }
 }
 
 

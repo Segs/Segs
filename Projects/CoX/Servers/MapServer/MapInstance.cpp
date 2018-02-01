@@ -356,6 +356,8 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     setMapName(cl->char_entity()->m_char,name());
     lnk->set_client_data(cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
+
+    sendServerMOTD(cl->char_entity());
 }
 void MapInstance::on_scene_request(SceneRequest *ev)
 {

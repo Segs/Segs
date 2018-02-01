@@ -44,10 +44,11 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"setu5"}, &cmdHandler_SetU5, 9},
     {{"setu6"}, &cmdHandler_SetU6, 9},
     /* Access Level 1 Commands */
+    {{"help","listcommands"}, &cmdHandler_Help, 1},
     {{"afk"}, &cmdHandler_AFK, 1},
     {{"whoall"}, &cmdHandler_WhoAll, 1},
     {{"setTitles"}, &cmdHandler_SetTitles, 1},
-    {{"stuck", "help"}, &cmdHandler_Stuck, 1},
+    {{"stuck"}, &cmdHandler_Stuck, 1},
     {{"lfg"}, &cmdHandler_LFG, 1},
 };
 
@@ -506,6 +507,22 @@ void cmdHandler_SetU6(QString &cmd, Entity *e) {
 }
 
 // Access Level 1 Commands
+void cmdHandler_Help(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    QString msg = "Below is a list of all slash commands. They are not case sensitive.\n";
+
+    for(const auto &sc : g_defined_slash_commands)
+    {
+        int alvl = getAccessLevel(*e);
+        if(alvl >= sc.m_required_access_level)
+            msg += "\t" + sc.m_valid_prefixes.join(", ") + "\n";
+    }
+
+    qDebug().noquote() << cmd << ":\n" << msg;
+    info = new InfoMessageCmd(InfoType::SVR_COM, msg);
+    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+}
+
 void cmdHandler_AFK(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
