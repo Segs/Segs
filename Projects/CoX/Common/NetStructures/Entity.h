@@ -115,7 +115,6 @@ public:
         {
             pos_delta_valid[i]=false;
             pyr_valid[i]=false;
-            orient_pyr_valid[i]=false;
         }
     }
 
@@ -125,21 +124,18 @@ public:
     uint16_t send_id                    = 0;
     void *current_state_P               = 0;
     glm::vec3 camera_pyr;
+    glm::vec3 m_orientation_pyr;             // Stored in Radians
+    glm::quat m_direction;
     int m_time_diff1                    = 0;
     int m_time_diff2                    = 0;
     uint8_t input_vel_scale             = 0; // TODO: Should be float?
-    glm::vec3 m_orientation_pyr;             // Stored in Radians
     uint8_t m_received_server_update_id = 0;
     bool m_no_coll                      = false;
     bool has_input_commit_guess         = 0;
     bool pos_delta_valid[3]             = {};
     bool pyr_valid[3]                   = {};
-    bool orient_pyr_valid[3]            = {};
     glm::vec3 pos_delta;
-    glm::quat direction;
-    bool m_has_target;
-    uint32_t m_target_idx;
-    uint32_t m_assist_target_idx;
+    bool m_controls_disabled            = false;
   
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
@@ -169,41 +165,62 @@ public:
             ENT_PLAYER=2,
             ENT_CRITTER=4
         };
+        struct SuperGroup
+        {
+            int     m_SG_id     = 0;
+            bool    m_SG_info   = false;
+            QString m_SG_name;              // 64 chars max
+            //QString m_SG_motto;
+            //QString m_SG_costume;         // 128 chars max -> hash table key from the CostumeString_HTable
+            uint32_t m_SG_color1    = 0;    // supergroup color 1
+            uint32_t m_SG_color2    = 0;    // supergroup color 2
+        };
 
+        SuperGroup          m_supergroup;
         EntityData          m_entity_data;
-        int                 m_access_level          = 0;
-        int                 m_randSeed              = 0; // Sequencer uses this as a seed for random bone scale
+
+        int32_t             m_idx                   = {0};
+        uint32_t            m_db_id                 = {0};
+        uint8_t             m_type                  = {0};
+        glm::quat           m_direction;
+        glm::vec3           m_spd                   = {1,1,1};
+        bool                m_has_target;
+        uint32_t            m_target_idx;
+        uint32_t            m_assist_target_idx;
+
+        int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
         int                 field_68                = 0;
-        int                 m_SG_id                 = 0;
         int                 m_num_fx                = 0;
         bool                m_is_logging_out        = false;
-        int                 m_time_till_logout      = 0; // time in miliseconds untill given entity should be marked as logged out.
+        int                 m_time_till_logout      = 0;    // time in miliseconds untill given entity should be marked as logged out.
         std::vector<uint8_t> m_fx1;
         std::vector<uint32_t> m_fx2;
         std::vector<uint8_t> m_fx3;
-        uint8_t             m_costume_type      = 0;
-        int                 m_state_mode        = 0;
-        bool                m_state_mode_send   = false;
-        bool                m_odd_send          = false;
-        bool                m_SG_info           = false;
-        bool                m_seq_update        = false;
-        bool                m_is_villian        = false;
-        bool                m_contact           = false;
-        int                 m_seq_upd_num1      = 0;
-        int                 m_seq_upd_num2      = 0;
-        bool                m_is_flying         = false;
+        uint8_t             m_costume_type          = 0;
+        int                 m_state_mode            = 0;
+        bool                m_state_mode_send       = false;
+        bool                m_odd_send              = false;
+        bool                m_seq_update            = false;
+        bool                m_is_villian            = false;
+        bool                m_contact               = false;
+        int                 m_seq_upd_num1          = 0;
+        int                 m_seq_upd_num2          = 0;
+        bool                m_is_flying             = false;
         bool                m_is_stunned            = false;
+        bool                m_is_jumping            = false;
+        bool                m_is_sliding            = false;
+        bool                m_is_falling            = false;
         bool                m_has_jumppack          = false;
         bool                m_controls_disabled     = false;
         float               m_backup_spd            = 1.0f;
         float               m_jump_height           = 1.0f;
-        uint8_t             m_cur_chat_channel      = 10; // Default is local
+
         uint8_t             m_update_id             = 1;
         bool                m_full_update           = true; // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = true; // EntityReponse sendServerPhysicsPositions
 
         int                 u1 = 1;
-        int                 u2 = 0;
+        int                 u2 = 1;
         int                 u3 = 0;
         int                 u4 = 0;
         int                 u5 = 0;
@@ -218,8 +235,6 @@ public:
         bool                entReceiveAlwaysCon         = false;
         bool                entReceiveSeeThroughWalls   = false;
         int                 pkt_id_QrotUpdateVal[3]     = {0};
-        glm::quat           qrot;
-        glm::vec3           pos;
         glm::vec3           vel;
         uint32_t            prev_pos[3]                 = {0};
         Vector3_FPV         fixedpoint_pos;
@@ -234,11 +249,6 @@ public:
         bool                m_rare_bits                 = false;
         int                 current_client_packet_id    = {0};
         QString             m_group_name, m_override_name;
-        uint8_t             m_origin_idx                = {0};
-        uint8_t             m_class_idx                 = {0};
-        uint8_t             m_type                      = {0};
-        int32_t             m_idx                       = {0};
-        uint32_t            m_db_id                     = {0};
         uint32_t            m_input_ack                 = {0};
         bool                player_type                 = false;
         bool                m_player_villain            = false;

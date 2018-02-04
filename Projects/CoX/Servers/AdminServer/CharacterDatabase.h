@@ -26,6 +26,7 @@ class CharacterDatabase
 
         QSqlQuery m_prepared_account_select;
         QSqlQuery m_prepared_account_insert;
+        QSqlQuery m_prepared_entity_select;
         QSqlQuery m_prepared_char_insert;
         QSqlQuery m_prepared_char_exists;
         QSqlQuery m_prepared_char_delete;
@@ -39,9 +40,10 @@ public:
 virtual             ~CharacterDatabase();
         bool        CreateLinkedAccount(uint64_t auth_account_id,const std::string &username,int max_character_slots); // returns true on success
         bool        create(AccountInfo *);
-        bool        create(uint64_t gid,uint8_t slot,Character *c);
+        bool        create(uint64_t gid, uint8_t slot, Entity *e);
         bool        fill( AccountInfo *); //!x
-        bool        fill( Character *); //! Will call fill(CharacterCostume)
+        bool        fill( Entity *e ); //! Will call fill(CharacterCostume)
+        bool        fill( Character *c ); //! Will call fill(CharacterCostume)
         bool        fill( CharacterCostume *);
         bool        update(Entity *);
         bool        update(CharacterCostume *);

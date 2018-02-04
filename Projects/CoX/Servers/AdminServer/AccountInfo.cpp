@@ -11,6 +11,7 @@
 #include "CharacterDatabase.h"
 #include "Database.h"
 #include "AccountInfo.h"
+#include "Entity.h"
 #include "Character.h"
 #include "Costume.h"
 
@@ -90,14 +91,14 @@ int8_t AccountInfo::char_slot_index(Character *c)
     }
     return -1;
 }
-bool AccountInfo::store_new_character(Character *character)
+bool AccountInfo::store_new_character(Entity *e, Character *character)
 {
     int8_t slot_idx=char_slot_index(character);
     if(slot_idx==-1)
         return false;
     CharacterDatabase *cdb = AdminServer::instance()->character_db();
     DbTransactionGuard grd(*cdb->getDb());
-    if(false==cdb->create(m_game_server_acc_id,slot_idx,character))
+    if(false==cdb->create(m_game_server_acc_id,slot_idx,e))
         return false;
     grd.commit();
     return true;

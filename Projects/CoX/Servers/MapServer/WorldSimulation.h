@@ -9,10 +9,7 @@
 class World {
 public:
     World(EntityManager &em) : ref_ent_mager(em) {}
-    void addPlayer(Entity *ent)
-    {
-        ref_ent_mager.InsertPlayer(ent);
-    }
+    void addPlayer(Entity *ent);
     void update(const ACE_Time_Value &tick_timer);
     float time_of_day() const {return m_time_of_day;}
     float sim_frame_time=1; // in seconds

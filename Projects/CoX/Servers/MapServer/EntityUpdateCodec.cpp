@@ -9,7 +9,7 @@
 #include "GameData/CoHMath.h"
 
 #ifdef DEBUG_ORIENTATION
-#include <glm/ext.hpp> // currently only needed for DEBUG_INPUT
+#include <glm/ext.hpp> // currently only needed for DEBUG_ORIENTATION
 #endif
 
 namespace  {
@@ -32,7 +32,7 @@ void storeCreation(const Entity &src, BitStream &bs)
     {
         bs.StoreBits(1,src.m_create_player);
         if(src.m_create_player)
-            bs.StorePackedBits(1,src.m_access_level);
+            bs.StorePackedBits(1,src.m_entity_data.m_access_level);
         bs.StorePackedBits(20,src.m_db_id); // formerly src.m_idx
     }
     else
@@ -48,12 +48,9 @@ void storeCreation(const Entity &src, BitStream &bs)
     PUTDEBUG("after creatorowner");
     if(src.m_type==Entity::ENT_PLAYER || src.m_type==Entity::ENT_CRITTER)
     {
-        bs.StorePackedBits(1,src.m_class_idx);
-        bs.StorePackedBits(1,src.m_origin_idx);
-
-        // Send conditional titles
-        bool unconditional_titles = false;
-        src.m_char.sendTitles(bs,unconditional_titles);
+        bs.StorePackedBits(1,src.m_entity_data.m_class_idx);
+        bs.StorePackedBits(1,src.m_entity_data.m_origin_idx);
+        src.m_char.sendTitles(bs,NameFlag::NoName,ConditionalFlag::Conditional); // NoName b/c We send it below
     }
     bs.StoreBits(1,src.m_hasname);
     if(src.m_hasname)
@@ -106,7 +103,7 @@ bool storePosition(const Entity &src,BitStream &bs)
 
     for(int i=0; i<3; i++)
     {
-        FixedPointValue fpv(src.pos[i]);
+        FixedPointValue fpv(src.m_entity_data.pos[i]);
         //diff = packed ^ prev_pos[i]; // changed bits are '1'
         bs.StoreBits(24,fpv.store);
     }
@@ -128,19 +125,18 @@ void storeOrientation(const Entity &src,BitStream &bs)
     fprintf(stderr,"\nupdates: %i\n",updates);
 #endif
     float pyr_angles[3];
-    glm::vec3 vec = toCoH_YPR(src.inp_state.direction);
+    glm::vec3 vec = toCoH_YPR(src.m_direction);
     pyr_angles[0] = 0.0f;
     pyr_angles[1] = vec.y; // set only yaw value
     pyr_angles[2] = 0.0f;
 #ifdef DEBUG_ORIENTATION
     // output everything
     fprintf(stderr,"\nPlayer: %d\n",src.m_idx);
-    fprintf(stderr,"src.qrot: %s \n", glm::to_string(src.qrot).c_str());
-    fprintf(stderr,"dir: %s \n", glm::to_string(src.inp_state.direction).c_str());
+    fprintf(stderr,"dir: %s \n", glm::to_string(src.direction).c_str());
     fprintf(stderr,"camera_pyr: %s \n", glm::to_string(src.inp_state.camera_pyr).c_str());
     fprintf(stderr,"pyr_angles: farr(%f, %f, %f)\n", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
-    fprintf(stderr,"orient_p: %f \n", src.inp_state.m_orientation_pyr[0]);
-    fprintf(stderr,"orient_y: %f \n", src.inp_state.m_orientation_pyr[1]);
+    fprintf(stderr,"orient_p: %f \n", src.m_entity_data.m_orientation_pyr[0]);
+    fprintf(stderr,"orient_y: %f \n", src.m_entity_data.m_orientation_pyr[1]);
     fprintf(stderr,"vel_scale: %f \n", src.inp_state.input_vel_scale);
 #endif
     for(int i=0; i<3; i++)
@@ -325,7 +321,7 @@ void sendTargetUpdate(const Entity &src,BitStream &bs)
 {
     uint32_t assist_id  = getAssistTargetIdx(src);
     uint32_t target_id  = getTargetIdx(src);
-    bool has_target     = src.inp_state.m_has_target;
+    bool has_target     = src.m_has_target;
 
     bs.StoreBits(1,has_target); // TODO: test this
     if(!has_target)
@@ -373,16 +369,16 @@ void sendAFK(const Entity &src, BitStream &bs)
 }
 void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1,src.m_SG_info); // UNFINISHED
-    if(!src.m_SG_info)
+    bs.StoreBits(1,src.m_supergroup.m_SG_info); // UNFINISHED
+    if(!src.m_supergroup.m_SG_info)
         return;
-    bs.StorePackedBits(2,src.m_SG_id);
-    if(src.m_SG_id)
+    bs.StorePackedBits(2,src.m_supergroup.m_SG_id);
+    if(src.m_supergroup.m_SG_id)
     {
-        bs.StoreString("");//64 chars max
+        bs.StoreString(src.m_supergroup.m_SG_name);//64 chars max
         bs.StoreString("");//128 chars max -> hash table key from the CostumeString_HTable
-        bs.StoreBits(32,0); // supergroup color 1
-        bs.StoreBits(32,0); // supergroup color 2
+        bs.StoreBits(32,src.m_supergroup.m_SG_color1); // supergroup color 1
+        bs.StoreBits(32,src.m_supergroup.m_SG_color2); // supergroup color 2
     }
 }
 void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStream &bs)
@@ -411,10 +407,6 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     bool client_believes_ent_exists=belief.m_entity!=nullptr;
     bool ent_exists = src.m_destroyed==false;
     bool update_existence=client_believes_ent_exists!=ent_exists;
-
-    bool unconditional_titles = true; // serializeto conditional only if ent and player
-    if(src.m_type==Entity::ENT_PLAYER) // if ent and player, then conditional
-        unconditional_titles = false;
 
     //////////////////////////////////////////////////////////////////////////
     bs.StoreBits(1,update_existence);
@@ -454,7 +446,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
-        src.m_char.sendTitles(bs,unconditional_titles);
+        src.m_char.sendTitles(bs,NameFlag::HasName,ConditionalFlag::Conditional);
     }
     if(src.m_pchar_things)
     {

@@ -17,6 +17,7 @@ class IClient;
 class CharacterClient;
 class CharacterCostume;
 class Character;
+class Entity;
 
 class AdminDatabase;
 class CharacterDatabase;
@@ -52,7 +53,7 @@ public:
     uint8_t                     max_slots() {return m_max_slots;}
     Character *                 get_character(size_t idx);
     Character *                 create_new_character(); // returns 0 if no free slots are left
-    bool                        store_new_character(Character *character);
+    bool                        store_new_character(Entity *e, Character *c);
     bool                        remove_character(Character *character);
     bool                        fill_game_db(uint64_t game_server_idx);
     void                        reset();

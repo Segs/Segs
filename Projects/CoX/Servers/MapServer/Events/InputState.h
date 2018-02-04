@@ -13,6 +13,10 @@ class InputState : public MapLinkEvent
 {
 public:
     InputStateStorage   m_data;
+    bool                m_has_target;
+    uint32_t            m_target_idx;
+    uint32_t            m_assist_target_idx;
+
 public:
     InputState() : MapLinkEvent(MapEventTypes::evInputState),m_user_commands(0)
     {}
