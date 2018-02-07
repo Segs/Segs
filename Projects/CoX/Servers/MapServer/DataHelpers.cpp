@@ -35,41 +35,48 @@ void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
 void    setTeamID(Entity &e, uint8_t val)
 {
     // TODO: provide method for updating Team Name and Rank
-    Entity::Team team = e.m_team;
-
     if(val == 0)
     {
-        team.m_has_team     = false;
-        team.m_team_id      = val;
-        team.m_team_name    = "";
-        team.m_team_rank    = 0;
+        e.m_team.m_has_team     = false;
+        e.m_team.m_team_id      = val;
+        e.m_team.m_team_name    = "";
+        e.m_team.m_team_rank    = 0;
     }
     else
     {
-        team.m_has_team     = true;
-        team.m_team_id      = val;
-        team.m_team_name    = "Super Team";
-        team.m_team_rank    = 1;
+        e.m_team.m_has_team     = true;
+        e.m_team.m_team_id      = val;
+        e.m_team.m_team_name    = "Super Team";
+        e.m_team.m_team_rank    = 1;
     }
+    qDebug().noquote() << "Team Info:"
+             << "\n  Has Team:" << e.m_team.m_has_team
+             << "\n  ID:" << e.m_team.m_team_id
+             << "\n  Name:" << e.m_team.m_team_name
+             << "\n  Rank:" << e.m_team.m_team_rank;
 }
 
 void    setSuperGroupID(Entity &e, uint8_t val)
 {
     // TODO: provide method for updating SuperGroup Name and Rank
-    Entity::SuperGroup sg   = e.m_supergroup;
-
     if(val == 0)
     {
-        sg.m_SG_info    = false;
-        sg.m_SG_id      = val;
-        sg.m_SG_name    = "";
+        e.m_supergroup.m_SG_info    = false;
+        e.m_supergroup.m_SG_id      = val;
+        e.m_supergroup.m_SG_name    = "";
     }
     else
     {
-        sg.m_SG_info    = true;
-        sg.m_SG_id      = val;
-        sg.m_SG_name    = "SuperGroup Name!";
+        e.m_supergroup.m_SG_info    = true;
+        e.m_supergroup.m_SG_id      = val;
+        e.m_supergroup.m_SG_name    = "SuperGroup Name!";
     }
+    qDebug().noquote() << "SG Info:"
+             << "\n  Has Team:" << e.m_supergroup.m_SG_info
+             << "\n  ID:" << e.m_supergroup.m_SG_id
+             << "\n  Name:" << e.m_supergroup.m_SG_name
+             << "\n  Color1:" << e.m_supergroup.m_SG_color1
+             << "\n  Color2:" << e.m_supergroup.m_SG_color2;
 }
 
 void    setu1(Entity &e, int val) { e.u1 = val; }

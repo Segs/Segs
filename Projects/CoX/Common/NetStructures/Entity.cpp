@@ -100,7 +100,8 @@ void Entity::dump()
             + "\n  target: " + QString::number(m_target_idx)
             + "\n  assist target: " + QString::number(m_assist_target_idx)
             + "\n  current chat channel: " + QString::number(m_entity_data.m_cur_chat_channel)
-            + "\n  m_SG_id: " + QString::number(m_supergroup.m_SG_id);
+            + "\n  m_SG_id: " + QString::number(m_supergroup.m_SG_id)
+            + "\n  m_team_id: " + QString::number(m_team.m_team_id);
 
     qDebug().noquote() << msg;
     if(m_type == Entity::ENT_PLAYER)

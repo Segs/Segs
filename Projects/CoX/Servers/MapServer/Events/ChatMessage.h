@@ -53,4 +53,4 @@ public:
     void            serializefrom(BitStream &src);
 };
 
-extern void sendChatMessage(MessageChannel t, QString msg, MapClient *src);
+extern void sendChatMessage(MessageChannel t, QString msg, MapClient *src, MapClient *tgt);

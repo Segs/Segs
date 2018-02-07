@@ -167,7 +167,7 @@ public:
         };
         struct SuperGroup
         {
-            int     m_SG_id         = 0;
+            int     m_SG_id         = {0};
             bool    m_SG_info       = false;
             QString m_SG_name;               // 64 chars max
             //QString m_SG_motto;
@@ -178,7 +178,7 @@ public:
         struct Team
         {
             bool    m_has_team      = false;
-            int     m_team_id       = 0;
+            int     m_team_id       = {0};
             QString m_team_name;             // m_group_name? what is this?
             int     m_team_rank     = 0;
         };

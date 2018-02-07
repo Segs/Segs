@@ -1,4 +1,5 @@
-#include "InfoMessageCmd.h"
+#define DEBUG_CHAT
+//#include "InfoMessageCmd.h"
 #include "Entity.h"
 #include "MapClient.h"
 #include "Servers/MapServer/DataHelpers.h"
@@ -17,4 +18,11 @@ void sendInfoMessage(MessageChannel t, QString msg, MapClient *tgt)
     res->m_target_player_id = getIdx(*tgt->char_entity());
 
     tgt->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(res));
+
+#ifdef DEBUG_CHAT
+    qDebug().noquote() << "InfoMessage:"
+             << "\n  Channel:" << int(res->m_channel_type)
+             << "\n  Target:" << res->m_target_player_id
+             << "\n  Message:" << res->m_msg;
+#endif
 }

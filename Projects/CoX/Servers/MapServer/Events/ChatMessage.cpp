@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-#define DEBUG_INPUT
+//#define DEBUG_CHAT
 #include "ChatMessage.h"
 #include "Events/InputState.h"
 #include "Entity.h"
@@ -23,10 +23,19 @@ void ChatMessage::serializefrom(BitStream &src)
     src.GetString(m_msg);
 }
 
-void sendChatMessage(MessageChannel t, QString msg, MapClient *src)
+void sendChatMessage(MessageChannel t, QString msg, MapClient *src, MapClient *tgt)
 {
     ChatMessage * res = new ChatMessage(t,msg);
     res->m_source_player_id = getIdx(*src->char_entity());
+    res->m_target_player_id = getIdx(*src->char_entity());
 
-    src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
+    tgt->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
+
+#ifdef DEBUG_CHAT
+    qDebug().noquote() << "ChatMessage:"
+             << "\n  Channel:" << int(res->m_channel_type)
+             << "\n  Source:" << res->m_source_player_id
+             << "\n  Target:" << res->m_target_player_id
+             << "\n  Message:" << res->m_msg;
+#endif
 }

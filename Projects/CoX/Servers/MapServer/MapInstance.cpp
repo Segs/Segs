@@ -644,7 +644,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             prepared_chat_message = QString("[Local] %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                sendChatMessage(MessageChannel::LOCAL,prepared_chat_message,cl);
+                sendChatMessage(MessageChannel::LOCAL,prepared_chat_message,sender,cl);
             }
             break;
         }
@@ -655,7 +655,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString()); // where does [Broadcast] come from? The client?
             for(MapClient * cl : recipients)
             {
-                sendChatMessage(MessageChannel::BROADCAST,prepared_chat_message,cl);
+                sendChatMessage(MessageChannel::BROADCAST,prepared_chat_message,sender,cl);
             }
             break;
         }
@@ -666,7 +666,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                sendChatMessage(MessageChannel::REQUEST,prepared_chat_message,cl);
+                sendChatMessage(MessageChannel::REQUEST,prepared_chat_message,sender,cl);
             }
             break;
         }
@@ -677,6 +677,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             msg_content = msg_text.midRef(first_comma+1,msg_text.lastIndexOf("\n"));
 
             QString target_name = target_name_ref.toString();
+            qDebug() << "target_name" << target_name;
 
             MapInstance *mi = sender->current_map();
             EntityManager &ent_manager(mi->m_entities);
@@ -692,17 +693,17 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             else
             {
                 prepared_chat_message = QString(" -->%1: %2").arg(target_name,msg_content.toString());
-                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender);
+                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,sender); // in this case, sender is target
 
                 prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
-                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,tgt->m_client);
+                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,tgt->m_client);
             }
             
             break;
         }
         case MessageChannel::TEAM:
         {
-            if(!sender->char_entity()->m_team.m_team_id == 0)
+            if(!sender->char_entity()->m_team.m_has_team)
             {
                 prepared_chat_message = "You are not a member of a Team.";
                 sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
@@ -718,13 +719,13 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                sendChatMessage(MessageChannel::TEAM,prepared_chat_message,sender);
+                sendChatMessage(MessageChannel::TEAM,prepared_chat_message,sender,cl);
             }
             break;
         }
         case MessageChannel::SUPERGROUP:
         {
-            if(sender->char_entity()->m_supergroup.m_SG_id == 0)
+            if(!sender->char_entity()->m_supergroup.m_SG_info)
             {
                 prepared_chat_message = "You are not a member of a SuperGroup.";
                 sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
@@ -740,8 +741,15 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                sendChatMessage(MessageChannel::SUPERGROUP,prepared_chat_message,sender);
+                sendChatMessage(MessageChannel::SUPERGROUP,prepared_chat_message,sender,cl);
             }
+            break;
+        }
+        case MessageChannel::FRIENDS:
+        {
+            // TODO: Only send the message to characters in sender's friendslist
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
+            sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,sender);
             break;
         }
         default:
@@ -753,30 +761,34 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
 }
 void MapInstance::on_console_command(ConsoleCommand * ev)
 {
+    QString contents = ev->contents.simplified();
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity(); // user entity
 
-    QString lowerContents = ev->contents.toLower();                             // ERICEDIT: Make the contents all lowercase for case-insensitivity.
+    QString lowerContents = contents.toLower();                             // ERICEDIT: Make the contents all lowercase for case-insensitivity.
 
     printf("Console command received %s\n",qPrintable(ev->contents));
 
-    if(isChatMessage(ev->contents))
+    if(isChatMessage(contents))
     {
-        process_chat(src,ev->contents);
+        process_chat(src,contents);
     }
-    else if(lowerContents.startsWith("em ",Qt::CaseInsensitive) || lowerContents.startsWith("e ",Qt::CaseInsensitive)
-            || lowerContents.startsWith("me ",Qt::CaseInsensitive))                                  // ERICEDIT: This encompasses all emotes.
+    else if(contents.startsWith("em ",Qt::CaseInsensitive) || contents.startsWith("e ",Qt::CaseInsensitive)
+            || contents.startsWith("me ",Qt::CaseInsensitive))                                  // ERICEDIT: This encompasses all emotes.
     {
-        on_emote_command(lowerContents, ent, src);
+        on_emote_command(lowerContents, ent);
     }
     else {
-        runCommand(ev->contents,*ent);
+        runCommand(contents,*ent);
     }
 }
-void MapInstance::on_emote_command(QString lowerContents, Entity *ent, MapClient *src)
+void MapInstance::on_emote_command(QString lowerContents, Entity *ent)
 {
     QString msg;                                                                // Initialize the variable to hold the debug message.
+    MapClient *src = ent->m_client;
+    std::vector<MapClient *> recipients;
+
     if(lowerContents.startsWith("em") || lowerContents.startsWith("me"))        // This if-else removes the prefix of the command for conciseness.
         lowerContents.replace(0, 3, "");
     else                                                                        // Requires a different argument for the "e" command.
@@ -1306,12 +1318,28 @@ void MapInstance::on_emote_command(QString lowerContents, Entity *ent, MapClient
     {
         // "CharacterName {emote message}"
         msg = QString("%1 %2").arg(ent->name(),lowerContents);
-        qDebug() << msg;                                                            // Print out the message to the server console.
-        sendChatMessage(MessageChannel::EMOTE, msg, src);
-        return;
     }
-    qDebug() << msg;                                                            // Print out the message to the server console.
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);                       // Create the message to send to the client.
+
+    // send only to clients within range
+    glm::vec3 senderpos = src->char_entity()->m_entity_data.pos;
+    for(MapClient *cl : m_clients)
+    {
+        glm::vec3 recpos = cl->char_entity()->m_entity_data.pos;
+        float range = 50.0f; // range of "hearing". I assume this is in yards
+        float dist = glm::distance(senderpos,recpos);
+        /*
+        printf("senderpos: %f %f %f\n", senderpos.x, senderpos.y, senderpos.z);
+        printf("recpos: %f %f %f\n", recpos.x, recpos.y, recpos.z);
+        printf("sphere: %f\n", range);
+        printf("dist: %f\n", dist);
+        */
+        if(dist<=range)
+            recipients.push_back(cl);
+    }
+    for(MapClient * cl : recipients)
+    {
+        sendChatMessage(MessageChannel::EMOTE,msg,src,cl);
+    }
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {

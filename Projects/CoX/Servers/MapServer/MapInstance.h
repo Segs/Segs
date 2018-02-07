@@ -116,5 +116,5 @@ protected:
     void on_switch_tray(class SwitchTray *ev);
 
 private:
-    void on_emote_command(QString lowerContents, Entity *ent, MapClient *src);
+    void on_emote_command(QString lowerContents, Entity *ent);
 };
