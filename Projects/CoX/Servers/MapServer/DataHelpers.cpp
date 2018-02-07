@@ -31,6 +31,47 @@ void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_spd = {v1,v2,v3}
 void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
 void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
 void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
+
+void    setTeamID(Entity &e, uint8_t val)
+{
+    // TODO: provide method for updating Team Name and Rank
+    Entity::Team team = e.m_team;
+
+    if(val == 0)
+    {
+        team.m_has_team     = false;
+        team.m_team_id      = val;
+        team.m_team_name    = "";
+        team.m_team_rank    = 0;
+    }
+    else
+    {
+        team.m_has_team     = true;
+        team.m_team_id      = val;
+        team.m_team_name    = "Super Team";
+        team.m_team_rank    = 1;
+    }
+}
+
+void    setSuperGroupID(Entity &e, uint8_t val)
+{
+    // TODO: provide method for updating SuperGroup Name and Rank
+    Entity::SuperGroup sg   = e.m_supergroup;
+
+    if(val == 0)
+    {
+        sg.m_SG_info    = false;
+        sg.m_SG_id      = val;
+        sg.m_SG_name    = "";
+    }
+    else
+    {
+        sg.m_SG_info    = true;
+        sg.m_SG_id      = val;
+        sg.m_SG_name    = "SuperGroup Name!";
+    }
+}
+
 void    setu1(Entity &e, int val) { e.u1 = val; }
 void    setu2(Entity &e, int val) { e.u2 = val; }
 void    setu3(Entity &e, int val) { e.u3 = val; }
@@ -115,7 +156,7 @@ void sendServerMOTD(Entity *e)
     else {
         QString errormsg = "Failed to load MOTD file. \'" + file.fileName() + "\' not found.";
         qDebug() << errormsg;
-        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(errormsg)));
+        sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, src);
     }
 }
 

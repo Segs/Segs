@@ -584,24 +584,24 @@ static bool isChatMessage(const QString &msg)
     QString space(msg.mid(0,msg.indexOf(' ')));
     return chat_prefixes.contains(space);
 }
-static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
+static MessageChannel getKindOfChatMessage(const QStringRef &msg)
 {
     if(msg=="l" || msg=="local")                                                            // Aliases: local, l
-        return ChatMessage::CHAT_Local;
+        return MessageChannel::LOCAL;
     if(msg=="b" || msg=="broadcast" || msg=="y" || msg=="yell")                             // Aliases: broadcast, yell, b, y
-        return ChatMessage::CHAT_Broadcast;
+        return MessageChannel::BROADCAST;
     if(msg=="g" || msg=="group" || msg=="team")                                             // Aliases: team, g, group
-        return ChatMessage::CHAT_TEAM;
+        return MessageChannel::TEAM;
     if(msg=="sg" || msg=="supergroup")                                                      // Aliases: sg, supergroup
-        return ChatMessage::CHAT_SuperGroup;
+        return MessageChannel::SUPERGROUP;
     if(msg=="req" || msg=="request" || msg=="auction" || msg=="sell")                       // Aliases: request, req, auction, sell
-        return ChatMessage::CHAT_Request;
+        return MessageChannel::REQUEST;
     if(msg=="f")                                                                            // Aliases: f
-        return ChatMessage::CHAT_Friend;
+        return MessageChannel::FRIENDS;
     if(msg=="t" || msg=="tell" || msg=="w" || msg=="whisper" || msg=="p" || msg=="private") // Aliases: t, tell, whisper, w, private, p
-        return ChatMessage::CHAT_PRIVATE;
+        return MessageChannel::PRIVATE;
     // unknown chat types are processed as local chat
-    return ChatMessage::CHAT_Local;
+    return MessageChannel::LOCAL;
 }
 
 void MapInstance::process_chat(MapClient *sender,QString &msg_text)
@@ -615,8 +615,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
 
     QStringRef cmd_str(msg_text.midRef(0,first_space));
     QStringRef msg_content(msg_text.midRef(first_space+1,msg_text.lastIndexOf("\n")));
-    InfoMessageCmd *info;
-    ChatMessage::eChatTypes kind = getKindOfChatMessage(cmd_str);
+    MessageChannel kind = getKindOfChatMessage(cmd_str);
     std::vector<MapClient *> recipients;
 
     if(sender && sender->char_entity())
@@ -624,7 +623,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
 
     switch(kind)
     {
-        case ChatMessage::CHAT_Local:
+        case MessageChannel::LOCAL:
         {
             // send only to clients within range
             glm::vec3 senderpos = sender->char_entity()->m_entity_data.pos;
@@ -645,36 +644,33 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             prepared_chat_message = QString("[Local] %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                ChatMessage *msg = ChatMessage::localMessage(prepared_chat_message,sender->char_entity());
-                cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(msg));
+                sendChatMessage(MessageChannel::LOCAL,prepared_chat_message,cl);
             }
             break;
         }
-        case ChatMessage::CHAT_Broadcast:
+        case MessageChannel::BROADCAST:
         {
             // send the message to everyone on this map
             std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString()); // where does [Broadcast] come from? The client?
             for(MapClient * cl : recipients)
             {
-                ChatMessage *msg = ChatMessage::broadcastMessage(prepared_chat_message,sender->char_entity());
-                cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(msg));
+                sendChatMessage(MessageChannel::BROADCAST,prepared_chat_message,cl);
             }
             break;
         }
-        case ChatMessage::CHAT_Request:
+        case MessageChannel::REQUEST:
         {
             // send the message to everyone on this map
             std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
-            prepared_chat_message = QString("[Request] %1: %2").arg(sender_char_name,msg_content.toString());
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                info = new InfoMessageCmd(InfoType::REQUEST_COM, prepared_chat_message);
-                cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendChatMessage(MessageChannel::REQUEST,prepared_chat_message,cl);
             }
             break;
         }
-        case ChatMessage::CHAT_PRIVATE:
+        case MessageChannel::PRIVATE:
         {
             int first_comma = msg_text.indexOf(',');
             QStringRef target_name_ref(msg_text.midRef(first_space+1,first_comma-2));
@@ -686,58 +682,71 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             EntityManager &ent_manager(mi->m_entities);
 
             Entity *tgt = ent_manager.getEntity(target_name);
-            Entity *src = sender->char_entity();
 
             if(tgt == nullptr)
             {
                 prepared_chat_message = QString("No player named \"%1\" currently online.").arg(target_name);
-                info = new InfoMessageCmd(InfoType::USER_ERROR, prepared_chat_message);
-                src->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
                 break;
             }
             else
             {
-                prepared_chat_message = QString("[Tell] -->%1: %2").arg(target_name,msg_content.toString());
-                info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
-                src->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                prepared_chat_message = QString(" -->%1: %2").arg(target_name,msg_content.toString());
+                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender);
 
-                prepared_chat_message = QString("[Tell] %1: %2").arg(sender_char_name,msg_content.toString());
-                info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
-                tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
+                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,tgt->m_client);
             }
             
             break;
         }
-        case ChatMessage::CHAT_TEAM:
+        case MessageChannel::TEAM:
         {
+            if(!sender->char_entity()->m_team.m_team_id == 0)
+            {
+                prepared_chat_message = "You are not a member of a Team.";
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                break;
+            }
+
             // Only send the message to characters on sender's team
             for(MapClient *cl : m_clients)
             {
-                if(sender->char_entity()->m_group_name == cl->char_entity()->m_group_name)
+                if(sender->char_entity()->m_team.m_team_id == cl->char_entity()->m_team.m_team_id)
                     recipients.push_back(cl);
             }
-            prepared_chat_message = QString("[Team] %1: %2").arg(sender_char_name,msg_content.toString());
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                info = new InfoMessageCmd(InfoType::TEAM_COM, prepared_chat_message);
-                cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendChatMessage(MessageChannel::TEAM,prepared_chat_message,sender);
             }
             break;
         }
-        case ChatMessage::CHAT_SuperGroup:
+        case MessageChannel::SUPERGROUP:
         {
+            if(sender->char_entity()->m_supergroup.m_SG_id == 0)
+            {
+                prepared_chat_message = "You are not a member of a SuperGroup.";
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                break;
+            }
+
             // Only send the message to characters in sender's supergroup
             for(MapClient *cl : m_clients)
             {
                 if(sender->char_entity()->m_supergroup.m_SG_id == cl->char_entity()->m_supergroup.m_SG_id)
                     recipients.push_back(cl);
             }
-            prepared_chat_message = QString("[SuperGroup] %1: %2").arg(sender_char_name,msg_content.toString());
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                info = new InfoMessageCmd(InfoType::SUPERGROUP_COM, prepared_chat_message);
-                cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendChatMessage(MessageChannel::SUPERGROUP,prepared_chat_message,sender);
             }
+            break;
+        }
+        default:
+        {
+            qDebug() << "Unhandled MessageChannel type" << int(kind);
             break;
         }
     }
@@ -747,7 +756,6 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity(); // user entity
-    InfoMessageCmd *info; // leverage InfoMessageCmd
 
     QString lowerContents = ev->contents.toLower();                             // ERICEDIT: Make the contents all lowercase for case-insensitivity.
 
@@ -768,7 +776,6 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
 }
 void MapInstance::on_emote_command(QString lowerContents, Entity *ent, MapClient *src)
 {
-    InfoMessageCmd *info;
     QString msg;                                                                // Initialize the variable to hold the debug message.
     if(lowerContents.startsWith("em") || lowerContents.startsWith("me"))        // This if-else removes the prefix of the command for conciseness.
         lowerContents.replace(0, 3, "");
@@ -1300,13 +1307,11 @@ void MapInstance::on_emote_command(QString lowerContents, Entity *ent, MapClient
         // "CharacterName {emote message}"
         msg = QString("%1 %2").arg(ent->name(),lowerContents);
         qDebug() << msg;                                                            // Print out the message to the server console.
-        ChatMessage *cmsg = ChatMessage::emoteMessage(msg,src->char_entity());
-        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(cmsg));
+        sendChatMessage(MessageChannel::EMOTE, msg, src);
         return;
     }
     qDebug() << msg;                                                            // Print out the message to the server console.
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);                       // Create the message to send to the client.
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));     // Print the message to the client.
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);                       // Create the message to send to the client.
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {
@@ -1333,7 +1338,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     std::snprintf(buf, 256, "There are %zu active entites and %zu clients", m_entities.active_entities(),
                   num_active_clients());
     welcome_msg += buf;
-    cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(welcome_msg.c_str())));
+    sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),cl);
 }
 void MapInstance::on_location_visited(LocationVisited *ev)
 {
@@ -1341,7 +1346,7 @@ void MapInstance::on_location_visited(LocationVisited *ev)
     MapClient *cl = lnk->client_data();
     qDebug() << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
     auto val = m_scripting_interface->callFuncWithClientContext(cl,"location_visited",qHash(ev->m_name));
-    cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(new InfoMessageCmd(InfoType::DEBUG_INFO,val.c_str())));
+    sendInfoMessage(MessageChannel::DEBUG_INFO,QString::fromStdString(val),cl);
 
     qWarning() << "Unhandled location visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);

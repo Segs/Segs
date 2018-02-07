@@ -20,10 +20,17 @@ public:
     EVENT_DECL(evPreUpdateCommand           ,1013)  // this wraps a list of commands
 // server -> client commands
     EVENT_DECL(evFirstServerToClient        ,100)
+//    EVENT_DECL(evServerGameCommand        ,113)
     EVENT_DECL(evStandardDialogCmd          ,114)
     EVENT_DECL(evInfoMessageCmd             ,115)
+//    EVENT_DECL(evDoorMsg                  ,116)
+//    EVENT_DECL(evConsoleOutput            ,117)
+//    EVENT_DECL(evServerSetClientState     ,118)
+//    EVENT_DECL(evConPrintf                ,119)
     EVENT_DECL(evChatMessage                ,120)
     EVENT_DECL(evFloatingDamage             ,121)
+//    EVENT_DECL(evVisitMapCells            ,122)
+//    EVENT_DECL(evSendWaypoint             ,123)
 // client -> server commands
     EVENT_DECL(evConsoleCommand             ,200)
     EVENT_DECL(evMiniMapState               ,201)

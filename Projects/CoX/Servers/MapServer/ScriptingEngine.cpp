@@ -56,7 +56,7 @@ void ScriptingEngine::registerTypes()
     );
     m_private->m_lua.new_usertype<MapClient>( "MapClient",
         "new", sol::no_constructor, // The client links are not constructible from the script side.
-        "admin_chat_message", sendAdminMessage,
+        "admin_chat_message", sendChatMessage,
         "simple_dialog", [](MapClient *cl,const char *dlgtext) {
             auto n = new StandardDialogCmd(dlgtext);
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
@@ -115,14 +115,14 @@ int ScriptingEngine::runScript(MapClient * client, const QString &script_content
     if(!load_res.valid())
     {
         sol::error err = load_res;
-        sendAdminMessage(client,err.what());
+        sendChatMessage(MessageChannel::ADMIN,err.what(),client);
         return -1;
     }
     sol::protected_function_result script_result = load_res();
     if(!script_result.valid())
     {
         sol::error err = script_result;
-        sendAdminMessage(client,err.what());
+        sendChatMessage(MessageChannel::ADMIN,err.what(),client);
         return -1;
     }
     return 0;

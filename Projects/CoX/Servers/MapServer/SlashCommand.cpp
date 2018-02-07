@@ -37,6 +37,8 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"updateid"}, &cmdHandler_UpdateId, 9},
     {{"fullupdate"}, &cmdHandler_FullUpdate, 9},
     {{"hascontrolid"}, &cmdHandler_HasControlId, 9},
+    {{"setTeam"}, &cmdHandler_SetTeam, 9},
+    {{"setSuperGroup"}, &cmdHandler_SetSuperGroup, 9},
     {{"setu1"}, &cmdHandler_SetU1, 9},
     {{"setu2"}, &cmdHandler_SetU2, 9},
     {{"setu3"}, &cmdHandler_SetU3, 9},
@@ -61,8 +63,7 @@ bool canAccessCommand(const SlashCommand &cmd, const Entity &e)
 
     QString msg = "You do not have adequate permissions to use the command: " + cmd.m_valid_prefixes.first();
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::USER_ERROR, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
     return false;
 }
 
@@ -87,11 +88,10 @@ void runCommand(QString &str, Entity &e) {
 // Access Level 9 Commands (GMs)
 void cmdHandler_Script(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    // TODO: This doesn't work anymore because it's out of scope.
-    std::unique_ptr<ScriptingEngine> m_scripting_interface;
+    MapInstance *mi = src->current_map();
 
     QString code = cmd.mid(7,cmd.size()-7);
-    m_scripting_interface->runScript(src,code,"user provided script");
+    mi->m_scripting_interface->runScript(src,code,"user provided script");
 }
 
 void cmdHandler_Dialog(QString &cmd, Entity *e) {
@@ -103,28 +103,26 @@ void cmdHandler_Dialog(QString &cmd, Entity *e) {
 
 void cmdHandler_InfoMessage(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
+    QString msg;
+    int cmdType = int(MessageChannel::USER_ERROR);
 
     int first_space = cmd.indexOf(' ');
     int second_space = cmd.indexOf(' ',first_space+1);
-    if(second_space==-1) {
-        info = new InfoMessageCmd(InfoType::USER_ERROR,
-                                       "The /imsg command takes two arguments, a <b>number</b> and a <b>string</b>"
-                                       );
-    }
-    else {
+    if(second_space==-1)
+        msg = "The /imsg command takes two arguments, a <b>number</b> and a <b>string</b>";
+    else
+    {
         bool ok = true;
-        int cmdType = cmd.midRef(first_space+1,second_space-(first_space+1)).toInt(&ok);
-        if(!ok || cmdType<1 || cmdType>21) {
-            info = new InfoMessageCmd(InfoType::USER_ERROR,
-                                           "The first /imsg argument must be a <b>number</b> between 1 and 21"
-                                           );
+        cmdType = cmd.midRef(first_space+1,second_space-(first_space+1)).toInt(&ok);
+        if(!ok || cmdType<1 || cmdType>21)
+        {
+            msg = "The first /imsg argument must be a <b>number</b> between 1 and 21";
+            cmdType = int(MessageChannel::USER_ERROR);
         }
-        else {
-            info = new InfoMessageCmd(InfoType(cmdType),cmd.mid(second_space+1));
-        }
-
+        else
+            msg = cmd.mid(second_space+1);
     }
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(static_cast<MessageChannel>(cmdType), msg, src);
 }
 
 void cmdHandler_SmileX(QString &cmd, Entity *e) {
@@ -144,7 +142,7 @@ void cmdHandler_SmileX(QString &cmd, Entity *e) {
     else {
         QString errormsg = "Failed to load smilex file. \'" + file.fileName() + "\' not found.";
         qDebug() << errormsg;
-        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(errormsg)));
+        sendInfoMessage(MessageChannel::ADMIN, errormsg, src);
     }
 }
 
@@ -155,8 +153,7 @@ void cmdHandler_Fly(QString &cmd, Entity *e) {
 
     QString msg = "Toggling " + cmd;
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_Falling(QString &cmd, Entity *e) {
@@ -166,8 +163,7 @@ void cmdHandler_Falling(QString &cmd, Entity *e) {
 
     QString msg = "Toggling " + cmd;
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_Sliding(QString &cmd, Entity *e) {
@@ -177,8 +173,7 @@ void cmdHandler_Sliding(QString &cmd, Entity *e) {
 
     QString msg = "Toggling " + cmd;
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_Jumping(QString &cmd, Entity *e) {
@@ -188,8 +183,7 @@ void cmdHandler_Jumping(QString &cmd, Entity *e) {
 
     QString msg = "Toggling " + cmd;
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_Stunned(QString &cmd, Entity *e) {
@@ -199,8 +193,7 @@ void cmdHandler_Stunned(QString &cmd, Entity *e) {
 
     QString msg = "Toggling " + cmd;
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_Jumppack(QString &cmd, Entity *e) {
@@ -210,8 +203,7 @@ void cmdHandler_Jumppack(QString &cmd, Entity *e) {
 
     QString msg = "Toggling " + cmd;
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetSpeed(QString &cmd, Entity *e) {
@@ -227,8 +219,7 @@ void cmdHandler_SetSpeed(QString &cmd, Entity *e) {
     args.removeAt(0); // remove command string
     QString msg = "Set Speed to: " + args.join(" ");
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetBackupSpd(QString &cmd, Entity *e) {
@@ -239,8 +230,7 @@ void cmdHandler_SetBackupSpd(QString &cmd, Entity *e) {
 
     QString msg = "Set BackupSpd to: " + QString::number(val);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetJumpHeight(QString &cmd, Entity *e) {
@@ -251,8 +241,7 @@ void cmdHandler_SetJumpHeight(QString &cmd, Entity *e) {
 
     QString msg = "Set JumpHeight to: " + QString::number(val);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetHP(QString &cmd, Entity *e) {
@@ -268,8 +257,7 @@ void cmdHandler_SetHP(QString &cmd, Entity *e) {
 
     QString msg = "Setting HP to: " + QString::number(attrib) + "/" + QString::number(maxattrib);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetEnd(QString &cmd, Entity *e) {
@@ -285,8 +273,7 @@ void cmdHandler_SetEnd(QString &cmd, Entity *e) {
 
     QString msg = "Setting Endurance to: " + QString::number(attrib) + "/" + QString::number(maxattrib);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetXP(QString &cmd, Entity *e) {
@@ -303,8 +290,7 @@ void cmdHandler_SetXP(QString &cmd, Entity *e) {
         msg += " and LVL to " + QString::number(newlvl);
 
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetDebt(QString &cmd, Entity *e) {
@@ -315,8 +301,7 @@ void cmdHandler_SetDebt(QString &cmd, Entity *e) {
     QString msg = "Setting XP Debt to " + QString::number(attrib);
 
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetInf(QString &cmd, Entity *e) {
@@ -327,8 +312,7 @@ void cmdHandler_SetInf(QString &cmd, Entity *e) {
 
     QString msg = "Setting influence to: " + QString::number(attrib);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetLevel(QString &cmd, Entity *e) {
@@ -339,8 +323,7 @@ void cmdHandler_SetLevel(QString &cmd, Entity *e) {
 
     QString msg = "Setting Level to: " + QString::number(attrib);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetCombatLevel(QString &cmd, Entity *e) {
@@ -351,8 +334,7 @@ void cmdHandler_SetCombatLevel(QString &cmd, Entity *e) {
 
     QString msg = "Setting Combat Level to: " + QString::number(attrib);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::REGULAR, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_UpdateChar(QString &cmd, Entity *e) {
@@ -362,8 +344,7 @@ void cmdHandler_UpdateChar(QString &cmd, Entity *e) {
 
     QString msg = "Updating Character in Database: " + e->name();
     qDebug() << cmd << ":" << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_DebugChar(QString &cmd, Entity *e) {
@@ -384,8 +365,7 @@ void cmdHandler_DebugChar(QString &cmd, Entity *e) {
             + "\n  afk: " + QString::number(e->m_char.m_char_data.m_afk)
             + "\n  tgt_idx: " + QString::number(getTargetIdx(*e));
     e->dump();
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_ControlsDisabled(QString &cmd, Entity *e) {
@@ -395,8 +375,7 @@ void cmdHandler_ControlsDisabled(QString &cmd, Entity *e) {
 
     QString msg = "Toggling " + cmd;
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_UpdateId(QString &cmd, Entity *e) {
@@ -407,8 +386,7 @@ void cmdHandler_UpdateId(QString &cmd, Entity *e) {
 
     QString msg = "Setting updateID to: " + QString::number(attrib);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_FullUpdate(QString &cmd, Entity *e) {
@@ -418,8 +396,7 @@ void cmdHandler_FullUpdate(QString &cmd, Entity *e) {
 
     QString msg = "Toggling " + cmd;
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_HasControlId(QString &cmd, Entity *e) {
@@ -429,8 +406,29 @@ void cmdHandler_HasControlId(QString &cmd, Entity *e) {
 
     QString msg = "Toggling " + cmd;
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+}
+
+void cmdHandler_SetTeam(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    int val = cmd.split(" ").value(1).toUInt();
+
+    setTeamID(*e, val);
+
+    QString msg = "Set Team ID to: " + QString::number(val);
+    qDebug() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+}
+
+void cmdHandler_SetSuperGroup(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    int val = cmd.split(" ").value(1).toUInt();
+
+    setSuperGroupID(*e, val);
+
+    QString msg = "Set SuperGroup ID to: " + QString::number(val);
+    qDebug() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 // Slash commands for setting bit values
@@ -442,8 +440,7 @@ void cmdHandler_SetU1(QString &cmd, Entity *e) {
 
     QString msg = "Set u1 to: " + QString::number(val);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetU2(QString &cmd, Entity *e) {
@@ -454,8 +451,7 @@ void cmdHandler_SetU2(QString &cmd, Entity *e) {
 
     QString msg = "Set u2 to: " + QString::number(val);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetU3(QString &cmd, Entity *e) {
@@ -466,8 +462,7 @@ void cmdHandler_SetU3(QString &cmd, Entity *e) {
 
     QString msg = "Set u3 to: " + QString::number(val);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetU4(QString &cmd, Entity *e) {
@@ -478,8 +473,7 @@ void cmdHandler_SetU4(QString &cmd, Entity *e) {
 
     QString msg = "Set u4 to: " + QString::number(val);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetU5(QString &cmd, Entity *e) {
@@ -490,8 +484,7 @@ void cmdHandler_SetU5(QString &cmd, Entity *e) {
 
     QString msg = "Set u5 to: " + QString::number(val);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetU6(QString &cmd, Entity *e) {
@@ -502,8 +495,7 @@ void cmdHandler_SetU6(QString &cmd, Entity *e) {
 
     QString msg = "Set u6 to: " + QString::number(val);
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 // Access Level 1 Commands
@@ -519,8 +511,7 @@ void cmdHandler_Help(QString &cmd, Entity *e) {
     }
 
     qDebug().noquote() << cmd << ":\n" << msg;
-    info = new InfoMessageCmd(InfoType::SVR_COM, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::SERVER, msg, src);
 }
 
 void cmdHandler_AFK(QString &cmd, Entity *e) {
@@ -532,18 +523,16 @@ void cmdHandler_AFK(QString &cmd, Entity *e) {
 
     QString msg = "Setting afk message to: " + val;
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::EMOTE, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::EMOTE, msg, src);
 }
 
 void cmdHandler_WhoAll(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    // TODO: This doesn't work anymore because it's out of scope.
-    ClientStore<MapClient> m_clients;
+    MapInstance *mi = src->current_map();
 
     QString msg = "Players on this map:\n";
 
-    for(MapClient *cl : m_clients)
+    for(MapClient *cl : mi->m_clients)
     {
         Character *c        = &cl->char_entity()->m_char;
         QString name        = cl->char_entity()->name();
@@ -557,8 +546,7 @@ void cmdHandler_WhoAll(QString &cmd, Entity *e) {
     }
 
     qDebug().noquote() << msg;
-    info = new InfoMessageCmd(InfoType::SVR_COM, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::SERVER, msg, src);
 }
 
 void cmdHandler_SetTitles(QString &cmd, Entity *e) {
@@ -584,8 +572,7 @@ void cmdHandler_SetTitles(QString &cmd, Entity *e) {
         msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
     }
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::USER_ERROR, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
 }
 
 void cmdHandler_Stuck(QString &cmd, Entity *e) {
@@ -599,8 +586,7 @@ void cmdHandler_Stuck(QString &cmd, Entity *e) {
             + QString::number(e->m_entity_data.pos.y) + ","
             + QString::number(e->m_entity_data.pos.z) + ")";
     qDebug() << cmd << ":" << msg;
-    info = new InfoMessageCmd(InfoType::SVR_COM, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::SERVER, msg, src);
 }
 
 void cmdHandler_LFG(QString &cmd, Entity *e) {
@@ -610,6 +596,5 @@ void cmdHandler_LFG(QString &cmd, Entity *e) {
 
     QString msg = "Toggling " + cmd;
     qDebug() << msg;
-    info = new InfoMessageCmd(InfoType::SVR_COM, msg);
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    sendInfoMessage(MessageChannel::SERVER, msg, src);
 }

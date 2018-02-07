@@ -45,6 +45,8 @@ void cmdHandler_ControlsDisabled(QString &cmd, Entity *e);
 void cmdHandler_UpdateId(QString &cmd, Entity *e);
 void cmdHandler_FullUpdate(QString &cmd, Entity *e);
 void cmdHandler_HasControlId(QString &cmd, Entity *e);
+void cmdHandler_SetTeam(QString &cmd, Entity *e);
+void cmdHandler_SetSuperGroup(QString &cmd, Entity *e);
 void cmdHandler_SetU1(QString &cmd, Entity *e);
 void cmdHandler_SetU2(QString &cmd, Entity *e);
 void cmdHandler_SetU3(QString &cmd, Entity *e);

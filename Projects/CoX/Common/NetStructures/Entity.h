@@ -167,16 +167,24 @@ public:
         };
         struct SuperGroup
         {
-            int     m_SG_id     = 0;
-            bool    m_SG_info   = false;
-            QString m_SG_name;              // 64 chars max
+            int     m_SG_id         = 0;
+            bool    m_SG_info       = false;
+            QString m_SG_name;               // 64 chars max
             //QString m_SG_motto;
-            //QString m_SG_costume;         // 128 chars max -> hash table key from the CostumeString_HTable
-            uint32_t m_SG_color1    = 0;    // supergroup color 1
-            uint32_t m_SG_color2    = 0;    // supergroup color 2
+            //QString m_SG_costume;          // 128 chars max -> hash table key from the CostumeString_HTable
+            uint32_t m_SG_color1    = 0;     // supergroup color 1
+            uint32_t m_SG_color2    = 0;     // supergroup color 2
+        };
+        struct Team
+        {
+            bool    m_has_team      = false;
+            int     m_team_id       = 0;
+            QString m_team_name;             // m_group_name? what is this?
+            int     m_team_rank     = 0;
         };
 
         SuperGroup          m_supergroup;
+        Team                m_team;
         EntityData          m_entity_data;
 
         int32_t             m_idx                   = {0};
@@ -242,13 +250,12 @@ public:
         bool                m_pchar_things              = false;
         bool                might_have_rare             = false;
         bool                m_hasname                   = false;
-        bool                m_hasgroup_name             = false;
         bool                m_classname_override        = false;
         bool                m_hasRagdoll                = false;
         bool                m_create_player             = false;
         bool                m_rare_bits                 = false;
         int                 current_client_packet_id    = {0};
-        QString             m_group_name, m_override_name;
+        QString             m_override_name;
         uint32_t            m_input_ack                 = {0};
         bool                player_type                 = false;
         bool                m_player_villain            = false;

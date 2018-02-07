@@ -25,6 +25,8 @@ void    setSpeed(Entity &e, float v1, float v2, float v3);
 void    setBackupSpd(Entity &e, float val);
 void    setJumpHeight(Entity &e, float val);
 void    setUpdateID(Entity &e, uint8_t val);
+void    setTeamID(Entity &e, uint8_t val);
+void    setSuperGroupID(Entity &e, uint8_t val);
 void    setu1(Entity &e, int val);
 void    setu2(Entity &e, int val);
 void    setu3(Entity &e, int val);

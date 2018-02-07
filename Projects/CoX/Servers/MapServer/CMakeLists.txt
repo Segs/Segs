@@ -17,6 +17,7 @@ SET(target_CPP
     Events/PlaqueVisited.cpp
     Events/NewEntity.cpp
     Events/SceneEvent.cpp
+    Events/InfoMessageCmd.cpp
     MapClient.cpp
     MapEventFactory.cpp
     MapInstance.cpp
