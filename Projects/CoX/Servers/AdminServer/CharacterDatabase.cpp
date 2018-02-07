@@ -7,7 +7,7 @@
  */
 
 // segs includes
-#define DEBUG_DB
+//#define DEBUG_DB
 #include "CharacterDatabase.h"
 #include "AccountInfo.h"
 #include "AdminServer.h"

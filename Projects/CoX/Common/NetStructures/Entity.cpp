@@ -99,7 +99,6 @@ void Entity::dump()
                              + QString::number(m_entity_data.m_orientation_pyr.r)
             + "\n  target: " + QString::number(m_target_idx)
             + "\n  assist target: " + QString::number(m_assist_target_idx)
-            + "\n  current chat channel: " + QString::number(m_entity_data.m_cur_chat_channel)
             + "\n  m_SG_id: " + QString::number(m_supergroup.m_SG_id)
             + "\n  m_team_id: " + QString::number(m_team.m_team_id);
 
@@ -143,7 +142,6 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_team.m_has_team                 = false;
     e.m_pchar_things                    = true;
     e.m_entity_data.m_access_level        = 9;
-    e.m_entity_data.m_cur_chat_channel    = 10;   // Default is local
 
     e.m_char.reset();
     e.might_have_rare = e.m_rare_bits   = true;

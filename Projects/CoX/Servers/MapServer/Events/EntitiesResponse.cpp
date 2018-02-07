@@ -122,9 +122,7 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     player_char.sendTeamBuffMode(bs);
     player_char.sendDockMode(bs);
     player_char.sendChatSettings(bs);
-
-    // NOTE: sendTitles(BitStream &bs, bool hasname, bool conditional)
-    player_char.sendTitles(bs,false,false); // both must be false
+    player_char.sendTitles(bs,NameFlag::NoName,ConditionalFlag::Unconditional); // NoName, we already sent it above.
 
     player_char.sendDescription(bs);
     uint8_t auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -304,9 +302,9 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         storeVector(bs,ent->m_entity_data.pos);         // server-side pos
         storeVectorConditional(bs,ent->m_spd);          // server-side spd (optional)
 
-        storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.p); // Pitch not used ?
+        storeFloatConditional(bs,0); // Pitch not used ?
         storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.y); // Yaw
-        storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.r); // Roll
+        storeFloatConditional(bs,0); // Roll
         bs.StorePackedBits(1,ent->m_is_falling); // server side forced falling bit
 
         ent->u2 = 0; // run once

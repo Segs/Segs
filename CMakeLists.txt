@@ -15,11 +15,11 @@ add_definitions(-D__STDC_FORMAT_MACROS)
 SET(MAIN_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/3rd_party/include CACHE PATH "Includes")
 SET(MAIN_LIB_PATH ${PROJECT_SOURCE_DIR}/3rd_party/lib CACHE PATH "Libraries")
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/out) # ERICEDIT: Changed the output directory to the build directory rather than source.
-
+SET(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/out)
 SET(CMAKE_INCLUDE_PATH ${MAIN_INCLUDE_PATH})
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
 SET(UNICODE TRUE)
-
+set(INSTALLED_TARGETS)
 OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" OFF)
 OPTION(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 OPTION(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
@@ -34,6 +34,47 @@ add_definitions(-DACE_HAS_DLL=1) # TODO: this should be set by per-target add_de
 link_directories(${PROJECT_SOURCE_DIR}/lib) # ERICEDIT: Changed to lowercase.
 
 find_package(Threads REQUIRED)
+SET(QT_MISSING True)
+# msvc only; mingw will need different logic
+IF(MSVC)
+    # look for user-registry pointing to qtcreator
+    GET_FILENAME_COMPONENT(QT_BIN [HKEY_CURRENT_USER\\Software\\Classes\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command] PATH)
+
+    # get root path so we can search for 5.3, 5.4, 5.5, etc
+    STRING(REPLACE "/Tools" ";" QT_BIN "${QT_BIN}")
+    LIST(GET QT_BIN 0 QT_BIN)
+    FILE(GLOB QT_VERSIONS "${QT_BIN}/5.*")
+    LIST(SORT QT_VERSIONS)
+
+    # assume the latest version will be last alphabetically
+    LIST(REVERSE QT_VERSIONS)
+
+    LIST(GET QT_VERSIONS 0 QT_VERSION)
+
+    # fix any double slashes which seem to be common
+    STRING(REPLACE "//" "/"  QT_VERSION "${QT_VERSION}")
+
+    # do some math trickery to guess folder
+    # - qt uses (e.g.) "msvc2012"
+    # - cmake uses (e.g.) "1800"
+    # - see also https://cmake.org/cmake/help/v3.0/variable/MSVC_VERSION.html
+    MATH(EXPR QT_MSVC "2000 + (${MSVC_VERSION} - 600) / 100")
+
+    # check for 64-bit os
+    # may need to be removed for older compilers as it wasn't always offered
+    IF(CMAKE_SYSTEM_PROCESSOR MATCHES 64)
+        SET(QT_MSVC "${QT_MSVC}_64")
+    ENDIF()
+    SET(QT_PATH "${QT_VERSION}/msvc${QT_MSVC}")
+    SET(QT_MISSING False)
+ENDIF()
+
+# use Qt_DIR approach so you can find Qt after cmake has been invoked
+IF(NOT QT_MISSING)
+    MESSAGE("-- Qt found: ${QT_PATH}")
+    SET(Qt5_DIR "${QT_PATH}/lib/cmake/Qt5/")
+    SET(Qt5Test_DIR "${QT_PATH}/lib/cmake/Qt5Test")
+ENDIF()
 find_package(Qt5 COMPONENTS Core Sql REQUIRED)
 
 link_directories(${ThirdParty_Install_Dir}/lib)
@@ -47,30 +88,3 @@ add_subdirectory(Utilities)
 add_subdirectory(Projects)
 file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/data)
 
-########################################################################################
-# DLL Transfers
-########################################################################################
-if(WIN32) # ERICEDIT: If the OS is Windows:
-    get_target_property(QtCore_location_Release Qt5::Core LOCATION_Release) # ERICEDIT: Get the direct location of Qt5Core.dll.
-    get_filename_component(Qt_binary_location ${QtCore_location_Release} DIRECTORY) # ERICEDIT: Remove the file name and let the directory remain.
-    add_custom_target( # ERICEDIT: Add a target that depends on all the executable files built by SEGS.
-        execTargets ALL
-        DEPENDS ${EXECUTABLE_OUTPUT_PATH}/authserver.exe
-        ${EXECUTABLE_OUTPUT_PATH}/binConverter.exe
-        ${EXECUTABLE_OUTPUT_PATH}/dbtool.exe
-        ${EXECUTABLE_OUTPUT_PATH}/ManifestBuilder.exe
-        ${EXECUTABLE_OUTPUT_PATH}/piggtool.exe
-        ${EXECUTABLE_OUTPUT_PATH}/slav.exe
-        )
-    find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${Qt_binary_location} ENV Qt_binary_location) # ERICEDIT: Find windeployqt for use in finding dependencies.
-    add_custom_command( # ERICEDIT: After building the executables, use windeployqt to transfer all dependencies to the output directory.
-        TARGET execTargets
-        POST_BUILD
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/authserver.exe
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/binConverter.exe
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/dbtool.exe
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/ManifestBuilder.exe
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/piggtool.exe
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${EXECUTABLE_OUTPUT_PATH}/slav.exe
-        )
-endif()

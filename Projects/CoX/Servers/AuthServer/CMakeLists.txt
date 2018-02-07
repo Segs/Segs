@@ -51,4 +51,12 @@ IF(BUILD_SEPARATE)
     IF(MINGW)
         target_link_libraries(authserver ws2_32)
     ENDIF()
+    install(TARGETS authserver
+        DESTINATION deploy
+    )
 ENDIF(BUILD_SEPARATE)
+
+IF(WIN32)
+    include(Windeployqt)
+    windeployqt(authserver deploy)
+ENDIF()

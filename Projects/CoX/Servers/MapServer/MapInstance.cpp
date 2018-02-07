@@ -1479,8 +1479,8 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
     // TODO: not sure what the client expects the server to do here, but m_chat_type
     // corresponds to the InfoType in InfoMessageCmd and eChatTypes in ChatMessage
 
-    // Passing cur_chat_channel to Entity in case we need it somewhere.
-    ent->m_entity_data.m_cur_chat_channel = ev->m_chat_type;
+    // Passing cur_chat_channel to Character in case we need it somewhere.
+    ent->m_char.m_char_data.m_cur_chat_channel = ev->m_chat_type;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
