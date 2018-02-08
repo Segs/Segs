@@ -133,7 +133,7 @@ void cmdHandler_SmileX(QString &cmd, Entity *e) {
     if(!fileName.endsWith(".smlx"))
             fileName.append(".smlx");
     QFile file(fileName);
-    if(QFileInfo::exists(fileName) && file.open(QIODevice::ReadOnly | QIODevice::Text))
+    if(file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         QString contents(file.readAll());
         StandardDialogCmd *dlg = new StandardDialogCmd(contents);

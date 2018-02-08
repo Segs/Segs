@@ -32,20 +32,20 @@ void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
 void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
 void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
 
-void    setTeamID(Entity &e, uint8_t val)
+void    setTeamID(Entity &e, uint8_t team_id)
 {
     // TODO: provide method for updating Team Name and Rank
-    if(val == 0)
+    if(team_id == 0)
     {
         e.m_team.m_has_team     = false;
-        e.m_team.m_team_id      = val;
+        e.m_team.m_team_id      = team_id;
         e.m_team.m_team_name    = "";
         e.m_team.m_team_rank    = 0;
     }
     else
     {
         e.m_team.m_has_team     = true;
-        e.m_team.m_team_id      = val;
+        e.m_team.m_team_id      = team_id;
         e.m_team.m_team_name    = "Super Team";
         e.m_team.m_team_rank    = 1;
     }
@@ -56,19 +56,19 @@ void    setTeamID(Entity &e, uint8_t val)
              << "\n  Rank:" << e.m_team.m_team_rank;
 }
 
-void    setSuperGroupID(Entity &e, uint8_t val)
+void    setSuperGroupID(Entity &e, uint8_t sg_id)
 {
     // TODO: provide method for updating SuperGroup Name and Rank
-    if(val == 0)
+    if(sg_id == 0)
     {
         e.m_supergroup.m_SG_info    = false;
-        e.m_supergroup.m_SG_id      = val;
+        e.m_supergroup.m_SG_id      = sg_id;
         e.m_supergroup.m_SG_name    = "";
     }
     else
     {
         e.m_supergroup.m_SG_info    = true;
-        e.m_supergroup.m_SG_id      = val;
+        e.m_supergroup.m_SG_id      = sg_id;
         e.m_supergroup.m_SG_name    = "SuperGroup Name!";
     }
     qDebug().noquote() << "SG Info:"
