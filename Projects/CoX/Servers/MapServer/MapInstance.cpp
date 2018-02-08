@@ -6,6 +6,7 @@
  *
 
  */
+//#define DEBUG_SPAWN
 #include "MapInstance.h"
 
 #include "AdminServer.h"
@@ -351,6 +352,10 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     if(false==char_db->fill(cl->char_entity()))
         return;
     grd.commit();
+
+#ifdef DEBUG_SPAWN
+        cl->char_entity()->dump();
+#endif
 
     cl->current_map()->enqueue_client(cl);
     setMapName(cl->char_entity()->m_char,name());

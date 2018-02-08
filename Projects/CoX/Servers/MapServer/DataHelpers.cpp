@@ -150,11 +150,17 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
 
 void sendServerMOTD(Entity *e)
 {
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
     MapClient *src = e->m_client;
 
     QString fileName("scripts/motd.smlx");
     QFile file(fileName);
-    if(QFileInfo::exists(fileName) && file.open(QIODevice::ReadOnly | QIODevice::Text))
+    if(file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         QString contents(file.readAll());
         StandardDialogCmd *dlg = new StandardDialogCmd(contents);

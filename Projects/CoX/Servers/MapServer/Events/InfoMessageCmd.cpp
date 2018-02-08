@@ -1,4 +1,4 @@
-#define DEBUG_CHAT
+//#define DEBUG_CHAT
 //#include "InfoMessageCmd.h"
 #include "Entity.h"
 #include "MapClient.h"

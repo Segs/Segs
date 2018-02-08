@@ -141,7 +141,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_supergroup.m_SG_info            = false;
     e.m_team.m_has_team                 = false;
     e.m_pchar_things                    = true;
-    e.m_entity_data.m_access_level        = 9;
+    e.m_entity_data.m_access_level      = 9;
 
     e.m_char.reset();
     e.might_have_rare = e.m_rare_bits   = true;
