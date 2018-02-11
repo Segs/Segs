@@ -43,29 +43,7 @@ _AdminServer::~_AdminServer()
 {
     (void)ShutDown();
 }
-static void createDefaultConfigEntries(const std::string &inipath) {
-    QSettings config(inipath.c_str(),QSettings::IniFormat);
 
-    config.beginGroup("AdminServer");
-        config.beginGroup("AccountDatabase");
-            config.setValue("db_driver","QSQLITE");
-            config.value("db_host","127.0.0.1").toString();
-            config.value("db_port","5432").toString();
-            config.value("db_name","segs").toString();
-            config.value("db_user","none").toString();
-            config.value("db_pass","none").toString();
-        config.endGroup();
-        config.beginGroup("CharacterDatabase");
-            config.setValue("db_driver","QSQLITE");
-            config.value("db_host","127.0.0.1").toString();
-            config.value("db_port","5432").toString();
-            config.value("db_name","segs_game").toString();
-            config.value("db_user","none").toString();
-            config.value("db_pass","none").toString();
-        config.endGroup();
-    config.endGroup();
-
-}
 /// later name will be used to read GameServer specific configuration
 bool _AdminServer::ReadConfig(const QString &inipath)
 {

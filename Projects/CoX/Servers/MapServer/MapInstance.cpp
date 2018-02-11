@@ -25,6 +25,7 @@
 #include "InternalEvents.h"
 #include "Database.h"
 #include "Common/GameData/CoHMath.h"
+#include "Settings.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -1207,6 +1208,13 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
                 + "\n  tgt_idx: " + QString::number(getTargetIdx(*ent));
         ent->dump();
         //qDebug().noquote() << msg;
+        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
+        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+    }
+    else if(lowerContents == "settingsdump") {
+        Settings::dump();
+
+        QString msg = "Sending settings config dump to console output.";
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }

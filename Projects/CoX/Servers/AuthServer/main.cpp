@@ -137,7 +137,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     if(parser.isSet("help")||parser.isSet("version"))
         return 0;
 
-    QString config_file_path = parser.value("config");
+    QString config_file_path = parser.value("config"); // settings.cfg from args
     ACE_Sig_Set interesting_signals;
     interesting_signals.sig_add(SIGINT);
     interesting_signals.sig_add(SIGHUP);
