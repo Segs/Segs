@@ -606,6 +606,6 @@ void cmdHandler_MOTD(QString &cmd, Entity *e) {
     sendServerMOTD(e);
 
     QString msg = "Opening Server MOTD";
-    qDebug() << msg;
+    qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, src);
 }

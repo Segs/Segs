@@ -362,8 +362,6 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     setMapName(cl->char_entity()->m_char,name());
     lnk->set_client_data(cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
-
-    sendServerMOTD(cl->char_entity());
 }
 void MapInstance::on_scene_request(SceneRequest *ev)
 {
@@ -1373,6 +1371,8 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
                   num_active_clients());
     welcome_msg += buf;
     sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),cl);
+
+    sendServerMOTD(cl->char_entity());
 }
 void MapInstance::on_location_visited(LocationVisited *ev)
 {
