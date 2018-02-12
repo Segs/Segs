@@ -10,19 +10,23 @@
 #include <QSettings>
 #include <QString>
 #include <QFile>
+#include <QFileInfo>
+#include <QDebug>
 
-class Settings {
+class Settings : public QSettings {
 
 public:
-    QSettings   &getSettings();
-    void        createSettingsFile();
-    void        setDefaultSettings();
-    void        dump();
-    QString     m_settings_path = "settings.cfg"; // default path 'settings.cfg'
-    QFile       m_settings_file;
-private:
     Settings();
     ~Settings();
 
+    QSettings  *getSettings();
+    void        createSettingsFile();
+    void        setDefaultSettings();
+    void        dump();
+
+    QString     m_settings_path = "settings.cfg"; // default path 'settings.cfg'
+    QFile       m_settings_file;
+
+private:
     QSettings* m_settings;
-}
+};
