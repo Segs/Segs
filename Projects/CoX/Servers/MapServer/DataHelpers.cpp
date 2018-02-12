@@ -157,6 +157,7 @@ void sendServerMOTD(Entity *e)
     }
 
     MapClient *src = e->m_client;
+    qDebug().noquote() << "Sending Server MOTD to" << e->m_char.getName();
 
     QString fileName("scripts/motd.smlx");
     QFile file(fileName);

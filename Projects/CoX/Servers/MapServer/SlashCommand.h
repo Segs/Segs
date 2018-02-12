@@ -61,3 +61,4 @@ void cmdHandler_WhoAll(QString &cmd, Entity *e);
 void cmdHandler_SetTitles(QString &cmd, Entity *e);
 void cmdHandler_Stuck(QString &cmd, Entity *e);
 void cmdHandler_LFG(QString &cmd, Entity *e);
+void cmdHandler_MOTD(QString &cmd, Entity *e);

@@ -31,7 +31,7 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"setInf"}, &cmdHandler_SetInf, 9},
     {{"setLevel"}, &cmdHandler_SetLevel, 9},
     {{"setCombatLevel"}, &cmdHandler_SetCombatLevel, 9},
-    {{"UpdateChar", "updateDB"}, &cmdHandler_UpdateChar, 9},
+    {{"UpdateChar", "CharUpdate", "save"}, &cmdHandler_UpdateChar, 9},
     {{"DebugChar", "chardebug"}, &cmdHandler_DebugChar, 9},
     {{"ControlsDisabled"}, &cmdHandler_ControlsDisabled, 9},
     {{"updateid"}, &cmdHandler_UpdateId, 9},
@@ -52,6 +52,7 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"setTitles"}, &cmdHandler_SetTitles, 1},
     {{"stuck"}, &cmdHandler_Stuck, 1},
     {{"lfg"}, &cmdHandler_LFG, 1},
+    {{"motd"}, &cmdHandler_MOTD, 1},
 };
 
 bool canAccessCommand(const SlashCommand &cmd, const Entity &e)
@@ -595,6 +596,16 @@ void cmdHandler_LFG(QString &cmd, Entity *e) {
     toggleLFG(e->m_char);
 
     QString msg = "Toggling " + cmd;
+    qDebug() << msg;
+    sendInfoMessage(MessageChannel::SERVER, msg, src);
+}
+
+void cmdHandler_MOTD(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    sendServerMOTD(e);
+
+    QString msg = "Opening Server MOTD";
     qDebug() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, src);
 }

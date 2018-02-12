@@ -339,6 +339,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         fillEntityFromNewCharData(*e,ev->m_character_data,g_GlobalMapServer->runtimeData().getPacker());
         cl->entity(e);
         cl->db_create();
+        cl->char_entity(e);
 
         //        start_idle_timer(cl);
         //cl->start_idle_timer();
