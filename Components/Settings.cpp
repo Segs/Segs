@@ -10,25 +10,24 @@
 
 bool fileExists(QString path) {
     QFileInfo check_file(path);
-    // check if file exists and if yes: Is it really a file and no directory?
+    // check if file exists and if yes: Is it really a file and not a directory?
     return check_file.exists() && check_file.isFile();
 }
 
 Settings::Settings()
 {
-    if (!fileExists(m_settings_path))
-        createSettingsFile();
-
-    if(!m_settings)
-        QSettings m_settings(m_settings_path,QSettings::IniFormat);
 }
 
 QSettings *Settings::getSettings()
 {
-    if (!m_settings)
-        m_settings =  new Settings();
+    Settings s;
 
-    return m_settings;
+    if(!fileExists(s.m_settings_path))
+        s.createSettingsFile();
+
+    static QSettings m_settings(s.m_settings_path,QSettings::IniFormat);
+
+    return &m_settings;
 }
 
 void Settings::createSettingsFile()
@@ -42,10 +41,33 @@ void Settings::createSettingsFile()
             qDebug() << "Unable to create" << m_settings_path << "Check folder permissions.";
             return;
         }
+
+        QTextStream header(&m_settings_file);
+        header << ";##############################################################"
+                 << "\n;#    SEGS configuration file."
+                 << "\n;#"
+                 << "\n;#    listen_addr values below should contain the IP the"
+                 << "\n;#      clients will connect to."
+                 << "\n;#"
+                 << "\n;#    location_addr values below should contain the IP the"
+                 << "\n;#      clients will receive data from."
+                 << "\n;#"
+                 << "\n;#    Both values are set to 127.0.0.1 by default but should"
+                 << "\n;#      be set to your local IP address on the network"
+                 << "\n;#      for example: 10.0.0.2"
+                 << "\n;#"
+                 << "\n;#    Default ports are listed below:"
+                 << "\n;#      AccountDatabase db_port:		5432"
+                 << "\n;#      CharacterDatabase db_port:	5432"
+                 << "\n;#      AuthServer listen_addr:		2106"
+                 << "\n;#      GameServer listen_addr:		7002"
+                 << "\n;#      GameServer location_addr:	7002"
+                 << "\n;#      MapServer listen_addr:		7003"
+                 << "\n;#      MapServer location_addr:		7003"
+                 << "\n;#"
+                 << "\n;##############################################################";
+
         m_settings_file.close();
-        
-        if(!m_settings)
-            QSettings m_settings(m_settings_path,QSettings::IniFormat);
         
         setDefaultSettings();
         
@@ -60,58 +82,60 @@ void Settings::createSettingsFile()
 
 void Settings::setDefaultSettings()
 {
-    m_settings->beginGroup("AdminServer");
-        m_settings->beginGroup("AccountDatabase");
-            m_settings->setValue("db_driver","QSQLITE");
-            m_settings->value("db_host","127.0.0.1").toString();
-            m_settings->value("db_port","5432").toString();
-            m_settings->value("db_name","segs").toString();
-            m_settings->value("db_user","none").toString();
-            m_settings->value("db_pass","none").toString();
-        m_settings->endGroup();
-        m_settings->beginGroup("CharacterDatabase");
-            m_settings->setValue("db_driver","QSQLITE");
-            m_settings->value("db_host","127.0.0.1").toString();
-            m_settings->value("db_port","5432").toString();
-            m_settings->value("db_name","segs_game").toString();
-            m_settings->value("db_user","none").toString();
-            m_settings->value("db_pass","none").toString();
-        m_settings->endGroup();
-    m_settings->endGroup();
-    m_settings->beginGroup("AuthServer");
-        m_settings->value("listen_addr","127.0.0.1:2106").toString();
-    m_settings->endGroup();
-    m_settings->beginGroup("GameServer");
-        m_settings->value("server_name","SEGS Server").toString();
-        m_settings->value("listen_addr","127.0.0.1:7002").toString();
-        m_settings->value("location_addr","127.0.0.1:7002").toString();
-        m_settings->value("max_players","200").toInt();
-        m_settings->value("max_account_slots","8").toInt();
-    m_settings->endGroup();
-    m_settings->beginGroup("MapServer");
-        m_settings->value("listen_addr","127.0.0.1:7003").toString();
-        m_settings->value("location_addr","127.0.0.1:7003").toString();
-    m_settings->endGroup();
+    QSettings *s = getSettings();
+
+    s->beginGroup("AdminServer");
+        s->beginGroup("AccountDatabase");
+            s->setValue("db_driver","QSQLITE");
+            s->setValue("db_host","127.0.0.1");
+            s->setValue("db_port","5432");
+            s->setValue("db_name","segs");
+            s->setValue("db_user","segsadmin");
+            s->setValue("db_pass","segs123");
+        s->endGroup();
+        s->beginGroup("CharacterDatabase");
+            s->setValue("db_driver","QSQLITE");
+            s->setValue("db_host","127.0.0.1");
+            s->setValue("db_port","5432");
+            s->setValue("db_name","segs_game");
+            s->setValue("db_user","segsadmin");
+            s->setValue("db_pass","segs123");
+        s->endGroup();
+    s->endGroup();
+    s->beginGroup("AuthServer");
+        s->setValue("listen_addr","127.0.0.1:2106");
+    s->endGroup();
+    s->beginGroup("GameServer");
+        s->setValue("server_name","SEGS Server");
+        s->setValue("listen_addr","127.0.0.1:7002");
+        s->setValue("location_addr","127.0.0.1:7002");
+        s->setValue("max_players","200");
+        s->setValue("max_account_slots","8");
+    s->endGroup();
+    s->beginGroup("MapServer");
+        s->setValue("listen_addr","127.0.0.1:7003");
+        s->setValue("location_addr","127.0.0.1:7003");
+    s->endGroup();
     
-    m_settings->sync(); // sync changes
+    s->sync(); // sync changes or they wont be saved to file.
 }
 
-void Settings::dump()
+void settingsDump()
 {
-    QString output;
-    QSettings* settings = getSettings();
-    foreach (const QString &group, settings->childGroups()) {
+    QString output = "Settings File Dump\n";
+    QSettings* s = Settings::getSettings();
+    foreach (const QString &group, s->childGroups()) {
         QString groupString = QString("===== %1 =====\n").arg(group);
-        settings->beginGroup(group);
-    
-        foreach (const QString &key, settings->childKeys()) {
-            groupString.append(QString("  %1\t %2\n").arg(key, settings->value(key).toString()));
+        s->beginGroup(group);
+
+        foreach (const QString &key, s->allKeys()) {
+            groupString.append(QString("  %1\t\t %2\n").arg(key, s->value(key).toString()));
         }
-        
-        settings->endGroup();
+
+        s->endGroup();
         groupString.append("\n");
-    
+
         output.append(groupString);
     }
-    qDebug() << output;
+    qDebug().noquote() << output;
 }

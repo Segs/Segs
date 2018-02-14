@@ -9,24 +9,24 @@
 #pragma once
 #include <QSettings>
 #include <QString>
-#include <QFile>
+#include <QTextStream>#include <QFile>
 #include <QFileInfo>
 #include <QDebug>
 
-class Settings : public QSettings {
+class Settings {
 
 public:
     Settings();
-    ~Settings();
 
-    QSettings  *getSettings();
-    void        createSettingsFile();
-    void        setDefaultSettings();
-    void        dump();
+    static QSettings    *getSettings();
+    void         createSettingsFile();
+    void         setDefaultSettings();
 
     QString     m_settings_path = "settings.cfg"; // default path 'settings.cfg'
     QFile       m_settings_file;
 
 private:
-    QSettings* m_settings;
+    static QSettings m_settings;
 };
+
+void settingsDump();

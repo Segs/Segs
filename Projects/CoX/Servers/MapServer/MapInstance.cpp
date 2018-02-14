@@ -1212,10 +1212,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
     else if(lowerContents == "settingsdump") {
-        Settings s;
-        QSettings *settings = s.getSettings();
-
-        s.dump();
+        settingsDump();
 
         QString msg = "Sending settings config dump to console output.";
         info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
