@@ -16,6 +16,7 @@
 #include "ConfigExtension.h"
 #include "CharacterDatabase.h"
 #include "ServerManager.h"
+#include "Settings.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
@@ -45,27 +46,22 @@ _AdminServer::~_AdminServer()
 }
 
 /// later name will be used to read GameServer specific configuration
-bool _AdminServer::ReadConfig(const QString &inipath)
+bool _AdminServer::ReadConfig()
 {
     if(m_running)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AdminServer: Already initialized and running\n") ),false);
 
-    if (!QFile::exists(inipath))
-    {
-        qCritical() << "Config file" << inipath <<"does not exist.";
-        return false;
-    }
-    QSettings config(inipath,QSettings::IniFormat);
-    config.beginGroup("AdminServer");
+    QSettings *config = Settings::getSettings();
+    config->beginGroup("AdminServer");
 
-    config.beginGroup("AccountDatabase");
-    QString dbdriver = config.value("db_driver","QSQLITE").toString();
-    QString dbhost = config.value("db_host","127.0.0.1").toString();
-    int dbport = config.value("db_port","5432").toInt();
-    QString dbname = config.value("db_name","segs").toString();
-    QString dbuser = config.value("db_user","none").toString();
-    QString dbpass = config.value("db_pass","none").toString();
-    config.endGroup();
+    config->beginGroup("AccountDatabase");
+    QString dbdriver = config->value("db_driver","QSQLITE").toString();
+    QString dbhost = config->value("db_host","127.0.0.1").toString();
+    int dbport = config->value("db_port","5432").toInt();
+    QString dbname = config->value("db_name","segs").toString();
+    QString dbuser = config->value("db_user","none").toString();
+    QString dbpass = config->value("db_pass","none").toString();
+    config->endGroup();
     QSqlDatabase *db1;
     QStringList driver_list {"QSQLITE","QPSQL"};
     if(!driver_list.contains(dbdriver.toUpper())) {
@@ -79,14 +75,14 @@ bool _AdminServer::ReadConfig(const QString &inipath)
     db1->setPassword(dbpass);
     m_db->setDb(db1);
 
-    config.beginGroup("CharacterDatabase");
-    dbdriver = config.value("db_driver","QSQLITE").toString();
-    dbhost = config.value("db_host","127.0.0.1").toString();
-    dbport = config.value("db_port","5432").toInt();
-    dbname = config.value("db_name","segs_game").toString();
-    dbuser = config.value("db_user","none").toString();
-    dbpass = config.value("db_pass","none").toString();
-    config.endGroup();
+    config->beginGroup("CharacterDatabase");
+    dbdriver = config->value("db_driver","QSQLITE").toString();
+    dbhost = config->value("db_host","127.0.0.1").toString();
+    dbport = config->value("db_port","5432").toInt();
+    dbname = config->value("db_name","segs_game").toString();
+    dbuser = config->value("db_user","none").toString();
+    dbpass = config->value("db_pass","none").toString();
+    config->endGroup();
     QSqlDatabase *db2;
     if(!driver_list.contains(dbdriver.toUpper())) {
         qWarning() << "Database driver" << dbdriver << " not supported";

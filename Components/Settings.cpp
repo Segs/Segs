@@ -22,52 +22,68 @@ QSettings *Settings::getSettings()
 {
     Settings s;
 
-    if(!fileExists(s.m_settings_path))
+    if(!fileExists(s.getSettingsPath()))
         s.createSettingsFile();
 
-    static QSettings m_settings(s.m_settings_path,QSettings::IniFormat);
+    static QSettings m_settings(s.getSettingsPath(),QSettings::IniFormat);
 
     return &m_settings;
 }
 
+void Settings::setSettingsPath(const QString path)
+{
+    if(path == NULL)
+        qCritical() << "Settings path not defined? This is unpossible!";
+
+    m_settings_path = path;
+}
+
+QString Settings::getSettingsPath()
+{
+    if(m_settings_path.isEmpty())
+        setSettingsPath("settings.cfg"); // set default path to "settings.cfg"
+
+    return m_settings_path;
+}
+
 void Settings::createSettingsFile()
 {
-    if (!fileExists(m_settings_path))
+    if (!fileExists(Settings::getSettingsPath()))
     {
-        qCritical() << "Settings file" << m_settings_path <<"does not exist. Creating it now...";
-        QFile m_settings_file(m_settings_path);
-        if(!m_settings_file.open(QIODevice::WriteOnly))
+        qCritical() << "Settings file" << Settings::getSettingsPath() <<"does not exist. Creating it now...";
+        QFile sfile(Settings::getSettingsPath());
+        if(!sfile.open(QIODevice::WriteOnly))
         {
-            qDebug() << "Unable to create" << m_settings_path << "Check folder permissions.";
+            qDebug() << "Unable to create" << Settings::getSettingsPath() << "Check folder permissions.";
             return;
         }
 
-        QTextStream header(&m_settings_file);
-        header << ";##############################################################"
-                 << "\n;#    SEGS configuration file."
-                 << "\n;#"
-                 << "\n;#    listen_addr values below should contain the IP the"
-                 << "\n;#      clients will connect to."
-                 << "\n;#"
-                 << "\n;#    location_addr values below should contain the IP the"
-                 << "\n;#      clients will receive data from."
-                 << "\n;#"
-                 << "\n;#    Both values are set to 127.0.0.1 by default but should"
-                 << "\n;#      be set to your local IP address on the network"
-                 << "\n;#      for example: 10.0.0.2"
-                 << "\n;#"
-                 << "\n;#    Default ports are listed below:"
-                 << "\n;#      AccountDatabase db_port:		5432"
-                 << "\n;#      CharacterDatabase db_port:	5432"
-                 << "\n;#      AuthServer listen_addr:		2106"
-                 << "\n;#      GameServer listen_addr:		7002"
-                 << "\n;#      GameServer location_addr:	7002"
-                 << "\n;#      MapServer listen_addr:		7003"
-                 << "\n;#      MapServer location_addr:		7003"
-                 << "\n;#"
-                 << "\n;##############################################################";
+        QTextStream header(&sfile);
+        header << "##############################################################"
+                 << "\n#    SEGS configuration file."
+                 << "\n#"
+                 << "\n#    listen_addr values below should contain the IP the"
+                 << "\n#      clients will connect to."
+                 << "\n#"
+                 << "\n#    location_addr values below should contain the IP the"
+                 << "\n#      clients will receive data from."
+                 << "\n#"
+                 << "\n#    Both values are set to 127.0.0.1 by default but should"
+                 << "\n#      be set to your local IP address on the network"
+                 << "\n#      for example: 10.0.0.2"
+                 << "\n#"
+                 << "\n#    Default ports are listed below:"
+                 << "\n#      AccountDatabase db_port:		5432"
+                 << "\n#      CharacterDatabase db_port:	5432"
+                 << "\n#      AuthServer listen_addr:		2106"
+                 << "\n#      GameServer listen_addr:		7002"
+                 << "\n#      GameServer location_addr:     7002"
+                 << "\n#      MapServer listen_addr:		7003"
+                 << "\n#      MapServer location_addr:		7003"
+                 << "\n#"
+                 << "\n##############################################################";
 
-        m_settings_file.close();
+        sfile.close();
         
         setDefaultSettings();
         
@@ -75,11 +91,12 @@ void Settings::createSettingsFile()
     }
     else
     {
-        qDebug() << "Settings file already exists at" << m_settings_path;
+        qDebug() << "Settings file already exists at" << Settings::getSettingsPath();
         return;
     }
 }
 
+// TODO: Any time you set settings values it deletes all file comments. There is no known workaround.
 void Settings::setDefaultSettings()
 {
     QSettings *s = getSettings();

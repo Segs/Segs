@@ -42,7 +42,7 @@ public:
                                     AuthServer();
                                     ~AuthServer() override;
 
-        bool                        ReadConfig(const QString &name) override;
+        bool                        ReadConfig() override;
         bool                        Run(void) override;
         bool                        ShutDown(const QString &reason="No particular reason") override;
 

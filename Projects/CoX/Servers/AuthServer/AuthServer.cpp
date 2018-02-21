@@ -17,6 +17,7 @@
 #include "AuthProtocol/AuthLink.h"
 #include "AuthHandler.h"
 #include "AuthClient.h"
+#include "Settings.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
@@ -49,25 +50,22 @@ AuthServer::~AuthServer()
  * @param inipath is a path to our configuration file.
  * @return bool, if it's false, this function failed somehow.
  */
-bool AuthServer::ReadConfig(const QString &inipath)
+bool AuthServer::ReadConfig()
 {
     if(m_running)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AuthServer: Already initialized and running\n") ),false);
-    if (!QFile::exists(inipath))
-    {
-        qCritical() << "Config file" << inipath <<"does not exist.";
-        return false;
-    }
-    QSettings config(inipath,QSettings::IniFormat);
 
-    config.beginGroup("AuthServer");
-    QString location_addr = config.value("listen_addr","127.0.0.1:2106").toString();
+    QSettings *config = Settings::getSettings();
+
+    config->beginGroup("AuthServer");
+    QString location_addr = config->value("listen_addr","127.0.0.1:2106").toString();
     if(!parseAddress(location_addr,m_location))
     {
         qCritical() << "Badly formed IP address" << location_addr;
         return false;
     }
-    config.endGroup();
+    config->endGroup();
+
     return true;
 }
 /*!

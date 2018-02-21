@@ -17,6 +17,7 @@
 #include "GameHandler.h"
 #include "Common/CRUDP_Protocol/CRUDP_Protocol.h"
 #include "Common/Servers/RoamingServer.h"
+#include "Settings.h"
 
 #include <ace/ACE.h>
 #include <ace/Synch.h>
@@ -34,7 +35,7 @@
 #include <QtCore/QDebug>
 
 namespace {
-    const constexpr int MaxAccountSlots=8;
+    const constexpr int MaxCharacterSlots=8;
 }
 GameServer *g_GlobalGameServer=nullptr;
 
@@ -120,25 +121,22 @@ bool GameServer::Run()
     return true;
 }
 // later name will be used to read GameServer specific configuration
-bool GameServer::ReadConfig(const QString &inipath)
+bool GameServer::ReadConfig()
 {
     if(d->m_endpoint)
     {
         ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Game server already initialized and running\n") ));
         return true;
     }
-    if (!QFile::exists(inipath))
-    {
-        qCritical() << "Config file" << inipath <<"does not exist.";
-        return false;
-    }
-    QSettings config(inipath,QSettings::IniFormat);
-    config.beginGroup("GameServer");
-    QString listen_addr = config.value("listen_addr","0.0.0.0:7002").toString();
-    QString location_addr = config.value("location_addr","127.0.0.1:7002").toString();
-    d->m_serverName = config.value("server_name","unnamed").toString();
-    d->m_max_players = config.value("max_players",600).toUInt();
-    d->m_max_character_slots = config.value("max_character_slots",MaxAccountSlots).toInt();
+
+    QSettings *config = Settings::getSettings();
+
+    config->beginGroup("GameServer");
+    QString listen_addr = config->value("listen_addr","0.0.0.0:7002").toString();
+    QString location_addr = config->value("location_addr","127.0.0.1:7002").toString();
+    d->m_serverName = config->value("server_name","unnamed").toString();
+    d->m_max_players = config->value("max_players",600).toUInt();
+    d->m_max_character_slots = config->value("max_character_slots",MaxCharacterSlots).toInt();
     if(!parseAddress(listen_addr,d->m_listen_point))
     {
         qCritical() << "Badly formed IP address" << listen_addr;

@@ -9,6 +9,7 @@
 //#define ACE_NTRACE 0
 #include "Servers/ServerManager.h"
 #include "Servers/server_support.h"
+#include "Settings.h"
 #include "version.h"
 //////////////////////////////////////////////////////////////////////////
 
@@ -66,10 +67,7 @@ bool CreateServers()
     server_manger->AddMapServer(map_instance);
     return true;
 }
-void setSettingDefaults()
-{
-    // here we should setup the default QSettings locations and such
-}
+
 QFile segs_log_target;
 void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -122,8 +120,6 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     QCoreApplication::setApplicationName("segs_server");
     QCoreApplication::setApplicationVersion(VersionInfo::getAuthVersion());
 
-    setSettingDefaults();
-
     QCommandLineParser parser;
     parser.setApplicationDescription("SEGS - CoX server");
     parser.addHelpOption();
@@ -137,7 +133,11 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     if(parser.isSet("help")||parser.isSet("version"))
         return 0;
 
-    QString config_file_path = parser.value("config"); // settings.cfg from args
+    Settings s;
+    s.setSettingsPath(parser.value("config")); // set settings.cfg from args
+    QSettings *config = Settings::getSettings(); // create config instance
+    //settingsDump();
+
     ACE_Sig_Set interesting_signals;
     interesting_signals.sig_add(SIGINT);
     interesting_signals.sig_add(SIGHUP);
@@ -160,7 +160,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     ACE_Thread_Manager::instance()->spawn_n(N_THREADS, event_loop, ACE_Reactor::instance());
     bool no_err = CreateServers();
     if(no_err)
-        no_err = ServerManager::instance()->LoadConfiguration(config_file_path);
+        no_err = ServerManager::instance()->LoadConfiguration();
     if(no_err)
         no_err = ServerManager::instance()->StartLocalServers();
     if(no_err)

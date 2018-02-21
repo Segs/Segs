@@ -20,17 +20,17 @@ ServerManagerC::ServerManagerC() : m_authserv(nullptr),m_adminserv(nullptr)
 {
 }
 //! this loads this process configuration
-bool ServerManagerC::LoadConfiguration(const QString &config_file_full_path)
+bool ServerManagerC::LoadConfiguration()
 {
-    bool loaded_ok = m_adminserv->ReadConfig(config_file_full_path);
-    loaded_ok &= m_authserv->ReadConfig(config_file_full_path);
+    bool loaded_ok = m_adminserv->ReadConfig();
+    loaded_ok &= m_authserv->ReadConfig();
     for(GameServerInterface * serv : m_GameServers)
     {
-        loaded_ok &= serv->ReadConfig(config_file_full_path);
+        loaded_ok &= serv->ReadConfig();
     }
     for(MapServerInterface *serv : m_MapServers)
     {
-        loaded_ok &= serv->ReadConfig(config_file_full_path);
+        loaded_ok &= serv->ReadConfig();
     }
     return loaded_ok;
 }

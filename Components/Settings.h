@@ -9,7 +9,8 @@
 #pragma once
 #include <QSettings>
 #include <QString>
-#include <QTextStream>#include <QFile>
+#include <QTextStream>
+#include <QFile>
 #include <QFileInfo>
 #include <QDebug>
 
@@ -19,14 +20,15 @@ public:
     Settings();
 
     static QSettings    *getSettings();
-    void         createSettingsFile();
-    void         setDefaultSettings();
+    void                setSettingsPath(const QString path);
+    QString             getSettingsPath();
 
-    QString     m_settings_path = "settings.cfg"; // default path 'settings.cfg'
-    QFile       m_settings_file;
+    void        createSettingsFile();
+    void        setDefaultSettings();
 
 private:
     static QSettings m_settings;
+    QString   m_settings_path; // default path 'settings.cfg' from args
 };
 
 void settingsDump();
