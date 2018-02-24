@@ -32,3 +32,4 @@ private:
 };
 
 void settingsDump();
+void settingsDump(QSettings *s);

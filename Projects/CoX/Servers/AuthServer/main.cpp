@@ -135,8 +135,8 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 
     Settings s;
     s.setSettingsPath(parser.value("config")); // set settings.cfg from args
+    qDebug() << "Main settings:";
     QSettings *config = Settings::getSettings(); // create config instance
-    //settingsDump();
 
     ACE_Sig_Set interesting_signals;
     interesting_signals.sig_add(SIGINT);

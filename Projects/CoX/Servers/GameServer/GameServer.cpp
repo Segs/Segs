@@ -129,14 +129,15 @@ bool GameServer::ReadConfig()
         return true;
     }
 
-    QSettings *config = Settings::getSettings();
+    qDebug() << "GameServer settings:";
+    QSettings config(Settings::getSettings());
 
-    config->beginGroup("GameServer");
-    QString listen_addr = config->value("listen_addr","0.0.0.0:7002").toString();
-    QString location_addr = config->value("location_addr","127.0.0.1:7002").toString();
-    d->m_serverName = config->value("server_name","unnamed").toString();
-    d->m_max_players = config->value("max_players",600).toUInt();
-    d->m_max_character_slots = config->value("max_character_slots",MaxCharacterSlots).toInt();
+    config.beginGroup("GameServer");
+    QString listen_addr = config.value("listen_addr","0.0.0.0:7002").toString();
+    QString location_addr = config.value("location_addr","127.0.0.1:7002").toString();
+    d->m_serverName = config.value("server_name","unnamed").toString();
+    d->m_max_players = config.value("max_players",600).toUInt();
+    d->m_max_character_slots = config.value("max_character_slots",MaxCharacterSlots).toInt();
     if(!parseAddress(listen_addr,d->m_listen_point))
     {
         qCritical() << "Badly formed IP address" << listen_addr;

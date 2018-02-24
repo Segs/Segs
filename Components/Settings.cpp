@@ -26,7 +26,12 @@ QSettings *Settings::getSettings()
         s.createSettingsFile();
 
     static QSettings m_settings(s.getSettingsPath(),QSettings::IniFormat);
+    //if(!s.m_settings.contains("AuthServer/location_addr"))
+    //{
+    //    s.m_settings.setPath(QSettings::IniFormat,QSettings::SystemScope,s.getSettingsPath());
+    //}
 
+    settingsDump(&m_settings); // Settings are correct
     return &m_settings;
 }
 
@@ -99,48 +104,53 @@ void Settings::createSettingsFile()
 // TODO: Any time you set settings values it deletes all file comments. There is no known workaround.
 void Settings::setDefaultSettings()
 {
-    QSettings *s = getSettings();
+    QSettings s(getSettings());
 
-    s->beginGroup("AdminServer");
-        s->beginGroup("AccountDatabase");
-            s->setValue("db_driver","QSQLITE");
-            s->setValue("db_host","127.0.0.1");
-            s->setValue("db_port","5432");
-            s->setValue("db_name","segs");
-            s->setValue("db_user","segsadmin");
-            s->setValue("db_pass","segs123");
-        s->endGroup();
-        s->beginGroup("CharacterDatabase");
-            s->setValue("db_driver","QSQLITE");
-            s->setValue("db_host","127.0.0.1");
-            s->setValue("db_port","5432");
-            s->setValue("db_name","segs_game");
-            s->setValue("db_user","segsadmin");
-            s->setValue("db_pass","segs123");
-        s->endGroup();
-    s->endGroup();
-    s->beginGroup("AuthServer");
-        s->setValue("listen_addr","127.0.0.1:2106");
-    s->endGroup();
-    s->beginGroup("GameServer");
-        s->setValue("server_name","SEGS Server");
-        s->setValue("listen_addr","127.0.0.1:7002");
-        s->setValue("location_addr","127.0.0.1:7002");
-        s->setValue("max_players","200");
-        s->setValue("max_account_slots","8");
-    s->endGroup();
-    s->beginGroup("MapServer");
-        s->setValue("listen_addr","127.0.0.1:7003");
-        s->setValue("location_addr","127.0.0.1:7003");
-    s->endGroup();
+    s.beginGroup("AdminServer");
+        s.beginGroup("AccountDatabase");
+            s.setValue("db_driver","QSQLITE");
+            s.setValue("db_host","127.0.0.1");
+            s.setValue("db_port","5432");
+            s.setValue("db_name","segs");
+            s.setValue("db_user","segsadmin");
+            s.setValue("db_pass","segs123");
+        s.endGroup();
+        s.beginGroup("CharacterDatabase");
+            s.setValue("db_driver","QSQLITE");
+            s.setValue("db_host","127.0.0.1");
+            s.setValue("db_port","5432");
+            s.setValue("db_name","segs_game");
+            s.setValue("db_user","segsadmin");
+            s.setValue("db_pass","segs123");
+        s.endGroup();
+    s.endGroup();
+    s.beginGroup("AuthServer");
+        s.setValue("listen_addr","127.0.0.1:2106");
+    s.endGroup();
+    s.beginGroup("GameServer");
+        s.setValue("server_name","SEGS Server");
+        s.setValue("listen_addr","127.0.0.1:7002");
+        s.setValue("location_addr","127.0.0.1:7002");
+        s.setValue("max_players","200");
+        s.setValue("max_account_slots","8");
+    s.endGroup();
+    s.beginGroup("MapServer");
+        s.setValue("listen_addr","127.0.0.1:7003");
+        s.setValue("location_addr","127.0.0.1:7003");
+    s.endGroup();
     
-    s->sync(); // sync changes or they wont be saved to file.
+    s.sync(); // sync changes or they wont be saved to file.
 }
 
 void settingsDump()
 {
+    QSettings *s(Settings::getSettings());
+    settingsDump(s);
+}
+
+void settingsDump(QSettings *s)
+{
     QString output = "Settings File Dump\n";
-    QSettings* s = Settings::getSettings();
     foreach (const QString &group, s->childGroups()) {
         QString groupString = QString("===== %1 =====\n").arg(group);
         s->beginGroup(group);

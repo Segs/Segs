@@ -99,9 +99,10 @@ bool MapServer::Run()
  */
 bool MapServer::ReadConfig()
 {
-    QSettings *config = Settings::getSettings();
-    config->beginGroup("MapServer");
+    qDebug() << "MapServer settings:";
+    QSettings config(Settings::getSettings());
 
+    config.beginGroup("MapServer");
     if(m_endpoint)
     {
         //TODO: perform shutdown, and load config ?
@@ -112,9 +113,9 @@ bool MapServer::ReadConfig()
     if(!RoamingServer::ReadConfig()) // try to read control channel configuration
         return false;
 
-    QString listen_addr = config->value("listen_addr","0.0.0.0:7003").toString();
-    QString location_addr = config->value("location_addr","127.0.0.1:7003").toString();
-    QString map_templates_dir = config->value("maps",".").toString();
+    QString listen_addr = config.value("listen_addr","127.0.0.1:7003").toString();
+    QString location_addr = config.value("location_addr","127.0.0.1:7003").toString();
+    QString map_templates_dir = config.value("maps",".").toString();
     if(!parseAddress(listen_addr,m_listen_point))
     {
         qCritical() << "Badly formed IP address" << listen_addr;
