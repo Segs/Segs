@@ -14,21 +14,23 @@
 #include <QFileInfo>
 #include <QDebug>
 
-class Settings {
+class Settings : public QSettings {
 
 public:
-    Settings();
-
-    static QSettings    *getSettings();
-    void                setSettingsPath(const QString path);
-    QString             getSettingsPath();
+    static QSettings*   getSettings();
+    static void         setSettingsPath(const QString path);
+    static QString      getSettingsPath();
 
     void        createSettingsFile();
     void        setDefaultSettings();
 
 private:
-    static QSettings m_settings;
-    QString   m_settings_path; // default path 'settings.cfg' from args
+    Settings();
+    Settings(Settings const&);
+    Settings& operator=(Settings const&);
+
+    static QSettings*   m_settings;
+    static QString      m_settings_path;
 };
 
 void settingsDump();

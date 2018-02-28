@@ -55,17 +55,21 @@ bool AuthServer::ReadConfig()
     if(m_running)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AuthServer: Already initialized and running\n") ),false);
 
-    qDebug() << "AuthServer settings:";
-    QSettings config(Settings::getSettings());
+    qWarning() << "Loading AuthServer settings...";
+    QSettings *config(Settings::getSettings());
 
-    config.beginGroup("AuthServer");
-    QString location_addr = config.value("listen_addr","127.0.0.1:2106").toString();
+    config->beginGroup("AuthServer");
+    if(!config->contains("location_addr"))
+        qDebug() << "Config file is missing 'location_addr' entry, will try to use default";
+
+    QString location_addr = config->value("location_addr","127.0.0.1:2106").toString();
+
     if(!parseAddress(location_addr,m_location))
     {
         qCritical() << "Badly formed IP address" << location_addr;
         return false;
     }
-    config.endGroup();
+    config->endGroup(); // AuthServer
 
     return true;
 }

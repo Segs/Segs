@@ -8,6 +8,9 @@
  
 #include "Settings.h"
 
+QSettings* Settings::m_settings = nullptr;
+QString Settings::m_settings_path = "settings.cfg"; // default path 'settings.cfg' from args
+
 bool fileExists(QString path) {
     QFileInfo check_file(path);
     // check if file exists and if yes: Is it really a file and not a directory?
@@ -16,23 +19,18 @@ bool fileExists(QString path) {
 
 Settings::Settings()
 {
+    if(!fileExists(getSettingsPath()))
+        createSettingsFile();
 }
 
 QSettings *Settings::getSettings()
 {
-    Settings s;
+    if(m_settings == nullptr)
+        m_settings = new QSettings(Settings::getSettingsPath(),QSettings::IniFormat,0);
 
-    if(!fileExists(s.getSettingsPath()))
-        s.createSettingsFile();
+    //settingsDump(m_settings); // Debugging
 
-    static QSettings m_settings(s.getSettingsPath(),QSettings::IniFormat);
-    //if(!s.m_settings.contains("AuthServer/location_addr"))
-    //{
-    //    s.m_settings.setPath(QSettings::IniFormat,QSettings::SystemScope,s.getSettingsPath());
-    //}
-
-    settingsDump(&m_settings); // Settings are correct
-    return &m_settings;
+    return m_settings;
 }
 
 void Settings::setSettingsPath(const QString path)
@@ -104,42 +102,42 @@ void Settings::createSettingsFile()
 // TODO: Any time you set settings values it deletes all file comments. There is no known workaround.
 void Settings::setDefaultSettings()
 {
-    QSettings s(getSettings());
+    QSettings *s(Settings::getSettings());
 
-    s.beginGroup("AdminServer");
-        s.beginGroup("AccountDatabase");
-            s.setValue("db_driver","QSQLITE");
-            s.setValue("db_host","127.0.0.1");
-            s.setValue("db_port","5432");
-            s.setValue("db_name","segs");
-            s.setValue("db_user","segsadmin");
-            s.setValue("db_pass","segs123");
-        s.endGroup();
-        s.beginGroup("CharacterDatabase");
-            s.setValue("db_driver","QSQLITE");
-            s.setValue("db_host","127.0.0.1");
-            s.setValue("db_port","5432");
-            s.setValue("db_name","segs_game");
-            s.setValue("db_user","segsadmin");
-            s.setValue("db_pass","segs123");
-        s.endGroup();
-    s.endGroup();
-    s.beginGroup("AuthServer");
-        s.setValue("listen_addr","127.0.0.1:2106");
-    s.endGroup();
-    s.beginGroup("GameServer");
-        s.setValue("server_name","SEGS Server");
-        s.setValue("listen_addr","127.0.0.1:7002");
-        s.setValue("location_addr","127.0.0.1:7002");
-        s.setValue("max_players","200");
-        s.setValue("max_account_slots","8");
-    s.endGroup();
-    s.beginGroup("MapServer");
-        s.setValue("listen_addr","127.0.0.1:7003");
-        s.setValue("location_addr","127.0.0.1:7003");
-    s.endGroup();
+    s->beginGroup("AdminServer");
+        s->beginGroup("AccountDatabase");
+            s->setValue("db_driver","QSQLITE");
+            s->setValue("db_host","127.0.0.1");
+            s->setValue("db_port","5432");
+            s->setValue("db_name","segs");
+            s->setValue("db_user","segsadmin");
+            s->setValue("db_pass","segs123");
+        s->endGroup();
+        s->beginGroup("CharacterDatabase");
+            s->setValue("db_driver","QSQLITE");
+            s->setValue("db_host","127.0.0.1");
+            s->setValue("db_port","5432");
+            s->setValue("db_name","segs_game");
+            s->setValue("db_user","segsadmin");
+            s->setValue("db_pass","segs123");
+        s->endGroup();
+    s->endGroup();
+    s->beginGroup("AuthServer");
+        s->setValue("listen_addr","127.0.0.1:2106");
+    s->endGroup();
+    s->beginGroup("GameServer");
+        s->setValue("server_name","SEGS Server");
+        s->setValue("listen_addr","127.0.0.1:7002");
+        s->setValue("location_addr","127.0.0.1:7002");
+        s->setValue("max_players","200");
+        s->setValue("max_character_slots","8");
+    s->endGroup();
+    s->beginGroup("MapServer");
+        s->setValue("listen_addr","127.0.0.1:7003");
+        s->setValue("location_addr","127.0.0.1:7003");
+    s->endGroup();
     
-    s.sync(); // sync changes or they wont be saved to file.
+    s->sync(); // sync changes or they wont be saved to file.
 }
 
 void settingsDump()

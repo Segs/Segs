@@ -133,10 +133,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     if(parser.isSet("help")||parser.isSet("version"))
         return 0;
 
-    Settings s;
-    s.setSettingsPath(parser.value("config")); // set settings.cfg from args
-    qDebug() << "Main settings:";
-    QSettings *config = Settings::getSettings(); // create config instance
+    Settings::setSettingsPath(parser.value("config")); // set settings.cfg from args
 
     ACE_Sig_Set interesting_signals;
     interesting_signals.sig_add(SIGINT);

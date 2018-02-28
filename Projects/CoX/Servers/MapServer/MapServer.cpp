@@ -99,10 +99,10 @@ bool MapServer::Run()
  */
 bool MapServer::ReadConfig()
 {
-    qDebug() << "MapServer settings:";
-    QSettings config(Settings::getSettings());
+    qWarning() << "Loading MapServer settings...";
+    QSettings *config(Settings::getSettings());
 
-    config.beginGroup("MapServer");
+    config->beginGroup("MapServer");
     if(m_endpoint)
     {
         //TODO: perform shutdown, and load config ?
@@ -113,9 +113,15 @@ bool MapServer::ReadConfig()
     if(!RoamingServer::ReadConfig()) // try to read control channel configuration
         return false;
 
-    QString listen_addr = config.value("listen_addr","127.0.0.1:7003").toString();
-    QString location_addr = config.value("location_addr","127.0.0.1:7003").toString();
-    QString map_templates_dir = config.value("maps",".").toString();
+    if(!config->contains("listen_addr"))
+        qDebug() << "Config file is missing 'listen_addr' entry, will try to use default";
+    if(!config->contains("location_addr"))
+        qDebug() << "Config file is missing 'location_addr' entry, will try to use default";
+
+    QString listen_addr = config->value("listen_addr","127.0.0.1:7003").toString();
+    QString location_addr = config->value("location_addr","127.0.0.1:7003").toString();
+
+    QString map_templates_dir = config->value("maps",".").toString();
     if(!parseAddress(listen_addr,m_listen_point))
     {
         qCritical() << "Badly formed IP address" << listen_addr;
@@ -128,6 +134,9 @@ bool MapServer::ReadConfig()
     }
 
     m_online = false;
+
+    config->endGroup(); // MapServer
+
     return d->m_manager.load_templates(qPrintable(map_templates_dir));
 }
 bool MapServer::ShutDown(const QString &reason)

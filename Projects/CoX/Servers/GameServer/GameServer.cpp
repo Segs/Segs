@@ -129,15 +129,21 @@ bool GameServer::ReadConfig()
         return true;
     }
 
-    qDebug() << "GameServer settings:";
-    QSettings config(Settings::getSettings());
+    qWarning() << "Loading GameServer settings...";
+    QSettings *config(Settings::getSettings());
 
-    config.beginGroup("GameServer");
-    QString listen_addr = config.value("listen_addr","0.0.0.0:7002").toString();
-    QString location_addr = config.value("location_addr","127.0.0.1:7002").toString();
-    d->m_serverName = config.value("server_name","unnamed").toString();
-    d->m_max_players = config.value("max_players",600).toUInt();
-    d->m_max_character_slots = config.value("max_character_slots",MaxCharacterSlots).toInt();
+    config->beginGroup("GameServer");
+    if(!config->contains("listen_addr"))
+        qDebug() << "Config file is missing 'listen_addr' entry, will try to use default";
+    if(!config->contains("location_addr"))
+        qDebug() << "Config file is missing 'location_addr' entry, will try to use default";
+
+    QString listen_addr = config->value("listen_addr","127.0.0.1:7002").toString();
+    QString location_addr = config->value("location_addr","127.0.0.1:7002").toString();
+
+    d->m_serverName = config->value("server_name","unnamed").toString();
+    d->m_max_players = config->value("max_players",600).toUInt();
+    d->m_max_character_slots = config->value("max_character_slots",MaxCharacterSlots).toInt();
     if(!parseAddress(listen_addr,d->m_listen_point))
     {
         qCritical() << "Badly formed IP address" << listen_addr;
@@ -154,6 +160,9 @@ bool GameServer::ReadConfig()
     d->m_unk1=d->m_unk2=0;
     d->m_online = false;
     //m_db = new GameServerDb("");
+
+    config->endGroup(); // GameServer
+
     return true;
 }
 bool GameServer::ShutDown(const QString &reason)
