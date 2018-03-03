@@ -33,9 +33,6 @@ class ClientSettings final : public MapLinkEvent
 public:
     ClientSettingsData data;
     ClientSettings() : MapLinkEvent(MapEventTypes::evClientSettings) {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,65);
-    }
+    void serializeto(BitStream &bs) const override;
     void serializefrom(BitStream &bs) override;
 };
