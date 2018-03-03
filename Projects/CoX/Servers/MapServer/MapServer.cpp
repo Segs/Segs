@@ -19,6 +19,7 @@
 #include "MapTemplate.h"
 #include "MapInstance.h"
 #include "SEGSTimer.h"
+#include "Settings.h"
 
 #include <ace/Reactor.h>
 
@@ -96,16 +97,12 @@ bool MapServer::Run()
  * @param  inipath Doc at RoamingServer::ReadConfig
  * @return bool (false means an error occurred )
  */
-bool MapServer::ReadConfig(const QString &inipath)
+bool MapServer::ReadConfig()
 {
-    if (!QFile::exists(inipath))
-    {
-        qCritical() << "Config file" << inipath <<"does not exist.";
-        return false;
-    }
-    QSettings config(inipath,QSettings::IniFormat);
-    config.beginGroup("MapServer");
+    qWarning() << "Loading MapServer settings...";
+    QSettings *config(Settings::getSettings());
 
+    config->beginGroup("MapServer");
     if(m_endpoint)
     {
         //TODO: perform shutdown, and load config ?
@@ -113,12 +110,18 @@ bool MapServer::ReadConfig(const QString &inipath)
         return true;
     }
     //TODO: this should read a properly nested MapServer/RoamingServer block, instead of reading ini-'global' [RoamingServer]
-    if(!RoamingServer::ReadConfig(inipath)) // try to read control channel configuration
+    if(!RoamingServer::ReadConfig()) // try to read control channel configuration
         return false;
 
-    QString listen_addr = config.value("listen_addr","0.0.0.0:7003").toString();
-    QString location_addr = config.value("location_addr","127.0.0.1:7003").toString();
-    QString map_templates_dir = config.value("maps",".").toString();
+    if(!config->contains("listen_addr"))
+        qDebug() << "Config file is missing 'listen_addr' entry, will try to use default";
+    if(!config->contains("location_addr"))
+        qDebug() << "Config file is missing 'location_addr' entry, will try to use default";
+
+    QString listen_addr = config->value("listen_addr","127.0.0.1:7003").toString();
+    QString location_addr = config->value("location_addr","127.0.0.1:7003").toString();
+
+    QString map_templates_dir = config->value("maps",".").toString();
     if(!parseAddress(listen_addr,m_listen_point))
     {
         qCritical() << "Badly formed IP address" << listen_addr;
@@ -131,6 +134,9 @@ bool MapServer::ReadConfig(const QString &inipath)
     }
 
     m_online = false;
+
+    config->endGroup(); // MapServer
+
     return d->m_manager.load_templates(qPrintable(map_templates_dir));
 }
 bool MapServer::ShutDown(const QString &reason)

@@ -13,10 +13,10 @@ bool GameServerInterface::Run()
     assert(m_instance);
     return m_instance->Run();
 }
-bool GameServerInterface::ReadConfig(const QString &name)
+bool GameServerInterface::ReadConfig()
 {
     assert(m_instance);
-    return m_instance->ReadConfig(name);
+    return m_instance->ReadConfig();
 }
 bool GameServerInterface::ShutDown(const QString &reason)
 {

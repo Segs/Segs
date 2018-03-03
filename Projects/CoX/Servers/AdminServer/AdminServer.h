@@ -57,7 +57,7 @@ public:
     int                         AddIPBan(const ACE_INET_Addr &client_addr) override;
     void                        InvalidGameServerConnection(const ACE_INET_Addr &) override;
 
-    bool                        ReadConfig(const QString &name) override;
+    bool                        ReadConfig() override;
     bool                        Run(void) override;
     bool                        ShutDown(const QString &reason="No particular reason") override;
     bool                        Online(void) override;

@@ -23,7 +23,7 @@ class RoamingServer : public Server
 public:
 virtual         ~RoamingServer() = default;
 
-virtual bool    ReadConfig(const QString &configpath)=0;
+virtual bool    ReadConfig()=0;
 virtual bool    Run(void) = 0;
 virtual bool    ShutDown(const QString &reason)=0;
 virtual bool    Online()=0;

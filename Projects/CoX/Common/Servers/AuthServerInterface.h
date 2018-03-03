@@ -19,7 +19,7 @@ class IAdminServer;
 class IAuthServer : public Server
 {
 public:
-virtual bool                        ReadConfig(const QString &name)=0;
+virtual bool                        ReadConfig()=0;
 virtual bool                        Run(void)=0;
 virtual bool                        ShutDown(const QString &reason)=0;
 virtual AuthClient *                GetClientByLogin(const char *)=0;
@@ -34,7 +34,7 @@ public:
                     AuthServerInterface(IAuthServer *server);
                     ~AuthServerInterface(void);
 
-        bool        ReadConfig(const QString &name);
+        bool        ReadConfig();
         bool        Run(void);
         bool        ShutDown(const QString &reason);
 

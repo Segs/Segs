@@ -2,6 +2,7 @@
 #include "ServerHandle.h"
 #include "InterfaceManager.h"
 #include "ConfigExtension.h"
+#include "Settings.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
@@ -12,30 +13,29 @@
  * @param  configpath This is a platform specific path to a config file containing
  * general RoamingServer vars.
  */
-bool RoamingServer::ReadConfig(const QString &inipath) 
+bool RoamingServer::ReadConfig()
 {
-    if (!QFile::exists(inipath))
-    {
-        qCritical() << "Config file" << inipath <<"does not exist.";
-        return false;
-    }
-    QSettings config(inipath,QSettings::IniFormat);
-    config.beginGroup("RoamingServer");
-    if(!config.contains("location_addr"))
+    qWarning() << "Loading RoamingServer settings...";
+    QSettings *config(Settings::getSettings());
+
+    config->beginGroup("RoamingServer");
+    if(!config->contains("location_addr"))
         qDebug() << "Config file is missing 'location_addr' entry, will try to use default";
 
-    QString location_addr = config.value("location_addr","127.0.0.1:2106").toString();
+    QString location_addr = config->value("location_addr","127.0.0.1:2106").toString();
+
     if(!parseAddress(location_addr,m_authaddr))
     {
         qCritical() << "Badly formed IP address" << location_addr;
         return false;
     }
-    if(!config.contains("auth_pass")) {
+    if(!config->contains("auth_pass")) {
         qDebug() << "Config file is missing 'auth_pass' entry, will try to use default";
     }
-    m_passw = config.value("auth_pass","").toString();
+    m_passw = config->value("auth_pass","").toString();
 
-    config.endGroup();
+    config->endGroup(); // RoamingServer
+
     return true;
 }
 

@@ -14,7 +14,7 @@ class Server
 {
 public:
 virtual         ~Server() = default;
-virtual bool    ReadConfig(const QString &name)=0;
+virtual bool    ReadConfig()=0;
 virtual bool    Run(void)=0;
 virtual bool    ShutDown(const QString &reason="No particular reason")=0;
 };

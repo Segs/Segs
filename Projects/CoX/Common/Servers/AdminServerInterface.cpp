@@ -56,9 +56,9 @@ bool AdminServerInterface::Run()
 {
     return m_server->Run();
 }
-bool AdminServerInterface::ReadConfig(const QString &name)
+bool AdminServerInterface::ReadConfig()
 {
-    return m_server->ReadConfig(name);
+    return m_server->ReadConfig();
 }
 bool AdminServerInterface::ShutDown(const QString &reason)
 {

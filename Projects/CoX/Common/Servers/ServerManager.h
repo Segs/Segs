@@ -28,7 +28,7 @@ public:
                                 ServerManagerC(void);
 virtual                         ~ServerManagerC(void){}
 
-        bool                    LoadConfiguration(const QString &config_file_path);
+        bool                    LoadConfiguration();
         bool                    StartLocalServers(void);
         bool                    CreateServerConnections(void);
         void                    StopLocalServers(void);
