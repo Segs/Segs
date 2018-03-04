@@ -78,7 +78,7 @@ void Settings::createSettingsFile()
                  << "\n#    Default ports are listed below:"
                  << "\n#      AccountDatabase db_port:		5432"
                  << "\n#      CharacterDatabase db_port:	5432"
-                 << "\n#      AuthServer listen_addr:		2106"
+                 << "\n#      AuthServer location_addr:		2106"
                  << "\n#      GameServer listen_addr:		7002"
                  << "\n#      GameServer location_addr:     7002"
                  << "\n#      MapServer listen_addr:		7003"
@@ -123,7 +123,7 @@ void Settings::setDefaultSettings()
         s->endGroup();
     s->endGroup();
     s->beginGroup("AuthServer");
-        s->setValue("listen_addr","127.0.0.1:2106");
+        s->setValue("location_addr","127.0.0.1:2106");
     s->endGroup();
     s->beginGroup("GameServer");
         s->setValue("server_name","SEGS Server");
