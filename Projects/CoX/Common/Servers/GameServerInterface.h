@@ -39,7 +39,7 @@ public:
                                 GameServerInterface(IGameServer *mi) : m_instance(mi){}
                                 ~GameServerInterface(void){}
         //uint32_t GetClientCookie(const ACE_INET_Addr &client_addr);
-        bool                    ReadConfig(const QString &name); //! later name will be used to read GameServer specific configuration
+        bool                    ReadConfig();
         bool                    Run(void);
         bool                    ShutDown(const QString &reason);
 

@@ -53,7 +53,7 @@ public:
                         AdminServerInterface(IAdminServer *srv);
                         ~AdminServerInterface(void);
 
-        bool            ReadConfig(const QString &name);
+        bool            ReadConfig();
         bool            Run(void);
         bool            ShutDown(const QString &reason);
 

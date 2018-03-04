@@ -28,7 +28,7 @@
 #include <cstdlib>
 #include <cstdio>
 using namespace std;
-QMutex mutex;
+QMutex g_mutex;
 
 CharacterDatabase::~CharacterDatabase()
 {
@@ -43,7 +43,7 @@ static bool prepQuery(QSqlQuery &qr,const QString &txt) {
     return true;
 }
 static bool doIt(QSqlQuery &qr) {
-    QMutexLocker locker(&mutex);
+    QMutexLocker locker(&g_mutex);
     if(!qr.exec()) {
         qDebug() << "SQL_ERROR:"<<qr.lastError();
         return false;

@@ -44,7 +44,7 @@ public:
                                 ~MapServer(void) override;
 
         bool                    Run(void) override;
-        bool                    ReadConfig(const QString &name) override;
+        bool                    ReadConfig() override;
 
         bool                    ShutDown(const QString &reason="No particular reason") override;
         void                    Online(bool s);

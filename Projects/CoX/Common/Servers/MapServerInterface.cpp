@@ -13,10 +13,10 @@ bool MapServerInterface::Run()
         assert(m_instance);
         return m_instance->Run();
 }
-bool MapServerInterface::ReadConfig(const QString &name)
+bool MapServerInterface::ReadConfig()
 {
         assert(m_instance);
-        return m_instance->ReadConfig(name);
+        return m_instance->ReadConfig();
 }
 bool MapServerInterface::ShutDown(const QString &reason)
 {
