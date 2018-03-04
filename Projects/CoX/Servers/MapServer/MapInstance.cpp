@@ -202,6 +202,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evTargetChatChannelSelected:
             on_target_chat_channel_selected(static_cast<TargetChatChannelSelected *>(ev));
             break;
+        case MapEventTypes::evReceivePlayerInfo:
+            on_receive_player_info(static_cast<ReceivePlayerInfo *>(ev));
+            break;
         default:
             fprintf(stderr,"Unhandled MapEventTypes %zu\n",ev->type()-MapEventTypes::base);
             //ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled event type %d\n"),ev->type()));
@@ -1857,6 +1860,18 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
 {
     qWarning() << "Unhandled entity info requested" << ev->entity_idx;
+}
+
+void MapInstance::on_receive_player_info(ReceivePlayerInfo * ev)
+{
+    // Return Description
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    Character c = src->char_entity()->m_char;
+
+    ev->description = getDescription(c);
+
+    qWarning() << "Unhandled receive player info requested" << ev->description;
 }
 
 void MapInstance::on_client_settings(ClientSettings * ev)

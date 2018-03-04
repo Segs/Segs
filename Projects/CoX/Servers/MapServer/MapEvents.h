@@ -451,15 +451,34 @@ class EntityInfoRequest final : public MapLinkEvent
 {
 public:
     int entity_idx;
+    QString description = "TEST Desc Sent!";
     EntityInfoRequest():MapLinkEvent(MapEventTypes::evEntityInfoRequest)
     {}
     void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(12,entity_idx);
+        bs.StoreString(description);
     }
     void serializefrom(BitStream &bs) override
     {
         entity_idx = bs.GetPackedBits(12);
+        bs.GetString(description);
+    }
+};
+class ReceivePlayerInfo final : public MapLinkEvent
+{
+public:
+    QString description = "TEST Desc Sent!";
+    ReceivePlayerInfo():MapLinkEvent(MapEventTypes::evReceivePlayerInfo)
+    {}
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,69);
+        bs.StoreString(description);
+    }
+    void serializefrom(BitStream &bs) override
+    {
+        bs.GetString(description);
     }
 };
 class SwitchViewPoint final : public MapLinkEvent

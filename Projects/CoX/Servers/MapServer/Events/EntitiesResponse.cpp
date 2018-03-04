@@ -125,7 +125,7 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     player_char.sendTitles(bs,NameFlag::NoName,ConditionalFlag::Unconditional); // NoName, we already sent it above.
 
     player_char.sendDescription(bs);
-    uint8_t auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint8_t auth_data[]={1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     PUTDEBUG("before auth data");
     bs.StoreBitArray(auth_data,128);
     player_char.sendKeybinds(bs);

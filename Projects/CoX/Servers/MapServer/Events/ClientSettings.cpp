@@ -27,6 +27,7 @@ void ClientSettings::serializefrom(BitStream & bs)
 
 void ClientSettings::serializeto(BitStream &tgt) const
 {
+    qDebug() << "Serializing to ClientSettings";
     tgt.StorePackedBits(1,65);
     tgt.StoreFloat(data.mouse_speed);
     tgt.StoreFloat(data.turn_speed);

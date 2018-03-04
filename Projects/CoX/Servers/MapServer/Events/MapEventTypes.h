@@ -48,5 +48,6 @@ public:
     EVENT_DECL(evSwitchViewPoint            ,264)
     EVENT_DECL(evClientSettings             ,265)
     EVENT_DECL(evDescriptionAndBattleCry    ,267)
+    EVENT_DECL(evReceivePlayerInfo          ,269)
     END_EVENTS(500)
 };

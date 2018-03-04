@@ -17,6 +17,7 @@
 #include "MapServer/DataHelpers.h"
 #include "GameData/entitydata_serializers.h"
 #include "GameData/chardata_serializers.h"
+#include "GameData/clientsettings_serializers.h"
 
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlDriver>
@@ -288,6 +289,7 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     CharacterData *cd = &c->m_char_data;
     cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
 
+    //ClientSettingsData *od = &c->m_options;
     Costume *cst = c->getCurrentCostume();
     if(!cst) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::create cannot insert char without costume.\n"))
@@ -314,6 +316,12 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     QString char_data;
     serializeToDb(*cd,char_data);
     m_prepared_char_insert.bindValue(":chardata", char_data);
+
+    /*
+    QString clientsettings_data;
+    serializeToDb(*od,clientsettings_data);
+    m_prepared_char_insert.bindValue(":options", clientsettings_data);
+    */
 
 #ifdef DEBUG_DB
     qDebug().noquote() << entity_data;

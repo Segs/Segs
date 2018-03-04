@@ -18,6 +18,9 @@ set(GAMEDATA_SRC
     chardata_definitions.h
     chardata_serializers.cpp
     chardata_serializers.h
+    clientsettings_definitions.h
+    clientsettings_serializers.cpp
+    clientsettings_serializers.h
     def_serializers.cpp
     def_serializers.h
     entitydata_definitions.h
