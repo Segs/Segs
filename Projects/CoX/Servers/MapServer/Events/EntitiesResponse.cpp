@@ -250,7 +250,7 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
     }
     uint32_t boost_count=0;
     bs.StorePackedBits(1,boost_count);
-    for(uint32_t insp=0; insp<inspiration_count; ++insp)
+    for(uint32_t insp=0; insp<boost_count; ++insp)
     {
         //TODO: fill this
         assert(false);

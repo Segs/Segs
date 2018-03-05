@@ -8,7 +8,6 @@
 
 #include "clientoptions_serializers.h"
 
-#include "Servers/MapServer/Events/ClientOptions.h"
 #include "DataStorage.h"
 #include "serialization_common.h"
 

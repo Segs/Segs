@@ -288,7 +288,7 @@ int CharacterDatabase::remove_account( uint64_t /*acc_serv_id*/ )
 {
     return 0;
 }
-//TODO: Initialize this function with Entity instead of Character
+
 bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
 {
     assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));

@@ -25,7 +25,6 @@
 #include "InternalEvents.h"
 #include "Database.h"
 #include "Common/GameData/CoHMath.h"
-#include "MapServer/Events/ClientOptions.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>

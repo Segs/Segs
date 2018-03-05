@@ -13,6 +13,7 @@
 #include "Events/InputState.h"
 #include "Entity.h"
 #include "GameData/CoHMath.h"
+#include "ClientOptions.h"
 #include <QDebug>
 #include <cmath>
 enum BinaryControl

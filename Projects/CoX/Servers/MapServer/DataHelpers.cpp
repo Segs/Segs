@@ -1,7 +1,6 @@
 #include "DataHelpers.h"
 
 #include "MapServer.h"
-#include "MapEvents.h"
 #include "MapServerData.h"
 #include "AdminServer/AdminServer.h"
 #include "AdminServer/CharacterDatabase.h"

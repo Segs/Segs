@@ -7,7 +7,7 @@
  */
 
 #pragma once
-#include "../MapEvents.h"
+#include "MapEvents.h"
 
 enum WindowVisibility : uint32_t {
   wv_HideAlways     = 0,

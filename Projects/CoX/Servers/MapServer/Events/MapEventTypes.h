@@ -1,6 +1,5 @@
 #pragma once
-//#include "CRUD_Events.h"
-#include "Common/CRUDP_Protocol/CRUD_Events.h"
+#include "CRUD_Events.h"
 
 class MapEventTypes : public CRUD_EventTypes
 {
@@ -28,7 +27,7 @@ public:
 // client -> server commands
     EVENT_DECL(evConsoleCommand             ,200)
     EVENT_DECL(evMiniMapState               ,201)
-    //EVENT_DECL(evRefreshWindows             ,203) // TODO: Refresh Windows? Issue #268
+//    EVENT_DECL(evRefreshWindows             ,203) // TODO: Refresh Windows? Issue #268
     EVENT_DECL(evClientResumedRendering     ,204)
     EVENT_DECL(evCookieRequest              ,206)
     EVENT_DECL(evSwitchTray                 ,208) // Switch Tray using left-right arrows next to power tray
