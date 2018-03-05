@@ -50,6 +50,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
             return new IdleEvent;
         case 1: return new MiniMapState;
         //case 2: return new Unknown2; // TODO: Tray 7?? Cycle over to tray 7 to receive this opcode.
+        //case 3: return new RefreshWindows; // TODO: Refreshes all windows? Issue #268
         case 4: return new ClientResumedRendering;
         case 8: return new SwitchTray;
         case 9: return new EnterDoor;
@@ -69,8 +70,9 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 56: return new EntityInfoRequest;
         case 62: return new LocationVisited;
         case 64: return new SwitchViewPoint;
-        case 65: return new ClientSettings;
+        case 65: return new SaveClientOptions;
         case 67: return new DescriptionAndBattleCry;
+        case 69: return new ReceivePlayerInfo;
         /*case 21: new KeybindProfileReset; */
         /*case 22: new KeybindProfileSelected; */
     }

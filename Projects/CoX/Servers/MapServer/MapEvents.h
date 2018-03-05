@@ -183,15 +183,16 @@ class WindowState final : public MapLinkEvent
 public:
     uint32_t window_idx;
     struct WindowS {
-        uint32_t field_0;
-        uint32_t field_4;
-        uint32_t field_8;
-        uint32_t field_C;
-        uint32_t field_14;
-        uint32_t field_18;
-        uint32_t field_24;
+        uint32_t posx;              // field_0
+        uint32_t posy;              // field_4
+        uint32_t width;             // field_8
+        uint32_t height;            // field_C
+        uint32_t draggable_frame;   // field_14
+        uint32_t locked;            // field_18
+        uint32_t start_shrunk;      // field_24
         uint32_t color;
         uint32_t alpha;
+        uint32_t mode;
     };
     WindowS wnd;
     WindowState():MapLinkEvent(MapEventTypes::evWindowState)
@@ -204,20 +205,33 @@ public:
     {
         window_idx = bs.GetPackedBits(1);
 
-        wnd.field_0 = bs.GetPackedBits(1);
-        wnd.field_4 = bs.GetPackedBits(1);
+        wnd.posx = bs.GetPackedBits(1);
+        wnd.posy = bs.GetPackedBits(1);
         uint32_t val = bs.GetPackedBits(1);
         if(val==4)
-            wnd.field_18 = 2;
-        wnd.field_24 = val;
+            wnd.locked = 2;
+        wnd.start_shrunk = val;
 
-        wnd.field_14 = bs.GetPackedBits(1);
+        wnd.draggable_frame = bs.GetPackedBits(1);
         wnd.color = bs.GetPackedBits(1);
         wnd.alpha = bs.GetPackedBits(1);
         if(bs.GetBits(1)) {
-            wnd.field_8 = bs.GetPackedBits(1);
-            wnd.field_C = bs.GetPackedBits(1);
+            wnd.width = bs.GetPackedBits(1);
+            wnd.height = bs.GetPackedBits(1);
         }
+
+        // TODO: Comment this out
+        qDebug().noquote() << "Debugging WindowState:"
+                 << "\n\t" << "posx:" << wnd.posx
+                 << "\n\t" << "posy:" << wnd.posy
+                 << "\n\t" << "width:" << wnd.width
+                 << "\n\t" << "height:" << wnd.height
+                 << "\n\t" << "draggable_frame:" << wnd.draggable_frame
+                 << "\n\t" << "locked:" << wnd.locked
+                 << "\n\t" << "start_shrunk:" << wnd.start_shrunk
+                 << "\n\t" << "color:" << wnd.color
+                 << "\n\t" << "alpha:" << wnd.alpha
+                 << "\n\t" << "mode:" << wnd.mode;
     }
 };
 
@@ -450,19 +464,19 @@ public:
 class EntityInfoRequest final : public MapLinkEvent
 {
 public:
-    int entity_idx;
     QString description = "TEST Desc Sent!";
+    int entity_idx;
     EntityInfoRequest():MapLinkEvent(MapEventTypes::evEntityInfoRequest)
     {}
     void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(12,entity_idx);
-        bs.StoreString(description);
     }
     void serializefrom(BitStream &bs) override
     {
         entity_idx = bs.GetPackedBits(12);
-        bs.GetString(description);
+        bs.StorePackedBits(1,69);
+        bs.StoreString(description);
     }
 };
 class ReceivePlayerInfo final : public MapLinkEvent
@@ -572,7 +586,7 @@ public:
     }
 };
 
-#include "Events/ClientSettings.h"
+#include "Events/ClientOptions.h"
 #include "Events/GameCommandList.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/SceneEvent.h"

@@ -1,10 +1,11 @@
 /*
  * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * https://github.com/Segs/Segs
+ * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
+
 #include "Character.h"
 
 #include "BitStream.h"
@@ -441,6 +442,11 @@ void Character::sendChatSettings(BitStream &bs) const
 }
 void Character::sendDescription(BitStream &bs) const
 {
+    /*
+    qDebug() << "Sending Description & BattleCry"
+             << "\nDescription: " << m_char_data.m_character_description
+             << "\nBattle Cry: " << m_char_data.m_battle_cry;
+    */
     bs.StoreString(m_char_data.m_character_description);
     bs.StoreString(m_char_data.m_battle_cry);
 }
@@ -631,26 +637,26 @@ void Character::sendFriendList(BitStream &bs) const
 }
 void Character::sendOptionsFull(BitStream &bs) const
 {
-    bs.StoreFloat(m_options.mouselook_scalefactor);
-    bs.StoreFloat(m_options.degrees_for_turns);
-    bs.StoreBits(1,m_options.mouse_invert);
-    bs.StoreBits(1,m_options.m_ChatWindow_fading);
-    bs.StoreBits(1,m_options.m_NavWindow_fading);
-    bs.StoreBits(1,m_options.showTooltips);
-    bs.StoreBits(1,m_options.allowProfanity);
-    bs.StoreBits(1,m_options.chatBallons);//g_ChatBalloons
+    bs.StoreFloat(m_options.m_mouse_speed);
+    bs.StoreFloat(m_options.m_turn_speed);
+    bs.StoreBits(1,m_options.m_mouse_invert);
+    bs.StoreBits(1,m_options.m_fade_chat_wnd);
+    bs.StoreBits(1,m_options.m_fade_nav_wnd);
+    bs.StoreBits(1,m_options.m_show_tooltips);
+    bs.StoreBits(1,m_options.m_allow_profanity);
+    bs.StoreBits(1,m_options.m_chat_balloons);
 
-    bs.StoreBits(3,m_options.showArchetype);
-    bs.StoreBits(3,m_options.showSupergroup);
-    bs.StoreBits(3,m_options.showPlayerName);
-    bs.StoreBits(3,m_options.showPlayerBars);
-    bs.StoreBits(3,m_options.showVillainName);
-    bs.StoreBits(3,m_options.showVillainBars);
-    bs.StoreBits(3,m_options.showPlayerReticles);
-    bs.StoreBits(3,m_options.showVillainReticles);
-    bs.StoreBits(3,m_options.showAssistReticles);
+    bs.StoreBits(3,m_options.m_show_archetype);
+    bs.StoreBits(3,m_options.m_show_supergroup);
+    bs.StoreBits(3,m_options.m_show_player_name);
+    bs.StoreBits(3,m_options.m_show_player_bars);
+    bs.StoreBits(3,m_options.m_show_enemy_name);
+    bs.StoreBits(3,m_options.m_show_enemy_bars);
+    bs.StoreBits(3,m_options.m_show_player_reticles);
+    bs.StoreBits(3,m_options.m_show_enemy_reticles);
+    bs.StoreBits(3,m_options.m_show_assist_reticles);
 
-    bs.StorePackedBits(5,m_options.chatFontSize); // value only used on client if >=5
+    bs.StorePackedBits(5,m_options.m_chat_font_size); // value only used on client if >=5
 }
 
 void Character::sendOptions( BitStream &bs ) const
@@ -662,9 +668,9 @@ void Character::sendOptions( BitStream &bs ) const
     }
     else
     {
-        bs.StoreBits(1,m_options.mouse_invert);
-        bs.StoreFloat(m_options.mouselook_scalefactor);
-        bs.StoreFloat(m_options.degrees_for_turns);
+        bs.StoreBits(1,m_options.m_mouse_invert);
+        bs.StoreFloat(m_options.m_mouse_speed);
+        bs.StoreFloat(m_options.m_turn_speed);
     }
     bs.StoreBits(1,m_first_person_view_toggle);
 }

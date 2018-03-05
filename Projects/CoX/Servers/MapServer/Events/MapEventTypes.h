@@ -1,5 +1,6 @@
 #pragma once
-#include "CRUD_Events.h"
+//#include "CRUD_Events.h"
+#include "Common/CRUDP_Protocol/CRUD_Events.h"
 
 class MapEventTypes : public CRUD_EventTypes
 {
@@ -27,6 +28,7 @@ public:
 // client -> server commands
     EVENT_DECL(evConsoleCommand             ,200)
     EVENT_DECL(evMiniMapState               ,201)
+    //EVENT_DECL(evRefreshWindows             ,203) // TODO: Refresh Windows? Issue #268
     EVENT_DECL(evClientResumedRendering     ,204)
     EVENT_DECL(evCookieRequest              ,206)
     EVENT_DECL(evSwitchTray                 ,208) // Switch Tray using left-right arrows next to power tray
@@ -46,7 +48,7 @@ public:
     EVENT_DECL(evEntityInfoRequest          ,256)
     EVENT_DECL(evLocationVisited            ,262)
     EVENT_DECL(evSwitchViewPoint            ,264)
-    EVENT_DECL(evClientSettings             ,265)
+    EVENT_DECL(evSaveClientOptions          ,265)
     EVENT_DECL(evDescriptionAndBattleCry    ,267)
     EVENT_DECL(evReceivePlayerInfo          ,269)
     END_EVENTS(500)

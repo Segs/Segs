@@ -10,7 +10,7 @@ SET(target_CPP
     Events/GameCommandList.cpp
     Events/ChatDividerMoved.cpp
     Events/ChatMessage.cpp
-    Events/ClientSettings.cpp
+    Events/ClientOptions.cpp
     Events/EntitiesResponse.cpp
     Events/InputState.cpp
     Events/LocationVisited.cpp
@@ -36,7 +36,7 @@ SET(target_INCLUDE
     Events/GameCommandList.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
-    Events/ClientSettings.h
+    Events/ClientOptions.h
     Events/EntitiesResponse.h
     Events/InputState.h
     Events/LocationVisited.h

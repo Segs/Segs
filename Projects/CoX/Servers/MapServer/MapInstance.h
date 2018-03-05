@@ -46,6 +46,7 @@ class ActivateInspiration;
 class PowersDockMode;
 class SwitchTray;
 class ReceivePlayerInfo;
+class SaveClientOptions;
 
 class MapInstance : public EventProcessor
 {
@@ -109,7 +110,7 @@ protected:
     void on_receive_player_info(class ReceivePlayerInfo *ev);
     void on_chat_reconfigured(class ChatReconfigure *ev);
     void on_switch_viewpoint(class SwitchViewPoint *ev);
-    void on_client_settings(class ClientSettings *ev);
+    void on_client_options(class SaveClientOptions *ev);
     void on_unqueue_all(class UnqueueAll *ev);
     void on_target_chat_channel_selected(class TargetChatChannelSelected *ev);
     void on_activate_inspiration(class ActivateInspiration *ev);

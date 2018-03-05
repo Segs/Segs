@@ -17,7 +17,7 @@
 #include "MapServer/DataHelpers.h"
 #include "GameData/entitydata_serializers.h"
 #include "GameData/chardata_serializers.h"
-#include "GameData/clientsettings_serializers.h"
+#include "GameData/clientoptions_serializers.h"
 
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlDriver>
@@ -74,12 +74,10 @@ void CharacterDatabase::on_connected(QSqlDatabase *db)
     prepQuery(m_prepared_char_insert,
                 "INSERT INTO characters  ("
                 "slot_index, account_id, char_name, chardata, entitydata, bodytype, "
-                "hitpoints, endurance, "
-                "supergroup_id, options"
+                "hitpoints, endurance, supergroup_id, options, gui, keybinds"
                 ") VALUES ("
                 ":slot_index, :account_id, :char_name, :chardata, :entitydata, :bodytype, "
-                ":hitpoints, :endurance, "
-                ":supergroup_id, :options"
+                ":hitpoints, :endurance, :supergroup_id, :options, :gui, :keybinds"
                 ")");
     prepQuery(m_prepared_costume_insert,
                 "INSERT INTO costume (character_id,costume_index,skin_color,parts) VALUES "
@@ -87,7 +85,8 @@ void CharacterDatabase::on_connected(QSqlDatabase *db)
     prepQuery(m_prepared_char_update,
                 "UPDATE characters SET "
                 "char_name=:char_name, chardata=:chardata, entitydata=:entitydata, bodytype=:bodytype, "
-                "supergroup_id=:supergroup_id, options=:options "
+                "hitpoints=:hitpoints, endurance=:endurance, supergroup_id=:supergroup_id, "
+                "options=:options, gui=:gui, keybinds=:keybinds "
                 "WHERE id=:id ");
     prepQuery(m_prepared_costume_update,
                 "UPDATE costume SET "
@@ -187,6 +186,10 @@ bool CharacterDatabase::fill( Entity *e)
 bool CharacterDatabase::fill( Character *c)
 {
     CharacterData *cd = &c->m_char_data;
+    ClientOptions *od = &c->m_options;
+    //Keybinds *kbd = &c->m_keybinds; // TODO
+    //WindowState *gui = &c->m_gui; // TODO
+
     assert(c&&c->getAccountId());
 
     m_prepared_char_select.bindValue(0,quint64(c->getAccountId()));
@@ -211,6 +214,18 @@ bool CharacterDatabase::fill( Character *c)
     QString char_data;
     char_data = (m_prepared_char_select.value("chardata").toString());
     serializeFromDb(*cd,char_data);
+
+    QString options_data;
+    options_data = (m_prepared_char_select.value("options").toString());
+    serializeFromDb(*od,options_data);
+
+    QString gui_data;
+    gui_data = (m_prepared_char_select.value("gui").toString());
+    //serializeFromDb(*gui,gui_data);
+
+    QString keybind_data;
+    keybind_data = (m_prepared_char_select.value("keybinds").toString());
+    //serializeFromDb(*kbd,keybind_data);
 
 #ifdef DEBUG_DB
     qDebug() << "m_db_id:" << c->m_db_id;
@@ -289,7 +304,9 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     CharacterData *cd = &c->m_char_data;
     cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
 
-    //ClientSettingsData *od = &c->m_options;
+    ClientOptions *od = &c->m_options;
+    //Keybinds *kbd = &c->m_keybinds; // TODO
+    //WindowState *gui = &c->m_gui; // TODO
     Costume *cst = c->getCurrentCostume();
     if(!cst) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::create cannot insert char without costume.\n"))
@@ -297,8 +314,8 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     }
 
     /*
-    ":slot_index, :account_id, :char_name, :chardata, :bodytype, :hitpoints, :endurance, "
-    ":posx, :posy, :posz, :orientp, :orienty, :orientr, :supergroup_id, :options "
+    ":slot_index, :account_id, :char_name, :chardata, :entitydata, :bodytype, "
+    ":hitpoints, :endurance, :supergroup_id, :options, :gui, :keybinds"
     */
     m_prepared_char_insert.bindValue(":slot_index", uint32_t(slot));
     m_prepared_char_insert.bindValue(":account_id", quint64(gid));
@@ -307,7 +324,6 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     m_prepared_char_insert.bindValue(":hitpoints", c->m_current_attribs.m_HitPoints);
     m_prepared_char_insert.bindValue(":endurance", c->m_current_attribs.m_Endurance);
     m_prepared_char_insert.bindValue(":supergroup_id", 0);
-    m_prepared_char_insert.bindValue(":options", 0);
 
     QString entity_data;
     serializeToDb(*ed,entity_data);
@@ -317,11 +333,17 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     serializeToDb(*cd,char_data);
     m_prepared_char_insert.bindValue(":chardata", char_data);
 
-    /*
-    QString clientsettings_data;
-    serializeToDb(*od,clientsettings_data);
-    m_prepared_char_insert.bindValue(":options", clientsettings_data);
-    */
+    QString options_data;
+    serializeToDb(*od,options_data);
+    m_prepared_char_insert.bindValue(":options", options_data);
+
+    QString gui_data;
+    //serializeToDb(*gui,gui_data);
+    m_prepared_char_insert.bindValue(":gui", gui_data);
+
+    QString keybind_data;
+    //serializeToDb(*kbd,keybind_data);
+    m_prepared_char_insert.bindValue(":keybinds", keybind_data);
 
 #ifdef DEBUG_DB
     qDebug().noquote() << entity_data;
@@ -359,6 +381,9 @@ bool CharacterDatabase::update( Entity *e )
     CharacterData *cd = &c->m_char_data;
     cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
 
+    ClientOptions *od = &c->m_options;
+    //Keybinds *kbd = &c->m_keybinds; // TODO
+    //WindowState *gui = &c->m_gui; // TODO
     Costume *cst = c->getCurrentCostume();
     if(!cst) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::update cannot update char without costume.\n"))
@@ -367,7 +392,7 @@ bool CharacterDatabase::update( Entity *e )
 
     /*
     ":id, :char_name, :chardata, :entitydata, :bodytype, :hitpoints, :endurance, "
-    ":posx, :posy, :posz, :orientp, :orienty, :orientr, :options, "
+    ":supergroup_id, :options, :gui, :keybinds "
     */
     m_prepared_char_update.bindValue(":id", uint32_t(c->m_db_id)); // for WHERE statement only
     m_prepared_char_update.bindValue(":char_name", c->getName());
@@ -375,7 +400,6 @@ bool CharacterDatabase::update( Entity *e )
     m_prepared_char_update.bindValue(":hitpoints", getHP(*c));
     m_prepared_char_update.bindValue(":endurance", getEnd(*c));
     m_prepared_char_update.bindValue(":supergroup_id", uint32_t(e->m_supergroup.m_SG_id));
-    m_prepared_char_update.bindValue(":options", 0); // c->m_options, which needs to be serialized.
 
     QString entity_data;
     serializeToDb(*ed,entity_data);
@@ -384,6 +408,18 @@ bool CharacterDatabase::update( Entity *e )
     QString char_data;
     serializeToDb(*cd,char_data);
     m_prepared_char_update.bindValue(":chardata", char_data);
+
+    QString options_data;
+    serializeToDb(*od,options_data);
+    m_prepared_char_insert.bindValue(":options", options_data);
+
+    QString gui_data;
+    //serializeToDb(*gui,gui_data);
+    m_prepared_char_insert.bindValue(":gui", gui_data);
+
+    QString keybind_data;
+    //serializeToDb(*kbd,keybind_data);
+    m_prepared_char_insert.bindValue(":keybinds", keybind_data);
 
 #ifdef DEBUG_DB
     qDebug().noquote() << entity_data;

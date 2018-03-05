@@ -25,7 +25,7 @@
 #include "InternalEvents.h"
 #include "Database.h"
 #include "Common/GameData/CoHMath.h"
-#include "Settings.h"
+#include "MapServer/Events/ClientOptions.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -185,8 +185,8 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evSwitchViewPoint:
             on_switch_viewpoint(static_cast<SwitchViewPoint *>(ev));
             break;
-        case MapEventTypes::evClientSettings:
-            on_client_settings(static_cast<ClientSettings *>(ev));
+        case MapEventTypes::evSaveClientOptions:
+            on_client_options(static_cast<SaveClientOptions *>(ev));
             break;
         case MapEventTypes::evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
@@ -1882,10 +1882,10 @@ void MapInstance::on_receive_player_info(ReceivePlayerInfo * ev)
     qWarning() << "Unhandled receive player info requested" << ev->description;
 }
 
-void MapInstance::on_client_settings(ClientSettings * ev)
+void MapInstance::on_client_options(SaveClientOptions * ev)
 {
-    qWarning() << "Unhandled client settings";
-    //TODO: serialize settings to client entry in the database.
+    qWarning() << "Unhandled client options";
+    //TODO: save options to client entry in the database.
 }
 
 void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
