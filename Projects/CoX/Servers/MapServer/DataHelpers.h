@@ -11,6 +11,7 @@ class QString;
 // Getters
 uint32_t    getIdx(const Entity &e);
 uint32_t    getDbId(const Entity &e);
+uint32_t    getAccessLevel(const Entity &e);
 uint32_t    getTargetIdx(const Entity &e);
 uint32_t    getAssistTargetIdx(const Entity &e);
 glm::vec3   getSpeed(const Entity &e);
@@ -24,6 +25,8 @@ void    setSpeed(Entity &e, float v1, float v2, float v3);
 void    setBackupSpd(Entity &e, float val);
 void    setJumpHeight(Entity &e, float val);
 void    setUpdateID(Entity &e, uint8_t val);
+void    setTeamID(Entity &e, uint8_t team_id);
+void    setSuperGroupID(Entity &e, uint8_t sg_id);
 void    setu1(Entity &e, int val);
 void    setu2(Entity &e, int val);
 void    setu3(Entity &e, int val);
@@ -46,6 +49,7 @@ void    toggleControlId(Entity &e);
 void    charUpdateDB(Entity *e);
 int     getEntityOriginIndex(bool is_player,const QString &origin_name);
 int     getEntityClassIndex(bool is_player, const QString &class_name);
+void    sendServerMOTD(Entity *e);
 
 /*
  * Character Methods

@@ -124,6 +124,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
     GameLink * lnk = (GameLink *)ev->src();
     CharacterClient *client = lnk->client_data();
     assert(client);
+
     ev->src()->putq(new CharacterResponse(this,ev->m_index,client));
 }
 void GameHandler::on_idle(IdleEvent *ev)
