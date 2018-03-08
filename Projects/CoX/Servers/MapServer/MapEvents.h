@@ -586,7 +586,7 @@ public:
     }
 };
 
-#include "Events/ClientOptions.h"
+//#include "Events/ClientOptions.h"
 #include "Events/GameCommandList.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/SceneEvent.h"

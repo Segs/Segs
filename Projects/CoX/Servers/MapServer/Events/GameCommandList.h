@@ -8,7 +8,7 @@
 #pragma once
 
 #include "MapEventTypes.h"
-#include "../MapLink.h"
+#include "MapLink.h"
 
 #include <QtCore/QString>
 //TODO: those must support chaining

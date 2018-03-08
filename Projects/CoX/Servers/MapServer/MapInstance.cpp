@@ -1890,7 +1890,6 @@ void MapInstance::on_client_options(SaveClientOptions * ev)
 void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
 {
     qWarning() << "Unhandled switch viewpoint to" << ev->new_viewpoint_is_firstperson;
-
 }
 
 void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
