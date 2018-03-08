@@ -27,7 +27,6 @@
 #include "Database.h"
 #include "SlashCommand.h"
 #include "Common/GameData/CoHMath.h"
-#include "Settings.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -783,13 +782,6 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
             || contents.startsWith("me ",Qt::CaseInsensitive))                                  // ERICEDIT: This encompasses all emotes.
     {
         on_emote_command(lowerContents, ent);
-    }
-    else if(lowerContents == "settingsdump") {
-        settingsDump();
-
-        QString msg = "Sending settings config dump to console output.";
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
     }
     else {
         runCommand(contents,*ent);
