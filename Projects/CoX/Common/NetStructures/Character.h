@@ -10,9 +10,9 @@
 #include "CommonNetStructures.h"
 #include "BitStream.h"
 #include "Powers.h"
-#include "Servers/MapServer/Events/ClientOptions.h"
 #include "Common/GameData/attrib_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
+#include "Common/GameData/clientoptions_definitions.h"
 #include "Common/GameData/other_definitions.h"
 
 #include <QtCore/QString>
@@ -56,7 +56,6 @@ class Character
         vPowerPool              m_powers;
         PowerTrayGroup          m_trays;
         bool                    m_full_options=false;
-        ClientOptions           m_options;
         uint64_t                m_owner_account_id;
         bool                    m_first_person_view_toggle=false;
         uint8_t                 m_player_collisions=0;
@@ -108,6 +107,7 @@ const   QString &       getName() const { return m_name; }
         Parse_CharAttrib    m_max_attribs;
         LevelExpAndDebt     m_other_attribs;
         CharacterData       m_char_data;
+        ClientOptions       m_options;
 
         uint32_t            m_account_id;
         uint32_t            m_db_id;

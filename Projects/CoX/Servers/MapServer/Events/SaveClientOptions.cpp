@@ -6,7 +6,7 @@
  *
  */
 
-#include "ClientOptions.h"
+#include "SaveClientOptions.h"
 
 void SaveClientOptions::serializefrom(BitStream & bs)
 {
@@ -18,15 +18,15 @@ void SaveClientOptions::serializefrom(BitStream & bs)
     data.m_show_tooltips        = bs.GetBits(1);
     data.m_allow_profanity      = bs.GetBits(1);
     data.m_chat_balloons        = bs.GetBits(1);
-    data.m_show_archetype       = (WindowState)bs.GetBits(3);
-    data.m_show_supergroup      = (WindowState)bs.GetBits(3);
-    data.m_show_player_name     = (WindowState)bs.GetBits(3);
-    data.m_show_player_bars     = (WindowState)bs.GetBits(3);
-    data.m_show_enemy_name      = (WindowState)bs.GetBits(3);
-    data.m_show_enemy_bars      = (WindowState)bs.GetBits(3);
-    data.m_show_player_reticles = (WindowState)bs.GetBits(3);
-    data.m_show_enemy_reticles  = (WindowState)bs.GetBits(3);
-    data.m_show_assist_reticles = (WindowState)bs.GetBits(3);
+    data.m_show_archetype       = (WindowVisibility)bs.GetBits(3);
+    data.m_show_supergroup      = (WindowVisibility)bs.GetBits(3);
+    data.m_show_player_name     = (WindowVisibility)bs.GetBits(3);
+    data.m_show_player_bars     = (WindowVisibility)bs.GetBits(3);
+    data.m_show_enemy_name      = (WindowVisibility)bs.GetBits(3);
+    data.m_show_enemy_bars      = (WindowVisibility)bs.GetBits(3);
+    data.m_show_player_reticles = (WindowVisibility)bs.GetBits(3);
+    data.m_show_enemy_reticles  = (WindowVisibility)bs.GetBits(3);
+    data.m_show_assist_reticles = (WindowVisibility)bs.GetBits(3);
     data.m_chat_font_size       = bs.GetPackedBits(5);
 }
 

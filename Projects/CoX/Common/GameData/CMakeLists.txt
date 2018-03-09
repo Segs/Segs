@@ -18,6 +18,7 @@ set(GAMEDATA_SRC
     chardata_definitions.h
     chardata_serializers.cpp
     chardata_serializers.h
+    clientoptions_definitions.h
     clientoptions_serializers.cpp
     clientoptions_serializers.h
     def_serializers.cpp

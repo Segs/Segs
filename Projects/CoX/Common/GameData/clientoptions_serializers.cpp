@@ -8,8 +8,8 @@
 
 #include "clientoptions_serializers.h"
 
+#include "clientoptions_definitions.h"
 #include "DataStorage.h"
-#include "Servers/MapServer/Events/ClientOptions.h"
 #include "serialization_common.h"
 
 CEREAL_CLASS_VERSION(ClientOptions, 1); // register Client Options class version
