@@ -50,11 +50,9 @@ class SaveClientOptions;
 
 class MapInstance : public EventProcessor
 {
-    std::unique_ptr<ScriptingEngine> m_scripting_interface;
     QString                m_name;
     SEGSTimer *            m_world_update_timer;
     SEGSTimer *            m_resend_timer;
-    ClientStore<MapClient> m_clients;
 
     // vClients        m_queued_clients;
     World *    m_world;
@@ -62,6 +60,9 @@ class MapInstance : public EventProcessor
 
 public:
     EntityManager m_entities;
+    ClientStore<MapClient> m_clients;
+
+    std::unique_ptr<ScriptingEngine> m_scripting_interface;
 
     MapInstance(const QString &name);
     virtual ~MapInstance();
@@ -118,5 +119,5 @@ protected:
     void on_switch_tray(class SwitchTray *ev);
 
 private:
-    void on_emote_command(QString lowerContents, Entity *ent, MapClient *src);
+    void on_emote_command(QString lowerContents, Entity *ent);
 };

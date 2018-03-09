@@ -2,9 +2,13 @@
 
 #include "MapServer.h"
 #include "MapServerData.h"
+#include "MapInstance.h"
+#include "MapClient.h"
 #include "AdminServer/AdminServer.h"
 #include "AdminServer/CharacterDatabase.h"
 
+#include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #include <QtCore/QDebug>
 
 /*
@@ -13,6 +17,7 @@
 // Getters
 uint32_t    getIdx(const Entity &e) { return e.m_idx; }
 uint32_t    getDbId(const Entity &e) { return e.m_db_id; }
+uint32_t    getAccessLevel(const Entity &e) { return e.m_entity_data.m_access_level; }
 uint32_t    getTargetIdx(const Entity &e) { return e.m_target_idx; }
 uint32_t    getAssistTargetIdx(const Entity &e) { return e.m_assist_target_idx; }
 glm::vec3   getSpeed(const Entity &e) { return e.m_spd; }
@@ -26,6 +31,54 @@ void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_spd = {v1,v2,v3}
 void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
 void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
 void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
+
+void    setTeamID(Entity &e, uint8_t team_id)
+{
+    // TODO: provide method for updating Team Name and Rank
+    if(team_id == 0)
+    {
+        e.m_team.m_has_team     = false;
+        e.m_team.m_team_id      = team_id;
+        e.m_team.m_team_name    = "";
+        e.m_team.m_team_rank    = 0;
+    }
+    else
+    {
+        e.m_team.m_has_team     = true;
+        e.m_team.m_team_id      = team_id;
+        e.m_team.m_team_name    = "Super Team";
+        e.m_team.m_team_rank    = 1;
+    }
+    qDebug().noquote() << "Team Info:"
+             << "\n  Has Team:" << e.m_team.m_has_team
+             << "\n  ID:" << e.m_team.m_team_id
+             << "\n  Name:" << e.m_team.m_team_name
+             << "\n  Rank:" << e.m_team.m_team_rank;
+}
+
+void    setSuperGroupID(Entity &e, uint8_t sg_id)
+{
+    // TODO: provide method for updating SuperGroup Name and Rank
+    if(sg_id == 0)
+    {
+        e.m_supergroup.m_SG_info    = false;
+        e.m_supergroup.m_SG_id      = sg_id;
+        e.m_supergroup.m_SG_name    = "";
+    }
+    else
+    {
+        e.m_supergroup.m_SG_info    = true;
+        e.m_supergroup.m_SG_id      = sg_id;
+        e.m_supergroup.m_SG_name    = "SuperGroup Name!";
+    }
+    qDebug().noquote() << "SG Info:"
+             << "\n  Has Team:" << e.m_supergroup.m_SG_info
+             << "\n  ID:" << e.m_supergroup.m_SG_id
+             << "\n  Name:" << e.m_supergroup.m_SG_name
+             << "\n  Color1:" << e.m_supergroup.m_SG_color1
+             << "\n  Color2:" << e.m_supergroup.m_SG_color2;
+}
+
 void    setu1(Entity &e, int val) { e.u1 = val; }
 void    setu2(Entity &e, int val) { e.u2 = val; }
 void    setu3(Entity &e, int val) { e.u3 = val; }
@@ -93,6 +146,32 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
     qWarning() << "Failed to locate class index for"<<class_name;
     return 0;
 
+}
+
+void sendServerMOTD(Entity *e)
+{
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    MapClient *src = e->m_client;
+    qDebug().noquote() << "Sending Server MOTD to" << e->m_char.getName();
+
+    QString fileName("scripts/motd.smlx");
+    QFile file(fileName);
+    if(file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QString contents(file.readAll());
+        StandardDialogCmd *dlg = new StandardDialogCmd(contents);
+        src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+    }
+    else {
+        QString errormsg = "Failed to load MOTD file. \'" + file.fileName() + "\' not found.";
+        qDebug() << errormsg;
+        sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, src);
+    }
 }
 
 

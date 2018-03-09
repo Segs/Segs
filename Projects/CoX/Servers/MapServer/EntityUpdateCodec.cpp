@@ -61,12 +61,11 @@ void storeCreation(const Entity &src, BitStream &bs)
     // the following is used as an input to LCG float generator, generated float (0-1) is used as
     // linear interpolation factor betwwen scale_min and scale_max
     bs.StoreBits(32,src.m_randSeed);
-    bs.StoreBits(1,src.m_hasgroup_name);
-    if(src.m_hasgroup_name)
+    bs.StoreBits(1,src.m_team.m_has_team); // could be supergroup?
+    if(src.m_team.m_has_team)
     {
-        int rank=0; // rank in the group ?
-        bs.StorePackedBits(2,rank);// this will be put in field_1830 of created entity
-        bs.StoreString(src.m_group_name);
+        bs.StorePackedBits(2,src.m_team.m_team_rank); // this will be put in field_1830 of created entity
+        bs.StoreString(src.m_team.m_team_name);
     }
     PUTDEBUG("end storeCreation");
 }

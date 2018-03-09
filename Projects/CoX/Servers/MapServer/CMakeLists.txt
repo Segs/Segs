@@ -17,6 +17,7 @@ SET(target_CPP
     Events/NewEntity.cpp
     Events/SaveClientOptions.cpp
     Events/SceneEvent.cpp
+    Events/InfoMessageCmd.cpp
     MapClient.cpp
     MapEventFactory.cpp
     MapInstance.cpp
@@ -26,6 +27,7 @@ SET(target_CPP
     MapServerData.cpp
     MapTemplate.cpp
     NetCommandManager.cpp
+    SlashCommand.cpp
     WorldSimulation.cpp
     ${SCRIPTING_CPP}
 )
@@ -59,6 +61,7 @@ SET(target_INCLUDE
     MapTemplate.h
     NetCommandManager.h
     ScriptingEngine.h
+    SlashCommand.h
     WorldSimulation.h
 )
 

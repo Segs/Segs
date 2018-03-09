@@ -6,6 +6,7 @@
  *
 
  */
+//#define DEBUG_SPAWN
 #include "MapInstance.h"
 
 #include "AdminServer.h"
@@ -24,6 +25,7 @@
 #include "WorldSimulation.h"
 #include "InternalEvents.h"
 #include "Database.h"
+#include "SlashCommand.h"
 #include "Common/GameData/CoHMath.h"
 
 #include <QtCore/QDebug>
@@ -340,6 +342,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         fillEntityFromNewCharData(*e,ev->m_character_data,g_GlobalMapServer->runtimeData().getPacker());
         cl->entity(e);
         cl->db_create();
+        cl->char_entity(e);
 
         //        start_idle_timer(cl);
         //cl->start_idle_timer();
@@ -353,6 +356,10 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     if(false==char_db->fill(cl->char_entity()))
         return;
     grd.commit();
+
+#ifdef DEBUG_SPAWN
+        cl->char_entity()->dump();
+#endif
 
     cl->current_map()->enqueue_client(cl);
     setMapName(cl->char_entity()->m_char,name());
@@ -584,24 +591,24 @@ static bool isChatMessage(const QString &msg)
     QString space(msg.mid(0,msg.indexOf(' ')));
     return chat_prefixes.contains(space);
 }
-static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
+static MessageChannel getKindOfChatMessage(const QStringRef &msg)
 {
     if(msg=="l" || msg=="local")                                                            // Aliases: local, l
-        return ChatMessage::CHAT_Local;
+        return MessageChannel::LOCAL;
     if(msg=="b" || msg=="broadcast" || msg=="y" || msg=="yell")                             // Aliases: broadcast, yell, b, y
-        return ChatMessage::CHAT_Broadcast;
+        return MessageChannel::BROADCAST;
     if(msg=="g" || msg=="group" || msg=="team")                                             // Aliases: team, g, group
-        return ChatMessage::CHAT_TEAM;
+        return MessageChannel::TEAM;
     if(msg=="sg" || msg=="supergroup")                                                      // Aliases: sg, supergroup
-        return ChatMessage::CHAT_SuperGroup;
+        return MessageChannel::SUPERGROUP;
     if(msg=="req" || msg=="request" || msg=="auction" || msg=="sell")                       // Aliases: request, req, auction, sell
-        return ChatMessage::CHAT_Request;
+        return MessageChannel::REQUEST;
     if(msg=="f")                                                                            // Aliases: f
-        return ChatMessage::CHAT_Friend;
+        return MessageChannel::FRIENDS;
     if(msg=="t" || msg=="tell" || msg=="w" || msg=="whisper" || msg=="p" || msg=="private") // Aliases: t, tell, whisper, w, private, p
-        return ChatMessage::CHAT_PRIVATE;
+        return MessageChannel::PRIVATE;
     // unknown chat types are processed as local chat
-    return ChatMessage::CHAT_Local;
+    return MessageChannel::LOCAL;
 }
 
 void MapInstance::process_chat(MapClient *sender,QString &msg_text)
@@ -615,8 +622,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
 
     QStringRef cmd_str(msg_text.midRef(0,first_space));
     QStringRef msg_content(msg_text.midRef(first_space+1,msg_text.lastIndexOf("\n")));
-    InfoMessageCmd *info;
-    ChatMessage::eChatTypes kind = getKindOfChatMessage(cmd_str);
+    MessageChannel kind = getKindOfChatMessage(cmd_str);
     std::vector<MapClient *> recipients;
 
     if(sender && sender->char_entity())
@@ -624,7 +630,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
 
     switch(kind)
     {
-        case ChatMessage::CHAT_Local:
+        case MessageChannel::LOCAL:
         {
             // send only to clients within range
             glm::vec3 senderpos = sender->char_entity()->m_entity_data.pos;
@@ -645,589 +651,151 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             prepared_chat_message = QString("[Local] %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                ChatMessage *msg = ChatMessage::localMessage(prepared_chat_message,sender->char_entity());
-                cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(msg));
+                sendChatMessage(MessageChannel::LOCAL,prepared_chat_message,sender,cl);
             }
             break;
         }
-        case ChatMessage::CHAT_Broadcast:
+        case MessageChannel::BROADCAST:
         {
             // send the message to everyone on this map
             std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString()); // where does [Broadcast] come from? The client?
             for(MapClient * cl : recipients)
             {
-                ChatMessage *msg = ChatMessage::broadcastMessage(prepared_chat_message,sender->char_entity());
-                cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(msg));
+                sendChatMessage(MessageChannel::BROADCAST,prepared_chat_message,sender,cl);
             }
             break;
         }
-        case ChatMessage::CHAT_Request:
+        case MessageChannel::REQUEST:
         {
             // send the message to everyone on this map
             std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
-            prepared_chat_message = QString("[Request] %1: %2").arg(sender_char_name,msg_content.toString());
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                info = new InfoMessageCmd(InfoType::REQUEST_COM, prepared_chat_message);
-                cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendChatMessage(MessageChannel::REQUEST,prepared_chat_message,sender,cl);
             }
             break;
         }
-        case ChatMessage::CHAT_PRIVATE:
+        case MessageChannel::PRIVATE:
         {
             int first_comma = msg_text.indexOf(',');
             QStringRef target_name_ref(msg_text.midRef(first_space+1,first_comma-2));
             msg_content = msg_text.midRef(first_comma+1,msg_text.lastIndexOf("\n"));
 
             QString target_name = target_name_ref.toString();
+            qDebug() << "target_name" << target_name;
 
             MapInstance *mi = sender->current_map();
             EntityManager &ent_manager(mi->m_entities);
 
             Entity *tgt = ent_manager.getEntity(target_name);
-            Entity *src = sender->char_entity();
 
             if(tgt == nullptr)
             {
                 prepared_chat_message = QString("No player named \"%1\" currently online.").arg(target_name);
-                info = new InfoMessageCmd(InfoType::USER_ERROR, prepared_chat_message);
-                src->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
                 break;
             }
             else
             {
-                prepared_chat_message = QString("[Tell] -->%1: %2").arg(target_name,msg_content.toString());
-                info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
-                src->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                prepared_chat_message = QString(" -->%1: %2").arg(target_name,msg_content.toString());
+                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,sender); // in this case, sender is target
 
-                prepared_chat_message = QString("[Tell] %1: %2").arg(sender_char_name,msg_content.toString());
-                info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
-                tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
+                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,tgt->m_client);
             }
             
             break;
         }
-        case ChatMessage::CHAT_TEAM:
+        case MessageChannel::TEAM:
         {
+            if(!sender->char_entity()->m_team.m_has_team)
+            {
+                prepared_chat_message = "You are not a member of a Team.";
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                break;
+            }
+
             // Only send the message to characters on sender's team
             for(MapClient *cl : m_clients)
             {
-                if(sender->char_entity()->m_group_name == cl->char_entity()->m_group_name)
+                if(sender->char_entity()->m_team.m_team_id == cl->char_entity()->m_team.m_team_id)
                     recipients.push_back(cl);
             }
-            prepared_chat_message = QString("[Team] %1: %2").arg(sender_char_name,msg_content.toString());
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                info = new InfoMessageCmd(InfoType::TEAM_COM, prepared_chat_message);
-                cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendChatMessage(MessageChannel::TEAM,prepared_chat_message,sender,cl);
             }
             break;
         }
-        case ChatMessage::CHAT_SuperGroup:
+        case MessageChannel::SUPERGROUP:
         {
+            if(!sender->char_entity()->m_supergroup.m_SG_info)
+            {
+                prepared_chat_message = "You are not a member of a SuperGroup.";
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                break;
+            }
+
             // Only send the message to characters in sender's supergroup
             for(MapClient *cl : m_clients)
             {
                 if(sender->char_entity()->m_supergroup.m_SG_id == cl->char_entity()->m_supergroup.m_SG_id)
                     recipients.push_back(cl);
             }
-            prepared_chat_message = QString("[SuperGroup] %1: %2").arg(sender_char_name,msg_content.toString());
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClient * cl : recipients)
             {
-                info = new InfoMessageCmd(InfoType::SUPERGROUP_COM, prepared_chat_message);
-                cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendChatMessage(MessageChannel::SUPERGROUP,prepared_chat_message,sender,cl);
             }
+            break;
+        }
+        case MessageChannel::FRIENDS:
+        {
+            // TODO: Only send the message to characters in sender's friendslist
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
+            sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,sender);
+            break;
+        }
+        default:
+        {
+            qDebug() << "Unhandled MessageChannel type" << int(kind);
             break;
         }
     }
 }
 void MapInstance::on_console_command(ConsoleCommand * ev)
 {
+    QString contents = ev->contents.simplified();
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity(); // user entity
-    InfoMessageCmd *info; // leverage InfoMessageCmd
 
-    QString lowerContents = ev->contents.toLower();                             // ERICEDIT: Make the contents all lowercase for case-insensitivity.
+    QString lowerContents = contents.toLower();                             // ERICEDIT: Make the contents all lowercase for case-insensitivity.
 
     printf("Console command received %s\n",qPrintable(ev->contents));
-    if(lowerContents.startsWith("script "))
+
+    if(isChatMessage(contents))
     {
-        //TODO: restrict scripting access to GM's and such
-        QString code = ev->contents.mid(7,ev->contents.size()-7);
-        m_scripting_interface->runScript(src,code,"user provided script");
-        return;
+        process_chat(src,contents);
     }
-    else if(isChatMessage(ev->contents))
+    else if(contents.startsWith("em ",Qt::CaseInsensitive) || contents.startsWith("e ",Qt::CaseInsensitive)
+            || contents.startsWith("me ",Qt::CaseInsensitive))                                  // ERICEDIT: This encompasses all emotes.
     {
-        process_chat(src,ev->contents);
-    }
-    else if(lowerContents.startsWith("dlg ")) {
-        StandardDialogCmd *dlg = new StandardDialogCmd(ev->contents.mid(4));
-        src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
-    }
-    else if(lowerContents.startsWith("imsg ")) {
-        int first_space = ev->contents.indexOf(' ');
-        int second_space = ev->contents.indexOf(' ',first_space+1);
-        if(second_space==-1) {
-            info = new InfoMessageCmd(InfoType::USER_ERROR,
-                                           "The /imsg command takes two arguments, a <b>number</b> and a <b>string</b>"
-                                           );
-        }
-        else {
-            bool ok = true;
-            int cmdType = ev->contents.midRef(first_space+1,second_space-(first_space+1)).toInt(&ok);
-            if(!ok || cmdType<1 || cmdType>21) {
-                info = new InfoMessageCmd(InfoType::USER_ERROR,
-                                               "The first /imsg argument must be a <b>number</b> between 1 and 21"
-                                               );
-            }
-            else {
-                info = new InfoMessageCmd(InfoType(cmdType),ev->contents.mid(second_space+1));
-            }
-
-        }
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("smilex ")) {
-        int space = ev->contents.indexOf(' ');
-        QString fileName("scripts/" + ev->contents.mid(space+1));
-        if(!fileName.endsWith(".smlx"))
-                fileName.append(".smlx");
-        QFile file(fileName);
-        if(QFileInfo::exists(fileName) && file.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            QString contents(file.readAll());
-            StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-            src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
-        }
-        else {
-            QString errormsg = "Failed to load smilex file. \'" + file.fileName() + "\' not found.";
-            qDebug() << errormsg;
-            src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(errormsg)));
-        }
-    }
-    else if(lowerContents == "fly") {
-        toggleFly(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "falling") {
-        toggleFalling(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "sliding") {
-        toggleSliding(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "jumping") {
-        toggleJumping(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "stunned") {
-        toggleStunned(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "jumppack") {
-        toggleJumppack(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setSpeed ",Qt::CaseInsensitive)) {
-        QStringList args;
-        args = ev->contents.split(QRegExp(" "));
-        float v1 = args.value(1).toFloat();
-        float v2 = args.value(2).toFloat();
-        float v3 = args.value(3).toFloat();
-        setSpeed(*ent, v1, v2, v3);
-
-        args.removeAt(0); // remove command string
-        QString msg = "Set Speed to: " + args.join(" ");
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setBackupSpd ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        float val = ev->contents.mid(space+1).toFloat();
-        setBackupSpd(*ent, val);
-
-        QString msg = "Set BackupSpd to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setJumpHeight ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        float val = ev->contents.mid(space+1).toFloat();
-        setJumpHeight(*ent, val);
-
-        QString msg = "Set JumpHeight to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("afk ") || lowerContents == "afk") {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        toggleAFK(ent->m_char, val);
-
-        QString msg = "Setting afk message to: " + val;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::EMOTE, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setHP ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        float attrib = val.toFloat();
-        float maxattrib = ent->m_char.m_max_attribs.m_HitPoints;
-
-        if(attrib > maxattrib)
-            attrib = maxattrib;
-
-        setHP(ent->m_char,attrib);
-
-        QString msg = "Setting HP to: " + QString::number(attrib) + "/" + QString::number(maxattrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setEnd ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        float attrib = val.toFloat();
-        float maxattrib = ent->m_char.m_max_attribs.m_Endurance;
-
-        if(attrib > maxattrib)
-            attrib = maxattrib;
-
-        setEnd(ent->m_char,attrib);
-
-        QString msg = "Setting Endurance to: " + QString::number(attrib) + "/" + QString::number(maxattrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setXP ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        float attrib = val.toFloat();
-        uint32_t lvl = getLevel(ent->m_char);
-        uint32_t newlvl;
-
-        setXP(ent->m_char, attrib);
-        QString msg = "Setting XP to " + QString::number(attrib);
-
-        newlvl = getLevel(ent->m_char);
-        if(newlvl != lvl)
-            msg += " and LVL to " + QString::number(newlvl+1);
-
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setDebt ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        float attrib = val.toFloat();
-
-        setDebt(ent->m_char, attrib);
-        QString msg = "Setting XP Debt to " + QString::number(attrib);
-
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setLevel ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        uint32_t attrib = val.toUInt();
-
-        setLevel(ent->m_char, attrib); // TODO: Why does this result in -1?
-
-        QString msg = "Setting Level to: " + QString::number(attrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setCombatLevel ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        uint32_t attrib = val.toUInt();
-
-        setCombatLevel(ent->m_char, attrib); // TODO: Why does this result in -1?
-
-        QString msg = "Setting Combat Level to: " + QString::number(attrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "whoall") {
-        QString msg = "Players on this map:\n";
-
-        for(MapClient *cl : m_clients)
-        {
-            Character *c        = &cl->char_entity()->m_char;
-            QString name        = cl->char_entity()->name();
-            QString lvl         = QString::number(getLevel(*c));
-            QString clvl        = QString::number(getCombatLevel(*c));
-            QString origin      = getOrigin(*c);
-            QString archetype   = QString(getClass(*c)).remove("Class_");
-
-            // Format: character_name "lvl" level "clvl" combat_level origin archetype
-            msg += name + " lvl " + lvl + " clvl " + clvl + " " + origin + " " + archetype + "\n";
-        }
-
-        qDebug().noquote() << msg;
-        info = new InfoMessageCmd(InfoType::SVR_COM, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "settitles" || (lowerContents.startsWith("setTitles ",Qt::CaseInsensitive) || lowerContents.startsWith("title_change ",Qt::CaseInsensitive))) {
-        QString msg;
-        bool prefix;
-        QString generic;
-        QString origin;
-        QString special;
-        QStringList args;
-
-        args = ev->contents.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
-
-        if(lowerContents == "settitles")
-        {
-            setTitles(ent->m_char);
-            msg = "Titles reset to nothing";
-        }
-        else
-        {
-            prefix  = !args.value(1).isEmpty();
-            generic = args.value(2);
-            origin  = args.value(3);
-            special = args.value(4);
-            setTitles(ent->m_char, prefix, generic, origin, special);
-            msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
-        }
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::USER_ERROR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "controls_disabled") {
-        toggleControlsDisabled(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("updateID ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        uint8_t attrib = val.toUInt();
-
-        setUpdateID(*ent, attrib);
-
-        QString msg = "Setting updateID to: " + QString::number(attrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "lfg") {
-        toggleLFG(ent->m_char);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setInf ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        uint32_t attrib = val.toUInt();
-
-        setInf(ent->m_char, attrib);
-
-        QString msg = "Setting influence to: " + QString::number(attrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "stuck") {
-        // TODO: Implement true move-to-safe-location-nearby logic
-        ent->m_entity_data.pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park starting location
-
-        QString msg = "Resetting location to default spawn ("
-                + QString::number(ent->m_entity_data.pos.x) + ","
-                + QString::number(ent->m_entity_data.pos.y) + ","
-                + QString::number(ent->m_entity_data.pos.z) + ")";
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "fullupdate") {
-        toggleFullUpdate(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "hascontrolid") {
-        toggleControlId(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("em ",Qt::CaseInsensitive) || lowerContents.startsWith("e ",Qt::CaseInsensitive)
-            || lowerContents.startsWith("me ",Qt::CaseInsensitive))                                  // ERICEDIT: This encompasses all emotes.
-    {
-        on_emote_command(lowerContents, ent, src);
-    }
-    // Slash commands for setting bit values
-    else if(lowerContents.startsWith("setu1 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu1(*ent, val);
-
-        QString msg = "Set u1 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setu2 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu2(*ent, val);
-
-        QString msg = "Set u2 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setu3 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu3(*ent, val);
-
-        QString msg = "Set u3 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setu4 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu4(*ent, val);
-
-        QString msg = "Set u4 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setu5 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu5(*ent, val);
-
-        QString msg = "Set u5 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setu6 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu6(*ent, val);
-
-        QString msg = "Set u6 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("getEntity ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        QString msg;
-
-        MapInstance *mi = src->current_map();
-        EntityManager &ent_manager(mi->m_entities);
-
-        Entity *e = ent_manager.getEntity(val);
-        if(e == nullptr)
-            msg = "No Such Entity: " + val;
-        else
-            msg = "Received Entity: " + e->name();
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "updatechar") {
-        charUpdateDB(ent);
-
-        QString msg = "Updating Character in Database: " + ent->name();
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "chardebug") {
-        QString msg = "CharDebug: " + ent->name()
-                + "\n  " + ent->m_char.m_char_data.m_origin_name
-                + "\n  " + ent->m_char.m_char_data.m_class_name
-                + "\n  map: " + ent->m_char.m_char_data.m_mapName
-                + "\n  db_id: " + QString::number(ent->m_db_id) + ":" + QString::number(ent->m_char.m_db_id)
-                + "\n  idx: " + QString::number(ent->m_idx)
-                + "\n  access: " + QString::number(ent->m_entity_data.m_access_level)
-                + "\n  acct: " + QString::number(ent->m_char.m_account_id)
-                + "\n  lvl/clvl: " + QString::number(ent->m_char.m_char_data.m_level) + "/" + QString::number(ent->m_char.m_char_data.m_combat_level)
-                + "\n  inf: " + QString::number(ent->m_char.m_char_data.m_influence)
-                + "\n  xp/debt: " + QString::number(ent->m_char.m_char_data.m_experience_points) + "/" + QString::number(ent->m_char.m_char_data.m_experience_debt)
-                + "\n  lfg: " + QString::number(ent->m_char.m_char_data.m_lfg)
-                + "\n  afk: " + QString::number(ent->m_char.m_char_data.m_afk)
-                + "\n  tgt_idx: " + QString::number(getTargetIdx(*ent));
-        ent->dump();
-        //qDebug().noquote() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "settingsdump") {
-        settingsDump();
-
-        QString msg = "Sending settings config dump to console output.";
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        on_emote_command(lowerContents, ent);
     }
     else {
-        qDebug() << "Unhandled game command:" << ev->contents;
+        runCommand(contents,*ent);
     }
 }
-void MapInstance::on_emote_command(QString lowerContents, Entity *ent, MapClient *src)
+void MapInstance::on_emote_command(QString lowerContents, Entity *ent)
 {
-    InfoMessageCmd *info;
     QString msg;                                                                // Initialize the variable to hold the debug message.
+    MapClient *src = ent->m_client;
+    std::vector<MapClient *> recipients;
+
     if(lowerContents.startsWith("em") || lowerContents.startsWith("me"))        // This if-else removes the prefix of the command for conciseness.
         lowerContents.replace(0, 3, "");
     else                                                                        // Requires a different argument for the "e" command.
@@ -1757,14 +1325,28 @@ void MapInstance::on_emote_command(QString lowerContents, Entity *ent, MapClient
     {
         // "CharacterName {emote message}"
         msg = QString("%1 %2").arg(ent->name(),lowerContents);
-        qDebug() << msg;                                                            // Print out the message to the server console.
-        ChatMessage *cmsg = ChatMessage::emoteMessage(msg,src->char_entity());
-        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(cmsg));
-        return;
     }
-    qDebug() << msg;                                                            // Print out the message to the server console.
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);                       // Create the message to send to the client.
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));     // Print the message to the client.
+
+    // send only to clients within range
+    glm::vec3 senderpos = src->char_entity()->m_entity_data.pos;
+    for(MapClient *cl : m_clients)
+    {
+        glm::vec3 recpos = cl->char_entity()->m_entity_data.pos;
+        float range = 50.0f; // range of "hearing". I assume this is in yards
+        float dist = glm::distance(senderpos,recpos);
+        /*
+        printf("senderpos: %f %f %f\n", senderpos.x, senderpos.y, senderpos.z);
+        printf("recpos: %f %f %f\n", recpos.x, recpos.y, recpos.z);
+        printf("sphere: %f\n", range);
+        printf("dist: %f\n", dist);
+        */
+        if(dist<=range)
+            recipients.push_back(cl);
+    }
+    for(MapClient * cl : recipients)
+    {
+        sendChatMessage(MessageChannel::EMOTE,msg,src,cl);
+    }
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {
@@ -1791,7 +1373,9 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     std::snprintf(buf, 256, "There are %zu active entites and %zu clients", m_entities.active_entities(),
                   num_active_clients());
     welcome_msg += buf;
-    cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(welcome_msg.c_str())));
+    sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),cl);
+
+    sendServerMOTD(cl->char_entity());
 }
 void MapInstance::on_location_visited(LocationVisited *ev)
 {
@@ -1799,7 +1383,7 @@ void MapInstance::on_location_visited(LocationVisited *ev)
     MapClient *cl = lnk->client_data();
     qDebug() << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
     auto val = m_scripting_interface->callFuncWithClientContext(cl,"location_visited",qHash(ev->m_name));
-    cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(new InfoMessageCmd(InfoType::DEBUG_INFO,val.c_str())));
+    sendInfoMessage(MessageChannel::DEBUG_INFO,QString::fromStdString(val),cl);
 
     qWarning() << "Unhandled location visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);

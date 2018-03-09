@@ -99,7 +99,8 @@ void Entity::dump()
                              + QString::number(m_entity_data.m_orientation_pyr.r)
             + "\n  target: " + QString::number(m_target_idx)
             + "\n  assist target: " + QString::number(m_assist_target_idx)
-            + "\n  m_SG_id: " + QString::number(m_supergroup.m_SG_id);
+            + "\n  m_SG_id: " + QString::number(m_supergroup.m_SG_id)
+            + "\n  m_team_id: " + QString::number(m_team.m_team_id);
 
     qDebug().noquote() << msg;
     if(m_type == Entity::ENT_PLAYER)
@@ -137,9 +138,10 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_entity_data.m_class_idx         = {0};
     e.m_selector1                       = false;
     e.m_hasname                         = true;
-    e.m_hasgroup_name                   = false;
+    e.m_supergroup.m_SG_info            = false;
+    e.m_team.m_has_team                 = false;
     e.m_pchar_things                    = true;
-    e.m_entity_data.m_access_level        = 9;
+    e.m_entity_data.m_access_level      = 9;
 
     e.m_char.reset();
     e.might_have_rare = e.m_rare_bits   = true;

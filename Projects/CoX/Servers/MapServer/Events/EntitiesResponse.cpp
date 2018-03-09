@@ -388,7 +388,6 @@ EntitiesResponse::EntitiesResponse(MapClient *cl) :
     m_interpolation_level = 2;
     m_interpolation_bits=1;
     //m_interpolation_level
-
 }
 void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
