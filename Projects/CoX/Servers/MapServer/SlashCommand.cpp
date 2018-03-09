@@ -1,6 +1,7 @@
 #include "SlashCommand.h"
 #include "DataHelpers.h"
 #include "MapInstance.h"
+#include "Settings.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFile>
@@ -39,6 +40,7 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"hascontrolid"}, &cmdHandler_HasControlId, 9},
     {{"setTeam"}, &cmdHandler_SetTeam, 9},
     {{"setSuperGroup"}, &cmdHandler_SetSuperGroup, 9},
+    {{"settingsDump"}, &cmdHandler_SettingsDump, 9},
     {{"setu1"}, &cmdHandler_SetU1, 9},
     {{"setu2"}, &cmdHandler_SetU2, 9},
     {{"setu3"}, &cmdHandler_SetU3, 9},
@@ -430,6 +432,16 @@ void cmdHandler_SetSuperGroup(QString &cmd, Entity *e) {
     QString msg = "Set SuperGroup ID to: " + QString::number(val);
     qDebug() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+}
+
+void cmdHandler_SettingsDump(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    QString msg = "Sending settings config dump to console output.";
+    qDebug() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    settingsDump(); // Send settings dump
 }
 
 // Slash commands for setting bit values
