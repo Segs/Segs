@@ -7,6 +7,7 @@
 
  */
 //#define DEBUG_SPAWN
+#define DEBUG_GUI
 #include "MapInstance.h"
 
 #include "AdminServer.h"
@@ -506,8 +507,12 @@ void MapInstance::on_cookie_confirm(CookieRequest * ev){
     printf("Received cookie confirm %x - %x\n",ev->cookie,ev->console);
 }
 void MapInstance::on_window_state(WindowState * ev){
-    //printf("Received window state %d - %d\n",ev->window_idx,ev->wnd.field_24);
+    // TODO: Save window state to database?
 
+#ifdef DEBUG_GUI
+    printf("Received window state %d - %d\n",ev->wnd.idx,ev->wnd.mode);
+    ev->guidump();
+#endif
 }
 QString process_replacement_strings(MapClient *sender,const QString &msg_text)
 {
@@ -1467,12 +1472,15 @@ void MapInstance::on_receive_player_info(ReceivePlayerInfo * ev)
 
 void MapInstance::on_client_options(SaveClientOptions * ev)
 {
-    // Save options/keybinds to client entry in the database.
+    // Save options/keybinds/windowsettings to character entity and entry in the database.
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
     Entity *e = src->char_entity();
 
-    charUpdateOptions(e);
+    e->m_char.m_options = ev->data;
+    // e->m_char.m_gui = ev->gui;
+    // e->m_char.m_keybinds = ev->keybinds;
+    charUpdateOptions(e); // Update database with opts/kbds/wnds
 
     qDebug() << "Client options saved to database.";
 }

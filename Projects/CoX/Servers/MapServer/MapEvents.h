@@ -181,18 +181,61 @@ public:
 class WindowState final : public MapLinkEvent
 {
 public:
-    uint32_t window_idx;
+    enum WindowIDX : uint32_t {
+        wdw_Unknown0        = 0,
+        wdw_Status          = 1,
+        wdw_Target          = 2,
+        wdw_PowersTray      = 3,
+        wdw_Chat            = 4,
+        wdw_PowerList       = 5,
+        wdw_Team            = 6,
+        wdw_NavCompass      = 7,
+        wdw_Map             = 8,
+        wdw_ChatOptions     = 9,
+        wdw_Friends         = 10,
+        wdw_Unknown11       = 11,
+        wdw_Inspirations    = 12,
+        wdw_SuperGroup      = 13,
+        wdw_Emails          = 14,
+        wdw_ComposeEmail    = 15,
+        wdw_Contacts        = 16,
+        wdw_Missions        = 17,
+        wdw_Clues           = 18,
+        wdw_Unknown19       = 19,
+        wdw_Quit            = 20,
+        wdw_Info            = 21,
+        wdw_Help            = 22,
+        wdw_Unknown23       = 23,
+        wdw_Actions         = 24,
+        wdw_Unknown25       = 25,
+        wdw_Unknown26       = 26,
+        wdw_Unknown27       = 27,
+        wdw_GenericDlg      = 28,
+        wdw_Unknown29       = 29,
+        wdw_Support         = 30,
+        wdw_Unknown31       = 31,
+        wdw_Defeated        = 32,
+        wdw_Unknown33       = 33,
+        wdw_CostumeSelect   = 34,
+    };
+    enum WindowVisibility : uint32_t {
+      wv_Visible            = 2,
+      wv_Shrinking          = 3,
+      wv_Hidden             = 4,
+    };
+
     struct WindowS {
-        uint32_t posx;              // field_0
-        uint32_t posy;              // field_4
-        uint32_t width;             // field_8
-        uint32_t height;            // field_C
-        uint32_t draggable_frame;   // field_14
-        uint32_t locked;            // field_18
-        uint32_t start_shrunk;      // field_24
-        uint32_t color;
-        uint32_t alpha;
-        uint32_t mode;
+        WindowIDX           idx;
+        WindowVisibility    state;      // field_24/start_shrunk - 2, unless closing, then goes from 2 (visible) to 3 to 4 (hidden)
+        bool        draggable_frame;    // field_14
+        uint32_t    posx;
+        uint32_t    posy;
+        uint32_t    width   = 0;
+        uint32_t    height  = 0;
+        uint32_t    locked;                 // field_18/docked? - 0, 2 (idx 12 = 1, idx 0-4,7 = 0)
+        uint32_t    color   = 0x3399FF99;   // 865730457 == 0x3399FF99 (light blue with 90% transparency)
+        uint32_t    alpha   = 0x88;         // default 136 (0x88)
+        uint32_t    mode;                   // 0, because I don't know where the client sends these bits
     };
     WindowS wnd;
     WindowState():MapLinkEvent(MapEventTypes::evWindowState)
@@ -203,35 +246,35 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        window_idx = bs.GetPackedBits(1);
+        wnd.idx = (WindowIDX)bs.GetPackedBits(1);
 
         wnd.posx = bs.GetPackedBits(1);
         wnd.posy = bs.GetPackedBits(1);
-        uint32_t val = bs.GetPackedBits(1);
-        if(val==4)
-            wnd.locked = 2;
-        wnd.start_shrunk = val;
-
-        wnd.draggable_frame = bs.GetPackedBits(1);
+        wnd.state = (WindowVisibility)bs.GetPackedBits(1);
+        wnd.locked = bs.GetPackedBits(1);
         wnd.color = bs.GetPackedBits(1);
         wnd.alpha = bs.GetPackedBits(1);
-        if(bs.GetBits(1)) {
+
+        if(wnd.state == wv_Hidden)
+            wnd.locked = 2; // if hidden, lock window
+
+        if((wnd.draggable_frame = bs.GetBits(1))) {
             wnd.width = bs.GetPackedBits(1);
             wnd.height = bs.GetPackedBits(1);
         }
 
-        //guidump(); // TODO: Comment this out
+        wnd.mode = 0; // where does this come from?
     }
     void guidump()
     {
-        qDebug().noquote() << "Debugging WindowState:" << window_idx
+        qDebug().noquote() << "Debugging WindowState:" << wnd.idx
                  << "\n\t" << "posx:" << wnd.posx
                  << "\n\t" << "posy:" << wnd.posy
                  << "\n\t" << "width:" << wnd.width
                  << "\n\t" << "height:" << wnd.height
                  << "\n\t" << "draggable_frame:" << wnd.draggable_frame
                  << "\n\t" << "locked:" << wnd.locked
-                 << "\n\t" << "start_shrunk:" << wnd.start_shrunk
+                 << "\n\t" << "state:" << wnd.state
                  << "\n\t" << "color:" << wnd.color
                  << "\n\t" << "alpha:" << wnd.alpha
                  << "\n\t" << "mode:" << wnd.mode;
@@ -478,8 +521,9 @@ public:
     void serializefrom(BitStream &bs) override
     {
         entity_idx = bs.GetPackedBits(12);
-        bs.StorePackedBits(1,69);
-        bs.StoreString(description);
+        // TODO: What happens here?
+        // bs.StorePackedBits(1,69);
+        // bs.StoreString(description);
     }
 };
 class ReceivePlayerInfo final : public MapLinkEvent
@@ -560,9 +604,8 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        dock_mode = bs.GetBits(18);
+        dock_mode = bs.GetPackedBits(32); // Some kind of array of slotted powers?
         toggle_secondary_tray = bs.GetBits(1);
-        // TODO: Not all bits were consumed
     }
 };
 class SwitchTray final : public MapLinkEvent

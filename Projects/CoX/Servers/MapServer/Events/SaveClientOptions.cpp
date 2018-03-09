@@ -10,7 +10,7 @@
 
 void SaveClientOptions::serializefrom(BitStream & bs)
 {
-    qDebug() << "Serializing from ClientOptions";
+    qDebug() << "Serializing options from Client";
     data.m_mouse_speed          = bs.GetFloat();
     data.m_turn_speed           = bs.GetFloat();
     data.m_mouse_invert         = bs.GetBits(1);
@@ -19,15 +19,15 @@ void SaveClientOptions::serializefrom(BitStream & bs)
     data.m_show_tooltips        = bs.GetBits(1);
     data.m_allow_profanity      = bs.GetBits(1);
     data.m_chat_balloons        = bs.GetBits(1);
-    data.m_show_archetype       = (WindowVisibility)bs.GetBits(3);
-    data.m_show_supergroup      = (WindowVisibility)bs.GetBits(3);
-    data.m_show_player_name     = (WindowVisibility)bs.GetBits(3);
-    data.m_show_player_bars     = (WindowVisibility)bs.GetBits(3);
-    data.m_show_enemy_name      = (WindowVisibility)bs.GetBits(3);
-    data.m_show_enemy_bars      = (WindowVisibility)bs.GetBits(3);
-    data.m_show_player_reticles = (WindowVisibility)bs.GetBits(3);
-    data.m_show_enemy_reticles  = (WindowVisibility)bs.GetBits(3);
-    data.m_show_assist_reticles = (WindowVisibility)bs.GetBits(3);
+    data.m_show_archetype       = (ReticleVisibility)bs.GetBits(3);
+    data.m_show_supergroup      = (ReticleVisibility)bs.GetBits(3);
+    data.m_show_player_name     = (ReticleVisibility)bs.GetBits(3);
+    data.m_show_player_bars     = (ReticleVisibility)bs.GetBits(3);
+    data.m_show_enemy_name      = (ReticleVisibility)bs.GetBits(3);
+    data.m_show_enemy_bars      = (ReticleVisibility)bs.GetBits(3);
+    data.m_show_player_reticles = (ReticleVisibility)bs.GetBits(3);
+    data.m_show_enemy_reticles  = (ReticleVisibility)bs.GetBits(3);
+    data.m_show_assist_reticles = (ReticleVisibility)bs.GetBits(3);
     data.m_chat_font_size       = bs.GetPackedBits(5);
 }
 

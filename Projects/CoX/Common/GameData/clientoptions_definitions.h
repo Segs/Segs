@@ -7,11 +7,12 @@
 
 #include <QDebug>
 
-enum WindowVisibility : uint32_t {
-  wv_HideAlways     = 0,
-  wv_Always         = 1,
-  wv_OnMouseOver    = 2,
-  wv_Selected       = 4,
+enum ReticleVisibility : uint32_t {
+  rv_HideAlways             = 0,
+  rv_Always                 = 1,
+  rv_OnMouseOver            = 2,
+  rv_Selected               = 4,
+  rv_SelectedOrMouseOver    = 6,
 };
 
 struct ClientOption
@@ -51,7 +52,7 @@ public:
     }
     int32_t control_debug       = 0;
     int32_t no_strafe           = 0;
-    int32_t alwaysmobile        = 0; // 1- player is always mobile (can't be immobilized by powers)
+    int32_t alwaysmobile        = 0; // 1 - player is always mobile (can't be immobilized by powers)
     int32_t repredict           = 0; // 1 - client is out of sync with server, asking for new physics state info.
     int32_t neterrorcorrection  = 0;
     float   speed_scale         = 0;
@@ -60,24 +61,24 @@ public:
     int32_t atest0,atest1,atest2,atest3,atest4,atest5,atest6,atest7,atest8,atest9;
     int32_t predict,notimeout,selected_ent_server_index;
 
-    bool             m_mouse_invert         = 0;
-    float            m_mouse_speed          = 0;
-    float            m_turn_speed           = 3;
-    bool             m_fade_chat_wnd        = 0;
-    bool             m_fade_nav_wnd         = 0;
-    bool             m_show_tooltips        = true;
-    bool             m_allow_profanity      = true;
-    bool             m_chat_balloons        = true;
-    WindowVisibility m_show_archetype       = wv_OnMouseOver;
-    WindowVisibility m_show_supergroup      = wv_OnMouseOver;
-    WindowVisibility m_show_player_name     = wv_OnMouseOver;
-    WindowVisibility m_show_player_bars     = wv_OnMouseOver;
-    WindowVisibility m_show_enemy_name      = wv_OnMouseOver;
-    WindowVisibility m_show_enemy_bars      = wv_OnMouseOver;
-    WindowVisibility m_show_player_reticles = wv_OnMouseOver;
-    WindowVisibility m_show_enemy_reticles  = wv_OnMouseOver;
-    WindowVisibility m_show_assist_reticles = wv_OnMouseOver;
-    uint8_t          m_chat_font_size       = 0;
+    bool                m_mouse_invert         = false;
+    float               m_mouse_speed          = 0;
+    float               m_turn_speed           = 3;    // client displays this as pct (*100)
+    bool                m_fade_chat_wnd        = true;
+    bool                m_fade_nav_wnd         = true;
+    bool                m_show_tooltips        = true;
+    bool                m_allow_profanity      = false;
+    bool                m_chat_balloons        = true;
+    ReticleVisibility   m_show_archetype       = rv_OnMouseOver;
+    ReticleVisibility   m_show_supergroup      = rv_OnMouseOver;
+    ReticleVisibility   m_show_player_name     = rv_Always;
+    ReticleVisibility   m_show_player_bars     = rv_SelectedOrMouseOver;
+    ReticleVisibility   m_show_enemy_name      = rv_SelectedOrMouseOver;
+    ReticleVisibility   m_show_enemy_bars      = rv_SelectedOrMouseOver;
+    ReticleVisibility   m_show_player_reticles = rv_SelectedOrMouseOver;
+    ReticleVisibility   m_show_enemy_reticles  = rv_SelectedOrMouseOver;
+    ReticleVisibility   m_show_assist_reticles = rv_SelectedOrMouseOver;
+    uint8_t             m_chat_font_size       = 12;   // 12 default size
 
     ClientOption *get(int idx)
     {

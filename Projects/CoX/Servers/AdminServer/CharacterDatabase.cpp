@@ -461,11 +461,11 @@ bool CharacterDatabase::updateClientOptions( Entity *e )
     serializeToDb(*od,options_data);
     m_prepared_options_update.bindValue(":options", options_data);
 
-    QString gui_data = "NULL";
+    QString gui_data = NULL;
     //serializeToDb(*gui,gui_data);
     m_prepared_options_update.bindValue(":gui", gui_data);
 
-    QString keybind_data = "NULL";
+    QString keybind_data = NULL;
     //serializeToDb(*kbd,keybind_data);
     m_prepared_options_update.bindValue(":keybinds", keybind_data);
 

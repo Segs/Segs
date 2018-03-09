@@ -14,31 +14,6 @@
 
 CEREAL_CLASS_VERSION(ClientOptions, 1); // register Client Options class version
 
-/*
-template<class Archive>
-std::string save_minimal(Archive &archive, WindowVisibility const &obj)
-{
-    switch (obj)
-    {
-        case WindowVisibility::wv_HideAlways: return "HideAlways";
-        case WindowVisibility::wv_Always: return "ShowAlways";
-        case WindowVisibility::wv_OnMouseOver: return "OnMouseOver";
-        case WindowVisibility::wv_Selected: return "Selected";
-    }
-    return "OnMouseOver"; // Default value
-}
-
-template<class Archive>
-void load_minimal(Archive &archive, WindowVisibility &obj, std::string const &value)
-{
-    if (value == "HideAlways") obj = WindowVisibility::wv_HideAlways;
-    else if (value == "ShowAlways") obj = WindowVisibility::wv_Always;
-    else if (value == "OnMouseOver") obj = WindowVisibility::wv_OnMouseOver;
-    else if (value == "Selected") obj = WindowVisibility::wv_Selected;
-    else obj = WindowVisibility::wv_OnMouseOver; // Default value
-}
-*/
-
 template<class Archive>
 void serialize(Archive &archive, ClientOptions &co, uint32_t const version)
 {
