@@ -5,7 +5,7 @@ class QString;
 struct CharacterData;
 
 template<class Archive>
-void serialize(Archive & archive, CharacterData & m, uint32_t const version);
+void serialize(Archive &archive, CharacterData &cd, uint32_t const version);
 
 void saveTo(const CharacterData &target,const QString &baseName,bool text_format=false);
 

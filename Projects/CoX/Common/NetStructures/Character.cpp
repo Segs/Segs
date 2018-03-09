@@ -301,6 +301,8 @@ void Character::dump()
     qDebug() <<"//-----------------Costume-----------------";
     if(getCurrentCostume())
         getCurrentCostume()->dump();
+    qDebug() <<"//-----------------Options-----------------";
+    m_options.clientOptionsDump();
 }
 
 void Character::recv_initial_costume( BitStream &src, ColorAndPartPacker *packer )

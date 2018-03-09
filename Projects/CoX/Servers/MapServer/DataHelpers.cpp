@@ -112,7 +112,17 @@ void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
 void charUpdateDB(Entity *e)
 {
     CharacterDatabase *char_db = AdminServer::instance()->character_db();
-        char_db->update(e);
+    // Update Character In Database
+    if(!char_db->update(e))
+        qDebug() << "Character failed to update in database!";
+}
+
+void charUpdateOptions(Entity *e)
+{
+    CharacterDatabase *char_db = AdminServer::instance()->character_db();
+    // Update Client Options/Keybinds/GUI settings
+    if(!char_db->updateClientOptions(e))
+        qDebug() << "Client Options failed to update in database!";
 }
 
 int getEntityOriginIndex(bool is_player, const QString &origin_name)

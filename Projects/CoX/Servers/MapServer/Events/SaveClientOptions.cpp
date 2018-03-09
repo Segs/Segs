@@ -10,6 +10,7 @@
 
 void SaveClientOptions::serializefrom(BitStream & bs)
 {
+    qDebug() << "Serializing from ClientOptions";
     data.m_mouse_speed          = bs.GetFloat();
     data.m_turn_speed           = bs.GetFloat();
     data.m_mouse_invert         = bs.GetBits(1);

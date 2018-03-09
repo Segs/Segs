@@ -220,8 +220,11 @@ public:
             wnd.height = bs.GetPackedBits(1);
         }
 
-        // TODO: Comment this out
-        qDebug().noquote() << "Debugging WindowState:"
+        //guidump(); // TODO: Comment this out
+    }
+    void guidump()
+    {
+        qDebug().noquote() << "Debugging WindowState:" << window_idx
                  << "\n\t" << "posx:" << wnd.posx
                  << "\n\t" << "posy:" << wnd.posy
                  << "\n\t" << "width:" << wnd.width

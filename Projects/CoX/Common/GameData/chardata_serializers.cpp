@@ -7,7 +7,7 @@
 CEREAL_CLASS_VERSION(CharacterData, 2); // register CharacterData class version
 
 template<class Archive>
-void serialize(Archive & archive, CharacterData &cd, uint32_t const version)
+void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
 {
     archive(cereal::make_nvp("Level",cd.m_level));
     archive(cereal::make_nvp("CombatLevel",cd.m_combat_level));
@@ -34,7 +34,7 @@ void serialize(Archive & archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("CurrentChatChannel",cd.m_cur_chat_channel));
 }
 
-void saveTo(const CharacterData & target, const QString & baseName, bool text_format)
+void saveTo(const CharacterData &target, const QString &baseName, bool text_format)
 {
     commonSaveTo(target,"CharacterData",baseName,text_format);
 }

@@ -1467,8 +1467,14 @@ void MapInstance::on_receive_player_info(ReceivePlayerInfo * ev)
 
 void MapInstance::on_client_options(SaveClientOptions * ev)
 {
-    qWarning() << "Unhandled client options";
-    //TODO: save options to client entry in the database.
+    // Save options/keybinds to client entry in the database.
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    Entity *e = src->char_entity();
+
+    charUpdateOptions(e);
+
+    qDebug() << "Client options saved to database.";
 }
 
 void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)

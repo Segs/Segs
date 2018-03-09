@@ -5,6 +5,8 @@
 #include <vector>
 #include <cassert>
 
+#include <QDebug>
+
 enum WindowVisibility : uint32_t {
   wv_HideAlways     = 0,
   wv_Always         = 1,
@@ -83,6 +85,29 @@ public:
             return nullptr;
         assert((size_t(idx)<m_opts.size()) && "Unknown option requested!!");
         return &m_opts[idx];
+    }
+
+    void clientOptionsDump()
+    {
+        qDebug().noquote() << "Debugging ClientOptions:"
+                 << "\n\t" << "Invert Mouse:" << m_mouse_invert
+                 << "\n\t" << "Mouse Speed:" << m_mouse_speed
+                 << "\n\t" << "Turn Speed:" << m_turn_speed
+                 << "\n\t" << "Fade Chat Window:" << m_fade_chat_wnd
+                 << "\n\t" << "Fade Nav Window:" << m_fade_nav_wnd
+                 << "\n\t" << "Show Tooltips:" << m_show_tooltips
+                 << "\n\t" << "Allow Profanity:" << m_allow_profanity
+                 << "\n\t" << "Chat Balloons:" << m_chat_balloons
+                 << "\n\t" << "Show Archetype:" << m_show_archetype
+                 << "\n\t" << "Show SuperGroup:" << m_show_supergroup
+                 << "\n\t" << "Show Player Name:" << m_show_player_name
+                 << "\n\t" << "Show Player Bars:" << m_show_player_bars
+                 << "\n\t" << "Show Enemy Name:" << m_show_enemy_name
+                 << "\n\t" << "Show Enemy Bars:" << m_show_enemy_bars
+                 << "\n\t" << "Show Player Reticles:" << m_show_player_reticles
+                 << "\n\t" << "Show Enemy Reticles:" << m_show_enemy_reticles
+                 << "\n\t" << "Show Assist Reticles:" << m_show_assist_reticles
+                 << "\n\t" << "Chat Font Size:" << m_chat_font_size;
     }
 
 };
