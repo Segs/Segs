@@ -6,6 +6,7 @@
 #include "MapClient.h"
 #include "AdminServer/AdminServer.h"
 #include "AdminServer/CharacterDatabase.h"
+#include "Team.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -37,23 +38,20 @@ void    setTeamID(Entity &e, uint8_t team_id)
     // TODO: provide method for updating Team Name and Rank
     if(team_id == 0)
     {
-        e.m_team.m_has_team     = false;
-        e.m_team.m_team_id      = team_id;
-        e.m_team.m_team_name    = "";
-        e.m_team.m_team_rank    = 0;
+        e.m_has_team            = false;
+        delete e.m_team;
     }
     else
     {
-        e.m_team.m_has_team     = true;
-        e.m_team.m_team_id      = team_id;
-        e.m_team.m_team_name    = "Super Team";
-        e.m_team.m_team_rank    = 1;
+        e.m_has_team            = true;
     }
     qDebug().noquote() << "Team Info:"
-             << "\n  Has Team:" << e.m_team.m_has_team
-             << "\n  ID:" << e.m_team.m_team_id
-             << "\n  Name:" << e.m_team.m_team_name
-             << "\n  Rank:" << e.m_team.m_team_rank;
+             << "\n  Has Team:" << e.m_has_team
+             << "\n  ID:" << e.m_team->m_team_idx
+             << "\n  Name:" << e.m_team->m_team_name
+             << "\n  Rank:" << e.m_team->m_team_rank
+             << "\n  Size:" << e.m_team->m_team_members.size()
+             << "\n  Members:" << e.m_team->m_team_members.data();
 }
 
 void    setSuperGroupID(Entity &e, uint8_t sg_id)
@@ -156,6 +154,41 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
     qWarning() << "Failed to locate class index for"<<class_name;
     return 0;
 
+}
+
+// Poll EntityManager to return Entity by Name or IDX
+Entity * getEntity(MapClient *src, const QString &name)
+{
+    MapInstance *mi = src->current_map();
+    EntityManager &em(mi->m_entities);
+
+    // Iterate through all active entities and return entity by name
+    for (Entity* pEnt : em.m_live_entlist)
+    {
+        if (pEnt->name() == name)
+            return pEnt;
+    }
+    qWarning() << "Entity" << name << "does not exist, or is not currently online.";
+    return nullptr;
+}
+
+Entity * getEntity(MapClient *src, const int32_t &idx)
+{
+    MapInstance *mi = src->current_map();
+    EntityManager &em(mi->m_entities);
+
+    if(idx==0) {
+        qWarning() << "Entity" << idx << "does not exist, or is not currently online.";
+        return nullptr;
+    }
+    // Iterate through all active entities and return entity by idx
+    for (Entity* pEnt : em.m_live_entlist)
+    {
+        if (pEnt->m_idx == idx)
+            return pEnt;
+    }
+    qWarning() << "Entity" << idx << "does not exist, or is not currently online.";
+    return nullptr;
 }
 
 void sendServerMOTD(Entity *e)

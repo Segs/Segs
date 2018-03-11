@@ -38,7 +38,7 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"updateid"}, &cmdHandler_UpdateId, 9},
     {{"fullupdate"}, &cmdHandler_FullUpdate, 9},
     {{"hascontrolid"}, &cmdHandler_HasControlId, 9},
-    {{"setTeam"}, &cmdHandler_SetTeam, 9},
+    {{"setTeam","setTeamID"}, &cmdHandler_SetTeam, 9},
     {{"setSuperGroup"}, &cmdHandler_SetSuperGroup, 9},
     {{"settingsDump"}, &cmdHandler_SettingsDump, 9},
     {{"setu1"}, &cmdHandler_SetU1, 9},
@@ -55,6 +55,10 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"stuck"}, &cmdHandler_Stuck, 1},
     {{"lfg"}, &cmdHandler_LFG, 1},
     {{"motd"}, &cmdHandler_MOTD, 1},
+    {{"i","invite"}, &cmdHandler_Invite, 1},
+    {{"k","kick"}, &cmdHandler_Kick, 1},
+    {{"leaveteam"}, &cmdHandler_LeaveTeam, 1},
+    {{"findmember"}, &cmdHandler_FindMember, 1}
 };
 
 bool canAccessCommand(const SlashCommand &cmd, const Entity &e)
@@ -620,4 +624,76 @@ void cmdHandler_MOTD(QString &cmd, Entity *e) {
     QString msg = "Opening Server MOTD";
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, src);
+}
+
+void cmdHandler_Invite(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+    QString msg;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space==-1)
+    {
+        msg = "The " + cmd + " command requires a name of a player.";
+        return;
+    }
+
+    if((tgt = getEntity(src,name)) == nullptr)
+        return;
+
+    if(inviteTeam(*e,*tgt))
+        msg = "Inviting " + name + " to team.";
+    else
+        msg = "Failed to invite " + name + ". They are already on a team.";
+
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::CHAT_TEXT, msg, src);
+}
+
+void cmdHandler_Kick(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+    QString msg;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space==-1)
+    {
+        msg = "The " + cmd + " command requires a name of a player.";
+        return;
+    }
+
+    if((tgt = getEntity(src,name)) == nullptr)
+        return;
+
+    if(kickTeam(*tgt))
+        msg = "Kicking " + name + " from team.";
+    else
+        msg = "Failed to kick " + name;
+
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::TEAM, msg, src);
+}
+
+void cmdHandler_LeaveTeam(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    leaveTeam(*e);
+
+    QString msg = "Leaving Team";
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::TEAM, msg, src);
+}
+
+void cmdHandler_FindMember(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    findTeamMember(*e);
+
+    QString msg = "Finding Team Member";
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::CHAT_TEXT, msg, src);
 }

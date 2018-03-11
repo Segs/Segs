@@ -50,6 +50,8 @@ public:
         init();
         m_mouse_speed = 0.6f;
     }
+
+    // Other Options
     int32_t control_debug       = 0;
     int32_t no_strafe           = 0;
     int32_t alwaysmobile        = 0; // 1 - player is always mobile (can't be immobilized by powers)
@@ -61,6 +63,9 @@ public:
     int32_t atest0,atest1,atest2,atest3,atest4,atest5,atest6,atest7,atest8,atest9;
     int32_t predict,notimeout,selected_ent_server_index;
 
+    bool    m_first_person_view = false;
+
+    // Serialized Options
     bool                m_mouse_invert         = false;
     float               m_mouse_speed          = 0;
     float               m_turn_speed           = 3;    // client displays this as pct (*100)

@@ -53,7 +53,7 @@ void Character::reset()
     m_char_data.m_supergroup_costume=false;
     m_sg_costume=nullptr;
     m_char_data.m_using_sg_costume=false;
-    m_first_person_view_toggle=false;
+    m_options.m_first_person_view=false;
     m_full_options = false;
     m_char_data.m_has_titles = false;
     m_char_data.m_cur_chat_channel = 10;   // Default is local
@@ -68,22 +68,29 @@ bool Character::isEmpty()
 
 void Character::sendWindow(BitStream &bs) const
 {
-    bs.StorePackedBits(1,0);
-    bs.StorePackedBits(1,0);
-    bs.StorePackedBits(1,0); // visible ?
-    bs.StorePackedBits(1,0);
-    bs.StorePackedBits(1,0); // color
-    bs.StorePackedBits(1,0); // alpha
-    bool draggable=false;
-    bs.StoreBits(1,draggable);
-    if(draggable)
+    //WindowS wnd;
+    bool        draggable_frame = false;        // field_14
+    uint32_t    posx    = 0;
+    uint32_t    posy    = 0;
+    uint32_t    mode    = 0;
+    uint32_t    width   = 0;
+    uint32_t    height  = 0;
+    uint32_t    locked  = 0;                 // field_18/docked? - 0, 2 (idx 12 = 1, idx 0-4,7 = 0)
+    uint32_t    color   = 0x3399FF99;   // 865730457 == 0x3399FF99 (light blue with 90% transparency)
+    uint32_t    alpha   = 0x88;         // default 136 (0x88)
+
+    bs.StorePackedBits(1,posx);
+    bs.StorePackedBits(1,posy);
+    bs.StorePackedBits(1,mode);
+    bs.StorePackedBits(1,locked);
+    bs.StorePackedBits(1,color);
+    bs.StorePackedBits(1,alpha);
+    bs.StoreBits(1,draggable_frame);
+    if(draggable_frame)
     {
-        int width=0;
-        int height=0;
         bs.StorePackedBits(1,width);
         bs.StorePackedBits(1,height);
     }
-    //storeFloatConditional(bs,1.0f);
 }
 
 void Character::setName(const QString &val )
@@ -674,6 +681,6 @@ void Character::sendOptions( BitStream &bs ) const
         bs.StoreFloat(m_options.m_mouse_speed);
         bs.StoreFloat(m_options.m_turn_speed);
     }
-    bs.StoreBits(1,m_first_person_view_toggle);
+    bs.StoreBits(1,m_options.m_first_person_view);
 }
 

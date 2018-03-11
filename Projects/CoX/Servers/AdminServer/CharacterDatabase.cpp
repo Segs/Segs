@@ -342,8 +342,6 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
 
     QString options_data;
     serializeToDb(*od,options_data);
-    qDebug().noquote() << options_data;
-    od->clientOptionsDump();
     m_prepared_char_insert.bindValue(":options", options_data);
 
     QString gui_data = "NULL";

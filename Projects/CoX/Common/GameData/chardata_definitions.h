@@ -17,7 +17,7 @@ struct CharacterData
     QString     m_character_description;
     bool        m_afk               = false;
     QString     m_afk_msg;
-    uint8_t     m_lfg               = 0;
+    bool        m_lfg               = false;
     QString     m_alignment         = "hero";
     uint64_t    m_last_costume_id;
     QString     m_last_online;

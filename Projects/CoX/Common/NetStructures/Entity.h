@@ -3,6 +3,7 @@
 #include "Powers.h"
 #include "Costume.h"
 #include "Character.h"
+#include "Team.h"
 #include "FixedPointValue.h"
 #include "Common/GameData/entitydata_definitions.h"
 
@@ -12,6 +13,7 @@
 #include <cmath>
 #include <array>
 class MapClient;
+class Team;
 struct AngleRadians // TODO: Is this intended to be used?
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
@@ -167,24 +169,18 @@ public:
         };
         struct SuperGroup
         {
-            int     m_SG_id         = {0};
-            bool    m_SG_info       = false;
-            QString m_SG_name;               // 64 chars max
-            //QString m_SG_motto;
-            //QString m_SG_costume;          // 128 chars max -> hash table key from the CostumeString_HTable
-            uint32_t m_SG_color1    = 0;     // supergroup color 1
-            uint32_t m_SG_color2    = 0;     // supergroup color 2
-        };
-        struct Team
-        {
-            bool    m_has_team      = false;
-            int     m_team_id       = {0};
-            QString m_team_name;             // m_group_name? what is this?
-            int     m_team_rank     = 0;
+            int             m_SG_id                 = {0};
+            bool            m_SG_info               = false;
+            QString         m_SG_name;                      // 64 chars max
+            //QString         m_SG_motto;
+            //QString         m_SG_costume;                 // 128 chars max -> hash table key from the CostumeString_HTable
+            uint32_t        m_SG_color1             = 0;    // supergroup color 1
+            uint32_t        m_SG_color2             = 0;    // supergroup color 2
         };
 
+        bool                m_has_team              = false;
         SuperGroup          m_supergroup;
-        Team                m_team;
+        Team *              m_team                  = nullptr;
         EntityData          m_entity_data;
 
         int32_t             m_idx                   = {0};

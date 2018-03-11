@@ -7,7 +7,7 @@
 
  */
 //#define DEBUG_SPAWN
-#define DEBUG_GUI
+//#define DEBUG_GUI
 #include "MapInstance.h"
 
 #include "AdminServer.h"
@@ -528,9 +528,6 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
     msg_text = msg_text.replace("$target",sender->char_entity()->target->name());
     */
 
-    MapInstance *mi = sender->current_map();
-    EntityManager &ent_manager(mi->m_entities);
-
     QString new_msg = msg_text;
     static const QStringList replacements = {
         "\\$\\$",
@@ -556,7 +553,7 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
 
     if(target_idx > 0)
     {
-        Entity   *tgt    = ent_manager.getEntity(target_idx);
+        Entity   *tgt    = getEntity(sender,target_idx);
         target_char_name = tgt->name();
     }
     else
@@ -621,9 +618,6 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
     int first_space = msg_text.indexOf(' ');
     QString sender_char_name;
     QString prepared_chat_message;
-
-    if(msg_text.contains("$")) // does it contain replacement strings?
-        msg_text = process_replacement_strings(sender, msg_text);
 
     QStringRef cmd_str(msg_text.midRef(0,first_space));
     QStringRef msg_content(msg_text.midRef(first_space+1,msg_text.lastIndexOf("\n")));
@@ -691,10 +685,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             QString target_name = target_name_ref.toString();
             qDebug() << "target_name" << target_name;
 
-            MapInstance *mi = sender->current_map();
-            EntityManager &ent_manager(mi->m_entities);
-
-            Entity *tgt = ent_manager.getEntity(target_name);
+            Entity *tgt = getEntity(sender,target_name);
 
             if(tgt == nullptr)
             {
@@ -715,7 +706,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         }
         case MessageChannel::TEAM:
         {
-            if(!sender->char_entity()->m_team.m_has_team)
+            if(!sender->char_entity()->m_has_team)
             {
                 prepared_chat_message = "You are not a member of a Team.";
                 sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
@@ -725,7 +716,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             // Only send the message to characters on sender's team
             for(MapClient *cl : m_clients)
             {
-                if(sender->char_entity()->m_team.m_team_id == cl->char_entity()->m_team.m_team_id)
+                if(sender->char_entity()->m_team->m_team_idx == cl->char_entity()->m_team->m_team_idx)
                     recipients.push_back(cl);
             }
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
@@ -778,9 +769,12 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity(); // user entity
 
+    if(contents.contains("$")) // does it contain replacement strings?
+        contents = process_replacement_strings(src, contents);
+
     QString lowerContents = contents.toLower();                             // ERICEDIT: Make the contents all lowercase for case-insensitivity.
 
-    printf("Console command received %s\n",qPrintable(ev->contents));
+    //printf("Console command received %s\n",qPrintable(ev->contents));
 
     if(isChatMessage(contents))
     {

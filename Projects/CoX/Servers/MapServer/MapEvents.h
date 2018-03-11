@@ -219,15 +219,17 @@ public:
         wdw_CostumeSelect   = 34,
     };
     enum WindowVisibility : uint32_t {
-      wv_Visible            = 2,
-      wv_Shrinking          = 3,
-      wv_Hidden             = 4,
+        wv_Uninitialized    = 0,
+        wv_Growing          = 1,
+        wv_Visible          = 2,
+        wv_Shrinking        = 3,
+        wv_DockedOrHidden   = 4,
     };
 
     struct WindowS {
         WindowIDX           idx;
-        WindowVisibility    state;      // field_24/start_shrunk - 2, unless closing, then goes from 2 (visible) to 3 to 4 (hidden)
-        bool        draggable_frame;    // field_14
+        WindowVisibility    mode;           // field_24/start_shrunk - 2, unless closing, then goes from 2 (visible) to 3 to 4 (hidden)
+        bool        draggable_frame;        // field_14
         uint32_t    posx;
         uint32_t    posy;
         uint32_t    width   = 0;
@@ -235,7 +237,6 @@ public:
         uint32_t    locked;                 // field_18/docked? - 0, 2 (idx 12 = 1, idx 0-4,7 = 0)
         uint32_t    color   = 0x3399FF99;   // 865730457 == 0x3399FF99 (light blue with 90% transparency)
         uint32_t    alpha   = 0x88;         // default 136 (0x88)
-        uint32_t    mode;                   // 0, because I don't know where the client sends these bits
     };
     WindowS wnd;
     WindowState():MapLinkEvent(MapEventTypes::evWindowState)
@@ -250,20 +251,15 @@ public:
 
         wnd.posx = bs.GetPackedBits(1);
         wnd.posy = bs.GetPackedBits(1);
-        wnd.state = (WindowVisibility)bs.GetPackedBits(1);
+        wnd.mode = (WindowVisibility)bs.GetPackedBits(1);
         wnd.locked = bs.GetPackedBits(1);
         wnd.color = bs.GetPackedBits(1);
         wnd.alpha = bs.GetPackedBits(1);
-
-        if(wnd.state == wv_Hidden)
-            wnd.locked = 2; // if hidden, lock window
 
         if((wnd.draggable_frame = bs.GetBits(1))) {
             wnd.width = bs.GetPackedBits(1);
             wnd.height = bs.GetPackedBits(1);
         }
-
-        wnd.mode = 0; // where does this come from?
     }
     void guidump()
     {
@@ -274,10 +270,9 @@ public:
                  << "\n\t" << "height:" << wnd.height
                  << "\n\t" << "draggable_frame:" << wnd.draggable_frame
                  << "\n\t" << "locked:" << wnd.locked
-                 << "\n\t" << "state:" << wnd.state
+                 << "\n\t" << "mode:" << wnd.mode
                  << "\n\t" << "color:" << wnd.color
-                 << "\n\t" << "alpha:" << wnd.alpha
-                 << "\n\t" << "mode:" << wnd.mode;
+                 << "\n\t" << "alpha:" << wnd.alpha;
     }
 };
 

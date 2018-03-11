@@ -7,6 +7,7 @@
 #include "MapClient.h"
 #include "MapInstance.h"
 #include "EntityUpdateCodec.h"
+#include "DataHelpers.h"
 
 #include <QByteArray>
 #include <cmath>
@@ -55,33 +56,53 @@ void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
         bs.StoreBitArray((const uint8_t *)ba.constData(),8*ba.size());
     }
 }
-void storeTeamList(const EntitiesResponse &/*src*/,BitStream &bs)
+void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 {
-    int team_id=0; //
-    bool mark_lfg=false;
-    bool in_mission_or_taskforce_thing=false;
-    uint32_t team_leader_id = 0;
-    uint32_t team_size=0;
-    storePackedBitsConditional(bs,20,team_id);
-    bs.StoreBits(1,in_mission_or_taskforce_thing);
+    Entity *e = src.m_client->char_entity();
+    assert(e);
+
+    // shorthand local vars
+    int         tm_idx = 0;
+    bool        mark_lfg = e->m_char.m_char_data.m_lfg;
+    bool        has_mission = 0;
+    uint32_t    tm_leader_id = 0;
+    uint32_t    tm_size = 0;
+
+    if(e->m_has_team && e->m_team != nullptr)
+    {
+        tm_idx          = e->m_team->m_team_idx;
+        has_mission     = e->m_team->m_team_has_mission;
+        tm_leader_id    = e->m_team->m_team_leader_idx;
+        tm_size         = e->m_team->m_team_members.size();
+    }
+
+    storePackedBitsConditional(bs,20,tm_idx);
+    bs.StoreBits(1,has_mission);
     bs.StoreBits(1,mark_lfg);
-    if(team_id == 0)
+
+    if(tm_idx == 0) // if no team, return.
         return;
 
-    bs.StoreBits(32,team_leader_id);
-    bs.StorePackedBits(1,team_size);
-    for(uint32_t i=0; i<team_size; ++i)
+    bs.StoreBits(32,tm_leader_id);
+    bs.StorePackedBits(1,tm_size);
+
+    for(auto member : e->m_team->m_team_members)
     {
-        uint32_t team_member_dbid=0;
-        bool team_member_is_on_the_same_map=true;
-        bs.StoreBits(32,team_member_dbid);
-        bs.StoreBits(1,team_member_is_on_the_same_map);
-        if(not team_member_is_on_the_same_map)
+        Entity *tm_ent          = getEntity(e->m_client,member.tm_idx);
+        QString member_name     = tm_ent->name();
+        QString member_mapname  = tm_ent->m_client->current_map()->name();
+        bool tm_on_same_map     = true;
+
+        if(member_mapname != e->m_client->current_map()->name())
+            tm_on_same_map = false;
+
+        bs.StoreBits(32,member.tm_idx);
+        bs.StoreBits(1,tm_on_same_map);
+
+        if(!tm_on_same_map)
         {
-            QString missing_team_member_name;
-            QString missing_team_member_is_on_map;
-            bs.StoreString(missing_team_member_name);
-            bs.StoreString(missing_team_member_is_on_map);
+            bs.StoreString(member_name);
+            bs.StoreString(member_mapname);
         }
     }
 }
