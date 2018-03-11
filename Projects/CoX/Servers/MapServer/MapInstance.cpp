@@ -7,7 +7,7 @@
 
  */
 //#define DEBUG_SPAWN
-//#define DEBUG_GUI
+#define DEBUG_GUI
 #include "MapInstance.h"
 
 #include "AdminServer.h"
@@ -506,12 +506,21 @@ void MapInstance::on_input_state(InputState *st)
 void MapInstance::on_cookie_confirm(CookieRequest * ev){
     printf("Received cookie confirm %x - %x\n",ev->cookie,ev->console);
 }
-void MapInstance::on_window_state(WindowState * ev){
-    // TODO: Save window state to database?
+void MapInstance::on_window_state(WindowState * ev) {
+    // Save GUISettings to character entity and entry in the database.
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    Entity *e = src->char_entity();
+
+    int idx = ev->wnd.m_idx;
+    e->m_char.m_gui.m_wnds[idx] = ev->wnd;
+    charUpdateGUI(e); // Update database with GUISettings
+
+    qDebug() << "Client GUISettings saved to database.";
 
 #ifdef DEBUG_GUI
-    printf("Received window state %d - %d\n",ev->wnd.idx,ev->wnd.mode);
-    ev->guidump();
+    printf("Received window state %d - %d\n",ev->wnd.m_idx,ev->wnd.m_mode);
+    e->m_char.m_gui.guiDump();
 #endif
 }
 QString process_replacement_strings(MapClient *sender,const QString &msg_text)
@@ -1400,7 +1409,13 @@ void MapInstance::on_plaque_visited(PlaqueVisited * ev)
 
 void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
 {
-    qWarning() << "Unhandled inspiration dock mode:" << ev->dock_mode;
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    // user entity
+    Entity *ent = src->char_entity();
+
+    ent->m_char.m_gui.m_insps_tray_mode = ev->dock_mode;
+    qDebug() << "Saving inspirations dock mode to GUISettings:" << ev->dock_mode;
 }
 
 void MapInstance::on_enter_door(EnterDoor *ev)
@@ -1466,15 +1481,14 @@ void MapInstance::on_receive_player_info(ReceivePlayerInfo * ev)
 
 void MapInstance::on_client_options(SaveClientOptions * ev)
 {
-    // Save options/keybinds/windowsettings to character entity and entry in the database.
+    // Save options/keybinds to character entity and entry in the database.
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
     Entity *e = src->char_entity();
 
     e->m_char.m_options = ev->data;
-    // e->m_char.m_gui = ev->gui;
     // e->m_char.m_keybinds = ev->keybinds;
-    charUpdateOptions(e); // Update database with opts/kbds/wnds
+    charUpdateOptions(e); // Update database with opts/kbds
 
     qDebug() << "Client options saved to database.";
 }
@@ -1508,7 +1522,7 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
     // corresponds to the InfoType in InfoMessageCmd and eChatTypes in ChatMessage
 
     // Passing cur_chat_channel to Character in case we need it somewhere.
-    ent->m_char.m_char_data.m_cur_chat_channel = ev->m_chat_type;
+    ent->m_char.m_gui.m_cur_chat_channel = ev->m_chat_type;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
@@ -1519,11 +1533,27 @@ void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
 
 void MapInstance::on_powers_dockmode(PowersDockMode *ev)
 {
-    qWarning() << "Unhandled powers dock mode:" << ev->dock_mode << ev->toggle_secondary_tray;
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    // user entity
+    Entity *ent = src->char_entity();
+
+    ent->m_char.m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
+    // TODO: What is dock mode?
+    qWarning() << "Saving powers tray dock mode to GUISettings:" << ev->dock_mode << ev->toggle_secondary_tray;
 }
 
 void MapInstance::on_switch_tray(SwitchTray *ev)
 {
-    qWarning() << "Unhandled switch tray request. Tray1:" << ev->tray1_num+1 << "Tray2:" << ev->tray2_num+1 << "Unk1:" << ev->tray_unk1;
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    // user entity
+    Entity *ent = src->char_entity();
+
+    ent->m_char.m_gui.m_tray1_number = ev->tray1_num;
+    ent->m_char.m_gui.m_tray2_number = ev->tray2_num;
+    ent->m_char.m_gui.m_tray3_number = ev->tray_unk1;
+    qDebug() << "Saving Tray States to GUISettings. Tray1:" << ev->tray1_num+1 << "Tray2:" << ev->tray2_num+1 << "Unk1:" << ev->tray_unk1;
     // TODO: need to load powers for new tray.
+    qWarning() << "TODO: Need to load powers for new trays";
 }

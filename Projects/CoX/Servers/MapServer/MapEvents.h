@@ -178,103 +178,6 @@ public:
     }
 
 };
-class WindowState final : public MapLinkEvent
-{
-public:
-    enum WindowIDX : uint32_t {
-        wdw_Unknown0        = 0,
-        wdw_Status          = 1,
-        wdw_Target          = 2,
-        wdw_PowersTray      = 3,
-        wdw_Chat            = 4,
-        wdw_PowerList       = 5,
-        wdw_Team            = 6,
-        wdw_NavCompass      = 7,
-        wdw_Map             = 8,
-        wdw_ChatOptions     = 9,
-        wdw_Friends         = 10,
-        wdw_Unknown11       = 11,
-        wdw_Inspirations    = 12,
-        wdw_SuperGroup      = 13,
-        wdw_Emails          = 14,
-        wdw_ComposeEmail    = 15,
-        wdw_Contacts        = 16,
-        wdw_Missions        = 17,
-        wdw_Clues           = 18,
-        wdw_Unknown19       = 19,
-        wdw_Quit            = 20,
-        wdw_Info            = 21,
-        wdw_Help            = 22,
-        wdw_Unknown23       = 23,
-        wdw_Actions         = 24,
-        wdw_Unknown25       = 25,
-        wdw_Unknown26       = 26,
-        wdw_Unknown27       = 27,
-        wdw_GenericDlg      = 28,
-        wdw_Unknown29       = 29,
-        wdw_Support         = 30,
-        wdw_Unknown31       = 31,
-        wdw_Defeated        = 32,
-        wdw_Unknown33       = 33,
-        wdw_CostumeSelect   = 34,
-    };
-    enum WindowVisibility : uint32_t {
-        wv_Uninitialized    = 0,
-        wv_Growing          = 1,
-        wv_Visible          = 2,
-        wv_Shrinking        = 3,
-        wv_DockedOrHidden   = 4,
-    };
-
-    struct WindowS {
-        WindowIDX           idx;
-        WindowVisibility    mode;           // field_24/start_shrunk - 2, unless closing, then goes from 2 (visible) to 3 to 4 (hidden)
-        bool        draggable_frame;        // field_14
-        uint32_t    posx;
-        uint32_t    posy;
-        uint32_t    width   = 0;
-        uint32_t    height  = 0;
-        uint32_t    locked;                 // field_18/docked? - 0, 2 (idx 12 = 1, idx 0-4,7 = 0)
-        uint32_t    color   = 0x3399FF99;   // 865730457 == 0x3399FF99 (light blue with 90% transparency)
-        uint32_t    alpha   = 0x88;         // default 136 (0x88)
-    };
-    WindowS wnd;
-    WindowState():MapLinkEvent(MapEventTypes::evWindowState)
-    {}
-    void serializeto(BitStream &bs) const
-    {
-        bs.StorePackedBits(1,14); // opcode
-    }
-    void serializefrom(BitStream &bs)
-    {
-        wnd.idx = (WindowIDX)bs.GetPackedBits(1);
-
-        wnd.posx = bs.GetPackedBits(1);
-        wnd.posy = bs.GetPackedBits(1);
-        wnd.mode = (WindowVisibility)bs.GetPackedBits(1);
-        wnd.locked = bs.GetPackedBits(1);
-        wnd.color = bs.GetPackedBits(1);
-        wnd.alpha = bs.GetPackedBits(1);
-
-        if((wnd.draggable_frame = bs.GetBits(1))) {
-            wnd.width = bs.GetPackedBits(1);
-            wnd.height = bs.GetPackedBits(1);
-        }
-    }
-    void guidump()
-    {
-        qDebug().noquote() << "Debugging WindowState:" << wnd.idx
-                 << "\n\t" << "posx:" << wnd.posx
-                 << "\n\t" << "posy:" << wnd.posy
-                 << "\n\t" << "width:" << wnd.width
-                 << "\n\t" << "height:" << wnd.height
-                 << "\n\t" << "draggable_frame:" << wnd.draggable_frame
-                 << "\n\t" << "locked:" << wnd.locked
-                 << "\n\t" << "mode:" << wnd.mode
-                 << "\n\t" << "color:" << wnd.color
-                 << "\n\t" << "alpha:" << wnd.alpha;
-    }
-};
 
 class CombineRequest final : public MapLinkEvent
 {
@@ -315,6 +218,7 @@ public:
 };
 #include "Events/InputState.h"
 #include "Events/ChatMessage.h"
+#include "Events/WindowState.h"
 //////////////////////////////////////////////////////////////////////////
 // Server -> Client events
 class MapInstanceConnected final : public MapLinkEvent

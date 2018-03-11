@@ -28,7 +28,7 @@ virtual ~Team() = default;
         std::vector<TeamMember> m_team_members;
 
 const   uint32_t    m_team_idx;
-        QString     m_team_name;                    // m_group_name? what is this?
+        QString     m_team_name = "team name";                    // m_group_name? what is this?
         int         m_team_rank         = 0;        // this could be: m_team_leader_idx
         int         m_max_team_size     = 8;        // max is always 8
         int         m_team_leader_idx   = 0;

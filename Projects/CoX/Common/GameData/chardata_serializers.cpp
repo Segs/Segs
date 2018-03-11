@@ -4,11 +4,14 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
-CEREAL_CLASS_VERSION(CharacterData, 3); // register CharacterData class version
+CEREAL_CLASS_VERSION(CharacterData, 4); // register CharacterData class version
 
 template<class Archive>
 void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
 {
+    if(version < 4)
+        qWarning() << "Please update your CharacterDatabase chardata.";
+
     archive(cereal::make_nvp("Level",cd.m_level));
     archive(cereal::make_nvp("CombatLevel",cd.m_combat_level));
     archive(cereal::make_nvp("XP",cd.m_experience_points));
@@ -31,7 +34,6 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("MapName",cd.m_mapName));
     archive(cereal::make_nvp("SuperGroupCostume",cd.m_supergroup_costume));
     archive(cereal::make_nvp("UsingSGCostume",cd.m_using_sg_costume));
-    archive(cereal::make_nvp("CurrentChatChannel",cd.m_cur_chat_channel));
 }
 
 void saveTo(const CharacterData &target, const QString &baseName, bool text_format)

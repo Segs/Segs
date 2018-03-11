@@ -54,20 +54,24 @@ void    setTeamID(Entity &e, uint8_t team_id)
              << "\n  Members:" << e.m_team->m_team_members.data();
 }
 
-void    setSuperGroupID(Entity &e, uint8_t sg_id)
+void    setSuperGroup(Entity &e, uint8_t sg_id, QString sg_name)
 {
-    // TODO: provide method for updating SuperGroup Name and Rank
+    // TODO: provide method for updating SuperGroup Rank and Colors
     if(sg_id == 0)
     {
         e.m_supergroup.m_SG_info    = false;
         e.m_supergroup.m_SG_id      = sg_id;
         e.m_supergroup.m_SG_name    = "";
+        e.m_supergroup.m_SG_color1  = 0x996633FF;
+        e.m_supergroup.m_SG_color2  = 0x336699FF;
     }
     else
     {
         e.m_supergroup.m_SG_info    = true;
         e.m_supergroup.m_SG_id      = sg_id;
-        e.m_supergroup.m_SG_name    = "SuperGroup Name!";
+        e.m_supergroup.m_SG_name    = sg_name;
+        e.m_supergroup.m_SG_color1  = 0xAA3366FF;
+        e.m_supergroup.m_SG_color2  = 0x66AA33FF;
     }
     qDebug().noquote() << "SG Info:"
              << "\n  Has Team:" << e.m_supergroup.m_SG_info
@@ -81,8 +85,8 @@ void    setu1(Entity &e, int val) { e.u1 = val; }
 void    setu2(Entity &e, int val) { e.u2 = val; }
 void    setu3(Entity &e, int val) { e.u3 = val; }
 void    setu4(Entity &e, int val) { e.u4 = val; }
-void    setu5(Entity &e, int val) { e.u5 = val; }
-void    setu6(Entity &e, int val) { e.u6 = val; }
+void    setu5(Entity &e, int val) { e.u5 = e.m_team->m_team_rank = val; }
+void    setu6(Entity &e, int val) { e.u6 = e.m_team->m_team_leader_idx = val; }
 
 // Toggles
 void    toggleFly(Entity &e) { e.m_is_flying = !e.m_is_flying; }
@@ -118,9 +122,17 @@ void charUpdateDB(Entity *e)
 void charUpdateOptions(Entity *e)
 {
     CharacterDatabase *char_db = AdminServer::instance()->character_db();
-    // Update Client Options/Keybinds/GUI settings
+    // Update Client Options/Keybinds
     if(!char_db->updateClientOptions(e))
         qDebug() << "Client Options failed to update in database!";
+}
+
+void charUpdateGUI(Entity *e)
+{
+    CharacterDatabase *char_db = AdminServer::instance()->character_db();
+    // Update Client GUI settings
+    if(!char_db->updateGUISettings(e))
+        qDebug() << "Client GUISettings failed to update in database!";
 }
 
 int getEntityOriginIndex(bool is_player, const QString &origin_name)
@@ -188,6 +200,25 @@ Entity * getEntity(MapClient *src, const int32_t &idx)
             return pEnt;
     }
     qWarning() << "Entity" << idx << "does not exist, or is not currently online.";
+    return nullptr;
+}
+
+Entity * getEntityByDBID(MapClient *src, const int32_t &idx)
+{
+    MapInstance *mi = src->current_map();
+    EntityManager &em(mi->m_entities);
+
+    if(idx==0) {
+        qWarning() << "Entity" << idx << "does not exist in the database.";
+        return nullptr;
+    }
+    // TODO: Iterate through all entities in Database and return entity by db_id
+    for (Entity* pEnt : em.m_live_entlist)
+    {
+        if (pEnt->m_db_id == idx)
+            return pEnt;
+    }
+    qWarning() << "Entity" << idx << "does not exist in the database.";
     return nullptr;
 }
 

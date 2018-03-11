@@ -56,7 +56,6 @@ void Character::reset()
     m_options.m_first_person_view=false;
     m_full_options = false;
     m_char_data.m_has_titles = false;
-    m_char_data.m_cur_chat_channel = 10;   // Default is local
 }
 
 
@@ -64,33 +63,6 @@ bool Character::isEmpty()
 {
     return ( 0==m_name.compare("EMPTY",Qt::CaseInsensitive)&&
             (0==m_char_data.m_class_name.compare("EMPTY",Qt::CaseInsensitive)));
-}
-
-void Character::sendWindow(BitStream &bs) const
-{
-    //WindowS wnd;
-    bool        draggable_frame = false;        // field_14
-    uint32_t    posx    = 0;
-    uint32_t    posy    = 0;
-    uint32_t    mode    = 0;
-    uint32_t    width   = 0;
-    uint32_t    height  = 0;
-    uint32_t    locked  = 0;                 // field_18/docked? - 0, 2 (idx 12 = 1, idx 0-4,7 = 0)
-    uint32_t    color   = 0x3399FF99;   // 865730457 == 0x3399FF99 (light blue with 90% transparency)
-    uint32_t    alpha   = 0x88;         // default 136 (0x88)
-
-    bs.StorePackedBits(1,posx);
-    bs.StorePackedBits(1,posy);
-    bs.StorePackedBits(1,mode);
-    bs.StorePackedBits(1,locked);
-    bs.StorePackedBits(1,color);
-    bs.StorePackedBits(1,alpha);
-    bs.StoreBits(1,draggable_frame);
-    if(draggable_frame)
-    {
-        bs.StorePackedBits(1,width);
-        bs.StorePackedBits(1,height);
-    }
 }
 
 void Character::setName(const QString &val )
@@ -108,7 +80,7 @@ void Character::sendTray(BitStream &bs) const
 
 void Character::sendTrayMode(BitStream &bs) const
 {
-    bs.StoreBits(1,0);
+    bs.StoreBits(1,m_gui.m_powers_tray_mode);
 }
 
 void Character::GetCharBuildInfo(BitStream &src)
@@ -292,7 +264,6 @@ void Character::DumpBuildInfo()
             + "\n  afk: " + QString::number(m_char_data.m_afk)
             + "\n  description: " + getDescription(c)
             + "\n  battleCry: " + getBattleCry(c)
-            + "\n  current chat channel: " + QString::number(m_char_data.m_cur_chat_channel)
             + "\n  Last Online: " + m_char_data.m_last_online;
 
     qDebug().noquote() << msg;
@@ -403,17 +374,34 @@ void Character::sendWindows( BitStream &bs ) const
     for(int i=0; i<35; i++)
     {
         bs.StorePackedBits(1,i); // window index
-        sendWindow(bs);
+        sendWindow(bs,m_gui.m_wnds[i]);
     }
 }
+
+void Character::sendWindow(BitStream &bs, GUIWindow wnd) const
+{
+    bs.StorePackedBits(1,wnd.m_posx);
+    bs.StorePackedBits(1,wnd.m_posy);
+    bs.StorePackedBits(1,wnd.m_mode);
+    bs.StorePackedBits(1,wnd.m_locked);
+    bs.StorePackedBits(1,wnd.m_color);
+    bs.StorePackedBits(1,wnd.m_alpha);
+    bs.StoreBits(1,wnd.m_draggable_frame);
+    if(wnd.m_draggable_frame)
+    {
+        bs.StorePackedBits(1,wnd.m_width);
+        bs.StorePackedBits(1,wnd.m_height);
+    }
+}
+
 void Character::sendTeamBuffMode(BitStream &bs) const
 {
-    bs.StoreBits(1,0);
+    bs.StoreBits(1,m_gui.m_team_buffs);
 }
 void Character::sendDockMode(BitStream &bs) const
 {
     bs.StoreBits(32,0); // unused on the client
-    bs.StoreBits(32,0); //
+    bs.StoreBits(32,0); // TODO: power trays?
 }
 void Character::sendChatSettings(BitStream &bs) const
 {

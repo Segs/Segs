@@ -26,6 +26,9 @@ set(GAMEDATA_SRC
     entitydata_definitions.h
     entitydata_serializers.cpp
     entitydata_serializers.h
+    gui_definitions.h
+    gui_serializers.cpp
+    gui_serializers.h
     other_definitions.h
     origin_definitions.h
     keybind_serializers.cpp

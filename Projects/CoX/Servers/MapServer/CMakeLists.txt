@@ -18,6 +18,7 @@ SET(target_CPP
     Events/SaveClientOptions.cpp
     Events/SceneEvent.cpp
     Events/InfoMessageCmd.cpp
+    Events/WindowState.cpp
     MapClient.cpp
     MapEventFactory.cpp
     MapInstance.cpp
@@ -49,6 +50,7 @@ SET(target_INCLUDE
     Events/Shortcuts.h
     Events/StandardDialogCmd.h
     Events/InfoMessageCmd.h
+    Events/WindowState.h
     MapClient.h
     MapEventFactory.h
     MapEvents.h

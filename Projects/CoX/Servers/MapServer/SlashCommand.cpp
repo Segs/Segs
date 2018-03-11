@@ -38,9 +38,11 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"updateid"}, &cmdHandler_UpdateId, 9},
     {{"fullupdate"}, &cmdHandler_FullUpdate, 9},
     {{"hascontrolid"}, &cmdHandler_HasControlId, 9},
-    {{"setTeam","setTeamID"}, &cmdHandler_SetTeam, 9},
+    {{"setTeam", "setTeamID"}, &cmdHandler_SetTeam, 9},
     {{"setSuperGroup"}, &cmdHandler_SetSuperGroup, 9},
-    {{"settingsDump"}, &cmdHandler_SettingsDump, 9},
+    {{"settingsDump", "settingsDebug"}, &cmdHandler_SettingsDump, 9},
+    {{"teamDump", "teamDebug"}, &cmdHandler_TeamDebug, 9},
+    {{"guiDump", "guiDebug"}, &cmdHandler_GUIDebug, 9},
     {{"setu1"}, &cmdHandler_SetU1, 9},
     {{"setu2"}, &cmdHandler_SetU2, 9},
     {{"setu3"}, &cmdHandler_SetU3, 9},
@@ -428,12 +430,16 @@ void cmdHandler_SetTeam(QString &cmd, Entity *e) {
 }
 
 void cmdHandler_SetSuperGroup(QString &cmd, Entity *e) {
-    MapClient *src = e->m_client;
-    int val = cmd.split(" ").value(1).toUInt();
+    MapClient *src  = e->m_client;
+    QStringList args;
+    args = cmd.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
-    setSuperGroupID(*e, val);
+    int sg_id       = args.value(1).toInt();
+    QString sg_name = args.value(2);
 
-    QString msg = "Set SuperGroup ID to: " + QString::number(val);
+    setSuperGroup(*e, sg_id, sg_name);
+
+    QString msg = "Set SuperGroup to: " + QString::number(sg_id) + " " + sg_name;
     qDebug() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
@@ -446,6 +452,26 @@ void cmdHandler_SettingsDump(QString &cmd, Entity *e) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 
     settingsDump(); // Send settings dump
+}
+
+void cmdHandler_TeamDebug(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    QString msg = "Sending team debug to console output.";
+    qDebug() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    e->m_team->dump(); // Send team debug info
+}
+
+void cmdHandler_GUIDebug(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    QString msg = "Sending GUISettings dump to console output.";
+    qDebug() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    e->m_char.m_gui.guiDump(); // Send GUISettings dump
 }
 
 // Slash commands for setting bit values

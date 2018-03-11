@@ -83,7 +83,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
     if(tm_idx == 0) // if no team, return.
         return;
 
-    bs.StoreBits(32,tm_leader_id);
+    bs.StoreBits(32,tm_leader_id); // must be db_id
     bs.StorePackedBits(1,tm_size);
 
     for(auto member : e->m_team->m_team_members)

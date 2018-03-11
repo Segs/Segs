@@ -36,6 +36,7 @@ class CharacterDatabase
         QSqlQuery m_prepared_costume_insert;
         QSqlQuery m_prepared_costume_update;
         QSqlQuery m_prepared_options_update;
+        QSqlQuery m_prepared_gui_update;
 
 public:
 virtual             ~CharacterDatabase();
@@ -48,6 +49,7 @@ virtual             ~CharacterDatabase();
         bool        fill( CharacterCostume *);
         bool        update(Entity *);
         bool        updateClientOptions(Entity *);
+        bool        updateGUISettings(Entity *);
         bool        update(CharacterCostume *);
         int         remove_account(uint64_t acc_serv_id); //will remove given account, TODO add logging feature
         bool        remove_character(AccountInfo *, int8_t slot_idx);
