@@ -10,8 +10,11 @@
 #include <stdint.h>
 
 class QString;
+class GUIWindow;
 class GUISettings;
 
+template<class Archive>
+void serialize(Archive &archive, GUIWindow &wnd, uint32_t const version);
 template<class Archive>
 void serialize(Archive &archive, GUISettings &gui, uint32_t const version);
 

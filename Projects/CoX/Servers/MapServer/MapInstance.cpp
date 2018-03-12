@@ -7,7 +7,7 @@
 
  */
 //#define DEBUG_SPAWN
-#define DEBUG_GUI
+//#define DEBUG_GUI
 #include "MapInstance.h"
 
 #include "AdminServer.h"
@@ -513,14 +513,15 @@ void MapInstance::on_window_state(WindowState * ev) {
     Entity *e = src->char_entity();
 
     int idx = ev->wnd.m_idx;
-    e->m_char.m_gui.m_wnds[idx] = ev->wnd;
-    charUpdateGUI(e); // Update database with GUISettings
+    e->m_char.m_gui.m_wnds.at(idx) = ev->wnd;
 
-    qDebug() << "Client GUISettings saved to database.";
+    // TODO: do we really want to save them here? maybe no?
+    //charUpdateGUI(e); // Update database with GUISettings
+    //qDebug() << "Client GUISettings saved to database.";
 
 #ifdef DEBUG_GUI
     printf("Received window state %d - %d\n",ev->wnd.m_idx,ev->wnd.m_mode);
-    e->m_char.m_gui.guiDump();
+    //e->m_char.m_gui.m_wnds.at(idx).guiWindowDump();
 #endif
 }
 QString process_replacement_strings(MapClient *sender,const QString &msg_text)
@@ -1360,6 +1361,9 @@ void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
+    Entity *ent = src->char_entity();
+
+    ent->m_char.m_gui.m_chat_divider_pos = ev->m_position;
     qDebug() << "Chat divider moved to " << ev->m_position << " for player" << src;
 }
 void MapInstance::on_minimap_state(MiniMapState *ev)
@@ -1411,7 +1415,6 @@ void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    // user entity
     Entity *ent = src->char_entity();
 
     ent->m_char.m_gui.m_insps_tray_mode = ev->dock_mode;
@@ -1495,33 +1498,38 @@ void MapInstance::on_client_options(SaveClientOptions * ev)
 
 void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
 {
-    qWarning() << "Unhandled switch viewpoint to" << ev->new_viewpoint_is_firstperson;
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    Entity *ent = src->char_entity();
+
+    ent->m_char.m_options.m_first_person_view = ev->new_viewpoint_is_firstperson;
+    qDebug() << "Saving viewpoint mode to ClientOptions" << ev->new_viewpoint_is_firstperson;
 }
 
 void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
 {
-    qWarning() << "Unhandled chat channel mask setting" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    Entity *ent = src->char_entity();
+
+    ent->m_char.m_gui.m_chat_top_flags = ev->m_chat_top_flags;
+    ent->m_char.m_gui.m_chat_bottom_flags = ev->m_chat_bottom_flags;
+
+    qDebug() << "Saving chat channel mask settings to GUISettings" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
 }
 
 void MapInstance::on_unqueue_all(UnqueueAll *ev)
 {
     qWarning() << "Unhandled unqueue all request:" << ev->g_input_pak;
-    // TODO: not sure what the client expects from the server here
-    // and is it really unqueing everything? Is this named correctly?
 }
 
 void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    // user entity
     Entity *ent = src->char_entity();
 
-    qWarning() << "Unhandled change chat type request." << ev->m_chat_type;
-    // TODO: not sure what the client expects the server to do here, but m_chat_type
-    // corresponds to the InfoType in InfoMessageCmd and eChatTypes in ChatMessage
-
-    // Passing cur_chat_channel to Character in case we need it somewhere.
+    qDebug() << "Saving chat channel type to GUISettings:" << ev->m_chat_type;
     ent->m_char.m_gui.m_cur_chat_channel = ev->m_chat_type;
 }
 
@@ -1535,7 +1543,6 @@ void MapInstance::on_powers_dockmode(PowersDockMode *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    // user entity
     Entity *ent = src->char_entity();
 
     ent->m_char.m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
@@ -1547,7 +1554,6 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    // user entity
     Entity *ent = src->char_entity();
 
     ent->m_char.m_gui.m_tray1_number = ev->tray1_num;

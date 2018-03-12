@@ -43,6 +43,7 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"settingsDump", "settingsDebug"}, &cmdHandler_SettingsDump, 9},
     {{"teamDump", "teamDebug"}, &cmdHandler_TeamDebug, 9},
     {{"guiDump", "guiDebug"}, &cmdHandler_GUIDebug, 9},
+    {{"setWindowVisibility", "setWinVis"}, &cmdHandler_SetWindowVisibility, 9},
     {{"setu1"}, &cmdHandler_SetU1, 9},
     {{"setu2"}, &cmdHandler_SetU2, 9},
     {{"setu3"}, &cmdHandler_SetU3, 9},
@@ -474,6 +475,22 @@ void cmdHandler_GUIDebug(QString &cmd, Entity *e) {
     e->m_char.m_gui.guiDump(); // Send GUISettings dump
 }
 
+void cmdHandler_SetWindowVisibility(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    QStringList args;
+    args = cmd.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    uint32_t idx = args.value(1).toInt();
+    WindowVisibility val = (WindowVisibility)args.value(2).toInt();
+
+    QString msg = "Toggling " + QString::number(idx) +  " GUIWindow visibility: " + QString::number(val);
+    qDebug() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    e->m_char.m_gui.m_wnds.at(idx).setWindowVisibility(val); // Set WindowVisibility
+    e->m_char.m_gui.m_wnds.at(idx).guiWindowDump(); // for debugging
+}
+
 // Slash commands for setting bit values
 void cmdHandler_SetU1(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
@@ -675,7 +692,7 @@ void cmdHandler_Invite(QString &cmd, Entity *e) {
         msg = "Failed to invite " + name + ". They are already on a team.";
 
     qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::CHAT_TEXT, msg, src);
+    sendInfoMessage(MessageChannel::TEAM, msg, src);
 }
 
 void cmdHandler_Kick(QString &cmd, Entity *e) {

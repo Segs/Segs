@@ -12,11 +12,12 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
-CEREAL_CLASS_VERSION(ClientOptions, 1); // register Client Options class version
+CEREAL_CLASS_VERSION(ClientOptions, 2); // register Client Options class version
 
 template<class Archive>
 void serialize(Archive &archive, ClientOptions &co, uint32_t const version)
 {
+    archive(cereal::make_nvp("FirstPersonView",co.m_first_person_view));
     archive(cereal::make_nvp("MouseSpeed",co.m_mouse_speed));
     archive(cereal::make_nvp("TurnSpeed",co.m_turn_speed));
     archive(cereal::make_nvp("InvertMouse",co.m_mouse_invert));

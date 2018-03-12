@@ -34,7 +34,7 @@ enum WindowIDX : uint32_t {
     wdw_Unknown23       = 23,
     wdw_Actions         = 24,
     wdw_Unknown25       = 25,
-    wdw_Unknown26       = 26,
+    wdw_Search          = 26,
     wdw_Unknown27       = 27,
     wdw_GenericDlg      = 28,
     wdw_Unknown29       = 29,
@@ -51,6 +51,25 @@ enum WindowVisibility : uint32_t {
     wv_Visible          = 2,
     wv_Shrinking        = 3,
     wv_DockedOrHidden   = 4,
+};
+
+// top empty/full: 100000000000001 / 1111111111111111111
+// bottom empty/full: 0 / 1111011111111111110
+// all none top/bottom: 0100000000000001 / 0
+//                                     16385    0       0000000000000000000 0000100000000000001
+enum ChatWindowMasks : uint32_t {   // top      bottom  bottom              top
+    ch_Damage           = 0x4,      // 16389    4       0000000000000000100 0000100000000000101
+    ch_Combat           = 0x2,      // 16387    2       0000000000000000010 0000100000000000011
+    ch_System           = 0x18048,  // 114761   98376   0011000000001001000 0011100000001001001
+    ch_NPCDialog        = 0x40030,  // 278577   262192  1000000000000110000 1000100000000110001
+    ch_PrivateMsg       = 0x80,     // 16513    128     0000000000010000000 0000100000010000001
+    ch_Team             = 0x100,    // 16641    256     0000000000100000000 0000100000100000001
+    ch_SuperGroup       = 0x200,    // 16897    512     0000000001000000000 0000100001000000001
+    ch_Local            = 0x400,    // 17409    1024    0000000010000000000 0000100010000000001
+    ch_Broadcast        = 0x800,    // 18433    2048    0000000100000000000 0000100100000000001
+    ch_Request          = 0x1000,   // 20481    4096    0000001000000000000 0000101000000000001
+    ch_Friends          = 0x2000,   // 24577    8192    0000010000000000000 0000110000000000001
+    ch_Emotes           = 0x20000,  // 147457   131072  0100000000000000000 0100100000000000001
 };
 
 class GUIWindow
@@ -84,6 +103,7 @@ public:
                      << "\n\t" << "alpha:" << m_alpha;
         }
 
+        void setWindowVisibility(WindowVisibility val) { m_mode = val; }
 };
 
 class GUISettings : private GUIWindow
@@ -92,7 +112,7 @@ public:
     GUISettings() { }
 
         // List of Windows
-        std::vector<GUIWindow> m_wnds;
+        std::array<GUIWindow, 35> m_wnds;
 
         // Other GUI flags
         bool        m_team_buffs        = false;
@@ -102,14 +122,27 @@ public:
         int         m_tray1_number      = 1;
         int         m_tray2_number      = 2;
         int         m_tray3_number      = 3;
+        float       m_chat_transparency = 0.8f;
+        int         m_chat_top_flags    = 0x5D87F; // orig: (1<<19)-1
+        int         m_chat_bottom_flags = 0x22780;
+        float       m_chat_divider_pos  = 0;
 
         void guiDump()
         {
             qDebug().noquote() << "Debugging GUISettings:"
-                     << "\n\t" << "TeamBuffs:" << m_team_buffs;
+                               << "\n\t" << "TeamBuffs:" << m_team_buffs
+                               << "\n\t" << "ChatChannel:" << m_cur_chat_channel
+                               << "\n\t" << "PowersTray Mode:" << m_powers_tray_mode
+                               << "\n\t" << "InspTray Mode:" << m_insps_tray_mode
+                               << "\n\t" << "Tray1 Page:" << m_tray1_number
+                               << "\n\t" << "Tray2 Page:" << m_tray2_number
+                               << "\n\t" << "Tray3 Page:" << m_tray3_number
+                               << "\n\t" << "Chat Transparency:" << m_chat_transparency
+                               << "\n\t" << "Chat Window Masks Top:" << m_chat_top_flags
+                               << "\n\t" << "Chat Window Masks Bottom:" << m_chat_bottom_flags
+                               << "\n\t" << "Chat Divider Position:" << m_chat_divider_pos;
 
             for(auto wnd : m_wnds)
                 wnd.guiWindowDump();
         }
-
 };

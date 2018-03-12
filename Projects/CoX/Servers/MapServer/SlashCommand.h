@@ -50,6 +50,7 @@ void cmdHandler_SetSuperGroup(QString &cmd, Entity *e);
 void cmdHandler_SettingsDump(QString &cmd, Entity *e);
 void cmdHandler_TeamDebug(QString &cmd, Entity *e);
 void cmdHandler_GUIDebug(QString &cmd, Entity *e);
+void cmdHandler_SetWindowVisibility(QString &cmd, Entity *e);
 void cmdHandler_SetU1(QString &cmd, Entity *e);
 void cmdHandler_SetU2(QString &cmd, Entity *e);
 void cmdHandler_SetU3(QString &cmd, Entity *e);

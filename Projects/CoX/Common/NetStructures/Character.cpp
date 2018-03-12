@@ -6,6 +6,7 @@
  *
  */
 
+//#define DEBUG_GUI
 #include "Character.h"
 
 #include "BitStream.h"
@@ -374,12 +375,17 @@ void Character::sendWindows( BitStream &bs ) const
     for(int i=0; i<35; i++)
     {
         bs.StorePackedBits(1,i); // window index
-        sendWindow(bs,m_gui.m_wnds[i]);
+        sendWindow(bs, m_gui.m_wnds.at(i));
     }
 }
 
 void Character::sendWindow(BitStream &bs, GUIWindow wnd) const
 {
+#ifdef DEBUG_GUI
+    qDebug() << "sendWindow:" << wnd.m_idx;
+    wnd.guiWindowDump();
+#endif
+
     bs.StorePackedBits(1,wnd.m_posx);
     bs.StorePackedBits(1,wnd.m_posy);
     bs.StorePackedBits(1,wnd.m_mode);
@@ -400,16 +406,16 @@ void Character::sendTeamBuffMode(BitStream &bs) const
 }
 void Character::sendDockMode(BitStream &bs) const
 {
-    bs.StoreBits(32,0); // unused on the client
-    bs.StoreBits(32,0); // TODO: power trays?
+    bs.StoreBits(32,m_gui.m_tray1_number); // unused on the client
+    bs.StoreBits(32,m_gui.m_tray2_number); // TODO: power trays?
 }
 void Character::sendChatSettings(BitStream &bs) const
 {
     //int i;
-    bs.StoreFloat(0.8f); // chat window transparency
-    bs.StorePackedBits(1,(1<<19)-1); // bitmask of channels (top window )
-    bs.StorePackedBits(1,0); // bitmask of channels (bottom )
-    bs.StorePackedBits(1,10); // selected channel, Local=10, 11 broadcast,
+    bs.StoreFloat(m_gui.m_chat_transparency); // chat window transparency
+    bs.StorePackedBits(1,m_gui.m_chat_top_flags); // bitmask of channels (top window )
+    bs.StorePackedBits(1,m_gui.m_chat_bottom_flags); // bitmask of channels (bottom )
+    bs.StorePackedBits(1,m_gui.m_cur_chat_channel); // selected channel, Local=10, 11 broadcast,
 /*
     bs.StorePackedBits(1,4);
     bs.StorePackedBits(1,5);
