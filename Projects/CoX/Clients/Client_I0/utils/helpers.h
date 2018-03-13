@@ -136,6 +136,10 @@ struct Matrix4x4
         TranslationPart = v.TranslationPart;
         return *this;
     }
+    Matrix4x4(const Matrix4x3 &v)
+    {
+        *this = v;
+    }
     float *data() { return (float *)this; }
 };
 struct Array

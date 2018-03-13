@@ -444,8 +444,7 @@ void modelDrawTexNormals(DrawMode mode, Model *model)
 static void setModelViewFromMat4x3(const Matrix4x3& mat) 
 {
     glMatrixMode(GL_MODELVIEW);
-    Matrix4x4 mat4_2;
-    mat4_2 = mat;
+    Matrix4x4 mat4_2 = mat;
     glLoadMatrixf(&mat4_2.r1.x);
 }
 

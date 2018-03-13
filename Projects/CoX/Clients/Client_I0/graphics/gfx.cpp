@@ -293,9 +293,7 @@ void drawFlatBox(int x1, int y1, int x2, int y2, uint32_t color)
 void segs_setSunLight(Matrix4x3 *view_mat)
 {
     Vector4 params;
-    Matrix4x4 gl_mat;
-    
-    gl_mat = *view_mat;
+    Matrix4x4 gl_mat = *view_mat;
     glLoadMatrixf(gl_mat.data());
     glEnable(GL_LIGHTING);
     segs_wcw_statemgmt_enableColorMaterial();

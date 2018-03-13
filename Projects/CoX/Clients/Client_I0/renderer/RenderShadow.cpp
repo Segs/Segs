@@ -348,7 +348,6 @@ namespace
     }
     void stencilShadowVolume(const GLvoid *pointer, const GLvoid *indices, int count, const Matrix4x3 &mat, uint8_t alpha, unsigned int mask)
     {
-        Matrix4x4 modelview;
         static char gl_ColorArray[100000];
         static bool s_StipplePatterns_initialized = false;
         static unsigned int stipple_patterns[16][32];
@@ -365,7 +364,7 @@ namespace
         fn_4E79C0(GL_TEXTURE_2D, 0, g_whiteTexture);
         fn_4E79C0(GL_TEXTURE_2D, 1, g_whiteTexture);
         glMatrixMode(GL_MODELVIEW);
-        modelview = mat;
+        Matrix4x4 modelview = mat;
         glLoadMatrixf(modelview.data());
         if (g_State.view.bShadowVol)
             debugDrawShadowVolume(pointer, indices, count*3);

@@ -110,7 +110,6 @@ void  segs_modelSetAlpha(uint8_t a1)
 int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs)
 {
     Matrix4x3 dst;
-    Matrix4x4 m;
 
     if ( !tricks || tricks->_TrickFlags == 0)
         return 1;
@@ -247,7 +246,7 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs)
                 glMatrixMode(GL_TEXTURE);
                 *(Matrix3x3 *)&cam_info.inv_viewmat = *(Matrix3x3 *)&dst;
                 dst.TranslationPart = { 0.0f,0.0f,0.0f };
-                m = dst;
+                Matrix4x4 m = dst;
                 glLoadMatrixf(m.data());
                 glMatrixMode(GL_MODELVIEW);
             }
