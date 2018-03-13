@@ -22,14 +22,14 @@ struct ClientState
 };
 ShaderProgramCache g_program_cache;
 // vertex shaders
-static GLuint default_vp;
-static GLuint skinbump_vp;
-static GLuint skin_vp;
-static GLuint bump_vp;
-static GLuint bump_rgb_vp;
-static GLuint bump_dual_vp;
+static ShaderObject default_vp;
+static ShaderObject skinbump_vp;
+static ShaderObject skin_vp;
+static ShaderObject bump_vp;
+static ShaderObject bump_rgb_vp;
+static ShaderObject bump_dual_vp;
 // fragment shader
-static GLuint fragment_shaders[7];
+static ShaderObject fragment_shaders[7];
 std::set<std::string> enabled_states;
 extern "C" {
 __declspec(dllimport) int texSetWhite(int unit);
@@ -103,11 +103,11 @@ static void enableState(ClientStates state)
     switch ( state )
     {
         case TEX0_COORDS:
-            glClientActiveTextureARB(GL_TEXTURE0);
+            glClientActiveTexture(GL_TEXTURE0);
             glEnableClientState(GL_TEXTURE_COORD_ARRAY_EXT);
             break;
         case TEX1_COORDS:
-            glClientActiveTextureARB(GL_TEXTURE1);
+            glClientActiveTexture(GL_TEXTURE1);
             glEnableClientState(GL_TEXTURE_COORD_ARRAY_EXT);
             break;
         case POSITIONS:
@@ -239,14 +239,14 @@ void  segs_disableGlClientStates(std::initializer_list<ClientStates> states)
 
 static void enableTextureUnit(uint32_t unit)
 {
-    glActiveTextureARB(unit);
-    glClientActiveTextureARB(unit);
+    glActiveTexture(unit);
+    glClientActiveTexture(unit);
     glEnable(GL_TEXTURE_2D);
 }
 static void disableTextureUnit(uint32_t unit)
 {
-    glActiveTextureARB(unit);
-    glClientActiveTextureARB(unit);
+    glActiveTexture(unit);
+    glClientActiveTexture(unit);
     glDisable(GL_TEXTURE_2D);
 }
 void segs_setupShading(DrawMode vertex_mode, eBlendMode pixel_mode)
@@ -264,9 +264,7 @@ void  segs_modelDrawState(DrawMode mode, int force)
     ++drawmode_changes[int(mode)];
     if (g_using_bump_maps)
     {
-        glActiveTextureARB(GL_TEXTURE2);
-        glClientActiveTextureARB(GL_TEXTURE2);
-        glDisable(GL_TEXTURE_2D);
+        disableTextureUnit(GL_TEXTURE2);
     }
     segs_disableGlClientStates({BONE_WEIGHTS,BONE_INDICES,BINORMALS,TANGENTS,PERVERTEXCOLORS_ONLY});
     g_program_cache.setVertexProgram(default_vp);
@@ -412,6 +410,7 @@ static void compileShader(const char *filename, GLuint program_id)
     if (fread(string, 1, shader_size,fp) != shader_size)
     {
         printfDebug("Error loading \"%s\"\n", filename);
+        free(string);
         return;
     }
     glShaderSource(program_id,1,(const GLcharARB **)&string,(int *)&shader_size);
@@ -431,8 +430,8 @@ static void compileShader(const char *filename, GLuint program_id)
     fprintf(stderr,"%s shader compilation failed: %s",filename,errorLog.data());
 }
 #define CREATE_NAMED_VP_SHADER(name)\
-    name = glCreateShader(GL_VERTEX_SHADER_ARB);\
-    glObjectLabel(GL_SHADER,name,strlen(#name),#name);
+    name.id = glCreateShader(GL_VERTEX_SHADER_ARB);\
+    glObjectLabel(GL_SHADER,name.id,strlen(#name),#name);
 void initializeRenderer()
 {
     static bool shaders_created=false;
@@ -445,8 +444,8 @@ void initializeRenderer()
         CREATE_NAMED_VP_SHADER(bump_vp);
         CREATE_NAMED_VP_SHADER(bump_rgb_vp);
         CREATE_NAMED_VP_SHADER(bump_dual_vp);
-        for (unsigned int & shader : fragment_shaders)
-            shader = glCreateShader(GL_FRAGMENT_SHADER_ARB);
+        for (ShaderObject & shader : fragment_shaders)
+            shader.id = glCreateShader(GL_FRAGMENT_SHADER_ARB);
         shaders_created = true;
     }
     compileShader("shaders/default.glsl", default_vp);
@@ -472,14 +471,14 @@ void initializeRenderer()
     }
 }
 
-void ShaderProgramCache::setProgram(GLuint vertex_shader, GLuint fragment_shader)
+void ShaderProgramCache::setProgram(ShaderObject vertex_shader, ShaderObject fragment_shader)
 {
     //find program in cache
     for(ShaderProgram &p : m_linked_programs)
     {
         if(p.gl_id==~0U)
             break;
-        if(p.vertex_id==vertex_shader && p.shader_id==fragment_shader)
+        if(p.vertex_shader.id ==vertex_shader.id && p.fragment_shader.id ==fragment_shader.id)
         {
             m_current_program = p;
             glUseProgram(p.gl_id);
@@ -494,7 +493,7 @@ void ShaderProgramCache::setProgram(GLuint vertex_shader, GLuint fragment_shader
 
     if(vertex_shader)
         glAttachShader(program_id,vertex_shader);
-    glAttachShader(program_id,fragment_shader ? fragment_shader : fragment_shaders[0]);
+    glAttachShader(program_id,fragment_shader ? fragment_shader.id : fragment_shaders[0]);
     glLinkProgram(program_id);
 
     GLint baseImageLoc = glGetUniformLocation(program_id, "myTextureMap");
@@ -528,8 +527,8 @@ void ShaderProgramCache::setProgram(GLuint vertex_shader, GLuint fragment_shader
 
 void ShaderProgramCache::disableVertexShader() 
 {
-    if (m_current_program.vertex_id)
-        m_previous_program.vertex_id = m_current_program.vertex_id;
+    if (m_current_program.vertex_shader)
+        m_previous_program.vertex_shader = m_current_program.vertex_shader;
     setVertexProgram(default_vp);
 }
 

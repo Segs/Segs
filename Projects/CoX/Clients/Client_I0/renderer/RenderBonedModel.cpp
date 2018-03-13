@@ -445,7 +445,7 @@ static void setModelViewFromMat4x3(const Matrix4x3& mat)
 {
     glMatrixMode(GL_MODELVIEW);
     Matrix4x4 mat4_2 = mat;
-    glLoadMatrixf(&mat4_2.r1.x);
+    glLoadMatrixf(mat4_2.data());
 }
 
 void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int alpha, uint8_t *rgb_entries, EntLight *light_params)
