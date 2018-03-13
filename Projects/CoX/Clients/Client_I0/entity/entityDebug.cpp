@@ -18,20 +18,17 @@ extern "C" {
 }
 void drawLine3D_2Color(Vector3 *p1, unsigned int argb_pt1, Vector3 *p2, unsigned int argb_pt2)
 {
-    Matrix4x4 model_view;
-
     Vector3 toCam = cam_info.cammat.TranslationPart - *p1;
     toCam.normalize();
-    Vector3 a = toCam * 0.05f + *p1;
+    const Vector3 a = toCam * 0.05f + *p1;
     toCam = cam_info.cammat.TranslationPart - *p2;
     toCam.normalize();
-    Vector3 b = toCam * 0.05f + *p2;
-    model_view = cam_info.viewmat;
+    const Vector3 b = toCam * 0.05f + *p2;
+    Matrix4x4 model_view = cam_info.viewmat;
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(model_view.data());
     segs_wcw_statemgmt_bindTexture(GL_TEXTURE_2D, 0, 0);
-    segs_modelDrawState(DrawMode::COLORONLY, 0);
-    segs_modelBlendState(eBlendMode::MULTIPLY, 0);
+    segs_setupShading(DrawMode::COLORONLY, eBlendMode::MULTIPLY);
     wcwMgmt_EnableFog(0);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBegin(GL_LINES);
@@ -53,8 +50,7 @@ void drawLine2D_2Color(int x1, int y1, int x2, int y2, uint32_t argb_pt1, uint32
 }
 void segs_entDebug_DrawUnculledTriangle(Vector3 *vertex1, unsigned int color1, Vector3 *vertex2, unsigned int color2, Vector3 *vertex3, unsigned int color3)
 {
-    Matrix4x4 m;
-    m = cam_info.viewmat;
+    Matrix4x4 m = cam_info.viewmat;
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(m.data());
     segs_wcw_statemgmt_bindTexture(GL_TEXTURE_2D, 0, 0);
