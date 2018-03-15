@@ -7,6 +7,7 @@
 #include "renderer/RenderModel.h"
 #include "renderer/RendererState.h"
 #include "renderer/RenderShadow.h"
+#include "renderer/RenderSprites.h"
 #include "renderer/RenderTree.h"
 #include "renderer/Texture.h"
 #include "graphics/gfx.h"
@@ -23,4 +24,5 @@ void patch_all_the_things()
     patch_shadow_renderer();
     patch_rendertree();
     patch_ent_debug();
+    patch_rendersprites();
 }

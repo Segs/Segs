@@ -9,7 +9,16 @@ struct TextureBind;
 struct TrickNode;
 struct GlobRenderRel;
 struct Model;
-
+struct RGBA
+{
+    uint8_t r, g, b, a;
+    constexpr RGBA(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_) : r(r_), g(g_), b(b_), a(a_) {}
+    constexpr RGBA() : r(0), g(0), b(0), a(0) {}
+    explicit constexpr RGBA(uint32_t vl) : r((vl >> 24) & 0xFF), g((vl >> 16) & 0xFF), b((vl >> 8) & 0xFF), a(vl & 0xFF)
+    {
+    }
+    Vector3 to3Floats() const { return {r/255.0f,g/255.0f,b/255.0f};}
+};
 struct SplatSib
 {
   Vector3 center;
@@ -34,7 +43,7 @@ struct SplatSib
   Vector2 *tex_scroll1;
   Vector2 *tex_scroll2;
   Vector3i *indices; //triangles
-  uint32_t *colors; //rgba
+  uint32_t *colors; //rgba ?
   SplatSib *invertedSplat;
 };
 #pragma pack(push, 1)
@@ -45,16 +54,7 @@ struct Handle
     operator bool() { return field_0 != 0 || idx != 0; }
 };
 #pragma pack(pop)
-struct RGBA
-{
-    uint8_t r, g, b, a;
-    constexpr RGBA(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_) : r(r_), g(g_), b(b_), a(a_) {}
-    constexpr RGBA() : r(0), g(0), b(0), a(0) {}
-    explicit constexpr RGBA(uint32_t vl) : r((vl >> 24) & 0xFF), g((vl >> 16) & 0xFF), b((vl >> 8) & 0xFF), a(vl & 0xFF)
-    {
-    }
-    Vector3 to3Floats() const { return {r/255.0f,g/255.0f,b/255.0f};}
-};
+
 struct BoneInfo
 {
     int numbones;

@@ -203,8 +203,8 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs)
     {
         shdr_Constant1.ref3() = tricks->TintColor0.to3Floats();
         shdr_Constant2.ref3() = tricks->TintColor1.to3Floats();
-        setUniformForProgram("constColor1",shdr_Constant1);
-        setUniformForProgram("constColor2",shdr_Constant2);
+        segs_setShaderConstant(0,&shdr_Constant1);
+        segs_setShaderConstant(1,&shdr_Constant2);
         if ( tricks->info )
         {
             if ( tricks->info->clists[0].count )

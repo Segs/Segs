@@ -46,6 +46,8 @@ set(DLL_SOURCES
     renderer/RenderModel.h
     renderer/RenderBonedModel.cpp
     renderer/RenderBonedModel.h
+    renderer/RenderSprites.cpp
+    renderer/RenderSprites.h
     renderer/RenderTree.cpp
     renderer/RenderTree.h
     renderer/RenderTricks.cpp
