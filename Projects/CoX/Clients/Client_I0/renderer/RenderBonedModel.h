@@ -10,6 +10,33 @@ struct TrickNode;
 struct GlobRenderRel;
 struct Model;
 
+struct SplatSib
+{
+  Vector3 center;
+  Vector3 normal;
+  Vector3 tangent;
+  float height;
+  float width;
+  float depth;
+  TextureBind *texture1;
+  TextureBind *texture2;
+  int drawMe;
+  int flags;
+  struct Parser_StAnim *stAnim;
+  int falloffType;
+  float normalFade;
+  int unkn_4C;
+  int count_70;
+  int unkn_54;
+  int vertexCount;
+  int triangleCount;
+  Vector3 *vertices;
+  Vector2 *tex_scroll1;
+  Vector2 *tex_scroll2;
+  Vector3i *indices; //triangles
+  uint32_t *colors; //rgba
+  SplatSib *invertedSplat;
+};
 #pragma pack(push, 1)
 struct Handle
 {

@@ -3,7 +3,9 @@
 #include "Texture.h"
 #include "ShaderProgramCache.h"
 #include "RendererState.h"
+#include "RendererUtils.h"
 #include "Model.h"
+#include "RenderModel.h"
 
 #include "utils/helpers.h"
 #include "utils/dll_patcher.h"
@@ -13,7 +15,7 @@
 
 #include <cmath>
 #include <algorithm>
-
+#include <cstring>
 
 extern "C" {
     __declspec(dllimport) int texSetWhite(int unit);
@@ -25,15 +27,21 @@ extern "C" {
     __declspec(dllimport) void MatMult4x3(const Matrix4x3 *self, const Matrix4x3 *oth, Matrix4x3 *res);
     __declspec(dllimport) void transposeMat4Copy(const Matrix4x3 *src, Matrix4x3 *dst);
     __declspec(dllimport) void matrix3x3_transpose(Matrix3x3 *);
-    __declspec(dllimport) void wcw_statemgmt_enableStencilTest();
-    __declspec(dllimport) void wcw_statemgmt_disableStencilTest();
     __declspec(dllimport) void wcwMgmt_EnableFog(int);
+    __declspec(dllimport) void xyprintf(int x, int y, const char *fmt, ...);
+    __declspec(dllimport) void fn_4E79C0(GLenum tex, int idx, TextureBind *bind);
+    __declspec(dllimport) void animateSts(Parser_StAnim *anim);
 
+    __declspec(dllimport) DrawMode g_curr_draw_state;
+    __declspec(dllimport) eBlendMode g_curr_blend_state;
     __declspec(dllimport) RdrStats struct_9E7300;
     __declspec(dllimport) CameraInfo cam_info;
     __declspec(dllimport) Array Sub38_PGroupRel_Arr;
     __declspec(dllimport) SunLight g_sun;
     __declspec(dllimport) TextureBind *g_whiteTexture;
+    __declspec(dllimport) int GPU_FLAGS;
+    __declspec(dllimport) int splatShadowsDrawn;
+
 }
 struct ShadowNode
 {
@@ -115,7 +123,7 @@ namespace
 
                 int other_next_vertex = (other_triangle_vertex + 1) % 3;
                 if (pt2_idx == other_tri[other_triangle_vertex] &&
-                    pt1_idx == other_tri[other_next_vertex] && 
+                    pt1_idx == other_tri[other_next_vertex] &&
                     isVectorDistanceLessThenEps(&shadow->tri_norms[triangle_idx], &shadow->tri_norms[other_tri_idx], 0.001f))
                     break;
             }
@@ -124,10 +132,10 @@ namespace
         }
         return 0;
     }
-    void setupVolume(Vector3 *vertices, Vector3i *triangles, int *p_triangle_count, Model *a4, const Matrix4x3 &a2, float distance)
+    void setupVolume(Vector3 *vertices, Vector3i *triangles, int *p_triangle_count, Model *model, const Matrix4x3 &a2, float distance)
     {
         Vector3 offset_t;
-        Matrix4x3 res; 
+        Matrix4x3 res;
 
         Vector3 offset = g_sun.shadow_direction * distance;
         MatMult4x3(&cam_info.inv_viewmat, &a2, &res);
@@ -136,7 +144,7 @@ namespace
 
         Vector3 normalized_offset = offset_t;
         normalized_offset.normalize();
-        ShadowInfo *shadow = a4->vbo->shadow;
+        ShadowInfo *shadow = model->vbo->shadow;
         for (int i = 0; i < shadow->shadow_vert_count; ++i)
         {
             vertices[i + shadow->shadow_vert_count] = offset_t + shadow->shadow_verts[i];
@@ -157,7 +165,7 @@ namespace
             int new_pt1 = pt1_idx + shadow->shadow_vert_count;
             int new_pt2 = pt2_idx + shadow->shadow_vert_count;
             int new_pt3 = pt3_idx + shadow->shadow_vert_count;
-            if (side < 0.0)
+            if (side < 0.0f)
             {
                 triangles[created_tri_idx++] = { pt1_idx,pt2_idx,pt3_idx };
                 triangles[created_tri_idx++] = { new_pt3,new_pt2,new_pt1 };
@@ -204,91 +212,91 @@ namespace
     {
         // intensity to stipple pattern
         uint32_t patt[4];
-        if (intensity <= 0x30)
+        if (intensity <= 48)
         {
             patt[0] = 0x55555555;
             patt[1] = 0;
             patt[2] = 0x11111111;
             patt[3] = 0;
         }
-        else if (intensity <= 0x40)
+        else if (intensity <= 64)
         {
             patt[0] = 0x55555555;
             patt[1] = 0;
             patt[2] = 0x55555555;
             patt[3] = 0;
         }
-        else if (intensity <= 0x50)
+        else if (intensity <= 80)
         {
             patt[0] = 0x55555555;
             patt[1] = 0x22222222;
             patt[2] = 0x55555555;
             patt[3] = 0;
         }
-        else if (intensity <= 0x60)
+        else if (intensity <= 96)
         {
             patt[0] = 0x55555555;
             patt[1] = 0x22222222;
             patt[2] = 0x55555555;
             patt[3] = 0x88888888;
         }
-        else if (intensity <= 0x66)
+        else if (intensity <= 102)
         {
             patt[0] = 0x55555555;
             patt[1] = 0xAAAAAAAA;
             patt[2] = 0x55555555;
             patt[3] = 0x88888888;
         }
-        else if (intensity <= 0x80)
+        else if (intensity <= 128)
         {
             patt[0] = 0x55555555;
             patt[1] = 0xAAAAAAAA;
             patt[2] = 0x55555555;
             patt[3] = 0xAAAAAAAA;
         }
-        else if (intensity <= 0x90)
+        else if (intensity <= 144)
         {
             patt[0] = 0x55555555;
             patt[1] = 0xEEEEEEEE;
             patt[2] = 0x55555555;
             patt[3] = 0xAAAAAAAA;
         }
-        else if (intensity <= 0xA0)
+        else if (intensity <= 160)
         {
             patt[0] = 0x55555555;
             patt[1] = 0xEEEEEEEE;
             patt[2] = 0x55555555;
             patt[3] = 0xBBBBBBBB;
         }
-        else if (intensity <= 0xB0)
+        else if (intensity <= 176)
         {
             patt[0] = 0x55555555;
             patt[1] = 0xFFFFFFFF;
             patt[2] = 0x55555555;
             patt[3] = 0xBBBBBBBB;
         }
-        else if (intensity <= 0xC0)
+        else if (intensity <= 192)
         {
             patt[0] = 0x55555555;
             patt[1] = 0xFFFFFFFF;
             patt[2] = 0x55555555;
             patt[3] = 0xFFFFFFFF;
         }
-        else if (intensity <= 0xD0)
+        else if (intensity <= 208)
         {
             patt[0] = 0xEEEEEEEE;
             patt[1] = 0xFFFFFFFF;
             patt[2] = 0x55555555;
             patt[3] = 0xFFFFFFFF;
         }
-        else if (intensity <= 0xE0)
+        else if (intensity <= 224)
         {
             patt[0] = 0xEEEEEEEE;
             patt[1] = 0xFFFFFFFF;
             patt[2] = 0xBBBBBBBB;
             patt[3] = 0xFFFFFFFF;
         }
-        else if (intensity <= 0xF0)
+        else if (intensity <= 240)
         {
             patt[0] = 0xFFFFFFFF;
             patt[1] = 0xFFFFFFFF;
@@ -379,7 +387,7 @@ namespace
             glEnable(GL_POLYGON_STIPPLE);
             glPolygonStipple((const GLubyte *)stipple_patterns[alpha >> 4]);
         }
-        wcw_statemgmt_enableStencilTest();
+        glEnable(GL_STENCIL_TEST);
         glStencilMask(0xFFFFFFFF);
         if (mask)
             glStencilFunc(GL_NOTEQUAL, mask, mask);
@@ -399,7 +407,7 @@ namespace
         glColorMask(1, 1, 1, 1);
         segs_wcw_statemgmt_setDepthMask(true);
         glDepthFunc(GL_LEQUAL);
-        wcw_statemgmt_disableStencilTest();
+        glDisable(GL_STENCIL_TEST);
         glDisable(GL_POLYGON_STIPPLE);
     }
     void drawModelShadowVolume(Model *model,Matrix4x3 &mat, uint8_t alpha, int shadowmask, struct GfxTree_Node *node)
@@ -485,7 +493,7 @@ void segs_shadowFinishScene()
 {
     if (g_State.view.bShadowVol == 2 || g_sun.shadowcolor.w < 0.05)
         return;
-    wcw_statemgmt_enableStencilTest();
+    glEnable(GL_STENCIL_TEST);
     segs_wcw_statemgmt_setDepthMask(false);
     glDepthFunc(GL_ALWAYS);
     glStencilFunc(GL_NOTEQUAL, 0, ~0xC0u);
@@ -493,7 +501,94 @@ void segs_shadowFinishScene()
     drawShadowColor();
     segs_wcw_statemgmt_setDepthMask(true);
     glDepthFunc(GL_LEQUAL);
-    wcw_statemgmt_disableStencilTest();
+    glDisable(GL_STENCIL_TEST);
+}
+extern Matrix4x3 Unity_Matrix;
+void segs_modelDrawShadowObject(Matrix4x3 *viewSpaceTransform, SplatSib *splat)
+{
+    Matrix4x3 res;
+    Matrix4x3 dest;
+    float delta;
+    float epsilon;
+    float zdist;
+
+    ++splatShadowsDrawn;
+    if ( g_State.view.bSimpleShadowDeb )
+    {
+        xyprintf(40, splatShadowsDrawn + 10, "Tris %d", splat->triangleCount);
+        xyprintf(55, splatShadowsDrawn + 10, "Verts %d", splat->vertexCount);
+    }
+    if ( splat->invertedSplat )
+        segs_modelDrawShadowObject(viewSpaceTransform, splat->invertedSplat);
+    zdist = std::min(-20.0f,viewSpaceTransform->TranslationPart.z);
+    float fixup_amount = 0.0001f;
+    float delta_add = 0.01f;
+    delta = fixup_amount * zdist * zdist / (zdist * fixup_amount + 1.0f) + delta_add;
+    epsilon = -2.0f * g_State.view.zFar * g_State.view.near_far_Z * delta / ((g_State.view.zFar + g_State.view.near_far_Z) * zdist * (zdist + delta));
+    Matrix4x4 m = g_State.view.params_proj_mat;
+    m.TranslationPart.z *=  (epsilon + 1.0f);
+    if ( g_State.view.bSimpleShadowDeb )
+    {
+        xyprintf(30, 30, "pz %f   f %f   n %f   MYCONST %f  EXTRABIT %f  PMatBefore %f", zdist, g_State.view.zFar, g_State.view.near_far_Z,
+                           fixup_amount, delta_add, g_State.view.params_proj_mat.r3.z);
+        xyprintf(30, 31, "delta   %f    epsilon   %f   PMatAfter %f", delta, epsilon, m.TranslationPart.z);
+    }
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadMatrixf(m.data());
+    dest = Unity_Matrix;
+    float offset = splatShadowsDrawn / 500.0f;
+    dest.TranslationPart = splat->normal * (offset + 0.01f);
+    MatMult4x3(&cam_info.viewmat, &dest, &res);
+    res.TranslationPart.z += offset + 0.02f;
+    Matrix4x4 res_gl = res;
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixf(res_gl.data());
+    segs_modelBlendState(eBlendMode::MULTIPLY, 0);
+    segs_modelDrawState(DrawMode::DUALTEX, 0);
+    segs_wcw_UnBindBufferARB();
+    fn_4E79C0(GL_TEXTURE_2D, 0, splat->texture1);
+    fn_4E79C0(GL_TEXTURE_2D, 1, splat->texture2);
+    if ( splat->flags & 1 )
+    {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        if ( GPU_FLAGS & fNV_vertex_program )
+            glFinalCombinerInputNV(GL_VARIABLE_C_NV, 0, GL_UNSIGNED_IDENTITY_NV, GL_RGB);
+    }
+    if ( splat->stAnim )
+        animateSts(splat->stAnim);
+    glMatrixMode(GL_MODELVIEW);
+    segs_wcw_statemgmt_setDepthMask(0);
+    glDisable(GL_LIGHTING);
+    glColorPointer(4, GL_UNSIGNED_BYTE, 0, splat->colors);
+    segs_UVPointer(GL_TEXTURE0, 2, GL_FLOAT, 0, splat->tex_scroll1);
+    segs_UVPointer(GL_TEXTURE1, 2, GL_FLOAT, 0, splat->tex_scroll2);
+    glVertexPointer(3, GL_FLOAT, 0, splat->vertices);
+    glCullFace(GL_BACK);
+    glDrawElements(GL_TRIANGLES, 3 * splat->triangleCount, GL_UNSIGNED_INT, splat->indices);
+    if ( splat->flags & 1 )
+    {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        if ( GPU_FLAGS & 1 )
+        {
+            g_curr_draw_state = DrawMode::INVALID;
+            g_curr_blend_state = eBlendMode::INVALID;
+        }
+    }
+    glMatrixMode(GL_TEXTURE);
+    glClientActiveTextureARB(GL_TEXTURE0);
+    glActiveTextureARB(GL_TEXTURE0);
+    glLoadIdentity();
+    glClientActiveTextureARB(GL_TEXTURE1);
+    glActiveTextureARB(GL_TEXTURE1);
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    segs_wcw_statemgmt_setDepthMask(true);
+    glEnable(GL_LIGHTING);
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 void patch_shadow_renderer()
 {

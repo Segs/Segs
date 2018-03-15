@@ -102,9 +102,9 @@ static void setColorFromList(int colorIdx, const ColorList &clrs)
         setUniformForProgram("constColor2",shdr_Constant2);
     }
 }
-void  segs_modelSetAlpha(uint8_t a1)
+void  segs_modelSetAlpha(uint8_t alpha)
 {
-    shdr_Constant1.w = a1 / 255.0f;
+    shdr_Constant1.w = alpha / 255.0f;
     setUniformForProgram("constColor1",shdr_Constant1);
 }
 int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs)
