@@ -14,6 +14,7 @@
 #include "Common/GameData/chardata_definitions.h"
 #include "Common/GameData/clientoptions_definitions.h"
 #include "Common/GameData/gui_definitions.h"
+#include "Common/GameData/keybind_definitions.h"
 #include "Common/GameData/other_definitions.h"
 
 #include <QtCore/QString>
@@ -108,6 +109,7 @@ const   QString &       getName() const { return m_name; }
         LevelExpAndDebt     m_other_attribs;
         CharacterData       m_char_data;
         ClientOptions       m_options;
+        Keybinds            m_keybinds;
         GUISettings         m_gui;
 
         uint32_t            m_account_id;

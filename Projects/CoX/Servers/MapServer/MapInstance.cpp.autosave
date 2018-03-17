@@ -1575,6 +1575,12 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
 
 void MapInstance::on_set_keybind(SetKeybind *ev)
 {
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    Entity *ent = src->char_entity();
+
+    // reset keybind.
+    //ent->m_char.m_keybinds.m_cur_keybind_profile = ev->profile;
     qWarning() << "Unhandled Set Keybind event: " << ev->profile << ev->key << ev->mods << ev->command;
 }
 

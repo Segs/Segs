@@ -317,3 +317,103 @@ bool loadFrom(BinStore * s, Parse_AllCommandCategories & target)
     assert(ok);
     return ok;
 }
+
+CEREAL_CLASS_VERSION(Keybinds, 1); // register Keybinds class version
+
+template<class Archive>
+void serialize(Archive &archive, Keybind &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("ActualKey",k.actualKey));
+    archive(cereal::make_nvp("Key",k.Key));
+    archive(cereal::make_nvp("Command",k.Command));
+}
+
+template<class Archive>
+void serialize(Archive &archive, KeybindData &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("Key",k.key));
+    archive(cereal::make_nvp("Mods",k.mods));
+    archive(cereal::make_nvp("Command",k.command));
+}
+
+template<class Archive>
+void serialize(Archive &archive, KeyProfiles_Entry &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("DisplayName",k.DisplayName));
+    archive(cereal::make_nvp("Name",k.Name));
+    archive(cereal::make_nvp("KeybindArr",k.KeybindArr));
+}
+
+template<class Archive>
+void serialize(Archive &archive, CommandEntry &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("KeyName",k.keyname));
+    archive(cereal::make_nvp("ModKeys",k.key_mods));
+}
+
+template<class Archive>
+void serialize(Archive &archive, Command &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("CommandString",k.CmdString));
+    archive(cereal::make_nvp("DisplayName",k.DisplayName));
+    archive(cereal::make_nvp("Binding",k.bound_to));
+}
+
+template<class Archive>
+void serialize(Archive &archive, CommandCategory_Entry &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("DisplayName",k.DisplayName));
+    archive(cereal::make_nvp("Commands",k.commands));
+}
+
+template<class Archive>
+void serialize(Archive &archive, Parse_AllKeyProfiles &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("KeyProfiles",k));
+}
+
+template<class Archive>
+void serialize(Archive &archive, Parse_AllCommandCategories &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("AllCommandCategories",k));
+}
+
+// TODO: Which of these do we really need?
+template<class Archive>
+void serialize(Archive &archive, Keybinds &kbds, uint32_t const version)
+{
+    archive(cereal::make_nvp("Profile",kbds.m_cur_keybind_profile));
+    archive(cereal::make_nvp("KeyBinds",kbds.binds));
+}
+
+void saveTo(const Keybinds &target, const QString &baseName, bool text_format)
+{
+    commonSaveTo(target,"Keybinds",baseName,text_format);
+}
+
+template
+void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive &archive, Keybinds &bds, uint32_t const version);
+template
+void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive &archive, Keybinds &bds, uint32_t const version);
+
+void serializeToDb(const Keybinds &data, QString &tgt)
+{
+    std::ostringstream ostr;
+    {
+        cereal::JSONOutputArchive ar(ostr);
+        ar(data);
+    }
+    tgt = QString::fromStdString(ostr.str());
+}
+
+void serializeFromDb(Keybinds &data,const QString &src)
+{
+    if(src.isEmpty())
+        return;
+    std::istringstream istr;
+    istr.str(src.toStdString());
+    {
+        cereal::JSONInputArchive ar(istr);
+        ar(data);
+    }
+}

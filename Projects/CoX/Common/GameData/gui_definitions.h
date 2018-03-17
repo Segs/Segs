@@ -53,11 +53,8 @@ enum WindowVisibility : uint32_t {
     wv_DockedOrHidden   = 4,
 };
 
-// top empty/full: 100000000000001 / 1111111111111111111
-// bottom empty/full: 0 / 1111011111111111110
-// all none top/bottom: 0100000000000001 / 0
-//                                     16385    0       0000000000000000000 0000100000000000001
 enum ChatWindowMasks : uint32_t {   // top      bottom  bottom              top
+    ch_TopMask          = 0x4001,   // 16385    0
     ch_Damage           = 0x4,      // 16389    4       0000000000000000100 0000100000000000101
     ch_Combat           = 0x2,      // 16387    2       0000000000000000010 0000100000000000011
     ch_System           = 0x18048,  // 114761   98376   0011000000001001000 0011100000001001001

@@ -531,6 +531,82 @@ public:
     }
 };
 
+class SetKeybind final : public MapLinkEvent
+{
+public:
+    QString profile;
+    QString key;
+    QString mods;
+    QString command;
+    SetKeybind():MapLinkEvent(MapEventTypes::evSetKeybind)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,19);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        bs.GetString(profile);  // Profile Name?
+        key = bs.GetBits(32);   // Key?
+        mods = bs.GetBits(32);  // Mods?
+        bs.GetString(command);  // Command?
+    }
+};
+
+class ChangeKeybind final : public MapLinkEvent
+{
+public:
+    QString profile;
+    QString key;
+    QString mods;
+    QString command;
+    ChangeKeybind():MapLinkEvent(MapEventTypes::evChangeKeybind)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,20);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        bs.GetString(profile);  // Profile Name?
+        key = bs.GetBits(32);   // Key?
+        mods = bs.GetBits(32);  // Mods?
+        bs.GetString(command);  // Command?
+    }
+};
+
+class ResetKeybinds final : public MapLinkEvent
+{
+public:
+    QString profile;
+    ResetKeybinds():MapLinkEvent(MapEventTypes::evResetKeybinds)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,21);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        bs.GetString(profile); // Keybind Profile Name?
+    }
+};
+
+class SelectKeybindProfile final : public MapLinkEvent
+{
+public:
+    QString profile;
+    SelectKeybindProfile():MapLinkEvent(MapEventTypes::evSelectKeybindProfile)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,22);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        bs.GetString(profile); // Keybind Profile Name
+    }
+};
+
 #include "Events/SaveClientOptions.h"
 #include "Events/GameCommandList.h"
 #include "Events/ChatDividerMoved.h"

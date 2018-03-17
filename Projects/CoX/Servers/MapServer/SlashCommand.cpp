@@ -44,6 +44,7 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"teamDump", "teamDebug"}, &cmdHandler_TeamDebug, 9},
     {{"guiDump", "guiDebug"}, &cmdHandler_GUIDebug, 9},
     {{"setWindowVisibility", "setWinVis"}, &cmdHandler_SetWindowVisibility, 9},
+    {{"keybindDump", "keybindDebug"}, &cmdHandler_KeybindDebug, 9},
     {{"setu1"}, &cmdHandler_SetU1, 9},
     {{"setu2"}, &cmdHandler_SetU2, 9},
     {{"setu3"}, &cmdHandler_SetU3, 9},
@@ -489,6 +490,16 @@ void cmdHandler_SetWindowVisibility(QString &cmd, Entity *e) {
 
     e->m_char.m_gui.m_wnds.at(idx).setWindowVisibility(val); // Set WindowVisibility
     e->m_char.m_gui.m_wnds.at(idx).guiWindowDump(); // for debugging
+}
+
+void cmdHandler_KeybindDebug(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    QString msg = "Sending Keybinds dump to console output.";
+    qDebug() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    e->m_char.m_keybinds.keybindsDump(); // Send GUISettings dump
 }
 
 // Slash commands for setting bit values

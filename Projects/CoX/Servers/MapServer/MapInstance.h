@@ -47,6 +47,10 @@ class PowersDockMode;
 class SwitchTray;
 class ReceivePlayerInfo;
 class SaveClientOptions;
+class SelectKeybindProfile;
+class ResetKeybinds;
+class SetKeybind;
+class ChangeKeybind;
 
 class MapInstance : public EventProcessor
 {
@@ -117,6 +121,10 @@ protected:
     void on_activate_inspiration(class ActivateInspiration *ev);
     void on_powers_dockmode(class PowersDockMode *ev);
     void on_switch_tray(class SwitchTray *ev);
+    void on_select_keybind_profile(class SelectKeybindProfile *ev);
+    void on_reset_keybinds(class ResetKeybinds *ev);
+    void on_set_keybind(class SetKeybind *ev);
+    void on_change_keybind(class ChangeKeybind *ev);
 
 private:
     void on_emote_command(QString lowerContents, Entity *ent);

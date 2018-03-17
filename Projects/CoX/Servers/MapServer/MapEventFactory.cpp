@@ -59,6 +59,10 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 16: return new ChatDividerMoved;
         case 17: return new InspirationDockMode;
         case 18: return new PowersDockMode;
+        case 19: return new SetKeybind;
+        case 20: return new ChangeKeybind;
+        case 21: return new ResetKeybinds;
+        case 22: return new SelectKeybindProfile;
         case 29: return new ActivateInspiration;
         case 32: return new UnqueueAll;
         case 33: return new AbortQueuedPower;
@@ -73,8 +77,6 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 65: return new SaveClientOptions;
         case 67: return new DescriptionAndBattleCry;
         case 69: return new ReceivePlayerInfo;
-        /*case 21: new KeybindProfileReset; */
-        /*case 22: new KeybindProfileSelected; */
     }
     ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled command event type %d\n"),opcode));
     return nullptr;

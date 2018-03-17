@@ -15,7 +15,7 @@
  */
 bool RoamingServer::ReadConfig()
 {
-    qWarning() << "Loading RoamingServer settings...";
+    qDebug() << "Loading RoamingServer settings...";
     QSettings *config(Settings::getSettings());
 
     config->beginGroup("RoamingServer");

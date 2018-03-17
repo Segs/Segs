@@ -129,7 +129,7 @@ bool GameServer::ReadConfig()
         return true;
     }
 
-    qWarning() << "Loading GameServer settings...";
+    qDebug() << "Loading GameServer settings...";
     QSettings *config(Settings::getSettings());
 
     config->beginGroup("GameServer");

@@ -99,7 +99,7 @@ bool MapServer::Run()
  */
 bool MapServer::ReadConfig()
 {
-    qWarning() << "Loading MapServer settings...";
+    qDebug() << "Loading MapServer settings...";
     QSettings *config(Settings::getSettings());
 
     config->beginGroup("MapServer");
