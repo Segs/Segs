@@ -88,7 +88,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 
     for(auto member : e->m_team->m_team_members)
     {
-        Entity *tm_ent          = getEntity(e->m_client,member.tm_idx);
+        Entity *tm_ent          = getEntityByDBID(e->m_client,member.tm_idx);
         QString member_name     = tm_ent->name();
         QString member_mapname  = tm_ent->m_client->current_map()->name();
         bool tm_on_same_map     = true;

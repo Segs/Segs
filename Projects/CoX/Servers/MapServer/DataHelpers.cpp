@@ -135,6 +135,14 @@ void charUpdateGUI(Entity *e)
         qDebug() << "Client GUISettings failed to update in database!";
 }
 
+void loadKeybindDefaults(Entity *e)
+{
+    const MapServerData &data(g_GlobalMapServer->runtimeData());
+    const Parse_AllKeyProfiles &key_profiles(data.m_keybind_profiles);
+
+    e->m_char.m_keybinds.m_all_key_profiles = key_profiles;
+}
+
 int getEntityOriginIndex(bool is_player, const QString &origin_name)
 {
     const MapServerData &data(g_GlobalMapServer->runtimeData());

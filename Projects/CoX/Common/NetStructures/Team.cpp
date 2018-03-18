@@ -58,8 +58,8 @@ void Team::removeTeamMember(Entity *e)
 
     if(m_team_members.size() <= 1)
     {
+        qDebug() << "One player left on team. Removing last entity and deleting team.";
 #ifdef DEBUG_TEAMS
-        qDebug() << "One player left on team. Before removing last entity.";
         dump();
 #endif
         int idx = m_team_members.front().tm_idx;

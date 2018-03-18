@@ -40,6 +40,7 @@ void Entity::fillFromCharacter(Character *f)
     m_db_id = m_char.m_db_id;
     m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*f));
     m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*f));
+    loadKeybindDefaults(this);
 }
 /**
  *  This will mark the Entity as being in logging out state
@@ -99,10 +100,13 @@ void Entity::dump()
                              + QString::number(m_entity_data.m_orientation_pyr.r)
             + "\n  target: " + QString::number(m_target_idx)
             + "\n  assist target: " + QString::number(m_assist_target_idx)
-            + "\n  m_SG_id: " + QString::number(m_supergroup.m_SG_id)
-            + "\n  m_team_id: " + QString::number(m_team->m_team_idx);
+            + "\n  m_SG_id: " + QString::number(m_supergroup.m_SG_id);
 
     qDebug().noquote() << msg;
+
+    if(m_team != nullptr)
+        m_team->dump();
+
     if(m_type == Entity::ENT_PLAYER)
         m_char.dump();
 }

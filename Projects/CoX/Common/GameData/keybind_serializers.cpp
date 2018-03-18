@@ -3,6 +3,8 @@
 #include "serialization_common.h"
 
 #include "DataStorage.h"
+//#define DEBUG_KEYBINDS
+
 namespace {
 static const QMap<QString,KeyName> keyNameToEnum = {
     {"ESCAPE",COH_INPUT_ESCAPE},
@@ -207,10 +209,24 @@ bool loadFrom(BinStore * s, Keybind & target)
 {
     s->prepare();
     bool ok = true;
-    ok &= s->read(target.Key);
+    ok &= s->read(target.KeyString);
     ok &= s->read(target.Command);
     ok &= s->prepare_nested(); // will update the file size left
-    target.actualKey = resolveKey(target.Key);
+
+    target.Mods = COH_INPUT_INVALID; // default is no modifiers
+    QStringList combo = target.KeyString.split("+");
+    if(combo.size() > 1)
+    {
+        target.Mods = resolveKey(combo.at(0));
+        target.Key  = resolveKey(combo.at(1));
+    }
+    else
+        target.Key = resolveKey(target.KeyString);
+
+#ifdef DEBUG_KEYBINDS
+    qDebug() << target.KeyString << target.Key << target.Mods << target.Command;
+#endif
+
     assert(ok && s->end_encountered());
     return ok;
 }
@@ -236,8 +252,8 @@ bool loadFrom(BinStore * s, KeyProfiles_Entry & target)
     }
     assert(ok);
     return ok;
-
 }
+
 bool loadFrom(BinStore * s, Command & target)
 {
     s->prepare();
@@ -245,9 +261,17 @@ bool loadFrom(BinStore * s, Command & target)
     ok &= s->read(target.CmdString);
     ok &= s->read(target.DisplayName);
     ok &= s->prepare_nested(); // will update the file size left
-    assert(ok && s->end_encountered());
+    if(s->end_encountered())
+        return ok;
+
+#ifdef DEBUG_KEYBINDS
+    qDebug() << target.CmdString << target.DisplayName;
+#endif
+
+    assert(ok);
     return ok;
 }
+
 bool loadFrom(BinStore * s, CommandCategory_Entry & target)
 {
     s->prepare();
@@ -271,7 +295,7 @@ bool loadFrom(BinStore * s, CommandCategory_Entry & target)
     return ok;
 }
 
-}
+} // Anonymous namespace
 
 bool loadFrom(BinStore * s, Parse_AllKeyProfiles & target)
 {
@@ -293,7 +317,6 @@ bool loadFrom(BinStore * s, Parse_AllKeyProfiles & target)
     }
     assert(ok);
     return ok;
-
 }
 
 bool loadFrom(BinStore * s, Parse_AllCommandCategories & target)
@@ -323,8 +346,8 @@ CEREAL_CLASS_VERSION(Keybinds, 1); // register Keybinds class version
 template<class Archive>
 void serialize(Archive &archive, Keybind &k, uint32_t const version)
 {
-    archive(cereal::make_nvp("ActualKey",k.actualKey));
     archive(cereal::make_nvp("Key",k.Key));
+    archive(cereal::make_nvp("KeyString",k.KeyString));
     archive(cereal::make_nvp("Command",k.Command));
 }
 
@@ -347,8 +370,8 @@ void serialize(Archive &archive, KeyProfiles_Entry &k, uint32_t const version)
 template<class Archive>
 void serialize(Archive &archive, CommandEntry &k, uint32_t const version)
 {
-    archive(cereal::make_nvp("KeyName",k.keyname));
-    archive(cereal::make_nvp("ModKeys",k.key_mods));
+    archive(cereal::make_nvp("Key",k.Key));
+    archive(cereal::make_nvp("Mods",k.Mods));
 }
 
 template<class Archive>
@@ -356,7 +379,7 @@ void serialize(Archive &archive, Command &k, uint32_t const version)
 {
     archive(cereal::make_nvp("CommandString",k.CmdString));
     archive(cereal::make_nvp("DisplayName",k.DisplayName));
-    archive(cereal::make_nvp("Binding",k.bound_to));
+    archive(cereal::make_nvp("CommandArr",k.CommandArr));
 }
 
 template<class Archive>
@@ -383,7 +406,7 @@ template<class Archive>
 void serialize(Archive &archive, Keybinds &kbds, uint32_t const version)
 {
     archive(cereal::make_nvp("Profile",kbds.m_cur_keybind_profile));
-    archive(cereal::make_nvp("KeyBinds",kbds.binds));
+    archive(cereal::make_nvp("KeyBinds",kbds.m_binds));
 }
 
 void saveTo(const Keybinds &target, const QString &baseName, bool text_format)

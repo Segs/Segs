@@ -477,14 +477,14 @@ void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag cond
     }
 }
 void Character::sendKeybinds(BitStream &bs) const
-{
+{    
     bs.StoreString(m_keybinds.m_cur_keybind_profile); // keybinding profile name
 
     for(int i=0; i<COH_INPUT_LAST_NON_GENERIC; ++i)
     {
-      if(!m_keybinds.binds.at(i).command.isEmpty())
+      if(!m_keybinds.m_binds.at(i).command.isEmpty())
       {
-         const KeybindData &kb(m_keybinds.binds[i]);
+         const KeybindData &kb(m_keybinds.m_binds[i]);
          bs.StoreString(kb.command);
          bs.StoreBits(32,kb.key);
          bs.StoreBits(32,kb.mods);

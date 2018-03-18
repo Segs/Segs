@@ -212,8 +212,9 @@ enum KeyName : int32_t
 };
 struct Keybind
 {
-    KeyName actualKey;
-    QString Key;
+    KeyName Key;
+    KeyName Mods;
+    QString KeyString;
     QString Command;
 };
 
@@ -225,14 +226,15 @@ struct KeyProfiles_Entry
 };
 
 struct CommandEntry {
-    KeyName keyname;
-    ModKeys key_mods; // Mod  0, 1 - CONTROL_KEY_PRESSED, 2 - SHIFT PRESSED, 3 - ALT PRESSED
+    QString KeyString;
+    KeyName Key;
+    ModKeys Mods; // Mod  0, 1 - CONTROL_KEY_PRESSED, 2 - SHIFT PRESSED, 3 - ALT PRESSED
 };
 struct Command
 {
     QString CmdString;
     QString DisplayName;
-    CommandEntry bound_to[2];
+    CommandEntry CommandArr[2];
 };
 struct CommandCategory_Entry
 {
@@ -258,9 +260,10 @@ struct KeybindData {
 class Keybinds
 {
 public:
-    Keybinds() { binds.resize(256); }
+    Keybinds() { m_binds.resize(256); }
 
-    std::vector<KeybindData> binds = {
+    Parse_AllKeyProfiles m_all_key_profiles;
+    std::vector<KeybindData> m_binds = {
         KeybindData(COH_INPUT_APOSTROPHE,"quickchat"),              // (        Qt::Key_ParenLeft
         KeybindData(COH_INPUT_MINUS,"prev_tray"),                   // -        Qt::Key_Minus
         KeybindData(COH_INPUT_MINUS,ALT_MOD,"prev_tray_alt"),       // ALT+-    Qt::AltModifier + Qt::Key_Minus
@@ -391,7 +394,22 @@ public:
         qDebug().noquote() << "Debugging Keybinds:"
                            << "\n\t" << "Profile Name:" << m_cur_keybind_profile;
 
-        for(auto k : binds)
+        for(auto k : m_binds)
             qDebug() << k.key << k.mods << k.command;
+
+        keyProfilesDump();
+    }
+
+    void keyProfilesDump()
+    {
+        qDebug() << "Keybind Profiles Dump";
+
+        for(auto &profile : m_all_key_profiles)
+        {
+            qDebug() << profile.DisplayName << profile.Name;
+
+            for(auto &k : profile.KeybindArr)
+                qDebug() << k.KeyString << k.Key << k.Mods << k.Command;
+        }
     }
 };

@@ -214,6 +214,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evSetKeybind:
             on_set_keybind(static_cast<SetKeybind *>(ev));
             break;
+        case MapEventTypes::evChangeKeybind:
+            on_change_keybind(static_cast<ChangeKeybind *>(ev));
+            break;
         case MapEventTypes::evResetKeybinds:
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
@@ -1575,17 +1578,23 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
 
 void MapInstance::on_set_keybind(SetKeybind *ev)
 {
-    qWarning() << "Unhandled Set Keybind event: " << ev->profile << ev->key << ev->mods << ev->command;
+    qWarning() << "Unhandled Set Keybind event: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command;
 }
 
 void MapInstance::on_change_keybind(ChangeKeybind *ev)
 {
-    qWarning() << "Unhandled Change Keybind event: " << ev->profile << ev->key << ev->mods << ev->command;
+    qWarning() << "Unhandled Change Keybind event: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
 void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
 {
-    qWarning() << "Unhandled Reset Keybinds event: " << ev->profile;
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    Entity *ent = src->char_entity();
+
+    ent->m_char.m_keybinds.m_cur_keybind_profile = ev->profile;
+    loadKeybindDefaults(ent);
+    qDebug() << "Resetting Keybinds to defaults.";
 }
 
 void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
@@ -1595,5 +1604,5 @@ void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
     Entity *ent = src->char_entity();
 
     ent->m_char.m_keybinds.m_cur_keybind_profile = ev->profile;
-    qDebug() << "Saving Keybind Profile to Keybinds class. Profile name: " << ev->profile;
+    qDebug() << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }

@@ -535,8 +535,10 @@ class SetKeybind final : public MapLinkEvent
 {
 public:
     QString profile;
-    QString key;
-    QString mods;
+    uint32_t key_and_secondary;
+    uint8_t key;
+    bool is_secondary;
+    uint32_t mods;
     QString command;
     SetKeybind():MapLinkEvent(MapEventTypes::evSetKeybind)
     {}
@@ -546,10 +548,14 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        bs.GetString(profile);  // Profile Name?
-        key = bs.GetBits(32);   // Key?
-        mods = bs.GetBits(32);  // Mods?
-        bs.GetString(command);  // Command?
+        bs.GetString(profile);  // Profile Name
+
+        key_and_secondary = bs.GetBits(32); // Key & Secondary
+        key = key_and_secondary &0xFF;
+        is_secondary = (key_and_secondary & 0xF00)==0xF00;
+
+        mods = bs.GetBits(32);  // Mods
+        bs.GetString(command);  // Command
     }
 };
 
@@ -557,9 +563,8 @@ class ChangeKeybind final : public MapLinkEvent
 {
 public:
     QString profile;
-    QString key;
-    QString mods;
-    QString command;
+    uint32_t key;
+    uint32_t mods;
     ChangeKeybind():MapLinkEvent(MapEventTypes::evChangeKeybind)
     {}
     void serializeto(BitStream &bs) const
@@ -568,10 +573,9 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        bs.GetString(profile);  // Profile Name?
-        key = bs.GetBits(32);   // Key?
-        mods = bs.GetBits(32);  // Mods?
-        bs.GetString(command);  // Command?
+        bs.GetString(profile);  // Profile Name
+        key = bs.GetBits(32);   // Key
+        mods = bs.GetBits(32);  // Mods
     }
 };
 
@@ -587,7 +591,7 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        bs.GetString(profile); // Keybind Profile Name?
+        // nothing?
     }
 };
 
