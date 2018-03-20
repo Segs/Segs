@@ -40,6 +40,8 @@ class MapServer;
 class SEGSTimer;
 class InputState;
 class World;
+class SetDefaultPowerSend;
+class SetDefaultPower;
 class UnqueueAll;
 class TargetChatChannelSelected;
 class ActivateInspiration;
@@ -116,6 +118,8 @@ protected:
     void on_chat_reconfigured(class ChatReconfigure *ev);
     void on_switch_viewpoint(class SwitchViewPoint *ev);
     void on_client_options(class SaveClientOptions *ev);
+    void on_set_default_power_send(class SetDefaultPowerSend *ev);
+    void on_set_default_power(class SetDefaultPower *ev);
     void on_unqueue_all(class UnqueueAll *ev);
     void on_target_chat_channel_selected(class TargetChatChannelSelected *ev);
     void on_activate_inspiration(class ActivateInspiration *ev);

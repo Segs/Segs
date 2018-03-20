@@ -178,6 +178,7 @@ bool CharacterDatabase::fill( Entity *e)
         }
     }
 
+    e->m_db_id = (m_prepared_entity_select.value("id").toUInt());
     e->m_supergroup.m_SG_id = (m_prepared_entity_select.value("supergroup_id").toUInt());
 
     QString entity_data;

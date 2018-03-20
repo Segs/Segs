@@ -5,23 +5,24 @@
  * This software is licensed! (See License.txt for details)
  *
  */
+#include <algorithm>
 
 #include "KeybindSettings.h"
 #include "MapServer.h"
 #include "MapServerData.h"
 
-QString makeKeyString(const KeyName &key, const KeyName &mods)
+QString makeKeyString(const KeyName &key, const ModKeys &mods)
 {
-    QString k = keyNameToEnum.key(key);
-    QString m = keyNameToEnum.key(mods);
+    QString k = keyNameToEnum.key(key,0);
+    QString m = modNameToEnum.key(mods,0);
     QString keystring;
 
-    if(m != "\u0000")
+    if(m != 0)
         keystring = QString("%1+%2").arg(m,k);
     else
         keystring = k;
 
-    qDebug() << keystring << k << m;
+    //qDebug() << keystring << k << m << key << mods;
 
     return keystring.toLower();
 }
@@ -44,7 +45,7 @@ const CurrentKeybinds &KeybindSettings::getCurrentKeybinds() const
             return p.KeybindArr;
     }
 
-    assert(false);
+    qDebug() << "Could not get Current Keybinds. Returning first keybind profile.";
     return m_keybind_profiles.at(0).KeybindArr;
 }
 
@@ -56,21 +57,40 @@ void KeybindSettings::resetKeybinds()
     m_keybind_profiles = default_profiles;
 }
 
-void KeybindSettings::setKeybind(QString &profile, KeyName &key, KeyName &mods, QString &command, bool &is_secondary)
+void KeybindSettings::setKeybind(QString &profile, KeyName &key, ModKeys &mods, QString &command, bool &is_secondary)
 {
-    QString keystring = makeKeyString(key,mods); // TODO: correct keystring
-    qDebug() << profile << key << mods << keystring << command << is_secondary;
+    removeKeybind(profile,key,mods); // remove previous keybinds
+
+    QString keystring = makeKeyString(key,mods); // Construct keystring from mods+key
 
     for(auto &p : m_keybind_profiles)
     {
         if(p.Name == profile)
             p.KeybindArr.push_back({key,mods,keystring,command,is_secondary});
     }
+
+    qDebug() << "Setting keybind: " << profile << key << mods << keystring << command << is_secondary;
+
 }
 
-void KeybindSettings::removeKeybind(QString &profile, KeyName &key, KeyName &mods)
+void KeybindSettings::removeKeybind(QString &profile, KeyName &key, ModKeys &mods)
 {
-    // TODO: find and remove keybind here
+    QString keystring = makeKeyString(key,mods); // Construct keystring from mods+key
+
+    for(auto &p : m_keybind_profiles)
+    {
+        if(p.Name == profile)
+        {
+            for(auto iter=p.KeybindArr.begin(); iter!=p.KeybindArr.end(); /*incremented inside loop*/)
+            {
+              if(iter->Key==key && iter->Mods==mods)
+                  iter=p.KeybindArr.erase(iter);
+              else
+                  ++iter;
+            }
+        }
+    }
+    qDebug() << "Clearing keybind: " << profile << key << mods << keystring;
 }
 
 void KeybindSettings::keybindsDump()

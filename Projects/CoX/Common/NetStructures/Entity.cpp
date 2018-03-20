@@ -37,10 +37,9 @@ void Entity::fillFromCharacter(Character *f)
 {
     m_char = *f;
     m_hasname = true;
-    m_db_id = m_char.m_db_id;
+    //m_db_id = m_char.m_db_id; // TODO: fill from database instead
     m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*f));
     m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*f));
-    m_char.m_keybinds.resetKeybinds();
 }
 /**
  *  This will mark the Entity as being in logging out state
@@ -69,7 +68,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *pac
     e.m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(e.m_char));
     e.m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(e.m_char));
     e.m_char.m_keybinds.resetKeybinds();
-    setDbId(e,e.m_char.m_db_id);
+    //setDbId(e,e.m_char.m_db_id); // TODO: Fill from database instead.
 
     // New Character Spawn Location
     //e.m_entity_data.pos                 = glm::vec3(-60.5f,180.0f,0.0f); // Tutorial Starting Location

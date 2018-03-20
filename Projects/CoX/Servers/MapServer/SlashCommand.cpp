@@ -63,7 +63,7 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"k","kick"}, &cmdHandler_Kick, 1},
     {{"leaveteam"}, &cmdHandler_LeaveTeam, 1},
     {{"findmember"}, &cmdHandler_FindMember, 1},
-    {{"makeleader","teamleader"}, &cmdHandler_MakeLeader, 1}
+    {{"makeleader","ml"}, &cmdHandler_MakeLeader, 1}
 };
 
 bool canAccessCommand(const SlashCommand &cmd, const Entity &e)
@@ -689,13 +689,12 @@ void cmdHandler_Invite(QString &cmd, Entity *e) {
     int space = cmd.indexOf(' ');
     QString name = cmd.mid(space+1);
 
-    if(space==-1)
-    {
-        msg = "The " + cmd + " command requires a name of a player.";
-        return;
-    }
+    if(space == -1 || name.isEmpty())
+        tgt = getEntity(src,getTargetIdx(*e));
+    else
+        tgt = getEntity(src,name);
 
-    if((tgt = getEntity(src,name)) == nullptr)
+    if(tgt == nullptr)
         return;
 
     if(inviteTeam(*e,*tgt))
@@ -715,13 +714,12 @@ void cmdHandler_Kick(QString &cmd, Entity *e) {
     int space = cmd.indexOf(' ');
     QString name = cmd.mid(space+1);
 
-    if(space==-1)
-    {
-        msg = "The " + cmd + " command requires a target or name of a player.";
-        return;
-    }
+    if(space == -1 || name.isEmpty())
+        tgt = getEntity(src,getTargetIdx(*e));
+    else
+        tgt = getEntity(src,name);
 
-    if((tgt = getEntity(src,name)) == nullptr)
+    if(tgt == nullptr)
         return;
 
     if(kickTeam(*tgt))
@@ -761,13 +759,12 @@ void cmdHandler_MakeLeader(QString &cmd, Entity *e) {
     int space = cmd.indexOf(' ');
     QString name = cmd.mid(space+1);
 
-    if(space==-1)
-    {
-        msg = "The " + cmd + " command requires a target or name of a player.";
-        return;
-    }
+    if(space == -1 || name.isEmpty())
+        tgt = getEntity(src,getTargetIdx(*e));
+    else
+        tgt = getEntity(src,name);
 
-    if((tgt = getEntity(src,name)) == nullptr)
+    if(tgt == nullptr)
         return;
 
     if(makeTeamLeader(*e,*tgt))

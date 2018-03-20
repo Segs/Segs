@@ -193,6 +193,12 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
             break;
+        case MapEventTypes::evSetDefaultPowerSend:
+            on_set_default_power_send(static_cast<SetDefaultPowerSend *>(ev));
+            break;
+        case MapEventTypes::evSetDefaultPower:
+            on_set_default_power(static_cast<SetDefaultPower *>(ev));
+            break;
         case MapEventTypes::evUnqueueAll:
             on_unqueue_all(static_cast<UnqueueAll *>(ev));
             break;
@@ -527,10 +533,6 @@ void MapInstance::on_window_state(WindowState * ev) {
     int idx = ev->wnd.m_idx;
     e->m_char.m_gui.m_wnds.at(idx) = ev->wnd;
 
-    // TODO: do we really want to save them here? maybe no?
-    //charUpdateGUI(e); // Update database with GUISettings
-    //qDebug() << "Client GUISettings saved to database.";
-
 #ifdef DEBUG_GUI
     printf("Received window state %d - %d\n",ev->wnd.m_idx,ev->wnd.m_mode);
     //e->m_char.m_gui.m_wnds.at(idx).guiWindowDump();
@@ -571,7 +573,7 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
     uint32_t target_idx         = getTargetIdx(*sender->char_entity());
     QString  target_char_name;
 
-    qDebug() << "target_idx: " << sender->char_entity()->m_idx  << ":" << target_idx;
+    qDebug() << "src -> tgt: " << sender->char_entity()->m_idx  << "->" << target_idx;
 
     if(target_idx > 0)
     {
@@ -1499,7 +1501,6 @@ void MapInstance::on_client_options(SaveClientOptions * ev)
     Entity *e = src->char_entity();
 
     e->m_char.m_options = ev->data;
-    // e->m_char.m_keybinds = ev->keybinds;
     charUpdateOptions(e); // Update database with opts/kbds
 
     qDebug() << "Client options saved to database.";
@@ -1527,9 +1528,19 @@ void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
     qDebug() << "Saving chat channel mask settings to GUISettings" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
 }
 
+void MapInstance::on_set_default_power_send(SetDefaultPowerSend *ev)
+{
+    qWarning() << "Unhandled Set Default Power Send request:" << ev->powerset_idx << ev->power_idx;
+}
+
+void MapInstance::on_set_default_power(SetDefaultPower *ev)
+{
+    qWarning() << "Unhandled Set Default Power request.";
+}
+
 void MapInstance::on_unqueue_all(UnqueueAll *ev)
 {
-    qWarning() << "Unhandled unqueue all request:" << ev->g_input_pak;
+    qWarning() << "Unhandled unqueue all request.";
 }
 
 void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
@@ -1555,8 +1566,7 @@ void MapInstance::on_powers_dockmode(PowersDockMode *ev)
     Entity *ent = src->char_entity();
 
     ent->m_char.m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
-    // TODO: What is dock mode?
-    qWarning() << "Saving powers tray dock mode to GUISettings:" << ev->dock_mode << ev->toggle_secondary_tray;
+    qDebug() << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
 }
 
 void MapInstance::on_switch_tray(SwitchTray *ev)
@@ -1579,8 +1589,11 @@ void MapInstance::on_set_keybind(SetKeybind *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_keybinds.setKeybind(ev->profile, (KeyName &)ev->key, (KeyName &)ev->mods, ev->command, ev->is_secondary);
-    qDebug() << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
+    KeyName key = static_cast<KeyName>(ev->key);
+    ModKeys mod = static_cast<ModKeys>(ev->mods);
+
+    ent->m_char.m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
+    //qDebug() << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
 }
 
 void MapInstance::on_remove_keybind(RemoveKeybind *ev)
@@ -1589,8 +1602,8 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(KeyName &)ev->mods);
-    qWarning() << "Changing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
+    ent->m_char.m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
+    //qWarning() << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
 void MapInstance::on_reset_keybinds(ResetKeybinds *ev)

@@ -341,7 +341,6 @@ public:
 class ActivateInspiration final : public MapLinkEvent
 {
 public:
-    int insp_unk;
     int slot_idx;
     int row_idx;
     ActivateInspiration():MapLinkEvent(MapEventTypes::evActivateInspiration)
@@ -354,16 +353,47 @@ public:
     }
     void serializefrom(BitStream &bs) override
     {
-        insp_unk = bs.GetBits(29);
         slot_idx = bs.GetPackedBits(3);
         row_idx = bs.GetPackedBits(3);
+    }
+};
+
+class SetDefaultPowerSend final : public MapLinkEvent
+{
+public:
+    int powerset_idx;
+    int power_idx;
+    SetDefaultPowerSend():MapLinkEvent(MapEventTypes::evSetDefaultPowerSend)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,30);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        powerset_idx = bs.GetPackedBits(4);
+        power_idx = bs.GetPackedBits(4);
+    }
+};
+
+class SetDefaultPower final : public MapLinkEvent
+{
+public:
+    SetDefaultPower():MapLinkEvent(MapEventTypes::evSetDefaultPower)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,31);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        // TODO: Seems like nothing is received server side.
     }
 };
 
 class UnqueueAll final : public MapLinkEvent
 {
 public:
-    int32_t g_input_pak; // TODO: Not sure what this is?
     UnqueueAll():MapLinkEvent(MapEventTypes::evUnqueueAll)
     {}
     void serializeto(BitStream &bs) const
@@ -372,7 +402,7 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        g_input_pak = bs.GetBits(32);
+        // TODO: Seems like nothing is received server side.
     }
 };
 
@@ -387,6 +417,7 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
+        // TODO: Seems like nothing is received server side.
     }
 };
 class DescriptionAndBattleCry final : public MapLinkEvent
@@ -409,7 +440,6 @@ public:
 class EntityInfoRequest final : public MapLinkEvent
 {
 public:
-    QString description = "TEST Desc Sent!";
     int entity_idx;
     EntityInfoRequest():MapLinkEvent(MapEventTypes::evEntityInfoRequest)
     {}
@@ -420,9 +450,6 @@ public:
     void serializefrom(BitStream &bs) override
     {
         entity_idx = bs.GetPackedBits(12);
-        // TODO: What happens here?
-        // bs.StorePackedBits(1,69);
-        // bs.StoreString(description);
     }
 };
 class ReceivePlayerInfo final : public MapLinkEvent
@@ -438,6 +465,7 @@ public:
     }
     void serializefrom(BitStream &bs) override
     {
+        // TODO: Seems like nothing is received server side but let's try this!
         bs.GetString(description);
     }
 };
@@ -491,7 +519,6 @@ public:
 class PowersDockMode final : public MapLinkEvent
 {
 public:
-    uint32_t dock_mode = 0;
     bool toggle_secondary_tray = 0;
 
     PowersDockMode():MapLinkEvent(MapEventTypes::evPowersDockMode)
@@ -503,7 +530,6 @@ public:
     }
     void serializefrom(BitStream &bs)
     {
-        dock_mode = bs.GetPackedBits(32); // Some kind of array of slotted powers?
         toggle_secondary_tray = bs.GetBits(1);
     }
 };
@@ -537,9 +563,10 @@ public:
     QString profile;
     uint32_t key_and_secondary;
     uint8_t key;
-    bool is_secondary;
     uint32_t mods;
     QString command;
+    bool is_secondary;
+
     SetKeybind():MapLinkEvent(MapEventTypes::evSetKeybind)
     {}
     void serializeto(BitStream &bs) const
@@ -549,13 +576,11 @@ public:
     void serializefrom(BitStream &bs)
     {
         bs.GetString(profile);  // Profile Name
-
+        qDebug() << profile;
         key_and_secondary = bs.GetBits(32); // Key & Secondary Binding
+
         key = key_and_secondary &0xFF;
         is_secondary = (key_and_secondary & 0xF00)==0xF00;
-
-        // For debug. Please remove me.
-        qDebug() << key_and_secondary << key << is_secondary;
 
         mods = bs.GetBits(32);  // Mods
         bs.GetString(command);  // Command

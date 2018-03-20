@@ -22,7 +22,7 @@ public:
         void setKeybindProfile(QString &profile);
 const   CurrentKeybinds &getCurrentKeybinds() const;
         void resetKeybinds();
-        void setKeybind(QString &profile, KeyName &key, KeyName &mods, QString &command, bool &is_secondary);
-        void removeKeybind(QString &profile, KeyName &key, KeyName &mods);
+        void setKeybind(QString &profile, KeyName &key, ModKeys &mods, QString &command, bool &is_secondary);
+        void removeKeybind(QString &profile, KeyName &key, ModKeys &mods);
         void keybindsDump();
 };

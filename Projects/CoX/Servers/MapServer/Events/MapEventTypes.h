@@ -48,8 +48,10 @@ public:
     EVENT_DECL(evResetKeybinds              ,221)
     EVENT_DECL(evSelectKeybindProfile       ,222)
     EVENT_DECL(evActivateInspiration        ,229) // Hit F1, F2, F3, F4, F5 or Click on Inspiration in Tray
-    EVENT_DECL(evUnqueueAll                 ,232) // Click on another entity
-    EVENT_DECL(evAbortQueuedPower           ,233) // TODO: this might actually mean something different
+    EVENT_DECL(evSetDefaultPowerSend        ,230) // Send Default Powerset
+    EVENT_DECL(evSetDefaultPower            ,231) // Clicking 'z'
+    EVENT_DECL(evUnqueueAll                 ,232) // Click on another entity or Clicking 'z'
+    EVENT_DECL(evAbortQueuedPower           ,233) // Clicking 'z'
     EVENT_DECL(evChangeStance               ,236)
     EVENT_DECL(evTargetChatChannelSelected  ,237) // Change chat type using the letters in the chat window 'l, b, g, sg, r, f"
     EVENT_DECL(evChatReconfigure            ,238)

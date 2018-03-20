@@ -188,7 +188,6 @@ public:
         uint8_t             m_type                  = {0};
         glm::quat           m_direction;
         glm::vec3           m_spd                   = {1,1,1};
-        bool                m_has_target;
         uint32_t            m_target_idx;
         uint32_t            m_assist_target_idx;
 

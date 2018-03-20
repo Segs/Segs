@@ -3,8 +3,8 @@
 #include "serialization_common.h"
 
 #include "Servers/MapServer/Events/KeybindSettings.h"
-
 #include "DataStorage.h"
+
 //#define DEBUG_KEYBINDS
 
 namespace {
@@ -15,6 +15,13 @@ KeyName resolveKey(const QString &name)
         return *iter;
     return COH_INPUT_INVALID;
 }
+ModKeys resolveMod(const QString &name)
+{
+    auto iter = modNameToEnum.find(name.toUpper());
+    if(iter!=modNameToEnum.end())
+        return *iter;
+    return NO_MOD;
+}
 bool loadFrom(BinStore * s, Keybind & target)
 {
     s->prepare();
@@ -23,18 +30,17 @@ bool loadFrom(BinStore * s, Keybind & target)
     ok &= s->read(target.Command);
     ok &= s->prepare_nested(); // will update the file size left
 
-    target.Mods = COH_INPUT_INVALID; // default is no modifiers
     QStringList combo = target.KeyString.split("+");
     if(combo.size() > 1)
     {
-        target.Mods = resolveKey(combo.at(0));
+        target.Mods = resolveMod(combo.at(0));
         target.Key  = resolveKey(combo.at(1));
     }
     else
         target.Key = resolveKey(target.KeyString);
 
 #ifdef DEBUG_KEYBINDS
-    qDebug() << target.KeyString << target.Key << target.Mods << target.Command;
+    qDebug() << "\tbind:" << target.KeyString << target.Key << target.Mods << target.Command;
 #endif
 
     assert(ok && s->end_encountered());
@@ -49,6 +55,11 @@ bool loadFrom(BinStore * s, Keybind_Profiles & target)
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
+
+#ifdef DEBUG_KEYBINDS
+    qDebug() << "Loading Profile:" << target.DisplayName << target.Name;
+#endif
+
     QString _name;
     while(s->nesting_name(_name))
     {
@@ -60,6 +71,11 @@ bool loadFrom(BinStore * s, Keybind_Profiles & target)
             assert(!"unknown field referenced.");
         s->nest_out();
     }
+
+#ifdef DEBUG_KEYBINDS
+    qDebug() << "Total Keybinds:" << target.KeybindArr.size();
+#endif
+
     assert(ok);
     return ok;
 }

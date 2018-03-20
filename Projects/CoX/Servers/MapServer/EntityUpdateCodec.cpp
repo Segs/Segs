@@ -320,7 +320,7 @@ void sendTargetUpdate(const Entity &src,BitStream &bs)
 {
     uint32_t assist_id  = getAssistTargetIdx(src);
     uint32_t target_id  = getTargetIdx(src);
-    bool has_target     = src.m_has_target;
+    bool has_target     = (target_id != 0);
 
     bs.StoreBits(1,has_target); // TODO: test this
     if(!has_target)

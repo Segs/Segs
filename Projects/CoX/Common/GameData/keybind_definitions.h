@@ -211,6 +211,17 @@ enum KeyName : int32_t
     COH_MOUSE_MOVE             = 0x1000,
 };
 
+static const QMap<QString,ModKeys> modNameToEnum = {
+    {"LCTRL",CTRL_MOD},
+    {"LCONTROL",CTRL_MOD},
+    {"RCTRL",CTRL_MOD},
+    {"RCONTROL",CTRL_MOD},
+    {"LALT",ALT_MOD},
+    {"RALT",ALT_MOD},
+    {"LSHIFT",SHIFT_MOD},
+    {"RSHIFT",SHIFT_MOD},
+};
+
 static const QMap<QString,KeyName> keyNameToEnum = {
     {"ESCAPE",COH_INPUT_ESCAPE},
     {"ESC",COH_INPUT_ESCAPE},
@@ -421,7 +432,7 @@ static const QMap<QString,KeyName> keyNameToEnum = {
 struct Keybind
 {
     KeyName Key;
-    KeyName Mods;
+    ModKeys Mods; // Mod  0, 1 - CONTROL_KEY_PRESSED, 2 - SHIFT PRESSED, 3 - ALT PRESSED
     QString KeyString;
     QString Command;
     bool    IsSecondary = false;

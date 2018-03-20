@@ -64,6 +64,8 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 21: return new ResetKeybinds;
         case 22: return new SelectKeybindProfile;
         case 29: return new ActivateInspiration;
+        case 30: return new SetDefaultPowerSend;
+        case 31: return new SetDefaultPower;
         case 32: return new UnqueueAll;
         case 33: return new AbortQueuedPower;
         case 36: return new ChangeStance;

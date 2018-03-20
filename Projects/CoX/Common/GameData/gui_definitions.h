@@ -122,7 +122,7 @@ public:
         float       m_chat_transparency = 0.8f;
         int         m_chat_top_flags    = 0x5D87F; // orig: (1<<19)-1
         int         m_chat_bottom_flags = 0x22780;
-        float       m_chat_divider_pos  = 0;
+        float       m_chat_divider_pos  = 0.5f;
 
         void guiDump()
         {

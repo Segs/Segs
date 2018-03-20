@@ -7,6 +7,7 @@
  */
 
 //#define DEBUG_GUI
+//#define DEBUG_KEYBINDS
 #include "Character.h"
 
 #include "BitStream.h"
@@ -256,7 +257,6 @@ void Character::DumpBuildInfo()
             + "\n  " + getClass(c)
             + "\n  map: " + getMapName(c)
             + "\n  db_id: " + QString::number(m_db_id)
-            + "\n  idx: " + QString::number(getIndex())
             + "\n  acct: " + QString::number(getAccountId())
             + "\n  lvl/clvl: " + QString::number(getLevel(c)) + "/" + QString::number(getCombatLevel(c))
             + "\n  inf: " + QString::number(getInf(c))
@@ -481,6 +481,10 @@ void Character::sendKeybinds(BitStream &bs) const
     const CurrentKeybinds &cur_keybinds = m_keybinds.getCurrentKeybinds();
     int total_keybinds = cur_keybinds.size();
 
+#ifdef DEBUG_KEYBINDS
+    qDebug() << "total keybinds:" << total_keybinds;
+#endif
+
     bs.StoreString(m_keybinds.m_cur_keybind_profile); // keybinding profile name
 
     for(int i=0; i<COH_INPUT_LAST_NON_GENERIC; ++i)
@@ -492,22 +496,28 @@ void Character::sendKeybinds(BitStream &bs) const
 
          if(kb.IsSecondary)
          {
-             int32_t sec = (kb.Key & 0xF00);
+             int32_t sec = (kb.Key | 0xF00);
              bs.StoreBits(32,sec);
+#ifdef DEBUG_KEYBINDS
+             qDebug() << "is secondary:" << sec;
+#endif
          }
          else
              bs.StoreBits(32,kb.Key);
 
          bs.StoreBits(32,kb.Mods);
-         qDebug() << i << kb.KeyString << kb.Key << kb.Mods << kb.Command << kb.IsSecondary;
+#ifdef DEBUG_KEYBINDS
+         qDebug() << i << kb.KeyString << kb.Key << kb.Mods << kb.Command << " secondary:" << kb.IsSecondary;
+#endif
       }
       else
       {
          bs.StoreString("");
          bs.StoreBits(32,0);
          bs.StoreBits(32,0);
-
+#ifdef DEBUG_KEYBINDS
          qDebug() << i;
+#endif
       }
     }
 }
