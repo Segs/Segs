@@ -198,7 +198,7 @@ bool CharacterDatabase::fill( Character *c)
 {
     CharacterData *cd = &c->m_char_data;
     ClientOptions *od = &c->m_options;
-    Keybinds *kbd = &c->m_keybinds;
+    KeybindSettings *kbd = &c->m_keybinds;
     GUISettings *gui = &c->m_gui;
 
     assert(c&&c->getAccountId());
@@ -236,7 +236,7 @@ bool CharacterDatabase::fill( Character *c)
 
     QString keybind_data;
     keybind_data = (m_prepared_char_select.value("keybinds").toString());
-    //serializeFromDb(*kbd,keybind_data);
+    serializeFromDb(*kbd,keybind_data);
 
 #ifdef DEBUG_DB
     qDebug().noquote() << "m_db_id:" << c->m_db_id;
@@ -319,7 +319,7 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
 
     ClientOptions *od = &c->m_options;
-    Keybinds *kbd = &c->m_keybinds;
+    KeybindSettings *kbd = &c->m_keybinds;
     GUISettings *gui = &c->m_gui;
     Costume *cst = c->getCurrentCostume();
     if(!cst) {
@@ -457,7 +457,7 @@ bool CharacterDatabase::updateClientOptions( Entity *e )
     assert(c);
 
     ClientOptions *od = &c->m_options;
-    Keybinds *kbd = &c->m_keybinds;
+    KeybindSettings *kbd = &c->m_keybinds;
 
     /*
     ":id, :options, :keybinds "

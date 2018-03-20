@@ -49,7 +49,6 @@ void    toggleControlId(Entity &e);
 void    charUpdateDB(Entity *e);
 void    charUpdateOptions(Entity *e);
 void    charUpdateGUI(Entity *e);
-void    loadKeybindDefaults(Entity *e);
 int     getEntityOriginIndex(bool is_player,const QString &origin_name);
 int     getEntityClassIndex(bool is_player, const QString &class_name);
 Entity * getEntity(MapClient *src, const QString &name);

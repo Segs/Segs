@@ -6,9 +6,9 @@
 
 class BinStore;
 class QString;
-class Keybinds;
+class KeybindSettings;
 
-using Parse_AllKeyProfiles = std::vector<struct KeyProfiles_Entry>;
+using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
 using Parse_AllCommandCategories = std::vector<struct CommandCategory_Entry>;
 
 constexpr const static uint32_t keyprofile_i0_requiredCrc = 0x4513EAB7;
@@ -20,15 +20,15 @@ bool loadFrom(BinStore *s,Parse_AllCommandCategories &target) ;
 void saveTo(const Parse_AllCommandCategories &target,const QString &baseName,bool text_format=false);
 
 template<class Archive>
-void serialize(Archive &archive, Keybind &k, uint32_t const version);
+void serialize(Archive &archive, Keybind &k);
 
 template<class Archive>
-void serialize(Archive &archive, KeybindData &k, uint32_t const version);
+void serialize(Archive &archive, Keybind_Profiles &kp);
 
 template<class Archive>
-void serialize(Archive &archive, Keybinds &kbds, uint32_t const version);
+void serialize(Archive &archive, KeybindSettings &kbds, uint32_t const version);
 
-void saveTo(const Keybinds &target,const QString &baseName,bool text_format=false);
+void saveTo(const KeybindSettings &target,const QString &baseName,bool text_format=false);
 
-void serializeToDb(const Keybinds &data, QString &tgt);
-void serializeFromDb(Keybinds &data, const QString &src);
+void serializeToDb(const KeybindSettings &data, QString &tgt);
+void serializeFromDb(KeybindSettings &data, const QString &src);

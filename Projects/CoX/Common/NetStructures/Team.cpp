@@ -105,9 +105,20 @@ bool Team::isTeamLeader(Entity *e)
     return false;
 }
 
-void Team::makeTeamLeader(Entity *e)
+bool sameTeam(Entity &src, Entity &tgt)
 {
-    m_team_leader_idx = e->m_db_id;
+    return (src.m_team->m_team_idx == tgt.m_team->m_team_idx) ? true : false;
+}
+
+bool makeTeamLeader(Entity &src, Entity &tgt)
+{
+    if(!src.m_has_team || !tgt.m_has_team
+            || !sameTeam(src,tgt)
+            || !(src.m_team->isTeamLeader(&src)))
+        return false;
+
+    src.m_team->m_team_leader_idx = tgt.m_db_id;
+    return true;
 }
 
 bool inviteTeam(Entity &src, Entity &tgt)

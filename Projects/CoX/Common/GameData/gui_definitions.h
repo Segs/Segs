@@ -103,7 +103,7 @@ public:
         void setWindowVisibility(WindowVisibility val) { m_mode = val; }
 };
 
-class GUISettings : private GUIWindow
+class GUISettings
 {
 public:
     GUISettings() { }

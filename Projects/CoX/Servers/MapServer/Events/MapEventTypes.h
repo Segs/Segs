@@ -44,7 +44,7 @@ public:
     EVENT_DECL(evInspirationDockMode        ,217)
     EVENT_DECL(evPowersDockMode             ,218)
     EVENT_DECL(evSetKeybind                 ,219)
-    EVENT_DECL(evChangeKeybind              ,220)
+    EVENT_DECL(evRemoveKeybind              ,220)
     EVENT_DECL(evResetKeybinds              ,221)
     EVENT_DECL(evSelectKeybindProfile       ,222)
     EVENT_DECL(evActivateInspiration        ,229) // Hit F1, F2, F3, F4, F5 or Click on Inspiration in Tray

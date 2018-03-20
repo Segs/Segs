@@ -550,22 +550,25 @@ public:
     {
         bs.GetString(profile);  // Profile Name
 
-        key_and_secondary = bs.GetBits(32); // Key & Secondary
+        key_and_secondary = bs.GetBits(32); // Key & Secondary Binding
         key = key_and_secondary &0xFF;
         is_secondary = (key_and_secondary & 0xF00)==0xF00;
+
+        // For debug. Please remove me.
+        qDebug() << key_and_secondary << key << is_secondary;
 
         mods = bs.GetBits(32);  // Mods
         bs.GetString(command);  // Command
     }
 };
 
-class ChangeKeybind final : public MapLinkEvent
+class RemoveKeybind final : public MapLinkEvent
 {
 public:
     QString profile;
     uint32_t key;
     uint32_t mods;
-    ChangeKeybind():MapLinkEvent(MapEventTypes::evChangeKeybind)
+    RemoveKeybind():MapLinkEvent(MapEventTypes::evRemoveKeybind)
     {}
     void serializeto(BitStream &bs) const
     {
@@ -582,7 +585,6 @@ public:
 class ResetKeybinds final : public MapLinkEvent
 {
 public:
-    QString profile;
     ResetKeybinds():MapLinkEvent(MapEventTypes::evResetKeybinds)
     {}
     void serializeto(BitStream &bs) const

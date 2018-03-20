@@ -71,3 +71,4 @@ void cmdHandler_Invite(QString &cmd, Entity *e);
 void cmdHandler_Kick(QString &cmd, Entity *e);
 void cmdHandler_LeaveTeam(QString &cmd, Entity *e);
 void cmdHandler_FindMember(QString &cmd, Entity *e);
+void cmdHandler_MakeLeader(QString &cmd, Entity *e);

@@ -62,7 +62,8 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"i","invite"}, &cmdHandler_Invite, 1},
     {{"k","kick"}, &cmdHandler_Kick, 1},
     {{"leaveteam"}, &cmdHandler_LeaveTeam, 1},
-    {{"findmember"}, &cmdHandler_FindMember, 1}
+    {{"findmember"}, &cmdHandler_FindMember, 1},
+    {{"makeleader","teamleader"}, &cmdHandler_MakeLeader, 1}
 };
 
 bool canAccessCommand(const SlashCommand &cmd, const Entity &e)
@@ -716,7 +717,7 @@ void cmdHandler_Kick(QString &cmd, Entity *e) {
 
     if(space==-1)
     {
-        msg = "The " + cmd + " command requires a name of a player.";
+        msg = "The " + cmd + " command requires a target or name of a player.";
         return;
     }
 
@@ -750,4 +751,30 @@ void cmdHandler_FindMember(QString &cmd, Entity *e) {
     QString msg = "Finding Team Member";
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::CHAT_TEXT, msg, src);
+}
+
+void cmdHandler_MakeLeader(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+    QString msg;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space==-1)
+    {
+        msg = "The " + cmd + " command requires a target or name of a player.";
+        return;
+    }
+
+    if((tgt = getEntity(src,name)) == nullptr)
+        return;
+
+    if(makeTeamLeader(*e,*tgt))
+        msg = "Making " + name + " team leader.";
+    else
+        msg = "Failed to make " + name + " team leader.";
+
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::TEAM, msg, src);
 }

@@ -477,26 +477,39 @@ void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag cond
     }
 }
 void Character::sendKeybinds(BitStream &bs) const
-{    
+{
+    const CurrentKeybinds &cur_keybinds = m_keybinds.getCurrentKeybinds();
+    int total_keybinds = cur_keybinds.size();
+
     bs.StoreString(m_keybinds.m_cur_keybind_profile); // keybinding profile name
 
     for(int i=0; i<COH_INPUT_LAST_NON_GENERIC; ++i)
     {
-      if(!m_keybinds.m_binds.at(i).command.isEmpty())
+      if(i < total_keybinds) // i begins at 0
       {
-         const KeybindData &kb(m_keybinds.m_binds[i]);
-         bs.StoreString(kb.command);
-         bs.StoreBits(32,kb.key);
-         bs.StoreBits(32,kb.mods);
+         const Keybind &kb(cur_keybinds.at(i));
+         bs.StoreString(kb.Command);
+
+         if(kb.IsSecondary)
+         {
+             int32_t sec = (kb.Key & 0xF00);
+             bs.StoreBits(32,sec);
+         }
+         else
+             bs.StoreBits(32,kb.Key);
+
+         bs.StoreBits(32,kb.Mods);
+         qDebug() << i << kb.KeyString << kb.Key << kb.Mods << kb.Command << kb.IsSecondary;
       }
       else
       {
          bs.StoreString("");
          bs.StoreBits(32,0);
          bs.StoreBits(32,0);
+
+         qDebug() << i;
       }
     }
-
 }
 void Character::sendFriendList(BitStream &bs) const
 {

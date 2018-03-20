@@ -50,7 +50,7 @@ class SaveClientOptions;
 class SelectKeybindProfile;
 class ResetKeybinds;
 class SetKeybind;
-class ChangeKeybind;
+class RemoveKeybind;
 
 class MapInstance : public EventProcessor
 {
@@ -124,8 +124,8 @@ protected:
     void on_select_keybind_profile(class SelectKeybindProfile *ev);
     void on_reset_keybinds(class ResetKeybinds *ev);
     void on_set_keybind(class SetKeybind *ev);
-    void on_change_keybind(class ChangeKeybind *ev);
+    void on_remove_keybind(class RemoveKeybind *ev);
 
 private:
-    void on_emote_command(QString lowerContents, Entity *ent);
+    void on_emote_command(QString command, Entity *ent);
 };

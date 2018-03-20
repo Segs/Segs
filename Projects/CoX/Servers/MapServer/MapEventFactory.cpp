@@ -60,7 +60,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 17: return new InspirationDockMode;
         case 18: return new PowersDockMode;
         case 19: return new SetKeybind;
-        case 20: return new ChangeKeybind;
+        case 20: return new RemoveKeybind;
         case 21: return new ResetKeybinds;
         case 22: return new SelectKeybindProfile;
         case 29: return new ActivateInspiration;

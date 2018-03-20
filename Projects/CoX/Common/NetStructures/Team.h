@@ -39,12 +39,13 @@ const   uint32_t    m_team_idx;
         void        addTeamMember(Entity *e);
         void        removeTeamMember(Entity *e);
         bool        isTeamLeader(Entity *e);
-        void        makeTeamLeader(Entity *e);
 
 private:
 static  uint32_t  m_team_idx_counter;
 };
 
+bool sameTeam(Entity &src, Entity &tgt);
+bool makeTeamLeader(Entity &src, Entity &tgt);
 bool inviteTeam(Entity &src, Entity &tgt);
 bool kickTeam(Entity &tgt);
 void leaveTeam(Entity &e);

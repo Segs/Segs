@@ -35,7 +35,7 @@ void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
 
 void    setTeamID(Entity &e, uint8_t team_id)
 {
-    // TODO: provide method for updating Team Name and Rank
+    // TODO: provide method for updating Team Name and Rank??
     if(team_id == 0)
     {
         e.m_has_team            = false;
@@ -85,8 +85,8 @@ void    setu1(Entity &e, int val) { e.u1 = val; }
 void    setu2(Entity &e, int val) { e.u2 = val; }
 void    setu3(Entity &e, int val) { e.u3 = val; }
 void    setu4(Entity &e, int val) { e.u4 = val; }
-void    setu5(Entity &e, int val) { e.u5 = e.m_team->m_team_rank = val; }
-void    setu6(Entity &e, int val) { e.u6 = e.m_team->m_team_leader_idx = val; }
+void    setu5(Entity &e, int val) { e.u5 = val; }
+void    setu6(Entity &e, int val) { e.u6 = val; }
 
 // Toggles
 void    toggleFly(Entity &e) { e.m_is_flying = !e.m_is_flying; }
@@ -133,14 +133,6 @@ void charUpdateGUI(Entity *e)
     // Update Client GUI settings
     if(!char_db->updateGUISettings(e))
         qDebug() << "Client GUISettings failed to update in database!";
-}
-
-void loadKeybindDefaults(Entity *e)
-{
-    const MapServerData &data(g_GlobalMapServer->runtimeData());
-    const Parse_AllKeyProfiles &key_profiles(data.m_keybind_profiles);
-
-    e->m_char.m_keybinds.m_all_key_profiles = key_profiles;
 }
 
 int getEntityOriginIndex(bool is_player, const QString &origin_name)

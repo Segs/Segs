@@ -214,8 +214,8 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evSetKeybind:
             on_set_keybind(static_cast<SetKeybind *>(ev));
             break;
-        case MapEventTypes::evChangeKeybind:
-            on_change_keybind(static_cast<ChangeKeybind *>(ev));
+        case MapEventTypes::evRemoveKeybind:
+            on_remove_keybind(static_cast<RemoveKeybind *>(ev));
             break;
         case MapEventTypes::evResetKeybinds:
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
@@ -794,8 +794,6 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     if(contents.contains("$")) // does it contain replacement strings?
         contents = process_replacement_strings(src, contents);
 
-    QString lowerContents = contents.toLower();                             // ERICEDIT: Make the contents all lowercase for case-insensitivity.
-
     //printf("Console command received %s\n",qPrintable(ev->contents));
 
     if(isChatMessage(contents))
@@ -803,24 +801,22 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         process_chat(src,contents);
     }
     else if(contents.startsWith("em ",Qt::CaseInsensitive) || contents.startsWith("e ",Qt::CaseInsensitive)
-            || contents.startsWith("me ",Qt::CaseInsensitive))                                  // ERICEDIT: This encompasses all emotes.
+            || contents.startsWith("me ",Qt::CaseInsensitive) || contents.startsWith("emote ",Qt::CaseInsensitive))                                  // ERICEDIT: This encompasses all emotes.
     {
-        on_emote_command(lowerContents, ent);
+        on_emote_command(contents, ent);
     }
     else {
         runCommand(contents,*ent);
     }
 }
-void MapInstance::on_emote_command(QString lowerContents, Entity *ent)
+void MapInstance::on_emote_command(QString command, Entity *ent)
 {
     QString msg;                                                                // Initialize the variable to hold the debug message.
     MapClient *src = ent->m_client;
     std::vector<MapClient *> recipients;
 
-    if(lowerContents.startsWith("em") || lowerContents.startsWith("me"))        // This if-else removes the prefix of the command for conciseness.
-        lowerContents.replace(0, 3, "");
-    else                                                                        // Requires a different argument for the "e" command.
-        lowerContents.replace(0, 2, "");
+    QString cmd_str = command.section(QRegExp("\\s+"), 0, 0);
+    QString lowerContents = command.remove(0,cmd_str.size()+1);
                                                                                 // Normal Emotes
     static const QStringList afraidCommands = {"afraid", "cower", "fear", "scared"};
     static const QStringList akimboCommands = {"akimbo", "wings"};
@@ -852,6 +848,7 @@ void MapInstance::on_emote_command(QString lowerContents, Entity *ent)
     static const QStringList yesCommands = {"yes", "thumbsup"};
     static const QStringList yogaCommands = {"yoga", "lotus"};
     static const QStringList snowflakesCommands = {"snowflakes", "throwsnowflakes"};
+
     if(afraidCommands.contains(lowerContents))                                  // Afraid: Cower in fear, hold stance.
     {
         if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
@@ -1578,12 +1575,22 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
 
 void MapInstance::on_set_keybind(SetKeybind *ev)
 {
-    qWarning() << "Unhandled Set Keybind event: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command;
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    Entity *ent = src->char_entity();
+
+    ent->m_char.m_keybinds.setKeybind(ev->profile, (KeyName &)ev->key, (KeyName &)ev->mods, ev->command, ev->is_secondary);
+    qDebug() << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
 }
 
-void MapInstance::on_change_keybind(ChangeKeybind *ev)
+void MapInstance::on_remove_keybind(RemoveKeybind *ev)
 {
-    qWarning() << "Unhandled Change Keybind event: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    Entity *ent = src->char_entity();
+
+    ent->m_char.m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(KeyName &)ev->mods);
+    qWarning() << "Changing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
 void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
@@ -1592,8 +1599,7 @@ void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_keybinds.m_cur_keybind_profile = ev->profile;
-    loadKeybindDefaults(ent);
+    ent->m_char.m_keybinds.resetKeybinds();
     qDebug() << "Resetting Keybinds to defaults.";
 }
 
@@ -1603,6 +1609,6 @@ void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_keybinds.m_cur_keybind_profile = ev->profile;
+    ent->m_char.m_keybinds.setKeybindProfile(ev->profile);
     qDebug() << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }

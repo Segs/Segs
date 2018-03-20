@@ -10,6 +10,7 @@
 #include "CommonNetStructures.h"
 #include "BitStream.h"
 #include "Powers.h"
+#include "Servers/MapServer/Events/KeybindSettings.h"
 #include "Common/GameData/attrib_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
 #include "Common/GameData/clientoptions_definitions.h"
@@ -109,7 +110,7 @@ const   QString &       getName() const { return m_name; }
         LevelExpAndDebt     m_other_attribs;
         CharacterData       m_char_data;
         ClientOptions       m_options;
-        Keybinds            m_keybinds;
+        KeybindSettings     m_keybinds;
         GUISettings         m_gui;
 
         uint32_t            m_account_id;
