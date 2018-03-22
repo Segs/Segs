@@ -90,8 +90,6 @@ void Team::removeTeamMember(Entity *e)
 void Team::dump()
 {
     QString output = "Debugging Team: " + QString::number(m_team_idx)
-             + "\n\t name: " + m_team_name
-             + "\n\t rank (?): " + QString::number(m_team_rank)
              + "\n\t size: " + QString::number(m_team_members.size())
              + "\n\t leader db_id: " + QString::number(m_team_leader_idx)
              + "\n\t has mission? " + QString::number(m_team_has_mission)

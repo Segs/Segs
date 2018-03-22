@@ -79,12 +79,14 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
             e->m_time_till_logout=0;
     }
 
+    /*
     CharacterDatabase *char_db = AdminServer::instance()->character_db();
     // TODO: Implement asynchronous database queries
     DbTransactionGuard grd(*char_db->getDb());
-    //if(false==char_db->update(e))
-    //    return;
-    //grd.commit();
+    if(false==char_db->update(e))
+        return;
+    grd.commit();
+    */
 }
 
 void World::addPlayer(Entity *ent)

@@ -127,7 +127,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
 
     ev->src()->putq(new CharacterResponse(this,ev->m_index,client));
 
-    // TODO: Do we update database here?
+    // TODO: Do we update database here? issue #271
 }
 void GameHandler::on_idle(IdleEvent *ev)
 {

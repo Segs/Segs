@@ -48,8 +48,6 @@ void    setTeamID(Entity &e, uint8_t team_id)
     qDebug().noquote() << "Team Info:"
              << "\n  Has Team:" << e.m_has_team
              << "\n  ID:" << e.m_team->m_team_idx
-             << "\n  Name:" << e.m_team->m_team_name
-             << "\n  Rank:" << e.m_team->m_team_rank
              << "\n  Size:" << e.m_team->m_team_members.size()
              << "\n  Members:" << e.m_team->m_team_members.data();
 }

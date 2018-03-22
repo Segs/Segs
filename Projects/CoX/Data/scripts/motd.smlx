@@ -1,4 +1,4 @@
-<face heading><span align=center><color #ff0000>SEGS Release Notes v0.4.0 alpha</color></span></face><br>
+<face heading><span align=center><color #ff0000>SEGS Release Notes v0.4.0b alpha</color></span></face><br>
 <br>
 Welcome to the Super Entity Game Server! SEGS is under active development and is far from being feature complete.<br>
 <br>
@@ -6,12 +6,13 @@ Please consider contributing to our success by reporting bugs on our github:<br>
 <face heading><span align=center><a href="http://github.com/Segs/">http://github.com/Segs/</a></span></face><br>
 <br>
 <color #ffff00>Latest Changes:</color><br>
- - Client Patching framework<br>
+ - Client Patching framework for Intel/Radeon cards<br>
  - Preliminary work on replacement Client<br>
- - Improved Player Entity database storage serialization<br>
+ - Improved Player Entity database storage serialization (incl Options, GUI, Keybinds)<br>
  - Improved dbtool for creating starter databases<br>
- - Chat Features such as <i>/l</i> <i>/b</i> <i>/t</i> <i>/em</i><br>
+ - Chat Features such as <i>/local</i> <i>/broadcast</i> <i>/tell</i> <i>/emote</i> <i>/team</i> <i>sg</i><br>
  - Entity state updated to reflect player orientation<br>
+ - Teams and Sidekicks<br>
 <br>
 <color #ff9900>Useful Slash Commands:</color><br>
 <color #ffCC99><i>/stuck</i></color> - resets your character to the starting location in Atlas Park<br>
