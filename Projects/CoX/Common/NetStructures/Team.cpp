@@ -47,6 +47,10 @@ void Team::removeTeamMember(Entity *e)
             iter = m_team_members.erase(iter);
             e->m_has_team = false;
             e->m_team = nullptr;
+
+            if(e->m_char.m_char_data.m_sidekick.sk_has_sidekick)
+                removeSidekick(*e);
+
 #ifdef DEBUG_TEAMS
             qDebug() << "Removing" << iter->tm_name << "from team" << m_team_idx;
             dump();
@@ -67,6 +71,8 @@ void Team::removeTeamMember(Entity *e)
         Entity *tgt = nullptr;
         if((tgt = getEntityByDBID(e->m_client,idx)) == nullptr)
             return;
+        assert(tgt); // uh oh
+
         tgt->m_has_team = false;
         tgt->m_team = nullptr;
         m_team_members.clear();

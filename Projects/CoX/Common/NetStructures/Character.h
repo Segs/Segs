@@ -85,6 +85,7 @@ const   QString &       getName() const { return m_name; }
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, ColorAndPartPacker *packer);
         Costume *       getCurrentCostume() const;
+        void            DumpSidekickInfo();
         void            DumpPowerPoolInfo( const PowerPool_Info &pool_info );
         void            DumpBuildInfo();
         void            face_bits(uint32_t){}

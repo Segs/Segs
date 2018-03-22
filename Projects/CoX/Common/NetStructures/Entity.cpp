@@ -142,7 +142,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_entity_data.m_class_idx         = {0};
     e.m_selector1                       = false;
     e.m_hasname                         = true;
-    e.m_supergroup.m_SG_info            = false;
+    e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = true;
     e.m_entity_data.m_access_level      = 9;

@@ -198,7 +198,7 @@ MapServerData::~MapServerData()
 
 bool MapServerData::read_runtime_data(const QString &directory_path)
 {
-    qWarning().noquote() << "Reading game data from"<<directory_path<<"folder";
+    qInfo().noquote() << "Reading game data from"<<directory_path<<"folder";
     if (!read_costumes(directory_path))
         return false;
     if (!read_colors(directory_path))
@@ -213,10 +213,10 @@ bool MapServerData::read_runtime_data(const QString &directory_path)
         return false;
     if(!read_commands(directory_path))
         return false;
-    qWarning().noquote() << " All game data read";
+    qInfo().noquote() << "Finished reading game data.";
     {
-        QDebug warnLine = qWarning().noquote();
-        warnLine << " Postprocessing runtime data .. ";
+        QDebug warnLine = qInfo().noquote();
+        warnLine << "Postprocessing runtime data .. ";
         static_cast<HashBasedPacker *>(packer_instance)->fill_hashes(*this);
         warnLine << "Hashes filled";
     }

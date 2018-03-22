@@ -61,11 +61,11 @@ void storeCreation(const Entity &src, BitStream &bs)
     // the following is used as an input to LCG float generator, generated float (0-1) is used as
     // linear interpolation factor betwwen scale_min and scale_max
     bs.StoreBits(32,src.m_randSeed);
-    bs.StoreBits(1,src.m_has_team); // could be supergroup?
-    if(src.m_has_team)
+    bs.StoreBits(1,src.m_has_supergroup); // fairly certain this is Supergroup
+    if(src.m_has_supergroup)
     {
-        bs.StorePackedBits(2,src.m_team->m_team_rank); // this will be put in field_1830 of created entity
-        bs.StoreString(src.m_team->m_team_name);
+        bs.StorePackedBits(2,src.m_supergroup.m_SG_rank); // this will be put in field_1830 (iRank) of created entity
+        bs.StoreString(src.m_supergroup.m_SG_name);
     }
     PUTDEBUG("end storeCreation");
 }
@@ -368,14 +368,14 @@ void sendAFK(const Entity &src, BitStream &bs)
 }
 void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1,src.m_supergroup.m_SG_info); // UNFINISHED
-    if(!src.m_supergroup.m_SG_info)
+    bs.StoreBits(1,src.m_has_supergroup); // src.m_has_supergroup?
+    if(!src.m_has_supergroup)
         return;
     bs.StorePackedBits(2,src.m_supergroup.m_SG_id);
     if(src.m_supergroup.m_SG_id)
     {
         bs.StoreString(src.m_supergroup.m_SG_name);//64 chars max
-        bs.StoreString("");//128 chars max -> hash table key from the CostumeString_HTable
+        bs.StoreString("");//128 chars max -> hash table key from the CostumeString_HTable. Maybe emblem?
         bs.StoreBits(32,src.m_supergroup.m_SG_color1); // supergroup color 1
         bs.StoreBits(32,src.m_supergroup.m_SG_color2); // supergroup color 2
     }

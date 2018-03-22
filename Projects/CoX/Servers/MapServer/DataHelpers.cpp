@@ -54,33 +54,169 @@ void    setTeamID(Entity &e, uint8_t team_id)
              << "\n  Members:" << e.m_team->m_team_members.data();
 }
 
-void    setSuperGroup(Entity &e, uint8_t sg_id, QString sg_name)
+void    setSuperGroup(Entity &e, uint8_t sg_id, QString sg_name, uint32_t sg_rank)
 {
-    // TODO: provide method for updating SuperGroup Rank and Colors
+    // TODO: provide method for updating SuperGroup Colors
     if(sg_id == 0)
     {
-        e.m_supergroup.m_SG_info    = false;
+        e.m_has_supergroup          = false;
         e.m_supergroup.m_SG_id      = sg_id;
         e.m_supergroup.m_SG_name    = "";
         e.m_supergroup.m_SG_color1  = 0x996633FF;
         e.m_supergroup.m_SG_color2  = 0x336699FF;
+        e.m_supergroup.m_SG_rank    = 0;
     }
     else
     {
-        e.m_supergroup.m_SG_info    = true;
+        e.m_has_supergroup          = true;
         e.m_supergroup.m_SG_id      = sg_id;
         e.m_supergroup.m_SG_name    = sg_name;
         e.m_supergroup.m_SG_color1  = 0xAA3366FF;
         e.m_supergroup.m_SG_color2  = 0x66AA33FF;
+        e.m_supergroup.m_SG_rank    = sg_rank;
     }
     qDebug().noquote() << "SG Info:"
-             << "\n  Has Team:" << e.m_supergroup.m_SG_info
+             << "\n  Has Team:" << e.m_has_supergroup
              << "\n  ID:" << e.m_supergroup.m_SG_id
              << "\n  Name:" << e.m_supergroup.m_SG_name
              << "\n  Color1:" << e.m_supergroup.m_SG_color1
-             << "\n  Color2:" << e.m_supergroup.m_SG_color2;
+             << "\n  Color2:" << e.m_supergroup.m_SG_color2
+             << "\n  Rank:" << e.m_supergroup.m_SG_rank;
 }
 
+void    setAssistTarget(Entity &e) { e.m_target_idx = getAssistTargetIdx(e); }
+bool    isSidekickMentor(Entity &e) { return (e.m_char.m_char_data.m_sidekick.sk_type == SidekickType::IsMentor); }
+
+void addSidekick(Entity &src, Entity &tgt)
+{
+    QString     msg = "Unable to add sidekick.";
+    Sidekick    &src_sk = src.m_char.m_char_data.m_sidekick;
+    Sidekick    &tgt_sk = tgt.m_char.m_char_data.m_sidekick;
+    uint32_t    src_lvl = getLevel(src.m_char);
+    uint32_t    tgt_lvl = getLevel(tgt.m_char);
+
+    // Only a mentor may invite a sidekick
+    if(src_lvl < tgt_lvl+3)
+        msg = "To Mentor another player, you must be at least 3 levels higher than them.";
+    else if(src_lvl < 10)
+        msg = "To Mentor another player, you must be at least level 10.";
+    else if(src_sk.sk_has_sidekick)
+        msg = "You are already Mentoring someone.";
+    else if (tgt_sk.sk_has_sidekick)
+        msg = tgt.name() + "is already a sidekick.";
+    else if(!src.m_has_team && !tgt.m_has_team && src.m_team == nullptr && tgt.m_team == nullptr)
+            msg = "To Mentor another player, you must be on the same team.";
+    else if(src.m_team->m_team_idx != tgt.m_team->m_team_idx)
+        msg = "To Mentor another player, you must be on the same team.";
+    else
+    {
+        src_sk.sk_type = SidekickType::IsMentor;
+        tgt_sk.sk_type = SidekickType::IsSidekick;
+        setCombatLevel(tgt.m_char, src_lvl - 1);
+        // TODO: Implement 225 feet "leash" for sidekicks.
+
+        src_sk.sk_db_id = tgt.m_db_id;
+        tgt_sk.sk_db_id = src.m_db_id;
+        src_sk.sk_has_sidekick = true;
+        tgt_sk.sk_has_sidekick = true;
+
+        msg = QString("%1 is now Mentoring %2.").arg(src.name(),tgt.name());
+        qDebug().noquote() << msg;
+
+        // Send message to each player
+        msg = QString("You are now Mentoring %1.").arg(tgt.name()); // Customize for src.
+        sendInfoMessage(MessageChannel::TEAM, msg, src.m_client);
+        msg = QString("%1 is now Mentoring you.").arg(src.name()); // Customize for src.
+        sendInfoMessage(MessageChannel::TEAM, msg, tgt.m_client);
+
+        return; // break early
+    }
+
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::USER_ERROR, msg, src.m_client);
+}
+
+void removeSidekick(Entity &src)
+{
+    QString     msg = "Unable to remove sidekick.";
+    Sidekick    &src_sk = src.m_char.m_char_data.m_sidekick;
+
+    if(!src_sk.sk_has_sidekick || src_sk.sk_db_id == 0)
+    {
+        msg = "You are not sidekicked with anyone.";
+        qDebug().noquote() << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, src.m_client);
+        return; // break early
+    }
+
+    Entity      *tgt            = getEntityByDBID(src.m_client, src_sk.sk_db_id);
+    Sidekick    &tgt_sk         = tgt->m_char.m_char_data.m_sidekick;
+
+    if(tgt == nullptr)
+    {
+        msg = "Your sidekick is not currently online.";
+        qDebug().noquote() << msg;
+
+        // reset src Sidekick relationship
+        src_sk.sk_has_sidekick = false;
+        src_sk.sk_type         = SidekickType::NoSidekick;
+        src_sk.sk_db_id        = 0;
+        setCombatLevel(src.m_char,getLevel(src.m_char)); // reset CombatLevel
+
+        return; // break early
+    }
+    assert(tgt); // uh oh
+
+    // Anyone can terminate a Sidekick relationship
+    if(!tgt_sk.sk_has_sidekick || (tgt_sk.sk_db_id != src.m_db_id))
+    {
+        // tgt doesn't know it's sidekicked with src. So clear src sidekick info.
+        src_sk.sk_has_sidekick = false;
+        src_sk.sk_type         = SidekickType::NoSidekick;
+        src_sk.sk_db_id        = 0;
+        setCombatLevel(src.m_char,getLevel(src.m_char)); // reset CombatLevel
+        msg = QString("You are no longer sidekicked with anyone.");
+    }
+    else {
+        src_sk.sk_has_sidekick = false;
+        src_sk.sk_type         = SidekickType::NoSidekick;
+        src_sk.sk_db_id        = 0;
+        setCombatLevel(src.m_char,getLevel(src.m_char)); // reset CombatLevel
+
+        tgt_sk.sk_has_sidekick = false;
+        tgt_sk.sk_type         = SidekickType::NoSidekick;
+        tgt_sk.sk_db_id        = 0;
+        setCombatLevel(tgt->m_char,getLevel(tgt->m_char)); // reset CombatLevel
+
+        msg = QString("%1 and %2 are no longer sidekicked.").arg(src.name(),tgt->name());
+        qDebug().noquote() << msg;
+
+        // Send message to each player
+        if(isSidekickMentor(src))
+        {
+            // src is mentor, tgt is sidekick
+            msg = QString("You are no longer mentoring %1.").arg(tgt->name());
+            sendInfoMessage(MessageChannel::TEAM, msg, src.m_client);
+            msg = QString("%1 is no longer mentoring you.").arg(src.name());
+            sendInfoMessage(MessageChannel::TEAM, msg, tgt->m_client);
+        }
+        else
+        {
+            // src is sidekick, tgt is mentor
+            msg = QString("You are no longer mentoring %1.").arg(src.name());
+            sendInfoMessage(MessageChannel::TEAM, msg, tgt->m_client);
+            msg = QString("%1 is no longer mentoring you.").arg(tgt->name());
+            sendInfoMessage(MessageChannel::TEAM, msg, src.m_client);
+        }
+
+        return; // break early
+    }
+
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::USER_ERROR, msg, src.m_client);
+}
+
+// For live debugging
 void    setu1(Entity &e, int val) { e.u1 = val; }
 void    setu2(Entity &e, int val) { e.u2 = val; }
 void    setu3(Entity &e, int val) { e.u3 = val; }
@@ -340,3 +476,4 @@ void toggleAFK(Character &c, const QString &msg)
 }
 
 void    toggleLFG(Character &c) { c.m_char_data.m_lfg = !c.m_char_data.m_lfg; }
+void    toggleTeamBuffs(Character &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }

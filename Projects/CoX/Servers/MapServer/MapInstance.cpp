@@ -83,6 +83,8 @@ void MapInstance::start()
     }
     m_world_update_timer = new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false); // world simulation ticks
     m_resend_timer = new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false); // state broadcast ticks
+
+    qInfo() << "Server running... awaiting client connections."; // best place for this?
 }
 
 size_t MapInstance::num_active_clients()
@@ -752,7 +754,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         }
         case MessageChannel::SUPERGROUP:
         {
-            if(!sender->char_entity()->m_supergroup.m_SG_info)
+            if(!sender->char_entity()->m_has_supergroup)
             {
                 prepared_chat_message = "You are not a member of a SuperGroup.";
                 sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
@@ -1456,8 +1458,9 @@ void MapInstance::on_change_stance(ChangeStance * ev)
 
 void MapInstance::on_set_destination(SetDestination * ev)
 {
-    qWarning() << "Unhandled set destination request";
-    qWarning() << "  index" <<ev->point_index<< "loc"<<ev->destination.x<<ev->destination.y<<ev->destination.z;
+    qWarning() << "Unhandled set destination request"
+               << "\n\t" << "index" << ev->point_index
+               << "loc" << ev->destination.x << ev->destination.y << ev->destination.z;
 }
 
 void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
@@ -1540,7 +1543,16 @@ void MapInstance::on_set_default_power(SetDefaultPower *ev)
 
 void MapInstance::on_unqueue_all(UnqueueAll *ev)
 {
-    qWarning() << "Unhandled unqueue all request.";
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    Entity *ent = src->char_entity();
+
+    // What else could go here?
+    ent->m_target_idx = 0;
+    ent->m_assist_target_idx = 0;
+    // cancelAttack(ent);
+
+    qWarning() << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }
 
 void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)

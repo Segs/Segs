@@ -2,6 +2,20 @@
 
 #include <QtCore/QString>
 
+enum SidekickType : uint8_t
+{
+    NoSidekick  = 0,
+    IsSidekick  = 1,
+    IsMentor    = 2,
+};
+
+struct Sidekick
+{
+    bool            sk_has_sidekick = false;
+    uint32_t        sk_db_id        = 0;
+    SidekickType    sk_type         = NoSidekick;
+};
+
 struct CharacterData
 {
     uint32_t    m_level             = 0;
@@ -26,4 +40,5 @@ struct CharacterData
     QString     m_mapName;
     bool        m_supergroup_costume; // player has a sg costume
     bool        m_using_sg_costume;   // player uses sg costume currently
+    Sidekick    m_sidekick;
 };

@@ -26,7 +26,12 @@ void    setBackupSpd(Entity &e, float val);
 void    setJumpHeight(Entity &e, float val);
 void    setUpdateID(Entity &e, uint8_t val);
 void    setTeamID(Entity &e, uint8_t team_id);
-void    setSuperGroup(Entity &e, uint8_t sg_id, QString sg_name = "");
+void    setSuperGroup(Entity &e, uint8_t sg_id = 0, QString sg_name = "", uint32_t sg_rank = 3);
+void    setAssistTarget(Entity &e);
+void    addSidekick(Entity &src, Entity &tgt);
+void    removeSidekick(Entity &src);
+
+// For live debugging
 void    setu1(Entity &e, int val);
 void    setu2(Entity &e, int val);
 void    setu3(Entity &e, int val);
@@ -77,7 +82,6 @@ const QString &     getDescription(const Character &c);
 const QString &     getBattleCry(const Character &c);
 const QString &     getAlignment(const Character &c);
 
-
 // Setters
 void    setLevel(Character &c, uint32_t val);
 void    setCombatLevel(Character &c, uint32_t val);
@@ -95,3 +99,4 @@ void    setBattleCry(Character &c, QString val);
 // Toggles
 void    toggleAFK(Character &c, const QString &msg = "");
 void    toggleLFG(Character &c);
+void    toggleTeamBuffs(Character &c);

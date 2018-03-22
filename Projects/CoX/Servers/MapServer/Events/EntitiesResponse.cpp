@@ -89,6 +89,14 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
     for(auto member : e->m_team->m_team_members)
     {
         Entity *tm_ent          = getEntityByDBID(e->m_client,member.tm_idx);
+
+        if(tm_ent == nullptr)
+        {
+            qDebug() << "Could not find Entity with db_id:" << member.tm_idx;
+            return; // break early
+        }
+        assert(tm_ent); // uh oh
+
         QString member_name     = tm_ent->name();
         QString member_mapname  = tm_ent->m_client->current_map()->name();
         bool tm_on_same_map     = true;
@@ -119,13 +127,11 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     sendBuffs(src,bs); //FIXEDOFFSET_pchar->character_ReceiveBuffs(pak,0);
 
     PUTDEBUG("PlayerEntity::serialize_full before sidekick");
-    bool has_sidekick=false;
-    bs.StoreBits(1,has_sidekick);
-    if(has_sidekick)
+    bs.StoreBits(1,player_char.m_char_data.m_sidekick.sk_has_sidekick);
+    if(player_char.m_char_data.m_sidekick.sk_has_sidekick)
     {
-        bool is_mentor=false; // this flag might mean something totally different :)
-        bs.StoreBits(1,is_mentor);
-        bs.StorePackedBits(20,0); // sidekick partner db_id -> 10240
+        bs.StoreBits(1,player_char.m_char_data.m_sidekick.sk_type);
+        bs.StorePackedBits(20,player_char.m_char_data.m_sidekick.sk_db_id); // sidekick partner db_id -> 10240
     }
 
     PUTDEBUG("before tray");

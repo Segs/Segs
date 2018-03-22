@@ -39,7 +39,7 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"fullupdate"}, &cmdHandler_FullUpdate, 9},
     {{"hascontrolid"}, &cmdHandler_HasControlId, 9},
     {{"setTeam", "setTeamID"}, &cmdHandler_SetTeam, 9},
-    {{"setSuperGroup"}, &cmdHandler_SetSuperGroup, 9},
+    {{"setSuperGroup","setSG"}, &cmdHandler_SetSuperGroup, 9},
     {{"settingsDump", "settingsDebug"}, &cmdHandler_SettingsDump, 9},
     {{"teamDump", "teamDebug"}, &cmdHandler_TeamDebug, 9},
     {{"guiDump", "guiDebug"}, &cmdHandler_GUIDebug, 9},
@@ -63,7 +63,11 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"k","kick"}, &cmdHandler_Kick, 1},
     {{"leaveteam"}, &cmdHandler_LeaveTeam, 1},
     {{"findmember"}, &cmdHandler_FindMember, 1},
-    {{"makeleader","ml"}, &cmdHandler_MakeLeader, 1}
+    {{"makeleader","ml"}, &cmdHandler_MakeLeader, 1},
+    {{"assist"}, &cmdHandler_SetAssistTarget, 1},
+    {{"sidekick","sk"}, &cmdHandler_Sidekick, 1},
+    {{"unsidekick","unsk"}, &cmdHandler_UnSidekick, 1},
+    {{"buffs"}, &cmdHandler_TeamBuffs, 1}
 };
 
 bool canAccessCommand(const SlashCommand &cmd, const Entity &e)
@@ -439,10 +443,11 @@ void cmdHandler_SetSuperGroup(QString &cmd, Entity *e) {
 
     int sg_id       = args.value(1).toInt();
     QString sg_name = args.value(2);
+    int sg_rank     = args.value(3).toInt();
 
-    setSuperGroup(*e, sg_id, sg_name);
+    setSuperGroup(*e, sg_id, sg_name, sg_rank);
 
-    QString msg = "Set SuperGroup to: " + QString::number(sg_id) + " " + sg_name;
+    QString msg = QString("Set SuperGroup:  id: %1  name: %2  rank: %3").arg(QString::number(sg_id), sg_name, QString::number(sg_rank));
     qDebug() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
@@ -690,7 +695,10 @@ void cmdHandler_Invite(QString &cmd, Entity *e) {
     QString name = cmd.mid(space+1);
 
     if(space == -1 || name.isEmpty())
+    {
         tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
     else
         tgt = getEntity(src,name);
 
@@ -715,7 +723,10 @@ void cmdHandler_Kick(QString &cmd, Entity *e) {
     QString name = cmd.mid(space+1);
 
     if(space == -1 || name.isEmpty())
+    {
         tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
     else
         tgt = getEntity(src,name);
 
@@ -760,7 +771,10 @@ void cmdHandler_MakeLeader(QString &cmd, Entity *e) {
     QString name = cmd.mid(space+1);
 
     if(space == -1 || name.isEmpty())
+    {
         tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
     else
         tgt = getEntity(src,name);
 
@@ -774,4 +788,52 @@ void cmdHandler_MakeLeader(QString &cmd, Entity *e) {
 
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::TEAM, msg, src);
+}
+
+void cmdHandler_SetAssistTarget(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    QString msg = "Setting assist target.";
+
+    setAssistTarget(*e);
+
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
+}
+
+void cmdHandler_Sidekick(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(src,name);
+
+    if(tgt == nullptr || e->m_char.isEmpty() || tgt->m_char.isEmpty())
+        return;
+
+    addSidekick(*e,*tgt);
+}
+
+void cmdHandler_UnSidekick(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    if(e->m_char.isEmpty())
+        return;
+
+    removeSidekick(*e);
+}
+
+void cmdHandler_TeamBuffs(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    toggleTeamBuffs(e->m_char);
+
+    QString msg = "Toggling Team Buffs display mode.";
+    qDebug().noquote() << msg;
 }

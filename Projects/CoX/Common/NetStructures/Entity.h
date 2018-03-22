@@ -170,17 +170,18 @@ public:
         struct SuperGroup
         {
             int             m_SG_id                 = {0};
-            bool            m_SG_info               = false;
             QString         m_SG_name;                      // 64 chars max
             //QString         m_SG_motto;
             //QString         m_SG_costume;                 // 128 chars max -> hash table key from the CostumeString_HTable
             uint32_t        m_SG_color1             = 0;    // supergroup color 1
             uint32_t        m_SG_color2             = 0;    // supergroup color 2
+            int             m_SG_rank               = 0;
         };
 
+        bool                m_has_supergroup        = false;
+        SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_team              = false;
-        SuperGroup          m_supergroup;
-        Team *              m_team                  = nullptr;
+        Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
         EntityData          m_entity_data;
 
         int32_t             m_idx                   = {0};
@@ -241,7 +242,7 @@ public:
         glm::vec3           vel;
         uint32_t            prev_pos[3]                 = {0};
         Vector3_FPV         fixedpoint_pos;
-        bool                m_selector1                 = false;
+        bool                m_selector1                 = false; // unused
         bool                m_pchar_things              = false;
         bool                might_have_rare             = false;
         bool                m_hasname                   = false;

@@ -72,3 +72,7 @@ void cmdHandler_Kick(QString &cmd, Entity *e);
 void cmdHandler_LeaveTeam(QString &cmd, Entity *e);
 void cmdHandler_FindMember(QString &cmd, Entity *e);
 void cmdHandler_MakeLeader(QString &cmd, Entity *e);
+void cmdHandler_SetAssistTarget(QString &cmd, Entity *e);
+void cmdHandler_Sidekick(QString &cmd, Entity *e);
+void cmdHandler_UnSidekick(QString &cmd, Entity *e);
+void cmdHandler_TeamBuffs(QString &cmd, Entity *e);

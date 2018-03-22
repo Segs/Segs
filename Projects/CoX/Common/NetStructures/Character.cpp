@@ -236,6 +236,15 @@ void Character::serialize_costumes(BitStream &bs, ColorAndPartPacker *packer , b
         ::serializeto(*getCurrentCostume(),bs,packer);
     }
 }
+void Character::DumpSidekickInfo()
+{
+    QString msg = QString("Sidekick Info\n  has_sidekick: %1 \n  db_id: %2 \n  type: %3 ")
+            .arg(m_char_data.m_sidekick.sk_has_sidekick)
+            .arg(m_char_data.m_sidekick.sk_db_id)
+            .arg(m_char_data.m_sidekick.sk_type);
+
+    qDebug().noquote() << msg;
+}
 void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
 {
     for (int i = 0; i < 3; i++)
@@ -275,6 +284,7 @@ void Character::DumpBuildInfo()
 void Character::dump()
 {
     DumpBuildInfo();
+    DumpSidekickInfo();
     qDebug() <<"//------------------Tray------------------";
     m_trays.dump();
     qDebug() <<"//-----------------Costume-----------------";
@@ -456,12 +466,14 @@ void Character::sendDescription(BitStream &bs) const
 void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const
 {
     bs.StoreBits(1, m_char_data.m_has_titles); // Does entity have titles?
+
     if(!m_char_data.m_has_titles)
         return;
 
     if(hasname)
         bs.StoreString(getName());
-    bs.StoreBits(1, m_char_data.m_has_the_prefix);       // likely an index to a title prefix ( 0 - None; 1 - The )
+
+    bs.StoreBits(1, m_char_data.m_has_the_prefix); // an index to a title prefix ( 0 - None; 1 - The )
 
     if(conditional)
     {
