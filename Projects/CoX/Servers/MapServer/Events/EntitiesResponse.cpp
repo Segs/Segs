@@ -8,6 +8,7 @@
 #include "MapInstance.h"
 #include "EntityUpdateCodec.h"
 #include "DataHelpers.h"
+#include "Logging.h"
 
 #include <QByteArray>
 #include <cmath>
@@ -62,7 +63,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
     assert(e);
 
     // shorthand local vars
-    int         tm_idx = 0;
+    int         team_idx = 0;
     bool        mark_lfg = e->m_char.m_char_data.m_lfg;
     bool        has_mission = 0;
     uint32_t    tm_leader_id = 0;
@@ -70,17 +71,17 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 
     if(e->m_has_team && e->m_team != nullptr)
     {
-        tm_idx          = e->m_team->m_team_idx;
+        team_idx        = e->m_team->m_team_idx;
         has_mission     = e->m_team->m_team_has_mission;
         tm_leader_id    = e->m_team->m_team_leader_idx;
         tm_size         = e->m_team->m_team_members.size();
     }
 
-    storePackedBitsConditional(bs,20,tm_idx);
+    storePackedBitsConditional(bs,20,team_idx);
     bs.StoreBits(1,has_mission);
     bs.StoreBits(1,mark_lfg);
 
-    if(tm_idx == 0) // if no team, return.
+    if(team_idx == 0) // if no team, return.
         return;
 
     bs.StoreBits(32,tm_leader_id); // must be db_id
@@ -88,20 +89,19 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 
     for(auto member : e->m_team->m_team_members)
     {
-        Entity *tm_ent          = getEntityByDBID(e->m_client,member.tm_idx);
+        Entity *tm_ent = getEntityByDBID(src.m_client, member.tm_idx);
 
         if(tm_ent == nullptr)
         {
-            qDebug() << "Could not find Entity with db_id:" << member.tm_idx;
-            return; // break early
+            qWarning() << "Could not find Entity with db_id:" << member.tm_idx;
+            continue; // continue loop
         }
-        assert(tm_ent); // uh oh
 
         QString member_name     = tm_ent->name();
         QString member_mapname  = tm_ent->m_client->current_map()->name();
         bool tm_on_same_map     = true;
 
-        if(member_mapname != e->m_client->current_map()->name())
+        if(member_mapname != src.m_client->current_map()->name())
             tm_on_same_map = false;
 
         bs.StoreBits(32,member.tm_idx);

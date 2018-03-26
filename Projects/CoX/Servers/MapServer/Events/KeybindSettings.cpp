@@ -10,6 +10,7 @@
 #include "KeybindSettings.h"
 #include "MapServer.h"
 #include "MapServerData.h"
+#include "Logging.h"
 
 QString makeKeyString(const KeyName &key, const ModKeys &mods)
 {
@@ -22,7 +23,7 @@ QString makeKeyString(const KeyName &key, const ModKeys &mods)
     else
         keystring = k;
 
-    //qDebug() << keystring << k << m << key << mods;
+    //qCDebug(logKeybinds) << keystring << k << m << key << mods;
 
     return keystring.toLower();
 }
@@ -45,7 +46,7 @@ const CurrentKeybinds &KeybindSettings::getCurrentKeybinds() const
             return p.KeybindArr;
     }
 
-    qDebug() << "Could not get Current Keybinds. Returning first keybind profile.";
+    qCDebug(logKeybinds) << "Could not get Current Keybinds. Returning first keybind profile.";
     return m_keybind_profiles.at(0).KeybindArr;
 }
 
@@ -69,7 +70,7 @@ void KeybindSettings::setKeybind(QString &profile, KeyName &key, ModKeys &mods, 
             p.KeybindArr.push_back({key,mods,keystring,command,is_secondary});
     }
 
-    qDebug() << "Setting keybind: " << profile << key << mods << keystring << command << is_secondary;
+    qCDebug(logKeybinds) << "Setting keybind: " << profile << key << mods << keystring << command << is_secondary;
 
 }
 
@@ -79,18 +80,18 @@ void KeybindSettings::removeKeybind(QString &profile, KeyName &key, ModKeys &mod
 
     for(auto &p : m_keybind_profiles)
     {
-        if(p.Name == profile)
+        if(p.Name != profile)
+            continue;
+
+        for(auto iter=p.KeybindArr.begin(); iter!=p.KeybindArr.end(); /*incremented inside loop*/)
         {
-            for(auto iter=p.KeybindArr.begin(); iter!=p.KeybindArr.end(); /*incremented inside loop*/)
-            {
-              if(iter->Key==key && iter->Mods==mods)
-                  iter=p.KeybindArr.erase(iter);
-              else
-                  ++iter;
-            }
+          if(iter->Key==key && iter->Mods==mods)
+              iter=p.KeybindArr.erase(iter);
+          else
+              ++iter;
         }
     }
-    qDebug() << "Clearing keybind: " << profile << key << mods << keystring;
+    qCDebug(logKeybinds) << "Clearing keybind: " << profile << key << mods << keystring;
 }
 
 void KeybindSettings::keybindsDump()

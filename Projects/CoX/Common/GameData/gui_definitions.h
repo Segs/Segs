@@ -3,6 +3,7 @@
 #include <QtCore/QString>
 #include <stdint.h>
 #include <vector>
+#include <array>
 #include <cassert>
 
 #include <QDebug>
@@ -83,7 +84,7 @@ public:
         uint32_t            m_width            = 0;
         uint32_t            m_height           = 0;
         uint32_t            m_locked;
-        uint32_t            m_color            = 0x3399FF99;   // 0x3399FF99 (light blue with 90% transparency)
+        uint32_t            m_color            = 0x3399FF99;   // 0x3399FF99 (light blue with 60% transparency)
         uint32_t            m_alpha            = 0x88;         // default 136 (0x88)
 
         void guiWindowDump()

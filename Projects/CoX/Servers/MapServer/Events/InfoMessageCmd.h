@@ -8,12 +8,10 @@
 
 #pragma once
 #include "GameCommandList.h"
-
-#include "MapEvents.h"
-#include "MapLink.h"
 #include "ChatMessage.h" // needed to access MessageChannel enum
 
-#include <QtCore/QString>
+class MapClient;
+class QString;
 
 enum class MessageChannel : int;
 

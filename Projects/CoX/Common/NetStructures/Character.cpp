@@ -40,6 +40,7 @@ Character::Character()
             || !m_char_data.m_titles[0].isEmpty()
             || !m_char_data.m_titles[1].isEmpty()
             || !m_char_data.m_titles[2].isEmpty();
+    m_char_data.m_sidekick.sk_has_sidekick = false;
 }
 void Character::reset()
 {
@@ -58,6 +59,7 @@ void Character::reset()
     m_options.m_first_person_view=false;
     m_full_options = false;
     m_char_data.m_has_titles = false;
+    m_char_data.m_sidekick.sk_has_sidekick = false;
 }
 
 

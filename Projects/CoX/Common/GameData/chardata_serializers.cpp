@@ -1,3 +1,4 @@
+#include <QDebug>
 #include "chardata_serializers.h"
 
 #include "chardata_definitions.h"
@@ -19,7 +20,7 @@ template<class Archive>
 void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
 {
     if(version < 4)
-        qWarning() << "Please update your CharacterDatabase chardata.";
+        qFatal("Please update your CharacterDatabase chardata.");
 
     archive(cereal::make_nvp("Level",cd.m_level));
     archive(cereal::make_nvp("CombatLevel",cd.m_combat_level));

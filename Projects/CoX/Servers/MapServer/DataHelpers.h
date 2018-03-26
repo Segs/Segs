@@ -1,9 +1,12 @@
 #pragma once
-
-#include "Entity.h"
-#include "Character.h"
+#include "CommonNetStructures.h"
+//#include "Entity.h"
+//#include "Character.h"
 
 class QString;
+class Entity;
+class Character;
+class MapClient;
 
 /*
  * Entity Methods
@@ -28,8 +31,6 @@ void    setUpdateID(Entity &e, uint8_t val);
 void    setTeamID(Entity &e, uint8_t team_id);
 void    setSuperGroup(Entity &e, uint8_t sg_id = 0, QString sg_name = "", uint32_t sg_rank = 3);
 void    setAssistTarget(Entity &e);
-void    addSidekick(Entity &src, Entity &tgt);
-void    removeSidekick(Entity &src);
 
 // For live debugging
 void    setu1(Entity &e, int val);
@@ -100,3 +101,10 @@ void    setBattleCry(Character &c, QString val);
 void    toggleAFK(Character &c, const QString &msg = "");
 void    toggleLFG(Character &c);
 void    toggleTeamBuffs(Character &c);
+
+/*
+ * Sidekick Methods -- Sidekick system requires teaming.
+ */
+bool isSidekickMentor(const Entity &e);
+void addSidekick(Entity &src, Entity &tgt);
+void removeSidekick(Entity &src);

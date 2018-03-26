@@ -5,8 +5,6 @@
 #include "Servers/MapServer/Events/KeybindSettings.h"
 #include "DataStorage.h"
 
-//#define DEBUG_KEYBINDS
-
 namespace {
 KeyName resolveKey(const QString &name)
 {
@@ -39,9 +37,7 @@ bool loadFrom(BinStore * s, Keybind & target)
     else
         target.Key = resolveKey(target.KeyString);
 
-#ifdef DEBUG_KEYBINDS
-    qDebug() << "\tbind:" << target.KeyString << target.Key << target.Mods << target.Command;
-#endif
+    qCDebug(logKeybinds) << "\tbind:" << target.KeyString << target.Key << target.Mods << target.Command;
 
     assert(ok && s->end_encountered());
     return ok;
@@ -56,9 +52,7 @@ bool loadFrom(BinStore * s, Keybind_Profiles & target)
     if(s->end_encountered())
         return ok;
 
-#ifdef DEBUG_KEYBINDS
-    qDebug() << "Loading Profile:" << target.DisplayName << target.Name;
-#endif
+    qCDebug(logKeybinds) << "Loading Profile:" << target.DisplayName << target.Name;
 
     QString _name;
     while(s->nesting_name(_name))
@@ -72,9 +66,7 @@ bool loadFrom(BinStore * s, Keybind_Profiles & target)
         s->nest_out();
     }
 
-#ifdef DEBUG_KEYBINDS
-    qDebug() << "Total Keybinds:" << target.KeybindArr.size();
-#endif
+    qCDebug(logKeybinds) << "Total Keybinds:" << target.KeybindArr.size();
 
     assert(ok);
     return ok;
@@ -90,9 +82,7 @@ bool loadFrom(BinStore * s, Command & target)
     if(s->end_encountered())
         return ok;
 
-#ifdef DEBUG_KEYBINDS
-    qDebug() << target.CmdString << target.DisplayName;
-#endif
+    qCDebug(logKeybinds) << target.CmdString << target.DisplayName;
 
     assert(ok);
     return ok;

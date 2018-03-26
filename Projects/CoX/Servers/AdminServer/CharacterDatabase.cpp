@@ -7,7 +7,6 @@
  */
 
 // segs includes
-//#define DEBUG_DB
 #include "CharacterDatabase.h"
 #include "AccountInfo.h"
 #include "AdminServer.h"
@@ -20,6 +19,7 @@
 #include "GameData/clientoptions_serializers.h"
 #include "GameData/gui_serializers.h"
 #include "GameData/keybind_serializers.h"
+#include "Logging.h"
 
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlDriver>
@@ -147,10 +147,9 @@ bool CharacterDatabase::fill( AccountInfo *c )
     c->max_slots(m_prepared_account_select.value("max_slots").toUInt());
     c->game_server_id(m_prepared_account_select.value("id").toULongLong());
 
-#ifdef DEBUG_DB
-    qDebug() << "CharacterClient id:" << c->account_server_id();
-    qDebug() << "CharacterClient slots:" << c->max_slots();
-#endif
+    qCDebug(logDB) << "CharacterClient id:" << c->account_server_id();
+    qCDebug(logDB) << "CharacterClient slots:" << c->max_slots();
+
     return true;
 }
 #define STR_OR_EMPTY(c) ((!c.isEmpty()) ? c:"EMPTY")
@@ -159,9 +158,7 @@ bool CharacterDatabase::fill( Entity *e)
 {
     assert(e);
     EntityData *ed = &e->m_entity_data;
-#ifdef DEBUG_DB
-    qDebug().noquote() << e->m_db_id;
-#endif
+    qCDebug(logDB).noquote() << e->m_db_id;
 
     m_prepared_entity_select.bindValue(":id",quint64(e->m_char.m_db_id));
     if(!doIt(m_prepared_entity_select))
@@ -188,19 +185,17 @@ bool CharacterDatabase::fill( Entity *e)
     // Can't pass direction through cereal, so let's update it here.
     e->m_direction = fromCoHYpr(ed->m_orientation_pyr);
 
-#ifdef DEBUG_DB
-    qDebug().noquote() << entity_data;
-    //qDebug().noquote() << glm::to_string(ed->m_orientation_pyr).c_str();
-    //qDebug().noquote() << glm::to_string(e->m_direction).c_str();
-#endif
+    qCDebug(logDB).noquote() << entity_data;
+    qCDebug(logOrientation).noquote() << glm::to_string(ed->m_orientation_pyr).c_str();
+    qCDebug(logOrientation).noquote() << glm::to_string(e->m_direction).c_str();
     return true;
 }
 bool CharacterDatabase::fill( Character *c)
 {
-    CharacterData *cd = &c->m_char_data;
-    ClientOptions *od = &c->m_options;
-    KeybindSettings *kbd = &c->m_keybinds;
-    GUISettings *gui = &c->m_gui;
+    CharacterData &cd(c->m_char_data);
+    ClientOptions &od(c->m_options);
+    KeybindSettings &kbd(c->m_keybinds);
+    GUISettings &gui(c->m_gui);
 
     assert(c&&c->getAccountId());
 
@@ -225,27 +220,25 @@ bool CharacterDatabase::fill( Character *c)
 
     QString char_data;
     char_data = (m_prepared_char_select.value("chardata").toString());
-    serializeFromDb(*cd,char_data);
+    serializeFromDb(cd,char_data);
 
     QString options_data;
     options_data = (m_prepared_char_select.value("options").toString());
-    serializeFromDb(*od,options_data);
+    serializeFromDb(od,options_data);
 
     QString gui_data;
     gui_data = (m_prepared_char_select.value("gui").toString());
-    serializeFromDb(*gui,gui_data);
+    serializeFromDb(gui,gui_data);
 
     QString keybind_data;
     keybind_data = (m_prepared_char_select.value("keybinds").toString());
-    serializeFromDb(*kbd,keybind_data);
+    serializeFromDb(kbd,keybind_data);
 
-#ifdef DEBUG_DB
-    qDebug().noquote() << "m_db_id:" << c->m_db_id;
-    qDebug().noquote() << char_data;
-    qDebug().noquote() << options_data;
-    qDebug().noquote() << gui_data;
-    qDebug().noquote() << keybind_data;
-#endif
+    qCDebug(logDB).noquote() << "m_db_id:" << c->m_db_id;
+    qCDebug(logDB).noquote() << char_data;
+    qCDebug(logDB).noquote() << options_data;
+    qCDebug(logDB).noquote() << gui_data;
+    qCDebug(logDB).noquote() << keybind_data;
 
     CharacterCostume *main_costume = new CharacterCostume;
     // appearance related.
@@ -319,9 +312,9 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     CharacterData *cd = &c->m_char_data;
     cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
 
-    ClientOptions *od = &c->m_options;
-    KeybindSettings *kbd = &c->m_keybinds;
-    GUISettings *gui = &c->m_gui;
+    ClientOptions &od(c->m_options);
+    KeybindSettings &kbd(c->m_keybinds);
+    GUISettings &gui(c->m_gui);
     Costume *cst = c->getCurrentCostume();
     if(!cst) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::create cannot insert char without costume.\n"))
@@ -349,33 +342,29 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     m_prepared_char_insert.bindValue(":chardata", char_data);
 
     QString options_data;
-    serializeToDb(*od,options_data);
+    serializeToDb(od,options_data);
     m_prepared_char_insert.bindValue(":options", options_data);
 
     QString gui_data;
-    serializeToDb(*gui,gui_data);
+    serializeToDb(gui,gui_data);
     m_prepared_char_insert.bindValue(":gui", gui_data);
 
     QString keybind_data;
-    serializeToDb(*kbd,keybind_data);
+    serializeToDb(kbd,keybind_data);
     m_prepared_char_insert.bindValue(":keybinds", keybind_data);
 
-#ifdef DEBUG_DB
-    qDebug().noquote() << entity_data;
-    qDebug().noquote() << char_data;
-    qDebug().noquote() << options_data;
-    qDebug().noquote() << gui_data;
-    qDebug().noquote() << keybind_data;
-#endif
+    qCDebug(logDB).noquote() << entity_data;
+    qCDebug(logDB).noquote() << char_data;
+    qCDebug(logDB).noquote() << options_data;
+    qCDebug(logDB).noquote() << gui_data;
+    qCDebug(logDB).noquote() << keybind_data;
 
     if(!doIt(m_prepared_char_insert))
         return false;
     int64_t char_id = m_prepared_char_insert.lastInsertId().toLongLong();
     c->m_db_id = char_id;
 
-#ifdef DEBUG_DB
-    qDebug() << "char_id: " << char_id << ":" << c->m_db_id;
-#endif
+    qCDebug(logDB) << "char_id: " << char_id << ":" << c->m_db_id;
 
     // create costume
     QString costume_parts;
@@ -430,10 +419,8 @@ bool CharacterDatabase::update( Entity *e )
     if(!updateGUISettings(e))
         qDebug() << "Client GUISettings failed to update in database!";
 
-#ifdef DEBUG_DB
-    qDebug().noquote() << entity_data;
-    qDebug().noquote() << char_data;
-#endif
+    qCDebug(logDB).noquote() << entity_data;
+    qCDebug(logDB).noquote() << char_data;
     
     if(!doIt(m_prepared_char_update))
         return false;
@@ -457,8 +444,8 @@ bool CharacterDatabase::updateClientOptions( Entity *e )
     Character *c = &e->m_char;
     assert(c);
 
-    ClientOptions *od = &c->m_options;
-    KeybindSettings *kbd = &c->m_keybinds;
+    ClientOptions &od(c->m_options);
+    KeybindSettings &kbd(c->m_keybinds);
 
     /*
     ":id, :options, :keybinds "
@@ -466,17 +453,15 @@ bool CharacterDatabase::updateClientOptions( Entity *e )
     m_prepared_options_update.bindValue(":id", uint32_t(c->m_db_id)); // for WHERE statement only
 
     QString options_data;
-    serializeToDb(*od,options_data);
+    serializeToDb(od,options_data);
     m_prepared_options_update.bindValue(":options", options_data);
 
     QString keybind_data;
-    serializeToDb(*kbd,keybind_data);
+    serializeToDb(kbd,keybind_data);
     m_prepared_options_update.bindValue(":keybinds", keybind_data);
 
-#ifdef DEBUG_DB
-    qDebug().noquote() << options_data;
-    qDebug().noquote() << keybind_data;
-#endif
+    qCDebug(logDB).noquote() << options_data;
+    qCDebug(logDB).noquote() << keybind_data;
 
     if(!doIt(m_prepared_options_update))
         return false;
@@ -489,7 +474,7 @@ bool CharacterDatabase::updateGUISettings( Entity *e )
     Character *c = &e->m_char;
     assert(c);
 
-    GUISettings *gui = &c->m_gui;
+    GUISettings &gui(c->m_gui);
 
     /*
     ":id, :gui "
@@ -497,12 +482,10 @@ bool CharacterDatabase::updateGUISettings( Entity *e )
     m_prepared_gui_update.bindValue(":id", uint32_t(c->m_db_id)); // for WHERE statement only
 
     QString gui_data;
-    serializeToDb(*gui,gui_data);
+    serializeToDb(gui,gui_data);
     m_prepared_gui_update.bindValue(":gui", gui_data);
 
-#ifdef DEBUG_DB
-    qDebug().noquote() << gui_data;
-#endif
+    qCDebug(logDB).noquote() << gui_data;
 
     if(!doIt(m_prepared_gui_update))
         return false;

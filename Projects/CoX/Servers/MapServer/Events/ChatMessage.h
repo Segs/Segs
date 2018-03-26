@@ -9,10 +9,9 @@
 #pragma once
 #include "GameCommandList.h"
 
-#include "MapEvents.h"
-#include "MapLink.h"
+#include <QString>
 
-#include <QtCore/QString>
+class MapClient;
 
 enum class MessageChannel : int {
     COMBAT         = 1, // COMBAT

@@ -34,6 +34,7 @@ const   uint32_t    m_team_idx;
 
         // Methods
         void        dump();
+        void        listTeamMembers();
         void        addTeamMember(Entity *e);
         void        removeTeamMember(Entity *e);
         bool        isTeamLeader(Entity *e);
@@ -42,6 +43,7 @@ private:
 static  uint32_t  m_team_idx_counter;
 };
 
+// Team Methods
 bool sameTeam(Entity &src, Entity &tgt);
 bool makeTeamLeader(Entity &src, Entity &tgt);
 bool inviteTeam(Entity &src, Entity &tgt);

@@ -136,6 +136,18 @@ void Settings::setDefaultSettings()
         s->setValue("listen_addr","127.0.0.1:7003");
         s->setValue("location_addr","127.0.0.1:7003");
     s->endGroup();
+    s->beginGroup("Logging");
+        s->setValue("log_keybinds","false");
+        s->setValue("log_settings","false");
+        s->setValue("log_gui","false");
+        s->setValue("log_teams","false");
+        s->setValue("log_db","false");
+        s->setValue("log_input","false");
+        s->setValue("log_orientation","false");
+        s->setValue("log_chat","false");
+        s->setValue("log_target","false");
+        s->setValue("log_spawn","false");
+    s->endGroup();
     
     s->sync(); // sync changes or they wont be saved to file.
 }

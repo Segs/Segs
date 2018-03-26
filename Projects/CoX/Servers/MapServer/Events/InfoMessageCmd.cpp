@@ -1,8 +1,8 @@
-//#define DEBUG_CHAT
-//#include "InfoMessageCmd.h"
+#include "InfoMessageCmd.h"
 #include "Entity.h"
 #include "MapClient.h"
 #include "Servers/MapServer/DataHelpers.h"
+#include "Logging.h"
 
 void InfoMessageCmd::serializeto(BitStream &bs) const
 {
@@ -19,10 +19,9 @@ void sendInfoMessage(MessageChannel t, QString msg, MapClient *tgt)
 
     tgt->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(res));
 
-#ifdef DEBUG_CHAT
-    qDebug().noquote() << "InfoMessage:"
+
+    qCDebug(logInfoMsg).noquote() << "InfoMessage:"
              << "\n  Channel:" << int(res->m_channel_type)
              << "\n  Target:" << res->m_target_player_id
              << "\n  Message:" << res->m_msg;
-#endif
 }

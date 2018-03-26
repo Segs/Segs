@@ -1,13 +1,11 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * Super Entity Game Server
+ * http://github.com/Segs
+ * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
-
  */
-//#define DEBUG_SPAWN
-//#define DEBUG_GUI
+
 #include "MapInstance.h"
 
 #include "AdminServer.h"
@@ -28,6 +26,7 @@
 #include "Database.h"
 #include "SlashCommand.h"
 #include "Common/GameData/CoHMath.h"
+#include "Logging.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -229,8 +228,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
         default:
-            fprintf(stderr,"Unhandled MapEventTypes %zu\n",ev->type()-MapEventTypes::base);
-            //ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled event type %d\n"),ev->type()));
+            qCWarning(logMapEvents, "Unhandled MapEventTypes %zu\n", ev->type()-MapEventTypes::base);
     }
 }
 
@@ -378,9 +376,8 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         return;
     grd.commit();
 
-#ifdef DEBUG_SPAWN
+    if(logSpawn().isDebugEnabled())
         cl->char_entity()->dump();
-#endif
 
     cl->current_map()->enqueue_client(cl);
     setMapName(cl->char_entity()->m_char,name());
@@ -487,7 +484,7 @@ void MapInstance::on_input_state(InputState *st)
     MapClient *cl  = lnk->client_data();
     if(cl==nullptr)
     {
-        qWarning() << "Bogus on_input_state, client is null";
+        qCWarning(logMapEvents) << "Bogus on_input_state, client is null";
         return;
     }
     Entity *   ent = cl->char_entity();
@@ -519,14 +516,20 @@ void MapInstance::on_input_state(InputState *st)
         putq(ev);
     }
     if(st->m_user_commands.GetReadableBits()!=0)
-        qDebug() << "Not all bits were consumed";
+    {
+        qCDebug(logMapEvents) << "bits: " << st->m_user_commands.GetReadableBits();
+        qCWarning(logMapEvents) << "Not all bits were consumed";
+        assert(false);
+    }
 
     //TODO: do something here !
 }
-void MapInstance::on_cookie_confirm(CookieRequest * ev){
-    printf("Received cookie confirm %x - %x\n",ev->cookie,ev->console);
+void MapInstance::on_cookie_confirm(CookieRequest * ev)
+{
+    qDebug("Received cookie confirm %x - %x\n", ev->cookie, ev->console);
 }
-void MapInstance::on_window_state(WindowState * ev) {
+void MapInstance::on_window_state(WindowState * ev)
+{
     // Save GUISettings to character entity and entry in the database.
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
@@ -535,10 +538,9 @@ void MapInstance::on_window_state(WindowState * ev) {
     int idx = ev->wnd.m_idx;
     e->m_char.m_gui.m_wnds.at(idx) = ev->wnd;
 
-#ifdef DEBUG_GUI
-    printf("Received window state %d - %d\n",ev->wnd.m_idx,ev->wnd.m_mode);
-    //e->m_char.m_gui.m_wnds.at(idx).guiWindowDump();
-#endif
+    qCDebug(logGUI) << "Received window state" << ev->wnd.m_idx << "-" << ev->wnd.m_mode;
+    if(logGUI().isDebugEnabled())
+        e->m_char.m_gui.m_wnds.at(idx).guiWindowDump();
 }
 QString process_replacement_strings(MapClient *sender,const QString &msg_text)
 {
@@ -575,7 +577,7 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
     uint32_t target_idx         = getTargetIdx(*sender->char_entity());
     QString  target_char_name;
 
-    qDebug() << "src -> tgt: " << sender->char_entity()->m_idx  << "->" << target_idx;
+    qCDebug(logChat) << "src -> tgt: " << sender->char_entity()->m_idx  << "->" << target_idx;
 
     if(target_idx > 0)
     {
@@ -601,7 +603,7 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
         else if(str == "\\$\\$")
         {
             if(new_msg.contains(str))
-                qDebug() << "need to send newline for" << str; // TODO: Need method for returning newline in str
+                qCDebug(logChat) << "need to send newline for" << str; // TODO: Need method for returning newline in str
         }
     }
     return new_msg;
@@ -664,12 +666,12 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
                 glm::vec3 recpos = cl->char_entity()->m_entity_data.pos;
                 float range = 50.0f; // range of "hearing". I assume this is in yards
                 float dist = glm::distance(senderpos,recpos);
-                /*
-                printf("senderpos: %f %f %f\n", senderpos.x, senderpos.y, senderpos.z);
-                printf("recpos: %f %f %f\n", recpos.x, recpos.y, recpos.z);
-                printf("sphere: %f\n", range);
-                printf("dist: %f\n", dist);
-                */
+
+                qCDebug(logChat, "senderpos: %f %f %f", senderpos.x, senderpos.y, senderpos.z);
+                qCDebug(logChat, "recpos: %f %f %f", recpos.x, recpos.y, recpos.z);
+                qCDebug(logChat, "sphere: %f", range);
+                qCDebug(logChat, "dist: %f", dist);
+
                 if(dist<=range)
                     recipients.push_back(cl);
             }
@@ -709,7 +711,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
             msg_content = msg_text.midRef(first_comma+1,msg_text.lastIndexOf("\n"));
 
             QString target_name = target_name_ref.toString();
-            qDebug() << "target_name" << target_name;
+            qCDebug(logChat) << "target_name" << target_name;
 
             Entity *tgt = getEntity(sender,target_name);
 
@@ -783,7 +785,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         }
         default:
         {
-            qDebug() << "Unhandled MessageChannel type" << int(kind);
+            qCDebug(logChat) << "Unhandled MessageChannel type" << int(kind);
             break;
         }
     }
@@ -1356,18 +1358,19 @@ void MapInstance::on_emote_command(QString command, Entity *ent)
         glm::vec3 recpos = cl->char_entity()->m_entity_data.pos;
         float range = 50.0f; // range of "hearing". I assume this is in yards
         float dist = glm::distance(senderpos,recpos);
-        /*
-        printf("senderpos: %f %f %f\n", senderpos.x, senderpos.y, senderpos.z);
-        printf("recpos: %f %f %f\n", recpos.x, recpos.y, recpos.z);
-        printf("sphere: %f\n", range);
-        printf("dist: %f\n", dist);
-        */
+
+        qCDebug(logEmotes, "senderpos: %f %f %f", senderpos.x, senderpos.y, senderpos.z);
+        qCDebug(logEmotes, "recpos: %f %f %f", recpos.x, recpos.y, recpos.z);
+        qCDebug(logEmotes, "sphere: %f", range);
+        qCDebug(logEmotes, "dist: %f", dist);
+
         if(dist<=range)
             recipients.push_back(cl);
     }
     for(MapClient * cl : recipients)
     {
         sendChatMessage(MessageChannel::EMOTE,msg,src,cl);
+        qCDebug(logEmotes) << msg;
     }
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
@@ -1377,13 +1380,13 @@ void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
     Entity *ent = src->char_entity();
 
     ent->m_char.m_gui.m_chat_divider_pos = ev->m_position;
-    qDebug() << "Chat divider moved to " << ev->m_position << " for player" << src;
+    qCDebug(logMapEvents) << "Chat divider moved to " << ev->m_position << " for player" << src;
 }
 void MapInstance::on_minimap_state(MiniMapState *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    //qDebug() << "MiniMapState tile "<<ev->tile_idx << " for player" << src;
+    //qCDebug(logMapEvents) << "MiniMapState tile "<<ev->tile_idx << " for player" << src;
     // TODO: Save these tile #s to dbase and (presumably) load upon entering map to remove fog-of-war from map
 }
 
@@ -1406,11 +1409,11 @@ void MapInstance::on_location_visited(LocationVisited *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl = lnk->client_data();
-    qDebug() << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
+    qCDebug(logMapEvents) << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
     auto val = m_scripting_interface->callFuncWithClientContext(cl,"location_visited",qHash(ev->m_name));
     sendInfoMessage(MessageChannel::DEBUG_INFO,QString::fromStdString(val),cl);
 
-    qWarning() << "Unhandled location visited event:" << ev->m_name <<
+    qCWarning(logMapEvents) << "Unhandled location visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 }
 
@@ -1418,9 +1421,9 @@ void MapInstance::on_plaque_visited(PlaqueVisited * ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl = lnk->client_data();
-    qDebug() << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
+    qCDebug(logMapEvents) << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
     auto val = m_scripting_interface->callFuncWithClientContext(cl,"plaque_visited",qHash(ev->m_name));
-    qWarning() << "Unhandled plaque visited event:" << ev->m_name <<
+    qCWarning(logMapEvents) << "Unhandled plaque visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 }
 
@@ -1431,16 +1434,16 @@ void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
     Entity *ent = src->char_entity();
 
     ent->m_char.m_gui.m_insps_tray_mode = ev->dock_mode;
-    qDebug() << "Saving inspirations dock mode to GUISettings:" << ev->dock_mode;
+    qCDebug(logMapEvents) << "Saving inspirations dock mode to GUISettings:" << ev->dock_mode;
 }
 
 void MapInstance::on_enter_door(EnterDoor *ev)
 {
-    qWarning().noquote() << "Unhandled door entry request to:" << ev->name;
+    qCWarning(logMapEvents).noquote() << "Unhandled door entry request to:" << ev->name;
     if(ev->unspecified_location)
-        qWarning().noquote() << "    no location provided";
+        qCWarning(logMapEvents).noquote() << "    no location provided";
     else
-        qWarning().noquote() << ev->location.x<< ev->location.y<< ev->location.z;
+        qCWarning(logMapEvents).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
     //pseudocode:
     //  auto door = get_door(ev->name,ev->location);
     //  if(door and player_can_enter(door)
@@ -1449,23 +1452,23 @@ void MapInstance::on_enter_door(EnterDoor *ev)
 
 void MapInstance::on_change_stance(ChangeStance * ev)
 {
-    qWarning() << "Unhandled change stance request";
+    qCWarning(logMapEvents) << "Unhandled change stance request";
     if(ev->enter_stance)
-        qWarning() << "  enter stance" <<ev->powerset_index<<ev->power_index;
+        qCWarning(logMapEvents) << "  enter stance" <<ev->powerset_index<<ev->power_index;
     else
-        qWarning() << "  exit stance";
+        qCWarning(logMapEvents) << "  exit stance";
 }
 
 void MapInstance::on_set_destination(SetDestination * ev)
 {
-    qWarning() << "Unhandled set destination request"
+    qCWarning(logMapEvents) << "Unhandled set destination request"
                << "\n\t" << "index" << ev->point_index
                << "loc" << ev->destination.x << ev->destination.y << ev->destination.z;
 }
 
 void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
 {
-    qWarning() << "Unhandled abort queued power request";
+    qCWarning(logMapEvents) << "Unhandled abort queued power request";
 }
 
 void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
@@ -1476,12 +1479,18 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 
     setBattleCry(c,ev->battlecry);
     setDescription(c,ev->description);
-    qWarning() << "Attempted description and battlecry request:" << ev->description << ev->battlecry;
+    qCWarning(logMapEvents) << "Attempted description and battlecry request:" << ev->description << ev->battlecry;
 }
 
 void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
 {
-    qWarning() << "Unhandled entity info requested" << ev->entity_idx;
+    // Return Description
+    MapLink * lnk = (MapLink *)ev->src();
+    MapClient *src = lnk->client_data();
+    Character c = src->char_entity()->m_char;
+
+    sendInfoMessage(MessageChannel::PROFILE_TEXT,getDescription(c),src);
+    qCWarning(logMapEvents) << "Unhandled entity info requested" << ev->entity_idx;
 }
 
 void MapInstance::on_receive_player_info(ReceivePlayerInfo * ev)
@@ -1493,7 +1502,7 @@ void MapInstance::on_receive_player_info(ReceivePlayerInfo * ev)
 
     ev->description = getDescription(c);
 
-    qWarning() << "Unhandled receive player info requested" << ev->description;
+    qCWarning(logMapEvents) << "Unhandled receive player info requested" << ev->description;
 }
 
 void MapInstance::on_client_options(SaveClientOptions * ev)
@@ -1506,7 +1515,7 @@ void MapInstance::on_client_options(SaveClientOptions * ev)
     e->m_char.m_options = ev->data;
     charUpdateOptions(e); // Update database with opts/kbds
 
-    qDebug() << "Client options saved to database.";
+    qCDebug(logMapEvents) << "Client options saved to database.";
 }
 
 void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
@@ -1516,7 +1525,7 @@ void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
     Entity *ent = src->char_entity();
 
     ent->m_char.m_options.m_first_person_view = ev->new_viewpoint_is_firstperson;
-    qDebug() << "Saving viewpoint mode to ClientOptions" << ev->new_viewpoint_is_firstperson;
+    qCDebug(logMapEvents) << "Saving viewpoint mode to ClientOptions" << ev->new_viewpoint_is_firstperson;
 }
 
 void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
@@ -1528,17 +1537,17 @@ void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
     ent->m_char.m_gui.m_chat_top_flags = ev->m_chat_top_flags;
     ent->m_char.m_gui.m_chat_bottom_flags = ev->m_chat_bottom_flags;
 
-    qDebug() << "Saving chat channel mask settings to GUISettings" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
+    qCDebug(logMapEvents) << "Saving chat channel mask settings to GUISettings" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
 }
 
 void MapInstance::on_set_default_power_send(SetDefaultPowerSend *ev)
 {
-    qWarning() << "Unhandled Set Default Power Send request:" << ev->powerset_idx << ev->power_idx;
+    qCWarning(logMapEvents) << "Unhandled Set Default Power Send request:" << ev->powerset_idx << ev->power_idx;
 }
 
 void MapInstance::on_set_default_power(SetDefaultPower *ev)
 {
-    qWarning() << "Unhandled Set Default Power request.";
+    qCWarning(logMapEvents) << "Unhandled Set Default Power request.";
 }
 
 void MapInstance::on_unqueue_all(UnqueueAll *ev)
@@ -1552,7 +1561,7 @@ void MapInstance::on_unqueue_all(UnqueueAll *ev)
     ent->m_assist_target_idx = 0;
     // cancelAttack(ent);
 
-    qWarning() << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
+    qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }
 
 void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
@@ -1561,13 +1570,13 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    qDebug() << "Saving chat channel type to GUISettings:" << ev->m_chat_type;
+    qCDebug(logMapEvents) << "Saving chat channel type to GUISettings:" << ev->m_chat_type;
     ent->m_char.m_gui.m_cur_chat_channel = ev->m_chat_type;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
 {
-    qWarning() << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
+    qCWarning(logMapEvents) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
     // TODO: not sure what the client expects from the server here
 }
 
@@ -1578,7 +1587,7 @@ void MapInstance::on_powers_dockmode(PowersDockMode *ev)
     Entity *ent = src->char_entity();
 
     ent->m_char.m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
-    qDebug() << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
+    qCDebug(logMapEvents) << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
 }
 
 void MapInstance::on_switch_tray(SwitchTray *ev)
@@ -1590,9 +1599,9 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
     ent->m_char.m_gui.m_tray1_number = ev->tray1_num;
     ent->m_char.m_gui.m_tray2_number = ev->tray2_num;
     ent->m_char.m_gui.m_tray3_number = ev->tray_unk1;
-    qDebug() << "Saving Tray States to GUISettings. Tray1:" << ev->tray1_num+1 << "Tray2:" << ev->tray2_num+1 << "Unk1:" << ev->tray_unk1;
+    qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray1_num+1 << "Tray2:" << ev->tray2_num+1 << "Unk1:" << ev->tray_unk1;
     // TODO: need to load powers for new tray.
-    qWarning() << "TODO: Need to load powers for new trays";
+    qCWarning(logMapEvents) << "TODO: Need to load powers for new trays";
 }
 
 void MapInstance::on_set_keybind(SetKeybind *ev)
@@ -1605,7 +1614,7 @@ void MapInstance::on_set_keybind(SetKeybind *ev)
     ModKeys mod = static_cast<ModKeys>(ev->mods);
 
     ent->m_char.m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
-    //qDebug() << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
+    //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
 }
 
 void MapInstance::on_remove_keybind(RemoveKeybind *ev)
@@ -1615,7 +1624,7 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
     Entity *ent = src->char_entity();
 
     ent->m_char.m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
-    //qWarning() << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
+    //qCWarning(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
 void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
@@ -1625,7 +1634,7 @@ void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
     Entity *ent = src->char_entity();
 
     ent->m_char.m_keybinds.resetKeybinds();
-    qDebug() << "Resetting Keybinds to defaults.";
+    qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
 }
 
 void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
@@ -1635,5 +1644,5 @@ void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
     Entity *ent = src->char_entity();
 
     ent->m_char.m_keybinds.setKeybindProfile(ev->profile);
-    qDebug() << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
+    qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }
