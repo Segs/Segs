@@ -49,7 +49,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
             // otherwise treat as idle
             return new IdleEvent;
         case 1: return new MiniMapState;
-        //case 2: return new Unknown2; // TODO: Tray 7?? Cycle over to tray 7 to receive this opcode.
+        //case 2: return new Unknown2; // TODO: What is this?
         //case 3: return new RefreshWindows; // TODO: Refreshes all windows? Issue #268
         case 4: return new ClientResumedRendering;
         case 8: return new SwitchTray;

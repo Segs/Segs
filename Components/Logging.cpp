@@ -103,20 +103,20 @@ void toggleLogging(QString &category)
 void dumpLogging()
 {
     QString output = "Current Logging Categories:";
-    output += "\n\t keybinds: "     + QString(logKeybinds().isDebugEnabled());
-    output += "\n\t settings: "     + QString(logSettings().isDebugEnabled());
-    output += "\n\t gui: "          + QString(logGUI().isDebugEnabled());
-    output += "\n\t teams: "        + QString(logTeams().isDebugEnabled());
-    output += "\n\t db: "           + QString(logDB().isDebugEnabled());
-    output += "\n\t input: "        + QString(logInput().isDebugEnabled());
-    output += "\n\t orientation: "  + QString(logOrientation().isDebugEnabled());
-    output += "\n\t chat: "         + QString(logChat().isDebugEnabled());
-    output += "\n\t infomsg: "      + QString(logInfoMsg().isDebugEnabled());
-    output += "\n\t emotes: "       + QString(logEmotes().isDebugEnabled());
-    output += "\n\t target: "       + QString(logTarget().isDebugEnabled());
-    output += "\n\t spawn: "        + QString(logSpawn().isDebugEnabled());
-    output += "\n\t mapevents: "    + QString(logMapEvents().isDebugEnabled());
-    output += "\n\t slashcommand: " + QString(logSlashCommand().isDebugEnabled());
+    output += "\n\t keybinds: "     + QString::number(logKeybinds().isDebugEnabled());
+    output += "\n\t settings: "     + QString::number(logSettings().isDebugEnabled());
+    output += "\n\t gui: "          + QString::number(logGUI().isDebugEnabled());
+    output += "\n\t teams: "        + QString::number(logTeams().isDebugEnabled());
+    output += "\n\t db: "           + QString::number(logDB().isDebugEnabled());
+    output += "\n\t input: "        + QString::number(logInput().isDebugEnabled());
+    output += "\n\t orientation: "  + QString::number(logOrientation().isDebugEnabled());
+    output += "\n\t chat: "         + QString::number(logChat().isDebugEnabled());
+    output += "\n\t infomsg: "      + QString::number(logInfoMsg().isDebugEnabled());
+    output += "\n\t emotes: "       + QString::number(logEmotes().isDebugEnabled());
+    output += "\n\t target: "       + QString::number(logTarget().isDebugEnabled());
+    output += "\n\t spawn: "        + QString::number(logSpawn().isDebugEnabled());
+    output += "\n\t mapevents: "    + QString::number(logMapEvents().isDebugEnabled());
+    output += "\n\t slashcommand: " + QString::number(logSlashCommand().isDebugEnabled());
 
     qDebug().noquote() << output;
 }
