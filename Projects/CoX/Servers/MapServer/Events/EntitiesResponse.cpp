@@ -99,7 +99,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 
         QString member_name     = tm_ent->name();
         QString member_mapname  = tm_ent->m_client->current_map()->name();
-        bool tm_on_same_map     = true;
+        bool tm_on_same_map     = false;
 
         if(member_mapname != src.m_client->current_map()->name())
             tm_on_same_map = false;
@@ -109,6 +109,9 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 
         if(!tm_on_same_map)
         {
+            QString unk_test = "Test Value";
+            bs.StoreString(unk_test); // Maybe mission name, or class?
+            //qWarning() << "Unknown value:" << unk_test;
             bs.StoreString(member_name);
             bs.StoreString(member_mapname);
         }

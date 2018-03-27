@@ -66,9 +66,12 @@ bool _AdminServer::ReadConfig()
     config->endGroup(); // AccountDatabase
     QSqlDatabase *db1;
     QStringList driver_list {"QSQLITE","QPSQL"};
-    if(!driver_list.contains(dbdriver.toUpper())) {
-        qWarning() << "Database driver" << dbdriver << " not supported";
-    }
+    if(!driver_list.contains(dbdriver.toUpper()))
+        qWarning() << "Database driver" << dbdriver << " not supported.";
+
+    if(!QSqlDatabase::isDriverAvailable(dbdriver))
+        qCritical() << "Database driver" << dbdriver << " not found!";
+
     db1 = new QSqlDatabase(QSqlDatabase::addDatabase(dbdriver.toUpper(),"AccountDatabase"));
     db1->setHostName(dbhost);
     db1->setPort(dbport);
