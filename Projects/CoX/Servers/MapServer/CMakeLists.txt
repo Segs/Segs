@@ -41,12 +41,16 @@ SET(target_INCLUDE
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
     Events/EntitiesResponse.h
+    Events/FloatingDamage.h
+    Events/FriendsListUpdate.h
     Events/InputState.h
     Events/KeybindSettings.h
     Events/LocationVisited.h
-    Events/PlaqueVisited.h
-    Events/NewEntity.h
     Events/MapEventTypes.h
+    Events/MessageChannels.h
+    Events/NewEntity.h
+    Events/PlaqueVisited.h
+    Events/PlayerInfo.h
     Events/SaveClientOptions.h
     Events/SceneEvent.h
     Events/Shortcuts.h

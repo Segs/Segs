@@ -350,8 +350,8 @@ void sendOnOddSend(const Entity &src,BitStream &bs)
 }
 void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1,0); // on team evil ?
-    bs.StoreBits(1,1); // on team good ?
+    bs.StoreBits(1,src.m_is_villian); // on team evil ?
+    bs.StoreBits(1,src.m_is_hero); // on team good ?
 }
 void sendEntCollision(const Entity &src,BitStream &bs)
 {

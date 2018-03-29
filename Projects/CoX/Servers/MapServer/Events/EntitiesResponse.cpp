@@ -99,7 +99,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 
         QString member_name     = tm_ent->name();
         QString member_mapname  = tm_ent->m_client->current_map()->name();
-        bool tm_on_same_map     = false;
+        bool tm_on_same_map     = true;
 
         if(member_mapname != src.m_client->current_map()->name())
             tm_on_same_map = false;
@@ -109,9 +109,6 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 
         if(!tm_on_same_map)
         {
-            QString unk_test = "Test Value";
-            bs.StoreString(unk_test); // Maybe mission name, or class?
-            //qWarning() << "Unknown value:" << unk_test;
             bs.StoreString(member_name);
             bs.StoreString(member_mapname);
         }
@@ -133,7 +130,8 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     bs.StoreBits(1,player_char.m_char_data.m_sidekick.sk_has_sidekick);
     if(player_char.m_char_data.m_sidekick.sk_has_sidekick)
     {
-        bs.StoreBits(1,player_char.m_char_data.m_sidekick.sk_type);
+        bool is_mentor = isSidekickMentor(src);
+        bs.StoreBits(1,is_mentor);
         bs.StorePackedBits(20,player_char.m_char_data.m_sidekick.sk_db_id); // sidekick partner db_id -> 10240
     }
 
@@ -292,9 +290,6 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     // user entity
     Entity *ent = src.m_client->char_entity();
 
-    bool update_part_1  = ent->u1;       // default: true;
-    bool update_part_2  = ent->u2;       // default: false;
-
     SurfaceParams surface_params[2];
     memset(&surface_params,0,2*sizeof(SurfaceParams));
     surface_params[0].traction = 1.5f;
@@ -303,8 +298,8 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     surface_params[1].max_speed = surface_params[0].max_speed = 1.5f;
     surface_params[1].gravitational_constant = surface_params[0].gravitational_constant = 3.0f;
 
-    bs.StoreBits(1,update_part_1);
-    if(update_part_1)
+    bs.StoreBits(1,ent->m_update_part_1);
+    if(ent->m_update_part_1)
     {
         //rand()&0xFF
         bs.StoreBits(8,ent->m_update_id);
@@ -325,8 +320,8 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         bs.StoreBits(1,ent->m_is_sliding);        // sliding? default = 0
     }
     // Used to force the client to a position/speed/pitch/rotation by server
-    bs.StoreBits(1,update_part_2);
-    if(update_part_2)
+    bs.StoreBits(1,ent->m_force_pos_and_cam);
+    if(ent->m_force_pos_and_cam)
     {
         bs.StorePackedBits(1,ent->inp_state.m_received_server_update_id); // sets g_client_pos_id_rel default = 0
         storeVector(bs,ent->m_entity_data.pos);         // server-side pos
@@ -337,7 +332,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         storeFloatConditional(bs,0); // Roll
         bs.StorePackedBits(1,ent->m_is_falling); // server side forced falling bit
 
-        ent->u2 = 0; // run once
+        ent->m_force_pos_and_cam = false; // run once
     }
 }
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)

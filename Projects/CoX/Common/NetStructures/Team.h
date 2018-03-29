@@ -43,10 +43,20 @@ private:
 static  uint32_t  m_team_idx_counter;
 };
 
-// Team Methods
+
+/*
+ * Team Methods
+ */
 bool sameTeam(Entity &src, Entity &tgt);
 bool makeTeamLeader(Entity &src, Entity &tgt);
 bool inviteTeam(Entity &src, Entity &tgt);
 bool kickTeam(Entity &tgt);
 void leaveTeam(Entity &e);
 void findTeamMember(Entity &tgt);
+
+/*
+ * Sidekick Methods -- Sidekick system requires teaming.
+ */
+bool isSidekickMentor(const Entity &e);
+void addSidekick(Entity &src, Entity &tgt);
+void removeSidekick(Entity &src);

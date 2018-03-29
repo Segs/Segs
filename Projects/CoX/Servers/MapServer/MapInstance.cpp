@@ -173,9 +173,6 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evMiniMapState:
             on_minimap_state(static_cast<MiniMapState *>(ev));
             break;
-        case MapEventTypes::evEntityInfoRequest:
-            on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
-            break;
         case MapEventTypes::evLocationVisited:
             on_location_visited(static_cast<LocationVisited *>(ev));
             break;
@@ -212,8 +209,8 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evTargetChatChannelSelected:
             on_target_chat_channel_selected(static_cast<TargetChatChannelSelected *>(ev));
             break;
-        case MapEventTypes::evReceivePlayerInfo:
-            on_receive_player_info(static_cast<ReceivePlayerInfo *>(ev));
+        case MapEventTypes::evEntityInfoRequest:
+            on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
             break;
         case MapEventTypes::evSelectKeybindProfile:
             on_select_keybind_profile(static_cast<SelectKeybindProfile *>(ev));
@@ -1380,13 +1377,15 @@ void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
     Entity *ent = src->char_entity();
 
     ent->m_char.m_gui.m_chat_divider_pos = ev->m_position;
-    qCDebug(logMapEvents) << "Chat divider moved to " << ev->m_position << " for player" << src;
+    qCDebug(logMapEvents) << "Chat divider moved to " << ev->m_position << " for player" << ent->name();
 }
 void MapInstance::on_minimap_state(MiniMapState *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    //qCDebug(logMapEvents) << "MiniMapState tile "<<ev->tile_idx << " for player" << src;
+    Entity *ent = src->char_entity();
+
+    qCDebug(logMiniMap) << "MiniMapState tile "<<ev->tile_idx << " for player" << ent->name();
     // TODO: Save these tile #s to dbase and (presumably) load upon entering map to remove fog-of-war from map
 }
 
@@ -1487,22 +1486,16 @@ void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
     // Return Description
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    Character c = src->char_entity()->m_char;
 
-    sendInfoMessage(MessageChannel::PROFILE_TEXT,getDescription(c),src);
-    qCWarning(logMapEvents) << "Unhandled entity info requested" << ev->entity_idx;
-}
+    Entity *tgt = nullptr;
+    if((tgt = getEntity(src,ev->entity_idx)) == nullptr)
+        return;
 
-void MapInstance::on_receive_player_info(ReceivePlayerInfo * ev)
-{
-    // Return Description
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *src = lnk->client_data();
-    Character c = src->char_entity()->m_char;
+    QString description = getDescription(tgt->m_char);
 
-    ev->description = getDescription(c);
-
-    qCWarning(logMapEvents) << "Unhandled receive player info requested" << ev->description;
+    // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
+    lnk->putq(new EntityInfoResponse(description));
+    qCDebug(logMapEvents) << "Entity info requested" << ev->entity_idx << description;
 }
 
 void MapInstance::on_client_options(SaveClientOptions * ev)

@@ -47,6 +47,7 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"setWindowVisibility", "setWinVis"}, &cmdHandler_SetWindowVisibility, 9},
     {{"keybindDump", "keybindDebug"}, &cmdHandler_KeybindDebug, 9},
     {{"toggleLogging", "log"}, &cmdHandler_ToggleLogging, 9},
+    {{"friendsDump", "friendsDebug"}, &cmdHandler_FriendsListDebug, 9},
     {{"setu1"}, &cmdHandler_SetU1, 9},
     {{"setu2"}, &cmdHandler_SetU2, 9},
     {{"setu3"}, &cmdHandler_SetU3, 9},
@@ -69,7 +70,10 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"assist"}, &cmdHandler_SetAssistTarget, 1},
     {{"sidekick","sk"}, &cmdHandler_Sidekick, 1},
     {{"unsidekick","unsk"}, &cmdHandler_UnSidekick, 1},
-    {{"buffs"}, &cmdHandler_TeamBuffs, 1}
+    {{"buffs"}, &cmdHandler_TeamBuffs, 1},
+    {{"friend"}, &cmdHandler_Friend, 1},
+    {{"unfriend"}, &cmdHandler_Unfriend, 1},
+    {{"friendlist", "fl"}, &cmdHandler_FriendList, 1}
 };
 
 bool canAccessCommand(const SlashCommand &cmd, const Entity &e)
@@ -524,6 +528,16 @@ void cmdHandler_ToggleLogging(QString &cmd, Entity *e) {
         toggleLogging(category); // Toggle each category listed
 }
 
+void cmdHandler_FriendsListDebug(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    QString msg = "Sending FriendsList dump to console output.";
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    dumpFriends(*e); // Send FriendsList dump
+}
+
 // Slash commands for setting bit values
 void cmdHandler_SetU1(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
@@ -852,4 +866,44 @@ void cmdHandler_TeamBuffs(QString &cmd, Entity *e) {
 
     QString msg = "Toggling Team Buffs display mode.";
     qCDebug(logSlashCommand).noquote() << msg;
+}
+
+void cmdHandler_Friend(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        // TODO: Implement getCharacterFromDB(name)
+        tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(src,name);
+
+    if(tgt == nullptr || e->m_char.isEmpty() || tgt->m_char.isEmpty())
+        return;
+
+    addFriend(*e,*tgt);
+}
+
+void cmdHandler_Unfriend(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    if(e->m_char.isEmpty())
+        return;
+
+    removeFriend(*e);
+}
+
+void cmdHandler_FriendList(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    if(e->m_char.isEmpty())
+        return;
+
+    toggleFriendList(*e);
 }

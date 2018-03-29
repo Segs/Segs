@@ -16,7 +16,7 @@ public:
     EVENT_DECL(evInputState                 ,8)
     EVENT_DECL(evClientQuit                 ,9)
     EVENT_DECL(evForceLogout                ,10)
-    EVENT_DECL(evChatDividerMoved           ,36)    // was 36
+    EVENT_DECL(evChatDividerMoved           ,36)
     EVENT_DECL(evPreUpdateCommand           ,1013)  // this wraps a list of commands
 // server -> client commands
     EVENT_DECL(evFirstServerToClient        ,100)
@@ -31,6 +31,8 @@ public:
     EVENT_DECL(evFloatingDamage             ,121)
 //    EVENT_DECL(evVisitMapCells            ,122)
 //    EVENT_DECL(evSendWaypoint             ,123)
+    EVENT_DECL(evFriendListUpdated          ,137)
+    EVENT_DECL(evEntityInfoResponse         ,169) // Send entity info (description)
 // client -> server commands
     EVENT_DECL(evConsoleCommand             ,200)
     EVENT_DECL(evMiniMapState               ,201)
@@ -57,11 +59,10 @@ public:
     EVENT_DECL(evChatReconfigure            ,238)
     EVENT_DECL(evPlaqueVisited              ,239)
     EVENT_DECL(evCombineRequest             ,240)
-    EVENT_DECL(evEntityInfoRequest          ,256)
+    EVENT_DECL(evEntityInfoRequest          ,256) // right-click entity select "Info"
     EVENT_DECL(evLocationVisited            ,262)
     EVENT_DECL(evSwitchViewPoint            ,264)
     EVENT_DECL(evSaveClientOptions          ,265)
     EVENT_DECL(evDescriptionAndBattleCry    ,267)
-    EVENT_DECL(evReceivePlayerInfo          ,269)
     END_EVENTS(500)
 };

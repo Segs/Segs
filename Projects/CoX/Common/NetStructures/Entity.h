@@ -170,15 +170,15 @@ public:
         struct SuperGroup
         {
             int             m_SG_id                 = {0};
-            QString         m_SG_name;                      // 64 chars max
+            QString         m_SG_name               = "Supergroup"; // 64 chars max
             //QString         m_SG_motto;
-            //QString         m_SG_costume;                 // 128 chars max -> hash table key from the CostumeString_HTable
-            uint32_t        m_SG_color1             = 0;    // supergroup color 1
-            uint32_t        m_SG_color2             = 0;    // supergroup color 2
-            int             m_SG_rank               = 0;
+            //QString         m_SG_costume;                         // 128 chars max -> hash table key from the CostumeString_HTable
+            uint32_t        m_SG_color1             = 0;            // supergroup color 1
+            uint32_t        m_SG_color2             = 0;            // supergroup color 2
+            int             m_SG_rank               = 1;
         };
 
-        bool                m_has_supergroup        = false;
+        bool                m_has_supergroup        = true;
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_team              = false;
         Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
@@ -205,6 +205,7 @@ public:
         bool                m_state_mode_send       = false;
         bool                m_odd_send              = false;
         bool                m_seq_update            = false;
+        bool                m_is_hero               = false;
         bool                m_is_villian            = false;
         bool                m_contact               = false;
         int                 m_seq_upd_num1          = 0;
@@ -220,8 +221,10 @@ public:
         float               m_jump_height           = 1.0f;
 
         uint8_t             m_update_id             = 1;
-        bool                m_full_update           = true; // EntityReponse sendServerPhysicsPositions
-        bool                m_has_control_id        = true; // EntityReponse sendServerPhysicsPositions
+        bool                m_update_part_1         = true;     // EntityResponse sendServerControlState
+        bool                m_force_pos_and_cam     = true;     // EntityResponse sendServerControlState
+        bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
+        bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
 
         int                 u1 = 1;
         int                 u2 = 1;
@@ -254,7 +257,6 @@ public:
         QString             m_override_name;
         uint32_t            m_input_ack                 = {0};
         bool                player_type                 = false;
-        bool                m_player_villain            = false;
         bool                m_destroyed                 = false;
         int                 ownerEntityId               = 0;
         int                 creatorEntityId             = 0;

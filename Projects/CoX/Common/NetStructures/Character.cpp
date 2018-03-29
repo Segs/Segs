@@ -6,15 +6,15 @@
  *
  */
 
-//#define DEBUG_GUI
-//#define DEBUG_KEYBINDS
 #include "Character.h"
 
 #include "BitStream.h"
 #include "Entity.h"
 #include "Costume.h"
+#include "Friend.h"
 #include "GameData/keybind_definitions.h"
 #include "Servers/MapServer/DataHelpers.h"
+#include "Logging.h"
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 
@@ -393,10 +393,10 @@ void Character::sendWindows( BitStream &bs ) const
 
 void Character::sendWindow(BitStream &bs, GUIWindow wnd) const
 {
-#ifdef DEBUG_GUI
-    qDebug() << "sendWindow:" << wnd.m_idx;
-    wnd.guiWindowDump();
-#endif
+
+    qCDebug(logGUI) << "sendWindow:" << wnd.m_idx;
+    if(logGUI().isDebugEnabled())
+        wnd.guiWindowDump();
 
     bs.StorePackedBits(1,wnd.m_posx);
     bs.StorePackedBits(1,wnd.m_posy);
@@ -457,11 +457,11 @@ void Character::sendChatSettings(BitStream &bs) const
 }
 void Character::sendDescription(BitStream &bs) const
 {
-    /*
-    qDebug() << "Sending Description & BattleCry"
+
+    qCDebug(logDescription) << "Sending Description & BattleCry"
              << "\nDescription: " << m_char_data.m_character_description
              << "\nBattle Cry: " << m_char_data.m_battle_cry;
-    */
+
     bs.StoreString(m_char_data.m_character_description);
     bs.StoreString(m_char_data.m_battle_cry);
 }
@@ -495,9 +495,7 @@ void Character::sendKeybinds(BitStream &bs) const
     const CurrentKeybinds &cur_keybinds = m_keybinds.getCurrentKeybinds();
     int total_keybinds = cur_keybinds.size();
 
-#ifdef DEBUG_KEYBINDS
-    qDebug() << "total keybinds:" << total_keybinds;
-#endif
+    qCDebug(logKeybinds) << "total keybinds:" << total_keybinds;
 
     bs.StoreString(m_keybinds.m_cur_keybind_profile); // keybinding profile name
 
@@ -512,33 +510,45 @@ void Character::sendKeybinds(BitStream &bs) const
          {
              int32_t sec = (kb.Key | 0xF00);
              bs.StoreBits(32,sec);
-#ifdef DEBUG_KEYBINDS
-             qDebug() << "is secondary:" << sec;
-#endif
+             qCDebug(logKeybinds) << "is secondary:" << sec;
          }
          else
              bs.StoreBits(32,kb.Key);
 
          bs.StoreBits(32,kb.Mods);
-#ifdef DEBUG_KEYBINDS
-         qDebug() << i << kb.KeyString << kb.Key << kb.Mods << kb.Command << " secondary:" << kb.IsSecondary;
-#endif
+         qCDebug(logKeybinds) << i << kb.KeyString << kb.Key << kb.Mods << kb.Command << " secondary:" << kb.IsSecondary;
       }
       else
       {
          bs.StoreString("");
          bs.StoreBits(32,0);
          bs.StoreBits(32,0);
-#ifdef DEBUG_KEYBINDS
-         qDebug() << i;
-#endif
+         qCDebug(logKeybinds) << i;
       }
     }
 }
 void Character::sendFriendList(BitStream &bs) const
 {
-    bs.StorePackedBits(1,0);
-    bs.StorePackedBits(1,0);
+    const FriendsList *fl(&m_char_data.m_friendlist);
+    bs.StorePackedBits(1,fl->m_friends_v2); // v2
+    bs.StorePackedBits(1,fl->m_friends_count);
+
+    for(int i=0; i<fl->m_friends_count; ++i)
+    {
+        bs.StoreBits(1,fl->m_has_friends); // if false, client will skip this iteration
+        bs.StorePackedBits(1,fl->m_friends[i].fr_field_0);
+        bs.StoreBits(1,fl->m_friends[i].fr_online_status);
+        bs.StoreString(fl->m_friends[i].fr_name);
+        bs.StorePackedBits(1,fl->m_friends[i].fr_class_idx);
+        bs.StorePackedBits(1,fl->m_friends[i].fr_origin_idx);
+
+        if(!fl->m_friends[i].fr_online_status)
+            continue;
+
+        // if friend is offline, these will be skipped
+        bs.StorePackedBits(1,fl->m_friends[i].fr_field_8);
+        bs.StoreString(fl->m_friends[i].fr_mapname);
+    }
 }
 void Character::sendOptionsFull(BitStream &bs) const
 {

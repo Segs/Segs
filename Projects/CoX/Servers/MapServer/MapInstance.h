@@ -47,7 +47,8 @@ class TargetChatChannelSelected;
 class ActivateInspiration;
 class PowersDockMode;
 class SwitchTray;
-class ReceivePlayerInfo;
+class EntityInfoRequest;
+class EntityInfoResponse;
 class SaveClientOptions;
 class SelectKeybindProfile;
 class ResetKeybinds;
@@ -114,7 +115,6 @@ protected:
     void on_abort_queued_power(class AbortQueuedPower *ev);
     void on_description_and_battlecry(class DescriptionAndBattleCry *ev);
     void on_entity_info_request(class EntityInfoRequest *ev);
-    void on_receive_player_info(class ReceivePlayerInfo *ev);
     void on_chat_reconfigured(class ChatReconfigure *ev);
     void on_switch_viewpoint(class SwitchViewPoint *ev);
     void on_client_options(class SaveClientOptions *ev);
@@ -129,6 +129,7 @@ protected:
     void on_reset_keybinds(class ResetKeybinds *ev);
     void on_set_keybind(class SetKeybind *ev);
     void on_remove_keybind(class RemoveKeybind *ev);
+    void on_friendslist_update(class FriendsListUpdate *ev);
 
 private:
     void on_emote_command(QString command, Entity *ent);

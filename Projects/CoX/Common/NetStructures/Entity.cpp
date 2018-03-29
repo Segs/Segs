@@ -14,7 +14,7 @@
 #include <cmath>
 #include <limits>
 #include <sstream>
-//#define LOG_
+
 //TODO: this file needs to know the MapInstance's WorldSimulation rate - Maybe extract it as a configuration object ?
 
 #define WORLD_UPDATE_TICKS_PER_SECOND 30
@@ -39,6 +39,7 @@ void Entity::fillFromCharacter(Character *f)
     m_hasname = true;
     m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*f));
     m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*f));
+    m_is_hero = true;
 }
 /**
  *  This will mark the Entity as being in logging out state
@@ -67,6 +68,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *pac
     e.m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(e.m_char));
     e.m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(e.m_char));
     e.m_char.m_keybinds.resetKeybinds();
+    e.m_is_hero = true;
 
     // New Character Spawn Location
     //e.m_entity_data.pos                 = glm::vec3(-60.5f,180.0f,0.0f); // Tutorial Starting Location
@@ -107,6 +109,8 @@ void Entity::dump()
 
     if(m_type == Entity::ENT_PLAYER)
         m_char.dump();
+
+    dumpFriends(*this);
 }
 
 void Entity::addPosUpdate(const PosUpdate & p) {
@@ -135,7 +139,8 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_destroyed                       = false;
     e.m_type                            = Entity::ENT_PLAYER; // 2
     e.m_create_player                   = true;
-    e.m_player_villain                  = false;
+    e.m_is_hero                         = true;
+    e.m_is_villian                      = false;
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = {0};
     e.m_selector1                       = false;

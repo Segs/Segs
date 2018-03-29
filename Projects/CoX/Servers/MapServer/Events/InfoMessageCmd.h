@@ -1,14 +1,14 @@
 /*
  * Super Entity Game Server Project
  * http://github.com/Segs
- * Copyright (c) 2006 - 2017 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
 
 #pragma once
 #include "GameCommandList.h"
-#include "ChatMessage.h" // needed to access MessageChannel enum
+#include "MessageChannels.h"
 
 class MapClient;
 class QString;

@@ -437,38 +437,6 @@ public:
         bs.GetString(battlecry);
     }
 };
-class EntityInfoRequest final : public MapLinkEvent
-{
-public:
-    int entity_idx;
-    EntityInfoRequest():MapLinkEvent(MapEventTypes::evEntityInfoRequest)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(12,entity_idx);
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        entity_idx = bs.GetPackedBits(12);
-    }
-};
-class ReceivePlayerInfo final : public MapLinkEvent
-{
-public:
-    QString description = "TEST Desc Sent!";
-    ReceivePlayerInfo():MapLinkEvent(MapEventTypes::evReceivePlayerInfo)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,69);
-        bs.StoreString(description);
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        // TODO: Seems like nothing is received server side but let's try this!
-        bs.GetString(description);
-    }
-};
 class SwitchViewPoint final : public MapLinkEvent
 {
 public:
@@ -638,11 +606,13 @@ public:
     }
 };
 
-#include "Events/SaveClientOptions.h"
-#include "Events/GameCommandList.h"
 #include "Events/ChatDividerMoved.h"
-#include "Events/SceneEvent.h"
 #include "Events/EntitiesResponse.h"
-#include "Events/Shortcuts.h"
-#include "Events/PlaqueVisited.h"
+#include "Events/FriendsListUpdate.h"
+#include "Events/GameCommandList.h"
 #include "Events/LocationVisited.h"
+#include "Events/PlaqueVisited.h"
+#include "Events/PlayerInfo.h"
+#include "Events/SaveClientOptions.h"
+#include "Events/SceneEvent.h"
+#include "Events/Shortcuts.h"

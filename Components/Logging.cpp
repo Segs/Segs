@@ -16,6 +16,7 @@
         return category; \
     }
 
+SEGS_LOGGING_CATEGORY(logLogging,     "log.logging")
 SEGS_LOGGING_CATEGORY(logKeybinds,     "log.keybinds")
 SEGS_LOGGING_CATEGORY(logSettings,     "log.settings")
 SEGS_LOGGING_CATEGORY(logGUI,          "log.gui")
@@ -30,12 +31,17 @@ SEGS_LOGGING_CATEGORY(logTarget,       "log.target")
 SEGS_LOGGING_CATEGORY(logSpawn,        "log.spawn")
 SEGS_LOGGING_CATEGORY(logMapEvents,    "log.mapevents")
 SEGS_LOGGING_CATEGORY(logSlashCommand, "log.slashcommand")
+SEGS_LOGGING_CATEGORY(logDescription,  "log.description")
+SEGS_LOGGING_CATEGORY(logFriends,      "log.friends")
+SEGS_LOGGING_CATEGORY(logMiniMap,      "log.minimap")
 
 void setLoggingFilter()
 {
     QSettings *config(Settings::getSettings());
 
+    config->beginGroup("Logging");
     QString filter_rules = config->value("log_generic","*.debug=true\nqt.*.debug=false").toString();
+    filter_rules += "\nlog.logging="        + config->value("log_logging","false").toString();
     filter_rules += "\nlog.keybinds="       + config->value("log_keybinds","false").toString();
     filter_rules += "\nlog.settings="       + config->value("log_settings","false").toString();
     filter_rules += "\nlog.gui="            + config->value("log_gui","false").toString();
@@ -50,8 +56,14 @@ void setLoggingFilter()
     filter_rules += "\nlog.spawn="          + config->value("log_spawn","false").toString();
     filter_rules += "\nlog.mapevents="      + config->value("log_mapevents","true").toString();
     filter_rules += "\nlog.slashcommand="   + config->value("log_slashcommand","true").toString();
+    filter_rules += "\nlog.description="    + config->value("log_description","false").toString();
+    filter_rules += "\nlog.friends="        + config->value("log_friends","false").toString();
+    filter_rules += "\nlog.minimap="        + config->value("log_minimap","false").toString();
+    config->endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
+
+    qCDebug(logLogging) << "Logging FilterRules:" << filter_rules; // so meta
 }
 
 void toggleLogging(QString &category)
@@ -89,6 +101,12 @@ void toggleLogging(QString &category)
         cat = &logMapEvents();
     else if(category.contains("slashcommand",Qt::CaseInsensitive))
         cat = &logSlashCommand();
+    else if(category.contains("description",Qt::CaseInsensitive))
+        cat = &logDescription();
+    else if(category.contains("friends",Qt::CaseInsensitive))
+        cat = &logFriends();
+    else if(category.contains("minimap",Qt::CaseInsensitive))
+        cat = &logMiniMap();
     else
         return;
 
@@ -117,6 +135,9 @@ void dumpLogging()
     output += "\n\t spawn: "        + QString::number(logSpawn().isDebugEnabled());
     output += "\n\t mapevents: "    + QString::number(logMapEvents().isDebugEnabled());
     output += "\n\t slashcommand: " + QString::number(logSlashCommand().isDebugEnabled());
+    output += "\n\t description: "  + QString::number(logDescription().isDebugEnabled());
+    output += "\n\t friends: "      + QString::number(logFriends().isDebugEnabled());
+    output += "\n\t minimap: "      + QString::number(logMiniMap().isDebugEnabled());
 
     qDebug().noquote() << output;
 }

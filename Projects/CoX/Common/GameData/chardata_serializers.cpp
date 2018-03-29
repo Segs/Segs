@@ -5,8 +5,32 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
+CEREAL_CLASS_VERSION(Friend, 1);        // register Friend struct version
+CEREAL_CLASS_VERSION(FriendsList, 1);    // register FriendList struct version
 CEREAL_CLASS_VERSION(Sidekick, 1);      // register Sidekick struct version
-CEREAL_CLASS_VERSION(CharacterData, 4); // register CharacterData class version
+CEREAL_CLASS_VERSION(CharacterData, 5); // register CharacterData class version
+
+template<class Archive>
+void serialize(Archive &archive, Friend &fr, uint32_t const version)
+{
+    archive(cereal::make_nvp("FriendIdx", fr.fr_idx));
+    archive(cereal::make_nvp("FriendOnline", fr.fr_online_status));
+    archive(cereal::make_nvp("FriendField0", fr.fr_field_0));
+    archive(cereal::make_nvp("FriendName", fr.fr_name));
+    archive(cereal::make_nvp("FriendClass", fr.fr_class_idx));
+    archive(cereal::make_nvp("FriendOrigin", fr.fr_origin_idx));
+    archive(cereal::make_nvp("FriendField8", fr.fr_field_8));
+    archive(cereal::make_nvp("FriendMapname", fr.fr_mapname));
+}
+
+template<class Archive>
+void serialize(Archive &archive, FriendsList &fl, uint32_t const version)
+{
+    archive(cereal::make_nvp("HasFriends",fl.m_has_friends));
+    archive(cereal::make_nvp("FriendsV2",fl.m_friends_v2));
+    archive(cereal::make_nvp("Friends",fl.m_friends));
+    archive(cereal::make_nvp("FriendsCount",fl.m_friends_count));
+}
 
 template<class Archive>
 void serialize(Archive &archive, Sidekick &sk, uint32_t const version)
@@ -19,8 +43,8 @@ void serialize(Archive &archive, Sidekick &sk, uint32_t const version)
 template<class Archive>
 void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
 {
-    if(version < 4)
-        qFatal("Please update your CharacterDatabase chardata.");
+    if(version < 5)
+        qCritical("Please update your CharacterDatabase chardata.");
 
     archive(cereal::make_nvp("Level",cd.m_level));
     archive(cereal::make_nvp("CombatLevel",cd.m_combat_level));
@@ -45,6 +69,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("SuperGroupCostume",cd.m_supergroup_costume));
     archive(cereal::make_nvp("UsingSGCostume",cd.m_using_sg_costume));
     archive(cereal::make_nvp("SideKick",cd.m_sidekick));
+    archive(cereal::make_nvp("FriendList",cd.m_friendlist));
 }
 
 void saveTo(const CharacterData &target, const QString &baseName, bool text_format)

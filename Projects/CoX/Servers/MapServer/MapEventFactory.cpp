@@ -78,7 +78,6 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 64: return new SwitchViewPoint;
         case 65: return new SaveClientOptions;
         case 67: return new DescriptionAndBattleCry;
-        case 69: return new ReceivePlayerInfo;
     }
     ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled command event type %d\n"),opcode));
     return nullptr;

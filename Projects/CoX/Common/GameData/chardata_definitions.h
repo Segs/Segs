@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Common/NetStructures/Friend.h"
 #include <QtCore/QString>
+#include <vector>
 
 enum SidekickType : uint8_t
 {
@@ -38,7 +40,8 @@ struct CharacterData
     QString     m_class_name;
     QString     m_origin_name;
     QString     m_mapName;
-    bool        m_supergroup_costume; // player has a sg costume
-    bool        m_using_sg_costume;   // player uses sg costume currently
-    Sidekick    m_sidekick;
+    bool        m_supergroup_costume;       // player has a sg costume
+    bool        m_using_sg_costume;         // player uses sg costume currently
+    Sidekick    m_sidekick;                 // Sidekick Struct
+    FriendsList  m_friendlist;               // Friendslist Struct
 };

@@ -1,7 +1,6 @@
 #pragma once
 #include "CommonNetStructures.h"
-//#include "Entity.h"
-//#include "Character.h"
+#include "Events/MessageChannels.h"
 
 class QString;
 class Entity;
@@ -102,9 +101,5 @@ void    toggleAFK(Character &c, const QString &msg = "");
 void    toggleLFG(Character &c);
 void    toggleTeamBuffs(Character &c);
 
-/*
- * Sidekick Methods -- Sidekick system requires teaming.
- */
-bool isSidekickMentor(const Entity &e);
-void addSidekick(Entity &src, Entity &tgt);
-void removeSidekick(Entity &src);
+// sendInfoMessage wrapper
+void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);

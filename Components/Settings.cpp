@@ -145,8 +145,14 @@ void Settings::setDefaultSettings()
         s->setValue("log_input","false");
         s->setValue("log_orientation","false");
         s->setValue("log_chat","false");
+        s->setValue("log_infomsg","false");
+        s->setValue("log_emotes","false");
         s->setValue("log_target","false");
         s->setValue("log_spawn","false");
+        s->setValue("log_mapevents","false");
+        s->setValue("log_slashcommands","false");
+        s->setValue("log_description","false");
+        s->setValue("log_friends","false");
     s->endGroup();
     
     s->sync(); // sync changes or they wont be saved to file.
