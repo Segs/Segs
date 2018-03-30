@@ -29,6 +29,7 @@ uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char.m_db_id = val; e.m_db_id = val; }
+void    setMapIdx(Entity &e, uint32_t val) { e.m_entity_data.m_map_idx = val; }
 void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_spd = {v1,v2,v3}; }
 void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
 void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
@@ -176,6 +177,7 @@ Entity * getEntity(MapClient *src, const QString &name)
 {
     MapInstance *mi = src->current_map();
     EntityManager &em(mi->m_entities);
+    QString errormsg;
 
     // Iterate through all active entities and return entity by name
     for (Entity* pEnt : em.m_live_entlist)
@@ -183,7 +185,10 @@ Entity * getEntity(MapClient *src, const QString &name)
         if (pEnt->name() == name)
             return pEnt;
     }
-    qWarning() << "Entity" << name << "does not exist, or is not currently online.";
+
+    errormsg = "Entity " + name + " does not exist, or is not currently online.";
+    qWarning() << errormsg;
+    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
     return nullptr;
 }
 
@@ -191,9 +196,12 @@ Entity * getEntity(MapClient *src, const int32_t &idx)
 {
     MapInstance *mi = src->current_map();
     EntityManager &em(mi->m_entities);
+    QString errormsg;
 
     if(idx==0) {
-        qWarning() << "Entity" << idx << "does not exist, or is not currently online.";
+        errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
+        qWarning() << errormsg;
+        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
         return nullptr;
     }
     // Iterate through all active entities and return entity by idx
@@ -202,26 +210,35 @@ Entity * getEntity(MapClient *src, const int32_t &idx)
         if (pEnt->m_idx == idx)
             return pEnt;
     }
-    qWarning() << "Entity" << idx << "does not exist, or is not currently online.";
+
+    errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
+    qWarning() << errormsg;
+    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
     return nullptr;
 }
 
-Entity * getEntityByDBID(MapClient *src, const int32_t &idx)
+Entity * getEntityByDBID(MapClient *src, const int32_t &db_id)
 {
     MapInstance *mi = src->current_map();
     EntityManager &em(mi->m_entities);
+    QString errormsg;
 
-    if(idx==0) {
-        qWarning() << "Entity" << idx << "does not exist in the database.";
+    if(db_id==0) {
+        errormsg = "Entity " + QString::number(db_id) + " does not exist in the database.";
+        qWarning() << errormsg;
+        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
         return nullptr;
     }
     // TODO: Iterate through all entities in Database and return entity by db_id
     for (Entity* pEnt : em.m_live_entlist)
     {
-        if (pEnt->m_db_id == idx)
+        if (pEnt->m_db_id == db_id)
             return pEnt;
     }
-    qWarning() << "Entity with db_id" << idx << "does not exist, or is not currently online.";
+
+    errormsg = "Entity with db_id " + QString::number(db_id) + " does not exist, or is not currently online.";
+    qWarning() << errormsg;
+    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
     return nullptr;
 }
 
@@ -342,12 +359,74 @@ void toggleAFK(Character &c, const QString &msg)
         c.m_char_data.m_afk_msg = msg;
 }
 
-void    toggleLFG(Character &c) { c.m_char_data.m_lfg = !c.m_char_data.m_lfg; }
 void    toggleTeamBuffs(Character &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
 
 
-// sendInfoMessage wrapper to provide access to NetStructures
+/*
+ * Looking For Group
+ */
+void toggleLFG(Entity &e)
+{
+    CharacterData *cd = &e.m_char.m_char_data;
+
+    cd->m_lfg = !cd->m_lfg;
+
+    if(cd->m_lfg)
+    {
+        // TODO: increase LFG array size, and store cd info
+        sendTeamLooking(&e); // TODO: send lfg array only
+    }
+    else
+    {
+        // TODO: increase LFG array size, and store cd info
+        // sendTeamLooking(e); // again to update list/ui
+    }
+}
+
+
+/*
+ * sendInfoMessage wrapper to provide access to NetStructures
+ */
 void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
 {
     sendInfoMessage(ch, msg, tgt.m_client);
+}
+
+
+/*
+ * SendUpdate Wrappers to provide access to NetStructures
+ */
+void sendFriendsListUpdate(Entity *src, FriendsList *friends_list)
+{
+    qCDebug(logFriends) << "Sending FriendsList Update.";
+    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FriendsListUpdate>(new FriendsListUpdate(friends_list)));
+}
+void sendSidekickOffer(Entity *tgt, uint32_t src_db_id)
+{
+    qCDebug(logTeams) << "Sending Sidekick Offer" << tgt->name() << "from" << src_db_id;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<SidekickOffer>(new SidekickOffer(src_db_id)));
+}
+void sendTeamLooking(Entity *tgt)
+{
+    QString name        = tgt->name();
+    QString classname   = tgt->m_char.m_char_data.m_class_name;
+    QString origin      = tgt->m_char.m_char_data.m_origin_name;
+    uint32_t level      = tgt->m_char.m_char_data.m_level;
+
+    qCDebug(logTeams) << "Sending Team Looking" << tgt->name();
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamLooking>(new TeamLooking(name, classname, origin, level)));
+}
+void sendTeamOffer(Entity *src, Entity *tgt)
+{
+    QString name        = src->name();
+    uint32_t db_id      = tgt->m_db_id;
+    TeamOfferType type  = NoMission;
+
+    // Check for mission, send appropriate TeamOfferType
+    if(src->m_has_team && src->m_team != nullptr)
+        if(src->m_team->m_team_has_mission)
+            type = WithMission; // TODO: Check for invalid missions to send `LeaveMission` instead
+
+    qCDebug(logTeams) << "Sending Teamup Offer" << db_id << name << type;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
 }

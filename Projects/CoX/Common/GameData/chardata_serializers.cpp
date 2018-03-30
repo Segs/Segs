@@ -5,29 +5,33 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
-CEREAL_CLASS_VERSION(Friend, 1);        // register Friend struct version
-CEREAL_CLASS_VERSION(FriendsList, 1);    // register FriendList struct version
+CEREAL_CLASS_VERSION(Friend, 2);        // register Friend struct version
+CEREAL_CLASS_VERSION(FriendsList, 2);    // register FriendList struct version
 CEREAL_CLASS_VERSION(Sidekick, 1);      // register Sidekick struct version
 CEREAL_CLASS_VERSION(CharacterData, 5); // register CharacterData class version
 
 template<class Archive>
 void serialize(Archive &archive, Friend &fr, uint32_t const version)
 {
-    archive(cereal::make_nvp("FriendIdx", fr.fr_idx));
+    if(version < 2)
+        qCritical("Please update your CharacterDatabase Friend data.");
+
     archive(cereal::make_nvp("FriendOnline", fr.fr_online_status));
-    archive(cereal::make_nvp("FriendField0", fr.fr_field_0));
+    archive(cereal::make_nvp("FriendDbId", fr.fr_db_id));
     archive(cereal::make_nvp("FriendName", fr.fr_name));
     archive(cereal::make_nvp("FriendClass", fr.fr_class_idx));
     archive(cereal::make_nvp("FriendOrigin", fr.fr_origin_idx));
-    archive(cereal::make_nvp("FriendField8", fr.fr_field_8));
+    archive(cereal::make_nvp("FriendMapIdx", fr.fr_map_idx));
     archive(cereal::make_nvp("FriendMapname", fr.fr_mapname));
 }
 
 template<class Archive>
 void serialize(Archive &archive, FriendsList &fl, uint32_t const version)
 {
+    if(version < 2)
+        qCritical("Please update your CharacterDatabase FriendList data.");
+
     archive(cereal::make_nvp("HasFriends",fl.m_has_friends));
-    archive(cereal::make_nvp("FriendsV2",fl.m_friends_v2));
     archive(cereal::make_nvp("Friends",fl.m_friends));
     archive(cereal::make_nvp("FriendsCount",fl.m_friends_count));
 }

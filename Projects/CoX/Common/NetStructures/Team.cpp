@@ -127,20 +127,11 @@ bool makeTeamLeader(Entity &src, Entity &tgt)
 
 bool inviteTeam(Entity &src, Entity &tgt)
 {
-    if(tgt.m_has_team)
-    {
-        qCDebug(logTeams) << tgt.name() << "is already on a team.";
-        return false;
-    }
-
     if(!src.m_has_team)
     {
-        if(!src.m_has_team)
-        {
-            qCDebug(logTeams) << src.name() << "is forming a team.";
-            src.m_team = new Team;
-            src.m_team->addTeamMember(&src);
-        }
+        qCDebug(logTeams) << src.name() << "is forming a team.";
+        src.m_team = new Team;
+        src.m_team->addTeamMember(&src);
 
         tgt.m_team = src.m_team;
         src.m_team->addTeamMember(&tgt);
@@ -151,8 +142,13 @@ bool inviteTeam(Entity &src, Entity &tgt)
         src.m_team->addTeamMember(&tgt);
         return true;
     }
+    else
+    {
+        qCDebug(logTeams) << src.name() << "is not team leader.";
+        return false;
+    }
 
-    qCWarning(logTeams) << "how did we get here?";
+    qCWarning(logTeams) << "How did we get here in inviteTeam?";
     return false;
 }
 
@@ -192,7 +188,7 @@ bool isSidekickMentor(const Entity &e)
     return (e.m_char.m_char_data.m_sidekick.sk_type == SidekickType::IsMentor);
 }
 
-void addSidekick(Entity &src, Entity &tgt)
+void inviteSidekick(Entity &src, Entity &tgt)
 {
     QString     msg = "Unable to add sidekick.";
     Sidekick    &src_sk = src.m_char.m_char_data.m_sidekick;
@@ -215,30 +211,43 @@ void addSidekick(Entity &src, Entity &tgt)
         msg = "To Mentor another player, you must be on the same team.";
     else
     {
-        src_sk.sk_type = SidekickType::IsMentor;
-        tgt_sk.sk_type = SidekickType::IsSidekick;
-        setCombatLevel(tgt.m_char, src_lvl - 1);
-        // TODO: Implement 225 feet "leash" for sidekicks.
-
-        src_sk.sk_db_id = tgt.m_db_id;
+        // Store this here now for sidekick_accept / decline
         tgt_sk.sk_db_id = src.m_db_id;
-        src_sk.sk_has_sidekick = true;
-        tgt_sk.sk_has_sidekick = true;
 
-        msg = QString("%1 is now Mentoring %2.").arg(src.name(),tgt.name());
-        qDebug().noquote() << msg;
-
-        // Send message to each player
-        msg = QString("You are now Mentoring %1.").arg(tgt.name()); // Customize for src.
-        messageOutput(MessageChannel::TEAM, msg, src);
-        msg = QString("%1 is now Mentoring you.").arg(src.name()); // Customize for src.
-        messageOutput(MessageChannel::TEAM, msg, tgt);
-
+        // sendSidekickOffer
+        sendSidekickOffer(&tgt, src.m_db_id); // tgt gets dialog, src.db_id is named.
         return; // break early
     }
 
     qDebug().noquote() << msg;
     messageOutput(MessageChannel::USER_ERROR, msg, src);
+}
+
+void addSidekick(Entity &src, Entity &tgt)
+{
+    QString     msg;
+    Sidekick    &src_sk = src.m_char.m_char_data.m_sidekick;
+    Sidekick    &tgt_sk = tgt.m_char.m_char_data.m_sidekick;
+    uint32_t    src_lvl = getLevel(src.m_char);
+    uint32_t    tgt_lvl = getLevel(tgt.m_char);
+
+    src_sk.sk_has_sidekick = true;
+    tgt_sk.sk_has_sidekick = true;
+    src_sk.sk_db_id = tgt.m_db_id;
+    tgt_sk.sk_db_id = src.m_db_id;
+    src_sk.sk_type = SidekickType::IsMentor;
+    tgt_sk.sk_type = SidekickType::IsSidekick;
+    setCombatLevel(tgt.m_char, src_lvl - 1);
+    // TODO: Implement 225 feet "leash" for sidekicks.
+
+    msg = QString("%1 is now Mentoring %2.").arg(src.name(),tgt.name());
+    qDebug().noquote() << msg;
+
+    // Send message to each player
+    msg = QString("You are now Mentoring %1.").arg(tgt.name()); // Customize for src.
+    messageOutput(MessageChannel::TEAM, msg, src);
+    msg = QString("%1 is now Mentoring you.").arg(src.name()); // Customize for src.
+    messageOutput(MessageChannel::TEAM, msg, tgt);
 }
 
 void removeSidekick(Entity &src)

@@ -378,6 +378,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
 
     cl->current_map()->enqueue_client(cl);
     setMapName(cl->char_entity()->m_char,name());
+    setMapIdx(*cl->char_entity(),index());
     lnk->set_client_data(cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
 }
@@ -775,8 +776,26 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         }
         case MessageChannel::FRIENDS:
         {
-            // TODO: Only send the message to characters in sender's friendslist
+            FriendsList * fl = &sender->char_entity()->m_char.m_char_data.m_friendlist;
+            if(!fl->m_has_friends || fl->m_friends_count == 0)
+            {
+                prepared_chat_message = "You don't have any friends to message.";
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                break;
+            }
+            // Only send the message to characters in sender's friendslist
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
+            for(Friend &f : fl->m_friends)
+            {
+                if(f.fr_online_status != true)
+                    continue;
+
+                Entity *tgt = getEntityByDBID(sender,f.fr_db_id);
+                if(tgt == nullptr) // In case we didn't toggle online_status.
+                    continue;
+
+                sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,tgt->m_client);
+            }
             sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,sender);
             break;
         }
@@ -1478,7 +1497,7 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 
     setBattleCry(c,ev->battlecry);
     setDescription(c,ev->description);
-    qCWarning(logMapEvents) << "Attempted description and battlecry request:" << ev->description << ev->battlecry;
+    qCDebug(logDescription) << "Saving description and battlecry:" << ev->description << ev->battlecry;
 }
 
 void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
@@ -1487,15 +1506,17 @@ void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
 
-    Entity *tgt = nullptr;
-    if((tgt = getEntity(src,ev->entity_idx)) == nullptr)
+    Entity *tgt = getEntity(src,ev->entity_idx);
+    if(tgt == nullptr)
+    {
+        qCDebug(logMapEvents) << "No target active, doing nothing";
         return;
+    }
 
     QString description = getDescription(tgt->m_char);
 
-    // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
-    lnk->putq(new EntityInfoResponse(description));
-    qCDebug(logMapEvents) << "Entity info requested" << ev->entity_idx << description;
+    src->addCommandToSendNextUpdate(std::unique_ptr<EntityInfoResponse>(new EntityInfoResponse(description)));
+    qCDebug(logDescription) << "Entity info requested" << ev->entity_idx << description;
 }
 
 void MapInstance::on_client_options(SaveClientOptions * ev)

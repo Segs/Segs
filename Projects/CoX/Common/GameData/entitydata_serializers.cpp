@@ -4,16 +4,20 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
-CEREAL_CLASS_VERSION(EntityData, 2); // register EntityData class version
+CEREAL_CLASS_VERSION(EntityData, 3); // register EntityData class version
 
 template<class Archive>
 void serialize(Archive & archive, EntityData &ed, uint32_t const version)
 {
+    if(version < 3)
+        qCritical("Please update your CharacterDatabase EntityData.");
+
     archive(cereal::make_nvp("AccessLevel",ed.m_access_level));
     archive(cereal::make_nvp("OriginIdx",ed.m_origin_idx));
     archive(cereal::make_nvp("ClassIdx",ed.m_class_idx));
     archive(cereal::make_nvp("Position",ed.pos));
     archive(cereal::make_nvp("Orientation",ed.m_orientation_pyr));
+    archive(cereal::make_nvp("MapIdx",ed.m_map_idx));
 }
 
 void saveTo(const EntityData & target, const QString & baseName, bool text_format)

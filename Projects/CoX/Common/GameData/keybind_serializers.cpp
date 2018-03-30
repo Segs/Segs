@@ -20,6 +20,20 @@ ModKeys resolveMod(const QString &name)
         return *iter;
     return NO_MOD;
 }
+std::vector<Keybind> correctSecondaryBinds(std::vector<Keybind> &keybinds)
+{
+    QSet<QString> known_commands;
+    for(Keybind & bind : keybinds)  {
+        if(known_commands.contains(bind.Command)) {
+            qCDebug(logKeybinds) << "Found duplicate keybind " + bind.Command + " Setting to alternate.";
+            bind.IsSecondary = true;
+        }
+        else {
+            known_commands.insert(bind.Command);
+        }
+    }
+    return keybinds;
+}
 bool loadFrom(BinStore * s, Keybind & target)
 {
     s->prepare();
@@ -29,6 +43,7 @@ bool loadFrom(BinStore * s, Keybind & target)
     ok &= s->prepare_nested(); // will update the file size left
 
     QStringList combo = target.KeyString.split("+");
+
     if(combo.size() > 1)
     {
         target.Mods = resolveMod(combo.at(0));
@@ -65,6 +80,8 @@ bool loadFrom(BinStore * s, Keybind_Profiles & target)
             assert(!"unknown field referenced.");
         s->nest_out();
     }
+
+    target.KeybindArr = correctSecondaryBinds(target.KeybindArr);
 
     qCDebug(logKeybinds) << "Total Keybinds:" << target.KeybindArr.size();
 

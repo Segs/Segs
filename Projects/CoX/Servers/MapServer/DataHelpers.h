@@ -6,6 +6,7 @@ class QString;
 class Entity;
 class Character;
 class MapClient;
+struct FriendsList;
 
 /*
  * Entity Methods
@@ -23,6 +24,7 @@ uint8_t     getUpdateId(const Entity &e);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);
+void    setMapIdx(Entity &e, uint32_t val);
 void    setSpeed(Entity &e, float v1, float v2, float v3);
 void    setBackupSpd(Entity &e, float val);
 void    setJumpHeight(Entity &e, float val);
@@ -98,8 +100,25 @@ void    setBattleCry(Character &c, QString val);
 
 // Toggles
 void    toggleAFK(Character &c, const QString &msg = "");
-void    toggleLFG(Character &c);
 void    toggleTeamBuffs(Character &c);
 
-// sendInfoMessage wrapper
+
+/*
+ * Looking for Group
+ */
+void    toggleLFG(Entity &e);
+
+
+/*
+ * sendInfoMessage wrapper to provide access to NetStructures
+ */
 void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
+
+
+/*
+ * SendUpdate Wrappers to provide access to NetStructures
+ */
+void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
+void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
+void sendTeamLooking(Entity *tgt);
+void sendTeamOffer(Entity *src, Entity *tgt);

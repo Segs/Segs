@@ -491,6 +491,62 @@ bool CharacterDatabase::updateGUISettings( Entity *e )
         return false;
     return true;
 }
+// Query by character name or db_id
+CharacterFromDB * CharacterDatabase::getCharacter(int32_t db_id)
+{
+    CharacterFromDB ent;
+
+    m_prepared_entity_select.bindValue(":id",quint64(db_id));
+    if(!doIt(m_prepared_entity_select))
+        return nullptr;
+
+    if(!m_prepared_entity_select.next()) // retry with the first one
+    {
+        m_prepared_entity_select.bindValue(":id",quint64(db_id));
+        if(!doIt(m_prepared_entity_select))
+            return nullptr;
+        if(!m_prepared_entity_select.next()) {
+            qCDebug(logDB) << "Cannot find Character with ID" << db_id << "in database.";
+        }
+    }
+
+    ent.name = (STR_OR_EMPTY(m_prepared_entity_select.value("char_name").toString()));
+    ent.hitpoints = (m_prepared_entity_select.value("hitpoints").toUInt());
+    ent.endurance = (m_prepared_entity_select.value("endurance").toUInt());
+    ent.sg_id = (m_prepared_entity_select.value("supergroup_id").toUInt());
+
+    QString char_data;
+    char_data = (m_prepared_entity_select.value("chardata").toString());
+    serializeFromDb(ent.char_data,char_data);
+
+    QString entity_data;
+    entity_data = (m_prepared_entity_select.value("entitydata").toString());
+    serializeFromDb(ent.entity_data,entity_data);
+
+    return &ent;
+}
+
+CharacterFromDB * CharacterDatabase::getCharacter(const QString &name)
+{
+    m_prepared_char_exists.bindValue(0,name);
+    if(!doIt(m_prepared_char_exists))
+        return nullptr;
+
+    if(!m_prepared_char_exists.next()) // retry with the first one
+    {
+        m_prepared_char_exists.bindValue(0,name);
+        if(!doIt(m_prepared_char_exists))
+            return nullptr;
+        if(!m_prepared_char_exists.next()) {
+            qCDebug(logDB) << "Cannot find Character" << name << "in database.";
+            return nullptr;
+        }
+    }
+
+    uint32_t db_id = (m_prepared_char_select.value("id").toUInt());
+    return getCharacter(db_id);
+}
+
 #ifdef DEFINED_ARRAYSIZE
 #undef DEFINED_ARRAYSIZE
 #undef ARRAYSIZE

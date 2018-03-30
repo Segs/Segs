@@ -58,6 +58,7 @@ class RemoveKeybind;
 class MapInstance : public EventProcessor
 {
     QString                m_name;
+    uint32_t               m_index = 1; // what does client expect this to store, and where do we send it?
     SEGSTimer *            m_world_update_timer;
     SEGSTimer *            m_resend_timer;
 
@@ -81,6 +82,7 @@ public:
     void   set_server(MapServer *s) { m_server = s; }
     size_t num_active_clients();
     const QString &     name() const { return m_name; }
+    const uint32_t &    index() const { return m_index; }
 
 protected:
     void process_chat(MapClient *sender, QString &msg_text);
@@ -129,8 +131,6 @@ protected:
     void on_reset_keybinds(class ResetKeybinds *ev);
     void on_set_keybind(class SetKeybind *ev);
     void on_remove_keybind(class RemoveKeybind *ev);
-    void on_friendslist_update(class FriendsListUpdate *ev);
-
 private:
     void on_emote_command(QString command, Entity *ent);
 };

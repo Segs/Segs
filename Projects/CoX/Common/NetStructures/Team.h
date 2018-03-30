@@ -58,5 +58,6 @@ void findTeamMember(Entity &tgt);
  * Sidekick Methods -- Sidekick system requires teaming.
  */
 bool isSidekickMentor(const Entity &e);
+void inviteSidekick(Entity &src, Entity &tgt);
 void addSidekick(Entity &src, Entity &tgt);
 void removeSidekick(Entity &src);

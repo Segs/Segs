@@ -49,7 +49,7 @@ void Character::reset()
     m_char_data.m_class_name="EMPTY";
     m_char_data.m_origin_name="EMPTY";
     m_villain=false;
-    m_char_data.m_mapName="EMPTY";
+    m_char_data.m_mapName="OFFLINE";
     m_multiple_costumes=false;
     m_current_costume_idx=0;
     m_current_costume_set=false;
@@ -418,13 +418,13 @@ void Character::sendTeamBuffMode(BitStream &bs) const
 }
 void Character::sendDockMode(BitStream &bs) const
 {
-    bs.StoreBits(32,m_gui.m_tray1_number); // unused on the client
-    bs.StoreBits(32,m_gui.m_tray2_number); // TODO: power trays?
+    bs.StoreBits(32,m_gui.m_tray1_number); // Tray #1 Page
+    bs.StoreBits(32,m_gui.m_tray2_number); // Tray #2 Page
 }
 void Character::sendChatSettings(BitStream &bs) const
 {
     //int i;
-    bs.StoreFloat(m_gui.m_chat_transparency); // chat window transparency
+    bs.StoreFloat(m_gui.m_chat_divider_pos); // chat divider position
     bs.StorePackedBits(1,m_gui.m_chat_top_flags); // bitmask of channels (top window )
     bs.StorePackedBits(1,m_gui.m_chat_bottom_flags); // bitmask of channels (bottom )
     bs.StorePackedBits(1,m_gui.m_cur_chat_channel); // selected channel, Local=10, 11 broadcast,
@@ -530,23 +530,22 @@ void Character::sendKeybinds(BitStream &bs) const
 void Character::sendFriendList(BitStream &bs) const
 {
     const FriendsList *fl(&m_char_data.m_friendlist);
-    bs.StorePackedBits(1,fl->m_friends_v2); // v2
+    bs.StorePackedBits(1,1); // v2 = force_update
     bs.StorePackedBits(1,fl->m_friends_count);
 
     for(int i=0; i<fl->m_friends_count; ++i)
     {
         bs.StoreBits(1,fl->m_has_friends); // if false, client will skip this iteration
-        bs.StorePackedBits(1,fl->m_friends[i].fr_field_0);
+        bs.StorePackedBits(1,fl->m_friends[i].fr_db_id);
         bs.StoreBits(1,fl->m_friends[i].fr_online_status);
         bs.StoreString(fl->m_friends[i].fr_name);
         bs.StorePackedBits(1,fl->m_friends[i].fr_class_idx);
         bs.StorePackedBits(1,fl->m_friends[i].fr_origin_idx);
 
         if(!fl->m_friends[i].fr_online_status)
-            continue;
+            continue; // if friend is offline, the rest is skipped
 
-        // if friend is offline, these will be skipped
-        bs.StorePackedBits(1,fl->m_friends[i].fr_field_8);
+        bs.StorePackedBits(1,fl->m_friends[i].fr_map_idx);
         bs.StoreString(fl->m_friends[i].fr_mapname);
     }
 }

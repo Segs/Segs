@@ -120,7 +120,6 @@ public:
         int         m_tray1_number      = 1;
         int         m_tray2_number      = 2;
         int         m_tray3_number      = 3;
-        float       m_chat_transparency = 0.8f;
         int         m_chat_top_flags    = 0x5D87F; // orig: (1<<19)-1
         int         m_chat_bottom_flags = 0x22780;
         float       m_chat_divider_pos  = 0.5f;
@@ -135,7 +134,6 @@ public:
                                << "\n\t" << "Tray1 Page:" << m_tray1_number
                                << "\n\t" << "Tray2 Page:" << m_tray2_number
                                << "\n\t" << "Tray3 Page:" << m_tray3_number
-                               << "\n\t" << "Chat Transparency:" << m_chat_transparency
                                << "\n\t" << "Chat Window Masks Top:" << m_chat_top_flags
                                << "\n\t" << "Chat Window Masks Bottom:" << m_chat_bottom_flags
                                << "\n\t" << "Chat Divider Position:" << m_chat_divider_pos;

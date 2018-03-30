@@ -616,3 +616,6 @@ public:
 #include "Events/SaveClientOptions.h"
 #include "Events/SceneEvent.h"
 #include "Events/Shortcuts.h"
+#include "Events/SidekickOffer.h"
+#include "Events/TeamLooking.h"
+#include "Events/TeamOffer.h"

@@ -21,26 +21,24 @@ struct FriendsResults
 
 struct Friend
 {
-    uint32_t    fr_idx;
     bool        fr_online_status;
-    int         fr_field_0;         // unknown Packed Bits
+    int         fr_db_id;         // m_db_id
     QString     fr_name;
     uint8_t     fr_class_idx;
     uint8_t     fr_origin_idx;
-    int         fr_field_8;         // if online, then these Packed Bits
+    int         fr_map_idx;         // if online, then these Packed Bits
     QString     fr_mapname;         // field_18, probably mapname
 };
 
 struct FriendsList
 {
     bool        m_has_friends;
-    int         m_friends_v2;               // v2, unknown Packed Bits
     int         m_friends_count     = 0;    // v12
     std::vector<Friend> m_friends;
 };
 
 void addFriend(Entity &src, Entity &tgt);
-void removeFriend(Entity &src);
+void removeFriend(Entity &src, Entity &tgt);
 int findFriendByIdx(uint32_t &idx);
 int findFriendByName(QString &name);
 void toggleFriendList(Entity &src);

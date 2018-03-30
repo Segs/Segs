@@ -57,4 +57,6 @@ virtual             ~CharacterDatabase();
         void        setDb(QSqlDatabase *db) {m_db=db;}
         QSqlDatabase *getDb() {return m_db;}
         void        on_connected(QSqlDatabase *db); //prepare statements here
+        CharacterFromDB *getCharacter(const QString &name);
+        CharacterFromDB *getCharacter(int32_t db_id);
 };

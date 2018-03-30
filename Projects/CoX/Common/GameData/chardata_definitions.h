@@ -40,6 +40,7 @@ struct CharacterData
     QString     m_class_name;
     QString     m_origin_name;
     QString     m_mapName;
+    uint32_t    m_mapIdx;
     bool        m_supergroup_costume;       // player has a sg costume
     bool        m_using_sg_costume;         // player uses sg costume currently
     Sidekick    m_sidekick;                 // Sidekick Struct

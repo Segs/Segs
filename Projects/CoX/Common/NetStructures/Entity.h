@@ -147,6 +147,19 @@ enum class FadeDirection
     In,
     Out
 };
+
+// returned by getEntityFromDB()
+struct CharacterFromDB
+{
+    QString         name;
+    EntityData      entity_data;
+    CharacterData   char_data;
+    float           hitpoints;
+    float           endurance;
+    uint32_t        sg_id;
+    uint32_t        m_db_id;
+};
+
 class Entity
 {
     // only EntityStore can create instances of this class

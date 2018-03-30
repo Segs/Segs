@@ -63,16 +63,20 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"lfg"}, &cmdHandler_LFG, 1},
     {{"motd"}, &cmdHandler_MOTD, 1},
     {{"i","invite"}, &cmdHandler_Invite, 1},
+    {{"team_accept"}, &cmdHandler_TeamAccept, 1},
+    {{"team_decline"}, &cmdHandler_TeamDecline, 1},
     {{"k","kick"}, &cmdHandler_Kick, 1},
     {{"leaveteam"}, &cmdHandler_LeaveTeam, 1},
     {{"findmember"}, &cmdHandler_FindMember, 1},
     {{"makeleader","ml"}, &cmdHandler_MakeLeader, 1},
     {{"assist"}, &cmdHandler_SetAssistTarget, 1},
     {{"sidekick","sk"}, &cmdHandler_Sidekick, 1},
+    {{"sidekick_accept"}, &cmdHandler_SidekickAccept, 1},
+    {{"sidekick_decline"}, &cmdHandler_SidekickDecline, 1},
     {{"unsidekick","unsk"}, &cmdHandler_UnSidekick, 1},
     {{"buffs"}, &cmdHandler_TeamBuffs, 1},
     {{"friend"}, &cmdHandler_Friend, 1},
-    {{"unfriend"}, &cmdHandler_Unfriend, 1},
+    {{"unfriend","estrange"}, &cmdHandler_Unfriend, 1},
     {{"friendlist", "fl"}, &cmdHandler_FriendList, 1}
 };
 
@@ -699,7 +703,7 @@ void cmdHandler_Stuck(QString &cmd, Entity *e) {
 void cmdHandler_LFG(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
-    toggleLFG(e->m_char);
+    toggleLFG(*e);
 
     QString msg = "Toggling " + cmd;
     qCDebug(logSlashCommand) << msg;
@@ -735,12 +739,87 @@ void cmdHandler_Invite(QString &cmd, Entity *e) {
     if(tgt == nullptr)
         return;
 
-    if(inviteTeam(*e,*tgt))
-        msg = "Inviting " + name + " to team.";
-    else
-        msg = "Failed to invite " + name + ". They are already on a team.";
+    if(tgt->m_has_team)
+    {
+        msg = tgt->name() + " is already on a team.";
+        qCDebug(logTeams) << msg;
+        sendInfoMessage(MessageChannel::SERVER, msg, src);
+        return;
+    }
 
+    if(e->m_has_team && e->m_team != nullptr)
+    {
+        if(!e->m_team->isTeamLeader(e))
+        {
+            msg = "Only the team leader can invite players to the team.";
+            qCDebug(logTeams) << e->name() << msg;
+            sendInfoMessage(MessageChannel::TEAM, msg, src);
+            return;
+        }
+    }
+
+    sendTeamOffer(e,tgt);
+}
+
+void cmdHandler_TeamAccept(QString &cmd, Entity *e) {
+    // game command: "team_accept \"From\" to_db_id to_db_id \"To\""
+    MapClient *src = e->m_client;
+
+    QString msgfrom = "Something went wrong with TeamAccept.";
+    QString msgtgt = "Something went wrong with TeamAccept.";
+    QStringList args;
+    args = cmd.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    QString from_name       = args.value(1);
+    uint32_t tgt_db_id      = args.value(2).toInt();
+    uint32_t tgt_db_id_2    = args.value(3).toInt(); // always the same?
+    QString tgt_name        = args.value(4);
+
+    if(tgt_db_id != tgt_db_id_2)
+        qWarning() << "TeamAccept db_ids do not match!";
+
+    Entity *from_ent = getEntity(src,from_name);
+    if(from_ent == nullptr)
+        return;
+
+    if(inviteTeam(*from_ent,*e))
+    {
+        msgfrom = "Inviting " + tgt_name + " to team.";
+        msgtgt = "Joining " + from_name + "'s team.";
+
+    }
+    else
+    {
+        msgfrom = "Failed to invite " + tgt_name + ". They are already on a team.";
+    }
+
+    qCDebug(logSlashCommand).noquote() << msgfrom;
+    sendInfoMessage(MessageChannel::TEAM, msgfrom, from_ent->m_client);
+    sendInfoMessage(MessageChannel::TEAM, msgtgt, src);
+}
+
+void cmdHandler_TeamDecline(QString &cmd, Entity *e) {
+    // game command: "team_decline \"From\" to_db_id \"To\""
+    MapClient *src = e->m_client;
+
+    QString msg;
+    QStringList args;
+    args = cmd.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    QString from_name   = args.value(1);
+    uint32_t tgt_db_id  = args.value(2).toInt();
+    QString tgt_name    = args.value(3);
+
+    Entity *from_ent = getEntity(src,from_name);
+    if(from_ent == nullptr)
+        return;
+
+    msg = tgt_name + " declined a team invite from " + from_name + QString::number(tgt_db_id);
     qCDebug(logSlashCommand).noquote() << msg;
+
+    msg = tgt_name + " declined your team invite."; // to sender
+    sendInfoMessage(MessageChannel::TEAM, msg, from_ent->m_client);
+    msg = "You declined the team invite from " + from_name; // to target
     sendInfoMessage(MessageChannel::TEAM, msg, src);
 }
 
@@ -830,7 +909,8 @@ void cmdHandler_SetAssistTarget(QString &cmd, Entity *e) {
     sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
 }
 
-void cmdHandler_Sidekick(QString &cmd, Entity *e) {
+void cmdHandler_Sidekick(QString &cmd, Entity *e)
+{
     MapClient *src = e->m_client;
     Entity *tgt = nullptr;
 
@@ -848,10 +928,28 @@ void cmdHandler_Sidekick(QString &cmd, Entity *e) {
     if(tgt == nullptr || e->m_char.isEmpty() || tgt->m_char.isEmpty())
         return;
 
+    inviteSidekick(*e,*tgt);
+}
+
+void cmdHandler_SidekickAccept(QString &cmd, Entity *e)
+{
+    MapClient *src  = e->m_client;
+    uint32_t db_id  = e->m_char.m_char_data.m_sidekick.sk_db_id;
+    Entity *tgt     = getEntityByDBID(src,db_id);
+
+    if(tgt == nullptr || e->m_char.isEmpty() || tgt->m_char.isEmpty())
+        return;
+
     addSidekick(*e,*tgt);
 }
 
-void cmdHandler_UnSidekick(QString &cmd, Entity *e) {
+void cmdHandler_SidekickDecline(QString &cmd, Entity *e)
+{
+    e->m_char.m_char_data.m_sidekick.sk_db_id = 0;
+}
+
+void cmdHandler_UnSidekick(QString &cmd, Entity *e)
+{
     MapClient *src = e->m_client;
 
     if(e->m_char.isEmpty())
@@ -877,7 +975,6 @@ void cmdHandler_Friend(QString &cmd, Entity *e) {
 
     if(space == -1 || name.isEmpty())
     {
-        // TODO: Implement getCharacterFromDB(name)
         tgt = getEntity(src,getTargetIdx(*e));
         name = tgt->name();
     }
@@ -892,11 +989,25 @@ void cmdHandler_Friend(QString &cmd, Entity *e) {
 
 void cmdHandler_Unfriend(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
 
-    if(e->m_char.isEmpty())
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(src,name);
+
+    if(tgt == nullptr || e->m_char.isEmpty() || tgt->m_char.isEmpty())
         return;
 
-    removeFriend(*e);
+    // TODO: Implement getCharacterFromDB(name) if target is not online.
+
+    removeFriend(*e,*tgt);
 }
 
 void cmdHandler_FriendList(QString &cmd, Entity *e) {

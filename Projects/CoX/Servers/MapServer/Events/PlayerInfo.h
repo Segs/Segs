@@ -12,17 +12,16 @@
 #include "MapEvents.h"
 #include "MapLink.h"
 
-class EntityInfoResponse final : public MapLinkEvent
+class EntityInfoResponse final : public GameCommand
 {
 public:
     QString m_info_text;
-    EntityInfoResponse (const QString &txt) : MapLinkEvent(MapEventTypes::evEntityInfoResponse),m_info_text(txt) {}
-    void serializefrom(BitStream &bs) override
-    {
-        assert(!"implemented");
-    }
+    EntityInfoResponse (const QString &txt) : GameCommand(MapEventTypes::evEntityInfoResponse),m_info_text(txt) {}
+    void serializefrom(BitStream &bs);
+
     void serializeto(BitStream &bs) const override
     {
+        qCDebug(logMapEvents) << "Info Response: " << m_info_text;
         bs.StorePackedBits(1, 69);
         bs.StoreString(m_info_text);
     }

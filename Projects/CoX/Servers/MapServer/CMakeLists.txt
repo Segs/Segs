@@ -54,7 +54,10 @@ SET(target_INCLUDE
     Events/SaveClientOptions.h
     Events/SceneEvent.h
     Events/Shortcuts.h
+    Events/SidekickOffer.h
     Events/StandardDialogCmd.h
+    Events/TeamLooking.h
+    Events/TeamOffer.h
     Events/InfoMessageCmd.h
     Events/WindowState.h
     MapClient.h
