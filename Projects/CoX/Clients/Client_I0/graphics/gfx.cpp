@@ -140,7 +140,7 @@ extern "C" {
     __declspec(dllimport) GfxTree_Node * sky_gfx_tree_root;
     __declspec(dllimport) GfxTree_Node *gfxtree_node_7B8FDC; // sun node
     __declspec(dllimport) CameraInfo cam_info;
-    __declspec(dllimport) FogVals struct_7B8DD8[2]; // indoor fog 
+    __declspec(dllimport) FogVals struct_7B8DD8[2]; // indoor fog
     __declspec(dllimport) FogVals struct_7B8E0C; // current fog
     __declspec(dllimport) Parsed_SkyScene parsed_scene;
 }
@@ -293,9 +293,7 @@ void drawFlatBox(int x1, int y1, int x2, int y2, uint32_t color)
 void segs_setSunLight(Matrix4x3 *view_mat)
 {
     Vector4 params;
-    Matrix4x4 gl_mat;
-    
-    gl_mat = *view_mat;
+    Matrix4x4 gl_mat = *view_mat;
     glLoadMatrixf(gl_mat.data());
     glEnable(GL_LIGHTING);
     segs_wcw_statemgmt_enableColorMaterial();
@@ -466,7 +464,7 @@ static void indoorFogBlend()
 }
 static void setSkyFog(Parse_SkyTime *early, Parse_SkyTime *late, float ratio)
 {
-    Vector2 fogdist; 
+    Vector2 fogdist;
     int i;
     float fogheightratio;
 
@@ -511,7 +509,7 @@ static void setSkyFog(Parse_SkyTime *early, Parse_SkyTime *late, float ratio)
     fogcolor = LinearInterpolateVectors(fogcolor, highfogcolor, fogheightratio); ;
     if (g_State.view.fogcolor.x != 0.0 || g_State.view.fogcolor.y != 0.0 || g_State.view.fogcolor.z != 0.0)
     {
-        fogcolor = g_State.view.fogcolor * 0.0039215689f;
+        fogcolor = g_State.view.fogcolor * (1.0f/255.0f);
     }
     struct_7B8E0C.color = fogcolor;
 }
@@ -540,15 +538,15 @@ void __cdecl fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *c
         Vector3 pyr;
     };
     const static CelestialFixups objects[9] = {
-        { 1.0,{ 0.0,  1.9634954,  3.1415927 } },
-        { 1.0,{ -0.61086524,  0.0,  0.0 } },
-        { 1.0,{ 3.2288592,  1.3089969,  0.61086524 } },
-        { 1.3,{ 3.1415927, -0.78539819,  0.0 } },
-        { 2.0,{ 3.1415927,  1.5707964, -0.78539819 } },
-        { 5.0,{ 0.08726646,  0.0,  1.3962634 } },
-        { 0.5,{ 0.17453292,  1.2217305, -1.3962634 } },
-        { 1.0,{ 0.2617994, -1.134464,  0.0 } },
-        { 0.1,{ 0.0, -0.52359879,  0.6457718 } }
+        { 1.0f,{ 0.0,  1.9634954,  3.1415927 } },
+        { 1.0f,{ -0.61086524,  0.0,  0.0 } },
+        { 1.0f,{ 3.2288592,  1.3089969,  0.61086524 } },
+        { 1.3f,{ 3.1415927, -0.78539819,  0.0 } },
+        { 2.0f,{ 3.1415927,  1.5707964, -0.78539819 } },
+        { 5.0f,{ 0.08726646,  0.0,  1.3962634 } },
+        { 0.5f,{ 0.17453292,  1.2217305, -1.3962634 } },
+        { 1.0f,{ 0.2617994, -1.134464,  0.0 } },
+        { 0.1f,{ 0.0, -0.52359879,  0.6457718 } }
     };
     Matrix4x3 dest;
     Matrix4x3 to;
@@ -561,13 +559,13 @@ void __cdecl fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *c
         to.TranslationPart = *cam_pos;
         fn_5B6740(dword_7B8E08->pyr.y, &to.ref3()); //yawMat3
         fn_5B6840(dword_7B8E08->pyr.z, &to.ref3()); //rollMat3
-        float angle = rot * dword_7B8E08->speed - 3.141592653589793 + dword_7B8E08->pyr.x;
+        float angle = rot * dword_7B8E08->speed - M_PI + dword_7B8E08->pyr.x;
         pitchMat3(angle, &to.ref3());
         dest.r1 = { 1,0,0 };
         dest.r2 = { 0,1,0 };
         dest.r3 = { 0,0,1 };
-        pitchMat3(-1.5707964, &dest.ref3());
-        dest.TranslationPart.y = add_dist + 7500.0;
+        pitchMat3(-1.5707964f, &dest.ref3());
+        dest.TranslationPart.y = add_dist + 7500.0f;
         dest.TranslationPart.x = 3000.0;
         node->mat = to * dest;
         Matrix3x3__scale(&node->mat.ref3(), &node->mat.ref3(), scale);
@@ -584,20 +582,20 @@ static void setGlobalShadowColor(Vector4 *earlyShadowColor, Vector4 *lateShadowC
     }
     else
     {
-        g_sun.shadowcolor.x = (1.0 - ratio) * earlyShadowColor->x + ratio * lateShadowColor->x;
-        g_sun.shadowcolor.y = (1.0 - ratio) * earlyShadowColor->y + ratio * lateShadowColor->y;
-        g_sun.shadowcolor.z = (1.0 - ratio) * earlyShadowColor->z + ratio * lateShadowColor->z;
-        g_sun.shadowcolor.w = (1.0 - ratio) * earlyShadowColor->w + ratio * lateShadowColor->w;
+        g_sun.shadowcolor.x = (1.0f - ratio) * earlyShadowColor->x + ratio * lateShadowColor->x;
+        g_sun.shadowcolor.y = (1.0f - ratio) * earlyShadowColor->y + ratio * lateShadowColor->y;
+        g_sun.shadowcolor.z = (1.0f - ratio) * earlyShadowColor->z + ratio * lateShadowColor->z;
+        g_sun.shadowcolor.w = (1.0f - ratio) * earlyShadowColor->w + ratio * lateShadowColor->w;
     }
 }
 void segs_sun_sunUpdate(int init)
 {
-    float tmp; 
+    float tmp;
     int time_idx;
     int nexttime_idx;
-    float fogtimefade; 
+    float fogtimefade;
     Vector3 player_offset;
-    float ratio; 
+    float ratio;
     auto copyvs = server_visible_state;
     float _time = server_visible_state.timescale * g_TIMESTEP / 108000.0 + server_visible_state.map_time_of_day;
     _time = fixTime(_time);
@@ -681,7 +679,7 @@ void segs_sun_sunUpdate(int init)
     {
         float t_dist = fixTime(_time - early->time);
         float t_len  = fixTime(late->time - early->time);
-        ratio        = t_len == 0.0 ? 0.0 : t_dist / t_len;
+        ratio        = t_len == 0.0f ? 0.0 : t_dist / t_len;
         ratio        = std::max(0.0f, std::min(1.0f, ratio));
     }
     for (int i = 0; i < parsed_sky.sun_time_count; ++i)
@@ -694,12 +692,12 @@ void segs_sun_sunUpdate(int init)
         r = 0.0;
     if (early->sky)
     {
-        gfxNodeSetAlpha(early->sky, int32_t((1.0 - r) * 255.0), 1);
+        gfxNodeSetAlpha(early->sky, int32_t((1.0f - r) * 255.0f), 1);
         early->sky->mat.TranslationPart = player_offset + early->skypos;
     }
     if (late->sky)
     {
-        gfxNodeSetAlpha(late->sky, int32_t(r * 255.0), 1);
+        gfxNodeSetAlpha(late->sky, int32_t(r * 255.0f), 1);
         late->sky->mat.TranslationPart = player_offset + late->skypos;
     }
     if (struct_7B8DD8[0].valid)
@@ -735,22 +733,15 @@ void segs_sun_sunUpdate(int init)
     setGlobalShadowColor(&early->shadowcolor, &late->shadowcolor, ratio);
     Vector3 ambient      = LinearInterpolateVectors(early->ambient, late->ambient, ratio);
     Vector3 diffuse      = LinearInterpolateVectors(early->diffuse, late->diffuse, ratio);
-    g_sun.ambient.ref3() = ambient * 63.0;
-    g_sun.diffuse.ref3() = diffuse * 63.0;
-    g_sun.ambient.x      = g_sun.ambient.x * 0.0039215689;
-    g_sun.ambient.y      = g_sun.ambient.y * 0.0039215689;
-    g_sun.ambient.z      = g_sun.ambient.z * 0.0039215689;
-    g_sun.diffuse.x      = g_sun.diffuse.x * 0.0039215689;
-    g_sun.diffuse.y      = g_sun.diffuse.y * 0.0039215689;
-    g_sun.diffuse.z      = g_sun.diffuse.z * 0.0039215689;
+    g_sun.ambient.ref3() = (ambient * 63.0)/255.0f;
+    g_sun.diffuse.ref3() = (diffuse * 63.0)/255.0f;
     if (celestial_objects[0].node)
     {
         g_sun.direction = celestial_objects[0].node->mat.TranslationPart - player_offset;
         g_sun.position  = celestial_objects[0].node->mat.TranslationPart;
     }
     g_sun.direction.ref3().normalize();
-    if (g_sun.direction.y < 0.0)
-        g_sun.direction.y        = -g_sun.direction.y;
+    g_sun.direction.y = std::abs(g_sun.direction.y);
     const float MAXIMUM_AMBIENT        = 1.0;
     const float MAXIMUM_PLAYER_AMBIENT = 1.0;
     const float MAXIMUM_DIFFUSE        = 1.0;

@@ -5,6 +5,7 @@
 #include "GL/glew.h"
 
 #include <stdint.h>
+#include <initializer_list>
 
 enum ClientStates : int
 {
@@ -73,3 +74,4 @@ extern void  segs_setShaderConstant(GLuint idx, Vector4 *v);
 extern void segs_setupShading(DrawMode vertex_mode, eBlendMode pixel_mode);
 extern void  segs_wcw_statemgmt_bindTexture(GLenum target, signed int idx, GLuint texture);
 extern void  segs_texSetAllToWhite();
+extern void  segs_disableGlClientStates(std::initializer_list<ClientStates> states);
