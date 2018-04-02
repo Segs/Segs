@@ -27,8 +27,9 @@ AuthLinkEvent *AuthEventFactory::EventForType(eAuthPacketType type)
             return new ReconnectAttempt();
         case MSG_AUTH_UNKNOWN:
             return nullptr;
+        default:
+            assert(!"unimplemented auth packet type");
     }
-    assert(!"unimplemented auth packet type");
     return nullptr;
 }
 void AuthEventFactory::Destroy(AuthLinkEvent *what)

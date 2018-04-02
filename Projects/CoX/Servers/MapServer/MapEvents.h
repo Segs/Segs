@@ -156,8 +156,9 @@ public:
     {
         bs.StorePackedBits(1,4);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &/*bs*/)
     {
+        assert(!"Unimplemented");
     }
 };
 
@@ -426,8 +427,9 @@ public:
     {
         bs.StorePackedBits(1,33);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &/*bs*/)
     {
+        assert(!"Unimplemented");
     }
 };
 class DescriptionAndBattleCry final : public MapLinkEvent

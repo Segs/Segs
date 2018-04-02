@@ -6,8 +6,8 @@
 *
 */
 
-#define VersionString "segs v0.4.0 alpha (The Real Beginning)";
-#define CopyrightString "Super Entity Game Server\nhttp://github.com/Segs/\nCopyright (c) 2006-2017 Super Entity Game Server Team (see Authors.txt)\nThis software is licensed! (See License.txt for details)\n";
+#define VersionString "segs v0.4.2 (The Real Beginning)";
+#define CopyrightString "Super Entity Game Server\nhttp://github.com/Segs/\nCopyright (c) 2006-2018 Super Entity Game Server Team (see Authors.txt)\nThis software is licensed! (See License.txt for details)\n";
 //const char *AdminVersionString="Undefined";
 //const char *AuthVersionString="Undefined";
 //const char *GameVersionString="Undefined";

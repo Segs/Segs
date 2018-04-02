@@ -45,8 +45,9 @@ public:
     MessageChannel  m_channel_type;
     int             m_source_player_id;
     int             m_target_player_id;
-                    ChatMessage(MessageChannel t, QString msg) : GameCommand(MapEventTypes::evChatMessage),
-                        m_channel_type(t),m_msg(msg)
+    virtual         ~ChatMessage() = default;
+                    ChatMessage(MessageChannel t, const QString &msg) : GameCommand(MapEventTypes::evChatMessage),
+                        m_msg(msg),m_channel_type(t)
                     {
                     }
     void            serializeto(BitStream &bs) const override;

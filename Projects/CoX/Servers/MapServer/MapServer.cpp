@@ -113,10 +113,10 @@ bool MapServer::ReadConfig()
     if(!RoamingServer::ReadConfig()) // try to read control channel configuration
         return false;
 
-    if(!config->contains("listen_addr"))
-        qDebug() << "Config file is missing 'listen_addr' entry, will try to use default";
-    if(!config->contains("location_addr"))
-        qDebug() << "Config file is missing 'location_addr' entry, will try to use default";
+    if(!config->contains(QStringLiteral("listen_addr")))
+        qDebug() << "Config file is missing 'listen_addr' entry in MapServer group, will try to use default";
+    if(!config->contains(QStringLiteral("location_addr")))
+        qDebug() << "Config file is missing 'location_addr' entry in MapServer group, will try to use default";
 
     QString listen_addr = config->value("listen_addr","127.0.0.1:7003").toString();
     QString location_addr = config->value("location_addr","127.0.0.1:7003").toString();
