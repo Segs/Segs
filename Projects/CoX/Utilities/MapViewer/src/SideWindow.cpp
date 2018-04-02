@@ -61,15 +61,16 @@ void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
 {
     if(!m) 
     {
-        ui->txtModelName->setText("none");
-        ui->txtTrickName->setText("none");
+        ui->txtModelName->setText(QStringLiteral("none"));
+        ui->txtTrickName->setText(QStringLiteral("none"));
         ui->matDescriptionTxt->clear();
         return;
     }
 
     ui->matDescriptionTxt->clear();
-    auto parts = m->name.split("__");
+    auto parts = m->name.split(QStringLiteral("__"));
     ui->txtModelName->setText(parts.front());
+
     if(parts.size()>2)
         qDebug() << "Too many double underscores in name:"<<m->name;
     if(parts.size()==2)

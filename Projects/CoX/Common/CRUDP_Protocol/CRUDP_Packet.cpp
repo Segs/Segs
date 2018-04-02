@@ -23,7 +23,7 @@ CrudP_Packet::CrudP_Packet()
     m_retransmit_count = 0;
 }
 
-CrudP_Packet::CrudP_Packet(BitStream *stream, bool hasDebugInfo)
+CrudP_Packet::CrudP_Packet(BitStream *stream, bool /*hasDebugInfo*/)
 {
     m_stream        = stream;
     m_finalized     = false;

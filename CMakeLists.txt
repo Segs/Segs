@@ -78,7 +78,7 @@ ENDIF()
 find_package(Qt5 COMPONENTS Core Sql REQUIRED)
 
 link_directories(${ThirdParty_Install_Dir}/lib)
-include_directories(${ThirdParty_Install_Dir}/include)
+include_directories(SYSTEM ${ThirdParty_Install_Dir}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 include_directories(Components)
