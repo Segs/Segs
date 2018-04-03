@@ -32,7 +32,6 @@ void sendChatMessage(MessageChannel t, QString msg, MapClient *src, MapClient *t
 
     tgt->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
 
-
     qCDebug(logChat).noquote() << "ChatMessage:"
              << "\n  Channel:" << int(res->m_channel_type)
              << "\n  Source:" << res->m_source_player_id

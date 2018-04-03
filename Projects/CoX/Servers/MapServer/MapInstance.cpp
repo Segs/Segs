@@ -705,11 +705,13 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         case MessageChannel::PRIVATE:
         {
             int first_comma = msg_text.indexOf(',');
-            QStringRef target_name_ref(msg_text.midRef(first_space+1,first_comma-2));
+            QStringRef target_name_ref(msg_text.midRef(first_space+1,(first_comma - first_space-1)));
             msg_content = msg_text.midRef(first_comma+1,msg_text.lastIndexOf("\n"));
 
             QString target_name = target_name_ref.toString();
-            qCDebug(logChat) << "target_name" << target_name;
+            qCDebug(logChat) << "Private Chat:"
+                             << "\n\t" << "target_name:" << target_name
+                             << "\n\t" << "msg_text:" << msg_text;
 
             Entity *tgt = getEntity(sender,target_name);
 

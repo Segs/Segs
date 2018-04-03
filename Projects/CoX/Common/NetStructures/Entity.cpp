@@ -7,6 +7,8 @@
  */
 #define _USE_MATH_DEFINES
 #include "Entity.h"
+#include "LFG.h"
+#include "Team.h"
 #include "Servers/MapServer/DataHelpers.h"
 
 #include <QtCore/QDebug>
@@ -49,6 +51,8 @@ void Entity::beginLogout(uint16_t time_till_logout)
 {
     m_is_logging_out = true;
     m_time_till_logout = time_till_logout*1000;
+    removeLFG(*this);
+    leaveTeam(*this);
 }
 
 void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *packer )

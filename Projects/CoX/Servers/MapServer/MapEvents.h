@@ -388,6 +388,7 @@ public:
     void serializefrom(BitStream &bs)
     {
         // TODO: Seems like nothing is received server side.
+        assert(!"Unimplemented");
     }
 };
 
@@ -403,6 +404,7 @@ public:
     void serializefrom(BitStream &bs)
     {
         // TODO: Seems like nothing is received server side.
+        assert(!"Unimplemented");
     }
 };
 
@@ -418,6 +420,7 @@ public:
     void serializefrom(BitStream &bs)
     {
         // TODO: Seems like nothing is received server side.
+        assert(!"Unimplemented");
     }
 };
 class DescriptionAndBattleCry final : public MapLinkEvent
