@@ -101,7 +101,7 @@ void CrudP_Protocol::clearQueues(bool recv_queue,bool clear_send_queue)
 }
 void CrudP_Protocol::ReceivedBlock(BitStream &src)
 {
-    uint32_t bitlength, checksum;
+    uint32_t bitlength, checksum=0;
     //TODO: consider allowing codec-less operation ?
     if(!m_codec || src.GetReadableDataSize()<12)
         return;

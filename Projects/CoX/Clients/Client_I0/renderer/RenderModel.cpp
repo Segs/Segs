@@ -5,9 +5,10 @@
 #include "Model.h"
 #include "utils/dll_patcher.h"
 #include "GameState.h"
+#include <algorithm>
 
 extern "C" {
-    __declspec(dllimport) void xyprintf(int a1, int a2, const char *a3, ...);
+    __declspec(dllimport) void xyprintf(int x, int y, const char *fmt, ...);
     __declspec(dllimport) void MatMult4x3(const Matrix4x3 *self, const Matrix4x3 *oth, Matrix4x3 *res);
     __declspec(dllimport) bool inEditMode();
 
@@ -16,7 +17,15 @@ extern "C" {
     __declspec(dllimport) int nonboned;
     __declspec(dllimport) int drawOrder;
 }
-
+void segs_modelDrawAlphaSortHackNode(GfxTree_Node *node)
+{
+    float ref_alpha = std::max(0.0f,float(node->alpha()/ 255.0) - 0.4f);
+    segs_wcw_statemgmt_setDepthMask(1);
+    glAlphaFunc(GL_GREATER, ref_alpha);
+    segs_modelDrawNode(node);
+    glAlphaFunc(GL_GREATER, 0.0);
+    segs_wcw_statemgmt_setDepthMask(1);
+}
 void segs_modelDrawNode(GfxTree_Node *node)
 {
     Model *model = node->model;
@@ -55,6 +64,11 @@ void segs_gfxTreeDrawNodeSky(GfxTree_Node *skynode, Matrix4x3 *mat)
 }
 void patch_render_node()
 {
-    PATCH_FUNC(modelDrawNode);
     PATCH_FUNC(gfxTreeDrawNodeSky);
+}
+
+void segs_UVPointer(uint32_t tex_unit, GLint size, GLenum type, GLsizei stride, GLvoid *pointer)
+{
+    glClientActiveTextureARB(tex_unit);
+    glTexCoordPointer(size, type, stride, pointer);
 }

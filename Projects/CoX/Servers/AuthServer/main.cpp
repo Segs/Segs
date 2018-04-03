@@ -171,8 +171,12 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
         return -1;
     }
     // process all queued qt messages here.
+    ACE_Time_Value event_processing_delay(0,1000*5);
     while( !s_event_loop_is_done )
+    {
         QCoreApplication::processEvents();
+        ACE_OS::sleep(event_processing_delay);
+    }
 
     ACE_Thread_Manager::instance()->wait();
     ACE_Reactor::close_singleton();

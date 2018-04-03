@@ -32,6 +32,10 @@ struct Vector3
     {
         return { x*v, y*v, z*v };
     }
+    constexpr Vector3 operator/(float v) const
+    {
+        return { x/v, y/v, z/v };
+    }
 
     float lengthNonSqrt() const { return x * x + y * y + z * z; }
     float normalize()
@@ -42,7 +46,7 @@ struct Vector3
         z /= factor;
         return factor;
     }
-    float dot(Vector3 with) const 
+    float dot(Vector3 with) const
     {
         return x * with.x + y * with.y + z * with.z;
     }
@@ -96,12 +100,12 @@ struct Matrix4x3
     Vector3 TranslationPart;
     Matrix3x3 &ref3() { return (Matrix3x3&)*this; }
     const Matrix3x3 &ref3() const { return (const Matrix3x3&)*this; }
-    Vector3 operator *(const Vector3 &val) const 
+    Vector3 operator *(const Vector3 &val) const
     {
         return {
             val.x * r1.x + val.y * r2.x + val.z * r3.x + TranslationPart.x,
             val.x * r1.y + val.y * r2.y + val.z * r3.y + TranslationPart.y,
-            val.x * r1.z + val.y * r2.z + val.z * r3.z + TranslationPart.z 
+            val.x * r1.z + val.y * r2.z + val.z * r3.z + TranslationPart.z
         };
     }
     Matrix4x3 operator*(const Matrix4x3 &oth) const
@@ -135,6 +139,10 @@ struct Matrix4x4
         r3 = v.r3;
         TranslationPart = v.TranslationPart;
         return *this;
+    }
+    Matrix4x4(const Matrix4x3 &v)
+    {
+        *this = v;
     }
     float *data() { return (float *)this; }
 };

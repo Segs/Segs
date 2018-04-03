@@ -304,7 +304,7 @@ void Character::recv_initial_costume( BitStream &src, ColorAndPartPacker *packer
     ::serializefrom(*res,src,packer);
     m_costumes.push_back(res);
 }
-void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool sendAbsolute)
+void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool /*sendAbsolute*/)
 {
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,0);
@@ -314,7 +314,7 @@ void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool sendAbsolute
     bs.StorePackedBits(5,src.m_Endurance/5.0f);
     bs.StoreBits(1,0); // no more data
 }
-void serializeFullStats(const Parse_CharAttrib &src,BitStream &bs, bool sendAbsolute)
+void serializeFullStats(const Parse_CharAttrib &src,BitStream &bs, bool /*sendAbsolute*/)
 {
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,0);
@@ -324,7 +324,7 @@ void serializeFullStats(const Parse_CharAttrib &src,BitStream &bs, bool sendAbso
     bs.StorePackedBits(7,src.m_Endurance);
     bs.StoreBits(1,0); // no more data
 }
-void serializeLevelsStats(const Character &src,BitStream &bs, bool sendAbsolute)
+void serializeLevelsStats(const Character &src,BitStream &bs, bool /*sendAbsolute*/)
 {
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,0);
@@ -340,7 +340,7 @@ void serializeStats(const Character &src,BitStream &bs, bool sendAbsolute)
     // Send CurrentAttribs
     // Send MaxAttribs
     // Send levels
-    int field_idx=0;
+    uint32_t field_idx=0;
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,field_idx++); // CurrentAttribs
     serializeStats(src.m_current_attribs,bs,sendAbsolute);
@@ -354,7 +354,7 @@ void serializeStats(const Character &src,BitStream &bs, bool sendAbsolute)
 }
 void serializeFullStats(const Character &src,BitStream &bs, bool sendAbsolute)
 {
-    int field_idx=0;
+    uint32_t field_idx=0;
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,field_idx++); // first field is CurrentAttribs
     serializeFullStats(src.m_current_attribs,bs,sendAbsolute);
@@ -384,7 +384,7 @@ void Character::sendFullStats(BitStream &bs) const
 
 void Character::sendWindows( BitStream &bs ) const
 {
-    for(int i=0; i<35; i++)
+    for(uint32_t i=0; i<35; i++)
     {
         bs.StorePackedBits(1,i); // window index
         sendWindow(bs, m_gui.m_wnds.at(i));

@@ -134,9 +134,9 @@ bool GameServer::ReadConfig()
 
     config->beginGroup("GameServer");
     if(!config->contains("listen_addr"))
-        qDebug() << "Config file is missing 'listen_addr' entry, will try to use default";
+        qDebug() << "Config file is missing 'listen_addr' entry in GameServer group, will try to use default";
     if(!config->contains("location_addr"))
-        qDebug() << "Config file is missing 'location_addr' entry, will try to use default";
+        qDebug() << "Config file is missing 'location_addr' entry in GameServer group, will try to use default";
 
     QString listen_addr = config->value("listen_addr","127.0.0.1:7002").toString();
     QString location_addr = config->value("location_addr","127.0.0.1:7002").toString();

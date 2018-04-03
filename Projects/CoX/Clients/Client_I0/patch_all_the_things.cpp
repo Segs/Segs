@@ -1,13 +1,16 @@
 #include "patch_all_the_things.h"
 
+#include "entity/entityDebug.h"
 #include "renderer/RendererUtils.h"
 #include "renderer/RenderTricks.h"
 #include "renderer/RenderBonedModel.h"
-#include "renderer/Texture.h"
 #include "renderer/RenderModel.h"
-#include "graphics/gfx.h"
 #include "renderer/RendererState.h"
 #include "renderer/RenderShadow.h"
+#include "renderer/RenderSprites.h"
+#include "renderer/RenderTree.h"
+#include "renderer/Texture.h"
+#include "graphics/gfx.h"
 
 void patch_all_the_things()
 {
@@ -19,4 +22,7 @@ void patch_all_the_things()
     patch_render_model();
     patch_render_node();
     patch_shadow_renderer();
+    patch_rendertree();
+    patch_ent_debug();
+    patch_rendersprites();
 }

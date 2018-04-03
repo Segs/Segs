@@ -58,11 +58,11 @@ bool AuthServer::ReadConfig()
     qInfo() << "Loading AuthServer settings...";
     QSettings *config(Settings::getSettings());
 
-    config->beginGroup("AuthServer");
-    if(!config->contains("location_addr"))
-        qDebug() << "Config file is missing 'location_addr' entry, will try to use default";
+    config->beginGroup(QStringLiteral("AuthServer"));
+    if(!config->contains(QStringLiteral("location_addr")))
+        qDebug() << "Config file is missing 'location_addr' entry in AuthServer group, will try to use default";
 
-    QString location_addr = config->value("location_addr","127.0.0.1:2106").toString();
+    QString location_addr = config->value(QStringLiteral("location_addr"),"127.0.0.1:2106").toString();
 
     if(!parseAddress(location_addr,m_location))
     {

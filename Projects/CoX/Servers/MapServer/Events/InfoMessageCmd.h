@@ -21,8 +21,9 @@ public:
     QString         m_msg;
     MessageChannel  m_channel_type;
     int             m_target_player_id;
-                    InfoMessageCmd(MessageChannel t, QString msg) : GameCommand(MapEventTypes::evInfoMessageCmd),
-                        m_channel_type(t),m_msg(msg)
+    virtual         ~InfoMessageCmd() = default;
+                    InfoMessageCmd(MessageChannel t, const QString &msg) : GameCommand(MapEventTypes::evInfoMessageCmd),
+                        m_msg(msg),m_channel_type(t)
                     {
                     }
     void            serializeto(BitStream &bs) const override;

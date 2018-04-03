@@ -9,15 +9,6 @@ struct TextureBind;
 struct TrickNode;
 struct GlobRenderRel;
 struct Model;
-
-#pragma pack(push, 1)
-struct Handle
-{
-    int16_t  field_0;
-    uint16_t idx;
-    operator bool() { return field_0 != 0 || idx != 0; }
-};
-#pragma pack(pop)
 struct RGBA
 {
     uint8_t r, g, b, a;
@@ -28,6 +19,42 @@ struct RGBA
     }
     Vector3 to3Floats() const { return {r/255.0f,g/255.0f,b/255.0f};}
 };
+struct SplatSib
+{
+  Vector3 center;
+  Vector3 normal;
+  Vector3 tangent;
+  float height;
+  float width;
+  float depth;
+  TextureBind *texture1;
+  TextureBind *texture2;
+  int drawMe;
+  int flags;
+  struct Parser_StAnim *stAnim;
+  int falloffType;
+  float normalFade;
+  int unkn_4C;
+  int count_70;
+  int unkn_54;
+  int vertexCount;
+  int triangleCount;
+  Vector3 *vertices;
+  Vector2 *tex_scroll1;
+  Vector2 *tex_scroll2;
+  Vector3i *indices; //triangles
+  uint32_t *colors; //rgba ?
+  SplatSib *invertedSplat;
+};
+#pragma pack(push, 1)
+struct Handle
+{
+    int16_t  field_0;
+    uint16_t idx;
+    operator bool() { return field_0 != 0 || idx != 0; }
+};
+#pragma pack(pop)
+
 struct BoneInfo
 {
     int numbones;

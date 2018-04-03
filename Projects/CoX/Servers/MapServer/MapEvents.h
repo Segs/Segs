@@ -156,8 +156,9 @@ public:
     {
         bs.StorePackedBits(1,4);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &/*bs*/)
     {
+        assert(!"Unimplemented");
     }
 };
 
@@ -417,7 +418,7 @@ public:
     {
         bs.StorePackedBits(1,33);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &/*bs*/)
     {
         // TODO: Seems like nothing is received server side.
         assert(!"Unimplemented");

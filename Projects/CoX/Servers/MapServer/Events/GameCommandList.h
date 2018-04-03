@@ -41,11 +41,11 @@ public:
             command->serializeto(bs);
         bs.StorePackedBits(1,0); // finalize the command list
     }
-    void serializefrom(BitStream &src)
+    void serializefrom(BitStream &/*src*/)
     {
         assert(false);
         // TODO: trouble, we need a second GameCommand Factory at this point !
-        uint32_t game_command = src.GetPackedBits(1);
+        //uint32_t game_command = src.GetPackedBits(1);
     }
 };
 #include "Events/ChatMessage.h"

@@ -102,15 +102,14 @@ static void setColorFromList(int colorIdx, const ColorList &clrs)
         setUniformForProgram("constColor2",shdr_Constant2);
     }
 }
-void  segs_modelSetAlpha(uint8_t a1)
+void  segs_modelSetAlpha(uint8_t alpha)
 {
-    shdr_Constant1.w = a1 / 255.0f;
+    shdr_Constant1.w = alpha / 255.0f;
     setUniformForProgram("constColor1",shdr_Constant1);
 }
 int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs)
 {
     Matrix4x3 dst;
-    Matrix4x4 m;
 
     if ( !tricks || tricks->_TrickFlags == 0)
         return 1;
@@ -204,8 +203,8 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs)
     {
         shdr_Constant1.ref3() = tricks->TintColor0.to3Floats();
         shdr_Constant2.ref3() = tricks->TintColor1.to3Floats();
-        setUniformForProgram("constColor1",shdr_Constant1);
-        setUniformForProgram("constColor2",shdr_Constant2);
+        segs_setShaderConstant(0,&shdr_Constant1);
+        segs_setShaderConstant(1,&shdr_Constant2);
         if ( tricks->info )
         {
             if ( tricks->info->clists[0].count )
@@ -247,7 +246,7 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs)
                 glMatrixMode(GL_TEXTURE);
                 *(Matrix3x3 *)&cam_info.inv_viewmat = *(Matrix3x3 *)&dst;
                 dst.TranslationPart = { 0.0f,0.0f,0.0f };
-                m = dst;
+                Matrix4x4 m = dst;
                 glLoadMatrixf(m.data());
                 glMatrixMode(GL_MODELVIEW);
             }
