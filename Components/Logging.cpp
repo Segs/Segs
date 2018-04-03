@@ -16,7 +16,7 @@
         return category; \
     }
 
-SEGS_LOGGING_CATEGORY(logLogging,     "log.logging")
+SEGS_LOGGING_CATEGORY(logLogging,      "log.logging")
 SEGS_LOGGING_CATEGORY(logKeybinds,     "log.keybinds")
 SEGS_LOGGING_CATEGORY(logSettings,     "log.settings")
 SEGS_LOGGING_CATEGORY(logGUI,          "log.gui")
@@ -34,6 +34,7 @@ SEGS_LOGGING_CATEGORY(logSlashCommand, "log.slashcommand")
 SEGS_LOGGING_CATEGORY(logDescription,  "log.description")
 SEGS_LOGGING_CATEGORY(logFriends,      "log.friends")
 SEGS_LOGGING_CATEGORY(logMiniMap,      "log.minimap")
+SEGS_LOGGING_CATEGORY(logLFG,          "log.lfg")
 
 void setLoggingFilter()
 {
@@ -59,6 +60,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.description="    + config->value("log_description","false").toString();
     filter_rules += "\nlog.friends="        + config->value("log_friends","false").toString();
     filter_rules += "\nlog.minimap="        + config->value("log_minimap","false").toString();
+    filter_rules += "\nlog.lfg="            + config->value("log_lfg","false").toString();
     config->endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -107,6 +109,8 @@ void toggleLogging(QString &category)
         cat = &logFriends();
     else if(category.contains("minimap",Qt::CaseInsensitive))
         cat = &logMiniMap();
+    else if(category.contains("lfg",Qt::CaseInsensitive))
+        cat = &logMiniMap();
     else
         return;
 
@@ -138,6 +142,7 @@ void dumpLogging()
     output += "\n\t description: "  + QString::number(logDescription().isDebugEnabled());
     output += "\n\t friends: "      + QString::number(logFriends().isDebugEnabled());
     output += "\n\t minimap: "      + QString::number(logMiniMap().isDebugEnabled());
+    output += "\n\t lfg: "          + QString::number(logLFG().isDebugEnabled());
 
     qDebug().noquote() << output;
 }

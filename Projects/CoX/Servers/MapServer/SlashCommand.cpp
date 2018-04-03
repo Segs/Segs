@@ -2,6 +2,7 @@
 #include "DataHelpers.h"
 #include "MapInstance.h"
 #include "Settings.h"
+#include "LFG.h"
 #include "Logging.h"
 
 #include <QtCore/QString>
@@ -742,6 +743,14 @@ void cmdHandler_Invite(QString &cmd, Entity *e) {
     if(tgt->m_has_team)
     {
         msg = tgt->name() + " is already on a team.";
+        qCDebug(logTeams) << msg;
+        sendInfoMessage(MessageChannel::SERVER, msg, src);
+        return;
+    }
+
+    if(tgt->name() == src->name())
+    {
+        msg = "You cannot invite yourself to a team.";
         qCDebug(logTeams) << msg;
         sendInfoMessage(MessageChannel::SERVER, msg, src);
         return;

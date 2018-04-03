@@ -641,7 +641,7 @@ static MessageChannel getKindOfChatMessage(const QStringRef &msg)
 
 void MapInstance::process_chat(MapClient *sender,QString &msg_text)
 {
-    int first_space = msg_text.indexOf(' ');
+    int first_space = msg_text.indexOf(QRegExp("\\s"), 0); // first whitespace, as the client sometimes sends tabs
     QString sender_char_name;
     QString prepared_chat_message;
 

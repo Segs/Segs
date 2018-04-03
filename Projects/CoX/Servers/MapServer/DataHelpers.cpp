@@ -7,6 +7,7 @@
 #include "AdminServer/AdminServer.h"
 #include "AdminServer/CharacterDatabase.h"
 #include "Team.h"
+#include "LFG.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -373,13 +374,13 @@ void toggleLFG(Entity &e)
 
     if(cd->m_lfg)
     {
-        // TODO: increase LFG array size, and store cd info
-        sendTeamLooking(&e); // TODO: send lfg array only
+        addLFG(e);
+        sendTeamLooking(&e);
     }
     else
     {
-        // TODO: increase LFG array size, and store cd info
-        // sendTeamLooking(e); // again to update list/ui
+        removeLFG(e);
+        sendTeamLooking(&e); // again to update list/ui
     }
 }
 
@@ -408,13 +409,10 @@ void sendSidekickOffer(Entity *tgt, uint32_t src_db_id)
 }
 void sendTeamLooking(Entity *tgt)
 {
-    QString name        = tgt->name();
-    QString classname   = tgt->m_char.m_char_data.m_class_name;
-    QString origin      = tgt->m_char.m_char_data.m_origin_name;
-    uint32_t level      = tgt->m_char.m_char_data.m_level;
+    std::vector<LFGMember> list = g_lfg_list;
 
-    qCDebug(logTeams) << "Sending Team Looking" << tgt->name();
-    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamLooking>(new TeamLooking(name, classname, origin, level)));
+    qCDebug(logLFG) << "Sending Team Looking to" << tgt->name();
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamLooking>(new TeamLooking(list)));
 }
 void sendTeamOffer(Entity *src, Entity *tgt)
 {

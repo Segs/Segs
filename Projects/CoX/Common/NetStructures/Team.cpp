@@ -127,6 +127,12 @@ bool makeTeamLeader(Entity &src, Entity &tgt)
 
 bool inviteTeam(Entity &src, Entity &tgt)
 {
+    if(src.name() == tgt.name())
+    {
+        qCDebug(logTeams) << "You cannot invite yourself to a team.";
+        return false;
+    }
+
     if(!src.m_has_team)
     {
         qCDebug(logTeams) << src.name() << "is forming a team.";
@@ -167,12 +173,6 @@ void leaveTeam(Entity &e)
 {
     if(e.m_has_team)
         e.m_team->removeTeamMember(&e);
-}
-
-void findTeamMember(Entity &tgt)
-{
-    // TODO: figure out what the search window is and leverage that.
-    qWarning() << "Search Window Not Implemented";
 }
 
 

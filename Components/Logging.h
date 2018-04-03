@@ -31,6 +31,7 @@ SEGS_DECLARE_LOGGING_CATEGORY(logSlashCommand)
 SEGS_DECLARE_LOGGING_CATEGORY(logDescription)
 SEGS_DECLARE_LOGGING_CATEGORY(logFriends)
 SEGS_DECLARE_LOGGING_CATEGORY(logMiniMap)
+SEGS_DECLARE_LOGGING_CATEGORY(logLFG)
 
 void    setLoggingFilter();
 void    toggleLogging(QString &category);

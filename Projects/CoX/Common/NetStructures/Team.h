@@ -52,7 +52,6 @@ bool makeTeamLeader(Entity &src, Entity &tgt);
 bool inviteTeam(Entity &src, Entity &tgt);
 bool kickTeam(Entity &tgt);
 void leaveTeam(Entity &e);
-void findTeamMember(Entity &tgt);
 
 /*
  * Sidekick Methods -- Sidekick system requires teaming.
