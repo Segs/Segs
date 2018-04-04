@@ -39,8 +39,7 @@ struct FriendsList
 
 void addFriend(Entity &src, Entity &tgt);
 void removeFriend(Entity &src, Entity &tgt);
-int findFriendByIdx(uint32_t &idx);
-int findFriendByName(QString &name);
+bool isFriendOnline(Entity &src, uint32_t db_id);
 void toggleFriendList(Entity &src);
 void dumpFriends(Entity &src);
 void dumpFriendsList(Friend &f);
