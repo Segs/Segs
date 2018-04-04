@@ -87,19 +87,25 @@ void removeFriend(Entity &src, Entity &tgt)
     sendFriendsListUpdate(&src, src_data);
 }
 
+bool isFriendOnline(uint32_t db_id)
+{
+    // TODO: Leverage getEntityByIdx(), but need mapclient
+    //return getEntityByIdx(db_id) != nullptr;
+}
+
 void toggleFriendList(Entity &src)
 {
-    GUIWindow friendlist = src.m_char.m_gui.m_wnds.at(WindowIDX::wdw_Friends);
+    GUIWindow *friendlist = &src.m_char.m_gui.m_wnds.at(WindowIDX::wdw_Friends);
     QString msg = "Toggling FriendList visibility.";
-    msg += " " + QString::number(friendlist.m_mode);
+    msg += " " + QString::number(friendlist->m_mode);
 
-    if(friendlist.m_mode != WindowVisibility::wv_Visible)
-        friendlist.setWindowVisibility(WindowVisibility::wv_Growing);
+    // TODO: How to actually change window visibility?
+    if(friendlist->m_mode != WindowVisibility::wv_Visible)
+        friendlist->setWindowVisibility(WindowVisibility::wv_Visible);
     else
-        friendlist.setWindowVisibility(WindowVisibility::wv_Shrinking);
+        friendlist->setWindowVisibility(WindowVisibility::wv_DockedOrHidden);
 
-    msg += " to " + QString::number(friendlist.m_mode);
-
+    msg += " to " + QString::number(friendlist->m_mode);
     qCDebug(logFriends).noquote() << msg;
 }
 
@@ -120,9 +126,9 @@ void dumpFriendsList(Friend &f)
 {
     qDebug().noquote() << "Friend:" << f.fr_name
              << "\n\t" << "online:" << f.fr_online_status
-             << "\n\t" << "field_0:" << f.fr_db_id
+             << "\n\t" << "db_id:" << f.fr_db_id
              << "\n\t" << "class_id:" << f.fr_class_idx
              << "\n\t" << "origin_id:" << f.fr_origin_idx
-             << "\n\t" << "field_8:" << f.fr_map_idx
+             << "\n\t" << "map_idx:" << f.fr_map_idx
              << "\n\t" << "mapname:" << f.fr_mapname;
 }

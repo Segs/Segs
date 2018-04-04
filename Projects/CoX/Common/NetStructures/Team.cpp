@@ -205,8 +205,8 @@ void inviteSidekick(Entity &src, Entity &tgt)
         msg = "You are already Mentoring someone.";
     else if (tgt_sk.sk_has_sidekick)
         msg = tgt.name() + "is already a sidekick.";
-    else if(!src.m_has_team && !tgt.m_has_team && src.m_team == nullptr && tgt.m_team == nullptr)
-            msg = "To Mentor another player, you must be on the same team.";
+    else if(!src.m_has_team || !tgt.m_has_team || src.m_team == nullptr || tgt.m_team == nullptr)
+        msg = "To Mentor another player, you must be on the same team.";
     else if(src.m_team->m_team_idx != tgt.m_team->m_team_idx)
         msg = "To Mentor another player, you must be on the same team.";
     else
@@ -219,11 +219,11 @@ void inviteSidekick(Entity &src, Entity &tgt)
         return; // break early
     }
 
-    qDebug().noquote() << msg;
+    qCDebug(logTeams).noquote() << msg;
     messageOutput(MessageChannel::USER_ERROR, msg, src);
 }
 
-void addSidekick(Entity &src, Entity &tgt)
+void addSidekick(Entity &tgt, Entity &src)
 {
     QString     msg;
     Sidekick    &src_sk = src.m_char.m_char_data.m_sidekick;
@@ -241,7 +241,7 @@ void addSidekick(Entity &src, Entity &tgt)
     // TODO: Implement 225 feet "leash" for sidekicks.
 
     msg = QString("%1 is now Mentoring %2.").arg(src.name(),tgt.name());
-    qDebug().noquote() << msg;
+    qCDebug(logTeams).noquote() << msg;
 
     // Send message to each player
     msg = QString("You are now Mentoring %1.").arg(tgt.name()); // Customize for src.
@@ -258,7 +258,7 @@ void removeSidekick(Entity &src)
     if(!src_sk.sk_has_sidekick || src_sk.sk_db_id == 0)
     {
         msg = "You are not sidekicked with anyone.";
-        qDebug().noquote() << msg;
+        qCDebug(logTeams).noquote() << msg;
         messageOutput(MessageChannel::USER_ERROR, msg, src);
         return; // break early
     }
@@ -269,7 +269,7 @@ void removeSidekick(Entity &src)
     if(tgt == nullptr)
     {
         msg = "Your sidekick is not currently online.";
-        qDebug().noquote() << msg;
+        qCDebug(logTeams).noquote() << msg;
 
         // reset src Sidekick relationship
         src_sk.sk_has_sidekick = false;
@@ -321,11 +321,11 @@ void removeSidekick(Entity &src)
         setCombatLevel(tgt->m_char,getLevel(tgt->m_char)); // reset CombatLevel
 
         msg = QString("%1 and %2 are no longer sidekicked.").arg(src.name(),tgt->name());
-        qDebug().noquote() << msg;
+        qCDebug(logTeams).noquote() << msg;
 
         return; // break early
     }
 
-    qDebug().noquote() << msg;
+    qCDebug(logTeams).noquote() << msg;
     messageOutput(MessageChannel::USER_ERROR, msg, src);
 }

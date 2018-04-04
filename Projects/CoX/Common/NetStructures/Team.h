@@ -58,5 +58,5 @@ void leaveTeam(Entity &e);
  */
 bool isSidekickMentor(const Entity &e);
 void inviteSidekick(Entity &src, Entity &tgt);
-void addSidekick(Entity &src, Entity &tgt);
+void addSidekick(Entity &tgt, Entity &src);
 void removeSidekick(Entity &src);

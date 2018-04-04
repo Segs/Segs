@@ -75,7 +75,9 @@ void toggleLogging(QString &category)
 
     QLoggingCategory *cat = nullptr;
 
-    if(category.contains("keybinds",Qt::CaseInsensitive))
+    if(category.contains("logging",Qt::CaseInsensitive))
+        cat = &logLogging();
+    else if(category.contains("keybinds",Qt::CaseInsensitive))
         cat = &logKeybinds();
     else if(category.contains("settings",Qt::CaseInsensitive))
         cat = &logSettings();
@@ -125,6 +127,7 @@ void toggleLogging(QString &category)
 void dumpLogging()
 {
     QString output = "Current Logging Categories:";
+    output += "\n\t logging: "     + QString::number(logLogging().isDebugEnabled());
     output += "\n\t keybinds: "     + QString::number(logKeybinds().isDebugEnabled());
     output += "\n\t settings: "     + QString::number(logSettings().isDebugEnabled());
     output += "\n\t gui: "          + QString::number(logGUI().isDebugEnabled());
