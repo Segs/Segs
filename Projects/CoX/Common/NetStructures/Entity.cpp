@@ -7,6 +7,8 @@
  */
 #define _USE_MATH_DEFINES
 #include "Entity.h"
+
+#include "Character.h"
 #include "Servers/MapServer/DataHelpers.h"
 
 #include <QtCore/QDebug>
@@ -33,13 +35,13 @@ void Entity::sendPvP(BitStream &bs)
     bs.StoreBits(1,0);
 }
 
-void Entity::fillFromCharacter(Character *f)
+void Entity::fillFromCharacter(const Character &f)
 {
-    m_char = *f;
+    *m_char = f;
     m_hasname = true;
-    m_db_id = m_char.m_db_id;
-    m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*f));
-    m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*f));
+    m_db_id = m_char->m_db_id;
+    m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(f));
+    m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(f));
 }
 /**
  *  This will mark the Entity as being in logging out state
@@ -56,18 +58,18 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *pac
     QString description;
     QString battlecry;
     e.m_type = src.GetPackedBits(1); //2. Possibly EntType (ENT_PLAYER)
-    e.m_char.GetCharBuildInfo(src);
-    e.m_char.recv_initial_costume(src,packer);
-    e.m_char.m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
-    if(e.m_char.m_char_data.m_has_the_prefix)
-        e.m_char.m_char_data.m_has_titles = true;
+    e.m_char->GetCharBuildInfo(src);
+    e.m_char->recv_initial_costume(src,packer);
+    e.m_char->m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
+    if(e.m_char->m_char_data.m_has_the_prefix)
+        e.m_char->m_char_data.m_has_titles = true;
     src.GetString(battlecry);
     src.GetString(description);
-    setBattleCry(e.m_char,battlecry);
-    setDescription(e.m_char,description);
-    e.m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(e.m_char));
-    e.m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(e.m_char));
-    setDbId(e,e.m_char.m_db_id);
+    setBattleCry(*e.m_char,battlecry);
+    setDescription(*e.m_char,description);
+    e.m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*e.m_char));
+    e.m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*e.m_char));
+    setDbId(e,e.m_char->m_db_id);
 
     // New Character Spawn Location
     //e.m_entity_data.pos                 = glm::vec3(-60.5f,180.0f,0.0f); // Tutorial Starting Location
@@ -79,6 +81,10 @@ void Entity::InsertUpdate( PosUpdate pup )
     m_update_idx++;
     m_update_idx %=64;
     m_pos_updates[m_update_idx]=pup;
+}
+
+const QString &Entity::name() const {
+    return m_char->getName();
 }
 
 void Entity::dump()
@@ -104,7 +110,7 @@ void Entity::dump()
 
     qDebug().noquote() << msg;
     if(m_type == Entity::ENT_PLAYER)
-        m_char.dump();
+        m_char->dump();
 }
 
 void Entity::addPosUpdate(const PosUpdate & p) {
@@ -116,9 +122,14 @@ void Entity::addInterp(const PosUpdate & p) {
     interpResults.emplace_back(p);
 }
 
-Entity::Entity()
+Entity::Entity() : m_char(new Character)
 {
     m_entity_data.m_access_level = 9; // enables access to all deve
+}
+
+Entity::~Entity()
+{
+
 }
 
 void abortLogout(Entity *e)
@@ -143,6 +154,6 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_pchar_things                    = true;
     e.m_entity_data.m_access_level      = 9;
 
-    e.m_char.reset();
+    e.m_char->reset();
     e.might_have_rare = e.m_rare_bits   = true;
 }

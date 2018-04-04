@@ -82,7 +82,7 @@ SEGSEvent * GameHandler::dispatchSync( SEGSEvent *ev )
             ev->release();
             return r;
     }
-    return 0;
+    return nullptr;
 }
 
 void GameHandler::on_connection_request(ConnectRequest *ev)
@@ -94,7 +94,7 @@ void GameHandler::on_connection_request(ConnectRequest *ev)
 void GameHandler::on_update_server(UpdateServer *ev)
 {
     CharacterClient *cl=m_clients.getExpectedByCookie(ev->authCookie);
-    if(cl==0)
+    if(cl==nullptr)
     {
         ev->src()->putq(new GameEntryError(this,"Unauthorized !"));
         ACE_DEBUG((LM_WARNING,ACE_TEXT("GameEntryError : Unauthorized !\n")));

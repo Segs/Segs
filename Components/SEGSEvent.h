@@ -45,14 +45,14 @@ virtual const char *    info() {return typeid(*this).name();}
 
 class TimerEvent : public SEGSEvent
 {
-    ACE_Time_Value m_arrival_time;
-    void *         m_data;
+    ACE_Time_Value          m_arrival_time;
+    void *                  m_data;
 
 public:
-    TimerEvent(const ACE_Time_Value &time, void *dat)
-        : SEGSEvent(SEGS_EventTypes::evTimeout), m_arrival_time(time), m_data(dat)
-    {
-    }
-    void *                data() { return m_data; }
-    const ACE_Time_Value &arrival_time() { return m_arrival_time; }
+                            TimerEvent(const ACE_Time_Value &time, void *dat)
+                                : SEGSEvent(SEGS_EventTypes::evTimeout), m_arrival_time(time), m_data(dat)
+                            {
+                            }
+    void *                  data() { return m_data; }
+    const ACE_Time_Value &  arrival_time() { return m_arrival_time; }
 };

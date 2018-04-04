@@ -1,4 +1,4 @@
-/* 
+/*
 * SEGS dbtool v0.2 dated 2017-11-04
 * A database creation and management tool.
 */
@@ -56,10 +56,10 @@ void errorHandler(QtMsgType type, const QMessageLogContext &context, const QStri
             fprintf(stderr, "%sWARNING!%s %s\n", colorTable[1], resetColor, localMsg.constData());
             break;
         case QtCriticalMsg:
-            fprintf(stderr, "%sCRITICAL!%s (%s:%u, %s)\n", colorTable[2], resetColor, localMsg.constData(), context.file, context.line, context.function);
+            fprintf(stderr, "%sCRITICAL!%s %s (%s:%u, %s)\n", colorTable[2], resetColor, localMsg.constData(), context.file, context.line, context.function);
             break;
         case QtFatalMsg:
-            fprintf(stderr, "%sFATAL!%s (%s:%u, %s)\n", colorTable[3], resetColor, localMsg.constData(), context.file, context.line, context.function);
+            fprintf(stderr, "%sFATAL!%s %s (%s:%u, %s)\n", colorTable[3], resetColor, localMsg.constData(), context.file, context.line, context.function);
             abort();
     }
 }
@@ -101,7 +101,7 @@ void createDatabases()
             if(!target_file.remove()) // We have to remove the file if it already exists; otherwise, many errors are thrown.
             {
                 qInfo("FAILED to remove existing file:");
-                qInfo(target_file_string.toStdString().c_str());
+                qInfo().noquote()<<target_file_string;
                 qFatal("Ensure no processes are using it and you have permission to modify it.");
             }
         }
@@ -122,8 +122,7 @@ void createDatabases()
                 if(!query.exec(queryTxt))
                 {
                     segs_db.rollback(); // Roll back the database if something goes wrong, so we're not left with useless poop.
-                    qFatal(QString("One of the query failed to execute."
-                                " Error detail: " + query.lastError().text()).toLocal8Bit());
+                    qFatal("One of the query failed to execute.\n Error detail: %s\n",qPrintable(query.lastError().text()));
                 }
                 query.finish();
             }
@@ -173,30 +172,30 @@ int main(int argc, char **argv)
     QCoreApplication app(argc,argv);
     QCoreApplication::setApplicationName("segs-dbtool");
     QCoreApplication::setApplicationVersion("0.3");
-    
+
     QCommandLineParser parser;
     parser.setApplicationDescription("SEGS database management utility");
     parser.addHelpOption();
     parser.addVersionOption();
 
     qInfo().noquote().nospace() << parser.applicationDescription() << " v" << QCoreApplication::applicationVersion() << endl;
-    
+
     parser.addPositionalArgument("file", QCoreApplication::translate("main", "Database Script file to import."));
-    
+
     // A boolean option with multiple names (-f, --force)
     QCommandLineOption forceOption(QStringList() << "f" << "force",
         QCoreApplication::translate("main", "Overwrite existing database files. THIS CANNOT BE UNDONE."));
     parser.addOption(forceOption);
 
     parser.process(app);
-    
+
 //    const QStringList args = parser.positionalArguments();
 
     bool forced = parser.isSet(forceOption);
 //    if(args.length() != 2 && args.length() != 0)
 //        qFatal("ERROR: Number of arguments must be 0 or 2.");
 //    bool nofile = args.isEmpty();
-    
+
     // Check if dbtool is being run from server directory
     qInfo() << "Checking for default_dbs directory...";
     QDir default_dbs_dir(QDir::currentPath() + "/default_dbs");

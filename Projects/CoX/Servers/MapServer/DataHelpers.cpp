@@ -4,6 +4,7 @@
 #include "MapServerData.h"
 #include "MapInstance.h"
 #include "MapClient.h"
+#include "Character.h"
 #include "AdminServer/AdminServer.h"
 #include "AdminServer/CharacterDatabase.h"
 
@@ -26,7 +27,7 @@ float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
 uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
 
 // Setters
-void    setDbId(Entity &e, uint8_t val) { e.m_char.m_db_id = val; e.m_db_id = val; }
+void    setDbId(Entity &e, uint32_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
 void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_spd = {v1,v2,v3}; }
 void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
 void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
@@ -157,7 +158,7 @@ void sendServerMOTD(Entity *e)
     }
 
     MapClient *src = e->m_client;
-    qDebug().noquote() << "Sending Server MOTD to" << e->m_char.getName();
+    qDebug().noquote() << "Sending Server MOTD to" << e->m_char->getName();
 
     QString fileName("scripts/motd.smlx");
     QFile file(fileName);
@@ -181,8 +182,8 @@ void sendServerMOTD(Entity *e)
 // Getter
 uint32_t            getLevel(const Character &c) { return c.m_char_data.m_level; }
 uint32_t            getCombatLevel(const Character &c) { return c.m_char_data.m_combat_level; }
-uint32_t            getHP(const Character &c) { return c.m_current_attribs.m_HitPoints; }
-uint32_t            getEnd(const Character &c) { return c.m_current_attribs.m_Endurance; }
+float               getHP(const Character &c) { return c.m_current_attribs.m_HitPoints; }
+float               getEnd(const Character &c) { return c.m_current_attribs.m_Endurance; }
 uint64_t            getLastCostumeId(const Character &c) { return c.m_char_data.m_last_costume_id; }
 const QString &     getOrigin(const Character &c) { return c.m_char_data.m_origin_name; }
 const QString &     getClass(const Character &c) { return c.m_char_data.m_class_name; }
@@ -190,7 +191,9 @@ const QString &     getMapName(const Character &c) { return c.m_char_data.m_mapN
 uint32_t            getXP(const Character &c) { return c.m_char_data.m_experience_points; }
 uint32_t            getDebt(const Character &c) { return c.m_char_data.m_experience_debt; }
 uint32_t            getPatrolXP(const Character &c) { return c.m_char_data.m_experience_patrol; }
-const QString &     getTitles(const Character &c) { return c.m_char_data.m_titles[3]; }
+const QString &     getGenericTitle(const Character &c) { return c.m_char_data.m_titles[0]; }
+const QString &     getOriginTitle(const Character &c) { return c.m_char_data.m_titles[1]; }
+const QString &     getSpecialTitle(const Character &c) { return c.m_char_data.m_titles[2]; }
 uint32_t            getInf(const Character &c) { return c.m_char_data.m_influence; }
 const QString &     getDescription(const Character &c) { return c.m_char_data.m_character_description ; }
 const QString &     getBattleCry(const Character &c) { return c.m_char_data.m_battle_cry; }

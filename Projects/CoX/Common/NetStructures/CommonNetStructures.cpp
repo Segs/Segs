@@ -7,16 +7,20 @@
  */
 #include "CommonNetStructures.h"
 #include "Common/GameData/CoXHash.h"
+
+#include <glm/gtc/type_ptr.hpp>
+
 #include <QtCore/QString>
+
 using namespace std;
-void storeBitsConditional( BitStream &bs,int numbits,int bits )
+void storeBitsConditional(BitStream &bs, uint8_t numbits, int bits )
 {
     bs.StoreBits(1,bits!=0);
     if(bits)
         bs.StoreBits(numbits,bits);
 }
 
-int getBitsConditional( BitStream &bs,int numbits )
+int getBitsConditional( BitStream &bs,uint32_t numbits )
 {
     if(bs.GetBits(1))
     {
@@ -25,7 +29,7 @@ int getBitsConditional( BitStream &bs,int numbits )
     return 0;
 }
 
-void storePackedBitsConditional( BitStream &bs,int numbits,int bits )
+void storePackedBitsConditional( BitStream &bs,uint8_t numbits,int bits )
 {
     bs.StoreBits(1,bits!=0);
     if(bits)
@@ -46,8 +50,8 @@ void storeVectorConditional(BitStream &bs, glm::vec3 &vec )
 
 void storeFloatConditional( BitStream &bs,float val )
 {
-    bs.StoreBits(1,val!=0.0);
-    if(val!=0.0)
+    bs.StoreBits(1,val!=0.0f);
+    if(val!=0.0f)
         bs.StoreFloat(val);
 }
 
@@ -57,7 +61,7 @@ void storeFloatPacked( BitStream &bs,float val )
     bs.StoreFloat(val);
 }
 
-int getPackedBitsConditional( BitStream &bs,int numbits )
+int getPackedBitsConditional( BitStream &bs,uint8_t numbits )
 {
     if(bs.GetBits(1))
     {
@@ -73,10 +77,10 @@ void storeStringConditional( BitStream &bs,const QString &str )
         bs.StoreString(str);
 }
 
-void storeTransformMatrix( BitStream &tgt,const Matrix4x3 &src )
+void storeTransformMatrix(BitStream &tgt, const glm::mat4x3 &src )
 {
     tgt.StoreBits(1,0); // no packed matrices for now
-    tgt.StoreBitArray((uint8_t*)&src,12*4*8);
+    tgt.StoreBitArray((const uint8_t*)glm::value_ptr(src),12*4*8);
 }
 
 void storeTransformMatrix( BitStream &tgt,const TransformStruct &src )
@@ -102,11 +106,11 @@ void storeTransformMatrix( BitStream &tgt,const TransformStruct &src )
     }
 }
 
-void getTransformMatrix( BitStream &bs,Matrix4x3 &src )
+void getTransformMatrix(BitStream &bs, glm::mat4x3 &src )
 {
     if(bs.GetBits(1))
         assert(!"PACKED ARRAY RECEIVED!");
-    bs.GetBitArray((uint8_t*)&src,12*4*8);
+    bs.GetBitArray((uint8_t *)glm::value_ptr(src),sizeof(glm::mat4x3)*8);
 }
 
 

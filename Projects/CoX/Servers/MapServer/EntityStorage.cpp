@@ -24,9 +24,13 @@ EntityStore::EntityStore()
     {
         e.m_idx = idx++;
     }
-    // starting from 1 to prevent returning special entity idx 0 to anyone
-    for(int i=1; i<m_map_entities.size(); ++i)
-        m_free_entries.emplace_back(i);
+    m_free_entries.resize(m_map_entities.size()-1);
+    // free entity indices starting from 1 to prevent returning special entity idx 0 to anyone
+    idx = 1;
+    for(int32_t &entry_idx : m_free_entries)
+    {
+        entry_idx = idx++;
+    }
 }
 
 Entity *EntityStore::get()
@@ -74,7 +78,7 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClient *client ) const
 {
     std::vector<int> entities_to_remove;
     // find the entities this client believes exist, but they are no longer amongst us.
-    for(const std::pair<int,ClientEntityStateBelief> &entry : client->m_worldstate_belief)
+    for(const std::pair<const int,ClientEntityStateBelief> &entry : client->m_worldstate_belief)
     {
         if(entry.second.m_entity==nullptr)
             continue;

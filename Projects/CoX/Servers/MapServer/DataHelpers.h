@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Entity.h"
-#include "Character.h"
 
 class QString;
 
@@ -20,7 +19,7 @@ float       getJumpHeight(const Entity &e);
 uint8_t     getUpdateId(const Entity &e);
 
 // Setters
-void    setDbId(Entity &e, uint8_t val);
+void    setDbId(Entity &e, uint32_t val);
 void    setSpeed(Entity &e, float v1, float v2, float v3);
 void    setBackupSpd(Entity &e, float val);
 void    setJumpHeight(Entity &e, float val);
@@ -57,8 +56,8 @@ void    sendServerMOTD(Entity *e);
 // Getters
 uint32_t            getLevel(const Character &c);
 uint32_t            getCombatLevel(const Character &c);
-uint32_t            getHP(const Character &c);
-uint32_t            getEnd(const Character &c);
+float getHP(const Character &c);
+float getEnd(const Character &c);
 uint64_t            getLastCostumeId(const Character &c);
 const QString &     getOrigin(const Character &c);
 const QString &     getClass(const Character &c);
@@ -66,7 +65,10 @@ const QString &     getMapName(const Character &c);
 uint32_t            getXP(const Character &c);
 uint32_t            getDebt(const Character &c);
 uint32_t            getPatrolXP(const Character &c);
-const QString &     getTitles(const Character &c);
+const QString &     getGenericTitle(const Character &c);
+const QString &     getOriginTitle(const Character &c);
+const QString &     getSpecialTitle(const Character &c);
+
 uint32_t            getInf(const Character &c);
 const QString &     getDescription(const Character &c);
 const QString &     getBattleCry(const Character &c);
