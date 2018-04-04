@@ -90,7 +90,7 @@ void removeFriend(Entity &src, Entity &tgt)
 bool isFriendOnline(Entity &src, uint32_t db_id)
 {
     // TODO: src is needed for mapclient
-    return getEntityByIdx(src, db_id) != nullptr;
+    return getEntityByDBID(src.m_client, db_id) != nullptr;
 }
 
 void toggleFriendList(Entity &src)
