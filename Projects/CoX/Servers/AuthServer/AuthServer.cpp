@@ -55,7 +55,7 @@ bool AuthServer::ReadConfig()
     if(m_running)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AuthServer: Already initialized and running\n") ),false);
 
-    qWarning() << "Loading AuthServer settings...";
+    qInfo() << "Loading AuthServer settings...";
     QSettings *config(Settings::getSettings());
 
     config->beginGroup(QStringLiteral("AuthServer"));
