@@ -56,7 +56,7 @@ void cmdHandler_SetU5(QString &cmd, Entity *e);
 void cmdHandler_SetU6(QString &cmd, Entity *e);
 
 // Access Level 1 Commands
-void cmdHandler_Help(QString &cmd, Entity *e);
+void cmdHandler_Cmdlist(QString &cmd, Entity *e);
 void cmdHandler_AFK(QString &cmd, Entity *e);
 void cmdHandler_WhoAll(QString &cmd, Entity *e);
 void cmdHandler_SetTitles(QString &cmd, Entity *e);
