@@ -51,7 +51,7 @@ bool _AdminServer::ReadConfig()
     if(m_running)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AdminServer: Already initialized and running\n") ),false);
 
-    qWarning() << "Loading AdminServer settings...";
+    qInfo() << "Loading AdminServer settings...";
     QSettings *config(Settings::getSettings());
 
     config->beginGroup("AdminServer");
