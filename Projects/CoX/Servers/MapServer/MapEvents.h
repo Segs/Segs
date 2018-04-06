@@ -158,7 +158,7 @@ public:
     }
     void serializefrom(BitStream &/*bs*/)
     {
-//        Parameterless - sealizefrom is no-op
+//        Parameterless - serializefrom is no-op
 //        assert(!"Unimplemented");
     }
 };
@@ -430,7 +430,7 @@ public:
     }
     void serializefrom(BitStream &/*bs*/)
     {
-//        Parameterless - sealizefrom is no-op
+//        Parameterless - serializefrom is no-op
 //        assert(!"Unimplemented");
     }
 };
