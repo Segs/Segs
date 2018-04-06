@@ -1495,10 +1495,10 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    Character c = src->char_entity()->m_char;
+    Character *c = &src->char_entity()->m_char;
 
-    setBattleCry(c,ev->battlecry);
-    setDescription(c,ev->description);
+    setBattleCry(*c,ev->battlecry);
+    setDescription(*c,ev->description);
     qCDebug(logDescription) << "Saving description and battlecry:" << ev->description << ev->battlecry;
 }
 

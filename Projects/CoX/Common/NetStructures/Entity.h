@@ -264,6 +264,7 @@ public:
         bool                m_hasname                   = false;
         bool                m_classname_override        = false;
         bool                m_hasRagdoll                = false;
+        bool                m_has_owner                 = false;
         bool                m_create_player             = false;
         bool                m_rare_bits                 = false;
         int                 current_client_packet_id    = {0};

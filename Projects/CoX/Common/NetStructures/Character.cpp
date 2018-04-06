@@ -467,11 +467,6 @@ void Character::sendDescription(BitStream &bs) const
 }
 void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const
 {
-    bs.StoreBits(1, m_char_data.m_has_titles); // Does entity have titles?
-
-    if(!m_char_data.m_has_titles)
-        return;
-
     if(hasname)
         bs.StoreString(getName());
 

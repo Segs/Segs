@@ -56,7 +56,9 @@ void storeCreation(const Entity &src, BitStream &bs)
     {
         bs.StorePackedBits(1,src.m_entity_data.m_class_idx);
         bs.StorePackedBits(1,src.m_entity_data.m_origin_idx);
-        src.m_char.sendTitles(bs,NameFlag::NoName,ConditionalFlag::Conditional); // NoName b/c We send it below
+        bs.StoreBits(1, src.m_char.m_char_data.m_has_titles); // Does entity have titles?
+        if(src.m_char.m_char_data.m_has_titles)
+            src.m_char.sendTitles(bs,NameFlag::NoName,ConditionalFlag::Conditional); // NoName b/c We send it below
     }
     bs.StoreBits(1,src.m_hasname);
     if(src.m_hasname)
@@ -453,7 +455,9 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
-        src.m_char.sendTitles(bs,NameFlag::HasName,ConditionalFlag::Conditional);
+        bs.StoreBits(1, src.m_char.m_char_data.m_has_titles); // Does entity have titles?
+        if(src.m_char.m_char_data.m_has_titles)
+            src.m_char.sendTitles(bs,NameFlag::HasName,ConditionalFlag::Conditional);
     }
     if(src.m_pchar_things)
     {
