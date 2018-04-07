@@ -218,7 +218,6 @@ void cmdHandler_SetSpeed(QString &cmd, Entity *e) {
     float v3 = args.value(3).toFloat();
     setSpeed(*e, v1, v2, v3);
 
-    args.removeAt(0); // remove command string
     QString msg = "Set Speed to: <"
             + QString::number(v1) + ","
             + QString::number(v2) + ","
