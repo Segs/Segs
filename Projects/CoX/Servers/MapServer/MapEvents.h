@@ -158,8 +158,8 @@ public:
     }
     void serializefrom(BitStream &/*bs*/)
     {
-        // TODO: Seems like nothing is received server side.
-        qWarning() << "ClientResumedRendering unimplemented.";
+//        Parameterless - serializefrom is no-op
+//        assert(!"Unimplemented");
     }
 };
 
@@ -421,8 +421,8 @@ public:
     }
     void serializefrom(BitStream &/*bs*/)
     {
-        // TODO: Seems like nothing is received server side.
-        qWarning() << "AbortQueuedPower unimplemented.";
+//        Parameterless - serializefrom is no-op
+//        assert(!"Unimplemented");
     }
 };
 class DescriptionAndBattleCry final : public MapLinkEvent
