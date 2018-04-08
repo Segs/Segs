@@ -17,6 +17,7 @@ class GameCommand
     const size_t    m_type;
 public:
                 GameCommand(size_t type) : m_type(type) {}
+virtual         ~GameCommand() = default;
         size_t  type() const {return m_type;}
 virtual void    serializeto(BitStream &bs) const = 0;
 };

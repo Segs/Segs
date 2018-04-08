@@ -9,7 +9,7 @@ class QNetworkReply;
 class QIODevice;
 struct ProjectApp;
 struct ProjectList;
-struct AppVersionManifest;
+class AppVersionManifest;
 
 struct OperationData
 {

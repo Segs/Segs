@@ -20,7 +20,7 @@
 
 // Anonymous namespace
 namespace {
-    
+
 }
 // End Anonymous namespace
 
@@ -467,7 +467,7 @@ void Character::sendDescription(BitStream &bs) const
 }
 void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const
 {
-    if(hasname)
+    if(hasname == NameFlag::HasName)
         bs.StoreString(getName());
 
     bs.StoreBits(1, m_char_data.m_has_the_prefix); // an index to a title prefix ( 0 - None; 1 - The )

@@ -50,6 +50,9 @@ set(GAMEDATA_SRC
     #titles_serializers.cpp
     #titles_serializers.h
     #particle_definitions.h
+    power_definitions.h
+    power_serializers.cpp
+    power_serializers.h
     scenegraph_definitions.h
     shop_definitions.h
     map_definitions.h

@@ -1,18 +1,20 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2017 Super Entity Game Server Team (see Authors.txt)
+ * Super Entity Game Server
+ * http://github.com/Segs
+ * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
 
-#define _USE_MATH_DEFINES
-#include "Events/InputState.h"
+#include "InputState.h"
+#include "Character.h"
 #include "Entity.h"
 #include "GameData/CoHMath.h"
 #include "Logging.h"
+#include <glm/gtc/constants.hpp>
 #include <QDebug>
 #include <cmath>
+
 enum BinaryControl
 {
     FORWARD=0,
@@ -109,14 +111,19 @@ void InputState::partial_2(BitStream &bs)
     uint8_t control_id;
     uint16_t ms_since_prev;
     float v;
-    static const char *control_name[] = {"FORWARD",
-                                         "BACK",
-                                         "LEFT",
-                                         "RIGHT",
-                                         "UP",
-                                         "DOWN",
-                                         "PITCH",
-                                         "YAW",};
+
+    if(logInput().isDebugEnabled())
+    {
+         static const char *control_name[] = {"FORWARD",
+                                              "BACK",
+                                              "LEFT",
+                                              "RIGHT",
+                                              "UP",
+                                              "DOWN",
+                                              "PITCH",
+                                              "YAW",};
+    }
+  
     do
     {
         if(bs.GetBits(1))
@@ -196,7 +203,7 @@ void InputState::extended_input(BitStream &bs)
     {
         m_data.m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
         m_data.send_id = bs.GetBits(16);
-        m_data.current_state_P = 0;
+        m_data.current_state_P = nullptr;
         qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_data.m_csc_deltabits, m_data.send_id, m_data.current_state_P);
         partial_2(bs);
 
@@ -312,7 +319,7 @@ void InputState::recv_client_opts(BitStream &bs)
     while((cmd_idx = bs.GetPackedBits(1))!=0)
     {
         entry=opts.get(cmd_idx-1);
-        if (!entry) 
+        if (!entry)
         {
             qWarning() << "recv_client_opts missing opt for cmd index"<<cmd_idx-1;
             continue;

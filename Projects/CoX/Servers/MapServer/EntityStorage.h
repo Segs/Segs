@@ -34,7 +34,7 @@ public:
 class EntityManager
 {
     struct EntityIdxCompare {
-        bool operator()(Entity *a,Entity *b) const {
+        bool operator()(const Entity *a,const Entity *b) const {
             return getIdx(*a) < getIdx(*b);
         }
     };

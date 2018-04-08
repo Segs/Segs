@@ -160,13 +160,13 @@ bool CharacterDatabase::fill( Entity *e)
     EntityData *ed = &e->m_entity_data;
     qCDebug(logDB).noquote() << e->m_db_id;
 
-    m_prepared_entity_select.bindValue(":id",quint64(e->m_char.m_db_id));
+    m_prepared_entity_select.bindValue(":id",quint64(e->m_char->m_db_id));
     if(!doIt(m_prepared_entity_select))
         return false;
 
     if(!m_prepared_entity_select.next()) // retry with the first one
     {
-        m_prepared_entity_select.bindValue(":id",quint64(e->m_char.m_db_id));
+        m_prepared_entity_select.bindValue(":id",quint64(e->m_char->m_db_id));
         if(!doIt(m_prepared_entity_select))
             return false;
         if(!m_prepared_entity_select.next()) {
@@ -301,21 +301,21 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
 {
     assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
 
-    assert(e);
-    EntityData *ed = &e->m_entity_data;
+    assert(e && e->m_char);
 
-    Character *c = &e->m_char;
+    EntityData *ed = &e->m_entity_data;
+    Character &c(*e->m_char);
+
     assert(gid>0);
-    assert(c);
     assert(slot<8);
 
-    CharacterData *cd = &c->m_char_data;
+    CharacterData *cd = &c.m_char_data;
     cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
 
-    ClientOptions &od(c->m_options);
-    KeybindSettings &kbd(c->m_keybinds);
-    GUISettings &gui(c->m_gui);
-    Costume *cst = c->getCurrentCostume();
+    ClientOptions &od(c.m_options);
+    KeybindSettings &kbd(c.m_keybinds);
+    GUISettings &gui(c.m_gui);
+    Costume *cst = c.getCurrentCostume();
     if(!cst) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::create cannot insert char without costume.\n"))
                          ,false);
@@ -327,10 +327,10 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     */
     m_prepared_char_insert.bindValue(":slot_index", uint32_t(slot));
     m_prepared_char_insert.bindValue(":account_id", quint64(gid));
-    m_prepared_char_insert.bindValue(":char_name", c->m_name);
-    m_prepared_char_insert.bindValue(":bodytype", c->getCurrentCostume()->m_body_type);
-    m_prepared_char_insert.bindValue(":hitpoints", c->m_current_attribs.m_HitPoints);
-    m_prepared_char_insert.bindValue(":endurance", c->m_current_attribs.m_Endurance);
+    m_prepared_char_insert.bindValue(":char_name", c.m_name);
+    m_prepared_char_insert.bindValue(":bodytype", c.getCurrentCostume()->m_body_type);
+    m_prepared_char_insert.bindValue(":hitpoints", c.m_current_attribs.m_HitPoints);
+    m_prepared_char_insert.bindValue(":endurance", c.m_current_attribs.m_Endurance);
     m_prepared_char_insert.bindValue(":supergroup_id", uint32_t(e->m_supergroup.m_SG_id));
 
     QString entity_data;
@@ -362,7 +362,7 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     if(!doIt(m_prepared_char_insert))
         return false;
     int64_t char_id = m_prepared_char_insert.lastInsertId().toLongLong();
-    c->m_db_id = char_id;
+    c.m_db_id = char_id;
 
     qCDebug(logDB) << "char_id: " << char_id << ":" << c->m_db_id;
 
@@ -383,12 +383,12 @@ bool CharacterDatabase::update( Entity *e )
     assert(e);
     EntityData *ed = &e->m_entity_data;
 
-    Character *c = &e->m_char;
-    assert(c);
-    CharacterData *cd = &c->m_char_data;
+    assert(e->m_char);
+    Character &c(*e->m_char);
+    CharacterData *cd = &c.m_char_data;
     cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
 
-    Costume *cst = c->getCurrentCostume();
+    Costume *cst = c.getCurrentCostume();
     if(!cst) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::update cannot update char without costume.\n"))
                          ,false);
@@ -397,11 +397,11 @@ bool CharacterDatabase::update( Entity *e )
     /*
     ":id, :char_name, :chardata, :entitydata, :bodytype, :hitpoints, :endurance, :supergroup_id "
     */
-    m_prepared_char_update.bindValue(":id", uint32_t(c->m_db_id)); // for WHERE statement only
-    m_prepared_char_update.bindValue(":char_name", c->getName());
-    m_prepared_char_update.bindValue(":bodytype", c->getCurrentCostume()->m_body_type);
-    m_prepared_char_update.bindValue(":hitpoints", getHP(*c));
-    m_prepared_char_update.bindValue(":endurance", getEnd(*c));
+    m_prepared_char_update.bindValue(":id", uint32_t(c.m_db_id)); // for WHERE statement only
+    m_prepared_char_update.bindValue(":char_name", c.getName());
+    m_prepared_char_update.bindValue(":bodytype", c.getCurrentCostume()->m_body_type);
+    m_prepared_char_update.bindValue(":hitpoints", getHP(c));
+    m_prepared_char_update.bindValue(":endurance", getEnd(c));
     m_prepared_char_update.bindValue(":supergroup_id", uint32_t(e->m_supergroup.m_SG_id));
 
     QString entity_data;
@@ -421,14 +421,14 @@ bool CharacterDatabase::update( Entity *e )
 
     qCDebug(logDB).noquote() << entity_data;
     qCDebug(logDB).noquote() << char_data;
-    
+  
     if(!doIt(m_prepared_char_update))
         return false;
 
     // Update costume
     QString costume_parts;
     cst->serializeToDb(costume_parts);
-    m_prepared_costume_update.bindValue(":id",c->m_db_id);
+    m_prepared_costume_update.bindValue(":id",c.m_db_id);
     m_prepared_costume_update.bindValue(":costume_index",uint32_t(0));
     m_prepared_costume_update.bindValue(":skin_color",uint32_t(cst->skin_color));
     m_prepared_costume_update.bindValue(":parts",costume_parts);

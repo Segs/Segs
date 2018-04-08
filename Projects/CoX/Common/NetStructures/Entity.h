@@ -12,8 +12,12 @@
 
 #include <cmath>
 #include <array>
+#include <memory>
+
 class MapClient;
 class Team;
+class Character;
+
 struct AngleRadians // TODO: Is this intended to be used?
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
@@ -138,7 +142,7 @@ public:
     bool pyr_valid[3]                   = {};
     glm::vec3 pos_delta;
     bool m_controls_disabled            = false;
-  
+
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
 };
@@ -164,10 +168,10 @@ class Entity
 {
     // only EntityStore can create instances of this class
     friend class EntityStore;
-    friend class std::array<Entity,10240>;
+    friend struct std::array<Entity,10240>;
 private:
                             Entity();
-virtual                     ~Entity() = default;
+virtual                     ~Entity();
 public:
         struct currentInputState
         {
@@ -197,7 +201,7 @@ public:
         Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
         EntityData          m_entity_data;
 
-        int32_t             m_idx                   = {0};
+        uint32_t            m_idx                   = {0};
         uint32_t            m_db_id                 = {0};
         uint8_t             m_type                  = {0};
         glm::quat           m_direction;
@@ -206,7 +210,6 @@ public:
         uint32_t            m_assist_target_idx;
 
         int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
-        int                 field_68                = 0;
         int                 m_num_fx                = 0;
         bool                m_is_logging_out        = false;
         int                 m_time_till_logout      = 0;    // time in miliseconds untill given entity should be marked as logged out.
@@ -245,12 +248,14 @@ public:
         int                 u4 = 0;
         int                 u5 = 0;
         int                 u6 = 0;
-  
+
         PosUpdate           m_pos_updates[64];
         size_t              m_update_idx        = 0;
         std::vector<PosUpdate> interpResults;
-
-        Character           m_char;
+        // Some entities might not have a character data ( doors, cars )
+        // Making it an unique_ptr<Character> makes it clear that Entity 'owns'
+        // and takes care of this data, at the same time it can be missing
+        std::unique_ptr<Character> m_char;
 
         bool                entReceiveAlwaysCon         = false;
         bool                entReceiveSeeThroughWalls   = false;
@@ -272,8 +277,8 @@ public:
         uint32_t            m_input_ack                 = {0};
         bool                player_type                 = false;
         bool                m_destroyed                 = false;
-        int                 ownerEntityId               = 0;
-        int                 creatorEntityId             = 0;
+        uint32_t            ownerEntityId               = 0;
+        uint32_t            creatorEntityId             = 0;
         float               translucency                = 1.f;
         bool                m_is_fading                 = true;
         MapClient *         m_client                    = nullptr;
@@ -289,8 +294,8 @@ static  void                sendPvP(BitStream &bs);
         bool                update_rot(int axis) const; // returns true if given axis needs updating;
 
         void                InsertUpdate(PosUpdate pup);
-        const QString &     name() const {return m_char.getName();}
-        void                fillFromCharacter(Character *f);
+        const QString &     name() const;
+        void                fillFromCharacter(const Character &f);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 };
 void initializeNewPlayerEntity(Entity &e);
