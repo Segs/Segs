@@ -9,6 +9,7 @@
 #include "Servers/MapServer/DataHelpers.h"
 #include "Team.h"
 #include "Entity.h"
+#include "LFG.h"
 #include "Logging.h"
 
 /*
@@ -23,6 +24,9 @@ void Team::addTeamMember(Entity *e)
 
     if(e->m_has_team)
         return;
+
+    if(e->m_char->m_char_data.m_lfg)
+        removeLFG(*e);
 
     m_team_members.emplace_back(TeamMember{e->m_db_id, e->name()});
     e->m_has_team = true;

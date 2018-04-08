@@ -373,17 +373,20 @@ void toggleLFG(Entity &e)
 {
     CharacterData *cd = &e.m_char->m_char_data;
 
-    cd->m_lfg = !cd->m_lfg;
+    if(e.m_has_team)
+    {
+        QString errormsg = "You're already on a team! You cannot toggle LFG.";
+        sendInfoMessage(MessageChannel::TEAM, errormsg, e.m_client);
+        errormsg = e.name() + "is already on a team and cannot toggle LFG.";
+        qCDebug(logTeams) << errormsg;
+    }
 
     if(cd->m_lfg)
+        removeLFG(e);
+    else
     {
         addLFG(e);
         sendTeamLooking(&e);
-    }
-    else
-    {
-        removeLFG(e);
-        sendTeamLooking(&e); // again to update list/ui
     }
 }
 

@@ -14,71 +14,72 @@ InfoMessageCmd *info; // leverage InfoMessageCmd
 
 std::vector<SlashCommand> g_defined_slash_commands = {
     /* Access Level 9 Commands */
-    {{"Script"}, &cmdHandler_Script, 9},
-    {{"Dialog", "dlg"}, &cmdHandler_Dialog, 9},
-    {{"InfoMessage", "imsg"}, &cmdHandler_InfoMessage, 9},
-    {{"SmileX"}, &cmdHandler_SmileX, 9},
-    {{"fly", "flying"}, &cmdHandler_Fly, 9},
-    {{"falling"}, &cmdHandler_Falling, 9},
-    {{"sliding"}, &cmdHandler_Sliding, 9},
-    {{"jumping"}, &cmdHandler_Jumping, 9},
-    {{"stunned"}, &cmdHandler_Stunned, 9},
-    {{"jumppack"}, &cmdHandler_Jumppack, 9},
-    {{"setSpeed", "speed"}, &cmdHandler_SetSpeed, 9},
-    {{"setBackupSpd", "BackupSpd"}, &cmdHandler_SetBackupSpd, 9},
-    {{"setJumpHeight", "JumpHeight"}, &cmdHandler_SetJumpHeight, 9},
-    {{"setHP"}, &cmdHandler_SetHP, 9},
-    {{"setEnd"}, &cmdHandler_SetEnd, 9},
-    {{"setXP"}, &cmdHandler_SetXP, 9},
-    {{"setDebt"}, &cmdHandler_SetDebt, 9},
-    {{"setInf"}, &cmdHandler_SetInf, 9},
-    {{"setLevel"}, &cmdHandler_SetLevel, 9},
-    {{"setCombatLevel"}, &cmdHandler_SetCombatLevel, 9},
-    {{"UpdateChar", "CharUpdate", "save"}, &cmdHandler_UpdateChar, 9},
-    {{"DebugChar", "chardebug"}, &cmdHandler_DebugChar, 9},
-    {{"ControlsDisabled"}, &cmdHandler_ControlsDisabled, 9},
-    {{"updateid"}, &cmdHandler_UpdateId, 9},
-    {{"fullupdate"}, &cmdHandler_FullUpdate, 9},
-    {{"hascontrolid"}, &cmdHandler_HasControlId, 9},
-    {{"setTeam", "setTeamID"}, &cmdHandler_SetTeam, 9},
-    {{"setSuperGroup","setSG"}, &cmdHandler_SetSuperGroup, 9},
-    {{"settingsDump", "settingsDebug"}, &cmdHandler_SettingsDump, 9},
-    {{"teamDump", "teamDebug"}, &cmdHandler_TeamDebug, 9},
-    {{"guiDump", "guiDebug"}, &cmdHandler_GUIDebug, 9},
-    {{"setWindowVisibility", "setWinVis"}, &cmdHandler_SetWindowVisibility, 9},
-    {{"keybindDump", "keybindDebug"}, &cmdHandler_KeybindDebug, 9},
-    {{"toggleLogging", "log"}, &cmdHandler_ToggleLogging, 9},
-    {{"friendsDump", "friendsDebug"}, &cmdHandler_FriendsListDebug, 9},
-    {{"setu1"}, &cmdHandler_SetU1, 9},
-    {{"setu2"}, &cmdHandler_SetU2, 9},
-    {{"setu3"}, &cmdHandler_SetU3, 9},
-    {{"setu4"}, &cmdHandler_SetU4, 9},
-    {{"setu5"}, &cmdHandler_SetU5, 9},
-    {{"setu6"}, &cmdHandler_SetU6, 9},
+    {{"Script"},"Run a Script", &cmdHandler_Script, 9},
+    {{"Dialog", "dlg"},"Open a dialog box with any string arg", &cmdHandler_Dialog, 9},
+    {{"InfoMessage", "imsg"},"Send an info message into chat. Expects <int> <string>, e.g. /imsg 1 test", &cmdHandler_InfoMessage, 9},
+    {{"SmileX"},"Runs the smlx script SmileX", &cmdHandler_SmileX, 9},
+    {{"fly", "flying"},"Toggle flying On/Off", &cmdHandler_Fly, 9},
+    {{"falling"},"Toggle falling On/Off", &cmdHandler_Falling, 9},
+    {{"sliding"},"Toggle sliding On/Off", &cmdHandler_Sliding, 9},
+    {{"jumping"},"Toggle jumping On/Off", &cmdHandler_Jumping, 9},
+    {{"stunned"},"Toggle stunned character On/Off", &cmdHandler_Stunned, 9},
+    {{"jumppack"},"Toggle jump pack On/Off", &cmdHandler_Jumppack, 9},
+    {{"setSpeed", "speed"},"Set your player Speed", &cmdHandler_SetSpeed, 9},
+    {{"setBackupSpd", "BackupSpd"},"Set the Backup Speed", &cmdHandler_SetBackupSpd, 9},
+    {{"setJumpHeight", "JumpHeight"},"Set the Jump Height", &cmdHandler_SetJumpHeight, 9},
+    {{"setHP"},"Set the HP value of your character", &cmdHandler_SetHP, 9},
+    {{"setEnd"},"Set your Endurance", &cmdHandler_SetEnd, 9},
+    {{"setXP"},"Set your XP", &cmdHandler_SetXP, 9},
+    {{"setDebt"},"Set your Debt", &cmdHandler_SetDebt, 9},
+    {{"setInf"},"Set your Influence", &cmdHandler_SetInf, 9},
+    {{"setLevel"},"Set your Level", &cmdHandler_SetLevel, 9},
+    {{"setCombatLevel"},"Set your Combat Level", &cmdHandler_SetCombatLevel, 9},
+    {{"UpdateChar", "CharUpdate", "save"},"Update character information in the database", &cmdHandler_UpdateChar, 9},
+    {{"DebugChar", "chardebug"},"View your characters debug information", &cmdHandler_DebugChar, 9},
+    {{"ControlsDisabled"},"Disable controls", &cmdHandler_ControlsDisabled, 9},
+    {{"updateid"},"Update ID", &cmdHandler_UpdateId, 9},
+    {{"fullupdate"},"Full Update", &cmdHandler_FullUpdate, 9},
+    {{"hascontrolid"},"Force the server to acknowledge input ids", &cmdHandler_HasControlId, 9},
+    {{"setTeam", "setTeamID"},"Set the team idx", &cmdHandler_SetTeam, 9},
+    {{"setSuperGroup","setSG"},"Set your Super Group", &cmdHandler_SetSuperGroup, 9},
+    {{"settingsDump","settingsDebug"},"Output settings.cfg to console", &cmdHandler_SettingsDump, 9},
+    {{"teamDump", "teamDebug"}, "Output team settings to console", &cmdHandler_TeamDebug, 9},
+    {{"guiDump", "guiDebug"}, "Output gui settings to console", &cmdHandler_GUIDebug, 9},
+    {{"setWindowVisibility", "setWinVis"}, "", &cmdHandler_SetWindowVisibility, 9},
+    {{"keybindDump", "keybindDebug"}, "Output keybind settings to console", &cmdHandler_KeybindDebug, 9},
+    {{"toggleLogging", "log"}, "Modify log categories (e.g. input, teams, ...)", &cmdHandler_ToggleLogging, 9},
+    {{"friendsDump", "friendsDebug"}, "Output friendlist info to console", &cmdHandler_FriendsListDebug, 9},
+    {{"setu1"},"Set bitvalue u1", &cmdHandler_SetU1, 9},
+    {{"setu2"},"Set bitvalue u2", &cmdHandler_SetU2, 9},
+    {{"setu3"},"Set bitvalue u3", &cmdHandler_SetU3, 9},
+    {{"setu4"},"Set bitvalue u4", &cmdHandler_SetU4, 9},
+    {{"setu5"},"Set bitvalue u5", &cmdHandler_SetU5, 9},
+    {{"setu6"},"Set bitvalue u6", &cmdHandler_SetU6, 9},
     /* Access Level 1 Commands */
-    {{"help","listcommands"}, &cmdHandler_Help, 1},
-    {{"afk"}, &cmdHandler_AFK, 1},
-    {{"whoall"}, &cmdHandler_WhoAll, 1},
-    {{"setTitles"}, &cmdHandler_SetTitles, 1},
-    {{"stuck"}, &cmdHandler_Stuck, 1},
-    {{"lfg"}, &cmdHandler_LFG, 1},
-    {{"motd"}, &cmdHandler_MOTD, 1},
-    {{"i","invite"}, &cmdHandler_Invite, 1},
-    {{"team_accept"}, &cmdHandler_TeamAccept, 1},
-    {{"team_decline"}, &cmdHandler_TeamDecline, 1},
-    {{"k","kick"}, &cmdHandler_Kick, 1},
-    {{"leaveteam"}, &cmdHandler_LeaveTeam, 1},
-    {{"findmember"}, &cmdHandler_FindMember, 1},
-    {{"makeleader","ml"}, &cmdHandler_MakeLeader, 1},
-    {{"assist"}, &cmdHandler_SetAssistTarget, 1},
-    {{"sidekick","sk"}, &cmdHandler_Sidekick, 1},
-    {{"sidekick_accept"}, &cmdHandler_SidekickAccept, 1},
-    {{"sidekick_decline"}, &cmdHandler_SidekickDecline, 1},
-    {{"unsidekick","unsk"}, &cmdHandler_UnSidekick, 1},
-    {{"buffs"}, &cmdHandler_TeamBuffs, 1},
-    {{"friend"}, &cmdHandler_Friend, 1},
-    {{"unfriend","estrange"}, &cmdHandler_Unfriend, 1},
-    {{"friendlist", "fl"}, &cmdHandler_FriendList, 1}
+    {{"cmdlist","commandlist"},"List all accessible commands", &cmdHandler_CmdList, 1},
+    {{"afk"},"Mark yourself as Away From Keyboard", &cmdHandler_AFK, 1},
+    {{"whoall"},"Shows who is on the current map ", &cmdHandler_WhoAll, 1},
+    {{"setTitles"},"Set your title", &cmdHandler_SetTitles, 1},
+    {{"stuck"},"Free yourself if your character gets stuck", &cmdHandler_Stuck, 1},
+    {{"lfg"},"Toggle looking for group status ", &cmdHandler_LFG, 1},
+    {{"motd"},"View the server MOTD", &cmdHandler_MOTD, 1},
+    {{"i","invite"}, "Invite player to team", &cmdHandler_Invite, 1},
+    {{"k","kick"}, "Kick player from team", &cmdHandler_Kick, 1},
+    {{"leaveteam"}, "Leave the team you're currently on", &cmdHandler_LeaveTeam, 1},
+    {{"findmember"}, "Open Looking For Group Window", &cmdHandler_FindMember, 1},
+    {{"makeleader","ml"}, "Make another player team leader", &cmdHandler_MakeLeader, 1},
+    {{"assist"}, "Re-target based on the selected entity's current target", &cmdHandler_SetAssistTarget, 1},
+    {{"sidekick","sk"}, "Invite player to sidekick", &cmdHandler_Sidekick, 1},
+    {{"unsidekick","unsk"}, "Remove sidekick/duo relationship", &cmdHandler_UnSidekick, 1},
+    {{"buffs"}, "Toggle buffs display on team window", &cmdHandler_TeamBuffs, 1},
+    {{"friend"}, "Add friend to friendlist", &cmdHandler_Friend, 1},
+    {{"unfriend","estrange"}, "Remove friend from friendlist", &cmdHandler_Unfriend, 1},
+    {{"friendlist", "fl"}, "Toggle visibility of friendslist", &cmdHandler_FriendList, 1},
+    /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
+    {{"team_accept"}, "Accept Team invite", &cmdHandler_TeamAccept, 0},
+    {{"team_decline"}, "Decline Team invite", &cmdHandler_TeamDecline, 0},
+    {{"sidekick_accept"}, "Accept Sidekick invite", &cmdHandler_SidekickAccept, 0},
+    {{"sidekick_decline"}, "Decline Sidekick invite", &cmdHandler_SidekickDecline, 0}
 };
 
 bool canAccessCommand(const SlashCommand &cmd, const Entity &e)
@@ -613,19 +614,31 @@ void cmdHandler_SetU6(QString &cmd, Entity *e) {
 }
 
 // Access Level 1 Commands
-void cmdHandler_Help(QString &cmd, Entity *e) {
+void cmdHandler_CmdList(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    QString msg = "Below is a list of all slash commands. They are not case sensitive.\n";
+    QString msg = "Below is a list of all slash commands that your account can access. They are not case sensitive.\n";
+    QString msg_dlg = "<face heading><span align=center><color #ff0000>Command List</color></span></face><br>\n<br>\n";
 
     for(const auto &sc : g_defined_slash_commands)
     {
         int alvl = getAccessLevel(*e);
         if(alvl >= sc.m_required_access_level)
-            msg += "\t" + sc.m_valid_prefixes.join(", ") + "\n";
+        {
+            // We don't want to show acess_level 0 (Under the Hood commands)
+            if(sc.m_required_access_level != 0 )
+            {
+                // Use msg for std out, msg_dlg for ingame dialog box
+                msg += "\t" + sc.m_valid_prefixes.join(", ") + "[" + QString::number(sc.m_required_access_level) + "]:\t" + sc.m_help_text + "\n";
+                msg_dlg += QString("<color #ffCC99><i>%1</i></color>[<color #66ffff>%2</color>]: %3<br>").arg(sc.m_valid_prefixes.join(", ")).arg(sc.m_required_access_level).arg(sc.m_help_text);
+            }
+        }
     }
 
+    // Dialog output
+    StandardDialogCmd *dlg = new StandardDialogCmd(msg_dlg);
+    src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+    // CMD line (debug) output
     qCDebug(logSlashCommand).noquote() << cmd << ":\n" << msg;
-    sendInfoMessage(MessageChannel::SERVER, msg, src);
 }
 
 void cmdHandler_AFK(QString &cmd, Entity *e) {

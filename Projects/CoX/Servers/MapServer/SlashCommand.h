@@ -9,6 +9,7 @@ class InfoMessageCmd; // leverage InfoMessageCmd
 struct SlashCommand
 {
     QStringList m_valid_prefixes;
+    QString m_help_text;
     std::function<void(QString &,Entity *)> m_handler;
     int m_required_access_level;
 };
@@ -62,7 +63,7 @@ void cmdHandler_SetU5(QString &cmd, Entity *e);
 void cmdHandler_SetU6(QString &cmd, Entity *e);
 
 // Access Level 1 Commands
-void cmdHandler_Help(QString &cmd, Entity *e);
+void cmdHandler_CmdList(QString &cmd, Entity *e);
 void cmdHandler_AFK(QString &cmd, Entity *e);
 void cmdHandler_WhoAll(QString &cmd, Entity *e);
 void cmdHandler_SetTitles(QString &cmd, Entity *e);

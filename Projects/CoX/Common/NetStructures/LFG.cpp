@@ -18,6 +18,8 @@ std::vector<LFGMember> g_lfg_list;
 
 void addLFG(Entity &src)
 {
+    src.m_char->m_char_data.m_lfg = true;
+
     LFGMember list;
     list.m_name         = src.name();
     list.m_classname    = src.m_char->m_char_data.m_class_name;
@@ -29,6 +31,7 @@ void addLFG(Entity &src)
 
 void removeLFG(Entity &tgt)
 {
+    tgt.m_char->m_char_data.m_lfg = false;
     // remove by name
     QString name_to_find = tgt.name();
     auto iter = std::find_if( g_lfg_list.begin(), g_lfg_list.end(),

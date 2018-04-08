@@ -355,9 +355,9 @@ void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
     bs.StoreBits(1,target->m_full_update);
     if( !target->m_full_update )
         bs.StoreBits(1,target->m_has_control_id);
-#ifdef LOG_
-    fprintf(stderr,"Phys: send %d ",target->m_input_ack);
-#endif
+
+    qCDebug(logInput,"Phys: send %d ",target->m_input_ack);
+
     if( target->m_full_update || target->m_has_control_id)
         bs.StoreBits(16,target->m_input_ack); //target->m_input_ack
     if(target->m_full_update)
