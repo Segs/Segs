@@ -376,7 +376,7 @@ void toggleLFG(Entity &e)
     if(e.m_has_team)
     {
         QString errormsg = "You're already on a team! You cannot toggle LFG.";
-        sendInfoMessage(MessageChannel::TEAM, errormsg, e.m_client);
+        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, e.m_client);
         errormsg = e.name() + "is already on a team and cannot toggle LFG.";
         qCDebug(logTeams) << errormsg;
     }
