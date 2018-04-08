@@ -13,17 +13,17 @@ InfoMessageCmd *info; // leverage InfoMessageCmd
 std::vector<SlashCommand> g_defined_slash_commands = {
     /* Access Level 9 Commands */
     {{"Script"},"Run a Script", &cmdHandler_Script, 9},
-    {{"Dialog", "dlg"},"Set the jumpheight", &cmdHandler_Dialog, 9},
-    {{"InfoMessage", "imsg"},"Set the jumpheight", &cmdHandler_InfoMessage, 9},
-    {{"SmileX"},"Set the jumpheight", &cmdHandler_SmileX, 9},
+    {{"Dialog", "dlg"},"Open a dialog box with any string arg", &cmdHandler_Dialog, 9},
+    {{"InfoMessage", "imsg"},"Send an info message into chat. Expects <int> <string>, e.g. /imsg 1 test", &cmdHandler_InfoMessage, 9},
+    {{"SmileX"},"Runs the smlx script SmileX", &cmdHandler_SmileX, 9},
     {{"fly", "flying"},"Toggle flying On/Off", &cmdHandler_Fly, 9},
-    {{"falling"},"Set the jumpheight", &cmdHandler_Falling, 9},
-    {{"sliding"},"Set the jumpheight", &cmdHandler_Sliding, 9},
-    {{"jumping"},"Set the jumpheight", &cmdHandler_Jumping, 9},
-    {{"stunned"},"Set the jumpheight", &cmdHandler_Stunned, 9},
+    {{"falling"},"Toggle falling On/Off", &cmdHandler_Falling, 9},
+    {{"sliding"},"Toggle sliding On/Off", &cmdHandler_Sliding, 9},
+    {{"jumping"},"Toggle jumping On/Off", &cmdHandler_Jumping, 9},
+    {{"stunned"},"Toggle stunned character On/Off", &cmdHandler_Stunned, 9},
     {{"jumppack"},"Toggle jump pack On/Off", &cmdHandler_Jumppack, 9},
     {{"setSpeed", "speed"},"Set your player speed", &cmdHandler_SetSpeed, 9},
-    {{"setBackupSpd", "BackupSpd"},"Set the jumpheight", &cmdHandler_SetBackupSpd, 9},
+    {{"setBackupSpd", "BackupSpd"},"Set the Backup Speed", &cmdHandler_SetBackupSpd, 9},
     {{"setJumpHeight", "JumpHeight"},"Set the jump height", &cmdHandler_SetJumpHeight, 9},
     {{"setHP"},"Set the HP value of your character", &cmdHandler_SetHP, 9},
     {{"setEnd"},"Set your Endurance", &cmdHandler_SetEnd, 9},
@@ -32,26 +32,26 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"setInf"},"Set your Influence", &cmdHandler_SetInf, 9},
     {{"setLevel"},"Set your level", &cmdHandler_SetLevel, 9},
     {{"setCombatLevel"},"Set your combat level", &cmdHandler_SetCombatLevel, 9},
-    {{"UpdateChar", "CharUpdate", "save"},"Set the jumpheight", &cmdHandler_UpdateChar, 9},
-    {{"DebugChar", "chardebug"},"Set the jumpheight", &cmdHandler_DebugChar, 9},
-    {{"ControlsDisabled"},"Set the jumpheight", &cmdHandler_ControlsDisabled, 9},
-    {{"updateid"},"Set the jumpheight", &cmdHandler_UpdateId, 9},
-    {{"fullupdate"},"Set the jumpheight", &cmdHandler_FullUpdate, 9},
-    {{"hascontrolid"},"Set the jumpheight", &cmdHandler_HasControlId, 9},
-    {{"setTeam"},"Set the jumpheight", &cmdHandler_SetTeam, 9},
+    {{"UpdateChar", "CharUpdate", "save"},"Update character information in the database", &cmdHandler_UpdateChar, 9},
+    {{"DebugChar", "chardebug"},"View your characters debug information", &cmdHandler_DebugChar, 9},
+    {{"ControlsDisabled"},"Disable controls", &cmdHandler_ControlsDisabled, 9},
+    {{"updateid"},"Update ID", &cmdHandler_UpdateId, 9},
+    {{"fullupdate"},"Full Update", &cmdHandler_FullUpdate, 9},
+    {{"hascontrolid"},"Force the server to acknowledge input ids", &cmdHandler_HasControlId, 9},
+    {{"setTeam"},"Set the team", &cmdHandler_SetTeam, 9},
     {{"setSuperGroup"},"Set your Super Group", &cmdHandler_SetSuperGroup, 9},
-    {{"settingsDump"},"Set the jumpheight", &cmdHandler_SettingsDump, 9},
-    {{"setu1"},"Set the jumpheight", &cmdHandler_SetU1, 9},
-    {{"setu2"},"Set the jumpheight", &cmdHandler_SetU2, 9},
-    {{"setu3"},"Set the jumpheight", &cmdHandler_SetU3, 9},
-    {{"setu4"},"Set the jumpheight", &cmdHandler_SetU4, 9},
-    {{"setu5"},"Set the jumpheight", &cmdHandler_SetU5, 9},
-    {{"setu6"},"Set the jumpheight", &cmdHandler_SetU6, 9},
+    {{"settingsDump"},"Output settings.cfg to console", &cmdHandler_SettingsDump, 9},
+    {{"setu1"},"Set bitvalue u1", &cmdHandler_SetU1, 9},
+    {{"setu2"},"Set bitvalue u2", &cmdHandler_SetU2, 9},
+    {{"setu3"},"Set bitvalue u3", &cmdHandler_SetU3, 9},
+    {{"setu4"},"Set bitvalue u4", &cmdHandler_SetU4, 9},
+    {{"setu5"},"Set bitvalue u5", &cmdHandler_SetU5, 9},
+    {{"setu6"},"Set bitvalue u6", &cmdHandler_SetU6, 9},
     /* Access Level 1 Commands */
     {{"cmdlist","commandlist"},"List all accessible commands", &cmdHandler_CmdList, 1},
     {{"afk"},"Mark yourself as Away From Keyboard", &cmdHandler_AFK, 1},
     {{"whoall"},"Shows who is on the current map ", &cmdHandler_WhoAll, 1},
-    {{"setTitles"},"Set the jumpheight", &cmdHandler_SetTitles, 1},
+    {{"setTitles"},"Set your title", &cmdHandler_SetTitles, 1},
     {{"stuck"},"Free yourself if your character gets stuck", &cmdHandler_Stuck, 1},
     {{"lfg"},"Toggle looking for group status ", &cmdHandler_LFG, 1},
     {{"motd"},"View the server MOTD", &cmdHandler_MOTD, 1},
@@ -515,21 +515,28 @@ void cmdHandler_SetU6(QString &cmd, Entity *e) {
 // Access Level 1 Commands
 void cmdHandler_CmdList(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    QString msg = "Below is a list of all slash commands. They are not case sensitive.\n";
+    QString msg = "Below is a list of all slash commands that your account can access. They are not case sensitive.\n";
     QString msg_dlg = "<face heading><span align=center><color #ff0000>Command List</color></span></face><br>\n<br>\n";
 
     for(const auto &sc : g_defined_slash_commands)
     {
         int alvl = getAccessLevel(*e);
         if(alvl >= sc.m_required_access_level)
-            // Use msg for std out, ms_dlg for ingame dialog box
-            msg += "\t" + sc.m_valid_prefixes.join(", ") + ":\t" + sc.m_help_text + "\n";
-            msg_dlg += "<color #ffCC99><i>"+sc.m_valid_prefixes.join(", ") + "</i></color>: " + sc.m_help_text + "<br>";
+        {
+            // We don't want to show acess_level 0 (Under the Hood commands)
+            if(sc.m_required_access_level != 0 )
+            {
+                // Use msg for std out, msg_dlg for ingame dialog box
+                msg += "\t" + sc.m_valid_prefixes.join(", ") + "[" + QString::number(sc.m_required_access_level) + "]:\t" + sc.m_help_text + "\n";
+                msg_dlg += "<color #ffCC99><i>" + sc.m_valid_prefixes.join(", ") + "</i></color>[<color #66ffff>" + QString::number(sc.m_required_access_level) + "</color>]: " + sc.m_help_text + "<br>";
+            }
+        }
     }
+    // Dialog output
     StandardDialogCmd *dlg = new StandardDialogCmd(msg_dlg);
     src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+    // CMD line (debug) output
     qDebug().noquote() << cmd << ":\n" << msg;
-    sendInfoMessage(MessageChannel::SERVER, msg, src);
 }
 
 void cmdHandler_AFK(QString &cmd, Entity *e) {
@@ -625,13 +632,4 @@ void cmdHandler_MOTD(QString &cmd, Entity *e) {
     QString msg = "Opening Server MOTD";
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, src);
-}
-
-void cmdHandler_Help(QString &cmd, Entity *e) {
-    MapClient *src = e->m_client;
-
-    sendServerMOTD(e);
-
-    QString msg = "Opening Help Dialog Box";
-
 }
