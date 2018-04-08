@@ -88,7 +88,7 @@ SEGSEvent * GameHandler::dispatchSync( SEGSEvent *ev )
 void GameHandler::on_connection_request(ConnectRequest *ev)
 {
     // TODO: disallow connects if server is overloaded
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("CLIENT VERSION %d\n"),ev->m_version));
+    qDebug("Client-side CRUDP Level: %d \n\t Tick Count: %d", ev->m_version, ev->m_tickcount);
     ev->src()->putq(new ConnectResponse);
 }
 void GameHandler::on_update_server(UpdateServer *ev)
@@ -97,19 +97,19 @@ void GameHandler::on_update_server(UpdateServer *ev)
     if(cl==nullptr)
     {
         ev->src()->putq(new GameEntryError(this,"Unauthorized !"));
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("GameEntryError : Unauthorized !\n")));
+        qDebug("GameEntryError: Unauthorized!");
         return;
     }
     if(ev->m_build_date!=supported_version)
     {
         ev->src()->putq(new GameEntryError(this,"We are very sorry but your client version is not supported."));
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("GameEntryError : Client version !\n")));
+        qDebug("GameEntryError: Client version %u not supported!", ev->m_build_date);
         return;
     }
     if(!cl->getCharsFromDb())
     {
         ev->src()->putq(new GameEntryError(this,"DB error encountered!"));
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("GameEntryError : getCharsFromDb error !\n")));
+        qDebug("GameEntryError: getCharsFromDb error!");
         return;
     }
     m_clients.connectedClient(ev->authCookie);
