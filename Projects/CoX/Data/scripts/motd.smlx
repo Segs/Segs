@@ -17,6 +17,6 @@ Please consider contributing to our success by reporting bugs on our github:<br>
 <color #ffCC99><i>/stuck</i></color> - resets your character to the starting location in Atlas Park<br>
 <color #ffCC99><i>/updatechar</i></color> - update the database with your character information<br>
 <color #ffCC99><i>/fly</i></color> - toggles the "flying" flag for your character<br>
-<color #ffCC99><i>/help</i></color> - list all available slash commands<br>
+<color #ffCC99><i>/cmdlist</i></color> - list all available slash commands<br>
 <br><br>
 <a href={OK}>Click OK below to close this box and begin playing!</a><br>
