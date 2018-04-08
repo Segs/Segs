@@ -310,7 +310,7 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
     if(ev->char_from_db)
     {
         Entity *ent = m_entities.CreatePlayer();
-        ent->fillFromCharacter(ev->char_from_db);
+        ent->fillFromCharacter(*ev->char_from_db);
         cl->char_entity(ent);
     }
     ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
@@ -327,7 +327,6 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
 void MapInstance::on_create_map_entity(NewEntity *ev)
 {
     //TODO: At this point we should pre-process the NewEntity packet and let the proper CoXMapInstance handle the rest of processing
-
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *cl = m_clients.getExpectedByCookie(ev->m_cookie-2);
 
@@ -359,7 +358,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
 #endif
 
     cl->current_map()->enqueue_client(cl);
-    setMapName(cl->char_entity()->m_char,name());
+    setMapName(*cl->char_entity()->m_char,name());
     lnk->set_client_data(cl);
     lnk->putq(new MapInstanceConnected(this,1,""));
 }
@@ -534,7 +533,7 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
         "\\$target"
     };
 
-    Character c = sender->char_entity()->m_char;
+    const Character &c(*sender->char_entity()->m_char);
 
     QString  sender_class       = QString(getClass(c)).remove("Class_");
     QString  sender_battlecry   = getBattleCry(c);
@@ -702,7 +701,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
                 prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
                 sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,tgt->m_client);
             }
-            
+
             break;
         }
         case MessageChannel::TEAM:
@@ -1438,7 +1437,7 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     MapClient *src = lnk->client_data();
-    Character c = src->char_entity()->m_char;
+    Character &c(*src->char_entity()->m_char);
 
     setBattleCry(c,ev->battlecry);
     setDescription(c,ev->description);
@@ -1486,7 +1485,7 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
     // corresponds to the InfoType in InfoMessageCmd and eChatTypes in ChatMessage
 
     // Passing cur_chat_channel to Character in case we need it somewhere.
-    ent->m_char.m_char_data.m_cur_chat_channel = ev->m_chat_type;
+    ent->m_char->m_char_data.m_cur_chat_channel = ev->m_chat_type;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)

@@ -34,7 +34,7 @@ bool loadFrom(BinStore *s,BodyPart_Data *target) {
     ok &= s->read(target->boneIndices[1]);
     ok &= s->read(target->m_TexName);
     ok &= s->read(target->m_BaseName);
-    uint32_t m_BoneCount2;
+    int m_BoneCount2;
     ok &= s->read(m_BoneCount2);
     assert(m_BoneCount2==target->m_BoneCount);
     ok &= s->prepare_nested(); // will update the file size left

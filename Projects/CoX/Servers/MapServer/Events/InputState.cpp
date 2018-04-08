@@ -5,16 +5,17 @@
  * This software is licensed! (See License.txt for details)
  *
  */
+#include "InputState.h"
 
+#include "Character.h"
+#include "Entity.h"
+#include "GameData/CoHMath.h"
+#include <glm/gtc/constants.hpp>
+#include <QDebug>
+#include <cmath>
 //#define DEBUG_INPUT
 //#define DEBUG_ORIENTATION
 //#define DEBUG_TARGET
-#define _USE_MATH_DEFINES
-#include "Events/InputState.h"
-#include "Entity.h"
-#include "GameData/CoHMath.h"
-#include <QDebug>
-#include <cmath>
 enum BinaryControl
 {
     FORWARD=0,
@@ -117,6 +118,7 @@ void InputState::partial_2(BitStream &bs)
     uint8_t control_id;
     uint16_t ms_since_prev;
     float v;
+#ifdef DEBUG_INPUT
     static const char *control_name[] = {"FORWARD",
                                          "BACK",
                                          "LEFT",
@@ -125,6 +127,7 @@ void InputState::partial_2(BitStream &bs)
                                          "DOWN",
                                          "PITCH",
                                          "YAW",};
+#endif
     do
     {
         if(bs.GetBits(1))
@@ -210,7 +213,7 @@ void InputState::extended_input(BitStream &bs)
     {
         m_data.m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
         m_data.send_id = bs.GetBits(16);
-        m_data.current_state_P = 0;
+        m_data.current_state_P = nullptr;
 #ifdef DEBUG_INPUT
         fprintf(stderr,"CSC_DELTA[%x-%x-%x] : ", m_data.m_csc_deltabits, m_data.send_id, m_data.current_state_P);
 #endif
@@ -335,7 +338,7 @@ void InputState::recv_client_opts(BitStream &bs)
     while((cmd_idx = bs.GetPackedBits(1))!=0)
     {
         entry=opts.get(cmd_idx-1);
-        if (!entry) 
+        if (!entry)
         {
             qWarning() << "recv_client_opts missing opt for cmd index"<<cmd_idx-1;
             continue;

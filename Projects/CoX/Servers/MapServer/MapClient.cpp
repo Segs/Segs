@@ -1,6 +1,8 @@
 #include "MapClient.h"
-#include "AdminServer/AccountInfo.h"
+
+#include "Character.h"
 #include "Entity.h"
+#include "AdminServer/AccountInfo.h"
 #include "NetCommandManager.h"
 
 #include <cstdarg>
@@ -24,7 +26,7 @@ bool MapClient::db_create()
     Character * new_char = account_info().create_new_character();
     if(!new_char)
         return false;
-    *new_char = m_ent->m_char;
+    *new_char = *m_ent->m_char;
     new_char->setName(m_name);
     account_info().store_new_character(m_ent, new_char); // Must pass both entity and char.
 
@@ -34,7 +36,7 @@ bool MapClient::db_create()
 void MapClient::entity( Entity * val )
 {
     m_ent = val;
-    m_ent->m_char.setName(m_name); // this is used because the new characters are passed to us nameless
+    m_ent->m_char->setName(m_name); // this is used because the new characters are passed to us nameless
 }
 // This packet tells us to fill in client data from db/create a new character
 /*

@@ -252,14 +252,14 @@ void cmdHandler_SetHP(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
     float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
-    float maxattrib = e->m_char.m_max_attribs.m_HitPoints;
+    float maxattrib = e->m_char->m_max_attribs.m_HitPoints;
 
     if(attrib > maxattrib)
         attrib = maxattrib;
 
-    setHP(e->m_char,attrib);
+    setHP(*e->m_char,attrib);
 
-    QString msg = "Setting HP to: " + QString::number(attrib) + "/" + QString::number(maxattrib);
+    QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(maxattrib);
     qDebug() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
@@ -268,12 +268,12 @@ void cmdHandler_SetEnd(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
     float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
-    float maxattrib = e->m_char.m_max_attribs.m_Endurance;
+    float maxattrib = e->m_char->m_max_attribs.m_Endurance;
 
     if(attrib > maxattrib)
         attrib = maxattrib;
 
-    setEnd(e->m_char,attrib);
+    setEnd(*e->m_char,attrib);
 
     QString msg = "Setting Endurance to: " + QString::number(attrib) + "/" + QString::number(maxattrib);
     qDebug() << msg;
@@ -284,12 +284,12 @@ void cmdHandler_SetXP(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
-    uint32_t lvl = getLevel(e->m_char);
+    uint32_t lvl = getLevel(*e->m_char);
 
-    setXP(e->m_char, attrib);
+    setXP(*e->m_char, attrib);
     QString msg = "Setting XP to " + QString::number(attrib);
 
-    uint32_t newlvl = getLevel(e->m_char);
+    uint32_t newlvl = getLevel(*e->m_char);
     if(lvl != newlvl)
         msg += " and LVL to " + QString::number(newlvl);
 
@@ -301,8 +301,8 @@ void cmdHandler_SetDebt(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
     float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
 
-    setDebt(e->m_char, attrib);
-    QString msg = "Setting XP Debt to " + QString::number(attrib);
+    setDebt(*e->m_char, attrib);
+    QString msg = QString("Setting XP Debt to %1").arg(attrib);
 
     qDebug() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
@@ -312,7 +312,7 @@ void cmdHandler_SetInf(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
-    setInf(e->m_char, attrib);
+    setInf(*e->m_char, attrib);
 
     QString msg = "Setting influence to: " + QString::number(attrib);
     qDebug() << msg;
@@ -323,7 +323,7 @@ void cmdHandler_SetLevel(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
-    setLevel(e->m_char, attrib); // TODO: Why does this result in -1?
+    setLevel(*e->m_char, attrib); // TODO: Why does this result in -1?
 
     QString msg = "Setting Level to: " + QString::number(attrib);
     qDebug() << msg;
@@ -334,7 +334,7 @@ void cmdHandler_SetCombatLevel(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
-    setCombatLevel(e->m_char, attrib); // TODO: Why does this result in -1?
+    setCombatLevel(*e->m_char, attrib); // TODO: Why does this result in -1?
 
     QString msg = "Setting Combat Level to: " + QString::number(attrib);
     qDebug() << msg;
@@ -353,20 +353,20 @@ void cmdHandler_UpdateChar(QString &cmd, Entity *e) {
 
 void cmdHandler_DebugChar(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-
+    const Character &chardata(*e->m_char);
     QString msg = "DebugChar: " + e->name()
-            + "\n  " + e->m_char.m_char_data.m_origin_name
-            + "\n  " + e->m_char.m_char_data.m_class_name
-            + "\n  map: " + e->m_char.m_char_data.m_mapName
-            + "\n  db_id: " + QString::number(e->m_db_id) + ":" + QString::number(e->m_char.m_db_id)
+            + "\n  " + chardata.m_char_data.m_origin_name
+            + "\n  " + chardata.m_char_data.m_class_name
+            + "\n  map: " + chardata.m_char_data.m_mapName
+            + "\n  db_id: " + QString::number(e->m_db_id) + ":" + QString::number(chardata.m_db_id)
             + "\n  idx: " + QString::number(e->m_idx)
             + "\n  access: " + QString::number(e->m_entity_data.m_access_level)
-            + "\n  acct: " + QString::number(e->m_char.m_account_id)
-            + "\n  lvl/clvl: " + QString::number(e->m_char.m_char_data.m_level) + "/" + QString::number(e->m_char.m_char_data.m_combat_level)
-            + "\n  inf: " + QString::number(e->m_char.m_char_data.m_influence)
-            + "\n  xp/debt: " + QString::number(e->m_char.m_char_data.m_experience_points) + "/" + QString::number(e->m_char.m_char_data.m_experience_debt)
-            + "\n  lfg: " + QString::number(e->m_char.m_char_data.m_lfg)
-            + "\n  afk: " + QString::number(e->m_char.m_char_data.m_afk)
+            + "\n  acct: " + QString::number(chardata.m_account_id)
+            + "\n  lvl/clvl: " + QString::number(chardata.m_char_data.m_level) + "/" + QString::number(chardata.m_char_data.m_combat_level)
+            + "\n  inf: " + QString::number(chardata.m_char_data.m_influence)
+            + "\n  xp/debt: " + QString::number(chardata.m_char_data.m_experience_points) + "/" + QString::number(chardata.m_char_data.m_experience_debt)
+            + "\n  lfg: " + QString::number(chardata.m_char_data.m_lfg)
+            + "\n  afk: " + QString::number(chardata.m_char_data.m_afk)
             + "\n  tgt_idx: " + QString::number(getTargetIdx(*e));
     e->dump();
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
@@ -533,7 +533,7 @@ void cmdHandler_AFK(QString &cmd, Entity *e) {
 
     int space = cmd.indexOf(' ');
     QString val = cmd.mid(space+1);
-    toggleAFK(e->m_char, val);
+    toggleAFK(*e->m_char, val);
 
     QString msg = "Setting afk message to: " + val;
     qDebug() << msg;
@@ -548,12 +548,12 @@ void cmdHandler_WhoAll(QString &cmd, Entity *e) {
 
     for(MapClient *cl : mi->m_clients)
     {
-        Character *c        = &cl->char_entity()->m_char;
+        Character &c(*cl->char_entity()->m_char);
         QString name        = cl->char_entity()->name();
-        QString lvl         = QString::number(getLevel(*c));
-        QString clvl        = QString::number(getCombatLevel(*c));
-        QString origin      = getOrigin(*c);
-        QString archetype   = QString(getClass(*c)).remove("Class_");
+        QString lvl         = QString::number(getLevel(c));
+        QString clvl        = QString::number(getCombatLevel(c));
+        QString origin      = getOrigin(c);
+        QString archetype   = QString(getClass(c)).remove("Class_");
 
         // Format: character_name "lvl" level "clvl" combat_level origin archetype
         msg += name + " lvl " + lvl + " clvl " + clvl + " " + origin + " " + archetype + "\n";
@@ -573,7 +573,7 @@ void cmdHandler_SetTitles(QString &cmd, Entity *e) {
 
     if(cmd.toLower() == "settitles")
     {
-        setTitles(e->m_char);
+        setTitles(*e->m_char);
         msg = "Titles reset to nothing";
     }
     else
@@ -582,7 +582,7 @@ void cmdHandler_SetTitles(QString &cmd, Entity *e) {
         generic = args.value(2);
         origin  = args.value(3);
         special = args.value(4);
-        setTitles(e->m_char, prefix, generic, origin, special);
+        setTitles(*e->m_char, prefix, generic, origin, special);
         msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
     }
     qDebug() << msg;
@@ -606,7 +606,7 @@ void cmdHandler_Stuck(QString &cmd, Entity *e) {
 void cmdHandler_LFG(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
-    toggleLFG(e->m_char);
+    toggleLFG(*e->m_char);
 
     QString msg = "Toggling " + cmd;
     qDebug() << msg;

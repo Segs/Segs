@@ -11,7 +11,7 @@
 #include <cstring>
 
 // Warning those classes aren't thread-safe!
-// maybe this should derive from ACE_Data_Block/Message_Block ?
+// NOTE: maybe this should derive from ACE_Data_Block/Message_Block ?
 
 // Template functions are part of include file to avoid the need of explicit instantiation of templates.
 class GrowingBuffer

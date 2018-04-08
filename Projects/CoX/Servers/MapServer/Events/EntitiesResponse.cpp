@@ -3,6 +3,7 @@
 #include "NetStructures/Powers.h"
 
 #include "Entity.h"
+#include "Character.h"
 #include "MapEvents.h"
 #include "MapClient.h"
 #include "MapInstance.h"
@@ -90,10 +91,10 @@ void storeTeamList(const EntitiesResponse &/*src*/,BitStream &bs)
 void serialize_char_full_update(const Entity &src, BitStream &bs )
 {
     PUTDEBUG("CharacterFromServer");
-    const Character &player_char=src.m_char;
-    src.m_char.SendCharBuildInfo(bs); //FIXEDOFFSET_pchar->character_Receive
+    const Character &player_char(*src.m_char);
+    src.m_char->SendCharBuildInfo(bs); //FIXEDOFFSET_pchar->character_Receive
     PUTDEBUG("PlayerEntity::serialize_full before sendFullStats");
-    src.m_char.sendFullStats(bs); //Entity::receiveFullStats(&FullStatsTokens, pak, FIXEDOFFSET_pchar, pkt_id_fullAttrDef, 1);
+    src.m_char->sendFullStats(bs); //Entity::receiveFullStats(&FullStatsTokens, pak, FIXEDOFFSET_pchar, pkt_id_fullAttrDef, 1);
     PUTDEBUG("PlayerEntity::serialize_full before sendBuffs");
     sendBuffs(src,bs); //FIXEDOFFSET_pchar->character_ReceiveBuffs(pak,0);
 
@@ -258,7 +259,7 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
 }
 void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
-    glm::vec3 zeroes;
+    glm::vec3 zeroes {0,0,0};
     // user entity
     Entity *ent = src.m_client->char_entity();
 
@@ -348,7 +349,7 @@ void sendCommands(const EntitiesResponse &src,BitStream &tgt)
 void sendClientData(const EntitiesResponse &src,BitStream &bs)
 {
     Entity *ent=src.m_client->char_entity();
-    Character &player_char=ent->m_char;
+
     if(!src.m_incremental)
     {
         //full_update - > receiveCharacterFromServer
@@ -358,7 +359,8 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
     }
     else
     {
-        ent->m_char.sendFullStats(bs);
+        const Character &player_char(*ent->m_char);
+        player_char.sendFullStats(bs);
     }
     storePowerInfoUpdate(src,bs);
     storeTeamList(src,bs);

@@ -1,20 +1,19 @@
-//#define DEBUG_INPUT
-//#define DEBUG_ORIENTATION
 #include "EntityUpdateCodec.h"
 
+#include "Character.h"
 #include "MapServer.h"
 #include "MapServerData.h"
 #include "MapClient.h"
 #include "Entity.h"
 #include "GameData/CoHMath.h"
 
+//#define DEBUG_INPUT
+//#define DEBUG_ORIENTATION
 #ifdef DEBUG_ORIENTATION
 #include <glm/ext.hpp> // currently only needed for DEBUG_ORIENTATION
 #endif
 
 namespace  {
-constexpr float F_PI = float(M_PI); // to prevent double <-> float conversion warnings
-
 void storeCreation(const Entity &src, BitStream &bs)
 {
     // entity creation
@@ -50,11 +49,11 @@ void storeCreation(const Entity &src, BitStream &bs)
     {
         bs.StorePackedBits(1,src.m_entity_data.m_class_idx);
         bs.StorePackedBits(1,src.m_entity_data.m_origin_idx);
-        src.m_char.sendTitles(bs,NameFlag::NoName,ConditionalFlag::Conditional); // NoName b/c We send it below
+        src.m_char->sendTitles(bs,NameFlag::NoName,ConditionalFlag::Conditional); // NoName b/c We send it below
     }
     bs.StoreBits(1,src.m_hasname);
     if(src.m_hasname)
-        bs.StoreString(src.m_char.getName());
+        bs.StoreString(src.m_char->getName());
     PUTDEBUG("after names");
     bool fadin = true;
     bs.StoreBits(1,fadin); // Is entity being faded in ?
@@ -86,7 +85,7 @@ struct BinTreeEntry {
 struct BinTreeBase {
     BinTreeEntry arr[7];
 };
-void storeUnknownBinTree(const Entity &src,BitStream &bs)
+void storeUnknownBinTree(const Entity &/*src*/,BitStream &bs)
 {
     bs.StoreBits(1,0);
 }
@@ -266,7 +265,7 @@ void sendCostumes(const Entity &src,BitStream &bs)
     switch(src.m_type)
     {
         case Entity::ENT_PLAYER: // client value 1
-            src.m_char.serialize_costumes(bs,packer,true); // we're always sending full info
+            src.m_char->serialize_costumes(bs,packer,true); // we're always sending full info
             break;
         case 3: // client value 2 top level defs from VillainCostume ?
             bs.StorePackedBits(12,1); // npc costume type idx ?
@@ -305,7 +304,7 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
            bs.StorePackedBits(20,our_buddy_dbid);
         }
     }
-    serializeStats(src.m_char,bs,false);
+    serializeStats(*src.m_char,bs,false);
 }
 void sendBuffsConditional(const Entity &src,BitStream &bs)
 {
@@ -356,7 +355,7 @@ void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 }
 void sendAFK(const Entity &src, BitStream &bs)
 {
-    CharacterData cd = src.m_char.m_char_data;
+    CharacterData cd = src.m_char->m_char_data;
     bool hasMsg = !cd.m_afk_msg.isEmpty();
     bs.StoreBits(1, cd.m_afk); // 1/0 only
     if(cd.m_afk)
@@ -445,7 +444,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
-        src.m_char.sendTitles(bs,NameFlag::HasName,ConditionalFlag::Conditional);
+        src.m_char->sendTitles(bs,NameFlag::HasName,ConditionalFlag::Conditional);
     }
     if(src.m_pchar_things)
     {
