@@ -300,7 +300,6 @@ int CharacterDatabase::remove_account( uint64_t /*acc_serv_id*/ )
 bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
 {
     assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
-
     assert(e && e->m_char);
 
     EntityData *ed = &e->m_entity_data;
@@ -364,7 +363,7 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     int64_t char_id = m_prepared_char_insert.lastInsertId().toLongLong();
     c.m_db_id = char_id;
 
-    qCDebug(logDB) << "char_id: " << char_id << ":" << c->m_db_id;
+    qCDebug(logDB) << "char_id: " << char_id << ":" << c.m_db_id;
 
     // create costume
     QString costume_parts;
@@ -381,9 +380,8 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
 bool CharacterDatabase::update( Entity *e )
 {
     assert(e);
+    assert(e->m_char!=nullptr);
     EntityData *ed = &e->m_entity_data;
-
-    assert(e->m_char);
     Character &c(*e->m_char);
     CharacterData *cd = &c.m_char_data;
     cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
@@ -441,16 +439,15 @@ bool CharacterDatabase::update( Entity *e )
 bool CharacterDatabase::updateClientOptions( Entity *e )
 {
     assert(e);
-    Character *c = &e->m_char;
-    assert(c);
-
-    ClientOptions &od(c->m_options);
-    KeybindSettings &kbd(c->m_keybinds);
+    assert(e->m_char!=nullptr);
+    Character &c = *e->m_char;
+    ClientOptions &od(c.m_options);
+    KeybindSettings &kbd(c.m_keybinds);
 
     /*
     ":id, :options, :keybinds "
     */
-    m_prepared_options_update.bindValue(":id", uint32_t(c->m_db_id)); // for WHERE statement only
+    m_prepared_options_update.bindValue(":id", uint32_t(c.m_db_id)); // for WHERE statement only
 
     QString options_data;
     serializeToDb(od,options_data);
@@ -471,15 +468,14 @@ bool CharacterDatabase::updateClientOptions( Entity *e )
 bool CharacterDatabase::updateGUISettings( Entity *e )
 {
     assert(e);
-    Character *c = &e->m_char;
-    assert(c);
-
-    GUISettings &gui(c->m_gui);
+    assert(e->m_char!=nullptr);
+    Character &c = *e->m_char;
+    GUISettings &gui(c.m_gui);
 
     /*
     ":id, :gui "
     */
-    m_prepared_gui_update.bindValue(":id", uint32_t(c->m_db_id)); // for WHERE statement only
+    m_prepared_gui_update.bindValue(":id", uint32_t(c.m_db_id)); // for WHERE statement only
 
     QString gui_data;
     serializeToDb(gui,gui_data);

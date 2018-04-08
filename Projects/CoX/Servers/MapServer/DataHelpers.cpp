@@ -371,7 +371,7 @@ void    toggleTeamBuffs(Character &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_b
  */
 void toggleLFG(Entity &e)
 {
-    CharacterData *cd = &e.m_char.m_char_data;
+    CharacterData *cd = &e.m_char->m_char_data;
 
     cd->m_lfg = !cd->m_lfg;
 

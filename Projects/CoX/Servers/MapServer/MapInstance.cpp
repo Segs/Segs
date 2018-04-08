@@ -533,11 +533,11 @@ void MapInstance::on_window_state(WindowState * ev)
     Entity *e = src->char_entity();
 
     int idx = ev->wnd.m_idx;
-    e->m_char.m_gui.m_wnds.at(idx) = ev->wnd;
+    e->m_char->m_gui.m_wnds.at(idx) = ev->wnd;
 
     qCDebug(logGUI) << "Received window state" << ev->wnd.m_idx << "-" << ev->wnd.m_mode;
     if(logGUI().isDebugEnabled())
-        e->m_char.m_gui.m_wnds.at(idx).guiWindowDump();
+        e->m_char->m_gui.m_wnds.at(idx).guiWindowDump();
 }
 QString process_replacement_strings(MapClient *sender,const QString &msg_text)
 {
@@ -777,7 +777,7 @@ void MapInstance::process_chat(MapClient *sender,QString &msg_text)
         }
         case MessageChannel::FRIENDS:
         {
-            FriendsList * fl = &sender->char_entity()->m_char.m_char_data.m_friendlist;
+            FriendsList * fl = &sender->char_entity()->m_char->m_char_data.m_friendlist;
             if(!fl->m_has_friends || fl->m_friends_count == 0)
             {
                 prepared_chat_message = "You don't have any friends to message.";
@@ -1396,7 +1396,7 @@ void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_gui.m_chat_divider_pos = ev->m_position;
+    ent->m_char->m_gui.m_chat_divider_pos = ev->m_position;
     qCDebug(logMapEvents) << "Chat divider moved to " << ev->m_position << " for player" << ent->name();
 }
 void MapInstance::on_minimap_state(MiniMapState *ev)
@@ -1452,7 +1452,7 @@ void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_gui.m_insps_tray_mode = ev->dock_mode;
+    ent->m_char->m_gui.m_insps_tray_mode = ev->dock_mode;
     qCDebug(logMapEvents) << "Saving inspirations dock mode to GUISettings:" << ev->dock_mode;
 }
 
@@ -1496,8 +1496,8 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
     MapClient *src = lnk->client_data();
     Character &c(*src->char_entity()->m_char);
 
-    setBattleCry(*c,ev->battlecry);
-    setDescription(*c,ev->description);
+    setBattleCry(c,ev->battlecry);
+    setDescription(c,ev->description);
     qCDebug(logDescription) << "Saving description and battlecry:" << ev->description << ev->battlecry;
 }
 
@@ -1514,7 +1514,7 @@ void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
         return;
     }
 
-    QString description = getDescription(tgt->m_char);
+    QString description = getDescription(*tgt->m_char);
 
     src->addCommandToSendNextUpdate(std::unique_ptr<EntityInfoResponse>(new EntityInfoResponse(description)));
     qCDebug(logDescription) << "Entity info requested" << ev->entity_idx << description;
@@ -1527,7 +1527,7 @@ void MapInstance::on_client_options(SaveClientOptions * ev)
     MapClient *src = lnk->client_data();
     Entity *e = src->char_entity();
 
-    e->m_char.m_options = ev->data;
+    e->m_char->m_options = ev->data;
     charUpdateOptions(e); // Update database with opts/kbds
 
     qCDebug(logMapEvents) << "Client options saved to database.";
@@ -1539,7 +1539,7 @@ void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_options.m_first_person_view = ev->new_viewpoint_is_firstperson;
+    ent->m_char->m_options.m_first_person_view = ev->new_viewpoint_is_firstperson;
     qCDebug(logMapEvents) << "Saving viewpoint mode to ClientOptions" << ev->new_viewpoint_is_firstperson;
 }
 
@@ -1549,8 +1549,8 @@ void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_gui.m_chat_top_flags = ev->m_chat_top_flags;
-    ent->m_char.m_gui.m_chat_bottom_flags = ev->m_chat_bottom_flags;
+    ent->m_char->m_gui.m_chat_top_flags = ev->m_chat_top_flags;
+    ent->m_char->m_gui.m_chat_bottom_flags = ev->m_chat_bottom_flags;
 
     qCDebug(logMapEvents) << "Saving chat channel mask settings to GUISettings" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
 }
@@ -1601,7 +1601,7 @@ void MapInstance::on_powers_dockmode(PowersDockMode *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
+    ent->m_char->m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
     qCDebug(logMapEvents) << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
 }
 
@@ -1611,9 +1611,9 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_gui.m_tray1_number = ev->tray1_num;
-    ent->m_char.m_gui.m_tray2_number = ev->tray2_num;
-    ent->m_char.m_gui.m_tray3_number = ev->tray_unk1;
+    ent->m_char->m_gui.m_tray1_number = ev->tray1_num;
+    ent->m_char->m_gui.m_tray2_number = ev->tray2_num;
+    ent->m_char->m_gui.m_tray3_number = ev->tray_unk1;
     qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray1_num+1 << "Tray2:" << ev->tray2_num+1 << "Unk1:" << ev->tray_unk1;
     // TODO: need to load powers for new tray.
     qCWarning(logMapEvents) << "TODO: Need to load powers for new trays";
@@ -1628,7 +1628,7 @@ void MapInstance::on_set_keybind(SetKeybind *ev)
     KeyName key = static_cast<KeyName>(ev->key);
     ModKeys mod = static_cast<ModKeys>(ev->mods);
 
-    ent->m_char.m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
+    ent->m_char->m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
     //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
 }
 
@@ -1638,7 +1638,7 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
+    ent->m_char->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
     //qCWarning(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
@@ -1648,7 +1648,7 @@ void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_keybinds.resetKeybinds();
+    ent->m_char->m_keybinds.resetKeybinds();
     qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
 }
 
@@ -1658,6 +1658,6 @@ void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
     MapClient *src = lnk->client_data();
     Entity *ent = src->char_entity();
 
-    ent->m_char.m_keybinds.setKeybindProfile(ev->profile);
+    ent->m_char->m_keybinds.setKeybindProfile(ev->profile);
     qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }

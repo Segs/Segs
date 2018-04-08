@@ -65,7 +65,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 
     // shorthand local vars
     int         team_idx = 0;
-    bool        mark_lfg = e->m_char.m_char_data.m_lfg;
+    bool        mark_lfg = e->m_char->m_char_data.m_lfg;
     bool        has_mission = 0;
     uint32_t    tm_leader_id = 0;
     uint32_t    tm_size = 0;
@@ -391,7 +391,7 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
     {
         //full_update - > receiveCharacterFromServer
         // initial character update = level/name/class/origin/map_name
-        //m_client->char_entity()->m_char.m_ent=m_client->char_entity();
+        //m_client->char_entity()->m_char->m_ent=m_client->char_entity();
         serialize_char_full_update(*ent,bs);
     }
     else

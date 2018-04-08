@@ -112,18 +112,15 @@ void InputState::partial_2(BitStream &bs)
     uint16_t ms_since_prev;
     float v;
 
-    if(logInput().isDebugEnabled())
-    {
-         static const char *control_name[] = {"FORWARD",
-                                              "BACK",
-                                              "LEFT",
-                                              "RIGHT",
-                                              "UP",
-                                              "DOWN",
-                                              "PITCH",
-                                              "YAW",};
-    }
-  
+    static const char *control_name[] = {"FORWARD",
+                                         "BACK",
+                                         "LEFT",
+                                         "RIGHT",
+                                         "UP",
+                                         "DOWN",
+                                         "PITCH",
+                                         "YAW",};
+
     do
     {
         if(bs.GetBits(1))

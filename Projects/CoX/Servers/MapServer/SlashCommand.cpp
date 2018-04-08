@@ -492,7 +492,7 @@ void cmdHandler_GUIDebug(QString &cmd, Entity *e) {
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 
-    e->m_char.m_gui.guiDump(); // Send GUISettings dump
+    e->m_char->m_gui.guiDump(); // Send GUISettings dump
 }
 
 void cmdHandler_SetWindowVisibility(QString &cmd, Entity *e) {
@@ -507,8 +507,8 @@ void cmdHandler_SetWindowVisibility(QString &cmd, Entity *e) {
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 
-    e->m_char.m_gui.m_wnds.at(idx).setWindowVisibility(val); // Set WindowVisibility
-    e->m_char.m_gui.m_wnds.at(idx).guiWindowDump(); // for debugging
+    e->m_char->m_gui.m_wnds.at(idx).setWindowVisibility(val); // Set WindowVisibility
+    e->m_char->m_gui.m_wnds.at(idx).guiWindowDump(); // for debugging
 }
 
 void cmdHandler_KeybindDebug(QString &cmd, Entity *e) {
@@ -518,7 +518,7 @@ void cmdHandler_KeybindDebug(QString &cmd, Entity *e) {
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 
-    e->m_char.m_keybinds.keybindsDump(); // Send GUISettings dump
+    e->m_char->m_keybinds.keybindsDump(); // Send GUISettings dump
 }
 
 void cmdHandler_ToggleLogging(QString &cmd, Entity *e) {
@@ -936,7 +936,7 @@ void cmdHandler_Sidekick(QString &cmd, Entity *e)
     else
         tgt = getEntity(src,name);
 
-    if(tgt == nullptr || e->m_char.isEmpty() || tgt->m_char.isEmpty())
+    if(tgt == nullptr || e->m_char->isEmpty() || tgt->m_char->isEmpty())
         return;
 
     inviteSidekick(*e,*tgt);
@@ -945,10 +945,10 @@ void cmdHandler_Sidekick(QString &cmd, Entity *e)
 void cmdHandler_SidekickAccept(QString &cmd, Entity *e)
 {
     MapClient *src  = e->m_client;
-    uint32_t db_id  = e->m_char.m_char_data.m_sidekick.sk_db_id;
+    uint32_t db_id  = e->m_char->m_char_data.m_sidekick.sk_db_id;
     Entity *tgt     = getEntityByDBID(src,db_id);
 
-    if(tgt == nullptr || e->m_char.isEmpty() || tgt->m_char.isEmpty())
+    if(tgt == nullptr || e->m_char->isEmpty() || tgt->m_char->isEmpty())
         return;
 
     addSidekick(*e,*tgt);
@@ -956,14 +956,14 @@ void cmdHandler_SidekickAccept(QString &cmd, Entity *e)
 
 void cmdHandler_SidekickDecline(QString &cmd, Entity *e)
 {
-    e->m_char.m_char_data.m_sidekick.sk_db_id = 0;
+    e->m_char->m_char_data.m_sidekick.sk_db_id = 0;
 }
 
 void cmdHandler_UnSidekick(QString &cmd, Entity *e)
 {
     MapClient *src = e->m_client;
 
-    if(e->m_char.isEmpty())
+    if(e->m_char->isEmpty())
         return;
 
     removeSidekick(*e);
@@ -971,7 +971,7 @@ void cmdHandler_UnSidekick(QString &cmd, Entity *e)
 
 void cmdHandler_TeamBuffs(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    toggleTeamBuffs(e->m_char);
+    toggleTeamBuffs(*e->m_char);
 
     QString msg = "Toggling Team Buffs display mode.";
     qCDebug(logSlashCommand).noquote() << msg;
@@ -992,7 +992,7 @@ void cmdHandler_Friend(QString &cmd, Entity *e) {
     else
         tgt = getEntity(src,name);
 
-    if(tgt == nullptr || e->m_char.isEmpty() || tgt->m_char.isEmpty())
+    if(tgt == nullptr || e->m_char->isEmpty() || tgt->m_char->isEmpty())
         return;
 
     addFriend(*e,*tgt);
@@ -1013,7 +1013,7 @@ void cmdHandler_Unfriend(QString &cmd, Entity *e) {
     else
         tgt = getEntity(src,name);
 
-    if(tgt == nullptr || e->m_char.isEmpty() || tgt->m_char.isEmpty())
+    if(tgt == nullptr || e->m_char->isEmpty() || tgt->m_char->isEmpty())
         return;
 
     // TODO: Implement getCharacterFromDB(name) if target is not online.
@@ -1024,7 +1024,7 @@ void cmdHandler_Unfriend(QString &cmd, Entity *e) {
 void cmdHandler_FriendList(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
-    if(e->m_char.isEmpty())
+    if(e->m_char->isEmpty())
         return;
 
     toggleFriendList(*e);

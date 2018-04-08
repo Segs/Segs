@@ -20,9 +20,9 @@ void addLFG(Entity &src)
 {
     LFGMember list;
     list.m_name         = src.name();
-    list.m_classname    = src.m_char.m_char_data.m_class_name;
-    list.m_origin       = src.m_char.m_char_data.m_origin_name;
-    list.m_level        = src.m_char.m_char_data.m_level;
+    list.m_classname    = src.m_char->m_char_data.m_class_name;
+    list.m_origin       = src.m_char->m_char_data.m_origin_name;
+    list.m_level        = src.m_char->m_char_data.m_level;
 
     g_lfg_list.emplace_back(list);
 }

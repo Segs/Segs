@@ -17,7 +17,7 @@ static const int g_max_friends = 25;
 void addFriend(Entity &src, Entity &tgt)
 {
     QString msg;
-    FriendsList *src_data(&src.m_char.m_char_data.m_friendlist);
+    FriendsList *src_data(&src.m_char->m_char_data.m_friendlist);
 
     if(src_data->m_friends_count >= g_max_friends)
     {
@@ -37,7 +37,7 @@ void addFriend(Entity &src, Entity &tgt)
     f.fr_class_idx = tgt.m_entity_data.m_class_idx;
     f.fr_origin_idx = tgt.m_entity_data.m_origin_idx;
     f.fr_map_idx = tgt.m_entity_data.m_map_idx;                                   // what do we do with this?
-    f.fr_mapname = tgt.m_char.m_char_data.m_mapName;
+    f.fr_mapname = tgt.m_char->m_char_data.m_mapName;
 
     // add to friendlist
     src_data->m_friends.emplace_back(f);
@@ -57,7 +57,7 @@ void addFriend(Entity &src, Entity &tgt)
 void removeFriend(Entity &src, Entity &tgt)
 {
     QString msg;
-    FriendsList *src_data(&src.m_char.m_char_data.m_friendlist);
+    FriendsList *src_data(&src.m_char->m_char_data.m_friendlist);
 
     qCDebug(logFriends) << "Searching for friend" << tgt.name() << "to remove them.";
     int id_to_find = tgt.m_db_id;
@@ -95,7 +95,7 @@ bool isFriendOnline(Entity &src, uint32_t db_id)
 
 void toggleFriendList(Entity &src)
 {
-    GUIWindow *friendlist = &src.m_char.m_gui.m_wnds.at(WindowIDX::wdw_Friends);
+    GUIWindow *friendlist = &src.m_char->m_gui.m_wnds.at(WindowIDX::wdw_Friends);
     QString msg = "Toggling FriendList visibility.";
     msg += " " + QString::number(friendlist->m_mode);
 
@@ -111,7 +111,7 @@ void toggleFriendList(Entity &src)
 
 void dumpFriends(Entity &src)
 {
-    const FriendsList *fl(&src.m_char.m_char_data.m_friendlist);
+    const FriendsList *fl(&src.m_char->m_char_data.m_friendlist);
     QString msg = QString("FriendsList\n  has_friends: %1 \n friends_count: %2 ")
             .arg(fl->m_has_friends)
             .arg(fl->m_friends_count);

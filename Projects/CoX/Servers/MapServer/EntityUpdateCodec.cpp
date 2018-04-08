@@ -301,10 +301,10 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
         return;
 
     // Store Sidekick Info
-    bs.StoreBits(1,src.m_char.m_char_data.m_sidekick.sk_has_sidekick);
-    if(src.m_char.m_char_data.m_sidekick.sk_has_sidekick)
+    bs.StoreBits(1,src.m_char->m_char_data.m_sidekick.sk_has_sidekick);
+    if(src.m_char->m_char_data.m_sidekick.sk_has_sidekick)
     {
-        Sidekick sidekick = src.m_char.m_char_data.m_sidekick;
+        Sidekick sidekick = src.m_char->m_char_data.m_sidekick;
         bool is_mentor = isSidekickMentor(src);
         bool has_dbid  = (sidekick.sk_db_id != 0);
 

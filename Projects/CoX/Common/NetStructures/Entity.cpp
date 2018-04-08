@@ -72,7 +72,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *pac
     setDescription(*e.m_char,description);
     e.m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*e.m_char));
     e.m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*e.m_char));
-    e.m_char.m_keybinds.resetKeybinds();
+    e.m_char->m_keybinds.resetKeybinds();
     e.m_is_hero = true;
 
     // New Character Spawn Location
