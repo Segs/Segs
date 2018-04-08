@@ -236,15 +236,17 @@ void cmdHandler_Jumppack(QString &cmd, Entity *e) {
 void cmdHandler_SetSpeed(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
-    QStringList args;
-    args = cmd.split(" ");
+    QVector<QStringRef> args(cmd.splitRef(' '));
     float v1 = args.value(1).toFloat();
     float v2 = args.value(2).toFloat();
     float v3 = args.value(3).toFloat();
     setSpeed(*e, v1, v2, v3);
 
-    args.removeAt(0); // remove command string
-    QString msg = "Set Speed to: " + args.join(" ");
+    QString msg = "Set Speed to: <"
+        + QString::number(v1) + ","
+        + QString::number(v2) + ","
+        + QString::number(v3) + ">";
+  
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
@@ -252,7 +254,7 @@ void cmdHandler_SetSpeed(QString &cmd, Entity *e) {
 void cmdHandler_SetBackupSpd(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
-    float val = cmd.split(" ").value(1).toFloat();
+    float val = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
     setBackupSpd(*e, val);
 
     QString msg = "Set BackupSpd to: " + QString::number(val);
@@ -263,7 +265,7 @@ void cmdHandler_SetBackupSpd(QString &cmd, Entity *e) {
 void cmdHandler_SetJumpHeight(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
-    float val = cmd.split(" ").value(1).toFloat();
+    float val = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
     setJumpHeight(*e, val);
 
     QString msg = "Set JumpHeight to: " + QString::number(val);
@@ -274,7 +276,7 @@ void cmdHandler_SetJumpHeight(QString &cmd, Entity *e) {
 void cmdHandler_SetHP(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
-    float attrib = cmd.split(" ").value(1).toFloat();
+    float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
     float maxattrib = e->m_char.m_max_attribs.m_HitPoints;
 
     if(attrib > maxattrib)
@@ -290,7 +292,7 @@ void cmdHandler_SetHP(QString &cmd, Entity *e) {
 void cmdHandler_SetEnd(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
-    float attrib = cmd.split(" ").value(1).toFloat();
+    float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
     float maxattrib = e->m_char.m_max_attribs.m_Endurance;
 
     if(attrib > maxattrib)
@@ -306,7 +308,7 @@ void cmdHandler_SetEnd(QString &cmd, Entity *e) {
 void cmdHandler_SetXP(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
-    uint32_t attrib = cmd.split(" ").value(1).toUInt();
+    uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
     uint32_t lvl = getLevel(e->m_char);
 
     setXP(e->m_char, attrib);
@@ -322,7 +324,7 @@ void cmdHandler_SetXP(QString &cmd, Entity *e) {
 
 void cmdHandler_SetDebt(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    float attrib = cmd.split(" ").value(1).toFloat();
+    float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
 
     setDebt(e->m_char, attrib);
     QString msg = "Setting XP Debt to " + QString::number(attrib);
@@ -333,7 +335,7 @@ void cmdHandler_SetDebt(QString &cmd, Entity *e) {
 
 void cmdHandler_SetInf(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    uint32_t attrib = cmd.split(" ").value(1).toUInt();
+    uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setInf(e->m_char, attrib);
 
@@ -344,7 +346,7 @@ void cmdHandler_SetInf(QString &cmd, Entity *e) {
 
 void cmdHandler_SetLevel(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    uint32_t attrib = cmd.split(" ").value(1).toUInt();
+    uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setLevel(e->m_char, attrib); // TODO: Why does this result in -1?
 
@@ -355,7 +357,7 @@ void cmdHandler_SetLevel(QString &cmd, Entity *e) {
 
 void cmdHandler_SetCombatLevel(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    uint32_t attrib = cmd.split(" ").value(1).toUInt();
+    uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setCombatLevel(e->m_char, attrib); // TODO: Why does this result in -1?
 
@@ -407,7 +409,7 @@ void cmdHandler_ControlsDisabled(QString &cmd, Entity *e) {
 
 void cmdHandler_UpdateId(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    uint8_t attrib = cmd.split(" ").value(1).toUInt();
+    uint8_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setUpdateID(*e, attrib);
 
@@ -438,7 +440,7 @@ void cmdHandler_HasControlId(QString &cmd, Entity *e) {
 
 void cmdHandler_SetTeam(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    int val = cmd.split(" ").value(1).toUInt();
+    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setTeamID(*e, val);
 
@@ -546,7 +548,7 @@ void cmdHandler_FriendsListDebug(QString &cmd, Entity *e) {
 // Slash commands for setting bit values
 void cmdHandler_SetU1(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    int val = cmd.split(" ").value(1).toUInt();
+    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setu1(*e, val);
 
@@ -557,7 +559,7 @@ void cmdHandler_SetU1(QString &cmd, Entity *e) {
 
 void cmdHandler_SetU2(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    int val = cmd.split(" ").value(1).toUInt();
+    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setu2(*e, val);
 
@@ -568,7 +570,7 @@ void cmdHandler_SetU2(QString &cmd, Entity *e) {
 
 void cmdHandler_SetU3(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    int val = cmd.split(" ").value(1).toUInt();
+    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setu3(*e, val);
 
@@ -579,7 +581,7 @@ void cmdHandler_SetU3(QString &cmd, Entity *e) {
 
 void cmdHandler_SetU4(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    int val = cmd.split(" ").value(1).toUInt();
+    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setu4(*e, val);
 
@@ -590,7 +592,7 @@ void cmdHandler_SetU4(QString &cmd, Entity *e) {
 
 void cmdHandler_SetU5(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    int val = cmd.split(" ").value(1).toUInt();
+    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setu5(*e, val);
 
@@ -601,7 +603,7 @@ void cmdHandler_SetU5(QString &cmd, Entity *e) {
 
 void cmdHandler_SetU6(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
-    int val = cmd.split(" ").value(1).toUInt();
+    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setu6(*e, val);
 
