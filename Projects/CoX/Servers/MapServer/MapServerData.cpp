@@ -197,7 +197,7 @@ MapServerData::~MapServerData()
 
 bool MapServerData::read_runtime_data(const QString &directory_path)
 {
-    qWarning().noquote() << "Reading map data from"<<directory_path<<"folder";
+    qInfo().noquote() << "Reading map data from"<<directory_path<<"folder";
     if (!read_costumes(directory_path))
         return false;
     if (!read_colors(directory_path))
@@ -208,12 +208,12 @@ bool MapServerData::read_runtime_data(const QString &directory_path)
         return false;
     if(!read_exp_and_debt(directory_path))
         return false;
-    qWarning().noquote() << " All map data read";
+    qInfo().noquote() << " All map data read";
     {
-        QDebug warnLine = qWarning().noquote();
-        warnLine << " Postprocessing runtime data .. ";
+        QDebug infoLine = qWarning().noquote();
+        infoLine << " Postprocessing runtime data .. ";
         static_cast<HashBasedPacker *>(packer_instance)->fill_hashes(*this);
-        warnLine << "Hashes filled";
+        infoLine << "Hashes filled";
     }
     return true;
 }
