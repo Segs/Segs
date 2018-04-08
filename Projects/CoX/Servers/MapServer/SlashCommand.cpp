@@ -528,7 +528,7 @@ void cmdHandler_CmdList(QString &cmd, Entity *e) {
             {
                 // Use msg for std out, msg_dlg for ingame dialog box
                 msg += "\t" + sc.m_valid_prefixes.join(", ") + "[" + QString::number(sc.m_required_access_level) + "]:\t" + sc.m_help_text + "\n";
-                msg_dlg = QString("<color #ffCC99><i>%1</i></color>[<color #66ffff>%2</color>]: %3<br>").arg(sc.m_valid_prefixes.join(", ")).arg(sc.m_required_access_level).arg(sc.m_help_text)
+                msg_dlg += QString("<color #ffCC99><i>%1</i></color>[<color #66ffff>%2</color>]: %3<br>").arg(sc.m_valid_prefixes.join(", ")).arg(sc.m_required_access_level).arg(sc.m_help_text);
             }
         }
     }
