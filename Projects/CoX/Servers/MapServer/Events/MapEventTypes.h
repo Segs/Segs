@@ -42,7 +42,7 @@ public:
 //    EVENT_DECL(evTradeOffer               ,132)
 //    EVENT_DECL(evTradeInit                ,133)
 //    EVENT_DECL(evTradeCancel              ,134)
-//    EVENT_DECL(evTradeUpdate              ,133)
+//    EVENT_DECL(evTradeUpdate              ,135)
 //    EVENT_DECL(evTradeSuccess             ,136)
     EVENT_DECL(evFriendListUpdated          ,137)
 //    EVENT_DECL(evControlPlayer            ,138)
