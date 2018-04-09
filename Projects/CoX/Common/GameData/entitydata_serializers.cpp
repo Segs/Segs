@@ -4,11 +4,18 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
-CEREAL_CLASS_VERSION(EntityData, 2); // register EntityData class version
+const constexpr uint32_t EntityData::class_version;
+CEREAL_CLASS_VERSION(EntityData, EntityData::class_version); // register EntityData class version
 
 template<class Archive>
 void serialize(Archive & archive, EntityData &ed, uint32_t const version)
 {
+    if (version != EntityData::class_version)
+    {
+        qCritical() << "Failed to serialize EntityData, incompatible serialization format version " << version;
+        return;
+    }
+
     archive(cereal::make_nvp("AccessLevel",ed.m_access_level));
     archive(cereal::make_nvp("OriginIdx",ed.m_origin_idx));
     archive(cereal::make_nvp("ClassIdx",ed.m_class_idx));

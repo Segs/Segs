@@ -4,11 +4,18 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
-CEREAL_CLASS_VERSION(CharacterData, 2); // register CharacterData class version
+const constexpr uint32_t CharacterData::class_version;
+CEREAL_CLASS_VERSION(CharacterData, CharacterData::class_version); // register CharacterData class version
 
 template<class Archive>
 void serialize(Archive & archive, CharacterData &cd, uint32_t const version)
 {
+    if (version != CharacterData::class_version)
+    {
+        qCritical() << "Failed to serialize CharacterData, incompatible serialization format version " << version;
+        return;
+    }
+
     archive(cereal::make_nvp("Level",cd.m_level));
     archive(cereal::make_nvp("CombatLevel",cd.m_combat_level));
     archive(cereal::make_nvp("XP",cd.m_experience_points));
