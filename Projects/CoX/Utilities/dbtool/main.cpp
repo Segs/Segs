@@ -16,10 +16,10 @@
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
 
-QString segs = "segs";
-QString segs_game = "segs_game";
+static QString segs = "segs";
+static QString segs_game = "segs_game";
 
-bool fileExists(QString path)
+static bool fileExists(QString path)
 {
     QFileInfo check_file("./" + path);
     return check_file.exists() && check_file.isFile();
@@ -132,7 +132,7 @@ void createDatabases()
     }
 }
 
-void addAccount(const char * username, const char * password, uint16_t access_level)
+void addAccount(const QString & username, const QString & password, uint16_t access_level)
 {
     QDir db_dir(QDir::currentPath());
     const QString &target_file_string(db_dir.currentPath() + "/segs");
@@ -150,7 +150,7 @@ void addAccount(const char * username, const char * password, uint16_t access_le
 
     PasswordHasher hasher;
     QByteArray salt = hasher.generateSalt();
-    QByteArray password_array = hasher.hashPassword(password, salt);
+    QByteArray password_array = hasher.hashPassword(password.toUtf8(), salt);
     query.bindValue(0, username);
     query.bindValue(1, password_array);
     query.bindValue(2, access_level);
@@ -167,6 +167,7 @@ void addAccount(const char * username, const char * password, uint16_t access_le
 
 int main(int argc, char **argv)
 {
+    const QStringList known_commands {"create","adduser"};
     QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
     qInstallMessageHandler(errorHandler);
     QCoreApplication app(argc,argv);
@@ -178,53 +179,84 @@ int main(int argc, char **argv)
     parser.addHelpOption();
     parser.addVersionOption();
 
-    qInfo().noquote().nospace() << parser.applicationDescription() << " v" << QCoreApplication::applicationVersion() << endl;
 
-    parser.addPositionalArgument("file", QCoreApplication::translate("main", "Database Script file to import."));
+    parser.addPositionalArgument("command", QCoreApplication::translate("main", "Command to execute."),"(create|adduser)");
 
     // A boolean option with multiple names (-f, --force)
     QCommandLineOption forceOption(QStringList() << "f" << "force",
         QCoreApplication::translate("main", "Overwrite existing database files. THIS CANNOT BE UNDONE."));
+    QCommandLineOption loginOption(QStringList() << "l" << "login",
+        QCoreApplication::translate("main", "Provide login for added account"),"login");
+    QCommandLineOption passOption(QStringList() << "p" << "pass",
+        QCoreApplication::translate("main", "Provide password for added account"),"password");
+    QCommandLineOption accessLevelOption(QStringList() << "a" << "access_level",
+        QCoreApplication::translate("main", "Provide access_level [1-9] for account"),"access_level","1");
     parser.addOption(forceOption);
+    parser.addOption(loginOption);
+    parser.addOption(passOption);
+    parser.addOption(accessLevelOption);
 
     parser.process(app);
-
-//    const QStringList args = parser.positionalArguments();
-
-    bool forced = parser.isSet(forceOption);
-//    if(args.length() != 2 && args.length() != 0)
-//        qFatal("ERROR: Number of arguments must be 0 or 2.");
-//    bool nofile = args.isEmpty();
-
-    // Check if dbtool is being run from server directory
-    qInfo() << "Checking for default_dbs directory...";
-    QDir default_dbs_dir(QDir::currentPath() + "/default_dbs");
-    if(!default_dbs_dir.exists())
+    const QStringList positionalArguments = parser.positionalArguments();
+    if(positionalArguments.size()<1 || !known_commands.contains(positionalArguments.first()))
     {
-        qDebug() << "SEGS dbtool must be run from the SEGS root folder (where the default_dbs directory resides)";
-        Pause();
-        return 0;
+        if(positionalArguments.size()>=1)
+            qDebug()<<"Unkown command"<<positionalArguments.first();
+        else
+            qDebug()<<"Command is required";
+        parser.showHelp(1);
     }
-    qInfo() << "default_dbs directory found!";
+    int selected_operation = known_commands.indexOf(positionalArguments.first());
+    switch (selected_operation) {
+        case 0:
+        {
+            bool forced = parser.isSet(forceOption);
+            // Check if dbtool is being run from server directory
+            qInfo() << "Checking for default_dbs directory...";
+            QDir default_dbs_dir(QDir::currentPath() + "/default_dbs");
+            if(!default_dbs_dir.exists())
+            {
+                qDebug() << "SEGS dbtool must be run from the SEGS root folder (where the default_dbs directory resides)";
+                Pause();
+                return 0;
+            }
+            qInfo() << "default_dbs directory found!";
 
-    // Check if database already exists
-    qInfo() << "Checking for existing databases OR -f command...";
-    if((fileExists(segs) || fileExists(segs_game)) && !forced)
-    {
-        if(fileExists(segs))
-            qWarning() << "Database" << segs << "already exists.";
-        if(fileExists(segs_game))
-            qWarning() << "Database" << segs_game << "already exists.";
-        qDebug() << "Run dbtool with -f option to overwrite existing databases. THIS CANNOT BE UNDONE.";
-        Pause();
-        return 0;
+            // Check if database already exists
+            qInfo() << "Checking for existing databases OR -f command...";
+            if((fileExists(segs) || fileExists(segs_game)) && !forced)
+            {
+                if(fileExists(segs))
+                    qWarning() << "Database" << segs << "already exists.";
+                if(fileExists(segs_game))
+                    qWarning() << "Database" << segs_game << "already exists.";
+                qDebug() << "Run dbtool with -f option to overwrite existing databases. THIS CANNOT BE UNDONE.";
+                Pause();
+                return 0;
+            }
+
+            if(forced)
+                qWarning() << "Forced flag used '-f'. Existing databases may be overwritten.";
+
+            createDatabases();
+            addAccount("segsadmin", "segs123", 9);
+            break;
+        }
+        case 1:
+        {
+            if(!parser.isSet(loginOption) || !parser.isSet(passOption))
+            {
+                qCritical()<< "adduser operation requires login and password";
+                return -1;
+            }
+            if(!fileExists(segs))
+            {
+                qCritical() << "Cannot add account, the database does not exist";
+                return -1;
+            }
+            addAccount(parser.value(loginOption),parser.value(passOption),parser.value(accessLevelOption).toUInt());
+        }
     }
-
-    if(forced)
-        qWarning() << "Forced flag used '-f'. Existing databases may be overwritten.";
-
-    createDatabases();
-    addAccount("segsadmin", "segs123", 9);
     Pause();
     return 0;
 }
