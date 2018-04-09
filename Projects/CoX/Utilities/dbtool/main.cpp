@@ -189,9 +189,12 @@ int main(int argc, char **argv)
         QCoreApplication::translate("main", "Provide login for added account"),"login");
     QCommandLineOption passOption(QStringList() << "p" << "pass",
         QCoreApplication::translate("main", "Provide password for added account"),"password");
+    QCommandLineOption accessLevelOption(QStringList() << "a" << "access_level",
+        QCoreApplication::translate("main", "Provide access_level [1-9] for account"),"access_level","1");
     parser.addOption(forceOption);
     parser.addOption(loginOption);
     parser.addOption(passOption);
+    parser.addOption(accessLevelOption);
 
     parser.process(app);
     const QStringList positionalArguments = parser.positionalArguments();
@@ -251,7 +254,7 @@ int main(int argc, char **argv)
                 qCritical() << "Cannot add account, the database does not exist";
                 return -1;
             }
-            addAccount(parser.value(loginOption),parser.value(passOption),1);
+            addAccount(parser.value(loginOption),parser.value(passOption),parser.value(accessLevelOption).toUInt());
         }
     }
     Pause();
