@@ -4,6 +4,7 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
+const constexpr uint32_t CharacterData::class_version;
 CEREAL_CLASS_VERSION(CharacterData, CharacterData::class_version); // register CharacterData class version
 
 template<class Archive>

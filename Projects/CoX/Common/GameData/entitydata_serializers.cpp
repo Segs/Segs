@@ -4,6 +4,7 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
+const constexpr uint32_t EntityData::class_version;
 CEREAL_CLASS_VERSION(EntityData, EntityData::class_version); // register EntityData class version
 
 template<class Archive>
