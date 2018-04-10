@@ -199,7 +199,7 @@ void AuthHandler::on_server_list_request( ServerListRequest *ev )
         inf.port = iface->getAddress().get_port_number();
         inf.current_players = iface->getCurrentPlayers();
         inf.max_players = iface->getMaxPlayers();
-        inf.online = iface->Online();
+        inf.online = true;
         info.push_back(inf);
     }
     r->set_server_list(info);

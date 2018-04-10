@@ -17,7 +17,6 @@
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
 #include "Common/CRUDP_Protocol/CRUDP_Protocol.h"
-#include "Common/Servers/RoamingServer.h"
 #include "Settings.h"
 
 #include <ace/ACE.h>
@@ -48,7 +47,6 @@ public:
     GameLinkEndpoint *      m_endpoint=nullptr;
     GameHandler *           m_handler=nullptr;
     GameLink *              m_game_link=nullptr;
-    bool                    m_online=false;
     uint8_t                 m_id=0;
     uint16_t                m_current_players=0;
     int                     m_max_character_slots;
@@ -63,7 +61,6 @@ public:
             qWarning() << "Server not running yet";
             return true;
         }
-        m_online = false;
         // tell our handler to shut down too
         m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish, nullptr));
 
@@ -116,7 +113,6 @@ bool GameServer::Run()
     if (d->m_endpoint->open() == -1) // will register notifications with current reactor
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
 
-    d->m_online = true;
     return true;
 }
 // later name will be used to read GameServer specific configuration
@@ -156,7 +152,6 @@ bool GameServer::ReadConfig()
 
     d->m_current_players = 0;
     d->m_id = 1;
-    d->m_online = false;
     //m_db = new GameServerDb("");
 
     config->endGroup(); // GameServer
@@ -166,16 +161,6 @@ bool GameServer::ReadConfig()
 bool GameServer::ShutDown(const QString &reason)
 {
     return d->ShutDown(reason);
-}
-
-void GameServer::Online(bool s)
-{
-    d->m_online=s;
-}
-
-bool GameServer::Online()
-{
-    return d->m_online;
 }
 
 const ACE_INET_Addr &GameServer::getAddress()

@@ -6,7 +6,6 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/MapServerInterface.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Client.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerSupport.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/RoamingServer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerEndpoint.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerHandle.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerManager.cpp
@@ -27,7 +26,6 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerProtocolHandler.h
     ${CMAKE_CURRENT_SOURCE_DIR}/server_support.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Server.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/RoamingServer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/InterfaceManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Database.h

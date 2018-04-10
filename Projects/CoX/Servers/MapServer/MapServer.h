@@ -4,7 +4,7 @@
  * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #pragma once
@@ -47,8 +47,6 @@ public:
         bool                    ReadConfig() override;
 
         bool                    ShutDown(const QString &reason="No particular reason") override;
-        void                    Online(bool s);
-        bool                    Online(void) override;
         const ACE_INET_Addr &   getAddress() override;
         EventProcessor *        event_target() override;
         GameServerInterface *   getGameInterface();
@@ -60,7 +58,6 @@ protected:
         std::unique_ptr<PrivateData> d;
 
         uint8_t                 m_id = 0;
-        bool                    m_online=false;
         GameServerInterface *   m_i_game;// GameServer access proxy object
 
         QString                 m_serverName;

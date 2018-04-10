@@ -10,7 +10,7 @@
 
 #include <ace/INET_Addr.h>
 #include <list>
-#include "RoamingServer.h"
+#include "Server.h"
 #include "ServerHandle.h"
 
 class AuthClient;

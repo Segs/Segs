@@ -23,11 +23,6 @@ bool GameServerInterface::ShutDown(const QString &reason)
     assert(m_instance);
     return m_instance->ShutDown(reason);
 }
-bool GameServerInterface::Online()
-{
-    assert(m_instance);
-    return m_instance->Online();
-}
 uint8_t GameServerInterface::getId()
 {
     assert(m_instance);

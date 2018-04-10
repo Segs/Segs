@@ -42,8 +42,6 @@ public:
         bool                    ReadConfig() override;
         bool                    Run(void) override;
         bool                    ShutDown(const QString &reason="No particular reason") override;
-        void                    Online(bool s );
-        bool                    Online(void) override;
         const ACE_INET_Addr &   getAddress() override;
 
         QString                 getName(void) override;

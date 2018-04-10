@@ -195,8 +195,3 @@ int _AdminServer::RemoveAccount(AccountInfo &client)
         res = m_char_db->remove_account(client.game_server_id());
     return res;
 }
-
-bool _AdminServer::Online( )
-{
-    return m_running;
-}
