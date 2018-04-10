@@ -58,11 +58,11 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case GameEventTypes::evUnknownEvent:
         on_unknown_link_event(static_cast<GameUnknownRequest *>(ev));
         break;
-    case Internal_EventTypes::evExpectClient:
-        on_expect_client(static_cast<ExpectClient *>(ev));
+    case Internal_EventTypes::evExpectClientRequest:
+        on_expect_client(static_cast<ExpectClientRequest *>(ev));
         break;
-    case Internal_EventTypes::evClientExpected:
-        on_client_expected(static_cast<ClientExpected *>(ev));
+    case Internal_EventTypes::evExpectClientResponse:
+        on_client_expected(static_cast<ExpectClientResponse *>(ev));
         break;
     case SEGS_EventTypes::evConnect:
         break;
@@ -77,8 +77,8 @@ SEGSEvent * GameHandler::dispatchSync( SEGSEvent *ev )
 {
     switch(ev->type())
     {
-    case Internal_EventTypes::evClientConnectionQuery:
-            SEGSEvent *r=on_connection_query((ClientConnectionQuery *)ev);
+    case Internal_EventTypes::evClientConnectionRequest:
+            SEGSEvent *r=on_connection_query((ClientConnectionRequest *)ev);
             ev->release();
             return r;
     }
@@ -204,7 +204,7 @@ void GameHandler::on_delete_character(DeleteCharacter *ev)
         lnk->putq(new GameEntryError(this,"Given name was not the same as character name\n. Character was not deleted."));
     }
 }
-void GameHandler::on_client_expected(ClientExpected *ev)
+void GameHandler::on_client_expected(ExpectClientResponse *ev)
 {
     // this is the case when we cannot use ev->src(), because it is not GameLink, but a MapHandler
     // we need to get a link from client_id
@@ -235,7 +235,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     //TODO: this should handle multiple map servers, for now it doesn't care and always connects to the first one.
     EventProcessor *map_handler=ServerManager::instance()->GetMapServer(0)->event_target();
     AccountInfo &acc_inf(client->account_info());
-    ExpectMapClient * expect_client = new ExpectMapClient(this,acc_inf.account_server_id(),acc_inf.access_level(),
+    ExpectMapClientRequest * expect_client = new ExpectMapClientRequest(this,acc_inf.account_server_id(),acc_inf.access_level(),
                                                           lnk->peer_addr());
     if(selected_slot )
     {
@@ -260,12 +260,12 @@ void GameHandler::on_unknown_link_event(GameUnknownRequest *)
 //
 // In return caller gets an unique client identifier. which is used later on to retrieve appropriate
 // client object
-void GameHandler::on_expect_client( ExpectClient *ev )
+void GameHandler::on_expect_client( ExpectClientRequest *ev )
 {
     uint32_t cookie = m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
     // let the client object know how can it access database
     m_clients.getExpectedByCookie(cookie)->setServer(this->m_server);
-    ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
+    ev->src()->putq(new ExpectClientResponse(this,ev->m_client_id,cookie,m_server->getAddress()));
 }
 void GameHandler::checkClientConnection(uint64_t id)
 {
@@ -282,7 +282,7 @@ void GameHandler::checkClientConnection(uint64_t id)
 }
 bool GameHandler::isClientConnected(uint64_t id)
 {
-    return m_clients.getById(id)!=NULL;
+    return m_clients.getById(id)!=nullptr;
 }
 void GameHandler::disconnectClient( AccountInfo & cl )
 {
@@ -290,14 +290,14 @@ void GameHandler::disconnectClient( AccountInfo & cl )
 }
 
 
-SEGSEvent *GameHandler::on_connection_query(ClientConnectionQuery *ev)
+SEGSEvent *GameHandler::on_connection_query(ClientConnectionRequest *ev)
 {
-    CharacterClient *cl=m_clients.getById(ev->m_id);
-    if(cl==0)
-        return new ClientConnectionResponse(this,ACE_Time_Value::max_time);
+    CharacterClient *cl=m_clients.getById(ev->m_data.m_id);
+    if(cl==nullptr)
+        return new ClientConnectionResponse({ACE_Time_Value::max_time},ev->session_token());
     // Client was not active for at least 15s. Warning this must check also map link!
     if(((GameLink *)cl->link_state().link())->client_last_seen_packets()>ACE_Time_Value(15,0))
         disconnectClient(cl->account_info());
-    return new ClientConnectionResponse(this,ACE_OS::gettimeofday());
+    return new ClientConnectionResponse({ACE_OS::gettimeofday()},ev->session_token());
 
 }

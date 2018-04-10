@@ -15,20 +15,10 @@ AdminServerInterface::~AdminServerInterface()
 {
     m_server=nullptr;
 }
-//! \brief Called from auth server during user authentication, might be useful for automatical firewall rules update
-int AdminServerInterface::GetBlockedIpList(std::list<int> &addreses)
-{
-    return m_server->GetBlockedIpList(addreses);
-}
 //! Records given 'client' as logged in from 'addr'.
 bool AdminServerInterface::Login(AccountInfo &client,const ACE_INET_Addr &client_addr)
 {
     return m_server->Login(client,client_addr);
-}
-//! Records given 'client' as logged out in from 'addr'.
-bool AdminServerInterface::Logout(AccountInfo &client)
-{
-    return m_server->Logout(client);
 }
 //! Save account
 int AdminServerInterface::SaveAccount(const char *username, const char *password)
@@ -39,14 +29,6 @@ int AdminServerInterface::SaveAccount(const char *username, const char *password
 bool AdminServerInterface::ValidPassword(const AccountInfo &client, const char *password)
 {
     return m_server->ValidPassword(client, password);
-}
-void AdminServerInterface::InvalidGameServerConnection(const ACE_INET_Addr &from)
-{
-    return m_server->InvalidGameServerConnection(from);
-}
-//! magical entry point to internal workings of all the servers ??
-void AdminServerInterface::RunCommand(const char *)
-{
 }
 bool AdminServerInterface::FillClientInfo(AccountInfo &client)
 {
@@ -64,12 +46,3 @@ bool AdminServerInterface::ShutDown(const QString &reason)
 {
     return m_server->ShutDown(reason);
 }
-ServerHandle<IGameServer> AdminServerInterface::RegisterMapServer(const ServerHandle<IMapServer> &map_h)
-{
-    return m_server->RegisterMapServer(map_h);
-}
-int AdminServerInterface::GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server)
-{
-    return m_server->GetAccessKeyForServer(h_server);
-}
-

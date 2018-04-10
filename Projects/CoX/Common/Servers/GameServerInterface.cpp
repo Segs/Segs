@@ -43,16 +43,6 @@ uint16_t GameServerInterface::getMaxPlayers()
     assert(m_instance);
     return m_instance->getMaxPlayers();
 }
-uint8_t GameServerInterface::getUnkn1()
-{
-    assert(m_instance);
-    return m_instance->getUnkn1();
-}
-uint8_t GameServerInterface::getUnkn2()
-{
-    assert(m_instance);
-    return m_instance->getUnkn2();
-}
 QString GameServerInterface::getName()
 {
     assert(m_instance);
@@ -62,16 +52,6 @@ const ACE_INET_Addr &GameServerInterface::getAddress()
 {
     assert(m_instance);
     return m_instance->getAddress();
-}
-int GameServerInterface::getAccessKeyForServer(const ServerHandle<IMapServer> &h_map)
-{
-    assert(m_instance);
-    return m_instance->getAccessKeyForServer(h_map);
-}
-bool GameServerInterface::isMapServerReady(const ServerHandle<IMapServer> &h_map)
-{
-    assert(m_instance);
-    return m_instance->isMapServerReady(h_map);
 }
 EventProcessor * GameServerInterface::event_target()
 {

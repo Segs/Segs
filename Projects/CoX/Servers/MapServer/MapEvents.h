@@ -159,7 +159,6 @@ public:
     void serializefrom(BitStream &/*bs*/)
     {
 //        Parameterless - serializefrom is no-op
-//        assert(!"Unimplemented");
     }
 };
 
@@ -422,7 +421,6 @@ public:
     void serializefrom(BitStream &/*bs*/)
     {
 //        Parameterless - serializefrom is no-op
-//        assert(!"Unimplemented");
     }
 };
 class DescriptionAndBattleCry final : public MapLinkEvent

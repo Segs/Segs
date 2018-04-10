@@ -9,12 +9,8 @@
 #pragma once
 #include <QSettings>
 #include <QString>
-#include <QTextStream>
-#include <QFile>
-#include <QFileInfo>
-#include <QDebug>
 
-class Settings : public QSettings {
+class Settings {
 
 public:
     static QSettings*   getSettings();

@@ -9,7 +9,7 @@ class PasswordHasher
 public:
     PasswordHasher();
     QByteArray generateSalt();
-    QByteArray hashPassword(const char * pass, QByteArray salt);
+    QByteArray hashPassword(const QByteArray &pass, const QByteArray &salt);
 
 protected:
     QString getRandomString(int length) const;

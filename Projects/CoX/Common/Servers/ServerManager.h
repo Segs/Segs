@@ -34,13 +34,11 @@ virtual                         ~ServerManagerC(void){}
         void                    StopLocalServers(void);
 
 virtual AdminServerInterface *  GetAdminServer(void);
-virtual AuthServerInterface *   GetAuthServer(void);
 virtual GameServerInterface *   GetGameServer(size_t idx);
 virtual MapServerInterface *    GetMapServer(size_t idx);
 
         void                    SetAuthServer(IAuthServer *srv);
         void                    SetAdminServer(IAdminServer *srv);
-virtual size_t                  GameServerCount(void);
 virtual void                    AddGameServer(IGameServer *srv);
         const dGameServer *     getGameServerList() const {return &m_GameServers;}
 

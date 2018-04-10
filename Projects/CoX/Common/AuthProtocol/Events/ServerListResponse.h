@@ -8,8 +8,6 @@ struct GameServerInfo
     uint8_t  id;
     uint32_t addr; // result of calling get_ip_address() on ACE_Inet_ADDR
     uint16_t port;
-    uint8_t  unknown_1;
-    uint8_t  unknown_2;
     uint16_t current_players;
     uint16_t max_players;
     uint8_t  online;

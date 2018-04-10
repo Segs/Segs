@@ -21,8 +21,8 @@ template <class CLIENT_CLASS>
 class ClientStore
 {
 public:
-typedef std::unordered_set<CLIENT_CLASS *> vClients;
-typedef typename vClients::iterator          ivClients;
+using   vClients = std::unordered_set<CLIENT_CLASS *>;
+using   ivClients = typename vClients::iterator;
 protected:
         //  boost::object_pool<CLIENT_CLASS> m_pool;
         std::unordered_map<uint32_t,CLIENT_CLASS *> m_expected_clients;

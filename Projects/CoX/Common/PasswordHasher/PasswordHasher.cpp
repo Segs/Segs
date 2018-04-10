@@ -39,10 +39,9 @@ QByteArray PasswordHasher::generateSalt()
  * \param salt The salt to be appended to the password.
  * \return A QByteArray containing the salted and hashed password.
  */
-QByteArray PasswordHasher::hashPassword(const char * pass, QByteArray salt)
+QByteArray PasswordHasher::hashPassword(const QByteArray &pass, const QByteArray &salt)
 {
-    QByteArray pass_array(pass);
-    pass_array.append(salt);
+    QByteArray pass_array(pass+salt);
     QByteArray hashed_pass_array = m_hasher->hash(pass_array, QCryptographicHash::Sha256);
     return hashed_pass_array;
 }

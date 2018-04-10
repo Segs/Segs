@@ -8,7 +8,6 @@
  */
 
 #pragma once
-#include "ServerManager.h"
 #include "Client.h"
 #include "MapLink.h"
 #include "CharacterDatabase.h"
@@ -54,7 +53,6 @@ virtual                     ~MapClient() = default;
 
         void                AddShortcut(int index, NetCommand *command);
         NetCommand *        GetCommand(int index) {return m_shortcuts[index];}
-        void                SendCommand(NetCommand *command,...);
         void                current_map(MapInstance *pmap){m_current_map=pmap;}
         MapInstance *       current_map(){return m_current_map;}
         void                char_entity(Entity *ent){m_ent=ent; m_ent->m_client=this;}

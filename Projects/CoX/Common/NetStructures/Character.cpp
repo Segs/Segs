@@ -391,7 +391,7 @@ void Character::sendWindows( BitStream &bs ) const
     }
 }
 
-void Character::sendWindow(BitStream &bs, GUIWindow wnd) const
+void Character::sendWindow(BitStream &bs,const GUIWindow &wnd) const
 {
 
     qCDebug(logGUI) << "sendWindow:" << wnd.m_idx;

@@ -1,9 +1,9 @@
-#include <QDebug>
 #include "chardata_serializers.h"
 
 #include "chardata_definitions.h"
 #include "DataStorage.h"
 #include "serialization_common.h"
+#include <QDebug>
 
 const constexpr uint32_t Friend::class_version;
 const constexpr uint32_t FriendsList::class_version;

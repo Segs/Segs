@@ -54,9 +54,12 @@ bool AuthClient::isLoggedIn()
         assert(gs!=nullptr);
         if(nullptr==gs) // something screwy happened
             return false;
-        ClientConnectionQuery * query = new ClientConnectionQuery(nullptr,m_account_info->account_server_id());
+        uint64_t fake_session_token=0;
+        ClientConnectionRequest * query = new ClientConnectionRequest({m_account_info->account_server_id()},fake_session_token);
         ClientConnectionResponse *resp = (ClientConnectionResponse *)gs->event_target()->dispatchSync(query);
-        bool still_connected = resp->last_comm!=ACE_Time_Value::max_time;
+        assert(resp->session_token()==fake_session_token);
+        const ClientConnectionResponseData &resp_data(resp->m_data);
+        bool still_connected = resp_data.last_comm!=ACE_Time_Value::max_time;
         resp->release();
         if(still_connected)
             return still_connected;

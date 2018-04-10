@@ -162,13 +162,6 @@ bool _AdminServer::Login(const AccountInfo &,const ACE_INET_Addr &)
     return true;
 }
 
-bool _AdminServer::Logout(const AccountInfo &) const
-{
-    // Here we should log to the Db, a Logout event for that client
-    //if(client)
-    //  client->setState(AuthClient::NOT_LOGGEDIN);
-    return true;
-}
 /// Verifies entered password matches stored password
 bool _AdminServer::ValidPassword( const AccountInfo &client, const char *password )
 {
@@ -187,15 +180,11 @@ int _AdminServer::SaveAccount(const char *username, const char *password)
     fill_account_info(tmp);
     // also register this account on all currently available gameservers
     // they really should check for sync with AdminDb on startup
-    //for(size_t idx=0; idx<ServerManager::instance()->GameServerCount(); idx++)
-    //{
-    // TODO: support multiple game servers.
     GameServerInterface *igs = ServerManager::instance()->GetGameServer(0);
     if(!igs)
         return -1;
     if(!m_char_db->CreateLinkedAccount(tmp.account_server_id(),username,igs->getMaxCharacterSlots()))
         res=2;
-    //}
     return res;   // Add the given account
 }
 
@@ -207,63 +196,7 @@ int _AdminServer::RemoveAccount(AccountInfo &client)
     return res;
 }
 
-/*
-*/
-
-/*
-bool AdminServer::AccountBlocked(const char *login) const
-{
-        IClient *cl = GetClientByLogin(login);
-        if(cl)
-        {
-                if(cl->getState()!=IClient::ACCOUNT_BLOCKED)
-                        return false; // Account is not blocked. Allow account to be used.
-        }
-        return true; // Account is blocked, or there is no such account. Deny them access.
-}
-*/
-/// Add client's IP to the banlist.
-int _AdminServer::AddIPBan(const ACE_INET_Addr &client_addr)
-{
-    m_ban_list.push_back(client_addr);
-    return 0;
-}
-
-/**
- * This method will find the most occupied GameServer, and attach MapServer bundle
- * (map_h) to it.
- * @return ServerHandle
- * @param  map_h
- */
-ServerHandle<IGameServer> _AdminServer::RegisterMapServer(const ServerHandle<IMapServer> &/*map_h*/)
-{
-    // For each server, find number of free Map handlers, and player occupancy ( servers with low number of Maps, and low occupancy should be prioritized)
-    return ServerHandle<IGameServer>(nullptr);
-}
-
-
-/**
- * Idea: All GetAccessKeyForServer methods create a new 'allowed access' entry in their callers table.
- *       So each call using Handle, is marked/encoded with it, and can be verified as valid.
- * @return int
- * @param  map_h
- */
-int _AdminServer::GetAccessKeyForServer(const ServerHandle<IMapServer> &/*map_h*/)
-{
-    return 0;
-}
-
 bool _AdminServer::Online( )
 {
     return m_running;
-}
-
-void _AdminServer::InvalidGameServerConnection( const ACE_INET_Addr & )
-{
-
-}
-/// Called from auth server during user authentication, might be useful for automatical firewall rules update
-int _AdminServer::GetBlockedIpList( std::list<int> & ) /* Called from auth server during user authentication, might be useful for automatical firewall rules update */
-{
-    return 0;
 }

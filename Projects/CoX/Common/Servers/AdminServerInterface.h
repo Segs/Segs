@@ -30,20 +30,12 @@ class IAdminServer : public RoamingServer
 {
         typedef ServerHandle<IGameServer> hGameServer;
 public:
-virtual bool            Logout(const AccountInfo &client) const=0;
 virtual bool            Login(const AccountInfo &client,const ACE_INET_Addr &client_addr)=0;
 virtual bool            ValidPassword(const AccountInfo &client, const char *password)=0;
 
 virtual bool            fill_account_info(AccountInfo &client)=0;
 virtual int             SaveAccount(const char *username, const char *password)=0;
 virtual int             RemoveAccount(AccountInfo &client)=0;
-
-virtual int             AddIPBan(const ACE_INET_Addr &client_addr)=0;
-virtual int             GetBlockedIpList(std::list<int> &)=0;
-virtual void            InvalidGameServerConnection(const ACE_INET_Addr &)=0;
-
-virtual hGameServer     RegisterMapServer(const ServerHandle<IMapServer> &map_h )=0;
-virtual int             GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server )=0;
 };
 
 class AdminServerInterface : public Server
@@ -57,18 +49,11 @@ public:
         bool            Run(void);
         bool            ShutDown(const QString &reason);
 
-        hGameServer     RegisterMapServer(const ServerHandle<IMapServer> &map_h);
-        int             GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server);
-
-
         int             GetBlockedIpList(std::list<int> &addreses);
         bool            FillClientInfo(AccountInfo &);
         bool            Login(AccountInfo &client,const ACE_INET_Addr &client_addr);
         int             SaveAccount(const char *username, const char *password);
-        bool            Logout(AccountInfo &client);
         bool            ValidPassword(const AccountInfo &client, const char *password);
-        void            InvalidGameServerConnection(const ACE_INET_Addr &from);
-        void            RunCommand(const char *);
 protected:
         IAdminServer *  m_server;
 };

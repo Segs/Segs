@@ -26,6 +26,8 @@
 #include "Database.h"
 #include "SlashCommand.h"
 #include "Common/GameData/CoHMath.h"
+#include "Common/Servers/HandlerLocator.h"
+#include "Common/Servers/MessageBus.h"
 #include "Logging.h"
 
 #include <QtCore/QDebug>
@@ -120,8 +122,8 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evSceneRequest:
             on_scene_request(static_cast<SceneRequest *>(ev));
             break;
-        case Internal_EventTypes::evExpectClient:
-            on_expect_client(static_cast<ExpectMapClient *>(ev));
+        case Internal_EventTypes::evExpectClientRequest:
+            on_expect_client(static_cast<ExpectMapClientRequest *>(ev));
             break;
         case MapEventTypes::evDisconnectRequest:
             on_disconnect(static_cast<DisconnectRequest *>(ev));
@@ -229,13 +231,6 @@ void MapInstance::dispatch( SEGSEvent *ev )
             qCWarning(logMapEvents, "Unhandled MapEventTypes %zu\n", ev->type()-MapEventTypes::base);
     }
 }
-
-SEGSEvent * MapInstance::dispatchSync( SEGSEvent * )
-{
-    assert(!"No sync dispatchable events here");
-
-    return nullptr;
-}
 void MapInstance::on_idle(IdleEvent *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
@@ -300,7 +295,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     lnk->putq(new DisconnectResponse);
     lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
 }
-void MapInstance::on_expect_client( ExpectMapClient *ev )
+void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 {
     // TODO: handle contention while creating 2 characters with the same name from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
@@ -309,7 +304,7 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
     MapClient *cl = nullptr;
     if(nullptr==tpl)
     {
-        ev->src()->putq(new ClientExpected(this,ev->m_client_id,1,m_server->getAddress()));
+        ev->src()->putq(new ExpectClientResponse(this,ev->m_client_id,1,m_server->getAddress()));
         return;
     }
     CharacterDatabase * char_db = AdminServer::instance()->character_db();
@@ -319,7 +314,7 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
         if(char_db->named_character_exists(ev->m_character_name))
         {
             // name is taken, inform by setting cookie to 0.
-            ev->src()->putq(new ClientExpected(this,ev->m_client_id,0,m_server->getAddress()));
+            ev->src()->putq(new ExpectClientResponse(this,ev->m_client_id,0,m_server->getAddress()));
             return;
         }
     }
@@ -333,7 +328,7 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
         ent->fillFromCharacter(*ev->char_from_db);
         cl->char_entity(ent);
     }
-    ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
+    ev->src()->putq(new ExpectClientResponse(this,ev->m_client_id,cookie,m_server->getAddress()));
     //    else if(true) // check if (character does not exist || character exists and is owned by this client )
     //    {
 
@@ -840,7 +835,8 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     std::vector<MapClient *> recipients;
 
     QString cmd_str = command.section(QRegularExpression("\\s+"), 0, 0);
-    QString emote_str = command.section(QRegularExpression("\\s+"), 1, -1);
+    QString original_emote = command.section(QRegularExpression("\\s+"), 1, -1);
+    QString lowerContents = original_emote.toLower();
                                                                                 // Normal Emotes
     static const QStringList afraidCommands = {"afraid", "cower", "fear", "scared"};
     static const QStringList akimboCommands = {"akimbo", "wings"};
@@ -873,28 +869,28 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     static const QStringList yogaCommands = {"yoga", "lotus"};
     static const QStringList snowflakesCommands = {"snowflakes", "throwsnowflakes"};
 
-    if(afraidCommands.contains(emote_str, Qt::CaseInsensitive))                                  // Afraid: Cower in fear, hold stance.
+    if(afraidCommands.contains(lowerContents))                                  // Afraid: Cower in fear, hold stance.
     {
         if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Afraid emote";
         else
             msg = "Unhandled ground Afraid emote";
     }
-    else if(akimboCommands.contains(emote_str, Qt::CaseInsensitive) && !ent->m_is_flying)        // Akimbo: Stands with fists on hips looking forward, hold stance.
+    else if(akimboCommands.contains(lowerContents) && !ent->m_is_flying)        // Akimbo: Stands with fists on hips looking forward, hold stance.
         msg = "Unhandled Akimbo emote";                                         // Not allowed when flying.
-    else if(emote_str.toLower() == "angry")                                           // Angry: Fists on hips and slouches forward, as if glaring or grumbling, hold stance.
+    else if(lowerContents == "angry")                                           // Angry: Fists on hips and slouches forward, as if glaring or grumbling, hold stance.
         msg = "Unhandled Angry emote";
-    else if(emote_str.toLower() == "atease")                                          // AtEase: Stands in the 'at ease' military position (legs spread out slightly, hands behind back) stance, hold stance.
+    else if(lowerContents == "atease")                                          // AtEase: Stands in the 'at ease' military position (legs spread out slightly, hands behind back) stance, hold stance.
         msg = "Unhandled AtEase emote";
-    else if(emote_str.toLower() == "attack")                                          // Attack: Gives a charge! type point, fists on hips stance.
+    else if(lowerContents == "attack")                                          // Attack: Gives a charge! type point, fists on hips stance.
         msg = "Unhandled Attack emote";
-    else if(emote_str.toLower() == "batsmash")                                        // BatSmash: Hit someone or something with a bat, repeat.
+    else if(lowerContents == "batsmash")                                        // BatSmash: Hit someone or something with a bat, repeat.
         msg = "Unhandled BatSmash emote";
-    else if(emote_str.toLower() == "batsmashreact")                                   // BatSmashReact: React as if getting hit with a bat, often used in duo with BatSmash.
+    else if(lowerContents == "batsmashreact")                                   // BatSmashReact: React as if getting hit with a bat, often used in duo with BatSmash.
         msg = "Unhandled BatSmashReact emote";
-    else if(bigWaveCommands.contains(emote_str, Qt::CaseInsensitive))                            // BigWave: Waves over the head, fists on hips stance.
+    else if(bigWaveCommands.contains(lowerContents))                            // BigWave: Waves over the head, fists on hips stance.
         msg = "Unhandled BigWave emote";
-    else if(boomBoxCommands.contains(emote_str, Qt::CaseInsensitive) && !ent->m_is_flying)       // BoomBox (has sound): Summons forth a boombox (it just appears) and leans over to turn it on, stands up and does a sort of dance. A random track will play.
+    else if(boomBoxCommands.contains(lowerContents) && !ent->m_is_flying)       // BoomBox (has sound): Summons forth a boombox (it just appears) and leans over to turn it on, stands up and does a sort of dance. A random track will play.
     {                                                                           // Not allowed when flying.
         int rSong = rand() % 25 + 1;                                            // Randomly pick a song.
         switch(rSong)
@@ -1025,13 +1021,13 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
             }
         }
     }
-    else if(bowCommands.contains(emote_str, Qt::CaseInsensitive) && !ent->m_is_flying)           // Bow: Chinese/Japanese style bow with palms together, returns to normal stance.
+    else if(bowCommands.contains(lowerContents) && !ent->m_is_flying)           // Bow: Chinese/Japanese style bow with palms together, returns to normal stance.
         msg = "Unhandled Bow emote";                                            // Not allowed when flying.
-    else if(bowDownCommands.contains(emote_str, Qt::CaseInsensitive))                            // BowDown: Thrusts hands forward, then points down, as if ordering someone else to bow before you.
+    else if(bowDownCommands.contains(lowerContents))                            // BowDown: Thrusts hands forward, then points down, as if ordering someone else to bow before you.
         msg = "Unhandled BowDown emote";
-    else if(emote_str.toLower() == "burp" && !ent->m_is_flying)                       // Burp (has sound): A raunchy belch, wipes mouth with arm afterward, ape-like stance.
+    else if(lowerContents == "burp" && !ent->m_is_flying)                       // Burp (has sound): A raunchy belch, wipes mouth with arm afterward, ape-like stance.
         msg = "Unhandled Burp emote";                                           // Not allowed when flying.
-    else if(emote_str.toLower() == "cheer")                                           // Cheer: Randomly does one of 3 cheers, 1 fist raised, 2 fists raised or 2 fists lowered, repeats.
+    else if(lowerContents == "cheer")                                           // Cheer: Randomly does one of 3 cheers, 1 fist raised, 2 fists raised or 2 fists lowered, repeats.
     {
         int rNum = rand() % 3 + 1;                                              // Randomly pick the cheer.
         switch(rNum)
@@ -1052,9 +1048,9 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
             }
         }
     }
-    else if(emote_str.toLower() == "clap")                                            // Clap (has sound): Claps hands several times, crossed arms stance.
+    else if(lowerContents == "clap")                                            // Clap (has sound): Claps hands several times, crossed arms stance.
         msg = "Unhandled Clap emote";
-    else if(coinCommands.contains(emote_str, Qt::CaseInsensitive))                               // Coin: Flips a coin, randomly displays heads or tails, and hold stance. Coin image remains until stance broken.
+    else if(coinCommands.contains(lowerContents))                               // Coin: Flips a coin, randomly displays heads or tails, and hold stance. Coin image remains until stance broken.
     {
         int rFlip = rand() % 2 + 1;                                             // Randomly pick heads or tails.
         switch(rFlip)
@@ -1070,9 +1066,9 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
             }
         }
     }
-    else if(emote_str.toLower() == "crossarms" && !ent->m_is_flying)                  // CrossArms: Crosses arms, stance (slightly different from most other crossed arm stances).
+    else if(lowerContents == "crossarms" && !ent->m_is_flying)                  // CrossArms: Crosses arms, stance (slightly different from most other crossed arm stances).
         msg = "Unhandled CrossArms emote";                                      // Not allowed when flying.
-    else if(emote_str.toLower() == "dance")                                           // Dance: Randomly performs one of six dances.
+    else if(lowerContents == "dance")                                           // Dance: Randomly performs one of six dances.
     {
         int rDance = rand() % 6 + 1;                                            // Randomly pick the dance.
         switch(rDance)
@@ -1108,7 +1104,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
             }
         }
     }
-    else if(diceCommands.contains(emote_str, Qt::CaseInsensitive))                               // Dice: Picks up, shakes and rolls a die, randomly displays the results (1-6), default stance. Die image quickly fades.
+    else if(diceCommands.contains(lowerContents))                               // Dice: Picks up, shakes and rolls a die, randomly displays the results (1-6), default stance. Die image quickly fades.
     {
         int rDice = rand() % 6 + 1;                                             // Randomly pick a die result.
         switch(rDice)
@@ -1144,118 +1140,118 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
             }
         }
     }
-    else if(emote_str.toLower() == "dice1")                                           // Dice1: Picks up, shakes and rolls a die, displays a 1, default stance.
+    else if(lowerContents == "dice1")                                           // Dice1: Picks up, shakes and rolls a die, displays a 1, default stance.
         msg = "Unhandled Dice1 emote";
-    else if(emote_str.toLower() == "dice2")                                           // Dice2: Picks up, shakes and rolls a die, displays a 2, default stance.
+    else if(lowerContents == "dice2")                                           // Dice2: Picks up, shakes and rolls a die, displays a 2, default stance.
         msg = "Unhandled Dice2 emote";
-    else if(emote_str.toLower() == "dice3")                                           // Dice3: Picks up, shakes and rolls a die, displays a 3, default stance.
+    else if(lowerContents == "dice3")                                           // Dice3: Picks up, shakes and rolls a die, displays a 3, default stance.
         msg = "Unhandled Dice3 emote";
-    else if(emote_str.toLower() == "dice4")                                           // Dice4: Picks up, shakes and rolls a die, displays a 4, default stance.
+    else if(lowerContents == "dice4")                                           // Dice4: Picks up, shakes and rolls a die, displays a 4, default stance.
         msg = "Unhandled Dice4 emote";
-    else if(emote_str.toLower() == "dice5")                                           // Dice5: Picks up, shakes and rolls a die, displays a 5, default stance.
+    else if(lowerContents == "dice5")                                           // Dice5: Picks up, shakes and rolls a die, displays a 5, default stance.
         msg = "Unhandled Dice5 emote";
-    else if(emote_str.toLower() == "dice6")                                           // Dice6: Picks up, shakes and rolls a die, displays a 6, default stance.
+    else if(lowerContents == "dice6")                                           // Dice6: Picks up, shakes and rolls a die, displays a 6, default stance.
         msg = "Unhandled Dice6 emote";
-    else if(emote_str.toLower() == "disagree")                                        // Disagree: Shakes head, crosses hand in front, then offers an alternative, crossed arms stance.
+    else if(lowerContents == "disagree")                                        // Disagree: Shakes head, crosses hand in front, then offers an alternative, crossed arms stance.
         msg = "Unhandled Disagree emote";
-    else if(emote_str.toLower() == "drat")                                            // Drat: Raises fists up, then down, stomping at the same time, same ending stance as Frustrated.
+    else if(lowerContents == "drat")                                            // Drat: Raises fists up, then down, stomping at the same time, same ending stance as Frustrated.
         msg = "Unhandled Drat emote";
-    else if(emote_str.toLower() == "explain")                                         // Explain: Hold arms out in a "wait a minute" gesture, motion alternatives, then shrug.
+    else if(lowerContents == "explain")                                         // Explain: Hold arms out in a "wait a minute" gesture, motion alternatives, then shrug.
         msg = "Unhandled Explain emote";
-    else if(evilLaughCommands.contains(emote_str, Qt::CaseInsensitive))                          // EvilLaugh: Extremely melodramatic, overacted evil laugh.
+    else if(evilLaughCommands.contains(lowerContents))                          // EvilLaugh: Extremely melodramatic, overacted evil laugh.
         msg = "Unhandled EvilLaugh emote";
-    else if(fancyBowCommands.contains(emote_str, Qt::CaseInsensitive))                           // FancyBow: A much more elegant, ball-room style bow, falls into neutral forward facing stance.
+    else if(fancyBowCommands.contains(lowerContents))                           // FancyBow: A much more elegant, ball-room style bow, falls into neutral forward facing stance.
         msg = "Unhandled FancyBow emote";
-    else if(flex1Commands.contains(emote_str, Qt::CaseInsensitive))                              // Flex1: Fists raised, flexing arms stance, hold stance. This is called a "double biceps" pose.
+    else if(flex1Commands.contains(lowerContents))                              // Flex1: Fists raised, flexing arms stance, hold stance. This is called a "double biceps" pose.
         msg = "Unhandled Flex1 emote";
-    else if(flex2Commands.contains(emote_str, Qt::CaseInsensitive))                              // Flex2: A side-stance flexing arms, hold stance. This is a sideways variation on the "most muscular" pose.
+    else if(flex2Commands.contains(lowerContents))                              // Flex2: A side-stance flexing arms, hold stance. This is a sideways variation on the "most muscular" pose.
         msg = "Unhandled Flex2 emote";
-    else if(flex3Commands.contains(emote_str, Qt::CaseInsensitive))                              // Flex3: Another side-stance, flexing arms, hold stance. This is an open variation on the "side chest" pose.
+    else if(flex3Commands.contains(lowerContents))                              // Flex3: Another side-stance, flexing arms, hold stance. This is an open variation on the "side chest" pose.
         msg = "Unhandled Flex3 emote";
-    else if(emote_str.toLower() == "frustrated")                                      // Frustrated: Raises both fists and leans backwards, shaking fists and head, leads into a quick-breathing angry-looking stance.
+    else if(lowerContents == "frustrated")                                      // Frustrated: Raises both fists and leans backwards, shaking fists and head, leads into a quick-breathing angry-looking stance.
         msg = "Unhandled Frustrated emote";
-    else if(emote_str.toLower() == "grief")                                           // Grief: Falls to knees, hands on forehead, looks up and gestures a sort of "why me?" look with hands, goes into a sort of depressed slump while on knees, holds stance.
+    else if(lowerContents == "grief")                                           // Grief: Falls to knees, hands on forehead, looks up and gestures a sort of "why me?" look with hands, goes into a sort of depressed slump while on knees, holds stance.
         msg = "Unhandled Grief emote";
-    else if(hiCommands.contains(emote_str, Qt::CaseInsensitive))                                 // Hi: Simple greeting wave, fists on hips stance.
+    else if(hiCommands.contains(lowerContents))                                 // Hi: Simple greeting wave, fists on hips stance.
         msg = "Unhandled Hi emote";
-    else if(hmmCommands.contains(emote_str, Qt::CaseInsensitive))                                // Hmmm: Stare into the sky, rubbing chin, thinking.
+    else if(hmmCommands.contains(lowerContents))                                // Hmmm: Stare into the sky, rubbing chin, thinking.
         msg = "Unhandled Hmmm emote";
-    else if(emote_str.toLower() == "jumpingjacks")                                    // JumpingJacks (has sound): Does jumping jacks, repeats.
+    else if(lowerContents == "jumpingjacks")                                    // JumpingJacks (has sound): Does jumping jacks, repeats.
         msg = "Unhandled JumpingJacks emote";
-    else if(emote_str.toLower() == "kneel")                                           // Kneel: Quickly kneels on both knees with hands on thighs (looks insanely uncomfortable), holds stance.
+    else if(lowerContents == "kneel")                                           // Kneel: Quickly kneels on both knees with hands on thighs (looks insanely uncomfortable), holds stance.
         msg = "Unhandled Kneel emote";
-    else if(emote_str.toLower() == "laugh")                                           // Laugh: Fists on hips, tosses head back and laughs.
+    else if(lowerContents == "laugh")                                           // Laugh: Fists on hips, tosses head back and laughs.
         msg = "Unhandled Laugh emote";
-    else if(laugh2Commands.contains(emote_str, Qt::CaseInsensitive))                             // Laugh2: Another style of laugh.
+    else if(laugh2Commands.contains(lowerContents))                             // Laugh2: Another style of laugh.
         msg = "Unhandled Laugh2 emote";
-    else if(emote_str.toLower() == "lecture")                                         // Lecture: Waves/shakes hands in different motions in a lengthy lecture, fists on hips stance.
+    else if(lowerContents == "lecture")                                         // Lecture: Waves/shakes hands in different motions in a lengthy lecture, fists on hips stance.
         msg = "Unhandled Lecture emote";
-    else if(martialArtsCommands.contains(emote_str, Qt::CaseInsensitive))                        // MartialArts (has sound): Warm up/practice punches and blocks.
+    else if(martialArtsCommands.contains(lowerContents))                        // MartialArts (has sound): Warm up/practice punches and blocks.
         msg = "Unhandled MartialArts emote";
-    else if(emote_str.toLower() == "militarysalute")                                  // MilitarySalute: Stands in the military-style heads-high hand on forehead salute stance.
+    else if(lowerContents == "militarysalute")                                  // MilitarySalute: Stands in the military-style heads-high hand on forehead salute stance.
         msg = "Unhandled MilitarySalute emote";
-    else if(newspaperCommands.contains(emote_str, Qt::CaseInsensitive))                          // Newspaper: Materializes a newspaper and reads it.
+    else if(newspaperCommands.contains(lowerContents))                          // Newspaper: Materializes a newspaper and reads it.
         msg = "Unhandled Newspaper emote";
-    else if(noCommands.contains(emote_str, Qt::CaseInsensitive))                                 // No: Shakes head and waves hands in front of character, crossed arms stance.
+    else if(noCommands.contains(lowerContents))                                 // No: Shakes head and waves hands in front of character, crossed arms stance.
         msg = "Unhandled No emote";
-    else if(emote_str.toLower() == "nod")                                             // Nod: Fists on hips, nod yes, hold stance.
+    else if(lowerContents == "nod")                                             // Nod: Fists on hips, nod yes, hold stance.
         msg = "Unhandled Nod emote";
-    else if(emote_str.toLower() == "none")                                            // None: Cancels the current emote, if any, and resumes default standing animation cycle.
+    else if(lowerContents == "none")                                            // None: Cancels the current emote, if any, and resumes default standing animation cycle.
         msg = "Unhandled None emote";
-    else if(emote_str.toLower() == "paper")                                           // Paper: Plays rock/paper/scissors, picking paper (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
+    else if(lowerContents == "paper")                                           // Paper: Plays rock/paper/scissors, picking paper (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
         msg = "Unhandled Paper emote";
-    else if(plotCommands.contains(emote_str, Qt::CaseInsensitive))                               // Plot: Rubs hands together while hunched over.
+    else if(plotCommands.contains(lowerContents))                               // Plot: Rubs hands together while hunched over.
         msg = "Unhandled Plot emote";
-    else if(emote_str.toLower() == "point")                                           // Point: Extends left arm and points in direction character is facing, hold stance.
+    else if(lowerContents == "point")                                           // Point: Extends left arm and points in direction character is facing, hold stance.
         msg = "Unhandled Point emote";
-    else if(emote_str.toLower() == "praise")                                          // Praise: Kneel prostrate and repeatedly bow in adoration.
+    else if(lowerContents == "praise")                                          // Praise: Kneel prostrate and repeatedly bow in adoration.
         msg = "Unhandled Praise emote";
-    else if(emote_str.toLower() == "protest")                                         // Protest: Hold hold up one of several randomly selected mostly unreadable protest signs.
+    else if(lowerContents == "protest")                                         // Protest: Hold hold up one of several randomly selected mostly unreadable protest signs.
         msg = "Unhandled Protest emote";
-    else if(emote_str.toLower() == "roar" && !ent->m_is_flying)                       // Roar: Claws air, roaring, ape-like stance.
+    else if(lowerContents == "roar" && !ent->m_is_flying)                       // Roar: Claws air, roaring, ape-like stance.
         msg = "Unhandled Roar emote";                                           // Not allowed when flying.
-    else if(emote_str.toLower() == "rock")                                            // Rock: Plays rock/paper/scissors, picking rock (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
+    else if(lowerContents == "rock")                                            // Rock: Plays rock/paper/scissors, picking rock (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
         msg = "Unhandled Rock emote";
-    else if(emote_str.toLower() == "salute")                                          // Salute: A hand-on-forehead salute, fists on hips stance.
+    else if(lowerContents == "salute")                                          // Salute: A hand-on-forehead salute, fists on hips stance.
         msg = "Unhandled Salute emote";
-    else if(emote_str.toLower() == "scissors")                                        // Scissors: Plays rock/paper/scissors, picking scissors (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
+    else if(lowerContents == "scissors")                                        // Scissors: Plays rock/paper/scissors, picking scissors (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
         msg = "Unhandled Scissors emote";
-    else if(emote_str.toLower() == "score1")                                          // Score1: Holds a black on white scorecard up, displaying a 1, holds stance.
+    else if(lowerContents == "score1")                                          // Score1: Holds a black on white scorecard up, displaying a 1, holds stance.
         msg = "Unhandled Score1 emote";
-    else if(emote_str.toLower() == "score2")                                          // Score2: Holds a black on white scorecard up, displaying a 2, holds stance.
+    else if(lowerContents == "score2")                                          // Score2: Holds a black on white scorecard up, displaying a 2, holds stance.
         msg = "Unhandled Score2 emote";
-    else if(emote_str.toLower() == "score3")                                          // Score3: Holds a black on white scorecard up, displaying a 3, holds stance.
+    else if(lowerContents == "score3")                                          // Score3: Holds a black on white scorecard up, displaying a 3, holds stance.
         msg = "Unhandled Score3 emote";
-    else if(emote_str.toLower() == "score4")                                          // Score4: Holds a black on white scorecard up, displaying a 4, holds stance.
+    else if(lowerContents == "score4")                                          // Score4: Holds a black on white scorecard up, displaying a 4, holds stance.
         msg = "Unhandled Score4 emote";
-    else if(emote_str.toLower() == "score5")                                          // Score5: Holds a black on white scorecard up, displaying a 5, holds stance.
+    else if(lowerContents == "score5")                                          // Score5: Holds a black on white scorecard up, displaying a 5, holds stance.
         msg = "Unhandled Score5 emote";
-    else if(emote_str.toLower() == "score6")                                          // Score6: Holds a black on white scorecard up, displaying a 6, holds stance.
+    else if(lowerContents == "score6")                                          // Score6: Holds a black on white scorecard up, displaying a 6, holds stance.
         msg = "Unhandled Score6 emote";
-    else if(emote_str.toLower() == "score7")                                          // Score7: Holds a black on white scorecard up, displaying a 7, holds stance.
+    else if(lowerContents == "score7")                                          // Score7: Holds a black on white scorecard up, displaying a 7, holds stance.
         msg = "Unhandled Score7 emote";
-    else if(emote_str.toLower() == "score8")                                          // Score8: Holds a black on white scorecard up, displaying a 8, holds stance.
+    else if(lowerContents == "score8")                                          // Score8: Holds a black on white scorecard up, displaying a 8, holds stance.
         msg = "Unhandled Score8 emote";
-    else if(emote_str.toLower() == "score9")                                          // Score9: Holds a black on white scorecard up, displaying a 9, holds stance.
+    else if(lowerContents == "score9")                                          // Score9: Holds a black on white scorecard up, displaying a 9, holds stance.
         msg = "Unhandled Score9 emote";
-    else if(emote_str.toLower() == "score10")                                         // Score10: Holds a black on white scorecard up, displaying a 10, holds stance.
+    else if(lowerContents == "score10")                                         // Score10: Holds a black on white scorecard up, displaying a 10, holds stance.
         msg = "Unhandled Score10 emote";
-    else if(emote_str.toLower() == "shucks")                                          // Shucks: Swings fist and head dejectedly, neutral forward facing stance (not the default stance, same as huh/shrug).
+    else if(lowerContents == "shucks")                                          // Shucks: Swings fist and head dejectedly, neutral forward facing stance (not the default stance, same as huh/shrug).
         msg = "Unhandled Shucks emote";
-    else if(emote_str.toLower() == "sit")                                             // Sit: Sits down, legs forward, with knees bent, elbows on knees, and slightly slumped over, stance.
+    else if(lowerContents == "sit")                                             // Sit: Sits down, legs forward, with knees bent, elbows on knees, and slightly slumped over, stance.
         msg = "Unhandled Sit emote";
-    else if(emote_str.toLower() == "smack")                                           // Smack: Backhand slap.
+    else if(lowerContents == "smack")                                           // Smack: Backhand slap.
         msg = "Unhandled Smack emote";
-    else if(stopCommands.contains(emote_str, Qt::CaseInsensitive))                               // Stop: Raises your right hand above your head, hold stance.
+    else if(stopCommands.contains(lowerContents))                               // Stop: Raises your right hand above your head, hold stance.
         msg = "Unhandled Stop emote";
-    else if(tarzanCommands.contains(emote_str, Qt::CaseInsensitive))                             // Tarzan: Beats chest and howls, angry-looking stance.
+    else if(tarzanCommands.contains(lowerContents))                             // Tarzan: Beats chest and howls, angry-looking stance.
     {
         if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Tarzan emote";
         else
             msg = "Unhandled ground Tarzan emote";
     }
-    else if(taunt1Commands.contains(emote_str, Qt::CaseInsensitive))                             // Taunt1: Taunts, beckoning with one hand, then slaps fist into palm, repeating stance.
+    else if(taunt1Commands.contains(lowerContents))                             // Taunt1: Taunts, beckoning with one hand, then slaps fist into palm, repeating stance.
 
     {
         if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
@@ -1263,32 +1259,32 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         else
             msg = "Unhandled ground Taunt1 emote";
     }
-    else if(taunt2Commands.contains(emote_str, Qt::CaseInsensitive))                             // Taunt2: Taunts, beckoning with both hands, combat stance.
+    else if(taunt2Commands.contains(lowerContents))                             // Taunt2: Taunts, beckoning with both hands, combat stance.
     {
         if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Taunt2 emote";
         else
             msg = "Unhandled ground Taunt2 emote";
     }
-    else if(thanksCommands.contains(emote_str, Qt::CaseInsensitive))                             // Thanks: Gestures with hand, neutral forward facing stance.
+    else if(thanksCommands.contains(lowerContents))                             // Thanks: Gestures with hand, neutral forward facing stance.
         msg = "Unhandled Thanks emote";
-    else if(emote_str.toLower() == "thewave")                                         // Thewave: Does the wave (as seen in stadiums at sporting events), neutral facing forward stance.
+    else if(lowerContents == "thewave")                                         // Thewave: Does the wave (as seen in stadiums at sporting events), neutral facing forward stance.
         msg = "Unhandled Thewave emote";
-    else if(emote_str.toLower() == "victory")                                         // Victory: Raises hands excitedly, and then again less excitedly, and then a third time almost non-chalantly, falls into neutral forward facing stance.
+    else if(lowerContents == "victory")                                         // Victory: Raises hands excitedly, and then again less excitedly, and then a third time almost non-chalantly, falls into neutral forward facing stance.
         msg = "Unhandled Victory emote";
-    else if(waveFistCommands.contains(emote_str, Qt::CaseInsensitive))                           // WaveFist (has sound): Waves fist, hoots and then claps (its a cheer), crossed arms stance.
+    else if(waveFistCommands.contains(lowerContents))                           // WaveFist (has sound): Waves fist, hoots and then claps (its a cheer), crossed arms stance.
         msg = "Unhandled WaveFist emote";
-    else if(emote_str.toLower() == "welcome")                                         // Welcome: Open arms welcoming, fists on hips stance.
+    else if(lowerContents == "welcome")                                         // Welcome: Open arms welcoming, fists on hips stance.
         msg = "Unhandled Welcome emote";
-    else if(emote_str.toLower() == "whistle")                                         // Whistle (has sound): Whistles (sounds like a police whistle), ready-stance.
+    else if(lowerContents == "whistle")                                         // Whistle (has sound): Whistles (sounds like a police whistle), ready-stance.
         msg = "Unhandled Whistle emote";
-    else if(winnerCommands.contains(emote_str, Qt::CaseInsensitive))                             // Winner: Fist in fist cheer, right, and then left, neutral forward facing stance.
+    else if(winnerCommands.contains(lowerContents))                             // Winner: Fist in fist cheer, right, and then left, neutral forward facing stance.
         msg = "Unhandled Winner emote";
-    else if(emote_str.toLower() == "yourewelcome")                                    // YoureWelcome: Bows head and gestures with hand, neutral forward facing stance.
+    else if(lowerContents == "yourewelcome")                                    // YoureWelcome: Bows head and gestures with hand, neutral forward facing stance.
         msg = "Unhandled YoureWelcome emote";
-    else if(yesCommands.contains(emote_str, Qt::CaseInsensitive))                                // Yes: Big (literally) thumbs up and an affirmative nod, fists on hips stance.
+    else if(yesCommands.contains(lowerContents))                                // Yes: Big (literally) thumbs up and an affirmative nod, fists on hips stance.
         msg = "Unhandled Yes emote";
-    else if(yogaCommands.contains(emote_str, Qt::CaseInsensitive))                               // Yoga: Sits down cross legged with hands on knees/legs, holds stance.
+    else if(yogaCommands.contains(lowerContents))                               // Yoga: Sits down cross legged with hands on knees/legs, holds stance.
     {
         if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Yoga emote";
@@ -1296,67 +1292,67 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
             msg = "Unhandled ground Yoga emote";
     }
                                                                                 // Boombox Emotes
-    else if(emote_str.startsWith("bb") && !ent->m_is_flying)                // Check if Boombox Emote.
+    else if(lowerContents.startsWith("bb") && !ent->m_is_flying)                // Check if Boombox Emote.
     {                                                                           // Not allowed when flying.
-        emote_str.replace(0, 2, "");                                        // Remove the "BB" prefix for conciseness.
-        if(emote_str.toLower() == "altitude")                                         // BBAltitude
+        lowerContents.replace(0, 2, "");                                        // Remove the "BB" prefix for conciseness.
+        if(lowerContents == "altitude")                                         // BBAltitude
             msg = "Unhandled BBAltitude emote";
-        else if(emote_str.toLower() == "beat")                                        // BBBeat
+        else if(lowerContents == "beat")                                        // BBBeat
             msg = "Unhandled BBBeat emote";
-        else if(emote_str.toLower() == "catchme")                                     // BBCatchMe
+        else if(lowerContents == "catchme")                                     // BBCatchMe
             msg = "Unhandled BBCatchMe emote";
-        else if(emote_str.toLower() == "dance")                                       // BBDance
+        else if(lowerContents == "dance")                                       // BBDance
             msg = "Unhandled BBDance emote";
-        else if(emote_str.toLower() == "discofreak")                                  // BBDiscoFreak
+        else if(lowerContents == "discofreak")                                  // BBDiscoFreak
             msg = "Unhandled BBDiscoFreak emote";
-        else if(emote_str.toLower() == "dogwalk")                                     // BBDogWalk
+        else if(lowerContents == "dogwalk")                                     // BBDogWalk
             msg = "Unhandled BBDogWalk emote";
-        else if(emote_str.toLower() == "electrovibe")                                 // BBElectroVibe
+        else if(lowerContents == "electrovibe")                                 // BBElectroVibe
             msg = "Unhandled BBElectroVibe emote";
-        else if(emote_str.toLower() == "heavydude")                                   // BBHeavyDude
+        else if(lowerContents == "heavydude")                                   // BBHeavyDude
             msg = "Unhandled BBHeavyDude emote";
-        else if(emote_str.toLower() == "infooverload")                                // BBInfoOverload
+        else if(lowerContents == "infooverload")                                // BBInfoOverload
             msg = "Unhandled BBInfoOverload emote";
-        else if(emote_str.toLower() == "jumpy")                                       // BBJumpy
+        else if(lowerContents == "jumpy")                                       // BBJumpy
             msg = "Unhandled BBJumpy emote";
-        else if(emote_str.toLower() == "kickit")                                      // BBKickIt
+        else if(lowerContents == "kickit")                                      // BBKickIt
             msg = "Unhandled BBKickIt emote";
-        else if(emote_str.toLower() == "looker")                                      // BBLooker
+        else if(lowerContents == "looker")                                      // BBLooker
             msg = "Unhandled BBLooker emote";
-        else if(emote_str.toLower() == "meaty")                                       // BBMeaty
+        else if(lowerContents == "meaty")                                       // BBMeaty
             msg = "Unhandled BBMeaty emote";
-        else if(emote_str.toLower() == "moveon")                                      // BBMoveOn
+        else if(lowerContents == "moveon")                                      // BBMoveOn
             msg = "Unhandled BBMoveOn emote";
-        else if(emote_str.toLower() == "notorious")                                   // BBNotorious
+        else if(lowerContents == "notorious")                                   // BBNotorious
             msg = "Unhandled BBNotorious emote";
-        else if(emote_str.toLower() == "peace")                                       // BBPeace
+        else if(lowerContents == "peace")                                       // BBPeace
             msg = "Unhandled BBPeace emote";
-        else if(emote_str.toLower() == "quickie")                                     // BBQuickie
+        else if(lowerContents == "quickie")                                     // BBQuickie
             msg = "Unhandled BBQuickie emote";
-        else if(emote_str.toLower() == "raver")                                       // BBRaver
+        else if(lowerContents == "raver")                                       // BBRaver
             msg = "Unhandled BBRaver emote";
-        else if(emote_str.toLower() == "shuffle")                                     // BBShuffle
+        else if(lowerContents == "shuffle")                                     // BBShuffle
             msg = "Unhandled BBShuffle emote";
-        else if(emote_str.toLower() == "spaz")                                        // BBSpaz
+        else if(lowerContents == "spaz")                                        // BBSpaz
             msg = "Unhandled BBSpaz emote";
-        else if(emote_str.toLower() == "technoid")                                    // BBTechnoid
+        else if(lowerContents == "technoid")                                    // BBTechnoid
             msg = "Unhandled BBTechnoid emote";
-        else if(emote_str.toLower() == "venus")                                       // BBVenus
+        else if(lowerContents == "venus")                                       // BBVenus
             msg = "Unhandled BBVenus emote";
-        else if(emote_str.toLower() == "winditup")                                    // BBWindItUp
+        else if(lowerContents == "winditup")                                    // BBWindItUp
             msg = "Unhandled BBWindItUp emote";
-        else if(emote_str.toLower() == "wahwah")                                      // BBWahWah
+        else if(lowerContents == "wahwah")                                      // BBWahWah
             msg = "Unhandled BBWahWah emote";
-        else if(emote_str.toLower() == "yellow")                                      // BBYellow
+        else if(lowerContents == "yellow")                                      // BBYellow
             msg = "Unhandled BBYellow emote";
     }
                                                                                 // Unlockable Emotes
                                                                                 // TODO: Implement logic and variables for unlocking these emotes.
-    else if(emote_str.toLower() == "dice7")                                           // Dice7: Picks up, shakes and rolls a die, displays a 7, default stance.
+    else if(lowerContents == "dice7")                                           // Dice7: Picks up, shakes and rolls a die, displays a 7, default stance.
         msg = "Unhandled Dice7 emote";                                          // Unlocked by earning the Burkholder's Bane Badge (from the Ernesto Hess Task Force).
-    else if(emote_str.toLower() == "listenpoliceband")                                // ListenPoliceBand: Listens in on the heroes' PPD police band radio.
+    else if(lowerContents == "listenpoliceband")                                // ListenPoliceBand: Listens in on the heroes' PPD police band radio.
         msg = "Unhandled ListenPoliceBand emote";                               // Heroes can use this without any unlock requirement. For villains, ListenStolenPoliceBand unlocks by earning the Outlaw Badge.
-    else if(snowflakesCommands.contains(emote_str, Qt::CaseInsensitive))                         // Snowflakes: Throws snowflakes.
+    else if(snowflakesCommands.contains(lowerContents))                         // Snowflakes: Throws snowflakes.
     {
         if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Snowflakes emote";                          // Unlocked by purchasing from the Candy Keeper during the Winter Event.
@@ -1366,7 +1362,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     else                                                                        // If not specific command, output EMOTE message.
     {
         // "CharacterName {emote message}"
-        msg = QString("%1 %2").arg(ent->name(),emote_str);
+        msg = QString("%1 %2").arg(ent->name(),original_emote);
     }
 
     // send only to clients within range

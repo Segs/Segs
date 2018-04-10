@@ -112,7 +112,7 @@ SEGSEvent * AuthLink::bytes_to_event()
 int AuthLink::open (void *p)
 {
     m_state=AuthLink::INITIAL;
-    if (this->peer_.get_remote_addr (m_peer_addr) == -1)
+    if (this->m_peer.get_remote_addr (m_peer_addr) == -1)
         ACE_ERROR_RETURN ((LM_ERROR,ACE_TEXT ("%p\n"),ACE_TEXT ("get_remote_addr")),-1);
     if (EventProcessor::open (p) == -1)
         return -1;
@@ -135,7 +135,7 @@ int AuthLink::handle_input( ACE_HANDLE )
     const size_t INPUT_SIZE = 4096;
     char buffer[INPUT_SIZE];
     ssize_t recv_cnt;
-    if ((recv_cnt = peer_.recv(buffer, sizeof(buffer))) <= 0)
+    if ((recv_cnt = m_peer.recv(buffer, sizeof(buffer))) <= 0)
     {
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Connection closed\n")));
         return -1;
@@ -222,7 +222,7 @@ void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
 
 bool AuthLink::send_buffer()
 {
-    ssize_t send_cnt = peer_.send(m_unsent_bytes_storage.read_ptr(), m_unsent_bytes_storage.GetReadableDataSize());
+    ssize_t send_cnt = m_peer.send(m_unsent_bytes_storage.read_ptr(), m_unsent_bytes_storage.GetReadableDataSize());
     if (send_cnt == -1)
         ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"), ACE_TEXT ("send")));
     else
@@ -286,9 +286,4 @@ int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 void AuthLink::dispatch( SEGSEvent */*ev*/ )
 {
     assert(!"Should not be called");
-}
-SEGSEvent *AuthLink::dispatchSync(SEGSEvent */*ev*/)
-{
-    assert(!"No sync events known");
-    return nullptr;
 }

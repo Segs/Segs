@@ -60,7 +60,7 @@ ACE_THR_FUNC_RETURN event_loop (void *arg)
 bool CreateServers()
 {
     auto server_manger = ServerManager::instance();
-    GameServer *game_instance   = new GameServer;
+    GameServer *game_instance   = new GameServer(0);
     MapServer * map_instance    = new MapServer;
     server_manger->SetAdminServer(AdminServer::instance());
     server_manger->SetAuthServer(new AuthServer);

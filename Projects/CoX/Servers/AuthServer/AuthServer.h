@@ -46,7 +46,6 @@ public:
         bool                        Run(void) override;
         bool                        ShutDown(const QString &reason="No particular reason") override;
 
-        ServerHandle<IAdminServer>  AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw) override;
         AuthClient *                GetClientByLogin(const char *) override;
 protected:
         ClientAcceptor *            m_acceptor;     //!< ace acceptor wrapping AuthClientService

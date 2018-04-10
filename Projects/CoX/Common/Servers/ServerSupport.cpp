@@ -7,6 +7,10 @@
  */
 
 #include "server_support.h"
+
+#include "HandlerLocator.h"
+#include "MessageBus.h"
+
 ServerStopper::ServerStopper(int signum) // when instantiated adds itself to current reactor
 {
     ACE_Reactor::instance()->register_handler(signum, this);

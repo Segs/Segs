@@ -4,6 +4,7 @@
 #include "GameEvents.h"
 #include "EventProcessor.h"
 #include "InternalEvents.h"
+#include "Common/Servers/MessageBusEndpoint.h"
 
 #include <map>
 #include <unordered_set>
@@ -38,8 +39,8 @@ protected:
     void        on_unknown_link_event(GameUnknownRequest *ev);
     //////////////////////////////////////////////////////////////////////////
     // Server <-> Server events
-    void        on_expect_client(ExpectClient *ev);     // from AuthServer
-    void        on_client_expected(ClientExpected *ev); // from MapServer
+    void        on_expect_client(ExpectClientRequest *ev);     // from AuthServer
+    void        on_client_expected(ExpectClientResponse *ev); // from MapServer
 
     //////////////////////////////////////////////////////////////////////////
     // Internal events
@@ -47,7 +48,7 @@ protected:
     void        on_timeout(TimerEvent *ev);
 
     // synchronous event
-    SEGSEvent * on_connection_query(ClientConnectionQuery *ev);
+    SEGSEvent * on_connection_query(ClientConnectionRequest *ev);
 
     //////////////////////////////////////////////////////////////////////////
     void        checkClientConnection(uint64_t id);
