@@ -120,7 +120,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evSceneRequest:
             on_scene_request(static_cast<SceneRequest *>(ev));
             break;
-        case Internal_EventTypes::evExpectClient:
+        case Internal_EventTypes::evExpectClientRequest:
             on_expect_client(static_cast<ExpectMapClient *>(ev));
             break;
         case MapEventTypes::evDisconnectRequest:

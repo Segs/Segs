@@ -69,17 +69,17 @@ static  EventProcessor *g_target;               //! All links post their message
         void            init_crypto(int vers,uint32_t seed);
         ACE_HANDLE      get_handle (void) const override {return m_peer.get_handle();}
 protected:
-        AuthClient *    m_client;
         AuthPacketCodec m_codec;
         GrowingBuffer   m_received_bytes_storage;       //!< Each link stores incoming bytes locally
         GrowingBuffer   m_unsent_bytes_storage;         //!< Each link stores outgoing bytes locally
-        tNotifyStrategy m_notifier; // our queue will use this to inform the reactor of it's new elements
-        int             m_protocol_version;
+        tNotifyStrategy m_notifier;                     //!< Our message queue will use this to wake up the reactor on new elements
         stream_type     m_peer;  //!< Underlying client connection object.
         addr_type       m_peer_addr;
+        AuthClient *    m_client;
+        ACE_Thread_Mutex *m_buffer_mutex;
+        int             m_protocol_version;
         uint64_t        m_session_token;
         eState          m_state;
-        ACE_Thread_Mutex *m_buffer_mutex;
         AuthLinkType    m_direction;
 
         bool            send_buffer();

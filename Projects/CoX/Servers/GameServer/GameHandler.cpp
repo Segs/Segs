@@ -58,8 +58,8 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case GameEventTypes::evUnknownEvent:
         on_unknown_link_event(static_cast<GameUnknownRequest *>(ev));
         break;
-    case Internal_EventTypes::evExpectClient:
-        on_expect_client(static_cast<ExpectClient *>(ev));
+    case Internal_EventTypes::evExpectClientRequest:
+        on_expect_client(static_cast<ExpectClientRequest *>(ev));
         break;
     case Internal_EventTypes::evClientExpected:
         on_client_expected(static_cast<ClientExpected *>(ev));
@@ -260,7 +260,7 @@ void GameHandler::on_unknown_link_event(GameUnknownRequest *)
 //
 // In return caller gets an unique client identifier. which is used later on to retrieve appropriate
 // client object
-void GameHandler::on_expect_client( ExpectClient *ev )
+void GameHandler::on_expect_client( ExpectClientRequest *ev )
 {
     uint32_t cookie = m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
     // let the client object know how can it access database

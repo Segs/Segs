@@ -9,7 +9,7 @@ class Internal_EventTypes
 {
 public:
     BEGINE_EVENTS_INTERNAL()
-    EVENT_DECL(evExpectClient,0)
+    EVENT_DECL(evExpectClientRequest,0)
     EVENT_DECL(evClientExpected,1)
     EVENT_DECL(evClientConnectionQuery,2)
     EVENT_DECL(evClientConnectionResponse,3)
@@ -17,12 +17,12 @@ public:
 };
 
 // This tells the server that it should expect a new client connection from given address
-class ExpectClient : public SEGSEvent
+class ExpectClientRequest : public SEGSEvent
 {
-    ExpectClient() = delete;
+    ExpectClientRequest() = delete;
 public:
-    ExpectClient(EventProcessor *evsrc,uint64_t client_id,uint8_t access_level,const ACE_INET_Addr &from) :
-                SEGSEvent(Internal_EventTypes::evExpectClient,evsrc),
+    ExpectClientRequest(EventProcessor *evsrc,uint64_t client_id,uint8_t access_level,const ACE_INET_Addr &from) :
+                SEGSEvent(Internal_EventTypes::evExpectClientRequest,evsrc),
                 m_client_id(client_id),
                 m_access_level(access_level),
                 m_from_addr(from)
@@ -32,11 +32,11 @@ public:
     uint8_t m_access_level;
     ACE_INET_Addr m_from_addr;
 };
-class ExpectMapClient : public ExpectClient
+class ExpectMapClient : public ExpectClientRequest
 {
 public:
     ExpectMapClient(EventProcessor *evsrc,  uint64_t client_id, uint8_t access_level,const ACE_INET_Addr &from) :
-                ExpectClient(evsrc,client_id,access_level,from)
+                ExpectClientRequest(evsrc,client_id,access_level,from)
     {
         m_map_id = 0;
         m_slot_idx=0;
