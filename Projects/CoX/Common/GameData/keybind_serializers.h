@@ -1,8 +1,9 @@
 #pragma once
 
+#include "keybind_definitions.h"
+
 #include <stdint.h>
 #include <vector>
-#include "keybind_definitions.h"
 
 class BinStore;
 class QString;

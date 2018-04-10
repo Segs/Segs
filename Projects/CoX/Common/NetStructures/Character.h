@@ -95,7 +95,7 @@ const   QString &       getName() const { return m_name; }
         void            sendTray(BitStream &bs) const;
         void            sendTrayMode(BitStream &bs) const;
         void            sendWindows(BitStream &bs) const;
-        void            sendWindow(BitStream &bs, GUIWindow wnd) const;
+        void            sendWindow(BitStream &bs,const GUIWindow &wnd) const;
         void            sendTeamBuffMode(BitStream &bs) const;
         void            sendDockMode(BitStream &bs) const;
         void            sendChatSettings(BitStream &bs) const;

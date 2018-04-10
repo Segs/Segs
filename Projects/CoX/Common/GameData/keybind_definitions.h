@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <QtCore/QString>
-#include <QtCore/QDebug>
+#include <QMap>
 
 enum ModKeys
 {
