@@ -2,10 +2,13 @@
 #include "DataHelpers.h"
 #include "MapInstance.h"
 #include "Settings.h"
+#include "LFG.h"
+#include "Logging.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QRegularExpression>
 #include <QtCore/QDebug>
 
 InfoMessageCmd *info; // leverage InfoMessageCmd
@@ -22,25 +25,31 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"jumping"},"Toggle jumping On/Off", &cmdHandler_Jumping, 9},
     {{"stunned"},"Toggle stunned character On/Off", &cmdHandler_Stunned, 9},
     {{"jumppack"},"Toggle jump pack On/Off", &cmdHandler_Jumppack, 9},
-    {{"setSpeed", "speed"},"Set your player speed", &cmdHandler_SetSpeed, 9},
+    {{"setSpeed", "speed"},"Set your player Speed", &cmdHandler_SetSpeed, 9},
     {{"setBackupSpd", "BackupSpd"},"Set the Backup Speed", &cmdHandler_SetBackupSpd, 9},
-    {{"setJumpHeight", "JumpHeight"},"Set the jump height", &cmdHandler_SetJumpHeight, 9},
+    {{"setJumpHeight", "JumpHeight"},"Set the Jump Height", &cmdHandler_SetJumpHeight, 9},
     {{"setHP"},"Set the HP value of your character", &cmdHandler_SetHP, 9},
     {{"setEnd"},"Set your Endurance", &cmdHandler_SetEnd, 9},
     {{"setXP"},"Set your XP", &cmdHandler_SetXP, 9},
     {{"setDebt"},"Set your Debt", &cmdHandler_SetDebt, 9},
     {{"setInf"},"Set your Influence", &cmdHandler_SetInf, 9},
-    {{"setLevel"},"Set your level", &cmdHandler_SetLevel, 9},
-    {{"setCombatLevel"},"Set your combat level", &cmdHandler_SetCombatLevel, 9},
+    {{"setLevel"},"Set your Level", &cmdHandler_SetLevel, 9},
+    {{"setCombatLevel"},"Set your Combat Level", &cmdHandler_SetCombatLevel, 9},
     {{"UpdateChar", "CharUpdate", "save"},"Update character information in the database", &cmdHandler_UpdateChar, 9},
     {{"DebugChar", "chardebug"},"View your characters debug information", &cmdHandler_DebugChar, 9},
     {{"ControlsDisabled"},"Disable controls", &cmdHandler_ControlsDisabled, 9},
     {{"updateid"},"Update ID", &cmdHandler_UpdateId, 9},
     {{"fullupdate"},"Full Update", &cmdHandler_FullUpdate, 9},
     {{"hascontrolid"},"Force the server to acknowledge input ids", &cmdHandler_HasControlId, 9},
-    {{"setTeam"},"Set the team", &cmdHandler_SetTeam, 9},
-    {{"setSuperGroup"},"Set your Super Group", &cmdHandler_SetSuperGroup, 9},
-    {{"settingsDump"},"Output settings.cfg to console", &cmdHandler_SettingsDump, 9},
+    {{"setTeam", "setTeamID"},"Set the team idx", &cmdHandler_SetTeam, 9},
+    {{"setSuperGroup","setSG"},"Set your Super Group", &cmdHandler_SetSuperGroup, 9},
+    {{"settingsDump","settingsDebug"},"Output settings.cfg to console", &cmdHandler_SettingsDump, 9},
+    {{"teamDump", "teamDebug"}, "Output team settings to console", &cmdHandler_TeamDebug, 9},
+    {{"guiDump", "guiDebug"}, "Output gui settings to console", &cmdHandler_GUIDebug, 9},
+    {{"setWindowVisibility", "setWinVis"}, "", &cmdHandler_SetWindowVisibility, 9},
+    {{"keybindDump", "keybindDebug"}, "Output keybind settings to console", &cmdHandler_KeybindDebug, 9},
+    {{"toggleLogging", "log"}, "Modify log categories (e.g. input, teams, ...)", &cmdHandler_ToggleLogging, 9},
+    {{"friendsDump", "friendsDebug"}, "Output friendlist info to console", &cmdHandler_FriendsListDebug, 9},
     {{"setu1"},"Set bitvalue u1", &cmdHandler_SetU1, 9},
     {{"setu2"},"Set bitvalue u2", &cmdHandler_SetU2, 9},
     {{"setu3"},"Set bitvalue u3", &cmdHandler_SetU3, 9},
@@ -55,6 +64,23 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"stuck"},"Free yourself if your character gets stuck", &cmdHandler_Stuck, 1},
     {{"lfg"},"Toggle looking for group status ", &cmdHandler_LFG, 1},
     {{"motd"},"View the server MOTD", &cmdHandler_MOTD, 1},
+    {{"i","invite"}, "Invite player to team", &cmdHandler_Invite, 1},
+    {{"k","kick"}, "Kick player from team", &cmdHandler_Kick, 1},
+    {{"leaveteam"}, "Leave the team you're currently on", &cmdHandler_LeaveTeam, 1},
+    {{"findmember"}, "Open Looking For Group Window", &cmdHandler_FindMember, 1},
+    {{"makeleader","ml"}, "Make another player team leader", &cmdHandler_MakeLeader, 1},
+    {{"assist"}, "Re-target based on the selected entity's current target", &cmdHandler_SetAssistTarget, 1},
+    {{"sidekick","sk"}, "Invite player to sidekick", &cmdHandler_Sidekick, 1},
+    {{"unsidekick","unsk"}, "Remove sidekick/duo relationship", &cmdHandler_UnSidekick, 1},
+    {{"buffs"}, "Toggle buffs display on team window", &cmdHandler_TeamBuffs, 1},
+    {{"friend"}, "Add friend to friendlist", &cmdHandler_Friend, 1},
+    {{"unfriend","estrange"}, "Remove friend from friendlist", &cmdHandler_Unfriend, 1},
+    {{"friendlist", "fl"}, "Toggle visibility of friendslist", &cmdHandler_FriendList, 1},
+    /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
+    {{"team_accept"}, "Accept Team invite", &cmdHandler_TeamAccept, 0},
+    {{"team_decline"}, "Decline Team invite", &cmdHandler_TeamDecline, 0},
+    {{"sidekick_accept"}, "Accept Sidekick invite", &cmdHandler_SidekickAccept, 0},
+    {{"sidekick_decline"}, "Decline Sidekick invite", &cmdHandler_SidekickDecline, 0}
 };
 
 bool canAccessCommand(const SlashCommand &cmd, const Entity &e)
@@ -65,7 +91,7 @@ bool canAccessCommand(const SlashCommand &cmd, const Entity &e)
         return true;
 
     QString msg = "You do not have adequate permissions to use the command: " + cmd.m_valid_prefixes.first();
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
     return false;
 }
@@ -81,7 +107,7 @@ void runCommand(QString &str, Entity &e) {
           return;       // return here to avoid unknown command msg
       }
     }
-    qDebug() << "Unknown game command:" << str;
+    qCDebug(logSlashCommand) << "Unknown game command:" << str;
 }
 
 /************************************************************
@@ -144,7 +170,7 @@ void cmdHandler_SmileX(QString &cmd, Entity *e) {
     }
     else {
         QString errormsg = "Failed to load smilex file. \'" + file.fileName() + "\' not found.";
-        qDebug() << errormsg;
+        qCDebug(logSlashCommand) << errormsg;
         sendInfoMessage(MessageChannel::ADMIN, errormsg, src);
     }
 }
@@ -155,7 +181,7 @@ void cmdHandler_Fly(QString &cmd, Entity *e) {
     toggleFly(*e);
 
     QString msg = "Toggling " + cmd;
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -165,7 +191,7 @@ void cmdHandler_Falling(QString &cmd, Entity *e) {
     toggleFalling(*e);
 
     QString msg = "Toggling " + cmd;
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -175,7 +201,7 @@ void cmdHandler_Sliding(QString &cmd, Entity *e) {
     toggleSliding(*e);
 
     QString msg = "Toggling " + cmd;
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -185,7 +211,7 @@ void cmdHandler_Jumping(QString &cmd, Entity *e) {
     toggleJumping(*e);
 
     QString msg = "Toggling " + cmd;
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -195,7 +221,7 @@ void cmdHandler_Stunned(QString &cmd, Entity *e) {
     toggleStunned(*e);
 
     QString msg = "Toggling " + cmd;
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -205,7 +231,7 @@ void cmdHandler_Jumppack(QString &cmd, Entity *e) {
     toggleJumppack(*e);
 
     QString msg = "Toggling " + cmd;
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -218,11 +244,9 @@ void cmdHandler_SetSpeed(QString &cmd, Entity *e) {
     float v3 = args.value(3).toFloat();
     setSpeed(*e, v1, v2, v3);
 
-    QString msg = "Set Speed to: <"
-            + QString::number(v1) + ","
-            + QString::number(v2) + ","
-            + QString::number(v3) + ">";
-    qDebug() << msg;
+    QString msg = QString("Set Speed to: <%1,%2,%3>").arg(v1).arg(v2).arg(v3);
+  
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -233,7 +257,7 @@ void cmdHandler_SetBackupSpd(QString &cmd, Entity *e) {
     setBackupSpd(*e, val);
 
     QString msg = "Set BackupSpd to: " + QString::number(val);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -244,7 +268,7 @@ void cmdHandler_SetJumpHeight(QString &cmd, Entity *e) {
     setJumpHeight(*e, val);
 
     QString msg = "Set JumpHeight to: " + QString::number(val);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -260,7 +284,7 @@ void cmdHandler_SetHP(QString &cmd, Entity *e) {
     setHP(*e->m_char,attrib);
 
     QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(maxattrib);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -275,8 +299,8 @@ void cmdHandler_SetEnd(QString &cmd, Entity *e) {
 
     setEnd(*e->m_char,attrib);
 
-    QString msg = "Setting Endurance to: " + QString::number(attrib) + "/" + QString::number(maxattrib);
-    qDebug() << msg;
+    QString msg = QString("Setting Endurance to: %1 / %2").arg(attrib).arg(maxattrib);
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -293,7 +317,7 @@ void cmdHandler_SetXP(QString &cmd, Entity *e) {
     if(lvl != newlvl)
         msg += " and LVL to " + QString::number(newlvl);
 
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -304,7 +328,7 @@ void cmdHandler_SetDebt(QString &cmd, Entity *e) {
     setDebt(*e->m_char, attrib);
     QString msg = QString("Setting XP Debt to %1").arg(attrib);
 
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -315,7 +339,7 @@ void cmdHandler_SetInf(QString &cmd, Entity *e) {
     setInf(*e->m_char, attrib);
 
     QString msg = "Setting influence to: " + QString::number(attrib);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -326,7 +350,7 @@ void cmdHandler_SetLevel(QString &cmd, Entity *e) {
     setLevel(*e->m_char, attrib); // TODO: Why does this result in -1?
 
     QString msg = "Setting Level to: " + QString::number(attrib);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -337,7 +361,7 @@ void cmdHandler_SetCombatLevel(QString &cmd, Entity *e) {
     setCombatLevel(*e->m_char, attrib); // TODO: Why does this result in -1?
 
     QString msg = "Setting Combat Level to: " + QString::number(attrib);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -347,7 +371,7 @@ void cmdHandler_UpdateChar(QString &cmd, Entity *e) {
     charUpdateDB(e);
 
     QString msg = "Updating Character in Database: " + e->name();
-    qDebug() << cmd << ":" << msg;
+    qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -378,7 +402,7 @@ void cmdHandler_ControlsDisabled(QString &cmd, Entity *e) {
     toggleControlsDisabled(*e);
 
     QString msg = "Toggling " + cmd;
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -389,7 +413,7 @@ void cmdHandler_UpdateId(QString &cmd, Entity *e) {
     setUpdateID(*e, attrib);
 
     QString msg = "Setting updateID to: " + QString::number(attrib);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -399,7 +423,7 @@ void cmdHandler_FullUpdate(QString &cmd, Entity *e) {
     toggleFullUpdate(*e);
 
     QString msg = "Toggling " + cmd;
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -409,7 +433,7 @@ void cmdHandler_HasControlId(QString &cmd, Entity *e) {
     toggleControlId(*e);
 
     QString msg = "Toggling " + cmd;
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -420,18 +444,23 @@ void cmdHandler_SetTeam(QString &cmd, Entity *e) {
     setTeamID(*e, val);
 
     QString msg = "Set Team ID to: " + QString::number(val);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
 void cmdHandler_SetSuperGroup(QString &cmd, Entity *e) {
-    MapClient *src = e->m_client;
-    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    MapClient *src  = e->m_client;
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
-    setSuperGroupID(*e, val);
+    int sg_id       = args.value(1).toInt();
+    QString sg_name = args.value(2);
+    int sg_rank     = args.value(3).toInt();
 
-    QString msg = "Set SuperGroup ID to: " + QString::number(val);
-    qDebug() << msg;
+    setSuperGroup(*e, sg_id, sg_name, sg_rank);
+
+    QString msg = QString("Set SuperGroup:  id: %1  name: %2  rank: %3").arg(QString::number(sg_id), sg_name, QString::number(sg_rank));
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -439,10 +468,80 @@ void cmdHandler_SettingsDump(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
     QString msg = "Sending settings config dump to console output.";
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 
     settingsDump(); // Send settings dump
+}
+
+void cmdHandler_TeamDebug(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    QString msg = "Sending team debug to console output.";
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    e->m_team->dump(); // Send team debug info
+}
+
+void cmdHandler_GUIDebug(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    QString msg = "Sending GUISettings dump to console output.";
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    e->m_char->m_gui.guiDump(); // Send GUISettings dump
+}
+
+void cmdHandler_SetWindowVisibility(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    uint32_t idx = args.value(1).toInt();
+    WindowVisibility val = (WindowVisibility)args.value(2).toInt();
+
+    QString msg = "Toggling " + QString::number(idx) +  " GUIWindow visibility: " + QString::number(val);
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    e->m_char->m_gui.m_wnds.at(idx).setWindowVisibility(val); // Set WindowVisibility
+    e->m_char->m_gui.m_wnds.at(idx).guiWindowDump(); // for debugging
+}
+
+void cmdHandler_KeybindDebug(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    QString msg = "Sending Keybinds dump to console output.";
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    e->m_char->m_keybinds.keybindsDump(); // Send GUISettings dump
+}
+
+void cmdHandler_ToggleLogging(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    args.removeFirst();
+
+    QString msg = "Toggle logging of categories: " + args.join(" ");
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    for (auto category : args)
+        toggleLogging(category); // Toggle each category listed
+}
+
+void cmdHandler_FriendsListDebug(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    QString msg = "Sending FriendsList dump to console output.";
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+
+    dumpFriends(*e); // Send FriendsList dump
 }
 
 // Slash commands for setting bit values
@@ -453,7 +552,7 @@ void cmdHandler_SetU1(QString &cmd, Entity *e) {
     setu1(*e, val);
 
     QString msg = "Set u1 to: " + QString::number(val);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -464,7 +563,7 @@ void cmdHandler_SetU2(QString &cmd, Entity *e) {
     setu2(*e, val);
 
     QString msg = "Set u2 to: " + QString::number(val);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -475,7 +574,7 @@ void cmdHandler_SetU3(QString &cmd, Entity *e) {
     setu3(*e, val);
 
     QString msg = "Set u3 to: " + QString::number(val);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -486,7 +585,7 @@ void cmdHandler_SetU4(QString &cmd, Entity *e) {
     setu4(*e, val);
 
     QString msg = "Set u4 to: " + QString::number(val);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -497,7 +596,7 @@ void cmdHandler_SetU5(QString &cmd, Entity *e) {
     setu5(*e, val);
 
     QString msg = "Set u5 to: " + QString::number(val);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -508,7 +607,7 @@ void cmdHandler_SetU6(QString &cmd, Entity *e) {
     setu6(*e, val);
 
     QString msg = "Set u6 to: " + QString::number(val);
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
@@ -532,11 +631,12 @@ void cmdHandler_CmdList(QString &cmd, Entity *e) {
             }
         }
     }
+
     // Dialog output
     StandardDialogCmd *dlg = new StandardDialogCmd(msg_dlg);
     src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
     // CMD line (debug) output
-    qDebug().noquote() << cmd << ":\n" << msg;
+    qCDebug(logSlashCommand).noquote() << cmd << ":\n" << msg;
 }
 
 void cmdHandler_AFK(QString &cmd, Entity *e) {
@@ -547,7 +647,7 @@ void cmdHandler_AFK(QString &cmd, Entity *e) {
     toggleAFK(*e->m_char, val);
 
     QString msg = "Setting afk message to: " + val;
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::EMOTE, msg, src);
 }
 
@@ -570,7 +670,7 @@ void cmdHandler_WhoAll(QString &cmd, Entity *e) {
         msg += name + " lvl " + lvl + " clvl " + clvl + " " + origin + " " + archetype + "\n";
     }
 
-    qDebug().noquote() << msg;
+    qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, src);
 }
 
@@ -580,7 +680,7 @@ void cmdHandler_SetTitles(QString &cmd, Entity *e) {
     bool prefix;
     QString msg, generic, origin, special;
     QStringList args;
-    args = cmd.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
     if(cmd.toLower() == "settitles")
     {
@@ -596,7 +696,7 @@ void cmdHandler_SetTitles(QString &cmd, Entity *e) {
         setTitles(*e->m_char, prefix, generic, origin, special);
         msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
     }
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
 }
 
@@ -604,23 +704,23 @@ void cmdHandler_Stuck(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
     // TODO: Implement true move-to-safe-location-nearby logic
-    e->m_entity_data.pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park starting location
+    e->m_entity_data.m_pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park starting location
 
     QString msg = "Resetting location to default spawn ("
-            + QString::number(e->m_entity_data.pos.x) + ","
-            + QString::number(e->m_entity_data.pos.y) + ","
-            + QString::number(e->m_entity_data.pos.z) + ")";
-    qDebug() << cmd << ":" << msg;
+            + QString::number(e->m_entity_data.m_pos.x) + ","
+            + QString::number(e->m_entity_data.m_pos.y) + ","
+            + QString::number(e->m_entity_data.m_pos.z) + ")";
+    qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, src);
 }
 
 void cmdHandler_LFG(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
-    toggleLFG(*e->m_char);
+    toggleLFG(*e);
 
     QString msg = "Toggling " + cmd;
-    qDebug() << msg;
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, src);
 }
 
@@ -630,6 +730,313 @@ void cmdHandler_MOTD(QString &cmd, Entity *e) {
     sendServerMOTD(e);
 
     QString msg = "Opening Server MOTD";
-    qDebug().noquote() << msg;
+    qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, src);
+}
+
+void cmdHandler_Invite(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+    QString msg;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(src,name);
+
+    if(tgt == nullptr)
+        return;
+
+    if(tgt->m_has_team)
+    {
+        msg = tgt->name() + " is already on a team.";
+        qCDebug(logTeams) << msg;
+        sendInfoMessage(MessageChannel::SERVER, msg, src);
+        return;
+    }
+
+    if(tgt->name() == src->name())
+    {
+        msg = "You cannot invite yourself to a team.";
+        qCDebug(logTeams) << msg;
+        sendInfoMessage(MessageChannel::SERVER, msg, src);
+        return;
+    }
+
+    if(e->m_has_team && e->m_team != nullptr)
+    {
+        if(!e->m_team->isTeamLeader(e))
+        {
+            msg = "Only the team leader can invite players to the team.";
+            qCDebug(logTeams) << e->name() << msg;
+            sendInfoMessage(MessageChannel::TEAM, msg, src);
+            return;
+        }
+    }
+
+    sendTeamOffer(e,tgt);
+}
+
+void cmdHandler_TeamAccept(QString &cmd, Entity *e) {
+    // game command: "team_accept \"From\" to_db_id to_db_id \"To\""
+    MapClient *src = e->m_client;
+
+    QString msgfrom = "Something went wrong with TeamAccept.";
+    QString msgtgt = "Something went wrong with TeamAccept.";
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    QString from_name       = args.value(1);
+    uint32_t tgt_db_id      = args.value(2).toInt();
+    uint32_t tgt_db_id_2    = args.value(3).toInt(); // always the same?
+    QString tgt_name        = args.value(4);
+
+    if(tgt_db_id != tgt_db_id_2)
+        qWarning() << "TeamAccept db_ids do not match!";
+
+    Entity *from_ent = getEntity(src,from_name);
+    if(from_ent == nullptr)
+        return;
+
+    if(inviteTeam(*from_ent,*e))
+    {
+        msgfrom = "Inviting " + tgt_name + " to team.";
+        msgtgt = "Joining " + from_name + "'s team.";
+
+    }
+    else
+    {
+        msgfrom = "Failed to invite " + tgt_name + ". They are already on a team.";
+    }
+
+    qCDebug(logSlashCommand).noquote() << msgfrom;
+    sendInfoMessage(MessageChannel::TEAM, msgfrom, from_ent->m_client);
+    sendInfoMessage(MessageChannel::TEAM, msgtgt, src);
+}
+
+void cmdHandler_TeamDecline(QString &cmd, Entity *e) {
+    // game command: "team_decline \"From\" to_db_id \"To\""
+    MapClient *src = e->m_client;
+
+    QString msg;
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    QString from_name   = args.value(1);
+    uint32_t tgt_db_id  = args.value(2).toInt();
+    QString tgt_name    = args.value(3);
+
+    Entity *from_ent = getEntity(src,from_name);
+    if(from_ent == nullptr)
+        return;
+
+    msg = tgt_name + " declined a team invite from " + from_name + QString::number(tgt_db_id);
+    qCDebug(logSlashCommand).noquote() << msg;
+
+    msg = tgt_name + " declined your team invite."; // to sender
+    sendInfoMessage(MessageChannel::TEAM, msg, from_ent->m_client);
+    msg = "You declined the team invite from " + from_name; // to target
+    sendInfoMessage(MessageChannel::TEAM, msg, src);
+}
+
+void cmdHandler_Kick(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+    QString msg;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(src,name);
+
+    if(tgt == nullptr)
+        return;
+
+    if(kickTeam(*tgt))
+        msg = "Kicking " + name + " from team.";
+    else
+        msg = "Failed to kick " + name;
+
+    qCDebug(logSlashCommand).noquote() << msg;
+    sendInfoMessage(MessageChannel::TEAM, msg, src);
+}
+
+void cmdHandler_LeaveTeam(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    leaveTeam(*e);
+
+    QString msg = "Leaving Team";
+    qCDebug(logSlashCommand).noquote() << msg;
+    sendInfoMessage(MessageChannel::TEAM, msg, src);
+}
+
+void cmdHandler_FindMember(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    findTeamMember(*e);
+
+    QString msg = "Finding Team Member";
+    qCDebug(logSlashCommand).noquote() << msg;
+    sendInfoMessage(MessageChannel::CHAT_TEXT, msg, src);
+}
+
+void cmdHandler_MakeLeader(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+    QString msg;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(src,name);
+
+    if(tgt == nullptr)
+        return;
+
+    if(makeTeamLeader(*e,*tgt))
+        msg = "Making " + name + " team leader.";
+    else
+        msg = "Failed to make " + name + " team leader.";
+
+    qCDebug(logSlashCommand).noquote() << msg;
+    sendInfoMessage(MessageChannel::TEAM, msg, src);
+}
+
+void cmdHandler_SetAssistTarget(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    QString msg = "Setting assist target.";
+
+    setAssistTarget(*e);
+
+    qCDebug(logSlashCommand).noquote() << msg;
+    sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
+}
+
+void cmdHandler_Sidekick(QString &cmd, Entity *e)
+{
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(src,name);
+
+    if(tgt == nullptr || e->m_char->isEmpty() || tgt->m_char->isEmpty())
+        return;
+
+    inviteSidekick(*e,*tgt);
+}
+
+void cmdHandler_SidekickAccept(QString &cmd, Entity *e)
+{
+    MapClient *src  = e->m_client;
+    uint32_t db_id  = e->m_char->m_char_data.m_sidekick.m_db_id;
+    Entity *tgt     = getEntityByDBID(src,db_id);
+
+    if(tgt == nullptr || e->m_char->isEmpty() || tgt->m_char->isEmpty())
+        return;
+
+    addSidekick(*e,*tgt);
+}
+
+void cmdHandler_SidekickDecline(QString &cmd, Entity *e)
+{
+    e->m_char->m_char_data.m_sidekick.m_db_id = 0;
+}
+
+void cmdHandler_UnSidekick(QString &cmd, Entity *e)
+{
+    MapClient *src = e->m_client;
+
+    if(e->m_char->isEmpty())
+        return;
+
+    removeSidekick(*e);
+}
+
+void cmdHandler_TeamBuffs(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    toggleTeamBuffs(*e->m_char);
+
+    QString msg = "Toggling Team Buffs display mode.";
+    qCDebug(logSlashCommand).noquote() << msg;
+}
+
+void cmdHandler_Friend(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(src,name);
+
+    if(tgt == nullptr || e->m_char->isEmpty() || tgt->m_char->isEmpty())
+        return;
+
+    addFriend(*e,*tgt);
+}
+
+void cmdHandler_Unfriend(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(src,getTargetIdx(*e));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(src,name);
+
+    if(tgt == nullptr || e->m_char->isEmpty() || tgt->m_char->isEmpty())
+        return;
+
+    // TODO: Implement getCharacterFromDB(name) if target is not online.
+
+    removeFriend(*e,*tgt);
+}
+
+void cmdHandler_FriendList(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    if(e->m_char->isEmpty())
+        return;
+
+    toggleFriendList(*e);
 }

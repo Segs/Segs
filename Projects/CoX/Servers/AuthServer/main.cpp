@@ -10,6 +10,7 @@
 #include "Servers/ServerManager.h"
 #include "Servers/server_support.h"
 #include "Settings.h"
+#include "Logging.h"
 #include "version.h"
 //////////////////////////////////////////////////////////////////////////
 
@@ -112,7 +113,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     {
         qCritical() << "Failed to open log file in write mode, will procede with console only logging";
     }
-    QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
+    setLoggingFilter(); // Set QT Logging filters
     qInstallMessageHandler(segsLogMessageOutput);
     QCoreApplication q_app(argc,argv);
     QCoreApplication::setOrganizationDomain("segs.nemerle.eu");

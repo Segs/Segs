@@ -4,6 +4,7 @@
 #include "Common/GameData/costume_serializers.h"
 #include "Common/GameData/def_serializers.h"
 #include "Common/GameData/charclass_serializers.h"
+#include "Common/GameData/keybind_serializers.h"
 #include "NetStructures/CommonNetStructures.h"
 
 #include <QtCore/QDebug>
@@ -197,7 +198,8 @@ MapServerData::~MapServerData()
 
 bool MapServerData::read_runtime_data(const QString &directory_path)
 {
-    qInfo().noquote() << "Reading map data from"<<directory_path<<"folder";
+    qInfo().noquote() << "Reading game data from" << directory_path << "folder";
+  
     if (!read_costumes(directory_path))
         return false;
     if (!read_colors(directory_path))
@@ -208,10 +210,14 @@ bool MapServerData::read_runtime_data(const QString &directory_path)
         return false;
     if(!read_exp_and_debt(directory_path))
         return false;
-    qInfo().noquote() << " All map data read";
+    if(!read_keybinds(directory_path))
+        return false;
+    if(!read_commands(directory_path))
+        return false;
+    qInfo().noquote() << "Finished reading game data.";
     {
-        QDebug infoLine = qWarning().noquote();
-        infoLine << " Postprocessing runtime data .. ";
+        QDebug infoLine = qInfo().noquote();
+        infoLine << "Postprocessing runtime data .. ";
         static_cast<HashBasedPacker *>(packer_instance)->fill_hashes(*this);
         infoLine << "Hashes filled";
     }
@@ -300,6 +306,22 @@ bool MapServerData::read_exp_and_debt(const QString &directory_path)
     qDebug() << "Loading exp and debt tables:";
     if (!read_data_to<LevelExpAndDebt, levelsdebts_i0_requiredCrc>(directory_path, "experience.bin",
                                                                    m_experience_and_debt_per_level))
+        return false;
+    return true;
+}
+
+bool MapServerData::read_keybinds(const QString &directory_path)
+{
+    qDebug() << "Loading keybinds:";
+    if(!read_data_to<Parse_AllKeyProfiles,keyprofile_i0_requiredCrc>(directory_path,"kb.bin",m_keybind_profiles))
+        return false;
+    return true;
+}
+
+bool MapServerData::read_commands(const QString &directory_path)
+{
+    qDebug() << "Loading commands:";
+    if(!read_data_to<Parse_AllCommandCategories,keycommands_i0_requiredCrc>(directory_path,"command.bin",m_command_categories))
         return false;
     return true;
 }

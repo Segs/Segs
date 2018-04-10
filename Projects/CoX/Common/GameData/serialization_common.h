@@ -1,5 +1,6 @@
 #pragma once
 #include "Colors.h"
+#include "Logging.h"
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 #include <cereal/archives/json.hpp>
@@ -9,7 +10,6 @@
 #include <cereal/types/string.hpp>
 #include <cereal/cereal.hpp>
 
-#include <QtCore/QDebug>
 #include <QtCore/QString>
 #include <QtCore/QFile>
 

@@ -40,7 +40,7 @@ void World::physicsStep(Entity *e,uint32_t msec)
         // todo: take into account time between updates
         glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
         float vel_scale = e->inp_state.input_vel_scale/255.0f;
-        e->m_entity_data.pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
+        e->m_entity_data.m_pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
         e->vel = za*e->inp_state.pos_delta;
     }
 }
@@ -79,12 +79,14 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
             e->m_time_till_logout=0;
     }
 
+    /*
     CharacterDatabase *char_db = AdminServer::instance()->character_db();
     // TODO: Implement asynchronous database queries
     DbTransactionGuard grd(*char_db->getDb());
-    //if(false==char_db->update(e))
-    //    return;
-    //grd.commit();
+    if(false==char_db->update(e))
+        return;
+    grd.commit();
+    */
 }
 
 void World::addPlayer(Entity *ent)

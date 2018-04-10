@@ -2,6 +2,8 @@
 #include "CommonNetStructures.h"
 #include "Powers.h"
 #include "Costume.h"
+#include "Character.h"
+#include "Team.h"
 #include "FixedPointValue.h"
 #include "Common/GameData/entitydata_definitions.h"
 
@@ -13,7 +15,9 @@
 #include <memory>
 
 class MapClient;
+class Team;
 class Character;
+
 struct AngleRadians // TODO: Is this intended to be used?
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
@@ -147,6 +151,19 @@ enum class FadeDirection
     In,
     Out
 };
+
+// returned by getEntityFromDB()
+struct CharacterFromDB
+{
+    QString         name;
+    EntityData      entity_data;
+    CharacterData   char_data;
+    float           hitpoints;
+    float           endurance;
+    uint32_t        sg_id;
+    uint32_t        m_db_id;
+};
+
 class Entity
 {
     // only EntityStore can create instances of this class
@@ -169,24 +186,19 @@ public:
         };
         struct SuperGroup
         {
-            int     m_SG_id         = {0};
-            bool    m_SG_info       = false;
-            QString m_SG_name;               // 64 chars max
-            //QString m_SG_motto;
-            //QString m_SG_costume;          // 128 chars max -> hash table key from the CostumeString_HTable
-            uint32_t m_SG_color1    = 0;     // supergroup color 1
-            uint32_t m_SG_color2    = 0;     // supergroup color 2
-        };
-        struct Team
-        {
-            bool    m_has_team      = false;
-            int     m_team_id       = {0};
-            QString m_team_name;             // m_group_name? what is this?
-            int     m_team_rank     = 0;
+            int             m_SG_id                 = {0};
+            QString         m_SG_name               = "Supergroup"; // 64 chars max
+            //QString         m_SG_motto;
+            //QString         m_SG_costume;                         // 128 chars max -> hash table key from the CostumeString_HTable
+            uint32_t        m_SG_color1             = 0;            // supergroup color 1
+            uint32_t        m_SG_color2             = 0;            // supergroup color 2
+            int             m_SG_rank               = 1;
         };
 
-        SuperGroup          m_supergroup;
-        Team                m_team;
+        bool                m_has_supergroup        = true;
+        SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
+        bool                m_has_team              = false;
+        Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
         EntityData          m_entity_data;
 
         uint32_t            m_idx                   = {0};
@@ -194,7 +206,6 @@ public:
         uint8_t             m_type                  = {0};
         glm::quat           m_direction;
         glm::vec3           m_spd                   = {1,1,1};
-        bool                m_has_target;
         uint32_t            m_target_idx;
         uint32_t            m_assist_target_idx;
 
@@ -210,6 +221,7 @@ public:
         bool                m_state_mode_send       = false;
         bool                m_odd_send              = false;
         bool                m_seq_update            = false;
+        bool                m_is_hero               = false;
         bool                m_is_villian            = false;
         bool                m_contact               = false;
         int                 m_seq_upd_num1          = 0;
@@ -225,8 +237,10 @@ public:
         float               m_jump_height           = 1.0f;
 
         uint8_t             m_update_id             = 1;
-        bool                m_full_update           = true; // EntityReponse sendServerPhysicsPositions
-        bool                m_has_control_id        = true; // EntityReponse sendServerPhysicsPositions
+        bool                m_update_part_1         = true;     // EntityResponse sendServerControlState
+        bool                m_force_pos_and_cam     = true;     // EntityResponse sendServerControlState
+        bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
+        bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
 
         int                 u1 = 1;
         int                 u2 = 1;
@@ -249,19 +263,19 @@ public:
         glm::vec3           vel;
         uint32_t            prev_pos[3]                 = {0};
         Vector3_FPV         fixedpoint_pos;
-        bool                m_selector1                 = false;
+        bool                m_selector1                 = false; // unused
         bool                m_pchar_things              = false;
         bool                might_have_rare             = false;
         bool                m_hasname                   = false;
         bool                m_classname_override        = false;
         bool                m_hasRagdoll                = false;
+        bool                m_has_owner                 = false;
         bool                m_create_player             = false;
         bool                m_rare_bits                 = false;
         int                 current_client_packet_id    = {0};
         QString             m_override_name;
         uint32_t            m_input_ack                 = {0};
         bool                player_type                 = false;
-        bool                m_player_villain            = false;
         bool                m_destroyed                 = false;
         uint32_t            ownerEntityId               = 0;
         uint32_t            creatorEntityId             = 0;

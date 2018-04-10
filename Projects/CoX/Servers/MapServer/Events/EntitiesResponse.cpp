@@ -8,6 +8,8 @@
 #include "MapClient.h"
 #include "MapInstance.h"
 #include "EntityUpdateCodec.h"
+#include "DataHelpers.h"
+#include "Logging.h"
 
 #include <QByteArray>
 #include <cmath>
@@ -56,33 +58,60 @@ void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
         bs.StoreBitArray((const uint8_t *)ba.constData(),8*ba.size());
     }
 }
-void storeTeamList(const EntitiesResponse &/*src*/,BitStream &bs)
+void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 {
-    int team_id=0; //
-    bool mark_lfg=false;
-    bool in_mission_or_taskforce_thing=false;
-    uint32_t team_leader_id = 0;
-    uint32_t team_size=0;
-    storePackedBitsConditional(bs,20,team_id);
-    bs.StoreBits(1,in_mission_or_taskforce_thing);
+    Entity *e = src.m_client->char_entity();
+    assert(e);
+
+    // shorthand local vars
+    int         team_idx = 0;
+    bool        mark_lfg = e->m_char->m_char_data.m_lfg;
+    bool        has_mission = 0;
+    uint32_t    tm_leader_id = 0;
+    uint32_t    tm_size = 0;
+
+    if(e->m_has_team && e->m_team != nullptr)
+    {
+        team_idx        = e->m_team->m_team_idx;
+        has_mission     = e->m_team->m_team_has_mission;
+        tm_leader_id    = e->m_team->m_team_leader_idx;
+        tm_size         = e->m_team->m_team_members.size();
+    }
+
+    storePackedBitsConditional(bs,20,team_idx);
+    bs.StoreBits(1,has_mission);
     bs.StoreBits(1,mark_lfg);
-    if(team_id == 0)
+
+    if(team_idx == 0) // if no team, return.
         return;
 
-    bs.StoreBits(32,team_leader_id);
-    bs.StorePackedBits(1,team_size);
-    for(uint32_t i=0; i<team_size; ++i)
+    bs.StoreBits(32,tm_leader_id); // must be db_id
+    bs.StorePackedBits(1,tm_size);
+
+    for(const auto &member : e->m_team->m_team_members)
     {
-        uint32_t team_member_dbid=0;
-        bool team_member_is_on_the_same_map=true;
-        bs.StoreBits(32,team_member_dbid);
-        bs.StoreBits(1,team_member_is_on_the_same_map);
-        if(not team_member_is_on_the_same_map)
+        Entity *tm_ent = getEntityByDBID(src.m_client, member.tm_idx);
+
+        if(tm_ent == nullptr)
         {
-            QString missing_team_member_name;
-            QString missing_team_member_is_on_map;
-            bs.StoreString(missing_team_member_name);
-            bs.StoreString(missing_team_member_is_on_map);
+            qWarning() << "Could not find Entity with db_id:" << member.tm_idx;
+            continue; // continue loop
+        }
+
+        QString member_name     = tm_ent->name();
+        QString member_mapname  = tm_ent->m_client->current_map()->name();
+        bool tm_on_same_map     = true;
+
+        if(member_mapname != src.m_client->current_map()->name())
+            tm_on_same_map = false;
+
+        bs.StoreBits(32,member.tm_idx);
+        bs.StoreBits(1,tm_on_same_map);
+
+        if(!tm_on_same_map)
+        {
+            bs.StoreString(member_name);
+            bs.StoreString(member_mapname);
         }
     }
 }
@@ -99,13 +128,12 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     sendBuffs(src,bs); //FIXEDOFFSET_pchar->character_ReceiveBuffs(pak,0);
 
     PUTDEBUG("PlayerEntity::serialize_full before sidekick");
-    bool has_sidekick=false;
-    bs.StoreBits(1,has_sidekick);
-    if(has_sidekick)
+    bs.StoreBits(1,player_char.m_char_data.m_sidekick.m_has_sidekick);
+    if(player_char.m_char_data.m_sidekick.m_has_sidekick)
     {
-        bool is_mentor=false; // this flag might mean something totally different :)
+        bool is_mentor = isSidekickMentor(src);
         bs.StoreBits(1,is_mentor);
-        bs.StorePackedBits(20,0); // sidekick partner db_id -> 10240
+        bs.StorePackedBits(20,player_char.m_char_data.m_sidekick.m_db_id); // sidekick partner db_id -> 10240
     }
 
     PUTDEBUG("before tray");
@@ -114,8 +142,8 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     player_char.sendTrayMode(bs);
 
     bs.StoreString(src.name());                     // maxlength 32
-    bs.StoreString(getBattleCry(player_char));      //max 128
-    bs.StoreString(getDescription(player_char));    //max 1024
+    bs.StoreString(getBattleCry(player_char));      // max 128
+    bs.StoreString(getDescription(player_char));    // max 1024
     PUTDEBUG("before windows");
     player_char.sendWindows(bs);
     bs.StoreBits(1,player_char.m_char_data.m_lfg);              // lfg related
@@ -125,7 +153,19 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     player_char.sendChatSettings(bs);
     player_char.sendTitles(bs,NameFlag::NoName,ConditionalFlag::Unconditional); // NoName, we already sent it above.
 
-    player_char.sendDescription(bs);
+    if(src.m_has_owner)
+    {
+        // TODO: if has owner, send again using owner info (desc first this time)
+        bs.StoreString(getDescription(player_char));    // max 1024
+        bs.StoreString(getBattleCry(player_char));      // max 128
+    }
+    else
+    {
+        // client expects this anyway, so let's send again (desc first this time)
+        bs.StoreString(getDescription(player_char));    // max 1024
+        bs.StoreString(getBattleCry(player_char));      // max 128
+    }
+
     uint8_t auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     PUTDEBUG("before auth data");
     bs.StoreBitArray(auth_data,128);
@@ -251,7 +291,7 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
     }
     uint32_t boost_count=0;
     bs.StorePackedBits(1,boost_count);
-    for(uint32_t insp=0; insp<inspiration_count; ++insp)
+    for(uint32_t insp=0; insp<boost_count; ++insp)
     {
         //TODO: fill this
         assert(false);
@@ -263,9 +303,6 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     // user entity
     Entity *ent = src.m_client->char_entity();
 
-    bool update_part_1  = ent->u1;       // default: true;
-    bool update_part_2  = ent->u2;       // default: false;
-
     SurfaceParams surface_params[2];
     memset(&surface_params,0,2*sizeof(SurfaceParams));
     surface_params[0].traction = 1.5f;
@@ -274,8 +311,8 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     surface_params[1].max_speed = surface_params[0].max_speed = 1.5f;
     surface_params[1].gravitational_constant = surface_params[0].gravitational_constant = 3.0f;
 
-    bs.StoreBits(1,update_part_1);
-    if(update_part_1)
+    bs.StoreBits(1,ent->m_update_part_1);
+    if(ent->m_update_part_1)
     {
         //rand()&0xFF
         bs.StoreBits(8,ent->m_update_id);
@@ -296,11 +333,11 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         bs.StoreBits(1,ent->m_is_sliding);        // sliding? default = 0
     }
     // Used to force the client to a position/speed/pitch/rotation by server
-    bs.StoreBits(1,update_part_2);
-    if(update_part_2)
+    bs.StoreBits(1,ent->m_force_pos_and_cam);
+    if(ent->m_force_pos_and_cam)
     {
         bs.StorePackedBits(1,ent->inp_state.m_received_server_update_id); // sets g_client_pos_id_rel default = 0
-        storeVector(bs,ent->m_entity_data.pos);         // server-side pos
+        storeVector(bs,ent->m_entity_data.m_pos);         // server-side pos
         storeVectorConditional(bs,ent->m_spd);          // server-side spd (optional)
 
         storeFloatConditional(bs,0); // Pitch not used ?
@@ -308,7 +345,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         storeFloatConditional(bs,0); // Roll
         bs.StorePackedBits(1,ent->m_is_falling); // server side forced falling bit
 
-        ent->u2 = 0; // run once
+        ent->m_force_pos_and_cam = false; // run once
     }
 }
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
@@ -318,15 +355,15 @@ void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
     bs.StoreBits(1,target->m_full_update);
     if( !target->m_full_update )
         bs.StoreBits(1,target->m_has_control_id);
-#ifdef LOG_
-    fprintf(stderr,"Phys: send %d ",target->m_input_ack);
-#endif
+
+    qCDebug(logInput,"Phys: send %d ",target->m_input_ack);
+
     if( target->m_full_update || target->m_has_control_id)
         bs.StoreBits(16,target->m_input_ack); //target->m_input_ack
     if(target->m_full_update)
     {
         for(int i=0; i<3; ++i)
-            bs.StoreFloat(target->m_entity_data.pos[i]); // server position
+            bs.StoreFloat(target->m_entity_data.m_pos[i]); // server position
         for(int i=0; i<3; ++i)
             storeFloatConditional(bs,target->vel[i]);
     }
@@ -354,7 +391,7 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
     {
         //full_update - > receiveCharacterFromServer
         // initial character update = level/name/class/origin/map_name
-        //m_client->char_entity()->m_char.m_ent=m_client->char_entity();
+        //m_client->char_entity()->m_char->m_ent=m_client->char_entity();
         serialize_char_full_update(*ent,bs);
     }
     else

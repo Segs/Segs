@@ -2,200 +2,10 @@
 #include "keybind_definitions.h"
 #include "serialization_common.h"
 
+#include "Servers/MapServer/Events/KeybindSettings.h"
 #include "DataStorage.h"
+
 namespace {
-static const QMap<QString,KeyName> keyNameToEnum = {
-    {"ESCAPE",COH_INPUT_ESCAPE},
-    {"1",COH_INPUT_1},
-    {"2",COH_INPUT_2},
-    {"3",COH_INPUT_3},
-    {"4",COH_INPUT_4},
-    {"5",COH_INPUT_5},
-    {"6",COH_INPUT_6},
-    {"7",COH_INPUT_7},
-    {"8",COH_INPUT_8},
-    {"9",COH_INPUT_9},
-    {"0",COH_INPUT_0},
-    {"MINUS",COH_INPUT_MINUS},
-    {"EQUALS",COH_INPUT_EQUALS},
-    {"TAB",COH_INPUT_TAB},
-    {"Q",COH_INPUT_Q},
-    {"W",COH_INPUT_W},
-    {"E",COH_INPUT_E},
-    {"R",COH_INPUT_R},
-    {"T",COH_INPUT_T},
-    {"Y",COH_INPUT_Y},
-    {"U",COH_INPUT_U},
-    {"I",COH_INPUT_I},
-    {"O",COH_INPUT_O},
-    {"P",COH_INPUT_P},
-    {"LBRACKET",COH_INPUT_LBRACKET},
-    {"RBRACKET",COH_INPUT_RBRACKET},
-    {"RETURN",COH_INPUT_RETURN},
-    {"LCONTROL",COH_INPUT_LCONTROL},
-    {"A",COH_INPUT_A},
-    {"S",COH_INPUT_S},
-    {"D",COH_INPUT_D},
-    {"F",COH_INPUT_F},
-    {"G",COH_INPUT_G},
-    {"H",COH_INPUT_H},
-    {"J",COH_INPUT_J},
-    {"K",COH_INPUT_K},
-    {"L",COH_INPUT_L},
-    {"SEMICOLON",COH_INPUT_SEMICOLON},
-    {"APOSTROPHE",COH_INPUT_APOSTROPHE},
-    {"TILDE",COH_INPUT_TILDE},
-    {"LSHIFT",COH_INPUT_LSHIFT},
-    {"BACKSLASH",COH_INPUT_BACKSLASH},
-    {"Z",COH_INPUT_Z},
-    {"X",COH_INPUT_X},
-    {"C",COH_INPUT_C},
-    {"V",COH_INPUT_V},
-    {"B",COH_INPUT_B},
-    {"N",COH_INPUT_N},
-    {"M",COH_INPUT_M},
-    {"COMMA",COH_INPUT_COMMA},
-    {"PERIOD",COH_INPUT_PERIOD},
-    {"SLASH",COH_INPUT_SLASH},
-    {"RSHIFT",COH_INPUT_RSHIFT},
-    {"MULTIPLY",COH_INPUT_MULTIPLY},
-    {"SPACE",COH_INPUT_SPACE},
-    {"F1",COH_INPUT_F1},
-    {"F2",COH_INPUT_F2},
-    {"F3",COH_INPUT_F3},
-    {"F4",COH_INPUT_F4},
-    {"F5",COH_INPUT_F5},
-    {"F6",COH_INPUT_F6},
-    {"F7",COH_INPUT_F7},
-    {"F8",COH_INPUT_F8},
-    {"F9",COH_INPUT_F9},
-    {"F10",COH_INPUT_F10},
-    {"NUMLOCK",COH_INPUT_NUMLOCK},
-    {"SCROLL",COH_INPUT_SCROLL},
-    {"NUMPAD7",COH_INPUT_NUMPAD7},
-    {"NUMPAD8",COH_INPUT_NUMPAD8},
-    {"NUMPAD9",COH_INPUT_NUMPAD9},
-    {"NUMPAD4",COH_INPUT_NUMPAD4},
-    {"NUMPAD5",COH_INPUT_NUMPAD5},
-    {"NUMPAD6",COH_INPUT_NUMPAD6},
-    {"NUMPAD1",COH_INPUT_NUMPAD1},
-    {"NUMPAD2",COH_INPUT_NUMPAD2},
-    {"NUMPAD3",COH_INPUT_NUMPAD3},
-    {"NUMPAD0",COH_INPUT_NUMPAD0},
-    {"F11",COH_INPUT_F11},
-    {"F12",COH_INPUT_F12},
-    {"F13",COH_INPUT_F13},
-    {"F14",COH_INPUT_F14},
-    {"F15",COH_INPUT_F15},
-    {"NUMPADEQUALS",COH_INPUT_NUMPADEQUALS},
-    {"ABNT_C1",COH_INPUT_ABNT_C1},
-    {"ABNT_C2",COH_INPUT_ABNT_C2},
-    {"COLON",COH_INPUT_COLON},
-    {"UNDERLINE",COH_INPUT_UNDERLINE},
-    {"NEXTTRACK",COH_INPUT_NEXTTRACK},
-    {"NUMPADENTER",COH_INPUT_NUMPADENTER},
-    {"RCONTROL",COH_INPUT_RCONTROL},
-    {"MUTE",COH_INPUT_MUTE},
-    {"CALCULATOR",COH_INPUT_CALCULATOR},
-    {"PLAYPAUSE",COH_INPUT_PLAYPAUSE},
-    {"MEDIASTOP",COH_INPUT_MEDIASTOP},
-    {"VOLUMEDOWN",COH_INPUT_VOLUMEDOWN},
-    {"VOLUMEUP",COH_INPUT_VOLUMEUP},
-    {"WEBHOME",COH_INPUT_WEBHOME},
-    {"NUMPADCOMMA",COH_INPUT_NUMPADCOMMA},
-    {"SYSRQ",COH_INPUT_SYSRQ},
-    {"PAUSE",COH_INPUT_PAUSE},
-    {"HOME",COH_INPUT_HOME},
-    {"END",COH_INPUT_END},
-    {"INSERT",COH_INPUT_INSERT},
-    {"DELETE",COH_INPUT_DELETE},
-    {"WEBSEARCH",COH_INPUT_WEBSEARCH},
-    {"WEBFAVORITES",COH_INPUT_WEBFAVORITES},
-    {"WEBREFRESH",COH_INPUT_WEBREFRESH},
-    {"WEBSTOP",COH_INPUT_WEBSTOP},
-    {"WEBFORWARD",COH_INPUT_WEBFORWARD},
-    {"WEBBACK",COH_INPUT_WEBBACK},
-    {"MYCOMPUTER",COH_INPUT_MYCOMPUTER},
-    {"MAIL",COH_INPUT_MAIL},
-    {"MEDIASELECT",COH_INPUT_MEDIASELECT},
-    {"BACKSPACE",COH_INPUT_BACKSPACE},
-    {"NUMPADSTAR",COH_INPUT_NUMPADSTAR},
-    {"LALT",COH_INPUT_LALT},
-    {"CAPSLOCK",COH_INPUT_CAPSLOCK},
-    {"NUMPADMINUS",COH_INPUT_NUMPADMINUS},
-    {"NUMPADPLUS",COH_INPUT_NUMPADPLUS},
-    {"NUMPADPERIOD",COH_INPUT_NUMPADPERIOD},
-    {"NUMPADSLASH",COH_INPUT_NUMPADSLASH},
-    {"RALT",COH_INPUT_RALT},
-    {"UPARROW",COH_INPUT_UPARROW},
-    {"PGUP",COH_INPUT_PGUP},
-    {"LEFTARROW",COH_INPUT_LEFTARROW},
-    {"RIGHTARROW",COH_INPUT_RIGHTARROW},
-    {"DOWNARROW",COH_INPUT_DOWNARROW},
-    {"PGDN",COH_INPUT_PGDN},
-    {"LBUTTON",COH_INPUT_LBUTTON},
-    {"MBUTTON",COH_INPUT_MBUTTON},
-    {"RBUTTON",COH_INPUT_RBUTTON},
-    {"BUTTON4",COH_INPUT_BUTTON4},
-    {"BUTTON5",COH_INPUT_BUTTON5},
-    {"BUTTON6",COH_INPUT_BUTTON6},
-    {"BUTTON7",COH_INPUT_BUTTON7},
-    {"BUTTON8",COH_INPUT_BUTTON8},
-    {"MOUSE_SCROLL",COH_INPUT_MOUSE_SCROLL},
-    {"JOY1",COH_INPUT_JOY1},
-    {"JOY2",COH_INPUT_JOY2},
-    {"JOY3",COH_INPUT_JOY3},
-    {"JOY4",COH_INPUT_JOY4},
-    {"JOY5",COH_INPUT_JOY5},
-    {"JOY6",COH_INPUT_JOY6},
-    {"JOY7",COH_INPUT_JOY7},
-    {"JOY8",COH_INPUT_JOY8},
-    {"JOY9",COH_INPUT_JOY9},
-    {"JOY10",COH_INPUT_JOY10},
-    {"JOY11",COH_INPUT_JOY11},
-    {"JOY12",COH_INPUT_JOY12},
-    {"JOY13",COH_INPUT_JOY13},
-    {"JOY14",COH_INPUT_JOY14},
-    {"JOY15",COH_INPUT_JOY15},
-    {"JOY16",COH_INPUT_JOY16},
-    {"JOY17",COH_INPUT_JOY17},
-    {"JOY18",COH_INPUT_JOY18},
-    {"JOY19",COH_INPUT_JOY19},
-    {"JOY20",COH_INPUT_JOY20},
-    {"JOY21",COH_INPUT_JOY21},
-    {"JOY22",COH_INPUT_JOY22},
-    {"JOY23",COH_INPUT_JOY23},
-    {"JOY24",COH_INPUT_JOY24},
-    {"JOY25",COH_INPUT_JOY25},
-    {"JOYPAD_UP",COH_INPUT_JOYPAD_UP},
-    {"JOYPAD_DOWN",COH_INPUT_JOYPAD_DOWN},
-    {"JOYPAD_LEFT",COH_INPUT_JOYPAD_LEFT},
-    {"JOYPAD_RIGHT",COH_INPUT_JOYPAD_RIGHT},
-    {"POV1_UP",COH_INPUT_POV1_UP},
-    {"POV1_DOWN",COH_INPUT_POV1_DOWN},
-    {"POV1_LEFT",COH_INPUT_POV1_LEFT},
-    {"POV1_RIGHT",COH_INPUT_POV1_RIGHT},
-    {"POV2_UP",COH_INPUT_POV2_UP},
-    {"POV2_DOWN",COH_INPUT_POV2_DOWN},
-    {"POV2_LEFT",COH_INPUT_POV2_LEFT},
-    {"POV2_RIGHT",COH_INPUT_POV2_RIGHT},
-    {"POV3_UP",COH_INPUT_POV3_UP},
-    {"POV3_DOWN",COH_INPUT_POV3_DOWN},
-    {"POV3_LEFT",COH_INPUT_POV3_LEFT},
-    {"POV3_RIGHT",COH_INPUT_POV3_RIGHT},
-    {"JOYSTICK1_UP",COH_INPUT_JOYSTICK1_UP},
-    {"JOYSTICK1_DOWN",COH_INPUT_JOYSTICK1_DOWN},
-    {"JOYSTICK1_LEFT",COH_INPUT_JOYSTICK1_LEFT},
-    {"JOYSTICK1_RIGHT",COH_INPUT_JOYSTICK1_RIGHT},
-    {"JOYSTICK2_UP",COH_INPUT_JOYSTICK2_UP},
-    {"JOYSTICK2_DOWN",COH_INPUT_JOYSTICK2_DOWN},
-    {"JOYSTICK2_LEFT",COH_INPUT_JOYSTICK2_LEFT},
-    {"JOYSTICK2_RIGHT",COH_INPUT_JOYSTICK2_RIGHT},
-    {"JOYSTICK3_UP",COH_INPUT_JOYSTICK3_UP},
-    {"JOYSTICK3_DOWN",COH_INPUT_JOYSTICK3_DOWN},
-    {"JOYSTICK3_LEFT",COH_INPUT_JOYSTICK3_LEFT},
-    {"JOYSTICK3_RIGHT",COH_INPUT_JOYSTICK3_RIGHT},
-};
 KeyName resolveKey(const QString &name)
 {
     auto iter = keyNameToEnum.find(name.toUpper());
@@ -203,18 +13,51 @@ KeyName resolveKey(const QString &name)
         return *iter;
     return COH_INPUT_INVALID;
 }
+ModKeys resolveMod(const QString &name)
+{
+    auto iter = modNameToEnum.find(name.toUpper());
+    if(iter!=modNameToEnum.end())
+        return *iter;
+    return NO_MOD;
+}
+std::vector<Keybind> correctSecondaryBinds(std::vector<Keybind> &keybinds)
+{
+    QSet<QString> known_commands;
+    for(Keybind & bind : keybinds)  {
+        if(known_commands.contains(bind.Command)) {
+            qCDebug(logKeybinds) << "Found duplicate keybind " + bind.Command + " Setting to alternate.";
+            bind.IsSecondary = true;
+        }
+        else {
+            known_commands.insert(bind.Command);
+        }
+    }
+    return keybinds;
+}
 bool loadFrom(BinStore * s, Keybind & target)
 {
     s->prepare();
     bool ok = true;
-    ok &= s->read(target.Key);
+    ok &= s->read(target.KeyString);
     ok &= s->read(target.Command);
     ok &= s->prepare_nested(); // will update the file size left
-    target.actualKey = resolveKey(target.Key);
+
+    QStringList combo = target.KeyString.split("+");
+
+    if(combo.size() > 1)
+    {
+        target.Mods = resolveMod(combo.at(0));
+        target.Key  = resolveKey(combo.at(1));
+    }
+    else
+        target.Key = resolveKey(target.KeyString);
+
+    qCDebug(logKeybinds) << "\tbind:" << target.KeyString << target.Key << target.Mods << target.Command;
+
     assert(ok && s->end_encountered());
     return ok;
 }
-bool loadFrom(BinStore * s, KeyProfiles_Entry & target)
+bool loadFrom(BinStore * s, Keybind_Profiles & target)
 {
     s->prepare();
     bool ok = true;
@@ -223,6 +66,9 @@ bool loadFrom(BinStore * s, KeyProfiles_Entry & target)
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
+
+    qCDebug(logKeybinds) << "Loading Profile:" << target.DisplayName << target.Name;
+
     QString _name;
     while(s->nesting_name(_name))
     {
@@ -234,10 +80,15 @@ bool loadFrom(BinStore * s, KeyProfiles_Entry & target)
             assert(!"unknown field referenced.");
         s->nest_out();
     }
+
+    target.KeybindArr = correctSecondaryBinds(target.KeybindArr);
+
+    qCDebug(logKeybinds) << "Total Keybinds:" << target.KeybindArr.size();
+
     assert(ok);
     return ok;
-
 }
+
 bool loadFrom(BinStore * s, Command & target)
 {
     s->prepare();
@@ -245,9 +96,15 @@ bool loadFrom(BinStore * s, Command & target)
     ok &= s->read(target.CmdString);
     ok &= s->read(target.DisplayName);
     ok &= s->prepare_nested(); // will update the file size left
-    assert(ok && s->end_encountered());
+    if(s->end_encountered())
+        return ok;
+
+    qCDebug(logKeybinds) << target.CmdString << target.DisplayName;
+
+    assert(ok);
     return ok;
 }
+
 bool loadFrom(BinStore * s, CommandCategory_Entry & target)
 {
     s->prepare();
@@ -271,7 +128,7 @@ bool loadFrom(BinStore * s, CommandCategory_Entry & target)
     return ok;
 }
 
-}
+} // Anonymous namespace
 
 bool loadFrom(BinStore * s, Parse_AllKeyProfiles & target)
 {
@@ -293,7 +150,6 @@ bool loadFrom(BinStore * s, Parse_AllKeyProfiles & target)
     }
     assert(ok);
     return ok;
-
 }
 
 bool loadFrom(BinStore * s, Parse_AllCommandCategories & target)
@@ -316,4 +172,97 @@ bool loadFrom(BinStore * s, Parse_AllCommandCategories & target)
     }
     assert(ok);
     return ok;
+}
+
+const constexpr uint32_t KeybindSettings::class_version;
+CEREAL_CLASS_VERSION(KeybindSettings, KeybindSettings::class_version); // register Keybinds class version
+
+template<class Archive>
+void serialize(Archive &archive, Keybind &k)
+{
+    archive(cereal::make_nvp("Key",k.Key));
+    archive(cereal::make_nvp("Mods",k.Mods));
+    archive(cereal::make_nvp("KeyString",k.KeyString));
+    archive(cereal::make_nvp("Command",k.Command));
+    archive(cereal::make_nvp("IsSecondary",k.IsSecondary));
+}
+
+template<class Archive>
+void serialize(Archive &archive, Keybind_Profiles &kp)
+{
+    archive(cereal::make_nvp("DisplayName",kp.DisplayName));
+    archive(cereal::make_nvp("Name",kp.Name));
+    archive(cereal::make_nvp("KeybindArr",kp.KeybindArr));
+}
+
+template<class Archive>
+void serialize(Archive &archive, KeybindSettings &kbds, uint32_t const version)
+{
+    if(version != KeybindSettings::class_version)
+    {
+        qCritical() << "Failed to serialize KeybindSettings, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("AllProfiles",kbds.m_keybind_profiles));
+}
+
+template<class Archive>
+void serialize(Archive &archive, CommandEntry &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("Key",k.Key));
+    archive(cereal::make_nvp("Mods",k.Mods));
+}
+
+template<class Archive>
+void serialize(Archive &archive, Command &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("CommandString",k.CmdString));
+    archive(cereal::make_nvp("DisplayName",k.DisplayName));
+    archive(cereal::make_nvp("CommandArr",k.CommandArr));
+}
+
+template<class Archive>
+void serialize(Archive &archive, CommandCategory_Entry &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("DisplayName",k.DisplayName));
+    archive(cereal::make_nvp("Commands",k.commands));
+}
+
+template<class Archive>
+void serialize(Archive &archive, Parse_AllCommandCategories &k, uint32_t const version)
+{
+    archive(cereal::make_nvp("AllCommandCategories",k));
+}
+
+void saveTo(const KeybindSettings &target, const QString &baseName, bool text_format)
+{
+    commonSaveTo(target,"KeybindSettings",baseName,text_format);
+}
+
+template
+void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive &archive, KeybindSettings &bds, uint32_t const version);
+template
+void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive &archive, KeybindSettings &bds, uint32_t const version);
+
+void serializeToDb(const KeybindSettings &data, QString &tgt)
+{
+    std::ostringstream ostr;
+    {
+        cereal::JSONOutputArchive ar(ostr);
+        ar(data);
+    }
+    tgt = QString::fromStdString(ostr.str());
+}
+
+void serializeFromDb(KeybindSettings &data,const QString &src)
+{
+    if(src.isEmpty())
+        return;
+    std::istringstream istr;
+    istr.str(src.toStdString());
+    {
+        cereal::JSONInputArchive ar(istr);
+        ar(data);
+    }
 }

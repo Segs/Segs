@@ -1,3 +1,11 @@
+/*
+ * Super Entity Game Server
+ * http://github.com/Segs
+ * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ *
+ */
+
 #include "EntityUpdateCodec.h"
 
 #include "Character.h"
@@ -6,12 +14,10 @@
 #include "MapClient.h"
 #include "Entity.h"
 #include "GameData/CoHMath.h"
+#include "DataHelpers.h"
+#include "Logging.h"
 
-//#define DEBUG_INPUT
-//#define DEBUG_ORIENTATION
-#ifdef DEBUG_ORIENTATION
-#include <glm/ext.hpp> // currently only needed for DEBUG_ORIENTATION
-#endif
+#include <glm/ext.hpp> // currently only needed for logOrientation debug
 
 namespace  {
 void storeCreation(const Entity &src, BitStream &bs)
@@ -49,7 +55,9 @@ void storeCreation(const Entity &src, BitStream &bs)
     {
         bs.StorePackedBits(1,src.m_entity_data.m_class_idx);
         bs.StorePackedBits(1,src.m_entity_data.m_origin_idx);
-        src.m_char->sendTitles(bs,NameFlag::NoName,ConditionalFlag::Conditional); // NoName b/c We send it below
+        bs.StoreBits(1, src.m_char->m_char_data.m_has_titles); // Does entity have titles?
+        if(src.m_char->m_char_data.m_has_titles)
+            src.m_char->sendTitles(bs,NameFlag::NoName,ConditionalFlag::Conditional); // NoName b/c We send it below
     }
     bs.StoreBits(1,src.m_hasname);
     if(src.m_hasname)
@@ -60,11 +68,11 @@ void storeCreation(const Entity &src, BitStream &bs)
     // the following is used as an input to LCG float generator, generated float (0-1) is used as
     // linear interpolation factor betwwen scale_min and scale_max
     bs.StoreBits(32,src.m_randSeed);
-    bs.StoreBits(1,src.m_team.m_has_team); // could be supergroup?
-    if(src.m_team.m_has_team)
+    bs.StoreBits(1,src.m_has_supergroup); // fairly certain this is Supergroup
+    if(src.m_has_supergroup)
     {
-        bs.StorePackedBits(2,src.m_team.m_team_rank); // this will be put in field_1830 of created entity
-        bs.StoreString(src.m_team.m_team_name);
+        bs.StorePackedBits(2,src.m_supergroup.m_SG_rank); // this will be put in field_1830 (iRank) of created entity
+        bs.StoreString(src.m_supergroup.m_SG_name);
     }
     PUTDEBUG("end storeCreation");
 }
@@ -101,7 +109,7 @@ bool storePosition(const Entity &src,BitStream &bs)
 
     for(int i=0; i<3; i++)
     {
-        FixedPointValue fpv(src.m_entity_data.pos[i]);
+        FixedPointValue fpv(src.m_entity_data.m_pos[i]);
         //diff = packed ^ prev_pos[i]; // changed bits are '1'
         bs.StoreBits(24,fpv.store);
     }
@@ -119,33 +127,33 @@ void storeOrientation(const Entity &src,BitStream &bs)
     uint8_t updates;
     updates = ((uint8_t)update_rot(src,0)) | (((uint8_t)update_rot(src,1))<<1) | (((uint8_t)update_rot(src,2))<<2);
     storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
-#ifdef DEBUG_INPUT
-    fprintf(stderr,"\nupdates: %i\n",updates);
-#endif
+
+    qCDebug(logOrientation, "updates: %i",updates);
+
     float pyr_angles[3];
     glm::vec3 vec = toCoH_YPR(src.m_direction);
     pyr_angles[0] = 0.0f;
     pyr_angles[1] = vec.y; // set only yaw value
     pyr_angles[2] = 0.0f;
-#ifdef DEBUG_ORIENTATION
+
     // output everything
-    fprintf(stderr,"\nPlayer: %d\n",src.m_idx);
-    fprintf(stderr,"dir: %s \n", glm::to_string(src.direction).c_str());
-    fprintf(stderr,"camera_pyr: %s \n", glm::to_string(src.inp_state.camera_pyr).c_str());
-    fprintf(stderr,"pyr_angles: farr(%f, %f, %f)\n", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
-    fprintf(stderr,"orient_p: %f \n", src.m_entity_data.m_orientation_pyr[0]);
-    fprintf(stderr,"orient_y: %f \n", src.m_entity_data.m_orientation_pyr[1]);
-    fprintf(stderr,"vel_scale: %f \n", src.inp_state.input_vel_scale);
-#endif
+    qCDebug(logOrientation, "Player: %d", src.m_idx);
+    qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
+    qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.inp_state.camera_pyr).c_str());
+    qCDebug(logOrientation, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
+    qCDebug(logOrientation, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
+    qCDebug(logOrientation, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);
+    qCDebug(logOrientation, "vel_scale: %f", src.inp_state.input_vel_scale);
+
     for(int i=0; i<3; i++)
     {
         if(update_rot(src,i))
         {
             uint32_t v;
             v = AngleQuantize(pyr_angles[i],9);
-#ifdef DEBUG_INPUT
-            fprintf(stderr,"v: %d\n", v); // does `v` fall between 0...512
-#endif
+
+            qCDebug(logOrientation, "v: %d", v); // does `v` fall between 0...512
+
             bs.StoreBits(9,v);
         }
     }
@@ -282,28 +290,30 @@ void sendXLuency(BitStream &bs,float val)
 }
 void sendCharacterStats(const Entity &src,BitStream &bs)
 {
-    bool have_stats=true; // no stats -> dead ?
-    bool stats_changed=true;
-    bool we_have_a_buddy = false;
-    bool our_buddy_is_our_mentor = false;
-    bool we_have_our_buddy_dbid=false;
-    int our_buddy_dbid = 0;
+    bool have_stats = true; // no stats -> dead ?
+    bool stats_changed = true;
+
     bs.StoreBits(1,have_stats); // nothing here for now
     if(!have_stats)
         return;
     bs.StoreBits(1,stats_changed);
     if(!stats_changed)
         return;
-    bs.StoreBits(1,we_have_a_buddy);
-    if ( we_have_a_buddy )        // buddy info
+
+    // Store Sidekick Info
+    bs.StoreBits(1,src.m_char->m_char_data.m_sidekick.m_has_sidekick);
+    if(src.m_char->m_char_data.m_sidekick.m_has_sidekick)
     {
-        bs.StoreBits(1,our_buddy_is_our_mentor);
-        bs.StoreBits(1,we_have_our_buddy_dbid);
-        if(we_have_our_buddy_dbid)
-        {
-           bs.StorePackedBits(20,our_buddy_dbid);
-        }
+        Sidekick sidekick = src.m_char->m_char_data.m_sidekick;
+        bool is_mentor = isSidekickMentor(src);
+        bool has_dbid  = (sidekick.m_db_id != 0);
+
+        bs.StoreBits(1,is_mentor);
+        bs.StoreBits(1, has_dbid);
+        if(has_dbid)
+            bs.StorePackedBits(20,sidekick.m_db_id);
     }
+
     serializeStats(*src.m_char,bs,false);
 }
 void sendBuffsConditional(const Entity &src,BitStream &bs)
@@ -319,9 +329,9 @@ void sendTargetUpdate(const Entity &src,BitStream &bs)
 {
     uint32_t assist_id  = getAssistTargetIdx(src);
     uint32_t target_id  = getTargetIdx(src);
-    bool has_target     = src.m_has_target;
+    bool has_target     = (target_id != 0);
 
-    bs.StoreBits(1,has_target); // TODO: test this
+    bs.StoreBits(1,has_target);
     if(!has_target)
         return;
     bs.StoreBits(1,target_id!=0);
@@ -341,8 +351,8 @@ void sendOnOddSend(const Entity &src,BitStream &bs)
 }
 void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1,0); // on team evil ?
-    bs.StoreBits(1,1); // on team good ?
+    bs.StoreBits(1,src.m_is_villian); // on team evil ?
+    bs.StoreBits(1,src.m_is_hero); // on team good ?
 }
 void sendEntCollision(const Entity &src,BitStream &bs)
 {
@@ -367,14 +377,14 @@ void sendAFK(const Entity &src, BitStream &bs)
 }
 void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1,src.m_supergroup.m_SG_info); // UNFINISHED
-    if(!src.m_supergroup.m_SG_info)
+    bs.StoreBits(1,src.m_has_supergroup); // src.m_has_supergroup?
+    if(!src.m_has_supergroup)
         return;
     bs.StorePackedBits(2,src.m_supergroup.m_SG_id);
     if(src.m_supergroup.m_SG_id)
     {
         bs.StoreString(src.m_supergroup.m_SG_name);//64 chars max
-        bs.StoreString("");//128 chars max -> hash table key from the CostumeString_HTable
+        bs.StoreString("");//128 chars max -> hash table key from the CostumeString_HTable. Maybe emblem?
         bs.StoreBits(32,src.m_supergroup.m_SG_color1); // supergroup color 1
         bs.StoreBits(32,src.m_supergroup.m_SG_color2); // supergroup color 2
     }
@@ -444,7 +454,9 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
-        src.m_char->sendTitles(bs,NameFlag::HasName,ConditionalFlag::Conditional);
+        bs.StoreBits(1, src.m_char->m_char_data.m_has_titles); // Does entity have titles?
+        if(src.m_char->m_char_data.m_has_titles)
+            src.m_char->sendTitles(bs,NameFlag::HasName,ConditionalFlag::Conditional);
     }
     if(src.m_pchar_things)
     {

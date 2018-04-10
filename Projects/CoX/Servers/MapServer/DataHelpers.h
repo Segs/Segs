@@ -1,8 +1,12 @@
 #pragma once
-
-#include "Entity.h"
+#include "CommonNetStructures.h"
+#include "Events/MessageChannels.h"
 
 class QString;
+class Entity;
+class Character;
+class MapClient;
+struct FriendsList;
 
 /*
  * Entity Methods
@@ -19,13 +23,17 @@ float       getJumpHeight(const Entity &e);
 uint8_t     getUpdateId(const Entity &e);
 
 // Setters
-void    setDbId(Entity &e, uint32_t val);
+void    setDbId(Entity &e, uint8_t val);
+void    setMapIdx(Entity &e, uint32_t val);
 void    setSpeed(Entity &e, float v1, float v2, float v3);
 void    setBackupSpd(Entity &e, float val);
 void    setJumpHeight(Entity &e, float val);
 void    setUpdateID(Entity &e, uint8_t val);
 void    setTeamID(Entity &e, uint8_t team_id);
-void    setSuperGroupID(Entity &e, uint8_t sg_id);
+void    setSuperGroup(Entity &e, uint8_t sg_id = 0, QString sg_name = "", uint32_t sg_rank = 3);
+void    setAssistTarget(Entity &e);
+
+// For live debugging
 void    setu1(Entity &e, int val);
 void    setu2(Entity &e, int val);
 void    setu3(Entity &e, int val);
@@ -46,8 +54,13 @@ void    toggleControlId(Entity &e);
 
 // Misc Methods
 void    charUpdateDB(Entity *e);
+void    charUpdateOptions(Entity *e);
+void    charUpdateGUI(Entity *e);
 int     getEntityOriginIndex(bool is_player,const QString &origin_name);
 int     getEntityClassIndex(bool is_player, const QString &class_name);
+Entity * getEntity(MapClient *src, const QString &name);
+Entity * getEntity(MapClient *src, const int32_t &idx);
+Entity * getEntityByDBID(MapClient *src, const int32_t &idx);
 void    sendServerMOTD(Entity *e);
 
 /*
@@ -74,7 +87,6 @@ const QString &     getDescription(const Character &c);
 const QString &     getBattleCry(const Character &c);
 const QString &     getAlignment(const Character &c);
 
-
 // Setters
 void    setLevel(Character &c, uint32_t val);
 void    setCombatLevel(Character &c, uint32_t val);
@@ -91,4 +103,25 @@ void    setBattleCry(Character &c, QString val);
 
 // Toggles
 void    toggleAFK(Character &c, const QString &msg = "");
-void    toggleLFG(Character &c);
+void    toggleTeamBuffs(Character &c);
+
+
+/*
+ * Looking for Group
+ */
+void    toggleLFG(Entity &e);
+
+
+/*
+ * sendInfoMessage wrapper to provide access to NetStructures
+ */
+void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
+
+
+/*
+ * SendUpdate Wrappers to provide access to NetStructures
+ */
+void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
+void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
+void sendTeamLooking(Entity *tgt);
+void sendTeamOffer(Entity *src, Entity *tgt);

@@ -10,7 +10,7 @@
 #include "MapEventTypes.h"
 #include "MapLink.h"
 
-#include <QtCore/QString>
+class QString;
 //TODO: those must support chaining
 class GameCommand
 {

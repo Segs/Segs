@@ -1,10 +1,11 @@
 #define _USE_MATH_DEFINES
-//#define DEBUG_CHAT
 #include "ChatMessage.h"
 #include "Events/InputState.h"
 #include "Entity.h"
 #include "MapClient.h"
+#include "MapEvents.h"
 #include "Servers/MapServer/DataHelpers.h"
+#include "Logging.h"
 
 #include <cmath>
 
@@ -31,11 +32,9 @@ void sendChatMessage(MessageChannel t, QString msg, MapClient *src, MapClient *t
 
     tgt->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
 
-#ifdef DEBUG_CHAT
-    qDebug().noquote() << "ChatMessage:"
+    qCDebug(logChat).noquote() << "ChatMessage:"
              << "\n  Channel:" << int(res->m_channel_type)
              << "\n  Source:" << res->m_source_player_id
              << "\n  Target:" << res->m_target_player_id
              << "\n  Message:" << res->m_msg;
-#endif
 }

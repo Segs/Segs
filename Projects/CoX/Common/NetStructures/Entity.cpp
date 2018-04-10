@@ -7,7 +7,8 @@
  */
 #define _USE_MATH_DEFINES
 #include "Entity.h"
-
+#include "LFG.h"
+#include "Team.h"
 #include "Character.h"
 #include "Servers/MapServer/DataHelpers.h"
 
@@ -16,7 +17,7 @@
 #include <cmath>
 #include <limits>
 #include <sstream>
-//#define LOG_
+
 //TODO: this file needs to know the MapInstance's WorldSimulation rate - Maybe extract it as a configuration object ?
 
 #define WORLD_UPDATE_TICKS_PER_SECOND 30
@@ -25,8 +26,8 @@ void Entity::sendAllyID(BitStream &bs)
 {
     bs.StorePackedBits(2,0);
     bs.StorePackedBits(4,0); // NPC->0
-
 }
+
 void Entity::sendPvP(BitStream &bs)
 {
     bs.StoreBits(1,0);
@@ -39,9 +40,9 @@ void Entity::fillFromCharacter(const Character &f)
 {
     *m_char = f;
     m_hasname = true;
-    m_db_id = m_char->m_db_id;
     m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(f));
     m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(f));
+    m_is_hero = true;
 }
 /**
  *  This will mark the Entity as being in logging out state
@@ -51,6 +52,8 @@ void Entity::beginLogout(uint16_t time_till_logout)
 {
     m_is_logging_out = true;
     m_time_till_logout = time_till_logout*1000;
+    removeLFG(*this);
+    leaveTeam(*this);
 }
 
 void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *packer )
@@ -69,11 +72,12 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *pac
     setDescription(*e.m_char,description);
     e.m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*e.m_char));
     e.m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*e.m_char));
-    setDbId(e,e.m_char->m_db_id);
+    e.m_char->m_keybinds.resetKeybinds();
+    e.m_is_hero = true;
 
     // New Character Spawn Location
     //e.m_entity_data.pos                 = glm::vec3(-60.5f,180.0f,0.0f); // Tutorial Starting Location
-    e.m_entity_data.pos                   = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting Location
+    e.m_entity_data.m_pos                   = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting Location
     e.m_direction                         = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 void Entity::InsertUpdate( PosUpdate pup )
@@ -97,20 +101,25 @@ void Entity::dump()
             + "\n  m_type: " + QString::number(m_type)
             + "\n  class idx: " + QString::number(m_entity_data.m_class_idx)
             + "\n  origin idx: " + QString::number(m_entity_data.m_origin_idx)
-            + "\n  pos: " + QString::number(m_entity_data.pos.x) + ", "
-                          + QString::number(m_entity_data.pos.y) + ", "
-                          + QString::number(m_entity_data.pos.z)
+            + "\n  pos: " + QString::number(m_entity_data.m_pos.x) + ", "
+                          + QString::number(m_entity_data.m_pos.y) + ", "
+                          + QString::number(m_entity_data.m_pos.z)
             + "\n  orient: " + QString::number(m_entity_data.m_orientation_pyr.p) + ", "
                              + QString::number(m_entity_data.m_orientation_pyr.y) + ", "
                              + QString::number(m_entity_data.m_orientation_pyr.r)
             + "\n  target: " + QString::number(m_target_idx)
             + "\n  assist target: " + QString::number(m_assist_target_idx)
-            + "\n  m_SG_id: " + QString::number(m_supergroup.m_SG_id)
-            + "\n  m_team_id: " + QString::number(m_team.m_team_id);
+            + "\n  m_SG_id: " + QString::number(m_supergroup.m_SG_id);
 
     qDebug().noquote() << msg;
+
+    if(m_team != nullptr)
+        m_team->dump();
+
     if(m_type == Entity::ENT_PLAYER)
         m_char->dump();
+
+    dumpFriends(*this);
 }
 
 void Entity::addPosUpdate(const PosUpdate & p) {
@@ -143,13 +152,14 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_destroyed                       = false;
     e.m_type                            = Entity::ENT_PLAYER; // 2
     e.m_create_player                   = true;
-    e.m_player_villain                  = false;
+    e.m_is_hero                         = true;
+    e.m_is_villian                      = false;
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = {0};
     e.m_selector1                       = false;
     e.m_hasname                         = true;
-    e.m_supergroup.m_SG_info            = false;
-    e.m_team.m_has_team                 = false;
+    e.m_has_supergroup                  = false;
+    e.m_has_team                        = false;
     e.m_pchar_things                    = true;
     e.m_entity_data.m_access_level      = 1;
 

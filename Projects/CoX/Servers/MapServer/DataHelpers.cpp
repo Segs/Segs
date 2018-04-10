@@ -7,6 +7,9 @@
 #include "Character.h"
 #include "AdminServer/AdminServer.h"
 #include "AdminServer/CharacterDatabase.h"
+#include "Team.h"
+#include "LFG.h"
+#include "Logging.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -27,7 +30,8 @@ float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
 uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
 
 // Setters
-void    setDbId(Entity &e, uint32_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
+void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
+void    setMapIdx(Entity &e, uint32_t val) { e.m_entity_data.m_map_idx = val; }
 void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_spd = {v1,v2,v3}; }
 void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
 void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
@@ -35,51 +39,54 @@ void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
 
 void    setTeamID(Entity &e, uint8_t team_id)
 {
-    // TODO: provide method for updating Team Name and Rank
     if(team_id == 0)
     {
-        e.m_team.m_has_team     = false;
-        e.m_team.m_team_id      = team_id;
-        e.m_team.m_team_name    = "";
-        e.m_team.m_team_rank    = 0;
+        e.m_has_team            = false;
+        delete e.m_team;
     }
     else
-    {
-        e.m_team.m_has_team     = true;
-        e.m_team.m_team_id      = team_id;
-        e.m_team.m_team_name    = "Super Team";
-        e.m_team.m_team_rank    = 1;
-    }
+        e.m_has_team            = true;
+
     qDebug().noquote() << "Team Info:"
-             << "\n  Has Team:" << e.m_team.m_has_team
-             << "\n  ID:" << e.m_team.m_team_id
-             << "\n  Name:" << e.m_team.m_team_name
-             << "\n  Rank:" << e.m_team.m_team_rank;
+             << "\n  Has Team:" << e.m_has_team
+             << "\n  ID:" << e.m_team->m_team_idx
+             << "\n  Size:" << e.m_team->m_team_members.size()
+             << "\n  Members:" << e.m_team->m_team_members.data();
 }
 
-void    setSuperGroupID(Entity &e, uint8_t sg_id)
+void    setSuperGroup(Entity &e, uint8_t sg_id, QString sg_name, uint32_t sg_rank)
 {
-    // TODO: provide method for updating SuperGroup Name and Rank
+    // TODO: provide method for updating SuperGroup Colors
     if(sg_id == 0)
     {
-        e.m_supergroup.m_SG_info    = false;
+        e.m_has_supergroup          = false;
         e.m_supergroup.m_SG_id      = sg_id;
         e.m_supergroup.m_SG_name    = "";
+        e.m_supergroup.m_SG_color1  = 0x996633FF;
+        e.m_supergroup.m_SG_color2  = 0x336699FF;
+        e.m_supergroup.m_SG_rank    = 0;
     }
     else
     {
-        e.m_supergroup.m_SG_info    = true;
+        e.m_has_supergroup          = true;
         e.m_supergroup.m_SG_id      = sg_id;
-        e.m_supergroup.m_SG_name    = "SuperGroup Name!";
+        e.m_supergroup.m_SG_name    = sg_name;
+        e.m_supergroup.m_SG_color1  = 0xAA3366FF;
+        e.m_supergroup.m_SG_color2  = 0x66AA33FF;
+        e.m_supergroup.m_SG_rank    = sg_rank;
     }
     qDebug().noquote() << "SG Info:"
-             << "\n  Has Team:" << e.m_supergroup.m_SG_info
+             << "\n  Has Team:" << e.m_has_supergroup
              << "\n  ID:" << e.m_supergroup.m_SG_id
              << "\n  Name:" << e.m_supergroup.m_SG_name
              << "\n  Color1:" << e.m_supergroup.m_SG_color1
-             << "\n  Color2:" << e.m_supergroup.m_SG_color2;
+             << "\n  Color2:" << e.m_supergroup.m_SG_color2
+             << "\n  Rank:" << e.m_supergroup.m_SG_rank;
 }
 
+void    setAssistTarget(Entity &e) { e.m_target_idx = getAssistTargetIdx(e); }
+
+// For live debugging
 void    setu1(Entity &e, int val) { e.u1 = val; }
 void    setu2(Entity &e, int val) { e.u2 = val; }
 void    setu3(Entity &e, int val) { e.u3 = val; }
@@ -113,7 +120,25 @@ void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
 void charUpdateDB(Entity *e)
 {
     CharacterDatabase *char_db = AdminServer::instance()->character_db();
-        char_db->update(e);
+    // Update Character In Database
+    if(!char_db->update(e))
+        qDebug() << "Character failed to update in database!";
+}
+
+void charUpdateOptions(Entity *e)
+{
+    CharacterDatabase *char_db = AdminServer::instance()->character_db();
+    // Update Client Options/Keybinds
+    if(!char_db->updateClientOptions(e))
+        qDebug() << "Client Options failed to update in database!";
+}
+
+void charUpdateGUI(Entity *e)
+{
+    CharacterDatabase *char_db = AdminServer::instance()->character_db();
+    // Update Client GUI settings
+    if(!char_db->updateGUISettings(e))
+        qDebug() << "Client GUISettings failed to update in database!";
 }
 
 int getEntityOriginIndex(bool is_player, const QString &origin_name)
@@ -147,6 +172,76 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
     qWarning() << "Failed to locate class index for"<<class_name;
     return 0;
 
+}
+
+// Poll EntityManager to return Entity by Name or IDX
+Entity * getEntity(MapClient *src, const QString &name)
+{
+    MapInstance *mi = src->current_map();
+    EntityManager &em(mi->m_entities);
+    QString errormsg;
+
+    // Iterate through all active entities and return entity by name
+    for (Entity* pEnt : em.m_live_entlist)
+    {
+        if (pEnt->name() == name)
+            return pEnt;
+    }
+
+    errormsg = "Entity " + name + " does not exist, or is not currently online.";
+    qWarning() << errormsg;
+    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
+    return nullptr;
+}
+
+Entity * getEntity(MapClient *src, const int32_t &idx)
+{
+    MapInstance *mi = src->current_map();
+    EntityManager &em(mi->m_entities);
+    QString errormsg;
+
+    if(idx==0) {
+        errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
+        qWarning() << errormsg;
+        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
+        return nullptr;
+    }
+    // Iterate through all active entities and return entity by idx
+    for (Entity* pEnt : em.m_live_entlist)
+    {
+        if (pEnt->m_idx == idx)
+            return pEnt;
+    }
+
+    errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
+    qWarning() << errormsg;
+    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
+    return nullptr;
+}
+
+Entity * getEntityByDBID(MapClient *src, const int32_t &db_id)
+{
+    MapInstance *mi = src->current_map();
+    EntityManager &em(mi->m_entities);
+    QString errormsg;
+
+    if(db_id==0) {
+        errormsg = "Entity " + QString::number(db_id) + " does not exist in the database.";
+        qWarning() << errormsg;
+        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
+        return nullptr;
+    }
+    // TODO: Iterate through all entities in Database and return entity by db_id
+    for (Entity* pEnt : em.m_live_entlist)
+    {
+        if (pEnt->m_db_id == db_id)
+            return pEnt;
+    }
+
+    errormsg = "Entity with db_id " + QString::number(db_id) + " does not exist, or is not currently online.";
+    qWarning() << errormsg;
+    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
+    return nullptr;
 }
 
 void sendServerMOTD(Entity *e)
@@ -268,4 +363,74 @@ void toggleAFK(Character &c, const QString &msg)
         c.m_char_data.m_afk_msg = msg;
 }
 
-void    toggleLFG(Character &c) { c.m_char_data.m_lfg = !c.m_char_data.m_lfg; }
+void    toggleTeamBuffs(Character &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
+
+
+/*
+ * Looking For Group
+ */
+void toggleLFG(Entity &e)
+{
+    CharacterData *cd = &e.m_char->m_char_data;
+
+    if(e.m_has_team)
+    {
+        QString errormsg = "You're already on a team! You cannot toggle LFG.";
+        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, e.m_client);
+        errormsg = e.name() + "is already on a team and cannot toggle LFG.";
+        qCDebug(logTeams) << errormsg;
+    }
+
+    if(cd->m_lfg)
+        removeLFG(e);
+    else
+    {
+        addLFG(e);
+        sendTeamLooking(&e);
+    }
+}
+
+
+/*
+ * sendInfoMessage wrapper to provide access to NetStructures
+ */
+void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
+{
+    sendInfoMessage(ch, msg, tgt.m_client);
+}
+
+
+/*
+ * SendUpdate Wrappers to provide access to NetStructures
+ */
+void sendFriendsListUpdate(Entity *src, FriendsList *friends_list)
+{
+    qCDebug(logFriends) << "Sending FriendsList Update.";
+    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FriendsListUpdate>(new FriendsListUpdate(friends_list)));
+}
+void sendSidekickOffer(Entity *tgt, uint32_t src_db_id)
+{
+    qCDebug(logTeams) << "Sending Sidekick Offer" << tgt->name() << "from" << src_db_id;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<SidekickOffer>(new SidekickOffer(src_db_id)));
+}
+void sendTeamLooking(Entity *tgt)
+{
+    std::vector<LFGMember> list = g_lfg_list;
+
+    qCDebug(logLFG) << "Sending Team Looking to" << tgt->name();
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamLooking>(new TeamLooking(list)));
+}
+void sendTeamOffer(Entity *src, Entity *tgt)
+{
+    QString name        = src->name();
+    uint32_t db_id      = tgt->m_db_id;
+    TeamOfferType type  = NoMission;
+
+    // Check for mission, send appropriate TeamOfferType
+    if(src->m_has_team && src->m_team != nullptr)
+        if(src->m_team->m_team_has_mission)
+            type = WithMission; // TODO: Check for invalid missions to send `LeaveMission` instead
+
+    qCDebug(logTeams) << "Sending Teamup Offer" << db_id << name << type;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
+}

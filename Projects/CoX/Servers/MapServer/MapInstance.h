@@ -40,15 +40,25 @@ class MapServer;
 class SEGSTimer;
 class InputState;
 class World;
+class SetDefaultPowerSend;
+class SetDefaultPower;
 class UnqueueAll;
 class TargetChatChannelSelected;
 class ActivateInspiration;
 class PowersDockMode;
 class SwitchTray;
+class EntityInfoRequest;
+class EntityInfoResponse;
+class SaveClientOptions;
+class SelectKeybindProfile;
+class ResetKeybinds;
+class SetKeybind;
+class RemoveKeybind;
 
 class MapInstance : public EventProcessor
 {
     QString                m_name;
+    uint32_t               m_index = 1; // what does client expect this to store, and where do we send it?
     SEGSTimer *            m_world_update_timer;
     SEGSTimer *            m_resend_timer;
 
@@ -72,6 +82,7 @@ public:
     void   set_server(MapServer *s) { m_server = s; }
     size_t num_active_clients();
     const QString &     name() const { return m_name; }
+    uint32_t            index() const { return m_index; }
 
 protected:
     void process_chat(MapClient *sender, QString &msg_text);
@@ -108,13 +119,18 @@ protected:
     void on_entity_info_request(class EntityInfoRequest *ev);
     void on_chat_reconfigured(class ChatReconfigure *ev);
     void on_switch_viewpoint(class SwitchViewPoint *ev);
-    void on_client_settings(class ClientSettings *ev);
+    void on_client_options(class SaveClientOptions *ev);
+    void on_set_default_power_send(class SetDefaultPowerSend *ev);
+    void on_set_default_power(class SetDefaultPower *ev);
     void on_unqueue_all(class UnqueueAll *ev);
     void on_target_chat_channel_selected(class TargetChatChannelSelected *ev);
     void on_activate_inspiration(class ActivateInspiration *ev);
     void on_powers_dockmode(class PowersDockMode *ev);
     void on_switch_tray(class SwitchTray *ev);
-
+    void on_select_keybind_profile(class SelectKeybindProfile *ev);
+    void on_reset_keybinds(class ResetKeybinds *ev);
+    void on_set_keybind(class SetKeybind *ev);
+    void on_remove_keybind(class RemoveKeybind *ev);
 private:
-    void on_emote_command(QString lowerContents, Entity *ent);
+    void on_emote_command(const QString &command, Entity *ent);
 };

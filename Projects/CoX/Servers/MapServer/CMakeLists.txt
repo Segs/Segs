@@ -10,14 +10,16 @@ SET(target_CPP
     Events/GameCommandList.cpp
     Events/ChatDividerMoved.cpp
     Events/ChatMessage.cpp
-    Events/ClientSettings.cpp
     Events/EntitiesResponse.cpp
     Events/InputState.cpp
+    Events/KeybindSettings.cpp
     Events/LocationVisited.cpp
     Events/PlaqueVisited.cpp
     Events/NewEntity.cpp
+    Events/SaveClientOptions.cpp
     Events/SceneEvent.cpp
     Events/InfoMessageCmd.cpp
+    Events/WindowState.cpp
     MapClient.cpp
     MapEventFactory.cpp
     MapInstance.cpp
@@ -38,17 +40,26 @@ SET(target_INCLUDE
     Events/GameCommandList.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
-    Events/ClientSettings.h
     Events/EntitiesResponse.h
+    Events/FloatingDamage.h
+    Events/FriendsListUpdate.h
     Events/InputState.h
+    Events/KeybindSettings.h
     Events/LocationVisited.h
-    Events/PlaqueVisited.h
-    Events/NewEntity.h
     Events/MapEventTypes.h
+    Events/MessageChannels.h
+    Events/NewEntity.h
+    Events/PlaqueVisited.h
+    Events/PlayerInfo.h
+    Events/SaveClientOptions.h
     Events/SceneEvent.h
     Events/Shortcuts.h
+    Events/SidekickOffer.h
     Events/StandardDialogCmd.h
+    Events/TeamLooking.h
+    Events/TeamOffer.h
     Events/InfoMessageCmd.h
+    Events/WindowState.h
     MapClient.h
     MapEventFactory.h
     MapEvents.h
