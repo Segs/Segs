@@ -61,6 +61,8 @@ public:
 //    EVENT_DECL(evDeadNoGurney             ,152)
 //    EVENT_DECL(evLevelUp                  ,160)
 //    EVENT_DECL(evCSRBugReport             ,164)
+    EVENT_DECL(evEmailHeadersCmd            ,165)
+    EVENT_DECL(evEmailReadCmd               ,166)
     EVENT_DECL(evEntityInfoResponse         ,169) // Send entity info (description)
 //    EVENT_DECL(evClueUpdate               ,170)
 // client -> server commands

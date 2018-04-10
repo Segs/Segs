@@ -87,3 +87,7 @@ void cmdHandler_TeamBuffs(QString &cmd, Entity *e);
 void cmdHandler_Friend(QString &cmd, Entity *e);
 void cmdHandler_Unfriend(QString &cmd, Entity *e);
 void cmdHandler_FriendList(QString &cmd, Entity *e);
+void cmdHandler_EmailHeaders(QString &cmd, Entity *e);
+void cmdHandler_EmailRead(QString &cmd, Entity *e);
+void cmdHandler_EmailSend(QString &cmd, Entity *e);
+void cmdHandler_EmailDelete(QString &cmd, Entity *e);
