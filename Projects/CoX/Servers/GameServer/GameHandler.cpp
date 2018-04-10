@@ -58,6 +58,7 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case GameEventTypes::evUnknownEvent:
         on_unknown_link_event(static_cast<GameUnknownRequest *>(ev));
         break;
+    // Server <-> Server messages
     case Internal_EventTypes::evExpectClientRequest:
         on_expect_client(static_cast<ExpectClientRequest *>(ev));
         break;
