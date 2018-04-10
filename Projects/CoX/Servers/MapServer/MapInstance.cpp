@@ -302,7 +302,7 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
     MapClient *cl = nullptr;
     if(nullptr==tpl)
     {
-        ev->src()->putq(new ClientExpected(this,ev->m_client_id,1,m_server->getAddress()));
+        ev->src()->putq(new ExpectClientResponse(this,ev->m_client_id,1,m_server->getAddress()));
         return;
     }
     CharacterDatabase * char_db = AdminServer::instance()->character_db();
@@ -312,7 +312,7 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
         if(char_db->named_character_exists(ev->m_character_name))
         {
             // name is taken, inform by setting cookie to 0.
-            ev->src()->putq(new ClientExpected(this,ev->m_client_id,0,m_server->getAddress()));
+            ev->src()->putq(new ExpectClientResponse(this,ev->m_client_id,0,m_server->getAddress()));
             return;
         }
     }
@@ -326,7 +326,7 @@ void MapInstance::on_expect_client( ExpectMapClient *ev )
         ent->fillFromCharacter(*ev->char_from_db);
         cl->char_entity(ent);
     }
-    ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
+    ev->src()->putq(new ExpectClientResponse(this,ev->m_client_id,cookie,m_server->getAddress()));
     //    else if(true) // check if (character does not exist || character exists and is owned by this client )
     //    {
 

@@ -48,7 +48,7 @@ protected:
     void        on_server_selected(ServerSelectRequest *ev);
     //////////////////////////////////////////////////////////////////////////
     // Server <-> server event handlers
-    void        on_client_expected(ClientExpected *ev);
+    void        on_client_expected(ExpectClientResponse *ev);
 public:
 
 

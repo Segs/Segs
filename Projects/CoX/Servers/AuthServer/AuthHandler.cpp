@@ -46,8 +46,8 @@ void AuthHandler::dispatch( SEGSEvent *ev )
             //////////////////////////////////////////////////////////////////////////
             //  Events from other servers
             //////////////////////////////////////////////////////////////////////////
-        case Internal_EventTypes::evClientExpected:
-            on_client_expected(static_cast<ClientExpected *>(ev)); break;
+        case Internal_EventTypes::evExpectClientResponse:
+            on_client_expected(static_cast<ExpectClientResponse *>(ev)); break;
         default:
             assert(!"Unknown event encountered in dispatch.");
     }
@@ -220,7 +220,7 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
     gs->event_target()->putq(cl_ev); // sending request to game server
     // client's state will not change until we get response from GameServer
 }
-void AuthHandler::on_client_expected(ClientExpected *ev)
+void AuthHandler::on_client_expected(ExpectClientResponse *ev)
 {
     if(m_link_store.find(ev->client_id)==m_link_store.end())
     {
