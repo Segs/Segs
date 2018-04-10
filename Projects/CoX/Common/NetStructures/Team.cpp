@@ -175,8 +175,11 @@ bool kickTeam(Entity &tgt)
 
 void leaveTeam(Entity &e)
 {
-    if(!e.m_has_team)
+    if(!e.m_team)
+    {
         qCWarning(logTeams) << "Trying to leave a team, but Entity has no team!?";
+        return;
+    }
 
     e.m_team->removeTeamMember(&e);
 }
