@@ -49,8 +49,8 @@ class TimerEvent : public SEGSEvent
     void *                  m_data;
 
 public:
-                            TimerEvent(const ACE_Time_Value &time, void *dat)
-                                : SEGSEvent(SEGS_EventTypes::evTimeout), m_arrival_time(time), m_data(dat)
+                            TimerEvent(const ACE_Time_Value &time, void *dat,EventProcessor *source)
+                                : SEGSEvent(SEGS_EventTypes::evTimeout,source), m_arrival_time(time), m_data(dat)
                             {
                             }
     void *                  data() { return m_data; }
