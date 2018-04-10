@@ -87,7 +87,7 @@ public:
         uint32_t            m_color            = 0x3399FF99;   // 0x3399FF99 (light blue with 60% transparency)
         uint32_t            m_alpha            = 0x88;         // default 136 (0x88)
 
-        void guiWindowDump()
+        void guiWindowDump() const
         {
             qDebug().noquote() << "GUIWindow:" << m_idx
                      << "\n\t" << "posx:" << m_posx
@@ -109,6 +109,9 @@ class GUISettings
 public:
     GUISettings() { }
 
+// GUISettings serialization class version
+static const constexpr uint32_t class_version = 1;
+
         // List of Windows
         std::array<GUIWindow, 35> m_wnds;
 
@@ -124,7 +127,7 @@ public:
         int         m_chat_bottom_flags = 0x22780;
         float       m_chat_divider_pos  = 0.5f;
 
-        void guiDump()
+        void guiDump() const
         {
             qDebug().noquote() << "Debugging GUISettings:"
                                << "\n\t" << "TeamBuffs:" << m_team_buffs
@@ -138,7 +141,7 @@ public:
                                << "\n\t" << "Chat Window Masks Bottom:" << m_chat_bottom_flags
                                << "\n\t" << "Chat Divider Position:" << m_chat_divider_pos;
 
-            for(auto wnd : m_wnds)
+            for(const auto &wnd : m_wnds)
                 wnd.guiWindowDump();
         }
 };

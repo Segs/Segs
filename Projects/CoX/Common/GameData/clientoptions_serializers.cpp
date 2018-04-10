@@ -12,11 +12,18 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
-CEREAL_CLASS_VERSION(ClientOptions, 2); // register Client Options class version
+const constexpr uint32_t ClientOptions::class_version;
+CEREAL_CLASS_VERSION(ClientOptions, ClientOptions::class_version); // register Client Options class version
 
 template<class Archive>
 void serialize(Archive &archive, ClientOptions &co, uint32_t const version)
 {
+    if(version != ClientOptions::class_version)
+    {
+        qCritical() << "Failed to serialize ClientOptions, incompatible serialization format version " << version;
+        return;
+    }
+
     archive(cereal::make_nvp("FirstPersonView",co.m_first_person_view));
     archive(cereal::make_nvp("MouseSpeed",co.m_mouse_speed));
     archive(cereal::make_nvp("TurnSpeed",co.m_turn_speed));

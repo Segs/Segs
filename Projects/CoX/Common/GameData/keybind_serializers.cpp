@@ -174,7 +174,8 @@ bool loadFrom(BinStore * s, Parse_AllCommandCategories & target)
     return ok;
 }
 
-CEREAL_CLASS_VERSION(KeybindSettings, 1); // register Keybinds class version
+const constexpr uint32_t KeybindSettings::class_version;
+CEREAL_CLASS_VERSION(KeybindSettings, KeybindSettings::class_version); // register Keybinds class version
 
 template<class Archive>
 void serialize(Archive &archive, Keybind &k)
@@ -197,6 +198,12 @@ void serialize(Archive &archive, Keybind_Profiles &kp)
 template<class Archive>
 void serialize(Archive &archive, KeybindSettings &kbds, uint32_t const version)
 {
+    if(version != KeybindSettings::class_version)
+    {
+        qCritical() << "Failed to serialize KeybindSettings, incompatible serialization format version " << version;
+        return;
+    }
+
     archive(cereal::make_nvp("AllProfiles",kbds.m_keybind_profiles));
 }
 

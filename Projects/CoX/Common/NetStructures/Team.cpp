@@ -55,7 +55,7 @@ void Team::removeTeamMember(Entity *e)
         e->m_has_team = false;
         e->m_team = nullptr;
 
-        if(e->m_char->m_char_data.m_sidekick.sk_has_sidekick)
+        if(e->m_char->m_char_data.m_sidekick.m_has_sidekick)
             removeSidekick(*e);
 
         qCDebug(logTeams) << "Removing" << iter->tm_name << "from team" << m_team_idx;
@@ -164,19 +164,19 @@ bool inviteTeam(Entity &src, Entity &tgt)
 
 bool kickTeam(Entity &tgt)
 {
-    if (tgt.m_has_team)
-    {
-        tgt.m_team->removeTeamMember(&tgt);
-        return true;
-    }
-    else
-       return false;
+    if (!tgt.m_has_team)
+        return false;
+
+    tgt.m_team->removeTeamMember(&tgt);
+    return true;
 }
 
 void leaveTeam(Entity &e)
 {
-    if(e.m_has_team)
-        e.m_team->removeTeamMember(&e);
+    if(!e.m_has_team)
+        qCWarning(logTeams) << "Trying to leave a team, but Entity has no team!?";
+
+    e.m_team->removeTeamMember(&e);
 }
 
 
@@ -189,12 +189,21 @@ static const int g_min_sidekick_mentor_level = 10;
 
 bool isSidekickMentor(const Entity &e)
 {
-    return (e.m_char->m_char_data.m_sidekick.sk_type == SidekickType::IsMentor);
+    return (e.m_char->m_char_data.m_sidekick.m_type == SidekickType::IsMentor);
 }
 
 void inviteSidekick(Entity &src, Entity &tgt)
 {
-    QString     msg = "Unable to add sidekick.";
+    const QString possible_messages[] = {
+        QStringLiteral("Unable to add sidekick."),
+        QStringLiteral("To Mentor another player, you must be at least 3 levels higher than them."),
+        QStringLiteral("To Mentor another player, you must be at least level 10."),
+        QStringLiteral("You are already Mentoring someone."),
+        tgt.name() + QStringLiteral("is already a sidekick."),
+        QStringLiteral("To Mentor another player, you must be on the same team."),
+    };
+
+    QString     msg = possible_messages[0];
     Sidekick    &src_sk = src.m_char->m_char_data.m_sidekick;
     Sidekick    &tgt_sk = tgt.m_char->m_char_data.m_sidekick;
     uint32_t    src_lvl = getLevel(*src.m_char);
@@ -202,21 +211,21 @@ void inviteSidekick(Entity &src, Entity &tgt)
 
     // Only a mentor may invite a sidekick
     if(src_lvl < tgt_lvl+g_max_sidekick_level_difference)
-        msg = "To Mentor another player, you must be at least 3 levels higher than them.";
+        msg = possible_messages[1];
     else if(src_lvl < g_min_sidekick_mentor_level)
-        msg = "To Mentor another player, you must be at least level 10.";
-    else if(src_sk.sk_has_sidekick)
-        msg = "You are already Mentoring someone.";
-    else if (tgt_sk.sk_has_sidekick)
-        msg = tgt.name() + "is already a sidekick.";
+        msg = possible_messages[2];
+    else if(src_sk.m_has_sidekick)
+        msg = possible_messages[3];
+    else if (tgt_sk.m_has_sidekick)
+        msg = possible_messages[4];
     else if(!src.m_has_team || !tgt.m_has_team || src.m_team == nullptr || tgt.m_team == nullptr)
-        msg = "To Mentor another player, you must be on the same team.";
+        msg = possible_messages[5];
     else if(src.m_team->m_team_idx != tgt.m_team->m_team_idx)
-        msg = "To Mentor another player, you must be on the same team.";
+        msg = possible_messages[5];
     else
     {
         // Store this here now for sidekick_accept / decline
-        tgt_sk.sk_db_id = src.m_db_id;
+        tgt_sk.m_db_id = src.m_db_id;
 
         // sendSidekickOffer
         sendSidekickOffer(&tgt, src.m_db_id); // tgt gets dialog, src.db_id is named.
@@ -235,12 +244,12 @@ void addSidekick(Entity &tgt, Entity &src)
     uint32_t    src_lvl = getLevel(*src.m_char);
     uint32_t    tgt_lvl = getLevel(*tgt.m_char);
 
-    src_sk.sk_has_sidekick = true;
-    tgt_sk.sk_has_sidekick = true;
-    src_sk.sk_db_id = tgt.m_db_id;
-    tgt_sk.sk_db_id = src.m_db_id;
-    src_sk.sk_type = SidekickType::IsMentor;
-    tgt_sk.sk_type = SidekickType::IsSidekick;
+    src_sk.m_has_sidekick = true;
+    tgt_sk.m_has_sidekick = true;
+    src_sk.m_db_id = tgt.m_db_id;
+    tgt_sk.m_db_id = src.m_db_id;
+    src_sk.m_type = SidekickType::IsMentor;
+    tgt_sk.m_type = SidekickType::IsSidekick;
     setCombatLevel(*tgt.m_char, src_lvl - 1);
     // TODO: Implement 225 feet "leash" for sidekicks.
 
@@ -259,7 +268,7 @@ void removeSidekick(Entity &src)
     QString     msg = "Unable to remove sidekick.";
     Sidekick    &src_sk = src.m_char->m_char_data.m_sidekick;
 
-    if(!src_sk.sk_has_sidekick || src_sk.sk_db_id == 0)
+    if(!src_sk.m_has_sidekick || src_sk.m_db_id == 0)
     {
         msg = "You are not sidekicked with anyone.";
         qCDebug(logTeams).noquote() << msg;
@@ -267,7 +276,7 @@ void removeSidekick(Entity &src)
         return; // break early
     }
 
-    Entity      *tgt            = getEntityByDBID(src.m_client, src_sk.sk_db_id);
+    Entity      *tgt            = getEntityByDBID(src.m_client, src_sk.m_db_id);
     Sidekick    &tgt_sk         = tgt->m_char->m_char_data.m_sidekick;
 
     if(tgt == nullptr)
@@ -276,21 +285,21 @@ void removeSidekick(Entity &src)
         qCDebug(logTeams).noquote() << msg;
 
         // reset src Sidekick relationship
-        src_sk.sk_has_sidekick = false;
-        src_sk.sk_type         = SidekickType::NoSidekick;
-        src_sk.sk_db_id        = 0;
+        src_sk.m_has_sidekick = false;
+        src_sk.m_type         = SidekickType::NoSidekick;
+        src_sk.m_db_id        = 0;
         setCombatLevel(*src.m_char,getLevel(*src.m_char)); // reset CombatLevel
 
         return; // break early
     }
 
     // Anyone can terminate a Sidekick relationship
-    if(!tgt_sk.sk_has_sidekick || (tgt_sk.sk_db_id != src.m_db_id))
+    if(!tgt_sk.m_has_sidekick || (tgt_sk.m_db_id != src.m_db_id))
     {
         // tgt doesn't know it's sidekicked with src. So clear src sidekick info.
-        src_sk.sk_has_sidekick = false;
-        src_sk.sk_type         = SidekickType::NoSidekick;
-        src_sk.sk_db_id        = 0;
+        src_sk.m_has_sidekick = false;
+        src_sk.m_type         = SidekickType::NoSidekick;
+        src_sk.m_db_id        = 0;
         setCombatLevel(*src.m_char,getLevel(*src.m_char)); // reset CombatLevel
         msg = QString("You are no longer sidekicked with anyone.");
     }
@@ -314,14 +323,14 @@ void removeSidekick(Entity &src)
             messageOutput(MessageChannel::TEAM, msg, src);
         }
 
-        src_sk.sk_has_sidekick = false;
-        src_sk.sk_type         = SidekickType::NoSidekick;
-        src_sk.sk_db_id        = 0;
+        src_sk.m_has_sidekick = false;
+        src_sk.m_type         = SidekickType::NoSidekick;
+        src_sk.m_db_id        = 0;
         setCombatLevel(*src.m_char,getLevel(*src.m_char)); // reset CombatLevel
 
-        tgt_sk.sk_has_sidekick = false;
-        tgt_sk.sk_type         = SidekickType::NoSidekick;
-        tgt_sk.sk_db_id        = 0;
+        tgt_sk.m_has_sidekick = false;
+        tgt_sk.m_type         = SidekickType::NoSidekick;
+        tgt_sk.m_db_id        = 0;
         setCombatLevel(*tgt->m_char,getLevel(*tgt->m_char)); // reset CombatLevel
 
         msg = QString("%1 and %2 are no longer sidekicked.").arg(src.name(),tgt->name());

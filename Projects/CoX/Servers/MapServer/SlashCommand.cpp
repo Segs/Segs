@@ -8,6 +8,7 @@
 #include <QtCore/QString>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QRegularExpression>
 #include <QtCore/QDebug>
 
 InfoMessageCmd *info; // leverage InfoMessageCmd
@@ -243,10 +244,7 @@ void cmdHandler_SetSpeed(QString &cmd, Entity *e) {
     float v3 = args.value(3).toFloat();
     setSpeed(*e, v1, v2, v3);
 
-    QString msg = "Set Speed to: <"
-        + QString::number(v1) + ","
-        + QString::number(v2) + ","
-        + QString::number(v3) + ">";
+    QString msg = QString("Set Speed to: <%1,%2,%3>").arg(v1).arg(v2).arg(v3);
   
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
@@ -453,7 +451,7 @@ void cmdHandler_SetTeam(QString &cmd, Entity *e) {
 void cmdHandler_SetSuperGroup(QString &cmd, Entity *e) {
     MapClient *src  = e->m_client;
     QStringList args;
-    args = cmd.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
     int sg_id       = args.value(1).toInt();
     QString sg_name = args.value(2);
@@ -499,7 +497,7 @@ void cmdHandler_GUIDebug(QString &cmd, Entity *e) {
 void cmdHandler_SetWindowVisibility(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
     QStringList args;
-    args = cmd.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
     uint32_t idx = args.value(1).toInt();
     WindowVisibility val = (WindowVisibility)args.value(2).toInt();
@@ -525,7 +523,7 @@ void cmdHandler_KeybindDebug(QString &cmd, Entity *e) {
 void cmdHandler_ToggleLogging(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
     QStringList args;
-    args = cmd.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
     args.removeFirst();
 
     QString msg = "Toggle logging of categories: " + args.join(" ");
@@ -682,7 +680,7 @@ void cmdHandler_SetTitles(QString &cmd, Entity *e) {
     bool prefix;
     QString msg, generic, origin, special;
     QStringList args;
-    args = cmd.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
     if(cmd.toLower() == "settitles")
     {
@@ -706,12 +704,12 @@ void cmdHandler_Stuck(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
 
     // TODO: Implement true move-to-safe-location-nearby logic
-    e->m_entity_data.pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park starting location
+    e->m_entity_data.m_pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park starting location
 
     QString msg = "Resetting location to default spawn ("
-            + QString::number(e->m_entity_data.pos.x) + ","
-            + QString::number(e->m_entity_data.pos.y) + ","
-            + QString::number(e->m_entity_data.pos.z) + ")";
+            + QString::number(e->m_entity_data.m_pos.x) + ","
+            + QString::number(e->m_entity_data.m_pos.y) + ","
+            + QString::number(e->m_entity_data.m_pos.z) + ")";
     qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, src);
 }
@@ -792,7 +790,7 @@ void cmdHandler_TeamAccept(QString &cmd, Entity *e) {
     QString msgfrom = "Something went wrong with TeamAccept.";
     QString msgtgt = "Something went wrong with TeamAccept.";
     QStringList args;
-    args = cmd.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
     QString from_name       = args.value(1);
     uint32_t tgt_db_id      = args.value(2).toInt();
@@ -828,7 +826,7 @@ void cmdHandler_TeamDecline(QString &cmd, Entity *e) {
 
     QString msg;
     QStringList args;
-    args = cmd.split(QRegExp("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
     QString from_name   = args.value(1);
     uint32_t tgt_db_id  = args.value(2).toInt();
@@ -958,7 +956,7 @@ void cmdHandler_Sidekick(QString &cmd, Entity *e)
 void cmdHandler_SidekickAccept(QString &cmd, Entity *e)
 {
     MapClient *src  = e->m_client;
-    uint32_t db_id  = e->m_char->m_char_data.m_sidekick.sk_db_id;
+    uint32_t db_id  = e->m_char->m_char_data.m_sidekick.m_db_id;
     Entity *tgt     = getEntityByDBID(src,db_id);
 
     if(tgt == nullptr || e->m_char->isEmpty() || tgt->m_char->isEmpty())
@@ -969,7 +967,7 @@ void cmdHandler_SidekickAccept(QString &cmd, Entity *e)
 
 void cmdHandler_SidekickDecline(QString &cmd, Entity *e)
 {
-    e->m_char->m_char_data.m_sidekick.sk_db_id = 0;
+    e->m_char->m_char_data.m_sidekick.m_db_id = 0;
 }
 
 void cmdHandler_UnSidekick(QString &cmd, Entity *e)

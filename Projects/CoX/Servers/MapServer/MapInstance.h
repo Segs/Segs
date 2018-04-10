@@ -82,7 +82,7 @@ public:
     void   set_server(MapServer *s) { m_server = s; }
     size_t num_active_clients();
     const QString &     name() const { return m_name; }
-    const uint32_t &    index() const { return m_index; }
+    uint32_t            index() const { return m_index; }
 
 protected:
     void process_chat(MapClient *sender, QString &msg_text);
@@ -132,5 +132,5 @@ protected:
     void on_set_keybind(class SetKeybind *ev);
     void on_remove_keybind(class RemoveKeybind *ev);
 private:
-    void on_emote_command(QString command, Entity *ent);
+    void on_emote_command(const QString &command, Entity *ent);
 };

@@ -88,7 +88,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
     bs.StoreBits(32,tm_leader_id); // must be db_id
     bs.StorePackedBits(1,tm_size);
 
-    for(auto member : e->m_team->m_team_members)
+    for(const auto &member : e->m_team->m_team_members)
     {
         Entity *tm_ent = getEntityByDBID(src.m_client, member.tm_idx);
 
@@ -128,12 +128,12 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     sendBuffs(src,bs); //FIXEDOFFSET_pchar->character_ReceiveBuffs(pak,0);
 
     PUTDEBUG("PlayerEntity::serialize_full before sidekick");
-    bs.StoreBits(1,player_char.m_char_data.m_sidekick.sk_has_sidekick);
-    if(player_char.m_char_data.m_sidekick.sk_has_sidekick)
+    bs.StoreBits(1,player_char.m_char_data.m_sidekick.m_has_sidekick);
+    if(player_char.m_char_data.m_sidekick.m_has_sidekick)
     {
         bool is_mentor = isSidekickMentor(src);
         bs.StoreBits(1,is_mentor);
-        bs.StorePackedBits(20,player_char.m_char_data.m_sidekick.sk_db_id); // sidekick partner db_id -> 10240
+        bs.StorePackedBits(20,player_char.m_char_data.m_sidekick.m_db_id); // sidekick partner db_id -> 10240
     }
 
     PUTDEBUG("before tray");
@@ -337,7 +337,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     if(ent->m_force_pos_and_cam)
     {
         bs.StorePackedBits(1,ent->inp_state.m_received_server_update_id); // sets g_client_pos_id_rel default = 0
-        storeVector(bs,ent->m_entity_data.pos);         // server-side pos
+        storeVector(bs,ent->m_entity_data.m_pos);         // server-side pos
         storeVectorConditional(bs,ent->m_spd);          // server-side spd (optional)
 
         storeFloatConditional(bs,0); // Pitch not used ?
@@ -363,7 +363,7 @@ void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
     if(target->m_full_update)
     {
         for(int i=0; i<3; ++i)
-            bs.StoreFloat(target->m_entity_data.pos[i]); // server position
+            bs.StoreFloat(target->m_entity_data.m_pos[i]); // server position
         for(int i=0; i<3; ++i)
             storeFloatConditional(bs,target->vel[i]);
     }

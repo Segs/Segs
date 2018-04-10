@@ -31,13 +31,13 @@ void addFriend(Entity &src, Entity &tgt)
     src_data->m_friends_count++;
 
     Friend f;
-    f.fr_online_status = (tgt.m_client != nullptr);     // need some other method for this.
-    f.fr_db_id = tgt.m_db_id;                           // what do we do with this?
-    f.fr_name = tgt.name();
-    f.fr_class_idx = tgt.m_entity_data.m_class_idx;
-    f.fr_origin_idx = tgt.m_entity_data.m_origin_idx;
-    f.fr_map_idx = tgt.m_entity_data.m_map_idx;                                   // what do we do with this?
-    f.fr_mapname = tgt.m_char->m_char_data.m_mapName;
+    f.m_online_status   = (tgt.m_client != nullptr); // need some other method for this.
+    f.m_db_id           = tgt.m_db_id;
+    f.m_name            = tgt.name();
+    f.m_class_idx       = tgt.m_entity_data.m_class_idx;
+    f.m_origin_idx      = tgt.m_entity_data.m_origin_idx;
+    f.m_map_idx         = tgt.m_entity_data.m_map_idx;
+    f.m_mapname         = tgt.m_char->m_char_data.m_mapName;
 
     // add to friendlist
     src_data->m_friends.emplace_back(f);
@@ -50,8 +50,7 @@ void addFriend(Entity &src, Entity &tgt)
     if(logFriends().isDebugEnabled())
         dumpFriends(src);
 
-    // Send FriendsListUpdate
-    sendFriendsListUpdate(&src, src_data);
+    sendFriendsListUpdate(&src, src_data); // Send FriendsListUpdate
 }
 
 void removeFriend(Entity &src, Entity &tgt)
@@ -62,12 +61,12 @@ void removeFriend(Entity &src, Entity &tgt)
     qCDebug(logFriends) << "Searching for friend" << tgt.name() << "to remove them.";
     int id_to_find = tgt.m_db_id;
     auto iter = std::find_if( src_data->m_friends.begin(), src_data->m_friends.end(),
-                              [id_to_find](const Friend& f)->bool {return id_to_find==f.fr_db_id;});
+                              [id_to_find](const Friend& f)->bool {return id_to_find==f.m_db_id;});
     if(iter!=src_data->m_friends.end())
     {
         iter = src_data->m_friends.erase(iter);
 
-        msg = "Removing " + iter->fr_name + " from your friends list.";
+        msg = "Removing " + iter->m_name + " from your friends list.";
         qCDebug(logFriends) << msg;
         if(logFriends().isDebugEnabled())
             dumpFriends(src);
@@ -109,7 +108,7 @@ void toggleFriendList(Entity &src)
     qCDebug(logFriends).noquote() << msg;
 }
 
-void dumpFriends(Entity &src)
+void dumpFriends(const Entity &src)
 {
     const FriendsList *fl(&src.m_char->m_char_data.m_friendlist);
     QString msg = QString("FriendsList\n  has_friends: %1 \n friends_count: %2 ")
@@ -118,17 +117,17 @@ void dumpFriends(Entity &src)
 
     qDebug().noquote() << msg;
 
-    for(auto f : fl->m_friends)
+    for(const auto &f : fl->m_friends)
         dumpFriendsList(f);
 }
 
-void dumpFriendsList(Friend &f)
+void dumpFriendsList(const Friend &f)
 {
-    qDebug().noquote() << "Friend:" << f.fr_name
-             << "\n\t" << "online:" << f.fr_online_status
-             << "\n\t" << "db_id:" << f.fr_db_id
-             << "\n\t" << "class_id:" << f.fr_class_idx
-             << "\n\t" << "origin_id:" << f.fr_origin_idx
-             << "\n\t" << "map_idx:" << f.fr_map_idx
-             << "\n\t" << "mapname:" << f.fr_mapname;
+    qDebug().noquote() << "Friend:" << f.m_name
+             << "\n\t" << "online:" << f.m_online_status
+             << "\n\t" << "db_id:" << f.m_db_id
+             << "\n\t" << "class_id:" << f.m_class_idx
+             << "\n\t" << "origin_id:" << f.m_origin_idx
+             << "\n\t" << "map_idx:" << f.m_map_idx
+             << "\n\t" << "mapname:" << f.m_mapname;
 }

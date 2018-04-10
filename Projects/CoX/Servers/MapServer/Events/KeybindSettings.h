@@ -14,6 +14,9 @@ class KeybindSettings
 public:
     KeybindSettings();
 
+// Keybind serialization class version
+static const constexpr  uint32_t class_version = 1;
+
         // Keybind Members
         Parse_AllKeyProfiles m_keybind_profiles;
         QString m_cur_keybind_profile = "Default";

@@ -40,7 +40,7 @@ void KeybindSettings::setKeybindProfile(QString &profile)
 
 const CurrentKeybinds &KeybindSettings::getCurrentKeybinds() const
 {
-    for(auto &p : m_keybind_profiles)
+    for(const auto &p : m_keybind_profiles)
     {
         if(p.Name == m_cur_keybind_profile)
             return p.KeybindArr;
@@ -99,11 +99,11 @@ void KeybindSettings::keybindsDump()
     qDebug().noquote() << "Debugging Keybinds:"
                        << "\n\t" << "Current Profile Name:" << m_cur_keybind_profile;
 
-    for(auto &profile : m_keybind_profiles)
+    for(const auto &profile : m_keybind_profiles)
     {
         qDebug() << profile.DisplayName << profile.Name;
 
-        for(auto &k : profile.KeybindArr)
+        for(const auto &k : profile.KeybindArr)
             qDebug() << k.KeyString << k.Key << k.Mods << k.Command << k.IsSecondary;
     }
 }

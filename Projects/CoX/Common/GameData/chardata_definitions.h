@@ -13,9 +13,10 @@ enum SidekickType : uint8_t
 
 struct Sidekick
 {
-    bool            sk_has_sidekick = false;
-    uint32_t        sk_db_id        = 0;
-    SidekickType    sk_type         = NoSidekick;
+static const constexpr  uint32_t        class_version   = 1;
+                        bool            m_has_sidekick  = false;
+                        uint32_t        m_db_id         = 0;
+                        SidekickType    m_type          = NoSidekick;
 };
 
 struct CharacterData

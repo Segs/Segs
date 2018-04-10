@@ -40,7 +40,7 @@ Character::Character()
             || !m_char_data.m_titles[0].isEmpty()
             || !m_char_data.m_titles[1].isEmpty()
             || !m_char_data.m_titles[2].isEmpty();
-    m_char_data.m_sidekick.sk_has_sidekick = false;
+    m_char_data.m_sidekick.m_has_sidekick = false;
 }
 void Character::reset()
 {
@@ -59,7 +59,7 @@ void Character::reset()
     m_options.m_first_person_view=false;
     m_full_options = false;
     m_char_data.m_has_titles = false;
-    m_char_data.m_sidekick.sk_has_sidekick = false;
+    m_char_data.m_sidekick.m_has_sidekick = false;
 }
 
 
@@ -241,9 +241,9 @@ void Character::serialize_costumes(BitStream &bs, ColorAndPartPacker *packer , b
 void Character::DumpSidekickInfo()
 {
     QString msg = QString("Sidekick Info\n  has_sidekick: %1 \n  db_id: %2 \n  type: %3 ")
-            .arg(m_char_data.m_sidekick.sk_has_sidekick)
-            .arg(m_char_data.m_sidekick.sk_db_id)
-            .arg(m_char_data.m_sidekick.sk_type);
+            .arg(m_char_data.m_sidekick.m_has_sidekick)
+            .arg(m_char_data.m_sidekick.m_db_id)
+            .arg(m_char_data.m_sidekick.m_type);
 
     qDebug().noquote() << msg;
 }
@@ -531,17 +531,17 @@ void Character::sendFriendList(BitStream &bs) const
     for(int i=0; i<fl->m_friends_count; ++i)
     {
         bs.StoreBits(1,fl->m_has_friends); // if false, client will skip this iteration
-        bs.StorePackedBits(1,fl->m_friends[i].fr_db_id);
-        bs.StoreBits(1,fl->m_friends[i].fr_online_status);
-        bs.StoreString(fl->m_friends[i].fr_name);
-        bs.StorePackedBits(1,fl->m_friends[i].fr_class_idx);
-        bs.StorePackedBits(1,fl->m_friends[i].fr_origin_idx);
+        bs.StorePackedBits(1,fl->m_friends[i].m_db_id);
+        bs.StoreBits(1,fl->m_friends[i].m_online_status);
+        bs.StoreString(fl->m_friends[i].m_name);
+        bs.StorePackedBits(1,fl->m_friends[i].m_class_idx);
+        bs.StorePackedBits(1,fl->m_friends[i].m_origin_idx);
 
-        if(!fl->m_friends[i].fr_online_status)
+        if(!fl->m_friends[i].m_online_status)
             continue; // if friend is offline, the rest is skipped
 
-        bs.StorePackedBits(1,fl->m_friends[i].fr_map_idx);
-        bs.StoreString(fl->m_friends[i].fr_mapname);
+        bs.StorePackedBits(1,fl->m_friends[i].m_map_idx);
+        bs.StoreString(fl->m_friends[i].m_mapname);
     }
 }
 void Character::sendOptionsFull(BitStream &bs) const

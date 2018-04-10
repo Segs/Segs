@@ -109,7 +109,7 @@ bool storePosition(const Entity &src,BitStream &bs)
 
     for(int i=0; i<3; i++)
     {
-        FixedPointValue fpv(src.m_entity_data.pos[i]);
+        FixedPointValue fpv(src.m_entity_data.m_pos[i]);
         //diff = packed ^ prev_pos[i]; // changed bits are '1'
         bs.StoreBits(24,fpv.store);
     }
@@ -301,17 +301,17 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
         return;
 
     // Store Sidekick Info
-    bs.StoreBits(1,src.m_char->m_char_data.m_sidekick.sk_has_sidekick);
-    if(src.m_char->m_char_data.m_sidekick.sk_has_sidekick)
+    bs.StoreBits(1,src.m_char->m_char_data.m_sidekick.m_has_sidekick);
+    if(src.m_char->m_char_data.m_sidekick.m_has_sidekick)
     {
         Sidekick sidekick = src.m_char->m_char_data.m_sidekick;
         bool is_mentor = isSidekickMentor(src);
-        bool has_dbid  = (sidekick.sk_db_id != 0);
+        bool has_dbid  = (sidekick.m_db_id != 0);
 
         bs.StoreBits(1,is_mentor);
         bs.StoreBits(1, has_dbid);
         if(has_dbid)
-            bs.StorePackedBits(20,sidekick.sk_db_id);
+            bs.StorePackedBits(20,sidekick.m_db_id);
     }
 
     serializeStats(*src.m_char,bs,false);

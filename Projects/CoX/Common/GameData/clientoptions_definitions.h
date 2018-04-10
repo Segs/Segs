@@ -51,6 +51,9 @@ public:
         m_mouse_speed = 0.6f;
     }
 
+// ClientOptions serialization class version
+static const constexpr uint32_t class_version = 1;
+
     // Other Options
     int32_t control_debug       = 0;
     int32_t no_strafe           = 0;

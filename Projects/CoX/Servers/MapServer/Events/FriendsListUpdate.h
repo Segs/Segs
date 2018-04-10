@@ -32,21 +32,21 @@ public:
         for(int i=0; i<m_list->m_friends_count; ++i)
         {
             bs.StoreBits(1,m_list->m_has_friends); // if false, client will skip this iteration
-            bs.StorePackedBits(1,m_list->m_friends[i].fr_db_id);
+            bs.StorePackedBits(1,m_list->m_friends[i].m_db_id);
 
             // TODO: Lookup online status, implement: isFriendOnline()
             //bool is_online = isFriendOnline(m_list->m_friends[i].fr_db_id);
 
-            bs.StoreBits(1,m_list->m_friends[i].fr_online_status);
-            bs.StoreString(m_list->m_friends[i].fr_name);
-            bs.StorePackedBits(1,m_list->m_friends[i].fr_class_idx);
-            bs.StorePackedBits(1,m_list->m_friends[i].fr_origin_idx);
+            bs.StoreBits(1,m_list->m_friends[i].m_online_status);
+            bs.StoreString(m_list->m_friends[i].m_name);
+            bs.StorePackedBits(1,m_list->m_friends[i].m_class_idx);
+            bs.StorePackedBits(1,m_list->m_friends[i].m_origin_idx);
 
-            if(!m_list->m_friends[i].fr_online_status)
+            if(!m_list->m_friends[i].m_online_status)
                 continue; // if friend is offline, the rest is skipped
 
-            bs.StorePackedBits(1,m_list->m_friends[i].fr_map_idx);
-            bs.StoreString(m_list->m_friends[i].fr_mapname);
+            bs.StorePackedBits(1,m_list->m_friends[i].m_map_idx);
+            bs.StoreString(m_list->m_friends[i].m_mapname);
         }
     }
     void    serializefrom(BitStream &src);

@@ -5,44 +5,59 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
+const constexpr uint32_t Friend::class_version;
+const constexpr uint32_t FriendsList::class_version;
+const constexpr uint32_t Sidekick::class_version;
 const constexpr uint32_t CharacterData::class_version;
-CEREAL_CLASS_VERSION(Friend, 2);        // register Friend struct version
-CEREAL_CLASS_VERSION(FriendsList, 2);    // register FriendList struct version
-CEREAL_CLASS_VERSION(Sidekick, 1);      // register Sidekick struct version
-CEREAL_CLASS_VERSION(CharacterData, CharacterData::class_version); // register CharacterData class version
+CEREAL_CLASS_VERSION(Friend, Friend::class_version);                // register Friend struct version
+CEREAL_CLASS_VERSION(FriendsList, FriendsList::class_version);      // register FriendList struct version
+CEREAL_CLASS_VERSION(Sidekick, Sidekick::class_version);            // register Sidekick struct version
+CEREAL_CLASS_VERSION(CharacterData, CharacterData::class_version);  // register CharacterData class version
 
 template<class Archive>
 void serialize(Archive &archive, Friend &fr, uint32_t const version)
 {
-    if(version < 2)
-        qCritical("Please update your CharacterDatabase Friend data.");
+    if (version != Friend::class_version)
+    {
+        qCritical() << "Failed to serialize Friend, incompatible serialization format version " << version;
+        return;
+    }
 
-    archive(cereal::make_nvp("FriendOnline", fr.fr_online_status));
-    archive(cereal::make_nvp("FriendDbId", fr.fr_db_id));
-    archive(cereal::make_nvp("FriendName", fr.fr_name));
-    archive(cereal::make_nvp("FriendClass", fr.fr_class_idx));
-    archive(cereal::make_nvp("FriendOrigin", fr.fr_origin_idx));
-    archive(cereal::make_nvp("FriendMapIdx", fr.fr_map_idx));
-    archive(cereal::make_nvp("FriendMapname", fr.fr_mapname));
+    archive(cereal::make_nvp("FriendOnline", fr.m_online_status));
+    archive(cereal::make_nvp("FriendDbId", fr.m_db_id));
+    archive(cereal::make_nvp("FriendName", fr.m_name));
+    archive(cereal::make_nvp("FriendClass", fr.m_class_idx));
+    archive(cereal::make_nvp("FriendOrigin", fr.m_origin_idx));
+    archive(cereal::make_nvp("FriendMapIdx", fr.m_map_idx));
+    archive(cereal::make_nvp("FriendMapname", fr.m_mapname));
 }
 
 template<class Archive>
 void serialize(Archive &archive, FriendsList &fl, uint32_t const version)
 {
-    if(version < 2)
-        qCritical("Please update your CharacterDatabase FriendList data.");
+    if (version != FriendsList::class_version)
+    {
+        qCritical() << "Failed to serialize FriendsList, incompatible serialization format version " << version;
+        return;
+    }
 
     archive(cereal::make_nvp("HasFriends",fl.m_has_friends));
-    archive(cereal::make_nvp("Friends",fl.m_friends));
     archive(cereal::make_nvp("FriendsCount",fl.m_friends_count));
+    archive(cereal::make_nvp("Friends",fl.m_friends));
 }
 
 template<class Archive>
 void serialize(Archive &archive, Sidekick &sk, uint32_t const version)
 {
-    archive(cereal::make_nvp("HasSidekick",sk.sk_has_sidekick));
-    archive(cereal::make_nvp("SidekickDbId",sk.sk_db_id));
-    archive(cereal::make_nvp("SidekickType",sk.sk_type));
+    if (version != Sidekick::class_version)
+    {
+        qCritical() << "Failed to serialize Sidekick, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("HasSidekick",sk.m_has_sidekick));
+    archive(cereal::make_nvp("SidekickDbId",sk.m_db_id));
+    archive(cereal::make_nvp("SidekickType",sk.m_type));
 }
 
 template<class Archive>

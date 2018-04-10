@@ -14,7 +14,7 @@ class GUIWindow;
 class GUISettings;
 
 template<class Archive>
-void serialize(Archive &archive, GUIWindow &wnd, uint32_t const version);
+void serialize(Archive &archive, GUIWindow &wnd);
 template<class Archive>
 void serialize(Archive &archive, GUISettings &gui, uint32_t const version);
 

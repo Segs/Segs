@@ -28,7 +28,7 @@ public:
         bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 25
 
         bs.StoreBits(32,m_num); // size of list
-        for(auto &m : m_list)
+        for(const auto &m : m_list)
         {
             bs.StoreString(m.m_name);
             bs.StoreString(m.m_classname);

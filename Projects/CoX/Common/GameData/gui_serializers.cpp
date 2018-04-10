@@ -12,11 +12,11 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
-CEREAL_CLASS_VERSION(GUIWindow, 1); // register GUIWindow class version
-CEREAL_CLASS_VERSION(GUISettings, 3); // register GUISettings class version
+const constexpr uint32_t GUISettings::class_version;
+CEREAL_CLASS_VERSION(GUISettings, GUISettings::class_version); // register GUISettings class version
 
 template<class Archive>
-void serialize(Archive &archive, GUIWindow &wnd, uint32_t const version)
+void serialize(Archive &archive, GUIWindow &wnd)
 {
     archive(cereal::make_nvp("IDX",wnd.m_idx));
     archive(cereal::make_nvp("Mode",wnd.m_mode));
@@ -33,8 +33,11 @@ void serialize(Archive &archive, GUIWindow &wnd, uint32_t const version)
 template<class Archive>
 void serialize(Archive &archive, GUISettings &gui, uint32_t const version)
 {
-    if(version < 3)
-        qCritical("Please update your CharacterDatabase GUI data.");
+    if(version != GUISettings::class_version)
+    {
+        qCritical() << "Failed to serialize GUISettings, incompatible serialization format version " << version;
+        return;
+    }
 
     archive(cereal::make_nvp("TeamBuffs",gui.m_team_buffs));
     archive(cereal::make_nvp("ChatChannel",gui.m_cur_chat_channel));
@@ -42,11 +45,6 @@ void serialize(Archive &archive, GUISettings &gui, uint32_t const version)
     archive(cereal::make_nvp("InspTray",gui.m_insps_tray_mode));
     archive(cereal::make_nvp("Tray1Page",gui.m_tray1_number));
     archive(cereal::make_nvp("Tray2Page",gui.m_tray2_number));
-    if(version < 3)
-    {
-        float discarded;
-        archive(cereal::make_nvp("ChatTransparency",discarded)); // we no longer need this.
-    }
     archive(cereal::make_nvp("ChatTopFlags",gui.m_chat_top_flags));
     archive(cereal::make_nvp("ChatBottomFlags",gui.m_chat_bottom_flags));
     archive(cereal::make_nvp("ChatDividerPos",gui.m_chat_divider_pos));

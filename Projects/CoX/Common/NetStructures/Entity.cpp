@@ -77,7 +77,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *pac
 
     // New Character Spawn Location
     //e.m_entity_data.pos                 = glm::vec3(-60.5f,180.0f,0.0f); // Tutorial Starting Location
-    e.m_entity_data.pos                   = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting Location
+    e.m_entity_data.m_pos                   = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting Location
     e.m_direction                         = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 void Entity::InsertUpdate( PosUpdate pup )
@@ -101,9 +101,9 @@ void Entity::dump()
             + "\n  m_type: " + QString::number(m_type)
             + "\n  class idx: " + QString::number(m_entity_data.m_class_idx)
             + "\n  origin idx: " + QString::number(m_entity_data.m_origin_idx)
-            + "\n  pos: " + QString::number(m_entity_data.pos.x) + ", "
-                          + QString::number(m_entity_data.pos.y) + ", "
-                          + QString::number(m_entity_data.pos.z)
+            + "\n  pos: " + QString::number(m_entity_data.m_pos.x) + ", "
+                          + QString::number(m_entity_data.m_pos.y) + ", "
+                          + QString::number(m_entity_data.m_pos.z)
             + "\n  orient: " + QString::number(m_entity_data.m_orientation_pyr.p) + ", "
                              + QString::number(m_entity_data.m_orientation_pyr.y) + ", "
                              + QString::number(m_entity_data.m_orientation_pyr.r)
