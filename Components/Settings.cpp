@@ -5,8 +5,12 @@
  * This software is licensed! (See License.txt for details)
  *
  */
- 
+
 #include "Settings.h"
+
+#include <QFileInfo>
+#include <QDebug>
+#include <QFile>
 
 QSettings* Settings::m_settings = nullptr;
 QString Settings::m_settings_path = "settings.cfg"; // default path 'settings.cfg' from args
@@ -35,7 +39,7 @@ QSettings *Settings::getSettings()
 
 void Settings::setSettingsPath(const QString path)
 {
-    if(path == NULL)
+    if(path == nullptr)
         qCritical() << "Settings path not defined? This is unpossible!";
 
     m_settings_path = path;
@@ -87,9 +91,9 @@ void Settings::createSettingsFile()
                  << "\n##############################################################";
 
         sfile.close();
-        
+
         setDefaultSettings();
-        
+
         return;
     }
     else
@@ -157,7 +161,7 @@ void Settings::setDefaultSettings()
         s->setValue("log_minimap","false");
         s->setValue("log_lfg","false");
     s->endGroup();
-    
+
     s->sync(); // sync changes or they wont be saved to file.
 }
 

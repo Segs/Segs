@@ -4,9 +4,9 @@
 class EventProcessor;
 
 // Helper defines to ease the definition of event types
-#define INIT_EVENTS() enum { base = 0,
-#define BEGINE_EVENTS(parent_class) enum { base = parent_class::evLAST_EVENT,
-#define BEGINE_EVENTS_INTERNAL() enum { base = 2000,
+#define INIT_EVENTS() enum : uint32_t { base = 0,
+#define BEGINE_EVENTS(parent_class) enum : uint32_t { base = parent_class::evLAST_EVENT,
+#define BEGINE_EVENTS_INTERNAL() enum : uint32_t { base = 20000,
 #define EVENT_DECL(name,cnt) name = base+cnt+1,
 #define END_EVENTS(cnt) evLAST_EVENT=base+cnt+1};
 class SEGS_EventTypes
@@ -23,23 +23,31 @@ public:
 class SEGSEvent
 {
 protected:
-        const size_t    m_type;
+        const uint32_t  m_type;
         EventProcessor *m_event_source;
+        int             m_ref_count = 1; // used to prevent event being deleted when it's in multiple queues
 
 virtual                 ~SEGSEvent()
                         {
                             m_event_source=nullptr;
                         }
 public:
-                        SEGSEvent(size_t evtype,EventProcessor *ev_src=nullptr) : m_type(evtype),m_event_source(ev_src)
+                        SEGSEvent(uint32_t evtype,EventProcessor *ev_src=nullptr) : m_type(evtype),m_event_source(ev_src)
                         {}
+        SEGSEvent *     shallow_copy() // just incrementing the ref count
+                        {
+                            ++m_ref_count;
+                            return this;
+                        }
         void            release()
                         {
-                            delete this;
+                            if(0==--m_ref_count)
+                                delete this;
                         }
+        int             get_ref_count() const {return m_ref_count; }
         void            src(EventProcessor *ev_src) {m_event_source=ev_src;}
         EventProcessor *src() {return m_event_source;}
-        size_t          type() const {return m_type;}
+        uint32_t        type() const {return m_type;}
 virtual const char *    info() {return typeid(*this).name();}
 };
 

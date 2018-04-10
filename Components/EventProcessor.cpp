@@ -1,6 +1,10 @@
-#include <cassert>
 #include "EventProcessor.h"
 #include "SEGSTimer.h"
+
+#include <cassert>
+// visual studio needs this
+#include <iso646.h>
+
 int EventProcessor::open( void *args /* = 0 */ )
 {
     return super::open(args);
