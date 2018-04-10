@@ -12,12 +12,12 @@
 #include <string>
 #include <stdint.h>
 
-#include "RoamingServer.h"
+#include "Server.h"
 #include "ServerHandle.h"
 class EventProcessor;
 class IMapServer;
 // this is a proxy for calling GameServer services
-class IGameServer : public RoamingServer
+class IGameServer : public Server
 {
 public:
 virtual const ACE_INET_Addr &   getAddress()=0;
@@ -39,7 +39,6 @@ public:
         bool                    Run(void);
         bool                    ShutDown(const QString &reason);
 
-        bool                    Online();
         const ACE_INET_Addr &   getAddress();
 
         uint8_t                 getId();

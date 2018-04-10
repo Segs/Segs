@@ -10,11 +10,11 @@
 
 #include <ace/INET_Addr.h>
 #include <string>
-#include "RoamingServer.h"
+#include "Server.h"
 class MapServer;
 class EventProcessor;
 // this is a proxy for calling MapServer services
-class IMapServer : public RoamingServer
+class IMapServer : public Server
 {
 public:
 
@@ -31,7 +31,6 @@ public:
     bool                    Run(void);
     bool                    ShutDown(const QString &reason);
     bool                    isLocal(){return true;} // this method returns true if this interface is a local ( same process )
-    bool                    Online();
     EventProcessor *        event_target();
         const ACE_INET_Addr &   getAddress();
 

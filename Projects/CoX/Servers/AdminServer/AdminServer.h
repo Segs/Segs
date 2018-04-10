@@ -56,7 +56,6 @@ public:
     bool                        ReadConfig() override;
     bool                        Run(void) override;
     bool                        ShutDown(const QString &reason="No particular reason") override;
-    bool                        Online(void) override;
     // Internal Admin server interface
     CharacterDatabase *         character_db(){return m_char_db;}
 

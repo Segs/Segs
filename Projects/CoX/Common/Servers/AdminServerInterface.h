@@ -11,7 +11,7 @@
 #include <ace/INET_Addr.h>
 #include <list>
 #include "ServerHandle.h"
-#include "RoamingServer.h"
+#include "Server.h"
 /************************************************************************/
 /* Design consideration:                                                */
 /* Current implementation gets knowledge it shouldn't possess,          */
@@ -26,9 +26,8 @@ class AccountInfo;
 
 class IMapServer;
 class IGameServer;
-class IAdminServer : public RoamingServer
+class IAdminServer : public Server
 {
-        typedef ServerHandle<IGameServer> hGameServer;
 public:
 virtual bool            Login(const AccountInfo &client,const ACE_INET_Addr &client_addr)=0;
 virtual bool            ValidPassword(const AccountInfo &client, const char *password)=0;

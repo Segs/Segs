@@ -23,11 +23,6 @@ bool MapServerInterface::ShutDown(const QString &reason)
         assert(m_instance);
         return m_instance->ShutDown(reason);
 }
-bool MapServerInterface::Online()
-{
-        assert(m_instance);
-        return m_instance->Online();
-}
 const ACE_INET_Addr &MapServerInterface::getAddress()
 {
         assert(m_instance);

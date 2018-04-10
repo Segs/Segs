@@ -109,10 +109,6 @@ bool MapServer::ReadConfig()
         ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) MapServer already initialized and running\n") ));
         return true;
     }
-    //TODO: this should read a properly nested MapServer/RoamingServer block, instead of reading ini-'global' [RoamingServer]
-    if(!RoamingServer::ReadConfig()) // try to read control channel configuration
-        return false;
-
     if(!config->contains(QStringLiteral("listen_addr")))
         qDebug() << "Config file is missing 'listen_addr' entry in MapServer group, will try to use default";
     if(!config->contains(QStringLiteral("location_addr")))
@@ -133,8 +129,6 @@ bool MapServer::ReadConfig()
         return false;
     }
 
-    m_online = false;
-
     config->endGroup(); // MapServer
 
     return d->m_manager.load_templates(qPrintable(map_templates_dir));
@@ -146,7 +140,6 @@ bool MapServer::ShutDown(const QString &reason)
         qWarning() << "MapServer has not been started yet.";
         return true;
     }
-    m_online = false;
     // tell our handler to shut down too
     m_handler->putq(new SEGSEvent(0, nullptr));
     qWarning() << "Shutting down map server because :"<<reason;
@@ -160,16 +153,6 @@ bool MapServer::ShutDown(const QString &reason)
     GlobalTimerQueue::instance()->deactivate();
 
     return true;
-}
-
-void MapServer::Online(bool s)
-{
-    m_online=s;
-}
-
-bool MapServer::Online()
-{
-    return m_online;
 }
 
 const ACE_INET_Addr &MapServer::getAddress()
