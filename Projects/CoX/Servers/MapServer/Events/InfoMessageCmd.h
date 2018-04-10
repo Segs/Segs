@@ -8,7 +8,7 @@
 
 #pragma once
 #include "GameCommandList.h"
-#include "MessageChannels.h"
+
 
 class MapClient;
 class QString;

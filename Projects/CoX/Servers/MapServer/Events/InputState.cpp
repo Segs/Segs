@@ -5,12 +5,13 @@
  * This software is licensed! (See License.txt for details)
  *
  */
-
 #include "InputState.h"
+
 #include "Character.h"
 #include "Entity.h"
 #include "GameData/CoHMath.h"
 #include "Logging.h"
+
 #include <glm/gtc/constants.hpp>
 #include <QDebug>
 #include <cmath>

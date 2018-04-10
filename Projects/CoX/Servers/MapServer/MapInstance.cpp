@@ -121,7 +121,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
             on_scene_request(static_cast<SceneRequest *>(ev));
             break;
         case Internal_EventTypes::evExpectClientRequest:
-            on_expect_client(static_cast<ExpectMapClient *>(ev));
+            on_expect_client(static_cast<ExpectMapClientRequest *>(ev));
             break;
         case MapEventTypes::evDisconnectRequest:
             on_disconnect(static_cast<DisconnectRequest *>(ev));
@@ -293,7 +293,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     lnk->putq(new DisconnectResponse);
     lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
 }
-void MapInstance::on_expect_client( ExpectMapClient *ev )
+void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 {
     // TODO: handle contention while creating 2 characters with the same name from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name

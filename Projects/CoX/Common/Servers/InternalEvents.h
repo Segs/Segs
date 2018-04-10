@@ -11,8 +11,10 @@ public:
     BEGINE_EVENTS_INTERNAL()
     EVENT_DECL(evExpectClientRequest,0)
     EVENT_DECL(evExpectClientResponse,1)
-    EVENT_DECL(evClientConnectionRequest,2)
-    EVENT_DECL(evClientConnectionResponse,3)
+    EVENT_DECL(evExpectMapClientRequest,2)
+    EVENT_DECL(evExpectMapClientResponse,3)
+    EVENT_DECL(evClientConnectionRequest,4)
+    EVENT_DECL(evClientConnectionResponse,5)
     // Message bus events
     EVENT_DECL(evServiceStatus,101)
     EVENT_DECL(evClientConnected,102)
@@ -74,10 +76,10 @@ public:
     uint8_t m_access_level;
     ACE_INET_Addr m_from_addr;
 };
-class ExpectMapClient : public ExpectClientRequest
+class ExpectMapClientRequest : public ExpectClientRequest
 {
 public:
-    ExpectMapClient(EventProcessor *evsrc,  uint64_t client_id, uint8_t access_level,const ACE_INET_Addr &from) :
+    ExpectMapClientRequest(EventProcessor *evsrc,  uint64_t client_id, uint8_t access_level,const ACE_INET_Addr &from) :
                 ExpectClientRequest(evsrc,client_id,access_level,from)
     {
         m_map_id = 0;

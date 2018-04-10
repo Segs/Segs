@@ -4,6 +4,7 @@
 #include "GameEvents.h"
 #include "EventProcessor.h"
 #include "InternalEvents.h"
+#include "Common/Servers/MessageBusEndpoint.h"
 
 #include <map>
 #include <unordered_set>

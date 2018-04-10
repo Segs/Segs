@@ -235,7 +235,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     //TODO: this should handle multiple map servers, for now it doesn't care and always connects to the first one.
     EventProcessor *map_handler=ServerManager::instance()->GetMapServer(0)->event_target();
     AccountInfo &acc_inf(client->account_info());
-    ExpectMapClient * expect_client = new ExpectMapClient(this,acc_inf.account_server_id(),acc_inf.access_level(),
+    ExpectMapClientRequest * expect_client = new ExpectMapClientRequest(this,acc_inf.account_server_id(),acc_inf.access_level(),
                                                           lnk->peer_addr());
     if(selected_slot )
     {
@@ -282,7 +282,7 @@ void GameHandler::checkClientConnection(uint64_t id)
 }
 bool GameHandler::isClientConnected(uint64_t id)
 {
-    return m_clients.getById(id)!=NULL;
+    return m_clients.getById(id)!=nullptr;
 }
 void GameHandler::disconnectClient( AccountInfo & cl )
 {

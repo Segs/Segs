@@ -3,7 +3,6 @@
 #include "HandlerLocator.h"
 #include "MessageBus.h"
 
-#include <cassert>
 
 MessageBusEndpoint::~MessageBusEndpoint()
 {

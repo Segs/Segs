@@ -4,11 +4,12 @@
 #include "AuthProtocol/AuthEvents.h"
 #include "EventProcessor.h"
 
-#include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
 #include <ace/Addr.h>
+#include <unordered_map>
 #include <map>
+
 enum eAuthError
 {
     AUTH_SERVER_OFFLINE = -1,
@@ -33,9 +34,9 @@ enum eAuthError
 class AuthHandler : public EventProcessor
 {
 protected:
-    typedef ACE_Guard<ACE_Thread_Mutex> MTGuard;
+    using MTGuard = ACE_Guard<ACE_Thread_Mutex>;
     ACE_Thread_Mutex m_store_mutex;
-    std::map<uint64_t,AuthLink *> m_link_store;
+    std::unordered_map<uint64_t,AuthLink *> m_link_store;
     //////////////////////////////////////////////////////////////////////////
     // function that send messages into the link
     void        auth_error(EventProcessor *lnk,uint32_t code);
@@ -52,6 +53,6 @@ protected:
 public:
 
 
-    void        dispatch(SEGSEvent *ev);
+    void        dispatch(SEGSEvent *ev) override;
 };
-typedef ACE_Singleton<AuthHandler,ACE_Thread_Mutex> AuthHandlerG;
+

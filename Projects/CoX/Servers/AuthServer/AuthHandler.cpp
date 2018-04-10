@@ -65,7 +65,7 @@ void AuthHandler::on_connect( ConnectEvent *ev )
     uint32_t seed = 0x1; //TODO: rand()
     lnk->init_crypto(30206,seed);
     ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Crypto seed %08x\n"), seed ));
-    lnk->putq(new AuthorizationProtocolVersion(this,30206,seed));
+    lnk->putq(new AuthorizationProtocolVersion(30206,seed));
 }
 void AuthHandler::on_disconnect( DisconnectEvent *ev )
 {
