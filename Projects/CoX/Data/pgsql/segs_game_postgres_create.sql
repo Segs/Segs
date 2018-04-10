@@ -8,10 +8,10 @@ CREATE TABLE "table_versions" (
   OIDS=FALSE
 );
 
-INSERT INTO table_versions VALUES(1,'db_version',4,'2018-03-05 00:55:01');
+INSERT INTO table_versions VALUES(1,'db_version',5,'2018-04-09 00:55:01');
 INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
 INSERT INTO table_versions VALUES(3,'accounts',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(4,'characters',5,'2018-03-05 00:54:27');
+INSERT INTO table_versions VALUES(4,'characters',6,'2018-04-09 00:54:27');
 INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
 INSERT INTO table_versions VALUES(6,'progress',0,'2017-11-11 08:57:43');
 INSERT INTO table_versions VALUES(7,'supergroups',0,'2018-01-23 10:16:43');
@@ -52,6 +52,8 @@ CREATE TABLE "characters" (
 	"chardata" bytea NOT NULL,
 	"entitydata" bytea NOT NULL,
 	"body_type" integer NOT NULL DEFAULT '4',
+	"height" real NOT NULL DEFAULT '0.0',
+	"physique" real NOT NULL DEFAULT '0.0',
 	"hitpoints" integer NOT NULL DEFAULT '0',
 	"endurance" integer NOT NULL DEFAULT '0',
 	"supergroup_id" integer NOT NULL DEFAULT '0',
