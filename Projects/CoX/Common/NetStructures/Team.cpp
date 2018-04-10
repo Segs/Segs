@@ -6,11 +6,13 @@
  *
  */
 
-#include "Servers/MapServer/DataHelpers.h"
 #include "Team.h"
+
+#include "Servers/MapServer/DataHelpers.h"
 #include "Entity.h"
 #include "LFG.h"
 #include "Logging.h"
+#include "Character.h"
 
 /*
  * Team Methods

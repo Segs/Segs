@@ -2,10 +2,10 @@
 #include "CommonNetStructures.h"
 #include "Powers.h"
 #include "Costume.h"
-#include "Character.h"
 #include "Team.h"
 #include "FixedPointValue.h"
 #include "Common/GameData/entitydata_definitions.h"
+#include "Common/GameData/chardata_definitions.h"
 
 #include <glm/vec3.hpp>
 #include <glm/gtx/quaternion.hpp>

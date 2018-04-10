@@ -6,10 +6,12 @@
  *
  */
 
-#include "Servers/MapServer/DataHelpers.h"
 #include "Friend.h"
+
+#include "Servers/MapServer/DataHelpers.h"
 #include "Entity.h"
 #include "Logging.h"
+#include "Character.h"
 
 // Max number of friends on friendslist -- client caps at 25 entries
 static const int g_max_friends = 25;

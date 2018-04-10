@@ -5,11 +5,12 @@
  * This software is licensed! (See License.txt for details)
  *
  */
+#include "LFG.h"
 
 #include "Servers/MapServer/DataHelpers.h"
 #include "Entity.h"
-#include "LFG.h"
 #include "Logging.h"
+#include "Character.h"
 
 /*
  * LFG Methods
