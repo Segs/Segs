@@ -10,7 +10,7 @@
 #include <QSettings>
 #include <QString>
 
-class Settings : public QSettings {
+class Settings {
 
 public:
     static QSettings*   getSettings();

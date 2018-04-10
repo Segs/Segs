@@ -13,9 +13,9 @@
 #include <QFile>
 
 QSettings* Settings::m_settings = nullptr;
-QString Settings::m_settings_path = "settings.cfg"; // default path 'settings.cfg' from args
+QString Settings::m_settings_path = QStringLiteral("settings.cfg"); // default path 'settings.cfg' from args
 
-bool fileExists(QString path) {
+static bool fileExists(const QString &path) {
     QFileInfo check_file(path);
     // check if file exists and if yes: Is it really a file and not a directory?
     return check_file.exists() && check_file.isFile();
