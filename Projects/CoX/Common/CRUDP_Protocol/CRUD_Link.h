@@ -34,6 +34,8 @@ using addr_type = ACE_INET_Addr;
 public:
                     CRUDLink();
                     ~CRUDLink() override;
+    uint64_t        session_token() const { return m_session_token; }
+    void            session_token(uint64_t tok) { m_session_token=tok; }
 
     int             open(void * = nullptr) override;
     int             handle_output( ACE_HANDLE = ACE_INVALID_HANDLE ) override;
@@ -67,10 +69,11 @@ protected:
 virtual CRUD_EventFactory &factory() = 0;
 
     CrudP_Protocol  m_protocol;
-    stream_type     peer_;  /// Maintain connection with client.
+    stream_type     peer_;  //!< Maintain connection with client.
     addr_type       m_peer_addr;
+    uint64_t        m_session_token;  //!< Handler-unique number identifying client's session
     void *          m_link_data;
-    EventProcessor *m_net_layer;      //! All outgoing events are put here
-    EventProcessor *m_target;         //! All incoming events are put here
+    EventProcessor *m_net_layer;      //!< All outgoing events are put here
+    EventProcessor *m_target;         //!< All incoming events are put here
 
 };

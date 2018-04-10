@@ -53,19 +53,21 @@ public:
 static  EventProcessor *g_target;               //! All links post their messages to the same target
 
                         AuthLink(AuthLinkType link_type = AuthLinkType::Server);
-                        ~AuthLink(void);
+                        ~AuthLink(void) override;
 
-        int             open(void * = 0) override;
+        int             open(void * = nullptr) override;
         int             handle_input (ACE_HANDLE) override;
         int             handle_output(ACE_HANDLE fd = ACE_INVALID_HANDLE) override;
         int             handle_close(ACE_HANDLE handle,ACE_Reactor_Mask close_mask) override;
         void            dispatch(SEGSEvent *ev) override;
-        stream_type &   peer() {return peer_;}
+        stream_type &   peer() {return m_peer;}
         addr_type &     peer_addr() {return m_peer_addr;}
+        uint64_t        session_token() const { return m_session_token; }
+        void            session_token(uint64_t tok) { m_session_token=tok; }
         AuthClient *    client() {return m_client;}
         void            client(AuthClient *c) {m_client=c;}
         void            init_crypto(int vers,uint32_t seed);
-        ACE_HANDLE      get_handle (void) const override {return peer_.get_handle();}
+        ACE_HANDLE      get_handle (void) const override {return m_peer.get_handle();}
 protected:
         AuthClient *    m_client;
         AuthPacketCodec m_codec;
@@ -73,8 +75,9 @@ protected:
         GrowingBuffer   m_unsent_bytes_storage;         //!< Each link stores outgoing bytes locally
         tNotifyStrategy m_notifier; // our queue will use this to inform the reactor of it's new elements
         int             m_protocol_version;
-        stream_type     peer_;  //!< Underlying client connection object.
+        stream_type     m_peer;  //!< Underlying client connection object.
         addr_type       m_peer_addr;
+        uint64_t        m_session_token;
         eState          m_state;
         ACE_Thread_Mutex *m_buffer_mutex;
         AuthLinkType    m_direction;

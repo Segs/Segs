@@ -100,19 +100,19 @@ void AuthHandler::on_login( LoginRequest *ev )
     if(lnk->m_state!=AuthLink::CONNECTED)
         return unknown_error(lnk);
 
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) User %s trying to login from %s.\n"),ev->login,lnk->peer_addr().get_host_addr()));
-    if(strlen(ev->login)<=2)
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) User %s trying to login from %s.\n"),ev->m_data.login,lnk->peer_addr().get_host_addr()));
+    if(strlen(ev->m_data.login)<=2)
         return auth_error(lnk,AUTH_ACCOUNT_BLOCKED); // invalid account
 
-    client = authserv->GetClientByLogin(ev->login);
+    client = authserv->GetClientByLogin(ev->m_data.login);
     // TODO: Version 0.3 will need to use admin tools instead of creating accounts willy-nilly
     if(!client) // no client exists, create one ( step 3c )
     {
-        adminserv->SaveAccount(ev->login,ev->password); // Autocreate/save account to DB
-        client = authserv->GetClientByLogin(ev->login);
+        adminserv->SaveAccount(ev->m_data.login,ev->m_data.password); // Autocreate/save account to DB
+        client = authserv->GetClientByLogin(ev->m_data.login);
     }
     if(!client) {
-        ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) User %s from %s - couldn't get/create account.\n"),ev->login,lnk->peer_addr().get_host_addr()));
+        ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) User %s from %s - couldn't get/create account.\n"),ev->m_data.login,lnk->peer_addr().get_host_addr()));
         return auth_error(lnk,AUTH_DATABASE_ERROR);
     }
 
@@ -137,7 +137,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     // if there were no errors and the provided password is valid and admin server has logged us in.
     if(
             no_errors &&
-            adminserv->ValidPassword(acc_inf,ev->password) &&
+            adminserv->ValidPassword(acc_inf,ev->m_data.password) &&
             adminserv->Login(acc_inf,lnk->peer_addr()) // this might fail somehow
             )
     {
@@ -173,8 +173,6 @@ void AuthHandler::on_server_list_request( ServerListRequest *ev )
         inf.id=iface->getId();
         inf.addr = iface->getAddress().get_ip_address();
         inf.port = iface->getAddress().get_port_number();
-        inf.unknown_1 = iface->getUnkn1();
-        inf.unknown_2 = iface->getUnkn2();
         inf.current_players = iface->getCurrentPlayers();
         inf.max_players = iface->getMaxPlayers();
         inf.online = iface->Online();
