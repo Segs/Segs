@@ -94,5 +94,5 @@ public:
     EVENT_DECL(evSwitchViewPoint            ,264)
     EVENT_DECL(evSaveClientOptions          ,265)
     EVENT_DECL(evDescriptionAndBattleCry    ,267)
-    END_EVENTS(500)
+    END_EVENTS(1500)
 };
