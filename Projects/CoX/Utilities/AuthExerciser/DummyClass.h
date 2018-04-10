@@ -11,7 +11,6 @@ public:
 
     // EventProcessor interface
     void        dispatch(SEGSEvent *ev) override;
-    SEGSEvent * dispatchSync(SEGSEvent *ev) override;
 
 protected:
     void        onConnect(class ConnectEvent * ev);

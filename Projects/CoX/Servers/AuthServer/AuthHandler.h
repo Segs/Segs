@@ -53,6 +53,5 @@ public:
     }; // this is a public type so other servers can pass us valid errors
 
     void        dispatch(SEGSEvent *ev);
-    SEGSEvent * dispatchSync(SEGSEvent *ev);
 };
 typedef ACE_Singleton<AuthHandler,ACE_Thread_Mutex> AuthHandlerG;

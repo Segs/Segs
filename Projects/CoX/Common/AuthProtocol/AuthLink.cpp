@@ -287,8 +287,3 @@ void AuthLink::dispatch( SEGSEvent */*ev*/ )
 {
     assert(!"Should not be called");
 }
-SEGSEvent *AuthLink::dispatchSync(SEGSEvent */*ev*/)
-{
-    assert(!"No sync events known");
-    return nullptr;
-}

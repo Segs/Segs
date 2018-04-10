@@ -41,12 +41,6 @@ void AuthHandler::dispatch( SEGSEvent *ev )
             assert(!"Unknown event encountered in dispatch.");
     }
 }
-SEGSEvent *AuthHandler::dispatchSync( SEGSEvent * )
-{
-    assert(!"No sync events known");
-    return nullptr;
-}
-
 void AuthHandler::on_connect( ConnectEvent *ev )
 {
     // TODO: guard for link state update ?

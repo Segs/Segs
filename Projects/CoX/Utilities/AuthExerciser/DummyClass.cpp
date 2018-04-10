@@ -99,9 +99,3 @@ void DummyClass::onServerSelectResponse(ServerSelectResponse *ev)
 {
     qInfo() << "ServerSelectResponse received:" << ev->type();
 }
-
-SEGSEvent* DummyClass::dispatchSync(SEGSEvent * ev)
-{
-    qInfo() << "DummyClass:dispatchSync called.";
-    return ev;
-}

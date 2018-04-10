@@ -231,9 +231,3 @@ void AdminLink::dispatch(SEGSEvent *ev)
 {
     assert(!"Should not be called");
 }
-
-SEGSEvent *AdminLink::dispatchSync(SEGSEvent *ev)
-{
-    assert(!"Should not be called");
-    return nullptr;
-}

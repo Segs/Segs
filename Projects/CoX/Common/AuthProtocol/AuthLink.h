@@ -78,7 +78,6 @@ protected:
         eState          m_state;
         ACE_Thread_Mutex *m_buffer_mutex;
         AuthLinkType    m_direction;
-        SEGSEvent *     dispatchSync( SEGSEvent *ev ) override;
 
         bool            send_buffer();
         void            encode_buffer(const AuthLinkEvent *ev,size_t start);

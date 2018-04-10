@@ -229,13 +229,6 @@ void MapInstance::dispatch( SEGSEvent *ev )
             qCWarning(logMapEvents, "Unhandled MapEventTypes %zu\n", ev->type()-MapEventTypes::base);
     }
 }
-
-SEGSEvent * MapInstance::dispatchSync( SEGSEvent * )
-{
-    assert(!"No sync dispatchable events here");
-
-    return nullptr;
-}
 void MapInstance::on_idle(IdleEvent *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();

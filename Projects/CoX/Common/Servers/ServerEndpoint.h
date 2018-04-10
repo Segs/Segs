@@ -62,11 +62,6 @@ protected:
                     {
                         ACE_ASSERT(!"All events are dispatched from handle_* methods");
                     }
-        SEGSEvent * dispatchSync( SEGSEvent *) override
-                    {
-                        ACE_ASSERT(!"No sync events known");
-                        return 0;
-                    }
         ILink *     createLinkInstance();
         ILink *     getClientLink(const ACE_INET_Addr &from_addr);
 virtual ILink *     createLink(EventProcessor *down) = 0;

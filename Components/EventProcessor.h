@@ -16,5 +16,5 @@ public:
                         /// thus ending that particular thread
 virtual bool            per_thread_setup() { return true; }
 virtual void            dispatch(SEGSEvent *ev)=0;
-virtual SEGSEvent *     dispatchSync(SEGSEvent *ev)=0;
+virtual SEGSEvent *     dispatchSync(SEGSEvent *ev) { return nullptr; }
 };
