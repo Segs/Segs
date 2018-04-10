@@ -7,23 +7,21 @@
  */
 
 #pragma once
-
-#include <list>
-#include <string>
+// segs includes
+#include "Common/Servers/Server.h"
+#include "Common/Servers/AdminServerInterface.h"
 
 // ACE includes
 #include <ace/ACE.h>
 #include <ace/INET_Addr.h>
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
-
-// segs includes
-#include "Common/Servers/Server.h"
-#include "Common/Servers/ServerHandle.h"
-#include "Common/Servers/AdminServerInterface.h"
-
 #include <ace/Acceptor.h>
 #include <ace/SOCK_Acceptor.h>
+
+#include <list>
+#include <string>
+
 
 class AdminLink;
 typedef ACE_Acceptor<AdminLink, ACE_SOCK_ACCEPTOR> AdminClientAcceptor;

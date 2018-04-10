@@ -85,22 +85,7 @@ bool ServerManagerC::CreateServerConnections()
 {
     return true; // for now, this is just a stub
 }
-/*
-void ServerManagerC::RemoveGameServer(IGameServer *srv)
-{
-    deque<GameServerInterface *>::iterator iter = find(m_GameServers.begin(),m_GameServers.end(),srv);
-    assert(iter!=m_GameServers.end());
-    delete *iter;
-    m_GameServers.erase(iter);
-};
-void ServerManagerC::RemoveMapServer(MapServerInterface *srv)
-{
-    deque<MapServerInterface *>::iterator iter = find(m_MapServers.begin(),m_MapServers.end(),srv);
-    assert(iter!=m_MapServers.end());
-    delete *iter;
-    m_MapServers.erase(iter);
-};
-*/
+
 MapServerInterface *ServerManagerC::GetMapServer(size_t idx)
 {
     if(idx>m_MapServers.size())
@@ -123,10 +108,10 @@ void ServerManagerC::AddMapServer( IMapServer *srv )
     m_MapServers.push_back(new MapServerInterface(srv));
 }
 
-void ServerManagerC::SetAuthServer( IAuthServer *srv )
+void ServerManagerC::SetAuthServer( Server *srv )
 {
     assert(m_authserv==nullptr);
-    m_authserv=new AuthServerInterface(srv);
+    m_authserv=srv;
 }
 void ServerManagerC::SetAdminServer( IAdminServer *srv )
 {

@@ -14,7 +14,6 @@
 #include "CRUDP_Protocol/CRUD_Link.h"
 #include "CRUDP_Protocol/CRUD_Events.h"
 #include "Servers/InternalEvents.h"
-#include "Servers/opcodes/ControlCodes.h"
 
 #include <QtCore/QString>
 
