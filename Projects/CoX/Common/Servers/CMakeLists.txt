@@ -11,6 +11,8 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerHandle.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/InterfaceManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MessageBus.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MessageBusEndpoint.cpp
 )
 SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/AdminServerInterface.h
@@ -29,6 +31,8 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Database.h
     ${CMAKE_CURRENT_SOURCE_DIR}/InternalEvents.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/MessageBus.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/MessageBusEndpoint.h
     ${CMAKE_CURRENT_SOURCE_DIR}/opcodes/ControlCodes.h
     ${CMAKE_CURRENT_SOURCE_DIR}/opcodes/NameTables.h
     ${CMAKE_CURRENT_SOURCE_DIR}/opcodes/Opcodes.h
