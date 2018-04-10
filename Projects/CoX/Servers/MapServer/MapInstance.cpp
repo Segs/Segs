@@ -835,7 +835,8 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     std::vector<MapClient *> recipients;
 
     QString cmd_str = command.section(QRegularExpression("\\s+"), 0, 0);
-    QString lowerContents = command.section(QRegularExpression("\\s+"), 1, -1).toLower();
+    QString original_emote = command.section(QRegularExpression("\\s+"), 1, -1);
+    QString lowerContents = original_emote.toLower();
                                                                                 // Normal Emotes
     static const QStringList afraidCommands = {"afraid", "cower", "fear", "scared"};
     static const QStringList akimboCommands = {"akimbo", "wings"};
@@ -1361,7 +1362,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     else                                                                        // If not specific command, output EMOTE message.
     {
         // "CharacterName {emote message}"
-        msg = QString("%1 %2").arg(ent->name(),lowerContents);
+        msg = QString("%1 %2").arg(ent->name(),original_emote);
     }
 
     // send only to clients within range
