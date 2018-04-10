@@ -215,7 +215,6 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
     }
     ACE_ERROR ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client selected server %d!\n"),ev->m_server_id));
     GameServerInterface *gs = ServerManager::instance()->GetGameServer(ev->m_server_id-1);
-    gs->event_target();
     if(!gs)
     {
         ACE_ERROR ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client selected non existant server !\n")));
