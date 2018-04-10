@@ -23,7 +23,6 @@ virtual bool                        ReadConfig()=0;
 virtual bool                        Run(void)=0;
 virtual bool                        ShutDown(const QString &reason)=0;
 virtual AuthClient *                GetClientByLogin(const char *)=0;
-virtual ServerHandle<IAdminServer>  AuthenticateMapServer(const ServerHandle<IMapServer> &map,int version,const std::string &passw)=0;
 };
 
 class AuthServerInterface : public Server
@@ -39,8 +38,6 @@ public:
         bool        ShutDown(const QString &reason);
 
     AuthClient *GetClientByLogin(const char *);
-
-        tAdminHandle AuthenticateMapServer(const tMapHandle &map,int version,const std::string &passw);
 
 protected:
     IAuthServer *m_server;

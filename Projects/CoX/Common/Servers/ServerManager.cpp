@@ -42,7 +42,7 @@ bool ServerManagerC::StartLocalServers()
     m_authserv->Run();
     for(GameServerInterface * serv : m_GameServers)
     {
-        if (!serv->Run()) 
+        if (!serv->Run())
         {
             qCritical() << "Failed to start game server";
             return false;
@@ -50,7 +50,7 @@ bool ServerManagerC::StartLocalServers()
     }
     for(MapServerInterface *serv : m_MapServers)
     {
-        if (!serv->Run()) 
+        if (!serv->Run())
         {
             qCritical() << "Failed to start map server";
             return false;
@@ -79,10 +79,6 @@ void ServerManagerC::StopLocalServers()
 AdminServerInterface *ServerManagerC::GetAdminServer()
 {
     return m_adminserv;
-}
-AuthServerInterface *ServerManagerC::GetAuthServer()
-{
-    return m_authserv;
 }
 //! using configuration info, this will connect all remote servers to their local proxy objects
 bool ServerManagerC::CreateServerConnections()
@@ -115,11 +111,6 @@ MapServerInterface *ServerManagerC::GetMapServer(size_t idx)
 void ServerManagerC::AddGameServer( IGameServer *srv )
 {
     m_GameServers.push_back(new GameServerInterface(srv));
-}
-
-size_t ServerManagerC::GameServerCount( )
-{
-    return m_GameServers.size();
 }
 
 size_t ServerManagerC::MapServerCount( )

@@ -205,30 +205,4 @@ bool MapServer::startup()
     //FIXME: global timer queue should be activated in some central place!
     GlobalTimerQueue::instance()->activate();
     return true;
-    AuthServerInterface *i_auth;
-    AdminServerInterface *i_admin;
-    //GameServerInterface *i_game;
-
-    ServerHandle<IMapServer> h_me(m_listen_point,m_id);
-
-    i_auth = getAuthServer(); // connect to AuthServer
-    i_admin= InterfaceManager::instance()->get(i_auth->AuthenticateMapServer(h_me,MAPSERVER_VERSION,"some_password"));// Authenticate
-    if(!i_admin)
-    {
-        //Auth failure, Errors could be passed here by async AuthServer->MapServer calls
-        return false;
-    }
-
-    m_online = true;
-#if 0
-    m_i_game=InterfaceManager::instance()->get(i_admin->RegisterMapServer(h_me));
-    if(!m_i_game)
-    {
-        //Couldn't register self with mapserver
-        return false;
-    }
-    return m_i_game->MapServerReady(h_me); // inform game server that we are ready.
-#else
-    return true;
-#endif
 }

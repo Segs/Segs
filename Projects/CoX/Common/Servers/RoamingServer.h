@@ -28,8 +28,6 @@ virtual bool    Run(void) = 0;
 virtual bool    ShutDown(const QString &reason)=0;
 virtual bool    Online()=0;
 
-protected:
-        AuthServerInterface *   getAuthServer();
 private:
         ACE_INET_Addr           m_authaddr;
         QString                 m_passw;

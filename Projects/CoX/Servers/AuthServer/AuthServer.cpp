@@ -79,7 +79,7 @@ bool AuthServer::ReadConfig()
  */
 bool AuthServer::Run()
 {
-    AuthLink::g_target = new AuthHandler;
+    AuthLink::g_target = new AuthHandler(this);
     AuthLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
     if (m_acceptor->open(m_location) == -1)
     {
@@ -133,15 +133,4 @@ AuthClient *AuthServer::GetClientByLogin(const char *login)
     }
     m_clients[res->account_info().login()]=res;                 // store valid object in the cache
     return res;
-}
-/**
- * @brief Performs whole authentication procedure.
- * @return ServerHandle
- * @param  map Initialized MapServerInterface
- * @param  version MapServer version
- * @param  passw server password
- */
-ServerHandle<IAdminServer> AuthServer::AuthenticateMapServer(const ServerHandle<IMapServer> &/*map_h*/,int /*version*/,const std::string &/*passw*/)
-{
-    return ServerHandle<IAdminServer>(nullptr);
 }

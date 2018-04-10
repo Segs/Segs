@@ -1,12 +1,16 @@
 #include "AuthHandler.h"
 
+#include "AuthServer/AuthServer.h"
 #include "AuthProtocol/AuthLink.h"
 #include "AuthProtocol/AuthEvents.h"
 #include "AuthClient.h"
+
 #include "AdminServer/AccountInfo.h"
 #include "Servers/AdminServerInterface.h"
 #include "Servers/ServerManager.h"
 #include "Servers/InternalEvents.h"
+#include "Servers/HandlerLocator.h"
+#include "Servers/MessageBus.h"
 
 #include <QDebug>
 
@@ -52,6 +56,13 @@ void AuthHandler::dispatch( SEGSEvent *ev )
             assert(!"Unknown event encountered in dispatch.");
     }
 }
+AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this),m_authserv(our_server)
+{
+    assert(HandlerLocator::getAuth_Handler()==nullptr);
+    HandlerLocator::setAuth_Handler(this);
+//    m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientConnected);
+//    m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientDisconnected);
+}
 void AuthHandler::on_connect( ConnectEvent *ev )
 {
     // TODO: guard for link state update ?
@@ -75,7 +86,6 @@ void AuthHandler::on_disconnect( DisconnectEvent *ev )
     if(lnk->client())
     {
         lnk->client()->link_state().setState(ClientLinkState::NOT_LOGGED_IN);
-        adminserv->Logout(lnk->client()->account_info());
         m_link_store[lnk->client()->account_info().account_server_id()] = nullptr;
         //if(lnk->m_state!=AuthLink::CLIENT_AWAITING_DISCONNECT)
     }
@@ -91,11 +101,10 @@ void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
 void AuthHandler::on_login( LoginRequest *ev )
 {
     AdminServerInterface *adminserv = ServerManager::instance()->GetAdminServer();
-    AuthServerInterface *authserv = ServerManager::instance()->GetAuthServer();
     AuthClient *client = nullptr;
     AuthLink *lnk = static_cast<AuthLink *>(ev->src());
     assert(adminserv);
-    assert(authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
+    assert(m_authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
 
     if(!adminserv)
     {
@@ -114,12 +123,12 @@ void AuthHandler::on_login( LoginRequest *ev )
     if(strlen(ev->m_data.login)<=2)
         return auth_error(lnk,AUTH_ACCOUNT_BLOCKED); // invalid account
 
-    client = authserv->GetClientByLogin(ev->m_data.login);
+    client = m_authserv->GetClientByLogin(ev->m_data.login);
     // TODO: Version 0.3 will need to use admin tools instead of creating accounts willy-nilly
     if(!client) // no client exists, create one ( step 3c )
     {
         adminserv->SaveAccount(ev->m_data.login,ev->m_data.password); // Autocreate/save account to DB
-        client = authserv->GetClientByLogin(ev->m_data.login);
+        client = m_authserv->GetClientByLogin(ev->m_data.login);
     }
     if(!client) {
         ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) User %s from %s - couldn't get/create account.\n"),ev->m_data.login,lnk->peer_addr().get_host_addr()));

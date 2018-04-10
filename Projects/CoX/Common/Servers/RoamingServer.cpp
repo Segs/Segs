@@ -38,17 +38,3 @@ bool RoamingServer::ReadConfig()
 
     return true;
 }
-
-/**
-* This method will return a valid AuthServerInterface, or NULL if this server
-* fails to connect to the AuthServer.
-* It'll build an AuthServer handle, and pass it to InterfaceManager, to resolve it to concrete Interface.
-*
-* @return AuthServerInterface constructed during call
-*/
-AuthServerInterface *RoamingServer::getAuthServer ( )
-{
-    ServerHandle<IAuthServer> h_auth(m_authaddr,-1);
-    return InterfaceManager::instance()->get(h_auth);
-
-}

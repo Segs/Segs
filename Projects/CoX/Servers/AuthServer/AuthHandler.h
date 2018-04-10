@@ -2,6 +2,7 @@
 #include "Servers/InternalEvents.h"
 #include "AuthProtocol/AuthLink.h"
 #include "AuthProtocol/AuthEvents.h"
+#include "Servers/MessageBusEndpoint.h"
 #include "EventProcessor.h"
 
 #include <ace/Thread_Mutex.h>
@@ -10,6 +11,9 @@
 #include <unordered_map>
 #include <map>
 
+class AuthServer;
+struct RetrieveAccountResponse;
+struct ValidatePasswordResponse;
 enum eAuthError
 {
     AUTH_SERVER_OFFLINE = -1,
@@ -36,7 +40,9 @@ class AuthHandler : public EventProcessor
 protected:
     using MTGuard = ACE_Guard<ACE_Thread_Mutex>;
     ACE_Thread_Mutex m_store_mutex;
+    MessageBusEndpoint m_message_bus_endpoint;
     std::unordered_map<uint64_t,AuthLink *> m_link_store;
+    AuthServer *m_authserv = nullptr;
     //////////////////////////////////////////////////////////////////////////
     // function that send messages into the link
     void        auth_error(EventProcessor *lnk,uint32_t code);
@@ -51,8 +57,7 @@ protected:
     // Server <-> server event handlers
     void        on_client_expected(ExpectClientResponse *ev);
 public:
-
-
     void        dispatch(SEGSEvent *ev) override;
+                AuthHandler(AuthServer *our_server);
 };
 

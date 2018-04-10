@@ -15,6 +15,7 @@
 #include "CharacterDatabase.h"
 #include "AdminServerInterface.h"
 #include "GameHandler.h"
+#include "Servers/HandlerLocator.h"
 #include "Common/CRUDP_Protocol/CRUDP_Protocol.h"
 #include "Common/Servers/RoamingServer.h"
 #include "Settings.h"
@@ -52,8 +53,6 @@ public:
     uint16_t                m_current_players=0;
     int                     m_max_character_slots;
     uint16_t                m_max_players=0;
-    uint8_t                 m_unk1=0;
-    uint8_t                 m_unk2=0;
     ACE_INET_Addr           m_location; // this value is sent to the clients
     ACE_INET_Addr           m_listen_point; // the server binds here
 
@@ -66,7 +65,7 @@ public:
         }
         m_online = false;
         // tell our handler to shut down too
-        m_handler->putq(new SEGSEvent(0, nullptr));
+        m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish, nullptr));
 
         qWarning() << "Shutting down game server because : "<<reason;
         if (ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
@@ -81,7 +80,7 @@ public:
     }
 };
 
-GameServer::GameServer() : d(new PrivateData)
+GameServer::GameServer(int id) : d(new PrivateData)
 {
     assert(g_GlobalGameServer==nullptr && "Only one GameServer instance per process allowed");
     g_GlobalGameServer = this;
@@ -157,7 +156,6 @@ bool GameServer::ReadConfig()
 
     d->m_current_players = 0;
     d->m_id = 1;
-    d->m_unk1=d->m_unk2=0;
     d->m_online = false;
     //m_db = new GameServerDb("");
 
@@ -184,15 +182,6 @@ const ACE_INET_Addr &GameServer::getAddress()
 {
     return d->m_location;
 }
-int GameServer::getAccessKeyForServer(const ServerHandle<IMapServer> &/*h_map*/)
-{
-    return 0;
-}
-bool GameServer::isMapServerReady(const ServerHandle<IMapServer> &/*h_map*/)
-{
-    return false;
-}
-
 QString GameServer::getName( )
 {
     return d->m_serverName;
@@ -216,16 +205,6 @@ uint16_t GameServer::getMaxPlayers()
 int GameServer::getMaxCharacterSlots() const
 {
     return d->m_max_character_slots;
-}
-
-uint8_t GameServer::getUnkn1( )
-{
-    return d->m_unk1;
-}
-
-uint8_t GameServer::getUnkn2( )
-{
-    return d->m_unk2;
 }
 
 EventProcessor *GameServer::event_target()

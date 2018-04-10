@@ -43,9 +43,7 @@ public:
                                 ~_AdminServer(void) override;
 
     // Client handling related interface
-    int                         GetBlockedIpList(std::list<int> &) override;
 
-    bool                        Logout(const AccountInfo &client) const override;
     bool                        Login(const AccountInfo &client,const ACE_INET_Addr &client_addr) override;
     bool                        ValidPassword(const AccountInfo &client, const char *password) override;
 
@@ -54,16 +52,11 @@ public:
     int                         RemoveAccount(AccountInfo &client) override; // Removes account from database via id #
 
     //bool AccountBlocked(const char *login) const; // Check if account is blocked.
-    int                         AddIPBan(const ACE_INET_Addr &client_addr) override;
-    void                        InvalidGameServerConnection(const ACE_INET_Addr &) override;
 
     bool                        ReadConfig() override;
     bool                        Run(void) override;
     bool                        ShutDown(const QString &reason="No particular reason") override;
     bool                        Online(void) override;
-    // Internal World-cluster interface
-    ServerHandle<IGameServer>   RegisterMapServer(const ServerHandle<IMapServer> &map_h ) override;
-    int                         GetAccessKeyForServer(const ServerHandle<IMapServer> &h_server ) override;
     // Internal Admin server interface
     CharacterDatabase *         character_db(){return m_char_db;}
 
