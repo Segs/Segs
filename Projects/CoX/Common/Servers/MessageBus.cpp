@@ -1,7 +1,7 @@
 #include "MessageBus.h"
 #include "MessageBusEndpoint.h"
 
-//#include "HandlerLocator.h"
+#include "HandlerLocator.h"
 
 #include "SEGSTimer.h"
 #include <cassert>
@@ -104,14 +104,14 @@ void MessageBus::recalculateStatisitcs()
 
 void postGlobalEvent(SEGSEvent *ev)
 {
-    assert(false && "Waiting for HandlerLocator to be moved to the master repo");
-    //HandlerLocator::getMessageBus()->putq(ev);
+    HandlerLocator::getMessageBus()->putq(ev);
 }
-
+///
+/// \brief shutDownMessageBus will request that all message bus handling threads terminate
+/// \note this cannot be called from one of the message bus handling threads.
 void shutDownMessageBus()
 {
-    assert(false && "Waiting for HandlerLocator to be moved to the master repo");
-    //HandlerLocator::getMessageBus()->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
-    //HandlerLocator::getMessageBus()->wait();
+    HandlerLocator::getMessageBus()->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+    HandlerLocator::getMessageBus()->wait();
 
 }

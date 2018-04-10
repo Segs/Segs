@@ -13,7 +13,11 @@ public:
     EVENT_DECL(evExpectClientResponse,1)
     EVENT_DECL(evClientConnectionRequest,2)
     EVENT_DECL(evClientConnectionResponse,3)
-    END_EVENTS(4)
+    // Message bus events
+    EVENT_DECL(evServiceStatus,101)
+    EVENT_DECL(evClientConnected,102)
+    EVENT_DECL(evClientDisconnected,103)
+    END_EVENTS(105)
 };
 class InternalEvent : public SEGSEvent
 {
