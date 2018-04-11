@@ -13,7 +13,7 @@
 #include <stdint.h>
 
 #include "Server.h"
-#include "ServerHandle.h"
+
 class EventProcessor;
 class IMapServer;
 // this is a proxy for calling GameServer services

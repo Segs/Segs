@@ -15,7 +15,6 @@
 //#include <boost/filesystem/path.hpp>
 #include <algorithm>
 #include "AdminServerInterface.h"
-#include "AuthServerInterface.h"
 #include "GameServerInterface.h"
 #include "MapServerInterface.h"
 
@@ -37,7 +36,7 @@ virtual AdminServerInterface *  GetAdminServer(void);
 virtual GameServerInterface *   GetGameServer(size_t idx);
 virtual MapServerInterface *    GetMapServer(size_t idx);
 
-        void                    SetAuthServer(IAuthServer *srv);
+        void                    SetAuthServer(Server *srv);
         void                    SetAdminServer(IAdminServer *srv);
 virtual void                    AddGameServer(IGameServer *srv);
         const dGameServer *     getGameServerList() const {return &m_GameServers;}
@@ -48,7 +47,7 @@ virtual void                    AddMapServer(IMapServer *srv);
 protected:
         dGameServer             m_GameServers;
         dMapServer              m_MapServers;
-        AuthServerInterface *   m_authserv;
+        Server *                m_authserv;
         AdminServerInterface *  m_adminserv;
 };
 typedef ACE_Singleton<ServerManagerC,ACE_Thread_Mutex> ServerManager;

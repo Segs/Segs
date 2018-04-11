@@ -10,7 +10,6 @@
 #include "MapServer.h"
 
 #include "ServerManager.h"
-#include "InterfaceManager.h"
 #include "ConfigExtension.h"
 #include "AdminServerInterface.h"
 #include "MapClient.h"

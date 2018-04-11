@@ -43,7 +43,7 @@ class ServerEndpoint : public EventProcessor
 public:
 
                     ServerEndpoint(const ACE_INET_Addr &local_addr) :
-                        m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK),
+                        m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK),
                         endpoint_ (local_addr)
                     {
                         m_notifier.event_handler(this);
@@ -55,7 +55,7 @@ private:
         int         handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE) override;
         int         handle_close (ACE_HANDLE /*handle*/,ACE_Reactor_Mask /*close_mask*/) override;
 public:
-        int         open(void *p=NULL) override;
+        int         open(void *p=nullptr) override;
         void        set_downstream(EventProcessor *ds) { m_downstream = ds;}
 protected:
         void        dispatch(SEGSEvent *) override

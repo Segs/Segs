@@ -24,16 +24,16 @@ virtual EventProcessor *        event_target()=0;
 class MapServerInterface : public Server
 {
 public:
-                                MapServerInterface(IMapServer *mi) : m_instance(mi){}
-                                ~MapServerInterface(void){}
+                            MapServerInterface(IMapServer *mi) : m_instance(mi){}
+                            ~MapServerInterface(void){}
 
     bool                    ReadConfig(); // later name will be used to read GameServer specific configuration
     bool                    Run(void);
     bool                    ShutDown(const QString &reason);
     bool                    isLocal(){return true;} // this method returns true if this interface is a local ( same process )
     EventProcessor *        event_target();
-        const ACE_INET_Addr &   getAddress();
+    const ACE_INET_Addr &   getAddress();
 
 protected:
-        IMapServer *            m_instance;
+    IMapServer *            m_instance;
 };

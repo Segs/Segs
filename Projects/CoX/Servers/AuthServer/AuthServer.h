@@ -11,8 +11,6 @@
 
 #include "Common/Servers/Client.h"
 #include "Common/Servers/Server.h"
-#include "Common/Servers/ServerHandle.h"
-#include "Common/Servers/AuthServerInterface.h"
 
 // QT includes
 #include <QtCore/QHash>
@@ -29,11 +27,13 @@
 #include <unordered_map>
 
 class AuthLink;
+class AuthClient;
+
 typedef ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR> ClientAcceptor;
 class IClient;
 typedef QHash<QString,AuthClient *> hmClients;
 class AuthClient;
-class AuthServer final : public IAuthServer
+class AuthServer final : public Server
 {
 //boost::object_pool<AuthClient>          m_client_pool;  //!< pool used to efficiently construct new client objects.
     typedef hmClients::iterator         ihmClients; //!< helper typedef for iterators to m_clients store
@@ -46,7 +46,7 @@ public:
         bool                        Run(void) override;
         bool                        ShutDown(const QString &reason="No particular reason") override;
 
-        AuthClient *                GetClientByLogin(const char *) override;
+        AuthClient *                GetClientByLogin(const char *);
 protected:
         ClientAcceptor *            m_acceptor;     //!< ace acceptor wrapping AuthClientService
         ACE_INET_Addr               m_location;     //!< address this server will bind at.

@@ -7,20 +7,16 @@
  */
 
 #pragma once
+#include "Server.h"
 
 #include <ace/INET_Addr.h>
 #include <list>
-#include "ServerHandle.h"
-#include "Server.h"
 /************************************************************************/
 /* Design consideration:                                                */
 /* Current implementation gets knowledge it shouldn't possess,          */
 /* AdminServerInterface::GetClientByLogin returns all details known     */
 /* about given client.                                                  */
 /************************************************************************/
-
-// this is interface for calling AdminServer services, currently it's an Interface pattern
-// in future it can be a Remote Proxy
 
 class AccountInfo;
 
@@ -39,7 +35,6 @@ virtual int             RemoveAccount(AccountInfo &client)=0;
 
 class AdminServerInterface : public Server
 {
-        typedef ServerHandle<IGameServer> hGameServer;
 public:
                         AdminServerInterface(IAdminServer *srv);
                         ~AdminServerInterface(void);
