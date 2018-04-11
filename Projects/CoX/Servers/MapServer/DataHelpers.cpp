@@ -403,6 +403,11 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendDamage(Entity *src, uint32_t tgt_idx, uint32_t amount)
+{
+    qCDebug(logSlashCommand, "Sending %d FloatingDamage from %d to %d", amount, src->m_idx, tgt_idx);
+    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingDamage>(new FloatingDamage(src->m_idx, tgt_idx, amount)));
+}
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list)
 {
     qCDebug(logFriends) << "Sending FriendsList Update.";

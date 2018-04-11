@@ -50,6 +50,7 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"keybindDump", "keybindDebug"}, "Output keybind settings to console", &cmdHandler_KeybindDebug, 9},
     {{"toggleLogging", "log"}, "Modify log categories (e.g. input, teams, ...)", &cmdHandler_ToggleLogging, 9},
     {{"friendsDump", "friendsDebug"}, "Output friendlist info to console", &cmdHandler_FriendsListDebug, 9},
+    {{"damage", "sendDamage"}, "Make current target (or self) take damage", &cmdHandler_SendDamage, 9},
     {{"setu1"},"Set bitvalue u1", &cmdHandler_SetU1, 9},
     {{"setu2"},"Set bitvalue u2", &cmdHandler_SetU2, 9},
     {{"setu3"},"Set bitvalue u3", &cmdHandler_SetU3, 9},
@@ -544,6 +545,46 @@ void cmdHandler_FriendsListDebug(QString &cmd, Entity *e) {
     dumpFriends(*e); // Send FriendsList dump
 }
 
+void cmdHandler_SendDamage(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+
+    QString msg; // result messages
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    if(args.size() < 3) // 3 to include cmdstring
+    {
+        msg = "sendDamage takes two arguments, a <target> and <amount_of_damage>. '/damage $target 10' for example.";
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
+        return;
+    }
+
+    QString name   = args.value(1);
+    uint32_t amount = args.value(2).toInt();
+    tgt = getEntity(src,name);
+
+    if(tgt == nullptr || e->m_char->isEmpty() || tgt->m_char->isEmpty())
+    {
+        msg = "sendDamage target " + name + " cannot be found.";
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
+        return;
+    }
+
+    sendDamage(e, tgt->m_idx, amount);
+    tgt->m_char->m_current_attribs.m_HitPoints -= amount; // deal dmg
+
+    msg = QString("%1 deals %2 points of damage to %3.").arg(e->name(), QString::number(amount), name);
+    qCDebug(logSlashCommand) << msg;
+
+    msg = QString("You deal %1 points of damage to %2.").arg(QString::number(amount), name);
+    sendInfoMessage(MessageChannel::DAMAGE, msg, src);
+    msg = QString("%1 has dealt you %2 points of damage!").arg(e->name(), QString::number(amount));
+    sendInfoMessage(MessageChannel::DAMAGE, msg, tgt->m_client);
+}
+
 // Slash commands for setting bit values
 void cmdHandler_SetU1(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
@@ -626,7 +667,7 @@ void cmdHandler_CmdList(QString &cmd, Entity *e) {
             if(sc.m_required_access_level != 0 )
             {
                 // Use msg for std out, msg_dlg for ingame dialog box
-                msg += "\t" + sc.m_valid_prefixes.join(", ") + "[" + QString::number(sc.m_required_access_level) + "]:\t" + sc.m_help_text + "\n";
+                msg += "\t" + sc.m_valid_prefixes.join(", ") + " [" + QString::number(sc.m_required_access_level) + "]:\t" + sc.m_help_text + "\n";
                 msg_dlg += QString("<color #ffCC99><i>%1</i></color>[<color #66ffff>%2</color>]: %3<br>").arg(sc.m_valid_prefixes.join(", ")).arg(sc.m_required_access_level).arg(sc.m_help_text);
             }
         }
@@ -706,10 +747,7 @@ void cmdHandler_Stuck(QString &cmd, Entity *e) {
     // TODO: Implement true move-to-safe-location-nearby logic
     e->m_entity_data.m_pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park starting location
 
-    QString msg = "Resetting location to default spawn ("
-            + QString::number(e->m_entity_data.m_pos.x) + ","
-            + QString::number(e->m_entity_data.m_pos.y) + ","
-            + QString::number(e->m_entity_data.m_pos.z) + ")";
+    QString msg = QString("Resetting location to default spawn (%1,%2,%3)").arg(e->m_entity_data.m_pos.x, e->m_entity_data.m_pos.y, e->m_entity_data.m_pos.z);
     qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, src);
 }

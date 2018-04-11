@@ -121,6 +121,7 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendDamage(Entity *src, uint32_t tgt_idx, uint32_t amount);
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);

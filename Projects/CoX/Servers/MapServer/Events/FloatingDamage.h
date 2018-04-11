@@ -19,7 +19,7 @@ class FloatingDamage final : public GameCommand
 public:
     int whos_fault_was_it;
     int who_was_damaged;
-    int damage_amount;
+    int damage_amount; // should be float?
     FloatingDamage(int source,int target,int amount) : GameCommand(MapEventTypes::evFloatingDamage),
         whos_fault_was_it(source),
         who_was_damaged(target),
