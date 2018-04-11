@@ -72,11 +72,11 @@ void createDatabases()
     {
         {
             db_dir.currentPath() + "/default_dbs/sqlite/segs_sqlite_create.sql",
-            db_dir.currentPath() + "/segs"
+            db_dir.currentPath() + "/" + segs
         },
         {
             db_dir.currentPath() + "/default_dbs/sqlite/segs_game_sqlite_create.sql",
-            db_dir.currentPath() + "/segs_game"
+            db_dir.currentPath() + "/" + segs_game
         }
     };
 //    if(nofile)
@@ -135,34 +135,71 @@ void createDatabases()
 void addAccount(const QString & username, const QString & password, uint16_t access_level)
 {
     QDir db_dir(QDir::currentPath());
-    const QString &target_file_string(db_dir.currentPath() + "/segs");
-    QFile target_file(target_file_string);
+    const QStringList &target_file_string = {db_dir.currentPath() + "/" + segs,
+                                             db_dir.currentPath() + "/" + segs_game
+                                            };
 
-    QSqlDatabase segs_db(QSqlDatabase::addDatabase("QSQLITE"));
-    segs_db.setDatabaseName(target_file_string);
-    segs_db.open();
-    QSqlQuery query(segs_db);
-    if(!query.prepare("INSERT INTO accounts (username,passw,access_level,salt) VALUES (?,?,?,?);"))
+// segs database file
+    QFile target_file1(target_file_string[0]);
+
+    QSqlDatabase auth_db(QSqlDatabase::addDatabase("QSQLITE", segs));
+    auth_db.setDatabaseName(target_file_string[0]);
+    auth_db.open();
+    QSqlQuery auth_query(auth_db);
+    if(!auth_query.prepare("INSERT INTO accounts (username,passw,access_level,salt) VALUES (?,?,?,?);"))
     {
-        qDebug() << "SQL_ERROR:" << query.lastError();
+        qDebug() << "SQL_ERROR:" << auth_query.lastError();
         return;
     }
 
     PasswordHasher hasher;
     QByteArray salt = hasher.generateSalt();
     QByteArray password_array = hasher.hashPassword(password.toUtf8(), salt);
-    query.bindValue(0, username);
-    query.bindValue(1, password_array);
-    query.bindValue(2, access_level);
-    query.bindValue(3, salt);
+    auth_query.bindValue(0, username);
+    auth_query.bindValue(1, password_array);
+    auth_query.bindValue(2, access_level);
+    auth_query.bindValue(3, salt);
 
-    if(!target_file.exists())
+    if(!target_file1.exists())
         qFatal("Target file could not be found. Verify its existence and try again.");
-    if(!query.exec())
+    if(!auth_query.exec())
     {
-        qDebug() << "SQL_ERROR:" << query.lastError(); // Why the query failed
+        auth_db.rollback(); // Roll back the database if something goes wrong, so we're not left with useless poop.
+        qDebug() << "SQL_ERROR:" << auth_query.lastError(); // Why the query failed
         return;
     }
+    uint32_t account_id = auth_query.lastInsertId().toInt();
+    auth_query.finish();
+    auth_db.close();
+
+// segs_game database file
+    uint32_t max_slots = 8;
+    QFile target_file2(target_file_string[1]);
+
+    QSqlDatabase game_db(QSqlDatabase::addDatabase("QSQLITE", segs_game));
+    game_db.setDatabaseName(target_file_string[1]);
+    game_db.open();
+    QSqlQuery game_query(game_db);
+    if(!game_query.prepare("INSERT INTO accounts (account_id,max_slots) VALUES (?,?);"))
+    {
+        qDebug() << "SQL_ERROR:" << game_query.lastError();
+        return;
+    }
+
+    game_query.bindValue(0, account_id);
+    game_query.bindValue(1, max_slots);
+
+    if(!target_file2.exists())
+        qFatal("Target file could not be found. Verify its existence and try again.");
+    if(!game_query.exec())
+    {
+        game_db.rollback(); // Roll back the database if something goes wrong, so we're not left with useless poop.
+        qDebug() << "SQL_ERROR:" << game_query.lastError(); // Why the query failed
+        return;
+    }
+    game_query.finish();
+    game_db.close();
+    qInfo() << "Successfully added user" << username << "to databases:" << segs << segs_game;
 }
 
 int main(int argc, char **argv)
@@ -172,7 +209,7 @@ int main(int argc, char **argv)
     qInstallMessageHandler(errorHandler);
     QCoreApplication app(argc,argv);
     QCoreApplication::setApplicationName("segs-dbtool");
-    QCoreApplication::setApplicationVersion("0.3");
+    QCoreApplication::setApplicationVersion("0.4");
 
     QCommandLineParser parser;
     parser.setApplicationDescription("SEGS database management utility");
