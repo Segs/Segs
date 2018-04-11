@@ -311,8 +311,26 @@ void setCombatLevel(Character &c, uint32_t val)
         val = 50;
     c.m_char_data.m_combat_level = val;
 }
-void    setHP(Character &c, uint32_t val) { c.m_current_attribs.m_HitPoints = val; }
-void    setEnd(Character &c, uint32_t val) { c.m_current_attribs.m_Endurance = val; }
+void setHP(Character &c, uint32_t val)
+{
+    if(val <= 0)
+        val = 0;
+
+    if(val > c.m_max_attribs.m_HitPoints)
+        val = c.m_max_attribs.m_HitPoints;
+
+    c.m_current_attribs.m_HitPoints = val;
+}
+void setEnd(Character &c, uint32_t val)
+{
+    if(val <= 0)
+        val = 0;
+
+    if(val > c.m_max_attribs.m_Endurance)
+        val = c.m_max_attribs.m_Endurance;
+
+    c.m_current_attribs.m_Endurance = val;
+}
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
 void    setMapName(Character &c, const QString &val) { c.m_char_data.m_mapName = val; }
 
@@ -403,9 +421,9 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
-void sendDamage(Entity *src, uint32_t tgt_idx, uint32_t amount)
+void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount)
 {
-    qCDebug(logSlashCommand, "Sending %d FloatingDamage from %d to %d", amount, src->m_idx, tgt_idx);
+    qCDebug(logSlashCommand, "Sending %d FloatingNumbers from %d to %d", amount, src->m_idx, tgt_idx);
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingDamage>(new FloatingDamage(src->m_idx, tgt_idx, amount)));
 }
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list)
