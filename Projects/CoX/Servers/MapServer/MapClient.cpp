@@ -33,4 +33,5 @@ void MapClient::entity( Entity * val )
 {
     m_ent = val;
     m_ent->m_char->setName(m_name); // this is used because the new characters are passed to us nameless
+    m_ent->m_entity_data.m_access_level = account_info().access_level();
 }
