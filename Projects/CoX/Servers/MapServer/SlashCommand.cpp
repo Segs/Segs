@@ -550,14 +550,14 @@ void cmdHandler_SendFloatingNumbers(QString &cmd, Entity *e) {
     Entity *tgt = nullptr;
 
     QString msg; // result messages
-    int first_space = cmd.indexOf(' ');
+    int first_space  = cmd.indexOf(' ');
     int second_space = cmd.indexOf(' ',first_space+1);
-    int third_space = cmd.indexOf(' ',second_space+1);
+    int third_space  = cmd.indexOf(' ',second_space+1);
 
     bool ok1 = true;
     bool ok2 = true;
     uint32_t runtimes   = cmd.midRef(first_space+1, second_space-(first_space+1)).toInt(&ok1);
-    int32_t amount      = cmd.midRef(second_space+1, third_space-(second_space+1)).toInt(&ok2);
+    float amount        = cmd.midRef(second_space+1, third_space-(second_space+1)).toFloat(&ok2);
     QString name        = cmd.midRef(third_space+1).toString();
 
     // reign in the insanity

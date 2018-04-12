@@ -311,25 +311,13 @@ void setCombatLevel(Character &c, uint32_t val)
         val = 50;
     c.m_char_data.m_combat_level = val;
 }
-void setHP(Character &c, uint32_t val)
+void setHP(Character &c, float val)
 {
-    if(val <= 0)
-        val = 0;
-
-    if(val > c.m_max_attribs.m_HitPoints)
-        val = c.m_max_attribs.m_HitPoints;
-
-    c.m_current_attribs.m_HitPoints = val;
+    c.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val,c.m_max_attribs.m_HitPoints));
 }
-void setEnd(Character &c, uint32_t val)
+void setEnd(Character &c, float val)
 {
-    if(val <= 0)
-        val = 0;
-
-    if(val > c.m_max_attribs.m_Endurance)
-        val = c.m_max_attribs.m_Endurance;
-
-    c.m_current_attribs.m_Endurance = val;
+    c.m_current_attribs.m_Endurance = std::max(0.0f, std::min(val,c.m_max_attribs.m_Endurance));
 }
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
 void    setMapName(Character &c, const QString &val) { c.m_char_data.m_mapName = val; }

@@ -90,8 +90,8 @@ const QString &     getAlignment(const Character &c);
 // Setters
 void    setLevel(Character &c, uint32_t val);
 void    setCombatLevel(Character &c, uint32_t val);
-void    setHP(Character &c, uint32_t val);
-void    setEnd(Character &c, uint32_t val);
+void    setHP(Character &c, float val);
+void    setEnd(Character &c, float val);
 void    setLastCostumeId(Character &c, uint64_t val);
 void    setMapName(Character &c, const QString &val);
 void    setXP(Character &c, uint32_t val);
