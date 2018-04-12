@@ -13,6 +13,7 @@
 #include "EventProcessor.h"
 #include "LinkLevelEvent.h"
 
+#include <memory>
 class CRUD_EventTypes
 {
 public:
@@ -30,11 +31,11 @@ public:
 class PacketEvent : public SEGSEvent
 {
 public:
-    PacketEvent(EventProcessor *evsrc, CrudP_Packet *pkt, const ACE_INET_Addr &tgt)
-        : SEGSEvent(CRUD_EventTypes::evPacket, evsrc), m_pkt(pkt), target(tgt)
+    PacketEvent(EventProcessor *evsrc, std::unique_ptr<CrudP_Packet> &&pkt, const ACE_INET_Addr &tgt)
+        : SEGSEvent(CRUD_EventTypes::evPacket, evsrc), m_pkt(std::move(pkt)), target(tgt)
     {
     }
-    CrudP_Packet * m_pkt;
+    std::unique_ptr<CrudP_Packet> m_pkt;
     ACE_INET_Addr  target;
     const uint8_t *bytes() const { return m_pkt->GetStream()->read_ptr(); }
     size_t         size() const { return m_pkt->GetStream()->GetReadableDataSize(); }
