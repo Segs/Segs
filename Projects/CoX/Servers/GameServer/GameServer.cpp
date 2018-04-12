@@ -104,6 +104,7 @@ bool GameServer::Run()
     d->m_handler->set_server(this);
     d->m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
     d->m_handler->start();
+    HandlerLocator::setGame_Handler(d->m_id,d->m_handler);
 
     d->m_endpoint = new GameLinkEndpoint(d->m_listen_point); //,this
     d->m_endpoint->set_downstream(d->m_handler);

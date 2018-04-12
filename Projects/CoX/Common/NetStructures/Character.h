@@ -62,6 +62,7 @@ class Character
         bool                    m_full_options=false;
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
+        friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src,Character &tgt);
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
@@ -92,7 +93,6 @@ const   QString &       getName() const { return m_name; }
         void            face_bits(uint32_t){}
         void            dump();
         void            sendFullStats(BitStream &bs) const;
-        //TODO: move these to some kind of Player info class
         void            sendTray(BitStream &bs) const;
         void            sendTrayMode(BitStream &bs) const;
         void            sendWindows(BitStream &bs) const;

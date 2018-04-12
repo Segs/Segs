@@ -3,7 +3,6 @@
 #include "MapServer.h"
 #include "MapServerData.h"
 #include "MapInstance.h"
-#include "MapClient.h"
 #include "Character.h"
 #include "AdminServer/AdminServer.h"
 #include "AdminServer/CharacterDatabase.h"
@@ -177,7 +176,7 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
 // Poll EntityManager to return Entity by Name or IDX
 Entity * getEntity(MapClientSession *src, const QString &name)
 {
-    MapInstance *mi = src->current_map();
+    MapInstance *mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
     QString errormsg;
 
@@ -196,7 +195,7 @@ Entity * getEntity(MapClientSession *src, const QString &name)
 
 Entity * getEntity(MapClientSession *src, int32_t idx)
 {
-    MapInstance *mi = src->current_map();
+    MapInstance *mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
     QString errormsg;
 
@@ -221,7 +220,7 @@ Entity * getEntity(MapClientSession *src, int32_t idx)
 
 Entity * getEntityByDBID(MapClientSession *src, int32_t db_id)
 {
-    MapInstance *mi = src->current_map();
+    MapInstance *mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
     QString errormsg;
 
@@ -244,16 +243,9 @@ Entity * getEntityByDBID(MapClientSession *src, int32_t db_id)
     return nullptr;
 }
 
-void sendServerMOTD(Entity *e)
+void sendServerMOTD(MapClientSession *tgt)
 {
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-
-    MapClientSession *src = e->m_client;
-    qDebug().noquote() << "Sending Server MOTD to" << e->m_char->getName();
+    qDebug().noquote() << "Sending Server MOTD to" << tgt->m_ent->m_char->getName();
 
     QString fileName("scripts/motd.smlx");
     QFile file(fileName);
@@ -261,12 +253,12 @@ void sendServerMOTD(Entity *e)
     {
         QString contents(file.readAll());
         StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-        src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+        tgt->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
     }
     else {
         QString errormsg = "Failed to load MOTD file. \'" + file.fileName() + "\' not found.";
         qDebug() << errormsg;
-        sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, src);
+        sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, tgt);
     }
 }
 

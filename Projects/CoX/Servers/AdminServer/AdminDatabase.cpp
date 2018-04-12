@@ -8,10 +8,9 @@
 // segs includes
 #include "AdminServer.h"
 
-#include "AccountInfo.h"
 #include "AdminDatabase.h"
-#include "Client.h"
 #include "PasswordHasher/PasswordHasher.h"
+#include "AuthDatabase/AccountData.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QDateTime>
@@ -86,7 +85,7 @@ int AdminDatabase::GetBanFlag(const char *username)
 }
 */
 
-bool AdminDatabase::ValidPassword(const char *username, const char *password)
+bool AdminDatabase::ValidPassword(const QString &username, const char *password)
 {
     bool res=false;
     m_prepared_select_account_passw.bindValue(0,username);
@@ -105,7 +104,7 @@ bool AdminDatabase::ValidPassword(const char *username, const char *password)
         res = true;
     return res;
 }
-bool AdminDatabase::GetAccountByName( AccountInfo &to_fill,const QString &login )
+bool AdminDatabase::GetAccountByName( AuthAccountData &to_fill,const QString &login )
 {
     to_fill.m_acc_server_acc_id = 0;
     m_prepared_select_account_by_username.bindValue(0,login);
@@ -115,7 +114,7 @@ bool AdminDatabase::GetAccountByName( AccountInfo &to_fill,const QString &login 
     }
     return GetAccount(to_fill,m_prepared_select_account_by_username);
 }
-bool AdminDatabase::GetAccountById( AccountInfo &to_fill,uint64_t id )
+bool AdminDatabase::GetAccountById( AuthAccountData &to_fill,uint64_t id )
 {
     to_fill.m_acc_server_acc_id = 0;
     m_prepared_select_account_by_id.bindValue(0,quint64(id));
@@ -127,16 +126,14 @@ bool AdminDatabase::GetAccountById( AccountInfo &to_fill,uint64_t id )
     return GetAccount(to_fill,m_prepared_select_account_by_id);
 }
 
-bool AdminDatabase::GetAccount( AccountInfo & client, QSqlQuery &results )
+bool AdminDatabase::GetAccount( AuthAccountData & client, QSqlQuery &results )
 {
     if(!results.next()) // TODO: handle case of multiple accounts with same name ?
         return false;
-    QDateTime creation;
     client.m_acc_server_acc_id  = results.value("id").toULongLong();
     client.m_login              = results.value("username").toString();
     client.m_access_level       = results.value("access_level").toUInt();
-    creation                    = results.value("creation_date").toDateTime();
-    //  client->setCreationDate(creation);
+    client.m_creation_date      = results.value("creation_date").toDateTime();
     return true;
 }
 
@@ -144,11 +141,6 @@ AdminDatabase::~AdminDatabase()
 {
     if(m_db)
         m_db->close();
-}
-
-int AdminDatabase::RemoveAccountByID( uint64_t )
-{
-    return 0;
 }
 
 void AdminDatabase::on_connected(QSqlDatabase *db)

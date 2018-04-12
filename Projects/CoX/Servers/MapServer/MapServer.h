@@ -19,7 +19,7 @@
 
 class Net;
 class MapServerEndpoint;
-class MapClientSession;
+struct MapClientSession;
 class MapInstance;
 class GameServerInterface;
 class MapServerData;
@@ -49,7 +49,6 @@ public:
         bool                    ShutDown(const QString &reason="No particular reason") override;
         const ACE_INET_Addr &   getAddress() override;
         EventProcessor *        event_target() override;
-        GameServerInterface *   getGameInterface();
         MapManager &            map_manager();
         MapServerData &         runtimeData();
 private:
@@ -58,7 +57,6 @@ protected:
         std::unique_ptr<PrivateData> d;
 
         uint8_t                 m_id = 0;
-        GameServerInterface *   m_i_game;// GameServer access proxy object
 
         QString                 m_serverName;
         ACE_INET_Addr           m_location; //! this value is sent to the clients

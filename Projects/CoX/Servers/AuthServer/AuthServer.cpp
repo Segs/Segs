@@ -16,7 +16,6 @@
 #include "Common/Servers/ServerManager.h"
 #include "AuthProtocol/AuthLink.h"
 #include "AuthHandler.h"
-#include "AuthClient.h"
 #include "Settings.h"
 
 #include <QtCore/QSettings>
@@ -105,32 +104,24 @@ bool AuthServer::ShutDown(const QString &/* ="No particular reason" */)
 /*!
  * @brief Returns AuthClient corresponding to given login.
  * @param login - client's login.
- * @return if found, returns a valid AuthClient object, NULL otherwise.
+ * @return true if found
  * If the client with given login exist in clients hash map return it, otherwise create this object and fill it from db.
  */
-AuthClient *AuthServer::GetClientByLogin(const char *login)
+bool AuthServer::GetClientByLogin(const char *login, AuthAccountData &toFill)
 {
-    AuthClient *res=nullptr;
+    //TODO: use Account cache, or push that functionality to db layer ?
     AdminServerInterface *adminserv;                            // this will be used in case when we don't have this client in the cache
-    hmClients::const_iterator iter = m_clients.constFind(login); // searching for the client in cache
-    if(iter!=m_clients.cend())               // if found
-        return (*iter);                                //  return cached object
     adminserv = ServerManager::instance()->GetAdminServer();
     assert(adminserv);
-    res = new AuthClient; //res= m_client_pool.construct();      // construct a new instance
-    res->account_info().login(login);                           // set login and ask AdminServer to fill in the rest
-    if( !adminserv->FillClientInfo(res->account_info()) )       // Can we fill the client account info from db ?
+    toFill.m_login = login;
+    if( !adminserv->FillClientInfo(toFill) )       // Can we fill the client account info from db ?
     {
-        delete res;
-        //m_client_pool.free(res);                              // nope ? Free object and return NULL.
-        return nullptr;
+        return false;
     }
-    if(res->account_info().account_server_id()==0)              // check if object is filled in correctly, by validating it's db id.
+    // check if object is filled in correctly, by validating it's db id.
+    if(toFill.m_acc_server_acc_id==0)
     {
-        delete res;
-        //m_client_pool.free(res);                                // if it is not. Free object and return NULL.
-        return nullptr;
+        return false;
     }
-    m_clients[res->account_info().login()]=res;                 // store valid object in the cache
-    return res;
+    return true;
 }

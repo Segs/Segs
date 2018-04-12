@@ -14,7 +14,7 @@
 #include <array>
 #include <memory>
 
-class MapClientSession;
+struct MapClientSession;
 class Team;
 class Character;
 
@@ -295,7 +295,7 @@ static  void                sendPvP(BitStream &bs);
 
         void                InsertUpdate(PosUpdate pup);
         const QString &     name() const;
-        void                fillFromCharacter(const Character &f);
+        void                fillFromCharacter();
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 };
 void initializeNewPlayerEntity(Entity &e);

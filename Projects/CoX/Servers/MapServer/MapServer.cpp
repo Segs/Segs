@@ -12,7 +12,6 @@
 #include "ServerManager.h"
 #include "ConfigExtension.h"
 #include "AdminServerInterface.h"
-#include "MapClient.h"
 #include "MapManager.h"
 #include "MapServerData.h"
 #include "MapTemplate.h"
@@ -29,8 +28,6 @@
 
 #include <set>
 
-// Template instantiation
-template class ClientStore<MapClientSession>;
 // global variables
 MapServer *g_GlobalMapServer=nullptr;
 
@@ -162,11 +159,6 @@ const ACE_INET_Addr &MapServer::getAddress()
 EventProcessor *MapServer::event_target()
 {
     return (EventProcessor *)m_handler;
-}
-
-GameServerInterface *MapServer::getGameInterface()
-{
-    return m_i_game;
 }
 
 MapManager &MapServer::map_manager()

@@ -8,7 +8,7 @@
 */
 
 #include "NetCommandManager.h"
-#include "MapClient.h"
+#include "MapClientSession.h"
 #include "AdminServer/AccountInfo.h"
 
 #include <vector>
@@ -149,7 +149,7 @@ void NetCommandManager::SendCommandShortcuts( MapClientSession *client,BitStream
         FillCommands();
     }
 
-    switch(client->account_info().access_level())
+    switch(client->m_access_level)
     {
         case 0:
         case 1:

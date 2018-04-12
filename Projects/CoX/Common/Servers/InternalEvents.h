@@ -4,7 +4,7 @@
 #include <ace/INET_Addr.h>
 #include <ace/Time_Value.h>
 #include <QtCore/QString>
-class Character;
+class GameAccountResponseCharacterData;
 class Internal_EventTypes
 {
 public:
@@ -60,43 +60,12 @@ struct name ## Response final : public InternalEvent\
     name ## ResponseData m_data;\
     name ## Response(name ## ResponseData &&d,uint64_t token) :  InternalEvent(Internal_EventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
 };
-// This tells the server that it should expect a new client connection from given address
-class ExpectClientRequest : public InternalEvent
+struct ExpectClientRequestData
 {
-    ExpectClientRequest() = delete;
-public:
-    ExpectClientRequest(EventProcessor *evsrc,uint64_t client_id,uint8_t access_level,const ACE_INET_Addr &from) :
-                InternalEvent(Internal_EventTypes::evExpectClientRequest,evsrc),
-                m_client_id(client_id),
-                m_access_level(access_level),
-                m_from_addr(from)
-    {
-    }
     uint64_t m_client_id;
-    uint8_t m_access_level;
     ACE_INET_Addr m_from_addr;
 };
-class ExpectMapClientRequest : public ExpectClientRequest
-{
-public:
-    ExpectMapClientRequest(EventProcessor *evsrc,  uint64_t client_id, uint8_t access_level,const ACE_INET_Addr &from) :
-                ExpectClientRequest(evsrc,client_id,access_level,from)
-    {
-        m_map_id = 0;
-        m_slot_idx=0;
-    }
-    void setValues(uint16_t slot_idx, const QString &name, uint32_t map_id,Character *char_f=0)
-    {
-        m_slot_idx  =   slot_idx;
-        m_character_name = name;
-        m_map_id    = map_id;
-        char_from_db=char_f;
-    }
-    Character *char_from_db;
-    uint16_t m_slot_idx;
-    QString m_character_name;
-    uint32_t m_map_id;
-};
+// This tells the server that it should expect a new client connection from given address
 // This event informs the server that given client is now expected on another server
 // and passes that servers connection point, and connection cookie
 struct ExpectClientResponseData
@@ -105,19 +74,25 @@ struct ExpectClientResponseData
     uint32_t cookie;
     uint32_t m_server_id; // this is the id of the server that is expecting the client
 };
-class ExpectClientResponse : public InternalEvent
+TWO_WAY_MESSAGE(ExpectClient)
+struct ExpectMapClientRequestData
 {
-public:
-        ExpectClientResponse(EventProcessor *evsrc,uint64_t cid,uint32_t c,const ACE_INET_Addr &tgt) :
-                        InternalEvent(Internal_EventTypes::evExpectClientResponse,evsrc),
-                        client_id(cid),
-                        cookie(c),
-                        m_connection_addr(tgt)
-        {}
+    uint64_t m_client_id;
+    uint8_t m_access_level;
+    ACE_INET_Addr m_from_addr;
+    GameAccountResponseCharacterData *char_from_db;
+    uint16_t m_slot_idx;
+    QString m_character_name;
+    uint32_t m_map_id;
+};
+struct ExpectMapClientResponseData
+{
         uint64_t client_id;
         uint32_t cookie;
+    uint32_t m_server_id; // this is the id of the server that is expecting the client
         ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client
 };
+TWO_WAY_MESSAGE(ExpectMapClient)
 
 // Called synchronously this query is used to retrieve client's connection status.
 // Maybe the map/game servers should just post ClientConnection updates to AuthServer ?
@@ -129,7 +104,7 @@ struct ClientConnectionResponseData
 {
     ACE_Time_Value last_comm;
 };
-TWO_WAY_MESSAGE(ClientConnection);
+TWO_WAY_MESSAGE(ClientConnection)
 
 #undef ONE_WAY_MESSAGE
 #undef SIMPLE_TWO_WAY_MESSAGE

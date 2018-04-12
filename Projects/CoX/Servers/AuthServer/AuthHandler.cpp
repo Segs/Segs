@@ -3,7 +3,6 @@
 #include "AuthServer/AuthServer.h"
 #include "AuthProtocol/AuthLink.h"
 #include "AuthProtocol/AuthEvents.h"
-#include "AuthClient.h"
 
 #include "AdminServer/AccountInfo.h"
 #include "Servers/AdminServerInterface.h"
@@ -14,6 +13,8 @@
 
 #include <QDebug>
 
+/// Monotonically incrementing session ids, starting at 1, to make 0 special.
+uint64_t AuthHandler::s_last_session_id=1;
 namespace {
 static AuthorizationError s_auth_error_no_db(AUTH_ACCOUNT_SYNC_FAIL);
 static AuthorizationError s_auth_error_blocked_account(AUTH_ACCOUNT_BLOCKED);
@@ -76,32 +77,66 @@ void AuthHandler::on_connect( ConnectEvent *ev )
     uint32_t seed = 0x1; //TODO: rand()
     lnk->init_crypto(30206,seed);
     ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Crypto seed %08x\n"), seed ));
+    {
+        SessionStore::MTGuard guard(m_sessions.store_lock());
+        AuthSession &session(m_sessions.createSession(s_last_session_id));
+        lnk->session_token(s_last_session_id); // record the session token in the link
+        session.m_link = lnk; // create session and set the link in it
+        ++s_last_session_id;
+    }
     lnk->putq(new AuthorizationProtocolVersion(30206,seed));
 }
 void AuthHandler::on_disconnect( DisconnectEvent *ev )
 {
-    AuthLink *lnk=static_cast<AuthLink *>(ev->src());
-    AdminServerInterface *adminserv;
-    adminserv = ServerManager::instance()->GetAdminServer();
-    if(lnk->client())
-    {
-        lnk->client()->link_state().setState(ClientLinkState::NOT_LOGGED_IN);
-        m_link_store[lnk->client()->account_info().account_server_id()] = nullptr;
-        //if(lnk->m_state!=AuthLink::CLIENT_AWAITING_DISCONNECT)
-    }
-    else
+    AuthSession &session(m_sessions.sessionFromEvent(ev));
+    session.m_state = AuthSession::NOT_LOGGED_IN;
+    if(!session.m_auth_data)
     {
         ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Client disconnected without a valid login attempt. Old client ?\n")));
     }
+    if(session.m_link)
+    {
+        session.m_link = nullptr;
+        m_sessions.removeFromActiveSessions(&session);
+    }
+    // TODO: timed session reaping
 }
 void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
 {
     lnk->putq(new AuthorizationError(code));
 }
+bool AuthHandler::isSessionConnectedAnywhere(uint64_t ses)
+{
+    GameServerInterface *gs=nullptr;
+    ServerManagerC *sm =ServerManager::instance();
+
+    const AuthSession &session(m_sessions.sessionFromToken(ses));
+    if(session.m_state == AuthSession::LOGGED_IN) // easiest way out
+    {
+        return true;
+    }
+    // let's ask all game servers, just to stay on the safe side.
+    ClientConnectionRequest query({session.m_auth_id},ses);
+    for(size_t i=0; i<sm->MapServerCount(); i++)
+    {
+        gs=sm->GetGameServer(i);
+        assert(gs!=nullptr);
+        if(nullptr==gs) // something screwy happened
+            return false;
+        ClientConnectionResponse *resp = (ClientConnectionResponse *)gs->event_target()->dispatchSync(query.shallow_copy());
+        assert(resp->session_token()==ses);
+        const ClientConnectionResponseData &resp_data(resp->m_data);
+        bool still_connected = resp_data.last_comm!=ACE_Time_Value::max_time;
+        resp->release();
+        if(still_connected)
+            return still_connected;
+    }
+    return false;
+}
 void AuthHandler::on_login( LoginRequest *ev )
 {
     AdminServerInterface *adminserv = ServerManager::instance()->GetAdminServer();
-    AuthClient *client = nullptr;
+    AuthSession &session(m_sessions.sessionFromEvent(ev));
     AuthLink *lnk = static_cast<AuthLink *>(ev->src());
     assert(adminserv);
     assert(m_authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
@@ -123,40 +158,40 @@ void AuthHandler::on_login( LoginRequest *ev )
     if(strlen(ev->m_data.login)<=2)
         return auth_error(lnk,AUTH_ACCOUNT_BLOCKED); // invalid account
 
-    client = m_authserv->GetClientByLogin(ev->m_data.login);
+    session.m_auth_data.reset(new AuthAccountData);
+
+    m_authserv->GetClientByLogin(ev->m_data.login,*session.m_auth_data);
     // TODO: Version 0.3 will need to use admin tools instead of creating accounts willy-nilly
-    if(!client) // no client exists, create one ( step 3c )
+    if(!session.m_auth_data->valid()) // no account exists, create one ( step 3c )
     {
         adminserv->SaveAccount(ev->m_data.login,ev->m_data.password); // Autocreate/save account to DB
-        client = m_authserv->GetClientByLogin(ev->m_data.login);
+        m_authserv->GetClientByLogin(ev->m_data.login,*session.m_auth_data);
     }
-    if(!client) {
+    if(!session.m_auth_data->valid()) {
         ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) User %s from %s - couldn't get/create account.\n"),ev->m_data.login,lnk->peer_addr().get_host_addr()));
         lnk->putq(s_auth_error_db_error.shallow_copy());
         return;
     }
 
-    AccountInfo & acc_inf(client->account_info());  // all the account info you can eat!
-    lnk->client(client);                            // now link knows what client it's responsible for
-    client->link_state().link(lnk);                 // and client knows what link it's using
+    m_sessions.addToActiveSessions(&session);
+    AuthAccountData & acc_inf(*session.m_auth_data);  // all the account info you can eat!
+    session.m_auth_id = acc_inf.m_acc_server_acc_id;
     bool no_errors=false;                           // this flag is set if there were no errors during client pre-processing
     // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),acc_inf.account_server_id()));
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),acc_inf.m_acc_server_acc_id));
     // step 3d: checking if this account is blocked
-    if(client->account_blocked()) {
-        delete client;
-        lnk->client(nullptr);
+    if(acc_inf.isBlocked()) {
         lnk->putq(s_auth_error_locked_account.shallow_copy());
         return;
     }
-    if(client->isLoggedIn())
+    if(isSessionConnectedAnywhere(lnk->session_token()))
     {
         // step 3e: asking game server connection check
         // TODO: client->forceGameServerConnectionCheck();
         lnk->putq(s_auth_error_already_online.shallow_copy());
         return;
     }
-    else if(client->link_state().getState()==ClientLinkState::NOT_LOGGED_IN)
+    else if(session.m_state == AuthSession::NOT_LOGGED_IN)
         no_errors = true;
     // if there were no errors and the provided password is valid and admin server has logged us in.
     if(
@@ -167,10 +202,9 @@ void AuthHandler::on_login( LoginRequest *ev )
     {
         // inform the client of the successful login attempt
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : succeeded\n")));
-        client->link_state().setState(ClientLinkState::LOGGED_IN);
+        session.m_state = AuthSession::LOGGED_IN;
         lnk->m_state = AuthLink::AUTHORIZED;
         lnk->putq(new LoginResponse());
-        m_link_store[acc_inf.account_server_id()] = lnk; // remember client link
     }
     else
     {
@@ -180,6 +214,7 @@ void AuthHandler::on_login( LoginRequest *ev )
 }
 void AuthHandler::on_server_list_request( ServerListRequest *ev )
 {
+    AuthSession &session(m_sessions.sessionFromEvent(ev));
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
     if(lnk->m_state!=AuthLink::AUTHORIZED)
     {
@@ -207,6 +242,7 @@ void AuthHandler::on_server_list_request( ServerListRequest *ev )
 }
 void AuthHandler::on_server_selected(ServerSelectRequest *ev)
 {
+    AuthSession &session(m_sessions.sessionFromEvent(ev));
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
     if(lnk->m_state!=AuthLink::CLIENT_SERVSELECT)
     {
@@ -221,21 +257,20 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
         auth_error(lnk,rand()%33);
         return;
     }
-    AuthClient *cl= lnk->client();
-    cl->setSelectedServer(gs);
-    AccountInfo &acc_inf(cl->account_info());
-    ExpectClientRequest *cl_ev=new ExpectClientRequest(this,acc_inf.account_server_id(),acc_inf.access_level(),cl->link_state().getPeer());
+    AuthAccountData &acc_inf(*session.m_auth_data); //acc_inf.m_access_level,
+    ExpectClientRequest *cl_ev=new ExpectClientRequest({acc_inf.m_acc_server_acc_id,lnk->peer_addr()},lnk->session_token());
     gs->event_target()->putq(cl_ev); // sending request to game server
     // client's state will not change until we get response from GameServer
 }
 void AuthHandler::on_client_expected(ExpectClientResponse *ev)
 {
-    if(m_link_store.find(ev->client_id)==m_link_store.end())
+    AuthSession &session(m_sessions.sessionFromEvent(ev));
+    if(session.m_link==nullptr)
     {
         assert(!"client disconnected before receiving game cookie");
         return;
     }
-    AuthLink *lnk = m_link_store[ev->client_id];
+    AuthLink *lnk = session.m_link;
     lnk->m_state = AuthLink::CLIENT_AWAITING_DISCONNECT;
-    lnk->putq(new ServerSelectResponse(this,0xCAFEF00D,ev->cookie));
+    lnk->putq(new ServerSelectResponse(this,0xCAFEF00D,ev->m_data.cookie));
 }

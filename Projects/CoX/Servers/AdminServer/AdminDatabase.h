@@ -12,11 +12,11 @@
 #include <QtSql/QSqlQuery>
 
 class QSqlDatabase;
-class AccountInfo;
+struct AuthAccountData;
 class AdminDatabase
 {
     QSqlDatabase *m_db;
-    bool        GetAccount(AccountInfo & client, QSqlQuery &query);
+    bool        GetAccount(AuthAccountData &client, QSqlQuery &query);
     QSqlQuery m_add_account_query;
     QSqlQuery m_prepared_select_account_by_id;
     QSqlQuery m_prepared_select_account_passw;
@@ -30,12 +30,11 @@ virtual     ~AdminDatabase();
     //
     // 0x7FFF - server gods
     bool    AddAccount(const char *username, const char *password, uint16_t access_level=1); //return true if success
-    int     RemoveAccountByID(uint64_t id);
     int     RemoveAccountByName(char *username);
     int     GetBanFlag(const char *username);
-    bool    ValidPassword(const char *username, const char *password);
-    bool    GetAccountByName(AccountInfo &to_fill, const QString &login);
-    bool    GetAccountById(AccountInfo &to_fill,uint64_t id);
+    bool    ValidPassword(const QString &username, const char *password);
+    bool    GetAccountByName(AuthAccountData &to_fill, const QString &login);
+    bool    GetAccountById(AuthAccountData &to_fill,uint64_t id);
     void    setDb(QSqlDatabase *db) {m_db=db;}
     QSqlDatabase *getDb() {return m_db;}
     void    on_connected(QSqlDatabase *db);

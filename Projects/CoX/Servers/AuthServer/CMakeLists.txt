@@ -1,10 +1,8 @@
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/AuthClient.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthHandler.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthServer.cpp
 )
 SET(target_INCLUDE
-${CMAKE_CURRENT_SOURCE_DIR}/AuthClient.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthHandler.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthServer.h
 )

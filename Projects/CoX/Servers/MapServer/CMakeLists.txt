@@ -20,7 +20,6 @@ SET(target_CPP
     Events/SceneEvent.cpp
     Events/InfoMessageCmd.cpp
     Events/WindowState.cpp
-    MapClient.cpp
     MapEventFactory.cpp
     MapInstance.cpp
     MapLink.cpp
@@ -60,7 +59,6 @@ SET(target_INCLUDE
     Events/TeamOffer.h
     Events/InfoMessageCmd.h
     Events/WindowState.h
-    MapClient.h
     MapEventFactory.h
     MapEvents.h
     MapInstance.h

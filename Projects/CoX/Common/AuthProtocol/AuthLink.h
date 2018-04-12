@@ -18,7 +18,6 @@
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
 class SEGSEvent;
-class AuthClient;
 
 enum class AuthLinkType
 {
@@ -31,7 +30,7 @@ enum class AuthLinkType
 // Whenever new bytes are received, the AuthLink tries to convert them into proper higher level Events,
 // And posts them to g_target
 // Each AuthLink serves as a Client's connection context
-class AuthLink final : public ILink
+class AuthLink final : public LinkBase
 {
     typedef EventProcessor super;
     typedef ACE_Reactor_Notification_Strategy tNotifyStrategy;
@@ -63,8 +62,6 @@ static  EventProcessor *g_target;               //! All links post their message
         void            dispatch(SEGSEvent *ev) override;
         stream_type &   peer() {return m_peer;}
         addr_type &     peer_addr() {return m_peer_addr;}
-        AuthClient *    client() {return m_client;}
-        void            client(AuthClient *c) {m_client=c;}
         void            init_crypto(int vers,uint32_t seed);
         ACE_HANDLE      get_handle (void) const override {return m_peer.get_handle();}
 protected:
@@ -74,7 +71,6 @@ protected:
         tNotifyStrategy m_notifier;                     //!< Our message queue will use this to wake up the reactor on new elements
         stream_type     m_peer;  //!< Underlying client connection object.
         addr_type       m_peer_addr;
-        AuthClient *    m_client;
         ACE_Thread_Mutex *m_buffer_mutex;
         int             m_protocol_version;
         eState          m_state;

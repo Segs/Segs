@@ -9,8 +9,8 @@
 #pragma once
 // segs includes
 
-#include "Common/Servers/Client.h"
 #include "Common/Servers/Server.h"
+#include "AuthDatabase/AccountData.h"
 
 // QT includes
 #include <QtCore/QHash>
@@ -35,9 +35,6 @@ typedef QHash<QString,AuthClient *> hmClients;
 class AuthClient;
 class AuthServer final : public Server
 {
-//boost::object_pool<AuthClient>          m_client_pool;  //!< pool used to efficiently construct new client objects.
-    typedef hmClients::iterator         ihmClients; //!< helper typedef for iterators to m_clients store
-    typedef hmClients::const_iterator   cihmClients; //!< helper typedef for const iterators to m_clients store
 public:
                                     AuthServer();
                                     ~AuthServer() override;
@@ -46,10 +43,9 @@ public:
         bool                        Run(void) override;
         bool                        ShutDown(const QString &reason="No particular reason") override;
 
-        AuthClient *                GetClientByLogin(const char *);
+        bool                        GetClientByLogin(const char *,AuthAccountData &toFill);
 protected:
         ClientAcceptor *            m_acceptor;     //!< ace acceptor wrapping AuthClientService
         ACE_INET_Addr               m_location;     //!< address this server will bind at.
         bool                        m_running;      //!< true if this server is running
-        hmClients                   m_clients;      //!< mapping from string:login to client's object
 };

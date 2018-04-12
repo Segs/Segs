@@ -5,6 +5,8 @@
 #include "EventProcessor.h"
 #include "InternalEvents.h"
 #include "Common/Servers/MessageBusEndpoint.h"
+#include "GameDatabase/GameAccountData.h"
+#include "AuthDatabase/AccountData.h"
 
 #include <map>
 #include <unordered_set>
@@ -12,9 +14,27 @@
 #include <ace/Thread_Mutex.h>
 class CharacterClient;
 class GameServer;
+struct GameSession
+{
+    enum eClientState
+    {
+        CLIENT_DISCONNECTED=0,
+        CLIENT_EXPECTED,
+        NOT_LOGGED_IN,
+        LOGGED_IN,
+        CLIENT_CONNECTED
+    };
+    GameLink *m_link=nullptr;
+    eClientState m_state;
+    AuthAccountData m_account;
+    GameAccountData m_game_account;
+};
 class GameHandler : public EventProcessor
 {
-    typedef std::unordered_set<uint32_t> sIds;
+    using sIds = std::unordered_set<uint32_t>;
+    using SessionStore = ClientSessionStore<GameSession>;
+
+    SessionStore m_session_store;
     // function that send messages into the link
     // incoming event handlers
     class SEGSTimer *     m_link_checker=nullptr;
@@ -40,7 +60,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Server <-> Server events
     void        on_expect_client(ExpectClientRequest *ev);     // from AuthServer
-    void        on_client_expected(ExpectClientResponse *ev); // from MapServer
+    void        on_client_expected(ExpectMapClientResponse *ev); // from MapServer
 
     //////////////////////////////////////////////////////////////////////////
     // Internal events
@@ -51,11 +71,7 @@ protected:
     SEGSEvent * on_connection_query(ClientConnectionRequest *ev);
 
     //////////////////////////////////////////////////////////////////////////
-    void        checkClientConnection(uint64_t id);
-    bool        isClientConnected(uint64_t id);
-    void        disconnectClient( AccountInfo & cl );
     sIds        waiting_for_client; // this hash_set holds all client cookies we wait for
-    ClientStore<CharacterClient>    m_clients;
     GameServer *m_server;
 
 };

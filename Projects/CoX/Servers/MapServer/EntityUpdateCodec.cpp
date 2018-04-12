@@ -7,11 +7,11 @@
  */
 
 #include "EntityUpdateCodec.h"
+#include "MapClientSession.h"
 
 #include "Character.h"
 #include "MapServer.h"
 #include "MapServerData.h"
-#include "MapClient.h"
 #include "Entity.h"
 #include "GameData/CoHMath.h"
 #include "DataHelpers.h"

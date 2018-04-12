@@ -9,7 +9,7 @@
 #include "EntityStorage.h"
 #include "Entity.h"
 #include "EntityUpdateCodec.h"
-#include "MapClient.h"
+#include "MapClientSession.h"
 #include "MapServer/MapServer.h"
 #include "MapServer/MapServerData.h"
 
@@ -100,7 +100,7 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
 void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool is_incremental) const
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_mutex);
-    int self_idx = getIdx(*target->char_entity());
+    int self_idx = getIdx(*target->m_ent);
     int prev_idx = -1;
     int delta;
     if(m_live_entlist.empty())
