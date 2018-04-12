@@ -227,7 +227,8 @@ void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
 }
 CrudP_Packet *CrudP_Protocol::mergeSiblings(uint32_t id)
 {
-    pPacketStorage &storage=sibling_map[id];
+    auto store_iter = sibling_map.find(id);
+    pPacketStorage &storage(store_iter->second);
     assert(storage.size()>=1); // wtf ??
     BitStream *bs=new BitStream(32);
     CrudP_Packet *res= new CrudP_Packet(*storage[0]); //copy packet info from first sibling
@@ -243,7 +244,7 @@ CrudP_Packet *CrudP_Protocol::mergeSiblings(uint32_t id)
     }
     res->SetStream(bs);
 
-    sibling_map.erase(sibling_map.find(id));
+    sibling_map.erase(store_iter);
     return res;
 }
 bool CrudP_Protocol::insert_sibling(CrudP_Packet *pkt)
@@ -265,35 +266,31 @@ bool CrudP_Protocol::insert_sibling(CrudP_Packet *pkt)
 }
 /**
   \brief this gets next packet in sequence,
-  \arg disregard_seq if it's set, returned packet will be the next available, not the next in sequence
   \return Pointer to packet. nullptr if no packets are available or no next packet in sequence is available
     First.  if there are no packets in avail_packets return nullptr
     Second. if first available packet sequence number is the same as the last popped one was, remove this duplicate
     Third.  if first available packet sequence number is the one we want (recv_seq+1) we pop it from storage,
             strip it's shell, and return only a Dbg/Plain BitStream copy of it's payload
 */
-CrudP_Packet *CrudP_Protocol::RecvPacket(bool disregard_seq)
+CrudP_Packet *CrudP_Protocol::RecvPacket()
 {
     CrudP_Packet *pkt=nullptr;
 
-    if(0==avail_packets.size())
+    if(avail_packets.empty())
         return nullptr;
     sort(avail_packets.begin(),avail_packets.end(),&CrudP_Protocol::PacketSeqCompare);
-    auto iter = avail_packets.begin();
-    // duplicate/old_packet removal
-    while(iter!=avail_packets.end())
+    pkt = avail_packets.front();
+    avail_packets.pop_front();
+    // duplicate packet removal
+    while(pkt->GetSequenceNumber()<=recv_seq)
     {
-        pkt = *iter;
-        if(pkt->GetSequenceNumber()>recv_seq)
-            break;
-        iter = avail_packets.erase(iter);//remove a duplicate
-        //PacketFactory::destroy(a);
-    }
-    if(iter==avail_packets.end())
+        delete pkt;
+        if(avail_packets.empty())
         return nullptr;
+        avail_packets.pop_front();
+        pkt = avail_packets.front();
+    }
     assert(pkt);
-    if(disregard_seq)
-        return pkt;
     if(pkt->GetSequenceNumber()!=recv_seq+1) // nope this packet is not a next one in the sequence
         return nullptr;
     if(pkt->getNumSibs()>0)
@@ -400,7 +397,7 @@ void CrudP_Protocol::sendRaw(CrudP_Packet *pak,lCrudP_Packet &tgt )
     uint32_t *head = (uint32_t*)wrapped->GetStream()->read_ptr();
     head[1] = m_codec->Checksum((uint8_t*)&head[2],fixedlen-8); // this is safe because all bitstreams have padding
     m_codec->Encrypt((uint8_t*)&head[1],fixedlen-4);//res->GetReadableDataSize()
-    tgt.push_back(wrapped);
+    tgt.emplace_back(wrapped);
 }
 bool CrudP_Protocol::addToSendQueue(CrudP_Packet *pak)
 {

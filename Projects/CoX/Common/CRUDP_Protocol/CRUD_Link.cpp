@@ -148,12 +148,12 @@ void CRUDLink::received_block( BitStream &bytes )
     // Fill the protocol with 'raw' bit stream
     m_protocol.ReceivedBlock(bytes);
     // now try to get actual packets
-    CrudP_Packet *pkt = m_protocol.RecvPacket(false);
+    CrudP_Packet *pkt = m_protocol.RecvPacket();
     while(pkt)
     {
         putq(new PacketEvent(net_layer(),pkt,peer_addr()));
         ++recv_count;
-        pkt=m_protocol.RecvPacket(false);
+        pkt=m_protocol.RecvPacket();
     }
     if(recv_count>0)
         connection_update(); //update the last time we've seen packets on this link
