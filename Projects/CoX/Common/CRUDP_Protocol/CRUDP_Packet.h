@@ -9,10 +9,11 @@
 #pragma once
 #include "BitStream.h"
 #include <set>
-#include <list>
+#include <deque>
 #include <vector>
 #include <stdint.h>
 #include <chrono>
+#include <memory>
 
 class PacketCollector;
 static const uint32_t maxPacketSize    = 1472;
@@ -47,7 +48,7 @@ public:
 
     //  Accessors
     //////////////////////////////////////////////////////////////////////////
-    uint8_t  *  GetBuffer()         const   { return (uint8_t *)m_stream->GetBuffer(); }
+    uint8_t  *  GetBuffer()         const   { return m_stream->GetBuffer(); }
     size_t      GetPacketLength()   const   { return m_stream->GetReadableDataSize();}
     BitStream * GetStream()                 { return m_stream;                      }
     bool        getIsCompressed()   const   { return m_compressed;                  }
@@ -94,6 +95,6 @@ protected:
     uint32_t m_retransmit_count;
     std::set<uint32_t> m_acks;
 };
-using lCrudP_Packet = std::list<CrudP_Packet *>;
+using lCrudP_Packet = std::deque<std::unique_ptr<CrudP_Packet>>;
 using vCrudP_Packet = std::vector<CrudP_Packet *>;
 using ivCrudP_Packet = vCrudP_Packet::iterator;
