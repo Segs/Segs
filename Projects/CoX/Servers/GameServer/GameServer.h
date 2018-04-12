@@ -27,7 +27,7 @@ public:
     GameLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
     ~GameLinkEndpoint()=default;
 protected:
-    ILink *createLink(EventProcessor *down) override
+    CRUDLink *createLink(EventProcessor *down) override
     {
         return new GameLink(down,this);
     }

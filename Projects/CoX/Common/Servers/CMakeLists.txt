@@ -37,7 +37,7 @@ ${target_INCLUDE}
 )
 
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
-INCLUDE_DIRECTORIES(${ACE_path})
+INCLUDE_DIRECTORIES(SYSTEM ${ACE_path})
 
 ADD_LIBRARY(cox_server_common STATIC ${target_SOURCES})
 add_dependencies(cox_server_common ace_IMP)

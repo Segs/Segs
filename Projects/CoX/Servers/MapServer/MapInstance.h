@@ -26,17 +26,17 @@ class World;
 // server<-> server event types
 struct ExpectMapClientRequest;
 
-class MapInstance : public EventProcessor
+class MapInstance final : public EventProcessor
 {
     QString                m_name;
     uint32_t               m_index = 1; // what does client expect this to store, and where do we send it?
     SEGSTimer *            m_world_update_timer;
     SEGSTimer *            m_resend_timer;
 
-    // vClients        m_queued_clients;
     World *    m_world;
     MapServer *m_server;
 
+    uint8_t                 m_game_server_id=255; // 255 is `invalid` id
 public:
     EntityManager m_entities;
     ClientStore<MapClient> m_clients;
@@ -44,16 +44,18 @@ public:
     std::unique_ptr<ScriptingEngine> m_scripting_interface;
 
     MapInstance(const QString &name);
-    virtual ~MapInstance();
-    void       dispatch(SEGSEvent *ev);
+                            ~MapInstance() override;
+    void                    dispatch(SEGSEvent *ev) override;
 
-    void   enqueue_client(MapClient *clnt);
+    void                    enqueue_client(MapClient *clnt);
     void   start();
     void   set_server(MapServer *s) { m_server = s; }
     size_t num_active_clients();
     const QString &     name() const { return m_name; }
     uint32_t            index() const { return m_index; }
 
+    void                    spin_down();
+    void                    spin_up_for(uint8_t game_server_id);
 protected:
     void process_chat(MapClient *sender, QString &msg_text);
 

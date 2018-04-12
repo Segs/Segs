@@ -88,6 +88,23 @@ void MapInstance::start()
 
     qInfo() << "Server running... awaiting client connections."; // best place for this?
 }
+///
+/// \fn MapInstance::spin_down
+/// \brief This function should stop the world simulation, and save all entities to db
+/// It is meant to be ran when MapInstance is getting `scrubbed` for reuse
+void MapInstance::spin_down()
+{
+    qDebug() << "spin down ? I don't know how to stop!";
+}
+///
+/// \fn MapInstance::spin_up_for
+/// \brief This function should prepare the map for use by the specified game server
+/// \param game_server_id
+///
+void MapInstance::spin_up_for(uint8_t game_server_id)
+{
+    m_game_server_id = game_server_id;
+}
 
 size_t MapInstance::num_active_clients()
 {
@@ -321,7 +338,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     cookie    = 2+m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
     cl = m_clients.getExpectedByCookie(cookie-2);
     cl->name(ev->m_character_name);
-    cl->current_map(tpl->get_instance());
+    cl->current_map(tpl->get_instance(m_game_server_id));
     if(ev->char_from_db)
     {
         Entity *ent = m_entities.CreatePlayer();

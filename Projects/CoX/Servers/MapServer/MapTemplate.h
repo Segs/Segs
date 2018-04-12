@@ -17,7 +17,7 @@ class MapTemplate
     std::vector<MapInstance *> m_instances; // switch from vector to priority queue ?
 public:
     MapTemplate(const std::string &template_filename);
-    MapInstance *   get_instance(); //! If there are no instances, starts a new one.
+    MapInstance *   get_instance(uint8_t game_server_id); //! If there are no instances, starts a new one.
     size_t          num_instances();
 };
 // Generates instances based on some kind of schema file

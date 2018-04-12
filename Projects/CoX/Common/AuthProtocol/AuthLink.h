@@ -6,6 +6,7 @@
 #include "AuthProtocol/AuthEvents.h"
 #include "AuthProtocol/AuthPacketCodec.h"
 #include "AuthProtocol/AuthOpcodes.h"
+#include "Common/CRUDP_Protocol/ILink.h"
 
 #include <ace/ACE.h>
 #include <ace/Synch.h>
@@ -30,7 +31,7 @@ enum class AuthLinkType
 // Whenever new bytes are received, the AuthLink tries to convert them into proper higher level Events,
 // And posts them to g_target
 // Each AuthLink serves as a Client's connection context
-class AuthLink final : public EventProcessor
+class AuthLink final : public ILink
 {
     typedef EventProcessor super;
     typedef ACE_Reactor_Notification_Strategy tNotifyStrategy;
@@ -62,8 +63,6 @@ static  EventProcessor *g_target;               //! All links post their message
         void            dispatch(SEGSEvent *ev) override;
         stream_type &   peer() {return m_peer;}
         addr_type &     peer_addr() {return m_peer_addr;}
-        uint64_t        session_token() const { return m_session_token; }
-        void            session_token(uint64_t tok) { m_session_token=tok; }
         AuthClient *    client() {return m_client;}
         void            client(AuthClient *c) {m_client=c;}
         void            init_crypto(int vers,uint32_t seed);
@@ -78,7 +77,6 @@ protected:
         AuthClient *    m_client;
         ACE_Thread_Mutex *m_buffer_mutex;
         int             m_protocol_version;
-        uint64_t        m_session_token;
         eState          m_state;
         AuthLinkType    m_direction;
 

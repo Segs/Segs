@@ -194,7 +194,7 @@ Entity * getEntity(MapClient *src, const QString &name)
     return nullptr;
 }
 
-Entity * getEntity(MapClient *src, const int32_t &idx)
+Entity * getEntity(MapClient *src, int32_t idx)
 {
     MapInstance *mi = src->current_map();
     EntityManager &em(mi->m_entities);
@@ -219,7 +219,7 @@ Entity * getEntity(MapClient *src, const int32_t &idx)
     return nullptr;
 }
 
-Entity * getEntityByDBID(MapClient *src, const int32_t &db_id)
+Entity * getEntityByDBID(MapClient *src, int32_t db_id)
 {
     MapInstance *mi = src->current_map();
     EntityManager &em(mi->m_entities);

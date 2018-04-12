@@ -91,7 +91,7 @@ MapServerInterface *ServerManagerC::GetMapServer(size_t idx)
     if(idx>m_MapServers.size())
         return nullptr;
     return m_MapServers[idx];
-};
+}
 
 void ServerManagerC::AddGameServer( IGameServer *srv )
 {
