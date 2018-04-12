@@ -12,7 +12,7 @@
 
 #include <QString>
 
-class MapClientSession;
+struct MapClientSession;
 
 class ChatMessage : public GameCommand
 {

@@ -27,7 +27,10 @@ struct MapClientSession
     using vBelief      = std::map<int, ClientEntityStateBelief>;
     friend class CharacterDatabase;
     struct MapLink * m_link;
-    uint64_t m_client_id;
+    uint32_t m_client_id;
+    // The values below might be needed for map<->map handover ?
+    uint32_t is_connected_to_map_server_id=0;
+    uint32_t is_connected_to_map_instance_id=0;
     uint8_t m_access_level;
     GameAccountData m_game_account;
 

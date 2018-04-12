@@ -14,16 +14,28 @@
 static const uint32_t supported_version=20040422;
 namespace {
 enum {
-    Link_Idle_Timer   = 1
+    Link_Idle_Timer   = 1,
+    Session_Reaper_Timer   = 2
 };
 const ACE_Time_Value link_update_interval(0,500*1000);
+const ACE_Time_Value session_reaping_interval(0,1000*1000);
 const ACE_Time_Value maximum_time_without_packets(0,1000*1000);
+const ACE_Time_Value link_is_stale_if_disconnected_for(0,15*1000*1000);
 const constexpr int MinPacketsToAck=5;
+}
+
+GameHandler::GameHandler()
+{
+}
+
+GameHandler::~GameHandler()
+{
 }
 
 void GameHandler::start() {
     ACE_ASSERT(m_link_checker==nullptr);
-    m_link_checker = new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false);
+    m_link_checker.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
+    m_session_reaper_timer.reset(new SEGSTimer(this,(void *)Session_Reaper_Timer,session_reaping_interval,false));
 }
 
 void GameHandler::dispatch( SEGSEvent *ev )
@@ -34,13 +46,29 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case SEGS_EventTypes::evTimeout:
         on_timeout(static_cast<TimerEvent *>(ev));
         break;
+    case SEGS_EventTypes::evDisconnect: // link layer tells us that a link is not responsive/dead
+        on_link_lost(ev);
+        break;
+    // Server <-> Server messages
+    case Internal_EventTypes::evExpectClientRequest:
+        on_expect_client(static_cast<ExpectClientRequest *>(ev));
+        break;
+    case Internal_EventTypes::evExpectMapClientResponse:
+        on_client_expected(static_cast<ExpectMapClientResponse *>(ev));
+        break;
+    case Internal_EventTypes::evClientConnected:
+        on_client_connected_to_other_server(static_cast<ClientConnectedMessage *>(ev));
+        break;
+    case Internal_EventTypes::evClientDisconnected:
+        on_client_disconnected_from_other_server(static_cast<ClientDisconnectedMessage *>(ev));
+        break;
+    // Client -> Server messages
     case GameEventTypes::evIdle:
         on_idle(static_cast<IdleEvent*>(ev));
         break;
     case GameEventTypes::evDisconnectRequest:
         on_disconnect(static_cast<DisconnectRequest *>(ev));
         break;
-
     case GameEventTypes::evConnectRequest:
         on_connection_request(static_cast<ConnectRequest *>(ev));
         break;
@@ -59,32 +87,10 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case GameEventTypes::evUnknownEvent:
         on_unknown_link_event(static_cast<GameUnknownRequest *>(ev));
         break;
-    // Server <-> Server messages
-    case Internal_EventTypes::evExpectClientRequest:
-        on_expect_client(static_cast<ExpectClientRequest *>(ev));
-        break;
-    case Internal_EventTypes::evExpectMapClientResponse:
-        on_client_expected(static_cast<ExpectMapClientResponse *>(ev));
-        break;
-    case SEGS_EventTypes::evConnect:
-        break;
-    case SEGS_EventTypes::evDisconnect: // link layer tells us that a link is not responsive/dead
-        on_link_lost(ev);
-        break;
+
     default:
         assert(!"Unknown event encountered in dispatch.");
     }
-}
-SEGSEvent * GameHandler::dispatchSync( SEGSEvent *ev )
-{
-    switch(ev->type())
-    {
-    case Internal_EventTypes::evClientConnectionRequest:
-            SEGSEvent *r=on_connection_query((ClientConnectionRequest *)ev);
-            ev->release();
-            return r;
-    }
-    return nullptr;
 }
 
 void GameHandler::on_connection_request(ConnectRequest *ev)
@@ -101,22 +107,26 @@ void GameHandler::on_update_server(UpdateServer *ev)
         qDebug("GameEntryError: Client version %u not supported!", ev->m_build_date);
         return;
     }
-    uint64_t expecting_ssession_token = m_session_store.connectedClient(ev->authCookie);
-    if(expecting_ssession_token==~0U)
+    uint64_t expecting_session_token = m_session_store.connectedClient(ev->authCookie);
+    if(expecting_session_token==~0U)
     {
         ev->src()->putq(new GameEntryError(this,"Unauthorized !"));
         qDebug("GameEntryError: Unauthorized!");
         return;
     }
-    GameSession &session(m_session_store.sessionFromToken(expecting_ssession_token));
+    GameSession &session(m_session_store.sessionFromToken(expecting_session_token));
     session.m_link = (GameLink *)ev->src();
-    session.m_link->session_token(expecting_ssession_token);
+    session.m_link->session_token(expecting_session_token);
     if(!fillGameAccountData(session.m_account.m_acc_server_acc_id,session.m_game_account))
     {
         ev->src()->putq(new GameEntryError(this,"DB error encountered!"));
         qDebug("GameEntryError: getCharsFromDb error!");
         return;
     }
+    // Inform auth server about succesful client connection
+    EventProcessor *tgt      = HandlerLocator::getAuth_Handler();
+    tgt->putq(new ClientConnectedMessage({expecting_session_token,m_server->getId(),0 }));
+
     m_session_store.addToActiveSessions(&session);
     CharacterSlots *slots_event=new CharacterSlots;
     slots_event->set_account_data(&session.m_game_account);
@@ -157,6 +167,8 @@ void GameHandler::on_check_links()
             client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
     }
 }
+
+
 void GameHandler::on_timeout(TimerEvent *ev)
 {
     // TODO: This should send 'ping' packets on all client links to which we didn't send
@@ -172,26 +184,31 @@ void GameHandler::on_timeout(TimerEvent *ev)
         case Link_Idle_Timer:
             on_check_links();
             break;
+        case Session_Reaper_Timer:
+            reap_stale_links();
+        break;
     }
 }
+
 void GameHandler::on_disconnect(DisconnectRequest *ev)
 {
-    GameSession &session = m_session_store.sessionFromEvent(ev);
     GameLink * lnk = (GameLink *)ev->src();
-    //TODO: removing session from the GameHandler's store, the client can be connected to MapServer
-    // consider not removing session here, should help with map hand-over ?
-    m_session_store.removeByToken(lnk->session_token());
+    GameSession &session = m_session_store.sessionFromEvent(ev);
+    if(session.is_connected_to_map_server_id==0)
+        m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(),&session,lnk->session_token()});
+    m_session_store.sessionLinkLost(lnk->session_token());
     lnk->putq(new DisconnectResponse);
     // Post disconnect event to link, will close it's processing loop, after it sends the response
     lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
 }
 void GameHandler::on_link_lost(SEGSEvent *ev)
 {
-    GameSession &session = m_session_store.sessionFromEvent(ev);
     GameLink * lnk = (GameLink *)ev->src();
-    //TODO: removing session from the GameHandler's store, the client can be connected to MapServer
-    // consider not removing session here, should help with map hand-over ?
-    m_session_store.removeByToken(lnk->session_token());
+    GameSession &session = m_session_store.sessionFromEvent(ev);
+
+    if(session.is_connected_to_map_server_id==0)
+        m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(),&session,lnk->session_token()});
+    m_session_store.sessionLinkLost(lnk->session_token());
     // Post disconnect event to link, will close it's processing loop
     lnk->putq(new DisconnectEvent(this));
 }
@@ -261,16 +278,6 @@ void GameHandler::on_unknown_link_event(GameUnknownRequest *)
         ACE_DEBUG((LM_WARNING,ACE_TEXT("Unknown GameHandler link event.\n")));
 }
 
-// This method is called by authentication service, to notify this GameServer that a client
-// with given source ip/port,id and access_level has just logged in.
-// If given client is not already logged in
-//  This method will create a new CharacterClient object, put it in m_expected_clients collection, and return a key (uint32_t)
-//  that will be used by the client during connection
-//  Also this will set m_expected_clients cleaning timer if it isn't set already
-// If given client is logged in ( it can be found here, or any other GameServer )
-//
-// In return caller gets an unique client identifier. which is used later on to retrieve appropriate
-// client object
 void GameHandler::on_expect_client( ExpectClientRequest *ev )
 {
     GameSession &sess = m_session_store.createSession(ev->session_token());
@@ -279,28 +286,58 @@ void GameHandler::on_expect_client( ExpectClientRequest *ev )
     sess.m_account.m_acc_server_acc_id = ev->m_data.m_client_id;
     HandlerLocator::getAuth_Handler()->putq(new ExpectClientResponse({ev->m_data.m_client_id,cookie,m_server->getId()},ev->session_token()));
 }
-SEGSEvent *GameHandler::on_connection_query(ClientConnectionRequest *ev)
+
+void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev)
 {
-    if (!m_session_store.hasSessionFor(ev->session_token()))
+    assert(ev->m_data.m_server_id);
+    assert(ev->m_data.m_sub_server_id);
+    GameSession &session(m_session_store.sessionFromToken(ev->m_data.m_session));
     {
-        // no session here
-        qDebug() << __FUNCTION__ << "No session in store for" << ev->session_token();
-        return new ClientConnectionResponse({ACE_Time_Value::max_time}, ev->session_token());
+        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
+        // check if this session perhaps is in ready for reaping set
+        for(size_t idx=0,total=m_session_ready_for_reaping.size(); idx<total; ++idx)
+        {
+            if(m_session_ready_for_reaping[idx].m_session==&session)
+            {
+                std::swap(m_session_ready_for_reaping[idx],m_session_ready_for_reaping.back());
+                m_session_ready_for_reaping.pop_back();
+                break;
+            }
+        }
     }
-    GameSession &session(m_session_store.sessionFromEvent(ev));
-
-
-    if (session.m_link == nullptr)
+    session.is_connected_to_map_server_id = ev->m_data.m_server_id;
+    session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
+}
+void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
 {
-        qDebug() << __FUNCTION__ << "No active link set in session for" << ev->session_token();
-        return new ClientConnectionResponse({ACE_Time_Value::max_time},ev->session_token());
-    }
-    // Client was not active for at least 15s. Warning this must check also map link!
-    if (session.m_link->client_last_seen_packets() > ACE_Time_Value(15, 0))
+    GameSession &session(m_session_store.sessionFromToken(ev->m_data.m_session));
+    session.is_connected_to_map_server_id = 0;
+    session.is_connected_to_map_instance_id = 0;
     {
-        // we assume the session was either handed over to
-        m_session_store.removeFromActiveSessions(&session);
+        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
+        m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(),&session,ev->m_data.m_session});
     }
-    return new ClientConnectionResponse({session.m_link->client_last_seen_packets()}, ev->session_token());
+}
+void GameHandler::reap_stale_links()
+{
+    ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
 
+    ACE_Time_Value              time_now = ACE_OS::gettimeofday();
+    EventProcessor *            tgt      = HandlerLocator::getAuth_Handler();
+
+    for (size_t idx = 0, total = m_session_ready_for_reaping.size(); idx < total; ++idx)
+    {
+        WaitingSession &waiting_session(m_session_ready_for_reaping[idx]);
+        if (time_now - m_session_ready_for_reaping[idx].m_waiting_since < link_is_stale_if_disconnected_for)
+            continue;
+        qDebug() << "Reaping stale link"<<waiting_session.m_session->m_account.m_acc_server_acc_id<<"in GameInstance";
+
+        tgt->putq(new ClientDisconnectedMessage({waiting_session.m_session_token}));
+        // we destroy the session object
+        m_session_store.removeByToken(waiting_session.m_session_token,
+                                      waiting_session.m_session->m_account.m_acc_server_acc_id);
+        std::swap(m_session_ready_for_reaping[idx], m_session_ready_for_reaping.back());
+        m_session_ready_for_reaping.pop_back();
+        total--; // update the total size
+    }
 }

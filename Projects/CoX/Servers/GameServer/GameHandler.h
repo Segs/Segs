@@ -14,6 +14,8 @@
 #include <ace/Thread_Mutex.h>
 class CharacterClient;
 class GameServer;
+class SEGSTimer;
+
 struct GameSession
 {
     enum eClientState
@@ -25,25 +27,40 @@ struct GameSession
         CLIENT_CONNECTED
     };
     GameLink *m_link=nullptr;
-    eClientState m_state;
     AuthAccountData m_account;
     GameAccountData m_game_account;
+    uint32_t is_connected_to_map_server_id=0;
+    uint32_t is_connected_to_map_instance_id=0;
+    eClientState m_state;
 };
 class GameHandler : public EventProcessor
 {
+    ///
+    /// \brief The WaitingSession struct is used to store sessions without active connections in any server.
+    ///
+    struct WaitingSession
+    {
+        ACE_Time_Value m_waiting_since;
+        GameSession *  m_session;
+        uint64_t       m_session_token;
+    };
+
     using sIds = std::unordered_set<uint32_t>;
     using SessionStore = ClientSessionStore<GameSession>;
 
     SessionStore m_session_store;
-    // function that send messages into the link
-    // incoming event handlers
-    class SEGSTimer *     m_link_checker=nullptr;
+    std::vector<WaitingSession> m_session_ready_for_reaping;
+    std::unique_ptr<SEGSTimer> m_link_checker;
+    std::unique_ptr<SEGSTimer> m_session_reaper_timer;
+    ACE_Thread_Mutex m_reaping_mutex;
+
 public:
+                GameHandler();
+                ~GameHandler();
     void        set_server(GameServer *s) {m_server=s;}
     void        start();
 protected:
         void    dispatch(SEGSEvent *ev);
-    SEGSEvent * dispatchSync( SEGSEvent *ev );
 
     //////////////////////////////////////////////////////////////////////////
     // Link events
@@ -61,18 +78,18 @@ protected:
     // Server <-> Server events
     void        on_expect_client(ExpectClientRequest *ev);     // from AuthServer
     void        on_client_expected(ExpectMapClientResponse *ev); // from MapServer
+    void        on_client_connected_to_other_server(ClientConnectedMessage *ev);
+    void        on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev);
 
     //////////////////////////////////////////////////////////////////////////
     // Internal events
     void        on_check_links();
+    void        reap_stale_links();
     void        on_timeout(TimerEvent *ev);
-
-    // synchronous event
-    SEGSEvent * on_connection_query(ClientConnectionRequest *ev);
 
     //////////////////////////////////////////////////////////////////////////
     sIds        waiting_for_client; // this hash_set holds all client cookies we wait for
     GameServer *m_server;
 
 };
-typedef ACE_Singleton<GameHandler,ACE_Thread_Mutex> GameHandlerG;
+

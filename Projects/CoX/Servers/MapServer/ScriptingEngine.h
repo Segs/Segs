@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 class QString;
-class MapClientSession;
+struct MapClientSession;
 
 class ScriptingEngine
 {

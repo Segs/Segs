@@ -5,7 +5,8 @@
 #include "MapRef.h"
 #include "CRUD_Events.h"
 #include "MapLink.h"
-class MapClientSession;
+
+struct MapClientSession;
 typedef CRUDLink_Event MapLinkEvent; //<MapLink>
 
 class EntitiesResponse : public MapLinkEvent
