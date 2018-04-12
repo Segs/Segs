@@ -29,5 +29,5 @@ public:
     //vector<NetCommand *> m_commands;
     std::vector<NetCommand *> m_commands2;  // m_commands2 will get filled after we know more about them
     std::vector<std::string>  m_shortcuts2;
-    MapClient *m_client;
+    MapClientSession *m_client;
 };

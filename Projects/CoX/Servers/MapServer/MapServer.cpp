@@ -30,7 +30,7 @@
 #include <set>
 
 // Template instantiation
-template class ClientStore<MapClient>;
+template class ClientStore<MapClientSession>;
 // global variables
 MapServer *g_GlobalMapServer=nullptr;
 

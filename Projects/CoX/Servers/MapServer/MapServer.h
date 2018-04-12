@@ -19,7 +19,7 @@
 
 class Net;
 class MapServerEndpoint;
-class MapClient;
+class MapClientSession;
 class MapInstance;
 class GameServerInterface;
 class MapServerData;

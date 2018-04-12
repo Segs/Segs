@@ -24,7 +24,7 @@ void ChatMessage::serializefrom(BitStream &src)
     src.GetString(m_msg);
 }
 
-void sendChatMessage(MessageChannel t, QString msg, MapClient *src, MapClient *tgt)
+void sendChatMessage(MessageChannel t, QString msg, MapClientSession *src, MapClientSession *tgt)
 {
     ChatMessage * res = new ChatMessage(t,msg);
     res->m_source_player_id = getIdx(*src->char_entity());

@@ -39,7 +39,7 @@ class MapInstance final : public EventProcessor
     uint8_t                 m_game_server_id=255; // 255 is `invalid` id
 public:
     EntityManager m_entities;
-    ClientStore<MapClient> m_clients;
+    ClientStore<MapClientSession> m_clients;
 
     std::unique_ptr<ScriptingEngine> m_scripting_interface;
 
@@ -47,7 +47,7 @@ public:
                             ~MapInstance() override;
     void                    dispatch(SEGSEvent *ev) override;
 
-    void                    enqueue_client(MapClient *clnt);
+    void                    enqueue_client(MapClientSession *clnt);
     void   start();
     void   set_server(MapServer *s) { m_server = s; }
     size_t num_active_clients();
@@ -57,7 +57,7 @@ public:
     void                    spin_down();
     void                    spin_up_for(uint8_t game_server_id);
 protected:
-    void process_chat(MapClient *sender, QString &msg_text);
+    void process_chat(MapClientSession *sender, QString &msg_text);
 
     void on_expect_client(ExpectMapClientRequest *ev);
     void on_link_lost(SEGSEvent *ev);

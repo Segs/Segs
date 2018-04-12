@@ -175,7 +175,7 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
 }
 
 // Poll EntityManager to return Entity by Name or IDX
-Entity * getEntity(MapClient *src, const QString &name)
+Entity * getEntity(MapClientSession *src, const QString &name)
 {
     MapInstance *mi = src->current_map();
     EntityManager &em(mi->m_entities);
@@ -194,7 +194,7 @@ Entity * getEntity(MapClient *src, const QString &name)
     return nullptr;
 }
 
-Entity * getEntity(MapClient *src, int32_t idx)
+Entity * getEntity(MapClientSession *src, int32_t idx)
 {
     MapInstance *mi = src->current_map();
     EntityManager &em(mi->m_entities);
@@ -219,7 +219,7 @@ Entity * getEntity(MapClient *src, int32_t idx)
     return nullptr;
 }
 
-Entity * getEntityByDBID(MapClient *src, int32_t db_id)
+Entity * getEntityByDBID(MapClientSession *src, int32_t db_id)
 {
     MapInstance *mi = src->current_map();
     EntityManager &em(mi->m_entities);
@@ -252,7 +252,7 @@ void sendServerMOTD(Entity *e)
         return;
     }
 
-    MapClient *src = e->m_client;
+    MapClientSession *src = e->m_client;
     qDebug().noquote() << "Sending Server MOTD to" << e->m_char->getName();
 
     QString fileName("scripts/motd.smlx");

@@ -36,7 +36,7 @@ struct ClientEntityStateBelief
     bool m_is_logging_out=false;
 };
 
-class MapClient : public ClientSession
+class MapClientSession : public ClientSession
 {
     friend class CharacterDatabase;
     using mNetCommands = std::map<int,NetCommand *>;
@@ -49,7 +49,7 @@ class MapClient : public ClientSession
         SEGSTimer *         m_tick_source = nullptr;
 
 public:
-virtual                     ~MapClient() = default;
+virtual                     ~MapClientSession() = default;
 
         void                AddShortcut(int index, NetCommand *command);
         NetCommand *        GetCommand(int index) {return m_shortcuts[index];}

@@ -7,7 +7,7 @@
 
 #include <cstdarg>
 
-void MapClient::AddShortcut(int index, NetCommand *command)
+void MapClientSession::AddShortcut(int index, NetCommand *command)
 {
     if(m_shortcuts.find(index)!=m_shortcuts.end())
     {
@@ -16,7 +16,7 @@ void MapClient::AddShortcut(int index, NetCommand *command)
     m_shortcuts[index]=command;
 }
 
-bool MapClient::db_create()
+bool MapClientSession::db_create()
 {
     account_info().fill_game_db(0);
     Character * new_char = account_info().create_new_character();
@@ -29,7 +29,7 @@ bool MapClient::db_create()
     return true;
 }
 
-void MapClient::entity( Entity * val )
+void MapClientSession::entity( Entity * val )
 {
     m_ent = val;
     m_ent->m_char->setName(m_name); // this is used because the new characters are passed to us nameless

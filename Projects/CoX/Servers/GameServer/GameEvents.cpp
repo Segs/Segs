@@ -107,7 +107,7 @@ void CharacterResponse::serializeto( BitStream &bs ) const
     if(indexed_character->getName().compare("EMPTY")!=0)
     {
         // actual character was read from db
-        const CharacterCostume *c=static_cast<const CharacterCostume *>(indexed_character->getCurrentCostume());
+        const Costume *c=indexed_character->getCurrentCostume();
         bs.StorePackedBits(1,m_index);
         c->storeCharselParts(bs);
     }
