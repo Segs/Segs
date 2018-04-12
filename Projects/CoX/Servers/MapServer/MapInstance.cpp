@@ -348,7 +348,8 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
 
     m_session_store.removeFromActiveSessions(&session);
     m_entities.removeEntityFromActiveList(ent);
-    session.m_link->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
+     // close the link by puting an disconnect event there
+    session.m_link->putq(new DisconnectEvent(session.m_link->session_token()));
     session.m_link = nullptr;
 }
 void MapInstance::on_disconnect(DisconnectRequest *ev)
@@ -362,7 +363,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     m_session_store.removeFromActiveSessions(&session);
         m_entities.removeEntityFromActiveList(ent);
     session.m_link->putq(new DisconnectResponse);
-    session.m_link->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
+    session.m_link->putq(new DisconnectEvent(session.m_link->session_token())); // this should work, event if different threads try to do it in parallel
     session.m_link = nullptr;
 }
 void MapInstance::on_expect_client( ExpectMapClientRequest *ev )

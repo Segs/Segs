@@ -22,8 +22,8 @@ public:
 class DisconnectEvent : public SEGSEvent
 {
 public:
-    DisconnectEvent(EventProcessor *ev_src) : SEGSEvent(SEGS_EventTypes::evDisconnect,ev_src)
+    uint64_t m_session_token;
+    DisconnectEvent(uint64_t token) : SEGSEvent(SEGS_EventTypes::evDisconnect,nullptr),m_session_token(token)
     {
-        assert(ev_src);
     }
 };

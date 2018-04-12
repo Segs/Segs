@@ -221,7 +221,7 @@ int AdminLink::handle_output(ACE_HANDLE fd)
 int AdminLink::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
     // client handle was closed, posting disconnect event with higher priority
-    g_target->msg_queue()->enqueue_prio(new DisconnectEvent(this),nullptr,100);
+    g_target->msg_queue()->enqueue_prio(new DisconnectEvent(0),nullptr,100);
     if (close_mask == ACE_Event_Handler::WRITE_MASK)
         return 0;
     return super::handle_close (handle, close_mask);
