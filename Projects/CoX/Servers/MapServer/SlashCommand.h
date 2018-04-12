@@ -55,6 +55,7 @@ void cmdHandler_SetWindowVisibility(QString &cmd, Entity *e);
 void cmdHandler_KeybindDebug(QString &cmd, Entity *e);
 void cmdHandler_ToggleLogging(QString &cmd, Entity *e);
 void cmdHandler_FriendsListDebug(QString &cmd, Entity *e);
+void cmdHandler_SendFloatingNumbers(QString &cmd, Entity *e);
 void cmdHandler_SetU1(QString &cmd, Entity *e);
 void cmdHandler_SetU2(QString &cmd, Entity *e);
 void cmdHandler_SetU3(QString &cmd, Entity *e);

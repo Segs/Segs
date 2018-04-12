@@ -50,6 +50,7 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"keybindDump", "keybindDebug"}, "Output keybind settings to console", &cmdHandler_KeybindDebug, 9},
     {{"toggleLogging", "log"}, "Modify log categories (e.g. input, teams, ...)", &cmdHandler_ToggleLogging, 9},
     {{"friendsDump", "friendsDebug"}, "Output friendlist info to console", &cmdHandler_FriendsListDebug, 9},
+    {{"damage", "heal"}, "Make current target (or self) take damage/health", &cmdHandler_SendFloatingNumbers, 9},
     {{"setu1"},"Set bitvalue u1", &cmdHandler_SetU1, 9},
     {{"setu2"},"Set bitvalue u2", &cmdHandler_SetU2, 9},
     {{"setu3"},"Set bitvalue u3", &cmdHandler_SetU3, 9},
@@ -544,6 +545,74 @@ void cmdHandler_FriendsListDebug(QString &cmd, Entity *e) {
     dumpFriends(*e); // Send FriendsList dump
 }
 
+void cmdHandler_SendFloatingNumbers(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+    Entity *tgt = nullptr;
+
+    QString msg; // result messages
+    int first_space  = cmd.indexOf(' ');
+    int second_space = cmd.indexOf(' ',first_space+1);
+    int third_space  = cmd.indexOf(' ',second_space+1);
+
+    bool ok1 = true;
+    bool ok2 = true;
+    uint32_t runtimes   = cmd.midRef(first_space+1, second_space-(first_space+1)).toInt(&ok1);
+    float amount        = cmd.midRef(second_space+1, third_space-(second_space+1)).toFloat(&ok2);
+    QString name        = cmd.midRef(third_space+1).toString();
+
+    // reign in the insanity
+    if(runtimes<=0)
+        runtimes = 1;
+    else if(runtimes > 5)
+        runtimes = 5;
+
+    if(!ok1 || !ok2 || name.isEmpty())
+    {
+        msg = "FloatingNumbers takes three arguments: `/damage <number_times_to_run> <damage_amount> <target_name>`";
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
+        return;
+    }       
+
+    tgt = getEntity(src,name); // get Entity by name
+
+    if(tgt == nullptr)
+    {
+        msg = "FloatingNumbers target " + name + " cannot be found.";
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
+        return;
+    }
+
+    for(int i = 0; i<runtimes; i++)
+    {
+        sendFloatingNumbers(e, tgt->m_idx, amount);
+
+        setHP(*tgt->m_char, getHP(*tgt->m_char)-amount); // deal dmg
+
+        if(amount >= 0) // damage
+        {
+            msg = QString("%1 deals %2 points of damage to %3.").arg(e->name(), QString::number(amount), name);
+            qCDebug(logSlashCommand) << msg;
+
+            msg = QString("You deal %1 points of damage to %2.").arg(QString::number(amount), name);
+            sendInfoMessage(MessageChannel::DAMAGE, msg, src);
+            msg = QString("%1 has dealt you %2 points of damage!").arg(e->name(), QString::number(amount));
+            sendInfoMessage(MessageChannel::DAMAGE, msg, tgt->m_client);
+        }
+        else
+        {
+            msg = QString("%1 heals %2 points of damage from %3.").arg(e->name(), QString::number(-amount), name);
+            qCDebug(logSlashCommand) << msg;
+
+            msg = QString("You heal %1 points of damage from %2.").arg(QString::number(-amount), name);
+            sendInfoMessage(MessageChannel::TEAM, msg, src); // TEAM for green
+            msg = QString("%1 has healed %2 points of damage from you!").arg(e->name(), QString::number(-amount));
+            sendInfoMessage(MessageChannel::TEAM, msg, tgt->m_client); // TEAM for green
+        }
+    }
+}
+
 // Slash commands for setting bit values
 void cmdHandler_SetU1(QString &cmd, Entity *e) {
     MapClient *src = e->m_client;
@@ -626,7 +695,7 @@ void cmdHandler_CmdList(QString &cmd, Entity *e) {
             if(sc.m_required_access_level != 0 )
             {
                 // Use msg for std out, msg_dlg for ingame dialog box
-                msg += "\t" + sc.m_valid_prefixes.join(", ") + "[" + QString::number(sc.m_required_access_level) + "]:\t" + sc.m_help_text + "\n";
+                msg += "\t" + sc.m_valid_prefixes.join(", ") + " [" + QString::number(sc.m_required_access_level) + "]:\t" + sc.m_help_text + "\n";
                 msg_dlg += QString("<color #ffCC99><i>%1</i></color>[<color #66ffff>%2</color>]: %3<br>").arg(sc.m_valid_prefixes.join(", ")).arg(sc.m_required_access_level).arg(sc.m_help_text);
             }
         }
@@ -706,10 +775,7 @@ void cmdHandler_Stuck(QString &cmd, Entity *e) {
     // TODO: Implement true move-to-safe-location-nearby logic
     e->m_entity_data.m_pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park starting location
 
-    QString msg = "Resetting location to default spawn ("
-            + QString::number(e->m_entity_data.m_pos.x) + ","
-            + QString::number(e->m_entity_data.m_pos.y) + ","
-            + QString::number(e->m_entity_data.m_pos.z) + ")";
+    QString msg = QString("Resetting location to default spawn (%1,%2,%3)").arg(e->m_entity_data.m_pos.x, e->m_entity_data.m_pos.y, e->m_entity_data.m_pos.z);
     qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, src);
 }

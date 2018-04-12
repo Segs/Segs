@@ -90,8 +90,8 @@ const QString &     getAlignment(const Character &c);
 // Setters
 void    setLevel(Character &c, uint32_t val);
 void    setCombatLevel(Character &c, uint32_t val);
-void    setHP(Character &c, uint32_t val);
-void    setEnd(Character &c, uint32_t val);
+void    setHP(Character &c, float val);
+void    setEnd(Character &c, float val);
 void    setLastCostumeId(Character &c, uint64_t val);
 void    setMapName(Character &c, const QString &val);
 void    setXP(Character &c, uint32_t val);
@@ -121,6 +121,7 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount);
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);
