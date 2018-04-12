@@ -188,18 +188,18 @@ void Character::serializetoCharsel( BitStream &bs )
         CharacterCostume::NullCostume.storeCharsel(bs);
     }
     else
-        m_costumes[m_current_costume_set]->storeCharsel(bs);
+        m_costumes[m_current_costume_set].storeCharsel(bs);
     bs.StoreString(getMapName(c));
     bs.StorePackedBits(1,1);
 }
 
-Costume * Character::getCurrentCostume() const
+const CharacterCostume * Character::getCurrentCostume() const
 {
-    assert(m_costumes.size()>0);
+    assert(!m_costumes.empty());
     if(m_current_costume_set)
-        return m_costumes[m_current_costume_idx];
+        return &m_costumes[m_current_costume_idx];
     else
-        return m_costumes[0];
+        return &m_costumes[0];
 }
 
 void Character::serialize_costumes(BitStream &bs, ColorAndPartPacker *packer , bool all_costumes) const
@@ -216,14 +216,14 @@ void Character::serialize_costumes(BitStream &bs, ColorAndPartPacker *packer , b
         bs.StoreBits(1,m_multiple_costumes);
         if(m_multiple_costumes)
         {
-            for(Costume * c : m_costumes)
+            for(const Costume & c : m_costumes)
             {
-                ::serializeto(*c,bs,packer);
+                ::serializeto(c,bs,packer);
             }
         }
         else
         {
-            ::serializeto(*m_costumes[m_current_costume_idx],bs,packer);
+            ::serializeto(m_costumes[m_current_costume_idx],bs,packer);
         }
         bs.StoreBits(1,m_char_data.m_supergroup_costume);
         if(m_char_data.m_supergroup_costume)
@@ -290,7 +290,7 @@ void Character::dump()
     qDebug() <<"//------------------Tray------------------";
     m_trays.dump();
     qDebug() <<"//-----------------Costume-----------------";
-    if(getCurrentCostume())
+    if(!m_costumes.empty())
         getCurrentCostume()->dump();
     qDebug() <<"//-----------------Options-----------------";
     m_options.clientOptionsDump();
@@ -299,10 +299,9 @@ void Character::dump()
 void Character::recv_initial_costume( BitStream &src, ColorAndPartPacker *packer )
 {
     assert(m_costumes.size()==0);
-    Costume *res=new Costume;
+    m_costumes.emplace_back();
     m_current_costume_idx=0;
-    ::serializefrom(*res,src,packer);
-    m_costumes.push_back(res);
+    ::serializefrom(m_costumes.back(),src,packer);
 }
 void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool /*sendAbsolute*/)
 {

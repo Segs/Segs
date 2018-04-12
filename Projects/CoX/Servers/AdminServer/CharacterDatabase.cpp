@@ -240,12 +240,12 @@ bool CharacterDatabase::fill( Character *c)
     qCDebug(logDB).noquote() << gui_data;
     qCDebug(logDB).noquote() << keybind_data;
 
-    CharacterCostume *main_costume = new CharacterCostume;
+    c->m_costumes.emplace_back();
+    CharacterCostume *main_costume = &c->m_costumes.back();
     // appearance related.
     main_costume->m_body_type = m_prepared_char_select.value("bodytype").toUInt();
     main_costume->setSlotIndex(0);
     main_costume->setCharacterId(m_prepared_char_select.value("id").toULongLong());
-    c->m_costumes.push_back(main_costume);
     return fill(main_costume);
 }
 #ifndef ARRAYSIZE
@@ -263,7 +263,6 @@ bool CharacterDatabase::fill( CharacterCostume *c)
 
     if(!m_prepared_fill.next()) // retry with the first one
     {
-        m_prepared_fill.bindValue(0,quint64(c->getCharacterId()));
         m_prepared_fill.bindValue(1,0); // get first costume
 
         if(!doIt(m_prepared_fill))
@@ -314,7 +313,7 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     ClientOptions &od(c.m_options);
     KeybindSettings &kbd(c.m_keybinds);
     GUISettings &gui(c.m_gui);
-    Costume *cst = c.getCurrentCostume();
+    const CharacterCostume *cst = c.getCurrentCostume();
     if(!cst) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::create cannot insert char without costume.\n"))
                          ,false);
@@ -386,7 +385,7 @@ bool CharacterDatabase::update( Entity *e )
     CharacterData *cd = &c.m_char_data;
     cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
 
-    Costume *cst = c.getCurrentCostume();
+    const CharacterCostume *cst = c.getCurrentCostume();
     if(!cst) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::update cannot update char without costume.\n"))
                          ,false);
@@ -419,7 +418,7 @@ bool CharacterDatabase::update( Entity *e )
 
     qCDebug(logDB).noquote() << entity_data;
     qCDebug(logDB).noquote() << char_data;
-  
+
     if(!doIt(m_prepared_char_update))
         return false;
 
