@@ -206,8 +206,8 @@ public:
         uint8_t             m_type                  = {0};
         glm::quat           m_direction;
         glm::vec3           m_spd                   = {1,1,1};
-        uint32_t            m_target_idx;
-        uint32_t            m_assist_target_idx;
+        uint32_t            m_target_idx            = 0;
+        uint32_t            m_assist_target_idx     = 0;
 
         int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
         int                 m_num_fx                = 0;

@@ -23,6 +23,7 @@
 #include <cassert>
 #include <string>
 
+struct CharacterCostume;
 struct Costume;
 struct CharacterPowerBoost
 {
@@ -54,7 +55,7 @@ class Character
         friend  class CharacterDatabase;
 
         using vPowerPool = std::vector<CharacterPower>;
-        using vCostume = std::vector<Costume *>;
+        using vCostume = std::vector<CharacterCostume>;
 
         vPowerPool              m_powers;
         PowerTrayGroup          m_trays;
@@ -84,7 +85,7 @@ const   QString &       getName() const { return m_name; }
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, ColorAndPartPacker *packer);
-        Costume *       getCurrentCostume() const;
+        const CharacterCostume *getCurrentCostume() const;
         void            DumpSidekickInfo();
         void            DumpPowerPoolInfo( const PowerPool_Info &pool_info );
         void            DumpBuildInfo();

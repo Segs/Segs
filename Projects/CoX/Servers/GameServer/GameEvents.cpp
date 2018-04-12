@@ -101,14 +101,13 @@ void UpdateCharacter::serializefrom( BitStream &bs )
 void CharacterResponse::serializeto( BitStream &bs ) const
 {
     Character *indexed_character = m_client->getCharacter(m_index);
-    CharacterCostume *c=0;
     assert(indexed_character);
-    if(indexed_character->getName().compare("EMPTY")!=0) // actual character was read from db
-        c=static_cast<CharacterCostume *>(indexed_character->getCurrentCostume());
     bs.StorePackedBits(1,6); // opcode
 
-    if(c)
+    if(indexed_character->getName().compare("EMPTY")!=0)
     {
+        // actual character was read from db
+        const CharacterCostume *c=static_cast<const CharacterCostume *>(indexed_character->getCurrentCostume());
         bs.StorePackedBits(1,m_index);
         c->storeCharselParts(bs);
     }
