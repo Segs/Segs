@@ -11,7 +11,7 @@
 #include <QRegularExpression>
 #include <QtCore/QDebug>
 
-InfoMessageCmd *info; // leverage InfoMessageCmd
+static InfoMessageCmd *info; // leverage InfoMessageCmd
 
 std::vector<SlashCommand> g_defined_slash_commands = {
     /* Access Level 9 Commands */

@@ -13,7 +13,8 @@
 #include "serialization_common.h"
 
 const constexpr uint32_t ClientOptions::class_version;
-CEREAL_CLASS_VERSION(ClientOptions, ClientOptions::class_version); // register Client Options class version
+// register Client Options class version
+CEREAL_CLASS_VERSION(ClientOptions, ClientOptions::class_version)
 
 template<class Archive>
 void serialize(Archive &archive, ClientOptions &co, uint32_t const version)
