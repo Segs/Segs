@@ -10,7 +10,7 @@
 #include "GameCommandList.h"
 
 
-class MapClientSession;
+struct MapClientSession;
 class QString;
 
 enum class MessageChannel : int;

@@ -1,11 +1,12 @@
 #include "GameHandler.h"
+
 #include "GameEvents.h"
-#include "AdminServer/AccountInfo.h"
+#include "Servers/HandlerLocator.h"
 #include "AdminServerInterface.h"
+#include "CharacterDatabase.h"
 #include "ServerManager.h"
 #include "GameLink.h"
 #include "GameEvents.h"
-#include "CharacterClient.h"
 #include "GameServer.h"
 #include "Character.h"
 #include "SEGSTimer.h"
@@ -62,8 +63,8 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case Internal_EventTypes::evExpectClientRequest:
         on_expect_client(static_cast<ExpectClientRequest *>(ev));
         break;
-    case Internal_EventTypes::evExpectClientResponse:
-        on_client_expected(static_cast<ExpectClientResponse *>(ev));
+    case Internal_EventTypes::evExpectMapClientResponse:
+        on_client_expected(static_cast<ExpectMapClientResponse *>(ev));
         break;
     case SEGS_EventTypes::evConnect:
         break;
@@ -94,39 +95,41 @@ void GameHandler::on_connection_request(ConnectRequest *ev)
 }
 void GameHandler::on_update_server(UpdateServer *ev)
 {
-    CharacterClient *cl=m_clients.getExpectedByCookie(ev->authCookie);
-    if(cl==nullptr)
-    {
-        ev->src()->putq(new GameEntryError(this,"Unauthorized !"));
-        qDebug("GameEntryError: Unauthorized!");
-        return;
-    }
     if(ev->m_build_date!=supported_version)
     {
         ev->src()->putq(new GameEntryError(this,"We are very sorry but your client version is not supported."));
         qDebug("GameEntryError: Client version %u not supported!", ev->m_build_date);
         return;
     }
-    if(!cl->getCharsFromDb())
+    uint64_t expecting_ssession_token = m_session_store.connectedClient(ev->authCookie);
+    if(expecting_ssession_token==~0U)
+    {
+        ev->src()->putq(new GameEntryError(this,"Unauthorized !"));
+        qDebug("GameEntryError: Unauthorized!");
+        return;
+    }
+    GameSession &session(m_session_store.sessionFromToken(expecting_ssession_token));
+    session.m_link = (GameLink *)ev->src();
+    session.m_link->session_token(expecting_ssession_token);
+    if(!fillGameAccountData(session.m_account.m_acc_server_acc_id,session.m_game_account))
     {
         ev->src()->putq(new GameEntryError(this,"DB error encountered!"));
         qDebug("GameEntryError: getCharsFromDb error!");
         return;
     }
-    m_clients.connectedClient(ev->authCookie);
-    ((GameLink *)ev->src())->set_client_data(cl); // store client object in link
-        cl->link_state().link((GameLink *)ev->src()); // store link in client
+    m_session_store.addToActiveSessions(&session);
     CharacterSlots *slots_event=new CharacterSlots;
-    slots_event->set_client(cl); // at this point pointer to the client is held in event, if it's destroyed somewhere else KA-BOOM!!
+    slots_event->set_account_data(&session.m_game_account);
     ev->src()->putq(slots_event);
 }
 void GameHandler::on_update_character(UpdateCharacter *ev)
 {
-    GameLink * lnk = (GameLink *)ev->src();
-    CharacterClient *client = lnk->client_data();
-    assert(client);
+    auto lnk = (GameLink *)ev->src();
+    assert(lnk->session_token());
+    GameSession &session = m_session_store.sessionFromEvent(ev);
+    assert(session.m_game_account.valid());
 
-    ev->src()->putq(new CharacterResponse(this,ev->m_index,client));
+    ev->src()->putq(new CharacterResponse(this,ev->m_index,&session.m_game_account));
 
     // TODO: Do we update database here? issue #271
 }
@@ -138,9 +141,15 @@ void GameHandler::on_idle(IdleEvent *ev)
 }
 void GameHandler::on_check_links()
 {
-    for(CharacterClient * c : m_clients)
+    // walk the active sessions
+    for(const auto &entry : m_session_store)
     {
-        GameLink * client_link = (GameLink *)c->link_state().link();
+        GameLink * client_link = entry->m_link;
+        if(!client_link)
+        {
+            // don't send to disconnected clients :)
+            continue;
+        }
         // Send at least one packet within maximum_time_without_packets
         if(client_link->last_sent_packets()>maximum_time_without_packets)
             client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
@@ -167,37 +176,37 @@ void GameHandler::on_timeout(TimerEvent *ev)
 }
 void GameHandler::on_disconnect(DisconnectRequest *ev)
 {
+    GameSession &session = m_session_store.sessionFromEvent(ev);
     GameLink * lnk = (GameLink *)ev->src();
-    CharacterClient *client = lnk->client_data();
-    if(client)
-    {
-        lnk->set_client_data(nullptr);
-        m_clients.removeById(client->account_info().account_server_id());
-    }
+    //TODO: removing session from the GameHandler's store, the client can be connected to MapServer
+    // consider not removing session here, should help with map hand-over ?
+    m_session_store.removeByToken(lnk->session_token());
     lnk->putq(new DisconnectResponse);
+    // Post disconnect event to link, will close it's processing loop, after it sends the response
     lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
 }
 void GameHandler::on_link_lost(SEGSEvent *ev)
 {
+    GameSession &session = m_session_store.sessionFromEvent(ev);
     GameLink * lnk = (GameLink *)ev->src();
-    CharacterClient *client = lnk->client_data();
-    if(client)
-    {
-        lnk->set_client_data(nullptr);
-        m_clients.removeById(client->account_info().account_server_id());
-    }
-    lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
+    //TODO: removing session from the GameHandler's store, the client can be connected to MapServer
+    // consider not removing session here, should help with map hand-over ?
+    m_session_store.removeByToken(lnk->session_token());
+    // Post disconnect event to link, will close it's processing loop
+    lnk->putq(new DisconnectEvent(this));
 }
 void GameHandler::on_delete_character(DeleteCharacter *ev)
 {
+    GameSession &session = m_session_store.sessionFromEvent(ev);
     GameLink * lnk = (GameLink *)ev->src();
-    CharacterClient *client = lnk->client_data();
-    Character *chr = client->getCharacter(ev->m_index);
+    auto chr(session.m_game_account.get_character(ev->m_index));
     // check if character exists, and if it's name is the same as the one passed here
-    if(chr && chr->getName().compare(ev->m_char_name)==0)
+    if(chr.m_name.compare(ev->m_char_name)==0)
     {
         // if it is delete the character ( or maybe not, just mark it deleted ? )
-        client->deleteCharacter(chr);
+        bool res = removeCharacter(session.m_game_account.m_game_server_acc_id,chr.index);
+        if(res)
+            chr.reset();
         lnk->putq(new DeletionAcknowledged);
     }
     else
@@ -205,27 +214,26 @@ void GameHandler::on_delete_character(DeleteCharacter *ev)
         lnk->putq(new GameEntryError(this,"Given name was not the same as character name\n. Character was not deleted."));
     }
 }
-void GameHandler::on_client_expected(ExpectClientResponse *ev)
+void GameHandler::on_client_expected(ExpectMapClientResponse *ev)
 {
     // this is the case when we cannot use ev->src(), because it is not GameLink, but a MapHandler
-    // we need to get a link from client_id
-    CharacterClient *cl=m_clients.getById(ev->client_id);
-    GameLink *lnk = (GameLink *)cl->link_state().link();
+    // we need to get a link based on the session token
+    GameSession &session = m_session_store.sessionFromEvent(ev);
+    GameLink *lnk = session.m_link;
     MapServerAddrResponse *r_ev=new MapServerAddrResponse;
-    r_ev->m_map_cookie  = ev->cookie;
-    r_ev->m_address     = ev->m_connection_addr;
+    r_ev->m_map_cookie  = ev->m_data.cookie;
+    r_ev->m_address     = ev->m_data.m_connection_addr;
     lnk->putq(r_ev);
 
 }
 void GameHandler::on_map_req(MapServerAddrRequest *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
-    CharacterClient *client = lnk->client_data();
-
-    if(!client)
+    GameSession &session = m_session_store.sessionFromEvent(ev);
+    if (!session.m_game_account.valid())
         return; // TODO:  return some kind of error.
 
-    Character * selected_slot = client->getCharacter(ev->m_character_index);
+    GameAccountResponseCharacterData *selected_slot = &session.m_game_account.get_character(ev->m_character_index);
     if(selected_slot->isEmpty())
         selected_slot = nullptr; // passing a null to map server to indicate a new character is being created.
     if(ServerManager::instance()->MapServerCount()<=0)
@@ -235,15 +243,17 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     }
     //TODO: this should handle multiple map servers, for now it doesn't care and always connects to the first one.
     EventProcessor *map_handler=ServerManager::instance()->GetMapServer(0)->event_target();
-    AccountInfo &acc_inf(client->account_info());
-    ExpectMapClientRequest * expect_client = new ExpectMapClientRequest(this,acc_inf.account_server_id(),acc_inf.access_level(),
-                                                          lnk->peer_addr());
+    AuthAccountData &acc_inf(session.m_account);
     if(selected_slot )
     {
-        ACE_ASSERT(selected_slot->getName()==ev->m_char_name || !"Server-Client character synchronization failure!");
+        ACE_ASSERT(selected_slot->m_name == ev->m_char_name || !"Server-Client character synchronization failure!");
     }
-    expect_client->setValues(ev->m_character_index, ev->m_char_name, ev->m_mapnumber,selected_slot);
-    fprintf(stderr," Telling map server to expect a client with character %s,%d\n",qPrintable(ev->m_char_name),ev->m_character_index);
+    ExpectMapClientRequest *expect_client =
+        new ExpectMapClientRequest({acc_inf.m_acc_server_acc_id, acc_inf.m_access_level, lnk->peer_addr(),
+                                    selected_slot, ev->m_character_index, ev->m_char_name, ev->m_mapnumber},
+                                   lnk->session_token());
+    fprintf(stderr, " Telling map server to expect a client with character %s,%d\n", qPrintable(ev->m_char_name),
+            ev->m_character_index);
     map_handler->putq(expect_client);
 }
 void GameHandler::on_unknown_link_event(GameUnknownRequest *)
@@ -263,42 +273,34 @@ void GameHandler::on_unknown_link_event(GameUnknownRequest *)
 // client object
 void GameHandler::on_expect_client( ExpectClientRequest *ev )
 {
-    uint32_t cookie = m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
-    // let the client object know how can it access database
-    m_clients.getExpectedByCookie(cookie)->setServer(this->m_server);
-    ev->src()->putq(new ExpectClientResponse(this,ev->m_client_id,cookie,m_server->getAddress()));
+    GameSession &sess = m_session_store.createSession(ev->session_token());
+    uint32_t cookie = m_session_store.ExpectClientSession(ev->session_token(),ev->m_data.m_from_addr,ev->m_data.m_client_id);
+    sess.m_state = GameSession::CLIENT_EXPECTED;
+    sess.m_account.m_acc_server_acc_id = ev->m_data.m_client_id;
+    HandlerLocator::getAuth_Handler()->putq(new ExpectClientResponse({ev->m_data.m_client_id,cookie,m_server->getId()},ev->session_token()));
 }
-void GameHandler::checkClientConnection(uint64_t id)
-{
-    CharacterClient *client = m_clients.getById(id);
-    if(client)
-    {
-        client->link_state().getState();
-    }
-    //GameLink * lnk = (GameLink *)client->link_state().link();
-    //    ACE_Time_Value inactive=lnk->inactivity_time();
-    //  m_clients.getById(id)->;
-    // empty for now, later on it will use client store to get the client, and then check it's packet backlog
-    //
-}
-bool GameHandler::isClientConnected(uint64_t id)
-{
-    return m_clients.getById(id)!=nullptr;
-}
-void GameHandler::disconnectClient( AccountInfo & cl )
-{
-    m_clients.removeById(cl.account_server_id()); // we're storing clients by their account server ids
-}
-
-
 SEGSEvent *GameHandler::on_connection_query(ClientConnectionRequest *ev)
 {
-    CharacterClient *cl=m_clients.getById(ev->m_data.m_id);
-    if(cl==nullptr)
+    if (!m_session_store.hasSessionFor(ev->session_token()))
+    {
+        // no session here
+        qDebug() << __FUNCTION__ << "No session in store for" << ev->session_token();
+        return new ClientConnectionResponse({ACE_Time_Value::max_time}, ev->session_token());
+    }
+    GameSession &session(m_session_store.sessionFromEvent(ev));
+
+
+    if (session.m_link == nullptr)
+{
+        qDebug() << __FUNCTION__ << "No active link set in session for" << ev->session_token();
         return new ClientConnectionResponse({ACE_Time_Value::max_time},ev->session_token());
+    }
     // Client was not active for at least 15s. Warning this must check also map link!
-    if(((GameLink *)cl->link_state().link())->client_last_seen_packets()>ACE_Time_Value(15,0))
-        disconnectClient(cl->account_info());
-    return new ClientConnectionResponse({ACE_OS::gettimeofday()},ev->session_token());
+    if (session.m_link->client_last_seen_packets() > ACE_Time_Value(15, 0))
+    {
+        // we assume the session was either handed over to
+        m_session_store.removeFromActiveSessions(&session);
+    }
+    return new ClientConnectionResponse({session.m_link->client_last_seen_packets()}, ev->session_token());
 
 }

@@ -1,11 +1,11 @@
 #define _USE_MATH_DEFINES
-#include "Events/EntitiesResponse.h"
-#include "NetStructures/Powers.h"
+#include "EntitiesResponse.h"
 
+#include "NetStructures/Powers.h"
+#include "MapClientSession.h"
 #include "Entity.h"
 #include "Character.h"
 #include "MapEvents.h"
-#include "MapClient.h"
 #include "MapInstance.h"
 #include "EntityUpdateCodec.h"
 #include "DataHelpers.h"
@@ -60,7 +60,7 @@ void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
 }
 void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 {
-    Entity *e = src.m_client->char_entity();
+    Entity *e = src.m_client->m_ent;
     assert(e);
 
     // shorthand local vars
@@ -99,10 +99,10 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
         }
 
         QString member_name     = tm_ent->name();
-        QString member_mapname  = tm_ent->m_client->current_map()->name();
+        QString member_mapname  = tm_ent->m_client->m_current_map->name();
         bool tm_on_same_map     = true;
 
-        if(member_mapname != src.m_client->current_map()->name())
+        if(member_mapname != src.m_client->m_current_map->name())
             tm_on_same_map = false;
 
         bs.StoreBits(32,member.tm_idx);
@@ -301,7 +301,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
     glm::vec3 zeroes {0,0,0};
     // user entity
-    Entity *ent = src.m_client->char_entity();
+    Entity *ent = src.m_client->m_ent;
 
     SurfaceParams surface_params[2];
     memset(&surface_params,0,2*sizeof(SurfaceParams));
@@ -350,7 +350,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 }
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
 {
-    Entity * target = src.m_client->char_entity();
+    Entity * target = src.m_client->m_ent;
 
     bs.StoreBits(1,target->m_full_update);
     if( !target->m_full_update )
@@ -385,7 +385,7 @@ void sendCommands(const EntitiesResponse &src,BitStream &tgt)
 }
 void sendClientData(const EntitiesResponse &src,BitStream &bs)
 {
-    Entity *ent=src.m_client->char_entity();
+    Entity *ent=src.m_client->m_ent;
 
     if(!src.m_incremental)
     {
@@ -430,7 +430,7 @@ EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
 }
 void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
-    MapInstance *mi = m_client->current_map();
+    MapInstance *mi = m_client->m_current_map;
     EntityManager &ent_manager(mi->m_entities);
 
 

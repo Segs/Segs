@@ -18,10 +18,10 @@ class PacketEvent;
 class CRUD_EventFactory;
 
 
-class CRUDLink : public ILink
+class CRUDLink : public LinkBase
 {
 protected:
-using super = ILink;
+using super = LinkBase;
         ACE_Reactor_Notification_Strategy   m_notifier; // our queue will use this to inform the reactor of it's new elements
         ACE_HANDLE                          get_handle (void) const override {return peer_.get_handle();}
         ACE_Time_Value                      m_last_recv_activity; // last link activity time
@@ -45,7 +45,6 @@ public:
     CrudP_Protocol *get_proto() { return &m_protocol; }
     stream_type &   peer() { return peer_; }
     addr_type &     peer_addr() { return m_peer_addr; }
-    void            set_client_data(void *d) { m_link_data = d; }
 
     ACE_Time_Value  client_last_seen_packets() const //! return the amount of time this client hasn't received anything
                     {
@@ -69,7 +68,6 @@ virtual CRUD_EventFactory &factory() = 0;
     CrudP_Protocol  m_protocol;
     stream_type     peer_;  //!< Maintain connection with client.
     addr_type       m_peer_addr;
-    void *          m_link_data;
     EventProcessor *m_net_layer;      //!< All outgoing events are put here
     EventProcessor *m_target;         //!< All incoming events are put here
 

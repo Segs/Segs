@@ -5,8 +5,9 @@
 class QString;
 class Entity;
 class Character;
-class MapClientSession;
+
 struct FriendsList;
+struct MapClientSession;
 
 /*
  * Entity Methods
@@ -61,7 +62,7 @@ int     getEntityClassIndex(bool is_player, const QString &class_name);
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, int32_t idx);
 Entity * getEntityByDBID(MapClientSession *src, int32_t idx);
-void    sendServerMOTD(Entity *e);
+void    sendServerMOTD(MapClientSession *tgt);
 
 /*
  * Character Methods

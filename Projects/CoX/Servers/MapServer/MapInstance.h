@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server Project
  * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
 
@@ -13,6 +13,8 @@
 #include "EventProcessor.h"
 #include "ClientManager.h"
 #include "ScriptingEngine.h"
+#include "MapClientSession.h"
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -38,22 +40,22 @@ class MapInstance final : public EventProcessor
 
     uint8_t                 m_game_server_id=255; // 255 is `invalid` id
 public:
+    using SessionStore = ClientSessionStore<MapClientSession>;
     EntityManager m_entities;
-    ClientStore<MapClientSession> m_clients;
+    SessionStore            m_session_store;
 
     std::unique_ptr<ScriptingEngine> m_scripting_interface;
 
-    MapInstance(const QString &name);
+public:
+                            MapInstance(const QString &name);
                             ~MapInstance() override;
     void                    dispatch(SEGSEvent *ev) override;
 
     void                    enqueue_client(MapClientSession *clnt);
-    void   start();
-    void   set_server(MapServer *s) { m_server = s; }
-    size_t num_active_clients();
-    const QString &     name() const { return m_name; }
-    uint32_t            index() const { return m_index; }
-
+    void                    start();
+    void                    set_server(MapServer *s) { m_server = s; }
+    const QString &         name() const { return m_name; }
+    uint32_t                index() const { return m_index; }
     void                    spin_down();
     void                    spin_up_for(uint8_t game_server_id);
 protected:

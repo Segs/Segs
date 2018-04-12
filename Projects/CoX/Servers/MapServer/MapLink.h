@@ -10,7 +10,6 @@
 #pragma once
 #include "Common/CRUDP_Protocol/CRUD_Link.h"
 #include "MapEventFactory.h"
-class MapClientSession;
 struct MapLink : public CRUDLink
 {
     MapLink(EventProcessor *tgt,EventProcessor *linktgt) : CRUDLink() {
@@ -18,9 +17,6 @@ struct MapLink : public CRUDLink
         m_target = tgt;
         assert(tgt);
     }
-    MapClientSession * client_data() {return static_cast<MapClientSession *>(m_link_data);}
-
-
     // CRUDLink interface
 protected:
     CRUD_EventFactory &factory() override

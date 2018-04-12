@@ -1,6 +1,5 @@
 #include "WorldSimulation.h"
 #include "MapInstance.h"
-#include "MapClient.h"
 #include "AdminServer.h"
 #include "Database.h"
 #include "Events/GameCommandList.h"

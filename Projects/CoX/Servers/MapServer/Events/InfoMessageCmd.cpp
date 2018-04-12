@@ -1,8 +1,8 @@
 #include "InfoMessageCmd.h"
 
 #include "Entity.h"
-#include "MapClient.h"
 #include "Servers/MapServer/DataHelpers.h"
+#include "MapClientSession.h"
 #include "Logging.h"
 
 void InfoMessageCmd::serializeto(BitStream &bs) const
@@ -16,7 +16,7 @@ void sendInfoMessage(MessageChannel t, QString msg, MapClientSession *tgt)
 {
 
     InfoMessageCmd * res = new InfoMessageCmd(t,msg);
-    res->m_target_player_id = getIdx(*tgt->char_entity());
+    res->m_target_player_id = getIdx(*tgt->m_ent);
 
     tgt->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(res));
 

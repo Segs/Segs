@@ -1,9 +1,12 @@
 #pragma once
 #include "Servers/InternalEvents.h"
+#include "AuthDatabase/AccountData.h"
 #include "AuthProtocol/AuthLink.h"
 #include "AuthProtocol/AuthEvents.h"
 #include "Servers/MessageBusEndpoint.h"
+#include "Servers/ClientManager.h"
 #include "EventProcessor.h"
+#include "AdminServer/AccountInfo.h"
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
@@ -35,14 +38,32 @@ enum eAuthError
     AUTH_UNKN_ERROR
 }; // this is a public type so other servers can pass us valid errors
 
+struct AuthSession
+{
+    enum eClientState
+    {
+        CLIENT_DISCONNECTED=0,
+        CLIENT_EXPECTED,
+        NOT_LOGGED_IN,
+        LOGGED_IN,
+        CLIENT_CONNECTED
+    };
+    AuthLink *m_link = nullptr;
+    uint64_t m_auth_id=0;
+    std::unique_ptr<AuthAccountData> m_auth_data;
+    eClientState m_state = NOT_LOGGED_IN;
+    //TODO: store last connected game server here, to speed up session liveness checks
+};
 class AuthHandler : public EventProcessor
 {
+    using SessionStore = ClientSessionStore<AuthSession>;
 protected:
-    using MTGuard = ACE_Guard<ACE_Thread_Mutex>;
-    ACE_Thread_Mutex m_store_mutex;
+    static uint64_t s_last_session_id;
     MessageBusEndpoint m_message_bus_endpoint;
-    std::unordered_map<uint64_t,AuthLink *> m_link_store;
+    SessionStore m_sessions;
     AuthServer *m_authserv = nullptr;
+
+    bool isSessionConnectedAnywhere(uint64_t ses);
     //////////////////////////////////////////////////////////////////////////
     // function that send messages into the link
     void        auth_error(EventProcessor *lnk,uint32_t code);
@@ -56,8 +77,8 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Server <-> server event handlers
     void        on_client_expected(ExpectClientResponse *ev);
-public:
     void        dispatch(SEGSEvent *ev) override;
+public:
                 AuthHandler(AuthServer *our_server);
 };
 

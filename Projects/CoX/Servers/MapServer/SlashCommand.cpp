@@ -118,7 +118,7 @@ void runCommand(QString &str, Entity &e) {
 // Access Level 9 Commands (GMs)
 void cmdHandler_Script(QString &cmd, Entity *e) {
     MapClientSession *src = e->m_client;
-    MapInstance *mi = src->current_map();
+    MapInstance *mi = src->m_current_map;
 
     QString code = cmd.mid(7,cmd.size()-7);
     mi->m_scripting_interface->runScript(src,code,"user provided script");
@@ -722,14 +722,14 @@ void cmdHandler_AFK(QString &cmd, Entity *e) {
 
 void cmdHandler_WhoAll(QString &cmd, Entity *e) {
     MapClientSession *src = e->m_client;
-    MapInstance *mi = src->current_map();
+    MapInstance *mi = src->m_current_map;
 
     QString msg = "Players on this map:\n";
 
-    for(MapClientSession *cl : mi->m_clients)
+    for(MapClientSession *cl : mi->m_session_store)
     {
-        Character &c(*cl->char_entity()->m_char);
-        QString name        = cl->char_entity()->name();
+        Character &c(*cl->m_ent->m_char);
+        QString name        = cl->m_ent->name();
         QString lvl         = QString::number(getLevel(c));
         QString clvl        = QString::number(getCombatLevel(c));
         QString origin      = getOrigin(c);
@@ -793,7 +793,7 @@ void cmdHandler_LFG(QString &cmd, Entity *e) {
 void cmdHandler_MOTD(QString &cmd, Entity *e) {
     MapClientSession *src = e->m_client;
 
-    sendServerMOTD(e);
+    sendServerMOTD(src);
 
     QString msg = "Opening Server MOTD";
     qCDebug(logSlashCommand).noquote() << msg;
@@ -827,7 +827,7 @@ void cmdHandler_Invite(QString &cmd, Entity *e) {
         return;
     }
 
-    if(tgt->name() == src->name())
+    if(tgt->name() == src->m_name)
     {
         msg = "You cannot invite yourself to a team.";
         qCDebug(logTeams) << msg;

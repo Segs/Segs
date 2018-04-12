@@ -18,7 +18,7 @@
 #include <set>
 #include <deque>
 
-class MapClientSession;
+struct MapClientSession;
 class MapInstance;
 class Entity;
 class BitStream;

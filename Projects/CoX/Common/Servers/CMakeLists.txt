@@ -3,7 +3,6 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/AdminServerInterface.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GameServerInterface.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MapServerInterface.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerSupport.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerEndpoint.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerManager.cpp
