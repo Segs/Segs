@@ -31,7 +31,7 @@ public:
     MapLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
     ~MapLinkEndpoint()=default;
 protected:
-    ILink *createLink(EventProcessor *down) override
+    CRUDLink *createLink(EventProcessor *down) override
     {
         return new MapLink(down,this);
     }

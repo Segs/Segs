@@ -32,14 +32,14 @@ public:
 }
 
 class SEGSEvent;
-class ILink;
+class CRUDLink;
 // This class represents a UDP port<->Client link router
 // when it receives any bytes it will pass them to appropriate ILink instance
 // when it receives PacketEvents from ILink it sends the bytes over the UDP to associated address
 class ServerEndpoint : public EventProcessor
 {
     typedef EventProcessor super;
-    typedef std::unordered_map<ACE_INET_Addr,ILink *> hmAddrProto;
+    typedef std::unordered_map<ACE_INET_Addr,CRUDLink *> hmAddrProto;
 public:
 
                     ServerEndpoint(const ACE_INET_Addr &local_addr) :
@@ -62,9 +62,9 @@ protected:
                     {
                         ACE_ASSERT(!"All events are dispatched from handle_* methods");
                     }
-        ILink *     createLinkInstance();
-        ILink *     getClientLink(const ACE_INET_Addr &from_addr);
-virtual ILink *     createLink(EventProcessor *down) = 0;
+        CRUDLink *  createLinkInstance();
+        CRUDLink *  getClientLink(const ACE_INET_Addr &from_addr);
+virtual CRUDLink *  createLink(EventProcessor *down) = 0;
 
         hmAddrProto client_links;
         ACE_Reactor_Notification_Strategy m_notifier;

@@ -1,7 +1,7 @@
 #include "ServerEndpoint.h"
 
 #include "Common/CRUDP_Protocol/CRUD_Events.h"
-#include "Common/CRUDP_Protocol/ILink.h"
+#include "Common/CRUDP_Protocol/CRUD_Link.h"
 
 #include <ace/Reactor.h>
 #include <ace/Message_Block.h>
@@ -13,7 +13,7 @@ int ServerEndpoint::handle_input(ACE_HANDLE /*fd*/) //! Called when input is ava
     ssize_t n = this->endpoint_.recv(buf, sizeof buf,from_addr);
     if (n == -1)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%p\n"),"handle_input"),0);
-    ILink *crud_link = getClientLink(from_addr); // get packet handling object for this connection
+    CRUDLink *crud_link = getClientLink(from_addr); // get packet handling object for this connection
     ACE_ASSERT(crud_link!=nullptr);
     BitStream wrap((uint8_t *)buf,n);
     crud_link->received_block(wrap);
@@ -74,8 +74,8 @@ int ServerEndpoint::open(void *p)
     return 0;
 }
 
-ILink *ServerEndpoint::createLinkInstance() {
-    ILink *res = createLink(m_downstream); // create a new client handler
+CRUDLink *ServerEndpoint::createLinkInstance() {
+    CRUDLink *res = createLink(m_downstream); // create a new client handler
     res->reactor(reactor());
     if(-1==res->open())
     {
@@ -85,9 +85,9 @@ ILink *ServerEndpoint::createLinkInstance() {
     return res;
 }
 
-ILink *ServerEndpoint::getClientLink(const ACE_INET_Addr &from_addr)
+CRUDLink *ServerEndpoint::getClientLink(const ACE_INET_Addr &from_addr)
 {
-    ILink *res= client_links[from_addr]; // get packet handling object for this connection
+    CRUDLink *res= client_links[from_addr]; // get packet handling object for this connection
     if(res!=nullptr)
         return res;
 
