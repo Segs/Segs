@@ -30,20 +30,35 @@ struct ExpectMapClientRequest;
 
 class MapInstance final : public EventProcessor
 {
+    ///
+    /// \brief The WaitingSession struct is used to store sessions without active connections in any server.
+    ///
+    struct WaitingSession
+    {
+        ACE_Time_Value m_waiting_since;
+        MapClientSession *  m_session;
+        uint64_t       m_session_token;
+    };
+
     QString                m_name;
     uint32_t               m_index = 1; // what does client expect this to store, and where do we send it?
-    SEGSTimer *            m_world_update_timer;
-    SEGSTimer *            m_resend_timer;
+    std::unique_ptr<SEGSTimer> m_world_update_timer;
+    std::unique_ptr<SEGSTimer> m_resend_timer;
+    std::unique_ptr<SEGSTimer> m_session_reaper_timer;
 
     World *    m_world;
     MapServer *m_server;
 
     uint8_t                 m_game_server_id=255; // 255 is `invalid` id
-public:
+    uint32_t                m_owner_id;
+    uint32_t                m_instance_id;
+    std::vector<WaitingSession> m_session_ready_for_reaping;
+    ACE_Thread_Mutex m_reaping_mutex;
     using SessionStore = ClientSessionStore<MapClientSession>;
-    EntityManager m_entities;
-    SessionStore            m_session_store;
 
+public:
+    SessionStore            m_session_store;
+    EntityManager           m_entities;
     std::unique_ptr<ScriptingEngine> m_scripting_interface;
 
 public:
@@ -57,8 +72,12 @@ public:
     const QString &         name() const { return m_name; }
     uint32_t                index() const { return m_index; }
     void                    spin_down();
-    void                    spin_up_for(uint8_t game_server_id);
+    void                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
 protected:
+    void reap_stale_links();
+    void on_client_connected_to_other_server(ClientConnectedMessage *ev);
+    void on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev);
+
     void process_chat(MapClientSession *sender, QString &msg_text);
 
     void on_expect_client(ExpectMapClientRequest *ev);

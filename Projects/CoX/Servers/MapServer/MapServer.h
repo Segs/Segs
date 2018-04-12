@@ -56,7 +56,7 @@ private:
 protected:
         std::unique_ptr<PrivateData> d;
 
-        uint8_t                 m_id = 0;
+        uint8_t                 m_id = 1;
 
         QString                 m_serverName;
         ACE_INET_Addr           m_location; //! this value is sent to the clients

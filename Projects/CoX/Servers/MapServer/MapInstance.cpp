@@ -40,11 +40,16 @@
 namespace {
 enum {
     World_Update_Timer   = 1,
-    State_Transmit_Timer = 2
+    State_Transmit_Timer = 2,
+    Session_Reaper_Timer   = 3,
 };
 
-ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
-ACE_Time_Value resend_interval(0,250*1000);
+
+const ACE_Time_Value reaping_interval(0,1000*1000);
+const ACE_Time_Value link_is_stale_if_disconnected_for(0,5*1000*1000);
+const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
+const ACE_Time_Value resend_interval(0,250*1000);
+
 void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &locations_scriptname)
 {
     if(QFile::exists(locations_scriptname))
@@ -84,9 +89,9 @@ void MapInstance::start()
         QDir::current().mkpath("MapInstances/"+m_name);
         qWarning() << "FAILED to load map instance data. Check to see if file exists:"<< "MapInstances/"+m_name;
     }
-    m_world_update_timer = new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false); // world simulation ticks
-    m_resend_timer = new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false); // state broadcast ticks
-
+    m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
+    m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
+    m_session_reaper_timer.reset(new SEGSTimer(this,(void *)Session_Reaper_Timer,reaping_interval,false)); // session cleaning
     qInfo() << "Server running... awaiting client connections."; // best place for this?
 }
 ///
@@ -102,13 +107,68 @@ void MapInstance::spin_down()
 /// \brief This function should prepare the map for use by the specified game server
 /// \param game_server_id
 ///
-void MapInstance::spin_up_for(uint8_t game_server_id)
+void MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t instance_id)
 {
     m_game_server_id = game_server_id;
+    m_owner_id = owner_id;
+    m_instance_id = instance_id;
 }
 
 MapInstance::~MapInstance() {
     delete m_world;
+}
+void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage *ev)
+{
+    assert(false);
+//    assert(ev->m_data.m_sub_server_id);
+//    MapClientSession &session(m_session_store.sessionFromEvent(ev));
+//    {
+//        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
+//        // check if this session perhaps is in ready for reaping set
+//        for(size_t idx=0,total=m_session_ready_for_reaping.size(); idx<total; ++idx)
+//        {
+//            if(m_session_ready_for_reaping[idx].m_session==&session)
+//            {
+//                std::swap(m_session_ready_for_reaping[idx],m_session_ready_for_reaping.back());
+//                m_session_ready_for_reaping.pop_back();
+//                break;
+//            }
+//        }
+//    }
+//    session.is_connected_to_map_server_id = ev->m_data.m_server_id;
+//    session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
+}
+void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
+{
+    MapClientSession &session(m_session_store.sessionFromEvent(ev));
+    session.is_connected_to_map_server_id = 0;
+    session.is_connected_to_map_instance_id = 0;
+    {
+        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
+        m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(),&session,ev->session_token()});
+    }
+}
+void MapInstance::reap_stale_links()
+{
+    ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
+
+    ACE_Time_Value              time_now = ACE_OS::gettimeofday();
+    EventProcessor *            tgt      = HandlerLocator::getGame_Handler(m_game_server_id);
+
+    for (size_t idx = 0, total = m_session_ready_for_reaping.size(); idx < total; ++idx)
+    {
+        WaitingSession &waiting_session(m_session_ready_for_reaping[idx]);
+        if (time_now - m_session_ready_for_reaping[idx].m_waiting_since < link_is_stale_if_disconnected_for)
+            continue;
+        qDebug() << "Reaping stale link"<<waiting_session.m_session->m_client_id<<"in MapInstance";
+        tgt->putq(new ClientDisconnectedMessage({waiting_session.m_session_token}));
+        // we destroy the session object
+        m_session_store.removeByToken(waiting_session.m_session_token,
+                                      waiting_session.m_session->m_client_id);
+        std::swap(m_session_ready_for_reaping[idx], m_session_ready_for_reaping.back());
+        m_session_ready_for_reaping.pop_back();
+        total--; // update the total size
+    }
 }
 void MapInstance::enqueue_client(MapClientSession *clnt)
 {
@@ -281,7 +341,11 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
     MapClientSession &session(m_session_store.sessionFromEvent(ev));
     Entity *ent = session.m_ent;
     assert(ent);
-        //todo: notify all clients about entity removal
+    //todo: notify all clients about entity removal
+
+    HandlerLocator::getGame_Handler(m_game_server_id)
+            ->putq(new ClientDisconnectedMessage({session.m_link->session_token()}));
+
     m_session_store.removeFromActiveSessions(&session);
     m_entities.removeEntityFromActiveList(ent);
     session.m_link->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
@@ -291,8 +355,10 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
 {
     MapClientSession &session(m_session_store.sessionFromEvent(ev));
     Entity *ent = session.m_ent;
-        assert(ent);
+    assert(ent);
         //todo: notify all clients about entity removal
+    HandlerLocator::getGame_Handler(m_game_server_id)
+            ->putq(new ClientDisconnectedMessage({session.m_link->session_token()}));
     m_session_store.removeFromActiveSessions(&session);
         m_entities.removeEntityFromActiveList(ent);
     session.m_link->putq(new DisconnectResponse);
@@ -330,7 +396,8 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     cookie                    = 2 + m_session_store.ExpectClientSession(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
     map_session.m_name        = request_data.m_character_name;
-    map_session.m_current_map = tpl->get_instance(m_game_server_id);
+    // TODO: this code is wrong on the logical level
+    map_session.m_current_map = tpl->get_instance(m_game_server_id,m_owner_id);
     if (request_data.char_from_db)
     {
         Entity *ent = m_entities.CreatePlayer();
@@ -349,26 +416,27 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 }
 void MapInstance::on_create_map_entity(NewEntity *ev)
 {
-    //TODO: At this point we should pre-process the NewEntity packet and let the proper CoXMapInstance handle the rest of processing
-    MapLink * lnk = (MapLink *)ev->src();
-    uint64_t token = m_session_store.connectedClient(ev->m_cookie-2);
+    // TODO: At this point we should pre-process the NewEntity packet and let the proper CoXMapInstance handle the rest
+    // of processing
+    MapLink *lnk   = (MapLink *)ev->src();
+    uint64_t token = m_session_store.connectedClient(ev->m_cookie - 2);
 
-    assert(token!=~0U);
+    assert(token != ~0U);
     MapClientSession &map_session(m_session_store.sessionFromToken(token));
-    if(ev->m_new_character)
+    if (ev->m_new_character)
     {
         Entity *e = m_entities.CreatePlayer();
-        fillEntityFromNewCharData(*e,ev->m_character_data,g_GlobalMapServer->runtimeData().getPacker());
+        fillEntityFromNewCharData(*e, ev->m_character_data, g_GlobalMapServer->runtimeData().getPacker());
         map_session.m_ent = e;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         map_session.m_ent->m_char->setName(map_session.m_name);
         // create the character from the data.
-        fillGameAccountData(map_session.m_client_id,map_session.m_game_account);
+        fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
         int8_t idx = map_session.m_game_account.next_free_slot_idx();
-        if(idx!=-1)
+        if (idx != -1)
         {
-            storeNewCharacter(map_session.m_ent,idx,map_session.m_client_id);
-    }
+            storeNewCharacter(map_session.m_ent, idx, map_session.m_client_id);
+        }
     }
     assert(map_session.m_ent);
 
@@ -376,19 +444,25 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     CharacterDatabase *char_db = AdminServer::instance()->character_db();
     // TODO: Implement asynchronous database queries
     DbTransactionGuard grd(*char_db->getDb());
-    if(false==char_db->fill(map_session.m_ent))
+    if (false == char_db->fill(map_session.m_ent))
+    {
+        //TODO: send some kind of error packet ?
         return;
+    }
     grd.commit();
 
-    if(logSpawn().isDebugEnabled())
+    if (logSpawn().isDebugEnabled())
         map_session.m_ent->dump();
+    // Tell our game server we've got the client
+    EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
+    tgt->putq(new ClientConnectedMessage({token,m_owner_id,m_instance_id}));
 
     map_session.m_current_map->enqueue_client(&map_session);
     map_session.m_link = lnk;
     lnk->session_token(token);
-    setMapName(*map_session.m_ent->m_char,name());
-    setMapIdx(*map_session.m_ent,index());
-    lnk->putq(new MapInstanceConnected(this,1,""));
+    setMapName(*map_session.m_ent->m_char, name());
+    setMapIdx(*map_session.m_ent, index());
+    lnk->putq(new MapInstanceConnected(this, 1, ""));
 }
 void MapInstance::on_scene_request(SceneRequest *ev)
 {
@@ -433,6 +507,9 @@ void MapInstance::on_timeout(TimerEvent *ev)
             break;
         case State_Transmit_Timer:
             sendState();
+            break;
+        case Session_Reaper_Timer:
+            reap_stale_links();
             break;
     }
 }
@@ -501,6 +578,7 @@ void MapInstance::on_input_state(InputState *st)
     // Input state messages can be followed by multiple commands.
     assert(st->m_user_commands.GetReadableBits()<32*1024*8); // simple sanity check ?
     // here we will try to extract all of them and put them on our processing queue
+    const char *prev_command = "none";
     while(st->m_user_commands.GetReadableBits()>1)
     {
         MapLinkEvent *ev = MapEventFactory::CommandEventFromStream(st->m_user_commands);
@@ -510,13 +588,14 @@ void MapInstance::on_input_state(InputState *st)
         // copy source packet seq number to created command
         ev->m_seq_number = st->m_seq_number;
         ev->src(st->src());
+        prev_command = ev->info();
         // post the event to ourselves for dispatch
         putq(ev);
     }
     if(st->m_user_commands.GetReadableBits()!=0)
     {
         qCDebug(logMapEvents) << "bits: " << st->m_user_commands.GetReadableBits();
-        qCWarning(logMapEvents) << "Not all bits were consumed";
+        qCWarning(logMapEvents) << "Not all bits were consumed by previous command"<<prev_command;
         assert(false);
     }
 

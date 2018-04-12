@@ -16,7 +16,7 @@
 #include <map>
 #include <vector>
 
-class MapClientSession;
+struct MapClientSession;
 class NetCommand
 {
     float normalizedCircumferenceToFloat(int number,int numbits)

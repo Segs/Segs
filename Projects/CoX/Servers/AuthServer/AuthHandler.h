@@ -15,8 +15,10 @@
 #include <map>
 
 class AuthServer;
+class SEGSTimer;
 struct RetrieveAccountResponse;
 struct ValidatePasswordResponse;
+
 enum eAuthError
 {
     AUTH_SERVER_OFFLINE = -1,
@@ -49,21 +51,39 @@ struct AuthSession
         CLIENT_CONNECTED
     };
     AuthLink *m_link = nullptr;
-    uint64_t m_auth_id=0;
     std::unique_ptr<AuthAccountData> m_auth_data;
+    uint32_t m_auth_id=0;
     eClientState m_state = NOT_LOGGED_IN;
-    //TODO: store last connected game server here, to speed up session liveness checks
+    uint32_t is_connected_to_game_server_id=0;
 };
 class AuthHandler : public EventProcessor
 {
+    ///
+    /// \brief The WaitingSession struct is used to store sessions without active connections in any server.
+    ///
+    struct WaitingSession
+    {
+        ACE_Time_Value m_waiting_since;
+        AuthSession *  m_session;
+        uint64_t       m_session_token;
+    };
     using SessionStore = ClientSessionStore<AuthSession>;
 protected:
     static uint64_t s_last_session_id;
+    ACE_Thread_Mutex m_reaping_mutex;
     MessageBusEndpoint m_message_bus_endpoint;
     SessionStore m_sessions;
+    std::vector<WaitingSession> m_session_ready_for_reaping;
+    std::unique_ptr<SEGSTimer> m_session_reaper_timer;
+
     AuthServer *m_authserv = nullptr;
 
-    bool isSessionConnectedAnywhere(uint64_t ses);
+    bool        isClientConnectedAnywhere(uint32_t client_id);
+    void        reap_stale_links();
+
+    //////////////////////////////////////////////////////////////////////////
+    // internal events
+    void        on_timeout(TimerEvent *ev);
     //////////////////////////////////////////////////////////////////////////
     // function that send messages into the link
     void        auth_error(EventProcessor *lnk,uint32_t code);
@@ -77,6 +97,9 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Server <-> server event handlers
     void        on_client_expected(ExpectClientResponse *ev);
+    void        on_client_connected_to_other_server(ClientConnectedMessage *ev);
+    void        on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev);
+
     void        dispatch(SEGSEvent *ev) override;
 public:
                 AuthHandler(AuthServer *our_server);
