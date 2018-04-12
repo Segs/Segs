@@ -199,7 +199,7 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
     m_session_store.sessionLinkLost(lnk->session_token());
     lnk->putq(new DisconnectResponse);
     // Post disconnect event to link, will close it's processing loop, after it sends the response
-    lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
+    lnk->putq(new DisconnectEvent(lnk->session_token())); // this should work, event if different threads try to do it in parallel
 }
 void GameHandler::on_link_lost(SEGSEvent *ev)
 {
@@ -210,7 +210,7 @@ void GameHandler::on_link_lost(SEGSEvent *ev)
         m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(),&session,lnk->session_token()});
     m_session_store.sessionLinkLost(lnk->session_token());
     // Post disconnect event to link, will close it's processing loop
-    lnk->putq(new DisconnectEvent(this));
+    lnk->putq(new DisconnectEvent(lnk->session_token()));
 }
 void GameHandler::on_delete_character(DeleteCharacter *ev)
 {

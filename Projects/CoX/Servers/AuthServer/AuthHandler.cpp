@@ -43,7 +43,9 @@ void AuthHandler::dispatch( SEGSEvent *ev )
         case SEGS_EventTypes::evTimeout:
             on_timeout(static_cast<TimerEvent *>(ev));
             break;
-
+        case evReconnectAttempt:
+            qWarning() << "Unhandled reconnect packet??";
+            break;
         case evLogin:
             on_login(static_cast<LoginRequest *>(ev));
             break;
@@ -109,7 +111,13 @@ void AuthHandler::on_connect( ConnectEvent *ev )
 }
 void AuthHandler::on_disconnect(DisconnectEvent *ev)
 {
-    AuthSession &session(m_sessions.sessionFromEvent(ev));
+    // since we cannot trust existence of the DisconnectEvent source at this point, we use the stored token
+    if(ev->m_session_token==0)
+    {
+        // disconnect without correct login/session creation ?
+        return;
+    }
+    AuthSession &session(m_sessions.sessionFromToken(ev->m_session_token));
     session.m_state = AuthSession::NOT_LOGGED_IN;
     if (!session.m_auth_data)
     {
