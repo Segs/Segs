@@ -12,7 +12,6 @@ SET(target_CPP
 )
 SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/AdminServerInterface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ClientManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/GameServerInterface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/MapServerInterface.h
