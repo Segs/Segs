@@ -12,6 +12,7 @@
 #include "AdminServer.h"
 #include "Character.h"
 #include "Costume.h"
+#include "Database.h"
 #include "GameData/CoHMath.h"
 #include "MapServer/DataHelpers.h"
 #include "GameData/entitydata_serializers.h"
@@ -19,6 +20,7 @@
 #include "GameData/clientoptions_serializers.h"
 #include "GameData/gui_serializers.h"
 #include "GameData/keybind_serializers.h"
+#include "GameDatabase/GameAccountData.h"
 #include "Logging.h"
 
 #include <QtSql/QSqlDatabase>
@@ -111,10 +113,10 @@ void CharacterDatabase::on_connected(QSqlDatabase *db)
 }
 
 
-bool CharacterDatabase::remove_character(AccountInfo *c,int8_t slot_idx)
+bool CharacterDatabase::remove_character(uint64_t game_server_id,int8_t slot_idx)
 {
-    assert(c!=nullptr);
-    m_prepared_char_delete.bindValue(0,quint64(c->account_server_id()));
+    assert(game_server_id!=0);
+    m_prepared_char_delete.bindValue(0,quint64(game_server_id));
     m_prepared_char_delete.bindValue(1,(uint32_t)slot_idx);
     if(!doIt(m_prepared_char_delete))
         return false;
@@ -131,11 +133,11 @@ bool CharacterDatabase::named_character_exists(const QString &name)
     // TODO: handle case of multiple accounts with same name ?
     return m_prepared_char_exists.value(0).toBool();
 }
-bool CharacterDatabase::fill( AccountInfo *c )
+bool CharacterDatabase::fill(uint64_t account_db_id, GameAccountData &c )
 {
-    assert(c&&c->account_server_id());
+    assert(account_db_id);
 
-    m_prepared_account_select.bindValue(0,quint64(c->account_server_id()));
+    m_prepared_account_select.bindValue(0,quint64(account_db_id));
     if(!doIt(m_prepared_account_select))
         return false;
 
@@ -143,12 +145,11 @@ bool CharacterDatabase::fill( AccountInfo *c )
     if(!m_prepared_account_select.next())
         return false;
     // TODO: handle case of multiple accounts with same name ?
+    c.m_max_slots = m_prepared_account_select.value("max_slots").toUInt();
+    c.m_game_server_acc_id = m_prepared_account_select.value("id").toULongLong();
 
-    c->max_slots(m_prepared_account_select.value("max_slots").toUInt());
-    c->game_server_id(m_prepared_account_select.value("id").toULongLong());
-
-    qCDebug(logDB) << "CharacterClient id:" << c->account_server_id();
-    qCDebug(logDB) << "CharacterClient slots:" << c->max_slots();
+    qCDebug(logDB) << "CharacterClient id:" << c.m_game_server_acc_id;
+    qCDebug(logDB) << "CharacterClient slots:" << c.m_max_slots;
 
     return true;
 }
@@ -190,80 +191,51 @@ bool CharacterDatabase::fill( Entity *e)
     qCDebug(logOrientation).noquote() << glm::to_string(e->m_direction).c_str();
     return true;
 }
-bool CharacterDatabase::fill( Character *c)
+void toActualCostume(const GameAccountResponseCostumeData &src,Costume &tgt)
 {
-    CharacterData &cd(c->m_char_data);
-    ClientOptions &od(c->m_options);
-    KeybindSettings &kbd(c->m_keybinds);
-    GUISettings &gui(c->m_gui);
-
-    assert(c&&c->getAccountId());
-
-    m_prepared_char_select.bindValue(0,quint64(c->getAccountId()));
-    m_prepared_char_select.bindValue(1,(uint16_t)c->getIndex());
-    if(!doIt(m_prepared_char_select))
-        return false;
-
-    if(!m_prepared_char_select.next())
-    {
-        c->reset(); // empty slot
-        return true;
+    tgt.skin_color = src.skin_color;
+    tgt.serializeFromDb(src.m_serialized_data);
+    tgt.m_non_default_costme_p = false;
     }
-//    else if (results.num_rows()>1)
-//        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query returned wrong number of results. %s failed.\n"), query.str().c_str()),false);
-
-    c->m_db_id = (m_prepared_char_select.value("id").toUInt());
-    c->m_account_id = (m_prepared_char_select.value("account_id").toUInt());
-    c->setName(STR_OR_EMPTY(m_prepared_char_select.value("char_name").toString()));
-    c->m_current_attribs.m_HitPoints = (m_prepared_char_select.value("hitpoints").toUInt());
-    c->m_current_attribs.m_Endurance = (m_prepared_char_select.value("endurance").toUInt());
-
-    QString char_data;
-    char_data = (m_prepared_char_select.value("chardata").toString());
-    serializeFromDb(cd,char_data);
-
-    QString options_data;
-    options_data = (m_prepared_char_select.value("options").toString());
-    serializeFromDb(od,options_data);
-
-    QString gui_data;
-    gui_data = (m_prepared_char_select.value("gui").toString());
-    serializeFromDb(gui,gui_data);
-
-    QString keybind_data;
-    keybind_data = (m_prepared_char_select.value("keybinds").toString());
-    serializeFromDb(kbd,keybind_data);
-
-    qCDebug(logDB).noquote() << "m_db_id:" << c->m_db_id;
-    qCDebug(logDB).noquote() << char_data;
-    qCDebug(logDB).noquote() << options_data;
-    qCDebug(logDB).noquote() << gui_data;
-    qCDebug(logDB).noquote() << keybind_data;
-
-    CharacterCostume *main_costume = new CharacterCostume;
-    // appearance related.
-    main_costume->m_body_type = m_prepared_char_select.value("bodytype").toUInt();
-    main_costume->setSlotIndex(0);
-    main_costume->setCharacterId(m_prepared_char_select.value("id").toULongLong());
-    c->m_costumes.push_back(main_costume);
-    return fill(main_costume);
-}
-#ifndef ARRAYSIZE
-#define ARRAYSIZE(x) (sizeof(x)/sizeof(x[1]))
-#define DEFINED_ARRAYSIZE
-#endif
-bool CharacterDatabase::fill( CharacterCostume *c)
+bool toActualCharacter(const GameAccountResponseCharacterData &src,Character &tgt)
 {
-    assert(c&&c->getCharacterId());
+    CharacterData &cd(tgt.m_char_data);
+    ClientOptions &od(tgt.m_options);
+    KeybindSettings &kbd(tgt.m_keybinds);
+    GUISettings &gui(tgt.m_gui);
+    tgt.m_db_id = src.m_db_id;
+    tgt.m_account_id = src.m_account_id;
+    tgt.setName(src.m_name);
+    tgt.m_current_attribs.m_HitPoints = src.m_HitPoints;
+    tgt.m_current_attribs.m_Endurance = src.m_Endurance;
+    serializeFromDb(cd,src.m_serialized_chardata);
+    serializeFromDb(od,src.m_serialized_options);
+    serializeFromDb(gui,src.m_serialized_gui);
+    serializeFromDb(kbd,src.m_serialized_keybinds);
 
-    m_prepared_fill.bindValue(0,quint64(c->getCharacterId()));
-    m_prepared_fill.bindValue(1,(uint16_t)c->getSlotIndex());
+    for(const GameAccountResponseCostumeData &costume : src.m_costumes)
+    {
+        tgt.m_costumes.emplace_back();
+        CharacterCostume &main_costume(tgt.m_costumes.back());
+        toActualCostume(costume,main_costume);
+    // appearance related.
+        main_costume.m_body_type = src.m_costumes.back().m_body_type;
+        main_costume.setSlotIndex(costume.m_slot_index);
+        main_costume.setCharacterId(costume.m_character_id);
+}
+    return true;
+}
+bool CharacterDatabase::fill( GameAccountResponseCostumeData &tgt)
+{
+    assert(tgt.m_character_id);
+
+    m_prepared_fill.bindValue(0,quint64(tgt.m_character_id));
+    m_prepared_fill.bindValue(1,(uint16_t)tgt.m_slot_index);
     if(!doIt(m_prepared_fill))
         return false;
 
     if(!m_prepared_fill.next()) // retry with the first one
     {
-        m_prepared_fill.bindValue(0,quint64(c->getCharacterId()));
         m_prepared_fill.bindValue(1,0); // get first costume
 
         if(!doIt(m_prepared_fill))
@@ -273,12 +245,52 @@ bool CharacterDatabase::fill( CharacterCostume *c)
             return false;
         }
     }
-    c->skin_color = m_prepared_fill.value("skin_color").toUInt();
-    QString serialized_parts= m_prepared_fill.value("parts").toString();
-    c->serializeFromDb(serialized_parts);
-    c->m_non_default_costme_p = false;
+    tgt.skin_color = m_prepared_fill.value("skin_color").toUInt();
+    tgt.m_serialized_data = m_prepared_fill.value("parts").toString();
     return true;
 }
+bool CharacterDatabase::fill(uint64_t account_id, GameAccountResponseCharacterData &c)
+{
+    m_prepared_char_select.bindValue(0,quint64(account_id));
+    m_prepared_char_select.bindValue(1,(uint16_t)c.index);
+    if(!doIt(m_prepared_char_select))
+        return false;
+
+    if(!m_prepared_char_select.next())
+    {
+        c.reset(); // empty slot
+        return true;
+    }
+//    else if (results.num_rows()>1)
+//        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill query returned wrong number of results. %s failed.\n"), query.str().c_str()),false);
+
+    c.m_db_id = (m_prepared_char_select.value("id").toUInt());
+    c.m_account_id = (m_prepared_char_select.value("account_id").toUInt());
+    c.m_name = STR_OR_EMPTY(m_prepared_char_select.value("char_name").toString());
+    c.m_HitPoints = m_prepared_char_select.value("hitpoints").toUInt();
+    c.m_Endurance = m_prepared_char_select.value("endurance").toUInt();
+    c.m_serialized_chardata = m_prepared_char_select.value("chardata").toString();
+    c.m_serialized_options  = m_prepared_char_select.value("options").toString();
+    c.m_serialized_gui      = m_prepared_char_select.value("gui").toString();
+    c.m_serialized_keybinds = m_prepared_char_select.value("keybinds").toString();
+    qCDebug(logDB).noquote() << "m_db_id:" << c.m_db_id;
+    qCDebug(logDB).noquote() << c.m_serialized_chardata;
+    qCDebug(logDB).noquote() << c.m_serialized_options;
+    qCDebug(logDB).noquote() << c.m_serialized_gui;
+    qCDebug(logDB).noquote() << c.m_serialized_keybinds;
+
+    c.m_costumes.emplace_back();
+    GameAccountResponseCostumeData &main_costume(c.m_costumes.back());
+    // appearance related.
+    main_costume.m_body_type = m_prepared_char_select.value("bodytype").toUInt();
+    main_costume.m_slot_index = 0;
+    main_costume.m_character_id = c.m_db_id;
+    return fill(main_costume);
+}
+#ifndef ARRAYSIZE
+#define ARRAYSIZE(x) (sizeof(x)/sizeof(x[1]))
+#define DEFINED_ARRAYSIZE
+#endif
 
 bool CharacterDatabase::CreateLinkedAccount( uint64_t auth_account_id,const std::string &username,int max_character_slots )
 {
@@ -290,11 +302,6 @@ bool CharacterDatabase::CreateLinkedAccount( uint64_t auth_account_id,const std:
     if(!doIt(m_prepared_account_insert))
         return false;
     return true;
-}
-
-int CharacterDatabase::remove_account( uint64_t /*acc_serv_id*/ )
-{
-    return 0;
 }
 
 bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
@@ -314,7 +321,7 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     ClientOptions &od(c.m_options);
     KeybindSettings &kbd(c.m_keybinds);
     GUISettings &gui(c.m_gui);
-    Costume *cst = c.getCurrentCostume();
+    const Costume *cst = c.getCurrentCostume();
     if(!cst) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::create cannot insert char without costume.\n"))
                          ,false);
@@ -386,7 +393,7 @@ bool CharacterDatabase::update( Entity *e )
     CharacterData *cd = &c.m_char_data;
     cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
 
-    Costume *cst = c.getCurrentCostume();
+    const Costume *cst = c.getCurrentCostume();
     if(!cst) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::update cannot update char without costume.\n"))
                          ,false);
@@ -419,7 +426,7 @@ bool CharacterDatabase::update( Entity *e )
 
     qCDebug(logDB).noquote() << entity_data;
     qCDebug(logDB).noquote() << char_data;
-  
+
     if(!doIt(m_prepared_char_update))
         return false;
 
@@ -547,3 +554,42 @@ CharacterFromDB * CharacterDatabase::getCharacter(const QString &name)
 #undef DEFINED_ARRAYSIZE
 #undef ARRAYSIZE
 #endif
+bool removeCharacter(uint64_t game_account_id, uint8_t slot_idx)
+{
+    CharacterDatabase *cdb = AdminServer::instance()->character_db();
+    return cdb->remove_character(game_account_id,slot_idx);
+}
+
+bool fillGameAccountData(uint64_t auth_account_id,GameAccountData &tgt)
+{
+    if(!AdminServer::instance()->character_db()->fill(auth_account_id,tgt)) // read basic facts
+        return false;
+
+    tgt.m_characters.resize(tgt.m_max_slots);
+    assert(tgt.m_max_slots>0);
+    GameAccountResponseCharacterData &act(tgt.m_characters[0]);
+    act.index=0;
+    //act->setAccountId(tgt.m_game_server_acc_id);
+    CharacterDatabase *char_db = AdminServer::instance()->character_db();
+    if(!char_db->fill(tgt.m_game_server_acc_id,act))
+        return false;
+    for(size_t i=1; i<tgt.m_characters.size(); i++)
+    {
+        tgt.m_characters[i].index =i;
+        if(!AdminServer::instance()->character_db()->fill(tgt.m_game_server_acc_id,tgt.m_characters[i]))
+            return false;
+    }
+    return true;
+}
+
+bool storeNewCharacter(Entity *e,int8_t slot_idx, uint64_t account_id)
+{
+    if(slot_idx==-1)
+        return false;
+    CharacterDatabase *cdb = AdminServer::instance()->character_db();
+    DbTransactionGuard grd(*cdb->getDb());
+    if(false==cdb->create(account_id,slot_idx,e))
+        return false;
+    grd.commit();
+    return true;
+}

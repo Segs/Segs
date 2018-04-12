@@ -9,10 +9,10 @@
 // segs includes
 #include "AdminServer.h"
 
+#include "AuthDatabase/AccountData.h"
 #include "AdminDatabase.h"
 #include "AdminLink.h"
 #include "AccountInfo.h"
-#include "Client.h"
 #include "ConfigExtension.h"
 #include "CharacterDatabase.h"
 #include "ServerManager.h"
@@ -141,21 +141,21 @@ bool _AdminServer::ShutDown(const QString &reason/* ="No particular reason" */)
     return res;
 }
 /// Refresh client object from database
-bool _AdminServer::fill_account_info( AccountInfo &client )
+bool _AdminServer::fill_account_info( AuthAccountData &client )
 {
-    if((client.login().size()>0) && (client.account_server_id()==0)) // existing client
+    if(!client.m_login.isEmpty() && (client.m_acc_server_acc_id==0)) // existing client, by name
     {
-        return m_db->GetAccountByName(client,client.login());
+        return m_db->GetAccountByName(client,client.m_login);
     }
-    if(client.account_server_id()) // existing client
+    if(client.m_acc_server_acc_id) // existing client by id
     {
-        return m_db->GetAccountById(client,client.account_server_id());
+        return m_db->GetAccountById(client,client.m_acc_server_acc_id);
     }
     return false;
 
 }
 /// \note will record given client as logged in.
-bool _AdminServer::Login(const AccountInfo &,const ACE_INET_Addr &)
+bool _AdminServer::Login(const AuthAccountData &,const ACE_INET_Addr &)
 {
     // Here we should log to the Db, a Login event for that client
     //client->setState(AuthClient::LOGGED_IN); modifying this should be done in AuthServer
@@ -163,9 +163,9 @@ bool _AdminServer::Login(const AccountInfo &,const ACE_INET_Addr &)
 }
 
 /// Verifies entered password matches stored password
-bool _AdminServer::ValidPassword( const AccountInfo &client, const char *password )
+bool _AdminServer::ValidPassword( const AuthAccountData &client, const char *password )
 {
-    return m_db->ValidPassword(qPrintable(client.login()),password);
+    return m_db->ValidPassword(client.m_login,password);
 }
 
 /// Save user account credentials to storage
@@ -175,23 +175,15 @@ int _AdminServer::SaveAccount(const char *username, const char *password)
     if(false==m_db->AddAccount(username, password))
         return 1;
 
-    AccountInfo tmp;
-    tmp.login(username); // Fix if username is preprocessed before db entry in AddAccount
+    AuthAccountData tmp;
+    tmp.m_login = username; // Fix if username is preprocessed before db entry in AddAccount
     fill_account_info(tmp);
     // also register this account on all currently available gameservers
     // they really should check for sync with AdminDb on startup
     GameServerInterface *igs = ServerManager::instance()->GetGameServer(0);
     if(!igs)
         return -1;
-    if(!m_char_db->CreateLinkedAccount(tmp.account_server_id(),username,igs->getMaxCharacterSlots()))
+    if(!m_char_db->CreateLinkedAccount(tmp.m_acc_server_acc_id,username,igs->getMaxCharacterSlots()))
         res=2;
     return res;   // Add the given account
-}
-
-int _AdminServer::RemoveAccount(AccountInfo &client)
-{
-    int res = m_db->RemoveAccountByID(client.account_server_id());
-    if(0==res)
-        res = m_char_db->remove_account(client.game_server_id());
-    return res;
 }

@@ -79,7 +79,7 @@ public:
         void                ReceivedBlock(BitStream &bs); // bytes received, will create some packets in avail_packets
 
         bool                SendPacket(CrudP_Packet *p); // this might split packet 'p' into a few packets
-        CrudP_Packet *      RecvPacket(bool disregard_seq);
+        CrudP_Packet *      RecvPacket();
         bool                batchSend(lCrudP_Packet &tgt);
         bool                isUnresponsiveLink();
 protected:

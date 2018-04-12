@@ -1,7 +1,6 @@
 #include "Entity.h"
 #include "Character.h"
 #include "DataHelpers.h"
-#include "MapClient.h"
 
 class QString;
 class InfoMessageCmd; // leverage InfoMessageCmd
@@ -55,6 +54,7 @@ void cmdHandler_SetWindowVisibility(QString &cmd, Entity *e);
 void cmdHandler_KeybindDebug(QString &cmd, Entity *e);
 void cmdHandler_ToggleLogging(QString &cmd, Entity *e);
 void cmdHandler_FriendsListDebug(QString &cmd, Entity *e);
+void cmdHandler_SendFloatingNumbers(QString &cmd, Entity *e);
 void cmdHandler_SetU1(QString &cmd, Entity *e);
 void cmdHandler_SetU2(QString &cmd, Entity *e);
 void cmdHandler_SetU3(QString &cmd, Entity *e);

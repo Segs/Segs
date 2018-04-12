@@ -5,8 +5,9 @@
 class QString;
 class Entity;
 class Character;
-class MapClient;
+
 struct FriendsList;
+struct MapClientSession;
 
 /*
  * Entity Methods
@@ -58,10 +59,10 @@ void    charUpdateOptions(Entity *e);
 void    charUpdateGUI(Entity *e);
 int     getEntityOriginIndex(bool is_player,const QString &origin_name);
 int     getEntityClassIndex(bool is_player, const QString &class_name);
-Entity * getEntity(MapClient *src, const QString &name);
-Entity * getEntity(MapClient *src, const int32_t &idx);
-Entity * getEntityByDBID(MapClient *src, const int32_t &idx);
-void    sendServerMOTD(Entity *e);
+Entity * getEntity(MapClientSession *src, const QString &name);
+Entity * getEntity(MapClientSession *src, int32_t idx);
+Entity * getEntityByDBID(MapClientSession *src, int32_t idx);
+void    sendServerMOTD(MapClientSession *tgt);
 
 /*
  * Character Methods
@@ -90,8 +91,8 @@ const QString &     getAlignment(const Character &c);
 // Setters
 void    setLevel(Character &c, uint32_t val);
 void    setCombatLevel(Character &c, uint32_t val);
-void    setHP(Character &c, uint32_t val);
-void    setEnd(Character &c, uint32_t val);
+void    setHP(Character &c, float val);
+void    setEnd(Character &c, float val);
 void    setLastCostumeId(Character &c, uint64_t val);
 void    setMapName(Character &c, const QString &val);
 void    setXP(Character &c, uint32_t val);
@@ -121,6 +122,7 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount);
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);

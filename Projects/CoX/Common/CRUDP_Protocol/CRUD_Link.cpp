@@ -32,7 +32,7 @@ CRUDLink::~CRUDLink()
 ///
 void CRUDLink::event_for_packet(PacketEvent * pak_ev)
 {
-    CrudP_Packet *pak=pak_ev->m_pkt;
+    CrudP_Packet *pak=pak_ev->m_pkt.get();
     // switch this to while, maybe many events are coming from single packet ?
     CRUDLink_Event *res = factory().EventFromStream(*pak->GetStream());
     if(!res)
@@ -70,10 +70,11 @@ void CRUDLink::packets_for_event(SEGSEvent *ev)
         return;
     }
     // wrap all packets as PacketEvents and put them on link queue
-    for (CrudP_Packet *pkt : packets_to_send)
+    for (std::unique_ptr<CrudP_Packet> &pkt : packets_to_send)
     {
-        net_layer()->putq(new PacketEvent(this, pkt, peer_addr()));
+        net_layer()->putq(new PacketEvent(this, std::move(pkt), peer_addr()));
     }
+    packets_to_send.clear();
     connection_sent_packet(); // data was sent, update
 }
 
@@ -148,12 +149,13 @@ void CRUDLink::received_block( BitStream &bytes )
     // Fill the protocol with 'raw' bit stream
     m_protocol.ReceivedBlock(bytes);
     // now try to get actual packets
-    CrudP_Packet *pkt = m_protocol.RecvPacket(false);
+    CrudP_Packet *pkt = m_protocol.RecvPacket();
     while(pkt)
     {
-        putq(new PacketEvent(net_layer(),pkt,peer_addr()));
+        std::unique_ptr<CrudP_Packet> own_it(pkt);
+        putq(new PacketEvent(net_layer(),std::move(own_it),peer_addr()));
         ++recv_count;
-        pkt=m_protocol.RecvPacket(false);
+        pkt=m_protocol.RecvPacket();
     }
     if(recv_count>0)
         connection_update(); //update the last time we've seen packets on this link

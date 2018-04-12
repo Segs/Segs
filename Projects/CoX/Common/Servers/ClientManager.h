@@ -1,35 +1,44 @@
 /*
  * Super Entity Game Server
- * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * http://github.com/Segs
+ * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
  */
 
 #pragma once
-#include "Client.h"
-#include "AdminServer/AccountInfo.h"
+#include "Common/CRUDP_Protocol/ILink.h"
+#include "InternalEvents.h"
+#include "SEGSEvent.h"
 
-#include <unordered_map>
-#include <unordered_set>
 #include <ace/INET_Addr.h>
-#include <ace/Singleton.h>
+#include <ace/OS_NS_time.h>
 #include <ace/Synch.h>
+#include <unordered_map>
+#include <vector>
+#include <cassert>
 
 
-template <class CLIENT_CLASS>
-class ClientStore
+// TODO: consider storing all sessions in vector, and convert m_session_store to token->index map
+template <class SESSION_CLASS>
+class ClientSessionStore
 {
 public:
-using   vClients = std::unordered_set<CLIENT_CLASS *>;
+using   MTGuard = ACE_Guard<ACE_Thread_Mutex>;
+using   vClients = std::vector<SESSION_CLASS *>;
 using   ivClients = typename vClients::iterator;
+using   civClients = typename vClients::const_iterator;
 protected:
-        //  boost::object_pool<CLIENT_CLASS> m_pool;
-        std::unordered_map<uint32_t,CLIENT_CLASS *> m_expected_clients;
-        std::unordered_map<uint64_t,CLIENT_CLASS *> m_clients; // this maps client's id to it's object
-        std::unordered_map<uint32_t,CLIENT_CLASS *> m_connected_clients_cookie; // this maps client's id to it's object
-        std::unordered_map<uint64_t,uint32_t> m_id_to_cookie; // client cookie is only useful in this context
-        vClients m_active_clients;
+        mutable ACE_Thread_Mutex m_store_mutex;
+        struct ExpectClientInfo
+        {
+            uint32_t cookie;
+            ACE_Time_Value m_expected_since;
+            uint64_t session_token;
+        };
+        std::unordered_map<uint64_t,SESSION_CLASS> m_token_to_session;
+        std::vector<ExpectClientInfo> m_session_expecting_clients;
+        vClients m_active_sessions;
         uint32_t create_cookie(const ACE_INET_Addr &from,uint64_t id)
         {
                 uint64_t res = ((from.hash()+id)&0xFFFFFFFF)^(id>>32);
@@ -38,84 +47,119 @@ protected:
         }
 
 public:
-        ivClients       begin() { return m_active_clients.begin();}
-        ivClients       end() { return m_active_clients.end();}
-
-        CLIENT_CLASS *getById(uint64_t id)
+        ivClients       begin() { return m_active_sessions.begin();}
+        ivClients       end() { return m_active_sessions.end();}
+        civClients      begin() const { return m_active_sessions.cbegin();}
+        civClients      end() const { return m_active_sessions.cend();}
+        ACE_Thread_Mutex &store_lock() { return m_store_mutex; }
+        SESSION_CLASS &createSession(uint64_t token)
         {
-                if(m_clients.find(id)==m_clients.end())
-                        return NULL;
-                return m_clients[id];
+            assert(m_token_to_session.find(token)==m_token_to_session.end());
+            return m_token_to_session[token];
         }
 
-        CLIENT_CLASS *getByCookie(uint32_t cookie)
+        bool hasSessionFor(uint64_t token) const
         {
-                if(m_connected_clients_cookie.find(cookie)!=m_connected_clients_cookie.end())
+            return m_token_to_session.find(token)!=m_token_to_session.end();
+        }
+        SESSION_CLASS &sessionFromToken(uint64_t token)
                 {
-                        return m_connected_clients_cookie[cookie];
+            auto iter = m_token_to_session.find(token);
+            assert(iter!=m_token_to_session.end());
+            return iter->second;
                 }
-                return NULL;
+        SESSION_CLASS &sessionFromEvent(SEGSEvent *ev)
+        {
+            assert(dynamic_cast<LinkBase *>(ev->src())!=nullptr); // make sure the event source is a Link
+            LinkBase * lnk = (LinkBase *)ev->src();
+            auto iter = m_token_to_session.find(lnk->session_token());
+            assert(iter!=m_token_to_session.end());
+            SESSION_CLASS &session(iter->second);
+            assert(session.m_link==lnk);
+            return session;
         }
 
-        CLIENT_CLASS *getExpectedByCookie(uint32_t cookie)
+        SESSION_CLASS &sessionFromEvent(InternalEvent *ev)
         {
-                // we got cookie check if it's an expected client
-                if(m_expected_clients.find(cookie)!=m_expected_clients.end())
-                {
-                        return m_expected_clients[cookie];
+            auto iter = m_token_to_session.find(ev->session_token());
+            assert(iter!=m_token_to_session.end());
+            return iter->second;
                 }
-                return NULL;
-        }
-
-        uint32_t ExpectClient(const ACE_INET_Addr &from,uint64_t id,uint8_t access_level)
+        uint32_t ExpectClientSession(uint64_t token,const ACE_INET_Addr &from,uint64_t id)
         {
-                CLIENT_CLASS * exp;
                 uint32_t cook = create_cookie(from,id);
-                // if we already expect this client
-                if(m_expected_clients.find(cook)!=m_expected_clients.end())
+                for(ExpectClientInfo sess : m_session_expecting_clients )
                 {
+                // if we already expect this client
+                    if(sess.cookie==cook)
+                {
+                        assert(false);
                         // return pregenerated cookie
                         return cook;
                 }
-                if(getByCookie(cook)) // already connected ?!
-                {
-                        //
-                        return ~0U; // invalid cookie
                 }
-                exp = new CLIENT_CLASS;
-                exp->account_info().access_level(access_level);
-                exp->account_info().account_server_id(id);
-                exp->link_state().setState(ClientLinkState::CLIENT_EXPECTED);
-                m_expected_clients[cook] = exp;
-                m_clients[id] = exp;
-                m_id_to_cookie[id]=cook;
+                m_session_expecting_clients.emplace_back(ExpectClientInfo{cook,ACE_OS::gettimeofday(),token});
                 return cook;
         }
-        void removeById(uint64_t id)
+        void removeByToken(uint64_t token)
         {
-                ACE_ASSERT(getById(id)!=0);
-                CLIENT_CLASS *cl=getById(id);
-                uint32_t cookie = m_id_to_cookie[id];
-                m_active_clients.erase(cl);
-                m_id_to_cookie.erase(id);
-                m_expected_clients.erase(cookie);
-                m_connected_clients_cookie.erase(cookie);
-                m_clients.erase(id);
+            SESSION_CLASS &session(sessionFromToken(token));
+            removeFromActiveSessions(&session);
 
-                delete cl;
+            for(size_t idx=0,total=m_session_expecting_clients.size(); idx<total; ++idx)
+            {
+                if(m_session_expecting_clients[idx].session_token==token)
+                {
+                    std::swap(m_session_expecting_clients[idx],m_session_expecting_clients.back());
+                    m_session_expecting_clients.pop_back();
+                    break;
         }
-        void connectedClient(uint32_t cookie)
+            }
+            m_token_to_session.erase(token);
+        }
+        uint64_t connectedClient(uint32_t cookie)
         {
-                // client with cookie has just connected
-                m_connected_clients_cookie[cookie]=getExpectedByCookie(cookie);
-                // so he's no longer expected
-                m_expected_clients.erase(cookie);
+            for(size_t idx=0,total=m_session_expecting_clients.size(); idx<total; ++idx)
+            {
+                if(m_session_expecting_clients[idx].cookie==cookie)
+                {
+                    uint64_t expected_in_session = m_session_expecting_clients[idx].session_token;
+                    std::swap(m_session_expecting_clients[idx],m_session_expecting_clients.back());
+                    m_session_expecting_clients.pop_back();
+                    return expected_in_session;
         }
 
-        void addToActiveClients(CLIENT_CLASS *cl) {
-            m_active_clients.insert(cl);
         }
-        size_t num_active_clients() const {
-            return m_active_clients.size();
+            return ~0U;
+        }
+        void removeFromActiveSessions(SESSION_CLASS *cl)
+        {
+            for(size_t idx=0,total=m_active_sessions.size(); idx<total; ++idx)
+            {
+                if(m_active_sessions[idx]==cl)
+                {
+                    std::swap(m_active_sessions[idx],m_active_sessions.back());
+                    m_active_sessions.pop_back();
+                    return;
+                }
+            }
+            assert(false);
+        }
+        void addToActiveSessions(SESSION_CLASS *cl)
+        {
+            for(size_t idx=0,total=m_active_sessions.size(); idx<total; ++idx)
+            {
+                if(m_active_sessions[idx]==cl)
+                    return;
+            }
+            m_active_sessions.emplace_back(cl);
+        }
+        bool isActive(SESSION_CLASS *c) const
+        {
+            return std::find(m_active_sessions.begin(),m_active_sessions.end(),c)!=m_active_sessions.end();
+        }
+        size_t num_active_clients() const
+        {
+            return m_active_sessions.size();
         }
 };

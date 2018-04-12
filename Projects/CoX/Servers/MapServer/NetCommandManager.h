@@ -16,7 +16,7 @@
 #include <map>
 #include <vector>
 
-class MapClient;
+class MapClientSession;
 class NetCommand
 {
     float normalizedCircumferenceToFloat(int number,int numbits)
@@ -53,7 +53,7 @@ class NetCommandManager
                                 const vNetCommand &commands,
                                 const vNetCommand &commands2);
 public:
-    void            SendCommandShortcuts(MapClient *client,
+    void            SendCommandShortcuts(MapClientSession *client,
                                          BitStream &tgt,
                                          const std::vector<NetCommand *> &commands2);
     NetCommand *    getCommandByName(const QString &name);

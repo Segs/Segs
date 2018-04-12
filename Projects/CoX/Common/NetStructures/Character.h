@@ -23,6 +23,7 @@
 #include <cassert>
 #include <string>
 
+struct CharacterCostume;
 struct Costume;
 struct CharacterPowerBoost
 {
@@ -54,13 +55,14 @@ class Character
         friend  class CharacterDatabase;
 
         using vPowerPool = std::vector<CharacterPower>;
-        using vCostume = std::vector<Costume *>;
+        using vCostume = std::vector<CharacterCostume>;
 
         vPowerPool              m_powers;
         PowerTrayGroup          m_trays;
         bool                    m_full_options=false;
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
+        friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src,Character &tgt);
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
@@ -84,14 +86,13 @@ const   QString &       getName() const { return m_name; }
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, ColorAndPartPacker *packer);
-        Costume *       getCurrentCostume() const;
+        const CharacterCostume *getCurrentCostume() const;
         void            DumpSidekickInfo();
         void            DumpPowerPoolInfo( const PowerPool_Info &pool_info );
         void            DumpBuildInfo();
         void            face_bits(uint32_t){}
         void            dump();
         void            sendFullStats(BitStream &bs) const;
-        //TODO: move these to some kind of Player info class
         void            sendTray(BitStream &bs) const;
         void            sendTrayMode(BitStream &bs) const;
         void            sendWindows(BitStream &bs) const;

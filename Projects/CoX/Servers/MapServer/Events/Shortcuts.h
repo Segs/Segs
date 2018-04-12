@@ -13,7 +13,7 @@
 class Shortcuts : public MapLinkEvent
 {
 public:
-    Shortcuts():MapLinkEvent(MapEventTypes::evShortcuts),m_num_shortcuts2(0)
+    Shortcuts(MapClientSession *sess):MapLinkEvent(MapEventTypes::evShortcuts),m_num_shortcuts2(0),m_client(sess)
     {
     }
     void serializeto(BitStream &bs) const
@@ -29,5 +29,5 @@ public:
     //vector<NetCommand *> m_commands;
     std::vector<NetCommand *> m_commands2;  // m_commands2 will get filled after we know more about them
     std::vector<std::string>  m_shortcuts2;
-    MapClient *m_client;
+    MapClientSession *m_client;
 };

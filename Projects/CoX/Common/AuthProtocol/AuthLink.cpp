@@ -5,7 +5,7 @@
 
 EventProcessor *AuthLink::g_target=nullptr;
 
-AuthLink::AuthLink(AuthLinkType link_type) :  m_client(nullptr),
+AuthLink::AuthLink(AuthLinkType link_type) :
     m_received_bytes_storage(0x1000,0,40),
     m_unsent_bytes_storage(0x200,0,40),
     m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK),
@@ -20,7 +20,6 @@ AuthLink::AuthLink(AuthLinkType link_type) :  m_client(nullptr),
 AuthLink::~AuthLink( )
 {
     delete m_buffer_mutex;
-    m_client=nullptr;
 }
 void AuthLink::init_crypto(int vers,uint32_t seed)
 {

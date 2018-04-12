@@ -3,7 +3,6 @@
 #include "MapServer.h"
 #include "MapServerData.h"
 #include "MapInstance.h"
-#include "MapClient.h"
 #include "Character.h"
 #include "AdminServer/AdminServer.h"
 #include "AdminServer/CharacterDatabase.h"
@@ -175,9 +174,9 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
 }
 
 // Poll EntityManager to return Entity by Name or IDX
-Entity * getEntity(MapClient *src, const QString &name)
+Entity * getEntity(MapClientSession *src, const QString &name)
 {
-    MapInstance *mi = src->current_map();
+    MapInstance *mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
     QString errormsg;
 
@@ -194,9 +193,9 @@ Entity * getEntity(MapClient *src, const QString &name)
     return nullptr;
 }
 
-Entity * getEntity(MapClient *src, const int32_t &idx)
+Entity * getEntity(MapClientSession *src, int32_t idx)
 {
-    MapInstance *mi = src->current_map();
+    MapInstance *mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
     QString errormsg;
 
@@ -219,9 +218,9 @@ Entity * getEntity(MapClient *src, const int32_t &idx)
     return nullptr;
 }
 
-Entity * getEntityByDBID(MapClient *src, const int32_t &db_id)
+Entity * getEntityByDBID(MapClientSession *src, int32_t db_id)
 {
-    MapInstance *mi = src->current_map();
+    MapInstance *mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
     QString errormsg;
 
@@ -244,16 +243,9 @@ Entity * getEntityByDBID(MapClient *src, const int32_t &db_id)
     return nullptr;
 }
 
-void sendServerMOTD(Entity *e)
+void sendServerMOTD(MapClientSession *tgt)
 {
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-
-    MapClient *src = e->m_client;
-    qDebug().noquote() << "Sending Server MOTD to" << e->m_char->getName();
+    qDebug().noquote() << "Sending Server MOTD to" << tgt->m_ent->m_char->getName();
 
     QString fileName("scripts/motd.smlx");
     QFile file(fileName);
@@ -261,12 +253,12 @@ void sendServerMOTD(Entity *e)
     {
         QString contents(file.readAll());
         StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-        src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+        tgt->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
     }
     else {
         QString errormsg = "Failed to load MOTD file. \'" + file.fileName() + "\' not found.";
         qDebug() << errormsg;
-        sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, src);
+        sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, tgt);
     }
 }
 
@@ -311,8 +303,14 @@ void setCombatLevel(Character &c, uint32_t val)
         val = 50;
     c.m_char_data.m_combat_level = val;
 }
-void    setHP(Character &c, uint32_t val) { c.m_current_attribs.m_HitPoints = val; }
-void    setEnd(Character &c, uint32_t val) { c.m_current_attribs.m_Endurance = val; }
+void setHP(Character &c, float val)
+{
+    c.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val,c.m_max_attribs.m_HitPoints));
+}
+void setEnd(Character &c, float val)
+{
+    c.m_current_attribs.m_Endurance = std::max(0.0f, std::min(val,c.m_max_attribs.m_Endurance));
+}
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
 void    setMapName(Character &c, const QString &val) { c.m_char_data.m_mapName = val; }
 
@@ -403,6 +401,11 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount)
+{
+    qCDebug(logSlashCommand, "Sending %d FloatingNumbers from %d to %d", amount, src->m_idx, tgt_idx);
+    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingDamage>(new FloatingDamage(src->m_idx, tgt_idx, amount)));
+}
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list)
 {
     qCDebug(logFriends) << "Sending FriendsList Update.";

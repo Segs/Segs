@@ -18,10 +18,10 @@ class PacketEvent;
 class CRUD_EventFactory;
 
 
-class CRUDLink : public ILink
+class CRUDLink : public LinkBase
 {
 protected:
-using super = ILink;
+using super = LinkBase;
         ACE_Reactor_Notification_Strategy   m_notifier; // our queue will use this to inform the reactor of it's new elements
         ACE_HANDLE                          get_handle (void) const override {return peer_.get_handle();}
         ACE_Time_Value                      m_last_recv_activity; // last link activity time
@@ -34,12 +34,10 @@ using addr_type = ACE_INET_Addr;
 public:
                     CRUDLink();
                     ~CRUDLink() override;
-    uint64_t        session_token() const { return m_session_token; }
-    void            session_token(uint64_t tok) { m_session_token=tok; }
 
     int             open(void * = nullptr) override;
     int             handle_output( ACE_HANDLE = ACE_INVALID_HANDLE ) override;
-    void            received_block(BitStream &bytes) override;
+    void            received_block(BitStream &bytes);
     void            dispatch(SEGSEvent *) override
                     {
                         assert(!"Should not be called");
@@ -47,7 +45,6 @@ public:
     CrudP_Protocol *get_proto() { return &m_protocol; }
     stream_type &   peer() { return peer_; }
     addr_type &     peer_addr() { return m_peer_addr; }
-    void            set_client_data(void *d) { m_link_data = d; }
 
     ACE_Time_Value  client_last_seen_packets() const //! return the amount of time this client hasn't received anything
                     {
@@ -71,8 +68,6 @@ virtual CRUD_EventFactory &factory() = 0;
     CrudP_Protocol  m_protocol;
     stream_type     peer_;  //!< Maintain connection with client.
     addr_type       m_peer_addr;
-    uint64_t        m_session_token;  //!< Handler-unique number identifying client's session
-    void *          m_link_data;
     EventProcessor *m_net_layer;      //!< All outgoing events are put here
     EventProcessor *m_target;         //!< All incoming events are put here
 

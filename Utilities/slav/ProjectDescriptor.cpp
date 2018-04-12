@@ -7,10 +7,10 @@
 #include <QtCore/QDebug>
 
 
-CEREAL_CLASS_VERSION( ProjectDescriptor, 1 );
-CEREAL_CLASS_VERSION( ServerDescriptor, 1 );
-CEREAL_CLASS_VERSION( ProjectApp, 1 );
-CEREAL_CLASS_VERSION( AppVersion, 1 );
+CEREAL_CLASS_VERSION( ProjectDescriptor, 1 )
+CEREAL_CLASS_VERSION( ServerDescriptor, 1 )
+CEREAL_CLASS_VERSION( ProjectApp, 1 )
+CEREAL_CLASS_VERSION( AppVersion, 1 )
 
 
 template<class Archive>

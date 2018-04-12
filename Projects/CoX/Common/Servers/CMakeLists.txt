@@ -3,7 +3,6 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/AdminServerInterface.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GameServerInterface.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MapServerInterface.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerSupport.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerEndpoint.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerManager.cpp
@@ -13,7 +12,6 @@ SET(target_CPP
 )
 SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/AdminServerInterface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ClientManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/GameServerInterface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/MapServerInterface.h
@@ -37,7 +35,7 @@ ${target_INCLUDE}
 )
 
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
-INCLUDE_DIRECTORIES(${ACE_path})
+INCLUDE_DIRECTORIES(SYSTEM ${ACE_path})
 
 ADD_LIBRARY(cox_server_common STATIC ${target_SOURCES})
 add_dependencies(cox_server_common ace_IMP)

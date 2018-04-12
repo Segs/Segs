@@ -2,8 +2,8 @@
 #include "ChatMessage.h"
 #include "Events/InputState.h"
 #include "Entity.h"
-#include "MapClient.h"
 #include "MapEvents.h"
+#include "MapClientSession.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "Logging.h"
 
@@ -24,11 +24,11 @@ void ChatMessage::serializefrom(BitStream &src)
     src.GetString(m_msg);
 }
 
-void sendChatMessage(MessageChannel t, QString msg, MapClient *src, MapClient *tgt)
+void sendChatMessage(MessageChannel t, QString msg, MapClientSession *src, MapClientSession *tgt)
 {
     ChatMessage * res = new ChatMessage(t,msg);
-    res->m_source_player_id = getIdx(*src->char_entity());
-    res->m_target_player_id = getIdx(*src->char_entity());
+    res->m_source_player_id = getIdx(*src->m_ent);
+    res->m_target_player_id = getIdx(*src->m_ent);
 
     tgt->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
 

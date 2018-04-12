@@ -1,7 +1,7 @@
 #pragma once
 class Entity;
 class BitStream;
-class MapClient;
+struct MapClientSession;
 class ColorAndPartPacker;
 struct ClientEntityStateBelief;
 void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream &bs);

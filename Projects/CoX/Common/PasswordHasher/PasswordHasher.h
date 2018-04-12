@@ -14,5 +14,5 @@ public:
 protected:
     QString getRandomString(int length) const;
 
-    QCryptographicHash * m_hasher = new QCryptographicHash(QCryptographicHash::Sha256);
+    QCryptographicHash m_hasher;
 };

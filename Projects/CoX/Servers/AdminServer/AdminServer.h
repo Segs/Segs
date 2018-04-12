@@ -30,7 +30,7 @@ class AdminDatabase;
 class CharacterDatabase;
 class IGameServer;
 class IMapServer;
-class AccountInfo;
+struct AuthAccountData;
 //! The AdminServer class handles administrative functions such as account saving, account banning, etcetera.
 class _AdminServer final : public IAdminServer
 {
@@ -42,12 +42,11 @@ public:
 
     // Client handling related interface
 
-    bool                        Login(const AccountInfo &client,const ACE_INET_Addr &client_addr) override;
-    bool                        ValidPassword(const AccountInfo &client, const char *password) override;
+    bool                        Login(const AuthAccountData &client,const ACE_INET_Addr &client_addr) override;
+    bool                        ValidPassword(const AuthAccountData &client, const char *password) override;
 
-    bool                        fill_account_info(AccountInfo &client) override;
+    bool                        fill_account_info(AuthAccountData &client) override;
     int                         SaveAccount(const char *username, const char *password) override;
-    int                         RemoveAccount(AccountInfo &client) override; // Removes account from database via id #
 
     //bool AccountBlocked(const char *login) const; // Check if account is blocked.
 

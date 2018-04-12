@@ -18,7 +18,7 @@
 #include <set>
 #include <deque>
 
-class MapClient;
+struct MapClientSession;
 class MapInstance;
 class Entity;
 class BitStream;
@@ -45,8 +45,8 @@ public:
                     EntityManager();
     void            sendDebuggedEntities(BitStream &tgt) const;
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
-    void            sendDeletes(BitStream &tgt, MapClient *client) const;
-    void            sendEntities(BitStream &tgt, MapClient *target, bool is_incremental) const;
+    void            sendDeletes(BitStream &tgt, MapClientSession *client) const;
+    void            sendEntities(BitStream &tgt, MapClientSession *target, bool is_incremental) const;
     void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
     void            removeEntityFromActiveList(Entity *ent);
@@ -62,6 +62,6 @@ class EntityStorage
 public:
 //  void NewPlayer(MapClient *client,Entity *player_ent); // stores fresh player avatar
 //  void StorePlayer(MapClient *client,Entity *player_ent); // stores player avatar
-        Entity *    CreatePlayer(MapClient *client,int avatar_id); // retrieves client avatar from storage
+        Entity *    CreatePlayer(MapClientSession *client,int avatar_id); // retrieves client avatar from storage
         Entity *    CreateInstance(MapInstance *target_world,uint64_t id); // will create a new instance of given entity, bound to given map
 };

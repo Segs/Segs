@@ -19,7 +19,7 @@
 
 typedef CRUDLink_Event GameLinkEvent;
 
-class CharacterClient;
+struct GameAccountData;
 
 class GameEventTypes : public CRUD_EventTypes
 {
@@ -59,7 +59,7 @@ public:
 
     }
     uint32_t m_map_server_ip;
-    uint32_t m_character_index;
+    uint16_t m_character_index;
     uint32_t m_mapnumber;
     QString m_char_name;
 };
@@ -141,16 +141,16 @@ class CharacterResponse : public GameLinkEvent
 public:
     CharacterResponse():GameLinkEvent(GameEventTypes::evCharacterResponse)
     {}
-    CharacterResponse(EventProcessor *src,uint8_t idx,CharacterClient *c) : GameLinkEvent(GameEventTypes::evCharacterResponse,src)
+    CharacterResponse(EventProcessor *src,uint8_t idx,GameAccountData *gad) : GameLinkEvent(GameEventTypes::evCharacterResponse,src)
     {
         m_index=idx;
-        m_client=c;
+        m_data=gad;
     }
-    void set_client(CharacterClient *c) {m_client=c;}
+    void set_client(GameAccountData *gad) {m_data=gad;}
     void serializeto(BitStream &bs) const;
     void serializefrom(BitStream &bs);
     uint8_t m_index;
-    CharacterClient *m_client;
+    GameAccountData *m_data;
 };
 
 class UpdateServer : public GameLinkEvent
@@ -175,14 +175,14 @@ class CharacterSlots : public GameLinkEvent
 public:
     CharacterSlots():GameLinkEvent(GameEventTypes::evCharacterSlots)
     {}
-    void set_client(CharacterClient *c) {m_client=c;}
+    void set_account_data(GameAccountData *c) {m_data=c;}
     void serializeto( BitStream &tgt ) const;
     void serializefrom( BitStream &src );
     void dependent_dump();
 
     uint32_t m_unknown_new;
     uint8_t m_clientinfo[16];
-    CharacterClient *m_client;
+    GameAccountData *m_data;
 };
 
 class GameEntryError : public GameLinkEvent
