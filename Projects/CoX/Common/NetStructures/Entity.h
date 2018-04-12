@@ -14,7 +14,7 @@
 #include <array>
 #include <memory>
 
-class MapClient;
+class MapClientSession;
 class Team;
 class Character;
 
@@ -281,7 +281,7 @@ public:
         uint32_t            creatorEntityId             = 0;
         float               translucency                = 1.f;
         bool                m_is_fading                 = true;
-        MapClient *         m_client                    = nullptr;
+        MapClientSession *         m_client                    = nullptr;
         FadeDirection       m_fading_direction = FadeDirection::In;
 
         void                dump();

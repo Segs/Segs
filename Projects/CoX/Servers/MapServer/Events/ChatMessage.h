@@ -12,7 +12,7 @@
 
 #include <QString>
 
-class MapClient;
+class MapClientSession;
 
 class ChatMessage : public GameCommand
 {
@@ -30,4 +30,4 @@ public:
     void            serializefrom(BitStream &src);
 };
 
-extern void sendChatMessage(MessageChannel t, QString msg, MapClient *src, MapClient *tgt);
+extern void sendChatMessage(MessageChannel t, QString msg, MapClientSession *src, MapClientSession *tgt);

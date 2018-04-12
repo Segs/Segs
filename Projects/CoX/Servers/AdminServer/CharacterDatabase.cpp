@@ -313,7 +313,7 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     ClientOptions &od(c.m_options);
     KeybindSettings &kbd(c.m_keybinds);
     GUISettings &gui(c.m_gui);
-    const CharacterCostume *cst = c.getCurrentCostume();
+    const Costume *cst = c.getCurrentCostume();
     if(!cst) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::create cannot insert char without costume.\n"))
                          ,false);
@@ -326,7 +326,7 @@ bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
     m_prepared_char_insert.bindValue(":slot_index", uint32_t(slot));
     m_prepared_char_insert.bindValue(":account_id", quint64(gid));
     m_prepared_char_insert.bindValue(":char_name", c.m_name);
-    m_prepared_char_insert.bindValue(":bodytype", c.getCurrentCostume()->m_body_type);
+    m_prepared_char_insert.bindValue(":bodytype", cst->m_body_type);
     m_prepared_char_insert.bindValue(":hitpoints", c.m_current_attribs.m_HitPoints);
     m_prepared_char_insert.bindValue(":endurance", c.m_current_attribs.m_Endurance);
     m_prepared_char_insert.bindValue(":supergroup_id", uint32_t(e->m_supergroup.m_SG_id));

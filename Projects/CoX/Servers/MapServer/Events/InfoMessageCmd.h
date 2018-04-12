@@ -10,7 +10,7 @@
 #include "GameCommandList.h"
 
 
-class MapClient;
+class MapClientSession;
 class QString;
 
 enum class MessageChannel : int;
@@ -30,4 +30,4 @@ public:
     void            serializefrom(BitStream &src);
 };
 
-extern void sendInfoMessage(MessageChannel t, QString msg, MapClient *tgt);
+extern void sendInfoMessage(MessageChannel t, QString msg, MapClientSession *tgt);

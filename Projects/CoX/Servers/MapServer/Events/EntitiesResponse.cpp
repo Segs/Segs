@@ -414,7 +414,7 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
 }
 }
 //! EntitiesResponse is sent to a client to inform it about the current world state.
-EntitiesResponse::EntitiesResponse(MapClient *cl) :
+EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
     MapLinkEvent(MapEventTypes::evEntitites)
 {
     m_map_time_of_day = 10;

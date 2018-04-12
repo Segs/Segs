@@ -12,7 +12,7 @@ void InfoMessageCmd::serializeto(BitStream &bs) const
     bs.StoreString(m_msg);
 }
 
-void sendInfoMessage(MessageChannel t, QString msg, MapClient *tgt)
+void sendInfoMessage(MessageChannel t, QString msg, MapClientSession *tgt)
 {
 
     InfoMessageCmd * res = new InfoMessageCmd(t,msg);
