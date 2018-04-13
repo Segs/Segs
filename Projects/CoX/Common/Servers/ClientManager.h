@@ -39,9 +39,9 @@ mutable ACE_Thread_Mutex m_store_mutex;
 
         struct ExpectClientInfo
         {
-            uint32_t cookie;
+            uint32_t m_cookie;
             ACE_Time_Value m_expected_since;
-            uint64_t session_token;
+            uint64_t m_session_token;
         };
         ///
         /// \brief The WaitingSession struct is used to store sessions without active connections in any server.
@@ -65,31 +65,49 @@ mutable ACE_Thread_Mutex m_store_mutex;
         }
 
 public:
-        ivClients       begin() { return m_active_sessions.begin();}
-        ivClients       end() { return m_active_sessions.end();}
-        civClients      begin() const { return m_active_sessions.cbegin();}
-        civClients      end() const { return m_active_sessions.cend();}
-        ACE_Thread_Mutex &store_lock() { return m_store_mutex; }
-        ACE_Thread_Mutex &reap_lock() { return m_reaping_mutex; }
+        ivClients begin()
+        {
+            return m_active_sessions.begin();
+        }
+        ivClients end()
+        {
+            return m_active_sessions.end();
+        }
+        civClients begin() const
+        {
+            return m_active_sessions.cbegin();
+        }
+        civClients end() const
+        {
+            return m_active_sessions.cend();
+        }
+        ACE_Thread_Mutex &store_lock()
+        {
+            return m_store_mutex;
+        }
+        ACE_Thread_Mutex &reap_lock()
+        {
+            return m_reaping_mutex;
+        }
         SESSION_CLASS &create_session(uint64_t token)
         {
-            assert(m_token_to_session.find(token)==m_token_to_session.end());
+            assert(m_token_to_session.find(token) == m_token_to_session.end());
             return m_token_to_session[token];
         }
         uint64_t token_for_id(uint32_t id) const
         {
             auto iter = m_id_to_token.find(id);
-            if(iter==m_id_to_token.end())
+            if (iter == m_id_to_token.end())
                 return 0;
             return iter->second;
         }
-        void setTokenForId(uint32_t id,uint64_t token)
+        void setTokenForId(uint32_t id, uint64_t token)
         {
             m_id_to_token[id] = token;
         }
         bool has_session_for(uint64_t token) const
         {
-            return m_token_to_session.find(token)!=m_token_to_session.end();
+            return m_token_to_session.find(token) != m_token_to_session.end();
         }
         SESSION_CLASS &session_from_token(uint64_t token)
         {
@@ -99,12 +117,12 @@ public:
         }
         SESSION_CLASS &session_from_event(SEGSEvent *ev)
         {
-            assert(dynamic_cast<LinkBase *>(ev->src())!=nullptr); // make sure the event source is a Link
-            LinkBase * lnk = (LinkBase *)ev->src();
-            auto iter = m_token_to_session.find(lnk->session_token());
-            assert(iter!=m_token_to_session.end());
+            assert(dynamic_cast<LinkBase *>(ev->src()) != nullptr); // make sure the event source is a Link
+            LinkBase *lnk  = (LinkBase *)ev->src();
+            auto      iter = m_token_to_session.find(lnk->session_token());
+            assert(iter != m_token_to_session.end());
             SESSION_CLASS &session(iter->second);
-            assert(session.m_link==lnk);
+            assert(session.m_link == lnk);
             return session;
         }
 
@@ -120,7 +138,7 @@ public:
             for (ExpectClientInfo sess : m_session_expecting_clients)
             {
                 // if we already expect this client
-                if (sess.cookie == cook)
+                if (sess.m_cookie == cook)
                 {
                     assert(false);
                     // return pregenerated cookie
@@ -136,7 +154,7 @@ public:
             remove_from_active_sessions(&session);
             for (size_t idx = 0, total = m_session_expecting_clients.size(); idx < total; ++idx)
             {
-                if (m_session_expecting_clients[idx].session_token == token)
+                if (m_session_expecting_clients[idx].m_session_token == token)
                 {
                     std::swap(m_session_expecting_clients[idx], m_session_expecting_clients.back());
                     m_session_expecting_clients.pop_back();
@@ -154,9 +172,9 @@ public:
         {
             for (size_t idx = 0, total = m_session_expecting_clients.size(); idx < total; ++idx)
             {
-                if (m_session_expecting_clients[idx].cookie == cookie)
+                if (m_session_expecting_clients[idx].m_cookie == cookie)
                 {
-                    uint64_t expected_in_session = m_session_expecting_clients[idx].session_token;
+                    uint64_t expected_in_session = m_session_expecting_clients[idx].m_session_token;
                     std::swap(m_session_expecting_clients[idx], m_session_expecting_clients.back());
                     m_session_expecting_clients.pop_back();
                     return expected_in_session;
@@ -188,34 +206,34 @@ public:
         }
         bool isActive(SESSION_CLASS *c) const
         {
-            return std::find(m_active_sessions.begin(),m_active_sessions.end(),c)!=m_active_sessions.end();
+            return std::find(m_active_sessions.begin(), m_active_sessions.end(), c) != m_active_sessions.end();
         }
         size_t num_active_clients() const
         {
             return m_active_sessions.size();
         }
-        void create_reaping_timer(EventProcessor *tgt,uint32_t id,ACE_Time_Value interval)
+        void create_reaping_timer(EventProcessor *tgt, uint32_t id, ACE_Time_Value interval)
         {
-            m_session_reaper_timer.reset(new SEGSTimer(tgt,(void *)id,interval,false));
+            m_session_reaper_timer.reset(new SEGSTimer(tgt, (void *)id, interval, false));
         }
-        void mark_session_for_reaping(SESSION_CLASS *sess,uint64_t token)
+        void mark_session_for_reaping(SESSION_CLASS *sess, uint64_t token)
         {
             m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(), sess, token});
         }
         void unmark_session_for_reaping(SESSION_CLASS *sess)
         {
-            for(size_t idx=0,total=m_session_ready_for_reaping.size(); idx<total; ++idx)
+            for (size_t idx = 0, total = m_session_ready_for_reaping.size(); idx < total; ++idx)
             {
-                if(m_session_ready_for_reaping[idx].m_session==sess)
+                if (m_session_ready_for_reaping[idx].m_session == sess)
                 {
-                    std::swap(m_session_ready_for_reaping[idx],m_session_ready_for_reaping.back());
+                    std::swap(m_session_ready_for_reaping[idx], m_session_ready_for_reaping.back());
                     m_session_ready_for_reaping.pop_back();
                     break;
                 }
             }
         }
         void reap_stale_links(const char *name, ACE_Time_Value link_is_stale_if_disconnected_for,
-                              std::function<void(uint64_t token)> reap_callback = [](uint64_t){})
+                              std::function<void(uint64_t token)> reap_callback = [](uint64_t) {})
         {
             ACE_Time_Value time_now = ACE_OS::gettimeofday();
             for (size_t idx = 0, total = m_session_ready_for_reaping.size(); idx < total; ++idx)
@@ -237,18 +255,16 @@ public:
         }
         SESSION_CLASS *create_or_reuse_session_for(uint64_t token)
         {
-            SESSION_CLASS *sess;
+            SESSION_CLASS *             sess;
             ACE_Guard<ACE_Thread_Mutex> guard(reap_lock());
-            auto iter = m_token_to_session.find(token);
-            if(iter!=m_token_to_session.end())
+            auto                        iter = m_token_to_session.find(token);
+            if (iter != m_token_to_session.end())
             {
                 sess = &iter->second;
                 unmark_session_for_reaping(sess);
-                qDebug()<<"Existing client session reused";
+                qDebug() << "Existing client session reused";
                 sess->reset();
-            }
-            else
+            } else
                 sess = &create_session(token);
         }
-
 };

@@ -4,7 +4,7 @@ PROJECT(SEGS)
 IF(MSVC)
     add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX -D_USE_MATH_DEFINES)
 ELSE()
-   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11"  )
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast "  )
 endif()
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -57,7 +57,7 @@ IF(MSVC)
     # fix any double slashes which seem to be common
     STRING(REPLACE "//" "/"  QT_VERSION "${QT_VERSION}")
 
-    # we only support 2017, and qt5 uses vs2015 for 32 bit build
+    # we only support 2017, and qt5 uses vs2015 files for 32 bit build
     SET(QT_MSVC "2015")
     # check for 64-bit os
     # may need to be removed for older compilers as it wasn't always offered

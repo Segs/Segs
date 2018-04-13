@@ -7,6 +7,7 @@ SET(target_CPP
     Buffer.cpp
     ConfigExtension.cpp
     EventProcessor.cpp
+    SEGSEvent.cpp
     SEGSTimer.cpp
     FixedPointValue.cpp
     Settings.cpp

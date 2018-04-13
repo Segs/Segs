@@ -28,9 +28,11 @@ IF(BUILD_SEPARATE)
     ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
     TARGET_LINK_LIBRARIES(authserver
         authserver_lib
+        auth_db_sync_lib
         adminserver_lib
         gameserver_lib
         mapserver_lib
+        game_db_sync_lib
         cox_server_common
         AuthProtocol
         ${target_DEPENDS} gameData

@@ -19,7 +19,7 @@ class QSqlQuery;
 class CharacterClient;
 class CharacterCostume;
 class Character;
-class GameAccountData;
+class GameAccountResponseData;
 struct GameAccountResponseCharacterData;
 struct GameAccountResponseCostumeData;
 class CharacterDatabase
@@ -44,7 +44,7 @@ public:
 virtual             ~CharacterDatabase();
         bool        CreateLinkedAccount(uint64_t auth_account_id,const std::string &username,int max_character_slots); // returns true on success
         bool        create(uint64_t gid, uint8_t slot, Entity *e);
-        bool        fill(uint64_t account_db_id, GameAccountData &); //!x
+        bool        fill(uint64_t account_db_id, GameAccountResponseData &); //!x
         bool        fill( Entity *e ); //! Will call fill(CharacterCostume)
         bool        fill(uint64_t account_id, GameAccountResponseCharacterData &c );
         bool        fill( GameAccountResponseCostumeData &); //!< Will call fill(CharacterCostume)
@@ -61,7 +61,7 @@ virtual             ~CharacterDatabase();
         CharacterFromDB *getCharacter(int32_t db_id);
 };
 bool removeCharacter(uint64_t game_account_id,uint8_t slot_idx);
-bool fillGameAccountData(uint64_t auth_account_id, GameAccountData &tgt);
+bool fillGameAccountData(uint64_t auth_account_id, GameAccountResponseData &tgt);
 bool initializeCharacterFromCreator();
 bool toActualCharacter(const GameAccountResponseCharacterData &src,Character &tgt);
 bool storeNewCharacter(Entity *e, int8_t slot_idx, uint64_t account_id);
