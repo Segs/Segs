@@ -107,14 +107,14 @@ void GameHandler::on_update_server(UpdateServer *ev)
         qDebug("GameEntryError: Client version %u not supported!", ev->m_build_date);
         return;
     }
-    uint64_t expecting_session_token = m_session_store.connectedClient(ev->authCookie);
+    uint64_t expecting_session_token = m_session_store.connected_client(ev->authCookie);
     if(expecting_session_token==~0U)
     {
         ev->src()->putq(new GameEntryError(this,"Unauthorized !"));
         qDebug("GameEntryError: Unauthorized!");
         return;
     }
-    GameSession &session(m_session_store.sessionFromToken(expecting_session_token));
+    GameSession &session(m_session_store.session_from_token(expecting_session_token));
     session.m_link = (GameLink *)ev->src();
     session.m_link->session_token(expecting_session_token);
     if(!fillGameAccountData(session.m_account.m_acc_server_acc_id,session.m_game_account))
@@ -127,7 +127,7 @@ void GameHandler::on_update_server(UpdateServer *ev)
     EventProcessor *tgt      = HandlerLocator::getAuth_Handler();
     tgt->putq(new ClientConnectedMessage({expecting_session_token,m_server->getId(),0 }));
 
-    m_session_store.addToActiveSessions(&session);
+    m_session_store.add_to_active_sessions(&session);
     CharacterSlots *slots_event=new CharacterSlots;
     slots_event->set_account_data(&session.m_game_account);
     ev->src()->putq(slots_event);
@@ -136,7 +136,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
 {
     auto lnk = (GameLink *)ev->src();
     assert(lnk->session_token());
-    GameSession &session = m_session_store.sessionFromEvent(ev);
+    GameSession &session = m_session_store.session_from_event(ev);
     assert(session.m_game_account.valid());
 
     ev->src()->putq(new CharacterResponse(this,ev->m_index,&session.m_game_account));
@@ -193,10 +193,10 @@ void GameHandler::on_timeout(TimerEvent *ev)
 void GameHandler::on_disconnect(DisconnectRequest *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
-    GameSession &session = m_session_store.sessionFromEvent(ev);
+    GameSession &session = m_session_store.session_from_event(ev);
     if(session.is_connected_to_map_server_id==0)
         m_session_store.mark_session_for_reaping(&session,lnk->session_token());
-    m_session_store.sessionLinkLost(lnk->session_token());
+    m_session_store.session_link_lost(lnk->session_token());
     lnk->putq(new DisconnectResponse);
     // Post disconnect event to link, will close it's processing loop, after it sends the response
     lnk->putq(new DisconnectEvent(lnk->session_token())); // this should work, event if different threads try to do it in parallel
@@ -204,17 +204,17 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
 void GameHandler::on_link_lost(SEGSEvent *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
-    GameSession &session = m_session_store.sessionFromEvent(ev);
+    GameSession &session = m_session_store.session_from_event(ev);
 
     if(session.is_connected_to_map_server_id==0)
         m_session_store.mark_session_for_reaping(&session,lnk->session_token());
-    m_session_store.sessionLinkLost(lnk->session_token());
+    m_session_store.session_link_lost(lnk->session_token());
     // Post disconnect event to link, will close it's processing loop
     lnk->putq(new DisconnectEvent(lnk->session_token()));
 }
 void GameHandler::on_delete_character(DeleteCharacter *ev)
 {
-    GameSession &session = m_session_store.sessionFromEvent(ev);
+    GameSession &session = m_session_store.session_from_event(ev);
     GameLink * lnk = (GameLink *)ev->src();
     auto chr(session.m_game_account.get_character(ev->m_index));
     // check if character exists, and if it's name is the same as the one passed here
@@ -235,7 +235,7 @@ void GameHandler::on_client_expected(ExpectMapClientResponse *ev)
 {
     // this is the case when we cannot use ev->src(), because it is not GameLink, but a MapHandler
     // we need to get a link based on the session token
-    GameSession &session = m_session_store.sessionFromEvent(ev);
+    GameSession &session = m_session_store.session_from_event(ev);
     GameLink *lnk = session.m_link;
     MapServerAddrResponse *r_ev=new MapServerAddrResponse;
     r_ev->m_map_cookie  = ev->m_data.cookie;
@@ -246,7 +246,7 @@ void GameHandler::on_client_expected(ExpectMapClientResponse *ev)
 void GameHandler::on_map_req(MapServerAddrRequest *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
-    GameSession &session = m_session_store.sessionFromEvent(ev);
+    GameSession &session = m_session_store.session_from_event(ev);
     if (!session.m_game_account.valid())
         return; // TODO:  return some kind of error.
 
@@ -280,21 +280,8 @@ void GameHandler::on_unknown_link_event(GameUnknownRequest *)
 
 void GameHandler::on_expect_client( ExpectClientRequest *ev )
 {
-    GameSession *sess = nullptr;
-    {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
-        if(m_session_store.hasSessionFor(ev->session_token()))
-        {
-            sess = &m_session_store.sessionFromEvent(ev);
-            m_session_store.unmark_session_for_reaping(sess);
-            qDebug()<<"Existing client session reused";
-            sess->reset();
-        }
-        else
-            sess = &m_session_store.createSession(ev->session_token());
-
-    }
-    uint32_t cookie = m_session_store.ExpectClientSession(ev->session_token(),ev->m_data.m_from_addr,ev->m_data.m_client_id);
+    GameSession *sess = m_session_store.create_or_reuse_session_for(ev->session_token());
+    uint32_t cookie = m_session_store.expect_client_session(ev->session_token(),ev->m_data.m_from_addr,ev->m_data.m_client_id);
     sess->m_state = GameSession::CLIENT_EXPECTED;
     sess->m_account.m_acc_server_acc_id = ev->m_data.m_client_id;
     HandlerLocator::getAuth_Handler()->putq(new ExpectClientResponse({ev->m_data.m_client_id,cookie,m_server->getId()},ev->session_token()));
@@ -304,7 +291,7 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
 {
     assert(ev->m_data.m_server_id);
     assert(ev->m_data.m_sub_server_id);
-    GameSession &session(m_session_store.sessionFromToken(ev->m_data.m_session));
+    GameSession &session(m_session_store.session_from_token(ev->m_data.m_session));
     {
         ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
         // check if this session perhaps is in ready for reaping set
@@ -315,7 +302,7 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
 }
 void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
 {
-    GameSession &session(m_session_store.sessionFromToken(ev->m_data.m_session));
+    GameSession &session(m_session_store.session_from_token(ev->m_data.m_session));
     session.is_connected_to_map_server_id = 0;
     session.is_connected_to_map_instance_id = 0;
     {
