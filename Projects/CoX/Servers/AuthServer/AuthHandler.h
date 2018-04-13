@@ -55,27 +55,15 @@ struct AuthSession
     uint32_t m_auth_id=0;
     eClientState m_state = NOT_LOGGED_IN;
     uint32_t is_connected_to_game_server_id=0;
+    uint32_t auth_id() const { return m_auth_id; }
 };
 class AuthHandler : public EventProcessor
 {
-    ///
-    /// \brief The WaitingSession struct is used to store sessions without active connections in any server.
-    ///
-    struct WaitingSession
-    {
-        ACE_Time_Value m_waiting_since;
-        AuthSession *  m_session;
-        uint64_t       m_session_token;
-    };
     using SessionStore = ClientSessionStore<AuthSession>;
 protected:
     static uint64_t s_last_session_id;
-    ACE_Thread_Mutex m_reaping_mutex;
     MessageBusEndpoint m_message_bus_endpoint;
     SessionStore m_sessions;
-    std::vector<WaitingSession> m_session_ready_for_reaping;
-    std::unique_ptr<SEGSTimer> m_session_reaper_timer;
-
     AuthServer *m_authserv = nullptr;
 
     bool        isClientConnectedAnywhere(uint32_t client_id);

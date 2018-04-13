@@ -10,6 +10,7 @@
 class MapHandler;
 class MapInstance;
 class NetCommand;
+struct MapLink;
 class GamePacket;
 class SEGSTimer;
 class Entity;
@@ -26,7 +27,8 @@ struct MapClientSession
     using mNetCommands = std::map<int, NetCommand *>;
     using vBelief      = std::map<int, ClientEntityStateBelief>;
     friend class CharacterDatabase;
-    struct MapLink * m_link;
+    uint32_t auth_id() const { return m_client_id; }
+    MapLink * m_link;
     uint32_t m_client_id;
     // The values below might be needed for map<->map handover ?
     uint32_t is_connected_to_map_server_id=0;

@@ -20,39 +20,31 @@ struct GameSession
 {
     enum eClientState
     {
-        CLIENT_DISCONNECTED=0,
+        CLIENT_DISCONNECTED = 0,
         CLIENT_EXPECTED,
         NOT_LOGGED_IN,
         LOGGED_IN,
         CLIENT_CONNECTED
     };
-    GameLink *m_link=nullptr;
+    GameLink *      m_link = nullptr;
     AuthAccountData m_account;
     GameAccountData m_game_account;
-    uint32_t is_connected_to_map_server_id=0;
-    uint32_t is_connected_to_map_instance_id=0;
-    eClientState m_state;
+    uint32_t        is_connected_to_map_server_id   = 0;
+    uint32_t        is_connected_to_map_instance_id = 0;
+    eClientState    m_state;
+    uint32_t auth_id() const { return m_account.m_acc_server_acc_id; }
+    void reset()
+    {
+        *this = {}; // just use default constructed value
+    }
 };
 class GameHandler : public EventProcessor
 {
-    ///
-    /// \brief The WaitingSession struct is used to store sessions without active connections in any server.
-    ///
-    struct WaitingSession
-    {
-        ACE_Time_Value m_waiting_since;
-        GameSession *  m_session;
-        uint64_t       m_session_token;
-    };
-
     using sIds = std::unordered_set<uint32_t>;
     using SessionStore = ClientSessionStore<GameSession>;
 
     SessionStore m_session_store;
-    std::vector<WaitingSession> m_session_ready_for_reaping;
     std::unique_ptr<SEGSTimer> m_link_checker;
-    std::unique_ptr<SEGSTimer> m_session_reaper_timer;
-    ACE_Thread_Mutex m_reaping_mutex;
 
 public:
                 GameHandler();

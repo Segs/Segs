@@ -81,7 +81,7 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
 {
     assert(HandlerLocator::getAuth_Handler()==nullptr);
     HandlerLocator::setAuth_Handler(this);
-    m_session_reaper_timer.reset(new SEGSTimer(this,(void *)Session_Reaper_Timer,session_reaping_interval,false));
+    m_sessions.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
 }
 void AuthHandler::on_timeout(TimerEvent *ev)
 {
@@ -124,10 +124,9 @@ void AuthHandler::on_disconnect(DisconnectEvent *ev)
         ACE_DEBUG((LM_WARNING, ACE_TEXT("(%P|%t) Client disconnected without a valid login attempt. Old client ?\n")));
     }
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
+        ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
         if (session.is_connected_to_game_server_id == 0)
-            m_session_ready_for_reaping.emplace_back(
-                WaitingSession{ACE_OS::gettimeofday(), &session, session.m_link->session_token()});
+            m_sessions.mark_session_for_reaping(&session, session.m_link->session_token());
     }
 
     if (session.m_link)
@@ -215,7 +214,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     // see if we can reuse the old session
     uint64_t sess_tok;
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
+        ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
         sess_tok = m_sessions.tokenForId(acc_data->m_acc_server_acc_id);
         if(sess_tok!=0)
         {
@@ -228,15 +227,7 @@ void AuthHandler::on_login( LoginRequest *ev )
 
                 // check if this session perhaps is in 'ready for reaping set'
                 // if so remove
-                for(size_t idx=0,total=m_session_ready_for_reaping.size(); idx<total; ++idx)
-                {
-                    if(m_session_ready_for_reaping[idx].m_session==ses_ptr)
-                    {
-                        std::swap(m_session_ready_for_reaping[idx],m_session_ready_for_reaping.back());
-                        m_session_ready_for_reaping.pop_back();
-                        break;
-                    }
-                }
+                m_sessions.unmark_session_for_reaping(ses_ptr);
         }
         else
         {
@@ -326,17 +317,8 @@ void AuthHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
     assert(ev->m_data.m_server_id);
     AuthSession &session(m_sessions.sessionFromToken(ev->m_data.m_session));
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
-        // check if this session perhaps is in ready for reaping set
-        for(size_t idx=0,total=m_session_ready_for_reaping.size(); idx<total; ++idx)
-        {
-            if(m_session_ready_for_reaping[idx].m_session==&session)
-            {
-                std::swap(m_session_ready_for_reaping[idx],m_session_ready_for_reaping.back());
-                m_session_ready_for_reaping.pop_back();
-                break;
-            }
-        }
+        ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
+        m_sessions.unmark_session_for_reaping(&session);
     }
     session.is_connected_to_game_server_id = ev->m_data.m_server_id;
 }
@@ -345,28 +327,13 @@ void AuthHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
     AuthSession &session(m_sessions.sessionFromToken(ev->m_data.m_session));
     session.is_connected_to_game_server_id = 0;
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
-        m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(),&session,ev->session_token()});
+        ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
+        m_sessions.mark_session_for_reaping(&session,ev->session_token());
     }
 }
 
 void AuthHandler::reap_stale_links()
 {
-    ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
-    ACE_Time_Value time_now = ACE_OS::gettimeofday();
-    for(size_t idx=0,total=m_session_ready_for_reaping.size(); idx<total; ++idx)
-    {
-        WaitingSession &waiting_session(m_session_ready_for_reaping[idx]);
-        if(time_now - m_session_ready_for_reaping[idx].m_waiting_since<link_is_stale_if_disconnected_for)
-            continue;
-        if(waiting_session.m_session->m_link==nullptr) // trully disconnected
-        {
-            qDebug() << "Reaping stale link"<<waiting_session.m_session->m_auth_id<<"in AuthHandler";
-            // we destroy the session object
-            m_sessions.removeByToken(waiting_session.m_session_token,waiting_session.m_session->m_auth_id);
-        }
-        std::swap(m_session_ready_for_reaping[idx],m_session_ready_for_reaping.back());
-        m_session_ready_for_reaping.pop_back();
-        total--; // update the total size
-    }
+    ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
+    m_sessions.reap_stale_links("AuthHandler",link_is_stale_if_disconnected_for);
 }
