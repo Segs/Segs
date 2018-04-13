@@ -71,12 +71,12 @@ public:
         civClients      end() const { return m_active_sessions.cend();}
         ACE_Thread_Mutex &store_lock() { return m_store_mutex; }
         ACE_Thread_Mutex &reap_lock() { return m_reaping_mutex; }
-        SESSION_CLASS &createSession(uint64_t token)
+        SESSION_CLASS &create_session(uint64_t token)
         {
             assert(m_token_to_session.find(token)==m_token_to_session.end());
             return m_token_to_session[token];
         }
-        uint64_t tokenForId(uint32_t id) const
+        uint64_t token_for_id(uint32_t id) const
         {
             auto iter = m_id_to_token.find(id);
             if(iter==m_id_to_token.end())
@@ -87,17 +87,17 @@ public:
         {
             m_id_to_token[id] = token;
         }
-        bool hasSessionFor(uint64_t token) const
+        bool has_session_for(uint64_t token) const
         {
             return m_token_to_session.find(token)!=m_token_to_session.end();
         }
-        SESSION_CLASS &sessionFromToken(uint64_t token)
+        SESSION_CLASS &session_from_token(uint64_t token)
         {
             auto iter = m_token_to_session.find(token);
             assert(iter != m_token_to_session.end());
             return iter->second;
         }
-        SESSION_CLASS &sessionFromEvent(SEGSEvent *ev)
+        SESSION_CLASS &session_from_event(SEGSEvent *ev)
         {
             assert(dynamic_cast<LinkBase *>(ev->src())!=nullptr); // make sure the event source is a Link
             LinkBase * lnk = (LinkBase *)ev->src();
@@ -108,13 +108,13 @@ public:
             return session;
         }
 
-        SESSION_CLASS &sessionFromEvent(InternalEvent *ev)
+        SESSION_CLASS &session_from_event(InternalEvent *ev)
         {
             auto iter = m_token_to_session.find(ev->session_token());
             assert(iter != m_token_to_session.end());
             return iter->second;
         }
-        uint32_t ExpectClientSession(uint64_t token, const ACE_INET_Addr &from, uint64_t id)
+        uint32_t expect_client_session(uint64_t token, const ACE_INET_Addr &from, uint64_t id)
         {
             uint32_t cook = create_cookie(from, id);
             for (ExpectClientInfo sess : m_session_expecting_clients)
@@ -130,10 +130,10 @@ public:
             m_session_expecting_clients.emplace_back(ExpectClientInfo{cook, ACE_OS::gettimeofday(), token});
             return cook;
         }
-        void sessionLinkLost(uint64_t token)
+        void session_link_lost(uint64_t token)
         {
-            SESSION_CLASS &session(sessionFromToken(token));
-            removeFromActiveSessions(&session);
+            SESSION_CLASS &session(session_from_token(token));
+            remove_from_active_sessions(&session);
             for (size_t idx = 0, total = m_session_expecting_clients.size(); idx < total; ++idx)
             {
                 if (m_session_expecting_clients[idx].session_token == token)
@@ -145,12 +145,12 @@ public:
             }
             session.m_link = nullptr;
         }
-        void removeByToken(uint64_t token, uint32_t id)
+        void remove_by_token(uint64_t token, uint32_t id)
         {
             m_id_to_token.erase(id);
             m_token_to_session.erase(token);
         }
-        uint64_t connectedClient(uint32_t cookie)
+        uint64_t connected_client(uint32_t cookie)
         {
             for (size_t idx = 0, total = m_session_expecting_clients.size(); idx < total; ++idx)
             {
@@ -164,7 +164,7 @@ public:
             }
             return ~0U;
         }
-        void removeFromActiveSessions(SESSION_CLASS *cl)
+        void remove_from_active_sessions(SESSION_CLASS *cl)
         {
             for (size_t idx = 0, total = m_active_sessions.size(); idx < total; ++idx)
             {
@@ -177,7 +177,7 @@ public:
             }
             assert(false);
         }
-        void addToActiveSessions(SESSION_CLASS *cl)
+        void add_to_active_sessions(SESSION_CLASS *cl)
         {
             for (size_t idx = 0, total = m_active_sessions.size(); idx < total; ++idx)
             {
@@ -228,12 +228,27 @@ public:
                     qDebug() << name << "Reaping stale link" << waiting_session.m_session_token;
                     reap_callback(waiting_session.m_session_token);
                     // we destroy the session object
-                    removeByToken(waiting_session.m_session_token, waiting_session.m_session->auth_id());
+                    remove_by_token(waiting_session.m_session_token, waiting_session.m_session->auth_id());
                 }
                 std::swap(m_session_ready_for_reaping[idx], m_session_ready_for_reaping.back());
                 m_session_ready_for_reaping.pop_back();
                 total--; // update the total size
             }
+        }
+        SESSION_CLASS *create_or_reuse_session_for(uint64_t token)
+        {
+            SESSION_CLASS *sess;
+            ACE_Guard<ACE_Thread_Mutex> guard(reap_lock());
+            auto iter = m_token_to_session.find(token);
+            if(iter!=m_token_to_session.end())
+            {
+                sess = &iter->second;
+                unmark_session_for_reaping(sess);
+                qDebug()<<"Existing client session reused";
+                sess->reset();
+            }
+            else
+                sess = &create_session(token);
         }
 
 };

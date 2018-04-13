@@ -117,7 +117,7 @@ void AuthHandler::on_disconnect(DisconnectEvent *ev)
         // disconnect without correct login/session creation ?
         return;
     }
-    AuthSession &session(m_sessions.sessionFromToken(ev->m_session_token));
+    AuthSession &session(m_sessions.session_from_token(ev->m_session_token));
     session.m_state = AuthSession::NOT_LOGGED_IN;
     if (!session.m_auth_data)
     {
@@ -132,7 +132,7 @@ void AuthHandler::on_disconnect(DisconnectEvent *ev)
     if (session.m_link)
     {
         session.m_link = nullptr;
-        m_sessions.removeFromActiveSessions(&session);
+        m_sessions.remove_from_active_sessions(&session);
     }
     // TODO: timed session reaping
 }
@@ -142,10 +142,10 @@ void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
 }
 bool AuthHandler::isClientConnectedAnywhere(uint32_t client_id)
 {
-    uint64_t token = m_sessions.tokenForId(client_id);
+    uint64_t token = m_sessions.token_for_id(client_id);
     if(token==0)
         return false;
-    const AuthSession &session(m_sessions.sessionFromToken(token));
+    const AuthSession &session(m_sessions.session_from_token(token));
     if(session.m_state == AuthSession::LOGGED_IN) // easiest way out
     {
         return true;
@@ -215,10 +215,10 @@ void AuthHandler::on_login( LoginRequest *ev )
     uint64_t sess_tok;
     {
         ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
-        sess_tok = m_sessions.tokenForId(acc_data->m_acc_server_acc_id);
+        sess_tok = m_sessions.token_for_id(acc_data->m_acc_server_acc_id);
         if(sess_tok!=0)
         {
-                ses_ptr = &m_sessions.sessionFromToken(sess_tok);
+                ses_ptr = &m_sessions.session_from_token(sess_tok);
                 if(ses_ptr->m_state != AuthSession::NOT_LOGGED_IN)
                 {
                     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
@@ -233,13 +233,13 @@ void AuthHandler::on_login( LoginRequest *ev )
         {
             SessionStore::MTGuard guard(m_sessions.store_lock());
             sess_tok = s_last_session_id++;
-            ses_ptr = &m_sessions.createSession(sess_tok);
+            ses_ptr = &m_sessions.create_session(sess_tok);
         }
         lnk->session_token(sess_tok); // record the session token in the link
         ses_ptr->m_link = lnk; // set the link in the session, will prevent reaping of it if it's a reused one
     }
     ses_ptr->m_auth_data = std::move(acc_data);
-    m_sessions.addToActiveSessions(ses_ptr);
+    m_sessions.add_to_active_sessions(ses_ptr);
     ses_ptr->m_auth_id = acc_inf.m_acc_server_acc_id;
 
     // if there were no errors and the provided password is valid and admin server has logged us in.
@@ -279,7 +279,7 @@ void AuthHandler::on_server_list_request( ServerListRequest *ev )
 }
 void AuthHandler::on_server_selected(ServerSelectRequest *ev)
 {
-    AuthSession &session(m_sessions.sessionFromEvent(ev));
+    AuthSession &session(m_sessions.session_from_event(ev));
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
     if(lnk->m_state!=AuthLink::CLIENT_SERVSELECT)
     {
@@ -301,7 +301,7 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
 }
 void AuthHandler::on_client_expected(ExpectClientResponse *ev)
 {
-    AuthSession &session(m_sessions.sessionFromEvent(ev));
+    AuthSession &session(m_sessions.session_from_event(ev));
     if(session.m_link==nullptr)
     {
         assert(!"client disconnected before receiving game cookie");
@@ -315,7 +315,7 @@ void AuthHandler::on_client_expected(ExpectClientResponse *ev)
 void AuthHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev)
 {
     assert(ev->m_data.m_server_id);
-    AuthSession &session(m_sessions.sessionFromToken(ev->m_data.m_session));
+    AuthSession &session(m_sessions.session_from_token(ev->m_data.m_session));
     {
         ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
         m_sessions.unmark_session_for_reaping(&session);
@@ -324,7 +324,7 @@ void AuthHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
 }
 void AuthHandler::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
 {
-    AuthSession &session(m_sessions.sessionFromToken(ev->m_data.m_session));
+    AuthSession &session(m_sessions.session_from_token(ev->m_data.m_session));
     session.is_connected_to_game_server_id = 0;
     {
         ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
