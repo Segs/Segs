@@ -10,7 +10,7 @@
 #include "GameEvents.h"
 #include "Character.h"
 #include "Costume.h"
-#include "GameDatabase/GameAccountData.h"
+#include "GameDatabase/GameDBSyncEvents.h"
 #include "CharacterDatabase.h"
 
 #include <QtCore/QDebug>

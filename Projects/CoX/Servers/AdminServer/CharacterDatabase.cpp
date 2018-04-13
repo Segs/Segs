@@ -20,7 +20,7 @@
 #include "GameData/clientoptions_serializers.h"
 #include "GameData/gui_serializers.h"
 #include "GameData/keybind_serializers.h"
-#include "GameDatabase/GameAccountData.h"
+#include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
 
 #include <QtSql/QSqlDatabase>
@@ -133,7 +133,7 @@ bool CharacterDatabase::named_character_exists(const QString &name)
     // TODO: handle case of multiple accounts with same name ?
     return m_prepared_char_exists.value(0).toBool();
 }
-bool CharacterDatabase::fill(uint64_t account_db_id, GameAccountData &c )
+bool CharacterDatabase::fill(uint64_t account_db_id, GameAccountResponseData &c )
 {
     assert(account_db_id);
 
@@ -560,7 +560,7 @@ bool removeCharacter(uint64_t game_account_id, uint8_t slot_idx)
     return cdb->remove_character(game_account_id,slot_idx);
 }
 
-bool fillGameAccountData(uint64_t auth_account_id,GameAccountData &tgt)
+bool fillGameAccountData(uint64_t auth_account_id,GameAccountResponseData &tgt)
 {
     if(!AdminServer::instance()->character_db()->fill(auth_account_id,tgt)) // read basic facts
         return false;

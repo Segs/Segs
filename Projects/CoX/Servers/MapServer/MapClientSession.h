@@ -1,7 +1,7 @@
 #pragma once
 #include "AuthDatabase/AccountData.h"
 #include "FixedPointValue.h"
-#include "GameDatabase/GameAccountData.h"
+#include "GameDatabase/GameDBSyncEvents.h"
 #include "Events/GameCommandList.h"
 
 #include <map>
@@ -30,7 +30,7 @@ struct MapClientSession
     MapLink *       m_link         = nullptr;
     uint32_t        m_client_id    = 0;
     uint8_t         m_access_level = 0;
-    GameAccountData m_game_account;
+    GameAccountResponseData m_game_account;
     mNetCommands    m_shortcuts;
     MapInstance *   m_current_map = nullptr;
     Entity *        m_ent         = nullptr;

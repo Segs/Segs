@@ -16,6 +16,7 @@ public:
     EVENT_DECL(evExpectMapClientResponse,3)
     EVENT_DECL(evClientConnectionRequest,4)
     EVENT_DECL(evClientConnectionResponse,5)
+    EVENT_DECL(evReloadConfig,6) // the server that receives this message will reload it's config file and restart with it
 
     EVENT_DECL(evGameServerStatus,10)
     EVENT_DECL(evMapServerStatus,11)
@@ -99,6 +100,13 @@ struct ExpectMapClientResponseData
 };
 TWO_WAY_MESSAGE(ExpectMapClient)
 
+// For now, no data here, could be a path to a config file?
+struct ReloadConfigData
+{
+
+};
+ONE_WAY_MESSAGE(ReloadConfig)
+
 struct GameServerStatusData
 {
     ACE_INET_Addr m_addr;
@@ -111,18 +119,27 @@ struct GameServerStatusData
 // This could be put in Message bus if any other server, apart from Auth needs this info.
 ONE_WAY_MESSAGE(GameServerStatus)
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/// The following messages are put on the global Message Bus, and published there for all subscribers to see
+//
+struct ServiceStatusData
+{
+    QString status_message;
+    int status_value;
+};
+ONE_WAY_MESSAGE(ServiceStatus)
 struct ClientConnectedData
 {
     uint64_t m_session;
     uint32_t m_server_id;     // id of the server the client connected to.
     uint32_t m_sub_server_id; // only used when server_id is the map server
 };
-ONE_WAY_MESSAGE(ClientConnected);
+ONE_WAY_MESSAGE(ClientConnected)
 struct ClientDisconnectedData
 {
     uint64_t m_session;
 };
-ONE_WAY_MESSAGE(ClientDisconnected);
+ONE_WAY_MESSAGE(ClientDisconnected)
 
 #undef ONE_WAY_MESSAGE
 #undef SIMPLE_TWO_WAY_MESSAGE

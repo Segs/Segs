@@ -9,6 +9,10 @@
 //#define ACE_NTRACE 0
 #include "Servers/ServerManager.h"
 #include "Servers/server_support.h"
+#include "Servers/HandlerLocator.h"
+#include "Servers/MessageBus.h"
+#include "Servers/MessageBusEndpoint.h"
+#include "Servers/InternalEvents.h"
 #include "Settings.h"
 #include "Logging.h"
 #include "version.h"
@@ -18,6 +22,8 @@
 #include "AuthServer.h"
 #include "Servers/MapServer/MapServer.h"
 #include "Servers/GameServer/GameServer.h"
+#include "Servers/GameDatabase/GameDBSync.h"
+#include "Servers/AuthDatabase/AuthDBSync.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include <ace/ACE.h>
@@ -40,10 +46,19 @@
 #include <QtCore/QCommandLineParser>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
+#include <QtCore/QElapsedTimer>
 #include <iostream>
 #include <string>
 #include <stdlib.h>
 #include <memory>
+#define TIMED_LOG(x,msg) {\
+    QDebug log(qDebug());\
+    log << msg << "..."; \
+    QElapsedTimer timer;\
+    timer.start();\
+    x;\
+    log << "done in"<<float(timer.elapsed())/1000.0f<<"s";\
+}
 namespace
 {
 static bool s_event_loop_is_done=false; //!< this is set to true when ace reactor is finished.

@@ -5,7 +5,7 @@
 #include "EventProcessor.h"
 #include "InternalEvents.h"
 #include "Common/Servers/MessageBusEndpoint.h"
-#include "GameDatabase/GameAccountData.h"
+#include "GameDatabase/GameDBSyncEvents.h"
 #include "AuthDatabase/AccountData.h"
 
 #include <map>
@@ -28,7 +28,7 @@ struct GameSession
     };
     GameLink *      m_link = nullptr;
     AuthAccountData m_account;
-    GameAccountData m_game_account;
+    GameAccountResponseData m_game_account;
     uint32_t        is_connected_to_map_server_id   = 0;
     uint32_t        is_connected_to_map_instance_id = 0;
     eClientState    m_state;

@@ -48,10 +48,10 @@ public:
         void            src(EventProcessor *ev_src) {m_event_source=ev_src;}
         EventProcessor *src() {return m_event_source;}
         uint32_t        type() const {return m_type;}
-virtual const char *    info() {return typeid(*this).name();}
+virtual const char *    info();
 };
 
-class TimerEvent : public SEGSEvent
+class TimerEvent final: public SEGSEvent
 {
     ACE_Time_Value          m_arrival_time;
     void *                  m_data;
