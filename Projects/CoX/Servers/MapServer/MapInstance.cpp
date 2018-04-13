@@ -53,7 +53,7 @@ void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &location
     }
     else
     {
-        qWarning().noquote() << locations_scriptname <<"is missing";
+        qDebug().noquote() << locations_scriptname <<"is missing; Process will continue without it.";
     }
 }
 }
