@@ -5,7 +5,6 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/xml.hpp>
 #include <cereal/archives/json.hpp>
-#include <strstream>
 #include <cassert>
 EventProcessor *AdminLink::g_target=nullptr;
 

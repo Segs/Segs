@@ -30,31 +30,19 @@ struct ExpectMapClientRequest;
 
 class MapInstance final : public EventProcessor
 {
-    ///
-    /// \brief The WaitingSession struct is used to store sessions without active connections in any server.
-    ///
-    struct WaitingSession
-    {
-        ACE_Time_Value m_waiting_since;
-        MapClientSession *  m_session;
-        uint64_t       m_session_token;
-    };
+    using SessionStore = ClientSessionStore<MapClientSession>;
 
     QString                m_name;
     uint32_t               m_index = 1; // what does client expect this to store, and where do we send it?
     std::unique_ptr<SEGSTimer> m_world_update_timer;
     std::unique_ptr<SEGSTimer> m_resend_timer;
-    std::unique_ptr<SEGSTimer> m_session_reaper_timer;
 
-    World *    m_world;
-    MapServer *m_server;
+    World *                 m_world;
+    MapServer *             m_server;
 
     uint8_t                 m_game_server_id=255; // 255 is `invalid` id
     uint32_t                m_owner_id;
     uint32_t                m_instance_id;
-    std::vector<WaitingSession> m_session_ready_for_reaping;
-    ACE_Thread_Mutex m_reaping_mutex;
-    using SessionStore = ClientSessionStore<MapClientSession>;
 
 public:
     SessionStore            m_session_store;

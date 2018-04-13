@@ -10,10 +10,14 @@
 #include "Common/CRUDP_Protocol/ILink.h"
 #include "InternalEvents.h"
 #include "SEGSEvent.h"
+#include "SEGSTimer.h"
 
 #include <ace/INET_Addr.h>
 #include <ace/OS_NS_time.h>
 #include <ace/Synch.h>
+
+#include <QDebug>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 #include <cassert>
@@ -29,16 +33,29 @@ using   vClients = std::vector<SESSION_CLASS *>;
 using   ivClients = typename vClients::iterator;
 using   civClients = typename vClients::const_iterator;
 protected:
-        mutable ACE_Thread_Mutex m_store_mutex;
+        std::unique_ptr<SEGSTimer> m_session_reaper_timer;
+mutable ACE_Thread_Mutex m_store_mutex;
+        ACE_Thread_Mutex m_reaping_mutex;
+
         struct ExpectClientInfo
         {
             uint32_t cookie;
             ACE_Time_Value m_expected_since;
             uint64_t session_token;
         };
+        ///
+        /// \brief The WaitingSession struct is used to store sessions without active connections in any server.
+        ///
+        struct WaitingSession
+        {
+            ACE_Time_Value m_waiting_since;
+            SESSION_CLASS *m_session;
+            uint64_t       m_session_token;
+        };
         std::unordered_map<uint64_t,SESSION_CLASS> m_token_to_session;
         std::unordered_map<uint32_t,uint64_t> m_id_to_token;
         std::vector<ExpectClientInfo> m_session_expecting_clients;
+        std::vector<WaitingSession> m_session_ready_for_reaping;
         vClients m_active_sessions;
         uint32_t create_cookie(const ACE_INET_Addr &from,uint64_t id)
         {
@@ -53,6 +70,7 @@ public:
         civClients      begin() const { return m_active_sessions.cbegin();}
         civClients      end() const { return m_active_sessions.cend();}
         ACE_Thread_Mutex &store_lock() { return m_store_mutex; }
+        ACE_Thread_Mutex &reap_lock() { return m_reaping_mutex; }
         SESSION_CLASS &createSession(uint64_t token)
         {
             assert(m_token_to_session.find(token)==m_token_to_session.end());
@@ -96,21 +114,21 @@ public:
             assert(iter != m_token_to_session.end());
             return iter->second;
         }
-        uint32_t ExpectClientSession(uint64_t token,const ACE_INET_Addr &from,uint64_t id)
+        uint32_t ExpectClientSession(uint64_t token, const ACE_INET_Addr &from, uint64_t id)
         {
-                uint32_t cook = create_cookie(from,id);
-                for(ExpectClientInfo sess : m_session_expecting_clients )
-                {
+            uint32_t cook = create_cookie(from, id);
+            for (ExpectClientInfo sess : m_session_expecting_clients)
+            {
                 // if we already expect this client
-                    if(sess.cookie==cook)
+                if (sess.cookie == cook)
                 {
-                        assert(false);
-                        // return pregenerated cookie
-                        return cook;
+                    assert(false);
+                    // return pregenerated cookie
+                    return cook;
                 }
-                }
-                m_session_expecting_clients.emplace_back(ExpectClientInfo{cook,ACE_OS::gettimeofday(),token});
-                return cook;
+            }
+            m_session_expecting_clients.emplace_back(ExpectClientInfo{cook, ACE_OS::gettimeofday(), token});
+            return cook;
         }
         void sessionLinkLost(uint64_t token)
         {
@@ -127,7 +145,7 @@ public:
             }
             session.m_link = nullptr;
         }
-        void removeByToken(uint64_t token,uint32_t id)
+        void removeByToken(uint64_t token, uint32_t id)
         {
             m_id_to_token.erase(id);
             m_token_to_session.erase(token);
@@ -148,11 +166,11 @@ public:
         }
         void removeFromActiveSessions(SESSION_CLASS *cl)
         {
-            for(size_t idx=0,total=m_active_sessions.size(); idx<total; ++idx)
+            for (size_t idx = 0, total = m_active_sessions.size(); idx < total; ++idx)
             {
-                if(m_active_sessions[idx]==cl)
+                if (m_active_sessions[idx] == cl)
                 {
-                    std::swap(m_active_sessions[idx],m_active_sessions.back());
+                    std::swap(m_active_sessions[idx], m_active_sessions.back());
                     m_active_sessions.pop_back();
                     return;
                 }
@@ -161,9 +179,9 @@ public:
         }
         void addToActiveSessions(SESSION_CLASS *cl)
         {
-            for(size_t idx=0,total=m_active_sessions.size(); idx<total; ++idx)
+            for (size_t idx = 0, total = m_active_sessions.size(); idx < total; ++idx)
             {
-                if(m_active_sessions[idx]==cl)
+                if (m_active_sessions[idx] == cl)
                     return;
             }
             m_active_sessions.emplace_back(cl);
@@ -176,4 +194,46 @@ public:
         {
             return m_active_sessions.size();
         }
+        void create_reaping_timer(EventProcessor *tgt,uint32_t id,ACE_Time_Value interval)
+        {
+            m_session_reaper_timer.reset(new SEGSTimer(tgt,(void *)id,interval,false));
+        }
+        void mark_session_for_reaping(SESSION_CLASS *sess,uint64_t token)
+        {
+            m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(), sess, token});
+        }
+        void unmark_session_for_reaping(SESSION_CLASS *sess)
+        {
+            for(size_t idx=0,total=m_session_ready_for_reaping.size(); idx<total; ++idx)
+            {
+                if(m_session_ready_for_reaping[idx].m_session==sess)
+                {
+                    std::swap(m_session_ready_for_reaping[idx],m_session_ready_for_reaping.back());
+                    m_session_ready_for_reaping.pop_back();
+                    break;
+                }
+            }
+        }
+        void reap_stale_links(const char *name, ACE_Time_Value link_is_stale_if_disconnected_for,
+                              std::function<void(uint64_t token)> reap_callback = [](uint64_t){})
+        {
+            ACE_Time_Value time_now = ACE_OS::gettimeofday();
+            for (size_t idx = 0, total = m_session_ready_for_reaping.size(); idx < total; ++idx)
+            {
+                WaitingSession &waiting_session(m_session_ready_for_reaping[idx]);
+                if (time_now - m_session_ready_for_reaping[idx].m_waiting_since < link_is_stale_if_disconnected_for)
+                    continue;
+                if (waiting_session.m_session->m_link == nullptr) // trully disconnected
+                {
+                    qDebug() << name << "Reaping stale link" << waiting_session.m_session_token;
+                    reap_callback(waiting_session.m_session_token);
+                    // we destroy the session object
+                    removeByToken(waiting_session.m_session_token, waiting_session.m_session->auth_id());
+                }
+                std::swap(m_session_ready_for_reaping[idx], m_session_ready_for_reaping.back());
+                m_session_ready_for_reaping.pop_back();
+                total--; // update the total size
+            }
+        }
+
 };

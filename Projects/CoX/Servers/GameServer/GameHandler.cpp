@@ -18,9 +18,9 @@ enum {
     Session_Reaper_Timer   = 2
 };
 const ACE_Time_Value link_update_interval(0,500*1000);
-const ACE_Time_Value session_reaping_interval(0,1000*1000);
-const ACE_Time_Value maximum_time_without_packets(0,1000*1000);
-const ACE_Time_Value link_is_stale_if_disconnected_for(0,15*1000*1000);
+const ACE_Time_Value session_reaping_interval(1,0);
+const ACE_Time_Value maximum_time_without_packets(1,0);
+const ACE_Time_Value link_is_stale_if_disconnected_for(15,0);
 const constexpr int MinPacketsToAck=5;
 }
 
@@ -35,7 +35,7 @@ GameHandler::~GameHandler()
 void GameHandler::start() {
     ACE_ASSERT(m_link_checker==nullptr);
     m_link_checker.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
-    m_session_reaper_timer.reset(new SEGSTimer(this,(void *)Session_Reaper_Timer,session_reaping_interval,false));
+    m_session_store.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
 }
 
 void GameHandler::dispatch( SEGSEvent *ev )
@@ -195,7 +195,7 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
     GameLink * lnk = (GameLink *)ev->src();
     GameSession &session = m_session_store.sessionFromEvent(ev);
     if(session.is_connected_to_map_server_id==0)
-        m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(),&session,lnk->session_token()});
+        m_session_store.mark_session_for_reaping(&session,lnk->session_token());
     m_session_store.sessionLinkLost(lnk->session_token());
     lnk->putq(new DisconnectResponse);
     // Post disconnect event to link, will close it's processing loop, after it sends the response
@@ -207,7 +207,7 @@ void GameHandler::on_link_lost(SEGSEvent *ev)
     GameSession &session = m_session_store.sessionFromEvent(ev);
 
     if(session.is_connected_to_map_server_id==0)
-        m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(),&session,lnk->session_token()});
+        m_session_store.mark_session_for_reaping(&session,lnk->session_token());
     m_session_store.sessionLinkLost(lnk->session_token());
     // Post disconnect event to link, will close it's processing loop
     lnk->putq(new DisconnectEvent(lnk->session_token()));
@@ -280,10 +280,23 @@ void GameHandler::on_unknown_link_event(GameUnknownRequest *)
 
 void GameHandler::on_expect_client( ExpectClientRequest *ev )
 {
-    GameSession &sess = m_session_store.createSession(ev->session_token());
+    GameSession *sess = nullptr;
+    {
+        ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
+        if(m_session_store.hasSessionFor(ev->session_token()))
+        {
+            sess = &m_session_store.sessionFromEvent(ev);
+            m_session_store.unmark_session_for_reaping(sess);
+            qDebug()<<"Existing client session reused";
+            sess->reset();
+        }
+        else
+            sess = &m_session_store.createSession(ev->session_token());
+
+    }
     uint32_t cookie = m_session_store.ExpectClientSession(ev->session_token(),ev->m_data.m_from_addr,ev->m_data.m_client_id);
-    sess.m_state = GameSession::CLIENT_EXPECTED;
-    sess.m_account.m_acc_server_acc_id = ev->m_data.m_client_id;
+    sess->m_state = GameSession::CLIENT_EXPECTED;
+    sess->m_account.m_acc_server_acc_id = ev->m_data.m_client_id;
     HandlerLocator::getAuth_Handler()->putq(new ExpectClientResponse({ev->m_data.m_client_id,cookie,m_server->getId()},ev->session_token()));
 }
 
@@ -293,17 +306,9 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
     assert(ev->m_data.m_sub_server_id);
     GameSession &session(m_session_store.sessionFromToken(ev->m_data.m_session));
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
+        ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
         // check if this session perhaps is in ready for reaping set
-        for(size_t idx=0,total=m_session_ready_for_reaping.size(); idx<total; ++idx)
-        {
-            if(m_session_ready_for_reaping[idx].m_session==&session)
-            {
-                std::swap(m_session_ready_for_reaping[idx],m_session_ready_for_reaping.back());
-                m_session_ready_for_reaping.pop_back();
-                break;
-            }
-        }
+        m_session_store.unmark_session_for_reaping(&session);
     }
     session.is_connected_to_map_server_id = ev->m_data.m_server_id;
     session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
@@ -314,30 +319,16 @@ void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
     session.is_connected_to_map_server_id = 0;
     session.is_connected_to_map_instance_id = 0;
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
-        m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(),&session,ev->m_data.m_session});
+        ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
+        m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
     }
 }
 void GameHandler::reap_stale_links()
 {
-    ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
-
-    ACE_Time_Value              time_now = ACE_OS::gettimeofday();
-    EventProcessor *            tgt      = HandlerLocator::getAuth_Handler();
-
-    for (size_t idx = 0, total = m_session_ready_for_reaping.size(); idx < total; ++idx)
-    {
-        WaitingSession &waiting_session(m_session_ready_for_reaping[idx]);
-        if (time_now - m_session_ready_for_reaping[idx].m_waiting_since < link_is_stale_if_disconnected_for)
-            continue;
-        qDebug() << "Reaping stale link"<<waiting_session.m_session->m_account.m_acc_server_acc_id<<"in GameInstance";
-
-        tgt->putq(new ClientDisconnectedMessage({waiting_session.m_session_token}));
-        // we destroy the session object
-        m_session_store.removeByToken(waiting_session.m_session_token,
-                                      waiting_session.m_session->m_account.m_acc_server_acc_id);
-        std::swap(m_session_ready_for_reaping[idx], m_session_ready_for_reaping.back());
-        m_session_ready_for_reaping.pop_back();
-        total--; // update the total size
-    }
+    ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
+    EventProcessor *            tgt = HandlerLocator::getAuth_Handler();
+    m_session_store.reap_stale_links("GameInstance", link_is_stale_if_disconnected_for,
+                                     [tgt](uint64_t tok) {
+                                         tgt->putq(new ClientDisconnectedMessage({tok}));
+                                     });
 }

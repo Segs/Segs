@@ -91,7 +91,7 @@ void MapInstance::start()
     }
     m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
-    m_session_reaper_timer.reset(new SEGSTimer(this,(void *)Session_Reaper_Timer,reaping_interval,false)); // session cleaning
+    m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
     qInfo() << "Server running... awaiting client connections."; // best place for this?
 }
 ///
@@ -144,31 +144,19 @@ void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMes
     session.is_connected_to_map_server_id = 0;
     session.is_connected_to_map_instance_id = 0;
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
-        m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(),&session,ev->session_token()});
+        ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
+        m_session_store.mark_session_for_reaping(&session,ev->session_token());
     }
 }
 void MapInstance::reap_stale_links()
 {
-    ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
-
     ACE_Time_Value              time_now = ACE_OS::gettimeofday();
     EventProcessor *            tgt      = HandlerLocator::getGame_Handler(m_game_server_id);
 
-    for (size_t idx = 0, total = m_session_ready_for_reaping.size(); idx < total; ++idx)
-    {
-        WaitingSession &waiting_session(m_session_ready_for_reaping[idx]);
-        if (time_now - m_session_ready_for_reaping[idx].m_waiting_since < link_is_stale_if_disconnected_for)
-            continue;
-        qDebug() << "Reaping stale link"<<waiting_session.m_session->m_client_id<<"in MapInstance";
-        tgt->putq(new ClientDisconnectedMessage({waiting_session.m_session_token}));
-        // we destroy the session object
-        m_session_store.removeByToken(waiting_session.m_session_token,
-                                      waiting_session.m_session->m_client_id);
-        std::swap(m_session_ready_for_reaping[idx], m_session_ready_for_reaping.back());
-        m_session_ready_for_reaping.pop_back();
-        total--; // update the total size
-    }
+    ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
+    m_session_store.reap_stale_links("MapInstance",link_is_stale_if_disconnected_for,[tgt](uint64_t tok) {
+        tgt->putq(new ClientDisconnectedMessage({tok}));
+    });
 }
 void MapInstance::enqueue_client(MapClientSession *clnt)
 {
@@ -393,6 +381,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
             return;
         }
     }
+
     MapClientSession &map_session(m_session_store.createSession(ev->session_token()));
     cookie                    = 2 + m_session_store.ExpectClientSession(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
