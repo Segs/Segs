@@ -3,16 +3,16 @@
 [![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-![GitHub issues](https://img.shields.io/github/issues-raw/Segs/Segs.svg)
-![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/Segs/Segs.svg)
-![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/Segs/Segs.svg)
-![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/Segs/Segs.svg)
+[![GitHub issues](https://img.shields.io/github/issues-raw/Segs/Segs.svg)](https://github.com/Segs/Segs/issues)
+[![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/Segs/Segs.svg)](https://github.com/Segs/Segs/issues?q=is%3Aissue+is%3Aclosed)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/Segs/Segs.svg)](https://github.com/Segs/Segs/pulls)
+[![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/Segs/Segs.svg)](https://github.com/Segs/Segs/pulls?q=is%3Apr+is%3Aclosed)
 
 [![Waffle.io - Columns and their card count](https://badge.waffle.io/Segs/Segs.svg?columns=all)](https://waffle.io/Segs/Segs)
 
-![Discord](https://img.shields.io/discord/242088237596803073.svg?logo=discord)
-![](https://img.shields.io/badge/irc.segs.io-%23segs-blue.svg)
-![Twitter Follow](https://img.shields.io/twitter/follow/segscode.svg?style=social&logo=twitter)
+[![Discord](https://img.shields.io/discord/242088237596803073.svg?logo=discord)](https://discord.segs.io/)
+[![](https://img.shields.io/badge/irc.segs.io-%23segs-blue.svg)](irc://irc.segs.io/segs)
+[![Twitter Follow](https://img.shields.io/twitter/follow/segscode.svg?style=social&logo=twitter)](https://twitter.com/segscode)
 
 SEGS - Super Entity Game Server
 ======
