@@ -60,23 +60,23 @@ bool GameDbSyncContext::loadAndConfigure()
         return false;
     }
 
-    qWarning() << "Loading GameDbSync settings...";
-    QSettings *config(Settings::getSettings());
+    qInfo() << "Loading GameDbSync settings...";
+    QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
-    config->beginGroup(QStringLiteral("AdminServer"));
+    config.beginGroup(QStringLiteral("AdminServer"));
     QStringList driver_list {"QSQLITE","QPSQL"};
     our_id.to_string(thread_name_buf); // Ace is using template specialization to acquire the lenght of passed buffer
 
-    config->beginGroup(QStringLiteral("CharacterDatabase"));
+    config.beginGroup(QStringLiteral("CharacterDatabase"));
     // this indent is here to mark the nesting of config block
-        QString dbdriver = config->value(QStringLiteral("db_driver"),"QSQLITE").toString();
-        QString dbhost = config->value(QStringLiteral("db_host"),"127.0.0.1").toString();
-        int dbport = config->value(QStringLiteral("db_port"),"5432").toInt();
-        QString dbname = config->value(QStringLiteral("db_name"),"segs_game").toString();
-        QString dbuser = config->value(QStringLiteral("db_user"),"segsadmin").toString();
-        QString dbpass = config->value(QStringLiteral("db_pass"),"segs123").toString();
-    config->endGroup(); // CharacterDatabase
-    config->endGroup(); // AdminServer
+        QString dbdriver = config.value(QStringLiteral("db_driver"),"QSQLITE").toString();
+        QString dbhost = config.value(QStringLiteral("db_host"),"127.0.0.1").toString();
+        int dbport = config.value(QStringLiteral("db_port"),"5432").toInt();
+        QString dbname = config.value(QStringLiteral("db_name"),"segs_game").toString();
+        QString dbuser = config.value(QStringLiteral("db_user"),"segsadmin").toString();
+        QString dbpass = config.value(QStringLiteral("db_pass"),"segs123").toString();
+    config.endGroup(); // CharacterDatabase
+    config.endGroup(); // AdminServer
 
     QSqlDatabase *db2;
     if(!driver_list.contains(dbdriver.toUpper())) {

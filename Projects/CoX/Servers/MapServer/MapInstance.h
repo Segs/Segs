@@ -37,8 +37,8 @@ class MapInstance final : public EventProcessor
     std::unique_ptr<SEGSTimer> m_world_update_timer;
     std::unique_ptr<SEGSTimer> m_resend_timer;
 
-    World *                 m_world;
-    MapServer *             m_server;
+    World *    m_world;
+    MapServer *m_server;
 
     uint8_t                 m_game_server_id=255; // 255 is `invalid` id
     uint32_t                m_owner_id;

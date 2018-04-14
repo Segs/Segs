@@ -2,9 +2,8 @@
 
 #include "GameEvents.h"
 #include "Servers/HandlerLocator.h"
-#include "AdminServerInterface.h"
+#include "Servers/MessageBus.h"
 #include "CharacterDatabase.h"
-#include "ServerManager.h"
 #include "GameLink.h"
 #include "GameEvents.h"
 #include "GameServer.h"
@@ -15,16 +14,18 @@ static const uint32_t supported_version=20040422;
 namespace {
 enum {
     Link_Idle_Timer   = 1,
-    Session_Reaper_Timer   = 2
+    Session_Reaper_Timer   = 2,
+    Service_Status_Timer = 3,
 };
 const ACE_Time_Value link_update_interval(0,500*1000);
+const ACE_Time_Value service_update_interval(5,0);
 const ACE_Time_Value session_reaping_interval(1,0);
 const ACE_Time_Value maximum_time_without_packets(1,0);
-const ACE_Time_Value link_is_stale_if_disconnected_for(15,0);
+const ACE_Time_Value link_is_stale_if_disconnected_for(5,0);
 const constexpr int MinPacketsToAck=5;
 }
 
-GameHandler::GameHandler()
+GameHandler::GameHandler() : EventProcessor ()
 {
 }
 
@@ -35,6 +36,7 @@ GameHandler::~GameHandler()
 void GameHandler::start() {
     ACE_ASSERT(m_link_checker==nullptr);
     m_link_checker.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
+    m_service_status_timer.reset(new SEGSTimer(this,(void *)Service_Status_Timer,service_update_interval,false));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
 }
 
@@ -115,8 +117,9 @@ void GameHandler::on_update_server(UpdateServer *ev)
         return;
     }
     GameSession &session(m_session_store.session_from_token(expecting_session_token));
-    session.m_link = (GameLink *)ev->src();
-    session.m_link->session_token(expecting_session_token);
+    session.link((GameLink *)ev->src());
+    session.m_direction = GameSession::EXITING_TO_LOGIN;
+    session.link()->session_token(expecting_session_token);
     if(!fillGameAccountData(session.m_account.m_acc_server_acc_id,session.m_game_account))
     {
         ev->src()->putq(new GameEntryError(this,"DB error encountered!"));
@@ -154,7 +157,7 @@ void GameHandler::on_check_links()
     // walk the active sessions
     for(const auto &entry : m_session_store)
     {
-        GameLink * client_link = entry->m_link;
+        GameLink * client_link = entry->link();
         if(!client_link)
         {
             // don't send to disconnected clients :)
@@ -167,7 +170,12 @@ void GameHandler::on_check_links()
             client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
     }
 }
-
+void GameHandler::report_service_status()
+{
+    postGlobalEvent(new GameServerStatusMessage({m_server->getAddress(),QDateTime::currentDateTime(),
+                                                 uint16_t(m_session_store.num_sessions()),
+                                                 m_server->getMaxPlayers(),m_server->getId(),true}));
+}
 
 void GameHandler::on_timeout(TimerEvent *ev)
 {
@@ -183,9 +191,12 @@ void GameHandler::on_timeout(TimerEvent *ev)
     switch (timer_id) {
         case Link_Idle_Timer:
             on_check_links();
-            break;
+        break;
         case Session_Reaper_Timer:
             reap_stale_links();
+        break;
+        case Service_Status_Timer:
+            report_service_status();
         break;
     }
 }
@@ -195,8 +206,23 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
     GameLink * lnk = (GameLink *)ev->src();
     GameSession &session = m_session_store.session_from_event(ev);
     if(session.is_connected_to_map_server_id==0)
-        m_session_store.mark_session_for_reaping(&session,lnk->session_token());
-    m_session_store.session_link_lost(lnk->session_token());
+    {
+        if(session.m_direction==GameSession::EXITING_TO_MAP)
+        {
+            SessionStore::MTGuard guard(m_session_store.reap_lock());
+            m_session_store.mark_session_for_reaping(&session,lnk->session_token());
+            m_session_store.session_link_lost(lnk->session_token());
+        }
+        else
+        {
+            EventProcessor * tgt = HandlerLocator::getAuth_Handler();
+            tgt->putq(new ClientDisconnectedMessage({lnk->session_token()}));
+            m_session_store.session_link_lost(lnk->session_token());
+            m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
+        }
+    }
+    else
+        m_session_store.session_link_lost(lnk->session_token());
     lnk->putq(new DisconnectResponse);
     // Post disconnect event to link, will close it's processing loop, after it sends the response
     lnk->putq(new DisconnectEvent(lnk->session_token())); // this should work, event if different threads try to do it in parallel
@@ -207,8 +233,23 @@ void GameHandler::on_link_lost(SEGSEvent *ev)
     GameSession &session = m_session_store.session_from_event(ev);
 
     if(session.is_connected_to_map_server_id==0)
-        m_session_store.mark_session_for_reaping(&session,lnk->session_token());
-    m_session_store.session_link_lost(lnk->session_token());
+    {
+        if(session.m_direction==GameSession::EXITING_TO_MAP)
+        {
+            SessionStore::MTGuard guard(m_session_store.reap_lock());
+            m_session_store.mark_session_for_reaping(&session,lnk->session_token());
+            m_session_store.session_link_lost(lnk->session_token());
+        }
+        else
+        {
+            EventProcessor * tgt = HandlerLocator::getAuth_Handler();
+            tgt->putq(new ClientDisconnectedMessage({lnk->session_token()}));
+            m_session_store.session_link_lost(lnk->session_token());
+            m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
+        }
+    }
+    else
+        m_session_store.session_link_lost(lnk->session_token());
     // Post disconnect event to link, will close it's processing loop
     lnk->putq(new DisconnectEvent(lnk->session_token()));
 }
@@ -233,10 +274,8 @@ void GameHandler::on_delete_character(DeleteCharacter *ev)
 }
 void GameHandler::on_client_expected(ExpectMapClientResponse *ev)
 {
-    // this is the case when we cannot use ev->src(), because it is not GameLink, but a MapHandler
-    // we need to get a link based on the session token
     GameSession &session = m_session_store.session_from_event(ev);
-    GameLink *lnk = session.m_link;
+    GameLink *lnk = session.link();
     MapServerAddrResponse *r_ev=new MapServerAddrResponse;
     r_ev->m_map_cookie  = ev->m_data.cookie;
     r_ev->m_address     = ev->m_data.m_connection_addr;
@@ -253,14 +292,18 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     GameAccountResponseCharacterData *selected_slot = &session.m_game_account.get_character(ev->m_character_index);
     if(selected_slot->isEmpty())
         selected_slot = nullptr; // passing a null to map server to indicate a new character is being created.
-    if(ServerManager::instance()->MapServerCount()<=0)
+
+    EventProcessor *map_handler=HandlerLocator::getMap_Handler(ev->m_mapnumber);
+    if(map_handler==nullptr)
+        map_handler=HandlerLocator::getMap_Handler("City_01_01");
+    if(nullptr == map_handler)
     {
         lnk->putq(new GameEntryError(this,"There are no available Map Servers."));
         return;
     }
     //TODO: this should handle multiple map servers, for now it doesn't care and always connects to the first one.
-    EventProcessor *map_handler=ServerManager::instance()->GetMapServer(0)->event_target();
-    AuthAccountData &acc_inf(session.m_account);
+    assert(map_handler);
+    RetrieveAccountResponseData &acc_inf(session.m_account);
     if(selected_slot )
     {
         ACE_ASSERT(selected_slot->m_name == ev->m_char_name || !"Server-Client character synchronization failure!");
@@ -271,6 +314,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
                                    lnk->session_token());
     fprintf(stderr, " Telling map server to expect a client with character %s,%d\n", qPrintable(ev->m_char_name),
             ev->m_character_index);
+    session.m_direction = GameSession::EXITING_TO_MAP;
     map_handler->putq(expect_client);
 }
 void GameHandler::on_unknown_link_event(GameUnknownRequest *)
@@ -282,7 +326,6 @@ void GameHandler::on_expect_client( ExpectClientRequest *ev )
 {
     GameSession *sess = m_session_store.create_or_reuse_session_for(ev->session_token());
     uint32_t cookie = m_session_store.expect_client_session(ev->session_token(),ev->m_data.m_from_addr,ev->m_data.m_client_id);
-    sess->m_state = GameSession::CLIENT_EXPECTED;
     sess->m_account.m_acc_server_acc_id = ev->m_data.m_client_id;
     HandlerLocator::getAuth_Handler()->putq(new ExpectClientResponse({ev->m_data.m_client_id,cookie,m_server->getId()},ev->session_token()));
 }
@@ -293,7 +336,7 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
     assert(ev->m_data.m_sub_server_id);
     GameSession &session(m_session_store.session_from_token(ev->m_data.m_session));
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
+        SessionStore::MTGuard guard(m_session_store.reap_lock());
         // check if this session perhaps is in ready for reaping set
         m_session_store.unmark_session_for_reaping(&session);
     }
@@ -306,14 +349,14 @@ void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
     session.is_connected_to_map_server_id = 0;
     session.is_connected_to_map_instance_id = 0;
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
+        SessionStore::MTGuard guard(m_session_store.reap_lock());
         m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
     }
 }
 void GameHandler::reap_stale_links()
 {
-    ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
-    EventProcessor *            tgt = HandlerLocator::getAuth_Handler();
+    SessionStore::MTGuard guard(m_session_store.reap_lock());
+    EventProcessor *            tgt      = HandlerLocator::getAuth_Handler();
     m_session_store.reap_stale_links("GameInstance", link_is_stale_if_disconnected_for,
                                      [tgt](uint64_t tok) {
                                          tgt->putq(new ClientDisconnectedMessage({tok}));

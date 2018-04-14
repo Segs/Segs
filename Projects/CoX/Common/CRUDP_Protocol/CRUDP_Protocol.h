@@ -13,7 +13,7 @@
 #include <deque>
 #include <list>
 #include <chrono>
-#include <ace/Thread_Mutex.h>
+#include <mutex>
 #include <ace/INET_Addr.h>
 
 template <size_t size>
@@ -58,7 +58,7 @@ private:
         FixedSizePacketQueue<16384> retransmit_queue;
         std::list<uint32_t> recv_acks; // each successful receive will store it's ack here
         hmSibStorage        sibling_map; // we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
-        ACE_Thread_Mutex    m_packets_mutex;
+        std::mutex          m_packets_mutex;
         bool                m_compression_allowed=false;
         timepoint           m_last_activity;
 

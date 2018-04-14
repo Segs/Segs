@@ -5,7 +5,7 @@
 #include <ace/Time_Value.h>
 #include <QtCore/QString>
 #include <QtCore/QDateTime>
-class GameAccountResponseCharacterData;
+struct GameAccountResponseCharacterData;
 class Internal_EventTypes
 {
 public:
@@ -99,7 +99,6 @@ struct ExpectMapClientResponseData
     ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client
 };
 TWO_WAY_MESSAGE(ExpectMapClient)
-
 // For now, no data here, could be a path to a config file?
 struct ReloadConfigData
 {
@@ -128,6 +127,7 @@ struct ServiceStatusData
     int status_value;
 };
 ONE_WAY_MESSAGE(ServiceStatus)
+
 struct ClientConnectedData
 {
     uint64_t m_session;

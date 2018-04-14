@@ -3,10 +3,9 @@
 #include "AuthServer/AuthServer.h"
 #include "AuthProtocol/AuthLink.h"
 #include "AuthProtocol/AuthEvents.h"
+#include "AuthDatabase/AuthDBSyncEvents.h"
 
 #include "AdminServer/AccountInfo.h"
-#include "Servers/AdminServerInterface.h"
-#include "Servers/ServerManager.h"
 #include "Servers/InternalEvents.h"
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
@@ -65,6 +64,9 @@ void AuthHandler::dispatch( SEGSEvent *ev )
             //////////////////////////////////////////////////////////////////////////
             //  Events from other servers
             //////////////////////////////////////////////////////////////////////////
+        case AuthDBEventTypes::evRetrieveAccountResponse:
+            on_retrieve_account_response(static_cast<RetrieveAccountResponse *>(ev));
+            break;
         case Internal_EventTypes::evExpectClientResponse:
             on_client_expected(static_cast<ExpectClientResponse *>(ev)); break;
         case Internal_EventTypes::evClientConnected:
@@ -72,6 +74,9 @@ void AuthHandler::dispatch( SEGSEvent *ev )
             break;
         case Internal_EventTypes::evClientDisconnected:
             on_client_disconnected_from_other_server(static_cast<ClientDisconnectedMessage *>(ev));
+            break;
+        case Internal_EventTypes::evGameServerStatus:
+            on_server_status_change(static_cast<GameServerStatusMessage *>(ev));
             break;
         default:
             assert(!"Unknown event encountered in dispatch.");
@@ -82,6 +87,7 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
     assert(HandlerLocator::getAuth_Handler()==nullptr);
     HandlerLocator::setAuth_Handler(this);
     m_sessions.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
+    m_message_bus_endpoint.subscribe(Internal_EventTypes::evGameServerStatus);
 }
 void AuthHandler::on_timeout(TimerEvent *ev)
 {
@@ -105,7 +111,7 @@ void AuthHandler::on_connect( ConnectEvent *ev )
     lnk->m_state=AuthLink::CONNECTED;
     uint32_t seed = 0x1; //TODO: rand()
     lnk->init_crypto(30206,seed);
-    ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Crypto seed %08x\n"), seed ));
+    //ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Crypto seed %08x\n"), seed ));
 
     lnk->putq(new AuthorizationProtocolVersion(30206,seed));
 }
@@ -124,14 +130,14 @@ void AuthHandler::on_disconnect(DisconnectEvent *ev)
         ACE_DEBUG((LM_WARNING, ACE_TEXT("(%P|%t) Client disconnected without a valid login attempt. Old client ?\n")));
     }
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
+        SessionStore::MTGuard guard(m_sessions.reap_lock());
         if (session.is_connected_to_game_server_id == 0)
-            m_sessions.mark_session_for_reaping(&session, session.m_link->session_token());
+            m_sessions.mark_session_for_reaping(&session, session.link()->session_token());
     }
 
-    if (session.m_link)
+    if (session.link())
     {
-        session.m_link = nullptr;
+        session.link(nullptr);
         m_sessions.remove_from_active_sessions(&session);
     }
     // TODO: timed session reaping
@@ -152,17 +158,104 @@ bool AuthHandler::isClientConnectedAnywhere(uint32_t client_id)
     }
     return session.is_connected_to_game_server_id!=0;
 }
+///
+/// \fn AuthHandler::on_retrieve_account_response
+/// \brief This function handles database server informing us about account details
+///
+void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
+{
+    uint64_t sess_token = msg->session_token();
+    AuthSession *sess_ptr = nullptr;
+    m_sessions.reap_lock().lock(); // prevent temp session from being reaped while we work with it
+    if(!m_sessions.has_session_for(sess_token))
+    {
+        m_sessions.reap_lock().unlock();
+        qWarning() << "Database response arrived to late for sess"<<sess_token;
+        // we can't do anything else.
+        return;
+    }
+    sess_ptr = &m_sessions.session_from_token(sess_token);
+    // protector takes ownership of the session, removing it from ready-for-reaping set
+    ReaperProtection<AuthSession> protector(sess_ptr,sess_token,m_sessions);
+    m_sessions.reap_lock().unlock();
+
+    AuthLink *lnk = sess_ptr->link();
+    assert(lnk!=nullptr);
+    if(!msg->m_data.valid()) // no account exists, return proper response
+    {
+        lnk->putq(s_auth_error_wrong_login_pass.shallow_copy());
+        return;
+    }
+
+    RetrieveAccountResponseData & acc_inf(msg->m_data);  // all the account info you can eat!
+
+    // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
+    if(acc_inf.isBlocked()) {
+        lnk->putq(s_auth_error_locked_account.shallow_copy());
+        return;
+    }
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),acc_inf.m_acc_server_acc_id));
+    // step 3d: checking if this account is blocked
+    if(isClientConnectedAnywhere(acc_inf.m_acc_server_acc_id))
+    {
+        lnk->putq(s_auth_error_already_online.shallow_copy());
+        return;
+    }
+    AuthSession *old_sess_ptr = nullptr;
+    // see if we can reuse the old session
+    uint64_t existing_sess_tok;
+    {
+        SessionStore::MTGuard guard(m_sessions.reap_lock());
+        existing_sess_tok = m_sessions.token_for_id(acc_inf.m_acc_server_acc_id);
+        if(existing_sess_tok!=0)
+        {
+            // at this point we have two sessions, the temporary one, and the one in storage
+            // the ReaperProtection above will expire on destruction, so we can simply replace the pointers
+            old_sess_ptr = &m_sessions.session_from_token(existing_sess_tok);
+            sess_token = existing_sess_tok;
+            if(old_sess_ptr->m_state != AuthSession::NOT_LOGGED_IN)
+                {
+                    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
+                    lnk->putq(s_auth_error_wrong_login_pass.shallow_copy());
+                return;
+                }
+
+            // check if this session perhaps is in 'ready for reaping set', and remove it from there
+            m_sessions.unmark_session_for_reaping(old_sess_ptr);
+            // reset the link in the temporary session to prevent it getting closed during reaping
+            sess_ptr->link(nullptr);
+            sess_ptr = old_sess_ptr;
+        }
+        else
+        {
+            // a valid session and no duplicates, prevent ReaperProtection from re-adding session to the reaper set
+            protector.protectee_moved();
+        }
+        lnk->session_token(sess_token); // record the session token in the link
+        sess_ptr->link(lnk); // set the link in the session, will prevent reaping of it if it's a reused one
+    }
+    // create the auth data store, and move retrieved response there
+    sess_ptr->m_auth_data.reset(new RetrieveAccountResponseData {acc_inf});
+    m_sessions.add_to_active_sessions(sess_ptr);
+    sess_ptr->m_auth_id = acc_inf.m_acc_server_acc_id;
+
+    // if there were no errors and the provided password is valid and admin server has logged us in.
+    // inform the client of the successful login attempt
+    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : succeeded\n")));
+    sess_ptr->m_state = AuthSession::LOGGED_IN;
+    lnk->m_state = AuthLink::AUTHORIZED;
+    m_sessions.setTokenForId(sess_ptr->m_auth_id,lnk->session_token());
+    lnk->putq(new LoginResponse());
+}
 void AuthHandler::on_login( LoginRequest *ev )
 {
-    AdminServerInterface *adminserv = ServerManager::instance()->GetAdminServer();
     AuthLink *lnk = static_cast<AuthLink *>(ev->src());
-    assert(adminserv);
+    EventProcessor *auth_db_handler=HandlerLocator::getAuthDB_Handler();
     assert(m_authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
 
-    if(!adminserv)
+    if(!auth_db_handler)
     {
-        // we cannot do much without that
-        lnk->putq(s_auth_error_no_db.shallow_copy());
+        lnk->putq(s_auth_error_no_db.shallow_copy()); // we cannot do much without that
         return;
     }
 
@@ -171,84 +264,31 @@ void AuthHandler::on_login( LoginRequest *ev )
         lnk->putq(s_auth_error_unknown.shallow_copy());
         return;
     }
-
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) User %s trying to login from %s.\n"),ev->m_data.login,lnk->peer_addr().get_host_addr()));
+    qDebug() <<"User" << ev->m_data.login<< "trying to login from" << lnk->peer_addr().get_host_addr();
     if(strlen(ev->m_data.login)<=2)
-        return auth_error(lnk,AUTH_ACCOUNT_BLOCKED); // invalid account
-
-    std::unique_ptr<AuthAccountData> acc_data(new AuthAccountData);
-
-    m_authserv->GetClientByLogin(ev->m_data.login,*acc_data);
-    // TODO: Version 0.3 will need to use admin tools instead of creating accounts willy-nilly
-    if(!acc_data->valid()) // no account exists, create one ( step 3c )
     {
-        adminserv->SaveAccount(ev->m_data.login,ev->m_data.password); // Autocreate/save account to DB
-        m_authserv->GetClientByLogin(ev->m_data.login,*acc_data);
-    }
-    if(!acc_data->valid()) {
-        ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) User %s from %s - couldn't get/create account.\n"),ev->m_data.login,lnk->peer_addr().get_host_addr()));
-        lnk->putq(s_auth_error_db_error.shallow_copy());
+        lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;
     }
-    AuthAccountData & acc_inf(*acc_data);  // all the account info you can eat!
-    if(acc_inf.isBlocked()) {
-        lnk->putq(s_auth_error_locked_account.shallow_copy());
-        return;
-    }
-    if(!adminserv->ValidPassword(acc_inf,ev->m_data.password))
-    {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
-        lnk->putq(s_auth_error_wrong_login_pass.shallow_copy());
-    }
-    // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),acc_inf.m_acc_server_acc_id));
-    // step 3d: checking if this account is blocked
-    if(isClientConnectedAnywhere(acc_data->m_acc_server_acc_id))
-    {
-        // step 3e: asking game server connection check
-        // TODO: client->forceGameServerConnectionCheck();
-        lnk->putq(s_auth_error_already_online.shallow_copy());
-        return;
-    }
-    AuthSession *ses_ptr = nullptr;
-    // see if we can reuse the old session
     uint64_t sess_tok;
+    AuthSession *session_ptr;
+    // we create a temporary session here.
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
-        sess_tok = m_sessions.token_for_id(acc_data->m_acc_server_acc_id);
-        if(sess_tok!=0)
-        {
-                ses_ptr = &m_sessions.session_from_token(sess_tok);
-                if(ses_ptr->m_state != AuthSession::NOT_LOGGED_IN)
-                {
-                    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
-                    lnk->putq(s_auth_error_wrong_login_pass.shallow_copy());
-                }
-
-                // check if this session perhaps is in 'ready for reaping set'
-                // if so remove
-                m_sessions.unmark_session_for_reaping(ses_ptr);
-        }
-        else
-        {
-            SessionStore::MTGuard guard(m_sessions.store_lock());
-            sess_tok = s_last_session_id++;
-            ses_ptr = &m_sessions.create_session(sess_tok);
-        }
-        lnk->session_token(sess_tok); // record the session token in the link
-        ses_ptr->m_link = lnk; // set the link in the session, will prevent reaping of it if it's a reused one
+        SessionStore::MTGuard guard(m_sessions.store_lock());
+        sess_tok = s_last_session_id++;
+        AuthSession &session(m_sessions.create_session(sess_tok));
+        session_ptr = &session;
+        session.link(lnk);
+        session.set_temporary(true);
     }
-    ses_ptr->m_auth_data = std::move(acc_data);
-    m_sessions.add_to_active_sessions(ses_ptr);
-    ses_ptr->m_auth_id = acc_inf.m_acc_server_acc_id;
 
-    // if there were no errors and the provided password is valid and admin server has logged us in.
-    // inform the client of the successful login attempt
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : succeeded\n")));
-    ses_ptr->m_state = AuthSession::LOGGED_IN;
-    lnk->m_state = AuthLink::AUTHORIZED;
-    m_sessions.setTokenForId(ses_ptr->m_auth_id,lnk->session_token());
-    lnk->putq(new LoginResponse());
+    RetrieveAccountRequest *request_event =
+        new RetrieveAccountRequest({ev->m_data.login, ev->m_data.password, 0}, sess_tok);
+    request_event->src(this);
+    auth_db_handler->putq(request_event);
+    // here we will wait for db response, so here we're going to put the session on the read-to-reap list
+    // in case db does not respond in sane time frame, the session is going to be removed.
+    m_sessions.mark_session_for_reaping(session_ptr,sess_tok);
 }
 void AuthHandler::on_server_list_request( ServerListRequest *ev )
 {
@@ -261,18 +301,27 @@ void AuthHandler::on_server_list_request( ServerListRequest *ev )
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client requesting server list\n")));
     lnk->m_state = AuthLink::CLIENT_SERVSELECT;
     ServerListResponse *r=new ServerListResponse;
-    const ServerManagerC::dGameServer *servers = ServerManager::instance()->getGameServerList();
     std::deque<GameServerInfo> info;
-    for(size_t idx=0; idx<servers->size(); ++idx) {
+    std::vector<GameServerStatusData> status_copy;
+    {
+        // copy game server data to local var
+        MTGuard guard(m_server_mutex);
+        status_copy.reserve(m_known_game_servers.size());
+        for(const std::pair<const uint8_t,GameServerStatusData> &server : m_known_game_servers)
+        {
+            status_copy.push_back(server.second);
+        }
+    }
+    for(const GameServerStatusData &server : status_copy)
+    {
         GameServerInfo inf;
-        GameServerInterface *iface = servers->at(idx);
-        inf.id=iface->getId();
-        inf.addr = iface->getAddress().get_ip_address();
-        inf.port = iface->getAddress().get_port_number();
-        inf.current_players = iface->getCurrentPlayers();
-        inf.max_players = iface->getMaxPlayers();
-        inf.online = true;
-        info.push_back(inf);
+        inf.id   = server.m_id;
+        inf.addr = server.m_addr.get_ip_address();
+        inf.port = server.m_addr.get_port_number();
+        inf.current_players = server.m_current_players;
+        inf.max_players = server.m_max_players;
+        inf.online = server.m_online;
+        info.emplace_back(inf);
     }
     r->set_server_list(info);
     lnk->putq(r);
@@ -287,27 +336,27 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
         return;
     }
     ACE_ERROR ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client selected server %d!\n"),ev->m_server_id));
-    GameServerInterface *gs = ServerManager::instance()->GetGameServer(ev->m_server_id-1);
-    if(!gs)
+    EventProcessor *tgt = HandlerLocator::getGame_Handler(ev->m_server_id);
+    if(!tgt)
     {
         ACE_ERROR ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client selected non existant server !\n")));
         auth_error(lnk,rand()%33);
         return;
     }
-    AuthAccountData &acc_inf(*session.m_auth_data); //acc_inf.m_access_level,
+    auto &acc_inf(*session.m_auth_data); //acc_inf.m_access_level,
     ExpectClientRequest *cl_ev=new ExpectClientRequest({acc_inf.m_acc_server_acc_id,lnk->peer_addr()},lnk->session_token());
-    gs->event_target()->putq(cl_ev); // sending request to game server
+    tgt->putq(cl_ev); // sending request to game server
     // client's state will not change until we get response from GameServer
 }
 void AuthHandler::on_client_expected(ExpectClientResponse *ev)
 {
     AuthSession &session(m_sessions.session_from_event(ev));
-    if(session.m_link==nullptr)
+    AuthLink *lnk = session.link();
+    if(lnk ==nullptr)
     {
         assert(!"client disconnected before receiving game cookie");
         return;
     }
-    AuthLink *lnk = session.m_link;
     lnk->m_state = AuthLink::CLIENT_AWAITING_DISCONNECT;
     lnk->putq(new ServerSelectResponse(this,0xCAFEF00D,ev->m_data.cookie));
 }
@@ -317,7 +366,7 @@ void AuthHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
     assert(ev->m_data.m_server_id);
     AuthSession &session(m_sessions.session_from_token(ev->m_data.m_session));
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
+        SessionStore::MTGuard guard(m_sessions.reap_lock());
         m_sessions.unmark_session_for_reaping(&session);
     }
     session.is_connected_to_game_server_id = ev->m_data.m_server_id;
@@ -327,13 +376,18 @@ void AuthHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
     AuthSession &session(m_sessions.session_from_token(ev->m_data.m_session));
     session.is_connected_to_game_server_id = 0;
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
+        SessionStore::MTGuard guard(m_sessions.reap_lock());
         m_sessions.mark_session_for_reaping(&session,ev->session_token());
     }
 }
 
 void AuthHandler::reap_stale_links()
 {
-    ACE_Guard<ACE_Thread_Mutex> guard(m_sessions.reap_lock());
+    SessionStore::MTGuard guard(m_sessions.reap_lock());
     m_sessions.reap_stale_links("AuthHandler",link_is_stale_if_disconnected_for);
+}
+void AuthHandler::on_server_status_change(GameServerStatusMessage *ev)
+{
+    MTGuard guard(m_server_mutex);
+    m_known_game_servers[ev->m_data.m_id] = ev->m_data;
 }

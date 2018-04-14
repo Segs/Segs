@@ -19,14 +19,11 @@ class CharacterCostume;
 class Character;
 class Entity;
 
-class AdminDatabase;
 class CharacterDatabase;
 
 class AccountInfo
 {
     friend class CharacterDatabase;
-    friend class AdminDatabase;
-
 
     uint64_t                    m_game_server_acc_id;
     std::vector<Character *>    m_characters;

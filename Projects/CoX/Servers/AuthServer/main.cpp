@@ -7,12 +7,12 @@
 
  */
 //#define ACE_NTRACE 0
-#include "Servers/ServerManager.h"
 #include "Servers/server_support.h"
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/InternalEvents.h"
+#include "SEGSTimer.h"
 #include "Settings.h"
 #include "Logging.h"
 #include "version.h"
@@ -59,28 +59,103 @@
     x;\
     log << "done in"<<float(timer.elapsed())/1000.0f<<"s";\
 }
+struct MessageBusMonitor : private EventProcessor
+{
+    MessageBusEndpoint m_endpoint;
+    MessageBusMonitor() : m_endpoint(*this)
+    {
+        m_endpoint.subscribe(MessageBus::ALL_EVENTS);
+        activate();
+    }
+
+    // EventProcessor interface
+public:
+    void dispatch(SEGSEvent *ev)
+    {
+        switch(ev->type())
+        {
+        case Internal_EventTypes::evServiceStatus:
+            on_service_status(static_cast<ServiceStatusMessage *>(ev));
+            break;
+        default:
+            ;//qDebug() << "Unhandled message bus monitor command" <<ev->info();
+        }
+    }
+private:
+    void on_service_status(ServiceStatusMessage *msg)
+    {
+        if(msg->m_data.status_value!=0)
+        {
+            qCritical().noquote() << msg->m_data.status_message;
+            exit(1);
+        }
+        else
+            qInfo() << msg->m_data.status_message;
+    }
+};
 namespace
 {
 static bool s_event_loop_is_done=false; //!< this is set to true when ace reactor is finished.
+static std::unique_ptr<AuthServer> g_auth_server; // this is a global for now.
+static std::unique_ptr<GameServer> g_game_server;
+static std::unique_ptr<MapServer> g_map_server;
+static MessageBus *g_message_bus=nullptr;
+static MessageBusMonitor *s_bus_monitor;
+static void destroyServers()
+{
+
+    g_auth_server->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+}
 ACE_THR_FUNC_RETURN event_loop (void *arg)
 {
     ACE_Reactor *reactor = static_cast<ACE_Reactor *>(arg);
     reactor->owner (ACE_OS::thr_self ());
     reactor->run_reactor_event_loop ();
-    ServerManager::instance()->StopLocalServers();
-    ServerManager::instance()->GetAdminServer()->ShutDown("No reason");
+    shutDownAllActiveHandlers();
+    GlobalTimerQueue::instance()->deactivate();
     s_event_loop_is_done = true;
     return (ACE_THR_FUNC_RETURN)nullptr;
 }
 bool CreateServers()
 {
-    auto server_manger = ServerManager::instance();
-    GameServer *game_instance   = new GameServer(0);
-    MapServer * map_instance    = new MapServer;
-    server_manger->SetAdminServer(AdminServer::instance());
-    server_manger->SetAuthServer(new AuthServer);
-    server_manger->AddGameServer(game_instance);
-    server_manger->AddMapServer(map_instance);
+    static ReloadConfigMessage reload_config;
+    GlobalTimerQueue::instance()->activate();
+
+    TIMED_LOG(
+                {
+                    g_message_bus = new MessageBus;
+                    HandlerLocator::setMessageBus(g_message_bus);
+                    g_message_bus->ReadConfigAndRestart();
+                }
+                ,"Creating message bus");
+    TIMED_LOG(s_bus_monitor = new MessageBusMonitor,"Starting message bus monitor");
+
+    TIMED_LOG(startAuthDBSync(),"Starting auth db service");
+    TIMED_LOG({
+                  g_auth_server.reset(new AuthServer);
+                  g_auth_server->activate();
+              },"Starting auth service");
+    AdminServer::instance()->ReadConfig();
+    AdminServer::instance()->Run();
+    TIMED_LOG(startGameDBSync(1),"Starting game(1) db service");
+    TIMED_LOG({
+                  g_game_server.reset(new GameServer(1));
+                  g_game_server->activate();
+              },"Starting game(1) server");
+    TIMED_LOG({
+                  g_map_server.reset(new MapServer());
+                  g_map_server->sett_game_server_owner(1);
+                  g_map_server->activate();
+              },"Starting map server");
+
+    qDebug() << "Asking AuthServer to load configuration and begin listening for external connections.";
+    g_auth_server->putq(reload_config.shallow_copy());
+    qDebug() << "Asking GameServer(0) to load configuration on begin listening for external connections.";
+    g_game_server->putq(reload_config.shallow_copy());
+    qDebug() << "Asking MapServer to load configuration on begin listening for external connections.";
+    g_map_server->putq(reload_config.shallow_copy());
+
+//    server_manger->AddGameServer(game_instance);
     return true;
 }
 
@@ -172,12 +247,6 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 
     ACE_Thread_Manager::instance()->spawn_n(N_THREADS, event_loop, ACE_Reactor::instance());
     bool no_err = CreateServers();
-    if(no_err)
-        no_err = ServerManager::instance()->LoadConfiguration();
-    if(no_err)
-        no_err = ServerManager::instance()->StartLocalServers();
-    if(no_err)
-        no_err = ServerManager::instance()->CreateServerConnections();
     if(!no_err)
     {
         ACE_Reactor::instance()->end_event_loop();

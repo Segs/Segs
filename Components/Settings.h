@@ -13,7 +13,6 @@
 class Settings {
 
 public:
-    static QSettings*   getSettings();
     static void         setSettingsPath(const QString path);
     static QString      getSettingsPath();
 
@@ -25,7 +24,6 @@ private:
     Settings(Settings const&);
     Settings& operator=(Settings const&);
 
-    static QSettings*   m_settings;
     static QString      m_settings_path;
 };
 

@@ -117,7 +117,7 @@ void Character::SendCharBuildInfo(BitStream &bs) const
         {
             uint32_t num_powers=m_powers.size();
             bs.StorePackedBits(5,0);
-            bs.StorePackedBits(4,uint32_t(num_powers));
+            bs.StorePackedBits(4,num_powers);
             for(const CharacterPower &power : m_powers)
             {
                 //sendPower(bs,0,0,0);

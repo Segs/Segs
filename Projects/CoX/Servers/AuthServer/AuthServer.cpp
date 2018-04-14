@@ -12,29 +12,45 @@
 
 #include "ConfigExtension.h"
 #include "AdminServer/AccountInfo.h"
-#include "Common/Servers/AdminServerInterface.h"
-#include "Common/Servers/ServerManager.h"
 #include "AuthProtocol/AuthLink.h"
 #include "AuthHandler.h"
 #include "Settings.h"
+#include "SEGSEvent.h"
+#include "Servers/InternalEvents.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
+struct ClientAcceptor : public ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR>
+{
+    AuthHandler *m_target;
+    int make_svc_handler (AuthLink *&sh) override
+    {
+        if(sh)
+            return 0;
+        if(!m_target)
+            return -1;
+        sh = new AuthLink(m_target,AuthLinkType::Server);
+        sh->reactor (this->reactor ());
+        return 0;
+    }
+};
 /*!
  * @class AuthServer
- * @brief main class of the authentication server.
+ * @brief main class of the authentication server, it controls the AuthHandler instances
  *
- * @note AuthServer should pull client data from database or from it's local,
- * in-memory cache currently there is no such thing, and 'client-cache' is just a hash-map
  */
 
 
 AuthServer::AuthServer()
 {
     m_acceptor = new ClientAcceptor;
+    m_handler.reset(new AuthHandler(this));
+    m_acceptor->m_target = m_handler.get();
+    // Start two threads to handle Auth events.
+    m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
     m_running=false;
 }
 
@@ -44,45 +60,63 @@ AuthServer::~AuthServer()
     ShutDown();
     delete m_acceptor;
 }
+void AuthServer::dispatch(SEGSEvent *ev)
+{
+    assert(ev);
+    switch(ev->type())
+    {
+        case Internal_EventTypes::evReloadConfig:
+            ReadConfigAndRestart();
+            break;
+        default:
+            assert(!"Unknown event encountered in dispatch.");
+    }
+}
 /*!
  * @brief Read server configuration
+ * @note m_mutex is held locked during this function
  * @param inipath is a path to our configuration file.
  * @return bool, if it's false, this function failed somehow.
  */
-bool AuthServer::ReadConfig()
+bool AuthServer::ReadConfigAndRestart()
 {
-    if(m_running)
-        ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("(%P|%t) AuthServer: Already initialized and running\n") ),false);
+    ACE_Guard<ACE_Thread_Mutex> guard(m_mutex);
 
     qInfo() << "Loading AuthServer settings...";
-    QSettings *config(Settings::getSettings());
+    QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
-    config->beginGroup(QStringLiteral("AuthServer"));
-    if(!config->contains(QStringLiteral("location_addr")))
+    config.beginGroup(QStringLiteral("AuthServer"));
+    if(!config.contains(QStringLiteral("location_addr")))
         qDebug() << "Config file is missing 'location_addr' entry in AuthServer group, will try to use default";
 
-    QString location_addr = config->value(QStringLiteral("location_addr"),"127.0.0.1:2106").toString();
+    QString location_addr = config.value(QStringLiteral("location_addr"),"127.0.0.1:2106").toString();
+    config.endGroup(); // AuthServer
 
     if(!parseAddress(location_addr,m_location))
     {
         qCritical() << "Badly formed IP address" << location_addr;
         return false;
     }
-    config->endGroup(); // AuthServer
 
-    return true;
+    return Run();
 }
 /*!
  * @brief Starts this server up, by opening the connection acceptor on given location.
- * @return bool, if it's false, we somehow failed to start. Error report sis logged by ACE_ERROR_RETURN
+ * This method can be called multiple times, to re-open the listening socket on different addresses.
+ * @return bool, if it's false, we somehow failed to start. Error report is logged by qCritical
+ *
  */
 bool AuthServer::Run()
 {
-    AuthLink::g_target = new AuthHandler(this);
-    AuthLink::g_target->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
+    if (m_running)
+    {
+        m_acceptor->close();
+        m_running = false;
+    }
     if (m_acceptor->open(m_location) == -1)
     {
-        ACE_ERROR_RETURN ((LM_ERROR, ACE_TEXT ("%p\n"),ACE_TEXT ("Opening the Acceptor failed")), false);
+        qCritical() << "Auth server failed to accept connections on:" << m_location.get_host_addr();
+        return false;
     }
     m_running=true;
     return true;
@@ -92,36 +126,17 @@ bool AuthServer::Run()
  * @param reason the value that should be stored the persistent log.
  * @return bool, if it's false, we failed to close down cleanly
  */
-bool AuthServer::ShutDown(const QString &/* ="No particular reason" */)
+bool AuthServer::ShutDown(const QString &reason)
 {
+    ACE_Guard<ACE_Thread_Mutex> guard(m_mutex);
+    if (m_running)
+    {
+        qWarning() << "Auth server listener is closing down";
     m_acceptor->close();
-    // tell our handler to shut down too
-    AuthLink::g_target->putq(new SEGSEvent(SEGS_EventTypes::evFinish,nullptr));
+    }
+    // force our handler to finish
+    m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+    qWarning() << "Shut down reason:" << reason;
     m_running=false;
-    return true;
-}
-
-/*!
- * @brief Returns AuthClient corresponding to given login.
- * @param login - client's login.
- * @return true if found
- * If the client with given login exist in clients hash map return it, otherwise create this object and fill it from db.
- */
-bool AuthServer::GetClientByLogin(const char *login, AuthAccountData &toFill)
-{
-    //TODO: use Account cache, or push that functionality to db layer ?
-    AdminServerInterface *adminserv;                            // this will be used in case when we don't have this client in the cache
-    adminserv = ServerManager::instance()->GetAdminServer();
-    assert(adminserv);
-    toFill.m_login = login;
-    if( !adminserv->FillClientInfo(toFill) )       // Can we fill the client account info from db ?
-    {
-        return false;
-    }
-    // check if object is filled in correctly, by validating it's db id.
-    if(toFill.m_acc_server_acc_id==0)
-    {
-        return false;
-    }
     return true;
 }

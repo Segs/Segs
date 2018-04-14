@@ -1,17 +1,14 @@
 #pragma once
 #include "Servers/InternalEvents.h"
-#include "AuthDatabase/AccountData.h"
+#include "AuthDatabase/AuthDBSyncEvents.h"
 #include "AuthProtocol/AuthLink.h"
 #include "AuthProtocol/AuthEvents.h"
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/ClientManager.h"
 #include "EventProcessor.h"
-#include "AdminServer/AccountInfo.h"
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
-#include <ace/Addr.h>
-#include <unordered_map>
 #include <map>
 
 class AuthServer;
@@ -50,21 +47,34 @@ struct AuthSession
         LOGGED_IN,
         CLIENT_CONNECTED
     };
-    AuthLink *m_link = nullptr;
-    std::unique_ptr<AuthAccountData> m_auth_data;
-    uint32_t m_auth_id=0;
-    eClientState m_state = NOT_LOGGED_IN;
-    uint32_t is_connected_to_game_server_id=0;
-    uint32_t auth_id() const { return m_auth_id; }
+    std::unique_ptr<RetrieveAccountResponseData> m_auth_data;
+    uint32_t        m_auth_id=0;
+    eClientState    m_state = NOT_LOGGED_IN;
+    uint32_t        is_connected_to_game_server_id=0;
+
+    uint32_t        auth_id() const { return m_auth_id; }
+    // those functions store temporariness state of the link in the lowest bit of the pointer
+    void            set_temporary(bool v) { (intptr_t &)(m_link) = (intptr_t(m_link) & ~1) | v; }
+    bool            is_temporary() const { return intptr_t(m_link) & 1; }
+    AuthLink *      link() { return (AuthLink *)(intptr_t(m_link) & ~1); }
+    /// \note setting the link does not preserver the state of the previous one.
+    void            link(AuthLink *l) { m_link = l; }
+
+protected:
+    AuthLink *      m_link = nullptr;
 };
 class AuthHandler : public EventProcessor
 {
     using SessionStore = ClientSessionStore<AuthSession>;
+    using MTGuard = ACE_Guard<ACE_Thread_Mutex>;
+    using ServerMap = std::map<uint8_t,GameServerStatusData>;
 protected:
     static uint64_t s_last_session_id;
     MessageBusEndpoint m_message_bus_endpoint;
     SessionStore m_sessions;
     AuthServer *m_authserv = nullptr;
+    ACE_Thread_Mutex m_server_mutex;
+    ServerMap   m_known_game_servers;
 
     bool        isClientConnectedAnywhere(uint32_t client_id);
     void        reap_stale_links();
@@ -72,6 +82,9 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // internal events
     void        on_timeout(TimerEvent *ev);
+    //////////////////////////////////////////////////////////////////////////
+    // Message bus subscriptions
+    void        on_server_status_change(GameServerStatusMessage *ev);
     //////////////////////////////////////////////////////////////////////////
     // function that send messages into the link
     void        auth_error(EventProcessor *lnk,uint32_t code);
@@ -84,6 +97,7 @@ protected:
     void        on_server_selected(ServerSelectRequest *ev);
     //////////////////////////////////////////////////////////////////////////
     // Server <-> server event handlers
+    void        on_retrieve_account_response(RetrieveAccountResponse *msg);
     void        on_client_expected(ExpectClientResponse *ev);
     void        on_client_connected_to_other_server(ClientConnectedMessage *ev);
     void        on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev);

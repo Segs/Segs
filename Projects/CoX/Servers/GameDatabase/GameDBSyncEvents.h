@@ -13,8 +13,7 @@ enum GameDBEventTypes : uint32_t
     evRemoveCharacter,
     evGameAccountRequest,
     evGameAccountResponse,
-    evGameDbError,
-    evLAST_EVENT
+    evGameDbError
 };
 
 #define ONE_WAY_MESSAGE(name)\

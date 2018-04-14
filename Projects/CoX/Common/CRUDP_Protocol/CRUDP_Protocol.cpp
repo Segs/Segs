@@ -12,7 +12,6 @@
 #include "PacketCodec.h"
 
 #include <cassert>
-#include <ace/Guard_T.h>
 
 #include <QDebug>
 using namespace std::chrono;
@@ -91,7 +90,7 @@ void CrudP_Protocol::clearQueues(bool recv_queue,bool clear_send_queue)
     }
     if(clear_send_queue)
     {
-        ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
+        std::lock_guard<std::mutex> grd(m_packets_mutex);
         for_each(send_queue.begin(),send_queue.end(),PacketDestroyer);
         for_each(reliable_packets.begin(),reliable_packets.end(),PacketDestroyer);
         retransmit_queue.clear();
@@ -160,7 +159,7 @@ void CrudP_Protocol::parseAcks(BitStream &src,CrudP_Packet *tgt)
 void CrudP_Protocol::storeAcks(BitStream &bs)
 {
     //TODO: sort + binary search for id
-    ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
+    std::lock_guard<std::mutex> grd(m_packets_mutex);
     if(recv_acks.empty())
     {
         bs.StorePackedBits(1,0);
@@ -198,7 +197,7 @@ bool CrudP_Protocol::allSiblingsAvailable(uint32_t sibid)
 }
 void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
 {
-    ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
+    std::lock_guard<std::mutex> grd(m_packets_mutex);
     uint32_t ack_count_to_process=a->getNumAcks();
     for(size_t i=0; i<ack_count_to_process; i++)
     {
@@ -407,7 +406,7 @@ bool CrudP_Protocol::addToSendQueue(CrudP_Packet *pak)
     pak->setSeqNo(++send_seq);
     pak->setLastSend(steady_clock::now());
     {
-        ACE_Guard<ACE_Thread_Mutex> grd(m_packets_mutex);
+        std::lock_guard<std::mutex> grd(m_packets_mutex);
         send_queue.push_back(pak);
     }
     return true;

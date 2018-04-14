@@ -12,6 +12,5 @@ void startAuthDBSync()
         return;
     }
     s_db_sync_handler = new AuthDBSyncHandler;
-    qDebug() << "Starting up DBSync service";
     s_db_sync_handler->activate();
 }

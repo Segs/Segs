@@ -1,5 +1,6 @@
 #pragma once
 #include <ace/Time_Value.h>
+#include <atomic>
 #include <typeinfo>
 class EventProcessor;
 
@@ -25,7 +26,7 @@ class SEGSEvent
 protected:
         const uint32_t  m_type;
         EventProcessor *m_event_source;
-        int             m_ref_count = 1; // used to prevent event being deleted when it's in multiple queues
+        std::atomic<int> m_ref_count {1}; // used to prevent event being deleted when it's in multiple queues
 
 virtual                 ~SEGSEvent()
                         {

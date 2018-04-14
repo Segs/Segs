@@ -21,7 +21,6 @@ void GameDBSyncHandler::dispatch(SEGSEvent *ev)
     // nullptr result means that the given message is one-way
     switch (ev->type())
     {
-
         case GameDBEventTypes::evCharacterUpdate:
         on_character_update(static_cast<CharacterUpdateMessage *>(ev));
         break;
@@ -30,6 +29,9 @@ void GameDBSyncHandler::dispatch(SEGSEvent *ev)
         break;
         case GameDBEventTypes::evGameAccountRequest:
         on_account_request(static_cast<GameAccountRequest *>(ev));
+        break;
+        default:
+        assert(false);
         break;
     }
 }

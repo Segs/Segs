@@ -4,6 +4,7 @@
 class QSqlDatabase;
 class QSqlQuery;
 class QSqlError;
+class QString;
 
 struct CreateAccountData;
 struct RetrieveAccountRequestData;
@@ -30,8 +31,11 @@ public:
     QSqlError *getLastError() const { return last_error.get(); }
     bool loadAndConfigure();
     bool addAccount(const struct CreateAccountData &data);
-    bool retrieveAccount(const RetrieveAccountRequestData &data, RetrieveAccountResponseData &result);
+    bool retrieveAccountAndCheckPassword(const RetrieveAccountRequestData &data,RetrieveAccountResponseData &result);
+//    bool retrieveAccount(const RetrieveAccountRequestData &data, RetrieveAccountResponseData &result);
     bool getPasswordValidity(const ValidatePasswordRequestData &data, ValidatePasswordResponseData &result);
+protected:
+    bool checkPassword(const QString &login, const QString &password);
 private:
     int64_t getDbVersion(QSqlDatabase &db);
 };

@@ -23,7 +23,7 @@
 #include <cassert>
 #include <string>
 
-struct CharacterCostume;
+class CharacterCostume;
 struct Costume;
 struct CharacterPowerBoost
 {

@@ -33,6 +33,9 @@ void AuthDBSyncHandler::dispatch(SEGSEvent *ev)
         case AuthDBEventTypes::evValidatePasswordRequest:
         on_validate_password(static_cast<ValidatePasswordRequest *>(ev));
         break;
+        default:
+        assert(false);
+        break;
     }
 }
 
@@ -49,7 +52,7 @@ void AuthDBSyncHandler::on_retrieve_account(RetrieveAccountRequest *msg)
 {
     AuthDbSyncContext &db_ctx(m_db_context.localData());
     RetrieveAccountResponseData resp;
-    if(!db_ctx.retrieveAccount(msg->m_data,resp))
+    if(!db_ctx.retrieveAccountAndCheckPassword(msg->m_data,resp))
     {
         resp.mark_as_missing();
     }

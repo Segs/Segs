@@ -3,9 +3,18 @@
 #include "AuthProtocol/AuthOpcodes.h"
 #include "AuthProtocol/AuthEventFactory.h"
 
-EventProcessor *AuthLink::g_target=nullptr;
+AuthLink::AuthLink() :
+    m_received_bytes_storage(0x1000,0,40),
+    m_unsent_bytes_storage(0x200,0,40),
+    m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK)
+{
+// This constructor exists only to make the default ACE implementation of make_svc_handler happy
+// it should never be called by our code, since we override make_svc_handler.
+    assert(false);
+}
 
-AuthLink::AuthLink(AuthLinkType link_type) :
+AuthLink::AuthLink(EventProcessor *target, AuthLinkType link_type) :
+    m_target(target),
     m_received_bytes_storage(0x1000,0,40),
     m_unsent_bytes_storage(0x200,0,40),
     m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK),
@@ -15,7 +24,7 @@ AuthLink::AuthLink(AuthLinkType link_type) :
 {
     m_notifier.event_handler(this); // notify 'this' object on WRITE events
     m_buffer_mutex = new ACE_Thread_Mutex;
-    assert(g_target);
+    assert(m_target);
 }
 AuthLink::~AuthLink( )
 {
@@ -122,7 +131,7 @@ int AuthLink::open (void *p)
     m_notifier.reactor(reactor());                      // notify reactor with write event,
     msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue() we will be notified
     //TODO: consider using sync query here.
-    g_target->putq(new ConnectEvent(this,m_peer_addr)); // also, inform the AuthHandler of our existence
+    m_target->putq(new ConnectEvent(this,m_peer_addr)); // also, inform the AuthHandler of our existence
     return 0;
 }
 /**
@@ -152,7 +161,7 @@ int AuthLink::handle_input( ACE_HANDLE )
     if(s_event)
     {
         s_event->src(this); // allows upper levels to post responses to us
-        g_target->putq(s_event);
+        m_target->putq(s_event);
     }
     return 0;
 }
@@ -275,7 +284,7 @@ void AuthLink::set_protocol_version( int vers )
 int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 {
     // client handle was closed, posting disconnect event with higher priority
-    g_target->msg_queue()->enqueue_prio(new DisconnectEvent(session_token()),nullptr,100);
+    m_target->msg_queue()->enqueue_prio(new DisconnectEvent(session_token()),nullptr,100);
     if (close_mask == ACE_Event_Handler::WRITE_MASK)
         return 0;
     return super::handle_close (handle, close_mask);

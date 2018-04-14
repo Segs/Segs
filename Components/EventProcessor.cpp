@@ -1,5 +1,4 @@
 #include "EventProcessor.h"
-
 #include "SEGSTimer.h"
 
 #include <cassert>

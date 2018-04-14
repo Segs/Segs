@@ -6,7 +6,7 @@
 #include "InternalEvents.h"
 #include "Common/Servers/MessageBusEndpoint.h"
 #include "GameDatabase/GameDBSyncEvents.h"
-#include "AuthDatabase/AccountData.h"
+#include "AuthDatabase/AuthDBSyncEvents.h"
 
 #include <map>
 #include <unordered_set>
@@ -18,33 +18,43 @@ class SEGSTimer;
 
 struct GameSession
 {
-    enum eClientState
+    enum eTravelDirection
     {
-        CLIENT_DISCONNECTED = 0,
-        CLIENT_EXPECTED,
-        NOT_LOGGED_IN,
-        LOGGED_IN,
-        CLIENT_CONNECTED
+        EXITING_TO_MAP=0,
+        EXITING_TO_LOGIN=1,
     };
-    GameLink *      m_link = nullptr;
-    AuthAccountData m_account;
+    RetrieveAccountResponseData m_account;
     GameAccountResponseData m_game_account;
-    uint32_t        is_connected_to_map_server_id   = 0;
-    uint32_t        is_connected_to_map_instance_id = 0;
-    eClientState    m_state;
+    uint32_t is_connected_to_map_server_id=0;
+    uint32_t is_connected_to_map_instance_id=0;
+    eTravelDirection m_direction;
+
     uint32_t auth_id() const { return m_account.m_acc_server_acc_id; }
     void reset()
     {
         *this = {}; // just use default constructed value
     }
+    // those functions store temporariness state of the link in the lowest bit of the pointer
+    void            set_temporary(bool v) { (intptr_t &)(m_link) = (intptr_t(m_link) & ~1) | v; }
+    bool            is_temporary() const { return intptr_t(m_link) & 1; }
+    GameLink *      link() { return (GameLink *)(intptr_t(m_link) & ~1); }
+    /// \note setting the link does not preserver the state of the previous one.
+    void            link(GameLink *l) { m_link = l; }
+
+protected:
+    GameLink *      m_link = nullptr;
 };
+
+
 class GameHandler : public EventProcessor
 {
+
     using sIds = std::unordered_set<uint32_t>;
     using SessionStore = ClientSessionStore<GameSession>;
 
     SessionStore m_session_store;
     std::unique_ptr<SEGSTimer> m_link_checker;
+    std::unique_ptr<SEGSTimer> m_service_status_timer;
 
 public:
                 GameHandler();
@@ -77,11 +87,11 @@ protected:
     // Internal events
     void        on_check_links();
     void        reap_stale_links();
+    void        report_service_status();
     void        on_timeout(TimerEvent *ev);
 
     //////////////////////////////////////////////////////////////////////////
     sIds        waiting_for_client; // this hash_set holds all client cookies we wait for
     GameServer *m_server;
-
 };
 

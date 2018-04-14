@@ -12,7 +12,6 @@
 #include <QDebug>
 #include <QFile>
 
-QSettings* Settings::m_settings = nullptr;
 QString Settings::m_settings_path = QStringLiteral("settings.cfg"); // default path 'settings.cfg' from args
 
 static bool fileExists(const QString &path) {
@@ -25,16 +24,6 @@ Settings::Settings()
 {
     if(!fileExists(getSettingsPath()))
         createSettingsFile();
-}
-
-QSettings *Settings::getSettings()
-{
-    if(m_settings == nullptr)
-        m_settings = new QSettings(Settings::getSettingsPath(),QSettings::IniFormat,0);
-
-    //settingsDump(m_settings); // Debugging
-
-    return m_settings;
 }
 
 void Settings::setSettingsPath(const QString path)
@@ -106,69 +95,69 @@ void Settings::createSettingsFile()
 // TODO: Any time you set settings values it deletes all file comments. There is no known workaround.
 void Settings::setDefaultSettings()
 {
-    QSettings *s(Settings::getSettings());
+    QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
-    s->beginGroup("AdminServer");
-        s->beginGroup("AccountDatabase");
-            s->setValue("db_driver","QSQLITE");
-            s->setValue("db_host","127.0.0.1");
-            s->setValue("db_port","5432");
-            s->setValue("db_name","segs");
-            s->setValue("db_user","segsadmin");
-            s->setValue("db_pass","segs123");
-        s->endGroup();
-        s->beginGroup("CharacterDatabase");
-            s->setValue("db_driver","QSQLITE");
-            s->setValue("db_host","127.0.0.1");
-            s->setValue("db_port","5432");
-            s->setValue("db_name","segs_game");
-            s->setValue("db_user","segsadmin");
-            s->setValue("db_pass","segs123");
-        s->endGroup();
-    s->endGroup();
-    s->beginGroup("AuthServer");
-        s->setValue("location_addr","127.0.0.1:2106");
-    s->endGroup();
-    s->beginGroup("GameServer");
-        s->setValue("server_name","SEGS Server");
-        s->setValue("listen_addr","127.0.0.1:7002");
-        s->setValue("location_addr","127.0.0.1:7002");
-        s->setValue("max_players","200");
-        s->setValue("max_character_slots","8");
-    s->endGroup();
-    s->beginGroup("MapServer");
-        s->setValue("listen_addr","127.0.0.1:7003");
-        s->setValue("location_addr","127.0.0.1:7003");
-    s->endGroup();
-    s->beginGroup("Logging");
-        s->setValue("log_logging","false");
-        s->setValue("log_keybinds","false");
-        s->setValue("log_settings","false");
-        s->setValue("log_gui","false");
-        s->setValue("log_teams","false");
-        s->setValue("log_db","false");
-        s->setValue("log_input","false");
-        s->setValue("log_orientation","false");
-        s->setValue("log_chat","false");
-        s->setValue("log_infomsg","false");
-        s->setValue("log_emotes","false");
-        s->setValue("log_target","false");
-        s->setValue("log_spawn","false");
-        s->setValue("log_mapevents","false");
-        s->setValue("log_slashcommands","false");
-        s->setValue("log_description","false");
-        s->setValue("log_friends","false");
-        s->setValue("log_minimap","false");
-        s->setValue("log_lfg","false");
-    s->endGroup();
+    config.beginGroup("AdminServer");
+        config.beginGroup("AccountDatabase");
+            config.setValue("db_driver","QSQLITE");
+            config.setValue("db_host","127.0.0.1");
+            config.setValue("db_port","5432");
+            config.setValue("db_name","segs");
+            config.setValue("db_user","segsadmin");
+            config.setValue("db_pass","segs123");
+        config.endGroup();
+        config.beginGroup("CharacterDatabase");
+            config.setValue("db_driver","QSQLITE");
+            config.setValue("db_host","127.0.0.1");
+            config.setValue("db_port","5432");
+            config.setValue("db_name","segs_game");
+            config.setValue("db_user","segsadmin");
+            config.setValue("db_pass","segs123");
+        config.endGroup();
+    config.endGroup();
+    config.beginGroup("AuthServer");
+        config.setValue("location_addr","127.0.0.1:2106");
+    config.endGroup();
+    config.beginGroup("GameServer");
+        config.setValue("server_name","SEGS Server");
+        config.setValue("listen_addr","127.0.0.1:7002");
+        config.setValue("location_addr","127.0.0.1:7002");
+        config.setValue("max_players","200");
+        config.setValue("max_character_slots","8");
+    config.endGroup();
+    config.beginGroup("MapServer");
+        config.setValue("listen_addr","127.0.0.1:7003");
+        config.setValue("location_addr","127.0.0.1:7003");
+    config.endGroup();
+    config.beginGroup("Logging");
+        config.setValue("log_logging","false");
+        config.setValue("log_keybinds","false");
+        config.setValue("log_settings","false");
+        config.setValue("log_gui","false");
+        config.setValue("log_teams","false");
+        config.setValue("log_db","false");
+        config.setValue("log_input","false");
+        config.setValue("log_orientation","false");
+        config.setValue("log_chat","false");
+        config.setValue("log_infomsg","false");
+        config.setValue("log_emotes","false");
+        config.setValue("log_target","false");
+        config.setValue("log_spawn","false");
+        config.setValue("log_mapevents","false");
+        config.setValue("log_slashcommands","false");
+        config.setValue("log_description","false");
+        config.setValue("log_friends","false");
+        config.setValue("log_minimap","false");
+        config.setValue("log_lfg","false");
+    config.endGroup();
 
-    s->sync(); // sync changes or they wont be saved to file.
+    config.sync(); // sync changes or they wont be saved to file.
 }
 
 void settingsDump()
 {
-    QSettings *s(Settings::getSettings());
-    settingsDump(s);
+    QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
+    settingsDump(&config);
 }
 
 void settingsDump(QSettings *s)

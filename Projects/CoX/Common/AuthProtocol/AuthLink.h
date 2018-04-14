@@ -50,9 +50,8 @@ public:
     typedef ACE_INET_Addr addr_type;
 
 
-static  EventProcessor *g_target;               //! All links post their messages to the same target
-
-                        AuthLink(AuthLinkType link_type = AuthLinkType::Server);
+                        AuthLink();
+                        AuthLink(EventProcessor *target, AuthLinkType link_type = AuthLinkType::Server);
                         ~AuthLink(void) override;
 
         int             open(void * = nullptr) override;
@@ -65,6 +64,7 @@ static  EventProcessor *g_target;               //! All links post their message
         void            init_crypto(int vers,uint32_t seed);
         ACE_HANDLE      get_handle (void) const override {return m_peer.get_handle();}
 protected:
+        EventProcessor *m_target; // Target handler of this link
         AuthPacketCodec m_codec;
         GrowingBuffer   m_received_bytes_storage;       //!< Each link stores incoming bytes locally
         GrowingBuffer   m_unsent_bytes_storage;         //!< Each link stores outgoing bytes locally

@@ -11,8 +11,7 @@ enum AuthDBEventTypes : uint32_t
     evValidatePasswordRequest,
     evValidatePasswordResponse,
     evCreateAccount,
-    evAuthDbError,
-    evLAST_EVENT
+    evAuthDbError
 };
 
 #define ONE_WAY_MESSAGE(name)\
@@ -67,9 +66,13 @@ struct RetrieveAccountResponseData
     QDateTime m_creation_date;
     uint8_t m_access_level;
     void mark_as_missing() { m_acc_server_acc_id = 0; }
+    bool valid() const { return m_acc_server_acc_id!=0; }
+    bool isBlocked() const { return m_access_level == 0; }
+
 };
 struct RetrieveAccountRequestData {
     QString  m_login;
+    QString  m_password;
     uint32_t m_id; // if this is 0, the lookup will be done by login, otherwise by id
 };
 TWO_WAY_MESSAGE(RetrieveAccount)

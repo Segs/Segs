@@ -112,6 +112,7 @@ void MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t 
     m_game_server_id = game_server_id;
     m_owner_id = owner_id;
     m_instance_id = instance_id;
+    HandlerLocator::registerMapInstance("",owner_id,this);
 }
 
 MapInstance::~MapInstance() {
@@ -144,16 +145,17 @@ void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMes
     session.is_connected_to_map_server_id = 0;
     session.is_connected_to_map_instance_id = 0;
     {
-        ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
+        SessionStore::MTGuard guard(m_session_store.reap_lock());
         m_session_store.mark_session_for_reaping(&session,ev->session_token());
     }
 }
 void MapInstance::reap_stale_links()
 {
+
     ACE_Time_Value              time_now = ACE_OS::gettimeofday();
     EventProcessor *            tgt      = HandlerLocator::getGame_Handler(m_game_server_id);
 
-    ACE_Guard<ACE_Thread_Mutex> guard(m_session_store.reap_lock());
+    SessionStore::MTGuard guard(m_session_store.reap_lock());
     m_session_store.reap_stale_links("MapInstance",link_is_stale_if_disconnected_for,[tgt](uint64_t tok) {
         tgt->putq(new ClientDisconnectedMessage({tok}));
     });
@@ -311,7 +313,7 @@ void MapInstance::on_shortcuts_request(ShortcutsRequest *ev)
     // TODO: use the access level and send proper commands
     MapClientSession &session(m_session_store.session_from_event(ev));
     Shortcuts *res = new Shortcuts(&session);
-    session.m_link->putq(res);
+    session.link()->putq(res);
 }
 void MapInstance::on_client_quit(ClientQuit*ev)
 {
@@ -327,32 +329,36 @@ void MapInstance::on_client_quit(ClientQuit*ev)
 void MapInstance::on_link_lost(SEGSEvent *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
+    MapLink *lnk = session.link();
+    uint64_t session_token = lnk->session_token();
     Entity *ent = session.m_ent;
     assert(ent);
     //todo: notify all clients about entity removal
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session.m_link->session_token()}));
+            ->putq(new ClientDisconnectedMessage({session_token}));
 
-    m_session_store.remove_from_active_sessions(&session);
     m_entities.removeEntityFromActiveList(ent);
+    m_session_store.session_link_lost(session_token);
      // close the link by puting an disconnect event there
-    session.m_link->putq(new DisconnectEvent(session.m_link->session_token()));
-    session.m_link = nullptr;
+    lnk->putq(new DisconnectEvent(session_token));
 }
 void MapInstance::on_disconnect(DisconnectRequest *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
+    MapLink *lnk = session.link();
+    uint64_t session_token = lnk->session_token();
+
     Entity *ent = session.m_ent;
     assert(ent);
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session.m_link->session_token()}));
-    m_session_store.remove_from_active_sessions(&session);
-        m_entities.removeEntityFromActiveList(ent);
-    session.m_link->putq(new DisconnectResponse);
-    session.m_link->putq(new DisconnectEvent(session.m_link->session_token())); // this should work, event if different threads try to do it in parallel
-    session.m_link = nullptr;
+            ->putq(new ClientDisconnectedMessage({session_token}));
+    m_entities.removeEntityFromActiveList(ent);
+    m_session_store.session_link_lost(session_token);
+
+    lnk->putq(new DisconnectResponse);
+    lnk->putq(new DisconnectEvent(session_token)); // this should work, event if different threads try to do it in parallel
 }
 void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 {
@@ -447,7 +453,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     tgt->putq(new ClientConnectedMessage({token,m_owner_id,m_instance_id}));
 
     map_session.m_current_map->enqueue_client(&map_session);
-    map_session.m_link = lnk;
+    map_session.link(lnk);
     lnk->session_token(token);
     setMapName(*map_session.m_ent->m_char, name());
     setMapIdx(*map_session.m_ent, index());
@@ -504,7 +510,7 @@ void MapInstance::on_timeout(TimerEvent *ev)
 }
 void MapInstance::sendState() {
 
-    if(m_session_store.num_active_clients()==0)
+    if(m_session_store.num_sessions()==0)
         return;
 
     auto iter=m_session_store.begin();
@@ -529,7 +535,7 @@ void MapInstance::sendState() {
         }
         res->ent_major_update = true;
         res->abs_time = 30*100*(m_world->sim_frame_time/1000.0f);
-        cl->m_link->putq(res);
+        cl->link()->putq(res);
     }
     only_first=false;
     if(resendtxt==15)
@@ -1484,7 +1490,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     char buf[256];
     std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
     std::snprintf(buf, 256, "There are %zu active entites and %zu clients", m_entities.active_entities(),
-                  m_session_store.num_active_clients());
+                  m_session_store.num_sessions());
     welcome_msg += buf;
     sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),&session);
 

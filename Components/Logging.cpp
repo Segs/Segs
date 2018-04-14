@@ -38,30 +38,30 @@ SEGS_LOGGING_CATEGORY(logLFG,          "log.lfg")
 
 void setLoggingFilter()
 {
-    QSettings *config(Settings::getSettings());
+    QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
-    config->beginGroup("Logging");
-    QString filter_rules = config->value("log_generic","*.debug=true\nqt.*.debug=false").toString();
-    filter_rules += "\nlog.logging="        + config->value("log_logging","false").toString();
-    filter_rules += "\nlog.keybinds="       + config->value("log_keybinds","false").toString();
-    filter_rules += "\nlog.settings="       + config->value("log_settings","false").toString();
-    filter_rules += "\nlog.gui="            + config->value("log_gui","false").toString();
-    filter_rules += "\nlog.teams="          + config->value("log_teams","false").toString();
-    filter_rules += "\nlog.db="             + config->value("log_db","false").toString();
-    filter_rules += "\nlog.input="          + config->value("log_input","false").toString();
-    filter_rules += "\nlog.orientation="    + config->value("log_orientation","false").toString();
-    filter_rules += "\nlog.chat="           + config->value("log_chat","false").toString();
-    filter_rules += "\nlog.infomsg="        + config->value("log_infomsg","false").toString();
-    filter_rules += "\nlog.emotes="         + config->value("log_emotes","true").toString();
-    filter_rules += "\nlog.target="         + config->value("log_target","false").toString();
-    filter_rules += "\nlog.spawn="          + config->value("log_spawn","false").toString();
-    filter_rules += "\nlog.mapevents="      + config->value("log_mapevents","true").toString();
-    filter_rules += "\nlog.slashcommand="   + config->value("log_slashcommand","true").toString();
-    filter_rules += "\nlog.description="    + config->value("log_description","false").toString();
-    filter_rules += "\nlog.friends="        + config->value("log_friends","false").toString();
-    filter_rules += "\nlog.minimap="        + config->value("log_minimap","false").toString();
-    filter_rules += "\nlog.lfg="            + config->value("log_lfg","false").toString();
-    config->endGroup(); // Logging
+    config.beginGroup("Logging");
+    QString filter_rules = config.value("log_generic","*.debug=true\nqt.*.debug=false").toString();
+    filter_rules += "\nlog.logging="        + config.value("log_logging","false").toString();
+    filter_rules += "\nlog.keybinds="       + config.value("log_keybinds","false").toString();
+    filter_rules += "\nlog.settings="       + config.value("log_settings","false").toString();
+    filter_rules += "\nlog.gui="            + config.value("log_gui","false").toString();
+    filter_rules += "\nlog.teams="          + config.value("log_teams","false").toString();
+    filter_rules += "\nlog.db="             + config.value("log_db","false").toString();
+    filter_rules += "\nlog.input="          + config.value("log_input","false").toString();
+    filter_rules += "\nlog.orientation="    + config.value("log_orientation","false").toString();
+    filter_rules += "\nlog.chat="           + config.value("log_chat","false").toString();
+    filter_rules += "\nlog.infomsg="        + config.value("log_infomsg","false").toString();
+    filter_rules += "\nlog.emotes="         + config.value("log_emotes","true").toString();
+    filter_rules += "\nlog.target="         + config.value("log_target","false").toString();
+    filter_rules += "\nlog.spawn="          + config.value("log_spawn","false").toString();
+    filter_rules += "\nlog.mapevents="      + config.value("log_mapevents","true").toString();
+    filter_rules += "\nlog.slashcommand="   + config.value("log_slashcommand","true").toString();
+    filter_rules += "\nlog.description="    + config.value("log_description","false").toString();
+    filter_rules += "\nlog.friends="        + config.value("log_friends","false").toString();
+    filter_rules += "\nlog.minimap="        + config.value("log_minimap","false").toString();
+    filter_rules += "\nlog.lfg="            + config.value("log_lfg","false").toString();
+    config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
 

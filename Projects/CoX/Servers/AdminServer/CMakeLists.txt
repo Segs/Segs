@@ -1,6 +1,5 @@
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/AdminServer.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/AdminDatabase.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/AccountInfo.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/AdminLink.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/CharacterDatabase.cpp
@@ -9,7 +8,6 @@ SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/CharacterDatabase.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AccountInfo.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AdminLink.h
-${CMAKE_CURRENT_SOURCE_DIR}/AdminDatabase.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AdminServer.h
 )
 SET (target_SOURCES
