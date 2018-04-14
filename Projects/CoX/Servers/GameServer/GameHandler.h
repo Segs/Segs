@@ -46,7 +46,7 @@ protected:
 };
 
 
-class GameHandler : public EventProcessor
+class GameHandler final : public EventProcessor
 {
 
     using sIds = std::unordered_set<uint32_t>;
@@ -90,6 +90,10 @@ protected:
     void        report_service_status();
     void        on_timeout(TimerEvent *ev);
 
+    void        on_game_db_error(GameDbErrorMessage *ev);
+    void        on_account_data(GameAccountResponse *ev);
+    void        on_character_deleted(RemoveCharacterResponse *ev);
+    void        on_game_account_response(GameAccountResponse *ev);
     //////////////////////////////////////////////////////////////////////////
     sIds        waiting_for_client; // this hash_set holds all client cookies we wait for
     GameServer *m_server;

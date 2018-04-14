@@ -288,7 +288,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     auth_db_handler->putq(request_event);
     // here we will wait for db response, so here we're going to put the session on the read-to-reap list
     // in case db does not respond in sane time frame, the session is going to be removed.
-    m_sessions.mark_session_for_reaping(session_ptr,sess_tok);
+    m_sessions.locked_mark_session_for_reaping(session_ptr,sess_tok);
 }
 void AuthHandler::on_server_list_request( ServerListRequest *ev )
 {

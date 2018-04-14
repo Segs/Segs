@@ -36,7 +36,9 @@ public:
         EVENT_DECL(evDeleteAcknowledged,8)
 
         EVENT_DECL(evUnknownEvent,16)
-        END_EVENTS(17)
+
+        EVENT_DECL(evServerReconfigured,100)
+        END_EVENTS(102)
 };
 
 class MapServerAddrRequest : public GameLinkEvent
@@ -214,4 +216,9 @@ public:
     { }
     void serializefrom(BitStream &)
     { }
+};
+class GameServerReconfigured : public InternalEvent
+{
+public:
+    GameServerReconfigured():InternalEvent(GameEventTypes::evServerReconfigured) {}
 };

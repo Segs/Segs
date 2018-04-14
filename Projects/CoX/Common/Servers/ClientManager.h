@@ -133,19 +133,29 @@ public:
         }
         uint32_t expect_client_session(uint64_t token, const ACE_INET_Addr &from, uint64_t id)
         {
-                uint32_t cook = create_cookie(from,id);
-                for(ExpectClientInfo sess : m_session_expecting_clients )
-                {
+            uint32_t cook = create_cookie(from, id);
+            for (ExpectClientInfo sess : m_session_expecting_clients)
+            {
                 // if we already expect this client
                 if (sess.m_cookie == cook)
                 {
-                        assert(false);
-                        // return pregenerated cookie
-                        return cook;
+                    assert(false);
+                    // return pregenerated cookie
+                    return cook;
                 }
-                }
-                m_session_expecting_clients.emplace_back(ExpectClientInfo{cook,ACE_OS::gettimeofday(),token});
-                return cook;
+            }
+            m_session_expecting_clients.emplace_back(ExpectClientInfo{cook, ACE_OS::gettimeofday(), token});
+            return cook;
+        }
+        // used to recover assigned cookie from session
+        uint32_t get_cookie_for_session(uint64_t token)
+        {
+            for (ExpectClientInfo sess : m_session_expecting_clients)
+            {
+                if(sess.m_session_token==token)
+                    return sess.m_cookie;
+            }
+            return 0;
         }
         void session_link_lost(uint64_t token)
         {
@@ -217,12 +227,16 @@ public:
         }
         void mark_session_for_reaping(SESSION_CLASS *sess, uint64_t token)
         {
-            qDebug() << "Marking:"<<intptr_t(sess);
             m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(), sess, token});
         }
+        void locked_mark_session_for_reaping(SESSION_CLASS *sess, uint64_t token)
+        {
+            MTGuard guard(reap_lock());
+            mark_session_for_reaping(sess,token);
+        }
+
         void unmark_session_for_reaping(SESSION_CLASS *sess)
         {
-            qDebug() << "Unamrking:"<<intptr_t(sess);
             for (size_t idx = 0, total = m_session_ready_for_reaping.size(); idx < total; ++idx)
             {
                 if (m_session_ready_for_reaping[idx].m_session == sess)
@@ -232,6 +246,11 @@ public:
                     break;
                 }
             }
+        }
+        void locked_unmark_session_for_reaping(SESSION_CLASS *sess)
+        {
+            MTGuard guard(reap_lock());
+            unmark_session_for_reaping(sess);
         }
         void reap_stale_links(const char *name, ACE_Time_Value link_is_stale_if_disconnected_for,
                               std::function<void(uint64_t token)> reap_callback = [](uint64_t) {})

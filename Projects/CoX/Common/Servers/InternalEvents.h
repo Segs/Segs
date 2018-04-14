@@ -86,14 +86,15 @@ struct ExpectMapClientRequestData
     uint64_t m_client_id;
     uint8_t m_access_level;
     ACE_INET_Addr m_from_addr;
+    //TODO: pass this as POD, or serialize it into some internal format.
     GameAccountResponseCharacterData *char_from_db;
     uint16_t m_slot_idx;
     QString m_character_name;
     uint32_t m_map_id;
+    uint16_t m_max_slots;
 };
 struct ExpectMapClientResponseData
 {
-    uint64_t      client_id;
     uint32_t      cookie;
     uint32_t      m_server_id;       // this is the id of the server that is expecting the client
     ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client

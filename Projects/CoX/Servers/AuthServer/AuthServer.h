@@ -8,8 +8,6 @@
 
 #pragma once
 // segs includes
-
-#include "Common/Servers/Server.h"
 #include "AuthDatabase/AuthDBSyncEvents.h"
 #include "EventProcessor.h"
 

@@ -10,9 +10,21 @@ enum GameDBEventTypes : uint32_t
 {
     evCharacterUpdate= Internal_EventTypes::evLAST_EVENT,
     evCostumeUpdate,
-    evRemoveCharacter,
+    evRemoveCharacterRequest,
+    evRemoveCharacterResponse,
     evGameAccountRequest,
     evGameAccountResponse,
+    evWouldNameDuplicateRequest,
+    evWouldNameDuplicateResponse,
+    // Insert for characters
+    evCreateNewCharacterRequest,
+    evCreateNewCharacterResponse,
+    // select by id for characters
+    evGetCharacterRequest,
+    evGetCharacterResponse,
+    // update by id for characters
+    evSetCharacterRequest,
+    evSetCharacterResponse,
     evGameDbError
 };
 
@@ -38,7 +50,8 @@ struct name ## Response final : public InternalEvent\
 struct name ## Request final : public InternalEvent\
 {\
     name ## RequestData m_data;\
-    name ## Request(name ## RequestData &&d,uint64_t token) : InternalEvent(GameDBEventTypes::ev ## name ## Request),m_data(d) {session_token(token);}\
+    name ## Request(name ## RequestData &&d,uint64_t token,EventProcessor *src = nullptr) :\
+        InternalEvent(GameDBEventTypes::ev ## name ## Request,src),m_data(d) {session_token(token);}\
 };\
 struct name ## Response final : public InternalEvent\
 {\
@@ -71,12 +84,16 @@ struct CostumeUpdateData
 };
 ONE_WAY_MESSAGE(CostumeUpdate)
 
-struct RemoveCharacterData
+struct RemoveCharacterRequestData
 {
     uint64_t account_id;
-    int8_t slot_idx;
+    int slot_idx;
 };
-ONE_WAY_MESSAGE(RemoveCharacter)
+struct RemoveCharacterResponseData
+{
+    int slot_idx;
+};
+TWO_WAY_MESSAGE(RemoveCharacter)
 
 struct GameAccountRequestData
 {
@@ -149,6 +166,24 @@ struct GameAccountResponseData
     bool valid() const { return m_game_server_acc_id!=0;}
 };
 TWO_WAY_MESSAGE(GameAccount)
+struct CreateNewCharacterRequestData
+{
+    GameAccountResponseCharacterData m_character;
+    uint16_t m_slot_idx;
+    uint32_t m_client_id;
+};
+struct CreateNewCharacterResponseData
+{};
+TWO_WAY_MESSAGE(CreateNewCharacter)
+struct WouldNameDuplicateRequestData
+{
+    QString m_name;
+};
+struct WouldNameDuplicateResponseData
+{
+    bool m_would_duplicate;
+};
+TWO_WAY_MESSAGE(WouldNameDuplicate)
 
 struct GameDbErrorData
 {

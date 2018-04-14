@@ -67,8 +67,11 @@ protected:
     void on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev);
 
     void process_chat(MapClientSession *sender, QString &msg_text);
-
+    // DB -> Server messages
+    void on_name_clash_check_result(WouldNameDuplicateResponse *ev);
+    // Server->Server messages
     void on_expect_client(ExpectMapClientRequest *ev);
+
     void on_link_lost(SEGSEvent *ev);
     void on_disconnect(class DisconnectRequest *ev);
     void on_scene_request(class SceneRequest *ev);

@@ -63,6 +63,7 @@ class Character
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
         friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src,Character &tgt);
+        friend bool fromActualCharacter(const Character &src,GameAccountResponseCharacterData &tgt);
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
@@ -73,7 +74,7 @@ const   QString &       getName() const { return m_name; }
         void            setIndex(uint8_t val) { m_index = val; }
         uint64_t        getAccountId() const { return m_owner_account_id; }
         void            setAccountId(uint64_t val) { m_owner_account_id = val; }
-        
+
 
 //
 //////////////////////////////////////////////////////////////////////////

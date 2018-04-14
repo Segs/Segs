@@ -26,6 +26,7 @@
 #include "SlashCommand.h"
 #include "Common/GameData/CoHMath.h"
 #include "CharacterDatabase.h"
+#include "GameDatabase/GameDBSyncEvents.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/MessageBus.h"
 #include "Logging.h"
@@ -179,6 +180,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case Internal_EventTypes::evExpectMapClientRequest:
             on_expect_client(static_cast<ExpectMapClientRequest *>(ev));
+            break;
+        case GameDBEventTypes::evWouldNameDuplicateResponse:
+            on_name_clash_check_result(static_cast<WouldNameDuplicateResponse *>(ev));
             break;
         case MapEventTypes::evIdle:
             on_idle(static_cast<IdleEvent *>(ev));
@@ -360,6 +364,23 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     lnk->putq(new DisconnectResponse);
     lnk->putq(new DisconnectEvent(session_token)); // this should work, event if different threads try to do it in parallel
 }
+void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
+{
+    if(ev->m_data.m_would_duplicate)
+    {
+        // name is taken, inform by setting cookie to 0.
+        EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
+        tgt->putq(new ExpectMapClientResponse({0, 0, m_server->getAddress()}, ev->session_token()));
+    }
+    else
+    {
+        uint32_t cookie = m_session_store.get_cookie_for_session(ev->session_token());
+        assert(cookie!=0);
+        // Now we inform our game server that this Map server instance is ready for the client
+        HandlerLocator::getGame_Handler(m_game_server_id)
+            ->putq(new ExpectMapClientResponse({2+cookie, 0, m_server->getAddress()}, ev->session_token()));
+    }
+}
 void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 {
     // TODO: handle contention while creating 2 characters with the same name from different clients
@@ -372,42 +393,36 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     if(nullptr==tpl)
     {
         ev->src()->putq(
-            new ExpectMapClientResponse({request_data.m_client_id, 1, 0, m_server->getAddress()}, ev->session_token()));
+            new ExpectMapClientResponse({1, 0, m_server->getAddress()}, ev->session_token()));
         return;
     }
-    CharacterDatabase * char_db = AdminServer::instance()->character_db();
-    if (!request_data.char_from_db)
-    {
-        // attempt to create a new character, let's see if the name is taken
-        if (char_db->named_character_exists(request_data.m_character_name))
-        {
-            // name is taken, inform by setting cookie to 0.
-            ev->src()->putq(new ExpectMapClientResponse({request_data.m_client_id, 0, 0, m_server->getAddress()},
-                                                        ev->session_token()));
-            return;
-        }
-    }
+    // fill the session with data, this will get discarded if the name is already in use...
     MapClientSession &map_session(*m_session_store.create_or_reuse_session_for(ev->session_token()));
-    cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
-                                                     request_data.m_client_id);
     map_session.m_name        = request_data.m_character_name;
     // TODO: this code is wrong on the logical level
     map_session.m_current_map = tpl->get_instance(m_game_server_id,m_owner_id);
-    if (request_data.char_from_db)
+    cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
+                                                     request_data.m_client_id);
+    if (!request_data.char_from_db)
     {
-        Entity *ent = m_entities.CreatePlayer();
-        toActualCharacter(*request_data.char_from_db, *ent->m_char);
-        ent->fillFromCharacter();
-        map_session.m_ent = ent;
+        EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
+        game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name},ev->session_token(),this) );
+        // while we wait for db response, mark session as waiting for reaping
+        m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
+        return;
     }
+    // existing character
+    Entity *ent = m_entities.CreatePlayer();
+    toActualCharacter(*request_data.char_from_db, *ent->m_char);
+    ent->fillFromCharacter();
+    map_session.m_ent = ent;
     // set the session's client
     map_session.m_access_level = request_data.m_access_level;
     map_session.m_client_id    = request_data.m_client_id;
     // Now we inform our game server that this Map server instance is ready for the client
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-        ->putq(new ExpectMapClientResponse({request_data.m_client_id, cookie, 0, m_server->getAddress()},
-                                           ev->session_token()));
+        ->putq(new ExpectMapClientResponse({cookie, 0, m_server->getAddress()}, ev->session_token()));
 }
 void MapInstance::on_create_map_entity(NewEntity *ev)
 {
@@ -420,18 +435,23 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     MapClientSession &map_session(m_session_store.session_from_token(token));
     if (ev->m_new_character)
     {
+        EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
+        game_db->putq(new GameAccountRequest({},lnk->session_token()));
         Entity *e = m_entities.CreatePlayer();
         fillEntityFromNewCharData(*e, ev->m_character_data, g_GlobalMapServer->runtimeData().getPacker());
         map_session.m_ent = e;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         map_session.m_ent->m_char->setName(map_session.m_name);
+        GameAccountResponseCharacterData char_data;
+        fromActualCharacter(*map_session.m_ent->m_char,char_data);
         // create the character from the data.
-        fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
-        int8_t idx = map_session.m_game_account.next_free_slot_idx();
-        if (idx != -1)
-        {
-            storeNewCharacter(map_session.m_ent, idx, map_session.m_client_id);
-        }
+        //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
+        game_db->putq(new CreateNewCharacterRequest({char_data,map_session.m_requested_slot_idx,map_session.m_client_id},token));
+//        int8_t idx = map_session.m_game_account.next_free_slot_idx();
+//        if (idx != -1)
+//        {
+//            storeNewCharacter(map_session.m_ent, idx, map_session.m_client_id);
+//        }
     }
     assert(map_session.m_ent);
 

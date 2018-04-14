@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "Common/Servers/MapServerInterface.h"
 #include "Common/Servers/ServerEndpoint.h"
 #include "GameServer/GameServer.h"
 //#include "Entity.h"
@@ -21,7 +20,6 @@ class Net;
 class MapServerEndpoint;
 struct MapClientSession;
 class MapInstance;
-class GameServerInterface;
 class MapServerData;
 class MapManager;
 

@@ -21,33 +21,41 @@ void GameDBSyncHandler::dispatch(SEGSEvent *ev)
     // nullptr result means that the given message is one-way
     switch (ev->type())
     {
-        case GameDBEventTypes::evCharacterUpdate:
-        on_character_update(static_cast<CharacterUpdateMessage *>(ev));
-        break;
-        case GameDBEventTypes::evCostumeUpdate:
-        on_costume_update(static_cast<CostumeUpdateMessage *>(ev));
-        break;
-        case GameDBEventTypes::evGameAccountRequest:
-        on_account_request(static_cast<GameAccountRequest *>(ev));
-        break;
-        default:
-        assert(false);
-        break;
+    case GameDBEventTypes::evCharacterUpdate:
+        on_character_update(static_cast<CharacterUpdateMessage *>(ev)); break;
+    case GameDBEventTypes::evRemoveCharacterRequest:
+        on_character_remove(static_cast<RemoveCharacterRequest *>(ev)); break;
+    case GameDBEventTypes::evCostumeUpdate:
+        on_costume_update(static_cast<CostumeUpdateMessage *>(ev)); break;
+    case GameDBEventTypes::evGameAccountRequest:
+        on_account_request(static_cast<GameAccountRequest *>(ev)); break;
+    case GameDBEventTypes::evWouldNameDuplicateRequest:
+        on_check_name_clash(static_cast<WouldNameDuplicateRequest *>(ev)); break;
+
+    default: assert(false); break;
     }
 }
 
-GameDBSyncHandler::GameDBSyncHandler(uint8_t id)
+GameDBSyncHandler::GameDBSyncHandler(uint8_t id) : m_id(id)
 {
     HandlerLocator::setGame_DB_Handler(id,this);
 }
 
+void GameDBSyncHandler::on_character_remove(RemoveCharacterRequest *msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+
+    if (!db_ctx.removeCharacter(msg->m_data))
+        msg->src()->putq(new GameDbErrorMessage({"Game db error"}, msg->session_token()));
+    else
+        msg->src()->putq(new RemoveCharacterResponse({msg->m_data.slot_idx}, msg->session_token()));
+}
 
 
 void GameDBSyncHandler::on_character_update(CharacterUpdateMessage *msg)
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
     db_ctx.performUpdate(msg->m_data);
-
 }
 
 void GameDBSyncHandler::on_costume_update(CostumeUpdateMessage *msg)
@@ -63,5 +71,18 @@ void GameDBSyncHandler::on_account_request(GameAccountRequest *msg)
         msg->src()->putq(new GameAccountResponse(std::move(resp),msg->session_token()));
     else
         msg->src()->putq(new GameDbErrorMessage({"Game db error"},msg->session_token()));
+
+}
+
+void GameDBSyncHandler::on_check_name_clash(WouldNameDuplicateRequest * ev)
+{
+    EventProcessor * tgt = HandlerLocator::getGame_Handler(m_id);
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    WouldNameDuplicateResponseData resp;
+
+    if(db_ctx.checkNameClash(ev->m_data,resp))
+        ev->src()->putq(new WouldNameDuplicateResponse(std::move(resp),ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 
 }

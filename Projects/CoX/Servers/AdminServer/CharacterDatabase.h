@@ -52,7 +52,6 @@ virtual             ~CharacterDatabase();
         bool        updateClientOptions(Entity *);
         bool        updateGUISettings(Entity *);
         bool        update(CharacterCostume *);
-        bool        remove_character(uint64_t account_server_id, int8_t slot_idx);
         bool        named_character_exists(const QString &name);
         void        setDb(QSqlDatabase *db) {m_db=db;}
         QSqlDatabase *getDb() {return m_db;}
@@ -60,8 +59,8 @@ virtual             ~CharacterDatabase();
         CharacterFromDB *getCharacter(const QString &name);
         CharacterFromDB *getCharacter(int32_t db_id);
 };
-bool removeCharacter(uint64_t game_account_id,uint8_t slot_idx);
 bool fillGameAccountData(uint64_t auth_account_id, GameAccountResponseData &tgt);
 bool initializeCharacterFromCreator();
 bool toActualCharacter(const GameAccountResponseCharacterData &src,Character &tgt);
+bool fromActualCharacter(const Character &src,GameAccountResponseCharacterData &tgt);
 bool storeNewCharacter(Entity *e, int8_t slot_idx, uint64_t account_id);

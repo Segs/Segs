@@ -135,8 +135,8 @@ bool CreateServers()
                   g_auth_server.reset(new AuthServer);
                   g_auth_server->activate();
               },"Starting auth service");
-    AdminServer::instance()->ReadConfig();
-    AdminServer::instance()->Run();
+//    AdminServer::instance()->ReadConfig();
+//    AdminServer::instance()->Run();
     TIMED_LOG(startGameDBSync(1),"Starting game(1) db service");
     TIMED_LOG({
                   g_game_server.reset(new GameServer(1));

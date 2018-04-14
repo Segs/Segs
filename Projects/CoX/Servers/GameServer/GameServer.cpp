@@ -119,6 +119,7 @@ GameServer::~GameServer()
 // later name will be used to read GameServer specific configuration
 bool GameServer::ReadConfigAndRestart()
 {
+    static GameServerReconfigured reconfigured_msg;
     if(d->m_endpoint) // TODO: consider properly closing all open sessions ?
         delete d->m_endpoint;
     qInfo() << "Loading GameServer settings...";
@@ -165,6 +166,7 @@ bool GameServer::ReadConfigAndRestart()
 
     qInfo() << "  configuration loaded and server started";
     d->m_online = true;
+    d->m_handler->putq(reconfigured_msg.shallow_copy());
     return true;
 }
 bool GameServer::ShutDown(const QString &reason)

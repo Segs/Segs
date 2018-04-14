@@ -11,7 +11,6 @@
 
 #include "Common/Servers/ServerEndpoint.h"
 #include "GameLink.h"
-#include "Common/Servers/GameServerInterface.h"
 #include "Entity.h"
 #include "MapServer/EntityStorage.h"
 

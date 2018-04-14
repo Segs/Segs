@@ -64,6 +64,10 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case Internal_EventTypes::evClientDisconnected:
         on_client_disconnected_from_other_server(static_cast<ClientDisconnectedMessage *>(ev));
         break;
+    case GameEventTypes::evServerReconfigured:
+        // reconfiguring service forces status broadcast
+        report_service_status();
+        break;
     // Client -> Server messages
     case GameEventTypes::evIdle:
         on_idle(static_cast<IdleEvent*>(ev));
@@ -89,12 +93,44 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case GameEventTypes::evUnknownEvent:
         on_unknown_link_event(static_cast<GameUnknownRequest *>(ev));
         break;
-
+    // DB -> Server messages
+    case GameDBEventTypes::evGameDbError:
+        on_game_db_error(static_cast<GameDbErrorMessage *>(ev));
+        break;
+    case GameDBEventTypes::evGameAccountResponse:
+        on_account_data(static_cast<GameAccountResponse *>(ev));
+        break;
+    case GameDBEventTypes::evRemoveCharacterResponse:
+        on_character_deleted(static_cast<RemoveCharacterResponse *>(ev));
+        break;
     default:
         assert(!"Unknown event encountered in dispatch.");
     }
 }
+void GameHandler::on_game_db_error(GameDbErrorMessage *ev)
+{
+    GameSession &session = m_session_store.session_from_event(ev);
+    session.link()->putq(new GameEntryError(this,"Unauthorized !"));
+}
+///
+/// \brief This handler is called when we get the account information for a
+/// \param ev
+///
+void GameHandler::on_account_data(GameAccountResponse *ev)
+{
+    GameSession &session(m_session_store.session_from_event(ev));
+    // we've got db answer, session is ok again
+    m_session_store.locked_unmark_session_for_reaping(&session);
+    session.m_game_account = ev->m_data;
+    // Inform auth server about succesful client connection
+    EventProcessor *tgt      = HandlerLocator::getAuth_Handler();
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),0 }));
 
+    m_session_store.add_to_active_sessions(&session);
+    CharacterSlots *slots_event=new CharacterSlots;
+    slots_event->set_account_data(&session.m_game_account);
+    session.link()->putq(slots_event);
+}
 void GameHandler::on_connection_request(ConnectRequest *ev)
 {
     // TODO: disallow connects if server is overloaded
@@ -120,20 +156,14 @@ void GameHandler::on_update_server(UpdateServer *ev)
     session.link((GameLink *)ev->src());
     session.m_direction = GameSession::EXITING_TO_LOGIN;
     session.link()->session_token(expecting_session_token);
-    if(!fillGameAccountData(session.m_account.m_acc_server_acc_id,session.m_game_account))
-    {
-        ev->src()->putq(new GameEntryError(this,"DB error encountered!"));
-        qDebug("GameEntryError: getCharsFromDb error!");
-        return;
-    }
-    // Inform auth server about succesful client connection
-    EventProcessor *tgt      = HandlerLocator::getAuth_Handler();
-    tgt->putq(new ClientConnectedMessage({expecting_session_token,m_server->getId(),0 }));
+    EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_server->getId());
+    game_db->putq(new GameAccountRequest({session.auth_id(), m_server->getMaxCharacterSlots(), true},
+                                         expecting_session_token,this));
 
-    m_session_store.add_to_active_sessions(&session);
-    CharacterSlots *slots_event=new CharacterSlots;
-    slots_event->set_account_data(&session.m_game_account);
-    ev->src()->putq(slots_event);
+    // here we will wait for db response, so here we're going to put the session on the read-to-reap list
+    // in case db does not respond in sane time frame, the session is going to be removed.
+    m_session_store.locked_mark_session_for_reaping(&session,expecting_session_token);
+    // if things work ok, than GameHandler::on_account_data will get all it needs.
 }
 void GameHandler::on_update_character(UpdateCharacter *ev)
 {
@@ -253,19 +283,24 @@ void GameHandler::on_link_lost(SEGSEvent *ev)
     // Post disconnect event to link, will close it's processing loop
     lnk->putq(new DisconnectEvent(lnk->session_token()));
 }
+void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)
+{
+    GameSession &session = m_session_store.session_from_event(ev);
+    auto chr(session.m_game_account.get_character(ev->m_data.slot_idx));
+    chr.reset();
+    session.link()->putq(new DeletionAcknowledged);
+}
 void GameHandler::on_delete_character(DeleteCharacter *ev)
 {
+    EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_server->getId());
     GameSession &session = m_session_store.session_from_event(ev);
     GameLink * lnk = (GameLink *)ev->src();
     auto chr(session.m_game_account.get_character(ev->m_index));
     // check if character exists, and if it's name is the same as the one passed here
     if(chr.m_name.compare(ev->m_char_name)==0)
     {
-        // if it is delete the character ( or maybe not, just mark it deleted ? )
-        bool res = removeCharacter(session.m_game_account.m_game_server_acc_id,chr.index);
-        if(res)
-            chr.reset();
-        lnk->putq(new DeletionAcknowledged);
+        game_db->putq(new RemoveCharacterRequest({session.m_game_account.m_game_server_acc_id, chr.index},
+                                                 lnk->session_token(),this));
     }
     else
     {

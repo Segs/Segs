@@ -31,7 +31,8 @@ struct MapClientSession
 
         uint32_t                m_client_id    = 0;
         uint8_t                 m_access_level = 0;
-        GameAccountResponseData m_game_account;
+        uint16_t                m_requested_slot_idx=0;
+        uint16_t                m_max_slots;
         mNetCommands            m_shortcuts;
         vStoredCommands         m_contents;
         MapInstance *           m_current_map = nullptr;
@@ -40,6 +41,7 @@ struct MapClientSession
         SEGSTimer *             m_tick_source = nullptr;
         vBelief                 m_worldstate_belief;
         bool                    m_in_map                        = false;
+
         // The values below might be needed for map<->map handover ?
         uint32_t                is_connected_to_map_server_id   = 0;
         uint32_t                is_connected_to_map_instance_id = 0;

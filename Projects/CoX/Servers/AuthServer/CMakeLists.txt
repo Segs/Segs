@@ -29,11 +29,11 @@ IF(BUILD_SEPARATE)
     TARGET_LINK_LIBRARIES(authserver
         authserver_lib
         auth_db_sync_lib
-        adminserver_lib
         gameserver_lib
         mapserver_lib
         game_db_sync_lib
         cox_server_common
+        adminserver_lib
         AuthProtocol
         ${target_DEPENDS} gameData
         SEGS_Components

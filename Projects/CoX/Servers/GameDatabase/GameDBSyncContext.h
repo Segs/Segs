@@ -30,7 +30,8 @@ public:
     bool performUpdate(const struct CharacterUpdateData &data);
     bool performUpdate(const struct CostumeUpdateData &data);
     bool getAccount(const struct GameAccountRequestData &data,struct GameAccountResponseData &result);
-    bool removeCharacter(const struct RemoveCharacterData &data);
+    bool removeCharacter(const struct RemoveCharacterRequestData &data);
+    bool checkNameClash(const struct WouldNameDuplicateRequestData &data,struct WouldNameDuplicateResponseData &result);
 private:
     int64_t getDbVersion(QSqlDatabase &);
 };

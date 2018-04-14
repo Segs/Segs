@@ -7,9 +7,6 @@
  */
 
 #pragma once
-// segs includes
-#include "Common/Servers/Server.h"
-
 // ACE includes
 #include <ace/ACE.h>
 #include <ace/INET_Addr.h>
@@ -21,6 +18,7 @@
 #include <memory>
 
 class CharacterDatabase;
+class QString;
 //! The AdminServer class handles administrative functions such as account saving, account banning, etcetera.
 class _AdminServer
 {

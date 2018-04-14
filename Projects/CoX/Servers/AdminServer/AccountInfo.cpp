@@ -17,35 +17,6 @@
 
 #include <sstream>
 
-//bool AccountInfo::fill_characters_db()
-//{
-//    Character *act=nullptr;
-//    m_characters.resize(m_max_slots);
-//    if(m_characters[0]==nullptr)
-//        m_characters[0] = act = new Character;
-//    else
-//        act = m_characters[0]; //reuse existing object
-//    act->setIndex(0);
-//    act->setAccountId(m_game_server_acc_id);
-//    CharacterDatabase *char_db = AdminServer::instance()->character_db();
-//    if(!char_db->fill(act))
-//        return false;
-//    for(size_t i=1; i<m_characters.size(); i++)
-//    {
-//        if(m_characters[i]) //even more reuse
-//        {
-//            m_characters[i]->reset();
-//        }
-//        else
-//            m_characters[i] = new Character;
-//        m_characters[i]->setIndex(i);
-//        m_characters[i]->setAccountId(m_game_server_acc_id);
-//        if(!AdminServer::instance()->character_db()->fill(m_characters[i]))
-//            return false;
-//    }
-//    return true;
-//}
-
 Character * AccountInfo::get_character(size_t idx)
 {
     assert(idx<m_characters.size());
@@ -65,13 +36,6 @@ AccountInfo::AccountInfo() : m_game_server_acc_id(0),m_max_slots(0)
 {
 
 }
-
-//bool AccountInfo::fill_game_db( uint64_t )
-//{
-//    if(!AdminServer::instance()->character_db()->fill(this)) // read basic facts
-//        return false;
-//    return fill_characters_db();
-//}
 
 Character * AccountInfo::create_new_character()
 {
@@ -103,13 +67,3 @@ bool AccountInfo::store_new_character(Entity *e, Character *character)
     grd.commit();
     return true;
 }
-
-//bool AccountInfo::remove_character( Character *character )
-//{
-//    CharacterDatabase *cdb = AdminServer::instance()->character_db();
-//    int8_t slot_idx=char_slot_index(character);
-//    if(slot_idx==-1)
-//        return false;
-//    cdb->remove_character(this,slot_idx);
-//    return true;
-//}

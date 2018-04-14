@@ -10,7 +10,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
-#include <QStringLiteral>
+#include <QString>
 
 namespace {
 bool prepQuery(QSqlQuery &qr,const QString &txt) {
@@ -252,12 +252,24 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
     }
     return true;
 }
-bool GameDbSyncContext::removeCharacter(const RemoveCharacterData &data)
+bool GameDbSyncContext::removeCharacter(const RemoveCharacterRequestData &data)
 {
     m_prepared_char_delete->bindValue(0,quint64(data.account_id));
     m_prepared_char_delete->bindValue(1,(uint32_t)data.slot_idx);
     if(!doIt(*m_prepared_char_delete))
         return false;
+    return true;
+}
+
+bool GameDbSyncContext::checkNameClash(const WouldNameDuplicateRequestData &data, WouldNameDuplicateResponseData &result)
+{
+    m_prepared_char_exists->bindValue(0,data.m_name);
+    if(!doIt(*m_prepared_char_exists))
+        return false;
+    if(!m_prepared_char_exists->next())
+        return false;
+    // TODO: handle case of multiple accounts with same name ?
+    result.m_would_duplicate = m_prepared_char_exists->value(0).toBool();
     return true;
 }
 /*
