@@ -1,8 +1,18 @@
 ![logo](docs/title_v1.png)
 [![master Build Status](https://travis-ci.org/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs) 
 [![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Average time to resolve an issue")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Percentage of issues still open")
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
+![GitHub issues](https://img.shields.io/github/issues-raw/Segs/Segs.svg)
+![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/Segs/Segs.svg)
+![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/Segs/Segs.svg)
+![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/Segs/Segs.svg)
+
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/Segs/Segs.svg?columns=all)](https://waffle.io/Segs/Segs)
+
+![Discord](https://img.shields.io/discord/242088237596803073.svg?logo=discord)
+![](https://img.shields.io/badge/irc.segs.io-%23segs-blue.svg)
+![Twitter Follow](https://img.shields.io/twitter/follow/segscode.svg?style=social&logo=twitter)
 
 SEGS - Super Entity Game Server
 ======
