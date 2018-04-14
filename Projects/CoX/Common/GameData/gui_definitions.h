@@ -76,16 +76,16 @@ public:
     GUIWindow() { }
 
         // GUI Window Params
-        WindowIDX           m_idx;
-        WindowVisibility    m_mode;
-        bool                m_draggable_frame;
-        uint32_t            m_posx;
-        uint32_t            m_posy;
-        uint32_t            m_width            = 0;
-        uint32_t            m_height           = 0;
-        uint32_t            m_locked;
-        uint32_t            m_color            = 0x3399FF99;   // 0x3399FF99 (light blue with 60% transparency)
-        uint32_t            m_alpha            = 0x88;         // default 136 (0x88)
+        WindowIDX           m_idx               = wdw_Unknown0;
+        WindowVisibility    m_mode              = wv_Uninitialized;
+        bool                m_draggable_frame   = false;
+        uint32_t            m_posx              = 0;
+        uint32_t            m_posy              = 0;
+        uint32_t            m_width             = 0;
+        uint32_t            m_height            = 0;
+        uint32_t            m_locked            = 0;
+        uint32_t            m_color             = 0x3399FF99;   // 0x3399FF99 (light blue with 60% transparency)
+        uint32_t            m_alpha             = 0x88;         // default 136 (0x88)
 
         void guiWindowDump() const
         {

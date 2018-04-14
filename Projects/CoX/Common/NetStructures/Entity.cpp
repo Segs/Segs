@@ -161,7 +161,6 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = true;
-    e.m_entity_data.m_access_level      = 1;
 
     e.m_char->reset();
     e.might_have_rare = e.m_rare_bits   = true;
