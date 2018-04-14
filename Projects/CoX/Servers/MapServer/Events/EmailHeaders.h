@@ -61,7 +61,7 @@ public:
             bs.StoreString(m_subject);
             bs.StoreBits(32, m_timestamp);
         }
-    };
+    }
     void    serializefrom(BitStream &src);
 
 protected:

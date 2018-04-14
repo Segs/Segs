@@ -25,7 +25,7 @@ public:
         bs.StoreString(m_message);
         bs.StorePackedBits(1, m_count);
         bs.StoreString(m_recipient);
-    };
+    }
 
     void    serializefrom(BitStream &src);
 
