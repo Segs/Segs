@@ -15,7 +15,6 @@ class EmailHeaders final : public GameCommand
 {
 public:
     struct EmailHeader {
-        bool valid; //Checked if the email exists, can probably use this to mark emails that are awaiting garbage collection
         int id;
         QString sender;
         QString subject;
@@ -33,7 +32,7 @@ public:
     EmailHeaders(const int &id, const QString &sender,  const QString &subject, const int &timestamp) : GameCommand(MapEventTypes::evEmailHeadersCmd),
         m_fullupdate(false)
     {
-        m_emails.append(EmailHeader{ true, id, sender, subject, timestamp });
+        m_emails.push_back(EmailHeader{ id, sender, subject, timestamp });
     }
 
     void    serializeto(BitStream &bs) const override {
@@ -42,7 +41,7 @@ public:
         bs.StorePackedBits(1, m_emails.size());
 
         for(const EmailHeader &hdr : m_emails){
-            bs.StoreBits(1, hdr.valid);
+            bs.StoreBits(1, true); //"valid" flag
             bs.StoreBits(32, hdr.id);
             bs.StoreString(hdr.sender);
             bs.StoreString(hdr.subject);
@@ -52,7 +51,7 @@ public:
     void    serializefrom(BitStream &src);
 
 protected:
-    bool    m_fullupdate; //Basically forces a refresh of the email window
+    bool    m_fullupdate; //Forces a refresh of the email window
 
     QVector<EmailHeader> m_emails;
 };
