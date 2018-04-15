@@ -21,6 +21,6 @@ public:
     void    serializefrom(BitStream &src);
 
 protected:
-    int m_status;
-    QString m_recipient;
+    bool m_status;
+    QString m_message;
 };
