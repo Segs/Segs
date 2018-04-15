@@ -6,6 +6,12 @@
 #include "Events/GameCommandList.h"
 #include <glm/gtx/vector_query.hpp>
 
+void markFlying(Entity &e ,bool is_flying) // Function to set character as flying
+{
+
+    e.m_is_flying = is_flying;
+
+}
 void World::update(const ACE_Time_Value &tick_timer)
 {
 
@@ -38,7 +44,13 @@ void World::physicsStep(Entity *e,uint32_t msec)
         e->m_entity_data.m_pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
         e->vel = za*e->inp_state.pos_delta;
     }
+
+    if(e->inp_state.pos_delta[1] == float(1.0f)) // Will set 'is flying' on jump event
+    {
+     markFlying(*e, true);
+    }
 }
+
 float animateValue(float v,float start,float target,float length,float dT)
 {
     float range=target-start;
