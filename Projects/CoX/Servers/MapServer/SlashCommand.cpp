@@ -81,7 +81,11 @@ std::vector<SlashCommand> g_defined_slash_commands = {
     {{"team_accept"}, "Accept Team invite", &cmdHandler_TeamAccept, 0},
     {{"team_decline"}, "Decline Team invite", &cmdHandler_TeamDecline, 0},
     {{"sidekick_accept"}, "Accept Sidekick invite", &cmdHandler_SidekickAccept, 0},
-    {{"sidekick_decline"}, "Decline Sidekick invite", &cmdHandler_SidekickDecline, 0}
+    {{"sidekick_decline"}, "Decline Sidekick invite", &cmdHandler_SidekickDecline, 0},
+    {{"emailheaders"}, "Request Email Headers", &cmdHandler_EmailHeaders, 0},
+    {{"emailread"}, "Request Email Message with Given ID", &cmdHandler_EmailRead, 0},
+    {{"emailsend"}, "Send Email", &cmdHandler_EmailSend, 0},
+    {{"emaildelete"}, "Delete Email with Given ID",&cmdHandler_EmailDelete, 0},
 };
 
 bool canAccessCommand(const SlashCommand &cmd, const Entity &e)
@@ -1105,4 +1109,47 @@ void cmdHandler_FriendList(QString &cmd, Entity *e) {
         return;
 
     toggleFriendList(*e);
+}
+
+void cmdHandler_EmailHeaders(QString &cmd, Entity *e) {
+    MapClient *src = e->m_client;
+
+    sendEmailHeaders(e);
+
+    QString msg = "Sent Email Headers";
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+}
+
+void cmdHandler_EmailRead(QString &cmd, Entity *e){
+    MapClient *src = e->m_client;
+    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+
+    readEmailMessage(e, id);
+
+    QString msg = "Opening Email ID: " + QString::number(id);
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
+}
+
+void cmdHandler_EmailSend(QString &cmd, Entity *e){
+    MapClient *src = e->m_client;
+    QVector<QStringRef> args(cmd.splitRef(' '));
+
+    //storeEmailInDB(src, args);
+
+    QString msg = "Email Sent";
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::SERVER, msg, src);
+}
+
+void cmdHandler_EmailDelete(QString &cmd, Entity *e){
+    MapClient *src = e->m_client;
+    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+
+    //deleteEmailFromDB(id);
+
+    QString msg = "Email Deleted ID: " + QString::number(id);
+    qDebug().noquote() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
