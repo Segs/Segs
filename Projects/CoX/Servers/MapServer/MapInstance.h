@@ -35,7 +35,7 @@ class MapInstance final : public EventProcessor
 {
     using SessionStore = ClientSessionStore<MapClientSession>;
 
-    QString                m_name;
+    QString                m_data_path;
     uint32_t               m_index = 1; // what does client expect this to store, and where do we send it?
     std::unique_ptr<SEGSTimer> m_world_update_timer;
     std::unique_ptr<SEGSTimer> m_resend_timer;
@@ -62,7 +62,7 @@ public:
 
     void                    enqueue_client(MapClientSession *clnt);
     void                    start();
-    const QString &         name() const { return m_name; }
+    const QString &         name() const { return m_data_path; }
     uint32_t                index() const { return m_index; }
     void                    spin_down();
     bool spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);

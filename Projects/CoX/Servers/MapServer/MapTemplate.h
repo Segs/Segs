@@ -30,6 +30,7 @@ public:
         MapInstance *               get_instance(); //! If there are no instances, starts a new one.
         size_t                      num_instances();
         void                        shut_down_all();
+        QString                     client_filename() const;
 };
 // Generates instances based on some kind of schema file
 class GeneratedMapTemplate : public MapTemplate

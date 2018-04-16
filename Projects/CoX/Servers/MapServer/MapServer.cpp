@@ -163,7 +163,7 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
     // TODO: handle contention while creating 2 characters with the same name from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
     const ExpectMapClientRequestData &request_data(ev->m_data);
-    MapTemplate *tpl    = map_manager().get_template(request_data.m_map_id);
+    MapTemplate *tpl    = map_manager().get_template(request_data.m_map_name);
     if(nullptr==tpl)
     {
         ev->src()->putq(

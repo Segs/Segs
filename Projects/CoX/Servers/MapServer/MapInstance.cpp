@@ -79,13 +79,14 @@ protected:
 };
 
 using namespace std;
-MapInstance::MapInstance(const QString &name, const ListenAndLocationAddresses &listen_addr)
-    : m_name(name), m_world_update_timer(nullptr), m_addresses(listen_addr)
+MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr)
+    : m_data_path(mapdir_path), m_world_update_timer(nullptr), m_addresses(listen_addr)
 {
     m_world = new World(m_entities);
     m_scripting_interface.reset(new ScriptingEngine);
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
+
 }
 
 void MapInstance::start()
@@ -93,20 +94,20 @@ void MapInstance::start()
     assert(m_world_update_timer==nullptr);
     assert(m_game_server_id!=255);
     m_scripting_interface->registerTypes();
-    QFileInfo mapDataDirInfo("MapInstances/"+m_name);
+    QFileInfo mapDataDirInfo(m_data_path);
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
-        QString locations_scriptname="MapInstances/"+m_name+'/'+"locations.lua";
-        QString plaques_scriptname="MapInstances/"+m_name+'/'+"plaques.lua";
+        QString locations_scriptname=m_data_path+'/'+"locations.lua";
+        QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
 
         loadAndRunLua(m_scripting_interface,locations_scriptname);
         loadAndRunLua(m_scripting_interface,plaques_scriptname);
     }
     else
     {
-        QDir::current().mkpath("MapInstances/"+m_name);
-        qWarning() << "FAILED to load map instance data. Check to see if file exists:"<< "MapInstances/"+m_name;
+        QDir::current().mkpath(m_data_path);
+        qWarning() << "FAILED to load map instance data. Check to see if file exists:"<< m_data_path;
     }
     m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
@@ -551,7 +552,12 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->m_outdoor_mission_map = false;
     res->m_map_number          = 1;
                             //"maps/City_Zones/City_00_01/City_00_01.txt";
-    res->m_map_desc        = "maps/City_Zones/City_01_01/City_01_01.txt";
+    assert(m_data_path.contains("City_"));
+    int city_idx = m_data_path.indexOf("City_");
+    int end_or_slash = m_data_path.indexOf("/",city_idx);
+    assert(city_idx!=-1);
+    QString map_desc_from_path = m_data_path.mid(city_idx,end_or_slash==-1 ? -1 : m_data_path.size()-end_or_slash);
+    res->m_map_desc        = QString("maps/City_Zones/%1/%1.txt").arg(map_desc_from_path);
     res->current_map_flags = true; // off 1
     res->unkn1             = 1;
     ACE_DEBUG((LM_DEBUG, ACE_TEXT("%d - %d - %d\n"), res->unkn1, res->undos_PP, res->current_map_flags));

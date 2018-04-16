@@ -91,7 +91,7 @@ struct ExpectMapClientRequestData
     GameAccountResponseCharacterData *char_from_db;
     uint16_t m_slot_idx;
     QString m_character_name;
-    uint32_t m_map_id;
+    QString m_map_name;
     uint16_t m_max_slots;
 };
 struct ExpectMapClientResponseData

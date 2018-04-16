@@ -8,10 +8,11 @@
  */
 
 #include "MapManager.h"
-
+#include "Logging.h"
 #include "MapTemplate.h"
 
 #include <QString>
+#include <QDebug>
 #include <QDir>
 #include <QDirIterator>
 #include <QHash>
@@ -31,17 +32,28 @@ MapManager::MapManager( ) : m_max_instances(2)
 bool MapManager::load_templates(const QString &template_directory, uint8_t game_id, uint32_t map_id,
                                 const ListenAndLocationAddresses &loc)
 {
-    QDirIterator map_dir_visitor(template_directory);
+    qCDebug(logSettings) << "Starting the search for maps in" << template_directory;
+    QDirIterator map_dir_visitor(template_directory, QDir::Dirs|QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    while (map_dir_visitor.hasNext())
+    {
+        QString dirname = map_dir_visitor.next();
+        if (dirname.contains("City_"))
+        {
+            auto tpl = new MapTemplate(map_dir_visitor.fileInfo().filePath(), game_id, map_id, loc);
+            m_templates[s_map_name_to_id[dirname]] = tpl;
+            m_name_to_template[tpl->client_filename()] = tpl;
+            qCDebug(logSettings) << "Detected a map"<<map_dir_visitor.fileInfo().filePath();
+        }
+    }
     // (template_directory / "tutorial.bin")
-    m_templates[0] = new MapTemplate("maps/City_Zones/City_01_01/City_01_01.txt", game_id, map_id, loc);
     return true;
 }
-//! \brief Retrieves template specified by it's id
-MapTemplate * MapManager::get_template( uint32_t id )
+//! \brief Retrieves template specified by it's client-side path
+MapTemplate * MapManager::get_template( QString id )
 {
-    if(m_templates.find(id)==m_templates.end())
+    if(m_name_to_template.find(id)==m_name_to_template.end())
         return nullptr;
-    return m_templates[id];
+    return m_name_to_template[id];
 }
 
 size_t MapManager::num_templates()

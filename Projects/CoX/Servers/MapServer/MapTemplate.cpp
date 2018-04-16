@@ -42,6 +42,18 @@ void MapTemplate::shut_down_all()
         delete instance;
     }
 }
+
+QString MapTemplate::client_filename() const
+{
+    assert(m_map_filename.contains("City_"));
+    int city_idx     = m_map_filename.indexOf("City_");
+    int end_or_slash = m_map_filename.indexOf("/", city_idx);
+    assert(city_idx != -1);
+    QString map_desc_from_path =
+        m_map_filename.mid(city_idx, end_or_slash == -1 ? -1 : m_map_filename.size() - end_or_slash).toLower();
+    return QString("maps/city_zones/%1/%1.txt").arg(map_desc_from_path);
+}
+
 size_t MapTemplate::num_instances()
 {
     return m_instances.size();
