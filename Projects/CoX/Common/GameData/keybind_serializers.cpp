@@ -175,7 +175,7 @@ bool loadFrom(BinStore * s, Parse_AllCommandCategories & target)
 }
 
 const constexpr uint32_t KeybindSettings::class_version;
-CEREAL_CLASS_VERSION(KeybindSettings, KeybindSettings::class_version); // register Keybinds class version
+CEREAL_CLASS_VERSION(KeybindSettings, KeybindSettings::class_version) // register Keybinds class version
 
 template<class Archive>
 void serialize(Archive &archive, Keybind &k)

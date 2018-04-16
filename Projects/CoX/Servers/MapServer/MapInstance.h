@@ -1,7 +1,7 @@
 /*
  * Super Entity Game Server Project
  * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
 
@@ -11,8 +11,10 @@
 
 #include "EntityStorage.h"
 #include "EventProcessor.h"
-#include "ClientManager.h"
+#include "Common/Servers/ClientManager.h"
 #include "ScriptingEngine.h"
+#include "MapClientSession.h"
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -26,38 +28,52 @@ class World;
 // server<-> server event types
 struct ExpectMapClientRequest;
 
-class MapInstance : public EventProcessor
+class MapInstance final : public EventProcessor
 {
+    using SessionStore = ClientSessionStore<MapClientSession>;
+
     QString                m_name;
     uint32_t               m_index = 1; // what does client expect this to store, and where do we send it?
-    SEGSTimer *            m_world_update_timer;
-    SEGSTimer *            m_resend_timer;
+    std::unique_ptr<SEGSTimer> m_world_update_timer;
+    std::unique_ptr<SEGSTimer> m_resend_timer;
 
-    // vClients        m_queued_clients;
     World *    m_world;
     MapServer *m_server;
 
-public:
-    EntityManager m_entities;
-    ClientStore<MapClient> m_clients;
+    uint8_t                 m_game_server_id=255; // 255 is `invalid` id
+    uint32_t                m_owner_id;
+    uint32_t                m_instance_id;
 
+public:
+    SessionStore            m_session_store;
+    EntityManager           m_entities;
     std::unique_ptr<ScriptingEngine> m_scripting_interface;
 
-    MapInstance(const QString &name);
-    virtual ~MapInstance();
-    void       dispatch(SEGSEvent *ev);
+public:
+                            MapInstance(const QString &name);
+                            ~MapInstance() override;
+    void                    dispatch(SEGSEvent *ev) override;
 
-    void   enqueue_client(MapClient *clnt);
-    void   start();
-    void   set_server(MapServer *s) { m_server = s; }
-    size_t num_active_clients();
-    const QString &     name() const { return m_name; }
-    uint32_t            index() const { return m_index; }
-
+    void                    enqueue_client(MapClientSession *clnt);
+    void                    start();
+    void                    set_server(MapServer *s) { m_server = s; }
+    const QString &         name() const { return m_name; }
+    uint32_t                index() const { return m_index; }
+    void                    spin_down();
+    void                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
 protected:
-    void process_chat(MapClient *sender, QString &msg_text);
+    void reap_stale_links();
+    void on_client_connected_to_other_server(ClientConnectedMessage *ev);
+    void on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev);
 
+    void process_chat(MapClientSession *sender, QString &msg_text);
+    // DB -> Server messages
+    void on_name_clash_check_result(WouldNameDuplicateResponse *ev);
+    void on_character_created(CreateNewCharacterResponse *ev);
+    void on_entity_response(GetEntityResponse *ev);
+    // Server->Server messages
     void on_expect_client(ExpectMapClientRequest *ev);
+
     void on_link_lost(SEGSEvent *ev);
     void on_disconnect(class DisconnectRequest *ev);
     void on_scene_request(class SceneRequest *ev);

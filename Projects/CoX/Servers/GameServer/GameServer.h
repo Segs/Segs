@@ -11,8 +11,6 @@
 
 #include "Common/Servers/ServerEndpoint.h"
 #include "GameLink.h"
-#include "Common/Servers/GameServerInterface.h"
-#include "Entity.h"
 #include "MapServer/EntityStorage.h"
 
 #include <string>
@@ -21,40 +19,27 @@
 class CharacterDatabase;
 class GameServerData;
 
-class GameLinkEndpoint : public ServerEndpoint
-{
-public:
-    GameLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
-    ~GameLinkEndpoint()=default;
-protected:
-    ILink *createLink(EventProcessor *down) override
-    {
-        return new GameLink(down,this);
-    }
-};
-
-class GameServer : public IGameServer
+class GameServer  : public EventProcessor
 {
         class PrivateData;
 public:
                                 ~GameServer();
                                 GameServer(int id);
-        bool                    ReadConfig() override;
-        bool                    Run(void) override;
-        bool                    ShutDown(const QString &reason="No particular reason") override;
-        const ACE_INET_Addr &   getAddress() override;
+        bool                    ReadConfigAndRestart();
+        bool                    Run(void);
+        bool                    ShutDown(const QString &reason="No particular reason") ;
+        const ACE_INET_Addr &   getAddress();
 
-        QString                 getName(void) override;
-        uint8_t                 getId(void) override;
-        uint16_t                getCurrentPlayers(void) override;
-        uint16_t                getMaxPlayers() override;
+        QString                 getName(void);
+        uint8_t                 getId(void);
+        uint16_t                getCurrentPlayers(void);
+        uint16_t                getMaxPlayers();
         CharacterDatabase *     getDb();
-        int                     createLinkedAccount(uint64_t auth_account_id,const std::string &username); // Part of exposed db interface.
-        EventProcessor *        event_target() override;
-        int                     getMaxCharacterSlots() const override;
+        EventProcessor *        event_target();
+        int                     getMaxCharacterSlots() const;
         GameServerData &        runtimeData();
 protected:
+        void                    dispatch(SEGSEvent *ev) override;
         uint32_t                GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver
         std::unique_ptr<PrivateData> d;
 };
-extern GameServer *g_GlobalGameServer;

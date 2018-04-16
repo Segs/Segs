@@ -1,13 +1,14 @@
 #pragma once
-
 #include "Events/MessageChannels.h"
-#include "CommonNetStructures.h"
-
+#include "glm/vec3.hpp"
+#include <stdint.h>
+#include <QString>
 class QString;
 class Entity;
 class Character;
-class MapClient;
+
 struct FriendsList;
+struct MapClientSession;
 
 /*
  * Entity Methods
@@ -55,14 +56,13 @@ void    toggleControlId(Entity &e);
 
 // Misc Methods
 void    charUpdateDB(Entity *e);
-void    charUpdateOptions(Entity *e);
 void    charUpdateGUI(Entity *e);
 int     getEntityOriginIndex(bool is_player,const QString &origin_name);
 int     getEntityClassIndex(bool is_player, const QString &class_name);
-Entity * getEntity(MapClient *src, const QString &name);
-Entity * getEntity(MapClient *src, const int32_t &idx);
-Entity * getEntityByDBID(MapClient *src, const int32_t &idx);
-void    sendServerMOTD(Entity *e);
+Entity * getEntity(MapClientSession *src, const QString &name);
+Entity * getEntity(MapClientSession *src, int32_t idx);
+Entity * getEntityByDBID(MapClientSession *src, int32_t idx);
+void    sendServerMOTD(MapClientSession *tgt);
 
 /*
  * Character Methods

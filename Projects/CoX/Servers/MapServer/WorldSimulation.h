@@ -3,7 +3,7 @@
 #include <glm/vec3.hpp>
 #include <ace/Time_Value.h>
 
-#include "Entity.h"
+#include "NetStructures/Entity.h"
 #include "EntityStorage.h"
 
 class World {

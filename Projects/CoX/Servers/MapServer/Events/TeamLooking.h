@@ -8,7 +8,7 @@
 
 #pragma once
 #include "GameCommandList.h"
-#include "LFG.h"
+#include "NetStructures/LFG.h"
 #include "Logging.h"
 
 #include "MapEvents.h"

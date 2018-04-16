@@ -20,7 +20,6 @@ SET(target_CPP
     Events/SceneEvent.cpp
     Events/InfoMessageCmd.cpp
     Events/WindowState.cpp
-    MapClient.cpp
     MapEventFactory.cpp
     MapInstance.cpp
     MapLink.cpp
@@ -63,7 +62,6 @@ SET(target_INCLUDE
     Events/TeamOffer.h
     Events/InfoMessageCmd.h
     Events/WindowState.h
-    MapClient.h
     MapEventFactory.h
     MapEvents.h
     MapInstance.h
@@ -88,7 +86,7 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
-target_link_libraries(mapserver_lib PUBLIC adminserver_lib CRUDP_Protocol)
+target_link_libraries(mapserver_lib PUBLIC CRUDP_Protocol)
 qt5_use_modules(mapserver_lib LINK_PUBLIC Core)
 if(ENABLE_SCRIPTING_ENGINE)
     target_compile_definitions(mapserver_lib PUBLIC -DSCRIPTING_ENABLED=1)

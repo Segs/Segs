@@ -8,7 +8,14 @@ EventProcessor * HandlerLocator::m_db_sync_handler = nullptr;
 EventProcessor * HandlerLocator::m_auth_handler = nullptr;
 std::deque<EventProcessor *> HandlerLocator::m_game_servers;
 std::deque<EventProcessor *> HandlerLocator::m_game_db_servers;
-std::deque<EventProcessor *> HandlerLocator::m_map_servers;
+QHash<QString,int> HandlerLocator::m_map_name_to_id =
+{
+    {"City_00_01",0}, // Outbreak
+    {"City_01_01",1}, // Atlas Park
+    {"City_01_03",29}, // Galaxy City
+};
+QHash<int,std::deque<EventProcessor *>> HandlerLocator::m_map_handlers;
+
 MessageBus * HandlerLocator::m_message_bus=nullptr;
 void shutDownAllActiveHandlers()
 {
@@ -42,7 +49,7 @@ void shutDownAllActiveHandlers()
         warn<<"Shutting down AuthHandler..";
         authhandler->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
         authhandler->wait();
-        delete authhandler;
+        // Auth handler is not removed here, since it is owned by the auth server
         warn<<"Done";
     }
     EventProcessor *dbsync=HandlerLocator::getAuthDB_Handler();
@@ -55,8 +62,6 @@ void shutDownAllActiveHandlers()
         delete dbsync;
         warn<<"Done";
     }
-
-
 }
 
 

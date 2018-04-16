@@ -2,8 +2,7 @@
 #include "SEGSTimer.h"
 
 #include <cassert>
-// visual studio needs this
-#include <iso646.h>
+#include <iso646.h> // visual studio needs this
 
 int EventProcessor::open( void *args /* = 0 */ )
 {
@@ -13,7 +12,7 @@ int EventProcessor::open( void *args /* = 0 */ )
 int EventProcessor::handle_timeout( const ACE_Time_Value &current_time, const void *act /* = 0 */ )
 {
     const SEGSTimer *timer_object = static_cast<const SEGSTimer *>(act);
-    assert(timer_object!=0);
+    assert(timer_object!=nullptr);
     // if target is known
     if(timer_object->target())
     {

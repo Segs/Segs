@@ -23,6 +23,7 @@
 #include <cassert>
 #include <string>
 
+class CharacterCostume;
 struct Costume;
 struct CharacterPowerBoost
 {
@@ -54,13 +55,15 @@ class Character
         friend  class CharacterDatabase;
 
         using vPowerPool = std::vector<CharacterPower>;
-        using vCostume = std::vector<Costume *>;
+        using vCostume = std::vector<CharacterCostume>;
 
         vPowerPool              m_powers;
         PowerTrayGroup          m_trays;
         bool                    m_full_options=false;
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
+        friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src,Character &tgt);
+        friend bool fromActualCharacter(const Character &src,GameAccountResponseCharacterData &tgt);
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
@@ -71,7 +74,7 @@ const   QString &       getName() const { return m_name; }
         void            setIndex(uint8_t val) { m_index = val; }
         uint64_t        getAccountId() const { return m_owner_account_id; }
         void            setAccountId(uint64_t val) { m_owner_account_id = val; }
-        
+
 
 //
 //////////////////////////////////////////////////////////////////////////
@@ -84,14 +87,13 @@ const   QString &       getName() const { return m_name; }
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, ColorAndPartPacker *packer);
-        Costume *       getCurrentCostume() const;
+        const CharacterCostume *getCurrentCostume() const;
         void            DumpSidekickInfo();
         void            DumpPowerPoolInfo( const PowerPool_Info &pool_info );
         void            DumpBuildInfo();
         void            face_bits(uint32_t){}
         void            dump();
         void            sendFullStats(BitStream &bs) const;
-        //TODO: move these to some kind of Player info class
         void            sendTray(BitStream &bs) const;
         void            sendTrayMode(BitStream &bs) const;
         void            sendWindows(BitStream &bs) const;
@@ -139,4 +141,7 @@ protected:
         };
 };
 
-void                serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
+void serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
+bool initializeCharacterFromCreator();
+bool toActualCharacter(const GameAccountResponseCharacterData &src,Character &tgt);
+bool fromActualCharacter(const Character &src,GameAccountResponseCharacterData &tgt);

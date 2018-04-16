@@ -7,8 +7,8 @@
  */
 #include "InputState.h"
 
-#include "Character.h"
-#include "Entity.h"
+#include "NetStructures/Character.h"
+#include "NetStructures/Entity.h"
 #include "GameData/CoHMath.h"
 #include "Logging.h"
 

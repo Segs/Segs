@@ -14,7 +14,7 @@
 #include <array>
 #include <memory>
 
-class MapClient;
+struct MapClientSession;
 class Team;
 class Character;
 
@@ -206,8 +206,8 @@ public:
         uint8_t             m_type                  = {0};
         glm::quat           m_direction;
         glm::vec3           m_spd                   = {1,1,1};
-        uint32_t            m_target_idx;
-        uint32_t            m_assist_target_idx;
+        uint32_t            m_target_idx            = 0;
+        uint32_t            m_assist_target_idx     = 0;
 
         int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
         int                 m_num_fx                = 0;
@@ -281,8 +281,9 @@ public:
         uint32_t            creatorEntityId             = 0;
         float               translucency                = 1.f;
         bool                m_is_fading                 = true;
-        MapClient *         m_client                    = nullptr;
+        MapClientSession *  m_client                    = nullptr;
         FadeDirection       m_fading_direction = FadeDirection::In;
+        uint32_t            m_db_store_flags = 0;
 
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
@@ -295,9 +296,17 @@ static  void                sendPvP(BitStream &bs);
 
         void                InsertUpdate(PosUpdate pup);
         const QString &     name() const;
-        void                fillFromCharacter(const Character &f);
+        void                fillFromCharacter();
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 };
+enum class DbStoreFlags : uint32_t
+{
+    Gui = 1,
+    Options = 2,
+    Keybinds = 4,
+    Full = ~0U,
+};
+void markEntityForDbStore(Entity *e,DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
 void fillEntityFromNewCharData(Entity &e,BitStream &src, ColorAndPartPacker *packer);
 extern void abortLogout(Entity *e);

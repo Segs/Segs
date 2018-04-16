@@ -1,7 +1,6 @@
-#include "Entity.h"
-#include "Character.h"
+#include "NetStructures/Entity.h"
+#include "NetStructures/Character.h"
 #include "DataHelpers.h"
-#include "MapClient.h"
 
 class QString;
 class InfoMessageCmd; // leverage InfoMessageCmd

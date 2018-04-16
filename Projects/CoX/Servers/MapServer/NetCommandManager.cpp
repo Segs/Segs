@@ -8,8 +8,7 @@
 */
 
 #include "NetCommandManager.h"
-#include "MapClient.h"
-#include "AdminServer/AccountInfo.h"
+#include "MapClientSession.h"
 
 #include <vector>
 
@@ -141,7 +140,7 @@ void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands,
 //    }
     tgt.StorePackedBits(1,~0u);
 }
-void NetCommandManager::SendCommandShortcuts( MapClient *client,BitStream &tgt,const std::vector<NetCommand *> &commands2 )
+void NetCommandManager::SendCommandShortcuts( MapClientSession *client,BitStream &tgt,const std::vector<NetCommand *> &commands2 )
 {
     static bool initialized=false;
     if(!initialized)  {
@@ -149,7 +148,7 @@ void NetCommandManager::SendCommandShortcuts( MapClient *client,BitStream &tgt,c
         FillCommands();
     }
 
-    switch(client->account_info().access_level())
+    switch(client->m_access_level)
     {
         case 0:
         case 1:

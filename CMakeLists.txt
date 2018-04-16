@@ -1,13 +1,16 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
-
+CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
 PROJECT(SEGS)
-IF(MSVC)
-    add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX -D_USE_MATH_DEFINES)
-ELSE()
-   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11"  )
-endif()
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+IF(MSVC)
+    add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX -D_USE_MATH_DEFINES)
+ELSEIF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -std=c++14"  )
+ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -std=c++14 -Wno-nested-anon-types -Wno-gnu-anonymous-struct -Wno-gnu-zero-variadic-macro-arguments")
+endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_definitions(-D__STDC_FORMAT_MACROS)
@@ -39,6 +42,9 @@ SET(QT_MISSING True)
 IF(MSVC)
     # look for user-registry pointing to qtcreator
     GET_FILENAME_COMPONENT(QT_BIN [HKEY_CURRENT_USER\\Software\\Classes\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command] PATH)
+    if(${MSVC_VERSION} VERSION_LESS "1910")
+        MESSAGE(FATAL_ERROR "SEGS requires visual studio 2017 to build")
+    endif()
 
     # get root path so we can search for 5.3, 5.4, 5.5, etc
     STRING(REPLACE "/Tools" ";" QT_BIN "${QT_BIN}")
@@ -54,17 +60,14 @@ IF(MSVC)
     # fix any double slashes which seem to be common
     STRING(REPLACE "//" "/"  QT_VERSION "${QT_VERSION}")
 
-    # do some math trickery to guess folder
-    # - qt uses (e.g.) "msvc2012"
-    # - cmake uses (e.g.) "1800"
-    # - see also https://cmake.org/cmake/help/v3.0/variable/MSVC_VERSION.html
-    MATH(EXPR QT_MSVC "2000 + (${MSVC_VERSION} - 600) / 100")
-
+    # we only support 2017, and qt5 uses vs2015 files for 32 bit build
+    SET(QT_MSVC "2015")
     # check for 64-bit os
     # may need to be removed for older compilers as it wasn't always offered
-    IF(CMAKE_SYSTEM_PROCESSOR MATCHES 64)
-        SET(QT_MSVC "${QT_MSVC}_64")
-    ENDIF()
+    if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+        SET(QT_MSVC "2017_64")
+    endif()
+
     SET(QT_PATH "${QT_VERSION}/msvc${QT_MSVC}")
     SET(QT_MISSING False)
 ENDIF()

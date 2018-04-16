@@ -32,4 +32,3 @@ void saveTo(const Parse_AllOrigins & target, const QString &baseName, bool text_
 constexpr const static uint32_t pischedule_i0_requiredCrc = 0x27267F27;
 bool loadFrom(BinStore *s,Parse_PI_Schedule *target);
 void saveTo(const Parse_PI_Schedule & target, const QString &baseName, bool text_format=false);
-;

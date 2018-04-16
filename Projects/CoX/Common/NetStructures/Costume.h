@@ -56,7 +56,7 @@ struct Costume
     float m_floats[8];
     std::vector<CostumePart> m_parts;
     uint32_t m_body_type;
-    void storeCharselParts(BitStream &bs);
+    void storeCharselParts(BitStream &bs) const;
     void storeCharsel(BitStream &bs)
     {
         bs.StorePackedBits(1,m_body_type); // 0:male normal
@@ -64,9 +64,9 @@ struct Costume
         bs.StoreFloat(m_physique);
         bs.StoreBits(32,skin_color); // rgb ?
     }
-    void serializeToDb(QString &tgt);
+    void serializeToDb(QString &tgt) const;
     void serializeFromDb(const QString &src);
-    void    dump();
+    void    dump() const;
 protected:
 };
 void serializefrom(Costume &tgt, BitStream &bs, ColorAndPartPacker *packer);

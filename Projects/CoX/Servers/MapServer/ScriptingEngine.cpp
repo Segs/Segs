@@ -1,5 +1,5 @@
 #include "ScriptingEngine.h"
-#include "MapClient.h"
+#include "MapClientSession.h"
 
 #include "Events/ChatMessage.h"
 #include "Events/StandardDialogCmd.h"
@@ -54,10 +54,10 @@ void ScriptingEngine::registerTypes()
         "name", sol::property(&Contact::getName, &Contact::setName),
         "display_name", &Contact::m_display_name
     );
-    m_private->m_lua.new_usertype<MapClient>( "MapClient",
+    m_private->m_lua.new_usertype<MapClientSession>( "MapClient",
         "new", sol::no_constructor, // The client links are not constructible from the script side.
         "admin_chat_message", sendChatMessage,
-        "simple_dialog", [](MapClient *cl,const char *dlgtext) {
+        "simple_dialog", [](MapClientSession *cl,const char *dlgtext) {
             auto n = new StandardDialogCmd(dlgtext);
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
         }
@@ -84,7 +84,7 @@ int ScriptingEngine::loadAndRunFile(const QString &filename)
     return 0;
 }
 
-std::string ScriptingEngine::callFuncWithClientContext(MapClient *client, const char *name, int arg1)
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1)
 {
     m_private->m_lua["client"] = client;
     return callFunc(name,arg1);
@@ -108,7 +108,7 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     }
     return result.get<std::string>();
 }
-int ScriptingEngine::runScript(MapClient * client, const QString &script_contents, const char *script_name)
+int ScriptingEngine::runScript(MapClientSession * client, const QString &script_contents, const char *script_name)
 {
     m_private->m_lua["client"] = client;
     sol::load_result load_res=m_private->m_lua.load(script_contents.toStdString(),script_name);
