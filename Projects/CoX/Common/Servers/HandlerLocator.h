@@ -1,8 +1,6 @@
 #pragma once
 #include <deque>
 #include <stdint.h>
-#include <QHash>
-#include <QString>
 
 class EventProcessor;
 class MessageBus;
@@ -16,9 +14,8 @@ class HandlerLocator
     static EventProcessor *m_db_sync_handler;
     static EventProcessor *m_auth_handler;
     static std::deque<EventProcessor *> m_game_servers;
+    static std::deque<EventProcessor *> m_map_servers;
     static std::deque<EventProcessor *> m_game_db_servers;
-    static QHash<QString,int> m_map_name_to_id;
-    static QHash<int,std::deque<EventProcessor *>> m_map_handlers;
 public:
     HandlerLocator();
     static void setMessageBus(MessageBus *h) { m_message_bus=h; }
@@ -57,32 +54,19 @@ public:
             m_game_db_servers.resize(id+1);
         m_game_db_servers[id] = h;
     }
-    //TODO: this whole instance selection code should be moved from here to GameServer
-    static EventProcessor *getMap_Handler(const QString &name)
+    // The ID here must be the same as the GameServer ID
+    // the MapServer is the point of contact for the GameServer, and will create many MapInstances with running maps
+    static EventProcessor *getMap_Handler(uint8_t id)
     {
-        auto iter = m_map_name_to_id.find(name);
-        if(iter==m_map_name_to_id.end())
-        {
-            // unknown map names requests are put in atlas park by default.
-            iter = m_map_name_to_id.find("City_01_01");
-        }
-        auto handler_container_iter = m_map_handlers.find(iter.value());
-        if(handler_container_iter==m_map_handlers.end())
+        if(id>=m_map_servers.size())
             return nullptr;
-        return handler_container_iter->front();
+        return m_map_servers[id];
     }
-    static EventProcessor *getMap_Handler(int id)
+    static void setMap_Handler(uint8_t id,EventProcessor *h)
     {
-        auto handler_container_iter = m_map_handlers.find(id);
-        if(handler_container_iter==m_map_handlers.end())
-            return nullptr;
-        return handler_container_iter->front();
-    }
-
-    static void registerMapInstance(const char *map_template,int id,EventProcessor *handler)
-    {
-        m_map_name_to_id[map_template] = id;
-        m_map_handlers[id].emplace_back(handler);
+        if(id>=m_map_servers.size())
+            m_map_servers.resize(id+1);
+        m_map_servers[id] = h;
     }
 
 };

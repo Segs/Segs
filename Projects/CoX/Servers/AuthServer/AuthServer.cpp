@@ -131,11 +131,12 @@ bool AuthServer::ShutDown(const QString &reason)
     if (m_running)
     {
         qWarning() << "Auth server listener is closing down";
-    m_acceptor->close();
+        m_acceptor->close();
     }
     // force our handler to finish
     m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+    m_handler->wait();
     qWarning() << "Shut down reason:" << reason;
-    m_running=false;
+    m_running = false;
     return true;
 }

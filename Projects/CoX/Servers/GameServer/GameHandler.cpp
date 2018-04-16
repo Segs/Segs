@@ -3,6 +3,7 @@
 #include "GameEvents.h"
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
+#include "GameData/chardata_serializers.h"
 #include "Common/Servers/InternalEvents.h"
 #include "GameLink.h"
 #include "GameEvents.h"
@@ -325,15 +326,30 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
         return; // TODO:  return some kind of error.
 
     GameAccountResponseCharacterData *selected_slot = &session.m_game_account.get_character(ev->m_character_index);
+    CharacterData cd;
+    serializeFromDb(cd,selected_slot->m_serialized_chardata);
+    QString map_path = cd.m_mapName;
+    switch(ev->m_mapnumber)
+    {
+        case 0:
+        if(map_path.isEmpty())
+            map_path = "maps/city_zones/city_00_01/city_00_01.txt";
+        break;
+        case 1: // atlas park
+            map_path = "maps/city_zones/city_01_01/city_01_01.txt";
+        break;
+        case 29:
+            map_path = "maps/city_zones/city_01_03/city_01_03.txt";
+        break;
+    }
+
     if(selected_slot->isEmpty())
         selected_slot = nullptr; // passing a null to map server to indicate a new character is being created.
 
-    EventProcessor *map_handler=HandlerLocator::getMap_Handler(ev->m_mapnumber);
-    if(map_handler==nullptr)
-        map_handler=HandlerLocator::getMap_Handler("City_01_01");
+    EventProcessor *map_handler=HandlerLocator::getMap_Handler(m_server->getId());
     if(nullptr == map_handler)
     {
-        lnk->putq(new GameEntryError(this,"There are no available Map Servers."));
+        lnk->putq(new GameEntryError(this,"No Map Servers are running."));
         return;
     }
     //TODO: this should handle multiple map servers, for now it doesn't care and always connects to the first one.
@@ -344,7 +360,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     }
     ExpectMapClientRequest *expect_client =
         new ExpectMapClientRequest({session.m_auth_account_id, session.m_access_level, lnk->peer_addr(),
-                                    selected_slot, ev->m_character_index, ev->m_char_name, ev->m_mapnumber,
+                                    selected_slot, ev->m_character_index, ev->m_char_name, map_path,
                                     uint16_t(session.m_game_account.m_max_slots)},
                                    lnk->session_token());
     fprintf(stderr, " Telling map server to expect a client with character %s,%d\n", qPrintable(ev->m_char_name),
