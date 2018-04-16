@@ -338,13 +338,12 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     }
     //TODO: this should handle multiple map servers, for now it doesn't care and always connects to the first one.
     assert(map_handler);
-    RetrieveAccountResponseData &acc_inf(session.m_account);
     if(selected_slot )
     {
         ACE_ASSERT(selected_slot->m_name == ev->m_char_name || !"Server-Client character synchronization failure!");
     }
     ExpectMapClientRequest *expect_client =
-        new ExpectMapClientRequest({acc_inf.m_acc_server_acc_id, acc_inf.m_access_level, lnk->peer_addr(),
+        new ExpectMapClientRequest({session.m_auth_account_id, session.m_access_level, lnk->peer_addr(),
                                     selected_slot, ev->m_character_index, ev->m_char_name, ev->m_mapnumber,
                                     uint16_t(session.m_game_account.m_max_slots)},
                                    lnk->session_token());
@@ -362,7 +361,8 @@ void GameHandler::on_expect_client( ExpectClientRequest *ev )
 {
     GameSession *sess = m_session_store.create_or_reuse_session_for(ev->session_token());
     uint32_t cookie = m_session_store.expect_client_session(ev->session_token(),ev->m_data.m_from_addr,ev->m_data.m_client_id);
-    sess->m_account.m_acc_server_acc_id = ev->m_data.m_client_id;
+    sess->m_auth_account_id = ev->m_data.m_client_id;
+    sess->m_access_level = ev->m_data.m_access_level;
     HandlerLocator::getAuth_Handler()->putq(new ExpectClientResponse({ev->m_data.m_client_id,cookie,m_server->getId()},ev->session_token()));
 }
 

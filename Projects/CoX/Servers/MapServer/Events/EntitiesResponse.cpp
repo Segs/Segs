@@ -418,11 +418,6 @@ EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
 {
     m_map_time_of_day = 10;
     m_client = cl;
-    abs_time=db_time=0;
-    unkn2=false;
-    debug_info=true;
-    m_incremental=false;
-    m_interpolating=true;
     m_interpolation_level = 2;
     m_interpolation_bits=1;
     //m_interpolation_level
@@ -441,19 +436,13 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
 
     tgt.StoreBits(32,abs_time);
     //tgt.StoreBits(32,db_time);
-
-    tgt.StoreBits(1,unkn2);
-    if(unkn2)
-    {
-        //g_debug_info 0
-        //interpolation level 2
-        //g_bitcount_rel 1
-    }
-    else
+    bool all_defaults = (debug_info==0) && (m_interpolation_level==2) && (m_interpolation_bits==1);
+    tgt.StoreBits(1,all_defaults);
+    if(!all_defaults)
     {
         tgt.StoreBits(1,debug_info);
-        tgt.StoreBits(1,m_interpolating);
-        if(m_interpolating==1)
+        tgt.StoreBits(1,m_interpolation_level!=0);
+        if(m_interpolation_level!=0)
         {
             tgt.StoreBits(2,m_interpolation_level);
             tgt.StoreBits(2,m_interpolation_bits);
@@ -462,7 +451,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     ;
     //else debug_info = false;
     ent_manager.sendEntities(tgt,m_client,m_incremental);
-    if(debug_info&&!unkn2)
+    if(debug_info)
     {
         ent_manager.sendDebuggedEntities(tgt); // while loop, sending entity id's and debug info for each
         ent_manager.sendGlobalEntDebugInfo(tgt);

@@ -149,12 +149,12 @@ bool GameDbSyncContext::loadAndConfigure()
                 "slot_index, account_id, char_name, chardata, entitydata, "
                 "bodytype, height, physique, "
                 "hitpoints, endurance, "
-                "supergroup_id, options"
+                "supergroup_id, options,gui,keybinds"
                 ") VALUES ("
                 ":slot_index, :account_id, :char_name, :chardata, :entitydata, "
                 ":bodytype, :height, :physique, "
                 ":hitpoints, :endurance, "
-                ":supergroup_id, :options"
+                ":supergroup_id, :options,:gui,:keybinds"
                 ")");
     prepQuery(*m_prepared_costume_insert,
                 "INSERT INTO costume (character_id,costume_index,skin_color,parts) VALUES "
@@ -335,8 +335,9 @@ bool GameDbSyncContext::createNewChar(const CreateNewCharacterRequestData &data,
     m_prepared_char_insert->bindValue(":hitpoints", data.m_character.m_HitPoints);
     m_prepared_char_insert->bindValue(":endurance", data.m_character.m_Endurance);
     m_prepared_char_insert->bindValue(":supergroup_id", 0);
-    m_prepared_char_insert->bindValue(":options", 0);
-
+    m_prepared_char_insert->bindValue(":options", data.m_character.m_serialized_options);
+    m_prepared_char_insert->bindValue(":gui", data.m_character.m_serialized_gui);
+    m_prepared_char_insert->bindValue(":keybinds", data.m_character.m_serialized_keybinds);
     m_prepared_char_insert->bindValue(":entitydata", data.m_ent_data);
     m_prepared_char_insert->bindValue(":chardata", data.m_character.m_serialized_chardata);
 

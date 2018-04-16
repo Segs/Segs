@@ -22,13 +22,14 @@ struct GameSession
         EXITING_TO_MAP=0,
         EXITING_TO_LOGIN=1,
     };
-    RetrieveAccountResponseData m_account;
     GameAccountResponseData m_game_account;
+    uint32_t m_auth_account_id=0;
     uint32_t is_connected_to_map_server_id=0;
     uint32_t is_connected_to_map_instance_id=0;
     eTravelDirection m_direction;
+    uint8_t m_access_level=0;
 
-    uint32_t auth_id() const { return m_account.m_acc_server_acc_id; }
+    uint32_t auth_id() const { return m_auth_account_id; }
     void reset()
     {
         *this = {}; // just use default constructed value

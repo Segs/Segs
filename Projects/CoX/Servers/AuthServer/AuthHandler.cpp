@@ -343,7 +343,8 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
         return;
     }
     auto &acc_inf(*session.m_auth_data); //acc_inf.m_access_level,
-    ExpectClientRequest *cl_ev=new ExpectClientRequest({acc_inf.m_acc_server_acc_id,lnk->peer_addr()},lnk->session_token());
+    ExpectClientRequest *cl_ev = new ExpectClientRequest(
+        {acc_inf.m_acc_server_acc_id, lnk->peer_addr(), acc_inf.m_access_level}, lnk->session_token());
     tgt->putq(cl_ev); // sending request to game server
     // client's state will not change until we get response from GameServer
 }

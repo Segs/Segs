@@ -200,6 +200,11 @@ bool AuthDbSyncContext::retrieveAccountAndCheckPassword(const RetrieveAccountReq
     assert(data.m_id == 0);
     if (!checkPassword(data.m_login, data.m_password))
     {
+        if(!last_error)
+        {
+            result.m_acc_server_acc_id = 0;
+            return true;
+        }
         return !last_error->isValid();
     }
     m_prepared_select_account_by_username->bindValue(0, data.m_login);

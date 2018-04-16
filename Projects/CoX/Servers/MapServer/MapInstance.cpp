@@ -496,6 +496,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         Entity *e = m_entities.CreatePlayer();
         fillEntityFromNewCharData(*e, ev->m_character_data, g_GlobalMapServer->runtimeData().getPacker());
         e->m_char->m_account_id = map_session.auth_id();
+        e->m_entity_data.m_access_level = map_session.m_access_level;
         map_session.m_ent = e;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
@@ -631,7 +632,7 @@ void MapInstance::on_input_state(InputState *st)
     // Input state messages can be followed by multiple commands.
     assert(st->m_user_commands.GetReadableBits()<32*1024*8); // simple sanity check ?
     // here we will try to extract all of them and put them on our processing queue
-    const char *prev_command = "none";
+    std::vector<const char *> prev_commands = {};
     while(st->m_user_commands.GetReadableBits()>1)
     {
         MapLinkEvent *ev = MapEventFactory::CommandEventFromStream(st->m_user_commands);
@@ -641,14 +642,16 @@ void MapInstance::on_input_state(InputState *st)
         // copy source packet seq number to created command
         ev->m_seq_number = st->m_seq_number;
         ev->src(st->src());
-        prev_command = ev->info();
+        prev_commands.emplace_back(ev->info());
         // post the event to ourselves for dispatch
         putq(ev);
     }
     if(st->m_user_commands.GetReadableBits()!=0)
     {
         qCDebug(logMapEvents) << "bits: " << st->m_user_commands.GetReadableBits();
-        qCWarning(logMapEvents) << "Not all bits were consumed by previous command"<<prev_command;
+        qCWarning(logMapEvents) << "Not all bits were consumed by previous commands:";
+        for(const char *cmd : prev_commands)
+            qCWarning(logMapEvents) << prev_commands;
         assert(false);
     }
 

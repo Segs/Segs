@@ -71,6 +71,7 @@ struct ExpectClientRequestData
 {
     uint64_t m_client_id;
     ACE_INET_Addr m_from_addr;
+    uint8_t m_access_level;
 };
 // This event informs the server that given client is now expected on another server
 // and passes that servers connection point, and connection cookie
