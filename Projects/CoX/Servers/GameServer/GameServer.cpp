@@ -11,7 +11,6 @@
 
 #include "GameServerData.h"
 #include "ConfigExtension.h"
-#include "CharacterDatabase.h"
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
 #include "Common/CRUDP_Protocol/CRUDP_Protocol.h"

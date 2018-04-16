@@ -11,7 +11,6 @@
 
 #include "Common/Servers/ServerEndpoint.h"
 #include "GameLink.h"
-#include "Entity.h"
 #include "MapServer/EntityStorage.h"
 
 #include <string>
@@ -36,7 +35,6 @@ public:
         uint16_t                getCurrentPlayers(void);
         uint16_t                getMaxPlayers();
         CharacterDatabase *     getDb();
-        int                     createLinkedAccount(uint64_t auth_account_id,const std::string &username); // Part of exposed db interface.
         EventProcessor *        event_target();
         int                     getMaxCharacterSlots() const;
         GameServerData &        runtimeData();

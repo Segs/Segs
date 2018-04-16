@@ -8,7 +8,7 @@
 
 #pragma once
 #include "GameCommandList.h"
-#include "Friend.h"
+#include "NetStructures/Friend.h"
 #include "Logging.h"
 
 #include "MapEvents.h"

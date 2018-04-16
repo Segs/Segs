@@ -1,9 +1,8 @@
 #pragma once
-#include "ClientManager.h"
 #include "GameLink.h"
 #include "GameEvents.h"
 #include "EventProcessor.h"
-#include "InternalEvents.h"
+#include "Common/Servers/ClientManager.h"
 #include "Common/Servers/MessageBusEndpoint.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "AuthDatabase/AuthDBSyncEvents.h"

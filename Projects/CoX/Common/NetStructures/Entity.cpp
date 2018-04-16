@@ -164,3 +164,8 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_char->reset();
     e.might_have_rare = e.m_rare_bits   = true;
 }
+
+void markEntityForDbStore(Entity *e, DbStoreFlags f)
+{
+    e->m_db_store_flags |= uint32_t(f);
+}

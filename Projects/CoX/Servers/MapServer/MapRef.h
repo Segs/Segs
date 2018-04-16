@@ -6,7 +6,7 @@
  *
  */
 #pragma once
-#include "CommonNetStructures.h"
+#include "NetStructures/CommonNetStructures.h"
 
 #include <QtCore/QString>
 #include <string>

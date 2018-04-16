@@ -26,6 +26,5 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 ADD_LIBRARY(gameserver_lib STATIC ${target_SOURCES})
-target_link_libraries(gameserver_lib adminserver_lib)
 qt5_use_modules(gameserver_lib Core)
 ADD_DEPENDENCIES(gameserver_lib gameData ${target_DEPENDS})

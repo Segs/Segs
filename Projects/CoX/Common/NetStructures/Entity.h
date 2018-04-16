@@ -283,6 +283,7 @@ public:
         bool                m_is_fading                 = true;
         MapClientSession *  m_client                    = nullptr;
         FadeDirection       m_fading_direction = FadeDirection::In;
+        uint32_t            m_db_store_flags = 0;
 
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
@@ -298,6 +299,14 @@ static  void                sendPvP(BitStream &bs);
         void                fillFromCharacter();
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 };
+enum class DbStoreFlags : uint32_t
+{
+    Gui = 1,
+    Options = 2,
+    Keybinds = 4,
+    Full = ~0U,
+};
+void markEntityForDbStore(Entity *e,DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
 void fillEntityFromNewCharData(Entity &e,BitStream &src, ColorAndPartPacker *packer);
 extern void abortLogout(Entity *e);

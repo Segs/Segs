@@ -1,6 +1,5 @@
 #include "InfoMessageCmd.h"
 
-#include "Entity.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "MapClientSession.h"
 #include "Logging.h"

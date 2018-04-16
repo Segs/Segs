@@ -3,11 +3,9 @@
 #include "MapServer.h"
 #include "MapServerData.h"
 #include "MapInstance.h"
-#include "Character.h"
-#include "AdminServer/AdminServer.h"
-#include "AdminServer/CharacterDatabase.h"
-#include "Team.h"
-#include "LFG.h"
+#include "NetStructures/Character.h"
+#include "NetStructures/Team.h"
+#include "NetStructures/LFG.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -118,26 +116,12 @@ void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
 // Misc Methods
 void charUpdateDB(Entity *e)
 {
-    CharacterDatabase *char_db = AdminServer::instance()->character_db();
-    // Update Character In Database
-    if(!char_db->update(e))
-        qDebug() << "Character failed to update in database!";
-}
-
-void charUpdateOptions(Entity *e)
-{
-    CharacterDatabase *char_db = AdminServer::instance()->character_db();
-    // Update Client Options/Keybinds
-    if(!char_db->updateClientOptions(e))
-        qDebug() << "Client Options failed to update in database!";
+    markEntityForDbStore(e,DbStoreFlags::Full);
 }
 
 void charUpdateGUI(Entity *e)
 {
-    CharacterDatabase *char_db = AdminServer::instance()->character_db();
-    // Update Client GUI settings
-    if(!char_db->updateGUISettings(e))
-        qDebug() << "Client GUISettings failed to update in database!";
+    markEntityForDbStore(e,DbStoreFlags::Gui);
 }
 
 int getEntityOriginIndex(bool is_player, const QString &origin_name)

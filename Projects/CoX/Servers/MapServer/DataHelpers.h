@@ -1,7 +1,9 @@
 #pragma once
-#include "CommonNetStructures.h"
-#include "Events/MessageChannels.h"
 
+#include "Events/MessageChannels.h"
+#include "glm/vec3.hpp"
+#include <stdint.h>
+#include <QString>
 class QString;
 class Entity;
 class Character;
@@ -55,7 +57,6 @@ void    toggleControlId(Entity &e);
 
 // Misc Methods
 void    charUpdateDB(Entity *e);
-void    charUpdateOptions(Entity *e);
 void    charUpdateGUI(Entity *e);
 int     getEntityOriginIndex(bool is_player,const QString &origin_name);
 int     getEntityClassIndex(bool is_player, const QString &class_name);

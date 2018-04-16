@@ -1,10 +1,9 @@
-#define _USE_MATH_DEFINES
 #include "EntitiesResponse.h"
 
 #include "NetStructures/Powers.h"
+#include "NetStructures/Entity.h"
+#include "NetStructures/Character.h"
 #include "MapClientSession.h"
-#include "Entity.h"
-#include "Character.h"
 #include "MapEvents.h"
 #include "MapInstance.h"
 #include "EntityUpdateCodec.h"

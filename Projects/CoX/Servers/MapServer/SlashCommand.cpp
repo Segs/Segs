@@ -1,8 +1,9 @@
 #include "SlashCommand.h"
+
 #include "DataHelpers.h"
 #include "MapInstance.h"
 #include "Settings.h"
-#include "LFG.h"
+#include "NetStructures/LFG.h"
 #include "Logging.h"
 
 #include <QtCore/QString>
@@ -246,7 +247,7 @@ void cmdHandler_SetSpeed(QString &cmd, Entity *e) {
     setSpeed(*e, v1, v2, v3);
 
     QString msg = QString("Set Speed to: <%1,%2,%3>").arg(v1).arg(v2).arg(v3);
-  
+
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
@@ -366,7 +367,8 @@ void cmdHandler_SetCombatLevel(QString &cmd, Entity *e) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, src);
 }
 
-void cmdHandler_UpdateChar(QString &cmd, Entity *e) {
+void cmdHandler_UpdateChar(QString &cmd, Entity *e)
+{
     MapClientSession *src = e->m_client;
 
     charUpdateDB(e);
@@ -572,7 +574,7 @@ void cmdHandler_SendFloatingNumbers(QString &cmd, Entity *e) {
         qCDebug(logSlashCommand) << msg;
         sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
         return;
-    }       
+    }
 
     tgt = getEntity(src,name); // get Entity by name
 

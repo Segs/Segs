@@ -11,7 +11,6 @@
 #include "AuthServer.h"
 
 #include "ConfigExtension.h"
-#include "AdminServer/AccountInfo.h"
 #include "AuthProtocol/AuthLink.h"
 #include "AuthHandler.h"
 #include "Settings.h"

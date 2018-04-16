@@ -5,7 +5,6 @@
 #include "AuthProtocol/AuthEvents.h"
 #include "AuthDatabase/AuthDBSyncEvents.h"
 
-#include "AdminServer/AccountInfo.h"
 #include "Servers/InternalEvents.h"
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"

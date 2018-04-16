@@ -31,7 +31,10 @@ void GameDBSyncHandler::dispatch(SEGSEvent *ev)
         on_account_request(static_cast<GameAccountRequest *>(ev)); break;
     case GameDBEventTypes::evWouldNameDuplicateRequest:
         on_check_name_clash(static_cast<WouldNameDuplicateRequest *>(ev)); break;
-
+    case GameDBEventTypes::evCreateNewCharacterRequest:
+        on_create_new_char(static_cast<CreateNewCharacterRequest *>(ev)); break;
+    case GameDBEventTypes::evGetEntityRequest:
+        on_get_entity(static_cast<GetEntityRequest *>(ev)); break;
     default: assert(false); break;
     }
 }
@@ -76,12 +79,31 @@ void GameDBSyncHandler::on_account_request(GameAccountRequest *msg)
 
 void GameDBSyncHandler::on_check_name_clash(WouldNameDuplicateRequest * ev)
 {
-    EventProcessor * tgt = HandlerLocator::getGame_Handler(m_id);
     GameDbSyncContext &db_ctx(m_db_context.localData());
     WouldNameDuplicateResponseData resp;
 
     if(db_ctx.checkNameClash(ev->m_data,resp))
         ev->src()->putq(new WouldNameDuplicateResponse(std::move(resp),ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
+void GameDBSyncHandler::on_create_new_char(CreateNewCharacterRequest * ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    CreateNewCharacterResponseData resp;
+
+    if(db_ctx.createNewChar(ev->m_data,resp))
+        ev->src()->putq(new CreateNewCharacterResponse(std::move(resp),ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
+void GameDBSyncHandler::on_get_entity(GetEntityRequest *ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    GetEntityResponseData resp;
+
+    if(db_ctx.getEntity(ev->m_data,resp))
+        ev->src()->putq(new GetEntityResponse(std::move(resp),ev->session_token()));
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 

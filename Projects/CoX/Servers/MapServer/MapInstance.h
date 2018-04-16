@@ -11,7 +11,7 @@
 
 #include "EntityStorage.h"
 #include "EventProcessor.h"
-#include "ClientManager.h"
+#include "Common/Servers/ClientManager.h"
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
 
@@ -69,6 +69,8 @@ protected:
     void process_chat(MapClientSession *sender, QString &msg_text);
     // DB -> Server messages
     void on_name_clash_check_result(WouldNameDuplicateResponse *ev);
+    void on_character_created(CreateNewCharacterResponse *ev);
+    void on_entity_response(GetEntityResponse *ev);
     // Server->Server messages
     void on_expect_client(ExpectMapClientRequest *ev);
 

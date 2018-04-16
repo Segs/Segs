@@ -8,8 +8,6 @@
 
 #include "MapInstance.h"
 
-#include "AdminServer.h"
-#include "AdminServer/AccountInfo.h"
 #include "version.h"
 #include "DataHelpers.h"
 #include "MapEvents.h"
@@ -18,17 +16,20 @@
 #include "MapTemplate.h"
 #include "MapServer.h"
 #include "SEGSTimer.h"
-#include "Entity.h"
+#include "NetStructures/Entity.h"
+#include "NetStructures/Character.h"
 #include "EntityStorage.h"
 #include "WorldSimulation.h"
-#include "InternalEvents.h"
-#include "Database.h"
-#include "SlashCommand.h"
-#include "Common/GameData/CoHMath.h"
-#include "CharacterDatabase.h"
-#include "GameDatabase/GameDBSyncEvents.h"
+#include "Common/Servers/InternalEvents.h"
+#include "Common/Servers/Database.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/MessageBus.h"
+#include "Common/GameData/CoHMath.h"
+#include "SlashCommand.h"
+#include "GameData/entitydata_serializers.h"
+#include "GameData/clientoptions_serializers.h"
+#include "GameData/keybind_serializers.h"
+#include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
 
 #include <QtCore/QDebug>
@@ -183,6 +184,12 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case GameDBEventTypes::evWouldNameDuplicateResponse:
             on_name_clash_check_result(static_cast<WouldNameDuplicateResponse *>(ev));
+            break;
+        case GameDBEventTypes::evCreateNewCharacterResponse:
+            on_character_created(static_cast<CreateNewCharacterResponse *>(ev));
+            break;
+        case GameDBEventTypes::evGetEntityResponse:
+            on_entity_response(static_cast<GetEntityResponse *>(ev));
             break;
         case MapEventTypes::evIdle:
             on_idle(static_cast<IdleEvent *>(ev));
@@ -401,6 +408,10 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     map_session.m_name        = request_data.m_character_name;
     // TODO: this code is wrong on the logical level
     map_session.m_current_map = tpl->get_instance(m_game_server_id,m_owner_id);
+    map_session.m_max_slots   = request_data.m_max_slots;
+    map_session.m_access_level = request_data.m_access_level;
+    map_session.m_client_id    = request_data.m_client_id;
+
     cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
     if (!request_data.char_from_db)
@@ -416,83 +427,110 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     toActualCharacter(*request_data.char_from_db, *ent->m_char);
     ent->fillFromCharacter();
     map_session.m_ent = ent;
-    // set the session's client
-    map_session.m_access_level = request_data.m_access_level;
-    map_session.m_client_id    = request_data.m_client_id;
     // Now we inform our game server that this Map server instance is ready for the client
 
     HandlerLocator::getGame_Handler(m_game_server_id)
         ->putq(new ExpectMapClientResponse({cookie, 0, m_server->getAddress()}, ev->session_token()));
 }
-void MapInstance::on_create_map_entity(NewEntity *ev)
+void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
 {
-    // TODO: At this point we should pre-process the NewEntity packet and let the proper CoXMapInstance handle the rest
-    // of processing
-    MapLink *lnk   = (MapLink *)ev->src();
-    uint64_t token = m_session_store.connected_client(ev->m_cookie - 2);
-
-    assert(token != ~0U);
-    MapClientSession &map_session(m_session_store.session_from_token(token));
-    if (ev->m_new_character)
+    MapClientSession &map_session(m_session_store.session_from_event(ev));
+    m_session_store.locked_unmark_session_for_reaping(&map_session);
+    if(ev->m_data.slot_idx<0)
     {
-        EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
-        game_db->putq(new GameAccountRequest({},lnk->session_token()));
-        Entity *e = m_entities.CreatePlayer();
-        fillEntityFromNewCharData(*e, ev->m_character_data, g_GlobalMapServer->runtimeData().getPacker());
-        map_session.m_ent = e;
-        // new characters are transmitted nameless, use the name provided in on_expect_client
-        map_session.m_ent->m_char->setName(map_session.m_name);
-        GameAccountResponseCharacterData char_data;
-        fromActualCharacter(*map_session.m_ent->m_char,char_data);
-        // create the character from the data.
-        //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
-        game_db->putq(new CreateNewCharacterRequest({char_data,map_session.m_requested_slot_idx,map_session.m_client_id},token));
-//        int8_t idx = map_session.m_game_account.next_free_slot_idx();
-//        if (idx != -1)
-//        {
-//            storeNewCharacter(map_session.m_ent, idx, map_session.m_client_id);
-//        }
-    }
-    assert(map_session.m_ent);
 
-    // Now that we have an entity, fill it.
-    CharacterDatabase *char_db = AdminServer::instance()->character_db();
-    // TODO: Implement asynchronous database queries
-    DbTransactionGuard grd(*char_db->getDb());
-    if (false == char_db->fill(map_session.m_ent))
-    {
-        //TODO: send some kind of error packet ?
+        //TODO: this requires sending an actual error message to client and then disconnecting ?
+        map_session.link()->putq(new DisconnectResponse);
+        assert(false); //this code needs work;
         return;
     }
-    grd.commit();
+    map_session.m_ent->m_char->m_db_id = ev->m_data.m_char_id;
+    map_session.m_ent->m_char->setIndex(ev->m_data.slot_idx);
+    EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
+    // now we go back to standard path -> asking db about the entity
+    // TODO: we've just put the entity in the db, and now we have to load it back ??
+    game_db->putq(new GetEntityRequest({ev->m_data.m_char_id},ev->session_token(),this));
+    // while we wait for db response, mark session as waiting for reaping
+    m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
+}
+void MapInstance::on_entity_response(GetEntityResponse *ev)
+{
+    MapClientSession &map_session(m_session_store.session_from_event(ev));
+    m_session_store.locked_unmark_session_for_reaping(&map_session);
+    Entity * e = map_session.m_ent;
+
+    e->m_db_id              = e->m_char->m_db_id;
+    e->m_supergroup.m_SG_id = ev->m_data.m_supergroup_id;
+    serializeFromDb(e->m_entity_data, ev->m_data.m_ent_data);
+
+    // Can't pass direction through cereal, so let's update it here.
+    e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
     if (logSpawn().isDebugEnabled())
         map_session.m_ent->dump();
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
-    tgt->putq(new ClientConnectedMessage({token,m_owner_id,m_instance_id}));
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
 
     map_session.m_current_map->enqueue_client(&map_session);
-    map_session.link(lnk);
-    lnk->session_token(token);
     setMapName(*map_session.m_ent->m_char, name());
     setMapIdx(*map_session.m_ent, index());
-    lnk->putq(new MapInstanceConnected(this, 1, ""));
+    map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
+}
+void MapInstance::on_create_map_entity(NewEntity *ev)
+{
+    // TODO: At this point we should pre-process the NewEntity packet and let the proper CoXMapInstance handle the rest
+    // of processing
+    auto *lnk   = (MapLink *)ev->src();
+    uint64_t token = m_session_store.connected_client(ev->m_cookie - 2);
+    EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
+
+    assert(token != ~0U);
+    MapClientSession &map_session(m_session_store.session_from_token(token));
+    map_session.link(lnk);
+    lnk->session_token(token);
+    if (ev->m_new_character)
+    {
+        QString ent_data;
+
+        Entity *e = m_entities.CreatePlayer();
+        fillEntityFromNewCharData(*e, ev->m_character_data, g_GlobalMapServer->runtimeData().getPacker());
+        e->m_char->m_account_id = map_session.auth_id();
+        map_session.m_ent = e;
+        // new characters are transmitted nameless, use the name provided in on_expect_client
+        e->m_char->setName(map_session.m_name);
+        GameAccountResponseCharacterData char_data;
+        fromActualCharacter(*e->m_char,char_data);
+        serializeToDb(e->m_entity_data,ent_data);
+        // create the character from the data.
+        //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
+        game_db->putq(new CreateNewCharacterRequest({char_data,ent_data, map_session.m_requested_slot_idx,
+                                                     map_session.m_max_slots,map_session.m_client_id},
+                                                    token,this));
+    }
+    else
+    {
+        assert(map_session.m_ent);
+        game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
+    }
+    // while we wait for db response, mark session as waiting for reaping
+    m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token());
 }
 void MapInstance::on_scene_request(SceneRequest *ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    SceneEvent *res=new SceneEvent;
-    res->undos_PP=0;
-    res->var_14=true;
-    res->m_outdoor_mission_map=false;
-    res->m_map_number=1;
-    //"maps/City_Zones/City_00_01/City_00_01.txt";
-    res->m_map_desc="maps/City_Zones/City_01_01/City_01_01.txt";
-    res->current_map_flags=true; //off 1
-    res->unkn1=1;
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
-    res->unkn2=true;
+    auto *lnk = (MapLink *)ev->src();
+    auto *res = new SceneEvent;
+
+    res->undos_PP              = 0;
+    res->var_14                = true;
+    res->m_outdoor_mission_map = false;
+    res->m_map_number          = 1;
+                            //"maps/City_Zones/City_00_01/City_00_01.txt";
+    res->m_map_desc        = "maps/City_Zones/City_01_01/City_01_01.txt";
+    res->current_map_flags = true; // off 1
+    res->unkn1             = 1;
+    ACE_DEBUG((LM_DEBUG, ACE_TEXT("%d - %d - %d\n"), res->unkn1, res->undos_PP, res->current_map_flags));
+    res->unkn2 = true;
     lnk->putq(res);
 }
 void MapInstance::on_entities_request(EntitiesRequest *ev)
@@ -515,7 +553,7 @@ void MapInstance::on_timeout(TimerEvent *ev)
     // 2. Find all links with inactivity_time() >= disconnect_time
     //   Disconnect given link.
 
-    intptr_t timer_id = (intptr_t)ev->data();
+    auto timer_id = (intptr_t)ev->data();
     switch (timer_id) {
         case World_Update_Timer:
             m_world->update(ev->arrival_time());
@@ -1612,12 +1650,11 @@ void MapInstance::on_client_options(SaveClientOptions * ev)
 {
     // Save options/keybinds to character entity and entry in the database.
     MapClientSession &session(m_session_store.session_from_event(ev));
+    LinkBase * lnk = (LinkBase *)ev->src();
+
     Entity *ent = session.m_ent;
-
+    markEntityForDbStore(ent,DbStoreFlags::Options);
     ent->m_char->m_options = ev->data;
-    charUpdateOptions(ent); // Update database with opts/kbds
-
-    qCDebug(logMapEvents) << "Client options saved to database.";
 }
 
 void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)

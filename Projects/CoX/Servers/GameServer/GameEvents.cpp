@@ -8,10 +8,9 @@
 */
 #include "HashStorage.h"
 #include "GameEvents.h"
-#include "Character.h"
-#include "Costume.h"
+#include "NetStructures/Character.h"
+#include "NetStructures/Costume.h"
 #include "GameDatabase/GameDBSyncEvents.h"
-#include "CharacterDatabase.h"
 
 #include <QtCore/QDebug>
 // SpecHash<std::string,val>

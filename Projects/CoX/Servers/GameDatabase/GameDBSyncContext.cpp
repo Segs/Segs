@@ -1,12 +1,26 @@
+#include <memory>
+
+#include <memory>
+
+#include <memory>
+
+#include <memory>
+
+#include <memory>
+
+#include <memory>
+
 #include "GameDBSyncContext.h"
 
 #include "GameDBSyncEvents.h"
 #include "Settings.h"
+#include "Database.h"
 
 #include <ace/Thread.h>
 
 #include <QDebug>
 #include <QSettings>
+#include <QSqlDriver>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
@@ -29,12 +43,9 @@ bool doIt(QSqlQuery &qr) {
 }
 }
 
-GameDbSyncContext::GameDbSyncContext()
-{
-}
-GameDbSyncContext::~GameDbSyncContext()
-{
-}
+GameDbSyncContext::GameDbSyncContext() = default;
+GameDbSyncContext::~GameDbSyncContext() = default;
+
 int64_t GameDbSyncContext::getDbVersion(QSqlDatabase &db)
 {
     QSqlQuery version_query(
@@ -101,28 +112,35 @@ bool GameDbSyncContext::loadAndConfigure()
         qCritical() << "Wrong db version:"<<db_version<<"this GameDatabase service requires:"<<required_db_version;
         return false;
     }
-    m_prepared_fill.reset(new QSqlQuery(*m_db));
-    m_prepared_account_insert.reset(new QSqlQuery(*m_db));
-    m_prepared_account_select.reset(new QSqlQuery(*m_db));
-    m_prepared_entity_select.reset(new QSqlQuery(*m_db));
-    m_prepared_char_select.reset(new QSqlQuery(*m_db));
-    m_prepared_char_exists.reset(new QSqlQuery(*m_db));
-    m_prepared_char_insert.reset(new QSqlQuery(*m_db));
-    m_prepared_char_delete.reset(new QSqlQuery(*m_db));
-    m_prepared_char_update.reset(new QSqlQuery(*m_db));
-    m_prepared_costume_insert.reset(new QSqlQuery(*m_db));
-    m_prepared_costume_update.reset(new QSqlQuery(*m_db));
+    m_prepared_fill = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_account_insert = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_account_select = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_entity_select = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_char_select = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_char_exists = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_char_insert = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_char_delete = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_char_update = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_costume_insert = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_costume_update = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_get_char_slots = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_options_update = std::make_unique<QSqlQuery>(*m_db);
 
     prepQuery(*m_prepared_char_update,
                 "UPDATE characters SET "
                 "char_name=:char_name, chardata=:chardata, entitydata=:entitydata, bodytype=:bodytype, "
-                ""
+                "height=:height, physique=:physique,"
                 "supergroup_id=:supergroup_id, options=:options "
                 "WHERE id=:id ");
     prepQuery(*m_prepared_costume_update,
                 "UPDATE costume SET "
                 "costume_index=:costume_index, skin_color=:skin_color, parts=:parts "
                 "WHERE character_id=:id ");
+    prepQuery(*m_prepared_options_update,
+              "UPDATE characters SET "
+              "options=:options, gui=:gui, keybinds=:keybinds "
+              "WHERE id=:id ");
+
     prepQuery(*m_prepared_fill,"SELECT * FROM costume WHERE character_id=? AND costume_index=?");
     prepQuery(*m_prepared_account_select,"SELECT * FROM accounts WHERE account_id=?");
     prepQuery(*m_prepared_account_insert,"INSERT INTO accounts  (account_id,max_slots) VALUES (?,?)");
@@ -145,6 +163,7 @@ bool GameDbSyncContext::loadAndConfigure()
     prepQuery(*m_prepared_char_select,"SELECT * FROM characters WHERE account_id=? AND slot_index=?");
     prepQuery(*m_prepared_char_exists,"SELECT exists (SELECT 1 FROM characters WHERE char_name = $1 LIMIT 1)");
     prepQuery(*m_prepared_char_delete,"DELETE FROM characters WHERE account_id=? AND slot_index=?");
+    prepQuery(*m_prepared_get_char_slots,"SELECT slot_index FROM characters WHERE account_id=?");
 
     return true;
 }
@@ -272,183 +291,89 @@ bool GameDbSyncContext::checkNameClash(const WouldNameDuplicateRequestData &data
     result.m_would_duplicate = m_prepared_char_exists->value(0).toBool();
     return true;
 }
-/*
-#define STR_OR_EMPTY(c) ((!c.isEmpty()) ? c:"EMPTY")
-#define STR_OR_VERY_EMPTY(c) ((c!=0) ? c:"")
-bool CharacterDatabase::fill( Entity *e)
-{
-    assert(e);
-    EntityData *ed = &e->m_entity_data;
-#ifdef DEBUG_DB
-    qDebug().noquote() << e->m_db_id;
-#endif
 
-    m_prepared_entity_select.bindValue(":id",quint64(e->m_char->m_db_id));
-    if(!doIt(m_prepared_entity_select))
+bool GameDbSyncContext::createNewChar(const CreateNewCharacterRequestData &data, CreateNewCharacterResponseData &result)
+{
+    DbTransactionGuard grd(*m_db);
+    m_prepared_get_char_slots->bindValue(0,data.m_client_id);
+    if(!doIt(*m_prepared_get_char_slots))
         return false;
 
-    if(!m_prepared_entity_select.next()) // retry with the first one
+    std::set<int> slots_in_use;
+    while(m_prepared_get_char_slots->next())
     {
-        m_prepared_entity_select.bindValue(":id",quint64(e->m_char->m_db_id));
-        if(!doIt(m_prepared_entity_select))
-            return false;
-        if(!m_prepared_entity_select.next()) {
-            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) CharacterDatabase::fill no matching entity.\n")),false);
-            return false;
+        slots_in_use.insert(m_prepared_get_char_slots->value(0).toInt());
+    }
+    if(slots_in_use.size()>=data.m_max_allowed_slots)
+    {
+        result.slot_idx = -1;
+        return true;
+    }
+    int selected_slot = data.m_slot_idx;
+    if(selected_slot<0 || slots_in_use.find(selected_slot)!= slots_in_use.end())
+    {
+        // selecting first slot available
+        for(int i=0;i<data.m_max_allowed_slots; ++i)
+        {
+            if(slots_in_use.find(i)==slots_in_use.end())
+            {
+                selected_slot = i;
+                break;
+            }
         }
     }
-
-    e->m_supergroup.m_SG_id = (m_prepared_entity_select.value("supergroup_id").toUInt());
-
-    QString entity_data;
-    entity_data = (m_prepared_entity_select.value("entitydata").toString());
-    serializeFromDb(*ed,entity_data);
-
-    // Can't pass direction through cereal, so let's update it here.
-    e->m_direction = fromCoHYpr(ed->m_orientation_pyr);
-
-#ifdef DEBUG_DB
-    qDebug().noquote() << entity_data;
-    qDebug().noquote() << glm::to_string(ed->m_orientation_pyr).c_str();
-    qDebug().noquote() << glm::to_string(e->m_direction).c_str();
-#endif
-    return true;
-}
-bool CharacterDatabase::fill( Character *c)
-{
-    CharacterData *cd = &c->m_char_data;
-    assert(c&&c->getAccountId());
-
-    serializeFromDb(*cd,char_data);
-
-#ifdef DEBUG_DB
-    qDebug() << "m_db_id:" << c->m_db_id;
-    //qDebug().noquote() << char_data;
-#endif
-
-    CharacterCostume *main_costume = new CharacterCostume;
-    c->m_costumes.push_back(main_costume);
-    main_costume->serializeFromDb(serialized_parts);
-    main_costume->m_non_default_costme_p = false;
-    return true;
-}
-
-//TODO: Initialize this function with Entity instead of Character
-bool CharacterDatabase::create(uint64_t gid, uint8_t slot, Entity *e)
-{
+    const GameAccountResponseCostumeData & costume(data.m_character.current_costume());
     assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
+    assert(data.m_slot_idx<8);
+    //cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
+    m_prepared_char_insert->bindValue(":slot_index", uint32_t(selected_slot));
+    m_prepared_char_insert->bindValue(":account_id", data.m_character.m_account_id);
+    m_prepared_char_insert->bindValue(":char_name", data.m_character.m_name);
+    m_prepared_char_insert->bindValue(":bodytype", costume.m_body_type);
+    m_prepared_char_insert->bindValue(QStringLiteral(":height"), costume.m_height);
+    m_prepared_char_insert->bindValue(QStringLiteral(":physique"), costume.m_physique);
+    m_prepared_char_insert->bindValue(":hitpoints", data.m_character.m_HitPoints);
+    m_prepared_char_insert->bindValue(":endurance", data.m_character.m_Endurance);
+    m_prepared_char_insert->bindValue(":supergroup_id", 0);
+    m_prepared_char_insert->bindValue(":options", 0);
 
-    assert(e && e->m_char);
+    m_prepared_char_insert->bindValue(":entitydata", data.m_ent_data);
+    m_prepared_char_insert->bindValue(":chardata", data.m_character.m_serialized_chardata);
 
-    EntityData *ed = &e->m_entity_data;
-    Character &c(*e->m_char);
-
-    assert(gid>0);
-    assert(slot<8);
-
-    CharacterData *cd = &c.m_char_data;
-    cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
-
-    Costume *cst = c.getCurrentCostume();
-    if(!cst) {
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("(%P|%t) CharacterDatabase::create cannot insert char without costume.\n"))
-                         ,false);
-    }
-
-    //":slot_index, :account_id, :char_name, :chardata, :bodytype, :hitpoints, :endurance, "
-    //":posx, :posy, :posz, :orientp, :orienty, :orientr, :supergroup_id, :options "
-
-    m_prepared_char_insert.bindValue(":slot_index", uint32_t(slot));
-    m_prepared_char_insert.bindValue(":account_id", quint64(gid));
-    m_prepared_char_insert.bindValue(":char_name", c.m_name);
-    m_prepared_char_insert.bindValue(":bodytype", c.getCurrentCostume()->m_body_type);
-    m_prepared_char_insert.bindValue(":hitpoints", c.m_current_attribs.m_HitPoints);
-    m_prepared_char_insert.bindValue(":endurance", c.m_current_attribs.m_Endurance);
-    m_prepared_char_insert.bindValue(":supergroup_id", 0);
-    m_prepared_char_insert.bindValue(":options", 0);
-
-    QString entity_data;
-    serializeToDb(*ed,entity_data);
-    m_prepared_char_insert.bindValue(":entitydata", entity_data);
-
-    QString char_data;
-    serializeToDb(*cd,char_data);
-    m_prepared_char_insert.bindValue(":chardata", char_data);
-
-#ifdef DEBUG_DB
-    qDebug().noquote() << entity_data;
-    qDebug().noquote() << char_data;
-#endif
-
-    if(!doIt(m_prepared_char_insert))
+    if(!doIt(*m_prepared_char_insert))
         return false;
-    int64_t char_id = m_prepared_char_insert.lastInsertId().toLongLong();
-    c.m_db_id = char_id;
-
-#ifdef DEBUG_DB
-    qDebug() << "char_id: " << char_id << ":" << c->m_db_id;
-#endif
-
+    int64_t char_id = m_prepared_char_insert->lastInsertId().toLongLong();
+    result.m_char_id = char_id;
     // create costume
-    QString costume_parts;
-    cst->serializeToDb(costume_parts);
-    m_prepared_costume_insert.bindValue(":id",quint64(char_id));
-    m_prepared_costume_insert.bindValue(":costume_index",uint32_t(0));
-    m_prepared_costume_insert.bindValue(":skin_color",uint32_t(cst->skin_color));
-    m_prepared_costume_insert.bindValue(":parts",costume_parts);
+    m_prepared_costume_insert->bindValue(":id",quint64(char_id));
+    m_prepared_costume_insert->bindValue(":costume_index",uint32_t(0));
+    m_prepared_costume_insert->bindValue(":skin_color",uint32_t(costume.skin_color));
+    m_prepared_costume_insert->bindValue(":parts",costume.m_serialized_data);
 
-    if(!doIt(m_prepared_costume_insert))
+    if(!doIt(*m_prepared_costume_insert))
+        return false;
+    grd.commit();
+    return true;
+}
+
+bool GameDbSyncContext::getEntity(const GetEntityRequestData &data, GetEntityResponseData &result)
+{
+    m_prepared_entity_select->bindValue(0,data.m_char_id);
+    if(!doIt(*m_prepared_entity_select))
+        return false;
+    if(!m_prepared_entity_select->next())
+        return false;
+    result.m_supergroup_id = m_prepared_entity_select->value("supergroup_id").toUInt();
+    result.m_ent_data = m_prepared_entity_select->value("entitydata").toString();
+    return true;
+}
+// Update Client Options/Keybinds
+bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
+{
+    m_prepared_options_update->bindValue(":id", data.m_client_id); // for WHERE statement only
+    m_prepared_options_update->bindValue(":options", data.m_options);
+    m_prepared_options_update->bindValue(":keybinds", data.m_keybinds);
+    if (!doIt(*m_prepared_options_update))
         return false;
     return true;
 }
-bool sendEntityStoreRequest(Entity *e)
-{
-    assert(e);
-    if(! HandlerLocator::getDBSync_Handler())
-    {
-        qCritical() << "Database sync service is not running";
-    }
-    EntityData &entity_data(e->m_entity_data);
-    assert(e->m_char);
-    Character &character(*e->m_char);
-    Costume *cst = character.getCurrentCostume();
-    if(!cst)
-    {
-        qCritical() << "Cannot store Entities without costumes.";
-        return false;
-    }
-
-    CharacterUpdateData cud;
-    cud.m_char_name = character.getName();
-    serializeToDb(character.m_char_data,cud.m_char_data);
-    serializeToDb(entity_data,cud.m_entitydata);
-#ifdef DEBUG_DB
-    qDebug().noquote() << cud.m_entitydata;
-    qDebug().noquote() << cud.m_char_data;
-#endif
-
-    cud.m_options.clear(); //TODO: character.m_options, need to be serialized here
-    cud.m_bodytype = character.getCurrentCostume()->m_body_type;
-    cud.m_id = character.m_db_id;
-    cud.m_supergroup_id = uint32_t(e->m_supergroup.m_SG_id);
-    HandlerLocator::getDBSync_Handler()->putq(new CharacterUpdateMessage(std::move(cud)));
-
-    // Update costume
-    CostumeUpdateData costume_update_data;
-    cst->serializeToDb(costume_update_data.m_parts);
-    costume_update_data.m_db_id = character.m_db_id;
-    costume_update_data.m_skin_color = uint32_t(cst->skin_color);
-    costume_update_data.m_costume_index = 0;
-    HandlerLocator::getDBSync_Handler()->putq(new CostumeUpdateMessage(std::move(costume_update_data)));
-    return true;
-}
-bool CharacterDatabase::update( Entity *e )
-{
-    assert(e);
-    assert(e->m_char);
-    Character &c(*e->m_char);
-    c.m_char_data.m_last_online = QDateTime::currentDateTimeUtc().toString();
-    return sendEntityStoreRequest(e);
-}
-
-*/

@@ -1,5 +1,5 @@
-#include "Entity.h"
-#include "Character.h"
+#include "NetStructures/Entity.h"
+#include "NetStructures/Character.h"
 #include "DataHelpers.h"
 
 class QString;

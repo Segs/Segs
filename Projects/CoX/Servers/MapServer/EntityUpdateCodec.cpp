@@ -9,10 +9,10 @@
 #include "EntityUpdateCodec.h"
 #include "MapClientSession.h"
 
-#include "Character.h"
+#include "NetStructures/Character.h"
+#include "NetStructures/Entity.h"
 #include "MapServer.h"
 #include "MapServerData.h"
-#include "Entity.h"
 #include "GameData/CoHMath.h"
 #include "DataHelpers.h"
 #include "Logging.h"

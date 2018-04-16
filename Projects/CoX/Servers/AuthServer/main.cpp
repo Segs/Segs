@@ -18,7 +18,6 @@
 #include "version.h"
 //////////////////////////////////////////////////////////////////////////
 
-#include "Servers/AdminServer/AdminServer.h"
 #include "AuthServer.h"
 #include "Servers/MapServer/MapServer.h"
 #include "Servers/GameServer/GameServer.h"

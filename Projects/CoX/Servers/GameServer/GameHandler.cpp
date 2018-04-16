@@ -3,11 +3,11 @@
 #include "GameEvents.h"
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
-#include "CharacterDatabase.h"
+#include "Common/Servers/InternalEvents.h"
 #include "GameLink.h"
 #include "GameEvents.h"
 #include "GameServer.h"
-#include "Character.h"
+#include "NetStructures/Character.h"
 #include "SEGSTimer.h"
 
 static const uint32_t supported_version=20040422;
@@ -345,7 +345,8 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     }
     ExpectMapClientRequest *expect_client =
         new ExpectMapClientRequest({acc_inf.m_acc_server_acc_id, acc_inf.m_access_level, lnk->peer_addr(),
-                                    selected_slot, ev->m_character_index, ev->m_char_name, ev->m_mapnumber},
+                                    selected_slot, ev->m_character_index, ev->m_char_name, ev->m_mapnumber,
+                                    uint16_t(session.m_game_account.m_max_slots)},
                                    lnk->session_token());
     fprintf(stderr, " Telling map server to expect a client with character %s,%d\n", qPrintable(ev->m_char_name),
             ev->m_character_index);

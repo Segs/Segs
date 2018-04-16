@@ -13,6 +13,12 @@
 #include "Costume.h"
 #include "Friend.h"
 #include "GameData/keybind_definitions.h"
+#include "Servers/GameDatabase/GameDBSyncEvents.h"
+#include "GameData/chardata_serializers.h"
+#include "GameData/clientoptions_serializers.h"
+#include "GameData/entitydata_serializers.h"
+#include "GameData/gui_serializers.h"
+#include "GameData/keybind_serializers.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "Logging.h"
 #include <QtCore/QString>
@@ -582,3 +588,72 @@ void Character::sendOptions( BitStream &bs ) const
     bs.StoreBits(1,m_options.m_first_person_view);
 }
 
+void toActualCostume(const GameAccountResponseCostumeData &src, Costume &tgt)
+{
+    tgt.skin_color = src.skin_color;
+    tgt.serializeFromDb(src.m_serialized_data);
+    tgt.m_non_default_costme_p = false;
+}
+void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)
+{
+    tgt.skin_color = src.skin_color;
+    src.serializeToDb(tgt.m_serialized_data);
+}
+bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt)
+{
+    CharacterData &  cd(tgt.m_char_data);
+    ClientOptions &  od(tgt.m_options);
+    KeybindSettings &kbd(tgt.m_keybinds);
+    GUISettings &    gui(tgt.m_gui);
+    tgt.m_db_id      = src.m_db_id;
+    tgt.m_account_id = src.m_account_id;
+    tgt.setName(src.m_name);
+    tgt.m_current_attribs.m_HitPoints = src.m_HitPoints;
+    tgt.m_current_attribs.m_Endurance = src.m_Endurance;
+    serializeFromDb(cd, src.m_serialized_chardata);
+    serializeFromDb(od, src.m_serialized_options);
+    serializeFromDb(gui, src.m_serialized_gui);
+    serializeFromDb(kbd, src.m_serialized_keybinds);
+
+    for (const GameAccountResponseCostumeData &costume : src.m_costumes)
+    {
+        tgt.m_costumes.emplace_back();
+        CharacterCostume &main_costume(tgt.m_costumes.back());
+        toActualCostume(costume, main_costume);
+        // appearance related.
+        main_costume.m_body_type = src.m_costumes.back().m_body_type;
+        main_costume.setSlotIndex(costume.m_slot_index);
+        main_costume.setCharacterId(costume.m_character_id);
+    }
+    return true;
+}
+
+bool fromActualCharacter(const Character &src,GameAccountResponseCharacterData &tgt)
+{
+    const CharacterData &  cd(src.m_char_data);
+    const ClientOptions &  od(src.m_options);
+    const KeybindSettings &kbd(src.m_keybinds);
+    const GUISettings &    gui(src.m_gui);
+    tgt.m_db_id      = src.m_db_id;
+    tgt.m_account_id = src.m_account_id;
+    tgt.m_name = src.getName();
+    tgt.m_HitPoints = src.m_current_attribs.m_HitPoints;
+    tgt.m_Endurance = src.m_current_attribs.m_Endurance;
+    serializeToDb(cd, tgt.m_serialized_chardata);
+    serializeToDb(od, tgt.m_serialized_options);
+    serializeToDb(gui, tgt.m_serialized_gui);
+    serializeToDb(kbd, tgt.m_serialized_keybinds);
+
+    for (const CharacterCostume &costume : src.m_costumes)
+    {
+
+        tgt.m_costumes.emplace_back();
+        GameAccountResponseCostumeData &main_costume(tgt.m_costumes.back());
+        fromActualCostume(costume, main_costume);
+        // appearance related.
+        main_costume.m_body_type = src.m_costumes.back().m_body_type;
+        main_costume.m_slot_index = costume.getSlotIndex();
+        main_costume.m_character_id= costume.getCharacterId();
+    }
+    return true;
+}

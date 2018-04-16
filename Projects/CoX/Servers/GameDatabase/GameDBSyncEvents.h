@@ -9,7 +9,10 @@
 enum GameDBEventTypes : uint32_t
 {
     evCharacterUpdate= Internal_EventTypes::evLAST_EVENT,
+    //updates, no responses
+    evSetClientOptions,
     evCostumeUpdate,
+    //requests
     evRemoveCharacterRequest,
     evRemoveCharacterResponse,
     evGameAccountRequest,
@@ -19,12 +22,13 @@ enum GameDBEventTypes : uint32_t
     // Insert for characters
     evCreateNewCharacterRequest,
     evCreateNewCharacterResponse,
-    // select by id for characters
-    evGetCharacterRequest,
-    evGetCharacterResponse,
     // update by id for characters
     evSetCharacterRequest,
     evSetCharacterResponse,
+    // select by id for entity data only
+    evGetEntityRequest,
+    evGetEntityResponse,
+
     evGameDbError
 };
 
@@ -141,6 +145,19 @@ struct GameAccountResponseCharacterData
     {
         return 0==m_name.compare("EMPTY",Qt::CaseInsensitive);
     }
+    GameAccountResponseCostumeData &current_costume() {
+        if(m_current_costume_idx>=0 && m_current_costume_idx<m_costumes.size() )
+            return m_costumes[m_current_costume_idx];
+        assert(!m_costumes.empty());
+        m_current_costume_idx = 0;
+        return m_costumes.front();
+    }
+    const GameAccountResponseCostumeData &current_costume() const {
+        if(m_current_costume_idx>=0 && m_current_costume_idx<m_costumes.size() )
+            return m_costumes[m_current_costume_idx];
+        assert(!m_costumes.empty());
+        return m_costumes.front();
+    }
 };
 struct GameAccountResponseData
 {
@@ -169,12 +186,28 @@ TWO_WAY_MESSAGE(GameAccount)
 struct CreateNewCharacterRequestData
 {
     GameAccountResponseCharacterData m_character;
+    QString m_ent_data;
     uint16_t m_slot_idx;
+    uint16_t m_max_allowed_slots;
     uint32_t m_client_id;
 };
 struct CreateNewCharacterResponseData
-{};
+{
+    uint32_t m_char_id;
+    int slot_idx; // if -1 , no more free slots are left ?
+};
 TWO_WAY_MESSAGE(CreateNewCharacter)
+struct GetEntityRequestData
+{
+    uint32_t m_char_id;
+};
+struct GetEntityResponseData
+{
+    uint32_t m_supergroup_id;
+    QString m_ent_data;
+};
+TWO_WAY_MESSAGE(GetEntity)
+
 struct WouldNameDuplicateRequestData
 {
     QString m_name;
@@ -191,6 +224,13 @@ struct GameDbErrorData
 };
 ONE_WAY_MESSAGE(GameDbError)
 
+struct SetClientOptionsData
+{
+    uint32_t m_client_id;
+    QString m_options;
+    QString m_keybinds;
+};
+ONE_WAY_MESSAGE(SetClientOptions)
 #undef ONE_WAY_MESSAGE
 #undef SIMPLE_TWO_WAY_MESSAGE
 #undef TWO_WAY_MESSAGE

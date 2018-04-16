@@ -33,18 +33,17 @@ IF(BUILD_SEPARATE)
         mapserver_lib
         game_db_sync_lib
         cox_server_common
-        adminserver_lib
+        network_structures
         AuthProtocol
         ${target_DEPENDS} gameData
         SEGS_Components
         ${SCRIPTING_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
         ace_IMP
-        ${PostgreSQL_LIBRARIES}
         ${CMAKE_DL_LIBS}
         password_hasher
     )
-    ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib adminserver_lib)
+    ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
     ADD_DEPENDENCIES(authserver ACE_BUILD)
     qt5_use_modules(authserver Core)
     set_property(TARGET authserver PROPERTY POSITION_INDEPENDENT_CODE ON)

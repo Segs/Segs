@@ -1,7 +1,7 @@
-#define _USE_MATH_DEFINES
 #include "ChatMessage.h"
+
 #include "Events/InputState.h"
-#include "Entity.h"
+#include "NetStructures/Entity.h"
 #include "MapEvents.h"
 #include "MapClientSession.h"
 #include "Servers/MapServer/DataHelpers.h"

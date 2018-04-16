@@ -7,7 +7,7 @@
   */
 
 #include "EntityStorage.h"
-#include "Entity.h"
+#include "NetStructures/Entity.h"
 #include "EntityUpdateCodec.h"
 #include "MapClientSession.h"
 #include "MapServer/MapServer.h"

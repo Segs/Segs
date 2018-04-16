@@ -141,4 +141,7 @@ protected:
         };
 };
 
-void                serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
+void serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
+bool initializeCharacterFromCreator();
+bool toActualCharacter(const GameAccountResponseCharacterData &src,Character &tgt);
+bool fromActualCharacter(const Character &src,GameAccountResponseCharacterData &tgt);

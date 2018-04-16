@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "Entity.h"
+#include "NetStructures/Entity.h"
 #include "Servers/MapServer/DataHelpers.h"
 
 #include <ace/Thread_Mutex.h>
