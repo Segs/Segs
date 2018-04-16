@@ -73,13 +73,6 @@ public:
         m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish, nullptr));
 
         qWarning() << "Shutting down game server because : "<<reason;
-        if (ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
-        {
-            delete m_endpoint;
-            qCritical() << "ACE_Reactor::remove_handler failed";
-            return false;
-        }
-        delete m_endpoint;
         return true;
 
     }
