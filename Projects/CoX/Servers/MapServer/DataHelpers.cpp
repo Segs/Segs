@@ -248,13 +248,14 @@ void sendServerMOTD(MapClientSession *tgt)
     }
 }
 
-void sendEmailHeaders(Entity *e){
+void sendEmailHeaders(Entity *e)
+{
     if(!e->m_client)
     {
         qWarning() << "m_client does not yet exist!";
         return;
     }
-    MapClient *src = e->m_client;
+    MapClientSession *src = e->m_client;
 
     EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
     src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
@@ -266,7 +267,7 @@ void readEmailMessage(Entity *e, const int id){
         qWarning() << "m_client does not yet exist!";
         return;
     }
-    MapClient *src = e->m_client;
+    MapClientSession *src = e->m_client;
 
     EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
     src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));

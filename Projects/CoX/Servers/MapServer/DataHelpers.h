@@ -1,6 +1,4 @@
 #pragma once
-#include "CommonNetStructures.h"
-
 #include "Events/MessageChannels.h"
 #include "glm/vec3.hpp"
 #include <stdint.h>

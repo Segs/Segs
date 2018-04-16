@@ -1114,7 +1114,7 @@ void cmdHandler_FriendList(QString &cmd, Entity *e) {
 }
 
 void cmdHandler_EmailHeaders(QString &cmd, Entity *e) {
-    MapClient *src = e->m_client;
+    MapClientSession *src = e->m_client;
 
     sendEmailHeaders(e);
 
@@ -1124,7 +1124,7 @@ void cmdHandler_EmailHeaders(QString &cmd, Entity *e) {
 }
 
 void cmdHandler_EmailRead(QString &cmd, Entity *e){
-    MapClient *src = e->m_client;
+    MapClientSession *src = e->m_client;
     int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
     readEmailMessage(e, id);
@@ -1135,7 +1135,7 @@ void cmdHandler_EmailRead(QString &cmd, Entity *e){
 }
 
 void cmdHandler_EmailSend(QString &cmd, Entity *e){
-    MapClient *src = e->m_client;
+    MapClientSession *src = e->m_client;
     QVector<QStringRef> args(cmd.splitRef(' '));
 
     //storeEmailInDB(src, args);
@@ -1146,7 +1146,7 @@ void cmdHandler_EmailSend(QString &cmd, Entity *e){
 }
 
 void cmdHandler_EmailDelete(QString &cmd, Entity *e){
-    MapClient *src = e->m_client;
+    MapClientSession *src = e->m_client;
     int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
     //deleteEmailFromDB(id);
