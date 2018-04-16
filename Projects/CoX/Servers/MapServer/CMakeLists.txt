@@ -39,6 +39,9 @@ SET(target_INCLUDE
     Events/GameCommandList.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
+    Events/EmailHeaders.h
+    Events/EmailMessageStatus.h
+    Events/EmailRead.h
     Events/EntitiesResponse.h
     Events/FloatingDamage.h
     Events/FriendsListUpdate.h

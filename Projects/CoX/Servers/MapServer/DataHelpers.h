@@ -1,4 +1,5 @@
 #pragma once
+#include "CommonNetStructures.h"
 
 #include "Events/MessageChannels.h"
 #include "glm/vec3.hpp"
@@ -128,3 +129,9 @@ void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
+
+/*
+ * sendEmail Wrappers for providing access to Email Database
+ */
+void sendEmailHeaders(Entity *e);
+void readEmailMessage(Entity *e, const int id);
