@@ -142,7 +142,7 @@ bool CreateServers()
                   g_game_server->activate();
               },"Starting game(1) server");
     TIMED_LOG({
-                  g_map_server.reset(new MapServer());
+                  g_map_server.reset(new MapServer(1));
                   g_map_server->sett_game_server_owner(1);
                   g_map_server->activate();
               },"Starting map server");

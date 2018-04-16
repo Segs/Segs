@@ -32,6 +32,8 @@
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
 
+#include <ace/Reactor.h>
+
 #include <QtCore/QDebug>
 #include <QRegularExpression>
 #include <QtCore/QFile>
@@ -64,13 +66,28 @@ void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &location
     }
 }
 }
+class MapLinkEndpoint : public ServerEndpoint
+{
+public:
+    MapLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
+    ~MapLinkEndpoint()=default;
+protected:
+    CRUDLink *createLink(EventProcessor *down) override
+    {
+        return new MapLink(down,this);
+    }
+};
 
 using namespace std;
-MapInstance::MapInstance(const QString &name) : m_name(name), m_world_update_timer(nullptr)
+MapInstance::MapInstance(const QString &name, const ListenAndLocationAddresses &listen_addr)
+    : m_name(name), m_world_update_timer(nullptr), m_addresses(listen_addr)
 {
     m_world = new World(m_entities);
     m_scripting_interface.reset(new ScriptingEngine);
+    m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
+    m_endpoint->set_downstream(this);
 }
+
 void MapInstance::start()
 {
     assert(m_world_update_timer==nullptr);
@@ -109,16 +126,30 @@ void MapInstance::spin_down()
 /// \brief This function should prepare the map for use by the specified game server
 /// \param game_server_id
 ///
-void MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t instance_id)
+bool MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t instance_id)
 {
     m_game_server_id = game_server_id;
     m_owner_id = owner_id;
     m_instance_id = instance_id;
-    HandlerLocator::registerMapInstance("",owner_id,this);
+    if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
+    {
+        qWarning() << "MapInstance::spin_up_for faile to register_handler, port already open";
+        return false;
+    }
+    if (m_endpoint->open() == -1) // will register notifications with current reactor
+        ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) MapInstance: ServerEndpoint::open\n"),false);
+
+    return true;
 }
 
-MapInstance::~MapInstance() {
+MapInstance::~MapInstance()
+{
     delete m_world;
+    if(ACE_Reactor::instance() && m_endpoint)
+    {
+        ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK);
+        delete m_endpoint;
+    }
 }
 void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage *ev)
 {
@@ -377,7 +408,7 @@ void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
     {
         // name is taken, inform by setting cookie to 0.
         EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
-        tgt->putq(new ExpectMapClientResponse({0, 0, m_server->getAddress()}, ev->session_token()));
+        tgt->putq(new ExpectMapClientResponse({0, 0, m_addresses.m_location_addr}, ev->session_token()));
     }
     else
     {
@@ -385,7 +416,7 @@ void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
         assert(cookie!=0);
         // Now we inform our game server that this Map server instance is ready for the client
         HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ExpectMapClientResponse({2+cookie, 0, m_server->getAddress()}, ev->session_token()));
+            ->putq(new ExpectMapClientResponse({2+cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
     }
 }
 void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
@@ -396,18 +427,11 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 
     // make sure that this is not a duplicate session
     uint32_t cookie = 0; // name in use
-    MapTemplate *tpl    = m_server->map_manager().get_template(request_data.m_map_id);
-    if(nullptr==tpl)
-    {
-        ev->src()->putq(
-            new ExpectMapClientResponse({1, 0, m_server->getAddress()}, ev->session_token()));
-        return;
-    }
     // fill the session with data, this will get discarded if the name is already in use...
     MapClientSession &map_session(*m_session_store.create_or_reuse_session_for(ev->session_token()));
     map_session.m_name        = request_data.m_character_name;
     // TODO: this code is wrong on the logical level
-    map_session.m_current_map = tpl->get_instance(m_game_server_id,m_owner_id);
+    map_session.m_current_map = this;
     map_session.m_max_slots   = request_data.m_max_slots;
     map_session.m_access_level = request_data.m_access_level;
     map_session.m_client_id    = request_data.m_client_id;
@@ -430,7 +454,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     // Now we inform our game server that this Map server instance is ready for the client
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-        ->putq(new ExpectMapClientResponse({cookie, 0, m_server->getAddress()}, ev->session_token()));
+        ->putq(new ExpectMapClientResponse({cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
 }
 void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
 {

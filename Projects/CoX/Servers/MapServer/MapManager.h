@@ -4,7 +4,7 @@
  * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #pragma once
@@ -23,8 +23,10 @@ class MapManager
     size_t                      m_max_instances; // how many maps can we instantiate
 public:
                     MapManager();
-    bool            load_templates(const QString &template_directory);
+    bool            load_templates(const QString &template_directory, uint8_t game_id, uint32_t map_id,
+                                   const struct ListenAndLocationAddresses &loc);
     MapTemplate *   get_template(uint32_t id);
     size_t          num_templates();
     size_t          max_instances();
+    void            shut_down_all();
 };

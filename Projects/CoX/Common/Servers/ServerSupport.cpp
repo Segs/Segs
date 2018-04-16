@@ -20,7 +20,7 @@ int ServerStopper::handle_signal (int, siginfo_t */*s_i*/, ucontext_t */*u_c*/)
 {
     shutDownAllActiveHandlers();
     shutDownMessageBus();
-    ACE_Reactor::instance()->close();
+    ACE_Reactor::instance()->end_reactor_event_loop();
     exit(0); //TODO: this is not graceful :(
     return 0;
 }

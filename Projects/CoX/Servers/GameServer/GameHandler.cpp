@@ -328,12 +328,10 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     if(selected_slot->isEmpty())
         selected_slot = nullptr; // passing a null to map server to indicate a new character is being created.
 
-    EventProcessor *map_handler=HandlerLocator::getMap_Handler(ev->m_mapnumber);
-    if(map_handler==nullptr)
-        map_handler=HandlerLocator::getMap_Handler("City_01_01");
+    EventProcessor *map_handler=HandlerLocator::getMap_Handler(m_server->getId());
     if(nullptr == map_handler)
     {
-        lnk->putq(new GameEntryError(this,"There are no available Map Servers."));
+        lnk->putq(new GameEntryError(this,"No Map Servers are running."));
         return;
     }
     //TODO: this should handle multiple map servers, for now it doesn't care and always connects to the first one.

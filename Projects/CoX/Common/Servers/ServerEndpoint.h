@@ -72,3 +72,23 @@ virtual CRUDLink *  createLink(EventProcessor *down) = 0;
         ACE_Thread_Mutex m_send_sema;
         EventProcessor *m_downstream; //!< All created links will have this as their downstream target
 };
+
+struct ListenAndLocationAddresses
+{
+    ACE_INET_Addr m_listen_addr;
+    ACE_INET_Addr m_location_addr;
+    ListenAndLocationAddresses(ACE_INET_Addr listen,ACE_INET_Addr location,uint16_t inc=0)
+    {
+        m_listen_addr = listen;
+        m_location_addr = location;
+        m_listen_addr.set_port_number(listen.get_port_number()+inc);
+        m_location_addr.set_port_number(location.get_port_number()+inc);
+    }
+    ListenAndLocationAddresses(const ListenAndLocationAddresses &oth,uint16_t inc=0)
+    {
+        m_listen_addr = oth.m_listen_addr;
+        m_location_addr = oth.m_location_addr;
+        m_listen_addr.set_port_number(oth.m_listen_addr.get_port_number()+inc);
+        m_location_addr.set_port_number(oth.m_location_addr.get_port_number()+inc);
+    }
+};

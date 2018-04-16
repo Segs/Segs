@@ -12,12 +12,14 @@
 #include "EntityStorage.h"
 #include "EventProcessor.h"
 #include "Common/Servers/ClientManager.h"
+#include "Servers/ServerEndpoint.h"
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
 
 #include <map>
 #include <memory>
 #include <vector>
+
 #define WORLD_UPDATE_TICKS_PER_SECOND 30
 
 class IdleEvent;
@@ -25,6 +27,7 @@ class MapServer;
 class SEGSTimer;
 class InputState;
 class World;
+
 // server<-> server event types
 struct ExpectMapClientRequest;
 
@@ -38,7 +41,7 @@ class MapInstance final : public EventProcessor
     std::unique_ptr<SEGSTimer> m_resend_timer;
 
     World *    m_world;
-    MapServer *m_server;
+    MapServer *m_owner_server;
 
     uint8_t                 m_game_server_id=255; // 255 is `invalid` id
     uint32_t                m_owner_id;
@@ -48,19 +51,21 @@ public:
     SessionStore            m_session_store;
     EntityManager           m_entities;
     std::unique_ptr<ScriptingEngine> m_scripting_interface;
+    class MapLinkEndpoint * m_endpoint = nullptr;
+    ListenAndLocationAddresses m_addresses; //! this value is sent to the clients
+    ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
 
 public:
-                            MapInstance(const QString &name);
+                            MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr);
                             ~MapInstance() override;
     void                    dispatch(SEGSEvent *ev) override;
 
     void                    enqueue_client(MapClientSession *clnt);
     void                    start();
-    void                    set_server(MapServer *s) { m_server = s; }
     const QString &         name() const { return m_name; }
     uint32_t                index() const { return m_index; }
     void                    spin_down();
-    void                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
+    bool spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
 protected:
     void reap_stale_links();
     void on_client_connected_to_other_server(ClientConnectedMessage *ev);
