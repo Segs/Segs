@@ -58,7 +58,7 @@
     x;\
     log << "done in"<<float(timer.elapsed())/1000.0f<<"s";\
 }
-struct MessageBusMonitor : private EventProcessor
+struct MessageBusMonitor : public EventProcessor
 {
     MessageBusEndpoint m_endpoint;
     MessageBusMonitor() : m_endpoint(*this)
@@ -100,10 +100,47 @@ static std::unique_ptr<GameServer> g_game_server;
 static std::unique_ptr<MapServer> g_map_server;
 static MessageBus *g_message_bus=nullptr;
 static MessageBusMonitor *s_bus_monitor;
-static void destroyServers()
+static void shutDownServers()
 {
+    s_event_loop_is_done = true;
+    if(g_game_server->thr_count()>0)
+    {
+        g_game_server->ShutDown();
+        g_game_server->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+        g_game_server->wait();
+        g_game_server.reset();
+    }
+    if(g_map_server->thr_count()>0)
+    {
+        g_map_server->ShutDown();
+        g_map_server->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+        g_map_server->wait();
+        g_map_server.reset();
+    }
+    if(g_auth_server->thr_count())
+    {
+        g_auth_server->ShutDown();
+        g_auth_server->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+        g_auth_server->wait();
+        g_auth_server.reset();
+    }
+    if(s_bus_monitor && s_bus_monitor->thr_count())
+    {
+        s_bus_monitor->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+        s_bus_monitor->wait();
+        delete s_bus_monitor;
+    }
+    if(g_message_bus && g_message_bus->thr_count())
+    {
+        g_message_bus->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+        g_message_bus->wait();
+        delete g_message_bus;
+    }
 
-    g_auth_server->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+}
+void break_func()
+{
+    shutDownServers();
 }
 ACE_THR_FUNC_RETURN event_loop (void *arg)
 {
@@ -234,7 +271,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     ACE_Reactor new_reactor(&threaded_reactor); //create concrete reactor
     std::unique_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes
 
-    ServerStopper st; // it'll register itself with current reactor, and shut it down on sigint
+    ServerStopper st(SIGINT,break_func); // it'll register itself with current reactor, and shut it down on sigint
     new_reactor.register_handler(interesting_signals,&st);
 
     // Print out startup copyright messages
@@ -262,6 +299,5 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     }
 
     ACE_Thread_Manager::instance()->wait();
-    ACE_Reactor::close_singleton();
     return 0;
 }
