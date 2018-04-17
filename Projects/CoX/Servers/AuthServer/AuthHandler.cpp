@@ -66,6 +66,8 @@ void AuthHandler::dispatch( SEGSEvent *ev )
         case AuthDBEventTypes::evRetrieveAccountResponse:
             on_retrieve_account_response(static_cast<RetrieveAccountResponse *>(ev));
             break;
+        case AuthDBEventTypes::evAuthDbError:
+            on_db_error(static_cast<AuthDbErrorMessage *>(ev)); break;
         case Internal_EventTypes::evExpectClientResponse:
             on_client_expected(static_cast<ExpectClientResponse *>(ev)); break;
         case Internal_EventTypes::evClientConnected:
@@ -216,7 +218,7 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
                 {
                     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
                     lnk->putq(s_auth_error_wrong_login_pass.shallow_copy());
-                return;
+                    return;
                 }
 
             // check if this session perhaps is in 'ready for reaping set', and remove it from there
@@ -390,4 +392,9 @@ void AuthHandler::on_server_status_change(GameServerStatusMessage *ev)
 {
     MTGuard guard(m_server_mutex);
     m_known_game_servers[ev->m_data.m_id] = ev->m_data;
+}
+void AuthHandler::on_db_error(AuthDbErrorMessage *ev)
+{
+    AuthSession &session(m_sessions.session_from_event(ev));
+    session.link()->putq(s_auth_error_db_error.shallow_copy());
 }

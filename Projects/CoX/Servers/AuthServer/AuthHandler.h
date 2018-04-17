@@ -101,6 +101,7 @@ protected:
     void        on_client_expected(ExpectClientResponse *ev);
     void        on_client_connected_to_other_server(ClientConnectedMessage *ev);
     void        on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev);
+    void        on_db_error(AuthDbErrorMessage *ev);
 
     void        dispatch(SEGSEvent *ev) override;
 public:
