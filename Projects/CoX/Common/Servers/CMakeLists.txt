@@ -1,6 +1,5 @@
 
 SET(target_CPP
-    ${CMAKE_CURRENT_SOURCE_DIR}/ServerSupport.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerEndpoint.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HandlerLocator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MessageBus.cpp
@@ -9,7 +8,6 @@ SET(target_CPP
 SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/ClientManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ServerEndpoint.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/server_support.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Database.h
     ${CMAKE_CURRENT_SOURCE_DIR}/InternalEvents.h
     ${CMAKE_CURRENT_SOURCE_DIR}/HandlerLocator.h

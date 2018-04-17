@@ -146,11 +146,7 @@ bool MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t 
 MapInstance::~MapInstance()
 {
     delete m_world;
-    if(ACE_Reactor::instance() && m_endpoint)
-    {
-        ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK);
-        delete m_endpoint;
-    }
+    delete m_endpoint;
 }
 void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage *ev)
 {

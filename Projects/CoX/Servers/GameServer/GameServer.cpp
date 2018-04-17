@@ -102,11 +102,7 @@ GameServer::GameServer(int id) : d(new PrivateData)
 
 GameServer::~GameServer()
 {
-    if(ACE_Reactor::instance())
-    {
-        ACE_Reactor::instance()->remove_handler(d->m_endpoint,ACE_Event_Handler::READ_MASK);
-        delete d->m_endpoint;
-    }
+    delete d->m_endpoint;
 }
 // later name will be used to read GameServer specific configuration
 bool GameServer::ReadConfigAndRestart()
@@ -163,7 +159,9 @@ bool GameServer::ReadConfigAndRestart()
 }
 bool GameServer::ShutDown(const QString &reason)
 {
-    return d->ShutDown(reason);
+    bool res = d->ShutDown(reason);
+    putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+    return res;
 }
 
 const ACE_INET_Addr &GameServer::getAddress()

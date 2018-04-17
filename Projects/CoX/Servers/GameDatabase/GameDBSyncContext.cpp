@@ -197,10 +197,11 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
     m_prepared_account_select->bindValue(0,quint64(data.m_auth_account_id));
     if(!doIt(*m_prepared_account_select))
         return false;
-    if(!m_prepared_account_select->next() && !data.create_if_does_not_exist)
+    bool account_exists = m_prepared_account_select->next();
+    if(!account_exists && !data.create_if_does_not_exist)
         return false;
 
-    if(data.create_if_does_not_exist)
+    if(!account_exists && data.create_if_does_not_exist)
     {
         m_prepared_account_insert->bindValue(0,quint64(data.m_auth_account_id));
         m_prepared_account_insert->bindValue(1,data.max_character_slots);
@@ -345,6 +346,7 @@ bool GameDbSyncContext::createNewChar(const CreateNewCharacterRequestData &data,
         return false;
     int64_t char_id = m_prepared_char_insert->lastInsertId().toLongLong();
     result.m_char_id = char_id;
+    result.slot_idx = selected_slot;
     // create costume
     m_prepared_costume_insert->bindValue(":id",quint64(char_id));
     m_prepared_costume_insert->bindValue(":costume_index",uint32_t(0));

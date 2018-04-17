@@ -55,8 +55,6 @@ AuthServer::AuthServer()
 
 AuthServer::~AuthServer()
 {
-
-    ShutDown();
     delete m_acceptor;
 }
 void AuthServer::dispatch(SEGSEvent *ev)
@@ -138,5 +136,7 @@ bool AuthServer::ShutDown(const QString &reason)
     m_handler->wait();
     qWarning() << "Shut down reason:" << reason;
     m_running = false;
+    putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+    wait();
     return true;
 }

@@ -17,7 +17,7 @@ class MessageBus final : public EventProcessor
 {
     std::unordered_map<uint32_t,std::vector<MessageBusEndpoint *> > m_specific_subscriber_map;
     std::vector<MessageBusEndpoint *> m_catch_all_subscribers;
-    SEGSTimer *m_statistics_timer = nullptr;
+    std::unique_ptr<SEGSTimer> m_statistics_timer;
     friend void postGlobalEvent(SEGSEvent *ev);
     friend void shutDownMessageBus();
     friend class MessageBusEndpoint; // allow endpoints to register/unregister

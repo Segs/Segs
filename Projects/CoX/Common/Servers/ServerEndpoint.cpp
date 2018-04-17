@@ -6,6 +6,11 @@
 #include <ace/Reactor.h>
 #include <ace/Message_Block.h>
 
+ServerEndpoint::~ServerEndpoint() 
+{
+    handle_close(INVALID_HANDLE_VALUE, 0);
+    m_downstream = nullptr;
+}
 int ServerEndpoint::handle_input(ACE_HANDLE /*fd*/) //! Called when input is available from the client.
 {
     uint8_t buf[0x2000];
@@ -55,6 +60,8 @@ int ServerEndpoint::handle_output(ACE_HANDLE /*fd*/) //! Called when output is p
 //! Called when this handler is removed from the ACE_Reactor.
 int ServerEndpoint::handle_close(ACE_HANDLE, ACE_Reactor_Mask)
 {
+    if (this->reactor() && this->reactor()->remove_handler(this, ALL_EVENTS_MASK | DONT_CALL) == -1)
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("unable to unregister client handler")), -1);
     endpoint_.close();
     return 0;
 }

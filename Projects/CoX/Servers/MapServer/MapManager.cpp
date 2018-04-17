@@ -46,7 +46,7 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
         }
     }
     // (template_directory / "tutorial.bin")
-    return true;
+    return !m_templates.empty();
 }
 //! \brief Retrieves template specified by it's client-side path
 MapTemplate * MapManager::get_template( QString id )

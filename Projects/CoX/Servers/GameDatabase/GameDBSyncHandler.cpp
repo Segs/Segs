@@ -49,7 +49,7 @@ void GameDBSyncHandler::on_character_remove(RemoveCharacterRequest *msg)
     GameDbSyncContext &db_ctx(m_db_context.localData());
 
     if (!db_ctx.removeCharacter(msg->m_data))
-        msg->src()->putq(new GameDbErrorMessage({"Game db error"}, msg->session_token()));
+        msg->src()->putq(new GameDbErrorMessage({"on_character_remove : Game db error"}, msg->session_token()));
     else
         msg->src()->putq(new RemoveCharacterResponse({msg->m_data.slot_idx}, msg->session_token()));
 }
@@ -73,7 +73,7 @@ void GameDBSyncHandler::on_account_request(GameAccountRequest *msg)
     if(db_ctx.getAccount(msg->m_data,resp))
         msg->src()->putq(new GameAccountResponse(std::move(resp),msg->session_token()));
     else
-        msg->src()->putq(new GameDbErrorMessage({"Game db error"},msg->session_token()));
+        msg->src()->putq(new GameDbErrorMessage({"on_account_request:Game db error"},msg->session_token()));
 
 }
 
@@ -85,7 +85,7 @@ void GameDBSyncHandler::on_check_name_clash(WouldNameDuplicateRequest * ev)
     if(db_ctx.checkNameClash(ev->m_data,resp))
         ev->src()->putq(new WouldNameDuplicateResponse(std::move(resp),ev->session_token()));
     else
-        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+        ev->src()->putq(new GameDbErrorMessage({"on_check_name_clash:Game db error"},ev->session_token()));
 }
 void GameDBSyncHandler::on_create_new_char(CreateNewCharacterRequest * ev)
 {
