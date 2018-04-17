@@ -183,7 +183,6 @@ bool AuthDbSyncContext::checkPassword(const QString &login, const QString &passw
     }
     if (!m_prepared_select_account_passw->next())
     {
-        last_error.reset(new QSqlError("No such account", "No such account"));
         return false;
     }
     PasswordHasher hasher;

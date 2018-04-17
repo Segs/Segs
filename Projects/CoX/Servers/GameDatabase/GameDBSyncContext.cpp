@@ -204,7 +204,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
     {
         m_prepared_account_insert->bindValue(0,quint64(data.m_auth_account_id));
         m_prepared_account_insert->bindValue(1,data.max_character_slots);
-        if(!doIt(*m_prepared_account_select))
+        if(!doIt(*m_prepared_account_insert))
             return false;
         m_prepared_account_select->bindValue(0,quint64(data.m_auth_account_id));
         if(!doIt(*m_prepared_account_select))
