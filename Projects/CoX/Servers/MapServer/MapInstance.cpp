@@ -681,7 +681,7 @@ void MapInstance::on_input_state(InputState *st)
         qCDebug(logMapEvents) << "bits: " << st->m_user_commands.GetReadableBits();
         qCWarning(logMapEvents) << "Not all bits were consumed by previous commands:";
         for(const char *cmd : prev_commands)
-            qCWarning(logMapEvents) << prev_commands;
+            qCWarning(logMapEvents) << cmd;
         assert(false);
     }
 
