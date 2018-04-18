@@ -148,10 +148,10 @@ void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
     lnk->putq(new AuthorizationError(code));
 }
 
-void AuthHandler::zero_terminate_strings(LoginRequest *ev)
+static void zero_terminate_strings(LoginRequest *ev)
 {
-    ev->m_data.login[strlen(ev->m_data.login)] = '\0';
-    ev->m_data.password[strlen(ev->m_data.password)] = '\0';
+    ev->m_data.login[sizeof(ev->m_data.login) -1] = '\0';
+    ev->m_data.password[sizeof(ev->m_data.password) -1] = '\0';
 }
 
 bool AuthHandler::isClientConnectedAnywhere(uint32_t client_id)
@@ -261,6 +261,22 @@ void AuthHandler::on_login( LoginRequest *ev )
     EventProcessor *auth_db_handler=HandlerLocator::getAuthDB_Handler();
     assert(m_authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
 
+    // if username is too long (same size as with the related char array)
+    // will have no null-termination and take in pwd as well
+    if(strlen(ev->m_data.login) >= sizeof(ev->m_data.login))
+    {
+        lnk->putq(s_auth_error_blocked_account.shallow_copy());
+        return;
+    }
+
+    // if password is too long
+    if (strlen(ev->m_data.password) >= sizeof(ev->m_data.password))
+    {
+        lnk->putq(s_auth_error_blocked_account.shallow_copy());
+        return;
+    }
+
+    // for safety reasons, ensure the last character in the arrays are null-terminated
     zero_terminate_strings(ev);
 
     if(!auth_db_handler)
@@ -280,6 +296,7 @@ void AuthHandler::on_login( LoginRequest *ev )
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;
     }
+
     uint64_t sess_tok;
     AuthSession *session_ptr;
     // we create a temporary session here.
