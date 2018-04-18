@@ -262,15 +262,15 @@ void AuthHandler::on_login( LoginRequest *ev )
     assert(m_authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
 
     // if username is too long (same size as with the related char array)
-    // will have no null-termination and take in pwd as well
-    if(strlen(ev->m_data.login) >= sizeof(ev->m_data.login))
+    // will have no null-termination and take in data from pwd array as well
+    if(ev->m_data.login[sizeof(ev->m_data.login) -1] != '\0')
     {
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;
     }
 
     // if password is too long
-    if (strlen(ev->m_data.password) >= sizeof(ev->m_data.password))
+    if (ev->m_data.password[sizeof(ev->m_data.password)-1] != '\0')
     {
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;
