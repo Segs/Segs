@@ -150,8 +150,8 @@ void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
 
 void AuthHandler::zero_terminate_strings(LoginRequest *ev)
 {
-    memset(ev->m_data.login, 0x00, sizeof(ev->m_data.login));
-    memset(ev->m_data.password, 0x00, sizeof(ev->m_data.password));
+    ev->m_data.login[strlen(ev->m_data.login)] = '\0';
+    ev->m_data.password[strlen(ev->m_data.password)] = '\0';
 }
 
 bool AuthHandler::isClientConnectedAnywhere(uint32_t client_id)
@@ -261,24 +261,23 @@ void AuthHandler::on_login( LoginRequest *ev )
     EventProcessor *auth_db_handler=HandlerLocator::getAuthDB_Handler();
     assert(m_authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
 
+    zero_terminate_strings(ev);
+
     if(!auth_db_handler)
     {
         lnk->putq(s_auth_error_no_db.shallow_copy()); // we cannot do much without that
-        zero_terminate_strings(ev);
         return;
     }
 
     if(lnk->m_state!=AuthLink::CONNECTED)
     {
         lnk->putq(s_auth_error_unknown.shallow_copy());
-        zero_terminate_strings(ev);
         return;
     }
     qDebug() <<"User" << ev->m_data.login<< "trying to login from" << lnk->peer_addr().get_host_addr();
     if(strlen(ev->m_data.login)<=2)
     {
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
-        zero_terminate_strings(ev);
         return;
     }
     uint64_t sess_tok;
@@ -300,8 +299,6 @@ void AuthHandler::on_login( LoginRequest *ev )
     // here we will wait for db response, so here we're going to put the session on the read-to-reap list
     // in case db does not respond in sane time frame, the session is going to be removed.
     m_sessions.locked_mark_session_for_reaping(session_ptr,sess_tok);
-
-    zero_terminate_strings(ev);
 }
 void AuthHandler::on_server_list_request( ServerListRequest *ev )
 {
