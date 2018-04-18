@@ -148,12 +148,6 @@ void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
     lnk->putq(new AuthorizationError(code));
 }
 
-static void zero_terminate_strings(LoginRequest *ev)
-{
-    ev->m_data.login[sizeof(ev->m_data.login) -1] = '\0';
-    ev->m_data.password[sizeof(ev->m_data.password) -1] = '\0';
-}
-
 bool AuthHandler::isClientConnectedAnywhere(uint32_t client_id)
 {
     uint64_t token = m_sessions.token_for_id(client_id);
@@ -275,9 +269,6 @@ void AuthHandler::on_login( LoginRequest *ev )
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;
     }
-
-    // for safety reasons, ensure the last character in the arrays are null-terminated
-    zero_terminate_strings(ev);
 
     if(!auth_db_handler)
     {
