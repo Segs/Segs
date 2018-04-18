@@ -1,5 +1,6 @@
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
+#include "SceneGraph.h"
 
 #include "Events/ChatMessage.h"
 #include "Events/StandardDialogCmd.h"
@@ -47,6 +48,12 @@ ScriptingEngine::~ScriptingEngine()
 
 void ScriptingEngine::registerTypes()
 {
+    m_private->m_lua.new_usertype<glm::vec3>( "vec3",
+        sol::constructors<glm::vec3(), glm::vec3(float,float,float)>(),
+        "x", &glm::vec3::x,
+        "y", &glm::vec3::y,
+        "z", &glm::vec3::z
+    );
     m_private->m_lua.new_usertype<Contact>( "Contact",
         // 3 constructors
         sol::constructors<Contact()>(),
@@ -54,13 +61,17 @@ void ScriptingEngine::registerTypes()
         "name", sol::property(&Contact::getName, &Contact::setName),
         "display_name", &Contact::m_display_name
     );
-    m_private->m_lua.new_usertype<MapClientSession>( "MapClient",
+    m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
         "new", sol::no_constructor, // The client links are not constructible from the script side.
         "admin_chat_message", sendChatMessage,
         "simple_dialog", [](MapClientSession *cl,const char *dlgtext) {
             auto n = new StandardDialogCmd(dlgtext);
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
         }
+    );
+    m_private->m_lua.new_usertype<SceneGraph>( "SceneGraph",
+        "new", sol::no_constructor, // The client links are not constructible from the script side.
+        "set_default_spawn_point", &SceneGraph::set_default_spawn_point
     );
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
 

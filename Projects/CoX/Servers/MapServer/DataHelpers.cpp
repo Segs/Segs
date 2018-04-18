@@ -185,7 +185,8 @@ Entity * getEntity(MapClientSession *src, int32_t idx)
     EntityManager &em(mi->m_entities);
     QString errormsg;
 
-    if(idx==0) {
+    if(idx==0)
+    {
         errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
         qWarning() << errormsg;
         sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
@@ -204,20 +205,21 @@ Entity * getEntity(MapClientSession *src, int32_t idx)
     return nullptr;
 }
 
-Entity * getEntityByDBID(MapClientSession *src, int32_t db_id)
+Entity *getEntityByDBID(MapClientSession *src, int32_t db_id)
 {
-    MapInstance *mi = src->m_current_map;
+    MapInstance *  mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
-    QString errormsg;
+    QString        errormsg;
 
-    if(db_id==0) {
+    if (db_id == 0)
+    {
         errormsg = "Entity " + QString::number(db_id) + " does not exist in the database.";
         qWarning() << errormsg;
         sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
         return nullptr;
     }
     // TODO: Iterate through all entities in Database and return entity by db_id
-    for (Entity* pEnt : em.m_live_entlist)
+    for (Entity *pEnt : em.m_live_entlist)
     {
         if (pEnt->m_db_id == db_id)
             return pEnt;
@@ -328,9 +330,9 @@ void    setMapName(Character &c, const QString &val) { c.m_char_data.m_mapName =
 void setXP(Character &c, uint32_t val)
 {
     c.m_char_data.m_experience_points = val;
-    for(auto const& lvl: c.m_other_attribs.m_ExperienceRequired)
+    for (auto const &lvl : c.m_other_attribs.m_ExperienceRequired)
     {
-        if(val>=lvl && val<lvl+1)
+        if (val >= lvl && val < lvl + 1)
         {
             setLevel(c, lvl);
             // TODO: set max attribs based upon level.

@@ -726,20 +726,21 @@ void cmdHandler_AFK(QString &cmd, Entity *e) {
     sendInfoMessage(MessageChannel::EMOTE, msg, src);
 }
 
-void cmdHandler_WhoAll(QString &cmd, Entity *e) {
+void cmdHandler_WhoAll(QString &cmd, Entity *e)
+{
     MapClientSession *src = e->m_client;
-    MapInstance *mi = src->m_current_map;
+    MapInstance *     mi  = src->m_current_map;
 
     QString msg = "Players on this map:\n";
 
-    for(MapClientSession *cl : mi->m_session_store)
+    for (MapClientSession *cl : mi->m_session_store)
     {
         Character &c(*cl->m_ent->m_char);
-        QString name        = cl->m_ent->name();
-        QString lvl         = QString::number(getLevel(c));
-        QString clvl        = QString::number(getCombatLevel(c));
-        QString origin      = getOrigin(c);
-        QString archetype   = QString(getClass(c)).remove("Class_");
+        QString    name      = cl->m_ent->name();
+        QString    lvl       = QString::number(getLevel(c));
+        QString    clvl      = QString::number(getCombatLevel(c));
+        QString    origin    = getOrigin(c);
+        QString    archetype = QString(getClass(c)).remove("Class_");
 
         // Format: character_name "lvl" level "clvl" combat_level origin archetype
         msg += name + " lvl " + lvl + " clvl " + clvl + " " + origin + " " + archetype + "\n";
