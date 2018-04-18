@@ -147,6 +147,7 @@ void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
 {
     lnk->putq(new AuthorizationError(code));
 }
+
 bool AuthHandler::isClientConnectedAnywhere(uint32_t client_id)
 {
     uint64_t token = m_sessions.token_for_id(client_id);
@@ -254,6 +255,21 @@ void AuthHandler::on_login( LoginRequest *ev )
     EventProcessor *auth_db_handler=HandlerLocator::getAuthDB_Handler();
     assert(m_authserv); // if this fails it means we were not created.. ( AuthServer is creation point for the Handler)
 
+    // if username is too long (same size as with the related char array)
+    // will have no null-termination and take in data from pwd array as well
+    if(ev->m_data.login[sizeof(ev->m_data.login) -1] != '\0')
+    {
+        lnk->putq(s_auth_error_blocked_account.shallow_copy());
+        return;
+    }
+
+    // if password is too long
+    if (ev->m_data.password[sizeof(ev->m_data.password)-1] != '\0')
+    {
+        lnk->putq(s_auth_error_blocked_account.shallow_copy());
+        return;
+    }
+
     if(!auth_db_handler)
     {
         lnk->putq(s_auth_error_no_db.shallow_copy()); // we cannot do much without that
@@ -271,6 +287,7 @@ void AuthHandler::on_login( LoginRequest *ev )
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;
     }
+
     uint64_t sess_tok;
     AuthSession *session_ptr;
     // we create a temporary session here.
