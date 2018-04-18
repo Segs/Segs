@@ -38,7 +38,6 @@ public:
         void                    sett_game_server_owner(uint8_t owner_id);
 private:
         bool                    Run(void);
-        bool                    startup(); // MapServerStartup sequence diagram entry point.
         // EventProcessor interface
         void                    dispatch(SEGSEvent *ev) override;
         void                    on_expect_client(struct ExpectMapClientRequest *ev);

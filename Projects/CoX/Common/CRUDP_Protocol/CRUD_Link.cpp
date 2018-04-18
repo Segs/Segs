@@ -117,7 +117,7 @@ int CRUDLink::handle_output( ACE_HANDLE )
                 connection_update();
                 break;
             case SEGS_EventTypes::evDisconnect:
-                putq(new SEGSEvent(SEGS_EventTypes::evFinish)); // close the link
+                putq(SEGSEvent::s_ev_finish.shallow_copy()); // close the link
                 break;
             case CRUD_EventTypes::evPacket: // CRUDP_Protocol has posted a pre-parsed packet to us
                 event_for_packet(static_cast<PacketEvent *>(ev));

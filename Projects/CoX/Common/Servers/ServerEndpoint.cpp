@@ -42,7 +42,7 @@ int ServerEndpoint::handle_output(ACE_HANDLE /*fd*/) //! Called when output is p
             if (send_cnt == -1)
             {
                 // inform the link that it should die.
-                pkt_ev->src()->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+                pkt_ev->src()->putq(SEGSEvent::s_ev_finish.shallow_copy());
                 ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"), ACE_TEXT ("send")));
                 ev->release();
                 break;

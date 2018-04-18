@@ -23,7 +23,7 @@ class GameServer  : public EventProcessor
 {
         class PrivateData;
 public:
-                                ~GameServer();
+                                ~GameServer() override;
                                 GameServer(int id);
         bool                    ReadConfigAndRestart();
         bool                    Run(void);

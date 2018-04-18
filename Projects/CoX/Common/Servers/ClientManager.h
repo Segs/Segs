@@ -268,7 +268,7 @@ public:
                     if(waiting_session.m_session->link()) // it's a temporary session
                     {
                         // telling the temporary link to close.
-                        waiting_session.m_session->link()->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+                        waiting_session.m_session->link()->putq(SEGSEvent::s_ev_finish.shallow_copy());
                     }
                     // we destroy the session object
                     remove_by_token(waiting_session.m_session_token, waiting_session.m_session->auth_id());
