@@ -31,6 +31,7 @@ public:
         size_t                      num_instances();
         void                        shut_down_all();
         QString                     client_filename() const;
+        QString                     base_name() const;
 };
 // Generates instances based on some kind of schema file
 class GeneratedMapTemplate : public MapTemplate

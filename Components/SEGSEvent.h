@@ -2,6 +2,7 @@
 #include <ace/Time_Value.h>
 #include <atomic>
 #include <typeinfo>
+#include <cassert>
 class EventProcessor;
 
 // Helper defines to ease the definition of event types
@@ -28,12 +29,16 @@ protected:
         EventProcessor *m_event_source;
         std::atomic<int> m_ref_count {1}; // used to prevent event being deleted when it's in multiple queues
 
+public:
+
 virtual                 ~SEGSEvent()
                         {
+                            // we allow delete when there is 1 reference left (static variables on exit)
+                            assert(m_ref_count<=1);
                             m_event_source=nullptr;
                         }
-public:
-                        SEGSEvent(uint32_t evtype,EventProcessor *ev_src=nullptr) : m_type(evtype),m_event_source(ev_src)
+                        SEGSEvent(uint32_t evtype,EventProcessor *ev_src=nullptr) :
+                            m_type(evtype),m_event_source(ev_src)
                         {}
         SEGSEvent *     shallow_copy() // just incrementing the ref count
                         {
@@ -50,6 +55,8 @@ public:
         EventProcessor *src() {return m_event_source;}
         uint32_t        type() const {return m_type;}
 virtual const char *    info();
+
+static  SEGSEvent       s_ev_finish;
 };
 
 class TimerEvent final: public SEGSEvent

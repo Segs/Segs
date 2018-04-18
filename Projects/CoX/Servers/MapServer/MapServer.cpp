@@ -67,7 +67,7 @@ bool MapServer::Run()
         return false;
     }
     assert(d->m_manager.num_templates()>0); // we have to have a world to run
-    return startup();
+    return true;
 }
 /**
  * @param  inipath Doc at RoamingServer::ReadConfig
@@ -116,7 +116,7 @@ bool MapServer::ShutDown(const QString &reason)
     qWarning() << "Shutting down map server because :"<<reason;
     // tell all instances to shut down too
     d->m_manager.shut_down_all();
-    putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+    putq(SEGSEvent::s_ev_finish.shallow_copy());
     return true;
 }
 
@@ -133,16 +133,6 @@ MapServerData &MapServer::runtimeData()
 void MapServer::sett_game_server_owner(uint8_t owner_id)
 {
     m_owner_game_server_id = owner_id;
-}
-
-/**
-* Processing according to MapServerStartup sequence diagram.
-*/
-bool MapServer::startup()
-{
-    //FIXME: global timer queue should be activated in some central place!
-    GlobalTimerQueue::instance()->activate();
-    return true;
 }
 
 void MapServer::dispatch(SEGSEvent *ev)
