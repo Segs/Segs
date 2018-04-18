@@ -8,7 +8,7 @@
 
 ServerEndpoint::~ServerEndpoint() 
 {
-    handle_close(INVALID_HANDLE_VALUE, 0);
+    handle_close(ACE_INVALID_HANDLE, 0);
     m_downstream = nullptr;
 }
 int ServerEndpoint::handle_input(ACE_HANDLE /*fd*/) //! Called when input is available from the client.
