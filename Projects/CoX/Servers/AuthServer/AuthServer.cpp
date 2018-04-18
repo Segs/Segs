@@ -132,11 +132,11 @@ bool AuthServer::ShutDown(const QString &reason)
         m_acceptor->close();
     }
     // force our handler to finish
-    m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+    m_handler->putq(SEGSEvent::s_ev_finish.shallow_copy());
     m_handler->wait();
     qWarning() << "Shut down reason:" << reason;
     m_running = false;
-    putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+    putq(SEGSEvent::s_ev_finish.shallow_copy());
     wait();
     return true;
 }

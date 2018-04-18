@@ -42,7 +42,8 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QElapsedTimer>
-#include <QtCore/QMutexLocker>
+#include <thread>
+#include <mutex>
 #include <stdlib.h>
 #include <memory>
 #define TIMED_LOG(x,msg) {\
@@ -106,11 +107,11 @@ static void shutDownServers()
     }
     if(s_bus_monitor && s_bus_monitor->thr_count())
     {
-        s_bus_monitor->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+        s_bus_monitor->putq(SEGSEvent::s_ev_finish.shallow_copy());
     }
     if(g_message_bus && g_message_bus->thr_count())
     {
-        g_message_bus->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+        g_message_bus->putq(SEGSEvent::s_ev_finish.shallow_copy());
     }
 
     s_event_loop_is_done = true;
@@ -125,26 +126,18 @@ void MessageBusMonitor::on_service_status(ServiceStatusMessage *msg)
     else
         qInfo() << msg->m_data.status_message;
 }
-void break_func()
-{
-    shutDownServers();
-}
 // this event stops main processing loop of the whole server
 class ServerStopper : public ACE_Event_Handler
 {
-    void(*shut_down_func)();
 public:
-    ServerStopper(int signum, void(*func)()) // when instantiated adds itself to current reactor
+    ServerStopper(int signum) // when instantiated adds itself to current reactor
     {
         ACE_Reactor::instance()->register_handler(signum, this);
-        shut_down_func = func;
 }
     // Called when object is signaled by OS.
     int handle_signal(int, siginfo_t */*s_i*/, ucontext_t */*u_c*/)
     {
         shutDownServers();
-        if (shut_down_func)
-            shut_down_func();
         return 0;
     }
 };
@@ -190,11 +183,11 @@ bool CreateServers()
 //    server_manger->AddGameServer(game_instance);
     return true;
 }
-QMutex log_mutex;
+std::mutex log_mutex;
 
 void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    QMutexLocker lock(&log_mutex);
+    std::lock_guard<std::mutex> lock(log_mutex);
     QFile segs_log_target;
     segs_log_target.setFileName("output.log");
     if (!segs_log_target.open(QFile::WriteOnly | QFile::Append))
@@ -270,7 +263,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     const size_t N_THREADS = 1;
     //std::unique_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes
 
-    ServerStopper st(SIGINT,break_func); // it'll register itself with current reactor, and shut it down on sigint
+    ServerStopper st(SIGINT); // it'll register itself with current reactor, and shut it down on sigint
     ACE_Reactor::instance()->register_handler(interesting_signals,&st);
 
     // Print out startup copyright messages
@@ -306,7 +299,6 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     g_message_bus.reset();
     ACE_Reactor::instance()->handle_events(&event_processing_delay);
     ACE_Reactor::instance()->remove_handler(interesting_signals);
-
     ACE_Reactor::end_event_loop();
     return 0;
 }

@@ -21,7 +21,7 @@ void shutDownAllActiveHandlers()
         warn<<"Shutting down GameDBSync..";
         while(game_db_handler->thr_count())
         {
-            game_db_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+            game_db_handler->putq(SEGSEvent::s_ev_finish.shallow_copy());
             game_db_handler->wait();
         }
         warn<<"Done";
@@ -34,7 +34,7 @@ void shutDownAllActiveHandlers()
         warn<<"Shutting down DBSync..";
         if(dbsync->thr_count()>0)
         {
-            dbsync->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+            dbsync->putq(SEGSEvent::s_ev_finish.shallow_copy());
             dbsync->wait();
         }
         warn<<"Done";

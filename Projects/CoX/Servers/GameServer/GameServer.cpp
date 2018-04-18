@@ -160,7 +160,7 @@ bool GameServer::ReadConfigAndRestart()
 bool GameServer::ShutDown(const QString &reason)
 {
     bool res = d->ShutDown(reason);
-    putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+    putq(SEGSEvent::s_ev_finish.shallow_copy());
     return res;
 }
 

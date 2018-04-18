@@ -111,7 +111,7 @@ void postGlobalEvent(SEGSEvent *ev)
 /// \note this cannot be called from one of the message bus handling threads.
 void shutDownMessageBus()
 {
-    HandlerLocator::getMessageBus()->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+    HandlerLocator::getMessageBus()->putq(SEGSEvent::s_ev_finish.shallow_copy());
     HandlerLocator::getMessageBus()->wait();
 
 }

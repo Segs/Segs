@@ -36,7 +36,7 @@ void MapTemplate::shut_down_all()
     {
         if(instance->thr_count()>0)
         {
-            instance->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+            instance->putq(SEGSEvent::s_ev_finish.shallow_copy());
             instance->wait();
         }
         delete instance;
@@ -45,13 +45,17 @@ void MapTemplate::shut_down_all()
 
 QString MapTemplate::client_filename() const
 {
-    assert(m_map_filename.contains("City_"));
+    QString map_desc_from_path = base_name();
+    return QString("maps/city_zones/%1/%1.txt").arg(map_desc_from_path);
+}
+
+QString MapTemplate::base_name() const
+{
     int city_idx     = m_map_filename.indexOf("City_");
     int end_or_slash = m_map_filename.indexOf("/", city_idx);
     assert(city_idx != -1);
-    QString map_desc_from_path =
-        m_map_filename.mid(city_idx, end_or_slash == -1 ? -1 : m_map_filename.size() - end_or_slash).toLower();
-    return QString("maps/city_zones/%1/%1.txt").arg(map_desc_from_path);
+    return m_map_filename.mid(city_idx, end_or_slash == -1 ? -1 : m_map_filename.size() - end_or_slash).toLower();
+
 }
 
 size_t MapTemplate::num_instances()

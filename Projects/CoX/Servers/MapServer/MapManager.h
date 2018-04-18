@@ -26,6 +26,7 @@ class MapManager
     size_t                      m_max_instances; // how many maps can we instantiate
 public:
                     MapManager();
+                    ~MapManager();
     bool            load_templates(const QString &template_directory, uint8_t game_id, uint32_t map_id,
                                    const struct ListenAndLocationAddresses &loc);
     MapTemplate *   get_template(QString id);

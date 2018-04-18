@@ -36,7 +36,10 @@ int EventProcessor::svc( )
             if (thr_count() > 1)
                 putq(mb); // put this back on our message queue, our siblings will receive it and shut down as well
             else
+            {
                 mb->release();
+                this->flush();
+            }
             return 0;
         }
         dispatch(mb);
