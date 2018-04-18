@@ -95,6 +95,9 @@ protected:
     void        on_login( LoginRequest *ev );
     void        on_server_list_request( ServerListRequest *ev );
     void        on_server_selected(ServerSelectRequest *ev);
+
+    // zero-terminating login and password arrays from LoginRequest
+    void        zero_terminate_strings(LoginRequest *ev);
     //////////////////////////////////////////////////////////////////////////
     // Server <-> server event handlers
     void        on_retrieve_account_response(RetrieveAccountResponse *msg);
