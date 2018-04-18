@@ -7,7 +7,6 @@
 
  */
 //#define ACE_NTRACE 0
-#include "Servers/server_support.h"
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
 #include "Servers/MessageBusEndpoint.h"
@@ -27,11 +26,8 @@
 
 #include <ace/ACE.h>
 #include <ace/Singleton.h>
-#include <ace/Null_Mutex.h>
 #include <ace/Log_Record.h>
 #include <ace/INET_Addr.h>
-#include <ace/SOCK_Connector.h>
-#include <ace/SOCK_Acceptor.h>
 
 #include <ace/Reactor.h>
 #include <ace/TP_Reactor.h>
@@ -46,8 +42,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QElapsedTimer>
-#include <iostream>
-#include <string>
+#include <QtCore/QMutexLocker>
 #include <stdlib.h>
 #include <memory>
 #define TIMED_LOG(x,msg) {\
@@ -58,6 +53,13 @@
     x;\
     log << "done in"<<float(timer.elapsed())/1000.0f<<"s";\
 }
+namespace
+{
+static bool s_event_loop_is_done=false; //!< this is set to true when ace reactor is finished.
+static std::unique_ptr<AuthServer> g_auth_server; // this is a global for now.
+static std::unique_ptr<GameServer> g_game_server;
+static std::unique_ptr<MapServer> g_map_server;
+static std::unique_ptr<MessageBus> g_message_bus;
 struct MessageBusMonitor : public EventProcessor
 {
     MessageBusEndpoint m_endpoint;
@@ -81,77 +83,71 @@ public:
         }
     }
 private:
-    void on_service_status(ServiceStatusMessage *msg)
-    {
-        if(msg->m_data.status_value!=0)
-        {
-            qCritical().noquote() << msg->m_data.status_message;
-            exit(1);
-        }
-        else
-            qInfo() << msg->m_data.status_message;
-    }
+    void on_service_status(ServiceStatusMessage *msg);
 };
-namespace
-{
-static bool s_event_loop_is_done=false; //!< this is set to true when ace reactor is finished.
-static std::unique_ptr<AuthServer> g_auth_server; // this is a global for now.
-static std::unique_ptr<GameServer> g_game_server;
-static std::unique_ptr<MapServer> g_map_server;
-static MessageBus *g_message_bus=nullptr;
-static MessageBusMonitor *s_bus_monitor;
+static std::unique_ptr<MessageBusMonitor> s_bus_monitor;
 static void shutDownServers()
 {
-    s_event_loop_is_done = true;
-    if(g_game_server->thr_count()>0)
+    if (GlobalTimerQueue::instance()->thr_count())
+    {
+        GlobalTimerQueue::instance()->deactivate();
+    }
+    if(g_game_server && g_game_server->thr_count())
     {
         g_game_server->ShutDown();
-        g_game_server->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
-        g_game_server->wait();
-        g_game_server.reset();
     }
-    if(g_map_server->thr_count()>0)
+    if(g_map_server && g_map_server->thr_count())
     {
         g_map_server->ShutDown();
-        g_map_server->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
-        g_map_server->wait();
-        g_map_server.reset();
     }
-    if(g_auth_server->thr_count())
+    if(g_auth_server && g_auth_server->thr_count())
     {
         g_auth_server->ShutDown();
-        g_auth_server->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
-        g_auth_server->wait();
-        g_auth_server.reset();
     }
     if(s_bus_monitor && s_bus_monitor->thr_count())
     {
         s_bus_monitor->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
-        s_bus_monitor->wait();
-        delete s_bus_monitor;
     }
     if(g_message_bus && g_message_bus->thr_count())
     {
         g_message_bus->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
-        g_message_bus->wait();
-        delete g_message_bus;
     }
 
+    s_event_loop_is_done = true;
+}
+void MessageBusMonitor::on_service_status(ServiceStatusMessage *msg)
+{
+    if (msg->m_data.status_value != 0)
+    {
+        qCritical().noquote() << msg->m_data.status_message;
+        shutDownServers();
+    }
+    else
+        qInfo() << msg->m_data.status_message;
 }
 void break_func()
 {
     shutDownServers();
 }
-ACE_THR_FUNC_RETURN event_loop (void *arg)
+// this event stops main processing loop of the whole server
+class ServerStopper : public ACE_Event_Handler
 {
-    ACE_Reactor *reactor = static_cast<ACE_Reactor *>(arg);
-    reactor->owner (ACE_OS::thr_self ());
-    reactor->run_reactor_event_loop ();
-    shutDownAllActiveHandlers();
-    GlobalTimerQueue::instance()->deactivate();
-    s_event_loop_is_done = true;
-    return (ACE_THR_FUNC_RETURN)nullptr;
+    void(*shut_down_func)();
+public:
+    ServerStopper(int signum, void(*func)()) // when instantiated adds itself to current reactor
+    {
+        ACE_Reactor::instance()->register_handler(signum, this);
+        shut_down_func = func;
 }
+    // Called when object is signaled by OS.
+    int handle_signal(int, siginfo_t */*s_i*/, ucontext_t */*u_c*/)
+    {
+        shutDownServers();
+        if (shut_down_func)
+            shut_down_func();
+        return 0;
+    }
+};
 bool CreateServers()
 {
     static ReloadConfigMessage reload_config;
@@ -159,12 +155,12 @@ bool CreateServers()
 
     TIMED_LOG(
                 {
-                    g_message_bus = new MessageBus;
-                    HandlerLocator::setMessageBus(g_message_bus);
+                    g_message_bus.reset(new MessageBus);
+                    HandlerLocator::setMessageBus(g_message_bus.get());
                     g_message_bus->ReadConfigAndRestart();
                 }
                 ,"Creating message bus");
-    TIMED_LOG(s_bus_monitor = new MessageBusMonitor,"Starting message bus monitor");
+    TIMED_LOG(s_bus_monitor.reset(new MessageBusMonitor),"Starting message bus monitor");
 
     TIMED_LOG(startAuthDBSync(),"Starting auth db service");
     TIMED_LOG({
@@ -194,38 +190,48 @@ bool CreateServers()
 //    server_manger->AddGameServer(game_instance);
     return true;
 }
+QMutex log_mutex;
 
-QFile segs_log_target;
 void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
+    QMutexLocker lock(&log_mutex);
+    QFile segs_log_target;
+    segs_log_target.setFileName("output.log");
+    if (!segs_log_target.open(QFile::WriteOnly | QFile::Append))
+    {
+        fprintf(stderr,"Failed to open log file in write mode, will procede with console only logging");
+    }
+    QTextStream fileLog(&segs_log_target);
     QByteArray localMsg = msg.toLocal8Bit();
-    static QTextStream stdOut(stdout);
-    static QTextStream fileLog(&segs_log_target);
     QString message;
     switch (type)
     {
         case QtDebugMsg:
-            message = "Debug   : ";
+            message = QString("Debug   : %1").arg(localMsg.constData());
             break;
         case QtInfoMsg:
-            message = "";  // no prefix for informational messages
+            // no prefix for informational messages
+            message = localMsg.constData();
             break;
         case QtWarningMsg:
-            message = "Warning : ";
+            message = QString("Warning : %1").arg(localMsg.constData());
             break;
         case QtCriticalMsg:
-            message = "Critical: ";
+            message = QString("Critical: %1").arg(localMsg.constData());
             break;
         case QtFatalMsg:
-            stdOut << "Fatal error" << localMsg.constData();
-            abort();
+            message = QString("Fatal error %1").arg(localMsg.constData());
     }
-    stdOut << message << localMsg.constData() << "\n";
-    stdOut.flush();
-    if(type!=QtInfoMsg)
+    fprintf(stdout, "%s\n", qPrintable(message));
+    if (type != QtInfoMsg && segs_log_target.isOpen())
     {
-        fileLog << message << localMsg.constData() << "\n";
+        fileLog << message << "\n";
         fileLog.flush();
+    }
+    if (type == QtFatalMsg)
+    {
+        fflush(stdout);
+        abort();
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -234,11 +240,6 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
 
 ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 {
-    segs_log_target.setFileName("output.log");
-    if(!segs_log_target.open(QFile::WriteOnly|QFile::Append))
-    {
-        qCritical() << "Failed to open log file in write mode, will procede with console only logging";
-    }
     setLoggingFilter(); // Set QT Logging filters
     qInstallMessageHandler(segsLogMessageOutput);
     QCoreApplication q_app(argc,argv);
@@ -267,12 +268,10 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     interesting_signals.sig_add(SIGHUP);
 
     const size_t N_THREADS = 1;
-    ACE_TP_Reactor threaded_reactor;
-    ACE_Reactor new_reactor(&threaded_reactor); //create concrete reactor
-    std::unique_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes
+    //std::unique_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes
 
     ServerStopper st(SIGINT,break_func); // it'll register itself with current reactor, and shut it down on sigint
-    new_reactor.register_handler(interesting_signals,&st);
+    ACE_Reactor::instance()->register_handler(interesting_signals,&st);
 
     // Print out startup copyright messages
 
@@ -281,23 +280,33 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 
     qInfo().noquote() << "main";
 
-    ACE_Thread_Manager::instance()->spawn_n(N_THREADS, event_loop, ACE_Reactor::instance());
     bool no_err = CreateServers();
     if(!no_err)
     {
-        ACE_Reactor::instance()->end_event_loop();
-        ACE_Thread_Manager::instance()->wait();
-        ACE_Reactor::close_singleton();
+        ACE_Reactor::instance()->end_reactor_event_loop();
         return -1;
     }
     // process all queued qt messages here.
     ACE_Time_Value event_processing_delay(0,1000*5);
     while( !s_event_loop_is_done )
     {
+        ACE_Reactor::instance()->handle_events(&event_processing_delay);
         QCoreApplication::processEvents();
-        ACE_OS::sleep(event_processing_delay);
     }
+    GlobalTimerQueue::instance()->wait();
+    g_game_server->wait();
+    g_map_server->wait();
+    g_auth_server->wait();
+    s_bus_monitor->wait();
+    g_message_bus->wait();
+    g_game_server.reset();
+    g_map_server.reset();
+    g_auth_server.reset();
+    s_bus_monitor.reset();
+    g_message_bus.reset();
+    ACE_Reactor::instance()->handle_events(&event_processing_delay);
+    ACE_Reactor::instance()->remove_handler(interesting_signals);
 
-    ACE_Thread_Manager::instance()->wait();
+    ACE_Reactor::end_event_loop();
     return 0;
 }

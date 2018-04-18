@@ -17,6 +17,8 @@
 #include "MapInstance.h"
 #include "SEGSTimer.h"
 #include "Settings.h"
+#include "Servers/MessageBus.h"
+
 
 #include <ace/Reactor.h>
 
@@ -104,7 +106,7 @@ bool MapServer::ReadConfigAndRestart()
 
     if(!d->m_manager.load_templates(map_templates_dir,m_owner_game_server_id,m_id,{m_base_listen_point,m_base_location}))
     {
-        qCritical() << "Cannot load map templates from" << map_templates_dir;
+        postGlobalEvent(new ServiceStatusMessage({ QString("MapServer: Cannot load map templates from %1").arg(map_templates_dir),-1 }));
         return false;
     }
     return Run();
@@ -114,6 +116,7 @@ bool MapServer::ShutDown(const QString &reason)
     qWarning() << "Shutting down map server because :"<<reason;
     // tell all instances to shut down too
     d->m_manager.shut_down_all();
+    putq(new SEGSEvent(SEGS_EventTypes::evFinish));
     return true;
 }
 

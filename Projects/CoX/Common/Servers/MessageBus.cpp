@@ -29,7 +29,7 @@ ACE_Time_Value statistic_update_interval(0,1000*1000*15);
 
 MessageBus::MessageBus()
 {
-    m_statistics_timer = new SEGSTimer(this,(void *)Statistics_Timer,statistic_update_interval,false); // world simulation ticks
+    m_statistics_timer.reset(new SEGSTimer(this,(void *)Statistics_Timer,statistic_update_interval,false)); // world simulation ticks
 }
 
 bool MessageBus::ReadConfigAndRestart()

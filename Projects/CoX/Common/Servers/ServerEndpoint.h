@@ -48,6 +48,7 @@ public:
                     {
                         m_notifier.event_handler(this);
                     }
+                    ~ServerEndpoint();
 private:
         // Part of the low level ace interface, not passed on to derived classes
         ACE_HANDLE  get_handle(void) const override { return this->endpoint_.get_handle(); }
