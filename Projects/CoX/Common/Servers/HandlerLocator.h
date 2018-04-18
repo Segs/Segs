@@ -14,8 +14,8 @@ class HandlerLocator
     static EventProcessor *m_db_sync_handler;
     static EventProcessor *m_auth_handler;
     static std::deque<EventProcessor *> m_game_servers;
-    static std::deque<EventProcessor *> m_game_db_servers;
     static std::deque<EventProcessor *> m_map_servers;
+    static std::deque<EventProcessor *> m_game_db_servers;
 public:
     HandlerLocator();
     static void setMessageBus(MessageBus *h) { m_message_bus=h; }
@@ -54,8 +54,9 @@ public:
             m_game_db_servers.resize(id+1);
         m_game_db_servers[id] = h;
     }
-    static const std::deque<EventProcessor *> &allMapHandlers() { return m_map_servers; }
-    static EventProcessor *getMap_Handler(uint16_t id)
+    // The ID here must be the same as the GameServer ID
+    // the MapServer is the point of contact for the GameServer, and will create many MapInstances with running maps
+    static EventProcessor *getMap_Handler(uint8_t id)
     {
         if(id>=m_map_servers.size())
             return nullptr;

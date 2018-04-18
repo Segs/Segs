@@ -19,14 +19,6 @@ env:
     - CASHER_TIME_OUT=1000
 
 addons_shortcuts:
-  addons_clang39: &clang39
-    apt:
-      sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-3.9' ]
-      packages: [ 'clang-3.9' ]
-  addons_clang40: &clang40
-    apt:
-      sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-4.0']
-      packages: [ 'clang-4.0' ]
   addons_clang50: &clang50
     apt:
       sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-5.0']
@@ -54,11 +46,11 @@ matrix:
 #      compiler: "clang-4.0"
 #      env: CLANG_VERSION=4.0 BUILD='Debug' CC=clang-4.0 CXX=clang++-4.0  LIBCXX=On
 #      addons: *clang40
-    - os: linux
-      compiler: "clang-5.0"
-      env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0  LIBCXX=On
-           CLANG_TIDY=clang-tidy-5.0
-      addons: *clang50
+#    - os: linux
+#      compiler: "clang-5.0"
+#      env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0  LIBCXX=On
+#           CLANG_TIDY=clang-tidy-5.0
+#      addons: *clang50
 #    - os: linux
 #      compiler: "clang-5.0"
 #      env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0  LIBCXX=On

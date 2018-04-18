@@ -59,13 +59,11 @@ void serializefrom(CostumePart &part,BitStream &bs,ColorAndPartPacker *packingCo
 }
 
 CharacterCostume CharacterCostume::NullCostume;
-void Costume::storeCharselParts( BitStream &bs )
+void Costume::storeCharselParts( BitStream &bs ) const
 {
     bs.StorePackedBits(1,m_parts.size());
-    uint8_t part_type=0;
-    for(CostumePart & part : m_parts)
+    for(const CostumePart & part : m_parts)
     {
-        part.m_type = part_type++;
         serializeto_charsel(part,bs);
     }
 }
@@ -90,7 +88,7 @@ void serialize(Archive &arc, Costume &c) {
     arc(c.m_parts);
 }
 
-void Costume::serializeToDb(QString &tgt)
+void Costume::serializeToDb(QString &tgt) const
 {
 // for now only parts are serialized
     // format is a simple [[]]
@@ -112,9 +110,15 @@ void Costume::serializeFromDb(const QString &src)
         cereal::JSONInputArchive ar(istr);
         ar(*this);
     }
+    // Set the part types
+    uint8_t part_type=0;
+    for(CostumePart & part : m_parts)
+    {
+        part.m_type = part_type++;
+    }
 }
 
-void Costume::dump()
+void Costume::dump() const
 {
 
     qDebug().noquote() << "Costume \n";

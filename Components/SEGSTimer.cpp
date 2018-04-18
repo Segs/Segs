@@ -16,8 +16,8 @@ SEGSTimer::SEGSTimer( EventProcessor *m_processor,void *data,const ACE_Time_Valu
 SEGSTimer::~SEGSTimer()
 {
     cancel();
-    m_target = 0;
-    m_data = 0;
+    m_target = nullptr;
+    m_data = nullptr;
 }
 
 void SEGSTimer::schedule()
@@ -29,7 +29,7 @@ void SEGSTimer::schedule()
 void SEGSTimer::cancel()
 {
     if(m_id!=-1)
-        GlobalTimerQueue::instance()->cancel(m_id,0);
+        GlobalTimerQueue::instance()->cancel(m_id,nullptr);
     m_id=-1;
 }
 

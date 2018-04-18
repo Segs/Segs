@@ -82,7 +82,7 @@ void DummyClass::onLoginResponse(LoginResponse * ev)
 
 void DummyClass::onAuthorizationError(AuthorizationError * ev)
 {
-    qFatal("AuthorizationError received: %s", ev->type());
+    qFatal("AuthorizationError received: %s", ev->info());
 }
 
 void DummyClass::onServerListResponse(ServerListResponse * ev)

@@ -386,7 +386,7 @@ public:
     {
         bs.StorePackedBits(1,31);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &/*bs*/)
     {
         // TODO: Seems like nothing is received server side.
         qWarning() << "SetDefaultPower unimplemented.";
@@ -402,7 +402,7 @@ public:
     {
         bs.StorePackedBits(1,32);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &/*bs*/)
     {
         // TODO: Seems like nothing is received server side.
         qWarning() << "UnqueueAll unimplemented.";
@@ -587,7 +587,7 @@ public:
     {
         bs.StorePackedBits(1,21);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &/*bs*/)
     {
         // TODO: Seems like nothing is received server side.
     }

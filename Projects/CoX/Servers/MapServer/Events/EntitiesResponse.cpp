@@ -1,11 +1,10 @@
-#define _USE_MATH_DEFINES
-#include "Events/EntitiesResponse.h"
-#include "NetStructures/Powers.h"
+#include "EntitiesResponse.h"
 
-#include "Entity.h"
-#include "Character.h"
+#include "NetStructures/Powers.h"
+#include "NetStructures/Entity.h"
+#include "NetStructures/Character.h"
+#include "MapClientSession.h"
 #include "MapEvents.h"
-#include "MapClient.h"
 #include "MapInstance.h"
 #include "EntityUpdateCodec.h"
 #include "DataHelpers.h"
@@ -60,7 +59,7 @@ void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
 }
 void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 {
-    Entity *e = src.m_client->char_entity();
+    Entity *e = src.m_client->m_ent;
     assert(e);
 
     // shorthand local vars
@@ -99,10 +98,10 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
         }
 
         QString member_name     = tm_ent->name();
-        QString member_mapname  = tm_ent->m_client->current_map()->name();
+        QString member_mapname  = tm_ent->m_client->m_current_map->name();
         bool tm_on_same_map     = true;
 
-        if(member_mapname != src.m_client->current_map()->name())
+        if(member_mapname != src.m_client->m_current_map->name())
             tm_on_same_map = false;
 
         bs.StoreBits(32,member.tm_idx);
@@ -301,7 +300,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
     glm::vec3 zeroes {0,0,0};
     // user entity
-    Entity *ent = src.m_client->char_entity();
+    Entity *ent = src.m_client->m_ent;
 
     SurfaceParams surface_params[2];
     memset(&surface_params,0,2*sizeof(SurfaceParams));
@@ -350,7 +349,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 }
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
 {
-    Entity * target = src.m_client->char_entity();
+    Entity * target = src.m_client->m_ent;
 
     bs.StoreBits(1,target->m_full_update);
     if( !target->m_full_update )
@@ -385,7 +384,7 @@ void sendCommands(const EntitiesResponse &src,BitStream &tgt)
 }
 void sendClientData(const EntitiesResponse &src,BitStream &bs)
 {
-    Entity *ent=src.m_client->char_entity();
+    Entity *ent=src.m_client->m_ent;
 
     if(!src.m_incremental)
     {
@@ -414,23 +413,18 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
 }
 }
 //! EntitiesResponse is sent to a client to inform it about the current world state.
-EntitiesResponse::EntitiesResponse(MapClient *cl) :
+EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
     MapLinkEvent(MapEventTypes::evEntitites)
 {
     m_map_time_of_day = 10;
     m_client = cl;
-    abs_time=db_time=0;
-    unkn2=false;
-    debug_info=true;
-    m_incremental=false;
-    m_interpolating=true;
     m_interpolation_level = 2;
     m_interpolation_bits=1;
     //m_interpolation_level
 }
 void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
-    MapInstance *mi = m_client->current_map();
+    MapInstance *mi = m_client->m_current_map;
     EntityManager &ent_manager(mi->m_entities);
 
 
@@ -442,19 +436,13 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
 
     tgt.StoreBits(32,abs_time);
     //tgt.StoreBits(32,db_time);
-
-    tgt.StoreBits(1,unkn2);
-    if(unkn2)
-    {
-        //g_debug_info 0
-        //interpolation level 2
-        //g_bitcount_rel 1
-    }
-    else
+    bool all_defaults = (debug_info==0) && (m_interpolation_level==2) && (m_interpolation_bits==1);
+    tgt.StoreBits(1,all_defaults);
+    if(!all_defaults)
     {
         tgt.StoreBits(1,debug_info);
-        tgt.StoreBits(1,m_interpolating);
-        if(m_interpolating==1)
+        tgt.StoreBits(1,m_interpolation_level!=0);
+        if(m_interpolation_level!=0)
         {
             tgt.StoreBits(2,m_interpolation_level);
             tgt.StoreBits(2,m_interpolation_bits);
@@ -463,7 +451,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     ;
     //else debug_info = false;
     ent_manager.sendEntities(tgt,m_client,m_incremental);
-    if(debug_info&&!unkn2)
+    if(debug_info)
     {
         ent_manager.sendDebuggedEntities(tgt); // while loop, sending entity id's and debug info for each
         ent_manager.sendGlobalEntDebugInfo(tgt);

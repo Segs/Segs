@@ -28,7 +28,7 @@ virtual ~Team() = default;
         std::vector<TeamMember> m_team_members;
 
 const   uint32_t    m_team_idx;
-        int         m_max_team_size     = 8;        // max is always 8
+        uint32_t    m_max_team_size     = 8;        // max is always 8
         int         m_team_leader_idx   = 0;
         bool        m_team_has_mission  = false;    // it's possible that this belongs to entity or char instead
 

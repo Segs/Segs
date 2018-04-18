@@ -9,10 +9,8 @@
 
 #include "MapServer.h"
 
-#include "ServerManager.h"
+#include "Servers/HandlerLocator.h"
 #include "ConfigExtension.h"
-#include "AdminServerInterface.h"
-#include "MapClient.h"
 #include "MapManager.h"
 #include "MapServerData.h"
 #include "MapTemplate.h"
@@ -29,8 +27,6 @@
 
 #include <set>
 
-// Template instantiation
-template class ClientStore<MapClient>;
 // global variables
 MapServer *g_GlobalMapServer=nullptr;
 
@@ -51,122 +47,74 @@ public:
 };
 
 
-MapServer::MapServer() : d(new PrivateData)
+MapServer::MapServer(uint8_t id) : d(new PrivateData), m_id(id)
 {
     assert(g_GlobalMapServer==nullptr && "Only one GameServer instance per process allowed");
     g_GlobalMapServer = this;
+    HandlerLocator::setMap_Handler(id,this);
 }
 MapServer::~MapServer()
 {
-    if(ACE_Reactor::instance())
-    {
-        ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK);
-        delete m_endpoint;
-    }
+
 }
 bool MapServer::Run()
 {
-    if(m_endpoint)
-    {
-        qWarning() << "Map server already running";
-        return true;
-    }
+    assert(m_owner_game_server_id!=255);
     if(!d->m_runtime_data.read_runtime_data("./data/bin/"))
     {
         return false;
     }
     assert(d->m_manager.num_templates()>0); // we have to have a world to run
-    m_handler = d->m_manager.get_template(0)->get_instance();
-    m_handler->set_server(this);
-
-
-    m_endpoint = new MapLinkEndpoint(m_listen_point); //,this
-    m_endpoint->set_downstream(m_handler);
-
-    if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
-    {
-        qWarning() << "ACE_Reactor::register_handler";
-        return false;
-    }
-    if (m_endpoint->open() == -1) // will register notifications with current reactor
-        ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
     return startup();
 }
 /**
  * @param  inipath Doc at RoamingServer::ReadConfig
  * @return bool (false means an error occurred )
  */
-bool MapServer::ReadConfig()
+bool MapServer::ReadConfigAndRestart()
 {
     qInfo() << "Loading MapServer settings...";
-    QSettings *config(Settings::getSettings());
+    QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
-    config->beginGroup("MapServer");
-    if(m_endpoint)
-    {
-        //TODO: perform shutdown, and load config ?
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) MapServer already initialized and running\n") ));
-        return true;
-    }
-    if(!config->contains(QStringLiteral("listen_addr")))
+    // tell all instances to shut down
+    d->m_manager.shut_down_all();
+
+    config.beginGroup("MapServer");
+    if(!config.contains(QStringLiteral("listen_addr")))
         qDebug() << "Config file is missing 'listen_addr' entry in MapServer group, will try to use default";
-    if(!config->contains(QStringLiteral("location_addr")))
+    if(!config.contains(QStringLiteral("location_addr")))
         qDebug() << "Config file is missing 'location_addr' entry in MapServer group, will try to use default";
 
-    QString listen_addr = config->value("listen_addr","127.0.0.1:7003").toString();
-    QString location_addr = config->value("location_addr","127.0.0.1:7003").toString();
+    QString listen_addr = config.value("listen_addr","127.0.0.1:7003").toString();
+    QString location_addr = config.value("location_addr","127.0.0.1:7003").toString();
 
-    QString map_templates_dir = config->value("maps",".").toString();
-    if(!parseAddress(listen_addr,m_listen_point))
+    QString map_templates_dir = config.value("maps",".").toString();
+    if(!parseAddress(listen_addr,m_base_listen_point))
     {
         qCritical() << "Badly formed IP address" << listen_addr;
         return false;
     }
-    if(!parseAddress(location_addr,m_location))
+    if(!parseAddress(location_addr,m_base_location))
     {
         qCritical() << "Badly formed IP address" << location_addr;
         return false;
     }
 
-    config->endGroup(); // MapServer
+    config.endGroup(); // MapServer
 
-    return d->m_manager.load_templates(qPrintable(map_templates_dir));
+    if(!d->m_manager.load_templates(map_templates_dir,m_owner_game_server_id,m_id,{m_base_listen_point,m_base_location}))
+    {
+        qCritical() << "Cannot load map templates from" << map_templates_dir;
+        return false;
+    }
+    return Run();
 }
 bool MapServer::ShutDown(const QString &reason)
 {
-    if(!m_endpoint)
-    {
-        qWarning() << "MapServer has not been started yet.";
-        return true;
-    }
-    // tell our handler to shut down too
-    m_handler->putq(new SEGSEvent(0, nullptr));
     qWarning() << "Shutting down map server because :"<<reason;
-    if (ACE_Reactor::instance()->remove_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
-    {
-        delete m_endpoint;
-        qCritical() << "ACE_Reactor::remove_handler failed";
-        return false;
-    }
-    delete m_endpoint;
-    GlobalTimerQueue::instance()->deactivate();
-
+    // tell all instances to shut down too
+    d->m_manager.shut_down_all();
     return true;
-}
-
-const ACE_INET_Addr &MapServer::getAddress()
-{
-    return m_location;
-}
-
-EventProcessor *MapServer::event_target()
-{
-    return (EventProcessor *)m_handler;
-}
-
-GameServerInterface *MapServer::getGameInterface()
-{
-    return m_i_game;
 }
 
 MapManager &MapServer::map_manager()
@@ -179,6 +127,11 @@ MapServerData &MapServer::runtimeData()
     return d->m_runtime_data;
 }
 
+void MapServer::sett_game_server_owner(uint8_t owner_id)
+{
+    m_owner_game_server_id = owner_id;
+}
+
 /**
 * Processing according to MapServerStartup sequence diagram.
 */
@@ -187,4 +140,38 @@ bool MapServer::startup()
     //FIXME: global timer queue should be activated in some central place!
     GlobalTimerQueue::instance()->activate();
     return true;
+}
+
+void MapServer::dispatch(SEGSEvent *ev)
+{
+    assert(ev);
+    switch(ev->type())
+    {
+        case Internal_EventTypes::evReloadConfig:
+            ReadConfigAndRestart();
+            break;
+        case Internal_EventTypes::evExpectMapClientRequest:
+            on_expect_client(static_cast<ExpectMapClientRequest *>(ev));
+            break;
+        default:
+            assert(!"Unknown event encountered in dispatch.");
+    }
+}
+
+void MapServer::on_expect_client(ExpectMapClientRequest *ev)
+{
+    // TODO: handle contention while creating 2 characters with the same name from different clients
+    // TODO: SELECT account_id from characters where name=ev->m_character_name
+    const ExpectMapClientRequestData &request_data(ev->m_data);
+    MapTemplate *tpl    = map_manager().get_template(request_data.m_map_name);
+    if(nullptr==tpl)
+    {
+        ev->src()->putq(
+            new ExpectMapClientResponse({1, 0, m_base_location}, ev->session_token()));
+        return;
+    }
+    EventProcessor *instance = tpl->get_instance();
+    // now we know which instance will handle this client, pass the event to it,
+    // remember to shallow_copy to mark the event as still owned.
+    instance->putq(ev->shallow_copy());
 }

@@ -18,9 +18,6 @@ struct GameLink : public CRUDLink
         m_target = tgt;
         assert(tgt);
     }
-    CharacterClient * client_data() {return static_cast<CharacterClient *>(m_link_data);}
-
-
     // CRUDLink interface
 protected:
     CRUD_EventFactory &factory() override

@@ -3,15 +3,12 @@
 #include "MapServer.h"
 #include "MapServerData.h"
 #include "MapInstance.h"
-#include "MapClient.h"
-#include "Character.h"
-#include "AdminServer/AdminServer.h"
-#include "AdminServer/CharacterDatabase.h"
+#include "NetStructures/Character.h"
+#include "NetStructures/Team.h"
+#include "NetStructures/LFG.h"
 #include "Events/EmailHeaders.h"
 #include "Events/EmailMessageStatus.h"
 #include "Events/EmailRead.h"
-#include "Team.h"
-#include "LFG.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -122,26 +119,12 @@ void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
 // Misc Methods
 void charUpdateDB(Entity *e)
 {
-    CharacterDatabase *char_db = AdminServer::instance()->character_db();
-    // Update Character In Database
-    if(!char_db->update(e))
-        qDebug() << "Character failed to update in database!";
-}
-
-void charUpdateOptions(Entity *e)
-{
-    CharacterDatabase *char_db = AdminServer::instance()->character_db();
-    // Update Client Options/Keybinds
-    if(!char_db->updateClientOptions(e))
-        qDebug() << "Client Options failed to update in database!";
+    markEntityForDbStore(e,DbStoreFlags::Full);
 }
 
 void charUpdateGUI(Entity *e)
 {
-    CharacterDatabase *char_db = AdminServer::instance()->character_db();
-    // Update Client GUI settings
-    if(!char_db->updateGUISettings(e))
-        qDebug() << "Client GUISettings failed to update in database!";
+    markEntityForDbStore(e,DbStoreFlags::Gui);
 }
 
 int getEntityOriginIndex(bool is_player, const QString &origin_name)
@@ -178,9 +161,9 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
 }
 
 // Poll EntityManager to return Entity by Name or IDX
-Entity * getEntity(MapClient *src, const QString &name)
+Entity * getEntity(MapClientSession *src, const QString &name)
 {
-    MapInstance *mi = src->current_map();
+    MapInstance *mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
     QString errormsg;
 
@@ -197,9 +180,9 @@ Entity * getEntity(MapClient *src, const QString &name)
     return nullptr;
 }
 
-Entity * getEntity(MapClient *src, const int32_t &idx)
+Entity * getEntity(MapClientSession *src, int32_t idx)
 {
-    MapInstance *mi = src->current_map();
+    MapInstance *mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
     QString errormsg;
 
@@ -222,9 +205,9 @@ Entity * getEntity(MapClient *src, const int32_t &idx)
     return nullptr;
 }
 
-Entity * getEntityByDBID(MapClient *src, const int32_t &db_id)
+Entity * getEntityByDBID(MapClientSession *src, int32_t db_id)
 {
-    MapInstance *mi = src->current_map();
+    MapInstance *mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
     QString errormsg;
 
@@ -247,16 +230,9 @@ Entity * getEntityByDBID(MapClient *src, const int32_t &db_id)
     return nullptr;
 }
 
-void sendServerMOTD(Entity *e)
+void sendServerMOTD(MapClientSession *tgt)
 {
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-
-    MapClient *src = e->m_client;
-    qDebug().noquote() << "Sending Server MOTD to" << e->m_char->getName();
+    qDebug().noquote() << "Sending Server MOTD to" << tgt->m_ent->m_char->getName();
 
     QString fileName("scripts/motd.smlx");
     QFile file(fileName);
@@ -264,31 +240,31 @@ void sendServerMOTD(Entity *e)
     {
         QString contents(file.readAll());
         StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-        src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+        tgt->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
     }
     else {
         QString errormsg = "Failed to load MOTD file. \'" + file.fileName() + "\' not found.";
         qDebug() << errormsg;
-        sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, src);
+        sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, tgt);
     }
 }
 
 void sendEmailHeaders(Entity *e){
-    MapClient *src = e->m_client;
+    MapClientSession *src = e->m_client;
 
     EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
     src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
 }
 
 void readEmailMessage(Entity *e, const int id){
-    MapClient *src = e->m_client;
+    MapClientSession *src = e->m_client;
 
     EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
     src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
 }
 
 void storeEmailInDb(Entity *e, QVector<QStringRef> &args){
-    MapClient *src = e->m_client;
+    MapClientSession *src = e->m_client;
     EmailMessageStatus *status;
     /*if(getEntityDbIdFromName(recipient) != -1){
       QDateTime y2k(QDate(2000, 1, 1), QTime(0, 0));

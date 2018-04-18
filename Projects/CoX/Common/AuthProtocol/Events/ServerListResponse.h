@@ -2,7 +2,6 @@
 #include "AuthProtocol/AuthEvents.h"
 #include <deque>
 
-class GameServerInterface;
 struct GameServerInfo
 {
     uint8_t  id;

@@ -1,10 +1,10 @@
 /*
- * Super Entity Game Server Project 
+ * Super Entity Game Server Project
  * http://segs.sf.net/
  * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
- 
+
  */
 
 #pragma once
@@ -17,9 +17,6 @@ struct MapLink : public CRUDLink
         m_target = tgt;
         assert(tgt);
     }
-    MapClient * client_data() {return static_cast<MapClient *>(m_link_data);}
-
-
     // CRUDLink interface
 protected:
     CRUD_EventFactory &factory() override

@@ -33,7 +33,7 @@ public:
     int entity_idx;
     EntityInfoRequest():MapLinkEvent(MapEventTypes::evEntityInfoRequest)
     {}
-    void serializeto(BitStream &bs) const override
+    void serializeto(BitStream &/*bs*/) const override
     {
         assert(!"implemented");
     }

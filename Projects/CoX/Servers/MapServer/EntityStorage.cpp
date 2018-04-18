@@ -7,9 +7,9 @@
   */
 
 #include "EntityStorage.h"
-#include "Entity.h"
+#include "NetStructures/Entity.h"
 #include "EntityUpdateCodec.h"
-#include "MapClient.h"
+#include "MapClientSession.h"
 #include "MapServer/MapServer.h"
 #include "MapServer/MapServerData.h"
 
@@ -74,7 +74,7 @@ void EntityManager::sendGlobalEntDebugInfo( BitStream &tgt ) const
     // third while loop here
 }
 
-void EntityManager::sendDeletes( BitStream &tgt,MapClient *client ) const
+void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
 {
     std::vector<int> entities_to_remove;
     // find the entities this client believes exist, but they are no longer amongst us.
@@ -97,10 +97,10 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClient *client ) const
  *  \par self_idx index of the entity that is receiving the packet, this is used to prevent marking every entity as a current player
  *
  */
-void EntityManager::sendEntities(BitStream& bs, MapClient *target, bool is_incremental) const
+void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool is_incremental) const
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_mutex);
-    int self_idx = getIdx(*target->char_entity());
+    int self_idx = getIdx(*target->m_ent);
     int prev_idx = -1;
     int delta;
     if(m_live_entlist.empty())

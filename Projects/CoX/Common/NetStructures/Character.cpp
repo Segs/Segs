@@ -13,6 +13,12 @@
 #include "Costume.h"
 #include "Friend.h"
 #include "GameData/keybind_definitions.h"
+#include "Servers/GameDatabase/GameDBSyncEvents.h"
+#include "GameData/chardata_serializers.h"
+#include "GameData/clientoptions_serializers.h"
+#include "GameData/entitydata_serializers.h"
+#include "GameData/gui_serializers.h"
+#include "GameData/keybind_serializers.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "Logging.h"
 #include <QtCore/QString>
@@ -117,7 +123,7 @@ void Character::SendCharBuildInfo(BitStream &bs) const
         {
             uint32_t num_powers=m_powers.size();
             bs.StorePackedBits(5,0);
-            bs.StorePackedBits(4,uint32_t(num_powers));
+            bs.StorePackedBits(4,num_powers);
             for(const CharacterPower &power : m_powers)
             {
                 //sendPower(bs,0,0,0);
@@ -188,18 +194,18 @@ void Character::serializetoCharsel( BitStream &bs )
         CharacterCostume::NullCostume.storeCharsel(bs);
     }
     else
-        m_costumes[m_current_costume_set]->storeCharsel(bs);
+        m_costumes[m_current_costume_set].storeCharsel(bs);
     bs.StoreString(getMapName(c));
     bs.StorePackedBits(1,1);
 }
 
-Costume * Character::getCurrentCostume() const
+const CharacterCostume * Character::getCurrentCostume() const
 {
-    assert(m_costumes.size()>0);
+    assert(!m_costumes.empty());
     if(m_current_costume_set)
-        return m_costumes[m_current_costume_idx];
+        return &m_costumes[m_current_costume_idx];
     else
-        return m_costumes[0];
+        return &m_costumes[0];
 }
 
 void Character::serialize_costumes(BitStream &bs, ColorAndPartPacker *packer , bool all_costumes) const
@@ -216,14 +222,14 @@ void Character::serialize_costumes(BitStream &bs, ColorAndPartPacker *packer , b
         bs.StoreBits(1,m_multiple_costumes);
         if(m_multiple_costumes)
         {
-            for(Costume * c : m_costumes)
+            for(const Costume & c : m_costumes)
             {
-                ::serializeto(*c,bs,packer);
+                ::serializeto(c,bs,packer);
             }
         }
         else
         {
-            ::serializeto(*m_costumes[m_current_costume_idx],bs,packer);
+            ::serializeto(m_costumes[m_current_costume_idx],bs,packer);
         }
         bs.StoreBits(1,m_char_data.m_supergroup_costume);
         if(m_char_data.m_supergroup_costume)
@@ -290,7 +296,7 @@ void Character::dump()
     qDebug() <<"//------------------Tray------------------";
     m_trays.dump();
     qDebug() <<"//-----------------Costume-----------------";
-    if(getCurrentCostume())
+    if(!m_costumes.empty())
         getCurrentCostume()->dump();
     qDebug() <<"//-----------------Options-----------------";
     m_options.clientOptionsDump();
@@ -299,10 +305,9 @@ void Character::dump()
 void Character::recv_initial_costume( BitStream &src, ColorAndPartPacker *packer )
 {
     assert(m_costumes.size()==0);
-    Costume *res=new Costume;
+    m_costumes.emplace_back();
     m_current_costume_idx=0;
-    ::serializefrom(*res,src,packer);
-    m_costumes.push_back(res);
+    ::serializefrom(m_costumes.back(),src,packer);
 }
 void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool /*sendAbsolute*/)
 {
@@ -583,3 +588,72 @@ void Character::sendOptions( BitStream &bs ) const
     bs.StoreBits(1,m_options.m_first_person_view);
 }
 
+void toActualCostume(const GameAccountResponseCostumeData &src, Costume &tgt)
+{
+    tgt.skin_color = src.skin_color;
+    tgt.serializeFromDb(src.m_serialized_data);
+    tgt.m_non_default_costme_p = false;
+}
+void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)
+{
+    tgt.skin_color = src.skin_color;
+    src.serializeToDb(tgt.m_serialized_data);
+}
+bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt)
+{
+    CharacterData &  cd(tgt.m_char_data);
+    ClientOptions &  od(tgt.m_options);
+    KeybindSettings &kbd(tgt.m_keybinds);
+    GUISettings &    gui(tgt.m_gui);
+    tgt.m_db_id      = src.m_db_id;
+    tgt.m_account_id = src.m_account_id;
+    tgt.setName(src.m_name);
+    tgt.m_current_attribs.m_HitPoints = src.m_HitPoints;
+    tgt.m_current_attribs.m_Endurance = src.m_Endurance;
+    serializeFromDb(cd, src.m_serialized_chardata);
+    serializeFromDb(od, src.m_serialized_options);
+    serializeFromDb(gui, src.m_serialized_gui);
+    serializeFromDb(kbd, src.m_serialized_keybinds);
+
+    for (const GameAccountResponseCostumeData &costume : src.m_costumes)
+    {
+        tgt.m_costumes.emplace_back();
+        CharacterCostume &main_costume(tgt.m_costumes.back());
+        toActualCostume(costume, main_costume);
+        // appearance related.
+        main_costume.m_body_type = src.m_costumes.back().m_body_type;
+        main_costume.setSlotIndex(costume.m_slot_index);
+        main_costume.setCharacterId(costume.m_character_id);
+    }
+    return true;
+}
+
+bool fromActualCharacter(const Character &src,GameAccountResponseCharacterData &tgt)
+{
+    const CharacterData &  cd(src.m_char_data);
+    const ClientOptions &  od(src.m_options);
+    const KeybindSettings &kbd(src.m_keybinds);
+    const GUISettings &    gui(src.m_gui);
+    tgt.m_db_id      = src.m_db_id;
+    tgt.m_account_id = src.m_account_id;
+    tgt.m_name = src.getName();
+    tgt.m_HitPoints = src.m_current_attribs.m_HitPoints;
+    tgt.m_Endurance = src.m_current_attribs.m_Endurance;
+    serializeToDb(cd, tgt.m_serialized_chardata);
+    serializeToDb(od, tgt.m_serialized_options);
+    serializeToDb(gui, tgt.m_serialized_gui);
+    serializeToDb(kbd, tgt.m_serialized_keybinds);
+
+    for (const CharacterCostume &costume : src.m_costumes)
+    {
+
+        tgt.m_costumes.emplace_back();
+        GameAccountResponseCostumeData &main_costume(tgt.m_costumes.back());
+        fromActualCostume(costume, main_costume);
+        // appearance related.
+        main_costume.m_body_type = src.m_costumes.back().m_body_type;
+        main_costume.m_slot_index = costume.getSlotIndex();
+        main_costume.m_character_id= costume.getCharacterId();
+    }
+    return true;
+}

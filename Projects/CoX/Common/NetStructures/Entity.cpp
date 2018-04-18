@@ -36,12 +36,11 @@ void Entity::sendPvP(BitStream &bs)
     bs.StoreBits(1,0);
 }
 
-void Entity::fillFromCharacter(const Character &f)
+void Entity::fillFromCharacter()
 {
-    *m_char = f;
-    m_hasname = true;
-    m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(f));
-    m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(f));
+    m_hasname = !m_char->getName().isEmpty();
+    m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*m_char));
+    m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*m_char));
     m_is_hero = true;
 }
 /**
@@ -164,4 +163,9 @@ void initializeNewPlayerEntity(Entity &e)
 
     e.m_char->reset();
     e.might_have_rare = e.m_rare_bits   = true;
+}
+
+void markEntityForDbStore(Entity *e, DbStoreFlags f)
+{
+    e->m_db_store_flags |= uint32_t(f);
 }

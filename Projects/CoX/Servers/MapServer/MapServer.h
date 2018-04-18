@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "Common/Servers/MapServerInterface.h"
 #include "Common/Servers/ServerEndpoint.h"
 #include "GameServer/GameServer.h"
 //#include "Entity.h"
@@ -19,51 +18,38 @@
 
 class Net;
 class MapServerEndpoint;
-class MapClient;
+struct MapClientSession;
 class MapInstance;
-class GameServerInterface;
 class MapServerData;
 class MapManager;
 
-class MapLinkEndpoint : public ServerEndpoint
-{
-public:
-    MapLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
-    ~MapLinkEndpoint()=default;
-protected:
-    ILink *createLink(EventProcessor *down) override
-    {
-        return new MapLink(down,this);
-    }
-};
-class MapServer : public IMapServer
+class MapServer : public EventProcessor
 {
         class PrivateData;
 public:
-                                MapServer(void);
+                                MapServer(uint8_t id);
                                 ~MapServer(void) override;
 
-        bool                    Run(void) override;
-        bool                    ReadConfig() override;
+        bool                    ReadConfigAndRestart();
 
-        bool                    ShutDown(const QString &reason="No particular reason") override;
-        const ACE_INET_Addr &   getAddress() override;
-        EventProcessor *        event_target() override;
-        GameServerInterface *   getGameInterface();
+        bool                    ShutDown(const QString &reason="No particular reason");
         MapManager &            map_manager();
         MapServerData &         runtimeData();
+        void                    sett_game_server_owner(uint8_t owner_id);
 private:
+        bool                    Run(void);
         bool                    startup(); // MapServerStartup sequence diagram entry point.
-protected:
+        // EventProcessor interface
+        void                    dispatch(SEGSEvent *ev) override;
+        void                    on_expect_client(struct ExpectMapClientRequest *ev);
+
         std::unique_ptr<PrivateData> d;
 
-        uint8_t                 m_id = 0;
-        GameServerInterface *   m_i_game;// GameServer access proxy object
-
+        uint8_t                 m_id = 1;
+        uint8_t                 m_owner_game_server_id = 255;
         QString                 m_serverName;
-        ACE_INET_Addr           m_location; //! this value is sent to the clients
-        ACE_INET_Addr           m_listen_point; //! this is used as a listening endpoint
-        MapLinkEndpoint *       m_endpoint = nullptr;
+        ACE_INET_Addr           m_base_location; //! this is the base map instance address
+        ACE_INET_Addr           m_base_listen_point; //! this is used as a base map listening endpoint
         MapInstance *           m_handler = nullptr;
 };
 extern MapServer *g_GlobalMapServer;

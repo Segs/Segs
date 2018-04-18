@@ -13,8 +13,8 @@
 #include <QDirIterator>
 #include <cassert>
 
-CEREAL_CLASS_VERSION( FileDescription, 1 );
-CEREAL_CLASS_VERSION( AppVersionManifest, 1 );
+CEREAL_CLASS_VERSION( FileDescription, 1 )
+CEREAL_CLASS_VERSION( AppVersionManifest, 1 )
 
 /**
     Basic idea is to have 'base' project files and allow per-server 'mods' that add/override the base files.
