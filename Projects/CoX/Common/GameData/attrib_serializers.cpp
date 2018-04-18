@@ -65,19 +65,17 @@ template<class Archive>
 void serialize(Archive & archive, Parse_CharAttrib & target)
 {
     char buf[128];
-    float *damage_types = &target.m_DamageType00;
     for(int i=0; i<24; ++i)
     {
         sprintf(buf,"DamageType%02d",i);
-        archive(cereal::make_nvp(buf,damage_types[i]));
+        archive(cereal::make_nvp(buf,target.m_DamageTypes[i]));
     }
     archive(cereal::make_nvp("HitPoints",target.m_HitPoints));
     archive(cereal::make_nvp("Endurance",target.m_Endurance));
     archive(cereal::make_nvp("ToHit",target.m_ToHit));
-    float *defense_types = &target.m_DefenseType00;
     for(int i=0; i<24; ++i) {
         sprintf(buf,"DefenseType00%02d",i);
-        archive(cereal::make_nvp(buf,defense_types[i]));
+        archive(cereal::make_nvp(buf,target.m_DefenseTypes[i]));
     }
 
     archive(cereal::make_nvp("Defense",target.m_Defense));
@@ -124,19 +122,17 @@ template<class Archive>
 void serialize(Archive & archive, Parse_CharAttribMax & target)
 {
     char buf[128];
-    auto *damage_types = &target.m_DamageType00;
     for(int i=0; i<24; ++i)
     {
         sprintf(buf,"DamageType%02d",i);
-        archive(cereal::make_nvp(buf,damage_types[i]));
+        archive(cereal::make_nvp(buf,target.m_DamageTypes[i]));
     }
     archive(cereal::make_nvp("HitPoints",target.m_HitPoints));
     archive(cereal::make_nvp("Endurance",target.m_Endurance));
     archive(cereal::make_nvp("ToHit",target.m_ToHit));
-    auto *defense_types = &target.m_DefenseType00;
     for(int i=0; i<24; ++i) {
         sprintf(buf,"DefenseType00%02d",i);
-        archive(cereal::make_nvp(buf,defense_types[i]));
+        archive(cereal::make_nvp(buf,target.m_DefenseTypes[i]));
     }
 
     archive(cereal::make_nvp("Defense",target.m_Defense));
@@ -190,16 +186,14 @@ bool loadFrom(BinStore *s, Parse_CharAttrib &target)
     s->prepare();
 
     bool ok = true;
-    float *damage_types = &target.m_DamageType00;
     for(int i=0; i<24; ++i) {
-        ok &= s->read(damage_types[i]);
+        ok &= s->read(target.m_DamageTypes[i]);
     }
     ok &= s->read(target.m_HitPoints);
     ok &= s->read(target.m_Endurance);
     ok &= s->read(target.m_ToHit);
-    float *defense_types = &target.m_DefenseType00;
     for(int i=0; i<24; ++i) {
-        ok &= s->read(defense_types[i]);
+        ok &= s->read(target.m_DefenseTypes[i]);
     }
 
     s->read(target.m_Defense);
@@ -250,16 +244,14 @@ bool loadFrom(BinStore *s, Parse_CharAttribMax &target)
     s->prepare();
 
     bool ok = true;
-    std::vector<float> *damage_types = &target.m_DamageType00;
     for(int i=0; i<24; ++i) {
-        ok &= s->read(damage_types[i]);
+        ok &= s->read(target.m_DamageTypes[i]);
     }
     ok &= s->read(target.m_HitPoints);
     ok &= s->read(target.m_Endurance);
     ok &= s->read(target.m_ToHit);
-    std::vector<float> *defence_types = &target.m_DefenseType00;
     for(int i=0; i<24; ++i) {
-        ok &= s->read(defence_types[i]);
+        ok &= s->read(target.m_DefenseTypes[i]);
     }
 
     s->read(target.m_Defense);
