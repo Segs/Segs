@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <array>
 #include <QtCore/QString>
 
 struct Parse_AttribDesc
@@ -18,57 +19,11 @@ struct AttribNames_Data
 
 struct Parse_CharAttrib
 {
-    float m_DamageType00;
-    float m_DamageType01;
-    float m_DamageType02;
-    float m_DamageType03;
-    float m_DamageType04;
-    float m_DamageType05;
-    float m_DamageType06;
-    float m_DamageType07;
-    float m_DamageType08;
-    float m_DamageType09;
-    float m_DamageType10;
-    float m_DamageType11;
-    float m_DamageType12;
-    float m_DamageType13;
-    float m_DamageType14;
-    float m_DamageType15;
-    float m_DamageType16;
-    float m_DamageType17;
-    float m_DamageType18;
-    float m_DamageType19;
-    float m_DamageType20;
-    float m_DamageType21;
-    float m_DamageType22;
-    float m_DamageType23;
+    std::array<float,24> m_DamageTypes;
     float m_HitPoints;
     float m_Endurance;
     float m_ToHit;
-    float m_DefenseType00;
-    float m_DefenseType01;
-    float m_DefenseType02;
-    float m_DefenseType03;
-    float m_DefenseType04;
-    float m_DefenseType05;
-    float m_DefenseType06;
-    float m_DefenseType07;
-    float m_DefenseType08;
-    float m_DefenseType09;
-    float m_DefenseType10;
-    float m_DefenseType11;
-    float m_DefenseType12;
-    float m_DefenseType13;
-    float m_DefenseType14;
-    float m_DefenseType15;
-    float m_DefenseType16;
-    float m_DefenseType17;
-    float m_DefenseType18;
-    float m_DefenseType19;
-    float m_DefenseType20;
-    float m_DefenseType21;
-    float m_DefenseType22;
-    float m_DefenseType23;
+    std::array<float,24> m_DefenseTypes;
     float m_Defense;
     float m_Evade;
     float m_SpeedRunning;
@@ -108,64 +63,18 @@ struct Parse_CharAttrib
     float m_RechargeTime;
     float m_InterruptTime;
     float m_EnduranceDiscount;
-    float *begin() { return &m_DamageType00; }
+    float *begin() { return &m_DamageTypes[0]; }
     float *end() { return (&m_EnduranceDiscount)+1; }
-    const float *begin() const { return &m_DamageType00; }
+    const float *begin() const { return &m_DamageTypes[0]; }
     const float *end() const { return (&m_EnduranceDiscount)+1; }
 };
 struct Parse_CharAttribMax
 {
-    std::vector<float> m_DamageType00;
-    std::vector<float> m_DamageType01;
-    std::vector<float> m_DamageType02;
-    std::vector<float> m_DamageType03;
-    std::vector<float> m_DamageType04;
-    std::vector<float> m_DamageType05;
-    std::vector<float> m_DamageType06;
-    std::vector<float> m_DamageType07;
-    std::vector<float> m_DamageType08;
-    std::vector<float> m_DamageType09;
-    std::vector<float> m_DamageType10;
-    std::vector<float> m_DamageType11;
-    std::vector<float> m_DamageType12;
-    std::vector<float> m_DamageType13;
-    std::vector<float> m_DamageType14;
-    std::vector<float> m_DamageType15;
-    std::vector<float> m_DamageType16;
-    std::vector<float> m_DamageType17;
-    std::vector<float> m_DamageType18;
-    std::vector<float> m_DamageType19;
-    std::vector<float> m_DamageType20;
-    std::vector<float> m_DamageType21;
-    std::vector<float> m_DamageType22;
-    std::vector<float> m_DamageType23;
+    std::array<std::vector<float>,24> m_DamageTypes;
     std::vector<float> m_HitPoints;
     std::vector<float> m_Endurance;
     std::vector<float> m_ToHit;
-    std::vector<float> m_DefenseType00;
-    std::vector<float> m_DefenseType01;
-    std::vector<float> m_DefenseType02;
-    std::vector<float> m_DefenseType03;
-    std::vector<float> m_DefenseType04;
-    std::vector<float> m_DefenseType05;
-    std::vector<float> m_DefenseType06;
-    std::vector<float> m_DefenseType07;
-    std::vector<float> m_DefenseType08;
-    std::vector<float> m_DefenseType09;
-    std::vector<float> m_DefenseType10;
-    std::vector<float> m_DefenseType11;
-    std::vector<float> m_DefenseType12;
-    std::vector<float> m_DefenseType13;
-    std::vector<float> m_DefenseType14;
-    std::vector<float> m_DefenseType15;
-    std::vector<float> m_DefenseType16;
-    std::vector<float> m_DefenseType17;
-    std::vector<float> m_DefenseType18;
-    std::vector<float> m_DefenseType19;
-    std::vector<float> m_DefenseType20;
-    std::vector<float> m_DefenseType21;
-    std::vector<float> m_DefenseType22;
-    std::vector<float> m_DefenseType23;
+    std::array<std::vector<float>,24> m_DefenseTypes;
     std::vector<float> m_Defense;
     std::vector<float> m_Evade;
     std::vector<float> m_SpeedRunning;
