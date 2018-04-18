@@ -124,7 +124,7 @@ void MessageBusMonitor::on_service_status(ServiceStatusMessage *msg)
         shutDownServers();
     }
     else
-        qInfo() << msg->m_data.status_message;
+        qInfo().noquote() << msg->m_data.status_message;
 }
 // this event stops main processing loop of the whole server
 class ServerStopper : public ACE_Event_Handler
@@ -188,42 +188,47 @@ std::mutex log_mutex;
 void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     std::lock_guard<std::mutex> lock(log_mutex);
+    static char log_buffer[4096]={0};
+    static char category_text[256];
+    log_buffer[0] = 0;
+    category_text[0] = 0;
+    if(strcmp(context.category,"default")!=0)
+        snprintf(category_text,256,"[%s]",context.category);
     QFile segs_log_target;
     segs_log_target.setFileName("output.log");
     if (!segs_log_target.open(QFile::WriteOnly | QFile::Append))
     {
         fprintf(stderr,"Failed to open log file in write mode, will procede with console only logging");
     }
-    QTextStream fileLog(&segs_log_target);
     QByteArray localMsg = msg.toLocal8Bit();
-    QString message;
+
     switch (type)
     {
         case QtDebugMsg:
-            message = QString("Debug   : %1").arg(localMsg.constData());
+            snprintf(log_buffer,4096,"%sDebug   : %s\n",category_text,localMsg.constData());
             break;
         case QtInfoMsg:
             // no prefix for informational messages
-            message = localMsg.constData();
+            snprintf(log_buffer,4096,"%s: %s\n",category_text,localMsg.constData());
             break;
         case QtWarningMsg:
-            message = QString("Warning : %1").arg(localMsg.constData());
+            snprintf(log_buffer,4096,"%sWarning : %s\n",category_text,localMsg.constData());
             break;
         case QtCriticalMsg:
-            message = QString("Critical: %1").arg(localMsg.constData());
+            snprintf(log_buffer,4096,"%sCritical: %s\n",category_text,localMsg.constData());
             break;
         case QtFatalMsg:
-            message = QString("Fatal error %1").arg(localMsg.constData());
+            snprintf(log_buffer,4096,"%sFatal: %s\n",category_text,localMsg.constData());
     }
-    fprintf(stdout, "%s\n", qPrintable(message));
+    fprintf(stdout, "%s", log_buffer);
     if (type != QtInfoMsg && segs_log_target.isOpen())
     {
-        fileLog << message << "\n";
-        fileLog.flush();
+        segs_log_target.write(log_buffer);
     }
     if (type == QtFatalMsg)
     {
         fflush(stdout);
+        segs_log_target.close();
         abort();
     }
 }
@@ -259,9 +264,6 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     ACE_Sig_Set interesting_signals;
     interesting_signals.sig_add(SIGINT);
     interesting_signals.sig_add(SIGHUP);
-
-    const size_t N_THREADS = 1;
-    //std::unique_ptr<ACE_Reactor> old_instance(ACE_Reactor::instance(&new_reactor)); // this will delete old instance when app finishes
 
     ServerStopper st(SIGINT); // it'll register itself with current reactor, and shut it down on sigint
     ACE_Reactor::instance()->register_handler(interesting_signals,&st);
