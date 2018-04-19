@@ -167,7 +167,7 @@ bool AuthHandler::isClientConnectedAnywhere(uint32_t client_id)
 void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
 {
     uint64_t sess_token = msg->session_token();
-    std::atomic<AuthSession *> sess_ptr = {nullptr};
+    AuthSession *sess_ptr = nullptr;
     m_sessions.reap_lock().lock(); // prevent temp session from being reaped while we work with it
     if(!m_sessions.has_session_for(sess_token))
     {
@@ -181,8 +181,7 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
     ReaperProtection<AuthSession> protector(sess_ptr,sess_token,m_sessions);
     m_sessions.reap_lock().unlock();
 
-    AuthSession *a_sess_ptr = sess_ptr.load();
-    AuthLink *lnk = a_sess_ptr->link();
+    AuthLink *lnk = sess_ptr->link();
     assert(lnk!=nullptr);
     if(!msg->m_data.valid()) // no account exists, return proper response
     {
@@ -226,9 +225,8 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
             // check if this session perhaps is in 'ready for reaping set', and remove it from there
             m_sessions.unmark_session_for_reaping(old_sess_ptr);
             // reset the link in the temporary session to prevent it getting closed during reaping
-            a_sess_ptr->link(nullptr);
-            a_sess_ptr = old_sess_ptr;
-            sess_ptr.store(old_sess_ptr);
+            sess_ptr->link(nullptr);
+            sess_ptr = old_sess_ptr;
         }
         else
         {
@@ -236,22 +234,19 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
             protector.protectee_moved();
         }
         lnk->session_token(sess_token); // record the session token in the link
-        a_sess_ptr = sess_ptr.load();
-        a_sess_ptr->link(lnk); // set the link in the session, will prevent reaping of it if it's a reused one
+        sess_ptr->link(lnk); // set the link in the session, will prevent reaping of it if it's a reused one
     }
     // create the auth data store, and move retrieved response there
-    a_sess_ptr->m_auth_data.reset(new RetrieveAccountResponseData {acc_inf});
-    sess_ptr.store(a_sess_ptr);
-    a_sess_ptr = sess_ptr.load();
-    m_sessions.add_to_active_sessions(a_sess_ptr);
-    a_sess_ptr->m_auth_id = acc_inf.m_acc_server_acc_id;
+    sess_ptr->m_auth_data.reset(new RetrieveAccountResponseData {acc_inf});
+    m_sessions.add_to_active_sessions(sess_ptr);
+    sess_ptr->m_auth_id = acc_inf.m_acc_server_acc_id;
 
     // if there were no errors and the provided password is valid and admin server has logged us in.
     // inform the client of the successful login attempt
     ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : succeeded\n")));
-    a_sess_ptr->m_state = AuthSession::LOGGED_IN;
+    sess_ptr->m_state = AuthSession::LOGGED_IN;
     lnk->m_state = AuthLink::AUTHORIZED;
-    m_sessions.setTokenForId(a_sess_ptr->m_auth_id,lnk->session_token());
+    m_sessions.setTokenForId(sess_ptr->m_auth_id,lnk->session_token());
     lnk->putq(new LoginResponse());
 }
 void AuthHandler::on_login( LoginRequest *ev )
