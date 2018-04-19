@@ -3,9 +3,18 @@
 #include "AuthProtocol/AuthOpcodes.h"
 #include "AuthProtocol/AuthEventFactory.h"
 
-EventProcessor *AuthLink::g_target=nullptr;
+AuthLink::AuthLink() :
+    m_received_bytes_storage(0x1000,0,40),
+    m_unsent_bytes_storage(0x200,0,40),
+    m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK)
+{
+// This constructor exists only to make the default ACE implementation of make_svc_handler happy
+// it should never be called by our code, since we override make_svc_handler.
+    assert(false);
+}
 
-AuthLink::AuthLink(AuthLinkType link_type) :  m_client(nullptr),
+AuthLink::AuthLink(EventProcessor *target, AuthLinkType link_type) :
+    m_target(target),
     m_received_bytes_storage(0x1000,0,40),
     m_unsent_bytes_storage(0x200,0,40),
     m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK),
@@ -15,12 +24,11 @@ AuthLink::AuthLink(AuthLinkType link_type) :  m_client(nullptr),
 {
     m_notifier.event_handler(this); // notify 'this' object on WRITE events
     m_buffer_mutex = new ACE_Thread_Mutex;
-    assert(g_target);
+    assert(m_target);
 }
 AuthLink::~AuthLink( )
 {
     delete m_buffer_mutex;
-    m_client=nullptr;
 }
 void AuthLink::init_crypto(int vers,uint32_t seed)
 {
@@ -112,7 +120,7 @@ SEGSEvent * AuthLink::bytes_to_event()
 int AuthLink::open (void *p)
 {
     m_state=AuthLink::INITIAL;
-    if (this->peer_.get_remote_addr (m_peer_addr) == -1)
+    if (this->m_peer.get_remote_addr (m_peer_addr) == -1)
         ACE_ERROR_RETURN ((LM_ERROR,ACE_TEXT ("%p\n"),ACE_TEXT ("get_remote_addr")),-1);
     if (EventProcessor::open (p) == -1)
         return -1;
@@ -123,7 +131,7 @@ int AuthLink::open (void *p)
     m_notifier.reactor(reactor());                      // notify reactor with write event,
     msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue() we will be notified
     //TODO: consider using sync query here.
-    g_target->putq(new ConnectEvent(this,m_peer_addr)); // also, inform the AuthHandler of our existence
+    m_target->putq(new ConnectEvent(this,m_peer_addr)); // also, inform the AuthHandler of our existence
     return 0;
 }
 /**
@@ -135,7 +143,7 @@ int AuthLink::handle_input( ACE_HANDLE )
     const size_t INPUT_SIZE = 4096;
     char buffer[INPUT_SIZE];
     ssize_t recv_cnt;
-    if ((recv_cnt = peer_.recv(buffer, sizeof(buffer))) <= 0)
+    if ((recv_cnt = m_peer.recv(buffer, sizeof(buffer))) <= 0)
     {
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Connection closed\n")));
         return -1;
@@ -153,7 +161,7 @@ int AuthLink::handle_input( ACE_HANDLE )
     if(s_event)
     {
         s_event->src(this); // allows upper levels to post responses to us
-        g_target->putq(s_event);
+        m_target->putq(s_event);
     }
     return 0;
 }
@@ -222,7 +230,7 @@ void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
 
 bool AuthLink::send_buffer()
 {
-    ssize_t send_cnt = peer_.send(m_unsent_bytes_storage.read_ptr(), m_unsent_bytes_storage.GetReadableDataSize());
+    ssize_t send_cnt = m_peer.send(m_unsent_bytes_storage.read_ptr(), m_unsent_bytes_storage.GetReadableDataSize());
     if (send_cnt == -1)
         ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"), ACE_TEXT ("send")));
     else
@@ -276,7 +284,9 @@ void AuthLink::set_protocol_version( int vers )
 int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 {
     // client handle was closed, posting disconnect event with higher priority
-    g_target->msg_queue()->enqueue_prio(new DisconnectEvent(this),nullptr,100);
+    m_target->msg_queue()->enqueue_prio(new DisconnectEvent(session_token()),nullptr,100);
+    if (this->reactor() && this->reactor()->remove_handler(this, READ_MASK | DONT_CALL) == -1)
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("unable to remove client handler")), -1);
     if (close_mask == ACE_Event_Handler::WRITE_MASK)
         return 0;
     return super::handle_close (handle, close_mask);
@@ -286,9 +296,4 @@ int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 void AuthLink::dispatch( SEGSEvent */*ev*/ )
 {
     assert(!"Should not be called");
-}
-SEGSEvent *AuthLink::dispatchSync(SEGSEvent */*ev*/)
-{
-    assert(!"No sync events known");
-    return nullptr;
 }

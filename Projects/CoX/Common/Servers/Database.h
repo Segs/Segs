@@ -11,9 +11,9 @@
 class DbTransactionGuard
 {
     QSqlDatabase &m_db;
-    bool proper_commit;
+    bool proper_commit = false;
 public:
-    DbTransactionGuard(QSqlDatabase &db) : m_db(db),proper_commit(false)
+    DbTransactionGuard(QSqlDatabase &db) : m_db(db)
     {
         m_db.transaction();
     }

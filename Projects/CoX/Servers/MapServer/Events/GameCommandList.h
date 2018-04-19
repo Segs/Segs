@@ -10,13 +10,14 @@
 #include "MapEventTypes.h"
 #include "MapLink.h"
 
-#include <QtCore/QString>
+class QString;
 //TODO: those must support chaining
 class GameCommand
 {
     const size_t    m_type;
 public:
                 GameCommand(size_t type) : m_type(type) {}
+virtual         ~GameCommand() = default;
         size_t  type() const {return m_type;}
 virtual void    serializeto(BitStream &bs) const = 0;
 };
@@ -41,11 +42,11 @@ public:
             command->serializeto(bs);
         bs.StorePackedBits(1,0); // finalize the command list
     }
-    void serializefrom(BitStream &src)
+    void serializefrom(BitStream &/*src*/)
     {
         assert(false);
         // TODO: trouble, we need a second GameCommand Factory at this point !
-        uint32_t game_command = src.GetPackedBits(1);
+        //uint32_t game_command = src.GetPackedBits(1);
     }
 };
 #include "Events/ChatMessage.h"

@@ -23,7 +23,7 @@ CrudP_Packet::CrudP_Packet()
     m_retransmit_count = 0;
 }
 
-CrudP_Packet::CrudP_Packet(BitStream *stream, bool hasDebugInfo)
+CrudP_Packet::CrudP_Packet(BitStream *stream, bool /*hasDebugInfo*/)
 {
     m_stream        = stream;
     m_finalized     = false;
@@ -63,7 +63,7 @@ uint32_t CrudP_Packet::GetBits(uint32_t nBits)
 void CrudP_Packet::GetBitArray(uint32_t nBytes, uint8_t *array)
 {
     return m_stream->GetBitArray(array,nBytes);
-};
+}
 
 uint32_t CrudP_Packet::GetPackedBits(uint32_t nBits)
 {

@@ -1,6 +1,7 @@
 #include "RenderBonedModel.h"
 
 #include "RendererState.h"
+#include "RenderModel.h"
 #include "ShaderProgramCache.h"
 #include "Texture.h"
 #include "Model.h"
@@ -29,7 +30,7 @@ __declspec(dllimport) void FreeMem(void *,int);
 __declspec(dllimport) void *malloc1(int sz,int,const char *,int);
 __declspec(dllimport) void wcwMgmt_EnableFog(int);
 __declspec(dllimport) void MatMult4x3(const Matrix4x3 *self, const Matrix4x3 *oth, Matrix4x3 *res);
-__declspec(dllimport) void transposeMat4Copy(const Matrix4x3 *a1, Matrix4x3 *a2);
+__declspec(dllimport) void transposeMat4Copy(const Matrix4x3 *src, Matrix4x3 *dst);
 
 __declspec(dllimport) BoneInfo struct_9EBDA0[70]; //fake bone info array
 __declspec(dllimport) CameraInfo cam_info;
@@ -99,11 +100,6 @@ void calcNodeLights(GfxTree_Node *node,Vector4 &ambient_col,Vector4 &diffuse_col
         diffuse_col.z = diffuse_col.z * seqGfxData->light.diffuseScale;
     }
 
-}
-void  segs_UVPointer(uint32_t tex_unit, GLint size, GLenum type, GLsizei stride, GLvoid *pointer)
-{
-    glClientActiveTextureARB(tex_unit);
-    glTexCoordPointer(size, type, stride, pointer);
 }
 static void setTexOrOverride(TextureBind *tex,int idx)
 {
@@ -290,7 +286,7 @@ void segs_modelDrawBonedNode(GfxTree_Node *node)
 }
 int segs_modelConvertRgbBuffer(GLuint *result, int count, int own_buffer)
 {
-    GLuint buffer; 
+    GLuint buffer;
     void * in_ptr = (void *)*result;
     assert( UsingVBOs );
     glGenBuffersARB(1, &buffer);
@@ -441,12 +437,11 @@ void modelDrawTexNormals(DrawMode mode, Model *model)
     }
 }
 
-static void setModelViewFromMat4x3(const Matrix4x3& mat) 
+static void setModelViewFromMat4x3(const Matrix4x3& mat)
 {
     glMatrixMode(GL_MODELVIEW);
-    Matrix4x4 mat4_2;
-    mat4_2 = mat;
-    glLoadMatrixf(&mat4_2.r1.x);
+    Matrix4x4 mat4_2 = mat;
+    glLoadMatrixf(mat4_2.data());
 }
 
 void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int alpha, uint8_t *rgb_entries, EntLight *light_params)
@@ -479,7 +474,7 @@ void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int 
     segs_modelSetAlpha(alpha);
     segs_setTexUnitLoadBias(GL_TEXTURE1, -0.5);
     segs_setTexUnitLoadBias(GL_TEXTURE0, -0.5);
-    if ( !segs_gfxNodeTricks(trick, model, mat) ) 
+    if ( !segs_gfxNodeTricks(trick, model, mat) )
     {
         segs_gfxNodeTricksUndo(trick, model);
         return;

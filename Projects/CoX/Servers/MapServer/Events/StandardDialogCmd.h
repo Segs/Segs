@@ -14,13 +14,14 @@
 
 #include <QtCore/QString>
 
-class StandardDialogCmd : public GameCommand
+class StandardDialogCmd final : public GameCommand
 {
 public:
     QString     m_msg;
                 StandardDialogCmd(QString msg) : GameCommand(MapEventTypes::evStandardDialogCmd),m_msg(msg)
                 {
                 }
+
         void    serializeto(BitStream &bs) const override {
                     bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
                     bs.StoreString(m_msg);

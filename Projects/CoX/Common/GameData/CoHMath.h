@@ -2,6 +2,7 @@
 #include <glm/vec3.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/constants.hpp>
 #include <algorithm>
 
 constexpr float F_PI = float(M_PI);
@@ -61,9 +62,9 @@ inline glm::vec3 toCoH_YPR(const glm::quat &q)
     {
         yawVal = std::atan2(-(2 * (qxz - qwy)), 1 - 2 * (qyy + qzz));
         if (mat21 <= 0.0f)
-            pitchVal = -1.570796326794897f;
+            pitchVal = -glm::radians(90.0f);
         else
-            pitchVal = 1.570796326794897f;
+            pitchVal = glm::radians(90.0f);
         rollVal = 0.0;
     }
 
@@ -194,7 +195,7 @@ inline uint32_t countBits(uint32_t val)
     uint32_t r = 0;
     while (val >>= 1)
         r++;
-    
+
     return r; // log2(v)
 }
 inline static float AngleDequantize(uint32_t val,int numb_bits) {

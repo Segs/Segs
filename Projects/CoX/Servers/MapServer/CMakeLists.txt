@@ -10,14 +10,16 @@ SET(target_CPP
     Events/GameCommandList.cpp
     Events/ChatDividerMoved.cpp
     Events/ChatMessage.cpp
-    Events/ClientSettings.cpp
     Events/EntitiesResponse.cpp
     Events/InputState.cpp
+    Events/KeybindSettings.cpp
     Events/LocationVisited.cpp
     Events/PlaqueVisited.cpp
     Events/NewEntity.cpp
+    Events/SaveClientOptions.cpp
     Events/SceneEvent.cpp
-    MapClient.cpp
+    Events/InfoMessageCmd.cpp
+    Events/WindowState.cpp
     MapEventFactory.cpp
     MapInstance.cpp
     MapLink.cpp
@@ -26,6 +28,8 @@ SET(target_CPP
     MapServerData.cpp
     MapTemplate.cpp
     NetCommandManager.cpp
+    SlashCommand.cpp
+    SceneGraph.cpp
     WorldSimulation.cpp
     ${SCRIPTING_CPP}
 )
@@ -36,18 +40,29 @@ SET(target_INCLUDE
     Events/GameCommandList.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
-    Events/ClientSettings.h
+    Events/EmailHeaders.h
+    Events/EmailMessageStatus.h
+    Events/EmailRead.h
     Events/EntitiesResponse.h
+    Events/FloatingDamage.h
+    Events/FriendsListUpdate.h
     Events/InputState.h
+    Events/KeybindSettings.h
     Events/LocationVisited.h
-    Events/PlaqueVisited.h
-    Events/NewEntity.h
     Events/MapEventTypes.h
+    Events/MessageChannels.h
+    Events/NewEntity.h
+    Events/PlaqueVisited.h
+    Events/PlayerInfo.h
+    Events/SaveClientOptions.h
     Events/SceneEvent.h
     Events/Shortcuts.h
+    Events/SidekickOffer.h
     Events/StandardDialogCmd.h
+    Events/TeamLooking.h
+    Events/TeamOffer.h
     Events/InfoMessageCmd.h
-    MapClient.h
+    Events/WindowState.h
     MapEventFactory.h
     MapEvents.h
     MapInstance.h
@@ -59,6 +74,8 @@ SET(target_INCLUDE
     MapTemplate.h
     NetCommandManager.h
     ScriptingEngine.h
+    SlashCommand.h
+    SceneGraph.h
     WorldSimulation.h
 )
 
@@ -71,7 +88,7 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
-target_link_libraries(mapserver_lib PUBLIC adminserver_lib CRUDP_Protocol)
+target_link_libraries(mapserver_lib PUBLIC CRUDP_Protocol)
 qt5_use_modules(mapserver_lib LINK_PUBLIC Core)
 if(ENABLE_SCRIPTING_ENGINE)
     target_compile_definitions(mapserver_lib PUBLIC -DSCRIPTING_ENABLED=1)

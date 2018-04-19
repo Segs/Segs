@@ -1,5 +1,6 @@
 #include "ScriptingEngine.h"
-#include "MapClient.h"
+#include "MapClientSession.h"
+#include "SceneGraph.h"
 
 #include "Events/ChatMessage.h"
 #include "Events/StandardDialogCmd.h"
@@ -47,6 +48,12 @@ ScriptingEngine::~ScriptingEngine()
 
 void ScriptingEngine::registerTypes()
 {
+    m_private->m_lua.new_usertype<glm::vec3>( "vec3",
+        sol::constructors<glm::vec3(), glm::vec3(float,float,float)>(),
+        "x", &glm::vec3::x,
+        "y", &glm::vec3::y,
+        "z", &glm::vec3::z
+    );
     m_private->m_lua.new_usertype<Contact>( "Contact",
         // 3 constructors
         sol::constructors<Contact()>(),
@@ -54,13 +61,17 @@ void ScriptingEngine::registerTypes()
         "name", sol::property(&Contact::getName, &Contact::setName),
         "display_name", &Contact::m_display_name
     );
-    m_private->m_lua.new_usertype<MapClient>( "MapClient",
+    m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
         "new", sol::no_constructor, // The client links are not constructible from the script side.
-        "admin_chat_message", sendAdminMessage,
-        "simple_dialog", [](MapClient *cl,const char *dlgtext) {
+        "admin_chat_message", sendChatMessage,
+        "simple_dialog", [](MapClientSession *cl,const char *dlgtext) {
             auto n = new StandardDialogCmd(dlgtext);
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
         }
+    );
+    m_private->m_lua.new_usertype<SceneGraph>( "SceneGraph",
+        "new", sol::no_constructor, // The client links are not constructible from the script side.
+        "set_default_spawn_point", &SceneGraph::set_default_spawn_point
     );
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
 
@@ -84,7 +95,7 @@ int ScriptingEngine::loadAndRunFile(const QString &filename)
     return 0;
 }
 
-std::string ScriptingEngine::callFuncWithClientContext(MapClient *client, const char *name, int arg1)
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1)
 {
     m_private->m_lua["client"] = client;
     return callFunc(name,arg1);
@@ -108,21 +119,21 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     }
     return result.get<std::string>();
 }
-int ScriptingEngine::runScript(MapClient * client, const QString &script_contents, const char *script_name)
+int ScriptingEngine::runScript(MapClientSession * client, const QString &script_contents, const char *script_name)
 {
     m_private->m_lua["client"] = client;
     sol::load_result load_res=m_private->m_lua.load(script_contents.toStdString(),script_name);
     if(!load_res.valid())
     {
         sol::error err = load_res;
-        sendAdminMessage(client,err.what());
+        sendInfoMessage(MessageChannel::ADMIN,err.what(),client);
         return -1;
     }
     sol::protected_function_result script_result = load_res();
     if(!script_result.valid())
     {
         sol::error err = script_result;
-        sendAdminMessage(client,err.what());
+        sendInfoMessage(MessageChannel::ADMIN,err.what(),client);
         return -1;
     }
     return 0;

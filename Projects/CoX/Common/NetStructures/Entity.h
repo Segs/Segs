@@ -2,16 +2,22 @@
 #include "CommonNetStructures.h"
 #include "Powers.h"
 #include "Costume.h"
-#include "Character.h"
+#include "Team.h"
 #include "FixedPointValue.h"
 #include "Common/GameData/entitydata_definitions.h"
+#include "Common/GameData/chardata_definitions.h"
 
 #include <glm/vec3.hpp>
 #include <glm/gtx/quaternion.hpp>
 
 #include <cmath>
 #include <array>
-class MapClient;
+#include <memory>
+
+struct MapClientSession;
+class Team;
+class Character;
+
 struct AngleRadians // TODO: Is this intended to be used?
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
@@ -115,7 +121,6 @@ public:
         {
             pos_delta_valid[i]=false;
             pyr_valid[i]=false;
-            orient_pyr_valid[i]=false;
         }
     }
 
@@ -125,22 +130,19 @@ public:
     uint16_t send_id                    = 0;
     void *current_state_P               = 0;
     glm::vec3 camera_pyr;
+    glm::vec3 m_orientation_pyr;             // Stored in Radians
+    glm::quat m_direction;
     int m_time_diff1                    = 0;
     int m_time_diff2                    = 0;
     uint8_t input_vel_scale             = 0; // TODO: Should be float?
-    glm::vec3 m_orientation_pyr;             // Stored in Radians
     uint8_t m_received_server_update_id = 0;
     bool m_no_coll                      = false;
     bool has_input_commit_guess         = 0;
     bool pos_delta_valid[3]             = {};
     bool pyr_valid[3]                   = {};
-    bool orient_pyr_valid[3]            = {};
     glm::vec3 pos_delta;
-    glm::quat direction;
-    bool m_has_target;
-    uint32_t m_target_idx;
-    uint32_t m_assist_target_idx;
-  
+    bool m_controls_disabled            = false;
+
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
 };
@@ -149,14 +151,27 @@ enum class FadeDirection
     In,
     Out
 };
+
+// returned by getEntityFromDB()
+struct CharacterFromDB
+{
+    QString         name;
+    EntityData      entity_data;
+    CharacterData   char_data;
+    float           hitpoints;
+    float           endurance;
+    uint32_t        sg_id;
+    uint32_t        m_db_id;
+};
+
 class Entity
 {
     // only EntityStore can create instances of this class
     friend class EntityStore;
-    friend class std::array<Entity,10240>;
+    friend struct std::array<Entity,10240>;
 private:
                             Entity();
-virtual                     ~Entity() = default;
+virtual                     ~Entity();
 public:
         struct currentInputState
         {
@@ -169,86 +184,106 @@ public:
             ENT_PLAYER=2,
             ENT_CRITTER=4
         };
+        struct SuperGroup
+        {
+            int             m_SG_id                 = {0};
+            QString         m_SG_name               = "Supergroup"; // 64 chars max
+            //QString         m_SG_motto;
+            //QString         m_SG_costume;                         // 128 chars max -> hash table key from the CostumeString_HTable
+            uint32_t        m_SG_color1             = 0;            // supergroup color 1
+            uint32_t        m_SG_color2             = 0;            // supergroup color 2
+            int             m_SG_rank               = 1;
+        };
 
+        bool                m_has_supergroup        = true;
+        SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
+        bool                m_has_team              = false;
+        Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
         EntityData          m_entity_data;
-        int                 m_access_level          = 0;
-        int                 m_randSeed              = 0; // Sequencer uses this as a seed for random bone scale
-        int                 field_68                = 0;
-        int                 m_SG_id                 = 0;
+
+        uint32_t            m_idx                   = {0};
+        uint32_t            m_db_id                 = {0};
+        uint8_t             m_type                  = {0};
+        glm::quat           m_direction;
+        glm::vec3           m_spd                   = {1,1,1};
+        uint32_t            m_target_idx            = 0;
+        uint32_t            m_assist_target_idx     = 0;
+
+        int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
         int                 m_num_fx                = 0;
         bool                m_is_logging_out        = false;
-        int                 m_time_till_logout      = 0; // time in miliseconds untill given entity should be marked as logged out.
+        int                 m_time_till_logout      = 0;    // time in miliseconds untill given entity should be marked as logged out.
         std::vector<uint8_t> m_fx1;
         std::vector<uint32_t> m_fx2;
         std::vector<uint8_t> m_fx3;
-        uint8_t             m_costume_type      = 0;
-        int                 m_state_mode        = 0;
-        bool                m_state_mode_send   = false;
-        bool                m_odd_send          = false;
-        bool                m_SG_info           = false;
-        bool                m_seq_update        = false;
-        bool                m_is_villian        = false;
-        bool                m_contact           = false;
-        int                 m_seq_upd_num1      = 0;
-        int                 m_seq_upd_num2      = 0;
-        bool                m_is_flying         = false;
+        uint8_t             m_costume_type          = 0;
+        int                 m_state_mode            = 0;
+        bool                m_state_mode_send       = false;
+        bool                m_odd_send              = false;
+        bool                m_seq_update            = false;
+        bool                m_is_hero               = false;
+        bool                m_is_villian            = false;
+        bool                m_contact               = false;
+        int                 m_seq_upd_num1          = 0;
+        int                 m_seq_upd_num2          = 0;
+        bool                m_is_flying             = false;
         bool                m_is_stunned            = false;
+        bool                m_is_jumping            = false;
+        bool                m_is_sliding            = false;
+        bool                m_is_falling            = false;
         bool                m_has_jumppack          = false;
         bool                m_controls_disabled     = false;
         float               m_backup_spd            = 1.0f;
         float               m_jump_height           = 1.0f;
-        uint8_t             m_cur_chat_channel      = 10; // Default is local
+
         uint8_t             m_update_id             = 1;
-        bool                m_full_update           = true; // EntityReponse sendServerPhysicsPositions
-        bool                m_has_control_id        = true; // EntityReponse sendServerPhysicsPositions
+        bool                m_update_part_1         = true;     // EntityResponse sendServerControlState
+        bool                m_force_pos_and_cam     = true;     // EntityResponse sendServerControlState
+        bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
+        bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
 
         int                 u1 = 1;
-        int                 u2 = 0;
+        int                 u2 = 1;
         int                 u3 = 0;
         int                 u4 = 0;
         int                 u5 = 0;
         int                 u6 = 0;
-  
+
         PosUpdate           m_pos_updates[64];
         size_t              m_update_idx        = 0;
         std::vector<PosUpdate> interpResults;
-
-        Character           m_char;
+        // Some entities might not have a character data ( doors, cars )
+        // Making it an unique_ptr<Character> makes it clear that Entity 'owns'
+        // and takes care of this data, at the same time it can be missing
+        std::unique_ptr<Character> m_char;
 
         bool                entReceiveAlwaysCon         = false;
         bool                entReceiveSeeThroughWalls   = false;
         int                 pkt_id_QrotUpdateVal[3]     = {0};
-        glm::quat           qrot;
-        glm::vec3           pos;
         glm::vec3           vel;
         uint32_t            prev_pos[3]                 = {0};
         Vector3_FPV         fixedpoint_pos;
-        bool                m_selector1                 = false;
+        bool                m_selector1                 = false; // unused
         bool                m_pchar_things              = false;
         bool                might_have_rare             = false;
         bool                m_hasname                   = false;
-        bool                m_hasgroup_name             = false;
         bool                m_classname_override        = false;
         bool                m_hasRagdoll                = false;
+        bool                m_has_owner                 = false;
         bool                m_create_player             = false;
         bool                m_rare_bits                 = false;
         int                 current_client_packet_id    = {0};
-        QString             m_group_name, m_override_name;
-        uint8_t             m_origin_idx                = {0};
-        uint8_t             m_class_idx                 = {0};
-        uint8_t             m_type                      = {0};
-        int32_t             m_idx                       = {0};
-        uint32_t            m_db_id                     = {0};
+        QString             m_override_name;
         uint32_t            m_input_ack                 = {0};
         bool                player_type                 = false;
-        bool                m_player_villain            = false;
         bool                m_destroyed                 = false;
-        int                 ownerEntityId               = 0;
-        int                 creatorEntityId             = 0;
+        uint32_t            ownerEntityId               = 0;
+        uint32_t            creatorEntityId             = 0;
         float               translucency                = 1.f;
         bool                m_is_fading                 = true;
-        MapClient *         m_client                    = nullptr;
+        MapClientSession *  m_client                    = nullptr;
         FadeDirection       m_fading_direction = FadeDirection::In;
+        uint32_t            m_db_store_flags = 0;
 
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
@@ -260,10 +295,18 @@ static  void                sendPvP(BitStream &bs);
         bool                update_rot(int axis) const; // returns true if given axis needs updating;
 
         void                InsertUpdate(PosUpdate pup);
-        const QString &     name() const {return m_char.getName();}
-        void                fillFromCharacter(Character *f);
+        const QString &     name() const;
+        void                fillFromCharacter();
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 };
+enum class DbStoreFlags : uint32_t
+{
+    Gui = 1,
+    Options = 2,
+    Keybinds = 4,
+    Full = ~0U,
+};
+void markEntityForDbStore(Entity *e,DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
 void fillEntityFromNewCharData(Entity &e,BitStream &src, ColorAndPartPacker *packer);
 extern void abortLogout(Entity *e);

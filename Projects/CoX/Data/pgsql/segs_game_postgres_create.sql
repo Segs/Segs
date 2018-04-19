@@ -8,14 +8,13 @@ CREATE TABLE "table_versions" (
   OIDS=FALSE
 );
 
-
-INSERT INTO table_versions VALUES(1,'table_versions',0,'2017-11-11 08:57:42');
-INSERT INTO table_versions VALUES(2,'accounts',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(3,'characters',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(4,'costume',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(5,'gui',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(6,'options',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(7,'progress',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(1,'db_version',5,'2018-04-09 00:55:01');
+INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
+INSERT INTO table_versions VALUES(3,'accounts',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(4,'characters',6,'2018-04-09 00:54:27');
+INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(6,'progress',0,'2017-11-11 08:57:43');
+INSERT INTO table_versions VALUES(7,'supergroups',0,'2018-01-23 10:16:43');
 
 
 CREATE TABLE "accounts" (
@@ -50,66 +49,18 @@ CREATE TABLE "characters" (
 	"slot_index" integer NOT NULL DEFAULT '0',
 	"account_id" integer NOT NULL DEFAULT '0',
 	"char_name" varchar(20) NOT NULL,
-	"archetype" varchar(32) NOT NULL,
-	"origin" varchar(32) NOT NULL,
-	"description" varchar(1024) NOT NULL,
-	"battlecry" varchar(32) NOT NULL,
-	"current_map" integer NOT NULL,
-	"body_type" integer NOT NULL,
-	"last_costume_id" integer NOT NULL DEFAULT '0',
-	"last_online" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	"chardata" bytea NOT NULL,
+	"entitydata" bytea NOT NULL,
+	"body_type" integer NOT NULL DEFAULT '4',
+	"height" real NOT NULL DEFAULT '0.0',
+	"physique" real NOT NULL DEFAULT '0.0',
 	"hitpoints" integer NOT NULL DEFAULT '0',
 	"endurance" integer NOT NULL DEFAULT '0',
-	"inf" integer NOT NULL DEFAULT '0',
-	"xp" integer NOT NULL DEFAULT '0',
-	"xpdebt" integer NOT NULL DEFAULT '0',
-	"xppatrol" integer NOT NULL DEFAULT '0',
-	"alignment" varchar NOT NULL DEFAULT 'hero',
-	"posx" integer NOT NULL,
-	"posy" integer NOT NULL,
-	"posz" integer NOT NULL,
-	"orientp" integer NOT NULL DEFAULT '0',
-	"orienty" integer NOT NULL,
-	"orientr" integer NOT NULL DEFAULT '0',
-	"title" varchar NOT NULL DEFAULT '32',
-	"badgetitle" varchar NOT NULL DEFAULT '32',
-	"specialtitle" varchar NOT NULL DEFAULT '32',
-	"supergroup_id" integer NOT NULL,
+	"supergroup_id" integer NOT NULL DEFAULT '0',
+	"options" bytea NOT NULL,
+	"gui" bytea NOT NULL,
+	"keybinds" bytea NOT NULL,
 	CONSTRAINT characters_pk PRIMARY KEY ("id")
-) WITH (
-  OIDS=FALSE
-);
-
-
-
-CREATE TABLE "options" (
-	"id" serial NOT NULL,
-	"character_id" integer NOT NULL,
-	"option" varchar(32) NOT NULL,
-	"value" integer NOT NULL,
-	CONSTRAINT options_pk PRIMARY KEY ("id")
-) WITH (
-  OIDS=FALSE
-);
-
-
-
-CREATE TABLE "gui" (
-	"id" serial NOT NULL,
-	"character_id" integer NOT NULL,
-	"window" integer NOT NULL,
-	"x" integer NOT NULL,
-	"y" integer NOT NULL,
-	"sx" integer NOT NULL,
-	"sy" integer NOT NULL,
-	"scale" integer NOT NULL DEFAULT '1',
-	"color1" integer NOT NULL,
-	"color2" integer NOT NULL,
-	"frozen" integer NOT NULL DEFAULT '0',
-	"state" integer NOT NULL DEFAULT '4',
-	"resizable" integer NOT NULL DEFAULT '0',
-	"flags" integer NOT NULL DEFAULT '0',
-	CONSTRAINT gui_pk PRIMARY KEY ("id")
 ) WITH (
   OIDS=FALSE
 );
@@ -119,13 +70,14 @@ CREATE TABLE "gui" (
 CREATE TABLE "supergroups" (
 	"id" serial NOT NULL,
 	"supergroup_id" serial NOT NULL,
-	"motto" varchar(128) NOT NULL,
-	"rank_names" bytea NOT NULL,
-	"rank_permissions" bytea NOT NULL,
-	"motd" varchar(1024) NOT NULL,
-	"emblem" bytea NOT NULL,
-	"colors" bytea NOT NULL,
-	"members" bytea NOT NULL,
+	"sg_name" varchar(30) NOT NULL,
+	"sg_motto" varchar(128) NOT NULL,
+	"sg_motd" varchar(1024) NOT NULL,
+	"sg_rank_names" bytea NOT NULL,
+	"sg_rank_perms" bytea NOT NULL,
+	"sg_emblem" bytea NOT NULL,
+	"sg_colors" bytea NOT NULL,
+	"sg_members" bytea NOT NULL,
 	CONSTRAINT supergroups_pk PRIMARY KEY ("id")
 ) WITH (
   OIDS=FALSE
@@ -152,12 +104,6 @@ CREATE TABLE "progress" (
 ALTER TABLE "costumes" ADD CONSTRAINT "costumes_fk0" FOREIGN KEY ("character_id") REFERENCES "characters"("id");
 
 ALTER TABLE "characters" ADD CONSTRAINT "characters_fk0" FOREIGN KEY ("account_id") REFERENCES "accounts"("id");
-ALTER TABLE "characters" ADD CONSTRAINT "characters_fk1" FOREIGN KEY ("supergroup_id") REFERENCES "supergroups"("id");
-
-ALTER TABLE "options" ADD CONSTRAINT "options_fk0" FOREIGN KEY ("character_id") REFERENCES "characters"("id");
-
-ALTER TABLE "gui" ADD CONSTRAINT "gui_fk0" FOREIGN KEY ("character_id") REFERENCES "characters"("id");
-
 
 ALTER TABLE "progress" ADD CONSTRAINT "progress_fk0" FOREIGN KEY ("character_id") REFERENCES "characters"("id");
 

@@ -97,7 +97,7 @@ NOTE: for QT, please install **mingw 32bit version**
 portsnap fetch update
 pkg update
 pkg install cmake git
-cd /usr/src/ports/devel/qt5-core && make install && cd ../../database/qt5-sql && make install && cd ../qt5-sqlite3 && make install && cd ../../x11-toolkits/qt5-gui && make install && cd ../qt5-widgets && make install && cd ../../graphics/qt5-opengl && make install
+cd /usr/ports/devel/qt5-core && make install clean BATCH=yes && cd ../../databases/qt5-sql && make install clean BATCH=yes && cd ../qt5-sqldrivers-sqlite3 && make install clean BATCH=yes && cd ../../x11-toolkits/qt5-gui && make install clean BATCH=yes && cd ../qt5-widgets && make install clean BATCH=yes && cd ../../graphics/qt5-opengl && make install clean BATCH=yes
 ```
 
 FreeBSD should have clang/llvm already installed.

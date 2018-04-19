@@ -4,88 +4,145 @@
 #include <ace/INET_Addr.h>
 #include <ace/Time_Value.h>
 #include <QtCore/QString>
-class Character;
+#include <QtCore/QDateTime>
+struct GameAccountResponseCharacterData;
 class Internal_EventTypes
 {
 public:
     BEGINE_EVENTS_INTERNAL()
-    EVENT_DECL(evExpectClient,0)
-    EVENT_DECL(evClientExpected,1)
-    EVENT_DECL(evClientConnectionQuery,2)
-    EVENT_DECL(evClientConnectionResponse,3)
-    END_EVENTS(4)
-};
+    EVENT_DECL(evExpectClientRequest,0)
+    EVENT_DECL(evExpectClientResponse,1)
+    EVENT_DECL(evExpectMapClientRequest,2)
+    EVENT_DECL(evExpectMapClientResponse,3)
+    EVENT_DECL(evClientConnectionRequest,4)
+    EVENT_DECL(evClientConnectionResponse,5)
+    EVENT_DECL(evReloadConfig,6) // the server that receives this message will reload it's config file and restart with it
 
-// This tells the server that it should expect a new client connection from given address
-class ExpectClient : public SEGSEvent
-{
-    ExpectClient() = delete;
-public:
-    ExpectClient(EventProcessor *evsrc,uint64_t client_id,uint8_t access_level,const ACE_INET_Addr &from) :
-                SEGSEvent(Internal_EventTypes::evExpectClient,evsrc),
-                m_client_id(client_id),
-                m_access_level(access_level),
-                m_from_addr(from)
-    {
-    }
-    uint64_t m_client_id;
-    uint8_t m_access_level;
-    ACE_INET_Addr m_from_addr;
+    EVENT_DECL(evGameServerStatus,10)
+    EVENT_DECL(evMapServerStatus,11)
+    // Message bus events
+    EVENT_DECL(evServiceStatus,101)
+    EVENT_DECL(evClientConnected,102)
+    EVENT_DECL(evClientDisconnected,103)
+    END_EVENTS(105)
 };
-class ExpectMapClient : public ExpectClient
+class InternalEvent : public SEGSEvent
 {
+    uint64_t            m_session_token = 0;
 public:
-    ExpectMapClient(EventProcessor *evsrc,  uint64_t client_id, uint8_t access_level,const ACE_INET_Addr &from) :
-                ExpectClient(evsrc,client_id,access_level,from)
-    {
-        m_map_id = 0;
-        m_slot_idx=0;
-    }
-    void setValues(uint16_t slot_idx, const QString &name, uint32_t map_id,Character *char_f=0)
-    {
-        m_slot_idx  =   slot_idx;
-        m_character_name = name;
-        m_map_id    = map_id;
-        char_from_db=char_f;
-    }
-    Character *char_from_db;
-    uint16_t m_slot_idx;
-    QString m_character_name;
-    uint32_t m_map_id;
+    using SEGSEvent::SEGSEvent; // forward all constructors to parent class.
+
+    void                session_token(uint64_t token) { m_session_token = token; }
+    uint64_t            session_token() const { return m_session_token; }
+
+};
+#define ONE_WAY_MESSAGE(name)\
+struct name ## Message final : public InternalEvent\
+{\
+    name ## Data m_data;\
+    explicit name ## Message() :  InternalEvent(Internal_EventTypes::ev ## name) {}\
+    name ## Message(name ## Data &&d) :  InternalEvent(Internal_EventTypes::ev ## name),m_data(d) {}\
+};
+/// A message without Request having additional data
+#define SIMPLE_TWO_WAY_MESSAGE(name)\
+struct name ## Request final : public InternalEvent\
+{\
+    name ## Message(int token) :  InternalEvent(Internal_EventTypes::ev ## name ## Request) {session_token(token);}\
+};\
+struct name ## Response final : public InternalEvent\
+{\
+    name ## Data m_data;\
+    name ## Response(name ## Data &&d,uint64_t token) :  InternalEvent(Internal_EventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
+};
+/// A message with Request having additional data
+#define TWO_WAY_MESSAGE(name)\
+struct name ## Request final : public InternalEvent\
+{\
+    name ## RequestData m_data;\
+    name ## Request(name ## RequestData &&d,uint64_t token) : InternalEvent(Internal_EventTypes::ev ## name ## Request),m_data(d) {session_token(token);}\
+};\
+struct name ## Response final : public InternalEvent\
+{\
+    name ## ResponseData m_data;\
+    name ## Response(name ## ResponseData &&d,uint64_t token) :  InternalEvent(Internal_EventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
+};
+// This tells the server that it should expect a new client connection from given address
+struct ExpectClientRequestData
+{
+    uint64_t m_client_id;
+    ACE_INET_Addr m_from_addr;
+    uint8_t m_access_level;
 };
 // This event informs the server that given client is now expected on another server
 // and passes that servers connection point, and connection cookie
-class ClientExpected : public SEGSEvent
+struct ExpectClientResponseData
 {
-public:
-        ClientExpected(EventProcessor *evsrc,uint64_t cid,uint32_t c,const ACE_INET_Addr &tgt) :
-                        SEGSEvent(Internal_EventTypes::evClientExpected,evsrc),
-                        client_id(cid),
-                        cookie(c),
-                        m_connection_addr(tgt)
-        {}
-        uint64_t client_id;
-        uint32_t cookie;
-        ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client
+    uint64_t client_id;
+    uint32_t cookie;
+    uint32_t m_server_id; // this is the id of the server that is expecting the client
 };
-
-// Called synchronously this query is used to retrieve client's connection status.
-// Maybe the map/game servers should just post ClientConnection updates to AuthServer ?
-class ClientConnectionQuery : public SEGSEvent
+TWO_WAY_MESSAGE(ExpectClient)
+struct ExpectMapClientRequestData
 {
-public:
-    ClientConnectionQuery(EventProcessor *evsrc,uint64_t id) : SEGSEvent(Internal_EventTypes::evClientConnectionQuery,evsrc),m_id(id)
-    {
-
-    }
-    uint64_t m_id;
+    uint64_t m_client_id;
+    uint8_t m_access_level;
+    ACE_INET_Addr m_from_addr;
+    //TODO: pass this as POD, or serialize it into some internal format.
+    GameAccountResponseCharacterData *char_from_db;
+    uint16_t m_slot_idx;
+    QString m_character_name;
+    QString m_map_name;
+    uint16_t m_max_slots;
 };
-
-class ClientConnectionResponse : public SEGSEvent
+struct ExpectMapClientResponseData
 {
-public:
-    ClientConnectionResponse(EventProcessor *evsrc,const ACE_Time_Value &lc) : SEGSEvent(Internal_EventTypes::evClientConnectionResponse,evsrc),last_comm(lc)
-    {
-    }
-    ACE_Time_Value last_comm;
+    uint32_t      cookie;
+    uint32_t      m_server_id;       // this is the id of the server that is expecting the client
+    ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client
 };
+TWO_WAY_MESSAGE(ExpectMapClient)
+// For now, no data here, could be a path to a config file?
+struct ReloadConfigData
+{
+
+};
+ONE_WAY_MESSAGE(ReloadConfig)
+
+struct GameServerStatusData
+{
+    ACE_INET_Addr m_addr;
+    QDateTime m_last_status_update;
+    uint16_t m_current_players;
+    uint16_t m_max_players;
+    uint8_t m_id;
+    bool m_online;
+};
+// This could be put in Message bus if any other server, apart from Auth needs this info.
+ONE_WAY_MESSAGE(GameServerStatus)
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/// The following messages are put on the global Message Bus, and published there for all subscribers to see
+//
+struct ServiceStatusData
+{
+    QString status_message;
+    int status_value;
+};
+ONE_WAY_MESSAGE(ServiceStatus)
+
+struct ClientConnectedData
+{
+    uint64_t m_session;
+    uint32_t m_server_id;     // id of the server the client connected to.
+    uint32_t m_sub_server_id; // only used when server_id is the map server
+};
+ONE_WAY_MESSAGE(ClientConnected)
+struct ClientDisconnectedData
+{
+    uint64_t m_session;
+};
+ONE_WAY_MESSAGE(ClientDisconnected)
+
+#undef ONE_WAY_MESSAGE
+#undef SIMPLE_TWO_WAY_MESSAGE
+#undef TWO_WAY_MESSAGE

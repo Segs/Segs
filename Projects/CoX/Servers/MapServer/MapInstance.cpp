@@ -1,30 +1,41 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * Super Entity Game Server
+ * http://github.com/Segs
+ * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
-
  */
+
 #include "MapInstance.h"
 
-#include "AdminServer.h"
-#include "AdminServer/AccountInfo.h"
 #include "version.h"
 #include "DataHelpers.h"
 #include "MapEvents.h"
-#include "MapClient.h"
 #include "MapServerData.h"
 #include "MapManager.h"
 #include "MapTemplate.h"
 #include "MapServer.h"
 #include "SEGSTimer.h"
-#include "Entity.h"
+#include "NetStructures/Entity.h"
+#include "NetStructures/Character.h"
 #include "EntityStorage.h"
 #include "WorldSimulation.h"
-#include "InternalEvents.h"
+#include "Common/Servers/InternalEvents.h"
+#include "Common/Servers/Database.h"
+#include "Common/Servers/HandlerLocator.h"
+#include "Common/Servers/MessageBus.h"
+#include "Common/GameData/CoHMath.h"
+#include "SlashCommand.h"
+#include "GameData/entitydata_serializers.h"
+#include "GameData/clientoptions_serializers.h"
+#include "GameData/keybind_serializers.h"
+#include "GameDatabase/GameDBSyncEvents.h"
+#include "Logging.h"
+
+#include <ace/Reactor.h>
 
 #include <QtCore/QDebug>
+#include <QRegularExpression>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
@@ -33,11 +44,16 @@
 namespace {
 enum {
     World_Update_Timer   = 1,
-    State_Transmit_Timer = 2
+    State_Transmit_Timer = 2,
+    Session_Reaper_Timer   = 3,
 };
 
-ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
-ACE_Time_Value resend_interval(0,250*1000);
+
+const ACE_Time_Value reaping_interval(0,1000*1000);
+const ACE_Time_Value link_is_stale_if_disconnected_for(0,5*1000*1000);
+const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
+const ACE_Time_Value resend_interval(0,250*1000);
+
 void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &locations_scriptname)
 {
     if(QFile::exists(locations_scriptname))
@@ -46,50 +62,137 @@ void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &location
     }
     else
     {
-        qWarning().noquote() << locations_scriptname <<"is missing";
+        qDebug().noquote() << locations_scriptname <<"is missing; Process will continue without it.";
     }
 }
 }
+class MapLinkEndpoint : public ServerEndpoint
+{
+public:
+    MapLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
+    ~MapLinkEndpoint()=default;
+protected:
+    CRUDLink *createLink(EventProcessor *down) override
+    {
+        return new MapLink(down,this);
+    }
+};
 
 using namespace std;
-MapInstance::MapInstance(const QString &name) : m_name(name), m_world_update_timer(nullptr)
+MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr)
+    : m_data_path(mapdir_path), m_world_update_timer(nullptr), m_addresses(listen_addr)
 {
     m_world = new World(m_entities);
     m_scripting_interface.reset(new ScriptingEngine);
+    m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
+    m_endpoint->set_downstream(this);
+
 }
+
 void MapInstance::start()
 {
     assert(m_world_update_timer==nullptr);
+    assert(m_game_server_id!=255);
     m_scripting_interface->registerTypes();
-    QFileInfo mapDataDirInfo("MapInstances/"+m_name);
+    QFileInfo mapDataDirInfo(m_data_path);
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
-        QString locations_scriptname="MapInstances/"+m_name+'/'+"locations.lua";
-        QString plaques_scriptname="MapInstances/"+m_name+'/'+"plaques.lua";
+        QString locations_scriptname=m_data_path+'/'+"locations.lua";
+        QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
 
         loadAndRunLua(m_scripting_interface,locations_scriptname);
         loadAndRunLua(m_scripting_interface,plaques_scriptname);
     }
     else
     {
-        QDir::current().mkpath("MapInstances/"+m_name);
-        qWarning() << "FAILED to load map instance data. Check to see if file exists:"<< "MapInstances/"+m_name;
+        QDir::current().mkpath(m_data_path);
+        qWarning() << "FAILED to load map instance data. Check to see if file exists:"<< m_data_path;
     }
-    m_world_update_timer = new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false); // world simulation ticks
-    m_resend_timer = new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false); // state broadcast ticks
+    m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
+    m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
+    m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
+    qInfo() << "Server running... awaiting client connections."; // best place for this?
+}
+///
+/// \fn MapInstance::spin_down
+/// \brief This function should stop the world simulation, and save all entities to db
+/// It is meant to be ran when MapInstance is getting `scrubbed` for reuse
+void MapInstance::spin_down()
+{
+    qDebug() << "spin down ? I don't know how to stop!";
+}
+///
+/// \fn MapInstance::spin_up_for
+/// \brief This function should prepare the map for use by the specified game server
+/// \param game_server_id
+///
+bool MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t instance_id)
+{
+    m_game_server_id = game_server_id;
+    m_owner_id = owner_id;
+    m_instance_id = instance_id;
+    if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
+    {
+        qWarning() << "MapInstance::spin_up_for faile to register_handler, port already open";
+        return false;
+    }
+    if (m_endpoint->open() == -1) // will register notifications with current reactor
+        ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) MapInstance: ServerEndpoint::open\n"),false);
+
+    return true;
 }
 
-size_t MapInstance::num_active_clients()
+MapInstance::~MapInstance()
 {
-    return m_clients.num_active_clients();
-}
-MapInstance::~MapInstance() {
     delete m_world;
+    delete m_endpoint;
 }
-void MapInstance::enqueue_client(MapClient *clnt)
+void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage *ev)
 {
-    m_world->addPlayer(clnt->char_entity());
+    assert(false);
+//    assert(ev->m_data.m_sub_server_id);
+//    MapClientSession &session(m_session_store.sessionFromEvent(ev));
+//    {
+//        ACE_Guard<ACE_Thread_Mutex> guard(m_reaping_mutex);
+//        // check if this session perhaps is in ready for reaping set
+//        for(size_t idx=0,total=m_session_ready_for_reaping.size(); idx<total; ++idx)
+//        {
+//            if(m_session_ready_for_reaping[idx].m_session==&session)
+//            {
+//                std::swap(m_session_ready_for_reaping[idx],m_session_ready_for_reaping.back());
+//                m_session_ready_for_reaping.pop_back();
+//                break;
+//            }
+//        }
+//    }
+//    session.is_connected_to_map_server_id = ev->m_data.m_server_id;
+//    session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
+}
+void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    session.is_connected_to_map_server_id = 0;
+    session.is_connected_to_map_instance_id = 0;
+    {
+        SessionStore::MTGuard guard(m_session_store.reap_lock());
+        m_session_store.mark_session_for_reaping(&session,ev->session_token());
+    }
+}
+void MapInstance::reap_stale_links()
+{
+
+    ACE_Time_Value              time_now = ACE_OS::gettimeofday();
+    EventProcessor *            tgt      = HandlerLocator::getGame_Handler(m_game_server_id);
+
+    SessionStore::MTGuard guard(m_session_store.reap_lock());
+    m_session_store.reap_stale_links("MapInstance",link_is_stale_if_disconnected_for,[tgt](uint64_t tok) {
+        tgt->putq(new ClientDisconnectedMessage({tok}));
+    });
+}
+void MapInstance::enqueue_client(MapClientSession *clnt)
+{
+    m_world->addPlayer(clnt->m_ent);
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
 // Here we would add the handler call in case we get evCombineRequest :)
@@ -104,6 +207,18 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case SEGS_EventTypes::evDisconnect:
             on_link_lost(ev);
             break;
+        case Internal_EventTypes::evExpectMapClientRequest:
+            on_expect_client(static_cast<ExpectMapClientRequest *>(ev));
+            break;
+        case GameDBEventTypes::evWouldNameDuplicateResponse:
+            on_name_clash_check_result(static_cast<WouldNameDuplicateResponse *>(ev));
+            break;
+        case GameDBEventTypes::evCreateNewCharacterResponse:
+            on_character_created(static_cast<CreateNewCharacterResponse *>(ev));
+            break;
+        case GameDBEventTypes::evGetEntityResponse:
+            on_entity_response(static_cast<GetEntityResponse *>(ev));
+            break;
         case MapEventTypes::evIdle:
             on_idle(static_cast<IdleEvent *>(ev));
             break;
@@ -112,9 +227,6 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case MapEventTypes::evSceneRequest:
             on_scene_request(static_cast<SceneRequest *>(ev));
-            break;
-        case Internal_EventTypes::evExpectClient:
-            on_expect_client(static_cast<ExpectMapClient *>(ev));
             break;
         case MapEventTypes::evDisconnectRequest:
             on_disconnect(static_cast<DisconnectRequest *>(ev));
@@ -167,9 +279,6 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evMiniMapState:
             on_minimap_state(static_cast<MiniMapState *>(ev));
             break;
-        case MapEventTypes::evEntityInfoRequest:
-            on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
-            break;
         case MapEventTypes::evLocationVisited:
             on_location_visited(static_cast<LocationVisited *>(ev));
             break;
@@ -182,11 +291,17 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evSwitchViewPoint:
             on_switch_viewpoint(static_cast<SwitchViewPoint *>(ev));
             break;
-        case MapEventTypes::evClientSettings:
-            on_client_settings(static_cast<ClientSettings *>(ev));
+        case MapEventTypes::evSaveClientOptions:
+            on_client_options(static_cast<SaveClientOptions *>(ev));
             break;
         case MapEventTypes::evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
+            break;
+        case MapEventTypes::evSetDefaultPowerSend:
+            on_set_default_power_send(static_cast<SetDefaultPowerSend *>(ev));
+            break;
+        case MapEventTypes::evSetDefaultPower:
+            on_set_default_power(static_cast<SetDefaultPower *>(ev));
             break;
         case MapEventTypes::evUnqueueAll:
             on_unqueue_all(static_cast<UnqueueAll *>(ev));
@@ -200,17 +315,24 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evTargetChatChannelSelected:
             on_target_chat_channel_selected(static_cast<TargetChatChannelSelected *>(ev));
             break;
+        case MapEventTypes::evEntityInfoRequest:
+            on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
+            break;
+        case MapEventTypes::evSelectKeybindProfile:
+            on_select_keybind_profile(static_cast<SelectKeybindProfile *>(ev));
+            break;
+        case MapEventTypes::evSetKeybind:
+            on_set_keybind(static_cast<SetKeybind *>(ev));
+            break;
+        case MapEventTypes::evRemoveKeybind:
+            on_remove_keybind(static_cast<RemoveKeybind *>(ev));
+            break;
+        case MapEventTypes::evResetKeybinds:
+            on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
+            break;
         default:
-            fprintf(stderr,"Unhandled MapEventTypes %zu\n",ev->type()-MapEventTypes::base);
-            //ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled event type %d\n"),ev->type()));
+            qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
     }
-}
-
-SEGSEvent * MapInstance::dispatchSync( SEGSEvent * )
-{
-    assert(!"No sync dispatchable events here");
-
-    return nullptr;
 }
 void MapInstance::on_idle(IdleEvent *ev)
 {
@@ -228,140 +350,214 @@ void MapInstance::on_shortcuts_request(ShortcutsRequest *ev)
     // TODO: expend this to properly access the data from :
     // Shortcuts are part of UserData and that should be a part of Client entity which is a part of InstanceData
     // TODO: use the access level and send proper commands
-    MapLink * lnk  = (MapLink *)ev->src();
-    Shortcuts *res = new Shortcuts;
-    res->m_client  = lnk->client_data();
-    lnk->putq(res);
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Shortcuts *res = new Shortcuts(&session);
+    session.link()->putq(res);
 }
 void MapInstance::on_client_quit(ClientQuit*ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *client = lnk->client_data();
+    MapClientSession &session(m_session_store.session_from_event(ev));
     // process client removal -> sending delete event to all clients etc.
-    assert(client && client->char_entity());
+    assert(session.m_ent);
     if(ev->abort_disconnect)
-        abortLogout(client->char_entity());
+        abortLogout(session.m_ent);
     else
-        client->char_entity()->beginLogout(10);
+        session.m_ent->beginLogout(10);
 
 }
 void MapInstance::on_link_lost(SEGSEvent *ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *client = lnk->client_data();
-    if(client)
-    {
-        Entity *ent = client->char_entity();
-        assert(ent);
-        //todo: notify all clients about entity removal
-        m_entities.removeEntityFromActiveList(ent);
-        lnk->set_client_data(nullptr);
-        m_clients.removeById(client->account_info().account_server_id());
-    }
-    lnk->putq(new DisconnectEvent(this));
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    MapLink *lnk = session.link();
+    uint64_t session_token = lnk->session_token();
+    Entity *ent = session.m_ent;
+    assert(ent);
+    //todo: notify all clients about entity removal
+
+    HandlerLocator::getGame_Handler(m_game_server_id)
+            ->putq(new ClientDisconnectedMessage({session_token}));
+
+    m_entities.removeEntityFromActiveList(ent);
+    m_session_store.session_link_lost(session_token);
+     // close the link by puting an disconnect event there
+    lnk->putq(new DisconnectEvent(session_token));
 }
 void MapInstance::on_disconnect(DisconnectRequest *ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *client = lnk->client_data();
-    if(client)
-    {
-        Entity *ent = client->char_entity();
-        assert(ent);
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    MapLink *lnk = session.link();
+    uint64_t session_token = lnk->session_token();
+
+    Entity *ent = session.m_ent;
+    assert(ent);
         //todo: notify all clients about entity removal
-        m_entities.removeEntityFromActiveList(ent);
-        lnk->set_client_data(nullptr);
-        m_clients.removeById(client->account_info().account_server_id());
-    }
+    HandlerLocator::getGame_Handler(m_game_server_id)
+            ->putq(new ClientDisconnectedMessage({session_token}));
+    m_entities.removeEntityFromActiveList(ent);
+    m_session_store.session_link_lost(session_token);
+
     lnk->putq(new DisconnectResponse);
-    lnk->putq(new DisconnectEvent(this)); // this should work, event if different threads try to do it in parallel
+    lnk->putq(new DisconnectEvent(session_token)); // this should work, event if different threads try to do it in parallel
 }
-void MapInstance::on_expect_client( ExpectMapClient *ev )
+void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
+{
+    if(ev->m_data.m_would_duplicate)
+    {
+        // name is taken, inform by setting cookie to 0.
+        EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
+        tgt->putq(new ExpectMapClientResponse({0, 0, m_addresses.m_location_addr}, ev->session_token()));
+    }
+    else
+    {
+        uint32_t cookie = m_session_store.get_cookie_for_session(ev->session_token());
+        assert(cookie!=0);
+        // Now we inform our game server that this Map server instance is ready for the client
+        HandlerLocator::getGame_Handler(m_game_server_id)
+            ->putq(new ExpectMapClientResponse({2+cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
+    }
+}
+void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 {
     // TODO: handle contention while creating 2 characters with the same name from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
+    const ExpectMapClientRequestData &request_data(ev->m_data);
+
+    // make sure that this is not a duplicate session
     uint32_t cookie = 0; // name in use
-    MapTemplate *tpl=m_server->map_manager().get_template(ev->m_map_id);
-    MapClient *cl = nullptr;
-    if(nullptr==tpl)
+    // fill the session with data, this will get discarded if the name is already in use...
+    MapClientSession &map_session(*m_session_store.create_or_reuse_session_for(ev->session_token()));
+    map_session.m_name        = request_data.m_character_name;
+    // TODO: this code is wrong on the logical level
+    map_session.m_current_map = this;
+    map_session.m_max_slots   = request_data.m_max_slots;
+    map_session.m_access_level = request_data.m_access_level;
+    map_session.m_client_id    = request_data.m_client_id;
+
+    cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
+                                                     request_data.m_client_id);
+    if (!request_data.char_from_db)
     {
-        ev->src()->putq(new ClientExpected(this,ev->m_client_id,1,m_server->getAddress()));
+        EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
+        game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name},ev->session_token(),this) );
+        // while we wait for db response, mark session as waiting for reaping
+        m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
         return;
     }
-    CharacterDatabase * char_db = AdminServer::instance()->character_db();
-    if(!ev->char_from_db)
-    {
-        // attempt to create a new character, let's see if the name is taken
-        if(char_db->named_character_exists(ev->m_character_name))
-        {
-            // name is taken, inform by setting cookie to 0.
-            ev->src()->putq(new ClientExpected(this,ev->m_client_id,0,m_server->getAddress()));
-            return;
-        }
-    }
-    cookie    = 2+m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
-    cl = m_clients.getExpectedByCookie(cookie-2);
-    cl->name(ev->m_character_name);
-    cl->current_map(tpl->get_instance());
-    if(ev->char_from_db)
-    {
-        Entity *ent = m_entities.CreatePlayer();
-        ent->fillFromCharacter(ev->char_from_db);
-        ent->m_origin_idx = getEntityOriginIndex(true, getOrigin(*ev->char_from_db));
-        ent->m_class_idx = getEntityClassIndex(true, getClass(*ev->char_from_db));
-        cl->char_entity(ent);
-    }
-    ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
-    //    else if(true) // check if (character does not exist || character exists and is owned by this client )
-    //    {
+    // existing character
+    Entity *ent = m_entities.CreatePlayer();
+    toActualCharacter(*request_data.char_from_db, *ent->m_char);
+    ent->fillFromCharacter();
+    map_session.m_ent = ent;
+    // Now we inform our game server that this Map server instance is ready for the client
 
-    //        cookie    = 2+m_clients.ExpectClient(ev->m_from_addr,ev->m_client_id,ev->m_access_level);
-    //        MapClient *cl = m_clients.getExpectedByCookie(cookie-2);
-    //        cl->name(ev->m_character_name);
-    //        cl->current_map(tpl->get_instance());
-    //        ev->src()->putq(new ClientExpected(this,ev->m_client_id,cookie,m_server->getAddress()));
-    //    }
+    HandlerLocator::getGame_Handler(m_game_server_id)
+        ->putq(new ExpectMapClientResponse({cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
+}
+void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
+{
+    MapClientSession &map_session(m_session_store.session_from_event(ev));
+    m_session_store.locked_unmark_session_for_reaping(&map_session);
+    if(ev->m_data.slot_idx<0)
+    {
+
+        //TODO: this requires sending an actual error message to client and then disconnecting ?
+        map_session.link()->putq(new DisconnectResponse);
+        assert(false); //this code needs work;
+        return;
+    }
+    map_session.m_ent->m_char->m_db_id = ev->m_data.m_char_id;
+    map_session.m_ent->m_char->setIndex(ev->m_data.slot_idx);
+    EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
+    // now we go back to standard path -> asking db about the entity
+    // TODO: we've just put the entity in the db, and now we have to load it back ??
+    game_db->putq(new GetEntityRequest({ev->m_data.m_char_id},ev->session_token(),this));
+    // while we wait for db response, mark session as waiting for reaping
+    m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
+}
+void MapInstance::on_entity_response(GetEntityResponse *ev)
+{
+    MapClientSession &map_session(m_session_store.session_from_event(ev));
+    m_session_store.locked_unmark_session_for_reaping(&map_session);
+    Entity * e = map_session.m_ent;
+
+    e->m_db_id              = e->m_char->m_db_id;
+    e->m_supergroup.m_SG_id = ev->m_data.m_supergroup_id;
+    serializeFromDb(e->m_entity_data, ev->m_data.m_ent_data);
+
+    // Can't pass direction through cereal, so let's update it here.
+    e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
+
+    if (logSpawn().isDebugEnabled())
+        map_session.m_ent->dump();
+    // Tell our game server we've got the client
+    EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
+
+    map_session.m_current_map->enqueue_client(&map_session);
+    setMapName(*map_session.m_ent->m_char, name());
+    setMapIdx(*map_session.m_ent, index());
+    map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
 }
 void MapInstance::on_create_map_entity(NewEntity *ev)
 {
-    //TODO: At this point we should pre-process the NewEntity packet and let the proper CoXMapInstance handle the rest of processing
+    // TODO: At this point we should pre-process the NewEntity packet and let the proper CoXMapInstance handle the rest
+    // of processing
+    auto *lnk   = (MapLink *)ev->src();
+    uint64_t token = m_session_store.connected_client(ev->m_cookie - 2);
+    EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
 
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *cl = m_clients.getExpectedByCookie(ev->m_cookie-2);
-
-    assert(cl);
-    cl->link_state().link(lnk);
-    if(ev->m_new_character)
+    assert(token != ~0U);
+    MapClientSession &map_session(m_session_store.session_from_token(token));
+    map_session.link(lnk);
+    lnk->session_token(token);
+    if (ev->m_new_character)
     {
+        QString ent_data;
+
         Entity *e = m_entities.CreatePlayer();
-        fillEntityFromNewCharData(*e,ev->m_character_data,g_GlobalMapServer->runtimeData().getPacker());
-        e->m_origin_idx = getEntityOriginIndex(true, getOrigin(e->m_char));
-        e->m_class_idx = getEntityClassIndex(true, getClass(e->m_char));
-        cl->entity(e);
-        cl->db_create();
-        //        start_idle_timer(cl);
-        //cl->start_idle_timer();
+        fillEntityFromNewCharData(*e, ev->m_character_data, g_GlobalMapServer->runtimeData().getPacker());
+        e->m_char->m_account_id = map_session.auth_id();
+        e->m_entity_data.m_access_level = map_session.m_access_level;
+        map_session.m_ent = e;
+        // new characters are transmitted nameless, use the name provided in on_expect_client
+        e->m_char->setName(map_session.m_name);
+        GameAccountResponseCharacterData char_data;
+        fromActualCharacter(*e->m_char,char_data);
+        serializeToDb(e->m_entity_data,ent_data);
+        // create the character from the data.
+        //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
+        game_db->putq(new CreateNewCharacterRequest({char_data,ent_data, map_session.m_requested_slot_idx,
+                                                     map_session.m_max_slots,map_session.m_client_id},
+                                                    token,this));
     }
-    assert(cl->char_entity());
-    cl->current_map()->enqueue_client(cl);
-    setMapName(cl->char_entity()->m_char,name());
-    lnk->set_client_data(cl);
-    lnk->putq(new MapInstanceConnected(this,1,""));
+    else
+    {
+        assert(map_session.m_ent);
+        game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
+    }
+    // while we wait for db response, mark session as waiting for reaping
+    m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token());
 }
 void MapInstance::on_scene_request(SceneRequest *ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    SceneEvent *res=new SceneEvent;
-    res->undos_PP=0;
-    res->var_14=true;
-    res->m_outdoor_mission_map=false;
-    res->m_map_number=1;
-    //"maps/City_Zones/City_00_01/City_00_01.txt";
-    res->m_map_desc="maps/City_Zones/City_01_01/City_01_01.txt";
-    res->current_map_flags=true; //off 1
-    res->unkn1=1;
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("%d - %d - %d\n"),res->unkn1,res->undos_PP,res->current_map_flags));
-    res->unkn2=true;
+    auto *lnk = (MapLink *)ev->src();
+    auto *res = new SceneEvent;
+
+    res->undos_PP              = 0;
+    res->var_14                = true;
+    res->m_outdoor_mission_map = false;
+    res->m_map_number          = 1;
+                            //"maps/City_Zones/City_00_01/City_00_01.txt";
+    assert(m_data_path.contains("City_"));
+    int city_idx = m_data_path.indexOf("City_");
+    int end_or_slash = m_data_path.indexOf("/",city_idx);
+    assert(city_idx!=-1);
+    QString map_desc_from_path = m_data_path.mid(city_idx,end_or_slash==-1 ? -1 : m_data_path.size()-end_or_slash);
+    res->m_map_desc        = QString("maps/City_Zones/%1/%1.txt").arg(map_desc_from_path);
+    res->current_map_flags = true; // off 1
+    res->unkn1             = 1;
+    ACE_DEBUG((LM_DEBUG, ACE_TEXT("%d - %d - %d\n"), res->unkn1, res->undos_PP, res->current_map_flags));
+    res->unkn2 = true;
     lnk->putq(res);
 }
 void MapInstance::on_entities_request(EntitiesRequest *ev)
@@ -369,11 +565,9 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     // this packet should start the per-client send-world-state-update timer
     // actually I think the best place for this timer would be the map instance.
     // so this method should call MapInstace->initial_update(MapClient *);
-    MapLink * lnk = (MapLink *)ev->src();
+    MapClientSession &session(m_session_store.session_from_event(ev));
     srand(time(nullptr));
-    MapClient *cl = lnk->client_data();
-    assert(cl);
-    m_clients.addToActiveClients(cl); // add to the list of clients interested in world updates
+    m_session_store.add_to_active_sessions(&session);
 }
 //! Handle instance-wide timers
 void MapInstance::on_timeout(TimerEvent *ev)
@@ -386,7 +580,7 @@ void MapInstance::on_timeout(TimerEvent *ev)
     // 2. Find all links with inactivity_time() >= disconnect_time
     //   Disconnect given link.
 
-    intptr_t timer_id = (intptr_t)ev->data();
+    auto timer_id = (intptr_t)ev->data();
     switch (timer_id) {
         case World_Update_Timer:
             m_world->update(ev->arrival_time());
@@ -394,22 +588,25 @@ void MapInstance::on_timeout(TimerEvent *ev)
         case State_Transmit_Timer:
             sendState();
             break;
+        case Session_Reaper_Timer:
+            reap_stale_links();
+            break;
     }
 }
 void MapInstance::sendState() {
 
-    if(num_active_clients()==0)
+    if(m_session_store.num_sessions()==0)
         return;
 
-    ClientStore<MapClient>::ivClients iter=m_clients.begin();
-    ClientStore<MapClient>::ivClients end=m_clients.end();
+    auto iter=m_session_store.begin();
+    auto end=m_session_store.end();
     static bool only_first=true;
     static int resendtxt=0;
     resendtxt++;
 
     for(;iter!=end; ++iter)
     {
-        MapClient *cl = *iter;
+        MapClientSession *cl = *iter;
         EntitiesResponse *res=new EntitiesResponse(cl);
         res->m_map_time_of_day = m_world->time_of_day();
 
@@ -444,21 +641,24 @@ void MapInstance::on_combine_boosts(CombineRequest */*req*/)
 }
 void MapInstance::on_input_state(InputState *st)
 {
-    MapLink *  lnk = (MapLink *)st->src();
-    MapClient *cl  = lnk->client_data();
-    if(cl==nullptr)
-    {
-        qWarning() << "Bogus on_input_state, client is null";
-        return;
-    }
-    Entity *   ent = cl->char_entity();
+    MapClientSession &session(m_session_store.session_from_event(st));
+    Entity *   ent = session.m_ent;
     if (st->m_data.has_input_commit_guess)
         ent->m_input_ack = st->m_data.send_id;
     ent->inp_state = st->m_data;
+    // Set Target
+    ent->m_target_idx = st->m_target_idx;
+    ent->m_assist_target_idx = st->m_assist_target_idx;
+    // Set Orientation
+    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r) {
+        ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
+        ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
+    }
 
     // Input state messages can be followed by multiple commands.
     assert(st->m_user_commands.GetReadableBits()<32*1024*8); // simple sanity check ?
     // here we will try to extract all of them and put them on our processing queue
+    std::vector<const char *> prev_commands = {};
     while(st->m_user_commands.GetReadableBits()>1)
     {
         MapLinkEvent *ev = MapEventFactory::CommandEventFromStream(st->m_user_commands);
@@ -468,22 +668,39 @@ void MapInstance::on_input_state(InputState *st)
         // copy source packet seq number to created command
         ev->m_seq_number = st->m_seq_number;
         ev->src(st->src());
+        prev_commands.emplace_back(ev->info());
         // post the event to ourselves for dispatch
         putq(ev);
     }
     if(st->m_user_commands.GetReadableBits()!=0)
-        qDebug() << "Not all bits were consumed";
+    {
+        qCDebug(logMapEvents) << "bits: " << st->m_user_commands.GetReadableBits();
+        qCWarning(logMapEvents) << "Not all bits were consumed by previous commands:";
+        for(const char *cmd : prev_commands)
+            qCWarning(logMapEvents) << cmd;
+        assert(false);
+    }
 
     //TODO: do something here !
 }
-void MapInstance::on_cookie_confirm(CookieRequest * ev){
-    printf("Received cookie confirm %x - %x\n",ev->cookie,ev->console);
+void MapInstance::on_cookie_confirm(CookieRequest * ev)
+{
+    qDebug("Received cookie confirm %x - %x\n", ev->cookie, ev->console);
 }
-void MapInstance::on_window_state(WindowState * ev){
-    printf("Received window state %d - %d\n",ev->window_idx,ev->wnd.field_24);
+void MapInstance::on_window_state(WindowState * ev)
+{
+    // Save GUISettings to character entity and entry in the database.
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *e = session.m_ent;
 
+    int idx = ev->wnd.m_idx;
+    e->m_char->m_gui.m_wnds.at(idx) = ev->wnd;
+
+    qCDebug(logGUI) << "Received window state" << ev->wnd.m_idx << "-" << ev->wnd.m_mode;
+    if(logGUI().isDebugEnabled())
+        e->m_char->m_gui.m_wnds.at(idx).guiWindowDump();
 }
-QString process_replacement_strings(MapClient *sender,const QString &msg_text)
+QString process_replacement_strings(MapClientSession *sender,const QString &msg_text)
 {
     /*
     // $$           - newline
@@ -494,11 +711,8 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
     // $origin      - your character's origin
     // $target      - your currently selected target's name
 
-    msg_text = msg_text.replace("$target",sender->char_entity()->target->name());
+    msg_text = msg_text.replace("$target",sender->m_ent->target->name());
     */
-
-    MapInstance *mi = sender->current_map();
-    EntityManager &ent_manager(mi->m_entities);
 
     QString new_msg = msg_text;
     static const QStringList replacements = {
@@ -511,21 +725,21 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
         "\\$target"
     };
 
-    Character c = sender->char_entity()->m_char;
+    const Character &c(*sender->m_ent->m_char);
 
     QString  sender_class       = QString(getClass(c)).remove("Class_");
     QString  sender_battlecry   = getBattleCry(c);
     uint32_t sender_level       = getLevel(c);
     QString  sender_char_name   = c.getName();
     QString  sender_origin      = getOrigin(c);
-    uint32_t target_idx         = getTargetIdx(*sender->char_entity());
+    uint32_t target_idx         = getTargetIdx(*sender->m_ent);
     QString  target_char_name;
 
-    qDebug() << "target_idx: " << sender->char_entity()->m_idx  << ":" << target_idx;
+    qCDebug(logChat) << "src -> tgt: " << sender->m_ent->m_idx  << "->" << target_idx;
 
     if(target_idx > 0)
     {
-        Entity   *tgt    = ent_manager.getEntity(target_idx);
+        Entity   *tgt    = getEntity(sender,target_idx);
         target_char_name = tgt->name();
     }
     else
@@ -533,21 +747,21 @@ QString process_replacement_strings(MapClient *sender,const QString &msg_text)
 
     foreach (const QString &str, replacements) {
         if(str == "\\$archetype")
-            new_msg.replace(QRegExp(str), sender_class);
+            new_msg.replace(QRegularExpression(str), sender_class);
         else if(str == "\\$battlecry")
-            new_msg.replace(QRegExp(str), sender_battlecry);
+            new_msg.replace(QRegularExpression(str), sender_battlecry);
         else if(str == "\\$level")
-            new_msg.replace(QRegExp(str), QString::number(sender_level));
+            new_msg.replace(QRegularExpression(str), QString::number(sender_level));
         else if(str == "\\$name")
-            new_msg.replace(QRegExp(str), sender_char_name);
+            new_msg.replace(QRegularExpression(str), sender_char_name);
         else if(str == "\\$origin")
-            new_msg.replace(QRegExp(str), sender_origin);
+            new_msg.replace(QRegularExpression(str), sender_origin);
         else if(str == "\\$target")
-            new_msg.replace(QRegExp(str), target_char_name);
+            new_msg.replace(QRegularExpression(str), target_char_name);
         else if(str == "\\$\\$")
         {
             if(new_msg.contains(str))
-                qDebug() << "need to send newline for" << str; // TODO: Need method for returning newline in str
+                qCDebug(logChat) << "need to send newline for" << str; // TODO: Need method for returning newline in str
         }
     }
     return new_msg;
@@ -565,626 +779,228 @@ static bool isChatMessage(const QString &msg)
     QString space(msg.mid(0,msg.indexOf(' ')));
     return chat_prefixes.contains(space);
 }
-static ChatMessage::eChatTypes getKindOfChatMessage(const QStringRef &msg)
+static MessageChannel getKindOfChatMessage(const QStringRef &msg)
 {
     if(msg=="l" || msg=="local")                                                            // Aliases: local, l
-        return ChatMessage::CHAT_Local;
+        return MessageChannel::LOCAL;
     if(msg=="b" || msg=="broadcast" || msg=="y" || msg=="yell")                             // Aliases: broadcast, yell, b, y
-        return ChatMessage::CHAT_Broadcast;
+        return MessageChannel::BROADCAST;
     if(msg=="g" || msg=="group" || msg=="team")                                             // Aliases: team, g, group
-        return ChatMessage::CHAT_TEAM;
+        return MessageChannel::TEAM;
     if(msg=="sg" || msg=="supergroup")                                                      // Aliases: sg, supergroup
-        return ChatMessage::CHAT_SuperGroup;
+        return MessageChannel::SUPERGROUP;
     if(msg=="req" || msg=="request" || msg=="auction" || msg=="sell")                       // Aliases: request, req, auction, sell
-        return ChatMessage::CHAT_Request;
+        return MessageChannel::REQUEST;
     if(msg=="f")                                                                            // Aliases: f
-        return ChatMessage::CHAT_Friend;
+        return MessageChannel::FRIENDS;
     if(msg=="t" || msg=="tell" || msg=="w" || msg=="whisper" || msg=="p" || msg=="private") // Aliases: t, tell, whisper, w, private, p
-        return ChatMessage::CHAT_PRIVATE;
+        return MessageChannel::PRIVATE;
     // unknown chat types are processed as local chat
-    return ChatMessage::CHAT_Local;
+    return MessageChannel::LOCAL;
 }
 
-void MapInstance::process_chat(MapClient *sender,QString &msg_text)
+void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
 {
-    int first_space = msg_text.indexOf(' ');
+    int first_space = msg_text.indexOf(QRegularExpression("\\s"), 0); // first whitespace, as the client sometimes sends tabs
     QString sender_char_name;
     QString prepared_chat_message;
 
-    if(msg_text.contains("$")) // does it contain replacement strings?
-        msg_text = process_replacement_strings(sender, msg_text);
-
     QStringRef cmd_str(msg_text.midRef(0,first_space));
     QStringRef msg_content(msg_text.midRef(first_space+1,msg_text.lastIndexOf("\n")));
-    InfoMessageCmd *info;
-    ChatMessage::eChatTypes kind = getKindOfChatMessage(cmd_str);
-    std::vector<MapClient *> recipients;
+    MessageChannel kind = getKindOfChatMessage(cmd_str);
+    std::vector<MapClientSession *> recipients;
 
-    if(sender && sender->char_entity())
-        sender_char_name = sender->char_entity()->name();
+    if(sender && sender->m_ent)
+        sender_char_name = sender->m_ent->name();
 
     switch(kind)
     {
-        case ChatMessage::CHAT_Local:
+        case MessageChannel::LOCAL:
         {
             // send only to clients within range
-            glm::vec3 senderpos = sender->char_entity()->pos;
-            for(MapClient *cl : m_clients)
+            glm::vec3 senderpos = sender->m_ent->m_entity_data.m_pos;
+            for(MapClientSession *cl : m_session_store)
             {
-                glm::vec3 recpos = cl->char_entity()->pos;
+                glm::vec3 recpos = cl->m_ent->m_entity_data.m_pos;
                 float range = 50.0f; // range of "hearing". I assume this is in yards
                 float dist = glm::distance(senderpos,recpos);
-                /*
-                printf("senderpos: %f %f %f\n", senderpos.x, senderpos.y, senderpos.z);
-                printf("recpos: %f %f %f\n", recpos.x, recpos.y, recpos.z);
-                printf("sphere: %f\n", range);
-                printf("dist: %f\n", dist);
-                */
+
+                qCDebug(logChat, "senderpos: %f %f %f", senderpos.x, senderpos.y, senderpos.z);
+                qCDebug(logChat, "recpos: %f %f %f", recpos.x, recpos.y, recpos.z);
+                qCDebug(logChat, "sphere: %f", range);
+                qCDebug(logChat, "dist: %f", dist);
+
                 if(dist<=range)
                     recipients.push_back(cl);
             }
             prepared_chat_message = QString("[Local] %1: %2").arg(sender_char_name,msg_content.toString());
-            for(MapClient * cl : recipients)
+            for(MapClientSession * cl : recipients)
             {
-                ChatMessage *msg = ChatMessage::localMessage(prepared_chat_message,sender->char_entity());
-                cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(msg));
+                sendChatMessage(MessageChannel::LOCAL,prepared_chat_message,sender,cl);
             }
             break;
         }
-        case ChatMessage::CHAT_Broadcast:
+        case MessageChannel::BROADCAST:
         {
             // send the message to everyone on this map
-            std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
+            std::copy(m_session_store.begin(),m_session_store.end(),std::back_insert_iterator<std::vector<MapClientSession *>>(recipients));
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString()); // where does [Broadcast] come from? The client?
-            for(MapClient * cl : recipients)
+            for(MapClientSession * cl : recipients)
             {
-                ChatMessage *msg = ChatMessage::broadcastMessage(prepared_chat_message,sender->char_entity());
-                cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(msg));
+                sendChatMessage(MessageChannel::BROADCAST,prepared_chat_message,sender,cl);
             }
             break;
         }
-        case ChatMessage::CHAT_Request:
+        case MessageChannel::REQUEST:
         {
             // send the message to everyone on this map
-            std::copy(m_clients.begin(),m_clients.end(),std::back_insert_iterator<std::vector<MapClient *>>(recipients));
-            prepared_chat_message = QString("[Request] %1: %2").arg(sender_char_name,msg_content.toString());
-            for(MapClient * cl : recipients)
+            std::copy(m_session_store.begin(),m_session_store.end(),std::back_insert_iterator<std::vector<MapClientSession *>>(recipients));
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
+            for(MapClientSession * cl : recipients)
             {
-                info = new InfoMessageCmd(InfoType::REQUEST_COM, prepared_chat_message);
-                cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendChatMessage(MessageChannel::REQUEST,prepared_chat_message,sender,cl);
             }
             break;
         }
-        case ChatMessage::CHAT_PRIVATE:
+        case MessageChannel::PRIVATE:
         {
             int first_comma = msg_text.indexOf(',');
-            QStringRef target_name_ref(msg_text.midRef(first_space+1,first_comma-2));
+            QStringRef target_name_ref(msg_text.midRef(first_space+1,(first_comma - first_space-1)));
             msg_content = msg_text.midRef(first_comma+1,msg_text.lastIndexOf("\n"));
 
             QString target_name = target_name_ref.toString();
+            qCDebug(logChat) << "Private Chat:"
+                             << "\n\t" << "target_name:" << target_name
+                             << "\n\t" << "msg_text:" << msg_text;
 
-            MapInstance *mi = sender->current_map();
-            EntityManager &ent_manager(mi->m_entities);
-
-            Entity *tgt = ent_manager.getEntity(target_name);
-            Entity *src = sender->char_entity();
+            Entity *tgt = getEntity(sender,target_name);
 
             if(tgt == nullptr)
             {
                 prepared_chat_message = QString("No player named \"%1\" currently online.").arg(target_name);
-                info = new InfoMessageCmd(InfoType::USER_ERROR, prepared_chat_message);
-                src->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
                 break;
             }
             else
             {
-                prepared_chat_message = QString("[Tell] -->%1: %2").arg(target_name,msg_content.toString());
-                info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
-                src->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                prepared_chat_message = QString(" -->%1: %2").arg(target_name,msg_content.toString());
+                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,sender); // in this case, sender is target
 
-                prepared_chat_message = QString("[Tell] %1: %2").arg(sender_char_name,msg_content.toString());
-                info = new InfoMessageCmd(InfoType::PRIVATE_COM, prepared_chat_message);
-                tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
+                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,tgt->m_client);
             }
-            
+
             break;
         }
-        case ChatMessage::CHAT_TEAM:
+        case MessageChannel::TEAM:
         {
+            if(!sender->m_ent->m_has_team)
+            {
+                prepared_chat_message = "You are not a member of a Team.";
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                break;
+            }
+
             // Only send the message to characters on sender's team
-            for(MapClient *cl : m_clients)
+            for(MapClientSession *cl : m_session_store)
             {
-                if(sender->char_entity()->m_group_name == cl->char_entity()->m_group_name)
+                if(sender->m_ent->m_team->m_team_idx == cl->m_ent->m_team->m_team_idx)
                     recipients.push_back(cl);
             }
-            prepared_chat_message = QString("[Team] %1: %2").arg(sender_char_name,msg_content.toString());
-            for(MapClient * cl : recipients)
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
+            for(MapClientSession * cl : recipients)
             {
-                info = new InfoMessageCmd(InfoType::TEAM_COM, prepared_chat_message);
-                cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendChatMessage(MessageChannel::TEAM,prepared_chat_message,sender,cl);
             }
             break;
         }
-        case ChatMessage::CHAT_SuperGroup:
+        case MessageChannel::SUPERGROUP:
         {
-            // Only send the message to characters in sender's supergroup
-            for(MapClient *cl : m_clients)
+            if(!sender->m_ent->m_has_supergroup)
             {
-                if(sender->char_entity()->m_SG_id == cl->char_entity()->m_SG_id)
+                prepared_chat_message = "You are not a member of a SuperGroup.";
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                break;
+            }
+
+            // Only send the message to characters in sender's supergroup
+            for(MapClientSession *cl : m_session_store)
+            {
+                if(sender->m_ent->m_supergroup.m_SG_id == cl->m_ent->m_supergroup.m_SG_id)
                     recipients.push_back(cl);
             }
-            prepared_chat_message = QString("[SuperGroup] %1: %2").arg(sender_char_name,msg_content.toString());
-            for(MapClient * cl : recipients)
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
+            for(MapClientSession * cl : recipients)
             {
-                info = new InfoMessageCmd(InfoType::SUPERGROUP_COM, prepared_chat_message);
-                cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+                sendChatMessage(MessageChannel::SUPERGROUP,prepared_chat_message,sender,cl);
             }
+            break;
+        }
+        case MessageChannel::FRIENDS:
+        {
+            FriendsList * fl = &sender->m_ent->m_char->m_char_data.m_friendlist;
+            if(!fl->m_has_friends || fl->m_friends_count == 0)
+            {
+                prepared_chat_message = "You don't have any friends to message.";
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                break;
+            }
+            // Only send the message to characters in sender's friendslist
+            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
+            for(Friend &f : fl->m_friends)
+            {
+                if(f.m_online_status != true)
+                    continue;
+
+                Entity *tgt = getEntityByDBID(sender,f.m_db_id);
+                if(tgt == nullptr) // In case we didn't toggle online_status.
+                    continue;
+
+                sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,tgt->m_client);
+            }
+            sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,sender);
+            break;
+        }
+        default:
+        {
+            qCDebug(logChat) << "Unhandled MessageChannel type" << int(kind);
             break;
         }
     }
 }
 void MapInstance::on_console_command(ConsoleCommand * ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *src = lnk->client_data();
-    Entity *ent = src->char_entity(); // user entity
-    InfoMessageCmd *info; // leverage InfoMessageCmd
+    QString contents = ev->contents.simplified();
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
 
-    QString lowerContents = ev->contents.toLower();                             // ERICEDIT: Make the contents all lowercase for case-insensitivity.
+    if(contents.contains("$")) // does it contain replacement strings?
+        contents = process_replacement_strings(&session, contents);
 
-    printf("Console command received %s\n",qPrintable(ev->contents));
-    if(lowerContents.startsWith("script "))
+    //printf("Console command received %s\n",qPrintable(ev->contents));
+
+    if(isChatMessage(contents))
     {
-        //TODO: restrict scripting access to GM's and such
-        QString code = ev->contents.mid(7,ev->contents.size()-7);
-        m_scripting_interface->runScript(src,code,"user provided script");
-        return;
+        process_chat(&session,contents);
     }
-    else if(isChatMessage(ev->contents))
+    else if(contents.startsWith("em ",Qt::CaseInsensitive) || contents.startsWith("e ",Qt::CaseInsensitive)
+            || contents.startsWith("me ",Qt::CaseInsensitive) || contents.startsWith("emote ",Qt::CaseInsensitive))                                  // ERICEDIT: This encompasses all emotes.
     {
-        process_chat(src,ev->contents);
-    }
-    else if(lowerContents.startsWith("dlg ")) {
-        StandardDialogCmd *dlg = new StandardDialogCmd(ev->contents.mid(4));
-        src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
-    }
-    else if(lowerContents.startsWith("imsg ")) {
-        int first_space = ev->contents.indexOf(' ');
-        int second_space = ev->contents.indexOf(' ',first_space+1);
-        if(second_space==-1) {
-            info = new InfoMessageCmd(InfoType::USER_ERROR,
-                                           "The /imsg command takes two arguments, a <b>number</b> and a <b>string</b>"
-                                           );
-        }
-        else {
-            bool ok = true;
-            int cmdType = ev->contents.midRef(first_space+1,second_space-(first_space+1)).toInt(&ok);
-            if(!ok || cmdType<1 || cmdType>21) {
-                info = new InfoMessageCmd(InfoType::USER_ERROR,
-                                               "The first /imsg argument must be a <b>number</b> between 1 and 21"
-                                               );
-            }
-            else {
-                info = new InfoMessageCmd(InfoType(cmdType),ev->contents.mid(second_space+1));
-            }
-
-        }
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("smilex ")) {
-        int space = ev->contents.indexOf(' ');
-        QString fileName("scripts/" + ev->contents.mid(space+1));
-        if(!fileName.endsWith(".smlx"))
-                fileName.append(".smlx");
-        QFile file(fileName);
-        if(QFileInfo::exists(fileName) && file.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            QString contents(file.readAll());
-            StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-            src->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
-        }
-        else {
-            QString errormsg = "Failed to load smilex file. \'" + file.fileName() + "\' not found.";
-            qDebug() << errormsg;
-            src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(errormsg)));
-        }
-    }
-    else if(lowerContents == "fly") {
-        toggleFly(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "stunned") {
-        toggleStunned(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "jumppack") {
-        toggleJumppack(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setBackupSpd ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        float val = ev->contents.mid(space+1).toFloat();
-        setBackupSpd(*ent, val);
-
-        QString msg = "Set BackupSpd to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setJumpHeight ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        float val = ev->contents.mid(space+1).toFloat();
-        setJumpHeight(*ent, val);
-
-        QString msg = "Set JumpHeight to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("afk ") || lowerContents == "afk") {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        toggleAFK(ent->m_char, val);
-
-        QString msg = "Setting afk message to: " + val;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::EMOTE, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setHP ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        float attrib = val.toFloat();
-        float maxattrib = ent->m_char.m_max_attribs.m_HitPoints;
-
-        if(attrib > maxattrib)
-            attrib = maxattrib;
-
-        setHP(ent->m_char,attrib);
-
-        QString msg = "Setting HP to: " + QString::number(attrib) + "/" + QString::number(maxattrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setEnd ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        float attrib = val.toFloat();
-        float maxattrib = ent->m_char.m_max_attribs.m_Endurance;
-
-        if(attrib > maxattrib)
-            attrib = maxattrib;
-
-        setEnd(ent->m_char,attrib);
-
-        QString msg = "Setting Endurance to: " + QString::number(attrib) + "/" + QString::number(maxattrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setXP ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        float attrib = val.toFloat();
-        uint32_t lvl = getLevel(ent->m_char);
-        uint32_t newlvl;
-
-        setXP(ent->m_char, attrib);
-        QString msg = "Setting XP to " + QString::number(attrib);
-
-        newlvl = getLevel(ent->m_char);
-        if(newlvl != lvl)
-            msg += " and LVL to " + QString::number(newlvl+1);
-
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setDebt ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        float attrib = val.toFloat();
-
-        setDebt(ent->m_char, attrib);
-        QString msg = "Setting XP Debt to " + QString::number(attrib);
-
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setLevel ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        uint32_t attrib = val.toUInt();
-
-        setLevel(ent->m_char, attrib-1); // TODO: Why must this be -1?
-
-        QString msg = "Setting Level to: " + QString::number(attrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setCombatLevel ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        uint32_t attrib = val.toUInt();
-
-        setCombatLevel(ent->m_char, attrib-1); // TODO: Why must this be -1?
-
-        QString msg = "Setting Combat Level to: " + QString::number(attrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::REGULAR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "whoall") {
-        QString msg = "Players on this map:\n";
-
-        for(MapClient *cl : m_clients)
-        {
-            Character *c        = &cl->char_entity()->m_char;
-            QString name        = cl->char_entity()->name();
-            QString lvl         = QString::number(getLevel(*c));
-            QString clvl        = QString::number(getCombatLevel(*c));
-            QString origin      = getOrigin(*c);
-            QString archetype   = QString(getClass(*c)).remove("Class_");
-
-            // Format: character_name "lvl" level "clvl" combat_level origin archetype
-            msg += name + " lvl " + lvl + " clvl " + clvl + " " + origin + " " + archetype + "\n";
-        }
-
-        qDebug().noquote() << msg;
-        info = new InfoMessageCmd(InfoType::SVR_COM, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "setTitles" || (lowerContents.startsWith("setTitles ",Qt::CaseInsensitive) || lowerContents.startsWith("title_change ",Qt::CaseInsensitive))) {
-        QString msg;
-        bool prefix;
-        QString generic;
-        QString origin;
-        QString special;
-
-        if(lowerContents == "setTitles")
-        {
-            setTitles(ent->m_char);
-            msg = "Titles reset to nothing";
-        }
-        else
-        {
-            int space1      = ev->contents.indexOf(' ');
-            int space2      = ev->contents.indexOf(' ',space1+1);
-            int space3      = ev->contents.indexOf(' ',space2+1);
-            int space4      = ev->contents.indexOf(' ',space3+1);
-
-            if(space2 == -1 || space3 == -1 || space4 == -1) {
-                msg = "The /setTitle command takes four arguments, a boolean (true/false) and three strings. e.g. /setTitle 1 generic origin special";
-            }
-            else {
-                prefix  = ev->contents.mid(space1+1,space2-(space1+1)).toInt();
-                generic = ev->contents.mid(space2+1,space3-(space2+1));
-                origin  = ev->contents.mid(space3+1,space4-(space3+1));
-                special = ev->contents.mid(space4+1);
-                setTitles(ent->m_char, prefix, generic, origin, special);
-                msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
-            }
-        }
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::USER_ERROR, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "controls_disabled") {
-        toggleControlsDisabled(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("updateID ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        uint8_t attrib = val.toUInt();
-
-        setUpdateID(*ent, attrib);
-
-        QString msg = "Setting updateID to: " + QString::number(attrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "lfg") {
-        toggleLFG(ent->m_char);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setInf ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        QString val = ev->contents.mid(space+1);
-        uint32_t attrib = val.toUInt();
-
-        setInf(ent->m_char, attrib);
-
-        QString msg = "Setting influence to: " + QString::number(attrib);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "stuck") {
-        // TODO: Implement true move-to-safe-location-nearby logic
-        ent->pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park starting location
-
-        QString msg = "Resetting location to default spawn ("
-                + QString::number(ent->pos.x) + ","
-                + QString::number(ent->pos.y) + ","
-                + QString::number(ent->pos.z) + ")";
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "fullupdate") {
-        toggleFullUpdate(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "hascontrolid") {
-        toggleControlId(*ent);
-
-        QString msg = "Toggling " + ev->contents;
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("em ",Qt::CaseInsensitive) || lowerContents.startsWith("e ",Qt::CaseInsensitive)
-            || lowerContents.startsWith("me ",Qt::CaseInsensitive))                                  // ERICEDIT: This encompasses all emotes.
-    {
-        on_emote_command(lowerContents, ent, src);
-    }
-    // Slash commands for setting bit values
-    else if(lowerContents.startsWith("setu1 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu1(*ent, val);
-
-        QString msg = "Set u1 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setu2 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu2(*ent, val);
-
-        QString msg = "Set u2 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setu3 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu3(*ent, val);
-
-        QString msg = "Set u3 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setu4 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu4(*ent, val);
-
-        QString msg = "Set u4 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setu5 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu5(*ent, val);
-
-        QString msg = "Set u5 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setu6 ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setu6(*ent, val);
-
-        QString msg = "Set u6 to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("getEntity ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        QString msg;
-
-        MapInstance *mi = src->current_map();
-        EntityManager &ent_manager(mi->m_entities);
-
-        Entity *e = ent_manager.getEntity(val);
-        if(e == nullptr)
-            msg = "No Such Entity: " + val;
-        else
-            msg = "Received Entity: " + e->name();
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "updatechar") {
-        charUpdateDB(ent);
-
-        QString msg = "Updating Character in Database: " + ent->name();
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents == "chardebug") {
-        QString msg = "CharDebug: " + ent->name()
-                + "\n  " + ent->m_char.m_char_data.m_origin_name
-                + "\n  " + ent->m_char.m_char_data.m_class_name
-                + "\n  map: " + ent->m_char.m_char_data.m_mapName
-                + "\n  db_id: " + QString::number(ent->m_db_id) + ":" + QString::number(ent->m_char.m_db_id)
-                + "\n  idx: " + QString::number(ent->m_idx)
-                + "\n  access: " + QString::number(ent->m_access_level)
-                + "\n  acct: " + QString::number(ent->m_char.m_account_id)
-                + "\n  lvl/clvl: " + QString::number(ent->m_char.m_char_data.m_level) + "/" + QString::number(ent->m_char.m_char_data.m_combat_level)
-                + "\n  inf: " + QString::number(ent->m_char.m_char_data.m_influence)
-                + "\n  xp/debt: " + QString::number(ent->m_char.m_char_data.m_experience_points) + "/" + QString::number(ent->m_char.m_char_data.m_experience_debt)
-                + "\n  lfg: " + QString::number(ent->m_char.m_char_data.m_lfg)
-                + "\n  afk: " + QString::number(ent->m_char.m_char_data.m_afk)
-                + "\n  tgt_idx: " + QString::number(getTargetIdx(*ent));
-        ent->dump();
-        //qDebug().noquote() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
-    }
-    else if(lowerContents.startsWith("setPowerLevel ",Qt::CaseInsensitive)) {
-        int space = ev->contents.indexOf(' ');
-        int val = ev->contents.mid(space+1).toInt();
-        setCombatLevel(ent->m_char, val);
-
-        QString msg = "Set m_power_level to: " + QString::number(val);
-        qDebug() << msg;
-        info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);
-        src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));
+        on_emote_command(contents, ent);
     }
     else {
-        qDebug() << "Unhandled game command:" << ev->contents;
+        runCommand(contents,*ent);
     }
 }
-void MapInstance::on_emote_command(QString lowerContents, Entity *ent, MapClient *src)
+void MapInstance::on_emote_command(const QString &command, Entity *ent)
 {
-    InfoMessageCmd *info;
     QString msg;                                                                // Initialize the variable to hold the debug message.
-    if(lowerContents.startsWith("em") || lowerContents.startsWith("me"))        // This if-else removes the prefix of the command for conciseness.
-        lowerContents.replace(0, 3, "");
-    else                                                                        // Requires a different argument for the "e" command.
-        lowerContents.replace(0, 2, "");
+    MapClientSession *src = ent->m_client;
+    std::vector<MapClientSession *> recipients;
+
+    QString cmd_str = command.section(QRegularExpression("\\s+"), 0, 0);
+    QString original_emote = command.section(QRegularExpression("\\s+"), 1, -1);
+    QString lowerContents = original_emote.toLower();
                                                                                 // Normal Emotes
     static const QStringList afraidCommands = {"afraid", "cower", "fear", "scared"};
     static const QStringList akimboCommands = {"akimbo", "wings"};
@@ -1216,6 +1032,7 @@ void MapInstance::on_emote_command(QString lowerContents, Entity *ent, MapClient
     static const QStringList yesCommands = {"yes", "thumbsup"};
     static const QStringList yogaCommands = {"yoga", "lotus"};
     static const QStringList snowflakesCommands = {"snowflakes", "throwsnowflakes"};
+
     if(afraidCommands.contains(lowerContents))                                  // Afraid: Cower in fear, hold stance.
     {
         if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
@@ -1709,77 +1526,99 @@ void MapInstance::on_emote_command(QString lowerContents, Entity *ent, MapClient
     else                                                                        // If not specific command, output EMOTE message.
     {
         // "CharacterName {emote message}"
-        msg = QString("%1 %2").arg(ent->name(),lowerContents);
-        qDebug() << msg;                                                            // Print out the message to the server console.
-        ChatMessage *cmsg = ChatMessage::emoteMessage(msg,src->char_entity());
-        src->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(cmsg));
-        return;
+        msg = QString("%1 %2").arg(ent->name(),original_emote);
     }
-    qDebug() << msg;                                                            // Print out the message to the server console.
-    info = new InfoMessageCmd(InfoType::DEBUG_INFO, msg);                       // Create the message to send to the client.
-    src->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(info));     // Print the message to the client.
+
+    // send only to clients within range
+    glm::vec3 senderpos = src->m_ent->m_entity_data.m_pos;
+    for(MapClientSession *cl : m_session_store)
+    {
+        glm::vec3 recpos = cl->m_ent->m_entity_data.m_pos;
+        float range = 50.0f; // range of "hearing". I assume this is in yards
+        float dist = glm::distance(senderpos,recpos);
+
+        qCDebug(logEmotes, "senderpos: %f %f %f", senderpos.x, senderpos.y, senderpos.z);
+        qCDebug(logEmotes, "recpos: %f %f %f", recpos.x, recpos.y, recpos.z);
+        qCDebug(logEmotes, "sphere: %f", range);
+        qCDebug(logEmotes, "dist: %f", dist);
+
+        if(dist<=range)
+            recipients.push_back(cl);
+    }
+    for(MapClientSession * cl : recipients)
+    {
+        sendChatMessage(MessageChannel::EMOTE,msg,src,cl);
+        qCDebug(logEmotes) << msg;
+    }
 }
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *src = lnk->client_data();
-    qDebug() << "Chat divider moved to " << ev->m_position << " for player" << src;
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
+    ent->m_char->m_gui.m_chat_divider_pos = ev->m_position;
+    qCDebug(logMapEvents) << "Chat divider moved to " << ev->m_position << " for player" << ent->name();
 }
 void MapInstance::on_minimap_state(MiniMapState *ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *src = lnk->client_data();
-    //qDebug() << "MiniMapState tile "<<ev->tile_idx << " for player" << src;
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
+    qCDebug(logMiniMap) << "MiniMapState tile "<<ev->tile_idx << " for player" << ent->name();
     // TODO: Save these tile #s to dbase and (presumably) load upon entering map to remove fog-of-war from map
 }
 
 void MapInstance::on_client_resumed(ClientResumedRendering *ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *cl = lnk->client_data();
-    if(cl->m_in_map==false)
-        cl->m_in_map = true;
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    if(session.m_in_map==false)
+        session.m_in_map = true;
     char buf[256];
     std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
     std::snprintf(buf, 256, "There are %zu active entites and %zu clients", m_entities.active_entities(),
-                  num_active_clients());
+                  m_session_store.num_sessions());
     welcome_msg += buf;
-    cl->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(ChatMessage::adminMessage(welcome_msg.c_str())));
+    sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),&session);
+
+    sendServerMOTD(&session);
 }
 void MapInstance::on_location_visited(LocationVisited *ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *cl = lnk->client_data();
-    qDebug() << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
-    auto val = m_scripting_interface->callFuncWithClientContext(cl,"location_visited",qHash(ev->m_name));
-    cl->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(new InfoMessageCmd(InfoType::DEBUG_INFO,val.c_str())));
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    qCDebug(logMapEvents) << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited",qHash(ev->m_name));
+    sendInfoMessage(MessageChannel::DEBUG_INFO,QString::fromStdString(val),&session);
 
-    qWarning() << "Unhandled location visited event:" << ev->m_name <<
+    qCWarning(logMapEvents) << "Unhandled location visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 }
 
 void MapInstance::on_plaque_visited(PlaqueVisited * ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *cl = lnk->client_data();
-    qDebug() << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
-    auto val = m_scripting_interface->callFuncWithClientContext(cl,"plaque_visited",qHash(ev->m_name));
-    qWarning() << "Unhandled plaque visited event:" << ev->m_name <<
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    qCDebug(logMapEvents) << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited",qHash(ev->m_name));
+    qCWarning(logMapEvents) << "Unhandled plaque visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 }
 
 void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
 {
-    qWarning() << "Unhandled inspiration dock mode:" << ev->dock_mode;
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
+    ent->m_char->m_gui.m_insps_tray_mode = ev->dock_mode;
+    qCDebug(logMapEvents) << "Saving inspirations dock mode to GUISettings:" << ev->dock_mode;
 }
 
 void MapInstance::on_enter_door(EnterDoor *ev)
 {
-    qWarning().noquote() << "Unhandled door entry request to:" << ev->name;
+    qCWarning(logMapEvents).noquote() << "Unhandled door entry request to:" << ev->name;
     if(ev->unspecified_location)
-        qWarning().noquote() << "    no location provided";
+        qCWarning(logMapEvents).noquote() << "    no location provided";
     else
-        qWarning().noquote() << ev->location.x<< ev->location.y<< ev->location.z;
+        qCWarning(logMapEvents).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
     //pseudocode:
     //  auto door = get_door(ev->name,ev->location);
     //  if(door and player_can_enter(door)
@@ -1788,92 +1627,180 @@ void MapInstance::on_enter_door(EnterDoor *ev)
 
 void MapInstance::on_change_stance(ChangeStance * ev)
 {
-    qWarning() << "Unhandled change stance request";
+    qCWarning(logMapEvents) << "Unhandled change stance request";
     if(ev->enter_stance)
-        qWarning() << "  enter stance" <<ev->powerset_index<<ev->power_index;
+        qCWarning(logMapEvents) << "  enter stance" <<ev->powerset_index<<ev->power_index;
     else
-        qWarning() << "  exit stance";
+        qCWarning(logMapEvents) << "  exit stance";
 }
 
 void MapInstance::on_set_destination(SetDestination * ev)
 {
-    qWarning() << "Unhandled set destination request";
-    qWarning() << "  index" <<ev->point_index<< "loc"<<ev->destination.x<<ev->destination.y<<ev->destination.z;
+    qCWarning(logMapEvents) << "Unhandled set destination request"
+               << "\n\t" << "index" << ev->point_index
+               << "loc" << ev->destination.x << ev->destination.y << ev->destination.z;
 }
 
 void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
 {
-    qWarning() << "Unhandled abort queued power request";
+    qCWarning(logMapEvents) << "Unhandled abort queued power request";
 }
 
 void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *src = lnk->client_data();
-    Character c = src->char_entity()->m_char;
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+    Character &c(*ent->m_char);
 
     setBattleCry(c,ev->battlecry);
     setDescription(c,ev->description);
-    qWarning() << "Attempted description and battlecry request:" << ev->description << ev->battlecry;
+    qCDebug(logDescription) << "Saving description and battlecry:" << ev->description << ev->battlecry;
 }
 
 void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
 {
-    qWarning() << "Unhandled entity info requested" << ev->entity_idx;
+    // Return Description
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    Entity *tgt = getEntity(&session,ev->entity_idx);
+    if(tgt == nullptr)
+    {
+        qCDebug(logMapEvents) << "No target active, doing nothing";
+        return;
+    }
+
+    QString description = getDescription(*tgt->m_char);
+
+    session.addCommandToSendNextUpdate(std::unique_ptr<EntityInfoResponse>(new EntityInfoResponse(description)));
+    qCDebug(logDescription) << "Entity info requested" << ev->entity_idx << description;
 }
 
-void MapInstance::on_client_settings(ClientSettings * ev)
+void MapInstance::on_client_options(SaveClientOptions * ev)
 {
-    qWarning() << "Unhandled client settings";
-    //TODO: serialize settings to client entry in the database.
+    // Save options/keybinds to character entity and entry in the database.
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    LinkBase * lnk = (LinkBase *)ev->src();
+
+    Entity *ent = session.m_ent;
+    markEntityForDbStore(ent,DbStoreFlags::Options);
+    ent->m_char->m_options = ev->data;
 }
 
 void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
 {
-    qWarning() << "Unhandled switch viewpoint to" << ev->new_viewpoint_is_firstperson;
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
 
+    ent->m_char->m_options.m_first_person_view = ev->new_viewpoint_is_firstperson;
+    qCDebug(logMapEvents) << "Saving viewpoint mode to ClientOptions" << ev->new_viewpoint_is_firstperson;
 }
 
 void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
 {
-    qWarning() << "Unhandled chat channel mask setting" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
+    ent->m_char->m_gui.m_chat_top_flags = ev->m_chat_top_flags;
+    ent->m_char->m_gui.m_chat_bottom_flags = ev->m_chat_bottom_flags;
+
+    qCDebug(logMapEvents) << "Saving chat channel mask settings to GUISettings" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
+}
+
+void MapInstance::on_set_default_power_send(SetDefaultPowerSend *ev)
+{
+    qCWarning(logMapEvents) << "Unhandled Set Default Power Send request:" << ev->powerset_idx << ev->power_idx;
+}
+
+void MapInstance::on_set_default_power(SetDefaultPower *ev)
+{
+    qCWarning(logMapEvents) << "Unhandled Set Default Power request.";
 }
 
 void MapInstance::on_unqueue_all(UnqueueAll *ev)
 {
-    qWarning() << "Unhandled unqueue all request:" << ev->g_input_pak;
-    // TODO: not sure what the client expects from the server here
-    // and is it really unqueing everything? Is this named correctly?
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
+    // What else could go here?
+    ent->m_target_idx = 0;
+    ent->m_assist_target_idx = 0;
+    // cancelAttack(ent);
+
+    qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }
 
 void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
 {
-    MapLink * lnk = (MapLink *)ev->src();
-    MapClient *src = lnk->client_data();
-    // user entity
-    Entity *ent = src->char_entity();
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
 
-    qWarning() << "Unhandled change chat type request." << ev->m_chat_type;
-    // TODO: not sure what the client expects the server to do here, but m_chat_type
-    // corresponds to the InfoType in InfoMessageCmd and eChatTypes in ChatMessage
-
-    // Passing cur_chat_channel to Entity in case we need it somewhere.
-    ent->m_cur_chat_channel = ev->m_chat_type;
+    qCDebug(logMapEvents) << "Saving chat channel type to GUISettings:" << ev->m_chat_type;
+    ent->m_char->m_gui.m_cur_chat_channel = ev->m_chat_type;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
 {
-    qWarning() << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
+    qCWarning(logMapEvents) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
     // TODO: not sure what the client expects from the server here
 }
 
 void MapInstance::on_powers_dockmode(PowersDockMode *ev)
 {
-    qWarning() << "Unhandled powers dock mode:" << ev->dock_mode << ev->toggle_secondary_tray;
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
+    ent->m_char->m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
+    qCDebug(logMapEvents) << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
 }
 
 void MapInstance::on_switch_tray(SwitchTray *ev)
 {
-    qWarning() << "Unhandled switch tray request. Tray1:" << ev->tray1_num+1 << "Tray2:" << ev->tray2_num+1 << "Unk1:" << ev->tray_unk1;
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
+    ent->m_char->m_gui.m_tray1_number = ev->tray1_num;
+    ent->m_char->m_gui.m_tray2_number = ev->tray2_num;
+    ent->m_char->m_gui.m_tray3_number = ev->tray_unk1;
+    qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray1_num+1 << "Tray2:" << ev->tray2_num+1 << "Unk1:" << ev->tray_unk1;
     // TODO: need to load powers for new tray.
+    qCWarning(logMapEvents) << "TODO: Need to load powers for new trays";
+}
+
+void MapInstance::on_set_keybind(SetKeybind *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
+    KeyName key = static_cast<KeyName>(ev->key);
+    ModKeys mod = static_cast<ModKeys>(ev->mods);
+
+    ent->m_char->m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
+    //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
+}
+
+void MapInstance::on_remove_keybind(RemoveKeybind *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
+    ent->m_char->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
+    //qCWarning(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
+}
+
+void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
+    ent->m_char->m_keybinds.resetKeybinds();
+    qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
+}
+
+void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
+    ent->m_char->m_keybinds.setKeybindProfile(ev->profile);
+    qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }

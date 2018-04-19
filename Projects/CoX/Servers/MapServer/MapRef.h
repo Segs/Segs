@@ -6,7 +6,7 @@
  *
  */
 #pragma once
-#include "CommonNetStructures.h"
+#include "NetStructures/CommonNetStructures.h"
 
 #include <QtCore/QString>
 #include <string>
@@ -16,10 +16,10 @@ class MapRef
 public:
     int         m_idx;
     bool        reduced_transform;
-    Matrix4x3   m_matrix;
+    glm::mat4x3 m_matrix;
     TransformStruct m_transforms;
     QString m_name;
-    MapRef(int idx,Matrix4x3 &mat,const QString &name) :
+    MapRef(int idx,const glm::mat4x3 &mat,const QString &name) :
         m_idx(idx),
         m_matrix(mat),
         m_name(name)

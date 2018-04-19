@@ -32,22 +32,23 @@ public:
 }
 
 class SEGSEvent;
-class ILink;
+class CRUDLink;
 // This class represents a UDP port<->Client link router
 // when it receives any bytes it will pass them to appropriate ILink instance
 // when it receives PacketEvents from ILink it sends the bytes over the UDP to associated address
 class ServerEndpoint : public EventProcessor
 {
     typedef EventProcessor super;
-    typedef std::unordered_map<ACE_INET_Addr,ILink *> hmAddrProto;
+    typedef std::unordered_map<ACE_INET_Addr,CRUDLink *> hmAddrProto;
 public:
 
                     ServerEndpoint(const ACE_INET_Addr &local_addr) :
-                        m_notifier(0, 0, ACE_Event_Handler::WRITE_MASK),
+                        m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK),
                         endpoint_ (local_addr)
                     {
                         m_notifier.event_handler(this);
                     }
+                    ~ServerEndpoint();
 private:
         // Part of the low level ace interface, not passed on to derived classes
         ACE_HANDLE  get_handle(void) const override { return this->endpoint_.get_handle(); }
@@ -55,25 +56,40 @@ private:
         int         handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE) override;
         int         handle_close (ACE_HANDLE /*handle*/,ACE_Reactor_Mask /*close_mask*/) override;
 public:
-        int         open(void *p=NULL) override;
+        int         open(void *p=nullptr) override;
         void        set_downstream(EventProcessor *ds) { m_downstream = ds;}
 protected:
         void        dispatch(SEGSEvent *) override
                     {
                         ACE_ASSERT(!"All events are dispatched from handle_* methods");
                     }
-        SEGSEvent * dispatchSync( SEGSEvent *) override
-                    {
-                        ACE_ASSERT(!"No sync events known");
-                        return 0;
-                    }
-        ILink *     createLinkInstance();
-        ILink *     getClientLink(const ACE_INET_Addr &from_addr);
-virtual ILink *     createLink(EventProcessor *down) = 0;
+        CRUDLink *  createLinkInstance();
+        CRUDLink *  getClientLink(const ACE_INET_Addr &from_addr);
+virtual CRUDLink *  createLink(EventProcessor *down) = 0;
 
         hmAddrProto client_links;
         ACE_Reactor_Notification_Strategy m_notifier;
         ACE_SOCK_Dgram endpoint_;   // Wrapper for sending/receiving dgrams.
         ACE_Thread_Mutex m_send_sema;
         EventProcessor *m_downstream; //!< All created links will have this as their downstream target
+};
+
+struct ListenAndLocationAddresses
+{
+    ACE_INET_Addr m_listen_addr;
+    ACE_INET_Addr m_location_addr;
+    ListenAndLocationAddresses(ACE_INET_Addr listen,ACE_INET_Addr location,uint16_t inc=0)
+    {
+        m_listen_addr = listen;
+        m_location_addr = location;
+        m_listen_addr.set_port_number(listen.get_port_number()+inc);
+        m_location_addr.set_port_number(location.get_port_number()+inc);
+    }
+    ListenAndLocationAddresses(const ListenAndLocationAddresses &oth,uint16_t inc=0)
+    {
+        m_listen_addr = oth.m_listen_addr;
+        m_location_addr = oth.m_location_addr;
+        m_listen_addr.set_port_number(oth.m_listen_addr.get_port_number()+inc);
+        m_location_addr.set_port_number(oth.m_location_addr.get_port_number()+inc);
+    }
 };

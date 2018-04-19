@@ -3,11 +3,15 @@
 #include "utils/helpers.h"
 
 #include <stdint.h>
-
+struct ShaderObject 
+{
+    GLuint id = 0;
+    operator bool () const { return id != 0; }
+};
 struct ShaderProgram
 {
-    GLuint vertex_id = 0;
-    GLuint shader_id = 0;
+    ShaderObject vertex_shader = {0};
+    ShaderObject fragment_shader = {0};
     GLuint gl_id = ~0U;
     int getUniformIdx(const char *name) const
     {
@@ -86,22 +90,22 @@ struct ShaderProgramCache
     ShaderProgram m_linked_programs[32];
     ShaderProgram m_previous_program;
     ShaderProgram m_current_program;
-    void setProgram(GLuint vertex_shader, GLuint fragment_shader);
-    void setVertexProgram(GLuint vertex_shader)
+    void setProgram(ShaderObject vertex_shader, ShaderObject fragment_shader);
+    void setVertexProgram(ShaderObject vertex_shader)
     {
-        setProgram(vertex_shader, m_current_program.shader_id);
+        setProgram(vertex_shader, m_current_program.fragment_shader);
     }
-    void setFragmentProgram(GLuint fragment_shader)
+    void setFragmentProgram(ShaderObject fragment_shader)
     {
-        setProgram(m_current_program.vertex_id, fragment_shader);
+        setProgram(m_current_program.vertex_shader, fragment_shader);
     }
 
     void disableVertexShader();
 
     void enableVertexShader()
     {
-        if (m_previous_program.vertex_id)
-            setVertexProgram(m_previous_program.vertex_id);
+        if (m_previous_program.vertex_shader)
+            setVertexProgram(m_previous_program.vertex_shader);
     }
 };
 extern ShaderProgramCache g_program_cache;

@@ -7487,7 +7487,6 @@ EXPORTS
     read_buffer_part_offset              ; RVA=0x001BB090
     read_data_blocks                     ; RVA=0x001C1EA0
     read_file_data_pigg                  ; RVA=0x001D1780
-    realloc                              ; RVA=0x001A29E0
     receiveChatSettings                  ; RVA=0x00108590
     receiveDescription                   ; RVA=0x0010ADB0
     receiveDockMode2                     ; RVA=0x00108440

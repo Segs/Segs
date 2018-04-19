@@ -4,6 +4,7 @@
 #include "Common/GameData/costume_definitions.h"
 #include "Common/GameData/origin_definitions.h"
 #include "Common/GameData/charclass_definitions.h"
+#include "Common/GameData/keybind_definitions.h"
 #include "Common/GameData/other_definitions.h"
 
 class ColorAndPartPacker;
@@ -18,6 +19,8 @@ class MapServerData
         bool            read_origins(const QString &src_filename);
         bool            read_classes(const QString &src_filename);
         bool            read_exp_and_debt(const QString &src_filename);
+        bool            read_keybinds(const QString &src_filename);
+        bool            read_commands(const QString &src_filename);
 public:
                         MapServerData();
                         ~MapServerData();
@@ -26,10 +29,12 @@ public:
         int             expForLevel(int lev) const;
         int             expDebtForLevel(int lev) const;
 
-        Pallette_Data        m_supergroup_colors;
-        CostumeSet_Data      m_costume_store;
-        Parse_AllOrigins     m_player_origins;
-        Parse_AllOrigins     m_other_origins;
-        Parse_AllCharClasses m_player_classes;
-        Parse_AllCharClasses m_other_classes;
+        Pallette_Data               m_supergroup_colors;
+        CostumeSet_Data             m_costume_store;
+        Parse_AllOrigins            m_player_origins;
+        Parse_AllOrigins            m_other_origins;
+        Parse_AllCharClasses        m_player_classes;
+        Parse_AllCharClasses        m_other_classes;
+        Parse_AllKeyProfiles        m_keybind_profiles;
+        Parse_AllCommandCategories  m_command_categories;
 };

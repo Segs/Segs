@@ -1,11 +1,16 @@
 #include "ServerEndpoint.h"
 
 #include "Common/CRUDP_Protocol/CRUD_Events.h"
-#include "Common/CRUDP_Protocol/ILink.h"
+#include "Common/CRUDP_Protocol/CRUD_Link.h"
 
 #include <ace/Reactor.h>
 #include <ace/Message_Block.h>
 
+ServerEndpoint::~ServerEndpoint() 
+{
+    handle_close(ACE_INVALID_HANDLE, 0);
+    m_downstream = nullptr;
+}
 int ServerEndpoint::handle_input(ACE_HANDLE /*fd*/) //! Called when input is available from the client.
 {
     uint8_t buf[0x2000];
@@ -13,7 +18,7 @@ int ServerEndpoint::handle_input(ACE_HANDLE /*fd*/) //! Called when input is ava
     ssize_t n = this->endpoint_.recv(buf, sizeof buf,from_addr);
     if (n == -1)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%p\n"),"handle_input"),0);
-    ILink *crud_link = getClientLink(from_addr); // get packet handling object for this connection
+    CRUDLink *crud_link = getClientLink(from_addr); // get packet handling object for this connection
     ACE_ASSERT(crud_link!=nullptr);
     BitStream wrap((uint8_t *)buf,n);
     crud_link->received_block(wrap);
@@ -37,7 +42,7 @@ int ServerEndpoint::handle_output(ACE_HANDLE /*fd*/) //! Called when output is p
             if (send_cnt == -1)
             {
                 // inform the link that it should die.
-                pkt_ev->src()->putq(new SEGSEvent(SEGS_EventTypes::evFinish));
+                pkt_ev->src()->putq(SEGSEvent::s_ev_finish.shallow_copy());
                 ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"), ACE_TEXT ("send")));
                 ev->release();
                 break;
@@ -55,6 +60,8 @@ int ServerEndpoint::handle_output(ACE_HANDLE /*fd*/) //! Called when output is p
 //! Called when this handler is removed from the ACE_Reactor.
 int ServerEndpoint::handle_close(ACE_HANDLE, ACE_Reactor_Mask)
 {
+    if (this->reactor() && this->reactor()->remove_handler(this, ALL_EVENTS_MASK | DONT_CALL) == -1)
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("unable to unregister client handler")), -1);
     endpoint_.close();
     return 0;
 }
@@ -74,8 +81,8 @@ int ServerEndpoint::open(void *p)
     return 0;
 }
 
-ILink *ServerEndpoint::createLinkInstance() {
-    ILink *res = createLink(m_downstream); // create a new client handler
+CRUDLink *ServerEndpoint::createLinkInstance() {
+    CRUDLink *res = createLink(m_downstream); // create a new client handler
     res->reactor(reactor());
     if(-1==res->open())
     {
@@ -85,9 +92,9 @@ ILink *ServerEndpoint::createLinkInstance() {
     return res;
 }
 
-ILink *ServerEndpoint::getClientLink(const ACE_INET_Addr &from_addr)
+CRUDLink *ServerEndpoint::getClientLink(const ACE_INET_Addr &from_addr)
 {
-    ILink *res= client_links[from_addr]; // get packet handling object for this connection
+    CRUDLink *res= client_links[from_addr]; // get packet handling object for this connection
     if(res!=nullptr)
         return res;
 

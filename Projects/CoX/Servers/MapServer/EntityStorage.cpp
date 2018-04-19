@@ -7,9 +7,9 @@
   */
 
 #include "EntityStorage.h"
-#include "Entity.h"
+#include "NetStructures/Entity.h"
 #include "EntityUpdateCodec.h"
-#include "MapClient.h"
+#include "MapClientSession.h"
 #include "MapServer/MapServer.h"
 #include "MapServer/MapServerData.h"
 
@@ -24,9 +24,13 @@ EntityStore::EntityStore()
     {
         e.m_idx = idx++;
     }
-    // starting from 1 to prevent returning special entity idx 0 to anyone
-    for(int i=1; i<m_map_entities.size(); ++i)
-        m_free_entries.emplace_back(i);
+    m_free_entries.resize(m_map_entities.size()-1);
+    // free entity indices starting from 1 to prevent returning special entity idx 0 to anyone
+    idx = 1;
+    for(int32_t &entry_idx : m_free_entries)
+    {
+        entry_idx = idx++;
+    }
 }
 
 Entity *EntityStore::get()
@@ -70,11 +74,11 @@ void EntityManager::sendGlobalEntDebugInfo( BitStream &tgt ) const
     // third while loop here
 }
 
-void EntityManager::sendDeletes( BitStream &tgt,MapClient *client ) const
+void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
 {
     std::vector<int> entities_to_remove;
     // find the entities this client believes exist, but they are no longer amongst us.
-    for(const std::pair<int,ClientEntityStateBelief> &entry : client->m_worldstate_belief)
+    for(const std::pair<const int,ClientEntityStateBelief> &entry : client->m_worldstate_belief)
     {
         if(entry.second.m_entity==nullptr)
             continue;
@@ -93,10 +97,10 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClient *client ) const
  *  \par self_idx index of the entity that is receiving the packet, this is used to prevent marking every entity as a current player
  *
  */
-void EntityManager::sendEntities(BitStream& bs, MapClient *target, bool is_incremental) const
+void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool is_incremental) const
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_mutex);
-    int self_idx = getIdx(*target->char_entity());
+    int self_idx = getIdx(*target->m_ent);
     int prev_idx = -1;
     int delta;
     if(m_live_entlist.empty())
@@ -132,8 +136,6 @@ void EntityManager::sendEntities(BitStream& bs, MapClient *target, bool is_incre
 }
 void EntityManager::InsertPlayer(Entity *ent)
 {
-    ent->pos = glm::vec3(128.0,16,-198); //-60.5;
-    ent->qrot= glm::quat(1.0f,0.0f,0.0f,0.0f);
     m_live_entlist.insert(ent);
 }
 Entity * EntityManager::CreatePlayer()
@@ -149,33 +151,4 @@ void EntityManager::removeEntityFromActiveList(Entity *ent)
     ent->m_client = nullptr;
     m_live_entlist.erase(ent);
     m_store.release(ent);
-}
-
-// Poll EntityManager to return Entity by Name or IDX
-Entity * EntityManager::getEntity(const QString &name)
-{
-    // Iterate through all active entities and return entity by name
-    for (Entity* pEnt : m_live_entlist)
-    {
-        if (pEnt->name() == name)
-            return pEnt;
-    }
-    qWarning() << "Entity" << name << "does not exist, or is not currently online.";
-    return nullptr;
-}
-
-Entity * EntityManager::getEntity(const int32_t &idx)
-{
-    if(idx==0) {
-        qWarning() << "Entity" << idx << "does not exist, or is not currently online.";
-        return nullptr;
-    }
-    // Iterate through all active entities and return entity by idx
-    for (Entity* pEnt : m_live_entlist)
-    {
-        if (pEnt->m_idx == idx)
-            return pEnt;
-    }
-    qWarning() << "Entity" << idx << "does not exist, or is not currently online.";
-    return nullptr;
 }

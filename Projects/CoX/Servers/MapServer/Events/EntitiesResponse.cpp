@@ -1,12 +1,14 @@
-#define _USE_MATH_DEFINES
-#include "Events/EntitiesResponse.h"
-#include "NetStructures/Powers.h"
+#include "EntitiesResponse.h"
 
-#include "Entity.h"
+#include "NetStructures/Powers.h"
+#include "NetStructures/Entity.h"
+#include "NetStructures/Character.h"
+#include "MapClientSession.h"
 #include "MapEvents.h"
-#include "MapClient.h"
 #include "MapInstance.h"
 #include "EntityUpdateCodec.h"
+#include "DataHelpers.h"
+#include "Logging.h"
 
 #include <QByteArray>
 #include <cmath>
@@ -55,33 +57,60 @@ void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
         bs.StoreBitArray((const uint8_t *)ba.constData(),8*ba.size());
     }
 }
-void storeTeamList(const EntitiesResponse &/*src*/,BitStream &bs)
+void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 {
-    int team_id=0; //
-    bool mark_lfg=false;
-    bool in_mission_or_taskforce_thing=false;
-    uint32_t team_leader_id = 0;
-    uint32_t team_size=0;
-    storePackedBitsConditional(bs,20,team_id);
-    bs.StoreBits(1,in_mission_or_taskforce_thing);
+    Entity *e = src.m_client->m_ent;
+    assert(e);
+
+    // shorthand local vars
+    int         team_idx = 0;
+    bool        mark_lfg = e->m_char->m_char_data.m_lfg;
+    bool        has_mission = 0;
+    uint32_t    tm_leader_id = 0;
+    uint32_t    tm_size = 0;
+
+    if(e->m_has_team && e->m_team != nullptr)
+    {
+        team_idx        = e->m_team->m_team_idx;
+        has_mission     = e->m_team->m_team_has_mission;
+        tm_leader_id    = e->m_team->m_team_leader_idx;
+        tm_size         = e->m_team->m_team_members.size();
+    }
+
+    storePackedBitsConditional(bs,20,team_idx);
+    bs.StoreBits(1,has_mission);
     bs.StoreBits(1,mark_lfg);
-    if(team_id == 0)
+
+    if(team_idx == 0) // if no team, return.
         return;
 
-    bs.StoreBits(32,team_leader_id);
-    bs.StorePackedBits(1,team_size);
-    for(uint32_t i=0; i<team_size; ++i)
+    bs.StoreBits(32,tm_leader_id); // must be db_id
+    bs.StorePackedBits(1,tm_size);
+
+    for(const auto &member : e->m_team->m_team_members)
     {
-        uint32_t team_member_dbid=0;
-        bool team_member_is_on_the_same_map=true;
-        bs.StoreBits(32,team_member_dbid);
-        bs.StoreBits(1,team_member_is_on_the_same_map);
-        if(not team_member_is_on_the_same_map)
+        Entity *tm_ent = getEntityByDBID(src.m_client, member.tm_idx);
+
+        if(tm_ent == nullptr)
         {
-            QString missing_team_member_name;
-            QString missing_team_member_is_on_map;
-            bs.StoreString(missing_team_member_name);
-            bs.StoreString(missing_team_member_is_on_map);
+            qWarning() << "Could not find Entity with db_id:" << member.tm_idx;
+            continue; // continue loop
+        }
+
+        QString member_name     = tm_ent->name();
+        QString member_mapname  = tm_ent->m_client->m_current_map->name();
+        bool tm_on_same_map     = true;
+
+        if(member_mapname != src.m_client->m_current_map->name())
+            tm_on_same_map = false;
+
+        bs.StoreBits(32,member.tm_idx);
+        bs.StoreBits(1,tm_on_same_map);
+
+        if(!tm_on_same_map)
+        {
+            bs.StoreString(member_name);
+            bs.StoreString(member_mapname);
         }
     }
 }
@@ -90,21 +119,20 @@ void storeTeamList(const EntitiesResponse &/*src*/,BitStream &bs)
 void serialize_char_full_update(const Entity &src, BitStream &bs )
 {
     PUTDEBUG("CharacterFromServer");
-    const Character &player_char=src.m_char;
-    src.m_char.SendCharBuildInfo(bs); //FIXEDOFFSET_pchar->character_Receive
+    const Character &player_char(*src.m_char);
+    src.m_char->SendCharBuildInfo(bs); //FIXEDOFFSET_pchar->character_Receive
     PUTDEBUG("PlayerEntity::serialize_full before sendFullStats");
-    src.m_char.sendFullStats(bs); //Entity::receiveFullStats(&FullStatsTokens, pak, FIXEDOFFSET_pchar, pkt_id_fullAttrDef, 1);
+    src.m_char->sendFullStats(bs); //Entity::receiveFullStats(&FullStatsTokens, pak, FIXEDOFFSET_pchar, pkt_id_fullAttrDef, 1);
     PUTDEBUG("PlayerEntity::serialize_full before sendBuffs");
     sendBuffs(src,bs); //FIXEDOFFSET_pchar->character_ReceiveBuffs(pak,0);
 
     PUTDEBUG("PlayerEntity::serialize_full before sidekick");
-    bool has_sidekick=false;
-    bs.StoreBits(1,has_sidekick);
-    if(has_sidekick)
+    bs.StoreBits(1,player_char.m_char_data.m_sidekick.m_has_sidekick);
+    if(player_char.m_char_data.m_sidekick.m_has_sidekick)
     {
-        bool is_mentor=false; // this flag might mean something totally different :)
+        bool is_mentor = isSidekickMentor(src);
         bs.StoreBits(1,is_mentor);
-        bs.StorePackedBits(20,0); // sidekick partner db_id -> 10240
+        bs.StorePackedBits(20,player_char.m_char_data.m_sidekick.m_db_id); // sidekick partner db_id -> 10240
     }
 
     PUTDEBUG("before tray");
@@ -113,8 +141,8 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     player_char.sendTrayMode(bs);
 
     bs.StoreString(src.name());                     // maxlength 32
-    bs.StoreString(getBattleCry(player_char));      //max 128
-    bs.StoreString(getDescription(player_char));    //max 1024
+    bs.StoreString(getBattleCry(player_char));      // max 128
+    bs.StoreString(getDescription(player_char));    // max 1024
     PUTDEBUG("before windows");
     player_char.sendWindows(bs);
     bs.StoreBits(1,player_char.m_char_data.m_lfg);              // lfg related
@@ -122,11 +150,21 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     player_char.sendTeamBuffMode(bs);
     player_char.sendDockMode(bs);
     player_char.sendChatSettings(bs);
+    player_char.sendTitles(bs,NameFlag::NoName,ConditionalFlag::Unconditional); // NoName, we already sent it above.
 
-    bool unconditional_titles = false;
-    player_char.sendTitles(bs,unconditional_titles);    // unconditional must be false
+    if(src.m_has_owner)
+    {
+        // TODO: if has owner, send again using owner info (desc first this time)
+        bs.StoreString(getDescription(player_char));    // max 1024
+        bs.StoreString(getBattleCry(player_char));      // max 128
+    }
+    else
+    {
+        // client expects this anyway, so let's send again (desc first this time)
+        bs.StoreString(getDescription(player_char));    // max 1024
+        bs.StoreString(getBattleCry(player_char));      // max 128
+    }
 
-    player_char.sendDescription(bs);
     uint8_t auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     PUTDEBUG("before auth data");
     bs.StoreBitArray(auth_data,128);
@@ -252,7 +290,7 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
     }
     uint32_t boost_count=0;
     bs.StorePackedBits(1,boost_count);
-    for(uint32_t insp=0; insp<inspiration_count; ++insp)
+    for(uint32_t insp=0; insp<boost_count; ++insp)
     {
         //TODO: fill this
         assert(false);
@@ -260,29 +298,9 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
 }
 void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
-    glm::vec3 spd(1,1,1);
-    glm::vec3 zeroes;
+    glm::vec3 zeroes {0,0,0};
     // user entity
-    Entity *ent = src.m_client->char_entity();
-
-    bool m_is_flying         = ent->m_is_flying;
-    bool m_is_stunned        = ent->m_is_stunned;
-    bool m_has_jumppack      = ent->m_has_jumppack;         // jumppack effect
-    float m_backup_spd       = ent->m_backup_spd;           // backup speed default = 1.0f
-    float m_jump_height      = ent->m_jump_height;          // jump height default = 0.1f
-    bool m_controls_disabled = ent->m_controls_disabled;
-    uint8_t update_id        = ent->m_update_id;            // update_id; value stored in control state field_134; default = 1
-
-    // Unknown bits
-    int u1 = ent->u1; // update_part_1; default true
-    int u2 = ent->u2; // update_part_2; default false
-    int u3 = ent->u3; // leaping? seems like the anim changes slightly?
-    int u4 = ent->u4; // no idea default = 0
-    int u5 = ent->u5; // sets g_client_pos_id_rel default = 0
-    int u6 = ent->u6; // // sets the lowest bit in CscCommon::flags default = 0
-
-    bool update_part_1  = u1;       // default: true;
-    bool update_part_2  = u2;       // default: false;
+    Entity *ent = src.m_client->m_ent;
 
     SurfaceParams surface_params[2];
     memset(&surface_params,0,2*sizeof(SurfaceParams));
@@ -292,60 +310,59 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     surface_params[1].max_speed = surface_params[0].max_speed = 1.5f;
     surface_params[1].gravitational_constant = surface_params[0].gravitational_constant = 3.0f;
 
-    bs.StoreBits(1,update_part_1);
-    if(update_part_1)
+    bs.StoreBits(1,ent->m_update_part_1);
+    if(ent->m_update_part_1)
     {
         //rand()&0xFF
-        bs.StoreBits(8,update_id);
+        bs.StoreBits(8,ent->m_update_id);
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
         // This is entity speed vector !!
-        storeVector(bs,spd);
+        storeVector(bs,ent->m_spd);
 
-        bs.StoreFloat(m_backup_spd);         // Backup Speed default = 1.0f
+        bs.StoreFloat(ent->m_backup_spd);         // Backup Speed default = 1.0f
         bs.StoreBitArray((uint8_t *)&surface_params,2*sizeof(SurfaceParams)*8);
 
-        bs.StoreFloat(m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
-        bs.StoreBits(1,m_is_flying);         // is_flying flag
-        bs.StoreBits(1,m_is_stunned);        // is_stunned flag (lacks overhead 'dizzy' FX)
-        bs.StoreBits(1,m_has_jumppack);      // jumpack flag (lacks costume parts)
+        bs.StoreFloat(ent->m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
+        bs.StoreBits(1,ent->m_is_flying);         // is_flying flag
+        bs.StoreBits(1,ent->m_is_stunned);        // is_stunned flag (lacks overhead 'dizzy' FX)
+        bs.StoreBits(1,ent->m_has_jumppack);      // jumpack flag (lacks costume parts)
 
-        bs.StoreBits(1,m_controls_disabled); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
-        bs.StoreBits(1,u3);                  // leaping? seems like the anim changes slightly?
-        bs.StoreBits(1,u4);                  // no idea default = 0
+        bs.StoreBits(1,ent->m_controls_disabled); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
+        bs.StoreBits(1,ent->m_is_jumping);        // leaping? seems like the anim changes slightly?
+        bs.StoreBits(1,ent->m_is_sliding);        // sliding? default = 0
     }
-    // TODO: This entire update_part_2 section is wrong. Maybe teleport?
     // Used to force the client to a position/speed/pitch/rotation by server
-    bs.StoreBits(1,update_part_2);
-    if(update_part_2)
+    bs.StoreBits(1,ent->m_force_pos_and_cam);
+    if(ent->m_force_pos_and_cam)
     {
-        bs.StorePackedBits(1,u5);            // sets g_client_pos_id_rel default = 0
-        storeVector(bs,spd);
-        storeVectorConditional(bs,spd);      // vector3 -> speed ? likely; was zeroes
+        bs.StorePackedBits(1,ent->inp_state.m_received_server_update_id); // sets g_client_pos_id_rel default = 0
+        storeVector(bs,ent->m_entity_data.m_pos);         // server-side pos
+        storeVectorConditional(bs,ent->m_spd);          // server-side spd (optional)
 
         storeFloatConditional(bs,0); // Pitch not used ?
-        storeFloatConditional(bs,ent->inp_state.camera_pyr.y); // Yaw
+        storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.y); // Yaw
         storeFloatConditional(bs,0); // Roll
-        bs.StorePackedBits(1,u6); // server side forced falling bit
+        bs.StorePackedBits(1,ent->m_is_falling); // server side forced falling bit
+
+        ent->m_force_pos_and_cam = false; // run once
     }
 }
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
 {
-    Entity * target = src.m_client->char_entity();
-    bool full_update = target->m_full_update; // true
-    bool has_control_id = target->m_has_control_id; // true
+    Entity * target = src.m_client->m_ent;
 
-    bs.StoreBits(1,full_update);
-    if( !full_update )
-        bs.StoreBits(1,has_control_id);
-#ifdef LOG_
-    fprintf(stderr,"Phys: send %d ",target->m_input_ack);
-#endif
-    if( full_update || has_control_id)
+    bs.StoreBits(1,target->m_full_update);
+    if( !target->m_full_update )
+        bs.StoreBits(1,target->m_has_control_id);
+
+    qCDebug(logInput,"Phys: send %d ",target->m_input_ack);
+
+    if( target->m_full_update || target->m_has_control_id)
         bs.StoreBits(16,target->m_input_ack); //target->m_input_ack
-    if(full_update)
+    if(target->m_full_update)
     {
         for(int i=0; i<3; ++i)
-            bs.StoreFloat(target->pos[i]); // server position
+            bs.StoreFloat(target->m_entity_data.m_pos[i]); // server position
         for(int i=0; i<3; ++i)
             storeFloatConditional(bs,target->vel[i]);
     }
@@ -367,52 +384,47 @@ void sendCommands(const EntitiesResponse &src,BitStream &tgt)
 }
 void sendClientData(const EntitiesResponse &src,BitStream &bs)
 {
-    Entity *ent=src.m_client->char_entity();
-    Character &player_char=ent->m_char;
+    Entity *ent=src.m_client->m_ent;
+
     if(!src.m_incremental)
     {
         //full_update - > receiveCharacterFromServer
         // initial character update = level/name/class/origin/map_name
-        //m_client->char_entity()->m_char.m_ent=m_client->char_entity();
+        //m_client->char_entity()->m_char->m_ent=m_client->char_entity();
         serialize_char_full_update(*ent,bs);
     }
     else
     {
-        ent->m_char.sendFullStats(bs);
+        const Character &player_char(*ent->m_char);
+        player_char.sendFullStats(bs);
     }
     storePowerInfoUpdate(src,bs);
     storeTeamList(src,bs);
     storeSuperStats(src,bs);
     storeGroupDyn(src,bs);
-    bool additional=false; // used to force the client camera direction
+    bool additional = ent->u3; // used to force the client camera direction
     bs.StoreBits(1,additional);
     if(additional)
     {
-        bs.StoreFloat(0.0f); // force camera_pitch
-        bs.StoreFloat(0.0f); // force camera_yaw
-        bs.StoreFloat(0.0f); // force camera_roll
+        bs.StoreFloat(ent->inp_state.camera_pyr.p); // force camera_pitch
+        bs.StoreFloat(ent->inp_state.camera_pyr.y); // force camera_yaw
+        bs.StoreFloat(ent->inp_state.camera_pyr.r); // force camera_roll
     }
 }
 }
 //! EntitiesResponse is sent to a client to inform it about the current world state.
-EntitiesResponse::EntitiesResponse(MapClient *cl) :
+EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
     MapLinkEvent(MapEventTypes::evEntitites)
 {
     m_map_time_of_day = 10;
     m_client = cl;
-    abs_time=db_time=0;
-    unkn2=false;
-    debug_info=true;
-    m_incremental=false;
-    m_interpolating=true;
     m_interpolation_level = 2;
     m_interpolation_bits=1;
     //m_interpolation_level
-
 }
 void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
-    MapInstance *mi = m_client->current_map();
+    MapInstance *mi = m_client->m_current_map;
     EntityManager &ent_manager(mi->m_entities);
 
 
@@ -424,19 +436,13 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
 
     tgt.StoreBits(32,abs_time);
     //tgt.StoreBits(32,db_time);
-
-    tgt.StoreBits(1,unkn2);
-    if(unkn2)
-    {
-        //g_debug_info 0
-        //interpolation level 2
-        //g_bitcount_rel 1
-    }
-    else
+    bool all_defaults = (debug_info==0) && (m_interpolation_level==2) && (m_interpolation_bits==1);
+    tgt.StoreBits(1,all_defaults);
+    if(!all_defaults)
     {
         tgt.StoreBits(1,debug_info);
-        tgt.StoreBits(1,m_interpolating);
-        if(m_interpolating==1)
+        tgt.StoreBits(1,m_interpolation_level!=0);
+        if(m_interpolation_level!=0)
         {
             tgt.StoreBits(2,m_interpolation_level);
             tgt.StoreBits(2,m_interpolation_bits);
@@ -445,7 +451,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     ;
     //else debug_info = false;
     ent_manager.sendEntities(tgt,m_client,m_incremental);
-    if(debug_info&&!unkn2)
+    if(debug_info)
     {
         ent_manager.sendDebuggedEntities(tgt); // while loop, sending entity id's and debug info for each
         ent_manager.sendGlobalEntDebugInfo(tgt);

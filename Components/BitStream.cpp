@@ -183,7 +183,7 @@ void BitStream::StoreBitArray(const uint8_t *src,size_t nBits)
     ByteAlign(false,true);
     PutBytes(src,nBytes);
     // nBits is not a multiple of 8, fixup
-    if(nBits&7) 
+    if(nBits&7)
     {
         --m_write_off;
         m_write_bit_off = nBits&7;
@@ -289,13 +289,13 @@ int32_t BitStream::GetPackedBits(uint32_t minbits)
         uint32_t bits    = GetBits(minbits);
         uint32_t bitMask = BIT_MASK(minbits);
 
-        if(bits < bitMask || minbits == BITS_PER_UINT32) 
+        if(bits < bitMask || minbits == BITS_PER_UINT32)
             return bits + accumulator;
 
         minbits     *= 2;
         accumulator += bitMask;
 
-        if(minbits > BITS_PER_UINT32) 
+        if(minbits > BITS_PER_UINT32)
             minbits = BITS_PER_UINT32;
     }
 
@@ -315,11 +315,10 @@ void BitStream::GetBitArray(uint8_t *tgt, uint32_t nBits)
     GetBytes(tgt,BITS_TO_BYTES(nBits));
 }
 
-/************************************************************************
-Function:    GetString/GetStringWithDebugInfo
-Description: Retrieves a null-terminated C-style string from the bit
-                         stream
-************************************************************************/
+/**
+\brief  Retrieves a null-terminated C-style string from the bit stream
+\note will set stream error status in case of stream exhaustion
+*/
 void BitStream::GetString(QString &str)
 {
     if(GetReadableBits()<8)
@@ -334,7 +333,7 @@ void BitStream::GetString(QString &str)
         chr  = m_buf[m_read_off]  >> m_read_bit_off;
         chr |= m_buf[++m_read_off] << bitsLeft;
         if(chr)
-            str += chr;
+            str += char(chr);
 
         if((chr!='\0') && GetReadableBits()<8)
         {
@@ -344,13 +343,15 @@ void BitStream::GetString(QString &str)
     } while(chr != '\0');
 }
 
-
-
+/**
+ * @brief Read upto 8 bytes from input stream and return them as 64bit integer
+ * @return received 64 bit value
+ */
 int64_t BitStream::Get64Bits()
 {
     int64_t result=0;
     uint32_t *res_ptr=reinterpret_cast<uint32_t *>(&result);
-    uint8_t byte_count=GetBits(3);
+    int byte_count=GetBits(3);
     if ( byte_count > 4 )
     {
         result=GetBits(BITS_PER_UINT32);
@@ -433,7 +434,7 @@ void BitStream::CompressAndStoreString(const char *str)
     StorePackedBits(1, decompLen);  //  Store decompressed len
     StoreBitArray((const uint8_t *)ba.data(),len << 3);    //  Store compressed string
 }
-static QByteArray uncompr_zip(QByteArray &compressed_data,uint32_t size_uncom) 
+static QByteArray uncompr_zip(QByteArray &compressed_data,uint32_t size_uncom)
 {
     compressed_data.prepend( char((size_uncom >> 0) & 0xFF));
     compressed_data.prepend( char((size_uncom >> 8) & 0xFF));

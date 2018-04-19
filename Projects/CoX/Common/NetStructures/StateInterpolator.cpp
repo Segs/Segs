@@ -51,7 +51,7 @@ static void buildErrorTable() {
         for (float &v : s_coding_sequence )
             v = std::sqrt(v) / 20.0f;
     }
-};
+}
 float get_interpolator_perturbation(int16_t a1,int level)
 {
     buildErrorTable();

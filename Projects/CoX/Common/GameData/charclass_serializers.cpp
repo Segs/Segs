@@ -111,7 +111,6 @@ static void serialize(Archive &archive, ClassMod_Data &src)
 {
     archive(cereal::make_nvp("Name",src.Name));
     archive(cereal::make_nvp("Values",src.Values));
-
 }
 template<class Archive>
 static void serialize(Archive & archive, CharClass_Data & src)

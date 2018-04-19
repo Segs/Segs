@@ -16,7 +16,7 @@
 #include <QtCore/QFile>
 #include <fstream>
 #include <map>
-
+#include <type_traits>
 struct RGBA;
 
 typedef glm::vec3 Vec3;
@@ -59,7 +59,7 @@ public:
         return read_str(12000);
     }
     bool        read_bytes(char *tgt,size_t sz);
-    QString read_str(size_t maxlen);
+    QString     read_str(size_t maxlen);
     bool        read(uint32_t &v);
     bool        read(int32_t &v);
     bool        read(float &v);
@@ -75,6 +75,25 @@ public:
     bool        read(std::vector<std::vector<QString>> &res);
     bool        read(uint8_t *&val, uint32_t length);
     bool        read(QString &val);
+                template<class Enum>
+    bool        readEnum(Enum &val)
+                {
+                    typename std::underlying_type<Enum>::type true_val;
+                    if(!read(true_val))
+                        return false;
+                    val = Enum(true_val);
+                    return true;
+                }
+                template<class Enum>
+    bool        readEnum(std::vector<Enum> &val)
+                {
+                    std::vector<typename std::underlying_type<Enum>::type> true_val;
+                    if(!read(true_val))
+                        return false;
+                    // this is bad, and I feel bad for writing it :/
+                    val = std::move(*(std::vector<Enum> *)(&true_val));
+                    return true;
+                }
     void        prepare();
     bool        prepare_nested();
     bool        nesting_name(QString & name);

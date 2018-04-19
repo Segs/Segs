@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "Entity.h"
-#include "PlayerMethods.h"
+#include "NetStructures/Entity.h"
+#include "Servers/MapServer/DataHelpers.h"
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
@@ -18,7 +18,7 @@
 #include <set>
 #include <deque>
 
-class MapClient;
+struct MapClientSession;
 class MapInstance;
 class Entity;
 class BitStream;
@@ -34,7 +34,7 @@ public:
 class EntityManager
 {
     struct EntityIdxCompare {
-        bool operator()(Entity *a,Entity *b) const {
+        bool operator()(const Entity *a,const Entity *b) const {
             return getIdx(*a) < getIdx(*b);
         }
     };
@@ -45,15 +45,13 @@ public:
                     EntityManager();
     void            sendDebuggedEntities(BitStream &tgt) const;
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
-    void            sendDeletes(BitStream &tgt, MapClient *client) const;
-    void            sendEntities(BitStream &tgt, MapClient *target, bool is_incremental) const;
+    void            sendDeletes(BitStream &tgt, MapClientSession *client) const;
+    void            sendEntities(BitStream &tgt, MapClientSession *target, bool is_incremental) const;
     void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
     void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }
-    Entity *        getEntity(const QString &name);
-    Entity *        getEntity(const int32_t &idx);
 
 protected:
     mutable ACE_Thread_Mutex m_mutex; // used to prevent world state reads during updates
@@ -64,6 +62,6 @@ class EntityStorage
 public:
 //  void NewPlayer(MapClient *client,Entity *player_ent); // stores fresh player avatar
 //  void StorePlayer(MapClient *client,Entity *player_ent); // stores player avatar
-        Entity *    CreatePlayer(MapClient *client,int avatar_id); // retrieves client avatar from storage
+        Entity *    CreatePlayer(MapClientSession *client,int avatar_id); // retrieves client avatar from storage
         Entity *    CreateInstance(MapInstance *target_world,uint64_t id); // will create a new instance of given entity, bound to given map
 };

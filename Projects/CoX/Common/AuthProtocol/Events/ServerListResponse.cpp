@@ -15,8 +15,8 @@ void ServerListResponse::serializeto( GrowingBuffer &buf ) const
         uint32_t addr= srv.addr;
         buf.Put((uint32_t)ACE_SWAP_LONG(addr)); //must be network byte order
         buf.Put((uint32_t)srv.port);
-        buf.Put(srv.unknown_1);
-        buf.Put(srv.unknown_2);
+        buf.Put(uint8_t(0));
+        buf.Put(uint8_t(0));
         buf.Put(srv.current_players);
         buf.Put(srv.max_players);
         buf.Put((uint8_t)srv.online);
@@ -25,7 +25,7 @@ void ServerListResponse::serializeto( GrowingBuffer &buf ) const
 
 void ServerListResponse::serializefrom( GrowingBuffer &buf )
 {
-    uint8_t op;
+    uint8_t op,unused;
     buf.uGet(op);
     uint8_t server_list_size;
     buf.uGet(server_list_size);
@@ -36,8 +36,8 @@ void ServerListResponse::serializefrom( GrowingBuffer &buf )
         buf.Get(srv.id);
         buf.Get(srv.addr); //must be network byte order
         buf.Get(srv.port);
-        buf.Get(srv.unknown_1);
-        buf.Get(srv.unknown_2);
+        buf.Get(unused);
+        buf.Get(unused);
         buf.Get(srv.current_players);
         buf.Get(srv.max_players);
         buf.Get(srv.online);

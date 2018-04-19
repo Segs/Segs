@@ -18,11 +18,17 @@ set(GAMEDATA_SRC
     chardata_definitions.h
     chardata_serializers.cpp
     chardata_serializers.h
+    clientoptions_definitions.h
+    clientoptions_serializers.cpp
+    clientoptions_serializers.h
     def_serializers.cpp
     def_serializers.h
     entitydata_definitions.h
     entitydata_serializers.cpp
     entitydata_serializers.h
+    gui_definitions.h
+    gui_serializers.cpp
+    gui_serializers.h
     other_definitions.h
     origin_definitions.h
     keybind_serializers.cpp
@@ -44,6 +50,9 @@ set(GAMEDATA_SRC
     #titles_serializers.cpp
     #titles_serializers.h
     #particle_definitions.h
+    power_definitions.h
+    power_serializers.cpp
+    power_serializers.h
     scenegraph_definitions.h
     shop_definitions.h
     map_definitions.h
