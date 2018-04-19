@@ -84,7 +84,6 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     : m_data_path(mapdir_path), m_world_update_timer(nullptr), m_addresses(listen_addr)
 {
     m_world = new World(m_entities);
-    m_owner_server = nullptr;
     m_scripting_interface.reset(new ScriptingEngine);
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
