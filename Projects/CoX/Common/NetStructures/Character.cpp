@@ -117,7 +117,7 @@ void Character::SendCharBuildInfo(BitStream &bs) const
 
     {
         // TODO: this is character powers related, refactor it out of here.
-        int count=0;
+        int count=0; // FixMe: count is explicitly set and never modified.
         bs.StorePackedBits(4,count); // count
         for(int i=0; i<count; i++)
         {
@@ -153,7 +153,7 @@ void Character::SendCharBuildInfo(BitStream &bs) const
         {
             for(size_t row=0; row<max_num_rows; ++row)
             {
-                bool is_power=false;
+                bool is_power=false; // FixMe: is_power is explicitly set and never modified.
                 bs.StoreBits(1,is_power);
                 if(is_power)
                     null_power.serializeto(bs);
@@ -162,7 +162,7 @@ void Character::SendCharBuildInfo(BitStream &bs) const
     }
     PUTDEBUG("SendCharBuildInfo after inspirations");
     // boosts
-    uint32_t num_boosts=0;
+    uint32_t num_boosts=0; // FixMe: num_boosts is never modified and the body of the for loop below will never fire.
     bs.StorePackedBits(5,num_boosts); // count
     for(size_t idx=0; idx<num_boosts; ++idx)
     {

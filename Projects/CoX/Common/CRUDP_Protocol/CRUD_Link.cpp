@@ -14,7 +14,7 @@
 // ServerEndpoint gets new input -> Bytes -> CRUDP_Protocol -> pushq(PacketEvent)
 // ACE_Reactor knows to wake CRUDLink up, whenever there are new events
 std::set<CRUDLink *> all_links;
-CRUDLink::CRUDLink() :  m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK)
+CRUDLink::CRUDLink() :  m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK),m_net_layer(nullptr),m_target(nullptr)
 {
     m_notifier.event_handler(this);
     m_protocol.setCodec(new PacketCodecNull);

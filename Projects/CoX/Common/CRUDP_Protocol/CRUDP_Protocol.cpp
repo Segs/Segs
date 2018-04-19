@@ -139,6 +139,7 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
 }
 void CrudP_Protocol::parseAcks(BitStream &src,CrudP_Packet *tgt)
 {
+    // FixMe: GetPackedBits() can return signed values which can cause the numUniqueAcks assignment to be extremely high.
     uint32_t numUniqueAcks = src.GetPackedBits(1);
     if(numUniqueAcks  == 0)
         return;

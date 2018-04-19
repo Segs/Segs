@@ -42,7 +42,7 @@ void storeCreation(const Entity &src, BitStream &bs)
     }
     else
     {
-        bool val=false;
+        bool val=false; // FixMe: val is explicitly set and never modified.
         bs.StoreBits(1,val);
         if(val)
         {
@@ -100,7 +100,7 @@ void storeUnknownBinTree(const Entity &/*src*/,BitStream &bs)
 bool storePosition(const Entity &src,BitStream &bs)
 {
 // float x = pos.vals.x;
-    uint8_t updated_bit_pos = 7;
+    uint8_t updated_bit_pos = 7; // FixMe: updated_bit_pos is explicitly assigned and never modified later.
 
     bs.StoreBits(3,updated_bit_pos);
 
@@ -117,7 +117,7 @@ bool storePosition(const Entity &src,BitStream &bs)
 }
 bool update_rot(const Entity &src, int axis ) /* returns true if given axis needs updating */
 {
-    if(axis==axis)
+    if(axis==axis) // FixMe: var compared against same var.
         return true;
     return false;
 }
@@ -161,7 +161,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
 
 void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
 {
-    bool extra_info = false;
+    bool extra_info = false; // FixMe: extra_info is used for comparison after being explicitly set, but is never modified.
     bool move_instantly = false;
     PUTDEBUG("before entReceivePosUpdate");
 
@@ -199,7 +199,7 @@ void sendSeqMoveUpdate(const Entity &src,BitStream &bs)
 void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
 {
     PUTDEBUG("before sendSeqTriggeredMoves");
-    uint32_t num_moves=0;
+    uint32_t num_moves=0; // FixMe: num_moves is never modified and the body of the for loop below will never fire.
     //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq triggeted moves %d\n"),num_moves));
     bs.StorePackedBits(1,num_moves); // num moves
     for (uint32_t idx = 0; idx < num_moves; ++idx )
@@ -225,7 +225,7 @@ void sendNetFx(const Entity &src,BitStream &bs)
         storeFloatConditional(bs,10.0); // radius
         storeBitsConditional(bs,4,10);  // power
         storeBitsConditional(bs,32,0);  // debris
-        int val=0;
+        int val=0; // FixMe: if comparison below is never true due to this explicit assignment of 0.
         storeBitsConditional(bs,2,val); // origiType
         if(val==1)
         {
@@ -290,6 +290,7 @@ void sendXLuency(BitStream &bs,float val)
 }
 void sendCharacterStats(const Entity &src,BitStream &bs)
 {
+    // FixMe: have_stats and stats_changed are never modified prior to if comparison below.
     bool have_stats = true; // no stats -> dead ?
     bool stats_changed = true;
 

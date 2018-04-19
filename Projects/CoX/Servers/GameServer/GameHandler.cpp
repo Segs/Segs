@@ -28,6 +28,7 @@ const constexpr int MinPacketsToAck=5;
 
 GameHandler::GameHandler() : EventProcessor ()
 {
+    m_server = nullptr;
 }
 
 GameHandler::~GameHandler()

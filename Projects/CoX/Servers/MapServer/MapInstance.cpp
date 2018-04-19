@@ -83,10 +83,10 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     : m_data_path(mapdir_path), m_world_update_timer(nullptr), m_addresses(listen_addr)
 {
     m_world = new World(m_entities);
+    m_owner_server = nullptr;
     m_scripting_interface.reset(new ScriptingEngine);
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
-
 }
 
 void MapInstance::start()
@@ -526,6 +526,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         serializeToDb(e->m_entity_data,ent_data);
         // create the character from the data.
         //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
+        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.
         game_db->putq(new CreateNewCharacterRequest({char_data,ent_data, map_session.m_requested_slot_idx,
                                                      map_session.m_max_slots,map_session.m_client_id},
                                                     token,this));
@@ -810,8 +811,11 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
     MessageChannel kind = getKindOfChatMessage(cmd_str);
     std::vector<MapClientSession *> recipients;
 
+    if(sender == nullptr)
+      return;
+
     if(sender && sender->m_ent)
-        sender_char_name = sender->m_ent->name();
+      sender_char_name = sender->m_ent->name();
 
     switch(kind)
     {

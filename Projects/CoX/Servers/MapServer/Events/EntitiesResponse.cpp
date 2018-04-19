@@ -31,6 +31,7 @@ void storeSuperStats(const EntitiesResponse &/*src*/,BitStream &bs)
 }
 void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
 {
+    // FixMe: num_graph_nodes_changed is initialized and never modified afterward, so the if/else is never reached.
     uint32_t num_graph_nodes_changed=0;
     bs.StorePackedBits(1,num_graph_nodes_changed);
     if(num_graph_nodes_changed==0)
@@ -180,7 +181,7 @@ void storePowerSpec(uint32_t powerset_idx,uint32_t power_idx,BitStream &bs)
 }
 void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
 {
-    bool power_info_updates_available=false;
+    bool power_info_updates_available=false; // FixMe: power_info_updates_available is never modified during execution.
     bs.StoreBits(1,power_info_updates_available);
     if(power_info_updates_available)
     {
