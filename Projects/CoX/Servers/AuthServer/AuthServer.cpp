@@ -123,7 +123,7 @@ bool AuthServer::Run()
  * @param reason the value that should be stored the persistent log.
  * @return bool, if it's false, we failed to close down cleanly
  */
-bool AuthServer::ShutDown(const QString &reason)
+bool AuthServer::ShutDown()
 {
     ACE_Guard<ACE_Thread_Mutex> guard(m_mutex);
     if (m_running)
@@ -134,7 +134,6 @@ bool AuthServer::ShutDown(const QString &reason)
     // force our handler to finish
     m_handler->putq(SEGSEvent::s_ev_finish.shallow_copy());
     m_handler->wait();
-    qWarning() << "Shut down reason:" << reason;
     m_running = false;
     putq(SEGSEvent::s_ev_finish.shallow_copy());
     wait();

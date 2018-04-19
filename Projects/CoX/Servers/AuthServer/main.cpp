@@ -46,14 +46,7 @@
 #include <mutex>
 #include <stdlib.h>
 #include <memory>
-#define TIMED_LOG(x,msg) {\
-    QDebug log(qDebug());\
-    log << msg << "..."; \
-    QElapsedTimer timer;\
-    timer.start();\
-    x;\
-    log << "done in"<<float(timer.elapsed())/1000.0f<<"s";\
-}
+
 namespace
 {
 static bool s_event_loop_is_done=false; //!< this is set to true when ace reactor is finished.
@@ -87,7 +80,7 @@ private:
     void on_service_status(ServiceStatusMessage *msg);
 };
 static std::unique_ptr<MessageBusMonitor> s_bus_monitor;
-static void shutDownServers()
+static void shutDownServers(const char *reason)
 {
     if (GlobalTimerQueue::instance()->thr_count())
     {
@@ -121,7 +114,7 @@ void MessageBusMonitor::on_service_status(ServiceStatusMessage *msg)
     if (msg->m_data.status_value != 0)
     {
         qCritical().noquote() << msg->m_data.status_message;
-        shutDownServers();
+        shutDownServers("Configuration failure");
     }
     else
         qInfo().noquote() << msg->m_data.status_message;
@@ -137,7 +130,7 @@ public:
     // Called when object is signaled by OS.
     int handle_signal(int, siginfo_t */*s_i*/, ucontext_t */*u_c*/)
     {
-        shutDownServers();
+        shutDownServers("Signal");
         return 0;
     }
 };

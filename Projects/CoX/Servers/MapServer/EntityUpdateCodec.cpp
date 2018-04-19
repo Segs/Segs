@@ -32,8 +32,8 @@ void storeCreation(const Entity &src, BitStream &bs)
 
     bs.StorePackedBits(12,src.m_idx);//  this will be put in  of created entity
     PUTDEBUG("after id");
-    bs.StorePackedBits(2,src.m_type);
-    if(src.m_type==Entity::ENT_PLAYER)
+    bs.StorePackedBits(2,uint8_t(src.m_type));
+    if(src.m_type==EntType::PLAYER)
     {
         bs.StoreBits(1,src.m_create_player);
         if(src.m_create_player)
@@ -42,7 +42,7 @@ void storeCreation(const Entity &src, BitStream &bs)
     }
     else
     {
-        bool val=false;
+        bool val=src.m_npc->m_is_owned;
         bs.StoreBits(1,val);
         if(val)
         {
@@ -51,7 +51,7 @@ void storeCreation(const Entity &src, BitStream &bs)
         }
     }
     PUTDEBUG("after creatorowner");
-    if(src.m_type==Entity::ENT_PLAYER || src.m_type==Entity::ENT_CRITTER)
+    if(src.m_type==EntType::PLAYER || src.m_type==EntType::CRITTER)
     {
         bs.StorePackedBits(1,src.m_entity_data.m_class_idx);
         bs.StorePackedBits(1,src.m_entity_data.m_origin_idx);
@@ -262,25 +262,23 @@ void sendNetFx(const Entity &src,BitStream &bs)
 void sendCostumes(const Entity &src,BitStream &bs)
 {
     //NOTE: this will only be initialized once, and no changes later on will influence this
-    static ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
+    static const ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
     PUTDEBUG("before sendCostumes");
-    storePackedBitsConditional(bs,2,src.m_costume_type);
-    if(src.m_costume_type!=1)
+    storePackedBitsConditional(bs,2,uint8_t(src.m_costume_type));
+    switch(src.m_costume_type)
     {
-        assert(false);
-        return;
-    }
-    switch(src.m_type)
-    {
-        case Entity::ENT_PLAYER: // client value 1
+        case AppearanceType::WholeCostume: // client value 1
             src.m_char->serialize_costumes(bs,packer,true); // we're always sending full info
             break;
-        case 3: // client value 2 top level defs from VillainCostume ?
-            bs.StorePackedBits(12,1); // npc costume type idx ?
-            bs.StorePackedBits(1,1); // npc costume idx ?
+        case AppearanceType::NpcCostume: // client value 2 top level defs from VillainCostume ?
+            bs.StorePackedBits(12,src.m_npc->npc_idx); // npc costume type idx ?
+            bs.StorePackedBits(1,src.m_npc->costume_variant); // npc costume idx ?
             break;
-        case Entity::ENT_CRITTER: // client val 4
-            bs.StoreString("Unknown"); // TODO what is stored here?
+        case AppearanceType::SequencerName: // client val 4
+            bs.StoreString("Unknown"); // this is mostly used to send mcguffins :)
+            break;
+        default:
+            assert(false);
             break;
     }
 }
@@ -319,8 +317,9 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
 void sendBuffsConditional(const Entity &src,BitStream &bs)
 {
     //TODO: implement this
-    bs.StoreBits(1,0); // nothing here for now
-    if(false)
+    bool have_buffs = false;
+    bs.StoreBits(1,have_buffs); // nothing here for now
+    if(have_buffs)
     {
         sendBuffs(src,bs);
     }

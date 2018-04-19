@@ -73,6 +73,28 @@ bool commonReadFrom(const QString &crl_path,const char *classname, T &target) {
     }
     return true;
 }
+template<class T>
+void serializeToQString(const T &data, QString &tgt)
+{
+    std::ostringstream ostr;
+    {
+        cereal::JSONOutputArchive ar(ostr);
+        ar(data);
+    }
+    tgt = QString::fromStdString(ostr.str());
+}
+template<class T>
+void serializeFromQString(T &data,const QString &src)
+{
+    if(src.isEmpty())
+        return;
+    std::istringstream istr;
+    istr.str(src.toStdString());
+    {
+        cereal::JSONInputArchive ar(istr);
+        ar(data);
+    }
+}
 
 namespace cereal {
 inline void epilogue(BinaryOutputArchive &, QString const &) { }

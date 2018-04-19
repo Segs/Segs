@@ -32,7 +32,7 @@ public:
 
         bool                    ReadConfigAndRestart();
 
-        bool                    ShutDown(const QString &reason="No particular reason");
+        bool                    ShutDown();
         MapManager &            map_manager();
         MapServerData &         runtimeData();
         void                    sett_game_server_owner(uint8_t owner_id);

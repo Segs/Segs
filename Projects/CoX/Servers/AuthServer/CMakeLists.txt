@@ -38,7 +38,7 @@ IF(BUILD_SEPARATE)
         ${target_DEPENDS} gameData
         SEGS_Components
         ${SCRIPTING_LIBRARY}
-        ${CMAKE_THREAD_LIBS_INIT}
+        Threads::Threads
         ace_IMP
         ${CMAKE_DL_LIBS}
         password_hasher

@@ -56,24 +56,3 @@ void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive &archive, Cl
 template
 void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive &archive, ClientOptions &co, uint32_t const version);
 
-void serializeToDb(const ClientOptions &data, QString &tgt)
-{
-    std::ostringstream ostr;
-    {
-        cereal::JSONOutputArchive ar(ostr);
-        ar(data);
-    }
-    tgt = QString::fromStdString(ostr.str());
-}
-
-void serializeFromDb(ClientOptions &data,const QString &src)
-{
-    if(src.isEmpty())
-        return;
-    std::istringstream istr;
-    istr.str(src.toStdString());
-    {
-        cereal::JSONInputArchive ar(istr);
-        ar(data);
-    }
-}

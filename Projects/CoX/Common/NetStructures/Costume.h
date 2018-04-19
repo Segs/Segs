@@ -44,8 +44,8 @@ struct CostumePart
     uint8_t m_type=0; // arms/legs etc..
     bool m_full_part;
 };
-void serializeto(const CostumePart &part, BitStream &bs, ColorAndPartPacker *packingContext);
-void serializefrom(CostumePart &part, BitStream &bs, ColorAndPartPacker *packingContext);
+void serializeto(const CostumePart &part, BitStream &bs, const ColorAndPartPacker *packingContext);
+void serializefrom(CostumePart &part, BitStream &bs, const ColorAndPartPacker *packingContext);
 struct Costume
 {
     float m_height=0;
@@ -69,8 +69,8 @@ struct Costume
     void    dump() const;
 protected:
 };
-void serializefrom(Costume &tgt, BitStream &bs, ColorAndPartPacker *packer);
-void serializeto(const Costume &tgt,BitStream &bs, ColorAndPartPacker *packer);
+void serializefrom(Costume &tgt, BitStream &bs, const ColorAndPartPacker *packer);
+void serializeto(const Costume &tgt, BitStream &bs, const ColorAndPartPacker *packer);
 
 class CharacterCostume : public Costume
 {
