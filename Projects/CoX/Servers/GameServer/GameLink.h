@@ -13,7 +13,8 @@
 
 struct GameLink : public CRUDLink
 {
-    GameLink(EventProcessor *tgt,EventProcessor *net_layer) : CRUDLink() {
+    GameLink(EventProcessor *tgt,EventProcessor *net_layer)
+    {
         m_net_layer = net_layer;
         m_target = tgt;
         assert(tgt);

@@ -23,7 +23,7 @@
 //    return 0;
 //}
 
-void UpdateServer::dependent_dump()
+void UpdateServer::dependent_dump() const
 {
     qDebug() << "Game:pktCS_ServerUpdate";
     qDebug() << "{";

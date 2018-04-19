@@ -15,13 +15,13 @@
 /// Monotonically incrementing session ids, starting at 1, to make 0 special.
 uint64_t AuthHandler::s_last_session_id=1;
 namespace {
-static AuthorizationError s_auth_error_no_db(AUTH_ACCOUNT_SYNC_FAIL);
-static AuthorizationError s_auth_error_blocked_account(AUTH_ACCOUNT_BLOCKED);
-static AuthorizationError s_auth_error_db_error(AUTH_DATABASE_ERROR);
-static AuthorizationError s_auth_error_unknown(AUTH_UNKN_ERROR);
-static AuthorizationError s_auth_error_wrong_login_pass(AUTH_WRONG_LOGINPASS);
-static AuthorizationError s_auth_error_locked_account(AUTH_ACCOUNT_BLOCKED);
-static AuthorizationError s_auth_error_already_online(AUTH_ALREADY_LOGGEDIN);
+AuthorizationError s_auth_error_no_db(AUTH_ACCOUNT_SYNC_FAIL);
+AuthorizationError s_auth_error_blocked_account(AUTH_ACCOUNT_BLOCKED);
+AuthorizationError s_auth_error_db_error(AUTH_DATABASE_ERROR);
+AuthorizationError s_auth_error_unknown(AUTH_UNKN_ERROR);
+AuthorizationError s_auth_error_wrong_login_pass(AUTH_WRONG_LOGINPASS);
+AuthorizationError s_auth_error_locked_account(AUTH_ACCOUNT_BLOCKED);
+AuthorizationError s_auth_error_already_online(AUTH_ALREADY_LOGGEDIN);
 
 enum {
     Session_Reaper_Timer   = 1
@@ -167,7 +167,6 @@ bool AuthHandler::isClientConnectedAnywhere(uint32_t client_id)
 void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
 {
     uint64_t sess_token = msg->session_token();
-    AuthSession *sess_ptr = nullptr;
     m_sessions.reap_lock().lock(); // prevent temp session from being reaped while we work with it
     if(!m_sessions.has_session_for(sess_token))
     {
@@ -176,7 +175,7 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
         // we can't do anything else.
         return;
     }
-    sess_ptr = &m_sessions.session_from_token(sess_token);
+    AuthSession *sess_ptr = &m_sessions.session_from_token(sess_token);
     // protector takes ownership of the session, removing it from ready-for-reaping set
     ReaperProtection<AuthSession> protector(sess_ptr,sess_token,m_sessions);
     m_sessions.reap_lock().unlock();
@@ -203,17 +202,14 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
         lnk->putq(s_auth_error_already_online.shallow_copy());
         return;
     }
-    AuthSession *old_sess_ptr = nullptr;
-    // see if we can reuse the old session
-    uint64_t existing_sess_tok;
     {
         SessionStore::MTGuard guard(m_sessions.reap_lock());
-        existing_sess_tok = m_sessions.token_for_id(acc_inf.m_acc_server_acc_id);
+        uint64_t existing_sess_tok = m_sessions.token_for_id(acc_inf.m_acc_server_acc_id);
         if(existing_sess_tok!=0)
         {
             // at this point we have two sessions, the temporary one, and the one in storage
             // the ReaperProtection above will expire on destruction, so we can simply replace the pointers
-            old_sess_ptr = &m_sessions.session_from_token(existing_sess_tok);
+            AuthSession *old_sess_ptr = &m_sessions.session_from_token(existing_sess_tok);
             sess_token = existing_sess_tok;
             if(old_sess_ptr->m_state != AuthSession::NOT_LOGGED_IN)
                 {

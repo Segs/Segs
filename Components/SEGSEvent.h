@@ -52,7 +52,7 @@ virtual                 ~SEGSEvent()
                         }
         int             get_ref_count() const {return m_ref_count; }
         void            src(EventProcessor *ev_src) {m_event_source=ev_src;}
-        EventProcessor *src() {return m_event_source;}
+        EventProcessor *src() const {return m_event_source;}
         uint32_t        type() const {return m_type;}
 virtual const char *    info();
 
