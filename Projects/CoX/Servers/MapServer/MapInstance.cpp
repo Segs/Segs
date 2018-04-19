@@ -814,7 +814,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
     if(!sender)
       return;
 
-    if(sender && sender->m_ent)
+    if(sender->m_ent)
       sender_char_name = sender->m_ent->name();
 
     switch(kind)
