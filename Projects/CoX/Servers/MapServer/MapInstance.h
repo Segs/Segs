@@ -123,4 +123,5 @@ protected:
         void on_set_keybind(class SetKeybind *ev);
         void on_remove_keybind(class RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
+        void on_interact_with(class InteractWithEntity *ev);
 };

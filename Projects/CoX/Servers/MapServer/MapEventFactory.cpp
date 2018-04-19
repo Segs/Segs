@@ -52,6 +52,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         //case 2: return new Unknown2; // TODO: What is this?
         //case 3: return new RefreshWindows; // TODO: Refreshes all windows? Issue #268
         case 4: return new ClientResumedRendering;
+        case 7: return new InteractWithEntity;
         case 8: return new SwitchTray;
         case 9: return new EnterDoor;
         case 11: return new SetDestination;
