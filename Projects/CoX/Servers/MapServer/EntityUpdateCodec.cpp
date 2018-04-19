@@ -475,4 +475,3 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
         sendLogoutUpdate(src,belief,bs);
     }
 }
-e
