@@ -713,15 +713,10 @@ void addNpc(QString &cmd, MapClientSession &sess)
     }
     glm::vec3 offset = glm::vec3 {2,0,1};
     int idx = npc_store.npc_idx(npc_def);
-    for(int i=0; i<16; ++i)
-    {
-        Entity *e = sess.m_current_map->m_entities.CreateNpc(*npc_def,idx,variation);
-        e->m_entity_data.m_pos = gm_loc + offset;
-        offset += glm::vec3 {1,0,0};
-        e->vel = {0,0,0};
-        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), &sess);
-    }
-
+    Entity *e = sess.m_current_map->m_entities.CreateNpc(*npc_def,idx,variation);
+    e->m_entity_data.m_pos = gm_loc + offset;
+    e->vel = {0,0,0};
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), &sess);
 }
 void moveTo(QString &cmd, MapClientSession &sess)
 {
