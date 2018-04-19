@@ -76,7 +76,7 @@ void PowerTrayGroup::serializeto(BitStream &tgt) const
     tgt.StoreBits(32,secondary_tray_idx);
     for(int bar_num=0; bar_num<9; bar_num++)
         m_trays[bar_num].serializeto(tgt);
-    bool m_c = false;
+    bool m_c = false; // FixMe: m_c is explicitly set and never later modified.
     tgt.StoreBits(1,m_c);
     if(m_c) // selected ???
     {

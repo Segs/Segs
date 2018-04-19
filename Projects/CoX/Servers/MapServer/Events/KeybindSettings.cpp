@@ -86,7 +86,7 @@ void KeybindSettings::removeKeybind(QString &profile, KeyName &key, ModKeys &mod
         for(auto iter=p.KeybindArr.begin(); iter!=p.KeybindArr.end(); /*incremented inside loop*/)
         {
           if(iter->Key==key && iter->Mods==mods)
-              iter=p.KeybindArr.erase(iter);
+              iter=p.KeybindArr.erase(iter); // this is flagged by Coverity, but is fine since we perform an end check in the for loop.
           else
               ++iter;
         }

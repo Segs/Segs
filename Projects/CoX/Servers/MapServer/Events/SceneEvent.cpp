@@ -57,6 +57,7 @@ void SceneEvent::serializefrom(BitStream &src)
         src.GetString(m_map_desc);
     }
     current_map_flags = src.GetBits(1); // is beaconized
+    // FixMe: GetPackedBits() can return signed values which can cause the num_base_elems assignment to be extremely high.
     num_base_elems = src.GetPackedBits(1);
     m_crc.resize(num_base_elems);
     m_trays.resize(num_base_elems);
@@ -104,7 +105,7 @@ void SceneEvent::serializeto(BitStream &tgt) const
     // overriding groups
     tgt.StorePackedBits(1,-1); // fake it all the way
     return;
-    if(0)
+    if(0) // FixMe: The interior blocks are unreachable due to the literal 0 here.
     {
         for(size_t i=1; i<m_refs.size(); i++)
         {
