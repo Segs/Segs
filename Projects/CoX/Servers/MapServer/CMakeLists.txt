@@ -61,6 +61,7 @@ SET(target_INCLUDE
     Events/TeamLooking.h
     Events/TeamOffer.h
     Events/InfoMessageCmd.h
+    Events/InteractWithEntity.h
     Events/WindowState.h
     NpcStore.h
     MapEventFactory.h

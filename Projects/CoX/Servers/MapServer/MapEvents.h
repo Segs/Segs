@@ -622,3 +622,4 @@ public:
 #include "Events/SidekickOffer.h"
 #include "Events/TeamLooking.h"
 #include "Events/TeamOffer.h"
+#include "Events/InteractWithEntity.h"

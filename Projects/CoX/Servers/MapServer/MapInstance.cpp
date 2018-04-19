@@ -310,6 +310,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evActivateInspiration:
             on_activate_inspiration(static_cast<ActivateInspiration *>(ev));
             break;
+        case MapEventTypes::evInteractWithEntity:
+            on_interact_with(static_cast<InteractWithEntity *>(ev));
+            break;
         case MapEventTypes::evSwitchTray:
             on_switch_tray(static_cast<SwitchTray *>(ev));
             break;
@@ -1820,4 +1823,10 @@ void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
 
     ent->m_player->m_keybinds.setKeybindProfile(ev->profile);
     qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
+}
+void MapInstance::on_interact_with(InteractWithEntity *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with"<<ev->m_srv_idx;
 }
