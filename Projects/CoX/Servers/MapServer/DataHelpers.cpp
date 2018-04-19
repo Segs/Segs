@@ -7,6 +7,7 @@
 #include "NetStructures/Team.h"
 #include "NetStructures/LFG.h"
 #include "Events/EmailHeaders.h"
+#include "Events/EmailMessageStatus.h"
 #include "Events/EmailRead.h"
 #include "Logging.h"
 
@@ -250,13 +251,7 @@ void sendServerMOTD(MapClientSession *tgt)
     }
 }
 
-void sendEmailHeaders(Entity *e)
-{
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
+void sendEmailHeaders(Entity *e){
     MapClientSession *src = e->m_client;
 
     EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
@@ -264,15 +259,24 @@ void sendEmailHeaders(Entity *e)
 }
 
 void readEmailMessage(Entity *e, const int id){
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
     MapClientSession *src = e->m_client;
 
     EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
     src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
+}
+
+void storeEmailInDb(Entity *e, QVector<QStringRef> &args){
+    MapClientSession *src = e->m_client;
+    EmailMessageStatus *status;
+    /*if(getEntityDbIdFromName(recipient) != -1){
+      QDateTime y2k(QDate(2000, 1, 1), QTime(0, 0));
+      int timestamp = (int)y2k.secsTo(QDateTime::currentDateTime());
+      storeEmail();*/
+    status = new EmailMessageStatus(true, "");
+    /*} else
+      status = new EmailMessageStatus(false, "RECIPIENT");
+    }*/
+    src->addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(status));
 }
 
 

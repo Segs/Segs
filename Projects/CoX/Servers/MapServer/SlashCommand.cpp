@@ -1139,11 +1139,7 @@ void cmdHandler_EmailSend(QString &cmd, Entity *e){
     MapClientSession *src = e->m_client;
     QVector<QStringRef> args(cmd.splitRef(' '));
 
-    //storeEmailInDB(src, args);
-
-    QString msg = "Email Sent";
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::SERVER, msg, src);
+    storeEmailInDb(e, args);
 }
 
 void cmdHandler_EmailDelete(QString &cmd, Entity *e){

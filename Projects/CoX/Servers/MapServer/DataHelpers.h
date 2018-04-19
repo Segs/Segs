@@ -133,3 +133,4 @@ void sendTeamOffer(Entity *src, Entity *tgt);
  */
 void sendEmailHeaders(Entity *e);
 void readEmailMessage(Entity *e, const int id);
+void storeEmailInDb(Entity *e, QVector<QStringRef> &args);
