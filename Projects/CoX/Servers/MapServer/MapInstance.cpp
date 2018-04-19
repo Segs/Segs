@@ -811,7 +811,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
     MessageChannel kind = getKindOfChatMessage(cmd_str);
     std::vector<MapClientSession *> recipients;
 
-    if(sender == nullptr)
+    if(!sender)
       return;
 
     if(sender && sender->m_ent)
