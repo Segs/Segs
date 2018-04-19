@@ -30,3 +30,14 @@ out/
 
 # Library generated exports
 *.exp
+Projects/CoX/Utilities/SEGSAdmin/.idea/misc.xml
+Projects/CoX/Utilities/SEGSAdmin/.idea/modules.xml
+Projects/CoX/Utilities/SEGSAdmin/.idea/SEGSAdmin.iml
+Projects/CoX/Utilities/SEGSAdmin/.idea/workspace.xml
+Projects/CoX/Utilities/SEGSAdmin/.idea/inspectionProfiles/Project_Default.xml
+Projects/CoX/Utilities/SEGSAdmin/__pycache__/dialog.cpython-36.pyc
+Projects/CoX/Utilities/SEGSAdmin/__pycache__/images.cpython-36.pyc
+Projects/CoX/Utilities/SEGSAdmin/__pycache__/segsAdmin.cpython-36.pyc
+Projects/CoX/Utilities/SEGSAdmin/__pycache__/main.cpython-36.pyc
+Projects/CoX/Utilities/SEGSAdmin/dist/main.exe
+Projects/CoX/Utilities/SEGSAdmin/__pycache__/loading.cpython-36.pyc

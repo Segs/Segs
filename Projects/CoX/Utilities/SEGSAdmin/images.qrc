@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="segsLogo">
+    <file>title_v2.png</file>
+  </qresource>
+</RCC>
