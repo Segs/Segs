@@ -124,6 +124,7 @@ struct GameAccountResponseCharacterData
     QString m_serialized_options;
     QString m_serialized_gui;
     QString m_serialized_keybinds;
+    QString m_serialized_currentattribs;
 
     uint32_t m_db_id;
     uint32_t m_account_id;

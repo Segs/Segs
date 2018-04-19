@@ -19,6 +19,7 @@
 #include "GameData/entitydata_serializers.h"
 #include "GameData/gui_serializers.h"
 #include "GameData/keybind_serializers.h"
+#include "GameData/attrib_serializers.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "Logging.h"
 #include <QtCore/QString>
@@ -605,15 +606,16 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &t
     ClientOptions &  od(tgt.m_options);
     KeybindSettings &kbd(tgt.m_keybinds);
     GUISettings &    gui(tgt.m_gui);
+    Parse_CharAttrib& pca(tgt.m_current_attribs);
+
     tgt.m_db_id      = src.m_db_id;
     tgt.m_account_id = src.m_account_id;
     tgt.setName(src.m_name);
-    tgt.m_current_attribs.m_HitPoints = src.m_HitPoints;
-    tgt.m_current_attribs.m_Endurance = src.m_Endurance;
     serializeFromDb(cd, src.m_serialized_chardata);
     serializeFromDb(od, src.m_serialized_options);
     serializeFromDb(gui, src.m_serialized_gui);
     serializeFromDb(kbd, src.m_serialized_keybinds);
+    serializeFromDb(pca, src.m_serialized_currentattribs);
 
     for (const GameAccountResponseCostumeData &costume : src.m_costumes)
     {
@@ -634,15 +636,15 @@ bool fromActualCharacter(const Character &src,GameAccountResponseCharacterData &
     const ClientOptions &  od(src.m_options);
     const KeybindSettings &kbd(src.m_keybinds);
     const GUISettings &    gui(src.m_gui);
+    const Parse_CharAttrib& pca(src.m_current_attribs);
     tgt.m_db_id      = src.m_db_id;
     tgt.m_account_id = src.m_account_id;
     tgt.m_name = src.getName();
-    tgt.m_HitPoints = src.m_current_attribs.m_HitPoints;
-    tgt.m_Endurance = src.m_current_attribs.m_Endurance;
     serializeToDb(cd, tgt.m_serialized_chardata);
     serializeToDb(od, tgt.m_serialized_options);
     serializeToDb(gui, tgt.m_serialized_gui);
     serializeToDb(kbd, tgt.m_serialized_keybinds);
+    serializeToDb(pca, tgt.m_serialized_currentattribs);
 
     for (const CharacterCostume &costume : src.m_costumes)
     {
