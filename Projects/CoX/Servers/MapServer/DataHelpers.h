@@ -6,6 +6,7 @@
 class QString;
 class Entity;
 class Character;
+struct PlayerData;
 
 struct FriendsList;
 struct MapClientSession;
@@ -32,16 +33,11 @@ void    setBackupSpd(Entity &e, float val);
 void    setJumpHeight(Entity &e, float val);
 void    setUpdateID(Entity &e, uint8_t val);
 void    setTeamID(Entity &e, uint8_t team_id);
-void    setSuperGroup(Entity &e, uint8_t sg_id = 0, QString sg_name = "", uint32_t sg_rank = 3);
+void    setSuperGroup(Entity &e, int sg_id = 0, QString sg_name = "", uint32_t sg_rank = 3);
 void    setAssistTarget(Entity &e);
 
 // For live debugging
-void    setu1(Entity &e, int val);
-void    setu2(Entity &e, int val);
 void    setu3(Entity &e, int val);
-void    setu4(Entity &e, int val);
-void    setu5(Entity &e, int val);
-void    setu6(Entity &e, int val);
 
 // Toggles
 void    toggleFly(Entity &e);
@@ -60,8 +56,8 @@ void    charUpdateGUI(Entity *e);
 int     getEntityOriginIndex(bool is_player,const QString &origin_name);
 int     getEntityClassIndex(bool is_player, const QString &class_name);
 Entity * getEntity(MapClientSession *src, const QString &name);
-Entity * getEntity(MapClientSession *src, int32_t idx);
-Entity * getEntityByDBID(MapClientSession *src, int32_t idx);
+Entity * getEntity(MapClientSession *src, uint32_t idx);
+Entity * getEntityByDBID(MapClientSession *src, uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
 
 /*
@@ -104,7 +100,7 @@ void    setBattleCry(Character &c, QString val);
 
 // Toggles
 void    toggleAFK(Character &c, const QString &msg = "");
-void    toggleTeamBuffs(Character &c);
+void    toggleTeamBuffs(PlayerData &c);
 
 
 /*

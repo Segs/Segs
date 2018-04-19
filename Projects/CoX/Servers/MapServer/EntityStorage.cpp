@@ -19,7 +19,7 @@
 
 EntityStore::EntityStore()
 {
-    int32_t idx=0;
+    uint32_t idx=0;
     for(Entity &e : m_map_entities)
     {
         e.m_idx = idx++;
@@ -27,7 +27,7 @@ EntityStore::EntityStore()
     m_free_entries.resize(m_map_entities.size()-1);
     // free entity indices starting from 1 to prevent returning special entity idx 0 to anyone
     idx = 1;
-    for(int32_t &entry_idx : m_free_entries)
+    for(uint32_t &entry_idx : m_free_entries)
     {
         entry_idx = idx++;
     }
@@ -36,7 +36,7 @@ EntityStore::EntityStore()
 Entity *EntityStore::get()
 {
     assert(!m_free_entries.empty());
-    int idx = m_free_entries.front();
+    uint32_t idx = m_free_entries.front();
     m_free_entries.pop_front();
     m_map_entities[idx].m_destroyed = false;
     return &m_map_entities[idx];
@@ -100,7 +100,7 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
 void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool is_incremental) const
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_mutex);
-    int self_idx = getIdx(*target->m_ent);
+    uint32_t self_idx = getIdx(*target->m_ent);
     int prev_idx = -1;
     int delta;
     if(m_live_entlist.empty())
@@ -145,7 +145,14 @@ Entity * EntityManager::CreatePlayer()
     initializeNewPlayerEntity(*res);
     return res;
 }
+Entity * EntityManager::CreateNpc(const Parse_NPC &tpl,int idx,int variant)
+{
+    Entity *res = m_store.get();
+    m_live_entlist.insert(res);
 
+    initializeNewNpcEntity(*res,&tpl,idx,variant);
+    return res;
+}
 void EntityManager::removeEntityFromActiveList(Entity *ent)
 {
     ent->m_client = nullptr;

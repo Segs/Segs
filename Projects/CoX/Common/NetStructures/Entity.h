@@ -9,6 +9,7 @@
 
 #include <glm/vec3.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/constants.hpp>
 
 #include <cmath>
 #include <array>
@@ -17,7 +18,8 @@
 struct MapClientSession;
 class Team;
 class Character;
-
+struct PlayerData;
+using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
 struct AngleRadians // TODO: Is this intended to be used?
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
@@ -66,10 +68,10 @@ struct AngleRadians // TODO: Is this intended to be used?
     bool operator==(const AngleRadians &other) const { return v == other.v; }
     bool operator!=(const AngleRadians &other) const { return v != other.v; }
     AngleRadians &fixup() {
-        if ( v > float(M_PI))
-            v -= 2* float(M_PI);
-        if ( v <= -float(M_PI))
-            v += 2* float(M_PI);
+        if ( v > glm::pi<float>())
+            v -= glm::two_pi<float>();
+        if ( v <= -glm::pi<float>())
+            v += glm::two_pi<float>();
         return *this;
     }
     bool operator<( const AngleRadians &o) const {
@@ -81,10 +83,10 @@ struct AngleRadians // TODO: Is this intended to be used?
     AngleRadians lerp(AngleRadians towards,float factor) const {
 
         float v3(towards.v - v);
-        if ( v3 > float(M_PI))
-            v3 = v3 - 2 * float(M_PI);
-        if ( v3 <= -float(M_PI))
-            v3 = v3 + 2 * float(M_PI);
+        if ( v3 > glm::pi<float>())
+            v3 = v3 - glm::two_pi<float>();
+        if ( v3 <= -glm::pi<float>())
+            v3 = v3 + glm::two_pi<float>();
         return AngleRadians(v3 * factor + v);
 
     }
@@ -93,7 +95,7 @@ struct AngleRadians // TODO: Is this intended to be used?
     float v;
     int toIntegerForm() const
     {
-        return int((v + float(M_PI)) * 2048.0f / (2* float(M_PI)));
+        return int((v + glm::pi<float>()) * 2048.0f / (glm::two_pi<float>()));
     }
     float fromIntegerForm(/*int v*/) const
     {
@@ -128,7 +130,7 @@ public:
     bool m_send_deltas                  = 0;
     uint16_t controlBits                = 0;
     uint16_t send_id                    = 0;
-    void *current_state_P               = 0;
+    void *current_state_P               = nullptr;
     glm::vec3 camera_pyr;
     glm::vec3 m_orientation_pyr;             // Stored in Radians
     glm::quat m_direction;
@@ -163,12 +165,54 @@ struct CharacterFromDB
     uint32_t        sg_id;
     uint32_t        m_db_id;
 };
-
+enum class EntType : uint8_t
+{
+    Invalid = 0,
+    NPC     = 1,
+    PLAYER  = 2,
+    HERO    = 3,
+    CRITTER = 4,
+    CAR     = 5,
+    DELIVERYTARGET = 6,
+    MOBILEGEOMETRY = 7,
+    MISSION_ITEM   = 8,
+    MAPXFERDOOR    = 9,
+    DOOR           = 10,
+    COUNT          = 11
+};
+enum class AppearanceType : uint8_t
+{
+    None          = 0,
+    WholeCostume  = 1,
+    NpcCostume    = 2,
+    VillainIndex  = 3,
+    SequencerName = 4
+};
+struct SuperGroup
+{
+    int             m_SG_id                 = {0};
+    QString         m_SG_name               = "Supergroup"; // 64 chars max
+    //QString         m_SG_motto;
+    //QString         m_SG_costume;                         // 128 chars max -> hash table key from the CostumeString_HTable
+    uint32_t        m_SG_color1             = 0;            // supergroup color 1
+    uint32_t        m_SG_color2             = 0;            // supergroup color 2
+    int             m_SG_rank               = 1;
+};
+struct NPCData
+{
+    bool m_is_owned = false;
+    const struct Parse_NPC *src_data;
+    int npc_idx=0;
+    int costume_variant=0;
+};
 class Entity
 {
     // only EntityStore can create instances of this class
     friend class EntityStore;
     friend struct std::array<Entity,10240>;
+    using CharacterPtr = std::unique_ptr<Character>;
+    using PlayerPtr = std::unique_ptr<PlayerData>;
+    using NPCPtr = std::unique_ptr<NPCData>;
 private:
                             Entity();
 virtual                     ~Entity();
@@ -179,21 +223,14 @@ public:
             glm::vec3 pyr; //TODO: convert to quat
         };
         InputStateStorage   inp_state;
-        enum EntType
-        {
-            ENT_PLAYER=2,
-            ENT_CRITTER=4
-        };
-        struct SuperGroup
-        {
-            int             m_SG_id                 = {0};
-            QString         m_SG_name               = "Supergroup"; // 64 chars max
-            //QString         m_SG_motto;
-            //QString         m_SG_costume;                         // 128 chars max -> hash table key from the CostumeString_HTable
-            uint32_t        m_SG_color1             = 0;            // supergroup color 1
-            uint32_t        m_SG_color2             = 0;            // supergroup color 2
-            int             m_SG_rank               = 1;
-        };
+        // Some entities might not have a character data ( doors, cars )
+        // Making it an unique_ptr<Character> makes it clear that Entity 'owns'
+        // and takes care of this data, at the same time it can be missing
+        CharacterPtr        m_char;
+        // And not all entities are players
+        PlayerPtr           m_player;
+        NPCPtr              m_npc;
+
 
         bool                m_has_supergroup        = true;
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
@@ -203,7 +240,7 @@ public:
 
         uint32_t            m_idx                   = {0};
         uint32_t            m_db_id                 = {0};
-        uint8_t             m_type                  = {0};
+        EntType             m_type                  = {EntType::Invalid};
         glm::quat           m_direction;
         glm::vec3           m_spd                   = {1,1,1};
         uint32_t            m_target_idx            = 0;
@@ -216,7 +253,7 @@ public:
         std::vector<uint8_t> m_fx1;
         std::vector<uint32_t> m_fx2;
         std::vector<uint8_t> m_fx3;
-        uint8_t             m_costume_type          = 0;
+        AppearanceType      m_costume_type          = AppearanceType::None;
         int                 m_state_mode            = 0;
         bool                m_state_mode_send       = false;
         bool                m_odd_send              = false;
@@ -235,35 +272,23 @@ public:
         bool                m_controls_disabled     = false;
         float               m_backup_spd            = 1.0f;
         float               m_jump_height           = 1.0f;
-
         uint8_t             m_update_id             = 1;
         bool                m_update_part_1         = true;     // EntityResponse sendServerControlState
         bool                m_force_pos_and_cam     = true;     // EntityResponse sendServerControlState
         bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
 
-        int                 u1 = 1;
-        int                 u2 = 1;
         int                 u3 = 0;
-        int                 u4 = 0;
-        int                 u5 = 0;
-        int                 u6 = 0;
 
         PosUpdate           m_pos_updates[64];
         size_t              m_update_idx        = 0;
         std::vector<PosUpdate> interpResults;
-        // Some entities might not have a character data ( doors, cars )
-        // Making it an unique_ptr<Character> makes it clear that Entity 'owns'
-        // and takes care of this data, at the same time it can be missing
-        std::unique_ptr<Character> m_char;
-
         bool                entReceiveAlwaysCon         = false;
         bool                entReceiveSeeThroughWalls   = false;
         int                 pkt_id_QrotUpdateVal[3]     = {0};
         glm::vec3           vel;
         uint32_t            prev_pos[3]                 = {0};
         Vector3_FPV         fixedpoint_pos;
-        bool                m_selector1                 = false; // unused
         bool                m_pchar_things              = false;
         bool                might_have_rare             = false;
         bool                m_hasname                   = false;
@@ -301,12 +326,14 @@ static  void                sendPvP(BitStream &bs);
 };
 enum class DbStoreFlags : uint32_t
 {
-    Gui = 1,
-    Options = 2,
-    Keybinds = 4,
-    Full = ~0U,
+    Gui        = 1,
+    Options    = 2,
+    Keybinds   = 4,
+    PlayerData = 7,
+    Full       = ~0U,
 };
 void markEntityForDbStore(Entity *e,DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
-void fillEntityFromNewCharData(Entity &e,BitStream &src, ColorAndPartPacker *packer);
+void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant);
+void fillEntityFromNewCharData(Entity &e, BitStream &src, const ColorAndPartPacker *packer, const Parse_AllKeyProfiles &default_profiles);
 extern void abortLogout(Entity *e);

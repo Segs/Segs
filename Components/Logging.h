@@ -8,6 +8,7 @@
 
 #pragma once
 #include <QtCore/QLoggingCategory>
+#include <QElapsedTimer>
 
 // Declare common logging categories
 #define SEGS_DECLARE_LOGGING_CATEGORY(name) \
@@ -36,3 +37,11 @@ SEGS_DECLARE_LOGGING_CATEGORY(logLFG)
 void    setLoggingFilter();
 void    toggleLogging(QString &category);
 void    dumpLogging();
+#define TIMED_LOG(x,msg) {\
+    QDebug log(qDebug());\
+    log << msg << "..."; \
+    QElapsedTimer timer;\
+    timer.start();\
+    x;\
+    log << "done in"<<float(timer.elapsed())/1000.0f<<"s";\
+}

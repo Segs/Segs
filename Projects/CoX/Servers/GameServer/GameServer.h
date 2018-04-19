@@ -27,7 +27,7 @@ public:
                                 GameServer(int id);
         bool                    ReadConfigAndRestart();
         bool                    Run(void);
-        bool                    ShutDown(const QString &reason="No particular reason") ;
+        bool                    ShutDown() ;
         const ACE_INET_Addr &   getAddress();
 
         QString                 getName(void);
@@ -35,10 +35,9 @@ public:
         uint16_t                getCurrentPlayers(void);
         uint16_t                getMaxPlayers();
         CharacterDatabase *     getDb();
-        EventProcessor *        event_target();
         int                     getMaxCharacterSlots() const;
-        GameServerData &        runtimeData();
 protected:
+        int                     handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask) override;
         void                    dispatch(SEGSEvent *ev) override;
         uint32_t                GetClientCookie(const ACE_INET_Addr &client_addr); // returns a cookie that will identify user to the gameserver
         std::unique_ptr<PrivateData> d;

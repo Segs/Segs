@@ -28,7 +28,7 @@ void serializeto_charsel(const CostumePart &part, BitStream &bs )
     bs.StoreBits(32,part.m_colors[1]);
 }
 }
-void serializeto(const CostumePart &part, BitStream &bs,ColorAndPartPacker *packingContext )
+void serializeto(const CostumePart &part, BitStream &bs,const ColorAndPartPacker *packingContext )
 {
     packingContext->packPartname(part.m_geometry,bs);
     packingContext->packPartname(part.m_texture_1,bs);
@@ -43,7 +43,7 @@ void serializeto(const CostumePart &part, BitStream &bs,ColorAndPartPacker *pack
     }
 }
 
-void serializefrom(CostumePart &part,BitStream &bs,ColorAndPartPacker *packingContext )
+void serializefrom(CostumePart &part,BitStream &bs,const ColorAndPartPacker *packingContext )
 {
     packingContext->unpackPartname(bs,part.m_geometry);
     packingContext->unpackPartname(bs,part.m_texture_1);
@@ -141,7 +141,7 @@ void Costume::dump() const
     qDebug().noquote() << "*************";
 }
 
-void serializeto(const Costume &costume,BitStream &bs,ColorAndPartPacker *packer)
+void serializeto(const Costume &costume,BitStream &bs,const ColorAndPartPacker *packer)
 {
     bs.StorePackedBits(3,costume.m_body_type); // 0:male normal
     bs.StoreBits(32,costume.skin_color); // rgb ?
@@ -162,7 +162,7 @@ void serializeto(const Costume &costume,BitStream &bs,ColorAndPartPacker *packer
     }
 }
 
-void serializefrom(Costume &tgt, BitStream &src,ColorAndPartPacker *packer)
+void serializefrom(Costume &tgt, BitStream &src,const ColorAndPartPacker *packer)
 {
     tgt.m_body_type = src.GetPackedBits(3); // 0:male normal
     tgt.skin_color = src.GetBits(32); // rgb

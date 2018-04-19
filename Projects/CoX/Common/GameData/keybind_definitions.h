@@ -1,3 +1,10 @@
+/*
+ * Super Entity Game Server Project
+ * https://github.com/Segs/Segs
+ * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ *
+ */
 #pragma once
 #include <vector>
 #include <QtCore/QString>
@@ -466,4 +473,22 @@ using Parse_AllKeyProfiles = std::vector<Keybind_Profiles>;
 using CurrentKeybinds = std::vector<Keybind>;
 using Parse_AllCommandCategories = std::vector<CommandCategory_Entry>;
 
+class KeybindSettings
+{
+public:
+// Keybind serialization class version
+static const constexpr  uint32_t class_version = 1;
+public:
+        // Keybind Members
+        Parse_AllKeyProfiles    m_keybind_profiles;
+        QString                 m_cur_keybind_profile = "Default";
 
+                                KeybindSettings();
+        // Keybind Methods
+        void                    setKeybindProfile(QString &profile);
+        const CurrentKeybinds & getCurrentKeybinds() const;
+        void                    resetKeybinds(const Parse_AllKeyProfiles &default_profiles);
+        void                    setKeybind(QString &profile, KeyName &key, ModKeys &mods, QString &command, bool &is_secondary);
+        void                    removeKeybind(QString &profile, KeyName &key, ModKeys &mods);
+        void                    keybindsDump();
+};

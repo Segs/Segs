@@ -27,6 +27,7 @@ class MapServer;
 class SEGSTimer;
 class InputState;
 class World;
+class MapServerData;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -43,7 +44,6 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_resend_timer;
 
         World *                 m_world;
-        MapServer *             m_owner_server;
         uint8_t                 m_game_server_id=255; // 255 is `invalid` id
         uint32_t                m_owner_id;
         uint32_t                m_instance_id;
@@ -66,6 +66,7 @@ public:
         uint32_t                index() const { return m_index; }
         void                    spin_down();
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
+        const MapServerData &   serverData() const;
 protected:
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(ClientConnectedMessage *ev);

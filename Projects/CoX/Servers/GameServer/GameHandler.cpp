@@ -5,6 +5,7 @@
 #include "Servers/MessageBus.h"
 #include "GameData/chardata_serializers.h"
 #include "Common/Servers/InternalEvents.h"
+#include "GameData/serialization_common.h"
 #include "GameLink.h"
 #include "GameEvents.h"
 #include "GameServer.h"
@@ -327,7 +328,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
 
     GameAccountResponseCharacterData *selected_slot = &session.m_game_account.get_character(ev->m_character_index);
     CharacterData cd;
-    serializeFromDb(cd,selected_slot->m_serialized_chardata);
+    serializeFromQString(cd,selected_slot->m_serialized_chardata);
     QString map_path = cd.m_mapName;
     switch(ev->m_mapnumber)
     {

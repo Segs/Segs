@@ -9,6 +9,7 @@
 #include "Friend.h"
 
 #include "Servers/MapServer/DataHelpers.h"
+#include "GameData/playerdata_definitions.h"
 #include "Entity.h"
 #include "Logging.h"
 #include "Character.h"
@@ -96,7 +97,7 @@ bool isFriendOnline(Entity &src, uint32_t db_id)
 
 void toggleFriendList(Entity &src)
 {
-    GUIWindow *friendlist = &src.m_char->m_gui.m_wnds.at(WindowIDX::wdw_Friends);
+    GUIWindow *friendlist = &src.m_player->m_gui.m_wnds.at(WindowIDX::wdw_Friends);
     QString msg = "Toggling FriendList visibility.";
     msg += " " + QString::number(friendlist->m_mode);
 

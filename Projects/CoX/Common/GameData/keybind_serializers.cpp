@@ -2,7 +2,6 @@
 #include "keybind_definitions.h"
 #include "serialization_common.h"
 
-#include "Servers/MapServer/Events/KeybindSettings.h"
 #include "DataStorage.h"
 
 namespace {
@@ -205,6 +204,7 @@ void serialize(Archive &archive, KeybindSettings &kbds, uint32_t const version)
     }
 
     archive(cereal::make_nvp("AllProfiles",kbds.m_keybind_profiles));
+    archive(cereal::make_nvp("SelectedProfile",kbds.m_cur_keybind_profile));
 }
 
 template<class Archive>
