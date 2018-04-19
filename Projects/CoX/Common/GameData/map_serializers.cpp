@@ -4,20 +4,6 @@
 #include "map_definitions.h"
 #include "DataStorage.h"
 
-//static Serialization_Template Map_Tokens[6] = {
-//{ "Name", TOKEN_STRING, 0x10},
-//{ "Icon",  TOKEN_STRING, 0x14},
-//{ "Location",  TOKEN_VEC2, 0},
-//{ "TextLocation",  TOKEN_VEC2, 8},
-//{ "End",  TOKEN_END},
-//{ },
-//};
-
-//static const Serialization_Template Map_Token[2] = {
-//{ "Zone", TOKEN_SUB_TABLE, 0, 0x18, Map_Tokens},
-//{},
-//};
-
 bool loadFrom(BinStore *s,Map_Data &target)
 {
     bool ok = true;

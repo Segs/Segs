@@ -11,7 +11,8 @@
 #include "Team.h"
 #include "Character.h"
 #include "Servers/MapServer/DataHelpers.h"
-
+#include "GameData/playerdata_definitions.h"
+#include "GameData/npc_definitions.h"
 #include <QtCore/QDebug>
 #include <algorithm>
 #include <cmath>
@@ -55,11 +56,11 @@ void Entity::beginLogout(uint16_t time_till_logout)
     leaveTeam(*this);
 }
 
-void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *packer )
+void fillEntityFromNewCharData(Entity &e, BitStream &src,const ColorAndPartPacker *packer,const Parse_AllKeyProfiles &default_profiles )
 {
     QString description;
     QString battlecry;
-    e.m_type = src.GetPackedBits(1); //2. Possibly EntType (ENT_PLAYER)
+    e.m_type = EntType(src.GetPackedBits(1));
     e.m_char->GetCharBuildInfo(src);
     e.m_char->recv_initial_costume(src,packer);
     e.m_char->m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
@@ -71,7 +72,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,ColorAndPartPacker *pac
     setDescription(*e.m_char,description);
     e.m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*e.m_char));
     e.m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*e.m_char));
-    e.m_char->m_keybinds.resetKeybinds();
+    e.m_player->m_keybinds.resetKeybinds(default_profiles);
     e.m_is_hero = true;
 
     // New Character Spawn Location
@@ -97,7 +98,7 @@ void Entity::dump()
             + "\n  db_id: " + QString::number(m_db_id)
             + "\n  entity idx: " + QString::number(m_idx)
             + "\n  access level: " + QString::number(m_entity_data.m_access_level)
-            + "\n  m_type: " + QString::number(m_type)
+            + "\n  m_type: " + QString::number(uint8_t(m_type))
             + "\n  class idx: " + QString::number(m_entity_data.m_class_idx)
             + "\n  origin idx: " + QString::number(m_entity_data.m_origin_idx)
             + "\n  pos: " + QString::number(m_entity_data.m_pos.x) + ", "
@@ -115,9 +116,10 @@ void Entity::dump()
     if(m_team != nullptr)
         m_team->dump();
 
-    if(m_type == Entity::ENT_PLAYER)
+    if(m_type == EntType::PLAYER || m_type == EntType::NPC)
         m_char->dump();
-
+    if(m_type == EntType::PLAYER)
+        m_player->dump();
     dumpFriends(*this);
 }
 
@@ -130,7 +132,7 @@ void Entity::addInterp(const PosUpdate & p) {
     interpResults.emplace_back(p);
 }
 
-Entity::Entity() : m_char(new Character)
+Entity::Entity()
 {
 }
 
@@ -147,21 +149,42 @@ void abortLogout(Entity *e)
 
 void initializeNewPlayerEntity(Entity &e)
 {
-    e.m_costume_type                    = 1;
+    e.m_costume_type                    = AppearanceType::WholeCostume;
     e.m_destroyed                       = false;
-    e.m_type                            = Entity::ENT_PLAYER; // 2
+    e.m_type                            = EntType::PLAYER; // 2
     e.m_create_player                   = true;
     e.m_is_hero                         = true;
     e.m_is_villian                      = false;
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = {0};
-    e.m_selector1                       = false;
     e.m_hasname                         = true;
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = true;
 
-    e.m_char->reset();
+    e.m_char.reset(new Character);
+    e.m_player.reset(new PlayerData);
+    e.m_player->reset();
+    e.might_have_rare = e.m_rare_bits   = true;
+}
+void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
+{
+    e.m_costume_type                    = AppearanceType::NpcCostume;
+    e.m_destroyed                       = false;
+    e.m_type                            = EntType::NPC; // 2
+    e.m_create_player                   = false;
+    e.m_is_hero                         = false;
+    e.m_is_villian                      = true;
+    e.m_entity_data.m_origin_idx        = {0};
+    e.m_entity_data.m_class_idx         = getEntityClassIndex(false,src->m_Class);
+    e.m_hasname                         = true;
+    e.m_has_supergroup                  = false;
+    e.m_has_team                        = false;
+    e.m_pchar_things                    = false;
+
+    e.m_char.reset(new Character);
+    e.m_npc.reset(new NPCData{false,src,idx,variant});
+    e.m_player.reset();
     e.might_have_rare = e.m_rare_bits   = true;
 }
 

@@ -97,7 +97,7 @@ static const constexpr uint32_t class_version = 1;
         return &m_opts[idx];
     }
 
-    void clientOptionsDump()
+    void clientOptionsDump() const
     {
         qDebug().noquote() << "Debugging ClientOptions:"
                  << "\n\t" << "Invert Mouse:" << m_mouse_invert

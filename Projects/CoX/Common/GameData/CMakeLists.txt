@@ -2,6 +2,20 @@ find_package(Qt5 COMPONENTS Core REQUIRED)
 set(GAMEDATA_SRC
     Colors.h
     serialization_common.h
+
+    chardata_definitions.h
+    chardata_serializers.cpp
+    chardata_serializers.h
+    clientoptions_definitions.h
+    clientoptions_serializers.cpp
+    clientoptions_serializers.h
+    playerdata_serializers.cpp
+    playerdata_serializers.h
+    playerdata_definitions.h
+    entitydata_definitions.h
+    entitydata_serializers.cpp
+    entitydata_serializers.h
+# Resource file formats
     anim_serializers.cpp
     anim_serializers.h
     anim_definitions.h
@@ -15,25 +29,20 @@ set(GAMEDATA_SRC
     charclass_definitions.h
     charclass_serializers.cpp
     charclass_serializers.h
-    chardata_definitions.h
-    chardata_serializers.cpp
-    chardata_serializers.h
-    clientoptions_definitions.h
-    clientoptions_serializers.cpp
-    clientoptions_serializers.h
     def_serializers.cpp
     def_serializers.h
-    entitydata_definitions.h
-    entitydata_serializers.cpp
-    entitydata_serializers.h
     gui_definitions.h
     gui_serializers.cpp
     gui_serializers.h
+    npc_serializers.cpp
+    npc_serializers.h
+    npc_definitions.h
     other_definitions.h
     origin_definitions.h
     keybind_serializers.cpp
     keybind_serializers.h
     keybind_definitions.h
+    keybind_definitions.cpp
     #particlesys_serializers.cpp
     #particlesys_serializers.h
     costume_serializers.cpp

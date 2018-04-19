@@ -12,13 +12,12 @@
 #include "Entity.h"
 #include "Costume.h"
 #include "Friend.h"
-#include "GameData/keybind_definitions.h"
+#include "GameData/serialization_common.h"
 #include "Servers/GameDatabase/GameDBSyncEvents.h"
 #include "GameData/chardata_serializers.h"
-#include "GameData/clientoptions_serializers.h"
 #include "GameData/entitydata_serializers.h"
-#include "GameData/gui_serializers.h"
-#include "GameData/keybind_serializers.h"
+#include "GameData/playerdata_definitions.h"
+#include "GameData/playerdata_serializers.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "Logging.h"
 #include <QtCore/QString>
@@ -62,8 +61,6 @@ void Character::reset()
     m_char_data.m_supergroup_costume=false;
     m_sg_costume=nullptr;
     m_char_data.m_using_sg_costume=false;
-    m_options.m_first_person_view=false;
-    m_full_options = false;
     m_char_data.m_has_titles = false;
     m_char_data.m_sidekick.m_has_sidekick = false;
 }
@@ -87,12 +84,6 @@ void Character::sendTray(BitStream &bs) const
 {
     m_trays.serializeto(bs);
 }
-
-void Character::sendTrayMode(BitStream &bs) const
-{
-    bs.StoreBits(1,m_gui.m_powers_tray_mode);
-}
-
 void Character::GetCharBuildInfo(BitStream &src)
 {
     m_char_data.m_level=0;
@@ -208,7 +199,7 @@ const CharacterCostume * Character::getCurrentCostume() const
         return &m_costumes[0];
 }
 
-void Character::serialize_costumes(BitStream &bs, ColorAndPartPacker *packer , bool all_costumes) const
+void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *packer , bool all_costumes) const
 {
     // full costume
     if(all_costumes) // this is only sent to the current player
@@ -299,10 +290,9 @@ void Character::dump()
     if(!m_costumes.empty())
         getCurrentCostume()->dump();
     qDebug() <<"//-----------------Options-----------------";
-    m_options.clientOptionsDump();
 }
 
-void Character::recv_initial_costume( BitStream &src, ColorAndPartPacker *packer )
+void Character::recv_initial_costume( BitStream &src, const ColorAndPartPacker *packer )
 {
     assert(m_costumes.size()==0);
     m_costumes.emplace_back();
@@ -387,78 +377,6 @@ void Character::sendFullStats(BitStream &bs) const
     serializeFullStats(*this,bs,false);
 }
 
-void Character::sendWindows( BitStream &bs ) const
-{
-    for(uint32_t i=0; i<35; i++)
-    {
-        bs.StorePackedBits(1,i); // window index
-        sendWindow(bs, m_gui.m_wnds.at(i));
-    }
-}
-
-void Character::sendWindow(BitStream &bs,const GUIWindow &wnd) const
-{
-    qCDebug(logGUI) << "sendWindow:" << wnd.m_idx;
-    if(logGUI().isDebugEnabled())
-        wnd.guiWindowDump();
-
-    bs.StorePackedBits(1,wnd.m_posx);
-    bs.StorePackedBits(1,wnd.m_posy);
-    bs.StorePackedBits(1,wnd.m_mode);
-    bs.StorePackedBits(1,wnd.m_locked);
-    bs.StorePackedBits(1,wnd.m_color);
-    bs.StorePackedBits(1,wnd.m_alpha);
-    bs.StoreBits(1,wnd.m_draggable_frame);
-    if(wnd.m_draggable_frame)
-    {
-        bs.StorePackedBits(1,wnd.m_width);
-        bs.StorePackedBits(1,wnd.m_height);
-    }
-}
-
-void Character::sendTeamBuffMode(BitStream &bs) const
-{
-    bs.StoreBits(1,m_gui.m_team_buffs);
-}
-void Character::sendDockMode(BitStream &bs) const
-{
-    bs.StoreBits(32,m_gui.m_tray1_number); // Tray #1 Page
-    bs.StoreBits(32,m_gui.m_tray2_number); // Tray #2 Page
-}
-void Character::sendChatSettings(BitStream &bs) const
-{
-    //int i;
-    bs.StoreFloat(m_gui.m_chat_divider_pos); // chat divider position
-    bs.StorePackedBits(1,m_gui.m_chat_top_flags); // bitmask of channels (top window )
-    bs.StorePackedBits(1,m_gui.m_chat_bottom_flags); // bitmask of channels (bottom )
-    bs.StorePackedBits(1,m_gui.m_cur_chat_channel); // selected channel, Local=10, 11 broadcast,
-/*
-    bs.StorePackedBits(1,4);
-    bs.StorePackedBits(1,5);
-    bs.StorePackedBits(1,6);
-    for(i=0; i<5; i++)
-    {
-        bs.StorePackedBits(1,1);
-        bs.StorePackedBits(1,2);
-        bs.StorePackedBits(1,3);
-        bs.StoreFloat(1.0f);
-    }
-    for(i=0; i<10; i++)
-    {
-        bs.StoreString("TestChat1");
-        bs.StorePackedBits(1,1);
-        bs.StorePackedBits(1,2);
-        bs.StorePackedBits(1,3);
-        bs.StorePackedBits(1,4);
-        bs.StorePackedBits(1,5);
-    }
-    for(i=0; i<10; i++)
-    {
-        bs.StoreString("TestChat2");
-        bs.StorePackedBits(1,1);
-    }
-*/
-}
 void Character::sendDescription(BitStream &bs) const
 {
 
@@ -489,43 +407,6 @@ void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag cond
         bs.StoreString(m_char_data.m_titles[2]);             // Title 3 - yellow title (special)
     }
 }
-void Character::sendKeybinds(BitStream &bs) const
-{
-    const CurrentKeybinds &cur_keybinds = m_keybinds.getCurrentKeybinds();
-    int total_keybinds = cur_keybinds.size();
-
-    qCDebug(logKeybinds) << "total keybinds:" << total_keybinds;
-
-    bs.StoreString(m_keybinds.m_cur_keybind_profile); // keybinding profile name
-
-    for(int i=0; i<COH_INPUT_LAST_NON_GENERIC; ++i)
-    {
-      if(i < total_keybinds) // i begins at 0
-      {
-         const Keybind &kb(cur_keybinds.at(i));
-         bs.StoreString(kb.Command);
-
-         if(kb.IsSecondary)
-         {
-             int32_t sec = (kb.Key | 0xF00);
-             bs.StoreBits(32,sec);
-             qCDebug(logKeybinds) << "is secondary:" << sec;
-         }
-         else
-             bs.StoreBits(32,kb.Key);
-
-         bs.StoreBits(32,kb.Mods);
-         qCDebug(logKeybinds) << i << kb.KeyString << kb.Key << kb.Mods << kb.Command << " secondary:" << kb.IsSecondary;
-      }
-      else
-      {
-         bs.StoreString("");
-         bs.StoreBits(32,0);
-         bs.StoreBits(32,0);
-         qCDebug(logKeybinds) << i;
-      }
-    }
-}
 void Character::sendFriendList(BitStream &bs) const
 {
     const FriendsList *fl(&m_char_data.m_friendlist);
@@ -548,46 +429,6 @@ void Character::sendFriendList(BitStream &bs) const
         bs.StoreString(fl->m_friends[i].m_mapname);
     }
 }
-void Character::sendOptionsFull(BitStream &bs) const
-{
-    bs.StoreFloat(m_options.m_mouse_speed);
-    bs.StoreFloat(m_options.m_turn_speed);
-    bs.StoreBits(1,m_options.m_mouse_invert);
-    bs.StoreBits(1,m_options.m_fade_chat_wnd);
-    bs.StoreBits(1,m_options.m_fade_nav_wnd);
-    bs.StoreBits(1,m_options.m_show_tooltips);
-    bs.StoreBits(1,m_options.m_allow_profanity);
-    bs.StoreBits(1,m_options.m_chat_balloons);
-
-    bs.StoreBits(3,m_options.m_show_archetype);
-    bs.StoreBits(3,m_options.m_show_supergroup);
-    bs.StoreBits(3,m_options.m_show_player_name);
-    bs.StoreBits(3,m_options.m_show_player_bars);
-    bs.StoreBits(3,m_options.m_show_enemy_name);
-    bs.StoreBits(3,m_options.m_show_enemy_bars);
-    bs.StoreBits(3,m_options.m_show_player_reticles);
-    bs.StoreBits(3,m_options.m_show_enemy_reticles);
-    bs.StoreBits(3,m_options.m_show_assist_reticles);
-
-    bs.StorePackedBits(5,m_options.m_chat_font_size); // value only used on client if >=5
-}
-
-void Character::sendOptions( BitStream &bs ) const
-{
-    bs.StoreBits(1,m_full_options);
-    if(m_full_options)
-    {
-        sendOptionsFull(bs);
-    }
-    else
-    {
-        bs.StoreBits(1,m_options.m_mouse_invert);
-        bs.StoreFloat(m_options.m_mouse_speed);
-        bs.StoreFloat(m_options.m_turn_speed);
-    }
-    bs.StoreBits(1,m_options.m_first_person_view);
-}
-
 void toActualCostume(const GameAccountResponseCostumeData &src, Costume &tgt)
 {
     tgt.skin_color = src.skin_color;
@@ -599,21 +440,16 @@ void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)
     tgt.skin_color = src.skin_color;
     src.serializeToDb(tgt.m_serialized_data);
 }
-bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt)
+bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player)
 {
     CharacterData &  cd(tgt.m_char_data);
-    ClientOptions &  od(tgt.m_options);
-    KeybindSettings &kbd(tgt.m_keybinds);
-    GUISettings &    gui(tgt.m_gui);
     tgt.m_db_id      = src.m_db_id;
     tgt.m_account_id = src.m_account_id;
     tgt.setName(src.m_name);
     tgt.m_current_attribs.m_HitPoints = src.m_HitPoints;
     tgt.m_current_attribs.m_Endurance = src.m_Endurance;
-    serializeFromDb(cd, src.m_serialized_chardata);
-    serializeFromDb(od, src.m_serialized_options);
-    serializeFromDb(gui, src.m_serialized_gui);
-    serializeFromDb(kbd, src.m_serialized_keybinds);
+    serializeFromQString(cd,src.m_serialized_chardata);
+    serializeFromQString(player,src.m_serialized_player_data);
 
     for (const GameAccountResponseCostumeData &costume : src.m_costumes)
     {
@@ -628,21 +464,16 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &t
     return true;
 }
 
-bool fromActualCharacter(const Character &src,GameAccountResponseCharacterData &tgt)
+bool fromActualCharacter(const Character &src,const PlayerData &player, GameAccountResponseCharacterData &tgt)
 {
     const CharacterData &  cd(src.m_char_data);
-    const ClientOptions &  od(src.m_options);
-    const KeybindSettings &kbd(src.m_keybinds);
-    const GUISettings &    gui(src.m_gui);
     tgt.m_db_id      = src.m_db_id;
     tgt.m_account_id = src.m_account_id;
     tgt.m_name = src.getName();
     tgt.m_HitPoints = src.m_current_attribs.m_HitPoints;
     tgt.m_Endurance = src.m_current_attribs.m_Endurance;
-    serializeToDb(cd, tgt.m_serialized_chardata);
-    serializeToDb(od, tgt.m_serialized_options);
-    serializeToDb(gui, tgt.m_serialized_gui);
-    serializeToDb(kbd, tgt.m_serialized_keybinds);
+    serializeToQString(cd, tgt.m_serialized_chardata);
+    serializeToQString(player, tgt.m_serialized_player_data);
 
     for (const CharacterCostume &costume : src.m_costumes)
     {

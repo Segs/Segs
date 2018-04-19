@@ -34,7 +34,7 @@ public:
                                     AuthServer();
                                     ~AuthServer();
 
-        bool                        ShutDown(const QString &reason="No particular reason");
+        bool                        ShutDown();
         bool                        ReadConfigAndRestart();
 
 protected:

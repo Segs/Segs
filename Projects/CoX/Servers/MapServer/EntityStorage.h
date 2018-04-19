@@ -26,7 +26,7 @@ class EntityStore
 {
 public:
     EntityStore();
-    std::deque<int32_t> m_free_entries;
+    std::deque<uint32_t> m_free_entries;
     std::array<Entity,10240> m_map_entities;
     Entity *get();
     void release(Entity *src);
@@ -49,19 +49,11 @@ public:
     void            sendEntities(BitStream &tgt, MapClientSession *target, bool is_incremental) const;
     void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
+    Entity *        CreateNpc(const Parse_NPC &tpl, int idx, int variant);
     void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }
 
 protected:
     mutable ACE_Thread_Mutex m_mutex; // used to prevent world state reads during updates
-};
-
-class EntityStorage
-{
-public:
-//  void NewPlayer(MapClient *client,Entity *player_ent); // stores fresh player avatar
-//  void StorePlayer(MapClient *client,Entity *player_ent); // stores player avatar
-        Entity *    CreatePlayer(MapClientSession *client,int avatar_id); // retrieves client avatar from storage
-        Entity *    CreateInstance(MapInstance *target_world,uint64_t id); // will create a new instance of given entity, bound to given map
 };

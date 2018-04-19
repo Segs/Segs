@@ -9,7 +9,6 @@
 
 #include "GameServer.h"
 
-#include "GameServerData.h"
 #include "ConfigExtension.h"
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
@@ -48,8 +47,9 @@ namespace {
 class GameServer::PrivateData
 {
 public:
+    ACE_INET_Addr           m_location; // this value is sent to the clients
+    ACE_INET_Addr           m_listen_point; // the server binds here
     QString                 m_serverName="";
-    GameServerData          m_runtime_data;
     GameLinkEndpoint *      m_endpoint=nullptr;
     GameHandler *           m_handler=nullptr;
     GameLink *              m_game_link=nullptr;
@@ -58,23 +58,13 @@ public:
     uint16_t                m_current_players=0;
     int                     m_max_character_slots;
     uint16_t                m_max_players=0;
-    ACE_INET_Addr           m_location; // this value is sent to the clients
-    ACE_INET_Addr           m_listen_point; // the server binds here
 
-    bool ShutDown(const QString &reason)
+    bool ShutDown()
     {
-        if(!m_endpoint)
-        {
-            qWarning() << "Server not running yet";
-            return true;
-        }
-        m_online = false;
         // tell our handler to shut down too
         m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish, nullptr));
-
-        qWarning() << "Shutting down game server because : "<<reason;
+        m_handler->wait();
         return true;
-
     }
 };
 void GameServer::dispatch(SEGSEvent *ev)
@@ -157,11 +147,11 @@ bool GameServer::ReadConfigAndRestart()
     d->m_handler->putq(reconfigured_msg.shallow_copy());
     return true;
 }
-bool GameServer::ShutDown(const QString &reason)
+bool GameServer::ShutDown()
 {
-    bool res = d->ShutDown(reason);
     putq(SEGSEvent::s_ev_finish.shallow_copy());
-    return res;
+    wait();
+    return true;
 }
 
 const ACE_INET_Addr &GameServer::getAddress()
@@ -193,11 +183,11 @@ int GameServer::getMaxCharacterSlots() const
     return d->m_max_character_slots;
 }
 
-EventProcessor *GameServer::event_target()
+int GameServer::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
-    return (EventProcessor *)d->m_handler;
-}
-GameServerData &GameServer::runtimeData()
-{
-    return d->m_runtime_data;
+    // after evfinish some other messages could have been added to the queue, release them
+    d->ShutDown();
+    assert(d->m_handler->msg_queue()->is_empty());
+    qWarning() << "Shutting down game server";
+    return 0;
 }

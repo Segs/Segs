@@ -35,10 +35,10 @@ public:
 class ColorAndPartPacker
 {
 public:
-    virtual void packColor(uint32_t c,BitStream &into)=0;
-    virtual void unpackColor(BitStream &from,uint32_t &tgt)=0;
-    virtual void packPartname(const QString &c,BitStream &into)=0;
-    virtual void unpackPartname(BitStream &from,QString &tgt)=0;
+    virtual void packColor(uint32_t c,BitStream &into) const=0;
+    virtual void unpackColor(BitStream &from,uint32_t &tgt) const =0;
+    virtual void packPartname(const QString &c,BitStream &into) const =0;
+    virtual void unpackPartname(BitStream &from,QString &tgt) const =0;
 };
 extern  void        storeBitsConditional(BitStream &bs, uint8_t numbits, int bits);
 extern  int         getBitsConditional(BitStream &bs, uint32_t numbits);

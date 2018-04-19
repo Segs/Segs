@@ -3,6 +3,7 @@
 #include "MapServer.h"
 #include "MapServerData.h"
 #include "MapInstance.h"
+#include "GameData/playerdata_definitions.h"
 #include "NetStructures/Character.h"
 #include "NetStructures/Team.h"
 #include "NetStructures/LFG.h"
@@ -57,13 +58,13 @@ void    setTeamID(Entity &e, uint8_t team_id)
                        << "\n  Members:" << e.m_team->m_team_members.data();
 }
 
-void    setSuperGroup(Entity &e, uint8_t sg_id, QString sg_name, uint32_t sg_rank)
+void    setSuperGroup(Entity &e, int sg_id, QString sg_name, uint32_t sg_rank)
 {
     // TODO: provide method for updating SuperGroup Colors
     if(sg_id == 0)
     {
         e.m_has_supergroup          = false;
-        e.m_supergroup.m_SG_id      = sg_id;
+        e.m_supergroup.m_SG_id      = 0;
         e.m_supergroup.m_SG_name    = "";
         e.m_supergroup.m_SG_color1  = 0x996633FF;
         e.m_supergroup.m_SG_color2  = 0x336699FF;
@@ -90,13 +91,7 @@ void    setSuperGroup(Entity &e, uint8_t sg_id, QString sg_name, uint32_t sg_ran
 void    setAssistTarget(Entity &e) { e.m_target_idx = getAssistTargetIdx(e); }
 
 // For live debugging
-void    setu1(Entity &e, int val) { e.u1 = val; }
-void    setu2(Entity &e, int val) { e.u2 = val; }
 void    setu3(Entity &e, int val) { e.u3 = val; }
-void    setu4(Entity &e, int val) { e.u4 = val; }
-void    setu5(Entity &e, int val) { e.u5 = val; }
-void    setu6(Entity &e, int val) { e.u6 = val; }
-
 // Toggles
 void    toggleFly(Entity &e) { e.m_is_flying = !e.m_is_flying; }
 void    toggleFalling(Entity &e) { e.m_is_falling = !e.m_is_falling; }
@@ -183,33 +178,28 @@ Entity * getEntity(MapClientSession *src, const QString &name)
     return nullptr;
 }
 
-Entity * getEntity(MapClientSession *src, int32_t idx)
+Entity * getEntity(MapClientSession *src, uint32_t idx)
 {
     MapInstance *mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
     QString errormsg;
 
-    if(idx==0)
+    if(idx!=0) // Entity idx 0 is special case, so we can't return it
     {
-        errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
-        qWarning() << errormsg;
-        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
-        return nullptr;
+        // Iterate through all active entities and return entity by idx
+        for (Entity* pEnt : em.m_live_entlist)
+        {
+            if (pEnt->m_idx == idx)
+                return pEnt;
+        }
     }
-    // Iterate through all active entities and return entity by idx
-    for (Entity* pEnt : em.m_live_entlist)
-    {
-        if (pEnt->m_idx == idx)
-            return pEnt;
-    }
-
     errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
     qWarning() << errormsg;
     sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
     return nullptr;
 }
 
-Entity *getEntityByDBID(MapClientSession *src, int32_t db_id)
+Entity *getEntityByDBID(MapClientSession *src, uint32_t db_id)
 {
     MapInstance *  mi = src->m_current_map;
     EntityManager &em(mi->m_entities);
@@ -378,7 +368,7 @@ void toggleAFK(Character &c, const QString &msg)
         c.m_char_data.m_afk_msg = msg;
 }
 
-void    toggleTeamBuffs(Character &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
+void    toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
 
 
 /*

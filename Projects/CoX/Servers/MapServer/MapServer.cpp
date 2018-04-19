@@ -111,9 +111,9 @@ bool MapServer::ReadConfigAndRestart()
     }
     return Run();
 }
-bool MapServer::ShutDown(const QString &reason)
+bool MapServer::ShutDown()
 {
-    qWarning() << "Shutting down map server because :"<<reason;
+    qWarning() << "Shutting down map server";
     // tell all instances to shut down too
     d->m_manager.shut_down_all();
     putq(SEGSEvent::s_ev_finish.shallow_copy());

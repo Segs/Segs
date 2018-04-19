@@ -6,6 +6,10 @@
 #include "Common/GameData/charclass_definitions.h"
 #include "Common/GameData/keybind_definitions.h"
 #include "Common/GameData/other_definitions.h"
+#include "Common/GameData/npc_definitions.h"
+
+#include "NpcStore.h"
+
 
 class ColorAndPartPacker;
 class QString;
@@ -21,14 +25,18 @@ class MapServerData
         bool            read_exp_and_debt(const QString &src_filename);
         bool            read_keybinds(const QString &src_filename);
         bool            read_commands(const QString &src_filename);
+        bool            read_npcs(const QString &directory_path);
 public:
                         MapServerData();
                         ~MapServerData();
         bool            read_runtime_data(const QString &directory_path);
-        ColorAndPartPacker *getPacker() { return packer_instance; }
+        const ColorAndPartPacker *getPacker() const { return packer_instance; }
         int             expForLevel(int lev) const;
         int             expDebtForLevel(int lev) const;
-
+        const NPCStorage & getNPCDefinitions() const
+                        {
+                            return m_npc_store;
+                        }
         Pallette_Data               m_supergroup_colors;
         CostumeSet_Data             m_costume_store;
         Parse_AllOrigins            m_player_origins;
@@ -37,4 +45,5 @@ public:
         Parse_AllCharClasses        m_other_classes;
         Parse_AllKeyProfiles        m_keybind_profiles;
         Parse_AllCommandCategories  m_command_categories;
+        NPCStorage                  m_npc_store;
 };
