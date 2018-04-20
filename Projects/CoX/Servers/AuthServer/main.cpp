@@ -128,7 +128,7 @@ public:
         ACE_Reactor::instance()->register_handler(signum, this);
 }
     // Called when object is signaled by OS.
-    int handle_signal(int, siginfo_t */*s_i*/, ucontext_t */*u_c*/)
+    int handle_signal(int, siginfo_t * /*s_i*/, ucontext_t * /*u_c*/)
     {
         shutDownServers("Signal");
         return 0;
