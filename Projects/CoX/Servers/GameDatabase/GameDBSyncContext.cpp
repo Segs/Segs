@@ -75,7 +75,7 @@ bool GameDbSyncContext::loadAndConfigure()
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
     config.beginGroup(QStringLiteral("AdminServer"));
-    QStringList driver_list {"QSQLITE","QPSQL"};
+    QStringList driver_list {"QSQLITE", "QPSQL", "QMYSQL"};
     our_id.to_string(thread_name_buf); // Ace is using template specialization to acquire the lenght of passed buffer
 
     config.beginGroup(QStringLiteral("CharacterDatabase"));
@@ -161,7 +161,7 @@ bool GameDbSyncContext::loadAndConfigure()
                 "(:id,:costume_index,:skin_color,:parts)");
     prepQuery(*m_prepared_entity_select,"SELECT * FROM characters WHERE id=:id");
     prepQuery(*m_prepared_char_select,"SELECT * FROM characters WHERE account_id=? AND slot_index=?");
-    prepQuery(*m_prepared_char_exists,"SELECT exists (SELECT 1 FROM characters WHERE char_name = $1 LIMIT 1)");
+    prepQuery(*m_prepared_char_exists,"SELECT exists (SELECT 1 FROM characters WHERE char_name = ? LIMIT 1)");
     prepQuery(*m_prepared_char_delete,"DELETE FROM characters WHERE account_id=? AND slot_index=?");
     prepQuery(*m_prepared_get_char_slots,"SELECT slot_index FROM characters WHERE account_id=?");
 
