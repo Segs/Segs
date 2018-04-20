@@ -26,7 +26,7 @@ public:
     bool current_map_flags;
     size_t num_base_elems;
     int undos_PP;
-    bool var_14;
+    bool is_new_world;
     std::vector<QString> m_trays;
     std::vector<uint32_t> m_crc;
     std::vector<MapRef> m_refs;

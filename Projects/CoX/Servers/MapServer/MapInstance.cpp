@@ -49,7 +49,6 @@ enum {
     Session_Reaper_Timer   = 3,
 };
 
-
 const ACE_Time_Value reaping_interval(0,1000*1000);
 const ACE_Time_Value link_is_stale_if_disconnected_for(0,5*1000*1000);
 const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
@@ -71,7 +70,7 @@ class MapLinkEndpoint : public ServerEndpoint
 {
 public:
     MapLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
-    ~MapLinkEndpoint()=default;
+    ~MapLinkEndpoint() override =default;
 protected:
     CRUDLink *createLink(EventProcessor *down) override
     {
@@ -552,10 +551,10 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     auto *res = new SceneEvent;
 
     res->undos_PP              = 0;
-    res->var_14                = true;
+    res->is_new_world          = true;
     res->m_outdoor_mission_map = false;
     res->m_map_number          = 1;
-                            //"maps/City_Zones/City_00_01/City_00_01.txt";
+
     assert(m_data_path.contains("City_"));
     int city_idx = m_data_path.indexOf("City_");
     int end_or_slash = m_data_path.indexOf("/",city_idx);
@@ -658,7 +657,8 @@ void MapInstance::on_input_state(InputState *st)
     ent->m_target_idx = st->m_target_idx;
     ent->m_assist_target_idx = st->m_assist_target_idx;
     // Set Orientation
-    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r) {
+    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r)
+    {
         ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
         ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
     }
