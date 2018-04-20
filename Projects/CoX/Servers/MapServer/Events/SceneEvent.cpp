@@ -44,8 +44,8 @@ void SceneEvent::serializefrom(BitStream &src)
     unkn1=false;
     //bool IAmAnArtist=false;
     undos_PP = src.GetPackedBits(1);
-    var_14 = src.GetBits(1);
-    if(var_14)
+    is_new_world = src.GetBits(1);
+    if(is_new_world)
     {
         m_outdoor_mission_map = src.GetBits(1);
         m_map_number = src.GetPackedBits(1);
@@ -81,12 +81,28 @@ void SceneEvent::serializefrom(BitStream &src)
     src.GetBits(32); //unused - crc ?
     ref_crc=src.GetBits(32); // 0x3f6057cf
 }
+struct NodeDef
+{
+    int idx;
+    bool exist;
+    const char *base_dir;
+    const char *name;
+    int tag_id=0;
+    int mod_time=0;
+};
+static void storeStringWithOptionalPrefix(BitStream &tgt,const char *prefix,const char *b)
+{
+    tgt.StoreBits(1,prefix!=nullptr);
+    if(prefix)
+        tgt.StoreString(prefix);
+    tgt.StoreString(b);
+}
 void SceneEvent::serializeto(BitStream &tgt) const
 {
     tgt.StorePackedBits(1,6); // opcode
     tgt.StorePackedBits(1,undos_PP);
-    tgt.StoreBits(1,var_14);
-    if(var_14)
+    tgt.StoreBits(1,is_new_world);
+    if(is_new_world)
     {
         tgt.StoreString(m_map_desc);
         tgt.StoreBits(1,m_outdoor_mission_map);
@@ -98,8 +114,19 @@ void SceneEvent::serializeto(BitStream &tgt) const
         0x9AE0A9D4,0x06BDEF70,0xA47A21F8,0x5FBF835D,
         0xFF25F3F6,0x70E6C422,0xF1CCC459,0xCBD35A55,
         0x64CCCC31,0x535B08CC};
-
-    //      ACE_TRACE(!"Hold yer horses!");
+    std::vector<NodeDef> def_overrides;
+    int prev_def_idx=-1;
+    for(NodeDef &d : def_overrides)
+    {
+        int delta = (prev_def_idx == -1) ? d.idx : (d.idx - prev_def_idx - 1);
+        prev_def_idx  = d.idx;
+        tgt.StorePackedBits(1,delta); // finisher
+        tgt.StoreBits(1,d.exist);
+        if(!d.exist)
+            continue;
+        storeStringWithOptionalPrefix(tgt,d.base_dir,d.name);
+        // TODO: finish this :)
+    }
     // overriding defs
     tgt.StorePackedBits(1,-1); // finisher
     // overriding groups

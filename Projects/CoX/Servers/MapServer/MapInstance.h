@@ -28,6 +28,7 @@ class SEGSTimer;
 class InputState;
 class World;
 class MapServerData;
+struct SceneGraph;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -54,6 +55,7 @@ public:
         ScriptEnginePtr         m_scripting_interface;
         MapLinkEndpoint *       m_endpoint = nullptr;
         ListenAndLocationAddresses m_addresses; //! this value is sent to the clients
+        SceneGraph *         m_map_scenegraph;
 
 public:
                                 MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr);
