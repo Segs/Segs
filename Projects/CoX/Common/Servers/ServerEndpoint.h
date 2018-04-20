@@ -44,7 +44,7 @@ public:
 
                     ServerEndpoint(const ACE_INET_Addr &local_addr) :
                         m_notifier(nullptr, nullptr, ACE_Event_Handler::WRITE_MASK),
-                        endpoint_ (local_addr)
+                        endpoint_ (local_addr), m_downstream(nullptr)
                     {
                         m_notifier.event_handler(this);
                     }

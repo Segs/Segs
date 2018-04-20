@@ -43,15 +43,19 @@ void    setTeamID(Entity &e, uint8_t team_id)
     {
         e.m_has_team            = false;
         delete e.m_team;
+        e.m_team = nullptr;
     }
     else
         e.m_has_team            = true;
 
+    if(!e.m_team)
+        return;
+
     qDebug().noquote() << "Team Info:"
-             << "\n  Has Team:" << e.m_has_team
-             << "\n  ID:" << e.m_team->m_team_idx
-             << "\n  Size:" << e.m_team->m_team_members.size()
-             << "\n  Members:" << e.m_team->m_team_members.data();
+                       << "\n  Has Team:" << e.m_has_team
+                       << "\n  ID:" << e.m_team->m_team_idx
+                       << "\n  Size:" << e.m_team->m_team_members.size()
+                       << "\n  Members:" << e.m_team->m_team_members.data();
 }
 
 void    setSuperGroup(Entity &e, int sg_id, QString sg_name, uint32_t sg_rank)

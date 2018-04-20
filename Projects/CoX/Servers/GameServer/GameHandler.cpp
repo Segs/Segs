@@ -26,7 +26,10 @@ const ACE_Time_Value link_is_stale_if_disconnected_for(5,0);
 const constexpr int MinPacketsToAck=5;
 }
 
-GameHandler::GameHandler() = default;
+GameHandler::GameHandler()
+{
+    m_server = nullptr;
+}
 GameHandler::~GameHandler() = default;
 
 void GameHandler::start() {

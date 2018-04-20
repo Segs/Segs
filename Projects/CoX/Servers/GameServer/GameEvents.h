@@ -173,7 +173,7 @@ public:
 class CharacterSlots : public GameLinkEvent
 {
 public:
-    CharacterSlots():GameLinkEvent(GameEventTypes::evCharacterSlots)
+    CharacterSlots():GameLinkEvent(GameEventTypes::evCharacterSlots),m_data(nullptr)
     {}
     void set_account_data(GameAccountResponseData *c) {m_data=c;}
     void serializeto( BitStream &tgt ) const override;
