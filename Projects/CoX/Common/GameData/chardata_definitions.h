@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common/NetStructures/Friend.h"
+#include "Common/GameData/attrib_definitions.h"
 #include <QtCore/QString>
 #include <vector>
 
@@ -47,4 +48,5 @@ static const constexpr  uint32_t    class_version       = 3;
                         bool        m_using_sg_costume;         // player uses sg costume currently
                         Sidekick    m_sidekick;                 // Sidekick Struct
                         FriendsList m_friendlist;               // Friendslist Struct
+                        Parse_CharAttrib    m_current_attribs;
 };

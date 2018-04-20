@@ -121,16 +121,10 @@ struct GameAccountResponseCharacterData
     std::vector<GameAccountResponseCostumeData> m_costumes;
     QString m_name;
     QString m_serialized_chardata;
-    QString m_serialized_options;
-    QString m_serialized_gui;
-    QString m_serialized_keybinds;
-    QString m_serialized_currentattribs;
     QString m_serialized_player_data;
 
     uint32_t m_db_id;
     uint32_t m_account_id;
-    uint32_t m_HitPoints;
-    uint32_t m_Endurance;
 
     int index;
     int m_current_costume_idx;

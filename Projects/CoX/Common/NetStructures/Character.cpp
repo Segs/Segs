@@ -446,24 +446,11 @@ void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)
 bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player)
 {
     CharacterData &  cd(tgt.m_char_data);
-    ClientOptions &  od(tgt.m_options);
-    KeybindSettings &kbd(tgt.m_keybinds);
-    GUISettings &    gui(tgt.m_gui);
-    Parse_CharAttrib& pca(tgt.m_current_attribs);
 
     tgt.m_db_id      = src.m_db_id;
     tgt.m_account_id = src.m_account_id;
     tgt.setName(src.m_name);
-    serializeFromDb(cd, src.m_serialized_chardata);
-    serializeFromDb(od, src.m_serialized_options);
-    serializeFromDb(gui, src.m_serialized_gui);
-    serializeFromDb(kbd, src.m_serialized_keybinds);
-    serializeFromDb(pca, src.m_serialized_currentattribs);
-    tgt.m_db_id      = src.m_db_id;
-    tgt.m_account_id = src.m_account_id;
-    tgt.setName(src.m_name);
-    tgt.m_current_attribs.m_HitPoints = src.m_HitPoints;
-    tgt.m_current_attribs.m_Endurance = src.m_Endurance;
+
     serializeFromQString(cd,src.m_serialized_chardata);
     serializeFromQString(player,src.m_serialized_player_data);
 
@@ -483,29 +470,16 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &t
 bool fromActualCharacter(const Character &src,const PlayerData &player, GameAccountResponseCharacterData &tgt)
 {
     const CharacterData &  cd(src.m_char_data);
-    const ClientOptions &  od(src.m_options);
-    const KeybindSettings &kbd(src.m_keybinds);
-    const GUISettings &    gui(src.m_gui);
-    const Parse_CharAttrib& pca(src.m_current_attribs);
+
     tgt.m_db_id      = src.m_db_id;
     tgt.m_account_id = src.m_account_id;
     tgt.m_name = src.getName();
-    serializeToDb(cd, tgt.m_serialized_chardata);
-    serializeToDb(od, tgt.m_serialized_options);
-    serializeToDb(gui, tgt.m_serialized_gui);
-    serializeToDb(kbd, tgt.m_serialized_keybinds);
-    serializeToDb(pca, tgt.m_serialized_currentattribs);
-    tgt.m_db_id      = src.m_db_id;
-    tgt.m_account_id = src.m_account_id;
-    tgt.m_name = src.getName();
-    tgt.m_HitPoints = src.m_current_attribs.m_HitPoints;
-    tgt.m_Endurance = src.m_current_attribs.m_Endurance;
+
     serializeToQString(cd, tgt.m_serialized_chardata);
     serializeToQString(player, tgt.m_serialized_player_data);
 
     for (const CharacterCostume &costume : src.m_costumes)
     {
-
         tgt.m_costumes.emplace_back();
         GameAccountResponseCostumeData &main_costume(tgt.m_costumes.back());
         fromActualCostume(costume, main_costume);
