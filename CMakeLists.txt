@@ -30,13 +30,14 @@ OPTION(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
 ########################################################################################
 # Prerequisites
 ########################################################################################
+find_package(Threads REQUIRED)
+
 include(3rdparty_support)
 set(ThirdParty_Install_Dir ${CMAKE_BINARY_DIR}/3rd_party/built) # ERICEDIT: Changed to CMAKE_BINARY_DIR so that this variable always points to the top level of the build directory.
 add_subdirectory(3rd_party)
 add_definitions(-DACE_HAS_DLL=1) # TODO: this should be set by per-target add_definitions
 link_directories(${PROJECT_SOURCE_DIR}/lib) # ERICEDIT: Changed to lowercase.
 
-find_package(Threads REQUIRED)
 SET(QT_MISSING True)
 # msvc only; mingw will need different logic
 IF(MSVC)

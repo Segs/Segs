@@ -9,22 +9,17 @@
 
 #include "GameServer.h"
 
-#include "GameServerData.h"
 #include "ConfigExtension.h"
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
-#include "Common/CRUDP_Protocol/CRUDP_Protocol.h"
+#include "Common/Servers/ServerEndpoint.h"
 #include "Settings.h"
 
-#include <ace/ACE.h>
 #include <ace/Synch.h>
 #include <ace/INET_Addr.h>
-#include <ace/SOCK_Dgram.h>
 #include <ace/Message_Queue.h>
-#include <ace/Message_Block.h>
 #include <ace/Event_Handler.h>
 #include <ace/Svc_Handler.h>
-#include <ace/Reactor_Notification_Strategy.h>
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
@@ -48,8 +43,9 @@ namespace {
 class GameServer::PrivateData
 {
 public:
+    ACE_INET_Addr           m_location; // this value is sent to the clients
+    ACE_INET_Addr           m_listen_point; // the server binds here
     QString                 m_serverName="";
-    GameServerData          m_runtime_data;
     GameLinkEndpoint *      m_endpoint=nullptr;
     GameHandler *           m_handler=nullptr;
     GameLink *              m_game_link=nullptr;
@@ -58,23 +54,12 @@ public:
     uint16_t                m_current_players=0;
     int                     m_max_character_slots;
     uint16_t                m_max_players=0;
-    ACE_INET_Addr           m_location; // this value is sent to the clients
-    ACE_INET_Addr           m_listen_point; // the server binds here
 
-    bool ShutDown(const QString &reason)
+    void ShutDown() const
     {
-        if(!m_endpoint)
-        {
-            qWarning() << "Server not running yet";
-            return true;
-        }
-        m_online = false;
         // tell our handler to shut down too
         m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish, nullptr));
-
-        qWarning() << "Shutting down game server because : "<<reason;
-        return true;
-
+        m_handler->wait();
     }
 };
 void GameServer::dispatch(SEGSEvent *ev)
@@ -108,8 +93,8 @@ GameServer::~GameServer()
 bool GameServer::ReadConfigAndRestart()
 {
     static GameServerReconfigured reconfigured_msg;
-    if(d->m_endpoint) // TODO: consider properly closing all open sessions ?
-        delete d->m_endpoint;
+    // TODO: consider properly closing all open sessions ?
+    delete d->m_endpoint;
     qInfo() << "Loading GameServer settings...";
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
@@ -157,11 +142,11 @@ bool GameServer::ReadConfigAndRestart()
     d->m_handler->putq(reconfigured_msg.shallow_copy());
     return true;
 }
-bool GameServer::ShutDown(const QString &reason)
+bool GameServer::ShutDown()
 {
-    bool res = d->ShutDown(reason);
     putq(SEGSEvent::s_ev_finish.shallow_copy());
-    return res;
+    wait();
+    return true;
 }
 
 const ACE_INET_Addr &GameServer::getAddress()
@@ -193,11 +178,11 @@ int GameServer::getMaxCharacterSlots() const
     return d->m_max_character_slots;
 }
 
-EventProcessor *GameServer::event_target()
+int GameServer::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
-    return (EventProcessor *)d->m_handler;
-}
-GameServerData &GameServer::runtimeData()
-{
-    return d->m_runtime_data;
+    // after evfinish some other messages could have been added to the queue, release them
+    d->ShutDown();
+    assert(d->m_handler->msg_queue()->is_empty());
+    qWarning() << "Shutting down game server";
+    return 0;
 }

@@ -32,8 +32,8 @@ void storeCreation(const Entity &src, BitStream &bs)
 
     bs.StorePackedBits(12,src.m_idx);//  this will be put in  of created entity
     PUTDEBUG("after id");
-    bs.StorePackedBits(2,src.m_type);
-    if(src.m_type==Entity::ENT_PLAYER)
+    bs.StorePackedBits(2,uint8_t(src.m_type));
+    if(src.m_type==EntType::PLAYER)
     {
         bs.StoreBits(1,src.m_create_player);
         if(src.m_create_player)
@@ -42,7 +42,7 @@ void storeCreation(const Entity &src, BitStream &bs)
     }
     else
     {
-        bool val=false;
+        bool val=src.m_npc->m_is_owned;
         bs.StoreBits(1,val);
         if(val)
         {
@@ -51,7 +51,7 @@ void storeCreation(const Entity &src, BitStream &bs)
         }
     }
     PUTDEBUG("after creatorowner");
-    if(src.m_type==Entity::ENT_PLAYER || src.m_type==Entity::ENT_CRITTER)
+    if(src.m_type==EntType::PLAYER || src.m_type==EntType::CRITTER)
     {
         bs.StorePackedBits(1,src.m_entity_data.m_class_idx);
         bs.StorePackedBits(1,src.m_entity_data.m_origin_idx);
@@ -100,7 +100,7 @@ void storeUnknownBinTree(const Entity &/*src*/,BitStream &bs)
 bool storePosition(const Entity &src,BitStream &bs)
 {
 // float x = pos.vals.x;
-    uint8_t updated_bit_pos = 7;
+    uint8_t updated_bit_pos = 7; // FixMe: updated_bit_pos is explicitly assigned and never modified later.
 
     bs.StoreBits(3,updated_bit_pos);
 
@@ -117,7 +117,7 @@ bool storePosition(const Entity &src,BitStream &bs)
 }
 bool update_rot(const Entity &src, int axis ) /* returns true if given axis needs updating */
 {
-    if(axis==axis)
+    if(axis==axis) // FixMe: var compared against same var.
         return true;
     return false;
 }
@@ -161,7 +161,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
 
 void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
 {
-    bool extra_info = false;
+    bool extra_info = false; // FixMe: extra_info is used for comparison after being explicitly set, but is never modified.
     bool move_instantly = false;
     PUTDEBUG("before entReceivePosUpdate");
 
@@ -199,7 +199,7 @@ void sendSeqMoveUpdate(const Entity &src,BitStream &bs)
 void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
 {
     PUTDEBUG("before sendSeqTriggeredMoves");
-    uint32_t num_moves=0;
+    uint32_t num_moves=0; // FixMe: num_moves is never modified and the body of the for loop below will never fire.
     //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq triggeted moves %d\n"),num_moves));
     bs.StorePackedBits(1,num_moves); // num moves
     for (uint32_t idx = 0; idx < num_moves; ++idx )
@@ -225,7 +225,7 @@ void sendNetFx(const Entity &src,BitStream &bs)
         storeFloatConditional(bs,10.0); // radius
         storeBitsConditional(bs,4,10);  // power
         storeBitsConditional(bs,32,0);  // debris
-        int val=0;
+        int val=0; // FixMe: if comparison below is never true due to this explicit assignment of 0.
         storeBitsConditional(bs,2,val); // origiType
         if(val==1)
         {
@@ -262,25 +262,23 @@ void sendNetFx(const Entity &src,BitStream &bs)
 void sendCostumes(const Entity &src,BitStream &bs)
 {
     //NOTE: this will only be initialized once, and no changes later on will influence this
-    static ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
+    static const ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
     PUTDEBUG("before sendCostumes");
-    storePackedBitsConditional(bs,2,src.m_costume_type);
-    if(src.m_costume_type!=1)
+    storePackedBitsConditional(bs,2,uint8_t(src.m_costume_type));
+    switch(src.m_costume_type)
     {
-        assert(false);
-        return;
-    }
-    switch(src.m_type)
-    {
-        case Entity::ENT_PLAYER: // client value 1
+        case AppearanceType::WholeCostume: // client value 1
             src.m_char->serialize_costumes(bs,packer,true); // we're always sending full info
             break;
-        case 3: // client value 2 top level defs from VillainCostume ?
-            bs.StorePackedBits(12,1); // npc costume type idx ?
-            bs.StorePackedBits(1,1); // npc costume idx ?
+        case AppearanceType::NpcCostume: // client value 2 top level defs from VillainCostume ?
+            bs.StorePackedBits(12,src.m_npc->npc_idx); // npc costume type idx ?
+            bs.StorePackedBits(1,src.m_npc->costume_variant); // npc costume idx ?
             break;
-        case Entity::ENT_CRITTER: // client val 4
-            bs.StoreString("Unknown"); // TODO what is stored here?
+        case AppearanceType::SequencerName: // client val 4
+            bs.StoreString("Unknown"); // this is mostly used to send mcguffins :)
+            break;
+        default:
+            assert(false);
             break;
     }
 }
@@ -290,6 +288,7 @@ void sendXLuency(BitStream &bs,float val)
 }
 void sendCharacterStats(const Entity &src,BitStream &bs)
 {
+    // FixMe: have_stats and stats_changed are never modified prior to if comparison below.
     bool have_stats = true; // no stats -> dead ?
     bool stats_changed = true;
 
@@ -319,8 +318,9 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
 void sendBuffsConditional(const Entity &src,BitStream &bs)
 {
     //TODO: implement this
-    bs.StoreBits(1,0); // nothing here for now
-    if(false)
+    bool have_buffs = false;
+    bs.StoreBits(1,have_buffs); // nothing here for now
+    if(have_buffs)
     {
         sendBuffs(src,bs);
     }

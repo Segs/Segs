@@ -160,6 +160,7 @@ void interpolate_pos_updates(Entity *a1, std::array<bintree_in,7> &a2)
 // Take a set of PositionUpdates S . . . . . . . E
 // Assume client will use linear interpolation for in-between values.
 // Encode fixups for in-between values
+// FixMe?: Pass std::array<PosUpdate,9> by reference instead of value given its size.
 std::array<bintree_in,7> testEncVec(std::array<PosUpdate,9> vals,float min_error)
 {
     std::array<bintree_in,7> enc;

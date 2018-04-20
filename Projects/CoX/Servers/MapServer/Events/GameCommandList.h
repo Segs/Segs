@@ -14,12 +14,12 @@ class QString;
 //TODO: those must support chaining
 class GameCommand
 {
-    const size_t    m_type;
+    const uint32_t    m_type;
 public:
-                GameCommand(size_t type) : m_type(type) {}
-virtual         ~GameCommand() = default;
-        size_t  type() const {return m_type;}
-virtual void    serializeto(BitStream &bs) const = 0;
+                    GameCommand(uint32_t type) : m_type(type) {}
+virtual             ~GameCommand() = default;
+        uint32_t    type() const {return m_type;}
+virtual void        serializeto(BitStream &bs) const = 0;
 };
 
 class PreUpdateCommand : public MapLinkEvent

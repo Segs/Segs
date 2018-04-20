@@ -69,7 +69,7 @@ struct CharacterUpdateData
     // Cerealized blobs
     QString m_char_data;
     QString m_entitydata;
-    QString m_options;
+    QString m_player_data;
     // plain values
     uint32_t m_bodytype;
     float    m_height;
@@ -125,6 +125,7 @@ struct GameAccountResponseCharacterData
     QString m_serialized_gui;
     QString m_serialized_keybinds;
     QString m_serialized_currentattribs;
+    QString m_serialized_player_data;
 
     uint32_t m_db_id;
     uint32_t m_account_id;

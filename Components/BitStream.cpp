@@ -446,7 +446,7 @@ void BitStream::GetAndDecompressString(QString &tgt)
 {
     uint32_t len = GetPackedBits(1);     //  Store compressed len
     uint32_t decompLen = GetPackedBits(1);     //  decompressed len
-    uint8_t *src = new uint8_t[len];
+    uint8_t *src = new uint8_t[len]; // FixMe: GetPackedBits() returns signed values which can cause len to be high if wrapped.
     GetBitArray(src,len<<3);
     QByteArray compr_data((const char *)src,len);
     tgt = uncompr_zip(compr_data,decompLen);

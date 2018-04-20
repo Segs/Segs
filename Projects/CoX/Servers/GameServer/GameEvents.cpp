@@ -11,8 +11,10 @@
 #include "NetStructures/Character.h"
 #include "NetStructures/Costume.h"
 #include "GameDatabase/GameDBSyncEvents.h"
+#include "GameData/playerdata_definitions.h"
 
 #include <QtCore/QDebug>
+
 // SpecHash<std::string,val>
 //
 // get hash index of given key
@@ -21,7 +23,7 @@
 //    return 0;
 //}
 
-void UpdateServer::dependent_dump()
+void UpdateServer::dependent_dump() const
 {
     qDebug() << "Game:pktCS_ServerUpdate";
     qDebug() << "{";
@@ -78,7 +80,8 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     for(size_t i=0; i<m_data->m_max_slots; i++)
     {
         Character converted;
-        toActualCharacter(m_data->m_characters[i],converted);
+        PlayerData player_data;
+        toActualCharacter(m_data->m_characters[i],converted,player_data);
         converted.serializetoCharsel(tgt);
     }
     //tgt.StoreBitArray(m_clientinfo,128);
@@ -104,7 +107,8 @@ void CharacterResponse::serializeto( BitStream &bs ) const
 {
     GameAccountResponseCharacterData indexed_character(m_data->get_character(m_index));
     Character converted;
-    toActualCharacter(indexed_character,converted);
+    PlayerData player_data;
+    toActualCharacter(indexed_character,converted,player_data);
     bs.StorePackedBits(1,6); // opcode
 
     if(indexed_character.m_name.compare("EMPTY")!=0)// actual character was read from db

@@ -1,10 +1,9 @@
 /*
  * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * http://github.com/Segs
+ * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  *
-
  */
 
 // segs includes
@@ -16,6 +15,9 @@
 #include "Settings.h"
 #include "SEGSEvent.h"
 #include "Servers/InternalEvents.h"
+
+#include <ace/Acceptor.h>
+#include <ace/SOCK_Acceptor.h>
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
@@ -41,7 +43,6 @@ struct ClientAcceptor : public ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR>
  * @brief main class of the authentication server, it controls the AuthHandler instances
  *
  */
-
 
 AuthServer::AuthServer()
 {
@@ -72,7 +73,6 @@ void AuthServer::dispatch(SEGSEvent *ev)
 /*!
  * @brief Read server configuration
  * @note m_mutex is held locked during this function
- * @param inipath is a path to our configuration file.
  * @return bool, if it's false, this function failed somehow.
  */
 bool AuthServer::ReadConfigAndRestart()
@@ -120,10 +120,9 @@ bool AuthServer::Run()
 }
 /*!
  * @brief Shuts the server down
- * @param reason the value that should be stored the persistent log.
  * @return bool, if it's false, we failed to close down cleanly
  */
-bool AuthServer::ShutDown(const QString &reason)
+bool AuthServer::ShutDown()
 {
     ACE_Guard<ACE_Thread_Mutex> guard(m_mutex);
     if (m_running)
@@ -134,7 +133,6 @@ bool AuthServer::ShutDown(const QString &reason)
     // force our handler to finish
     m_handler->putq(SEGSEvent::s_ev_finish.shallow_copy());
     m_handler->wait();
-    qWarning() << "Shut down reason:" << reason;
     m_running = false;
     putq(SEGSEvent::s_ev_finish.shallow_copy());
     wait();

@@ -54,7 +54,7 @@ struct AuthSession
 
     uint32_t        auth_id() const { return m_auth_id; }
     // those functions store temporariness state of the link in the lowest bit of the pointer
-    void            set_temporary(bool v) { (intptr_t &)(m_link) = (intptr_t(m_link) & ~1) | v; }
+    void            set_temporary(bool v) { (intptr_t &)(m_link) = (intptr_t(m_link) & ~1) | intptr_t(v); }
     bool            is_temporary() const { return intptr_t(m_link) & 1; }
     AuthLink *      link() { return (AuthLink *)(intptr_t(m_link) & ~1); }
     /// \note setting the link does not preserver the state of the previous one.

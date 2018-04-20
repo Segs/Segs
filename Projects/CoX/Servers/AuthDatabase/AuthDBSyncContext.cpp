@@ -61,7 +61,7 @@ bool AuthDbSyncContext::loadAndConfigure()
     QSettings config(Settings::getSettingsPath(), QSettings::IniFormat, nullptr);
 
     config.beginGroup(QStringLiteral("AdminServer"));
-    QStringList driver_list{"QSQLITE", "QPSQL"};
+    QStringList driver_list {"QSQLITE", "QPSQL", "QMYSQL"};
     our_id.to_string(thread_name_buf); // Ace is using template specialization to acquire the lenght of passed buffer
 
     config.beginGroup(QStringLiteral("AccountDatabase"));

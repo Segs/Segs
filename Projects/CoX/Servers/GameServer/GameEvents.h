@@ -48,11 +48,11 @@ public:
     {
 
     }
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,3); //opcode
     }
-    void serializefrom(BitStream &src)
+    void serializefrom(BitStream &src) override
     {
         m_character_index = src.GetPackedBits(1);
         m_map_server_ip = src.GetPackedBits(1);
@@ -72,20 +72,18 @@ public:
     {
         unused1=unused2=unused3=unused4=0;
     }
-    void serializefrom(BitStream &src)
+    void serializefrom(BitStream &src) override
     {
-        uint16_t port;
-        uint32_t ipaddr;
         unused1         = src.GetPackedBits(1);
         unused2         = src.GetPackedBits(1);
-        ipaddr          = src.GetPackedBits(1);
+        uint32_t ipaddr = src.GetPackedBits(1);
         unused3         = src.GetPackedBits(1);
-        port            = src.GetPackedBits(1);
+        uint16_t port   = src.GetPackedBits(1);
         unused4         = src.GetPackedBits(1);
         m_map_cookie    = src.GetPackedBits(1);
         m_address.set(port,ntohl(ipaddr));
     }
-    void serializeto(BitStream &tgt) const
+    void serializeto(BitStream &tgt) const override
     {
         uint32_t ipaddr = htonl(m_address.get_ip_address());
         uint16_t port   = m_address.get_port_number();
@@ -114,13 +112,13 @@ public:
     {}
     DeleteCharacter(EventProcessor *evsrc,uint8_t idx,const QString &name) : GameLinkEvent(GameEventTypes::evDeleteCharacter,evsrc),m_index(idx),m_char_name(name)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override 
     {
         bs.StorePackedBits(1,4); // opcode
         bs.StorePackedBits(1,m_index);
         bs.StoreString(m_char_name);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override 
     {
         m_index=bs.GetPackedBits(1);
         bs.GetString(m_char_name);
@@ -134,8 +132,8 @@ public:
     UpdateCharacter():GameLinkEvent(GameEventTypes::evUpdateCharacter)
     {
     }
-    void serializeto(BitStream &bs) const;
-    void serializefrom(BitStream &bs);
+    void serializeto(BitStream &bs) const override;
+    void serializefrom(BitStream &bs) override;
     uint8_t m_index;
 };
 class CharacterResponse : public GameLinkEvent
@@ -149,8 +147,8 @@ public:
         m_data=gad;
     }
     void set_client(GameAccountResponseData *gad) {m_data=gad;}
-    void serializeto(BitStream &bs) const;
-    void serializefrom(BitStream &bs);
+    void serializeto(BitStream &bs) const override;
+    void serializefrom(BitStream &bs) override;
     uint8_t m_index;
     GameAccountResponseData *m_data;
 };
@@ -160,9 +158,9 @@ class UpdateServer : public GameLinkEvent
 public:
     UpdateServer():GameLinkEvent(GameEventTypes::evUpdateServer)
     {}
-    void serializeto( BitStream &tgt ) const;
-    void serializefrom( BitStream &src );
-    void dependent_dump();
+    void serializeto( BitStream &tgt ) const override;
+    void serializefrom( BitStream &src ) override;
+    void dependent_dump() const;
 
 
     uint32_t m_build_date;
@@ -175,12 +173,11 @@ public:
 class CharacterSlots : public GameLinkEvent
 {
 public:
-    CharacterSlots():GameLinkEvent(GameEventTypes::evCharacterSlots)
+    CharacterSlots():GameLinkEvent(GameEventTypes::evCharacterSlots),m_data(nullptr)
     {}
     void set_account_data(GameAccountResponseData *c) {m_data=c;}
-    void serializeto( BitStream &tgt ) const;
-    void serializefrom( BitStream &src );
-    void dependent_dump();
+    void serializeto( BitStream &tgt ) const override;
+    void serializefrom( BitStream &src ) override;
 
     uint32_t m_unknown_new;
     uint8_t m_clientinfo[16];
@@ -194,9 +191,8 @@ public:
     {}
     GameEntryError(EventProcessor *evsrc,const QString &erstr):GameLinkEvent(GameEventTypes::evGameEntryError,evsrc),m_error(erstr)
     {}
-    void serializeto( BitStream &tgt ) const;
-    void serializefrom( BitStream &src );
-    void dependent_dump();
+    void serializeto( BitStream &tgt ) const override;
+    void serializefrom( BitStream &src ) override;
     QString m_error;
 };
 class DeletionAcknowledged : public GameLinkEvent
@@ -204,18 +200,16 @@ class DeletionAcknowledged : public GameLinkEvent
 public:
     DeletionAcknowledged():GameLinkEvent(GameEventTypes::evDeleteAcknowledged)
     {}
-    void serializeto( BitStream &tgt ) const;
-    void serializefrom( BitStream &) {}
+    void serializeto( BitStream &tgt ) const override;
+    void serializefrom( BitStream &) override {}
 };
 class GameUnknownRequest : public GameLinkEvent
 {
 public:
     GameUnknownRequest():GameLinkEvent(GameEventTypes::evUnknownEvent)
     { }
-    void serializeto(BitStream &) const
-    { }
-    void serializefrom(BitStream &)
-    { }
+    void serializeto(BitStream &) const override { }
+    void serializefrom(BitStream &) override { }
 };
 class GameServerReconfigured : public InternalEvent
 {

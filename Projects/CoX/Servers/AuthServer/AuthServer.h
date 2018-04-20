@@ -11,19 +11,9 @@
 #include "AuthDatabase/AuthDBSyncEvents.h"
 #include "EventProcessor.h"
 
-// QT includes
-#include <QtCore/QHash>
-#include <QtCore/QString>
-
 // ACE includes
-#include <ace/ACE.h>
 #include <ace/INET_Addr.h>
-#include <ace/Singleton.h>
 #include <ace/Synch.h>
-#include <ace/Acceptor.h>
-#include <ace/SOCK_Acceptor.h>
-
-#include <unordered_map>
 
 class AuthLink;
 class AuthHandler;
@@ -34,11 +24,11 @@ public:
                                     AuthServer();
                                     ~AuthServer();
 
-        bool                        ShutDown(const QString &reason="No particular reason");
+        bool                        ShutDown();
         bool                        ReadConfigAndRestart();
 
 protected:
-        bool                        Run(void);
+        bool                        Run();
         ClientAcceptor *            m_acceptor;     //!< ace acceptor wrapping AuthClientService
         ACE_INET_Addr               m_location;     //!< address this server will bind at.
         bool                        m_running;      //!< true if this server is running

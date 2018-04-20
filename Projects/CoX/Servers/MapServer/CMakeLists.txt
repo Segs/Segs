@@ -12,7 +12,6 @@ SET(target_CPP
     Events/ChatMessage.cpp
     Events/EntitiesResponse.cpp
     Events/InputState.cpp
-    Events/KeybindSettings.cpp
     Events/LocationVisited.cpp
     Events/PlaqueVisited.cpp
     Events/NewEntity.cpp
@@ -20,6 +19,7 @@ SET(target_CPP
     Events/SceneEvent.cpp
     Events/InfoMessageCmd.cpp
     Events/WindowState.cpp
+    NpcStore.cpp
     MapEventFactory.cpp
     MapInstance.cpp
     MapLink.cpp
@@ -47,7 +47,6 @@ SET(target_INCLUDE
     Events/FloatingDamage.h
     Events/FriendsListUpdate.h
     Events/InputState.h
-    Events/KeybindSettings.h
     Events/LocationVisited.h
     Events/MapEventTypes.h
     Events/MessageChannels.h
@@ -62,7 +61,9 @@ SET(target_INCLUDE
     Events/TeamLooking.h
     Events/TeamOffer.h
     Events/InfoMessageCmd.h
+    Events/InteractWithEntity.h
     Events/WindowState.h
+    NpcStore.h
     MapEventFactory.h
     MapEvents.h
     MapInstance.h

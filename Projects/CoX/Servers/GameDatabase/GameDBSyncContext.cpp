@@ -75,7 +75,7 @@ bool GameDbSyncContext::loadAndConfigure()
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
     config.beginGroup(QStringLiteral("AdminServer"));
-    QStringList driver_list {"QSQLITE","QPSQL"};
+    QStringList driver_list {"QSQLITE", "QPSQL", "QMYSQL"};
     our_id.to_string(thread_name_buf); // Ace is using template specialization to acquire the lenght of passed buffer
 
     config.beginGroup(QStringLiteral("CharacterDatabase"));
@@ -130,7 +130,7 @@ bool GameDbSyncContext::loadAndConfigure()
                 "UPDATE characters SET "
                 "char_name=:char_name, chardata=:chardata, entitydata=:entitydata, bodytype=:bodytype, "
                 "height=:height, physique=:physique,"
-                "supergroup_id=:supergroup_id, options=:options "
+                "supergroup_id=:supergroup_id, player_data=:player_data "
                 "WHERE id=:id ");
     prepQuery(*m_prepared_costume_update,
                 "UPDATE costume SET "
@@ -138,7 +138,7 @@ bool GameDbSyncContext::loadAndConfigure()
                 "WHERE character_id=:id ");
     prepQuery(*m_prepared_options_update,
               "UPDATE characters SET "
-              "options=:options, gui=:gui, keybinds=:keybinds "
+              "player_data=:player_data "
               "WHERE id=:id ");
 
     prepQuery(*m_prepared_fill,"SELECT * FROM costume WHERE character_id=? AND costume_index=?");
@@ -149,19 +149,19 @@ bool GameDbSyncContext::loadAndConfigure()
                 "slot_index, account_id, char_name, chardata, entitydata, "
                 "bodytype, height, physique, "
                 "hitpoints, endurance, "
-                "supergroup_id, options,gui,keybinds"
+                "supergroup_id, player_data"
                 ") VALUES ("
                 ":slot_index, :account_id, :char_name, :chardata, :entitydata, "
                 ":bodytype, :height, :physique, "
                 ":hitpoints, :endurance, "
-                ":supergroup_id, :options,:gui,:keybinds"
+                ":supergroup_id, :player_data"
                 ")");
     prepQuery(*m_prepared_costume_insert,
                 "INSERT INTO costume (character_id,costume_index,skin_color,parts) VALUES "
                 "(:id,:costume_index,:skin_color,:parts)");
     prepQuery(*m_prepared_entity_select,"SELECT * FROM characters WHERE id=:id");
     prepQuery(*m_prepared_char_select,"SELECT * FROM characters WHERE account_id=? AND slot_index=?");
-    prepQuery(*m_prepared_char_exists,"SELECT exists (SELECT 1 FROM characters WHERE char_name = $1 LIMIT 1)");
+    prepQuery(*m_prepared_char_exists,"SELECT exists (SELECT 1 FROM characters WHERE char_name = ? LIMIT 1)");
     prepQuery(*m_prepared_char_delete,"DELETE FROM characters WHERE account_id=? AND slot_index=?");
     prepQuery(*m_prepared_get_char_slots,"SELECT slot_index FROM characters WHERE account_id=?");
 
@@ -178,7 +178,7 @@ bool GameDbSyncContext::performUpdate(const CharacterUpdateData &data)
     m_prepared_char_update->bindValue(QStringLiteral(":height"), data.m_height);
     m_prepared_char_update->bindValue(QStringLiteral(":physique"), data.m_physique);
     m_prepared_char_update->bindValue(QStringLiteral(":supergroup_id"), data.m_supergroup_id);
-    m_prepared_char_update->bindValue(QStringLiteral(":options"), data.m_options);
+    m_prepared_char_update->bindValue(QStringLiteral(":player_data"), data.m_player_data);
     return doIt(*m_prepared_char_update);
 }
 
@@ -236,9 +236,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         character.m_HitPoints = (m_prepared_char_select->value("hitpoints").toUInt());
         character.m_Endurance = (m_prepared_char_select->value("endurance").toUInt());
         character.m_serialized_chardata = m_prepared_char_select->value("chardata").toString();
-        character.m_serialized_options  = m_prepared_char_select->value("options").toString();
-        character.m_serialized_gui      = m_prepared_char_select->value("gui").toString();
-        character.m_serialized_keybinds = m_prepared_char_select->value("keybinds").toString();
+        character.m_serialized_player_data = m_prepared_char_select->value("player_data").toString();
 
         GameAccountResponseCostumeData costume;
         // appearance related.
@@ -336,9 +334,7 @@ bool GameDbSyncContext::createNewChar(const CreateNewCharacterRequestData &data,
     m_prepared_char_insert->bindValue(":hitpoints", data.m_character.m_HitPoints);
     m_prepared_char_insert->bindValue(":endurance", data.m_character.m_Endurance);
     m_prepared_char_insert->bindValue(":supergroup_id", 0);
-    m_prepared_char_insert->bindValue(":options", data.m_character.m_serialized_options);
-    m_prepared_char_insert->bindValue(":gui", data.m_character.m_serialized_gui);
-    m_prepared_char_insert->bindValue(":keybinds", data.m_character.m_serialized_keybinds);
+    m_prepared_char_insert->bindValue(":player_data", data.m_character.m_serialized_player_data);
     m_prepared_char_insert->bindValue(":entitydata", data.m_ent_data);
     m_prepared_char_insert->bindValue(":chardata", data.m_character.m_serialized_chardata);
 

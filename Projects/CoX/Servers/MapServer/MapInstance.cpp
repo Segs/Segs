@@ -26,6 +26,7 @@
 #include "Common/Servers/MessageBus.h"
 #include "Common/GameData/CoHMath.h"
 #include "SlashCommand.h"
+#include "GameData/playerdata_definitions.h"
 #include "GameData/entitydata_serializers.h"
 #include "GameData/clientoptions_serializers.h"
 #include "GameData/keybind_serializers.h"
@@ -86,7 +87,6 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     m_scripting_interface.reset(new ScriptingEngine);
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
-
 }
 
 void MapInstance::start()
@@ -309,6 +309,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evActivateInspiration:
             on_activate_inspiration(static_cast<ActivateInspiration *>(ev));
             break;
+        case MapEventTypes::evInteractWithEntity:
+            on_interact_with(static_cast<InteractWithEntity *>(ev));
+            break;
         case MapEventTypes::evSwitchTray:
             on_switch_tray(static_cast<SwitchTray *>(ev));
             break;
@@ -443,9 +446,10 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
         m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
         return;
     }
+
     // existing character
     Entity *ent = m_entities.CreatePlayer();
-    toActualCharacter(*request_data.char_from_db, *ent->m_char);
+    toActualCharacter(*request_data.char_from_db, *ent->m_char,*ent->m_player);
     ent->fillFromCharacter();
     map_session.m_ent = ent;
     // Now we inform our game server that this Map server instance is ready for the client
@@ -513,19 +517,23 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     if (ev->m_new_character)
     {
         QString ent_data;
-
         Entity *e = m_entities.CreatePlayer();
-        fillEntityFromNewCharData(*e, ev->m_character_data, g_GlobalMapServer->runtimeData().getPacker());
+
+        const MapServerData &data(g_GlobalMapServer->runtimeData());
+        const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
+
+        fillEntityFromNewCharData(*e, ev->m_character_data, data.getPacker(),data.m_keybind_profiles);
         e->m_char->m_account_id = map_session.auth_id();
         e->m_entity_data.m_access_level = map_session.m_access_level;
         map_session.m_ent = e;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
         GameAccountResponseCharacterData char_data;
-        fromActualCharacter(*e->m_char,char_data);
+        fromActualCharacter(*e->m_char,*e->m_player,char_data);
         serializeToDb(e->m_entity_data,ent_data);
         // create the character from the data.
         //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
+        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.
         game_db->putq(new CreateNewCharacterRequest({char_data,ent_data, map_session.m_requested_slot_idx,
                                                      map_session.m_max_slots,map_session.m_client_id},
                                                     token,this));
@@ -694,11 +702,11 @@ void MapInstance::on_window_state(WindowState * ev)
     Entity *e = session.m_ent;
 
     int idx = ev->wnd.m_idx;
-    e->m_char->m_gui.m_wnds.at(idx) = ev->wnd;
+    e->m_player->m_gui.m_wnds.at(idx) = ev->wnd;
 
     qCDebug(logGUI) << "Received window state" << ev->wnd.m_idx << "-" << ev->wnd.m_mode;
     if(logGUI().isDebugEnabled())
-        e->m_char->m_gui.m_wnds.at(idx).guiWindowDump();
+        e->m_player->m_gui.m_wnds.at(idx).guiWindowDump();
 }
 QString process_replacement_strings(MapClientSession *sender,const QString &msg_text)
 {
@@ -810,8 +818,11 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
     MessageChannel kind = getKindOfChatMessage(cmd_str);
     std::vector<MapClientSession *> recipients;
 
-    if(sender && sender->m_ent)
-        sender_char_name = sender->m_ent->name();
+    if(!sender)
+      return;
+
+    if(sender->m_ent)
+      sender_char_name = sender->m_ent->name();
 
     switch(kind)
     {
@@ -968,6 +979,11 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
         }
     }
 }
+static bool has_emote_prefix(const QString &cmd) // ERICEDIT: This encompasses all emotes.
+{
+    return cmd.startsWith("em ",Qt::CaseInsensitive) || cmd.startsWith("e ",Qt::CaseInsensitive)
+                || cmd.startsWith("me ",Qt::CaseInsensitive) || cmd.startsWith("emote ",Qt::CaseInsensitive);
+}
 void MapInstance::on_console_command(ConsoleCommand * ev)
 {
     QString contents = ev->contents.simplified();
@@ -983,13 +999,13 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     {
         process_chat(&session,contents);
     }
-    else if(contents.startsWith("em ",Qt::CaseInsensitive) || contents.startsWith("e ",Qt::CaseInsensitive)
-            || contents.startsWith("me ",Qt::CaseInsensitive) || contents.startsWith("emote ",Qt::CaseInsensitive))                                  // ERICEDIT: This encompasses all emotes.
+    else if(has_emote_prefix(contents))
     {
         on_emote_command(contents, ent);
     }
-    else {
-        runCommand(contents,*ent);
+    else
+    {
+        runCommand(contents,session);
     }
 }
 void MapInstance::on_emote_command(const QString &command, Entity *ent)
@@ -1556,7 +1572,7 @@ void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    ent->m_char->m_gui.m_chat_divider_pos = ev->m_position;
+    ent->m_player->m_gui.m_chat_divider_pos = ev->m_position;
     qCDebug(logMapEvents) << "Chat divider moved to " << ev->m_position << " for player" << ent->name();
 }
 void MapInstance::on_minimap_state(MiniMapState *ev)
@@ -1608,7 +1624,7 @@ void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    ent->m_char->m_gui.m_insps_tray_mode = ev->dock_mode;
+    ent->m_player->m_gui.m_insps_tray_mode = ev->dock_mode;
     qCDebug(logMapEvents) << "Saving inspirations dock mode to GUISettings:" << ev->dock_mode;
 }
 
@@ -1683,7 +1699,7 @@ void MapInstance::on_client_options(SaveClientOptions * ev)
 
     Entity *ent = session.m_ent;
     markEntityForDbStore(ent,DbStoreFlags::Options);
-    ent->m_char->m_options = ev->data;
+    ent->m_player->m_options = ev->data;
 }
 
 void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
@@ -1691,7 +1707,7 @@ void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    ent->m_char->m_options.m_first_person_view = ev->new_viewpoint_is_firstperson;
+    ent->m_player->m_options.m_first_person_view = ev->new_viewpoint_is_firstperson;
     qCDebug(logMapEvents) << "Saving viewpoint mode to ClientOptions" << ev->new_viewpoint_is_firstperson;
 }
 
@@ -1700,8 +1716,8 @@ void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    ent->m_char->m_gui.m_chat_top_flags = ev->m_chat_top_flags;
-    ent->m_char->m_gui.m_chat_bottom_flags = ev->m_chat_bottom_flags;
+    ent->m_player->m_gui.m_chat_top_flags = ev->m_chat_top_flags;
+    ent->m_player->m_gui.m_chat_bottom_flags = ev->m_chat_bottom_flags;
 
     qCDebug(logMapEvents) << "Saving chat channel mask settings to GUISettings" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
 }
@@ -1735,7 +1751,7 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
     Entity *ent = session.m_ent;
 
     qCDebug(logMapEvents) << "Saving chat channel type to GUISettings:" << ev->m_chat_type;
-    ent->m_char->m_gui.m_cur_chat_channel = ev->m_chat_type;
+    ent->m_player->m_gui.m_cur_chat_channel = ev->m_chat_type;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
@@ -1749,7 +1765,7 @@ void MapInstance::on_powers_dockmode(PowersDockMode *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    ent->m_char->m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
+    ent->m_player->m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
     qCDebug(logMapEvents) << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
 }
 
@@ -1758,9 +1774,10 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    ent->m_char->m_gui.m_tray1_number = ev->tray1_num;
-    ent->m_char->m_gui.m_tray2_number = ev->tray2_num;
-    ent->m_char->m_gui.m_tray3_number = ev->tray_unk1;
+    ent->m_player->m_gui.m_tray1_number = ev->tray1_num;
+    ent->m_player->m_gui.m_tray2_number = ev->tray2_num;
+    ent->m_player->m_gui.m_tray3_number = ev->tray_unk1;
+    ent->m_db_store_flags |= uint32_t(DbStoreFlags::PlayerData);
     qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray1_num+1 << "Tray2:" << ev->tray2_num+1 << "Unk1:" << ev->tray_unk1;
     // TODO: need to load powers for new tray.
     qCWarning(logMapEvents) << "TODO: Need to load powers for new trays";
@@ -1774,7 +1791,8 @@ void MapInstance::on_set_keybind(SetKeybind *ev)
     KeyName key = static_cast<KeyName>(ev->key);
     ModKeys mod = static_cast<ModKeys>(ev->mods);
 
-    ent->m_char->m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
+
+    ent->m_player->m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
     //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
 }
 
@@ -1783,16 +1801,21 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    ent->m_char->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
+    ent->m_player->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
     //qCWarning(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
-
+const MapServerData &MapInstance::serverData() const
+{
+    return g_GlobalMapServer->runtimeData();
+}
 void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
 {
+    const MapServerData &data(g_GlobalMapServer->runtimeData());
+    const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    ent->m_char->m_keybinds.resetKeybinds();
+    ent->m_player->m_keybinds.resetKeybinds(default_profiles);
     qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
 }
 
@@ -1801,6 +1824,12 @@ void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    ent->m_char->m_keybinds.setKeybindProfile(ev->profile);
+    ent->m_player->m_keybinds.setKeybindProfile(ev->profile);
     qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
+}
+void MapInstance::on_interact_with(InteractWithEntity *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with"<<ev->m_srv_idx;
 }

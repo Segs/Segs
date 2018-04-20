@@ -10,7 +10,6 @@
 #include "CommonNetStructures.h"
 #include "BitStream.h"
 #include "Powers.h"
-#include "Servers/MapServer/Events/KeybindSettings.h"
 #include "Common/GameData/attrib_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
 #include "Common/GameData/clientoptions_definitions.h"
@@ -24,6 +23,7 @@
 #include <string>
 
 class CharacterCostume;
+struct PlayerData;
 struct Costume;
 struct CharacterPowerBoost
 {
@@ -50,6 +50,7 @@ enum ConditionalFlag : bool
     Conditional = true,
 };
 
+
 class Character
 {
         friend  class CharacterDatabase;
@@ -59,11 +60,10 @@ class Character
 
         vPowerPool              m_powers;
         PowerTrayGroup          m_trays;
-        bool                    m_full_options=false;
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
-        friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src,Character &tgt);
-        friend bool fromActualCharacter(const Character &src,GameAccountResponseCharacterData &tgt);
+        friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player);
+        friend bool fromActualCharacter(const Character &src,const PlayerData &player, GameAccountResponseCharacterData &tgt);
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
@@ -82,11 +82,11 @@ const   QString &       getName() const { return m_name; }
         bool            isEmpty();
         void            serializefrom(BitStream &buffer);
         void            serializeto(BitStream &buffer) const;
-        void            serialize_costumes(BitStream &buffer, ColorAndPartPacker *packer, bool all_costumes=true) const;
+        void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool all_costumes=true) const;
         void            serializetoCharsel(BitStream &bs);
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
-        void            recv_initial_costume(BitStream &src, ColorAndPartPacker *packer);
+        void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
         const CharacterCostume *getCurrentCostume() const;
         void            DumpSidekickInfo();
         void            DumpPowerPoolInfo( const PowerPool_Info &pool_info );
@@ -95,26 +95,14 @@ const   QString &       getName() const { return m_name; }
         void            dump();
         void            sendFullStats(BitStream &bs) const;
         void            sendTray(BitStream &bs) const;
-        void            sendTrayMode(BitStream &bs) const;
-        void            sendWindows(BitStream &bs) const;
-        void            sendWindow(BitStream &bs,const GUIWindow &wnd) const;
-        void            sendTeamBuffMode(BitStream &bs) const;
-        void            sendDockMode(BitStream &bs) const;
-        void            sendChatSettings(BitStream &bs) const;
         void            sendDescription(BitStream &bs) const;
         void            sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const;
-        void            sendKeybinds(BitStream &bs) const;
         void            sendFriendList(BitStream &bs) const;
-        void            sendOptions( BitStream &bs ) const;
-        void            sendOptionsFull(BitStream &bs) const;
 
         Parse_CharAttrib    m_current_attribs;
         Parse_CharAttrib    m_max_attribs;
         LevelExpAndDebt     m_other_attribs;
         CharacterData       m_char_data;
-        ClientOptions       m_options;
-        KeybindSettings     m_keybinds;
-        GUISettings         m_gui;
 
         uint32_t            m_account_id;
         uint32_t            m_db_id;
@@ -143,5 +131,5 @@ protected:
 
 void serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
 bool initializeCharacterFromCreator();
-bool toActualCharacter(const GameAccountResponseCharacterData &src,Character &tgt);
-bool fromActualCharacter(const Character &src,GameAccountResponseCharacterData &tgt);
+bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt, PlayerData &player);
+bool fromActualCharacter(const Character &src, const PlayerData &player, GameAccountResponseCharacterData &tgt);

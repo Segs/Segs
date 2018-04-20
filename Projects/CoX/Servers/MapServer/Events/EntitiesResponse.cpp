@@ -3,6 +3,7 @@
 #include "NetStructures/Powers.h"
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
+#include "GameData/playerdata_definitions.h"
 #include "MapClientSession.h"
 #include "MapEvents.h"
 #include "MapInstance.h"
@@ -31,6 +32,7 @@ void storeSuperStats(const EntitiesResponse &/*src*/,BitStream &bs)
 }
 void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
 {
+    // FixMe: num_graph_nodes_changed is initialized and never modified afterward, so the if/else is never reached.
     uint32_t num_graph_nodes_changed=0;
     bs.StorePackedBits(1,num_graph_nodes_changed);
     if(num_graph_nodes_changed==0)
@@ -114,12 +116,144 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
         }
     }
 }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Start of PlayerData network serialization
+//                GUI
+void sendChatSettings(const GUISettings &gui,BitStream &bs)
+{
+    //int i;
+    bs.StoreFloat(gui.m_chat_divider_pos); // chat divider position
+    bs.StorePackedBits(1,gui.m_chat_top_flags); // bitmask of channels (top window )
+    bs.StorePackedBits(1,gui.m_chat_bottom_flags); // bitmask of channels (bottom )
+    bs.StorePackedBits(1,gui.m_cur_chat_channel); // selected channel, Local=10, 11 broadcast,
+}
 
+static void sendWindow(BitStream &bs,const GUIWindow &wnd)
+{
+    qCDebug(logGUI) << "sendWindow:" << wnd.m_idx;
+    if(logGUI().isDebugEnabled())
+        wnd.guiWindowDump();
 
+    bs.StorePackedBits(1,wnd.m_posx);
+    bs.StorePackedBits(1,wnd.m_posy);
+    bs.StorePackedBits(1,wnd.m_mode);
+    bs.StorePackedBits(1,wnd.m_locked);
+    bs.StorePackedBits(1,wnd.m_color);
+    bs.StorePackedBits(1,wnd.m_alpha);
+    bs.StoreBits(1,wnd.m_draggable_frame);
+    if(wnd.m_draggable_frame)
+    {
+        bs.StorePackedBits(1,wnd.m_width);
+        bs.StorePackedBits(1,wnd.m_height);
+    }
+}
+static void sendWindows(const GUISettings &gui, BitStream &bs )
+{
+    for(uint32_t i=0; i<35; i++)
+    {
+        bs.StorePackedBits(1,i); // window index
+        sendWindow(bs, gui.m_wnds.at(i));
+    }
+}
+static void sendTeamBuffMode(const GUISettings &gui,BitStream &bs)
+{
+    bs.StoreBits(1,gui.m_team_buffs);
+}
+static void sendDockMode(const GUISettings &gui,BitStream &bs)
+{
+    bs.StoreBits(32,gui.m_tray1_number); // Tray #1 Page
+    bs.StoreBits(32,gui.m_tray2_number); // Tray #2 Page
+}
+
+static void sendTrayMode(const GUISettings &gui, BitStream &bs)
+{
+    bs.StoreBits(1,gui.m_powers_tray_mode);
+}
+//////////////////////////////
+//                Keybinds
+
+static void sendKeybinds(const KeybindSettings &keybinds,BitStream &bs)
+{
+    const CurrentKeybinds &cur_keybinds = keybinds.getCurrentKeybinds();
+    int total_keybinds = cur_keybinds.size();
+
+    qCDebug(logKeybinds) << "total keybinds:" << total_keybinds;
+
+    bs.StoreString(keybinds.m_cur_keybind_profile); // keybinding profile name
+
+    for(int i=0; i<COH_INPUT_LAST_NON_GENERIC; ++i)
+    {
+      if(i < total_keybinds) // i begins at 0
+      {
+         const Keybind &kb(cur_keybinds.at(i));
+         bs.StoreString(kb.Command);
+
+         if(kb.IsSecondary)
+         {
+             int32_t sec = (kb.Key | 0xF00);
+             bs.StoreBits(32,sec);
+             qCDebug(logKeybinds) << "is secondary:" << sec;
+         }
+         else
+             bs.StoreBits(32,kb.Key);
+
+         bs.StoreBits(32,kb.Mods);
+         qCDebug(logKeybinds) << i << kb.KeyString << kb.Key << kb.Mods << kb.Command << " secondary:" << kb.IsSecondary;
+      }
+      else
+      {
+         bs.StoreString("");
+         bs.StoreBits(32,0);
+         bs.StoreBits(32,0);
+         qCDebug(logKeybinds) << i;
+      }
+    }
+}
+static void sendOptionsFull(const ClientOptions &options,BitStream &bs)
+{
+    bs.StoreFloat(options.m_mouse_speed);
+    bs.StoreFloat(options.m_turn_speed);
+    bs.StoreBits(1,options.m_mouse_invert);
+    bs.StoreBits(1,options.m_fade_chat_wnd);
+    bs.StoreBits(1,options.m_fade_nav_wnd);
+    bs.StoreBits(1,options.m_show_tooltips);
+    bs.StoreBits(1,options.m_allow_profanity);
+    bs.StoreBits(1,options.m_chat_balloons);
+
+    bs.StoreBits(3,options.m_show_archetype);
+    bs.StoreBits(3,options.m_show_supergroup);
+    bs.StoreBits(3,options.m_show_player_name);
+    bs.StoreBits(3,options.m_show_player_bars);
+    bs.StoreBits(3,options.m_show_enemy_name);
+    bs.StoreBits(3,options.m_show_enemy_bars);
+    bs.StoreBits(3,options.m_show_player_reticles);
+    bs.StoreBits(3,options.m_show_enemy_reticles);
+    bs.StoreBits(3,options.m_show_assist_reticles);
+
+    bs.StorePackedBits(5,options.m_chat_font_size); // value only used on client if >=5
+}
+static void sendOptions(const ClientOptions &options, bool send_full, BitStream &bs )
+{
+    bs.StoreBits(1,send_full);
+    if(send_full)
+    {
+        sendOptionsFull(options,bs);
+    }
+    else
+    {
+        bs.StoreBits(1,options.m_mouse_invert);
+        bs.StoreFloat(options.m_mouse_speed);
+        bs.StoreFloat(options.m_turn_speed);
+    }
+    bs.StoreBits(1,options.m_first_person_view);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 void serialize_char_full_update(const Entity &src, BitStream &bs )
 {
     PUTDEBUG("CharacterFromServer");
     const Character &player_char(*src.m_char);
+    const PlayerData &player_data(*src.m_player);
     src.m_char->SendCharBuildInfo(bs); //FIXEDOFFSET_pchar->character_Receive
     PUTDEBUG("PlayerEntity::serialize_full before sendFullStats");
     src.m_char->sendFullStats(bs); //Entity::receiveFullStats(&FullStatsTokens, pak, FIXEDOFFSET_pchar, pkt_id_fullAttrDef, 1);
@@ -138,18 +272,18 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     PUTDEBUG("before tray");
     player_char.sendTray(bs);
     PUTDEBUG("before traymode");
-    player_char.sendTrayMode(bs);
+    sendTrayMode(player_data.m_gui,bs);
 
     bs.StoreString(src.name());                     // maxlength 32
     bs.StoreString(getBattleCry(player_char));      // max 128
     bs.StoreString(getDescription(player_char));    // max 1024
     PUTDEBUG("before windows");
-    player_char.sendWindows(bs);
+    sendWindows(player_data.m_gui, bs);
     bs.StoreBits(1,player_char.m_char_data.m_lfg);              // lfg related
     bs.StoreBits(1,player_char.m_char_data.m_using_sg_costume); // SG mode
-    player_char.sendTeamBuffMode(bs);
-    player_char.sendDockMode(bs);
-    player_char.sendChatSettings(bs);
+    sendTeamBuffMode(player_data.m_gui,bs);
+    sendDockMode(player_data.m_gui,bs);
+    sendChatSettings(player_data.m_gui,bs);
     player_char.sendTitles(bs,NameFlag::NoName,ConditionalFlag::Unconditional); // NoName, we already sent it above.
 
     if(src.m_has_owner)
@@ -168,8 +302,8 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     uint8_t auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     PUTDEBUG("before auth data");
     bs.StoreBitArray(auth_data,128);
-    player_char.sendKeybinds(bs);
-    player_char.sendOptions(bs);
+    sendKeybinds(player_data.m_keybinds,bs);
+    sendOptions(player_data.m_options,false,bs);
     PUTDEBUG("before friend list");
     player_char.sendFriendList(bs);
 }
@@ -180,7 +314,7 @@ void storePowerSpec(uint32_t powerset_idx,uint32_t power_idx,BitStream &bs)
 }
 void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
 {
-    bool power_info_updates_available=false;
+    bool power_info_updates_available=false; // FixMe: power_info_updates_available is never modified during execution.
     bs.StoreBits(1,power_info_updates_available);
     if(power_info_updates_available)
     {
@@ -298,7 +432,6 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
 }
 void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
-    glm::vec3 zeroes {0,0,0};
     // user entity
     Entity *ent = src.m_client->m_ent;
 
