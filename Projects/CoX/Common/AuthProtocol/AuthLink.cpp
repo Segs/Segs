@@ -215,8 +215,9 @@ void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
     size_t actual_packet_start = m_unsent_bytes_storage.GetReadableDataSize();
     // store bytes
     ev->serializeto(m_unsent_bytes_storage);
-    // calculate the number of stored bytes, and set it in packet_size
-    *packet_size = (m_unsent_bytes_storage.GetReadableDataSize() - actual_packet_start) - 1; // -1 because opcode is not counted toward packet size
+    // calculate the number of stored bytes, and set it in packet_size,
+    // -1 because opcode is not counted toward packet size
+    *packet_size = (m_unsent_bytes_storage.GetReadableDataSize() - actual_packet_start) - 1; 
 
     // additional encryption of login details
     if(ev->type()==evLogin)

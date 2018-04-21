@@ -7,7 +7,6 @@
 #include "Common/Servers/InternalEvents.h"
 #include "GameData/serialization_common.h"
 #include "GameLink.h"
-#include "GameEvents.h"
 #include "GameServer.h"
 #include "NetStructures/Character.h"
 #include "SEGSTimer.h"
@@ -27,14 +26,11 @@ const ACE_Time_Value link_is_stale_if_disconnected_for(5,0);
 const constexpr int MinPacketsToAck=5;
 }
 
-GameHandler::GameHandler() : EventProcessor ()
+GameHandler::GameHandler()
 {
     m_server = nullptr;
 }
-
-GameHandler::~GameHandler()
-{
-}
+GameHandler::~GameHandler() = default;
 
 void GameHandler::start() {
     ACE_ASSERT(m_link_checker==nullptr);

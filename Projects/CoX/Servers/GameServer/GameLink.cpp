@@ -7,9 +7,5 @@
  
  */
 #include "GameLink.h"
-#include "EventProcessor.h"
-#include "GameEvents.h"
-
-#include <ace/INET_Addr.h>
 
 GameEventFactory GameLink::m_factory;

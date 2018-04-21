@@ -144,7 +144,7 @@ void InputState::partial_2(BitStream &bs)
             case PITCH: // camera pitch (Insert/Delete keybinds)
             {
                 v = AngleDequantize(bs.GetBits(11),11); // pitch
-                m_data.pyr_valid[control_id==6] = true;
+                m_data.pyr_valid[0] = true;
                 m_data.camera_pyr[0] = v;
                 qCDebug(logInput, "Pitch (%f): %f", m_data.m_orientation_pyr[0], m_data.camera_pyr.x);
                 break;
@@ -152,7 +152,7 @@ void InputState::partial_2(BitStream &bs)
             case YAW: // camera yaw (Q or E keybinds)
             {
                 v = AngleDequantize(bs.GetBits(11),11); // yaw
-                m_data.pyr_valid[control_id==7] = true;
+                m_data.pyr_valid[1] = true;
                 m_data.camera_pyr[1] = v;
                 qCDebug(logInput, "Yaw (%f): %f", m_data.m_orientation_pyr[1], m_data.camera_pyr.y);
                 break;

@@ -12,18 +12,14 @@
 #include "ConfigExtension.h"
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
-#include "Common/CRUDP_Protocol/CRUDP_Protocol.h"
+#include "Common/Servers/ServerEndpoint.h"
 #include "Settings.h"
 
-#include <ace/ACE.h>
 #include <ace/Synch.h>
 #include <ace/INET_Addr.h>
-#include <ace/SOCK_Dgram.h>
 #include <ace/Message_Queue.h>
-#include <ace/Message_Block.h>
 #include <ace/Event_Handler.h>
 #include <ace/Svc_Handler.h>
-#include <ace/Reactor_Notification_Strategy.h>
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
@@ -59,12 +55,11 @@ public:
     int                     m_max_character_slots;
     uint16_t                m_max_players=0;
 
-    bool ShutDown()
+    void ShutDown() const
     {
         // tell our handler to shut down too
         m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish, nullptr));
         m_handler->wait();
-        return true;
     }
 };
 void GameServer::dispatch(SEGSEvent *ev)
@@ -98,8 +93,8 @@ GameServer::~GameServer()
 bool GameServer::ReadConfigAndRestart()
 {
     static GameServerReconfigured reconfigured_msg;
-    if(d->m_endpoint) // TODO: consider properly closing all open sessions ?
-        delete d->m_endpoint;
+    // TODO: consider properly closing all open sessions ?
+    delete d->m_endpoint;
     qInfo() << "Loading GameServer settings...";
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 

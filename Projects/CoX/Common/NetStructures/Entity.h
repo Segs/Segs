@@ -7,11 +7,9 @@
 #include "Common/GameData/entitydata_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
 
-#include <glm/vec3.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/constants.hpp>
 
-#include <cmath>
 #include <array>
 #include <memory>
 
@@ -209,7 +207,7 @@ class Entity
 {
     // only EntityStore can create instances of this class
     friend class EntityStore;
-    friend struct std::array<Entity,10240>;
+    friend std::array<Entity,10240>;
     using CharacterPtr = std::unique_ptr<Character>;
     using PlayerPtr = std::unique_ptr<PlayerData>;
     using NPCPtr = std::unique_ptr<NPCData>;

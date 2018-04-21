@@ -48,7 +48,7 @@ explicit        BitStream(size_t size);
                 StoreBitArray(src.read_ptr(),src.GetReadableBits());
             else
             {
-                int bits_to_store=src.GetReadableBits();
+                size_t bits_to_store=src.GetReadableBits();
                 ByteAlign(false,true);
                 while(bits_to_store>32)
                 {

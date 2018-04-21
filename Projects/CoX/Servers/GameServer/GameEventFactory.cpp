@@ -2,11 +2,9 @@
 #include "GameEvents.h"
 GameLinkEvent *GameEventFactory::EventFromStream(BitStream &bs)
 {
-    GameLinkEvent *ev;
-
     size_t read_pos = bs.GetReadPos();
     //size_t bits_avail = bs.GetReadableBits();
-    ev = CRUD_EventFactory::EventFromStream(bs);
+    GameLinkEvent *ev = CRUD_EventFactory::EventFromStream(bs);
     if(ev) // base class created the event
         return ev;
     bs.SetReadPos(read_pos); // otherwise rewind the stream and retry
