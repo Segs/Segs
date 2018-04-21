@@ -269,7 +269,7 @@ public:
         bool                m_has_jumppack          = false;
         bool                m_controls_disabled     = false;
         float               m_backup_spd            = 1.0f;
-        float               m_jump_height           = 1.0f;
+        float               m_jump_height           = 2.0f;
         uint8_t             m_update_id             = 1;
         bool                m_update_part_1         = true;     // EntityResponse sendServerControlState
         bool                m_force_pos_and_cam     = true;     // EntityResponse sendServerControlState
