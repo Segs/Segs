@@ -1,6 +1,9 @@
 #include "SceneGraph.h"
+
 #include "GameData/scenegraph_definitions.h"
 #include "GameData/scenegraph_serializers.h"
+#include "GameData/trick_definitions.h"
+#include "GameData/trick_serializers.h"
 #include "GameData/DataStorage.h"
 #include "Logging.h"
 
@@ -9,34 +12,12 @@
 #include <QDir>
 #include <cmath>
 
-// Geo file info
-struct GeoStoreDef
-{
-    QString geopath;        //!< a path to a .geo file
-    QStringList entries;    //!< the names of models contained in a geoset
-    bool loaded;
-};
+
+
 // Node name re-mapping support
-struct NameList
-{
-    QHash<QString,QString> new_names; // map from old node name to a new name
-    QString basename;
-};
 
 namespace
 {
-QString g_basepath;
-int last_node_id=0; // used to create new number suffixes for generic nodes
-QHash<QString,SceneNode *> name_to_node; // working name to node mapping.
-QHash<QString,GeoStoreDef *> s_modelname_to_geostore;
-GeoStoreDef * groupGetFileEntryPtr(const QString &a1)
-{
-    QString key = a1.mid(a1.lastIndexOf('/')+1);
-    key = key.mid(0,key.indexOf("__"));
-    return s_modelname_to_geostore.value(key,nullptr);
-}
-
-
 struct TexBlockInfo
 {
     uint32_t size1;
@@ -102,6 +83,10 @@ struct GeoSet
     bool                 data_loaded = false;
 };
 QHash<QString,GeoSet *> s_name_to_geoset;
+AllTricks_Data s_tricks_store;
+QHash<QString,TextureModifiers *> g_texture_path_to_mod;
+QHash<QString,GeometryModifiers *> g_tricks_string_hash_tab;
+
 inline QByteArray uncompr_zip(char *comp_data,int size_comprs,uint32_t size_uncom)
 {
     QByteArray compressed_data;
@@ -113,7 +98,32 @@ inline QByteArray uncompr_zip(char *comp_data,int size_comprs,uint32_t size_unco
     compressed_data.append(comp_data,size_comprs);
     return qUncompress(compressed_data);
 }
+Model *convertAndInsertModel(GeoSet &tgt, const Model32 *v)
+{
+    Model *z = new Model;
 
+    z->flags = v->flg1;
+    z->visibility_radius = v->radius;
+    z->num_textures = v->num_textures;
+    //z->boneinfo_offset = v->boneinfo;
+    //z->blend_mode = CoHBlendMode(v->blend_mode);
+    //z->vertex_count = v->vertex_count;
+    //z->model_tri_count = v->model_tri_count;
+    z->scale = v->m_scale;
+    z->box.m_min = v->m_min;
+    z->box.m_max = v->m_max;
+    /*
+    for (uint8_t i = 0; i < 7; ++i)
+    {
+        DeltaPack &dp_blk(z->packed_data[i]);
+        dp_blk.compressed_size = v->pack_data[i].compressed_size;
+        dp_blk.uncomp_size = v->pack_data[i].uncomp_size;
+        dp_blk.compressed_data = nullptr;
+        dp_blk.buffer_offset = v->pack_data[i].compressed_data_off;
+    }*/
+    tgt.subs.push_back(z);
+    return z;
+}
 void geosetLoadHeader(QFile &fp, GeoSet *geoset)
 {
     unsigned int anm_hdr_size;
@@ -146,19 +156,19 @@ void geosetLoadHeader(QFile &fp, GeoSet *geoset)
         //if (info->tex_binds_size) {
         //    binds = convertTexBinds(v6->num_textures, v6->texture_bind_offsets + stream_pos_1);
         //}
-        //Model *m    = convertAndInsertModel(*geoset, v6);
+        Model *m    = convertAndInsertModel(*geoset, v6);
         //m->texture_bind_info = binds;
         //m->geoset       = geoset;
-        //m->name         = QString((const char *)stream_pos_0 + v6->bone_name_offset);
+        m->name         = QString((const char *)stream_pos_0 + v6->bone_name_offset);
     }
 //    if (!geoset->subs.empty())
 //        addModelStubs(geoset);
 }
-static GeoSet *findAndPrepareGeoSet(const QString &fname)
+GeoSet *findAndPrepareGeoSet(const QString &fname,LoadingContext &ctx)
 {
     GeoSet *geoset = nullptr;
     QFile fp;
-    fp.setFileName(g_basepath+fname);
+    fp.setFileName(ctx.m_base_path+fname);
     if (fp.open(QFile::ReadOnly))
     {
         geoset = new GeoSet;
@@ -172,17 +182,14 @@ static GeoSet *findAndPrepareGeoSet(const QString &fname)
     return geoset;
 }
 /// load the given geoset, used when loading scene-subgraph and nodes
-GeoSet * geosetLoad(const QString &m)
+GeoSet * geosetLoad(const QString &m,LoadingContext &ctx)
 {
     GeoSet * res = s_name_to_geoset.value(m,nullptr);
     if(res)
         return res;
-    return findAndPrepareGeoSet(m);
+    return findAndPrepareGeoSet(m,ctx);
 }
-NameList my_name_list;
-
-
-void rotationFromYPR(glm::mat4x3 & mat, const glm::vec3 &pyr)
+void rotationFromYPR(glm::mat4 & mat, const glm::vec3 &pyr)
 {
     float   cos_p     =  std::cos(pyr.x);
     float   neg_sin_p = -std::sin(pyr.x);
@@ -202,9 +209,9 @@ void rotationFromYPR(glm::mat4x3 & mat, const glm::vec3 &pyr)
     rotmat[2][1] = -neg_sin_p;
     rotmat[2][2] = cos_y * cos_p;
 
-    mat[0]=rotmat[0];
-    mat[1]=rotmat[1];
-    mat[2]=rotmat[2];
+    mat[0]= glm::vec4(rotmat[0],0);
+    mat[1]= glm::vec4(rotmat[1],0);
+    mat[2]= glm::vec4(rotmat[2],0);
 }
 bool groupInLibSub(const QString &name)
 {
@@ -213,7 +220,7 @@ bool groupInLibSub(const QString &name)
     }
     return !name.startsWith("grp");
 }
-SceneNode * getNodeByName(const QString &name)
+SceneNode * getNodeByName(const SceneGraph &graph,const QString &name)
 {
     QString filename;
     int idx = name.lastIndexOf('/');
@@ -221,30 +228,31 @@ SceneNode * getNodeByName(const QString &name)
         filename = name;
     else
         filename = name.mid(idx+1);
-    return name_to_node.value(filename.toLower(),nullptr);
+    return graph.name_to_node.value(filename.toLower(),nullptr);
 }
-QString  groupMakeName(const QString &base)
+QString  groupMakeName(const QString &base,LoadingContext &ctx)
 {
     QString buf;
     do
-        buf = base + QString::number(last_node_id);
-    while (getNodeByName(buf));
+        buf = base + QString::number(++ctx.last_node_id);
+    while (getNodeByName(*ctx.m_target,buf));
     return buf;
 }
 // Create new names for any 'numbered' scene nodes
-QString groupRename(NameList &memory, const QString &oldname, bool is_def)
+QString groupRename(LoadingContext &ctx, const QString &oldname, bool is_def)
 {
     QString str;
-    str = oldname.contains('/') ? oldname : memory.basename+'/'+oldname;
+    str = oldname.contains('/') ? oldname : ctx.m_renamer.basename+'/'+oldname;
     if ( groupInLibSub(str) )
         return str;
     if ( !is_def && !str.contains("/grp",Qt::CaseInsensitive) && !str.contains("/map",Qt::CaseInsensitive) )
         return str;
     QString querystring = QString(str).toLower();
-    auto str_iter = memory.new_names.find(querystring);
-    if ( str_iter!=memory.new_names.end() ) {
+    auto str_iter = ctx.m_renamer.new_names.find(querystring);
+
+    if ( str_iter!=ctx.m_renamer.new_names.end() )
         return *str_iter;
-    }
+
     QString prefix = str;
     int gidx = prefix.indexOf("/grp",0,Qt::CaseInsensitive);
     if ( gidx!=-1 )
@@ -262,11 +270,11 @@ QString groupRename(NameList &memory, const QString &oldname, bool is_def)
             prefix = "baddef";
         }
     }
-    QString tgt = groupMakeName(prefix);
-    memory.new_names[querystring] = tgt;
+    QString tgt = groupMakeName(prefix,ctx);
+    ctx.m_renamer.new_names[querystring] = tgt;
     return tgt;
 }
-QString buildBaseName(QString path)
+QString buildBaseName(const QString& path)
 {
     QStringList z = path.split(QDir::separator());
 
@@ -283,43 +291,18 @@ QString buildBaseName(QString path)
 
 }
 
-QString mapNameToPath(const QString &name)
+QString mapNameToPath(const QString &name,LoadingContext &ctx)
 {
     int start_idx = name.indexOf("object_library",Qt::CaseInsensitive);
     if ( -1==start_idx )
         start_idx = name.indexOf("maps",Qt::CaseInsensitive);
-    QString buf = g_basepath +"geobin/" + name.midRef(start_idx);
+    QString buf = ctx.m_base_path+"geobin/" + name.midRef(start_idx);
     const int last_dot = buf.lastIndexOf('.');
     if(-1==last_dot)
         buf+=".bin";
     else if(!buf.contains(".crl"))
         buf.replace(last_dot,buf.size()-last_dot,".bin");
     return buf;
-}
-bool LoadSceneData(const QString &fname, SceneGraph_Data &scenegraph)
-{
-    BinStore binfile;
-
-    if (fname.contains(".crl"))
-    {
-        if (!loadFrom(fname, scenegraph))
-        {
-            qCritical() << "Failed to serialize data from crl:" << fname;
-            return false;
-        }
-        return true;
-    }
-    if (!binfile.open(fname, scenegraph_i0_2_requiredCrc))
-    {
-        qCritical() << "Failed to open original bin:" << fname;
-        return false;
-    }
-    if (!loadFrom(&binfile, scenegraph))
-    {
-        qCritical() << "Failed to load data from original bin:" << fname;
-        return false;
-    }
-    return true;
 }
 RootNode *newRef(SceneGraph &scene)
 {
@@ -336,104 +319,29 @@ RootNode *newRef(SceneGraph &scene)
     return scene.refs[idx];
 }
 
-bool groupLoadRequiredLibsForNode(SceneNode *node,SceneGraph &conv)
+void addRoot(const SceneRootNode_Data &refload, LoadingContext &ctx, PrefabStore &store)
 {
-    GeoStoreDef *gf;
-
-    if ( !node || !node->in_use )
-        return false;
-
-    if ( node->geoset_info )
-        gf = node->geoset_info;
-    else
-    {
-        gf = groupGetFileEntryPtr(node->name);
-        node->geoset_info = gf;
-        if ( !node->geoset_info )
-            node->geoset_info = (GeoStoreDef *)-1; // prevent future load attempts
-    }
-    if ( !gf || gf == (GeoStoreDef *)-1 )
-        return false;
-    if ( !gf->loaded )
-    {
-        gf->loaded = true;
-        conv.loadSubgraph(gf->geopath);
-    }
-    return true;
-}
-bool groupFileLoadFromName(const QString &name,SceneGraph &conv)
-{
-    GeoStoreDef *geo_store = groupGetFileEntryPtr(name);
-    if ( !geo_store )
-        return false;
-    if ( geo_store->loaded )
-        return true;
-
-    geo_store->loaded = true;
-    conv.loadSubgraph(geo_store->geopath);
-    groupLoadRequiredLibsForNode(getNodeByName(name),conv);
-    return 1;
-}
-void addRoot(const SceneRootNode_Data &refload, NameList &namelist,SceneGraph &conv)
-{
-    QString newname = groupRename(namelist, refload.name, 0);
-    auto *def = getNodeByName(newname);
+    QString newname = groupRename(ctx, refload.name, false);
+    auto *def = getNodeByName(*ctx.m_target,newname);
     if(!def) {
-        groupFileLoadFromName(newname,conv);
-        def = getNodeByName(newname);
+        if(store.loadNamedPrefab(newname,ctx))
+            def = getNodeByName(*ctx.m_target,newname);
     }
     if(!def) {
         qCritical() << "Missing reference:"<<newname;
         return;
     }
-    auto ref = newRef(conv);
+    auto ref = newRef(*ctx.m_target);
     ref->node = def;
     rotationFromYPR(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z});
-    ref->mat[3] = refload.pos;
+    ref->mat[3] = glm::vec4(refload.pos,1);
 }
 SceneNode *newDef(SceneGraph &scene)
 {
     SceneNode *res = new SceneNode;
+    res->m_index_in_scenegraph = scene.all_converted_defs.size();
     scene.all_converted_defs.emplace_back(res);
     return res;
-}
-Model *modelFind(const QString &geoset_name,const QString &model_name)
-{
-    Model *ptr_sub = nullptr;
-
-    if (model_name.isEmpty() || geoset_name.isEmpty()) {
-        qCritical() << "Bad model/geometry set requested:";
-        if (!model_name.isEmpty())
-            qCritical() << "Model: "<<model_name;
-        if (!geoset_name.isEmpty())
-            qCritical() << "GeoFile: "<<geoset_name;
-        return nullptr;
-    }
-    GeoSet *geoset = geosetLoad(geoset_name);
-    if (!geoset) // failed to load the geometry set
-        return nullptr;
-    int end_of_name_idx  = model_name.indexOf("__");
-    if (end_of_name_idx == -1)
-        end_of_name_idx = model_name.size();
-    QStringRef basename(model_name.midRef(0, end_of_name_idx));
-
-    for (Model *m : geoset->subs)
-    {
-        QString geo_name = m->name;
-        if (geo_name.isEmpty())
-            continue;
-        bool subs_in_place = (geo_name.size() <= end_of_name_idx || geo_name.midRef(end_of_name_idx).startsWith("__"));
-        if (subs_in_place && geo_name.startsWith(basename, Qt::CaseInsensitive))
-            ptr_sub = m; // TODO: return immediately
-    }
-    return ptr_sub;
-
-}
-Model *groupModelFind(const QString & path)
-{
-    QString model_name=path.mid(path.lastIndexOf('/')+1);
-    auto val = groupGetFileEntryPtr(model_name);
-    return val ? modelFind(val->geopath,model_name) : nullptr;
 }
 void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
 {
@@ -444,8 +352,8 @@ void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
     if ( groupInLibSub(obj_path) )
         result = "object_library/";
     result += obj_path;
-    int v4 = result.lastIndexOf('/');
-    QStringRef key = result.midRef(v4 + 1);
+    int last_separator = result.lastIndexOf('/');
+    QStringRef key = result.midRef(last_separator + 1);
     QString lowkey = key.toString().toLower();
     auto iter = scene.name_to_node.find(lowkey);
     if(iter==scene.name_to_node.end()) {
@@ -456,20 +364,20 @@ void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
     if ( key.position() != 0 )
         node->dir = result.mid(0,key.position()-1);
 }
-void addChildNodes(const SceneGraphNode_Data &a1, SceneNode *node,NameList &a3,SceneGraph &conv)
+void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, LoadingContext &ctx, PrefabStore &store)
 {
-    if ( a1.p_Grp.empty() )
+    if ( inp_data.p_Grp.empty() )
         return;
-    node->children.reserve(a1.p_Grp.size());
-    for(const GroupLoc_Data & dat : a1.p_Grp)
+    node->children.reserve(inp_data.p_Grp.size());
+    for(const GroupLoc_Data & dat : inp_data.p_Grp)
     {
-        QString v5 = groupRename(a3, dat.name, 0);
+        const QString new_name = groupRename(ctx, dat.name, false);
         SceneNodeChildTransform child;
-        child.node = getNodeByName(v5);
+        child.node = getNodeByName(*ctx.m_target,new_name);
         if ( !child.node )
         {
-            groupFileLoadFromName(v5,conv);
-            child.node = getNodeByName(v5);
+            store.loadNamedPrefab(new_name,ctx);
+            child.node = getNodeByName(*ctx.m_target,new_name);
         }
         // construct from euler angles
         glm::quat qPitch = glm::angleAxis(dat.rot.x, glm::vec3(-1, 0, 0));
@@ -492,6 +400,7 @@ void addLod(const std::vector<DefLod_Data> &a1, SceneNode *a2)
         return;
     const DefLod_Data &v2(a1.front());
     a2->lod_scale = v2.Scale;
+
     if ( a2->lod_fromtrick )
         return;
 
@@ -506,7 +415,7 @@ bool nodeCalculateBounds(SceneNode *group)
     float maxrad=0.0f;
     Model *model;
     AxisAlignedBoundingBox bbox;
-    bool set = 0;
+    bool set = false;
     if ( !group )
         return false;
     if ( group->model )
@@ -515,7 +424,7 @@ bool nodeCalculateBounds(SceneNode *group)
         bbox.merge(model->box);
 
         geometry_radius = glm::length(bbox.size()) * 0.5f;
-        set = 1;
+        set = true;
     }
     for ( SceneNodeChildTransform & child : group->children )
     {
@@ -523,7 +432,7 @@ bool nodeCalculateBounds(SceneNode *group)
         glm::vec3 v_radius(child.node->radius,child.node->radius,child.node->radius);
         bbox.merge(dst+v_radius);
         bbox.merge(dst-v_radius);
-        set = 1;
+        set = true;
     }
     if ( !set )
     {
@@ -562,7 +471,7 @@ void  nodeSetVisBounds(SceneNode *group)
         {
             group->lod_far = (maxrad + 10.0f) * 10.0f;
             group->lod_far_fade = group->lod_far * 0.25f;
-            group->lod_autogen = 1;
+            group->lod_autogen = true;
         }
         maxvis = group->lod_far + group->lod_far_fade;
     }
@@ -578,25 +487,29 @@ void  nodeSetVisBounds(SceneNode *group)
     group->vis_dist = maxvis;
 }
 
-bool addNode(const SceneGraphNode_Data &defload, NameList &renamer,SceneGraph &conv)
+bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore &prefabs)
 {
     if (defload.p_Grp.empty() && defload.p_Obj.isEmpty())
         return false;
-    QString obj_path = groupRename(renamer, defload.name, 1);
-    SceneNode * node = getNodeByName(obj_path);
-    if ( !node )
-        node = newDef(conv);
+    QString obj_path = groupRename(ctx, defload.name, true);
+    SceneNode * node = getNodeByName(*ctx.m_target,obj_path);
+    if (!node)
+    {
+        node = newDef(*ctx.m_target);
+        if (!defload.p_Property.empty())
+            node->properties = new std::vector<GroupProperty_Data> (defload.p_Property);
+    }
     if ( !defload.p_Obj.isEmpty() )
     {
-        node->model = groupModelFind(defload.p_Obj);
+        node->model = prefabs.groupModelFind(defload.p_Obj,ctx);
         if ( !node->model )
         {
             qCritical() << "Cannot find root geometry in" << defload.p_Obj;
         }
         //groupApplyModifiers(node);
     }
-    setNodeNameAndPath(conv,node,obj_path);
-    addChildNodes(defload,node,renamer,conv);
+    setNodeNameAndPath(*ctx.m_target,node,obj_path);
+    addChildNodes(defload,node,ctx,prefabs);
 
     if ( node->children.empty() && !node->model )
     {
@@ -612,30 +525,230 @@ bool addNode(const SceneGraphNode_Data &defload, NameList &renamer,SceneGraph &c
 
 }
 
-void SceneGraph::serializeIn(SceneGraph_Data &scenegraph,NameList &renamer)
+void serializeIn(SceneGraph_Data &scenegraph,LoadingContext &ctx,PrefabStore &prefabs)
 {
     for (const SceneGraphNode_Data & node_dat : scenegraph.Def )
-        addNode(node_dat, renamer,*this);
+        addNode(node_dat, ctx,prefabs);
     for (const SceneRootNode_Data & root_dat : scenegraph.Ref)
-        addRoot(root_dat, renamer,*this);
+        addRoot(root_dat, ctx,prefabs);
 }
-bool SceneGraph::loadSceneGraph(const QString &path)
+bool loadSceneGraph(const QString &path,LoadingContext &ctx,PrefabStore &prefabs)
 {
-    name_to_node.clear(); // reset local mapping
-    QString binName = mapNameToPath(path);
-    NameList my_name_list;
-    my_name_list.basename = buildBaseName(path);
-    SceneGraph_Data scenegraph;
+    QString binName = mapNameToPath(path,ctx);
+    SceneGraph_Data serialized_graph;
+    ctx.m_renamer.basename = buildBaseName(path);
     binName.replace("CHUNKS.bin","Chunks.bin");
-    LoadSceneData(binName,scenegraph);
+    LoadSceneData(binName, serialized_graph);
 
-    serializeIn(scenegraph,my_name_list);
-    name_to_node = std::move(name_to_node);
+    serializeIn(serialized_graph, ctx, prefabs);
     return true;
 }
-void SceneGraph::loadSubgraph(const QString &filename)
+void loadSubgraph(const QString &filename, LoadingContext &ctx,PrefabStore &prefabs)
 {
-    geosetLoad(filename); // load given subgraph's root geoset
+    geosetLoad(filename,ctx); // load given subgraph's root geoset
     QFileInfo fi(filename);
-    loadSceneGraph(fi.path()+"/"+fi.completeBaseName()+".txt");
+    LoadingContext tmp = ctx;
+    loadSceneGraph(fi.path()+"/"+fi.completeBaseName()+".txt",tmp,prefabs);
+}
+
+GeoStoreDef * PrefabStore::groupGetFileEntryPtr(const QString &a1)
+{
+    QString key = a1.mid(a1.lastIndexOf('/') + 1);
+    key = key.mid(0, key.indexOf("__"));
+    return m_modelname_to_geostore.value(key, nullptr);
+}
+static void registerGeometryModifier(GeometryModifiers *a1)
+{
+    if (a1->node.TintColor0.rgb_are_zero())
+        a1->node.TintColor0 = RGBA(0xFFFFFFFF);
+    if (a1->node.TintColor1.rgb_are_zero())
+        a1->node.TintColor1 = RGBA(0xFFFFFFFF);
+    a1->AlphaRef /= 255.0f;
+    if (a1->ObjTexBias != 0.0f)
+        a1->node._TrickFlags |= TexBias;
+    if (a1->AlphaRef != 0.0f)
+        a1->node._TrickFlags |= AlphaRef;
+    if (a1->FogDist.x != 0.0f || a1->FogDist.y != 0.0f)
+        a1->node._TrickFlags |= FogHasStartAndEnd;
+    if (a1->ShadowDist != 0.0f)
+        a1->node._TrickFlags |= CastShadow;
+    if (a1->NightGlow.x != 0.0f || a1->NightGlow.y != 0.0f)
+        a1->node._TrickFlags |= NightGlow;
+    if (a1->node.ScrollST0.x != 0.0f || a1->node.ScrollST0.y != 0.0f)
+        a1->node._TrickFlags |= ScrollST0;
+    if (a1->node.ScrollST1.x != 0.0f || a1->node.ScrollST1.y != 0.0f)
+        a1->node._TrickFlags |= ScrollST1;
+    if (!a1->StAnim.empty())
+    {
+        //        if (setStAnim(&a1->StAnim.front()))
+        //            a1->node._TrickFlags |= STAnimate;
+    }
+    if (a1->GroupFlags & VisTray)
+        a1->ObjFlags |= 0x400;
+    if (a1->name.isEmpty())
+        qDebug() << "No name in trick";
+    auto iter = g_tricks_string_hash_tab.find(a1->name.toLower());
+    if (iter!=g_tricks_string_hash_tab.end())
+    {
+        qDebug() << "duplicate model trick!";
+        return;
+    }
+    g_tricks_string_hash_tab[a1->name.toLower()]=a1;
+}
+
+static void setupTexOpt(TextureModifiers *tex)
+{
+    if (tex->ScaleST0.x == 0.0f)
+        tex->ScaleST0.x = 1.0f;
+    if (tex->ScaleST0.y == 0.0f)
+        tex->ScaleST0.y = 1.0f;
+    if (tex->ScaleST1.x == 0.0f)
+        tex->ScaleST1.x = 1.0f;
+    if (tex->ScaleST1.y == 0.0f)
+        tex->ScaleST1.y = 1.0f;
+    if (tex->Fade.x != 0.0f || tex->Fade.y != 0.0f)
+        tex->Flags |= uint32_t(TexOpt::FADE);
+    if (!tex->Blend.isEmpty())
+        tex->Flags |= uint32_t(TexOpt::DUAL);
+    if (!tex->Surface.isEmpty())
+    {
+        //qDebug() <<"Has surface"<<tex->Surface;
+    }
+
+    tex->name = tex->name.mid(0,tex->name.lastIndexOf('.')); // cut last extension part
+    if(tex->name.startsWith('/'))
+        tex->name.remove(0,1);
+    auto iter = g_texture_path_to_mod.find(tex->name.toLower());
+    if (iter!=g_texture_path_to_mod.end())
+    {
+        qDebug() << "duplicate texture info: "<<tex->name;
+        return;
+    }
+    g_texture_path_to_mod[tex->name.toLower()] = tex;
+}
+static void  trickLoadPostProcess(AllTricks_Data *a2)
+{
+    g_texture_path_to_mod.clear();
+    g_tricks_string_hash_tab.clear();
+    for (TextureModifiers &texopt : a2->texture_mods)
+        setupTexOpt(&texopt);
+    for (GeometryModifiers &trickinfo : a2->geometry_mods)
+        registerGeometryModifier(&trickinfo);
+}
+bool loadTricksBin(const QString &base_path)
+{
+    BinStore binfile;
+    QString fname(base_path+"bin/tricks.bin");
+    if(!LoadModifiersData(fname, s_tricks_store))
+    {
+        return false;
+    }
+    trickLoadPostProcess(&s_tricks_store);
+    return true;
+}
+bool PrefabStore::prepareGeoLookupArray(const QString &base_path)
+{
+    QFile defnames(base_path + "bin/defnames.bin");
+    if (!defnames.open(QFile::ReadOnly))
+    {
+        qCritical() << "Failed to open defnames.bin";
+        return false;
+    }
+    QByteArrayList defnames_arr;
+    for (const QByteArray &entr : defnames.readAll().split('\0'))
+        defnames_arr.push_back(entr);
+    QString lookup_str;
+    GeoStoreDef *current_geosetinf = nullptr;
+    for (QString str : defnames_arr)
+    {
+        str.replace("CHUNKS.geo", "Chunks.geo"); // original paths are case insensitive
+        int last_slash = str.lastIndexOf('/');
+        if (-1 != last_slash)
+        {
+            QString geo_path = str.mid(0, last_slash);
+            lookup_str = geo_path.toLower();
+            current_geosetinf = &m_dir_to_geoset[lookup_str];
+            current_geosetinf->geopath = geo_path;
+        }
+        current_geosetinf->entries << str.mid(last_slash + 1);
+        m_modelname_to_geostore[str.mid(last_slash + 1)] = current_geosetinf;
+    }
+    return loadTricksBin(base_path);
+}
+
+bool PrefabStore::loadPrefabForNode(SceneNode *node, LoadingContext &ctx) //groupLoadRequiredLibsForNode
+{
+    GeoStoreDef *gf;
+
+    if (!node || !node->in_use)
+        return false;
+
+    if (node->geoset_info)
+        gf = node->geoset_info;
+    else
+    {
+        gf = groupGetFileEntryPtr(node->name);
+        node->geoset_info = gf;
+        if (!node->geoset_info)
+            node->geoset_info = (GeoStoreDef *)-1; // prevent future load attempts
+    }
+    if (!gf || gf == (GeoStoreDef *)-1)
+        return false;
+    if (!gf->loaded)
+    {
+        gf->loaded = true;
+        loadSubgraph(gf->geopath,ctx,*this);
+    }
+    return true;
+}
+bool PrefabStore::loadNamedPrefab(const QString &name, LoadingContext &ctx) //groupFileLoadFromName
+{
+    GeoStoreDef *geo_store = groupGetFileEntryPtr(name);
+    if (!geo_store)
+        return false;
+    if (geo_store->loaded)
+        return true;
+
+    geo_store->loaded = true;
+    loadSubgraph(geo_store->geopath,ctx,*this);
+    loadPrefabForNode(getNodeByName(*ctx.m_target,name), ctx);
+    return true;
+}
+Model *modelFind(const QString &geoset_name, const QString &model_name,LoadingContext &ctx)
+{
+    Model *ptr_sub = nullptr;
+
+    if (model_name.isEmpty() || geoset_name.isEmpty()) {
+        qCritical() << "Bad model/geometry set requested:";
+        if (!model_name.isEmpty())
+            qCritical() << "Model: " << model_name;
+        if (!geoset_name.isEmpty())
+            qCritical() << "GeoFile: " << geoset_name;
+        return nullptr;
+    }
+    GeoSet *geoset = geosetLoad(geoset_name,ctx);
+    if (!geoset) // failed to load the geometry set
+        return nullptr;
+    int end_of_name_idx = model_name.indexOf("__");
+    if (end_of_name_idx == -1)
+        end_of_name_idx = model_name.size();
+    QStringRef basename(model_name.midRef(0, end_of_name_idx));
+
+    for (Model *m : geoset->subs)
+    {
+        QString geo_name = m->name;
+        if (geo_name.isEmpty())
+            continue;
+        bool subs_in_place = (geo_name.size() <= end_of_name_idx || geo_name.midRef(end_of_name_idx).startsWith("__"));
+        if (subs_in_place && geo_name.startsWith(basename, Qt::CaseInsensitive))
+            ptr_sub = m; // TODO: return immediately
+    }
+    return ptr_sub;
+
+}
+Model *PrefabStore::groupModelFind(const QString & path,LoadingContext &ctx)
+{
+    QString model_name = path.mid(path.lastIndexOf('/') + 1);
+    auto val = groupGetFileEntryPtr(model_name);
+    return val ? modelFind(val->geopath, model_name,ctx) : nullptr;
 }

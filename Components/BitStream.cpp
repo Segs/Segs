@@ -365,8 +365,8 @@ int64_t BitStream::Get64Bits()
 
 size_t BitStream::GetAvailSize() const
 {
-    int64_t res = (int64_t)((m_size-m_write_off)-(m_write_bit_off!=0));
-    return std::max<size_t>(0,res);
+    int64_t res = int64_t(m_size)- int64_t(m_write_off)-(m_write_bit_off!=0);
+    return size_t(std::max<int64_t>(0,res));
 }
 /************************************************************************
 Function:    GetFloat/GetFloatWithDebugInfo()
