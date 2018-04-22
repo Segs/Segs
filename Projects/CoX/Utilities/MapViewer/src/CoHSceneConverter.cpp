@@ -81,32 +81,7 @@ ConvertedRootNode *newRef(CoHSceneGraph &scene)
     scene.refs[idx]->index_in_roots_array = idx;
     return scene.refs[idx];
 }
-bool LoadSceneData(const QString &fname, SceneGraph_Data &scenegraph)
-{
-    BinStore binfile;
 
-    if (fname.contains(".crl"))
-    {
-        if (!loadFrom(fname, scenegraph))
-        {
-            qCritical() << "Failed to serialize data from crl:" << fname;
-            return false;
-        }
-    } else
-    {
-        if (!binfile.open(fname, scenegraph_i0_2_requiredCrc))
-        {
-            qCritical() << "Failed to open original bin:" << fname;
-            return false;
-        }
-        if (!loadFrom(&binfile, scenegraph))
-        {
-            qCritical() << "Failed to load data from original bin:" << fname;
-            return false;
-        }
-    }
-    return true;
-}
 CoHNode * getNodeByName(const CoHSceneGraph &conv,const QString &a1)
 {
     QString filename;

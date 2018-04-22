@@ -153,3 +153,35 @@ void saveTo(const AllTricks_Data &target, const QString &baseName, bool text_for
 {
     commonSaveTo(target,"Tricks",baseName,text_format);
 }
+bool loadFrom(const QString &filepath, AllTricks_Data &target)
+{
+    return commonReadFrom(filepath,"Tricks",target);
+}
+bool LoadModifiersData(const QString &fname, AllTricks_Data &m)
+{
+    BinStore binfile;
+
+    if (fname.contains(".crl"))
+    {
+        if (!loadFrom(fname, m))
+        {
+            qCritical() << "Failed to serialize data from crl:" << fname;
+            return false;
+        }
+        return true;
+    }
+    bool opened = binfile.open(fname, tricks_i0_requiredCrc);
+    if(!opened)
+        opened = binfile.open(fname, tricks_i2_requiredCrc);
+    if (!opened)
+    {
+        qCritical() << "Failed to open original bin:" << fname;
+        return false;
+    }
+    if (!loadFrom(&binfile, &m))
+    {
+        qCritical() << "Failed to load data from original bin:" << fname;
+        return false;
+    }
+    return true;
+}

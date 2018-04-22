@@ -29,7 +29,7 @@ SET(target_CPP
     MapTemplate.cpp
     NetCommandManager.cpp
     SlashCommand.cpp
-    SceneGraph.cpp
+    MapSceneGraph.cpp
     WorldSimulation.cpp
     ${SCRIPTING_CPP}
 )
@@ -76,7 +76,7 @@ SET(target_INCLUDE
     NetCommandManager.h
     ScriptingEngine.h
     SlashCommand.h
-    SceneGraph.h
+    MapSceneGraph.h
     WorldSimulation.h
 )
 
