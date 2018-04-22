@@ -68,7 +68,7 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
         return true;
     }
     QString hdr=read_pstr(20);
-    int sz;
+    size_t sz;
     read_internal(sz);
 
     quint64 read_start = m_str.pos();

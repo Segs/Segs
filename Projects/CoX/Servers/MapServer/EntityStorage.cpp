@@ -97,7 +97,7 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
  *  \par self_idx index of the entity that is receiving the packet, this is used to prevent marking every entity as a current player
  *
  */
-void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool is_incremental) const
+void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool /*is_incremental*/) const
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_mutex);
     uint32_t self_idx = getIdx(*target->m_ent);

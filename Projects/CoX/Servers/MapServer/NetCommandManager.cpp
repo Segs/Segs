@@ -116,7 +116,7 @@ NetCommand * NetCommandManager::getCommandByName( const QString &name )
 {
     return m_name_to_command[name];
 }
-void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands, const vNetCommand &commands2 )
+void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands, const vNetCommand &/*commands2*/ )
 {
     if(commands.size()==0)
     {

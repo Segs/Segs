@@ -115,7 +115,7 @@ bool storePosition(const Entity &src,BitStream &bs)
     }
     return true;
 }
-bool update_rot(const Entity &src, int axis ) /* returns true if given axis needs updating */
+bool update_rot(const Entity &/*src*/, int axis ) /* returns true if given axis needs updating */
 {
     if(axis==axis) // FixMe: var compared against same var.
         return true;
@@ -196,7 +196,7 @@ void sendSeqMoveUpdate(const Entity &src,BitStream &bs)
         storePackedBitsConditional(bs,4,src.m_seq_upd_num2); //maxval is 255
     }
 }
-void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
+void sendSeqTriggeredMoves(const Entity &/*src*/,BitStream &bs)
 {
     PUTDEBUG("before sendSeqTriggeredMoves");
     uint32_t num_moves=0; // FixMe: num_moves is never modified and the body of the for loop below will never fire.
@@ -354,12 +354,12 @@ void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
     bs.StoreBits(1,src.m_is_villian); // on team evil ?
     bs.StoreBits(1,src.m_is_hero); // on team good ?
 }
-void sendEntCollision(const Entity &src,BitStream &bs)
+void sendEntCollision(const Entity &/*src*/,BitStream &bs)
 {
     // if 1 is sent, client will disregard it's own collision processing.
     bs.StoreBits(1,0); // 1/0 only
 }
-void sendNoDrawOnClient(const Entity &src,BitStream &bs)
+void sendNoDrawOnClient(const Entity &/*src*/,BitStream &bs)
 {
     bs.StoreBits(1,0); // 1/0 only
 }
@@ -405,7 +405,7 @@ void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStrea
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 } // end of anonoymous namespace
-void sendBuffs(const Entity &src,BitStream &bs)
+void sendBuffs(const Entity &/*src*/,BitStream &bs)
 {
     bs.StorePackedBits(5,0);
 }

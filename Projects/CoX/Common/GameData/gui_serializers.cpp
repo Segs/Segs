@@ -13,7 +13,7 @@
 #include "serialization_common.h"
 
 const constexpr uint32_t GUISettings::class_version;
-CEREAL_CLASS_VERSION(GUISettings, GUISettings::class_version); // register GUISettings class version
+CEREAL_CLASS_VERSION(GUISettings, GUISettings::class_version) // register GUISettings class version
 
 template<class Archive>
 void serialize(Archive &archive, GUIWindow &wnd)

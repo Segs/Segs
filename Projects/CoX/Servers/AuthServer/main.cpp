@@ -82,6 +82,8 @@ private:
 static std::unique_ptr<MessageBusMonitor> s_bus_monitor;
 static void shutDownServers(const char *reason)
 {
+    qCDebug(logInput) << "Reason for shutdown: " << reason;
+
     if (GlobalTimerQueue::instance()->thr_count())
     {
         GlobalTimerQueue::instance()->deactivate();

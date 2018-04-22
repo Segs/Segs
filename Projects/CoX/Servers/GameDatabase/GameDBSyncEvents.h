@@ -127,7 +127,7 @@ struct GameAccountResponseCharacterData
     uint32_t m_account_id;
 
     int index;
-    int m_current_costume_idx;
+    size_t m_current_costume_idx;
     bool m_villain;
     bool m_multiple_costumes;
     void reset()
@@ -142,14 +142,14 @@ struct GameAccountResponseCharacterData
         return 0==m_name.compare("EMPTY",Qt::CaseInsensitive);
     }
     GameAccountResponseCostumeData &current_costume() {
-        if(m_current_costume_idx>=0 && m_current_costume_idx<m_costumes.size() )
+        if(m_current_costume_idx<m_costumes.size() )
             return m_costumes[m_current_costume_idx];
         assert(!m_costumes.empty());
         m_current_costume_idx = 0;
         return m_costumes.front();
     }
     const GameAccountResponseCostumeData &current_costume() const {
-        if(m_current_costume_idx>=0 && m_current_costume_idx<m_costumes.size() )
+        if(m_current_costume_idx<m_costumes.size() )
             return m_costumes[m_current_costume_idx];
         assert(!m_costumes.empty());
         return m_costumes.front();
