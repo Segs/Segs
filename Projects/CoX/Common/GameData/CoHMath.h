@@ -181,6 +181,30 @@ inline glm::mat3 CoHYprToMat3(glm::vec3 pyr)
     }
     return mat;
 }
+inline void rotationFromYPR(glm::mat4 & mat, const glm::vec3 &pyr)
+{
+    float   cos_p     =  std::cos(pyr.x);
+    float   neg_sin_p = -std::sin(pyr.x);
+    float   cos_y     =  std::cos(pyr.y);
+    float   neg_sin_y = -std::sin(pyr.y);
+    float   cos_r     =  std::cos(pyr.z);
+    float   neg_sin_r = -std::sin(pyr.z);
+    float   tmp       =  - cos_y * neg_sin_p;
+    glm::mat3 rotmat;
+    rotmat[0][0] = cos_r * cos_y - neg_sin_y * neg_sin_p * neg_sin_r;
+    rotmat[0][1] = neg_sin_r * cos_p;
+    rotmat[0][2] = tmp * neg_sin_r + cos_r * neg_sin_y;
+    rotmat[1][0] = -(neg_sin_r * cos_y) - neg_sin_y * neg_sin_p * cos_r;
+    rotmat[1][1] = cos_r * cos_p;
+    rotmat[1][2] = tmp * cos_r - neg_sin_r * neg_sin_y;
+    rotmat[2][0] = -(neg_sin_y * cos_p);
+    rotmat[2][1] = -neg_sin_p;
+    rotmat[2][2] = cos_y * cos_p;
+
+    mat[0]= glm::vec4(rotmat[0],0);
+    mat[1]= glm::vec4(rotmat[1],0);
+    mat[2]= glm::vec4(rotmat[2],0);
+}
 inline float normalizeRadAngle(float ang)
 {
     float res = ang;
