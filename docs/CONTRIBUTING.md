@@ -45,14 +45,14 @@ We have an official message board and a FAQ where the community chimes in with h
 
 Chat with us on Discord! We're currently hosting a `#segs` channel on Splat Chat. You can join by clicking this link:
  
- [**Click here to join SEGS Discord**](https://discord.gg/DKaEyhd)
+ [**Click here to join SEGS Discord**](https://discord.segs.io/)
 
 
 ### Chat with us on IRC
 
 Or if IRC chat is more your speed, you can join us on IRC:
 
-  **Server:** irc.nemerle.eu  
+  **Server:** irc.segs.io 
   **Port:** 6667  
   **SSL port:** 6697  
   **Channel:** #segs  
@@ -239,8 +239,39 @@ and reserve enough tabs for the longest return type. i.e:
     float       yaw;
 ```
 
-6. Doxygen Comments - IMHO The place for doxygen comments is in the source file.
-Headers should be clean of comments, as to allow for quick class interface scanning
+6. Use spacing between binary mathematical, assignment, and ternary operators and their operands:
+```cpp
+    a = b + c;
+    a += x * y / z;
+    a = b ? c : d;
+```
+
+7. Doxygen documentation should be done in the implementation files (.cpp) and omitted from the headers. Proper and thorough documentation will enable others to better understand the intent of any code you contributed. Doxygen uses special comment syntax along with tags to accomplish this. For a definitive list of tags, please see [Doxygen tags](https://www.stack.nl/~dimitri/doxygen/manual/commands.html). We prefer Qt style (`/*!*/` for multi-line and `//!` for single-line) comments. See below for various examples.
+```cpp
+//! This class represents an Entity
+class Entity
+{
+    public:
+        // ...
+    private:
+        int id; //! contains the ID of the Entity
+};
+
+/*!
+ * @brief Clones an entity
+ * @param[in] src source Entity to copy from
+ * @param[out] dst destination Entity to copy to
+ * @returns true if copy was successful and false otherwise
+ */
+bool clone(Entity *src, Entity *dst)
+{
+    // ...
+    if (!Entity)
+        return false;
+    else
+        return true;
+}
+```
 
 ### Documentation Styleguide
 

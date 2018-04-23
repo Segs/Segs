@@ -26,6 +26,7 @@ void World::update(const ACE_Time_Value &tick_timer)
     if(m_time_of_day>=24.0f)
         m_time_of_day-=24.0f;
     sim_frame_time = delta.msec()/1000.0f;
+    accumulated_time += sim_frame_time;
     prev_tick_time = tick_timer;
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_ent_mager.getEntitiesMutex());
 

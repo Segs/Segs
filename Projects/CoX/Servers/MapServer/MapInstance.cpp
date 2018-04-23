@@ -637,7 +637,7 @@ void MapInstance::sendState() {
             res->is_incremental(true); // incremental world update = op 2
         }
         res->ent_major_update = true;
-        res->abs_time = 30*100*(m_world->sim_frame_time/1000.0f);
+        res->abs_time = 30*100*(m_world->accumulated_time);
         cl->link()->putq(res);
     }
     only_first=false;
