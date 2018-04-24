@@ -124,7 +124,7 @@ void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands,
     }
     else
     {
-        for(uint32_t i=0; i<(uint32_t)commands.size(); i++)
+        for(uint32_t i=0; i<commands.size(); i++)
         {
             tgt.StorePackedBits(1,i+1);
             tgt.StoreString(commands[i]->m_name);

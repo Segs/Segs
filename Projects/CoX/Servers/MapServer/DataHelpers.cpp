@@ -276,8 +276,8 @@ void readEmailMessage(Entity *e, const int id){
 // Getter
 uint32_t            getLevel(const Character &c) { return c.m_char_data.m_level; }
 uint32_t            getCombatLevel(const Character &c) { return c.m_char_data.m_combat_level; }
-float               getHP(const Character &c) { return c.m_current_attribs.m_HitPoints; }
-float               getEnd(const Character &c) { return c.m_current_attribs.m_Endurance; }
+float               getHP(const Character &c) { return c.m_char_data.m_current_attribs.m_HitPoints; }
+float               getEnd(const Character &c) { return c.m_char_data.m_current_attribs.m_Endurance; }
 uint64_t            getLastCostumeId(const Character &c) { return c.m_char_data.m_last_costume_id; }
 const QString &     getOrigin(const Character &c) { return c.m_char_data.m_origin_name; }
 const QString &     getClass(const Character &c) { return c.m_char_data.m_class_name; }
@@ -312,11 +312,11 @@ void setCombatLevel(Character &c, uint32_t val)
 }
 void setHP(Character &c, float val)
 {
-    c.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val,c.m_max_attribs.m_HitPoints));
+    c.m_char_data.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val,c.m_max_attribs.m_HitPoints));
 }
 void setEnd(Character &c, float val)
 {
-    c.m_current_attribs.m_Endurance = std::max(0.0f, std::min(val,c.m_max_attribs.m_Endurance));
+    c.m_char_data.m_current_attribs.m_Endurance = std::max(0.0f, std::min(val,c.m_max_attribs.m_Endurance));
 }
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
 void    setMapName(Character &c, const QString &val) { c.m_char_data.m_mapName = val; }

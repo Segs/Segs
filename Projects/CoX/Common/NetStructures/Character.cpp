@@ -31,16 +31,16 @@ namespace {
 
 Character::Character()
 {
-    m_multiple_costumes              = false;
-    m_current_costume_idx            = 0;
-    m_current_costume_set            = false;
-    m_char_data.m_supergroup_costume = false;
-    m_sg_costume                     = nullptr;
-    m_char_data.m_using_sg_costume   = false;
-    m_current_attribs.m_HitPoints    = 25;
-    m_max_attribs.m_HitPoints        = 50;
-    m_current_attribs.m_Endurance    = 33;
-    m_max_attribs.m_Endurance        = 43;
+    m_multiple_costumes                         = false;
+    m_current_costume_idx                       = 0;
+    m_current_costume_set                       = false;
+    m_char_data.m_supergroup_costume            = false;
+    m_sg_costume                                = nullptr;
+    m_char_data.m_using_sg_costume              = false;
+    m_char_data.m_current_attribs.m_HitPoints   = 25;
+    m_max_attribs.m_HitPoints                   = 50;
+    m_char_data.m_current_attribs.m_Endurance   = 33;
+    m_max_attribs.m_Endurance                   = 43;
     m_char_data.m_has_titles = m_char_data.m_has_the_prefix
             || !m_char_data.m_titles[0].isEmpty()
             || !m_char_data.m_titles[1].isEmpty()
@@ -338,7 +338,7 @@ void serializeStats(const Character &src,BitStream &bs, bool sendAbsolute)
     uint32_t field_idx=0;
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,field_idx++); // CurrentAttribs
-    serializeStats(src.m_current_attribs,bs,sendAbsolute);
+    serializeStats(src.m_char_data.m_current_attribs,bs,sendAbsolute);
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,field_idx++); // MaxAttribs
     serializeStats(src.m_max_attribs,bs,sendAbsolute);
@@ -352,7 +352,7 @@ void serializeFullStats(const Character &src,BitStream &bs, bool sendAbsolute)
     uint32_t field_idx=0;
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,field_idx++); // first field is CurrentAttribs
-    serializeFullStats(src.m_current_attribs,bs,sendAbsolute);
+    serializeFullStats(src.m_char_data.m_current_attribs,bs,sendAbsolute);
     bs.StoreBits(1,1); // we have more data
     bs.StorePackedBits(1,field_idx++); // first field is MaxAttribs
     serializeFullStats(src.m_max_attribs,bs,sendAbsolute);
