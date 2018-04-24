@@ -7,6 +7,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 
+DROP TABLE IF EXISTS `accounts`;
 CREATE TABLE `accounts` (
   `id` int(11) NOT NULL,
   `username` varchar(20) NOT NULL,
@@ -16,9 +17,7 @@ CREATE TABLE `accounts` (
   `salt` blob NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-INSERT INTO `accounts` (`id`, `username`, `access_level`, `creation_date`, `passw`, `salt`) VALUES
-(1, 'segsadmin', 9, '2018-04-20 08:42:33', 0xab6ef29656c1a0b0f9ef11dba9de1393fe6494b445cf22d335c57d21108bcde0, 0x625551474b5942456364534a4a756f7a);
-
+DROP TABLE IF EXISTS `bans`;
 CREATE TABLE `bans` (
   `id` int(11) NOT NULL,
   `account_id` int(11) NOT NULL,
@@ -27,6 +26,7 @@ CREATE TABLE `bans` (
   `reason` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+DROP TABLE IF EXISTS `game_servers`;
 CREATE TABLE `game_servers` (
   `id` int(11) NOT NULL,
   `addr` varchar(20) NOT NULL,
@@ -35,6 +35,7 @@ CREATE TABLE `game_servers` (
   `token` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+DROP TABLE IF EXISTS `table_versions`;
 CREATE TABLE `table_versions` (
   `id` int(11) NOT NULL,
   `table_name` varchar(20) NOT NULL,
@@ -66,7 +67,7 @@ ALTER TABLE `table_versions`
 
 
 ALTER TABLE `accounts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 ALTER TABLE `bans`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 ALTER TABLE `game_servers`

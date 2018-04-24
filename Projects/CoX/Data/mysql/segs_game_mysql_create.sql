@@ -7,15 +7,14 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 
+DROP TABLE IF EXISTS `accounts`;
 CREATE TABLE `accounts` (
   `id` int(11) NOT NULL,
   `account_id` int(11) DEFAULT NULL,
   `max_slots` int(11) NOT NULL DEFAULT '8'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-INSERT INTO `accounts` (`id`, `account_id`, `max_slots`) VALUES
-(1, 1, 8);
-
+DROP TABLE IF EXISTS `characters`;
 CREATE TABLE `characters` (
   `id` int(11) NOT NULL,
   `account_id` int(11) NOT NULL,
@@ -32,6 +31,7 @@ CREATE TABLE `characters` (
   `player_data` mediumblob
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+DROP TABLE IF EXISTS `costume`;
 CREATE TABLE `costume` (
   `id` int(11) NOT NULL,
   `character_id` int(11) NOT NULL,
@@ -40,6 +40,7 @@ CREATE TABLE `costume` (
   `parts` blob
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+DROP TABLE IF EXISTS `progress`;
 CREATE TABLE `progress` (
   `id` int(11) NOT NULL,
   `character_id` int(11) DEFAULT NULL,
@@ -49,6 +50,7 @@ CREATE TABLE `progress` (
   `souvenirs` blob
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+DROP TABLE IF EXISTS `supergroups`;
 CREATE TABLE `supergroups` (
   `id` int(11) NOT NULL,
   `supergroup_id` int(11) DEFAULT NULL,
@@ -62,6 +64,7 @@ CREATE TABLE `supergroups` (
   `sg_members` blob
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+DROP TABLE IF EXISTS `table_versions`;
 CREATE TABLE `table_versions` (
   `id` int(11) NOT NULL,
   `table_name` varchar(20) NOT NULL,
@@ -104,11 +107,11 @@ ALTER TABLE `table_versions`
 
 
 ALTER TABLE `accounts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 ALTER TABLE `characters`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 ALTER TABLE `costume`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 ALTER TABLE `progress`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 ALTER TABLE `supergroups`
