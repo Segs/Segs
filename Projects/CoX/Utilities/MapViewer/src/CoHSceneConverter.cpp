@@ -81,30 +81,7 @@ ConvertedRootNode *newRef(CoHSceneGraph &scene)
     scene.refs[idx]->index_in_roots_array = idx;
     return scene.refs[idx];
 }
-bool LoadScene(const QString &fname,SceneGraph_Data &scenegraph)
-{
-    BinStore binfile;
 
-    if(fname.contains(".crl")) {
-        if(!loadFrom(fname,scenegraph))
-        {
-            qCritical() << "Failed to serialize data from crl:" << fname;
-            return false;
-        }
-    }
-    else
-    {
-        if(!binfile.open(fname,scenegraph_i0_2_requiredCrc)) {
-            qCritical() << "Failed to open original bin:" << fname;
-            return false;
-        }
-        if(!loadFrom(&binfile,scenegraph)) {
-            qCritical() << "Failed to load data from original bin:" << fname;
-            return false;
-        }
-    }
-    return true;
-}
 CoHNode * getNodeByName(const CoHSceneGraph &conv,const QString &a1)
 {
     QString filename;
@@ -466,7 +443,7 @@ bool loadSceneGraph(CoHSceneGraph &conv,const QString &path)
     my_name_list.basename = buildBaseName(path);
     SceneGraph_Data scenegraph;
     binName.replace("CHUNKS.bin","Chunks.bin");
-    LoadScene(binName,scenegraph);
+    LoadSceneData(binName,scenegraph);
     PostProcessScene(scenegraph,conv,my_name_list,path);
     return true;
 }
@@ -474,7 +451,7 @@ extern int created_node_count;
 //TODO: convert this from recursive function into iterative one.
 Urho3D::Node * convertedNodeToLutefisk(CoHNode *conv_node, const Urho3D::Matrix3x4 &mat, Context *ctx, int depth, int opt)
 {
-    
+
     ResourceCache* cache = ctx->m_ResourceCache.get();
     Urho3D::Node * node = new Node(ctx);
     created_node_count++;

@@ -143,19 +143,18 @@ void storeOrientation(const Entity &src,BitStream &bs)
     qCDebug(logOrientation, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
     qCDebug(logOrientation, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
     qCDebug(logOrientation, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);
-    qCDebug(logOrientation, "vel_scale: %f", src.inp_state.input_vel_scale);
+    qCDebug(logOrientation, "vel_scale: %d", src.inp_state.input_vel_scale);
 
     for(int i=0; i<3; i++)
     {
-        if(update_rot(src,i))
-        {
-            uint32_t v;
-            v = AngleQuantize(pyr_angles[i],9);
+        if(!update_rot(src,i))
+            continue;
 
-            qCDebug(logOrientation, "v: %d", v); // does `v` fall between 0...512
+        uint32_t v = AngleQuantize(pyr_angles[i],9);
 
-            bs.StoreBits(9,v);
-        }
+        qCDebug(logOrientation, "v: %d", v); // does `v` fall between 0...512
+
+        bs.StoreBits(9,v);
     }
 }
 
@@ -215,10 +214,10 @@ void sendNetFx(const Entity &src,BitStream &bs)
     //NetFx.serializeto();
     for(int i=0; i<src.m_num_fx; i++)
     {
-        bs.StoreBits(8,src.m_fx1[i]); // command
-        bs.StoreBits(32,src.m_fx2[i]); // NetID
-        bs.StoreBits(1,0);
-        storePackedBitsConditional(bs,10,0xCB8); // handle
+        bs.StoreBits(8,src.m_fx1[i].command); // command
+        bs.StoreBits(32,src.m_fx1[i].net_id); // NetID
+        bs.StoreBits(1,src.m_fx1[i].pitch_to_target);
+        storePackedBitsConditional(bs,10, src.m_fx1[i].handle); // handle
         storeBitsConditional(bs,4,0); // client timer
         storeBitsConditional(bs,32,0); // clientTriggerFx
         storeFloatConditional(bs,0.0); // duration

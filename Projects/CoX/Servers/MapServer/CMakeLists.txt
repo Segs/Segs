@@ -29,7 +29,7 @@ SET(target_CPP
     MapTemplate.cpp
     NetCommandManager.cpp
     SlashCommand.cpp
-    SceneGraph.cpp
+    MapSceneGraph.cpp
     WorldSimulation.cpp
     ${SCRIPTING_CPP}
 )
@@ -76,7 +76,7 @@ SET(target_INCLUDE
     NetCommandManager.h
     ScriptingEngine.h
     SlashCommand.h
-    SceneGraph.h
+    MapSceneGraph.h
     WorldSimulation.h
 )
 
@@ -89,7 +89,7 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
-target_link_libraries(mapserver_lib PUBLIC CRUDP_Protocol)
+target_link_libraries(mapserver_lib PUBLIC CRUDP_Protocol common_runtime)
 qt5_use_modules(mapserver_lib LINK_PUBLIC Core)
 if(ENABLE_SCRIPTING_ENGINE)
     target_compile_definitions(mapserver_lib PUBLIC -DSCRIPTING_ENABLED=1)

@@ -203,6 +203,14 @@ struct NPCData
     int npc_idx=0;
     int costume_variant=0;
 };
+struct NetFx
+{
+    uint8_t command;
+    uint32_t net_id;
+    uint32_t handle;
+    bool pitch_to_target;
+    uint8_t bone_id;
+};
 class Entity
 {
     // only EntityStore can create instances of this class
@@ -248,9 +256,7 @@ public:
         int                 m_num_fx                = 0;
         bool                m_is_logging_out        = false;
         int                 m_time_till_logout      = 0;    // time in miliseconds untill given entity should be marked as logged out.
-        std::vector<uint8_t> m_fx1;
-        std::vector<uint32_t> m_fx2;
-        std::vector<uint8_t> m_fx3;
+        std::vector<NetFx> m_fx1;
         AppearanceType      m_costume_type          = AppearanceType::None;
         int                 m_state_mode            = 0;
         bool                m_state_mode_send       = false;

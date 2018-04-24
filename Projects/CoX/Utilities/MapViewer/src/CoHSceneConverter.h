@@ -63,8 +63,6 @@ struct ConvertedRootNode
     Urho3D::Matrix3x4 mat;
     CoHNode *node = nullptr;
     uint32_t index_in_roots_array=0;
-
-
 };
 struct CoHSceneGraph
 {

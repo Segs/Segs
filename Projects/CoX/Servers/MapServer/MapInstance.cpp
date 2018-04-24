@@ -19,6 +19,7 @@
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
 #include "EntityStorage.h"
+#include "MapSceneGraph.h"
 #include "WorldSimulation.h"
 #include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/Database.h"
@@ -49,7 +50,6 @@ enum {
     Session_Reaper_Timer   = 3,
 };
 
-
 const ACE_Time_Value reaping_interval(0,1000*1000);
 const ACE_Time_Value link_is_stale_if_disconnected_for(0,5*1000*1000);
 const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
@@ -71,7 +71,7 @@ class MapLinkEndpoint : public ServerEndpoint
 {
 public:
     MapLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
-    ~MapLinkEndpoint()=default;
+    ~MapLinkEndpoint() override =default;
 protected:
     CRUDLink *createLink(EventProcessor *down) override
     {
@@ -89,7 +89,7 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     m_endpoint->set_downstream(this);
 }
 
-void MapInstance::start()
+void MapInstance::start(const QString &scenegraph_path)
 {
     assert(m_world_update_timer==nullptr);
     assert(m_game_server_id!=255);
@@ -98,6 +98,16 @@ void MapInstance::start()
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
+        bool scene_graph_loaded = false;
+        TIMED_LOG({
+                m_map_scenegraph = new MapSceneGraph;
+                scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/" + scenegraph_path);
+            }, "Loading original scene graph"
+            );
+        TIMED_LOG({
+            m_map_scenegraph->spawn_npcs(this);
+            },"Spawning npcs");
+        qInfo() << "Loading custom scripts";
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
 
@@ -552,10 +562,10 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     auto *res = new SceneEvent;
 
     res->undos_PP              = 0;
-    res->var_14                = true;
+    res->is_new_world          = true;
     res->m_outdoor_mission_map = false;
     res->m_map_number          = 1;
-                            //"maps/City_Zones/City_00_01/City_00_01.txt";
+
     assert(m_data_path.contains("City_"));
     int city_idx = m_data_path.indexOf("City_");
     int end_or_slash = m_data_path.indexOf("/",city_idx);
@@ -627,7 +637,7 @@ void MapInstance::sendState() {
             res->is_incremental(true); // incremental world update = op 2
         }
         res->ent_major_update = true;
-        res->abs_time = 30*100*(m_world->sim_frame_time/1000.0f);
+        res->abs_time = 30*100*(m_world->accumulated_time);
         cl->link()->putq(res);
     }
     only_first=false;
@@ -658,7 +668,8 @@ void MapInstance::on_input_state(InputState *st)
     ent->m_target_idx = st->m_target_idx;
     ent->m_assist_target_idx = st->m_assist_target_idx;
     // Set Orientation
-    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r) {
+    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r)
+    {
         ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
         ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
     }
