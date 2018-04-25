@@ -39,7 +39,6 @@ enum GameDBEventTypes : uint32_t
 };
 
 #define ONE_WAY_MESSAGE(name)\
-
 struct name ## Message final : public InternalEvent\
 {\
     name ## Data m_data;\
@@ -48,12 +47,10 @@ struct name ## Message final : public InternalEvent\
 
 /// A message without Request having additional data
 #define SIMPLE_TWO_WAY_MESSAGE(name)\
-
 struct name ## Request final : public InternalEvent\
 {\
     name ## Message(uint64_t token) :  InternalEvent(GameDBEventTypes::ev ## name ## Request) {session_token(token);}\
 };\
-
 struct name ## Response final : public InternalEvent\
 {\
     name ## Data m_data;\
@@ -62,14 +59,12 @@ struct name ## Response final : public InternalEvent\
 
 /// A message with Request having additional data
 #define TWO_WAY_MESSAGE(name)\
-
 struct name ## Request final : public InternalEvent\
 {\
     name ## RequestData m_data;\
     name ## Request(name ## RequestData &&d,uint64_t token,EventProcessor *src = nullptr) :\
         InternalEvent(GameDBEventTypes::ev ## name ## Request,src),m_data(d) {session_token(token);}\
 };\
-
 struct name ## Response final : public InternalEvent\
 {\
     name ## ResponseData m_data;\

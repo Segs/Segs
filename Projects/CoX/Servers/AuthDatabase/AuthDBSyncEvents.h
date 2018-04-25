@@ -30,27 +30,23 @@ struct name ## Message final : public InternalEvent\
 
 /// A message without Request having additional data
 #define SIMPLE_TWO_WAY_MESSAGE(name)\
-
 struct name ## Request final : public InternalEvent\
 {\
     name ## Message(uint64_t token) :  InternalEvent(AuthDBEventTypes::ev ## name ## Request) {session_token(token);}\
 };\
-
 struct name ## Response final : public InternalEvent\
 {\
     name ## Data m_data;\
     name ## Response(name ## Data &&d,uint64_t token) :  InternalEvent(AuthDBEventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
 };
+
 /// A message with Request having additional data
-
 #define TWO_WAY_MESSAGE(name)\
-
 struct name ## Request final : public InternalEvent\
 {\
     name ## RequestData m_data;\
     name ## Request(name ## RequestData &&d,uint64_t token) : InternalEvent(AuthDBEventTypes::ev ## name ## Request),m_data(d) {session_token(token);}\
 };\
-
 struct name ## Response final : public InternalEvent\
 {\
     name ## ResponseData m_data;\
