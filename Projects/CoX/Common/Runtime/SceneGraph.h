@@ -110,7 +110,7 @@ struct PrefabStore
     bool loadPrefabForNode(SceneNode *node, LoadingContext &ctx);
     bool loadNamedPrefab(const QString &name, LoadingContext &conv);
     Model *groupModelFind(const QString &path, LoadingContext &ctx);
-    GeoStoreDef * groupGetFileEntryPtr(const QString &a1);
+    GeoStoreDef * groupGetFileEntryPtr(const QString &full_name);
 };
 
 struct LoadingContext

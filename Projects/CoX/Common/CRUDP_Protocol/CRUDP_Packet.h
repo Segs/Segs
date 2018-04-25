@@ -30,7 +30,6 @@ public:
     ~CrudP_Packet();
 
     uint32_t  GetBits(uint32_t nBits);
-    void GetBitArray(uint32_t nBytes, uint8_t *array);
     uint32_t  GetPackedBits(uint32_t nBits);
     void GetString(QString &str);
 

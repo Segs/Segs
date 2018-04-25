@@ -15,6 +15,7 @@ class MapSceneGraph
     std::vector<struct SceneNode *> m_nodes_with_properties;
 public:
     MapSceneGraph();
+    ~MapSceneGraph();
     bool loadFromFile(const QString &mapname);
     void set_default_spawn_point(glm::vec3 loc) { m_spawn_point = loc; }
     glm::vec3 spawn_location() const { return m_spawn_point; }

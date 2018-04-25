@@ -73,35 +73,33 @@ enum ChatWindowMasks : uint32_t {   // top      bottom  bottom              top
 class GUIWindow
 {
 public:
-    GUIWindow() { }
-
         // GUI Window Params
         WindowIDX           m_idx               = wdw_Unknown0;
         WindowVisibility    m_mode              = wv_Uninitialized;
         bool                m_draggable_frame   = false;
-        uint32_t            m_posx              = 0;
-        uint32_t            m_posy              = 0;
+        int32_t             m_posx              = 0;
+        int32_t             m_posy              = 0;
         uint32_t            m_width             = 0;
         uint32_t            m_height            = 0;
         uint32_t            m_locked            = 0;
         uint32_t            m_color             = 0x3399FF99;   // 0x3399FF99 (light blue with 60% transparency)
         uint32_t            m_alpha             = 0x88;         // default 136 (0x88)
 
-        void guiWindowDump() const
-        {
-            qDebug().noquote() << "GUIWindow:" << m_idx
-                     << "\n\t" << "posx:" << m_posx
-                     << "\n\t" << "posy:" << m_posy
-                     << "\n\t" << "width:" << m_width
-                     << "\n\t" << "height:" << m_height
-                     << "\n\t" << "draggable_frame:" << m_draggable_frame
-                     << "\n\t" << "locked:" << m_locked
-                     << "\n\t" << "mode:" << m_mode
-                     << "\n\t" << "color:" << m_color
-                     << "\n\t" << "alpha:" << m_alpha;
-        }
+        void                guiWindowDump() const
+                            {
+                                qDebug().noquote() << "GUIWindow:" << m_idx
+                                         << "\n\t" << "posx:" << m_posx
+                                         << "\n\t" << "posy:" << m_posy
+                                         << "\n\t" << "width:" << m_width
+                                         << "\n\t" << "height:" << m_height
+                                         << "\n\t" << "draggable_frame:" << m_draggable_frame
+                                         << "\n\t" << "locked:" << m_locked
+                                         << "\n\t" << "mode:" << m_mode
+                                         << "\n\t" << "color:" << m_color
+                                         << "\n\t" << "alpha:" << m_alpha;
+                            }
 
-        void setWindowVisibility(WindowVisibility val) { m_mode = val; }
+        void                setWindowVisibility(WindowVisibility val) { m_mode = val; }
 };
 
 class GUISettings

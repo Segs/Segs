@@ -156,3 +156,8 @@ void MapSceneGraph::spawn_npcs(MapInstance *instance)
         walkSceneNode(v->node, v->mat, creator);
     }
 }
+
+MapSceneGraph::~MapSceneGraph()
+{
+
+}

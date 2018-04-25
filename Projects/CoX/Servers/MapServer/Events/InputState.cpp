@@ -299,10 +299,11 @@ void InputState::serializefrom(BitStream &bs)
         ctrl_idx++;
     }
     recv_client_opts(bs); // g_pak contents will follow
-    bs.ByteAlign(true,false);
-    if(bs.GetReadableBits()>0) {
-        m_user_commands.Reset();
-        m_user_commands.appendBitStream(bs);
+    if(bs.GetReadableBits()>0)
+    {
+        m_user_commands.ResetOffsets();
+        bs.ByteAlign(true,false);
+        m_user_commands.StoreBitArray(bs.read_ptr(),bs.GetReadableBits());
         // all remaining bits were moved to m_user_commands.
         bs.SetReadPos(bs.GetWritePos());
     }

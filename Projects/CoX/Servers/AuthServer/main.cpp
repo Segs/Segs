@@ -43,6 +43,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QElapsedTimer>
 #include <thread>
+#include <chrono>
 #include <mutex>
 #include <stdlib.h>
 #include <memory>
@@ -275,9 +276,9 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
         return -1;
     }
     // process all queued qt messages here.
-    ACE_Time_Value event_processing_delay(0,1000*5);
     while( !s_event_loop_is_done )
     {
+        ACE_Time_Value event_processing_delay(0,1000*15);
         ACE_Reactor::instance()->handle_events(&event_processing_delay);
         QCoreApplication::processEvents();
     }
@@ -292,6 +293,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     g_auth_server.reset();
     s_bus_monitor.reset();
     g_message_bus.reset();
+    ACE_Time_Value event_processing_delay(0,1000*15);
     ACE_Reactor::instance()->handle_events(&event_processing_delay);
     ACE_Reactor::instance()->remove_handler(interesting_signals);
     ACE_Reactor::end_event_loop();

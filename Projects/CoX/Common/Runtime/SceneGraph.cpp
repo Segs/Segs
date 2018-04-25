@@ -152,15 +152,15 @@ void geosetLoadHeader(QFile &fp, GeoSet *geoset)
     geoset->name = header32->name;
     for (int idx = 0; idx < header32->num_subs; ++idx)
     {
-        const Model32 *v6 = &ptr_subs[idx];
+        const Model32 *sub_model = &ptr_subs[idx];
         //std::vector<TextureBind> binds;
         //if (info->tex_binds_size) {
-        //    binds = convertTexBinds(v6->num_textures, v6->texture_bind_offsets + stream_pos_1);
+        //    binds = convertTexBinds(sub_model->num_textures, sub_model->texture_bind_offsets + stream_pos_1);
         //}
-        Model *m    = convertAndInsertModel(*geoset, v6);
+        Model *m    = convertAndInsertModel(*geoset, sub_model);
         //m->texture_bind_info = binds;
         //m->geoset       = geoset;
-        m->name         = QString((const char *)stream_pos_0 + v6->bone_name_offset);
+        m->name         = QString((const char *)stream_pos_0 + sub_model->bone_name_offset);
     }
 //    if (!geoset->subs.empty())
 //        addModelStubs(geoset);
@@ -371,20 +371,21 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
         }
     }
 }
-void addLod(const std::vector<DefLod_Data> &a1, SceneNode *a2)
+void addLod(const std::vector<DefLod_Data> &lods, SceneNode *a2)
 {
-    if(a1.empty())
+    if(lods.empty())
         return;
-    const DefLod_Data &v2(a1.front());
-    a2->lod_scale = v2.Scale;
+
+    const DefLod_Data &lod_data(lods.front());
+    a2->lod_scale = lod_data.Scale;
 
     if ( a2->lod_fromtrick )
         return;
 
-    a2->lod_far       = v2.Far;
-    a2->lod_far_fade  = v2.FarFade;
-    a2->lod_near      = v2.Near;
-    a2->lod_near_fade = v2.NearFade;
+    a2->lod_far       = lod_data.Far;
+    a2->lod_far_fade  = lod_data.FarFade;
+    a2->lod_near      = lod_data.Near;
+    a2->lod_near_fade = lod_data.NearFade;
 }
 bool nodeCalculateBounds(SceneNode *group)
 {
@@ -441,8 +442,8 @@ void  nodeSetVisBounds(SceneNode *group)
         group->lod_scale = 1.0f;
     if ( group->model )
     {
-        Model *v1 = group->model;
-        dv = v1->box.size();
+        Model *model = group->model;
+        dv = model->box.size();
         maxrad = glm::length(dv) * 0.5f + group->shadow_dist;
         if ( group->lod_far == 0.0f )
         {
@@ -528,49 +529,49 @@ void loadSubgraph(const QString &filename, LoadingContext &ctx,PrefabStore &pref
     loadSceneGraph(fi.path()+"/"+fi.completeBaseName()+".txt",tmp,prefabs);
 }
 
-GeoStoreDef * PrefabStore::groupGetFileEntryPtr(const QString &a1)
+GeoStoreDef * PrefabStore::groupGetFileEntryPtr(const QString &full_name)
 {
-    QString key = a1.mid(a1.lastIndexOf('/') + 1);
+    QString key = full_name.mid(full_name.lastIndexOf('/') + 1);
     key = key.mid(0, key.indexOf("__"));
     return m_modelname_to_geostore.value(key, nullptr);
 }
-static void registerGeometryModifier(GeometryModifiers *a1)
+static void registerGeometryModifier(GeometryModifiers *mod)
 {
-    if (a1->node.TintColor0.rgb_are_zero())
-        a1->node.TintColor0 = RGBA(0xFFFFFFFF);
-    if (a1->node.TintColor1.rgb_are_zero())
-        a1->node.TintColor1 = RGBA(0xFFFFFFFF);
-    a1->AlphaRef /= 255.0f;
-    if (a1->ObjTexBias != 0.0f)
-        a1->node._TrickFlags |= TexBias;
-    if (a1->AlphaRef != 0.0f)
-        a1->node._TrickFlags |= AlphaRef;
-    if (a1->FogDist.x != 0.0f || a1->FogDist.y != 0.0f)
-        a1->node._TrickFlags |= FogHasStartAndEnd;
-    if (a1->ShadowDist != 0.0f)
-        a1->node._TrickFlags |= CastShadow;
-    if (a1->NightGlow.x != 0.0f || a1->NightGlow.y != 0.0f)
-        a1->node._TrickFlags |= NightGlow;
-    if (a1->node.ScrollST0.x != 0.0f || a1->node.ScrollST0.y != 0.0f)
-        a1->node._TrickFlags |= ScrollST0;
-    if (a1->node.ScrollST1.x != 0.0f || a1->node.ScrollST1.y != 0.0f)
-        a1->node._TrickFlags |= ScrollST1;
-    if (!a1->StAnim.empty())
+    if (mod->node.TintColor0.rgb_are_zero())
+        mod->node.TintColor0 = RGBA(0xFFFFFFFF);
+    if (mod->node.TintColor1.rgb_are_zero())
+        mod->node.TintColor1 = RGBA(0xFFFFFFFF);
+    mod->AlphaRef /= 255.0f;
+    if (mod->ObjTexBias != 0.0f)
+        mod->node._TrickFlags |= TexBias;
+    if (mod->AlphaRef != 0.0f)
+        mod->node._TrickFlags |= AlphaRef;
+    if (mod->FogDist.x != 0.0f || mod->FogDist.y != 0.0f)
+        mod->node._TrickFlags |= FogHasStartAndEnd;
+    if (mod->ShadowDist != 0.0f)
+        mod->node._TrickFlags |= CastShadow;
+    if (mod->NightGlow.x != 0.0f || mod->NightGlow.y != 0.0f)
+        mod->node._TrickFlags |= NightGlow;
+    if (mod->node.ScrollST0.x != 0.0f || mod->node.ScrollST0.y != 0.0f)
+        mod->node._TrickFlags |= ScrollST0;
+    if (mod->node.ScrollST1.x != 0.0f || mod->node.ScrollST1.y != 0.0f)
+        mod->node._TrickFlags |= ScrollST1;
+    if (!mod->StAnim.empty())
     {
-        //        if (setStAnim(&a1->StAnim.front()))
-        //            a1->node._TrickFlags |= STAnimate;
+        //        if (setStAnim(&mod->StAnim.front()))
+        //            mod->node._TrickFlags |= STAnimate;
     }
-    if (a1->GroupFlags & VisTray)
-        a1->ObjFlags |= 0x400;
-    if (a1->name.isEmpty())
+    if (mod->GroupFlags & VisTray)
+        mod->ObjFlags |= 0x400;
+    if (mod->name.isEmpty())
         qDebug() << "No name in trick";
-    auto iter = g_tricks_string_hash_tab.find(a1->name.toLower());
+    auto iter = g_tricks_string_hash_tab.find(mod->name.toLower());
     if (iter!=g_tricks_string_hash_tab.end())
     {
         qDebug() << "duplicate model trick!";
         return;
     }
-    g_tricks_string_hash_tab[a1->name.toLower()]=a1;
+    g_tricks_string_hash_tab[mod->name.toLower()]=mod;
 }
 
 static void setupTexOpt(TextureModifiers *tex)
