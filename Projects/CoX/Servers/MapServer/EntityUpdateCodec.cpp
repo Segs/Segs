@@ -1,9 +1,13 @@
 /*
- * Super Entity Game Server
- * http://github.com/Segs
- * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
+ */
+
+/*!
+ * @addtogroup MapServer Projects/CoX/Servers/MapServer
+ * @{
  */
 
 #include "EntityUpdateCodec.h"
@@ -76,6 +80,7 @@ void storeCreation(const Entity &src, BitStream &bs)
     }
     PUTDEBUG("end storeCreation");
 }
+
 void sendStateMode(const Entity &src,BitStream &bs)
 {
     PUTDEBUG("before sendStateMode");
@@ -87,16 +92,20 @@ void sendStateMode(const Entity &src,BitStream &bs)
     }
     PUTDEBUG("after sendStateMode");
 }
+
 struct BinTreeEntry {
     uint8_t x,y,z,d;
 };
+
 struct BinTreeBase {
     BinTreeEntry arr[7];
 };
+
 void storeUnknownBinTree(const Entity &/*src*/,BitStream &bs)
 {
     bs.StoreBits(1,0);
 }
+
 bool storePosition(const Entity &src,BitStream &bs)
 {
 // float x = pos.vals.x;
@@ -115,12 +124,14 @@ bool storePosition(const Entity &src,BitStream &bs)
     }
     return true;
 }
+
 bool update_rot(const Entity &src, int axis ) /* returns true if given axis needs updating */
 {
     if(axis==axis) // FixMe: var compared against same var.
         return true;
     return false;
 }
+
 void storeOrientation(const Entity &src,BitStream &bs)
 {
     // Check if update needed through update_rot()
@@ -184,6 +195,7 @@ void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
     PUTDEBUG("after storeOrientation");
 
 }
+
 void sendSeqMoveUpdate(const Entity &src,BitStream &bs)
 {
     //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq mode update %d\n"),m_seq_update));
@@ -196,6 +208,7 @@ void sendSeqMoveUpdate(const Entity &src,BitStream &bs)
         storePackedBitsConditional(bs,4,src.m_seq_upd_num2); //maxval is 255
     }
 }
+
 void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
 {
     PUTDEBUG("before sendSeqTriggeredMoves");
@@ -209,6 +222,7 @@ void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
         storePackedBitsConditional(bs,16,0); // 1 EntityStoredMoveP->field_1
     }
 }
+
 void sendNetFx(const Entity &src,BitStream &bs)
 {
     bs.StorePackedBits(1,src.m_num_fx); // num fx
@@ -259,6 +273,7 @@ void sendNetFx(const Entity &src,BitStream &bs)
         }
     }
 }
+
 void sendCostumes(const Entity &src,BitStream &bs)
 {
     //NOTE: this will only be initialized once, and no changes later on will influence this
@@ -282,10 +297,12 @@ void sendCostumes(const Entity &src,BitStream &bs)
             break;
     }
 }
+
 void sendXLuency(BitStream &bs,float val)
 {
     storeBitsConditional(bs,8,std::min(static_cast<int>(uint8_t(val*255)),255));
 }
+
 void sendCharacterStats(const Entity &src,BitStream &bs)
 {
     // FixMe: have_stats and stats_changed are never modified prior to if comparison below.
@@ -315,6 +332,7 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
 
     serializeStats(*src.m_char,bs,false);
 }
+
 void sendBuffsConditional(const Entity &src,BitStream &bs)
 {
     //TODO: implement this
@@ -325,6 +343,7 @@ void sendBuffsConditional(const Entity &src,BitStream &bs)
         sendBuffs(src,bs);
     }
 }
+
 void sendTargetUpdate(const Entity &src,BitStream &bs)
 {
     uint32_t assist_id  = getAssistTargetIdx(src);
@@ -341,6 +360,7 @@ void sendTargetUpdate(const Entity &src,BitStream &bs)
     if(assist_id!=0)
         bs.StorePackedBits(12,assist_id);
 }
+
 void sendOnOddSend(const Entity &src,BitStream &bs)
 {
     // if this is set the entity on client will :
@@ -349,20 +369,24 @@ void sendOnOddSend(const Entity &src,BitStream &bs)
     //
     bs.StoreBits(1,src.m_odd_send);
 }
+
 void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
 {
     bs.StoreBits(1,src.m_is_villian); // on team evil ?
     bs.StoreBits(1,src.m_is_hero); // on team good ?
 }
+
 void sendEntCollision(const Entity &src,BitStream &bs)
 {
     // if 1 is sent, client will disregard it's own collision processing.
     bs.StoreBits(1,0); // 1/0 only
 }
+
 void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 {
     bs.StoreBits(1,0); // 1/0 only
 }
+
 void sendAFK(const Entity &src, BitStream &bs)
 {
     CharacterData cd = src.m_char->m_char_data;
@@ -375,6 +399,7 @@ void sendAFK(const Entity &src, BitStream &bs)
             bs.StoreString(cd.m_afk_msg);
     }
 }
+
 void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
 {
     bs.StoreBits(1,src.m_has_supergroup); // src.m_has_supergroup?
@@ -389,6 +414,7 @@ void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
         bs.StoreBits(32,src.m_supergroup.m_SG_color2); // supergroup color 2
     }
 }
+
 void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStream &bs)
 {
     if(belief.m_is_logging_out==src.m_is_logging_out) // no change in logout state
@@ -402,9 +428,9 @@ void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStrea
     storePackedBitsConditional(bs,5,src.m_is_logging_out ? src.m_time_till_logout/(1000) : 0);
     belief.m_is_logging_out = src.m_is_logging_out;
 }
-
 ////////////////////////////////////////////////////////////////////////////////////////////
 } // end of anonoymous namespace
+
 void sendBuffs(const Entity &src,BitStream &bs)
 {
     bs.StorePackedBits(5,0);
@@ -475,3 +501,5 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
         sendLogoutUpdate(src,belief,bs);
     }
 }
+
+//! @}

@@ -1,8 +1,19 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup CommonServers Projects/CoX/Common/Servers
+ * @{
+ */
+
 #include "MessageBusEndpoint.h"
 
 #include "HandlerLocator.h"
 #include "MessageBus.h"
-
 
 MessageBusEndpoint::~MessageBusEndpoint()
 {
@@ -15,6 +26,7 @@ void MessageBusEndpoint::subscribe(uint32_t ev_type)
     HandlerLocator::getMessageBus()->subscribe(ev_type,this);
     m_active_subscriptions.emplace_back(ev_type);
 }
+
 void MessageBusEndpoint::unsubscribe(uint32_t ev_type)
 {
     HandlerLocator::getMessageBus()->unsubscribe(ev_type,this);
@@ -28,3 +40,5 @@ void MessageBusEndpoint::unsubscribe(uint32_t ev_type)
         }
     }
 }
+
+//! @}

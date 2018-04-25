@@ -1,7 +1,20 @@
 /*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*
 * SEGS dbtool v0.4 dated 2018-04-22
 * A database creation and management tool.
 */
+
+/*!
+ * @addtogroup dbtool Projects/CoX/Utilities/dbtool
+ * @{
+ */
+
 #include "PasswordHasher/PasswordHasher.h"
 
 #include <QtCore/QSettings>
@@ -70,7 +83,6 @@ bool ConfigStruct::initialize_from_settings(const QString &settings_file_name, c
     config.endGroup(); // AdminServer
     return true;
 }
-
 
 void ConfigStruct::putFilePath()
 {
@@ -439,3 +451,5 @@ int main(int argc, char **argv)
     Pause();
     return 0;
 }
+
+//! @}

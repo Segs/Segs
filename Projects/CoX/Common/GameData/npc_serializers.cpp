@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "npc_serializers.h"
 #include "npc_definitions.h"
 
@@ -5,97 +17,95 @@
 #include "costume_definitions.h"
 #include "DataStorage.h"
 
-namespace  {
-bool loadFrom(BinStore *s, Parse_CostumePart &target)
+namespace
 {
-    s->prepare();
-    bool ok = true;
-    ok &= s->read(target.m_Name);
-    ok &= s->read(target.m_CP_Geometry);
-    ok &= s->read(target.m_Texture1);
-    ok &= s->read(target.m_Texture2);
-    ok &= s->read(target.m_Color1);
-    ok &= s->read(target.m_Color2);
-    ok &=s->prepare_nested();
-    assert(ok&&s->end_encountered());
-    return ok;
-}
-
-bool loadFrom(BinStore *s, Parse_Costume &target)
-{
-    s->prepare();
-    bool ok = true;
-    ok &= s->read(target.m_EntTypeFile);
-    ok &= s->read(target.m_CostumeFilePrefix);
-    ok &= s->read(target.m_Scale);
-    ok &= s->read(target.m_BoneScale);
-    ok &= s->read(target.m_SkinColor);
-    ok &=s->prepare_nested();
-    if(s->end_encountered())
-        return ok;
-    QString _name;
-    while(s->nesting_name(_name))
+    bool loadFrom(BinStore *s, Parse_CostumePart &target)
     {
-        s->nest_in();
-        if(_name.compare("CostumePart")==0) {
-            target.m_CostumeParts.emplace_back();
-            ok &= loadFrom(s,target.m_CostumeParts.back());
-        } else
-            assert(!"unknown field referenced.");
-        s->nest_out();
-    }
-    assert(ok);
-    return ok;
-}
-
-
-bool loadFrom(BinStore *s, NPCPower_Desc &target)
-{
-    s->prepare();
-    bool ok = true;
-    ok &= s->read(target.PowerCategory);
-    ok &= s->read(target.PowerSet);
-    ok &= s->read(target.Power);
-    ok &= s->read(target.Level);
-    ok &= s->read(target.Remove);
-    ok &=s->prepare_nested();
-    assert(ok && s->end_encountered());
-    return ok;
-}
-
-bool loadFrom(BinStore *s, Parse_NPC &target)
-{
-    s->prepare();
-    bool ok = true;
-    ok &= s->read(target.m_Name);
-    ok &= s->read(target.m_DisplayName);
-    ok &= s->read(target.m_Class);
-    ok &= s->read(target.m_Level);
-    ok &= s->read(target.m_Rank);
-    ok &= s->read(target.m_XP);
-    ok &=s->prepare_nested();
-    if(s->end_encountered())
+        s->prepare();
+        bool ok = true;
+        ok &= s->read(target.m_Name);
+        ok &= s->read(target.m_CP_Geometry);
+        ok &= s->read(target.m_Texture1);
+        ok &= s->read(target.m_Texture2);
+        ok &= s->read(target.m_Color1);
+        ok &= s->read(target.m_Color2);
+        ok &=s->prepare_nested();
+        assert(ok&&s->end_encountered());
         return ok;
-    QString _name;
-    while(s->nesting_name(_name))
-    {
-        s->nest_in();
-        if(_name.compare("Power")==0) {
-            target.m_Powers.emplace_back();
-            ok &= loadFrom(s,target.m_Powers.back());
-        } else if(_name.compare("Costume")==0) {
-            target.m_Costumes.emplace_back();
-            ok &= loadFrom(s,target.m_Costumes.back());
-        } else
-            assert(!"unknown field referenced.");
-        s->nest_out();
     }
-    assert(ok);
-    return ok;
-}
 
-}
+    bool loadFrom(BinStore *s, Parse_Costume &target)
+    {
+        s->prepare();
+        bool ok = true;
+        ok &= s->read(target.m_EntTypeFile);
+        ok &= s->read(target.m_CostumeFilePrefix);
+        ok &= s->read(target.m_Scale);
+        ok  &= s->read(target.m_BoneScale);
+        ok &= s->read(target.m_SkinColor);
+        ok &=s->prepare_nested();
+        if(s->end_encountered())
+            return ok;
+        QString _name;
+        while(s->nesting_name(_name))
+        {
+            s->nest_in();
+            if(_name.compare("CostumePart")==0) {
+                target.m_CostumeParts.emplace_back();
+                ok &= loadFrom(s,target.m_CostumeParts.back());
+            } else
+                assert(!"unknown field referenced.");
+            s->nest_out();
+        }
+        assert(ok);
+        return ok;
+    }
 
+    bool loadFrom(BinStore *s, NPCPower_Desc &target)
+    {
+        s->prepare();
+        bool ok = true;
+        ok &= s->read(target.PowerCategory);
+        ok &= s->read(target.PowerSet);
+        ok &= s->read(target.Power);
+        ok &= s->read(target.Level);
+        ok &= s->read(target.Remove);
+        ok &=s->prepare_nested();
+        assert(ok && s->end_encountered());
+        return ok;
+    }
+
+    bool loadFrom(BinStore *s, Parse_NPC &target)
+    {
+        s->prepare();
+        bool ok = true;
+        ok &= s->read(target.m_Name);
+        ok &= s->read(target.m_DisplayName);
+        ok &= s->read(target.m_Class);
+        ok &= s->read(target.m_Level);
+        ok &= s->read(target.m_Rank);
+        ok &= s->read(target.m_XP);
+        ok &=s->prepare_nested();
+        if(s->end_encountered())
+            return ok;
+        QString _name;
+        while(s->nesting_name(_name))
+        {
+            s->nest_in();
+            if(_name.compare("Power")==0) {
+                target.m_Powers.emplace_back();
+                ok &= loadFrom(s,target.m_Powers.back());
+            } else if(_name.compare("Costume")==0) {
+                target.m_Costumes.emplace_back();
+                ok &= loadFrom(s,target.m_Costumes.back());
+            } else
+                assert(!"unknown field referenced.");
+            s->nest_out();
+        }
+        assert(ok);
+        return ok;
+    }
+} // namespace
 
 bool loadFrom(BinStore *s, AllNpcs_Data &target)
 {
@@ -117,6 +127,7 @@ bool loadFrom(BinStore *s, AllNpcs_Data &target)
     assert(ok);
     return ok;
 }
+
 template<class Archive>
 static void serialize(Archive & archive, Parse_CostumePart & m)
 {
@@ -127,6 +138,7 @@ static void serialize(Archive & archive, Parse_CostumePart & m)
     archive(cereal::make_nvp("Texture2",m.m_Texture2));
     archive(cereal::make_nvp("CP_Geometry",m.m_CP_Geometry));
 }
+
 template<class Archive>
 static void serialize(Archive & archive, Parse_Costume & m)
 {
@@ -149,6 +161,7 @@ static void serialize(Archive & archive, NPCPower_Desc & m)
     archive(cereal::make_nvp("Level",m.Level));
     archive(cereal::make_nvp("Remove",m.Remove));
 }
+
 template<class Archive>
 static void serialize(Archive & archive, Parse_NPC & m)
 {
@@ -166,3 +179,5 @@ void saveTo(const AllNpcs_Data &target, const QString &baseName, bool text_forma
 {
     commonSaveTo(target,"AllNpcs",baseName,text_format);
 }
+
+//! @}

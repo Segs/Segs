@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 
 #include "Colors.h"
@@ -14,6 +21,7 @@ struct Parse_CostumePart
     QString m_Texture2;
     QString m_CP_Geometry;
 };
+
 enum class BodyType : int
 {
     Male        = 0,
@@ -24,6 +32,7 @@ enum class BodyType : int
     Enemy       = 5,
     Villain     = 6,
 };
+
 struct Parse_Costume
 {
     QString  m_EntTypeFile;
@@ -44,6 +53,7 @@ struct NPCPower_Desc
     int Level;
     int Remove;
 };
+
 struct Parse_NPC
 {
     QString m_Name;

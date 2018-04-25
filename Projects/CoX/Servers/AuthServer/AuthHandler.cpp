@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup AuthServer Projects/CoX/Servers/AuthServer
+ * @{
+ */
+
 #include "AuthHandler.h"
 
 #include "AuthServer/AuthServer.h"
@@ -14,22 +26,26 @@
 
 /// Monotonically incrementing session ids, starting at 1, to make 0 special.
 uint64_t AuthHandler::s_last_session_id=1;
-namespace {
-AuthorizationError s_auth_error_no_db(AUTH_ACCOUNT_SYNC_FAIL);
-AuthorizationError s_auth_error_blocked_account(AUTH_ACCOUNT_BLOCKED);
-AuthorizationError s_auth_error_db_error(AUTH_DATABASE_ERROR);
-AuthorizationError s_auth_error_unknown(AUTH_UNKN_ERROR);
-AuthorizationError s_auth_error_wrong_login_pass(AUTH_WRONG_LOGINPASS);
-AuthorizationError s_auth_error_locked_account(AUTH_ACCOUNT_BLOCKED);
-AuthorizationError s_auth_error_already_online(AUTH_ALREADY_LOGGEDIN);
 
-enum {
-    Session_Reaper_Timer   = 1
-};
+namespace
+{
+    AuthorizationError s_auth_error_no_db(AUTH_ACCOUNT_SYNC_FAIL);
+    AuthorizationError s_auth_error_blocked_account(AUTH_ACCOUNT_BLOCKED);
+    AuthorizationError s_auth_error_db_error(AUTH_DATABASE_ERROR);
+    AuthorizationError s_auth_error_unknown(AUTH_UNKN_ERROR);
+    AuthorizationError s_auth_error_wrong_login_pass(AUTH_WRONG_LOGINPASS);
+    AuthorizationError s_auth_error_locked_account(AUTH_ACCOUNT_BLOCKED);
+    AuthorizationError s_auth_error_already_online(AUTH_ALREADY_LOGGEDIN);
 
-const ACE_Time_Value session_reaping_interval(0,1000*1000);
-const ACE_Time_Value link_is_stale_if_disconnected_for(0,2*1000*1000);
-}
+    enum
+    {
+        Session_Reaper_Timer   = 1
+    };
+
+    const ACE_Time_Value session_reaping_interval(0,1000*1000);
+    const ACE_Time_Value link_is_stale_if_disconnected_for(0,2*1000*1000);
+} // namespace
+
 void AuthHandler::dispatch( SEGSEvent *ev )
 {
     assert(ev);
@@ -83,6 +99,7 @@ void AuthHandler::dispatch( SEGSEvent *ev )
             assert(!"Unknown event encountered in dispatch.");
     }
 }
+
 AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this),m_authserv(our_server)
 {
     assert(HandlerLocator::getAuth_Handler()==nullptr);
@@ -90,6 +107,7 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
     m_sessions.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
     m_message_bus_endpoint.subscribe(Internal_EventTypes::evGameServerStatus);
 }
+
 void AuthHandler::on_timeout(TimerEvent *ev)
 {
     intptr_t timer_id = (intptr_t)ev->data();
@@ -116,6 +134,7 @@ void AuthHandler::on_connect( ConnectEvent *ev )
 
     lnk->putq(new AuthorizationProtocolVersion(30206,seed));
 }
+
 void AuthHandler::on_disconnect(DisconnectEvent *ev)
 {
     // since we cannot trust existence of the DisconnectEvent source at this point, we use the stored token
@@ -143,6 +162,7 @@ void AuthHandler::on_disconnect(DisconnectEvent *ev)
     }
     // TODO: timed session reaping
 }
+
 void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
 {
     lnk->putq(new AuthorizationError(code));
@@ -164,6 +184,7 @@ bool AuthHandler::isClientConnectedAnywhere(uint32_t client_id)
 /// \fn AuthHandler::on_retrieve_account_response
 /// \brief This function handles database server informing us about account details
 ///
+
 void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
 {
     uint64_t sess_token = msg->session_token();
@@ -245,6 +266,7 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
     m_sessions.setTokenForId(sess_ptr->m_auth_id,lnk->session_token());
     lnk->putq(new LoginResponse());
 }
+
 void AuthHandler::on_login( LoginRequest *ev )
 {
     AuthLink *lnk = static_cast<AuthLink *>(ev->src());
@@ -304,6 +326,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     // in case db does not respond in sane time frame, the session is going to be removed.
     m_sessions.locked_mark_session_for_reaping(session_ptr,sess_tok);
 }
+
 void AuthHandler::on_server_list_request( ServerListRequest *ev )
 {
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
@@ -340,6 +363,7 @@ void AuthHandler::on_server_list_request( ServerListRequest *ev )
     r->set_server_list(info);
     lnk->putq(r);
 }
+
 void AuthHandler::on_server_selected(ServerSelectRequest *ev)
 {
     AuthSession &session(m_sessions.session_from_event(ev));
@@ -363,6 +387,7 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
     tgt->putq(cl_ev); // sending request to game server
     // client's state will not change until we get response from GameServer
 }
+
 void AuthHandler::on_client_expected(ExpectClientResponse *ev)
 {
     AuthSession &session(m_sessions.session_from_event(ev));
@@ -386,6 +411,7 @@ void AuthHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
     }
     session.is_connected_to_game_server_id = ev->m_data.m_server_id;
 }
+
 void AuthHandler::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
 {
     AuthSession &session(m_sessions.session_from_token(ev->m_data.m_session));
@@ -401,13 +427,17 @@ void AuthHandler::reap_stale_links()
     SessionStore::MTGuard guard(m_sessions.reap_lock());
     m_sessions.reap_stale_links("AuthHandler",link_is_stale_if_disconnected_for);
 }
+
 void AuthHandler::on_server_status_change(GameServerStatusMessage *ev)
 {
     MTGuard guard(m_server_mutex);
     m_known_game_servers[ev->m_data.m_id] = ev->m_data;
 }
+
 void AuthHandler::on_db_error(AuthDbErrorMessage *ev)
 {
     AuthSession &session(m_sessions.session_from_event(ev));
     session.link()->putq(s_auth_error_db_error.shallow_copy());
 }
+
+//! @}

@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include <QtCore/QString>
 #include <vector>
@@ -10,6 +17,7 @@ struct ItemPower_Data
     int m_Level;
     int m_Remove;
 };
+
 struct ShopItemInfo_Data
 {
     QString m_Name;
@@ -27,10 +35,12 @@ struct ShopBuySell_Data
     int m_Department;
     float m_Markup;
 };
+
 struct ShopItem_Data
 {
     QString m_Name;
 };
+
 struct Shop_Data
 {
     QString m_Name;
@@ -40,7 +50,8 @@ struct Shop_Data
 };
 typedef std::vector<Shop_Data> AllShops_Data;
 
-struct ShopDeptName_Data {
+struct ShopDeptName_Data
+{
     QString m_Names;
 };
 typedef std::vector<ShopDeptName_Data> AllShopDepts_Data;

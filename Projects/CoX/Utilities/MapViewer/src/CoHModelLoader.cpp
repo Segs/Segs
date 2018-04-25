@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapViewer Projects/CoX/Utilities/MapViewer
+ * @{
+ */
+
 #include "CoHModelLoader.h"
 
 #include "CohModelConverter.h"
@@ -18,16 +30,17 @@ using namespace Urho3D;
 
 // convenience struct for triangle index access
 
-
 // Start of anonymous namespace
 namespace {
-glm::vec3 fromUrho(Vector3 v) { return {v.x_,v.y_,v.z_};}
-Vector3 toUrho(glm::vec3 v) { return {v.x,v.y,v.z};}
+glm::vec3 fromUrho(Vector3 v) {return {v.x_,v.y_,v.z_};}
+Vector3 toUrho(glm::vec3 v) {return {v.x,v.y,v.z};}
 
-enum UnpackMode {
+enum UnpackMode
+{
     UNPACK_FLOATS=0,
     UNPACK_INTS=1,
 };
+
 // name of the geometry is constructed from actual name and an optional modifer name
 struct TexBlockInfo
 {
@@ -36,6 +49,7 @@ struct TexBlockInfo
     uint32_t bone_names_size;
     uint32_t tex_binds_size;
 };
+
 struct GeosetHeader32
 {
     char name[124];
@@ -44,6 +58,7 @@ struct GeosetHeader32
     int  subs_idx;
     int  num_subs;
 };
+
 struct PackInfo
 {
     int      compressed_size;
@@ -51,6 +66,7 @@ struct PackInfo
     int      compressed_data_off;
 };
 static_assert(sizeof(PackInfo) == 12, "sizeof(PackInfo)==12");
+
 struct Model32
 {
     int             flg1;
@@ -131,6 +147,7 @@ static void setupTexOpt(TextureModifiers *tex)
     }
     g_texture_path_to_mod[tex->name.toLower()] = tex;
 }
+
 static void setupTrick(GeometryModifiers *a1)
 {
     if (a1->node.TintColor0.rgb_are_zero())
@@ -169,6 +186,7 @@ static void setupTrick(GeometryModifiers *a1)
     }
     tricks_string_hash_tab[a1->name.toLower()]=a1;
 }
+
 static void  trickLoadPostProcess(AllTricks_Data *a2)
 {
     g_texture_path_to_mod.clear();
@@ -178,6 +196,7 @@ static void  trickLoadPostProcess(AllTricks_Data *a2)
     for (GeometryModifiers &trickinfo : a2->geometry_mods)
         setupTrick(&trickinfo);
 }
+
 bool loadTricksBin()
 {
     BinStore binfile;
@@ -209,12 +228,14 @@ void convertTextureNames(const int *a1, std::vector<QString> &a2)
         a2.push_back(start_of_strings_area + indices[idx]);
     }
 }
+
 std::vector<TextureBind> convertTexBinds(int cnt, const uint8_t *data)
 {
     std::vector<TextureBind> res;
     res.assign((const TextureBind *)data,((const TextureBind *)data)+cnt);
     return res;
 }
+
 static CoHModel *convertAndInsertModel(ConvertedGeoSet &tgt, const Model32 *v)
 {
     CoHModel *z = new CoHModel;
@@ -255,6 +276,7 @@ void  addModelStubs(ConvertedGeoSet *geoset)
         }
     }
 }
+
 void geosetLoadHeader(QFile &fp, ConvertedGeoSet *geoset)
 {
     unsigned int anm_hdr_size;
@@ -294,6 +316,7 @@ void geosetLoadHeader(QFile &fp, ConvertedGeoSet *geoset)
     if (!geoset->subs.empty())
         addModelStubs(geoset);
 }
+
 static ConvertedGeoSet *findAndPrepareGeoSet(const QString &fname)
 {
     ConvertedGeoSet *geoset = nullptr;
@@ -311,6 +334,7 @@ static ConvertedGeoSet *findAndPrepareGeoSet(const QString &fname)
     }
     return geoset;
 }
+
 CoHModel *modelFind(const QString &model_name, const QString &filename)
 {
     CoHModel *ptr_sub = nullptr;
@@ -343,6 +367,7 @@ CoHModel *modelFind(const QString &model_name, const QString &filename)
     return ptr_sub;
 
 }
+
 ptrdiff_t unpackedDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, uint32_t num_entries, UnpackMode v_type)
 {
     uint32_t     idx;
@@ -429,14 +454,17 @@ void geoUnpackDeltas(const DeltaPack *a1, uint8_t *target, uint32_t entry_size, 
         consumed_bytes = unpackedDeltaPack((int *)target, (uint8_t *)a1->compressed_data, entry_size, num_entries, type);
     }
 }
+
 inline void geoUnpackDeltas(const DeltaPack *a1, glm::vec3 *unpacked_data, uint32_t num_entries)
 {
     geoUnpackDeltas(a1, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_FLOATS);
 }
+
 inline void geoUnpackDeltas(const DeltaPack *a1, glm::ivec3 *unpacked_data, uint32_t num_entries)
 {
     geoUnpackDeltas(a1, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_INTS);
 }
+
 static bool bumpMapped(const CoHModel &model) {
     return model.flags & (OBJ_DRAW_AS_ENT | OBJ_BUMPMAP);
 }
@@ -475,6 +503,7 @@ std::unique_ptr<VBOPointers> fillVbo(const CoHModel &model)
     }
     return vbo;
 }
+
 void modelFixup(const CoHModel &model,VBOPointers &vbo)
 {
     if (!vbo.norm.empty() && (model.flags & OBJ_NOLIGHTANGLE))
@@ -538,6 +567,7 @@ void modelFixup(const CoHModel &model,VBOPointers &vbo)
         triangle_offset += bind_tri_count;
     }
 }
+
 void reportUnhandled(const QString &message)
 {
     static QSet<QString> already_reported;
@@ -546,6 +576,7 @@ void reportUnhandled(const QString &message)
     qDebug() << message;
     already_reported.insert(message);
 }
+
 void fixupDataPtr(DeltaPack &a, uint8_t *b)
 {
     if (a.uncomp_size)
@@ -618,6 +649,7 @@ bool prepareGeoLookupArray()
 
     return loadTricksBin();
 }
+
 GeometryModifiers *findGeomModifier(const QString &modelname, const QString &trick_path)
 {
     QStringList parts = modelname.split("__");
@@ -631,12 +663,14 @@ GeometryModifiers *findGeomModifier(const QString &modelname, const QString &tri
     qDebug() << "Can't find modifier for" << trick_path<<modelname;
     return nullptr;
 }
+
 GeoStoreDef * groupGetFileEntryPtr(const QString &a1)
 {
     QString key = a1.mid(a1.lastIndexOf('/')+1);
     key = key.mid(0,key.indexOf("__"));
     return s_modelname_to_geostore.value(key,nullptr);
 }
+
 /// load the given geoset, used when loading scene-subgraph and nodes
 ConvertedGeoSet * geosetLoad(const QString &m)
 {
@@ -652,6 +686,7 @@ std::unique_ptr<VBOPointers> getVBO(CoHModel & model)
     modelFixup(model,*databuf);
     return databuf;
 }
+
 float *combineBuffers(VBOPointers &meshdata,CoHModel *mdl)
 {
     size_t num_floats = mdl->vertex_count*3;
@@ -715,6 +750,7 @@ float *combineBuffers(VBOPointers &meshdata,CoHModel *mdl)
                          3 * meshdata.triangles.size(), normal_offset, texcoord_offset, tangents_offset);
     return res;
 }
+
 void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader,CoHModel *model,const std::vector<TextureWrapper> &textures)
 {
     model->blend_mode = CoHBlendMode::MULTIPLY_REG;
@@ -797,3 +833,5 @@ void initLoadedModel(std::function<TextureWrapper(const QString &)> funcloader,C
             model->blend_mode = CoHBlendMode(model->trck_node->info->blend_mode);
     }
 }
+
+//! @}

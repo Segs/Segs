@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameDatabase Projects/CoX/Servers/GameDatabase
+ * @{
+ */
+
 #include "GameDBSync.h"
 
 #include "GameDBSyncHandler.h"
@@ -7,6 +19,7 @@
 #include <unordered_map>
 
 static std::unordered_map<uint8_t,GameDBSyncHandler *> s_game_db_handlers;
+
 void startGameDBSync(uint8_t for_game_server_id)
 {
     if(s_game_db_handlers[for_game_server_id]!=nullptr)
@@ -21,3 +34,5 @@ void startGameDBSync(uint8_t for_game_server_id)
     HandlerLocator::setGame_DB_Handler(for_game_server_id,handler);
 
 }
+
+//! @}

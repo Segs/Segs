@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup AuthDatabase Projects/CoX/Servers/AuthDatabase
+ * @{
+ */
+
 #include "AuthDBSyncHandler.h"
 
 #include "AuthDBSyncEvents.h"
@@ -6,6 +18,7 @@
 
 #include <QSqlError> // used to format returned errors
 #include <cassert>
+
 bool AuthDBSyncHandler::per_thread_setup()
 {
     AuthDbSyncContext &db_ctx(m_db_context.localData());
@@ -62,6 +75,7 @@ void AuthDBSyncHandler::on_retrieve_account(RetrieveAccountRequest *msg)
         msg->src()->putq(new RetrieveAccountResponse(std::move(resp),msg->session_token()));
 
 }
+
 void AuthDBSyncHandler::on_validate_password(ValidatePasswordRequest *msg)
 {
     AuthDbSyncContext &db_ctx(m_db_context.localData());
@@ -73,8 +87,9 @@ void AuthDBSyncHandler::on_validate_password(ValidatePasswordRequest *msg)
     msg->src()->putq(new AuthDbErrorMessage({db_ctx.getLastError()->text()}));
 }
 
-
 AuthDBSyncHandler::AuthDBSyncHandler()
 {
     HandlerLocator::setAuthDB_Handler(this);
 }
+
+//! @}

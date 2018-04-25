@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapViewer Projects/CoX/Utilities/MapViewer
+ * @{
+ */
+
 #include "CoHSceneConverter.h"
 #include "CoHModelLoader.h"
 #include "CohModelConverter.h"
@@ -26,10 +38,12 @@
 
 using namespace Urho3D;
 extern QString basepath;
+
 namespace
 {
 glm::vec3 fromUrho(Vector3 v) { return {v.x_,v.y_,v.z_};}
 Vector3 toUrho(glm::vec3 v) { return {v.x,v.y,v.z};}
+
 struct NameList
 {
     QHash<QString,QString> new_names; // map from old node name to a new name
@@ -67,6 +81,7 @@ CoHNode *newDef(CoHSceneGraph &scene)
     scene.all_converted_defs.emplace_back(res);
     return res;
 }
+
 ConvertedRootNode *newRef(CoHSceneGraph &scene)
 {
     size_t idx;
@@ -81,6 +96,7 @@ ConvertedRootNode *newRef(CoHSceneGraph &scene)
     scene.refs[idx]->index_in_roots_array = idx;
     return scene.refs[idx];
 }
+
 bool LoadScene(const QString &fname,SceneGraph_Data &scenegraph)
 {
     BinStore binfile;
@@ -105,6 +121,7 @@ bool LoadScene(const QString &fname,SceneGraph_Data &scenegraph)
     }
     return true;
 }
+
 CoHNode * getNodeByName(const CoHSceneGraph &conv,const QString &a1)
 {
     QString filename;
@@ -115,6 +132,7 @@ CoHNode * getNodeByName(const CoHSceneGraph &conv,const QString &a1)
         filename = a1.mid(idx+1);
     return conv.name_to_node.value(filename.toLower(),nullptr);
 }
+
 QString  groupMakeName(CoHSceneGraph &conv,const QString &base)
 {
     QString buf;
@@ -123,6 +141,7 @@ QString  groupMakeName(CoHSceneGraph &conv,const QString &base)
     while (getNodeByName(conv,buf));
     return buf;
 }
+
 bool groupInLibSub(const QString &a1)
 {
     if(a1.contains('/')) {
@@ -166,6 +185,7 @@ QString groupRename(CoHSceneGraph &conv,NameList &memory, const QString &oldname
     memory.new_names[querystring] = tgt;
     return tgt;
 }
+
 void  groupApplyModifiers(CoHNode *group)
 {
 
@@ -191,6 +211,7 @@ void  groupApplyModifiers(CoHNode *group)
             v4->LodScale != 0.0f)
         group->lod_fromtrick = true;
 }
+
 void setNodeNameAndPath(CoHSceneGraph &scene,CoHNode *a2, QString obj_path)
 {
     QString result;
@@ -212,6 +233,7 @@ void setNodeNameAndPath(CoHSceneGraph &scene,CoHNode *a2, QString obj_path)
     if ( key.position() != 0 )
         a2->dir = result.mid(0,key.position()-1);
 }
+
 void addChildNodes(CoHSceneGraph &conv,const SceneGraphNode_Data &a1, CoHNode *node, NameList &a3)
 {
     if ( a1.p_Grp.empty() )
@@ -239,6 +261,7 @@ void addChildNodes(CoHSceneGraph &conv,const SceneGraphNode_Data &a1, CoHNode *n
         }
     }
 }
+
 void addLod(const std::vector<DefLod_Data> &a1, CoHNode *a2)
 {
     if(a1.empty())
@@ -253,6 +276,7 @@ void addLod(const std::vector<DefLod_Data> &a1, CoHNode *a2)
     a2->lod_near      = v2.Near;
     a2->lod_near_fade = v2.NearFade;
 }
+
 bool nodeCalculateBounds(CoHNode *group)
 {
     float geometry_radius=0.0f;
@@ -296,6 +320,7 @@ bool nodeCalculateBounds(CoHNode *group)
     group->radius = std::max(geometry_radius,group->radius);
     return group->radius == 0.0f && !group->children.empty();
 }
+
 void  nodeSetVisBounds(CoHNode *group)
 {
     //TODO: fix this
@@ -330,6 +355,7 @@ void  nodeSetVisBounds(CoHNode *group)
         group->shadow_dist = maxrad - group->radius;
     group->vis_dist = maxvis;
 }
+
 bool addNode(CoHSceneGraph &conv,const SceneGraphNode_Data &defload, NameList &renamer)
 {
     if (defload.p_Grp.empty() && defload.p_Obj.isEmpty())
@@ -361,12 +387,14 @@ bool addNode(CoHSceneGraph &conv,const SceneGraphNode_Data &defload, NameList &r
     nodeSetVisBounds(a1);
     return true;
 }
+
 void  loadSubgraph(const QString &filename,CoHSceneGraph &conv)
 {
     geosetLoad(filename); // load given subgraph's root geoset
     QFileInfo fi(filename);
     loadSceneGraph(conv,fi.path()+"/"+fi.completeBaseName()+".txt");
 }
+
 bool groupLoadRequiredLibsForNode(CoHNode *node,CoHSceneGraph &conv)
 {
     GeoStoreDef *gf;
@@ -392,6 +420,7 @@ bool groupLoadRequiredLibsForNode(CoHNode *node,CoHSceneGraph &conv)
     }
     return true;
 }
+
 bool groupFileLoadFromName(CoHSceneGraph &conv,const QString &a1)
 {
     GeoStoreDef *v3 = groupGetFileEntryPtr(a1);
@@ -405,6 +434,7 @@ bool groupFileLoadFromName(CoHSceneGraph &conv,const QString &a1)
     groupLoadRequiredLibsForNode(getNodeByName(conv,a1),conv);
     return 1;
 }
+
 void addRoot(CoHSceneGraph &conv,const SceneRootNode_Data &refload, NameList &namelist)
 {
     QString newname = groupRename(conv,namelist, refload.name, 0);
@@ -422,6 +452,7 @@ void addRoot(CoHSceneGraph &conv,const SceneRootNode_Data &refload, NameList &na
     rotationFromYPR(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z});
     ref->mat.SetTranslation(Vector3(&refload.pos[0]));
 }
+
 void PostProcessScene(SceneGraph_Data &scenegraph,CoHSceneGraph &conv,NameList &renamer,const QString &name)
 {
     for (const SceneGraphNode_Data & node_dat : scenegraph.Def )
@@ -429,6 +460,7 @@ void PostProcessScene(SceneGraph_Data &scenegraph,CoHSceneGraph &conv,NameList &
     for (const SceneRootNode_Data & root_dat : scenegraph.Ref)
         addRoot(conv,root_dat, renamer);
 }
+
 QString buildBaseName(QString path)
 {
     QStringList z = path.split(QDir::separator());
@@ -445,6 +477,7 @@ QString buildBaseName(QString path)
     return z.join('/');
 
 }
+
 QString mapNameToPath(const QString &a1)
 {
     int start_idx = a1.indexOf("object_library",Qt::CaseInsensitive);
@@ -458,7 +491,8 @@ QString mapNameToPath(const QString &a1)
         buf.replace(last_dot,buf.size()-last_dot,".bin");
     return buf;
 }
-}
+} // namespace
+
 bool loadSceneGraph(CoHSceneGraph &conv,const QString &path)
 {
     QString binName = mapNameToPath(path);
@@ -470,7 +504,9 @@ bool loadSceneGraph(CoHSceneGraph &conv,const QString &path)
     PostProcessScene(scenegraph,conv,my_name_list,path);
     return true;
 }
+
 extern int created_node_count;
+
 //TODO: convert this from recursive function into iterative one.
 Urho3D::Node * convertedNodeToLutefisk(CoHNode *conv_node, const Urho3D::Matrix3x4 &mat, Context *ctx, int depth, int opt)
 {
@@ -522,5 +558,4 @@ Urho3D::Node * convertedNodeToLutefisk(CoHNode *conv_node, const Urho3D::Matrix3
     return node;
 }
 
-
-
+//! @}

@@ -1,10 +1,9 @@
 /*
-* Super Entity Game Server Project
-* http://segs.sf.net/
-* Copyright (c) 2009 Super Entity Game Server Team (see Authors.txt)
-* This software is licensed! (See License.txt for details)
-*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
 
-*/
 #pragma once
 #include <string>

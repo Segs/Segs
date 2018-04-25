@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup CommonServers Projects/CoX/Common/Servers
+ * @{
+ */
+
 #include "ServerEndpoint.h"
 
 #include "Common/CRUDP_Protocol/CRUD_Events.h"
@@ -11,6 +23,7 @@ ServerEndpoint::~ServerEndpoint()
     handle_close(ACE_INVALID_HANDLE, 0);
     m_downstream = nullptr;
 }
+
 int ServerEndpoint::handle_input(ACE_HANDLE /*fd*/) //! Called when input is available from the client.
 {
     uint8_t buf[0x2000];
@@ -106,3 +119,5 @@ CRUDLink *ServerEndpoint::getClientLink(const ACE_INET_Addr &from_addr)
     //TODO: schedule timeout timer here!!
     return res;
 }
+
+//! @}

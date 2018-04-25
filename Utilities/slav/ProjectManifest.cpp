@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup slav Utilities/slav
+ * @{
+ */
+
 #include "ProjectManifest.h"
 #include "CerealHelpers.h"
 
@@ -153,3 +165,5 @@ AppVersionManifest calculateDelta(const AppVersionManifest & old_version, const 
     }
     return dest;
 }
+
+//! @}

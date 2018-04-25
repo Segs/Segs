@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #ifndef MPRPC_ChatClient_client_6fd354dd_HPP__
 #define MPRPC_ChatClient_client_6fd354dd_HPP__
 

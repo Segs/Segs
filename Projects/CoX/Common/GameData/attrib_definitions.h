@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include <vector>
 #include <array>
@@ -9,6 +16,7 @@ struct Parse_AttribDesc
     QString DisplayName;
     QString IconName;
 };
+
 struct AttribNames_Data
 {
     std::vector<Parse_AttribDesc> m_Damage;
@@ -68,6 +76,7 @@ struct Parse_CharAttrib
     const float *begin() const { return &m_DamageTypes[0]; }
     const float *end() const { return (&m_EnduranceDiscount)+1; }
 };
+
 struct Parse_CharAttribMax
 {
     std::array<std::vector<float>,24> m_DamageTypes;

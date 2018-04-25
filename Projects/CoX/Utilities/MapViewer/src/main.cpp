@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapViewer Projects/CoX/Utilities/MapViewer
+ * @{
+ */
+
 #include "MapViewerApp.h"
 #include "PiggTools.h"
 #include "Lutefisk3D/Engine/Engine.h"
@@ -16,6 +28,7 @@
 #include <QtCore/QDebug>
 
 #include <memory>
+
 using namespace Urho3D;
 static const QHash<QString,const char *> validHashes = {
     { "bin.pigg" , "CNMUJ8OZhEGW+/8E4oI01Q==" },
@@ -50,6 +63,7 @@ static const QHash<QString,const char *> validHashes = {
     { "texworldv1.pigg" , "Ss/xw1sVSZiRD9/gA+w+HA==" },
     { "texworldv2.pigg" , "vp5rDFXyzcfxXwci0eUxeQ==" },
 };
+
 bool dataDirIsValid(const QString &path)
 {
     if(path.isEmpty())
@@ -58,6 +72,7 @@ bool dataDirIsValid(const QString &path)
         return false;
     return true;
 }
+
 bool isThatPiggRequired(const QString &file)
 {
     QString filename = QFileInfo(file).fileName();
@@ -65,6 +80,7 @@ bool isThatPiggRequired(const QString &file)
         return false;
     return true;
 }
+
 bool checkPiggCrc(const QString &file, QProgressDialog &progress)
 {
     QFile fi(file);
@@ -93,6 +109,7 @@ bool checkPiggCrc(const QString &file, QProgressDialog &progress)
     qDebug() << '{' << filename.toLower() << ',' << hasher.result().toBase64() << '}';
     return req_hash == hasher.result();
 }
+
 QString askForPiggDirPath() {
     // ask for a path to pigg files
     bool we_are_piggless = true;
@@ -111,6 +128,7 @@ QString askForPiggDirPath() {
     }
     return dirpath;
 }
+
 bool explodizeThePiggs(const QStringList &piggfiles,const QString &tgtpath,QProgressDialog &progressdlg)
 {
     int cnt=0;
@@ -125,6 +143,7 @@ bool explodizeThePiggs(const QStringList &piggfiles,const QString &tgtpath,QProg
     }
     return true;
 }
+
 bool acquireAndExplodePiggs()
 {
     bool dialog_shown=false;
@@ -185,6 +204,7 @@ bool acquireAndExplodePiggs()
     our_settings.setValue("ExtractedDir",dirpath);
     return true;
 }
+
 bool checkDataFileAvailability()
 {
 
@@ -194,6 +214,7 @@ bool checkDataFileAvailability()
         return true;
     return false;
 }
+
 int main(int argc,char **argv)
 {
     QApplication q_app(argc,argv);
@@ -211,3 +232,5 @@ int main(int argc,char **argv)
     app.Run();
     return 0;
 }
+
+//! @}

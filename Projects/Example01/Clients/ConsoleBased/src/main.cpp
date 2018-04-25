@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup ExampleConsoleAuthClient Projects/Example01/Clients/ConsoleBased
+ * @{
+ */
+
 #include <ace/Task.h>
 #include <ace/Thread_Mutex.h>
 #include <ace/Future.h>
@@ -30,6 +42,7 @@ public:
 private:
     ACE_Activation_Queue m_activation_queue;
 };
+
 static void write_buffer(const msgpack::sbuffer &buf)
 {
     FILE *fp;
@@ -37,10 +50,12 @@ static void write_buffer(const msgpack::sbuffer &buf)
     fwrite(buf.data(),1,buf.size(),fp);
     fclose(fp);
 }
+
 void on_message(msgpack::object &obj,std::auto_ptr<msgpack::zone> z)
 {
     std::cerr<<obj.type<<"\n";
 }
+
 int main(int argc,char **argv)
 {
     msgpack::sbuffer buf;
@@ -70,3 +85,5 @@ int main(int argc,char **argv)
     }
     return 0;
 }
+
+//! @}

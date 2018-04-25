@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup Components
+ * @{
+ */
+
 #include <cassert>
 #include "SEGSTimer.h"
 #include "EventProcessor.h"
@@ -54,3 +66,5 @@ void SEGSTimer::schedule_repeatable()
     assert(m_id==-1);
     m_id = GlobalTimerQueue::instance()->schedule(m_target,this,ACE_OS::gettimeofday()+m_fire_delta_time,m_fire_delta_time);
 }
+
+//! @}

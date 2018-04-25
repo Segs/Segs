@@ -1,10 +1,8 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
-
  */
 
 #pragma once
@@ -39,6 +37,7 @@ public:
     {
     }
 };
+
 class ShortcutsRequest final : public MapLinkEvent
 {
 public:
@@ -80,6 +79,7 @@ public:
     {
     }
 };
+
 class ClientQuit final : public MapLinkEvent
 {
 public:
@@ -98,6 +98,7 @@ public:
     }
 
 };
+
 class ForcedLogout final : public MapLinkEvent
 {
 public:
@@ -132,6 +133,7 @@ public:
         console = bs.GetPackedBits(1);
     }
 };
+
 class ConsoleCommand final : public MapLinkEvent
 {
 public:
@@ -147,6 +149,7 @@ public:
         bs.GetString(contents);
     }
 };
+
 class ClientResumedRendering final : public MapLinkEvent
 {
 public:
@@ -164,7 +167,6 @@ public:
 
 class MiniMapState final : public MapLinkEvent
 {
-
 public:
     uint32_t tile_idx=0;
     MiniMapState():MapLinkEvent(MapEventTypes::evMiniMapState)
@@ -217,6 +219,7 @@ public:
         getPowerForCombinde(bs,second_power);
     }
 };
+
 #include "Events/InputState.h"
 #include "Events/ChatMessage.h"
 #include "Events/WindowState.h"
@@ -250,7 +253,6 @@ public:
     QString     m_fatal_error;
 
 };
-
 
 class InspirationDockMode final : public MapLinkEvent
 {
@@ -293,6 +295,7 @@ public:
         bs.GetString(name);
     }
 };
+
 class ChangeStance final : public MapLinkEvent
 {
 public:
@@ -315,6 +318,7 @@ public:
     }
 
 };
+
 class SetDestination final : public MapLinkEvent
 {
 public:
@@ -423,6 +427,7 @@ public:
 //        Parameterless - serializefrom is no-op
     }
 };
+
 class DescriptionAndBattleCry final : public MapLinkEvent
 {
 public:
@@ -440,6 +445,7 @@ public:
         bs.GetString(battlecry);
     }
 };
+
 class SwitchViewPoint final : public MapLinkEvent
 {
 public:
@@ -455,6 +461,7 @@ public:
         new_viewpoint_is_firstperson = bs.GetBits(1);
     }
 };
+
 class TargetChatChannelSelected final : public MapLinkEvent
 {
 public:
@@ -470,6 +477,7 @@ public:
         m_chat_type = bs.GetPackedBits(1);
     }
 };
+
 class ChatReconfigure final : public MapLinkEvent
 {
 public:
@@ -487,6 +495,7 @@ public:
         m_chat_bottom_flags = bs.GetPackedBits(1);
     }
 };
+
 class PowersDockMode final : public MapLinkEvent
 {
 public:
@@ -504,6 +513,7 @@ public:
         toggle_secondary_tray = bs.GetBits(1);
     }
 };
+
 class SwitchTray final : public MapLinkEvent
 {
 public:

@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "bodypart_serializers.h"
 #include "serialization_common.h"
 #include "bodypart_definitions.h"
@@ -22,25 +34,28 @@
 //    {0}
 //};
 
-namespace {
-bool loadFrom(BinStore *s,BodyPart_Data *target) {
-    bool ok = true;
-    s->prepare();
-    ok &= s->read(target->m_Name);
-    ok &= s->read(target->m_BoneCount);
-    ok &= s->read(target->m_InfluenceCost);
-    ok &= s->read(target->m_GeoName);
-    ok &= s->read(target->boneIndices[0]);
-    ok &= s->read(target->boneIndices[1]);
-    ok &= s->read(target->m_TexName);
-    ok &= s->read(target->m_BaseName);
-    int m_BoneCount2;
-    ok &= s->read(m_BoneCount2);
-    assert(m_BoneCount2==target->m_BoneCount);
-    ok &= s->prepare_nested(); // will update the file size left
-    return (ok && s->end_encountered());
+namespace
+{
+    bool loadFrom(BinStore *s,BodyPart_Data *target)
+    {
+        bool ok = true;
+        s->prepare();
+        ok &= s->read(target->m_Name);
+        ok &= s->read(target->m_BoneCount);
+        ok &= s->read(target->m_InfluenceCost);
+        ok &= s->read(target->m_GeoName);
+        ok &= s->read(target->boneIndices[0]);
+        ok &= s->read(target->boneIndices[1]);
+        ok &= s->read(target->m_TexName);
+        ok &= s->read(target->m_BaseName);
+        int m_BoneCount2;
+        ok &= s->read(m_BoneCount2);
+        assert(m_BoneCount2==target->m_BoneCount);
+        ok &= s->prepare_nested(); // will update the file size left
+        return (ok && s->end_encountered());
+    }
 }
-}
+
 template<class Archive>
 void serialize(Archive & archive, BodyPart_Data & m)
 {
@@ -79,3 +94,5 @@ void saveTo(const AllBodyParts_Data & target, const QString & baseName, bool tex
 {
     commonSaveTo(target,"BodyParts",baseName,text_format);
 }
+
+//! @}

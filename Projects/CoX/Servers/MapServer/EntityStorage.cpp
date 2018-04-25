@@ -1,10 +1,14 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
-  */
+ */
+
+/*!
+ * @addtogroup MapServer Projects/CoX/Servers/MapServer
+ * @{
+ */
 
 #include "EntityStorage.h"
 #include "NetStructures/Entity.h"
@@ -15,7 +19,6 @@
 
 #include <QtCore/QDebug>
 #include <algorithm>
-
 
 EntityStore::EntityStore()
 {
@@ -93,6 +96,7 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
         client->m_worldstate_belief.erase(idx);
     }
 }
+
 /**
  *  \par self_idx index of the entity that is receiving the packet, this is used to prevent marking every entity as a current player
  *
@@ -134,10 +138,12 @@ void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool i
     bs.StoreBits(1, 1); // create/upte -> create
     bs.StoreBits(1, 1); // empty entity. will finish the receiving loop
 }
+
 void EntityManager::InsertPlayer(Entity *ent)
 {
     m_live_entlist.insert(ent);
 }
+
 Entity * EntityManager::CreatePlayer()
 {
     Entity *res = m_store.get();
@@ -145,6 +151,7 @@ Entity * EntityManager::CreatePlayer()
     initializeNewPlayerEntity(*res);
     return res;
 }
+
 Entity * EntityManager::CreateNpc(const Parse_NPC &tpl,int idx,int variant)
 {
     Entity *res = m_store.get();
@@ -153,9 +160,12 @@ Entity * EntityManager::CreateNpc(const Parse_NPC &tpl,int idx,int variant)
     initializeNewNpcEntity(*res,&tpl,idx,variant);
     return res;
 }
+
 void EntityManager::removeEntityFromActiveList(Entity *ent)
 {
     ent->m_client = nullptr;
     m_live_entlist.erase(ent);
     m_store.release(ent);
 }
+
+//! @}

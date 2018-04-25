@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 
 #include "Colors.h"
@@ -60,12 +67,14 @@ struct TextureModifiers
     QString   Surface; // Name of this surface  WOOD METAL etc.
     float     Gloss;
 };
+
 struct ColorList
 {
     RGBA field_0[16];
     int count; // count of color 'key frames'
     float scale;
 };
+
 struct ModelModifiers
 {
     glm::vec2 ScrollST0;
@@ -101,6 +110,7 @@ enum GroupFlags : uint32_t
     RedWaterVolume   = 0x8000, // only in I2
     MaterialVolume   =0x10000, // only in I2
 };
+
 struct GeometryModifiers
 {
     QString                       src_name;

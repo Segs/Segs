@@ -1,13 +1,22 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include "CohTextureConverter.h"
 #include <glm/vec3.hpp>
 #include <QStringList>
 #include <memory>
 #include <vector>
+
 namespace Urho3D
 {
     class StaticModel;
 }
+
 struct CoHNode;
 struct ConvertedGeoSet;
 struct GeometryModifiers;
@@ -19,6 +28,7 @@ struct GeoStoreDef
     QStringList entries;    //!< the names of models contained in a geoset
     bool loaded;
 };
+
 struct VBOPointers
 {
     std::vector<glm::vec3> pos;
@@ -31,6 +41,7 @@ struct VBOPointers
 };
 
 enum class CoHBlendMode : uint8_t;
+
 #pragma pack(push, 1)
 struct DeltaPack
 {
@@ -39,11 +50,13 @@ struct DeltaPack
     int buffer_offset=0;
     uint8_t *compressed_data=nullptr;
 };
+
 struct TextureBind
 {
     uint16_t tex_idx;
     uint16_t tri_count;
 };
+
 #pragma pack(pop)
 struct PackBlock
 {
@@ -56,6 +69,7 @@ struct PackBlock
     DeltaPack  grid;
     DeltaPack &operator[](uint8_t idx) { return (&tris)[idx]; }
 };
+
 enum ModelFlags : uint32_t
 {
     OBJ_ALPHASORT      = 0x1,
@@ -73,6 +87,7 @@ enum ModelFlags : uint32_t
     OBJ_STATICFX       = 0x8000,
     OBJ_HIDE           = 0x10000,
 };
+
 struct CoHModel
 {
     QString                  name;
@@ -93,6 +108,7 @@ struct CoHModel
     Urho3D::StaticModel *    converted_model = nullptr;
 };
 std::unique_ptr<VBOPointers> getVBO(CoHModel &m);
+
 struct ConvertedGeoSet
 {
     QString                       geopath;

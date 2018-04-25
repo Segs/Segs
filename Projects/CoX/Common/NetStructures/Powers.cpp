@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup NetStructures Projects/CoX/Common/NetStructures
+ * @{
+ */
+
 #include "Powers.h"
 
 #include <QDebug>
@@ -173,3 +185,5 @@ void PowerPool_Info::serializeto(BitStream &src) const
     src.StorePackedBits(3,powerset_entry_idx);
     src.StorePackedBits(3,power_idx);
 }
+
+//! @}

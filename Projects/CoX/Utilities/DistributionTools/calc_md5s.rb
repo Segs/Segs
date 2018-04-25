@@ -1,4 +1,9 @@
 #!/usr/bin/env ruby
+# SEGS - Super Entity Game Server
+# http://www.segs.io/
+# Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+# This software is licensed! (See License.txt for details)
+
 require 'digest/md5'
 digester=Digest::MD5.new
 fp=File.open("digests","w")

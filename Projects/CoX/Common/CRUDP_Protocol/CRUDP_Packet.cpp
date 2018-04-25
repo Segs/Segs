@@ -1,9 +1,13 @@
 /*
- * Super Entity Game Server
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2017 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
+ */
+
+/*!
+ * @addtogroup CRUDP_Protocol Projects/CoX/Common/CRUDP_Protocol
+ * @{
  */
 
 #include "CRUDP_Packet.h"
@@ -36,6 +40,7 @@ CrudP_Packet::CrudP_Packet(BitStream *stream, bool /*hasDebugInfo*/)
     m_retransmit_count = 0;
 
 }
+
 CrudP_Packet::CrudP_Packet(const CrudP_Packet &from)
 {
     m_stream        = nullptr; // we're not copying streams !!!
@@ -50,6 +55,7 @@ CrudP_Packet::CrudP_Packet(const CrudP_Packet &from)
     m_xfer_time     = from.m_xfer_time;
 
 }
+
 CrudP_Packet::~CrudP_Packet()
 {
     delete m_stream;
@@ -79,6 +85,7 @@ float CrudP_Packet::GetFloat()
 {
     return m_stream->GetFloat();
 }
+
 void CrudP_Packet::setContents(const BitStream &t)
 {
     if(m_stream)
@@ -102,3 +109,5 @@ uint32_t CrudP_Packet::getNextAck()
     m_acks.erase(m_acks.begin());
     return res;
 }
+
+//! @}

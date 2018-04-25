@@ -1,10 +1,14 @@
 /*
-* Super Entity Game Server Project
-* http://segs.sf.net/
-* Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
-* This software is licensed! (See License.txt for details)
-*
-*/
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup ExampleAuthClient Projects/Example01/Clients/Auth
+ * @{
+ */
 
 #include <stdlib.h>
 #include "Base.h"
@@ -20,3 +24,5 @@ AuthConnection_ClientSide::AuthConnection_ClientSide(AuthObserver *ob) : AuthCon
     m_current_proto = new AuthProtocol< AuthFSM_Client >(true);
     static_cast<AuthProtocol< AuthFSM_Client > *>(m_current_proto)->set_observer(ob);
 }
+
+//! @}

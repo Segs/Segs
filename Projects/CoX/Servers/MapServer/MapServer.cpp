@@ -1,10 +1,13 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
+ */
 
+/*!
+ * @addtogroup MapServer Projects/CoX/Servers/MapServer
+ * @{
  */
 
 #include "MapServer.h"
@@ -18,7 +21,6 @@
 #include "SEGSTimer.h"
 #include "Settings.h"
 #include "Servers/MessageBus.h"
-
 
 #include <ace/Reactor.h>
 
@@ -35,8 +37,9 @@ MapServer *g_GlobalMapServer=nullptr;
 // anonymous namespace
 namespace
 {
-constexpr int                MAPSERVER_VERSION=1;
+    constexpr int                MAPSERVER_VERSION=1;
 } // end of anonymous namespace
+
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief The MapServer::PrivateData class - PIMPL idiom for internal
 /// MapServer data
@@ -55,10 +58,12 @@ MapServer::MapServer(uint8_t id) : d(new PrivateData), m_id(id)
     g_GlobalMapServer = this;
     HandlerLocator::setMap_Handler(id,this);
 }
+
 MapServer::~MapServer()
 {
 
 }
+
 bool MapServer::Run()
 {
     assert(m_owner_game_server_id!=255);
@@ -69,6 +74,7 @@ bool MapServer::Run()
     assert(d->m_manager.num_templates()>0); // we have to have a world to run
     return true;
 }
+
 /**
  * @param  inipath Doc at RoamingServer::ReadConfig
  * @return bool (false means an error occurred )
@@ -111,6 +117,7 @@ bool MapServer::ReadConfigAndRestart()
     }
     return Run();
 }
+
 bool MapServer::ShutDown()
 {
     qWarning() << "Shutting down map server";
@@ -169,3 +176,5 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
     // remember to shallow_copy to mark the event as still owned.
     instance->putq(ev->shallow_copy());
 }
+
+//! @}

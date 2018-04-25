@@ -1,10 +1,15 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "DataStorage.h"
 #include "Common/GameData/Colors.h"
 #include <QtCore/QFile>
@@ -26,6 +31,7 @@ bool BinStore::check_bin_version_and_crc(uint32_t req_crc)
     }
     return true;
 }
+
 QString BinStore::read_pstr( size_t maxlen )
 {
     uint16_t len=0;
@@ -119,11 +125,13 @@ bool BinStore::read( uint32_t &v )
     size_t res = read_internal(v);
     return res==4;
 }
+
 bool BinStore::read( int32_t &v )
 {
     size_t res = read_internal(v);
     return res==4;
 }
+
 bool BinStore::read( float &v )
 {
     size_t res = read_internal(v);
@@ -169,6 +177,7 @@ bool BinStore::read(RGBA & rgb)
     read(skipped);
     return parse_ok;
 }
+
 bool BinStore::read(uint8_t *&val, uint32_t length)
 {
     bool parse_ok=true;
@@ -179,11 +188,13 @@ bool BinStore::read(uint8_t *&val, uint32_t length)
     fixup();
     return parse_ok;
 }
+
 bool BinStore::read(QString &val)
 {
     val=this->read_str(12000);
     return true;
 }
+
 bool BinStore::read(std::vector<QString> &res)
 {
     bool parse_ok=true;
@@ -198,6 +209,7 @@ bool BinStore::read(std::vector<QString> &res)
     }
     return parse_ok;
 }
+
 bool BinStore::read(std::vector<uint32_t> &res)
 {
     bool parse_ok=true;
@@ -213,6 +225,7 @@ bool BinStore::read(std::vector<uint32_t> &res)
     }
     return parse_ok;
 }
+
 bool BinStore::read(std::vector<int32_t> &res)
 {
     bool parse_ok=true;
@@ -228,6 +241,7 @@ bool BinStore::read(std::vector<int32_t> &res)
     }
     return parse_ok;
 }
+
 bool BinStore::read(std::vector<float> &res)
 {
     bool parse_ok=true;
@@ -243,6 +257,7 @@ bool BinStore::read(std::vector<float> &res)
     }
     return parse_ok;
 }
+
 bool BinStore::read_bytes( char *tgt,size_t sz )
 {
     m_str.read(tgt,sz);
@@ -309,3 +324,5 @@ bool BinStore::end_encountered() const
 {
     return (*m_file_sizes.rbegin())==0;
 }
+
+//! @}

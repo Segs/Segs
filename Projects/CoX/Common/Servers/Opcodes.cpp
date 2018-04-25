@@ -1,9 +1,13 @@
 /*
- * Super Entity Game Server
- * http://segs.sf.net/
- * Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
+ */
+
+/*!
+ * @addtogroup CommonServers Projects/CoX/Common/Servers
+ * @{
  */
 
 #include "Opcodes.h"
@@ -132,3 +136,5 @@ NameTableEntry OpcodeNames[] =
     { SERVER_BASE_CREATE,		  "SERVER_BASE_CREAT" },
     { SERVER_CMD_COUNT,           "SERVER_CMD_COUNT" },
 };
+
+//! @}

@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "map_serializers.h"
 #include "serialization_common.h"
 
@@ -16,6 +28,7 @@ bool loadFrom(BinStore *s,Map_Data &target)
     assert(ok);
     return ok && s->end_encountered();
 }
+
 bool loadFrom(BinStore *s, AllMaps_Data &target)
 {
     bool ok = true;
@@ -38,6 +51,7 @@ bool loadFrom(BinStore *s, AllMaps_Data &target)
     }
     return ok;
 }
+
 template<class Archive>
 static void serialize(Archive & archive, Map_Data & m)
 {
@@ -51,3 +65,5 @@ void saveTo(const AllMaps_Data &target, const QString &baseName, bool text_forma
 {
     commonSaveTo(target,"AllZones",baseName,text_format);
 }
+
+//! @}

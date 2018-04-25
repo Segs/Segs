@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 
 #include "Servers/InternalEvents.h"
@@ -20,31 +27,35 @@ struct name ## Message final : public InternalEvent\
     name ## Data m_data;\
     name ## Message(name ## Data &&d) :  InternalEvent(AuthDBEventTypes::ev ## name),m_data(d) {}\
 };
+
 /// A message without Request having additional data
 #define SIMPLE_TWO_WAY_MESSAGE(name)\
+
 struct name ## Request final : public InternalEvent\
 {\
     name ## Message(uint64_t token) :  InternalEvent(AuthDBEventTypes::ev ## name ## Request) {session_token(token);}\
 };\
+
 struct name ## Response final : public InternalEvent\
 {\
     name ## Data m_data;\
     name ## Response(name ## Data &&d,uint64_t token) :  InternalEvent(AuthDBEventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
 };
 /// A message with Request having additional data
+
 #define TWO_WAY_MESSAGE(name)\
+
 struct name ## Request final : public InternalEvent\
 {\
     name ## RequestData m_data;\
     name ## Request(name ## RequestData &&d,uint64_t token) : InternalEvent(AuthDBEventTypes::ev ## name ## Request),m_data(d) {session_token(token);}\
 };\
+
 struct name ## Response final : public InternalEvent\
 {\
     name ## ResponseData m_data;\
     name ## Response(name ## ResponseData &&d,uint64_t token) :  InternalEvent(AuthDBEventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
 };
-
-
 
 struct CreateAccountData
 {
@@ -53,6 +64,7 @@ struct CreateAccountData
     int access_level;
 };
 ONE_WAY_MESSAGE(CreateAccount)
+
 struct AuthDbErrorData
 {
     QString message;
@@ -70,7 +82,9 @@ struct RetrieveAccountResponseData
     bool isBlocked() const { return m_access_level == 0; }
 
 };
-struct RetrieveAccountRequestData {
+
+struct RetrieveAccountRequestData
+{
     QString  m_login;
     QString  m_password;
     uint32_t m_id; // if this is 0, the lookup will be done by login, otherwise by id
@@ -82,6 +96,7 @@ struct ValidatePasswordRequestData
     QString username;
     QString password;
 };
+
 struct ValidatePasswordResponseData
 {
     bool m_valid_password;

@@ -1,9 +1,8 @@
 /*
- * Super Entity Game Server Project
- * https://github.com/Segs/Segs
- * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
 
 #pragma once
@@ -25,12 +24,14 @@
 class CharacterCostume;
 struct PlayerData;
 struct Costume;
+
 struct CharacterPowerBoost
 {
     PowerPool_Info boost_id;
     int            level        = 0;
     int            num_combines = 0;
 };
+
 struct CharacterPower
 {
     PowerPool_Info                   power_id;
@@ -44,12 +45,12 @@ enum NameFlag : bool
     NoName = false,
     HasName = true,
 };
+
 enum ConditionalFlag : bool
 {
     Unconditional = false,
     Conditional = true,
 };
-
 
 class Character
 {

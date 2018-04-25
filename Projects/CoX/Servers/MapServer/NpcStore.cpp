@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapServer Projects/CoX/Servers/MapServer
+ * @{
+ */
+
 #include "NpcStore.h"
 
 #include "Logging.h"
@@ -25,6 +37,7 @@ int NPCStorage::npc_idx(const Parse_NPC *npc) const
     assert(npc>=m_all_npcs.data() && npc< m_all_npcs.data()+m_all_npcs.size());
     return std::distance(m_all_npcs.data(),npc);
 }
+
 int NPCStorage::npc_idx(const QString &name)
 {
     return npc_idx(m_name_to_npc_def[name.toLower()]);
@@ -37,3 +50,5 @@ const Parse_NPC *NPCStorage::npc_by_name(const QStringRef &name) const
         return iter.value();
     return nullptr;
 }
+
+//! @}

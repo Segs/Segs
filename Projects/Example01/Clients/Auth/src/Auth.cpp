@@ -1,8 +1,21 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup ExampleAuthClient Projects/Example01/Clients/Auth
+ * @{
+ */
+
 #include "Auth.h"
 #include "AuthConnection_ClientSide.h"
 #include "AuthPacket.h"
 #include "AuthOpcodes.h"
 #include "AuthProtocol.h"
+
 int Auth_Handler::open (void *p)
 {
 	ACE_Time_Value iter_delay (2);   // Two seconds
@@ -20,6 +33,7 @@ int Auth_Handler::open (void *p)
 	int res= this->reactor ()->schedule_timer(this, 0, ACE_Time_Value::zero, iter_delay);
 	return res;
 }
+
 int Auth_Handler::handle_input (ACE_HANDLE)
 {
 	char buf[64];
@@ -37,6 +51,7 @@ int Auth_Handler::handle_input (ACE_HANDLE)
 	}
 	return 0;
 }
+
 int Auth_Handler::handle_timeout(const ACE_Time_Value &, const void *)
 {
 	if (this->iterations_ >= ITERATIONS)
@@ -52,6 +67,7 @@ int Auth_Handler::handle_timeout(const ACE_Time_Value &, const void *)
 	this->putq (mb);
 	return 0;
 }
+
 int Auth_Handler::handle_output (ACE_HANDLE)
 {
 	ACE_Message_Block *mb;
@@ -91,3 +107,5 @@ void AuthInterface::login(const std::string &login,const std::string &passw )
 	m_conn->getProtocol()->sendPacket(pkt);
 
 }
+
+//! @}

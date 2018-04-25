@@ -151,6 +151,7 @@ SEGS can be developed locally by cloning the git repo to your local machine. For
 * Limit the first line to 72 characters or less
 * Reference issues and pull requests liberally after the first line
 * When only changing documentation, include `[ci skip]` in the commit description
+* If creating a new file, please add the standard SEGS copyright notice to the head of the file
 * Consider starting the commit message with an applicable emoji:
     * :art: `:art:` when improving the format/structure of the code
     * :racehorse: `:racehorse:` when improving performance

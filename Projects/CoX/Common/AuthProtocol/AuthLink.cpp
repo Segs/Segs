@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup AuthProtocol Projects/CoX/Common/AuthProtocol
+ * @{
+ */
+
 #include "AuthLink.h"
 
 #include "AuthProtocol/AuthOpcodes.h"
@@ -298,3 +310,5 @@ void AuthLink::dispatch( SEGSEvent */*ev*/ )
 {
     assert(!"Should not be called");
 }
+
+//! @}

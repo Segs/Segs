@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 
 #include <stdint.h>
@@ -6,7 +13,6 @@
 class BinStore;
 class QString;
 typedef std::vector<struct CharClass_Data> Parse_AllCharClasses;
-
 
 constexpr const static uint32_t charclass_i0_requiredCrc = 0xF6D734A6;
 bool loadFrom(BinStore *s,Parse_AllCharClasses &target) ;

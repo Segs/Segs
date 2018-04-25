@@ -1,6 +1,19 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup ExampleAuthClient Projects/Example01/Clients/Auth
+ * @{
+ */
+
 #include "Auth.h"
 #include "AuthFSM.h"
 #include "AuthPacket.h"
+
 AuthPacket * AuthFSM_Client::ConnectionEstablished(AuthConnection *conn)
 {
 	m_observer->notify_connected();
@@ -33,3 +46,5 @@ AuthObserver * AuthFSM_Client::get_observer()
 {
 	return m_observer;
 }
+
+//! @}

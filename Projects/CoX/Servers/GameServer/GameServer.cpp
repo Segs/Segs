@@ -1,10 +1,13 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
+ */
 
+/*!
+ * @addtogroup GameServer Projects/CoX/Servers/GameServer
+ * @{
  */
 
 #include "GameServer.h"
@@ -26,20 +29,22 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
-namespace {
+namespace
+{
     const constexpr int MaxCharacterSlots=8;
     class GameLinkEndpoint : public ServerEndpoint
     {
-    public:
-        GameLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
-        ~GameLinkEndpoint()=default;
-    protected:
-        CRUDLink *createLink(EventProcessor *down) override
-        {
-            return new GameLink(down,this);
-        }
-    };
+        public:
+            GameLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
+            ~GameLinkEndpoint()=default;
+        protected:
+            CRUDLink *createLink(EventProcessor *down) override
+            {
+                return new GameLink(down,this);
+            }
+        };
 }
+
 class GameServer::PrivateData
 {
 public:
@@ -62,6 +67,7 @@ public:
         m_handler->wait();
     }
 };
+
 void GameServer::dispatch(SEGSEvent *ev)
 {
     assert(ev);
@@ -89,6 +95,7 @@ GameServer::~GameServer()
 {
     delete d->m_endpoint;
 }
+
 // later name will be used to read GameServer specific configuration
 bool GameServer::ReadConfigAndRestart()
 {
@@ -142,6 +149,7 @@ bool GameServer::ReadConfigAndRestart()
     d->m_handler->putq(reconfigured_msg.shallow_copy());
     return true;
 }
+
 bool GameServer::ShutDown()
 {
     putq(SEGSEvent::s_ev_finish.shallow_copy());
@@ -153,6 +161,7 @@ const ACE_INET_Addr &GameServer::getAddress()
 {
     return d->m_location;
 }
+
 QString GameServer::getName( )
 {
     return d->m_serverName;
@@ -186,3 +195,5 @@ int GameServer::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
     qWarning() << "Shutting down game server";
     return 0;
 }
+
+//! @}

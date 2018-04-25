@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameDatabase Projects/CoX/Servers/GameDatabase
+ * @{
+ */
+
 #include "GameDBSyncHandler.h"
 
 #include "HandlerLocator.h"
@@ -66,6 +78,7 @@ void GameDBSyncHandler::on_costume_update(CostumeUpdateMessage *msg)
     GameDbSyncContext &db_ctx(m_db_context.localData());
     db_ctx.performUpdate(msg->m_data);
 }
+
 void GameDBSyncHandler::on_account_request(GameAccountRequest *msg)
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
@@ -87,6 +100,7 @@ void GameDBSyncHandler::on_check_name_clash(WouldNameDuplicateRequest * ev)
     else
         ev->src()->putq(new GameDbErrorMessage({"on_check_name_clash:Game db error"},ev->session_token()));
 }
+
 void GameDBSyncHandler::on_create_new_char(CreateNewCharacterRequest * ev)
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
@@ -97,6 +111,7 @@ void GameDBSyncHandler::on_create_new_char(CreateNewCharacterRequest * ev)
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 }
+
 void GameDBSyncHandler::on_get_entity(GetEntityRequest *ev)
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
@@ -106,5 +121,6 @@ void GameDBSyncHandler::on_get_entity(GetEntityRequest *ev)
         ev->src()->putq(new GetEntityResponse(std::move(resp),ev->session_token()));
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
-
 }
+
+//! @}

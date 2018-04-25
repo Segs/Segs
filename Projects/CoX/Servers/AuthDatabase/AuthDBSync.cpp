@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup AuthDatabase Projects/CoX/Servers/AuthDatabase
+ * @{
+ */
+
 #include "AuthDBSync.h"
 
 #include "AuthDBSyncHandler.h"
@@ -14,3 +26,5 @@ void startAuthDBSync()
     s_db_sync_handler = new AuthDBSyncHandler;
     s_db_sync_handler->activate();
 }
+
+//! @}
