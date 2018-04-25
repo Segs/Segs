@@ -1,12 +1,16 @@
 /*
- * Super Entity Game Server Project
- * http://github.com/Segs
- * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
 
-// segs includes
+/*!
+ * @addtogroup AuthServer Projects/CoX/Servers/AuthServer
+ * @{
+ */
+
+// SEGS includes
 #include "AuthServer.h"
 
 #include "ConfigExtension.h"
@@ -38,12 +42,12 @@ struct ClientAcceptor : public ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR>
         return 0;
     }
 };
+
 /*!
  * @class AuthServer
  * @brief main class of the authentication server, it controls the AuthHandler instances
  *
  */
-
 AuthServer::AuthServer()
 {
     m_acceptor = new ClientAcceptor;
@@ -58,6 +62,7 @@ AuthServer::~AuthServer()
 {
     delete m_acceptor;
 }
+
 void AuthServer::dispatch(SEGSEvent *ev)
 {
     assert(ev);
@@ -70,6 +75,7 @@ void AuthServer::dispatch(SEGSEvent *ev)
             assert(!"Unknown event encountered in dispatch.");
     }
 }
+
 /*!
  * @brief Read server configuration
  * @note m_mutex is held locked during this function
@@ -97,6 +103,7 @@ bool AuthServer::ReadConfigAndRestart()
 
     return Run();
 }
+
 /*!
  * @brief Starts this server up, by opening the connection acceptor on given location.
  * This method can be called multiple times, to re-open the listening socket on different addresses.
@@ -118,6 +125,7 @@ bool AuthServer::Run()
     m_running=true;
     return true;
 }
+
 /*!
  * @brief Shuts the server down
  * @return bool, if it's false, we failed to close down cleanly
@@ -138,3 +146,5 @@ bool AuthServer::ShutDown()
     wait();
     return true;
 }
+
+//! @}

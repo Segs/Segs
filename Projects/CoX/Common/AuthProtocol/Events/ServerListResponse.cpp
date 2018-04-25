@@ -1,8 +1,21 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup AuthProtocolEvents Projects/CoX/Common/AuthProtocol/Events
+ * @{
+ */
+
 #include "ServerListResponse.h"
 
 #ifdef _MSC_VER
 #include <ciso646>
 #endif
+
 void ServerListResponse::serializeto( GrowingBuffer &buf ) const
 {
     assert(not m_serv_list.empty());
@@ -44,3 +57,5 @@ void ServerListResponse::serializefrom( GrowingBuffer &buf )
         m_serv_list.push_back(srv);
     }
 }
+
+//! @}

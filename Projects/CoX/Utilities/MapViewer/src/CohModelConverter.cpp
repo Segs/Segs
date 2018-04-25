@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapViewer Projects/CoX/Utilities/MapViewer
+ * @{
+ */
+
 #include "CohModelConverter.h"
 
 #include "CoHModelLoader.h"
@@ -24,6 +36,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QDir>
+
 extern QString basepath;
 
 using namespace Urho3D;
@@ -36,6 +49,7 @@ enum UnpackMode {
     UNPACK_FLOATS=0,
     UNPACK_INTS=1,
 };
+
 // name of the geometry is constructed from actual name and an optional modifer name
 struct TexBlockInfo
 {
@@ -44,6 +58,7 @@ struct TexBlockInfo
     uint32_t bone_names_size;
     uint32_t tex_binds_size;
 };
+
 struct GeosetHeader32
 {
     char name[124];
@@ -52,6 +67,7 @@ struct GeosetHeader32
     int  subs_idx;
     int  num_subs;
 };
+
 struct PackInfo
 {
     int      compressed_size;
@@ -59,7 +75,6 @@ struct PackInfo
     int      compressed_data_off;
 };
 static_assert(sizeof(PackInfo) == 12, "sizeof(PackInfo)==12");
-
 
 AllTricks_Data s_tricks_store;
 /// this map is used too lookup converted models by the CoHModel pointer
@@ -74,6 +89,7 @@ void reportUnhandled(const QString &message)
     qDebug() << message;
     already_reported.insert(message);
 }
+
 void modelCreateObjectFromModel(Urho3D::Context *ctx,CoHModel *model,std::vector<TextureWrapper> &textures)
 {
     initLoadedModel([ctx](const QString &v) -> TextureWrapper { return tryLoadTexture(ctx, v); }, model, textures);
@@ -129,6 +145,7 @@ void modelCreateObjectFromModel(Urho3D::Context *ctx,CoHModel *model,std::vector
     fromScratchModel->SetBoundingBox(bbox);
     s_coh_model_to_renderable[model] = fromScratchModel;
 }
+
 void addModelData(Urho3D::Context *ctx,ConvertedGeoSet *geoset)
 {
     std::vector<TextureWrapper> v2 = getModelTextures(ctx,geoset->tex_names);
@@ -137,6 +154,7 @@ void addModelData(Urho3D::Context *ctx,ConvertedGeoSet *geoset)
         modelCreateObjectFromModel(ctx,model, v2);
     }
 }
+
 Urho3D::Model *buildModel(Urho3D::Context *ctx,CoHModel *mdl)
 {
     ResourceCache* cache = ctx->m_ResourceCache.get();
@@ -360,6 +378,7 @@ void convertMaterial(Urho3D::Context *ctx,CoHModel *mdl,StaticModel* boxObject)
     }
 
 }
+
 void copyStaticModel(const Urho3D::StaticModel *src, Urho3D::StaticModel *tgt)
 {
     tgt->SetModel(src->GetModel());
@@ -370,6 +389,7 @@ void copyStaticModel(const Urho3D::StaticModel *src, Urho3D::StaticModel *tgt)
     }
 }
 } // end of anonymus namespace
+
 Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, CoHNode *node, int opt)
 {
     CoHModel *mdl = node->model;
@@ -425,3 +445,5 @@ Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node
     mdl->converted_model = boxObject;
     return boxObject;
 }
+
+//! @}

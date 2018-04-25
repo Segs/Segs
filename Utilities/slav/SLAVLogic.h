@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #ifndef SLAVLOGIC_H
 #define SLAVLOGIC_H
 
@@ -33,8 +40,6 @@ public slots:
     void onManifestReceived(const QString & manifest_url, const QString &manifestData);
     // called from UI
     void onUpdateRequested(ServerDescriptor * manifest);
-
 };
-
 
 #endif // SLAVLOGIC_H

@@ -1,3 +1,8 @@
+# SEGS - Super Entity Game Server
+# http://www.segs.io/
+# Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+# This software is licensed! (See License.txt for details)
+
 class GameServer
 	
 	############################################################################
@@ -11,6 +16,7 @@ class GameServer
 			client.is_nice = false
 		end
 	end
+
 	# only client events are passed to us as plain old bytes
 	def on_bytes(ev)
 		client = @clients[ev.src_addr]
@@ -67,11 +73,13 @@ class GameServer
 			client.post_event SlotListEvent.new(self,client)
 		end
 	end
+
 	def on_update_character(ev)
 		# client requests given update to given character slot
 		character_data=ev.client.get_character(ev.char_idx)
 		ev.client.post_event CharUpdateEvent.new(self,character_data)
 	end
+
 	def on_delete_character(ev)
 		# client wants to delete given character
 		character_data=ev.client.get_character(ev.char_idx)
@@ -80,6 +88,7 @@ class GameServer
 		end
 		# after delete the clien will ask us for update, so no event is posted
 	end
+
 	def on_map_query(ev)
 		cl = ev.client
 		if(@map_servers.size>0)

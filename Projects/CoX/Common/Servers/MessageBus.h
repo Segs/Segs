@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include "EventProcessor.h"
 
@@ -8,11 +15,13 @@
 #include <vector>
 
 class MessageBusEndpoint;
+
 class SEGSTimer;
 /**
  * @brief The MessageBus class is responsible for forwarding incoming events to correct subscriber's endpoints
  *
  */
+
 class MessageBus final : public EventProcessor
 {
     std::unordered_map<uint32_t,std::vector<MessageBusEndpoint *> > m_specific_subscriber_map;

@@ -1,112 +1,128 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "shop_serializers.h"
 #include "serialization_common.h"
 
 #include "Common/GameData/shop_definitions.h"
 #include "DataStorage.h"
 
-
-namespace {
-
-bool loadFrom(BinStore *s,ShopBuySell_Data &target)
+namespace
 {
-    bool ok = true;
-    s->prepare();
-    ok &= s->read(target.m_Department);
-    ok &= s->read(target.m_Markup);
-    ok &= s->prepare_nested(); // will update the file size left
-    assert(ok);
-    return s->end_encountered();
-}
-bool loadFrom(BinStore *s,ShopItem_Data &target)
-{
-    bool ok = true;
-    s->prepare();
-    ok &= s->read(target.m_Name);
-    ok &= s->prepare_nested(); // will update the file size left
-    assert(ok);
-    return s->end_encountered();
-}
-bool loadFrom(BinStore *s,ShopDeptName_Data *target)
-{
-    bool ok = true;
-    s->prepare();
-    ok &= s->read(target->m_Names);
-    ok &= s->prepare_nested(); // will update the file size left
-    assert(ok);
-    return s->end_encountered();
-}
-bool loadFrom(BinStore *s,Shop_Data &target)
-{
-    bool ok = true;
-    s->prepare();
-    ok &= s->read(target.m_Name);
-    ok &= s->prepare_nested(); // will update the file size left
-    assert(ok);
-    if(s->end_encountered())
-        return ok;
-    QString _name;
-    // Only one entry per Item
-    while(s->nesting_name(_name))
+    bool loadFrom(BinStore *s,ShopBuySell_Data &target)
     {
-        s->nest_in();
-        if(_name.compare("Sell")==0) {
-            ShopBuySell_Data nt;
-            ok &= loadFrom(s,nt);
-            target.m_Sells.push_back(nt);
-        } else if(_name.compare("Buy")==0) {
-            ShopBuySell_Data nt;
-            ok &= loadFrom(s,nt);
-            target.m_Buys.push_back(nt);
-        } else if(_name.compare("Item")==0) {
-            ShopItem_Data nt;
-            ok &= loadFrom(s,nt);
-            target.m_Items.push_back(nt);
-        } else
-            assert(!"unknown field referenced.");
-        s->nest_out();
+        bool ok = true;
+        s->prepare();
+        ok &= s->read(target.m_Department);
+        ok &= s->read(target.m_Markup);
+        ok &= s->prepare_nested(); // will update the file size left
+        assert(ok);
+        return s->end_encountered();
     }
-    return ok;
-}
-bool loadFrom(BinStore *s,ItemPower_Data *target)
-{
-    bool ok = true;
-    s->prepare();
-    ok &= s->read(target->m_PowerCategory);
-    ok &= s->read(target->m_PowerSet);
-    ok &= s->read(target->m_Power);
-    ok &= s->read(target->m_Level);
-    ok &= s->read(target->m_Remove);
-    ok &= s->prepare_nested(); // will update the file size left
-    assert(ok);
-    return s->end_encountered();
-}
-bool loadFrom(BinStore *s,ShopItemInfo_Data *target)
-{
-    bool ok = true;
-    s->prepare();
-    ok &= s->read(target->m_Name);
-    ok &= s->read(target->m_Sell);
-    ok &= s->read(target->m_Buy);
-    ok &= s->read(target->m_CountPerStore);
-    ok &= s->read(target->m_Departments);
-    ok &= s->prepare_nested(); // will update the file size left
-    assert(ok);
-    if(s->end_encountered())
-        return ok;
-    QString _name;
-    // Only one entry per Item
-    if(s->nesting_name(_name))
+
+    bool loadFrom(BinStore *s,ShopItem_Data &target)
     {
-        s->nest_in();
-        if(_name.compare("Power")==0) {
-            ok &= loadFrom(s,&target->m_Power);
-        } else
-            assert(!"unknown field referenced.");
-        s->nest_out();
+        bool ok = true;
+        s->prepare();
+        ok &= s->read(target.m_Name);
+       ok &= s->prepare_nested(); // will update the file size left
+        assert(ok);
+        return s->end_encountered();
     }
-    return ok;
-}
-}
+
+    bool loadFrom(BinStore *s,ShopDeptName_Data *target)
+    {
+        bool ok = true;
+        s->prepare();
+        ok &= s->read(target->m_Names);
+        ok &= s->prepare_nested(); // will update the file size left
+        assert(ok);
+        return s->end_encountered();
+    }
+
+    bool loadFrom(BinStore *s,Shop_Data &target)
+    {
+        bool ok = true;
+        s->prepare();
+        ok &= s->read(target.m_Name);
+        ok &= s->prepare_nested(); // will update the file size left
+        assert(ok);
+        if(s->end_encountered())
+            return ok;
+        QString _name;
+        // Only one entry per Item
+        while(s->nesting_name(_name))
+        {
+            s->nest_in();
+            if(_name.compare("Sell")==0) {
+                ShopBuySell_Data nt;
+                ok &= loadFrom(s,nt);
+                target.m_Sells.push_back(nt);
+            } else if(_name.compare("Buy")==0) {
+                ShopBuySell_Data nt;
+                ok &= loadFrom(s,nt);
+                target.m_Buys.push_back(nt);
+            } else if(_name.compare("Item")==0) {
+                ShopItem_Data nt;
+                ok &= loadFrom(s,nt);
+                target.m_Items.push_back(nt);
+            } else
+                assert(!"unknown field referenced.");
+            s->nest_out();
+        }
+        return ok;
+    }
+
+    bool loadFrom(BinStore *s,ItemPower_Data *target)
+    {
+        bool ok = true;
+        s->prepare();
+        ok &= s->read(target->m_PowerCategory);
+        ok &= s->read(target->m_PowerSet);
+        ok &= s->read(target->m_Power);
+        ok &= s->read(target->m_Level);
+        ok &= s->read(target->m_Remove);
+        ok &= s->prepare_nested(); // will update the file size left
+        assert(ok);
+        return s->end_encountered();
+    }
+
+    bool loadFrom(BinStore *s,ShopItemInfo_Data *target)
+    {
+        bool ok = true;
+        s->prepare();
+        ok &= s->read(target->m_Name);
+        ok &= s->read(target->m_Sell);
+        ok &= s->read(target->m_Buy);
+        ok &= s->read(target->m_CountPerStore);
+        ok &= s->read(target->m_Departments);
+        ok &= s->prepare_nested(); // will update the file size left
+        assert(ok);
+        if(s->end_encountered())
+            return ok;
+        QString _name;
+        // Only one entry per Item
+        if(s->nesting_name(_name))
+        {
+            s->nest_in();
+            if(_name.compare("Power")==0) {
+                ok &= loadFrom(s,&target->m_Power);
+            } else
+                assert(!"unknown field referenced.");
+            s->nest_out();
+        }
+        return ok;
+    }
+} // namespace
 
 bool loadFrom(BinStore *s, AllShops_Data &target)
 {
@@ -183,6 +199,7 @@ static void serialize(Archive & archive, ShopBuySell_Data & m)
     archive(cereal::make_nvp("Department",m.m_Department));
     archive(cereal::make_nvp("Markup",m.m_Markup));
 }
+
 template<class Archive>
 static void serialize(Archive & archive, ShopItem_Data & m)
 {
@@ -212,6 +229,7 @@ static void serialize(Archive & archive, ItemPower_Data & m)
     archive(cereal::make_nvp("Level",m.m_Level));
     archive(cereal::make_nvp("Remove",m.m_Remove));
 }
+
 template<class Archive>
 static void serialize(Archive & archive, ShopItemInfo_Data & m)
 {
@@ -233,7 +251,10 @@ static void serialize(Archive & archive, ShopDeptName_Data & m)
 {
     archive(cereal::make_nvp("Name",m.m_Names));
 }
+
 void saveTo(const AllShopDepts_Data & target, const QString & baseName, bool text_format)
 {
     commonSaveTo(target,"AllShopDepts",baseName,text_format);
 }
+
+//! @}

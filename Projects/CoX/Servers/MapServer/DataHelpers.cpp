@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapServer Projects/CoX/Servers/MapServer
+ * @{
+ */
+
 #include "DataHelpers.h"
 
 #include "MapServer.h"
@@ -269,7 +281,6 @@ void readEmailMessage(Entity *e, const int id){
     src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
 }
 
-
 /*
  * Character Methods
  */
@@ -310,14 +321,17 @@ void setCombatLevel(Character &c, uint32_t val)
         val = 50;
     c.m_char_data.m_combat_level = val;
 }
+
 void setHP(Character &c, float val)
 {
     c.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val,c.m_max_attribs.m_HitPoints));
 }
+
 void setEnd(Character &c, float val)
 {
     c.m_current_attribs.m_Endurance = std::max(0.0f, std::min(val,c.m_max_attribs.m_Endurance));
 }
+
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
 void    setMapName(Character &c, const QString &val) { c.m_char_data.m_mapName = val; }
 
@@ -334,7 +348,7 @@ void setXP(Character &c, uint32_t val)
     }
 }
 
-void    setDebt(Character &c, uint32_t val) { c.m_char_data.m_experience_debt = val; }
+void setDebt(Character &c, uint32_t val) { c.m_char_data.m_experience_debt = val; }
 
 void setTitles(Character &c, bool prefix, QString generic, QString origin, QString special)
 {
@@ -356,9 +370,9 @@ void setTitles(Character &c, bool prefix, QString generic, QString origin, QStri
     c.m_char_data.m_titles[2] = special;
 }
 
-void    setInf(Character &c, uint32_t val) { c.m_char_data.m_influence = val; }
-void    setDescription(Character &c, QString val) { c.m_char_data.m_character_description = val; }
-void    setBattleCry(Character &c, QString val) { c.m_char_data.m_battle_cry = val; }
+void setInf(Character &c, uint32_t val) { c.m_char_data.m_influence = val; }
+void setDescription(Character &c, QString val) { c.m_char_data.m_character_description = val; }
+void setBattleCry(Character &c, QString val) { c.m_char_data.m_battle_cry = val; }
 
 // Toggles
 void toggleAFK(Character &c, const QString &msg)
@@ -368,8 +382,7 @@ void toggleAFK(Character &c, const QString &msg)
         c.m_char_data.m_afk_msg = msg;
 }
 
-void    toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
-
+void toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
 
 /*
  * Looking For Group
@@ -395,7 +408,6 @@ void toggleLFG(Entity &e)
     }
 }
 
-
 /*
  * sendInfoMessage wrapper to provide access to NetStructures
  */
@@ -403,7 +415,6 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
 {
     sendInfoMessage(ch, msg, tgt.m_client);
 }
-
 
 /*
  * SendUpdate Wrappers to provide access to NetStructures
@@ -413,16 +424,19 @@ void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount)
     qCDebug(logSlashCommand, "Sending %d FloatingNumbers from %d to %d", amount, src->m_idx, tgt_idx);
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingDamage>(new FloatingDamage(src->m_idx, tgt_idx, amount)));
 }
+
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list)
 {
     qCDebug(logFriends) << "Sending FriendsList Update.";
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FriendsListUpdate>(new FriendsListUpdate(friends_list)));
 }
+
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id)
 {
     qCDebug(logTeams) << "Sending Sidekick Offer" << tgt->name() << "from" << src_db_id;
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<SidekickOffer>(new SidekickOffer(src_db_id)));
 }
+
 void sendTeamLooking(Entity *tgt)
 {
     std::vector<LFGMember> list = g_lfg_list;
@@ -430,6 +444,7 @@ void sendTeamLooking(Entity *tgt)
     qCDebug(logLFG) << "Sending Team Looking to" << tgt->name();
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamLooking>(new TeamLooking(list)));
 }
+
 void sendTeamOffer(Entity *src, Entity *tgt)
 {
     QString name        = src->name();
@@ -444,3 +459,5 @@ void sendTeamOffer(Entity *src, Entity *tgt)
     qCDebug(logTeams) << "Sending Teamup Offer" << db_id << name << type;
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
 }
+
+//! @}

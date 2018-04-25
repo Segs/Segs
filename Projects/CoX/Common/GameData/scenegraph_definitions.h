@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include <glm/vec3.hpp>
 
@@ -10,17 +17,20 @@ struct GroupLoc_Data
     glm::vec3 pos {0,0,0};
     glm::vec3 rot {0,0,0};
 };
+
 struct GroupProperty_Data
 {
     QString propName;
     QString propValue;
     int propertyType; // 1 - propValue contains float radius, 0 propValue is plain string
 };
+
 struct TintColor_Data
 {
     uint32_t clr1;
     uint32_t clr2;
 };
+
 struct ReplaceTex_Data
 {
     int texIdxToReplace;
@@ -38,6 +48,7 @@ struct DefSound_Data
     float snd_ramp_feet;
     uint32_t sndFlags;
 };
+
 struct DefLod_Data
 {
     float Far;
@@ -46,17 +57,20 @@ struct DefLod_Data
     float NearFade;
     float Scale;
 };
+
 struct DefOmni_Data
 {
     uint32_t omniColor;
     float Size;
     int isNegative;
 };
+
 struct DefBeacon_Data
 {
     QString name;
     float amplitude; // maybe rotation speed ?
 };
+
 struct DefFog_Data
 {
     float fogZ;
@@ -65,6 +79,7 @@ struct DefFog_Data
     uint32_t fogClr1;
     uint32_t fogClr2;
 };
+
 struct DefAmbient_Data
 {
     uint32_t clr;
@@ -87,12 +102,14 @@ struct SceneGraphNode_Data
     std::vector<DefAmbient_Data> p_Ambient;
     std::vector<DefLod_Data> p_Lod;
 };
+
 struct SceneRootNode_Data
 {
     QString name;
     glm::vec3 pos {0,0,0};
     glm::vec3 rot {0,0,0};
 };
+
 struct SceneGraph_Data
 {
     int Version;

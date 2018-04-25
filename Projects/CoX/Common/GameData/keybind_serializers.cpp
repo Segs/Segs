@@ -1,133 +1,149 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "keybind_serializers.h"
 #include "keybind_definitions.h"
 #include "serialization_common.h"
 
 #include "DataStorage.h"
 
-namespace {
-KeyName resolveKey(const QString &name)
+namespace
 {
-    auto iter = keyNameToEnum.find(name.toUpper());
-    if(iter!=keyNameToEnum.end())
-        return *iter;
-    return COH_INPUT_INVALID;
-}
-ModKeys resolveMod(const QString &name)
-{
-    auto iter = modNameToEnum.find(name.toUpper());
-    if(iter!=modNameToEnum.end())
-        return *iter;
-    return NO_MOD;
-}
-std::vector<Keybind> correctSecondaryBinds(std::vector<Keybind> &keybinds)
-{
-    QSet<QString> known_commands;
-    for(Keybind & bind : keybinds)  {
-        if(known_commands.contains(bind.Command)) {
-            qCDebug(logKeybinds) << "Found duplicate keybind " + bind.Command + " Setting to alternate.";
-            bind.IsSecondary = true;
+    KeyName resolveKey(const QString &name)
+    {
+        auto iter = keyNameToEnum.find(name.toUpper());
+        if(iter!=keyNameToEnum.end())
+            return *iter;
+        return COH_INPUT_INVALID;
+    }
+
+    ModKeys resolveMod(const QString &name)
+    {
+        auto iter = modNameToEnum.find(name.toUpper());
+        if(iter!=modNameToEnum.end())
+            return *iter;
+        return NO_MOD;
+    }
+
+    std::vector<Keybind> correctSecondaryBinds(std::vector<Keybind> &keybinds)
+    {
+        QSet<QString> known_commands;
+        for(Keybind & bind : keybinds)  {
+            if(known_commands.contains(bind.Command)) {
+                qCDebug(logKeybinds) << "Found duplicate keybind " + bind.Command + " Setting to alternate.";
+                bind.IsSecondary = true;
+            }
+            else {
+                known_commands.insert(bind.Command);
+            }
         }
-        else {
-            known_commands.insert(bind.Command);
+        return keybinds;
+    }
+
+    bool loadFrom(BinStore * s, Keybind & target)
+    {
+        s->prepare();
+        bool ok = true;
+        ok &= s->read(target.KeyString);
+        ok &= s->read(target.Command);
+        ok &= s->prepare_nested(); // will update the file size left
+
+        QStringList combo = target.KeyString.split("+");
+
+        if(combo.size() > 1)
+        {
+            target.Mods = resolveMod(combo.at(0));
+            target.Key  = resolveKey(combo.at(1));
         }
-    }
-    return keybinds;
-}
-bool loadFrom(BinStore * s, Keybind & target)
-{
-    s->prepare();
-    bool ok = true;
-    ok &= s->read(target.KeyString);
-    ok &= s->read(target.Command);
-    ok &= s->prepare_nested(); // will update the file size left
+        else
+            target.Key = resolveKey(target.KeyString);
 
-    QStringList combo = target.KeyString.split("+");
+        qCDebug(logKeybinds) << "\tbind:" << target.KeyString << target.Key << target.Mods << target.Command;
 
-    if(combo.size() > 1)
-    {
-        target.Mods = resolveMod(combo.at(0));
-        target.Key  = resolveKey(combo.at(1));
-    }
-    else
-        target.Key = resolveKey(target.KeyString);
-
-    qCDebug(logKeybinds) << "\tbind:" << target.KeyString << target.Key << target.Mods << target.Command;
-
-    assert(ok && s->end_encountered());
-    return ok;
-}
-bool loadFrom(BinStore * s, Keybind_Profiles & target)
-{
-    s->prepare();
-    bool ok = true;
-    ok &= s->read(target.DisplayName);
-    ok &= s->read(target.Name);
-    ok &= s->prepare_nested(); // will update the file size left
-    if(s->end_encountered())
+        assert(ok && s->end_encountered());
         return ok;
-
-    qCDebug(logKeybinds) << "Loading Profile:" << target.DisplayName << target.Name;
-
-    QString _name;
-    while(s->nesting_name(_name))
-    {
-        s->nest_in();
-        if(_name.compare("KeyBind")==0) {
-            target.KeybindArr.emplace_back();
-            ok &= loadFrom(s,target.KeybindArr.back());
-        } else
-            assert(!"unknown field referenced.");
-        s->nest_out();
     }
 
-    target.KeybindArr = correctSecondaryBinds(target.KeybindArr);
-
-    qCDebug(logKeybinds) << "Total Keybinds:" << target.KeybindArr.size();
-
-    assert(ok);
-    return ok;
-}
-
-bool loadFrom(BinStore * s, Command & target)
-{
-    s->prepare();
-    bool ok = true;
-    ok &= s->read(target.CmdString);
-    ok &= s->read(target.DisplayName);
-    ok &= s->prepare_nested(); // will update the file size left
-    if(s->end_encountered())
-        return ok;
-
-    qCDebug(logKeybinds) << target.CmdString << target.DisplayName;
-
-    assert(ok);
-    return ok;
-}
-
-bool loadFrom(BinStore * s, CommandCategory_Entry & target)
-{
-    s->prepare();
-    bool ok = true;
-    ok &= s->read(target.DisplayName);
-    ok &= s->prepare_nested(); // will update the file size left
-    if(s->end_encountered())
-        return ok;
-    QString _name;
-    while(s->nesting_name(_name))
+    bool loadFrom(BinStore * s, Keybind_Profiles & target)
     {
-        s->nest_in();
-        if(_name.compare("Command")==0) {
-            target.commands.emplace_back();
-            ok &= loadFrom(s,target.commands.back());
-        } else
-            assert(!"unknown field referenced.");
-        s->nest_out();
-    }
-    assert(ok);
-    return ok;
-}
+        s->prepare();
+        bool ok = true;
+        ok &= s->read(target.DisplayName);
+        ok &= s->read(target.Name);
+        ok &= s->prepare_nested(); // will update the file size left
+        if(s->end_encountered())
+            return ok;
 
-} // Anonymous namespace
+        qCDebug(logKeybinds) << "Loading Profile:" << target.DisplayName << target.Name;
+
+        QString _name;
+        while(s->nesting_name(_name))
+        {
+            s->nest_in();
+            if(_name.compare("KeyBind")==0) {
+                target.KeybindArr.emplace_back();
+                ok &= loadFrom(s,target.KeybindArr.back());
+            } else
+                assert(!"unknown field referenced.");
+            s->nest_out();
+        }
+
+        target.KeybindArr = correctSecondaryBinds(target.KeybindArr);
+
+        qCDebug(logKeybinds) << "Total Keybinds:" << target.KeybindArr.size();
+
+        assert(ok);
+        return ok;
+    }
+
+    bool loadFrom(BinStore * s, Command & target)
+    {
+        s->prepare();
+        bool ok = true;
+        ok &= s->read(target.CmdString);
+        ok &= s->read(target.DisplayName);
+        ok &= s->prepare_nested(); // will update the file size left
+        if(s->end_encountered())
+            return ok;
+
+        qCDebug(logKeybinds) << target.CmdString << target.DisplayName;
+
+        assert(ok);
+        return ok;
+    }
+
+    bool loadFrom(BinStore * s, CommandCategory_Entry & target)
+    {
+        s->prepare();
+        bool ok = true;
+        ok &= s->read(target.DisplayName);
+        ok &= s->prepare_nested(); // will update the file size left
+        if(s->end_encountered())
+            return ok;
+        QString _name;
+        while(s->nesting_name(_name))
+        {
+            s->nest_in();
+            if(_name.compare("Command")==0) {
+                target.commands.emplace_back();
+                ok &= loadFrom(s,target.commands.back());
+            } else
+                assert(!"unknown field referenced.");
+            s->nest_out();
+        }
+        assert(ok);
+        return ok;
+    }
+} // namespace
 
 bool loadFrom(BinStore * s, Parse_AllKeyProfiles & target)
 {
@@ -266,3 +282,5 @@ void serializeFromDb(KeybindSettings &data,const QString &src)
         ar(data);
     }
 }
+
+//! @}

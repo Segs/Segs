@@ -1,3 +1,14 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup ExampleChatServer Projects/Example01/Common/Communication/Server
+ * @{
+ */
 
 #include "GameServer_server.hpp"
 #include <memory>
@@ -59,3 +70,5 @@ try {
 }  // namespace GameServer
 
 }  // namespace StickWorld
+
+//! @}

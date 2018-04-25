@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup slav Utilities/slav
+ * @{
+ */
+
 #include "ProjectDescriptor.h"
 #include "ProjectManifest.h"
 #include "UpdaterDlg.h"
@@ -20,7 +32,8 @@ UpdaterDlg::~UpdaterDlg()
 void UpdaterDlg::projectListChanged(const std::vector<ProjectDescriptor> &projects)
 {
     ui->projectSelector->clear();
-    for(const ProjectDescriptor &pd : projects) {
+    for(const ProjectDescriptor &pd : projects)
+    {
         ui->projectSelector->addItem(pd.displayName(),QVariant::fromValue((void *)&pd));
     }
 }
@@ -44,6 +57,6 @@ void UpdaterDlg::onUpdateAvailable(AppVersionManifest *manifest, const QString &
     {
         emit requestUpdateForServer(nullptr);
     }
-
 }
 
+//! @}

@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup AuthDatabase Projects/CoX/Servers/AuthDatabase
+ * @{
+ */
+
 #include "AuthDBSyncContext.h"
 
 #include "AuthDBSyncEvents.h"
@@ -15,23 +27,24 @@
 
 namespace
 {
-bool GetAccount(RetrieveAccountResponseData &client, QSqlQuery &results)
-{
-    if (!results.next()) // TODO: handle case of multiple accounts with same name ?
-        return false;
-    QDateTime creation;
-    client.m_acc_server_acc_id = results.value("id").toULongLong();
-    client.m_login             = results.value("username").toString();
-    client.m_access_level      = results.value("access_level").toUInt();
-    creation                   = results.value("creation_date").toDateTime();
-    //  client->setCreationDate(creation);
-    return true;
-}
+    bool GetAccount(RetrieveAccountResponseData &client, QSqlQuery &results)
+    {
+        if (!results.next()) // TODO: handle case of multiple accounts with same name ?
+            return false;
+        QDateTime creation;
+        client.m_acc_server_acc_id = results.value("id").toULongLong();
+        client.m_login             = results.value("username").toString();
+        client.m_access_level      = results.value("access_level").toUInt();
+        creation                   = results.value("creation_date").toDateTime();
+        //  client->setCreationDate(creation);
+        return true;
+    }
 } // namespace
 
 AuthDbSyncContext::AuthDbSyncContext() {}
 
 AuthDbSyncContext::~AuthDbSyncContext() {}
+
 int64_t AuthDbSyncContext::getDbVersion(QSqlDatabase &db)
 {
     QSqlQuery version_query(
@@ -46,6 +59,7 @@ int64_t AuthDbSyncContext::getDbVersion(QSqlDatabase &db)
         return -1;
     return version_query.value(0).toInt();
 }
+
 // Maybe one day we'll need to read different db configs per-thread, for now all just read the same file.
 bool AuthDbSyncContext::loadAndConfigure()
 {
@@ -215,9 +229,12 @@ bool AuthDbSyncContext::retrieveAccountAndCheckPassword(const RetrieveAccountReq
     }
     return GetAccount(result, *m_prepared_select_account_by_username);
 }
+
 bool AuthDbSyncContext::getPasswordValidity(const ValidatePasswordRequestData &data,
                                             ValidatePasswordResponseData &     result)
 {
     result.m_valid_password = checkPassword(data.username, data.password);
     return !last_error->isValid();
 }
+
+//! @}

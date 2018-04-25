@@ -1,3 +1,7 @@
+# SEGS - Super Entity Game Server
+# http://www.segs.io/
+# Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+# This software is licensed! (See License.txt for details)
 
 class AuthServer < EventProcessor
 	# low level events, posted by network layer
@@ -8,11 +12,13 @@ class AuthServer < EventProcessor
 		end
 		post_event bytes_to_event(cl,ev.bytes)
 	end
+
 	def bytes_to_event(cl,bytes)
 		res = nil
 		
 		res.link = cl
 	end
+
 	def on_connect(ev)
 		cl=@clients.find_link_ip(ev.link.src_addr)
 		raise "Multiple connection attempts from the same addr/port" if(cl!=nil)
@@ -20,12 +26,14 @@ class AuthServer < EventProcessor
 		client_link.state = :connected
 		client_link.post_event AuthorizationProtocolVersion.new(self,30206)
 	end
+
 	def on_disconnect(ev)
 		if(ev.link.state!=:waiting_for_disconnect)
 			# premature disconnect
 		end
 		ev.link.state = :disconnected
 	end
+
 	# self posted events	
 	def on_auth_request(ev)
 		client_link = ev.link
@@ -55,6 +63,7 @@ class AuthServer < EventProcessor
 		client_link.state = :deciding_on_server # now client will select a server
 		client_link.post_event server_list_event		
 	end
+
 	def on_server_selected(ev)
 		# client selected a server
 		# we ask the selected server to give us a cookie
@@ -71,6 +80,7 @@ class AuthServer < EventProcessor
 		game_server.post_event ExpectClient.new(self,ev.link.addr,ev.link.client_id,ev.link.access_level)
 		# as can be seen, we do not send anything to the client from here
 	end
+
 	############################################################################
 	# event posted by Game server
 	def on_expecting_client(ev) 

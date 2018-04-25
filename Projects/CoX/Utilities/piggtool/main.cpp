@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup piggtool Projects/CoX/Utilities/piggtool
+ * @{
+ */
+
 #include <stdio.h>
 #include <QtCore/QFileInfo>
 #include <QtCore/QFile>
@@ -8,6 +20,7 @@
 
 #include <vector>
 #include <cassert>
+
 namespace {
 #pragma pack(push, 1)
 struct PiggHeader
@@ -19,6 +32,7 @@ struct PiggHeader
     int16_t used_header_bytes;
     uint32_t num_entries;
 };
+
 struct PiggInternalHeader
 {
     int flag;
@@ -29,12 +43,14 @@ struct PiggInternalHeader
     int unused[6];
     uint32_t packed_size;
 };
+
 #pragma pack(pop)
 struct Pigg_DataTable
 {
     int datapool_flag;
     std::vector<QString> data_parts;
 };
+
 struct PiggFile
 {
    PiggHeader hdr;
@@ -47,6 +63,7 @@ template<class POD>
 bool readPOD(QIODevice &src,POD &tgt) {
     return sizeof(POD)==src.read((char *)&tgt,sizeof(POD));
 }
+
 //Unpack the ZIP data using qt functions, need to prepend the uncompressed data size to the source data.
 QByteArray uncompr_zip(QByteArray &compressed_data,uint32_t size_uncom) {
     compressed_data.prepend( char((size_uncom >> 0) & 0xFF));
@@ -76,6 +93,7 @@ bool loadDataTable(QFile &src,Pigg_DataTable &target) {
     }
     return true;
 }
+
 bool loadPigg(const QString &fname,PiggFile &pigg)
 {
     QFile src_fl(fname);
@@ -139,6 +157,7 @@ bool loadPigg(const QString &fname,PiggFile &pigg)
     qDebug() << "Header loaded";
     return true;
 }
+
 void dumpFileList(PiggFile &pigg)
 {
     qDebug() << "Filename    -  Compressed Size - Actual size";
@@ -146,6 +165,7 @@ void dumpFileList(PiggFile &pigg)
         qDebug().noquote() << pigg.strings_table.data_parts[ih.name_id] << "  " <<ih.packed_size<<"  "<<ih.size;
     }
 }
+
 void saveFile(const QString &fname,const QByteArray &data) {
     QFile tgt_fl(fname);
     if(!tgt_fl.open(QFile::WriteOnly)) {
@@ -157,6 +177,7 @@ void saveFile(const QString &fname,const QByteArray &data) {
     }
 
 }
+
 void extractAllFiles(PiggFile &pigg)
 {
     QFile src_fl(pigg.fname);
@@ -182,6 +203,7 @@ void extractAllFiles(PiggFile &pigg)
     }
 }
 }
+
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc,argv);
@@ -213,3 +235,5 @@ int main(int argc, char **argv)
     }
     return 0;
 }
+
+//! @}

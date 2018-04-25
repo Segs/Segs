@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameServer Projects/CoX/Servers/GameServer
+ * @{
+ */
+
 #include "GameHandler.h"
 
 #include "GameEvents.h"
@@ -32,7 +44,8 @@ GameHandler::GameHandler()
 }
 GameHandler::~GameHandler() = default;
 
-void GameHandler::start() {
+void GameHandler::start()
+{
     ACE_ASSERT(m_link_checker==nullptr);
     m_link_checker.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
     m_service_status_timer.reset(new SEGSTimer(this,(void *)Service_Status_Timer,service_update_interval,false));
@@ -106,11 +119,13 @@ void GameHandler::dispatch( SEGSEvent *ev )
         assert(!"Unknown event encountered in dispatch.");
     }
 }
+
 void GameHandler::on_game_db_error(GameDbErrorMessage *ev)
 {
     GameSession &session = m_session_store.session_from_event(ev);
     session.link()->putq(new GameEntryError(this,"Unauthorized !"));
 }
+
 ///
 /// \brief This handler is called when we get the account information for a
 /// \param ev
@@ -130,12 +145,14 @@ void GameHandler::on_account_data(GameAccountResponse *ev)
     slots_event->set_account_data(&session.m_game_account);
     session.link()->putq(slots_event);
 }
+
 void GameHandler::on_connection_request(ConnectRequest *ev)
 {
     // TODO: disallow connects if server is overloaded
     qDebug("Client-side CRUDP Level: %d \n\t Tick Count: %d", ev->m_version, ev->m_tickcount);
     ev->src()->putq(new ConnectResponse);
 }
+
 void GameHandler::on_update_server(UpdateServer *ev)
 {
     if(ev->m_build_date!=supported_version)
@@ -164,6 +181,7 @@ void GameHandler::on_update_server(UpdateServer *ev)
     m_session_store.locked_mark_session_for_reaping(&session,expecting_session_token);
     // if things work ok, than GameHandler::on_account_data will get all it needs.
 }
+
 void GameHandler::on_update_character(UpdateCharacter *ev)
 {
     auto lnk = (GameLink *)ev->src();
@@ -175,12 +193,14 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
 
     // TODO: Do we update database here? issue #271
 }
+
 void GameHandler::on_idle(IdleEvent *ev)
 {
     // idle for idle 'strategy'
 //    GameLink * lnk = (GameLink *)ev->src();
 //    lnk->putq(new IdleEvent);
 }
+
 void GameHandler::on_check_links()
 {
     // walk the active sessions
@@ -199,6 +219,7 @@ void GameHandler::on_check_links()
             client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
     }
 }
+
 void GameHandler::report_service_status()
 {
     postGlobalEvent(new GameServerStatusMessage({m_server->getAddress(),QDateTime::currentDateTime(),
@@ -256,6 +277,7 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
     // Post disconnect event to link, will close it's processing loop, after it sends the response
     lnk->putq(new DisconnectEvent(lnk->session_token())); // this should work, event if different threads try to do it in parallel
 }
+
 void GameHandler::on_link_lost(SEGSEvent *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
@@ -282,6 +304,7 @@ void GameHandler::on_link_lost(SEGSEvent *ev)
     // Post disconnect event to link, will close it's processing loop
     lnk->putq(new DisconnectEvent(lnk->session_token()));
 }
+
 void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)
 {
     GameSession &session = m_session_store.session_from_event(ev);
@@ -289,6 +312,7 @@ void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)
     chr.reset();
     session.link()->putq(new DeletionAcknowledged);
 }
+
 void GameHandler::on_delete_character(DeleteCharacter *ev)
 {
     EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_server->getId());
@@ -306,6 +330,7 @@ void GameHandler::on_delete_character(DeleteCharacter *ev)
         lnk->putq(new GameEntryError(this,"Given name was not the same as character name\n. Character was not deleted."));
     }
 }
+
 void GameHandler::on_client_expected(ExpectMapClientResponse *ev)
 {
     GameSession &session = m_session_store.session_from_event(ev);
@@ -316,6 +341,7 @@ void GameHandler::on_client_expected(ExpectMapClientResponse *ev)
     lnk->putq(r_ev);
 
 }
+
 void GameHandler::on_map_req(MapServerAddrRequest *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
@@ -366,6 +392,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     session.m_direction = GameSession::EXITING_TO_MAP;
     map_handler->putq(expect_client);
 }
+
 void GameHandler::on_unknown_link_event(GameUnknownRequest *)
 {
         ACE_DEBUG((LM_WARNING,ACE_TEXT("Unknown GameHandler link event.\n")));
@@ -393,6 +420,7 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
     session.is_connected_to_map_server_id = ev->m_data.m_server_id;
     session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
 }
+
 void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
 {
     GameSession &session(m_session_store.session_from_token(ev->m_data.m_session));
@@ -403,6 +431,7 @@ void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
         m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
     }
 }
+
 void GameHandler::reap_stale_links()
 {
     SessionStore::MTGuard guard(m_session_store.reap_lock());
@@ -412,3 +441,5 @@ void GameHandler::reap_stale_links()
                                          tgt->putq(new ClientDisconnectedMessage({tok}));
                                      });
 }
+
+//! @}

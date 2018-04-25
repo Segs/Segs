@@ -1,10 +1,15 @@
 /*
- * Super Entity Game Server
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
+
+/*!
+ * @addtogroup NetStructures Projects/CoX/Common/NetStructures
+ * @{
+ */
+
 #include "CommonNetStructures.h"
 #include "Common/GameData/CoXHash.h"
 
@@ -35,12 +40,14 @@ void storePackedBitsConditional( BitStream &bs,uint8_t numbits,int bits )
     if(bits)
         bs.StorePackedBits(numbits,bits);
 }
+
 void storeVector( BitStream &bs,glm::vec3 &vec )
 {
     bs.StoreFloat(vec.x);
     bs.StoreFloat(vec.y);
     bs.StoreFloat(vec.z);
 }
+
 void storeVectorConditional(BitStream &bs, glm::vec3 &vec )
 {
     storeFloatConditional(bs,vec.x);
@@ -113,4 +120,4 @@ void getTransformMatrix(BitStream &bs, glm::mat4x3 &src )
     bs.GetBitArray((uint8_t *)glm::value_ptr(src),sizeof(glm::mat4x3)*8);
 }
 
-
+//! @}

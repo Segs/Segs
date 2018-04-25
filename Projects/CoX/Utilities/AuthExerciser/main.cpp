@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup AuthExerciser Projects/CoX/Utilities/AuthExerciser
+ * @{
+ */
+
 #include "AuthProtocol/Events/LoginRequest.h"
 #include "AuthProtocol/AuthLink.h"
 #include "DummyClass.h"
@@ -34,6 +46,7 @@ struct AuthConnector final : public ACE_Connector<AuthLink, ACE_SOCK_Connector>
         return 0;
     }
 };
+
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
@@ -88,3 +101,5 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
+//! @}

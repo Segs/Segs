@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup AuthProtocol Projects/CoX/Common/AuthProtocol
+ * @{
+ */
+
 #include "AuthEventFactory.h"
 #include "AuthEvents.h"
 
@@ -39,3 +51,4 @@ void AuthEventFactory::Destroy(AuthLinkEvent *what)
     //delete what;
 }
 
+//! @}

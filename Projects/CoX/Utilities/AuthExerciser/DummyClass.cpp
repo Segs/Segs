@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup AuthExerciser Projects/CoX/Utilities/AuthExerciser
+ * @{
+ */
+
 #include "DummyClass.h"
 
 #include "AuthProtocol/AuthEvents.h"
@@ -99,3 +111,5 @@ void DummyClass::onServerSelectResponse(ServerSelectResponse *ev)
 {
     qInfo() << "ServerSelectResponse received:" << ev->type();
 }
+
+//! @}

@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapServer Projects/CoX/Servers/MapServer
+ * @{
+ */
+
 #include "WorldSimulation.h"
 
 #include "MapInstance.h"
@@ -12,6 +24,7 @@ void markFlying(Entity &e ,bool is_flying) // Function to set character as flyin
     e.m_is_flying = is_flying;
 
 }
+
 void World::update(const ACE_Time_Value &tick_timer)
 {
 
@@ -34,6 +47,7 @@ void World::update(const ACE_Time_Value &tick_timer)
         updateEntity(e,delta);
     }
 }
+
 void World::physicsStep(Entity *e,uint32_t msec)
 {
     if(glm::length2(e->inp_state.pos_delta))
@@ -60,6 +74,7 @@ float animateValue(float v,float start,float target,float length,float dT)
     float res = start + (accumulated_time/length) * range;
     return res;
 }
+
 void World::effectsStep(Entity *e,uint32_t msec)
 {
     if(e->m_is_fading)
@@ -76,6 +91,7 @@ void World::effectsStep(Entity *e,uint32_t msec)
             e->m_is_fading = false;
     }
 }
+
 void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
     physicsStep(e,dT.msec());
     effectsStep(e,dT.msec());
@@ -100,3 +116,5 @@ void World::addPlayer(Entity *ent)
 {
     ref_ent_mager.InsertPlayer(ent);
 }
+
+//! @}

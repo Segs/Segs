@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup slav Utilities/slav
+ * @{
+ */
+
 #include "FileSignatureWorker.h"
 
 #include "ProjectManifest.h"
@@ -42,3 +54,5 @@ void FileSignatureWorker::process()
     emit progress(m_manifest->m_version,100.0);
     emit finished();
 }
+
+//! @}

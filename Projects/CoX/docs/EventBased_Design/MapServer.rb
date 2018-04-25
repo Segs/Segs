@@ -1,3 +1,8 @@
+# SEGS - Super Entity Game Server
+# http://www.segs.io/
+# Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+# This software is licensed! (See License.txt for details)
+
 class MapServer
 	############################################################################
 	# Events from network layer
@@ -10,6 +15,7 @@ class MapServer
 			client.is_nice = false
 		end
 	end
+
 	def on_bytes(ev)
 		# only client events are passed to us as plain old bytes
 		# unless we implement split server executables.

@@ -1,12 +1,14 @@
-#include <memory>
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
 
-#include <memory>
-
-#include <memory>
-
-#include <memory>
-
-#include <memory>
+/*!
+ * @addtogroup GameDatabase Projects/CoX/Servers/GameDatabase
+ * @{
+ */
 
 #include <memory>
 
@@ -26,22 +28,25 @@
 #include <QSqlError>
 #include <QString>
 
-namespace {
-bool prepQuery(QSqlQuery &qr,const QString &txt) {
-    if(!qr.prepare(txt)) {
-        qDebug() << "SQL_ERROR:"<<qr.lastError();
-        return false;
+namespace
+{
+    bool prepQuery(QSqlQuery &qr,const QString &txt) {
+        if(!qr.prepare(txt))
+        {
+            qDebug() << "SQL_ERROR:"<<qr.lastError();
+            return false;
+        }
+        return true;
     }
-    return true;
-}
-bool doIt(QSqlQuery &qr) {
-    if(!qr.exec()) {
-        qDebug() << "SQL_ERROR:"<<qr.lastError();
-        return false;
+    bool doIt(QSqlQuery &qr) {
+        if(!qr.exec())
+        {
+            qDebug() << "SQL_ERROR:"<<qr.lastError();
+            return false;
+        }
+        return true;
     }
-    return true;
-}
-}
+} // namespace
 
 GameDbSyncContext::GameDbSyncContext() = default;
 GameDbSyncContext::~GameDbSyncContext() = default;
@@ -60,6 +65,7 @@ int64_t GameDbSyncContext::getDbVersion(QSqlDatabase &db)
         return -1;
     return version_query.value(0).toInt();
 }
+
 // Maybe one day we'll need to read different db configs per-thread, for now all just read the same file.
 bool GameDbSyncContext::loadAndConfigure()
 {
@@ -270,6 +276,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
     }
     return true;
 }
+
 bool GameDbSyncContext::removeCharacter(const RemoveCharacterRequestData &data)
 {
     m_prepared_char_delete->bindValue(0,quint64(data.account_id));
@@ -366,6 +373,7 @@ bool GameDbSyncContext::getEntity(const GetEntityRequestData &data, GetEntityRes
     result.m_ent_data = m_prepared_entity_select->value("entitydata").toString();
     return true;
 }
+
 // Update Client Options/Keybinds
 bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
 {
@@ -376,3 +384,5 @@ bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
         return false;
     return true;
 }
+
+//! @}

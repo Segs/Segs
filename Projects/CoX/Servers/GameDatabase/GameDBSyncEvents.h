@@ -1,10 +1,16 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 
 #include "Servers/InternalEvents.h"
 #include "GameData/chardata_definitions.h"
 
 #include <QDateTime>
-
 
 enum GameDBEventTypes : uint32_t
 {
@@ -38,6 +44,7 @@ struct name ## Message final : public InternalEvent\
     name ## Data m_data;\
     name ## Message(name ## Data &&d,uint64_t token) :  InternalEvent(GameDBEventTypes::ev ## name),m_data(d) {session_token(token);}\
 };
+
 /// A message without Request having additional data
 #define SIMPLE_TWO_WAY_MESSAGE(name)\
 struct name ## Request final : public InternalEvent\
@@ -49,6 +56,7 @@ struct name ## Response final : public InternalEvent\
     name ## Data m_data;\
     name ## Response(name ## Data &&d,uint64_t token) :  InternalEvent(GameDBEventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
 };
+
 /// A message with Request having additional data
 #define TWO_WAY_MESSAGE(name)\
 struct name ## Request final : public InternalEvent\
@@ -93,6 +101,7 @@ struct RemoveCharacterRequestData
     uint64_t account_id;
     int slot_idx;
 };
+
 struct RemoveCharacterResponseData
 {
     int slot_idx;
@@ -105,6 +114,7 @@ struct GameAccountRequestData
     int max_character_slots;
     bool create_if_does_not_exist;
 };
+
 struct GameAccountResponseCostumeData
 {
     QString m_serialized_data;
@@ -116,6 +126,7 @@ struct GameAccountResponseCostumeData
     uint8_t  m_slot_index;
 
 };
+
 struct GameAccountResponseCharacterData
 {
     std::vector<GameAccountResponseCostumeData> m_costumes;
@@ -157,6 +168,7 @@ struct GameAccountResponseCharacterData
         return m_costumes.front();
     }
 };
+
 struct GameAccountResponseData
 {
     uint64_t m_game_server_acc_id;
@@ -181,6 +193,7 @@ struct GameAccountResponseData
     bool valid() const { return m_game_server_acc_id!=0;}
 };
 TWO_WAY_MESSAGE(GameAccount)
+
 struct CreateNewCharacterRequestData
 {
     GameAccountResponseCharacterData m_character;
@@ -189,16 +202,19 @@ struct CreateNewCharacterRequestData
     uint16_t m_max_allowed_slots;
     uint32_t m_client_id;
 };
+
 struct CreateNewCharacterResponseData
 {
     uint32_t m_char_id;
     int slot_idx; // if -1 , no more free slots are left ?
 };
 TWO_WAY_MESSAGE(CreateNewCharacter)
+
 struct GetEntityRequestData
 {
     uint32_t m_char_id;
 };
+
 struct GetEntityResponseData
 {
     uint32_t m_supergroup_id;
@@ -210,6 +226,7 @@ struct WouldNameDuplicateRequestData
 {
     QString m_name;
 };
+
 struct WouldNameDuplicateResponseData
 {
     bool m_would_duplicate;

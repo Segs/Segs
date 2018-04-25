@@ -1,8 +1,14 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include <cassert>
 #include <ace/INET_Addr.h>
 #include "SEGSEvent.h"
-
 
 class ConnectEvent : public SEGSEvent
 {

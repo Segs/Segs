@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapViewer Projects/CoX/Utilities/MapViewer
+ * @{
+ */
+
 #include "PiggTools.h"
 
 #include <QtCore/QDir>
@@ -6,8 +18,10 @@
 
 #include <vector>
 #include <cassert>
+
 namespace {
 #pragma pack(push, 1)
+
 struct PiggHeader
 {
     int pigg_magic;
@@ -17,6 +31,7 @@ struct PiggHeader
     int16_t used_header_bytes;
     uint32_t num_entries;
 };
+
 struct PiggInternalHeader
 {
     int flag;
@@ -27,12 +42,14 @@ struct PiggInternalHeader
     int unused[6];
     uint32_t packed_size;
 };
+
 #pragma pack(pop)
 struct Pigg_DataTable
 {
     int datapool_flag;
     std::vector<QString> data_parts;
 };
+
 struct PiggFile
 {
    PiggHeader hdr;
@@ -42,11 +59,14 @@ struct PiggFile
 };
 
 template<class POD>
-bool readPOD(QIODevice &src,POD &tgt) {
+bool readPOD(QIODevice &src,POD &tgt)
+{
     return sizeof(POD)==src.read((char *)&tgt,sizeof(POD));
 }
+
 //Unpack the ZIP data using qt functions, need to prepend the uncompressed data size to the source data.
-QByteArray uncompr_zip(QByteArray &compressed_data,uint32_t size_uncom) {
+QByteArray uncompr_zip(QByteArray &compressed_data,uint32_t size_uncom)
+{
     compressed_data.prepend( char((size_uncom >> 0) & 0xFF));
     compressed_data.prepend( char((size_uncom >> 8) & 0xFF));
     compressed_data.prepend( char((size_uncom >> 16) & 0xFF));
@@ -54,7 +74,8 @@ QByteArray uncompr_zip(QByteArray &compressed_data,uint32_t size_uncom) {
     return qUncompress(compressed_data);
 }
 
-bool loadDataTable(QFile &src,Pigg_DataTable &target) {
+bool loadDataTable(QFile &src,Pigg_DataTable &target)
+{
     int table_sizes;
     int num_entries;
 
@@ -74,6 +95,7 @@ bool loadDataTable(QFile &src,Pigg_DataTable &target) {
     }
     return true;
 }
+
 bool loadPigg(const QString &fname,PiggFile &pigg)
 {
     QFile src_fl(fname);
@@ -137,7 +159,9 @@ bool loadPigg(const QString &fname,PiggFile &pigg)
     qDebug() << "Header loaded";
     return true;
 }
-bool saveFile(const QString &fname,const QByteArray &data) {
+
+bool saveFile(const QString &fname,const QByteArray &data)
+{
     QFile tgt_fl(fname);
     if(!tgt_fl.open(QFile::WriteOnly)) {
         qWarning() << "failed to open target file" << fname;
@@ -150,6 +174,7 @@ bool saveFile(const QString &fname,const QByteArray &data) {
     return true;
 
 }
+
 bool extractAllFiles(PiggFile &pigg,const QString &tgt_path)
 {
     QFile src_fl(pigg.fname);
@@ -181,8 +206,7 @@ bool extractAllFiles(PiggFile &pigg,const QString &tgt_path)
     }
     return true;
 }
-}
-
+} // namespace
 
 bool unpackPiggFile(const QString &filename,const QString &target_path)
 {
@@ -192,3 +216,5 @@ bool unpackPiggFile(const QString &filename,const QString &target_path)
 
     return extractAllFiles(hdr,target_path);
 }
+
+//! @}

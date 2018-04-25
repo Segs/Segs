@@ -1,9 +1,8 @@
 /*
- * Super Entity Game Server
- * http://segs.sf.net/
- * Copyright (c) 2006-2017 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
 
 #pragma once
@@ -17,22 +16,25 @@
 
 #include <unordered_map>
 
-namespace std {
-// std::hash override for ACE_INET_Addr
-template<>
-class hash<ACE_INET_Addr>
+namespace std
 {
-public:
-        size_t operator()( const ACE_INET_Addr& Key ) const
-        {
-            std::hash<ACE_UINT32> hasher;
-            return hasher(Key.get_ip_address()) ^ (hasher(Key.get_port_number()<<8));
-        }
-};
+    // std::hash override for ACE_INET_Addr
+    template<>
+    class hash<ACE_INET_Addr>
+    {
+    public:
+            size_t operator()( const ACE_INET_Addr& Key ) const
+            {
+                std::hash<ACE_UINT32> hasher;
+                return hasher(Key.get_ip_address()) ^ (hasher(Key.get_port_number()<<8));
+            }
+    };
 }
 
 class SEGSEvent;
+
 class CRUDLink;
+
 // This class represents a UDP port<->Client link router
 // when it receives any bytes it will pass them to appropriate ILink instance
 // when it receives PacketEvents from ILink it sends the bytes over the UDP to associated address

@@ -1,10 +1,15 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "CoXHash.h"
 
 template<class KEY,class VALUE,class COMPARE_FUNCTOR>
@@ -16,10 +21,8 @@ uint32_t JenkinsHash<QString>::operator()(const QString &val,uint32_t prev_val) 
     return hash((const uint8_t *)qPrintable(val),uint32_t(val.size()),prev_val);
 }
 
-
 template<class KEY,class VALUE>
 JenkinsHash<KEY> CoxHashCommon<KEY, VALUE>::hash;
-
 
 template<class VALUE>
 uint32_t CoXHashMap<VALUE>::find_index(const QString &key, uint32_t &index_tgt, uint32_t &key_tgt, bool a5) const
@@ -75,6 +78,7 @@ uint32_t CoXHashMap<VALUE>::find_index(const QString &key, uint32_t &index_tgt, 
     index_tgt = hash_index;
     return res;
 }
+
 template<class KEY,class VALUE,class COMPARE_FUNCTOR>
 uint32_t CoXGenericHashMap<KEY, VALUE, COMPARE_FUNCTOR>::find_index( const KEY &needle,uint32_t &entry_idx,uint32_t &prev_val_out,bool /*a5*/ ) const
 {
@@ -112,6 +116,7 @@ uint32_t CoXGenericHashMap<KEY, VALUE, COMPARE_FUNCTOR>::find_index( const KEY &
     prev_val_out = prev_val;
     return result;
 }
+
 //////////////////////////////////////////////////////////////////////////
 // Implicit instantiations
 
@@ -126,3 +131,4 @@ class CoXHashMap<QString>;
 template
 class CoXGenericHashMap<uint32_t,uint32_t,IntCompare>;
 
+//! @}

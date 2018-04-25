@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup slav Utilities/slav
+ * @{
+ */
+
 #include "ProjectDescriptor.h"
 #include "CerealHelpers.h"
 
@@ -6,12 +18,10 @@
 #include <cereal/types/vector.hpp>
 #include <QtCore/QDebug>
 
-
 CEREAL_CLASS_VERSION( ProjectDescriptor, 1 )
 CEREAL_CLASS_VERSION( ServerDescriptor, 1 )
 CEREAL_CLASS_VERSION( ProjectApp, 1 )
 CEREAL_CLASS_VERSION( AppVersion, 1 )
-
 
 template<class Archive>
 static void serialize(Archive & archive, ServerDescriptor & m,uint32_t version)
@@ -98,3 +108,5 @@ bool loadFrom(ProjectApp & target, const QString &data)
     }
     return true;
 }
+
+//! @}

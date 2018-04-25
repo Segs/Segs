@@ -1,10 +1,13 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
+ */
 
+/*!
+ * @addtogroup MapServer Projects/CoX/Servers/MapServer
+ * @{
  */
 
 #include "MapManager.h"
@@ -25,9 +28,11 @@ static QHash<QString,int> s_map_name_to_id =
 };
 
 using namespace std;
+
 MapManager::MapManager( ) : m_max_instances(2)
 {
 }
+
 MapManager::~MapManager()
 {
     for(auto & v : m_templates)
@@ -35,6 +40,7 @@ MapManager::~MapManager()
         delete v.second;
     }
 }
+
 //! \brief Loads all templates available in given directory, will populate m_templates attribute
 bool MapManager::load_templates(const QString &template_directory, uint8_t game_id, uint32_t map_id,
                                 const ListenAndLocationAddresses &loc)
@@ -55,6 +61,7 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
     // (template_directory / "tutorial.bin")
     return !m_templates.empty();
 }
+
 //! \brief Retrieves template specified by it's client-side path
 MapTemplate * MapManager::get_template( QString id )
 {
@@ -80,3 +87,5 @@ void MapManager::shut_down_all()
         entry.second->shut_down_all();
     }
 }
+
+//! @}

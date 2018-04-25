@@ -1,9 +1,8 @@
 /*
- * Super Entity Game Server
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
 
 #pragma once
@@ -22,6 +21,7 @@ enum class TrayItemType : uint32_t
     Macro                   = 6,
     Count                   = 7,
 };
+
 class PowerPool_Info
 {
 public:
@@ -45,6 +45,7 @@ public:
 
     void Dump();
 };
+
 class PowerTray
 {
 public:
@@ -55,6 +56,7 @@ public:
     void serializeto(BitStream &tgt) const;
     void Dump();
 };
+
 class PowerTrayGroup
 {
     static const int num_trays=2; // was 3, displayed trays

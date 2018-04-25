@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapServerEvents Projects/CoX/Servers/MapServer/Events
+ * @{
+ */
+
 #include "ChatMessage.h"
 
 #include "Events/InputState.h"
@@ -38,3 +50,5 @@ void sendChatMessage(MessageChannel t, QString msg, MapClientSession *src, MapCl
              << "\n  Target:" << res->m_target_player_id
              << "\n  Message:" << res->m_msg;
 }
+
+//! @}

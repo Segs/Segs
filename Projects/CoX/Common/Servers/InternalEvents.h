@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include "CRUDP_Protocol/CRUDP_Protocol.h"
 #include "EventProcessor.h"
@@ -5,7 +12,9 @@
 #include <ace/Time_Value.h>
 #include <QtCore/QString>
 #include <QtCore/QDateTime>
+
 struct GameAccountResponseCharacterData;
+
 class Internal_EventTypes
 {
 public:
@@ -26,6 +35,7 @@ public:
     EVENT_DECL(evClientDisconnected,103)
     END_EVENTS(105)
 };
+
 class InternalEvent : public SEGSEvent
 {
     uint64_t            m_session_token = 0;
@@ -36,6 +46,7 @@ public:
     uint64_t            session_token() const { return m_session_token; }
 
 };
+
 #define ONE_WAY_MESSAGE(name)\
 struct name ## Message final : public InternalEvent\
 {\
@@ -43,6 +54,7 @@ struct name ## Message final : public InternalEvent\
     explicit name ## Message() :  InternalEvent(Internal_EventTypes::ev ## name) {}\
     name ## Message(name ## Data &&d) :  InternalEvent(Internal_EventTypes::ev ## name),m_data(d) {}\
 };
+
 /// A message without Request having additional data
 #define SIMPLE_TWO_WAY_MESSAGE(name)\
 struct name ## Request final : public InternalEvent\
@@ -54,6 +66,7 @@ struct name ## Response final : public InternalEvent\
     name ## Data m_data;\
     name ## Response(name ## Data &&d,uint64_t token) :  InternalEvent(Internal_EventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
 };
+
 /// A message with Request having additional data
 #define TWO_WAY_MESSAGE(name)\
 struct name ## Request final : public InternalEvent\
@@ -66,6 +79,7 @@ struct name ## Response final : public InternalEvent\
     name ## ResponseData m_data;\
     name ## Response(name ## ResponseData &&d,uint64_t token) :  InternalEvent(Internal_EventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
 };
+
 // This tells the server that it should expect a new client connection from given address
 struct ExpectClientRequestData
 {
@@ -73,6 +87,7 @@ struct ExpectClientRequestData
     ACE_INET_Addr m_from_addr;
     uint8_t m_access_level;
 };
+
 // This event informs the server that given client is now expected on another server
 // and passes that servers connection point, and connection cookie
 struct ExpectClientResponseData
@@ -82,6 +97,7 @@ struct ExpectClientResponseData
     uint32_t m_server_id; // this is the id of the server that is expecting the client
 };
 TWO_WAY_MESSAGE(ExpectClient)
+
 struct ExpectMapClientRequestData
 {
     uint64_t m_client_id;
@@ -94,6 +110,7 @@ struct ExpectMapClientRequestData
     QString m_map_name;
     uint16_t m_max_slots;
 };
+
 struct ExpectMapClientResponseData
 {
     uint32_t      cookie;
@@ -101,6 +118,7 @@ struct ExpectMapClientResponseData
     ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client
 };
 TWO_WAY_MESSAGE(ExpectMapClient)
+
 // For now, no data here, could be a path to a config file?
 struct ReloadConfigData
 {
@@ -137,6 +155,7 @@ struct ClientConnectedData
     uint32_t m_sub_server_id; // only used when server_id is the map server
 };
 ONE_WAY_MESSAGE(ClientConnected)
+
 struct ClientDisconnectedData
 {
     uint64_t m_session;

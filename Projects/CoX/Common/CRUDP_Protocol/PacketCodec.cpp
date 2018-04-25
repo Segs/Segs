@@ -1,14 +1,19 @@
 /*
- * Super Entity Game Server
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
+ */
+
+/*!
+ * @addtogroup CRUDP_Protocol Projects/CoX/Common/CRUDP_Protocol
+ * @{
  */
 
 #include "PacketCodec.h"
 
 #include <QtCore/QtEndian>
+
 uint32_t PacketCodecNull::Checksum(const uint8_t *buf,size_t size)
 {
     uint16_t v1 = 1, v2 = 0;
@@ -30,3 +35,5 @@ uint32_t PacketCodecNull::Checksum(const uint8_t *buf,size_t size)
     return  (((uint32_t)qToBigEndian(v1))<<16)|qToBigEndian (v2) ;
     //return MAKELONG(htons(v2), htons(v1));
 }
+
+//! @}

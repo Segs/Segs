@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "playerdata_serializers.h"
 #include "playerdata_definitions.h"
 #include "serialization_common.h"
@@ -5,7 +17,6 @@
 #include "keybind_serializers.h"
 #include "gui_serializers.h"
 #include "clientoptions_serializers.h"
-
 
 #include "Logging.h"
 
@@ -26,8 +37,9 @@ void serialize(Archive &archive, PlayerData &cd, uint32_t const version)
     archive(cereal::make_nvp("Options",cd.m_options));
 }
 
-
 template
 void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, PlayerData & m, uint32_t const version);
 template
 void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, PlayerData & m, uint32_t const version);
+
+//! @}

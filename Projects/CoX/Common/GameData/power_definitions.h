@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include <QtCore/QHash>
 #include <vector>
@@ -31,11 +38,13 @@ enum class StoredEntEnum : uint32_t
     DeadOrAliveTeammate = 13,
     Teleport            = 14,
 };
+
 enum StoredVisibility : uint32_t
 {
     LineOfSight    = 0,
     VisibilityNone = 1,
 };
+
 enum class StoredAffectArea : uint32_t
 {
     Character = 0,
@@ -43,6 +52,7 @@ enum class StoredAffectArea : uint32_t
     Sphere    = 2,
     Location  = 3,
 };
+
 enum class StoredAiReport : uint32_t
 {
     Always   = 0,
@@ -50,11 +60,13 @@ enum class StoredAiReport : uint32_t
     HitsOnly = 2,
     MissOnly = 3,
 };
+
 enum DurationEnum : int32_t
 {
     kInstant     = -1,
     kUntilKilled = 999999, // Until Shut Off
 };
+
 enum class AttribStackType
 {
     Stack   = 0,
@@ -62,17 +74,20 @@ enum class AttribStackType
     Extend  = 2,
     Replace = 3
 };
+
 enum class AttribModType : uint32_t
 {
     Duration  = 0,
     Magnitude = 1,
     Constant  = 2,
 };
+
 enum class AttribModTarget : uint32_t
 {
     Self   = 0,
     Target = 1,
 };
+
 enum class AttribMod_Aspect : uint32_t
 {
     Current         = 0,
@@ -82,6 +97,7 @@ enum class AttribMod_Aspect : uint32_t
     Absolute        = 0x10,
     CurrentAbsolute = 0x10,
 };
+
 enum class PowerType : uint32_t
 {
     Click       = 0,
@@ -91,6 +107,7 @@ enum class PowerType : uint32_t
     Inspiration = 4,
     NumTypes    = 5,
 };
+
 // I'm unsure as to the validity of this
 enum class AttackType : uint32_t {
     None = 0,
@@ -107,6 +124,7 @@ enum class AttackType : uint32_t {
     Carry = 11,
     Club = 12,
 };
+
 struct StoredAttribMod
 {
     QString            name;
@@ -139,6 +157,7 @@ struct StoredAttribMod
     QString            PriorityListDefense;
     QString            PriorityListPassive;
 };
+
 struct Power_Data
 {
     QString                      m_Name;
@@ -228,10 +247,12 @@ struct Parse_PowerSet
     QHash<QString, Power_Data *> m_hash_table;
     std::vector<int32_t>         Available;
 };
+
 enum
 {
     kCategory_Count = 3
 };
+
 struct StoredPowerCategory
 {
     QString                          name;

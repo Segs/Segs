@@ -1,33 +1,40 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
+
+/*!
+ * @addtogroup NetStructures Projects/CoX/Common/NetStructures
+ * @{
+ */
+
 #include "Costume.h"
 
 #include "BitStream.h"
 #include "Common/GameData/serialization_common.h"
 #include <QtCore/QDebug>
 
-namespace {
-void serializeto_charsel(const CostumePart &part, BitStream &bs )
+namespace
 {
-    // character selection needs to get part names as strings
-    static const char *names[] = {
-        "Pants","Chest","Head","Gloves","Boots","Belt","Hair","Face","EyeDetail","ChestDetail",
-        "Shoulders","Back","WepR","Neck","UarmR",
-    };
+    void serializeto_charsel(const CostumePart &part, BitStream &bs )
+    {
+        // character selection needs to get part names as strings
+        static const char *names[] = {
+            "Pants","Chest","Head","Gloves","Boots","Belt","Hair","Face","EyeDetail","ChestDetail",
+            "Shoulders","Back","WepR","Neck","UarmR",
+        };
 
-    bs.StoreString(part.m_geometry);
-    bs.StoreString(part.m_texture_1);
-    bs.StoreString(part.m_texture_2);
-    bs.StoreString(names[part.m_type]); //name_6 bonename ?
-    bs.StoreBits(32,part.m_colors[0]);
-    bs.StoreBits(32,part.m_colors[1]);
+        bs.StoreString(part.m_geometry);
+        bs.StoreString(part.m_texture_1);
+        bs.StoreString(part.m_texture_2);
+        bs.StoreString(names[part.m_type]); //name_6 bonename ?
+        bs.StoreBits(32,part.m_colors[0]);
+        bs.StoreBits(32,part.m_colors[1]);
+    }
 }
-}
+
 void serializeto(const CostumePart &part, BitStream &bs,const ColorAndPartPacker *packingContext )
 {
     packingContext->packPartname(part.m_geometry,bs);
@@ -67,7 +74,6 @@ void Costume::storeCharselParts( BitStream &bs ) const
         serializeto_charsel(part,bs);
     }
 }
-
 
 template<class Archive>
 void serialize(Archive &arc, CostumePart &cp) {
@@ -180,3 +186,5 @@ void serializefrom(Costume &tgt, BitStream &src,const ColorAndPartPacker *packer
         tgt.m_parts.push_back(part);
     }
 }
+
+//! @}

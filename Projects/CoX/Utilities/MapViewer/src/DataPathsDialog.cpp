@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapViewer Projects/CoX/Utilities/MapViewer
+ * @{
+ */
+
 #include "DataPathsDialog.h"
 #include "ui_DataPathsDialog.h"
 
@@ -21,7 +33,6 @@ DataPathsDialog::~DataPathsDialog()
     delete ui;
 }
 
-
 void DataPathsDialog::on_selectUnpackedDir_clicked()
 {
     QString dir= QFileDialog::getExistingDirectory();
@@ -31,5 +42,6 @@ void DataPathsDialog::on_selectUnpackedDir_clicked()
     QSettings our_settings(QSettings::IniFormat,QSettings::UserScope,"SEGS","MapViewer");
     our_settings.setValue("ExtractedDir",dir);
     basepath = dir;
-
 }
+
+//! @}

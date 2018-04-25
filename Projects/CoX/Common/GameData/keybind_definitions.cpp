@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "keybind_definitions.h"
 
 #include "Logging.h"
@@ -97,3 +109,5 @@ void KeybindSettings::keybindsDump()
             qDebug() << k.KeyString << k.Key << k.Mods << k.Command << k.IsSecondary;
     }
 }
+
+//! @}

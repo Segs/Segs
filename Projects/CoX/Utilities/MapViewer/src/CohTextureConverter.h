@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 
 #include <Lutefisk3D/Container/Ptr.h>
@@ -9,11 +16,13 @@
 
 struct TextureModifiers;
 class QString;
+
 namespace Urho3D
 {
-class Texture;
-class Context;
+    class Texture;
+    class Context;
 }
+
 enum class CoHBlendMode : uint8_t;
 
 struct TextureWrapper
@@ -40,6 +49,7 @@ struct TextureWrapper
     CoHBlendMode BlendType = CoHBlendMode(0);
     TextureModifiers *info {nullptr};
 };
+
 enum TexOpt : uint32_t
 {
     FADE        = 1,
@@ -47,6 +57,7 @@ enum TexOpt : uint32_t
     REPLACEABLE = 0x800,
     BUMPMAP     = 0x1000,
 };
+
 extern QHash<QString,TextureModifiers *> g_texture_path_to_mod;
 TextureWrapper tryLoadTexture(Urho3D::Context *ctx, const QString &fname);
 void preloadTextureNames();

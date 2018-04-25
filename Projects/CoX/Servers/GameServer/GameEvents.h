@@ -1,10 +1,8 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
-
  */
 
 #pragma once
@@ -65,6 +63,7 @@ public:
     uint32_t m_mapnumber;
     QString m_char_name;
 };
+
 class MapServerAddrResponse : public GameLinkEvent
 {
 public:
@@ -105,6 +104,7 @@ public:
     // 1 - Problem detected in the game database system
     uint32_t m_map_cookie;
 };
+
 class DeleteCharacter : public GameLinkEvent
 {
 public:
@@ -126,6 +126,7 @@ public:
     uint8_t m_index;
     QString m_char_name;
 };
+
 class UpdateCharacter : public GameLinkEvent
 {
 public:
@@ -136,6 +137,7 @@ public:
     void serializefrom(BitStream &bs) override;
     uint8_t m_index;
 };
+
 class CharacterResponse : public GameLinkEvent
 {
 public:
@@ -170,6 +172,7 @@ public:
     QString accountName;
     bool localMapServer;
 };
+
 class CharacterSlots : public GameLinkEvent
 {
 public:
@@ -195,6 +198,7 @@ public:
     void serializefrom( BitStream &src ) override;
     QString m_error;
 };
+
 class DeletionAcknowledged : public GameLinkEvent
 {
 public:
@@ -203,6 +207,7 @@ public:
     void serializeto( BitStream &tgt ) const override;
     void serializefrom( BitStream &) override {}
 };
+
 class GameUnknownRequest : public GameLinkEvent
 {
 public:
@@ -211,6 +216,7 @@ public:
     void serializeto(BitStream &) const override { }
     void serializefrom(BitStream &) override { }
 };
+
 class GameServerReconfigured : public InternalEvent
 {
 public:

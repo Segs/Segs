@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include <glm/vec3.hpp>
 #include <glm/mat3x3.hpp>
@@ -73,6 +80,7 @@ inline glm::vec3 toCoH_YPR(const glm::quat &q)
     assert(rollVal > -16.0f);
     return {pitchVal,yawVal,rollVal};
 }
+
 inline glm::vec3 CoHYprFromMat(const glm::mat3 &mat)
 {
     float pitchVal;
@@ -146,6 +154,7 @@ inline glm::quat fromCoHYpr(glm::vec3 pyr)
     zc.z = std::copysign(zc.z, m01 - m10);
     return zc;
 }
+
 inline glm::mat3 CoHYprToMat3(glm::vec3 pyr)
 {
     const float cp = std::cos(pyr.x);
@@ -181,6 +190,7 @@ inline glm::mat3 CoHYprToMat3(glm::vec3 pyr)
     }
     return mat;
 }
+
 inline float normalizeRadAngle(float ang)
 {
     float res = ang;
@@ -190,6 +200,7 @@ inline float normalizeRadAngle(float ang)
         res += 2*F_PI;
     return res;
 }
+
 inline uint32_t countBits(uint32_t val)
 {
     uint32_t r = 0;
@@ -198,6 +209,7 @@ inline uint32_t countBits(uint32_t val)
 
     return r; // log2(v)
 }
+
 inline static float AngleDequantize(uint32_t val,int numb_bits) {
     float v = val;
     v = v/(1<<numb_bits);
@@ -205,6 +217,7 @@ inline static float AngleDequantize(uint32_t val,int numb_bits) {
     v -= F_PI;
     return v;
 }
+
 inline uint32_t AngleQuantize(float val,int numb_bits)
 {
     int max_val = 1<<numb_bits;
