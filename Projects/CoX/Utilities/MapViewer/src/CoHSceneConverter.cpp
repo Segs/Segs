@@ -4,6 +4,7 @@
 #include "CohTextureConverter.h"
 
 #include "GameData/DataStorage.h"
+#include "GameData/CoHMath.h"
 #include "GameData/scenegraph_serializers.h"
 #include "GameData/scenegraph_definitions.h"
 #include "GameData/trick_definitions.h"
@@ -38,28 +39,6 @@ struct NameList
 static NameList my_name_list;
 
 bool groupFileLoadFromName(CoHSceneGraph &conv,const QString &a1);
-
-void rotationFromYPR(Matrix3x4 & mat, const Vector3 &pyr)
-{
-    float   cos_p     =  std::cos(pyr.x_);
-    float   neg_sin_p = -std::sin(pyr.x_);
-    float   cos_y     =  std::cos(pyr.y_);
-    float   neg_sin_y = -std::sin(pyr.y_);
-    float   cos_r     =  std::cos(pyr.z_);
-    float   neg_sin_r = -std::sin(pyr.z_);
-    float   tmp       =  cos_y * neg_sin_p;
-    Matrix3 rotmat;
-    rotmat.m00_ = cos_r * cos_y - neg_sin_y * neg_sin_p * neg_sin_r;
-    rotmat.m01_ = neg_sin_r * cos_p;
-    rotmat.m02_ = tmp * neg_sin_r + cos_r * neg_sin_y;
-    rotmat.m10_ = -(neg_sin_r * cos_y) - neg_sin_y * neg_sin_p * cos_r;
-    rotmat.m11_ = cos_r * cos_p;
-    rotmat.m12_ = tmp * cos_r - neg_sin_r * neg_sin_y;
-    rotmat.m20_ = -(neg_sin_y * cos_p);
-    rotmat.m21_ = -neg_sin_p;
-    rotmat.m22_ = cos_y * cos_p;
-    mat.SetRotation(rotmat);
-}
 
 CoHNode *newDef(CoHSceneGraph &scene)
 {
@@ -396,8 +375,7 @@ void addRoot(CoHSceneGraph &conv,const SceneRootNode_Data &refload, NameList &na
     }
     auto ref = newRef(conv);
     ref->node = def;
-    rotationFromYPR(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z});
-    ref->mat.SetTranslation(Vector3(&refload.pos[0]));
+    transformFromYPRandTranslation(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z},refload.pos);
 }
 void PostProcessScene(SceneGraph_Data &scenegraph,CoHSceneGraph &conv,NameList &renamer,const QString &name)
 {

@@ -311,8 +311,7 @@ void addRoot(const SceneRootNode_Data &refload, LoadingContext &ctx, PrefabStore
     }
     auto ref = newRef(*ctx.m_target);
     ref->node = def;
-    rotationFromYPR(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z});
-    ref->mat[3] = glm::vec4(refload.pos,1);
+    transformFromYPRandTranslation(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z},refload.pos);
 }
 SceneNode *newDef(SceneGraph &scene)
 {

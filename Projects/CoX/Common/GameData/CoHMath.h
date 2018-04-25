@@ -5,8 +5,6 @@
 #include <glm/gtc/constants.hpp>
 #include <algorithm>
 
-constexpr float F_PI = float(M_PI);
-
 // All conversion will use YPR order of rotations,
 // but the used values are passed/returned in the PYR order
 inline glm::vec3 toCoH_YPR(const glm::quat &q)
@@ -146,42 +144,7 @@ inline glm::quat fromCoHYpr(glm::vec3 pyr)
     zc.z = std::copysign(zc.z, m01 - m10);
     return zc;
 }
-inline glm::mat3 CoHYprToMat3(glm::vec3 pyr)
-{
-    const float cp = std::cos(pyr.x);
-    const float sp = std::sin(pyr.x);
-    const float cy = std::cos(pyr.y);
-    const float sy = std::sin(pyr.y);
-    const float cr = std::cos(pyr.z);
-    const float sr = std::sin(pyr.z);
-    glm::mat3 mat;
-    mat[0][0] = cr * cy + sy * sp * sr;
-    mat[1][0] = sr * cy - sy * sp * cr;
-    mat[2][0] = sy * cp;
-    mat[0][1] = - sr * cp;
-    mat[1][1] = cr * cp;
-    mat[2][1] = sp;
-    mat[0][2] = cy * sp * sr - cr * sy;
-    mat[1][2] = - cy * sp * cr - sr * sy;
-    mat[2][2] = cy * cp;
-
-    {
-        float sp = -std::sin(pyr.x);
-        float sy = -std::sin(pyr.y);
-        float sr = -std::sin(pyr.z);
-        mat[0][0] = cr * cy - sy * sp * sr;
-        mat[1][0] = -(sr * cy) - sy * sp * cr;
-        mat[2][0] = -(sy * cp);
-        mat[0][1] = sr * cp;
-        mat[1][1] = cr * cp;
-        mat[2][1] = -sp;
-        mat[0][2] = cy * sp * sr + cr * sy;
-        mat[1][2] = cy * sp * cr - sr * sy;
-        mat[2][2] = cy * cp;
-    }
-    return mat;
-}
-inline void rotationFromYPR(glm::mat4 & mat, const glm::vec3 &pyr)
+inline void transformFromYPRandTranslation(glm::mat4 & mat, glm::vec3 pyr,glm::vec3 translation)
 {
     float   cos_p     =  std::cos(pyr.x);
     float   neg_sin_p = -std::sin(pyr.x);
@@ -204,14 +167,15 @@ inline void rotationFromYPR(glm::mat4 & mat, const glm::vec3 &pyr)
     mat[0]= glm::vec4(rotmat[0],0);
     mat[1]= glm::vec4(rotmat[1],0);
     mat[2]= glm::vec4(rotmat[2],0);
+    mat[3]= glm::vec4(translation,1);
 }
 inline float normalizeRadAngle(float ang)
 {
     float res = ang;
-    if ( ang > F_PI )
-        res -= 2*F_PI;
-    if ( res <= -F_PI )
-        res += 2*F_PI;
+    if ( ang > glm::pi<float>() )
+        res -= glm::two_pi<float>();
+    if ( res <= -glm::pi<float>() )
+        res += glm::two_pi<float>();
     return res;
 }
 inline uint32_t countBits(uint32_t val)
@@ -225,8 +189,8 @@ inline uint32_t countBits(uint32_t val)
 inline static float AngleDequantize(uint32_t val,int numb_bits) {
     float v = val;
     v = v/(1<<numb_bits);
-    v *= (2*F_PI);
-    v -= F_PI;
+    v *= glm::two_pi<float>();
+    v -= glm::pi<float>();
     return v;
 }
 inline uint32_t AngleQuantize(float val,int numb_bits)
@@ -234,7 +198,7 @@ inline uint32_t AngleQuantize(float val,int numb_bits)
     int max_val = 1<<numb_bits;
 
     float v = normalizeRadAngle(val); // ensure v falls within -pi..pi
-    v = (v+F_PI)/(2*F_PI);
+    v = (v+glm::pi<float>())/glm::two_pi<float>();
     v *= max_val;
 //  assert(v<=max_val);
     return uint32_t(v);
