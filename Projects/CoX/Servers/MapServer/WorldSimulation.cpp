@@ -55,11 +55,12 @@ void World::physicsStep(Entity *e,uint32_t msec)
         // todo: take into account time between updates
         glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
         float vel_scale = e->inp_state.input_vel_scale/255.0f;
+        Q_UNUSED(vel_scale);
         e->m_entity_data.m_pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
         e->vel = za*e->inp_state.pos_delta;
     }
 
-    if(e->inp_state.pos_delta[1] == float(1.0f)) // Will set 'is flying' on jump event
+    if(e->inp_state.pos_delta[1] == 1.0f) // Will set 'is flying' on jump event
     {
      markFlying(*e, true);
     }

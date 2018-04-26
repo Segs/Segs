@@ -189,6 +189,8 @@ int GameServer::getMaxCharacterSlots() const
 
 int GameServer::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
+    Q_UNUSED(handle);
+    Q_UNUSED(close_mask);
     // after evfinish some other messages could have been added to the queue, release them
     d->ShutDown();
     assert(d->m_handler->msg_queue()->is_empty());

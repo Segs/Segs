@@ -127,7 +127,9 @@ bool storePosition(const Entity &src,BitStream &bs)
 
 bool update_rot(const Entity &src, int axis ) /* returns true if given axis needs updating */
 {
-    if(axis==axis) // FixMe: var compared against same var.
+    Q_UNUSED(src);
+    int axis_tmp = axis;
+    if(axis == axis_tmp) // FixMe: var compared against same var.
         return true;
     return false;
 }
@@ -211,6 +213,7 @@ void sendSeqMoveUpdate(const Entity &src,BitStream &bs)
 
 void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
 {
+    Q_UNUSED(src);
     PUTDEBUG("before sendSeqTriggeredMoves");
     uint32_t num_moves=0; // FixMe: num_moves is never modified and the body of the for loop below will never fire.
     //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq triggeted moves %d\n"),num_moves));
@@ -378,12 +381,14 @@ void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
 
 void sendEntCollision(const Entity &src,BitStream &bs)
 {
+    Q_UNUSED(src);
     // if 1 is sent, client will disregard it's own collision processing.
     bs.StoreBits(1,0); // 1/0 only
 }
 
 void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 {
+    Q_UNUSED(src);
     bs.StoreBits(1,0); // 1/0 only
 }
 
@@ -433,6 +438,7 @@ void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStrea
 
 void sendBuffs(const Entity &src,BitStream &bs)
 {
+    Q_UNUSED(src);
     bs.StorePackedBits(5,0);
 }
 

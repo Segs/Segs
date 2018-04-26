@@ -159,6 +159,7 @@ MapInstance::~MapInstance()
 
 void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage *ev)
 {
+    Q_UNUSED(ev);
     assert(false);
 //    assert(ev->m_data.m_sub_server_id);
 //    MapClientSession &session(m_session_store.sessionFromEvent(ev));
@@ -544,6 +545,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
 
         const MapServerData &data(g_GlobalMapServer->runtimeData());
         const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
+        Q_UNUSED(default_profiles);
 
         fillEntityFromNewCharData(*e, ev->m_character_data, data.getPacker(),data.m_keybind_profiles);
         e->m_char->m_account_id = map_session.auth_id();
@@ -636,6 +638,7 @@ void MapInstance::sendState() {
     auto iter=m_session_store.begin();
     auto end=m_session_store.end();
     static bool only_first=true;
+    Q_UNUSED(only_first);
     static int resendtxt=0;
     resendtxt++;
 
@@ -1699,6 +1702,7 @@ void MapInstance::on_set_destination(SetDestination * ev)
 
 void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
 {
+    Q_UNUSED(ev);
     qCWarning(logMapEvents) << "Unhandled abort queued power request";
 }
 
@@ -1735,7 +1739,8 @@ void MapInstance::on_client_options(SaveClientOptions * ev)
 {
     // Save options/keybinds to character entity and entry in the database.
     MapClientSession &session(m_session_store.session_from_event(ev));
-    LinkBase * lnk = (LinkBase *)ev->src();
+    LinkBase *lnk = (LinkBase *)ev->src();
+    Q_UNUSED(lnk);
 
     Entity *ent = session.m_ent;
     markEntityForDbStore(ent,DbStoreFlags::Options);
@@ -1769,6 +1774,7 @@ void MapInstance::on_set_default_power_send(SetDefaultPowerSend *ev)
 
 void MapInstance::on_set_default_power(SetDefaultPower *ev)
 {
+    Q_UNUSED(ev);
     qCWarning(logMapEvents) << "Unhandled Set Default Power request.";
 }
 

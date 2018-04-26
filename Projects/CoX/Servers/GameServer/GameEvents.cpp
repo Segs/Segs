@@ -82,7 +82,7 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     tgt.StorePackedBits(1, 2); //opcode
     tgt.StorePackedBits(1,static_cast<uint32_t>(m_data->m_max_slots));
     assert(m_data->m_max_slots>0);
-    for(size_t i=0; i<m_data->m_max_slots; i++)
+    for(size_t i = 0; i < static_cast<unsigned>(m_data->m_max_slots); i++)
     {
         Character converted;
         PlayerData player_data;

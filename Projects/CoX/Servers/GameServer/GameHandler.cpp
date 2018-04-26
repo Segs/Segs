@@ -196,6 +196,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
 
 void GameHandler::on_idle(IdleEvent *ev)
 {
+    Q_UNUSED(ev);
     // idle for idle 'strategy'
 //    GameLink * lnk = (GameLink *)ev->src();
 //    lnk->putq(new IdleEvent);

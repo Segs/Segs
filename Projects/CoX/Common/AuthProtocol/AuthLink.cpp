@@ -216,6 +216,7 @@ int AuthLink::handle_output( ACE_HANDLE /*= ACE_INVALID_HANDLE*/ )
 
 void AuthLink::encode_buffer(const AuthLinkEvent *ev,size_t start)
 {
+    (void)start; // temporary to quell unused var warning similar to Q_UNUSED
     assert(ev);
     if(ev==nullptr)
         return;

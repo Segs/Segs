@@ -51,10 +51,10 @@ void Team::removeTeamMember(Entity *e)
     qCDebug(logTeams) << "Searching team members for" << e->name() << "to remove them.";
     int id_to_find = e->m_db_id;
     auto iter = std::find_if( m_team_members.begin(), m_team_members.end(),
-                              [id_to_find](const TeamMember& t)->bool {return id_to_find==t.tm_idx;});
-    if(iter!=m_team_members.end())
+                              [id_to_find](const TeamMember& t)->bool {return static_cast<unsigned>(id_to_find) == t.tm_idx;});
+    if(iter != m_team_members.end())
     {
-        if(iter->tm_idx == m_team_leader_idx)
+        if(iter->tm_idx == static_cast<unsigned>(m_team_leader_idx))
             m_team_leader_idx = m_team_members.front().tm_idx;
 
         iter = m_team_members.erase(iter);
@@ -116,7 +116,7 @@ void Team::listTeamMembers()
 
 bool Team::isTeamLeader(Entity *e)
 {
-    return m_team_leader_idx == e->m_db_id;
+    return static_cast<unsigned>(m_team_leader_idx) == e->m_db_id;
 }
 
 bool sameTeam(Entity &src, Entity &tgt)
@@ -251,6 +251,7 @@ void addSidekick(Entity &tgt, Entity &src)
     Sidekick    &tgt_sk = tgt.m_char->m_char_data.m_sidekick;
     uint32_t    src_lvl = getLevel(*src.m_char);
     uint32_t    tgt_lvl = getLevel(*tgt.m_char);
+    Q_UNUSED(tgt_lvl);
 
     src_sk.m_has_sidekick = true;
     tgt_sk.m_has_sidekick = true;
