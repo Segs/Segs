@@ -255,7 +255,7 @@ CrudP_Packet *CrudP_Protocol::mergeSiblings(uint32_t id)
         //if(i > 0 && storage[i]->getSibPos() == storage[i-1]->getSibPos()) continue;
         assert(pak->getSibId() == id);
         BitStream *pkt_bs = pak->GetStream();
-        bs->PutBytes(pkt_bs->read_ptr(),pkt_bs->GetReadableDataSize());
+        bs->StoreBitArray(pkt_bs->read_ptr(),pkt_bs->GetReadableBits());
         delete pak;
         //PacketFactory::Delete(storage[i])
     }
@@ -361,7 +361,7 @@ vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
     if(bit_stream->GetReadableDataSize()>0) // store leftover
     {
         act = new CrudP_Packet;
-        act->GetStream()->appendBitStream(*bit_stream);
+        act->GetStream()->StoreBitArray(bit_stream->read_ptr(),bit_stream->GetReadableBits());
         act->setSibPos(sib_idx);
         act->SetReliabilty(src.isReliable());
         res.push_back(act);
@@ -396,7 +396,7 @@ CrudP_Packet *CrudP_Protocol::wrapPacket(CrudP_Packet *_p)
     if(cmd!=1)
         strm->StoreBits(1,_p->getIsCompressed());
     strm->ByteAlign();
-    strm->appendBitStream(*_p->GetStream());
+    strm->StoreBitArray(_p->GetStream()->read_ptr(),_p->GetStream()->GetReadableBits());
     strm->ResetReading();
     uint32_t *head =  (uint32_t *)strm->read_ptr();
     head[0] = uint32_t(strm->GetReadableBits());

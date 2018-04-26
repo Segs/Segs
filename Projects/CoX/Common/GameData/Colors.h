@@ -101,10 +101,4 @@ struct RGBA
     glm::vec3 to3Floats() const { return glm::vec3(r/255.0f,g/255.0f,b/255.0f); }
     RGB toRGB() const { return {r,g,b}; }
 };
-
-//static_assert(offsetof(RGBA,r)==0,"");
-//static_assert(offsetof(RGBA,g)==1,"");
-//static_assert(offsetof(RGBA,b)==2,"");
-//static_assert(offsetof(RGBA,a)==3,"");
-
 static_assert(sizeof(RGBA)==4,"sizeof(RGBA)==4");

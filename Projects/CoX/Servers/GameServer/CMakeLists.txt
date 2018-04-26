@@ -1,5 +1,4 @@
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/HashStorage.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/GameHandler.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/GameServer.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/GameEvents.cpp
@@ -7,7 +6,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/GameEventFactory.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/GameLink.cpp
 )
 SET(target_INCLUDE
-${CMAKE_CURRENT_SOURCE_DIR}/HashStorage.h
 ${CMAKE_CURRENT_SOURCE_DIR}/GameServer.h
 ${CMAKE_CURRENT_SOURCE_DIR}/GameHandler.h
 ${CMAKE_CURRENT_SOURCE_DIR}/GameEventFactory.h
