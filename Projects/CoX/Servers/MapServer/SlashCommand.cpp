@@ -38,7 +38,9 @@ struct SlashCommand
     std::function<void(QString &,MapClientSession &)> m_handler;
     uint32_t m_required_access_level;
 };
-bool canAccessCommand(SlashCommand &cmd, const Entity &e);
+
+// FixMe: Define canAccessCommand()
+//bool canAccessCommand(SlashCommand &cmd, const Entity &e);
 
 // prototypes of all commands
 // Access Level 9 Commands (GMs)

@@ -89,6 +89,7 @@ static std::unique_ptr<MessageBusMonitor> s_bus_monitor;
 
 static void shutDownServers(const char *reason)
 {
+    Q_UNUSED(reason);
     if (GlobalTimerQueue::instance()->thr_count())
     {
         GlobalTimerQueue::instance()->deactivate();

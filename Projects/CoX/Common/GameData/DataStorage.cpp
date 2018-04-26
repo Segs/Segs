@@ -91,7 +91,7 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
     }
     quint64 read_end = m_str.pos();
     m_file_sizes.push_back(m_str.size()-read_end);
-    return (sz==(read_end-read_start));
+    return (static_cast<unsigned>(sz) == (read_end-read_start));
 }
 
 bool BinStore::open(const QString &name,uint32_t required_crc )

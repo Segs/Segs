@@ -123,6 +123,7 @@ NetCommand * NetCommandManager::getCommandByName( const QString &name )
 
 void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands, const vNetCommand &commands2 )
 {
+    Q_UNUSED(commands2);
     if(commands.size()==0)
     {
         tgt.StorePackedBits(1,~0u);//0xFFFFFFFF

@@ -80,6 +80,7 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
 
 void InputStateStorage::processDirectionControl(int dir,int prev_time,int press_release)
 {
+    Q_UNUSED(prev_time);
     if(press_release)
     {
         qCDebug(logInput, "pressed: %s", dir);
@@ -240,6 +241,7 @@ struct ControlState
     // recover actual ControlState from network data and previous entry
     void serializefrom_delta(BitStream &bs,const ControlState &prev)
     {
+        Q_UNUSED(prev);
         client_timenow   = bs.GetPackedBits(1); // field_0 diff next-current
         time_res = bs.GetPackedBits(1); // time to next state ?
         timestep = bs.GetFloat(); // next state's timestep

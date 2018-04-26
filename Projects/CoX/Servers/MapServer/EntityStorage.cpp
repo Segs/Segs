@@ -103,6 +103,7 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
  */
 void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool is_incremental) const
 {
+    Q_UNUSED(is_incremental);
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_mutex);
     uint32_t self_idx = getIdx(*target->m_ent);
     int prev_idx = -1;
