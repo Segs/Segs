@@ -9,6 +9,7 @@ nemerle         (http://www.nemerle.eu/) <nemerle AT segs DOT io>
 SEGS Contributors
 =================
 Armingleggings
+Ashleigh
 cameron-justice
 Catvir
 Darawk          <darawk AT darawk DOT com>
@@ -24,6 +25,8 @@ Patrick         <patrick_guerra AT users DOT sourceforge DOT net>
 PsiLupan
 rz950
 SilverJohn
+StarkRavingMad
+Suiv             R.I.P. - Your dark humor will be missed.
 teronis84
 TharBeDragons
 Tonster
