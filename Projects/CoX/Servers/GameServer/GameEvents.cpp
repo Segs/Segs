@@ -10,7 +10,6 @@
  * @{
  */
 
-#include "HashStorage.h"
 #include "GameEvents.h"
 #include "NetStructures/Character.h"
 #include "NetStructures/Costume.h"

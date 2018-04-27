@@ -66,11 +66,6 @@ uint32_t CrudP_Packet::GetBits(uint32_t nBits)
     return m_stream->GetBits(nBits);
 }
 
-void CrudP_Packet::GetBitArray(uint32_t nBytes, uint8_t *array)
-{
-    return m_stream->GetBitArray(array,nBytes);
-}
-
 uint32_t CrudP_Packet::GetPackedBits(uint32_t nBits)
 {
     return m_stream->GetPackedBits(nBits);

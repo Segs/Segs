@@ -47,6 +47,5 @@ private:
         QString                 m_serverName;
         ACE_INET_Addr           m_base_location; //! this is the base map instance address
         ACE_INET_Addr           m_base_listen_point; //! this is used as a base map listening endpoint
-        MapInstance *           m_handler = nullptr;
 };
 extern MapServer *g_GlobalMapServer;

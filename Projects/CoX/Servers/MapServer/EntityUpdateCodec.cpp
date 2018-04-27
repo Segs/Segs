@@ -154,19 +154,18 @@ void storeOrientation(const Entity &src,BitStream &bs)
     qCDebug(logOrientation, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
     qCDebug(logOrientation, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
     qCDebug(logOrientation, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);
-    qCDebug(logOrientation, "vel_scale: %f", src.inp_state.input_vel_scale);
+    qCDebug(logOrientation, "vel_scale: %d", src.inp_state.input_vel_scale);
 
     for(int i=0; i<3; i++)
     {
-        if(update_rot(src,i))
-        {
-            uint32_t v;
-            v = AngleQuantize(pyr_angles[i],9);
+        if(!update_rot(src,i))
+            continue;
 
-            qCDebug(logOrientation, "v: %d", v); // does `v` fall between 0...512
+        uint32_t v = AngleQuantize(pyr_angles[i],9);
 
-            bs.StoreBits(9,v);
-        }
+        qCDebug(logOrientation, "v: %d", v); // does `v` fall between 0...512
+
+        bs.StoreBits(9,v);
     }
 }
 
