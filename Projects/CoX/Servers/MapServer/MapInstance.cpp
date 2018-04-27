@@ -54,12 +54,16 @@ namespace
         World_Update_Timer   = 1,
         State_Transmit_Timer = 2,
         Session_Reaper_Timer   = 3,
+        Link_Idle_Timer   = 4,
     };
 
     const ACE_Time_Value reaping_interval(0,1000*1000);
     const ACE_Time_Value link_is_stale_if_disconnected_for(0,5*1000*1000);
+    const ACE_Time_Value link_update_interval(0,500*1000);
     const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
     const ACE_Time_Value resend_interval(0,250*1000);
+    const ACE_Time_Value maximum_time_without_packets(2,0);
+    const constexpr int MinPacketsToAck=5;
 
     void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &locations_scriptname)
     {
@@ -78,7 +82,7 @@ class MapLinkEndpoint : public ServerEndpoint
 {
 public:
     MapLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
-    ~MapLinkEndpoint()=default;
+    ~MapLinkEndpoint() override =default;
 protected:
     CRUDLink *createLink(EventProcessor *down) override
     {
@@ -134,6 +138,7 @@ void MapInstance::start()
     }
     m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
+    m_link_timer.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
 }
 
@@ -374,6 +379,24 @@ void MapInstance::on_idle(IdleEvent *ev)
     lnk->putq(new IdleEvent);
 }
 
+void MapInstance::on_check_links()
+{
+    // walk the active sessions
+    for(const auto &entry : m_session_store)
+    {
+        MapLink * client_link = entry->link();
+        if(!client_link)
+        {
+            // don't send to disconnected clients :)
+            continue;
+        }
+        // Send at least one packet within maximum_time_without_packets
+        if(client_link->last_sent_packets()>maximum_time_without_packets)
+            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+        else if(client_link->client_packets_waiting_for_ack()>MinPacketsToAck)
+            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+    }
+}
 void MapInstance::on_connection_request(ConnectRequest *ev)
 {
     ev->src()->putq(new ConnectResponse);
@@ -592,9 +615,9 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     auto *res = new SceneEvent;
 
     res->undos_PP              = 0;
-    res->var_14                = true;
+    res->is_new_world          = true;
     res->m_outdoor_mission_map = false;
-    res->m_map_number          = 1; // "maps/City_Zones/City_00_01/City_00_01.txt"
+    res->m_map_number          = 1;
 
     assert(m_data_path.contains("City_"));
     int city_idx = m_data_path.indexOf("City_");
@@ -616,6 +639,13 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     // so this method should call MapInstace->initial_update(MapClient *);
     MapClientSession &session(m_session_store.session_from_event(ev));
     srand(time(nullptr));
+
+    EntitiesResponse *res=new EntitiesResponse(&session);
+    res->m_map_time_of_day = m_world->time_of_day();
+    res->is_incremental(false); // full world update = op 3
+    res->ent_major_update = true;
+    res->abs_time = 30*100*(m_world->accumulated_time);
+    session.link()->putq(res);
     m_session_store.add_to_active_sessions(&session);
 }
 
@@ -638,6 +668,9 @@ void MapInstance::on_timeout(TimerEvent *ev)
         case State_Transmit_Timer:
             sendState();
             break;
+        case Link_Idle_Timer:
+            on_check_links();
+            break;
         case Session_Reaper_Timer:
             reap_stale_links();
             break;
@@ -652,8 +685,6 @@ void MapInstance::sendState() {
     auto iter=m_session_store.begin();
     auto end=m_session_store.end();
     static bool only_first=true;
-    static int resendtxt=0;
-    resendtxt++;
 
     for(;iter!=end; ++iter)
     {
@@ -663,21 +694,17 @@ void MapInstance::sendState() {
 
         if(cl->m_in_map==false) // send full updates until client `resumes`
         {
-            res->is_incremental(false); // full world update = op 3
+            //TODO: decide when we need full updates res->is_incremental(false);
         }
         else
         {
             res->is_incremental(true); // incremental world update = op 2
         }
         res->ent_major_update = true;
-        res->abs_time = 30*100*(m_world->sim_frame_time/1000.0f);
+        res->abs_time = 30*100*(m_world->accumulated_time);
         cl->link()->putq(res);
     }
     only_first=false;
-    if(resendtxt==15)
-    {
-        resendtxt=0;
-    }
     // This is handling instance-wide timers
 
     //TODO: Move timer processing to per-client EventHandler ?
@@ -703,7 +730,8 @@ void MapInstance::on_input_state(InputState *st)
     ent->m_target_idx = st->m_target_idx;
     ent->m_assist_target_idx = st->m_assist_target_idx;
     // Set Orientation
-    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r) {
+    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r)
+    {
         ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
         ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
     }
@@ -728,10 +756,9 @@ void MapInstance::on_input_state(InputState *st)
     if(st->m_user_commands.GetReadableBits()!=0)
     {
         qCDebug(logMapEvents) << "bits: " << st->m_user_commands.GetReadableBits();
-        qCWarning(logMapEvents) << "Not all bits were consumed by previous commands:";
+        qCCritical(logMapEvents) << "Not all bits were consumed by previous commands:";
         for(const char *cmd : prev_commands)
             qCWarning(logMapEvents) << cmd;
-        assert(false);
     }
 
     //TODO: do something here !

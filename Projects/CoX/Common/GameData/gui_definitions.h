@@ -80,14 +80,13 @@ enum ChatWindowMasks : uint32_t {   // top      bottom  bottom              top
 class GUIWindow
 {
 public:
-    GUIWindow() { }
 
         // GUI Window Params
         WindowIDX           m_idx               = wdw_Unknown0;
         WindowVisibility    m_mode              = wv_Uninitialized;
         bool                m_draggable_frame   = false;
-        uint32_t            m_posx              = 0;
-        uint32_t            m_posy              = 0;
+        int32_t             m_posx              = 0;
+        int32_t             m_posy              = 0;
         uint32_t            m_width             = 0;
         uint32_t            m_height            = 0;
         uint32_t            m_locked            = 0;
