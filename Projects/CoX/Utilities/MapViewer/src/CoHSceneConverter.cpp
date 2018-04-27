@@ -76,31 +76,6 @@ ConvertedRootNode *newRef(CoHSceneGraph &scene)
     return scene.refs[idx];
 }
 
-bool LoadScene(const QString &fname,SceneGraph_Data &scenegraph)
-{
-    BinStore binfile;
-
-    if(fname.contains(".crl")) {
-        if(!loadFrom(fname,scenegraph))
-        {
-            qCritical() << "Failed to serialize data from crl:" << fname;
-            return false;
-        }
-    }
-    else
-    {
-        if(!binfile.open(fname,scenegraph_i0_2_requiredCrc)) {
-            qCritical() << "Failed to open original bin:" << fname;
-            return false;
-        }
-        if(!loadFrom(&binfile,scenegraph)) {
-            qCritical() << "Failed to load data from original bin:" << fname;
-            return false;
-        }
-    }
-    return true;
-}
-
 CoHNode * getNodeByName(const CoHSceneGraph &conv,const QString &a1)
 {
     QString filename;
@@ -478,7 +453,7 @@ bool loadSceneGraph(CoHSceneGraph &conv,const QString &path)
     my_name_list.basename = buildBaseName(path);
     SceneGraph_Data scenegraph;
     binName.replace("CHUNKS.bin","Chunks.bin");
-    LoadScene(binName,scenegraph);
+    LoadSceneData(binName,scenegraph);
     PostProcessScene(scenegraph,conv,my_name_list,path);
     return true;
 }

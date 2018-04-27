@@ -30,7 +30,7 @@ MapInstance * MapTemplate::get_instance()
         m_instances.push_back(new MapInstance(m_map_filename,ListenAndLocationAddresses(m_base_loc,port_inc)));
         m_instances.back()->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
         m_instances.back()->spin_up_for(m_game_server_id,m_map_server_id,s_template_id++);
-        m_instances.back()->start();
+        m_instances.back()->start(client_filename());
     }
     return m_instances.front();
 }

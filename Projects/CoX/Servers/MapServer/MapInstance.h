@@ -26,6 +26,7 @@ class SEGSTimer;
 class InputState;
 class World;
 class MapServerData;
+struct MapSceneGraph;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -53,6 +54,7 @@ public:
         ScriptEnginePtr         m_scripting_interface;
         MapLinkEndpoint *       m_endpoint = nullptr;
         ListenAndLocationAddresses m_addresses; //! this value is sent to the clients
+        MapSceneGraph *         m_map_scenegraph;
 
 public:
                                 MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr);
@@ -60,7 +62,7 @@ public:
         void                    dispatch(SEGSEvent *ev) override;
 
         void                    enqueue_client(MapClientSession *clnt);
-        void                    start();
+        void                    start(const QString &scenegraph_path);
         const QString &         name() const { return m_data_path; }
         uint32_t                index() const { return m_index; }
         void                    spin_down();
@@ -74,7 +76,7 @@ protected:
         // DB -> Server messages
         void                    on_name_clash_check_result(WouldNameDuplicateResponse *ev);
         void                    on_character_created(CreateNewCharacterResponse *ev);
-        void on_entity_response(GetEntityResponse *ev);
+        void                    on_entity_response(GetEntityResponse *ev);
         // Server->Server messages
         void on_expect_client(ExpectMapClientRequest *ev);
 

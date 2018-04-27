@@ -23,6 +23,7 @@
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
 #include "EntityStorage.h"
+#include "MapSceneGraph.h"
 #include "WorldSimulation.h"
 #include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/Database.h"
@@ -99,7 +100,7 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     m_endpoint->set_downstream(this);
 }
 
-void MapInstance::start()
+void MapInstance::start(const QString &scenegraph_path)
 {
     assert(m_world_update_timer==nullptr);
     assert(m_game_server_id!=255);
@@ -108,6 +109,16 @@ void MapInstance::start()
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
+        bool scene_graph_loaded = false;
+        TIMED_LOG({
+                m_map_scenegraph = new MapSceneGraph;
+                scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/" + scenegraph_path);
+            }, "Loading original scene graph"
+            );
+        TIMED_LOG({
+            m_map_scenegraph->spawn_npcs(this);
+            },"Spawning npcs");
+        qInfo() << "Loading custom scripts";
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
 

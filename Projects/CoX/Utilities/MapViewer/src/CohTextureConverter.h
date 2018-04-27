@@ -49,15 +49,6 @@ struct TextureWrapper
     CoHBlendMode BlendType = CoHBlendMode(0);
     TextureModifiers *info {nullptr};
 };
-
-enum TexOpt : uint32_t
-{
-    FADE        = 1,
-    DUAL        = 0x10,
-    REPLACEABLE = 0x800,
-    BUMPMAP     = 0x1000,
-};
-
 extern QHash<QString,TextureModifiers *> g_texture_path_to_mod;
 TextureWrapper tryLoadTexture(Urho3D::Context *ctx, const QString &fname);
 void preloadTextureNames();
