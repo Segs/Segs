@@ -25,7 +25,7 @@ void NPCStorage::prepare_dictionaries()
         auto iter = m_name_to_npc_def.find(npc.m_Name.toLower());
         if(iter!=m_name_to_npc_def.end())
         {
-            qWarning() << "Duplicate NPC name"<<npc.m_Name<<"vs"<<iter.value()->m_Name;
+            qCWarning(logNPCs) << "Duplicate NPC name"<<npc.m_Name<<"vs"<<iter.value()->m_Name;
             continue;
         }
         m_name_to_npc_def[npc.m_Name.toLower()] = &npc;

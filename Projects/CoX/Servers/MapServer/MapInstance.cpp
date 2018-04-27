@@ -44,6 +44,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <glm/ext.hpp>
 #include <stdlib.h>
 
 namespace
@@ -85,6 +86,12 @@ protected:
     }
 };
 
+// Spawning Locations
+const std::vector<SpawningLocations> g_starting_spawns = {
+    {"City_00_01",{-60.5f,0.0f,180.0f}},
+    {"City_01_01",{128.0f,16.0f,-198.0f}},
+};
+
 using namespace std;
 MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr)
     : m_data_path(mapdir_path), m_world_update_timer(nullptr), m_addresses(listen_addr)
@@ -93,6 +100,16 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     m_scripting_interface.reset(new ScriptingEngine);
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
+
+    QString mapname = m_data_path.remove("MapInstances/");
+    qDebug() << mapname;
+    auto iter = std::find_if( g_starting_spawns.begin(), g_starting_spawns.end(),
+                              [mapname](const SpawningLocations& locs)->bool {return mapname==locs.m_mapname;});
+    if(iter!=g_starting_spawns.end())
+        m_spawn_pos = iter->m_starting_pos;
+
+    qCDebug(logSpawn) << "Searching starting location based upon mapname" << m_data_path
+                      << "returning" << glm::to_string(m_spawn_pos).c_str();
 }
 
 void MapInstance::start()
@@ -118,7 +135,6 @@ void MapInstance::start()
     m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
-    qInfo() << "Server running... awaiting client connections."; // best place for this?
 }
 
 ///
@@ -449,14 +465,14 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     uint32_t cookie = 0; // name in use
     // fill the session with data, this will get discarded if the name is already in use...
     MapClientSession &map_session(*m_session_store.create_or_reuse_session_for(ev->session_token()));
-    map_session.m_name        = request_data.m_character_name;
+    map_session.m_name          = request_data.m_character_name;
     // TODO: this code is wrong on the logical level
-    map_session.m_current_map = this;
-    map_session.m_max_slots   = request_data.m_max_slots;
-    map_session.m_access_level = request_data.m_access_level;
-    map_session.m_client_id    = request_data.m_client_id;
+    map_session.m_current_map   = this;
+    map_session.m_max_slots     = request_data.m_max_slots;
+    map_session.m_access_level  = request_data.m_access_level;
+    map_session.m_client_id     = request_data.m_client_id;
 
-    cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
+    cookie                      = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
     if (!request_data.char_from_db)
     {
@@ -545,7 +561,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         const MapServerData &data(g_GlobalMapServer->runtimeData());
         const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
 
-        fillEntityFromNewCharData(*e, ev->m_character_data, data.getPacker(),data.m_keybind_profiles);
+        fillEntityFromNewCharData(*e, ev->m_character_data, map_session.m_current_map->m_spawn_pos, data.getPacker(),data.m_keybind_profiles);
         e->m_char->m_account_id = map_session.auth_id();
         e->m_entity_data.m_access_level = map_session.m_access_level;
         map_session.m_ent = e;
@@ -578,8 +594,8 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->undos_PP              = 0;
     res->var_14                = true;
     res->m_outdoor_mission_map = false;
-    res->m_map_number          = 1;
-                            //"maps/City_Zones/City_00_01/City_00_01.txt";
+    res->m_map_number          = 1; // "maps/City_Zones/City_00_01/City_00_01.txt"
+
     assert(m_data_path.contains("City_"));
     int city_idx = m_data_path.indexOf("City_");
     int end_or_slash = m_data_path.indexOf("/",city_idx);
