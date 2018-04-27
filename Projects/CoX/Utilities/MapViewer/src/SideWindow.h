@@ -29,6 +29,7 @@ namespace Urho3D
 struct CoHSceneGraph;
 struct CoHNode;
 struct CoHModel;
+struct ConvertedRootNode;
 
 class MapViewerApp;
 
@@ -46,19 +47,16 @@ signals:
     void scenegraphSelected(const QString &path);
     void nodeSelected(CoHNode *n);
     void nodeDisplayRequest(CoHNode *n,bool isroot);
+    void refDisplayRequest(ConvertedRootNode *n,bool show_all);
 public slots:
     void onCameraPositionChanged(float x,float y,float z);
     void onModelSelected(CoHNode*n, CoHModel*m, Urho3D::Drawable*d);
     void onScenegraphLoaded(const CoHSceneGraph &sc);
 private slots:
     void on_actionLoad_Scene_Graph_triggered();
-
     void on_actionSet_data_paths_triggered();
-
     void on_nodeList_clicked(const QModelIndex &index);
-
     void on_nodeList_doubleClicked(const QModelIndex &index);
-
 private:
     MapViewerApp *m_map_viewer;
     Ui::SideWindow *ui;

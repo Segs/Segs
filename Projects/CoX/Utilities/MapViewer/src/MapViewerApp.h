@@ -24,6 +24,7 @@ namespace Urho3D
 }
 
 struct CoHSceneGraph;
+struct ConvertedRootNode;
 struct CoHNode;
 struct CoHModel;
 
@@ -40,6 +41,7 @@ public:
 public slots:
     void loadSelectedSceneGraph(const QString &path);
     void onDisplayNode(CoHNode *n, bool rootnode);
+    void onDisplayRef(ConvertedRootNode *root, bool show_all);
     void onNodeSelected(CoHNode *n);
 signals:
     void cameraLocationChanged(float x,float y,float z);
