@@ -39,6 +39,10 @@ struct SpawningLocations {
 
 extern const std::vector<SpawningLocations> g_starting_spawns;
 
+// getSpawnLocation based upon g_starting_spawns
+// TODO: pull spawn location from map file, or lua script if available.
+glm::vec3 getSpawnLocation(const MapClientSession &sess);
+
 class MapInstance final : public EventProcessor
 {
         using SessionStore = ClientSessionStore<MapClientSession>;
@@ -72,7 +76,6 @@ public:
         void                    spin_down();
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         const MapServerData &   serverData() const;
-        glm::vec3               m_spawn_pos = {0.0f, 0.0f, 0.0f};
 protected:
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(ClientConnectedMessage *ev);

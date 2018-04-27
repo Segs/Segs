@@ -211,8 +211,8 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
             snprintf(log_buffer,4096,"%sDebug   : %s\n",category_text,localMsg.constData());
             break;
         case QtInfoMsg:
-            // no prefix for informational messages
-            snprintf(log_buffer,4096,"%s: %s\n",category_text,localMsg.constData());
+            // no prefix or category for informational messages, as these are end-user facing
+            snprintf(log_buffer,4096,"%s\n",localMsg.constData());
             break;
         case QtWarningMsg:
             snprintf(log_buffer,4096,"%sWarning : %s\n",category_text,localMsg.constData());

@@ -144,7 +144,7 @@ bool GameServer::ReadConfigAndRestart()
     if (d->m_endpoint->open() == -1) // will register notifications with current reactor
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
 
-    qInfo() << "  configuration loaded and server started";
+    qInfo() << "Configurations loaded";
     d->m_online = true;
     d->m_handler->putq(reconfigured_msg.shallow_copy());
     return true;

@@ -20,7 +20,6 @@
 #include "GameData/npc_definitions.h"
 #include "Logging.h"
 #include <QtCore/QDebug>
-#include <glm/ext.hpp>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -64,7 +63,7 @@ void Entity::beginLogout(uint16_t time_till_logout)
     leaveTeam(*this);
 }
 
-void fillEntityFromNewCharData(Entity &e, BitStream &src, const glm::vec3 spawn_pos, const ColorAndPartPacker *packer,const Parse_AllKeyProfiles &default_profiles )
+void fillEntityFromNewCharData(Entity &e, BitStream &src, const ColorAndPartPacker *packer, const Parse_AllKeyProfiles &default_profiles )
 {
     QString description;
     QString battlecry;
@@ -82,14 +81,6 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src, const glm::vec3 spawn_
     e.m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*e.m_char));
     e.m_player->m_keybinds.resetKeybinds(default_profiles);
     e.m_is_hero = true;
-
-    // New Character Spawn Location
-    e.m_entity_data.m_pos                 = spawn_pos; //glm::vec3(-60.5f,180.0f,0.0f); // Tutorial Starting (spawn) Location
-    //e.m_entity_data.m_pos                   = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting (spawn) Location
-    e.m_direction                         = glm::quat(1.0f,0.0f,0.0f,0.0f);
-
-    qCDebug(logSpawn) << "spawning:" << glm::to_string(e.m_entity_data.m_pos).c_str()
-                      << "\nfacing:" << glm::to_string(e.m_direction).c_str();
 }
 
 void Entity::InsertUpdate( PosUpdate pup )

@@ -350,5 +350,5 @@ enum class DbStoreFlags : uint32_t
 void markEntityForDbStore(Entity *e,DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant);
-void fillEntityFromNewCharData(Entity &e, BitStream &src, const glm::vec3 spawn_pos, const ColorAndPartPacker *packer, const Parse_AllKeyProfiles &default_profiles);
+void fillEntityFromNewCharData(Entity &e, BitStream &src, const ColorAndPartPacker *packer, const Parse_AllKeyProfiles &default_profiles);
 extern void abortLogout(Entity *e);
