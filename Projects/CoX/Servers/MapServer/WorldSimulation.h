@@ -22,6 +22,7 @@ public:
         void            update(const ACE_Time_Value &tick_timer);
         float           time_of_day() const { return m_time_of_day; }
         float           sim_frame_time = 1; // in seconds
+        float           accumulated_time=0;
 protected:
         void            physicsStep(Entity *e, uint32_t msec);
         void            effectsStep(Entity *e, uint32_t msec);

@@ -51,6 +51,7 @@ class MapInstance final : public EventProcessor
         uint32_t               m_index = 1; // what does client expect this to store, and where do we send it?
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
+        std::unique_ptr<SEGSTimer> m_link_timer;
 
         World *                 m_world;
         uint8_t                 m_game_server_id=255; // 255 is `invalid` id
@@ -100,6 +101,8 @@ protected:
         void on_shortcuts_request(class ShortcutsRequest *ev);
 
         void sendState();
+        void on_check_links();
+
         void on_cookie_confirm(class CookieRequest *ev);
         void on_window_state(class WindowState *ev);
         void on_console_command(class ConsoleCommand *ev);

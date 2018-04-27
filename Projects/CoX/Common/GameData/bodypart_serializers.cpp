@@ -16,23 +16,6 @@
 
 #include "DataStorage.h"
 
-//Serialization_Template BodyPart_Tokens[11] = {
-//    { "Name", TOKEN_STRING, 0, 0},
-//    { "BoneCount", TOKEN_ENUM, 0x10, 0},
-//    { "InfluenceCost", TOKEN_ENUM, 0x14},
-//    { "GeoName", TOKEN_STRING, 0x18, 0},
-//    { "", TOKEN_ENUM, 4, 0},
-//    { "", TOKEN_ENUM, 8, 0},
-//    { "TexName", TOKEN_STRING, 0x1C, 0},
-//    { "BaseName", TOKEN_STRING, 0x20, 0},
-//    { "BoneCount", TOKEN_ENUM, 0x10, 0},
-//    { "End", TOKEN_END},
-//    { },
-//};
-//Serialization_Template AllBodyParts_Tokens[2] = {
-//    { "BodyPart", TOKEN_SUB_TABLE, 0, 36, BodyPart_Tokens },
-//    {0}
-//};
 
 namespace
 {
