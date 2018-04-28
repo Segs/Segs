@@ -8,26 +8,21 @@ CREATE TABLE "table_versions" (
   OIDS=FALSE
 );
 
-INSERT INTO table_versions VALUES(1,'db_version',6,'2018-04-19 00:55:01');
+INSERT INTO table_versions VALUES(1,'db_version',7,'2018-05-03 17:52:33');
 INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
-INSERT INTO table_versions VALUES(3,'accounts',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(4,'characters',7,'2018-04-19 00:54:27');
+INSERT INTO table_versions VALUES(3,'accounts',1,'2018-05-03 14:06:03');
+INSERT INTO table_versions VALUES(4,'characters',8,'2018-05-04 14:58:27');
 INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(6,'progress',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(7,'supergroups',0,'2018-01-23 10:16:43');
+INSERT INTO table_versions VALUES(7,'supergroups',1,'2018-05-03 14:06:43');
 
 
 CREATE TABLE "accounts" (
-    "id" serial NOT NULL,
-    "account_id" integer NOT NULL,
+    "id" integer NOT NULL,
     "max_slots" integer NOT NULL DEFAULT '8',
     CONSTRAINT accounts_pk PRIMARY KEY ("id")
 ) WITH (
   OIDS=FALSE
 );
-
-
-INSERT INTO accounts VALUES(1,1,8);
 
 
 CREATE TABLE "costumes" (
@@ -54,8 +49,6 @@ CREATE TABLE "characters" (
     "body_type" integer NOT NULL DEFAULT '4',
     "height" real NOT NULL DEFAULT '0.0',
     "physique" real NOT NULL DEFAULT '0.0',
-    "hitpoints" integer NOT NULL DEFAULT '0',
-    "endurance" integer NOT NULL DEFAULT '0',
     "supergroup_id" integer NOT NULL DEFAULT '0',
     "player_data" bytea NOT NULL,
     CONSTRAINT characters_pk PRIMARY KEY ("id")
@@ -67,7 +60,6 @@ CREATE TABLE "characters" (
 
 CREATE TABLE "supergroups" (
     "id" serial NOT NULL,
-    "supergroup_id" serial NOT NULL,
     "sg_name" varchar(30) NOT NULL,
     "sg_motto" varchar(128) NOT NULL,
     "sg_motd" varchar(1024) NOT NULL,
@@ -83,25 +75,7 @@ CREATE TABLE "supergroups" (
 
 
 
-CREATE TABLE "progress" (
-    "id" serial NOT NULL,
-    "character_id" integer NOT NULL,
-    "badges" bytea NOT NULL,
-    "clues" bytea NOT NULL,
-    "contacts" bytea NOT NULL,
-    "souvenirs" bytea NOT NULL,
-    CONSTRAINT progress_pk PRIMARY KEY ("id")
-) WITH (
-  OIDS=FALSE
-);
-
-
-
-
 
 ALTER TABLE "costumes" ADD CONSTRAINT "costumes_fk0" FOREIGN KEY ("character_id") REFERENCES "characters"("id");
 
 ALTER TABLE "characters" ADD CONSTRAINT "characters_fk0" FOREIGN KEY ("account_id") REFERENCES "accounts"("id");
-
-ALTER TABLE "progress" ADD CONSTRAINT "progress_fk0" FOREIGN KEY ("character_id") REFERENCES "characters"("id");
-

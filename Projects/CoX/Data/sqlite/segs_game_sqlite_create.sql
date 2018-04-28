@@ -7,21 +7,17 @@ CREATE TABLE `table_versions` (
     `last_update` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO table_versions VALUES(1,'db_version',6,'2018-04-19 00:55:01');
+INSERT INTO table_versions VALUES(1,'db_version',7,'2018-05-03 17:52:33');
 INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
-INSERT INTO table_versions VALUES(3,'accounts',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(4,'characters',7,'2018-04-19 00:54:27');
+INSERT INTO table_versions VALUES(3,'accounts',1,'2017-05-03 12:56:03');
+INSERT INTO table_versions VALUES(4,'characters',8,'2018-05-04 14:58:27');
 INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(6,'progress',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(7,'supergroups',0,'2018-01-23 10:16:43');
+INSERT INTO table_versions VALUES(7,'supergroups',1,'2018-05-03 12:56:43');
 
 CREATE TABLE `accounts` (
-    `id`	INTEGER PRIMARY KEY AUTOINCREMENT,
-    `account_id`	INTEGER UNIQUE,
-    `max_slots`	INTEGER NOT NULL DEFAULT 8
+    `id` INTEGER PRIMARY KEY,
+    `max_slots` INTEGER NOT NULL DEFAULT 8
 );
-
-INSERT INTO accounts VALUES(1,1,8);
 
 CREATE TABLE `characters` (
     `id`	INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,11 +29,9 @@ CREATE TABLE `characters` (
     `bodytype`	INTEGER NOT NULL DEFAULT 4,
     `height` real NOT NULL DEFAULT 0.0,
     `physique` real NOT NULL DEFAULT 0.0,
-    `hitpoints`	INTEGER DEFAULT 0,
-    `endurance`	INTEGER DEFAULT 0,
     `supergroup_id`	INTEGER NOT NULL DEFAULT 0,
     `player_data` BLOB,
-    FOREIGN KEY(`account_id`) REFERENCES accounts ( account_id ) ON DELETE CASCADE
+    FOREIGN KEY(`account_id`) REFERENCES accounts ( id ) ON DELETE CASCADE
 );
 
 CREATE TABLE `costume` (
@@ -50,20 +44,8 @@ CREATE TABLE `costume` (
     UNIQUE (character_id, costume_index)
 );
 
-CREATE TABLE `progress` (
-    `id` integer PRIMARY KEY AUTOINCREMENT,
-    `character_id` integer,
-    `badges` blob,
-    `clues` blob,
-    `contacts` blob,
-    `souvenirs` blob,
-    FOREIGN KEY(`character_id`) REFERENCES characters ( id ) ON DELETE CASCADE,
-    UNIQUE (character_id)
-);
-
 CREATE TABLE `supergroups` (
     `id`	INTEGER PRIMARY KEY AUTOINCREMENT,
-    `supergroup_id`	INTEGER UNIQUE,
     `sg_name`	TEXT NOT NULL,
     `sg_motto`	TEXT,
     `sg_motd`	TEXT,

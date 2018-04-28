@@ -150,8 +150,8 @@ bool GameDbSyncContext::loadAndConfigure()
               "WHERE id=:id ");
 
     prepQuery(*m_prepared_fill,"SELECT * FROM costume WHERE character_id=? AND costume_index=?");
-    prepQuery(*m_prepared_account_select,"SELECT * FROM accounts WHERE account_id=?");
-    prepQuery(*m_prepared_account_insert,"INSERT INTO accounts  (account_id,max_slots) VALUES (?,?)");
+    prepQuery(*m_prepared_account_select,"SELECT * FROM accounts WHERE id=?");
+    prepQuery(*m_prepared_account_insert,"INSERT INTO accounts  (id,max_slots) VALUES (?,?)");
     prepQuery(*m_prepared_char_insert,
                 "INSERT INTO characters  ("
                 "slot_index, account_id, char_name, chardata, entitydata, "
@@ -221,7 +221,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         if(!m_prepared_account_select->next() && !data.create_if_does_not_exist)
             return false;
     }
-    result.m_game_server_acc_id = m_prepared_account_select->value("id").toULongLong();
+    result.m_game_server_acc_id = data.m_auth_account_id;
     result.m_max_slots = m_prepared_account_select->value("max_slots").toULongLong();
     result.m_characters.resize(result.m_max_slots);
     int idx=0;
