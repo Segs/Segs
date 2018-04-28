@@ -20,6 +20,7 @@ SET(target_CPP
     Events/InfoMessageCmd.cpp
     Events/WindowState.cpp
     NpcStore.cpp
+    NpcGenerator.cpp
     MapEventFactory.cpp
     MapInstance.cpp
     MapLink.cpp
@@ -64,6 +65,7 @@ SET(target_INCLUDE
     Events/InteractWithEntity.h
     Events/WindowState.h
     NpcStore.h
+    NpcGenerator.h
     MapEventFactory.h
     MapEvents.h
     MapInstance.h

@@ -27,8 +27,6 @@ namespace  {
 void storeCreation(const Entity &src, BitStream &bs)
 {
     // entity creation
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending create entity\n")));
-
     bs.StoreBits(1,src.m_destroyed); // ends creation destroys seq and returns NULL
 
     if(src.m_destroyed)

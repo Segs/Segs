@@ -143,9 +143,10 @@ void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
             CoHNode * cn = (CoHNode *)stored.GetVoidPtr();
             if(cn->properties)
             {
+                prop_text += QString("%1\n").arg(cn->name);
                 for(const GroupProperty_Data &prop : *cn->properties)
                 {
-                    prop_text += QString("%1 - %2 [%3]\n").arg(prop.propName).arg(prop.propValue).arg(prop.propertyType);
+                    prop_text += QString("%2 - %3 [%4]\n").arg(prop.propName).arg(prop.propValue).arg(prop.propertyType);
                 }
             }
         }

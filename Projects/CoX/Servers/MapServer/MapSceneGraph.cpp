@@ -10,17 +10,20 @@
  * @{
  */
 #include "MapSceneGraph.h"
+
 #include "GameData/CoHMath.h"
 #include "MapServerData.h"
 #include "SceneGraph.h"
 #include "EntityStorage.h"
 #include "Logging.h"
 #include "Common/NetStructures/Character.h"
+#include "NpcGenerator.h"
 #include "MapInstance.h"
 #include "NpcStore.h"
 
 #include "glm/mat4x4.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <QSet>
 
 namespace
 {
@@ -30,6 +33,11 @@ MapSceneGraph::MapSceneGraph()
 {
 
 }
+MapSceneGraph::~MapSceneGraph()
+{
+
+}
+
 
 bool MapSceneGraph::loadFromFile(const QString &filename)
 {
@@ -104,13 +112,15 @@ static QString convertNpcName(const QString &n)
     }
     return "ChessPawn";
 }
+
 struct NpcCreator
 {
     MapInstance *map_instance = nullptr;
-    bool operator()(SceneNode *n, const glm::mat4 &v)
+    NpcGeneratorStore *generators;
+    QSet<QString> m_reported_generators;
+
+    bool checkPersistant(SceneNode *n, const glm::mat4 &v)
     {
-        if (!n->properties)
-            return true;
         bool has_npc = false;
         QString persistant_name;
         for (GroupProperty_Data &prop : *n->properties)
@@ -149,6 +159,40 @@ struct NpcCreator
         }
         return true;
     }
+    bool checkGenerators(SceneNode *n, const glm::mat4 &v)
+    {
+        if(!generators)
+            return false;
+        QString generator_type;
+        for (GroupProperty_Data &prop : *n->properties)
+        {
+            if(prop.propName=="Generator")
+            {
+                generator_type = prop.propValue;
+            }
+        }
+        if(generator_type.isEmpty())
+            return true;
+        if(!generators->m_generators.contains(generator_type))
+        {
+            if(!m_reported_generators.contains(generator_type))
+            {
+                qDebug() << "Missing generator for"<<generator_type;
+                m_reported_generators.insert(generator_type);
+            }
+            return true;
+        }
+        generators->m_generators[generator_type].initial_positions.push_back(v);
+        return true;
+    }
+    bool operator()(SceneNode *n, const glm::mat4 &v)
+    {
+        if (!n->properties)
+            return true;
+        checkPersistant(n,v);
+        checkGenerators(n,v);
+        return true;
+    }
 };
 void MapSceneGraph::spawn_npcs(MapInstance *instance)
 {
@@ -164,6 +208,7 @@ void MapSceneGraph::spawn_npcs(MapInstance *instance)
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), &sess);
     */
     NpcCreator creator;
+    creator.generators = &instance->m_npc_generators;
     creator.map_instance = instance;
     glm::mat4 initial_pos(1);
     for(auto v : m_scene_graph->refs)
@@ -172,8 +217,39 @@ void MapSceneGraph::spawn_npcs(MapInstance *instance)
     }
 }
 
-MapSceneGraph::~MapSceneGraph()
+struct SpawnPointLocator
 {
+    QString m_kind;
+    std::vector<glm::mat4> *m_targets;
+    SpawnPointLocator(const QString &kind,std::vector<glm::mat4> *targets) :
+        m_kind(kind),
+        m_targets(targets)
+    {}
+    bool operator()(SceneNode *n, const glm::mat4 &v)
+    {
+        if (!n->properties)
+            return true;
+        for (GroupProperty_Data &prop : *n->properties)
+        {
+            if(prop.propName=="SpawnLocation" && 0==prop.propValue.compare(m_kind))
+            {
+                m_targets->emplace_back(v);
+                return false; //
+            }
+        }
+        return true;
+    }
+};
 
+std::vector<glm::mat4> MapSceneGraph::spawn_points(const QString &kind) const
+{
+    std::vector<glm::mat4> res;
+    SpawnPointLocator locator(kind,&res);
+    for(auto v : m_scene_graph->refs)
+    {
+        walkSceneNode(v->node, v->mat, locator);
+    }
+    return res;
 }
+
 //! @}

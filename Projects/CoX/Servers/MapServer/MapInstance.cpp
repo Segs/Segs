@@ -109,19 +109,21 @@ void MapInstance::start(const QString &scenegraph_path)
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
+        m_npc_generators.m_generators["NPCDrones"] = {"Police_Drone",{}};
         bool scene_graph_loaded = false;
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
+                m_new_player_spawns = m_map_scenegraph->spawn_points("NewPlayer");
             }, "Loading original scene graph"
             );
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);
+            m_npc_generators.generate(this);
             },"Spawning npcs");
         qInfo() << "Loading custom scripts";
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
-
         loadAndRunLua(m_scripting_interface,locations_scriptname);
         loadAndRunLua(m_scripting_interface,plaques_scriptname);
     }
@@ -582,9 +584,13 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
 
         fillEntityFromNewCharData(*e, ev->m_character_data, data.getPacker(),data.m_keybind_profiles);
         e->m_char->m_account_id = map_session.auth_id();
-        e->m_entity_data.m_access_level = map_session.m_access_level;
         e->m_client = &map_session;
         map_session.m_ent = e;
+        if(m_new_player_spawns.empty())
+            e->m_entity_data.m_pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting Location
+        else
+            e->m_entity_data.m_pos = glm::vec3(m_new_player_spawns[rand()%m_new_player_spawns.size()][3]);
+        e->m_entity_data.m_access_level = map_session.m_access_level;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
         GameAccountResponseCharacterData char_data;
@@ -685,6 +691,7 @@ void MapInstance::sendState() {
 
     for(;iter!=end; ++iter)
     {
+
         MapClientSession *cl = *iter;
         EntitiesResponse *res=new EntitiesResponse(cl);
         res->m_map_time_of_day = m_world->time_of_day();
@@ -1888,6 +1895,15 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
 const MapServerData &MapInstance::serverData() const
 {
     return g_GlobalMapServer->runtimeData();
+}
+
+glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
+{
+    if(!m_new_player_spawns.empty())
+    {
+        return m_new_player_spawns.front()[3];
+    }
+    return glm::vec3(0,0,0);
 }
 
 void MapInstance::on_reset_keybinds(ResetKeybinds *ev)

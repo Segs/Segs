@@ -7,6 +7,7 @@
 
 #pragma once
 #include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 #include <memory>
 #include <vector>
 
@@ -26,5 +27,6 @@ public:
     bool loadFromFile(const QString &mapname);
     void set_default_spawn_point(glm::vec3 loc) { m_spawn_point = loc; }
     glm::vec3 spawn_location() const { return m_spawn_point; }
+    std::vector<glm::mat4> spawn_points(const QString &kind) const;
     void spawn_npcs(class MapInstance *instance);
 };
