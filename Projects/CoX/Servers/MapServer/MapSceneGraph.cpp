@@ -10,7 +10,7 @@
  * @{
  */
 #include "MapSceneGraph.h"
-
+#include "GameData/CoHMath.h"
 #include "MapServerData.h"
 #include "SceneGraph.h"
 #include "EntityStorage.h"
@@ -20,7 +20,7 @@
 #include "NpcStore.h"
 
 #include "glm/mat4x4.hpp"
-#include <glm/gtc/matrix_transform.inl>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace
 {
@@ -36,10 +36,14 @@ bool MapSceneGraph::loadFromFile(const QString &filename)
     m_scene_graph.reset(new SceneGraph);
     LoadingContext ctx;
     ctx.m_target = m_scene_graph.get();
+    int geobin_idx= filename.indexOf("geobin");
     int maps_idx = filename.indexOf("maps");
-    ctx.m_base_path = filename.mid(0, maps_idx);
+    ctx.m_base_path = filename.mid(0, geobin_idx);
     g_prefab_store.prepareGeoLookupArray(ctx.m_base_path);
-    bool res = loadSceneGraph(filename.mid(maps_idx), ctx, g_prefab_store);
+    QString upcase_city = filename;
+    upcase_city.replace("city","City");
+    upcase_city.replace("zones","Zones");
+    bool res = loadSceneGraph(upcase_city.mid(maps_idx), ctx, g_prefab_store);
     if (!res)
         return false;
 
@@ -134,11 +138,10 @@ struct NpcCreator
                 e->m_entity_data.m_pos = glm::vec3(v[3]);
                 auto valquat = glm::quat_cast(v);
                 glm::vec3 angles = glm::eulerAngles(valquat);
+
                 e->m_char->setName(npc_costume_name);
                 e->m_direction = valquat;
-                e->m_entity_data.m_orientation_pyr.x = angles.x;
-                e->m_entity_data.m_orientation_pyr.y = angles.y;
-                //                e->m_entity_data.m_orientation_pyr = glm::eulerAngles(glm::quat_cast(v));
+                e->m_entity_data.m_orientation_pyr = {angles.x,glm::pi<float>()+angles.y,angles.z};
                 e->vel = { 0,0,0 };
             }
         }

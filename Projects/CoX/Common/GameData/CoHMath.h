@@ -212,8 +212,7 @@ inline uint32_t AngleQuantize(float val,int numb_bits)
     int max_val = 1<<numb_bits;
 
     float v = normalizeRadAngle(val); // ensure v falls within -pi..pi
-    v = (v+glm::pi<float>())/glm::two_pi<float>();
-    v *= max_val;
-//  assert(v<=max_val);
+    v = (v+glm::pi<float>())/glm::two_pi<float>(); // 0..1
+    v *= max_val; // 0..max_val
     return uint32_t(v);
 }

@@ -112,7 +112,7 @@ void MapInstance::start(const QString &scenegraph_path)
         bool scene_graph_loaded = false;
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;
-                scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/" + scenegraph_path);
+                scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
             }, "Loading original scene graph"
             );
         TIMED_LOG({
