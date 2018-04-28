@@ -505,6 +505,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     Entity *ent = m_entities.CreatePlayer();
     toActualCharacter(*request_data.char_from_db, *ent->m_char,*ent->m_player);
     ent->fillFromCharacter();
+    ent->m_client = &map_session;
     map_session.m_ent = ent;
     // Now we inform our game server that this Map server instance is ready for the client
 
@@ -582,6 +583,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         fillEntityFromNewCharData(*e, ev->m_character_data, data.getPacker(),data.m_keybind_profiles);
         e->m_char->m_account_id = map_session.auth_id();
         e->m_entity_data.m_access_level = map_session.m_access_level;
+        e->m_client = &map_session;
         map_session.m_ent = e;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
