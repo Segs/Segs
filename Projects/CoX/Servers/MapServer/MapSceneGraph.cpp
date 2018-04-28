@@ -137,11 +137,13 @@ struct NpcCreator
                 Entity *e = map_instance->m_entities.CreateNpc(*npc_def, idx, 0);
                 e->m_entity_data.m_pos = glm::vec3(v[3]);
                 auto valquat = glm::quat_cast(v);
-                glm::vec3 angles = glm::eulerAngles(valquat);
 
+                glm::vec3 angles = glm::eulerAngles(valquat);
+                angles.y += glm::pi<float>();
+                valquat = glm::quat(angles);
                 e->m_char->setName(npc_costume_name);
                 e->m_direction = valquat;
-                e->m_entity_data.m_orientation_pyr = {angles.x,glm::pi<float>()+angles.y,angles.z};
+                e->m_entity_data.m_orientation_pyr = {angles.x,angles.y,angles.z};
                 e->vel = { 0,0,0 };
             }
         }

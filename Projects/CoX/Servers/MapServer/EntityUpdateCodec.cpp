@@ -140,12 +140,8 @@ void storeOrientation(const Entity &src,BitStream &bs)
     storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
 
     qCDebug(logOrientation, "updates: %i",updates);
-    float pyr_angles[3];
-//    glm::vec3 vec = toCoH_YPR(src.m_direction);
-    glm::vec3 angles = glm::eulerAngles(src.m_direction);
-    pyr_angles[0] = angles.x;
-    pyr_angles[1] = glm::pi<float>() + angles.y;//src.m_entity_data.m_orientation_pyr.y; // set only yaw value
-    pyr_angles[2] = angles.z;
+    glm::vec3 pyr_angles(0);
+    pyr_angles.y = src.m_entity_data.m_orientation_pyr.y;
     // output everything
     qCDebug(logOrientation, "Player: %d", src.m_idx);
     qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
