@@ -14,7 +14,7 @@ void NpcGenerator::generate(MapInstance *map_instance)
     for(const glm::mat4 &v : initial_positions)
     {
         int idx = npc_store.npc_idx(npc_def);
-        Entity *e = map_instance->m_entities.CreateNpc(*npc_def, idx, 0);
+        Entity *e = map_instance->m_entities.CreateGeneric(*npc_def, idx, 0,type);
         e->m_entity_data.m_pos = glm::vec3(v[3]);
         auto valquat = glm::quat_cast(v);
 

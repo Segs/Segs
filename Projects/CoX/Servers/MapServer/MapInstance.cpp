@@ -109,7 +109,29 @@ void MapInstance::start(const QString &scenegraph_path)
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
-        m_npc_generators.m_generators["NPCDrones"] = {"Police_Drone",{}};
+        m_npc_generators.m_generators["NPCDrones"] = {"Police_Drone",EntType::NPC,{}};
+        for(int i=0; i<7; ++i)
+        {
+            QString right_whare=QString("Door_Right_Whare_0%1").arg(i);
+            m_npc_generators.m_generators[right_whare] = {right_whare, EntType::DOOR, {}};
+            QString left_whare=QString("Door_Left_Whare_0%1").arg(i);
+            m_npc_generators.m_generators[left_whare] = {left_whare,EntType::DOOR,{}};
+            QString left_city=QString("Door_Left_City_0%1").arg(i);
+            m_npc_generators.m_generators[left_city] = {left_city,EntType::DOOR,{}};
+            QString right_city=QString("Door_Right_City_0%1").arg(i);
+            m_npc_generators.m_generators[right_city] = {right_city,EntType::DOOR,{}};
+            QString right_store=QString("Door_Right_Store_0%1").arg(i);
+            m_npc_generators.m_generators[right_store] = {right_store,EntType::DOOR,{}};
+            QString left_store=QString("Door_Left_Store_0%1").arg(i);
+            m_npc_generators.m_generators[left_store] = {left_store,EntType::DOOR,{}};
+        }
+        m_npc_generators.m_generators["Door_reclpad"] = {"Door_reclpad",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_elevator"] = {"Door_elevator",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Left_Res_03"] = {"Door_Left_Res_03",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Right_Res_03"] = {"Door_Right_Res_03",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Right_Ind_01"] = {"Door_Right_Ind_01",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Left_Ind_01"] = {"Door_Left_Ind_01",EntType::DOOR,{}};
+
         bool scene_graph_loaded = false;
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;

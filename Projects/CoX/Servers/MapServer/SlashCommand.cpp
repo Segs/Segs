@@ -836,7 +836,9 @@ void cmdHandler_Stuck(QString &cmd, MapClientSession &sess)
     sess.m_ent->m_entity_data.m_pos = sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos);
 
     QString msg = QString("Resetting location to default spawn (%1,%2,%3)")
-                      .arg(sess.m_ent->m_entity_data.m_pos.x, sess.m_ent->m_entity_data.m_pos.y, sess.m_ent->m_entity_data.m_pos.z);
+                      .arg(sess.m_ent->m_entity_data.m_pos.x)
+                      .arg(sess.m_ent->m_entity_data.m_pos.y)
+                      .arg(sess.m_ent->m_entity_data.m_pos.z);
     qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, &sess);
 }

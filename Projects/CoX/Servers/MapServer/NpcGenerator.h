@@ -14,9 +14,11 @@
 
 #include <vector>
 
+enum class EntType : uint8_t;
 struct NpcGenerator
 {
     QString costume_name;
+    EntType type;
     std::vector<glm::mat4> initial_positions;
     void generate(class MapInstance *);
 };
