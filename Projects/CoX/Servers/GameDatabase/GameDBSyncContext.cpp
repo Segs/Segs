@@ -8,6 +8,8 @@
 /*!
  * @addtogroup GameDatabase Projects/CoX/Servers/GameDatabase
  * @{
+ *
+ * @image html dbschema/segs_game_dbschema.png
  */
 
 #include <memory>
