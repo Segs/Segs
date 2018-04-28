@@ -32,6 +32,17 @@ struct ExpectMapClientRequest;
 
 class MapLinkEndpoint;
 
+struct SpawningLocations {
+    QString m_mapname;
+    glm::vec3 m_starting_pos;
+};
+
+extern const std::vector<SpawningLocations> g_starting_spawns;
+
+// getSpawnLocation based upon g_starting_spawns
+// TODO: pull spawn location from map file, or lua script if available.
+glm::vec3 getSpawnLocation(const MapClientSession &sess);
+
 class MapInstance final : public EventProcessor
 {
         using SessionStore = ClientSessionStore<MapClientSession>;

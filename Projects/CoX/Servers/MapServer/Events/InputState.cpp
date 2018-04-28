@@ -82,7 +82,7 @@ void InputStateStorage::processDirectionControl(int dir,int prev_time,int press_
 {
     if(press_release)
     {
-        qCDebug(logInput, "pressed: %s", dir);
+        qCDebug(logInput, "pressed: %d", dir);
         switch(dir)
         {
             case 0: pos_delta[2] = 1.0f; break; //FORWARD

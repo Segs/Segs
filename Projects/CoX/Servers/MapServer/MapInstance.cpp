@@ -36,6 +36,7 @@
 #include "GameData/keybind_serializers.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
+#include "Settings.h"
 
 #include <ace/Reactor.h>
 
@@ -44,6 +45,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <glm/ext.hpp>
 #include <stdlib.h>
 
 namespace
@@ -89,6 +91,42 @@ protected:
     }
 };
 
+// Spawning Locations
+const std::vector<SpawningLocations> g_starting_spawns = {
+    {"Unknown",     {0.0f, 0.0f, 0.0f}},
+    {"City_00_01",  {-60.5f, 0.0f, 180.0f}},
+    {"City_01_01",  {128.0f, 16.0f, -198.0f}},
+};
+
+// getSpawnLocation based upon g_starting_spawns
+glm::vec3 getSpawnLocation(const MapClientSession &sess)
+{
+    // TODO: pull spawn location from map file, or lua script if available.
+    QString mapname = sess.m_current_map->name();
+    mapname = mapname.remove(QRegularExpression(".*/")); // regex wizardry: everything after last slash
+
+    auto iter = std::find_if( g_starting_spawns.begin(), g_starting_spawns.end(),
+                              [mapname](const SpawningLocations& locs)->bool {return mapname==locs.m_mapname;});
+
+    if(iter!=g_starting_spawns.end())
+    {
+        qCDebug(logSpawn).noquote() << QString("Searching starting location based upon mapname %1 returning (%2, %3, %4)")
+                .arg(mapname)
+                .arg(iter->m_starting_pos.x)
+                .arg(iter->m_starting_pos.y)
+                .arg(iter->m_starting_pos.z);
+
+        return iter->m_starting_pos;
+    }
+    else
+    {
+        qCDebug(logSpawn).noquote() << "No starting spawn location found for" << mapname
+                          << "spawning at (0.0, 0.0, 0.0)";
+
+        return g_starting_spawns.at(0).m_starting_pos; // unknown pos 0,0,0
+    }
+}
+
 using namespace std;
 MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr)
     : m_data_path(mapdir_path), m_world_update_timer(nullptr), m_addresses(listen_addr)
@@ -123,7 +161,6 @@ void MapInstance::start()
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
     m_link_timer.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
-    qInfo() << "Server running... awaiting client connections."; // best place for this?
 }
 
 ///
@@ -472,14 +509,14 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     uint32_t cookie = 0; // name in use
     // fill the session with data, this will get discarded if the name is already in use...
     MapClientSession &map_session(*m_session_store.create_or_reuse_session_for(ev->session_token()));
-    map_session.m_name        = request_data.m_character_name;
+    map_session.m_name          = request_data.m_character_name;
     // TODO: this code is wrong on the logical level
-    map_session.m_current_map = this;
-    map_session.m_max_slots   = request_data.m_max_slots;
-    map_session.m_access_level = request_data.m_access_level;
-    map_session.m_client_id    = request_data.m_client_id;
+    map_session.m_current_map   = this;
+    map_session.m_max_slots     = request_data.m_max_slots;
+    map_session.m_access_level  = request_data.m_access_level;
+    map_session.m_client_id     = request_data.m_client_id;
 
-    cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
+    cookie                      = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
     if (!request_data.char_from_db)
     {
@@ -537,7 +574,11 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
     if (logSpawn().isDebugEnabled())
+    {
+        qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
         map_session.m_ent->dump();
+    }
+
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
     tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
@@ -574,6 +615,14 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         map_session.m_ent = e;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
+
+        // New Character Spawn Location
+        e->m_entity_data.m_pos  = getSpawnLocation(map_session);
+        e->m_direction          = glm::quat(1.0f,0.0f,0.0f,0.0f);
+
+        qCDebug(logSpawn) << "spawning:" << glm::to_string(e->m_entity_data.m_pos).c_str()
+                          << "\nfacing:" << glm::to_string(e->m_direction).c_str();
+
         GameAccountResponseCharacterData char_data;
         fromActualCharacter(*e->m_char,*e->m_player,char_data);
         serializeToDb(e->m_entity_data,ent_data);
