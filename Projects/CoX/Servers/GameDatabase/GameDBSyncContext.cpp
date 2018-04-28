@@ -9,7 +9,7 @@
  * @addtogroup GameDatabase Projects/CoX/Servers/GameDatabase
  * @{
  *
- * @image dbschema/segs_game_dbschema.png
+ * @image html dbschema/segs_game_dbschema.png
  */
 
 #include <memory>

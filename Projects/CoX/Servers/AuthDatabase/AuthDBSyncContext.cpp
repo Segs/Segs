@@ -27,7 +27,7 @@
 
 namespace
 {
-    //! @image dbschema/segs_dbschema.png
+    //! @image html dbschema/segs_dbschema.png
     bool GetAccount(RetrieveAccountResponseData &client, QSqlQuery &results)
     {
         if (!results.next()) // TODO: handle case of multiple accounts with same name ?
