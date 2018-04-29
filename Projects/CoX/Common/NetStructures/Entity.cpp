@@ -87,13 +87,6 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const ColorAndPartPacke
     e.m_direction                         = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 
-void Entity::InsertUpdate( PosUpdate pup )
-{
-    m_update_idx++;
-    m_update_idx %=64;
-    m_pos_updates[m_update_idx]=pup;
-}
-
 const QString &Entity::name() const {
     return m_char->getName();
 }

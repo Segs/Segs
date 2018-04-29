@@ -373,9 +373,9 @@ int main(int argc, char **argv)
     if(positionalArguments.size()<1 || !known_commands.contains(positionalArguments.first()))
     {
         if(positionalArguments.size()>=1)
-            qDebug()<<"Unkown command"<<positionalArguments.first();
+            qWarning()<<"Unkown command"<<positionalArguments.first();
         else
-            qDebug()<<"Command is required";
+            qWarning()<<"Command is required";
         parser.showHelp(1);
     }
     
@@ -396,7 +396,7 @@ int main(int argc, char **argv)
             QDir default_dbs_dir(QDir::currentPath() + "/default_dbs");
             if(!default_dbs_dir.exists())
             {
-                qDebug() << "SEGS dbtool must be run from the SEGS root folder "
+                qWarning() << "SEGS dbtool must be run from the SEGS root folder "
                          << "(where the default_dbs directory resides)";
                 Pause();
                 return 0;

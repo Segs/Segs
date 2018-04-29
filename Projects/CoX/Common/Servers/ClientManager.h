@@ -58,7 +58,7 @@ mutable std::mutex m_store_mutex;
         uint32_t create_cookie(const ACE_INET_Addr &from,uint64_t id)
         {
                 uint64_t res = ((from.hash()+id)&0xFFFFFFFF)^(id>>32);
-                ACE_DEBUG ((LM_WARNING,ACE_TEXT ("(%P|%t) create_cookie still needs a good algorithm.0x%08x\n"),res));
+                qWarning("Create_cookie still needs a good algorithm. 0x%08x", res);
                 return (uint32_t)res;
         }
 

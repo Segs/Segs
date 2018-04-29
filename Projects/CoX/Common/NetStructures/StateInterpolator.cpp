@@ -28,29 +28,41 @@
 using namespace glm;
 
 #pragma pack(push, 1)
-struct bintree_in {
-    int16_t x=0,y=0,z=0;
-    uint8_t has_height :1;
-    uint8_t has_other  :1;
-};
+
 #pragma pack(pop)
 
-//struct Entity {
-//    PosUpdatePair m_pos_updates[64];
-//    int pos_up_tgt=0;
-//    std::vector<PosUpdatePair> interpResults;
-//    void addPosUpdate(const PosUpdatePair &p) {
-//        pos_up_tgt = (pos_up_tgt+1) % 64;
-//        m_pos_updates[pos_up_tgt] = p;
-//    }
-//    void addInterp(const PosUpdatePair &p) {
-//        interpResults.emplace_back(p);
-//    }
-//};
+// struct Entity
+// {
+//     PosUpdatePair m_pos_updates[64];
+//     int pos_up_tgt = 0;
+//     std::vector<PosUpdatePair> interpResults;
+//     void addPosUpdate(const PosUpdatePair &p)
+//     {
+//         pos_up_tgt = (pos_up_tgt+1) % 64;
+//         m_pos_updates[pos_up_tgt] = p;
+//     }
+//     void addInterp(const PosUpdatePair &p)
+//         interpResults.emplace_back(p);
+// };
+
 // Narayana's cows sequence  in use here, why though ?
 // Likely a typo in original code, and fibbonacci was meant to be used ?
 // a(0) = a(1) = a(2) = 1; thereafter a(n) = a(n-1) + a(n-3).
 static float s_coding_sequence[131] ={1,1,1};
+
+// enc values are put in tree order 3, 1, 5, 0, 2, 4, 6
+static const uint8_t s_enc_level[7]= {0, 1, 1, 2, 2, 2, 2};
+static const int s_breadth_first_order[] = {3, 1, 5, 0, 2, 4, 6, 7, 8};
+static const std::pair<uint8_t,uint8_t> s_source_val_idx[] = {
+    {0,8}, // Start and End elements
+    {0,4}, // Start and middle point
+    {4,8}, // Middle and End ...
+    {0,2},{2,4},{4,6},{6,8}
+};
+
+bool        g_interpolating         = true;
+uint8_t     g_interpolation_level   = 2;
+uint8_t     g_interpolation_bits    = 1;
 
 static void buildErrorTable() {
     static bool dword_769AD4=false;
@@ -103,100 +115,88 @@ static int16_t encodePerturbation(float error_val,float &value,int level) {
 // V(2) = V(1) + V(3) / 2  + perturb(4) * 4
 // V(4) = V(3) + V(5) / 2  + perturb(5) * 4
 // V(6) = V(5) + V(8) / 2  + perturb(6) * 4
-void interpolate_pos_updates(Entity *a1, std::array<bintree_in,7> &a2)
+void interpolate_pos_updates(Entity *e, std::array<BinTreeEntry,7> &server_pos_update)
 {
-    PosUpdate *current_pos_update;
-    float lerp_factor;
-    unsigned int v11;
-    vec3 midpoint;
-    bool v17[7];
-    int prev_timestamp;
-    PosUpdate prev_update;
-    vec3 v21[9];
-    PosUpdate current;
-    int num_interpolation_coeffs;
+    PosUpdate   prev_pos;
+    PosUpdate   cur_pos;
+    PosUpdate   *cur_pos_update;
+    vec3        pos_update_arr[9];
+    vec3        midpoint;
+    float       lerp_factor;
+    uint32_t    dt;
+    bool        needs_update[7];
+    int         prev_timestamp;
+    int         num_interp_coeffs = 0;
 
-    static const int breadth_first_order[] = {3, 1, 5, 0, 2, 4, 6, 7, 8};
-    static const std::pair<int,int> s_source_idx_0[] = {{7,8},{7,0},{0,8},{7,1},{1,0},{0,2},{2,8}};
-    static const uint8_t byte_680958[7]= {0, 1, 1, 2, 2, 2, 2};
+    cur_pos             = e->m_pos_updates[e->m_update_idx];
+    prev_pos            = e->m_pos_updates[(e->m_update_idx + -1 + 64) % 64];
+    prev_timestamp      = prev_pos.m_timestamp;
+    pos_update_arr[7]   = prev_pos.m_position;
+    pos_update_arr[8]   = cur_pos.m_position;
 
-    current = a1->m_pos_updates[a1->m_update_idx];
-    prev_update = a1->m_pos_updates[(a1->m_update_idx + -1 + 64) % 64];
-    prev_timestamp = prev_update.m_timestamp;
-    num_interpolation_coeffs = 0;
-    v21[7] = prev_update.posvec;
-    v21[8] = current.posvec;
     for (uint8_t i = 0; i < 7; ++i )
     {
-        if ( a2[i].has_height || a2[i].has_other)
+        if ( server_pos_update[i].m_has_height || server_pos_update[i].m_has_other)
         {
-            midpoint = (v21[breadth_first_order[s_source_idx_0[i].first]] + v21[breadth_first_order[s_source_idx_0[i].second]]) * 0.5f;
-            const int level = byte_680958[i];
-            if ( a2[i].has_height )
-                midpoint.y += get_interpolator_perturbation(a2[i].y,level);
-            if ( a2[i].has_other )
+            midpoint = (pos_update_arr[s_breadth_first_order[s_source_val_idx[i].first]] + pos_update_arr[s_breadth_first_order[s_source_val_idx[i].second]]) * 0.5f;
+            const int level = s_enc_level[i];
+            if ( server_pos_update[i].m_has_height )
+                midpoint.y += get_interpolator_perturbation(server_pos_update[i].y,level);
+            if ( server_pos_update[i].m_has_other )
             {
-                midpoint.x += get_interpolator_perturbation(a2[i].x,level);
-                midpoint.z += get_interpolator_perturbation(a2[i].z,level);
+                midpoint.x += get_interpolator_perturbation(server_pos_update[i].x,level);
+                midpoint.z += get_interpolator_perturbation(server_pos_update[i].z,level);
             }
-            v21[breadth_first_order[i]] = midpoint;
-            v17[breadth_first_order[i]] = true;
-            ++num_interpolation_coeffs;
+            pos_update_arr[s_breadth_first_order[i]] = midpoint;
+            needs_update[s_breadth_first_order[i]] = true;
+            ++num_interp_coeffs;
         }
         else
-        {
-            v17[breadth_first_order[i]] = false;
-        }
+            needs_update[s_breadth_first_order[i]] = false;
     }
-    a1->addInterp(prev_update);
-    if ( num_interpolation_coeffs )
+    e->addInterp(prev_pos);
+    if ( num_interp_coeffs )
     {
-        v11 = current.m_timestamp - prev_timestamp;
+        dt = cur_pos.m_timestamp - prev_timestamp;
         // interpolate into upto 8 updates
         for (int i = 0; i < 7; ++i )
         {
-            if ( v17[i] )
+            if ( needs_update[i] )
             {
                 lerp_factor = (float)(i + 1) / 8.0f;
                 PosUpdate step;
-                current_pos_update = &step;
-                current_pos_update->m_timestamp = prev_timestamp + (v11 * (i + 1) / 8);
-                current_pos_update->posvec = v21[i];
+                cur_pos_update = &step;
+                cur_pos_update->m_timestamp = prev_timestamp + (dt * (i + 1) / 8);
+                cur_pos_update->m_position = pos_update_arr[i];
                 for (int j = 0; j < 3; ++j )
                 {
-                    current_pos_update->PitchYawRoll[j] = prev_update.PitchYawRoll[j].lerp(current.PitchYawRoll[j],lerp_factor);
+                    cur_pos_update->m_pyr_angles[j] = prev_pos.m_pyr_angles[j].lerp(cur_pos.m_pyr_angles[j],lerp_factor);
                 }
-                a1->addInterp(step);
+                e->addInterp(step);
             }
         }
     }
-    a1->addInterp(current);
+    e->addInterp(cur_pos);
 }
 
 // Take a set of PositionUpdates S . . . . . . . E
 // Assume client will use linear interpolation for in-between values.
 // Encode fixups for in-between values
 // FixMe?: Pass std::array<PosUpdate,9> by reference instead of value given its size.
-std::array<bintree_in,7> testEncVec(std::array<PosUpdate,9> vals,float min_error)
+std::array<BinTreeEntry,7> testEncVec(std::array<PosUpdate,9> &vals, float min_error)
 {
-    std::array<bintree_in,7> enc;
-    std::array<PosUpdate,9> work_area=vals;
-    static const std::pair<uint8_t,uint8_t> src_val_idx[] = {
-        {0,8}, // Start and End elements
-        {0,4}, // Start and middle point
-        {4,8}, // Middle and End ...
-        {0,2},{2,4},{4,6},{6,8}
-    };
-    // enc values are put in tree order 3, 1, 5, 0, 2, 4, 6
-    static const uint8_t enc_level[7]= {0, 1, 1, 2, 2, 2, 2};
-    for(int i=0; i<7; ++i) {
+    std::array<BinTreeEntry,7> enc;
+    std::array<PosUpdate,9> work_area = vals;
+
+    for(int i=0; i<7; ++i)
+    {
         vec3 quant_delta; // quantized error values will be put here
         // linear interpolation between value's sources
-        vec3 predicted = (work_area[src_val_idx[i].first].posvec+work_area[src_val_idx[i].second].posvec)/2.0f;
+        vec3 predicted = (work_area[s_source_val_idx[i].first].m_position+work_area[s_source_val_idx[i].second].m_position)/2.0f;
         // location of calculated value in the array
-        uint8_t target_idx = (src_val_idx[i].first + src_val_idx[i].second)/2;
+        uint8_t target_idx = (s_source_val_idx[i].first + s_source_val_idx[i].second)/2;
         // linear interpolation will be wrong by 'this' much
-        vec3 error_val = work_area[target_idx].posvec - predicted;
+        vec3 error_val = work_area[target_idx].m_position - predicted;
         // if the error is small enough, setting it to 0 will cause encodePerturbation to return 0 -> mark value as not-sent
         if(std::abs(error_val.x)<min_error)
             error_val.x=0;
@@ -204,11 +204,11 @@ std::array<bintree_in,7> testEncVec(std::array<PosUpdate,9> vals,float min_error
             error_val.y=0;
         if(std::abs(error_val.z)<min_error)
             error_val.z=0;
-        enc[i].x = encodePerturbation(error_val.x,quant_delta.x,enc_level[i]);
-        enc[i].y = encodePerturbation(error_val.y,quant_delta.y,enc_level[i]);
-        enc[i].z = encodePerturbation(error_val.z,quant_delta.z,enc_level[i]);
+        enc[i].x = encodePerturbation(error_val.x, quant_delta.x, s_enc_level[i]);
+        enc[i].y = encodePerturbation(error_val.y, quant_delta.y, s_enc_level[i]);
+        enc[i].z = encodePerturbation(error_val.z, quant_delta.z, s_enc_level[i]);
         // update the work area value with actual value we'll have after decoding
-        work_area[target_idx].posvec = predicted + quant_delta;
+        work_area[target_idx].m_position = predicted + quant_delta;
     }
     /////////////////////////////////////////////
     // Enc X means Encoding for Value error at index X
@@ -230,7 +230,7 @@ std::array<bintree_in,7> testEncVec(std::array<PosUpdate,9> vals,float min_error
     //3, 1, 5, 0, 2, 4, 6
     int required_value_order[] = {2,2,1,1,0,0,0};
     for(int to_check=enc.size()-1; to_check>0; --to_check) {
-        bintree_in &checked_parent(enc[required_value_order[to_check]]);
+        BinTreeEntry &checked_parent(enc[required_value_order[to_check]]);
         if(enc[to_check].x && !checked_parent.x) {
             checked_parent.x=1;
         }
@@ -242,23 +242,89 @@ std::array<bintree_in,7> testEncVec(std::array<PosUpdate,9> vals,float min_error
         }
     }
     // mark
-    for(bintree_in & v : enc) {
-        v.has_height = v.y!=0;
-        v.has_other = v.x!=0 || v.z!=0;
+    for(BinTreeEntry & v : enc) {
+        v.m_has_height = v.y!=0;
+        v.m_has_other = v.x!=0 || v.z!=0;
     }
     return enc;
 }
 
-int runTest()
+int storeBinTreesResult(BitStream &bs,const std::array<BinTreeEntry,7> &bintree)
 {
-    std::array<Entity,10240> entities;
+    // this least means that midpoint ( idx 0 ) depends on midpoint, but that's check with idx==0
+    // then checking S - * - M - - - E   (idx 1)  depends on actual midpoint, and we check it
+    // then checking S - - - M - * - E   (idx 2)  same as above
+    // then checking S * - - M - - - E   (idx 3)  checking that we had SM/2 midpoint
+    // then checking S * - - M - - - E   (idx 4)  checking that we had SM/2 midpoint
+    // ...
+    static const uint8_t dependency_indices[] = {0,0,0,1,1,2,2};
+    static const uint8_t tree_depth_bits_mod[8] = { 1,2,2,3,3,3,3 };
+    char num_bits;
+    int val_sign;
+    char base_bitcount;
+    int res=0;
+    std::array<BinTreeEntry,7> tree_copy = bintree;
+    base_bitcount = g_interpolation_bits + 5;
+
+    if (tree_copy[0].m_has_height && tree_copy[0].m_has_other)
+        bs.StoreBits(1,1); // we have both values
+    else
+        bs.StoreBits(1,tree_copy[0].m_has_height); // otherwise it is assumed that has_other is true
+
+    for (int idx = 0; idx < 7; ++idx )
+    {
+        if ( (idx && !tree_copy[dependency_indices[idx]].m_has_height) || tree_depth_bits_mod[idx] > g_interpolation_level )
+            tree_copy[idx].m_has_height = 0; // mark dependency as missing
+        else
+        {
+            if ( idx )
+                bs.StoreBits(1, tree_copy[idx].m_has_height);
+
+            if ( tree_copy[idx].m_has_height )
+            {
+                num_bits = base_bitcount - tree_depth_bits_mod[idx];
+                res = 1;
+                bs.StoreBits(1,tree_copy[idx].y<0);
+                bs.StoreBits(num_bits,std::abs(tree_copy[idx].y));
+            }
+        }
+    }
+
+    for (int idx = 0; idx < 7; ++idx )
+    {
+        // check if the 'source' value for the one located at idx has xz values,
+        if ( (idx && !tree_copy[dependency_indices[idx]].m_has_other) || tree_depth_bits_mod[idx] > g_interpolation_level )
+            tree_copy[idx].m_has_other = false;
+        else
+        {
+            if ( idx )
+                bs.StoreBits(1, tree_copy[idx].m_has_other);
+
+            if ( tree_copy[idx].m_has_other )
+            {
+                num_bits = base_bitcount - tree_depth_bits_mod[idx];
+                res = 1;
+                bs.StoreBits(1,tree_copy[idx].x<0);
+                bs.StoreBits(num_bits,std::abs(tree_copy[idx].x));
+                bs.StoreBits(1,tree_copy[idx].z<0);
+                bs.StoreBits(num_bits,std::abs(tree_copy[idx].z));
+            }
+        }
+    }
+
+    return res;
+}
+
+int runTest(Entity &e)
+{
     // Linear move from 0 to 2, over 10 time units
-    std::array<bintree_in,7> tgt;
+    std::array<BinTreeEntry,7> tgt;
     std::array<PosUpdate,9> pos_vals;
     int t=0;
     int t_start=1100;
+
     for(PosUpdate &puv : pos_vals) {
-        puv.posvec = {
+        puv.m_position = {
             std::sin(float(M_PI/12)*t)*10,
             std::sin(float(M_PI/22)*t)*10,
             std::sin(float(M_PI/8)*t)*10
@@ -266,15 +332,19 @@ int runTest()
         puv.m_timestamp = t_start+t*10;
         t++;
     }
-    tgt=testEncVec( pos_vals,0.02f );
-    entities.front().interpResults.clear();
+
+    tgt = testEncVec(pos_vals, 0.02f);
+
+    e.interpResults.clear();
     // add start and end to prime interpolator.
-    entities.front().addPosUpdate(pos_vals.front());
-    entities.front().addPosUpdate(pos_vals.back());
-    interpolate_pos_updates(&entities.front(),tgt);
+    e.addPosUpdate(pos_vals.front());
+    e.addPosUpdate(pos_vals.back());
+
+    interpolate_pos_updates(&e,tgt);
+
     vec3 errsum;
     for(int i=0; i<9; ++i) {
-        errsum +=  glm::abs(entities.front().interpResults[i].posvec-pos_vals[i].posvec);
+        errsum +=  glm::abs(e.interpResults[i].m_position-pos_vals[i].m_position);
     }
     errsum = errsum/9.0f;
     printf("After transition - L1 error is %f %f %f\n",errsum.x,errsum.y,errsum.z);
