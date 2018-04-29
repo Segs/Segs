@@ -44,10 +44,10 @@ void    setSuperGroup(Entity &e, int sg_id = 0, QString sg_name = "", uint32_t s
 void    setAssistTarget(Entity &e);
 
 // For live debugging
-void    setu3(Entity &e, int val);
+void    setu1(Entity &e, int val);
 
 // Toggles
-void    toggleFly(Entity &e);
+void    toggleFlying(Entity &e);
 void    toggleFalling(Entity &e);
 void    toggleJumping(Entity &e);
 void    toggleSliding(Entity &e);
@@ -56,6 +56,8 @@ void    toggleJumppack(Entity &e);
 void    toggleControlsDisabled(Entity &e);
 void    toggleFullUpdate(Entity &e);
 void    toggleControlId(Entity &e);
+void    toggleExtraInfo(Entity &e);
+void    toggleMoveInstantly(Entity &e);
 
 // Misc Methods
 void    charUpdateDB(Entity *e);

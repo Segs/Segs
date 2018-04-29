@@ -35,8 +35,8 @@ public:
         uint32_t    abs_time=0;
         uint32_t    db_time=0;
         uint16_t    m_debug_idx;
-        uint8_t     m_interpolation_level;
-        uint8_t     m_interpolation_bits;
+        uint8_t     g_interpolation_level;
+        uint8_t     g_interpolation_bits;
         uint32_t    m_command_idx[15];
         std::string m_commands[15];
         uint32_t    m_num_commands2;

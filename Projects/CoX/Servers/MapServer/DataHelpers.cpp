@@ -103,9 +103,10 @@ void    setSuperGroup(Entity &e, int sg_id, QString sg_name, uint32_t sg_rank)
 void    setAssistTarget(Entity &e) { e.m_target_idx = getAssistTargetIdx(e); }
 
 // For live debugging
-void    setu3(Entity &e, int val) { e.u3 = val; }
+void    setu1(Entity &e, int val) { e.u1 = val; }
+
 // Toggles
-void    toggleFly(Entity &e) { e.m_is_flying = !e.m_is_flying; }
+void    toggleFlying(Entity &e) { e.m_is_flying = !e.m_is_flying; }
 void    toggleFalling(Entity &e) { e.m_is_falling = !e.m_is_falling; }
 void    toggleJumping(Entity &e) { e.m_is_jumping = !e.m_is_jumping; }
 void    toggleSliding(Entity &e) { e.m_is_sliding = !e.m_is_sliding; }
@@ -125,6 +126,8 @@ void toggleJumppack(Entity &e)
 void    toggleControlsDisabled(Entity &e) { e.m_controls_disabled = !e.m_controls_disabled; }
 void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
 void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
+void    toggleExtraInfo(Entity &e) { e.m_extra_info = !e.m_extra_info; }
+void    toggleMoveInstantly(Entity &e) { e.m_move_instantly = !e.m_move_instantly; }
 
 // Misc Methods
 void charUpdateDB(Entity *e)

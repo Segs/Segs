@@ -35,7 +35,7 @@ static const constexpr  uint32_t    class_version       = 3;
                         uint32_t    m_experience_debt   = 0;
                         uint32_t    m_experience_patrol = 0; // planned future use
                         uint32_t    m_influence         = 0;
-                        bool        m_has_titles;
+                        bool        m_has_titles        = false;
                         bool        m_has_the_prefix    = false;
                         QString     m_titles[3];             // Generic, Origin, Special
                         QString     m_battle_cry;

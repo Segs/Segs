@@ -28,6 +28,7 @@ SEGS_LOGGING_CATEGORY(logTeams,        "log.teams")
 SEGS_LOGGING_CATEGORY(logDB,           "log.db")
 SEGS_LOGGING_CATEGORY(logInput,        "log.input")
 SEGS_LOGGING_CATEGORY(logOrientation,  "log.orientation")
+SEGS_LOGGING_CATEGORY(logPosition,     "log.position")
 SEGS_LOGGING_CATEGORY(logChat,         "log.chat")
 SEGS_LOGGING_CATEGORY(logInfoMsg,      "log.infomsg")
 SEGS_LOGGING_CATEGORY(logEmotes,       "log.emotes")
@@ -39,6 +40,8 @@ SEGS_LOGGING_CATEGORY(logDescription,  "log.description")
 SEGS_LOGGING_CATEGORY(logFriends,      "log.friends")
 SEGS_LOGGING_CATEGORY(logMiniMap,      "log.minimap")
 SEGS_LOGGING_CATEGORY(logLFG,          "log.lfg")
+SEGS_LOGGING_CATEGORY(logNPCs,         "log.npcs")
+SEGS_LOGGING_CATEGORY(logAnimations,         "log.animations")
 
 void setLoggingFilter()
 {
@@ -53,6 +56,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.teams="          + config.value("log_teams","false").toString();
     filter_rules += "\nlog.db="             + config.value("log_db","false").toString();
     filter_rules += "\nlog.input="          + config.value("log_input","false").toString();
+    filter_rules += "\nlog.position="       + config.value("log_position","false").toString();
     filter_rules += "\nlog.orientation="    + config.value("log_orientation","false").toString();
     filter_rules += "\nlog.chat="           + config.value("log_chat","false").toString();
     filter_rules += "\nlog.infomsg="        + config.value("log_infomsg","false").toString();
@@ -65,6 +69,8 @@ void setLoggingFilter()
     filter_rules += "\nlog.friends="        + config.value("log_friends","false").toString();
     filter_rules += "\nlog.minimap="        + config.value("log_minimap","false").toString();
     filter_rules += "\nlog.lfg="            + config.value("log_lfg","false").toString();
+    filter_rules += "\nlog.npcs="           + config.value("log_npcs","false").toString();
+    filter_rules += "\nlog.animations="     + config.value("log_animations","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -93,6 +99,8 @@ void toggleLogging(QString &category)
         cat = &logDB();
     else if(category.contains("input",Qt::CaseInsensitive))
         cat = &logInput();
+    else if(category.contains("position",Qt::CaseInsensitive))
+        cat = &logPosition();
     else if(category.contains("orentation",Qt::CaseInsensitive))
         cat = &logOrientation();
     else if(category.contains("chat",Qt::CaseInsensitive))
@@ -116,7 +124,11 @@ void toggleLogging(QString &category)
     else if(category.contains("minimap",Qt::CaseInsensitive))
         cat = &logMiniMap();
     else if(category.contains("lfg",Qt::CaseInsensitive))
-        cat = &logMiniMap();
+        cat = &logLFG();
+    else if(category.contains("npcs",Qt::CaseInsensitive))
+        cat = &logNPCs();
+    else if(category.contains("animations",Qt::CaseInsensitive))
+        cat = &logAnimations();
     else
         return;
 
@@ -131,13 +143,14 @@ void toggleLogging(QString &category)
 void dumpLogging()
 {
     QString output = "Current Logging Categories:";
-    output += "\n\t logging: "     + QString::number(logLogging().isDebugEnabled());
+    output += "\n\t logging: "      + QString::number(logLogging().isDebugEnabled());
     output += "\n\t keybinds: "     + QString::number(logKeybinds().isDebugEnabled());
     output += "\n\t settings: "     + QString::number(logSettings().isDebugEnabled());
     output += "\n\t gui: "          + QString::number(logGUI().isDebugEnabled());
     output += "\n\t teams: "        + QString::number(logTeams().isDebugEnabled());
     output += "\n\t db: "           + QString::number(logDB().isDebugEnabled());
     output += "\n\t input: "        + QString::number(logInput().isDebugEnabled());
+    output += "\n\t position: "     + QString::number(logLFG().isDebugEnabled());
     output += "\n\t orientation: "  + QString::number(logOrientation().isDebugEnabled());
     output += "\n\t chat: "         + QString::number(logChat().isDebugEnabled());
     output += "\n\t infomsg: "      + QString::number(logInfoMsg().isDebugEnabled());
@@ -150,6 +163,8 @@ void dumpLogging()
     output += "\n\t friends: "      + QString::number(logFriends().isDebugEnabled());
     output += "\n\t minimap: "      + QString::number(logMiniMap().isDebugEnabled());
     output += "\n\t lfg: "          + QString::number(logLFG().isDebugEnabled());
+    output += "\n\t npcs: "         + QString::number(logNPCs().isDebugEnabled());
+    output += "\n\t animations: "   + QString::number(logAnimations().isDebugEnabled());
 
     qDebug().noquote() << output;
 }
