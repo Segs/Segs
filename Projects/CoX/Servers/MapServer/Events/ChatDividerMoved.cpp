@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapServerEvents Projects/CoX/Servers/MapServer/Events
+ * @{
+ */
+
 #include "ChatDividerMoved.h"
 
 void ChatDividerMoved::serializefrom(BitStream &src)
@@ -10,3 +22,5 @@ void ChatDividerMoved::serializeto(BitStream &tgt) const
     tgt.StorePackedBits(1,36);
     tgt.StoreFloat(m_position);
 }
+
+//! @}

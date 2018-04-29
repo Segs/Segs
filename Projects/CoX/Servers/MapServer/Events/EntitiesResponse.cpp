@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapServerEvents Projects/CoX/Servers/MapServer/Events
+ * @{
+ */
+
 #include "EntitiesResponse.h"
 
 #include "NetStructures/Powers.h"
@@ -30,6 +42,7 @@ void storeSuperStats(const EntitiesResponse &/*src*/,BitStream &bs)
 {
     bs.StorePackedBits(1,0);
 }
+
 void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
 {
     // FixMe: num_graph_nodes_changed is initialized and never modified afterward, so the if/else is never reached.
@@ -59,6 +72,7 @@ void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
         bs.StoreBitArray((const uint8_t *)ba.constData(),8*ba.size());
     }
 }
+
 void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 {
     Entity *e = src.m_client->m_ent;
@@ -116,6 +130,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
         }
     }
 }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Start of PlayerData network serialization
 //                GUI
@@ -147,6 +162,7 @@ static void sendWindow(BitStream &bs,const GUIWindow &wnd)
         bs.StorePackedBits(1,wnd.m_height);
     }
 }
+
 static void sendWindows(const GUISettings &gui, BitStream &bs )
 {
     for(uint32_t i=0; i<35; i++)
@@ -155,10 +171,12 @@ static void sendWindows(const GUISettings &gui, BitStream &bs )
         sendWindow(bs, gui.m_wnds.at(i));
     }
 }
+
 static void sendTeamBuffMode(const GUISettings &gui,BitStream &bs)
 {
     bs.StoreBits(1,gui.m_team_buffs);
 }
+
 static void sendDockMode(const GUISettings &gui,BitStream &bs)
 {
     bs.StoreBits(32,gui.m_tray1_number); // Tray #1 Page
@@ -169,9 +187,9 @@ static void sendTrayMode(const GUISettings &gui, BitStream &bs)
 {
     bs.StoreBits(1,gui.m_powers_tray_mode);
 }
+
 //////////////////////////////
 //                Keybinds
-
 static void sendKeybinds(const KeybindSettings &keybinds,BitStream &bs)
 {
     const CurrentKeybinds &cur_keybinds = keybinds.getCurrentKeybinds();
@@ -209,6 +227,7 @@ static void sendKeybinds(const KeybindSettings &keybinds,BitStream &bs)
       }
     }
 }
+
 static void sendOptionsFull(const ClientOptions &options,BitStream &bs)
 {
     bs.StoreFloat(options.m_mouse_speed);
@@ -232,6 +251,7 @@ static void sendOptionsFull(const ClientOptions &options,BitStream &bs)
 
     bs.StorePackedBits(5,options.m_chat_font_size); // value only used on client if >=5
 }
+
 static void sendOptions(const ClientOptions &options, bool send_full, BitStream &bs )
 {
     bs.StoreBits(1,send_full);
@@ -307,11 +327,13 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     PUTDEBUG("before friend list");
     player_char.sendFriendList(bs);
 }
+
 void storePowerSpec(uint32_t powerset_idx,uint32_t power_idx,BitStream &bs)
 {
     bs.StorePackedBits(2,powerset_idx);
     bs.StorePackedBits(1,power_idx);
 }
+
 void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
 {
     bool power_info_updates_available=false; // FixMe: power_info_updates_available is never modified during execution.
@@ -430,6 +452,7 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
         assert(false);
     }
 }
+
 void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
     // user entity
@@ -480,6 +503,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         ent->m_force_pos_and_cam = false; // run once
     }
 }
+
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
 {
     Entity * target = src.m_client->m_ent;
@@ -505,6 +529,7 @@ void sendControlState(const EntitiesResponse &src,BitStream &bs)
 {
     sendServerControlState(src,bs);
 }
+
 void sendCommands(const EntitiesResponse &src,BitStream &tgt)
 {
     tgt.StorePackedBits(1,1); // use 'time' shortcut
@@ -515,6 +540,7 @@ void sendCommands(const EntitiesResponse &src,BitStream &tgt)
     tgt.StoreFloat(2.0f);
     tgt.StorePackedBits(1,0);
 }
+
 void sendClientData(const EntitiesResponse &src,BitStream &bs)
 {
     Entity *ent=src.m_client->m_ent;
@@ -545,6 +571,7 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
     }
 }
 }
+
 //! EntitiesResponse is sent to a client to inform it about the current world state.
 EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
     MapLinkEvent(MapEventTypes::evEntitites)
@@ -555,6 +582,7 @@ EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
     m_interpolation_bits=1;
     //m_interpolation_level
 }
+
 void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
     MapInstance *mi = m_client->m_current_map;
@@ -600,3 +628,5 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
         command->serializeto(tgt);
     tgt.StorePackedBits(1,0); // finalize the command list
 }
+
+//! @}

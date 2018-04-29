@@ -1,10 +1,8 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
-
  */
 
 #pragma once
@@ -49,6 +47,5 @@ private:
         QString                 m_serverName;
         ACE_INET_Addr           m_base_location; //! this is the base map instance address
         ACE_INET_Addr           m_base_listen_point; //! this is used as a base map listening endpoint
-        MapInstance *           m_handler = nullptr;
 };
 extern MapServer *g_GlobalMapServer;

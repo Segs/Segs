@@ -1,11 +1,15 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
-
  */
+
+/*!
+ * @addtogroup AuthServer Projects/CoX/Servers/AuthServer
+ * @{
+ */
+
 //#define ACE_NTRACE 0
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
@@ -43,6 +47,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QElapsedTimer>
 #include <thread>
+#include <chrono>
 #include <mutex>
 #include <stdlib.h>
 #include <memory>
@@ -54,6 +59,7 @@ static std::unique_ptr<AuthServer> g_auth_server; // this is a global for now.
 static std::unique_ptr<GameServer> g_game_server;
 static std::unique_ptr<MapServer> g_map_server;
 static std::unique_ptr<MessageBus> g_message_bus;
+
 struct MessageBusMonitor : public EventProcessor
 {
     MessageBusEndpoint m_endpoint;
@@ -79,7 +85,9 @@ public:
 private:
     void on_service_status(ServiceStatusMessage *msg);
 };
+
 static std::unique_ptr<MessageBusMonitor> s_bus_monitor;
+
 static void shutDownServers(const char *reason)
 {
     qDebug() << "Reason for shutdown: " << reason;
@@ -111,6 +119,7 @@ static void shutDownServers(const char *reason)
 
     s_event_loop_is_done = true;
 }
+
 void MessageBusMonitor::on_service_status(ServiceStatusMessage *msg)
 {
     if (msg->m_data.status_value != 0)
@@ -121,6 +130,7 @@ void MessageBusMonitor::on_service_status(ServiceStatusMessage *msg)
     else
         qInfo().noquote() << msg->m_data.status_message;
 }
+
 // this event stops main processing loop of the whole server
 class ServerStopper : public ACE_Event_Handler
 {
@@ -136,6 +146,7 @@ public:
         return 0;
     }
 };
+
 bool CreateServers()
 {
     static ReloadConfigMessage reload_config;
@@ -277,9 +288,9 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
         return -1;
     }
     // process all queued qt messages here.
-    ACE_Time_Value event_processing_delay(0,1000*5);
     while( !s_event_loop_is_done )
     {
+        ACE_Time_Value event_processing_delay(0,1000*15);
         ACE_Reactor::instance()->handle_events(&event_processing_delay);
         QCoreApplication::processEvents();
     }
@@ -294,8 +305,11 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     g_auth_server.reset();
     s_bus_monitor.reset();
     g_message_bus.reset();
+    ACE_Time_Value event_processing_delay(0,1000*15);
     ACE_Reactor::instance()->handle_events(&event_processing_delay);
     ACE_Reactor::instance()->remove_handler(interesting_signals);
     ACE_Reactor::end_event_loop();
     return 0;
 }
+
+//! @}

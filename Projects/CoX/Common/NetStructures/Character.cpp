@@ -1,9 +1,13 @@
 /*
- * Super Entity Game Server Project
- * https://github.com/Segs/Segs
- * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
+ */
+
+/*!
+ * @addtogroup NetStructures Projects/CoX/Common/NetStructures
+ * @{
  */
 
 #include "Character.h"
@@ -47,6 +51,7 @@ Character::Character()
             || !m_char_data.m_titles[2].isEmpty();
     m_char_data.m_sidekick.m_has_sidekick = false;
 }
+
 void Character::reset()
 {
     m_char_data.m_level=0;
@@ -84,6 +89,7 @@ void Character::sendTray(BitStream &bs) const
 {
     m_trays.serializeto(bs);
 }
+
 void Character::GetCharBuildInfo(BitStream &src)
 {
     m_char_data.m_level=0;
@@ -97,6 +103,7 @@ void Character::GetCharBuildInfo(BitStream &src)
     m_powers.push_back(secondary); // secondary_powerset power
     m_trays.serializefrom(src);
 }
+
 void Character::SendCharBuildInfo(BitStream &bs) const
 {
     Character c = *this;
@@ -235,6 +242,7 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
         ::serializeto(*getCurrentCostume(),bs,packer);
     }
 }
+
 void Character::DumpSidekickInfo()
 {
     QString msg = QString("Sidekick Info\n  has_sidekick: %1 \n  db_id: %2 \n  type: %3 ")
@@ -244,6 +252,7 @@ void Character::DumpSidekickInfo()
 
     qDebug().noquote() << msg;
 }
+
 void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
 {
     for (int i = 0; i < 3; i++)
@@ -256,6 +265,7 @@ void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
                                             .arg(pool_info.power_idx);
     }
 }
+
 void Character::DumpBuildInfo()
 {
     Character &c = *this;
@@ -299,6 +309,7 @@ void Character::recv_initial_costume( BitStream &src, const ColorAndPartPacker *
     m_current_costume_idx=0;
     ::serializefrom(m_costumes.back(),src,packer);
 }
+
 void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool /*sendAbsolute*/)
 {
     bs.StoreBits(1,1); // we have more data
@@ -309,6 +320,7 @@ void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool /*sendAbsolu
     bs.StorePackedBits(5,src.m_Endurance/5.0f);
     bs.StoreBits(1,0); // no more data
 }
+
 void serializeFullStats(const Parse_CharAttrib &src,BitStream &bs, bool /*sendAbsolute*/)
 {
     bs.StoreBits(1,1); // we have more data
@@ -319,6 +331,7 @@ void serializeFullStats(const Parse_CharAttrib &src,BitStream &bs, bool /*sendAb
     bs.StorePackedBits(7,src.m_Endurance);
     bs.StoreBits(1,0); // no more data
 }
+
 void serializeLevelsStats(const Character &src,BitStream &bs, bool /*sendAbsolute*/)
 {
     bs.StoreBits(1,1); // we have more data
@@ -347,6 +360,7 @@ void serializeStats(const Character &src,BitStream &bs, bool sendAbsolute)
     serializeLevelsStats(src,bs,sendAbsolute);
     bs.StoreBits(1,0); // we have no more data
 }
+
 void serializeFullStats(const Character &src,BitStream &bs, bool sendAbsolute)
 {
     uint32_t field_idx=0;
@@ -387,6 +401,7 @@ void Character::sendDescription(BitStream &bs) const
     bs.StoreString(m_char_data.m_character_description);
     bs.StoreString(m_char_data.m_battle_cry);
 }
+
 void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const
 {
     if(hasname == NameFlag::HasName)
@@ -407,6 +422,7 @@ void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag cond
         bs.StoreString(m_char_data.m_titles[2]);             // Title 3 - yellow title (special)
     }
 }
+
 void Character::sendFriendList(BitStream &bs) const
 {
     const FriendsList *fl(&m_char_data.m_friendlist);
@@ -429,17 +445,20 @@ void Character::sendFriendList(BitStream &bs) const
         bs.StoreString(fl->m_friends[i].m_mapname);
     }
 }
+
 void toActualCostume(const GameAccountResponseCostumeData &src, Costume &tgt)
 {
     tgt.skin_color = src.skin_color;
     tgt.serializeFromDb(src.m_serialized_data);
     tgt.m_non_default_costme_p = false;
 }
+
 void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)
 {
     tgt.skin_color = src.skin_color;
     src.serializeToDb(tgt.m_serialized_data);
 }
+
 bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player)
 {
     CharacterData &  cd(tgt.m_char_data);
@@ -487,3 +506,5 @@ bool fromActualCharacter(const Character &src,const PlayerData &player, GameAcco
     }
     return true;
 }
+
+//! @}

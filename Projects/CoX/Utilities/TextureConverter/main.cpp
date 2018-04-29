@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup TextureConverter Projects/CoX/Utilities/TextureConverter
+ * @{
+ */
+
 #include "cereal/cereal.hpp"
 #include "cereal/archives/json.hpp"
 #include "cereal/types/vector.hpp"
@@ -22,6 +34,7 @@ struct TexFileHdr
     uint8_t alpha;
     char magic[3];
 };
+
 #pragma pack(pop)
 struct CohTextureInfo {
     int file_size;
@@ -31,6 +44,7 @@ struct CohTextureInfo {
     std::vector<int> fade;
     uint8_t alpha;
 };
+
 template<class Archive>
 static void serialize(Archive & archive, CohTextureInfo & m)
 {
@@ -41,6 +55,7 @@ static void serialize(Archive & archive, CohTextureInfo & m)
     archive(cereal::make_nvp("fade",m.fade));
     archive(cereal::make_nvp("alpha",m.alpha));
 }
+
 QString saveTo(const CohTextureInfo &tgt)
 {
     std::ostringstream str_dat;
@@ -96,3 +111,5 @@ int main(int c,char **argv)
     }
     return 0;
 }
+
+//! @}

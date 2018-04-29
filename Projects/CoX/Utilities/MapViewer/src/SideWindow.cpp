@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapViewer Projects/CoX/Utilities/MapViewer
+ * @{
+ */
+
 #include "SideWindow.h"
 #include "ui_SideWindow.h"
 
@@ -17,8 +29,11 @@
 #include <Lutefisk3D/Resource/JSONFile.h>
 #include <Lutefisk3D/Resource/XMLFile.h>
 #include <Lutefisk3D/IO/VectorBuffer.h>
+
 using namespace Urho3D;
+
 extern QString basepath;
+
 SideWindow::SideWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::SideWindow)
@@ -57,6 +72,7 @@ void SideWindow::onCameraPositionChanged(float x, float y, float z)
                                .arg(y, 5, 'f', 2, QChar(' '))
                                .arg(z, 5, 'f', 2, QChar(' ')));
 }
+
 void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
 {
     if(!m) 
@@ -115,6 +131,7 @@ void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
     ui->yawEdt->setText(QString::number(quat.YawAngle()));
     ui->rollEdt->setText(QString::number(quat.RollAngle()));
 }
+
 static QStandardItem * fillModel(CoHNode *node)
 {
     QStandardItem *root = new QStandardItem;
@@ -129,6 +146,7 @@ static QStandardItem * fillModel(CoHNode *node)
     }
     return root;
 }
+
 void SideWindow::onScenegraphLoaded(const CoHSceneGraph & sc)
 {
     QStandardItemModel *m=new QStandardItemModel();
@@ -159,6 +177,7 @@ void SideWindow::onScenegraphLoaded(const CoHSceneGraph & sc)
     ui->nodeList->setModel(m);
     m_model = m;
 }
+
 void SideWindow::on_actionLoad_Scene_Graph_triggered()
 {
     QString fl = QFileDialog::getOpenFileName(this,"Select a scenegraph .bin file to load",basepath+"/geobin",
@@ -212,3 +231,5 @@ void SideWindow::on_nodeList_doubleClicked(const QModelIndex &index)
     }
     emit nodeDisplayRequest(nullptr,true);
 }
+
+//! @}

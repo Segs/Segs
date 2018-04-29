@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup BinConverter Projects/CoX/Utilities/BinConverter
+ * @{
+ */
+
 #include "Common/GameData/DataStorage.h"
 #include "Common/GameData/attrib_definitions.h"
 #include "Common/GameData/attrib_serializers.h"
@@ -55,6 +67,7 @@ enum BinType {
     ePowerDefinitions,
     eNpcDefinitions,
 };
+
 const QHash<uint32_t,BinType> knownSerializers = {
     {levelsdebts_i0_requiredCrc         , eLevelsDebts},
 //    {combining_i0_requiredCrc           , eCombineChances},
@@ -79,6 +92,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {powers_i0_requiredCrc              , ePowerDefinitions},
     {npccostumesets_i0_requiredCrc      , eNpcDefinitions},
 };
+
 BinType getLoader(const QString &fname)
 {
     QFile fl(fname);
@@ -94,6 +108,7 @@ BinType getLoader(const QString &fname)
     fl.read((char *)&template_hash,sizeof(template_hash));
     return knownSerializers.value(template_hash,eInvalid);
 }
+
 template<class T>
 T * doLoad(BinStore *bs) {
     T *res = new T;
@@ -103,6 +118,7 @@ T * doLoad(BinStore *bs) {
     }
     return res;
 }
+
 template<class T>
 T * doLoadRef(BinStore *bs) {
     T *res = new T {};
@@ -112,6 +128,7 @@ T * doLoadRef(BinStore *bs) {
     }
     return res;
 }
+
 template<class T>
 bool doConvert(T *src_struct,const QString &fname,bool text_format=false)
 {
@@ -119,6 +136,7 @@ bool doConvert(T *src_struct,const QString &fname,bool text_format=false)
     delete src_struct;
     return false;
 }
+
 void showSupportedBinTypes()
 {
     qDebug()<<"Currently supported file types ";
@@ -201,3 +219,5 @@ int main(int argc,char **argv)
 
     return 0;
 }
+
+//! @}

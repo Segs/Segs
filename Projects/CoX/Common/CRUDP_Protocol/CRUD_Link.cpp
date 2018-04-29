@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup CRUDP_Protocol Projects/CoX/Common/CRUDP_Protocol
+ * @{
+ */
+
 #include "CRUD_Link.h"
 
 #include "CRUD_Events.h"
@@ -49,6 +61,7 @@ void CRUDLink::event_for_packet(PacketEvent * pak_ev)
         qDebug() << res->info() << "left" << pak->GetStream()->GetReadableBits() <<"bits";
     }
 }
+
 ///
 /// \brief CRUDLink::packets_for_event - convert event to 1-n packets and push them to our net_layer()
 /// \param ev - an event that we've received from our downstream.
@@ -89,6 +102,7 @@ void CRUDLink::connection_sent_packet()
 {
     m_last_send_activity = ACE_OS::gettimeofday();
 }
+
 //! Called when we start to service a new connection, here we tell reactor to wake us
 //! when queue() is not empty.
 int CRUDLink::open (void *p)
@@ -101,6 +115,7 @@ int CRUDLink::open (void *p)
     connection_sent_packet();
     return 0;
 }
+
 int CRUDLink::handle_output( ACE_HANDLE )
 {
     SEGSEvent *ev;
@@ -167,3 +182,4 @@ int CRUDLink::handle_close(ACE_HANDLE h, ACE_Reactor_Mask c)
     return EventProcessor::handle_close(h,c);
 }
 
+//! @}

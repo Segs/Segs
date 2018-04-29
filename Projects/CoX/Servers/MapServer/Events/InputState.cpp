@@ -1,10 +1,15 @@
 /*
- * Super Entity Game Server
- * http://github.com/Segs
- * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
+
+/*!
+ * @addtogroup MapServerEvents Projects/CoX/Servers/MapServer/Events
+ * @{
+ */
+
 #include "InputState.h"
 
 #include "NetStructures/Character.h"
@@ -29,10 +34,12 @@ enum BinaryControl
     LAST_BINARY_VALUE=5,
     LAST_QUANTIZED_VALUE=7,
 };
+
 void InputState::serializeto(BitStream &) const
 {
     assert(!"Not implemented");
 }
+
 InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
 {
     m_csc_deltabits             = other.m_csc_deltabits;
@@ -107,6 +114,7 @@ void InputStateStorage::processDirectionControl(int dir,int /*prev_time*/,int pr
         case 5: pos_delta_valid[1] = true; break;
     }
 }
+
 void InputState::partial_2(BitStream &bs)
 {
     uint8_t control_id;
@@ -220,6 +228,7 @@ void InputState::extended_input(BitStream &bs)
         qCDebug(logInput, "%f : %f",m_data.m_orientation_pyr[0],m_data.m_orientation_pyr[1]);;
     }
 }
+
 struct ControlState
 {
     int client_timenow;
@@ -265,6 +274,7 @@ struct ControlState
         qCDebug(logInput, "(%lld %lld)", m_perf_cntr_diff, m_perf_freq_diff);
     }
 };
+
 void InputState::serializefrom(BitStream &bs)
 {
     m_data.m_send_deltas=false;
@@ -299,14 +309,16 @@ void InputState::serializefrom(BitStream &bs)
         ctrl_idx++;
     }
     recv_client_opts(bs); // g_pak contents will follow
-    bs.ByteAlign(true,false);
-    if(bs.GetReadableBits()>0) {
-        m_user_commands.Reset();
-        m_user_commands.appendBitStream(bs);
+    if(bs.GetReadableBits()>0)
+    {
+        m_user_commands.ResetOffsets();
+        bs.ByteAlign(true,false);
+        m_user_commands.StoreBitArray(bs.read_ptr(),bs.GetReadableBits());
         // all remaining bits were moved to m_user_commands.
         bs.SetReadPos(bs.GetWritePos());
     }
 }
+
 //TODO: use generic ReadableStructures here ?
 void InputState::recv_client_opts(BitStream &bs)
 {
@@ -364,3 +376,5 @@ void InputState::recv_client_opts(BitStream &bs)
         }
     }
 }
+
+//! @}

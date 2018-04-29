@@ -1,12 +1,15 @@
 /*
-* Super Entity Game Server Project
-* http://segs.sf.net/
-* Copyright (c) 2009 Super Entity Game Server Team (see Authors.txt)
-* This software is licensed! (See License.txt for details)
-*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
 
-*/
-#include "HashStorage.h"
+/*!
+ * @addtogroup GameServer Projects/CoX/Servers/GameServer
+ * @{
+ */
+
 #include "GameEvents.h"
 #include "NetStructures/Character.h"
 #include "NetStructures/Costume.h"
@@ -67,6 +70,7 @@ void GameEntryError::serializeto( BitStream &tgt ) const
     tgt.StorePackedBits(1, 3); //opcode
     tgt.StoreString(m_error);
 }
+
 void GameEntryError::serializefrom( BitStream &tgt )
 {
     tgt.GetString(m_error);
@@ -133,3 +137,5 @@ void DeletionAcknowledged::serializeto( BitStream &tgt ) const
 {
     tgt.StorePackedBits(1,5); // opcode 5
 }
+
+//! @}

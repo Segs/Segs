@@ -1,10 +1,21 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "power_serializers.h"
 #include "power_definitions.h"
 #include "serialization_common.h"
 #include "DataStorage.h"
 
 #include <type_traits>
-
 
 bool loadFrom(BinStore *s, StoredAttribMod &target)
 {
@@ -43,6 +54,7 @@ bool loadFrom(BinStore *s, StoredAttribMod &target)
     assert(ok && s->end_encountered());
     return ok;
 }
+
 bool loadFrom(BinStore *s, Power_Data &target)
 {
     bool ok = true;
@@ -125,7 +137,6 @@ bool loadFrom(BinStore *s, Power_Data &target)
     return ok;
 }
 
-
 bool loadFrom(BinStore *s, Parse_PowerSet &target)
 {
     bool ok = true;
@@ -153,7 +164,6 @@ bool loadFrom(BinStore *s, Parse_PowerSet &target)
     }
     return ok;
 }
-
 
 bool loadFrom(BinStore *s, StoredPowerCategory &target)
 {
@@ -203,6 +213,7 @@ bool loadFrom(BinStore *s, AllPowerCategories &target)
     }
     return ok;
 }
+
 /////////////////////////////////////////////////////////////
 /// Cereal specific code
 ///
@@ -259,6 +270,7 @@ static void serialize(Archive & archive, StoredAttribMod & src)
     archive(cereal::make_nvp("PriorityListOffense",src.PriorityListOffense));
     archive(cereal::make_nvp("PriorityListPassive",src.PriorityListPassive));
 }
+
 template<class Archive>
 static void serialize(Archive & archive, Power_Data & src)
 {
@@ -357,3 +369,5 @@ void saveTo(const AllPowerCategories & target, const QString & baseName, bool te
 {
     commonSaveTo(target,"Powers",baseName,text_format);
 }
+
+//! @}

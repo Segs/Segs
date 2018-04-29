@@ -1,9 +1,8 @@
 /*
- * Super Entity Game Server
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2017 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
 
 /************************************************************************
@@ -68,7 +67,7 @@ explicit        BitStream(size_t size);
         void    GetString(QString &str);
         float   GetFloat();
         int64_t Get64Bits();
-        size_t  GetWritableBits()   const   { return (GetAvailSize()<<3)-m_write_bit_off;}
+        size_t  GetWritableBits()   const   { int64_t bitsleft = int64_t(GetAvailSize() << 3) - m_write_bit_off; return bitsleft > 0 ? bitsleft : 0; }
         size_t  GetReadableBits()   const   { return (GetReadableDataSize()<<3)+(m_write_bit_off-m_read_bit_off);}
         size_t  GetAvailSize()      const;
         bool    IsByteAligned()     const   { return m_byteAligned;}

@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup NetStructures Projects/CoX/Common/NetStructures
+ * @{
+ */
+
 #include "StateInterpolator.h"
 #include "Entity.h"
 #include <glm/vec3.hpp>
@@ -39,6 +51,7 @@ struct bintree_in {
 // Likely a typo in original code, and fibbonacci was meant to be used ?
 // a(0) = a(1) = a(2) = 1; thereafter a(n) = a(n-1) + a(n-3).
 static float s_coding_sequence[131] ={1,1,1};
+
 static void buildErrorTable() {
     static bool dword_769AD4=false;
     if ( !dword_769AD4 )
@@ -52,6 +65,7 @@ static void buildErrorTable() {
             v = std::sqrt(v) / 20.0f;
     }
 }
+
 float get_interpolator_perturbation(int16_t a1,int level)
 {
     buildErrorTable();
@@ -59,6 +73,7 @@ float get_interpolator_perturbation(int16_t a1,int level)
         return (2 * (a1 >= 0) - 1) * s_coding_sequence[int(std::abs(a1))]*(1<<level);
     return 0.0f;
 }
+
 static int16_t encodePerturbation(float error_val,float &value,int level) {
     if(error_val==0.0f) {
         value=0;
@@ -78,6 +93,7 @@ static int16_t encodePerturbation(float error_val,float &value,int level) {
     value = signval*s_coding_sequence[130];
     return signval*130;
 }
+
 // Position interpolation values
 // 0  1  2  3  4  5  6     7  8
 // V(3) = V(7) + V(8) / 2  + perturb(0) * 1
@@ -232,6 +248,7 @@ std::array<bintree_in,7> testEncVec(std::array<PosUpdate,9> vals,float min_error
     }
     return enc;
 }
+
 int runTest()
 {
     std::array<Entity,10240> entities;
@@ -263,3 +280,5 @@ int runTest()
     printf("After transition - L1 error is %f %f %f\n",errsum.x,errsum.y,errsum.z);
     return 0;
 }
+
+//! @}

@@ -1,11 +1,14 @@
 /*
-* Super Entity Game Server Project
-* http://segs.sf.net/
-* Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
-* This software is licensed! (See License.txt for details)
-*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
 
-*/
+/*!
+ * @addtogroup MapServer Projects/CoX/Servers/MapServer
+ * @{
+ */
 
 #include "NetCommandManager.h"
 #include "MapClientSession.h"
@@ -56,6 +59,7 @@ static void FillCommands()
 //    cmd_manager->addCommand(new NetCommand(9,"noentcollisions",args));
 //    cmd_manager->addCommand(new NetCommand(9,"pvpmap",args));
 }
+
 int NetCommand::serializefrom( BitStream &bs )
 {
     for(size_t i=0; i<m_arguments.size(); i++)
@@ -116,6 +120,7 @@ NetCommand * NetCommandManager::getCommandByName( const QString &name )
 {
     return m_name_to_command[name];
 }
+
 void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands, const vNetCommand &/*commands2*/ )
 {
     if(commands.size()==0)
@@ -140,6 +145,7 @@ void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands,
 //    }
     tgt.StorePackedBits(1,~0u);
 }
+
 void NetCommandManager::SendCommandShortcuts( MapClientSession *client,BitStream &tgt,const std::vector<NetCommand *> &commands2 )
 {
     static bool initialized=false;
@@ -167,3 +173,5 @@ void NetCommandManager::SendCommandShortcuts( MapClientSession *client,BitStream
             assert(false);
     }
 }
+
+//! @}

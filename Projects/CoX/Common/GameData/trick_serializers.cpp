@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "trick_serializers.h"
 
 #include "anim_serializers.h"
@@ -5,71 +17,72 @@
 #include "trick_definitions.h"
 #include "DataStorage.h"
 
-namespace {
-bool loadFrom(BinStore * s, TextureModifiers & target)
+namespace
 {
-    bool ok=true;
-    s->prepare();
-    ok &= s->read(target.name);
-    ok &= s->read(target.src_file);
-    ok &= s->read(target.Gloss);
-    ok &= s->read(target.Surface);
-    ok &= s->read(target.Fade);
-    ok &= s->read(target.ScaleST0);
-    ok &= s->read(target.ScaleST1);
-    ok &= s->read(target.Blend);
-    ok &= s->read(target.BumpMap);
-    ok &= s->read(target.BlendType);
-    ok &= s->read(target.Flags);
-    ok &= s->prepare_nested(); // will update the file size left
-    assert(s->end_encountered());
-    return ok;
-}
-bool loadFrom(BinStore * s, GeometryModifiers & target)
-{
-    bool ok=true;
-    s->prepare();
-    ok &= s->read(target.name);
-    ok &= s->read(target.src_name);
-    ok &= s->read(target.LodFar);
-    ok &= s->read(target.LodFarFade);
-    ok &= s->read(target.LodNear);
-    ok &= s->read(target.LodNearFade);
-    ok &= s->read(target.node._TrickFlags);
-    ok &= s->read(target.ObjFlags);
-    ok &= s->read(target.GfxFlags);
-    ok &= s->read(target.GroupFlags);
-    ok &= s->read(target.Sway);
-    ok &= s->read(target.Sway_Rotate);
-    ok &= s->read(target.AlphaRef);
-    ok &= s->read(target.FogDist);
-    ok &= s->read(target.node.SortBias);
-    ok &= s->read(target.node.ScrollST0);
-    ok &= s->read(target.node.ScrollST1);
-    ok &= s->read(target.ShadowDist);
-    ok &= s->read(target.NightGlow);
-    ok &= s->read(target.node.TintColor0);
-    ok &= s->read(target.node.TintColor1);
-    ok &= s->read(target.ObjTexBias);
-    ok &= s->prepare_nested(); // will update the file size left
-    if(s->end_encountered())
-        return ok;
-    QString _name;
-    while(s->nesting_name(_name))
+    bool loadFrom(BinStore * s, TextureModifiers & target)
     {
-        s->nest_in();
-        if(_name.compare("StAnim")==0) {
-            target.StAnim.emplace_back();
-            ok &= loadFrom(s,target.StAnim.back());
-        } else
-            assert(!"unknown field referenced.");
-        s->nest_out();
+        bool ok=true;
+        s->prepare();
+        ok &= s->read(target.name);
+        ok &= s->read(target.src_file);
+        ok &= s->read(target.Gloss);
+        ok  &= s->read(target.Surface);
+        ok &= s->read(target.Fade);
+        ok &= s->read(target.ScaleST0);
+        ok &= s->read(target.ScaleST1);
+        ok &= s->read(target.Blend);
+        ok &= s->read(target.BumpMap);
+        ok &= s->read(target.BlendType);
+        ok &= s->read(target.Flags);
+        ok &= s->prepare_nested(); // will update the file size left
+        assert(s->end_encountered());
+        return ok;
     }
-    assert(s->end_encountered());
-    return ok;
-}
-}
 
+    bool loadFrom(BinStore * s, GeometryModifiers & target)
+    {
+        bool ok=true;
+        s->prepare();
+        ok &= s->read(target.name);
+        ok &= s->read(target.src_name);
+        ok &= s->read(target.LodFar);
+        ok &= s->read(target.LodFarFade);
+        ok &= s->read(target.LodNear);
+        ok &= s->read(target.LodNearFade);
+        ok &= s->read(target.node._TrickFlags);
+        ok &= s->read(target.ObjFlags);
+        ok &= s->read(target.GfxFlags);
+        ok &= s->read(target.GroupFlags);
+        ok &= s->read(target.Sway);
+        ok &= s->read(target.Sway_Rotate);
+        ok &= s->read(target.AlphaRef);
+        ok &= s->read(target.FogDist);
+        ok &= s->read(target.node.SortBias);
+        ok &= s->read(target.node.ScrollST0);
+        ok &= s->read(target.node.ScrollST1);
+        ok &= s->read(target.ShadowDist);
+        ok &= s->read(target.NightGlow);
+        ok &= s->read(target.node.TintColor0);
+        ok &= s->read(target.node.TintColor1);
+        ok &= s->read(target.ObjTexBias);
+        ok &= s->prepare_nested(); // will update the file size left
+        if(s->end_encountered())
+            return ok;
+        QString _name;
+        while(s->nesting_name(_name))
+        {
+            s->nest_in();
+            if(_name.compare("StAnim")==0) {
+                target.StAnim.emplace_back();
+                ok &= loadFrom(s,target.StAnim.back());
+            } else
+                assert(!"unknown field referenced.");
+            s->nest_out();
+        }
+        assert(s->end_encountered());
+        return ok;
+    }
+} // namespace
 
 bool loadFrom(BinStore * s, AllTricks_Data *target)
 {
@@ -110,6 +123,7 @@ static void serialize(Archive & archive, TextureModifiers & m)
     archive(cereal::make_nvp("BlendType",m.BlendType));
     archive(cereal::make_nvp("Flags",m.Flags));
 }
+
 template<class Archive>
 static void serialize(Archive & archive, ModelModifiers & m)
 {
@@ -120,6 +134,7 @@ static void serialize(Archive & archive, ModelModifiers & m)
     archive(cereal::make_nvp("TintColor0",m.TintColor0));
     archive(cereal::make_nvp("TintColor1",m.TintColor1));
 }
+
 template<class Archive>
 static void serialize(Archive & archive, GeometryModifiers & m)
 {
@@ -149,7 +164,10 @@ static void serialize(Archive & archive, AllTricks_Data & m)
     archive(cereal::make_nvp("Texture",m.texture_mods));
     archive(cereal::make_nvp("Geometry",m.geometry_mods));
 }
+
 void saveTo(const AllTricks_Data &target, const QString &baseName, bool text_format)
 {
     commonSaveTo(target,"Tricks",baseName,text_format);
 }
+
+//! @}

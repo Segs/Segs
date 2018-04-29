@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup AuthProtocol Projects/CoX/Common/AuthProtocol
+ * @{
+ */
+
 #include "AuthLink.h"
 
 #include "AuthProtocol/AuthOpcodes.h"
@@ -286,8 +298,6 @@ int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 {
     // client handle was closed, posting disconnect event with higher priority
     m_target->msg_queue()->enqueue_prio(new DisconnectEvent(session_token()),nullptr,100);
-    if (this->reactor() && this->reactor()->remove_handler(this, READ_MASK | DONT_CALL) == -1)
-        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("unable to remove client handler")), -1);
     if (close_mask == ACE_Event_Handler::WRITE_MASK)
         return 0;
     return super::handle_close (handle, close_mask);
@@ -298,3 +308,5 @@ void AuthLink::dispatch( SEGSEvent */*ev*/ )
 {
     assert(!"Should not be called");
 }
+
+//! @}

@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapViewer Projects/CoX/Utilities/MapViewer
+ * @{
+ */
+
 #include "CohTextureConverter.h"
 #include "CoHSceneConverter.h"
 
@@ -60,6 +72,7 @@ TextureModifiers *modFromTextureName(const QString &texpath)
     }
     return nullptr;
 }
+
 void loadTexHeader(const QString &fname)
 {
     TextureWrapper res;
@@ -146,6 +159,7 @@ void loadTexHeader(const QString &fname)
     s_loaded_textures[lookupstring] = res;
 }
 }
+
 TextureWrapper tryLoadTexture(Urho3D::Context *ctx,const QString &fname)
 {
     ResourceCache *rcache=ctx->m_ResourceCache.get();
@@ -206,6 +220,7 @@ TextureWrapper tryLoadTexture(Urho3D::Context *ctx,const QString &fname)
         res.base = rcache->GetResource<Texture2D>(converted_path);
     return res;
 }
+
 void preloadTextureNames()
 {
     //TODO: store texture headers into an array, and only rescan directories when forced ?
@@ -217,6 +232,7 @@ void preloadTextureNames()
         loadTexHeader(fpath);
     }
 }
+
 std::vector<TextureWrapper> getModelTextures(Urho3D::Context *ctx,std::vector<QString> &a1)
 {
     uint32_t v2 = std::max<uint32_t>(1,a1.size());
@@ -247,3 +263,5 @@ std::vector<TextureWrapper> getModelTextures(Urho3D::Context *ctx,std::vector<QS
         res.emplace_back(tryLoadTexture(ctx,"white.tga"));
     return res;
 }
+
+//! @}

@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapServer Projects/CoX/Servers/MapServer
+ * @{
+ */
+
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
 #include "SceneGraph.h"
@@ -17,11 +29,13 @@ int luaopen_package(lua_State *)
     assert(false && "functionality removed");
     return 0;
 }
+
 int luaopen_io(lua_State *)
 {
     assert(false && "functionality removed");
     return 0;
 }
+
 int luaopen_os(lua_State *)
 {
     assert(false && "functionality removed");
@@ -42,6 +56,7 @@ struct ScriptingEngine::ScriptingEnginePrivate
 ScriptingEngine::ScriptingEngine() : m_private(new ScriptingEnginePrivate)
 {
 }
+
 ScriptingEngine::~ScriptingEngine()
 {
 }
@@ -76,6 +91,7 @@ void ScriptingEngine::registerTypes()
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
 
 }
+
 int ScriptingEngine::loadAndRunFile(const QString &filename)
 {
     sol::load_result load_res=m_private->m_lua.load_file(filename.toStdString());
@@ -119,6 +135,7 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     }
     return result.get<std::string>();
 }
+
 int ScriptingEngine::runScript(MapClientSession * client, const QString &script_contents, const char *script_name)
 {
     m_private->m_lua["client"] = client;
@@ -138,6 +155,7 @@ int ScriptingEngine::runScript(MapClientSession * client, const QString &script_
     }
     return 0;
 }
+
 int ScriptingEngine::runScript(const QString &script_contents, const char *script_name)
 {
     sol::load_result load_res = m_private->m_lua.load(script_contents.toStdString(), script_name);
@@ -157,3 +175,4 @@ int ScriptingEngine::runScript(const QString &script_contents, const char *scrip
     return 0;
 }
 
+//! @}

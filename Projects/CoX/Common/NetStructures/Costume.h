@@ -1,9 +1,8 @@
 /*
- * Super Entity Game Server
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
 
 #pragma once
@@ -44,8 +43,10 @@ struct CostumePart
     uint8_t m_type=0; // arms/legs etc..
     bool m_full_part;
 };
+
 void serializeto(const CostumePart &part, BitStream &bs, const ColorAndPartPacker *packingContext);
 void serializefrom(CostumePart &part, BitStream &bs, const ColorAndPartPacker *packingContext);
+
 struct Costume
 {
     float m_height=0;
@@ -69,6 +70,7 @@ struct Costume
     void    dump() const;
 protected:
 };
+
 void serializefrom(Costume &tgt, BitStream &bs, const ColorAndPartPacker *packer);
 void serializeto(const Costume &tgt, BitStream &bs, const ColorAndPartPacker *packer);
 

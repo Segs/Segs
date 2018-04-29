@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup slav Utilities/slav
+ * @{
+ */
+
 #include "SLAVLogic.h"
 #include "UpdaterDlg.h"
 #include "ProjectManifest.h"
@@ -13,9 +25,10 @@
 #include <QtCore/QDebug>
 #include <QtCore/QCryptographicHash>
 #include <QThread>
-namespace {
-    AppVersionManifest slav_manifest;
 
+namespace
+{
+    AppVersionManifest slav_manifest;
 }
 
 SLAVLogic::SLAVLogic(QObject *parent) : QObject(parent)
@@ -27,16 +40,17 @@ SLAVLogic::SLAVLogic(QObject *parent) : QObject(parent)
     connect(m_serv_conn,&ServerConnection::downloadProgress,m_ui_impl,&UpdaterDlg::onDownloadProgressed);
     connect(m_serv_conn,&ServerConnection::retrievedManifest,this,&SLAVLogic::onManifestReceived);
     connectUI();
-
 }
 
 void SLAVLogic::connectUI()
 {
     connect(this,&SLAVLogic::needUpdate,m_ui_impl,&UpdaterDlg::onUpdateAvailable);
 }
+
 void SLAVLogic::start()
 {
-    if(needToOverwriteBaseInstall()) {
+    if(needToOverwriteBaseInstall())
+    {
         createBackupIfNeeded();
         copyFilesOverBase();
         //restartBaseInstall();
@@ -50,14 +64,17 @@ void SLAVLogic::start()
     m_serv_conn->onRequestAppData();
 
 }
+
 void SLAVLogic::onManifestReceived(const QString &manifest_url,const QString &manifestData)
 {
     AppVersionManifest pm;
     bool load_res = loadFrom(pm,manifestData);
     // we've got a project manifest, perform work based on the manifest type.
-    if(manifest_url.contains("slav.manifest")) {
+    if(manifest_url.contains("slav.manifest"))
+    {
         // Check if we need to update ourselves
-        if(*m_current_manifest!=pm) {
+        if(*m_current_manifest!=pm)
+        {
             emit needUpdate(new AppVersionManifest(pm),"Changed stuff");
         }
     }
@@ -66,7 +83,8 @@ void SLAVLogic::onManifestReceived(const QString &manifest_url,const QString &ma
 
 void SLAVLogic::onUpdateRequested(ServerDescriptor * manifest)
 {
-    if(manifest==nullptr) {
+    if(manifest==nullptr)
+    {
         // self - update request.
     }
 }
@@ -110,11 +128,13 @@ bool SLAVLogic::needToOverwriteBaseInstall() {
     return false;
 }
 
-void SLAVLogic::createBackupIfNeeded() {
+void SLAVLogic::createBackupIfNeeded()
+{
 
 }
 
-void SLAVLogic::copyFilesOverBase() {
+void SLAVLogic::copyFilesOverBase()
+{
 
 }
 
@@ -132,11 +152,15 @@ void SLAVLogic::calculateHashes(AppVersionManifest *manifest)
     connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
     thread->start();
 }
+
 void SLAVLogic::onThreadError(QString v)
 {
     qWarning() << "Thread error:" << v;
 }
+
 void SLAVLogic::onHashingProgress(QString chan, float percent)
 {
     qDebug()<<"Hash progress " << chan << percent;
 }
+
+//! @}

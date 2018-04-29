@@ -1,11 +1,15 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
-
  */
+
+/*!
+ * @addtogroup MapServerEvents Projects/CoX/Servers/MapServer/Events
+ * @{
+ */
+
 #include "Events/NewEntity.h"
 
 void NewEntity::serializeto( BitStream & ) const
@@ -24,3 +28,5 @@ void NewEntity::serializefrom( BitStream &bs )
         m_character_data.appendBitStream(bs);
     }
 }
+
+//! @}

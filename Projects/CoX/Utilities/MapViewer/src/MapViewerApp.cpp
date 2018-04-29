@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapViewer Projects/CoX/Utilities/MapViewer
+ * @{
+ */
+
 #include "MapViewerApp.h"
 #include "CoHSceneConverter.h"
 #include "CoHModelLoader.h"
@@ -42,9 +54,11 @@ QString basepath;
 MapViewerApp::MapViewerApp(Context * ctx) : Application("CoX Map Viewer",ctx)
 {
 }
+
 MapViewerApp::~MapViewerApp()
 {
 }
+
 void MapViewerApp::Setup()
 {
     engineParameters_[EP_FULL_SCREEN]  = false;
@@ -52,6 +66,7 @@ void MapViewerApp::Setup()
     //Force the data directory names to use mapviewer_data/ root
     engineParameters_[EP_RESOURCE_PATHS] = "mapviewer_data/Data;mapviewer_data/CoreData";
 }
+
 void MapViewerApp::CreateBaseScene()
 {
     // Create a basic plane, a light and a camera
@@ -89,12 +104,14 @@ void MapViewerApp::CreateBaseScene()
     emit cameraLocationChanged(0.0f, 5.0f, 0.0f);
     cam->SetFarClip(1500);
 }
+
 void MapViewerApp::SetupViewport() {
     Renderer *renderer = m_context->m_Renderer.get();
     SharedPtr<Viewport> viewport(
                 new Viewport(m_context, m_scene, m_camera_node->GetComponent<Camera>()));
     renderer->SetViewport(0, viewport);
 }
+
 void MapViewerApp::CreateConsoleAndDebugHud()
 {
     // Get default style
@@ -112,6 +129,7 @@ void MapViewerApp::CreateConsoleAndDebugHud()
     DebugHud* debugHud = engine_->CreateDebugHud();
     debugHud->SetDefaultStyle(xmlFile);
 }
+
 void MapViewerApp::prepareSideWindow()
 {
     Graphics *graphics = m_context->m_Graphics.get();
@@ -127,6 +145,7 @@ void MapViewerApp::prepareSideWindow()
     connect(m_sidewindow,&SideWindow::nodeSelected,this,&MapViewerApp::onNodeSelected);
     m_sidewindow->setMapViewer(this);
 }
+
 void MapViewerApp::prepareCursor()
 {
     ResourceCache* cache = m_context->m_ResourceCache.get();
@@ -144,6 +163,7 @@ void MapViewerApp::prepareCursor()
     input->SetMouseMode(ui->GetCursor()->IsVisible() ? MM_FREE : MM_RELATIVE);//,MM_RELATIVE
 
 }
+
 void MapViewerApp::Start()
 {
     QSettings our_settings(QSettings::IniFormat,QSettings::UserScope,"SEGS","MapViewer");
@@ -170,6 +190,7 @@ void MapViewerApp::Start()
     preloadTextureNames();
     prepareSideWindow();
 }
+
 void MapViewerApp::loadSelectedSceneGraph(const QString &path)
 {
     m_selected_drawable = nullptr;
@@ -182,12 +203,16 @@ void MapViewerApp::loadSelectedSceneGraph(const QString &path)
     loadSceneGraph(*m_coh_scene,path);
     emit scenegraphLoaded(*m_coh_scene);
 }
+
 void MapViewerApp::onNodeSelected(CoHNode * n)
 {
     m_current_selected_node = n;
 }
+
 #define MAX_GRAPH_DEPTH 80
+
 int created_node_count = 0;
+
 void MapViewerApp::onDisplayNode(CoHNode *n,bool rootnode)
 {
     if(nullptr==n)
@@ -227,6 +252,7 @@ void MapViewerApp::onDisplayNode(CoHNode *n,bool rootnode)
     m_currently_shown_node = boxNode;
 
 }
+
 void MapViewerApp::HandleKeyUp(int key,int scancode,unsigned buttons,int qualifiers)
 {
     // Close console (if open) or exit when ESC is pressed
@@ -244,6 +270,7 @@ void MapViewerApp::HandleKeyUp(int key,int scancode,unsigned buttons,int qualifi
             v->SetDeepEnabled(!v->IsEnabled());
     }
 }
+
 void MapViewerApp::HandleKeyDown(int key,int scancode,unsigned buttons,int qualifiers, bool repeat)
 {
     // Toggle console with F1
@@ -263,6 +290,7 @@ void MapViewerApp::HandleKeyDown(int key,int scancode,unsigned buttons,int quali
                            Time::GetTimeStamp().replace(':', '_').replace('.', '_').replace(' ', '_') + ".png");
     }
 }
+
 bool MapViewerApp::Raycast(float maxDistance)
 {
     Vector3 hitPos;
@@ -299,6 +327,7 @@ bool MapViewerApp::Raycast(float maxDistance)
     emit modelSelected(nullptr,nullptr,nullptr);
     return false;
 }
+
 void MapViewerApp::HandleUpdate(float timeStep)
 {
     Input* input = m_context->m_InputSystem.get();
@@ -359,6 +388,7 @@ void MapViewerApp::HandleUpdate(float timeStep)
     if (ui->GetCursor()->IsVisible() && input->GetMouseButtonPress(MouseButton::LEFT))
         Raycast(8500);
 }
+
 void MapViewerApp::HandlePostRenderUpdate(float ts)
 {
     // If draw debug mode is enabled, draw viewport debug geometry. Disable depth test so that we can see the effect of occlusion
@@ -373,3 +403,5 @@ void MapViewerApp::HandlePostRenderUpdate(float ts)
         m_scene->GetComponent<DebugRenderer>()->AddBoundingBox(bbox,Color::BLUE,false);
     }
 }
+
+//! @}

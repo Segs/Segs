@@ -1,20 +1,35 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup GameData Projects/CoX/Common/GameData
+ * @{
+ */
+
 #include "attrib_serializers.h"
 #include "attrib_definitions.h"
 #include "serialization_common.h"
 #include "DataStorage.h"
-namespace {
-bool loadFrom(BinStore * s, Parse_AttribDesc & target)
+
+namespace
 {
-    s->prepare();
-    bool ok = true;
-    ok &= s->read(target.Name);
-    ok &= s->read(target.DisplayName);
-    ok &= s->read(target.IconName);
-    ok &= s->prepare_nested(); // will update the file size left
-    assert(s->end_encountered());
-    return ok;
+    bool loadFrom(BinStore * s, Parse_AttribDesc & target)
+    {
+        s->prepare();
+        bool ok = true;
+        ok &= s->read(target.Name);
+        ok &= s->read(target.DisplayName);
+        ok &= s->read(target.IconName);
+        ok &= s->prepare_nested(); // will update the file size left
+        assert(s->end_encountered());
+        return ok;
+    }
 }
-}
+
 bool loadFrom(BinStore * s, AttribNames_Data & target)
 {
     s->prepare();
@@ -61,6 +76,7 @@ static void serialize(Archive & archive, AttribNames_Data & m)
     archive(cereal::make_nvp("Boost",m.m_Boost));
     archive(cereal::make_nvp("Group",m.m_Group));
 }
+
 template<class Archive>
 void serialize(Archive & archive, Parse_CharAttrib & target)
 {
@@ -118,6 +134,7 @@ void serialize(Archive & archive, Parse_CharAttrib & target)
     archive(cereal::make_nvp("InterruptTime",target.m_InterruptTime));
     archive(cereal::make_nvp("EnduranceDiscount",target.m_EnduranceDiscount));
 }
+
 template<class Archive>
 void serialize(Archive & archive, Parse_CharAttribMax & target)
 {
@@ -239,6 +256,7 @@ bool loadFrom(BinStore *s, Parse_CharAttrib &target)
     assert(ok && s->end_encountered());
     return ok;
 }
+
 bool loadFrom(BinStore *s, Parse_CharAttribMax &target)
 {
     s->prepare();

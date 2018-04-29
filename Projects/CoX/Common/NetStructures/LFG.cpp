@@ -1,10 +1,15 @@
 /*
- * Super Entity Game Server Project
- * https://github.com/Segs/Segs
- * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
+
+/*!
+ * @addtogroup NetStructures Projects/CoX/Common/NetStructures
+ * @{
+ */
+
 #include "LFG.h"
 
 #include "Servers/MapServer/DataHelpers.h"
@@ -66,3 +71,5 @@ void dumpLFGList()
 
     qDebug().noquote() << output;
 }
+
+//! @}

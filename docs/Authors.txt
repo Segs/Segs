@@ -1,16 +1,32 @@
 SEGS Developers
-=================
-malign     (malign AT users.sourceforge.net)
-nemerle    (nemerle AT users.sourceforge.net)
-Patrick    (patrick_guerra AT users.sourceforge.net)
+===============
+broxen          (http://www.broxen.net/) <broxen AT segs DOT io>
+erpmario        <erpmario AT segs DOT io>
+ldilley         (http://www.dilley.me/) <lloyd AT segs DOT io>
+mobbyg          <mobbyg AT segs DOT io>
+nemerle         (http://www.nemerle.eu/) <nemerle AT segs DOT io>
 
 SEGS Contributors
-===================
-Catvir         (?)
-Darawk         (darawk AT darawk.com)
-Fork           (catnipjunkie AT users.sourceforge.net)
-gustav         (bjordal AT users.sourceforge.net)
-rz950          (?)
-SilverJohn     (?)
-StarkRavingMad ()
-Suiv           () R.I.P. - Your dark humor will be missed.
+=================
+Armingleggings
+Ashleigh
+cameron-justice
+Catvir
+Darawk          <darawk AT darawk DOT com>
+DrPhil
+electronbeam
+eos428
+Fork            <catnipjunkie AT users DOT sourceforge DOT net>
+gustav          <bjordal AT users DOT sourceforge DOT net>
+JMox
+MaxRis
+miles200
+Patrick         <patrick_guerra AT users DOT sourceforge DOT net>
+PsiLupan
+rz950
+SilverJohn
+StarkRavingMad
+Suiv             R.I.P. - Your dark humor will be missed.
+teronis84
+TharBeDragons
+Tonster

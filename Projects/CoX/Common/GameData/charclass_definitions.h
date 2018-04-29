@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 
 #include "Common/GameData/attrib_definitions.h"
@@ -5,10 +12,13 @@
 #include <vector>
 #include <memory>
 struct StoredPowerCategory;
-struct ClassMod_Data {
+
+struct ClassMod_Data
+{
     QString Name;
     std::vector<float> Values;
 };
+
 struct CharClass_Data
 {
     QString m_Name;

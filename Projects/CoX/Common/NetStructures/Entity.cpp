@@ -1,10 +1,15 @@
 /*
- * Super Entity Game Server Project
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2016 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
+
+/*!
+ * @addtogroup NetStructures Projects/CoX/Common/NetStructures
+ * @{
+ */
+
 #define _USE_MATH_DEFINES
 #include "Entity.h"
 #include "LFG.h"
@@ -44,6 +49,7 @@ void Entity::fillFromCharacter()
     m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*m_char));
     m_is_hero = true;
 }
+
 /**
  *  This will mark the Entity as being in logging out state
  *  \arg time_till_logout is time in seconds untill logout is done
@@ -80,6 +86,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const ColorAndPartPacke
     e.m_entity_data.m_pos                   = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting Location
     e.m_direction                         = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
+
 void Entity::InsertUpdate( PosUpdate pup )
 {
     m_update_idx++;
@@ -167,6 +174,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_player->reset();
     e.might_have_rare = e.m_rare_bits   = true;
 }
+
 void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
 {
     e.m_costume_type                    = AppearanceType::NpcCostume;
@@ -192,3 +200,5 @@ void markEntityForDbStore(Entity *e, DbStoreFlags f)
 {
     e->m_db_store_flags |= uint32_t(f);
 }
+
+//! @}

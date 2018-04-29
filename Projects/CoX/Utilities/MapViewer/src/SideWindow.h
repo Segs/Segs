@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #ifndef SIDEWINDOW_H
 #define SIDEWINDOW_H
 
@@ -5,21 +12,26 @@
 
 #include <QAbstractItemModel>
 
-namespace Ui {
-class SideWindow;
+namespace Ui
+{
+    class SideWindow;
 }
-namespace Urho3D {
-class Node;
-class Scene;
-class StaticModel;
-class Vector3;
-class Drawable;
+
+namespace Urho3D
+{
+    class Node;
+    class Scene;
+    class StaticModel;
+    class Vector3;
+    class Drawable;
 }
+
 struct CoHSceneGraph;
 struct CoHNode;
 struct CoHModel;
 
 class MapViewerApp;
+
 class SideWindow : public QMainWindow
 {
     Q_OBJECT

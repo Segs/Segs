@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include "CRUD_Events.h"
 #include "MapLink.h"
@@ -10,6 +17,7 @@
 class BitStream;
 class MapRef;
 typedef CRUDLink_Event MapLinkEvent; //<MapLink>
+
 class SceneEvent : public MapLinkEvent
 {
 public:
@@ -26,7 +34,7 @@ public:
     bool current_map_flags;
     size_t num_base_elems;
     int undos_PP;
-    bool var_14;
+    bool is_new_world;
     std::vector<QString> m_trays;
     std::vector<uint32_t> m_crc;
     std::vector<MapRef> m_refs;

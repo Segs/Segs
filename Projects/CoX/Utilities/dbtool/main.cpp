@@ -1,7 +1,20 @@
 /*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*
 * SEGS dbtool v0.4 dated 2018-04-22
 * A database creation and management tool.
 */
+
+/*!
+ * @addtogroup dbtool Projects/CoX/Utilities/dbtool
+ * @{
+ */
+
 #include "PasswordHasher/PasswordHasher.h"
 
 #include <QtCore/QSettings>
@@ -71,30 +84,29 @@ bool ConfigStruct::initialize_from_settings(const QString &settings_file_name, c
     return true;
 }
 
-
 void ConfigStruct::putFilePath()
 {
     QDir db_dir(QDir::currentPath());
     if(isSqlite())
     {
         if(m_character_db)
-            m_file_path = db_dir.currentPath() + "/default_dbs/sqlite/segs_sqlite_create.sql";
-        else
             m_file_path = db_dir.currentPath() + "/default_dbs/sqlite/segs_game_sqlite_create.sql";
+        else
+            m_file_path = db_dir.currentPath() + "/default_dbs/sqlite/segs_sqlite_create.sql";
     }
     else if(isMysql())
     {
         if(m_character_db)
-            m_file_path = db_dir.currentPath() + "/default_dbs/mysql/segs_mysql_create.sql";
-        else
             m_file_path = db_dir.currentPath() + "/default_dbs/mysql/segs_game_mysql_create.sql";
+        else
+            m_file_path = db_dir.currentPath() + "/default_dbs/mysql/segs_mysql_create.sql";
     }
     else if(isPostgresql())
     {
         if(m_character_db)
-            m_file_path = db_dir.currentPath() + "/default_dbs/pgsql/segs_postgres_create.sql";
-        else
             m_file_path = db_dir.currentPath() + "/default_dbs/pgsql/segs_game_postgres_create.sql";
+        else
+            m_file_path = db_dir.currentPath() + "/default_dbs/pgsql/segs_postgres_create.sql";
     }
     else
         qFatal("Unknown database driver.");
@@ -417,7 +429,7 @@ int main(int argc, char **argv)
                 qWarning() << "Forced flag used '-f'. Existing databases may be overwritten.";
 
             createDatabases(configs);
-            addAccount(configs[1], "segsadmin", "segs123", 9);
+            addAccount(configs[0], "segsadmin", "segs123", 9);
             break;
         }
         case 1:
@@ -432,10 +444,12 @@ int main(int argc, char **argv)
                 qCritical() << "Cannot add account, the database does not exist";
                 return -1;
             }
-            addAccount(configs[1], parser.value(loginOption),
+            addAccount(configs[0], parser.value(loginOption),
                        parser.value(passOption), parser.value(accessLevelOption).toUInt());
         }
     }
     Pause();
     return 0;
 }
+
+//! @}

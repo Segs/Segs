@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 #include <deque>
@@ -11,6 +18,7 @@ struct GameServerInfo
     uint16_t max_players;
     uint8_t  online;
 };
+
 class ServerListResponse : public AuthLinkEvent
 {
     std::deque<GameServerInfo> m_serv_list;

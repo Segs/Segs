@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapServer Projects/CoX/Servers/MapServer
+ * @{
+ */
+
 #include "MapServerData.h"
 
 #include "Common/GameData/DataStorage.h"
@@ -119,6 +131,7 @@ public:
         }
 
     }
+
     void unpackColor(BitStream &bs, uint32_t &tgt)const override
     {
         bool in_hash= bs.GetBits(1);
@@ -131,6 +144,7 @@ public:
         }
         tgt = bs.GetBits(32);
     }
+
     void packPartname(const QString &str, BitStream &bs) const override
     {
         uint32_t cache_idx=0;
@@ -145,6 +159,7 @@ public:
         else
             bs.StoreString(str);
     }
+
     void unpackPartname(BitStream &bs, QString &tgt)const override
     {
         tgt.clear();
@@ -160,6 +175,7 @@ public:
         bs.GetString(tgt);
     }
 };
+
 template<class TARGET,unsigned int CRC>
 bool read_data_to(const QString &directory_path,const QString &storage,TARGET &target)
 {
@@ -264,6 +280,7 @@ bool MapServerData::read_costumes(const QString &directory_path)
     }
     return res;
 }
+
 bool MapServerData::read_colors( const QString &directory_path )
 {
     QDebug deb=qDebug().noquote().nospace();
@@ -287,6 +304,7 @@ bool MapServerData::read_colors( const QString &directory_path )
     }
     return res;
 }
+
 bool MapServerData::read_origins(const QString &directory_path)
 {
     qDebug() << "Loading origins:";
@@ -296,6 +314,7 @@ bool MapServerData::read_origins(const QString &directory_path)
         return false;
     return true;
 }
+
 bool MapServerData::read_classes(const QString &directory_path)
 {
     qDebug() << "Loading classes:";
@@ -332,6 +351,7 @@ bool MapServerData::read_commands(const QString &directory_path)
         return false;
     return true;
 }
+
 bool MapServerData::read_npcs(const QString &directory_path)
 {
     qDebug() << "Loading npcs:";
@@ -340,3 +360,5 @@ bool MapServerData::read_npcs(const QString &directory_path)
         return false;
     return true;
 }
+
+//! @}

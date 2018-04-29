@@ -1,9 +1,13 @@
 /*
- * Super Entity Game Server
- * http://github.com/Segs
- * Copyright (c) 2006 - 2018 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
+ */
+
+/*!
+ * @addtogroup MapServer Projects/CoX/Servers/MapServer
+ * @{
  */
 
 #include "MapInstance.h"
@@ -42,36 +46,42 @@
 #include <QtCore/QDir>
 #include <stdlib.h>
 
-namespace {
-enum {
-    World_Update_Timer   = 1,
-    State_Transmit_Timer = 2,
-    Session_Reaper_Timer   = 3,
-};
-
-
-const ACE_Time_Value reaping_interval(0,1000*1000);
-const ACE_Time_Value link_is_stale_if_disconnected_for(0,5*1000*1000);
-const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
-const ACE_Time_Value resend_interval(0,250*1000);
-
-void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &locations_scriptname)
+namespace
 {
-    if(QFile::exists(locations_scriptname))
+    enum
     {
-        lua->loadAndRunFile(locations_scriptname);
-    }
-    else
+        World_Update_Timer   = 1,
+        State_Transmit_Timer = 2,
+        Session_Reaper_Timer   = 3,
+        Link_Idle_Timer   = 4,
+    };
+
+    const ACE_Time_Value reaping_interval(0,1000*1000);
+    const ACE_Time_Value link_is_stale_if_disconnected_for(0,5*1000*1000);
+    const ACE_Time_Value link_update_interval(0,500*1000);
+    const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
+    const ACE_Time_Value resend_interval(0,250*1000);
+    const ACE_Time_Value maximum_time_without_packets(2,0);
+    const constexpr int MinPacketsToAck=5;
+
+    void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &locations_scriptname)
     {
-        qDebug().noquote() << locations_scriptname <<"is missing; Process will continue without it.";
+        if(QFile::exists(locations_scriptname))
+        {
+            lua->loadAndRunFile(locations_scriptname);
+        }
+        else
+        {
+            qDebug().noquote() << locations_scriptname <<"is missing; Process will continue without it.";
+        }
     }
-}
-}
+} // namespace
+
 class MapLinkEndpoint : public ServerEndpoint
 {
 public:
     MapLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
-    ~MapLinkEndpoint()=default;
+    ~MapLinkEndpoint() override =default;
 protected:
     CRUDLink *createLink(EventProcessor *down) override
     {
@@ -111,9 +121,11 @@ void MapInstance::start()
     }
     m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
+    m_link_timer.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
     qInfo() << "Server running... awaiting client connections."; // best place for this?
 }
+
 ///
 /// \fn MapInstance::spin_down
 /// \brief This function should stop the world simulation, and save all entities to db
@@ -122,6 +134,7 @@ void MapInstance::spin_down()
 {
     qDebug() << "spin down ? I don't know how to stop!";
 }
+
 ///
 /// \fn MapInstance::spin_up_for
 /// \brief This function should prepare the map for use by the specified game server
@@ -148,6 +161,7 @@ MapInstance::~MapInstance()
     delete m_world;
     delete m_endpoint;
 }
+
 void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*ev*/)
 {
     assert(false);
@@ -169,6 +183,7 @@ void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*
 //    session.is_connected_to_map_server_id = ev->m_data.m_server_id;
 //    session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
 }
+
 void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -179,6 +194,7 @@ void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMes
         m_session_store.mark_session_for_reaping(&session,ev->session_token());
     }
 }
+
 void MapInstance::reap_stale_links()
 {
 
@@ -190,11 +206,13 @@ void MapInstance::reap_stale_links()
         tgt->putq(new ClientDisconnectedMessage({tok}));
     });
 }
+
 void MapInstance::enqueue_client(MapClientSession *clnt)
 {
     m_world->addPlayer(clnt->m_ent);
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
+
 // Here we would add the handler call in case we get evCombineRequest :)
 void MapInstance::dispatch( SEGSEvent *ev )
 {
@@ -337,11 +355,31 @@ void MapInstance::dispatch( SEGSEvent *ev )
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
     }
 }
+
 void MapInstance::on_idle(IdleEvent *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
     lnk->putq(new IdleEvent);
+}
+
+void MapInstance::on_check_links()
+{
+    // walk the active sessions
+    for(const auto &entry : m_session_store)
+    {
+        MapLink * client_link = entry->link();
+        if(!client_link)
+        {
+            // don't send to disconnected clients :)
+            continue;
+        }
+        // Send at least one packet within maximum_time_without_packets
+        if(client_link->last_sent_packets()>maximum_time_without_packets)
+            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+        else if(client_link->client_packets_waiting_for_ack()>MinPacketsToAck)
+            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+    }
 }
 void MapInstance::on_connection_request(ConnectRequest *ev)
 {
@@ -357,6 +395,7 @@ void MapInstance::on_shortcuts_request(ShortcutsRequest *ev)
     Shortcuts *res = new Shortcuts(&session);
     session.link()->putq(res);
 }
+
 void MapInstance::on_client_quit(ClientQuit*ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -368,6 +407,7 @@ void MapInstance::on_client_quit(ClientQuit*ev)
         session.m_ent->beginLogout(10);
 
 }
+
 void MapInstance::on_link_lost(SEGSEvent *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -385,6 +425,7 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
      // close the link by puting an disconnect event there
     lnk->putq(new DisconnectEvent(session_token));
 }
+
 void MapInstance::on_disconnect(DisconnectRequest *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -402,6 +443,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     lnk->putq(new DisconnectResponse);
     lnk->putq(new DisconnectEvent(session_token)); // this should work, event if different threads try to do it in parallel
 }
+
 void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
 {
     if(ev->m_data.m_would_duplicate)
@@ -419,6 +461,7 @@ void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
             ->putq(new ExpectMapClientResponse({2+cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
     }
 }
+
 void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 {
     // TODO: handle contention while creating 2 characters with the same name from different clients
@@ -457,6 +500,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     HandlerLocator::getGame_Handler(m_game_server_id)
         ->putq(new ExpectMapClientResponse({cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
 }
+
 void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
 {
     MapClientSession &map_session(m_session_store.session_from_event(ev));
@@ -478,6 +522,7 @@ void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
     // while we wait for db response, mark session as waiting for reaping
     m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
 }
+
 void MapInstance::on_entity_response(GetEntityResponse *ev)
 {
     MapClientSession &map_session(m_session_store.session_from_event(ev));
@@ -502,6 +547,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     setMapIdx(*map_session.m_ent, index());
     map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
 }
+
 void MapInstance::on_create_map_entity(NewEntity *ev)
 {
     // TODO: At this point we should pre-process the NewEntity packet and let the proper CoXMapInstance handle the rest
@@ -546,16 +592,17 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     // while we wait for db response, mark session as waiting for reaping
     m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token());
 }
+
 void MapInstance::on_scene_request(SceneRequest *ev)
 {
     auto *lnk = (MapLink *)ev->src();
     auto *res = new SceneEvent;
 
     res->undos_PP              = 0;
-    res->var_14                = true;
+    res->is_new_world          = true;
     res->m_outdoor_mission_map = false;
     res->m_map_number          = 1;
-                            //"maps/City_Zones/City_00_01/City_00_01.txt";
+
     assert(m_data_path.contains("City_"));
     int city_idx = m_data_path.indexOf("City_");
     int end_or_slash = m_data_path.indexOf("/",city_idx);
@@ -568,6 +615,7 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->unkn2 = true;
     lnk->putq(res);
 }
+
 void MapInstance::on_entities_request(EntitiesRequest *ev)
 {
     // this packet should start the per-client send-world-state-update timer
@@ -575,8 +623,16 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     // so this method should call MapInstace->initial_update(MapClient *);
     MapClientSession &session(m_session_store.session_from_event(ev));
     srand(time(nullptr));
+
+    EntitiesResponse *res=new EntitiesResponse(&session);
+    res->m_map_time_of_day = m_world->time_of_day();
+    res->is_incremental(false); // full world update = op 3
+    res->ent_major_update = true;
+    res->abs_time = 30*100*(m_world->accumulated_time);
+    session.link()->putq(res);
     m_session_store.add_to_active_sessions(&session);
 }
+
 //! Handle instance-wide timers
 void MapInstance::on_timeout(TimerEvent *ev)
 {
@@ -596,11 +652,15 @@ void MapInstance::on_timeout(TimerEvent *ev)
         case State_Transmit_Timer:
             sendState();
             break;
+        case Link_Idle_Timer:
+            on_check_links();
+            break;
         case Session_Reaper_Timer:
             reap_stale_links();
             break;
     }
 }
+
 void MapInstance::sendState() {
 
     if(m_session_store.num_sessions()==0)
@@ -608,7 +668,8 @@ void MapInstance::sendState() {
 
     auto iter=m_session_store.begin();
     auto end=m_session_store.end();
-    //static bool only_first=true; --> atm this is only changed below but not used
+
+    static bool only_first=true; // --> atm this is only changed below but not used
     static int resendtxt=0;
     resendtxt++;
 
@@ -620,21 +681,23 @@ void MapInstance::sendState() {
 
         if(cl->m_in_map==false) // send full updates until client `resumes`
         {
-            res->is_incremental(false); // full world update = op 3
+            //TODO: decide when we need full updates res->is_incremental(false);
         }
         else
         {
             res->is_incremental(true); // incremental world update = op 2
         }
         res->ent_major_update = true;
-        res->abs_time = 30*100*(m_world->sim_frame_time/1000.0f);
+        res->abs_time = 30*100*(m_world->accumulated_time);
         cl->link()->putq(res);
     }
-    //only_first=false;
+
+    only_first=false;
     if(resendtxt==15)
     {
         resendtxt=0;
     }
+
     // This is handling instance-wide timers
 
     //TODO: Move timer processing to per-client EventHandler ?
@@ -643,10 +706,12 @@ void MapInstance::sendState() {
     //3. Maybe use one timer for all links ?
 
 }
+
 void MapInstance::on_combine_boosts(CombineRequest */*req*/)
 {
     //TODO: do something here !
 }
+
 void MapInstance::on_input_state(InputState *st)
 {
     MapClientSession &session(m_session_store.session_from_event(st));
@@ -658,7 +723,8 @@ void MapInstance::on_input_state(InputState *st)
     ent->m_target_idx = st->m_target_idx;
     ent->m_assist_target_idx = st->m_assist_target_idx;
     // Set Orientation
-    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r) {
+    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r)
+    {
         ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
         ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
     }
@@ -683,18 +749,19 @@ void MapInstance::on_input_state(InputState *st)
     if(st->m_user_commands.GetReadableBits()!=0)
     {
         qCDebug(logMapEvents) << "bits: " << st->m_user_commands.GetReadableBits();
-        qCWarning(logMapEvents) << "Not all bits were consumed by previous commands:";
+        qCCritical(logMapEvents) << "Not all bits were consumed by previous commands:";
         for(const char *cmd : prev_commands)
             qCWarning(logMapEvents) << cmd;
-        assert(false);
     }
 
     //TODO: do something here !
 }
+
 void MapInstance::on_cookie_confirm(CookieRequest * ev)
 {
     qDebug("Received cookie confirm %x - %x\n", ev->cookie, ev->console);
 }
+
 void MapInstance::on_window_state(WindowState * ev)
 {
     // Save GUISettings to character entity and entry in the database.
@@ -708,6 +775,7 @@ void MapInstance::on_window_state(WindowState * ev)
     if(logGUI().isDebugEnabled())
         e->m_player->m_gui.m_wnds.at(idx).guiWindowDump();
 }
+
 QString process_replacement_strings(MapClientSession *sender,const QString &msg_text)
 {
     /*
@@ -774,6 +842,7 @@ QString process_replacement_strings(MapClientSession *sender,const QString &msg_
     }
     return new_msg;
 }
+
 static bool isChatMessage(const QString &msg)
 {
     static const QStringList chat_prefixes = {
@@ -787,6 +856,7 @@ static bool isChatMessage(const QString &msg)
     QString space(msg.mid(0,msg.indexOf(' ')));
     return chat_prefixes.contains(space);
 }
+
 static MessageChannel getKindOfChatMessage(const QStringRef &msg)
 {
     if(msg=="l" || msg=="local")                                                            // Aliases: local, l
@@ -979,11 +1049,13 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
         }
     }
 }
+
 static bool has_emote_prefix(const QString &cmd) // ERICEDIT: This encompasses all emotes.
 {
     return cmd.startsWith("em ",Qt::CaseInsensitive) || cmd.startsWith("e ",Qt::CaseInsensitive)
                 || cmd.startsWith("me ",Qt::CaseInsensitive) || cmd.startsWith("emote ",Qt::CaseInsensitive);
 }
+
 void MapInstance::on_console_command(ConsoleCommand * ev)
 {
     QString contents = ev->contents.simplified();
@@ -1008,6 +1080,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
         runCommand(contents,session);
     }
 }
+
 void MapInstance::on_emote_command(const QString &command, Entity *ent)
 {
     QString msg;                                                                // Initialize the variable to hold the debug message.
@@ -1567,6 +1640,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         qCDebug(logEmotes) << msg;
     }
 }
+
 void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -1575,6 +1649,7 @@ void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
     ent->m_player->m_gui.m_chat_divider_pos = ev->m_position;
     qCDebug(logMapEvents) << "Chat divider moved to " << ev->m_position << " for player" << ent->name();
 }
+
 void MapInstance::on_minimap_state(MiniMapState *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -1599,6 +1674,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
 
     sendServerMOTD(&session);
 }
+
 void MapInstance::on_location_visited(LocationVisited *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -1804,10 +1880,12 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
     ent->m_player->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
     //qCWarning(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
+
 const MapServerData &MapInstance::serverData() const
 {
     return g_GlobalMapServer->runtimeData();
 }
+
 void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
 {
     const MapServerData &data(g_GlobalMapServer->runtimeData());
@@ -1827,9 +1905,12 @@ void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
     ent->m_player->m_keybinds.setKeybindProfile(ev->profile);
     qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }
+
 void MapInstance::on_interact_with(InteractWithEntity *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with"<<ev->m_srv_idx;
 }
+
+//! @}

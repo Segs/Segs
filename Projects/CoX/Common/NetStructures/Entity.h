@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include "CommonNetStructures.h"
 #include "Powers.h"
@@ -18,6 +25,7 @@ class Team;
 class Character;
 struct PlayerData;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
+
 struct AngleRadians // TODO: Is this intended to be used?
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
@@ -112,6 +120,7 @@ public:
     //glm::quat quat;
     int m_timestamp;
 };
+
 class InputStateStorage
 {
 public:
@@ -146,6 +155,7 @@ public:
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
 };
+
 enum class FadeDirection
 {
     In,
@@ -163,6 +173,7 @@ struct CharacterFromDB
     uint32_t        sg_id;
     uint32_t        m_db_id;
 };
+
 enum class EntType : uint8_t
 {
     Invalid = 0,
@@ -178,6 +189,7 @@ enum class EntType : uint8_t
     DOOR           = 10,
     COUNT          = 11
 };
+
 enum class AppearanceType : uint8_t
 {
     None          = 0,
@@ -186,6 +198,7 @@ enum class AppearanceType : uint8_t
     VillainIndex  = 3,
     SequencerName = 4
 };
+
 struct SuperGroup
 {
     int             m_SG_id                 = {0};
@@ -196,6 +209,7 @@ struct SuperGroup
     uint32_t        m_SG_color2             = 0;            // supergroup color 2
     int             m_SG_rank               = 1;
 };
+
 struct NPCData
 {
     bool m_is_owned = false;
@@ -203,6 +217,7 @@ struct NPCData
     int npc_idx=0;
     int costume_variant=0;
 };
+
 class Entity
 {
     // only EntityStore can create instances of this class
@@ -322,6 +337,7 @@ static  void                sendPvP(BitStream &bs);
         void                fillFromCharacter();
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 };
+
 enum class DbStoreFlags : uint32_t
 {
     Gui        = 1,
@@ -330,6 +346,7 @@ enum class DbStoreFlags : uint32_t
     PlayerData = 7,
     Full       = ~0U,
 };
+
 void markEntityForDbStore(Entity *e,DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant);

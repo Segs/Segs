@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
+/*!
+ * @addtogroup MapServerEvents Projects/CoX/Servers/MapServer/Events
+ * @{
+ */
+
 #include "Events/SceneEvent.h"
 #include "MapEvents.h"
 
@@ -30,6 +42,7 @@ void SceneEvent::reqWorldUpdateIfPak(BitStream &)
     //src.GetBits(1);
     assert(0);
 }
+
 void SceneEvent::groupnetrecv_5(BitStream &src,int /*a*/,int /*b*/)
 {
     if(!src.GetBits(1))
@@ -44,8 +57,8 @@ void SceneEvent::serializefrom(BitStream &src)
     unkn1=false;
     //bool IAmAnArtist=false;
     undos_PP = src.GetPackedBits(1);
-    var_14 = src.GetBits(1);
-    if(var_14)
+    is_new_world = src.GetBits(1);
+    if(is_new_world)
     {
         m_outdoor_mission_map = src.GetBits(1);
         m_map_number = src.GetPackedBits(1);
@@ -81,12 +94,13 @@ void SceneEvent::serializefrom(BitStream &src)
     src.GetBits(32); //unused - crc ?
     ref_crc=src.GetBits(32); // 0x3f6057cf
 }
+
 void SceneEvent::serializeto(BitStream &tgt) const
 {
     tgt.StorePackedBits(1,6); // opcode
     tgt.StorePackedBits(1,undos_PP);
-    tgt.StoreBits(1,var_14);
-    if(var_14)
+    tgt.StoreBits(1,is_new_world);
+    if(is_new_world)
     {
         tgt.StoreString(m_map_desc);
         tgt.StoreBits(1,m_outdoor_mission_map);
@@ -144,3 +158,5 @@ void SceneEvent::serializeto(BitStream &tgt) const
     tgt.StoreBits(32,0); //unused - crc ?
     tgt.StoreBits(32,ref_crc); // 0x3f6057cf
 }
+
+//! @}

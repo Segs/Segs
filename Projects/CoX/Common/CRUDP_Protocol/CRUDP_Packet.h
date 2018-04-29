@@ -1,9 +1,8 @@
 /*
- * Super Entity Game Server
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2017 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
  */
 
 #pragma once
@@ -30,7 +29,6 @@ public:
     ~CrudP_Packet();
 
     uint32_t  GetBits(uint32_t nBits);
-    void GetBitArray(uint32_t nBytes, uint8_t *array);
     uint32_t  GetPackedBits(uint32_t nBits);
     void GetString(QString &str);
 

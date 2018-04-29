@@ -1,9 +1,13 @@
 /*
- * Super Entity Game Server
- * http://segs.sf.net/
- * Copyright (c) 2006 - 2017 Super Entity Game Server Team (see Authors.txt)
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
- *
+ */
+
+/*!
+ * @addtogroup Components
+ * @{
  */
 
 #include "BitStream.h"
@@ -365,8 +369,8 @@ int64_t BitStream::Get64Bits()
 
 size_t BitStream::GetAvailSize() const
 {
-    int64_t res = (int64_t)((m_size-m_write_off)-(m_write_bit_off!=0));
-    return std::max<size_t>(0,res);
+    int64_t res = int64_t(m_size)- int64_t(m_write_off)-(m_write_bit_off!=0);
+    return size_t(std::max<int64_t>(0,res));
 }
 /************************************************************************
 Function:    GetFloat/GetFloatWithDebugInfo()
@@ -452,3 +456,5 @@ void BitStream::GetAndDecompressString(QString &tgt)
     tgt = uncompr_zip(compr_data,decompLen);
     delete [] src;
 }
+
+//! @}

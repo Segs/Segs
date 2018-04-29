@@ -1,3 +1,10 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
+ */
+
 #pragma once
 #include <memory>
 
@@ -11,6 +18,7 @@ struct RetrieveAccountRequestData;
 struct RetrieveAccountResponseData;
 struct ValidatePasswordRequestData;
 struct ValidatePasswordResponseData;
+
 ///
 /// \brief The AuthDbSyncContext class is used as thread local storage for auth database related objects
 ///
