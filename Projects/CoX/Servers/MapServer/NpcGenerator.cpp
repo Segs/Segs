@@ -24,7 +24,7 @@ void NpcGenerator::generate(MapInstance *map_instance)
         e->m_char->setName(costume_name);
         e->m_direction = valquat;
         e->m_entity_data.m_orientation_pyr = {angles.x,angles.y,angles.z};
-        e->vel = { 0,0,0 };
+        e->m_velocity = { 0,0,0 };
     }
 }
 

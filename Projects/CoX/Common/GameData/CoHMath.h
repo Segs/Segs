@@ -15,8 +15,8 @@
 // AngleRadians for use in PosUpdate etc
 struct AngleRadians
 {
-    static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
-    float toDeg() { return AngleRadians((v*180.0f)/ float(M_PI)).v;}
+    static AngleRadians fromDeg(float deg) { return AngleRadians(deg*glm::pi<float>()/180.0f);}
+    float toDeg() { return AngleRadians((v*180.0f)/ glm::pi<float>()).v;}
     explicit AngleRadians(float x=0.0f) : v(x) {}
     AngleRadians operator-(const AngleRadians&ot) const
     {
@@ -92,7 +92,7 @@ struct AngleRadians
     }
     float fromIntegerForm(/*int v*/) const
     {
-        return (float(v)/2048.0f)*(2*M_PI) - M_PI;
+        return (float(v)/2048.0f)*glm::two_pi<float>() - glm::pi<float>();
     }
     explicit operator float() const {
         return v;
