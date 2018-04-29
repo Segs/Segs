@@ -36,7 +36,7 @@ MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
         case 9: return new NewEntity;
             //   default: return new MapUnknownRequest;
     }
-    ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled event type %d\n"),opcode));
+    qCWarning(logMapEvents, "Unhandled event type %d", opcode);
     return nullptr;
 }
 
@@ -83,7 +83,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 65: return new SaveClientOptions;
         case 67: return new DescriptionAndBattleCry;
     }
-    ACE_DEBUG ((LM_WARNING,ACE_TEXT ("Unhandled command event type %d\n"),opcode));
+    qCWarning(logMapEvents, "Unhandled command event type %d", opcode);
     return nullptr;
 }
 

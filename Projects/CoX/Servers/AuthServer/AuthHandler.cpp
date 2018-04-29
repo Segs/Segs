@@ -130,7 +130,7 @@ void AuthHandler::on_connect( ConnectEvent *ev )
     lnk->m_state=AuthLink::CONNECTED;
     uint32_t seed = 0x1; //TODO: rand()
     lnk->init_crypto(30206,seed);
-    //ACE_DEBUG((LM_WARNING,ACE_TEXT("(%P|%t) Crypto seed %08x\n"), seed ));
+    //qWarning("Crypto seed %08x", seed);
 
     lnk->putq(new AuthorizationProtocolVersion(30206,seed));
 }
@@ -147,7 +147,7 @@ void AuthHandler::on_disconnect(DisconnectEvent *ev)
     session.m_state = AuthSession::NOT_LOGGED_IN;
     if (!session.m_auth_data)
     {
-        ACE_DEBUG((LM_WARNING, ACE_TEXT("(%P|%t) Client disconnected without a valid login attempt. Old client ?\n")));
+        qWarning("Client disconnected without a valid login attempt. Old client ?");
     }
     {
         SessionStore::MTGuard guard(m_sessions.reap_lock());
@@ -216,7 +216,7 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
         lnk->putq(s_auth_error_locked_account.shallow_copy());
         return;
     }
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\tid : %I64u\n"),acc_inf.m_acc_server_acc_id));
+    qDebug("Server Account Id : %d", acc_inf.m_acc_server_acc_id);
     // step 3d: checking if this account is blocked
     if(isClientConnectedAnywhere(acc_inf.m_acc_server_acc_id))
     {
@@ -234,7 +234,7 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
             sess_token = existing_sess_tok;
             if(old_sess_ptr->m_state != AuthSession::NOT_LOGGED_IN)
                 {
-                    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : failed\n")));
+                    qDebug() << "Login failed";
                     lnk->putq(s_auth_error_wrong_login_pass.shallow_copy());
                     return;
                 }
@@ -260,7 +260,7 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
 
     // if there were no errors and the provided password is valid and admin server has logged us in.
     // inform the client of the successful login attempt
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\t\t : succeeded\n")));
+    qDebug() << "Login successful";
     sess_ptr->m_state = AuthSession::LOGGED_IN;
     lnk->m_state = AuthLink::AUTHORIZED;
     m_sessions.setTokenForId(sess_ptr->m_auth_id,lnk->session_token());
@@ -299,7 +299,7 @@ void AuthHandler::on_login( LoginRequest *ev )
         lnk->putq(s_auth_error_unknown.shallow_copy());
         return;
     }
-    qDebug() <<"User" << ev->m_data.login<< "trying to login from" << lnk->peer_addr().get_host_addr();
+    qDebug() << "User" << ev->m_data.login << "trying to login from" << lnk->peer_addr().get_host_addr();
     if(strlen(ev->m_data.login)<=2)
     {
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
@@ -335,7 +335,7 @@ void AuthHandler::on_server_list_request( ServerListRequest *ev )
         lnk->putq(s_auth_error_unknown.shallow_copy());
         return;
     }
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Client requesting server list\n")));
+    qDebug() << "Client requesting server list...";
     lnk->m_state = AuthLink::CLIENT_SERVSELECT;
     ServerListResponse *r=new ServerListResponse;
     std::deque<GameServerInfo> info;

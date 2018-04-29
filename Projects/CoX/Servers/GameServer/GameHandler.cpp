@@ -387,7 +387,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
                                     selected_slot, ev->m_character_index, ev->m_char_name, map_path,
                                     uint16_t(session.m_game_account.m_max_slots)},
                                    lnk->session_token());
-    fprintf(stderr, " Telling map server to expect a client with character %s,%d\n", qPrintable(ev->m_char_name),
+    qInfo("Telling map server to expect a client with character %s, %d\n", qPrintable(ev->m_char_name),
             ev->m_character_index);
     session.m_direction = GameSession::EXITING_TO_MAP;
     map_handler->putq(expect_client);
@@ -395,7 +395,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
 
 void GameHandler::on_unknown_link_event(GameUnknownRequest *)
 {
-        ACE_DEBUG((LM_WARNING,ACE_TEXT("Unknown GameHandler link event.\n")));
+        qWarning() << "Unknown GameHandler link event";
 }
 
 void GameHandler::on_expect_client( ExpectClientRequest *ev )

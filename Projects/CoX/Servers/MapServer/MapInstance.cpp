@@ -158,7 +158,6 @@ void MapInstance::start(const QString &scenegraph_path)
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
     m_link_timer.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
-    qInfo() << "Server running... awaiting client connections."; // best place for this?
 }
 
 ///
@@ -573,7 +572,11 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
     if (logSpawn().isDebugEnabled())
+    {
+        qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
         map_session.m_ent->dump();
+    }
+
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
     tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
@@ -652,7 +655,7 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->m_map_desc        = QString("maps/City_Zones/%1/%1.txt").arg(map_desc_from_path);
     res->current_map_flags = true; // off 1
     res->unkn1             = 1;
-    ACE_DEBUG((LM_DEBUG, ACE_TEXT("%d - %d - %d\n"), res->unkn1, res->undos_PP, res->current_map_flags));
+    qDebug("Scene Request: unkn1: %d, undos_PP: %d, current_map_flags: %d", res->unkn1, res->undos_PP, res->current_map_flags);
     res->unkn2 = true;
     lnk->putq(res);
 }
@@ -750,7 +753,7 @@ void MapInstance::on_input_state(InputState *st)
     MapClientSession &session(m_session_store.session_from_event(st));
     Entity *   ent = session.m_ent;
     if (st->m_data.has_input_commit_guess)
-        ent->m_input_ack = st->m_data.send_id;
+        ent->m_input_ack = st->m_data.m_send_id;
     ent->inp_state = st->m_data;
     // Set Target
     ent->m_target_idx = st->m_target_idx;

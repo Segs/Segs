@@ -24,6 +24,7 @@
 #include "Logging.h"
 
 #include <QByteArray>
+#include <glm/ext.hpp>
 #include <cmath>
 #include <iso646.h>
 
@@ -455,8 +456,7 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
 
 void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
-    // user entity
-    Entity *ent = src.m_client->m_ent;
+    Entity *ent = src.m_client->m_ent; // user entity
 
     SurfaceParams surface_params[2];
     memset(&surface_params,0,2*sizeof(SurfaceParams));
@@ -472,8 +472,8 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         //rand()&0xFF
         bs.StoreBits(8,ent->m_update_id);
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
-        // This is entity speed vector !!
-        storeVector(bs,ent->m_spd);
+
+        storeVector(bs,ent->m_spd); // This is entity speed vector !!
 
         bs.StoreFloat(ent->m_backup_spd);         // Backup Speed default = 1.0f
         bs.StoreBitArray((uint8_t *)&surface_params,2*sizeof(SurfaceParams)*8);
@@ -512,7 +512,7 @@ void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
     if( !target->m_full_update )
         bs.StoreBits(1,target->m_has_control_id);
 
-    qCDebug(logInput,"Phys: send %d ",target->m_input_ack);
+    qCDebug(logPosition,"Input_Ack: %d",target->m_input_ack);
 
     if( target->m_full_update || target->m_has_control_id)
         bs.StoreBits(16,target->m_input_ack); //target->m_input_ack
@@ -521,7 +521,10 @@ void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
         for(int i=0; i<3; ++i)
             bs.StoreFloat(target->m_entity_data.m_pos[i]); // server position
         for(int i=0; i<3; ++i)
-            storeFloatConditional(bs,target->vel[i]);
+            storeFloatConditional(bs,target->m_velocity[i]);
+
+        qCDebug(logPosition) << "position" << glm::to_string(target->m_entity_data.m_pos).c_str();
+        qCDebug(logPosition) << "velocity" << glm::to_string(target->m_velocity).c_str();
     }
 }
 
@@ -561,13 +564,13 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
     storeTeamList(src,bs);
     storeSuperStats(src,bs);
     storeGroupDyn(src,bs);
-    bool additional = ent->u3; // used to force the client camera direction
-    bs.StoreBits(1,additional);
-    if(additional)
+
+    bs.StoreBits(1,ent->m_force_camera_dir);
+    if(ent->m_force_camera_dir)
     {
-        bs.StoreFloat(ent->inp_state.camera_pyr.p); // force camera_pitch
-        bs.StoreFloat(ent->inp_state.camera_pyr.y); // force camera_yaw
-        bs.StoreFloat(ent->inp_state.camera_pyr.r); // force camera_roll
+        bs.StoreFloat(ent->inp_state.m_camera_pyr.p); // force camera_pitch
+        bs.StoreFloat(ent->inp_state.m_camera_pyr.y); // force camera_yaw
+        bs.StoreFloat(ent->inp_state.m_camera_pyr.r); // force camera_roll
     }
 }
 }
@@ -576,18 +579,16 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
 EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
     MapLinkEvent(MapEventTypes::evEntitites)
 {
-    m_map_time_of_day = 10;
-    m_client = cl;
-    m_interpolation_level = 2;
-    m_interpolation_bits=1;
-    //m_interpolation_level
+    m_map_time_of_day       = 10;
+    m_client                = cl;
+    g_interpolation_level   = 2;
+    g_interpolation_bits    = 1;
 }
 
 void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
     MapInstance *mi = m_client->m_current_map;
     EntityManager &ent_manager(mi->m_entities);
-
 
     tgt.StorePackedBits(1,m_incremental ? 2 : 3); // opcode  3 - full update.
 
@@ -597,16 +598,16 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
 
     tgt.StoreBits(32,abs_time);
     //tgt.StoreBits(32,db_time);
-    bool all_defaults = (debug_info==0) && (m_interpolation_level==2) && (m_interpolation_bits==1);
+    bool all_defaults = (debug_info==0) && (g_interpolation_level==2) && (g_interpolation_bits==1);
     tgt.StoreBits(1,all_defaults);
     if(!all_defaults)
     {
         tgt.StoreBits(1,debug_info);
-        tgt.StoreBits(1,m_interpolation_level!=0);
-        if(m_interpolation_level!=0)
+        tgt.StoreBits(1,g_interpolation_level!=0);
+        if(g_interpolation_level!=0)
         {
-            tgt.StoreBits(2,m_interpolation_level);
-            tgt.StoreBits(2,m_interpolation_bits);
+            tgt.StoreBits(2,g_interpolation_level);
+            tgt.StoreBits(2,g_interpolation_bits);
         }
     }
     ;

@@ -72,6 +72,8 @@ bool MapServer::Run()
         return false;
     }
     assert(d->m_manager.num_templates()>0); // we have to have a world to run
+
+    qInfo() << "Server running... awaiting client connections."; // best place for this?
     return true;
 }
 

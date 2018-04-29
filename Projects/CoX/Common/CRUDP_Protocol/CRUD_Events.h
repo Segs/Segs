@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Buffer.h"
+#include "Logging.h"
 #include "CRUDP_Packet.h"
 #include "CRUDP_Protocol.h"
 #include "EventProcessor.h"
@@ -146,7 +147,7 @@ public:
             return new DisconnectRequest(); // CTRL_DISCONNECT_REQ
         default: break;
         }
-        ACE_DEBUG((LM_WARNING, ACE_TEXT("Unhandled control event type %d\n"), control_opcode));
+        qWarning("Unhandled control event type %d", control_opcode);
         return nullptr;
     }
 };
