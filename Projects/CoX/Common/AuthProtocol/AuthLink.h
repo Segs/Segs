@@ -24,7 +24,6 @@
 #include <ace/Event_Handler.h>
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
-#include <QtCore/QDebug>
 class SEGSEvent;
 
 enum class AuthLinkType
