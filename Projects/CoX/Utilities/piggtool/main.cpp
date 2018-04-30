@@ -178,7 +178,7 @@ void saveFile(const QString &fname,const QByteArray &data) {
 
 }
 
-void extractAllFiles(PiggFile &pigg)
+void extractAllFiles(PiggFile &pigg,const QString &tgt_path)
 {
     QFile src_fl(pigg.fname);
     if(!src_fl.open(QFile::ReadOnly)) {
@@ -188,18 +188,18 @@ void extractAllFiles(PiggFile &pigg)
     const QDir curdir(QDir::current());
     for(const PiggInternalHeader & ih : pigg.headers) {
         const QString target_fname=pigg.strings_table.data_parts[ih.name_id];
-        qDebug().noquote() << "Extracting"<<target_fname;
+        //qDebug().noquote() << "Extracting"<<target_fname;
         src_fl.seek(ih.offset);
         bool was_packed = ih.packed_size!=0;
         QByteArray src_data = src_fl.read(was_packed ? ih.packed_size : ih.size);
-        const QFileInfo fi(target_fname);
+        const QFileInfo fi(tgt_path+"/"+target_fname);
         if(!curdir.exists(fi.path()))
             curdir.mkpath(fi.path());
         if(was_packed) {
             QByteArray actual_data = uncompr_zip(src_data,ih.size);
             src_data = actual_data;
         }
-        saveFile(target_fname,src_data);
+        saveFile(tgt_path+"/"+target_fname,src_data);
     }
 }
 }
@@ -214,14 +214,16 @@ int main(int argc, char **argv)
         {"x", "Extract all files from pigg archive "},
     });
     parser.addPositionalArgument("pigg_file", "File to process");
+    parser.addPositionalArgument("target_directory", "directory to put extracted files in");
     parser.addHelpOption();
 
     parser.process(app);
     if(parser.positionalArguments().isEmpty() || parser.optionNames().isEmpty()) {
         parser.showHelp(0);
     }
-
-    const QString pigg_name = parser.positionalArguments().constFirst();
+    QStringList positionals = parser.positionalArguments();
+    const QString &pigg_name = positionals.constFirst();
+    QString target_dir = positionals.count()>1 ? positionals[1] : "data";
     PiggFile hdr;
     if(!loadPigg(pigg_name,hdr))
     {
@@ -231,7 +233,7 @@ int main(int argc, char **argv)
         dumpFileList(hdr);
     }
     else if(parser.isSet("x")) {
-        extractAllFiles(hdr);
+        extractAllFiles(hdr,target_dir);
     }
     return 0;
 }

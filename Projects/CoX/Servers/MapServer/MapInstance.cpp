@@ -23,6 +23,7 @@
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
 #include "EntityStorage.h"
+#include "MapSceneGraph.h"
 #include "WorldSimulation.h"
 #include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/Database.h"
@@ -99,7 +100,7 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     m_endpoint->set_downstream(this);
 }
 
-void MapInstance::start()
+void MapInstance::start(const QString &scenegraph_path)
 {
     assert(m_world_update_timer==nullptr);
     assert(m_game_server_id!=255);
@@ -108,9 +109,43 @@ void MapInstance::start()
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
+        m_npc_generators.m_generators["NPCDrones"] = {"Police_Drone",EntType::NPC,{}};
+        for(int i=0; i<7; ++i)
+        {
+            QString right_whare=QString("Door_Right_Whare_0%1").arg(i);
+            m_npc_generators.m_generators[right_whare] = {right_whare, EntType::DOOR, {}};
+            QString left_whare=QString("Door_Left_Whare_0%1").arg(i);
+            m_npc_generators.m_generators[left_whare] = {left_whare,EntType::DOOR,{}};
+            QString left_city=QString("Door_Left_City_0%1").arg(i);
+            m_npc_generators.m_generators[left_city] = {left_city,EntType::DOOR,{}};
+            QString right_city=QString("Door_Right_City_0%1").arg(i);
+            m_npc_generators.m_generators[right_city] = {right_city,EntType::DOOR,{}};
+            QString right_store=QString("Door_Right_Store_0%1").arg(i);
+            m_npc_generators.m_generators[right_store] = {right_store,EntType::DOOR,{}};
+            QString left_store=QString("Door_Left_Store_0%1").arg(i);
+            m_npc_generators.m_generators[left_store] = {left_store,EntType::DOOR,{}};
+        }
+        m_npc_generators.m_generators["Door_reclpad"] = {"Door_reclpad",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_elevator"] = {"Door_elevator",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Left_Res_03"] = {"Door_Left_Res_03",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Right_Res_03"] = {"Door_Right_Res_03",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Right_Ind_01"] = {"Door_Right_Ind_01",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Left_Ind_01"] = {"Door_Left_Ind_01",EntType::DOOR,{}};
+
+        bool scene_graph_loaded = false;
+        TIMED_LOG({
+                m_map_scenegraph = new MapSceneGraph;
+                scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
+                m_new_player_spawns = m_map_scenegraph->spawn_points("NewPlayer");
+            }, "Loading original scene graph"
+            );
+        TIMED_LOG({
+            m_map_scenegraph->spawn_npcs(this);
+            m_npc_generators.generate(this);
+            },"Spawning npcs");
+        qInfo() << "Loading custom scripts";
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
-
         loadAndRunLua(m_scripting_interface,locations_scriptname);
         loadAndRunLua(m_scripting_interface,plaques_scriptname);
     }
@@ -493,6 +528,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     Entity *ent = m_entities.CreatePlayer();
     toActualCharacter(*request_data.char_from_db, *ent->m_char,*ent->m_player);
     ent->fillFromCharacter();
+    ent->m_client = &map_session;
     map_session.m_ent = ent;
     // Now we inform our game server that this Map server instance is ready for the client
 
@@ -573,8 +609,13 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
 
         fillEntityFromNewCharData(*e, ev->m_character_data, data.getPacker(),data.m_keybind_profiles);
         e->m_char->m_account_id = map_session.auth_id();
-        e->m_entity_data.m_access_level = map_session.m_access_level;
+        e->m_client = &map_session;
         map_session.m_ent = e;
+        if(m_new_player_spawns.empty())
+            e->m_entity_data.m_pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting Location
+        else
+            e->m_entity_data.m_pos = glm::vec3(m_new_player_spawns[rand()%m_new_player_spawns.size()][3]);
+        e->m_entity_data.m_access_level = map_session.m_access_level;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
         GameAccountResponseCharacterData char_data;
@@ -675,6 +716,7 @@ void MapInstance::sendState() {
 
     for(;iter!=end; ++iter)
     {
+
         MapClientSession *cl = *iter;
         EntitiesResponse *res=new EntitiesResponse(cl);
         res->m_map_time_of_day = m_world->time_of_day();
@@ -1877,6 +1919,15 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
 const MapServerData &MapInstance::serverData() const
 {
     return g_GlobalMapServer->runtimeData();
+}
+
+glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
+{
+    if(!m_new_player_spawns.empty())
+    {
+        return m_new_player_spawns.front()[3];
+    }
+    return glm::vec3(0,0,0);
 }
 
 void MapInstance::on_reset_keybinds(ResetKeybinds *ev)

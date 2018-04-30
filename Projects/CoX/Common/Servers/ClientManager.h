@@ -138,7 +138,6 @@ public:
                 // if we already expect this client
                 if (sess.m_cookie == cook)
                 {
-                    assert(false);
                     // return pregenerated cookie
                     return cook;
                 }

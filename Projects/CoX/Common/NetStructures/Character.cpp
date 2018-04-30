@@ -504,6 +504,8 @@ bool fromActualCharacter(const Character &src,const PlayerData &player, GameAcco
         main_costume.m_body_type = src.m_costumes.back().m_body_type;
         main_costume.m_slot_index = costume.getSlotIndex();
         main_costume.m_character_id= costume.getCharacterId();
+        main_costume.m_height = costume.m_height;
+        main_costume.m_physique = costume.m_physique;
     }
     return true;
 }

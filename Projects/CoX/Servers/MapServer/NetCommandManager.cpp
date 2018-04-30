@@ -170,7 +170,10 @@ void NetCommandManager::SendCommandShortcuts( MapClientSession *client,BitStream
             serializeto(tgt,m_commands_level0,commands2);
             break;
         default:
-            assert(false);
+            // add shortcuts to client's shortcut map.
+            for (size_t i = 0; i<m_commands_level0.size(); ++i)
+                client->AddShortcut(i, m_commands_level0[i]);
+            serializeto(tgt, m_commands_level0, commands2);
     }
 }
 

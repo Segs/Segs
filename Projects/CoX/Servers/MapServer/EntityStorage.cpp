@@ -160,7 +160,15 @@ Entity * EntityManager::CreateNpc(const Parse_NPC &tpl,int idx,int variant)
     initializeNewNpcEntity(*res,&tpl,idx,variant);
     return res;
 }
+Entity * EntityManager::CreateGeneric(const Parse_NPC &tpl,int idx,int variant,EntType type)
+{
+    Entity *res = m_store.get();
+    m_live_entlist.insert(res);
 
+    initializeNewNpcEntity(*res,&tpl,idx,variant);
+    res->m_type = type;
+    return res;
+}
 void EntityManager::removeEntityFromActiveList(Entity *ent)
 {
     ent->m_client = nullptr;

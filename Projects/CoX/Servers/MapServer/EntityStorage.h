@@ -50,6 +50,7 @@ public:
     void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
     Entity *        CreateNpc(const Parse_NPC &tpl, int idx, int variant);
+    Entity *        CreateGeneric(const Parse_NPC &tpl, int idx, int variant, EntType type);
     void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }

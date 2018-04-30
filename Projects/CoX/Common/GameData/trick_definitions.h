@@ -136,6 +136,14 @@ struct GeometryModifiers
     float                         LodScale;
 };
 
+enum TexOpt : uint32_t
+{
+    FADE        = 0x0001,
+    DUAL        = 0x0010,
+    REPLACEABLE = 0x0800,
+    BUMPMAP     = 0x1000,
+};
+
 struct AllTricks_Data
 {
     std::vector<TextureModifiers>  texture_mods;
