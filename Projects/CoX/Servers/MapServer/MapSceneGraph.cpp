@@ -131,13 +131,13 @@ struct NpcCreator
             }
             if (prop.propName.contains("NPC", Qt::CaseInsensitive))
             {
-                qDebug() << prop.propName << '=' << prop.propValue;
+                qCDebug(logNPCs) << prop.propName << '=' << prop.propValue;
                 has_npc = true;
             }
         }
         if(has_npc && map_instance)
         {
-            qDebug() << "Attempt to spawn npc" << persistant_name << "at"<<v[3][0] << v[3][1] << v[3][2];
+            qCDebug(logNPCs) << "Attempting to spawn npc" << persistant_name << "at" << v[3][0] << v[3][1] << v[3][2];
             const NPCStorage & npc_store(map_instance->serverData().getNPCDefinitions());
             QString npc_costume_name = convertNpcName(persistant_name);
             const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_costume_name);
@@ -151,7 +151,7 @@ struct NpcCreator
                 glm::vec3 angles = glm::eulerAngles(valquat);
                 angles.y += glm::pi<float>();
                 valquat = glm::quat(angles);
-                e->m_char->setName(npc_costume_name);
+                e->m_char->setName(makeReadableName(npc_costume_name));
                 e->m_direction = valquat;
                 e->m_entity_data.m_orientation_pyr = {angles.x,angles.y,angles.z};
                 e->m_velocity = { 0,0,0 };
@@ -177,7 +177,7 @@ struct NpcCreator
         {
             if(!m_reported_generators.contains(generator_type))
             {
-                qDebug() << "Missing generator for"<<generator_type;
+                qCDebug(logNPCs) << "Missing generator for" << generator_type;
                 m_reported_generators.insert(generator_type);
             }
             return true;

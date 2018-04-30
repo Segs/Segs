@@ -28,3 +28,5 @@ struct NpcGeneratorStore
     QHash<QString,NpcGenerator> m_generators;
     void generate(class MapInstance *instance);
 };
+
+QString makeReadableName(QString &name);
