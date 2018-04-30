@@ -64,6 +64,6 @@ struct Parse_NPC
     int m_XP;
     std::vector<NPCPower_Desc> m_Powers;
     std::vector<Parse_Costume> m_Costumes;
-    bool has_variant(size_t idx) const { return idx<m_Costumes.size(); }
+    bool has_variant(uint32_t idx) const { return idx<m_Costumes.size(); }
 };
 using AllNpcs_Data = std::vector<Parse_NPC>;

@@ -138,7 +138,7 @@ struct GameAccountResponseCharacterData
     uint32_t m_account_id;
 
     int index;
-    size_t m_current_costume_idx;
+    uint32_t m_current_costume_idx;
     bool m_villain;
     bool m_multiple_costumes;
     void reset()

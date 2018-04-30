@@ -566,7 +566,6 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         Entity *e = m_entities.CreatePlayer();
 
         const MapServerData &data(g_GlobalMapServer->runtimeData());
-        //const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
 
         fillEntityFromNewCharData(*e, ev->m_character_data, data.getPacker(),data.m_keybind_profiles);
         e->m_char->m_account_id = map_session.auth_id();
@@ -669,10 +668,6 @@ void MapInstance::sendState() {
     auto iter=m_session_store.begin();
     auto end=m_session_store.end();
 
-    static bool only_first=true; // --> atm this is only changed below but not used
-    static int resendtxt=0;
-    resendtxt++;
-
     for(;iter!=end; ++iter)
     {
         MapClientSession *cl = *iter;
@@ -690,12 +685,6 @@ void MapInstance::sendState() {
         res->ent_major_update = true;
         res->abs_time = 30*100*(m_world->accumulated_time);
         cl->link()->putq(res);
-    }
-
-    only_first=false;
-    if(resendtxt==15)
-    {
-        resendtxt=0;
     }
 
     // This is handling instance-wide timers

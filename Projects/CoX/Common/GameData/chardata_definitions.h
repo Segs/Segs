@@ -29,7 +29,7 @@ static const constexpr  uint32_t        class_version   = 1;
 
 struct CharacterData
 {
-static const constexpr  uint32_t    class_version       = 3;
+static const constexpr  uint32_t    class_version       = 4;
                         uint32_t    m_level             = 0;
                         uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
                         uint32_t    m_experience_points = 0;
