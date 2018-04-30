@@ -81,9 +81,6 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const ColorAndPartPacke
     e.m_player->m_keybinds.resetKeybinds(default_profiles);
     e.m_is_hero = true;
 
-    // New Character Spawn Location
-    //e.m_entity_data.pos                 = glm::vec3(-60.5f,180.0f,0.0f); // Tutorial Starting Location
-    e.m_entity_data.m_pos                   = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting Location
     e.m_direction                         = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 

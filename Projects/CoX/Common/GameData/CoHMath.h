@@ -15,8 +15,8 @@
 // AngleRadians for use in PosUpdate etc
 struct AngleRadians
 {
-    static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
-    float toDeg() { return AngleRadians((v*180.0f)/ float(M_PI)).v;}
+    static AngleRadians fromDeg(float deg) { return AngleRadians(deg*glm::pi<float>()/180.0f);}
+    float toDeg() { return AngleRadians((v*180.0f)/ glm::pi<float>()).v;}
     explicit AngleRadians(float x=0.0f) : v(x) {}
     AngleRadians operator-(const AngleRadians&ot) const
     {
@@ -92,7 +92,7 @@ struct AngleRadians
     }
     float fromIntegerForm(/*int v*/) const
     {
-        return (float(v)/2048.0f)*(2*M_PI) - M_PI;
+        return (float(v)/2048.0f)*glm::two_pi<float>() - glm::pi<float>();
     }
     explicit operator float() const {
         return v;
@@ -298,8 +298,7 @@ inline uint32_t AngleQuantize(float val,int numb_bits)
     int max_val = 1<<numb_bits;
 
     float v = normalizeRadAngle(val); // ensure v falls within -pi..pi
-    v = (v+glm::pi<float>())/glm::two_pi<float>();
-    v *= max_val;
-//  assert(v<=max_val);
+    v = (v+glm::pi<float>())/glm::two_pi<float>(); // 0..1
+    v *= max_val; // 0..max_val
     return uint32_t(v);
 }

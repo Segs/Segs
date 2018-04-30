@@ -33,7 +33,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="documentMode">
        <bool>true</bool>
@@ -43,6 +43,13 @@
         <string>Generic</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QCheckBox" name="show_editor_nodes">
+          <property name="text">
+           <string>Also show editor nodes</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QLabel" name="label_4">
           <property name="text">
@@ -132,6 +139,13 @@
           </layout>
          </widget>
         </item>
+        <item>
+         <widget class="QPlainTextEdit" name="propertiesTxt">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_2">
@@ -172,7 +186,7 @@
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
-     <string>Options</string>
+     <string>Optio&amp;ns</string>
     </property>
     <addaction name="actionSet_data_paths"/>
    </widget>
@@ -182,12 +196,12 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLoad_Scene_Graph">
    <property name="text">
-    <string>Load Scene Graph</string>
+    <string>&amp;Load Scene Graph</string>
    </property>
   </action>
   <action name="actionSet_data_paths">
    <property name="text">
-    <string>Set data paths</string>
+    <string>&amp;Set data paths</string>
    </property>
   </action>
  </widget>

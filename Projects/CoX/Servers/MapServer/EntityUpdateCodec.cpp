@@ -26,8 +26,7 @@
 namespace  {
 void storeCreation(const Entity &src, BitStream &bs)
 {
-    qCDebug(logSpawn) << "Sending create entity:" << src.name(); // Entity creation
-
+    // entity creation
     bs.StoreBits(1,src.m_destroyed); // ends creation destroys seq and returns NULL
 
     if(src.m_destroyed)
@@ -131,13 +130,8 @@ void storeOrientation(const Entity &src,BitStream &bs)
     storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
 
     qCDebug(logOrientation, "updates: %i",updates);
-
-    float pyr_angles[3];
-    glm::vec3 vec = toCoH_YPR(src.m_direction);
-    pyr_angles[0] = 0.0f;
-    pyr_angles[1] = vec.y; // set only yaw value
-    pyr_angles[2] = 0.0f;
-
+    glm::vec3 pyr_angles(0);
+    pyr_angles.y = src.m_entity_data.m_orientation_pyr.y;
     // output everything
     qCDebug(logOrientation, "Player: %d", src.m_idx);
     qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
@@ -214,10 +208,10 @@ void sendNetFx(const Entity &src,BitStream &bs)
     //NetFx.serializeto();
     for(int i=0; i<src.m_num_fx; i++)
     {
-        bs.StoreBits(8,src.m_fx1[i]); // command
-        bs.StoreBits(32,src.m_fx2[i]); // NetID
-        bs.StoreBits(1,0);
-        storePackedBitsConditional(bs,10,0xCB8); // handle
+        bs.StoreBits(8,src.m_fx1[i].command); // command
+        bs.StoreBits(32,src.m_fx1[i].net_id); // NetID
+        bs.StoreBits(1,src.m_fx1[i].pitch_to_target);
+        storePackedBitsConditional(bs,10, src.m_fx1[i].handle); // handle
         storeBitsConditional(bs,4,0); // client timer
         storeBitsConditional(bs,32,0); // clientTriggerFx
         storeFloatConditional(bs,0.0); // duration

@@ -76,31 +76,6 @@ ConvertedRootNode *newRef(CoHSceneGraph &scene)
     return scene.refs[idx];
 }
 
-bool LoadScene(const QString &fname,SceneGraph_Data &scenegraph)
-{
-    BinStore binfile;
-
-    if(fname.contains(".crl")) {
-        if(!loadFrom(fname,scenegraph))
-        {
-            qCritical() << "Failed to serialize data from crl:" << fname;
-            return false;
-        }
-    }
-    else
-    {
-        if(!binfile.open(fname,scenegraph_i0_2_requiredCrc)) {
-            qCritical() << "Failed to open original bin:" << fname;
-            return false;
-        }
-        if(!loadFrom(&binfile,scenegraph)) {
-            qCritical() << "Failed to load data from original bin:" << fname;
-            return false;
-        }
-    }
-    return true;
-}
-
 CoHNode * getNodeByName(const CoHSceneGraph &conv,const QString &a1)
 {
     QString filename;
@@ -340,30 +315,34 @@ bool addNode(CoHSceneGraph &conv,const SceneGraphNode_Data &defload, NameList &r
     if (defload.p_Grp.empty() && defload.p_Obj.isEmpty())
         return false;
     QString obj_path = groupRename(conv,renamer, defload.name, 1);
-    CoHNode * a1 = getNodeByName(conv,obj_path);
-    if ( !a1 )
-        a1 = newDef(conv);
+    CoHNode * node = getNodeByName(conv,obj_path);
+    if ( !node )
+    {
+        node = newDef(conv);
+        if (!defload.p_Property.empty())
+            node->properties = new std::vector<GroupProperty_Data> (defload.p_Property);
+    }
     if ( !defload.p_Obj.isEmpty() )
     {
-        a1->model = groupModelFind(defload.p_Obj);
-        if ( !a1->model )
+        node->model = groupModelFind(defload.p_Obj);
+        if ( !node->model )
         {
             qCritical() << "Cannot find root geometry in" << defload.p_Obj;
         }
-        groupApplyModifiers(a1);
+        groupApplyModifiers(node);
     }
-    setNodeNameAndPath(conv,a1,obj_path);
-    addChildNodes(conv,defload,a1,renamer);
+    setNodeNameAndPath(conv,node,obj_path);
+    addChildNodes(conv,defload,node,renamer);
 
-    if ( a1->children.empty() && !a1->model )
+    if ( node->children.empty() && !node->model )
     {
         qDebug() << "Should delete def"<<defload.name<<" after conversion it has no children, nor models";
         return false;
     }
-    addLod(defload.p_Lod, a1);
+    addLod(defload.p_Lod, node);
 
-    nodeCalculateBounds(a1);
-    nodeSetVisBounds(a1);
+    nodeCalculateBounds(node);
+    nodeSetVisBounds(node);
     return true;
 }
 
@@ -478,7 +457,7 @@ bool loadSceneGraph(CoHSceneGraph &conv,const QString &path)
     my_name_list.basename = buildBaseName(path);
     SceneGraph_Data scenegraph;
     binName.replace("CHUNKS.bin","Chunks.bin");
-    LoadScene(binName,scenegraph);
+    LoadSceneData(binName,scenegraph);
     PostProcessScene(scenegraph,conv,my_name_list,path);
     return true;
 }
@@ -488,7 +467,7 @@ extern int created_node_count;
 //TODO: convert this from recursive function into iterative one.
 Urho3D::Node * convertedNodeToLutefisk(CoHNode *conv_node, const Urho3D::Matrix3x4 &mat, Context *ctx, int depth, int opt)
 {
-    
+
     ResourceCache* cache = ctx->m_ResourceCache.get();
     Urho3D::Node * node = new Node(ctx);
     created_node_count++;

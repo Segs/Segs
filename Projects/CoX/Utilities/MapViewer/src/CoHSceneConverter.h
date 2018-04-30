@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "GameData/scenegraph_definitions.h"
 #include <Lutefisk3D/Math/Matrix3x4.h>
 #include <Lutefisk3D/Math/BoundingBox.h>
 #include <Lutefisk3D/Container/Ptr.h>
@@ -60,6 +61,7 @@ struct CoHNode
     Urho3D::BoundingBox           m_bbox;
     glm::vec3                     center;
     Urho3D::WeakPtr<Urho3D::Node> m_lutefisk_result;
+    std::vector<GroupProperty_Data> *properties = nullptr;
     float                         radius        = 0;
     float                         vis_dist      = 0;
     float                         lod_near      = 0;
@@ -75,11 +77,9 @@ struct CoHNode
 
 struct ConvertedRootNode
 {
-    Urho3D::Matrix3x4 mat;
+    glm::mat4 mat;
     CoHNode *node = nullptr;
     uint32_t index_in_roots_array=0;
-
-
 };
 
 struct CoHSceneGraph

@@ -223,9 +223,9 @@ void InputState::extended_input(BitStream &bs)
 
     if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )
     {
-        m_data.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[0]);
-        m_data.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11); //pak->SendBits(11, control_state.field_1C[1]);
-        qCDebug(logOrientation, "%f : %f",m_data.m_orientation_pyr[0],m_data.m_orientation_pyr[1]);;
+        m_data.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11);
+        m_data.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11);
+        qCDebug(logOrientation, "%f : %f",m_data.m_orientation_pyr[0],m_data.m_orientation_pyr[1]);
     }
 }
 

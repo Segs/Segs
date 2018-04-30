@@ -13,6 +13,7 @@
 #include "Servers/ServerEndpoint.h"
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
+#include "NpcGenerator.h"
 
 #include <map>
 #include <memory>
@@ -26,6 +27,7 @@ class SEGSTimer;
 class InputState;
 class World;
 class MapServerData;
+struct MapSceneGraph;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -41,7 +43,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
-
+        std::vector<glm::mat4>  m_new_player_spawns;
         World *                 m_world;
         uint8_t                 m_game_server_id=255; // 255 is `invalid` id
         uint32_t                m_owner_id;
@@ -53,6 +55,8 @@ public:
         ScriptEnginePtr         m_scripting_interface;
         MapLinkEndpoint *       m_endpoint = nullptr;
         ListenAndLocationAddresses m_addresses; //! this value is sent to the clients
+        MapSceneGraph *         m_map_scenegraph;
+        NpcGeneratorStore       m_npc_generators;
 
 public:
                                 MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr);
@@ -60,12 +64,13 @@ public:
         void                    dispatch(SEGSEvent *ev) override;
 
         void                    enqueue_client(MapClientSession *clnt);
-        void                    start();
+        void                    start(const QString &scenegraph_path);
         const QString &         name() const { return m_data_path; }
         uint32_t                index() const { return m_index; }
         void                    spin_down();
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         const MapServerData &   serverData() const;
+        glm::vec3               closest_safe_location(glm::vec3 v) const;
 protected:
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(ClientConnectedMessage *ev);
@@ -74,7 +79,7 @@ protected:
         // DB -> Server messages
         void                    on_name_clash_check_result(WouldNameDuplicateResponse *ev);
         void                    on_character_created(CreateNewCharacterResponse *ev);
-        void on_entity_response(GetEntityResponse *ev);
+        void                    on_entity_response(GetEntityResponse *ev);
         // Server->Server messages
         void on_expect_client(ExpectMapClientRequest *ev);
 
