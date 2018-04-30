@@ -557,7 +557,6 @@ public:
     void serializefrom(BitStream &bs)
     {
         bs.GetString(profile);  // Profile Name
-        qDebug() << profile;
         key_and_secondary = bs.GetBits(32); // Key & Secondary Binding
 
         key = key_and_secondary &0xFF;

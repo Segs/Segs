@@ -1745,7 +1745,6 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 
 void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
 {
-    // Return Description
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     Entity *tgt = getEntity(&session,ev->entity_idx);
@@ -1872,7 +1871,7 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
     Entity *ent = session.m_ent;
 
     ent->m_player->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
-    //qCWarning(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
+    //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
 const MapServerData &MapInstance::serverData() const
