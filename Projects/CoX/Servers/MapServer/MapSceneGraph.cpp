@@ -119,15 +119,15 @@ struct NpcCreator
     NpcGeneratorStore *generators;
     QSet<QString> m_reported_generators;
 
-    bool checkPersistant(SceneNode *n, const glm::mat4 &v)
+    bool checkPersistent(SceneNode *n, const glm::mat4 &v)
     {
         bool has_npc = false;
-        QString persistant_name;
+        QString persistent_name;
         for (GroupProperty_Data &prop : *n->properties)
         {
             if(prop.propName=="PersistentNPC")
             {
-                persistant_name = prop.propValue;
+                persistent_name = prop.propValue;
             }
             if (prop.propName.contains("NPC", Qt::CaseInsensitive))
             {
@@ -137,9 +137,9 @@ struct NpcCreator
         }
         if(has_npc && map_instance)
         {
-            qCDebug(logNPCs) << "Attempting to spawn npc" << persistant_name << "at" << v[3][0] << v[3][1] << v[3][2];
+            qCDebug(logNPCs) << "Attempting to spawn npc" << persistent_name << "at" << v[3][0] << v[3][1] << v[3][2];
             const NPCStorage & npc_store(map_instance->serverData().getNPCDefinitions());
-            QString npc_costume_name = convertNpcName(persistant_name);
+            QString npc_costume_name = convertNpcName(persistent_name);
             const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_costume_name);
             if (npc_def)
             {
@@ -151,7 +151,7 @@ struct NpcCreator
                 glm::vec3 angles = glm::eulerAngles(valquat);
                 angles.y += glm::pi<float>();
                 valquat = glm::quat(angles);
-                e->m_char->setName(makeReadableName(persistant_name));
+                e->m_char->setName(makeReadableName(persistent_name));
                 e->m_direction = valquat;
                 e->m_entity_data.m_orientation_pyr = {angles.x,angles.y,angles.z};
                 e->m_velocity = { 0,0,0 };
@@ -189,7 +189,7 @@ struct NpcCreator
     {
         if (!n->properties)
             return true;
-        checkPersistant(n,v);
+        checkPersistent(n,v);
         checkGenerators(n,v);
         return true;
     }
