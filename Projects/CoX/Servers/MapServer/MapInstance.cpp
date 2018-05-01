@@ -1701,7 +1701,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         session.m_in_map = true;
     char buf[256];
     std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
-    std::snprintf(buf, 256, "There are %zu active entites and %zu clients", m_entities.active_entities(),
+    std::snprintf(buf, 256, "There are %zu active entities and %zu clients", m_entities.active_entities(),
                   m_session_store.num_sessions());
     welcome_msg += buf;
     sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),&session);
