@@ -1261,3 +1261,6 @@ void runCommand(const QString &str, MapClientSession &e)
     }
     qCDebug(logSlashCommand) << "Unknown game command:" << str;
 }
+
+//! @}
+
