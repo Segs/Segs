@@ -356,3 +356,5 @@ void serializeFromDb(Parse_CharAttrib &data,const QString &src)
         ar(data);
     }
 }
+
+//! @}
