@@ -58,31 +58,16 @@ void SEGSAdminTool::commit_user(const QString username, const QString password, 
     ui->createUser->setText("Please Wait...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString dbcommand = "dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
-    #ifdef Q_OS_WIN
-    QString program = "cmd.exe";
-    QStringList arguments;
-    arguments <<"/c" << dbcommand;
-    qDebug() << "Windows detected...";
-    ui->output->appendPlainText("Windows detected");
-    #endif
+    QString program = "dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
     #ifdef Q_OS_LINUX
-    QString program = "xterm";
-    dbcommand.prepend("./");
-    QStringList arguments;
-    arguments <<"-e"<<dbcommand;
-    ui->output->appendPlainText("Linux detected");
+    program.prepend("./");
     #endif
     #ifdef Q_OS_MACOS // Adding this to satisfy Travis-CI build, not tested
-    QString program = "/bin/sh";
-    dbcommand.prepend("./");
-    QStringList arguments;
-    arguments <<"-e"<<dbcommand;
-    ui->output->appendPlainText("MacOS detected");
+    program.prepend("./");
     #endif
 
     m_createUser = new QProcess(this);
-    m_createUser->start(program, arguments);
+    m_createUser->start(program);
 
     if (m_createUser->waitForStarted())
     {
@@ -156,37 +141,20 @@ void SEGSAdminTool::create_databases(bool overwrite)
     ui->output->appendPlainText("Setting arguments...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString dbcommand = "dbtool create";
+    QString program = "dbtool create";
     if (overwrite)
     {
-        dbcommand = dbcommand + " -f";
+        program.append(" -f");
     }
-    #ifdef Q_OS_WIN
-    QString program = "cmd.exe";
-    QStringList arguments;
-    arguments <<"/c" << dbcommand;
-    qDebug() << "Windows detected...";
-    ui->output->appendPlainText("Windows detected");
-    qApp->processEvents();
-    #endif
     #ifdef Q_OS_LINUX
-    QString program = "xterm";
-    dbcommand.prepend("./");
-    QStringList arguments;
-    arguments <<"-e"<<dbcommand;
-    ui->output->appendPlainText("Linux detected");
-    qApp->processEvents();
+    program.prepend("./");
     #endif
     #ifdef Q_OS_MACOS // Adding this to satisfy Travis-CI build, not tested
-    QString program = "/bin/sh";
-    dbcommand.prepend("./");
-    QStringList arguments;
-    arguments <<"-e"<<dbcommand;
-    ui->output->appendPlainText("MacOS detected");
+    program.prepend("./");
     #endif
 
     m_createDB = new QProcess(this);
-    m_createDB->start(program, arguments);
+    m_createDB->start(program);
 
     if (m_createDB->waitForStarted())
     {
@@ -233,7 +201,7 @@ void SEGSAdminTool::start_auth_server()
     ui->authserver_start->setText("Please Wait...");
     ui->output->appendPlainText("Setting arguments...");
     qApp->processEvents();
-    QString program = "authserver.exe";
+    QString program = "authserver";
     #ifdef Q_OS_LINUX
     program.prepend("./");
     #endif
