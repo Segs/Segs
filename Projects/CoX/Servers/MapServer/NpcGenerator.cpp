@@ -5,6 +5,13 @@
 #include "NpcStore.h"
 #include "NetStructures/Character.h"
 
+#include <QRegularExpression>
+
+QString makeReadableName(QString &name)
+{
+    return name.remove(QRegularExpression(".*\\\\")).remove(QRegularExpression("\\..*")).replace("_"," ");
+}
+
 void NpcGenerator::generate(MapInstance *map_instance)
 {
     const NPCStorage & npc_store(map_instance->serverData().getNPCDefinitions());
@@ -21,7 +28,7 @@ void NpcGenerator::generate(MapInstance *map_instance)
         glm::vec3 angles = glm::eulerAngles(valquat);
         angles.y += glm::pi<float>();
         valquat = glm::quat(angles);
-        e->m_char->setName(costume_name);
+        e->m_char->setName(makeReadableName(costume_name));
         e->m_direction = valquat;
         e->m_entity_data.m_orientation_pyr = {angles.x,angles.y,angles.z};
         e->m_velocity = { 0,0,0 };
