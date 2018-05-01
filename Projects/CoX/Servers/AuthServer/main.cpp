@@ -227,13 +227,13 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
             snprintf(log_buffer,4096,"%sFatal: %s\n",category_text,localMsg.constData());
     }
     fprintf(stdout, "%s", log_buffer);
+    fflush(stdout);
     if (segs_log_target.isOpen())
     {
         segs_log_target.write(log_buffer);
     }
     if (type == QtFatalMsg)
     {
-        fflush(stdout);
         segs_log_target.close();
         abort();
     }
