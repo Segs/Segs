@@ -142,6 +142,7 @@ void MapViewerApp::prepareSideWindow()
     connect(this,&MapViewerApp::scenegraphLoaded,m_sidewindow,&SideWindow::onScenegraphLoaded);
     connect(m_sidewindow,&SideWindow::scenegraphSelected,this,&MapViewerApp::loadSelectedSceneGraph);
     connect(m_sidewindow,&SideWindow::nodeDisplayRequest,this,&MapViewerApp::onDisplayNode);
+    connect(m_sidewindow,&SideWindow::refDisplayRequest,this,&MapViewerApp::onDisplayRef);
     connect(m_sidewindow,&SideWindow::nodeSelected,this,&MapViewerApp::onNodeSelected);
     m_sidewindow->setMapViewer(this);
 }
@@ -212,7 +213,43 @@ void MapViewerApp::onNodeSelected(CoHNode * n)
 #define MAX_GRAPH_DEPTH 80
 
 int created_node_count = 0;
+void MapViewerApp::onDisplayRef(ConvertedRootNode *root,bool show_all)
+{
+    if(nullptr==root)
+    {
+        if (m_currently_shown_node)
+            m_currently_shown_node->SetEnabledRecursive(false);
+        m_currently_shown_node = nullptr;
+        return;
+    }
+    auto  iter = m_converted_nodes.find(root->node);
+    Node *boxNode;
+    if (iter == m_converted_nodes.end())
+    {
+        Urho3D::Matrix3x4 fromglm;
+        fromglm.m00_ = root->mat[0][0];
+        fromglm.m10_ = root->mat[0][1];
+        fromglm.m20_ = root->mat[0][2];
+        fromglm.m01_ = root->mat[1][0];
+        fromglm.m11_ = root->mat[1][1];
+        fromglm.m21_ = root->mat[1][2];
+        fromglm.m02_ = root->mat[2][0];
+        fromglm.m12_ = root->mat[2][1];
+        fromglm.m22_ = root->mat[2][2];
+        fromglm.m03_ = root->mat[3][0];
+        fromglm.m13_ = root->mat[3][1];
+        fromglm.m23_ = root->mat[3][2];
 
+        boxNode = convertedNodeToLutefisk(root->node, fromglm, m_context, MAX_GRAPH_DEPTH,
+                                          show_all ? CONVERT_EDITOR_MARKERS : CONVERT_MINIMAL);
+        m_scene->AddChild(boxNode);
+        m_converted_nodes[root->node] = boxNode;
+    }
+    else
+        boxNode = iter->second;
+    boxNode->SetEnabledRecursive(!boxNode->IsEnabled());
+    m_currently_shown_node = boxNode;
+}
 void MapViewerApp::onDisplayNode(CoHNode *n,bool rootnode)
 {
     if(nullptr==n)

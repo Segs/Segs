@@ -410,7 +410,7 @@ Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node
     ModelModifiers *model_trick = mdl->trck_node;
     if (model_trick)
     {
-        if (model_trick->isFlag(NoDraw))
+        if (opt != CONVERT_EDITOR_MARKERS && model_trick->isFlag(NoDraw))
         {
             //qDebug() << mdl->name << "Set as no draw";
             return nullptr;

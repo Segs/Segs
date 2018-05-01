@@ -19,6 +19,8 @@
 #include "CohModelConverter.h"
 #include "DataPathsDialog.h"
 
+#include "glm/gtc/quaternion.hpp"
+
 #include <QtWidgets/QFileDialog>
 #include <QtCore/QDebug>
 #include <QtCore/QStringListModel>
@@ -29,6 +31,7 @@
 #include <Lutefisk3D/Resource/JSONFile.h>
 #include <Lutefisk3D/Resource/XMLFile.h>
 #include <Lutefisk3D/IO/VectorBuffer.h>
+
 
 using namespace Urho3D;
 
@@ -75,7 +78,7 @@ void SideWindow::onCameraPositionChanged(float x, float y, float z)
 
 void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
 {
-    if(!m) 
+    if(!m)
     {
         ui->txtModelName->setText(QStringLiteral("none"));
         ui->txtTrickName->setText(QStringLiteral("none"));
@@ -130,6 +133,26 @@ void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
     ui->pitchEdt->setText(QString::number(quat.PitchAngle()));
     ui->yawEdt->setText(QString::number(quat.YawAngle()));
     ui->rollEdt->setText(QString::number(quat.RollAngle()));
+    Urho3D::Node *iter = holder;
+    QString prop_text;
+    while(iter)
+    {
+        Variant stored = iter->GetVar("CoHNode");
+        if(stored!=Variant::EMPTY)
+        {
+            CoHNode * cn = (CoHNode *)stored.GetVoidPtr();
+            if(cn->properties)
+            {
+                prop_text += QString("%1\n").arg(cn->name);
+                for(const GroupProperty_Data &prop : *cn->properties)
+                {
+                    prop_text += QString("%2 - %3 [%4]\n").arg(prop.propName).arg(prop.propValue).arg(prop.propertyType);
+                }
+            }
+        }
+        iter = iter->GetParent();
+    }
+    ui->propertiesTxt->setPlainText(prop_text);
 }
 
 static QStandardItem * fillModel(CoHNode *node)
@@ -155,7 +178,7 @@ void SideWindow::onScenegraphLoaded(const CoHSceneGraph & sc)
     {
         QStandardItem *rowItem = new QStandardItem;
         rowItem->setData(ref->node->name,Qt::DisplayRole);
-        rowItem->setData(QVariant::fromValue((void*)ref->node),Qt::UserRole);
+        rowItem->setData(QVariant::fromValue((void*)ref),Qt::UserRole);
         rowItem->setData(QVariant::fromValue(true),Qt::UserRole+1);
         item->appendRow(rowItem);
     }
@@ -194,12 +217,32 @@ void SideWindow::on_actionSet_data_paths_triggered()
 void SideWindow::on_nodeList_clicked(const QModelIndex &index)
 {
     QVariant v=m_model->data(index,Qt::UserRole);
+    QVariant isroot=m_model->data(index,Qt::UserRole+1);
     CoHNode *n = (CoHNode *)v.value<void *>();
-    emit nodeSelected(n);
+    ConvertedRootNode *ref = (ConvertedRootNode *)v.value<void *>();
+
+    if(isroot.isValid() && isroot.toBool())
+        emit nodeSelected(ref->node);
+    else
+        emit nodeSelected(n);
     if(!n)
         return;
 
-    QModelIndex parent_idx = m_model->parent(index);
+    if(isroot.isValid() && isroot.toBool())
+    {
+        if(!ref)
+            return;
+        Urho3D::Quaternion quat;
+        glm::quat q=glm::quat_cast(ref->mat);
+        quat.x_ = q.x;
+        quat.y_ = q.y;
+        quat.z_ = q.z;
+        quat.w_ = q.w;
+        ui->pitchEdt->setText(QString::number(quat.PitchAngle()));
+        ui->yawEdt->setText(QString::number(quat.YawAngle()));
+        ui->rollEdt->setText(QString::number(quat.RollAngle()));
+        return;
+    }
     QVariant parentv = m_model->data(m_model->parent(index),Qt::UserRole);
     CoHNode *parent_node = (CoHNode *)parentv.value<void *>();
     if(!parent_node)
@@ -223,9 +266,19 @@ void SideWindow::on_nodeList_doubleClicked(const QModelIndex &index)
     if(v.isValid() && isroot.isValid())
     {
         void *val = v.value<void *>();
-        if(val) {
-            CoHNode *n = (CoHNode *)val;
-            emit nodeDisplayRequest(n,isroot.value<bool>());
+        if(val)
+        {
+            if(isroot.toBool())
+            {
+                ConvertedRootNode *n = (ConvertedRootNode *)val;
+
+                emit refDisplayRequest(n,ui->show_editor_nodes->isChecked());
+            }
+            else
+            {
+                CoHNode *n = (CoHNode *)val;
+                emit nodeDisplayRequest(n,isroot.value<bool>());
+            }
             return;
         }
     }

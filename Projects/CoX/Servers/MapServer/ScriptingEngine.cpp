@@ -12,7 +12,7 @@
 
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
-#include "SceneGraph.h"
+#include "MapSceneGraph.h"
 
 #include "Events/ChatMessage.h"
 #include "Events/StandardDialogCmd.h"
@@ -84,9 +84,9 @@ void ScriptingEngine::registerTypes()
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
         }
     );
-    m_private->m_lua.new_usertype<SceneGraph>( "SceneGraph",
+    m_private->m_lua.new_usertype<MapSceneGraph>( "MapSceneGraph",
         "new", sol::no_constructor, // The client links are not constructible from the script side.
-        "set_default_spawn_point", &SceneGraph::set_default_spawn_point
+        "set_default_spawn_point", &MapSceneGraph::set_default_spawn_point
     );
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
 

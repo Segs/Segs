@@ -28,7 +28,7 @@ ADD_EXECUTABLE(mapviewer ${SOURCES})
 TARGET_LINK_LIBRARIES(mapviewer
     lutefisk3d_IMP
     ace_IMP
-    gameData cereal_IMP
+    gameData common_runtime cereal_IMP
 )
 qt5_use_modules(mapviewer Core Widgets  )
 

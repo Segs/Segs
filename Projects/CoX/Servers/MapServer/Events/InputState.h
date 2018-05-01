@@ -25,6 +25,6 @@ public:
     void extended_input(BitStream &bs);
     void serializefrom(BitStream &bs);
     void recv_client_opts(BitStream &bs);
-    glm::vec3 &pyr() {return m_data.camera_pyr;}
+    glm::vec3 &pyr() {return m_data.m_camera_pyr;}
     BitStream m_user_commands;
 };

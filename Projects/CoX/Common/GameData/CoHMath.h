@@ -12,6 +12,92 @@
 #include <glm/gtc/constants.hpp>
 #include <algorithm>
 
+// AngleRadians for use in PosUpdate etc
+struct AngleRadians
+{
+    static AngleRadians fromDeg(float deg) { return AngleRadians(deg*glm::pi<float>()/180.0f);}
+    float toDeg() { return AngleRadians((v*180.0f)/ glm::pi<float>()).v;}
+    explicit AngleRadians(float x=0.0f) : v(x) {}
+    AngleRadians operator-(const AngleRadians&ot) const
+    {
+        AngleRadians result(v);
+        return result-=ot;
+    }
+    AngleRadians operator-() const {
+        return AngleRadians(-v);
+    }
+    float operator/(AngleRadians &other) const {
+        return v/other.v;
+    }
+    AngleRadians operator+(const AngleRadians &ot) const
+    {
+        AngleRadians result(v);
+        result+=ot;
+        result.fixup();
+        return result;
+    }
+    AngleRadians operator*(float scale) const
+    {
+        return AngleRadians(v*scale);
+    }
+    AngleRadians &operator*=(float scale)
+    {
+        v*=scale;
+        return *this;
+    }
+    AngleRadians &operator+=(const AngleRadians &ot)
+    {
+        v += ot.v;
+        fixup();
+        return *this;
+    }
+    AngleRadians &operator-=(const AngleRadians &ot)
+    {
+        v -= ot.v;
+        fixup();
+        return *this;
+    }
+    bool operator==(float other) const { return v == other; }
+    bool operator==(const AngleRadians &other) const { return v == other.v; }
+    bool operator!=(const AngleRadians &other) const { return v != other.v; }
+    AngleRadians &fixup() {
+        if ( v > glm::pi<float>())
+            v -= glm::two_pi<float>();
+        if ( v <= -glm::pi<float>())
+            v += glm::two_pi<float>();
+        return *this;
+    }
+    bool operator<( const AngleRadians &o) const {
+        return v<o.v;
+    }
+    bool operator>( const AngleRadians &o) const {
+        return v>o.v;
+    }
+    AngleRadians lerp(AngleRadians towards,float factor) const {
+
+        float v3(towards.v - v);
+        if ( v3 > glm::pi<float>())
+            v3 = v3 - glm::two_pi<float>();
+        if ( v3 <= -glm::pi<float>())
+            v3 = v3 + glm::two_pi<float>();
+        return AngleRadians(v3 * factor + v);
+
+    }
+    //    operator float()
+    //    { return v;}
+    float v;
+    int toIntegerForm() const
+    {
+        return int((v + glm::pi<float>()) * 2048.0f / (glm::two_pi<float>()));
+    }
+    float fromIntegerForm(/*int v*/) const
+    {
+        return (float(v)/2048.0f)*glm::two_pi<float>() - glm::pi<float>();
+    }
+    explicit operator float() const {
+        return v;
+    }
+};
 
 // All conversion will use YPR order of rotations,
 // but the used values are passed/returned in the PYR order
@@ -212,8 +298,7 @@ inline uint32_t AngleQuantize(float val,int numb_bits)
     int max_val = 1<<numb_bits;
 
     float v = normalizeRadAngle(val); // ensure v falls within -pi..pi
-    v = (v+glm::pi<float>())/glm::two_pi<float>();
-    v *= max_val;
-//  assert(v<=max_val);
+    v = (v+glm::pi<float>())/glm::two_pi<float>(); // 0..1
+    v *= max_val; // 0..max_val
     return uint32_t(v);
 }

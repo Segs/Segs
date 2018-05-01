@@ -27,8 +27,6 @@ namespace  {
 void storeCreation(const Entity &src, BitStream &bs)
 {
     // entity creation
-    ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending create entity\n")));
-
     bs.StoreBits(1,src.m_destroyed); // ends creation destroys seq and returns NULL
 
     if(src.m_destroyed)
@@ -72,11 +70,11 @@ void storeCreation(const Entity &src, BitStream &bs)
     // the following is used as an input to LCG float generator, generated float (0-1) is used as
     // linear interpolation factor betwwen scale_min and scale_max
     bs.StoreBits(32,src.m_randSeed);
-    bs.StoreBits(1,src.m_has_supergroup); // fairly certain this is Supergroup
+    bs.StoreBits(1,src.m_has_supergroup); // TODO: This appears to actually be for Villain Groups
     if(src.m_has_supergroup)
     {
-        bs.StorePackedBits(2,src.m_supergroup.m_SG_rank); // this will be put in field_1830 (iRank) of created entity
-        bs.StoreString(src.m_supergroup.m_SG_name);
+        bs.StorePackedBits(2,src.m_supergroup.m_SG_rank);   // this will be put in field_1830 (iRank) of created entity
+        bs.StoreString(src.m_supergroup.m_SG_name);         // villain group name?
     }
     PUTDEBUG("end storeCreation");
 }
@@ -92,14 +90,6 @@ void sendStateMode(const Entity &src,BitStream &bs)
     }
     PUTDEBUG("after sendStateMode");
 }
-
-struct BinTreeEntry {
-    uint8_t x,y,z,d;
-};
-
-struct BinTreeBase {
-    BinTreeEntry arr[7];
-};
 
 void storeUnknownBinTree(const Entity &/*src*/,BitStream &bs)
 {
@@ -140,21 +130,15 @@ void storeOrientation(const Entity &src,BitStream &bs)
     storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
 
     qCDebug(logOrientation, "updates: %i",updates);
-
-    float pyr_angles[3];
-    glm::vec3 vec = toCoH_YPR(src.m_direction);
-    pyr_angles[0] = 0.0f;
-    pyr_angles[1] = vec.y; // set only yaw value
-    pyr_angles[2] = 0.0f;
-
+    glm::vec3 pyr_angles(0);
+    pyr_angles.y = src.m_entity_data.m_orientation_pyr.y;
     // output everything
     qCDebug(logOrientation, "Player: %d", src.m_idx);
     qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
-    qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.inp_state.camera_pyr).c_str());
+    qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.inp_state.m_camera_pyr).c_str());
     qCDebug(logOrientation, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
     qCDebug(logOrientation, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
     qCDebug(logOrientation, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);
-    qCDebug(logOrientation, "vel_scale: %d", src.inp_state.input_vel_scale);
 
     for(int i=0; i<3; i++)
     {
@@ -162,62 +146,58 @@ void storeOrientation(const Entity &src,BitStream &bs)
             continue;
 
         uint32_t v = AngleQuantize(pyr_angles[i],9);
-
         qCDebug(logOrientation, "v: %d", v); // does `v` fall between 0...512
-
         bs.StoreBits(9,v);
     }
 }
 
 void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
 {
-    bool extra_info = false; // FixMe: extra_info is used for comparison after being explicitly set, but is never modified.
-    bool move_instantly = false;
     PUTDEBUG("before entReceivePosUpdate");
+    bool position_updated = storePosition(src, bs);
 
-    bool position_updated = storePosition(src,bs);
     PUTDEBUG("before posInterpolators");
     if(!just_created && position_updated)
     {
         // if position has changed
         // prepare interpolation table, given previous position
-        bs.StoreBits(1,extra_info); // not extra_info
-        if(extra_info) {
-            bs.StoreBits(1,move_instantly);
+        bs.StoreBits(1, src.m_extra_info); // not extra_info
+        if(src.m_extra_info) {
+            bs.StoreBits(1, src.m_move_instantly);
             // Bintree sending happens here
-            storeUnknownBinTree(src,bs);
+            storeUnknownBinTree(src, bs);
         }
         // if extra_inf
     }
     PUTDEBUG("before storeOrientation");
     storeOrientation(src,bs);
     PUTDEBUG("after storeOrientation");
-
 }
 
 void sendSeqMoveUpdate(const Entity &src,BitStream &bs)
 {
-    //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq mode update %d\n"),m_seq_update));
-    PUTDEBUG("before sendSeqMoveUpdate");
+    qCDebug(logAnimations, "Sending seq mode update %d", src.m_seq_update);
 
+    PUTDEBUG("before sendSeqMoveUpdate");
     bs.StoreBits(1,src.m_seq_update); // no seq update
     if(src.m_seq_update)
     {
         storePackedBitsConditional(bs,8,src.m_seq_upd_num1); // move index
-        storePackedBitsConditional(bs,4,src.m_seq_upd_num2); //maxval is 255
+        storePackedBitsConditional(bs,4,src.m_seq_upd_num2); // maxval is 255
     }
 }
 void sendSeqTriggeredMoves(const Entity &/*src*/,BitStream &bs)
 {
     PUTDEBUG("before sendSeqTriggeredMoves");
-    uint32_t num_moves=0; // FixMe: num_moves is never modified and the body of the for loop below will never fire.
-    //ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("\tSending seq triggeted moves %d\n"),num_moves));
+    uint32_t num_moves = 0; // FixMe: num_moves is never modified and the body of the for loop below will never fire.
+    qCDebug(logAnimations, "Sending seq triggered moves %d", num_moves);
+
     bs.StorePackedBits(1,num_moves); // num moves
     for (uint32_t idx = 0; idx < num_moves; ++idx )
     {
-        bs.StorePackedBits(16,0); // 2  EntityStoredMoveP->field_2
-        bs.StorePackedBits(6,0); //0  EntityStoredMoveP->field_0
-        storePackedBitsConditional(bs,16,0); // 1 EntityStoredMoveP->field_1
+        bs.StorePackedBits(16, 0);  // 2  EntityStoredMoveP->field_2
+        bs.StorePackedBits(6, 0);   // 0  EntityStoredMoveP->field_0
+        storePackedBitsConditional(bs, 16, 0);  // 1 EntityStoredMoveP->field_1
     }
 }
 
@@ -227,10 +207,10 @@ void sendNetFx(const Entity &src,BitStream &bs)
     //NetFx.serializeto();
     for(int i=0; i<src.m_num_fx; i++)
     {
-        bs.StoreBits(8,src.m_fx1[i]); // command
-        bs.StoreBits(32,src.m_fx2[i]); // NetID
-        bs.StoreBits(1,0);
-        storePackedBitsConditional(bs,10,0xCB8); // handle
+        bs.StoreBits(8,src.m_fx1[i].command); // command
+        bs.StoreBits(32,src.m_fx1[i].net_id); // NetID
+        bs.StoreBits(1,src.m_fx1[i].pitch_to_target);
+        storePackedBitsConditional(bs,10, src.m_fx1[i].handle); // handle
         storeBitsConditional(bs,4,0); // client timer
         storeBitsConditional(bs,32,0); // clientTriggerFx
         storeFloatConditional(bs,0.0); // duration
@@ -373,15 +353,15 @@ void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
     bs.StoreBits(1,src.m_is_villian); // on team evil ?
     bs.StoreBits(1,src.m_is_hero); // on team good ?
 }
-void sendEntCollision(const Entity &/*src*/,BitStream &bs)
+void sendEntCollision(const Entity &src,BitStream &bs)
 {
     // if 1 is sent, client will disregard it's own collision processing.
-    bs.StoreBits(1,0); // 1/0 only
+    bs.StoreBits(1, src.inp_state.m_no_collision); // 1/0 only
 }
 
-void sendNoDrawOnClient(const Entity &/*src*/,BitStream &bs)
+void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1,0); // 1/0 only
+    bs.StoreBits(1, src.m_no_draw_on_client); // 1/0 only
 }
 
 void sendAFK(const Entity &src, BitStream &bs)

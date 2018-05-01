@@ -23,6 +23,7 @@
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
 #include "EntityStorage.h"
+#include "MapSceneGraph.h"
 #include "WorldSimulation.h"
 #include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/Database.h"
@@ -99,7 +100,7 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     m_endpoint->set_downstream(this);
 }
 
-void MapInstance::start()
+void MapInstance::start(const QString &scenegraph_path)
 {
     assert(m_world_update_timer==nullptr);
     assert(m_game_server_id!=255);
@@ -108,9 +109,43 @@ void MapInstance::start()
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
+        m_npc_generators.m_generators["NPCDrones"] = {"Police_Drone",EntType::NPC,{}};
+        for(int i=0; i<7; ++i)
+        {
+            QString right_whare=QString("Door_Right_Whare_0%1").arg(i);
+            m_npc_generators.m_generators[right_whare] = {right_whare, EntType::DOOR, {}};
+            QString left_whare=QString("Door_Left_Whare_0%1").arg(i);
+            m_npc_generators.m_generators[left_whare] = {left_whare,EntType::DOOR,{}};
+            QString left_city=QString("Door_Left_City_0%1").arg(i);
+            m_npc_generators.m_generators[left_city] = {left_city,EntType::DOOR,{}};
+            QString right_city=QString("Door_Right_City_0%1").arg(i);
+            m_npc_generators.m_generators[right_city] = {right_city,EntType::DOOR,{}};
+            QString right_store=QString("Door_Right_Store_0%1").arg(i);
+            m_npc_generators.m_generators[right_store] = {right_store,EntType::DOOR,{}};
+            QString left_store=QString("Door_Left_Store_0%1").arg(i);
+            m_npc_generators.m_generators[left_store] = {left_store,EntType::DOOR,{}};
+        }
+        m_npc_generators.m_generators["Door_reclpad"] = {"Door_reclpad",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_elevator"] = {"Door_elevator",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Left_Res_03"] = {"Door_Left_Res_03",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Right_Res_03"] = {"Door_Right_Res_03",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Right_Ind_01"] = {"Door_Right_Ind_01",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_Left_Ind_01"] = {"Door_Left_Ind_01",EntType::DOOR,{}};
+
+        bool scene_graph_loaded = false;
+        TIMED_LOG({
+                m_map_scenegraph = new MapSceneGraph;
+                scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
+                m_new_player_spawns = m_map_scenegraph->spawn_points("NewPlayer");
+            }, "Loading original scene graph"
+            );
+        TIMED_LOG({
+            m_map_scenegraph->spawn_npcs(this);
+            m_npc_generators.generate(this);
+            },"Spawning npcs");
+        qInfo() << "Loading custom scripts";
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
-
         loadAndRunLua(m_scripting_interface,locations_scriptname);
         loadAndRunLua(m_scripting_interface,plaques_scriptname);
     }
@@ -123,7 +158,6 @@ void MapInstance::start()
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
     m_link_timer.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
-    qInfo() << "Server running... awaiting client connections."; // best place for this?
 }
 
 ///
@@ -494,6 +528,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     Entity *ent = m_entities.CreatePlayer();
     toActualCharacter(*request_data.char_from_db, *ent->m_char,*ent->m_player);
     ent->fillFromCharacter();
+    ent->m_client = &map_session;
     map_session.m_ent = ent;
     // Now we inform our game server that this Map server instance is ready for the client
 
@@ -537,7 +572,11 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
     if (logSpawn().isDebugEnabled())
+    {
+        qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
         map_session.m_ent->dump();
+    }
+
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
     tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
@@ -569,8 +608,13 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
 
         fillEntityFromNewCharData(*e, ev->m_character_data, data.getPacker(),data.m_keybind_profiles);
         e->m_char->m_account_id = map_session.auth_id();
-        e->m_entity_data.m_access_level = map_session.m_access_level;
+        e->m_client = &map_session;
         map_session.m_ent = e;
+        if(m_new_player_spawns.empty())
+            e->m_entity_data.m_pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting Location
+        else
+            e->m_entity_data.m_pos = glm::vec3(m_new_player_spawns[rand()%m_new_player_spawns.size()][3]);
+        e->m_entity_data.m_access_level = map_session.m_access_level;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
         GameAccountResponseCharacterData char_data;
@@ -610,7 +654,7 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->m_map_desc        = QString("maps/City_Zones/%1/%1.txt").arg(map_desc_from_path);
     res->current_map_flags = true; // off 1
     res->unkn1             = 1;
-    ACE_DEBUG((LM_DEBUG, ACE_TEXT("%d - %d - %d\n"), res->unkn1, res->undos_PP, res->current_map_flags));
+    qDebug("Scene Request: unkn1: %d, undos_PP: %d, current_map_flags: %d", res->unkn1, res->undos_PP, res->current_map_flags);
     res->unkn2 = true;
     lnk->putq(res);
 }
@@ -670,6 +714,7 @@ void MapInstance::sendState() {
 
     for(;iter!=end; ++iter)
     {
+
         MapClientSession *cl = *iter;
         EntitiesResponse *res=new EntitiesResponse(cl);
         res->m_map_time_of_day = m_world->time_of_day();
@@ -706,7 +751,7 @@ void MapInstance::on_input_state(InputState *st)
     MapClientSession &session(m_session_store.session_from_event(st));
     Entity *   ent = session.m_ent;
     if (st->m_data.has_input_commit_guess)
-        ent->m_input_ack = st->m_data.send_id;
+        ent->m_input_ack = st->m_data.m_send_id;
     ent->inp_state = st->m_data;
     // Set Target
     ent->m_target_idx = st->m_target_idx;
@@ -1740,7 +1785,6 @@ void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 
 void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
 {
-    // Return Description
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     Entity *tgt = getEntity(&session,ev->entity_idx);
@@ -1867,12 +1911,21 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
     Entity *ent = session.m_ent;
 
     ent->m_player->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
-    //qCWarning(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
+    //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
 const MapServerData &MapInstance::serverData() const
 {
     return g_GlobalMapServer->runtimeData();
+}
+
+glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
+{
+    if(!m_new_player_spawns.empty())
+    {
+        return m_new_player_spawns.front()[3];
+    }
+    return glm::vec3(0,0,0);
 }
 
 void MapInstance::on_reset_keybinds(ResetKeybinds *ev)

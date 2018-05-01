@@ -71,7 +71,7 @@ int NetCommand::serializefrom( BitStream &bs )
                 int res=bs.GetPackedBits(1);
                 if(m_arguments[i].targetvar)
                     *((int *)m_arguments[i].targetvar) = res;
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %d\n"),qPrintable(m_name),i,res));
+                qDebug("CommRecv %s:arg%d : %d", qPrintable(m_name),i,res);
                 break;
             }
             case 2:
@@ -79,19 +79,19 @@ int NetCommand::serializefrom( BitStream &bs )
             {
                 QString res;
                 bs.GetString(res); // postprocessed
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %s\n"),qPrintable(m_name),i,qPrintable(res)));
+                qDebug("CommRecv %s:arg%d : %s", qPrintable(m_name),i,qPrintable(res));
                 break;
             }
             case 3:
             {
                 float res = bs.GetFloat();
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %f\n"),qPrintable(m_name),i,res));
+                qDebug("CommRecv %s:arg%d : %f", qPrintable(m_name),i,res);
                 break;
             }
             case 5:
             {
                 float res1 = normalizedCircumferenceToFloat(bs.GetBits(14),14);
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %s\n"),qPrintable(m_name),i,res1));
+                qDebug("CommRecv %s:arg%d : %s", qPrintable(m_name),i,res1);
                 break;
             }
             case 6:
@@ -101,7 +101,7 @@ int NetCommand::serializefrom( BitStream &bs )
                 float res1 = bs.GetFloat();
                 float res2 = bs.GetFloat();
                 float res3 = bs.GetFloat();
-                ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("CommRecv %s:arg%d : %f,%f,%f\n"),qPrintable(m_name),i,res1,res2,res3));
+                qDebug("CommRecv %s:arg%d : %f,%f,%f", qPrintable(m_name),i,res1,res2,res3);
                 break;
             }
         }
@@ -170,7 +170,10 @@ void NetCommandManager::SendCommandShortcuts( MapClientSession *client,BitStream
             serializeto(tgt,m_commands_level0,commands2);
             break;
         default:
-            assert(false);
+            // add shortcuts to client's shortcut map.
+            for (size_t i = 0; i<m_commands_level0.size(); ++i)
+                client->AddShortcut(i, m_commands_level0[i]);
+            serializeto(tgt, m_commands_level0, commands2);
     }
 }
 

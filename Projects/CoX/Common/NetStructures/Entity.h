@@ -13,6 +13,7 @@
 #include "FixedPointValue.h"
 #include "Common/GameData/entitydata_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
+#include "Common/GameData/CoHMath.h"
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/constants.hpp>
@@ -26,99 +27,12 @@ class Character;
 struct PlayerData;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
 
-struct AngleRadians // TODO: Is this intended to be used?
-{
-    static AngleRadians fromDeg(float deg) { return AngleRadians(deg*float(M_PI)/180.0f);}
-    float toDeg() { return AngleRadians((v*180.0f)/ float(M_PI)).v;}
-    explicit AngleRadians(float x=0.0f) : v(x) {}
-    AngleRadians operator-(const AngleRadians&ot) const
-    {
-        AngleRadians result(v);
-        return result-=ot;
-    }
-    AngleRadians operator-() const {
-        return AngleRadians(-v);
-    }
-    float operator/(AngleRadians &other) const {
-        return v/other.v;
-    }
-    AngleRadians operator+(const AngleRadians &ot) const
-    {
-        AngleRadians result(v);
-        result+=ot;
-        result.fixup();
-        return result;
-    }
-    AngleRadians operator*(float scale) const
-    {
-        return AngleRadians(v*scale);
-    }
-    AngleRadians &operator*=(float scale)
-    {
-        v*=scale;
-        return *this;
-    }
-    AngleRadians &operator+=(const AngleRadians &ot)
-    {
-        v += ot.v;
-        fixup();
-        return *this;
-    }
-    AngleRadians &operator-=(const AngleRadians &ot)
-    {
-        v -= ot.v;
-        fixup();
-        return *this;
-    }
-    bool operator==(float other) const { return v == other; }
-    bool operator==(const AngleRadians &other) const { return v == other.v; }
-    bool operator!=(const AngleRadians &other) const { return v != other.v; }
-    AngleRadians &fixup() {
-        if ( v > glm::pi<float>())
-            v -= glm::two_pi<float>();
-        if ( v <= -glm::pi<float>())
-            v += glm::two_pi<float>();
-        return *this;
-    }
-    bool operator<( const AngleRadians &o) const {
-        return v<o.v;
-    }
-    bool operator>( const AngleRadians &o) const {
-        return v>o.v;
-    }
-    AngleRadians lerp(AngleRadians towards,float factor) const {
-
-        float v3(towards.v - v);
-        if ( v3 > glm::pi<float>())
-            v3 = v3 - glm::two_pi<float>();
-        if ( v3 <= -glm::pi<float>())
-            v3 = v3 + glm::two_pi<float>();
-        return AngleRadians(v3 * factor + v);
-
-    }
-    //    operator float()
-    //    { return v;}
-    float v;
-    int toIntegerForm() const
-    {
-        return int((v + glm::pi<float>()) * 2048.0f / (glm::two_pi<float>()));
-    }
-    float fromIntegerForm(/*int v*/) const
-    {
-        return (float(v)/2048.0f)*(2*M_PI) - M_PI;
-    }
-    explicit operator float() const {
-        return v;
-    }
-};
-
 class PosUpdate
 {
 public:
-    glm::vec3 posvec;
-    AngleRadians PitchYawRoll[3];
-    //glm::quat quat;
-    int m_timestamp;
+    glm::vec3       m_position;
+    AngleRadians    m_pyr_angles[3];
+    int             m_timestamp;
 };
 
 class InputStateStorage
@@ -133,24 +47,24 @@ public:
         }
     }
 
-    uint8_t m_csc_deltabits             = 0;
-    bool m_send_deltas                  = 0;
-    uint16_t controlBits                = 0;
-    uint16_t send_id                    = 0;
-    void *current_state_P               = nullptr;
-    glm::vec3 camera_pyr;
-    glm::vec3 m_orientation_pyr;             // Stored in Radians
-    glm::quat m_direction;
-    int m_time_diff1                    = 0;
-    int m_time_diff2                    = 0;
-    uint8_t input_vel_scale             = 0; // TODO: Should be float?
-    uint8_t m_received_server_update_id = 0;
-    bool m_no_coll                      = false;
-    bool has_input_commit_guess         = 0;
-    bool pos_delta_valid[3]             = {};
-    bool pyr_valid[3]                   = {};
-    glm::vec3 pos_delta;
-    bool m_controls_disabled            = false;
+    uint8_t     m_csc_deltabits                 = 0;
+    bool        m_send_deltas                   = 0;
+    uint16_t    m_control_bits                  = 0;
+    uint16_t    m_send_id                       = 0;
+    void        *current_state_P                = nullptr;
+    glm::vec3   m_camera_pyr;
+    glm::vec3   m_orientation_pyr;              // Stored in Radians
+    glm::quat   m_direction;
+    int         m_time_diff1                    = 0;
+    int         m_time_diff2                    = 0;
+    uint8_t     m_input_vel_scale               = 0; // TODO: Should be float?
+    uint8_t     m_received_server_update_id     = 0;
+    bool        m_no_collision                       = false;
+    bool        has_input_commit_guess          = 0;
+    bool        pos_delta_valid[3]              = {};
+    bool        pyr_valid[3]                    = {};
+    glm::vec3   pos_delta;
+    bool        m_controls_disabled             = false;
 
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
@@ -218,6 +132,14 @@ struct NPCData
     int costume_variant=0;
 };
 
+struct NetFx
+{
+    uint8_t command;
+    uint32_t net_id;
+    uint32_t handle;
+    bool pitch_to_target;
+    uint8_t bone_id;
+};
 class Entity
 {
     // only EntityStore can create instances of this class
@@ -263,14 +185,14 @@ public:
         int                 m_num_fx                = 0;
         bool                m_is_logging_out        = false;
         int                 m_time_till_logout      = 0;    // time in miliseconds untill given entity should be marked as logged out.
-        std::vector<uint8_t> m_fx1;
-        std::vector<uint32_t> m_fx2;
-        std::vector<uint8_t> m_fx3;
+        std::vector<NetFx>  m_fx1;
         AppearanceType      m_costume_type          = AppearanceType::None;
         int                 m_state_mode            = 0;
         bool                m_state_mode_send       = false;
         bool                m_odd_send              = false;
+        bool                m_no_draw_on_client     = false;
         bool                m_seq_update            = false;
+        bool                m_force_camera_dir      = false; // used to force the client camera direction in sendClientData()
         bool                m_is_hero               = false;
         bool                m_is_villian            = false;
         bool                m_contact               = false;
@@ -290,17 +212,16 @@ public:
         bool                m_force_pos_and_cam     = true;     // EntityResponse sendServerControlState
         bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
+        bool                m_extra_info            = false;    // EntityUpdateCodec storePosUpdate
+        bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
 
-        int                 u3 = 0;
+        int                 u1 = 0; // used for live-debugging
 
         PosUpdate           m_pos_updates[64];
-        size_t              m_update_idx        = 0;
         std::vector<PosUpdate> interpResults;
-        bool                entReceiveAlwaysCon         = false;
-        bool                entReceiveSeeThroughWalls   = false;
-        int                 pkt_id_QrotUpdateVal[3]     = {0};
-        glm::vec3           vel;
-        uint32_t            prev_pos[3]                 = {0};
+        size_t              m_update_idx                = 0;
+        glm::vec3           m_velocity;
+        glm::vec3           m_prev_pos;
         Vector3_FPV         fixedpoint_pos;
         bool                m_pchar_things              = false;
         bool                might_have_rare             = false;
@@ -317,11 +238,11 @@ public:
         bool                m_destroyed                 = false;
         uint32_t            ownerEntityId               = 0;
         uint32_t            creatorEntityId             = 0;
-        float               translucency                = 1.f;
+        float               translucency                = 1.0f;
         bool                m_is_fading                 = true;
         MapClientSession *  m_client                    = nullptr;
-        FadeDirection       m_fading_direction = FadeDirection::In;
-        uint32_t            m_db_store_flags = 0;
+        FadeDirection       m_fading_direction          = FadeDirection::In;
+        uint32_t            m_db_store_flags            = 0;
 
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
@@ -332,7 +253,6 @@ static  void                sendPvP(BitStream &bs);
 
         bool                update_rot(int axis) const; // returns true if given axis needs updating;
 
-        void                InsertUpdate(PosUpdate pup);
         const QString &     name() const;
         void                fillFromCharacter();
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s

@@ -80,7 +80,9 @@ void cmdHandler_KeybindDebug(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ToggleLogging(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FriendsListDebug(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess);
-void cmdHandler_SetU3(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ToggleExtraInfo(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
 void moveTo(const QString &cmd, MapClientSession &sess);
@@ -151,7 +153,10 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"toggleLogging", "log"}, "Modify log categories (e.g. input, teams, ...)", cmdHandler_ToggleLogging, 9},
     {{"friendsDump", "friendsDebug"}, "Output friendlist info to console", cmdHandler_FriendsListDebug, 9},
     {{"damage", "heal"}, "Make current target (or self) take damage/health", cmdHandler_SendFloatingNumbers, 9},
-    {{"setu3"},"Set bitvalue u3", cmdHandler_SetU3, 9},
+    {{"extrainfo"},"Toggle extra_info", &cmdHandler_ToggleExtraInfo, 9},
+    {{"moveinstantly"},"Toggle move_instantly", &cmdHandler_ToggleMoveInstantly, 9},
+    {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
+
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", addNpc, 2},
     {{"moveTo"},"set the gm's position to <x> <y> <z>", moveTo, 2},
@@ -191,6 +196,7 @@ static const SlashCommand g_defined_slash_commands[] = {
  *  Slash Command Handlers
  ***********************************************************/
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 9 Commands (GMs)
 void cmdHandler_Script(const QString &cmd, MapClientSession &sess)
 {
@@ -250,7 +256,9 @@ void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess) {
 }
 
 void cmdHandler_Fly(const QString &cmd, MapClientSession &sess) {
-    toggleFly(*sess.m_ent);
+
+
+    toggleFlying(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
     qCDebug(logSlashCommand) << msg;
@@ -670,14 +678,32 @@ void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess)
     }
 }
 
+void cmdHandler_ToggleExtraInfo(const QString &cmd, MapClientSession &sess)
+{
+    toggleExtraInfo(*sess.m_ent);
+
+    QString msg = "Toggling " + cmd;
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
+}
+
+void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess)
+{
+    toggleMoveInstantly(*sess.m_ent);
+
+    QString msg = "Toggling " + cmd;
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
+}
+
 // Slash commands for setting bit values
-void cmdHandler_SetU3(const QString &cmd, MapClientSession &sess)
+void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
 {
     int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
-    setu3(*sess.m_ent, val);
+    setu1(*sess.m_ent, val);
 
-    QString msg = "Set u3 to: " + QString::number(val);
+    QString msg = "Set u1 to: " + QString::number(val);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
@@ -719,7 +745,7 @@ void addNpc(const QString &cmd, MapClientSession &sess)
     int idx = npc_store.npc_idx(npc_def);
     Entity *e = sess.m_current_map->m_entities.CreateNpc(*npc_def,idx,variation);
     e->m_entity_data.m_pos = gm_loc + offset;
-    e->vel = {0,0,0};
+    e->m_velocity = {0,0,0};
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), &sess);
 }
 
@@ -838,10 +864,12 @@ void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess)
 void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 {
     // TODO: Implement true move-to-safe-location-nearby logic
-    sess.m_ent->m_entity_data.m_pos = glm::vec3(128.0f, 16.0f, -198.0f); // Atlas Park starting location
+    sess.m_ent->m_entity_data.m_pos = sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos);
 
     QString msg = QString("Resetting location to default spawn (%1,%2,%3)")
-                      .arg(sess.m_ent->m_entity_data.m_pos.x, sess.m_ent->m_entity_data.m_pos.y, sess.m_ent->m_entity_data.m_pos.z);
+                      .arg(sess.m_ent->m_entity_data.m_pos.x)
+                      .arg(sess.m_ent->m_entity_data.m_pos.y)
+                      .arg(sess.m_ent->m_entity_data.m_pos.z);
     qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, &sess);
 }
@@ -909,67 +937,6 @@ void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
     }
 
     sendTeamOffer(sess.m_ent,tgt);
-}
-
-void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
-{
-    // game command: "team_accept \"From\" to_db_id to_db_id \"To\""
-
-    QString msgfrom = "Something went wrong with TeamAccept.";
-    QString msgtgt = "Something went wrong with TeamAccept.";
-    QStringList args;
-    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
-
-    QString from_name       = args.value(1);
-    uint32_t tgt_db_id      = args.value(2).toUInt();
-    uint32_t tgt_db_id_2    = args.value(3).toUInt(); // always the same?
-    QString tgt_name        = args.value(4);
-
-    if(tgt_db_id != tgt_db_id_2)
-        qWarning() << "TeamAccept db_ids do not match!";
-
-    Entity *from_ent = getEntity(&sess,from_name);
-    if(from_ent == nullptr)
-        return;
-
-    if(inviteTeam(*from_ent,*sess.m_ent))
-    {
-        msgfrom = "Inviting " + tgt_name + " to team.";
-        msgtgt = "Joining " + from_name + "'s team.";
-
-    }
-    else
-    {
-        msgfrom = "Failed to invite " + tgt_name + ". They are already on a team.";
-    }
-
-    qCDebug(logSlashCommand).noquote() << msgfrom;
-    sendInfoMessage(MessageChannel::TEAM, msgfrom, from_ent->m_client);
-    sendInfoMessage(MessageChannel::TEAM, msgtgt, &sess);
-}
-
-void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
-{
-    // game command: "team_decline \"From\" to_db_id \"To\""
-    QString msg;
-    QStringList args;
-    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
-
-    QString from_name   = args.value(1);
-    uint32_t tgt_db_id  = args.value(2).toUInt();
-    QString tgt_name    = args.value(3);
-
-    Entity *from_ent = getEntity(&sess,from_name);
-    if(from_ent == nullptr)
-        return;
-
-    msg = tgt_name + " declined a team invite from " + from_name + QString::number(tgt_db_id);
-    qCDebug(logSlashCommand).noquote() << msg;
-
-    msg = tgt_name + " declined your team invite."; // to sender
-    sendInfoMessage(MessageChannel::TEAM, msg, from_ent->m_client);
-    msg = "You declined the team invite from " + from_name; // to target
-    sendInfoMessage(MessageChannel::TEAM, msg, &sess);
 }
 
 void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
@@ -1076,22 +1043,6 @@ void cmdHandler_Sidekick(const QString &cmd, MapClientSession &sess)
     inviteSidekick(*sess.m_ent,*tgt);
 }
 
-void cmdHandler_SidekickAccept(const QString &/*cmd*/, MapClientSession &sess)
-{
-    uint32_t db_id  = sess.m_ent->m_char->m_char_data.m_sidekick.m_db_id;
-    Entity *tgt     = getEntityByDBID(&sess,db_id);
-
-    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
-        return;
-
-    addSidekick(*sess.m_ent,*tgt);
-}
-
-void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
-{
-    sess.m_ent->m_char->m_char_data.m_sidekick.m_db_id = 0;
-}
-
 void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
 {
     if(sess.m_ent->m_char->isEmpty())
@@ -1160,6 +1111,85 @@ void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)
     toggleFriendList(*sess.m_ent);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Access Level 0 Commands
+void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
+{
+    // game command: "team_accept \"From\" to_db_id to_db_id \"To\""
+
+    QString msgfrom = "Something went wrong with TeamAccept.";
+    QString msgtgt = "Something went wrong with TeamAccept.";
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    QString from_name       = args.value(1);
+    uint32_t tgt_db_id      = args.value(2).toUInt();
+    uint32_t tgt_db_id_2    = args.value(3).toUInt(); // always the same?
+    QString tgt_name        = args.value(4);
+
+    if(tgt_db_id != tgt_db_id_2)
+        qWarning() << "TeamAccept db_ids do not match!";
+
+    Entity *from_ent = getEntity(&sess,from_name);
+    if(from_ent == nullptr)
+        return;
+
+    if(inviteTeam(*from_ent,*sess.m_ent))
+    {
+        msgfrom = "Inviting " + tgt_name + " to team.";
+        msgtgt = "Joining " + from_name + "'s team.";
+
+    }
+    else
+    {
+        msgfrom = "Failed to invite " + tgt_name + ". They are already on a team.";
+    }
+
+    qCDebug(logSlashCommand).noquote() << msgfrom;
+    sendInfoMessage(MessageChannel::TEAM, msgfrom, from_ent->m_client);
+    sendInfoMessage(MessageChannel::TEAM, msgtgt, &sess);
+}
+
+void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
+{
+    // game command: "team_decline \"From\" to_db_id \"To\""
+    QString msg;
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    QString from_name   = args.value(1);
+    uint32_t tgt_db_id  = args.value(2).toUInt();
+    QString tgt_name    = args.value(3);
+
+    Entity *from_ent = getEntity(&sess,from_name);
+    if(from_ent == nullptr)
+        return;
+
+    msg = tgt_name + " declined a team invite from " + from_name + QString::number(tgt_db_id);
+    qCDebug(logSlashCommand).noquote() << msg;
+
+    msg = tgt_name + " declined your team invite."; // to sender
+    sendInfoMessage(MessageChannel::TEAM, msg, from_ent->m_client);
+    msg = "You declined the team invite from " + from_name; // to target
+    sendInfoMessage(MessageChannel::TEAM, msg, &sess);
+}
+
+void cmdHandler_SidekickAccept(const QString &/*cmd*/, MapClientSession &sess)
+{
+    uint32_t db_id  = sess.m_ent->m_char->m_char_data.m_sidekick.m_db_id;
+    Entity *tgt     = getEntityByDBID(&sess,db_id);
+
+    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
+        return;
+
+    addSidekick(*sess.m_ent,*tgt);
+}
+
+void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
+{
+    sess.m_ent->m_char->m_char_data.m_sidekick.m_db_id = 0;
+}
+
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
     sendEmailHeaders(sess.m_ent);
@@ -1214,6 +1244,9 @@ bool canAccessCommand(const SlashCommand &cmd, MapClientSession &src)
 }
 } // end of anonymous namespace
 
+/*
+ * runCommand for executing commands on MapClientSession
+ */
 void runCommand(const QString &str, MapClientSession &e)
 {
     for (const auto &cmd : g_defined_slash_commands)
