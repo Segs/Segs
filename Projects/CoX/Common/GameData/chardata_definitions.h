@@ -8,6 +8,7 @@
 #pragma once
 
 #include "Common/NetStructures/Friend.h"
+#include "Common/GameData/attrib_definitions.h"
 #include <QtCore/QString>
 #include <vector>
 
@@ -28,7 +29,7 @@ static const constexpr  uint32_t        class_version   = 1;
 
 struct CharacterData
 {
-static const constexpr  uint32_t    class_version       = 3;
+static const constexpr  uint32_t    class_version       = 4;
                         uint32_t    m_level             = 0;
                         uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
                         uint32_t    m_experience_points = 0;
@@ -54,4 +55,5 @@ static const constexpr  uint32_t    class_version       = 3;
                         bool        m_using_sg_costume;         // player uses sg costume currently
                         Sidekick    m_sidekick;                 // Sidekick Struct
                         FriendsList m_friendlist;               // Friendslist Struct
+                        Parse_CharAttrib    m_current_attribs;
 };

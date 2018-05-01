@@ -35,84 +35,85 @@ struct SlashCommand
 {
     QStringList m_valid_prefixes;
     QString m_help_text;
-    std::function<void(QString &,MapClientSession &)> m_handler;
+    std::function<void(const QString &,MapClientSession &)> m_handler;
     uint32_t m_required_access_level;
 };
-bool canAccessCommand(SlashCommand &cmd, const Entity &e);
+
+//bool canAccessCommand(const SlashCommand &cmd, const Entity &e); --> function not defined (yet)
+bool canAccessCommand(const SlashCommand &cmd, MapClientSession &src);
 
 // prototypes of all commands
 // Access Level 9 Commands (GMs)
-void cmdHandler_Script(QString &cmd, MapClientSession &sess);
-void cmdHandler_Dialog(QString &cmd, MapClientSession &sess);
-void cmdHandler_InfoMessage(QString &cmd, MapClientSession &sess);
-void cmdHandler_SmileX(QString &cmd, MapClientSession &sess);
-void cmdHandler_Fly(QString &cmd, MapClientSession &sess);
-void cmdHandler_Falling(QString &cmd, MapClientSession &sess);
-void cmdHandler_Sliding(QString &cmd, MapClientSession &sess);
-void cmdHandler_Jumping(QString &cmd, MapClientSession &sess);
-void cmdHandler_Stunned(QString &cmd, MapClientSession &sess);
-void cmdHandler_Jumppack(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetSpeed(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetBackupSpd(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetJumpHeight(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetHP(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetEnd(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetXP(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetDebt(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetInf(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetLevel(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetCombatLevel(QString &cmd, MapClientSession &sess);
-void cmdHandler_UpdateChar(QString &cmd, MapClientSession &sess);
-void cmdHandler_DebugChar(QString &cmd, MapClientSession &sess);
-void cmdHandler_ControlsDisabled(QString &cmd, MapClientSession &sess);
-void cmdHandler_UpdateId(QString &cmd, MapClientSession &sess);
-void cmdHandler_FullUpdate(QString &cmd, MapClientSession &sess);
-void cmdHandler_HasControlId(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetTeam(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetSuperGroup(QString &cmd, MapClientSession &sess);
-void cmdHandler_SettingsDump(QString &cmd, MapClientSession &sess);
-void cmdHandler_TeamDebug(QString &cmd, MapClientSession &sess);
-void cmdHandler_GUIDebug(QString &, MapClientSession &sess);
-void cmdHandler_SetWindowVisibility(QString &cmd, MapClientSession &sess);
-void cmdHandler_KeybindDebug(QString &cmd, MapClientSession &sess);
-void cmdHandler_ToggleLogging(QString &cmd, MapClientSession &sess);
-void cmdHandler_FriendsListDebug(QString &cmd, MapClientSession &sess);
-void cmdHandler_SendFloatingNumbers(QString &cmd, MapClientSession &sess);
-void cmdHandler_ToggleExtraInfo(QString &cmd, MapClientSession &sess);
-void cmdHandler_ToggleMoveInstantly(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetU1(QString &cmd, MapClientSession &sess);
+void cmdHandler_Script(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Dialog(const QString &cmd, MapClientSession &sess);
+void cmdHandler_InfoMessage(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Fly(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Falling(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Sliding(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Jumping(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Stunned(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Jumppack(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetSpeed(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetBackupSpd(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetJumpHeight(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetEnd(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetXP(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetDebt(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetInf(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetCombatLevel(const QString &cmd, MapClientSession &sess);
+void cmdHandler_UpdateChar(const QString &cmd, MapClientSession &sess);
+void cmdHandler_DebugChar(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ControlsDisabled(const QString &cmd, MapClientSession &sess);
+void cmdHandler_UpdateId(const QString &cmd, MapClientSession &sess);
+void cmdHandler_FullUpdate(const QString &cmd, MapClientSession &sess);
+void cmdHandler_HasControlId(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetTeam(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetSuperGroup(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SettingsDump(const QString &cmd, MapClientSession &sess);
+void cmdHandler_TeamDebug(const QString &cmd, MapClientSession &sess);
+void cmdHandler_GUIDebug(const QString &, MapClientSession &sess);
+void cmdHandler_SetWindowVisibility(const QString &cmd, MapClientSession &sess);
+void cmdHandler_KeybindDebug(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ToggleLogging(const QString &cmd, MapClientSession &sess);
+void cmdHandler_FriendsListDebug(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ToggleExtraInfo(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
-void addNpc(QString &cmd, MapClientSession &sess);
-void moveTo(QString &cmd, MapClientSession &sess);
+void addNpc(const QString &cmd, MapClientSession &sess);
+void moveTo(const QString &cmd, MapClientSession &sess);
 // Access Level 1 Commands
-void cmdHandler_CmdList(QString &cmd, MapClientSession &sess);
-void cmdHandler_AFK(QString &cmd, MapClientSession &sess);
-void cmdHandler_WhoAll(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetTitles(QString &cmd, MapClientSession &sess);
-void cmdHandler_Stuck(QString &cmd, MapClientSession &sess);
-void cmdHandler_LFG(QString &cmd, MapClientSession &sess);
-void cmdHandler_MOTD(QString &cmd, MapClientSession &sess);
-void cmdHandler_Invite(QString &cmd, MapClientSession &sess);
-void cmdHandler_Kick(QString &cmd, MapClientSession &sess);
-void cmdHandler_LeaveTeam(QString &cmd, MapClientSession &sess);
-void cmdHandler_FindMember(QString &cmd, MapClientSession &sess);
-void cmdHandler_MakeLeader(QString &cmd, MapClientSession &sess);
-void cmdHandler_SetAssistTarget(QString &cmd, MapClientSession &sess);
-void cmdHandler_Sidekick(QString &cmd, MapClientSession &sess);
-void cmdHandler_UnSidekick(QString &cmd, MapClientSession &sess);
-void cmdHandler_TeamBuffs(QString &cmd, MapClientSession &sess);
-void cmdHandler_Friend(QString &cmd, MapClientSession &sess);
-void cmdHandler_Unfriend(QString &cmd, MapClientSession &sess);
-void cmdHandler_FriendList(QString &cmd, MapClientSession &sess);
-// Access Level 0 Commands
-void cmdHandler_TeamAccept(QString &cmd, MapClientSession &sess);
-void cmdHandler_TeamDecline(QString &cmd, MapClientSession &sess);
-void cmdHandler_SidekickAccept(QString &cmd, MapClientSession &sess);
-void cmdHandler_SidekickDecline(QString &cmd, MapClientSession &sess);
-void cmdHandler_EmailHeaders(QString &cmd, MapClientSession &sess);
-void cmdHandler_EmailRead(QString &cmd, MapClientSession &sess);
-void cmdHandler_EmailSend(QString &cmd, MapClientSession &sess);
-void cmdHandler_EmailDelete(QString &cmd, MapClientSession &sess);
+void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess);
+void cmdHandler_AFK(const QString &cmd, MapClientSession &sess);
+void cmdHandler_WhoAll(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess);
+void cmdHandler_LFG(const QString &cmd, MapClientSession &sess);
+void cmdHandler_MOTD(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Invite(const QString &cmd, MapClientSession &sess);
+void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
+void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Kick(const QString &cmd, MapClientSession &sess);
+void cmdHandler_LeaveTeam(const QString &cmd, MapClientSession &sess);
+void cmdHandler_FindMember(const QString &cmd, MapClientSession &sess);
+void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetAssistTarget(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Sidekick(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SidekickAccept(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SidekickDecline(const QString &cmd, MapClientSession &sess);
+void cmdHandler_UnSidekick(const QString &cmd, MapClientSession &sess);
+void cmdHandler_TeamBuffs(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Friend(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess);
+void cmdHandler_FriendList(const QString &cmd, MapClientSession &sess);
+void cmdHandler_EmailHeaders(const QString &cmd, MapClientSession &sess);
+void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess);
+void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess);
+void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess);
 
 static const SlashCommand g_defined_slash_commands[] = {
     /* Access Level 9 Commands */
@@ -197,19 +198,19 @@ static const SlashCommand g_defined_slash_commands[] = {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 9 Commands (GMs)
-void cmdHandler_Script(QString &cmd, MapClientSession &sess)
+void cmdHandler_Script(const QString &cmd, MapClientSession &sess)
 {
     QString code = cmd.mid(7, cmd.size() - 7);
     sess.m_current_map->m_scripting_interface->runScript(&sess, code, "user provided script");
 }
 
-void cmdHandler_Dialog(QString &cmd, MapClientSession &sess)
+void cmdHandler_Dialog(const QString &cmd, MapClientSession &sess)
 {
     StandardDialogCmd *dlg = new StandardDialogCmd(cmd.mid(4));
     sess.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
 }
 
-void cmdHandler_InfoMessage(QString &cmd, MapClientSession &sess)
+void cmdHandler_InfoMessage(const QString &cmd, MapClientSession &sess)
 {
     QString msg;
     int cmdType = int(MessageChannel::USER_ERROR);
@@ -233,7 +234,7 @@ void cmdHandler_InfoMessage(QString &cmd, MapClientSession &sess)
     sendInfoMessage(static_cast<MessageChannel>(cmdType), msg, &sess);
 }
 
-void cmdHandler_SmileX(QString &cmd, MapClientSession &sess) {
+void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess) {
 
 
     int space = cmd.indexOf(' ');
@@ -254,7 +255,9 @@ void cmdHandler_SmileX(QString &cmd, MapClientSession &sess) {
     }
 }
 
-void cmdHandler_Fly(QString &cmd, MapClientSession &sess) {
+void cmdHandler_Fly(const QString &cmd, MapClientSession &sess) {
+
+
     toggleFlying(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
@@ -262,7 +265,7 @@ void cmdHandler_Fly(QString &cmd, MapClientSession &sess) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_Falling(QString &cmd, MapClientSession &sess) {
+void cmdHandler_Falling(const QString &cmd, MapClientSession &sess) {
 
 
     toggleFalling(*sess.m_ent);
@@ -272,7 +275,7 @@ void cmdHandler_Falling(QString &cmd, MapClientSession &sess) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_Sliding(QString &cmd, MapClientSession &sess) {
+void cmdHandler_Sliding(const QString &cmd, MapClientSession &sess) {
 
 
     toggleSliding(*sess.m_ent);
@@ -282,7 +285,7 @@ void cmdHandler_Sliding(QString &cmd, MapClientSession &sess) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_Jumping(QString &cmd, MapClientSession &sess)
+void cmdHandler_Jumping(const QString &cmd, MapClientSession &sess)
 {
     toggleJumping(*sess.m_ent);
 
@@ -291,7 +294,7 @@ void cmdHandler_Jumping(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_Stunned(QString &cmd, MapClientSession &sess) {
+void cmdHandler_Stunned(const QString &cmd, MapClientSession &sess) {
 
 
     toggleStunned(*sess.m_ent);
@@ -301,7 +304,7 @@ void cmdHandler_Stunned(QString &cmd, MapClientSession &sess) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_Jumppack(QString &cmd, MapClientSession &sess) {
+void cmdHandler_Jumppack(const QString &cmd, MapClientSession &sess) {
 
 
     toggleJumppack(*sess.m_ent);
@@ -311,7 +314,7 @@ void cmdHandler_Jumppack(QString &cmd, MapClientSession &sess) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetSpeed(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetSpeed(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> args(cmd.splitRef(' '));
     float v1 = args.value(1).toFloat();
@@ -325,7 +328,7 @@ void cmdHandler_SetSpeed(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetBackupSpd(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetBackupSpd(const QString &cmd, MapClientSession &sess)
 {
     float val = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
     setBackupSpd(*sess.m_ent, val);
@@ -335,7 +338,7 @@ void cmdHandler_SetBackupSpd(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetJumpHeight(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetJumpHeight(const QString &cmd, MapClientSession &sess)
 {
     float val = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
     setJumpHeight(*sess.m_ent, val);
@@ -345,7 +348,7 @@ void cmdHandler_SetJumpHeight(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetHP(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess)
 {
     float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
     float maxattrib =sess.m_ent->m_char->m_max_attribs.m_HitPoints;
@@ -360,7 +363,7 @@ void cmdHandler_SetHP(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetEnd(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetEnd(const QString &cmd, MapClientSession &sess)
 {
     float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
     float maxattrib = sess.m_ent->m_char->m_max_attribs.m_Endurance;
@@ -375,7 +378,7 @@ void cmdHandler_SetEnd(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetXP(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetXP(const QString &cmd, MapClientSession &sess)
 {
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
     uint32_t lvl = getLevel(*sess.m_ent->m_char);
@@ -391,7 +394,7 @@ void cmdHandler_SetXP(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetDebt(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetDebt(const QString &cmd, MapClientSession &sess)
 {
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
@@ -402,7 +405,7 @@ void cmdHandler_SetDebt(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetInf(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetInf(const QString &cmd, MapClientSession &sess)
 {
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
@@ -413,7 +416,7 @@ void cmdHandler_SetInf(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetLevel(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess)
 {
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
@@ -424,7 +427,7 @@ void cmdHandler_SetLevel(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetCombatLevel(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetCombatLevel(const QString &cmd, MapClientSession &sess)
 {
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
@@ -435,7 +438,7 @@ void cmdHandler_SetCombatLevel(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_UpdateChar(QString &cmd, MapClientSession &sess)
+void cmdHandler_UpdateChar(const QString &cmd, MapClientSession &sess)
 {
     charUpdateDB(sess.m_ent);
 
@@ -444,7 +447,7 @@ void cmdHandler_UpdateChar(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_DebugChar(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_DebugChar(const QString &/*cmd*/, MapClientSession &sess)
 {
     const Character &chardata(*sess.m_ent->m_char);
     QString msg = "DebugChar: " + sess.m_ent->name()
@@ -465,7 +468,7 @@ void cmdHandler_DebugChar(QString &/*cmd*/, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_ControlsDisabled(QString &cmd, MapClientSession &sess)
+void cmdHandler_ControlsDisabled(const QString &cmd, MapClientSession &sess)
 {
     toggleControlsDisabled(*sess.m_ent);
 
@@ -474,7 +477,8 @@ void cmdHandler_ControlsDisabled(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_UpdateId(QString &cmd, MapClientSession &sess)
+
+void cmdHandler_UpdateId(const QString &cmd, MapClientSession &sess)
 {
     uint8_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUShort();
 
@@ -485,7 +489,7 @@ void cmdHandler_UpdateId(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_FullUpdate(QString &cmd, MapClientSession &sess)
+void cmdHandler_FullUpdate(const QString &cmd, MapClientSession &sess)
 {
     toggleFullUpdate(*sess.m_ent);
 
@@ -494,7 +498,7 @@ void cmdHandler_FullUpdate(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_HasControlId(QString &cmd, MapClientSession &sess)
+void cmdHandler_HasControlId(const QString &cmd, MapClientSession &sess)
 {
     toggleControlId(*sess.m_ent);
 
@@ -503,7 +507,7 @@ void cmdHandler_HasControlId(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetTeam(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetTeam(const QString &cmd, MapClientSession &sess)
 {
     uint8_t val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
@@ -514,7 +518,7 @@ void cmdHandler_SetTeam(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SetSuperGroup(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetSuperGroup(const QString &cmd, MapClientSession &sess)
 {
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
@@ -530,7 +534,7 @@ void cmdHandler_SetSuperGroup(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_SettingsDump(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_SettingsDump(const QString &/*cmd*/, MapClientSession &sess)
 {
     QString msg = "Sending settings config dump to console output.";
     qCDebug(logSlashCommand) << msg;
@@ -539,7 +543,7 @@ void cmdHandler_SettingsDump(QString &/*cmd*/, MapClientSession &sess)
     settingsDump(); // Send settings dump
 }
 
-void cmdHandler_TeamDebug(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_TeamDebug(const QString &/*cmd*/, MapClientSession &sess)
 {
     QString msg = "Sending team debug to console output.";
     qCDebug(logSlashCommand) << msg;
@@ -548,7 +552,8 @@ void cmdHandler_TeamDebug(QString &/*cmd*/, MapClientSession &sess)
     sess.m_ent->m_team->dump(); // Send team debug info
 }
 
-void cmdHandler_GUIDebug(QString &/*cmd*/, MapClientSession &sess)
+
+void cmdHandler_GUIDebug(const QString &/*cmd*/, MapClientSession &sess)
 {
     QString msg = "Sending GUISettings dump to console output.";
     qCDebug(logSlashCommand) << msg;
@@ -557,7 +562,7 @@ void cmdHandler_GUIDebug(QString &/*cmd*/, MapClientSession &sess)
     sess.m_ent->m_player->m_gui.guiDump(); // Send GUISettings dump
 }
 
-void cmdHandler_SetWindowVisibility(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetWindowVisibility(const QString &cmd, MapClientSession &sess)
 {
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
@@ -573,7 +578,8 @@ void cmdHandler_SetWindowVisibility(QString &cmd, MapClientSession &sess)
     sess.m_ent->m_player->m_gui.m_wnds.at(idx).guiWindowDump(); // for debugging
 }
 
-void cmdHandler_KeybindDebug(QString &/*cmd*/, MapClientSession &sess){
+void cmdHandler_KeybindDebug(const QString &/*cmd*/, MapClientSession &sess)
+{
     QString msg = "Sending Keybinds dump to console output.";
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
@@ -581,7 +587,7 @@ void cmdHandler_KeybindDebug(QString &/*cmd*/, MapClientSession &sess){
     sess.m_ent->m_player->m_keybinds.keybindsDump(); // Send GUISettings dump
 }
 
-void cmdHandler_ToggleLogging(QString &cmd, MapClientSession &sess)
+void cmdHandler_ToggleLogging(const QString &cmd, MapClientSession &sess)
 {
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
@@ -595,7 +601,7 @@ void cmdHandler_ToggleLogging(QString &cmd, MapClientSession &sess)
         toggleLogging(category); // Toggle each category listed
 }
 
-void cmdHandler_FriendsListDebug(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_FriendsListDebug(const QString &/*cmd*/, MapClientSession &sess)
 {
     QString msg = "Sending FriendsList dump to console output.";
     qCDebug(logSlashCommand) << msg;
@@ -604,7 +610,7 @@ void cmdHandler_FriendsListDebug(QString &/*cmd*/, MapClientSession &sess)
     dumpFriends(*sess.m_ent); // Send FriendsList dump
 }
 
-void cmdHandler_SendFloatingNumbers(QString &cmd, MapClientSession &sess)
+void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess)
 {
     Entity *tgt = nullptr;
 
@@ -672,7 +678,7 @@ void cmdHandler_SendFloatingNumbers(QString &cmd, MapClientSession &sess)
     }
 }
 
-void cmdHandler_ToggleExtraInfo(QString &cmd, MapClientSession &sess)
+void cmdHandler_ToggleExtraInfo(const QString &cmd, MapClientSession &sess)
 {
     toggleExtraInfo(*sess.m_ent);
 
@@ -681,7 +687,7 @@ void cmdHandler_ToggleExtraInfo(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_ToggleMoveInstantly(QString &cmd, MapClientSession &sess)
+void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess)
 {
     toggleMoveInstantly(*sess.m_ent);
 
@@ -691,7 +697,7 @@ void cmdHandler_ToggleMoveInstantly(QString &cmd, MapClientSession &sess)
 }
 
 // Slash commands for setting bit values
-void cmdHandler_SetU1(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
 {
     int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
@@ -704,7 +710,7 @@ void cmdHandler_SetU1(QString &cmd, MapClientSession &sess)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 2 Commands
-void addNpc(QString &cmd, MapClientSession &sess)
+void addNpc(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     int variation = 0;
@@ -743,7 +749,7 @@ void addNpc(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), &sess);
 }
 
-void moveTo(QString &cmd, MapClientSession &sess)
+void moveTo(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     parts = cmd.splitRef(' ');
@@ -764,7 +770,7 @@ void moveTo(QString &cmd, MapClientSession &sess)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 1 Commands
-void cmdHandler_CmdList(QString &cmd, MapClientSession &sess)
+void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess)
 {
 
     QString msg = "Below is a list of all slash commands that your account can access. They are not case sensitive.\n";
@@ -796,7 +802,7 @@ void cmdHandler_CmdList(QString &cmd, MapClientSession &sess)
     qCDebug(logSlashCommand).noquote() << cmd << ":\n" << msg;
 }
 
-void cmdHandler_AFK(QString &cmd, MapClientSession &sess)
+void cmdHandler_AFK(const QString &cmd, MapClientSession &sess)
 {
     int space = cmd.indexOf(' ');
     QString val = cmd.mid(space+1);
@@ -807,7 +813,7 @@ void cmdHandler_AFK(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::EMOTE, msg, &sess);
 }
 
-void cmdHandler_WhoAll(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_WhoAll(const QString &/*cmd*/, MapClientSession &sess)
 {
     MapInstance *     mi  = sess.m_current_map;
 
@@ -830,7 +836,7 @@ void cmdHandler_WhoAll(QString &/*cmd*/, MapClientSession &sess)
     sendInfoMessage(MessageChannel::SERVER, msg, &sess);
 }
 
-void cmdHandler_SetTitles(QString &cmd, MapClientSession &sess)
+void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess)
 {
     bool        prefix;
     QString     msg, generic, origin, special;
@@ -855,7 +861,7 @@ void cmdHandler_SetTitles(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::USER_ERROR, msg, &sess);
 }
 
-void cmdHandler_Stuck(QString &cmd, MapClientSession &sess)
+void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 {
     // TODO: Implement true move-to-safe-location-nearby logic
     sess.m_ent->m_entity_data.m_pos = sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos);
@@ -868,7 +874,7 @@ void cmdHandler_Stuck(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::SERVER, msg, &sess);
 }
 
-void cmdHandler_LFG(QString &cmd, MapClientSession &sess)
+void cmdHandler_LFG(const QString &cmd, MapClientSession &sess)
 {
     toggleLFG(*sess.m_ent);
     QString msg = "Toggling " + cmd;
@@ -876,7 +882,7 @@ void cmdHandler_LFG(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::SERVER, msg, &sess);
 }
 
-void cmdHandler_MOTD(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_MOTD(const QString &/*cmd*/, MapClientSession &sess)
 {
     sendServerMOTD(&sess);
     QString msg = "Opening Server MOTD";
@@ -884,7 +890,7 @@ void cmdHandler_MOTD(QString &/*cmd*/, MapClientSession &sess)
     sendInfoMessage(MessageChannel::SERVER, msg, &sess);
 }
 
-void cmdHandler_Invite(QString &cmd, MapClientSession &sess)
+void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
 {
     Entity *tgt = nullptr;
     QString msg;
@@ -933,7 +939,7 @@ void cmdHandler_Invite(QString &cmd, MapClientSession &sess)
     sendTeamOffer(sess.m_ent,tgt);
 }
 
-void cmdHandler_Kick(QString &cmd, MapClientSession &sess)
+void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
 {
     Entity *tgt = nullptr;
     QString msg;
@@ -961,7 +967,7 @@ void cmdHandler_Kick(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::TEAM, msg, &sess);
 }
 
-void cmdHandler_LeaveTeam(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_LeaveTeam(const QString &/*cmd*/, MapClientSession &sess)
 {
     leaveTeam(*sess.m_ent);
     QString msg = "Leaving Team";
@@ -969,7 +975,7 @@ void cmdHandler_LeaveTeam(QString &/*cmd*/, MapClientSession &sess)
     sendInfoMessage(MessageChannel::TEAM, msg, &sess);
 }
 
-void cmdHandler_FindMember(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_FindMember(const QString &/*cmd*/, MapClientSession &sess)
 {
     findTeamMember(*sess.m_ent);
     QString msg = "Finding Team Member";
@@ -977,7 +983,8 @@ void cmdHandler_FindMember(QString &/*cmd*/, MapClientSession &sess)
     sendInfoMessage(MessageChannel::CHAT_TEXT, msg, &sess);
 }
 
-void cmdHandler_MakeLeader(QString &cmd, MapClientSession &sess)
+
+void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess)
 {
     Entity *tgt = nullptr;
     QString msg;
@@ -1005,7 +1012,7 @@ void cmdHandler_MakeLeader(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::TEAM, msg, &sess);
 }
 
-void cmdHandler_SetAssistTarget(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
 {
     QString msg = "Setting assist target.";
 
@@ -1015,7 +1022,7 @@ void cmdHandler_SetAssistTarget(QString &/*cmd*/, MapClientSession &sess)
     sendInfoMessage(MessageChannel::USER_ERROR, msg, &sess);
 }
 
-void cmdHandler_Sidekick(QString &cmd, MapClientSession &sess)
+void cmdHandler_Sidekick(const QString &cmd, MapClientSession &sess)
 {
     Entity *tgt = nullptr;
 
@@ -1036,7 +1043,7 @@ void cmdHandler_Sidekick(QString &cmd, MapClientSession &sess)
     inviteSidekick(*sess.m_ent,*tgt);
 }
 
-void cmdHandler_UnSidekick(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
 {
     if(sess.m_ent->m_char->isEmpty())
         return;
@@ -1044,7 +1051,7 @@ void cmdHandler_UnSidekick(QString &/*cmd*/, MapClientSession &sess)
     removeSidekick(*sess.m_ent);
 }
 
-void cmdHandler_TeamBuffs(QString & /*cmd*/, MapClientSession &sess)
+void cmdHandler_TeamBuffs(const QString & /*cmd*/, MapClientSession &sess)
 {
     toggleTeamBuffs(*sess.m_ent->m_player);
 
@@ -1052,7 +1059,7 @@ void cmdHandler_TeamBuffs(QString & /*cmd*/, MapClientSession &sess)
     qCDebug(logSlashCommand).noquote() << msg;
 }
 
-void cmdHandler_Friend(QString &cmd, MapClientSession &sess)
+void cmdHandler_Friend(const QString &cmd, MapClientSession &sess)
 {
     Entity *tgt = nullptr;
 
@@ -1073,7 +1080,7 @@ void cmdHandler_Friend(QString &cmd, MapClientSession &sess)
     addFriend(*sess.m_ent,*tgt);
 }
 
-void cmdHandler_Unfriend(QString &cmd, MapClientSession &sess)
+void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess)
 {
     Entity *tgt = nullptr;
 
@@ -1096,7 +1103,7 @@ void cmdHandler_Unfriend(QString &cmd, MapClientSession &sess)
     removeFriend(*sess.m_ent,*tgt);
 }
 
-void cmdHandler_FriendList(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)
 {
     if(sess.m_ent->m_char->isEmpty())
         return;
@@ -1104,10 +1111,9 @@ void cmdHandler_FriendList(QString &/*cmd*/, MapClientSession &sess)
     toggleFriendList(*sess.m_ent);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 0 Commands
-void cmdHandler_TeamAccept(QString &cmd, MapClientSession &sess)
+void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
 {
     // game command: "team_accept \"From\" to_db_id to_db_id \"To\""
 
@@ -1144,7 +1150,7 @@ void cmdHandler_TeamAccept(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::TEAM, msgtgt, &sess);
 }
 
-void cmdHandler_TeamDecline(QString &cmd, MapClientSession &sess)
+void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
 {
     // game command: "team_decline \"From\" to_db_id \"To\""
     QString msg;
@@ -1168,7 +1174,7 @@ void cmdHandler_TeamDecline(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::TEAM, msg, &sess);
 }
 
-void cmdHandler_SidekickAccept(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_SidekickAccept(const QString &/*cmd*/, MapClientSession &sess)
 {
     uint32_t db_id  = sess.m_ent->m_char->m_char_data.m_sidekick.m_db_id;
     Entity *tgt     = getEntityByDBID(&sess,db_id);
@@ -1179,12 +1185,12 @@ void cmdHandler_SidekickAccept(QString &/*cmd*/, MapClientSession &sess)
     addSidekick(*sess.m_ent,*tgt);
 }
 
-void cmdHandler_SidekickDecline(QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 {
     sess.m_ent->m_char->m_char_data.m_sidekick.m_db_id = 0;
 }
 
-void cmdHandler_EmailHeaders(QString & /*cmd*/, MapClientSession &sess)
+void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
     sendEmailHeaders(sess.m_ent);
     QString msg = "Sent Email Headers";
@@ -1192,7 +1198,7 @@ void cmdHandler_EmailHeaders(QString & /*cmd*/, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_EmailRead(QString &cmd, MapClientSession &sess)
+void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
 {
     int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
@@ -1203,7 +1209,7 @@ void cmdHandler_EmailRead(QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_EmailSend(QString &cmd, MapClientSession &sess){
+void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess){
 
     QVector<QStringRef> args(cmd.splitRef(' '));
 
@@ -1214,7 +1220,7 @@ void cmdHandler_EmailSend(QString &cmd, MapClientSession &sess){
     sendInfoMessage(MessageChannel::SERVER, msg, &sess);
 }
 
-void cmdHandler_EmailDelete(QString &cmd, MapClientSession &sess)
+void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
 {
     int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
@@ -1238,11 +1244,10 @@ bool canAccessCommand(const SlashCommand &cmd, MapClientSession &src)
 }
 } // end of anonymous namespace
 
-
 /*
  * runCommand for executing commands on MapClientSession
  */
-void runCommand(QString &str, MapClientSession &e)
+void runCommand(const QString &str, MapClientSession &e)
 {
     for (const auto &cmd : g_defined_slash_commands)
     {
@@ -1258,3 +1263,4 @@ void runCommand(QString &str, MapClientSession &e)
 }
 
 //! @}
+

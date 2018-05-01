@@ -78,7 +78,7 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     return *this;
 }
 
-void InputStateStorage::processDirectionControl(int dir,int prev_time,int press_release)
+void InputStateStorage::processDirectionControl(int dir,int /*prev_time*/,int press_release)
 {
     if(press_release)
     {
@@ -238,7 +238,7 @@ struct ControlState
     uint64_t m_perf_cntr_diff;
     uint64_t m_perf_freq_diff;
     // recover actual ControlState from network data and previous entry
-    void serializefrom_delta(BitStream &bs,const ControlState &prev)
+    void serializefrom_delta(BitStream &bs,const ControlState &/*prev*/)
     {
         client_timenow   = bs.GetPackedBits(1); // field_0 diff next-current
         time_res = bs.GetPackedBits(1); // time to next state ?

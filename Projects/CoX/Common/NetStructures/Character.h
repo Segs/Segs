@@ -100,7 +100,7 @@ const   QString &       getName() const { return m_name; }
         void            sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const;
         void            sendFriendList(BitStream &bs) const;
 
-        Parse_CharAttrib    m_current_attribs;
+        // Parse_CharAttrib    m_current_attribs; --> placed in CharacterData now
         Parse_CharAttrib    m_max_attribs;
         LevelExpAndDebt     m_other_attribs;
         CharacterData       m_char_data;

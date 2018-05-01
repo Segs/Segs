@@ -194,7 +194,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
     // TODO: Do we update database here? issue #271
 }
 
-void GameHandler::on_idle(IdleEvent *ev)
+void GameHandler::on_idle(IdleEvent */*ev*/)
 {
     // idle for idle 'strategy'
 //    GameLink * lnk = (GameLink *)ev->src();

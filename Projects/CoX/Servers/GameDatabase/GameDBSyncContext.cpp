@@ -241,8 +241,6 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         character.m_account_id = (m_prepared_char_select->value("account_id").toUInt());
         QString name=m_prepared_char_select->value("char_name").toString();
         character.m_name =  name.isEmpty() ? "EMPTY" : name;
-        character.m_HitPoints = (m_prepared_char_select->value("hitpoints").toUInt());
-        character.m_Endurance = (m_prepared_char_select->value("endurance").toUInt());
         character.m_serialized_chardata = m_prepared_char_select->value("chardata").toString();
         character.m_serialized_player_data = m_prepared_char_select->value("player_data").toString();
 
@@ -340,8 +338,6 @@ bool GameDbSyncContext::createNewChar(const CreateNewCharacterRequestData &data,
     m_prepared_char_insert->bindValue(":bodytype", costume.m_body_type);
     m_prepared_char_insert->bindValue(QStringLiteral(":height"), costume.m_height);
     m_prepared_char_insert->bindValue(QStringLiteral(":physique"), costume.m_physique);
-    m_prepared_char_insert->bindValue(":hitpoints", data.m_character.m_HitPoints);
-    m_prepared_char_insert->bindValue(":endurance", data.m_character.m_Endurance);
     m_prepared_char_insert->bindValue(":supergroup_id", 0);
     m_prepared_char_insert->bindValue(":player_data", data.m_character.m_serialized_player_data);
     m_prepared_char_insert->bindValue(":entitydata", data.m_ent_data);

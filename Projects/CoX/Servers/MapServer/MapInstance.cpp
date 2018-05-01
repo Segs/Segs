@@ -196,7 +196,7 @@ MapInstance::~MapInstance()
     delete m_endpoint;
 }
 
-void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage *ev)
+void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*ev*/)
 {
     assert(false);
 //    assert(ev->m_data.m_sub_server_id);
@@ -605,7 +605,6 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         Entity *e = m_entities.CreatePlayer();
 
         const MapServerData &data(g_GlobalMapServer->runtimeData());
-        const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
 
         fillEntityFromNewCharData(*e, ev->m_character_data, data.getPacker(),data.m_keybind_profiles);
         e->m_char->m_account_id = map_session.auth_id();
@@ -712,7 +711,6 @@ void MapInstance::sendState() {
 
     auto iter=m_session_store.begin();
     auto end=m_session_store.end();
-    static bool only_first=true;
 
     for(;iter!=end; ++iter)
     {
@@ -733,7 +731,7 @@ void MapInstance::sendState() {
         res->abs_time = 30*100*(m_world->accumulated_time);
         cl->link()->putq(res);
     }
-    only_first=false;
+
     // This is handling instance-wide timers
 
     //TODO: Move timer processing to per-client EventHandler ?
@@ -1769,7 +1767,7 @@ void MapInstance::on_set_destination(SetDestination * ev)
                << "loc" << ev->destination.x << ev->destination.y << ev->destination.z;
 }
 
-void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
+void MapInstance::on_abort_queued_power(AbortQueuedPower * /*ev*/)
 {
     qCWarning(logMapEvents) << "Unhandled abort queued power request";
 }
@@ -1806,7 +1804,7 @@ void MapInstance::on_client_options(SaveClientOptions * ev)
 {
     // Save options/keybinds to character entity and entry in the database.
     MapClientSession &session(m_session_store.session_from_event(ev));
-    LinkBase * lnk = (LinkBase *)ev->src();
+    //LinkBase * lnk = (LinkBase *)ev->src();
 
     Entity *ent = session.m_ent;
     markEntityForDbStore(ent,DbStoreFlags::Options);
@@ -1838,7 +1836,7 @@ void MapInstance::on_set_default_power_send(SetDefaultPowerSend *ev)
     qCWarning(logMapEvents) << "Unhandled Set Default Power Send request:" << ev->powerset_idx << ev->power_idx;
 }
 
-void MapInstance::on_set_default_power(SetDefaultPower *ev)
+void MapInstance::on_set_default_power(SetDefaultPower */*ev*/)
 {
     qCWarning(logMapEvents) << "Unhandled Set Default Power request.";
 }

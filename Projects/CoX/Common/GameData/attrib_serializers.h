@@ -27,3 +27,6 @@ template<class Archive>
 void serialize(Archive & archive, Parse_CharAttrib & m);
 template<class Archive>
 void serialize(Archive & archive, Parse_CharAttribMax & m);
+
+void serializeToDb(const Parse_CharAttrib &data, QString &tgt);
+void serializeFromDb(Parse_CharAttrib &data, const QString &src);

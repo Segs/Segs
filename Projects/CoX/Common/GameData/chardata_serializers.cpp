@@ -15,6 +15,7 @@
 #include "chardata_definitions.h"
 #include "DataStorage.h"
 #include "serialization_common.h"
+#include "attrib_serializers.h"
 #include <QDebug>
 
 const constexpr uint32_t Friend::class_version;
@@ -105,6 +106,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("UsingSGCostume",cd.m_using_sg_costume));
     archive(cereal::make_nvp("SideKick",cd.m_sidekick));
     archive(cereal::make_nvp("FriendList",cd.m_friendlist));
+    archive(cereal::make_nvp("CurrentAttribs", cd.m_current_attribs));
 }
 
 void saveTo(const CharacterData &target, const QString &baseName, bool text_format)

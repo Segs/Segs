@@ -49,7 +49,7 @@ void Team::addTeamMember(Entity *e)
 void Team::removeTeamMember(Entity *e)
 {
     qCDebug(logTeams) << "Searching team members for" << e->name() << "to remove them.";
-    int id_to_find = e->m_db_id;
+    uint32_t id_to_find = e->m_db_id;
     auto iter = std::find_if( m_team_members.begin(), m_team_members.end(),
                               [id_to_find](const TeamMember& t)->bool {return id_to_find==t.tm_idx;});
     if(iter!=m_team_members.end())

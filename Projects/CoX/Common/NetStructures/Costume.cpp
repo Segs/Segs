@@ -159,7 +159,7 @@ void serializeto(const Costume &costume,BitStream &bs,const ColorAndPartPacker *
     //m_num_parts = m_parts.size();
     assert(!costume.m_parts.empty());
     bs.StorePackedBits(4,costume.m_parts.size());
-    for(int costume_part=0; costume_part<costume.m_parts.size();costume_part++)
+    for(uint32_t costume_part=0; costume_part<costume.m_parts.size();costume_part++)
     {
         CostumePart part=costume.m_parts[costume_part];
         // TODO: this is bad code, it's purpose is to NOT send all part strings if m_non_default_costme_p is false

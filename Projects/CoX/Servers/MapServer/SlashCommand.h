@@ -9,5 +9,5 @@
 
 class QString;
 
-void runCommand(QString &str,struct MapClientSession &e);
+void runCommand(const QString &str,struct MapClientSession &e);
 
