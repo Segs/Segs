@@ -9,6 +9,7 @@
 
 QString makeReadableName(QString &name)
 {
+    // remove filepaths and extensions then replace underscores with spaces
     return name.remove(QRegularExpression(".*\\\\")).remove(QRegularExpression("\\..*")).replace("_"," ");
 }
 
