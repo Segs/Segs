@@ -238,7 +238,10 @@ void convertMaterial(Urho3D::Context *ctx,CoHModel *mdl,StaticModel* boxObject)
             isAdditive = true;
         }
         if ( tflags & ColorOnly )
-            onlyColor = Color(model_trick->TintColor0.r/255.0f, model_trick->TintColor0.g/255.0f, model_trick->TintColor0.b/255.0f, model_trick->TintColor0.a/255.0f);
+            onlyColor = Color(model_trick->TintColor0.rgba.r/255.0f,
+                              model_trick->TintColor0.rgba.g/255.0f,
+                              model_trick->TintColor0.rgba.b/255.0f,
+                              model_trick->TintColor0.rgba.a/255.0f);
         if ( tflags & DoubleSided )
             targetCulling = CULL_NONE;
         if ( tflags & NoZTest )
