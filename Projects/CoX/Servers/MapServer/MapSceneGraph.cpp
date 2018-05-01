@@ -151,7 +151,7 @@ struct NpcCreator
                 glm::vec3 angles = glm::eulerAngles(valquat);
                 angles.y += glm::pi<float>();
                 valquat = glm::quat(angles);
-                e->m_char->setName(makeReadableName(npc_costume_name));
+                e->m_char->setName(makeReadableName(persistant_name));
                 e->m_direction = valquat;
                 e->m_entity_data.m_orientation_pyr = {angles.x,angles.y,angles.z};
                 e->m_velocity = { 0,0,0 };
