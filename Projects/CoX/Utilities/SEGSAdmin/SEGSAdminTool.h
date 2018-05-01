@@ -20,28 +20,35 @@ class SEGSAdminTool : public QMainWindow
 {
     Q_OBJECT
     class AddNewUserDialog *m_add_user_dialog;
+    class GenerateConfigFileDialog *m_generate_config_dialog;
 
 public:
-    explicit SEGSAdminTool(QWidget *parent = 0);
+    explicit SEGSAdminTool(QWidget *parent = nullptr);
     ~SEGSAdminTool();
 
 
-public Q_SLOTS:
-    void commit_user(const QString username, const QString password, const QString acclevel);
+public slots:
+    void commit_user(QString username, QString password, QString acclevel);
     void create_databases(bool overwrite);
-    void check_db_exist();
+    void check_db_exist(bool on_startup);
     void start_auth_server();
     void stop_auth_server();
     void read_createuser();
     void read_createDB();
     void read_authserver();
-    //void GetConfigFile();
-    void read_config_file(const QString filePath);
+    void read_config_file(QString filePath);
     void check_for_config_file();
+    void save_changes_config_file();
 
 signals:
-    void readyToRead(const QString filePath);
+    void readyToRead(QString filePath);
+    void checkForConfigFile();
+    void checkForDB(bool on_startup);
+    void addAdminUser();
 
+
+public slots:
+    void generate_default_config_file(QString server_name, QString ip);
 
 private:
     Ui::SEGSAdminTool *ui;
