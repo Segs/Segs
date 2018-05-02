@@ -31,7 +31,7 @@ class PosUpdate
 {
 public:
     glm::vec3       m_position;
-    AngleRadians    m_pyr_angles[3];
+    glm::vec3       m_pyr_angles;
     int             m_timestamp;
 };
 
@@ -48,7 +48,7 @@ public:
     }
 
     uint8_t     m_csc_deltabits                 = 0;
-    bool        m_send_deltas                   = 0;
+    bool        m_autorun                       = 0; // send_bits? autorun?
     uint16_t    m_control_bits                  = 0;
     uint16_t    m_send_id                       = 0;
     void        *current_state_P                = nullptr;
@@ -67,7 +67,7 @@ public:
     bool        m_controls_disabled             = false;
 
     InputStateStorage & operator=(const InputStateStorage &other);
-    void processDirectionControl(int dir, int prev_time, int press_release);
+    void processDirectionControl(uint8_t dir, int prev_time, int press_release);
 };
 
 enum class FadeDirection
@@ -115,13 +115,13 @@ enum class AppearanceType : uint8_t
 
 struct SuperGroup
 {
-    int             m_SG_id                 = {0};
-    QString         m_SG_name               = "Supergroup"; // 64 chars max
+    int             m_SG_id         = {0};
+    QString         m_SG_name       = "Supergroup"; // 64 chars max
     //QString         m_SG_motto;
-    //QString         m_SG_costume;                         // 128 chars max -> hash table key from the CostumeString_HTable
-    uint32_t        m_SG_color1             = 0;            // supergroup color 1
-    uint32_t        m_SG_color2             = 0;            // supergroup color 2
-    int             m_SG_rank               = 1;
+    //QString         m_SG_costume;                 // 128 chars max -> hash table key from the CostumeString_HTable
+    uint32_t        m_SG_color1     = 0;            // supergroup color 1
+    uint32_t        m_SG_color2     = 0;            // supergroup color 2
+    int             m_SG_rank       = 1;
 };
 
 struct NPCData
@@ -177,7 +177,7 @@ public:
         uint32_t            m_db_id                 = {0};
         EntType             m_type                  = {EntType::Invalid};
         glm::quat           m_direction;
-        glm::vec3           m_spd                   = {1,1,1};
+        glm::vec3           m_speed                 = {1,1,1};
         uint32_t            m_target_idx            = 0;
         uint32_t            m_assist_target_idx     = 0;
 

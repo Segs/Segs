@@ -473,7 +473,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         bs.StoreBits(8,ent->m_update_id);
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
 
-        storeVector(bs,ent->m_spd); // This is entity speed vector !!
+        storeVector(bs,ent->m_speed); // This is entity speed vector !!
 
         bs.StoreFloat(ent->m_backup_spd);         // Backup Speed default = 1.0f
         bs.StoreBitArray((uint8_t *)&surface_params,2*sizeof(SurfaceParams)*8);
@@ -493,7 +493,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     {
         bs.StorePackedBits(1,ent->inp_state.m_received_server_update_id); // sets g_client_pos_id_rel default = 0
         storeVector(bs,ent->m_entity_data.m_pos);         // server-side pos
-        storeVectorConditional(bs,ent->m_spd);          // server-side spd (optional)
+        storeVectorConditional(bs,ent->m_speed);          // server-side spd (optional)
 
         storeFloatConditional(bs,0); // Pitch not used ?
         storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.y); // Yaw

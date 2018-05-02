@@ -170,7 +170,7 @@ void interpolate_pos_updates(Entity *e, std::array<BinTreeEntry,7> &server_pos_u
                 cur_pos_update->m_position = pos_update_arr[i];
                 for (int j = 0; j < 3; ++j )
                 {
-                    cur_pos_update->m_pyr_angles[j] = prev_pos.m_pyr_angles[j].lerp(cur_pos.m_pyr_angles[j],lerp_factor);
+                    cur_pos_update->m_pyr_angles[j] = glm::mix(cur_pos_update->m_pyr_angles[j], prev_pos.m_pyr_angles[j], lerp_factor);
                 }
                 e->addInterp(step);
             }
@@ -182,7 +182,6 @@ void interpolate_pos_updates(Entity *e, std::array<BinTreeEntry,7> &server_pos_u
 // Take a set of PositionUpdates S . . . . . . . E
 // Assume client will use linear interpolation for in-between values.
 // Encode fixups for in-between values
-// FixMe?: Pass std::array<PosUpdate,9> by reference instead of value given its size.
 std::array<BinTreeEntry,7> testEncVec(std::array<PosUpdate,9> &vals, float min_error)
 {
     std::array<BinTreeEntry,7> enc;

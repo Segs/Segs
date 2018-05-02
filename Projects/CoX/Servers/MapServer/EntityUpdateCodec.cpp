@@ -15,6 +15,7 @@
 
 #include "NetStructures/Character.h"
 #include "NetStructures/Entity.h"
+#include "NetStructures/StateInterpolator.h"
 #include "MapServer.h"
 #include "MapServerData.h"
 #include "GameData/CoHMath.h"
@@ -92,13 +93,32 @@ void sendStateMode(const Entity &src,BitStream &bs)
 }
 
 void storeUnknownBinTree(const Entity &/*src*/,BitStream &bs)
-{
-    bs.StoreBits(1,0);
+{  
+    std::array<PosUpdate, 9> pos_vals;
+    std::array<BinTreeEntry,7> tgt;
+
+
+    // craft some bintree data for testing
+    int t=0;
+    int t_start=1100;
+    for(PosUpdate &puv : pos_vals) {
+        puv.m_position = {
+            std::sin(float(M_PI/12)*t)*10,
+            std::sin(float(M_PI/22)*t)*10,
+            std::sin(float(M_PI/8)*t)*10
+        };
+        puv.m_timestamp = t_start+t*10;
+        t++;
+    }
+
+
+    tgt = testEncVec(pos_vals, 0.02f); // src.m_pos_updates
+
+    int res = storeBinTreesResult(bs, tgt);
 }
 
 bool storePosition(const Entity &src,BitStream &bs)
 {
-// float x = pos.vals.x;
     uint8_t updated_bit_pos = 7; // FixMe: updated_bit_pos is explicitly assigned and never modified later.
 
     bs.StoreBits(3,updated_bit_pos);

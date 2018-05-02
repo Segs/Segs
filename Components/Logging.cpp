@@ -41,7 +41,7 @@ SEGS_LOGGING_CATEGORY(logFriends,      "log.friends")
 SEGS_LOGGING_CATEGORY(logMiniMap,      "log.minimap")
 SEGS_LOGGING_CATEGORY(logLFG,          "log.lfg")
 SEGS_LOGGING_CATEGORY(logNPCs,         "log.npcs")
-SEGS_LOGGING_CATEGORY(logAnimations,         "log.animations")
+SEGS_LOGGING_CATEGORY(logAnimations,   "log.animations")
 
 void setLoggingFilter()
 {
@@ -150,7 +150,7 @@ void dumpLogging()
     output += "\n\t teams: "        + QString::number(logTeams().isDebugEnabled());
     output += "\n\t db: "           + QString::number(logDB().isDebugEnabled());
     output += "\n\t input: "        + QString::number(logInput().isDebugEnabled());
-    output += "\n\t position: "     + QString::number(logLFG().isDebugEnabled());
+    output += "\n\t position: "     + QString::number(logPosition().isDebugEnabled());
     output += "\n\t orientation: "  + QString::number(logOrientation().isDebugEnabled());
     output += "\n\t chat: "         + QString::number(logChat().isDebugEnabled());
     output += "\n\t infomsg: "      + QString::number(logInfoMsg().isDebugEnabled());

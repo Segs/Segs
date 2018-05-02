@@ -19,6 +19,7 @@
 #include "NetStructures/Character.h"
 #include "NetStructures/Team.h"
 #include "NetStructures/LFG.h"
+#include "NetStructures/StateInterpolator.h"
 #include "Events/EmailHeaders.h"
 #include "Events/EmailRead.h"
 #include "Logging.h"
@@ -36,7 +37,7 @@ uint32_t    getDbId(const Entity &e) { return e.m_db_id; }
 uint32_t    getAccessLevel(const Entity &e) { return e.m_entity_data.m_access_level; }
 uint32_t    getTargetIdx(const Entity &e) { return e.m_target_idx; }
 uint32_t    getAssistTargetIdx(const Entity &e) { return e.m_assist_target_idx; }
-glm::vec3   getSpeed(const Entity &e) { return e.m_spd; }
+glm::vec3   getSpeed(const Entity &e) { return e.m_speed; }
 float       getBackupSpd(const Entity &e) { return e.m_backup_spd; }
 float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
 uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
@@ -44,7 +45,7 @@ uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
 void    setMapIdx(Entity &e, uint32_t val) { e.m_entity_data.m_map_idx = val; }
-void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_spd = {v1,v2,v3}; }
+void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_speed = {v1,v2,v3}; }
 void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
 void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
 void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
@@ -259,29 +260,42 @@ void sendServerMOTD(MapClientSession *tgt)
     }
 }
 
-void sendEmailHeaders(Entity *e)
+void positionTest(Entity *e)
 {
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
+    QString output = "Position Test:\n";
 
-    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+    output += QString("Prev Pos <%1, %2, %3>\n")
+            .arg(e->m_prev_pos.x)
+            .arg(e->m_prev_pos.y)
+            .arg(e->m_prev_pos.z);
+
+    output += QString("Server Pos <%1, %2, %3>\n")
+            .arg(e->m_entity_data.m_pos.x)
+            .arg(e->m_entity_data.m_pos.y)
+            .arg(e->m_entity_data.m_pos.z);
+
+    output += QString("Client Pos <%1, %2, %3>\n")
+            .arg((float)e->fixedpoint_pos.x)
+            .arg((float)e->fixedpoint_pos.y)
+            .arg((float)e->fixedpoint_pos.z);
+
+    sendInfoMessage(MessageChannel::DEBUG_INFO, output, e->m_client);
+    qCDebug(logPosition) << output;
 }
 
-void readEmailMessage(Entity *e, const int id){
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
+void setInterpolationSettings(Entity *e, const bool active, const uint8_t level, const uint8_t bits)
+{
+    g_interpolating = active;
+    g_interpolation_level = level;
+    g_interpolation_bits = bits;
 
-    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
+    QString output = QString("Setting Interpolation Settings (active, level, bits): %1, %2, %3")
+            .arg(g_interpolating)
+            .arg(g_interpolation_level)
+            .arg(g_interpolation_bits);
+
+    sendInfoMessage(MessageChannel::DEBUG_INFO, output, e->m_client);
+    qCDebug(logPosition) << output;
 }
 
 /*
@@ -461,6 +475,35 @@ void sendTeamOffer(Entity *src, Entity *tgt)
 
     qCDebug(logTeams) << "Sending Teamup Offer" << db_id << name << type;
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
+}
+
+
+/*
+ * sendEmail Wrappers for providing access to Email Database
+ */
+void sendEmailHeaders(Entity *e)
+{
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+    MapClientSession *src = e->m_client;
+
+    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
+    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+}
+
+void readEmailMessage(Entity *e, const int id){
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+    MapClientSession *src = e->m_client;
+
+    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
+    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
 }
 
 //! @}

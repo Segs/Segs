@@ -35,6 +35,17 @@ enum BinaryControl
     LAST_QUANTIZED_VALUE=7,
 };
 
+static const char *control_name[] = {
+    "FORWARD",
+    "BACK",
+    "LEFT",
+    "RIGHT",
+    "UP",
+    "DOWN",
+    "PITCH",
+    "YAW",
+};
+
 void InputState::serializeto(BitStream &) const
 {
     assert(!"Not implemented");
@@ -43,7 +54,7 @@ void InputState::serializeto(BitStream &) const
 InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
 {
     m_csc_deltabits             = other.m_csc_deltabits;
-    m_send_deltas               = other.m_send_deltas;
+    m_autorun               = other.m_autorun;
     m_control_bits              = other.m_control_bits;
     m_send_id                   = other.m_send_id;
     m_time_diff1                = other.m_time_diff1;
@@ -78,32 +89,24 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     return *this;
 }
 
-void InputStateStorage::processDirectionControl(int dir,int /*prev_time*/,int press_release)
+void InputStateStorage::processDirectionControl(uint8_t dir, int prev_time, int press_release)
 {
+    float delta = 0.0f;
+
     if(press_release)
+        delta = 1.0f;
+
+    qCDebug(logInput, "Pressed dir: %s \t prev_time: %d \t press_release: %d", control_name[dir], prev_time, press_release);
+    switch(dir)
     {
-        qCDebug(logInput, "pressed: %d", dir);
-        switch(dir)
-        {
-            case 0: pos_delta[2] = 1.0f; break; //FORWARD
-            case 1: pos_delta[2] = -1.0f; break; //BACKWARD
-            case 2: pos_delta[0] = -1.0f; break; //LEFT
-            case 3: pos_delta[0] = 1.0f; break; //RIGHT
-            case 4: pos_delta[1] = 1.0f; break; // UP
-            case 5: pos_delta[1] = -1.0f; break; // DOWN
-        }
+        case 0: pos_delta[2] = delta; break;    //FORWARD
+        case 1: pos_delta[2] = -delta; break;   //BACKWARD
+        case 2: pos_delta[0] = -delta; break;   //LEFT
+        case 3: pos_delta[0] = delta; break;    //RIGHT
+        case 4: pos_delta[1] = delta; break;    // UP
+        case 5: pos_delta[1] = -delta; break;   // DOWN
     }
-    else {
-        switch(dir)
-        {
-            case 0: pos_delta[2] =0.0f; break;
-            case 1: pos_delta[2] =0.0f; break;
-            case 2: pos_delta[0] =0.0f; break;
-            case 3: pos_delta[0] =0.0f; break;
-            case 4: pos_delta[1] =0.0f; break;
-            case 5: pos_delta[1] =0.0f; break;
-        }
-    }
+
     switch(dir)
     {
         case 0:
@@ -117,18 +120,9 @@ void InputStateStorage::processDirectionControl(int dir,int /*prev_time*/,int pr
 
 void InputState::partial_2(BitStream &bs)
 {
-    uint8_t control_id;
-    uint16_t ms_since_prev;
-    float v;
-
-    static const char *control_name[] = {"FORWARD",
-                                         "BACK",
-                                         "LEFT",
-                                         "RIGHT",
-                                         "UP",
-                                         "DOWN",
-                                         "PITCH",
-                                         "YAW",};
+    uint8_t     control_id;
+    uint32_t    ms_since_prev;
+    float       v;
 
     do
     {
@@ -138,17 +132,21 @@ void InputState::partial_2(BitStream &bs)
             control_id = bs.GetBits(4);
 
         if(bs.GetBits(1))
-            ms_since_prev=bs.GetBits(2)+32; // delta from prev event
+            ms_since_prev = bs.GetBits(2)+32; // delta from prev event
         else
-            ms_since_prev=bs.GetBits(m_data.m_csc_deltabits);
+            ms_since_prev = bs.GetBits(m_data.m_csc_deltabits);
+
         switch(control_id)
         {
             case FORWARD: case BACKWARD:
             case LEFT: case RIGHT:
             case UP: case DOWN:
-                qCDebug(logInput, "%s  : %d - ", control_name[control_id], ms_since_prev);
-                m_data.processDirectionControl(control_id,ms_since_prev,bs.GetBits(1));
+            {
+                bool keypress_state = bs.GetBits(1); // get keypress state
+                m_data.m_control_bits |= keypress_state<<control_id; // save control_bits
+                m_data.processDirectionControl(control_id, ms_since_prev, keypress_state); // TODO: this should be moved out of partial_2?
                 break;
+            }
             case PITCH: // camera pitch (Insert/Delete keybinds)
             {
                 v = AngleDequantize(bs.GetBits(11),11); // pitch
@@ -168,31 +166,39 @@ void InputState::partial_2(BitStream &bs)
             case 8:
             {
                 m_data.m_controls_disabled = bs.GetBits(1);
-                if ( m_data.m_send_deltas )
+                if ( m_data.m_autorun ) // sent_run_physics. maybe autorun? maybe is_running?
                 {
-                    m_data.m_time_diff1=bs.GetPackedBits(8);   // value - previous_value
-                    m_data.m_time_diff2=bs.GetPackedBits(8);   // time - previous_time
+                    m_data.m_time_diff1 = bs.GetPackedBits(8);   // value - previous_value
+                    m_data.m_time_diff2 = bs.GetPackedBits(8);   // time - previous_time
                 }
                 else
                 {
-                    m_data.m_send_deltas = true;
-                    m_data.m_time_diff1=bs.GetBits(32);       // value
-                    m_data.m_time_diff2=bs.GetPackedBits(10); // value - time
+                    m_data.m_autorun = true;
+                    m_data.m_time_diff1 = bs.GetBits(32);       // value
+                    m_data.m_time_diff2 = bs.GetPackedBits(10); // value - time
                 }
-                if(bs.GetBits(1))
+                /*
+                qCDebug(logInput, "Controls Disabled: %d \t time_diff1: %d \t time_diff2: %d",
+                        m_data.m_input_vel_scale, m_data.m_time_diff1, m_data.m_time_diff2);
+                */
+
+                if(bs.GetBits(1)) // if true velocity scale < 255
                 {
-                    m_data.m_input_vel_scale=bs.GetBits(8);
+                    m_data.m_input_vel_scale = bs.GetBits(8);
+                    qCDebug(logInput, "Velocity Scale: %d", m_data.m_input_vel_scale);
                 }
                 break;
             }
             case 9:
             {
-                m_data.m_received_server_update_id = bs.GetBits(8);
+                m_data.m_received_server_update_id = bs.GetBits(8); // value is always 1?
+                //qCDebug(logInput, "Server Update ID: %d", m_data.m_received_server_update_id);
                 break;
             }
             case 10:
             {
                 m_data.m_no_collision = bs.GetBits(1);
+                qCDebug(logInput, "Collision: %d", m_data.m_no_collision);
                 break;
             }
             default:
@@ -204,28 +210,35 @@ void InputState::partial_2(BitStream &bs)
 
 void InputState::extended_input(BitStream &bs)
 {
+    bool keypress_state;
+
     m_data.has_input_commit_guess = bs.GetBits(1);
     if(m_data.has_input_commit_guess) // list of partial_2 follows
     {
         m_data.m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
         m_data.m_send_id = bs.GetBits(16);
         m_data.current_state_P = nullptr;
-        qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_data.m_csc_deltabits, m_data.m_send_id, m_data.current_state_P);
+
+        //qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_data.m_csc_deltabits, m_data.m_send_id, m_data.current_state_P);
         partial_2(bs);
-
     }
-    m_data.m_control_bits = 0;
-    for(int idx=0; idx<6; ++idx)
-        m_data.m_control_bits |= (bs.GetBits(1))<<idx;
 
-    if(m_data.m_control_bits)
-        qCDebug(logInput, "E input %x : ",m_data.m_control_bits);
+    for(int idx=0; idx<6; ++idx)
+    {
+        keypress_state = bs.GetBits(1);
+        m_data.m_control_bits |= keypress_state<<idx;
+        // TODO: do something with these control_bits now
+        // m_data.processDirectionControl(idx, ms_since_prev, keypress_state);
+    }
+
+
+    //qCDebug(logInput, "ControlBits: %i", m_data.m_control_bits);
 
     if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )
     {
         m_data.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11);
         m_data.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11);
-        qCDebug(logOrientation, "%f : %f",m_data.m_orientation_pyr[0],m_data.m_orientation_pyr[1]);
+        qCDebug(logOrientation, "pitch: %f \tyaw: %f", m_data.m_orientation_pyr[0], m_data.m_orientation_pyr[1]);
     }
 }
 
@@ -277,7 +290,7 @@ struct ControlState
 
 void InputState::serializefrom(BitStream &bs)
 {
-    m_data.m_send_deltas=false;
+    m_data.m_autorun=false;
 
     if(bs.GetBits(1))
         extended_input(bs);
@@ -286,8 +299,7 @@ void InputState::serializefrom(BitStream &bs)
     m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
     int ctrl_idx=0;
 
-    if(m_has_target)
-        qCDebug(logTarget, "Has Target? %d | TargetIdx: %d", m_has_target, m_target_idx);
+    qCDebug(logTarget, "Has Target? %d | TargetIdx: %d", m_has_target, m_target_idx);
 
     ControlState prev_fld;
     while(bs.GetBits(1)) // receive control state array entries ?

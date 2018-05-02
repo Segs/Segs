@@ -17,13 +17,7 @@
 #include "Common/Servers/Database.h"
 #include "Events/GameCommandList.h"
 #include <glm/gtx/vector_query.hpp>
-
-void markFlying(Entity &e ,bool is_flying) // Function to set character as flying
-{
-
-    e.m_is_flying = is_flying;
-
-}
+#include <glm/ext.hpp>
 
 void World::update(const ACE_Time_Value &tick_timer)
 {
@@ -53,15 +47,30 @@ void World::physicsStep(Entity *e,uint32_t msec)
 {
     if(glm::length2(e->inp_state.pos_delta))
     {
-        // todo: take into account time between updates
-        glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
-        //float vel_scale = e->inp_state.m_input_vel_scale/255.0f;
-        e->m_entity_data.m_pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
-        e->m_velocity = za*e->inp_state.pos_delta;
-    }
+        PosUpdate prev = e->m_pos_updates[(e->m_update_idx + -1 + 64) % 64];
+        PosUpdate current;
+        current.m_position     = e->m_entity_data.m_pos;
+        current.m_pyr_angles   = e->m_entity_data.m_orientation_pyr;
+        current.m_timestamp    = msec;
+        e->addPosUpdate(current);
 
-    if(e->inp_state.pos_delta[1] == 1.0f) // Will set 'is flying' on jump event
-        markFlying(*e, true);
+        int dt = current.m_timestamp - prev.m_timestamp;
+        e->m_prev_pos = e->m_entity_data.m_pos;
+
+        glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
+        float vel_scale = e->inp_state.m_input_vel_scale/255.0f;
+
+        e->m_entity_data.m_pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
+        float distance  = glm::distance(e->m_entity_data.m_pos, e->m_prev_pos);
+        e->m_velocity   = e->inp_state.pos_delta * e->m_speed / distance; // za*e->inp_state.pos_delta;
+
+        qCDebug(logPosition) << "physicsStep:"
+                             << "\n    prev_pos:\t"   << glm::to_string(e->m_prev_pos).c_str()
+                             << "\n    cur_pos:\t"    << glm::to_string(e->m_entity_data.m_pos).c_str()
+                             << "\n    distance:\t"   << distance
+                             << "\n    vel_scale:\t"  << vel_scale
+                             << "\n    velocity:\t"   << glm::to_string(e->m_velocity).c_str();
+    }
 }
 
 float animateValue(float v,float start,float target,float length,float dT)
