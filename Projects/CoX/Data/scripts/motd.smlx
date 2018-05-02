@@ -1,4 +1,8 @@
-<face heading><span align=center><color #ff0000>SEGS Release Notes v0.4.3</color></span></face><br>
+<face heading><span align=center><color #ff0000>SEGS Release Notes v0.5.0</color></span></face><br>
+<color #ff0000><span align=center><b>Warning.</b></color></span>
+<br>
+<color #ff0000>By default, server synchoronization of player positions have been disabled</color>
+This change removes the rubber-banding effect, but positions of other players will not be updated
 <br>
 Welcome to the Super Entity Game Server! SEGS is under active development and is far from being feature complete.<br>
 <br>
@@ -6,16 +10,9 @@ Please consider contributing to our success by reporting bugs on our github:<br>
 <face heading><span align=center><a href="http://github.com/Segs/">http://github.com/Segs/</a></span></face><br>
 <br>
 <color #ffff00>Latest Changes:</color><br>
- - Client Patching framework for Intel/Radeon cards<br>
- - Preliminary work on replacement Client<br>
- - Improved Player Entity database storage serialization (incl Options, GUI, Keybinds)<br>
- - Improved dbtool for creating starter databases<br>
- - Chat Features such as <i>/local</i> <i>/broadcast</i> <i>/tell</i> <i>/emote</i> <i>/team</i> <i>sg</i><br>
- - Entity state updated to reflect player orientation<br>
- - Teams, FriendsLists, LFG Window, and Sidekicks<br>
 <br>
 <color #ff9900>Useful Slash Commands:</color><br>
-<color #ffCC99><i>/stuck</i></color> - resets your character to the starting location in Atlas Park<br>
+<color #ffCC99><i>/stuck</i></color> - resets your character to the starting location in current map<br>
 <color #ffCC99><i>/updatechar</i></color> - update the database with your character information<br>
 <color #ffCC99><i>/fly</i></color> - toggles the "flying" flag for your character<br>
 <color #ffCC99><i>/cmdlist</i></color> - list all available slash commands<br>
