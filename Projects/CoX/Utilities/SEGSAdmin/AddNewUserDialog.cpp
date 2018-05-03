@@ -33,6 +33,8 @@ void AddNewUserDialog::on_add_user()
     ui->usernameedit->clear();
     ui->passedit->clear();
     ui->accleveledit->setValue(1);
+    ui->accleveledit->show();
+    ui->acclevel->show();
     show();
 }
 
