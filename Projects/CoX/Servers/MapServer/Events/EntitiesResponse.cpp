@@ -493,14 +493,12 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     {
         bs.StorePackedBits(1,ent->inp_state.m_received_server_update_id); // sets g_client_pos_id_rel default = 0
         storeVector(bs,ent->m_entity_data.m_pos);         // server-side pos
-        storeVectorConditional(bs,ent->m_speed);          // server-side spd (optional)
+        storeVectorConditional(bs,ent->m_velocity);          // server-side spd (optional)
 
-        storeFloatConditional(bs,0); // Pitch not used ?
-        storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.y); // Yaw
-        storeFloatConditional(bs,0); // Roll
+        storeFloatConditional(bs, ent->inp_state.m_camera_pyr.x); // Pitch
+        storeFloatConditional(bs, ent->inp_state.m_camera_pyr.y); // Yaw
+        storeFloatConditional(bs, ent->inp_state.m_camera_pyr.z); // Roll
         bs.StorePackedBits(1,ent->m_is_falling); // server side forced falling bit
-
-        ent->m_force_pos_and_cam = false; // run once
     }
 }
 
