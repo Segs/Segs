@@ -2,4 +2,9 @@
     <qresource prefix="/logo">
         <file>title_v3.png</file>
     </qresource>
+    <qresource prefix="/icons">
+        <file>icon_warning.png</file>
+        <file>icon_good.png</file>
+        <file>segs.bmp</file>
+    </qresource>
 </RCC>

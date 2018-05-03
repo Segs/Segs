@@ -1,4 +1,4 @@
-find_package(Qt5 5.9 COMPONENTS Core Gui Widgets OpenGL Network REQUIRED)
+find_package(Qt5 5.8 COMPONENTS Core Gui Widgets OpenGL Network REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTORCC ON)
@@ -13,6 +13,9 @@ set(SEGSADMIN_SOURCES
     AddNewUserDialog.ui
     AddNewUserDialog.cpp
     AddNewUserDialog.h
+    GenerateConfigFileDialog.cpp
+    GenerateConfigFileDialog.h
+    GenerateConfigFileDialog.ui
     resources.qrc
 
 )
