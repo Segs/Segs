@@ -60,8 +60,8 @@ void World::physicsStep(Entity *e,uint32_t msec)
         e->m_velocity = za*e->inp_state.pos_delta;
     }
 
-    if(e->inp_state.pos_delta[1] == 1.0f) // Will set 'is flying' on jump event
-        markFlying(*e, true);
+//    if(e->inp_state.pos_delta[1] == 1.0f) // Will set 'is flying' on jump event
+//        markFlying(*e, true);
 }
 
 float animateValue(float v,float start,float target,float length,float dT)
