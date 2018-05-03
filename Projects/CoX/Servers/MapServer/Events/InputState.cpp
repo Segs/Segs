@@ -143,7 +143,7 @@ void InputState::partial_2(BitStream &bs)
             case UP: case DOWN:
             {
                 bool keypress_state = bs.GetBits(1); // get keypress state
-                m_data.m_control_bits |= keypress_state<<control_id; // save control_bits
+                m_data.m_control_bits |= keypress_state << control_id; // save control_bits
                 m_data.processDirectionControl(control_id, ms_since_prev, keypress_state); // TODO: this should be moved out of partial_2?
                 break;
             }
@@ -185,7 +185,7 @@ void InputState::partial_2(BitStream &bs)
                 if(bs.GetBits(1)) // if true velocity scale < 255
                 {
                     m_data.m_input_vel_scale = bs.GetBits(8);
-                    qCDebug(logInput, "Velocity Scale: %d", m_data.m_input_vel_scale);
+                    qCDebug(logMovement, "Velocity Scale: %d", m_data.m_input_vel_scale);
                 }
                 break;
             }
@@ -226,13 +226,10 @@ void InputState::extended_input(BitStream &bs)
     for(int idx=0; idx<6; ++idx)
     {
         keypress_state = bs.GetBits(1);
-        m_data.m_control_bits |= keypress_state<<idx;
+        m_data.m_control_bits ^= keypress_state << idx;
         // TODO: do something with these control_bits now
-        // m_data.processDirectionControl(idx, ms_since_prev, keypress_state);
+        //m_data.processDirectionControl(idx, 0, keypress_state);
     }
-
-
-    //qCDebug(logInput, "ControlBits: %i", m_data.m_control_bits);
 
     if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )
     {

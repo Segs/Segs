@@ -131,6 +131,7 @@ bool storePosition(const Entity &src,BitStream &bs)
         FixedPointValue fpv(src.m_entity_data.m_pos[i]);
         //diff = packed ^ prev_pos[i]; // changed bits are '1'
         bs.StoreBits(24,fpv.store);
+        qCDebug(logPosition, "E[%d] position: %d", src.m_idx, (float)fpv);
     }
     return true;
 }
@@ -152,6 +153,10 @@ void storeOrientation(const Entity &src,BitStream &bs)
     qCDebug(logOrientation, "updates: %i",updates);
     glm::vec3 pyr_angles(0);
     pyr_angles.y = src.m_entity_data.m_orientation_pyr.y;
+
+    if(src.m_is_flying)
+        pyr_angles.z = src.m_entity_data.m_orientation_pyr.z;
+
     // output everything
     qCDebug(logOrientation, "Player: %d", src.m_idx);
     qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
@@ -188,6 +193,7 @@ void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
             storeUnknownBinTree(src, bs);
         }
         // if extra_inf
+        qCDebug(logPosition, "E[%d] pos: %i  extra_info: %d  move_instantly: %d", src.m_idx, src.m_extra_info, src.m_move_instantly);
     }
     PUTDEBUG("before storeOrientation");
     storeOrientation(src,bs);

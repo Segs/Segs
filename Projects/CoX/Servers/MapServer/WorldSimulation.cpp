@@ -64,7 +64,7 @@ void World::physicsStep(Entity *e,uint32_t msec)
         float distance  = glm::distance(e->m_entity_data.m_pos, e->m_prev_pos);
         e->m_velocity   = e->inp_state.pos_delta * e->m_speed / distance; // za*e->inp_state.pos_delta;
 
-        qCDebug(logPosition) << "physicsStep:"
+        qCDebug(logMovement) << "physicsStep:"
                              << "\n    prev_pos:\t"   << glm::to_string(e->m_prev_pos).c_str()
                              << "\n    cur_pos:\t"    << glm::to_string(e->m_entity_data.m_pos).c_str()
                              << "\n    distance:\t"   << distance
