@@ -492,12 +492,13 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     if(ent->m_force_pos_and_cam)
     {
         bs.StorePackedBits(1,ent->inp_state.m_received_server_update_id); // sets g_client_pos_id_rel default = 0
-        storeVector(bs,ent->m_entity_data.m_pos);         // server-side pos
-        storeVectorConditional(bs,ent->m_velocity);          // server-side spd (optional)
+        storeVector(bs,ent->m_entity_data.m_pos);   // server-side pos
+        storeVectorConditional(bs,ent->m_velocity); // server-side spd (probably velocity)
 
         storeFloatConditional(bs, ent->inp_state.m_camera_pyr.x); // Pitch
         storeFloatConditional(bs, ent->inp_state.m_camera_pyr.y); // Yaw
         storeFloatConditional(bs, ent->inp_state.m_camera_pyr.z); // Roll
+
         bs.StorePackedBits(1,ent->m_is_falling); // server side forced falling bit
     }
 }
@@ -513,7 +514,7 @@ void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
     qCDebug(logPosition,"Input_Ack: %d",target->m_input_ack);
 
     if( target->m_full_update || target->m_has_control_id)
-        bs.StoreBits(16,target->m_input_ack); //target->m_input_ack
+        bs.StoreBits(16,target->m_input_ack);
     if(target->m_full_update)
     {
         for(int i=0; i<3; ++i)
@@ -588,9 +589,9 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     MapInstance *mi = m_client->m_current_map;
     EntityManager &ent_manager(mi->m_entities);
 
-    tgt.StorePackedBits(1,m_incremental ? 2 : 3); // opcode  3 - full update.
+    tgt.StorePackedBits(1, m_incremental ? 2 : 3); // opcode  3 - full update.
 
-    tgt.StoreBits(1,ent_major_update); // passed to Entity::EntReceive as a parameter
+    tgt.StoreBits(1, ent_major_update); // passed to Entity::EntReceive as a parameter
 
     sendCommands(*this,tgt);
 

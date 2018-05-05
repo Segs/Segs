@@ -54,8 +54,7 @@ void InputState::serializeto(BitStream &) const
 InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
 {
     m_csc_deltabits             = other.m_csc_deltabits;
-    m_autorun               = other.m_autorun;
-    m_control_bits              = other.m_control_bits;
+    m_autorun                   = other.m_autorun;
     m_send_id                   = other.m_send_id;
     m_time_diff1                = other.m_time_diff1;
     m_time_diff2                = other.m_time_diff2;
@@ -64,12 +63,14 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     m_no_collision              = other.m_no_collision;
     m_controls_disabled         = other.m_controls_disabled;
 
+    bool update_needed=false;
+
     for(int i=0; i<3; ++i)
     {
         if(other.pos_delta_valid[i])
             pos_delta[i] = other.pos_delta[i];
     }
-    bool update_needed=false;
+
     for(int i=0; i<3; ++i)
     {
         if(other.pyr_valid[i])
@@ -82,6 +83,17 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
             update_needed = true;
         }
     }
+
+    for(int i=0; i<5; ++i)
+    {
+        if(other.m_control_bits[i])
+            m_control_bits[i] = other.m_control_bits[i];
+        if(other.m_prev_control_bits[i])
+            m_prev_control_bits[i] = other.m_prev_control_bits[i];
+        if(other.m_keypress_time[i])
+            m_keypress_time[i] = other.m_keypress_time[i];
+    }
+
     if(update_needed)
         m_direction = fromCoHYpr(m_orientation_pyr);
 
@@ -125,7 +137,7 @@ void InputState::partial_2(BitStream &bs)
     float       v;
 
     do
-    {
+    {   
         if(bs.GetBits(1))
             control_id = 8;
         else
@@ -136,6 +148,9 @@ void InputState::partial_2(BitStream &bs)
         else
             ms_since_prev = bs.GetBits(m_data.m_csc_deltabits);
 
+        m_data.m_keypress_time[control_id] = ms_since_prev;
+        m_data.m_prev_control_bits[control_id] = m_data.m_control_bits[control_id];
+
         switch(control_id)
         {
             case FORWARD: case BACKWARD:
@@ -143,7 +158,7 @@ void InputState::partial_2(BitStream &bs)
             case UP: case DOWN:
             {
                 bool keypress_state = bs.GetBits(1); // get keypress state
-                m_data.m_control_bits |= keypress_state << control_id; // save control_bits
+                m_data.m_control_bits[control_id] = keypress_state; // save control_bits
                 m_data.processDirectionControl(control_id, ms_since_prev, keypress_state); // TODO: this should be moved out of partial_2?
                 break;
             }
@@ -226,7 +241,7 @@ void InputState::extended_input(BitStream &bs)
     for(int idx=0; idx<6; ++idx)
     {
         keypress_state = bs.GetBits(1);
-        m_data.m_control_bits ^= keypress_state << idx;
+        m_data.m_control_bits[idx] = keypress_state;
         // TODO: do something with these control_bits now
         //m_data.processDirectionControl(idx, 0, keypress_state);
     }

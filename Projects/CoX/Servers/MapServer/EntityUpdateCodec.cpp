@@ -97,7 +97,7 @@ void storeUnknownBinTree(const Entity &/*src*/,BitStream &bs)
     std::array<PosUpdate, 9> pos_vals;
     std::array<BinTreeEntry,7> tgt;
 
-
+    // TODO: Send real bintree data constructed of PosUpdates
     // craft some bintree data for testing
     int t=0;
     int t_start=1100;
@@ -119,9 +119,10 @@ void storeUnknownBinTree(const Entity &/*src*/,BitStream &bs)
 
 bool storePosition(const Entity &src,BitStream &bs)
 {
+    // TODO: logMovement updated_bit_pos should only be 7 if full_update is required
     uint8_t updated_bit_pos = 7; // FixMe: updated_bit_pos is explicitly assigned and never modified later.
 
-    bs.StoreBits(3,updated_bit_pos);
+    bs.StoreBits(3, updated_bit_pos);
 
     if(updated_bit_pos==0)
         return false; // no actual update takes place
@@ -130,14 +131,15 @@ bool storePosition(const Entity &src,BitStream &bs)
     {
         FixedPointValue fpv(src.m_entity_data.m_pos[i]);
         //diff = packed ^ prev_pos[i]; // changed bits are '1'
-        bs.StoreBits(24,fpv.store);
-        qCDebug(logPosition, "E[%d] position: %d", src.m_idx, (float)fpv);
+        bs.StoreBits(24, fpv.store);
+        qCDebug(logPosition, "E[%d] position: %d", src.m_idx, (float)fpv.store);
     }
     return true;
 }
 
 bool update_rot(const Entity &/*src*/, int axis ) /* returns true if given axis needs updating */
 {
+    // TODO: logMovement need to update axis check here
     if(axis==axis) // FixMe: var compared against same var.
         return true;
     return false;

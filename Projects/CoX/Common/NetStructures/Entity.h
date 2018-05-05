@@ -49,7 +49,8 @@ public:
 
     uint8_t     m_csc_deltabits                 = 0;
     bool        m_autorun                       = 0; // send_bits? autorun?
-    uint16_t    m_control_bits                  = 0;
+    uint16_t    m_control_bits[6]               = {0};
+    uint16_t    m_prev_control_bits[6]          = {0};
     uint16_t    m_send_id                       = 0;
     void        *current_state_P                = nullptr;
     glm::vec3   m_camera_pyr;
@@ -57,14 +58,15 @@ public:
     glm::quat   m_direction;
     int         m_time_diff1                    = 0;
     int         m_time_diff2                    = 0;
-    uint8_t     m_input_vel_scale               = 0; // TODO: Should be float?
+    float       m_input_vel_scale               = 1.0f;
     uint8_t     m_received_server_update_id     = 0;
-    bool        m_no_collision                       = false;
+    bool        m_no_collision                  = false;
     bool        has_input_commit_guess          = 0;
     bool        pos_delta_valid[3]              = {};
     bool        pyr_valid[3]                    = {};
     glm::vec3   pos_delta;
     bool        m_controls_disabled             = false;
+    float       m_keypress_time[6]              = {0};
 
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(uint8_t dir, int prev_time, int press_release);
