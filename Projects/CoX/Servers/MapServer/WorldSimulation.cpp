@@ -19,39 +19,24 @@
 #include <glm/gtx/vector_query.hpp>
 #include <glm/ext.hpp>
 
-enum BinaryControl
-{
-    FORWARD=0,
-    BACKWARD=1,
-    LEFT=2,
-    RIGHT=3,
-    UP=4,
-    DOWN=5,
-    PITCH=6,
-    YAW=7,
-    LAST_BINARY_VALUE=5,
-    LAST_QUANTIZED_VALUE=7,
-};
-
 static void SetVelocity(Entity *e)
 {
     float control_vals[6] = {0};
-    glm::vec3 horizVel = {0, 0, 0};
+    glm::vec3 horiz_vel = {0, 0, 0};
     int max_press_time = 0;
     int press_time = 100;
     glm::vec3 vel = {0, 0, 0};
-    float speed_scale = 1.0f;
 
-    if(e->inp_state.m_no_collision)
+    if(e->m_cur_state->m_no_collision)
     {
-        qCDebug(logMovement) << "No collision" << e->inp_state.m_no_collision;
+        qCDebug(logMovement) << "No collision" << e->m_cur_state->m_no_collision;
         e->m_velocity = vel;
     }
 
     for (int i = BinaryControl::FORWARD; i < BinaryControl::LAST_BINARY_VALUE; ++i)
     {
-        press_time = e->inp_state.m_keypress_time[i]*30;
-        qCDebug(logMovement) << "keypress_time" << i << e->inp_state.m_keypress_time[i];
+        press_time = e->m_cur_state->m_keypress_time[i]*30;
+        //qCDebug(logMovement) << "keypress_time" << i << e->inp_state.m_keypress_time[i];
         max_press_time = std::max(press_time, max_press_time);
         if (i >= BinaryControl::UP && !e->m_is_flying) // UP or Fly
             control_vals[i] = (float)(press_time != 0);
@@ -68,7 +53,7 @@ static void SetVelocity(Entity *e)
         else
             control_vals[i] = (float)(press_time - 100) * 0.004f / 9.0f + 0.6f;
 
-        qCDebug(logMovement) << "control_vals:" << i << control_vals[i];
+        //qCDebug(logMovement) << "control_vals:" << i << control_vals[i];
     }
 
     //controls->max_presstime = max_press_time;
@@ -80,27 +65,27 @@ static void SetVelocity(Entity *e)
 
     qCDebug(logMovement) << "vel:" << glm::to_string(vel).c_str();
 
-    horizVel = vel;
+    horiz_vel = vel;
 
     if (!e->m_is_flying)
-        horizVel.y = 0;
+        horiz_vel.y = 0;
     if (vel.z < 0.0f)
-        e->inp_state.m_input_vel_scale *= e->m_backup_spd;
+        e->m_cur_state->m_velocity_scale *= e->m_backup_spd;
     if (e->m_is_stunned)
-        e->inp_state.m_input_vel_scale *= 0.1f;
+        e->m_cur_state->m_velocity_scale *= 0.1f;
 
-    if(horizVel.length() >= 0.0f)
-        horizVel = glm::normalize(horizVel);
+    if(horiz_vel.length() >= 0.0f)
+        horiz_vel = glm::normalize(horiz_vel);
 
-    if (speed_scale != 0.0f)
-        e->inp_state.m_input_vel_scale *= speed_scale;
+    if (e->m_cur_state->m_speed_scale != 0.0f)
+        e->m_cur_state->m_velocity_scale *= e->m_cur_state->m_speed_scale;
 
-    vel.x = horizVel.x * std::fabs(control_vals[BinaryControl::RIGHT] - control_vals[BinaryControl::LEFT]);
-    vel.z = horizVel.z * std::fabs(control_vals[BinaryControl::FORWARD] - control_vals[BinaryControl::BACKWARD]);
+    vel.x = horiz_vel.x * std::fabs(control_vals[BinaryControl::RIGHT] - control_vals[BinaryControl::LEFT]);
+    vel.z = horiz_vel.z * std::fabs(control_vals[BinaryControl::FORWARD] - control_vals[BinaryControl::BACKWARD]);
 
     if (e->m_is_flying)
-        vel.y = horizVel.y * std::fabs(control_vals[BinaryControl::UP] - control_vals[BinaryControl::DOWN]);
-    else if (e->inp_state.m_prev_control_bits[BinaryControl::UP])
+        vel.y = horiz_vel.y * std::fabs(control_vals[BinaryControl::UP] - control_vals[BinaryControl::DOWN]);
+    else if (e->m_cur_state->m_prev_control_bits[BinaryControl::UP])
         vel.y = 0;
     else
     {
@@ -109,7 +94,7 @@ static void SetVelocity(Entity *e)
             //ent->motion.flag_5 = false;
     }
 
-    qCDebug(logMovement) << "horizVel:" << glm::to_string(horizVel).c_str();
+    qCDebug(logMovement) << "horizVel:" << glm::to_string(horiz_vel).c_str();
 
     e->m_velocity = vel;
 
@@ -146,7 +131,10 @@ void World::update(const ACE_Time_Value &tick_timer)
 
 void World::physicsStep(Entity *e,uint32_t msec)
 {
-    if(glm::length2(e->inp_state.pos_delta))
+    if(e->m_cur_state == nullptr)
+        return;
+
+    if(glm::length2(e->m_cur_state->pos_delta))
     {
         SetVelocity(e);
 
@@ -161,9 +149,9 @@ void World::physicsStep(Entity *e,uint32_t msec)
         e->m_prev_pos = e->m_entity_data.m_pos;
 
         glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
-        float vel_scale = e->inp_state.m_input_vel_scale/255.0f;
+        float vel_scale = e->m_cur_state->m_velocity_scale/255.0f;
 
-        e->m_entity_data.m_pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
+        e->m_entity_data.m_pos += ((za*e->m_cur_state->pos_delta)*float(msec))/50.0f;
         float distance  = glm::distance(e->m_entity_data.m_pos, e->m_prev_pos);
         //e->m_velocity   = e->inp_state.pos_delta * e->m_speed / distance;
         //e->m_velocity   = za*e->inp_state.pos_delta;
@@ -172,7 +160,7 @@ void World::physicsStep(Entity *e,uint32_t msec)
                              << "\n    prev_pos:\t"   << glm::to_string(e->m_prev_pos).c_str()
                              << "\n    cur_pos:\t"    << glm::to_string(e->m_entity_data.m_pos).c_str()
                              << "\n    distance:\t"   << distance
-                             << "\n    vel_scale:\t"  << vel_scale << e->inp_state.m_input_vel_scale
+                             << "\n    vel_scale:\t"  << vel_scale << e->m_cur_state->m_velocity_scale
                              << "\n    velocity:\t"   << glm::to_string(e->m_velocity).c_str();
     }
 }

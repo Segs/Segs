@@ -15,6 +15,7 @@
 #include "NetStructures/Powers.h"
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
+#include "NetStructures/InputStates.h"
 #include "GameData/playerdata_definitions.h"
 #include "MapClientSession.h"
 #include "MapEvents.h"
@@ -29,14 +30,6 @@
 #include <iso646.h>
 
 namespace  {
-struct SurfaceParams
-{
-    float traction;
-    float friction;
-    float bounce;
-    float gravitational_constant;
-    float max_speed;
-};
 static_assert(2*sizeof(SurfaceParams)==320/8,"Required since it's sent as an bit array");
 
 void storeSuperStats(const EntitiesResponse &/*src*/,BitStream &bs)
@@ -491,13 +484,13 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     bs.StoreBits(1,ent->m_force_pos_and_cam);
     if(ent->m_force_pos_and_cam)
     {
-        bs.StorePackedBits(1,ent->inp_state.m_received_server_update_id); // sets g_client_pos_id_rel default = 0
+        bs.StorePackedBits(1,ent->m_cur_state->m_received_id); // sets g_client_pos_id_rel default = 0
         storeVector(bs,ent->m_entity_data.m_pos);   // server-side pos
         storeVectorConditional(bs,ent->m_velocity); // server-side spd (probably velocity)
 
-        storeFloatConditional(bs, ent->inp_state.m_camera_pyr.x); // Pitch
-        storeFloatConditional(bs, ent->inp_state.m_camera_pyr.y); // Yaw
-        storeFloatConditional(bs, ent->inp_state.m_camera_pyr.z); // Roll
+        storeFloatConditional(bs, ent->m_cur_state->m_camera_pyr.x); // Pitch
+        storeFloatConditional(bs, ent->m_cur_state->m_camera_pyr.y); // Yaw
+        storeFloatConditional(bs, ent->m_cur_state->m_camera_pyr.z); // Roll
 
         bs.StorePackedBits(1,ent->m_is_falling); // server side forced falling bit
     }
@@ -567,9 +560,9 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
     bs.StoreBits(1,ent->m_force_camera_dir);
     if(ent->m_force_camera_dir)
     {
-        bs.StoreFloat(ent->inp_state.m_camera_pyr.p); // force camera_pitch
-        bs.StoreFloat(ent->inp_state.m_camera_pyr.y); // force camera_yaw
-        bs.StoreFloat(ent->inp_state.m_camera_pyr.r); // force camera_roll
+        bs.StoreFloat(ent->m_cur_state->m_camera_pyr.p); // force camera_pitch
+        bs.StoreFloat(ent->m_cur_state->m_camera_pyr.y); // force camera_yaw
+        bs.StoreFloat(ent->m_cur_state->m_camera_pyr.r); // force camera_roll
     }
 }
 }

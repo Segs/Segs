@@ -296,7 +296,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
             on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
             break;
         case MapEventTypes::evInputState:
-            on_input_state(static_cast<InputState *>(ev));
+            on_input_state(static_cast<InputStateEvent *>(ev));
             break;
         case MapEventTypes::evCookieRequest:
             on_cookie_confirm(static_cast<CookieRequest *>(ev));
@@ -746,20 +746,29 @@ void MapInstance::on_combine_boosts(CombineRequest */*req*/)
     //TODO: do something here !
 }
 
-void MapInstance::on_input_state(InputState *st)
+void MapInstance::on_input_state(InputStateEvent *st)
 {
     MapClientSession &session(m_session_store.session_from_event(st));
     Entity *   ent = session.m_ent;
-    if (st->m_data.has_input_commit_guess)
-        ent->m_input_ack = st->m_data.m_send_id;
-    ent->inp_state = st->m_data;
+
+    if(ent->m_cur_state == nullptr) // first time, save state
+        ent->m_states.addNewState(st->m_current);
+
+    ent->m_prev_state = &ent->m_states.m_inp_states.back();
+    ent->m_states.addNewState(st->m_current);
+    ent->m_cur_state = &ent->m_states.m_inp_states.back();
+
+    if (st->m_current.m_has_historical_input)
+        ent->m_input_ack = st->m_current.m_send_id;
+
     // Set Target
-    ent->m_target_idx = st->m_target_idx;
-    ent->m_assist_target_idx = st->m_assist_target_idx;
+    ent->m_target_idx = st->m_current.m_target_idx;
+    ent->m_assist_target_idx = st->m_current.m_assist_target_idx;
+
     // Set Orientation
-    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r)
+    if(st->m_current.m_orientation_pyr.p || st->m_current.m_orientation_pyr.y || st->m_current.m_orientation_pyr.r)
     {
-        ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
+        ent->m_entity_data.m_orientation_pyr = st->m_current.m_orientation_pyr;
         ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
     }
 

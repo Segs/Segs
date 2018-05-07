@@ -27,7 +27,7 @@ MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
     switch(opcode) // this is the actual clientside packet Opcode
     {
         case 1: return new ConnectRequest;
-        case 2: return new InputState;
+        case 2: return new InputStateEvent;
         case 3: return new SceneRequest;
         case 4: return new ShortcutsRequest;
         case 5: return new EntitiesRequest;
