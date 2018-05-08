@@ -156,12 +156,10 @@ bool GameDbSyncContext::loadAndConfigure()
                 "INSERT INTO characters  ("
                 "slot_index, account_id, char_name, chardata, entitydata, "
                 "bodytype, height, physique, "
-                "hitpoints, endurance, "
                 "supergroup_id, player_data"
                 ") VALUES ("
                 ":slot_index, :account_id, :char_name, :chardata, :entitydata, "
                 ":bodytype, :height, :physique, "
-                ":hitpoints, :endurance, "
                 ":supergroup_id, :player_data"
                 ")");
     prepQuery(*m_prepared_costume_insert,
