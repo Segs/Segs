@@ -131,48 +131,92 @@ bool loadFrom(BinStore *s, AllNpcs_Data &target)
 template<class Archive>
 static void serialize(Archive & archive, Parse_CostumePart & m)
 {
-    archive(cereal::make_nvp("Name",m.m_Name));
-    archive(cereal::make_nvp("Color1",m.m_Color1));
-    archive(cereal::make_nvp("Color2",m.m_Color2));
-    archive(cereal::make_nvp("Texture1",m.m_Texture1));
-    archive(cereal::make_nvp("Texture2",m.m_Texture2));
-    archive(cereal::make_nvp("CP_Geometry",m.m_CP_Geometry));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.m_Name));
+        archive(cereal::make_nvp("Color1",m.m_Color1));
+        archive(cereal::make_nvp("Color2",m.m_Color2));
+        archive(cereal::make_nvp("Texture1",m.m_Texture1));
+        archive(cereal::make_nvp("Texture2",m.m_Texture2));
+        archive(cereal::make_nvp("CP_Geometry",m.m_CP_Geometry));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, Parse_Costume & m)
 {
-    archive(cereal::make_nvp("EntTypeFile",m.m_EntTypeFile));
-    archive(cereal::make_nvp("CostumeFilePrefix",m.m_CostumeFilePrefix));
-    archive(cereal::make_nvp("BodyType",m.m_BodyType));
-    archive(cereal::make_nvp("Scale",m.m_Scale));
-    archive(cereal::make_nvp("BoneScale",m.m_BoneScale));
-    archive(cereal::make_nvp("SkinColor",m.m_SkinColor));
-    archive(cereal::make_nvp("NumParts",m.m_NumParts));
-    archive(cereal::make_nvp("CostumeParts",m.m_CostumeParts));
+    try
+    {
+        archive(cereal::make_nvp("EntTypeFile",m.m_EntTypeFile));
+        archive(cereal::make_nvp("CostumeFilePrefix",m.m_CostumeFilePrefix));
+        archive(cereal::make_nvp("BodyType",m.m_BodyType));
+        archive(cereal::make_nvp("Scale",m.m_Scale));
+        archive(cereal::make_nvp("BoneScale",m.m_BoneScale));
+        archive(cereal::make_nvp("SkinColor",m.m_SkinColor));
+        archive(cereal::make_nvp("NumParts",m.m_NumParts));
+        archive(cereal::make_nvp("CostumeParts",m.m_CostumeParts));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, NPCPower_Desc & m)
 {
-    archive(cereal::make_nvp("PowerCategory",m.PowerCategory));
-    archive(cereal::make_nvp("PowerSet",m.PowerSet));
-    archive(cereal::make_nvp("Power",m.Power));
-    archive(cereal::make_nvp("Level",m.Level));
-    archive(cereal::make_nvp("Remove",m.Remove));
+    try
+    {
+        archive(cereal::make_nvp("PowerCategory",m.PowerCategory));
+        archive(cereal::make_nvp("PowerSet",m.PowerSet));
+        archive(cereal::make_nvp("Power",m.Power));
+        archive(cereal::make_nvp("Level",m.Level));
+        archive(cereal::make_nvp("Remove",m.Remove));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, Parse_NPC & m)
 {
-    archive(cereal::make_nvp("Name",m.m_Name));
-    archive(cereal::make_nvp("DisplayName",m.m_DisplayName));
-    archive(cereal::make_nvp("Rank",m.m_Rank));
-    archive(cereal::make_nvp("Class",m.m_Class));
-    archive(cereal::make_nvp("Level",m.m_Level));
-    archive(cereal::make_nvp("XP",m.m_XP));
-    archive(cereal::make_nvp("Powers",m.m_Powers));
-    archive(cereal::make_nvp("Costumes",m.m_Costumes));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.m_Name));
+        archive(cereal::make_nvp("DisplayName",m.m_DisplayName));
+        archive(cereal::make_nvp("Rank",m.m_Rank));
+        archive(cereal::make_nvp("Class",m.m_Class));
+        archive(cereal::make_nvp("Level",m.m_Level));
+        archive(cereal::make_nvp("XP",m.m_XP));
+        archive(cereal::make_nvp("Powers",m.m_Powers));
+        archive(cereal::make_nvp("Costumes",m.m_Costumes));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 void saveTo(const AllNpcs_Data &target, const QString &baseName, bool text_format)

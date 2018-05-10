@@ -247,119 +247,262 @@ bool loadFrom(BinStore *s, SceneGraph_Data &target)
 template<class Archive>
 static void serialize(Archive & archive, TintColor_Data & m)
 {
-    archive(cereal::make_nvp("Color1",m.clr1));
-    archive(cereal::make_nvp("Color2",m.clr2));
+    try
+    {
+        archive(cereal::make_nvp("Color1",m.clr1));
+        archive(cereal::make_nvp("Color2",m.clr2));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, ReplaceTex_Data & m)
 {
-    archive(cereal::make_nvp("TextureID",m.texIdxToReplace));
-    archive(cereal::make_nvp("NewTexture",m.repl_with));
+    try
+    {
+        archive(cereal::make_nvp("TextureID",m.texIdxToReplace));
+        archive(cereal::make_nvp("NewTexture",m.repl_with));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, DefOmni_Data & m)
 {
-    archive(cereal::make_nvp("Color",m.omniColor));
-    archive(cereal::make_nvp("Size",m.Size));
-    archive(cereal::make_nvp("Flags",m.isNegative));
+    try
+    {
+        archive(cereal::make_nvp("Color",m.omniColor));
+        archive(cereal::make_nvp("Size",m.Size));
+        archive(cereal::make_nvp("Flags",m.isNegative));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, DefBeacon_Data & m)
 {
-    archive(cereal::make_nvp("Name",m.name));
-    archive(cereal::make_nvp("Amplitude",m.amplitude));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.name));
+        archive(cereal::make_nvp("Amplitude",m.amplitude));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, DefFog_Data & m)
 {
-    archive(cereal::make_nvp("Z",m.fogZ));
-    archive(cereal::make_nvp("X",m.fogX));
-    archive(cereal::make_nvp("Y",m.fogY));
-    archive(cereal::make_nvp("Color1",m.fogClr1));
-    archive(cereal::make_nvp("Color2",m.fogClr2));
+    try
+    {
+        archive(cereal::make_nvp("Z",m.fogZ));
+        archive(cereal::make_nvp("X",m.fogX));
+        archive(cereal::make_nvp("Y",m.fogY));
+        archive(cereal::make_nvp("Color1",m.fogClr1));
+        archive(cereal::make_nvp("Color2",m.fogClr2));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, DefAmbient_Data & m)
 {
-    archive(cereal::make_nvp("Color",m.clr));
+    try
+    {
+        archive(cereal::make_nvp("Color",m.clr));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, DefLod_Data & m)
 {
-    archive(cereal::make_nvp("Far",m.Far));
-    archive(cereal::make_nvp("FarFade",m.FarFade));
-    archive(cereal::make_nvp("Near",m.Near));
-    archive(cereal::make_nvp("NearFade",m.NearFade));
-    archive(cereal::make_nvp("Scale",m.Scale));
+    try
+    {
+        archive(cereal::make_nvp("Far",m.Far));
+        archive(cereal::make_nvp("FarFade",m.FarFade));
+        archive(cereal::make_nvp("Near",m.Near));
+        archive(cereal::make_nvp("NearFade",m.NearFade));
+        archive(cereal::make_nvp("Scale",m.Scale));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, DefSound_Data & m)
 {
-    archive(cereal::make_nvp("Name",m.name));
-    archive(cereal::make_nvp("Volume",m.volRel1));
-    archive(cereal::make_nvp("Radius",m.sndRadius));
-    archive(cereal::make_nvp("RampInFeet",m.snd_ramp_feet));
-    archive(cereal::make_nvp("Flags",m.sndFlags));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.name));
+        archive(cereal::make_nvp("Volume",m.volRel1));
+        archive(cereal::make_nvp("Radius",m.sndRadius));
+        archive(cereal::make_nvp("RampInFeet",m.snd_ramp_feet));
+        archive(cereal::make_nvp("Flags",m.sndFlags));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, GroupProperty_Data & m)
 {
-    archive(cereal::make_nvp("Name",m.propName));
-    archive(cereal::make_nvp("Value",m.propValue));
-    archive(cereal::make_nvp("Type",m.propertyType));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.propName));
+        archive(cereal::make_nvp("Value",m.propValue));
+        archive(cereal::make_nvp("Type",m.propertyType));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, GroupLoc_Data & m)
 {
-    archive(cereal::make_nvp("Name",m.name));
-    archive(cereal::make_nvp("Position",m.pos));
-    archive(cereal::make_nvp("Rotation",m.rot));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.name));
+        archive(cereal::make_nvp("Position",m.pos));
+        archive(cereal::make_nvp("Rotation",m.rot));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, SceneGraphNode_Data & m)
 {
-    archive(cereal::make_nvp("Name",m.name));
-    archive(cereal::make_nvp("Object",m.p_Obj));
-    archive(cereal::make_nvp("Type",m.type));
-    archive(cereal::make_nvp("Flags",m.flags));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.name));
+        archive(cereal::make_nvp("Object",m.p_Obj));
+        archive(cereal::make_nvp("Type",m.type));
+        archive(cereal::make_nvp("Flags",m.flags));
 
-    archive(cereal::make_nvp("Groups",m.p_Grp));
-    archive(cereal::make_nvp("Properties",m.p_Property));
-    archive(cereal::make_nvp("Tints",m.p_TintColor));
-    archive(cereal::make_nvp("Sounds",m.p_Sound));
-    archive(cereal::make_nvp("TextureReplacements",m.p_ReplaceTex));
-    archive(cereal::make_nvp("Omnis",m.p_Omni));
-    archive(cereal::make_nvp("Beacons",m.p_Beacon));
-    archive(cereal::make_nvp("Fogs",m.p_Fog));
-    archive(cereal::make_nvp("AmbientColors",m.p_Ambient));
-    archive(cereal::make_nvp("Lods",m.p_Lod));
+        archive(cereal::make_nvp("Groups",m.p_Grp));
+        archive(cereal::make_nvp("Properties",m.p_Property));
+        archive(cereal::make_nvp("Tints",m.p_TintColor));
+        archive(cereal::make_nvp("Sounds",m.p_Sound));
+        archive(cereal::make_nvp("TextureReplacements",m.p_ReplaceTex));
+        archive(cereal::make_nvp("Omnis",m.p_Omni));
+        archive(cereal::make_nvp("Beacons",m.p_Beacon));
+        archive(cereal::make_nvp("Fogs",m.p_Fog));
+        archive(cereal::make_nvp("AmbientColors",m.p_Ambient));
+        archive(cereal::make_nvp("Lods",m.p_Lod));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, SceneRootNode_Data & m)
 {
-    archive(cereal::make_nvp("Name",m.name));
-    archive(cereal::make_nvp("Position",m.pos));
-    archive(cereal::make_nvp("Rotation",m.rot));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.name));
+        archive(cereal::make_nvp("Position",m.pos));
+        archive(cereal::make_nvp("Rotation",m.rot));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, SceneGraph_Data & m)
 {
-    archive(cereal::make_nvp("Version",m.Version));
-    archive(cereal::make_nvp("Scenefile",m.Scenefile));
-    archive(cereal::make_nvp("Defs",m.Def));
-    archive(cereal::make_nvp("Refs",m.Ref));
+    try
+    {
+        archive(cereal::make_nvp("Version",m.Version));
+        archive(cereal::make_nvp("Scenefile",m.Scenefile));
+        archive(cereal::make_nvp("Defs",m.Def));
+        archive(cereal::make_nvp("Refs",m.Ref));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 void saveTo(const SceneGraph_Data &target, const QString &baseName, bool text_format)

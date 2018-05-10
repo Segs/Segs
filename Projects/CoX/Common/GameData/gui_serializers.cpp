@@ -22,16 +22,27 @@ CEREAL_CLASS_VERSION(GUISettings, GUISettings::class_version) // register GUISet
 template<class Archive>
 void serialize(Archive &archive, GUIWindow &wnd)
 {
-    archive(cereal::make_nvp("IDX",wnd.m_idx));
-    archive(cereal::make_nvp("Mode",wnd.m_mode));
-    archive(cereal::make_nvp("DraggableFrame",wnd.m_draggable_frame));
-    archive(cereal::make_nvp("PosX",wnd.m_posx));
-    archive(cereal::make_nvp("PosY",wnd.m_posy));
-    archive(cereal::make_nvp("Width",wnd.m_width));
-    archive(cereal::make_nvp("Height",wnd.m_height));
-    archive(cereal::make_nvp("Locked",wnd.m_locked));
-    archive(cereal::make_nvp("Color",wnd.m_color));
-    archive(cereal::make_nvp("Alpha",wnd.m_alpha));
+    try
+    {
+        archive(cereal::make_nvp("IDX",wnd.m_idx));
+        archive(cereal::make_nvp("Mode",wnd.m_mode));
+        archive(cereal::make_nvp("DraggableFrame",wnd.m_draggable_frame));
+        archive(cereal::make_nvp("PosX",wnd.m_posx));
+        archive(cereal::make_nvp("PosY",wnd.m_posy));
+        archive(cereal::make_nvp("Width",wnd.m_width));
+        archive(cereal::make_nvp("Height",wnd.m_height));
+        archive(cereal::make_nvp("Locked",wnd.m_locked));
+        archive(cereal::make_nvp("Color",wnd.m_color));
+        archive(cereal::make_nvp("Alpha",wnd.m_alpha));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
@@ -43,16 +54,27 @@ void serialize(Archive &archive, GUISettings &gui, uint32_t const version)
         return;
     }
 
-    archive(cereal::make_nvp("TeamBuffs",gui.m_team_buffs));
-    archive(cereal::make_nvp("ChatChannel",gui.m_cur_chat_channel));
-    archive(cereal::make_nvp("PowersTray",gui.m_powers_tray_mode));
-    archive(cereal::make_nvp("InspTray",gui.m_insps_tray_mode));
-    archive(cereal::make_nvp("Tray1Page",gui.m_tray1_number));
-    archive(cereal::make_nvp("Tray2Page",gui.m_tray2_number));
-    archive(cereal::make_nvp("ChatTopFlags",gui.m_chat_top_flags));
-    archive(cereal::make_nvp("ChatBottomFlags",gui.m_chat_bottom_flags));
-    archive(cereal::make_nvp("ChatDividerPos",gui.m_chat_divider_pos));
-    archive(cereal::make_nvp("Windows",gui.m_wnds));
+    try
+    {
+        archive(cereal::make_nvp("TeamBuffs",gui.m_team_buffs));
+        archive(cereal::make_nvp("ChatChannel",gui.m_cur_chat_channel));
+        archive(cereal::make_nvp("PowersTray",gui.m_powers_tray_mode));
+        archive(cereal::make_nvp("InspTray",gui.m_insps_tray_mode));
+        archive(cereal::make_nvp("Tray1Page",gui.m_tray1_number));
+        archive(cereal::make_nvp("Tray2Page",gui.m_tray2_number));
+        archive(cereal::make_nvp("ChatTopFlags",gui.m_chat_top_flags));
+        archive(cereal::make_nvp("ChatBottomFlags",gui.m_chat_bottom_flags));
+        archive(cereal::make_nvp("ChatDividerPos",gui.m_chat_divider_pos));
+        archive(cereal::make_nvp("Windows",gui.m_wnds));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 void saveTo(const GUISettings &target, const QString &baseName, bool text_format)

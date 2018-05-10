@@ -111,58 +111,102 @@ bool loadFrom(BinStore * s, AllTricks_Data *target)
 template<class Archive>
 static void serialize(Archive & archive, TextureModifiers & m)
 {
-    archive(cereal::make_nvp("name",m.name));
-    archive(cereal::make_nvp("src_file",m.src_file));
-    archive(cereal::make_nvp("Gloss",m.Gloss));
-    archive(cereal::make_nvp("Surface",m.Surface));
-    archive(cereal::make_nvp("Fade",m.Fade));
-    archive(cereal::make_nvp("ScaleST0",m.ScaleST0));
-    archive(cereal::make_nvp("ScaleST1",m.ScaleST1));
-    archive(cereal::make_nvp("Blend",m.Blend));
-    archive(cereal::make_nvp("BumpMap",m.BumpMap));
-    archive(cereal::make_nvp("BlendType",m.BlendType));
-    archive(cereal::make_nvp("Flags",m.Flags));
+    try
+    {
+        archive(cereal::make_nvp("name",m.name));
+        archive(cereal::make_nvp("src_file",m.src_file));
+        archive(cereal::make_nvp("Gloss",m.Gloss));
+        archive(cereal::make_nvp("Surface",m.Surface));
+        archive(cereal::make_nvp("Fade",m.Fade));
+        archive(cereal::make_nvp("ScaleST0",m.ScaleST0));
+        archive(cereal::make_nvp("ScaleST1",m.ScaleST1));
+        archive(cereal::make_nvp("Blend",m.Blend));
+        archive(cereal::make_nvp("BumpMap",m.BumpMap));
+        archive(cereal::make_nvp("BlendType",m.BlendType));
+        archive(cereal::make_nvp("Flags",m.Flags));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, ModelModifiers & m)
 {
-    archive(cereal::make_nvp("TrickFlags",m._TrickFlags));
-    archive(cereal::make_nvp("SortBias",m.SortBias));
-    archive(cereal::make_nvp("ScrollST0",m.ScrollST0));
-    archive(cereal::make_nvp("ScrollST1",m.ScrollST1));
-    archive(cereal::make_nvp("TintColor0",m.TintColor0));
-    archive(cereal::make_nvp("TintColor1",m.TintColor1));
+    try
+    {
+        archive(cereal::make_nvp("TrickFlags",m._TrickFlags));
+        archive(cereal::make_nvp("SortBias",m.SortBias));
+        archive(cereal::make_nvp("ScrollST0",m.ScrollST0));
+        archive(cereal::make_nvp("ScrollST1",m.ScrollST1));
+        archive(cereal::make_nvp("TintColor0",m.TintColor0));
+        archive(cereal::make_nvp("TintColor1",m.TintColor1));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, GeometryModifiers & m)
 {
-    archive(cereal::make_nvp("Name",m.name));
-    archive(cereal::make_nvp("SrcName",m.src_name));
-    archive(cereal::make_nvp("LodFar",m.LodFar));
-    archive(cereal::make_nvp("LodFarFade",m.LodFarFade));
-    archive(cereal::make_nvp("LodNear",m.LodNear));
-    archive(cereal::make_nvp("LodNearFade",m.LodNearFade));
-    archive(cereal::make_nvp("ObjFlags",m.ObjFlags));
-    archive(cereal::make_nvp("GfxFlags",m.GfxFlags));
-    archive(cereal::make_nvp("GroupFlags",m.GroupFlags));
-    archive(cereal::make_nvp("Sway",m.Sway));
-    archive(cereal::make_nvp("Sway_Rotate",m.Sway_Rotate));
-    archive(cereal::make_nvp("AlphaRef",m.AlphaRef));
-    archive(cereal::make_nvp("FogDist",m.FogDist));
-    archive(cereal::make_nvp("ShadowDist",m.ShadowDist));
-    archive(cereal::make_nvp("NightGlow",m.NightGlow));
-    archive(cereal::make_nvp("ObjTexBias",m.ObjTexBias));
-    archive(cereal::make_nvp("Node",m.node));
-    archive(cereal::make_nvp("TextureAnims",m.StAnim));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.name));
+        archive(cereal::make_nvp("SrcName",m.src_name));
+        archive(cereal::make_nvp("LodFar",m.LodFar));
+        archive(cereal::make_nvp("LodFarFade",m.LodFarFade));
+        archive(cereal::make_nvp("LodNear",m.LodNear));
+        archive(cereal::make_nvp("LodNearFade",m.LodNearFade));
+        archive(cereal::make_nvp("ObjFlags",m.ObjFlags));
+        archive(cereal::make_nvp("GfxFlags",m.GfxFlags));
+        archive(cereal::make_nvp("GroupFlags",m.GroupFlags));
+        archive(cereal::make_nvp("Sway",m.Sway));
+        archive(cereal::make_nvp("Sway_Rotate",m.Sway_Rotate));
+        archive(cereal::make_nvp("AlphaRef",m.AlphaRef));
+        archive(cereal::make_nvp("FogDist",m.FogDist));
+        archive(cereal::make_nvp("ShadowDist",m.ShadowDist));
+        archive(cereal::make_nvp("NightGlow",m.NightGlow));
+        archive(cereal::make_nvp("ObjTexBias",m.ObjTexBias));
+        archive(cereal::make_nvp("Node",m.node));
+        archive(cereal::make_nvp("TextureAnims",m.StAnim));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, AllTricks_Data & m)
 {
-    archive(cereal::make_nvp("Texture",m.texture_mods));
-    archive(cereal::make_nvp("Geometry",m.geometry_mods));
+    try
+    {
+        archive(cereal::make_nvp("Texture",m.texture_mods));
+        archive(cereal::make_nvp("Geometry",m.geometry_mods));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 void saveTo(const AllTricks_Data &target, const QString &baseName, bool text_format)

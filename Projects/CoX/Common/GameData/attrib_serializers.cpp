@@ -63,134 +63,180 @@ bool loadFrom(BinStore * s, AttribNames_Data & target)
 template<class Archive>
 static void serialize(Archive & archive, Parse_AttribDesc & m)
 {
-    archive(cereal::make_nvp("Name",m.Name));
-    archive(cereal::make_nvp("DisplayName",m.DisplayName));
-    archive(cereal::make_nvp("IconName",m.IconName));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.Name));
+        archive(cereal::make_nvp("DisplayName",m.DisplayName));
+        archive(cereal::make_nvp("IconName",m.IconName));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << "Other kind of exception: " << e.what();
+    }
+
 }
 
 template<class Archive>
 static void serialize(Archive & archive, AttribNames_Data & m)
 {
-    archive(cereal::make_nvp("Damage",m.m_Damage));
-    archive(cereal::make_nvp("Defense",m.m_Defense));
-    archive(cereal::make_nvp("Boost",m.m_Boost));
-    archive(cereal::make_nvp("Group",m.m_Group));
+    try
+    {
+        archive(cereal::make_nvp("Damage",m.m_Damage));
+        archive(cereal::make_nvp("Defense",m.m_Defense));
+        archive(cereal::make_nvp("Boost",m.m_Boost));
+        archive(cereal::make_nvp("Group",m.m_Group));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << "Other kind of exception: " << e.what();
+    }
 }
 
 template<class Archive>
 void serialize(Archive & archive, Parse_CharAttrib & target)
 {
-    char buf[128];
-    for(int i=0; i<24; ++i)
+    try
     {
-        sprintf(buf,"DamageType%02d",i);
-        archive(cereal::make_nvp(buf,target.m_DamageTypes[i]));
-    }
-    archive(cereal::make_nvp("HitPoints",target.m_HitPoints));
-    archive(cereal::make_nvp("Endurance",target.m_Endurance));
-    archive(cereal::make_nvp("ToHit",target.m_ToHit));
-    for(int i=0; i<24; ++i) {
-        sprintf(buf,"DefenseType00%02d",i);
-        archive(cereal::make_nvp(buf,target.m_DefenseTypes[i]));
-    }
+        char buf[128];
+        for(int i=0; i<24; ++i)
+        {
+            sprintf(buf,"DamageType%02d",i);
+            archive(cereal::make_nvp(buf,target.m_DamageTypes[i]));
+        }
+        archive(cereal::make_nvp("HitPoints",target.m_HitPoints));
+        archive(cereal::make_nvp("Endurance",target.m_Endurance));
+        archive(cereal::make_nvp("ToHit",target.m_ToHit));
+        for(int i=0; i<24; ++i) {
+            sprintf(buf,"DefenseType00%02d",i);
+            archive(cereal::make_nvp(buf,target.m_DefenseTypes[i]));
+        }
 
-    archive(cereal::make_nvp("Defense",target.m_Defense));
-    archive(cereal::make_nvp("Evade",target.m_Evade));
-    archive(cereal::make_nvp("SpeedRunning",target.m_SpeedRunning));
-    archive(cereal::make_nvp("SpeedFlying",target.m_SpeedFlying));
-    archive(cereal::make_nvp("SpeedSwimming",target.m_SpeedSwimming));
-    archive(cereal::make_nvp("SpeedJumping",target.m_SpeedJumping));
-    archive(cereal::make_nvp("JumpHeight",target.m_jump_height));
-    archive(cereal::make_nvp("MovementControl",target.m_MovementControl));
-    archive(cereal::make_nvp("MovementFriction",target.m_MovementFriction));
-    archive(cereal::make_nvp("Stealth",target.m_Stealth));
-    archive(cereal::make_nvp("StealthRadius",target.m_StealthRadius));
-    archive(cereal::make_nvp("PerceptionRadius",target.m_PerceptionRadius));
-    archive(cereal::make_nvp("Regeneration",target.m_Regeneration));
-    archive(cereal::make_nvp("Recovery",target.m_Recovery));
-    archive(cereal::make_nvp("ThreatLevel",target.m_ThreatLevel));
-    archive(cereal::make_nvp("Taunt",target.m_Taunt));
-    archive(cereal::make_nvp("Confused",target.m_Confused));
-    archive(cereal::make_nvp("Afraid",target.m_Afraid));
-    archive(cereal::make_nvp("Held",target.m_Held));
-    archive(cereal::make_nvp("Immobilized",target.m_Immobilized));
-    archive(cereal::make_nvp("Stunned",target.m_is_stunned));
-    archive(cereal::make_nvp("Sleep",target.m_Sleep));
-    archive(cereal::make_nvp("Fly",target.m_is_flying));
-    archive(cereal::make_nvp("Jumppack",target.m_has_jumppack));
-    archive(cereal::make_nvp("Teleport",target.m_Teleport));
-    archive(cereal::make_nvp("Untouchable",target.m_Untouchable));
-    archive(cereal::make_nvp("Intangible",target.m_Intangible));
-    archive(cereal::make_nvp("OnlyAffectsSelf",target.m_OnlyAffectsSelf));
-    archive(cereal::make_nvp("Knockup",target.m_Knockup));
-    archive(cereal::make_nvp("Knockback",target.m_Knockback));
-    archive(cereal::make_nvp("Repel",target.m_Repel));
-    archive(cereal::make_nvp("Accuracy",target.m_Accuracy));
-    archive(cereal::make_nvp("Radius",target.m_Radius));
-    archive(cereal::make_nvp("Arc",target.m_Arc));
-    archive(cereal::make_nvp("Range",target.m_Range));
-    archive(cereal::make_nvp("TimeToActivate",target.m_TimeToActivate));
-    archive(cereal::make_nvp("RechargeTime",target.m_RechargeTime));
-    archive(cereal::make_nvp("InterruptTime",target.m_InterruptTime));
-    archive(cereal::make_nvp("EnduranceDiscount",target.m_EnduranceDiscount));
+        archive(cereal::make_nvp("Defense",target.m_Defense));
+        archive(cereal::make_nvp("Evade",target.m_Evade));
+        archive(cereal::make_nvp("SpeedRunning",target.m_SpeedRunning));
+        archive(cereal::make_nvp("SpeedFlying",target.m_SpeedFlying));
+        archive(cereal::make_nvp("SpeedSwimming",target.m_SpeedSwimming));
+        archive(cereal::make_nvp("SpeedJumping",target.m_SpeedJumping));
+        archive(cereal::make_nvp("JumpHeight",target.m_jump_height));
+        archive(cereal::make_nvp("MovementControl",target.m_MovementControl));
+        archive(cereal::make_nvp("MovementFriction",target.m_MovementFriction));
+        archive(cereal::make_nvp("Stealth",target.m_Stealth));
+        archive(cereal::make_nvp("StealthRadius",target.m_StealthRadius));
+        archive(cereal::make_nvp("PerceptionRadius",target.m_PerceptionRadius));
+        archive(cereal::make_nvp("Regeneration",target.m_Regeneration));
+        archive(cereal::make_nvp("Recovery",target.m_Recovery));
+        archive(cereal::make_nvp("ThreatLevel",target.m_ThreatLevel));
+        archive(cereal::make_nvp("Taunt",target.m_Taunt));
+        archive(cereal::make_nvp("Confused",target.m_Confused));
+        archive(cereal::make_nvp("Afraid",target.m_Afraid));
+        archive(cereal::make_nvp("Held",target.m_Held));
+        archive(cereal::make_nvp("Immobilized",target.m_Immobilized));
+        archive(cereal::make_nvp("Stunned",target.m_is_stunned));
+        archive(cereal::make_nvp("Sleep",target.m_Sleep));
+        archive(cereal::make_nvp("Fly",target.m_is_flying));
+        archive(cereal::make_nvp("Jumppack",target.m_has_jumppack));
+        archive(cereal::make_nvp("Teleport",target.m_Teleport));
+        archive(cereal::make_nvp("Untouchable",target.m_Untouchable));
+        archive(cereal::make_nvp("Intangible",target.m_Intangible));
+        archive(cereal::make_nvp("OnlyAffectsSelf",target.m_OnlyAffectsSelf));
+        archive(cereal::make_nvp("Knockup",target.m_Knockup));
+        archive(cereal::make_nvp("Knockback",target.m_Knockback));
+        archive(cereal::make_nvp("Repel",target.m_Repel));
+        archive(cereal::make_nvp("Accuracy",target.m_Accuracy));
+        archive(cereal::make_nvp("Radius",target.m_Radius));
+        archive(cereal::make_nvp("Arc",target.m_Arc));
+        archive(cereal::make_nvp("Range",target.m_Range));
+        archive(cereal::make_nvp("TimeToActivate",target.m_TimeToActivate));
+        archive(cereal::make_nvp("RechargeTime",target.m_RechargeTime));
+        archive(cereal::make_nvp("InterruptTime",target.m_InterruptTime));
+        archive(cereal::make_nvp("EnduranceDiscount",target.m_EnduranceDiscount));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << "Other kind of exception: " << e.what();
+    }
 }
 
 template<class Archive>
 void serialize(Archive & archive, Parse_CharAttribMax & target)
 {
-    char buf[128];
-    for(int i=0; i<24; ++i)
+    try
     {
-        sprintf(buf,"DamageType%02d",i);
-        archive(cereal::make_nvp(buf,target.m_DamageTypes[i]));
+        char buf[128];
+        for(int i=0; i<24; ++i)
+        {
+            sprintf(buf,"DamageType%02d",i);
+            archive(cereal::make_nvp(buf,target.m_DamageTypes[i]));
+        }
+        archive(cereal::make_nvp("HitPoints",target.m_HitPoints));
+        archive(cereal::make_nvp("Endurance",target.m_Endurance));
+        archive(cereal::make_nvp("ToHit",target.m_ToHit));
+        for(int i=0; i<24; ++i) {
+            sprintf(buf,"DefenseType00%02d",i);
+            archive(cereal::make_nvp(buf,target.m_DefenseTypes[i]));
+        }
+
+        archive(cereal::make_nvp("Defense",target.m_Defense));
+        archive(cereal::make_nvp("Evade",target.m_Evade));
+        archive(cereal::make_nvp("SpeedRunning",target.m_SpeedRunning));
+        archive(cereal::make_nvp("SpeedFlying",target.m_SpeedFlying));
+        archive(cereal::make_nvp("SpeedSwimming",target.m_SpeedSwimming));
+        archive(cereal::make_nvp("SpeedJumping",target.m_SpeedJumping));
+        archive(cereal::make_nvp("JumpHeight",target.m_jump_height));
+        archive(cereal::make_nvp("MovementControl",target.m_MovementControl));
+        archive(cereal::make_nvp("MovementFriction",target.m_MovementFriction));
+        archive(cereal::make_nvp("Stealth",target.m_Stealth));
+        archive(cereal::make_nvp("StealthRadius",target.m_StealthRadius));
+        archive(cereal::make_nvp("PerceptionRadius",target.m_PerceptionRadius));
+        archive(cereal::make_nvp("Regeneration",target.m_Regeneration));
+        archive(cereal::make_nvp("Recovery",target.m_Recovery));
+        archive(cereal::make_nvp("ThreatLevel",target.m_ThreatLevel));
+        archive(cereal::make_nvp("Taunt",target.m_Taunt));
+        archive(cereal::make_nvp("Confused",target.m_Confused));
+        archive(cereal::make_nvp("Afraid",target.m_Afraid));
+        archive(cereal::make_nvp("Held",target.m_Held));
+        archive(cereal::make_nvp("Immobilized",target.m_Immobilized));
+        archive(cereal::make_nvp("Stunned",target.m_is_stunned));
+        archive(cereal::make_nvp("Sleep",target.m_Sleep));
+        archive(cereal::make_nvp("Fly",target.m_is_flying));
+        archive(cereal::make_nvp("Jumppack",target.m_has_jumppack));
+        archive(cereal::make_nvp("Teleport",target.m_Teleport));
+        archive(cereal::make_nvp("Untouchable",target.m_Untouchable));
+        archive(cereal::make_nvp("Intangible",target.m_Intangible));
+        archive(cereal::make_nvp("OnlyAffectsSelf",target.m_OnlyAffectsSelf));
+        archive(cereal::make_nvp("Knockup",target.m_Knockup));
+        archive(cereal::make_nvp("Knockback",target.m_Knockback));
+        archive(cereal::make_nvp("Repel",target.m_Repel));
+        archive(cereal::make_nvp("Accuracy",target.m_Accuracy));
+        archive(cereal::make_nvp("Radius",target.m_Radius));
+        archive(cereal::make_nvp("Arc",target.m_Arc));
+        archive(cereal::make_nvp("Range",target.m_Range));
+        archive(cereal::make_nvp("TimeToActivate",target.m_TimeToActivate));
+        archive(cereal::make_nvp("RechargeTime",target.m_RechargeTime));
+        archive(cereal::make_nvp("InterruptTime",target.m_InterruptTime));
+        archive(cereal::make_nvp("EnduranceDiscount",target.m_EnduranceDiscount));
     }
-    archive(cereal::make_nvp("HitPoints",target.m_HitPoints));
-    archive(cereal::make_nvp("Endurance",target.m_Endurance));
-    archive(cereal::make_nvp("ToHit",target.m_ToHit));
-    for(int i=0; i<24; ++i) {
-        sprintf(buf,"DefenseType00%02d",i);
-        archive(cereal::make_nvp(buf,target.m_DefenseTypes[i]));
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << "Other kind of exception: " << e.what();
     }
 
-    archive(cereal::make_nvp("Defense",target.m_Defense));
-    archive(cereal::make_nvp("Evade",target.m_Evade));
-    archive(cereal::make_nvp("SpeedRunning",target.m_SpeedRunning));
-    archive(cereal::make_nvp("SpeedFlying",target.m_SpeedFlying));
-    archive(cereal::make_nvp("SpeedSwimming",target.m_SpeedSwimming));
-    archive(cereal::make_nvp("SpeedJumping",target.m_SpeedJumping));
-    archive(cereal::make_nvp("JumpHeight",target.m_jump_height));
-    archive(cereal::make_nvp("MovementControl",target.m_MovementControl));
-    archive(cereal::make_nvp("MovementFriction",target.m_MovementFriction));
-    archive(cereal::make_nvp("Stealth",target.m_Stealth));
-    archive(cereal::make_nvp("StealthRadius",target.m_StealthRadius));
-    archive(cereal::make_nvp("PerceptionRadius",target.m_PerceptionRadius));
-    archive(cereal::make_nvp("Regeneration",target.m_Regeneration));
-    archive(cereal::make_nvp("Recovery",target.m_Recovery));
-    archive(cereal::make_nvp("ThreatLevel",target.m_ThreatLevel));
-    archive(cereal::make_nvp("Taunt",target.m_Taunt));
-    archive(cereal::make_nvp("Confused",target.m_Confused));
-    archive(cereal::make_nvp("Afraid",target.m_Afraid));
-    archive(cereal::make_nvp("Held",target.m_Held));
-    archive(cereal::make_nvp("Immobilized",target.m_Immobilized));
-    archive(cereal::make_nvp("Stunned",target.m_is_stunned));
-    archive(cereal::make_nvp("Sleep",target.m_Sleep));
-    archive(cereal::make_nvp("Fly",target.m_is_flying));
-    archive(cereal::make_nvp("Jumppack",target.m_has_jumppack));
-    archive(cereal::make_nvp("Teleport",target.m_Teleport));
-    archive(cereal::make_nvp("Untouchable",target.m_Untouchable));
-    archive(cereal::make_nvp("Intangible",target.m_Intangible));
-    archive(cereal::make_nvp("OnlyAffectsSelf",target.m_OnlyAffectsSelf));
-    archive(cereal::make_nvp("Knockup",target.m_Knockup));
-    archive(cereal::make_nvp("Knockback",target.m_Knockback));
-    archive(cereal::make_nvp("Repel",target.m_Repel));
-    archive(cereal::make_nvp("Accuracy",target.m_Accuracy));
-    archive(cereal::make_nvp("Radius",target.m_Radius));
-    archive(cereal::make_nvp("Arc",target.m_Arc));
-    archive(cereal::make_nvp("Range",target.m_Range));
-    archive(cereal::make_nvp("TimeToActivate",target.m_TimeToActivate));
-    archive(cereal::make_nvp("RechargeTime",target.m_RechargeTime));
-    archive(cereal::make_nvp("InterruptTime",target.m_InterruptTime));
-    archive(cereal::make_nvp("EnduranceDiscount",target.m_EnduranceDiscount));
 }
 
 void saveTo(const AttribNames_Data & target, const QString & baseName, bool text_format)

@@ -28,14 +28,25 @@ void serialize(Archive & archive, EntityData &ed, uint32_t const version)
         return;
     }
 
-    archive(cereal::make_nvp("AccessLevel",ed.m_access_level));
-    archive(cereal::make_nvp("OriginIdx",ed.m_origin_idx));
-    archive(cereal::make_nvp("ClassIdx",ed.m_class_idx));
-    archive(cereal::make_nvp("Position",ed.m_pos));
-    archive(cereal::make_nvp("Orientation",ed.m_orientation_pyr));
+    try
+    {
+        archive(cereal::make_nvp("AccessLevel",ed.m_access_level));
+        archive(cereal::make_nvp("OriginIdx",ed.m_origin_idx));
+        archive(cereal::make_nvp("ClassIdx",ed.m_class_idx));
+        archive(cereal::make_nvp("Position",ed.m_pos));
+        archive(cereal::make_nvp("Orientation",ed.m_orientation_pyr));
 
-    if(version >= 3)
-        archive(cereal::make_nvp("MapIdx",ed.m_map_idx));
+        if(version >= 3)
+            archive(cereal::make_nvp("MapIdx",ed.m_map_idx));
+    }
+    catch (cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch (std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 void saveTo(const EntityData & target, const QString & baseName, bool text_format)

@@ -32,10 +32,21 @@ bool loadFrom(BinStore * s, TextureAnim_Data & target)
 template<class Archive>
 void serialize(Archive & archive, TextureAnim_Data & m)
 {
-    archive(cereal::make_nvp("Speed",m.speed));
-    archive(cereal::make_nvp("Scale",m.stScale));
-    archive(cereal::make_nvp("Type",m.scrollType));
-    archive(cereal::make_nvp("flags",m.flags));
+    try
+    {
+        archive(cereal::make_nvp("Speed",m.speed));
+        archive(cereal::make_nvp("Scale",m.stScale));
+        archive(cereal::make_nvp("Type",m.scrollType));
+        archive(cereal::make_nvp("flags",m.flags));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template

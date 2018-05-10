@@ -42,13 +42,25 @@ namespace
 template<class Archive>
 void serialize(Archive & archive, BodyPart_Data & m)
 {
-    archive(cereal::make_nvp("Name",m.m_Name));
-    archive(cereal::make_nvp("BoneCount",m.m_BoneCount));
-    archive(cereal::make_nvp("InfluenceCost",m.m_InfluenceCost));
-    archive(cereal::make_nvp("GeoName",m.m_GeoName));
-    archive(cereal::make_nvp("boneIndices",m.boneIndices));
-    archive(cereal::make_nvp("TexName",m.m_TexName));
-    archive(cereal::make_nvp("BaseName",m.m_BaseName));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.m_Name));
+        archive(cereal::make_nvp("BoneCount",m.m_BoneCount));
+        archive(cereal::make_nvp("InfluenceCost",m.m_InfluenceCost));
+        archive(cereal::make_nvp("GeoName",m.m_GeoName));
+        archive(cereal::make_nvp("boneIndices",m.boneIndices));
+        archive(cereal::make_nvp("TexName",m.m_TexName));
+        archive(cereal::make_nvp("BaseName",m.m_BaseName));
+    }
+    catch (cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch (std::exception &e)
+    {
+        qCritical() << e.what();
+    }
+
 }
 
 bool loadFrom(BinStore * s, AllBodyParts_Data * target)

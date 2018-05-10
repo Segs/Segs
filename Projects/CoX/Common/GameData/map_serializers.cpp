@@ -55,10 +55,21 @@ bool loadFrom(BinStore *s, AllMaps_Data &target)
 template<class Archive>
 static void serialize(Archive & archive, Map_Data & m)
 {
-    archive(cereal::make_nvp("Name",m.Name));
-    archive(cereal::make_nvp("Icon",m.Icon));
-    archive(cereal::make_nvp("Location",m.Location));
-    archive(cereal::make_nvp("TextLocation",m.TextLocation));
+    try
+    {
+        archive(cereal::make_nvp("Name",m.Name));
+        archive(cereal::make_nvp("Icon",m.Icon));
+        archive(cereal::make_nvp("Location",m.Location));
+        archive(cereal::make_nvp("TextLocation",m.TextLocation));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 void saveTo(const AllMaps_Data &target, const QString &baseName, bool text_format)

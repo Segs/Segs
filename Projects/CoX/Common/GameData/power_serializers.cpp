@@ -239,130 +239,183 @@ bool loadFrom(BinStore *s, AllPowerCategories &target)
 template<class Archive>
 static void serialize(Archive & archive, StoredAttribMod & src)
 {
+    try
+    {
+        archive(cereal::make_nvp("Name",src.name));
+        archive(cereal::make_nvp("DisplayAttackerHit",src.DisplayAttackerHit));
+        archive(cereal::make_nvp("DisplayVictimHit",src.DisplayVictimHit));
+        archive(cereal::make_nvp("Attrib",src.Attrib));
+        archive(cereal::make_nvp("Aspect",src.Aspect));
+        archive(cereal::make_nvp("Target",src.Target));
+        archive(cereal::make_nvp("Table",src.Table));
 
-    archive(cereal::make_nvp("Name",src.name));
-    archive(cereal::make_nvp("DisplayAttackerHit",src.DisplayAttackerHit));
-    archive(cereal::make_nvp("DisplayVictimHit",src.DisplayVictimHit));
-    archive(cereal::make_nvp("Attrib",src.Attrib));
-    archive(cereal::make_nvp("Aspect",src.Aspect));
-    archive(cereal::make_nvp("Target",src.Target));
-    archive(cereal::make_nvp("Table",src.Table));
+        archive(cereal::make_nvp("Scale",src.Scale));
+        archive(cereal::make_nvp("Type",src.Type));
+        archive(cereal::make_nvp("Delay",src.Delay));
+        archive(cereal::make_nvp("Period",src.Period));
+        archive(cereal::make_nvp("Chance",src.Chance));
 
-    archive(cereal::make_nvp("Scale",src.Scale));
-    archive(cereal::make_nvp("Type",src.Type));
-    archive(cereal::make_nvp("Delay",src.Delay));
-    archive(cereal::make_nvp("Period",src.Period));
-    archive(cereal::make_nvp("Chance",src.Chance));
-
-    archive(cereal::make_nvp("CancelOnMiss",src.CancelOnMiss));     // T/F
-    archive(cereal::make_nvp("NearGround",src.NearGround));       // T/F
-    archive(cereal::make_nvp("AllowStrength",src.AllowStrength));    // T/F
-    archive(cereal::make_nvp("AllowResistance",src.AllowResistance)); // T/F
-    archive(cereal::make_nvp("StackType",src.StackType));
-    archive(cereal::make_nvp("Duration",src.Duration));
-    archive(cereal::make_nvp("Magnitude",src.Magnitude));
-    archive(cereal::make_nvp("ContinuingBits",src.ContinuingBits));
-    archive(cereal::make_nvp("ContinuingFX",src.ContinuingFX));
-    archive(cereal::make_nvp("ConditionalBits",src.ConditionalBits));
-    archive(cereal::make_nvp("ConditionalFX",src.ConditionalFX));
-    archive(cereal::make_nvp("EntityDef",src.EntityDef));
-    archive(cereal::make_nvp("PriorityListDefense",src.PriorityListDefense));
-    archive(cereal::make_nvp("PriorityListOffense",src.PriorityListOffense));
-    archive(cereal::make_nvp("PriorityListPassive",src.PriorityListPassive));
+        archive(cereal::make_nvp("CancelOnMiss",src.CancelOnMiss));     // T/F
+        archive(cereal::make_nvp("NearGround",src.NearGround));       // T/F
+        archive(cereal::make_nvp("AllowStrength",src.AllowStrength));    // T/F
+        archive(cereal::make_nvp("AllowResistance",src.AllowResistance)); // T/F
+        archive(cereal::make_nvp("StackType",src.StackType));
+        archive(cereal::make_nvp("Duration",src.Duration));
+        archive(cereal::make_nvp("Magnitude",src.Magnitude));
+        archive(cereal::make_nvp("ContinuingBits",src.ContinuingBits));
+        archive(cereal::make_nvp("ContinuingFX",src.ContinuingFX));
+        archive(cereal::make_nvp("ConditionalBits",src.ConditionalBits));
+        archive(cereal::make_nvp("ConditionalFX",src.ConditionalFX));
+        archive(cereal::make_nvp("EntityDef",src.EntityDef));
+        archive(cereal::make_nvp("PriorityListDefense",src.PriorityListDefense));
+        archive(cereal::make_nvp("PriorityListOffense",src.PriorityListOffense));
+        archive(cereal::make_nvp("PriorityListPassive",src.PriorityListPassive));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, Power_Data & src)
 {
-
-    archive(cereal::make_nvp("Name",src.m_Name));
-    archive(cereal::make_nvp("DisplayName",src.DisplayName));
-    archive(cereal::make_nvp("DisplayHelp",src.DisplayHelp));
-    archive(cereal::make_nvp("DisplayShortHelp",src.DisplayShortHelp));
-    archive(cereal::make_nvp("DisplayAttackerAttack",src.DisplayAttackerAttack));
-    archive(cereal::make_nvp("DisplayAttackerHit",src.DisplayAttackerHit));
-    archive(cereal::make_nvp("DisplayVictimHit",src.DisplayVictimHit));
-    archive(cereal::make_nvp("IconName",src.IconName));
-    archive(cereal::make_nvp("Type",src.Type));
-    archive(cereal::make_nvp("AttackTypes",src.AttackTypes));
-    archive(cereal::make_nvp("Requires",src.Requires));
-    archive(cereal::make_nvp("Accuracy",src.Accuracy));
-    archive(cereal::make_nvp("NearGround",src.NearGround));
-    archive(cereal::make_nvp("TargetNearGround",src.TargetNearGround));
-    archive(cereal::make_nvp("CastableAfterDeath",src.CastableAfterDeath));
-    archive(cereal::make_nvp("AIReport",src.AIReport));
-    archive(cereal::make_nvp("EffectArea",src.EffectArea));
-    archive(cereal::make_nvp("Radius",src.Radius));
-    archive(cereal::make_nvp("Arc",src.Arc));
-    archive(cereal::make_nvp("Range",src.Range));
-    archive(cereal::make_nvp("RangeSecondary",src.RangeSecondary));
-    archive(cereal::make_nvp("TimeToActivate",src.TimeToActivate));
-    archive(cereal::make_nvp("RechargeTime",src.RechargeTime));
-    archive(cereal::make_nvp("ActivatePeriod",src.ActivatePeriod));
-    archive(cereal::make_nvp("EnduranceCost",src.EnduranceCost));
-    archive(cereal::make_nvp("DestroyOnLimit",src.DestroyOnLimit)); //true/false
-    archive(cereal::make_nvp("NumCharges",src.m_NumCharges));
-    archive(cereal::make_nvp("UsageTime",src.m_UsageTime));
-    archive(cereal::make_nvp("Lifetime",src.m_Lifetime));
-    archive(cereal::make_nvp("InterruptTime",src.InterruptTime));
-    archive(cereal::make_nvp("TargetVisibility",src.TargetVisibility));
-    archive(cereal::make_nvp("Target",src.Target));
-    archive(cereal::make_nvp("TargetSecondary",src.TargetSecondary));
-    archive(cereal::make_nvp("EntsAutoHit",src.EntsAutoHit));
-    archive(cereal::make_nvp("EntsAffected",src.EntsAffected));
-    archive(cereal::make_nvp("BoostsAllowed",src.BoostsAllowed));
-    archive(cereal::make_nvp("GroupMembership",src.GroupMembership));
-    archive(cereal::make_nvp("AIGroups",src.AIGroups));
-    archive(cereal::make_nvp("IgnoreStrength",src.IgnoreStrength)); // true/false
-    archive(cereal::make_nvp("ModeSeqBits",src.ModeSeqBits));
-    archive(cereal::make_nvp("AttackBits",src.AttackBits)); // or cast anim bits
-    archive(cereal::make_nvp("BlockBits",src.BlockBits));
-    archive(cereal::make_nvp("WindUpBits",src.WindUpBits));
-    archive(cereal::make_nvp("HitBits",src.HitBits));
-    archive(cereal::make_nvp("DeathBits",src.DeathBits)); // or DeathAnimBits - resolve using g_hashTabPtr
-    archive(cereal::make_nvp("ActivationBits",src.ActivationBits)); // or AttachedAnim - resolve using g_hashTabPtr
-    archive(cereal::make_nvp("ActivationFX",src.ActivationFX)); // or AttachedFxName
-    archive(cereal::make_nvp("AttackFX",src.AttackFX)); // or TravellingProjectileEffect
-    archive(cereal::make_nvp("HitFX",src.HitFX)); // or AttachedToVictimFxName
-    archive(cereal::make_nvp("FramesBeforeHit",src.m_FramesBeforeHit)); // or a punch hits, or a missile spawns
-    archive(cereal::make_nvp("DelayedHit",src.DelayedHit)); // True/False
-    archive(cereal::make_nvp("WindUpFX",src.WindUpFX));
-    archive(cereal::make_nvp("BlockFX",src.BlockFX));
-    archive(cereal::make_nvp("DeathFX",src.DeathFX));
-    archive(cereal::make_nvp("AttackFrames",src.m_AttackFrames)); // those are non-inerruptible ?
-    archive(cereal::make_nvp("InitialAttackFX",src.InitialAttackFX));
-    archive(cereal::make_nvp("InitialAttackBits",src.InitialAttackBits)); //each entry can be mapped from int to attack bit name using g_hashTabPtr ?
-    archive(cereal::make_nvp("InitialFramesBeforeHit",src.m_InitialFramesBeforeHit));
-    archive(cereal::make_nvp("ProjectileSpeed",src.ProjectileSpeed));
-    archive(cereal::make_nvp("AttribMods",src.pAttribMod));
+    try
+    {
+        archive(cereal::make_nvp("Name",src.m_Name));
+        archive(cereal::make_nvp("DisplayName",src.DisplayName));
+        archive(cereal::make_nvp("DisplayHelp",src.DisplayHelp));
+        archive(cereal::make_nvp("DisplayShortHelp",src.DisplayShortHelp));
+        archive(cereal::make_nvp("DisplayAttackerAttack",src.DisplayAttackerAttack));
+        archive(cereal::make_nvp("DisplayAttackerHit",src.DisplayAttackerHit));
+        archive(cereal::make_nvp("DisplayVictimHit",src.DisplayVictimHit));
+        archive(cereal::make_nvp("IconName",src.IconName));
+        archive(cereal::make_nvp("Type",src.Type));
+        archive(cereal::make_nvp("AttackTypes",src.AttackTypes));
+        archive(cereal::make_nvp("Requires",src.Requires));
+        archive(cereal::make_nvp("Accuracy",src.Accuracy));
+        archive(cereal::make_nvp("NearGround",src.NearGround));
+        archive(cereal::make_nvp("TargetNearGround",src.TargetNearGround));
+        archive(cereal::make_nvp("CastableAfterDeath",src.CastableAfterDeath));
+        archive(cereal::make_nvp("AIReport",src.AIReport));
+        archive(cereal::make_nvp("EffectArea",src.EffectArea));
+        archive(cereal::make_nvp("Radius",src.Radius));
+        archive(cereal::make_nvp("Arc",src.Arc));
+        archive(cereal::make_nvp("Range",src.Range));
+        archive(cereal::make_nvp("RangeSecondary",src.RangeSecondary));
+        archive(cereal::make_nvp("TimeToActivate",src.TimeToActivate));
+        archive(cereal::make_nvp("RechargeTime",src.RechargeTime));
+        archive(cereal::make_nvp("ActivatePeriod",src.ActivatePeriod));
+        archive(cereal::make_nvp("EnduranceCost",src.EnduranceCost));
+        archive(cereal::make_nvp("DestroyOnLimit",src.DestroyOnLimit)); //true/false
+        archive(cereal::make_nvp("NumCharges",src.m_NumCharges));
+        archive(cereal::make_nvp("UsageTime",src.m_UsageTime));
+        archive(cereal::make_nvp("Lifetime",src.m_Lifetime));
+        archive(cereal::make_nvp("InterruptTime",src.InterruptTime));
+        archive(cereal::make_nvp("TargetVisibility",src.TargetVisibility));
+        archive(cereal::make_nvp("Target",src.Target));
+        archive(cereal::make_nvp("TargetSecondary",src.TargetSecondary));
+        archive(cereal::make_nvp("EntsAutoHit",src.EntsAutoHit));
+        archive(cereal::make_nvp("EntsAffected",src.EntsAffected));
+        archive(cereal::make_nvp("BoostsAllowed",src.BoostsAllowed));
+        archive(cereal::make_nvp("GroupMembership",src.GroupMembership));
+        archive(cereal::make_nvp("AIGroups",src.AIGroups));
+        archive(cereal::make_nvp("IgnoreStrength",src.IgnoreStrength)); // true/false
+        archive(cereal::make_nvp("ModeSeqBits",src.ModeSeqBits));
+        archive(cereal::make_nvp("AttackBits",src.AttackBits)); // or cast anim bits
+        archive(cereal::make_nvp("BlockBits",src.BlockBits));
+        archive(cereal::make_nvp("WindUpBits",src.WindUpBits));
+        archive(cereal::make_nvp("HitBits",src.HitBits));
+        archive(cereal::make_nvp("DeathBits",src.DeathBits)); // or DeathAnimBits - resolve using g_hashTabPtr
+        archive(cereal::make_nvp("ActivationBits",src.ActivationBits)); // or AttachedAnim - resolve using g_hashTabPtr
+        archive(cereal::make_nvp("ActivationFX",src.ActivationFX)); // or AttachedFxName
+        archive(cereal::make_nvp("AttackFX",src.AttackFX)); // or TravellingProjectileEffect
+        archive(cereal::make_nvp("HitFX",src.HitFX)); // or AttachedToVictimFxName
+        archive(cereal::make_nvp("FramesBeforeHit",src.m_FramesBeforeHit)); // or a punch hits, or a missile spawns
+        archive(cereal::make_nvp("DelayedHit",src.DelayedHit)); // True/False
+        archive(cereal::make_nvp("WindUpFX",src.WindUpFX));
+        archive(cereal::make_nvp("BlockFX",src.BlockFX));
+        archive(cereal::make_nvp("DeathFX",src.DeathFX));
+        archive(cereal::make_nvp("AttackFrames",src.m_AttackFrames)); // those are non-inerruptible ?
+        archive(cereal::make_nvp("InitialAttackFX",src.InitialAttackFX));
+        archive(cereal::make_nvp("InitialAttackBits",src.InitialAttackBits)); //each entry can be mapped from int to attack bit name using g_hashTabPtr ?
+        archive(cereal::make_nvp("InitialFramesBeforeHit",src.m_InitialFramesBeforeHit));
+        archive(cereal::make_nvp("ProjectileSpeed",src.ProjectileSpeed));
+        archive(cereal::make_nvp("AttribMods",src.pAttribMod));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, Parse_PowerSet & src)
 {
-    archive(cereal::make_nvp("Name",src.Name));
-    archive(cereal::make_nvp("DisplayName",src.DisplayName));
-    archive(cereal::make_nvp("DisplayHelp",src.DisplayHelp));
-    archive(cereal::make_nvp("DisplayShortHelp",src.DisplayShortHelp));
-    archive(cereal::make_nvp("IconName",src.IconName));
-    archive(cereal::make_nvp("Available",src.Available));
-    archive(cereal::make_nvp("Powers",src.m_Powers));
+    try
+    {
+        archive(cereal::make_nvp("Name",src.Name));
+        archive(cereal::make_nvp("DisplayName",src.DisplayName));
+        archive(cereal::make_nvp("DisplayHelp",src.DisplayHelp));
+        archive(cereal::make_nvp("DisplayShortHelp",src.DisplayShortHelp));
+        archive(cereal::make_nvp("IconName",src.IconName));
+        archive(cereal::make_nvp("Available",src.Available));
+        archive(cereal::make_nvp("Powers",src.m_Powers));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, StoredPowerCategory & src)
 {
-    archive(cereal::make_nvp("Name",src.name));
-    archive(cereal::make_nvp("DispName",src.disp_name));
-    archive(cereal::make_nvp("DispShortHelp",src.disp_short_help));
-    archive(cereal::make_nvp("DispHelp",src.disp_help));
-    archive(cereal::make_nvp("PowerSets",src.m_PowerSets));
+    try
+    {
+        archive(cereal::make_nvp("Name",src.name));
+        archive(cereal::make_nvp("DispName",src.disp_name));
+        archive(cereal::make_nvp("DispShortHelp",src.disp_short_help));
+        archive(cereal::make_nvp("DispHelp",src.disp_help));
+        archive(cereal::make_nvp("PowerSets",src.m_PowerSets));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 static void serialize(Archive & archive, AllPowerCategories & src)
 {
-    archive(cereal::make_nvp("Categories",src.m_categories));
+    try
+    {
+        archive(cereal::make_nvp("Categories",src.m_categories));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 void saveTo(const AllPowerCategories & target, const QString & baseName, bool text_format)

@@ -195,60 +195,137 @@ CEREAL_CLASS_VERSION(KeybindSettings, KeybindSettings::class_version) // registe
 template<class Archive>
 void serialize(Archive &archive, Keybind &k)
 {
-    archive(cereal::make_nvp("Key",k.Key));
-    archive(cereal::make_nvp("Mods",k.Mods));
-    archive(cereal::make_nvp("KeyString",k.KeyString));
-    archive(cereal::make_nvp("Command",k.Command));
-    archive(cereal::make_nvp("IsSecondary",k.IsSecondary));
+    try
+    {
+        archive(cereal::make_nvp("Key",k.Key));
+        archive(cereal::make_nvp("Mods",k.Mods));
+        archive(cereal::make_nvp("KeyString",k.KeyString));
+        archive(cereal::make_nvp("Command",k.Command));
+        archive(cereal::make_nvp("IsSecondary",k.IsSecondary));
+    }
+    catch (cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch (std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 void serialize(Archive &archive, Keybind_Profiles &kp)
 {
-    archive(cereal::make_nvp("DisplayName",kp.DisplayName));
-    archive(cereal::make_nvp("Name",kp.Name));
-    archive(cereal::make_nvp("KeybindArr",kp.KeybindArr));
+    try
+    {
+        archive(cereal::make_nvp("DisplayName",kp.DisplayName));
+        archive(cereal::make_nvp("Name",kp.Name));
+        archive(cereal::make_nvp("KeybindArr",kp.KeybindArr));
+    }
+    catch (cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch (std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 void serialize(Archive &archive, KeybindSettings &kbds, uint32_t const version)
 {
-    if(version != KeybindSettings::class_version)
+    try
     {
-        qCritical() << "Failed to serialize KeybindSettings, incompatible serialization format version " << version;
-        return;
-    }
+        if(version != KeybindSettings::class_version)
+        {
+            qCritical() << "Failed to serialize KeybindSettings, incompatible serialization format version " << version;
+            return;
+        }
 
-    archive(cereal::make_nvp("AllProfiles",kbds.m_keybind_profiles));
-    archive(cereal::make_nvp("SelectedProfile",kbds.m_cur_keybind_profile));
+        archive(cereal::make_nvp("AllProfiles",kbds.m_keybind_profiles));
+        archive(cereal::make_nvp("SelectedProfile",kbds.m_cur_keybind_profile));
+    }
+    catch (cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch (std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 void serialize(Archive &archive, CommandEntry &k, uint32_t const version)
 {
-    archive(cereal::make_nvp("Key",k.Key));
-    archive(cereal::make_nvp("Mods",k.Mods));
+    try
+    {
+        archive(cereal::make_nvp("Key",k.Key));
+        archive(cereal::make_nvp("Mods",k.Mods));
+    }
+    catch (cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch (std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 void serialize(Archive &archive, Command &k, uint32_t const version)
 {
-    archive(cereal::make_nvp("CommandString",k.CmdString));
-    archive(cereal::make_nvp("DisplayName",k.DisplayName));
-    archive(cereal::make_nvp("CommandArr",k.CommandArr));
+    try
+    {
+        archive(cereal::make_nvp("CommandString",k.CmdString));
+        archive(cereal::make_nvp("DisplayName",k.DisplayName));
+        archive(cereal::make_nvp("CommandArr",k.CommandArr));
+    }
+    catch (cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch (std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 void serialize(Archive &archive, CommandCategory_Entry &k, uint32_t const version)
 {
-    archive(cereal::make_nvp("DisplayName",k.DisplayName));
-    archive(cereal::make_nvp("Commands",k.commands));
+    try
+    {
+        archive(cereal::make_nvp("DisplayName",k.DisplayName));
+        archive(cereal::make_nvp("Commands",k.commands));
+    }
+    catch (cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch (std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class Archive>
 void serialize(Archive &archive, Parse_AllCommandCategories &k, uint32_t const version)
 {
-    archive(cereal::make_nvp("AllCommandCategories",k));
+    try
+    {
+        archive(cereal::make_nvp("AllCommandCategories",k));
+    }
+    catch (cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch (std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 void saveTo(const KeybindSettings &target, const QString &baseName, bool text_format)
