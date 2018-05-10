@@ -26,7 +26,8 @@ public:
                     MapManager();
                     ~MapManager();
     bool            load_templates(const QString &template_directory, uint8_t game_id, uint32_t map_id,
-                                   const struct ListenAndLocationAddresses &loc);
+                                   const struct ListenAndLocationAddresses &loc,
+                                   const struct MapConfig& map_config);
     MapTemplate *   get_template(QString id);
     size_t          num_templates();
     size_t          max_instances();

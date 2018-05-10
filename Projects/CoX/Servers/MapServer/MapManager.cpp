@@ -43,7 +43,7 @@ MapManager::~MapManager()
 
 //! \brief Loads all templates available in given directory, will populate m_templates attribute
 bool MapManager::load_templates(const QString &template_directory, uint8_t game_id, uint32_t map_id,
-                                const ListenAndLocationAddresses &loc)
+                                const ListenAndLocationAddresses &loc, const MapConfig& map_config)
 {
     qCDebug(logSettings) << "Starting the search for maps in" << template_directory;
     QDirIterator map_dir_visitor(template_directory, QDir::Dirs|QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
@@ -52,7 +52,7 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
         QString dirname = map_dir_visitor.next();
         if (dirname.contains("City_",Qt::CaseInsensitive))
         {
-            auto tpl = new MapTemplate(map_dir_visitor.fileInfo().filePath(), game_id, map_id, loc);
+            auto tpl = new MapTemplate(map_dir_visitor.fileInfo().filePath(), game_id, map_id, loc, map_config);
             m_templates[s_map_name_to_id[tpl->base_name()]] = tpl;
             m_name_to_template[tpl->client_filename()] = tpl;
             qCDebug(logSettings) << "Detected a map"<<map_dir_visitor.fileInfo().filePath();

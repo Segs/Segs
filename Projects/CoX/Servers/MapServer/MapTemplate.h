@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "MapServer.h"
 #include "Servers/ServerEndpoint.h"
 
 #include <QString>
@@ -22,11 +23,13 @@ static  uint8_t                     s_template_id;
         uint8_t                     m_game_server_id;
         uint32_t                    m_map_server_id;
         ListenAndLocationAddresses  m_base_loc;
+        MapConfig                   m_map_config;
 
 public:
                                     MapTemplate(const QString &template_filename,
                                                 uint8_t game_server_id, uint32_t map_server_id,
-                                                const ListenAndLocationAddresses &loc);
+                                                const ListenAndLocationAddresses &loc,
+                                                const MapConfig &map_config);
         MapInstance *               get_instance(); //! If there are no instances, starts a new one.
         size_t                      num_instances();
         void                        shut_down_all();

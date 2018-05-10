@@ -49,3 +49,16 @@ private:
         ACE_INET_Addr           m_base_listen_point; //! this is used as a base map listening endpoint
 };
 extern MapServer *g_GlobalMapServer;
+
+struct MapConfig
+{
+    float m_player_fade_in;
+    MapConfig(float player_fade_in)
+    {
+        m_player_fade_in = player_fade_in;
+    }
+    MapConfig(const MapConfig &other)
+    {
+        m_player_fade_in = other.m_player_fade_in;
+    }
+};

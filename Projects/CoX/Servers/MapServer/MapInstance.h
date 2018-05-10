@@ -59,7 +59,8 @@ public:
         NpcGeneratorStore       m_npc_generators;
 
 public:
-                                MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr);
+                                MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr,
+                                                const struct MapConfig &map_config);
                                 ~MapInstance() override;
         void                    dispatch(SEGSEvent *ev) override;
 

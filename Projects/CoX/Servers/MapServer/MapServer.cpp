@@ -94,6 +94,8 @@ bool MapServer::ReadConfigAndRestart()
         qDebug() << "Config file is missing 'listen_addr' entry in MapServer group, will try to use default";
     if(!config.contains(QStringLiteral("location_addr")))
         qDebug() << "Config file is missing 'location_addr' entry in MapServer group, will try to use default";
+    if(!config.contains(QStringLiteral("player_fade_in")))
+        qDebug() << "Config file is missing 'player_fade_in' entry in MapServer group, will try to use default";
 
     QString listen_addr = config.value("listen_addr","127.0.0.1:7003").toString();
     QString location_addr = config.value("location_addr","127.0.0.1:7003").toString();
@@ -110,9 +112,19 @@ bool MapServer::ReadConfigAndRestart()
         return false;
     }
 
+    bool ok = true;
+    QVariant fade_in_variant = config.value("player_fade_in","380.0");
+    float player_fade_in = fade_in_variant.toFloat();
+    if(!ok)
+    {
+        qCritical() << "Badly formed float for 'player_fade_in': " << fade_in_variant.toString();
+        return false;
+    }
+
     config.endGroup(); // MapServer
 
-    if(!d->m_manager.load_templates(map_templates_dir,m_owner_game_server_id,m_id,{m_base_listen_point,m_base_location}))
+    if(!d->m_manager.load_templates(map_templates_dir,m_owner_game_server_id,m_id,{m_base_listen_point,m_base_location},
+          {player_fade_in}))
     {
         postGlobalEvent(new ServiceStatusMessage({ QString("MapServer: Cannot load map templates from %1").arg(map_templates_dir),-1 }));
         return false;
