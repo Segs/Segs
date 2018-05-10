@@ -122,19 +122,8 @@ bool loadFrom(BinStore *s, Parse_AllCharClasses &target)
 template<class Archive>
 static void serialize(Archive &archive, ClassMod_Data &src)
 {
-    try
-    {
-        archive(cereal::make_nvp("Name",src.Name));
-        archive(cereal::make_nvp("Values",src.Values));
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
+    archive(cereal::make_nvp("Name",src.Name));
+    archive(cereal::make_nvp("Values",src.Values));
 }
 
 template<class Archive>

@@ -189,28 +189,17 @@ static void serialize(Archive & archive, Pallette_Data & m)
 template<class Archive>
 static void serialize(Archive & archive, TailorCost_Data & m)
 {
-    try
-    {
-        archive(cereal::make_nvp("MinLevel",m.m_MinLevel));
-        archive(cereal::make_nvp("MaxLevel",m.m_MaxLevel));
-        archive(cereal::make_nvp("EntryFee",m.m_EntryFee));
-        archive(cereal::make_nvp("Global",m.m_Global));
-        archive(cereal::make_nvp("HeadCost",m.m_HeadCost));
-        archive(cereal::make_nvp("HeadSubCost",m.m_HeadSubCost));
-        archive(cereal::make_nvp("UpperCost",m.m_UpperCost));
-        archive(cereal::make_nvp("UpperSubCost",m.m_UpperSubCost));
-        archive(cereal::make_nvp("LowerCost",m.m_LowerCost));
-        archive(cereal::make_nvp("LoserSubCost",m.m_LoserSubCost));
-        archive(cereal::make_nvp("NumCostumes",m.m_NumCostumes));
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
+    archive(cereal::make_nvp("MinLevel",m.m_MinLevel));
+    archive(cereal::make_nvp("MaxLevel",m.m_MaxLevel));
+    archive(cereal::make_nvp("EntryFee",m.m_EntryFee));
+    archive(cereal::make_nvp("Global",m.m_Global));
+    archive(cereal::make_nvp("HeadCost",m.m_HeadCost));
+    archive(cereal::make_nvp("HeadSubCost",m.m_HeadSubCost));
+    archive(cereal::make_nvp("UpperCost",m.m_UpperCost));
+    archive(cereal::make_nvp("UpperSubCost",m.m_UpperSubCost));
+    archive(cereal::make_nvp("LowerCost",m.m_LowerCost));
+    archive(cereal::make_nvp("LoserSubCost",m.m_LoserSubCost));
+    archive(cereal::make_nvp("NumCostumes",m.m_NumCostumes));
 }
 
 bool loadFrom(BinStore *s,GeoSet_Data *target)
@@ -318,140 +307,63 @@ void saveTo(const AllTailorCosts_Data & target, const QString & baseName, bool t
 template<class Archive>
 static void serialize(Archive & archive, GeoSet_Mask_Data & m)
 {
-    try
-    {
-        archive(cereal::make_nvp("Name",m.m_Name));
-        archive(cereal::make_nvp("DisplayName",m.m_DisplayName));
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
+    archive(cereal::make_nvp("Name",m.m_Name));
+    archive(cereal::make_nvp("DisplayName",m.m_DisplayName));
 }
 
 template<class Archive>
 static void serialize(Archive & archive, GeoSet_Info_Data & m)
 {
-    try
-    {
-        archive(cereal::make_nvp("DisplayName",m.m_DisplayName));
-        archive(cereal::make_nvp("GeoName",m.m_GeoName));
-        archive(cereal::make_nvp("Geo",m.m_Geo));
-        archive(cereal::make_nvp("m_Tex1",m.m_Tex1));
-        archive(cereal::make_nvp("m_Tex2",m.m_Tex2));
-        archive(cereal::make_nvp("DevOnly",m.m_DevOnly));
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
+    archive(cereal::make_nvp("DisplayName",m.m_DisplayName));
+    archive(cereal::make_nvp("GeoName",m.m_GeoName));
+    archive(cereal::make_nvp("Geo",m.m_Geo));
+    archive(cereal::make_nvp("m_Tex1",m.m_Tex1));
+    archive(cereal::make_nvp("m_Tex2",m.m_Tex2));
+    archive(cereal::make_nvp("DevOnly",m.m_DevOnly));
 }
 
 template<class Archive>
 static void serialize(Archive & archive, GeoSet_Data & m)
 {
-    try
-    {
-        archive(cereal::make_nvp("Displayname",m.m_Displayname));
-        archive(cereal::make_nvp("BodyPart",m.m_BodyPart));
-        archive(cereal::make_nvp("Type",m.m_Type));
-        archive(cereal::make_nvp("MaskStrings",m.m_MaskStrings));
-        archive(cereal::make_nvp("MaskNames",m.m_MaskNames));
-        archive(cereal::make_nvp("Infos",m.m_Infos));
-        archive(cereal::make_nvp("Masks",m.m_Masks));
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
+    archive(cereal::make_nvp("Displayname",m.m_Displayname));
+    archive(cereal::make_nvp("BodyPart",m.m_BodyPart));
+    archive(cereal::make_nvp("Type",m.m_Type));
+    archive(cereal::make_nvp("MaskStrings",m.m_MaskStrings));
+    archive(cereal::make_nvp("MaskNames",m.m_MaskNames));
+    archive(cereal::make_nvp("Infos",m.m_Infos));
+    archive(cereal::make_nvp("Masks",m.m_Masks));
 }
 
 template<class Archive>
 static void serialize(Archive & archive, BoneSet_Data & m)
 {
-    try
-    {
-        archive(cereal::make_nvp("Name",m.m_Name));
-        archive(cereal::make_nvp("Displayname",m.m_Displayname));
-        archive(cereal::make_nvp("GeoSets",m.m_GeoSets));
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
+    archive(cereal::make_nvp("Name",m.m_Name));
+    archive(cereal::make_nvp("Displayname",m.m_Displayname));
+    archive(cereal::make_nvp("GeoSets",m.m_GeoSets));
 }
 
 template<class Archive>
 static void serialize(Archive & archive, Region_Data & m)
 {
-    try
-    {
-        archive(cereal::make_nvp("Name",m.m_Name));
-        archive(cereal::make_nvp("Displayname",m.m_Displayname));
-        archive(cereal::make_nvp("BoneSets",m.m_BoneSets));
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
+    archive(cereal::make_nvp("Name",m.m_Name));
+    archive(cereal::make_nvp("Displayname",m.m_Displayname));
+    archive(cereal::make_nvp("BoneSets",m.m_BoneSets));
 }
 
 template<class Archive>
 static void serialize(Archive & archive, CostumeOrigin_Data & m)
 {
-    try
-    {
-        archive(cereal::make_nvp("Name",m.m_Name));
-        archive(cereal::make_nvp("BodyPalette",m.m_BodyPalette));
-        archive(cereal::make_nvp("SkinPalette",m.m_SkinPalette));
-        archive(cereal::make_nvp("Region",m.m_Region));
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
+    archive(cereal::make_nvp("Name",m.m_Name));
+    archive(cereal::make_nvp("BodyPalette",m.m_BodyPalette));
+    archive(cereal::make_nvp("SkinPalette",m.m_SkinPalette));
+    archive(cereal::make_nvp("Region",m.m_Region));
 }
 
 template<class Archive>
 static void serialize(Archive & archive, Costume2_Data & m)
 {
-    try
-    {
-        archive(cereal::make_nvp("Name",m.m_Name));
-        archive(cereal::make_nvp("Origins",m.m_Origins));
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
+    archive(cereal::make_nvp("Name",m.m_Name));
+    archive(cereal::make_nvp("Origins",m.m_Origins));
 }
 
 void saveTo(const CostumeSet_Data & target, const QString & baseName, bool text_format)

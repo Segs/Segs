@@ -28,176 +28,77 @@ namespace cereal
     template<class Archive>
     static void save(Archive & archive, LevelExpAndDebt const & m)
     {
-        try
-        {
-            archive(make_nvp("DefeatPenalty", m.m_DefeatPenalty)
-                    , make_nvp("ExperienceRequired", m.m_ExperienceRequired) );
-        }
-        catch(cereal::RapidJSONException &e)
-        {
-            qWarning() << e.what();
-        }
-        catch(std::exception &e)
-        {
-            qCritical() << e.what();
-        }
+        archive(make_nvp("DefeatPenalty", m.m_DefeatPenalty)
+                , make_nvp("ExperienceRequired", m.m_ExperienceRequired) );
     }
 
     template<class Archive>
     static void load(Archive & archive, LevelExpAndDebt & m)
     {
-        try
-        {
-            archive(make_nvp("DefeatPenalty", m.m_DefeatPenalty)
-                    , make_nvp("ExperienceRequired", m.m_ExperienceRequired) );
-        }
-        catch(cereal::RapidJSONException &e)
-        {
-            qWarning() << e.what();
-        }
-        catch(std::exception &e)
-        {
-            qCritical() << e.what();
-        }
+        archive(make_nvp("DefeatPenalty", m.m_DefeatPenalty)
+                , make_nvp("ExperienceRequired", m.m_ExperienceRequired) );
     }
 
     template<class Archive>
     static void save(Archive & archive, Parse_Combining const & m)
     {
-        try
-        {
-            archive(cereal::make_nvp("CombineChances", m.CombineChances));
-        }
-        catch(cereal::RapidJSONException &e)
-        {
-            qWarning() << e.what();
-        }
-        catch(std::exception &e)
-        {
-            qCritical() << e.what();
-        }
+        archive(cereal::make_nvp("CombineChances", m.CombineChances));
     }
 
     template<class Archive>
     static void load(Archive & archive, Parse_Combining & m)
     {
-        try
-        {
-            archive(cereal::make_nvp("CombineChances", m.CombineChances) );
-        }
-        catch(cereal::RapidJSONException &e)
-        {
-            qWarning() << e.what();
-        }
-        catch(std::exception &e)
-        {
-            qCritical() << e.what();
-        }
+        archive(cereal::make_nvp("CombineChances", m.CombineChances) );
     }
 
     template<class Archive>
     static void save(Archive & archive, Parse_Effectiveness const & m)
     {
-        try
-        {
-            archive(cereal::make_nvp("Effectiveness", m.Effectiveness));
-        }
-        catch(cereal::RapidJSONException &e)
-        {
-            qWarning() << e.what();
-        }
-        catch(std::exception &e)
-        {
-            qCritical() << e.what();
-        }
+        archive(cereal::make_nvp("Effectiveness", m.Effectiveness));
     }
 
     template<class Archive>
     static void load(Archive & archive, Parse_Effectiveness & m)
     {
-        try
-        {
-            archive(cereal::make_nvp("Effectiveness", m.Effectiveness) );
-        }
-        catch(cereal::RapidJSONException &e)
-        {
-            qWarning() << e.what();
-        }
-        catch(std::exception &e)
-        {
-            qCritical() << e.what();
-        }
+        archive(cereal::make_nvp("Effectiveness", m.Effectiveness) );
     }
 
     template<class Archive>
     static void save(Archive & archive, Parse_PI_Schedule const & m)
     {
-        try
-        {
-            archive(cereal::make_nvp("FreeBoostSlotsOnPower", m.m_FreeBoostSlotsOnPower) );
-            archive(cereal::make_nvp("PoolPowerSet", m.m_PoolPowerSet) );
-            archive(cereal::make_nvp("Power", m.m_Power) );
-            archive(cereal::make_nvp("AssignableBoost", m.m_AssignableBoost) );
-            archive(cereal::make_nvp("InspirationCol", m.m_InspirationCol) );
-            archive(cereal::make_nvp("InspirationRow", m.m_InspirationRow) );
-            archive(cereal::make_nvp("BoostSlot", m.m_BoostSlot) );
-        }
-        catch(cereal::RapidJSONException &e)
-        {
-            qWarning() << e.what();
-        }
-        catch(std::exception &e)
-        {
-            qCritical() << e.what();
-        }
+        archive(cereal::make_nvp("FreeBoostSlotsOnPower", m.m_FreeBoostSlotsOnPower) );
+        archive(cereal::make_nvp("PoolPowerSet", m.m_PoolPowerSet) );
+        archive(cereal::make_nvp("Power", m.m_Power) );
+        archive(cereal::make_nvp("AssignableBoost", m.m_AssignableBoost) );
+        archive(cereal::make_nvp("InspirationCol", m.m_InspirationCol) );
+        archive(cereal::make_nvp("InspirationRow", m.m_InspirationRow) );
+        archive(cereal::make_nvp("BoostSlot", m.m_BoostSlot) );
     }
 
     template<class Archive>
     static void load(Archive & archive, Parse_PI_Schedule & m)
     {
-        try
-        {
-            archive(cereal::make_nvp("FreeBoostSlotsOnPower", m.m_FreeBoostSlotsOnPower) );
-            archive(cereal::make_nvp("PoolPowerSet", m.m_PoolPowerSet) );
-            archive(cereal::make_nvp("Power", m.m_Power) );
-            archive(cereal::make_nvp("AssignableBoost", m.m_AssignableBoost) );
-            archive(cereal::make_nvp("InspirationCol", m.m_InspirationCol) );
-            archive(cereal::make_nvp("InspirationRow", m.m_InspirationRow) );
-            archive(cereal::make_nvp("BoostSlot", m.m_BoostSlot) );
-        }
-        catch(cereal::RapidJSONException &e)
-        {
-            qWarning() << e.what();
-        }
-        catch(std::exception &e)
-        {
-            qCritical() << e.what();
-        }
+        archive(cereal::make_nvp("FreeBoostSlotsOnPower", m.m_FreeBoostSlotsOnPower) );
+        archive(cereal::make_nvp("PoolPowerSet", m.m_PoolPowerSet) );
+        archive(cereal::make_nvp("Power", m.m_Power) );
+        archive(cereal::make_nvp("AssignableBoost", m.m_AssignableBoost) );
+        archive(cereal::make_nvp("InspirationCol", m.m_InspirationCol) );
+        archive(cereal::make_nvp("InspirationRow", m.m_InspirationRow) );
+        archive(cereal::make_nvp("BoostSlot", m.m_BoostSlot) );
     }
 
     template<class Archive>
     void serialize(Archive & archive, Parse_Origin & target)
     {
-        try
-        {
-            archive(cereal::make_nvp("Name",target.Name));
-            archive(cereal::make_nvp("DisplayName",target.DisplayName));
-            archive(cereal::make_nvp("DisplayHelp",target.DisplayHelp));
-            archive(cereal::make_nvp("DisplayShortHelp",target.DisplayShortHelp));
-            archive(cereal::make_nvp("NumBonusPowerSets",target.NumBonusPowerSets));
-            archive(cereal::make_nvp("NumBonusPowers",target.NumBonusPowers));
-            archive(cereal::make_nvp("NumBonusBoostSlots",target.NumBonusBoostSlots));
-            archive(cereal::make_nvp("NumContacts",target.NumContacts));
-            archive(cereal::make_nvp("ContactBonusLength",target.ContactBonusLength));
-        }
-        catch(cereal::RapidJSONException &e)
-        {
-            qWarning() << e.what();
-        }
-        catch(std::exception &e)
-        {
-            qCritical() << e.what();
-        }
+        archive(cereal::make_nvp("Name",target.Name));
+        archive(cereal::make_nvp("DisplayName",target.DisplayName));
+        archive(cereal::make_nvp("DisplayHelp",target.DisplayHelp));
+        archive(cereal::make_nvp("DisplayShortHelp",target.DisplayShortHelp));
+        archive(cereal::make_nvp("NumBonusPowerSets",target.NumBonusPowerSets));
+        archive(cereal::make_nvp("NumBonusPowers",target.NumBonusPowers));
+        archive(cereal::make_nvp("NumBonusBoostSlots",target.NumBonusBoostSlots));
+        archive(cereal::make_nvp("NumContacts",target.NumContacts));
+        archive(cereal::make_nvp("ContactBonusLength",target.ContactBonusLength));
     }
 } // namespace cereal
 

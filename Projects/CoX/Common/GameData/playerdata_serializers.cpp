@@ -32,21 +32,9 @@ void serialize(Archive &archive, PlayerData &cd, uint32_t const version)
         qCritical() << "Failed to serialize PlayerData, incompatible serialization format version " << version;
         return;
     }
-
-    try
-    {
-        archive(cereal::make_nvp("Gui",cd.m_gui));
-        archive(cereal::make_nvp("KeyBinds",cd.m_keybinds));
-        archive(cereal::make_nvp("Options",cd.m_options));
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
+    archive(cereal::make_nvp("Gui",cd.m_gui));
+    archive(cereal::make_nvp("KeyBinds",cd.m_keybinds));
+    archive(cereal::make_nvp("Options",cd.m_options));
 }
 
 template
