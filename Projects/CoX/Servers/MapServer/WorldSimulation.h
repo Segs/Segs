@@ -18,8 +18,8 @@
 class World
 {
 public:
-                        World(EntityManager &em, const MapConfig &map_config) : ref_ent_mager(em),
-                            m_map_config(map_config) {}
+                        World(EntityManager &em, const MapConfig &map_config)
+                            : ref_ent_mager(em), m_map_config(map_config) {}
         void            addPlayer(Entity *ent);
         void            update(const ACE_Time_Value &tick_timer);
         float           time_of_day() const { return m_time_of_day; }

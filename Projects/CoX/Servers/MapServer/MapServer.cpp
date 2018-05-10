@@ -123,8 +123,9 @@ bool MapServer::ReadConfigAndRestart()
 
     config.endGroup(); // MapServer
 
+    MapConfig map_config(player_fade_in);
     if(!d->m_manager.load_templates(map_templates_dir,m_owner_game_server_id,m_id,{m_base_listen_point,m_base_location},
-          {player_fade_in}))
+          map_config))
     {
         postGlobalEvent(new ServiceStatusMessage({ QString("MapServer: Cannot load map templates from %1").arg(map_templates_dir),-1 }));
         return false;
