@@ -147,7 +147,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     }
     catch (std::exception &e)
     {
-        qCritical() < e.what();
+        qCritical() << e.what();
     }
 }
 

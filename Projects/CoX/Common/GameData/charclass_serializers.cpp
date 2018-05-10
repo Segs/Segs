@@ -135,33 +135,42 @@ static void serialize(Archive &archive, ClassMod_Data &src)
     {
         qCritical() << e.what();
     }
-
 }
 
 template<class Archive>
 static void serialize(Archive & archive, CharClass_Data & src)
 {
-    archive(cereal::make_nvp("Name",src.m_Name));
-    archive(cereal::make_nvp("DisplayName",src.m_DisplayName));
-    archive(cereal::make_nvp("DisplayHelp",src.m_DisplayHelp));
-    archive(cereal::make_nvp("DisplayShortHelp",src.m_DisplayShortHelp));
-    archive(cereal::make_nvp("PrimaryCategory",src.m_PrimaryCategory));
-    archive(cereal::make_nvp("SecondaryCategory",src.m_SecondaryCategory));
-    archive(cereal::make_nvp("PowerPoolCategory",src.m_PowerPoolCategory));
-    archive(cereal::make_nvp("AttribMin",src.m_AttribMin));
-    archive(cereal::make_nvp("AttribBase",src.m_AttribBase));
-    archive(cereal::make_nvp("StrengthMin",src.m_StrengthMin));
-    archive(cereal::make_nvp("ResistanceMin",src.m_ResistanceMin));
-    archive(cereal::make_nvp("AttribMaxTable",src.m_AttribMaxTable));
-    archive(cereal::make_nvp("AttribMaxMaxTable",src.m_AttribMaxMaxTable));
-    archive(cereal::make_nvp("StrengthMaxTable",src.m_StrengthMaxTable));
-    archive(cereal::make_nvp("ResistanceMaxTable",src.m_ResistanceMaxTable));
-    archive(cereal::make_nvp("ModTable",src.m_ModTable));
-    archive(cereal::make_nvp("_FinalAttrMax_",src._FinalAttrMax_));
-    archive(cereal::make_nvp("_FinalAttrMaxMax_",src._FinalAttrMaxMax_));
-    archive(cereal::make_nvp("_FinalAttrStrengthMax_",src._FinalAttrStrengthMax_));
-    archive(cereal::make_nvp("_FinalAttrResistanceMax_",src._FinalAttrResistanceMax_));
-
+    try
+    {
+        archive(cereal::make_nvp("Name",src.m_Name));
+        archive(cereal::make_nvp("DisplayName",src.m_DisplayName));
+        archive(cereal::make_nvp("DisplayHelp",src.m_DisplayHelp));
+        archive(cereal::make_nvp("DisplayShortHelp",src.m_DisplayShortHelp));
+        archive(cereal::make_nvp("PrimaryCategory",src.m_PrimaryCategory));
+        archive(cereal::make_nvp("SecondaryCategory",src.m_SecondaryCategory));
+        archive(cereal::make_nvp("PowerPoolCategory",src.m_PowerPoolCategory));
+        archive(cereal::make_nvp("AttribMin",src.m_AttribMin));
+        archive(cereal::make_nvp("AttribBase",src.m_AttribBase));
+        archive(cereal::make_nvp("StrengthMin",src.m_StrengthMin));
+        archive(cereal::make_nvp("ResistanceMin",src.m_ResistanceMin));
+        archive(cereal::make_nvp("AttribMaxTable",src.m_AttribMaxTable));
+        archive(cereal::make_nvp("AttribMaxMaxTable",src.m_AttribMaxMaxTable));
+        archive(cereal::make_nvp("StrengthMaxTable",src.m_StrengthMaxTable));
+        archive(cereal::make_nvp("ResistanceMaxTable",src.m_ResistanceMaxTable));
+        archive(cereal::make_nvp("ModTable",src.m_ModTable));
+        archive(cereal::make_nvp("_FinalAttrMax_",src._FinalAttrMax_));
+        archive(cereal::make_nvp("_FinalAttrMaxMax_",src._FinalAttrMaxMax_));
+        archive(cereal::make_nvp("_FinalAttrStrengthMax_",src._FinalAttrStrengthMax_));
+        archive(cereal::make_nvp("_FinalAttrResistanceMax_",src._FinalAttrResistanceMax_));
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 void saveTo(const Parse_AllCharClasses & target, const QString & baseName, bool text_format)
