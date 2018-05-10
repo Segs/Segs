@@ -449,14 +449,37 @@ void Character::sendFriendList(BitStream &bs) const
 void toActualCostume(const GameAccountResponseCostumeData &src, Costume &tgt)
 {
     tgt.skin_color = src.skin_color;
-    tgt.serializeFromDb(src.m_serialized_data);
+    try
+    {
+        tgt.serializeFromDb(src.m_serialized_data);
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
+
     tgt.m_non_default_costme_p = false;
 }
 
 void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)
 {
     tgt.skin_color = src.skin_color;
-    src.serializeToDb(tgt.m_serialized_data);
+    try
+    {
+        src.serializeToDb(tgt.m_serialized_data);
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player)
@@ -467,8 +490,19 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &t
     tgt.m_account_id = src.m_account_id;
     tgt.setName(src.m_name);
 
-    serializeFromQString(cd,src.m_serialized_chardata);
-    serializeFromQString(player,src.m_serialized_player_data);
+    try
+    {
+        serializeFromQString(cd,src.m_serialized_chardata);
+        serializeFromQString(player,src.m_serialized_player_data);
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 
     for (const GameAccountResponseCostumeData &costume : src.m_costumes)
     {
@@ -491,8 +525,19 @@ bool fromActualCharacter(const Character &src,const PlayerData &player, GameAcco
     tgt.m_account_id = src.m_account_id;
     tgt.m_name = src.getName();
 
-    serializeToQString(cd, tgt.m_serialized_chardata);
-    serializeToQString(player, tgt.m_serialized_player_data);
+    try
+    {
+        serializeToQString(cd, tgt.m_serialized_chardata);
+        serializeToQString(player, tgt.m_serialized_player_data);
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 
     for (const CharacterCostume &costume : src.m_costumes)
     {
