@@ -34,6 +34,7 @@
 #include "Common/GameData/def_serializers.h"
 #include "Common/GameData/other_definitions.h"
 #include "Common/GameData/origin_definitions.h"
+#include "Common/GameData/serialization_common.h"
 //#include "Common/GameData/particlesys_serializers.h"
 
 #include <QtCore/QCoreApplication>
@@ -210,6 +211,11 @@ int main(int argc,char **argv)
           default:
               break;
       }
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+        return -1;
     }
     catch(std::exception &e)
     {
