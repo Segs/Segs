@@ -156,7 +156,7 @@ void dumpLogging()
     output += "\n\t input: "        + QString::number(logInput().isDebugEnabled());
     output += "\n\t position: "     + QString::number(logPosition().isDebugEnabled());
     output += "\n\t orientation: "  + QString::number(logOrientation().isDebugEnabled());
-    output += "\n\t movement: "     + QString::number(logMovement().isDebugEnabled());
+    output += "\n\t movement: "   + QString::number(logMovement().isDebugEnabled());
     output += "\n\t chat: "         + QString::number(logChat().isDebugEnabled());
     output += "\n\t infomsg: "      + QString::number(logInfoMsg().isDebugEnabled());
     output += "\n\t emotes: "       + QString::number(logEmotes().isDebugEnabled());

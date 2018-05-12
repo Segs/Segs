@@ -43,8 +43,8 @@ public:
     {
         for(int i=0; i<3; ++i)
         {
-            pos_delta_valid[i]=false;
-            pyr_valid[i]=false;
+            m_pos_delta_valid[i]    = false;
+            m_pyr_valid[i]          = false;
         }
     }
 
@@ -55,7 +55,7 @@ public:
     bool        m_autorun               = 0;    // send_bits? autorun?
     uint16_t    m_control_bits[6]       = {0};
     uint16_t    m_prev_control_bits[6]  = {0};  // maybe goes away?
-    glm::vec3   m_camera_pyr;
+    glm::vec3   m_camera_pyr            = {0.0f, 0.0f, 0.0f};
     glm::vec3   m_orientation_pyr;      // Stored in Radians
     glm::quat   m_direction;
     int         m_time_diff1            = 0;
@@ -64,9 +64,9 @@ public:
     float       m_speed_scale           = 1.0f;
     bool        m_no_collision          = false;
     bool        m_has_historical_input  = 0;
-    bool        pos_delta_valid[3]      = {};
-    bool        pyr_valid[3]            = {};
-    glm::vec3   pos_delta;
+    bool        m_pos_delta_valid[3]    = {false};
+    bool        m_pyr_valid[3]          = {false};
+    glm::vec3   m_pos_delta             = {0.0f, 0.0f, 0.0f};
     bool        m_controls_disabled     = false;
     float       m_keypress_time[6]      = {0};
 
@@ -75,6 +75,7 @@ public:
     uint32_t    m_target_idx;
     uint32_t    m_assist_target_idx;
 
+    //InputState & operator=(const InputState &other);
 };
 
 class TimeState
@@ -102,5 +103,5 @@ public:
     // std::vector<SpeedState>  m_speed_states;
     // std::vector<MotionState>  m_motion_states;
 
-    void addNewState(const InputState &new_state);
+    void addNewState(InputState &new_state);
 };

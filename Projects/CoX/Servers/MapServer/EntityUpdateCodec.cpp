@@ -137,10 +137,10 @@ bool storePosition(const Entity &src,BitStream &bs)
     return true;
 }
 
-bool update_rot(const Entity &/*src*/, int axis ) /* returns true if given axis needs updating */
+bool update_rot(const Entity &src, int axis ) /* returns true if given axis needs updating */
 {
     // TODO: logMovement need to update axis check here
-    if(axis==axis) // FixMe: var compared against same var.
+    if(src.m_prev_state->m_orientation_pyr[axis]==src.m_cur_state->m_orientation_pyr[axis]) // FixMe: var compared against same var.
         return true;
     return false;
 }
@@ -152,7 +152,9 @@ void storeOrientation(const Entity &src,BitStream &bs)
     updates = ((uint8_t)update_rot(src,0)) | (((uint8_t)update_rot(src,1))<<1) | (((uint8_t)update_rot(src,2))<<2);
     storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
 
-    qCDebug(logOrientation, "updates: %i",updates);
+    if(src.m_type == EntType::PLAYER)
+        qCDebug(logMovement, "updates: %i",updates);
+
     glm::vec3 pyr_angles(0);
     pyr_angles.y = src.m_entity_data.m_orientation_pyr.y;
 
@@ -160,12 +162,15 @@ void storeOrientation(const Entity &src,BitStream &bs)
         pyr_angles.z = src.m_entity_data.m_orientation_pyr.z;
 
     // output everything
-    qCDebug(logOrientation, "Player: %d", src.m_idx);
-    qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
-    qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.m_cur_state->m_camera_pyr).c_str());
-    qCDebug(logOrientation, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
-    qCDebug(logOrientation, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
-    qCDebug(logOrientation, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);
+    if(src.m_type == EntType::PLAYER)
+    {
+        qCDebug(logMovement, "Player: %d", src.m_idx);
+        qCDebug(logMovement, "dir: %s", glm::to_string(src.m_direction).c_str());
+        qCDebug(logMovement, "camera_pyr: %s", glm::to_string(src.m_cur_state->m_camera_pyr).c_str());
+        qCDebug(logMovement, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
+        qCDebug(logMovement, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
+        qCDebug(logMovement, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);
+    }
 
     for(int i=0; i<3; i++)
     {
@@ -173,7 +178,10 @@ void storeOrientation(const Entity &src,BitStream &bs)
             continue;
 
         uint32_t v = AngleQuantize(pyr_angles[i],9);
-        qCDebug(logOrientation, "v: %d", v); // does `v` fall between 0...512
+
+        if(src.m_type == EntType::PLAYER)
+            qCDebug(logMovement, "Angle in Radians: %d", v); // does `v` fall between 0...512
+
         bs.StoreBits(9,v);
     }
 }
@@ -384,7 +392,7 @@ void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
 void sendEntCollision(const Entity &src,BitStream &bs)
 {
     // if 1 is sent, client will disregard it's own collision processing.
-    bs.StoreBits(1, src.m_cur_state->m_no_collision); // 1/0 only
+    bs.StoreBits(1, src.m_no_collision); // 1/0 only
 }
 
 void sendNoDrawOnClient(const Entity &src,BitStream &bs)

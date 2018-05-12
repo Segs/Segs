@@ -119,8 +119,8 @@ private:
 virtual                     ~Entity();
 public:
         StateStorage        m_states;
-        InputState          *m_cur_state;
-        InputState          *m_prev_state;
+        InputState          *m_cur_state            = nullptr;
+        InputState          *m_prev_state           = nullptr;
         // Some entities might not have a character data ( doors, cars )
         // Making it an unique_ptr<Character> makes it clear that Entity 'owns'
         // and takes care of this data, at the same time it can be missing
@@ -154,6 +154,7 @@ public:
         bool                m_state_mode_send       = false;
         bool                m_odd_send              = false;
         bool                m_no_draw_on_client     = false;
+        bool                m_no_collision          = false;
         bool                m_seq_update            = false;
         bool                m_force_camera_dir      = false; // used to force the client camera direction in sendClientData()
         bool                m_is_hero               = false;
@@ -170,9 +171,9 @@ public:
         bool                m_controls_disabled     = false;
         float               m_backup_spd            = 1.0f;
         float               m_jump_height           = 2.0f;
-        uint8_t             m_update_id             = 1;
-        bool                m_update_part_1         = true;     // EntityResponse sendServerControlState
-        bool                m_force_pos_and_cam     = true;     // EntityResponse sendServerControlState
+        uint8_t             m_motion_state_id             = 1;
+        bool                m_update_motion_state         = true;     // EntityResponse sendServerControlState
+        bool                m_update_pos_and_cam    = true;     // EntityResponse sendServerControlState
         bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_extra_info            = false;    // EntityUpdateCodec storePosUpdate

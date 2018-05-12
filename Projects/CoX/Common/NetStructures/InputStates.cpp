@@ -10,6 +10,7 @@
  * @{
  */
 #include "InputStates.h"
+#include "Common/GameData/CoHMath.h"
 
 const char *control_name[] = {
     "FORWARD",
@@ -21,6 +22,46 @@ const char *control_name[] = {
     "PITCH",
     "YAW",
 };
+
+/*
+InputState &InputState::operator =(const InputState &other)
+{
+    m_csc_deltabits         = other.m_csc_deltabits;
+    //m_send_deltas           = other.m_send_deltas;
+    //m_control_bits          = other.m_control_bits;
+    m_send_id               = other.m_send_id;
+    m_time_diff1            = other.m_time_diff1;
+    m_time_diff2            = other.m_time_diff2;
+    m_has_historical_input  = other.m_has_historical_input;
+    m_received_id           = other.m_received_id;
+    m_no_collision          = other.m_no_collision;
+    m_controls_disabled     = other.m_controls_disabled;
+
+    for(int i=0; i<3; ++i)
+    {
+        if(other.m_pos_delta_valid[i])
+            m_pos_delta[i] = other.m_pos_delta[i];
+    }
+    bool update_needed=false;
+    for(int i=0; i<3; ++i)
+    {
+        if(other.m_pyr_valid[i])
+            m_camera_pyr[i] = other.m_camera_pyr[i];
+
+        if(other.m_orientation_pyr[i])
+        {
+            qCDebug(logOrientation) << other.m_orientation_pyr[i];
+            m_orientation_pyr[i] = other.m_orientation_pyr[i];
+            update_needed = true;
+        }
+    }
+    if(update_needed)
+        m_direction = fromCoHYpr(m_orientation_pyr);
+
+    qCDebug(logOrientation) << m_direction.w << m_direction.x << m_direction.y << m_direction.z;
+    return *this;
+}
+*/
 
 void TimeState::serializefrom_delta(BitStream &bs, const TimeState &/*prev*/)
 {
@@ -57,8 +98,26 @@ void TimeState::dump()
     qCDebug(logInput, "(%lld %lld)", m_perf_cntr_diff, m_perf_freq_diff);
 }
 
-void StateStorage::addNewState(const InputState &new_state)
+void StateStorage::addNewState(InputState &new_state)
 {
+    // Only update if we've actually received an update
+    for(int i=0; i<3; ++i)
+    {
+        if(!new_state.m_pos_delta_valid[i])
+            new_state.m_pos_delta[i] = m_inp_states.back().m_pos_delta[i];
+    }
+    bool update_needed=false;
+    for(int i=0; i<3; ++i)
+    {
+        if(!new_state.m_pyr_valid[i])
+            new_state.m_camera_pyr[i] = m_inp_states.back().m_camera_pyr[i];
+
+        if(new_state.m_orientation_pyr[i] != m_inp_states.back().m_orientation_pyr[i])
+            update_needed = true;
+    }
+    if(update_needed)
+        new_state.m_direction = fromCoHYpr(new_state.m_orientation_pyr);
+
     m_inp_states.push_back(new_state);
     // m_time_states.push_back(new_time_state);
     // m_speed_states.push_back(new_speed_state);

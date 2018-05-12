@@ -13,7 +13,7 @@
 class InputStateEvent : public MapLinkEvent
 {
 public:
-    InputState   m_current;
+    InputState   m_next_state;
     BitStream    m_user_commands;
 
 public:
@@ -26,5 +26,5 @@ public:
     void serializefrom(BitStream &bs);
     void serializeto(BitStream &) const;
     void recv_client_opts(BitStream &bs);
-    glm::vec3 &pyr() {return m_current.m_camera_pyr;}
+    glm::vec3 &pyr() {return m_next_state.m_camera_pyr;}
 };

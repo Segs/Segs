@@ -31,22 +31,22 @@ void InputStateEvent::processDirectionControl(uint8_t dir, int prev_time, int pr
     qCDebug(logInput, "Pressed dir: %s \t prev_time: %d \t press_release: %d", control_name[dir], prev_time, press_release);
     switch(dir)
     {
-        case 0: m_current.pos_delta[2] = delta; break;    // FORWARD
-        case 1: m_current.pos_delta[2] = -delta; break;   // BACKWARD
-        case 2: m_current.pos_delta[0] = -delta; break;   // LEFT
-        case 3: m_current.pos_delta[0] = delta; break;    // RIGHT
-        case 4: m_current.pos_delta[1] = delta; break;    // UP
-        case 5: m_current.pos_delta[1] = -delta; break;   // DOWN
+        case 0: m_next_state.m_pos_delta[2] = delta; break;    // FORWARD
+        case 1: m_next_state.m_pos_delta[2] = -delta; break;   // BACKWARD
+        case 2: m_next_state.m_pos_delta[0] = -delta; break;   // LEFT
+        case 3: m_next_state.m_pos_delta[0] = delta; break;    // RIGHT
+        case 4: m_next_state.m_pos_delta[1] = delta; break;    // UP
+        case 5: m_next_state.m_pos_delta[1] = -delta; break;   // DOWN
     }
 
     switch(dir)
     {
         case 0:
-        case 1: m_current.pos_delta_valid[2] = true; break;
+        case 1: m_next_state.m_pos_delta_valid[2] = true; break;
         case 2:
-        case 3: m_current.pos_delta_valid[0] = true; break;
+        case 3: m_next_state.m_pos_delta_valid[0] = true; break;
         case 4:
-        case 5: m_current.pos_delta_valid[1] = true; break;
+        case 5: m_next_state.m_pos_delta_valid[1] = true; break;
     }
 }
 
@@ -66,9 +66,9 @@ void InputStateEvent::receiveInputStateHistory(BitStream &bs) // formerly partia
         if(bs.GetBits(1))
             ms_since_prev = bs.GetBits(2)+32; // delta from prev event
         else
-            ms_since_prev = bs.GetBits(m_current.m_csc_deltabits);
+            ms_since_prev = bs.GetBits(m_next_state.m_csc_deltabits);
 
-        m_current.m_keypress_time[control_id] = ms_since_prev;
+        m_next_state.m_keypress_time[control_id] = ms_since_prev;
 
         switch(control_id)
         {
@@ -77,39 +77,39 @@ void InputStateEvent::receiveInputStateHistory(BitStream &bs) // formerly partia
             case UP: case DOWN:
             {
                 bool keypress_state = bs.GetBits(1); // get keypress state
-                m_current.m_prev_control_bits[control_id] = keypress_state; // save control_bits
+                m_next_state.m_prev_control_bits[control_id] = keypress_state; // save control_bits
                 //m_current.processDirectionControl(control_id, ms_since_prev, keypress_state); // TODO: this should be moved out of partial_2?
                 break;
             }
             case PITCH: // camera pitch (Insert/Delete keybinds)
             {
                 angle = AngleDequantize(bs.GetBits(11),11); // pitch
-                m_current.pyr_valid[0] = true;
-                m_current.m_camera_pyr[0] = angle;
-                qCDebug(logOrientation, "Pitch (%f): %f", m_current.m_orientation_pyr[0], m_current.m_camera_pyr.x);
+                m_next_state.m_pyr_valid[0] = true;
+                m_next_state.m_camera_pyr[0] = angle;
+                qCDebug(logMovement, "Pitch (%f): %f", m_next_state.m_orientation_pyr[0], m_next_state.m_camera_pyr.x);
                 break;
             }
             case YAW: // camera yaw (Q or E keybinds)
             {
                 angle = AngleDequantize(bs.GetBits(11),11); // yaw
-                m_current.pyr_valid[1] = true;
-                m_current.m_camera_pyr[1] = angle;
-                qCDebug(logOrientation, "Yaw (%f): %f", m_current.m_orientation_pyr[1], m_current.m_camera_pyr.y);
+                m_next_state.m_pyr_valid[1] = true;
+                m_next_state.m_camera_pyr[1] = angle;
+                qCDebug(logMovement, "Yaw (%f): %f", m_next_state.m_orientation_pyr[1], m_next_state.m_camera_pyr.y);
                 break;
             }
             case 8:
             {
-                m_current.m_controls_disabled = bs.GetBits(1);
-                if ( m_current.m_autorun ) // sent_run_physics. maybe autorun? maybe is_running?
+                m_next_state.m_controls_disabled = bs.GetBits(1);
+                if ( m_next_state.m_autorun ) // sent_run_physics. maybe autorun? maybe is_running?
                 {
-                    m_current.m_time_diff1 = bs.GetPackedBits(8);   // value - previous_value
-                    m_current.m_time_diff2 = bs.GetPackedBits(8);   // time - previous_time
+                    m_next_state.m_time_diff1 = bs.GetPackedBits(8);   // value - previous_value
+                    m_next_state.m_time_diff2 = bs.GetPackedBits(8);   // time - previous_time
                 }
                 else
                 {
-                    m_current.m_autorun = true;
-                    m_current.m_time_diff1 = bs.GetBits(32);       // value
-                    m_current.m_time_diff2 = bs.GetPackedBits(10); // value - time
+                    m_next_state.m_autorun = true;
+                    m_next_state.m_time_diff1 = bs.GetBits(32);       // value
+                    m_next_state.m_time_diff2 = bs.GetPackedBits(10); // value - time
                 }
                 /*
                 qCDebug(logInput, "Controls Disabled: %d \t time_diff1: %d \t time_diff2: %d",
@@ -118,21 +118,21 @@ void InputStateEvent::receiveInputStateHistory(BitStream &bs) // formerly partia
 
                 if(bs.GetBits(1)) // if true velocity scale < 255
                 {
-                    m_current.m_velocity_scale = bs.GetBits(8);
-                    qCDebug(logMovement, "Velocity Scale: %d", m_current.m_velocity_scale);
+                    m_next_state.m_velocity_scale = bs.GetBits(8);
+                    qCDebug(logMovement, "Velocity Scale: %d", m_next_state.m_velocity_scale);
                 }
                 break;
             }
             case 9:
             {
-                m_current.m_received_id = bs.GetBits(8); // value is always 1?
+                m_next_state.m_received_id = bs.GetBits(8); // value is always 1?
                 //qCDebug(logInput, "Server Update ID: %d", m_current.m_received_server_update_id);
                 break;
             }
             case 10:
             {
-                m_current.m_no_collision = bs.GetBits(1);
-                qCDebug(logInput, "Collision: %d", m_current.m_no_collision);
+                m_next_state.m_no_collision = bs.GetBits(1);
+                qCDebug(logInput, "Collision: %d", m_next_state.m_no_collision);
                 break;
             }
             default:
@@ -146,11 +146,11 @@ void InputStateEvent::extended_input(BitStream &bs)
 {
     bool keypress_state;
 
-    m_current.m_has_historical_input = bs.GetBits(1);
-    if(m_current.m_has_historical_input) // list of partial_2 follows
+    m_next_state.m_has_historical_input = bs.GetBits(1);
+    if(m_next_state.m_has_historical_input) // list of partial_2 follows
     {
-        m_current.m_csc_deltabits = bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
-        m_current.m_send_id = bs.GetBits(16);
+        m_next_state.m_csc_deltabits = bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
+        m_next_state.m_send_id = bs.GetBits(16);
 
         //qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_current.m_csc_deltabits, m_current.m_send_id, m_current.current_state_P);
         receiveInputStateHistory(bs); // formerly partial_2
@@ -159,30 +159,30 @@ void InputStateEvent::extended_input(BitStream &bs)
     for(int idx=0; idx<6; ++idx)
     {
         keypress_state = bs.GetBits(1);
-        m_current.m_control_bits[idx] = keypress_state;
+        m_next_state.m_control_bits[idx] = keypress_state;
         if(keypress_state==true)
             processDirectionControl(idx, 0, keypress_state);
     }
 
     if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )
     {
-        m_current.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11);
-        m_current.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11);
-        qCDebug(logOrientation, "pitch: %f \tyaw: %f", m_current.m_orientation_pyr[0], m_current.m_orientation_pyr[1]);
+        m_next_state.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11);
+        m_next_state.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11);
+        qCDebug(logMovement, "pitch: %f \tyaw: %f", m_next_state.m_orientation_pyr[0], m_next_state.m_orientation_pyr[1]);
     }
 }
 
 void InputStateEvent::serializefrom(BitStream &bs)
 {
-    m_current.m_autorun=false;
+    m_next_state.m_autorun=false;
 
     if(bs.GetBits(1))
         extended_input(bs);
 
-    m_current.m_has_target = bs.GetBits(1);
-    m_current.m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
+    m_next_state.m_has_target = bs.GetBits(1);
+    m_next_state.m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
 
-    qCDebug(logTarget, "Has Target? %d | TargetIdx: %d", m_current.m_has_target, m_current.m_target_idx);
+    qCDebug(logTarget, "Has Target? %d | TargetIdx: %d", m_next_state.m_has_target, m_next_state.m_target_idx);
 
     TimeState prev_fld;
     int ctrl_idx = 0;

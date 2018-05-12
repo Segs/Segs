@@ -459,11 +459,11 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     surface_params[1].max_speed = surface_params[0].max_speed = 1.5f;
     surface_params[1].gravitational_constant = surface_params[0].gravitational_constant = 3.0f;
 
-    bs.StoreBits(1,ent->m_update_part_1);
-    if(ent->m_update_part_1)
+    bs.StoreBits(1,ent->m_update_motion_state);
+    if(ent->m_update_motion_state)
     {
         //rand()&0xFF
-        bs.StoreBits(8,ent->m_update_id);
+        bs.StoreBits(8,ent->m_motion_state_id);
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
 
         storeVector(bs,ent->m_speed); // This is entity speed vector !!
@@ -481,8 +481,8 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         bs.StoreBits(1,ent->m_is_sliding);        // sliding? default = 0
     }
     // Used to force the client to a position/speed/pitch/rotation by server
-    bs.StoreBits(1,ent->m_force_pos_and_cam);
-    if(ent->m_force_pos_and_cam)
+    bs.StoreBits(1,ent->m_update_pos_and_cam);
+    if(ent->m_update_pos_and_cam)
     {
         bs.StorePackedBits(1,ent->m_cur_state->m_received_id); // sets g_client_pos_id_rel default = 0
         storeVector(bs,ent->m_entity_data.m_pos);   // server-side pos

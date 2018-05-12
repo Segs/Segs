@@ -29,7 +29,9 @@ static void SetVelocity(Entity *e)
 
     if(e->m_cur_state->m_no_collision)
     {
-        qCDebug(logMovement) << "No collision" << e->m_cur_state->m_no_collision;
+        if(e->m_type == EntType::PLAYER)
+            qCDebug(logMovement) << "No collision" << e->m_cur_state->m_no_collision;
+
         e->m_velocity = vel;
     }
 
@@ -44,7 +46,7 @@ static void SetVelocity(Entity *e)
             control_vals[i] = 0.0f;
         else if (press_time >= 1000)
             control_vals[i] = 1.0f;
-        else if (press_time <= 50 /*&& e->inp_state.m_control_bits[i]*/)
+        else if (press_time <= 50 /*&& e->m_prev_state.m_control_bits[i]*/)
             control_vals[i] = 0.0f;
         else if (press_time < 75)
             control_vals[i] = 0.2f;
@@ -63,7 +65,8 @@ static void SetVelocity(Entity *e)
     vel.x = vel.x * e->m_speed.x;
     vel.y = vel.y * e->m_speed.y;
 
-    qCDebug(logMovement) << "vel:" << glm::to_string(vel).c_str();
+    if(e->m_type == EntType::PLAYER)
+        qCDebug(logMovement) << "vel:" << glm::to_string(vel).c_str();
 
     horiz_vel = vel;
 
@@ -74,7 +77,7 @@ static void SetVelocity(Entity *e)
     if (e->m_is_stunned)
         e->m_cur_state->m_velocity_scale *= 0.1f;
 
-    if(horiz_vel.length() >= 0.0f)
+    if(horiz_vel.length() <= 0.0f)
         horiz_vel = glm::normalize(horiz_vel);
 
     if (e->m_cur_state->m_speed_scale != 0.0f)
@@ -85,8 +88,8 @@ static void SetVelocity(Entity *e)
 
     if (e->m_is_flying)
         vel.y = horiz_vel.y * std::fabs(control_vals[BinaryControl::UP] - control_vals[BinaryControl::DOWN]);
-    else if (e->m_cur_state->m_prev_control_bits[BinaryControl::UP])
-        vel.y = 0;
+    else if (e->m_prev_state->m_control_bits[BinaryControl::UP])
+        vel.y = 0.0f;
     else
     {
         vel.y *= glm::clamp(e->m_jump_height, 0.0f, 1.0f);
@@ -94,13 +97,16 @@ static void SetVelocity(Entity *e)
             //ent->motion.flag_5 = false;
     }
 
-    qCDebug(logMovement) << "horizVel:" << glm::to_string(horiz_vel).c_str();
+    if(e->m_type == EntType::PLAYER)
+        qCDebug(logMovement) << "horizVel:" << glm::to_string(horiz_vel).c_str();
 
     e->m_velocity = vel;
 
     if (e->m_char->m_char_data.m_afk && e->m_velocity != glm::vec3(0,0,0))
     {
-        qCDebug(logMovement) << "Moving so turning off AFK";
+        if(e->m_type == EntType::PLAYER)
+            qCDebug(logMovement) << "Moving so turning off AFK";
+
         toggleAFK(*e->m_char);
     }
 }
@@ -134,34 +140,41 @@ void World::physicsStep(Entity *e,uint32_t msec)
     if(e->m_cur_state == nullptr)
         return;
 
-    if(glm::length2(e->m_cur_state->pos_delta))
+    if(glm::length2(e->m_cur_state->m_pos_delta))
     {
         SetVelocity(e);
 
-        PosUpdate prev = e->m_pos_updates[(e->m_update_idx + -1 + 64) % 64];
-        PosUpdate current;
-        current.m_position     = e->m_entity_data.m_pos;
-        current.m_pyr_angles   = e->m_entity_data.m_orientation_pyr;
-        current.m_timestamp    = msec;
-        e->addPosUpdate(current);
+        // Get timestamp in ms
+        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
 
-        int dt = current.m_timestamp - prev.m_timestamp;
+        // add PosUpdate
+        PosUpdate prev      = e->m_pos_updates[(e->m_update_idx + -1 + 64) % 64];
+        PosUpdate pud;
+        pud.m_position      = e->m_entity_data.m_pos;
+        pud.m_pyr_angles    = e->m_entity_data.m_orientation_pyr;
+        pud.m_timestamp     = now_ms;
+        e->addPosUpdate(pud);
+
+        int dt = pud.m_timestamp - prev.m_timestamp;
         e->m_prev_pos = e->m_entity_data.m_pos;
 
         glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
         float vel_scale = e->m_cur_state->m_velocity_scale/255.0f;
 
-        e->m_entity_data.m_pos += ((za*e->m_cur_state->pos_delta)*float(msec))/50.0f;
+        e->m_entity_data.m_pos += ((za*e->m_cur_state->m_pos_delta)*float(msec))/50.0f;
         float distance  = glm::distance(e->m_entity_data.m_pos, e->m_prev_pos);
         //e->m_velocity   = e->inp_state.pos_delta * e->m_speed / distance;
         //e->m_velocity   = za*e->inp_state.pos_delta;
 
-        qCDebug(logMovement) << "physicsStep:"
-                             << "\n    prev_pos:\t"   << glm::to_string(e->m_prev_pos).c_str()
-                             << "\n    cur_pos:\t"    << glm::to_string(e->m_entity_data.m_pos).c_str()
-                             << "\n    distance:\t"   << distance
-                             << "\n    vel_scale:\t"  << vel_scale << e->m_cur_state->m_velocity_scale
-                             << "\n    velocity:\t"   << glm::to_string(e->m_velocity).c_str();
+        if(e->m_type == EntType::PLAYER)
+        {
+            qCDebug(logMovement) << "physicsStep:"
+                                       << "\n    prev_pos:\t"   << glm::to_string(e->m_prev_pos).c_str()
+                                       << "\n    cur_pos:\t"    << glm::to_string(e->m_entity_data.m_pos).c_str()
+                                       << "\n    distance:\t"   << distance
+                                       << "\n    vel_scale:\t"  << vel_scale << e->m_cur_state->m_velocity_scale
+                                       << "\n    velocity:\t"   << glm::to_string(e->m_velocity).c_str();
+        }
     }
 }
 

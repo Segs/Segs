@@ -40,7 +40,7 @@ uint32_t    getAssistTargetIdx(const Entity &e) { return e.m_assist_target_idx; 
 glm::vec3   getSpeed(const Entity &e) { return e.m_speed; }
 float       getBackupSpd(const Entity &e) { return e.m_backup_spd; }
 float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
-uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
+uint8_t     getUpdateId(const Entity &e) { return e.m_motion_state_id; }
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
@@ -48,7 +48,7 @@ void    setMapIdx(Entity &e, uint32_t val) { e.m_entity_data.m_map_idx = val; }
 void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_speed = {v1,v2,v3}; }
 void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
 void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
-void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
+void    setUpdateID(Entity &e, uint8_t val) { e.m_motion_state_id = val;}
 
 void    setTeamID(Entity &e, uint8_t team_id)
 {
