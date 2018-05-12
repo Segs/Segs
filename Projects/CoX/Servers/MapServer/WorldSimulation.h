@@ -30,4 +30,5 @@ protected:
         EntityManager & ref_ent_mager;
         float           m_time_of_day = 8.0f; // hour of the day in 24h format, start at 8am
         ACE_Time_Value  prev_tick_time;
+        int             m_char_update_interval = 5; // every 5 second, update characters in db
 };

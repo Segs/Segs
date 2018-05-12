@@ -247,6 +247,7 @@ public:
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
         void                addInterp(const PosUpdate &p);
+        bool                hasValidDbStoreFlag();
 
 static  void                sendAllyID(BitStream &bs);
 static  void                sendPvP(BitStream &bs);
