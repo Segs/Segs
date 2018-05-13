@@ -429,7 +429,15 @@ int main(int argc, char **argv)
                 qWarning() << "Forced flag used '-f'. Existing databases may be overwritten.";
 
             createDatabases(configs);
-            addAccount(configs[0], "segsadmin", "segs123", 9);
+
+            /*!
+             * @brief Replaced default admin user creation with a warning that no admin account was created.
+             * @brief Also added text to show them the proper format in which to enter to submit an admin account.
+             */
+
+            qInfo() << "\nNO ADMIN USER ACCOUNTS CREATED IN DATABASE!"
+                    << "\nUse the following example to add an admin account to the database:"
+                    << "\ndbtool -l <username> -p <password> -a 9 adduser";
             break;
         }
         case 1:
