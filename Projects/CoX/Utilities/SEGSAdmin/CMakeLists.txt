@@ -17,8 +17,13 @@ set(SEGSADMIN_SOURCES
     GenerateConfigFileDialog.h
     GenerateConfigFileDialog.ui
     resources.qrc
+    SetUpData.ui
+    SetUpData.cpp
+    SetUpData.h
+    Globals.cpp
+    Globals.h
 
 )
 
-add_executable(SEGSAdmin WIN32 ${SEGSADMIN_SOURCES})
+add_executable(SEGSAdmin ${SEGSADMIN_SOURCES})
 qt5_use_modules(SEGSAdmin Core Gui Widgets Network)
