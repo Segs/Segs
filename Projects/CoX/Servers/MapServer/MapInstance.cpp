@@ -753,9 +753,11 @@ void MapInstance::on_input_state(InputState *st)
     if (st->m_data.has_input_commit_guess)
         ent->m_input_ack = st->m_data.m_send_id;
     ent->inp_state = st->m_data;
+
     // Set Target
-    ent->m_target_idx = st->m_target_idx;
-    ent->m_assist_target_idx = st->m_assist_target_idx;
+    if(st->m_has_target && (getTargetIdx(*ent) != st->m_target_idx))
+        setTarget(*ent, st->m_target_idx);
+
     // Set Orientation
     if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r)
     {

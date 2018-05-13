@@ -100,7 +100,32 @@ void    setSuperGroup(Entity &e, int sg_id, QString sg_name, uint32_t sg_rank)
              << "\n  Rank:" << e.m_supergroup.m_SG_rank;
 }
 
-void    setAssistTarget(Entity &e) { e.m_target_idx = getAssistTargetIdx(e); }
+void setTarget(Entity &e, uint32_t target_idx)
+{
+    e.m_target_idx = target_idx;
+    setAssistTarget(e);
+}
+
+void setAssistTarget(Entity &e)
+{
+    if(getTargetIdx(e) == 0)
+    {
+        e.m_assist_target_idx = 0;
+        return;
+    }
+
+    Entity *target_ent = getEntity(e.m_client, getTargetIdx(e));
+    if(target_ent == nullptr)
+    {
+        e.m_assist_target_idx = 0;
+        return;
+    }
+
+    // TODO: are there any entity types that are invalid assist targets?
+    e.m_assist_target_idx = getTargetIdx(*target_ent);
+
+    qCDebug(logTarget) << "Assist Target is:" << getAssistTargetIdx(e);
+}
 
 // For live debugging
 void    setu1(Entity &e, int val) { e.u1 = val; }
