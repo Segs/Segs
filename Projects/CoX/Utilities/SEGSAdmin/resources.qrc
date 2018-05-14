@@ -6,5 +6,6 @@
         <file>icon_warning.png</file>
         <file>icon_good.png</file>
         <file>segs.bmp</file>
+        <file>icon_lookup.png</file>
     </qresource>
 </RCC>
