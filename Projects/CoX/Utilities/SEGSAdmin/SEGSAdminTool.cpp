@@ -275,7 +275,7 @@ void SEGSAdminTool::start_auth_server()
         qDebug() << "Starting AuthServer...";
         connect(m_start_auth_server,&QProcess::readyReadStandardError,this,&SEGSAdminTool::read_authserver);
         connect(m_start_auth_server,&QProcess::readyReadStandardOutput,this,&SEGSAdminTool::read_authserver);
-        ui->authserver_start->setText("Start Auth Server");
+        ui->authserver_start->setText("Start Server");
         ui->authserver_stop->setEnabled(true);
         qApp->processEvents();
         m_start_auth_server->waitForFinished(2000);
@@ -285,13 +285,15 @@ void SEGSAdminTool::start_auth_server()
             ui->authserver_status->setText("RUNNING");
             ui->authserver_status->setStyleSheet("QLabel {color: rgb(0, 200, 0)}");
             ui->tabWidget->setEnabled(false);
+            ui->user_box->setEnabled(false);
+            ui->server_setup_box->setEnabled(false);
             int pid = m_start_auth_server->processId();
             qDebug()<<pid;
         }
         if(m_start_auth_server->state()==QProcess::NotRunning)
         {
             ui->output->appendPlainText("*** AUTHSERVER NOT RUNNING... Have you setup your piggs and settings files? ***");
-            ui->authserver_start->setText("Start Auth Server");
+            ui->authserver_start->setText("Start Server");
             ui->authserver_start->setEnabled(true);
             ui->authserver_status->setText("STOPPED");
             ui->authserver_status->setStyleSheet("QLabel {color: rgb(255, 0, 0)}");
@@ -302,7 +304,7 @@ void SEGSAdminTool::start_auth_server()
     {
         ui->output->appendPlainText("Failed to start AuthServer...");
         qDebug() <<"Failed to start AuthServer...";
-        ui->authserver_start->setText("Start Auth Server");
+        ui->authserver_start->setText("Start Server");
         ui->authserver_start->setEnabled(true);
         qApp->processEvents();
     }
@@ -338,6 +340,8 @@ void SEGSAdminTool::stop_auth_server()
         ui->authserver_status->setText("STOPPED");
         ui->authserver_status->setStyleSheet("QLabel {color: rgb(255, 0, 0)}");
         ui->tabWidget->setEnabled(true);
+        ui->user_box->setEnabled(true);
+        ui->server_setup_box->setEnabled(true);
         ui->output->appendPlainText("*** AuthServer Stopped ***");
     }
 }
@@ -355,6 +359,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
         ui->set_up_data_button->setEnabled(true);
         ui->tab_settings->setEnabled(true);
         ui->tab_logging->setEnabled(true);
+        ui->authserver_start->setEnabled(true);
         emit readyToRead(config_file_path);
     }
     else
@@ -364,6 +369,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
         ui->runDBTool->setEnabled(false); // Cannot create DB without settings.cfg
         ui->createUser->setEnabled(false); // Cannot create user without settings.cfg
         ui->set_up_data_button->setEnabled(false); // Shouldn't create data before config file exists
+        ui->authserver_start->setEnabled(false); // Shouldn't run authserver if no config file exists
         ui->tab_settings->setEnabled(false);
         ui->tab_logging->setEnabled(false);
 
