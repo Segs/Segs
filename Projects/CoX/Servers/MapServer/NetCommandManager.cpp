@@ -14,6 +14,7 @@
 #include "MapClientSession.h"
 
 #include <vector>
+#include <algorithm>
 
 static void FillCommands()
 {
@@ -24,40 +25,61 @@ static void FillCommands()
     args.push_back(arg1);
     std::vector<NetCommand::Argument> fargs;
     fargs.push_back(arg_1float);
-//    cmd_manager->addCommand(new NetCommand(9,"controldebug",args));
-//    cmd_manager->addCommand(new NetCommand(9,"nostrafe",args));
-//    cmd_manager->addCommand(new NetCommand(9,"alwaysmobile",args));
-//    cmd_manager->addCommand(new NetCommand(9,"repredict",args));
-//    cmd_manager->addCommand(new NetCommand(9,"neterrorcorrection",args));
-//    cmd_manager->addCommand(new NetCommand(9,"speed_scale",fargs));
-//    cmd_manager->addCommand(new NetCommand(9,"svr_lag",args));
-//    cmd_manager->addCommand(new NetCommand(9,"svr_lag_vary",args));
-//    cmd_manager->addCommand(new NetCommand(9,"svr_pl",args));
-//    cmd_manager->addCommand(new NetCommand(9,"svr_oo_packets",args));
-//    cmd_manager->addCommand(new NetCommand(9,"client_pos_id",args));
-//    cmd_manager->addCommand(new NetCommand(9,"atest0",args));
-//    cmd_manager->addCommand(new NetCommand(9,"atest1",args));
-//    cmd_manager->addCommand(new NetCommand(9,"atest2",args));
-//    cmd_manager->addCommand(new NetCommand(9,"atest3",args));
-//    cmd_manager->addCommand(new NetCommand(9,"atest4",args));
-//    cmd_manager->addCommand(new NetCommand(9,"atest5",args));
-//    cmd_manager->addCommand(new NetCommand(9,"atest6",args));
-//    cmd_manager->addCommand(new NetCommand(9,"atest7",args));
-//    cmd_manager->addCommand(new NetCommand(9,"atest8",args));
-//    cmd_manager->addCommand(new NetCommand(9,"atest9",args));
-//    cmd_manager->addCommand(new NetCommand(9,"predict",args));
-//    cmd_manager->addCommand(new NetCommand(9,"notimeout",args)); // unknown-10,argtype-1
-//    cmd_manager->addCommand(new NetCommand(9,"selected_ent_server_index",args));
-//    cmd_manager->addCommand(new NetCommand(9,"record_motion",args));
-
+    // The following five netcommands need to be sent in this order.
     cmd_manager->addCommand(new NetCommand(3,"time",fargs));
     cmd_manager->addCommand(new NetCommand(3,"timescale",fargs));
     cmd_manager->addCommand(new NetCommand(3,"timestepscale",fargs));
     cmd_manager->addCommand(new NetCommand(3,"pause",args));
     cmd_manager->addCommand(new NetCommand(3,"disablegurneys",args));
-//    cmd_manager->addCommand(new NetCommand(9,"nodynamiccollisions",args));
-//    cmd_manager->addCommand(new NetCommand(9,"noentcollisions",args));
-//    cmd_manager->addCommand(new NetCommand(9,"pvpmap",args));
+    // Following commands are "optional".
+    cmd_manager->addCommand(new NetCommand(0,"canlook",args));
+    cmd_manager->addCommand(new NetCommand(0,"camrotate",args));
+    cmd_manager->addCommand(new NetCommand(0,"forward",args));
+    cmd_manager->addCommand(new NetCommand(0,"backward",args));
+    cmd_manager->addCommand(new NetCommand(0,"left",args));
+    cmd_manager->addCommand(new NetCommand(0,"right",args));
+    cmd_manager->addCommand(new NetCommand(0,"up",args));
+    cmd_manager->addCommand(new NetCommand(0,"down",args));
+    cmd_manager->addCommand(new NetCommand(1,"nocoll",args));
+    cmd_manager->addCommand(new NetCommand(1,"nosync",args));
+    cmd_manager->addCommand(new NetCommand(0,"speed_turn",fargs));
+    cmd_manager->addCommand(new NetCommand(0,"turnleft",args));
+    cmd_manager->addCommand(new NetCommand(0,"turnright",args));
+    cmd_manager->addCommand(new NetCommand(0,"zoomin",args));
+    cmd_manager->addCommand(new NetCommand(0,"zoomout",args));
+    cmd_manager->addCommand(new NetCommand(0,"lookup",args));
+    cmd_manager->addCommand(new NetCommand(0,"lookdown",args));
+    cmd_manager->addCommand(new NetCommand(0,"third",args));
+    cmd_manager->addCommand(new NetCommand(0,"first",args));
+    cmd_manager->addCommand(new NetCommand(9,"velscale",fargs));
+    cmd_manager->addCommand(new NetCommand(9,"yaw",fargs));
+    cmd_manager->addCommand(new NetCommand(0,"mouse_speed",fargs));
+    cmd_manager->addCommand(new NetCommand(0,"mouse_invert",args));
+    cmd_manager->addCommand(new NetCommand(0,"autorun",args));
+    cmd_manager->addCommand(new NetCommand(9,"controldebug",args));
+    cmd_manager->addCommand(new NetCommand(9,"nostrafe",args));
+    cmd_manager->addCommand(new NetCommand(9,"alwaysmobile",args));
+    cmd_manager->addCommand(new NetCommand(0,"repredict",args));
+    cmd_manager->addCommand(new NetCommand(0,"neterrorcorrection",args));
+    cmd_manager->addCommand(new NetCommand(1,"speed_scale",fargs));
+    cmd_manager->addCommand(new NetCommand(1,"svr_lag",args));
+    cmd_manager->addCommand(new NetCommand(1,"svr_lag_vary",args));
+    cmd_manager->addCommand(new NetCommand(1,"svr_pl",args));
+    cmd_manager->addCommand(new NetCommand(1,"svr_oo_packets",args));
+    cmd_manager->addCommand(new NetCommand(0,"client_pos_id",args));
+    cmd_manager->addCommand(new NetCommand(9,"atest0",args));
+    cmd_manager->addCommand(new NetCommand(9,"atest1",args));
+    cmd_manager->addCommand(new NetCommand(9,"atest2",args));
+    cmd_manager->addCommand(new NetCommand(9,"atest3",args));
+    cmd_manager->addCommand(new NetCommand(9,"atest4",args));
+    cmd_manager->addCommand(new NetCommand(9,"atest5",args));
+    cmd_manager->addCommand(new NetCommand(9,"atest6",args));
+    cmd_manager->addCommand(new NetCommand(9,"atest7",args));
+    cmd_manager->addCommand(new NetCommand(9,"atest8",args));
+    cmd_manager->addCommand(new NetCommand(9,"atest9",args));
+    cmd_manager->addCommand(new NetCommand(0,"predict",args));
+    cmd_manager->addCommand(new NetCommand(9,"notimeout",args));
+    cmd_manager->addCommand(new NetCommand(0,"selected_ent_server_index",args));
 }
 
 int NetCommand::serializefrom( BitStream &bs )
@@ -113,7 +135,7 @@ void NetCommandManager::addCommand( NetCommand *cmd )
 {
     assert(m_name_to_command.find(cmd->m_name)==m_name_to_command.end());
     m_name_to_command[cmd->m_name]=cmd;
-    m_commands_level0.push_back(cmd);
+    m_access_level_commands.push_back(cmd);
 }
 
 NetCommand * NetCommandManager::getCommandByName( const QString &name )
@@ -149,32 +171,21 @@ void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands,
 void NetCommandManager::SendCommandShortcuts( MapClientSession *client,BitStream &tgt,const std::vector<NetCommand *> &commands2 )
 {
     static bool initialized=false;
+    size_t cmd_iterator = 0;
+
     if(!initialized)  {
         initialized=true;
         FillCommands();
     }
 
-    switch(client->m_access_level)
-    {
-        case 0:
-        case 1:
-            // add shortcuts to client's shortcut map.
-            for(size_t i=0; i<m_commands_level0.size(); ++i)
-                client->AddShortcut(i,m_commands_level0[i]);
-            serializeto(tgt,m_commands_level0,commands2);
-            break;
-        case 9:
-            // add shortcuts to client's shortcut map.
-            for(size_t i=0; i<m_commands_level0.size(); ++i)
-                client->AddShortcut(i,m_commands_level0[i]);
-            serializeto(tgt,m_commands_level0,commands2);
-            break;
-        default:
-            // add shortcuts to client's shortcut map.
-            for (size_t i = 0; i<m_commands_level0.size(); ++i)
-                client->AddShortcut(i, m_commands_level0[i]);
-            serializeto(tgt, m_commands_level0, commands2);
-    }
+    std::for_each(begin(m_access_level_commands),
+                  end(m_access_level_commands),
+                  [&client, &cmd_iterator](NetCommand *nc)
+                  {
+		      client->AddShortcut(cmd_iterator, nc);
+		      cmd_iterator++;
+		  });
+    serializeto(tgt, m_access_level_commands, commands2);
 }
 
 //! @}

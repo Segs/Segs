@@ -12,7 +12,6 @@
 #include <ace/Thread_Mutex.h>
 #include <QtCore/QString>
 #include <QtCore/QHash>
-#include <map>
 #include <vector>
 
 struct MapClientSession;
@@ -49,7 +48,7 @@ class NetCommandManager
 {
     typedef std::vector<NetCommand *> vNetCommand;
     QHash<QString,NetCommand *> m_name_to_command;
-    vNetCommand m_commands_level0;
+    vNetCommand m_access_level_commands;
     void            serializeto(BitStream &tgt,
                                 const vNetCommand &commands,
                                 const vNetCommand &commands2);

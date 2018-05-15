@@ -540,12 +540,18 @@ void sendControlState(const EntitiesResponse &src,BitStream &bs)
 
 void sendCommands(const EntitiesResponse &src,BitStream &tgt)
 {
+    bool m_pause = false;
+    bool m_gurney = false;
     tgt.StorePackedBits(1,1); // use 'time' shortcut
     tgt.StoreFloat(float(src.m_map_time_of_day)*10.0f);
     tgt.StorePackedBits(1,2); // use 'time scale' shortcut
     tgt.StoreFloat(4.0f);
     tgt.StorePackedBits(1,3); // use 'time step scale' shortcut
     tgt.StoreFloat(2.0f);
+    tgt.StorePackedBits(1,4); // use 'pause' shortcut
+    tgt.StorePackedBits(1, uint32_t(m_pause));
+    tgt.StorePackedBits(1,5); // use 'disablegurneys' shortcut
+    tgt.StorePackedBits(1, uint32_t(m_gurney));
     tgt.StorePackedBits(1,0);
 }
 

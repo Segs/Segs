@@ -65,8 +65,37 @@ void SaveClientOptions::serializeto(BitStream &tgt) const
 void ClientOptions::init()
 {
     m_opts = {
-        CLIENT_OPT(ClientOption::t_int,control_debug),
-        CLIENT_OPT(ClientOption::t_int,no_strafe),
+        CLIENT_OPT(ClientOption::t_float,time),
+        CLIENT_OPT(ClientOption::t_float,timescale),
+        CLIENT_OPT(ClientOption::t_float,timestepscale),
+        CLIENT_OPT(ClientOption::t_int,pause),
+        CLIENT_OPT(ClientOption::t_int,disablegurneys),
+        CLIENT_OPT(ClientOption::t_int,canlook),
+        CLIENT_OPT(ClientOption::t_int,camrotate),
+        CLIENT_OPT(ClientOption::t_int,forward),
+        CLIENT_OPT(ClientOption::t_int,backward),
+        CLIENT_OPT(ClientOption::t_int,left),
+        CLIENT_OPT(ClientOption::t_int,right),
+        CLIENT_OPT(ClientOption::t_int,up),
+        CLIENT_OPT(ClientOption::t_int,down),
+        CLIENT_OPT(ClientOption::t_int,nocoll),
+        CLIENT_OPT(ClientOption::t_int,nosync),
+        CLIENT_OPT(ClientOption::t_float,speed_turn),
+        CLIENT_OPT(ClientOption::t_int,turnleft),
+        CLIENT_OPT(ClientOption::t_int,turnright),
+        CLIENT_OPT(ClientOption::t_int,zoomin),
+        CLIENT_OPT(ClientOption::t_int,zoomout),
+        CLIENT_OPT(ClientOption::t_int,lookup),
+        CLIENT_OPT(ClientOption::t_int,lookdown),
+        CLIENT_OPT(ClientOption::t_int,third),
+        CLIENT_OPT(ClientOption::t_int,first),
+        CLIENT_OPT(ClientOption::t_float,velscale),
+        CLIENT_OPT(ClientOption::t_float,yaw),
+        CLIENT_OPT(ClientOption::t_float,mouse_speed),
+        CLIENT_OPT(ClientOption::t_int,mouse_invert),
+        CLIENT_OPT(ClientOption::t_int,autorun),
+        CLIENT_OPT(ClientOption::t_int,controldebug),
+        CLIENT_OPT(ClientOption::t_int,nostrafe),
         CLIENT_OPT(ClientOption::t_int,alwaysmobile),
         CLIENT_OPT(ClientOption::t_int,repredict),
         CLIENT_OPT(ClientOption::t_int,neterrorcorrection),
@@ -91,6 +120,6 @@ void ClientOptions::init()
         CLIENT_OPT(ClientOption::t_int,selected_ent_server_index),
     };
 }
-#undef ADD_OPT
+#undef CLIENT_OPT
 
 //! @}
