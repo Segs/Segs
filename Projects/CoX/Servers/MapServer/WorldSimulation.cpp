@@ -46,12 +46,6 @@ void World::update(const ACE_Time_Value &tick_timer)
     for(Entity * e : ref_ent_mager.m_live_entlist)
     {
         updateEntity(e,delta);
-
-        if ((int)tick_timer.sec() % m_char_update_interval == 0) // update the player characters in DB every n seconds
-        {
-            if (e->hasValidDbStoreFlag())
-                charUpdateDB(e);
-        }
     }
 }
 

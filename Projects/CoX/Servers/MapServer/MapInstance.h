@@ -11,6 +11,7 @@
 #include "EventProcessor.h"
 #include "Common/Servers/ClientManager.h"
 #include "Servers/ServerEndpoint.h"
+#include "Servers/GameDatabase/GameDBSyncService.h"
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
 #include "NpcGenerator.h"
@@ -45,6 +46,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_link_timer;
         std::vector<glm::mat4>  m_new_player_spawns;
         World *                 m_world;
+        GameDBSyncService*      m_sync_service;
         uint8_t                 m_game_server_id=255; // 255 is `invalid` id
         uint32_t                m_owner_id;
         uint32_t                m_instance_id;

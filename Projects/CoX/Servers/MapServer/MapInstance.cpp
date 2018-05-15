@@ -154,6 +154,11 @@ void MapInstance::start(const QString &scenegraph_path)
         QDir::current().mkpath(m_data_path);
         qWarning() << "FAILED to load map instance data. Check to see if file exists:"<< m_data_path;
     }
+
+    // create a GameDbSyncService
+    m_sync_service = new GameDBSyncService(m_entities);
+    m_sync_service->set_db_handler(m_game_server_id);
+
     m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
     m_link_timer.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
