@@ -117,7 +117,8 @@ bool storePosition(const Entity &src,BitStream &bs)
 
 bool update_rot(const Entity &/*src*/, int axis ) /* returns true if given axis needs updating */
 {
-    if(axis==axis) // FixMe: var compared against same var.
+    int axis_tmp = axis;
+    if(axis==axis_tmp) // FixMe: var compared against same var.
         return true;
     return false;
 }
