@@ -8,14 +8,18 @@ SEGS - Super Entity Game Server
 ======
 SEGS is the Super Entity Game Server. It is a free, open source (under the terms of the BSD License), cross-platform, and object-oriented suite of protocols and services designed to interface with popular super hero themed MMORPG clients. SEGS is written in C++ and facilitates common MMORPG functionality such as account and character storage to a database, account and character retrieval from a database, secure client authentication, client movement in a virtual world, and client chat.
 
-For legal information, please see [LICENSE](./LICENSE).
+For legal information, please see [LICENSE.md](./LICENSE.md).
 
-For a list of SEGS authors and contributors, please see [Authors.txt](./docs/Authors.txt).
+For a list of SEGS authors and contributors, please see [AUTHORS.md](./docs/AUTHORS.md).
 
+**:exclamation: LOOKING FOR INSTALLATION INSTRUCTIONS? :exclamation:**
+> NOTICE: This guide is for COMPILING SEGS FROM SOURCE. If you're looking for help installing and configuring SEGS from a release package, please view [the install README.md here](./Projects/CoX/docs/README.md) 
+
+Some other useful links:
+* Our [Discord](https://discord.segs.io/)
 * Our [wiki](https://github.com/Segs/Segs/wiki)
 * The [Issue Queue](https://github.com/Segs/Segs/issues)
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide)
-* Join us on [Chat!](./docs/CONTRIBUTING.md#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 
 Basic instructions for compiling SEGS in Linux and Windows are below, however for more detailed visual instructions, visit https://segs.nemerle.eu/developers
 
@@ -25,10 +29,11 @@ CONTENTS OF THIS FILE
 - [Requirements and Notes](#requirements-and-notes)
 - [Install C++ Tool Chain](#install-c-tool-chain)
 - [Compile SEGS](#build-segs)
-- [Setting up SEGS Server and Playing](#setting-up-segs-server-and-playing)
 - [Contribute to Development](#contribute-to-development)
-- [More Information](#more-information)
+- [Setting up SEGS Server and Playing](#setting-up-segs-server-and-playing)
+- [More Information](#help-and-more-information)
 - [FAQs](#faqs)
+
 
 REQUIREMENTS AND NOTES
 ------
@@ -79,7 +84,7 @@ Your distro may come with some or all of these packages pre-installed, and while
 
 Download dependencies and tools by clicking on the links listed in the Requirements section above. Make sure you download the correct version for your installation of Windows. Once downloaded, navigate to your downloads folder and run each installer.
 
-NOTE: for QT, please install **mingw 32bit version**
+:exclamation: NOTE: for QT, please install **mingw 32bit version**
 
 **3. Installing in FreeBSD 11.x**
 
@@ -148,17 +153,6 @@ make
 ```
 
 
-SETTING UP SEGS SERVER AND PLAYING
-------
-
-After compiling, you'll need to setup your SEGS Server and Databases. You'll also need to download a specific version of the client compatible with SEGS.
-
-**IMPORTANT:** You can find information on setting up and running your SEGS server by reading the README.md located in your output directory (typically `out`). You can also read a copy of that [README.md here](./Projects/CoX/docs/README.md)
-
-- Don't forget! You'll need a copy of the required CoH client from Issue 0 (release) version 0.22, which can be found through various sources online, or via magnet link:  
-  `magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f`
-
-
 CONTRIBUTE TO DEVELOPMENT
 ------
 
@@ -172,13 +166,24 @@ Please read [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and see the links below to
 * Join us on [Chat!](./docs/CONTRIBUTING.md#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 
 
-MORE INFORMATION
+SETTING UP SEGS SERVER AND PLAYING
 ------
 
-Additional information will be available here, including optional steps to take after configuration and where to find additional help.
+After compiling, you'll need to setup your SEGS Server and Databases. You'll also need to download a specific version of the client compatible with SEGS.
+
+**IMPORTANT:** You can find information on setting up and running your SEGS server by reading the README.md located in your output directory (typically `out`). You can also read a copy of that [README.md here](./Projects/CoX/docs/README.md)
+
+- Don't forget! You'll need a copy of the required CoH client from Issue 0 (release) version 0.22, which can be found through various sources online, or via magnet link:  
+  `magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f`
+
+
+HELP AND MORE INFORMATION
+------
+
+For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.io/
 
 
 FAQs
 ------
 
-Frequently asked questions will go here.
+Visit our FAQ at https://github.com/Segs/Segs/blob/master/docs/FAQ.md

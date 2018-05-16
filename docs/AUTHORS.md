@@ -1,13 +1,14 @@
 SEGS Developers
-===============
+======
 broxen          (http://www.broxen.net/) <broxen AT segs DOT io>
 erpmario        <erpmario AT segs DOT io>
 ldilley         (http://www.dilley.me/) <lloyd AT segs DOT io>
 mobbyg          <mobbyg AT segs DOT io>
 nemerle         (http://www.nemerle.eu/) <nemerle AT segs DOT io>
 
+
 SEGS Contributors
-=================
+======
 Armingleggings
 Ashleigh
 cameron-justice
