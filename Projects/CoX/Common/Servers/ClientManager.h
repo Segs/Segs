@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <vector>
 #include <cassert>
-
+#include <cinttypes>
 
 // TODO: consider storing all sessions in vector, and convert m_session_store to token->index map
 template <class SESSION_CLASS>
