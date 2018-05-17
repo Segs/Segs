@@ -133,6 +133,7 @@ void MapInstance::start(const QString &scenegraph_path)
         m_npc_generators.m_generators["Door_Left_Ind_01"] = {"Door_Left_Ind_01",EntType::DOOR,{}};
 
         bool scene_graph_loaded = false;
+        Q_UNUSED(scene_graph_loaded);
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
@@ -1923,6 +1924,7 @@ const MapServerData &MapInstance::serverData() const
 
 glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
 {
+    Q_UNUSED(v);
     if(!m_new_player_spawns.empty())
     {
         return m_new_player_spawns.front()[3];
