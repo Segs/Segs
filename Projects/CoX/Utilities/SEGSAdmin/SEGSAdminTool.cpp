@@ -16,6 +16,7 @@
 #include "GenerateConfigFileDialog.h"
 #include "SetUpData.h"
 #include "Globals.h"
+#include "GetIPDialog.h"
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
@@ -59,6 +60,10 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(m_set_up_data,&SetUpData::dataSetupComplete,this,&SEGSAdminTool::check_data_and_dir);
     connect(m_set_up_data,&SetUpData::getMapsDir,this,&SEGSAdminTool::send_maps_dir);
     connect(this,&SEGSAdminTool::sendMapsDir,m_set_up_data,&SetUpData::create_default_directory);
+    // GetIP Signals/Slots
+    m_get_ip = new GetIPDialog;
+    connect(ui->ip_auto_populate,&QPushButton::clicked,m_get_ip,&GetIPDialog::get_local_ip);
+    connect(m_get_ip,&GetIPDialog::sendIP,this,&SEGSAdminTool::auto_populate_ip_main);
     // Send startup signals
     emit checkForConfigFile();
     emit check_db_exist(true);
@@ -275,7 +280,7 @@ void SEGSAdminTool::start_auth_server()
         qDebug() << "Starting AuthServer...";
         connect(m_start_auth_server,&QProcess::readyReadStandardError,this,&SEGSAdminTool::read_authserver);
         connect(m_start_auth_server,&QProcess::readyReadStandardOutput,this,&SEGSAdminTool::read_authserver);
-        ui->authserver_start->setText("Start Auth Server");
+        ui->authserver_start->setText("Start Server");
         ui->authserver_stop->setEnabled(true);
         qApp->processEvents();
         m_start_auth_server->waitForFinished(2000);
@@ -285,13 +290,15 @@ void SEGSAdminTool::start_auth_server()
             ui->authserver_status->setText("RUNNING");
             ui->authserver_status->setStyleSheet("QLabel {color: rgb(0, 200, 0)}");
             ui->tabWidget->setEnabled(false);
+            ui->user_box->setEnabled(false);
+            ui->server_setup_box->setEnabled(false);
             int pid = m_start_auth_server->processId();
             qDebug()<<pid;
         }
         if(m_start_auth_server->state()==QProcess::NotRunning)
         {
             ui->output->appendPlainText("*** AUTHSERVER NOT RUNNING... Have you setup your piggs and settings files? ***");
-            ui->authserver_start->setText("Start Auth Server");
+            ui->authserver_start->setText("Start Server");
             ui->authserver_start->setEnabled(true);
             ui->authserver_status->setText("STOPPED");
             ui->authserver_status->setStyleSheet("QLabel {color: rgb(255, 0, 0)}");
@@ -302,7 +309,7 @@ void SEGSAdminTool::start_auth_server()
     {
         ui->output->appendPlainText("Failed to start AuthServer...");
         qDebug() <<"Failed to start AuthServer...";
-        ui->authserver_start->setText("Start Auth Server");
+        ui->authserver_start->setText("Start Server");
         ui->authserver_start->setEnabled(true);
         qApp->processEvents();
     }
@@ -338,6 +345,8 @@ void SEGSAdminTool::stop_auth_server()
         ui->authserver_status->setText("STOPPED");
         ui->authserver_status->setStyleSheet("QLabel {color: rgb(255, 0, 0)}");
         ui->tabWidget->setEnabled(true);
+        ui->user_box->setEnabled(true);
+        ui->server_setup_box->setEnabled(true);
         ui->output->appendPlainText("*** AuthServer Stopped ***");
     }
 }
@@ -355,6 +364,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
         ui->set_up_data_button->setEnabled(true);
         ui->tab_settings->setEnabled(true);
         ui->tab_logging->setEnabled(true);
+        ui->authserver_start->setEnabled(true);
         emit readyToRead(config_file_path);
     }
     else
@@ -364,6 +374,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
         ui->runDBTool->setEnabled(false); // Cannot create DB without settings.cfg
         ui->createUser->setEnabled(false); // Cannot create user without settings.cfg
         ui->set_up_data_button->setEnabled(false); // Shouldn't create data before config file exists
+        ui->authserver_start->setEnabled(false); // Shouldn't run authserver if no config file exists
         ui->tab_settings->setEnabled(false);
         ui->tab_logging->setEnabled(false);
 
@@ -514,6 +525,7 @@ void SEGSAdminTool::generate_default_config_file(QString server_name, QString ip
 
     config_file_write.sync();
     emit checkForConfigFile();
+    emit check_data_and_dir();
 }
 
 void SEGSAdminTool::save_changes_config_file()
@@ -576,6 +588,15 @@ void SEGSAdminTool::save_changes_config_file()
     ui->output->appendPlainText("** Settings Saved **");
     emit checkForConfigFile();
     emit check_data_and_dir();
+}
+
+void SEGSAdminTool::auto_populate_ip_main(QString local_ip)
+{
+    ui->game_listen_ip->setText(local_ip);
+    ui->game_loc_ip->setText(local_ip);
+    ui->map_listen_ip->setText(local_ip);
+    ui->map_location_ip->setText(local_ip);
+    ui->auth_ip->setText(local_ip);
 }
 
 void SEGSAdminTool::send_maps_dir()
