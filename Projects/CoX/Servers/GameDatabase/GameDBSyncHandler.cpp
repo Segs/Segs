@@ -35,6 +35,14 @@ void GameDBSyncHandler::dispatch(SEGSEvent *ev)
     {
     case GameDBEventTypes::evCharacterUpdate:
         on_character_update(static_cast<CharacterUpdateMessage *>(ev)); break;
+    case GameDBEventTypes::evGuiUpdate:
+        on_gui_update(static_cast<GuiUpdateMessage *>(ev)); break;
+    case GameDBEventTypes::evOptionsUpdate:
+        on_options_update(static_cast<OptionsUpdateMessage *>(ev)); break;
+    case GameDBEventTypes::evKeybindsUpdate:
+        on_keybinds_update(static_cast<KeybindsUpdateMessage *>(ev)); break;
+    case GameDBEventTypes::evPlayerUpdate:
+        on_player_update(static_cast<PlayerUpdateMessage *>(ev)); break;
     case GameDBEventTypes::evRemoveCharacterRequest:
         on_character_remove(static_cast<RemoveCharacterRequest *>(ev)); break;
     case GameDBEventTypes::evCostumeUpdate:

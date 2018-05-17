@@ -250,6 +250,7 @@ void MapInstance::reap_stale_links()
 void MapInstance::enqueue_client(MapClientSession *clnt)
 {
     m_world->addPlayer(clnt->m_ent);
+    m_sync_service->addPlayer(clnt->m_ent);
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
 
