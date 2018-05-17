@@ -16,6 +16,7 @@
 #include "GenerateConfigFileDialog.h"
 #include "SetUpData.h"
 #include "Globals.h"
+#include "GetIPDialog.h"
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
@@ -59,6 +60,10 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(m_set_up_data,&SetUpData::dataSetupComplete,this,&SEGSAdminTool::check_data_and_dir);
     connect(m_set_up_data,&SetUpData::getMapsDir,this,&SEGSAdminTool::send_maps_dir);
     connect(this,&SEGSAdminTool::sendMapsDir,m_set_up_data,&SetUpData::create_default_directory);
+    // GetIP Signals/Slots
+    m_get_ip = new GetIPDialog;
+    connect(ui->ip_auto_populate,&QPushButton::clicked,m_get_ip,&GetIPDialog::get_local_ip);
+    connect(m_get_ip,&GetIPDialog::sendIP,this,&SEGSAdminTool::auto_populate_ip_main);
     // Send startup signals
     emit checkForConfigFile();
     emit check_db_exist(true);
@@ -520,6 +525,7 @@ void SEGSAdminTool::generate_default_config_file(QString server_name, QString ip
 
     config_file_write.sync();
     emit checkForConfigFile();
+    emit check_data_and_dir();
 }
 
 void SEGSAdminTool::save_changes_config_file()
@@ -582,6 +588,15 @@ void SEGSAdminTool::save_changes_config_file()
     ui->output->appendPlainText("** Settings Saved **");
     emit checkForConfigFile();
     emit check_data_and_dir();
+}
+
+void SEGSAdminTool::auto_populate_ip_main(QString local_ip)
+{
+    ui->game_listen_ip->setText(local_ip);
+    ui->game_loc_ip->setText(local_ip);
+    ui->map_listen_ip->setText(local_ip);
+    ui->map_location_ip->setText(local_ip);
+    ui->auth_ip->setText(local_ip);
 }
 
 void SEGSAdminTool::send_maps_dir()
