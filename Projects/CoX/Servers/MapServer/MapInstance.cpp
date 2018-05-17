@@ -133,6 +133,7 @@ void MapInstance::start(const QString &scenegraph_path)
         m_npc_generators.m_generators["Door_Left_Ind_01"] = {"Door_Left_Ind_01",EntType::DOOR,{}};
 
         bool scene_graph_loaded = false;
+        Q_UNUSED(scene_graph_loaded);
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
@@ -758,9 +759,11 @@ void MapInstance::on_input_state(InputState *st)
     if (st->m_data.has_input_commit_guess)
         ent->m_input_ack = st->m_data.m_send_id;
     ent->inp_state = st->m_data;
+
     // Set Target
-    ent->m_target_idx = st->m_target_idx;
-    ent->m_assist_target_idx = st->m_assist_target_idx;
+    if(st->m_has_target && (getTargetIdx(*ent) != st->m_target_idx))
+        setTarget(*ent, st->m_target_idx);
+
     // Set Orientation
     if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r)
     {
@@ -1926,6 +1929,7 @@ const MapServerData &MapInstance::serverData() const
 
 glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
 {
+    Q_UNUSED(v);
     if(!m_new_player_spawns.empty())
     {
         return m_new_player_spawns.front()[3];

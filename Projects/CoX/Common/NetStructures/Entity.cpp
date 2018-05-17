@@ -170,6 +170,8 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = true;
+    e.m_target_idx                      = 0;
+    e.m_assist_target_idx               = 0;
 
     e.m_char.reset(new Character);
     e.m_player.reset(new PlayerData);
@@ -191,6 +193,8 @@ void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = false;
+    e.m_target_idx                      = 0;
+    e.m_assist_target_idx               = 0;
 
     e.m_char.reset(new Character);
     e.m_npc.reset(new NPCData{false,src,idx,variant});

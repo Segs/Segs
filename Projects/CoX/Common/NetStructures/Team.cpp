@@ -250,7 +250,6 @@ void addSidekick(Entity &tgt, Entity &src)
     Sidekick    &src_sk = src.m_char->m_char_data.m_sidekick;
     Sidekick    &tgt_sk = tgt.m_char->m_char_data.m_sidekick;
     uint32_t    src_lvl = getLevel(*src.m_char);
-    uint32_t    tgt_lvl = getLevel(*tgt.m_char);
 
     src_sk.m_has_sidekick = true;
     tgt_sk.m_has_sidekick = true;
