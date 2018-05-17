@@ -1,33 +1,33 @@
 SEGS Developers
 ======
-broxen          (http://www.broxen.net/) <broxen AT segs DOT io>
-erpmario        <erpmario AT segs DOT io>
-ldilley         (http://www.dilley.me/) <lloyd AT segs DOT io>
-mobbyg          <mobbyg AT segs DOT io>
-nemerle         (http://www.nemerle.eu/) <nemerle AT segs DOT io>
+- broxen 			_[broxen.net](http://broxen.net/) `broxen AT segs.io`_
+- erpmario 			_`erpmario AT segs.io`_
+- ldilley			_[dilley.me](http://www.dilley.me/) `lloyd AT segs.io`_
+- mobbyg			_`mobbyg AT segs.io`_
+- nemerle			_[nemerle.eu](http://www.nemerle.eu/) `nemerle AT segs.io`_
 
 
 SEGS Contributors
 ======
-Armingleggings
-Ashleigh
-cameron-justice
-Catvir
-Darawk          <darawk AT darawk DOT com>
-DrPhil
-electronbeam
-eos428
-Fork            <catnipjunkie AT users DOT sourceforge DOT net>
-gustav          <bjordal AT users DOT sourceforge DOT net>
-JMox
-MaxRis
-miles200
-Patrick         <patrick_guerra AT users DOT sourceforge DOT net>
-PsiLupan
-rz950
-SilverJohn
-StarkRavingMad
-Suiv             R.I.P. - Your dark humor will be missed.
-teronis84
-TharBeDragons
-Tonster
+- Armingleggings
+- Ashleigh
+- cameron-justice
+- Catvir
+- Darawk            _`darawk AT darawk.com`_
+- DrPhil
+- electronbeam
+- eos428
+- Fork              _`catnipjunkie AT users.sourceforge.net`_
+- gustav            _`bjordal AT users.sourceforge.net`_
+- JMox
+- MaxRis
+- miles200
+- Patrick           _`patrick_guerra AT users.sourceforge.net`_
+- PsiLupan
+- rz950
+- SilverJohn
+- StarkRavingMad
+- Suiv              _`R.I.P. - Your dark humor will be missed.`_
+- teronis84
+- TharBeDragons
+- Tonster
