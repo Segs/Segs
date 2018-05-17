@@ -13,7 +13,9 @@ SEGS Contributors
 - Ashleigh
 - cameron-justice
 - Catvir
+- Crescens
 - Darawk            _`darawk AT darawk.com`_
+- dracc
 - DrPhil
 - electronbeam
 - eos428
