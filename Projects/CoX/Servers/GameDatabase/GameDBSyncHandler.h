@@ -14,6 +14,11 @@
 
 struct CharacterUpdateMessage;
 struct CostumeUpdateMessage;
+struct GuiUpdateMessage;
+struct OptionsUpdateMessage;
+struct KeybindsUpdateMessage;
+struct SetClientOptionsMessage;
+struct PlayerUpdateMessage;
 struct GameAccountRequest;
 struct RemoveCharacterRequest;
 struct WouldNameDuplicateRequest;
@@ -30,6 +35,11 @@ class GameDBSyncHandler final : public EventProcessor
     void dispatch(SEGSEvent *ev) override;
     void on_character_update(CharacterUpdateMessage *msg);
     void on_costume_update(CostumeUpdateMessage *msg);
+    void on_gui_update(GuiUpdateMessage *msg);
+    void on_options_update(OptionsUpdateMessage* msg);
+    void on_keybinds_update(KeybindsUpdateMessage* msg);
+    void on_player_update(PlayerUpdateMessage* msg);
+    void on_client_options_update(SetClientOptionsMessage* msg);
     void on_account_request(GameAccountRequest *msg);
     void on_character_remove(RemoveCharacterRequest *msg);
     void on_check_name_clash(WouldNameDuplicateRequest *ev);

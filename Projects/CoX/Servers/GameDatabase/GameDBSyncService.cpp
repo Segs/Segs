@@ -2,6 +2,16 @@
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/MessageBus.h"
 #include "Common/Servers/InternalEvents.h"
+#include "GameData/serialization_common.h"
+#include "GameDBSyncEvents.h"
+#include "Character.h"
+#include "GameData/chardata_serializers.h"
+#include "GameData/entitydata_serializers.h"
+#include "GameData/playerdata_definitions.h"
+#include "GameData/playerdata_serializers.h"
+#include "GameData/gui_serializers.h"
+#include "GameData/keybind_serializers.h"
+#include "GameData/clientoptions_serializers.h"
 
 bool GameDBSyncService::per_thread_setup()
 {
@@ -51,4 +61,106 @@ void GameDBSyncService::on_update_timer(const ACE_Time_Value &tick_timer)
             }
         }
     }
+}
+
+void GameDBSyncService::sendGuiUpdateToHandler(const Entity& e)
+{
+    QString cerealizedGuiData;
+    serializeToQString(e.m_player->m_gui, cerealizedGuiData);
+
+    GuiUpdateMessage* msg = new GuiUpdateMessage(
+                GuiUpdateData({
+                                       e.m_char->getAccountId(),
+                                       cerealizedGuiData
+                                   }), (uint64_t)1);
+
+    m_db_handler->putq(msg);
+    delete msg;
+}
+
+void GameDBSyncService::sendOptionsUpdateToHandler(const Entity& e)
+{
+    QString cerealizedOptionsData;
+    serializeToQString(e.m_player->m_options, cerealizedOptionsData);
+
+    OptionsUpdateMessage* msg = new OptionsUpdateMessage(
+                OptionsUpdateData({
+                                       e.m_char->getAccountId(),
+                                       cerealizedOptionsData
+                                   }), (uint64_t)1);
+
+    m_db_handler->putq(msg);
+    delete msg;
+}
+
+void GameDBSyncService::sendKeybindsUpdateToHandler(const Entity& e)
+{
+    QString cerealizedKeybindsData;
+    serializeToQString(e.m_player->m_keybinds, cerealizedKeybindsData);
+
+    KeybindsUpdateMessage* msg = new KeybindsUpdateMessage(
+                KeybindsUpdateData({
+                                       e.m_char->getAccountId(),
+                                       cerealizedKeybindsData
+                                   }), (uint64_t)1);
+
+    m_db_handler->putq(msg);
+    delete msg;
+}
+
+void GameDBSyncService::sendPlayerUpdateToHandler(const Entity& e)
+{
+    QString cerealizedPlayerData;
+
+    PlayerData playerData = PlayerData({
+                e.m_player->m_gui,
+                e.m_player->m_keybinds,
+                e.m_player->m_options
+                });
+
+    serializeToQString(playerData, cerealizedPlayerData);
+
+    PlayerUpdateMessage* msg = new PlayerUpdateMessage(
+                PlayerUpdateData({
+                                     e.m_char->getAccountId(),
+                                     cerealizedPlayerData
+                                 }), (uint64_t)1);
+
+    m_db_handler->putq(msg);
+    delete msg;
+}
+
+void GameDBSyncService::sendCharacterUpdateToHandler(const Entity& e)
+{
+    QString cerealizedCharData, cerealizedEntityData, cerealizedPlayerData;
+
+    PlayerData playerData = PlayerData({
+                e.m_player->m_gui,
+                e.m_player->m_keybinds,
+                e.m_player->m_options
+                });
+
+    serializeToQString(e.m_char->m_char_data, cerealizedCharData);
+    serializeToQString(e.m_entity_data, cerealizedEntityData);
+    serializeToQString(playerData, cerealizedPlayerData);
+
+    CharacterUpdateMessage* msg = new CharacterUpdateMessage(
+                CharacterUpdateData({
+                                        e.m_char->getName(),
+
+                                        // cerealized blobs
+                                        cerealizedCharData,
+                                        cerealizedEntityData,
+                                        cerealizedPlayerData,
+
+                                        // plain values
+                                        e.m_char->getCurrentCostume()->m_body_type,
+                                        e.m_char->getCurrentCostume()->m_height,
+                                        e.m_char->getCurrentCostume()->m_physique,
+                                        e.m_supergroup.m_SG_id,
+                                        e.m_char->getAccountId()
+        }), (uint64_t)1);
+
+    m_db_handler->putq(msg);
+    delete msg;
 }

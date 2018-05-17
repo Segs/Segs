@@ -25,6 +25,11 @@ public:
     void startup();
     void on_update_timer(const ACE_Time_Value &tick_timer);
     void set_db_handler(uint8_t id);
+    void sendGuiUpdateToHandler(const Entity& e);
+    void sendOptionsUpdateToHandler(const Entity& e);
+    void sendKeybindsUpdateToHandler(const Entity& e);
+    void sendPlayerUpdateToHandler(const Entity& e);
+    void sendCharacterUpdateToHandler(const Entity& e);
 };
 
 #endif // GAMEDBSYNCSERVICE_H

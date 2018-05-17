@@ -79,6 +79,37 @@ void GameDBSyncHandler::on_costume_update(CostumeUpdateMessage *msg)
     db_ctx.performUpdate(msg->m_data);
 }
 
+void GameDBSyncHandler::on_gui_update(GuiUpdateMessage *msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.performUpdate(msg->m_data);
+}
+
+
+void GameDBSyncHandler::on_options_update(OptionsUpdateMessage *msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.performUpdate(msg->m_data);
+}
+
+void GameDBSyncHandler::on_keybinds_update(KeybindsUpdateMessage *msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.performUpdate(msg->m_data);
+}
+
+void GameDBSyncHandler::on_player_update(PlayerUpdateMessage *msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.performUpdate(msg->m_data);
+}
+
+void GameDBSyncHandler::on_client_options_update(SetClientOptionsMessage *msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.updateClientOptions(msg->m_data);
+}
+
 void GameDBSyncHandler::on_account_request(GameAccountRequest *msg)
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
