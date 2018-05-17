@@ -87,7 +87,7 @@ struct CharacterUpdateData
     float    m_height;
     float    m_physique;
     uint32_t m_supergroup_id;
-    uint32_t m_id;
+    uint64_t m_id;
 };
 ONE_WAY_MESSAGE(CharacterUpdate)
 

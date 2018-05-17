@@ -166,7 +166,7 @@ void GameDBSyncService::sendCharacterUpdateToHandler(const Entity* e)
                                         e->m_char->getCurrentCostume()->m_body_type,
                                         e->m_char->getCurrentCostume()->m_height,
                                         e->m_char->getCurrentCostume()->m_physique,
-                                        e->m_supergroup.m_SG_id,
+                                        (uint32_t)e->m_supergroup.m_SG_id,
                                         e->m_char->getAccountId()
         }), (uint64_t)1);
 
