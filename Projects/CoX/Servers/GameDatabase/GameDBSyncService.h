@@ -22,7 +22,6 @@ private:
 
 public:
     GameDBSyncService(EntityManager& em) : ref_entity_mgr(em) {}
-    void startup();
     void addPlayer(Entity* e);
     void on_update_timer(const ACE_Time_Value &tick_timer);
     void set_db_handler(uint8_t id);

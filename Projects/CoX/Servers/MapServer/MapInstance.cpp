@@ -159,6 +159,7 @@ void MapInstance::start(const QString &scenegraph_path)
     // create a GameDbSyncService
     m_sync_service = new GameDBSyncService(m_entities);
     m_sync_service->set_db_handler(m_game_server_id);
+    m_sync_service->activate();
 
     m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
@@ -698,6 +699,7 @@ void MapInstance::on_timeout(TimerEvent *ev)
     switch (timer_id) {
         case World_Update_Timer:
             m_world->update(ev->arrival_time());
+            m_sync_service->on_update_timer(ev->arrival_time());
             break;
         case State_Transmit_Timer:
             sendState();

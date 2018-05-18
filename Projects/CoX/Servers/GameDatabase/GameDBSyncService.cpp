@@ -35,10 +35,6 @@ void GameDBSyncService::dispatch(SEGSEvent *ev)
     }
 }
 
-void GameDBSyncService::startup()
-{
-}
-
 void GameDBSyncService::set_db_handler(const uint8_t id)
 {
     m_db_handler = static_cast<GameDBSyncHandler*>(
@@ -59,15 +55,29 @@ void GameDBSyncService::on_update_timer(const ACE_Time_Value &tick_timer)
         // update the player characters in DB every n seconds
         if ((int)tick_timer.sec() % m_update_interval == 0)
         {
-            switch(e->m_db_store_flags)
+            // These are ordered based on how much data is sent depending on those flags
+            if (e->m_db_store_flags & uint32_t(DbStoreFlags::Full))
             {
-            case (uint32_t)DbStoreFlags::Gui: sendGuiUpdateToHandler(e); break;
-            case (uint32_t)DbStoreFlags::Options: sendOptionsUpdateToHandler(e); break;
-            case (uint32_t)DbStoreFlags::Keybinds: sendKeybindsUpdateToHandler(e); break;
-            case (uint32_t)DbStoreFlags::PlayerData: sendPlayerUpdateToHandler(e); break;
-            case (uint32_t)DbStoreFlags::Full: sendCharacterUpdateToHandler(e); break;
-            default: break;
+                sendCharacterUpdateToHandler(e);
+                continue;
             }
+
+            // Full character update and PlayerData update encompass Gui, Options and Keybinds already
+            // And so, we should just not check for the three below anymore if this is true
+            if (e->m_db_store_flags & uint32_t(DbStoreFlags::PlayerData))
+            {
+                sendPlayerUpdateToHandler(e);
+                continue;
+            }
+
+            if (e->m_db_store_flags & uint32_t(DbStoreFlags::Gui))
+                sendGuiUpdateToHandler(e);
+
+            if (e->m_db_store_flags & uint32_t(DbStoreFlags::Options))
+                sendOptionsUpdateToHandler(e);
+
+            if (e->m_db_store_flags & uint32_t(DbStoreFlags::Keybinds))
+                sendKeybindsUpdateToHandler(e);
         }
     }
 }
