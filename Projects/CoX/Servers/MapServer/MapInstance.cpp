@@ -55,12 +55,14 @@ namespace
         State_Transmit_Timer = 2,
         Session_Reaper_Timer   = 3,
         Link_Idle_Timer   = 4,
+        Sync_Service_Update_Timer = 5
     };
 
     const ACE_Time_Value reaping_interval(0,1000*1000);
     const ACE_Time_Value link_is_stale_if_disconnected_for(0,5*1000*1000);
     const ACE_Time_Value link_update_interval(0,500*1000);
     const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
+    const ACE_Time_Value sync_service_update_interval(0, 30000*1000);
     const ACE_Time_Value resend_interval(0,250*1000);
     const ACE_Time_Value maximum_time_without_packets(2,0);
     const constexpr int MinPacketsToAck=5;
@@ -164,6 +166,7 @@ void MapInstance::start(const QString &scenegraph_path)
     m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
     m_link_timer.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
+    m_sync_service_timer.reset(new SEGSTimer(this,(void *)Sync_Service_Update_Timer,sync_service_update_interval,false));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
 }
 
@@ -201,6 +204,10 @@ MapInstance::~MapInstance()
 {
     delete m_world;
     delete m_endpoint;
+
+    // one last update on entities before termination of MapInstance, and in turn the SyncService as well
+    m_sync_service->updateEntities();
+    delete m_sync_service;
 }
 
 void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*ev*/)
@@ -699,7 +706,6 @@ void MapInstance::on_timeout(TimerEvent *ev)
     switch (timer_id) {
         case World_Update_Timer:
             m_world->update(ev->arrival_time());
-            m_sync_service->on_update_timer(ev->arrival_time());
             break;
         case State_Transmit_Timer:
             sendState();
@@ -709,6 +715,9 @@ void MapInstance::on_timeout(TimerEvent *ev)
             break;
         case Session_Reaper_Timer:
             reap_stale_links();
+            break;
+        case Sync_Service_Update_Timer:
+            m_sync_service->updateEntities();
             break;
     }
 }

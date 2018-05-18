@@ -44,6 +44,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
+        std::unique_ptr<SEGSTimer> m_sync_service_timer;
         std::vector<glm::mat4>  m_new_player_spawns;
         World *                 m_world;
         GameDBSyncService*      m_sync_service;

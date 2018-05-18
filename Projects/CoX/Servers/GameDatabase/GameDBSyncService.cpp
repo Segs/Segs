@@ -50,39 +50,47 @@ void GameDBSyncService::on_update_timer(const ACE_Time_Value &tick_timer)
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_entity_mgr.getEntitiesMutex());
 
+    // update the player characters in DB every n seconds
+    if ((int)tick_timer.sec() % m_update_interval == 0)
+        updateEntities();
+}
+
+void GameDBSyncService::on_destroy()
+{
+    updateEntities();
+}
+
+void GameDBSyncService::updateEntities()
+{
     for(Entity * e : ref_entity_mgr.m_live_entlist)
     {
-        // update the player characters in DB every n seconds
-        if ((int)tick_timer.sec() % m_update_interval == 0)
+        // These are ordered based on how much data is sent depending on those flags
+        if (e->m_db_store_flags & uint32_t(DbStoreFlags::Full))
         {
-            // These are ordered based on how much data is sent depending on those flags
-            if (e->m_db_store_flags & uint32_t(DbStoreFlags::Full))
-            {
-                sendCharacterUpdateToHandler(e);
-                continue;
-            }
-
-            // Full character update and PlayerData update encompass Gui, Options and Keybinds already
-            // And so, we should just not check for the three below anymore if this is true
-            if (e->m_db_store_flags & uint32_t(DbStoreFlags::PlayerData))
-            {
-                sendPlayerUpdateToHandler(e);
-                continue;
-            }
-
-            if (e->m_db_store_flags & uint32_t(DbStoreFlags::Gui))
-                sendGuiUpdateToHandler(e);
-
-            if (e->m_db_store_flags & uint32_t(DbStoreFlags::Options))
-                sendOptionsUpdateToHandler(e);
-
-            if (e->m_db_store_flags & uint32_t(DbStoreFlags::Keybinds))
-                sendKeybindsUpdateToHandler(e);
+            sendCharacterUpdateToHandler(e);
+            continue;
         }
+
+        // Full character update and PlayerData update encompass Gui, Options and Keybinds already
+        // And so, we should just not check for the three below anymore if this is true
+        if (e->m_db_store_flags & uint32_t(DbStoreFlags::PlayerData))
+        {
+            sendPlayerUpdateToHandler(e);
+            continue;
+        }
+
+        if (e->m_db_store_flags & uint32_t(DbStoreFlags::Gui))
+            sendGuiUpdateToHandler(e);
+
+        if (e->m_db_store_flags & uint32_t(DbStoreFlags::Options))
+            sendOptionsUpdateToHandler(e);
+
+        if (e->m_db_store_flags & uint32_t(DbStoreFlags::Keybinds))
+            sendKeybindsUpdateToHandler(e);
     }
 }
 
-void GameDBSyncService::sendGuiUpdateToHandler(const Entity* e)
+void GameDBSyncService::sendGuiUpdateToHandler(Entity* e)
 {
     QString cerealizedGuiData;
     serializeToQString(e->m_player->m_gui, cerealizedGuiData);
@@ -95,9 +103,10 @@ void GameDBSyncService::sendGuiUpdateToHandler(const Entity* e)
 
     m_db_handler->putq(msg);
     delete msg;
+    e->m_db_store_flags |= uint32_t(0);
 }
 
-void GameDBSyncService::sendOptionsUpdateToHandler(const Entity* e)
+void GameDBSyncService::sendOptionsUpdateToHandler(Entity* e)
 {
     QString cerealizedOptionsData;
     serializeToQString(e->m_player->m_options, cerealizedOptionsData);
@@ -110,9 +119,10 @@ void GameDBSyncService::sendOptionsUpdateToHandler(const Entity* e)
 
     m_db_handler->putq(msg);
     delete msg;
+    e->m_db_store_flags |= uint32_t(0);
 }
 
-void GameDBSyncService::sendKeybindsUpdateToHandler(const Entity* e)
+void GameDBSyncService::sendKeybindsUpdateToHandler(Entity* e)
 {
     QString cerealizedKeybindsData;
     serializeToQString(e->m_player->m_keybinds, cerealizedKeybindsData);
@@ -125,9 +135,10 @@ void GameDBSyncService::sendKeybindsUpdateToHandler(const Entity* e)
 
     m_db_handler->putq(msg);
     delete msg;
+    e->m_db_store_flags |= uint32_t(0);
 }
 
-void GameDBSyncService::sendPlayerUpdateToHandler(const Entity* e)
+void GameDBSyncService::sendPlayerUpdateToHandler(Entity* e)
 {
     QString cerealizedPlayerData;
 
@@ -147,9 +158,10 @@ void GameDBSyncService::sendPlayerUpdateToHandler(const Entity* e)
 
     m_db_handler->putq(msg);
     delete msg;
+    e->m_db_store_flags |= uint32_t(0);
 }
 
-void GameDBSyncService::sendCharacterUpdateToHandler(const Entity* e)
+void GameDBSyncService::sendCharacterUpdateToHandler(Entity* e)
 {
     QString cerealizedCharData, cerealizedEntityData, cerealizedPlayerData;
 
@@ -182,4 +194,5 @@ void GameDBSyncService::sendCharacterUpdateToHandler(const Entity* e)
 
     m_db_handler->putq(msg);
     delete msg;
+    e->m_db_store_flags |= uint32_t(0);
 }
