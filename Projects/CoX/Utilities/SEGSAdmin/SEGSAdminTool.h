@@ -21,11 +21,11 @@ class SEGSAdminTool : public QMainWindow
     Q_OBJECT
     class AddNewUserDialog *m_add_user_dialog;
     class GenerateConfigFileDialog *m_generate_config_dialog;
+    class SetUpData *m_set_up_data;
 
 public:
     explicit SEGSAdminTool(QWidget *parent = nullptr);
     ~SEGSAdminTool();
-
 
 public slots:
     void commit_user(QString username, QString password, QString acclevel);
@@ -39,12 +39,15 @@ public slots:
     void read_config_file(QString filePath);
     void check_for_config_file();
     void save_changes_config_file();
+    void check_data_and_dir();
+    void send_maps_dir();
 
 signals:
     void readyToRead(QString filePath);
     void checkForConfigFile();
     void checkForDB(bool on_startup);
     void addAdminUser();
+    void sendMapsDir(QString maps_dir);
 
 
 public slots:

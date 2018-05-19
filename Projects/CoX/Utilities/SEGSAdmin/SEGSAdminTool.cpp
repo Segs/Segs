@@ -14,15 +14,17 @@
 #include "ui_SEGSAdminTool.h"
 #include "AddNewUserDialog.h"
 #include "GenerateConfigFileDialog.h"
+#include "SetUpData.h"
+#include "Globals.h"
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
 #include <QFileInfo>
 #include <QFile>
-#include <QFileDialog>
 #include <QApplication>
 #include <QSettings>
 #include <QMessageBox>
+#include <QDir>
 #include <iostream>
 
 SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
@@ -41,7 +43,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     // GenerateConfigFileDialog Signals/Slots
     m_generate_config_dialog = new GenerateConfigFileDialog;
     connect(m_generate_config_dialog,&GenerateConfigFileDialog::sendInputConfigFile,this,&SEGSAdminTool::generate_default_config_file);
-    connect(ui->gen_config_file,&QPushButton::clicked,m_generate_config_dialog,&GenerateConfigFileDialog::on_generate_config_file);
+    connect(ui->gen_config_file,&QPushButton::clicked,m_generate_config_dialog,&GenerateConfigFileDialog::on_generate_config_file);    
     // Local Signals/Slots
     connect(ui->runDBTool,&QPushButton::clicked,this,&SEGSAdminTool::check_db_exist);
     connect(this,&SEGSAdminTool::checkForDB,this,&SEGSAdminTool::check_db_exist);
@@ -51,14 +53,49 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(this,&SEGSAdminTool::checkForConfigFile,this,&SEGSAdminTool::check_for_config_file);
     connect(ui->settings_buttonBox,&QDialogButtonBox::accepted,this,&SEGSAdminTool::save_changes_config_file);
     connect(ui->logging_buttonBox,&QDialogButtonBox::accepted,this,&SEGSAdminTool::save_changes_config_file);
+    // SetUpData Signals/Slots
+    m_set_up_data = new SetUpData;
+    connect(ui->set_up_data_button,&QPushButton::clicked,m_set_up_data,&SetUpData::open_data_dialog);
+    connect(m_set_up_data,&SetUpData::dataSetupComplete,this,&SEGSAdminTool::check_data_and_dir);
+    connect(m_set_up_data,&SetUpData::getMapsDir,this,&SEGSAdminTool::send_maps_dir);
+    connect(this,&SEGSAdminTool::sendMapsDir,m_set_up_data,&SetUpData::create_default_directory);
     // Send startup signals
     emit checkForConfigFile();
     emit check_db_exist(true);
+    emit check_data_and_dir();
 }
 
 SEGSAdminTool::~SEGSAdminTool()
 {
     delete ui;
+}
+
+void SEGSAdminTool::check_data_and_dir() // Checks for data sub dirs and maps dir
+{
+    QStringList data_dirs = {"data/bin","data/geobin","data/object_library"}; // Currently only checking for these 3 sub dirs, check for all files could be overkill
+    bool all_maps_exist = true;
+    for(const QString &map_name : g_map_names)
+    {
+        all_maps_exist &= QDir(ui->map_location->text()+"/"+map_name).exists();
+        if(!all_maps_exist)
+            break; // at least one map dir is missing, we can finish early
+    }
+    bool all_data_dirs_exist = true;
+    for(const QString &data_dir : data_dirs)
+    {
+        all_data_dirs_exist &= QDir(data_dir).exists();
+        if(!all_data_dirs_exist)
+            break; // at least one map dir is missing, we can finish early
+    }
+    if(all_data_dirs_exist && all_maps_exist)
+    {
+        ui->icon_status_data->setText("<html><head/><body><p><img src=':/icons/icon_good.png'/></p></body></html>");
+    }
+    else
+    {
+        ui->icon_status_data->setText("<html><head/><body><p><img src=':/icons/icon_warning.png'/></p></body></html>");
+    }
+
 }
 
 void SEGSAdminTool::commit_user(QString username, QString password, QString acclevel)
@@ -70,13 +107,9 @@ void SEGSAdminTool::commit_user(QString username, QString password, QString accl
     qApp->processEvents();
     qDebug() << "Setting arguments...";
     QString program = "dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
-    #ifdef Q_OS_LINUX
+    #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
     program.prepend("./");
     #endif
-    #ifdef Q_OS_MACOS // Adding this to satisfy Travis-CI build, not tested
-    program.prepend("./");
-    #endif
-
     m_createUser = new QProcess(this);
     m_createUser->start(program);
 
@@ -100,7 +133,7 @@ void SEGSAdminTool::commit_user(QString username, QString password, QString accl
     }
 }
 
-void SEGSAdminTool::read_createuser() // Not currently working with xterm/gnome-terminal
+void SEGSAdminTool::read_createuser()
 {
     QByteArray out_err = m_createUser->readAllStandardError();
     QByteArray out_std = m_createUser->readAllStandardOutput();
@@ -175,13 +208,9 @@ void SEGSAdminTool::create_databases(bool overwrite)
     {
         program.append(" -f");
     }
-    #ifdef Q_OS_LINUX
+    #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
     program.prepend("./");
     #endif
-    #ifdef Q_OS_MACOS // Adding this to satisfy Travis-CI build, not tested
-    program.prepend("./");
-    #endif
-
     m_createDB = new QProcess(this);
     m_createDB->start(program);
 
@@ -209,7 +238,7 @@ void SEGSAdminTool::create_databases(bool overwrite)
     }
 }
 
-void SEGSAdminTool::read_createDB() // Not currently working with xterm/gnome-terminal
+void SEGSAdminTool::read_createDB()
 {
     QByteArray out_err = m_createDB->readAllStandardError();
     QByteArray out_std = m_createDB->readAllStandardOutput();
@@ -231,13 +260,9 @@ void SEGSAdminTool::start_auth_server()
     ui->output->appendPlainText("Setting arguments...");
     qApp->processEvents();
     QString program = "authserver";
-    #ifdef Q_OS_LINUX
+    #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
     program.prepend("./");
     #endif
-    #ifdef Q_OS_MACOS
-    program.prepend("./");
-    #endif
-
     m_start_auth_server = new QProcess(this);
     m_start_auth_server->start(program);
 
@@ -284,8 +309,6 @@ void SEGSAdminTool::start_auth_server()
 
 }
 
-// Not currently working with xterm/gnome-terminal
-// Some problem with reading large output
 void SEGSAdminTool::read_authserver()
 {
     QByteArray out_err = m_start_auth_server->readAllStandardError();
@@ -329,6 +352,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
         ui->icon_status_config->setText("<html><head/><body><p><img src=':/icons/icon_good.png'/></p></body></html>");
         ui->gen_config_file->setEnabled(false);
         ui->runDBTool->setEnabled(true);
+        ui->set_up_data_button->setEnabled(true);
         ui->tab_settings->setEnabled(true);
         ui->tab_logging->setEnabled(true);
         emit readyToRead(config_file_path);
@@ -339,6 +363,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
         ui->icon_status_config->setText("<html><head/><body><p><img src=':/icons/icon_warning.png'/></p></body></html>");
         ui->runDBTool->setEnabled(false); // Cannot create DB without settings.cfg
         ui->createUser->setEnabled(false); // Cannot create user without settings.cfg
+        ui->set_up_data_button->setEnabled(false); // Shouldn't create data before config file exists
         ui->tab_settings->setEnabled(false);
         ui->tab_logging->setEnabled(false);
 
@@ -550,6 +575,13 @@ void SEGSAdminTool::save_changes_config_file()
     config_file_write.sync();
     ui->output->appendPlainText("** Settings Saved **");
     emit checkForConfigFile();
+    emit check_data_and_dir();
+}
+
+void SEGSAdminTool::send_maps_dir()
+{
+    QString maps_dir = ui->map_location->text();
+    emit sendMapsDir(maps_dir);
 }
 
 //!@}

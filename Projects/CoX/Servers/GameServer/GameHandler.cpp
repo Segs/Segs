@@ -351,7 +351,19 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
 
     GameAccountResponseCharacterData *selected_slot = &session.m_game_account.get_character(ev->m_character_index);
     CharacterData cd;
-    serializeFromQString(cd,selected_slot->m_serialized_chardata);
+    try
+    {
+        serializeFromQString(cd,selected_slot->m_serialized_chardata);
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
+
     QString map_path = cd.m_mapName;
     switch(ev->m_mapnumber)
     {

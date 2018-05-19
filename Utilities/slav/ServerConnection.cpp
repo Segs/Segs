@@ -36,6 +36,8 @@ void ServerConnection::onRequestManifest(const QString &manifestname) {
 
 void ServerConnection::onRequestFileList(const QString & base_path, const QStringList & files)
 {
+    Q_UNUSED(base_path);
+    Q_UNUSED(files);
     assert(false);
 }
 

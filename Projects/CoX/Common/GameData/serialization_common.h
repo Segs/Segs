@@ -30,23 +30,34 @@ void commonSaveTo(const T & target, const char *classname, const QString & baseN
         target_fname = baseName + ".crl.bin";
     std::ostringstream tgt;
     QFile  tgt_fle(target_fname);
-    if(text_format) {
-        cereal::JSONOutputArchive ar( tgt );
-        ar(cereal::make_nvp(classname,target));
-        if(!tgt_fle.open(QFile::WriteOnly|QFile::Text)) {
-            qCritical() << "Failed to open"<<target_fname<<"in write mode";
-            return;
+    try
+    {
+        if(text_format) {
+            cereal::JSONOutputArchive ar( tgt );
+            ar(cereal::make_nvp(classname,target));
+            if(!tgt_fle.open(QFile::WriteOnly|QFile::Text)) {
+                qCritical() << "Failed to open"<<target_fname<<"in write mode";
+                return;
+            }
         }
-    }
-    else {
-        cereal::BinaryOutputArchive ar( tgt );
-        ar(cereal::make_nvp(classname,target));
-        if(!tgt_fle.open(QFile::WriteOnly)) {
-            qCritical() << "Failed to open"<<target_fname<<"in write mode";
-            return;
+        else {
+            cereal::BinaryOutputArchive ar( tgt );
+            ar(cereal::make_nvp(classname,target));
+            if(!tgt_fle.open(QFile::WriteOnly)) {
+                qCritical() << "Failed to open"<<target_fname<<"in write mode";
+                return;
+            }
         }
+        tgt_fle.write(tgt.str().c_str(),tgt.str().size());
     }
-    tgt_fle.write(tgt.str().c_str(),tgt.str().size());
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 template<class T>
@@ -61,8 +72,19 @@ bool commonReadFrom(const QString &crl_path,const char *classname, T &target) {
 
         std::istringstream istr(ifl.readAll().toStdString());
 
-        cereal::JSONInputArchive arc(istr);
-        arc(cereal::make_nvp(classname,target));
+        try
+        {
+            cereal::JSONInputArchive arc(istr);
+            arc(cereal::make_nvp(classname,target));
+        }
+        catch(cereal::RapidJSONException &e)
+        {
+            qWarning() << e.what();
+        }
+        catch (std::exception &e)
+        {
+            qCritical() << e.what();
+        }
     }
     else if(crl_path.endsWith(".crl.bin"))
     {
@@ -73,8 +95,19 @@ bool commonReadFrom(const QString &crl_path,const char *classname, T &target) {
         }
         std::istringstream istr(ifl.readAll().toStdString());
 
-        cereal::BinaryInputArchive arc(istr);
-        arc(cereal::make_nvp(classname,target));
+        try
+        {
+            cereal::BinaryInputArchive arc(istr);
+            arc(cereal::make_nvp(classname,target));
+        }
+        catch(cereal::RapidJSONException &e)
+        {
+            qWarning() << e.what();
+        }
+        catch (std::exception &e)
+        {
+            qCritical() << e.what();
+        }
     }
     else {
         qWarning() << "Invalid serialized data extension in" <<crl_path;

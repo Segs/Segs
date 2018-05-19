@@ -37,31 +37,53 @@ namespace
 
 void serializeto(const CostumePart &part, BitStream &bs,const ColorAndPartPacker *packingContext )
 {
-    packingContext->packPartname(part.m_geometry,bs);
-    packingContext->packPartname(part.m_texture_1,bs);
-    packingContext->packPartname(part.m_texture_2,bs);
-    packingContext->packColor(part.m_colors[0],bs);
-    packingContext->packColor(part.m_colors[1],bs);
-    if(part.m_full_part)
+    try
     {
-        packingContext->packPartname(part.name_3,bs);
-        packingContext->packPartname(part.name_4,bs);
-        packingContext->packPartname(part.name_5,bs);
+        packingContext->packPartname(part.m_geometry,bs);
+        packingContext->packPartname(part.m_texture_1,bs);
+        packingContext->packPartname(part.m_texture_2,bs);
+        packingContext->packColor(part.m_colors[0],bs);
+        packingContext->packColor(part.m_colors[1],bs);
+        if(part.m_full_part)
+        {
+            packingContext->packPartname(part.name_3,bs);
+            packingContext->packPartname(part.name_4,bs);
+            packingContext->packPartname(part.name_5,bs);
+        }
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
     }
 }
 
 void serializefrom(CostumePart &part,BitStream &bs,const ColorAndPartPacker *packingContext )
 {
-    packingContext->unpackPartname(bs,part.m_geometry);
-    packingContext->unpackPartname(bs,part.m_texture_1);
-    packingContext->unpackPartname(bs,part.m_texture_2);
-    packingContext->unpackColor(bs,part.m_colors[0]);
-    packingContext->unpackColor(bs,part.m_colors[1]);
-    if(part.m_full_part)
+    try
     {
-        packingContext->unpackPartname(bs,part.name_3);
-        packingContext->unpackPartname(bs,part.name_4);
-        packingContext->unpackPartname(bs,part.name_5);
+        packingContext->unpackPartname(bs,part.m_geometry);
+        packingContext->unpackPartname(bs,part.m_texture_1);
+        packingContext->unpackPartname(bs,part.m_texture_2);
+        packingContext->unpackColor(bs,part.m_colors[0]);
+        packingContext->unpackColor(bs,part.m_colors[1]);
+        if(part.m_full_part)
+        {
+            packingContext->unpackPartname(bs,part.name_3);
+            packingContext->unpackPartname(bs,part.name_4);
+            packingContext->unpackPartname(bs,part.name_5);
+        }
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
     }
 }
 
@@ -159,12 +181,24 @@ void serializeto(const Costume &costume,BitStream &bs,const ColorAndPartPacker *
     //m_num_parts = m_parts.size();
     assert(!costume.m_parts.empty());
     bs.StorePackedBits(4,costume.m_parts.size());
-    for(uint32_t costume_part=0; costume_part<costume.m_parts.size();costume_part++)
+
+    try
     {
-        CostumePart part=costume.m_parts[costume_part];
-        // TODO: this is bad code, it's purpose is to NOT send all part strings if m_non_default_costme_p is false
-        part.m_full_part = costume.m_non_default_costme_p;
-        ::serializeto(part,bs,packer);
+        for(uint32_t costume_part=0; costume_part<costume.m_parts.size();costume_part++)
+        {
+            CostumePart part=costume.m_parts[costume_part];
+            // TODO: this is bad code, it's purpose is to NOT send all part strings if m_non_default_costme_p is false
+            part.m_full_part = costume.m_non_default_costme_p;
+            ::serializeto(part,bs,packer);
+        }
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
     }
 }
 
@@ -178,12 +212,24 @@ void serializefrom(Costume &tgt, BitStream &src,const ColorAndPartPacker *packer
 
     tgt.m_non_default_costme_p = src.GetBits(1);
     tgt.m_num_parts = src.GetPackedBits(4);
-    for(int costume_part=0; costume_part<tgt.m_num_parts;costume_part++)
+
+    try
     {
-        CostumePart part;
-        part.m_full_part = tgt.m_non_default_costme_p;
-        ::serializefrom(part,src,packer);
-        tgt.m_parts.push_back(part);
+        for(int costume_part=0; costume_part<tgt.m_num_parts;costume_part++)
+        {
+            CostumePart part;
+            part.m_full_part = tgt.m_non_default_costme_p;
+            ::serializefrom(part,src,packer);
+            tgt.m_parts.push_back(part);
+        }
+    }
+    catch(cereal::RapidJSONException &e)
+    {
+        qWarning() << e.what();
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
     }
 }
 

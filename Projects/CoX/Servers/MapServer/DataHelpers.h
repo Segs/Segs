@@ -41,6 +41,7 @@ void    setJumpHeight(Entity &e, float val);
 void    setUpdateID(Entity &e, uint8_t val);
 void    setTeamID(Entity &e, uint8_t team_id);
 void    setSuperGroup(Entity &e, int sg_id = 0, QString sg_name = "", uint32_t sg_rank = 3);
+void    setTarget(Entity &e, uint32_t target_idx);
 void    setAssistTarget(Entity &e);
 
 // For live debugging
