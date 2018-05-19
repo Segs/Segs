@@ -146,6 +146,10 @@ bool GameDbSyncContext::loadAndConfigure()
                 "height=:height, physique=:physique,"
                 "supergroup_id=:supergroup_id, player_data=:player_data "
                 "WHERE id=:id ");
+    prepQuery(*m_prepared_player_update,
+              "UPDATE characters SET "
+              "player_data=:player_data "
+              "WHERE id=:id ");
     prepQuery(*m_prepared_costume_update,
                 "UPDATE costume SET "
                 "costume_index=:costume_index, skin_color=:skin_color, parts=:parts "
