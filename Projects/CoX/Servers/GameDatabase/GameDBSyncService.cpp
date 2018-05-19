@@ -103,7 +103,7 @@ void GameDBSyncService::sendGuiUpdateToHandler(Entity* e)
 
     m_db_handler->putq(msg);
     delete msg;
-    e->m_db_store_flags |= uint32_t(0);
+    e->m_db_store_flags = uint32_t(0);
 }
 
 void GameDBSyncService::sendOptionsUpdateToHandler(Entity* e)
@@ -119,7 +119,7 @@ void GameDBSyncService::sendOptionsUpdateToHandler(Entity* e)
 
     m_db_handler->putq(msg);
     delete msg;
-    e->m_db_store_flags |= uint32_t(0);
+    e->m_db_store_flags = uint32_t(0);
 }
 
 void GameDBSyncService::sendKeybindsUpdateToHandler(Entity* e)
@@ -135,7 +135,7 @@ void GameDBSyncService::sendKeybindsUpdateToHandler(Entity* e)
 
     m_db_handler->putq(msg);
     delete msg;
-    e->m_db_store_flags |= uint32_t(0);
+    e->m_db_store_flags = uint32_t(0);
 }
 
 void GameDBSyncService::sendPlayerUpdateToHandler(Entity* e)
@@ -158,7 +158,7 @@ void GameDBSyncService::sendPlayerUpdateToHandler(Entity* e)
 
     m_db_handler->putq(msg);
     delete msg;
-    e->m_db_store_flags |= uint32_t(0);
+    e->m_db_store_flags = uint32_t(0);
 }
 
 void GameDBSyncService::sendCharacterUpdateToHandler(Entity* e)
@@ -194,5 +194,5 @@ void GameDBSyncService::sendCharacterUpdateToHandler(Entity* e)
 
     m_db_handler->putq(msg);
     delete msg;
-    e->m_db_store_flags |= uint32_t(0);
+    e->m_db_store_flags = uint32_t(0);
 }
