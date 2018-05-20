@@ -18,8 +18,8 @@
 class World
 {
 public:
-                        World(EntityManager &em, const MapConfig &map_config)
-                            : ref_ent_mager(em), m_map_config(map_config) {}
+                        World(EntityManager &em, const float player_fade_in)
+                            : ref_ent_mager(em), m_player_fade_in(player_fade_in) {}
         void            addPlayer(Entity *ent);
         void            update(const ACE_Time_Value &tick_timer);
         float           time_of_day() const { return m_time_of_day; }
@@ -30,7 +30,7 @@ protected:
         void            effectsStep(Entity *e, uint32_t msec);
         void            updateEntity(Entity *e, const ACE_Time_Value &dT);
         EntityManager & ref_ent_mager;
-        MapConfig       m_map_config;
+        float           m_player_fade_in;
         float           m_time_of_day = 8.0f; // hour of the day in 24h format, start at 8am
         ACE_Time_Value  prev_tick_time;
 };

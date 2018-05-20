@@ -85,7 +85,7 @@ void World::effectsStep(Entity *e,uint32_t msec)
             target = 1;
             start = 0;
         }
-        e->translucency = animateValue(e->translucency,start,target,m_map_config.m_player_fade_in,float(msec)/50.0f);
+        e->translucency = animateValue(e->translucency,start,target,m_player_fade_in,float(msec)/50.0f);
         if(std::abs(e->translucency-target)<std::numeric_limits<float>::epsilon())
             e->m_is_fading = false;
     }
