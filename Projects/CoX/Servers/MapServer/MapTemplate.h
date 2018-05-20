@@ -6,7 +6,6 @@
  */
 
 #pragma once
-#include "MapServer.h"
 #include "Servers/ServerEndpoint.h"
 
 #include <QString>
