@@ -53,4 +53,5 @@ public:
         Parse_AllKeyProfiles        m_keybind_profiles;
         Parse_AllCommandCategories  m_command_categories;
         NPCStorage                  m_npc_store;
+        float                       m_player_fade_in;
 };
