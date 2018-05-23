@@ -86,8 +86,8 @@ install:
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       sudo apt-get install -qq qt59base qt59declarative qt59quickcontrols2; source /opt/qt59/bin/qt59-env.sh;
     else
-      brew install qt5;
-      brew link --force qt5 && sudo ln -s /usr/local/Cellar/qt/5.10.1/mkspecs /usr/local/mkspecs && sudo ln -s /usr/local/Cellar/qt/5.10.1/plugins /usr/local/plugins;
+      brew install qt;
+      brew link --force qt && sudo ln -s /usr/local/Cellar/qt/5.10.1/mkspecs /usr/local/mkspecs && sudo ln -s /usr/local/Cellar/qt/5.10.1/plugins /usr/local/plugins;
     fi
 
 script:
