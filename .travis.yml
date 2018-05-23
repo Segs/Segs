@@ -93,6 +93,7 @@ install:
       QT5_CMAKE_PREFIX=$(ls -d $(brew --cellar)/qt/*/lib/cmake)
       CMAKE_OPTS="-DCMAKE_PREFIX_PATH=${QT5_CMAKE_PREFIX}"
     fi
+    export CMAKE_OPTS
   
 script:
   - mkdir build
