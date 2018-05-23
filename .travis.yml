@@ -88,10 +88,10 @@ install:
       sudo apt-get install -qq qt59base qt59declarative qt59quickcontrols2; source /opt/qt59/bin/qt59-env.sh;
     else
       brew install cppcheck qt$BREW;
-      bbrew link --force qt$BREW;
+      brew link --force qt$BREW;
     fi
 before_script:
-  - '[[ "$TRAVIS_OS_NAME" != linux ]] || . /opt/qt$QT/bin/qt$QT-env.sh'
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then . /opt/qt$QT/bin/qt$QT-env.sh; fi
   
 script:
   - mkdir build
