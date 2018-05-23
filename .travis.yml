@@ -91,7 +91,7 @@ install:
       brew link --force qt$BREW;
     fi
 before_script:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then . /opt/qt$QT/bin/qt$QT-env.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then /opt/qt$QT/bin/qt$QT-env.sh; fi
   
 script:
   - mkdir build
