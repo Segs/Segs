@@ -17,7 +17,7 @@ env:
     - CCACHE_TEMPDIR=/tmp/.ccache-temp
     - CCACHE_COMPRESS=1
     - CASHER_TIME_OUT=1000
-    - QT=510 BREW=@5.10
+    - QT=511
     
 addons_shortcuts:
   addons_clang50: &clang50
@@ -87,8 +87,8 @@ install:
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       sudo apt-get install -qq qt59base qt59declarative qt59quickcontrols2; source /opt/qt59/bin/qt59-env.sh;
     else
-      brew install cppcheck qt$BREW;
-      brew link --force qt$BREW;
+      brew install cppcheck qt;
+      brew link --force qt;
     fi
 before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then /opt/qt$QT/bin/qt$QT-env.sh; fi
