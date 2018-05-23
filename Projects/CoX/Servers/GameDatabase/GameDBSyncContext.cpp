@@ -221,28 +221,28 @@ bool GameDbSyncContext::performUpdate(const CostumeUpdateData &data)
 
 bool GameDbSyncContext::performUpdate(const GuiUpdateData &data)
 {
-    m_prepared_gui_update->bindValue(QStringLiteral(":id"), data.m_id);
+    m_prepared_gui_update->bindValue(QStringLiteral(":id"), QVariant::fromValue(data.m_id));
     m_prepared_gui_update->bindValue(QStringLiteral(":id"), data.m_gui);
     return doIt(*m_prepared_gui_update);
 }
 
 bool GameDbSyncContext::performUpdate(const OptionsUpdateData &data)
 {
-    m_prepared_options_only_update->bindValue(QStringLiteral(":id"), data.m_id);
+    m_prepared_options_only_update->bindValue(QStringLiteral(":id"), QVariant::fromValue(data.m_id));
     m_prepared_options_only_update->bindValue(QStringLiteral(":options"), data.m_options);
     return doIt(*m_prepared_options_only_update);
 }
 
 bool GameDbSyncContext::performUpdate(const KeybindsUpdateData &data)
 {
-    m_prepared_keybinds_update->bindValue(QStringLiteral(":id"), data.m_id);
+    m_prepared_keybinds_update->bindValue(QStringLiteral(":id"), QVariant::fromValue(data.m_id));
     m_prepared_keybinds_update->bindValue(QStringLiteral(":keybinds"), data.m_keybinds);
     return doIt(*m_prepared_keybinds_update);
 }
 
 bool GameDbSyncContext::performUpdate(const PlayerUpdateData &data)
 {
-    m_prepared_player_update->bindValue(QStringLiteral(":id"), data.m_id);
+    m_prepared_player_update->bindValue(QStringLiteral(":id"), QVariant::fromValue(data.m_id));
     m_prepared_player_update->bindValue(QStringLiteral(":player_data"), data.m_player_data);
     return doIt(*m_prepared_player_update);
 }
