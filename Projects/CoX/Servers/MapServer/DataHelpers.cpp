@@ -160,11 +160,6 @@ void charUpdateDB(Entity *e)
     markEntityForDbStore(e,DbStoreFlags::Full);
 }
 
-void charUpdateGUI(Entity *e)
-{
-    markEntityForDbStore(e,DbStoreFlags::Gui);
-}
-
 int getEntityOriginIndex(bool is_player, const QString &origin_name)
 {
     const MapServerData &data(g_GlobalMapServer->runtimeData());

@@ -133,9 +133,6 @@ bool GameDbSyncContext::loadAndConfigure()
     m_prepared_costume_update = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_get_char_slots = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_options_update = std::make_unique<QSqlQuery>(*m_db);
-    m_prepared_gui_update = std::make_unique<QSqlQuery>(*m_db);
-    m_prepared_options_only_update = std::make_unique<QSqlQuery>(*m_db);
-    m_prepared_keybinds_update = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_player_update = std::make_unique<QSqlQuery>(*m_db);
 
     // TO-DO: prepQuery for playerUpdate
@@ -155,18 +152,6 @@ bool GameDbSyncContext::loadAndConfigure()
                 "costume_index=:costume_index, skin_color=:skin_color, parts=:parts "
                 "WHERE character_id=:id ");
     prepQuery(*m_prepared_options_update,
-              "UPDATE characters SET "
-              "player_data=:player_data "
-              "WHERE id=:id ");
-    prepQuery(*m_prepared_gui_update,
-              "UPDATE characters SET "
-              "player_data=:player_data "
-              "WHERE id=:id ");
-    prepQuery(*m_prepared_options_only_update,
-              "UPDATE characters SET "
-              "player_data=:player_data "
-              "WHERE id=:id ");
-    prepQuery(*m_prepared_keybinds_update,
               "UPDATE characters SET "
               "player_data=:player_data "
               "WHERE id=:id ");
@@ -198,7 +183,7 @@ bool GameDbSyncContext::loadAndConfigure()
 
 bool GameDbSyncContext::performUpdate(const CharacterUpdateData &data)
 {
-    m_prepared_char_update->bindValue(QStringLiteral(":id"), quint64(data.m_id)); // for WHERE statement only
+    m_prepared_char_update->bindValue(QStringLiteral(":id"), data.m_id); // for WHERE statement only
     m_prepared_char_update->bindValue(QStringLiteral(":char_name"), data.m_char_name);
     m_prepared_char_update->bindValue(QStringLiteral(":chardata"), data.m_char_data);
     m_prepared_char_update->bindValue(QStringLiteral(":entitydata"), data.m_entitydata);
@@ -212,37 +197,16 @@ bool GameDbSyncContext::performUpdate(const CharacterUpdateData &data)
 
 bool GameDbSyncContext::performUpdate(const CostumeUpdateData &data)
 {
-    m_prepared_costume_update->bindValue(QStringLiteral(":id"), quint64(data.m_db_id)); // for WHERE statement only
+    m_prepared_costume_update->bindValue(QStringLiteral(":id"), uint32_t(data.m_db_id)); // for WHERE statement only
     m_prepared_costume_update->bindValue(QStringLiteral(":costume_index"), data.m_costume_index);
     m_prepared_costume_update->bindValue(QStringLiteral(":skin_color"), data.m_skin_color);
     m_prepared_costume_update->bindValue(QStringLiteral(":parts"), data.m_parts);
     return doIt(*m_prepared_costume_update);
 }
 
-bool GameDbSyncContext::performUpdate(const GuiUpdateData &data)
-{
-    m_prepared_gui_update->bindValue(QStringLiteral(":id"), quint64(data.m_id));
-    m_prepared_gui_update->bindValue(QStringLiteral(":id"), data.m_gui);
-    return doIt(*m_prepared_gui_update);
-}
-
-bool GameDbSyncContext::performUpdate(const OptionsUpdateData &data)
-{
-    m_prepared_options_only_update->bindValue(QStringLiteral(":id"), quint64(data.m_id));
-    m_prepared_options_only_update->bindValue(QStringLiteral(":options"), data.m_options);
-    return doIt(*m_prepared_options_only_update);
-}
-
-bool GameDbSyncContext::performUpdate(const KeybindsUpdateData &data)
-{
-    m_prepared_keybinds_update->bindValue(QStringLiteral(":id"), quint64(data.m_id));
-    m_prepared_keybinds_update->bindValue(QStringLiteral(":keybinds"), data.m_keybinds);
-    return doIt(*m_prepared_keybinds_update);
-}
-
 bool GameDbSyncContext::performUpdate(const PlayerUpdateData &data)
 {
-    m_prepared_player_update->bindValue(QStringLiteral(":id"), quint64(data.m_id));
+    m_prepared_player_update->bindValue(QStringLiteral(":id"), data.m_id);
     m_prepared_player_update->bindValue(QStringLiteral(":player_data"), data.m_player_data);
     return doIt(*m_prepared_player_update);
 }

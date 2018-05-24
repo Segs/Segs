@@ -78,61 +78,7 @@ void GameDBSyncService::updateEntities()
             sendPlayerUpdateToHandler(e);
             continue;
         }
-
-        if (e->m_db_store_flags & uint32_t(DbStoreFlags::Gui))
-            sendGuiUpdateToHandler(e);
-
-        if (e->m_db_store_flags & uint32_t(DbStoreFlags::Options))
-            sendOptionsUpdateToHandler(e);
-
-        if (e->m_db_store_flags & uint32_t(DbStoreFlags::Keybinds))
-            sendKeybindsUpdateToHandler(e);
     }
-}
-
-void GameDBSyncService::sendGuiUpdateToHandler(Entity* e)
-{
-    QString cerealizedGuiData;
-    serializeToQString(e->m_player->m_gui, cerealizedGuiData);
-
-    GuiUpdateMessage* msg = new GuiUpdateMessage(
-                GuiUpdateData({
-                                       e->m_char->getAccountId(),
-                                       cerealizedGuiData
-                                   }), (uint64_t)1);
-
-    m_db_handler->putq(msg);
-    unmarkEntityForDbStore(e, DbStoreFlags::Gui);
-}
-
-void GameDBSyncService::sendOptionsUpdateToHandler(Entity* e)
-{
-    QString cerealizedOptionsData;
-    serializeToQString(e->m_player->m_options, cerealizedOptionsData);
-
-    OptionsUpdateMessage* msg = new OptionsUpdateMessage(
-                OptionsUpdateData({
-                                       e->m_char->getAccountId(),
-                                       cerealizedOptionsData
-                                   }), (uint64_t)1);
-
-    m_db_handler->putq(msg);
-    unmarkEntityForDbStore(e, DbStoreFlags::Options);
-}
-
-void GameDBSyncService::sendKeybindsUpdateToHandler(Entity* e)
-{
-    QString cerealizedKeybindsData;
-    serializeToQString(e->m_player->m_keybinds, cerealizedKeybindsData);
-
-    KeybindsUpdateMessage* msg = new KeybindsUpdateMessage(
-                KeybindsUpdateData({
-                                       e->m_char->getAccountId(),
-                                       cerealizedKeybindsData
-                                   }), (uint64_t)1);
-
-    m_db_handler->putq(msg);
-    unmarkEntityForDbStore(e, DbStoreFlags::Keybinds);
 }
 
 void GameDBSyncService::sendPlayerUpdateToHandler(Entity* e)
@@ -149,7 +95,7 @@ void GameDBSyncService::sendPlayerUpdateToHandler(Entity* e)
 
     PlayerUpdateMessage* msg = new PlayerUpdateMessage(
                 PlayerUpdateData({
-                                     e->m_char->getAccountId(),
+                                     e->m_char->m_db_id,
                                      cerealizedPlayerData
                                  }), (uint64_t)1);
 
@@ -185,7 +131,7 @@ void GameDBSyncService::sendCharacterUpdateToHandler(Entity* e)
                                         e->m_char->getCurrentCostume()->m_height,
                                         e->m_char->getCurrentCostume()->m_physique,
                                         (uint32_t)e->m_supergroup.m_SG_id,
-                                        e->m_char->getAccountId()
+                                        e->m_char->m_db_id
         }), (uint64_t)1);
 
     m_db_handler->putq(msg);

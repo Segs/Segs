@@ -247,7 +247,6 @@ public:
         void                dump();
         void                addPosUpdate(const PosUpdate &p);
         void                addInterp(const PosUpdate &p);
-        bool                hasValidDbStoreFlag();
 
 static  void                sendAllyID(BitStream &bs);
 static  void                sendPvP(BitStream &bs);
@@ -261,10 +260,7 @@ static  void                sendPvP(BitStream &bs);
 
 enum class DbStoreFlags : uint32_t
 {
-    Gui        = 1,
-    Options    = 2,
-    Keybinds   = 4,
-    PlayerData = 7,
+    PlayerData = 1,
     Full       = ~0U,
 };
 

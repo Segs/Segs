@@ -87,7 +87,7 @@ struct CharacterUpdateData
     float    m_height;
     float    m_physique;
     uint32_t m_supergroup_id;
-    uint64_t m_id;
+    uint32_t m_id;
 };
 ONE_WAY_MESSAGE(CharacterUpdate)
 
@@ -249,30 +249,9 @@ struct SetClientOptionsData
 };
 ONE_WAY_MESSAGE(SetClientOptions)
 
-struct GuiUpdateData
-{
-    uint64_t m_id;
-    QString m_gui;
-};
-ONE_WAY_MESSAGE(GuiUpdate)
-
-struct OptionsUpdateData
-{
-    uint64_t m_id;
-    QString m_options;
-};
-ONE_WAY_MESSAGE(OptionsUpdate)
-
-struct KeybindsUpdateData
-{
-    uint64_t m_id;
-    QString m_keybinds;
-};
-ONE_WAY_MESSAGE(KeybindsUpdate)
-
 struct PlayerUpdateData
 {
-    uint64_t m_id;
+    uint32_t m_id;
     QString m_player_data;
 };
 ONE_WAY_MESSAGE(PlayerUpdate)

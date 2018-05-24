@@ -129,18 +129,6 @@ void Entity::addInterp(const PosUpdate & p) {
     interpResults.emplace_back(p);
 }
 
-bool Entity::hasValidDbStoreFlag()
-{
-    switch(m_db_store_flags)
-    {
-    case uint32_t(DbStoreFlags::Gui):
-    case uint32_t(DbStoreFlags::Options):
-    case uint32_t(DbStoreFlags::Keybinds):
-    case uint32_t(DbStoreFlags::PlayerData): return true;
-    default: return false;
-    }
-}
-
 Entity::Entity()
 {
 }

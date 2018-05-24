@@ -1827,7 +1827,7 @@ void MapInstance::on_client_options(SaveClientOptions * ev)
     //LinkBase * lnk = (LinkBase *)ev->src();
 
     Entity *ent = session.m_ent;
-    markEntityForDbStore(ent,DbStoreFlags::Options);
+    markEntityForDbStore(ent,DbStoreFlags::PlayerData);
     ent->m_player->m_options = ev->data;
 }
 
@@ -1906,7 +1906,8 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
     ent->m_player->m_gui.m_tray1_number = ev->tray1_num;
     ent->m_player->m_gui.m_tray2_number = ev->tray2_num;
     ent->m_player->m_gui.m_tray3_number = ev->tray_unk1;
-    ent->m_db_store_flags |= uint32_t(DbStoreFlags::PlayerData);
+    markEntityForDbStore(ent, DbStoreFlags::PlayerData);
+
     qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray1_num+1 << "Tray2:" << ev->tray2_num+1 << "Unk1:" << ev->tray_unk1;
     // TODO: need to load powers for new tray.
     qCWarning(logMapEvents) << "TODO: Need to load powers for new trays";

@@ -12,9 +12,6 @@ class QSqlQuery;
 
 struct CharacterUpdateData;
 struct CostumeUpdateData;
-struct GuiUpdateData;
-struct OptionsUpdateData;
-struct KeybindsUpdateData;
 struct PlayerUpdateData;
 struct GameAccountRequestData;
 struct GameAccountResponseData;
@@ -36,9 +33,6 @@ class GameDbSyncContext
     std::unique_ptr<QSqlDatabase> m_db;
     std::unique_ptr<QSqlQuery> m_prepared_char_update;
     std::unique_ptr<QSqlQuery> m_prepared_costume_update;
-    std::unique_ptr<QSqlQuery> m_prepared_gui_update;
-    std::unique_ptr<QSqlQuery> m_prepared_options_only_update;
-    std::unique_ptr<QSqlQuery> m_prepared_keybinds_update;
     std::unique_ptr<QSqlQuery> m_prepared_player_update;
     std::unique_ptr<QSqlQuery> m_prepared_account_select;
     std::unique_ptr<QSqlQuery> m_prepared_account_insert;
@@ -59,9 +53,6 @@ public:
     bool loadAndConfigure();
     bool performUpdate(const CharacterUpdateData &data);
     bool performUpdate(const CostumeUpdateData &data);
-    bool performUpdate(const GuiUpdateData &data);
-    bool performUpdate(const OptionsUpdateData &data);
-    bool performUpdate(const KeybindsUpdateData &data);
     bool performUpdate(const PlayerUpdateData &data);
     bool performUpdate(const SetClientOptionsData &data);
     bool getAccount(const GameAccountRequestData &data,GameAccountResponseData &result);

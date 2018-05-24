@@ -35,12 +35,6 @@ void GameDBSyncHandler::dispatch(SEGSEvent *ev)
     {
     case GameDBEventTypes::evCharacterUpdate:
         on_character_update(static_cast<CharacterUpdateMessage *>(ev)); break;
-    case GameDBEventTypes::evGuiUpdate:
-        on_gui_update(static_cast<GuiUpdateMessage *>(ev)); break;
-    case GameDBEventTypes::evOptionsUpdate:
-        on_options_update(static_cast<OptionsUpdateMessage *>(ev)); break;
-    case GameDBEventTypes::evKeybindsUpdate:
-        on_keybinds_update(static_cast<KeybindsUpdateMessage *>(ev)); break;
     case GameDBEventTypes::evPlayerUpdate:
         on_player_update(static_cast<PlayerUpdateMessage *>(ev)); break;
     case GameDBEventTypes::evRemoveCharacterRequest:
@@ -82,25 +76,6 @@ void GameDBSyncHandler::on_character_update(CharacterUpdateMessage *msg)
 }
 
 void GameDBSyncHandler::on_costume_update(CostumeUpdateMessage *msg)
-{
-    GameDbSyncContext &db_ctx(m_db_context.localData());
-    db_ctx.performUpdate(msg->m_data);
-}
-
-void GameDBSyncHandler::on_gui_update(GuiUpdateMessage *msg)
-{
-    GameDbSyncContext &db_ctx(m_db_context.localData());
-    db_ctx.performUpdate(msg->m_data);
-}
-
-
-void GameDBSyncHandler::on_options_update(OptionsUpdateMessage *msg)
-{
-    GameDbSyncContext &db_ctx(m_db_context.localData());
-    db_ctx.performUpdate(msg->m_data);
-}
-
-void GameDBSyncHandler::on_keybinds_update(KeybindsUpdateMessage *msg)
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
     db_ctx.performUpdate(msg->m_data);
