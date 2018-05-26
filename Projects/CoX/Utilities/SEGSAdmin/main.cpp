@@ -12,12 +12,18 @@
 
 #include "SEGSAdminTool.h"
 #include <QApplication>
+#include <QFontDatabase>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     SEGSAdminTool w;
     w.show();
+
+    // Add custom fonts
+    QFontDatabase fontDB;
+    fontDB.addApplicationFont(":/fonts/dejavusanscondensed.ttf");
+
     return a.exec();
 }
 

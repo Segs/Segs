@@ -10,6 +10,7 @@
 
 #include <QDialog>
 #include <QProcess>
+#include <QFontDatabase>
 
 
 namespace Ui {
@@ -19,6 +20,7 @@ class SetUpData;
 class SetUpData : public QDialog
 {
     Q_OBJECT
+    const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
 public:
     explicit SetUpData(QWidget *parent = 0);
@@ -38,7 +40,7 @@ public slots:
 signals:
     void fileCopyComplete();
     void callPiggWorker(QString program);
-    void dataSetupComplete();
+    void dataSetupComplete(QString maps_dir);
     void getMapsDir();
     void quitPiggLoop();
     void readyToCopy();

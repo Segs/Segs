@@ -29,6 +29,10 @@ SetUpData::SetUpData(QWidget *parent) :
     ui(new Ui::SetUpData)
 {
     ui->setupUi(this);
+    QFont dejavu_font;
+    dejavu_font.setFamily("DejaVu Sans Condensed");
+    dejavu_font.setPointSize(12);
+    ui->piggtool_output->setFont(dejavu_font);
     connect(ui->pigg_select_file,&QToolButton::clicked,this,&SetUpData::select_piggs_dir);
     connect(ui->copy_extract_button,&QPushButton::clicked,this,&SetUpData::check_client_version);
     connect(this,&SetUpData::fileCopyComplete,this,&SetUpData::pigg_dispatcher);
@@ -269,7 +273,7 @@ void SetUpData::create_default_directory(QString maps_dir) // Creates default di
     }
     ui->icon_create_directory->show();
     ui->buttonBox->setEnabled(true);
-    emit dataSetupComplete();
+    emit dataSetupComplete(maps_dir);
 }
 
 //!@}

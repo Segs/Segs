@@ -25,6 +25,9 @@ set(SEGSADMIN_SOURCES
     GetIPDialog.cpp
     GetIPDialog.h
     GetIPDialog.ui
+    SettingsDialog.cpp
+    SettingsDialog.h
+    SettingsDialog.ui
 
 )
 
