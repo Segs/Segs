@@ -22,6 +22,7 @@ class SEGSAdminTool : public QMainWindow
     class AddNewUserDialog *m_add_user_dialog;
     class GenerateConfigFileDialog *m_generate_config_dialog;
     class SetUpData *m_set_up_data;
+    class GetIPDialog *m_get_ip;
 
 public:
     explicit SEGSAdminTool(QWidget *parent = nullptr);
@@ -41,6 +42,7 @@ public slots:
     void save_changes_config_file();
     void check_data_and_dir();
     void send_maps_dir();
+    void auto_populate_ip_main(QString local_ip);
 
 signals:
     void readyToRead(QString filePath);
@@ -58,6 +60,7 @@ private:
     QProcess *m_createUser;
     QProcess *m_createDB;
     QProcess *m_start_auth_server;
+
 };
 
 #endif // SEGSADMINTOOL_H

@@ -13,6 +13,7 @@
 #include "GenerateConfigFileDialog.h"
 #include "ui_GenerateConfigFileDialog.h"
 #include "SEGSAdminTool.h"
+#include "GetIPDialog.h"
 
 GenerateConfigFileDialog::GenerateConfigFileDialog(QWidget *parent) :
     QDialog(parent),
@@ -20,6 +21,10 @@ GenerateConfigFileDialog::GenerateConfigFileDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     connect(ui->buttonBox,&QDialogButtonBox::accepted,this,&GenerateConfigFileDialog::capture_input);
+    // GetIP Signals/Slots
+    m_get_ip = new GetIPDialog(this);
+    connect(ui->ip_auto_populate,&QPushButton::clicked,m_get_ip,&GetIPDialog::get_local_ip);
+    connect(m_get_ip,&GetIPDialog::sendIP,this,&GenerateConfigFileDialog::auto_populate_ip_gen_config);
 }
 
 GenerateConfigFileDialog::~GenerateConfigFileDialog()
@@ -40,4 +45,10 @@ void GenerateConfigFileDialog::capture_input()
     QString ip = ui->config_ip_edit->text();
     emit sendInputConfigFile(server_name,ip);
 }
+
+void GenerateConfigFileDialog::auto_populate_ip_gen_config(QString local_ip)
+{
+    ui->config_ip_edit->setText(local_ip);
+}
+
 //!@}

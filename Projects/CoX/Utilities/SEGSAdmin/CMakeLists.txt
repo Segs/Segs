@@ -22,6 +22,9 @@ set(SEGSADMIN_SOURCES
     SetUpData.h
     Globals.cpp
     Globals.h
+    GetIPDialog.cpp
+    GetIPDialog.h
+    GetIPDialog.ui
 
 )
 
