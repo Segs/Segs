@@ -50,6 +50,7 @@ Character::Character()
             || !m_char_data.m_titles[1].isEmpty()
             || !m_char_data.m_titles[2].isEmpty();
     m_char_data.m_sidekick.m_has_sidekick = false;
+    m_char_data.m_current_attribs.initAttribArrays();
 }
 
 void Character::reset()
