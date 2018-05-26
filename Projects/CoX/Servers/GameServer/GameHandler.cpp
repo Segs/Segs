@@ -465,11 +465,11 @@ void GameHandler::reap_stale_links()
                                      });
 }
 
-MapName GameHandler::checkMap(QString map_path)
+MapName GameHandler::checkMap(const QString& map_path)
 {
-    if (map_path == "segs_maps/City_00_01")
+    if (map_path.contains("City_00_01", Qt::CaseInsensitive))
         return Outbreak;
-    if (map_path == "segs_maps/City_01_01")
+    if (map_path.contains("City_01_01", Qt::CaseInsensitive))
         return AtlasPark;
 
     // let's default to Outbreak in case things go wrong

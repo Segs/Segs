@@ -100,7 +100,7 @@ protected:
         void        on_game_db_error(GameDbErrorMessage *ev);
         void        on_account_data(GameAccountResponse *ev);
         void        on_character_deleted(RemoveCharacterResponse *ev);
-        MapName     checkMap(QString map_path);
+        MapName     checkMap(const QString& map_path);
     //////////////////////////////////////////////////////////////////////////
         sIds        waiting_for_client; // this hash_set holds all client cookies we wait for
         GameServer *m_server;
