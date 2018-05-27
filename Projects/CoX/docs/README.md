@@ -32,7 +32,7 @@ SEGS requires:
 For more detailed version of this guide or for help, visit our discord or forums by using the links below:
 - https://segs.io/
 - https://discord.segs.io/
-- https://segs.nemerle.eu/forumz/index.php
+- https://forum.segs.io/
 
 To report any bugs, please visit our GitHub:
 - https://github.com/Segs/Segs
@@ -100,7 +100,7 @@ If you're looking to compile SEGS from source, or need to do an advanced manual 
 
    In the SEGSAdmin window, there is a section titled `Server Setup`.
    
-   To setup your copy of SEGS click each of the following buttons and follow the on screen instructions:
+   To setup your copy of SEGS click each of the following buttons and follow the on screen instructions. If setup is successful, a green checkmark will appear next to the button.
    
    
    1. **Generate Config File**
@@ -108,6 +108,8 @@ If you're looking to compile SEGS from source, or need to do an advanced manual 
       Clicking this button will open a dialog box to configure the settings.cfg file SEGS needs to run. It will ask you to enter a name for your server and the IP address of your computer.
       
       > This will be the same IP you used during Section 2 of 'Configure The COX Client'
+      
+      Next to the IP address field, clicking a small button with a magnifying glass will look up your computer's IP address.
    
       
    2. **Create New Databases**

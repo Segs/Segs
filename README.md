@@ -1,4 +1,4 @@
-![logo](docs/title_v1.png)
+<img align="right" src="docs/segs-medallion-med.png">
 [![master Build Status](https://travis-ci.org/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs) 
 [![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Average time to resolve an issue")
@@ -21,7 +21,7 @@ Some other useful links:
 * The [Issue Queue](https://github.com/Segs/Segs/issues)
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide)
 
-Basic instructions for compiling SEGS in Linux and Windows are below, however for more detailed visual instructions, visit https://segs.nemerle.eu/developers
+Basic instructions for compiling SEGS in Linux and Windows are below, however for more detailed visual instructions, visit https://segs.io/developers
 
 
 CONTENTS OF THIS FILE
@@ -49,9 +49,9 @@ Below are the utilities and libraries you'll need to compile SEGS in any environ
    - _OPTIONAL:_ MySQL - http://www.mysql.org/downloads/mysql
 
 For more detailed version of this guide or forums for help see the links below:
-- https://segs.nemerle.eu/
-- https://segs.nemerle.eu/developers
-- https://segs.nemerle.eu/forumz/index.php
+- https://segs.io
+- https://segs.io/developers
+- https://forum.segs.io/
 
 To report any bugs, please visit our github:
 - https://github.com/Segs/Segs
