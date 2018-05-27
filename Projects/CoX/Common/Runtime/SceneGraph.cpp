@@ -225,7 +225,7 @@ QString groupRename(LoadingContext &ctx, const QString &oldname, bool is_def)
         return str;
     if ( !is_def && !str.contains("/grp",Qt::CaseInsensitive) && !str.contains("/map",Qt::CaseInsensitive) )
         return str;
-    QString querystring = QString(str).toLower();
+    QString querystring = str.toLower();
     auto str_iter = ctx.m_renamer.new_names.find(querystring);
 
     if ( str_iter!=ctx.m_renamer.new_names.end() )

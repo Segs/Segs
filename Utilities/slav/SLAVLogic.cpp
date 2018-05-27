@@ -69,6 +69,7 @@ void SLAVLogic::onManifestReceived(const QString &manifest_url,const QString &ma
 {
     AppVersionManifest pm;
     bool load_res = loadFrom(pm,manifestData);
+    Q_UNUSED(load_res);
     // we've got a project manifest, perform work based on the manifest type.
     if(manifest_url.contains("slav.manifest"))
     {
