@@ -1,4 +1,4 @@
-![logo](docs/segs-medallion.png)
+![logo](docs/segs-medallion-med.png)
 [![master Build Status](https://travis-ci.org/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs) 
 [![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Average time to resolve an issue")
