@@ -11,6 +11,7 @@
 #include <QMainWindow>
 #include <QDialog>
 #include <QProcess>
+#include <QFontDatabase>
 
 namespace Ui {
 class SEGSAdminTool;
@@ -22,7 +23,16 @@ class SEGSAdminTool : public QMainWindow
     class AddNewUserDialog *m_add_user_dialog;
     class GenerateConfigFileDialog *m_generate_config_dialog;
     class SetUpData *m_set_up_data;
-    class GetIPDialog *m_get_ip;
+    class SettingsDialog *m_settings_dialog;
+    bool m_server_running = false;
+
+
+    //int font_output_id = QFontDatabase::addApplicationFont(":/fonts/dejavusanscondensed.ttf");
+    //QString font_output_family = QFontDatabase::applicationFontFamilies(id).at(0);
+    //QFont monospace(font_output_family);
+
+
+    //const QFont fixedFont = QFontDatabase::addApplicationFont(":/fonts/dejavusanscondensed.ttf");
 
 public:
     explicit SEGSAdminTool(QWidget *parent = nullptr);
@@ -37,26 +47,21 @@ public slots:
     void read_createuser();
     void read_createDB();
     void read_authserver();
-    void read_config_file(QString filePath);
     void check_for_config_file();
-    void save_changes_config_file();
-    void check_data_and_dir();
-    void send_maps_dir();
-    void auto_populate_ip_main(QString local_ip);
+    void check_data_and_dir(QString maps_dir);
 
 signals:
     void readyToRead(QString filePath);
     void checkForConfigFile();
     void checkForDB(bool on_startup);
     void addAdminUser();
-    void sendMapsDir(QString maps_dir);
+    void getMapsDirConfigCheck();
+    //void sendMapsDir(QString maps_dir);
 
-
-public slots:
-    void generate_default_config_file(QString server_name, QString ip);
 
 private:
     Ui::SEGSAdminTool *ui;
+    void is_server_running();
     QProcess *m_createUser;
     QProcess *m_createDB;
     QProcess *m_start_auth_server;
