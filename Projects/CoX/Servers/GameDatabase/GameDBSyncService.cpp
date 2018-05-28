@@ -57,6 +57,10 @@ void GameDBSyncService::updateEntities()
 
     for(Entity * e : ref_entity_mgr.m_live_entlist)
     {
+        sendCharacterUpdateToHandler(e);
+
+        /* TODO: Set the flags for entities on other functions, like maybe World::updateEntity, etc etc
+         * at the moment I will make a full update for the characters no matter what the flag it
         // These are ordered based on how much data is sent depending on those flags
         if (e->m_db_store_flags & uint32_t(DbStoreFlags::Full))
         {
@@ -71,6 +75,7 @@ void GameDBSyncService::updateEntities()
             sendPlayerUpdateToHandler(e);
             continue;
         }
+        */
     }
 }
 
