@@ -51,6 +51,19 @@ void GameDBSyncService::on_destroy()
     updateEntities();
 }
 
+void GameDBSyncService::addPlayer(Entity* e)
+{
+    ref_entity_mgr.InsertPlayer(e);
+}
+
+void GameDBSyncService::removePlayer(Entity* e)
+{
+    // update player one last time before logging off
+    updateEntity(e);
+
+    ref_entity_mgr.removeEntityFromActiveList(e);
+}
+
 void GameDBSyncService::updateEntities()
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_entity_mgr.getEntitiesMutex());
@@ -81,11 +94,15 @@ void GameDBSyncService::updateEntities()
 
 void GameDBSyncService::updateEntity(Entity* e)
 {
+    sendCharacterUpdateToHandler(e);
+
+    /* See TODO in updateEntities for explanation on this
     if (e->m_db_store_flags & uint32_t(DbStoreFlags::Full))
         sendCharacterUpdateToHandler(e);
 
     if (e->m_db_store_flags & uint32_t(DbStoreFlags::PlayerData))
         sendPlayerUpdateToHandler(e);
+    */
 }
 
 void GameDBSyncService::sendPlayerUpdateToHandler(Entity* e)

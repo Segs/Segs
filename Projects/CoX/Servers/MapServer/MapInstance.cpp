@@ -159,7 +159,7 @@ void MapInstance::start(const QString &scenegraph_path)
     }
 
     // create a GameDbSyncService
-    m_sync_service = new GameDBSyncService(m_entities);
+    m_sync_service = new GameDBSyncService();
     m_sync_service->set_db_handler(m_game_server_id);
     m_sync_service->activate();
 
@@ -257,9 +257,11 @@ void MapInstance::reap_stale_links()
 
 void MapInstance::enqueue_client(MapClientSession *clnt)
 {
-    // because m_world and m_sync_service store a ref to m_entities,
-    // they will be updated as well
+    // m_world stores a ref to m_entities, so its entity mgr is updated as well
     m_entities.InsertPlayer(clnt->m_ent);
+
+    // m_sync_service has its own entity mgr, so add to its own mgr separately
+    m_sync_service->addPlayer(clnt->m_ent);
 
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
@@ -471,9 +473,7 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
             ->putq(new ClientDisconnectedMessage({session_token}));
 
     m_entities.removeEntityFromActiveList(ent);
-
-    // one last update for the entity before logging off
-    m_sync_service->updateEntity(ent);
+    m_sync_service->removePlayer(ent);
 
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());
@@ -494,9 +494,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
             ->putq(new ClientDisconnectedMessage({session_token}));
 
     m_entities.removeEntityFromActiveList(ent);
-
-    // one last update for the entity before logging off
-    m_sync_service->updateEntity(ent);
+    m_sync_service->removePlayer(ent);
 
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());
