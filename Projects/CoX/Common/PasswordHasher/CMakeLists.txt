@@ -17,5 +17,5 @@ INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 ADD_LIBRARY(password_hasher STATIC ${target_SOURCES})
 set_target_properties(password_hasher PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
 
-qt5_use_modules(password_hasher LINK_PUBLIC Core)
+target_link_libraries(password_hasher PUBLIC Qt5::Core)
 ADD_DEPENDENCIES(password_hasher cereal_IMP CRUDP_Protocol)

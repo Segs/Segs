@@ -37,7 +37,7 @@ INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 add_library(SEGS_Components STATIC ${target_SOURCES} )
 add_dependencies(SEGS_Components ACE_BUILD)
 
-qt5_use_modules(SEGS_Components Core)
+target_link_libraries(SEGS_Components Qt5::Core)
 
 
 

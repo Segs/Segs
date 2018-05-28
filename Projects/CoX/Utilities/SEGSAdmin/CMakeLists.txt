@@ -29,4 +29,4 @@ set(SEGSADMIN_SOURCES
 )
 
 add_executable(SEGSAdmin ${SEGSADMIN_SOURCES})
-qt5_use_modules(SEGSAdmin Core Gui Widgets Network)
+target_link_libraries(SEGSAdmin PUBLIC Qt5::Core Qt5::Widgets Qt5::Network)
