@@ -257,8 +257,10 @@ void MapInstance::reap_stale_links()
 
 void MapInstance::enqueue_client(MapClientSession *clnt)
 {
-    m_world->addPlayer(clnt->m_ent);
-    m_sync_service->addPlayer(clnt->m_ent);
+    // because m_world and m_sync_service store a ref to m_entities,
+    // they will be updated as well
+    m_entities.InsertPlayer(clnt->m_ent);
+
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
 
@@ -454,7 +456,6 @@ void MapInstance::on_client_quit(ClientQuit*ev)
         abortLogout(session.m_ent);
     else
         session.m_ent->beginLogout(10);
-
 }
 
 void MapInstance::on_link_lost(SEGSEvent *ev)
@@ -470,7 +471,12 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
             ->putq(new ClientDisconnectedMessage({session_token}));
 
     m_entities.removeEntityFromActiveList(ent);
+
+    // one last update for the entity before logging off
+    m_sync_service->updateEntity(ent);
+
     m_session_store.session_link_lost(session_token);
+    m_session_store.remove_by_token(session_token, session.auth_id());
      // close the link by puting an disconnect event there
     lnk->putq(new DisconnectEvent(session_token));
 }
@@ -486,8 +492,14 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token}));
+
     m_entities.removeEntityFromActiveList(ent);
+
+    // one last update for the entity before logging off
+    m_sync_service->updateEntity(ent);
+
     m_session_store.session_link_lost(session_token);
+    m_session_store.remove_by_token(session_token, session.auth_id());
 
     lnk->putq(new DisconnectResponse);
     lnk->putq(new DisconnectEvent(session_token)); // this should work, event if different threads try to do it in parallel

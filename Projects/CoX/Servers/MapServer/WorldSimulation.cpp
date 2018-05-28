@@ -111,9 +111,4 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
     */
 }
 
-void World::addPlayer(Entity *ent)
-{
-    ref_ent_mager.InsertPlayer(ent);
-}
-
 //! @}

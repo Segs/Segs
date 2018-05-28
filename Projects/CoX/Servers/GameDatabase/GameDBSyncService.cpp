@@ -41,18 +41,9 @@ void GameDBSyncService::set_db_handler(const uint8_t id)
                 HandlerLocator::getGame_DB_Handler(id));
 }
 
-void GameDBSyncService::addPlayer(Entity* e)
-{
-    ref_entity_mgr.InsertPlayer(e);
-}
-
 void GameDBSyncService::on_update_timer(const ACE_Time_Value &tick_timer)
 {
-    ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_entity_mgr.getEntitiesMutex());
-
-    // update the player characters in DB every n seconds
-    if ((int)tick_timer.sec() % m_update_interval == 0)
-        updateEntities();
+    // unused at the moment... but this works similarly to World::update
 }
 
 void GameDBSyncService::on_destroy()
@@ -62,6 +53,8 @@ void GameDBSyncService::on_destroy()
 
 void GameDBSyncService::updateEntities()
 {
+    ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_entity_mgr.getEntitiesMutex());
+
     for(Entity * e : ref_entity_mgr.m_live_entlist)
     {
         // These are ordered based on how much data is sent depending on those flags
@@ -79,6 +72,15 @@ void GameDBSyncService::updateEntities()
             continue;
         }
     }
+}
+
+void GameDBSyncService::updateEntity(Entity* e)
+{
+    if (e->m_db_store_flags & uint32_t(DbStoreFlags::Full))
+        sendCharacterUpdateToHandler(e);
+
+    if (e->m_db_store_flags & uint32_t(DbStoreFlags::PlayerData))
+        sendPlayerUpdateToHandler(e);
 }
 
 void GameDBSyncService::sendPlayerUpdateToHandler(Entity* e)
