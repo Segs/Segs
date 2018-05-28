@@ -18,9 +18,7 @@ set(SLAV_SOURCES
 )
 
 add_executable(slav ${SLAV_SOURCES})
-qt5_use_modules(slav Core Gui Widgets Network)
-target_link_libraries(slav cereal_IMP)
+target_link_libraries(slav cereal_IMP  Qt5::Core Qt5::Widgets Qt5::Network)
 
 add_executable(ManifestBuilder ManifestBuilder.cpp ProjectManifest.cpp FileSignatureWorker)
-qt5_use_modules(ManifestBuilder Core)
-target_link_libraries(ManifestBuilder cereal_IMP)
+target_link_libraries(ManifestBuilder cereal_IMP Qt5::Core)

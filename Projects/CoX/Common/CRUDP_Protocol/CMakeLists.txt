@@ -33,7 +33,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${ACE_path})
 ADD_LIBRARY(CRUDP_Protocol STATIC ${target_SOURCES})
 target_include_directories(CRUDP_Protocol INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-qt5_use_modules(CRUDP_Protocol LINK_PUBLIC Core)
+target_link_libraries(CRUDP_Protocol PUBLIC Qt5::Core)
 add_dependencies(CRUDP_Protocol ace_IMP)
 
 

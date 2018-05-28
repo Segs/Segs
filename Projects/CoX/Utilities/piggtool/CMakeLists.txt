@@ -12,5 +12,4 @@ set(tool_SRC
     main.cpp
 )
 add_executable(piggtool ${tool_SRC})
-qt5_use_modules(piggtool Core)
 target_link_libraries(piggtool Qt5::Core)

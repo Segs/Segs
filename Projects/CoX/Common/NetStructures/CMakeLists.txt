@@ -36,5 +36,5 @@ INCLUDE_DIRECTORIES(SYSTEM ${ACE_path})
 ADD_LIBRARY(network_structures STATIC ${target_SOURCES})
 set_target_properties(network_structures PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
 
-qt5_use_modules(network_structures LINK_PUBLIC Core)
+target_link_libraries(network_structures PUBLIC Qt5::Core)
 ADD_DEPENDENCIES(network_structures cereal_IMP CRUDP_Protocol)
