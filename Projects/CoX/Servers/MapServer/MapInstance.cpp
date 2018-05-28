@@ -159,7 +159,7 @@ void MapInstance::start(const QString &scenegraph_path)
     }
 
     // create a GameDbSyncService
-    m_sync_service = new GameDBSyncService();
+    m_sync_service = new GameDBSyncService(m_entities);
     m_sync_service->set_db_handler(m_game_server_id);
     m_sync_service->activate();
 
@@ -472,8 +472,10 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token}));
 
+    m_sync_service->updateEntity(ent);
     m_entities.removeEntityFromActiveList(ent);
-    m_sync_service->removePlayer(ent);
+
+    //m_sync_service->removePlayer(ent);
 
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());
@@ -493,8 +495,9 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token}));
 
+    m_sync_service->updateEntity(ent);
     m_entities.removeEntityFromActiveList(ent);
-    m_sync_service->removePlayer(ent);
+    // m_sync_service->removePlayer(ent);
 
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());

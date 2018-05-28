@@ -70,7 +70,9 @@ void GameDBSyncService::updateEntities()
 
     for(Entity * e : ref_entity_mgr.m_live_entlist)
     {
-        sendCharacterUpdateToHandler(e);
+        // if m_db_id is 0, it does not have a db entry (NPCs, etc...)
+        if (e->m_db_id != 0)
+            sendCharacterUpdateToHandler(e);
 
         /* TODO: Set the flags for entities on other functions, like maybe World::updateEntity, etc etc
          * at the moment I will make a full update for the characters no matter what the flag it
@@ -94,6 +96,8 @@ void GameDBSyncService::updateEntities()
 
 void GameDBSyncService::updateEntity(Entity* e)
 {
+    ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_entity_mgr.getEntitiesMutex());
+
     sendCharacterUpdateToHandler(e);
 
     /* See TODO in updateEntities for explanation on this
