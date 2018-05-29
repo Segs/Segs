@@ -1,5 +1,5 @@
 
-<img src="docs/segs-medallion-med.png" width="265px" align="right" alt="SEGS Logo">
+<img src="docs/segs-medallion-med.png" align="right" alt="SEGS Logo">
 
 [![master Build Status](https://travis-ci.org/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs) 
 [![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
