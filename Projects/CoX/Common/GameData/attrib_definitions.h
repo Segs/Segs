@@ -28,58 +28,63 @@ struct AttribNames_Data
 struct Parse_CharAttrib
 {
     std::array<float,24> m_DamageTypes;
-    float m_HitPoints;
-    float m_Endurance;
-    float m_ToHit;
+    float m_HitPoints           = 0;
+    float m_Endurance           = 0;
+    float m_ToHit               = 0;
     std::array<float,24> m_DefenseTypes;
-    float m_Defense;
-    float m_Evade;
-    float m_SpeedRunning;
-    float m_SpeedFlying;
-    float m_SpeedSwimming;
-    float m_SpeedJumping;
-    float m_jump_height;
-    float m_MovementControl;
-    float m_MovementFriction;
-    float m_Stealth;
-    float m_StealthRadius;
-    float m_PerceptionRadius;
-    float m_Regeneration;
-    float m_Recovery;
-    float m_ThreatLevel;
-    float m_Taunt;
-    float m_Confused;
-    float m_Afraid;
-    float m_Held;
-    float m_Immobilized;
-    float m_is_stunned;
-    float m_Sleep;
-    float m_is_flying;
-    float m_has_jumppack;
-    float m_Teleport;
-    float m_Untouchable;
-    float m_Intangible;
-    float m_OnlyAffectsSelf;
-    float m_Knockup;
-    float m_Knockback;
-    float m_Repel;
-    float m_Accuracy;
-    float m_Radius;
-    float m_Arc;
-    float m_Range;
-    float m_TimeToActivate;
-    float m_RechargeTime;
-    float m_InterruptTime;
-    float m_EnduranceDiscount;
+    float m_Defense             = 0;
+    float m_Evade               = 0;
+    float m_SpeedRunning        = 0;
+    float m_SpeedFlying         = 0;
+    float m_SpeedSwimming       = 0;
+    float m_SpeedJumping        = 0;
+    float m_jump_height         = 0;
+    float m_MovementControl     = 0;
+    float m_MovementFriction    = 0;
+    float m_Stealth             = 0;
+    float m_StealthRadius       = 0;
+    float m_PerceptionRadius    = 0;
+    float m_Regeneration        = 0;
+    float m_Recovery            = 0;
+    float m_ThreatLevel         = 0;
+    float m_Taunt               = 0;
+    float m_Confused            = 0;
+    float m_Afraid              = 0;
+    float m_Held                = 0;
+    float m_Immobilized         = 0;
+    float m_is_stunned          = 0;
+    float m_Sleep               = 0;
+    float m_is_flying           = 0;
+    float m_has_jumppack        = 0;
+    float m_Teleport            = 0;
+    float m_Untouchable         = 0;
+    float m_Intangible          = 0;
+    float m_OnlyAffectsSelf     = 0;
+    float m_Knockup             = 0;
+    float m_Knockback           = 0;
+    float m_Repel               = 0;
+    float m_Accuracy            = 0;
+    float m_Radius              = 0;
+    float m_Arc                 = 0;
+    float m_Range               = 0;
+    float m_TimeToActivate      = 0;
+    float m_RechargeTime        = 0;
+    float m_InterruptTime       = 0;
+    float m_EnduranceDiscount   = 0;
     float *begin() { return &m_DamageTypes[0]; }
     float *end() { return (&m_EnduranceDiscount)+1; }
     const float *begin() const { return &m_DamageTypes[0]; }
     const float *end() const { return (&m_EnduranceDiscount)+1; }
+    void initAttribArrays()
+    {
+        m_DamageTypes.fill(0.0f);
+        m_DefenseTypes.fill(0.0f);
+    }
 };
 
 struct Parse_CharAttribMax
 {
-    std::array<std::vector<float>,24> m_DamageTypes;
+    std::array<std::vector<float>,24> m_DamageTypes ;
     std::vector<float> m_HitPoints;
     std::vector<float> m_Endurance;
     std::vector<float> m_ToHit;

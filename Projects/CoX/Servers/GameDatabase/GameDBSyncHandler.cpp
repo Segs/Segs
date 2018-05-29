@@ -35,6 +35,8 @@ void GameDBSyncHandler::dispatch(SEGSEvent *ev)
     {
     case GameDBEventTypes::evCharacterUpdate:
         on_character_update(static_cast<CharacterUpdateMessage *>(ev)); break;
+    case GameDBEventTypes::evPlayerUpdate:
+        on_player_update(static_cast<PlayerUpdateMessage *>(ev)); break;
     case GameDBEventTypes::evRemoveCharacterRequest:
         on_character_remove(static_cast<RemoveCharacterRequest *>(ev)); break;
     case GameDBEventTypes::evCostumeUpdate:
@@ -77,6 +79,18 @@ void GameDBSyncHandler::on_costume_update(CostumeUpdateMessage *msg)
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
     db_ctx.performUpdate(msg->m_data);
+}
+
+void GameDBSyncHandler::on_player_update(PlayerUpdateMessage *msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.performUpdate(msg->m_data);
+}
+
+void GameDBSyncHandler::on_client_options_update(SetClientOptionsMessage *msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.updateClientOptions(msg->m_data);
 }
 
 void GameDBSyncHandler::on_account_request(GameAccountRequest *msg)

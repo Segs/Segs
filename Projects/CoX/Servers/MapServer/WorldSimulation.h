@@ -20,7 +20,6 @@ class World
 public:
                         World(EntityManager &em, const float player_fade_in)
                             : ref_ent_mager(em), m_player_fade_in(player_fade_in) {}
-        void            addPlayer(Entity *ent);
         void            update(const ACE_Time_Value &tick_timer);
         float           time_of_day() const { return m_time_of_day; }
         float           sim_frame_time = 1; // in seconds

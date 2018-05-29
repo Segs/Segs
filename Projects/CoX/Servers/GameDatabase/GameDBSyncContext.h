@@ -12,6 +12,7 @@ class QSqlQuery;
 
 struct CharacterUpdateData;
 struct CostumeUpdateData;
+struct PlayerUpdateData;
 struct GameAccountRequestData;
 struct GameAccountResponseData;
 struct RemoveCharacterRequestData;
@@ -32,6 +33,7 @@ class GameDbSyncContext
     std::unique_ptr<QSqlDatabase> m_db;
     std::unique_ptr<QSqlQuery> m_prepared_char_update;
     std::unique_ptr<QSqlQuery> m_prepared_costume_update;
+    std::unique_ptr<QSqlQuery> m_prepared_player_update;
     std::unique_ptr<QSqlQuery> m_prepared_account_select;
     std::unique_ptr<QSqlQuery> m_prepared_account_insert;
     std::unique_ptr<QSqlQuery> m_prepared_entity_select;
@@ -51,6 +53,8 @@ public:
     bool loadAndConfigure();
     bool performUpdate(const CharacterUpdateData &data);
     bool performUpdate(const CostumeUpdateData &data);
+    bool performUpdate(const PlayerUpdateData &data);
+    bool performUpdate(const SetClientOptionsData &data);
     bool getAccount(const GameAccountRequestData &data,GameAccountResponseData &result);
     bool removeCharacter(const RemoveCharacterRequestData &data);
     bool checkNameClash(const WouldNameDuplicateRequestData &data,WouldNameDuplicateResponseData &result);

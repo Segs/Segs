@@ -260,14 +260,12 @@ static  void                sendPvP(BitStream &bs);
 
 enum class DbStoreFlags : uint32_t
 {
-    Gui        = 1,
-    Options    = 2,
-    Keybinds   = 4,
-    PlayerData = 7,
+    PlayerData = 1,
     Full       = ~0U,
 };
 
 void markEntityForDbStore(Entity *e,DbStoreFlags f);
+void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant);
 void fillEntityFromNewCharData(Entity &e, BitStream &src, const ColorAndPartPacker *packer, const Parse_AllKeyProfiles &default_profiles);

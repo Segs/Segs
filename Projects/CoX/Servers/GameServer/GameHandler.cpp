@@ -365,18 +365,29 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     }
 
     QString map_path = cd.m_mapName;
-    switch(ev->m_mapnumber)
+
+    if (!map_path.isEmpty())
     {
-        case 0:
-        if(map_path.isEmpty())
-            map_path = "maps/city_zones/city_00_01/city_00_01.txt";
-        break;
-        case 1: // atlas park
-            map_path = "maps/city_zones/city_01_01/city_01_01.txt";
-        break;
-        case 29:
-            map_path = "maps/city_zones/city_01_03/city_01_03.txt";
-        break;
+        switch(checkMap(map_path))
+        {
+            case Outbreak: map_path = "maps/city_zones/city_00_01/city_00_01.txt"; break;
+            case AtlasPark: map_path = "maps/city_zones/city_01_01/city_01_01.txt"; break;
+        }
+    }
+    else
+    {
+        switch(ev->m_mapnumber)
+        {
+            case 0:
+                map_path = "maps/city_zones/city_00_01/city_00_01.txt";
+            break;
+            case 1: // atlas park
+                map_path = "maps/city_zones/city_01_01/city_01_01.txt";
+            break;
+            case 29:
+                map_path = "maps/city_zones/city_01_03/city_01_03.txt";
+            break;
+        }
     }
 
     if(selected_slot->isEmpty())
@@ -452,6 +463,17 @@ void GameHandler::reap_stale_links()
                                      [tgt](uint64_t tok) {
                                          tgt->putq(new ClientDisconnectedMessage({tok}));
                                      });
+}
+
+MapName GameHandler::checkMap(const QString& map_path)
+{
+    if (map_path.contains("City_00_01", Qt::CaseInsensitive))
+        return Outbreak;
+    if (map_path.contains("City_01_01", Qt::CaseInsensitive))
+        return AtlasPark;
+
+    // let's default to Outbreak in case things go wrong
+    return Outbreak;
 }
 
 //! @}

@@ -195,4 +195,9 @@ void markEntityForDbStore(Entity *e, DbStoreFlags f)
     e->m_db_store_flags |= uint32_t(f);
 }
 
+void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
+{
+    e->m_db_store_flags &= ~uint32_t(f);
+}
+
 //! @}
