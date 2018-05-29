@@ -1,5 +1,5 @@
 
-<img src="docs/segs-medallion-med.png" align="right" alt="SEGS Logo">
+<img src="docs/segs-medallion-med.png" width="265px" align="right" alt="SEGS Logo">
 
 [![master Build Status](https://travis-ci.org/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs) 
 [![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
@@ -42,8 +42,8 @@ REQUIREMENTS AND NOTES
 
 Below are the utilities and libraries you'll need to compile SEGS in any environment. While it may be possible to use another toolset, the C++ Tool Chain below is the only one officially supported by the SEGS team. These packages are available for both Linux or Windows, via your distro's package manager, or via the links below:
 
-   - **QT >5.8** - A cross platform application framework utilized heavily by SEGS. https://www.qt.io/download-qt-for-application-development  
-   - **CMake >3.6** - CMake is the cross-platform make utility. It generates makefiles for multiple platforms. https://cmake.org/download/
+   - **QT 5.9+** - A cross platform application framework utilized heavily by SEGS. https://www.qt.io/download-qt-for-application-development  
+   - **CMake 3.6+** - CMake is the cross-platform make utility. It generates makefiles for multiple platforms. https://cmake.org/download/
    - **Git** - A version control system for tracking changes in computer files and coordinating work on those files among multiple people. https://git-scm.com/download  
 
 **ADVANCED:** By default SEGS uses a local SQLite database created by `SEGSAdmin` or `dbtool`, but optionally may be configured to use another database driver by manually configuring settings.cfg. SEGS is compatible with PostGreSQL or MySQL/MariaDB. These alternate configurations are optional and unsupported. YMMV.
