@@ -399,6 +399,7 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
     std::vector<Power> powers;
     for(Power &p : powers)
     {
+        Q_UNUSED(p);
         bs.StoreBits(1,1); // have power to send.
         uint32_t category_idx=0;
         uint32_t powerset_idx=0;

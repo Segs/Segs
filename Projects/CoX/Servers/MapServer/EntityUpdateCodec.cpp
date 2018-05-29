@@ -117,7 +117,8 @@ bool storePosition(const Entity &src,BitStream &bs)
 
 bool update_rot(const Entity &/*src*/, int axis ) /* returns true if given axis needs updating */
 {
-    if(axis==axis) // FixMe: var compared against same var.
+    int axis_tmp = axis; // Used to quell tautological comparison warning
+    if(axis==axis_tmp)   // FixMe: var compared against same var.
         return true;
     return false;
 }
@@ -331,6 +332,7 @@ void sendTargetUpdate(const Entity &src,BitStream &bs)
     bs.StoreBits(1,has_target);
     if(!has_target)
         return;
+
     bs.StoreBits(1,target_id!=0);
     if(target_id!=0)
         bs.StorePackedBits(12,target_id);

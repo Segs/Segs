@@ -284,11 +284,11 @@ void InputState::serializefrom(BitStream &bs)
 
     m_has_target = bs.GetBits(1);
     m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
-    int ctrl_idx=0;
 
     if(m_has_target)
         qCDebug(logTarget, "Has Target? %d | TargetIdx: %d", m_has_target, m_target_idx);
 
+    int ctrl_idx=0;
     ControlState prev_fld;
     while(bs.GetBits(1)) // receive control state array entries ?
     {

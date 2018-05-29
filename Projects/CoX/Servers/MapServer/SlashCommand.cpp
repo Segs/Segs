@@ -1014,12 +1014,19 @@ void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
 {
-    QString msg = "Setting assist target.";
+    Entity *target_ent = getEntity(&sess, getTargetIdx(*sess.m_ent));
+    if(target_ent == nullptr)
+        return;
 
-    setAssistTarget(*sess.m_ent);
+    uint32_t new_target = getTargetIdx(*target_ent);
+    if(new_target == 0)
+        return;
 
+    setTarget(*sess.m_ent, new_target);
+
+    QString msg = "Now targeting " + target_ent->name() + "'s target";
+    sendInfoMessage(MessageChannel::TEAM, msg, &sess);
     qCDebug(logSlashCommand).noquote() << msg;
-    sendInfoMessage(MessageChannel::USER_ERROR, msg, &sess);
 }
 
 void cmdHandler_Sidekick(const QString &cmd, MapClientSession &sess)

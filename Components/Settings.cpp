@@ -132,6 +132,7 @@ void Settings::setDefaultSettings()
     config.beginGroup("MapServer");
         config.setValue("listen_addr","127.0.0.1:7003");
         config.setValue("location_addr","127.0.0.1:7003");
+        config.setValue("player_fade_in", "380.0");
     config.endGroup();
     config.beginGroup("Logging");
         config.setValue("log_logging","false");

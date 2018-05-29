@@ -1,9 +1,10 @@
-<img align="right" src="docs/segs-medallion-med.png">
 
-[ ![master Build Status](https://travis-ci.org/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs) 
-[ ![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
-[ ![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Average time to resolve an issue")
-[ ![Percentage of issues still open](http://isitmaintained.com/badge/open/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Percentage of issues still open")
+<img src="docs/segs-medallion-med.png" align="right" alt="SEGS Logo">
+
+[![master Build Status](https://travis-ci.org/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs) 
+[![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Percentage of issues still open")
 
 SEGS - Super Entity Game Server
 ======
@@ -14,7 +15,7 @@ For legal information, please see [LICENSE.md](./LICENSE.md).
 For a list of SEGS authors and contributors, please see [AUTHORS.md](./docs/AUTHORS.md).
 
 **:exclamation: LOOKING FOR INSTALLATION INSTRUCTIONS? :exclamation:**
-> NOTICE: This guide is for COMPILING SEGS FROM SOURCE. If you're looking for help installing and configuring SEGS from a release package, please view [the install README.md here](./Projects/CoX/docs/README.md) 
+> NOTICE: This guide is for COMPILING SEGS FROM SOURCE. If you're looking for help installing and configuring SEGS from a release package, please view [the server installation README.md here](./Projects/CoX/docs/README.md) 
 
 Some other useful links:
 * Our [Discord](https://discord.segs.io/)
@@ -63,7 +64,13 @@ Note that all directories mentioned in this document are always relative to the 
 INSTALL C++ TOOL CHAIN
 ------
 
-**1. Installing in Linux**
+**1. Installing in Windows**
+
+Download dependencies and tools by clicking on the links listed in the Requirements section above. Make sure you download the correct version for your installation of Windows. Once downloaded, navigate to your downloads folder and run each installer.
+
+:exclamation: NOTE: for QT, please install **mingw 32bit version**
+
+**2. Installing in Linux**
 
 Install all dependencies and tools by opening a terminal and typing:
 
@@ -83,12 +90,6 @@ source /opt/rh/devtoolset-6/enable
 ```
 
 Your distro may come with some or all of these packages pre-installed, and while most versions of these libraries will work, you must have version 5.8+ of Qt installed. CentOS and RHEL are two such distributions that require downloading a more recent version of CMake and Qt and potentially having to build from source.
-
-**2. Installing in Windows**
-
-Download dependencies and tools by clicking on the links listed in the Requirements section above. Make sure you download the correct version for your installation of Windows. Once downloaded, navigate to your downloads folder and run each installer.
-
-:exclamation: NOTE: for QT, please install **mingw 32bit version**
 
 **3. Installing in FreeBSD 11.x**
 
@@ -145,7 +146,7 @@ Now, select `Build > Build All` from the menu at the top of QTCreator. The botto
 00:00:00: The process 'cmake' exited normally.
 ```
 
-**Doing it the CLI Way**
+**ADVANCED: Doing it the CLI Way**
 
 If you're on a headless Linux or FreeBSD server, run the following commands:
 ```

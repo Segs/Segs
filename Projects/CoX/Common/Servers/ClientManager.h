@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <vector>
 #include <cassert>
-
+#include <cinttypes>
 
 // TODO: consider storing all sessions in vector, and convert m_session_store to token->index map
 template <class SESSION_CLASS>
@@ -58,7 +58,7 @@ mutable std::mutex m_store_mutex;
         uint32_t create_cookie(const ACE_INET_Addr &from,uint64_t id)
         {
                 uint64_t res = ((from.hash()+id)&0xFFFFFFFF)^(id>>32);
-                qWarning("Create_cookie still needs a good algorithm. 0x%08x", res);
+                qWarning("Create_cookie still needs a good algorithm. 0x%" PRIx64, res);
                 return (uint32_t)res;
         }
 
@@ -221,7 +221,7 @@ public:
         }
         void create_reaping_timer(EventProcessor *tgt, uint32_t id, ACE_Time_Value interval)
         {
-            m_session_reaper_timer.reset(new SEGSTimer(tgt, (void *)id, interval, false));
+            m_session_reaper_timer.reset(new SEGSTimer(tgt, (void *)(intptr_t)id, interval, false));
         }
         void mark_session_for_reaping(SESSION_CLASS *sess, uint64_t token)
         {
