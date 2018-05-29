@@ -38,8 +38,8 @@ This project and everyone participating in it is governed by the [SEGS Code of C
 
 We have an official message board and a FAQ where the community chimes in with helpful advice if you have questions.
 
-* [SEGS Official Forums](https://segs.nemerle.eu/forumz/index.php)
-* [The FAQ Thread](https://segs.nemerle.eu/forumz/viewtopic.php?f=8&t=8244)
+* [SEGS Official Forums](https://forum.segs.io/)
+* [The FAQ Thread](https://forum.segs.io/viewtopic.php?f=8&t=8244)
 
 ### Chat with us on Discord
 
@@ -80,7 +80,7 @@ Before creating issues, please check [this list](#before-submitting-an-issue) as
 #### Before Submitting An Issue
 
 * **Check the [debugging guide](DEBUGGING_GUIDE.md).** You might be able to find the cause of the problem and fix things yourself. Most importantly, check if you can reproduce the problem [in the latest version of SEGS](http://github.com/Segs/Segs).
-* **Check the [FAQs on the forum](https://segs.nemerle.eu/forumz/viewtopic.php?f=8&t=8244)** for a list of common questions and problems.
+* **Check the [FAQs on the forum](https://forum.segs.io/viewtopic.php?f=8&t=8244)** for a list of common questions and problems.
 * **Perform a [cursory search](https://github.com/Segs/Segs/issues?q=is%3Aopen+is%3Aissue)** to see if the problem has already been reported. If it has **and the issue is still open**, add a comment to the existing issue instead of opening a new one.
 
 #### How Do I Submit A (Good) Issue?
