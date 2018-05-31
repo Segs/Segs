@@ -77,8 +77,8 @@ void InputStateEvent::receiveInputStateHistory(BitStream &bs) // formerly partia
             case UP: case DOWN:
             {
                 bool keypress_state = bs.GetBits(1); // get keypress state
-                m_next_state.m_prev_control_bits[control_id] = keypress_state; // save control_bits
-                //m_current.processDirectionControl(control_id, ms_since_prev, keypress_state); // TODO: this should be moved out of partial_2?
+                m_next_state.m_control_bits[control_id] = keypress_state; // save control_bits
+                processDirectionControl(control_id, ms_since_prev, keypress_state); // TODO: this should be moved out of partial_2?
                 break;
             }
             case PITCH: // camera pitch (Insert/Delete keybinds)
@@ -156,6 +156,7 @@ void InputStateEvent::extended_input(BitStream &bs)
         receiveInputStateHistory(bs); // formerly partial_2
     }
 
+    // Key HELD
     for(int idx=0; idx<6; ++idx)
     {
         keypress_state = bs.GetBits(1);

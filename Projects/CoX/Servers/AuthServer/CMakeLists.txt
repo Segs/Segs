@@ -21,12 +21,12 @@ SET (target_SOURCES
 #FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LIBRARIES is not a cache variable, so we  have to do this here again
 
 ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
-qt5_use_modules(authserver_lib Core)
+target_link_libraries(authserver_lib PUBLIC Qt5::Core)
 add_dependencies(authserver_lib ace_IMP)
 IF(BUILD_SEPARATE)
     ADD_DEFINITIONS(-DSEPARATE)
     ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
-    TARGET_LINK_LIBRARIES(authserver
+    TARGET_LINK_LIBRARIES(authserver PUBLIC
         authserver_lib
         auth_db_sync_lib
         gameserver_lib
@@ -45,10 +45,10 @@ IF(BUILD_SEPARATE)
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
     ADD_DEPENDENCIES(authserver ACE_BUILD)
-    qt5_use_modules(authserver Core)
+    target_link_libraries(authserver PUBLIC Qt5::Core)
     set_property(TARGET authserver PROPERTY POSITION_INDEPENDENT_CODE ON)
     IF(MINGW)
-        target_link_libraries(authserver ws2_32)
+        target_link_libraries(authserver PUBLIC ws2_32)
     ENDIF()
     install(TARGETS authserver
         DESTINATION deploy

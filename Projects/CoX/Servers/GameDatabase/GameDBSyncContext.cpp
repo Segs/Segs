@@ -133,6 +133,9 @@ bool GameDbSyncContext::loadAndConfigure()
     m_prepared_costume_update = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_get_char_slots = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_options_update = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_player_update = std::make_unique<QSqlQuery>(*m_db);
+
+    // TO-DO: prepQuery for playerUpdate
 
     prepQuery(*m_prepared_char_update,
                 "UPDATE characters SET "
@@ -140,6 +143,10 @@ bool GameDbSyncContext::loadAndConfigure()
                 "height=:height, physique=:physique,"
                 "supergroup_id=:supergroup_id, player_data=:player_data "
                 "WHERE id=:id ");
+    prepQuery(*m_prepared_player_update,
+              "UPDATE characters SET "
+              "player_data=:player_data "
+              "WHERE id=:id ");
     prepQuery(*m_prepared_costume_update,
                 "UPDATE costume SET "
                 "costume_index=:costume_index, skin_color=:skin_color, parts=:parts "
@@ -150,18 +157,16 @@ bool GameDbSyncContext::loadAndConfigure()
               "WHERE id=:id ");
 
     prepQuery(*m_prepared_fill,"SELECT * FROM costume WHERE character_id=? AND costume_index=?");
-    prepQuery(*m_prepared_account_select,"SELECT * FROM accounts WHERE account_id=?");
-    prepQuery(*m_prepared_account_insert,"INSERT INTO accounts  (account_id,max_slots) VALUES (?,?)");
+    prepQuery(*m_prepared_account_select,"SELECT * FROM accounts WHERE id=?");
+    prepQuery(*m_prepared_account_insert,"INSERT INTO accounts  (id,max_slots) VALUES (?,?)");
     prepQuery(*m_prepared_char_insert,
                 "INSERT INTO characters  ("
                 "slot_index, account_id, char_name, chardata, entitydata, "
                 "bodytype, height, physique, "
-                "hitpoints, endurance, "
                 "supergroup_id, player_data"
                 ") VALUES ("
                 ":slot_index, :account_id, :char_name, :chardata, :entitydata, "
                 ":bodytype, :height, :physique, "
-                ":hitpoints, :endurance, "
                 ":supergroup_id, :player_data"
                 ")");
     prepQuery(*m_prepared_costume_insert,
@@ -178,7 +183,7 @@ bool GameDbSyncContext::loadAndConfigure()
 
 bool GameDbSyncContext::performUpdate(const CharacterUpdateData &data)
 {
-    m_prepared_char_update->bindValue(QStringLiteral(":id"), uint32_t(data.m_id)); // for WHERE statement only
+    m_prepared_char_update->bindValue(QStringLiteral(":id"), data.m_id); // for WHERE statement only
     m_prepared_char_update->bindValue(QStringLiteral(":char_name"), data.m_char_name);
     m_prepared_char_update->bindValue(QStringLiteral(":chardata"), data.m_char_data);
     m_prepared_char_update->bindValue(QStringLiteral(":entitydata"), data.m_entitydata);
@@ -197,6 +202,13 @@ bool GameDbSyncContext::performUpdate(const CostumeUpdateData &data)
     m_prepared_costume_update->bindValue(QStringLiteral(":skin_color"), data.m_skin_color);
     m_prepared_costume_update->bindValue(QStringLiteral(":parts"), data.m_parts);
     return doIt(*m_prepared_costume_update);
+}
+
+bool GameDbSyncContext::performUpdate(const PlayerUpdateData &data)
+{
+    m_prepared_player_update->bindValue(QStringLiteral(":id"), data.m_id);
+    m_prepared_player_update->bindValue(QStringLiteral(":player_data"), data.m_player_data);
+    return doIt(*m_prepared_player_update);
 }
 
 bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccountResponseData &result)
@@ -221,7 +233,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         if(!m_prepared_account_select->next() && !data.create_if_does_not_exist)
             return false;
     }
-    result.m_game_server_acc_id = m_prepared_account_select->value("id").toULongLong();
+    result.m_game_server_acc_id = data.m_auth_account_id;
     result.m_max_slots = m_prepared_account_select->value("max_slots").toULongLong();
     result.m_characters.resize(result.m_max_slots);
     int idx=0;
@@ -375,7 +387,7 @@ bool GameDbSyncContext::getEntity(const GetEntityRequestData &data, GetEntityRes
 // Update Client Options/Keybinds
 bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
 {
-    m_prepared_options_update->bindValue(":id", data.m_client_id); // for WHERE statement only
+    m_prepared_options_update->bindValue(":id", (quint64)data.m_client_id); // for WHERE statement only
     m_prepared_options_update->bindValue(":options", data.m_options);
     m_prepared_options_update->bindValue(":keybinds", data.m_keybinds);
     if (!doIt(*m_prepared_options_update))

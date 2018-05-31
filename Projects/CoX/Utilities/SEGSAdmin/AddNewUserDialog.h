@@ -21,18 +21,19 @@ class AddNewUserDialog : public QDialog
 
 
 public:
-    explicit AddNewUserDialog(QWidget *parent = 0);
+    explicit AddNewUserDialog(QWidget *parent = nullptr);
     ~AddNewUserDialog();
     void capture_input();
 
 public Q_SLOTS:
     void on_add_user();
+    void on_add_admin_user();
 
 private:
     Ui::AddNewUserDialog *ui;
 
 signals:
-    void sendInput(const QString username, const QString password, const QString acclevel);
+    void sendInput(QString username, QString password, QString acclevel);
 
 };
 

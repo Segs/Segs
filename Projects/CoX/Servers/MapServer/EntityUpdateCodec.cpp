@@ -367,6 +367,7 @@ void sendTargetUpdate(const Entity &src,BitStream &bs)
     bs.StoreBits(1,has_target);
     if(!has_target)
         return;
+
     bs.StoreBits(1,target_id!=0);
     if(target_id!=0)
         bs.StorePackedBits(12,target_id);

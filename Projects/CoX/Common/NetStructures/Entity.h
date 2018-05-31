@@ -171,8 +171,8 @@ public:
         bool                m_controls_disabled     = false;
         float               m_backup_spd            = 1.0f;
         float               m_jump_height           = 2.0f;
-        uint8_t             m_motion_state_id             = 1;
-        bool                m_update_motion_state         = true;     // EntityResponse sendServerControlState
+        uint8_t             m_motion_state_id       = 1;
+        bool                m_update_motion_state   = true;     // EntityResponse sendServerControlState
         bool                m_update_pos_and_cam    = true;     // EntityResponse sendServerControlState
         bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
@@ -224,14 +224,12 @@ static  void                sendPvP(BitStream &bs);
 
 enum class DbStoreFlags : uint32_t
 {
-    Gui        = 1,
-    Options    = 2,
-    Keybinds   = 4,
-    PlayerData = 7,
+    PlayerData = 1,
     Full       = ~0U,
 };
 
 void markEntityForDbStore(Entity *e,DbStoreFlags f);
+void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant);
 void fillEntityFromNewCharData(Entity &e, BitStream &src, const ColorAndPartPacker *packer, const Parse_AllKeyProfiles &default_profiles);

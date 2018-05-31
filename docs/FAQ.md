@@ -1,4 +1,5 @@
-] *** Frequently Asked Questions *** [
+Frequently Asked Questions
+======
 
 Q. Who are you guys/gals?
 

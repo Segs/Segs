@@ -29,18 +29,32 @@ AddNewUserDialog::~AddNewUserDialog()
 
 void AddNewUserDialog::on_add_user()
 {
-   ui->usernameedit->clear();
-   ui->passedit->clear();
-   ui->accleveledit->clear();
-   show();
+    ui->label->clear();
+    ui->usernameedit->clear();
+    ui->passedit->clear();
+    ui->accleveledit->setValue(1);
+    ui->accleveledit->show();
+    ui->acclevel->show();
+    show();
+}
+
+void AddNewUserDialog::on_add_admin_user()
+{
+    ui->label->setText("Create an admin user");
+    ui->usernameedit->clear();
+    ui->passedit->clear();
+    ui->accleveledit->setValue(9);
+    ui->accleveledit->hide();
+    ui->acclevel->hide();
+    show();
 }
 
 void AddNewUserDialog::capture_input()
 {
-QString username = ui->usernameedit->text();
-QString password = ui->passedit->text();
-QString acclevel = ui->accleveledit->text();
-emit sendInput(username,password,acclevel);
+    QString username = ui->usernameedit->text();
+    QString password = ui->passedit->text();
+    QString acclevel = ui->accleveledit->text();
+    emit sendInput(username,password,acclevel);
 }
 
 //!@}

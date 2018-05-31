@@ -92,7 +92,7 @@ ${target_INCLUDE}
 )
 ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
 target_link_libraries(mapserver_lib PUBLIC CRUDP_Protocol common_runtime)
-qt5_use_modules(mapserver_lib LINK_PUBLIC Core)
+target_link_libraries(mapserver_lib PUBLIC Qt5::Core)
 if(ENABLE_SCRIPTING_ENGINE)
     target_compile_definitions(mapserver_lib PUBLIC -DSCRIPTING_ENABLED=1)
     target_link_libraries(mapserver_lib INTERFACE lua_IMP sol2_IMP)

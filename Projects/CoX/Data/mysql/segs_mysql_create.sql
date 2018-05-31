@@ -7,6 +7,9 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 
+DROP TABLE IF EXISTS `table_versions`;
+DROP TABLE IF EXISTS `game_servers`;
+DROP TABLE IF EXISTS `bans`;
 DROP TABLE IF EXISTS `accounts`;
 CREATE TABLE `accounts` (
   `id` int(11) NOT NULL,
@@ -17,7 +20,6 @@ CREATE TABLE `accounts` (
   `salt` blob NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-DROP TABLE IF EXISTS `bans`;
 CREATE TABLE `bans` (
   `id` int(11) NOT NULL,
   `account_id` int(11) NOT NULL,
@@ -26,7 +28,6 @@ CREATE TABLE `bans` (
   `reason` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-DROP TABLE IF EXISTS `game_servers`;
 CREATE TABLE `game_servers` (
   `id` int(11) NOT NULL,
   `addr` varchar(20) NOT NULL,
@@ -35,7 +36,6 @@ CREATE TABLE `game_servers` (
   `token` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-DROP TABLE IF EXISTS `table_versions`;
 CREATE TABLE `table_versions` (
   `id` int(11) NOT NULL,
   `table_name` varchar(20) NOT NULL,

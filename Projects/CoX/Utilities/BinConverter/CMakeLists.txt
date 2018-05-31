@@ -11,7 +11,7 @@ find_package(Qt5 COMPONENTS Core REQUIRED)
 add_executable(binConverter
     binConverter.cpp
 )
-target_link_libraries(binConverter gameData cereal_IMP)
-qt5_use_modules(binConverter Core)
+target_link_libraries(binConverter PUBLIC gameData cereal_IMP)
+target_link_libraries(binConverter PUBLIC Qt5::Core)
 
 

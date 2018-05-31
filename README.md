@@ -1,4 +1,6 @@
-![logo](docs/title_v1.png)
+
+<img src="docs/segs-medallion-med.png" align="right" alt="SEGS Logo">
+
 [![master Build Status](https://travis-ci.org/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs) 
 [![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Average time to resolve an issue")
@@ -8,16 +10,20 @@ SEGS - Super Entity Game Server
 ======
 SEGS is the Super Entity Game Server. It is a free, open source (under the terms of the BSD License), cross-platform, and object-oriented suite of protocols and services designed to interface with popular super hero themed MMORPG clients. SEGS is written in C++ and facilitates common MMORPG functionality such as account and character storage to a database, account and character retrieval from a database, secure client authentication, client movement in a virtual world, and client chat.
 
-For legal information, please see [LICENSE](./LICENSE).
+For legal information, please see [LICENSE.md](./LICENSE.md).
 
-For a list of SEGS authors and contributors, please see [Authors.txt](./docs/Authors.txt).
+For a list of SEGS authors and contributors, please see [AUTHORS.md](./docs/AUTHORS.md).
 
+**:exclamation: LOOKING FOR INSTALLATION INSTRUCTIONS? :exclamation:**
+> NOTICE: This guide is for COMPILING SEGS FROM SOURCE. If you're looking for help installing and configuring SEGS from a release package, please view [the server installation README.md here](./Projects/CoX/docs/README.md) 
+
+Some other useful links:
+* Our [Discord](https://discord.segs.io/)
 * Our [wiki](https://github.com/Segs/Segs/wiki)
 * The [Issue Queue](https://github.com/Segs/Segs/issues)
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide)
-* Join us on [Chat!](./docs/CONTRIBUTING.md#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 
-Basic instructions for compiling SEGS in Linux and Windows are below, however for more detailed visual instructions, visit https://segs.nemerle.eu/developers
+Basic instructions for compiling SEGS in Linux and Windows are below, however for more detailed visual instructions, visit https://segs.io/developers
 
 
 CONTENTS OF THIS FILE
@@ -25,25 +31,29 @@ CONTENTS OF THIS FILE
 - [Requirements and Notes](#requirements-and-notes)
 - [Install C++ Tool Chain](#install-c-tool-chain)
 - [Compile SEGS](#build-segs)
-- [Setting up SEGS Server and Playing](#setting-up-segs-server-and-playing)
 - [Contribute to Development](#contribute-to-development)
-- [More Information](#more-information)
+- [Setting up SEGS Server and Playing](#setting-up-segs-server-and-playing)
+- [More Information](#help-and-more-information)
 - [FAQs](#faqs)
+
 
 REQUIREMENTS AND NOTES
 ------
 
 Below are the utilities and libraries you'll need to compile SEGS in any environment. While it may be possible to use another toolset, the C++ Tool Chain below is the only one officially supported by the SEGS team. These packages are available for both Linux or Windows, via your distro's package manager, or via the links below:
 
-   - QT >5.8 - A cross platform application framework utilized heavily by SEGS. https://www.qt.io/download-qt-for-application-development  
-   - CMake >3.6 - CMake is the cross-platform make utility. It generates makefiles for multiple platforms. https://cmake.org/download/
-   - Git - A version control system for tracking changes in computer files and coordinating work on those files among multiple people. https://git-scm.com/download  
-   - _OPTIONAL:_ PostGreSQL - By default SEGS uses a local SQLite database, but optionally may be configured to use PostGreSQL instead. http://www.postgresql.org/download/
+   - **QT 5.9+** - A cross platform application framework utilized heavily by SEGS. https://www.qt.io/download-qt-for-application-development  
+   - **CMake 3.6+** - CMake is the cross-platform make utility. It generates makefiles for multiple platforms. https://cmake.org/download/
+   - **Git** - A version control system for tracking changes in computer files and coordinating work on those files among multiple people. https://git-scm.com/download  
+
+**ADVANCED:** By default SEGS uses a local SQLite database created by `SEGSAdmin` or `dbtool`, but optionally may be configured to use another database driver by manually configuring settings.cfg. SEGS is compatible with PostGreSQL or MySQL/MariaDB. These alternate configurations are optional and unsupported. YMMV.
+   - _OPTIONAL:_ PostGreSQL - http://www.postgresql.org/download/
+   - _OPTIONAL:_ MySQL - http://www.mysql.org/downloads/mysql
 
 For more detailed version of this guide or forums for help see the links below:
-- https://segs.nemerle.eu/
-- https://segs.nemerle.eu/developers
-- https://segs.nemerle.eu/forumz/index.php
+- https://segs.io
+- https://segs.io/developers
+- https://forum.segs.io/
 
 To report any bugs, please visit our github:
 - https://github.com/Segs/Segs
@@ -54,7 +64,13 @@ Note that all directories mentioned in this document are always relative to the 
 INSTALL C++ TOOL CHAIN
 ------
 
-**1. Installing in Linux**
+**1. Installing in Windows**
+
+Download dependencies and tools by clicking on the links listed in the Requirements section above. Make sure you download the correct version for your installation of Windows. Once downloaded, navigate to your downloads folder and run each installer.
+
+:exclamation: NOTE: for QT, please install **mingw 32bit version**
+
+**2. Installing in Linux**
 
 Install all dependencies and tools by opening a terminal and typing:
 
@@ -74,12 +90,6 @@ source /opt/rh/devtoolset-6/enable
 ```
 
 Your distro may come with some or all of these packages pre-installed, and while most versions of these libraries will work, you must have version 5.8+ of Qt installed. CentOS and RHEL are two such distributions that require downloading a more recent version of CMake and Qt and potentially having to build from source.
-
-**2. Installing in Windows**
-
-Download dependencies and tools by clicking on the links listed in the Requirements section above. Make sure you download the correct version for your installation of Windows. Once downloaded, navigate to your downloads folder and run each installer.
-
-NOTE: for QT, please install **mingw 32bit version**
 
 **3. Installing in FreeBSD 11.x**
 
@@ -136,7 +146,7 @@ Now, select `Build > Build All` from the menu at the top of QTCreator. The botto
 00:00:00: The process 'cmake' exited normally.
 ```
 
-**Doing it the CLI Way**
+**ADVANCED: Doing it the CLI Way**
 
 If you're on a headless Linux or FreeBSD server, run the following commands:
 ```
@@ -146,17 +156,6 @@ cd Segs/bld
 cmake ..
 make
 ```
-
-
-SETTING UP SEGS SERVER AND PLAYING
-------
-
-After compiling, you'll need to setup your SEGS Server and Databases. You'll also need to download a specific version of the client compatible with SEGS.
-
-**IMPORTANT:** You can find information on setting up and running your SEGS server by reading the README.md located in your output directory (typically `out`). You can also read a copy of that [README.md here](./Projects/CoX/docs/README.md)
-
-- Don't forget! You'll need a copy of the required CoH client from Issue 0 (release) version 0.22, which can be found through various sources online, or via magnet link:  
-  `magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f`
 
 
 CONTRIBUTE TO DEVELOPMENT
@@ -172,13 +171,24 @@ Please read [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and see the links below to
 * Join us on [Chat!](./docs/CONTRIBUTING.md#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 
 
-MORE INFORMATION
+SETTING UP SEGS SERVER AND PLAYING
 ------
 
-Additional information will be available here, including optional steps to take after configuration and where to find additional help.
+After compiling, you'll need to setup your SEGS Server and Databases. You'll also need to download a specific version of the client compatible with SEGS.
+
+**IMPORTANT:** You can find information on setting up and running your SEGS server by reading the README.md located in your output directory (typically `out`). You can also read a copy of that [README.md here](./Projects/CoX/docs/README.md)
+
+- Don't forget! You'll need a copy of the required CoH client from Issue 0 (release) version 0.22, which can be found through various sources online, or via magnet link:  
+  `magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f`
+
+
+HELP AND MORE INFORMATION
+------
+
+For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.io/
 
 
 FAQs
 ------
 
-Frequently asked questions will go here.
+Visit our FAQ at https://github.com/Segs/Segs/blob/master/docs/FAQ.md

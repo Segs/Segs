@@ -17,5 +17,5 @@ ADD_LIBRARY(auth_db_sync_lib STATIC ${target_SOURCES})
 target_link_libraries(auth_db_sync_lib PUBLIC cox_server_common network_structures)
 target_link_libraries(auth_db_sync_lib PRIVATE cereal_IMP)
 target_include_directories(auth_db_sync_lib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(auth_db_sync_lib PUBLIC Qt5::Core Qt5::Sql)
 
-qt5_use_modules(auth_db_sync_lib LINK_PUBLIC Core Sql)

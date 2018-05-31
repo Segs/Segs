@@ -260,6 +260,7 @@ int storeBinTreesResult(BitStream &bs,const std::array<BinTreeEntry,7> &bintree)
     static const uint8_t tree_depth_bits_mod[8] = { 1,2,2,3,3,3,3 };
     char num_bits;
     int val_sign;
+    Q_UNUSED(val_sign);
     char base_bitcount;
     int res=0;
     std::array<BinTreeEntry,7> tree_copy = bintree;

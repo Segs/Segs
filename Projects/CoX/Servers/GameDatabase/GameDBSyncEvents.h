@@ -18,6 +18,10 @@ enum GameDBEventTypes : uint32_t
     //updates, no responses
     evSetClientOptions,
     evCostumeUpdate,
+    evGuiUpdate,
+    evOptionsUpdate,
+    evKeybindsUpdate,
+    evPlayerUpdate,
     //requests
     evRemoveCharacterRequest,
     evRemoveCharacterResponse,
@@ -244,6 +248,14 @@ struct SetClientOptionsData
     QString m_keybinds;
 };
 ONE_WAY_MESSAGE(SetClientOptions)
+
+struct PlayerUpdateData
+{
+    uint32_t m_id;
+    QString m_player_data;
+};
+ONE_WAY_MESSAGE(PlayerUpdate)
+
 #undef ONE_WAY_MESSAGE
 #undef SIMPLE_TWO_WAY_MESSAGE
 #undef TWO_WAY_MESSAGE
