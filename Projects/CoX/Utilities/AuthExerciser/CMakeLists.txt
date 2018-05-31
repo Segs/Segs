@@ -20,7 +20,7 @@ install(TARGETS AuthExerciser
     DESTINATION deploy
 )
 if(MINGW)
-    target_link_libraries(AuthExerciser ws2_32)
+    target_link_libraries(AuthExerciser PUBLIC ws2_32)
 endif()
 IF(WIN32)
     include(Windeployqt)
