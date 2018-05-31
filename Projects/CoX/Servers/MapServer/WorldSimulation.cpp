@@ -21,11 +21,11 @@
 
 static void SetVelocity(Entity *e)
 {
-    float control_vals[6] = {0};
-    glm::vec3 horiz_vel = {0, 0, 0};
-    int max_press_time = 0;
-    int press_time = 100;
-    glm::vec3 vel = {0, 0, 0};
+    float       control_vals[6] = {0};
+    glm::vec3   horiz_vel       = {0, 0, 0};
+    int         max_press_time  = 0;
+    int         press_time      = 100;
+    glm::vec3   vel             = {0, 0, 0};
 
     if(e->m_cur_state->m_no_collision)
     {
@@ -163,8 +163,9 @@ void World::physicsStep(Entity *e,uint32_t msec)
 
         e->m_entity_data.m_pos += ((za*e->m_cur_state->m_pos_delta)*float(msec))/50.0f;
         float distance  = glm::distance(e->m_entity_data.m_pos, e->m_prev_pos);
-        //e->m_velocity   = e->inp_state.pos_delta * e->m_speed / distance;
-        //e->m_velocity   = za*e->inp_state.pos_delta;
+        // setting velocity above. these are the old methods:
+        //e->m_velocity   = e->m_cur_state->m_pos_delta * e->m_speed / distance;
+        //e->m_velocity   = za*e->m_cur_state->m_pos_delta;
 
         if(e->m_type == EntType::PLAYER)
         {
@@ -214,15 +215,6 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
         if(e->m_time_till_logout<0)
             e->m_time_till_logout=0;
     }
-
-    /*
-    CharacterDatabase *char_db = AdminServer::instance()->character_db();
-    // TODO: Implement asynchronous database queries
-    DbTransactionGuard grd(*char_db->getDb());
-    if(false==char_db->update(e))
-        return;
-    grd.commit();
-    */
 }
 
 //! @}

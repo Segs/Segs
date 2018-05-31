@@ -86,7 +86,7 @@ void InputStateEvent::receiveInputStateHistory(BitStream &bs) // formerly partia
                 angle = AngleDequantize(bs.GetBits(11),11); // pitch
                 m_next_state.m_pyr_valid[0] = true;
                 m_next_state.m_camera_pyr[0] = angle;
-                qCDebug(logMovement, "Pitch (%f): %f", m_next_state.m_orientation_pyr[0], m_next_state.m_camera_pyr.x);
+                qCDebug(logInput, "Pitch (%f): %f", m_next_state.m_orientation_pyr[0], m_next_state.m_camera_pyr.x);
                 break;
             }
             case YAW: // camera yaw (Q or E keybinds)
@@ -94,7 +94,7 @@ void InputStateEvent::receiveInputStateHistory(BitStream &bs) // formerly partia
                 angle = AngleDequantize(bs.GetBits(11),11); // yaw
                 m_next_state.m_pyr_valid[1] = true;
                 m_next_state.m_camera_pyr[1] = angle;
-                qCDebug(logMovement, "Yaw (%f): %f", m_next_state.m_orientation_pyr[1], m_next_state.m_camera_pyr.y);
+                qCDebug(logInput, "Yaw (%f): %f", m_next_state.m_orientation_pyr[1], m_next_state.m_camera_pyr.y);
                 break;
             }
             case 8:
@@ -119,7 +119,7 @@ void InputStateEvent::receiveInputStateHistory(BitStream &bs) // formerly partia
                 if(bs.GetBits(1)) // if true velocity scale < 255
                 {
                     m_next_state.m_velocity_scale = bs.GetBits(8);
-                    qCDebug(logMovement, "Velocity Scale: %d", m_next_state.m_velocity_scale);
+                    qCDebug(logInput, "Velocity Scale: %d", m_next_state.m_velocity_scale);
                 }
                 break;
             }
@@ -169,7 +169,7 @@ void InputStateEvent::extended_input(BitStream &bs)
     {
         m_next_state.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11);
         m_next_state.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11);
-        qCDebug(logMovement, "pitch: %f \tyaw: %f", m_next_state.m_orientation_pyr[0], m_next_state.m_orientation_pyr[1]);
+        qCDebug(logInput, "extended pitch: %f \tyaw: %f", m_next_state.m_orientation_pyr[0], m_next_state.m_orientation_pyr[1]);
     }
 }
 
