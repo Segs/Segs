@@ -638,10 +638,10 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         e->m_char->m_account_id = map_session.auth_id();
         e->m_client = &map_session;
         map_session.m_ent = e;
-        if(m_new_player_spawns.empty())
-            e->m_entity_data.m_pos = glm::vec3(128.0f,16.0f,-198.0f); // Atlas Park Starting Location
-        else
-            e->m_entity_data.m_pos = glm::vec3(m_new_player_spawns[rand()%m_new_player_spawns.size()][3]);
+        glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
+        if(!m_new_player_spawns.empty())
+            spawn_pos = glm::vec3(m_new_player_spawns[rand()%m_new_player_spawns.size()][3]);
+        forcePosition(*e,spawn_pos);
         e->m_entity_data.m_access_level = map_session.m_access_level;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);

@@ -508,6 +508,10 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
 {
     Entity * target = src.m_client->m_ent;
+    //TODO: remove this after we have proper physics processing
+    if(target->m_full_update_count>0)
+        target->m_full_update_count--;
+    target->m_full_update = target->m_full_update_count!=0;
 
     bs.StoreBits(1,target->m_full_update);
     if( !target->m_full_update )
