@@ -200,4 +200,9 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
     e->m_db_store_flags &= ~uint32_t(f);
 }
 
+void forcePosition(Entity &e, glm::vec3 pos)
+{
+    e.m_entity_data.m_pos = pos;
+    e.m_full_update_count = 10;
+}
 //! @}
