@@ -1,8 +1,8 @@
 <face heading><span align=center><color #ff0000>SEGS Release Notes v0.5.0</color></span></face><br>
-<color #ff0000><span align=center><b>Warning.</b></color></span>
+<color #ff0000><span align=center><b>NOTICE!</b></color></span>
 <br>
 <color #ff0000>By default, server synchoronization of player positions have been disabled</color>
-This change removes the rubber-banding effect, but positions of other players will not be updated
+This change removes the rubber-banding effect, but positions of other players may not be updated properly
 <br>
 Welcome to the Super Entity Game Server! SEGS is under active development and is far from being feature complete.<br>
 <br>
@@ -10,10 +10,15 @@ Please consider contributing to our success by reporting bugs on our github:<br>
 <face heading><span align=center><a href="http://github.com/Segs/">http://github.com/Segs/</a></span></face><br>
 <br>
 <color #ffff00>Latest Changes:</color><br>
+- Completely new SEGSAdmin GUI tool to faciliate simple server setup<br>
+- Periodic state saves to database for Character/Player data permanence. Player Spawns now work properly too!<br>
+- NPC Spawns! Static NPCs such as police drones and contacts now spawn from client files<br>
+- Generator NPCs! Server now properly recognizes NPC generators (spawners) from the client files. This is the first step towards spawning bad guys, cars, and pedestrians<br>
+- Deep changes to the server architecture enabling NPC spawns, and building a framework for future enhancements<br>
 <br>
 <color #ff9900>Useful Slash Commands:</color><br>
 <color #ffCC99><i>/stuck</i></color> - resets your character to the starting location in current map<br>
-<color #ffCC99><i>/updatechar</i></color> - update the database with your character information<br>
+<color #ffCC99><i>/moveto x y z</i></color> - move character to the x y z coordinates<br>
 <color #ffCC99><i>/fly</i></color> - toggles the "flying" flag for your character<br>
 <color #ffCC99><i>/cmdlist</i></color> - list all available slash commands<br>
 <br><br>
