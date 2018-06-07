@@ -20,6 +20,8 @@ GenerateConfigFileDialog::GenerateConfigFileDialog(QWidget *parent) :
     ui(new Ui::GenerateConfigFileDialog)
 {
     ui->setupUi(this);
+    // Field Validators
+    ui->config_server_name_edit->setMaxLength(32);
     connect(ui->buttonBox,&QDialogButtonBox::accepted,this,&GenerateConfigFileDialog::capture_input);
     // GetIP Signals/Slots
     m_get_ip = new GetIPDialog(this);

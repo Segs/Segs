@@ -392,6 +392,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
         ui->runDBTool->setEnabled(true);
         ui->set_up_data_button->setEnabled(true);
         ui->authserver_start->setEnabled(true);
+        ui->settings_button->setEnabled(true);
         emit readyToRead(config_file_path);
     }
     else
@@ -402,6 +403,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
         ui->createUser->setEnabled(false); // Cannot create user without settings.cfg
         ui->set_up_data_button->setEnabled(false); // Shouldn't create data before config file exists
         ui->authserver_start->setEnabled(false); // Shouldn't run authserver if no config file exists
+        ui->settings_button->setEnabled(false); // Shouldn't be able to edit settings if no config file exists
     }
 }
 

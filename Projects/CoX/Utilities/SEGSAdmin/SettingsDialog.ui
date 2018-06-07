@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>844</width>
+    <width>849</width>
     <height>454</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    <string>Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
-   <item row="0" column="0" colspan="2">
+   <item row="0" column="0" colspan="4">
     <widget class="QTabWidget" name="tabWidget">
      <property name="minimumSize">
       <size>
@@ -99,7 +99,10 @@
              </size>
             </property>
             <property name="inputMask">
-             <string>000.000.000.000</string>
+             <string/>
+            </property>
+            <property name="placeholderText">
+             <string>IP Address</string>
             </property>
            </widget>
           </item>
@@ -122,6 +125,9 @@
               <width>50</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="placeholderText">
+             <string>Num</string>
             </property>
            </widget>
           </item>
@@ -158,7 +164,10 @@
              </size>
             </property>
             <property name="inputMask">
-             <string>000.000.000.000</string>
+             <string/>
+            </property>
+            <property name="placeholderText">
+             <string>IP Address</string>
             </property>
            </widget>
           </item>
@@ -182,6 +191,9 @@
               <height>16777215</height>
              </size>
             </property>
+            <property name="placeholderText">
+             <string>Num</string>
+            </property>
            </widget>
           </item>
           <item row="2" column="0">
@@ -204,6 +216,9 @@
               <height>22</height>
              </size>
             </property>
+            <property name="placeholderText">
+             <string>Text</string>
+            </property>
            </widget>
           </item>
           <item row="3" column="0">
@@ -219,18 +234,12 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="game_max_players">
-            <property name="minimumSize">
-             <size>
-              <width>108</width>
-              <height>22</height>
-             </size>
+           <widget class="QSpinBox" name="game_max_players">
+            <property name="minimum">
+             <number>1</number>
             </property>
-            <property name="maximumSize">
-             <size>
-              <width>160</width>
-              <height>22</height>
-             </size>
+            <property name="maximum">
+             <number>200</number>
             </property>
            </widget>
           </item>
@@ -247,12 +256,12 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QLineEdit" name="game_max_slots">
-            <property name="maximumSize">
-             <size>
-              <width>160</width>
-              <height>22</height>
-             </size>
+           <widget class="QSpinBox" name="game_max_slots">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>8</number>
             </property>
            </widget>
           </item>
@@ -314,14 +323,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QLineEdit" name="char_dbdriver">
-               <property name="maximumSize">
-                <size>
-                 <width>200</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
+              <widget class="QComboBox" name="char_dbdriver"/>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="AdminServer_9">
@@ -338,7 +340,10 @@
              <item row="1" column="1">
               <widget class="QLineEdit" name="char_dbhost">
                <property name="inputMask">
-                <string>000.000.000.000</string>
+                <string/>
+               </property>
+               <property name="placeholderText">
+                <string>IP Address</string>
                </property>
               </widget>
              </item>
@@ -355,7 +360,11 @@
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QLineEdit" name="char_dbport"/>
+              <widget class="QLineEdit" name="char_dbport">
+               <property name="placeholderText">
+                <string>Number</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -396,9 +405,6 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="acc_dbdriver"/>
-             </item>
              <item row="1" column="0">
               <widget class="QLabel" name="AdminServer_3">
                <property name="font">
@@ -414,7 +420,10 @@
              <item row="1" column="1">
               <widget class="QLineEdit" name="acc_dbhost">
                <property name="inputMask">
-                <string>000.000.000.000</string>
+                <string/>
+               </property>
+               <property name="placeholderText">
+                <string>IP Address</string>
                </property>
               </widget>
              </item>
@@ -431,7 +440,14 @@
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QLineEdit" name="acc_dbport"/>
+              <widget class="QLineEdit" name="acc_dbport">
+               <property name="placeholderText">
+                <string>Number</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="acc_dbdriver"/>
              </item>
             </layout>
            </widget>
@@ -463,57 +479,17 @@
           <string>Map Server</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="0" rowspan="4">
-           <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
-             <widget class="QLabel" name="AdminServer_32">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Listen Address (IP):</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="AdminServer_33">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Location Address (IP):</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="AdminServer_36">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Maps Location:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="AdminServer_37">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Player Fade In:</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+          <item row="0" column="0">
+           <widget class="QLabel" name="AdminServer_32">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Listen Address (IP):</string>
+            </property>
+           </widget>
           </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="map_listen_ip">
@@ -547,6 +523,21 @@
               <width>50</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="placeholderText">
+             <string>Num</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="AdminServer_33">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Location Address (IP):</string>
             </property>
            </widget>
           </item>
@@ -583,25 +574,110 @@
               <height>16777215</height>
              </size>
             </property>
+            <property name="placeholderText">
+             <string>Num</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="AdminServer_36">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Maps Location:</string>
+            </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QLineEdit" name="map_location">
+            <property name="minimumSize">
+             <size>
+              <width>111</width>
+              <height>22</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>160</width>
-              <height>16777215</height>
+              <width>111</width>
+              <height>22</height>
              </size>
+            </property>
+            <property name="placeholderText">
+             <string>Text</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="map_player_fade_in">
+          <item row="3" column="0">
+           <widget class="QLabel" name="AdminServer_37">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Player Fade In:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1" colspan="2">
+           <widget class="QSlider" name="map_player_fade_in">
+            <property name="minimumSize">
+             <size>
+              <width>151</width>
+              <height>20</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>160</width>
-              <height>16777215</height>
+              <width>151</width>
+              <height>20</height>
              </size>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+            <property name="singleStep">
+             <number>40</number>
+            </property>
+            <property name="pageStep">
+             <number>40</number>
+            </property>
+            <property name="tracking">
+             <bool>true</bool>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::NoTicks</enum>
+            </property>
+            <property name="tickInterval">
+             <number>40</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="QLineEdit" name="map_player_fade_in_value">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="placeholderText">
+             <string>Num</string>
             </property>
            </widget>
           </item>
@@ -655,7 +731,10 @@
                </size>
               </property>
               <property name="inputMask">
-               <string>000.000.000.000</string>
+               <string/>
+              </property>
+              <property name="placeholderText">
+               <string>IP Address</string>
               </property>
              </widget>
             </item>
@@ -682,6 +761,9 @@
                 <width>50</width>
                 <height>16777215</height>
                </size>
+              </property>
+              <property name="placeholderText">
+               <string>Num</string>
               </property>
              </widget>
             </item>
@@ -966,39 +1048,85 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QPushButton" name="ip_auto_populate">
-     <property name="minimumSize">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="ip_auto_populate">
+       <property name="minimumSize">
+        <size>
+         <width>121</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>150</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="text">
+        <string> Auto Populate IPs</string>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normalon>:/icons/icon_lookup.png</normalon>
+        </iconset>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="reset_defaults">
+       <property name="minimumSize">
+        <size>
+         <width>121</width>
+         <height>21</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>150</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Reset Defaults</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="1">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
       <size>
-       <width>121</width>
-       <height>21</height>
+       <width>398</width>
+       <height>20</height>
       </size>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>150</width>
-       <height>50</height>
-      </size>
-     </property>
+    </spacer>
+   </item>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="settings_save_button">
      <property name="text">
-      <string> Auto Populate IPs</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normalon>:/icons/icon_lookup.png</normalon>
-      </iconset>
-     </property>
-     <property name="flat">
-      <bool>false</bool>
+      <string>Save</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
+   <item row="1" column="3">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Close|QDialogButtonBox::Save</set>
+      <set>QDialogButtonBox::Close</set>
      </property>
     </widget>
    </item>

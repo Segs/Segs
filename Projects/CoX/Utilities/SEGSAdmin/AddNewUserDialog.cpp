@@ -19,6 +19,9 @@ AddNewUserDialog::AddNewUserDialog(QWidget *parent) :
     ui(new Ui::AddNewUserDialog)
 {
     ui->setupUi(this);
+    // Field Validators
+    ui->usernameedit->setMaxLength(14);
+    ui->passedit->setMaxLength(14);
     connect(ui->buttonBox,&QDialogButtonBox::accepted,this,&AddNewUserDialog::capture_input);
 
 }
@@ -35,6 +38,7 @@ void AddNewUserDialog::on_add_user()
     ui->accleveledit->setValue(1);
     ui->accleveledit->show();
     ui->acclevel->show();
+
     show();
 }
 

@@ -13,20 +13,39 @@
 #include "SettingsDialog.h"
 #include "ui_SettingsDialog.h"
 #include "GetIPDialog.h"
+#include "Globals.h"
 #include <QSettings>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QDebug>
+#include <QValidator>
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SettingsDialog)
 {
     ui->setupUi(this);
+    ui->acc_dbdriver->addItems(g_db_drivers);
+    ui->char_dbdriver->addItems(g_db_drivers);
+    // Field Validators
+    ui->map_player_fade_in_value->setValidator(new QIntValidator(0, 1000, this)); // Only allow int between 0 and 1000
+    ui->game_listen_port->setMaxLength(5);
+    ui->game_loc_port->setMaxLength(5);
+    ui->game_server_name->setMaxLength(32);
+    ui->map_listen_port->setMaxLength(5);
+    ui->map_location_port->setMaxLength(5);
+    ui->map_listen_port->setMaxLength(5);
+    ui->char_dbport->setMaxLength(5);
+    ui->acc_dbport->setMaxLength(5);
+    ui->auth_port->setMaxLength(5);
     m_get_ip = new GetIPDialog(this);
 
     // SettingsDialog Signals
-    connect(ui->buttonBox,&QDialogButtonBox::accepted,this,&SettingsDialog::save_changes_config_file);
     connect(ui->ip_auto_populate,&QPushButton::clicked,m_get_ip,&GetIPDialog::get_local_ip);
+    connect(ui->settings_save_button,&QPushButton::clicked,this,&SettingsDialog::field_validator);
+    connect(ui->reset_defaults,&QPushButton::clicked,this,&SettingsDialog::set_default_values);
+    connect(ui->map_player_fade_in,&QSlider::valueChanged,this,&SettingsDialog::text_edit_updater);
+    connect(ui->map_player_fade_in_value,&QLineEdit::textChanged,this,&SettingsDialog::slider_updater);
 
     // GetIP Signals
     connect(m_get_ip,&GetIPDialog::sendIP,this,&SettingsDialog::auto_populate_ip_main);
@@ -37,11 +56,30 @@ SettingsDialog::~SettingsDialog()
     delete ui;
 }
 
+void SettingsDialog::text_edit_updater()
+{
+    QString fade_in_textedit = QString::number(ui->map_player_fade_in->value());
+    ui->map_player_fade_in_value->setText(fade_in_textedit);
+}
+
+void SettingsDialog::slider_updater()
+{
+    float fade_in_slider = ui->map_player_fade_in_value->text().toFloat();
+    ui->map_player_fade_in->setValue(fade_in_slider);
+}
+
 void SettingsDialog::open_settings_dialog()
 {
     QFileInfo config_file("settings.cfg");
     QString config_file_path = config_file.absoluteFilePath();
     SettingsDialog::read_config_file(config_file_path);
+    QList<QLineEdit *> all_line_edits = ui->tab_settings->findChildren<QLineEdit *>();
+    foreach(QLineEdit* le, all_line_edits)
+    {
+        le->setStyleSheet("background-color: rgb(255, 255, 255)");
+    }
+    QString fade_in_value = QString::number(ui->map_player_fade_in->value());
+    ui->map_player_fade_in_value->setText(fade_in_value);
     show();
 }
 
@@ -53,7 +91,8 @@ void SettingsDialog::read_config_file(QString filePath)
     QString acc_db_driver = config_file.value("db_driver","").toString();
     QString acc_db_host = config_file.value("db_host","").toString();
     QString acc_db_port = config_file.value("db_port","").toString();
-    ui->acc_dbdriver->setText(acc_db_driver);
+    int acc_index = ui->acc_dbdriver->findText(acc_db_driver);
+    ui->acc_dbdriver->setCurrentIndex(acc_index);
     ui->acc_dbhost->setText(acc_db_host);
     ui->acc_dbport->setText(acc_db_port);
     config_file.endGroup();
@@ -61,7 +100,8 @@ void SettingsDialog::read_config_file(QString filePath)
     QString char_db_driver = config_file.value("db_driver","").toString();
     QString char_db_host = config_file.value("db_host","").toString();
     QString char_db_port = config_file.value("db_port","").toString();
-    ui->char_dbdriver->setText(char_db_driver);
+    int char_index = ui->char_dbdriver->findText(char_db_driver);
+    ui->char_dbdriver->setCurrentIndex(char_index);
     ui->char_dbhost->setText(char_db_host);
     ui->char_dbport->setText(char_db_port);
     config_file.endGroup();
@@ -78,15 +118,15 @@ void SettingsDialog::read_config_file(QString filePath)
     QStringList game_listen_addr_portip = game_listen_addr.split(':');
     QString game_loc_addr = config_file.value("location_addr","").toString();
     QStringList game_loc_addr_portip = game_loc_addr.split(':');
-    QString max_players = config_file.value("max_players","").toString();
-    QString max_char_slots = config_file.value("max_character_slots","").toString();
+    int max_players = config_file.value("max_players","").toInt();
+    int max_char_slots = config_file.value("max_character_slots","").toInt();
     ui->game_server_name->setText(game_server_name);
     ui->game_listen_ip->setText(game_listen_addr_portip[0]);
     ui->game_listen_port->setText(game_listen_addr_portip[1]);
     ui->game_loc_ip->setText(game_loc_addr_portip[0]);
     ui->game_loc_port->setText(game_loc_addr_portip[1]);
-    ui->game_max_players->setText(max_players);
-    ui->game_max_slots->setText(max_char_slots);
+    ui->game_max_players->setValue(max_players);
+    ui->game_max_slots->setValue(max_char_slots);
     config_file.endGroup();
     config_file.beginGroup("MapServer");
     QString map_listen_addr = config_file.value("listen_addr","").toString();
@@ -94,13 +134,13 @@ void SettingsDialog::read_config_file(QString filePath)
     QString map_loc_addr = config_file.value("location_addr","").toString();
     QStringList map_loc_addr_portip = map_loc_addr.split(':');
     QString maps_loc = config_file.value("maps","").toString();
-    QString player_fade_in = config_file.value("player_fade_in", "").toString();
+    float player_fade_in = config_file.value("player_fade_in", "").toFloat();
     ui->map_listen_ip->setText(map_listen_addr_portip[0]);
     ui->map_listen_port->setText(map_listen_addr_portip[1]);
     ui->map_location_ip->setText(map_loc_addr_portip[0]);
     ui->map_location_port->setText(map_loc_addr_portip[1]);
     ui->map_location->setText(maps_loc);
-    ui->map_player_fade_in->setText(player_fade_in);
+    ui->map_player_fade_in->setValue(player_fade_in);
     config_file.endGroup();
     config_file.beginGroup("Logging");
     ui->log_logging->setChecked(config_file.value("log_logging","").toBool());
@@ -161,7 +201,7 @@ void SettingsDialog::generate_default_config_file(QString server_name, QString i
     config_file_write.beginGroup("MapServer");
     config_file_write.setValue("listen_addr",ip+":7003");
     config_file_write.setValue("location_addr",ip+":7003");
-    config_file_write.setValue("maps","maps");
+    config_file_write.setValue("maps","DefaultMapInstances");
     config_file_write.setValue("player_fade_in", "380.0");
     config_file_write.endGroup();
     config_file_write.beginGroup("Logging");
@@ -200,12 +240,12 @@ void SettingsDialog::save_changes_config_file()
     QSettings config_file_write("settings.cfg", QSettings::IniFormat);
     config_file_write.beginGroup("AdminServer");
     config_file_write.beginGroup("AccountDatabase");
-    config_file_write.setValue("db_driver",ui->acc_dbdriver->text());
+    config_file_write.setValue("db_driver",ui->acc_dbdriver->currentText());
     config_file_write.setValue("db_host",ui->acc_dbhost->text());
     config_file_write.setValue("db_port",ui->acc_dbport->text());
     config_file_write.endGroup();
     config_file_write.beginGroup("CharacterDatabase");
-    config_file_write.setValue("db_driver",ui->char_dbdriver->text());
+    config_file_write.setValue("db_driver",ui->char_dbdriver->currentText());
     config_file_write.setValue("db_host",ui->char_dbhost->text());
     config_file_write.setValue("db_port",ui->char_dbport->text());
     config_file_write.endGroup();
@@ -224,7 +264,8 @@ void SettingsDialog::save_changes_config_file()
     config_file_write.setValue("listen_addr",ui->map_listen_ip->text()+":"+ui->map_listen_port->text());
     config_file_write.setValue("location_addr",ui->map_location_ip->text()+":"+ui->map_location_port->text());
     config_file_write.setValue("maps",ui->map_location->text());
-    config_file_write.setValue("player_fade_in",ui->map_player_fade_in->text());
+    QString player_fade_in = ui->map_player_fade_in_value->text() + ".0";
+    config_file_write.setValue("player_fade_in",player_fade_in);
     config_file_write.endGroup();
     config_file_write.beginGroup("Logging");
     config_file_write.setValue("log_generic","*.debug=true\nqt.*.debug=false");
@@ -260,6 +301,83 @@ void SettingsDialog::save_changes_config_file()
     settings_saved.setIcon(QMessageBox::Information);
     settings_saved.exec();
     emit check_data_and_dir(ui->map_location->text());
+}
+
+void SettingsDialog::set_default_values()
+{
+    ui->acc_dbdriver->setCurrentText("QSQLITE");
+    ui->acc_dbhost->setText("127.0.0.1");
+    ui->acc_dbport->setText("5432");
+    ui->char_dbdriver->setCurrentText("QSQLITE");
+    ui->char_dbhost->setText("127.0.0.1");
+    ui->char_dbport->setText("5432");
+    ui->auth_ip->setText("127.0.0.1");
+    ui->auth_port->setText("2106");
+    ui->game_server_name->setText("SEGS_Server");
+    ui->game_listen_ip->setText("127.0.0.1");
+    ui->game_listen_port->setText("7002");
+    ui->game_loc_ip->setText("127.0.0.1");
+    ui->game_loc_port->setText("7002");
+    ui->game_max_players->setValue(200);
+    ui->game_max_slots->setValue(8);
+    ui->map_listen_ip->setText("127.0.0.1");
+    ui->map_listen_port->setText("7003");
+    ui->map_location_ip->setText("127.0.0.1");
+    ui->map_location_port->setText("7003");
+    ui->map_location->setText("DefaultMapInstances");
+    ui->map_player_fade_in->setValue(380.0);
+    ui->log_logging->setChecked(false);
+    ui->log_keybinds->setChecked(false);
+    ui->log_settings->setChecked(false);
+    ui->log_gui->setChecked(false);
+    ui->log_teams->setChecked(false);
+    ui->log_db->setChecked(false);
+    ui->log_input->setChecked(false);
+    ui->log_position->setChecked(false);
+    ui->log_orientation->setChecked(false);
+    ui->log_chat->setChecked(false);
+    ui->log_infomsg->setChecked(false);
+    ui->log_emotes->setChecked(false);
+    ui->log_target->setChecked(false);
+    ui->log_spawn->setChecked(false);
+    ui->log_mapevents->setChecked(false);
+    ui->log_slashcommand->setChecked(false);
+    ui->log_description->setChecked(false);
+    ui->log_friends->setChecked(false);
+    ui->log_minimap->setChecked(false);
+    ui->log_lfg->setChecked(false);
+    ui->log_npcs->setChecked(false);
+    ui->log_animations->setChecked(false);
+}
+
+void SettingsDialog::field_validator()
+{
+
+    QList<QLineEdit *> all_line_edits = ui->tab_settings->findChildren<QLineEdit *>();
+    bool all_fields_validated = true;
+    foreach(QLineEdit* le, all_line_edits)
+    {
+        if (le->text().isEmpty()) // Checks for empty fields, if found highlight fields
+        {
+            le->setStyleSheet("background-color: rgb(252, 175, 62)");
+            all_fields_validated = false;
+
+        }
+    }
+    if (all_fields_validated == false) // Field validation failed, stop save
+    {
+        QMessageBox validation_error;
+        validation_error.setText("The highlighted fields can not be blank");
+        //validation_error.setText()
+        validation_error.setStandardButtons(QMessageBox::Ok);
+        validation_error.setDefaultButton(QMessageBox::Ok);
+        validation_error.setIcon(QMessageBox::Warning);
+        validation_error.exec();
+    }
+    else
+    {
+        SettingsDialog::save_changes_config_file(); // Field validation passed, proceed to save
+    }
 }
 
 void SettingsDialog::auto_populate_ip_main(QString local_ip)
