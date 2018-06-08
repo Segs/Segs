@@ -42,6 +42,7 @@ void serialize(Archive &archive, Friend &fr, uint32_t const version)
     archive(cereal::make_nvp("FriendClass", fr.m_class_idx));
     archive(cereal::make_nvp("FriendOrigin", fr.m_origin_idx));
     archive(cereal::make_nvp("FriendMapIdx", fr.m_map_idx));
+    archive(cereal::make_nvp("FriendMapName", fr.m_mapname));
 }
 
 template<class Archive>
