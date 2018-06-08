@@ -66,14 +66,16 @@ MapServer::~MapServer()
 
 bool MapServer::Run()
 {
-    assert(m_owner_game_server_id!=255);
-    if(!d->m_runtime_data.read_runtime_data("./data/bin/"))
-    {
-        return false;
-    }
-    assert(d->m_manager.num_templates()>0); // we have to have a world to run
+    assert(m_owner_game_server_id != kInvalidGameServerId);
 
-    qInfo() << "Server running... awaiting client connections."; // best place for this?
+    if (!d->m_runtime_data.read_runtime_data(kRuntimeDataPath))
+        return false;
+
+    assert(d->m_manager.num_templates() > 0);
+
+    qInfo() << "MapServer" << m_id << "now listening on" << m_base_listen_point.get_host_addr() << ":"
+            << m_base_listen_point.get_port_number();
+
     return true;
 }
 
