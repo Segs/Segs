@@ -3,6 +3,7 @@
 #include "GL/glew.h"
 
 #include <stdint.h>
+#include <vector>
 struct TextureBind;
 struct TrickNode;
 struct SunLight
@@ -13,7 +14,7 @@ struct SunLight
     Vector4 diffuse_for_players;
     Vector4 no_angle_light;
     Vector4 direction;
-    float   direction_in_viewspace[4];
+    Vector4 direction_in_viewspace; // this is precomputed at the start of each frame as  cam_info.viewmat * direction
     Vector3 shadow_direction;
     Vector3 shadow_direction_in_viewspace;
     float   gloss_scale;
@@ -28,7 +29,7 @@ struct SmallAnimSRel
   char *compressed_data;
 };
 
-struct VBO
+struct GeometryData
 {
     GLuint gl_index_buffer;
     Vector3i *triangles;
@@ -58,7 +59,7 @@ enum ModelState
 struct Model {
     int Model_flg1;
     float model_VisSphereRadius;
-    struct VBO *vbo;
+    GeometryData *vbo;
     int num_textures;
     int16_t field_10;
     char blendState;

@@ -214,7 +214,9 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs)
         }
     }
     if ( flags & 0x40000 )
+    {
         ; // vertex alpha is noop in glsl shaders
+    }
     if ( flags & 0x80000 )
         wcwMgmt_EnableFog(0);
     if ( flags & 0x100000 )

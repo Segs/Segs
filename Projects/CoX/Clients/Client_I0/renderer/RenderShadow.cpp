@@ -69,7 +69,7 @@ namespace
     int  initializeShadowInfo(Model *model)
     {
         int vert_count = 0;
-        VBO *vbo = model->vbo;
+        GeometryData *vbo = model->vbo;
         ShadowInfo *shadow = (ShadowInfo *)dbgCalloc(sizeof(ShadowInfo), 1, 1, __FILE__, __LINE__);
         vbo->shadow = shadow;
         const int strct_size = 3 * model->model_tri_count;
@@ -503,7 +503,6 @@ void segs_shadowFinishScene()
     glDepthFunc(GL_LEQUAL);
     glDisable(GL_STENCIL_TEST);
 }
-extern Matrix4x3 Unity_Matrix;
 void segs_modelDrawShadowObject(Matrix4x3 *viewSpaceTransform, SplatSib *splat)
 {
     Matrix4x3 res;

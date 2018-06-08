@@ -58,7 +58,7 @@ void segs_wcw_UnBindBufferARB()
 }
 int  segs_modelBindBuffer(Model *model)
 {
-    VBO *vbo = model->vbo;
+    GeometryData *vbo = model->vbo;
     assert(UsingVBOs);
     if ( currently_bound_gl_buffer == vbo->gl_vertex_buffer )
         return 0;
@@ -88,7 +88,7 @@ void calcNodeLights(GfxTree_Node *node,Vector4 &ambient_col,Vector4 &diffuse_col
             ambient_col = g_sun.ambient_for_players;
             diffuse_col = g_sun.diffuse_for_players;
         }
-        (Vector3 &)light_pos = (Vector3 &)g_sun.direction_in_viewspace;
+        light_pos = g_sun.direction_in_viewspace.ref3();
     }
     if ( seqGfxData->light.use & (ENTLIGHT_CUSTOM_DIFFUSE|ENTLIGHT_CUSTOM_AMBIENT) )
     {
@@ -104,15 +104,15 @@ void calcNodeLights(GfxTree_Node *node,Vector4 &ambient_col,Vector4 &diffuse_col
 static void setTexOrOverride(TextureBind *tex,int idx)
 {
     if (tex->flags & 0x400 && int32_9EBD10[idx])
-        fn_4E79C0((GLenum)tex->texture_target, idx, int32_9EBD10[idx]);
+        fn_4E79C0(tex->texture_target, idx, int32_9EBD10[idx]);
     else
-        fn_4E79C0((GLenum)tex->texture_target, idx, tex);
+        fn_4E79C0(tex->texture_target, idx, tex);
 
 }
 void  drawLoop(Model *model)
 {
 
-    VBO *vbo = model->vbo;
+    GeometryData *vbo = model->vbo;
     int offset = 0;
     if ( !vbo->tex_uv1 )
         return;
@@ -147,7 +147,7 @@ void segs_modelDrawBonedNode(GfxTree_Node *node)
     assert(model && model->vbo);
     modelSetupVertexObject(model, 1);
     segs_modelBindBuffer(model);
-    VBO *vbo = model->vbo;
+    GeometryData *vbo = model->vbo;
     GlobRenderRel *seqGfxData = node->seqGfxData;
     TrickNode *tricks = node->trick_node;
     BoneInfo *boneinfo = model->boneinfo;
@@ -303,7 +303,7 @@ int segs_modelConvertRgbBuffer(GLuint *result, int count, int own_buffer)
 void modelDrawWireframe(RGBA *colors, Model *model)
 {
     assert(model && model->vbo);
-    VBO *vbo = model->vbo;
+    GeometryData *vbo = model->vbo;
     if ( !vbo->normals_vbo_idx )
         return;
     wcwMgmt_EnableFog(0);
@@ -346,7 +346,7 @@ void bumpRenderObj(Model *model, Matrix4x3 *mat, GLuint colorbuf, Vector4 *ambie
     Matrix4x3 viewer;
     Matrix4x3 globToViewer;
 
-    VBO *vbo = model->vbo;
+    GeometryData *vbo = model->vbo;
 
     assert(vbo && ( model->loadstate & LOADED ));
     if ( g_curr_blend_state == eBlendMode::BUMPMAP_COLORBLEND_DUAL )
@@ -387,7 +387,7 @@ void bumpRenderObj(Model *model, Matrix4x3 *mat, GLuint colorbuf, Vector4 *ambie
 }
 void modelDrawTexRgb(DrawMode mode, Model *model, GLuint color_buf)
 {
-    VBO *vbo = model->vbo;
+    GeometryData *vbo = model->vbo;
     segs_modelDrawState(mode, 0);
     glDisable(GL_LIGHTING);
     assert ( model && model->vbo );
@@ -411,7 +411,7 @@ void modelDrawTexNormals(DrawMode mode, Model *model)
 {
     assert(model && model->vbo);
 
-    VBO *vbo = model->vbo;
+    GeometryData *vbo = model->vbo;
     segs_modelDrawState(mode, 0);
     bool override_light = model->Model_flg1 & 0x10;
     if (override_light)

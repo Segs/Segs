@@ -4,15 +4,16 @@
 #include "renderer/RendererUtils.h"
 #include "renderer/RendererState.h"
 #include "renderer/RenderBonedModel.h"
+#include "renderer/Model.h"
+#include "renderer/RenderTricks.h"
+#include "GameState.h"
 
+#include "glm/gtc/constants.hpp"
 #include "GL/glew.h"
 
 #include <cstring>
 #include <cassert>
 #include <algorithm>
-#include "renderer/Model.h"
-#include "renderer/RenderTricks.h"
-#include "GameState.h"
 
 struct BeaconDbgRel
 {
@@ -314,10 +315,10 @@ void segs_setSunLight(Matrix4x3 *view_mat)
 }
 static float fixTime(float tm_val)
 {
-    while (tm_val >= 24.0)
-        tm_val = tm_val - 24.0;
-    while (tm_val < 0.0)
-        tm_val = tm_val + 24.0;
+    while (tm_val >= 24.0f)
+        tm_val = tm_val - 24.0f;
+    while (tm_val < 0.0f)
+        tm_val = tm_val + 24.0f;
     return tm_val;
 }
 static void gfxTreeInitSkyTree()
@@ -350,10 +351,7 @@ GfxTree_Node *sunAddNode(const char *model_name, int which_graph_to_insert)
     result->model = anim_GeoReq4E9090(model_name, filename, nullptr, 2, 0xA); //modelFind
     if (result->model)
         gfxtree_4ECD00(result);//gfxTreeInitGfxNodeWithObjectsTricks
-    result->mat.r1 = { 1, 0, 0 };
-    result->mat.r2 = { 0, 1, 0 };
-    result->mat.r3 = { 0, 0, 1 };
-    result->mat.TranslationPart = { 0, 0, 0 };
+    result->mat = Unity_Matrix;
     return result;
 }
 void resetSunNode()
@@ -432,11 +430,11 @@ static void initializeSky()
 }
 static Vector3 LinearInterpolateVectors(Vector3 start, Vector3 end, float factor)
 {
-    return start * (1.0 - factor) + end * factor;
+    return start * (1.0f - factor) + end * factor;
 }
 static float  LinearInterpolateValue(float start, float end, float factor)
 {
-    return start * (1.0 - factor) + end * factor;
+    return start * (1.0f - factor) + end * factor;
 }
 
 static void fogBlend(FogVals *start, FogVals *end, float ratio, float feet, FogVals *result)
@@ -446,7 +444,7 @@ static void fogBlend(FogVals *start, FogVals *end, float ratio, float feet, FogV
     {
         float d = end->startEnd[i] - start->startEnd[i];
         float da = std::min(feet * g_TIMESTEP,std::abs(d));
-        if (d < 0.0)
+        if (d < 0.0f)
             da = -da;
         result->startEnd[i] = da + start->startEnd[i];
     }
@@ -455,9 +453,9 @@ static void indoorFogBlend()
 {
     static float s_ratio;
     s_ratio = g_TIMESTEP * 0.03f + s_ratio;
-    if (s_ratio > float(2*M_PI))
-        s_ratio = s_ratio - float(2*M_PI);
-    if (s_ratio >= float(M_PI))
+    if (s_ratio > glm::two_pi<float>())
+        s_ratio = s_ratio - glm::two_pi<float>();
+    if (s_ratio >= glm::pi<float>())
         fogBlend(struct_7B8DD8, &struct_7B8DD8[1], 1.0, 3.0, &struct_7B8E0C);
     else
         fogBlend(struct_7B8DD8, &struct_7B8DD8[1], 0.0, 3.0, &struct_7B8E0C);
@@ -484,13 +482,11 @@ static void setSkyFog(Parse_SkyTime *early, Parse_SkyTime *late, float ratio)
         }
         if (early->fogdist.y == 0.0f)
         {
-            fogdist.x = late->fogdist.x;
-            fogdist.y = late->fogdist.y;
+            fogdist = late->fogdist;
         }
         if (late->fogdist.y == 0.0f)
         {
-            fogdist.x = early->fogdist.x;
-            fogdist.y = early->fogdist.y;
+            fogdist = early->fogdist;
         }
         if (g_State.view.fogdists.y != 0.0f)
         {
@@ -498,7 +494,7 @@ static void setSkyFog(Parse_SkyTime *early, Parse_SkyTime *late, float ratio)
         }
         for (i = 0; i < 2; ++i)
         {
-            float t = int32_t((1.0 - fogheightratio) * fogdist[i] + fogheightratio * (*parsed_sky.sun)->FogDist[i]);
+            float t = int32_t((1.0f - fogheightratio) * fogdist[i] + fogheightratio * (*parsed_sky.sun)->FogDist[i]);
             fogdist[i] = std::min(t,fogdist[i]);
         }
         struct_7B8E0C.startEnd = fogdist;
@@ -506,7 +502,7 @@ static void setSkyFog(Parse_SkyTime *early, Parse_SkyTime *late, float ratio)
     Vector3 fogcolor = LinearInterpolateVectors(early->fogcolor, late->fogcolor,ratio);
     Vector3 highfogcolor = LinearInterpolateVectors(early->highfogcolor, late->highfogcolor, ratio); ;
     fogcolor = LinearInterpolateVectors(fogcolor, highfogcolor, fogheightratio); ;
-    if (g_State.view.fogcolor.x != 0.0 || g_State.view.fogcolor.y != 0.0 || g_State.view.fogcolor.z != 0.0)
+    if (g_State.view.fogcolor.x != 0.0f || g_State.view.fogcolor.y != 0.0f || g_State.view.fogcolor.z != 0.0f)
     {
         fogcolor = g_State.view.fogcolor * (1.0f/255.0f);
     }
@@ -531,7 +527,7 @@ static void fogBlendWithLast()
 }
 static constexpr float degToRad(float v)
 {
-    return M_PI * v / 180.0f;
+    return glm::pi<float>() * v / 180.0f;
 }
 void fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *cam_pos, GfxTree_Node *node, float scale)
 {
@@ -562,12 +558,12 @@ void fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *cam_pos, 
         to.TranslationPart = *cam_pos;
         fn_5B6740(dword_7B8E08->pyr.y, &to.ref3()); //yawMat3
         fn_5B6840(dword_7B8E08->pyr.z, &to.ref3()); //rollMat3
-        float angle = rot * dword_7B8E08->speed - M_PI + dword_7B8E08->pyr.x;
+        float angle = rot * dword_7B8E08->speed - glm::pi<float>() + dword_7B8E08->pyr.x;
         pitchMat3(angle, &to.ref3());
         dest.r1 = { 1,0,0 };
         dest.r2 = { 0,1,0 };
         dest.r3 = { 0,0,1 };
-        pitchMat3(-1.5707964f, &dest.ref3());
+        pitchMat3(-degToRad(90), &dest.ref3());
         dest.TranslationPart.y = add_dist + 7500.0f;
         dest.TranslationPart.x = 3000.0;
         node->mat = to * dest;
@@ -594,13 +590,12 @@ static void setGlobalShadowColor(Vector4 *earlyShadowColor, Vector4 *lateShadowC
 void segs_sun_sunUpdate(int init)
 {
     float tmp;
-    int time_idx;
-    int nexttime_idx;
+    int time_idx=0;
+    int nexttime_idx=0;
     float fogtimefade;
     Vector3 player_offset;
     float ratio;
-    auto copyvs = server_visible_state;
-    float _time = server_visible_state.timescale * g_TIMESTEP / 108000.0 + server_visible_state.map_time_of_day;
+    float _time = server_visible_state.timescale * g_TIMESTEP / 108000.0f + server_visible_state.map_time_of_day;
     _time = fixTime(_time);
     server_visible_state.map_time_of_day = _time;
     if (!parsed_sky.sun)
@@ -623,7 +618,7 @@ void segs_sun_sunUpdate(int init)
         if (!s_clouds[i])
             continue;
 
-        if (parsed_sky.cloud[i]->Height.y != 0.0)
+        if (parsed_sky.cloud[i]->Height.y != 0.0f)
         {
             float ratio = (cam_info.cammat.TranslationPart.y - parsed_sky.cloud[i]->Height.x) / (parsed_sky.cloud[i]->Height.y - parsed_sky.cloud[i]->Height.x);
             fogtimefade *= std::max(0.0f,std::min(1.0f,ratio));
@@ -637,7 +632,7 @@ void segs_sun_sunUpdate(int init)
         }
         s_clouds[i]->mat.TranslationPart = player_offset;
     }
-    assert(_time < 24.0 && _time >= 0.0);
+    assert(_time < 24.0f && _time >= 0.0f);
     assert(parsed_sky.sun_time_count > 0 && parsed_sky.sun_time_count < 100);
     if (parsed_sky.sun_time_count == 1)
     {
@@ -660,12 +655,12 @@ void segs_sun_sunUpdate(int init)
             {
                 if (_time >= time_val || _time < next_time_val)
                 {
-                    success = 1;
+                    success = true;
                 }
             }
             else if (_time >= time_val && _time < next_time_val)
             {
-                success = 1;
+                success = true;
             }
             if (success)
                 break;
@@ -712,9 +707,9 @@ void segs_sun_sunUpdate(int init)
     Vector3 bg_color = LinearInterpolateVectors(early->backgroundcolor, late->backgroundcolor, ratio);
     glClearColor(bg_color.x, bg_color.y, bg_color.z, 1.0);
     struct_7B8DD8[0].valid = 0;
-    float rot              = (_time - 12.0) * 6.283185307179586 / 24.0;
+    float rot              = (_time - 12.0f) * glm::two_pi<float>() / 24.0f;
     rot                    = normalizeRadAngle(rot);
-    rot                    = rot * sqrt(fabs(rot)) / sqrt(3.141592653589793);
+    rot                    = rot * std::sqrt(std::fabs(rot)) / std::sqrt(glm::pi<float>());
     for (int i = 0; i < parsed_sky.num_suns; ++i)
     {
         float scale = LinearInterpolateValue(early->moon_scales[i],late->moon_scales[i],ratio);
@@ -723,7 +718,6 @@ void segs_sun_sunUpdate(int init)
         if (celestial_objects[i].glow)
             fixupCelestialObject(i, 0.0, rot, &player_offset, celestial_objects[i].glow, scale);
     }
-    Parse_Sky copy = parsed_sky;
     if (_time <= (*parsed_sky.sun)->LampLightTime.y)
     {
         tmp = std::min(1.0f,_time - ((*parsed_sky.sun)->LampLightTime.x - 1.0f));

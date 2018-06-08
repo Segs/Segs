@@ -33,12 +33,11 @@ struct Parser_Texture
     char *Surface;
     int Gloss;
 };
-__declspec(dllimport) Parser_Texture * fn_4F4DB0(char *name);
+__declspec(dllimport) Parser_Texture * fn_4F4DB0(const char *name);
 __declspec(dllimport) TextureBind * tex_FindMapEntryTexture(const char *b);
 __declspec(dllimport) void * HashTable_queryValue(HashTable *cache_tab, const char *filename);
 __declspec(dllimport) int error_ReportParsing(const char *filename, const char *fmt, ...);
 __declspec(dllimport) int  AddArrayEntry(void ***arr, void *entry);
-__declspec(dllimport) void * dbgCalloc(int strct_size, int count, int blockType, const char *fname, int line);
 __declspec(dllimport) void  tex_4E63C0(TextureBind *tex);
 __declspec(dllimport) void  tex_4E6300();
 __declspec(dllimport) int  tex_4E5CD0(char *name, TextureBind *value);
@@ -77,10 +76,10 @@ int process_texture_name(const char *tex_name, char *name_tgt)
 void texSetBindsSub(TextureBind *bind, TextureBind **binds, int base_idx)
 {
     char filename[128];
-    char *name = bind->name1;
+    const char *name = bind->name1;
     int flags = 0;
 
-    bind->tex_field_0 = bind;
+    bind->actualTexture = bind;
     Parser_Texture *tex_info = fn_4F4DB0(name);
     if ( tex_info )
         flags = tex_info->Flags;
@@ -103,10 +102,8 @@ void texSetBindsSub(TextureBind *bind, TextureBind **binds, int base_idx)
         bind->flags |= 0x400u;
     if ( flags & 0x1000 )
         bind->flags |= 0x800u;
-    bind->ScaleST0.x = 1.0;
-    bind->ScaleST0.y = 1.0;
-    bind->ScaleST1.x = 1.0;
-    bind->ScaleST1.y = 1.0;
+    bind->ScaleST0 = {1.0f,1.0f};
+    bind->ScaleST1 = {1.0f,1.0f};
     if ( tex_info && tex_info->BumpMap )
         bind->tex_links[1] = tex_FindMapEntryTexture(tex_info->BumpMap);
     if ( !(flags & 0x10) )
@@ -147,12 +144,12 @@ void texSetBindsSub(TextureBind *bind, TextureBind **binds, int base_idx)
         process_texture_name("black", filename);
         bind->tex_links[0] = (TextureBind *)HashTable_queryValue(g_texbinds_ht, filename);
     }
-    bind->texture_target = (void *)((bind->flags & 0x200) != 0 ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D);
+    bind->texture_target = (bind->flags & 0x200) != 0 ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
     bind->load_state = 1;
 }
 void  segs_texSetBinds()
 {
-    int tex_count = g_texbinds?((int *)g_texbinds)[-2] : 0;
+    int tex_count = COH_ARRAY_SIZE(g_texbinds);
     for (int i = 0; i < tex_count; ++i )
         texSetBindsSub(g_texbinds[i], g_texbinds, i);
 }
@@ -191,7 +188,7 @@ void  segs_reloadTextureCallback(const char *filename)
     }
     else
     {
-        TextureBind *bind = (TextureBind *)dbgCalloc(sizeof(TextureBind), 1, 1, __FILE__, __LINE__);
+        TextureBind *bind = (TextureBind *)COH_CALLOC(sizeof(TextureBind), 1);
         tex_4E6320();
         if ( !tex_4E5CD0(buf2, bind) )
         {
