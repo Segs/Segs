@@ -454,10 +454,10 @@ static void fogBlend(FogVals *start, FogVals *end, float ratio, float feet, FogV
 static void indoorFogBlend()
 {
     static float s_ratio;
-    s_ratio = g_TIMESTEP * 0.03 + s_ratio;
-    if (s_ratio > 6.283185307179586)
-        s_ratio = s_ratio - 6.283185307179586;
-    if (s_ratio >= 3.141592653589793)
+    s_ratio = g_TIMESTEP * 0.03f + s_ratio;
+    if (s_ratio > float(2*M_PI))
+        s_ratio = s_ratio - float(2*M_PI);
+    if (s_ratio >= float(M_PI))
         fogBlend(struct_7B8DD8, &struct_7B8DD8[1], 1.0, 3.0, &struct_7B8E0C);
     else
         fogBlend(struct_7B8DD8, &struct_7B8DD8[1], 0.0, 3.0, &struct_7B8E0C);
@@ -469,33 +469,32 @@ static void setSkyFog(Parse_SkyTime *early, Parse_SkyTime *late, float ratio)
     float fogheightratio;
 
     float fogdepth = LinearInterpolateValue(early->fogdepth,late->fogdepth,ratio);
-    if ((*parsed_sky.sun)->FogHeightRange.x == 0.0)
+    if ((*parsed_sky.sun)->FogHeightRange.x == 0.0f)
         fogheightratio = 0.0;
     else
         fogheightratio = (cam_info.cammat.TranslationPart.y - (*parsed_sky.sun)->FogHeightRange.x) / ((*parsed_sky.sun)->FogHeightRange.y - (*parsed_sky.sun)->FogHeightRange.x);
     fogheightratio = std::max(0.0f,std::min(1.0f,fogheightratio));
     if (fogdepth < (*parsed_sky.sun)->FogDist.x)
-        fogdepth = (1.0 - fogheightratio) * fogdepth + fogheightratio * (*parsed_sky.sun)->FogDist.x;
-    if (early->fogdist.y != 0.0 || g_State.view.fogdist2 != 0.0)
+        fogdepth = (1.0f - fogheightratio) * fogdepth + fogheightratio * (*parsed_sky.sun)->FogDist.x;
+    if (early->fogdist.y != 0.0f || g_State.view.fogdists.y != 0.0f)
     {
         for (i = 0; i < 2; ++i)
         {
             fogdist[i] = LinearInterpolateValue(early->fogdist[i], late->fogdist[i],ratio);
         }
-        if (early->fogdist.y == 0.0)
+        if (early->fogdist.y == 0.0f)
         {
             fogdist.x = late->fogdist.x;
             fogdist.y = late->fogdist.y;
         }
-        if (late->fogdist.y == 0.0)
+        if (late->fogdist.y == 0.0f)
         {
             fogdist.x = early->fogdist.x;
             fogdist.y = early->fogdist.y;
         }
-        if (g_State.view.fogdist2 != 0.0)
+        if (g_State.view.fogdists.y != 0.0f)
         {
-            fogdist.x = g_State.view.fogdist;
-            fogdist.y = g_State.view.fogdist2;
+            fogdist = g_State.view.fogdists;
         }
         for (i = 0; i < 2; ++i)
         {
@@ -516,8 +515,8 @@ static void setSkyFog(Parse_SkyTime *early, Parse_SkyTime *late, float ratio)
 void segs_sun_SetFog(Vector2 *param, const GLfloat *color)
 {
     float drawdist = 1.0;
-    if (g_State.view.controls_draw_dist < 1.0 && param->x > 400.0)
-        drawdist = g_State.view.controls_draw_dist;
+    if (g_State.view.vis_scale < 1.0f && param->x > 400.0f)
+        drawdist = g_State.view.vis_scale;
     glFogi(GL_FOG_MODE, GL_LINEAR);
     glFogf(GL_FOG_START, drawdist * param->x);
     glFogf(GL_FOG_END, drawdist * param->y);
@@ -530,7 +529,11 @@ static void fogBlendWithLast()
     fogBlend(&g_FogStartEnd, &struct_7B8E0C, parsed_scene.FogRampColor, parsed_scene.FogRampDistance, &g_FogStartEnd);
     g_FogStartEnd.valid = 1;
 }
-void __cdecl fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *cam_pos, GfxTree_Node *node, float scale)
+static constexpr float degToRad(float v)
+{
+    return M_PI * v / 180.0f;
+}
+void fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *cam_pos, GfxTree_Node *node, float scale)
 {
     struct CelestialFixups
     {
@@ -538,15 +541,15 @@ void __cdecl fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *c
         Vector3 pyr;
     };
     const static CelestialFixups objects[9] = {
-        { 1.0f,{ 0.0,  1.9634954,  3.1415927 } },
-        { 1.0f,{ -0.61086524,  0.0,  0.0 } },
-        { 1.0f,{ 3.2288592,  1.3089969,  0.61086524 } },
-        { 1.3f,{ 3.1415927, -0.78539819,  0.0 } },
-        { 2.0f,{ 3.1415927,  1.5707964, -0.78539819 } },
-        { 5.0f,{ 0.08726646,  0.0,  1.3962634 } },
-        { 0.5f,{ 0.17453292,  1.2217305, -1.3962634 } },
-        { 1.0f,{ 0.2617994, -1.134464,  0.0 } },
-        { 0.1f,{ 0.0, -0.52359879,  0.6457718 } }
+        { 1.0f,{  degToRad(0),  degToRad(112.5f),  degToRad(180.0f) } },
+        { 1.0f,{ -degToRad(35.0),  degToRad(0),  0.0 } },
+        { 1.0f,{  degToRad(185),  degToRad(75),  degToRad(35.0) } },
+        { 1.3f,{  degToRad(180), -degToRad(45),  0.0 } },
+        { 2.0f,{  degToRad(180),  degToRad(90), -degToRad(45) } },
+        { 5.0f,{  degToRad(5),  degToRad(0),  degToRad(80) } },
+        { 0.5f,{  degToRad(10),  degToRad(70), -degToRad(80) } },
+        { 1.0f,{  degToRad(15), -degToRad(65),  0.0 } },
+        { 0.1f,{  degToRad(0), -degToRad(30),  degToRad(37) } }
     };
     Matrix4x3 dest;
     Matrix4x3 to;

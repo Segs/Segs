@@ -2,6 +2,22 @@
 #include <stdint.h>
 #include <cassert>
 #include <cmath>
+#include <algorithm>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
+
+////// COH memory management wrapper macros
+extern "C"
+{
+__declspec(dllimport) void *malloc1(int sz, int, const char *, int);
+__declspec(dllimport) void FreeMem(void *, int);
+__declspec(dllimport) void * dbgCalloc(int strct_size, int count, int blockType, const char *fname, int line);
+}
+#define COH_ARRAY_SIZE(x) ( x ? ((int *)x)[-2] : 0)
+#define COH_MALLOC(x) malloc((x))
+#define COH_CALLOC(x,y) calloc((x),(y))
+#define COH_FREE(x) free(x);
 
 struct Vector2
 {
