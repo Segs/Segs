@@ -18,6 +18,7 @@
 #include "GameData/chardata_serializers.h"
 #include "Common/Servers/InternalEvents.h"
 #include "GameData/serialization_common.h"
+#include "GameData/entitydata_serializers.h"
 #include "GameLink.h"
 #include "GameServer.h"
 #include "NetStructures/Character.h"
@@ -350,7 +351,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
         return; // TODO:  return some kind of error.
 
     GameAccountResponseCharacterData *selected_slot = &session.m_game_account.get_character(ev->m_character_index);
-    /*EntityData ed;
+    EntityData ed;
     try
     {
         serializeFromQString(ed,selected_slot->m_serialized_entity_data);
@@ -413,7 +414,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     qInfo("Telling map server to expect a client with character %s, %d\n", qPrintable(ev->m_char_name),
             ev->m_character_index);
     session.m_direction = GameSession::EXITING_TO_MAP;
-    map_handler->putq(expect_client);*/
+    map_handler->putq(expect_client);
 }
 
 void GameHandler::on_unknown_link_event(GameUnknownRequest *)
