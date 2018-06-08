@@ -100,7 +100,7 @@ void    setCombatLevel(Character &c, uint32_t val);
 void    setHP(Character &c, float val);
 void    setEnd(Character &c, float val);
 void    setLastCostumeId(Character &c, uint64_t val);
-void    setMapName(Character &c, const QString &val);
+void    setMapName(Entity &e, const QString &val);
 void    setXP(Character &c, uint32_t val);
 void    setDebt(Character &c, uint32_t val);
 void    setTitles(Character &c, bool prefix = false, QString generic = "", QString origin = "", QString special = "");

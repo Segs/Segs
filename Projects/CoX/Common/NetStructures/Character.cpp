@@ -60,7 +60,6 @@ void Character::reset()
     m_char_data.m_class_name="EMPTY";
     m_char_data.m_origin_name="EMPTY";
     m_villain=false;
-    m_char_data.m_mapName="OFFLINE";
     m_multiple_costumes=false;
     m_current_costume_idx=0;
     m_current_costume_set=false;
@@ -194,7 +193,6 @@ void Character::serializetoCharsel( BitStream &bs )
     }
     else
         m_costumes[m_current_costume_set].storeCharsel(bs);
-    bs.StoreString(getMapName(c));
     bs.StorePackedBits(1,1);
 }
 
@@ -274,7 +272,6 @@ void Character::DumpBuildInfo()
             + getName()
             + "\n  " + getOrigin(c)
             + "\n  " + getClass(c)
-            + "\n  map: " + getMapName(c)
             + "\n  db_id: " + QString::number(m_db_id)
             + "\n  acct: " + QString::number(getAccountId())
             + "\n  lvl/clvl: " + QString::number(getLevel(c)) + "/" + QString::number(getCombatLevel(c))
@@ -483,7 +480,8 @@ void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)
     }
 }
 
-bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player)
+bool toActualCharacter(const GameAccountResponseCharacterData &src,
+                       Character &tgt,PlayerData &player, EntityData &entity)
 {
     CharacterData &  cd(tgt.m_char_data);
 
@@ -495,6 +493,7 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &t
     {
         serializeFromQString(cd,src.m_serialized_chardata);
         serializeFromQString(player,src.m_serialized_player_data);
+        serializeFromQString(entity, src.m_serialized_entity_data);
     }
     catch(cereal::RapidJSONException &e)
     {
@@ -518,7 +517,8 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &t
     return true;
 }
 
-bool fromActualCharacter(const Character &src,const PlayerData &player, GameAccountResponseCharacterData &tgt)
+bool fromActualCharacter(const Character &src,const PlayerData &player,
+                         const EntityData &entity, GameAccountResponseCharacterData &tgt)
 {
     const CharacterData &  cd(src.m_char_data);
 
@@ -530,6 +530,7 @@ bool fromActualCharacter(const Character &src,const PlayerData &player, GameAcco
     {
         serializeToQString(cd, tgt.m_serialized_chardata);
         serializeToQString(player, tgt.m_serialized_player_data);
+        serializeToQString(entity, tgt.m_serialized_entity_data);
     }
     catch(cereal::RapidJSONException &e)
     {

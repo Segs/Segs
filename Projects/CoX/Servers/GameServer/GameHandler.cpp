@@ -350,10 +350,10 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
         return; // TODO:  return some kind of error.
 
     GameAccountResponseCharacterData *selected_slot = &session.m_game_account.get_character(ev->m_character_index);
-    CharacterData cd;
+    /*EntityData ed;
     try
     {
-        serializeFromQString(cd,selected_slot->m_serialized_chardata);
+        serializeFromQString(ed,selected_slot->m_serialized_entity_data);
     }
     catch(cereal::RapidJSONException &e)
     {
@@ -364,7 +364,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
         qCritical() << e.what();
     }
 
-    QString map_path = cd.m_mapName;
+    QString map_path = ed.m_current_map;
 
     if (!map_path.isEmpty())
     {
@@ -413,7 +413,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     qInfo("Telling map server to expect a client with character %s, %d\n", qPrintable(ev->m_char_name),
             ev->m_character_index);
     session.m_direction = GameSession::EXITING_TO_MAP;
-    map_handler->putq(expect_client);
+    map_handler->putq(expect_client);*/
 }
 
 void GameHandler::on_unknown_link_event(GameUnknownRequest *)

@@ -29,7 +29,7 @@ static const constexpr  uint32_t        class_version   = 1;
 
 struct CharacterData
 {
-static const constexpr  uint32_t    class_version       = 4;
+static const constexpr  uint32_t    class_version       = 5;    // v5: no more m_mapName
                         uint32_t    m_level             = 0;
                         uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
                         uint32_t    m_experience_points = 0;
@@ -49,7 +49,6 @@ static const constexpr  uint32_t    class_version       = 4;
                         QString     m_last_online;
                         QString     m_class_name;
                         QString     m_origin_name;
-                        QString     m_mapName;
                         uint32_t    m_mapIdx;
                         bool        m_supergroup_costume;       // player has a sg costume
                         bool        m_using_sg_costume;         // player uses sg costume currently

@@ -85,7 +85,8 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     {
         Character converted;
         PlayerData player_data;
-        toActualCharacter(m_data->m_characters[i],converted,player_data);
+        EntityData entity_data;
+        toActualCharacter(m_data->m_characters[i],converted,player_data, entity_data);
         converted.serializetoCharsel(tgt);
     }
     //tgt.StoreBitArray(m_clientinfo,128);
@@ -112,7 +113,8 @@ void CharacterResponse::serializeto( BitStream &bs ) const
     GameAccountResponseCharacterData indexed_character(m_data->get_character(m_index));
     Character converted;
     PlayerData player_data;
-    toActualCharacter(indexed_character,converted,player_data);
+    EntityData entity_data;
+    toActualCharacter(indexed_character,converted,player_data, entity_data);
     bs.StorePackedBits(1,6); // opcode
 
     if(indexed_character.m_name.compare("EMPTY")!=0)// actual character was read from db

@@ -554,7 +554,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 
     // existing character
     Entity *ent = m_entities.CreatePlayer();
-    toActualCharacter(*request_data.char_from_db, *ent->m_char,*ent->m_player);
+    toActualCharacter(*request_data.char_from_db, *ent->m_char,*ent->m_player, *ent->m_entity);
     ent->fillFromCharacter();
     ent->m_client = &map_session;
     map_session.m_ent = ent;
@@ -610,7 +610,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
 
     map_session.m_current_map->enqueue_client(&map_session);
-    setMapName(*map_session.m_ent->m_char, name());
+    setMapName(*map_session.m_ent, name());
     setMapIdx(*map_session.m_ent, index());
     map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
 }
@@ -646,7 +646,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
         GameAccountResponseCharacterData char_data;
-        fromActualCharacter(*e->m_char,*e->m_player,char_data);
+        fromActualCharacter(*e->m_char,*e->m_player, *e->m_entity, char_data);
         serializeToDb(e->m_entity_data,ent_data);
         // create the character from the data.
         //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);

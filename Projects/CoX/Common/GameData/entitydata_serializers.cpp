@@ -36,6 +36,9 @@ void serialize(Archive & archive, EntityData &ed, uint32_t const version)
 
     if(version >= 3)
         archive(cereal::make_nvp("MapIdx",ed.m_map_idx));
+
+    if(version >= 4)
+        archive(cereal::make_nvp("CurrentMap", ed.m_current_map));
 }
 
 void saveTo(const EntityData & target, const QString & baseName, bool text_format)

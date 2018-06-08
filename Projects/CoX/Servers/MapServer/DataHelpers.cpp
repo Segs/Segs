@@ -315,7 +315,7 @@ float               getEnd(const Character &c) { return c.m_char_data.m_current_
 uint64_t            getLastCostumeId(const Character &c) { return c.m_char_data.m_last_costume_id; }
 const QString &     getOrigin(const Character &c) { return c.m_char_data.m_origin_name; }
 const QString &     getClass(const Character &c) { return c.m_char_data.m_class_name; }
-const QString &     getMapName(const Character &c) { return c.m_char_data.m_mapName; }
+const QString &     getMapName(const Entity &e) { return e.m_entity_data.m_current_map; }
 uint32_t            getXP(const Character &c) { return c.m_char_data.m_experience_points; }
 uint32_t            getDebt(const Character &c) { return c.m_char_data.m_experience_debt; }
 uint32_t            getPatrolXP(const Character &c) { return c.m_char_data.m_experience_patrol; }
@@ -356,7 +356,7 @@ void setEnd(Character &c, float val)
 }
 
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
-void    setMapName(Character &c, const QString &val) { c.m_char_data.m_mapName = val; }
+void    setMapName(Entity &e, const QString &val) { e.m_entity_data.m_current_map = val; }
 
 void setXP(Character &c, uint32_t val)
 {

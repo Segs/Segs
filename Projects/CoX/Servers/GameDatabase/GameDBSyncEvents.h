@@ -137,6 +137,7 @@ struct GameAccountResponseCharacterData
     QString m_name;
     QString m_serialized_chardata;
     QString m_serialized_player_data;
+    QString m_serialized_entity_data;
 
     uint32_t m_db_id;
     uint32_t m_account_id;
