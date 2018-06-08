@@ -504,9 +504,9 @@ void ShaderProgramCache::setProgram(ShaderObject vertex_shader, ShaderObject fra
     if (!linked) {
         GLint length;
         glGetObjectParameterivARB(program_id, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
-        std::vector<GLcharARB> infoLog(length);
-        glGetInfoLogARB(program_id, length, nullptr, infoLog.data());
-        fprintf(stderr,"%s\n",infoLog.data());
+        char infoLog[length];
+        glGetInfoLogARB(program_id, length, nullptr, infoLog);
+        fprintf(stderr,"%s\n",infoLog);
         assert(false);
     }
     glUseProgram(program_id);

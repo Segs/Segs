@@ -10,8 +10,8 @@ struct TextureBind
     float hot_x;
     float hot_y;
     uint32_t gltexture_id;
-    char *name1;
-    int flags;
+    const char *name1;
+    int flags; // 0x400 should be overridden by g_global_texbinds entry ?
     int load_at_ticks;
     int load_state;
     struct XFileHandle *fh;
@@ -25,8 +25,8 @@ struct TextureBind
     Vector2 ScaleST0;
     Vector2 ScaleST1;
     struct TexInternalHdr *u4;
-    int u5;
-    int u6;
+    int mip_size;
+    int mip_id;
     int use_category;
     int u7;
     int byte_size;

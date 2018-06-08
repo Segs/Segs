@@ -1,4 +1,6 @@
 #pragma once
+#include <GL/glew.h>
+#include "RendererState.h"
 
 struct SysInfo_2
 {
@@ -20,7 +22,29 @@ enum eGPU
     f_GL_FragmentShader        = 0x100,
     f_GL_VertexShader          = 0x200,
 };
+struct GLDebugGuard
+{
+    GLDebugGuard(const char *fname)
+    {
+        if (GLEW_KHR_debug) {
+            glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, fname);
+        }
+    }
 
+    static void insertMessage(const char *text)
+    {
+        if (GLEW_KHR_debug) {
+            glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_OTHER,
+                0, GL_DEBUG_SEVERITY_MEDIUM, -1, text);
+        }
+    }
+    ~GLDebugGuard()
+    {
+        if (GLEW_KHR_debug) {
+            glPopDebugGroup();
+        }
+    }
+};
 extern void segs_renderUtil_GetGfxCardVend(SysInfo_2 *inf);
 extern void segs_wcw_statemgmt_enableColorMaterial();
 extern void patch_render_utils();

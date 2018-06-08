@@ -9,6 +9,7 @@ struct TextureBind;
 struct TrickNode;
 struct GlobRenderRel;
 struct Model;
+struct MaterialDefinition;
 struct RGBA
 {
     uint8_t r, g, b, a;
@@ -18,6 +19,7 @@ struct RGBA
     {
     }
     Vector3 to3Floats() const { return {r/255.0f,g/255.0f,b/255.0f};}
+    Vector4 to4Floats() const { return { r / 255.0f,g / 255.0f,b / 255.0f,a/255.0f }; }
 };
 struct SplatSib
 {
@@ -52,6 +54,7 @@ struct Handle
     int16_t  field_0;
     uint16_t idx;
     operator bool() { return field_0 != 0 || idx != 0; }
+    bool operator==(Handle oth) const { return field_0 == oth.field_0 && idx == oth.idx; }
 };
 #pragma pack(pop)
 
@@ -63,17 +66,16 @@ struct BoneInfo
     Vector2su *matidxs;
 };
 
+#pragma pack(push, 4)
 struct GfxTree_Node
 {
     Handle           seqHandle;
-    char             GfxTree_Node_field_4;
-    char             GfxTree_Node_field_5;
-    char             GfxTree_Node_field_6;
-    char             GfxTree_Node_field_7;
+    char             use_flags;
     GfxTree_Node *   next;
     GfxTree_Node *   children_list;
     int              flg;
     uint8_t alpha() const { return flg & 0xFF; }
+    void setAlpha(uint8_t v) { flg = (flg & ~0xFF) | v; }
     int              bone_slot;
     Model *          model;
     Matrix4x3 *      viewspace;
@@ -89,7 +91,7 @@ struct GfxTree_Node
     char             GfxTree_Node_field_77;
     uint8_t *        rgb_entries;
     int              blendMode;
-    int              unique_id;
+    uint32_t         unique_id;
     GlobRenderRel *  seqGfxData;
     TextureBind *    customtex[2];
     RGBA             color1;
@@ -100,6 +102,7 @@ struct GfxTree_Node
     GfxTree_Node *   prev;
     uint8_t anim_id() const { return bone_slot & 0xFF; }
 };
+#pragma pack(pop)
 static_assert(sizeof(GfxTree_Node) == 0xA8u, "GfxTree_Node");
 
 enum eLightUse : uint8_t
