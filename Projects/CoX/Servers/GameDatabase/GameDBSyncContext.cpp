@@ -255,6 +255,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         character.m_name =  name.isEmpty() ? "EMPTY" : name;
         character.m_serialized_chardata = m_prepared_char_select->value("chardata").toString();
         character.m_serialized_player_data = m_prepared_char_select->value("player_data").toString();
+        character.m_serialized_entity_data = m_prepared_char_select->value("entitydata").toString();
 
         GameAccountResponseCostumeData costume;
         // appearance related.

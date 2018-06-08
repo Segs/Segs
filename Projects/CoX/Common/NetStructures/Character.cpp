@@ -179,7 +179,7 @@ void Character::SendCharBuildInfo(BitStream &bs) const
     PUTDEBUG("SendCharBuildInfo after boosts");
 }
 
-void Character::serializetoCharsel( BitStream &bs )
+void Character::serializetoCharsel( BitStream &bs, const QString& m_current_map )
 {
     Character c = *this;
     bs.StorePackedBits(1,getLevel(c));
@@ -193,6 +193,7 @@ void Character::serializetoCharsel( BitStream &bs )
     }
     else
         m_costumes[m_current_costume_set].storeCharsel(bs);
+    bs.StoreString(m_current_map);
     bs.StorePackedBits(1,1);
 }
 
