@@ -287,6 +287,7 @@ struct Matrix4x4
         r2 = v.r2;
         r3 = v.r3;
         TranslationPart = v.TranslationPart;
+        TranslationPart.w = 1.0;
         return *this;
     }
     explicit Matrix4x4() {}
