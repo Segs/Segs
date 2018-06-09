@@ -1,11 +1,17 @@
 #include "helpers.h"
 
+#include "dll_patcher.h"
+
 #include <cstring>
 #include <cctype>
 #include <cstdarg>
 #include <cstdio>
 #include <windows.h>
 
+extern "C"
+{
+    __declspec(dllimport) char *fix_path_slashes(char *);
+}
 const char *strcasestr(const char *haystack, const char *needle)
 {
     do
@@ -64,3 +70,29 @@ void printfDebug(const char * fmt, ...)
     OutputDebugString(szBuffer);
     va_end(args);
 }
+void segs_fxCleanFileName(char *dst, const char *src)
+{
+    const char *fx_loc;
+
+    strcpy(dst, src);
+    _strupr(dst);
+    fix_path_slashes(dst);
+    fx_loc = strstr(dst, "/FX/");
+    if ( fx_loc )
+    {
+        fx_loc += strlen("/FX/");
+    }
+    else if ( 0==strncmp(dst, "FX/", 3) )
+    {
+        fx_loc = dst + strlen("FX/");
+    }
+    if ( fx_loc )
+    {
+        memcpy(dst, fx_loc, strlen(fx_loc) + 1);
+    }
+}
+void patch_helperutils()
+{
+    PATCH_FUNC(fxCleanFileName);
+}
+

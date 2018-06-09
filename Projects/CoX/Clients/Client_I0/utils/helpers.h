@@ -348,3 +348,6 @@ void mulVecMat4Transpose(Vector3 *src, Matrix4x3 *mat, Vector3 *dst);
 bool isVectorDistanceLessThenEps(Vector3 *a, Vector3 *b, float eps);
 void multVertexByMatrix(Vector3 *src, Matrix3x3 *mat, Vector3 *dst);
 void printfDebug(const char *fmt, ...);
+void segs_fxCleanFileName(char *dst, const char *src);
+
+void patch_helperutils();
