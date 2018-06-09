@@ -197,7 +197,7 @@ bool MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t 
     if (m_endpoint->open() == -1) // will register notifications with current reactor
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) MapInstance: ServerEndpoint::open\n"),false);
 
-    qDebug() << "Spun up MapInstance" << m_instance_id "for MapServer" << m_owner_id;
+    qInfo() << "Spun up MapInstance" << m_instance_id << "for MapServer" << m_owner_id;
 
     return true;
 }

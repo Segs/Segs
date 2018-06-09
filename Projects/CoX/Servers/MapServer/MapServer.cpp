@@ -66,9 +66,9 @@ MapServer::~MapServer()
 
 bool MapServer::Run()
 {
-    assert(m_owner_game_server_id != kInvalidGameServerId);
+    assert(m_owner_game_server_id != INVALID_GAME_SERVER_ID);
 
-    if (!d->m_runtime_data.read_runtime_data(kRuntimeDataPath))
+    if (!d->m_runtime_data.read_runtime_data(RUNTIME_DATA_PATH))
         return false;
 
     assert(d->m_manager.num_templates() > 0);
