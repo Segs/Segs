@@ -1,5 +1,6 @@
 #pragma once
 #include "utils/helpers.h"
+#include "GL/glew.h"
 #include <stdint.h>
 
 struct SplatSib;
