@@ -4,152 +4,151 @@
 #include "renderer/RendererUtils.h"
 #include "renderer/RendererState.h"
 #include "renderer/RenderBonedModel.h"
+#include "renderer/ShaderProgramCache.h"
+#include "entity/entityDebug.h"
 #include "renderer/Model.h"
 #include "renderer/RenderTricks.h"
 #include "GameState.h"
-
+#include "renderer/RenderModel.h"
+#include "renderer/RenderTree.h"
+#include "renderer/RenderShadow.h"
+#include "renderer/Texture.h"
+#include "renderer/RenderSprites.h"
+#include "renderer/RenderParticles.h"
+#include "graphics/GroupDraw.h"
 #include "glm/gtc/constants.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 #include "GL/glew.h"
+#include "GL/wglew.h"
 
+#include <windows.h>
 #include <cstring>
 #include <cassert>
 #include <algorithm>
+#include <ctime>
 
-struct BeaconDbgRel
+struct Hash_Iter
 {
-    Vector3 lineStart;
-    Vector3 lineEnd;
-    RGBA color;
-    float linewidth;
+    HashTable *tab;
+    int idx;
 };
-enum GpuVendor
+struct HashTab_Entry
 {
-    ATI = 0x1002,
-    NVIDIA = 0x10DE,
+    void *key;
+    int hash_val;
+    void *value;
+    int u_C;
 };
-enum NvidiaCards
-{
-    GeForce3 = 0x200,
-    Quadro_DCC = 0x203,
-};
-enum AtiCards
-{
-    Radeon_9000 = 0x4966,
-    Radeon_9500_Pro = 0x4E45,
-    Radeon_8500 = 0x514C,
-    Radeon_9100 = 0x514D,
-};
-
-struct Parse_Sun
-{
-    char ****MoonName;
-    Vector2 LampLightTime;
-    Vector2 CloudFadeTime;
-    float CloudFadeMin;
-    Vector2 FogHeightRange;
-    Vector2 FogDist;
-};
-struct Parse_SkyCloud
-{
-    char * Name;
-    Vector2 Height;
-    int ScrollRatio;
-};
-#pragma pack(push, 8)
-struct Parse_SkyTime
-{
-    float time;
-    Vector3 ambient;
-    Vector3 diffuse;
-    Vector3 fogcolor;
-    Vector3 highfogcolor;
-    Vector3 backgroundcolor;
-    Vector2 fogdist;
-    float fogdepth;
-    Vector4 shadowcolor;
-    char *SkyName;
-    GfxTree_Node *sky;
-    Vector3 skypos;
-    float moon_scales[8];
-};
-#pragma pack(pop)
-
-struct Parse_Sky
-{
-    Parse_Sun **sun;
-    int num_suns;
-    Parse_SkyCloud **cloud;
-    int num_clouds;
-    Parse_SkyTime **skytime;
-    int sun_time_count;
-};
-struct FogVals
-{
-    Vector2 startEnd;
-    Vector3 color;
-    char valid;
-};
-struct SkyRel
-{
-    GfxTree_Node *node;
-    GfxTree_Node *glow;
-};
-struct MemPool;
-#pragma pack(push, 8)
-struct Parsed_SkyScene
-{
-    char *CubeMap;
-    char *Sky;
-    int ClipFoggedGeometry;
-    float FogRampColor;
-    float FogRampDistance;
-    int ScaleSpecularity;
-    struct Parse_TexSwap **TexSwap;
-};
-#pragma pack(pop)
 
 extern "C" {
-    __declspec(dllimport) void wcwMgmt_EnableFog(int);
-    __declspec(dllimport) GfxTree_Node *gfxtree_Allocgfxtreenode(MemPool *pool);
+    __declspec(dllimport) void hashtab_first(HashTable *arg0, Hash_Iter *iter);
+    __declspec(dllimport) HashTab_Entry *hashtab_next(Hash_Iter *iter);
+    __declspec(dllimport) void *HashTable_GetEntryValue(HashTab_Entry *element);
     __declspec(dllimport) void fn_5B7BE0(MemPool *pool);
     __declspec(dllimport) MemPool *MemPool__Alloc();
     __declspec(dllimport) void MemPool__InitPool(MemPool *mp, size_t strct_size, int struct_count, const char *fl, int ln);
-    __declspec(dllimport) void gfxtree_4ECDC0();
+    __declspec(dllimport) void *getMemFromPool(MemPool *pool, const char *filename, int line);
+    __declspec(dllimport) GfxTree_Node *gfx_tree_RemoveNodeFromTree(GfxTree_Node *node, GfxTree_Node **head, GfxTree_Node **tail);
     __declspec(dllimport) GfxTree_Node *gfxtree_CreateEnqueNode(GfxTree_Node *parent_node, GfxTree_Node *curr, GfxTree_Node **head, GfxTree_Node **tail);
-    __declspec(dllimport) GfxTree_Node *createGfxTreeNode_with_parent(GfxTree_Node *);
+    __declspec(dllimport) GfxTree_Node *gfxtree_4ED460(GfxTree_Node *memtofree, MemPool *pool);
+    __declspec(dllimport) void gfxtree_FreeGfxNodeContents(GfxTree_Node *memtofree, MemPool *pool);
     __declspec(dllimport) char *fn_4BF9F0(const char *obj_name, char *path);
     __declspec(dllimport) int  VfPrintfWrapper(const char *fmt, ...);
     __declspec(dllimport) Model *anim_GeoReq4E9090(const char *model_name, const char *filename, char *shadowname, int load_type, int use_type);
     __declspec(dllimport) void gfxtree_4ECD00(GfxTree_Node *node);
     __declspec(dllimport) bool gfxTreeNodeIsValid(GfxTree_Node *node, int id);
-    __declspec(dllimport) void gfxtree_gfxTreeDelete(GfxTree_Node *node);
     __declspec(dllimport) void fn_4FB720(const char *fmt, ...);
     __declspec(dllimport) char *strstri(const char *str1, const char *str2);
-    __declspec(dllimport) void gfxNodeSetAlpha(GfxTree_Node *node, char alpha, int root_only);
+    __declspec(dllimport) void gfxNodeSetAlpha(GfxTree_Node *node, uint8_t alpha, int root_only);
     __declspec(dllimport) float normalizeRadAngle(float v);
     __declspec(dllimport) void  fn_5B6740(float yaw_angle, Matrix3x3 *tgt);
     __declspec(dllimport) void  fn_5B6840(float roll_angle, Matrix3x3 *tgt);
     __declspec(dllimport) void  pitchMat3(float pitch_angle, Matrix3x3 *tgt);
     __declspec(dllimport) void  Matrix3x3__scale(Matrix3x3 *src, Matrix3x3 *dst,float scale);
+    __declspec(dllimport) void ReverseTransform(Matrix4x3 *, Matrix4x3 *);
+    __declspec(dllimport) void xyprintf(int x, int y, const char *fmt, ...);
+    __declspec(dllimport) bool inEditMode();
+    __declspec(dllimport) void fx_fxRunEngine();
+    __declspec(dllimport) void resetViewspaceMatCount();
+    __declspec(dllimport) void gfx_PrintSeqInfo();
+    __declspec(dllimport) void sunGlareDisable();
+    __declspec(dllimport) void drawStuffOnEntities();
+    __declspec(dllimport) void font_fontRender();
+    __declspec(dllimport) void sunVisible();
+    __declspec(dllimport) void DoorAnimCheckFade();
+    __declspec(dllimport) void renderUtil_rdrPixBufGetOld();
+    __declspec(dllimport) void gfx_48B1B0(const char *, int);
+    __declspec(dllimport) void fxCleanUp();
+    __declspec(dllimport) void showBgAdd(int diff);
+    __declspec(dllimport) void showBG(uint32_t);
+    __declspec(dllimport) void startFadeInScreen(int);
+    __declspec(dllimport) void statusLineDraw();
+    __declspec(dllimport) void gfx_showFramerate();
+    __declspec(dllimport) void printGfxSettings();
+    __declspec(dllimport) void displayEntDebugInfo();
+    __declspec(dllimport) void displaylog_4890F0();
+    __declspec(dllimport) void PrintSystemMessage(const char *fmt, ...);
+    __declspec(dllimport) int CohTimer__AllocTimer();
+    __declspec(dllimport) float CohTimer__elapsed(int idx);
+    __declspec(dllimport) int fn_4C13C0(const char *);
+    __declspec(dllimport) GroupDef *findNameInLib_P(const char *);
+    __declspec(dllimport) void CohTimer__ResetTimer(int);
+    __declspec(dllimport) void *fn_5B8FA0(HashTable *table, const char *key); //hashRemoveElement
+    __declspec(dllimport) void fn_5B7BE0(MemPool *pool);
+    __declspec(dllimport) void FreeModelGeometry(Model *model); // this should be named freeModelCollisionTriangles
 
-    __declspec(dllimport) int camera_is_inside;
-    __declspec(dllimport) FogVals g_FogStartEnd;
-    __declspec(dllimport) SunLight g_sun;
+    __declspec(dllimport) int int32_7B7E24;
+    __declspec(dllimport) int int32_6F13A8;
+    __declspec(dllimport) TextureBind *g_whiteTexture;
+    __declspec(dllimport) int glob_have_camera_pos;
+    __declspec(dllimport) int see_outside;
+    __declspec(dllimport) GfxTree_Node *gfx_tree_root;
     __declspec(dllimport) OptRel_A0 server_visible_state;
     __declspec(dllimport) Parse_Sky parsed_sky;
     __declspec(dllimport) float g_TIMESTEP;
-    __declspec(dllimport) GfxTree_Node * sky_gfx_tree_root;
     __declspec(dllimport) GfxTree_Node *gfxtree_node_7B8FDC; // sun node
     __declspec(dllimport) CameraInfo cam_info;
     __declspec(dllimport) FogVals struct_7B8DD8[2]; // indoor fog
     __declspec(dllimport) FogVals struct_7B8E0C; // current fog
     __declspec(dllimport) Parsed_SkyScene parsed_scene;
+    __declspec(dllimport) HDC device_context_handle;
+    __declspec(dllimport) int line_count;
+    __declspec(dllimport) BeaconDbgRel struct_114C3C0[50000];
+    __declspec(dllimport) BeaconDbgRel *int32_114C3AC;
+    __declspec(dllimport) int beacon_dbg_idx;
+    __declspec(dllimport) int int32_D49520;
+    __declspec(dllimport) BeaconDbgRel struct_D41820[1000];
+    __declspec(dllimport) MemPool *MP_GfxNode;
+    __declspec(dllimport) GfxTree_Node *gfx_tree_root_tail;
+    __declspec(dllimport) HashTable *GeoHashTable;
+    __declspec(dllimport) int maxSimultaneousFx;
+    __declspec(dllimport) int fxDestroyedCount;
+    __declspec(dllimport) int fxCreatedCount;
+    __declspec(dllimport) int seqLoadInstCalls;
+    __declspec(dllimport) int seqFreeInstCalls;
 }
 static MemPool *s_skynode_pool;
+static GfxTree_Node * sky_gfx_tree_root;
 static GfxTree_Node *sky_gfx_tree_tail;
 static SkyRel celestial_objects[8];
-static GfxTree_Node *s_clouds[8];
+static std::array<GfxTree_Node *,8> s_clouds;
 static int valid_tree_node_val;
+static GeometryData simple_quad_vbo;
+static int startTypeDrawing;
+static int startAlphaDrawing;
+static int startShadowDrawing;
+static int endDrawModels;
+static int s_blend_mode_switches;
+
+SunLight g_sun;
+FogVals g_FogStartEnd;
+
+void lightLines2(Matrix4x3 *mat, MaterialDefinition &material);
+void drawLightDirLines(Matrix4x3 *mat, MaterialDefinition &material);
+GfxTree_Node *segs_createGfxTreeNode_with_parent(GfxTree_Node *);
+GfxTree_Node *segs_gfxtree_Allocgfxtreenode(MemPool *pool);
+void segs_gfxtree_gfxTreeDelete(GfxTree_Node *node);
+
 
 // should be named: getDefaultPreferences()
 void  segs_gfx_GfxCardFixes(GfxPrefs *settings)
@@ -159,29 +158,6 @@ void  segs_gfx_GfxCardFixes(GfxPrefs *settings)
     //TODO: consider the fact that almost no one has 9500 or GeForce3 anymore
     //TODO: compare lowest end intel graphics card to Radeon 9500 and Geforce3, select default prefs for it
     segs_renderUtil_GetGfxCardVend(&sys_info);
-    if ( sys_info.pci_ven == ATI )
-    {
-        if ( sys_info.pci_dev == Radeon_9500_Pro )
-        {
-            quality_mod = 3;
-        }
-        else if ( sys_info.pci_dev == Radeon_9100 ||
-                  sys_info.pci_dev == Radeon_9000 ||
-                  sys_info.pci_dev == Radeon_8500 )
-        {
-            quality_mod = 2;
-        }
-    }
-    if ( sys_info.pci_ven == NVIDIA )
-    {
-        if ( sys_info.pci_dev < Quadro_DCC )
-        {
-            if ( sys_info.pci_dev < GeForce3 )
-                quality_mod = 1;
-            else
-                quality_mod = 2;
-        }
-    }
     settings->fxSoundVolume = 1.0;
     settings->musicSoundVolume = 0.6f;
     settings->screenX_pos = 0;
@@ -193,44 +169,25 @@ void  segs_gfx_GfxCardFixes(GfxPrefs *settings)
     settings->maxParticleFill_div1mln = 10.0;
     settings->fullscreen = 1;
     settings->mipLevel = 0;
-
-    switch(quality_mod)
-    {
-        case 0:
-        case 2:
-        settings->controls_draw_dist = 1.0;
-        settings->LODBias = 1.0;
-        settings->screen_x = 1024;
-        settings->screen_y = 768;
-        settings->enableVBOs = 1;
-        break;
-    case 1:
-        settings->controls_draw_dist = 0.7f;
-        settings->LODBias = 0.7f;
-        settings->screen_x = 800;
-        settings->screen_y = 600;
-        settings->enableVBOs = 0;
-        break;
-    case 3:
-        settings->controls_draw_dist = 1.0;
-        settings->LODBias = 1.0;
-        settings->screen_x = 1024;
-        settings->screen_y = 768;
-        settings->enableVBOs = 1;
-        break;
-    default:
-        assert(!"Unknown quality value in segs_gfx_GfxCardFixes");
-    }
+    settings->controls_draw_dist = 1.0;
+    settings->LODBias = 1.0;
+    settings->screen_x = 1024;
+    settings->screen_y = 768;
+    settings->enableVBOs = 1;
     if ( sys_info.total_physical_memory <= 269000000 )
         settings->mipLevel = 1;
 }
-
-void  drawDebugBeacons(BeaconDbgRel *beacons, int count)
+static void  drawDebugBeacons(BeaconDbgRel *beacons, int count, MaterialDefinition &material)
 {
-    segs_setupShading(DrawMode::COLORONLY, eBlendMode::MULTIPLY);
     glLineWidth(3.0);
+//    std::vector<uint8_t> colors;
+//    std::vector<Vector3> pos;
+//    std::vector<uint16_t> indices;
+//    uint16_t index_offset=0;
+    //TODO: check if all beacon.line widths are same, or sort beacons by line width, and do separate draw calls
     for(int idx=0; idx<count; ++idx)
     {
+
         const BeaconDbgRel &beacon(beacons[idx]);
         const float line_width = beacon.linewidth == 0.0f ? 1.0f : beacon.linewidth;
         glLineWidth(line_width);
@@ -240,78 +197,100 @@ void  drawDebugBeacons(BeaconDbgRel *beacons, int count)
         glVertex3f(beacon.lineEnd.x, beacon.lineEnd.y, beacon.lineEnd.z);
         glEnd();
     }
-    segs_modelDrawState(DrawMode::DUALTEX, 1);
-    segs_modelBlendState(eBlendMode::MULTIPLY, 1);
+    material.apply();
 }
-static void drawColoredBox(float x1, float y1, float x2, float y2, uint32_t clr1, uint32_t clr2, uint32_t clr3, uint32_t clr4)
+void drawDebugBeaconsWithMatrix(BeaconDbgRel *beacons, int count, Matrix4x3 *mat, MaterialDefinition &material)//gfx_4D8580
 {
+    material.draw_data.modelViewMatrix = mat->toGLM();
+    material.apply();
+    drawDebugBeacons(beacons, count, material);
+}
+static void drawColoredBox(float x1, float y1, float x2, float y2, uint32_t clr1, uint32_t clr2, uint32_t clr3, uint32_t clr4,
+                           MaterialDefinition &material)
+{
+    if (!simple_quad_vbo.segs_data)
+        simple_quad_vbo.createVAO();
     if (x1 > x2)
         std::swap(x1, x2);
     if (y1 > y2)
         std::swap(y1, y2);
-
+    float vbo_data[] = {
+        x1, y1, -1.0f,
+        x1, y2, -1.0f,
+        x2, y2, -1.0f,
+        x2, y1, -1.0f,
+    };
+    uint8_t colors[] = {
+        uint8_t(clr3 >> 16) , uint8_t(clr3 >> 8), uint8_t(clr3), uint8_t(clr3 >> 24),
+        uint8_t(clr1 >> 16) , uint8_t(clr1 >> 8), uint8_t(clr1), uint8_t(clr1 >> 24),
+        uint8_t(clr2 >> 16) , uint8_t(clr2 >> 8), uint8_t(clr2), uint8_t(clr2 >> 24),
+        uint8_t(clr4 >> 16) , uint8_t(clr4 >> 8), uint8_t(clr4), uint8_t(clr4 >> 24),
+    };
     segs_wcw_statemgmt_bindTexture(GL_TEXTURE_2D, 0, 0);
-    glBegin(GL_TRIANGLES);
-        glColor4ub((clr3 & 0xFF0000) >> 16, (clr3 & 0xFF00) >> 8, clr3, (clr3 & 0xFF000000) >> 24);
-        glVertex3f(x1, y1, -1.0f);
-        glColor4ub((clr1 & 0xFF0000) >> 16, (clr1 & 0xFF00) >> 8, clr1, (clr1 & 0xFF000000) >> 24);
-        glVertex3f(x1, y2, -1.0f);
-        glColor4ub((clr2 & 0xFF0000) >> 16, (clr2 & 0xFF00) >> 8, clr2, (clr2 & 0xFF000000) >> 24);
-        glVertex3f(x2, y2, -1.0f);
-    glEnd();
-    glBegin(GL_TRIANGLES);
-        glColor4ub((clr3 & 0xFF0000) >> 16, (clr3 & 0xFF00) >> 8, clr3, (clr3 & 0xFF000000) >> 24);
-        glVertex3f(x1, y1, -1.0f);
-        glColor4ub((clr2 & 0xFF0000u) >> 16, (clr2 & 0xFF00) >> 8, clr2, (clr2 & 0xFF000000) >> 24);
-        glVertex3f(x2, y2, -1.0f);
-        glColor4ub((clr4 & 0xFF0000u) >> 16, (clr4 & 0xFF00) >> 8, clr4, (clr4 & 0xFF000000) >> 24);
-        glVertex3f(x2, y1, -1.0f);
-    glEnd();
+    uint32_t indices[] = { 0,1,2,0,2,3 };
+    simple_quad_vbo.uploadVerticesToBuffer(vbo_data,12);
+    simple_quad_vbo.uploadColorsToBuffer(colors,16);
+    simple_quad_vbo.uploadIndicesToBuffer(indices, 6);
+    material.apply();
+    simple_quad_vbo.draw(*material.program, GL_TRIANGLES, 6, 0);
 }
 void drawFlatBox(int x1, int y1, int x2, int y2, uint32_t color)
 {
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0.0, 640.0, 0.0, 480.0, -1.0, 100.0);
+    GLDebugGuard guard(__FUNCTION__);
+    MaterialDefinition flat_material(g_default_mat);
+    flat_material.setDrawMode(DrawMode::COLORONLY);
+    flat_material.setFragmentMode(eBlendMode::MULTIPLY);
+
     segs_texSetAllToWhite();
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    glDisable(GL_LIGHTING);
-    wcwMgmt_EnableFog(0);
-    glDisable(GL_DEPTH_TEST);
-    segs_wcw_statemgmt_setDepthMask(true);
-    glColor3f(1.0, 1.0, 1.0);
-    segs_modelDrawState(DrawMode::SINGLETEX, 1);
-    segs_modelBlendState(eBlendMode::MULTIPLY, 1);
-    drawColoredBox(x1, y1, x2, y2, color, color, color, color);
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
+    flat_material.draw_data.projectionMatrix = glm::ortho(0.0, 640.0, 0.0, 480.0, -1.0, 100.0);
+    flat_material.draw_data.modelViewMatrix = glm::mat4(1);
+    flat_material.draw_data.light0.State = false;
+    flat_material.draw_data.globalColor = { 1,1,1,1 };
+    flat_material.draw_data.fog_params.enabled = false;
+    flat_material.render_state.setDepthTestMode(RenderState::CMP_NONE);
+    flat_material.render_state.setDepthWrite(true);
+    flat_material.apply();
+    drawColoredBox(x1, y1, x2, y2, color, color, color, color, flat_material);
+}
+void segs_ttDrawBoxBasic(float x1, float y1, float x2, float y2,uint32_t clr2, uint32_t clr3, uint32_t clr1, uint32_t clr4, int draw_quad)
+{
+    if ( x1 > x2 )
+        std::swap(x1,x2);
+    if ( y1 > y2 )
+        std::swap(y1,y2);
+    segs_wcw_statemgmt_bindTexture(GL_TEXTURE_2D, 0, 0);
+    GeometryData fakevbo;
+    float vbo_data[] = {
+        x1, y1,-1 ,
+        x1, y2,-1 ,
+        x2, y2,-1 ,
+        x2, y1,-1 ,
+    };
+    uint8_t colors[] = {
+        uint8_t(clr1>> 16), uint8_t(clr1 >> 8), uint8_t(clr1), uint8_t(clr1 >> 24),
+        uint8_t(clr2>> 16), uint8_t(clr2 >> 8), uint8_t(clr2), uint8_t(clr2 >> 24),
+        uint8_t(clr3>> 16), uint8_t(clr3 >> 8), uint8_t(clr3), uint8_t(clr3 >> 24),
+        uint8_t(clr4>> 16), uint8_t(clr4 >> 8), uint8_t(clr4), uint8_t(clr4 >> 24)
+
+    };
+    simple_quad_vbo.uploadVerticesToBuffer(vbo_data,12);
+    simple_quad_vbo.uploadColorsToBuffer(colors,16);
+    MaterialDefinition temp_material(g_default_mat);
+    temp_material.setDrawMode(DrawMode::SINGLETEX);
+    temp_material.setFragmentMode(eBlendMode::MULTIPLY);
+
+    temp_material.apply();
+    GLenum mode = draw_quad ? GL_QUADS : GL_LINE_LOOP;
+    simple_quad_vbo.drawArray(*temp_material.program, mode,4,0);
 }
 void segs_setSunLight(Matrix4x3 *view_mat)
 {
-    Vector4 params;
-    Matrix4x4 gl_mat = *view_mat;
-    glLoadMatrixf(gl_mat.data());
-    glEnable(GL_LIGHTING);
-    segs_wcw_statemgmt_enableColorMaterial();
-    glEnable(GL_LIGHT0);
-    glColor4ub(0xFFu, 0xFFu, 0xFFu, 0xFFu);
-    segs_wcw_statemgmt_SetLightParam(GL_LIGHT0, GL_AMBIENT, &g_sun.ambient);
-    segs_wcw_statemgmt_SetLightParam(GL_LIGHT0, GL_DIFFUSE, &g_sun.diffuse);
-    params.x = g_sun.direction.x;
-    params.y = g_sun.direction.y;
-    params.z = g_sun.direction.z;
-    params.w = 0.0;
-    segs_wcw_statemgmt_SetLightParam(GL_LIGHT0, GL_POSITION, &params);
-    params = { 0,0,0,1 };
-    segs_wcw_statemgmt_SetLightParam(GL_LIGHT0, GL_SPECULAR, &params);
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, &params.x);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, &params.x);
-    glMateriali(GL_FRONT, GL_SHININESS, 128);
+    g_light_state.State = true;
+    g_light_state.Ambient = g_sun.ambient;
+    g_light_state.Diffuse = g_sun.diffuse;
+    g_light_state.Position= view_mat->ref3() * g_sun.direction.ref3();
+    g_light_state.Specular={ 0,0,0,1 };
+    //TODO: set gloss exponent to 128 here
 }
 static float fixTime(float tm_val)
 {
@@ -332,7 +311,7 @@ static void gfxTreeInitSkyTree()
 }
 static GfxTree_Node * segs_gfxtree_CreateSkyGfxTreeRoot(GfxTree_Node *node)
 {
-    GfxTree_Node *curr = gfxtree_Allocgfxtreenode(s_skynode_pool);
+    GfxTree_Node *curr = segs_gfxtree_Allocgfxtreenode(s_skynode_pool);
     gfxtree_CreateEnqueNode(node, curr, &sky_gfx_tree_root, &sky_gfx_tree_tail);
     return curr;
 }
@@ -342,7 +321,7 @@ GfxTree_Node *sunAddNode(const char *model_name, int which_graph_to_insert)
     char filename[260] = {0};
 
     if (which_graph_to_insert)
-        result = createGfxTreeNode_with_parent(nullptr);
+        result = segs_createGfxTreeNode_with_parent(nullptr);
     else
         result = segs_gfxtree_CreateSkyGfxTreeRoot(nullptr);
     fn_4BF9F0(model_name, filename);
@@ -357,7 +336,7 @@ GfxTree_Node *sunAddNode(const char *model_name, int which_graph_to_insert)
 void resetSunNode()
 {
     if (gfxTreeNodeIsValid(gfxtree_node_7B8FDC, valid_tree_node_val))
-        gfxtree_gfxTreeDelete(gfxtree_node_7B8FDC);
+        segs_gfxtree_gfxTreeDelete(gfxtree_node_7B8FDC);
     gfxtree_node_7B8FDC = nullptr;
     valid_tree_node_val = 0;
 }
@@ -368,14 +347,7 @@ static void initializeSky()
     gfxTreeInitSkyTree();
     g_FogStartEnd.valid = 0;
     memset(celestial_objects, 0, sizeof(celestial_objects));
-    s_clouds[0] = nullptr;
-    s_clouds[1] = nullptr;
-    s_clouds[2] = nullptr;
-    s_clouds[3] = nullptr;
-    s_clouds[4] = nullptr;
-    s_clouds[5] = nullptr;
-    s_clouds[6] = nullptr;
-    s_clouds[7] = nullptr;
+    s_clouds.fill(nullptr);
     resetSunNode();
     for (int i = 0; i < parsed_sky.sun_time_count; ++i)
     {
@@ -453,9 +425,9 @@ static void indoorFogBlend()
 {
     static float s_ratio;
     s_ratio = g_TIMESTEP * 0.03f + s_ratio;
-    if (s_ratio > glm::two_pi<float>())
-        s_ratio = s_ratio - glm::two_pi<float>();
-    if (s_ratio >= glm::pi<float>())
+    if (s_ratio > float(2*M_PI))
+        s_ratio = s_ratio - float(2*M_PI);
+    if (s_ratio >= float(M_PI))
         fogBlend(struct_7B8DD8, &struct_7B8DD8[1], 1.0, 3.0, &struct_7B8E0C);
     else
         fogBlend(struct_7B8DD8, &struct_7B8DD8[1], 0.0, 3.0, &struct_7B8E0C);
@@ -513,10 +485,10 @@ void segs_sun_SetFog(Vector2 *param, const GLfloat *color)
     float drawdist = 1.0;
     if (g_State.view.vis_scale < 1.0f && param->x > 400.0f)
         drawdist = g_State.view.vis_scale;
-    glFogi(GL_FOG_MODE, GL_LINEAR);
-    glFogf(GL_FOG_START, drawdist * param->x);
-    glFogf(GL_FOG_END, drawdist * param->y);
-    glFogfv(GL_FOG_COLOR, color);
+    g_fog_state.setMode(1);
+    g_fog_state.color = { color[0],color[1],color[2],color[3] };
+    g_fog_state.setStart(drawdist * param->x);
+    g_fog_state.setEnd(drawdist * param->y);
 }
 static void fogBlendWithLast()
 {
@@ -527,7 +499,7 @@ static void fogBlendWithLast()
 }
 static constexpr float degToRad(float v)
 {
-    return glm::pi<float>() * v / 180.0f;
+    return M_PI * v / 180.0f;
 }
 void fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *cam_pos, GfxTree_Node *node, float scale)
 {
@@ -558,7 +530,7 @@ void fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *cam_pos, 
         to.TranslationPart = *cam_pos;
         fn_5B6740(dword_7B8E08->pyr.y, &to.ref3()); //yawMat3
         fn_5B6840(dword_7B8E08->pyr.z, &to.ref3()); //rollMat3
-        float angle = rot * dword_7B8E08->speed - glm::pi<float>() + dword_7B8E08->pyr.x;
+        float angle = rot * dword_7B8E08->speed - M_PI + dword_7B8E08->pyr.x;
         pitchMat3(angle, &to.ref3());
         dest.r1 = { 1,0,0 };
         dest.r2 = { 0,1,0 };
@@ -595,6 +567,7 @@ void segs_sun_sunUpdate(int init)
     float fogtimefade;
     Vector3 player_offset;
     float ratio;
+
     float _time = server_visible_state.timescale * g_TIMESTEP / 108000.0f + server_visible_state.map_time_of_day;
     _time = fixTime(_time);
     server_visible_state.map_time_of_day = _time;
@@ -627,7 +600,7 @@ void segs_sun_sunUpdate(int init)
         {
             if (!strstri(s_clouds[i]->model->bone_name_offset, "sunskirt"))
             {
-                gfxNodeSetAlpha(s_clouds[i], fogtimefade * 255.0, 1);
+                gfxNodeSetAlpha(s_clouds[i], uint8_t(fogtimefade * 255), 1);
             }
         }
         s_clouds[i]->mat.TranslationPart = player_offset;
@@ -718,6 +691,7 @@ void segs_sun_sunUpdate(int init)
         if (celestial_objects[i].glow)
             fixupCelestialObject(i, 0.0, rot, &player_offset, celestial_objects[i].glow, scale);
     }
+    Parse_Sky copy = parsed_sky;
     if (_time <= (*parsed_sky.sun)->LampLightTime.y)
     {
         tmp = std::min(1.0f,_time - ((*parsed_sky.sun)->LampLightTime.x - 1.0f));
@@ -730,8 +704,10 @@ void segs_sun_sunUpdate(int init)
     setGlobalShadowColor(&early->shadowcolor, &late->shadowcolor, ratio);
     Vector3 ambient      = LinearInterpolateVectors(early->ambient, late->ambient, ratio);
     Vector3 diffuse      = LinearInterpolateVectors(early->diffuse, late->diffuse, ratio);
-    g_sun.ambient.ref3() = (ambient * 63.0)/255.0f;
+    g_sun.ambient.ref3() = (ambient * 63.0)/255.0f; // basically (ambient/255) * 1/4
+    g_sun.ambient.w             = 1.0;
     g_sun.diffuse.ref3() = (diffuse * 63.0)/255.0f;
+    g_sun.diffuse.w             = 1.0;
     if (celestial_objects[0].node)
     {
         g_sun.direction = celestial_objects[0].node->mat.TranslationPart - player_offset;
@@ -751,16 +727,10 @@ void segs_sun_sunUpdate(int init)
     const float MINIMUM_PLAYER_DIFFUSE = 0.06f;
 
     g_sun.no_angle_light.w      = 1.0;
-    g_sun.ambient.w             = 1.0;
-    g_sun.diffuse.w             = 1.0;
     g_sun.ambient_for_players.w = 1.0;
     g_sun.diffuse_for_players.w = 1.0;
-    g_sun.ambient_for_players.x = g_sun.ambient.x * playerAmbientAdjuster;
-    g_sun.ambient_for_players.y = g_sun.ambient.y * playerAmbientAdjuster;
-    g_sun.ambient_for_players.z = g_sun.ambient.z * playerAmbientAdjuster;
-    g_sun.diffuse_for_players.x = g_sun.diffuse.x * playerDiffuseAdjuster;
-    g_sun.diffuse_for_players.y = g_sun.diffuse.y * playerDiffuseAdjuster;
-    g_sun.diffuse_for_players.z = g_sun.diffuse.z * playerDiffuseAdjuster;
+    g_sun.ambient_for_players.ref3() = g_sun.ambient.ref3() * playerAmbientAdjuster;
+    g_sun.diffuse_for_players.ref3() = g_sun.diffuse.ref3() * playerDiffuseAdjuster;
     for (int i = 0; i < 3; ++i)
     {
         g_sun.ambient[i] = std::max(MINIMUM_AMBIENT, g_sun.ambient[i]);
@@ -783,23 +753,627 @@ void segs_sun_sunUpdate(int init)
     }
     g_sun.no_angle_light.ref3() = g_sun.ambient.ref3() + g_sun.diffuse.ref3();
 }
-
-void segs_gfxTreeInit()
+void segs_model_cache_FreeVBO(GeometryData *bf)
 {
-    gfxtree_4ECDC0();
-    gfxTreeInitSkyTree();
+
+    if (!bf->vertices && !bf->gl_index_buffer)
+        return;
+    segs_wcw_statemgmt_FreeVBO(GL_ARRAY_BUFFER, 1, &bf->gl_vertex_buffer, "ModelCache_VBO");
+    segs_wcw_statemgmt_FreeVBO(GL_ELEMENT_ARRAY_BUFFER, 1, &bf->gl_index_buffer, "ModelCache_VBO");
+    if (bf->cpuside_memory)
+        COH_FREE(bf->cpuside_memory);
+    bf->gl_index_buffer = 0;
+    bf->triangles = nullptr;
+    bf->normals_offset = nullptr;
+    bf->uv1_offset = nullptr;
+    bf->uv2_offset = nullptr;
+    bf->tangents_directions = nullptr;
+    delete bf->segs_data;
+    bf->segs_data = nullptr;
+    bf->weights = nullptr;
+    bf->boneIndices = nullptr;
 }
 
+void modelFreeCache(Model *model) //fn_4EB440
+{
+    if (model->loadstate == 4)
+    {
+        FreeModelGeometry(model);
+        segs_model_cache_FreeVBO(model->vbo);
+    }
+}
+static void modelListFree(AnimList *anm_lst)
+{
+    if (anm_lst->loadstate != 4)
+        return;
+    for (int i = 0; i < anm_lst->headers->num_subs; ++i)
+    {
+        Model *model = &anm_lst->headers->models[i];
+        modelFreeCache(model);
+        COH_FREE(model->trck_node);
+        if (model->vbo)
+            COH_FREE(model->vbo->textureP_arr);
+        delete model->vbo;
+    }
+    fn_5B8FA0(GeoHashTable, anm_lst->name);
+    COH_FREE(anm_lst->header_data);
+    COH_FREE(anm_lst->geo_data);
+    COH_FREE(anm_lst);
+}
+void modelFreeAllCache(int unuse_type)
+{
+    Hash_Iter iter;
+
+    if (!GeoHashTable)
+        return;
+
+    hashtab_first(GeoHashTable, &iter);
+    for(;;)
+    {
+        HashTab_Entry *element = hashtab_next(&iter);
+        if (!element)
+            break;
+        AnimList *anm_lst = (AnimList *)HashTable_GetEntryValue(element);
+        for (int i = 0; i < anm_lst->headers->num_subs; ++i)
+            modelFreeCache(&anm_lst->headers->models[i]);
+        anm_lst->geo_use_type &= ~unuse_type;
+        if (!anm_lst->geo_use_type)
+            modelListFree(anm_lst);
+    }
+}
+
+void gfxTreeInitCharacterAndFxTree()
+{
+    if (MP_GfxNode)
+        fn_5B7BE0(MP_GfxNode);
+    MP_GfxNode = MemPool__Alloc();
+    MemPool__InitPool(MP_GfxNode, sizeof(GfxTree_Node), 0x7D0, __FILE__, __LINE__);
+    gfx_tree_root = nullptr;
+    gfx_tree_root_tail = nullptr;
+    modelFreeAllCache(8);//modelFreeAllCache, 8- GEO_USED_BY_GFXTREE
+}
+void segs_gfxTreeInit()
+{
+    gfxTreeInitCharacterAndFxTree();
+    gfxTreeInitSkyTree();
+}
+GfxTree_Node *segs_gfxtree_Allocgfxtreenode(MemPool *pool)
+{
+    static uint32_t g_gfx_node_counter = 1;
+    GfxTree_Node *node = (GfxTree_Node *)getMemFromPool(pool, __FILE__, __LINE__);
+    assert(node);
+    node->trick_node = nullptr;
+    node->setAlpha(255);
+    if ( g_gfx_node_counter == 0xFFFFFFFF )
+        g_gfx_node_counter += 2;
+    node->unique_id = g_gfx_node_counter++;
+    return node;
+}
+GfxTree_Node *segs_createGfxTreeNode_with_parent(GfxTree_Node *parent_node)
+{
+    GfxTree_Node *curr = segs_gfxtree_Allocgfxtreenode(MP_GfxNode);
+    gfxtree_CreateEnqueNode(parent_node, curr, &gfx_tree_root, &gfx_tree_root_tail);
+    return curr;
+}
+void segs_gfxtree_gfxTreeDelete(GfxTree_Node *tree)
+{
+    if ( !tree )
+        return;
+
+    gfx_tree_RemoveNodeFromTree(tree, &gfx_tree_root, &gfx_tree_root_tail);
+    gfxtree_4ED460(tree->children_list, MP_GfxNode);
+    gfxtree_FreeGfxNodeContents(tree, MP_GfxNode);
+}
+HGLRC segs_createGL()
+{
+    int pfattribs[] =
+    {
+        WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+        WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+        WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+        WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+        WGL_COLOR_BITS_ARB, 32,
+        WGL_DEPTH_BITS_ARB, 24,
+        WGL_STENCIL_BITS_ARB, 8,
+        //WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+        0
+    };
+    float pf_float_attribs[] = { 0 };
+    int attribs[] =
+    {
+        WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 0,
+        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+        WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
+        0
+    };
+    static PIXELFORMATDESCRIPTOR pfd_old {
+        sizeof(PIXELFORMATDESCRIPTOR), 1, PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER,
+        PFD_TYPE_RGBA, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 8, 0, 0, 0, 0, 0, 0 };
+    int pixfmt = ChoosePixelFormat(device_context_handle, &pfd_old);
+    if (!SetPixelFormat(device_context_handle, pixfmt, &pfd_old))
+        return nullptr;
+    auto old_ctx = wglCreateContext(device_context_handle);
+    if (!old_ctx || !wglMakeCurrent(device_context_handle, old_ctx))
+        return nullptr;
+    glewInit();
+    wglMakeCurrent(nullptr, nullptr);
+    HGLRC true_ctx = nullptr;
+    wglDeleteContext(old_ctx);
+    unsigned int numpf;
+    if (!wglChoosePixelFormatARB(device_context_handle, pfattribs, pf_float_attribs, 1, &pixfmt, &numpf))
+    {
+        return nullptr;
+    }
+    PIXELFORMATDESCRIPTOR pfd;
+    DescribePixelFormat(device_context_handle, pixfmt, sizeof(pfd), &pfd);
+    if (SetPixelFormat(device_context_handle, pixfmt, &pfd))
+    {
+        true_ctx = wglCreateContextAttribsARB(device_context_handle, nullptr, attribs);
+        if (true_ctx)
+        {
+            if (!wglMakeCurrent(device_context_handle, true_ctx))
+            {
+                GetLastError();
+                wglDeleteContext(true_ctx);
+                return nullptr;
+            }
+        }
+    }
+    segs_createSamplers();
+    glDisable(GL_LIGHTING);
+    return true_ctx;
+}
+void segs_drawBox(int x1, int y1, int x2, int y2, uint32_t argb)
+{
+    MaterialDefinition flat_material(g_default_mat);
+    flat_material.setDrawMode(DrawMode::COLORONLY);
+    flat_material.setFragmentMode(eBlendMode::MULTIPLY);
+    segs_texSetAllToWhite();
+    flat_material.draw_data.projectionMatrix = glm::ortho(0.0, 640.0, 0.0, 480.0, -1.0, 100.0);
+    flat_material.draw_data.modelViewMatrix = glm::mat4(1);
+    flat_material.draw_data.light0.State = 0;
+    flat_material.draw_data.fog_params.enabled = 0;
+    flat_material.render_state.setDepthTestMode(RenderState::CMP_NONE);
+    flat_material.render_state.setDepthWrite(true);
+    flat_material.draw_data.globalColor = { 1,1,1,1 };
+
+    flat_material.apply();
+    drawColoredBox(x1, y1, x2, y2, argb, argb, argb, argb, flat_material);
+}
+
+static int cmpSortThingsType(SortThing *a, SortThing *b)
+{
+    int result = a->blendMode - b->blendMode;
+    if (a->blendMode == b->blendMode)
+        result = (a->model - b->model) / sizeof(Model);
+    return result;
+}
+static int cmpSortThingsDist(SortThing *a, SortThing *b)
+{
+    if (a->distsq == b->distsq)
+        return 0;
+    if (a->distsq < b->distsq)
+        return -1;
+    return 1;
+}
+static void drawSortList(int(*cmpFunc)(const void *, const void *), std::vector<SortThing> &c)
+{
+    GLDebugGuard debug_guard(__FUNCTION__);
+    if (cmpFunc && !(g_State.view.perf_flags & 0x200))
+        qsort(c.data(), c.size(), sizeof(SortThing), cmpFunc);
+    for (SortThing & thing : c)
+    {
+        if (thing.modelSource == 1)
+        {
+            assert(thing.gfxnode);
+            segs_modelDrawGfxNode(thing.gfxnode);
+        }
+        else
+        {
+            segs_rendertree_modelDrawWorldmodel(&vsArray[thing.vsIdx]);
+        }
+    }
+}
+void drawSortedModels()
+{
+    GLDebugGuard debug_guard(__FUNCTION__);
+    startTypeDrawing = s_blend_mode_switches;
+    drawSortList((int(*)(const void *, const void *))cmpSortThingsType, ModelArrayTypeSort);
+    startAlphaDrawing = s_blend_mode_switches;
+    drawSortList((int(*)(const void *, const void *))cmpSortThingsDist, ModelArrayDistSort);
+    startShadowDrawing = s_blend_mode_switches;
+    //segs_rendertree_drawShadows();
+    endDrawModels = s_blend_mode_switches;
+}
+static void finishLoadScreen()
+{
+
+    while (int32_7B7E24 < int32_6F13A8)
+    {
+        gfx_48B1B0("blarg", 1000000);
+        Sleep(1u);
+    }
+    DWORD start_count = GetTickCount();
+    while (GetTickCount() - start_count < 250)
+    {
+        uint32_t alpha = 0xFF * (GetTickCount() - start_count) / 250;
+        if (alpha > 0xFF)
+            alpha = 0xFF;
+        showBG(alpha << 24);
+        Sleep(4);
+    }
+    showBG(0xFF000000);
+}
+void segs_setLightForCharacterEditor()
+{
+    static float angle = 0;
+    g_sun.ambient_for_players = { 0.15f,0.15f,0.15f,1.0f };
+    g_sun.diffuse_for_players = { 0.19f,0.19f,0.19f,0.19f };
+    float x = std::cos(angle);
+    float y = std::sin(angle);
+    angle += 0.005;
+    g_sun.direction.x = x;// 1.0;
+    g_sun.direction.y = y;// 1.0;
+    g_sun.direction.z = 1.0;
+}
+static void rdrFixMat(Matrix4x3 *to)
+{
+    Matrix3x3 unitfix;
+    unitfix = { {-1,0,0},
+                {0,1,0},
+                {0,0,1} };
+    to->ref3() = to->ref3() * unitfix;
+}
+void segs_gfxSetViewMat(const Matrix4x3 *cam_mat, Matrix4x3 *view_mat, Matrix4x3 *inv_viewmat)
+{
+
+    *view_mat = *cam_mat;
+    view_mat->ref3() = view_mat->ref3().transpose();
+    rdrFixMat(view_mat);
+    Vector3 tmp = - view_mat->TranslationPart;
+    view_mat->TranslationPart = view_mat->ref3() * tmp;
+    if (inv_viewmat)
+        ReverseTransform(view_mat, inv_viewmat);
+}
+void printGeneralDebug() //489C00
+{
+    xyprintf(10, 10, "maxSimultaneousFx %d", maxSimultaneousFx);
+    xyprintf(10, 11, "fxCreatedCount %d", fxCreatedCount);
+    xyprintf(10, 12, "fxDestroyedCount %d", fxDestroyedCount);
+    xyprintf(10, 15, "seqLoadInstCalls %d", seqLoadInstCalls);
+    xyprintf(10, 16, "seqFreeInstCalls %d", seqFreeInstCalls);
+    xyprintf(10, 18, "drawGfxNodeCalls %d", drawGfxNodeCalls);
+    drawGfxNodeCalls = 0;
+    xyprintf(10, 19, "drawOrder %d", drawOrder);
+    g_nextdraw = 0;
+    drawOrder = 0;
+    xyprintf(10, 20, "boned\t\t%d", boned);
+    xyprintf(10, 21, "nonboned\t%d", nonboned);
+    nonboned = 0;
+    boned = 0;
+    // todo: display shader/material changes here ?
+    // todo: show per render pass shader/material switch counts sorted/alpha/shadow/etc.
+    s_blend_mode_switches = 0;
+    endDrawModels = 0;
+    startShadowDrawing = 0;
+    startTypeDrawing = 0;
+    xyprintf(10, 38, "sortedByDist\t\t   %d", sortedByDist);
+    xyprintf(10, 39, "sortedByType\t       %d", sortedByType);
+    NodesDrawn = 0;
+}
+static int cmpPtrQSort(const DefTracker **a, const DefTracker **b)
+{
+    if ( *a >= *b )
+        return *a != *b;
+    return -1;
+}
+void segs_gfxUpdateFrame(bool force_render_world, bool head_shot)
+{
+    ModelArrayTypeSort.clear();
+    ModelArrayDistSort.clear();
+    vsArray.clear();
+    nodeTotal = 0;
+    segs_renderUtil_ClearGL();
+    if (!head_shot)
+        segs_gfxWindowReshape();
+    segs_gfxSetViewMat(&cam_info.cammat, &cam_info.viewmat, &cam_info.inv_viewmat);
+    if (g_State.view.game_mode == 2)
+        segs_setLightForCharacterEditor();
+
+    segs_setSunLight(&cam_info.viewmat);
+    g_sun.direction_in_viewspace.ref3() = cam_info.viewmat.ref3() * g_sun.direction.ref3();
+    if (g_State.view.debTest3 == 1.0f)
+        printGeneralDebug();
+    fx_fxRunEngine();
+    if (g_State.view.game_mode == 2 || g_State.view.game_mode == 1 || force_render_world)// Render
+    {
+        splatShadowsDrawn = 0;
+        segs_shadowStartScene();
+        resetViewspaceMatCount();
+        g_fog_state.enabled = true;
+        if (g_State.view.bPrintSeqInfo)
+            gfx_PrintSeqInfo();
+        segs_texSetAllToWhite();
+        segs_wcw_UnBindBufferARB();
+        visibleTrays.clear();
+        see_outside = 1;
+        if (g_State.view.bWireframe && !inEditMode())
+            xyprintf(10, 9, "TIME: %f", server_visible_state.map_time_of_day);
+        if (g_State.view.bWireframe && !inEditMode())
+            xyprintf(10, 9, "TIME: %f", server_visible_state.map_time_of_day);
+        if (g_State.view.disablesky)
+            sunGlareDisable();
+        if(!head_shot)
+        {
+            if (!inEditMode() && !g_State.view.ortho && !g_State.view.disablesky)
+                segs_gfxTreeDrawNodeSky(sky_gfx_tree_root, &cam_info.viewmat);
+            if (g_State.view.game_mode == 1 || force_render_world)
+                segs_groupDrawRefs(&cam_info.viewmat);
+        }
+        qsort(visibleTrays.data(), visibleTrays.size(), sizeof(DefTracker *), (int(*)(const void *, const void *))cmpPtrQSort);
+        segs_gfxTreeDrawNode(gfx_tree_root, &cam_info.viewmat);
+        g_curr_blend_state = eBlendMode::INVALID;
+        g_curr_draw_state = DrawMode::INVALID;
+        drawSortedModels();
+        //segs_shadowFinishScene();
+    }
+    if (g_State.view.bShowDepthComplexity == 1)
+    {
+        glClear(GL_STENCIL_BUFFER_BIT);
+        assert(!"Removed");
+    }
+    segs_partRunEngine();                            // Run and Render Particle Engine
+    if (g_State.view.bShowDepthComplexity == 1)
+    {
+        assert(!"Removed");
+//        glEnable(GL_STENCIL_TEST);
+//        glStencilFunc(GL_ALWAYS, 0x80, 0xFFFFFFFF);
+//        render_state.setStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    }
+    if (!head_shot)
+    {
+        drawStuffOnEntities();
+        font_fontRender();
+        sunVisible();
+        DoorAnimCheckFade();                    // DoorAnimCheckFade
+        MaterialDefinition debug_draw_material(g_default_mat);
+        debug_draw_material.setDrawMode(DrawMode::COLORONLY);
+        debug_draw_material.setFragmentMode(eBlendMode::MULTIPLY);
+        if (inEditMode() || g_State.see_everything || g_State.view.perf_flags)
+            lightLines2(&cam_info.viewmat, debug_draw_material);
+        displayEntDebugInfo();
+        drawLightDirLines(&cam_info.viewmat, debug_draw_material);
+        displaylog_4890F0();
+    }
+    // WCWClear & showFramerate
+    if (server_visible_state.pause)
+        xyprintf(1, 5, "Paused");
+    gfx_showFramerate();
+    if (!head_shot)
+    {
+        if (g_State.view.bShowPerformSet)
+            printGfxSettings();
+        statusLineDraw();
+        if (g_State.view.game_mode == 3)      // showBg - winupdate
+        {
+            showBgAdd(2);
+            showBG(0);
+            showBgAdd(-2);
+        }
+        else if (glob_have_camera_pos == 2)
+        {
+            VfPrintfWrapper("starting game\n");
+            showBgAdd(2);
+            finishLoadScreen();
+            showBgAdd(-2);
+            startFadeInScreen(1);
+            glob_have_camera_pos = 1;
+        }
+        else
+        {
+            SwapBuffers(device_context_handle);
+        }
+    }
+    if (!head_shot && (g_State.g_spin360_speed || g_State.g_BuildCubeMaps == 6))
+        renderUtil_rdrPixBufGetOld();
+    fxCleanUp();
+    assert(size_t(nodeTotal) + vsArray.size() == ModelArrayDistSort.size() + ModelArrayTypeSort.size());
+    ModelArrayTypeSort.clear();
+    ModelArrayDistSort.clear();
+    vsArray.clear();
+    nodeTotal = 0;
+}
+void segs_onPerfTest(int test_num)
+{
+    static int s_timer_id;
+    int iterations = 0;
+    if ( !s_timer_id )
+        s_timer_id = CohTimer__AllocTimer();
+    fn_4C13C0("_hedgeshort_lrghi");
+    Model *model = findNameInLib_P("_hedgeshort_lrghi")->model;
+    TextureBind *bind1 = *model->vbo->textureP_arr;
+    CohTimer__ResetTimer(s_timer_id);
+    MaterialDefinition testmaterial(g_default_mat);
+    testmaterial.setDrawMode(DrawMode::SINGLETEX);
+    testmaterial.setFragmentMode(eBlendMode::MULTIPLY);
+    while ( true )
+    {
+        ++iterations;
+        Matrix4x3 tmp_mat1 = Unity_Matrix;
+        tmp_mat1.TranslationPart.y = 75.0;
+        tmp_mat1.TranslationPart.z = -1000.0;
+        segs_modelDraw(model, &tmp_mat1, nullptr, 0xFF, 0, nullptr,testmaterial);
+        switch ( test_num )
+        {
+            case 0:
+                for(int i=0; i<20000; ++i)
+                {
+                    segs_modelDraw(model, &tmp_mat1, nullptr, 0xFF, 0, nullptr,testmaterial);
+                }
+                break;
+            case 1:
+                for(int i=0; i<20000; ++i)
+                {
+                    model->vbo->draw(*testmaterial.program,GL_TRIANGLES,3 * model->model_tri_count,0);
+                }
+                break;
+            case 2:
+            {
+                int idx_count = 3 * model->model_tri_count;
+                Vector3i *indices = model->vbo->triangles;
+                for(int i=0; i<20000; ++i)
+                {
+                    if ( idx_count > 0 )
+                    {
+                        for(int tri=0; tri<((idx_count - 1) / 3 + 1); ++tri)
+                        {
+                            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, indices+tri);
+                        }
+                    }
+                }
+            }
+                break;
+            case 3:
+                for(int i=0; i<20000; ++i)
+                {
+                    tmp_mat1.TranslationPart.y += 0.00001f;
+                    testmaterial.draw_data.modelViewMatrix = tmp_mat1.toGLM();
+                    glBindTexture(g_whiteTexture->texture_target, g_whiteTexture->gltexture_id);
+                    glBindTexture(bind1->texture_target, bind1->gltexture_id);
+                    testmaterial.draw_data.constColor1.w = 1.0;
+                    testmaterial.updateUniforms();
+                    glDrawElements(GL_TRIANGLES, 3 * model->model_tri_count, GL_UNSIGNED_INT, model->vbo->triangles);
+                }
+            break;
+            case 31:
+                for(int i=0; i<20000; ++i)
+                {
+                    tmp_mat1.TranslationPart.y += 0.00001f;
+                    testmaterial.draw_data.modelViewMatrix = tmp_mat1.toGLM();
+                    glDrawElements(GL_TRIANGLES, 3 * model->model_tri_count, GL_UNSIGNED_INT, model->vbo->triangles);
+                }
+            break;
+            case 32:
+                for(int i=0; i<20000; ++i)
+                {
+                    glBindTexture(g_whiteTexture->texture_target, g_whiteTexture->gltexture_id);
+                    glBindTexture(bind1->texture_target, bind1->gltexture_id);
+                    glDrawElements(GL_TRIANGLES, 3 * model->model_tri_count, GL_UNSIGNED_INT, model->vbo->triangles);
+                }
+            break;
+            case 33:
+                for(int i=0; i<20000; ++i)
+                {
+                    testmaterial.draw_data.constColor1.w = 1.0;
+                    testmaterial.updateUniforms();
+                    glDrawElements(GL_TRIANGLES, 3 * model->model_tri_count, GL_UNSIGNED_INT, model->vbo->triangles);
+                }
+                break;
+            default:
+                PrintSystemMessage("unknown test_num: %d", test_num);
+                return;
+        }
+        SwapBuffers(device_context_handle);
+        if ( CohTimer__elapsed(s_timer_id) >= 2.0f )
+        {
+            int tri_count = 20000 * iterations * model->model_tri_count;
+            float seconds_elapsed = CohTimer__elapsed(s_timer_id);
+            PrintSystemMessage("test#%d: %fM tris/sec", test_num, double(tri_count / seconds_elapsed / 1000000.0f));
+            return;
+        }
+    }
+}
+struct SeqGlobals
+{
+    struct Parser_Sequencer *seq;
+    int dev_seqInfoCount;
+    struct Parser_SeqToken **m_Sequencers;
+};
+#pragma pack(push, 1)
+struct Parser_SeqToken
+{
+    struct SeqInfo *info;
+    int u_0;
+    char *seq_name;
+    struct Parser_TypeDef **_TypeDef;
+    int _Group;
+    int _Move;
+    int a;
+    int b;
+};
+#pragma pack(pop)
+
+static_assert(sizeof(CharAttr_Nested1) == 0x14);
+extern "C"
+{
+    __declspec(dllimport) int ParserLoadFiles(const char *, const char *alternate_ext, const char *, int flags, CharAttr_Nested1 *loading_template, void *tgt_memory, void *, int *, signed int(*)(void *, void *));
+    __declspec(dllimport) void fn_5B37C0(char *, const char *);
+    __declspec(dllimport) int fn_4F35C0(Parser_SeqToken *, Parser_SeqToken *);
+    __declspec(dllimport) SeqGlobals seqGlobals;
+    __declspec(dllimport) CharAttr_Nested1 SeqencerTokens[2];
+}
+
+float segs_load_parse_Sequencers()
+{
+
+    int now = clock();
+    ParserLoadFiles("sequencers", ".txt", "sequencers.bin", 1, SeqencerTokens, &seqGlobals.m_Sequencers, 0, 0, 0);
+    size_t sz = COH_ARRAY_SIZE(seqGlobals.m_Sequencers);
+    for (int i = 0; i < (signed int)sz; ++i)
+    {
+        char buf[260] = {0};
+        Parser_SeqToken *tok = seqGlobals.m_Sequencers[i];
+        fn_5B37C0(buf, tok->seq_name);
+        strcpy(tok->seq_name,buf);
+    }
+    qsort(seqGlobals.m_Sequencers, sz, sizeof(Parser_SeqToken *), (int(*)(const void *, const void *))fn_4F35C0);
+    return (clock()-now)/1000.0f;
+}
+void segs_gfxDoNothingFrame()
+{
+    fx_fxRunEngine();
+    segs_partRunEngine();
+    segs_clrLastSpriteIdx();
+    Sleep(1000u);
+}
+void lightLines2(Matrix4x3 *mat, MaterialDefinition &material)
+{
+    if (line_count)
+        drawDebugBeaconsWithMatrix(struct_114C3C0, line_count, mat, material);
+    if (beacon_dbg_idx)
+        drawDebugBeaconsWithMatrix(int32_114C3AC, beacon_dbg_idx, mat, material);
+}
+void drawLightDirLines(Matrix4x3 *mat, MaterialDefinition &material)
+{
+    if (int32_D49520)
+        drawDebugBeaconsWithMatrix(struct_D41820, int32_D49520, mat, material);
+}
 void patch_gfx()
 {
+    BREAK_FUNC(gfx_4D8580);
+    PATCH_FUNC(load_parse_Sequencers);
+
+
     PATCH_FUNC(gfx_GfxCardFixes);
-    patchit("fn_4D8410", (void *)drawDebugBeacons);
-    patchit("gfx_48AE20", (void *)drawFlatBox);
-    patchit("gfxtree_4ECE30",(void *)segs_gfxTreeInit);
-    patchit("fn_49C760", (void *)resetSunNode);
-    patchit("gfxtree_4ECE30", (void *)segs_gfxTreeInit);
+    patchit("gfx_48AE20",reinterpret_cast<void *>(segs_drawBox));
+    patchit("fn_5810B0", reinterpret_cast<void *>(segs_createGL));
+    patchit("gfx_48AE20", reinterpret_cast<void *>(drawFlatBox));
+    patchit("gfxtree_4ECE30",reinterpret_cast<void *>(segs_gfxTreeInit));
+    patchit("fn_49C760", reinterpret_cast<void *>(resetSunNode));
+    patchit("gfxtree_4ECE30", reinterpret_cast<void *>(segs_gfxTreeInit));
+    patchit("fn_4B0180", reinterpret_cast<void *>(segs_ttDrawBoxBasic));
+    patchit("fn_4EB560", reinterpret_cast<void *>(modelFreeAllCache));
+    patchit("fn_4EB440", reinterpret_cast<void*>(modelFreeCache));
+
+    PATCH_FUNC(gfxUpdateFrame);
     PATCH_FUNC(setSunLight);
     PATCH_FUNC(sun_SetFog);
     PATCH_FUNC(sun_sunUpdate);
+    PATCH_FUNC(onPerfTest);
+    PATCH_FUNC(gfxDoNothingFrame);
+    PATCH_FUNC(gfxSetViewMat);
+    PATCH_FUNC(createGfxTreeNode_with_parent);
+    PATCH_FUNC(gfxtree_gfxTreeDelete);
 
 }

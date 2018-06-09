@@ -371,21 +371,21 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
         }
     }
 }
-void addLod(const std::vector<DefLod_Data> &lods, SceneNode *a2)
+void addLod(const std::vector<DefLod_Data> &lods, SceneNode *node)
 {
     if(lods.empty())
         return;
 
     const DefLod_Data &lod_data(lods.front());
-    a2->lod_scale = lod_data.Scale;
+    node->lod_scale = lod_data.Scale;
 
-    if ( a2->lod_fromtrick )
+    if ( node->lod_fromtrick )
         return;
 
-    a2->lod_far       = lod_data.Far;
-    a2->lod_far_fade  = lod_data.FarFade;
-    a2->lod_near      = lod_data.Near;
-    a2->lod_near_fade = lod_data.NearFade;
+    node->lod_far       = lod_data.Far;
+    node->lod_far_fade  = lod_data.FarFade;
+    node->lod_near      = lod_data.Near;
+    node->lod_near_fade = lod_data.NearFade;
 }
 bool nodeCalculateBounds(SceneNode *group)
 {

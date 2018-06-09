@@ -3,19 +3,24 @@
 #include "RendererState.h"
 #include "RenderSprites.h"
 #include "Model.h"
+
 #include "utils/dll_patcher.h"
 #include "utils/helpers.h"
 #include "GameState.h"
-#include "GL/glew.h"
 
+#include "GL/glew.h"
 #define STB_IMAGE_IMPLEMENTATION
+#ifdef __GNUG__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wextra"
 #pragma GCC diagnostic ignored "-Wduplicated-cond"
 #pragma GCC diagnostic ignored "-Wduplicated-branches"
+#endif
 #include "3rd_party/stb/stb_image.h"
+#ifdef __GNUG__
 #pragma GCC diagnostic pop
+#endif
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,18 +41,18 @@ struct HashTable;
 struct Parser_Texture
 {
     const char *src_file;
-    char *name;
-    char *Blend;
-    char *BumpMap;
-    int u1;
-    Vector2 Fade;
-    Vector2 ScaleST0;
-    Vector2 ScaleST1;
-    int Flags;
-    int BlendType;
-    int u2;
-    char *Surface;
-    float Gloss;
+    char *      name;
+    char *      Blend;
+    char *      BumpMap;
+    int         u1;
+    Vector2     Fade;
+    Vector2     ScaleST0;
+    Vector2     ScaleST1;
+    int         Flags;
+    int         BlendType;
+    int         u2;
+    char *      Surface;
+    float       Gloss;
 };
 struct TexReadInfo
 {
@@ -86,7 +91,6 @@ __declspec(dllimport) int fn_5A0950(const char *fmt, ...);
 __declspec(dllimport) Parse_TexSwap ** tex_49F230(int *);
 __declspec(dllimport) void remove_from_list(ListEntry *node, ListEntry **head);
 __declspec(dllimport) void gfx_48B1B0(const char *, int);
-
 __declspec(dllimport) TextureBind * tex_FindMapEntryTexture(const char *b);
 __declspec(dllimport) void * HashTable_queryValue(HashTable *cache_tab, const char *filename);
 __declspec(dllimport) int error_ReportParsing(const char *filename, const char *fmt, ...);
@@ -121,7 +125,6 @@ __declspec(dllimport) int g_ThreadedTexLoadDisabled;
 __declspec(dllimport) int g_texture_load_mode_isquick;
 __declspec(dllimport) TextureBind *g_whiteTexture;
 __declspec(dllimport) TextureAPC_Arg *TextureGLUploader_getq;
-__declspec(dllimport) int GPU_FLAGS;
 __declspec(dllimport) int int32_85EA64;
 __declspec(dllimport) HashTable *g_texbinds_ht;
 __declspec(dllimport) TextureBind **g_texbinds;
@@ -500,6 +503,7 @@ void texLoadQueueFinish() // fn_4E7B60
     }
     segs_tex_texSwap2();
 }
+
 Parser_Texture *trickFromTextureDirName(const char *dir, const char *name)
 {
     char buf[1000] = {0};

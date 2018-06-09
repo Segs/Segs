@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <windows.h>
 
+const Matrix4x3 Unity_Matrix = {{1,0,0},{0,1,0},{0,0,1},{0,0,0}};
 extern "C"
 {
     __declspec(dllimport) char *fix_path_slashes(char *);

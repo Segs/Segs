@@ -19,6 +19,18 @@ __declspec(dllimport) void * dbgCalloc(int strct_size, int count, int blockType,
 #define COH_CALLOC(x,y) calloc((x),(y))
 #define COH_FREE(x) free(x);
 
+//////// COH data loader support
+#pragma pack(push, 8)
+struct CharAttr_Nested1
+{
+    const char *name;
+    int type;
+    int offset;
+    int param;
+    CharAttr_Nested1 *ptr_sub;
+};
+#pragma pack(pop)
+//////// COH math support
 struct Vector2
 {
     float x,y;
@@ -274,7 +286,7 @@ struct Matrix4x3
             TranslationPart.x, TranslationPart.y, TranslationPart.z, 1.0f);
     }
 };
-extern Matrix4x3 Unity_Matrix;
+extern const Matrix4x3 Unity_Matrix;
 
 struct Matrix4x4
 {

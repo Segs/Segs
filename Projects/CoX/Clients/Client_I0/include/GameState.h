@@ -221,5 +221,5 @@ struct GameState
 };
 static_assert(sizeof(GameState) == 0x37E0, "GameState size must be 0x37E0");
 extern "C" {
-__declspec(dllimport) GameState g_State;
+extern __declspec(dllimport) GameState g_State;
 }
