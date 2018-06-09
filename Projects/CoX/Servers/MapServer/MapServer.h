@@ -21,6 +21,9 @@ class MapInstance;
 class MapServerData;
 class MapManager;
 
+static constexpr uint8_t INVALID_GAME_SERVER_ID = 255;
+static constexpr char RUNTIME_DATA_PATH[] = "./data/bin/";
+
 class MapServer : public EventProcessor
 {
         class PrivateData;
@@ -43,9 +46,9 @@ private:
         std::unique_ptr<PrivateData> d;
 
         uint8_t                 m_id = 1;
-        uint8_t                 m_owner_game_server_id = 255;
-        QString                 m_serverName;
+        uint8_t                 m_owner_game_server_id = INVALID_GAME_SERVER_ID;
         ACE_INET_Addr           m_base_location; //! this is the base map instance address
         ACE_INET_Addr           m_base_listen_point; //! this is used as a base map listening endpoint
 };
+
 extern MapServer *g_GlobalMapServer;
