@@ -22,6 +22,17 @@ void segs_colorsToShaderConstants(uint32_t clr1, uint32_t clr2)
     segs_setShaderConstant(0, &shdr_Constant1);
     segs_setShaderConstant(1, &shdr_Constant2);
 }
+unsigned long nextPowerOfTwoLargerThan(unsigned long v)
+{
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    v++;
+    return v;
+}
 void patch_rendersprites()
 {
     PATCH_FUNC(colorsToShaderConstants);

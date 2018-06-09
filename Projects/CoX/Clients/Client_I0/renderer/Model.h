@@ -56,6 +56,40 @@ enum ModelState
 {
     LOADED=4,
 };
+struct PackNames
+{
+    char **strings;
+    int count;
+};
+struct ModelHeader
+{
+    char name[124];
+    struct AnimList *parent_anim;
+    float length;
+    struct Model *models;
+    int num_subs;
+};
+
+struct AnimList
+{
+    AnimList *next;
+    AnimList *prev;
+    int header_count;
+    struct ModelHeader *headers;
+    char name[128];
+    PackNames texnames;
+    int headersize;
+    int datasize;
+    int loadstate;
+    float lasttimeused;
+    int type;
+    struct XFileHandle *file;
+    int tex_load_style;
+    int geo_use_type;
+    void *header_data;
+    void *geo_data;
+};
+static_assert(sizeof(AnimList) == 0xC0);
 struct Model {
     int Model_flg1;
     float model_VisSphereRadius;

@@ -24,7 +24,7 @@ struct TextureBind
     int BlendType;
     Vector2 ScaleST0;
     Vector2 ScaleST1;
-    struct TexInternalHdr *u4;
+    char *mip_data;
     int mip_size;
     int mip_id;
     int use_category;
@@ -35,3 +35,7 @@ struct TextureBind
 static_assert (sizeof(TextureBind)==0x7C,"");
 
 void patch_textures();
+TextureBind *segs_tex_texLoad2(const char *name, int how, int use_category);
+void segs_texBindTexture(GLenum tex_target, int unit, TextureBind *bind);
+void segs_texCheckThreadLoader();
+void segs_animCheckThreadLoader();
