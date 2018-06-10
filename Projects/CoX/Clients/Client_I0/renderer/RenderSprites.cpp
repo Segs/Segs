@@ -330,6 +330,8 @@ void segs_drawAllSprites(MaterialDefinition &material)
     assert(depthSortedSpriteIndices.size() == g_sprites_arr.size());
     static  GeometryData fakevbo;
     fakevbo.createVAO();
+    uint32_t indices[] = {0, 1, 2, 0, 2, 3};
+    fakevbo.uploadIndicesToBuffer(indices, 6);
     for (int idx : depthSortedSpriteIndices)
     {
         float bottom = height;
@@ -427,7 +429,7 @@ void segs_drawAllSprites(MaterialDefinition &material)
             fakevbo.uv1_offset = (Vector2 *)(sizeof(Vector3)*4);
             fakevbo.uploadColorsToBuffer(colors,16);
             material.apply();
-            fakevbo.drawArray(*material.program, GL_QUADS, 4, 0);
+            fakevbo.draw(*material.program, GL_TRIANGLES, 6, 0);
         }
         else if (sprite_array_entry.type == DISP_SPR_QUAD || sprite_array_entry.type == DISP_SPR_UV || sprite_array_entry.type == DISP_SPR_BLEND)
         {
@@ -476,7 +478,7 @@ void segs_drawAllSprites(MaterialDefinition &material)
             fakevbo.uv1_offset = (Vector2 *)(sizeof(Vector3) * 4);
             fakevbo.uploadColorsToBuffer(colors, 16);
             material.apply();
-            fakevbo.drawArray(*material.program, GL_QUADS, 4, 0);
+            fakevbo.draw(*material.program, GL_TRIANGLES, 6, 0);
         }
         if (sprite_array_entry.additivie)
             material.render_state.setBlendMode(RenderState::BLEND_ALPHA);
@@ -508,13 +510,16 @@ static int DrawText2DWithScalingHandler(DrawTextParam *param)
         param->rgba[2].r, param->rgba[2].g, param->rgba[2].b, param->rgba[2].a,
         param->rgba[3].r, param->rgba[3].g, param->rgba[3].b, param->rgba[3].a
     };
+    uint32_t indices[] = {0, 1, 2, 0, 2, 3};
+
     static GeometryData fakevbo;
     fakevbo.createVAO();
     fakevbo.uploadVerticesToBuffer(vbo_data,3*4+2*4);
+    fakevbo.uploadIndicesToBuffer(indices, 6);
     fakevbo.uv1_offset = (Vector2 *)(sizeof(Vector3) * 4);
 
     fakevbo.uploadColorsToBuffer(colors,16);
-    fakevbo.drawArray(*MaterialDefinition::last_applied->program, GL_QUADS, 4, 0);
+    fakevbo.draw(*MaterialDefinition::last_applied->program, GL_TRIANGLES, 6, 0);
     return 1;
 }
 void segs_DrawText2DWithScaling(TTDrawContext *draw_ctx, float x, float y, float z, float xScale, float yScale, uint32_t *rgba, wchar_t *text, int len)

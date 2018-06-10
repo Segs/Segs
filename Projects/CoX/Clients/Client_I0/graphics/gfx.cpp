@@ -271,17 +271,20 @@ void segs_ttDrawBoxBasic(float x1, float y1, float x2, float y2,uint32_t clr2, u
         uint8_t(clr2>> 16), uint8_t(clr2 >> 8), uint8_t(clr2), uint8_t(clr2 >> 24),
         uint8_t(clr3>> 16), uint8_t(clr3 >> 8), uint8_t(clr3), uint8_t(clr3 >> 24),
         uint8_t(clr4>> 16), uint8_t(clr4 >> 8), uint8_t(clr4), uint8_t(clr4 >> 24)
-
     };
+    uint32_t quad_indices[] = {0, 1, 2, 0, 2, 3};
+    uint32_t line_indices[] = {0, 1, 2, 3};
+
     simple_quad_vbo.uploadVerticesToBuffer(vbo_data,12);
     simple_quad_vbo.uploadColorsToBuffer(colors,16);
+    simple_quad_vbo.uploadIndicesToBuffer(draw_quad ? quad_indices : line_indices, draw_quad ? 6 : 4);
     MaterialDefinition temp_material(g_default_mat);
     temp_material.setDrawMode(DrawMode::SINGLETEX);
     temp_material.setFragmentMode(eBlendMode::MULTIPLY);
 
     temp_material.apply();
-    GLenum mode = draw_quad ? GL_QUADS : GL_LINE_LOOP;
-    simple_quad_vbo.drawArray(*temp_material.program, mode,4,0);
+    GLenum mode = draw_quad ? GL_TRIANGLES : GL_LINE_LOOP;
+    simple_quad_vbo.draw(*temp_material.program, mode, draw_quad ? 6 : 4, 0);
 }
 void segs_setSunLight(Matrix4x3 *view_mat)
 {
@@ -883,7 +886,7 @@ HGLRC segs_createGL()
     {
         WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
         WGL_CONTEXT_MINOR_VERSION_ARB, 0,
-        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
         WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
         0
     };
@@ -921,7 +924,6 @@ HGLRC segs_createGL()
         }
     }
     segs_createSamplers();
-    glDisable(GL_LIGHTING);
     return true_ctx;
 }
 void segs_drawBox(int x1, int y1, int x2, int y2, uint32_t argb)

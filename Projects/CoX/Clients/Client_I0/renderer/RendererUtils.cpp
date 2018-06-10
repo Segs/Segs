@@ -125,7 +125,7 @@ void segs_renderUtil_GetGfxCardVend(SysInfo_2 *sysinfo)
 void segs_rendererInit()
 {
     glClearColor(0.0, 0.0, 0.0, 0.0);
-    glEnable(GL_ALPHA_TEST);
+
     RenderState basic_rs;
     basic_rs.setCullMode(RenderState::CULL_CCW);
     basic_rs.setBlendMode(RenderState::BLEND_ALPHA);
@@ -146,7 +146,6 @@ void segs_rendererInit()
     g_default_mat.apply();
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glActiveTexture(GL_TEXTURE0);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 }
 void segs_renderUtil_4E0CA0()
 {
@@ -164,33 +163,10 @@ void segs_renderUtil_4E0CA0()
     }
     GPU_FLAGS = 0;
 
-    checkExt("GL_EXT_compiled_vertex_array",extension_missing);
-    checkExt("GL_ARB_multitexture",extension_missing);
-    checkExt("GL_ARB_texture_compression",extension_missing);
-    if( glewIsSupported("GL_ARB_fragment_program") && glewIsSupported("GL_ARB_vertex_program") )
-    {
-        // custom flags, using generic GL shader support
-        printf("Enabling GLSL support\n");
-        GPU_FLAGS = f_GL_FragmentShader | f_GL_VertexShader;
-    }
-    else if ( glewIsSupported("GL_NV_register_combiners") )
-    {
-        int dummy_missing=0;
-        if ( checkExt("GL_NV_vertex_program",dummy_missing) )
-        {
-            GPU_FLAGS = fNV_vertex_program;
-            if ( glewIsSupported("GL_NV_register_combiners2") )
-                GPU_FLAGS |= fGL_NV_register_combiners2;
-        }
-    }
-    else
-    {
-        if ( glewIsSupported("GL_EXT_texture_env_combine") )
-            GPU_FLAGS = fTexture_env_combine;
-        if ( glewIsSupported("GL_EXT_vertex_shader") && glewIsSupported("GL_ATI_fragment_shader") )
-            GPU_FLAGS |= fATI_fragment_shader;
-    }
-
+    // custom flags, using generic GL shader support
+    printf("Enabling GLSL support\n");
+    // since we use CORE GL profile, this is a given
+    GPU_FLAGS = f_GL_FragmentShader | f_GL_VertexShader;
     if ( GPU_FLAGS == 0 || extension_missing )
     {
         char text[1024];
@@ -383,7 +359,9 @@ void segs_rdrRenderEditor(FontRel *font_array, int count)
                               { s2, t2},
                               { s1, t2 },
                           });
-            bg_indices.insert(bg_indices.end(), { start_idx,start_idx + 1,start_idx + 2,start_idx + 3 });
+
+            bg_indices.insert(bg_indices.end(),
+                              {start_idx, start_idx + 1, start_idx + 2, start_idx, start_idx + 2,start_idx + 3});
             x1 = letter->width * font_array[idx].scaleX + x1;
         }
         std::vector<float> collatedBuffer;
@@ -398,12 +376,12 @@ void segs_rdrRenderEditor(FontRel *font_array, int count)
         GLubyte bound_alpha = std::min<uint8_t>(0xAA, font_array[idx].color.a);
         text_mat.draw_data.globalColor = RGBA(70, 70, 70, bound_alpha).to4Floats();
         text_mat.updateUniforms();
-        fakevbo.draw(*text_mat.program, GL_QUADS, bg_indices.size(), 0);
+        fakevbo.draw(*text_mat.program, GL_TRIANGLES, bg_indices.size(), 0);
 
         segs_texBindTexture(GL_TEXTURE_2D, 0, prev_fnt->p_tex);
         text_mat.draw_data.globalColor = font_array[idx].color.to4Floats();
         text_mat.updateUniforms();
-        fakevbo.draw(*text_mat.program, GL_QUADS, bg_indices.size(), 0);
+        fakevbo.draw(*text_mat.program, GL_TRIANGLES, bg_indices.size(), 0);
     }
 }
 void segs_renderUtil_ClearGL()

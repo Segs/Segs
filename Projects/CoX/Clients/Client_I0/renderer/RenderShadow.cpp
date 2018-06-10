@@ -358,10 +358,13 @@ void drawShadowColor(RenderState &rs)
         {640, 0,0 },
         {0, 0,0 },
     };
+    uint32_t quad_indices[] = {0, 1, 2, 0, 2, 3};
+
     fakevbo.uploadVerticesToBuffer(pos[0].data(),12);
+    fakevbo.uploadIndicesToBuffer(quad_indices, 6);
     shadow_color_mat.set_colorSource(0); // global color only
     shadow_color_mat.apply();
-    fakevbo.drawArray(*shadow_color_mat.program, GL_QUADS, 4, 0);
+    fakevbo.drawArray(*shadow_color_mat.program, GL_TRIANGLES, 6, 0);
     glPopAttrib();
 }
 }// end of anonymous namespace

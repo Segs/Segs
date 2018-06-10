@@ -15,9 +15,9 @@ __declspec(dllimport) void FreeMem(void *, int);
 __declspec(dllimport) void * dbgCalloc(int strct_size, int count, int blockType, const char *fname, int line);
 }
 #define COH_ARRAY_SIZE(x) ( x ? ((int *)x)[-2] : 0)
-#define COH_MALLOC(x) malloc((x))
-#define COH_CALLOC(x,y) calloc((x),(y))
-#define COH_FREE(x) free(x);
+#define COH_MALLOC(x) malloc1((x),1,__FILE__,__LINE__)
+#define COH_CALLOC(x, y) dbgCalloc((x), (y), 1, __FILE__, __LINE__)
+#define COH_FREE(x) FreeMem(x,1);
 
 //////// COH data loader support
 #pragma pack(push, 8)

@@ -169,10 +169,12 @@ void drawQuad2D_4Color(int x1, int y1, int x2, int y2, uint32_t clr2, uint32_t c
         uint8_t(clr4>> 16), uint8_t(clr4 >> 8), uint8_t(clr4), uint8_t(clr4 >> 24)
 
     };
-    fakevbo.uploadVerticesToBuffer(pos,12);
+    uint32_t indices[] = {0, 1, 2, 0, 2, 3};
+    fakevbo.uploadVerticesToBuffer(pos, 12);
     fakevbo.uploadColorsToBuffer(colors,16);
+    fakevbo.uploadIndicesToBuffer(indices, 6);
     colored_mat.apply();
-    fakevbo.drawArray(*colored_mat.program, GL_QUADS, 4, 0);
+    fakevbo.draw(*colored_mat.program, GL_TRIANGLES, 6, 0);
 }
 void drawQuad2D_1Color(int x1, int y1, int x2, int y2, uint32_t clr)
 {

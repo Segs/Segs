@@ -43,7 +43,11 @@ TTF_CacheElement * segs_ttFontManager_uploadFontBitmap(TTFontManager *manager, T
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, new_entry->tex_ids);
     //TODO: oh gods, make this a texture atlas at least.
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8_ALPHA8_EXT, (uint16_t)bitmap->info.tex_dim, (uint16_t)bitmap->info.tex_dim, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, bitmap->bitmap);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8_ALPHA8_EXT, (uint16_t)bitmap->info.tex_dim, (uint16_t)bitmap->info.tex_dim, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, bitmap->bitmap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, (uint16_t)bitmap->info.tex_dim, (uint16_t)bitmap->info.tex_dim, 0, GL_RG,
+                 GL_UNSIGNED_BYTE, bitmap->bitmap);
+    GLint swizzleMask[] = {GL_RED, GL_RED, GL_RED, GL_GREEN};
+    glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
     new_entry->top    = 0.0;
     new_entry->left   = 0.0;
     new_entry->bottom = (float)(uint16_t)bitmap->info.height / (float)(uint16_t)bitmap->info.tex_dim;

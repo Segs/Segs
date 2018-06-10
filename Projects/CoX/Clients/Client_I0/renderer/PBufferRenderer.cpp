@@ -49,8 +49,6 @@ namespace {
     }
     void obufInit(OffscreenBuffer *fb, int width, int height)
     {
-        assert(glewIsSupported("GL_EXT_framebuffer_object"));
-
         if (fb->FramebufferName)
             releaseOBUF(fb);
 
@@ -119,8 +117,11 @@ void segs_PBuffer__RenderTexQuad(TextureBind *tex, int width, int height, float 
         1,1,
         0,1
     };
+    uint32_t indices[]               = {0, 1, 2, 0, 2, 3};
+
     fake_vbo.uv1_offset = (Vector2 *)(sizeof(Vector3)*4); // start of uv data
     fake_vbo.uploadVerticesToBuffer(vbo_data,20);
+    fake_vbo.uploadIndicesToBuffer(indices, 6);
     Vector4 converted = RGBA(color).to4Floats();
     fprintf(stderr,"global color is %x - %f,%f,%f,%f\n",color,converted.x,converted.y,converted.z,converted.w);
     mat.draw_data.globalColor = RGBA(color).to4Floats();
@@ -131,7 +132,7 @@ void segs_PBuffer__RenderTexQuad(TextureBind *tex, int width, int height, float 
     texSetWhite(0);
     segs_tex_texLoad2(tex->name1, 2, 1);
     segs_texBindTexture(GL_TEXTURE_2D, 0, tex);
-    fake_vbo.drawArray(*mat.program, GL_QUADS, 4, 0);
+    fake_vbo.draw(*mat.program, GL_TRIANGLES, 6, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 void hwcursorInit()
