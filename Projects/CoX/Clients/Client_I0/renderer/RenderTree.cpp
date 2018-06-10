@@ -93,8 +93,6 @@ int trackerCMP(const DefTracker **a, const DefTracker **b)
 void segs_addViewSortNode(GfxTree_Node *node, Model *model, Matrix4x3 *mat, Vector3 *mid, int alpha, GLuint rgbs, RGBA *tint_colors, TextureBind **custom_texbinds, EntLight *light)
 {
     SortThing *entry;
-    static ViewSortNode tmp_node;
-
     Model *model_l = model;
     float dist_sq = 0.0;
     assert(model);

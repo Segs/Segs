@@ -899,6 +899,7 @@ HGLRC segs_createGL()
     auto old_ctx = wglCreateContext(device_context_handle);
     if (!old_ctx || !wglMakeCurrent(device_context_handle, old_ctx))
         return nullptr;
+    glewExperimental = GL_TRUE;
     glewInit();
     wglMakeCurrent(nullptr, nullptr);
     HGLRC true_ctx = nullptr;
@@ -944,14 +945,14 @@ void segs_drawBox(int x1, int y1, int x2, int y2, uint32_t argb)
     drawColoredBox(x1, y1, x2, y2, argb, argb, argb, argb, flat_material);
 }
 
-static int cmpSortThingsType(SortThing *a, SortThing *b)
+static int cmpSortThingsType(const SortThing *a, const SortThing *b)
 {
     int result = a->blendMode - b->blendMode;
     if (a->blendMode == b->blendMode)
         result = (a->model - b->model) / sizeof(Model);
     return result;
 }
-static int cmpSortThingsDist(SortThing *a, SortThing *b)
+static int cmpSortThingsDist(const SortThing *a, const SortThing *b)
 {
     if (a->distsq == b->distsq)
         return 0;
@@ -959,11 +960,11 @@ static int cmpSortThingsDist(SortThing *a, SortThing *b)
         return -1;
     return 1;
 }
-static void drawSortList(int(*cmpFunc)(const void *, const void *), std::vector<SortThing> &c)
+static void drawSortList(int (*cmpFunc)(const SortThing *, const SortThing *), std::vector<SortThing> &c)
 {
     GLDebugGuard debug_guard(__FUNCTION__);
     if (cmpFunc && !(g_State.view.perf_flags & 0x200))
-        qsort(c.data(), c.size(), sizeof(SortThing), cmpFunc);
+        qsort(c.data(), c.size(), sizeof(SortThing), reinterpret_cast<int (*)(const void *, const void *)>(cmpFunc));
     for (SortThing & thing : c)
     {
         if (thing.modelSource == 1)
@@ -981,11 +982,11 @@ void drawSortedModels()
 {
     GLDebugGuard debug_guard(__FUNCTION__);
     startTypeDrawing = s_blend_mode_switches;
-    drawSortList((int(*)(const void *, const void *))cmpSortThingsType, ModelArrayTypeSort);
+    drawSortList(cmpSortThingsType, ModelArrayTypeSort);
     startAlphaDrawing = s_blend_mode_switches;
-    drawSortList((int(*)(const void *, const void *))cmpSortThingsDist, ModelArrayDistSort);
+    drawSortList(cmpSortThingsDist, ModelArrayDistSort);
     startShadowDrawing = s_blend_mode_switches;
-    //segs_rendertree_drawShadows();
+    segs_rendertree_drawShadows();
     endDrawModels = s_blend_mode_switches;
 }
 static void finishLoadScreen()
@@ -1118,7 +1119,7 @@ void segs_gfxUpdateFrame(bool force_render_world, bool head_shot)
         g_curr_blend_state = eBlendMode::INVALID;
         g_curr_draw_state = DrawMode::INVALID;
         drawSortedModels();
-        //segs_shadowFinishScene();
+        segs_shadowFinishScene();
     }
     if (g_State.view.bShowDepthComplexity == 1)
     {

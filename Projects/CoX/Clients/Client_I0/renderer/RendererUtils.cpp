@@ -149,8 +149,8 @@ void segs_rendererInit()
 }
 void segs_renderUtil_4E0CA0()
 {
+    glewExperimental = GL_TRUE;
     glewInit();
-    int extension_missing=0;
     segs_renderUtil_GetGfxCardVend(&struct_9A09A0);
     renderUtil_4E0C40(&struct_9A09A0);
     if ( g_State.create_bins )
@@ -167,21 +167,6 @@ void segs_renderUtil_4E0CA0()
     printf("Enabling GLSL support\n");
     // since we use CORE GL profile, this is a given
     GPU_FLAGS = f_GL_FragmentShader | f_GL_VertexShader;
-    if ( GPU_FLAGS == 0 || extension_missing )
-    {
-        char text[1024];
-        text[0] = 0;
-        sprintf(text, "Detected video card or driver is currently unsupported \n %s \n", struct_9A09A0.video_card);
-        strcat(text, "The game may run poorly or not at all with you current configuration.\n");
-        strcat(text, "Current system requirements are NVidia GeForce 2 or better or ATI Radeon 8500 or better.\n");
-        strcat(text, "(If your card does meet the minimum requirements, you might not have the latest drivers.\n");
-        strcat(text, "Go to www.nvidia.com or www.ati.com to update your driver. In some cases, such as laptops,\n");
-        strcat(text, "you may need to get the latest drivers from you computer manufacturer.)\n");
-        strcat(text, "Do you want to continue?");
-        if ( !fn_581560(text) )
-            dispatch_cmd("quit");
-        fn_57B710();
-    }
     int driver_version = 0;
     const char *version_str = strrchr(struct_9A09A0.driver_version, '.');
     if ( version_str )
