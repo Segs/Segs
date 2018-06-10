@@ -92,7 +92,7 @@ set(SOURCES
 )
 add_library(cohdll SHARED ${SOURCES})
 # we link to the imp lib for the exe
-target_link_libraries(cohdll CityOfX glew_IMP)
+target_link_libraries(cohdll CityOfX glew_IMP Threads::Threads)
 # enforce the dll prefix.
 SET_TARGET_PROPERTIES(cohdll PROPERTIES PREFIX "lib"
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
