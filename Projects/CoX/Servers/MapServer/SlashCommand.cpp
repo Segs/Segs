@@ -732,6 +732,7 @@ void addNpc(const QString &cmd, MapClientSession &sess)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, &sess);
+        return;
     }
     glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos;
     const NPCStorage & npc_store(sess.m_current_map->serverData().getNPCDefinitions());
