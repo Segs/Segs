@@ -16,9 +16,9 @@ TARGET_LINK_LIBRARIES(AuthExerciser PUBLIC
     ${CMAKE_DL_LIBS}
     Threads::Threads
 )
-install(TARGETS AuthExerciser
-    DESTINATION deploy
-)
+#install(TARGETS AuthExerciser
+#    DESTINATION ${CPACK_BIN_DIR}
+#)
 if(MINGW)
     target_link_libraries(AuthExerciser PUBLIC ws2_32)
 endif()
