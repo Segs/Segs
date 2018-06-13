@@ -65,7 +65,10 @@ INSTALL & CONFIGURE THE COX CLIENT
 
 3. **How to correctly run the CoX Client?**
 
-   The CoX Client must be run with a special command line argument telling the client that it's not connecting to the official game servers. Create a shortcut to CoX.exe and place it on your desktop. Right click the link to access its properties, and in the `Target:` field, add the following to the end of the line: `-project SEGS`.
+   The CoX Client must be run with a special command line argument telling the client that it's not connecting to the official game servers. Create a shortcut to CoX.exe and place it on your desktop. Right click the link to access its properties, and in the `Target:` field, add the following to the end of the line: ` -project SEGS`.
+
+   > Your line should end something like this: `.../CoX.exe" -project SEGS`.  
+Please note the space between the quotation mark and the dash.
       
    If you would like to run the client in windowed mode, you may also add these optional command line arguments: `-fullscreen 0 -screen 1024 768`.
    
