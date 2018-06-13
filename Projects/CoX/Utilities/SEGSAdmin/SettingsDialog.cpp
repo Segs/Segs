@@ -93,7 +93,7 @@ void SettingsDialog::read_config_file(QString filePath)
     QStringList map_listen_addr_portip = map_listen_addr.split(':');
     QString map_loc_addr = config_file.value("location_addr","").toString();
     QStringList map_loc_addr_portip = map_loc_addr.split(':');
-    QString maps_loc = config_file.value("maps","").toString();
+    QString maps_loc = config_file.value("maps","DefaultMapInstances").toString();
     QString player_fade_in = config_file.value("player_fade_in", "").toString();
     ui->map_listen_ip->setText(map_listen_addr_portip[0]);
     ui->map_listen_port->setText(map_listen_addr_portip[1]);
@@ -161,7 +161,7 @@ void SettingsDialog::generate_default_config_file(QString server_name, QString i
     config_file_write.beginGroup("MapServer");
     config_file_write.setValue("listen_addr",ip+":7003");
     config_file_write.setValue("location_addr",ip+":7003");
-    config_file_write.setValue("maps","maps");
+    config_file_write.setValue("maps","DefaultMapInstances");
     config_file_write.setValue("player_fade_in", "380.0");
     config_file_write.endGroup();
     config_file_write.beginGroup("Logging");
