@@ -315,7 +315,6 @@ float               getEnd(const Character &c) { return c.m_char_data.m_current_
 uint64_t            getLastCostumeId(const Character &c) { return c.m_char_data.m_last_costume_id; }
 const QString &     getOrigin(const Character &c) { return c.m_char_data.m_origin_name; }
 const QString &     getClass(const Character &c) { return c.m_char_data.m_class_name; }
-const QString &     getMapName(const Entity &e) { return e.m_entity_data.m_current_map; }
 uint32_t            getXP(const Character &c) { return c.m_char_data.m_experience_points; }
 uint32_t            getDebt(const Character &c) { return c.m_char_data.m_experience_debt; }
 uint32_t            getPatrolXP(const Character &c) { return c.m_char_data.m_experience_patrol; }
@@ -326,6 +325,42 @@ uint32_t            getInf(const Character &c) { return c.m_char_data.m_influenc
 const QString &     getDescription(const Character &c) { return c.m_char_data.m_character_description ; }
 const QString &     getBattleCry(const Character &c) { return c.m_char_data.m_battle_cry; }
 const QString &     getAlignment(const Character &c) { return c.m_char_data.m_alignment; }
+
+const QString getMapName(const QString &map_name)
+{
+    if (map_name.contains("City_00_01", Qt::CaseInsensitive))
+        return "Outbreak";
+    if (map_name.contains("City_01_01", Qt::CaseInsensitive))
+        return "AtlasPark";
+
+    // let's default to Outbreak in case things go wrong
+    return "Outbreak";
+}
+
+const QString getEntityMapName(const EntityData &ed)
+{
+    return getMapName(ed.m_current_map);
+}
+
+const QString getFriendMapName(const Friend &f)
+{
+    if (!f.m_online_status)
+        return "OFFLINE";
+    return getMapName(f.m_mapname);
+}
+
+const QString getMapPath(const EntityData &ed)
+{
+    // Outbreak
+    if (ed.m_current_map.contains("City_00_01", Qt::CaseInsensitive))
+        return "maps/city_zones/city_00_01/city_00_01.txt";
+    // Atlas Park
+    if (ed.m_current_map.contains("City_01_01", Qt::CaseInsensitive))
+        return "maps/city_zones/city_01_01/city_01_01.txt";
+
+    // let's default to Outbreak in case things go wrong
+    return "maps/city_zones/city_00_01/city_00_01.txt";
+}
 
 // Setters
 void setLevel(Character &c, uint32_t val)

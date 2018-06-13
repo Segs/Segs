@@ -44,7 +44,7 @@ void addFriend(Entity &src, Entity &tgt)
     f.m_class_idx       = tgt.m_entity_data.m_class_idx;
     f.m_origin_idx      = tgt.m_entity_data.m_origin_idx;
     f.m_map_idx         = tgt.m_entity_data.m_map_idx;
-    f.m_mapname         = tgt.m_entity_data.m_current_map;
+    f.m_mapname         = getEntityMapName(tgt.m_entity_data);
 
     // add to friendlist
     src_data->m_friends.emplace_back(f);

@@ -15,6 +15,7 @@
 #include "NetStructures/Costume.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "GameData/playerdata_definitions.h"
+#include "MapServer/DataHelpers.h"
 
 #include <QtCore/QDebug>
 
@@ -87,7 +88,7 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
         PlayerData player_data;
         EntityData entity_data;
         toActualCharacter(m_data->m_characters[i],converted,player_data, entity_data);
-        converted.serializetoCharsel(tgt, entity_data.getMapName());
+        converted.serializetoCharsel(tgt, getEntityMapName(entity_data));
     }
     //tgt.StoreBitArray(m_clientinfo,128);
 }

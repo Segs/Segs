@@ -14,7 +14,9 @@ class QString;
 class Entity;
 class Character;
 struct PlayerData;
+struct EntityData;
 
+struct Friend;
 struct FriendsList;
 struct MapClientSession;
 
@@ -81,7 +83,10 @@ float getEnd(const Character &c);
 uint64_t            getLastCostumeId(const Character &c);
 const QString &     getOrigin(const Character &c);
 const QString &     getClass(const Character &c);
-const QString &     getMapName(const Character &c);
+const QString       getMapName(const QString &map_name);
+const QString       getMapPath(const EntityData &ed);
+const QString       getEntityMapName(const EntityData &ed);
+const QString       getFriendMapName(const Friend &f);
 uint32_t            getXP(const Character &c);
 uint32_t            getDebt(const Character &c);
 uint32_t            getPatrolXP(const Character &c);

@@ -85,7 +85,7 @@ const   QString &       getName() const { return m_name; }
         void            serializefrom(BitStream &buffer);
         void            serializeto(BitStream &buffer) const;
         void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool all_costumes=true) const;
-        void            serializetoCharsel(BitStream &bs, const QString& m_current_map);
+        void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);

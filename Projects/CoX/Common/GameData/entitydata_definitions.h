@@ -21,21 +21,4 @@ static const constexpr  uint32_t    class_version       = 4;    // v4: adds m_cu
                         glm::vec3   m_orientation_pyr;          // Stored in Radians
                         uint32_t    m_map_idx           = 1;    // only 1 map instance
                         QString     m_current_map;
-
-                        void reset()
-                        {}
-
-                        void dump()
-                        {}
-
-                        QString getMapName()
-                        {
-                            if (m_current_map.contains("City_00_01", Qt::CaseInsensitive))
-                                return "Outbreak";
-                            if (m_current_map.contains("City_01_01", Qt::CaseInsensitive))
-                                return "AtlasPark";
-
-                            // let's default to Outbreak in case things go wrong
-                            return "Outbreak";
-                        }
 };

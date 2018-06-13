@@ -165,7 +165,6 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_player.reset(new PlayerData);
     e.m_player->reset();
     e.m_entity.reset(new EntityData);
-    e.m_entity->reset();
     e.might_have_rare = e.m_rare_bits   = true;
 }
 
