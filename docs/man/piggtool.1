@@ -11,7 +11,7 @@ piggtool
 .B [ -l ]
 .B [ -x ]
 .I <pigg_file>
-.I <target_dir>
+.I [target_dir]
 .SH DESCRIPTION
 The piggtool can display the contents of pigg archives and can also extract contained files. Some of these extracted
 files can be read by the
@@ -40,9 +40,19 @@ Extract all files from pigg archive
 A pigg archive
 .RE
 .PP
-.I <target_dir>
+.I [target_dir]
 .RS
 Target directory where pigg contents will be extracted to
+.RE
+.SH EXAMPLES
+List all contents from chive.pigg:
+.RS
+.B piggtool -l chive.pigg
+.RE
+.PP
+Extract all contents from chive.pigg to data directory:
+.RS
+.B piggtool -x chive.pigg data
 .RE
 .SH SEE ALSO
 authserver(1)
