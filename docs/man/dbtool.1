@@ -1,0 +1,139 @@
+.\" SEGS - Super Entity Game Server
+.\" http://www.segs.io/
+.\" Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+.\" This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
+.TH dbtool 1 "14 June 2018" "0.5.0" "Super Entity Game Server Manual"
+.SH NAME
+dbtool \- SEGS database management utility
+.SH SYNOPSIS
+dbtool
+.B [ -a
+.I <level>
+.B ]
+.B [ -c
+.I <config_file>
+.B ]
+.B [ -f ]
+.B [ -h ]
+.B [ -l
+.I <login_name>
+.B ]
+.B [ -p
+.I <password>
+.B ]
+.B [ -v ]
+.I [command]
+.SH DESCRIPTION
+The dbtool utility manipulates the databases utilized by the
+.B authserver(1)
+program. It is capable of initializing or recreating the databases in the event they become corrupted. dbtool
+can also create user accounts with arbitrary passwords and access levels. In the future, it will also be used
+to upgrade databases to work with newer versions of SEGS.
+.SH OPTIONS
+dbtool accepts the following arguments:
+.PP
+.B -a, --access_level
+.I <level>
+.RS
+Specifies access level of user account. This option is used in conjunction with the
+.B -l
+and
+.B -p
+arguments along with the
+.B adduser
+command.
+.RE
+.PP
+.B -c, --config
+.I <config_file>
+.RS
+Use the specified settings file. The default is: settings.cfg
+.RE
+.PP
+.B -f
+.RS
+Overwrite existing database files. This is a potentially dangerous operation! Use with caution. This argument
+is used in conjunction with the
+.B create
+command.
+.RE
+.PP
+.B -h, --help
+.RS
+Print help
+.RE
+.PP
+.B -l, --login
+.I <login_name>
+.RS
+Specifies login name of user account. This option is used in conjunction with the
+.B -a
+and
+.B -p
+arguments along with the
+.B adduser
+command.
+.RE
+.PP
+.B -p, --pass
+.I <password>
+.RS
+Specifies the password for the user account. This option is used in conjunction with the
+.B -a
+and
+.B -l
+arguments along with the
+.B adduser
+command.
+.RE
+.PP
+.B -v, --version
+.RS
+Print version
+.RE
+.PP
+.I [command]
+.RS
+This can be either
+.B create
+or
+.B adduser
+currently.
+.B create
+is used in conjunction with
+.B -f
+while
+.B adduser
+is used in conjunction with the
+.B -a, -l,
+and
+.B -p
+arguments.
+.RE
+.SH EXAMPLES
+Initialize or overwrite databases:
+.RS
+.B dbtool -f create
+.RE
+.PP
+Add a new user account with administrative privileges:
+.RS
+.B dbtool -a 9 -l Odin -p Secret adduser
+.RE
+.PP
+Add a regular user account:
+.RS
+.B dbtool -a 1 -l Peon -p Abc123 adduser
+.RE
+.SH SEE ALSO
+authserver(1)
+.SH BUGS
+Please report any findings to https://github.com/Segs/Segs/issues
+.SH AUTHORS
+This man page was created by Lloyd Dilley <lloyd@segs.io>. SEGS has many authors and contributors. See
+AUTHORS.md included with the project for details.
+.SH LICENSE
+SEGS is licensed under the terms of the 3-clause BSD License. See LICENSE.md included with the project
+for details.
+.SH CONTACT
+http://www.segs.io/
