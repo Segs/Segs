@@ -17,6 +17,7 @@ AuthExerciser validates connectivity to the SEGS authserver.
 .SH OPTIONS
 AuthExerciser accepts the following arguments:
 .PP
+.PP
 .B -h, --help
 .RS
 Print help
@@ -40,6 +41,11 @@ TCP port (typically 2106)
 .I <iterations>
 .RS
 Communicate with server this amount of times
+.RE
+.SH EXAMPLE
+Connect to a local authserver instance for 3 iterations:
+.RS
+.B AuthExerciser 127.0.0.1 2106 3
 .RE
 .SH SEE ALSO
 authserver(1)
