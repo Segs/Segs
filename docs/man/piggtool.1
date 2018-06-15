@@ -1,0 +1,58 @@
+.\" SEGS - Super Entity Game Server
+.\" http://www.segs.io/
+.\" Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+.\" This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
+.TH piggtool 1 "14 June 2018" "0.5.0" "Super Entity Game Server Manual"
+.SH NAME
+piggtool \- manipulate pigg archives
+.SH SYNOPSIS
+piggtool
+.B [ -h ]
+.B [ -l ]
+.B [ -x ]
+.I <pigg_file>
+.I <target_dir>
+.SH DESCRIPTION
+The piggtool can display the contents of pigg archives and can also extract contained files. Some of these extracted
+files can be read by the
+.B authserver(1)
+program.
+.SH OPTIONS
+piggtool accepts the following arguments:
+.PP
+.B -h, --help
+.RS
+Print help
+.RE
+.PP
+.B -l
+.RS
+List files in pigg archive
+.RE
+.PP
+.B -x
+.RS
+Extract all files from pigg archive
+.RE
+.PP
+.I <pigg_file>
+.RS
+A pigg archive
+.RE
+.PP
+.I <target_dir>
+.RS
+Target directory where pigg contents will be extracted to
+.RE
+.SH SEE ALSO
+authserver(1)
+.SH BUGS
+Please report any findings to https://github.com/Segs/Segs/issues
+.SH AUTHORS
+This man page was created by Lloyd Dilley <lloyd@segs.io>. SEGS has many authors and contributors. See
+AUTHORS.md included with the project for details.
+.SH LICENSE
+SEGS is licensed under the terms of the 3-clause BSD License. See LICENSE.md included with the project
+for details.
+.SH CONTACT
+http://www.segs.io/
