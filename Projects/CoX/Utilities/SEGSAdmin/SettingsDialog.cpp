@@ -134,7 +134,7 @@ void SettingsDialog::read_config_file(QString filePath)
     QString map_loc_addr = config_file.value("location_addr","").toString();
     QStringList map_loc_addr_portip = map_loc_addr.split(':');
     QString maps_loc = config_file.value("maps","DefaultMapInstances").toString();
-    QString player_fade_in = config_file.value("player_fade_in", "").toString();
+    float player_fade_in = config_file.value("player_fade_in", "").toFloat();
     ui->map_listen_ip->setText(map_listen_addr_portip[0]);
     ui->map_listen_port->setText(map_listen_addr_portip[1]);
     ui->map_location_ip->setText(map_loc_addr_portip[0]);
