@@ -77,8 +77,8 @@ struct GfxTree_Node
     GfxTree_Node *   next;
     GfxTree_Node *   children_list;
     int              flg;
-    uint8_t alpha() const { return flg & 0xFF; }
-    void setAlpha(uint8_t v) { flg = (flg & ~0xFF) | v; }
+    uint8_t          alpha() const { return flg & 0xFF; }
+    void             setAlpha(uint8_t v) { flg = (flg & ~0xFF) | v; }
     int              bone_slot;
     Model *          model;
     Matrix4x3 *      viewspace;

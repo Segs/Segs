@@ -771,9 +771,7 @@ int segs_groupDrawRefs(const Matrix4x3 *parent_mat)
     draw.tint_color_ptr = nullptr;
     draw.tex_binds[0] = nullptr;
     draw.tex_binds[1] = nullptr;
-    draw.node_mid.x = 0.0;
-    draw.node_mid.y = 0.0;
-    draw.node_mid.z = 0.0;
+    draw.node_mid = {0,0,0};
     draw.scale = g_State.view.vis_scale;
     checkForVisScaleChange(g_State.view.vis_scale);
     fog_far_dist = skyGetFogFarDist();
@@ -877,7 +875,7 @@ void segs_addGroups(Parser_Def *parser_def, GroupDef *pDef, NameList *name_list,
     if (!pDef->num_subs)
         return;
 
-    pDef->subdefs = (GroupEnt *)dbgCalloc(sizeof(GroupEnt), pDef->num_subs, 1,__FILE__, 474);
+    pDef->subdefs = (GroupEnt *)COH_CALLOC(sizeof(GroupEnt), pDef->num_subs);
     int valid_dev_idx = 0;
     for(int idx = 0; idx < cnt; ++idx)
     {

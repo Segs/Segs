@@ -265,15 +265,15 @@ struct FxMiniTracker
 
 struct GroupEnt
 {
-    Matrix4x3 *transform;
-    GroupDef *m_def;
-    char flags_cache;
-    char flg2;
-    char flg3;
-    char flg4;
-    float vis_dist_sqr_cache;
-    float vist_dist_cache;
-    Vector3 mid_cache;
+    Matrix4x3 *transform=nullptr;
+    GroupDef * m_def     = nullptr;
+    char flags_cache=0;
+    char flg2=0;
+    char flg3=0;
+    char flg4=0;
+    float vis_dist_sqr_cache=0;
+    float vist_dist_cache=0;
+    Vector3 mid_cache {0,0,0};
 };
 static_assert (sizeof(GroupEnt) == 0x20);
 struct DrawParams

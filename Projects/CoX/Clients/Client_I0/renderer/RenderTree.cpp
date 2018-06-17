@@ -5,7 +5,6 @@
 #include "RendererState.h"
 #include "RenderBonedModel.h"
 #include "RenderShadow.h"
-#include "RenderModel.h"
 #include "RenderTricks.h"
 #include "GameState.h"
 #include "graphics/GroupDraw.h"
@@ -84,7 +83,7 @@ void segs_modelDrawGfxNode(GfxTree_Node *node)
             segs_modelDrawNode(node,node_base_material);
     }
 }
-int trackerCMP(const DefTracker **a, const DefTracker **b)
+static int trackerCMP(const DefTracker **a, const DefTracker **b)
 {
     if (*a >= *b)
         return *a != *b;
@@ -123,10 +122,6 @@ void segs_addViewSortNode(GfxTree_Node *node, Model *model, Matrix4x3 *mat, Vect
             sort_entry.tint_colors[1] = tint_colors[1];
         }
         sort_entry.mat = *mat;
-        if(std::abs(mat->r1[2])==1)
-        {
-            printf("here");
-        }
         sort_entry.has_texids = custom_texbinds != nullptr;
         if (custom_texbinds)
         {
@@ -281,10 +276,10 @@ void segs_rendertree_SetColors(GfxTree_Node *node, const uint8_t *clr1, const ui
 {
     node->flg |= 0x200000;
     node->color1.r = clr1[0];
-    node->color2.r = clr2[0];
     node->color1.g = clr1[1];
-    node->color2.g = clr2[1];
     node->color1.b = clr1[2];
+    node->color2.r = clr2[0];
+    node->color2.g = clr2[1];
     node->color2.b = clr2[2];
 }
 void segs_modelAddShadow(Matrix4x3 *mat, uint8_t alpha, Model *model, uint8_t mask)

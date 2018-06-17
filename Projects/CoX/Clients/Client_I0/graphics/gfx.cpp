@@ -94,7 +94,6 @@ extern "C" {
     __declspec(dllimport) GroupDef *findNameInLib_P(const char *);
     __declspec(dllimport) void CohTimer__ResetTimer(int);
     __declspec(dllimport) void *fn_5B8FA0(HashTable *table, const char *key); //hashRemoveElement
-    __declspec(dllimport) void fn_5B7BE0(MemPool *pool);
     __declspec(dllimport) void FreeModelGeometry(Model *model); // this should be named freeModelCollisionTriangles
 
     __declspec(dllimport) int int32_7B7E24;
