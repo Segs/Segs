@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -133,8 +133,8 @@ void SettingsDialog::read_config_file(QString filePath)
     QStringList map_listen_addr_portip = map_listen_addr.split(':');
     QString map_loc_addr = config_file.value("location_addr","").toString();
     QStringList map_loc_addr_portip = map_loc_addr.split(':');
-    QString maps_loc = config_file.value("maps","").toString();
-    float player_fade_in = config_file.value("player_fade_in", "").toFloat();
+    QString maps_loc = config_file.value("maps","DefaultMapInstances").toString();
+    QString player_fade_in = config_file.value("player_fade_in", "").toString();
     ui->map_listen_ip->setText(map_listen_addr_portip[0]);
     ui->map_listen_port->setText(map_listen_addr_portip[1]);
     ui->map_location_ip->setText(map_loc_addr_portip[0]);

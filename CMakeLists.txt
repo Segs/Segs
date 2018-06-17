@@ -91,4 +91,7 @@ add_subdirectory(Components)
 add_subdirectory(Utilities)
 add_subdirectory(Projects)
 file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/data)
+file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/DefaultMapInstances/City_00_01)
+file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/DefaultMapInstances/City_01_01)
+file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/DefaultMapInstances/City_02_01)
 
