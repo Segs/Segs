@@ -71,7 +71,7 @@ static void SetVelocity(Entity *e)
     horiz_vel = vel;
 
     if (!e->m_is_flying)
-        horiz_vel.y = 0;
+        horiz_vel.y = 0.0f;
     if (vel.z < 0.0f)
         e->m_cur_state->m_velocity_scale *= e->m_backup_spd;
     if (e->m_is_stunned)
