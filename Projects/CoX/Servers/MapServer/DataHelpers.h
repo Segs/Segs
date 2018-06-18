@@ -20,6 +20,11 @@ struct Friend;
 struct FriendsList;
 struct MapClientSession;
 
+enum MapData
+{
+    Outbreak, AtlasPark, GalaxyCity
+};
+
 /*
  * Entity Methods
  */
@@ -83,6 +88,7 @@ float getEnd(const Character &c);
 uint64_t            getLastCostumeId(const Character &c);
 const QString &     getOrigin(const Character &c);
 const QString &     getClass(const Character &c);
+MapData             getMapData(const QString &map_name);
 const QString       getMapName(const QString &map_name);
 const QString       getMapPath(const EntityData &ed);
 const QString       getEntityMapName(const EntityData &ed);

@@ -326,15 +326,30 @@ const QString &     getDescription(const Character &c) { return c.m_char_data.m_
 const QString &     getBattleCry(const Character &c) { return c.m_char_data.m_battle_cry; }
 const QString &     getAlignment(const Character &c) { return c.m_char_data.m_alignment; }
 
-const QString getMapName(const QString &map_name)
+MapData getMapData(const QString &map_name)
 {
     if (map_name.contains("City_00_01", Qt::CaseInsensitive))
-        return "Outbreak";
+        return Outbreak;
     if (map_name.contains("City_01_01", Qt::CaseInsensitive))
-        return "AtlasPark";
+        return AtlasPark;
+    if (map_name.contains("City_23_01", Qt::CaseInsensitive))
+        return GalaxyCity;
 
     // let's default to Outbreak in case things go wrong
-    return "Outbreak";
+    return Outbreak;
+}
+
+const QString getMapName(const QString &map_name)
+{
+    switch (getMapData(map_name))
+    {
+        case Outbreak: return "Outbreak";
+        case AtlasPark: return "Atlas Park";
+        case GalaxyCity: return "Galaxy City";
+
+        // default to Outbreak if something weird happens
+        default: return "Outbreak";
+    }
 }
 
 const QString getEntityMapName(const EntityData &ed)
@@ -351,15 +366,15 @@ const QString getFriendMapName(const Friend &f)
 
 const QString getMapPath(const EntityData &ed)
 {
-    // Outbreak
-    if (ed.m_current_map.contains("City_00_01", Qt::CaseInsensitive))
-        return "maps/city_zones/city_00_01/city_00_01.txt";
-    // Atlas Park
-    if (ed.m_current_map.contains("City_01_01", Qt::CaseInsensitive))
-        return "maps/city_zones/city_01_01/city_01_01.txt";
+    switch (getMapData(ed.m_current_map))
+    {
+        case Outbreak: return "maps/city_zones/city_00_01/city_00_01.txt";
+        case AtlasPark: return "maps/city_zones/city_01_01/city_01_01.txt";
+        case GalaxyCity: return "maps/city_zones/city_23_01/city_23_01.txt";
 
-    // let's default to Outbreak in case things go wrong
-    return "maps/city_zones/city_00_01/city_00_01.txt";
+        // default to Outbreak's map path if something weird happens
+        default: return "maps/city_zones/city_00_01/city_00_01.txt";
+    }
 }
 
 // Setters
