@@ -89,7 +89,7 @@ If you're looking to compile SEGS from source, or need to do an advanced manual 
    
    _Files are available in .tar.gz and .zip formats and can be extracted using most common compression tools._
 
-   Extract the release files to a local directory on your machine. For Windows users it is recommended to extract SEGS to your `Documents` folder or `C:\` to ensure that SEGS has all the permissions it needs to properly run.
+   Extract the release files to a local directory on your machine. For Windows users it is recommended to extract SEGS to your `C:\` to ensure that SEGS has all the permissions it needs to properly run.
 
    Once extracted, you will have a new directory `SEGS` containing all SEGS files and subdirectories.
    
