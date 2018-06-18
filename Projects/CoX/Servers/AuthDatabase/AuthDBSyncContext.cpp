@@ -32,7 +32,7 @@ namespace
     static constexpr int64_t INVALID_DB_VERSION = -1;
 
     static constexpr auto FETCH_DB_VERSION_QUERY =
-        "SELECT version FROM table_versions WHERE table_name = 'db_version' ORDER BY id DESC LIMIT 1";
+        "SELECT version FROM table_versions WHERE table_name = 'accounts' LIMIT 1";
 
     static constexpr auto ADD_ACCOUNT_QUERY =
         "INSERT INTO accounts (username, passw, access_level, salt) VALUES (?, ?, ?, ?);";

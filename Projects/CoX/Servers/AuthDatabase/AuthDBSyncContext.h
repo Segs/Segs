@@ -24,7 +24,7 @@ struct ValidatePasswordResponseData;
 ///
 class AuthDbSyncContext
 {
-    static constexpr int64_t REQUIRED_DB_VERSION = 0;
+    static constexpr int64_t REQUIRED_DB_VERSION = 1;
 
     std::unique_ptr<QSqlDatabase> m_db;
     std::unique_ptr<QSqlQuery> m_add_account_query;
