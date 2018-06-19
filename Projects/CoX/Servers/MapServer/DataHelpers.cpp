@@ -326,30 +326,23 @@ const QString &     getDescription(const Character &c) { return c.m_char_data.m_
 const QString &     getBattleCry(const Character &c) { return c.m_char_data.m_battle_cry; }
 const QString &     getAlignment(const Character &c) { return c.m_char_data.m_alignment; }
 
-MapData getMapData(const QString &map_name)
+static const std::vector<MapData> g_defined_map_datas =
 {
-    if (map_name.contains("City_00_01", Qt::CaseInsensitive))
-        return Outbreak;
-    if (map_name.contains("City_01_01", Qt::CaseInsensitive))
-        return AtlasPark;
-    if (map_name.contains("City_23_01", Qt::CaseInsensitive))
-        return GalaxyCity;
-
-    // let's default to Outbreak in case things go wrong
-    return Outbreak;
-}
+    {0, "City_00_01", "maps/city_zones/city_00_01/city_00_01.txt", "Outbreak", {0, 0, 0}},
+    {1, "City_01_01", "maps/city_zones/city_00_01/city_01_01.txt", "Atlas Park", {0, 0, 0}},
+    {2, "City_23_01", "maps/city_zones/city_00_01/city_23_01.txt", "Galaxy City", {0, 0, 0}}
+};
 
 const QString getMapName(const QString &map_name)
 {
-    switch (getMapData(map_name))
+    for (uint32_t i = 0; i < g_defined_map_datas.size(); i++)
     {
-        case Outbreak: return "Outbreak";
-        case AtlasPark: return "Atlas Park";
-        case GalaxyCity: return "Galaxy City";
-
-        // default to Outbreak if something weird happens
-        default: return "Outbreak";
+        if (map_name.contains(g_defined_map_datas[i].m_map_name))
+            return g_defined_map_datas[i].m_display_map_name;
     }
+
+    // defaulting to Outbreak's map name if things went wrong
+    return g_defined_map_datas[0].m_display_map_name;
 }
 
 const QString getEntityMapName(const EntityData &ed)
@@ -366,15 +359,14 @@ const QString getFriendMapName(const Friend &f)
 
 const QString getMapPath(const EntityData &ed)
 {
-    switch (getMapData(ed.m_current_map))
+    for (uint32_t i = 0; i < g_defined_map_datas.size(); i++)
     {
-        case Outbreak: return "maps/city_zones/city_00_01/city_00_01.txt";
-        case AtlasPark: return "maps/city_zones/city_01_01/city_01_01.txt";
-        case GalaxyCity: return "maps/city_zones/city_23_01/city_23_01.txt";
-
-        // default to Outbreak's map path if something weird happens
-        default: return "maps/city_zones/city_00_01/city_00_01.txt";
+        if (ed.m_current_map.contains(g_defined_map_datas[i].m_map_name))
+            return g_defined_map_datas[i].m_map_path;
     }
+
+    // defaulting to Outbreak's map path if things went wrong
+    return g_defined_map_datas[0].m_map_path;
 }
 
 // Setters
