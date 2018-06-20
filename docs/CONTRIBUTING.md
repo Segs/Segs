@@ -125,11 +125,11 @@ Unsure where to begin contributing to SEGS? You can start by looking through the
 
 Both issue lists are sorted by total number of comments. While not perfect, number of comments is a reasonable proxy for impact a given change will have.
 
-If you want to read about running SEGS, try the end-user [README](./Projects/CoX/docs/README.md).
+If you want to read about running SEGS, try the end-user [README](../Projects/CoX/docs/README.md).
 
 #### Local development
 
-SEGS can be developed locally by cloning the git repo to your local machine. For instructions on how to do this, see the following sections in the development [README](./README.md):
+SEGS can be developed locally by cloning the git repo to your local machine. For instructions on how to do this, see the following sections in the development [README](../README.md):
 
 
 ### Pull Requests
