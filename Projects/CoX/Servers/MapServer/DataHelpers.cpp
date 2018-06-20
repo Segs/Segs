@@ -328,9 +328,9 @@ const QString &     getAlignment(const Character &c) { return c.m_char_data.m_al
 
 static const std::vector<MapData> g_defined_map_datas =
 {
-    {0, "City_00_01", "maps/city_zones/city_00_01/city_00_01.txt", "Outbreak", {0, 0, 0}},
-    {1, "City_01_01", "maps/city_zones/city_01_01/city_01_01.txt", "Atlas Park", {0, 0, 0}},
-    {23, "City_23_01", "maps/city_zones/city_23_01/city_23_01.txt", "Galaxy City", {0, 0, 0}}
+    {0, "City_00_01", "maps/city_zones/city_00_01/city_00_01.txt", "Outbreak"},
+    {1, "City_01_01", "maps/city_zones/city_01_01/city_01_01.txt", "Atlas Park"},
+    {23, "City_23_01", "maps/city_zones/city_23_01/city_23_01.txt", "Galaxy City"}
 };
 
 const QString getMapName(const QString &map_name)

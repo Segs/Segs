@@ -26,7 +26,6 @@ struct MapData
     QString m_map_name;             // City_00_01, City_01_01, etc...
     QString m_map_path;             // The ones ending with .txt
     QString m_display_map_name;     // Outbreak, Atlas Park...
-    glm::vec3 m_spawn_location;
 };
 
 /*
