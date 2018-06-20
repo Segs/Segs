@@ -335,13 +335,17 @@ static const std::vector<MapData> g_defined_map_datas =
 
 const QString getMapName(const QString &map_name)
 {
-    for (uint32_t i = 0; i < g_defined_map_datas.size(); i++)
+    for (const auto &map_data : g_defined_map_datas)
     {
-        if (map_name.contains(g_defined_map_datas[i].m_map_name))
-            return g_defined_map_datas[i].m_display_map_name;
+        if (map_name.contains(map_data.m_map_name))
+            return map_data.m_map_name;
     }
 
-    // defaulting to Outbreak's map name if things went wrong
+    // log a warning because this part of the code is called when things went wrong
+    qWarning() << "No matching map name in struct g_defined_map_datas to sent map name."
+        << " Returning Outbreak's display map name as default...";
+
+    // defaulting to Outbreak's map name
     return g_defined_map_datas[0].m_display_map_name;
 }
 
@@ -359,13 +363,17 @@ const QString getFriendMapName(const Friend &f)
 
 const QString getMapPath(const EntityData &ed)
 {
-    for (uint32_t i = 0; i < g_defined_map_datas.size(); i++)
+    for (const auto &map_data : g_defined_map_datas)
     {
-        if (ed.m_current_map.contains(g_defined_map_datas[i].m_map_name))
-            return g_defined_map_datas[i].m_map_path;
+        if (ed.m_current_map.contains(map_data.m_map_name))
+            return map_data.m_map_path;
     }
 
-    // defaulting to Outbreak's map path if things went wrong
+    // log a warning because this part of the code is called when things went wrong
+    qWarning() << "No matching map name in struct g_defined_map_datas to EntityData's m_map_name."
+        << " Returning Outbreak's map path as default...";
+
+    // defaulting to Outbreak's map path
     return g_defined_map_datas[0].m_map_path;
 }
 
