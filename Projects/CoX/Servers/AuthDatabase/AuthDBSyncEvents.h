@@ -69,13 +69,16 @@ ONE_WAY_MESSAGE(AuthDbError)
 
 struct RetrieveAccountResponseData
 {
+    static constexpr uint64_t INVALID_ACCOUNT_ID = 0;
+
     uint64_t m_acc_server_acc_id;
     QString m_login;
     QDateTime m_creation_date;
     uint8_t m_access_level;
-    void mark_as_missing() { m_acc_server_acc_id = 0; }
-    bool valid() const { return m_acc_server_acc_id!=0; }
-    bool isBlocked() const { return m_access_level == 0; }
+
+    void mark_as_missing() { m_acc_server_acc_id = INVALID_ACCOUNT_ID; }
+    bool valid() const { return m_acc_server_acc_id != INVALID_ACCOUNT_ID; }
+    bool isBlocked() const { return m_access_level == INVALID_ACCOUNT_ID; }
 
 };
 
