@@ -50,7 +50,7 @@ void InputStateEvent::processDirectionControl(uint8_t dir, int prev_time, int pr
     }
 }
 
-void InputStateEvent::receiveInputStateHistory(BitStream &bs) // formerly partial_2
+void InputStateEvent::receiveInputStateEnding(BitStream &bs) // formerly partial_2
 {
     uint8_t     control_id;
     uint32_t    ms_since_prev;
@@ -79,6 +79,7 @@ void InputStateEvent::receiveInputStateHistory(BitStream &bs) // formerly partia
                 bool keypress_state = bs.GetBits(1); // get keypress state
                 m_next_state.m_control_bits[control_id] = keypress_state; // save control_bits
                 processDirectionControl(control_id, ms_since_prev, keypress_state); // TODO: this should be moved out of partial_2?
+                qCDebug(logInput, "key released %f", control_id);
                 break;
             }
             case PITCH: // camera pitch (Insert/Delete keybinds)
@@ -146,14 +147,14 @@ void InputStateEvent::extended_input(BitStream &bs)
 {
     bool keypress_state;
 
-    m_next_state.m_has_historical_input = bs.GetBits(1);
-    if(m_next_state.m_has_historical_input) // list of partial_2 follows
+    m_next_state.m_has_key_release = bs.GetBits(1);
+    if(m_next_state.m_has_key_release) // list of partial_2 follows
     {
         m_next_state.m_csc_deltabits = bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
         m_next_state.m_send_id = bs.GetBits(16);
 
         //qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_current.m_csc_deltabits, m_current.m_send_id, m_current.current_state_P);
-        receiveInputStateHistory(bs); // formerly partial_2
+        receiveInputStateEnding(bs); // formerly partial_2
     }
 
     // Key HELD
@@ -162,7 +163,10 @@ void InputStateEvent::extended_input(BitStream &bs)
         keypress_state = bs.GetBits(1);
         m_next_state.m_control_bits[idx] = keypress_state;
         if(keypress_state==true)
+        {
             processDirectionControl(idx, 0, keypress_state);
+            qCDebug(logInput, "key pressed down %f", idx);
+        }
     }
 
     if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )

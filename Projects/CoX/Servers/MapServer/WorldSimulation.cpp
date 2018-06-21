@@ -23,8 +23,8 @@ static void SetVelocity(Entity *e)
 {
     float       control_vals[6] = {0};
     glm::vec3   horiz_vel       = {0, 0, 0};
-    int         max_press_time  = 0;
-    int         press_time      = 100;
+    float       max_press_time  = 0.0f;
+    float       press_time      = 100.0f;
     glm::vec3   vel             = {0, 0, 0};
 
     if(e->m_cur_state->m_no_collision)
@@ -36,7 +36,7 @@ static void SetVelocity(Entity *e)
     }
 
     for (int i = BinaryControl::FORWARD; i < BinaryControl::LAST_BINARY_VALUE; ++i)
-    {
+    {   
         press_time = e->m_cur_state->m_keypress_time[i]*30;
         //qCDebug(logMovement) << "keypress_time" << i << e->inp_state.m_keypress_time[i];
         max_press_time = std::max(press_time, max_press_time);
@@ -46,7 +46,7 @@ static void SetVelocity(Entity *e)
             control_vals[i] = 0.0f;
         else if (press_time >= 1000)
             control_vals[i] = 1.0f;
-        else if (press_time <= 50 /*&& e->m_prev_state.m_control_bits[i]*/)
+        else if (press_time <= 50 && e->m_prev_state->m_control_bits[i])
             control_vals[i] = 0.0f;
         else if (press_time < 75)
             control_vals[i] = 0.2f;
@@ -58,7 +58,7 @@ static void SetVelocity(Entity *e)
         //qCDebug(logMovement) << "control_vals:" << i << control_vals[i];
     }
 
-    //controls->max_presstime = max_press_time;
+    e->m_cur_state->m_max_press_time = max_press_time;
     vel.x = control_vals[BinaryControl::RIGHT] - control_vals[BinaryControl::LEFT];
     vel.y = control_vals[BinaryControl::UP] - control_vals[BinaryControl::DOWN];
     vel.z = control_vals[BinaryControl::FORWARD] - control_vals[BinaryControl::BACKWARD];
@@ -94,13 +94,24 @@ static void SetVelocity(Entity *e)
     {
         vel.y *= glm::clamp(e->m_jump_height, 0.0f, 1.0f);
         //if (!e->m_is_sliding)
-            //ent->motion.flag_5 = false;
+            //ent->motion.flag_5 = false; // flag_5 "jogging anim"?
     }
 
     if(e->m_type == EntType::PLAYER)
         qCDebug(logMovement) << "horizVel:" << glm::to_string(horiz_vel).c_str();
 
-    e->m_velocity = vel;
+    /* Movement Anims?
+    if (optrel_speeds->fly)
+        ent->move_type |= MOVETYPE_FLY;
+    else
+        ent->move_type &= ~MOVETYPE_FLY;
+    if (optrel_speeds->flags_178_10)
+        ent->move_type |= MOVETYPE_10;
+    else
+        ent->move_type &= ~MOVETYPE_10;
+    */
+
+    e->m_velocity = vel; // motion->inp_vel = vel;
 
     if (e->m_char->m_char_data.m_afk && e->m_velocity != glm::vec3(0,0,0))
     {
@@ -163,9 +174,6 @@ void World::physicsStep(Entity *e,uint32_t msec)
 
         e->m_entity_data.m_pos += ((za*e->m_cur_state->m_pos_delta)*float(msec))/50.0f;
         float distance  = glm::distance(e->m_entity_data.m_pos, e->m_prev_pos);
-        // setting velocity above. these are the old methods:
-        //e->m_velocity   = e->m_cur_state->m_pos_delta * e->m_speed / distance;
-        //e->m_velocity   = za*e->m_cur_state->m_pos_delta;
 
         if(e->m_type == EntType::PLAYER)
         {

@@ -65,10 +65,10 @@ uint8_t     g_interpolation_level   = 2;
 uint8_t     g_interpolation_bits    = 1;
 
 static void buildErrorTable() {
-    static bool dword_769AD4=false;
-    if ( !dword_769AD4 )
+    static bool table_built=false; // what's the point?
+    if ( !table_built )
     {
-        dword_769AD4 = true;
+        table_built = true;
         for (int i = 3; i < 131; ++i )
         {
             s_coding_sequence[i] = s_coding_sequence[i-1] + s_coding_sequence[i-3];
