@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -45,7 +45,8 @@ MapManager::~MapManager()
 bool MapManager::load_templates(const QString &template_directory, uint8_t game_id, uint32_t map_id,
                                 const ListenAndLocationAddresses &loc)
 {
-    qCDebug(logSettings) << "Starting the search for maps in" << template_directory;
+    qInfo() << "Searching for maps in:" << template_directory;
+
     QDirIterator map_dir_visitor(template_directory, QDir::Dirs|QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while (map_dir_visitor.hasNext())
     {
@@ -55,7 +56,8 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
             auto tpl = new MapTemplate(map_dir_visitor.fileInfo().filePath(), game_id, map_id, loc);
             m_templates[s_map_name_to_id[tpl->base_name()]] = tpl;
             m_name_to_template[tpl->client_filename()] = tpl;
-            qCDebug(logSettings) << "Detected a map"<<map_dir_visitor.fileInfo().filePath();
+
+            qInfo() << "Found map:" << map_dir_visitor.fileInfo().filePath();
         }
     }
     // (template_directory / "tutorial.bin")

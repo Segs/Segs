@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -732,6 +732,7 @@ void addNpc(const QString &cmd, MapClientSession &sess)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, &sess);
+        return;
     }
     glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos;
     const NPCStorage & npc_store(sess.m_current_map->serverData().getNPCDefinitions());
@@ -744,7 +745,7 @@ void addNpc(const QString &cmd, MapClientSession &sess)
     glm::vec3 offset = glm::vec3 {2,0,1};
     int idx = npc_store.npc_idx(npc_def);
     Entity *e = sess.m_current_map->m_entities.CreateNpc(*npc_def,idx,variation);
-    e->m_entity_data.m_pos = gm_loc + offset;
+    forcePosition(*e,gm_loc + offset);
     e->m_velocity = {0,0,0};
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), &sess);
 }
@@ -763,7 +764,7 @@ void moveTo(const QString &cmd, MapClientSession &sess)
       parts[2].toFloat(),
       parts[3].toFloat()
     };
-    sess.m_ent->m_entity_data.m_pos = new_pos;
+    forcePosition(*sess.m_ent,new_pos);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("New position set"), &sess);
 
 }
@@ -864,7 +865,7 @@ void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess)
 void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 {
     // TODO: Implement true move-to-safe-location-nearby logic
-    sess.m_ent->m_entity_data.m_pos = sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos);
+    forcePosition(*sess.m_ent,sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
 
     QString msg = QString("Resetting location to default spawn (%1,%2,%3)")
                       .arg(sess.m_ent->m_entity_data.m_pos.x)

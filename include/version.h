@@ -1,13 +1,13 @@
 /*
 * Super Entity Game Server
 * http://segs.sf.net/
-* Copyright (c) 2006 Super Entity Game Server Team (see Authors.txt)
-* This software is licensed! (See License.txt for details)
+* Copyright (c) 2006 Super Entity Game Server Team (see AUTHORS.md)
+* This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
 *
 */
 
-#define VersionString "segs v0.4.3 (The Real Beginning)";
-#define CopyrightString "Super Entity Game Server\nhttp://github.com/Segs/\nCopyright (c) 2006-2018 Super Entity Game Server Team (see Authors.txt)\nThis software is licensed! (See License.txt for details)\n";
+#define VersionString "segs v0.5.0 (The Unsilencer)";
+#define CopyrightString "Super Entity Game Server\nhttp://github.com/Segs/\nCopyright (c) 2006-2018 Super Entity Game Server Team (see AUTHORS.md)\nThis software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.\n";
 //const char *AdminVersionString="Undefined";
 //const char *AuthVersionString="Undefined";
 //const char *GameVersionString="Undefined";

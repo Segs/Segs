@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -214,4 +214,9 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
     e->m_db_store_flags &= ~uint32_t(f);
 }
 
+void forcePosition(Entity &e, glm::vec3 pos)
+{
+    e.m_entity_data.m_pos = pos;
+    e.m_full_update_count = 10;
+}
 //! @}

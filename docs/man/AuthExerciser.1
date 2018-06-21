@@ -1,0 +1,61 @@
+.\" SEGS - Super Entity Game Server
+.\" http://www.segs.io/
+.\" Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+.\" This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
+.TH AuthExerciser 1 "14 June 2018" "0.5.0" "Super Entity Game Server Manual"
+.SH NAME
+AuthExerciser \- validate connectivity to a SEGS authserver
+.SH SYNOPSIS
+AuthExerciser
+.B [ -h ]
+.B [ -v ]
+.I <address>
+.I <port>
+.I <iterations>
+.SH DESCRIPTION
+AuthExerciser validates connectivity to the SEGS authserver.
+.SH OPTIONS
+AuthExerciser accepts the following arguments:
+.PP
+.PP
+.B -h, --help
+.RS
+Print help
+.RE
+.PP
+.B -v, --version
+.RS
+Print version
+.RE
+.PP
+.I <address>
+.RS
+A network address
+.RE
+.PP
+.I <port>
+.RS
+TCP port (typically 2106)
+.RE
+.PP
+.I <iterations>
+.RS
+Communicate with server this amount of times
+.RE
+.SH EXAMPLE
+Connect to a local authserver instance for 3 iterations:
+.RS
+.B AuthExerciser 127.0.0.1 2106 3
+.RE
+.SH SEE ALSO
+authserver(1)
+.SH BUGS
+Please report any findings to https://github.com/Segs/Segs/issues
+.SH AUTHORS
+This man page was created by Lloyd Dilley <lloyd@segs.io>. SEGS has many authors and contributors. See
+AUTHORS.md included with the project for details.
+.SH LICENSE
+SEGS is licensed under the terms of the 3-clause BSD License. See LICENSE.md included with the project
+for details.
+.SH CONTACT
+http://www.segs.io/

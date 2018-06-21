@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -145,7 +145,7 @@ struct NpcCreator
             {
                 int idx = npc_store.npc_idx(npc_def);
                 Entity *e = map_instance->m_entities.CreateNpc(*npc_def, idx, 0);
-                e->m_entity_data.m_pos = glm::vec3(v[3]);
+                forcePosition(*e,glm::vec3(v[3]));
                 auto valquat = glm::quat_cast(v);
 
                 glm::vec3 angles = glm::eulerAngles(valquat);

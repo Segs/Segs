@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -129,7 +129,7 @@ public:
         PlayerPtr           m_player;
         NPCPtr              m_npc;
 
-
+        int                 m_full_update_count     = 10; // TODO: remove this after we have proper physics
         bool                m_has_supergroup        = true;
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_team              = false;
@@ -233,4 +233,5 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant);
 void fillEntityFromNewCharData(Entity &e, BitStream &src, const ColorAndPartPacker *packer, const Parse_AllKeyProfiles &default_profiles);
+void forcePosition(Entity &e,glm::vec3 pos);
 extern void abortLogout(Entity *e);

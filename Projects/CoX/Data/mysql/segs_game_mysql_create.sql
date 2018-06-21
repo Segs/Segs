@@ -36,7 +36,7 @@ CREATE TABLE `costume` (
   `id` int(11) NOT NULL,
   `character_id` int(11) NOT NULL,
   `costume_index` int(11) NOT NULL,
-  `skin_color` int(11) NOT NULL,
+  `skin_color` int(11) UNSIGNED NOT NULL,
   `parts` blob
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

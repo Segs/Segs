@@ -1,5 +1,5 @@
 #FIND_PACKAGE(ACE REQUIRED)
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
 set(CMAKE_AUTOUIC TRUE)
 set(CMAKE_AUTOMOC TRUE)
@@ -29,8 +29,8 @@ TARGET_LINK_LIBRARIES(mapviewer
     lutefisk3d_IMP
     ace_IMP
     gameData common_runtime cereal_IMP
+    Qt5::Core Qt5::Widgets
 )
-qt5_use_modules(mapviewer Core Widgets  )
 
 add_custom_command(TARGET mapviewer POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${EXECUTABLE_OUTPUT_PATH}/mapviewer_data
