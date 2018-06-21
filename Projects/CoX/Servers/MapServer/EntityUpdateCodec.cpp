@@ -139,10 +139,9 @@ bool storePosition(const Entity &src,BitStream &bs)
 
 bool update_rot(const Entity &src, int axis ) /* returns true if given axis needs updating */
 {
-    // TODO: logMovement need to update axis check here
     if(src.m_prev_state->m_orientation_pyr[axis]==src.m_cur_state->m_orientation_pyr[axis]) // FixMe: var compared against same var.
-        return true;
-    return false;
+        return false;
+    return true;
 }
 
 void storeOrientation(const Entity &src,BitStream &bs)
