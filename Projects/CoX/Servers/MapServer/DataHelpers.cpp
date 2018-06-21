@@ -338,7 +338,7 @@ const QString getMapName(const QString &map_name)
     for (const auto &map_data : g_defined_map_datas)
     {
         if (map_name.contains(map_data.m_map_name))
-            return map_data.m_map_name;
+            return map_data.m_display_map_name;
     }
 
     // log a warning because this part of the code is called when things went wrong
