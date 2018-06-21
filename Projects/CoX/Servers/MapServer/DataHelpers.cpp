@@ -315,7 +315,6 @@ float               getEnd(const Character &c) { return c.m_char_data.m_current_
 uint64_t            getLastCostumeId(const Character &c) { return c.m_char_data.m_last_costume_id; }
 const QString &     getOrigin(const Character &c) { return c.m_char_data.m_origin_name; }
 const QString &     getClass(const Character &c) { return c.m_char_data.m_class_name; }
-const QString &     getMapName(const Character &c) { return c.m_char_data.m_mapName; }
 uint32_t            getXP(const Character &c) { return c.m_char_data.m_experience_points; }
 uint32_t            getDebt(const Character &c) { return c.m_char_data.m_experience_debt; }
 uint32_t            getPatrolXP(const Character &c) { return c.m_char_data.m_experience_patrol; }
@@ -326,6 +325,57 @@ uint32_t            getInf(const Character &c) { return c.m_char_data.m_influenc
 const QString &     getDescription(const Character &c) { return c.m_char_data.m_character_description ; }
 const QString &     getBattleCry(const Character &c) { return c.m_char_data.m_battle_cry; }
 const QString &     getAlignment(const Character &c) { return c.m_char_data.m_alignment; }
+
+static const std::vector<MapData> g_defined_map_datas =
+{
+    {0, "City_00_01", "maps/city_zones/city_00_01/city_00_01.txt", "Outbreak"},
+    {1, "City_01_01", "maps/city_zones/city_01_01/city_01_01.txt", "Atlas Park"},
+    {23, "City_23_01", "maps/city_zones/city_23_01/city_23_01.txt", "Galaxy City"}
+};
+
+const QString getMapName(const QString &map_name)
+{
+    for (const auto &map_data : g_defined_map_datas)
+    {
+        if (map_name.contains(map_data.m_map_name))
+            return map_data.m_display_map_name;
+    }
+
+    // log a warning because this part of the code is called when things went wrong
+    qWarning() << "No matching map name in struct g_defined_map_datas to sent map name."
+        << " Returning Outbreak's display map name as default...";
+
+    // defaulting to Outbreak's map name
+    return g_defined_map_datas[0].m_display_map_name;
+}
+
+const QString getEntityMapName(const EntityData &ed)
+{
+    return getMapName(ed.m_current_map);
+}
+
+const QString getFriendMapName(const Friend &f)
+{
+    if (!f.m_online_status)
+        return "OFFLINE";
+    return getMapName(f.m_mapname);
+}
+
+const QString getMapPath(const EntityData &ed)
+{
+    for (const auto &map_data : g_defined_map_datas)
+    {
+        if (ed.m_current_map.contains(map_data.m_map_name))
+            return map_data.m_map_path;
+    }
+
+    // log a warning because this part of the code is called when things went wrong
+    qWarning() << "No matching map name in struct g_defined_map_datas to EntityData's m_map_name."
+        << " Returning Outbreak's map path as default...";
+
+    // defaulting to Outbreak's map path
+    return g_defined_map_datas[0].m_map_path;
+}
 
 // Setters
 void setLevel(Character &c, uint32_t val)
@@ -356,7 +406,7 @@ void setEnd(Character &c, float val)
 }
 
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
-void    setMapName(Character &c, const QString &val) { c.m_char_data.m_mapName = val; }
+void    setMapName(Entity &e, const QString &val) { e.m_entity_data.m_current_map = val; }
 
 void setXP(Character &c, uint32_t val)
 {

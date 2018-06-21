@@ -11,6 +11,7 @@
 #include "Powers.h"
 #include "Common/GameData/attrib_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
+#include "Common/GameData/entitydata_definitions.h"
 #include "Common/GameData/clientoptions_definitions.h"
 #include "Common/GameData/gui_definitions.h"
 #include "Common/GameData/keybind_definitions.h"
@@ -63,8 +64,8 @@ class Character
         PowerTrayGroup          m_trays;
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
-        friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player);
-        friend bool fromActualCharacter(const Character &src,const PlayerData &player, GameAccountResponseCharacterData &tgt);
+        friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player, EntityData &entity);
+        friend bool fromActualCharacter(const Character &src,const PlayerData &player, const EntityData &entity, GameAccountResponseCharacterData &tgt);
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
@@ -84,7 +85,7 @@ const   QString &       getName() const { return m_name; }
         void            serializefrom(BitStream &buffer);
         void            serializeto(BitStream &buffer) const;
         void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool all_costumes=true) const;
-        void            serializetoCharsel(BitStream &bs);
+        void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
@@ -132,5 +133,5 @@ protected:
 
 void serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
 bool initializeCharacterFromCreator();
-bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt, PlayerData &player);
-bool fromActualCharacter(const Character &src, const PlayerData &player, GameAccountResponseCharacterData &tgt);
+bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt, PlayerData &player, EntityData &entity);
+bool fromActualCharacter(const Character &src, const PlayerData &player, const EntityData &entity, GameAccountResponseCharacterData &tgt);

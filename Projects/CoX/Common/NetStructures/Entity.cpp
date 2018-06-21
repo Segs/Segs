@@ -164,6 +164,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_char.reset(new Character);
     e.m_player.reset(new PlayerData);
     e.m_player->reset();
+    e.m_entity.reset(new EntityData);
     e.might_have_rare = e.m_rare_bits   = true;
 }
 
@@ -187,6 +188,7 @@ void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
     e.m_char.reset(new Character);
     e.m_npc.reset(new NPCData{false,src,idx,variant});
     e.m_player.reset();
+    e.m_entity.reset(new EntityData);
     e.might_have_rare = e.m_rare_bits   = true;
 }
 
