@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "CRUD_Events.h"
+#include "Common/CRUDP_Protocol/CRUD_Events.h"
 
 class MapEventTypes : public CRUD_EventTypes
 {
