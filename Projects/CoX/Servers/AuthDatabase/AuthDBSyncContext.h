@@ -24,7 +24,8 @@ struct ValidatePasswordResponseData;
 ///
 class AuthDbSyncContext
 {
-    static constexpr int required_db_version = 0;
+    static constexpr int64_t REQUIRED_DB_VERSION = 1;
+
     std::unique_ptr<QSqlDatabase> m_db;
     std::unique_ptr<QSqlQuery> m_add_account_query;
     std::unique_ptr<QSqlQuery> m_prepared_select_account_by_id;
@@ -44,6 +45,4 @@ public:
     bool getPasswordValidity(const ValidatePasswordRequestData &data, ValidatePasswordResponseData &result);
 protected:
     bool checkPassword(const QString &login, const QString &password);
-private:
-    int64_t getDbVersion(QSqlDatabase &db);
 };

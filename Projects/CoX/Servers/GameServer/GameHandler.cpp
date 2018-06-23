@@ -309,8 +309,8 @@ void GameHandler::on_link_lost(SEGSEvent *ev)
 void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)
 {
     GameSession &session = m_session_store.session_from_event(ev);
-    auto chr(session.m_game_account.get_character(ev->m_data.slot_idx));
-    chr.reset();
+    GameAccountResponseCharacterData& selected_slot = session.m_game_account.get_character(ev->m_data.slot_idx);
+    selected_slot.reset();
     session.link()->putq(new DeletionAcknowledged);
 }
 
@@ -319,12 +319,13 @@ void GameHandler::on_delete_character(DeleteCharacter *ev)
     EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_server->getId());
     GameSession &session = m_session_store.session_from_event(ev);
     GameLink * lnk = (GameLink *)ev->src();
-    auto chr(session.m_game_account.get_character(ev->m_index));
+    const GameAccountResponseCharacterData& selected_slot = session.m_game_account.get_character(ev->m_index);
+
     // check if character exists, and if it's name is the same as the one passed here
-    if(chr.m_name.compare(ev->m_char_name)==0)
+    if (selected_slot.m_name == ev->m_char_name)
     {
-        game_db->putq(new RemoveCharacterRequest({session.m_game_account.m_game_server_acc_id, chr.index},
-                                                 lnk->session_token(),this));
+        game_db->putq(new RemoveCharacterRequest({session.m_game_account.m_game_server_acc_id, selected_slot.index},
+                                                 lnk->session_token(), this));
     }
     else
     {
