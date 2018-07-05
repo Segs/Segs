@@ -247,7 +247,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     setLoggingFilter(); // Set QT Logging filters
     qInstallMessageHandler(segsLogMessageOutput);
     QCoreApplication q_app(argc,argv);
-    QCoreApplication::setOrganizationDomain("segs.nemerle.eu");
+    QCoreApplication::setOrganizationDomain("segs.io");
     QCoreApplication::setOrganizationName("SEGS Project");
     QCoreApplication::setApplicationName("segs_server");
     QCoreApplication::setApplicationVersion(VersionInfo::getAuthVersion());
