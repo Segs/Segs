@@ -33,7 +33,7 @@ namespace
 
 SLAVLogic::SLAVLogic(QObject *parent) : QObject(parent)
 {
-    m_serv_conn = new ServerConnection("http://segs.nemerle.eu");
+    m_serv_conn = new ServerConnection("http://segs.io");
     m_ui_impl = new UpdaterDlg;
     m_current_manifest = new AppVersionManifest;
 
