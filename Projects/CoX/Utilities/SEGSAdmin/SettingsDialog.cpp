@@ -29,15 +29,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     ui->char_dbdriver->addItems(g_db_drivers);
     // Field Validators
     ui->map_player_fade_in_value->setValidator(new QIntValidator(0, 1000, this)); // Only allow int between 0 and 1000
-    ui->game_listen_port->setMaxLength(5);
-    ui->game_loc_port->setMaxLength(5);
     ui->game_server_name->setMaxLength(32);
-    ui->map_listen_port->setMaxLength(5);
-    ui->map_location_port->setMaxLength(5);
-    ui->map_listen_port->setMaxLength(5);
-    ui->char_dbport->setMaxLength(5);
-    ui->acc_dbport->setMaxLength(5);
-    ui->auth_port->setMaxLength(5);
     m_get_ip = new GetIPDialog(this);
 
     // SettingsDialog Signals
@@ -76,7 +68,7 @@ void SettingsDialog::open_settings_dialog()
     QList<QLineEdit *> all_line_edits = ui->tab_settings->findChildren<QLineEdit *>();
     foreach(QLineEdit* le, all_line_edits)
     {
-        le->setStyleSheet("background-color: rgb(255, 255, 255)");
+        le->setStyleSheet("");
     }
     QString fade_in_value = QString::number(ui->map_player_fade_in->value());
     ui->map_player_fade_in_value->setText(fade_in_value);
@@ -90,27 +82,28 @@ void SettingsDialog::read_config_file(QString filePath)
     config_file.beginGroup("AccountDatabase");
     QString acc_db_driver = config_file.value("db_driver","").toString();
     QString acc_db_host = config_file.value("db_host","").toString();
-    QString acc_db_port = config_file.value("db_port","").toString();
+    int acc_db_port = config_file.value("db_port","").toInt();
     int acc_index = ui->acc_dbdriver->findText(acc_db_driver);
     ui->acc_dbdriver->setCurrentIndex(acc_index);
     ui->acc_dbhost->setText(acc_db_host);
-    ui->acc_dbport->setText(acc_db_port);
+    ui->acc_dbport->setValue(acc_db_port);
     config_file.endGroup();
     config_file.beginGroup("CharacterDatabase");
     QString char_db_driver = config_file.value("db_driver","").toString();
     QString char_db_host = config_file.value("db_host","").toString();
-    QString char_db_port = config_file.value("db_port","").toString();
+    int char_db_port = config_file.value("db_port","").toInt();
     int char_index = ui->char_dbdriver->findText(char_db_driver);
     ui->char_dbdriver->setCurrentIndex(char_index);
     ui->char_dbhost->setText(char_db_host);
-    ui->char_dbport->setText(char_db_port);
+    ui->char_dbport->setValue(char_db_port);
     config_file.endGroup();
     config_file.endGroup();
     config_file.beginGroup("AuthServer");
     QString auth_loc_addr = config_file.value("location_addr","").toString();
     QStringList auth_portip = auth_loc_addr.split(':');
+    int auth_port = auth_portip[1].toInt();
     ui->auth_ip->setText(auth_portip[0]);
-    ui->auth_port->setText(auth_portip[1]);
+    ui->auth_port->setValue(auth_port);
     config_file.endGroup();
     config_file.beginGroup("GameServer");
     QString game_server_name = config_file.value("server_name","").toString();
@@ -118,27 +111,31 @@ void SettingsDialog::read_config_file(QString filePath)
     QStringList game_listen_addr_portip = game_listen_addr.split(':');
     QString game_loc_addr = config_file.value("location_addr","").toString();
     QStringList game_loc_addr_portip = game_loc_addr.split(':');
+    int game_loc_addr_port = game_loc_addr_portip[1].toInt();
+    int game_listen_addr_port = game_listen_addr_portip[1].toInt();
     int max_players = config_file.value("max_players","").toInt();
     int max_char_slots = config_file.value("max_character_slots","").toInt();
     ui->game_server_name->setText(game_server_name);
     ui->game_listen_ip->setText(game_listen_addr_portip[0]);
-    ui->game_listen_port->setText(game_listen_addr_portip[1]);
+    ui->game_listen_port->setValue(game_listen_addr_port);
     ui->game_loc_ip->setText(game_loc_addr_portip[0]);
-    ui->game_loc_port->setText(game_loc_addr_portip[1]);
+    ui->game_loc_port->setValue(game_loc_addr_port);
     ui->game_max_players->setValue(max_players);
     ui->game_max_slots->setValue(max_char_slots);
     config_file.endGroup();
     config_file.beginGroup("MapServer");
     QString map_listen_addr = config_file.value("listen_addr","").toString();
     QStringList map_listen_addr_portip = map_listen_addr.split(':');
+    int map_listen_addr_port = map_listen_addr_portip[1].toInt();
     QString map_loc_addr = config_file.value("location_addr","").toString();
     QStringList map_loc_addr_portip = map_loc_addr.split(':');
+    int map_loc_addr_port = map_loc_addr_portip[1].toInt();
     QString maps_loc = config_file.value("maps","DefaultMapInstances").toString();
     float player_fade_in = config_file.value("player_fade_in", "").toFloat();
     ui->map_listen_ip->setText(map_listen_addr_portip[0]);
-    ui->map_listen_port->setText(map_listen_addr_portip[1]);
+    ui->map_listen_port->setValue(map_listen_addr_port);
     ui->map_location_ip->setText(map_loc_addr_portip[0]);
-    ui->map_location_port->setText(map_loc_addr_portip[1]);
+    ui->map_location_port->setValue(map_loc_addr_port);
     ui->map_location->setText(maps_loc);
     ui->map_player_fade_in->setValue(player_fade_in);
     config_file.endGroup();
@@ -307,23 +304,23 @@ void SettingsDialog::set_default_values()
 {
     ui->acc_dbdriver->setCurrentText("QSQLITE");
     ui->acc_dbhost->setText("127.0.0.1");
-    ui->acc_dbport->setText("5432");
+    ui->acc_dbport->setValue(5432);
     ui->char_dbdriver->setCurrentText("QSQLITE");
     ui->char_dbhost->setText("127.0.0.1");
-    ui->char_dbport->setText("5432");
+    ui->char_dbport->setValue(5432);
     ui->auth_ip->setText("127.0.0.1");
-    ui->auth_port->setText("2106");
+    ui->auth_port->setValue(2106);
     ui->game_server_name->setText("SEGS_Server");
     ui->game_listen_ip->setText("127.0.0.1");
-    ui->game_listen_port->setText("7002");
+    ui->game_listen_port->setValue(7002);
     ui->game_loc_ip->setText("127.0.0.1");
-    ui->game_loc_port->setText("7002");
+    ui->game_loc_port->setValue(7002);
     ui->game_max_players->setValue(200);
     ui->game_max_slots->setValue(8);
     ui->map_listen_ip->setText("127.0.0.1");
-    ui->map_listen_port->setText("7003");
+    ui->map_listen_port->setValue(7003);
     ui->map_location_ip->setText("127.0.0.1");
-    ui->map_location_port->setText("7003");
+    ui->map_location_port->setValue(7003);
     ui->map_location->setText("DefaultMapInstances");
     ui->map_player_fade_in->setValue(380.0);
     ui->log_logging->setChecked(false);
@@ -368,7 +365,6 @@ void SettingsDialog::field_validator()
     {
         QMessageBox validation_error;
         validation_error.setText("The highlighted fields can not be blank");
-        //validation_error.setText()
         validation_error.setStandardButtons(QMessageBox::Ok);
         validation_error.setDefaultButton(QMessageBox::Ok);
         validation_error.setIcon(QMessageBox::Warning);

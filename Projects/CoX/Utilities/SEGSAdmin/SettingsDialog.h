@@ -2,6 +2,7 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
+#include <QValidator>
 
 namespace Ui {
 class SettingsDialog;
@@ -37,6 +38,7 @@ signals:
 
 private:
     Ui::SettingsDialog *ui;
+
 };
 
 #endif // SETTINGSDIALOG_H
