@@ -1219,11 +1219,13 @@ void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess){
 
-    QVector<QStringRef> args(cmd.splitRef(' '));
+    // QVector<QStringRef> args(cmd.splitRef(' '));
+    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+    sendEmailHeadersWithId(sess.m_ent, id);
 
     //storeEmailInDB(src, args);
 
-    QString msg = "Email Sent";
+    QString msg = "Email Sent with ID:" + id;
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, &sess);
 }
@@ -1231,6 +1233,8 @@ void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess){
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
 {
     int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+
+    deleteEmailHeaders(sess.m_ent, id);
 
     //deleteEmailFromDB(id);
 

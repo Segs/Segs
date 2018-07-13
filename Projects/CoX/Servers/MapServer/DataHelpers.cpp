@@ -21,6 +21,7 @@
 #include "NetStructures/LFG.h"
 #include "Events/EmailHeaders.h"
 #include "Events/EmailRead.h"
+#include "Events/EmailEvents.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -286,9 +287,24 @@ void sendEmailHeaders(Entity *e)
         qWarning() << "m_client does not yet exist!";
         return;
     }
-    MapClientSession *src = e->m_client;
 
-    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
+    EmailHeaderMessage* msgToHandler = new EmailHeaderMessage(
+                EmailHeaderData({e->m_client, 152, "TestSender", "TEST", 576956720}));
+
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+}
+
+void sendEmailHeadersWithId(Entity *e, const int id)
+{
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+    MapClientSession *src = e->m_client;
+    QString subject = "TestEmail with ID: " + QString::number(id);
+
+    EmailHeaders *header = new EmailHeaders(id, "TestSender ", subject, 576956720);
     src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
 }
 
@@ -299,9 +315,21 @@ void readEmailMessage(Entity *e, const int id){
         return;
     }
     MapClientSession *src = e->m_client;
+    QString message = "Email ID \n" + QString::number(id);
 
-    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
+    EmailRead *msg = new EmailRead(id, message, "TestSender");
     src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
+}
+
+void deleteEmailHeaders(Entity *e, const int id)
+{
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    MapClientSession *src = e->m_client;
 }
 
 /*
