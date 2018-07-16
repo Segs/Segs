@@ -10,6 +10,7 @@
 
 #include "EventProcessor.h"
 #include "EmailEvents.h"
+#include "Servers/MessageBusEndpoint.h"
 
 class EmailHandler : public EventProcessor
 {
@@ -18,9 +19,13 @@ private:
     void dispatch(SEGSEvent *ev) override;
 
     void on_email_header(EmailHeaderMessage* msg);
-    void on_email_sent();
-    void on_email_read();
-    void on_email_delete();
+    void on_email_send(EmailSendMessage* msg);
+    void on_email_read(EmailReadMessage* msg);
+    void on_email_delete(EmailDeleteMessage* msg);
+    void on_client_connected(ClientConnectedMessage* msg);
+    void on_client_disconnected(ClientDisconnectedMessage *msg);
+protected:
+    MessageBusEndpoint m_message_bus_endpoint;
 public:
     EmailHandler();
 };

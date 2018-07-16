@@ -290,22 +290,23 @@ void sendEmailHeaders(Entity *e)
 
     EmailHeaderMessage* msgToHandler = new EmailHeaderMessage(
                 EmailHeaderData({e->m_client, 152, "TestSender", "TEST", 576956720}));
-
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
-void sendEmailHeadersWithId(Entity *e, const int id)
+void sendEmail(Entity* e, const int id, QString recipient, QString subject, QString message)
 {
     if(!e->m_client)
     {
         qWarning() << "m_client does not yet exist!";
         return;
     }
-    MapClientSession *src = e->m_client;
-    QString subject = "TestEmail with ID: " + QString::number(id);
 
-    EmailHeaders *header = new EmailHeaders(id, "TestSender ", subject, 576956720);
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+    EmailSendMessage* msgToHandler = new EmailSendMessage(
+                EmailSendData({e->m_client, id,
+                               e->m_client->m_name,    // -> sender
+                               recipient, subject, message, 0}));
+
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
 void readEmailMessage(Entity *e, const int id){
@@ -314,11 +315,21 @@ void readEmailMessage(Entity *e, const int id){
         qWarning() << "m_client does not yet exist!";
         return;
     }
-    MapClientSession *src = e->m_client;
+
     QString message = "Email ID \n" + QString::number(id);
 
-    EmailRead *msg = new EmailRead(id, message, "TestSender");
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
+    EmailRead *emailRead = new EmailRead(
+                id,
+                message,
+                e->m_client->m_name);
+
+    e->m_client->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(emailRead));
+
+    /*
+    EmailReadMessage* msgToHandler = new EmailReadMessage(
+                EmailReadData({e->m_client, id}));
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+    */
 }
 
 void deleteEmailHeaders(Entity *e, const int id)

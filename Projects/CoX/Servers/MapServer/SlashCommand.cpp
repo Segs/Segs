@@ -21,6 +21,7 @@
 #include "Logging.h"
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
+#include "Servers/MapServer/Events/EmailEvents.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFile>
@@ -1201,7 +1202,9 @@ void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
     sendEmailHeaders(sess.m_ent);
+
     QString msg = "Sent Email Headers";
+
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
@@ -1219,11 +1222,20 @@ void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess){
 
-    // QVector<QStringRef> args(cmd.splitRef(' '));
+    // args[0] is "emailsend", args[1] email id, args[2] email recipient
+    // args[3] email subject, args[4] email message
+    QVector<QStringRef> args(cmd.splitRef(' '));
     int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
-    sendEmailHeadersWithId(sess.m_ent, id);
 
-    //storeEmailInDB(src, args);
+    if (args.size() < 5)
+    {
+        qWarning() << "Not enough parameters for email send!";
+        return;
+    }
+
+    // Later on, we should check the email database and get the increment of the latest email ID
+    // Also, some utility class to convert current time to timestamp
+    sendEmail(sess.m_ent, id, args[2].toString(), args[3].toString(), args[4].toString());
 
     QString msg = "Email Sent with ID:" + id;
     qDebug().noquote() << msg;
@@ -1234,7 +1246,9 @@ void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
 {
     int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
-    deleteEmailHeaders(sess.m_ent, id);
+    EmailDeleteMessage *msgToHandler = new EmailDeleteMessage(
+                EmailDeleteData({sess.m_ent->m_client, id}));
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 
     //deleteEmailFromDB(id);
 

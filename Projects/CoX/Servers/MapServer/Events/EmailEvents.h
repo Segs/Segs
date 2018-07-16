@@ -15,7 +15,7 @@ enum EmailEventTypes : uint32_t
 {
     evEmailHeader,
     evEmailRead,
-    evEmailSent,
+    evEmailSend,
     evEmailDelete
 };
 
@@ -35,6 +35,32 @@ struct EmailHeaderData
     int timestamp;
 };
 ONE_WAY_MESSAGE(EmailHeader)
+
+struct EmailReadData
+{
+    MapClientSession* src;
+    int id;
+};
+ONE_WAY_MESSAGE(EmailRead)
+
+struct EmailSendData
+{
+    MapClientSession* src;
+    int id;
+    QString sender;
+    QString recipient;
+    QString subject;
+    QString message;
+    int timestamp;
+};
+ONE_WAY_MESSAGE(EmailSend)
+
+struct EmailDeleteData
+{
+    MapClientSession* src;
+    int id;
+};
+ONE_WAY_MESSAGE(EmailDelete)
 
 #undef ONE_WAY_MESSAGE
 #endif

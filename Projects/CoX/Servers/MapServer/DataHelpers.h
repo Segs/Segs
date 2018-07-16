@@ -152,6 +152,6 @@ void sendTeamOffer(Entity *src, Entity *tgt);
  * sendEmail Wrappers for providing access to Email Database
  */
 void sendEmailHeaders(Entity *e);
-void sendEmailHeadersWithId(Entity *e, const int id);
 void readEmailMessage(Entity *e, const int id);
+void sendEmail(Entity *e, int id, QString recipient, QString subject, QString message);
 void deleteEmailHeaders(Entity *e, const int id);
