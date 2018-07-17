@@ -1100,15 +1100,8 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess)
         tgt = getEntity(&sess,getTargetIdx(*sess.m_ent));
         name = tgt->name();
     }
-    else
-        tgt = getEntity(&sess,name);
 
-    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
-        return;
-
-    // TODO: Implement getCharacterFromDB(name) if target is not online.
-
-    removeFriend(*sess.m_ent,*tgt);
+    removeFriend(*sess.m_ent,name);
 }
 
 void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)

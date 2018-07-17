@@ -31,7 +31,7 @@ static const constexpr  uint32_t    class_version   = 1;
 };
 
 void addFriend(Entity &src, Entity &tgt);
-void removeFriend(Entity &src, Entity &tgt);
+void removeFriend(Entity &src, QString friendName);
 bool isFriendOnline(Entity &src, uint32_t db_id);
 void toggleFriendList(Entity &src);
 void dumpFriends(const Entity &src);
