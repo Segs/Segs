@@ -676,10 +676,10 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->m_outdoor_mission_map = false;
     res->m_map_number          = 1;
 
-    assert(m_data_path.contains("City_"));
-    int city_idx = m_data_path.indexOf("City_");
+    assert(m_data_path.contains("_"));
+    int city_idx = m_data_path.indexOf('/') + 1;
     int end_or_slash = m_data_path.indexOf("/",city_idx);
-    assert(city_idx!=-1);
+    assert(city_idx!=0);
     QString map_desc_from_path = m_data_path.mid(city_idx,end_or_slash==-1 ? -1 : m_data_path.size()-end_or_slash);
     res->m_map_desc        = QString("maps/City_Zones/%1/%1.txt").arg(map_desc_from_path);
     res->current_map_flags = true; // off 1
