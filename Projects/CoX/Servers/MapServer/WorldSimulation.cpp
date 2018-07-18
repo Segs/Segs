@@ -170,13 +170,12 @@ void World::physicsStep(Entity *e,uint32_t msec)
         e->m_prev_pos = e->m_entity_data.m_pos;
 
         glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
-        float vel_scale = e->m_cur_state->m_velocity_scale/255.0f;
-
-        e->m_entity_data.m_pos += ((za*e->m_cur_state->m_pos_delta)*float(msec))/50.0f;
-        float distance  = glm::distance(e->m_entity_data.m_pos, e->m_prev_pos);
+        e->m_entity_data.m_pos += ((za*e->m_cur_state->m_pos_delta)*float(msec))/32.0f;
 
         if(e->m_type == EntType::PLAYER)
         {
+            float vel_scale = e->m_cur_state->m_velocity_scale/255.0f;
+            float distance  = glm::distance(e->m_entity_data.m_pos, e->m_prev_pos);
             qCDebug(logMovement) << "physicsStep:"
                                        << "\n    prev_pos:\t"   << glm::to_string(e->m_prev_pos).c_str()
                                        << "\n    cur_pos:\t"    << glm::to_string(e->m_entity_data.m_pos).c_str()

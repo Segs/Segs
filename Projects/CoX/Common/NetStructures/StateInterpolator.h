@@ -24,6 +24,6 @@ extern  uint8_t     g_interpolation_level;
 extern  uint8_t     g_interpolation_bits;
 
 void interpolate_pos_updates(Entity *e, std::array<BinTreeEntry,7> &server_pos_update);
-std::array<BinTreeEntry,7> testEncVec(std::array<PosUpdate, 9> &vals, float min_error);
+std::array<BinTreeEntry,7> testEncVec(std::vector<PosUpdate> vals, float min_error);
 int storeBinTreesResult(BitStream &bs,const std::array<BinTreeEntry,7> &bintree);
 int runTest(Entity &e);

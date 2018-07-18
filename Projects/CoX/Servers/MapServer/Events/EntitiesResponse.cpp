@@ -485,7 +485,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     bs.StoreBits(1,ent->m_update_pos_and_cam);
     if(ent->m_update_pos_and_cam)
     {
-        bs.StorePackedBits(1,ent->m_cur_state->m_received_id); // sets g_client_pos_id_rel default = 0
+        bs.StorePackedBits(1, ent->m_cur_state->m_received_id); // sets g_client_pos_id_rel default = 0
         storeVector(bs,ent->m_entity_data.m_pos);   // server-side pos
         storeVectorConditional(bs,ent->m_velocity); // server-side spd (probably velocity)
 
@@ -501,9 +501,9 @@ void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
 {
     Entity * target = src.m_client->m_ent;
     //TODO: remove this after we have proper physics processing
-    if(target->m_full_update_count>0)
-        target->m_full_update_count--;
-    target->m_full_update = target->m_full_update_count!=0;
+    //if(target->m_full_update_count>0)
+    //    target->m_full_update_count--;
+    //target->m_full_update = target->m_full_update_count!=0;
 
     bs.StoreBits(1,target->m_full_update);
     if( !target->m_full_update )

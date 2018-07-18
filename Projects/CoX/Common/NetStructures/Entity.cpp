@@ -126,7 +126,7 @@ void Entity::addPosUpdate(const PosUpdate & p) {
 }
 
 void Entity::addInterp(const PosUpdate & p) {
-    interpResults.emplace_back(p);
+    m_interp_results.emplace_back(p);
 }
 
 Entity::Entity()
@@ -172,6 +172,19 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_prev_state = &e.m_states.m_inp_states.back();
     e.m_states.addNewState(empty_state);
     e.m_cur_state = &e.m_states.m_inp_states.back();
+
+    PosUpdate p;
+    for(int i = 0; i<9; i++)
+    {
+        // Get timestamp in ms
+        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        p.m_position = e.m_entity_data.m_pos;
+        p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
+        p.m_timestamp = now_ms;
+        e.addInterp(p);
+        e.addPosUpdate(p);
+    }
 }
 
 void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
@@ -202,6 +215,19 @@ void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
     e.m_prev_state = &e.m_states.m_inp_states.back();
     e.m_states.addNewState(empty_state);
     e.m_cur_state = &e.m_states.m_inp_states.back();
+
+    PosUpdate p;
+    for(int i = 0; i<9; i++)
+    {
+        // Get timestamp in ms
+        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        p.m_position = e.m_entity_data.m_pos;
+        p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
+        p.m_timestamp = now_ms;
+        e.addInterp(p);
+        e.addPosUpdate(p);
+    }
 }
 
 void markEntityForDbStore(Entity *e, DbStoreFlags f)

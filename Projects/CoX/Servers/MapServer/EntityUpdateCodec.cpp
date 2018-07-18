@@ -92,27 +92,11 @@ void sendStateMode(const Entity &src,BitStream &bs)
     PUTDEBUG("after sendStateMode");
 }
 
-void storeUnknownBinTree(const Entity &/*src*/,BitStream &bs)
+void storeUnknownBinTree(const Entity &src, BitStream &bs)
 {  
-    std::array<PosUpdate, 9> pos_vals;
     std::array<BinTreeEntry,7> tgt;
 
-    // TODO: Send real bintree data constructed of PosUpdates
-    // craft some bintree data for testing
-    int t=0;
-    int t_start=1100;
-    for(PosUpdate &puv : pos_vals) {
-        puv.m_position = {
-            std::sin(float(M_PI/12)*t)*10,
-            std::sin(float(M_PI/22)*t)*10,
-            std::sin(float(M_PI/8)*t)*10
-        };
-        puv.m_timestamp = t_start+t*10;
-        t++;
-    }
-
-
-    tgt = testEncVec(pos_vals, 0.02f); // src.m_pos_updates
+    tgt = testEncVec(src.m_interp_results, 0.02f); // src.m_pos_updates
 
     int res = storeBinTreesResult(bs, tgt);
 }
@@ -139,7 +123,7 @@ bool storePosition(const Entity &src,BitStream &bs)
 
 bool update_rot(const Entity &src, int axis ) /* returns true if given axis needs updating */
 {
-    if(src.m_prev_state->m_orientation_pyr[axis]==src.m_cur_state->m_orientation_pyr[axis]) // FixMe: var compared against same var.
+    if(src.m_prev_state->m_orientation_pyr[axis] == src.m_cur_state->m_orientation_pyr[axis])
         return false;
     return true;
 }
@@ -149,10 +133,10 @@ void storeOrientation(const Entity &src,BitStream &bs)
     // Check if update needed through update_rot()
     uint8_t updates;
     updates = ((uint8_t)update_rot(src,0)) | (((uint8_t)update_rot(src,1))<<1) | (((uint8_t)update_rot(src,2))<<2);
-    storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
+    storeBitsConditional(bs, 3, updates); //frank 7,0,0.1,0
 
     if(src.m_type == EntType::PLAYER)
-        qCDebug(logOrientation, "update rot: %i",updates);
+        qCDebug(logOrientation, "update rot: %i", updates);
 
     glm::vec3 pyr_angles(0);
     pyr_angles.y = src.m_entity_data.m_orientation_pyr.y;
@@ -173,10 +157,10 @@ void storeOrientation(const Entity &src,BitStream &bs)
 
     for(int i=0; i<3; i++)
     {
-        if(!update_rot(src,i))
+        if(!update_rot(src, i))
             continue;
 
-        uint32_t v = AngleQuantize(pyr_angles[i],9);
+        uint32_t v = AngleQuantize(pyr_angles[i], 9);
 
         if(src.m_type == EntType::PLAYER)
             qCDebug(logOrientation, "Angle in Radians: %d", v); // does `v` fall between 0...512
@@ -209,30 +193,34 @@ void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
     PUTDEBUG("after storeOrientation");
 }
 
-void sendSeqMoveUpdate(const Entity &src,BitStream &bs)
+void sendSeqMoveUpdate(const Entity &src, BitStream &bs)
 {
     qCDebug(logAnimations, "Sending seq mode update %d", src.m_seq_update);
 
+    bool        seq_update = src.m_seq_update;
+    uint32_t    seq_move_idx = src.m_seq_move_idx;
+    uint8_t     seq_move_change_time = src.m_seq_move_change_time;
+
     PUTDEBUG("before sendSeqMoveUpdate");
-    bs.StoreBits(1,src.m_seq_update); // no seq update
-    if(src.m_seq_update)
+    bs.StoreBits(1, seq_update); // no seq update
+    if(seq_update)
     {
-        storePackedBitsConditional(bs,8,src.m_seq_upd_num1); // move index
-        storePackedBitsConditional(bs,4,src.m_seq_upd_num2); // maxval is 255
+        storePackedBitsConditional(bs, 8, seq_move_idx); // move index
+        storePackedBitsConditional(bs, 4, seq_move_change_time); // maxval is 255
     }
 }
-void sendSeqTriggeredMoves(const Entity &/*src*/,BitStream &bs)
+void sendSeqTriggeredMoves(const Entity &src, BitStream &bs)
 {
-    PUTDEBUG("before sendSeqTriggeredMoves");
-    uint32_t num_moves = 0; // FixMe: num_moves is never modified and the body of the for loop below will never fire.
-    qCDebug(logAnimations, "Sending seq triggered moves %d", num_moves);
+    TriggeredMove move;
+    qCDebug(logAnimations, "Sending seq triggered moves %d", move.m_num_moves);
 
-    bs.StorePackedBits(1,num_moves); // num moves
-    for (uint32_t idx = 0; idx < num_moves; ++idx )
+    PUTDEBUG("before sendSeqTriggeredMoves");
+    bs.StorePackedBits(1, move.m_num_moves); // num moves
+    for (uint32_t idx = 0; idx < move.m_num_moves; ++idx )
     {
-        bs.StorePackedBits(16, 0);  // 2  EntityStoredMoveP->field_2
-        bs.StorePackedBits(6, 0);   // 0  EntityStoredMoveP->field_0
-        storePackedBitsConditional(bs, 16, 0);  // 1 EntityStoredMoveP->field_1
+        bs.StorePackedBits(10, move.m_move_idx);                   // 2  triggeredMoveIDX
+        bs.StorePackedBits(6, move.m_ticks_to_delay);              // 0  ticksToDelay
+        storePackedBitsConditional(bs, 16, move.m_trigger_fx_idx); // 1 triggerFxNetId
     }
 }
 

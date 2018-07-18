@@ -182,16 +182,16 @@ void interpolate_pos_updates(Entity *e, std::array<BinTreeEntry,7> &server_pos_u
 // Take a set of PositionUpdates S . . . . . . . E
 // Assume client will use linear interpolation for in-between values.
 // Encode fixups for in-between values
-std::array<BinTreeEntry,7> testEncVec(std::array<PosUpdate,9> &vals, float min_error)
+std::array<BinTreeEntry,7> testEncVec(std::vector<PosUpdate> vals, float min_error)
 {
     std::array<BinTreeEntry,7> enc;
-    std::array<PosUpdate,9> work_area = vals;
+    std::vector<PosUpdate> work_area = vals;
 
     for(int i=0; i<7; ++i)
     {
         vec3 quant_delta; // quantized error values will be put here
         // linear interpolation between value's sources
-        vec3 predicted = (work_area[s_source_val_idx[i].first].m_position+work_area[s_source_val_idx[i].second].m_position)/2.0f;
+        vec3 predicted = (work_area[s_source_val_idx[i].first].m_position + work_area[s_source_val_idx[i].second].m_position)/2.0f;
         // location of calculated value in the array
         uint8_t target_idx = (s_source_val_idx[i].first + s_source_val_idx[i].second)/2;
         // linear interpolation will be wrong by 'this' much
@@ -319,7 +319,7 @@ int runTest(Entity &e)
 {
     // Linear move from 0 to 2, over 10 time units
     std::array<BinTreeEntry,7> tgt;
-    std::array<PosUpdate,9> pos_vals;
+    std::vector<PosUpdate> pos_vals;
     int t=0;
     int t_start=1100;
 
@@ -335,7 +335,7 @@ int runTest(Entity &e)
 
     tgt = testEncVec(pos_vals, 0.02f);
 
-    e.interpResults.clear();
+    e.m_interp_results.clear();
     // add start and end to prime interpolator.
     e.addPosUpdate(pos_vals.front());
     e.addPosUpdate(pos_vals.back());
@@ -344,7 +344,7 @@ int runTest(Entity &e)
 
     vec3 errsum;
     for(int i=0; i<9; ++i) {
-        errsum +=  glm::abs(e.interpResults[i].m_position-pos_vals[i].m_position);
+        errsum +=  glm::abs(e.m_interp_results[i].m_position - pos_vals[i].m_position);
     }
     errsum = errsum/9.0f;
     printf("After transition - L1 error is %f %f %f\n",errsum.x,errsum.y,errsum.z);

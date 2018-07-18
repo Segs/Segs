@@ -97,6 +97,14 @@ struct NPCData
     int costume_variant=0;
 };
 
+struct TriggeredMove
+{
+    uint32_t m_num_moves = 0;
+    uint32_t m_move_idx = 0;
+    uint32_t m_ticks_to_delay = 0;
+    uint32_t m_trigger_fx_idx = 0;
+};
+
 struct NetFx
 {
     uint8_t command;
@@ -155,13 +163,13 @@ public:
         bool                m_odd_send              = false;
         bool                m_no_draw_on_client     = false;
         bool                m_no_collision          = false;
-        bool                m_seq_update            = false;
         bool                m_force_camera_dir      = false; // used to force the client camera direction in sendClientData()
         bool                m_is_hero               = false;
         bool                m_is_villian            = false;
         bool                m_contact               = false;
-        int                 m_seq_upd_num1          = 0;
-        int                 m_seq_upd_num2          = 0;
+        bool                m_seq_update            = false;
+        int                 m_seq_move_idx          = 0;
+        uint8_t             m_seq_move_change_time  = 0;
         bool                m_is_flying             = false;
         bool                m_is_stunned            = false;
         bool                m_is_jumping            = false;
@@ -182,7 +190,7 @@ public:
         int                 u1 = 0; // used for live-debugging
 
         PosUpdate           m_pos_updates[64];
-        std::vector<PosUpdate> interpResults;
+        std::vector<PosUpdate> m_interp_results;
         size_t              m_update_idx                = 0;
         glm::vec3           m_velocity;
         glm::vec3           m_prev_pos;
