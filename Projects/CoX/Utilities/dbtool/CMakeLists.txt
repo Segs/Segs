@@ -14,3 +14,7 @@ set(tool_SRC
 add_executable(dbtool ${tool_SRC})
 target_link_libraries(dbtool Qt5::Core Qt5::Sql)
 target_link_libraries(dbtool password_hasher SEGS_Components)
+
+install(TARGETS dbtool
+    DESTINATION ${CPACK_BIN_DIR}
+)

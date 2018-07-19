@@ -1,5 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
 PROJECT(SEGS)
+set(PROJECT_VERSION_MAJOR 0)
+set(PROJECT_VERSION_MINOR 5)
+set(PROJECT_VERSION_PATCH 0)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -84,14 +87,19 @@ find_package(Qt5 COMPONENTS Core Sql REQUIRED)
 link_directories(${ThirdParty_Install_Dir}/lib)
 include_directories(SYSTEM ${ThirdParty_Install_Dir}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include)
-
 include_directories(Components)
 
 add_subdirectory(Components)
 add_subdirectory(Utilities)
 add_subdirectory(Projects)
+
+# Add CPack stuff
+set(CPACK_PREFIX local)
+set(CPACK_BIN_DIR ${CPACK_PREFIX}/bin)
+set(CPACK_LIB_DIR ${CPACK_PREFIX}/lib)
+add_subdirectory(packaging)
+
 file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/data)
 file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/DefaultMapInstances/City_00_01)
 file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/DefaultMapInstances/City_01_01)
 file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/DefaultMapInstances/City_02_01)
-

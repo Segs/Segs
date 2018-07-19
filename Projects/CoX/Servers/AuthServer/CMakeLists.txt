@@ -51,7 +51,7 @@ IF(BUILD_SEPARATE)
         target_link_libraries(authserver PUBLIC ws2_32)
     ENDIF()
     install(TARGETS authserver
-        DESTINATION deploy
+        DESTINATION ${CPACK_BIN_DIR}
     )
 ENDIF(BUILD_SEPARATE)
 

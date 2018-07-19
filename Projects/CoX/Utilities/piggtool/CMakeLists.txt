@@ -13,3 +13,6 @@ set(tool_SRC
 )
 add_executable(piggtool ${tool_SRC})
 target_link_libraries(piggtool Qt5::Core)
+install(TARGETS piggtool
+    DESTINATION ${CPACK_BIN_DIR}
+)
