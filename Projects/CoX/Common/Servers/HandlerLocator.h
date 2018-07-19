@@ -20,6 +20,7 @@ class HandlerLocator
     static MessageBus *m_message_bus;
     static EventProcessor *m_db_sync_handler;
     static EventProcessor *m_auth_handler;
+    static EventProcessor *m_friend_handler;
     static std::deque<EventProcessor *> m_game_servers;
     static std::deque<EventProcessor *> m_map_servers;
     static std::deque<EventProcessor *> m_game_db_servers;
@@ -34,6 +35,8 @@ public:
     static void setAuth_Handler(EventProcessor *h) { m_auth_handler=h; }
     static EventProcessor *getAuth_Handler() { return m_auth_handler; }
 
+    static void setFriend_Handler(EventProcessor *h) { m_friend_handler=h; }
+    static EventProcessor *getFriend_Handler() { return m_friend_handler; }
 
     static const std::deque<EventProcessor *> &allGameDBHandlers() { return m_game_db_servers; }
     static const std::deque<EventProcessor *> &allGameHandlers() { return m_game_servers; }

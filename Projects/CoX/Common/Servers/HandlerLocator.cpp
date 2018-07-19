@@ -18,6 +18,7 @@
 #include <QDebug>
 EventProcessor * HandlerLocator::m_db_sync_handler = nullptr;
 EventProcessor * HandlerLocator::m_auth_handler = nullptr;
+EventProcessor * HandlerLocator::m_friend_handler = nullptr;
 std::deque<EventProcessor *> HandlerLocator::m_game_servers;
 std::deque<EventProcessor *> HandlerLocator::m_game_db_servers;
 std::deque<EventProcessor *> HandlerLocator::m_map_servers;
