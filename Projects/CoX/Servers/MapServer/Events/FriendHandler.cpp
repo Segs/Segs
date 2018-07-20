@@ -12,13 +12,11 @@
 
 void FriendHandler::dispatch(SEGSEvent *ev)
 {
-    qDebug() << "FHandler dispatch";
     assert(ev);
 
     switch(ev->type())
     {
         case Internal_EventTypes::evClientConnected:
-            qDebug() << "FHandler sees connect event";
             on_client_connected(static_cast<ClientConnectedMessage *>(ev));
             break;
         case Internal_EventTypes::evClientDisconnected:
@@ -42,7 +40,6 @@ void FriendHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 
 FriendHandler::FriendHandler() : m_message_bus_endpoint(*this)
 {
-    qDebug() << "FHandler constructor";
     assert(HandlerLocator::getFriend_Handler() == nullptr);
     HandlerLocator::setFriend_Handler(this);
 
