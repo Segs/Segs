@@ -13,20 +13,50 @@
 
 enum EmailEventTypes : uint32_t
 {
-    evEmailHeader,
+    evEmailHeaderRequest,
+    evEmailHeaderResponse,
     evEmailRead,
     evEmailSend,
-    evEmailDelete
+    evEmailDelete,
+    evEmailWasReadByRecipient
 };
+
+// when tokens are brought up, use sess.link()->session_token()
 
 #define ONE_WAY_MESSAGE(name)\
 struct name ## Message final : public InternalEvent\
 {\
     name ## Data m_data;\
-    name ## Message(name ## Data &&d) :  InternalEvent(EmailEventTypes::ev ## name),m_data(d) {}\
+    name ## Message(name ## Data &&d, uint64_t token) :  InternalEvent(EmailEventTypes::ev ## name),m_data(d) {session_token(token);}\
 };
 
-struct EmailHeaderData
+/// A message without Request having additional data
+#define SIMPLE_TWO_WAY_MESSAGE(name)\
+struct name ## Request final : public InternalEvent\
+{\
+    name ## Message() :  InternalEvent(EmailEventTypes::ev ## name ## Request) {}\
+};\
+struct name ## Response final : public InternalEvent\
+{\
+    name ## Data m_data;\
+    name ## Response(name ## Data &&d) :  InternalEvent(EmailEventTypes::ev ## name ## Response),m_data(d) {}\
+};
+
+/// A message with Request having additional data
+#define TWO_WAY_MESSAGE(name)\
+struct name ## Request final : public InternalEvent\
+{\
+    name ## RequestData m_data;\
+    name ## Request(name ## RequestData &&d,uint64_t token,EventProcessor *src = nullptr) :\
+        InternalEvent(EmailEventTypes::ev ## name ## Request,src),m_data(d) {session_token(token);}\
+};\
+struct name ## Response final : public InternalEvent\
+{\
+    name ## ResponseData m_data;\
+    name ## Response(name ## ResponseData &&d,uint64_t token) :  InternalEvent(EmailEventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
+};
+
+struct EmailHeaderRequestData
 {
     MapClientSession* src;
     int id;
@@ -34,7 +64,16 @@ struct EmailHeaderData
     QString subject;
     int timestamp;
 };
-ONE_WAY_MESSAGE(EmailHeader)
+
+struct EmailHeaderResponseData
+{
+    MapClientSession* src;
+    int id;
+    QString sender;
+    QString subject;
+    int timestamp;
+};
+TWO_WAY_MESSAGE(EmailHeader)
 
 struct EmailReadData
 {
@@ -61,6 +100,12 @@ struct EmailDeleteData
     int id;
 };
 ONE_WAY_MESSAGE(EmailDelete)
+
+struct EmailWasReadByRecipientData
+{
+    int id;
+};
+ONE_WAY_MESSAGE(EmailWasReadByRecipient)
 
 #undef ONE_WAY_MESSAGE
 #endif

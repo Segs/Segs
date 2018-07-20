@@ -133,4 +133,6 @@ protected:
         void on_remove_keybind(class RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(class InteractWithEntity *ev);
+        void on_email_header_response(class EmailHeaderResponse* msg);
+        void on_email_read_by_recipient(class EmailWasReadByRecipientMessage* msg);
 };

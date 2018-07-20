@@ -436,8 +436,12 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
         // check if this session perhaps is in ready for reaping set
         m_session_store.unmark_session_for_reaping(&session);
     }
+
     session.is_connected_to_map_server_id = ev->m_data.m_server_id;
     session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
+
+    postGlobalEvent(new ClientConnectedMessage(
+    {ev->m_data.m_session, ev->m_data.m_server_id, ev->m_data.m_sub_server_id}));
 }
 
 void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
@@ -449,6 +453,8 @@ void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
         SessionStore::MTGuard guard(m_session_store.reap_lock());
         m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
     }
+
+    postGlobalEvent(new ClientDisconnectedMessage({ev->m_data.m_session}));
 }
 
 void GameHandler::reap_stale_links()

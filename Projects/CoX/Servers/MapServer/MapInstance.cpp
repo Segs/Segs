@@ -37,6 +37,7 @@
 #include "GameData/keybind_serializers.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
+#include "Events/EmailEvents.h"
 
 #include <ace/Reactor.h>
 
@@ -406,6 +407,11 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evResetKeybinds:
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
+        case EmailEventTypes::evEmailHeaderResponse:
+
+        break;
+        case EmailEventTypes::evEmailWasReadByRecipient:
+        break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
     }
@@ -1990,6 +1996,16 @@ void MapInstance::on_interact_with(InteractWithEntity *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with"<<ev->m_srv_idx;
+}
+
+void MapInstance::on_email_header_response(EmailHeaderResponse* msg)
+{
+    // src->addCommandToSendNextUpdate for the recipient
+}
+
+void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage* msg)
+{
+    // this is sent from the reader back to the sender via EmailHandler
 }
 
 //! @}

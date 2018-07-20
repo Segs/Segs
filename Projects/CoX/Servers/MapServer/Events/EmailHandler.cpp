@@ -18,8 +18,8 @@ void EmailHandler::dispatch(SEGSEvent *ev)
     assert(ev);
     switch(ev->type())
     {
-        case EmailEventTypes::evEmailHeader:
-        on_email_header(static_cast<EmailHeaderMessage *>(ev));
+        case EmailEventTypes::evEmailHeaderRequest:
+        on_email_header(static_cast<EmailHeaderRequest *>(ev));
         break;
         case EmailEventTypes::evEmailRead:
         on_email_read(static_cast<EmailReadMessage *>(ev));
@@ -42,7 +42,7 @@ void EmailHandler::dispatch(SEGSEvent *ev)
     }
 }
 
-void EmailHandler::on_email_header(EmailHeaderMessage *msg)
+void EmailHandler::on_email_header(EmailHeaderRequest *msg)
 {
     EmailHeaders *header = new EmailHeaders(
                 msg->m_data.id,
@@ -62,6 +62,10 @@ void EmailHandler::on_email_read(EmailReadMessage *msg)
                 message,
                 msg->m_data.src->m_name);
 
+    // TODO: Implement 'EmailWasReadByRecipientMessage' and send them all to interested parties
+    // The recipient is the one sending EmailReadMessage to here in the first place, so leave him out
+    // So, we send this message to the sender in wherever MapInstance he is at
+
     msg->m_data.src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(emailRead));
 }
 
@@ -76,20 +80,31 @@ void EmailHandler::on_email_send(EmailSendMessage *msg)
     // saveEmailInDb()
 
     msg->m_data.src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+
+    // TODO: Send EmailHeaderResponse to the relevant EventProcessor (in this case MapInstance)
+    // based on the server_id and subserver_id retrieved based on session_id
+    // then the MapInstance can addCommandToSendNextUpdate for the appropriate session/entity
+
     // addCommandToSendNextUpdate for recipient?
 }
 
 void EmailHandler::on_email_delete(EmailDeleteMessage *msg)
 {
-    // delete email in db
+    // delete email in db and that's it, shouldn't be any need to toss responses and messages around
 }
 
 void EmailHandler::on_client_connected(ClientConnectedMessage *msg)
 {
+    // m_session is the key, m_server_id and m_sub_server_id are the values
+    m_stored_client_datas[msg->m_data.m_session] =
+            ServerIds{msg->m_data.m_server_id, msg->m_data.m_sub_server_id};
 }
 
 void EmailHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
-{}
+{
+    if (m_stored_client_datas.count(msg->m_data.m_session) > 0)
+        m_stored_client_datas.erase(msg->m_data.m_session);
+}
 
 EmailHandler::EmailHandler() : m_message_bus_endpoint(*this)
 {

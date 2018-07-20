@@ -151,7 +151,7 @@ void sendTeamOffer(Entity *src, Entity *tgt);
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
-void sendEmailHeaders(Entity *e);
-void readEmailMessage(Entity *e, const int id);
-void sendEmail(Entity *e, int id, QString recipient, QString subject, QString message);
-void deleteEmailHeaders(Entity *e, const int id);
+void sendEmailHeaders(MapClientSession& sess);
+void readEmailMessage(MapClientSession& sess, const int id);
+void sendEmail(MapClientSession& sess, int id, QString recipient, QString subject, QString message);
+void deleteEmailHeaders(MapClientSession& sess, const int id);

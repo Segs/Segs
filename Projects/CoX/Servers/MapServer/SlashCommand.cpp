@@ -1201,7 +1201,7 @@ void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
-    sendEmailHeaders(sess.m_ent);
+    sendEmailHeaders(sess);
 
     QString msg = "Sent Email Headers";
 
@@ -1213,7 +1213,7 @@ void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
 {
     int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
-    readEmailMessage(sess.m_ent, id);
+    readEmailMessage(sess, id);
 
     QString msg = "Opening Email ID: " + QString::number(id);
     qDebug().noquote() << msg;
@@ -1235,7 +1235,7 @@ void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess){
 
     // Later on, we should check the email database and get the increment of the latest email ID
     // Also, some utility class to convert current time to timestamp
-    sendEmail(sess.m_ent, id, args[2].toString(), args[3].toString(), args[4].toString());
+    sendEmail(sess, id, args[2].toString(), args[3].toString(), args[4].toString());
 
     QString msg = "Email Sent with ID:" + id;
     qDebug().noquote() << msg;
@@ -1247,7 +1247,8 @@ void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
     int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
     EmailDeleteMessage *msgToHandler = new EmailDeleteMessage(
-                EmailDeleteData({sess.m_ent->m_client, id}));
+                EmailDeleteData({sess.m_ent->m_client, id}),
+                sess.link()->session_token());
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 
     //deleteEmailFromDB(id);

@@ -22,6 +22,7 @@
 #include "Events/EmailHeaders.h"
 #include "Events/EmailRead.h"
 #include "Events/EmailEvents.h"
+#include "Events/EmailHandler.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -280,37 +281,39 @@ void sendServerMOTD(MapClientSession *tgt)
     }
 }
 
-void sendEmailHeaders(Entity *e)
+void sendEmailHeaders(MapClientSession& sess)
 {
-    if(!e->m_client)
+    if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
         return;
     }
 
-    EmailHeaderMessage* msgToHandler = new EmailHeaderMessage(
-                EmailHeaderData({e->m_client, 152, "TestSender", "TEST", 576956720}));
+    EmailHeaderRequest* msgToHandler = new EmailHeaderRequest(
+                EmailHeaderRequestData({sess.m_ent->m_client, 152, "TestSender", "TEST", 576956720}),
+                sess.link()->session_token());
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
-void sendEmail(Entity* e, const int id, QString recipient, QString subject, QString message)
+void sendEmail(MapClientSession& sess, const int id, QString recipient, QString subject, QString message)
 {
-    if(!e->m_client)
+    if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
         return;
     }
 
     EmailSendMessage* msgToHandler = new EmailSendMessage(
-                EmailSendData({e->m_client, id,
-                               e->m_client->m_name,    // -> sender
-                               recipient, subject, message, 0}));
+                EmailSendData({sess.m_ent->m_client, id,
+                               sess.m_ent->m_client->m_name,    // -> sender
+                               recipient, subject, message, 0}),
+                sess.link()->session_token());
 
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
-void readEmailMessage(Entity *e, const int id){
-    if(!e->m_client)
+void readEmailMessage(MapClientSession& sess, const int id){
+    if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
         return;
@@ -321,9 +324,9 @@ void readEmailMessage(Entity *e, const int id){
     EmailRead *emailRead = new EmailRead(
                 id,
                 message,
-                e->m_client->m_name);
+                sess.m_ent->m_client->m_name);
 
-    e->m_client->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(emailRead));
+    sess.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(emailRead));
 
     /*
     EmailReadMessage* msgToHandler = new EmailReadMessage(
