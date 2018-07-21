@@ -129,7 +129,7 @@ void setAssistTarget(Entity &e)
 }
 
 // For live debugging
-void    setu1(Entity &e, int val) { e.u1 = val; }
+void    setu1(Entity &e, float val) { e.u1 = val; }
 
 // Toggles
 void    toggleFlying(Entity &e) { e.m_is_flying = !e.m_is_flying; }

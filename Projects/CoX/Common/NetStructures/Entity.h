@@ -181,13 +181,13 @@ public:
         float               m_jump_height           = 2.0f;
         uint8_t             m_motion_state_id       = 1;
         bool                m_update_motion_state   = true;     // EntityResponse sendServerControlState
-        bool                m_update_pos_and_cam    = true;     // EntityResponse sendServerControlState
+        bool                m_update_pos_and_cam    = false;     // EntityResponse sendServerControlState
         bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_extra_info            = false;    // EntityUpdateCodec storePosUpdate
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
 
-        int                 u1 = 0; // used for live-debugging
+        float               u1 = 24.0f; // used for live-debugging
 
         PosUpdate           m_pos_updates[64];
         std::vector<PosUpdate> m_interp_results;

@@ -598,8 +598,8 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     e->m_supergroup.m_SG_id = ev->m_data.m_supergroup_id;
     serializeFromDb(e->m_entity_data, ev->m_data.m_ent_data);
 
-    //if(!e->m_is_jumping || !e->m_is_flying)
-        //e->m_entity_data.m_orientation_pyr.z = 0;
+    if(!e->m_is_jumping || !e->m_is_flying)
+        e->m_entity_data.m_orientation_pyr.z = 0;
 
     // Can't pass direction through cereal, so let's update it here.
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);

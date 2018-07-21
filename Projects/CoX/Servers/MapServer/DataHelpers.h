@@ -45,7 +45,7 @@ void    setTarget(Entity &e, uint32_t target_idx);
 void    setAssistTarget(Entity &e);
 
 // For live debugging
-void    setu1(Entity &e, int val);
+void    setu1(Entity &e, float val);
 
 // Toggles
 void    toggleFlying(Entity &e);
