@@ -10,7 +10,6 @@ SET(target_CPP
     Events/GameCommandList.cpp
     Events/ChatDividerMoved.cpp
     Events/ChatMessage.cpp
-    Events/EmailHandler.cpp
     Events/EntitiesResponse.cpp
     Events/InputState.cpp
     Events/LocationVisited.cpp
@@ -42,8 +41,6 @@ SET(target_INCLUDE
     Events/GameCommandList.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
-    Events/EmailEvents.h
-    Events/EmailHandler.h
     Events/EmailHeaders.h
     Events/EmailMessageStatus.h
     Events/EmailRead.h

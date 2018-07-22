@@ -21,8 +21,7 @@
 #include "NetStructures/LFG.h"
 #include "Events/EmailHeaders.h"
 #include "Events/EmailRead.h"
-#include "Events/EmailEvents.h"
-#include "Events/EmailHandler.h"
+#include "Servers/GameServer/EmailEvents.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -290,7 +289,7 @@ void sendEmailHeaders(MapClientSession& sess)
     }
 
     EmailHeaderRequest* msgToHandler = new EmailHeaderRequest(
-                EmailHeaderRequestData({sess.m_ent->m_client, 152, "TestSender", "TEST", 576956720}),
+                EmailHeaderRequestData({152, "TestSender", "TEST", 576956720}),
                 sess.link()->session_token());
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
@@ -304,7 +303,7 @@ void sendEmail(MapClientSession& sess, const int id, QString recipient, QString 
     }
 
     EmailSendMessage* msgToHandler = new EmailSendMessage(
-                EmailSendData({sess.m_ent->m_client, id,
+                EmailSendData({id,
                                sess.m_ent->m_client->m_name,    // -> sender
                                recipient, subject, message, 0}),
                 sess.link()->session_token());
@@ -312,7 +311,8 @@ void sendEmail(MapClientSession& sess, const int id, QString recipient, QString 
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
-void readEmailMessage(MapClientSession& sess, const int id){
+void readEmailMessage(MapClientSession& sess, const int id)
+{
     if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
@@ -335,15 +335,13 @@ void readEmailMessage(MapClientSession& sess, const int id){
     */
 }
 
-void deleteEmailHeaders(Entity *e, const int id)
+void deleteEmailHeaders(MapClientSession& sess, const int id)
 {
-    if(!e->m_client)
+    if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
         return;
     }
-
-    MapClientSession *src = e->m_client;
 }
 
 /*

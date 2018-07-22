@@ -37,7 +37,7 @@
 #include "GameData/keybind_serializers.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
-#include "Events/EmailEvents.h"
+#include "Servers/GameServer/EmailEvents.h"
 
 #include <ace/Reactor.h>
 

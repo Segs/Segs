@@ -11,8 +11,9 @@
 #include "EventProcessor.h"
 #include "EmailEvents.h"
 #include "Servers/MessageBusEndpoint.h"
+#include <map>
 
-struct ServerIds
+struct ClientSessionData
 {
     uint32_t m_server_id;
     uint32_t m_sub_server_id;
@@ -32,7 +33,7 @@ private:
     void on_client_disconnected(ClientDisconnectedMessage *msg);
 protected:
     MessageBusEndpoint m_message_bus_endpoint;
-    std::map<uint64_t, ServerIds> m_stored_client_datas;
+    std::map<uint64_t, ClientSessionData> m_stored_client_datas;
     // QVector<ClientConnectedData> m_stored_client_datas;
 public:
     EmailHandler();

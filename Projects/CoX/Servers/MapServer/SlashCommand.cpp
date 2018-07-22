@@ -21,7 +21,6 @@
 #include "Logging.h"
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
-#include "Servers/MapServer/Events/EmailEvents.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFile>
@@ -1246,10 +1245,7 @@ void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
 {
     int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
-    EmailDeleteMessage *msgToHandler = new EmailDeleteMessage(
-                EmailDeleteData({sess.m_ent->m_client, id}),
-                sess.link()->session_token());
-    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+    deleteEmailHeaders(sess, id);
 
     //deleteEmailFromDB(id);
 

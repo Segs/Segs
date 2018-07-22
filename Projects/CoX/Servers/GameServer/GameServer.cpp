@@ -16,6 +16,7 @@
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
 #include "Common/Servers/ServerEndpoint.h"
+#include "EmailHandler.h"
 #include "Settings.h"
 
 #include <ace/Synch.h>

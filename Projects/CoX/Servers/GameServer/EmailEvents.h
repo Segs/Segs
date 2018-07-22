@@ -6,7 +6,6 @@
  */
 
 #include "Servers/InternalEvents.h"
-#include "MapServer/MapClientSession.h"
 
 #ifndef EMAILEVENTS_H
 #define EMAILEVENTS_H
@@ -56,9 +55,10 @@ struct name ## Response final : public InternalEvent\
     name ## Response(name ## ResponseData &&d,uint64_t token) :  InternalEvent(EmailEventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
 };
 
+// 'id' below is the email id
+
 struct EmailHeaderRequestData
 {
-    MapClientSession* src;
     int id;
     QString sender;
     QString subject;
@@ -67,7 +67,6 @@ struct EmailHeaderRequestData
 
 struct EmailHeaderResponseData
 {
-    MapClientSession* src;
     int id;
     QString sender;
     QString subject;
@@ -77,14 +76,12 @@ TWO_WAY_MESSAGE(EmailHeader)
 
 struct EmailReadData
 {
-    MapClientSession* src;
     int id;
 };
 ONE_WAY_MESSAGE(EmailRead)
 
 struct EmailSendData
 {
-    MapClientSession* src;
     int id;
     QString sender;
     QString recipient;
@@ -96,7 +93,6 @@ ONE_WAY_MESSAGE(EmailSend)
 
 struct EmailDeleteData
 {
-    MapClientSession* src;
     int id;
 };
 ONE_WAY_MESSAGE(EmailDelete)

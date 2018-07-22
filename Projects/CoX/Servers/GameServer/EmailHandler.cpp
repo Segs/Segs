@@ -7,11 +7,8 @@
 
 #include "EmailHandler.h"
 #include "Common/Servers/HandlerLocator.h"
-#include "Servers/GameServer/GameEvents.h"
-#include "MapEventTypes.h"
+#include "GameEvents.h"
 #include "EmailEvents.h"
-#include "EmailHeaders.h"
-#include "EmailRead.h"
 
 void EmailHandler::dispatch(SEGSEvent *ev)
 {
@@ -44,12 +41,12 @@ void EmailHandler::dispatch(SEGSEvent *ev)
 
 void EmailHandler::on_email_header(EmailHeaderRequest *msg)
 {
-    EmailHeaders *header = new EmailHeaders(
+    /*EmailHeaders *header = new EmailHeaders(
                 msg->m_data.id,
                 msg->m_data.sender,
                 msg->m_data.subject,
-                msg->m_data.timestamp);
-    msg->m_data.src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+                msg->m_data.timestamp);*/
+    // msg->m_data.src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
 }
 
 void EmailHandler::on_email_read(EmailReadMessage *msg)
@@ -57,29 +54,30 @@ void EmailHandler::on_email_read(EmailReadMessage *msg)
     // later on, find the message from DB
     QString message = "Email ID \n" + QString::number(msg->m_data.id);
 
+    /*
     EmailRead *emailRead = new EmailRead(
                 msg->m_data.id,
                 message,
-                msg->m_data.src->m_name);
+                msg->m_data.src->m_name);*/
 
     // TODO: Implement 'EmailWasReadByRecipientMessage' and send them all to interested parties
     // The recipient is the one sending EmailReadMessage to here in the first place, so leave him out
     // So, we send this message to the sender in wherever MapInstance he is at
 
-    msg->m_data.src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(emailRead));
+    //msg->m_data.src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(emailRead));
 }
 
 void EmailHandler::on_email_send(EmailSendMessage *msg)
 {
-    EmailHeaders *header = new EmailHeaders(
+    /*EmailHeaders *header = new EmailHeaders(
                 msg->m_data.id,
                 msg->m_data.sender,
                 msg->m_data.subject,
-                msg->m_data.timestamp);
+                msg->m_data.timestamp); */
 
     // saveEmailInDb()
 
-    msg->m_data.src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+    // msg->m_data.src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
 
     // TODO: Send EmailHeaderResponse to the relevant EventProcessor (in this case MapInstance)
     // based on the server_id and subserver_id retrieved based on session_id
@@ -97,7 +95,7 @@ void EmailHandler::on_client_connected(ClientConnectedMessage *msg)
 {
     // m_session is the key, m_server_id and m_sub_server_id are the values
     m_stored_client_datas[msg->m_data.m_session] =
-            ServerIds{msg->m_data.m_server_id, msg->m_data.m_sub_server_id};
+            ClientSessionData{msg->m_data.m_server_id, msg->m_data.m_sub_server_id};
 }
 
 void EmailHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
