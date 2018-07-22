@@ -60,15 +60,17 @@ void addFriend(Entity &src, Entity &tgt)
     sendFriendsListUpdate(&src, src_data); // Send FriendsListUpdate
 }
 
-void removeFriend(Entity &src, Entity &tgt)
+void removeFriend(Entity &src, QString friend_name)
 {
     QString msg;
     FriendsList *src_data(&src.m_char->m_char_data.m_friendlist);
 
-    qCDebug(logFriends) << "Searching for friend" << tgt.name() << "to remove them.";
-    int id_to_find = tgt.m_db_id;
+    qCDebug(logFriends) << "Searching for friend" << friend_name << "to remove them.";
+
+    QString lower_name = friend_name.toLower();
     auto iter = std::find_if( src_data->m_friends.begin(), src_data->m_friends.end(),
-                              [id_to_find](const Friend& f)->bool {return id_to_find==f.m_db_id;});
+                              [lower_name](const Friend& f)->bool {return lower_name==f.m_name.toLower();});
+
     if(iter!=src_data->m_friends.end())
     {
         iter = src_data->m_friends.erase(iter);
@@ -79,7 +81,7 @@ void removeFriend(Entity &src, Entity &tgt)
             dumpFriends(src);
     }
     else
-        msg = tgt.name() + "is not on your friends list.";
+        msg = friend_name + " is not on your friends list.";
 
     if(src_data->m_friends.empty())
         src_data->m_has_friends = false;

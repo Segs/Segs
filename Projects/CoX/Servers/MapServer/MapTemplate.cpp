@@ -56,9 +56,9 @@ QString MapTemplate::client_filename() const
 
 QString MapTemplate::base_name() const
 {
-    int city_idx     = m_map_filename.indexOf("City_");
+    int city_idx     = m_map_filename.indexOf('/')+1;
     int end_or_slash = m_map_filename.indexOf("/", city_idx);
-    assert(city_idx != -1);
+    assert(city_idx != 0);
     return m_map_filename.mid(city_idx, end_or_slash == -1 ? -1 : m_map_filename.size() - end_or_slash).toLower();
 
 }

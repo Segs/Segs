@@ -23,6 +23,7 @@
 #include "GameServer.h"
 #include "NetStructures/Character.h"
 #include "SEGSTimer.h"
+#include "MapServer/DataHelpers.h"
 
 static const uint32_t supported_version=20040422;
 namespace {
@@ -369,21 +370,10 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     QString map_path = ed.m_current_map;
 
     if (!map_path.isEmpty())
-        map_path = getMapPath(ed);
+        map_path = getMapPath(ed).toLower();
     else
     {
-        switch(ev->m_mapnumber)
-        {
-            case 0:
-                map_path = "maps/city_zones/city_00_01/city_00_01.txt";
-            break;
-            case 1: // atlas park
-                map_path = "maps/city_zones/city_01_01/city_01_01.txt";
-            break;
-            case 29:
-                map_path = "maps/city_zones/city_01_03/city_01_03.txt";
-            break;
-        }
+        map_path = getMapPath(ev->m_mapnumber).toLower();
     }
 
     if(selected_slot->isEmpty())
