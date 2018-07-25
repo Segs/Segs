@@ -9,9 +9,12 @@
 
 #include <stdint.h>
 
+class Power;
+class PowerTray;
+class PowerTrayGroup;
 struct PlayerData;
 
 template<class Archive>
-void serialize(Archive &archive, PlayerData &fr, uint32_t const version);
+void serialize(Archive &archive, PlayerData &pd, uint32_t const version);
 
 

@@ -178,7 +178,7 @@ static void sendTeamBuffMode(const GUISettings &gui,BitStream &bs)
     bs.StoreBits(1,gui.m_team_buffs);
 }
 
-static void sendDockMode(const GUISettings &gui,BitStream &bs)
+static void sendDockMode(const GUISettings &gui, BitStream &bs)
 {
     bs.StoreBits(32,gui.m_tray1_number); // Tray #1 Page
     bs.StoreBits(32,gui.m_tray2_number); // Tray #2 Page
@@ -291,9 +291,9 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     }
 
     PUTDEBUG("before tray");
-    player_char.sendTray(bs);
+    player_char.m_char_data.m_trays.serializeto(bs);
     PUTDEBUG("before traymode");
-    sendTrayMode(player_data.m_gui,bs);
+    sendTrayMode(player_data.m_gui, bs);
 
     bs.StoreString(src.name());                     // maxlength 32
     bs.StoreString(getBattleCry(player_char));      // max 128
@@ -331,90 +331,95 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
 
 void storePowerSpec(uint32_t powerset_idx,uint32_t power_idx,BitStream &bs)
 {
-    bs.StorePackedBits(2,powerset_idx);
-    bs.StorePackedBits(1,power_idx);
+    bs.StorePackedBits(2, powerset_idx);
+    bs.StorePackedBits(1, power_idx);
 }
 
-void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
+void storePowerRanges(CharacterData &cd, BitStream &bs)
 {
-    bool power_info_updates_available=false; // FixMe: power_info_updates_available is never modified during execution.
-    bs.StoreBits(1,power_info_updates_available);
-    if(power_info_updates_available)
+    // sending state of all current powers.
+    for(CharacterPowerSet &pset : cd.m_powersets)
     {
-        bool remove_all_powersets_apart_from_inherent=false;
-        uint32_t num_powers_to_send=0;
-        bs.StoreBits(1,remove_all_powersets_apart_from_inherent);
-
-        bs.StorePackedBits(1,num_powers_to_send);
-        for(uint32_t i=0; i<num_powers_to_send; ++i)
+        for(CharacterPower &p : pset.m_powers)
         {
-            storePowerSpec(0,0,bs);
-            bool is_custom_power=false;
-            if(is_custom_power)
-            {
-                uint32_t category_idx=0;
-                uint32_t powerset_idx=0;
-                uint32_t power_idx=0;
-                bs.StorePackedBits(3,category_idx);
-                bs.StorePackedBits(3,powerset_idx);
-                bs.StorePackedBits(3,power_idx);
-                uint32_t maybe_required_level=0;
-                uint32_t level_bought=0;
-                uint32_t num_charges = 0;
-                float usage_time = 0;
-                uint32_t timing_rel=0; // timestamp ?
-                uint32_t count_boosts=0;
-                bs.StorePackedBits(5,maybe_required_level);
-                bs.StorePackedBits(5,level_bought);
-                bs.StorePackedBits(3,num_charges);
-                bs.StoreFloat(usage_time);
-                bs.StorePackedBits(24,timing_rel);
-                bs.StorePackedBits(4,count_boosts);
-                for(uint32_t boost_idx=0; boost_idx<count_boosts; ++boost_idx)
-                {
-                    bool has_boost = false;
-                    bs.StoreBits(1,has_boost);
-                    if(has_boost)
-                    {
-                        uint32_t boost_category_idx=0;
-                        uint32_t boost_powerset_idx=0;
-                        uint32_t boost_power_idx=0;
-                        uint32_t boost_level = 0;
-                        uint32_t boost_num_combines=0;
-                        bs.StorePackedBits(3,boost_category_idx);
-                        bs.StorePackedBits(3,boost_powerset_idx);
-                        bs.StorePackedBits(3,boost_power_idx);
-                        bs.StorePackedBits(5,boost_level);
-                        bs.StorePackedBits(2,boost_num_combines);
-                    }
-                }
-            }
-            else
-            {
-                // nothing to do.
-            }
+            bs.StoreBits(1,1); // have power to send.
+            p.power_id.serializeto(bs);
+            bs.StoreFloat(p.range); // nem: I have no idea why it is passed here
         }
     }
-    // sending state of all current powers.
-    std::vector<Power> powers;
-    for(Power &p : powers)
-    {
-        Q_UNUSED(p);
-        bs.StoreBits(1,1); // have power to send.
-        uint32_t category_idx=0;
-        uint32_t powerset_idx=0;
-        uint32_t power_idx=0;
-        bs.StorePackedBits(3,category_idx);
-        bs.StorePackedBits(3,powerset_idx);
-        bs.StorePackedBits(3,power_idx);
-        float range=0.0f;
-        bs.StoreFloat(range); // nem: I have no idea why it is passed here
-    }
     bs.StoreBits(1,0); // no more powers to send.
-    if(!power_info_updates_available) // no power list updates were needed
+}
+
+void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
+{
+    Entity *e = src.m_client->m_ent;
+    assert(e);
+
+    PowerPool_Info null_power = {0,0,0};
+
+    bool has_power_info_updates = false; // FixMe: power_info_updates_available is never modified during execution.
+    bs.StoreBits(1, has_power_info_updates);
+    if(!has_power_info_updates)
+    {
+        storePowerRanges(e->m_char->m_char_data, bs);
         return;
+    }
+
+    bool remove_all_powersets_apart_from_inherent = false;
+    bs.StoreBits(1, remove_all_powersets_apart_from_inherent);
+    if(remove_all_powersets_apart_from_inherent)
+    {
+        // TODO: reset powersets array
+    }
+
+    uint32_t num_powers_to_send = 0;
+    bs.StorePackedBits(1, num_powers_to_send);
+    for(uint32_t i=0; i<num_powers_to_send; ++i)
+    {
+        storePowerSpec(0, 0, bs);
+
+        bool is_custom_power=false;
+        if(is_custom_power)
+        {
+            null_power.serializeto(bs);
+            uint32_t maybe_required_level=0;
+            uint32_t level_bought=0;
+            uint32_t num_charges = 0;
+            float usage_time = 0;
+            uint32_t timing_rel=0; // timestamp ?
+            bs.StorePackedBits(5, maybe_required_level);
+            bs.StorePackedBits(5, level_bought);
+            bs.StorePackedBits(3, num_charges);
+            bs.StoreFloat(usage_time);
+            bs.StorePackedBits(24, timing_rel);
+
+            uint32_t count_boosts=0;
+            bs.StorePackedBits(4,count_boosts);
+            for(uint32_t boost_idx=0; boost_idx<count_boosts; ++boost_idx)
+            {
+                bool has_boost = false;
+                bs.StoreBits(1, has_boost);
+                if(has_boost)
+                {
+                    uint32_t boost_level = 0;
+                    uint32_t boost_num_combines=0;
+                    null_power.serializeto(bs);
+                    bs.StorePackedBits(5, boost_level);
+                    bs.StorePackedBits(2, boost_num_combines);
+                }
+            }
+        }
+        else
+        {
+            // nothing to do.
+        }
+    }
+
+    // sending state of all current powers.
+    storePowerRanges(e->m_char->m_char_data, bs);
+
     uint32_t activation_count=0;
-    bs.StorePackedBits(4,activation_count);
+    bs.StorePackedBits(4, activation_count);
     for(uint32_t act=0; act<activation_count; ++act)
     {
         bool active_state_change=false;
@@ -426,6 +431,7 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
             bs.StorePackedBits(1,activation_state);
         }
     }
+
     uint32_t timer_count=0;
     bs.StorePackedBits(1,timer_count);
     for(uint32_t tmr=0; tmr<timer_count; ++tmr)
@@ -439,19 +445,37 @@ void storePowerInfoUpdate(const EntitiesResponse &/*src*/,BitStream &bs)
             bs.StoreFloat(recharge_countdown);
         }
     }
+
     uint32_t inspiration_count=0;
     storePackedBitsConditional(bs,4,inspiration_count);
     for(uint32_t insp=0; insp<inspiration_count; ++insp)
     {
-        //TODO: fill this
-        assert(false);
+        int iRow = 0;
+        int iCol = 0;
+
+        bs.StorePackedBits(3, iRow);
+        bs.StorePackedBits(3, iCol);
+        null_power.serializeto(bs);
     }
+
+    // boosts
     uint32_t boost_count=0;
     bs.StorePackedBits(1,boost_count);
     for(uint32_t insp=0; insp<boost_count; ++insp)
     {
-        //TODO: fill this
-        assert(false);
+        uint32_t idx = 0;
+        bool clear = false;
+        uint32_t level = 0;
+        uint32_t num_combines = 0;
+
+        bs.StorePackedBits(3, idx);
+        bs.StoreBits(1, clear);
+        if(!clear)
+        {
+            null_power.serializeto(bs);
+            bs.StorePackedBits(5, level);
+            bs.StorePackedBits(2, num_combines);
+        }
     }
 }
 

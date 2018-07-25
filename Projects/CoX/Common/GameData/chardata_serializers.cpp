@@ -11,21 +11,87 @@
  */
 
 #include "chardata_serializers.h"
-
 #include "chardata_definitions.h"
-#include "DataStorage.h"
 #include "serialization_common.h"
-#include "attrib_serializers.h"
-#include <QDebug>
 
+#include "DataStorage.h"
+#include "trays_serializers.h"
+#include "attrib_serializers.h"
+
+#include "Logging.h"
+
+const constexpr uint32_t PowerPool_Info::class_version;
+const constexpr uint32_t CharacterPowerBoost::class_version;
+const constexpr uint32_t CharacterPower::class_version;
+const constexpr uint32_t CharacterPowerSet::class_version;
 const constexpr uint32_t Friend::class_version;
 const constexpr uint32_t FriendsList::class_version;
 const constexpr uint32_t Sidekick::class_version;
 const constexpr uint32_t CharacterData::class_version;
-CEREAL_CLASS_VERSION(Friend, Friend::class_version)                // register Friend struct version
-CEREAL_CLASS_VERSION(FriendsList, FriendsList::class_version)      // register FriendList struct version
-CEREAL_CLASS_VERSION(Sidekick, Sidekick::class_version)            // register Sidekick struct version
-CEREAL_CLASS_VERSION(CharacterData, CharacterData::class_version)  // register CharacterData class version
+CEREAL_CLASS_VERSION(PowerPool_Info, PowerPool_Info::class_version)   // register PowerPool_Info class version
+CEREAL_CLASS_VERSION(CharacterPowerBoost, CharacterPowerBoost::class_version)   // register CharacterPowerBoost struct version
+CEREAL_CLASS_VERSION(CharacterPower, CharacterPower::class_version)             // register CharacterPower struct version
+CEREAL_CLASS_VERSION(CharacterPowerSet, CharacterPowerSet::class_version)       // register CharacterPowerSet struct version
+CEREAL_CLASS_VERSION(Friend, Friend::class_version)                 // register Friend struct version
+CEREAL_CLASS_VERSION(FriendsList, FriendsList::class_version)       // register FriendList struct version
+CEREAL_CLASS_VERSION(Sidekick, Sidekick::class_version)             // register Sidekick struct version
+CEREAL_CLASS_VERSION(CharacterData, CharacterData::class_version)   // register CharacterData struct version
+
+template<class Archive>
+void serialize(Archive &archive, PowerPool_Info &poolinfo, uint32_t const version)
+{
+    if (version != PowerPool_Info::class_version)
+    {
+        qCritical() << "Failed to serialize PowerPool_Info, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("CategoryIdx", poolinfo.category_idx));
+    archive(cereal::make_nvp("PowersetEntryIdx", poolinfo.powerset_idx));
+    archive(cereal::make_nvp("PowerIdx", poolinfo.power_idx));
+}
+
+template<class Archive>
+void serialize(Archive &archive, CharacterPowerBoost &boost, uint32_t const version)
+{
+    if (version != CharacterPowerBoost::class_version)
+    {
+        qCritical() << "Failed to serialize CharacterPowerBoost, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("BoostInfo", boost.boost_id));
+    archive(cereal::make_nvp("Level", boost.level));
+    archive(cereal::make_nvp("NumCombines", boost.num_combines));
+}
+
+template<class Archive>
+void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version)
+{
+    if (version != CharacterPower::class_version)
+    {
+        qCritical() << "Failed to serialize CharacterPower, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("PowerInfo", pwr.power_id));
+    archive(cereal::make_nvp("LevelBought", pwr.bought_at_level));
+    archive(cereal::make_nvp("Range", pwr.range));
+    archive(cereal::make_nvp("Boosts", pwr.boosts));
+}
+
+template<class Archive>
+void serialize(Archive &archive, CharacterPowerSet &pset, uint32_t const version)
+{
+    if (version != CharacterPowerSet::class_version)
+    {
+        qCritical() << "Failed to serialize CharacterPowerSet, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("LevelBought", pset.m_level_bought));
+    archive(cereal::make_nvp("Powers", pset.m_powers));
+}
 
 template<class Archive>
 void serialize(Archive &archive, Friend &fr, uint32_t const version)
@@ -106,6 +172,8 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("SideKick",cd.m_sidekick));
     archive(cereal::make_nvp("FriendList",cd.m_friendlist));
     archive(cereal::make_nvp("CurrentAttribs", cd.m_current_attribs));
+    archive(cereal::make_nvp("PowerSets", cd.m_powersets));
+    archive(cereal::make_nvp("PowerTrayGroups", cd.m_trays));
 }
 
 void saveTo(const CharacterData &target, const QString &baseName, bool text_format)

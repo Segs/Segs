@@ -9,11 +9,23 @@
 #include <stdint.h>
 
 class QString;
+class PowerPool_Info;
+struct CharacterPowerBoost;
+struct CharacterPower;
+struct CharacterPowerSet;
 struct Friend;
 struct FriendsList;
 struct Sidekick;
 struct CharacterData;
 
+template<class Archive>
+void serialize(Archive &archive, PowerPool_Info &poolinfo, uint32_t const version);
+template<class Archive>
+void serialize(Archive &archive, CharacterPowerBoost &boost, uint32_t const version);
+template<class Archive>
+void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version);
+template<class Archive>
+void serialize(Archive &archive, CharacterPowerSet &pset, uint32_t const version);
 template<class Archive>
 void serialize(Archive &archive, Friend &fr, uint32_t const version);
 template<class Archive>

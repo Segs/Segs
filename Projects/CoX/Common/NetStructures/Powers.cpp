@@ -69,7 +69,7 @@ void Power::Dump()
     {
     case TrayItemType::Power:
     case TrayItemType::Inspiration:
-            qDebug().noquote() << "[(" << QString::number(powerset_idx,16) << ',' << QString::number(powerset_idx,16)<<")]";
+            qDebug().noquote() << "[(" << QString::number(powerset_idx,16) << ',' << QString::number(power_idx,16)<<")]";
         break;
     case TrayItemType::Macro:
             qDebug() << "[(" << command << ',' << short_name<<',' << icon_name<<")]";
@@ -84,16 +84,16 @@ void Power::Dump()
 
 void PowerTrayGroup::serializeto(BitStream &tgt) const
 {
-    tgt.StoreBits(32,primary_tray_idx);
-    tgt.StoreBits(32,secondary_tray_idx);
+    tgt.StoreBits(32, primary_tray_idx);
+    tgt.StoreBits(32, secondary_tray_idx);
     for(int bar_num=0; bar_num<9; bar_num++)
         m_trays[bar_num].serializeto(tgt);
-    bool m_c = false; // FixMe: m_c is explicitly set and never later modified.
-    tgt.StoreBits(1,m_c);
-    if(m_c) // selected ???
+
+    tgt.StoreBits(1, m_has_default_power);
+    if(m_has_default_power)
     {
-        tgt.StoreBits(32,m_default_powerset_idx);
-        tgt.StoreBits(32,m_default_power_idx);
+        tgt.StoreBits(32, m_default_powerset_idx);
+        tgt.StoreBits(32, m_default_power_idx);
     }
 }
 
@@ -105,8 +105,8 @@ void PowerTrayGroup::serializefrom(BitStream &src)
     {
         tray.serializefrom(src);
     }
-    m_c = src.GetBits(1);
-    if(m_c)
+    m_has_default_power = src.GetBits(1);
+    if(m_has_default_power)
     {
         m_default_powerset_idx= src.GetBits(32);
         m_default_power_idx   = src.GetBits(32);
@@ -121,16 +121,14 @@ void PowerTrayGroup::dump()
     {
         if(m_trays[bar_num].setPowers()==0)
             continue;
-        QDebug non_line_breaking_debug=qDebug();
-        non_line_breaking_debug << "    Tray "<<bar_num<<" ***";
+        qDebug() << "Tray: " << bar_num;
         m_trays[bar_num].Dump();
-        non_line_breaking_debug << "***";
     }
-    qDebug() << "    m_c " << m_c;
-    if(m_c)
+    qDebug() << "m_has_default_power: " << m_has_default_power;
+    if(m_has_default_power)
     {
-        qDebug() << "    m_power_rel1 0x" << QString::number(m_default_powerset_idx,16);
-        qDebug() << "    m_power_rel2 0x" << QString::number(m_default_power_idx,16);
+        qDebug() << "    m_default_powerset_idx: " << QString::number(m_default_powerset_idx,16);
+        qDebug() << "    m_default_power_idx: " << QString::number(m_default_power_idx,16);
     }
 }
 
@@ -175,15 +173,15 @@ void PowerTray::Dump()
 void PowerPool_Info::serializefrom(BitStream &src)
 {
     category_idx = src.GetPackedBits(3);
-    powerset_entry_idx = src.GetPackedBits(3);
+    powerset_idx = src.GetPackedBits(3);
     power_idx = src.GetPackedBits(3);
 }
 
 void PowerPool_Info::serializeto(BitStream &src) const
 {
-    src.StorePackedBits(3,category_idx);
-    src.StorePackedBits(3,powerset_entry_idx);
-    src.StorePackedBits(3,power_idx);
+    src.StorePackedBits(3, category_idx);
+    src.StorePackedBits(3, powerset_idx);
+    src.StorePackedBits(3, power_idx);
 }
 
 //! @}

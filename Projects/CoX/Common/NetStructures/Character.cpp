@@ -16,6 +16,7 @@
 #include "Entity.h"
 #include "Costume.h"
 #include "Friend.h"
+#include "Powers.h"
 #include "GameData/serialization_common.h"
 #include "Servers/GameDatabase/GameDBSyncEvents.h"
 #include "GameData/chardata_serializers.h"
@@ -87,21 +88,22 @@ void Character::setName(const QString &val )
 
 void Character::sendTray(BitStream &bs) const
 {
-    m_trays.serializeto(bs);
+    m_char_data.m_trays.serializeto(bs);
 }
 
 void Character::GetCharBuildInfo(BitStream &src)
 {
-    m_char_data.m_level=0;
+    m_char_data.m_level = 0;
     src.GetString(m_char_data.m_class_name);
     src.GetString(m_char_data.m_origin_name);
-    CharacterPower primary,secondary;
+    CharacterPowerSet primaryset, secondaryset;
+    CharacterPower primary, secondary;
     primary.power_id.serializefrom(src);
     secondary.power_id.serializefrom(src);
 
-    m_powers.push_back(primary); // primary_powerset power
-    m_powers.push_back(secondary); // secondary_powerset power
-    m_trays.serializefrom(src);
+    primaryset.m_powers.push_back(primary); // primary_powerset power
+    secondaryset.m_powers.push_back(secondary); // secondary_powerset power
+    m_char_data.m_trays.serializefrom(src);
 }
 
 void Character::SendCharBuildInfo(BitStream &bs) const
@@ -110,32 +112,30 @@ void Character::SendCharBuildInfo(BitStream &bs) const
     PowerPool_Info null_power = {0,0,0};
     bs.StoreString(getClass(c));   // class name
     bs.StoreString(getOrigin(c));  // origin name
-    bs.StorePackedBits(5,getCombatLevel(c)); // related to combat level?
+    bs.StorePackedBits(5, getCombatLevel(c)); // related to combat level?
     PUTDEBUG("SendCharBuildInfo after plevel");
 
     {
         // TODO: this is character powers related, refactor it out of here.
-        int count=0; // FixMe: count is explicitly set and never modified.
-        bs.StorePackedBits(4,count); // count
-        for(int i=0; i<count; i++)
+        bs.StorePackedBits(4, m_char_data.m_powersets.size()); // count
+        for(const CharacterPowerSet &pset : m_char_data.m_powersets)
         {
-            uint32_t num_powers=m_powers.size();
-            bs.StorePackedBits(5,0);
-            bs.StorePackedBits(4,num_powers);
-            for(const CharacterPower &power : m_powers)
+            bs.StorePackedBits(5, pset.m_level_bought);
+            bs.StorePackedBits(4, pset.m_powers.size());
+            for(const CharacterPower &power : pset.m_powers)
             {
                 //sendPower(bs,0,0,0);
                 power.power_id.serializeto(bs);
-                bs.StorePackedBits(5,power.bought_at_level);
+                bs.StorePackedBits(5, power.bought_at_level);
                 bs.StoreFloat(power.range);
-                bs.StorePackedBits(4,power.boosts.size());
+                bs.StorePackedBits(4, power.boosts.size());
 
                 for(const CharacterPowerBoost &boost : power.boosts)
                 {
                     //sendPower(bs,0,0,0);
                     boost.boost_id.serializeto(bs);
-                    bs.StorePackedBits(5,boost.level);
-                    bs.StorePackedBits(2,boost.num_combines);
+                    bs.StorePackedBits(5, boost.level);
+                    bs.StorePackedBits(2, boost.num_combines);
                 }
             }
         }
@@ -253,23 +253,41 @@ void Character::DumpSidekickInfo()
     qDebug().noquote() << msg;
 }
 
-void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
+void Character::DumpPowerPoolInfo( const PowerPool_Info &pinfo )
 {
-    for (int i = 0; i < 3; i++)
+    qDebug().nospace().noquote() << QString("PPInfo: %1 %2 %3")
+                                    .arg(pinfo.category_idx)
+                                    .arg(pinfo.powerset_idx)
+                                    .arg(pinfo.power_idx);
+}
+
+void Character::DumpOwnedPowers()
+{
+    int pset_idx = 0;
+
+    for(CharacterPowerSet &pset : m_char_data.m_powersets)
     {
-        qDebug().nospace().noquote() << "    "
-                                     << QString("Pool_id[%1]: %2 %3 %4")
-                                            .arg(i)
-                                            .arg(pool_info.category_idx)
-                                            .arg(pool_info.powerset_entry_idx)
-                                            .arg(pool_info.power_idx);
+        int pow_idx = 0;
+        qDebug().noquote() << "PowerSet: " << pset_idx;
+        qDebug().noquote() << "LevelBought: " << pset.m_level_bought;
+        for(CharacterPower &p : pset.m_powers)
+        {
+            qDebug().noquote() << "Power: " << pow_idx;
+            DumpPowerPoolInfo(p.power_id);
+            qDebug().noquote() << "LevelBought: " << p.bought_at_level;
+            qDebug().noquote() << "Range: " << p.range;
+
+            pow_idx++;
+        }
+
+        pset_idx++;
     }
 }
 
 void Character::DumpBuildInfo()
 {
     Character &c = *this;
-    QString msg = "CharDebug\n  "
+    QString msg = "//--------------Char Debug--------------\n  "
             + getName()
             + "\n  " + getOrigin(c)
             + "\n  " + getClass(c)
@@ -285,20 +303,20 @@ void Character::DumpBuildInfo()
             + "\n  Last Online: " + m_char_data.m_last_online;
 
     qDebug().noquote() << msg;
-    //DumpPowerPoolInfo(m_powers[0].power_id);
-    //DumpPowerPoolInfo(m_powers[1].power_id);
 }
 
 void Character::dump()
 {
     DumpBuildInfo();
+    qDebug() << "//--------------Owned Powers--------------";
+    DumpOwnedPowers();
+    qDebug() << "//--------------Sidekick Info--------------";
     DumpSidekickInfo();
-    qDebug() <<"//------------------Tray------------------";
-    m_trays.dump();
-    qDebug() <<"//-----------------Costume-----------------";
+    qDebug() << "//------------------Tray------------------";
+    m_char_data.m_trays.dump();
+    qDebug() << "//-----------------Costume-----------------";
     if(!m_costumes.empty())
         getCurrentCostume()->dump();
-    qDebug() <<"//-----------------Options-----------------";
 }
 
 void Character::recv_initial_costume( BitStream &src, const ColorAndPartPacker *packer )

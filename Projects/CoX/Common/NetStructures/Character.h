@@ -8,7 +8,6 @@
 #pragma once
 #include "CommonNetStructures.h"
 #include "BitStream.h"
-#include "Powers.h"
 #include "Common/GameData/attrib_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
 #include "Common/GameData/entitydata_definitions.h"
@@ -23,23 +22,10 @@
 #include <string>
 
 class CharacterCostume;
+
 struct PlayerData;
 struct Costume;
-
-struct CharacterPowerBoost
-{
-    PowerPool_Info boost_id;
-    int            level        = 0;
-    int            num_combines = 0;
-};
-
-struct CharacterPower
-{
-    PowerPool_Info                   power_id;
-    int                              bought_at_level = 0;
-    float                            range           = 1.0f;
-    std::vector<CharacterPowerBoost> boosts;
-};
+struct PowerPool_Info;
 
 enum NameFlag : bool
 {
@@ -57,11 +43,8 @@ class Character
 {
         friend  class CharacterDatabase;
 
-        using vPowerPool = std::vector<CharacterPower>;
         using vCostume = std::vector<CharacterCostume>;
 
-        vPowerPool              m_powers;
-        PowerTrayGroup          m_trays;
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
         friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player, EntityData &entity);
@@ -91,7 +74,8 @@ const   QString &       getName() const { return m_name; }
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
         const CharacterCostume *getCurrentCostume() const;
         void            DumpSidekickInfo();
-        void            DumpPowerPoolInfo( const PowerPool_Info &pool_info );
+        void            DumpPowerPoolInfo( const PowerPool_Info &pinfo );
+        void            DumpOwnedPowers();
         void            DumpBuildInfo();
         void            face_bits(uint32_t){}
         void            dump();
@@ -110,7 +94,6 @@ const   QString &       getName() const { return m_name; }
         uint32_t            m_db_id;
 
 protected:
-        PowerPool_Info  get_power_info(BitStream &src);
         uint8_t         m_index;
         QString         m_name;
         bool            m_villain;
