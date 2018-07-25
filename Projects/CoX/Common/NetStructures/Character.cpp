@@ -96,13 +96,16 @@ void Character::GetCharBuildInfo(BitStream &src)
     m_char_data.m_level = 0;
     src.GetString(m_char_data.m_class_name);
     src.GetString(m_char_data.m_origin_name);
+
     CharacterPowerSet primaryset, secondaryset;
     CharacterPower primary, secondary;
     primary.power_id.serializefrom(src);
     secondary.power_id.serializefrom(src);
-
     primaryset.m_powers.push_back(primary); // primary_powerset power
     secondaryset.m_powers.push_back(secondary); // secondary_powerset power
+    m_char_data.m_powersets.push_back(primaryset);
+    m_char_data.m_powersets.push_back(secondaryset);
+
     m_char_data.m_trays.serializefrom(src);
 }
 
