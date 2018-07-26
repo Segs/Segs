@@ -13,7 +13,7 @@
 #include "Powers.h"
 
 #include <QDebug>
-void Power::serializeto(BitStream &tgt) const
+void PowerTrayItem::serializeto(BitStream &tgt) const
 {
     tgt.StoreBits(4,uint32_t(entry_type));
     switch(entry_type)
@@ -38,7 +38,7 @@ void Power::serializeto(BitStream &tgt) const
     }
 }
 
-void Power::serializefrom(BitStream &src)
+void PowerTrayItem::serializefrom(BitStream &src)
 {
     entry_type = (TrayItemType)src.GetBits(4);
     switch(entry_type)
@@ -63,7 +63,7 @@ void Power::serializefrom(BitStream &src)
     }
 }
 
-void Power::Dump()
+void PowerTrayItem::Dump()
 {
     switch(entry_type)
     {
@@ -132,7 +132,7 @@ void PowerTrayGroup::dump()
     }
 }
 
-Power *PowerTray::getPower(size_t idx)
+PowerTrayItem *PowerTray::getPower(size_t idx)
 {
     if(idx<10)
         return &m_powers[idx];
@@ -142,7 +142,7 @@ Power *PowerTray::getPower(size_t idx)
 int PowerTray::setPowers()
 {
     int res=0;
-    for(const Power &pow : m_powers)
+    for(const PowerTrayItem &pow : m_powers)
     {
         res += (pow.entry_type!=TrayItemType::None);
     }
@@ -151,19 +151,19 @@ int PowerTray::setPowers()
 
 void PowerTray::serializefrom(BitStream &src)
 {
-    for(Power &pow : m_powers)
+    for(PowerTrayItem &pow : m_powers)
         pow.serializefrom(src);
 }
 
 void PowerTray::serializeto(BitStream &tgt) const
 {
-    for(const Power &pow : m_powers)
+    for(const PowerTrayItem &pow : m_powers)
         pow.serializeto(tgt);
 }
 
 void PowerTray::Dump()
 {
-    for(Power &pow : m_powers)
+    for(PowerTrayItem &pow : m_powers)
     {
         pow.Dump();
     }

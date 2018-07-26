@@ -9,12 +9,10 @@
 
 #include <stdint.h>
 
-class Power;
+class PowerTrayItem;
 class PowerTray;
 class PowerTrayGroup;
 struct PlayerData;
 
 template<class Archive>
 void serialize(Archive &archive, PlayerData &pd, uint32_t const version);
-
-

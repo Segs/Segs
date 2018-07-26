@@ -28,61 +28,68 @@ enum class TrayItemType : uint32_t
 class PowerPool_Info
 {
 public:
-    static const constexpr  uint32_t    class_version   = 1;
-    int category_idx;
-    int powerset_idx;
-    int power_idx;
-    void serializefrom( BitStream &src );
-    void serializeto( BitStream &src ) const;
+static const constexpr  uint32_t    class_version = 1;
+        uint32_t     category_idx;
+        uint32_t     powerset_idx;
+        uint32_t     power_idx;
+        void serializefrom( BitStream &src );
+        void serializeto( BitStream &src ) const;
 };
 
 struct CharacterPowerBoost
 {
-    static const constexpr  uint32_t    class_version   = 1;
-    PowerPool_Info boost_id;
-    int            level        = 0;
-    int            num_combines = 0;
+static const constexpr  uint32_t    class_version = 1;
+        PowerPool_Info  m_enhance_tpl;
+        uint32_t        m_enhancement_idx = 0;
+        uint32_t        m_level           = 0;
+        uint32_t        m_num_combines    = 0;
 };
 
 struct CharacterPower
 {
-    static const constexpr  uint32_t    class_version   = 1;
-    PowerPool_Info                   power_id;
-    int                              bought_at_level = 0;
-    float                            range           = 1.0f;
-    std::vector<CharacterPowerBoost> boosts;
+static const constexpr  uint32_t    class_version = 1;
+        PowerPool_Info  m_power_tpl;
+        uint32_t        m_power_idx         = 0;
+        uint32_t        m_level_bought      = 0;
+        uint32_t        m_num_charges       = 0;
+        float           m_usage_time        = 0.0f;
+        uint32_t        m_activation_time   = 0;
+        float           m_range             = 1.0f;
+        uint32_t        m_num_enhancements  = 0;
+        std::vector<CharacterPowerBoost> m_enhancements;
 };
 
 struct CharacterPowerSet
 {
-    static const constexpr  uint32_t    class_version   = 1;
-    int                             m_level_bought = 0;
-    std::vector<CharacterPower>     m_powers;
+static const constexpr  uint32_t    class_version   = 1;
+        uint32_t                    m_pset_idx      = 0;
+        uint32_t                    m_level_bought  = 0;
+        std::vector<CharacterPower> m_powers;
 };
 
 using vPowerSets = std::vector<CharacterPowerSet>;
 
-class Power
+class PowerTrayItem
 {
 public:
-    static const constexpr  uint32_t    class_version   = 1;
-    TrayItemType entry_type = TrayItemType(0);
-    int powerset_idx,power_idx;
-    QString command;
-    QString short_name;
-    QString icon_name;
+static const constexpr  uint32_t    class_version = 1;
+    TrayItemType    entry_type = TrayItemType(0);
+    uint32_t        powerset_idx, power_idx;
+    QString         command;
+    QString         short_name;
+    QString         icon_name;
+
     void serializeto(BitStream &tgt) const;
     void serializefrom(BitStream &src);
-
     void Dump();
 };
 
 class PowerTray
 {
 public:
-    static const constexpr  uint32_t    class_version   = 1;
-    std::array<Power, 10>     m_powers;
-    Power *getPower(size_t idx);
+static const constexpr  uint32_t    class_version = 1;
+    std::array<PowerTrayItem, 10>     m_powers;
+    PowerTrayItem *getPower(size_t idx);
     int setPowers();
     void serializefrom(BitStream &src);
     void serializeto(BitStream &tgt) const;
@@ -92,8 +99,8 @@ public:
 class PowerTrayGroup
 {
 public:
-    static const constexpr  uint32_t    class_version   = 1;
-    static const int num_trays=2; // was 3, displayed trays
+static const constexpr  uint32_t    class_version = 1;
+static const int num_trays=2; // was 3, displayed trays
     std::array<PowerTray, 9>     m_trays;
     uint32_t m_default_powerset_idx,m_default_power_idx;
     bool m_has_default_power;

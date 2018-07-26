@@ -12,12 +12,12 @@
 #include <stdint.h>
 
 class QString;
-class Power;
+class PowerTrayItem;
 class PowerTray;
 class PowerTrayGroup;
 
 template<class Archive>
-void serialize(Archive &archive, Power &pwr, uint32_t const version);
+void serialize(Archive &archive, PowerTrayItem &pwr, uint32_t const version);
 template<class Archive>
 void serialize(Archive &archive, PowerTray &ptray, uint32_t const version);
 template<class Archive>

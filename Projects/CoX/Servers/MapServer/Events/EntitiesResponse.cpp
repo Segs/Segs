@@ -343,8 +343,8 @@ void storePowerRanges(CharacterData &cd, BitStream &bs)
         for(CharacterPower &p : pset.m_powers)
         {
             bs.StoreBits(1,1); // have power to send.
-            p.power_id.serializeto(bs);
-            bs.StoreFloat(p.range); // nem: I have no idea why it is passed here
+            p.m_power_tpl.serializeto(bs);
+            bs.StoreFloat(p.m_range); // nem: I have no idea why it is passed here
         }
     }
     bs.StoreBits(1,0); // no more powers to send.
@@ -354,94 +354,116 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
 {
     Entity *e = src.m_client->m_ent;
     assert(e);
+    CharacterData cd = e->m_char->m_char_data;
+    uint32_t pset_idx, pow_idx = 0;
 
-    PowerPool_Info null_power = {0,0,0};
+    // These should go away as we use real owned powers data
+    PowerPool_Info      null_pow_tpl = {0,0,0};
 
     bool has_power_info_updates = false; // FixMe: power_info_updates_available is never modified during execution.
     bs.StoreBits(1, has_power_info_updates);
     if(!has_power_info_updates)
     {
-        storePowerRanges(e->m_char->m_char_data, bs);
+        storePowerRanges(cd, bs);
         return;
     }
 
-    bool remove_all_powersets_apart_from_inherent = false;
-    bs.StoreBits(1, remove_all_powersets_apart_from_inherent);
-    if(remove_all_powersets_apart_from_inherent)
+    bool reset_powersets = false;
+    bs.StoreBits(1, reset_powersets);
+    if(reset_powersets)
     {
-        // TODO: reset powersets array
+        // TODO: How can we confirm that first powerset contains inherent powers
+        cd.m_powersets.erase(cd.m_powersets.begin()+1, cd.m_powersets.begin()+3);
     }
 
-    uint32_t num_powers_to_send = 0;
-    bs.StorePackedBits(1, num_powers_to_send);
-    for(uint32_t i=0; i<num_powers_to_send; ++i)
+    // Count all powers owned
+    uint32_t total_powers_owned = 0;
+    for(const CharacterPowerSet &pset : cd.m_powersets)
     {
-        storePowerSpec(0, 0, bs);
+        total_powers_owned += pset.m_powers.size(); // total up all powers
+    }
+    bs.StorePackedBits(1, total_powers_owned);
 
-        bool is_custom_power=false;
-        if(is_custom_power)
+    for(const CharacterPowerSet &pset : cd.m_powersets)
+    {
+        for(const CharacterPower &power : pset.m_powers)
         {
-            null_power.serializeto(bs);
-            uint32_t maybe_required_level=0;
-            uint32_t level_bought=0;
-            uint32_t num_charges = 0;
-            float usage_time = 0;
-            uint32_t timing_rel=0; // timestamp ?
-            bs.StorePackedBits(5, maybe_required_level);
-            bs.StorePackedBits(5, level_bought);
-            bs.StorePackedBits(3, num_charges);
-            bs.StoreFloat(usage_time);
-            bs.StorePackedBits(24, timing_rel);
+            storePowerSpec(pset_idx, pow_idx, bs);
 
-            uint32_t count_boosts=0;
-            bs.StorePackedBits(4,count_boosts);
-            for(uint32_t boost_idx=0; boost_idx<count_boosts; ++boost_idx)
+            bool is_custom_power = false; // I don't think this is "custom" power?
+            if(is_custom_power)
             {
-                bool has_boost = false;
-                bs.StoreBits(1, has_boost);
-                if(has_boost)
+                power.m_power_tpl.serializeto(bs);
+
+                bs.StorePackedBits(5, pset.m_level_bought);
+                bs.StorePackedBits(5, power.m_level_bought);
+                bs.StorePackedBits(3, power.m_num_charges);
+                bs.StoreFloat(power.m_usage_time);
+                bs.StorePackedBits(24, power.m_activation_time);
+
+                bs.StorePackedBits(4, power.m_num_enhancements); // total enhancement slots
+                for(uint32_t i = 0; i<power.m_num_enhancements; ++i)
                 {
-                    uint32_t boost_level = 0;
-                    uint32_t boost_num_combines=0;
-                    null_power.serializeto(bs);
-                    bs.StorePackedBits(5, boost_level);
-                    bs.StorePackedBits(2, boost_num_combines);
+                    bool has_enhancement = false;
+                    bs.StoreBits(1, has_enhancement); // slot has enhancement
+                    if(has_enhancement)
+                    {
+                        null_pow_tpl.serializeto(bs);
+                        bs.StorePackedBits(5, power.m_enhancements.at(i).m_level);
+                        bs.StorePackedBits(2, power.m_enhancements.at(i).m_num_combines);
+                    }
                 }
             }
+            else
+            {
+                // TODO: Release power? Maybe erase from array?
+            }
+
+            pow_idx++; // iterate to next power
         }
-        else
-        {
-            // nothing to do.
-        }
+
+        pset_idx++; // iterate to next powerset
     }
 
     // sending state of all current powers.
-    storePowerRanges(e->m_char->m_char_data, bs);
+    storePowerRanges(cd, bs);
 
-    uint32_t activation_count=0;
-    bs.StorePackedBits(4, activation_count);
-    for(uint32_t act=0; act<activation_count; ++act)
+    // Count all active powers (there's probably a smarter way)
+    uint32_t total_active_powers = 0;
+    for(const CharacterPowerSet &pset : cd.m_powersets)
     {
-        bool active_state_change=false;
-        bs.StoreBits(1,active_state_change);
+        for(const CharacterPower &power : pset.m_powers)
+        {
+            if(power.m_activation_time != 0)
+                total_active_powers++;
+        }
+    }
+    bs.StorePackedBits(4, total_active_powers);
+
+    // TODO: Create and update vector of active (or queued) powers, include pset_idx, pow_idx, activation_state
+    for(uint32_t i=0; i<total_active_powers; ++i)
+    {
+        bool active_state_change = false;
+        bs.StoreBits(1, active_state_change);
         if(active_state_change)
         {
-            uint32_t activation_state=0;
-            storePowerSpec(0,0,bs);
-            bs.StorePackedBits(1,activation_state);
+            uint32_t activation_state = 0;
+            storePowerSpec(0, 0, bs);
+            bs.StorePackedBits(1, activation_state);
         }
     }
 
-    uint32_t timer_count=0;
-    bs.StorePackedBits(1,timer_count);
+    // TODO: Create and update vector of powers on recharge, include pset_idx, pow_idx, countdown_timer
+    uint32_t timer_count = 0;
+    bs.StorePackedBits(1, timer_count);
     for(uint32_t tmr=0; tmr<timer_count; ++tmr)
     {
-        bool timer_updated=false;
-        bs.StoreBits(1,timer_updated);
+        bool timer_updated = false;
+        bs.StoreBits(1, timer_updated);
         if(timer_updated)
         {
-            float recharge_countdown=0;
-            storePowerSpec(0,0,bs);
+            float recharge_countdown = 0;
+            storePowerSpec(0, 0, bs);
             bs.StoreFloat(recharge_countdown);
         }
     }
@@ -455,7 +477,7 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
 
         bs.StorePackedBits(3, iRow);
         bs.StorePackedBits(3, iCol);
-        null_power.serializeto(bs);
+        null_pow_tpl.serializeto(bs);
     }
 
     // boosts
@@ -472,7 +494,7 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
         bs.StoreBits(1, clear);
         if(!clear)
         {
-            null_power.serializeto(bs);
+            null_pow_tpl.serializeto(bs);
             bs.StorePackedBits(5, level);
             bs.StorePackedBits(2, num_combines);
         }

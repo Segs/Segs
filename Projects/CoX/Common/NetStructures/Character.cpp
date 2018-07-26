@@ -99,14 +99,39 @@ void Character::GetCharBuildInfo(BitStream &src)
 
     CharacterPowerSet primaryset, secondaryset;
     CharacterPower primary, secondary;
-    primary.power_id.serializefrom(src);
-    secondary.power_id.serializefrom(src);
+    primary.m_power_tpl.serializefrom(src);
+    secondary.m_power_tpl.serializefrom(src);
     primaryset.m_powers.push_back(primary); // primary_powerset power
     secondaryset.m_powers.push_back(secondary); // secondary_powerset power
     m_char_data.m_powersets.push_back(primaryset);
     m_char_data.m_powersets.push_back(secondaryset);
 
     m_char_data.m_trays.serializefrom(src);
+}
+
+void Character::sendOwnedPowers(BitStream &bs) const
+{
+    // TODO: this is character powers related, refactor it out of here.
+    bs.StorePackedBits(4, m_char_data.m_powersets.size()); // count
+    for(const CharacterPowerSet &pset : m_char_data.m_powersets)
+    {
+        bs.StorePackedBits(5, pset.m_level_bought);
+        bs.StorePackedBits(4, pset.m_powers.size());
+        for(const CharacterPower &power : pset.m_powers)
+        {
+            power.m_power_tpl.serializeto(bs);
+            bs.StorePackedBits(5, power.m_level_bought);
+            bs.StoreFloat(power.m_range);
+            bs.StorePackedBits(4, power.m_enhancements.size());
+
+            for(const CharacterPowerBoost &boost : power.m_enhancements)
+            {
+                boost.m_enhance_tpl.serializeto(bs);
+                bs.StorePackedBits(5, boost.m_level);
+                bs.StorePackedBits(2, boost.m_num_combines);
+            }
+        }
+    }
 }
 
 void Character::SendCharBuildInfo(BitStream &bs) const
@@ -118,32 +143,9 @@ void Character::SendCharBuildInfo(BitStream &bs) const
     bs.StorePackedBits(5, getCombatLevel(c)); // related to combat level?
     PUTDEBUG("SendCharBuildInfo after plevel");
 
-    {
-        // TODO: this is character powers related, refactor it out of here.
-        bs.StorePackedBits(4, m_char_data.m_powersets.size()); // count
-        for(const CharacterPowerSet &pset : m_char_data.m_powersets)
-        {
-            bs.StorePackedBits(5, pset.m_level_bought);
-            bs.StorePackedBits(4, pset.m_powers.size());
-            for(const CharacterPower &power : pset.m_powers)
-            {
-                //sendPower(bs,0,0,0);
-                power.power_id.serializeto(bs);
-                bs.StorePackedBits(5, power.bought_at_level);
-                bs.StoreFloat(power.range);
-                bs.StorePackedBits(4, power.boosts.size());
-
-                for(const CharacterPowerBoost &boost : power.boosts)
-                {
-                    //sendPower(bs,0,0,0);
-                    boost.boost_id.serializeto(bs);
-                    bs.StorePackedBits(5, boost.level);
-                    bs.StorePackedBits(2, boost.num_combines);
-                }
-            }
-        }
-    }
+    sendOwnedPowers(bs);
     PUTDEBUG("SendCharBuildInfo after powers");
+
     // main tray inspirations
     {
         uint32_t max_num_cols=3;
@@ -162,21 +164,22 @@ void Character::SendCharBuildInfo(BitStream &bs) const
         }
     }
     PUTDEBUG("SendCharBuildInfo after inspirations");
-    // boosts
-    uint32_t num_boosts=0; // FixMe: num_boosts is never modified and the body of the for loop below will never fire.
-    bs.StorePackedBits(5,num_boosts); // count
+
+    // Enhancements
+    uint32_t num_boosts = 0; // FixMe: num_boosts is never modified and the body of the for loop below will never fire.
+    bs.StorePackedBits(5, num_boosts); // count
     for(size_t idx=0; idx<num_boosts; ++idx)
     {
-        bool set_boost=false;
-        bs.StorePackedBits(3,0); // boost idx
-        bs.StoreBits(1,set_boost); // 1 set, 0 clear
+        bool set_boost = false;
+        bs.StorePackedBits(3, 0); // boost idx
+        bs.StoreBits(1, set_boost); // 1 set, 0 clear
         if(set_boost)
         {
-            int level=0;
-            int num_combines=0;
+            int level = 0;
+            int num_combines = 0;
             null_power.serializeto(bs);
-            bs.StorePackedBits(5,level); // boost idx
-            bs.StorePackedBits(2,num_combines); // boost idx
+            bs.StorePackedBits(5, level); // boost idx
+            bs.StorePackedBits(2, num_combines); // boost idx
         }
     }
     PUTDEBUG("SendCharBuildInfo after boosts");
@@ -276,9 +279,9 @@ void Character::DumpOwnedPowers()
         for(CharacterPower &p : pset.m_powers)
         {
             qDebug().noquote() << "Power: " << pow_idx;
-            DumpPowerPoolInfo(p.power_id);
-            qDebug().noquote() << "LevelBought: " << p.bought_at_level;
-            qDebug().noquote() << "Range: " << p.range;
+            DumpPowerPoolInfo(p.m_power_tpl);
+            qDebug().noquote() << "LevelBought: " << p.m_level_bought;
+            qDebug().noquote() << "Range: " << p.m_range;
 
             pow_idx++;
         }

@@ -81,6 +81,7 @@ const   QString &       getName() const { return m_name; }
         void            dump();
         void            sendFullStats(BitStream &bs) const;
         void            sendTray(BitStream &bs) const;
+        void            sendOwnedPowers(BitStream &bs) const;
         void            sendDescription(BitStream &bs) const;
         void            sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const;
         void            sendFriendList(BitStream &bs) const;

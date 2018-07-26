@@ -60,9 +60,9 @@ void serialize(Archive &archive, CharacterPowerBoost &boost, uint32_t const vers
         return;
     }
 
-    archive(cereal::make_nvp("BoostInfo", boost.boost_id));
-    archive(cereal::make_nvp("Level", boost.level));
-    archive(cereal::make_nvp("NumCombines", boost.num_combines));
+    archive(cereal::make_nvp("BoostInfo", boost.m_enhance_tpl));
+    archive(cereal::make_nvp("Level", boost.m_level));
+    archive(cereal::make_nvp("NumCombines", boost.m_num_combines));
 }
 
 template<class Archive>
@@ -74,10 +74,10 @@ void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version)
         return;
     }
 
-    archive(cereal::make_nvp("PowerInfo", pwr.power_id));
-    archive(cereal::make_nvp("LevelBought", pwr.bought_at_level));
-    archive(cereal::make_nvp("Range", pwr.range));
-    archive(cereal::make_nvp("Boosts", pwr.boosts));
+    archive(cereal::make_nvp("PowerInfo", pwr.m_power_tpl));
+    archive(cereal::make_nvp("LevelBought", pwr.m_level_bought));
+    archive(cereal::make_nvp("Range", pwr.m_range));
+    archive(cereal::make_nvp("Enhancements", pwr.m_enhancements));
 }
 
 template<class Archive>
