@@ -681,7 +681,7 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
  */
 void sendFloatingInfo(Entity *tgt, QString msg, FloatingInfoStyle style, float delay)
 {
-    qCDebug(logSlashCommand, "Sending %d FloatingInfo: %s", tgt->m_idx, msg);
+    qCDebug(logSlashCommand) << "Sending FloatingInfo:" << tgt->m_idx << msg;
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingInfo>(new FloatingInfo(tgt->m_idx, msg, style, delay)));
 }
 

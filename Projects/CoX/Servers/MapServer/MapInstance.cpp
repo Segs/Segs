@@ -1954,7 +1954,7 @@ void MapInstance::on_activate_power(ActivatePower *ev)
     std::shuffle(batman_kerpow.begin(), batman_kerpow.end(), urng);
     QString contents = batman_kerpow.first();
 
-    sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 2.0);
+    sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }
 
@@ -1964,14 +1964,17 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
 
     // TODO: Check that target is valid, then Do Power!
     QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
-    StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-    session.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+    sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
 {
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    QString contents = "Inspired!";
+
+    sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
     qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
     // TODO: not sure what the client expects from the server here
 }

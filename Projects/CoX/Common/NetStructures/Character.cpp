@@ -116,7 +116,7 @@ void Character::addStartingInspirations()
     int pcat_idx = getPowerCatByName("Inspirations");
     int pset_idx = getPowerSetByName("Large", pcat_idx);
     int insp1_idx = getPowerByName("Resurgence", pcat_idx, pset_idx);
-    int insp2_idx = getPowerByName("Second_Wind", pcat_idx, pset_idx);
+    int insp2_idx = getPowerByName("Phenomenal_Luck", pcat_idx, pset_idx);
 
     qCDebug(logPowers) << "Starting Inspirations: " << pcat_idx << pset_idx << ":" << insp1_idx << insp2_idx;
 
@@ -236,6 +236,9 @@ void Character::sendInspirations(BitStream &bs) const
 
     for ( int i = 0; i < max_inspirations; ++i )
     {
+        if(m_char_data.m_inspirations.size() < i)
+            bs.StoreBits(1, 0);
+
         bs.StoreBits(1, m_char_data.m_inspirations[i].m_has_insp);
         if(m_char_data.m_inspirations[i].m_has_insp)
             m_char_data.m_inspirations[i].m_insp_tpl.serializeto(bs);
