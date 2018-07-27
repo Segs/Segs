@@ -11,6 +11,7 @@
 #include "EventProcessor.h"
 #include "EmailEvents.h"
 #include "Servers/MessageBusEndpoint.h"
+#include "GameDatabase/GameDBSyncHandler.h"
 #include <map>
 
 struct ClientSessionData
@@ -34,9 +35,11 @@ private:
 protected:
     MessageBusEndpoint m_message_bus_endpoint;
     std::map<uint64_t, ClientSessionData> m_stored_client_datas;
+    GameDBSyncHandler* m_db_handler;
     // QVector<ClientConnectedData> m_stored_client_datas;
 public:
     EmailHandler();
+    void set_db_handler(uint8_t id);
 };
 
 #endif // EMAILHANDLER_H

@@ -39,8 +39,14 @@ void EmailHandler::dispatch(SEGSEvent *ev)
     }
 }
 
-void EmailHandler::on_email_header(EmailHeaderRequest *msg)
+void EmailHandler::set_db_handler(uint8_t id)
 {
+    m_db_handler = static_cast<GameDBSyncHandler*>(
+                HandlerLocator::getGame_DB_Handler(id));
+}
+
+void EmailHandler::on_email_header(EmailHeaderRequest *msg)
+{    
     /*EmailHeaders *header = new EmailHeaders(
                 msg->m_data.id,
                 msg->m_data.sender,

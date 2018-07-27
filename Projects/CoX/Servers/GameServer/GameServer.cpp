@@ -54,6 +54,7 @@ public:
     QString                 m_serverName="";
     GameLinkEndpoint *      m_endpoint=nullptr;
     GameHandler *           m_handler=nullptr;
+    EmailHandler *          m_email_handler=nullptr;
     GameLink *              m_game_link=nullptr;
     bool                    m_online=false;
     uint8_t                 m_id=1;
@@ -89,6 +90,10 @@ GameServer::GameServer(int id) : d(new PrivateData)
     d->m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
     d->m_handler->start();
     d->m_id = id;
+
+    d->m_email_handler = new EmailHandler();
+    d->m_email_handler->activate();
+    d->m_email_handler->set_db_handler(d->m_id);
     HandlerLocator::setGame_Handler(d->m_id,d->m_handler);
 }
 
