@@ -165,7 +165,7 @@ int getEntityOriginIndex(bool is_player, const QString &origin_name)
     const MapServerData &data(g_GlobalMapServer->runtimeData());
     const Parse_AllOrigins &origins_to_search(is_player ? data.m_player_origins : data.m_other_origins);
 
-    int idx=0;
+    int idx = 0;
     for(const Parse_Origin &orig : origins_to_search)
     {
         if(orig.Name.compare(origin_name,Qt::CaseInsensitive)==0)
@@ -181,7 +181,7 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
     const MapServerData &data(g_GlobalMapServer->runtimeData());
     const Parse_AllCharClasses &classes_to_search(is_player ? data.m_player_classes : data.m_other_classes);
 
-    int idx=0;
+    int idx = 0;
     for(const CharClass_Data &classdata : classes_to_search)
     {
         if(classdata.m_Name.compare(class_name,Qt::CaseInsensitive)==0)
@@ -196,7 +196,7 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
 // Get Powers
 int getPowerCatByName(const QString &name)
 {
-    int idx;
+    int idx = 0;
 
     const MapServerData &data(g_GlobalMapServer->runtimeData());
 
@@ -214,7 +214,7 @@ int getPowerCatByName(const QString &name)
 
 int getPowerSetByName(const QString &name, uint32_t pcat_idx)
 {
-    int idx;
+    int idx = 0;
 
     const MapServerData &data(g_GlobalMapServer->runtimeData());
 
@@ -232,7 +232,7 @@ int getPowerSetByName(const QString &name, uint32_t pcat_idx)
 
 int getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx)
 {
-    int idx;
+    int idx = 0;
 
     const MapServerData &data(g_GlobalMapServer->runtimeData());
 
@@ -256,15 +256,18 @@ CharacterPowerSet getPowers(uint32_t pcat_idx, uint32_t pset_idx)
 
     for(const Power_Data &power : powerset.m_Powers)
     {
+        int pow_idx =getPowerByName(power.m_Name, pcat_idx, pset_idx);
+
         CharacterPower p;
-        p.m_power_tpl.m_category_idx    = power.category_idx;
-        p.m_power_tpl.m_pset_idx        = power.powerset_idx;
-        p.m_power_tpl.m_pow_idx         = power.power_index;
-        p.m_power_idx                   = p.m_power_tpl.m_pow_idx;
+        p.m_power_tpl.m_category_idx    = pcat_idx;
+        p.m_power_tpl.m_pset_idx        = pset_idx;
+        p.m_power_tpl.m_pow_idx         = pow_idx;
+        p.m_power_idx                   = pow_idx;
+        p.m_name                        = power.m_Name;
         p.m_num_charges                 = power.m_NumCharges;
         p.m_range                       = power.Range;
         p.m_recharge_time               = power.RechargeTime;
-        result.m_pset_idx               = power.powerset_idx;
+        result.m_pset_idx               = pset_idx;
 
         result.m_powers.push_back(p);
     }
@@ -676,6 +679,12 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendFloatingInfo(Entity *tgt, QString msg, FloatingInfoStyle style, float delay)
+{
+    qCDebug(logSlashCommand, "Sending %d FloatingInfo: %s", tgt->m_idx, msg);
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingInfo>(new FloatingInfo(tgt->m_idx, msg, style, delay)));
+}
+
 void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount)
 {
     qCDebug(logSlashCommand, "Sending %d FloatingNumbers from %d to %d", amount, src->m_idx, tgt_idx);

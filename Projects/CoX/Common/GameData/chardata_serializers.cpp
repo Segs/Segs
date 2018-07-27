@@ -78,6 +78,7 @@ void serialize(Archive &archive, CharacterPowerEnhancement &eh, uint32_t const v
     }
 
     archive(cereal::make_nvp("EnhancementInfo", eh.m_enhance_tpl));
+    archive(cereal::make_nvp("Index", eh.m_enhancement_idx));
     archive(cereal::make_nvp("Level", eh.m_level));
     archive(cereal::make_nvp("NumCombines", eh.m_num_combines));
     archive(cereal::make_nvp("IsUsed", eh.m_is_used));
@@ -93,8 +94,15 @@ void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version)
     }
 
     archive(cereal::make_nvp("PowerInfo", pwr.m_power_tpl));
+    archive(cereal::make_nvp("Name", pwr.m_name));
     archive(cereal::make_nvp("LevelBought", pwr.m_level_bought));
+    archive(cereal::make_nvp("NumCharges", pwr.m_num_charges));
+    archive(cereal::make_nvp("UsageTime", pwr.m_usage_time));
+    archive(cereal::make_nvp("ActivationTime", pwr.m_activation_time));
     archive(cereal::make_nvp("Range", pwr.m_range));
+    archive(cereal::make_nvp("RechargeTime", pwr.m_recharge_time));
+    archive(cereal::make_nvp("ActivationState", pwr.m_activation_state));
+    archive(cereal::make_nvp("NumEnhancements", pwr.m_num_enhancements));
     archive(cereal::make_nvp("Enhancements", pwr.m_enhancements));
 }
 
@@ -107,6 +115,7 @@ void serialize(Archive &archive, CharacterPowerSet &pset, uint32_t const version
         return;
     }
 
+    archive(cereal::make_nvp("Index", pset.m_pset_idx));
     archive(cereal::make_nvp("LevelBought", pset.m_level_bought));
     archive(cereal::make_nvp("Powers", pset.m_powers));
 }

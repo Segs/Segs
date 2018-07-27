@@ -46,6 +46,8 @@ SET(target_INCLUDE
     Events/EmailRead.h
     Events/EntitiesResponse.h
     Events/FloatingDamage.h
+    Events/FloatingInfo.h
+    Events/FloatingInfoStyles.h
     Events/FriendsListUpdate.h
     Events/InputState.h
     Events/LocationVisited.h

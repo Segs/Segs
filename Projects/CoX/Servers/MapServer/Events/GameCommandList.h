@@ -41,3 +41,4 @@ public:
 #include "Events/StandardDialogCmd.h"
 #include "Events/InfoMessageCmd.h"
 #include "Events/FloatingDamage.h"
+#include "Events/FloatingInfo.h"

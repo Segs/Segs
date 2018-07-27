@@ -69,6 +69,7 @@ struct CharacterPower
 static const constexpr  uint32_t    class_version = 1;
         PowerPool_Info  m_power_tpl;
         uint32_t        m_power_idx         = 0;
+        QString         m_name;
         uint32_t        m_level_bought      = 0;
         uint32_t        m_num_charges       = 0;
         float           m_usage_time        = 0.0f;

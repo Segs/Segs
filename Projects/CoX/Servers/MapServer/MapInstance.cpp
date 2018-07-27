@@ -1954,10 +1954,8 @@ void MapInstance::on_activate_power(ActivatePower *ev)
     std::shuffle(batman_kerpow.begin(), batman_kerpow.end(), urng);
     QString contents = batman_kerpow.first();
 
-    StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-    session.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
-
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
+    sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 2.0);
+    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }
 
 void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
@@ -1969,12 +1967,12 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
     StandardDialogCmd *dlg = new StandardDialogCmd(contents);
     session.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
 
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
+    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
 {
-    qCWarning(logMapEvents) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
+    qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
     // TODO: not sure what the client expects from the server here
 }
 
@@ -2010,7 +2008,7 @@ void MapInstance::on_set_keybind(SetKeybind *ev)
 
 
     ent->m_player->m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
-    qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
+    //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
 }
 
 void MapInstance::on_remove_keybind(RemoveKeybind *ev)
@@ -2019,7 +2017,7 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
     Entity *ent = session.m_ent;
 
     ent->m_player->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
-    qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
+    //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
 const MapServerData &MapInstance::serverData() const
@@ -2045,7 +2043,7 @@ void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
     Entity *ent = session.m_ent;
 
     ent->m_player->m_keybinds.resetKeybinds(default_profiles);
-    qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
+    //qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
 }
 
 void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
@@ -2054,7 +2052,7 @@ void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
     Entity *ent = session.m_ent;
 
     ent->m_player->m_keybinds.setKeybindProfile(ev->profile);
-    qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
+    //qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }
 
 void MapInstance::on_interact_with(InteractWithEntity *ev)

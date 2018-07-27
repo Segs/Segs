@@ -52,6 +52,8 @@ Character::Character()
             || !m_char_data.m_titles[2].isEmpty();
     m_char_data.m_sidekick.m_has_sidekick = false;
     m_char_data.m_current_attribs.initAttribArrays();
+    m_char_data.m_max_insp_cols = 3;
+    m_char_data.m_max_insp_rows = 1;
 }
 
 void Character::reset()
@@ -69,6 +71,11 @@ void Character::reset()
     m_char_data.m_using_sg_costume=false;
     m_char_data.m_has_titles = false;
     m_char_data.m_sidekick.m_has_sidekick = false;
+    m_char_data.m_powersets.clear();
+    m_char_data.m_inspirations.clear();
+    m_char_data.m_enhancements.clear();
+    m_char_data.m_max_insp_cols = 3;
+    m_char_data.m_max_insp_rows = 1;
 }
 
 
@@ -95,6 +102,8 @@ void Character::addPowerSet(uint32_t pcat_idx, uint32_t pset_idx)
 {
     CharacterPowerSet pset;
 
+    qCDebug(logPowers) << "addPowerSet:" << pcat_idx << pset_idx;
+
     pset = getPowers(pcat_idx, pset_idx);
     pset.m_level_bought = m_char_data.m_level;
 
@@ -109,7 +118,7 @@ void Character::addStartingInspirations()
     int insp1_idx = getPowerByName("Resurgence", pcat_idx, pset_idx);
     int insp2_idx = getPowerByName("Second_Wind", pcat_idx, pset_idx);
 
-    qCDebug(logPowers) << "Starting Inspirations: " << pcat_idx << pset_idx << insp1_idx << insp2_idx;
+    qCDebug(logPowers) << "Starting Inspirations: " << pcat_idx << pset_idx << ":" << insp1_idx << insp2_idx;
 
     CharacterInspiration insp1, insp2;
 
@@ -119,14 +128,28 @@ void Character::addStartingInspirations()
     insp1.m_insp_tpl.m_pset_idx = pset_idx;
     insp1.m_insp_tpl.m_pow_idx = insp1_idx;
     insp1.m_col = 1;
-    insp1.m_row = 1;
+    insp1.m_row = 0;
     // Second Wind
     insp2.m_has_insp = true;
     insp2.m_insp_tpl.m_category_idx = pcat_idx;
     insp2.m_insp_tpl.m_pset_idx = pset_idx;
     insp2.m_insp_tpl.m_pow_idx = insp2_idx;
-    insp2.m_col = 1;
-    insp2.m_row = 2;
+    insp2.m_col = 2;
+    insp2.m_row = 0;
+
+    qCDebug(logPowers) << "Insp1: " << insp1.m_has_insp
+                       << insp1.m_insp_tpl.m_category_idx
+                       << insp1.m_insp_tpl.m_pset_idx
+                       << insp1.m_insp_tpl.m_pow_idx
+                       << insp1.m_col
+                       << insp1.m_row;
+
+    qCDebug(logPowers) << "Insp2: " << insp2.m_has_insp
+                       << insp2.m_insp_tpl.m_category_idx
+                       << insp2.m_insp_tpl.m_pset_idx
+                       << insp2.m_insp_tpl.m_pow_idx
+                       << insp2.m_col
+                       << insp2.m_row;
 
     m_char_data.m_inspirations.push_back(insp1);
     m_char_data.m_inspirations.push_back(insp2);
@@ -179,7 +202,7 @@ void Character::GetCharBuildInfo(BitStream &src)
     src.GetString(m_char_data.m_class_name);
     src.GetString(m_char_data.m_origin_name);
 
-//    addStartingInspirations();      // resurgence and second wind
+    addStartingInspirations();      // resurgence and second wind
     getInherentPowers();            // inherent
     getPowerFromBuildInfo(src);     // primary, secondary
 
@@ -204,14 +227,18 @@ void Character::sendEnhancements(BitStream &bs) const
 
 void Character::sendInspirations(BitStream &bs) const
 {
-    bs.StorePackedBits(3, m_char_data.m_max_insp_cols); // count
-    bs.StorePackedBits(3, m_char_data.m_max_insp_rows); // count
+    int max_cols = m_char_data.m_max_insp_cols;
+    int max_rows = m_char_data.m_max_insp_rows;
+    int max_inspirations = max_cols * max_rows;
 
-    for(const CharacterInspiration &insp : m_char_data.m_inspirations)
+    bs.StorePackedBits(3, max_cols); // count
+    bs.StorePackedBits(3, max_rows); // count
+
+    for ( int i = 0; i < max_inspirations; ++i )
     {
-        bs.StoreBits(1, insp.m_has_insp);
-        if(insp.m_has_insp)
-            insp.m_insp_tpl.serializeto(bs);
+        bs.StoreBits(1, m_char_data.m_inspirations[i].m_has_insp);
+        if(m_char_data.m_inspirations[i].m_has_insp)
+            m_char_data.m_inspirations[i].m_insp_tpl.serializeto(bs);
     }
 }
 
