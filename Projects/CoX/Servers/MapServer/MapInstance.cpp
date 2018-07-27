@@ -45,6 +45,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <random>
 #include <stdlib.h>
 
 namespace
@@ -326,6 +327,12 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evEnterDoor:
             on_enter_door(static_cast<EnterDoor *>(ev));
             break;
+        case MapEventTypes::evChangeStance:
+            on_change_stance(static_cast<ChangeStance *>(ev));
+            break;
+        case MapEventTypes::evSendStance:
+            on_send_stance(static_cast<SendStance *>(ev));
+            break;
         case MapEventTypes::evSetDestination:
             on_set_destination(static_cast<SetDestination *>(ev));
             break;
@@ -379,6 +386,12 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case MapEventTypes::evUnqueueAll:
             on_unqueue_all(static_cast<UnqueueAll *>(ev));
+            break;
+        case MapEventTypes::evActivatePower:
+            on_activate_power(static_cast<ActivatePower *>(ev));
+            break;
+        case MapEventTypes::evActivatePowerAtLocation:
+            on_activate_power_at_location(static_cast<ActivatePowerAtLocation *>(ev));
             break;
         case MapEventTypes::evActivateInspiration:
             on_activate_inspiration(static_cast<ActivateInspiration *>(ev));
@@ -775,9 +788,13 @@ void MapInstance::sendState() {
 
 }
 
-void MapInstance::on_combine_boosts(CombineRequest */*req*/)
+void MapInstance::on_combine_boosts(CombineRequest *ev)
 {
-    //TODO: do something here !
+    // TODO: Merge Enhancements
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to merge enhancements" /*<< ev->first_power << ev->second_power*/;
+
 }
 
 void MapInstance::on_input_state(InputState *st)
@@ -1789,11 +1806,28 @@ void MapInstance::on_enter_door(EnterDoor *ev)
 
 void MapInstance::on_change_stance(ChangeStance * ev)
 {
-    qCWarning(logMapEvents) << "Unhandled change stance request";
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *ent = session.m_ent;
+
     if(ev->enter_stance)
-        qCWarning(logMapEvents) << "  enter stance" <<ev->powerset_index<<ev->power_index;
+    {
+        //ent->m_stance = getPower(*ent, ev->pset_idx, ev->pow_idx); // This crashes server
+        qCWarning(logMapEvents) << "Unhandled change stance request" << ev->pset_idx << ev->pow_idx;
+    }
     else
-        qCWarning(logMapEvents) << "  exit stance";
+    {
+        qCWarning(logMapEvents) << "Unhandled exit stance request";
+    }
+}
+
+void MapInstance::on_send_stance(SendStance * ev)
+{
+    qCWarning(logMapEvents) << "Unhandled send stance request";
+
+    if(ev->enter_stance)
+        qCWarning(logMapEvents) << "  send stance" << ev->pset_idx << ev->pow_idx;
+    else
+        qCWarning(logMapEvents) << "  stance is zero";
 }
 
 void MapInstance::on_set_destination(SetDestination * ev)
@@ -1895,8 +1929,47 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    qCDebug(logMapEvents) << "Saving chat channel type to GUISettings:" << ev->m_chat_type;
     ent->m_player->m_gui.m_cur_chat_channel = ev->m_chat_type;
+    qCDebug(logMapEvents) << "Saving chat channel type to GUISettings:" << ev->m_chat_type;
+}
+
+void MapInstance::on_activate_power(ActivatePower *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    // TODO: Check that target is valid, then Do Power!
+    QStringList batman_kerpow{"AIEEE!", "ARRRGH!", "AWKKKKKK!", "BAM!", "BANG!", "BAP!",
+                     "BIFF!", "BLOOP!", "BLURP!", "BOFF!", "BONK!", "CLANK!",
+                     "CLASH!", "CLUNK!", "CRAAACK!", "CRASH!", "CRUNCH!", "EEE-YOW!",
+                     "FLRBBBBB!", "GLIPP!", "GLURPP!", "KAPOW!", "KER-PLOP!", "KLONK!",
+                     "KRUNCH!", "OOOFF!", "OUCH!", "OWWW!", "PAM!", "PLOP!",
+                     "POW!", "POWIE!", "QUNCKKK!", "RAKKK!", "RIP!", "SLOSH!",
+                     "SOCK!", "SPLAAT!", "SWAAP!", "SWISH!", "SWOOSH!", "THUNK!",
+                     "THWACK!", "THWAPP!", "TOUCHÉ!", "UGGH!", "URKK!", "VRONK!",
+                     "WHACK!", "WHAMM!", "WHAP!", "ZAM!", "ZAP!", "ZGRUPPP!",
+                     "ZLONK!", "ZLOPP!", "ZLOTT!", "ZOK!", "ZOWIE!", "ZWAPP!"};
+
+    std::random_device rng;
+    std::mt19937 urng(rng());
+    std::shuffle(batman_kerpow.begin(), batman_kerpow.end(), urng);
+    QString contents = batman_kerpow.first();
+
+    StandardDialogCmd *dlg = new StandardDialogCmd(contents);
+    session.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
+}
+
+void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    // TODO: Check that target is valid, then Do Power!
+    QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
+    StandardDialogCmd *dlg = new StandardDialogCmd(contents);
+    session.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
@@ -1911,7 +1984,7 @@ void MapInstance::on_powers_dockmode(PowersDockMode *ev)
     Entity *ent = session.m_ent;
 
     ent->m_player->m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
-    qCDebug(logMapEvents) << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
+    //qCDebug(logMapEvents) << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
 }
 
 void MapInstance::on_switch_tray(SwitchTray *ev)
@@ -1919,14 +1992,12 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    ent->m_player->m_gui.m_tray1_number = ev->tray1_num;
-    ent->m_player->m_gui.m_tray2_number = ev->tray2_num;
-    ent->m_player->m_gui.m_tray3_number = ev->tray_unk1;
+    ent->m_player->m_gui.m_tray1_number = ev->tray_group.m_primary_tray_idx;
+    ent->m_player->m_gui.m_tray2_number = ev->tray_group.m_second_tray_idx;
+    ent->m_char->m_char_data.m_trays = ev->tray_group;
     markEntityForDbStore(ent, DbStoreFlags::PlayerData);
 
-    qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray1_num+1 << "Tray2:" << ev->tray2_num+1 << "Unk1:" << ev->tray_unk1;
-    // TODO: need to load powers for new tray.
-    qCWarning(logMapEvents) << "TODO: Need to load powers for new trays";
+   //qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray_group.m_primary_tray_idx+1 << "Tray2:" << ev->tray_group.m_second_tray_idx+1;
 }
 
 void MapInstance::on_set_keybind(SetKeybind *ev)
@@ -1939,7 +2010,7 @@ void MapInstance::on_set_keybind(SetKeybind *ev)
 
 
     ent->m_player->m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
-    //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
+    qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
 }
 
 void MapInstance::on_remove_keybind(RemoveKeybind *ev)
@@ -1948,7 +2019,7 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
     Entity *ent = session.m_ent;
 
     ent->m_player->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
-    //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
+    qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
 const MapServerData &MapInstance::serverData() const
@@ -1990,7 +2061,7 @@ void MapInstance::on_interact_with(InteractWithEntity *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with"<<ev->m_srv_idx;
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
 }
 
 //! @}

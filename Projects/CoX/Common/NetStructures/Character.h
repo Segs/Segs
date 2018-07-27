@@ -69,6 +69,12 @@ const   QString &       getName() const { return m_name; }
         void            serializeto(BitStream &buffer) const;
         void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool all_costumes=true) const;
         void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
+        void            addPowerSet(uint32_t pcat_idx, uint32_t pset_idx);
+        void            addStartingInspirations();
+        void            getInherentPowers();
+        void            getPowerFromBuildInfo(BitStream &src);
+        void            sendEnhancements(BitStream &bs) const;
+        void            sendInspirations(BitStream &bs) const;
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);

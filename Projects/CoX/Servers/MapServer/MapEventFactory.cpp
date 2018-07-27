@@ -67,6 +67,8 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 20: return new RemoveKeybind;
         case 21: return new ResetKeybinds;
         case 22: return new SelectKeybindProfile;
+        case 27: return new ActivatePower;
+        case 28: return new ActivatePowerAtLocation;
         case 29: return new ActivateInspiration;
         case 30: return new SetDefaultPowerSend;
         case 31: return new SetDefaultPower;
@@ -78,6 +80,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 39: return new PlaqueVisited;
         case 40: return new CombineRequest;
         case 56: return new EntityInfoRequest;
+        case 57: return new SendStance;
         case 62: return new LocationVisited;
         case 64: return new SwitchViewPoint;
         case 65: return new SaveClientOptions;

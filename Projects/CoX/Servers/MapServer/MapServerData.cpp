@@ -18,6 +18,7 @@
 #include "Common/GameData/charclass_serializers.h"
 #include "Common/GameData/keybind_serializers.h"
 #include "Common/GameData/npc_serializers.h"
+#include "Common/GameData/power_serializers.h"
 #include "NetStructures/CommonNetStructures.h"
 #include "Logging.h"
 
@@ -234,6 +235,8 @@ bool MapServerData::read_runtime_data(const QString &directory_path)
         return false;
     if(!read_npcs(directory_path))
         return false;
+    if(!read_powers(directory_path))
+        return false;
     qInfo().noquote() << "Finished reading game data.";
     {
         TIMED_LOG({
@@ -357,6 +360,15 @@ bool MapServerData::read_npcs(const QString &directory_path)
     qDebug() << "Loading npcs:";
     if (!read_data_to<AllNpcs_Data, npccostumesets_i0_requiredCrc>(directory_path, "VillainCostume.bin",
                                                                    m_npc_store.m_all_npcs))
+        return false;
+    return true;
+}
+
+bool MapServerData::read_powers(const QString &directory_path)
+{
+    qDebug() << "Loading powers:";
+    if (!read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path, "powers.bin",
+                                                                   m_all_powers))
         return false;
     return true;
 }

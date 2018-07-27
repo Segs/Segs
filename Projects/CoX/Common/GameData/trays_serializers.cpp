@@ -29,16 +29,16 @@ void serialize(Archive &archive, PowerTrayItem &pwr, uint32_t const version)
 {
     if (version != PowerTrayItem::class_version)
     {
-        qCritical() << "Failed to serialize Power, incompatible serialization format version " << version;
+        qCritical() << "Failed to serialize PowerTrayItem, incompatible serialization format version " << version;
         return;
     }
 
-    archive(cereal::make_nvp("EntryType", pwr.entry_type));
-    archive(cereal::make_nvp("PowerSetIdx", pwr.powerset_idx));
-    archive(cereal::make_nvp("PowerIdx", pwr.power_idx));
-    archive(cereal::make_nvp("Command", pwr.command));
-    archive(cereal::make_nvp("ShortName", pwr.short_name));
-    archive(cereal::make_nvp("IconName", pwr.icon_name));
+    archive(cereal::make_nvp("EntryType", pwr.m_entry_type));
+    archive(cereal::make_nvp("PowerSetIdx", pwr.m_pset_idx));
+    archive(cereal::make_nvp("PowerIdx", pwr.m_pow_idx));
+    archive(cereal::make_nvp("Command", pwr.m_command));
+    archive(cereal::make_nvp("ShortName", pwr.m_short_name));
+    archive(cereal::make_nvp("IconName", pwr.m_icon_name));
 }
 
 template<class Archive>
@@ -50,7 +50,7 @@ void serialize(Archive &archive, PowerTray &ptray, uint32_t const version)
         return;
     }
 
-    archive(cereal::make_nvp("Powers", ptray.m_powers));
+    archive(cereal::make_nvp("Powers", ptray.m_tray_items));
 }
 
 template<class Archive>
@@ -62,8 +62,8 @@ void serialize(Archive &archive, PowerTrayGroup &ptraygroup, uint32_t const vers
         return;
     }
 
-    archive(cereal::make_nvp("DefaultPowerSet", ptraygroup.m_default_powerset_idx));
-    archive(cereal::make_nvp("DefaultPower", ptraygroup.m_default_power_idx));
+    archive(cereal::make_nvp("DefaultPowerSet", ptraygroup.m_default_pset_idx));
+    archive(cereal::make_nvp("DefaultPower", ptraygroup.m_default_pow_idx));
     archive(cereal::make_nvp("PowerTrays", ptraygroup.m_trays));
 }
 

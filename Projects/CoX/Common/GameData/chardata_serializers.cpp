@@ -21,7 +21,8 @@
 #include "Logging.h"
 
 const constexpr uint32_t PowerPool_Info::class_version;
-const constexpr uint32_t CharacterPowerBoost::class_version;
+const constexpr uint32_t CharacterInspiration::class_version;
+const constexpr uint32_t CharacterPowerEnhancement::class_version;
 const constexpr uint32_t CharacterPower::class_version;
 const constexpr uint32_t CharacterPowerSet::class_version;
 const constexpr uint32_t Friend::class_version;
@@ -29,7 +30,8 @@ const constexpr uint32_t FriendsList::class_version;
 const constexpr uint32_t Sidekick::class_version;
 const constexpr uint32_t CharacterData::class_version;
 CEREAL_CLASS_VERSION(PowerPool_Info, PowerPool_Info::class_version)   // register PowerPool_Info class version
-CEREAL_CLASS_VERSION(CharacterPowerBoost, CharacterPowerBoost::class_version)   // register CharacterPowerBoost struct version
+CEREAL_CLASS_VERSION(CharacterInspiration, CharacterInspiration::class_version)   // register CharacterInspiration struct version
+CEREAL_CLASS_VERSION(CharacterPowerEnhancement, CharacterPowerEnhancement::class_version)   // register CharacterPowerEnhancement struct version
 CEREAL_CLASS_VERSION(CharacterPower, CharacterPower::class_version)             // register CharacterPower struct version
 CEREAL_CLASS_VERSION(CharacterPowerSet, CharacterPowerSet::class_version)       // register CharacterPowerSet struct version
 CEREAL_CLASS_VERSION(Friend, Friend::class_version)                 // register Friend struct version
@@ -46,23 +48,39 @@ void serialize(Archive &archive, PowerPool_Info &poolinfo, uint32_t const versio
         return;
     }
 
-    archive(cereal::make_nvp("CategoryIdx", poolinfo.category_idx));
-    archive(cereal::make_nvp("PowersetEntryIdx", poolinfo.powerset_idx));
-    archive(cereal::make_nvp("PowerIdx", poolinfo.power_idx));
+    archive(cereal::make_nvp("CategoryIdx", poolinfo.m_category_idx));
+    archive(cereal::make_nvp("PowersetEntryIdx", poolinfo.m_pset_idx));
+    archive(cereal::make_nvp("PowerIdx", poolinfo.m_pow_idx));
 }
 
 template<class Archive>
-void serialize(Archive &archive, CharacterPowerBoost &boost, uint32_t const version)
+void serialize(Archive &archive, CharacterInspiration &in, uint32_t const version)
 {
-    if (version != CharacterPowerBoost::class_version)
+    if (version != CharacterInspiration::class_version)
     {
-        qCritical() << "Failed to serialize CharacterPowerBoost, incompatible serialization format version " << version;
+        qCritical() << "Failed to serialize CharacterInspiration, incompatible serialization format version " << version;
         return;
     }
 
-    archive(cereal::make_nvp("BoostInfo", boost.m_enhance_tpl));
-    archive(cereal::make_nvp("Level", boost.m_level));
-    archive(cereal::make_nvp("NumCombines", boost.m_num_combines));
+    archive(cereal::make_nvp("InspirationInfo", in.m_insp_tpl));
+    archive(cereal::make_nvp("Col", in.m_col));
+    archive(cereal::make_nvp("Row", in.m_row));
+    archive(cereal::make_nvp("HasInsp", in.m_has_insp));
+}
+
+template<class Archive>
+void serialize(Archive &archive, CharacterPowerEnhancement &eh, uint32_t const version)
+{
+    if (version != CharacterPowerEnhancement::class_version)
+    {
+        qCritical() << "Failed to serialize CharacterPowerEnhancement, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("EnhancementInfo", eh.m_enhance_tpl));
+    archive(cereal::make_nvp("Level", eh.m_level));
+    archive(cereal::make_nvp("NumCombines", eh.m_num_combines));
+    archive(cereal::make_nvp("IsUsed", eh.m_is_used));
 }
 
 template<class Archive>
@@ -174,6 +192,10 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("CurrentAttribs", cd.m_current_attribs));
     archive(cereal::make_nvp("PowerSets", cd.m_powersets));
     archive(cereal::make_nvp("PowerTrayGroups", cd.m_trays));
+    archive(cereal::make_nvp("Inspirations", cd.m_inspirations));
+    archive(cereal::make_nvp("Enhancements", cd.m_enhancements));
+    archive(cereal::make_nvp("MaxInspirationCols", cd.m_max_insp_cols));
+    archive(cereal::make_nvp("MaxInspirationRows", cd.m_max_insp_rows));
 }
 
 void saveTo(const CharacterData &target, const QString &baseName, bool text_format)

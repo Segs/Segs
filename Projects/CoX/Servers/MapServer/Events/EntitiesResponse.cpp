@@ -373,7 +373,7 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     if(reset_powersets)
     {
         // TODO: How can we confirm that first powerset contains inherent powers
-        cd.m_powersets.erase(cd.m_powersets.begin()+1, cd.m_powersets.begin()+3);
+        cd.m_powersets.erase(cd.m_powersets.begin()+1, cd.m_powersets.end());
     }
 
     // Count all powers owned
@@ -428,75 +428,49 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     // sending state of all current powers.
     storePowerRanges(cd, bs);
 
-    // Count all active powers (there's probably a smarter way)
-    uint32_t total_active_powers = 0;
-    for(const CharacterPowerSet &pset : cd.m_powersets)
+    bs.StorePackedBits(4, e->m_queued_powers.size()); // Count all active powers
+    for(const CharacterPower *pow : e->m_queued_powers)
     {
-        for(const CharacterPower &power : pset.m_powers)
+        bs.StoreBits(1, pow->m_active_state_change);
+        if(pow->m_active_state_change)
         {
-            if(power.m_activation_time != 0)
-                total_active_powers++;
-        }
-    }
-    bs.StorePackedBits(4, total_active_powers);
-
-    // TODO: Create and update vector of active (or queued) powers, include pset_idx, pow_idx, activation_state
-    for(uint32_t i=0; i<total_active_powers; ++i)
-    {
-        bool active_state_change = false;
-        bs.StoreBits(1, active_state_change);
-        if(active_state_change)
-        {
-            uint32_t activation_state = 0;
-            storePowerSpec(0, 0, bs);
-            bs.StorePackedBits(1, activation_state);
+            storePowerSpec(pow->m_power_tpl.m_pset_idx, pow->m_power_tpl.m_pset_idx, bs);
+            bs.StorePackedBits(1, pow->m_activation_state);
         }
     }
 
-    // TODO: Create and update vector of powers on recharge, include pset_idx, pow_idx, countdown_timer
-    uint32_t timer_count = 0;
-    bs.StorePackedBits(1, timer_count);
-    for(uint32_t tmr=0; tmr<timer_count; ++tmr)
+    bs.StorePackedBits(1, e->m_recharging_powers.size());
+    for(const CharacterPower *pow : e->m_recharging_powers)
     {
-        bool timer_updated = false;
-        bs.StoreBits(1, timer_updated);
-        if(timer_updated)
+        bs.StoreBits(1, pow->m_timer_updated);
+        if(pow->m_timer_updated)
         {
-            float recharge_countdown = 0;
-            storePowerSpec(0, 0, bs);
-            bs.StoreFloat(recharge_countdown);
+            storePowerSpec(pow->m_power_tpl.m_pset_idx, pow->m_power_tpl.m_pset_idx, bs);
+            bs.StoreFloat(pow->m_recharge_time);
         }
     }
 
-    uint32_t inspiration_count=0;
-    storePackedBitsConditional(bs,4,inspiration_count);
-    for(uint32_t insp=0; insp<inspiration_count; ++insp)
+    // All Owned Inspirations
+    storePackedBitsConditional(bs, 4, e->m_char->m_char_data.m_inspirations.size());
+    for(CharacterInspiration &insp : e->m_char->m_char_data.m_inspirations)
     {
-        int iRow = 0;
-        int iCol = 0;
-
-        bs.StorePackedBits(3, iRow);
-        bs.StorePackedBits(3, iCol);
-        null_pow_tpl.serializeto(bs);
+        bs.StorePackedBits(3, insp.m_col);
+        bs.StorePackedBits(3, insp.m_row);
+        if(insp.m_has_insp)
+            insp.m_insp_tpl.serializeto(bs);
     }
 
-    // boosts
-    uint32_t boost_count=0;
-    bs.StorePackedBits(1,boost_count);
-    for(uint32_t insp=0; insp<boost_count; ++insp)
+    // All Owned Enhancements
+    bs.StorePackedBits(1, e->m_char->m_char_data.m_enhancements.size());
+    for(CharacterPowerEnhancement &eh : e->m_char->m_char_data.m_enhancements)
     {
-        uint32_t idx = 0;
-        bool clear = false;
-        uint32_t level = 0;
-        uint32_t num_combines = 0;
-
-        bs.StorePackedBits(3, idx);
-        bs.StoreBits(1, clear);
-        if(!clear)
+        bs.StorePackedBits(3, eh.m_enhancement_idx);
+        bs.StoreBits(1, eh.m_is_used);
+        if(eh.m_is_used)
         {
-            null_pow_tpl.serializeto(bs);
-            bs.StorePackedBits(5, level);
-            bs.StorePackedBits(2, num_combines);
+            eh.m_enhance_tpl.serializeto(bs);
+            bs.StorePackedBits(5, eh.m_level);
+            bs.StorePackedBits(2, eh.m_num_combines);
         }
     }
 }

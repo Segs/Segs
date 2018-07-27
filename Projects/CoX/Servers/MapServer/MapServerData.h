@@ -14,6 +14,7 @@
 #include "Common/GameData/keybind_definitions.h"
 #include "Common/GameData/other_definitions.h"
 #include "Common/GameData/npc_definitions.h"
+#include "Common/GameData/power_definitions.h"
 
 #include "NpcStore.h"
 
@@ -33,6 +34,7 @@ class MapServerData
         bool            read_keybinds(const QString &src_filename);
         bool            read_commands(const QString &src_filename);
         bool            read_npcs(const QString &directory_path);
+        bool            read_powers(const QString &directory_path);
 public:
                         MapServerData();
                         ~MapServerData();
@@ -53,5 +55,6 @@ public:
         Parse_AllKeyProfiles        m_keybind_profiles;
         Parse_AllCommandCategories  m_command_categories;
         NPCStorage                  m_npc_store;
+        AllPowerCategories          m_all_powers;
         float                       m_player_fade_in;
 };

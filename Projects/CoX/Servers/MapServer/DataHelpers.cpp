@@ -193,6 +193,100 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
 
 }
 
+// Get Powers
+int getPowerCatByName(const QString &name)
+{
+    int idx;
+
+    const MapServerData &data(g_GlobalMapServer->runtimeData());
+
+    for(const StoredPowerCategory &pcat : data.m_all_powers.m_categories)
+    {
+        if(pcat.name.compare(name, Qt::CaseInsensitive) == 0)
+            return idx;
+
+        idx++;
+    }
+
+    qCDebug(logPowers) << "Failed to find PowerCategory called " << name;
+    return 0;
+}
+
+int getPowerSetByName(const QString &name, uint32_t pcat_idx)
+{
+    int idx;
+
+    const MapServerData &data(g_GlobalMapServer->runtimeData());
+
+    for(const Parse_PowerSet &pset : data.m_all_powers.m_categories[pcat_idx].m_PowerSets)
+    {
+        if(pset.Name.compare(name, Qt::CaseInsensitive) == 0)
+            return idx;
+
+        idx++;
+    }
+
+    qCDebug(logPowers) << "Failed to find PowerSet called " << name;
+    return 0;
+}
+
+int getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx)
+{
+    int idx;
+
+    const MapServerData &data(g_GlobalMapServer->runtimeData());
+
+    for(const Power_Data &pow : data.m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers)
+    {
+        if(pow.m_Name.compare(name, Qt::CaseInsensitive) == 0)
+            return idx;
+
+        idx++;
+    }
+
+    qCDebug(logPowers) << "Failed to find Power called " << name;
+    return 0;
+}
+
+CharacterPowerSet getPowers(uint32_t pcat_idx, uint32_t pset_idx)
+{
+    CharacterPowerSet result;
+    const MapServerData &data(g_GlobalMapServer->runtimeData());
+    Parse_PowerSet powerset = data.m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx];
+
+    for(const Power_Data &power : powerset.m_Powers)
+    {
+        CharacterPower p;
+        p.m_power_tpl.m_category_idx    = power.category_idx;
+        p.m_power_tpl.m_pset_idx        = power.powerset_idx;
+        p.m_power_tpl.m_pow_idx         = power.power_index;
+        p.m_power_idx                   = p.m_power_tpl.m_pow_idx;
+        p.m_num_charges                 = power.m_NumCharges;
+        p.m_range                       = power.Range;
+        p.m_recharge_time               = power.RechargeTime;
+        result.m_pset_idx               = power.powerset_idx;
+
+        result.m_powers.push_back(p);
+    }
+    return result;
+
+    qWarning() << "Failed to locate Power by index for" << pcat_idx << pset_idx;
+}
+
+CharacterPower getPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
+{
+    for(const CharacterPowerSet &pset : e.m_char->m_char_data.m_powersets)
+    {
+        for(const CharacterPower &power : pset.m_powers)
+        {
+            if(power.m_power_tpl.m_pset_idx == pset_idx && power.m_power_tpl.m_pow_idx == pow_idx)
+                return power;
+        }
+    }
+
+    qWarning() << "Failed to locate Power by index for" << pset_idx << pow_idx;
+}
+
 // Poll EntityManager to return Entity by Name or IDX
 Entity * getEntity(MapClientSession *src, const QString &name)
 {

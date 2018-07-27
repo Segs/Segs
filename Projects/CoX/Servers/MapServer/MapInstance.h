@@ -92,7 +92,7 @@ protected:
         void on_entities_request(class EntitiesRequest *ev);
         void on_create_map_entity(class NewEntity *ev);
         void on_timeout(TimerEvent *ev);
-        void on_combine_boosts(class CombineRequest *);
+        void on_combine_boosts(class CombineRequest *ev);
         void on_input_state(InputState *st);
         void on_idle(IdleEvent *ev);
         void on_shortcuts_request(class ShortcutsRequest *ev);
@@ -113,6 +113,7 @@ protected:
         void on_inspiration_dockmode(class InspirationDockMode *ev);
         void on_enter_door(class EnterDoor *ev);
         void on_change_stance(class ChangeStance *ev);
+        void on_send_stance(class SendStance *ev);
         void on_set_destination(class SetDestination *ev);
         void on_abort_queued_power(class AbortQueuedPower *ev);
         void on_description_and_battlecry(class DescriptionAndBattleCry *ev);
@@ -124,6 +125,8 @@ protected:
         void on_set_default_power(class SetDefaultPower *ev);
         void on_unqueue_all(class UnqueueAll *ev);
         void on_target_chat_channel_selected(class TargetChatChannelSelected *ev);
+        void on_activate_power(class ActivatePower *ev);
+        void on_activate_power_at_location(class ActivatePowerAtLocation *ev);
         void on_activate_inspiration(class ActivateInspiration *ev);
         void on_powers_dockmode(class PowersDockMode *ev);
         void on_switch_tray(class SwitchTray *ev);

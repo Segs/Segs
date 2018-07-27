@@ -66,6 +66,7 @@ public:
 //    EVENT_DECL(evMissionEntryText         ,149)
 //    EVENT_DECL(evMissionKick              ,150)
 //    EVENT_DECL(evDeadNoGurney             ,152)
+    EVENT_DECL(evSendStance                 ,157) // I think?
 //    EVENT_DECL(evLevelUp                  ,160)
 //    EVENT_DECL(evCSRBugReport             ,164)
     EVENT_DECL(evEmailHeadersCmd            ,165)
@@ -89,6 +90,8 @@ public:
     EVENT_DECL(evRemoveKeybind              ,220)
     EVENT_DECL(evResetKeybinds              ,221)
     EVENT_DECL(evSelectKeybindProfile       ,222)
+    EVENT_DECL(evActivatePower              ,227)
+    EVENT_DECL(evActivatePowerAtLocation    ,228)
     EVENT_DECL(evActivateInspiration        ,229) // Hit F1, F2, F3, F4, F5 or Click on Inspiration in Tray
     EVENT_DECL(evSetDefaultPowerSend        ,230) // Send Default Powerset
     EVENT_DECL(evSetDefaultPower            ,231) // Clicking 'z'

@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Events/MapEventTypes.h"
+#include "NetStructures/Powers.h"
 #include "LinkLevelEvent.h"
 #include "BitStream.h"
 #include "CRUD_Link.h"
@@ -300,8 +301,8 @@ class ChangeStance final : public MapLinkEvent
 {
 public:
     bool enter_stance;
-    int powerset_index;
-    int power_index;
+    int pset_idx;
+    int pow_idx;
     ChangeStance():MapLinkEvent(MapEventTypes::evChangeStance)
     {}
     void serializeto(BitStream &bs) const
@@ -313,8 +314,30 @@ public:
         enter_stance = bs.GetBits(1);
         if(!enter_stance)
             return;
-        powerset_index=bs.GetPackedBits(4);
-        power_index=bs.GetPackedBits(4);
+        pset_idx = bs.GetPackedBits(4);
+        pow_idx = bs.GetPackedBits(4);
+    }
+
+};
+
+class SendStance final : public MapLinkEvent
+{
+public:
+    bool enter_stance;
+    int pset_idx;
+    int pow_idx;
+    SendStance():MapLinkEvent(MapEventTypes::evSendStance)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StoreBits(1, enter_stance);
+        bs.StorePackedBits(4, pset_idx);
+        bs.StorePackedBits(4, pow_idx);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        // TODO: Seems like nothing is received server side.
+        qWarning() << "From SendStance unimplemented.";
     }
 
 };
@@ -340,6 +363,67 @@ public:
         destination.y = bs.GetFloat();
         destination.z = bs.GetFloat();
         point_index   = bs.GetPackedBits(1);
+    }
+};
+
+class ActivatePower final : public MapLinkEvent
+{
+public:
+    uint32_t pset_idx;
+    uint32_t pow_idx;
+    uint32_t target_idx;
+    uint32_t target_db_id;
+
+    ActivatePower():MapLinkEvent(MapEventTypes::evActivatePower)
+    {}
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,27);
+        bs.StorePackedBits(4, pset_idx);
+        bs.StorePackedBits(4, pow_idx);
+        bs.StorePackedBits(16, target_idx);
+        bs.StorePackedBits(32, target_db_id);
+    }
+    void serializefrom(BitStream &bs) override
+    {
+        pset_idx = bs.GetPackedBits(4);
+        pow_idx = bs.GetPackedBits(4);
+        target_idx = bs.GetPackedBits(16);
+        target_db_id = bs.GetPackedBits(32);
+    }
+};
+
+class ActivatePowerAtLocation final : public MapLinkEvent
+{
+public:
+    uint32_t pset_idx;
+    uint32_t pow_idx;
+    uint32_t target_idx;
+    uint32_t target_db_id;
+    glm::vec3 location;
+
+    ActivatePowerAtLocation():MapLinkEvent(MapEventTypes::evActivatePowerAtLocation)
+    {}
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,27);
+        bs.StorePackedBits(4, pset_idx);
+        bs.StorePackedBits(4, pow_idx);
+        bs.StorePackedBits(16, target_idx);
+        bs.StorePackedBits(32, target_db_id);
+        bs.StoreFloat(location.x);
+        bs.StoreFloat(location.y);
+        bs.StoreFloat(location.z);
+    }
+    void serializefrom(BitStream &bs) override
+    {
+        pset_idx = bs.GetPackedBits(4);
+        pow_idx = bs.GetPackedBits(4);
+        target_idx = bs.GetPackedBits(16);
+        target_db_id = bs.GetPackedBits(32);
+        location.x = bs.GetFloat();
+        location.y = bs.GetFloat();
+        location.z = bs.GetFloat();
     }
 };
 
@@ -517,24 +601,24 @@ public:
 class SwitchTray final : public MapLinkEvent
 {
 public:
-    uint32_t tray1_num = 0;
-    uint32_t tray2_num = 0;
-    uint32_t tray_unk1 = 0;
+    //uint32_t tray1_num = 0;
+    //uint32_t tray2_num = 0;
+    PowerTrayGroup tray_group;
+
     SwitchTray():MapLinkEvent(MapEventTypes::evSwitchTray)
     {}
     void serializeto(BitStream &bs) const
     {
         bs.StorePackedBits(1,8);
-        bs.StorePackedBits(32,tray1_num);
-        bs.StorePackedBits(32,tray2_num);
-        bs.StoreBits(1,tray_unk1);
+        //bs.StorePackedBits(32,tray1_num);
+        //bs.StorePackedBits(32,tray2_num);
+        tray_group.serializeto(bs);
     }
     void serializefrom(BitStream &bs)
     {
-        tray1_num = bs.GetPackedBits(32); // Appears to correlate to Tray1's #
-        tray2_num = bs.GetPackedBits(32); // Appears to correlate to Tray2's #
-        tray_unk1 = bs.GetBits(1);        // TODO: Unused bits!?
-        // TODO: "Console command received " blank 40 times?
+        //tray1_num = bs.GetPackedBits(32); // Appears to correlate to Tray1's #
+        //tray2_num = bs.GetPackedBits(32); // Appears to correlate to Tray2's #
+        tray_group.serializefrom(bs);
     }
 };
 

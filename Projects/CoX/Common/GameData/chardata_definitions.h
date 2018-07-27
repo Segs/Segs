@@ -57,4 +57,8 @@ static const constexpr  uint32_t    class_version       = 6; // v6: powersets
                         Parse_CharAttrib    m_current_attribs;
                         vPowerSets          m_powersets;
                         PowerTrayGroup      m_trays;
+                        vInspirations       m_inspirations;
+                        vEnhancements       m_enhancements;     // Enhancements owned, but not attached to powers
+                        uint32_t    m_max_insp_cols     = 0;
+                        uint32_t    m_max_insp_rows     = 0;
 };
