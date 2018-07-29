@@ -420,6 +420,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evResetKeybinds:
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
+        case MapEventTypes::evMoveInspiration:
+            on_move_inspiration(static_cast<MoveInspiration *>(ev));
+            break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
     }
@@ -1742,7 +1745,7 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    qCDebug(logMiniMap) << "MiniMapState tile "<<ev->tile_idx << " for player" << ent->name();
+    qCDebug(logMiniMap) << "MiniMapState tile "<< ev->tile_idx << " for player" << ent->name();
     // TODO: Save these tile #s to dbase and (presumably) load upon entering map to remove fog-of-war from map
 }
 
@@ -1793,11 +1796,25 @@ void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
 
 void MapInstance::on_enter_door(EnterDoor *ev)
 {
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    QString contents;
+
+    QStringList door_text{"KNOCK KNOCK!!", "Trick or Treat!", "Hewwoooo!",
+                         "No one's home!", "Occupied!", "NO SOLICITORS!",
+                         "Who's there?", "It's locked..."};
+
+    std::random_device rng;
+    std::mt19937 urng(rng());
+    std::shuffle(door_text.begin(), door_text.end(), urng);
+    contents = door_text.first();
+    sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+
     qCWarning(logMapEvents).noquote() << "Unhandled door entry request to:" << ev->name;
     if(ev->unspecified_location)
         qCWarning(logMapEvents).noquote() << "    no location provided";
     else
         qCWarning(logMapEvents).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
+
     //pseudocode:
     //  auto door = get_door(ev->name,ev->location);
     //  if(door and player_can_enter(door)
@@ -1807,16 +1824,15 @@ void MapInstance::on_enter_door(EnterDoor *ev)
 void MapInstance::on_change_stance(ChangeStance * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
 
     if(ev->enter_stance)
     {
-        //ent->m_stance = getPower(*ent, ev->pset_idx, ev->pow_idx); // This crashes server
-        qCWarning(logMapEvents) << "Unhandled change stance request" << ev->pset_idx << ev->pow_idx;
+        //session.m_ent->m_stance = getPower(*ent, ev->pset_idx, ev->pow_idx); // TODO: This crashes server
+        qCWarning(logMapEvents) << "Unhandled change stance request" << session.m_ent->m_idx << ev->pset_idx << ev->pow_idx;
     }
     else
     {
-        qCWarning(logMapEvents) << "Unhandled exit stance request";
+        qCWarning(logMapEvents) << "Unhandled exit stance request" << session.m_ent->m_idx;
     }
 }
 
@@ -2063,6 +2079,14 @@ void MapInstance::on_interact_with(InteractWithEntity *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
+}
+
+void MapInstance::on_move_inspiration(MoveInspiration *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    moveInspiration(*session.m_ent, ev->src_col, ev->src_row, ev->dest_col, ev->dest_row);
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to move inspiration from" << ev->src_col << ev->src_row << "to" << ev->dest_col << ev->dest_row;
 }
 
 //! @}

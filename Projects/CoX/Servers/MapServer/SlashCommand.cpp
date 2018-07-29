@@ -21,6 +21,7 @@
 #include "Logging.h"
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
+#include "Events/ClientStates.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFile>
@@ -82,6 +83,7 @@ void cmdHandler_FriendsListDebug(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ToggleExtraInfo(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetClientState(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
@@ -110,6 +112,7 @@ void cmdHandler_TeamBuffs(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Friend(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FriendList(const QString &cmd, MapClientSession &sess);
+void cmdHandler_MapXferList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailHeaders(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess);
@@ -155,6 +158,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"damage", "heal"}, "Make current target (or self) take damage/health", cmdHandler_SendFloatingNumbers, 9},
     {{"extrainfo"},"Toggle extra_info", &cmdHandler_ToggleExtraInfo, 9},
     {{"moveinstantly"},"Toggle move_instantly", &cmdHandler_ToggleMoveInstantly, 9},
+    {{"clientstate"},"Set ClientState mode", &cmdHandler_SetClientState, 9},
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
     /* Access Level 2 Commands */
@@ -181,6 +185,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"friend"}, "Add friend to friendlist", cmdHandler_Friend, 1},
     {{"unfriend","estrange"}, "Remove friend from friendlist", cmdHandler_Unfriend, 1},
     {{"friendlist", "fl"}, "Toggle visibility of friendslist", cmdHandler_FriendList, 1},
+    {{"MapXferList", "mapmenu"}, "Show MapXferList", cmdHandler_MapXferList, 1},
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
     {{"team_decline"}, "Decline Team invite", cmdHandler_TeamDecline, 0},
@@ -697,6 +702,18 @@ void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess)
 }
 
 // Slash commands for setting bit values
+void cmdHandler_SetClientState(const QString &cmd, MapClientSession &sess)
+{
+    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+
+    sendClientState(sess.m_ent, ClientStates(val));
+
+    QString msg = "Setting ClientState to: " + QString::number(val);
+    //qCDebug(logSlashCommand) << msg; // we're already sending a debug msg elsewhere
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
+}
+
+// Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
 {
     int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
@@ -1110,6 +1127,15 @@ void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)
         return;
 
     toggleFriendList(*sess.m_ent);
+}
+
+void cmdHandler_MapXferList(const QString &/*cmd*/, MapClientSession &sess)
+{
+    bool has_location = true;
+    glm::vec3 location = sess.m_ent->m_entity_data.m_pos;
+    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table><a href=CONTACTLINK_NEWPLAYERTELEPORT_AP><tr><td>One day this link will take you somewhere!</a></tr></td></table>";
+
+    showMapXferList(sess.m_ent, has_location, location, msg_body);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -10,10 +10,12 @@
  * @{
  */
 
+#include "Entity.h"
+#include "Character.h"
 #include "Powers.h"
+#include "Logging.h"
 #include "Servers/MapServer/MapServerData.h"
 
-#include <QDebug>
 void PowerTrayItem::serializeto(BitStream &tgt) const
 {
     tgt.StoreBits(4,uint32_t(m_entry_type));
@@ -184,6 +186,20 @@ void PowerPool_Info::serializeto(BitStream &src) const
     src.StorePackedBits(3, m_category_idx);
     src.StorePackedBits(3, m_pset_idx);
     src.StorePackedBits(3, m_pow_idx);
+}
+
+void moveInspiration(Entity &ent, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row)
+{
+    for(CharacterInspiration &insp : ent.m_char->m_char_data.m_inspirations)
+    {
+        if(src_col == insp.m_col && src_row == insp.m_row)
+        {
+            insp.m_col = dest_col;
+            insp.m_row = dest_row;
+        }
+    }
+
+    qCDebug(logPowers) << "Entity: " << ent.m_idx << "wants to move inspiration from" << src_col << src_row << "to" << dest_col << dest_row;
 }
 
 //! @}

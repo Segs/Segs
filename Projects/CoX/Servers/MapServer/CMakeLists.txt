@@ -41,6 +41,7 @@ SET(target_INCLUDE
     Events/GameCommandList.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
+    Events/ClientStates.h
     Events/EmailHeaders.h
     Events/EmailMessageStatus.h
     Events/EmailRead.h
@@ -52,12 +53,15 @@ SET(target_INCLUDE
     Events/InputState.h
     Events/LocationVisited.h
     Events/MapEventTypes.h
+    Events/MapXferList.h
+    Events/MapXferListClose.h
     Events/MessageChannels.h
     Events/NewEntity.h
     Events/PlaqueVisited.h
     Events/PlayerInfo.h
     Events/SaveClientOptions.h
     Events/SceneEvent.h
+    Events/SetClientState.h
     Events/Shortcuts.h
     Events/SidekickOffer.h
     Events/StandardDialogCmd.h

@@ -8,6 +8,7 @@
 #pragma once
 #include "Events/MessageChannels.h"
 #include "Events/FloatingInfoStyles.h"
+#include "Events/ClientStates.h"
 #include "glm/vec3.hpp"
 #include <stdint.h>
 #include <QString>
@@ -155,7 +156,9 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
-void sendFloatingInfo(Entity *tgt, QString msg, FloatingInfoStyle style, float delay);
+void sendClientState(Entity *tgt, ClientStates client_state);
+void showMapXferList(Entity *ent, bool has_location, glm::vec3 &location, QString &name);
+void sendFloatingInfo(Entity *tgt, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount);
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);

@@ -334,7 +334,7 @@ public:
         bs.StorePackedBits(4, pset_idx);
         bs.StorePackedBits(4, pow_idx);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &/*bs*/)
     {
         // TODO: Seems like nothing is received server side.
         qWarning() << "From SendStance unimplemented.";
@@ -699,6 +699,25 @@ public:
     void serializefrom(BitStream &bs)
     {
         bs.GetString(profile); // Keybind Profile Name
+    }
+};
+
+class MoveInspiration final : public MapLinkEvent
+{
+public:
+    uint32_t src_col, src_row, dest_col, dest_row;
+    MoveInspiration():MapLinkEvent(MapEventTypes::evMoveInspiration)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,34);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        src_col = bs.GetPackedBits(3);
+        src_row = bs.GetPackedBits(3);
+        dest_col = bs.GetPackedBits(3);
+        dest_row = bs.GetPackedBits(3);
     }
 };
 

@@ -32,7 +32,7 @@ public:
     EVENT_DECL(evInfoMessageCmd             ,115)
 //    EVENT_DECL(evDoorMsg                  ,116)
 //    EVENT_DECL(evConsoleOutput            ,117)
-//    EVENT_DECL(evServerSetClientState     ,118)
+    EVENT_DECL(evSetClientState             ,118)
 //    EVENT_DECL(evConPrintf                ,119)
     EVENT_DECL(evChatMessage                ,120)
     EVENT_DECL(evFloatingDamage             ,121)
@@ -72,8 +72,8 @@ public:
 //    EVENT_DECL(evFaceLocation             ,155)
     EVENT_DECL(evFloatingInfo               ,156)
     EVENT_DECL(evSendStance                 ,157) // I think?
-//    EVENT_DECL(evMapXferList              ,158)
-//    EVENT_DECL(evMapXferListClose         ,159)
+    EVENT_DECL(evMapXferList                ,158)
+    EVENT_DECL(evMapXferListClose           ,159)
 //    EVENT_DECL(evLevelUp                  ,160) // 161?
 //    EVENT_DECL(evCSRBugReport             ,164)
     EVENT_DECL(evEmailHeadersCmd            ,165)
@@ -104,6 +104,7 @@ public:
     EVENT_DECL(evSetDefaultPower            ,231) // Clicking 'z'
     EVENT_DECL(evUnqueueAll                 ,232) // Click on another entity or Clicking 'z'
     EVENT_DECL(evAbortQueuedPower           ,233) // Clicking 'z'
+    EVENT_DECL(evMoveInspiration            ,234)
     EVENT_DECL(evChangeStance               ,236)
     EVENT_DECL(evTargetChatChannelSelected  ,237) // Change chat type using the letters in the chat window 'l, b, g, sg, r, f"
     EVENT_DECL(evChatReconfigure            ,238)

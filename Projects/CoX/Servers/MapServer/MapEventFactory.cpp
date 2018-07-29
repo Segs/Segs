@@ -52,8 +52,6 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
             // otherwise treat as idle
             return new IdleEvent;
         case 1: return new MiniMapState;
-        //case 2: return new Unknown2; // TODO: What is this?
-        //case 3: return new RefreshWindows; // TODO: Refreshes all windows? Issue #268
         case 4: return new ClientResumedRendering;
         case 7: return new InteractWithEntity;
         case 8: return new SwitchTray;
@@ -74,6 +72,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 31: return new SetDefaultPower;
         case 32: return new UnqueueAll;
         case 33: return new AbortQueuedPower;
+        case 34: return new MoveInspiration;
         case 36: return new ChangeStance;
         case 37: return new TargetChatChannelSelected;
         case 38: return new ChatReconfigure;

@@ -17,6 +17,3 @@ public:
     MapLinkEvent *EventFromStream(BitStream &bs) override;
     static MapLinkEvent *CommandEventFromStream(BitStream &bs);
 };
-
-
-

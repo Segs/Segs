@@ -7,10 +7,12 @@
 
 #pragma once
 #include "CommonNetStructures.h"
-#include <QtCore/QString>
 #include "BitStream.h"
 
+#include <QtCore/QString>
 #include <array>
+
+class Entity;
 
 enum class TrayItemType : uint32_t
 {
@@ -140,3 +142,5 @@ static const int m_num_trays = 2; // was 3, displayed trays
     void dump();
 
 };
+
+void moveInspiration(Entity &ent, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);

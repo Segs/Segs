@@ -679,7 +679,19 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
-void sendFloatingInfo(Entity *tgt, QString msg, FloatingInfoStyle style, float delay)
+void sendClientState(Entity *tgt, ClientStates client_state)
+{
+    qCDebug(logSlashCommand) << "Sending ClientState:" << tgt->m_idx << QString::number(client_state);
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<SetClientState>(new SetClientState(client_state)));
+}
+
+void showMapXferList(Entity *ent, bool has_location, glm::vec3 &location, QString &name)
+{
+    qCDebug(logSlashCommand) << "Showing MapXferList:" << ent->m_idx << name;
+    ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<MapXferList>(new MapXferList(has_location, location, name)));
+}
+
+void sendFloatingInfo(Entity *tgt, QString &msg, FloatingInfoStyle style, float delay)
 {
     qCDebug(logSlashCommand) << "Sending FloatingInfo:" << tgt->m_idx << msg;
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingInfo>(new FloatingInfo(tgt->m_idx, msg, style, delay)));

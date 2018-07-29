@@ -136,4 +136,5 @@ protected:
         void on_remove_keybind(class RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(class InteractWithEntity *ev);
+        void on_move_inspiration(class MoveInspiration *ev);
 };
