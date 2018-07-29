@@ -8,3 +8,11 @@ QStringList g_map_names = {
     "City_01_01",
     "City_23_01"
 };
+
+// List of supported DB drivers
+QStringList g_db_drivers = {
+    "QSQLITE",
+    "QMYSQL",
+    "QPSQL"
+};
+
