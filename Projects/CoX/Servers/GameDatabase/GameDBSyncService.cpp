@@ -25,6 +25,11 @@ bool GameDBSyncService::per_thread_setup()
     return result;
 }
 
+GameDBSyncService::GameDBSyncService()
+{
+
+}
+
 void GameDBSyncService::dispatch(SEGSEvent *ev)
 {
     // We are servicing a request from message queue, using dispatchSync as a common processing point.
@@ -41,11 +46,6 @@ void GameDBSyncService::set_db_handler(const uint8_t id)
                 HandlerLocator::getGame_DB_Handler(id));
 }
 
-void GameDBSyncService::on_update_timer(const ACE_Time_Value &tick_timer)
-{
-    // unused at the moment... but this works similarly to World::update
-}
-
 void GameDBSyncService::on_destroy()
 {
     updateEntities();
@@ -53,7 +53,7 @@ void GameDBSyncService::on_destroy()
 
 void GameDBSyncService::addPlayer(Entity* e)
 {
-    ref_entity_mgr.InsertPlayer(e);
+    m_entities.push_back(e);
 }
 
 void GameDBSyncService::removePlayer(Entity* e)
@@ -61,18 +61,20 @@ void GameDBSyncService::removePlayer(Entity* e)
     // update player one last time before logging off
     updateEntity(e);
 
-    ref_entity_mgr.removeEntityFromActiveList(e);
+    if (!m_entities.removeOne(e))
+        qWarning() << "Failed to remove entity " + e->m_char->getName() + " from Sync Service";
+
+    // point the pointer to null
+    e = nullptr;
 }
 
 void GameDBSyncService::updateEntities()
 {
-    ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_entity_mgr.getEntitiesMutex());
-
-    for(Entity * e : ref_entity_mgr.m_live_entlist)
+    for(int i = 0; i < m_entities.size(); ++i)
     {
         // if m_db_id is 0, it does not have a db entry (NPCs, etc...)
-        if (e->m_db_id != 0)
-            sendCharacterUpdateToHandler(e);
+        if (m_entities[i]->m_db_id != 0)
+            sendCharacterUpdateToHandler(m_entities[i]);
 
         /* TODO: Set the flags for entities on other functions, like maybe World::updateEntity, etc etc
          * at the moment I will make a full update for the characters no matter what the flag it
@@ -96,8 +98,6 @@ void GameDBSyncService::updateEntities()
 
 void GameDBSyncService::updateEntity(Entity* e)
 {
-    ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_entity_mgr.getEntitiesMutex());
-
     sendCharacterUpdateToHandler(e);
 
     /* See TODO in updateEntities for explanation on this
