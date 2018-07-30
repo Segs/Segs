@@ -5,13 +5,7 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-/*!
- * @addtogroup PasswordHasher Projects/CoX/Common/PasswordHasher
- * @{
- */
-
 #include "PasswordHasher.h"
-
 #include <QTime>
 
 PasswordHasher::PasswordHasher() : m_hasher(QCryptographicHash::Sha256)
