@@ -93,6 +93,8 @@ void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AFK(const QString &cmd, MapClientSession &sess);
 void cmdHandler_WhoAll(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetCustomTitles(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetSpecialTitle(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LFG(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MOTD(const QString &cmd, MapClientSession &sess);
@@ -169,7 +171,9 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"cmdlist","commandlist"},"List all accessible commands", cmdHandler_CmdList, 1},
     {{"afk"},"Mark yourself as Away From Keyboard", cmdHandler_AFK, 1},
     {{"whoall"},"Shows who is on the current map ", cmdHandler_WhoAll, 1},
-    {{"setTitles"},"Set your title", cmdHandler_SetTitles, 1},
+    {{"setTitles","title"},"Open the Title selection window", cmdHandler_SetTitles, 1},
+    {{"setCustomTitles"},"Set your titles manually", cmdHandler_SetCustomTitles, 1},
+    {{"setSpecialTitle"},"Set your Special title", cmdHandler_SetSpecialTitle, 1},
     {{"stuck"},"Free yourself if your character gets stuck", cmdHandler_Stuck, 1},
     {{"lfg"},"Toggle looking for group status ", cmdHandler_LFG, 1},
     {{"motd"},"View the server MOTD", cmdHandler_MOTD, 1},
@@ -856,6 +860,18 @@ void cmdHandler_WhoAll(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess)
 {
+    bool        select_origin = false;
+    int space = cmd.indexOf(' ');
+    QString val = cmd.mid(space+1);
+
+    if(!val.isEmpty())
+        select_origin = true;
+
+    sendChangeTitle(sess.m_ent, select_origin);
+}
+
+void cmdHandler_SetCustomTitles(const QString &cmd, MapClientSession &sess)
+{
     bool        prefix;
     QString     msg, generic, origin, special;
     QStringList args;
@@ -875,6 +891,23 @@ void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess)
         setTitles(*sess.m_ent->m_char, prefix, generic, origin, special);
         msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
     }
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::USER_ERROR, msg, &sess);
+}
+
+void cmdHandler_SetSpecialTitle(const QString &cmd, MapClientSession &sess)
+{
+    bool        prefix;
+    QString     msg, generic, origin, special;
+    int space = cmd.indexOf(' ');
+    prefix = sess.m_ent->m_char->m_char_data.m_has_the_prefix;
+    generic = getGenericTitle(*sess.m_ent->m_char);
+    origin = getOriginTitle(*sess.m_ent->m_char);
+    special = cmd.mid(space+1);
+
+    setTitles(*sess.m_ent->m_char, prefix, generic, origin, special);
+    msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
+
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::USER_ERROR, msg, &sess);
 }

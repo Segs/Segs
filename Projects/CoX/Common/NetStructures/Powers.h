@@ -144,3 +144,5 @@ static const int m_num_trays = 2; // was 3, displayed trays
 };
 
 void moveInspiration(Entity &ent, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
+void useInspiration(Entity &ent, uint32_t col, uint32_t row);
+void removeInspiration(Entity &ent, uint32_t col, uint32_t row);

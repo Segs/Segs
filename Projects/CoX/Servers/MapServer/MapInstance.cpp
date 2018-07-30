@@ -423,6 +423,12 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));
             break;
+        case MapEventTypes::evRecvSelectedTitles:
+            on_recv_selected_titles(static_cast<RecvSelectedTitles *>(ev));
+            break;
+        case MapEventTypes::evDialogButton:
+            on_dialog_button(static_cast<DialogButton *>(ev));
+            break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
     }
@@ -1990,9 +1996,10 @@ void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     QString contents = "Inspired!";
 
+    useInspiration(*session.m_ent, ev->slot_idx, ev->row_idx);
+
     sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
-    // TODO: not sure what the client expects from the server here
+   // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
 }
 
 void MapInstance::on_powers_dockmode(PowersDockMode *ev)
@@ -2087,6 +2094,26 @@ void MapInstance::on_move_inspiration(MoveInspiration *ev)
 
     moveInspiration(*session.m_ent, ev->src_col, ev->src_row, ev->dest_col, ev->dest_row);
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to move inspiration from" << ev->src_col << ev->src_row << "to" << ev->dest_col << ev->dest_row;
+}
+
+void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    QString generic, origin, special;
+
+    generic = getGenericTitle(ev->m_generic);
+    origin  = getOriginTitle(ev->m_origin);
+    special = getSpecialTitle(*session.m_ent->m_char);
+
+    setTitles(*session.m_ent->m_char, ev->m_has_prefix, generic, origin, special);
+    qCDebug(logMapEvents) << "Entity sending titles: " << session.m_ent->m_idx;
+}
+
+void MapInstance::on_dialog_button(DialogButton *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id;
 }
 
 //! @}

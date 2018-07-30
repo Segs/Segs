@@ -114,7 +114,9 @@ uint32_t            getXP(const Character &c);
 uint32_t            getDebt(const Character &c);
 uint32_t            getPatrolXP(const Character &c);
 const QString &     getGenericTitle(const Character &c);
+const QString &     getGenericTitle(uint32_t val);
 const QString &     getOriginTitle(const Character &c);
+const QString &     getOriginTitle(uint32_t val);
 const QString &     getSpecialTitle(const Character &c);
 
 uint32_t            getInf(const Character &c);
@@ -160,6 +162,7 @@ void sendClientState(Entity *tgt, ClientStates client_state);
 void showMapXferList(Entity *ent, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(Entity *tgt, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount);
+void sendChangeTitle(Entity *tgt, bool select_origin);
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);

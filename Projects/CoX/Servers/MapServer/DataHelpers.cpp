@@ -256,7 +256,7 @@ CharacterPowerSet getPowers(uint32_t pcat_idx, uint32_t pset_idx)
 
     for(const Power_Data &power : powerset.m_Powers)
     {
-        int pow_idx =getPowerByName(power.m_Name, pcat_idx, pset_idx);
+        int pow_idx = getPowerByName(power.m_Name, pcat_idx, pset_idx);
 
         CharacterPower p;
         p.m_power_tpl.m_category_idx    = pcat_idx;
@@ -276,8 +276,11 @@ CharacterPowerSet getPowers(uint32_t pcat_idx, uint32_t pset_idx)
     qWarning() << "Failed to locate Power by index for" << pcat_idx << pset_idx;
 }
 
-CharacterPower getPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
+CharacterPower *getPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
 {
+    if(pset_idx < 0 || pset_idx > e.m_char->m_char_data.m_powersets.size())
+        return nullptr;
+
     for(const CharacterPowerSet &pset : e.m_char->m_char_data.m_powersets)
     {
         for(const CharacterPower &power : pset.m_powers)
@@ -288,6 +291,7 @@ CharacterPower getPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
     }
 
     qWarning() << "Failed to locate Power by index for" << pset_idx << pow_idx;
+    return nullptr;
 }
 
 // Poll EntityManager to return Entity by Name or IDX
@@ -404,6 +408,54 @@ void readEmailMessage(Entity *e, const int id){
 /*
  * Character Methods
  */
+static const QStringList g_generic_titles =
+{
+    "NULL",
+    "Awesome",
+    "Bold",
+    "Courageous",
+    "Daring",
+    "Extraordinary",
+    "Famous",
+    "Gallant",
+    "Heroic",
+    "Incomparable",
+    "Legendary",
+    "Magnificent",
+    "Outstanding",
+    "Powerful",
+    "Remarkable",
+    "Startling",
+    "Terrific",
+    "Ultimate",
+    "Valiant",
+    "Wonderful",
+};
+
+static const QStringList g_origin_titles =
+{
+    "NULL",
+    "Adept",
+    "Bright",
+    "Curious",
+    "Deductiv",
+    "Exceptional",
+    "Far Seeing",
+    "Glorious",
+    "Honorable",
+    "Indescribable",
+    "Lucky",
+    "Majestic",
+    "Otherworldly",
+    "Phenomenal",
+    "Redoubtable",
+    "Stupendous",
+    "Thoughtful",
+    "Unearthly",
+    "Venturous",
+    "Watchful",
+};
+
 // Getter
 uint32_t            getLevel(const Character &c) { return c.m_char_data.m_level; }
 uint32_t            getCombatLevel(const Character &c) { return c.m_char_data.m_combat_level; }
@@ -416,7 +468,9 @@ uint32_t            getXP(const Character &c) { return c.m_char_data.m_experienc
 uint32_t            getDebt(const Character &c) { return c.m_char_data.m_experience_debt; }
 uint32_t            getPatrolXP(const Character &c) { return c.m_char_data.m_experience_patrol; }
 const QString &     getGenericTitle(const Character &c) { return c.m_char_data.m_titles[0]; }
+const QString &     getGenericTitle(uint32_t val) { return g_generic_titles.at(val); }
 const QString &     getOriginTitle(const Character &c) { return c.m_char_data.m_titles[1]; }
+const QString &     getOriginTitle(uint32_t val) { return g_origin_titles.at(val); }
 const QString &     getSpecialTitle(const Character &c) { return c.m_char_data.m_titles[2]; }
 uint32_t            getInf(const Character &c) { return c.m_char_data.m_influence; }
 const QString &     getDescription(const Character &c) { return c.m_char_data.m_character_description ; }
@@ -701,6 +755,12 @@ void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount)
 {
     qCDebug(logSlashCommand, "Sending %d FloatingNumbers from %d to %d", amount, src->m_idx, tgt_idx);
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingDamage>(new FloatingDamage(src->m_idx, tgt_idx, amount)));
+}
+
+void sendChangeTitle(Entity *tgt, bool select_origin)
+{
+    qCDebug(logSlashCommand) << "Sending ChangeTitle:" << tgt->m_idx << QString::number(select_origin);
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<ChangeTitle>(new ChangeTitle(select_origin)));
 }
 
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list)

@@ -42,6 +42,7 @@ public:
 #include "Events/InfoMessageCmd.h"
 #include "Events/FloatingDamage.h"
 #include "Events/FloatingInfo.h"
+#include "Events/ChangeTitle.h"
 #include "Events/SetClientState.h"
 #include "Events/MapXferList.h"
 #include "Events/MapXferListClose.h"

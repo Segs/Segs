@@ -194,12 +194,53 @@ void moveInspiration(Entity &ent, uint32_t src_col, uint32_t src_row, uint32_t d
     {
         if(src_col == insp.m_col && src_row == insp.m_row)
         {
-            insp.m_col = dest_col;
-            insp.m_row = dest_row;
+            if(dest_col > ent.m_char->m_char_data.m_max_insp_cols
+                    || dest_row > ent.m_char->m_char_data.m_max_insp_rows)
+            {
+                removeInspiration(ent, src_col, src_row);
+            }
+            else
+            {
+                insp.m_col = dest_col;
+                insp.m_row = dest_row;
+            }
         }
     }
 
     qCDebug(logPowers) << "Entity: " << ent.m_idx << "wants to move inspiration from" << src_col << src_row << "to" << dest_col << dest_row;
+}
+
+void useInspiration(Entity &ent, uint32_t col, uint32_t row)
+{
+    auto it = std::begin(ent.m_char->m_char_data.m_inspirations);
+    for(CharacterInspiration &insp : ent.m_char->m_char_data.m_inspirations)
+    {
+        if(col == insp.m_col && row == insp.m_row)
+        {
+            // TODO: Do inspiration benefit
+            ent.m_char->m_char_data.m_inspirations.erase(it);
+        }
+
+        ++it;
+    }
+
+    qCDebug(logPowers) << "Entity: " << ent.m_idx << "wants to use inspiration from" << col << row;
+}
+
+void removeInspiration(Entity &ent, uint32_t col, uint32_t row)
+{
+    auto it = std::begin(ent.m_char->m_char_data.m_inspirations);
+    for(CharacterInspiration &insp : ent.m_char->m_char_data.m_inspirations)
+    {
+        if(col == insp.m_col && row == insp.m_row)
+        {
+            ent.m_char->m_char_data.m_inspirations.erase(it);
+        }
+
+        ++it;
+    }
+
+    qCDebug(logPowers) << "Entity: " << ent.m_idx << "wants to remove inspiration from" << col << row;
 }
 
 //! @}

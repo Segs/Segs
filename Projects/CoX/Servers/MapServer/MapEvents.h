@@ -366,6 +366,25 @@ public:
     }
 };
 
+class DialogButton final : public MapLinkEvent
+{
+public:
+    uint32_t button_id;
+    DialogButton():MapLinkEvent(MapEventTypes::evDialogButton)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,24);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        button_id = bs.GetPackedBits(1);
+        //bs.GetPackedBits(1);
+        //bs.GetPackedBits(1);
+        //bs.GetPackedBits(1);
+    }
+};
+
 class ActivatePower final : public MapLinkEvent
 {
 public:
@@ -509,6 +528,26 @@ public:
     void serializefrom(BitStream &/*bs*/)
     {
 //        Parameterless - serializefrom is no-op
+    }
+};
+
+class RecvSelectedTitles : public MapLinkEvent
+{
+public:
+    bool m_has_prefix;
+    uint32_t m_generic, m_origin;
+
+    RecvSelectedTitles():MapLinkEvent(MapEventTypes::evRecvSelectedTitles)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,66);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        m_has_prefix = bs.GetBits(1);
+        m_generic = bs.GetPackedBits(5);
+        m_origin = bs.GetPackedBits(5);
     }
 };
 

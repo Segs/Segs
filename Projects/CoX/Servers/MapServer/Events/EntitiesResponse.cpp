@@ -357,9 +357,6 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     CharacterData cd = e->m_char->m_char_data;
     uint32_t pset_idx, pow_idx = 0;
 
-    // These should go away as we use real owned powers data
-    PowerPool_Info      null_pow_tpl = {0,0,0};
-
     bool has_power_info_updates = false; // FixMe: power_info_updates_available is never modified during execution.
     bs.StoreBits(1, has_power_info_updates);
     if(!has_power_info_updates)
@@ -390,7 +387,7 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
         {
             storePowerSpec(pset_idx, pow_idx, bs);
 
-            bool is_custom_power = false; // I don't think this is "custom" power?
+            bool is_custom_power = true; // I don't think this is "custom" power?
             if(is_custom_power)
             {
                 power.m_power_tpl.serializeto(bs);
@@ -408,7 +405,7 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
                     bs.StoreBits(1, has_enhancement); // slot has enhancement
                     if(has_enhancement)
                     {
-                        null_pow_tpl.serializeto(bs);
+                        power.m_enhancements.at(i).m_enhance_tpl.serializeto(bs);
                         bs.StorePackedBits(5, power.m_enhancements.at(i).m_level);
                         bs.StorePackedBits(2, power.m_enhancements.at(i).m_num_combines);
                     }

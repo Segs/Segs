@@ -74,7 +74,9 @@ public:
     EVENT_DECL(evSendStance                 ,157) // I think?
     EVENT_DECL(evMapXferList                ,158)
     EVENT_DECL(evMapXferListClose           ,159)
-//    EVENT_DECL(evLevelUp                  ,160) // 161?
+//    EVENT_DECL(evEnableControlLog         ,160)
+//    EVENT_DECL(evLevelUp                  ,161)
+    EVENT_DECL(evChangeTitle                ,162)
 //    EVENT_DECL(evCSRBugReport             ,164)
     EVENT_DECL(evEmailHeadersCmd            ,165)
     EVENT_DECL(evEmailReadCmd               ,166)
@@ -97,6 +99,7 @@ public:
     EVENT_DECL(evRemoveKeybind              ,220)
     EVENT_DECL(evResetKeybinds              ,221)
     EVENT_DECL(evSelectKeybindProfile       ,222)
+    EVENT_DECL(evDialogButton               ,224)
     EVENT_DECL(evActivatePower              ,227)
     EVENT_DECL(evActivatePowerAtLocation    ,228)
     EVENT_DECL(evActivateInspiration        ,229) // Hit F1, F2, F3, F4, F5 or Click on Inspiration in Tray
@@ -114,6 +117,7 @@ public:
     EVENT_DECL(evLocationVisited            ,262)
     EVENT_DECL(evSwitchViewPoint            ,264)
     EVENT_DECL(evSaveClientOptions          ,265)
+    EVENT_DECL(evRecvSelectedTitles         ,266)
     EVENT_DECL(evDescriptionAndBattleCry    ,267)
     END_EVENTS(1500)
 };

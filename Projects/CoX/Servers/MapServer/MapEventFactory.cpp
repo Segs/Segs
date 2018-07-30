@@ -65,6 +65,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 20: return new RemoveKeybind;
         case 21: return new ResetKeybinds;
         case 22: return new SelectKeybindProfile;
+        case 24: return new DialogButton;
         case 27: return new ActivatePower;
         case 28: return new ActivatePowerAtLocation;
         case 29: return new ActivateInspiration;
@@ -83,6 +84,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 62: return new LocationVisited;
         case 64: return new SwitchViewPoint;
         case 65: return new SaveClientOptions;
+        case 66: return new RecvSelectedTitles;
         case 67: return new DescriptionAndBattleCry;
     }
     qCWarning(logMapEvents, "Unhandled command event type %d", opcode);

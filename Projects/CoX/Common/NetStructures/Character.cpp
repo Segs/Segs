@@ -157,8 +157,6 @@ void Character::addStartingInspirations()
 
 void Character::getInherentPowers()
 {
-    CharacterPowerSet pset;
-
     // TODO: Make these configurable in settings.cfg?
     std::vector<PreorderSprint> preorders =
     {
