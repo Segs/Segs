@@ -1833,11 +1833,12 @@ void MapInstance::on_change_stance(ChangeStance * ev)
 
     if(ev->enter_stance)
     {
-        //session.m_ent->m_stance = getPower(*ent, ev->pset_idx, ev->pow_idx); // TODO: This crashes server
+        //session.m_ent->m_stance = &getPower(*session.m_ent, ev->pset_idx, ev->pow_idx);
         qCWarning(logMapEvents) << "Unhandled change stance request" << session.m_ent->m_idx << ev->pset_idx << ev->pow_idx;
     }
     else
     {
+        session.m_ent->m_stance = nullptr;
         qCWarning(logMapEvents) << "Unhandled exit stance request" << session.m_ent->m_idx;
     }
 }
@@ -1942,6 +1943,8 @@ void MapInstance::on_unqueue_all(UnqueueAll *ev)
     ent->m_target_idx = 0;
     ent->m_assist_target_idx = 0;
     // cancelAttack(ent);
+    // unqueuePowers(ent);
+    // unqueueInspirations(ent); // merge this with unqueuePowers()?
 
     qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }
@@ -1958,25 +1961,12 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
 void MapInstance::on_activate_power(ActivatePower *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
+    uint32_t tgt_idx = ev->target_idx;
 
-    // TODO: Check that target is valid, then Do Power!
-    QStringList batman_kerpow{"AIEEE!", "ARRRGH!", "AWKKKKKK!", "BAM!", "BANG!", "BAP!",
-                     "BIFF!", "BLOOP!", "BLURP!", "BOFF!", "BONK!", "CLANK!",
-                     "CLASH!", "CLUNK!", "CRAAACK!", "CRASH!", "CRUNCH!", "EEE-YOW!",
-                     "FLRBBBBB!", "GLIPP!", "GLURPP!", "KAPOW!", "KER-PLOP!", "KLONK!",
-                     "KRUNCH!", "OOOFF!", "OUCH!", "OWWW!", "PAM!", "PLOP!",
-                     "POW!", "POWIE!", "QUNCKKK!", "RAKKK!", "RIP!", "SLOSH!",
-                     "SOCK!", "SPLAAT!", "SWAAP!", "SWISH!", "SWOOSH!", "THUNK!",
-                     "THWACK!", "THWAPP!", "TOUCHÉ!", "UGGH!", "URKK!", "VRONK!",
-                     "WHACK!", "WHAMM!", "WHAP!", "ZAM!", "ZAP!", "ZGRUPPP!",
-                     "ZLONK!", "ZLOPP!", "ZLOTT!", "ZOK!", "ZOWIE!", "ZWAPP!"};
+    if(ev->target_idx == 0)
+        tgt_idx = session.m_ent->m_idx;
 
-    std::random_device rng;
-    std::mt19937 urng(rng());
-    std::shuffle(batman_kerpow.begin(), batman_kerpow.end(), urng);
-    QString contents = batman_kerpow.first();
-
-    sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, ev->target_idx, ev->target_db_id);
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }
 
@@ -2093,7 +2083,6 @@ void MapInstance::on_move_inspiration(MoveInspiration *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     moveInspiration(*session.m_ent, ev->src_col, ev->src_row, ev->dest_col, ev->dest_row);
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to move inspiration from" << ev->src_col << ev->src_row << "to" << ev->dest_col << ev->dest_row;
 }
 
 void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)

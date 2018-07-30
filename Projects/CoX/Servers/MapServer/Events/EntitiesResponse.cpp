@@ -354,14 +354,14 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
 {
     Entity *e = src.m_client->m_ent;
     assert(e);
-    CharacterData cd = e->m_char->m_char_data;
+    CharacterData *cd = &e->m_char->m_char_data;
     uint32_t pset_idx, pow_idx = 0;
 
     bool has_power_info_updates = false; // FixMe: power_info_updates_available is never modified during execution.
     bs.StoreBits(1, has_power_info_updates);
     if(!has_power_info_updates)
     {
-        storePowerRanges(cd, bs);
+        storePowerRanges(*cd, bs);
         return;
     }
 
@@ -370,24 +370,24 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     if(reset_powersets)
     {
         // TODO: How can we confirm that first powerset contains inherent powers
-        cd.m_powersets.erase(cd.m_powersets.begin()+1, cd.m_powersets.end());
+        //cd->m_powersets.erase(*cd->m_powersets.begin()+1, *cd->m_powersets.end());
     }
 
     // Count all powers owned
     uint32_t total_powers_owned = 0;
-    for(const CharacterPowerSet &pset : cd.m_powersets)
+    for(const CharacterPowerSet &pset : cd->m_powersets)
     {
         total_powers_owned += pset.m_powers.size(); // total up all powers
     }
     bs.StorePackedBits(1, total_powers_owned);
 
-    for(const CharacterPowerSet &pset : cd.m_powersets)
+    for(const CharacterPowerSet &pset : cd->m_powersets)
     {
         for(const CharacterPower &power : pset.m_powers)
         {
             storePowerSpec(pset_idx, pow_idx, bs);
 
-            bool is_custom_power = true; // I don't think this is "custom" power?
+            bool is_custom_power = false; // I don't think this is "custom" power?
             if(is_custom_power)
             {
                 power.m_power_tpl.serializeto(bs);
@@ -423,7 +423,7 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     }
 
     // sending state of all current powers.
-    storePowerRanges(cd, bs);
+    storePowerRanges(*cd, bs);
 
     bs.StorePackedBits(4, e->m_queued_powers.size()); // Count all active powers
     for(const CharacterPower *pow : e->m_queued_powers)

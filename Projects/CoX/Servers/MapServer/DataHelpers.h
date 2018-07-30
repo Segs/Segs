@@ -12,17 +12,18 @@
 #include "glm/vec3.hpp"
 #include <stdint.h>
 #include <QString>
+
 class QString;
 class Entity;
 class Character;
 struct PlayerData;
 struct EntityData;
-
 struct Friend;
 struct FriendsList;
 struct MapClientSession;
 struct CharacterPowerSet;
 struct CharacterPower;
+class MapServerData;
 
 struct MapData
 {
@@ -79,16 +80,12 @@ void    charUpdateDB(Entity *e);
 void    charUpdateGUI(Entity *e);
 int     getEntityOriginIndex(bool is_player,const QString &origin_name);
 int     getEntityClassIndex(bool is_player, const QString &class_name);
-int     getPowerCatByName(const QString &name);
-int     getPowerSetByName(const QString &name, uint32_t pcat_idx);
-int     getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
-CharacterPowerSet getPowers(uint32_t pcat_idx, uint32_t pset_idx);
-CharacterPower getPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
 
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(MapClientSession *src, uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
+
 
 /*
  * Character Methods
@@ -147,6 +144,12 @@ void    toggleTeamBuffs(PlayerData &c);
  * Looking for Group
  */
 void    toggleLFG(Entity &e);
+
+
+/*
+ * getMapServerData Wrapper to provide access to NetStructures
+ */
+MapServerData *getMapServerData();
 
 
 /*

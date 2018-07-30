@@ -143,6 +143,21 @@ static const int m_num_trays = 2; // was 3, displayed trays
 
 };
 
+
+/*
+ * Powers Methods
+ */
+int     getPowerCatByName(const QString &name);
+int     getPowerSetByName(const QString &name, uint32_t pcat_idx);
+int     getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
+CharacterPowerSet getPowers(uint32_t pcat_idx, uint32_t pset_idx);
+CharacterPower * getPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
+
+
+/*
+ * Inspirations Methods
+ */
 void moveInspiration(Entity &ent, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
 void useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void removeInspiration(Entity &ent, uint32_t col, uint32_t row);
