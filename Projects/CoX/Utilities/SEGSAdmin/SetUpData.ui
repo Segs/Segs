@@ -78,7 +78,10 @@
    <item row="1" column="2">
     <widget class="QLabel" name="icon_cox_directory">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/icons/icon_good.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="resources.qrc">:/icons/check.svg</pixmap>
      </property>
     </widget>
    </item>
@@ -135,7 +138,10 @@
    <item row="5" column="2">
     <widget class="QLabel" name="icon_extract_pigg">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/icons/icon_good.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="resources.qrc">:/icons/check.svg</pixmap>
      </property>
     </widget>
    </item>
@@ -156,7 +162,10 @@
    <item row="7" column="2">
     <widget class="QLabel" name="icon_create_directory">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/icons/icon_good.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="resources.qrc">:/icons/check.svg</pixmap>
      </property>
     </widget>
    </item>
@@ -179,7 +188,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
