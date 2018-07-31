@@ -5,6 +5,11 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
+/*!
+ * @addtogroup Components
+ * @{
+ */
+
 #include "PasswordHasher.h"
 #include <QTime>
 
