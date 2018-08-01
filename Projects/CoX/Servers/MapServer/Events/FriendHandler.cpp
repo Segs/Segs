@@ -8,9 +8,10 @@
 #include "FriendHandler.h"
 #include "Servers/GameServer/GameEvents.h"
 #include "Common/Servers/HandlerLocator.h"
+#include "GameDatabase/GameDBSyncEvents.h"
 #include <QtCore/QDebug>
 
-std::unordered_map<int,std::vector<int>> FriendHandler::friend_map;
+std::unordered_map<int,std::vector<int>> FriendHandler::s_friend_map;
 
 void FriendHandler::dispatch(SEGSEvent *ev)
 {
@@ -18,6 +19,9 @@ void FriendHandler::dispatch(SEGSEvent *ev)
 
     switch(ev->type())
     {
+        case GameDBEventTypes::evGetEntityResponse:
+            on_entity_response(static_cast<GetEntityResponse *>(ev));
+            break;
         case Internal_EventTypes::evClientConnected:
             on_client_connected(static_cast<ClientConnectedMessage *>(ev));
             break;
@@ -29,16 +33,24 @@ void FriendHandler::dispatch(SEGSEvent *ev)
     }
 }
 
+void FriendHandler::on_entity_response(GetEntityResponse *ev){
+    qDebug() << "Fhandler ent response";
+    //MapClientSession &map_session(m_session_store.session_from_event(ev));
+    //m_session_store.locked_unmark_session_for_reaping(&map_session);
+    //Entity * e = map_session.m_ent;
+}
+
 void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
 {
     //A player has connected, notify all the people that have added this character as a friend
     //Also update this player/character's online status
     qDebug() << "FHandler received connection, char id: " << msg->m_data.m_char_id;
-    //Iterate over friend_map[msg->m_data.m_char_id] and send message saying character logged in
+    //Iterate over s_friend_map[msg->m_data.m_char_id] and send message saying character logged in
 
     //Also read this player's friend list to see who they've added
 
-
+    //MapClientSession &session(m_session_store.session_from_event(ev));
+    //msg->m_data.m_char_id
 }
 
 void FriendHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
@@ -49,11 +61,12 @@ void FriendHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 
 FriendHandler::FriendHandler() : m_message_bus_endpoint(*this)
 {
-    friend_map[1] = {1,2,3};
-    qDebug() << "friend_map: " << friend_map[1];
+    s_friend_map[1] = {1,2,3};
+    qDebug() << "friend_map: " << s_friend_map[1];
     assert(HandlerLocator::getFriend_Handler() == nullptr);
     HandlerLocator::setFriend_Handler(this);
 
     m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientConnected);
     m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientDisconnected);
+    m_message_bus_endpoint.subscribe(GameDBEventTypes::evGetEntityResponse);
 }

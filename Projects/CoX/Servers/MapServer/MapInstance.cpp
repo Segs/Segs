@@ -588,6 +588,7 @@ void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
     // now we go back to standard path -> asking db about the entity
     // TODO: we've just put the entity in the db, and now we have to load it back ??
     game_db->putq(new GetEntityRequest({ev->m_data.m_char_id},ev->session_token(),this));
+    postGlobalEvent(new GetEntityRequest({ev->m_data.m_char_id},ev->session_token(),this));
     // while we wait for db response, mark session as waiting for reaping
     m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
 }
