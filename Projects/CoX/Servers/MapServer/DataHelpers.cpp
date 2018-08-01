@@ -666,8 +666,14 @@ void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount)
 
 void sendChangeTitle(Entity *tgt, bool select_origin)
 {
-    qCDebug(logSlashCommand) << "Sending ChangeTitle:" << tgt->m_idx << QString::number(select_origin);
+    //qCDebug(logSlashCommand) << "Sending ChangeTitle Dialog:" << tgt->m_idx << "select_origin:" << select_origin;
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<ChangeTitle>(new ChangeTitle(select_origin)));
+}
+
+void sendTrayAdd(Entity *tgt, uint32_t pset_idx, uint32_t pow_idx)
+{
+    qCDebug(logSlashCommand) << "Sending TrayAdd:" << tgt->m_idx << pset_idx << pow_idx;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TrayAdd>(new TrayAdd(pset_idx, pow_idx)));
 }
 
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list)

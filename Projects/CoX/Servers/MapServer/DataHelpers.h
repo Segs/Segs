@@ -166,6 +166,7 @@ void showMapXferList(Entity *ent, bool has_location, glm::vec3 &location, QStrin
 void sendFloatingInfo(Entity *tgt, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount);
 void sendChangeTitle(Entity *tgt, bool select_origin);
+void sendTrayAdd(Entity *tgt, uint32_t pset_idx, uint32_t pow_idx);
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);

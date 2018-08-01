@@ -1845,12 +1845,18 @@ void MapInstance::on_change_stance(ChangeStance * ev)
 
 void MapInstance::on_send_stance(SendStance * ev)
 {
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    //ev->m_enter_stance = true;
+    //ev->m_pset_idx = session.m_ent->m_stance->m_power_tpl.m_pset_idx;
+    //ev->m_pow_idx = session.m_ent->m_stance->m_power_tpl.m_pow_idx;
+
     qCWarning(logMapEvents) << "Unhandled send stance request";
 
-    if(ev->enter_stance)
-        qCWarning(logMapEvents) << "  send stance" << ev->pset_idx << ev->pow_idx;
+    if(ev->m_enter_stance)
+        qCWarning(logMapEvents) << "Entity" << session.m_ent->name() << "SendStance" << ev->m_pset_idx << ev->m_pow_idx;
     else
-        qCWarning(logMapEvents) << "  stance is zero";
+        qCWarning(logMapEvents) << "Entity" << session.m_ent->name() << "SendStance is zero";
 }
 
 void MapInstance::on_set_destination(SetDestination * ev)
@@ -1962,11 +1968,12 @@ void MapInstance::on_activate_power(ActivatePower *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     uint32_t tgt_idx = ev->target_idx;
+    uint32_t modified_pset_idx = ev->pset_idx - 1; // no idea why, but client returns pset index + 1?
 
     if(ev->target_idx == 0)
         tgt_idx = session.m_ent->m_idx;
 
-    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, ev->target_idx, ev->target_db_id);
+    usePower(*session.m_ent, modified_pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }
 
@@ -1984,12 +1991,9 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    QString contents = "Inspired!";
 
     useInspiration(*session.m_ent, ev->slot_idx, ev->row_idx);
-
-    sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-   // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
+    // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
 }
 
 void MapInstance::on_powers_dockmode(PowersDockMode *ev)
@@ -2095,7 +2099,7 @@ void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
     special = getSpecialTitle(*session.m_ent->m_char);
 
     setTitles(*session.m_ent->m_char, ev->m_has_prefix, generic, origin, special);
-    qCDebug(logMapEvents) << "Entity sending titles: " << session.m_ent->m_idx;
+    qCDebug(logMapEvents) << "Entity sending titles: " << session.m_ent->m_idx << ev->m_has_prefix << generic << origin << special;
 }
 
 void MapInstance::on_dialog_button(DialogButton *ev)

@@ -323,16 +323,17 @@ public:
 class SendStance final : public MapLinkEvent
 {
 public:
-    bool enter_stance;
-    int pset_idx;
-    int pow_idx;
-    SendStance():MapLinkEvent(MapEventTypes::evSendStance)
-    {}
+    bool             m_enter_stance;
+    uint32_t         m_pset_idx;
+    uint32_t         m_pow_idx;
+    SendStance() : MapLinkEvent(MapEventTypes::evSendStance)
+    {
+    }
     void serializeto(BitStream &bs) const
     {
-        bs.StoreBits(1, enter_stance);
-        bs.StorePackedBits(4, pset_idx);
-        bs.StorePackedBits(4, pow_idx);
+        bs.StoreBits(1, m_enter_stance);
+        bs.StorePackedBits(4, m_pset_idx);
+        bs.StorePackedBits(4, m_pow_idx);
     }
     void serializefrom(BitStream &/*bs*/)
     {

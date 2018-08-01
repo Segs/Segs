@@ -102,57 +102,26 @@ void Character::addPowerSet(uint32_t pcat_idx, uint32_t pset_idx)
 {
     CharacterPowerSet pset;
 
-    qCDebug(logPowers) << "addPowerSet:" << pcat_idx << pset_idx;
+    qCDebug(logPowers) << "Adding entire PowerSet:" << pcat_idx << pset_idx;
 
-    pset = getPowers(pcat_idx, pset_idx);
+    pset = getPowerSetData(pcat_idx, pset_idx);
     pset.m_level_bought = m_char_data.m_level;
+    pset.m_index = pset_idx;
+    pset.m_category = pcat_idx;
 
     m_char_data.m_powersets.push_back(pset);
 }
 
 void Character::addStartingInspirations()
 {
-    // Add Starting Inspirations
-    int pcat_idx = getPowerCatByName("Inspirations");
-    int pset_idx = getPowerSetByName("Large", pcat_idx);
-    int insp1_idx = getPowerByName("Resurgence", pcat_idx, pset_idx);
-    int insp2_idx = getPowerByName("Phenomenal_Luck", pcat_idx, pset_idx);
+    // TODO: We can make this configurable in settings.cfg
+    QStringList starting_insps = {
+        "Resurgence",       // 25.2.3
+        "Phenomenal_Luck",  // 25.2.0
+    };
 
-    qCDebug(logPowers) << "Starting Inspirations: " << pcat_idx << pset_idx << ":" << insp1_idx << insp2_idx;
-
-    CharacterInspiration insp1, insp2;
-
-    // Resurgence
-    insp1.m_has_insp = true;
-    insp1.m_insp_tpl.m_category_idx = pcat_idx;
-    insp1.m_insp_tpl.m_pset_idx = pset_idx;
-    insp1.m_insp_tpl.m_pow_idx = insp1_idx;
-    insp1.m_col = 1;
-    insp1.m_row = 0;
-    // Second Wind
-    insp2.m_has_insp = true;
-    insp2.m_insp_tpl.m_category_idx = pcat_idx;
-    insp2.m_insp_tpl.m_pset_idx = pset_idx;
-    insp2.m_insp_tpl.m_pow_idx = insp2_idx;
-    insp2.m_col = 2;
-    insp2.m_row = 0;
-
-    qCDebug(logPowers) << "Insp1: " << insp1.m_has_insp
-                       << insp1.m_insp_tpl.m_category_idx
-                       << insp1.m_insp_tpl.m_pset_idx
-                       << insp1.m_insp_tpl.m_pow_idx
-                       << insp1.m_col
-                       << insp1.m_row;
-
-    qCDebug(logPowers) << "Insp2: " << insp2.m_has_insp
-                       << insp2.m_insp_tpl.m_category_idx
-                       << insp2.m_insp_tpl.m_pset_idx
-                       << insp2.m_insp_tpl.m_pow_idx
-                       << insp2.m_col
-                       << insp2.m_row;
-
-    m_char_data.m_inspirations.push_back(insp1);
-    m_char_data.m_inspirations.push_back(insp2);
+    for (QString &name : starting_insps)
+        addInspirationByName(m_char_data, name);
 }
 
 void Character::getInherentPowers()
@@ -161,17 +130,15 @@ void Character::getInherentPowers()
     std::vector<PreorderSprint> preorders =
     {
         // {m_has_preorder, m_name}
-        {true, "prestige_generic_Sprintp"},
-        {true, "prestige_preorder_Sprintp"},
-        {true, "prestige_BestBuy_Sprintp"},
-        {true, "prestige_EB_Sprintp"},
-        {true, "prestige_Gamestop_Sprintp"},
+        {true, "prestige_generic_Sprintp"},     // 26.0.1
+        {true, "prestige_preorder_Sprintp"},    // 26.0.2
+        {true, "prestige_BestBuy_Sprintp"},     // 26.0.3
+        {true, "prestige_EB_Sprintp"},          // 26.0.4
+        {true, "prestige_Gamestop_Sprintp"},    // 26.0.5
     };
 
-    int pcat_idx = getPowerCatByName("Inherent");
-    int pset_idx = getPowerSetByName("Inherent", pcat_idx);
-
-    qCDebug(logPowers) << "Inherent Power: " << pcat_idx << pset_idx;
+    int pcat_idx = getPowerCatByName("Inherent");           // idx: 26
+    int pset_idx = getPowerSetByName("Inherent", pcat_idx); // idx: 0
 
     // TODO: remove preorders that are set to false
     addPowerSet(pcat_idx, pset_idx);
@@ -181,16 +148,14 @@ void Character::getPowerFromBuildInfo(BitStream &src)
 {
     for(int i = 1; i <= 2; ++i)
     {
-        CharacterPowerSet pset;
-        CharacterPower power;
-        pset.m_level_bought = m_char_data.m_level;
+        PowerPool_Info ppinfo;
 
-        power.m_power_tpl.serializefrom(src);
-        pset.m_pset_idx = power.m_power_tpl.m_pset_idx;
-        power.m_power_idx = power.m_power_tpl.m_pow_idx;
+        ppinfo.serializefrom(src);
+        uint32_t pcat_idx = ppinfo.m_category_idx;
+        uint32_t pset_idx = ppinfo.m_pset_idx;
+        uint32_t pow_idx = ppinfo.m_pow_idx;
 
-        pset.m_powers.push_back(power);
-        m_char_data.m_powersets.push_back(pset);
+        addPower(m_char_data, pcat_idx, pset_idx, pow_idx);
     }
 }
 
@@ -200,9 +165,12 @@ void Character::GetCharBuildInfo(BitStream &src)
     src.GetString(m_char_data.m_class_name);
     src.GetString(m_char_data.m_origin_name);
 
-    addStartingInspirations();      // resurgence and second wind
+    //addStartingInspirations();      // resurgence and phenomenal_luck
     getInherentPowers();            // inherent
     getPowerFromBuildInfo(src);     // primary, secondary
+
+    //if(logPowers().isDebugEnabled())
+        //dumpOwnedPowers(m_char_data);
 
     m_char_data.m_trays.serializefrom(src);
 }
@@ -227,19 +195,21 @@ void Character::sendInspirations(BitStream &bs) const
 {
     int max_cols = m_char_data.m_max_insp_cols;
     int max_rows = m_char_data.m_max_insp_rows;
-    int max_inspirations = max_cols * max_rows;
+    int max_insps = max_cols * max_rows;
 
     bs.StorePackedBits(3, max_cols); // count
     bs.StorePackedBits(3, max_rows); // count
 
-    for ( int i = 0; i < max_inspirations; ++i )
+    for(int i = 0; i < max_insps; ++i)
     {
-        if(m_char_data.m_inspirations.size() < i)
+        if(i > m_char_data.m_inspirations.size() || m_char_data.m_inspirations.empty())
             bs.StoreBits(1, 0);
-
-        bs.StoreBits(1, m_char_data.m_inspirations[i].m_has_insp);
-        if(m_char_data.m_inspirations[i].m_has_insp)
-            m_char_data.m_inspirations[i].m_insp_tpl.serializeto(bs);
+        else
+        {
+            bs.StoreBits(1, m_char_data.m_inspirations[i].m_has_insp);
+            if(m_char_data.m_inspirations[i].m_has_insp)
+                m_char_data.m_inspirations[i].m_insp_tpl.serializeto(bs);
+        }
     }
 }
 
@@ -362,37 +332,6 @@ void Character::DumpSidekickInfo()
     qDebug().noquote() << msg;
 }
 
-void Character::DumpPowerPoolInfo( const PowerPool_Info &pinfo )
-{
-    qDebug().nospace().noquote() << QString("PPInfo: %1 %2 %3")
-                                    .arg(pinfo.m_category_idx)
-                                    .arg(pinfo.m_pset_idx)
-                                    .arg(pinfo.m_pow_idx);
-}
-
-void Character::DumpOwnedPowers()
-{
-    int pset_idx = 0;
-
-    for(CharacterPowerSet &pset : m_char_data.m_powersets)
-    {
-        int pow_idx = 0;
-        qDebug().noquote() << "PowerSet: " << pset_idx;
-        qDebug().noquote() << "LevelBought: " << pset.m_level_bought;
-        for(CharacterPower &p : pset.m_powers)
-        {
-            qDebug().noquote() << "Power: " << pow_idx;
-            DumpPowerPoolInfo(p.m_power_tpl);
-            qDebug().noquote() << "LevelBought: " << p.m_level_bought;
-            qDebug().noquote() << "Range: " << p.m_range;
-
-            pow_idx++;
-        }
-
-        pset_idx++;
-    }
-}
-
 void Character::DumpBuildInfo()
 {
     Character &c = *this;
@@ -418,7 +357,9 @@ void Character::dump()
 {
     DumpBuildInfo();
     qDebug() << "//--------------Owned Powers--------------";
-    DumpOwnedPowers();
+    dumpOwnedPowers(m_char_data);
+    qDebug() << "//-----------Owned Inspirations-----------";
+    dumpInspirations(m_char_data);
     qDebug() << "//--------------Sidekick Info--------------";
     DumpSidekickInfo();
     qDebug() << "//------------------Tray------------------";

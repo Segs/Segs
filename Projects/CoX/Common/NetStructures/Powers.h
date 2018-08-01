@@ -13,6 +13,7 @@
 #include <array>
 
 class Entity;
+struct CharacterData;
 
 enum class TrayItemType : uint32_t
 {
@@ -47,6 +48,7 @@ struct CharacterInspiration
 {
 static const constexpr  uint32_t    class_version = 1;
         PowerPool_Info  m_insp_tpl;
+        QString         m_name;
         uint32_t        m_col               = 0;
         uint32_t        m_row               = 0;
         bool            m_has_insp          = false;
@@ -59,6 +61,7 @@ struct CharacterPowerEnhancement
 static const constexpr  uint32_t    class_version = 1;
         PowerPool_Info  m_enhance_tpl;
         uint32_t        m_enhancement_idx   = 0;
+        QString         m_name;
         uint32_t        m_level             = 0;
         uint32_t        m_num_combines      = 0;
         bool            m_is_used           = false;
@@ -70,7 +73,7 @@ struct CharacterPower
 {
 static const constexpr  uint32_t    class_version = 1;
         PowerPool_Info  m_power_tpl;
-        uint32_t        m_power_idx         = 0;
+        uint32_t        m_index             = 0;
         QString         m_name;
         uint32_t        m_level_bought      = 0;
         uint32_t        m_num_charges       = 0;
@@ -88,7 +91,8 @@ static const constexpr  uint32_t    class_version = 1;
 struct CharacterPowerSet
 {
 static const constexpr  uint32_t    class_version   = 1;
-        uint32_t                    m_pset_idx      = 0;
+        uint32_t                    m_index         = 0;
+        uint32_t                    m_category      = 0;
         uint32_t                    m_level_bought  = 0;
         std::vector<CharacterPower> m_powers;
 };
@@ -99,8 +103,9 @@ class PowerTrayItem
 {
 public:
 static const constexpr  uint32_t    class_version = 1;
-    TrayItemType    m_entry_type = TrayItemType(0);
-    uint32_t        m_pset_idx, m_pow_idx;
+    TrayItemType    m_entry_type    = TrayItemType(0);
+    uint32_t        m_pset_idx      = 0;
+    uint32_t        m_pow_idx       = 0;
     QString         m_command;
     QString         m_short_name;
     QString         m_icon_name;
@@ -128,10 +133,11 @@ public:
 static const constexpr  uint32_t    class_version = 1;
 static const int m_num_trays = 2; // was 3, displayed trays
     std::array<PowerTray, 9>     m_trays;
-    uint32_t m_default_pset_idx, m_default_pow_idx;
-    bool m_has_default_power;
-    int m_primary_tray_idx = 0;
-    int m_second_tray_idx = 1;
+    uint32_t m_default_pset_idx = 0;
+    uint32_t m_default_pow_idx  = 0;
+    bool m_has_default_power    = false;
+    int m_primary_tray_idx      = 0;
+    int m_second_tray_idx       = 1;
     PowerTrayGroup()
     {
         m_default_pset_idx = m_default_pow_idx = 0;
@@ -150,14 +156,21 @@ static const int m_num_trays = 2; // was 3, displayed trays
 int     getPowerCatByName(const QString &name);
 int     getPowerSetByName(const QString &name, uint32_t pcat_idx);
 int     getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
-CharacterPowerSet getPowers(uint32_t pcat_idx, uint32_t pset_idx);
-CharacterPower * getPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
+CharacterPower getPowerData(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
+CharacterPowerSet getPowerSetData(uint32_t pcat_idx, uint32_t pset_idx);
+CharacterPower * getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
+void addPower(CharacterData &cd, uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
-
+void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
+void dumpPower(const CharacterPower &pow);
+void dumpOwnedPowers(CharacterData &cd);
 
 /*
  * Inspirations Methods
  */
+void addInspirationByName(CharacterData &cd, QString &name);
+void addInspirationToChar(CharacterData &cd, CharacterInspiration insp);
 void moveInspiration(Entity &ent, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
 void useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void removeInspiration(Entity &ent, uint32_t col, uint32_t row);
+void dumpInspirations(CharacterData &cd);

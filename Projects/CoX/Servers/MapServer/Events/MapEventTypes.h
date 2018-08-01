@@ -83,6 +83,7 @@ public:
     EVENT_DECL(evEmailMsgStatus             ,167)
     EVENT_DECL(evEntityInfoResponse         ,169) // Send entity info (description)
 //    EVENT_DECL(evClueUpdate               ,170)
+    EVENT_DECL(evTrayAdd                    ,182)
 // client -> server commands
     EVENT_DECL(evConsoleCommand             ,200)
     EVENT_DECL(evMiniMapState               ,201)

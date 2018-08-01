@@ -21,16 +21,16 @@
 
 void PowerTrayItem::serializeto(BitStream &tgt) const
 {
-    tgt.StoreBits(4,uint32_t(m_entry_type));
+    tgt.StoreBits(4, uint32_t(m_entry_type));
     switch(m_entry_type)
     {
     case TrayItemType::Power:
-        tgt.StoreBits(32,m_pset_idx);
-        tgt.StoreBits(32,m_pow_idx);
+        tgt.StoreBits(32, m_pset_idx);
+        tgt.StoreBits(32, m_pow_idx);
         break;
     case TrayItemType::Inspiration:
-        tgt.StorePackedBits(3,m_pset_idx);
-        tgt.StorePackedBits(3,m_pow_idx);
+        tgt.StorePackedBits(3, m_pset_idx);
+        tgt.StorePackedBits(3, m_pow_idx);
         break;
     case TrayItemType::Macro:
         tgt.StoreString(m_command);
@@ -93,7 +93,7 @@ void PowerTrayGroup::serializeto(BitStream &tgt) const
     tgt.StoreBits(32, m_primary_tray_idx);
     tgt.StoreBits(32, m_second_tray_idx);
 
-    for(int bar_num=0; bar_num<9; bar_num++)
+    for(int bar_num = 0; bar_num < 9; bar_num++)
         m_trays[bar_num].serializeto(tgt);
 
     tgt.StoreBits(1, m_has_default_power);
@@ -164,7 +164,7 @@ void PowerTray::serializefrom(BitStream &src)
 
 void PowerTray::serializeto(BitStream &tgt) const
 {
-    for(int i=0; i<10; i++)
+    for(int i = 0; i < 10; i++)
         m_tray_items[i].serializeto(tgt);
 }
 
@@ -249,33 +249,42 @@ int getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx)
     return 0;
 }
 
-CharacterPowerSet getPowers(uint32_t pcat_idx, uint32_t pset_idx)
+CharacterPower getPowerData(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+{
+    const MapServerData &data(*getMapServerData());
+    Power_Data power = data.m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
+
+    CharacterPower result;
+    result.m_power_tpl.m_category_idx    = pcat_idx;
+    result.m_power_tpl.m_pset_idx        = pset_idx;
+    result.m_power_tpl.m_pow_idx         = pow_idx;
+    result.m_name                        = power.m_Name;
+    result.m_index                       = pow_idx;
+    result.m_num_charges                 = power.m_NumCharges;
+    result.m_range                       = power.Range;
+    result.m_recharge_time               = power.RechargeTime;
+
+    //if(logPowers().isDebugEnabled())
+        //dumpPower(result);
+
+    return result;
+}
+
+CharacterPowerSet getPowerSetData(uint32_t pcat_idx, uint32_t pset_idx)
 {
     CharacterPowerSet result;
     const MapServerData &data(*getMapServerData());
     Parse_PowerSet powerset = data.m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx];
 
-    for(const Power_Data &power : powerset.m_Powers)
+    for(int pow_idx = 0; pow_idx < powerset.m_Powers.size(); pow_idx++)
     {
-        int pow_idx = getPowerByName(power.m_Name, pcat_idx, pset_idx);
-
-        CharacterPower p;
-        p.m_power_tpl.m_category_idx    = pcat_idx;
-        p.m_power_tpl.m_pset_idx        = pset_idx;
-        p.m_power_tpl.m_pow_idx         = pow_idx;
-        p.m_power_idx                   = pow_idx;
-        p.m_name                        = power.m_Name;
-        p.m_num_charges                 = power.m_NumCharges;
-        p.m_range                       = power.Range;
-        p.m_recharge_time               = power.RechargeTime;
-        result.m_pset_idx               = pset_idx;
-
+        CharacterPower p = getPowerData(pcat_idx, pset_idx, pow_idx);
         result.m_powers.push_back(p);
     }
     return result;
 }
 
-CharacterPower *getPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
+CharacterPower *getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
 {
     CharacterData *cd = &e.m_char->m_char_data;
 
@@ -286,9 +295,12 @@ CharacterPower *getPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
     {
         for(int j = 0; j < cd->m_powersets[i].m_powers.size(); j++)
         {
-            if(cd->m_powersets[i].m_powers[j].m_power_tpl.m_pset_idx == pset_idx
-                    && cd->m_powersets[i].m_powers[j].m_power_tpl.m_pow_idx == pow_idx)
+            if(cd->m_powersets[i].m_index == pset_idx
+                    && cd->m_powersets[i].m_powers[j].m_index == pow_idx)
+            {
+                qCDebug(logPowers) << "getPower returned" << cd->m_powersets[i].m_powers.at(j).m_name;
                 return &cd->m_powersets[i].m_powers[j];
+            }
         }
     }
 
@@ -296,11 +308,61 @@ CharacterPower *getPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
     return nullptr;
 }
 
+void addPower(CharacterData &cd, uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+{
+    CharacterPowerSet pset;
+    CharacterPower power;
+
+    power = getPowerData(pcat_idx, pset_idx, pow_idx);
+    pset.m_level_bought = cd.m_level;
+    power.m_index = pow_idx;
+    pset.m_index = pset_idx;
+    pset.m_category = pcat_idx;
+
+    // Does Power or PowerSet already exist?
+    int existing_pset = 0;
+    for(CharacterPowerSet &ps : cd.m_powersets)
+    {
+        if(ps.m_category == pcat_idx && ps.m_index == pset_idx)
+        {
+            // Does Power already exist? Then return.
+            for(CharacterPower &p : ps.m_powers)
+            {
+                if(p.m_index == pow_idx)
+                {
+                    qCDebug(logPowers) << "Power already exists " << ps.m_category << pset_idx << pow_idx;
+                    return;
+                }
+            }
+
+            qCDebug(logPowers) << "Character adding power to existing powerset " << ps.m_category << pset_idx << pow_idx;
+            cd.m_powersets[existing_pset].m_powers.push_back(power); // if powerset already exists redefine pset
+
+            if(logPowers().isDebugEnabled())
+                dumpPower(power);
+
+            return;
+        }
+
+        existing_pset++;
+    }
+
+    // Add power to vector
+    pset.m_powers.push_back(power);
+
+    qCDebug(logPowers) << "Adding Power:" << pcat_idx << pset_idx << pow_idx;
+    if(logPowers().isDebugEnabled())
+        dumpPower(power);
+
+    // Add powerset to vector
+    cd.m_powersets.push_back(pset);
+}
+
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t /*tgt_idx*/, uint32_t /*tgt_id*/)
 {
     // Add to activepowers queue
     CharacterPower * ppower = nullptr;
-    ppower = getPower(ent, pset_idx, pow_idx);
+    ppower = getOwnedPower(ent, pset_idx, pow_idx);
 
     if(ppower != nullptr && !ppower->m_name.isEmpty())
         ent.m_queued_powers.push_back(ppower);
@@ -325,53 +387,215 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t /*tgt_i
     sendFloatingInfo(&ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 }
 
+void dumpPowerPoolInfo(const PowerPool_Info &pinfo)
+{
+    qDebug().nospace().noquote() << QString("  PPInfo: %1 %2 %3")
+                                    .arg(pinfo.m_category_idx)
+                                    .arg(pinfo.m_pset_idx)
+                                    .arg(pinfo.m_pow_idx);
+}
+
+void dumpPower(const CharacterPower &pow)
+{
+    qDebug().noquote() << pow.m_name;
+    qDebug().noquote() << "  Index: " << pow.m_index;
+    dumpPowerPoolInfo(pow.m_power_tpl);
+    qDebug().noquote() << "  LevelBought: " << pow.m_level_bought;
+    qDebug().noquote() << "  NumCharges: " << pow.m_num_charges;
+    qDebug().noquote() << "  UsageTime: " << pow.m_usage_time;
+    qDebug().noquote() << "  ActivationTime: " << pow.m_activation_time;
+    qDebug().noquote() << "  Range: " << pow.m_range;
+    qDebug().noquote() << "  RechargeTime: " << pow.m_recharge_time;
+    qDebug().noquote() << "  ActivationState: " << pow.m_activation_state;
+    qDebug().noquote() << "  ActivationStateChange: " << pow.m_active_state_change;
+    qDebug().noquote() << "  TimerUpdated: " << pow.m_timer_updated;
+    qDebug().noquote() << "  NumEnhancements: " << pow.m_num_enhancements;
+}
+
+void dumpOwnedPowers(CharacterData &cd)
+{
+    int pset_idx = 0;
+
+    for(CharacterPowerSet &pset : cd.m_powersets)
+    {
+        int pow_idx = 0;
+        qDebug().noquote() << "Category: " << pset.m_category;
+        qDebug().noquote() << "PowerSet: " << pset.m_index << "Iterator:" << pset_idx;
+        qDebug().noquote() << "LevelBought: " << pset.m_level_bought;
+
+        for(CharacterPower &p : pset.m_powers)
+        {
+            qDebug().noquote() << "Power: " << p.m_index << "Iterator:" << pow_idx;
+            dumpPower(p);
+            pow_idx++;
+        }
+
+        pset_idx++;
+    }
+}
+
 
 /*
  * Inspirations Methods
  */
-void moveInspiration(Entity &ent, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row)
+void addInspirationByName(CharacterData &cd, QString &name)
 {
-    for(CharacterInspiration &insp : ent.m_char->m_char_data.m_inspirations)
+    const MapServerData &data(*getMapServerData());
+    uint32_t pcat_idx = getPowerCatByName("Inspirations");
+    uint32_t pset_idx, pow_idx    = 0;
+    bool found  = false;
+
+    int i = 0;
+    for(const Parse_PowerSet &pset : data.m_all_powers.m_categories[pcat_idx].m_PowerSets)
     {
-        if(src_col == insp.m_col && src_row == insp.m_row)
+        int j = 0;
+        for(const Power_Data &pow : pset.m_Powers)
         {
-            if(dest_col > ent.m_char->m_char_data.m_max_insp_cols
-                    || dest_row > ent.m_char->m_char_data.m_max_insp_rows)
+            if(pow.m_Name.compare(name, Qt::CaseInsensitive) == 0)
             {
-                removeInspiration(ent, src_col, src_row);
+                qCDebug(logPowers) << pow.m_Name << i << j;
+                found = true;
+                pset_idx = i;
+                pow_idx = j;
             }
-            else
-            {
-                // TODO: This currently crashes client upon next login
-                //insp.m_col = dest_col;
-                //insp.m_row = dest_row;
-            }
+
+            j++;
         }
+
+        i++;
     }
 
+    if(!found)
+    {
+        qCDebug(logPowers) << "Failed to find Inspiration called " << name;
+        return;
+    }
+
+    CharacterInspiration insp;
+    insp.m_has_insp = true;
+    insp.m_name = name;
+    insp.m_insp_tpl.m_category_idx = pcat_idx;
+    insp.m_insp_tpl.m_pset_idx = pset_idx;
+    insp.m_insp_tpl.m_pow_idx = pow_idx;
+
+    addInspirationToChar(cd, insp);
+}
+
+void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
+{
+    int max_cols = cd.m_max_insp_cols;
+    int max_rows = cd.m_max_insp_rows;
+
+    if(cd.m_inspirations.size() > max_cols*max_rows)
+    {
+        qCDebug(logPowers) << "Character cannot hold any more inspirations";
+        return;
+    }
+
+    cd.m_inspirations.push_back(insp);
+    qCDebug(logPowers) << "Character received inspiration:"
+                       << insp.m_insp_tpl.m_category_idx
+                       << insp.m_insp_tpl.m_pset_idx
+                       << insp.m_insp_tpl.m_pow_idx;
+}
+
+int getInspirationIdx(Entity &ent, uint32_t col, uint32_t row)
+{
+    vInspirations *insp_arr = &ent.m_char->m_char_data.m_inspirations;
+    int max_cols = ent.m_char->m_char_data.m_max_insp_cols;
+    int max_rows = ent.m_char->m_char_data.m_max_insp_rows;
+
+    if(col > max_cols || row > max_rows)
+    {
+        qWarning() << "Inspiration doesn't exist at" << col << row;
+        return -1;
+    }
+
+    auto iter = std::find_if(insp_arr->begin(), insp_arr->end(),
+                              [col, row](const CharacterInspiration& insp)->bool {return col==insp.m_col && row==insp.m_row;});
+
+    if(iter != insp_arr->end())
+    {
+        qCDebug(logPowers) << "Entity: " << ent.m_idx << " returning inspiration at " << col << row;
+        return std::distance(insp_arr->begin(), iter);
+    }
+
+    qCDebug(logPowers) << "Entity: " << ent.m_idx << " does not have an inspiration at " << col << "x" << row;
+    return -1;
+}
+
+void moveInspiration(Entity &ent, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row)
+{
+    vInspirations *insp_arr = &ent.m_char->m_char_data.m_inspirations;
+    CharacterInspiration src_insp, dest_insp;
+    int max_cols = ent.m_char->m_char_data.m_max_insp_cols;
+    int max_rows = ent.m_char->m_char_data.m_max_insp_rows;
+    bool dest_is_empty = false;
+
+    if(dest_col > max_cols || dest_row > max_rows)
+    {
+        removeInspiration(ent, src_col, src_row);
+        return;
+    }
+
+    int src_idx = getInspirationIdx(ent, src_col, src_row);
+    if(src_idx < 0)
+        return;
+
+    // src is now dest (even if it was empty)
+    insp_arr->at(src_idx).m_col = dest_col;
+    insp_arr->at(src_idx).m_row = dest_row;
+
     qCDebug(logPowers) << "Entity: " << ent.m_idx << "wants to move inspiration from" << src_col << src_row << "to" << dest_col << dest_row;
+
+    int dest_idx = getInspirationIdx(ent, dest_col, dest_row);
+    if(dest_idx < 0)
+        return;
+
+    // dest is now src
+    insp_arr->at(dest_idx).m_col = src_col;
+    insp_arr->at(dest_idx).m_row = src_row;
 }
 
 void useInspiration(Entity &ent, uint32_t col, uint32_t row)
 {
+    int insp_idx = getInspirationIdx(ent, col, row);
+    if(insp_idx < 0)
+        return;
+
     removeInspiration(ent, col, row);
     // TODO: Do inspiration benefit
 
     qCDebug(logPowers) << "Entity: " << ent.m_idx << "wants to use inspiration from" << col << row;
+    QString contents = "Inspired!";
+    sendFloatingInfo(&ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 }
 
 void removeInspiration(Entity &ent, uint32_t col, uint32_t row)
 {
-    auto iter = std::find_if( ent.m_char->m_char_data.m_inspirations.begin(),
-                              ent.m_char->m_char_data.m_inspirations.end(),
-                              [col, row](const CharacterInspiration& insp)->bool {return col==insp.m_col && row==insp.m_row;});
-    if(iter != ent.m_char->m_char_data.m_inspirations.end())
-    {
-        // This currently crashes the cilent upon next login
-        //iter = ent.m_char->m_char_data.m_inspirations.erase(iter);
-    }
+    int insp_idx = getInspirationIdx(ent, col, row);
+    if(insp_idx < 0)
+        return;
 
-    qCDebug(logPowers) << "Entity: " << ent.m_idx << "wants to remove inspiration from" << col << row;
+    qCDebug(logPowers) << "Entity: " << ent.m_idx << " wants to remove inspiration from " << col << "x" << row;
+    ent.m_char->m_char_data.m_inspirations.erase(ent.m_char->m_char_data.m_inspirations.begin() + insp_idx);
+}
+
+void dumpInspirations(CharacterData &cd)
+{
+    if(cd.m_inspirations.size() == 0)
+        qDebug().noquote() << "This character has no inspirations.";
+
+    for(CharacterInspiration &insp : cd.m_inspirations)
+    {
+        qDebug().noquote() << "Inspiration: " << insp.m_name;
+        qDebug().noquote() << "  HasInsp: " << insp.m_has_insp;
+        qDebug().noquote() << "  Col: " << insp.m_col;
+        qDebug().noquote() << "  Row: " << insp.m_row;
+        qDebug().noquote() << "  CategoryIdx: " << insp.m_insp_tpl.m_category_idx;
+        qDebug().noquote() << "  PowerSetIdx: " << insp.m_insp_tpl.m_pset_idx;
+        qDebug().noquote() << "  PowerIdx: " << insp.m_insp_tpl.m_pow_idx;
+    }
 }
 
 //! @}

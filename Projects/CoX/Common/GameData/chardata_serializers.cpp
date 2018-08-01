@@ -49,7 +49,7 @@ void serialize(Archive &archive, PowerPool_Info &poolinfo, uint32_t const versio
     }
 
     archive(cereal::make_nvp("CategoryIdx", poolinfo.m_category_idx));
-    archive(cereal::make_nvp("PowersetEntryIdx", poolinfo.m_pset_idx));
+    archive(cereal::make_nvp("PowersetIdx", poolinfo.m_pset_idx));
     archive(cereal::make_nvp("PowerIdx", poolinfo.m_pow_idx));
 }
 
@@ -63,6 +63,7 @@ void serialize(Archive &archive, CharacterInspiration &in, uint32_t const versio
     }
 
     archive(cereal::make_nvp("InspirationInfo", in.m_insp_tpl));
+    archive(cereal::make_nvp("Name", in.m_name));
     archive(cereal::make_nvp("Col", in.m_col));
     archive(cereal::make_nvp("Row", in.m_row));
     archive(cereal::make_nvp("HasInsp", in.m_has_insp));
@@ -79,6 +80,7 @@ void serialize(Archive &archive, CharacterPowerEnhancement &eh, uint32_t const v
 
     archive(cereal::make_nvp("EnhancementInfo", eh.m_enhance_tpl));
     archive(cereal::make_nvp("Index", eh.m_enhancement_idx));
+    archive(cereal::make_nvp("Name", eh.m_name));
     archive(cereal::make_nvp("Level", eh.m_level));
     archive(cereal::make_nvp("NumCombines", eh.m_num_combines));
     archive(cereal::make_nvp("IsUsed", eh.m_is_used));
@@ -94,6 +96,7 @@ void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version)
     }
 
     archive(cereal::make_nvp("PowerInfo", pwr.m_power_tpl));
+    archive(cereal::make_nvp("Index", pwr.m_index));
     archive(cereal::make_nvp("Name", pwr.m_name));
     archive(cereal::make_nvp("LevelBought", pwr.m_level_bought));
     archive(cereal::make_nvp("NumCharges", pwr.m_num_charges));
@@ -115,7 +118,8 @@ void serialize(Archive &archive, CharacterPowerSet &pset, uint32_t const version
         return;
     }
 
-    archive(cereal::make_nvp("Index", pset.m_pset_idx));
+    archive(cereal::make_nvp("Index", pset.m_index));
+    archive(cereal::make_nvp("Category", pset.m_category));
     archive(cereal::make_nvp("LevelBought", pset.m_level_bought));
     archive(cereal::make_nvp("Powers", pset.m_powers));
 }

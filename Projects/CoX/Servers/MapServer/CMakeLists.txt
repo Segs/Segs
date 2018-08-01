@@ -68,6 +68,7 @@ SET(target_INCLUDE
     Events/StandardDialogCmd.h
     Events/TeamLooking.h
     Events/TeamOffer.h
+    Events/TrayAdd.h
     Events/InfoMessageCmd.h
     Events/InteractWithEntity.h
     Events/WindowState.h
