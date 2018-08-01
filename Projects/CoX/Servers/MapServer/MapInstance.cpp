@@ -474,6 +474,8 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token}));
 
+    postGlobalEvent(new ClientDisconnectedMessage({session_token}));
+
     m_sync_service->updateEntity(ent);
     m_entities.removeEntityFromActiveList(ent);
 
@@ -496,6 +498,8 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token}));
+
+    postGlobalEvent(new ClientDisconnectedMessage({session_token}));
 
     m_sync_service->updateEntity(ent);
     m_entities.removeEntityFromActiveList(ent);
@@ -610,6 +614,9 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
     tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
+
+    postGlobalEvent(new ClientConnectedMessage(
+        {ev->session_token(), m_owner_id, m_instance_id, e->m_db_id}));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapName(*map_session.m_ent, name());

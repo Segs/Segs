@@ -139,7 +139,8 @@ void GameHandler::on_account_data(GameAccountResponse *ev)
     session.m_game_account = ev->m_data;
     // Inform auth server about succesful client connection
     EventProcessor *tgt      = HandlerLocator::getAuth_Handler();
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),0 }));
+    //Use 0 for character ID, no character is selected here
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),0,0 }));
 
     m_session_store.add_to_active_sessions(&session);
     CharacterSlots *slots_event=new CharacterSlots;
@@ -439,8 +440,9 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
     session.is_connected_to_map_server_id = ev->m_data.m_server_id;
     session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
 
-    postGlobalEvent(new ClientConnectedMessage(
-        {ev->m_data.m_session, ev->m_data.m_server_id, ev->m_data.m_sub_server_id}));
+    //Uncomment this if you need the ClientConnectedMessage from GameHandler
+    //postGlobalEvent(new ClientConnectedMessage(
+        //{ev->m_data.m_session, ev->m_data.m_server_id, ev->m_data.m_sub_server_id}));
 }
 
 void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
@@ -452,7 +454,8 @@ void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
         SessionStore::MTGuard guard(m_session_store.reap_lock());
         m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
     }
-    postGlobalEvent(new ClientDisconnectedMessage({ev->m_data.m_session}));
+    //Uncomment this if you need the ClientDisconnectedMessage from GameHandler
+    //postGlobalEvent(new ClientDisconnectedMessage({ev->m_data.m_session}));
 }
 
 void GameHandler::reap_stale_links()

@@ -9,9 +9,13 @@
 #include "EventProcessor.h"
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/InternalEvents.h"
+#include <unordered_map>
+#include <vector>
 
 class FriendHandler : public EventProcessor
 {
+    //Key is ID of character who comes online, value is vector of IDs who have added this friend
+    static std::unordered_map<int,std::vector<int>> friend_map;
 private:
     void on_client_connected(ClientConnectedMessage* msg);
     void on_client_disconnected(ClientDisconnectedMessage* msg);

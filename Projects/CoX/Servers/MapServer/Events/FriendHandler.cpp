@@ -10,6 +10,8 @@
 #include "Common/Servers/HandlerLocator.h"
 #include <QtCore/QDebug>
 
+std::unordered_map<int,std::vector<int>> FriendHandler::friend_map;
+
 void FriendHandler::dispatch(SEGSEvent *ev)
 {
     assert(ev);
@@ -29,17 +31,26 @@ void FriendHandler::dispatch(SEGSEvent *ev)
 
 void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
 {
-    qDebug() << "FHandler received connection";
-    //qDebug() << "Connected msg: " << &msg;
+    //A player has connected, notify all the people that have added this character as a friend
+    //Also update this player/character's online status
+    qDebug() << "FHandler received connection, char id: " << msg->m_data.m_char_id;
+    //Iterate over friend_map[msg->m_data.m_char_id] and send message saying character logged in
+
+    //Also read this player's friend list to see who they've added
+
+
 }
 
 void FriendHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 {
+    //Update this player/character's online status (to offline)
     qDebug() << "Disconnected msg: " << &msg;
 }
 
 FriendHandler::FriendHandler() : m_message_bus_endpoint(*this)
 {
+    friend_map[1] = {1,2,3};
+    qDebug() << "friend_map: " << friend_map[1];
     assert(HandlerLocator::getFriend_Handler() == nullptr);
     HandlerLocator::setFriend_Handler(this);
 
