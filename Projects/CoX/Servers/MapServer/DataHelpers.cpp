@@ -389,7 +389,7 @@ uint32_t getMapIndex(const QString &map_name)
     return 0;
 }
 
-const QString getMapName(const QString &map_name)
+const QString getDisplayMapName(const QString &map_name)
 {
     for (const auto &map_data : g_defined_map_datas)
     {
@@ -433,7 +433,7 @@ const QString getMapPath(const EntityData &ed)
 {
     for (const auto &map_data : g_defined_map_datas)
     {
-        if (ed.m_current_map.contains(map_data.m_map_name, Qt::CaseInsensitive))
+        if (ed.m_map_idx == map_data.m_map_idx)
             return map_data.m_map_path;
     }
 
@@ -455,16 +455,16 @@ const QString getMapPath(size_t index)
     return g_defined_map_datas[index].m_map_path;
 }
 
-const QString getEntityMapName(const EntityData &ed)
+const QString getEntityDisplayMapName(const EntityData &ed)
 {
-    return getMapName(ed.m_current_map);
+    return getDisplayMapName(ed.m_map_idx);
 }
 
-const QString getFriendMapName(const Friend &f)
+const QString getFriendDisplayMapName(const Friend &f)
 {
     if (!f.m_online_status)
         return "OFFLINE";
-    return getMapName(f.m_mapname);
+    return getDisplayMapName(f.m_map_idx);
 }
 
 // Setters
@@ -496,7 +496,6 @@ void setEnd(Character &c, float val)
 }
 
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
-void    setMapName(Entity &e, const QString &val) { e.m_entity_data.m_current_map = val; }
 
 void setXP(Character &c, uint32_t val)
 {
