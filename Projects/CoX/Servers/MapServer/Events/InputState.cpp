@@ -48,7 +48,7 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     m_send_id                   = other.m_send_id;
     m_time_diff1                = other.m_time_diff1;
     m_time_diff2                = other.m_time_diff2;
-    has_input_commit_guess      = other.has_input_commit_guess;
+    m_key_released              = other.m_key_released;
     m_received_server_update_id = other.m_received_server_update_id;
     m_no_collision              = other.m_no_collision;
     m_controls_disabled         = other.m_controls_disabled;
@@ -204,8 +204,8 @@ void InputState::partial_2(BitStream &bs)
 
 void InputState::extended_input(BitStream &bs)
 {
-    m_data.has_input_commit_guess = bs.GetBits(1);
-    if(m_data.has_input_commit_guess) // list of partial_2 follows
+    m_data.m_key_released = bs.GetBits(1);
+    if(m_data.m_key_released) // list of partial_2 follows
     {
         m_data.m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
         m_data.m_send_id = bs.GetBits(16);
@@ -280,7 +280,12 @@ void InputState::serializefrom(BitStream &bs)
     m_data.m_send_deltas=false;
 
     if(bs.GetBits(1))
+    {
+        m_data.m_input_received = true;
         extended_input(bs);
+    }
+    else
+        m_data.m_input_received = false;
 
     m_has_target = bs.GetBits(1);
     m_target_idx = bs.GetPackedBits(14); // targeted entity server_index

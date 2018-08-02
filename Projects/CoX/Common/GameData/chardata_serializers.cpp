@@ -106,6 +106,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("SideKick",cd.m_sidekick));
     archive(cereal::make_nvp("FriendList",cd.m_friendlist));
     archive(cereal::make_nvp("CurrentAttribs", cd.m_current_attribs));
+    archive(cereal::make_nvp("OnTaskForce", cd.m_is_on_task_force));
 }
 
 void saveTo(const CharacterData &target, const QString &baseName, bool text_format)

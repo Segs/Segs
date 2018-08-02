@@ -361,4 +361,16 @@ bool MapServerData::read_npcs(const QString &directory_path)
     return true;
 }
 
+// should read from settings.cfg
+bool MapServerData::read_settings(const QString &directory_path)
+{
+    qDebug() << "Loading data from settings:";
+
+    // m_time_to_afk = 5 minutes
+    // m_time_to_logout_msg = 18 minutes
+    // m_time_to_auto_logout = 2 minutes
+
+    return true;
+}
+
 //! @}

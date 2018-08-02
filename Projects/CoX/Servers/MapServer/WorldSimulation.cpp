@@ -16,6 +16,7 @@
 
 #include "Common/Servers/Database.h"
 #include "Events/GameCommandList.h"
+#include "NetStructures/Character.h"
 #include <glm/gtx/vector_query.hpp>
 
 void markFlying(Entity &e ,bool is_flying) // Function to set character as flying
@@ -100,6 +101,18 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
         if(e->m_time_till_logout<0)
             e->m_time_till_logout=0;
     }
+
+    CharacterData* cd = &e->m_char->m_char_data;
+
+    if (e->inp_state.m_input_received == false)
+        cd->m_idle_time += dT.msec();
+    else
+    {
+        cd->m_idle_time = 0;
+        cd->m_afk = false;
+    }
+
+    // TODO: prepare a bunch of if statements based on cd->m_idle_time
 
     /*
     CharacterDatabase *char_db = AdminServer::instance()->character_db();

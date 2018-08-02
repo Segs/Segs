@@ -60,7 +60,8 @@ public:
     uint8_t     m_input_vel_scale               = 0; // TODO: Should be float?
     uint8_t     m_received_server_update_id     = 0;
     bool        m_no_collision                       = false;
-    bool        has_input_commit_guess          = 0;
+    bool        m_input_received                = false;
+    bool        m_key_released                  = false; // was has_input_commit_guess
     bool        pos_delta_valid[3]              = {};
     bool        pyr_valid[3]                    = {};
     glm::vec3   pos_delta;

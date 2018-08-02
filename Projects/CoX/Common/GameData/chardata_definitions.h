@@ -29,7 +29,7 @@ static const constexpr  uint32_t        class_version   = 1;
 
 struct CharacterData
 {
-static const constexpr  uint32_t    class_version       = 5;    // v5: no more m_mapName
+static const constexpr  uint32_t    class_version       = 6;    // v6: add m_is_on_task_force and m_idle_time
                         uint32_t    m_level             = 0;
                         uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
                         uint32_t    m_experience_points = 0;
@@ -55,4 +55,6 @@ static const constexpr  uint32_t    class_version       = 5;    // v5: no more m
                         Sidekick    m_sidekick;                 // Sidekick Struct
                         FriendsList m_friendlist;               // Friendslist Struct
                         Parse_CharAttrib    m_current_attribs;
+                        bool        m_is_on_task_force  = false;
+                        float       m_idle_time         = 0;
 };

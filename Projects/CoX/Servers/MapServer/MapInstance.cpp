@@ -784,7 +784,7 @@ void MapInstance::on_input_state(InputState *st)
 {
     MapClientSession &session(m_session_store.session_from_event(st));
     Entity *   ent = session.m_ent;
-    if (st->m_data.has_input_commit_guess)
+    if (st->m_data.m_key_released)
         ent->m_input_ack = st->m_data.m_send_id;
     ent->inp_state = st->m_data;
 
