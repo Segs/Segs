@@ -83,6 +83,7 @@ protected:
         void                    on_name_clash_check_result(WouldNameDuplicateResponse *ev);
         void                    on_character_created(CreateNewCharacterResponse *ev);
         void                    on_entity_response(GetEntityResponse *ev);
+        void                    on_entity_by_name_response(GetEntityByNameResponse *ev);
         // Server->Server messages
         void on_expect_client(ExpectMapClientRequest *ev);
 

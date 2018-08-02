@@ -470,7 +470,7 @@ void cmdHandler_DebugChar(const QString &/*cmd*/, MapClientSession &sess)
     QString msg = "DebugChar: " + sess.m_ent->name()
             + "\n  " + chardata.m_char_data.m_origin_name
             + "\n  " + chardata.m_char_data.m_class_name
-            + "\n  map: " + getEntityMapName(sess.m_ent->m_entity_data)
+            + "\n  map: " + getEntityDisplayMapName(sess.m_ent->m_entity_data)
             + "\n  db_id: " + QString::number(sess.m_ent->m_db_id) + ":" + QString::number(chardata.m_db_id)
             + "\n  idx: " + QString::number(sess.m_ent->m_idx)
             + "\n  access: " + QString::number(sess.m_ent->m_entity_data.m_access_level)

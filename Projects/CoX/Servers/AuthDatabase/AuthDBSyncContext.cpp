@@ -13,7 +13,7 @@
 #include "AuthDBSyncContext.h"
 
 #include "AuthDBSyncEvents.h"
-#include "PasswordHasher/PasswordHasher.h"
+#include "PasswordHasher.h"
 #include "Settings.h"
 
 #include <ace/Thread.h>

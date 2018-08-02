@@ -265,7 +265,7 @@ void MapInstance::enqueue_client(MapClientSession *clnt)
     m_entities.InsertPlayer(clnt->m_ent);
 
     // m_sync_service has its own entity mgr, so add to its own mgr separately
-    m_sync_service->addPlayer(clnt->m_ent);
+    // m_sync_service->addPlayer(clnt->m_ent);
 
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
@@ -293,6 +293,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case GameDBEventTypes::evGetEntityResponse:
             on_entity_response(static_cast<GetEntityResponse *>(ev));
+            break;
+        case GameDBEventTypes::evGetEntityByNameResponse:
+            on_entity_by_name_response(static_cast<GetEntityByNameResponse *>(ev));
             break;
         case MapEventTypes::evIdle:
             on_idle(static_cast<IdleEvent *>(ev));
@@ -635,7 +638,35 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
 
     map_session.m_current_map->enqueue_client(&map_session);
-    setMapName(*map_session.m_ent, name());
+    setMapIdx(*map_session.m_ent, index());
+    map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
+}
+
+void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
+{
+    // exactly the same function as above, this is just a test to see if getting entitydata by name is working
+    MapClientSession &map_session(m_session_store.session_from_event(ev));
+    m_session_store.locked_unmark_session_for_reaping(&map_session);
+    Entity * e = map_session.m_ent;
+
+    e->m_db_id              = e->m_char->m_db_id;
+    e->m_supergroup.m_SG_id = ev->m_data.m_supergroup_id;
+    serializeFromDb(e->m_entity_data, ev->m_data.m_ent_data);
+
+    // Can't pass direction through cereal, so let's update it here.
+    e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
+
+    if (logSpawn().isDebugEnabled())
+    {
+        qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
+        map_session.m_ent->dump();
+    }
+
+    // Tell our game server we've got the client
+    EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
+
+    map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
     map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
 }
@@ -675,7 +706,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         serializeToDb(e->m_entity_data,ent_data);
         // create the character from the data.
         //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
-        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.
+        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.      
         game_db->putq(new CreateNewCharacterRequest({char_data,ent_data, map_session.m_requested_slot_idx,
                                                      map_session.m_max_slots,map_session.m_client_id},
                                                     token,this));
@@ -683,6 +714,11 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     else
     {
         assert(map_session.m_ent);
+
+        // this is just to test if GetEntityByNameRequest is working, the plan is for other EventProcessors to use this event
+        // game_db->putq(new GetEntityByNameRequest({map_session.m_ent->m_char->getName()}, lnk->session_token(), this));
+
+        // this is what should be used
         game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
     }
     // while we wait for db response, mark session as waiting for reaping

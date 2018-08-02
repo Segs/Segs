@@ -98,6 +98,7 @@ void Entity::dump()
             + "\n  m_type: " + QString::number(uint8_t(m_type))
             + "\n  class idx: " + QString::number(m_entity_data.m_class_idx)
             + "\n  origin idx: " + QString::number(m_entity_data.m_origin_idx)
+            + "\n  mapidx: " + QString::number(m_entity_data.m_map_idx)
             + "\n  pos: " + QString::number(m_entity_data.m_pos.x) + ", "
                           + QString::number(m_entity_data.m_pos.y) + ", "
                           + QString::number(m_entity_data.m_pos.z)

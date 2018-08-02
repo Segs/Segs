@@ -6,12 +6,11 @@
  */
 
 /*!
- * @addtogroup PasswordHasher Projects/CoX/Common/PasswordHasher
+ * @addtogroup Components
  * @{
  */
 
 #include "PasswordHasher.h"
-
 #include <QTime>
 
 PasswordHasher::PasswordHasher() : m_hasher(QCryptographicHash::Sha256)

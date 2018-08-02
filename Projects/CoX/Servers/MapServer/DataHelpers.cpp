@@ -439,7 +439,7 @@ uint32_t getMapIndex(const QString &map_name)
     return 0;
 }
 
-const QString getMapName(const QString &map_name)
+const QString getDisplayMapName(const QString &map_name)
 {
     for (const auto &map_data : g_defined_map_datas)
     {
@@ -457,9 +457,10 @@ const QString getMapName(const QString &map_name)
 
 const QString getDisplayMapName(size_t index)
 {
-    // If index > 0, wraps around and becomes really large number.
-    // Thus, no need to check for index > 0.
-    if(index >= g_defined_map_datas.size()){
+    // Since index is unsigned, it cannot be negative.
+    // Thus, no need to check for index < 0.
+    if(index >= g_defined_map_datas.size())
+    {
         qWarning() << "Sought map index was out of range."
                    << "Returning Outbreak's display map name as default...";
         index = 0;
@@ -469,9 +470,10 @@ const QString getDisplayMapName(size_t index)
 
 const QString getMapName(size_t index)
 {
-    // If index > 0, wraps around and becomes really large number.
-    // Thus, no need to check for index > 0.
-    if(index >= g_defined_map_datas.size()){
+    // Since index is unsigned, it cannot be negative.
+    // Thus, no need to check for index < 0.
+    if(index >= g_defined_map_datas.size())
+    {
         qWarning() << "Sought map index was out of range."
                    << "Returning Outbreak's map name as default...";
         index = 0;
@@ -481,18 +483,7 @@ const QString getMapName(size_t index)
 
 const QString getMapPath(const EntityData &ed)
 {
-    for (const auto &map_data : g_defined_map_datas)
-    {
-        if (ed.m_current_map.contains(map_data.m_map_name, Qt::CaseInsensitive))
-            return map_data.m_map_path;
-    }
-
-    // log a warning because this part of the code is called when things went wrong
-    qWarning() << "No matching map name in g_defined_map_datas to EntityData's m_map_name."
-               << "Returning Outbreak's map path as default...";
-
-    // defaulting to Outbreak's map path
-    return g_defined_map_datas[0].m_map_path;
+    return getMapPath(ed.m_map_idx);
 }
 
 const QString getMapPath(size_t index)
@@ -505,16 +496,16 @@ const QString getMapPath(size_t index)
     return g_defined_map_datas[index].m_map_path;
 }
 
-const QString getEntityMapName(const EntityData &ed)
+const QString getEntityDisplayMapName(const EntityData &ed)
 {
-    return getMapName(ed.m_current_map);
+    return getDisplayMapName(ed.m_map_idx);
 }
 
-const QString getFriendMapName(const Friend &f)
+const QString getFriendDisplayMapName(const Friend &f)
 {
     if (!f.m_online_status)
         return "OFFLINE";
-    return getMapName(f.m_mapname);
+    return getDisplayMapName(f.m_map_idx);
 }
 
 // Setters
@@ -546,7 +537,6 @@ void setEnd(Character &c, float val)
 }
 
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
-void    setMapName(Entity &e, const QString &val) { e.m_entity_data.m_current_map = val; }
 
 void setXP(Character &c, uint32_t val)
 {
