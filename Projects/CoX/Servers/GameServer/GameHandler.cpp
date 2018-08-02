@@ -368,7 +368,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     }
 
     // will never be empty because we look based on m_map_idx, and integers cannot be null
-    QString map_path = getMapPath(ed).toLower();
+    QString map_path = getMapPath(ed.m_map_idx).toLower();
 
     if(selected_slot->isEmpty())
         selected_slot = nullptr; // passing a null to map server to indicate a new character is being created.
