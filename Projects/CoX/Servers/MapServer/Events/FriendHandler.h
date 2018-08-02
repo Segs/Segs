@@ -10,25 +10,24 @@
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/InternalEvents.h"
 #include "GameDatabase/GameDBSyncEvents.h"
-#include "MapClientSession.h"
 #include "Common/Servers/ClientManager.h"
 #include <unordered_map>
 #include <vector>
 
 class FriendHandler : public EventProcessor
 {
-    using SessionStore = ClientSessionStore<MapClientSession>;
 
     //Key is ID of character who comes online, value is vector of IDs who have added this friend
     static std::unordered_map<int,std::vector<int>> s_friend_map;
+    //static int s_game_server_id;
 private:
-    void on_entity_response(GetEntityResponse *ev);
+    void on_player_friends(GetPlayerFriendsResponse* ev);
     void on_client_connected(ClientConnectedMessage* msg);
     void on_client_disconnected(ClientDisconnectedMessage* msg);
 protected:
     MessageBusEndpoint m_message_bus_endpoint;
 public:
-    SessionStore m_session_store;
     FriendHandler();
+    void set_game_server_id(int m_id);
     void dispatch(SEGSEvent *ev) override;
 };

@@ -17,6 +17,7 @@
 #include "Servers/HandlerLocator.h"
 #include "Common/Servers/ServerEndpoint.h"
 #include "Settings.h"
+#include "MapServer/Events/FriendHandler.h"
 
 #include <ace/Synch.h>
 #include <ace/INET_Addr.h>
@@ -89,6 +90,11 @@ GameServer::GameServer(int id) : d(new PrivateData)
     d->m_handler->start();
     d->m_id = id;
     HandlerLocator::setGame_Handler(d->m_id,d->m_handler);
+
+    qDebug() << "Creating FHandler";
+    FriendHandler *friendHandler = new FriendHandler();
+    friendHandler->set_game_server_id(id);
+    friendHandler->activate();
 }
 
 GameServer::~GameServer()

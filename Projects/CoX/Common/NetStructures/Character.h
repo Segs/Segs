@@ -64,6 +64,7 @@ class Character
         PowerTrayGroup          m_trays;
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
+        friend bool toActualCharacterData(const CharacterData &data, QString serialized_data);
         friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player, EntityData &entity);
         friend bool fromActualCharacter(const Character &src,const PlayerData &player, const EntityData &entity, GameAccountResponseCharacterData &tgt);
 public:
@@ -133,5 +134,6 @@ protected:
 
 void serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
 bool initializeCharacterFromCreator();
+bool toActualCharacterData(const CharacterData &data, QString serialized_data);
 bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt, PlayerData &player, EntityData &entity);
 bool fromActualCharacter(const Character &src, const PlayerData &player, const EntityData &entity, GameAccountResponseCharacterData &tgt);

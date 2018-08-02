@@ -12,6 +12,7 @@
 #include <QtCore/QDebug>
 
 std::unordered_map<int,std::vector<int>> FriendHandler::s_friend_map;
+static int s_game_server_id;
 
 void FriendHandler::dispatch(SEGSEvent *ev)
 {
@@ -19,9 +20,6 @@ void FriendHandler::dispatch(SEGSEvent *ev)
 
     switch(ev->type())
     {
-        case GameDBEventTypes::evGetEntityResponse:
-            on_entity_response(static_cast<GetEntityResponse *>(ev));
-            break;
         case Internal_EventTypes::evClientConnected:
             on_client_connected(static_cast<ClientConnectedMessage *>(ev));
             break;
@@ -33,13 +31,6 @@ void FriendHandler::dispatch(SEGSEvent *ev)
     }
 }
 
-void FriendHandler::on_entity_response(GetEntityResponse *ev){
-    qDebug() << "Fhandler ent response";
-    //MapClientSession &map_session(m_session_store.session_from_event(ev));
-    //m_session_store.locked_unmark_session_for_reaping(&map_session);
-    //Entity * e = map_session.m_ent;
-}
-
 void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
 {
     //A player has connected, notify all the people that have added this character as a friend
@@ -48,15 +39,19 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
     //Iterate over s_friend_map[msg->m_data.m_char_id] and send message saying character logged in
 
     //Also read this player's friend list to see who they've added
-
-    //MapClientSession &session(m_session_store.session_from_event(ev));
-    //msg->m_data.m_char_id
+    //To do this, we send a GetFriendsListRequest to GameDBSyncHandler
+    EventProcessor *tgt = HandlerLocator::getGame_DB_Handler(s_game_server_id);
+    tgt->putq(new GetPlayerFriendsRequest({msg->m_data.m_char_id},msg->session_token(),this));
 }
 
 void FriendHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 {
     //Update this player/character's online status (to offline)
     qDebug() << "Disconnected msg: " << &msg;
+}
+
+void FriendHandler::set_game_server_id(int id){
+    s_game_server_id = id;
 }
 
 FriendHandler::FriendHandler() : m_message_bus_endpoint(*this)
@@ -68,5 +63,4 @@ FriendHandler::FriendHandler() : m_message_bus_endpoint(*this)
 
     m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientConnected);
     m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientDisconnected);
-    m_message_bus_endpoint.subscribe(GameDBEventTypes::evGetEntityResponse);
 }

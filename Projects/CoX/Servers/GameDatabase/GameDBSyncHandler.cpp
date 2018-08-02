@@ -49,6 +49,8 @@ void GameDBSyncHandler::dispatch(SEGSEvent *ev)
         on_create_new_char(static_cast<CreateNewCharacterRequest *>(ev)); break;
     case GameDBEventTypes::evGetEntityRequest:
         on_get_entity(static_cast<GetEntityRequest *>(ev)); break;
+    case GameDBEventTypes::evGetPlayerFriendsRequest:
+        on_get_player_friends(static_cast<GetPlayerFriendsRequest *>(ev)); break;
     default: assert(false); break;
     }
 }
@@ -135,6 +137,12 @@ void GameDBSyncHandler::on_get_entity(GetEntityRequest *ev)
         ev->src()->putq(new GetEntityResponse(std::move(resp),ev->session_token()));
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
+
+void GameDBSyncHandler::on_get_player_friends(GetPlayerFriendsRequest *ev){
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    GetPlayerFriendsResponseData resp;
+    db_ctx.getPlayerFriends(ev->m_data,resp);
 }
 
 //! @}

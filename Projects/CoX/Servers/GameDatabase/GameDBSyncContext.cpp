@@ -19,6 +19,7 @@
 #include "GameDBSyncEvents.h"
 #include "Settings.h"
 #include "Database.h"
+#include "GameData/chardata_serializers.h"
 
 #include <ace/Thread.h>
 
@@ -382,6 +383,22 @@ bool GameDbSyncContext::getEntity(const GetEntityRequestData &data, GetEntityRes
         return false;
     result.m_supergroup_id = m_prepared_entity_select->value("supergroup_id").toUInt();
     result.m_ent_data = m_prepared_entity_select->value("entitydata").toString();
+    return true;
+}
+
+bool GameDbSyncContext::getPlayerFriends(const GetPlayerFriendsRequestData &data,
+                                         GetPlayerFriendsResponseData &result)
+{
+    m_prepared_entity_select->bindValue(0,data.m_char_id);
+    if(!doIt(*m_prepared_entity_select))
+        return false;
+    if(!m_prepared_entity_select->next())
+        return false;
+    //result.m_friends = m_prepared_entity_select->value("chardata.m_friendlist");
+    CharacterData temp;
+    serializeFromDb(temp, m_prepared_entity_select->value("chardata").toString());
+
+    qDebug() << "getPlayerFriends list: " << temp.m_friendlist.m_friends[0].m_name;
     return true;
 }
 

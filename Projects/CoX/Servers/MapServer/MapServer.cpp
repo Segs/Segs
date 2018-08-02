@@ -21,7 +21,6 @@
 #include "SEGSTimer.h"
 #include "Settings.h"
 #include "Servers/MessageBus.h"
-#include "Events/FriendHandler.h"
 
 #include <ace/Reactor.h>
 
@@ -58,10 +57,6 @@ MapServer::MapServer(uint8_t id) : d(new PrivateData), m_id(id)
     assert(g_GlobalMapServer==nullptr && "Only one GameServer instance per process allowed");
     g_GlobalMapServer = this;
     HandlerLocator::setMap_Handler(id,this);
-
-    qDebug() << "Creating FHandler";
-    FriendHandler *friendHandler = new FriendHandler();
-    friendHandler->activate();
 }
 
 MapServer::~MapServer()
