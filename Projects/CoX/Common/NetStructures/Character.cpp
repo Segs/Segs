@@ -481,11 +481,6 @@ void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)
     }
 }
 
-bool toActualCharacterData(const CharacterData &data, QString serialized_data){
-    serializeFromQString(data, serialized_data);
-    return true;
-}
-
 bool toActualCharacter(const GameAccountResponseCharacterData &src,
                        Character &tgt,PlayerData &player, EntityData &entity)
 {
