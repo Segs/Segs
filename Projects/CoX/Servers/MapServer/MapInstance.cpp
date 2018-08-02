@@ -696,10 +696,10 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         assert(map_session.m_ent);
 
         // this is just to test if GetEntityByNameRequest is working, the plan is for other EventProcessors to use this event
-        game_db->putq(new GetEntityByNameRequest({map_session.m_ent->m_char->getName()}, lnk->session_token(), this));
+        // game_db->putq(new GetEntityByNameRequest({map_session.m_ent->m_char->getName()}, lnk->session_token(), this));
 
         // this is what should be used
-        //game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
+        game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
     }
     // while we wait for db response, mark session as waiting for reaping
     m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token());
