@@ -11,7 +11,7 @@
 class QString;
 class PowerPool_Info;
 struct CharacterInspiration;
-struct CharacterPowerEnhancement;
+struct CharacterEnhancement;
 struct CharacterPower;
 struct CharacterPowerSet;
 struct Friend;
@@ -24,7 +24,7 @@ void serialize(Archive &archive, PowerPool_Info &poolinfo, uint32_t const versio
 template<class Archive>
 void serialize(Archive &archive, CharacterInspiration &in, uint32_t const version);
 template<class Archive>
-void serialize(Archive &archive, CharacterPowerEnhancement &eh, uint32_t const version);
+void serialize(Archive &archive, CharacterEnhancement &eh, uint32_t const version);
 template<class Archive>
 void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version);
 template<class Archive>

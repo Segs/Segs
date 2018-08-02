@@ -72,8 +72,6 @@ void Character::reset()
     m_char_data.m_has_titles = false;
     m_char_data.m_sidekick.m_has_sidekick = false;
     m_char_data.m_powersets.clear();
-    m_char_data.m_inspirations.clear();
-    m_char_data.m_enhancements.clear();
     m_char_data.m_max_insp_cols = 3;
     m_char_data.m_max_insp_rows = 1;
 }
@@ -165,12 +163,9 @@ void Character::GetCharBuildInfo(BitStream &src)
     src.GetString(m_char_data.m_class_name);
     src.GetString(m_char_data.m_origin_name);
 
-    //addStartingInspirations();      // resurgence and phenomenal_luck
+    addStartingInspirations();      // resurgence and phenomenal_luck
     getInherentPowers();            // inherent
     getPowerFromBuildInfo(src);     // primary, secondary
-
-    //if(logPowers().isDebugEnabled())
-        //dumpOwnedPowers(m_char_data);
 
     m_char_data.m_trays.serializefrom(src);
 }
@@ -178,11 +173,11 @@ void Character::GetCharBuildInfo(BitStream &src)
 void Character::sendEnhancements(BitStream &bs) const
 {
     bs.StorePackedBits(5, m_char_data.m_enhancements.size()); // count
-    for(const CharacterPowerEnhancement &eh : m_char_data.m_enhancements)
+    for(const CharacterEnhancement &eh : m_char_data.m_enhancements)
     {
         bs.StorePackedBits(3, eh.m_enhancement_idx); // boost idx
-        bs.StoreBits(1, eh.m_is_used); // 1 set, 0 clear
-        if(eh.m_is_used)
+        bs.StoreBits(1, eh.m_slot_used); // 1 set, 0 clear
+        if(eh.m_slot_used)
         {
             eh.m_enhance_tpl.serializeto(bs);
             bs.StorePackedBits(5, eh.m_level); // boost idx
@@ -195,20 +190,17 @@ void Character::sendInspirations(BitStream &bs) const
 {
     int max_cols = m_char_data.m_max_insp_cols;
     int max_rows = m_char_data.m_max_insp_rows;
-    int max_insps = max_cols * max_rows;
 
     bs.StorePackedBits(3, max_cols); // count
     bs.StorePackedBits(3, max_rows); // count
 
-    for(int i = 0; i < max_insps; ++i)
+    for(int i = 0; i < max_cols; ++i)
     {
-        if(i > m_char_data.m_inspirations.size() || m_char_data.m_inspirations.empty())
-            bs.StoreBits(1, 0);
-        else
+        for(int j = 0; j < max_rows; ++j)
         {
-            bs.StoreBits(1, m_char_data.m_inspirations[i].m_has_insp);
-            if(m_char_data.m_inspirations[i].m_has_insp)
-                m_char_data.m_inspirations[i].m_insp_tpl.serializeto(bs);
+            bs.StoreBits(1, m_char_data.m_inspirations[i][j].m_has_insp);
+            if(m_char_data.m_inspirations[i][j].m_has_insp)
+                m_char_data.m_inspirations[i][j].m_insp_tpl.serializeto(bs);
         }
     }
 }
@@ -225,13 +217,17 @@ void Character::sendOwnedPowers(BitStream &bs) const
             power.m_power_tpl.serializeto(bs);
             bs.StorePackedBits(5, power.m_level_bought);
             bs.StoreFloat(power.m_range);
-            bs.StorePackedBits(4, power.m_enhancements.size());
 
-            for(const CharacterPowerEnhancement &enhancement : power.m_enhancements)
+            bs.StorePackedBits(4, power.m_enhancement_slots);
+            for(int i = 0; i < power.m_enhancement_slots; ++i)
             {
-                enhancement.m_enhance_tpl.serializeto(bs);
-                bs.StorePackedBits(5, enhancement.m_level);
-                bs.StorePackedBits(2, enhancement.m_num_combines);
+                bs.StoreBits(1, power.m_enhancements[i].m_slot_used); // slot has enhancement
+                if(power.m_enhancements[i].m_slot_used)
+                {
+                    power.m_enhancements[i].m_enhance_tpl.serializeto(bs);
+                    bs.StorePackedBits(5, power.m_enhancements[i].m_level);
+                    bs.StorePackedBits(2, power.m_enhancements[i].m_num_combines);
+                }
             }
         }
     }

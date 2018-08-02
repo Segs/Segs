@@ -54,9 +54,9 @@ static const constexpr  uint32_t    class_version = 1;
         bool            m_has_insp          = false;
 };
 
-using vInspirations = std::vector<CharacterInspiration>;
+using vInspirations = std::array< std::array<CharacterInspiration, 4>, 5>;
 
-struct CharacterPowerEnhancement
+struct CharacterEnhancement
 {
 static const constexpr  uint32_t    class_version = 1;
         PowerPool_Info  m_enhance_tpl;
@@ -64,10 +64,10 @@ static const constexpr  uint32_t    class_version = 1;
         QString         m_name;
         uint32_t        m_level             = 0;
         uint32_t        m_num_combines      = 0;
-        bool            m_is_used           = false;
+        bool            m_slot_used         = false;
 };
 
-using vEnhancements = std::vector<CharacterPowerEnhancement>;
+using vEnhancements = std::array<CharacterEnhancement, 10>;
 
 struct CharacterPower
 {
@@ -82,10 +82,11 @@ static const constexpr  uint32_t    class_version = 1;
         float           m_range             = 1.0f;
         float           m_recharge_time     = 0.0f;
         uint32_t        m_activation_state  = 0;
-        uint32_t        m_num_enhancements  = 0;
+        uint32_t        m_enhancement_slots = 3;
         bool            m_active_state_change   = false;
         bool            m_timer_updated         = false;
-        std::vector<CharacterPowerEnhancement> m_enhancements;
+        bool            m_erase_power           = false;
+        std::array<CharacterEnhancement, 6> m_enhancements;
 };
 
 struct CharacterPowerSet
@@ -160,6 +161,7 @@ CharacterPower getPowerData(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_i
 CharacterPowerSet getPowerSetData(uint32_t pcat_idx, uint32_t pset_idx);
 CharacterPower * getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
 void addPower(CharacterData &cd, uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
+void removePower(CharacterData &cd, const PowerPool_Info &ppool);
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
 void dumpPower(const CharacterPower &pow);
@@ -170,7 +172,7 @@ void dumpOwnedPowers(CharacterData &cd);
  */
 void addInspirationByName(CharacterData &cd, QString &name);
 void addInspirationToChar(CharacterData &cd, CharacterInspiration insp);
-void moveInspiration(Entity &ent, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
+void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
 void useInspiration(Entity &ent, uint32_t col, uint32_t row);
-void removeInspiration(Entity &ent, uint32_t col, uint32_t row);
+void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row);
 void dumpInspirations(CharacterData &cd);

@@ -317,34 +317,36 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
         bs.StoreString(getBattleCry(player_char));      // max 128
     }
 
-    uint8_t auth_data[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     PUTDEBUG("before auth data");
-    bs.StoreBitArray(auth_data,128);
+    bs.StoreBitArray(player_data.m_auth_data,128);
     sendKeybinds(player_data.m_keybinds,bs);
     sendOptions(player_data.m_options,false,bs);
     PUTDEBUG("before friend list");
     player_char.sendFriendList(bs);
 }
 
-void storePowerSpec(uint32_t powerset_idx,uint32_t power_idx,BitStream &bs)
+void storePowerSpec(const PowerPool_Info &ppool, BitStream &bs)
 {
-    bs.StorePackedBits(2, powerset_idx);
-    bs.StorePackedBits(1, power_idx);
+    bs.StorePackedBits(2, ppool.m_pset_idx);
+    bs.StorePackedBits(1, ppool.m_pow_idx);
 }
 
-void storePowerRanges(CharacterData &cd, BitStream &bs)
+void storePowerRanges(const CharacterData &cd, BitStream &bs)
 {
     // sending state of all current powers.
-    for(CharacterPowerSet &pset : cd.m_powersets)
+    for(const CharacterPowerSet &pset : cd.m_powersets)
     {
-        for(CharacterPower &p : pset.m_powers)
+        for(const CharacterPower &p : pset.m_powers)
         {
+            //qCDebug(logPowers) << "Sending Power:" << p.m_name << pset.m_index << p.m_index;
+
             bs.StoreBits(1,1); // have power to send.
             p.m_power_tpl.serializeto(bs);
             bs.StoreFloat(p.m_range); // nem: I have no idea why it is passed here
         }
     }
     bs.StoreBits(1,0); // no more powers to send.
+    //qCDebug(logPowers) << "No more powers to send.";
 }
 
 void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
@@ -352,7 +354,6 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     Entity *e = src.m_client->m_ent;
     assert(e);
     CharacterData *cd = &e->m_char->m_char_data;
-    uint32_t pset_idx, pow_idx = 0;
 
     bs.StoreBits(1, e->m_powers_updated);
     if(!e->m_powers_updated)
@@ -360,13 +361,14 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
         storePowerRanges(*cd, bs);
         return;
     }
-    qCDebug(logPowers) << "PowersUpdated?" << e->m_powers_updated;
+    qCDebug(logPowers) << "Powers Updated:" << e->m_powers_updated;
 
-    qCDebug(logPowers) << "ResetPowers?" << e->m_reset_powersets;
+
     // Reset Powersets (for respec)
     bs.StoreBits(1, e->m_reset_powersets);
     if(e->m_reset_powersets)
     {
+        qCDebug(logPowers) << "Resetting Powers:" << e->m_reset_powersets;
         CharacterPowerSet temp;
         int pcat_idx = getPowerCatByName("Inherent");
 
@@ -396,59 +398,50 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     {
         total_powers_owned += pset.m_powers.size(); // total up all powers
     }
-    bs.StorePackedBits(1, total_powers_owned);
 
     qCDebug(logPowers) << "Update Powers:" << total_powers_owned;
+    bs.StorePackedBits(1, total_powers_owned);
     for(const CharacterPowerSet &pset : cd->m_powersets)
     {
-        pow_idx = 0;
         for(const CharacterPower &power : pset.m_powers)
         {
-            qCDebug(logPowers) << "Power:" << pset_idx << power.m_name << pow_idx;
-            storePowerSpec(power.m_power_tpl.m_pset_idx, power.m_power_tpl.m_pow_idx, bs);
+            qCDebug(logPowers) << "Power:" << power.m_name << pset.m_index << power.m_index;
+            storePowerSpec(power.m_power_tpl, bs);
 
-            if(e->m_powers_updated)
+            if(power.m_erase_power)
             {
-                qCDebug(logPowers) << "  PowersUpdated?2" << e->m_powers_updated;
-                power.m_power_tpl.serializeto(bs);
+                qCDebug(logPowers) << "  Removing power" << power.m_name << pset.m_index << power.m_index;
+                removePower(*cd, power.m_power_tpl);
+                continue;
+            }
 
-                bs.StorePackedBits(5, pset.m_level_bought);
-                bs.StorePackedBits(5, power.m_level_bought);
-                bs.StorePackedBits(3, power.m_num_charges);
-                bs.StoreFloat(power.m_usage_time);
-                bs.StorePackedBits(24, power.m_activation_time);
+            power.m_power_tpl.serializeto(bs);
+            bs.StorePackedBits(5, pset.m_level_bought);
+            bs.StorePackedBits(5, power.m_level_bought);
+            bs.StorePackedBits(3, power.m_num_charges);
+            bs.StoreFloat(power.m_usage_time);
+            bs.StorePackedBits(24, power.m_activation_time);
 
-                qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_num_enhancements;
-                bs.StorePackedBits(4, power.m_num_enhancements); // total enhancement slots
-                for(uint32_t i = 0; i<power.m_num_enhancements; ++i)
+            qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_enhancement_slots;
+            bs.StorePackedBits(4, power.m_enhancement_slots); // total enhancement slots
+            for(int i = 0; i < power.m_enhancement_slots; ++i)
+            {
+                qCDebug(logPowers) << "  Enhancement:" << power.m_enhancements[i].m_name
+                                   << power.m_enhancements[i].m_enhancement_idx
+                                   << power.m_enhancements[i].m_slot_used;
+                bs.StoreBits(1, power.m_enhancements[i].m_slot_used);        // slot has enhancement
+                if(power.m_enhancements[i].m_slot_used)
                 {
-                    qCDebug(logPowers) << "  Enhancement:" << power.m_enhancements.at(i).m_name
-                                       << power.m_enhancements.at(i).m_enhancement_idx
-                                       << power.m_enhancements.at(i).m_is_used;
-                    bs.StoreBits(1, power.m_enhancements.at(i).m_is_used); // slot has enhancement
-                    if(power.m_enhancements.at(i).m_is_used)
-                    {
-                        power.m_enhancements.at(i).m_enhance_tpl.serializeto(bs);
-                        bs.StorePackedBits(5, power.m_enhancements.at(i).m_level);
-                        bs.StorePackedBits(2, power.m_enhancements.at(i).m_num_combines);
-                    }
+                    power.m_enhancements[i].m_enhance_tpl.serializeto(bs);
+                    bs.StorePackedBits(5, power.m_enhancements[i].m_level);
+                    bs.StorePackedBits(2, power.m_enhancements[i].m_num_combines);
                 }
             }
-            else
-            {
-                qCDebug(logPowers) << "  Erase Power?";
-                // TODO: Release power? Maybe erase from array?
-            }
-
-            pow_idx++;  // iterate to next power
         }
-
-        pset_idx++;     // iterate to next powerset
     }
 
     qCDebug(logPowers) << "Send State of All Powers";
-    // sending state of all current powers.
-    storePowerRanges(*cd, bs);
+    storePowerRanges(*cd, bs); // sending state of all current powers.
 
     qCDebug(logPowers) << "NumQueuedPowers:" << e->m_queued_powers.size();
     bs.StorePackedBits(4, e->m_queued_powers.size()); // Count all active powers
@@ -458,7 +451,7 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
         bs.StoreBits(1, pow->m_active_state_change);
         if(pow->m_active_state_change)
         {
-            storePowerSpec(pow->m_power_tpl.m_pset_idx, pow->m_power_tpl.m_pset_idx, bs);
+            storePowerSpec(pow->m_power_tpl, bs);
             bs.StorePackedBits(1, pow->m_activation_state);
         }
     }
@@ -471,41 +464,42 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
         bs.StoreBits(1, pow->m_timer_updated);
         if(pow->m_timer_updated)
         {
-            storePowerSpec(pow->m_power_tpl.m_pset_idx, pow->m_power_tpl.m_pset_idx, bs);
+            storePowerSpec(pow->m_power_tpl, bs);
             bs.StoreFloat(pow->m_recharge_time);
         }
     }
 
     // All Owned Inspirations
-    int max_insps = cd->m_max_insp_cols * cd->m_max_insp_rows;
-    qCDebug(logPowers) << "MaxInspSlots" << max_insps;
+    int max_cols = cd->m_max_insp_cols;
+    int max_rows = cd->m_max_insp_rows;
+    int max_insps = max_cols * max_rows;
+    qCDebug(logPowers) << "Max Insp Slots:" << max_insps;
     //e->m_char->sendInspirations(bs);
 
     storePackedBitsConditional(bs, 4, max_insps);
-    for(int i = 0; i < max_insps; ++i)
+    for(int i = 0; i < max_cols; ++i)
     {
-        if(i > cd->m_inspirations.size() || cd->m_inspirations.empty())
+        for(int j = 0; j < max_rows; ++j)
         {
-            qCDebug(logPowers) << "  No Inspiration:" << i;
-            bs.StoreBits(1, 0);
-            continue;
+            qCDebug(logPowers) << "  Inspiration:" << i << j << cd->m_inspirations[i][j].m_has_insp;
+
+            bs.StorePackedBits(3, i); // iCol
+            bs.StorePackedBits(3, j); // iRow
+
+            bs.StoreBits(1, cd->m_inspirations[i][j].m_has_insp);
+            if(cd->m_inspirations[i][j].m_has_insp)
+                cd->m_inspirations[i][j].m_insp_tpl.serializeto(bs);
         }
-
-        qCDebug(logPowers) << "  Inspiration:" << cd->m_inspirations[i].m_has_insp;
-        bs.StoreBits(1, cd->m_inspirations[i].m_has_insp);
-        if(cd->m_inspirations[i].m_has_insp)
-            cd->m_inspirations[i].m_insp_tpl.serializeto(bs);
-
     }
 
     // All Owned Enhancements
-    qCDebug(logPowers) << "OwnedEnhancements:" << cd->m_enhancements.size();
+    qCDebug(logPowers) << "Owned Enhancements:" << cd->m_enhancements.size();
     //e->m_char->sendEnhancements(bs);
 
     bs.StorePackedBits(1, cd->m_enhancements.size());
-    for(CharacterPowerEnhancement &eh : cd->m_enhancements)
+    for(CharacterEnhancement &eh : cd->m_enhancements)
     {
-        if(cd->m_enhancements.empty() || !eh.m_name.isEmpty())
+        if(cd->m_enhancements.empty() || eh.m_name.isEmpty())
         {
             qCDebug(logPowers) << "  No Enhancement:" << eh.m_enhancement_idx;
             bs.StorePackedBits(3, eh.m_enhancement_idx);
@@ -514,10 +508,10 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
         }
 
         qCDebug(logPowers) << "  Enhancement:" << eh.m_enhancement_idx
-                           << eh.m_is_used;
+                           << eh.m_slot_used;
         bs.StorePackedBits(3, eh.m_enhancement_idx);
-        bs.StoreBits(1, eh.m_is_used);
-        if(eh.m_is_used)
+        bs.StoreBits(1, eh.m_slot_used);
+        if(eh.m_slot_used)
         {
             eh.m_enhance_tpl.serializeto(bs);
             bs.StorePackedBits(5, eh.m_level);
@@ -639,7 +633,9 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
         const Character &player_char(*ent->m_char);
         player_char.sendFullStats(bs);
     }
+    //qCDebug(logPowers) << "Before storePowerInfoUpdate";
     storePowerInfoUpdate(src,bs);
+    //qCDebug(logPowers) << "After storePowerInfoUpdate";
     storeTeamList(src,bs);
     storeSuperStats(src,bs);
     storeGroupDyn(src,bs);

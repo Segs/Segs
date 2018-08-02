@@ -22,7 +22,7 @@
 
 const constexpr uint32_t PowerPool_Info::class_version;
 const constexpr uint32_t CharacterInspiration::class_version;
-const constexpr uint32_t CharacterPowerEnhancement::class_version;
+const constexpr uint32_t CharacterEnhancement::class_version;
 const constexpr uint32_t CharacterPower::class_version;
 const constexpr uint32_t CharacterPowerSet::class_version;
 const constexpr uint32_t Friend::class_version;
@@ -31,7 +31,7 @@ const constexpr uint32_t Sidekick::class_version;
 const constexpr uint32_t CharacterData::class_version;
 CEREAL_CLASS_VERSION(PowerPool_Info, PowerPool_Info::class_version)   // register PowerPool_Info class version
 CEREAL_CLASS_VERSION(CharacterInspiration, CharacterInspiration::class_version)   // register CharacterInspiration struct version
-CEREAL_CLASS_VERSION(CharacterPowerEnhancement, CharacterPowerEnhancement::class_version)   // register CharacterPowerEnhancement struct version
+CEREAL_CLASS_VERSION(CharacterEnhancement, CharacterEnhancement::class_version)   // register CharacterEnhancement struct version
 CEREAL_CLASS_VERSION(CharacterPower, CharacterPower::class_version)             // register CharacterPower struct version
 CEREAL_CLASS_VERSION(CharacterPowerSet, CharacterPowerSet::class_version)       // register CharacterPowerSet struct version
 CEREAL_CLASS_VERSION(Friend, Friend::class_version)                 // register Friend struct version
@@ -70,9 +70,9 @@ void serialize(Archive &archive, CharacterInspiration &in, uint32_t const versio
 }
 
 template<class Archive>
-void serialize(Archive &archive, CharacterPowerEnhancement &eh, uint32_t const version)
+void serialize(Archive &archive, CharacterEnhancement &eh, uint32_t const version)
 {
-    if (version != CharacterPowerEnhancement::class_version)
+    if (version != CharacterEnhancement::class_version)
     {
         qCritical() << "Failed to serialize CharacterPowerEnhancement, incompatible serialization format version " << version;
         return;
@@ -83,7 +83,7 @@ void serialize(Archive &archive, CharacterPowerEnhancement &eh, uint32_t const v
     archive(cereal::make_nvp("Name", eh.m_name));
     archive(cereal::make_nvp("Level", eh.m_level));
     archive(cereal::make_nvp("NumCombines", eh.m_num_combines));
-    archive(cereal::make_nvp("IsUsed", eh.m_is_used));
+    archive(cereal::make_nvp("IsUsed", eh.m_slot_used));
 }
 
 template<class Archive>
@@ -105,7 +105,7 @@ void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version)
     archive(cereal::make_nvp("Range", pwr.m_range));
     archive(cereal::make_nvp("RechargeTime", pwr.m_recharge_time));
     archive(cereal::make_nvp("ActivationState", pwr.m_activation_state));
-    archive(cereal::make_nvp("NumEnhancements", pwr.m_num_enhancements));
+    archive(cereal::make_nvp("NumEnhancements", pwr.m_enhancement_slots));
     archive(cereal::make_nvp("Enhancements", pwr.m_enhancements));
 }
 

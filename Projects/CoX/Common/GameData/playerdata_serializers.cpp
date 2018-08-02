@@ -31,6 +31,7 @@ void serialize(Archive &archive, PlayerData &pd, uint32_t const version)
         qCritical() << "Failed to serialize PlayerData, incompatible serialization format version " << version;
         return;
     }
+    archive(cereal::make_nvp("AuthData", pd.m_auth_data));
     archive(cereal::make_nvp("Gui", pd.m_gui));
     archive(cereal::make_nvp("KeyBinds", pd.m_keybinds));
     archive(cereal::make_nvp("Options", pd.m_options));

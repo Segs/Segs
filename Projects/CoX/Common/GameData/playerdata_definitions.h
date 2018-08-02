@@ -16,10 +16,11 @@
 // this part of the Entity is for Players only info
 struct PlayerData
 {
-    static const constexpr  uint32_t    class_version   = 1;
+    static const constexpr  uint32_t    class_version   = 2;
     GUISettings         m_gui;
     KeybindSettings     m_keybinds;
     ClientOptions       m_options;
+    uint8_t             m_auth_data[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}; // preorder rewards and things
     void reset()
     {
         m_options.m_first_person_view=false;

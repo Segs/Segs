@@ -358,6 +358,24 @@ void addPower(CharacterData &cd, uint32_t pcat_idx, uint32_t pset_idx, uint32_t 
     cd.m_powersets.push_back(pset);
 }
 
+void removePower(CharacterData &cd, const PowerPool_Info &ppool)
+{
+    for(CharacterPowerSet &pset : cd.m_powersets)
+    {
+        auto iter = std::find_if(pset.m_powers.begin(), pset.m_powers.end(),
+                                  [ppool](const CharacterPower& pow)->bool {return ppool.m_pow_idx==pow.m_index;});
+
+        if(iter != pset.m_powers.end())
+        {
+            qCDebug(logPowers) << "Removing Power:" << ppool.m_category_idx << ppool.m_pset_idx << ppool.m_pow_idx;
+            pset.m_powers.erase(iter);
+            return;
+        }
+    }
+
+    qCDebug(logPowers) << "Player does not own Power:" << ppool.m_category_idx << ppool.m_pset_idx << ppool.m_pow_idx;
+}
+
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t /*tgt_idx*/, uint32_t /*tgt_id*/)
 {
     // Add to activepowers queue
@@ -409,7 +427,7 @@ void dumpPower(const CharacterPower &pow)
     qDebug().noquote() << "  ActivationState: " << pow.m_activation_state;
     qDebug().noquote() << "  ActivationStateChange: " << pow.m_active_state_change;
     qDebug().noquote() << "  TimerUpdated: " << pow.m_timer_updated;
-    qDebug().noquote() << "  NumEnhancements: " << pow.m_num_enhancements;
+    qDebug().noquote() << "  NumEnhancements: " << pow.m_enhancement_slots;
 }
 
 void dumpOwnedPowers(CharacterData &cd)
@@ -485,116 +503,116 @@ void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
 {
     int max_cols = cd.m_max_insp_cols;
     int max_rows = cd.m_max_insp_rows;
+    int count = 0;
 
-    if(cd.m_inspirations.size() > max_cols*max_rows)
+    for(int i = 0; i < max_cols; ++i)
+    {
+        for(int j = 0; j < max_rows; ++j)
+        {
+            if(cd.m_inspirations[i][j].m_has_insp)
+                count++;
+        }
+    }
+
+    if(count >= max_cols*max_rows)
     {
         qCDebug(logPowers) << "Character cannot hold any more inspirations";
         return;
     }
 
-    cd.m_inspirations.push_back(insp);
-    qCDebug(logPowers) << "Character received inspiration:"
-                       << insp.m_insp_tpl.m_category_idx
-                       << insp.m_insp_tpl.m_pset_idx
-                       << insp.m_insp_tpl.m_pow_idx;
+    for(int i = 0; i < max_cols; ++i)
+    {
+        for(int j = 0; j < max_rows; ++j)
+        {
+            if(!cd.m_inspirations[i][j].m_has_insp)
+            {
+                cd.m_inspirations[i][j] = insp;
+                qCDebug(logPowers) << "Character received inspiration:"
+                                   << insp.m_insp_tpl.m_category_idx
+                                   << insp.m_insp_tpl.m_pset_idx
+                                   << insp.m_insp_tpl.m_pow_idx;
+                return;
+            }
+        }
+    }
 }
 
-int getInspirationIdx(Entity &ent, uint32_t col, uint32_t row)
+void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row)
 {
-    vInspirations *insp_arr = &ent.m_char->m_char_data.m_inspirations;
-    int max_cols = ent.m_char->m_char_data.m_max_insp_cols;
-    int max_rows = ent.m_char->m_char_data.m_max_insp_rows;
-
-    if(col > max_cols || row > max_rows)
-    {
-        qWarning() << "Inspiration doesn't exist at" << col << row;
-        return -1;
-    }
-
-    auto iter = std::find_if(insp_arr->begin(), insp_arr->end(),
-                              [col, row](const CharacterInspiration& insp)->bool {return col==insp.m_col && row==insp.m_row;});
-
-    if(iter != insp_arr->end())
-    {
-        qCDebug(logPowers) << "Entity: " << ent.m_idx << " returning inspiration at " << col << row;
-        return std::distance(insp_arr->begin(), iter);
-    }
-
-    qCDebug(logPowers) << "Entity: " << ent.m_idx << " does not have an inspiration at " << col << "x" << row;
-    return -1;
-}
-
-void moveInspiration(Entity &ent, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row)
-{
-    vInspirations *insp_arr = &ent.m_char->m_char_data.m_inspirations;
-    CharacterInspiration src_insp, dest_insp;
-    int max_cols = ent.m_char->m_char_data.m_max_insp_cols;
-    int max_rows = ent.m_char->m_char_data.m_max_insp_rows;
-    bool dest_is_empty = false;
+    vInspirations *insp_arr = &cd.m_inspirations;
+    int max_cols = cd.m_max_insp_cols;
+    int max_rows = cd.m_max_insp_rows;
 
     if(dest_col > max_cols || dest_row > max_rows)
     {
-        removeInspiration(ent, src_col, src_row);
+        removeInspiration(cd, src_col, src_row);
         return;
     }
 
-    int src_idx = getInspirationIdx(ent, src_col, src_row);
-    if(src_idx < 0)
-        return;
+    // save src_insp incase of switch
+    insp_arr->at(src_col).at(src_row).m_col = dest_col;
+    insp_arr->at(src_col).at(src_row).m_row = dest_row;
+    insp_arr->at(dest_col).at(dest_row).m_col = src_col;
+    insp_arr->at(dest_col).at(dest_row).m_row = src_row;
+    std::swap(insp_arr->at(src_col).at(src_row), insp_arr->at(dest_col).at(dest_row));
 
-    // src is now dest (even if it was empty)
-    insp_arr->at(src_idx).m_col = dest_col;
-    insp_arr->at(src_idx).m_row = dest_row;
+    //ent.m_powers_updated = true; // TODO: this crashes client
 
-    qCDebug(logPowers) << "Entity: " << ent.m_idx << "wants to move inspiration from" << src_col << src_row << "to" << dest_col << dest_row;
-
-    int dest_idx = getInspirationIdx(ent, dest_col, dest_row);
-    if(dest_idx < 0)
-        return;
-
-    // dest is now src
-    insp_arr->at(dest_idx).m_col = src_col;
-    insp_arr->at(dest_idx).m_row = src_row;
+    qCDebug(logPowers) << "Moving inspiration from" << src_col << src_row << "to" << dest_col << dest_row;
 }
 
 void useInspiration(Entity &ent, uint32_t col, uint32_t row)
 {
-    int insp_idx = getInspirationIdx(ent, col, row);
-    if(insp_idx < 0)
+    CharacterData &cd = ent.m_char->m_char_data;
+
+    if(!cd.m_inspirations[col][row].m_has_insp)
         return;
 
-    removeInspiration(ent, col, row);
+    removeInspiration(cd, col, row);
     // TODO: Do inspiration benefit
 
-    qCDebug(logPowers) << "Entity: " << ent.m_idx << "wants to use inspiration from" << col << row;
+    qCDebug(logPowers) << "Using inspiration from" << col << row;
     QString contents = "Inspired!";
     sendFloatingInfo(&ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 }
 
-void removeInspiration(Entity &ent, uint32_t col, uint32_t row)
+void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)
 {
-    int insp_idx = getInspirationIdx(ent, col, row);
-    if(insp_idx < 0)
-        return;
+    //int max_cols = ent.m_char->m_char_data.m_max_insp_cols;
+    int max_rows = cd.m_max_insp_rows;
 
-    qCDebug(logPowers) << "Entity: " << ent.m_idx << " wants to remove inspiration from " << col << "x" << row;
-    ent.m_char->m_char_data.m_inspirations.erase(ent.m_char->m_char_data.m_inspirations.begin() + insp_idx);
+    CharacterInspiration insp;
+    qCDebug(logPowers) << "Removing inspiration from " << col << "x" << row;
+    cd.m_inspirations[col][row] = insp;
+
+    for(int j = row; j < max_rows; j++)
+    {
+        cd.m_inspirations[col][j+1] = cd.m_inspirations[col][j];
+    }
+
+    //ent.m_powers_updated = true; // TODO: this crashes client
 }
 
 void dumpInspirations(CharacterData &cd)
 {
+    int max_cols = cd.m_max_insp_cols;
+    int max_rows = cd.m_max_insp_rows;
+
     if(cd.m_inspirations.size() == 0)
         qDebug().noquote() << "This character has no inspirations.";
 
-    for(CharacterInspiration &insp : cd.m_inspirations)
+    for(int i = 0; i < max_cols; ++i)
     {
-        qDebug().noquote() << "Inspiration: " << insp.m_name;
-        qDebug().noquote() << "  HasInsp: " << insp.m_has_insp;
-        qDebug().noquote() << "  Col: " << insp.m_col;
-        qDebug().noquote() << "  Row: " << insp.m_row;
-        qDebug().noquote() << "  CategoryIdx: " << insp.m_insp_tpl.m_category_idx;
-        qDebug().noquote() << "  PowerSetIdx: " << insp.m_insp_tpl.m_pset_idx;
-        qDebug().noquote() << "  PowerIdx: " << insp.m_insp_tpl.m_pow_idx;
+        for(int j = 0; j < max_rows; ++j)
+        {
+            qDebug().noquote() << "Inspiration: " << cd.m_inspirations[i][j].m_name;
+            qDebug().noquote() << "  HasInsp: " << cd.m_inspirations[i][j].m_has_insp;
+            qDebug().noquote() << "  Col: " << cd.m_inspirations[i][j].m_col;
+            qDebug().noquote() << "  Row: " << cd.m_inspirations[i][j].m_row;
+            qDebug().noquote() << "  CategoryIdx: " << cd.m_inspirations[i][j].m_insp_tpl.m_category_idx;
+            qDebug().noquote() << "  PowerSetIdx: " << cd.m_inspirations[i][j].m_insp_tpl.m_pset_idx;
+            qDebug().noquote() << "  PowerIdx: " << cd.m_inspirations[i][j].m_insp_tpl.m_pow_idx;
+        }
     }
 }
 

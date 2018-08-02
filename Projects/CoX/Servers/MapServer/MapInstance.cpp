@@ -2122,7 +2122,7 @@ void MapInstance::on_move_inspiration(MoveInspiration *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    moveInspiration(*session.m_ent, ev->src_col, ev->src_row, ev->dest_col, ev->dest_row);
+    moveInspiration(session.m_ent->m_char->m_char_data, ev->src_col, ev->src_row, ev->dest_col, ev->dest_row);
 }
 
 void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
