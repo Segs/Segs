@@ -73,9 +73,9 @@ void removeFriend(Entity &src, QString friend_name)
 
     if(iter!=src_data->m_friends.end())
     {
+        msg = "Removing " + iter->m_name + " from your friends list.";
         iter = src_data->m_friends.erase(iter);
 
-        msg = "Removing " + iter->m_name + " from your friends list.";
         qCDebug(logFriends) << msg;
         if(logFriends().isDebugEnabled())
             dumpFriends(src);
