@@ -616,7 +616,6 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
 
     map_session.m_current_map->enqueue_client(&map_session);
-    setMapName(*map_session.m_ent, name());
     setMapIdx(*map_session.m_ent, index());
     map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
 }
