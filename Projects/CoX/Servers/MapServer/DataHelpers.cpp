@@ -431,18 +431,7 @@ const QString getMapName(size_t index)
 
 const QString getMapPath(const EntityData &ed)
 {
-    for (const auto &map_data : g_defined_map_datas)
-    {
-        if (ed.m_map_idx == map_data.m_map_idx)
-            return map_data.m_map_path;
-    }
-
-    // log a warning because this part of the code is called when things went wrong
-    qWarning() << "No matching map name in g_defined_map_datas to EntityData's m_map_name."
-               << "Returning Outbreak's map path as default...";
-
-    // defaulting to Outbreak's map path
-    return g_defined_map_datas[0].m_map_path;
+    return getMapPath(ed.m_map_idx);
 }
 
 const QString getMapPath(size_t index)
