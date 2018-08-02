@@ -13,7 +13,7 @@
 
 struct EntityData
 {
-static const constexpr  uint32_t    class_version       = 5;    // v4: removes m_current_map
+static const constexpr  uint32_t    class_version       = 5;    // v5: removes m_current_map
                         uint32_t    m_access_level      = 0;
                         uint8_t     m_origin_idx        = {0};
                         uint8_t     m_class_idx         = {0};

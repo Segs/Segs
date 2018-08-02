@@ -407,9 +407,10 @@ const QString getDisplayMapName(const QString &map_name)
 
 const QString getDisplayMapName(size_t index)
 {
-    // If index > 0, wraps around and becomes really large number.
-    // Thus, no need to check for index > 0.
-    if(index >= g_defined_map_datas.size()){
+    // Since index is unsigned, it cannot be negative.
+    // Thus, no need to check for index < 0.
+    if(index >= g_defined_map_datas.size())
+    {
         qWarning() << "Sought map index was out of range."
                    << "Returning Outbreak's display map name as default...";
         index = 0;
@@ -419,9 +420,10 @@ const QString getDisplayMapName(size_t index)
 
 const QString getMapName(size_t index)
 {
-    // If index > 0, wraps around and becomes really large number.
-    // Thus, no need to check for index > 0.
-    if(index >= g_defined_map_datas.size()){
+    // Since index is unsigned, it cannot be negative.
+    // Thus, no need to check for index < 0.
+    if(index >= g_defined_map_datas.size())
+    {
         qWarning() << "Sought map index was out of range."
                    << "Returning Outbreak's map name as default...";
         index = 0;
