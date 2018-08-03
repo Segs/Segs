@@ -41,6 +41,8 @@ enum GameDBEventTypes : uint32_t
     // Asking for friends list
     evGetPlayerFriendsRequest,
     evGetPlayerFriendsResponse,
+    evGetPlayerLocationRequest,
+    evGetPlayerLocationResponse,
 
     evGameDbError
 };
@@ -241,9 +243,22 @@ struct GetPlayerFriendsRequestData
 struct GetPlayerFriendsResponseData
 {
     uint32_t m_char_id;
-    std::vector<int> m_friends;
+    FriendsList m_friendslist;
 };
 TWO_WAY_MESSAGE(GetPlayerFriends)
+
+struct GetPlayerLocationRequestData
+{
+    uint32_t m_char_id;
+};
+
+struct GetPlayerLocationResponseData
+{
+    uint32_t m_char_id;
+    int m_map_idx;
+    QString m_mapname;
+};
+TWO_WAY_MESSAGE(GetPlayerLocation)
 
 struct WouldNameDuplicateRequestData
 {

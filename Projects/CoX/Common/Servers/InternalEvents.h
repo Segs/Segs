@@ -160,6 +160,7 @@ ONE_WAY_MESSAGE(ClientConnected)
 struct ClientDisconnectedData
 {
     uint64_t m_session;
+    uint32_t m_char_id;       // id of the character disconnected
 };
 ONE_WAY_MESSAGE(ClientDisconnected)
 

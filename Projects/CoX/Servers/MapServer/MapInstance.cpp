@@ -253,7 +253,7 @@ void MapInstance::reap_stale_links()
 
     SessionStore::MTGuard guard(m_session_store.reap_lock());
     m_session_store.reap_stale_links("MapInstance",link_is_stale_if_disconnected_for,[tgt](uint64_t tok) {
-        tgt->putq(new ClientDisconnectedMessage({tok}));
+        tgt->putq(new ClientDisconnectedMessage({tok,0}));
     });
 }
 
@@ -472,9 +472,9 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
     //todo: notify all clients about entity removal
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token}));
+            ->putq(new ClientDisconnectedMessage({session_token, ent->m_char->m_db_id}));
 
-    postGlobalEvent(new ClientDisconnectedMessage({session_token}));
+    postGlobalEvent(new ClientDisconnectedMessage({session_token, ent->m_char->m_db_id}));
 
     m_sync_service->updateEntity(ent);
     m_entities.removeEntityFromActiveList(ent);
@@ -497,9 +497,9 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     assert(ent);
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token}));
+            ->putq(new ClientDisconnectedMessage({session_token, ent->m_char->m_db_id}));
 
-    postGlobalEvent(new ClientDisconnectedMessage({session_token}));
+    postGlobalEvent(new ClientDisconnectedMessage({session_token, ent->m_char->m_db_id}));
 
     m_sync_service->updateEntity(ent);
     m_entities.removeEntityFromActiveList(ent);

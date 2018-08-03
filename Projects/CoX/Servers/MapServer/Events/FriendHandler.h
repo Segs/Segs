@@ -16,10 +16,10 @@
 
 class FriendHandler : public EventProcessor
 {
-
     //Key is ID of character who comes online, value is vector of IDs who have added this friend
     static std::unordered_map<int,std::vector<int>> s_friend_map;
-    //static int s_game_server_id;
+    static std::unordered_map<int,bool> s_online_map; //key is char ID, bool is if they are online
+    static int s_game_server_id;
 private:
     void on_player_friends(GetPlayerFriendsResponse* ev);
     void on_client_connected(ClientConnectedMessage* msg);
@@ -29,5 +29,6 @@ protected:
 public:
     FriendHandler();
     void set_game_server_id(int m_id);
+    bool is_online(int m_id);
     void dispatch(SEGSEvent *ev) override;
 };

@@ -394,11 +394,16 @@ bool GameDbSyncContext::getPlayerFriends(const GetPlayerFriendsRequestData &data
         return false;
     if(!m_prepared_entity_select->next())
         return false;
-    //result.m_friends = m_prepared_entity_select->value("chardata.m_friendlist");
-    CharacterData temp;
-    serializeFromDb(temp, m_prepared_entity_select->value("chardata").toString());
 
-    qDebug() << "getPlayerFriends list: " << temp.m_friendlist.m_friends[0].m_name;
+    CharacterData char_data;
+    serializeFromDb(char_data, m_prepared_entity_select->value("chardata").toString());
+
+    result.m_char_id = data.m_char_id;
+    result.m_friendslist = char_data.m_friendlist;
+    //For each friend in the friendlist, add their db_id to the m_friends vector
+//    for(auto const& val : char_data.m_friendlist.m_friends){
+//        result.m_friends.push_back(val.m_db_id);
+//    }
     return true;
 }
 

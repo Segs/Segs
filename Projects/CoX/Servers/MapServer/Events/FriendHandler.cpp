@@ -9,10 +9,12 @@
 #include "Servers/GameServer/GameEvents.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "GameDatabase/GameDBSyncEvents.h"
+#include "DataHelpers.h"
 #include <QtCore/QDebug>
 
 std::unordered_map<int,std::vector<int>> FriendHandler::s_friend_map;
-static int s_game_server_id;
+std::unordered_map<int,bool> FriendHandler::s_online_map;
+int FriendHandler::s_game_server_id;
 
 void FriendHandler::dispatch(SEGSEvent *ev)
 {
@@ -20,6 +22,9 @@ void FriendHandler::dispatch(SEGSEvent *ev)
 
     switch(ev->type())
     {
+        case GameDBEventTypes::evGetPlayerFriendsResponse:
+            on_player_friends(static_cast<GetPlayerFriendsResponse *>(ev));
+            break;
         case Internal_EventTypes::evClientConnected:
             on_client_connected(static_cast<ClientConnectedMessage *>(ev));
             break;
@@ -31,12 +36,59 @@ void FriendHandler::dispatch(SEGSEvent *ev)
     }
 }
 
+void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
+{
+    uint32_t &m_char_id = ev->m_data.m_char_id;
+    FriendsList &m_friendslist = ev->m_data.m_friendslist;
+
+    /*
+     * Iterate over the friends list, and put each friend id as a key,
+     * and push the current character id into the vector value
+     */
+    for(uint i=0; i<m_friendslist.m_friends.size(); i++){
+        s_friend_map[m_friendslist.m_friends[i].m_db_id].push_back(m_char_id);
+    }
+
+    /*
+     * Iterate through the friends list and update online status accordingly
+     */
+    for(Friend f : m_friendslist.m_friends)
+    {
+        //if(s_online_map[f.m_db_id])
+        auto search = s_online_map.find(f.m_db_id);
+        if(search != s_online_map.end())
+            f.m_online_status = true;
+        else
+            f.m_online_status = false;
+    }
+
+    //Send the FriendsList to FriendsListUpdate
+
+}
+
 void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
 {
     //A player has connected, notify all the people that have added this character as a friend
-    //Also update this player/character's online status
-    qDebug() << "FHandler received connection, char id: " << msg->m_data.m_char_id;
-    //Iterate over s_friend_map[msg->m_data.m_char_id] and send message saying character logged in
+    //MapClientSession &session(m_session_store.session_from_event(msg));
+
+    uint32_t &m_char_id = msg->m_data.m_char_id;
+    //Iterate over map and send message saying character logged in
+    for(auto const& val : s_friend_map[m_char_id])
+    {
+        //We might need to check later if this character is still online?
+        //if s_online_map[val]
+        qDebug() << "Hey char id " << val << ", cid " << m_char_id << " just logged on";
+        //Looks like we'll need a MessageHandler to do this part?
+        /*
+        char buf[256];
+        std::string welcome_msg = std::string("Your friend logged on! ");
+        welcome_msg += buf;
+        sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),&session);
+        */
+    }
+
+    //Update this player/character's online status
+    s_online_map[m_char_id] = true;
 
     //Also read this player's friend list to see who they've added
     //To do this, we send a GetFriendsListRequest to GameDBSyncHandler
@@ -47,17 +99,25 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
 void FriendHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 {
     //Update this player/character's online status (to offline)
-    qDebug() << "Disconnected msg: " << &msg;
+    s_online_map.erase(msg->m_data.m_char_id);
 }
 
-void FriendHandler::set_game_server_id(int id){
-    s_game_server_id = id;
+bool FriendHandler::is_online(int m_id)
+{
+    if(s_online_map[m_id])
+        return true;
+    else
+        return false;
+    //return s_online_map[m_id];
+}
+
+void FriendHandler::set_game_server_id(int m_id)
+{
+    s_game_server_id = m_id;
 }
 
 FriendHandler::FriendHandler() : m_message_bus_endpoint(*this)
 {
-    s_friend_map[1] = {1,2,3};
-    qDebug() << "friend_map: " << s_friend_map[1];
     assert(HandlerLocator::getFriend_Handler() == nullptr);
     HandlerLocator::setFriend_Handler(this);
 

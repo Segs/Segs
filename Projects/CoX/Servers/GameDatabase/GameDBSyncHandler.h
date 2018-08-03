@@ -25,6 +25,7 @@ struct WouldNameDuplicateRequest;
 struct CreateNewCharacterRequest;
 struct GetEntityRequest;
 struct GetPlayerFriendsRequest;
+struct GetPlayerLocationRequest;
 
 class GameDBSyncHandler final : public EventProcessor
 {
@@ -44,6 +45,7 @@ class GameDBSyncHandler final : public EventProcessor
     void on_create_new_char(CreateNewCharacterRequest *ev);
     void on_get_entity(GetEntityRequest *ev);
     void on_get_player_friends(GetPlayerFriendsRequest *ev);
+    void on_get_player_location(GetPlayerLocationRequest *ev);
     // This is an unique ID that links this DB with it's Game Server
     uint8_t m_id;
 public:

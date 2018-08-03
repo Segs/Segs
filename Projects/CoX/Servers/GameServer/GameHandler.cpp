@@ -268,7 +268,7 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
         else
         {
             EventProcessor * tgt = HandlerLocator::getAuth_Handler();
-            tgt->putq(new ClientDisconnectedMessage({lnk->session_token()}));
+            tgt->putq(new ClientDisconnectedMessage({lnk->session_token(),0}));
             m_session_store.session_link_lost(lnk->session_token());
             m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
         }
@@ -296,7 +296,7 @@ void GameHandler::on_link_lost(SEGSEvent *ev)
         else
         {
             EventProcessor * tgt = HandlerLocator::getAuth_Handler();
-            tgt->putq(new ClientDisconnectedMessage({lnk->session_token()}));
+            tgt->putq(new ClientDisconnectedMessage({lnk->session_token(),0}));
             m_session_store.session_link_lost(lnk->session_token());
             m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
         }
@@ -464,7 +464,7 @@ void GameHandler::reap_stale_links()
     EventProcessor *            tgt      = HandlerLocator::getAuth_Handler();
     m_session_store.reap_stale_links("GameInstance", link_is_stale_if_disconnected_for,
                                      [tgt](uint64_t tok) {
-                                         tgt->putq(new ClientDisconnectedMessage({tok}));
+                                         tgt->putq(new ClientDisconnectedMessage({tok,0}));
                                      });
 }
 //! @}
