@@ -173,15 +173,17 @@ void Character::GetCharBuildInfo(BitStream &src)
 void Character::sendEnhancements(BitStream &bs) const
 {
     bs.StorePackedBits(5, m_char_data.m_enhancements.size()); // count
-    for(const CharacterEnhancement &eh : m_char_data.m_enhancements)
+    //for(const CharacterEnhancement &eh : m_char_data.m_enhancements)
+    //{
+    for(size_t i = 0; i < m_char_data.m_enhancements.size(); ++i)
     {
-        bs.StorePackedBits(3, eh.m_enhancement_idx); // boost idx
-        bs.StoreBits(1, eh.m_slot_used); // 1 set, 0 clear
-        if(eh.m_slot_used)
+        bs.StorePackedBits(3, i); // boost idx, maybe use m_enhancement_idx
+        bs.StoreBits(1, m_char_data.m_enhancements[i].m_slot_used); // 1 set, 0 clear
+        if(m_char_data.m_enhancements[i].m_slot_used)
         {
-            eh.m_enhance_tpl.serializeto(bs);
-            bs.StorePackedBits(5, eh.m_level); // boost idx
-            bs.StorePackedBits(2, eh.m_num_combines); // boost idx
+            m_char_data.m_enhancements[i].m_enhance_tpl.serializeto(bs);
+            bs.StorePackedBits(5, m_char_data.m_enhancements[i].m_level); // boost idx
+            bs.StorePackedBits(2, m_char_data.m_enhancements[i].m_num_combines); // boost idx
         }
     }
 }
@@ -218,8 +220,8 @@ void Character::sendOwnedPowers(BitStream &bs) const
             bs.StorePackedBits(5, power.m_level_bought);
             bs.StoreFloat(power.m_range);
 
-            bs.StorePackedBits(4, power.m_enhancement_slots);
-            for(int i = 0; i < power.m_enhancement_slots; ++i)
+            bs.StorePackedBits(4, power.m_available_eh_slots);
+            for(int i = 0; i < power.m_available_eh_slots; ++i)
             {
                 bs.StoreBits(1, power.m_enhancements[i].m_slot_used); // slot has enhancement
                 if(power.m_enhancements[i].m_slot_used)
@@ -356,6 +358,8 @@ void Character::dump()
     dumpOwnedPowers(m_char_data);
     qDebug() << "//-----------Owned Inspirations-----------";
     dumpInspirations(m_char_data);
+    qDebug() << "//-----------Owned Enhancements-----------";
+    dumpEnhancements(m_char_data);
     qDebug() << "//--------------Sidekick Info--------------";
     DumpSidekickInfo();
     qDebug() << "//------------------Tray------------------";

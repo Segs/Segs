@@ -183,44 +183,6 @@ public:
 
 };
 
-class CombineRequest final : public MapLinkEvent
-{
-public:
-    struct PowerEntry
-    {
-        int powerset_array_index;
-        int powerset_index;
-        int index;
-    };
-    PowerEntry first_power;
-    PowerEntry second_power;
-    CombineRequest() : MapLinkEvent(MapEventTypes::evCombineRequest)
-    {}
-    void serializeto(BitStream &bs) const
-    {
-        bs.StorePackedBits(1,40); // opcode
-        assert(false); // since we will not send CombineRequest to anyone :)
-    }
-    // now to make this useful ;)
-
-    void getPowerForCombinde(BitStream &bs,PowerEntry &entry)
-    {
-        // first bit tells us if we have full/partial?? data
-        // here we can do a small refactoring, because in both branches of if/else, the last set value is index.
-        if(bs.GetBits(1))
-        {
-            entry.powerset_array_index = bs.GetPackedBits(1);
-            entry.powerset_index = bs.GetPackedBits(1);
-        }
-        entry.index = bs.GetPackedBits(1);
-    }
-    void serializefrom(BitStream &bs)
-    {
-        getPowerForCombinde(bs,first_power);
-        getPowerForCombinde(bs,second_power);
-    }
-};
-
 #include "Events/InputState.h"
 #include "Events/ChatMessage.h"
 #include "Events/WindowState.h"
@@ -761,6 +723,7 @@ public:
     }
 };
 
+#include "Events/EnhancementEvents.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/EntitiesResponse.h"
 #include "Events/FriendsListUpdate.h"

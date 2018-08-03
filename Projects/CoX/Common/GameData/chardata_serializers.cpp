@@ -105,7 +105,7 @@ void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version)
     archive(cereal::make_nvp("Range", pwr.m_range));
     archive(cereal::make_nvp("RechargeTime", pwr.m_recharge_time));
     archive(cereal::make_nvp("ActivationState", pwr.m_activation_state));
-    archive(cereal::make_nvp("NumEnhancements", pwr.m_enhancement_slots));
+    archive(cereal::make_nvp("NumEnhancements", pwr.m_available_eh_slots));
     archive(cereal::make_nvp("Enhancements", pwr.m_enhancements));
 }
 

@@ -93,7 +93,6 @@ protected:
         void on_entities_request(class EntitiesRequest *ev);
         void on_create_map_entity(class NewEntity *ev);
         void on_timeout(TimerEvent *ev);
-        void on_combine_boosts(class CombineRequest *ev);
         void on_input_state(InputState *st);
         void on_idle(IdleEvent *ev);
         void on_shortcuts_request(class ShortcutsRequest *ev);
@@ -140,4 +139,8 @@ protected:
         void on_move_inspiration(class MoveInspiration *ev);
         void on_recv_selected_titles(class RecvSelectedTitles *ev);
         void on_dialog_button(class DialogButton *ev);
+        void on_combine_enhancements(class CombineEnhancements *ev);
+        void on_move_enhancement(class MoveEnhancement *ev);
+        void on_set_enhancement(class SetEnhancement *ev);
+        void on_trash_enhancement(class TrashEnhancement *ev);
 };

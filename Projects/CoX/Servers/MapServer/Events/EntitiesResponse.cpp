@@ -422,9 +422,9 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
             bs.StoreFloat(power.m_usage_time);
             bs.StorePackedBits(24, power.m_activation_time);
 
-            qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_enhancement_slots;
-            bs.StorePackedBits(4, power.m_enhancement_slots); // total enhancement slots
-            for(int i = 0; i < power.m_enhancement_slots; ++i)
+            qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_available_eh_slots;
+            bs.StorePackedBits(4, power.m_available_eh_slots); // total enhancement slots
+            for(int i = 0; i < power.m_available_eh_slots; ++i)
             {
                 qCDebug(logPowers) << "  Enhancement:" << power.m_enhancements[i].m_name
                                    << power.m_enhancements[i].m_enhancement_idx

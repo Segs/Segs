@@ -86,6 +86,7 @@ void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetClientState(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess);
+void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
@@ -167,6 +168,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"clientstate"},"Set ClientState mode", &cmdHandler_SetClientState, 9},
     {{"addpower"},"Adds Power (by 'pcat pset pow' idxs) to Entity", &cmdHandler_AddPower, 9},
     {{"addinsp"},"Adds Inspiration (by name) to Entity", &cmdHandler_AddInspiration, 9},
+    {{"addboost", "addEnhancement"},"Adds Enhancement (by name) to Entity", &cmdHandler_AddEnhancement, 9},
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
     /* Access Level 2 Commands */
@@ -726,7 +728,7 @@ void cmdHandler_SetClientState(const QString &cmd, MapClientSession &sess)
 void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess)
 {
     CharacterData &cd = sess.m_ent->m_char->m_char_data;
-    QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
+    QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundClue).value();
 
     QVector<QStringRef> args(cmd.splitRef(' '));
     uint32_t v1 = args.value(1).toInt();
@@ -742,7 +744,7 @@ void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess)
     QString msg = QString("Granting Power <%1, %2, %3> to %4").arg(v1).arg(v2).arg(v3).arg(sess.m_ent->name());
 
     addPower(cd, v1, v2, v3);
-    sess.m_ent->m_powers_updated = true;
+    //sess.m_ent->m_powers_updated = true;
 
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
@@ -758,7 +760,30 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
     QString msg = "Awarding Inspiration '" + val + "' to " + sess.m_ent->name();
 
     addInspirationByName(cd, val);
-    sess.m_ent->m_powers_updated = true;
+    //sess.m_ent->m_powers_updated = true;
+
+    qCDebug(logSlashCommand).noquote() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
+    sendFloatingInfo(sess.m_ent, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+}
+
+void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
+{
+    CharacterData &cd = sess.m_ent->m_char->m_char_data;
+    QVector<QStringRef> args(cmd.splitRef(' '));
+    QString name = args.value(1).toString();
+    uint32_t level = args.value(2).toInt();
+
+    QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
+    QString msg = "Awarding Enhancement '" + name + "' to " + sess.m_ent->name();
+
+    if(args.size() < 3)
+    {
+        level = cd.m_level;
+    }
+
+    addEnhancementByName(cd, name, level);
+    //sess.m_ent->m_powers_updated = true;
 
     qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);

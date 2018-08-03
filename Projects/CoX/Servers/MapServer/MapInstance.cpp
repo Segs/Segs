@@ -270,7 +270,6 @@ void MapInstance::enqueue_client(MapClientSession *clnt)
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
 
-// Here we would add the handler call in case we get evCombineRequest :)
 void MapInstance::dispatch( SEGSEvent *ev )
 {
     assert(ev);
@@ -431,6 +430,18 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case MapEventTypes::evDialogButton:
             on_dialog_button(static_cast<DialogButton *>(ev));
+            break;
+        case MapEventTypes::evCombineEnhancements:
+            on_combine_enhancements(static_cast<CombineEnhancements *>(ev));
+            break;
+        case MapEventTypes::evMoveEnhancement:
+            on_move_enhancement(static_cast<MoveEnhancement *>(ev));
+            break;
+        case MapEventTypes::evSetEnhancement:
+            on_set_enhancement(static_cast<SetEnhancement *>(ev));
+            break;
+        case MapEventTypes::evTrashEnhancement:
+            on_trash_enhancement(static_cast<TrashEnhancement *>(ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
@@ -833,9 +844,9 @@ void MapInstance::sendState() {
 
 }
 
-void MapInstance::on_combine_boosts(CombineRequest *ev)
+void MapInstance::on_combine_enhancements(CombineEnhancements *ev)
 {
-    // TODO: Merge Enhancements
+    // TODO: Merge Enhancements.
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to merge enhancements" /*<< ev->first_power << ev->second_power*/;
@@ -2143,6 +2154,27 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id;
+}
+
+void MapInstance::on_move_enhancement(MoveEnhancement *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    moveEnhancement(session.m_ent->m_char->m_char_data, ev->m_src_idx, ev->m_dest_idx);
+}
+
+void MapInstance::on_set_enhancement(SetEnhancement *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    setEnhancement(*session.m_ent, ev->m_pset_idx, ev->m_pow_idx, ev->m_src_idx, ev->m_dest_idx);
+}
+
+void MapInstance::on_trash_enhancement(TrashEnhancement *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_idx);
 }
 
 //! @}

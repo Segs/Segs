@@ -78,7 +78,10 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 37: return new TargetChatChannelSelected;
         case 38: return new ChatReconfigure;
         case 39: return new PlaqueVisited;
-        case 40: return new CombineRequest;
+        case 40: return new CombineEnhancements;
+        case 41: return new MoveEnhancement;
+        case 42: return new SetEnhancement;
+        case 43: return new TrashEnhancement;
         case 56: return new EntityInfoRequest;
         case 57: return new SendStance;
         case 62: return new LocationVisited;

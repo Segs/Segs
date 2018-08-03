@@ -82,7 +82,7 @@ static const constexpr  uint32_t    class_version = 1;
         float           m_range             = 1.0f;
         float           m_recharge_time     = 0.0f;
         uint32_t        m_activation_state  = 0;
-        uint32_t        m_enhancement_slots = 3;
+        uint32_t        m_available_eh_slots = 3;
         bool            m_active_state_change   = false;
         bool            m_timer_updated         = false;
         bool            m_erase_power           = false;
@@ -176,3 +176,13 @@ void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint
 void useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row);
 void dumpInspirations(CharacterData &cd);
+
+/*
+ * Enhancements Methods
+ */
+void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level);
+int getNumberEnhancements(CharacterData &cd);
+void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx);
+void setEnhancement(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t src_idx, uint32_t dest_idx);
+void trashEnhancement(CharacterData &cd, uint32_t eh_idx);
+void dumpEnhancements(CharacterData &cd);

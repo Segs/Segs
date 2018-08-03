@@ -221,7 +221,7 @@ int getPowerSetByName(const QString &name, uint32_t pcat_idx)
 
     for(const Parse_PowerSet &pset : data.m_all_powers.m_categories[pcat_idx].m_PowerSets)
     {
-        if(pset.Name.compare(name, Qt::CaseInsensitive) == 0)
+        if(pset.m_Name.compare(name, Qt::CaseInsensitive) == 0)
             return idx;
 
         idx++;
@@ -427,7 +427,7 @@ void dumpPower(const CharacterPower &pow)
     qDebug().noquote() << "  ActivationState: " << pow.m_activation_state;
     qDebug().noquote() << "  ActivationStateChange: " << pow.m_active_state_change;
     qDebug().noquote() << "  TimerUpdated: " << pow.m_timer_updated;
-    qDebug().noquote() << "  NumEnhancements: " << pow.m_enhancement_slots;
+    qDebug().noquote() << "  NumEnhancements: " << pow.m_available_eh_slots;
 }
 
 void dumpOwnedPowers(CharacterData &cd)
@@ -613,6 +613,127 @@ void dumpInspirations(CharacterData &cd)
             qDebug().noquote() << "  PowerSetIdx: " << cd.m_inspirations[i][j].m_insp_tpl.m_pset_idx;
             qDebug().noquote() << "  PowerIdx: " << cd.m_inspirations[i][j].m_insp_tpl.m_pow_idx;
         }
+    }
+}
+
+/*
+ * Enhancements (boosts) Methods
+ */
+void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level)
+{
+    const MapServerData &data(*getMapServerData());
+    uint32_t pcat_idx = getPowerCatByName("Boosts");
+    uint32_t pset_idx, pow_idx    = 0;
+    bool found  = false;
+
+    if(getNumberEnhancements(cd) == cd.m_enhancements.size())
+    {
+        qCDebug(logPowers) << "Enhancement tray is full!";
+        return;
+    }
+
+    int i = 0;
+    for(const Parse_PowerSet &pset : data.m_all_powers.m_categories[pcat_idx].m_PowerSets)
+    {
+        if(pset.m_Name.compare(name, Qt::CaseInsensitive) == 0)
+        {
+            qCDebug(logPowers) << pset.m_Name << i;
+            found = true;
+            pset_idx = i;
+        }
+
+        i++;
+    }
+
+    if(!found)
+    {
+        qCDebug(logPowers) << "Failed to find Enhancement called " << name;
+        return;
+    }
+
+    CharacterEnhancement enhance;
+    enhance.m_slot_used                     = true;
+    enhance.m_enhancement_idx               = 0;
+    enhance.m_name                          = name;
+    enhance.m_level                         = level;
+    enhance.m_enhance_tpl.m_category_idx    = pcat_idx;
+    enhance.m_enhance_tpl.m_pset_idx        = pset_idx;
+    enhance.m_enhance_tpl.m_pow_idx         = pow_idx; // always zero
+
+    for(size_t iter = 0; iter < cd.m_enhancements.size(); iter++)
+    {
+        if(!cd.m_enhancements[iter].m_slot_used)
+        {
+            enhance.m_enhancement_idx = uint32_t(iter);
+            cd.m_enhancements[iter] = enhance;
+            qCDebug(logPowers) << "Character received Enhancement:" << iter
+                               << enhance.m_name
+                               << enhance.m_level;
+            return;
+        }
+    }
+}
+
+int getNumberEnhancements(CharacterData &cd)
+{
+    int count = 0;
+    for(size_t i = 0; i < cd.m_enhancements.size(); ++i)
+    {
+        if(cd.m_enhancements.at(i).m_slot_used)
+            count++;
+    }
+    return count;
+}
+
+void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx)
+{
+    cd.m_enhancements[src_idx].m_enhancement_idx = dest_idx;
+    cd.m_enhancements[dest_idx].m_enhancement_idx = src_idx;
+    std::swap(cd.m_enhancements[src_idx], cd.m_enhancements[dest_idx]);
+
+    qCDebug(logPowers) << "Moving Enhancement from" << src_idx << "to" << dest_idx;
+}
+
+void setEnhancement(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t src_idx, uint32_t dest_idx)
+{
+    CharacterPower *tgt_pow = &ent.m_char->m_char_data.m_powersets[pset_idx-1].m_powers[pow_idx];
+    CharacterEnhancement src_eh = ent.m_char->m_char_data.m_enhancements[src_idx];
+
+    // Set Enhancement into Power
+    qCDebug(logPowers) << "Set Enhancement" << src_eh.m_name << src_idx << "to" << dest_idx << "for power:"  << pset_idx << pow_idx;
+    src_eh.m_enhancement_idx = dest_idx;
+    tgt_pow->m_enhancements[dest_idx] = src_eh;
+
+    // Clear slot in Enhancement Tray
+    CharacterEnhancement blank;
+    blank.m_enhancement_idx = src_idx;
+    ent.m_char->m_char_data.m_enhancements[src_idx] = blank;
+}
+
+void trashEnhancement(CharacterData &cd, uint32_t eh_idx)
+{
+    CharacterEnhancement enhance;
+    enhance.m_enhancement_idx = eh_idx;
+    cd.m_enhancements[eh_idx] = enhance;
+
+    qCDebug(logPowers) << "Remove Enhancement from" << eh_idx;
+}
+
+void dumpEnhancements(CharacterData &cd)
+{
+    if(getNumberEnhancements(cd) == 0)
+        qDebug().noquote() << "This character has no inspirations.";
+
+    for(size_t i = 0; i < cd.m_enhancements.size(); ++i)
+    {
+        qDebug().noquote() << "Enhancement: " << cd.m_enhancements[i].m_enhancement_idx
+                           << cd.m_enhancements[i].m_name;
+        qDebug().noquote() << "  SlotUsed: " << cd.m_enhancements[i].m_slot_used;
+        qDebug().noquote() << "  Level: " << cd.m_enhancements[i].m_level;
+        qDebug().noquote() << "  NumCombines: " << cd.m_enhancements[i].m_num_combines;
+        qDebug().noquote() << "  CategoryIdx: " << cd.m_enhancements[i].m_enhance_tpl.m_category_idx;
+        qDebug().noquote() << "  PowerSetIdx: " << cd.m_enhancements[i].m_enhance_tpl.m_pset_idx;
+        qDebug().noquote() << "  PowerIdx: " << cd.m_enhancements[i].m_enhance_tpl.m_pow_idx;
     }
 }
 

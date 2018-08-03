@@ -46,6 +46,7 @@ SET(target_INCLUDE
     Events/EmailHeaders.h
     Events/EmailMessageStatus.h
     Events/EmailRead.h
+    Events/EnhancementEvents.h
     Events/EntitiesResponse.h
     Events/FloatingDamage.h
     Events/FloatingInfo.h

@@ -113,7 +113,10 @@ public:
     EVENT_DECL(evTargetChatChannelSelected  ,237) // Change chat type using the letters in the chat window 'l, b, g, sg, r, f"
     EVENT_DECL(evChatReconfigure            ,238)
     EVENT_DECL(evPlaqueVisited              ,239)
-    EVENT_DECL(evCombineRequest             ,240)
+    EVENT_DECL(evCombineEnhancements        ,240)
+    EVENT_DECL(evMoveEnhancement            ,241)
+    EVENT_DECL(evSetEnhancement             ,242)
+    EVENT_DECL(evTrashEnhancement           ,243)
     EVENT_DECL(evEntityInfoRequest          ,256) // right-click entity select "Info"
     EVENT_DECL(evLocationVisited            ,262)
     EVENT_DECL(evSwitchViewPoint            ,264)
