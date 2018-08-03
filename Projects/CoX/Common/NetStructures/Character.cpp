@@ -144,7 +144,7 @@ void Character::getInherentPowers()
 
 void Character::getPowerFromBuildInfo(BitStream &src)
 {
-    for(int i = 1; i <= 2; ++i)
+    for(int i = 0; i < 2; ++i)
     {
         PowerPool_Info ppinfo;
 
