@@ -16,3 +16,4 @@ QStringList g_db_drivers = {
     "QPSQL"
 };
 
+QVector<SegsReleaseInfo> g_segs_release_info;
