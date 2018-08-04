@@ -10,10 +10,12 @@
 #include "Common/Servers/HandlerLocator.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "DataHelpers.h"
+#include "MapServer.h"
 #include <QtCore/QDebug>
 
 std::unordered_map<int,std::vector<int>> FriendHandler::s_friend_map;
 std::unordered_map<int,bool> FriendHandler::s_online_map;
+std::unordered_map<int,int> FriendHandler::s_map_instance_map;
 int FriendHandler::s_game_server_id;
 
 void FriendHandler::dispatch(SEGSEvent *ev)
@@ -62,8 +64,9 @@ void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
             f.m_online_status = false;
     }
 
-    //Send the FriendsList to FriendsListUpdate
-
+    //Send the FriendsList to MapInstance, which will call FriendsListUpdate
+    EventProcessor *tgt = HandlerLocator::getMap_Handler(s_game_server_id);
+    MapServer* m_mapserv = static_cast<MapServer*>(HandlerLocator::getMap_Handler(s_game_server_id));
 }
 
 void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
@@ -90,6 +93,11 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
     //Update this player/character's online status
     s_online_map[m_char_id] = true;
 
+    //Store the map instance ID so that we know where to send the constructed FriendsList
+    s_map_instance_map[m_char_id] = msg->m_data.m_sub_server_id;
+    qDebug() << "Serv id: " << msg->m_data.m_server_id; //this is the owner ID aka game server id
+    qDebug() << "Sub id: " << msg->m_data.m_sub_server_id; //this is the template ID aka map instance id
+
     //Also read this player's friend list to see who they've added
     //To do this, we send a GetFriendsListRequest to GameDBSyncHandler
     EventProcessor *tgt = HandlerLocator::getGame_DB_Handler(s_game_server_id);
@@ -104,7 +112,9 @@ void FriendHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 
 bool FriendHandler::is_online(int m_id)
 {
-    if(s_online_map[m_id])
+    //if(s_online_map[m_id])
+    auto search = s_online_map.find(m_id);
+    if(search != s_online_map.end())
         return true;
     else
         return false;

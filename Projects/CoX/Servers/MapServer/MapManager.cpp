@@ -72,6 +72,11 @@ MapTemplate * MapManager::get_template( QString id )
     return m_name_to_template[id];
 }
 
+MapTemplate * MapManager::get_template_by_id(int id)
+{
+
+}
+
 size_t MapManager::num_templates()
 {
     return m_templates.size();

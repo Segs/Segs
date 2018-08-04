@@ -28,6 +28,7 @@ public:
     bool            load_templates(const QString &template_directory, uint8_t game_id, uint32_t map_id,
                                        const struct ListenAndLocationAddresses &loc);
     MapTemplate *   get_template(QString id);
+    MapTemplate *   get_template_by_id(int id);
     size_t          num_templates();
     size_t          max_instances();
     void            shut_down_all();
