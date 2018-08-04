@@ -247,19 +247,6 @@ struct GetPlayerFriendsResponseData
 };
 TWO_WAY_MESSAGE(GetPlayerFriends)
 
-struct GetPlayerLocationRequestData
-{
-    uint32_t m_char_id;
-};
-
-struct GetPlayerLocationResponseData
-{
-    uint32_t m_char_id;
-    int m_map_idx;
-    QString m_mapname;
-};
-TWO_WAY_MESSAGE(GetPlayerLocation)
-
 struct WouldNameDuplicateRequestData
 {
     QString m_name;
