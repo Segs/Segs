@@ -9,13 +9,13 @@
 #include "Servers/GameServer/GameEvents.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "GameDatabase/GameDBSyncEvents.h"
+#include "FriendHandlerEvents.h"
 #include "DataHelpers.h"
-#include "MapServer.h"
 #include <QtCore/QDebug>
 
-std::unordered_map<int,std::vector<int>> FriendHandler::s_friend_map;
+std::unordered_map<int,std::set<int>> FriendHandler::s_friend_map;
 std::unordered_map<int,bool> FriendHandler::s_online_map;
-std::unordered_map<int,int> FriendHandler::s_map_instance_map;
+std::unordered_map<int,MapInfo> FriendHandler::s_map_info_map;
 int FriendHandler::s_game_server_id;
 
 void FriendHandler::dispatch(SEGSEvent *ev)
@@ -40,15 +40,19 @@ void FriendHandler::dispatch(SEGSEvent *ev)
 
 void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
 {
+    qDebug() << "who it be1 " << ev->m_data.m_friendslist.m_friends[0].m_name;
     uint32_t &m_char_id = ev->m_data.m_char_id;
-    FriendsList &m_friendslist = ev->m_data.m_friendslist;
+    FriendsList m_friendslist = ev->m_data.m_friendslist;
 
+    qDebug() << "who it be " << m_friendslist.m_friends[0].m_name;
+    //This code might execute multiple times whenever a player changes zone,
+    //but won't do any harm.  Inefficient though.
     /*
      * Iterate over the friends list, and put each friend id as a key,
-     * and push the current character id into the vector value
+     * and push the current character id into the set value
      */
     for(uint i=0; i<m_friendslist.m_friends.size(); i++){
-        s_friend_map[m_friendslist.m_friends[i].m_db_id].push_back(m_char_id);
+        s_friend_map[m_friendslist.m_friends[i].m_db_id].insert(m_char_id);
     }
 
     /*
@@ -56,31 +60,39 @@ void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
      */
     for(Friend f : m_friendslist.m_friends)
     {
-        //if(s_online_map[f.m_db_id])
-        auto search = s_online_map.find(f.m_db_id);
-        if(search != s_online_map.end())
-            f.m_online_status = true;
-        else
-            f.m_online_status = false;
+        f.m_online_status = is_online(f.m_db_id);
     }
 
     //Send the FriendsList to MapInstance, which will call FriendsListUpdate
-    EventProcessor *tgt = HandlerLocator::getMap_Handler(s_game_server_id);
-    MapServer* m_mapserv = static_cast<MapServer*>(HandlerLocator::getMap_Handler(s_game_server_id));
+    EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
+                s_map_info_map[m_char_id].server_id, s_map_info_map[m_char_id].instance_id);
+    tgt->putq(new SendFriendListMessage({s_map_info_map[m_char_id].session_token,
+                                        m_friendslist, s_friend_map[m_char_id]},s_map_info_map[m_char_id].session_token));
 }
 
 void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
 {
     //A player has connected, notify all the people that have added this character as a friend
-    //MapClientSession &session(m_session_store.session_from_event(msg));
-
     uint32_t &m_char_id = msg->m_data.m_char_id;
-    //Iterate over map and send message saying character logged in
+
+    //Update this player/character's online status
+    s_online_map[m_char_id] = true;
+
+    EventProcessor *tgt = HandlerLocator::getGame_DB_Handler(s_game_server_id);
+    //Iterate over map and update friends list of all people who have added this character
     for(auto const& val : s_friend_map[m_char_id])
     {
+        //We need to notify all the people who added this player (if they're online)
+        if(is_online(val)){
+            uint32_t friend_id = val;
+            tgt->putq(new GetPlayerFriendsRequest({friend_id},msg->session_token(),this));
+        }
+
         //We might need to check later if this character is still online?
         //if s_online_map[val]
         qDebug() << "Hey char id " << val << ", cid " << m_char_id << " just logged on";
+
+
         //Looks like we'll need a MessageHandler to do this part?
         /*
         char buf[256];
@@ -90,23 +102,23 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
         */
     }
 
-    //Update this player/character's online status
-    s_online_map[m_char_id] = true;
-
     //Store the map instance ID so that we know where to send the constructed FriendsList
-    s_map_instance_map[m_char_id] = msg->m_data.m_sub_server_id;
+    uint64_t session_token = msg->m_data.m_session;
+    uint8_t server_id = msg->m_data.m_server_id;
+    int instance_id = msg->m_data.m_sub_server_id;
+    s_map_info_map[m_char_id] = MapInfo{session_token, server_id, instance_id};
     qDebug() << "Serv id: " << msg->m_data.m_server_id; //this is the owner ID aka game server id
     qDebug() << "Sub id: " << msg->m_data.m_sub_server_id; //this is the template ID aka map instance id
 
     //Also read this player's friend list to see who they've added
     //To do this, we send a GetFriendsListRequest to GameDBSyncHandler
-    EventProcessor *tgt = HandlerLocator::getGame_DB_Handler(s_game_server_id);
     tgt->putq(new GetPlayerFriendsRequest({msg->m_data.m_char_id},msg->session_token(),this));
 }
 
 void FriendHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 {
     //Update this player/character's online status (to offline)
+    s_map_info_map.erase(msg->m_data.m_char_id);
     s_online_map.erase(msg->m_data.m_char_id);
 }
 

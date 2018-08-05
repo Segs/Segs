@@ -25,7 +25,6 @@ struct WouldNameDuplicateRequest;
 struct CreateNewCharacterRequest;
 struct GetEntityRequest;
 struct GetPlayerFriendsRequest;
-struct GetPlayerLocationRequest;
 
 class GameDBSyncHandler final : public EventProcessor
 {

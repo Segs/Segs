@@ -24,6 +24,7 @@ class HandlerLocator
     static std::deque<EventProcessor *> m_game_servers;
     static std::deque<EventProcessor *> m_map_servers;
     static std::deque<EventProcessor *> m_game_db_servers;
+    static std::deque<std::deque<EventProcessor *>> m_map_instances;
 public:
     HandlerLocator();
     static void setMessageBus(MessageBus *h) { m_message_bus=h; }
@@ -78,6 +79,21 @@ public:
             m_map_servers.resize(id+1);
         m_map_servers[id] = h;
     }
-
+    static EventProcessor *getMapInstance_Handler(uint8_t id,uint8_t subserver_id)
+    {
+        if(id>=m_map_instances.size())
+            return nullptr;
+        if(subserver_id>=m_map_instances[id].size())
+            return nullptr;
+        return m_map_instances[id][subserver_id];
+    }
+    static void setMapInstance_Handler(uint8_t id,uint8_t subserver_id,EventProcessor *h)
+    {
+        if(id>=m_map_instances.size())
+            m_map_instances.resize(id+1);
+        if(subserver_id>=m_map_instances[id].size())
+            m_map_instances[id].resize(subserver_id+1);
+        m_map_instances[id][subserver_id] = h;
+    }
 };
 extern void shutDownAllActiveHandlers();

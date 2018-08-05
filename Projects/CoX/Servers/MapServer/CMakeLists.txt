@@ -49,6 +49,7 @@ SET(target_INCLUDE
     Events/FloatingDamage.h
     Events/FriendsListUpdate.h
     Events/FriendHandler.h
+    Events/FriendHandlerEvents.h
     Events/InputState.h
     Events/LocationVisited.h
     Events/MapEventTypes.h

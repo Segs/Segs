@@ -25,6 +25,7 @@
 #include "EntityStorage.h"
 #include "MapSceneGraph.h"
 #include "WorldSimulation.h"
+#include "Events/FriendHandlerEvents.h"
 #include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/Database.h"
 #include "Common/Servers/HandlerLocator.h"
@@ -189,6 +190,7 @@ bool MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t 
     m_game_server_id = game_server_id;
     m_owner_id = owner_id;
     m_instance_id = instance_id;
+    HandlerLocator::setMapInstance_Handler(owner_id,instance_id,this);
     if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
     {
         qWarning() << "MapInstance::spin_up_for failed to register_handler, port already open";
@@ -283,6 +285,8 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case Internal_EventTypes::evExpectMapClientRequest:
             on_expect_client(static_cast<ExpectMapClientRequest *>(ev));
             break;
+        case FriendHandlerEventTypes::evSendFriendList:
+            on_update_friendslist(static_cast<SendFriendListMessage *>(ev));
         case GameDBEventTypes::evWouldNameDuplicateResponse:
             on_name_clash_check_result(static_cast<WouldNameDuplicateResponse *>(ev));
             break;
@@ -568,6 +572,17 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 
     HandlerLocator::getGame_Handler(m_game_server_id)
         ->putq(new ExpectMapClientResponse({cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
+}
+
+void MapInstance::on_update_friendslist(SendFriendListMessage *ev)
+{
+    qDebug() << "Updating friendslist..";
+    MapClientSession &map_session(m_session_store.session_from_token(ev->m_data.m_session_token));
+    Entity * e = map_session.m_ent;
+    e->m_db_id              = e->m_char->m_db_id;
+    qDebug() << "Sending update -- " << ev->m_data.m_friendlist.m_friends[0].m_name;
+    FriendsList *flist = &ev->m_data.m_friendlist;
+    sendFriendsListUpdate(e,flist);
 }
 
 void MapInstance::on_character_created(CreateNewCharacterResponse *ev)

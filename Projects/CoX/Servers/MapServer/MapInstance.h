@@ -15,6 +15,7 @@
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
 #include "NpcGenerator.h"
+#include "Events/FriendHandlerEvents.h"
 
 #include <map>
 #include <memory>
@@ -85,6 +86,7 @@ protected:
         void                    on_entity_response(GetEntityResponse *ev);
         // Server->Server messages
         void on_expect_client(ExpectMapClientRequest *ev);
+        void on_update_friendslist(SendFriendListMessage *ev);
 
         void on_link_lost(SEGSEvent *ev);
         void on_disconnect(class DisconnectRequest *ev);

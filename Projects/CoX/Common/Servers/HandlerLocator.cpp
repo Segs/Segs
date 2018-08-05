@@ -22,6 +22,7 @@ EventProcessor * HandlerLocator::m_friend_handler = nullptr;
 std::deque<EventProcessor *> HandlerLocator::m_game_servers;
 std::deque<EventProcessor *> HandlerLocator::m_game_db_servers;
 std::deque<EventProcessor *> HandlerLocator::m_map_servers;
+std::deque<std::deque<EventProcessor *>> HandlerLocator::m_map_instances;
 
 MessageBus * HandlerLocator::m_message_bus=nullptr;
 void shutDownAllActiveHandlers()

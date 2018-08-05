@@ -41,8 +41,6 @@ enum GameDBEventTypes : uint32_t
     // Asking for friends list
     evGetPlayerFriendsRequest,
     evGetPlayerFriendsResponse,
-    evGetPlayerLocationRequest,
-    evGetPlayerLocationResponse,
 
     evGameDbError
 };
