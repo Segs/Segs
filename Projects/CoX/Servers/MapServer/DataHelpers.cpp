@@ -504,6 +504,12 @@ void sendFriendsListUpdate(Entity *src, FriendsList *friends_list)
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FriendsListUpdate>(new FriendsListUpdate(friends_list)));
 }
 
+void sendFriendsListUpdate(Entity *src, FriendsList friends_list)
+{
+    qCDebug(logFriends) << "Sending FriendsList Update.";
+    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FriendsListUpdate>(new FriendsListUpdate(friends_list)));
+}
+
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id)
 {
     qCDebug(logTeams) << "Sending Sidekick Offer" << tgt->name() << "from" << src_db_id;

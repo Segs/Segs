@@ -287,6 +287,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case FriendHandlerEventTypes::evSendFriendList:
             on_update_friendslist(static_cast<SendFriendListMessage *>(ev));
+            break;
         case GameDBEventTypes::evWouldNameDuplicateResponse:
             on_name_clash_check_result(static_cast<WouldNameDuplicateResponse *>(ev));
             break;
@@ -580,9 +581,9 @@ void MapInstance::on_update_friendslist(SendFriendListMessage *ev)
     MapClientSession &map_session(m_session_store.session_from_token(ev->m_data.m_session_token));
     Entity * e = map_session.m_ent;
     e->m_db_id              = e->m_char->m_db_id;
-    qDebug() << "Sending update -- " << ev->m_data.m_friendlist.m_friends[0].m_name;
-    FriendsList *flist = &ev->m_data.m_friendlist;
+    FriendsList flist = ev->m_data.m_friendlist;
     sendFriendsListUpdate(e,flist);
+    //map_session.addCommandToSendNextUpdate(std::unique_ptr<FriendsListUpdate>(new FriendsListUpdate(flist)));
 }
 
 void MapInstance::on_character_created(CreateNewCharacterResponse *ev)

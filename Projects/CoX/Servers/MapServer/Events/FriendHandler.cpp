@@ -40,11 +40,9 @@ void FriendHandler::dispatch(SEGSEvent *ev)
 
 void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
 {
-    qDebug() << "who it be1 " << ev->m_data.m_friendslist.m_friends[0].m_name;
     uint32_t &m_char_id = ev->m_data.m_char_id;
     FriendsList m_friendslist = ev->m_data.m_friendslist;
 
-    qDebug() << "who it be " << m_friendslist.m_friends[0].m_name;
     //This code might execute multiple times whenever a player changes zone,
     //but won't do any harm.  Inefficient though.
     /*
@@ -58,9 +56,13 @@ void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
     /*
      * Iterate through the friends list and update online status accordingly
      */
-    for(Friend f : m_friendslist.m_friends)
+    for(Friend& f : m_friendslist.m_friends)
     {
         f.m_online_status = is_online(f.m_db_id);
+        f.m_mapname = getFriendMapName(f);
+        if(!f.m_online_status){
+            f.m_map_idx = -1;
+        }
     }
 
     //Send the FriendsList to MapInstance, which will call FriendsListUpdate
@@ -118,8 +120,22 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
 void FriendHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 {
     //Update this player/character's online status (to offline)
-    s_map_info_map.erase(msg->m_data.m_char_id);
     s_online_map.erase(msg->m_data.m_char_id);
+    EventProcessor *tgt = HandlerLocator::getGame_DB_Handler(s_game_server_id);
+    //Iterate over map and update friends list of all people who have added this character
+    for(auto const& val : s_friend_map[msg->m_data.m_char_id])
+    {
+        //We need to notify all the people who added this player (if they're online)
+        if(is_online(val)){
+            uint32_t friend_id = val;
+            tgt->putq(new GetPlayerFriendsRequest({friend_id},msg->session_token(),this));
+        }
+
+        //We might need to check later if this character is still online?
+        //if s_online_map[val]
+        qDebug() << "Hey char id " << val << ", cid " << msg->m_data.m_char_id << " just logged off";
+    }
+    s_map_info_map.erase(msg->m_data.m_char_id);
 }
 
 bool FriendHandler::is_online(int m_id)

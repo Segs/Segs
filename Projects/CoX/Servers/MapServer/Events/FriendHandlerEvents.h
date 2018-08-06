@@ -12,7 +12,7 @@
 
 enum FriendHandlerEventTypes : uint32_t
 {
-    evSendFriendList
+    evSendFriendList = Internal_EventTypes::evLAST_EVENT
 };
 
 #define ONE_WAY_MESSAGE(name)\
