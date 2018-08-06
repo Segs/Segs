@@ -400,8 +400,6 @@ bool GameDbSyncContext::getPlayerFriends(const GetPlayerFriendsRequestData &data
 
     result.m_char_id = data.m_char_id;
     result.m_friendslist = char_data.m_friendlist;
-
-    qDebug() << "Got friends, response made";
     return true;
 }
 

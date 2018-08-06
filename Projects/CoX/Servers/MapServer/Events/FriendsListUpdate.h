@@ -30,13 +30,10 @@ public:
     void    serializeto(BitStream &bs) const override {
         bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 37
 
-        qDebug() << "Serialize flist";
-        qDebug() << "FL Update:" << m_list->m_has_friends << m_list->m_friends_count << m_list->m_friends.size();
         qCDebug(logFriends) << "FL Update:" << m_list->m_has_friends << m_list->m_friends_count << m_list->m_friends.size();
         bs.StorePackedBits(1,1); // v2 = force_update
         bs.StorePackedBits(1,m_list->m_friends_count);
 
-        qDebug() << "Going over friends " << m_list->m_friends_count;
         for(int i=0; i<m_list->m_friends_count; ++i)
         {
             qDebug() << "Friend" << m_list->m_friends[i].m_name << " is " << m_list->m_friends[i].m_online_status;
@@ -59,7 +56,6 @@ public:
 
 
         }
-        qDebug() << "Done";
     }
     void    serializefrom(BitStream &src);
 };

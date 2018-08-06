@@ -74,7 +74,7 @@ void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
 
 void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
 {
-    //A player has connected, notify all the people that have added this character as a friend
+    //A player has connected, we need to notify all the people that have added this character as a friend
     uint32_t &m_char_id = msg->m_data.m_char_id;
 
     //Update this player/character's online status
@@ -86,14 +86,10 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
     {
         //We need to notify all the people who added this player (if they're online)
         if(is_online(val)){
+            qDebug() << "Hey char id " << val << ", cid " << m_char_id << " just logged on";
             uint32_t friend_id = val;
             tgt->putq(new GetPlayerFriendsRequest({friend_id},msg->session_token(),this));
         }
-
-        //We might need to check later if this character is still online?
-        //if s_online_map[val]
-        qDebug() << "Hey char id " << val << ", cid " << m_char_id << " just logged on";
-
 
         //Looks like we'll need a MessageHandler to do this part?
         /*
@@ -109,8 +105,6 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
     uint8_t server_id = msg->m_data.m_server_id;
     int instance_id = msg->m_data.m_sub_server_id;
     s_map_info_map[m_char_id] = MapInfo{session_token, server_id, instance_id};
-    qDebug() << "Serv id: " << msg->m_data.m_server_id; //this is the owner ID aka game server id
-    qDebug() << "Sub id: " << msg->m_data.m_sub_server_id; //this is the template ID aka map instance id
 
     //Also read this player's friend list to see who they've added
     //To do this, we send a GetFriendsListRequest to GameDBSyncHandler

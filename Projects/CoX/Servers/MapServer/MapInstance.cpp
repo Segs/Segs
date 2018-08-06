@@ -577,13 +577,11 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 
 void MapInstance::on_update_friendslist(SendFriendListMessage *ev)
 {
-    qDebug() << "Updating friendslist..";
     MapClientSession &map_session(m_session_store.session_from_token(ev->m_data.m_session_token));
     Entity * e = map_session.m_ent;
     e->m_db_id              = e->m_char->m_db_id;
     FriendsList flist = ev->m_data.m_friendlist;
     sendFriendsListUpdate(e,flist);
-    //map_session.addCommandToSendNextUpdate(std::unique_ptr<FriendsListUpdate>(new FriendsListUpdate(flist)));
 }
 
 void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
@@ -631,14 +629,14 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
     tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id, e->m_db_id}));
 
-    //Fire off a global event for anyone listening for new connections (like FriendHandler)
-    postGlobalEvent(new ClientConnectedMessage(
-        {ev->session_token(), m_owner_id, m_instance_id, e->m_db_id}));
-
     map_session.m_current_map->enqueue_client(&map_session);
     setMapName(*map_session.m_ent, name());
     setMapIdx(*map_session.m_ent, index());
     map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
+
+    //Fire off a global event for anyone listening for new connections (like FriendHandler)
+    postGlobalEvent(new ClientConnectedMessage(
+        {ev->session_token(), m_owner_id, m_instance_id, e->m_db_id}));
 }
 
 void MapInstance::on_create_map_entity(NewEntity *ev)

@@ -18,8 +18,8 @@
 struct MapInfo
 {
     uint64_t session_token;
-    uint8_t server_id;
-    int instance_id;
+    uint8_t server_id; //this is the owner ID aka game server id
+    int instance_id; //this is the template ID aka map instance id
 };
 
 class FriendHandler : public EventProcessor
