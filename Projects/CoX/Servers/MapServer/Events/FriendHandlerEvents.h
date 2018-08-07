@@ -13,15 +13,25 @@
 enum FriendHandlerEventTypes : uint32_t
 {
     evSendFriendList = Internal_EventTypes::evLAST_EVENT,
-    evSendNotifyFriend
+    evSendNotifyFriend,
+    evFriendAdded,
+    evFriendRemoved
 };
+
+//#define ONE_WAY_MESSAGE(name)\
+//struct name ## Message final : public InternalEvent\
+//{\
+//    name ## Data m_data;\
+//    name ## Message(name ## Data &&d,uint64_t token) :  InternalEvent(FriendHandlerEventTypes::ev ## name),m_data(d) {session_token(token);}\
+//};
 
 #define ONE_WAY_MESSAGE(name)\
 struct name ## Message final : public InternalEvent\
 {\
     name ## Data m_data;\
-    name ## Message(name ## Data &&d,uint64_t token) :  InternalEvent(FriendHandlerEventTypes::ev ## name),m_data(d) {session_token(token);}\
+    name ## Message(name ## Data &&d) :  InternalEvent(FriendHandlerEventTypes::ev ## name),m_data(d) {}\
 };
+
 
 struct SendFriendListData
 {
@@ -38,3 +48,19 @@ struct SendNotifyFriendData
 };
 
 ONE_WAY_MESSAGE(SendNotifyFriend)
+
+struct FriendAddedData
+{
+    uint32_t m_char_id;         //character who added a new friend
+    uint32_t m_added_id;        //id of player added
+};
+
+ONE_WAY_MESSAGE(FriendAdded)
+
+struct FriendRemovedData
+{
+    uint32_t m_char_id;         //character who removed a friend
+    uint32_t m_removed_id;      //id of player removed
+};
+
+ONE_WAY_MESSAGE(FriendRemoved)

@@ -14,6 +14,9 @@
 
 #include "Servers/MapServer/DataHelpers.h"
 #include "GameData/playerdata_definitions.h"
+#include "Common/Servers/HandlerLocator.h"
+#include "EventProcessor.h"
+#include "Servers/MapServer/Events/FriendHandlerEvents.h"
 #include "Entity.h"
 #include "Logging.h"
 #include "Character.h"
@@ -57,6 +60,8 @@ void addFriend(Entity &src, Entity &tgt)
     if(logFriends().isDebugEnabled())
         dumpFriends(src);
 
+    EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
+    friend_tgt->putq(new FriendAddedMessage({src.m_char->m_db_id,tgt.m_db_id}));
     FriendsList flist = *src_data;
     sendFriendsListUpdate(&src, flist); // Send FriendsListUpdate
 }

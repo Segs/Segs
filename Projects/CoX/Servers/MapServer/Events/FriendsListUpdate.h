@@ -35,9 +35,6 @@ public:
             bs.StoreBits(1,m_list.m_has_friends); // if false, client will skip this iteration
             bs.StorePackedBits(1,m_list.m_friends[i].m_db_id);
 
-            // TODO: Lookup online status, implement: isFriendOnline()
-            //bool is_online = isFriendOnline(m_list->m_friends[i].fr_db_id);
-
             bs.StoreBits(1,m_list.m_friends[i].m_online_status);
             bs.StoreString(m_list.m_friends[i].m_name);
             bs.StorePackedBits(1,m_list.m_friends[i].m_class_idx);

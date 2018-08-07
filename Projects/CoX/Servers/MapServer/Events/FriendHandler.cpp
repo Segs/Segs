@@ -33,6 +33,12 @@ void FriendHandler::dispatch(SEGSEvent *ev)
         case Internal_EventTypes::evClientDisconnected:
             on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
             break;
+        case FriendHandlerEventTypes::evFriendAdded:
+            on_friend_added(static_cast<FriendAddedMessage *>(ev));
+            break;
+        case FriendHandlerEventTypes::evFriendRemoved:
+            on_friend_removed(static_cast<FriendRemovedMessage *>(ev));
+            break;
         default:
             break;
     }
@@ -69,8 +75,10 @@ void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
     //Send the FriendsList to MapInstance, which will call FriendsListUpdate
     EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
                 s_map_info_map[m_char_id].server_id, s_map_info_map[m_char_id].instance_id);
+//    tgt->putq(new SendFriendListMessage({s_map_info_map[m_char_id].session_token,
+//                                        m_friendslist},s_map_info_map[m_char_id].session_token));
     tgt->putq(new SendFriendListMessage({s_map_info_map[m_char_id].session_token,
-                                        m_friendslist},s_map_info_map[m_char_id].session_token));
+                                        m_friendslist}));
 }
 
 void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
@@ -99,8 +107,7 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
             uint32_t friend_id = val;
             tgt->putq(new GetPlayerFriendsRequest({friend_id},msg->session_token(),this));
             inst_tgt->putq(new SendNotifyFriendMessage({s_map_info_map[m_char_id].session_token,
-                                                        s_map_info_map[friend_id].session_token},
-                                                       s_map_info_map[friend_id].session_token));
+                                                        s_map_info_map[friend_id].session_token}));
         }
     }
 
@@ -122,12 +129,19 @@ void FriendHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
             uint32_t friend_id = val;
             tgt->putq(new GetPlayerFriendsRequest({friend_id},msg->session_token(),this));
         }
-
-        //We might need to check later if this character is still online?
-        //if s_online_map[val]
-        qDebug() << "Hey char id " << val << ", cid " << msg->m_data.m_char_id << " just logged off";
     }
     s_map_info_map.erase(msg->m_data.m_char_id);
+}
+
+void FriendHandler::on_friend_added(FriendAddedMessage *msg)
+{
+    s_friend_map[msg->m_data.m_added_id].insert(msg->m_data.m_char_id);
+}
+
+void FriendHandler::on_friend_removed(FriendRemovedMessage *msg)
+{
+    qDebug() << "Player " << msg->m_data.m_removed_id << " has removed " << msg->m_data.m_char_id;
+    s_friend_map[msg->m_data.m_removed_id].erase(msg->m_data.m_char_id);
 }
 
 bool FriendHandler::is_online(int m_id)

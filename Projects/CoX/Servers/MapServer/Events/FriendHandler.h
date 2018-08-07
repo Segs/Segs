@@ -11,6 +11,7 @@
 #include "Servers/InternalEvents.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "Common/Servers/ClientManager.h"
+#include "FriendHandlerEvents.h"
 #include <unordered_map>
 #include <vector>
 
@@ -35,6 +36,8 @@ private:
     void on_player_friends(GetPlayerFriendsResponse* ev);
     void on_client_connected(ClientConnectedMessage* msg);
     void on_client_disconnected(ClientDisconnectedMessage* msg);
+    void on_friend_added(FriendAddedMessage* msg);
+    void on_friend_removed(FriendRemovedMessage* msg);
 protected:
     MessageBusEndpoint m_message_bus_endpoint;
 public:
