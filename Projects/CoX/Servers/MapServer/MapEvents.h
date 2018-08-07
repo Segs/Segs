@@ -38,6 +38,7 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class ShortcutsRequest final : public MapLinkEvent
 {
 public:
@@ -52,6 +53,7 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class SceneRequest final : public MapLinkEvent
 {
 public:
@@ -66,6 +68,7 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class EntitiesRequest final : public MapLinkEvent
 {
 public:
@@ -80,9 +83,11 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class ClientQuit final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     int abort_disconnect = 0;
     ClientQuit():MapLinkEvent(MapEventTypes::evClientQuit)
     {}
@@ -99,9 +104,11 @@ public:
 
 };
 
+// [[ev_def:type]]
 class ForcedLogout final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     QString reason;
     ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason)
     {}
@@ -116,10 +123,13 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class CookieRequest final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     uint32_t cookie;
+    // [[ev_def:field]]
     uint32_t console;
     CookieRequest():MapLinkEvent(MapEventTypes::evCookieRequest)
     {}
@@ -134,9 +144,11 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class ConsoleCommand final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     QString contents;
     ConsoleCommand():MapLinkEvent(MapEventTypes::evConsoleCommand)
     {}
@@ -150,6 +162,7 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class ClientResumedRendering final : public MapLinkEvent
 {
 public:
@@ -165,9 +178,11 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class MiniMapState final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     uint32_t tile_idx=0;
     MiniMapState():MapLinkEvent(MapEventTypes::evMiniMapState)
     {}
@@ -182,6 +197,7 @@ public:
 
 };
 
+// [[ev_def:type]]
 class CombineRequest final : public MapLinkEvent
 {
 public:
@@ -191,7 +207,9 @@ public:
         int powerset_index;
         int index;
     };
+    // [[ev_def:field]]
     PowerEntry first_power;
+    // [[ev_def:field]]
     PowerEntry second_power;
     CombineRequest() : MapLinkEvent(MapEventTypes::evCombineRequest)
     {}
@@ -225,6 +243,7 @@ public:
 #include "Events/WindowState.h"
 //////////////////////////////////////////////////////////////////////////
 // Server -> Client events
+// [[ev_def:type]]
 class MapInstanceConnected final : public MapLinkEvent
 {
 public:
@@ -249,14 +268,18 @@ public:
         if(m_resp==0)
             src.GetString(m_fatal_error);
     }
+    // [[ev_def:field]]
     uint32_t    m_resp;
+    // [[ev_def:field]]
     QString     m_fatal_error;
 
 };
 
+// [[ev_def:type]]
 class InspirationDockMode final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     uint32_t dock_mode = 0;
     InspirationDockMode():MapLinkEvent(MapEventTypes::evInspirationDockMode)
     {}
@@ -271,11 +294,15 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class EnterDoor final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     bool unspecified_location;
+    // [[ev_def:field]]
     glm::vec3 location;
+    // [[ev_def:field]]
     QString name;
     EnterDoor():MapLinkEvent(MapEventTypes::evEnterDoor)
     {}
@@ -296,11 +323,15 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class ChangeStance final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     bool enter_stance;
+    // [[ev_def:field]]
     int powerset_index;
+    // [[ev_def:field]]
     int power_index;
     ChangeStance():MapLinkEvent(MapEventTypes::evChangeStance)
     {}
@@ -319,10 +350,13 @@ public:
 
 };
 
+// [[ev_def:type]]
 class SetDestination final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     glm::vec3 destination;
+    // [[ev_def:field]]
     int point_index;
     SetDestination():MapLinkEvent(MapEventTypes::evSetDestination)
     {}
@@ -343,10 +377,13 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class ActivateInspiration final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     int slot_idx;
+    // [[ev_def:field]]
     int row_idx;
     ActivateInspiration():MapLinkEvent(MapEventTypes::evActivateInspiration)
     {}
@@ -363,10 +400,13 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class SetDefaultPowerSend final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     int powerset_idx;
+    // [[ev_def:field]]
     int power_idx;
     SetDefaultPowerSend():MapLinkEvent(MapEventTypes::evSetDefaultPowerSend)
     {}
@@ -381,6 +421,7 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class SetDefaultPower final : public MapLinkEvent
 {
 public:
@@ -397,6 +438,7 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class UnqueueAll final : public MapLinkEvent
 {
 public:
@@ -413,6 +455,7 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class AbortQueuedPower final : public MapLinkEvent
 {
 public:
@@ -428,10 +471,13 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class DescriptionAndBattleCry final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     QString description;
+    // [[ev_def:field]]
     QString battlecry;
     DescriptionAndBattleCry():MapLinkEvent(MapEventTypes::evDescriptionAndBattleCry)
     {}
@@ -446,9 +492,11 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class SwitchViewPoint final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     bool new_viewpoint_is_firstperson;
     SwitchViewPoint():MapLinkEvent(MapEventTypes::evSwitchViewPoint)
     {}
@@ -462,9 +510,11 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class TargetChatChannelSelected final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     uint8_t m_chat_type;
     TargetChatChannelSelected():MapLinkEvent(MapEventTypes::evTargetChatChannelSelected)
     {}
@@ -478,10 +528,13 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class ChatReconfigure final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     int m_chat_top_flags;
+    // [[ev_def:field]]
     int m_chat_bottom_flags;
     ChatReconfigure():MapLinkEvent(MapEventTypes::evChatReconfigure)
     {}
@@ -496,9 +549,11 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class PowersDockMode final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     bool toggle_secondary_tray = 0;
 
     PowersDockMode():MapLinkEvent(MapEventTypes::evPowersDockMode)
@@ -514,11 +569,15 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class SwitchTray final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     uint32_t tray1_num = 0;
+    // [[ev_def:field]]
     uint32_t tray2_num = 0;
+    // [[ev_def:field]]
     uint32_t tray_unk1 = 0;
     SwitchTray():MapLinkEvent(MapEventTypes::evSwitchTray)
     {}
@@ -538,14 +597,21 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class SetKeybind final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     QString profile;
+    // [[ev_def:field]]
     uint32_t key_and_secondary;
+    // [[ev_def:field]]
     uint8_t key;
+    // [[ev_def:field]]
     uint32_t mods;
+    // [[ev_def:field]]
     QString command;
+    // [[ev_def:field]]
     bool is_secondary;
 
     SetKeybind():MapLinkEvent(MapEventTypes::evSetKeybind)
@@ -567,11 +633,15 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class RemoveKeybind final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     QString profile;
+    // [[ev_def:field]]
     uint32_t key;
+    // [[ev_def:field]]
     uint32_t mods;
     RemoveKeybind():MapLinkEvent(MapEventTypes::evRemoveKeybind)
     {}
@@ -587,6 +657,7 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class ResetKeybinds final : public MapLinkEvent
 {
 public:
@@ -602,9 +673,11 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class SelectKeybindProfile final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     QString profile;
     SelectKeybindProfile():MapLinkEvent(MapEventTypes::evSelectKeybindProfile)
     {}

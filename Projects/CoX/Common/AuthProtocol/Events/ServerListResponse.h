@@ -19,11 +19,14 @@ struct GameServerInfo
     uint8_t  online;
 };
 
+// [[ev_def:type]]
 class ServerListResponse : public AuthLinkEvent
 {
-    std::deque<GameServerInfo> m_serv_list;
-    uint8_t  m_preferred_server_idx;
 public:
+    // [[ev_def:field]]
+    std::deque<GameServerInfo> m_serv_list;
+    // [[ev_def:field]]
+    uint8_t  m_preferred_server_idx;
     ServerListResponse() : AuthLinkEvent(evServerListResponse)
     {}
     void set_server_list(const std::deque<GameServerInfo> &srv) {m_serv_list=srv;}

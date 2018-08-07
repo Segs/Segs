@@ -11,9 +11,11 @@
 #include "MapEvents.h"
 #include "MapLink.h"
 
+// [[ev_def:type]]
 class EntityInfoResponse final : public GameCommand
 {
 public:
+    // [[ev_def:field]]
     QString m_info_text;
     EntityInfoResponse (const QString &txt) : GameCommand(MapEventTypes::evEntityInfoResponse),m_info_text(txt) {}
     void serializefrom(BitStream &bs);
@@ -26,9 +28,11 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class EntityInfoRequest final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     int entity_idx;
     EntityInfoRequest():MapLinkEvent(MapEventTypes::evEntityInfoRequest)
     {}

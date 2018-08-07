@@ -13,6 +13,7 @@
 #include <QtCore/QString>
 #include <glm/vec3.hpp>
 
+// [[ev_def:type]]
 class PlaqueVisited : public MapLinkEvent
 {
 public:
@@ -22,6 +23,8 @@ public:
     void serializefrom(BitStream &src) override;
     void serializeto(BitStream &) const override;
 
+    // [[ev_def:field]]
     QString m_name;
+    // [[ev_def:field]]
     glm::vec3 m_pos;
 };

@@ -276,7 +276,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
     switch(ev->type())
     {
         case SEGS_EventTypes::evTimeout:
-            on_timeout(static_cast<TimerEvent *>(ev));
+            on_timeout(static_cast<Timeout *>(ev));
             break;
         case SEGS_EventTypes::evDisconnect:
             on_link_lost(ev);
@@ -684,7 +684,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         serializeToDb(e->m_entity_data,ent_data);
         // create the character from the data.
         //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
-        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.      
+        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.
         game_db->putq(new CreateNewCharacterRequest({char_data,ent_data, map_session.m_requested_slot_idx,
                                                      map_session.m_max_slots,map_session.m_client_id},
                                                     token,this));
@@ -744,7 +744,7 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
 }
 
 //! Handle instance-wide timers
-void MapInstance::on_timeout(TimerEvent *ev)
+void MapInstance::on_timeout(Timeout *ev)
 {
     // TODO: This should send 'ping' packets on all client links to which we didn't send
     // anything in the last time quantum

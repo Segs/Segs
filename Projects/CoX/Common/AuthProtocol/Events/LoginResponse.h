@@ -9,13 +9,21 @@
 #include <cstring>
 #include "AuthProtocol/AuthEvents.h"
 
+// [[ev_def:type]]
 class LoginResponse : public AuthLinkEvent
 {
-    uint8_t unkArray1[8];
-    uint8_t unkArray2[8];
-    uint32_t unk1, unk2, unk3;
 public:
-    LoginResponse() : AuthLinkEvent(evLoginResponse),unk1(0), unk2(0), unk3(0)
+    // [[ev_def:field]]
+    uint8_t unkArray1[8];
+    // [[ev_def:field]]
+    uint8_t unkArray2[8];
+    // [[ev_def:field]]
+    uint32_t unk1=0;
+    // [[ev_def:field]]
+    uint32_t unk2=0;
+    // [[ev_def:field]]
+    uint32_t unk3=0;
+    LoginResponse() : AuthLinkEvent(evLoginResponse)
     {
         memset(unkArray1,0,8);
         memset(unkArray2,0,8);

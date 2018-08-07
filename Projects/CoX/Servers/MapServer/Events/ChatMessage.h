@@ -13,12 +13,17 @@
 
 struct MapClientSession;
 
+// [[ev_def:type]]
 class ChatMessage : public GameCommand
 {
 public:
+    // [[ev_def:field]]
     QString         m_msg;
+    // [[ev_def:field]]
     MessageChannel  m_channel_type;
+    // [[ev_def:field]]
     int             m_source_player_id;
+    // [[ev_def:field]]
     int             m_target_player_id;
     virtual         ~ChatMessage() = default;
                     ChatMessage(MessageChannel t, const QString &msg) : GameCommand(MapEventTypes::evChatMessage),

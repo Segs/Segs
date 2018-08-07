@@ -8,10 +8,12 @@
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 
+// [[ev_def:type]]
 class DbError : public AuthLinkEvent
 {
-    uint8_t m_err_arr[8];
 public:
+    // [[ev_def:field]]
+    uint8_t m_err_arr[8];
     DbError() : AuthLinkEvent(evDbError)
     {}
     void init(EventProcessor *ev_src,const uint8_t *error_arr) {memcpy(m_err_arr,error_arr,8);m_event_source=ev_src;}

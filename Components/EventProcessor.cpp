@@ -28,7 +28,7 @@ int EventProcessor::handle_timeout( const ACE_Time_Value &current_time, const vo
     // if target is known
     if(timer_object->target())
     {
-        SEGSEvent *mb=new TimerEvent(current_time,timer_object->data(),this);
+        SEGSEvent *mb=new Timeout(current_time,timer_object->data(),this);
         // post a new event to it
         return timer_object->target()->putq(mb);
     }

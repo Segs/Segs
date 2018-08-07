@@ -49,8 +49,8 @@ public:
     }
     void    serializefrom(BitStream &src);
 
-protected:
+    // [[ev_def:field]]
     bool    m_fullupdate; //Forces a refresh of the email window
-
+    // [[ev_def:field]]
     QVector<EmailHeader> m_emails;
 };

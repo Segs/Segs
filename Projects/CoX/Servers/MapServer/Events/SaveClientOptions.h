@@ -9,9 +9,11 @@
 #include "MapEvents.h"
 #include "Common/GameData/clientoptions_definitions.h"
 
+// [[ev_def:type]]
 class SaveClientOptions final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     ClientOptions data;
     SaveClientOptions() : MapLinkEvent(MapEventTypes::evSaveClientOptions) {}
     void serializeto(BitStream &bs) const override;

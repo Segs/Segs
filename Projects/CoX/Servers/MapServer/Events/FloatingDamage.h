@@ -13,11 +13,15 @@
 
 #include <QtCore/QString>
 
+// [[ev_def:type]]
 class FloatingDamage final : public GameCommand
 {
 public:
+    // [[ev_def:field]]
     int whos_fault_was_it;
+    // [[ev_def:field]]
     int who_was_damaged;
+    // [[ev_def:field]]
     int damage_amount; // should be float?
     FloatingDamage(int source,int target,int amount) : GameCommand(MapEventTypes::evFloatingDamage),
         whos_fault_was_it(source),

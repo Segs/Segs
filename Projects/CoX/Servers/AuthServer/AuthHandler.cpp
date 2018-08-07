@@ -55,12 +55,12 @@ void AuthHandler::dispatch( SEGSEvent *ev )
             on_connect(static_cast<ConnectEvent *>(ev));
             break;
         case SEGS_EventTypes::evTimeout:
-            on_timeout(static_cast<TimerEvent *>(ev));
+            on_timeout(static_cast<Timeout *>(ev));
             break;
         case evReconnectAttempt:
             qWarning() << "Unhandled reconnect packet??";
             break;
-        case evLogin:
+        case evLoginRequest:
             on_login(static_cast<LoginRequest *>(ev));
             break;
         case evServerListRequest:
@@ -108,7 +108,7 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
     m_message_bus_endpoint.subscribe(Internal_EventTypes::evGameServerStatus);
 }
 
-void AuthHandler::on_timeout(TimerEvent *ev)
+void AuthHandler::on_timeout(Timeout *ev)
 {
     intptr_t timer_id = (intptr_t)ev->data();
     switch (timer_id) {
@@ -132,7 +132,7 @@ void AuthHandler::on_connect( ConnectEvent *ev )
     lnk->init_crypto(30206,seed);
     //qWarning("Crypto seed %08x", seed);
 
-    lnk->putq(new AuthorizationProtocolVersion(30206,seed));
+    lnk->putq(new AuthProtocolVersion(30206,seed));
 }
 
 void AuthHandler::on_disconnect(DisconnectEvent *ev)
@@ -299,8 +299,8 @@ void AuthHandler::on_login( LoginRequest *ev )
         lnk->putq(s_auth_error_unknown.shallow_copy());
         return;
     }
-    qDebug() << "User" << ev->m_data.login << "trying to login from" << lnk->peer_addr().get_host_addr();
-    if(strlen(ev->m_data.login)<=2)
+    qDebug() << "User" << ev->m_data.login.data() << "trying to login from" << lnk->peer_addr().get_host_addr();
+    if(strlen(ev->m_data.login.data())<=2)
     {
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;
@@ -319,7 +319,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     }
 
     RetrieveAccountRequest *request_event =
-        new RetrieveAccountRequest({ev->m_data.login, ev->m_data.password, 0}, sess_tok);
+        new RetrieveAccountRequest({ev->m_data.login.data(), ev->m_data.password.data(), 0}, sess_tok);
     request_event->src(this);
     auth_db_handler->putq(request_event);
     // here we will wait for db response, so here we're going to put the session on the read-to-reap list

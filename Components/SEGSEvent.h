@@ -66,13 +66,14 @@ virtual const char *    info();
 static  SEGSEvent       s_ev_finish;
 };
 
-class TimerEvent final: public SEGSEvent
+// [[ev_def:type]]
+class Timeout final: public SEGSEvent
 {
     ACE_Time_Value          m_arrival_time;
     void *                  m_data;
 
 public:
-                            TimerEvent(const ACE_Time_Value &time, void *dat,EventProcessor *source)
+                            Timeout(const ACE_Time_Value &time, void *dat,EventProcessor *source)
                                 : SEGSEvent(SEGS_EventTypes::evTimeout,source), m_arrival_time(time), m_data(dat)
                             {
                             }

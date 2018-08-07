@@ -8,10 +8,11 @@
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 
+// [[ev_def:type]]
 class ServerSelectResponse : public AuthLinkEvent
 {
 public:
-    ServerSelectResponse():AuthLinkEvent(evServerSelectResponse),db_server_cookie(~0U),m_cookie(~0U),m_unk2(0xFF)
+    ServerSelectResponse():AuthLinkEvent(evServerSelectResponse)
     {}
     ServerSelectResponse(EventProcessor *ev_src,uint32_t cookie,uint32_t dbcookie) : AuthLinkEvent(evServerSelectResponse,ev_src),
         db_server_cookie(dbcookie),
@@ -41,7 +42,10 @@ public:
         m_unk2           = 0;
         m_event_source   = ev_src;
     }
-    uint32_t db_server_cookie;
-    uint32_t m_cookie;
-    uint8_t m_unk2;
+    // [[ev_def:field]]
+    uint32_t db_server_cookie=~0U;
+    // [[ev_def:field]]
+    uint32_t m_cookie = ~0U;
+    // [[ev_def:field]]
+    uint8_t m_unk2 = 0xFF;
 };

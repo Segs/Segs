@@ -18,6 +18,7 @@ class BitStream;
 class MapRef;
 typedef CRUDLink_Event MapLinkEvent; //<MapLink>
 
+// [[ev_def:type]]
 class SceneEvent : public MapLinkEvent
 {
 public:
@@ -26,20 +27,35 @@ public:
     void    serializefrom(BitStream &src);
     void    serializeto(BitStream &tgt) const;
 
+    // [[ev_def:field]]
     QString m_map_desc;
+    // [[ev_def:field]]
     uint32_t ref_count;
+    // [[ev_def:field]]
     int ref_crc;
+    // [[ev_def:field]]
     int var_4;
+    // [[ev_def:field]]
     bool m_outdoor_mission_map;
+    // [[ev_def:field]]
     bool current_map_flags;
+    // [[ev_def:field]]
     size_t num_base_elems;
+    // [[ev_def:field]]
     int undos_PP;
+    // [[ev_def:field]]
     bool is_new_world;
+    // [[ev_def:field]]
     std::vector<QString> m_trays;
+    // [[ev_def:field]]
     std::vector<uint32_t> m_crc;
+    // [[ev_def:field]]
     std::vector<MapRef> m_refs;
+    // [[ev_def:field]]
     int unkn1;
+    // [[ev_def:field]]
     int m_map_number;
+    // [[ev_def:field]]
     bool unkn2;
 protected:
     void getGrpElem(BitStream &src,int idx);

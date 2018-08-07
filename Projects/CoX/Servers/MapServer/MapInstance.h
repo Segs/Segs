@@ -92,7 +92,7 @@ protected:
         void on_scene_request(class SceneRequest *ev);
         void on_entities_request(class EntitiesRequest *ev);
         void on_create_map_entity(class NewEntity *ev);
-        void on_timeout(TimerEvent *ev);
+        void on_timeout(Timeout *ev);
         void on_combine_boosts(class CombineRequest *);
         void on_input_state(InputState *st);
         void on_idle(IdleEvent *ev);

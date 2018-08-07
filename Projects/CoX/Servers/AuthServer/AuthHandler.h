@@ -88,7 +88,7 @@ protected:
 
     //////////////////////////////////////////////////////////////////////////
     // internal events
-    void        on_timeout(TimerEvent *ev);
+    void        on_timeout(Timeout *ev);
     //////////////////////////////////////////////////////////////////////////
     // Message bus subscriptions
     void        on_server_status_change(GameServerStatusMessage *ev);

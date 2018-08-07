@@ -14,7 +14,7 @@
 class MapRef
 {
 public:
-    int         m_idx;
+    int         m_idx=0;
     bool        reduced_transform;
     glm::mat4x3 m_matrix;
     TransformStruct m_transforms;
@@ -31,7 +31,7 @@ public:
         reduced_transform=true;
         m_transforms=TransformStruct(pos,rot,glm::vec3(),true,true,false);
     }
-    MapRef(): m_idx(0),m_name(""){}
+    MapRef(): m_name(""){}
     void serializefrom(BitStream &src)
     {
         m_idx = src.GetPackedBits(1);

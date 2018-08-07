@@ -13,10 +13,13 @@
 #include "MapEvents.h"
 #include "MapLink.h"
 
+// [[ev_def:type]]
 class TeamLooking final : public GameCommand
 {
 public:
+    // [[ev_def:field]]
     uint32_t m_num = 0;
+    // [[ev_def:field]]
     std::vector<LFGMember> m_list;
     TeamLooking(std::vector<LFGMember> list) : GameCommand(MapEventTypes::evTeamLooking),
         m_num(list.size()),
