@@ -32,7 +32,6 @@ public:
 
         for(int i=0; i<m_list.m_friends_count; ++i)
         {
-            qDebug() << "Friend" << m_list.m_friends[i].m_name << " is " << m_list.m_friends[i].m_online_status;
             bs.StoreBits(1,m_list.m_has_friends); // if false, client will skip this iteration
             bs.StorePackedBits(1,m_list.m_friends[i].m_db_id);
 
