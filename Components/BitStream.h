@@ -18,6 +18,7 @@ Description: The BitStream class allows it's user to manipulate data in
 
 #include "Buffer.h"
 
+#include <cereal/macros.hpp>
 #include <cstdint>
 
 #ifdef CUSTOM_CLIENT_CODE
@@ -29,6 +30,11 @@ Description: The BitStream class allows it's user to manipulate data in
 class QString;
 class BitStream : public GrowingBuffer
 {
+    template <class Archive>
+    friend void CEREAL_SAVE_FUNCTION_NAME( Archive & ar, const BitStream &buf );
+    template <class Archive>
+    friend void CEREAL_LOAD_FUNCTION_NAME( Archive & ar, BitStream &buf );
+
 public:
 
 explicit        BitStream(size_t size);

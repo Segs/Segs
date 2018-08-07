@@ -3,6 +3,7 @@ if(ENABLE_SCRIPTING_ENGINE_MRUBY)
 endif()
 
 SET(target_CPP
+    serialization_types.cpp
     BitStream.cpp
     Buffer.cpp
     ConfigExtension.cpp
@@ -15,6 +16,9 @@ SET(target_CPP
     PasswordHasher.cpp
 )
 SET(target_INCLUDE
+    Colors.h
+    serialization_common.h
+    serialization_types.h
     BitStream.h
     Buffer.h
     ConfigExtension.h
@@ -39,8 +43,11 @@ INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 add_library(SEGS_Components STATIC ${target_SOURCES} )
 add_dependencies(SEGS_Components ACE_BUILD)
 
-target_link_libraries(SEGS_Components Qt5::Core)
-
+target_link_libraries(SEGS_Components PUBLIC Qt5::Core)
+target_link_libraries(SEGS_Components INTERFACE ace_IMP)
+IF(MINGW)
+    target_link_libraries(SEGS_Components INTERFACE ws2_32)
+ENDIF()
 
 
 

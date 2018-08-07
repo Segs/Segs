@@ -16,7 +16,7 @@
 #include "Entity.h"
 #include "Costume.h"
 #include "Friend.h"
-#include "GameData/serialization_common.h"
+#include "serialization_common.h"
 #include "Servers/GameDatabase/GameDBSyncEvents.h"
 #include "GameData/chardata_serializers.h"
 #include "GameData/entitydata_serializers.h"
