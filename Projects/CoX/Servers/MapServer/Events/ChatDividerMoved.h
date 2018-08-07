@@ -11,9 +11,11 @@
 
 class QString;
 
+// [[ev_def:type]]
 class ChatDividerMoved : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     float m_position;
     ChatDividerMoved() : MapLinkEvent(MapEventTypes::evChatDividerMoved) {}
 

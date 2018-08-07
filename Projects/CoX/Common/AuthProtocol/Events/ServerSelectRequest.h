@@ -8,10 +8,11 @@
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 
+// [[ev_def:type]]
 class ServerSelectRequest : public AuthLinkEvent
 {
 public:
-    ServerSelectRequest() : AuthLinkEvent(evServerSelectRequest),m_server_id(0)
+    ServerSelectRequest() : AuthLinkEvent(evServerSelectRequest)
     {}
     void init(EventProcessor *ev_src,uint8_t server_id)
     {
@@ -31,6 +32,8 @@ public:
         buf.uPutBytes(unkLoginArray, sizeof(unkLoginArray));
         buf.uPut(m_server_id);
     }
+    // [[ev_def:field]]
     uint8_t unkLoginArray[8];
-    uint8_t m_server_id;
+    // [[ev_def:field]]
+    uint8_t m_server_id = 0;
 };

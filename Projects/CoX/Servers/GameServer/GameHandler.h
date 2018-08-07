@@ -89,7 +89,7 @@ protected:
         void        on_check_links();
         void        reap_stale_links();
         void        report_service_status();
-        void        on_timeout(TimerEvent *ev);
+        void        on_timeout(Timeout *ev);
 
         void        on_game_db_error(GameDbErrorMessage *ev);
         void        on_account_data(GameAccountResponse *ev);

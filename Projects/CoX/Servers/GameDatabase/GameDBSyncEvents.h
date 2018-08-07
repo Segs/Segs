@@ -92,6 +92,7 @@ struct CharacterUpdateData
     uint32_t m_supergroup_id;
     uint32_t m_id;
 };
+// [[ev_def:macro]]
 ONE_WAY_MESSAGE(CharacterUpdate)
 
 struct CostumeUpdateData
@@ -101,6 +102,7 @@ struct CostumeUpdateData
     int m_costume_index;
     uint32_t m_skin_color;
 };
+// [[ev_def:macro]]
 ONE_WAY_MESSAGE(CostumeUpdate)
 
 struct RemoveCharacterRequestData
@@ -113,6 +115,7 @@ struct RemoveCharacterResponseData
 {
     int slot_idx;
 };
+// [[ev_def:macro]]
 TWO_WAY_MESSAGE(RemoveCharacter)
 
 struct GameAccountRequestData
@@ -185,6 +188,11 @@ struct GameAccountResponseData
         assert(idx<m_characters.size());
         return m_characters[idx];
     }
+    const GameAccountResponseCharacterData &get_character(size_t idx) const
+    {
+        assert(idx<m_characters.size());
+        return m_characters[idx];
+    }
     int8_t next_free_slot_idx() const
     {
         int8_t res = 0;
@@ -198,6 +206,7 @@ struct GameAccountResponseData
     }
     bool valid() const { return m_game_server_acc_id!=0;}
 };
+// [[ev_def:macro]]
 TWO_WAY_MESSAGE(GameAccount)
 
 struct CreateNewCharacterRequestData
@@ -214,6 +223,7 @@ struct CreateNewCharacterResponseData
     uint32_t m_char_id;
     int slot_idx; // if -1 , no more free slots are left ?
 };
+// [[ev_def:macro]]
 TWO_WAY_MESSAGE(CreateNewCharacter)
 
 struct GetEntityRequestData
@@ -226,6 +236,7 @@ struct GetEntityResponseData
     uint32_t m_supergroup_id;
     QString m_ent_data;
 };
+// [[ev_def:macro]]
 TWO_WAY_MESSAGE(GetEntity)
 
 struct GetEntityByNameRequestData
@@ -238,6 +249,7 @@ struct GetEntityByNameResponseData
     uint32_t m_supergroup_id;
     QString m_ent_data;
 };
+// [[ev_def:macro]]
 TWO_WAY_MESSAGE(GetEntityByName)
 
 struct WouldNameDuplicateRequestData
@@ -249,12 +261,14 @@ struct WouldNameDuplicateResponseData
 {
     bool m_would_duplicate;
 };
+// [[ev_def:macro]]
 TWO_WAY_MESSAGE(WouldNameDuplicate)
 
 struct GameDbErrorData
 {
     QString message;
 };
+// [[ev_def:macro]]
 ONE_WAY_MESSAGE(GameDbError)
 
 struct SetClientOptionsData
@@ -263,6 +277,7 @@ struct SetClientOptionsData
     QString m_options;
     QString m_keybinds;
 };
+// [[ev_def:macro]]
 ONE_WAY_MESSAGE(SetClientOptions)
 
 struct PlayerUpdateData
@@ -270,6 +285,7 @@ struct PlayerUpdateData
     uint32_t m_id;
     QString m_player_data;
 };
+// [[ev_def:macro]]
 ONE_WAY_MESSAGE(PlayerUpdate)
 
 #undef ONE_WAY_MESSAGE

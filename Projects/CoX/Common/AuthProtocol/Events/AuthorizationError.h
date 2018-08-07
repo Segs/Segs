@@ -8,11 +8,13 @@
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 
+// [[ev_def:type]]
 class AuthorizationError : public AuthLinkEvent
 {
-    uint32_t m_error_type;
 public:
-    AuthorizationError() : AuthLinkEvent(evAuthorizationError),m_error_type(0)
+    // [[ev_def:field]]
+    uint32_t m_error_type = 0;
+    AuthorizationError() : AuthLinkEvent(evAuthorizationError)
     {}
     AuthorizationError(uint32_t err) : AuthLinkEvent(evAuthorizationError),m_error_type(err)
     {}

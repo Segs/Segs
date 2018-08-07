@@ -61,7 +61,7 @@ void GameHandler::dispatch( SEGSEvent *ev )
     switch(ev->type())
     {
     case SEGS_EventTypes::evTimeout:
-        on_timeout(static_cast<TimerEvent *>(ev));
+        on_timeout(static_cast<Timeout *>(ev));
         break;
     case SEGS_EventTypes::evDisconnect: // link layer tells us that a link is not responsive/dead
         on_link_lost(ev);
@@ -96,7 +96,7 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case GameEventTypes::evUpdateServer:
         on_update_server(static_cast<UpdateServer *>(ev));
         break;
-    case GameEventTypes::evMapAddrRequest:
+    case GameEventTypes::evMapServerAddrRequest:
         on_map_req(static_cast<MapServerAddrRequest *>(ev));
         break;
     case GameEventTypes::evDeleteCharacter:
@@ -145,7 +145,7 @@ void GameHandler::on_account_data(GameAccountResponse *ev)
 
     m_session_store.add_to_active_sessions(&session);
     CharacterSlots *slots_event=new CharacterSlots;
-    slots_event->set_account_data(&session.m_game_account);
+    slots_event->m_data = session.m_game_account;
     session.link()->putq(slots_event);
 }
 
@@ -192,7 +192,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
     GameSession &session = m_session_store.session_from_event(ev);
     assert(session.m_game_account.valid());
 
-    ev->src()->putq(new CharacterResponse(this,ev->m_index,&session.m_game_account));
+    ev->src()->putq(new CharacterResponse(this,ev->m_index,session.m_game_account));
 
     // TODO: Do we update database here? issue #271
 }
@@ -230,7 +230,7 @@ void GameHandler::report_service_status()
                                                  m_server->getMaxPlayers(),m_server->getId(),true}));
 }
 
-void GameHandler::on_timeout(TimerEvent *ev)
+void GameHandler::on_timeout(Timeout *ev)
 {
     // TODO: This should send 'ping' packets on all client links to which we didn't send
     // anything in the last time quantum
@@ -313,7 +313,7 @@ void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)
     GameSession &session = m_session_store.session_from_event(ev);
     GameAccountResponseCharacterData& selected_slot = session.m_game_account.get_character(ev->m_data.slot_idx);
     selected_slot.reset();
-    session.link()->putq(new DeletionAcknowledged);
+    session.link()->putq(new DeleteAcknowledged);
 }
 
 void GameHandler::on_delete_character(DeleteCharacter *ev)

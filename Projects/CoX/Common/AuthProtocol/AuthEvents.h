@@ -25,29 +25,32 @@ public:
 
 enum AuthEventTypes
 {
-    evContinue=SEGS_EventTypes::evLAST_EVENT,
+    evSendLeftovers=SEGS_EventTypes::evLAST_EVENT,
     evAuthProtocolVersion,
     evAuthorizationError,
     evServerSelectRequest,
     evDbError,
     evReconnectAttempt,
-    evLogin,
+    evLoginRequest,
     evLoginResponse,
     evServerListResponse,
     evServerListRequest,
     evServerSelectResponse
 
 };
-class ContinueEvent : public SEGSEvent // this event is posted from AuthLink to AuthLink, it means there are leftover unsent bytes.
+// [[ev_def:type]]
+class SendLeftovers : public SEGSEvent // this event is posted from AuthLink to AuthLink, it means there are leftover unsent bytes.
 {
 public:
-        ContinueEvent() : SEGSEvent(evContinue)
+        SendLeftovers() : SEGSEvent(evSendLeftovers)
         {}
 };
+// [[ev_def:type]]
 class ReconnectAttempt : public AuthLinkEvent
 {
-    uint8_t m_arr[8];
 public:
+    // [[ev_def:field]]
+    uint8_t m_arr[8];
     ReconnectAttempt() : AuthLinkEvent(evReconnectAttempt)
     {}
     void init(EventProcessor *ev_src,const uint8_t *auth_arr) {memcpy(m_arr,auth_arr,8);m_event_source=ev_src;}

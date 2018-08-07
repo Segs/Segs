@@ -115,7 +115,7 @@ SEGSEvent * AuthLink::bytes_to_event()
             continue;
         }
         // A catch !
-        if(evt->type() == evLogin) // Is tis' on of those pesky AuthLogin Packets ?!!?
+        if(evt->type() == evLoginRequest) // Is tis' on of those pesky AuthLogin Packets ?!!?
         {
             // Bring out the Codec Cannon, an' load it with Des
             m_codec.DesDecode(tmp+1,30); // It'll crack it's chitinous armor
@@ -191,7 +191,7 @@ int AuthLink::handle_output( ACE_HANDLE /*= ACE_INVALID_HANDLE*/ )
             ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Error sent, closing connection\n")));
             return -1;
         }
-        if(ev->type()==evContinue) // we have asked ourselves to send leftovers
+        if(ev->type()==evSendLeftovers) // we have asked ourselves to send leftovers
         {
             assert(m_unsent_bytes_storage.GetReadableDataSize() > 0); // be sure we have some
         }
@@ -230,10 +230,10 @@ void AuthLink::encode_buffer(const AuthLinkEvent *ev, size_t start)
     ev->serializeto(m_unsent_bytes_storage);
     // calculate the number of stored bytes, and set it in packet_size,
     // -1 because opcode is not counted toward packet size
-    *packet_size = (m_unsent_bytes_storage.GetReadableDataSize() - actual_packet_start) - 1; 
+    *packet_size = (m_unsent_bytes_storage.GetReadableDataSize() - actual_packet_start) - 1;
 
     // additional encryption of login details
-    if(ev->type()==evLogin)
+    if(ev->type()==evLoginRequest)
         m_codec.DesCode(m_unsent_bytes_storage.read_ptr()+actual_packet_start+1,30); //only part of packet is encrypted with des
 
     // every packet, but the authorization protocol, is encrypted
@@ -253,7 +253,7 @@ bool AuthLink::send_buffer()
     }
     if (m_unsent_bytes_storage.GetReadableDataSize() > 0) // and still there is something left
     {
-        ungetq(new ContinueEvent);
+        ungetq(new SendLeftovers);
         return false; // couldn't send all
     }
     return true;

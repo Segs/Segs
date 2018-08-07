@@ -59,12 +59,14 @@ struct CreateAccountData
     QString password;
     int access_level;
 };
+// [[ev_def:macro]]
 ONE_WAY_MESSAGE(CreateAccount)
 
 struct AuthDbErrorData
 {
     QString message;
 };
+// [[ev_def:macro]]
 ONE_WAY_MESSAGE(AuthDbError)
 
 struct RetrieveAccountResponseData
@@ -88,6 +90,7 @@ struct RetrieveAccountRequestData
     QString  m_password;
     uint32_t m_id; // if this is 0, the lookup will be done by login, otherwise by id
 };
+// [[ev_def:macro]]
 TWO_WAY_MESSAGE(RetrieveAccount)
 
 struct ValidatePasswordRequestData
@@ -100,6 +103,7 @@ struct ValidatePasswordResponseData
 {
     bool m_valid_password;
 };
+// [[ev_def:macro]]
 TWO_WAY_MESSAGE(ValidatePassword)
 
 #undef ONE_WAY_MESSAGE

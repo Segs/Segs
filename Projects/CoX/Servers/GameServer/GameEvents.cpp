@@ -49,7 +49,7 @@ void UpdateServer::serializeto( BitStream &tgt ) const
     tgt.StorePackedBits(1, m_build_date);
     tgt.StorePackedBits(1, 0); // flags
     tgt.StoreString(currentVersion);
-    tgt.StoreBitArray(clientInfo,sizeof(clientInfo)*8);
+    tgt.StoreBitArray(clientInfo.data(),clientInfo.size()*8);
     tgt.StorePackedBits(1, authID);
     tgt.StoreBits(32, authCookie);
     tgt.StoreString(accountName);
@@ -60,7 +60,7 @@ void UpdateServer::serializefrom( BitStream &src )
     m_build_date = src.GetPackedBits(1);
     /*uint32_t t =*/ src.GetPackedBits(1);
     src.GetString(currentVersion);
-    src.GetBitArray(clientInfo,sizeof(clientInfo)*8);
+    src.GetBitArray(clientInfo.data(),clientInfo.size()*8);
     authID = src.GetPackedBits(1);
     authCookie = src.GetBits(32);
     src.GetString(accountName);
@@ -80,14 +80,14 @@ void GameEntryError::serializefrom( BitStream &tgt )
 void CharacterSlots::serializeto( BitStream &tgt ) const
 {
     tgt.StorePackedBits(1, 2); //opcode
-    tgt.StorePackedBits(1,static_cast<uint32_t>(m_data->m_max_slots));
-    assert(m_data->m_max_slots>0);
-    for(int i=0; i<m_data->m_max_slots; i++)
+    tgt.StorePackedBits(1,static_cast<uint32_t>(m_data.m_max_slots));
+    assert(m_data.m_max_slots>0);
+    for(int i=0; i<m_data.m_max_slots; i++)
     {
         Character converted;
         PlayerData player_data;
         EntityData entity_data;
-        toActualCharacter(m_data->m_characters[i],converted,player_data, entity_data);
+        toActualCharacter(m_data.m_characters[i],converted,player_data, entity_data);
         converted.serializetoCharsel(tgt, getEntityDisplayMapName(entity_data));
     }
     //tgt.StoreBitArray(m_clientinfo,128);
@@ -111,7 +111,7 @@ void UpdateCharacter::serializefrom( BitStream &bs )
 
 void CharacterResponse::serializeto( BitStream &bs ) const
 {
-    GameAccountResponseCharacterData indexed_character(m_data->get_character(m_index));
+    GameAccountResponseCharacterData indexed_character(m_data.get_character(m_index));
     Character converted;
     PlayerData player_data;
     EntityData entity_data;
@@ -136,7 +136,7 @@ void CharacterResponse::serializefrom( BitStream &bs )
     assert(!"TODO");
 }
 
-void DeletionAcknowledged::serializeto( BitStream &tgt ) const
+void DeleteAcknowledged::serializeto( BitStream &tgt ) const
 {
     tgt.StorePackedBits(1,5); // opcode 5
 }

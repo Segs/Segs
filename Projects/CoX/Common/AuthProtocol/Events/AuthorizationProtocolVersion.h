@@ -8,14 +8,18 @@
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 
-class AuthorizationProtocolVersion : public AuthLinkEvent
+
+// [[ev_def:type]]
+class AuthProtocolVersion : public AuthLinkEvent
 {
-        uint32_t        m_seed;
-        uint32_t        m_proto_vers;
 public:
-                        AuthorizationProtocolVersion() : AuthLinkEvent(evAuthProtocolVersion),m_seed(1),m_proto_vers(0)
+        // [[ev_def:field]]
+        uint32_t        m_seed = 1;
+        // [[ev_def:field]]
+        uint32_t        m_proto_vers = 0;
+                        AuthProtocolVersion() : AuthLinkEvent(evAuthProtocolVersion)
                         {}
-                        AuthorizationProtocolVersion(uint32_t version_id,uint32_t seed) :
+                        AuthProtocolVersion(uint32_t version_id,uint32_t seed) :
                             AuthLinkEvent(evAuthProtocolVersion),
                             m_seed(seed),
                             m_proto_vers(version_id)

@@ -48,7 +48,7 @@ private:
                 /// \brief unsubscribe from all events ( type == ALL_EVENTS )
                 ///
         void    unsubscribe(uint32_t type,MessageBusEndpoint *);
-        void    on_timer_event(TimerEvent *tmr);
+
         void    dispatch(SEGSEvent *ev) override;
                 ///
                 /// \brief do_publish will locate all handlers ( catch-all, and event specific ), and send message copies to them.

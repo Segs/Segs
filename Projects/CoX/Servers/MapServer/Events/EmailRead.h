@@ -10,6 +10,8 @@
 
 #include <QtCore/QString>
 
+
+// [[ev_def:type]]
 class EmailRead final : public GameCommand
 {
 public:
@@ -28,9 +30,12 @@ public:
 
     void    serializefrom(BitStream &src);
 
-protected:
+    // [[ev_def:field]]
     int m_id;
+    // [[ev_def:field]]
     QString m_message;
+    // [[ev_def:field]]
     int m_count = 1; //Doesn't do anything in Issue 0, seemingly, so hardcoding as 1
+    // [[ev_def:field]]
     QString m_recipient; //Possible misnamed variable, as this is actually the sender in the email's read tab
 };

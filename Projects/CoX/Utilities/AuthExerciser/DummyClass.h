@@ -21,7 +21,7 @@ public:
 
 protected:
     void        onConnect(class ConnectEvent * ev);
-    void        onServerVersion(class AuthorizationProtocolVersion * ev);
+    void        onServerVersion(class AuthProtocolVersion * ev);
     void        onLoginResponse(class LoginResponse *ev);
     void        onAuthorizationError(class AuthorizationError * ev);
     void        onServerListResponse(class ServerListResponse * ev);

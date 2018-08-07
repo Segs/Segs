@@ -13,10 +13,13 @@ class QString;
 
 enum class MessageChannel : int;
 
+// [[ev_def:type]]
 class InfoMessageCmd : public GameCommand
 {
 public:
+    // [[ev_def:field]]
     QString         m_msg;
+    // [[ev_def:field]]
     MessageChannel  m_channel_type;
     int             m_target_player_id;
     virtual         ~InfoMessageCmd() = default;

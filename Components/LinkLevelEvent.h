@@ -10,6 +10,7 @@
 #include <ace/INET_Addr.h>
 #include "SEGSEvent.h"
 
+// [[ev_def:type]]
 class ConnectEvent : public SEGSEvent
 {
 public:
@@ -23,11 +24,14 @@ public:
     {
         assert(ev_src);
     }
+    // [[ev_def:field]]
     ACE_INET_Addr src_addr;
 };
+// [[ev_def:type]]
 class DisconnectEvent : public SEGSEvent
 {
 public:
+    // [[ev_def:field]]
     uint64_t m_session_token;
     DisconnectEvent(uint64_t token) : SEGSEvent(SEGS_EventTypes::evDisconnect,nullptr),m_session_token(token)
     {

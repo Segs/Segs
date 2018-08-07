@@ -13,9 +13,11 @@
 
 #include <QtCore/QString>
 
+// [[ev_def:type]]
 class StandardDialogCmd final : public GameCommand
 {
 public:
+    // [[ev_def:field]]
     QString     m_msg;
                 StandardDialogCmd(QString msg) : GameCommand(MapEventTypes::evStandardDialogCmd),m_msg(msg)
                 {

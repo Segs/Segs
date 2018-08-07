@@ -8,10 +8,11 @@
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 
+// [[ev_def:type]]
 class ServerListRequest : public AuthLinkEvent
 {
 public:
-    ServerListRequest() : AuthLinkEvent(evServerListRequest),unk1(0xFF)
+    ServerListRequest() : AuthLinkEvent(evServerListRequest)
     {}
     void serializeto(GrowingBuffer &buf) const
     {
@@ -27,6 +28,8 @@ public:
         buf.uGet(unk1);
     }
 
+    // [[ev_def:field]]
     uint8_t unkArrayFromLoginResponse[8];
-    uint8_t unk1;
+    // [[ev_def:field]]
+    uint8_t unk1=0xFF;
 };

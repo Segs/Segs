@@ -9,9 +9,11 @@
 #include "GameCommandList.h"
 #include "Logging.h"
 
+// [[ev_def:type]]
 class SidekickOffer final : public GameCommand
 {
 public:
+    // [[ev_def:field]]
     uint32_t m_db_id;
             SidekickOffer(uint32_t &db_id) : GameCommand(MapEventTypes::evSidekickOffer),
                 m_db_id(db_id)

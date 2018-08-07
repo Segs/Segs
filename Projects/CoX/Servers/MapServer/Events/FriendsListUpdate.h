@@ -13,9 +13,11 @@
 #include "MapEvents.h"
 #include "MapLink.h"
 
+// [[ev_def:type]]
 class FriendsListUpdate final : public GameCommand
 {
 public:
+    // [[ev_def:field]]
     FriendsList *m_list;
     FriendsListUpdate(FriendsList *friends_list) : GameCommand(MapEventTypes::evFriendListUpdated),
         m_list(friends_list)
