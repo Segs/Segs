@@ -12,7 +12,8 @@
 
 enum FriendHandlerEventTypes : uint32_t
 {
-    evSendFriendList = Internal_EventTypes::evLAST_EVENT
+    evSendFriendList = Internal_EventTypes::evLAST_EVENT,
+    evSendNotifyFriend
 };
 
 #define ONE_WAY_MESSAGE(name)\
@@ -26,7 +27,14 @@ struct SendFriendListData
 {
     uint64_t m_session_token;
     FriendsList m_friendlist;
-    std::set<int> m_players_to_notify;
 };
 
 ONE_WAY_MESSAGE(SendFriendList)
+
+struct SendNotifyFriendData
+{
+    uint64_t m_connected_token; //session of player who connected
+    uint64_t m_notify_token;    //session of player to notify
+};
+
+ONE_WAY_MESSAGE(SendNotifyFriend)

@@ -47,7 +47,8 @@ void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
     //but won't do any harm.  Inefficient though.
     /*
      * Iterate over the friends list, and put each friend id as a key,
-     * and push the current character id into the set value
+     * and push the current character id into the set value.
+     * We don't have to worry about duplicates because we're using a set.
      */
     for(uint i=0; i<m_friendslist.m_friends.size(); i++){
         s_friend_map[m_friendslist.m_friends[i].m_db_id].insert(m_char_id);
@@ -69,7 +70,7 @@ void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
     EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
                 s_map_info_map[m_char_id].server_id, s_map_info_map[m_char_id].instance_id);
     tgt->putq(new SendFriendListMessage({s_map_info_map[m_char_id].session_token,
-                                        m_friendslist, s_friend_map[m_char_id]},s_map_info_map[m_char_id].session_token));
+                                        m_friendslist},s_map_info_map[m_char_id].session_token));
 }
 
 void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
@@ -77,34 +78,31 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
     //A player has connected, we need to notify all the people that have added this character as a friend
     uint32_t &m_char_id = msg->m_data.m_char_id;
 
-    //Update this player/character's online status
-    s_online_map[m_char_id] = true;
-
-    EventProcessor *tgt = HandlerLocator::getGame_DB_Handler(s_game_server_id);
-    //Iterate over map and update friends list of all people who have added this character
-    for(auto const& val : s_friend_map[m_char_id])
-    {
-        //We need to notify all the people who added this player (if they're online)
-        if(is_online(val)){
-            qDebug() << "Hey char id " << val << ", cid " << m_char_id << " just logged on";
-            uint32_t friend_id = val;
-            tgt->putq(new GetPlayerFriendsRequest({friend_id},msg->session_token(),this));
-        }
-
-        //Looks like we'll need a MessageHandler to do this part?
-        /*
-        char buf[256];
-        std::string welcome_msg = std::string("Your friend logged on! ");
-        welcome_msg += buf;
-        sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),&session);
-        */
-    }
-
     //Store the map instance ID so that we know where to send the constructed FriendsList
     uint64_t session_token = msg->m_data.m_session;
     uint8_t server_id = msg->m_data.m_server_id;
     int instance_id = msg->m_data.m_sub_server_id;
     s_map_info_map[m_char_id] = MapInfo{session_token, server_id, instance_id};
+
+    //Update this player/character's online status
+    s_online_map[m_char_id] = true;
+
+    EventProcessor *tgt = HandlerLocator::getGame_DB_Handler(s_game_server_id);
+
+    EventProcessor *inst_tgt = HandlerLocator::getMapInstance_Handler(
+                s_map_info_map[m_char_id].server_id, s_map_info_map[m_char_id].instance_id);
+    //Iterate over map and update friends list of all people who have added this character
+    for(auto const& val : s_friend_map[m_char_id])
+    {
+        //We need to notify all the people who added this player (if they're online)
+        if(is_online(val)){
+            uint32_t friend_id = val;
+            tgt->putq(new GetPlayerFriendsRequest({friend_id},msg->session_token(),this));
+            inst_tgt->putq(new SendNotifyFriendMessage({s_map_info_map[m_char_id].session_token,
+                                                        s_map_info_map[friend_id].session_token},
+                                                       s_map_info_map[friend_id].session_token));
+        }
+    }
 
     //Also read this player's friend list to see who they've added
     //To do this, we send a GetFriendsListRequest to GameDBSyncHandler
