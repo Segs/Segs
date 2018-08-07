@@ -13,7 +13,9 @@
 #include "keybind_serializers.h"
 #include "keybind_definitions.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
+#include "Logging.h"
 #include "DataStorage.h"
 
 namespace

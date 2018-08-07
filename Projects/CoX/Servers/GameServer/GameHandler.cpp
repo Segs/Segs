@@ -17,12 +17,13 @@
 #include "Servers/MessageBus.h"
 #include "GameData/chardata_serializers.h"
 #include "Common/Servers/InternalEvents.h"
-#include "GameData/serialization_common.h"
 #include "GameData/entitydata_serializers.h"
 #include "GameLink.h"
 #include "GameServer.h"
 #include "NetStructures/Character.h"
 #include "SEGSTimer.h"
+#include "serialization_common.h"
+#include "serialization_types.h"
 #include "MapServer/DataHelpers.h"
 
 static const uint32_t supported_version=20040422;

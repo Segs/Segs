@@ -15,6 +15,7 @@
 #include "chardata_definitions.h"
 #include "DataStorage.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 #include "attrib_serializers.h"
 #include <QDebug>
 

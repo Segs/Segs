@@ -15,6 +15,7 @@
 #include "clientoptions_definitions.h"
 #include "DataStorage.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
 const constexpr uint32_t ClientOptions::class_version;
 // register Client Options class version

@@ -2,7 +2,7 @@
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/MessageBus.h"
 #include "Common/Servers/InternalEvents.h"
-#include "GameData/serialization_common.h"
+#include "serialization_common.h"
 #include "GameDBSyncEvents.h"
 #include "Character.h"
 #include "GameData/chardata_serializers.h"
