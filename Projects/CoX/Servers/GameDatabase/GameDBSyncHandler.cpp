@@ -151,4 +151,5 @@ void GameDBSyncHandler::on_get_player_friends(GetPlayerFriendsRequest *ev){
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 }
+
 //! @}

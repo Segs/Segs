@@ -326,6 +326,7 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     sendKeybinds(player_data.m_keybinds,bs);
     sendOptions(player_data.m_options,false,bs);
     PUTDEBUG("before friend list");
+    qDebug() << "ER friend list";
     player_char.sendFriendList(bs);
 }
 

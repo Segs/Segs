@@ -57,7 +57,8 @@ void addFriend(Entity &src, Entity &tgt)
     if(logFriends().isDebugEnabled())
         dumpFriends(src);
 
-    sendFriendsListUpdate(&src, src_data); // Send FriendsListUpdate
+    FriendsList flist = *src_data;
+    sendFriendsListUpdate(&src, flist); // Send FriendsListUpdate
 }
 
 void removeFriend(Entity &src, Entity &tgt)
@@ -89,8 +90,8 @@ void removeFriend(Entity &src, Entity &tgt)
     qCDebug(logFriends).noquote() << msg;
     messageOutput(MessageChannel::FRIENDS, msg, src);
 
-    // Send FriendsListUpdate
-    sendFriendsListUpdate(&src, src_data);
+    FriendsList flist = *src_data;
+    sendFriendsListUpdate(&src, flist); // Send FriendsListUpdate
 }
 
 bool isFriendOnline(Entity &src, uint32_t db_id)
