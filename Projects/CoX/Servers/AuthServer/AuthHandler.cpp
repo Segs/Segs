@@ -110,7 +110,7 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
 
 void AuthHandler::on_timeout(Timeout *ev)
 {
-    intptr_t timer_id = (intptr_t)ev->data();
+    intptr_t timer_id = ev->timer_id();
     switch (timer_id) {
         case Session_Reaper_Timer:
             reap_stale_links();

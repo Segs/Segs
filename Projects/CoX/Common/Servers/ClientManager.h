@@ -221,7 +221,7 @@ public:
         }
         void create_reaping_timer(EventProcessor *tgt, uint32_t id, ACE_Time_Value interval)
         {
-            m_session_reaper_timer.reset(new SEGSTimer(tgt, (void *)(intptr_t)id, interval, false));
+            m_session_reaper_timer.reset(new SEGSTimer(tgt, id, interval, false));
         }
         void mark_session_for_reaping(SESSION_CLASS *sess, uint64_t token)
         {

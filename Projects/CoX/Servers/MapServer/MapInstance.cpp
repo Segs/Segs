@@ -164,10 +164,10 @@ void MapInstance::start(const QString &scenegraph_path)
     m_sync_service->set_db_handler(m_game_server_id);
     m_sync_service->activate();
 
-    m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
-    m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
-    m_link_timer.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
-    m_sync_service_timer.reset(new SEGSTimer(this,(void *)Sync_Service_Update_Timer,sync_service_update_interval,false));
+    m_world_update_timer.reset(new SEGSTimer(this,World_Update_Timer,world_update_interval,false)); // world simulation ticks
+    m_resend_timer.reset(new SEGSTimer(this,State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
+    m_link_timer.reset(new SEGSTimer(this,Link_Idle_Timer,link_update_interval,false));
+    m_sync_service_timer.reset(new SEGSTimer(this,Sync_Service_Update_Timer,sync_service_update_interval,false));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
 }
 
@@ -754,7 +754,7 @@ void MapInstance::on_timeout(Timeout *ev)
     // 2. Find all links with inactivity_time() >= disconnect_time
     //   Disconnect given link.
 
-    auto timer_id = (intptr_t)ev->data();
+    auto timer_id = ev->timer_id();
     switch (timer_id) {
         case World_Update_Timer:
             m_world->update(ev->arrival_time());

@@ -43,7 +43,7 @@ namespace
 
 MessageBus::MessageBus()
 {
-    m_statistics_timer.reset(new SEGSTimer(this,(void *)Statistics_Timer,statistic_update_interval,false)); // world simulation ticks
+    m_statistics_timer.reset(new SEGSTimer(this,Statistics_Timer,statistic_update_interval,false)); // world simulation ticks
 }
 
 bool MessageBus::ReadConfigAndRestart()

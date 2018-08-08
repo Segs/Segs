@@ -14,7 +14,9 @@
 #include "SEGSTimer.h"
 
 #include <cassert>
+#ifdef _MSC_VER
 #include <iso646.h> // visual studio needs this
+#endif
 
 int EventProcessor::open( void *args /* = 0 */ )
 {
@@ -28,7 +30,7 @@ int EventProcessor::handle_timeout( const ACE_Time_Value &current_time, const vo
     // if target is known
     if(timer_object->target())
     {
-        SEGSEvent *mb=new Timeout(current_time,timer_object->data(),this);
+        SEGSEvent *mb=new Timeout(current_time,timer_object->user_id(),this);
         // post a new event to it
         return timer_object->target()->putq(mb);
     }

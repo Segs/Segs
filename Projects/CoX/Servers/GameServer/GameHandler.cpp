@@ -50,8 +50,8 @@ GameHandler::~GameHandler() = default;
 void GameHandler::start()
 {
     ACE_ASSERT(m_link_checker==nullptr);
-    m_link_checker.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
-    m_service_status_timer.reset(new SEGSTimer(this,(void *)Service_Status_Timer,service_update_interval,false));
+    m_link_checker.reset(new SEGSTimer(this, Link_Idle_Timer,link_update_interval,false));
+    m_service_status_timer.reset(new SEGSTimer(this,Service_Status_Timer,service_update_interval,false));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
 }
 
@@ -240,7 +240,7 @@ void GameHandler::on_timeout(Timeout *ev)
     // 2. Find all links with inactivity_time() >= disconnect_time
     //   Disconnect given link.
 
-    intptr_t timer_id = (intptr_t)ev->data();
+    intptr_t timer_id = ev->timer_id();
     switch (timer_id) {
         case Link_Idle_Timer:
             on_check_links();
