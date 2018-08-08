@@ -19,7 +19,6 @@
 #include "GameDBSyncEvents.h"
 #include "Settings.h"
 #include "Database.h"
-#include "GameData/chardata_serializers.h"
 
 #include <ace/Thread.h>
 
