@@ -88,6 +88,7 @@ protected:
         void on_expect_client(ExpectMapClientRequest *ev);
         void on_update_friendslist(SendFriendListMessage *ev);
         void on_notify_friend(SendNotifyFriendMessage *ev);
+        void on_get_player_friends(GetPlayerFriendsRequest *ev);
 
         void on_link_lost(SEGSEvent *ev);
         void on_disconnect(class DisconnectRequest *ev);

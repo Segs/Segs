@@ -95,6 +95,8 @@ void removeFriend(Entity &src, Entity &tgt)
     qCDebug(logFriends).noquote() << msg;
     messageOutput(MessageChannel::FRIENDS, msg, src);
 
+    EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
+    friend_tgt->putq(new FriendRemovedMessage({src.m_char->m_db_id,tgt.m_db_id}));
     FriendsList flist = *src_data;
     sendFriendsListUpdate(&src, flist); // Send FriendsListUpdate
 }

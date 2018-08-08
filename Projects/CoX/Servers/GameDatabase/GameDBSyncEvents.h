@@ -38,9 +38,6 @@ enum GameDBEventTypes : uint32_t
     // select by id for entity data only
     evGetEntityRequest,
     evGetEntityResponse,
-    // Asking for friends list
-    evGetPlayerFriendsRequest,
-    evGetPlayerFriendsResponse,
 
     evGameDbError
 };
@@ -227,23 +224,6 @@ struct GetEntityResponseData
     QString m_ent_data;
 };
 TWO_WAY_MESSAGE(GetEntity)
-
-/*
- * These two don't need to be a two-way message, since we can
- * simply listen to all GetPlayerFriendsResponse.
-*/
-struct GetPlayerFriendsRequestData
-{
-    uint32_t m_char_id;
-};
-//ONE_WAY_MESSAGE(GetPlayerFriendsRequest)
-
-struct GetPlayerFriendsResponseData
-{
-    uint32_t m_char_id;
-    FriendsList m_friendslist;
-};
-TWO_WAY_MESSAGE(GetPlayerFriends)
 
 struct WouldNameDuplicateRequestData
 {

@@ -8,7 +8,6 @@
 #include "FriendHandler.h"
 #include "Servers/GameServer/GameEvents.h"
 #include "Common/Servers/HandlerLocator.h"
-#include "GameDatabase/GameDBSyncEvents.h"
 #include "FriendHandlerEvents.h"
 #include "DataHelpers.h"
 #include <QtCore/QDebug>
@@ -24,7 +23,7 @@ void FriendHandler::dispatch(SEGSEvent *ev)
 
     switch(ev->type())
     {
-        case GameDBEventTypes::evGetPlayerFriendsResponse:
+        case FriendHandlerEventTypes::evGetPlayerFriendsResponse:
             on_player_friends(static_cast<GetPlayerFriendsResponse *>(ev));
             break;
         case Internal_EventTypes::evClientConnected:
@@ -95,7 +94,7 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
     //Update this player/character's online status
     s_online_map[m_char_id] = true;
 
-    EventProcessor *tgt = HandlerLocator::getGame_DB_Handler(s_game_server_id);
+    //EventProcessor *tgt = HandlerLocator::getGame_DB_Handler(s_game_server_id);
 
     EventProcessor *inst_tgt = HandlerLocator::getMapInstance_Handler(
                 s_map_info_map[m_char_id].server_id, s_map_info_map[m_char_id].instance_id);
@@ -105,7 +104,7 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
         //We need to notify all the people who added this player (if they're online)
         if(is_online(val)){
             uint32_t friend_id = val;
-            tgt->putq(new GetPlayerFriendsRequest({friend_id},msg->session_token(),this));
+            inst_tgt->putq(new GetPlayerFriendsRequest({s_map_info_map[val].session_token},msg->session_token(),this));
             inst_tgt->putq(new SendNotifyFriendMessage({s_map_info_map[m_char_id].session_token,
                                                         s_map_info_map[friend_id].session_token}));
         }
@@ -113,21 +112,22 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
 
     //Also read this player's friend list to see who they've added
     //To do this, we send a GetFriendsListRequest to GameDBSyncHandler
-    tgt->putq(new GetPlayerFriendsRequest({msg->m_data.m_char_id},msg->session_token(),this));
+    inst_tgt->putq(new GetPlayerFriendsRequest({s_map_info_map[m_char_id].session_token},msg->session_token(),this));
 }
 
 void FriendHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 {
     //Update this player/character's online status (to offline)
     s_online_map.erase(msg->m_data.m_char_id);
-    EventProcessor *tgt = HandlerLocator::getGame_DB_Handler(s_game_server_id);
+    EventProcessor *inst_tgt = HandlerLocator::getMapInstance_Handler(
+                s_map_info_map[msg->m_data.m_char_id].server_id,
+                s_map_info_map[msg->m_data.m_char_id].instance_id);
     //Iterate over map and update friends list of all people who have added this character
     for(auto const& val : s_friend_map[msg->m_data.m_char_id])
     {
         //We need to notify all the people who added this player (if they're online)
         if(is_online(val)){
-            uint32_t friend_id = val;
-            tgt->putq(new GetPlayerFriendsRequest({friend_id},msg->session_token(),this));
+            inst_tgt->putq(new GetPlayerFriendsRequest({s_map_info_map[val].session_token},msg->session_token(),this));
         }
     }
     s_map_info_map.erase(msg->m_data.m_char_id);
@@ -140,7 +140,7 @@ void FriendHandler::on_friend_added(FriendAddedMessage *msg)
 
 void FriendHandler::on_friend_removed(FriendRemovedMessage *msg)
 {
-    qDebug() << "Player " << msg->m_data.m_removed_id << " has removed " << msg->m_data.m_char_id;
+    qDebug() << "Player " << msg->m_data.m_char_id << " has removed " << msg->m_data.m_removed_id;
     s_friend_map[msg->m_data.m_removed_id].erase(msg->m_data.m_char_id);
 }
 
@@ -149,7 +149,7 @@ bool FriendHandler::is_online(int m_id)
     //if(s_online_map[m_id])
     auto search = s_online_map.find(m_id);
     if(search != s_online_map.end())
-        return true;
+        return s_online_map[m_id];
     else
         return false;
     //return s_online_map[m_id];

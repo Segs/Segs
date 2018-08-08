@@ -386,23 +386,6 @@ bool GameDbSyncContext::getEntity(const GetEntityRequestData &data, GetEntityRes
     return true;
 }
 
-bool GameDbSyncContext::getPlayerFriends(const GetPlayerFriendsRequestData &data,
-                                         GetPlayerFriendsResponseData &result)
-{
-    m_prepared_entity_select->bindValue(0,data.m_char_id);
-    if(!doIt(*m_prepared_entity_select))
-        return false;
-    if(!m_prepared_entity_select->next())
-        return false;
-
-    CharacterData char_data;
-    serializeFromDb(char_data, m_prepared_entity_select->value("chardata").toString());
-
-    result.m_char_id = data.m_char_id;
-    result.m_friendslist = char_data.m_friendlist;
-    return true;
-}
-
 // Update Client Options/Keybinds
 bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
 {

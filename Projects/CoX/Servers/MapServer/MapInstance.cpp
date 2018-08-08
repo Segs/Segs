@@ -291,6 +291,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case FriendHandlerEventTypes::evSendNotifyFriend:
             on_notify_friend(static_cast<SendNotifyFriendMessage *>(ev));
             break;
+        case FriendHandlerEventTypes::evGetPlayerFriendsRequest:
+            on_get_player_friends(static_cast<GetPlayerFriendsRequest *>(ev));
+            break;
         case GameDBEventTypes::evWouldNameDuplicateResponse:
             on_name_clash_check_result(static_cast<WouldNameDuplicateResponse *>(ev));
             break;
@@ -595,8 +598,18 @@ void MapInstance::on_notify_friend(SendNotifyFriendMessage *ev)
     MapClientSession &connected_session(m_session_store.session_from_token(ev->m_data.m_connected_token));
     Entity * e = connected_session.m_ent;
 
-    QString notify_msg = "Your friend " + e->m_char->getName() + " has logged on.";
+    QString notify_msg = "Your friend " + e->m_char->getName() + " is now online.";
     sendInfoMessage(MessageChannel::SERVER,notify_msg,&notify_session);
+}
+
+void MapInstance::on_get_player_friends(GetPlayerFriendsRequest *ev)
+{
+    MapClientSession &map_session(m_session_store.session_from_token(ev->m_data.m_session_token));
+    Entity * e = map_session.m_ent;
+    e->m_db_id              = e->m_char->m_db_id;
+
+    EventProcessor *tgt = HandlerLocator::getFriend_Handler();
+    tgt->putq(new GetPlayerFriendsResponse({e->m_db_id,e->m_char->m_char_data.m_friendlist}, ev->session_token()));
 }
 
 void MapInstance::on_character_created(CreateNewCharacterResponse *ev)

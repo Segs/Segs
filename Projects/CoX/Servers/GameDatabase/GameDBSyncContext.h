@@ -22,8 +22,6 @@ struct CreateNewCharacterRequestData;
 struct CreateNewCharacterResponseData;
 struct GetEntityRequestData;
 struct GetEntityResponseData;
-struct GetPlayerFriendsRequestData;
-struct GetPlayerFriendsResponseData;
 struct SetClientOptionsData;
 
 ///
@@ -62,7 +60,6 @@ public:
     bool checkNameClash(const WouldNameDuplicateRequestData &data,WouldNameDuplicateResponseData &result);
     bool createNewChar(const  CreateNewCharacterRequestData&data, CreateNewCharacterResponseData &result);
     bool getEntity(const  GetEntityRequestData&data, GetEntityResponseData &result);
-    bool getPlayerFriends(const GetPlayerFriendsRequestData &data, GetPlayerFriendsResponseData &result);
     bool updateClientOptions(const SetClientOptionsData &data);
 private:
     int64_t getDbVersion(QSqlDatabase &);

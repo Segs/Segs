@@ -9,7 +9,6 @@
 #include "EventProcessor.h"
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/InternalEvents.h"
-#include "GameDatabase/GameDBSyncEvents.h"
 #include "Common/Servers/ClientManager.h"
 #include "FriendHandlerEvents.h"
 #include <unordered_map>
