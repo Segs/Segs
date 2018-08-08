@@ -18,18 +18,18 @@
 struct MapInfo
 {
     uint64_t session_token;
-    uint8_t server_id; //this is the owner ID aka game server id
-    int instance_id; //this is the template ID aka map instance id
+    uint32_t server_id; //this is the owner ID aka game server id
+    uint32_t instance_id; //this is the template ID aka map instance id
 };
 
 class FriendHandler : public EventProcessor
 {
 
     //Key is ID of character who comes online, value is set of IDs who have added this friend
-    static std::unordered_map<int,std::set<int>> s_friend_map;
-    static std::unordered_map<int,bool> s_online_map; //key is char ID, bool is if they are online
+    static std::unordered_map<uint32_t,std::set<uint32_t>> s_friend_map;
+    static std::unordered_map<uint32_t,bool> s_online_map; //key is char ID, bool is if they are online
     //key is char ID, value should have both map server ID and map instance ID
-    static std::unordered_map<int,MapInfo> s_map_info_map;
+    static std::unordered_map<uint32_t,MapInfo> s_map_info_map;
     static int s_game_server_id;
 private:
     void on_player_friends(GetPlayerFriendsResponse* ev);

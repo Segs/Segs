@@ -12,9 +12,9 @@
 #include "DataHelpers.h"
 #include <QtCore/QDebug>
 
-std::unordered_map<int,std::set<int>> FriendHandler::s_friend_map;
-std::unordered_map<int,bool> FriendHandler::s_online_map;
-std::unordered_map<int,MapInfo> FriendHandler::s_map_info_map;
+std::unordered_map<uint32_t,std::set<uint32_t>> FriendHandler::s_friend_map;
+std::unordered_map<uint32_t,bool> FriendHandler::s_online_map;
+std::unordered_map<uint32_t,MapInfo> FriendHandler::s_map_info_map;
 int FriendHandler::s_game_server_id;
 
 void FriendHandler::dispatch(SEGSEvent *ev)
@@ -87,8 +87,8 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
 
     //Store the map instance ID so that we know where to send the constructed FriendsList
     uint64_t session_token = msg->m_data.m_session;
-    uint8_t server_id = msg->m_data.m_server_id;
-    int instance_id = msg->m_data.m_sub_server_id;
+    uint32_t server_id = msg->m_data.m_server_id;
+    uint32_t instance_id = msg->m_data.m_sub_server_id;
     s_map_info_map[m_char_id] = MapInfo{session_token, server_id, instance_id};
 
     //Update this player/character's online status
@@ -140,19 +140,16 @@ void FriendHandler::on_friend_added(FriendAddedMessage *msg)
 
 void FriendHandler::on_friend_removed(FriendRemovedMessage *msg)
 {
-    qDebug() << "Player " << msg->m_data.m_char_id << " has removed " << msg->m_data.m_removed_id;
     s_friend_map[msg->m_data.m_removed_id].erase(msg->m_data.m_char_id);
 }
 
 bool FriendHandler::is_online(int m_id)
 {
-    //if(s_online_map[m_id])
     auto search = s_online_map.find(m_id);
     if(search != s_online_map.end())
-        return s_online_map[m_id];
+        return true;
     else
         return false;
-    //return s_online_map[m_id];
 }
 
 void FriendHandler::set_game_server_id(int m_id)
