@@ -46,7 +46,6 @@ SET(target_INCLUDE
     Events/EmailHeaders.h
     Events/EmailMessageStatus.h
     Events/EmailRead.h
-    Events/EnhancementEvents.h
     Events/EntitiesResponse.h
     Events/FloatingDamage.h
     Events/FloatingInfo.h
@@ -54,13 +53,14 @@ SET(target_INCLUDE
     Events/FriendsListUpdate.h
     Events/InputState.h
     Events/LocationVisited.h
+    Events/LevelUp.h
     Events/MapEventTypes.h
     Events/MapXferList.h
-    Events/MapXferListClose.h
     Events/MessageChannels.h
     Events/NewEntity.h
     Events/PlaqueVisited.h
     Events/PlayerInfo.h
+    Events/PowerSystemEvents.h
     Events/SaveClientOptions.h
     Events/SceneEvent.h
     Events/SetClientState.h

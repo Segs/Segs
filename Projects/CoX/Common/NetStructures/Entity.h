@@ -186,8 +186,6 @@ public:
         std::vector<CharacterPower *> m_queued_powers;
         std::vector<CharacterPower *> m_recharging_powers;
         CharacterPower    * m_stance                = nullptr;
-        bool                m_powers_updated        = false;
-        bool                m_reset_powersets       = false;
 
         int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
         int                 m_num_fx                = 0;

@@ -13,18 +13,38 @@
 
 #include <QtCore/QString>
 
-class CombineEnhancements final : public MapLinkEvent
+// [[ev_def:type]]
+class CombineEnhanceResponse final : public GameCommand
 {
 public:
-    struct PowerEntry
-    {
-        uint32_t m_pset_idx;
-        uint32_t m_pow_idx;
-        uint32_t m_eh_idx;
-    };
-    PowerEntry first_power;
-    PowerEntry second_power;
-    CombineEnhancements() : MapLinkEvent(MapEventTypes::evCombineEnhancements)
+    // [[ev_def:field]]
+    uint32_t            m_was_success;
+    // [[ev_def:field]]
+    uint32_t            m_destroyed_on_fail;
+                CombineEnhanceResponse(uint32_t success, uint32_t destroy) : GameCommand(MapEventTypes::evCombineEnhancResponse),
+                    m_was_success(success),
+                    m_destroyed_on_fail(destroy)
+                {
+                }
+
+        void    serializeto(BitStream &bs) const override {
+                    bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient); // 56
+
+                    bs.StorePackedBits(1, m_was_success);
+                    bs.StorePackedBits(1, m_destroyed_on_fail);
+                }
+        void    serializefrom(BitStream &src);
+};
+
+// [[ev_def:type]]
+class CombineEnhancementsReq final : public MapLinkEvent
+{
+public:    
+    // [[ev_def:field]]
+    EnhancemenSlotEntry first_power;
+    // [[ev_def:field]]
+    EnhancemenSlotEntry second_power;
+    CombineEnhancementsReq() : MapLinkEvent(MapEventTypes::evCombineEnhancements)
     {}
     void serializeto(BitStream &bs) const
     {
@@ -33,11 +53,12 @@ public:
     }
     // now to make this useful ;)
 
-    void getPowerForCombine(BitStream &bs, PowerEntry &entry)
+    void getPowerForCombine(BitStream &bs, EnhancemenSlotEntry &entry)
     {
         // first bit tells us if we have full/partial?? data
         // here we can do a small refactoring, because in both branches of if/else, the last set value is index.
-        if(bs.GetBits(1))
+        entry.m_set_in_power = bs.GetBits(1);
+        if(entry.m_set_in_power)
         {
             entry.m_pset_idx = bs.GetPackedBits(1);
             entry.m_pow_idx = bs.GetPackedBits(1);
@@ -51,10 +72,13 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class MoveEnhancement final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     int m_src_idx;
+    // [[ev_def:field]]
     int m_dest_idx;
     MoveEnhancement() : MapLinkEvent(MapEventTypes::evMoveEnhancement)
     {}
@@ -70,12 +94,17 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class SetEnhancement final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     uint32_t m_pset_idx;
+    // [[ev_def:field]]
     uint32_t m_pow_idx;
+    // [[ev_def:field]]
     uint32_t m_src_idx;
+    // [[ev_def:field]]
     uint32_t m_dest_idx;
     SetEnhancement() : MapLinkEvent(MapEventTypes::evSetEnhancement)
     {}
@@ -93,9 +122,11 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class TrashEnhancement final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     int m_idx;
     TrashEnhancement() : MapLinkEvent(MapEventTypes::evTrashEnhancement)
     {}
@@ -107,5 +138,26 @@ public:
     void    serializefrom(BitStream &bs)
     {
         m_idx = bs.GetPackedBits(1);
+    }
+};
+
+// [[ev_def:type]]
+class RecvNewPower final : public MapLinkEvent
+{
+public:
+    // [[ev_def:field]]
+    PowerPool_Info ppool;
+    RecvNewPower() : MapLinkEvent(MapEventTypes::evRecvNewPower)
+    {}
+    void    serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1, 46);
+        assert(false); // we don't send this, we receive it.
+    }
+    void    serializefrom(BitStream &bs)
+    {
+        ppool.m_pcat_idx    = bs.GetPackedBits(3);
+        ppool.m_pset_idx    = bs.GetPackedBits(3);
+        ppool.m_pow_idx     = bs.GetPackedBits(3);
     }
 };

@@ -71,8 +71,8 @@ enum BinType {
 
 const QHash<uint32_t,BinType> knownSerializers = {
     {levelsdebts_i0_requiredCrc         , eLevelsDebts},
-//    {combining_i0_requiredCrc           , eCombineChances},
-//    {boosteffectiveness_i0_requiredCrc  , eBoostEffectiveness},
+    {combining_i0_requiredCrc           , eCombineChances},
+    {boosteffectiveness_i0_requiredCrc  , eBoostEffectiveness},
 //    {particlesystems_i0_requiredCrc     , eParticleSystems},
     {shoplist_i0_requiredCrc            , eShops},
     {shopitems_i0_requiredCrc           , eShopItems},
@@ -188,8 +188,8 @@ int main(int argc,char **argv)
       switch(bin_type)
       {
           case eLevelsDebts:    doConvert(doLoadRef<LevelExpAndDebt>(&binfile),target_basename,json_output); break;
-//        case eCombineChances: doConvert(doLoad<Parse_Combining>(&binfile),target_basename,json_output); break;
-//        case eBoostEffectiveness: doConvert(doLoad<Parse_Effectiveness>(&binfile),target_basename,json_output); break;
+          case eCombineChances: doConvert(doLoadRef<Parse_Combining>(&binfile),target_basename,json_output); break;
+          case eBoostEffectiveness: doConvert(doLoadRef<Parse_Effectiveness>(&binfile),target_basename,json_output); break;
 //        case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(&binfile),target_basename,json_output); break;
           case eShops:        doConvert(doLoadRef<AllShops_Data>(&binfile),target_basename,json_output); break;
           case eShopItems:    doConvert(doLoad<AllShopItems_Data>(&binfile),target_basename,json_output); break;

@@ -432,7 +432,7 @@ void MapInstance::dispatch( SEGSEvent *ev )
             on_dialog_button(static_cast<DialogButton *>(ev));
             break;
         case MapEventTypes::evCombineEnhancements:
-            on_combine_enhancements(static_cast<CombineEnhancements *>(ev));
+            on_combine_enhancements(static_cast<CombineEnhancementsReq *>(ev));
             break;
         case MapEventTypes::evMoveEnhancement:
             on_move_enhancement(static_cast<MoveEnhancement *>(ev));
@@ -442,6 +442,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case MapEventTypes::evTrashEnhancement:
             on_trash_enhancement(static_cast<TrashEnhancement *>(ev));
+            break;
+        case MapEventTypes::evRecvNewPower:
+            on_recv_new_power(static_cast<RecvNewPower *>(ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
@@ -844,13 +847,12 @@ void MapInstance::sendState() {
 
 }
 
-void MapInstance::on_combine_enhancements(CombineEnhancements *ev)
+void MapInstance::on_combine_enhancements(CombineEnhancementsReq *ev)
 {
-    // TODO: Merge Enhancements.
     MapClientSession &session(m_session_store.session_from_event(ev));
+    combineEnhancements(*session.m_ent, ev->first_power, ev->second_power);
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to merge enhancements" /*<< ev->first_power << ev->second_power*/;
-
 }
 
 void MapInstance::on_input_state(InputState *st)
@@ -2015,12 +2017,11 @@ void MapInstance::on_activate_power(ActivatePower *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     uint32_t tgt_idx = ev->target_idx;
-    uint32_t modified_pset_idx = ev->pset_idx - 1; // no idea why, but client returns pset index + 1?
 
     if(ev->target_idx == 0)
         tgt_idx = session.m_ent->m_idx;
 
-    usePower(*session.m_ent, modified_pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
+    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }
 
@@ -2175,6 +2176,13 @@ void MapInstance::on_trash_enhancement(TrashEnhancement *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_idx);
+}
+
+void MapInstance::on_recv_new_power(RecvNewPower *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    addPower(session.m_ent->m_char->m_char_data, ev->ppool);
 }
 
 //! @}

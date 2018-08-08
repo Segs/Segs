@@ -14,12 +14,17 @@
 
 #include <QtCore/QString>
 
+// [[ev_def:type]]
 class FloatingInfo final : public GameCommand
 {
 public:
+    // [[ev_def:field]]
     uint32_t            m_tgt_idx;
+    // [[ev_def:field]]
     QString             m_msg;
+    // [[ev_def:field]]
     FloatingInfoStyle   m_style;
+    // [[ev_def:field]]
     float               m_delay;
                 FloatingInfo(uint32_t tgt_idx, QString msg, FloatingInfoStyle style, float delay) : GameCommand(MapEventTypes::evFloatingInfo),
                     m_tgt_idx(tgt_idx),

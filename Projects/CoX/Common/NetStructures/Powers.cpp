@@ -179,17 +179,18 @@ void PowerTray::Dump()
 
 void PowerPool_Info::serializefrom(BitStream &src)
 {
-    m_category_idx = src.GetPackedBits(3);
+    m_pcat_idx = src.GetPackedBits(3);
     m_pset_idx = src.GetPackedBits(3);
     m_pow_idx = src.GetPackedBits(3);
 }
 
 void PowerPool_Info::serializeto(BitStream &src) const
 {
-    src.StorePackedBits(3, m_category_idx);
+    src.StorePackedBits(3, m_pcat_idx);
     src.StorePackedBits(3, m_pset_idx);
     src.StorePackedBits(3, m_pow_idx);
 }
+
 
 /*
  * Powers Methods
@@ -249,20 +250,24 @@ int getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx)
     return 0;
 }
 
-CharacterPower getPowerData(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+CharacterPower getPowerData(PowerPool_Info &ppool)
 {
     const MapServerData &data(*getMapServerData());
-    Power_Data power = data.m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
+    Power_Data power = data.m_all_powers.m_categories[ppool.m_pcat_idx].m_PowerSets[ppool.m_pset_idx].m_Powers[ppool.m_pow_idx];
 
     CharacterPower result;
-    result.m_power_tpl.m_category_idx    = pcat_idx;
-    result.m_power_tpl.m_pset_idx        = pset_idx;
-    result.m_power_tpl.m_pow_idx         = pow_idx;
-    result.m_name                        = power.m_Name;
-    result.m_index                       = pow_idx;
-    result.m_num_charges                 = power.m_NumCharges;
-    result.m_range                       = power.Range;
-    result.m_recharge_time               = power.RechargeTime;
+    result.m_power_info.m_pcat_idx      = ppool.m_pcat_idx;
+    result.m_power_info.m_pset_idx      = ppool.m_pset_idx;
+    result.m_power_info.m_pow_idx       = ppool.m_pow_idx;
+    result.m_name                       = power.m_Name;
+    result.m_index                      = ppool.m_pow_idx;
+    result.m_num_charges                = power.m_NumCharges;
+    result.m_range                      = power.Range;
+    result.m_recharge_time              = power.RechargeTime;
+    result.m_power_tpl                  = power; // Maybe there's a better way to access this when needed?
+
+    if(!power.BoostsAllowed.empty())
+        result.m_total_eh_slots = 3; // TODO: buy during levelup. For now, everyone has 3!
 
     //if(logPowers().isDebugEnabled())
         //dumpPower(result);
@@ -270,15 +275,16 @@ CharacterPower getPowerData(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_i
     return result;
 }
 
-CharacterPowerSet getPowerSetData(uint32_t pcat_idx, uint32_t pset_idx)
+CharacterPowerSet getPowerSetData(PowerPool_Info &ppool)
 {
     CharacterPowerSet result;
     const MapServerData &data(*getMapServerData());
-    Parse_PowerSet powerset = data.m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx];
+    Parse_PowerSet powerset = data.m_all_powers.m_categories[ppool.m_pcat_idx].m_PowerSets[ppool.m_pset_idx];
 
-    for(int pow_idx = 0; pow_idx < powerset.m_Powers.size(); pow_idx++)
+    for(int pow_idx = 0; pow_idx < powerset.m_Powers.size(); ++pow_idx)
     {
-        CharacterPower p = getPowerData(pcat_idx, pset_idx, pow_idx);
+        ppool.m_pow_idx = pow_idx;
+        CharacterPower p = getPowerData(ppool);
         result.m_powers.push_back(p);
     }
     return result;
@@ -288,58 +294,77 @@ CharacterPower *getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
 {
     CharacterData *cd = &e.m_char->m_char_data;
 
-    if(pset_idx > cd->m_powersets.size())
-        return nullptr;
-
-    for(int i = 0; i < cd->m_powersets.size(); i++)
+    if(pset_idx > cd->m_powersets.size()
+            || cd->m_powersets[pset_idx].m_powers[pow_idx].m_name.isEmpty())
     {
-        for(int j = 0; j < cd->m_powersets[i].m_powers.size(); j++)
-        {
-            if(cd->m_powersets[i].m_index == pset_idx
-                    && cd->m_powersets[i].m_powers[j].m_index == pow_idx)
-            {
-                qCDebug(logPowers) << "getPower returned" << cd->m_powersets[i].m_powers.at(j).m_name;
-                return &cd->m_powersets[i].m_powers[j];
-            }
-        }
+        qWarning() << "Failed to locate Power by index" << pset_idx << pow_idx;
+        return nullptr;
     }
 
-    qWarning() << "Failed to locate Power by index" << pset_idx << pow_idx;
-    return nullptr;
+    qCDebug(logPowers) << "getPower returned" << cd->m_powersets[pset_idx].m_powers[pow_idx].m_name;
+    return &cd->m_powersets[pset_idx].m_powers[pow_idx];
 }
 
-void addPower(CharacterData &cd, uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+void addPowerSet(CharacterData &cd, PowerPool_Info &ppool)
 {
     CharacterPowerSet pset;
-    CharacterPower power;
 
-    power = getPowerData(pcat_idx, pset_idx, pow_idx);
+    qCDebug(logPowers) << "Adding empty PowerSet:" << ppool.m_pcat_idx << ppool.m_pset_idx;
+
     pset.m_level_bought = cd.m_level;
-    power.m_index = pow_idx;
-    pset.m_index = pset_idx;
-    pset.m_category = pcat_idx;
+    pset.m_index        = ppool.m_pset_idx;
+    pset.m_category     = ppool.m_pcat_idx;
+
+    cd.m_powersets.push_back(pset);
+}
+
+void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool)
+{
+    CharacterPowerSet pset;
+
+    qCDebug(logPowers) << "Adding entire PowerSet:" << ppool.m_pcat_idx << ppool.m_pset_idx;
+
+    pset = getPowerSetData(ppool);
+    pset.m_level_bought = cd.m_level;
+    pset.m_index        = ppool.m_pset_idx;
+    pset.m_category     = ppool.m_pcat_idx;
+
+    cd.m_powersets.push_back(pset);
+}
+
+void addPower(CharacterData &cd, PowerPool_Info &ppool)
+{
+    CharacterPowerSet new_pset;
+    CharacterPower new_power;
+
+    new_power               = getPowerData(ppool);
+    new_pset.m_level_bought = cd.m_level;
+    new_power.m_index       = ppool.m_pow_idx;
+    new_pset.m_index        = ppool.m_pset_idx;
+    new_pset.m_category     = ppool.m_pcat_idx;
 
     // Does Power or PowerSet already exist?
     int existing_pset = 0;
     for(CharacterPowerSet &ps : cd.m_powersets)
     {
-        if(ps.m_category == pcat_idx && ps.m_index == pset_idx)
+        if(ps.m_category == new_pset.m_category
+                && ps.m_index == new_pset.m_index)
         {
             // Does Power already exist? Then return.
             for(CharacterPower &p : ps.m_powers)
             {
-                if(p.m_index == pow_idx)
+                if(p.m_index == new_power.m_index)
                 {
-                    qCDebug(logPowers) << "Power already exists " << ps.m_category << pset_idx << pow_idx;
+                    qCDebug(logPowers) << "Power already exists " << ps.m_category << new_pset.m_index << new_power.m_index;
                     return;
                 }
             }
 
-            qCDebug(logPowers) << "Character adding power to existing powerset " << ps.m_category << pset_idx << pow_idx;
-            cd.m_powersets[existing_pset].m_powers.push_back(power); // if powerset already exists redefine pset
+            qCDebug(logPowers) << "Character adding power to existing powerset " << ps.m_category << new_pset.m_index << new_power.m_index;
+            cd.m_powersets[existing_pset].m_powers.push_back(new_power); // if powerset already exists redefine pset
 
             if(logPowers().isDebugEnabled())
-                dumpPower(power);
+                dumpPower(new_power);
 
             return;
         }
@@ -348,14 +373,14 @@ void addPower(CharacterData &cd, uint32_t pcat_idx, uint32_t pset_idx, uint32_t 
     }
 
     // Add power to vector
-    pset.m_powers.push_back(power);
+    new_pset.m_powers.push_back(new_power);
 
-    qCDebug(logPowers) << "Adding Power:" << pcat_idx << pset_idx << pow_idx;
+    qCDebug(logPowers) << "Adding Power:" << new_pset.m_category << new_pset.m_index << new_power.m_index;
     if(logPowers().isDebugEnabled())
-        dumpPower(power);
+        dumpPower(new_power);
 
     // Add powerset to vector
-    cd.m_powersets.push_back(pset);
+    cd.m_powersets.push_back(new_pset);
 }
 
 void removePower(CharacterData &cd, const PowerPool_Info &ppool)
@@ -367,13 +392,13 @@ void removePower(CharacterData &cd, const PowerPool_Info &ppool)
 
         if(iter != pset.m_powers.end())
         {
-            qCDebug(logPowers) << "Removing Power:" << ppool.m_category_idx << ppool.m_pset_idx << ppool.m_pow_idx;
+            qCDebug(logPowers) << "Removing Power:" << ppool.m_pcat_idx << ppool.m_pset_idx << ppool.m_pow_idx;
             pset.m_powers.erase(iter);
             return;
         }
     }
 
-    qCDebug(logPowers) << "Player does not own Power:" << ppool.m_category_idx << ppool.m_pset_idx << ppool.m_pow_idx;
+    qCDebug(logPowers) << "Player does not own Power:" << ppool.m_pcat_idx << ppool.m_pset_idx << ppool.m_pow_idx;
 }
 
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t /*tgt_idx*/, uint32_t /*tgt_id*/)
@@ -408,7 +433,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t /*tgt_i
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo)
 {
     qDebug().nospace().noquote() << QString("  PPInfo: %1 %2 %3")
-                                    .arg(pinfo.m_category_idx)
+                                    .arg(pinfo.m_pcat_idx)
                                     .arg(pinfo.m_pset_idx)
                                     .arg(pinfo.m_pow_idx);
 }
@@ -417,7 +442,7 @@ void dumpPower(const CharacterPower &pow)
 {
     qDebug().noquote() << pow.m_name;
     qDebug().noquote() << "  Index: " << pow.m_index;
-    dumpPowerPoolInfo(pow.m_power_tpl);
+    dumpPowerPoolInfo(pow.m_power_info);
     qDebug().noquote() << "  LevelBought: " << pow.m_level_bought;
     qDebug().noquote() << "  NumCharges: " << pow.m_num_charges;
     qDebug().noquote() << "  UsageTime: " << pow.m_usage_time;
@@ -427,7 +452,7 @@ void dumpPower(const CharacterPower &pow)
     qDebug().noquote() << "  ActivationState: " << pow.m_activation_state;
     qDebug().noquote() << "  ActivationStateChange: " << pow.m_active_state_change;
     qDebug().noquote() << "  TimerUpdated: " << pow.m_timer_updated;
-    qDebug().noquote() << "  NumEnhancements: " << pow.m_available_eh_slots;
+    qDebug().noquote() << "  NumEnhancements: " << pow.m_total_eh_slots;
 }
 
 void dumpOwnedPowers(CharacterData &cd)
@@ -459,6 +484,7 @@ void dumpOwnedPowers(CharacterData &cd)
 void addInspirationByName(CharacterData &cd, QString &name)
 {
     const MapServerData &data(*getMapServerData());
+    CharacterInspiration insp;
     uint32_t pcat_idx = getPowerCatByName("Inspirations");
     uint32_t pset_idx, pow_idx    = 0;
     bool found  = false;
@@ -475,6 +501,7 @@ void addInspirationByName(CharacterData &cd, QString &name)
                 found = true;
                 pset_idx = i;
                 pow_idx = j;
+                insp.m_insp_tpl = pow;
             }
 
             j++;
@@ -489,12 +516,11 @@ void addInspirationByName(CharacterData &cd, QString &name)
         return;
     }
 
-    CharacterInspiration insp;
     insp.m_has_insp = true;
     insp.m_name = name;
-    insp.m_insp_tpl.m_category_idx = pcat_idx;
-    insp.m_insp_tpl.m_pset_idx = pset_idx;
-    insp.m_insp_tpl.m_pow_idx = pow_idx;
+    insp.m_insp_info.m_pcat_idx = pcat_idx;
+    insp.m_insp_info.m_pset_idx = pset_idx;
+    insp.m_insp_info.m_pow_idx = pow_idx;
 
     addInspirationToChar(cd, insp);
 }
@@ -505,32 +531,27 @@ void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
     int max_rows = cd.m_max_insp_rows;
     int count = 0;
 
-    for(int i = 0; i < max_cols; ++i)
+    for(int i = 0; i < max_rows; ++i)
     {
-        for(int j = 0; j < max_rows; ++j)
+        for(int j = 0; j < max_cols; ++j)
         {
-            if(cd.m_inspirations[i][j].m_has_insp)
-                count++;
-        }
-    }
-
-    if(count >= max_cols*max_rows)
-    {
-        qCDebug(logPowers) << "Character cannot hold any more inspirations";
-        return;
-    }
-
-    for(int i = 0; i < max_cols; ++i)
-    {
-        for(int j = 0; j < max_rows; ++j)
-        {
-            if(!cd.m_inspirations[i][j].m_has_insp)
+            if(count >= max_cols*max_rows)
             {
-                cd.m_inspirations[i][j] = insp;
+                qCDebug(logPowers) << "Character cannot hold any more inspirations";
+                return;
+            }
+
+            if(cd.m_inspirations[j][i].m_has_insp)
+                count++;
+            else
+            {
+                insp.m_col = j;
+                insp.m_row = i;
+                cd.m_inspirations[j][i] = insp;
                 qCDebug(logPowers) << "Character received inspiration:"
-                                   << insp.m_insp_tpl.m_category_idx
-                                   << insp.m_insp_tpl.m_pset_idx
-                                   << insp.m_insp_tpl.m_pow_idx;
+                                   << insp.m_insp_info.m_pcat_idx
+                                   << insp.m_insp_info.m_pset_idx
+                                   << insp.m_insp_info.m_pow_idx;
                 return;
             }
         }
@@ -556,9 +577,9 @@ void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint
     insp_arr->at(dest_col).at(dest_row).m_row = src_row;
     std::swap(insp_arr->at(src_col).at(src_row), insp_arr->at(dest_col).at(dest_row));
 
-    //ent.m_powers_updated = true; // TODO: this crashes client
+    cd.m_powers_updated = true; // update client on power status
 
-    qCDebug(logPowers) << "Moving inspiration from" << src_col << src_row << "to" << dest_col << dest_row;
+    qCDebug(logPowers) << "Moving inspiration from" << src_col << "x" << src_row << "to" << dest_col << "x" << dest_row;
 }
 
 void useInspiration(Entity &ent, uint32_t col, uint32_t row)
@@ -571,7 +592,7 @@ void useInspiration(Entity &ent, uint32_t col, uint32_t row)
     removeInspiration(cd, col, row);
     // TODO: Do inspiration benefit
 
-    qCDebug(logPowers) << "Using inspiration from" << col << row;
+    qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
     QString contents = "Inspired!";
     sendFloatingInfo(&ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 }
@@ -585,12 +606,15 @@ void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)
     qCDebug(logPowers) << "Removing inspiration from " << col << "x" << row;
     cd.m_inspirations[col][row] = insp;
 
-    for(int j = row; j < max_rows; j++)
+    for(int j = row; j < max_rows; ++j)
     {
-        cd.m_inspirations[col][j+1] = cd.m_inspirations[col][j];
+        if(j+1 >= max_rows)
+            break;
+
+        moveInspiration(cd, col, j+1, col, j);
     }
 
-    //ent.m_powers_updated = true; // TODO: this crashes client
+    cd.m_powers_updated = true; // update client on power status
 }
 
 void dumpInspirations(CharacterData &cd)
@@ -609,9 +633,9 @@ void dumpInspirations(CharacterData &cd)
             qDebug().noquote() << "  HasInsp: " << cd.m_inspirations[i][j].m_has_insp;
             qDebug().noquote() << "  Col: " << cd.m_inspirations[i][j].m_col;
             qDebug().noquote() << "  Row: " << cd.m_inspirations[i][j].m_row;
-            qDebug().noquote() << "  CategoryIdx: " << cd.m_inspirations[i][j].m_insp_tpl.m_category_idx;
-            qDebug().noquote() << "  PowerSetIdx: " << cd.m_inspirations[i][j].m_insp_tpl.m_pset_idx;
-            qDebug().noquote() << "  PowerIdx: " << cd.m_inspirations[i][j].m_insp_tpl.m_pow_idx;
+            qDebug().noquote() << "  CategoryIdx: " << cd.m_inspirations[i][j].m_insp_info.m_pcat_idx;
+            qDebug().noquote() << "  PowerSetIdx: " << cd.m_inspirations[i][j].m_insp_info.m_pset_idx;
+            qDebug().noquote() << "  PowerIdx: " << cd.m_inspirations[i][j].m_insp_info.m_pow_idx;
         }
     }
 }
@@ -622,6 +646,7 @@ void dumpInspirations(CharacterData &cd)
 void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level)
 {
     const MapServerData &data(*getMapServerData());
+    CharacterEnhancement enhance;
     uint32_t pcat_idx = getPowerCatByName("Boosts");
     uint32_t pset_idx, pow_idx    = 0;
     bool found  = false;
@@ -640,6 +665,7 @@ void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level)
             qCDebug(logPowers) << pset.m_Name << i;
             found = true;
             pset_idx = i;
+            enhance.m_enhance_tpl = pset.m_Powers.front();
         }
 
         i++;
@@ -651,20 +677,19 @@ void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level)
         return;
     }
 
-    CharacterEnhancement enhance;
     enhance.m_slot_used                     = true;
-    enhance.m_enhancement_idx               = 0;
+    enhance.m_slot_idx                      = 0;
     enhance.m_name                          = name;
     enhance.m_level                         = level;
-    enhance.m_enhance_tpl.m_category_idx    = pcat_idx;
-    enhance.m_enhance_tpl.m_pset_idx        = pset_idx;
-    enhance.m_enhance_tpl.m_pow_idx         = pow_idx; // always zero
+    enhance.m_enhance_info.m_pcat_idx    = pcat_idx;
+    enhance.m_enhance_info.m_pset_idx        = pset_idx;
+    enhance.m_enhance_info.m_pow_idx         = pow_idx; // always zero
 
-    for(size_t iter = 0; iter < cd.m_enhancements.size(); iter++)
+    for(size_t iter = 0; iter < cd.m_enhancements.size(); ++iter)
     {
         if(!cd.m_enhancements[iter].m_slot_used)
         {
-            enhance.m_enhancement_idx = uint32_t(iter);
+            enhance.m_slot_idx = uint32_t(iter);
             cd.m_enhancements[iter] = enhance;
             qCDebug(logPowers) << "Character received Enhancement:" << iter
                                << enhance.m_name
@@ -672,6 +697,18 @@ void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level)
             return;
         }
     }
+}
+
+CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_array, uint32_t pow_idx_in_array, uint32_t eh_slot)
+{
+    CharacterPower * pow = nullptr;
+    pow = &e.m_char->m_char_data.m_powersets[pset_idx_in_array].m_powers[pow_idx_in_array];
+
+    if(pow == nullptr || eh_slot > pow->m_enhancements.size())
+        return nullptr;
+
+    qCDebug(logPowers) << "getSetEnhancementBySlot returned" << pow->m_enhancements[eh_slot].m_name << "at" << eh_slot;
+    return &pow->m_enhancements[eh_slot];
 }
 
 int getNumberEnhancements(CharacterData &cd)
@@ -687,8 +724,8 @@ int getNumberEnhancements(CharacterData &cd)
 
 void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx)
 {
-    cd.m_enhancements[src_idx].m_enhancement_idx = dest_idx;
-    cd.m_enhancements[dest_idx].m_enhancement_idx = src_idx;
+    cd.m_enhancements[src_idx].m_slot_idx = dest_idx;
+    cd.m_enhancements[dest_idx].m_slot_idx = src_idx;
     std::swap(cd.m_enhancements[src_idx], cd.m_enhancements[dest_idx]);
 
     qCDebug(logPowers) << "Moving Enhancement from" << src_idx << "to" << dest_idx;
@@ -696,27 +733,131 @@ void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx)
 
 void setEnhancement(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t src_idx, uint32_t dest_idx)
 {
-    CharacterPower *tgt_pow = &ent.m_char->m_char_data.m_powersets[pset_idx-1].m_powers[pow_idx];
+    CharacterPower *tgt_pow = &ent.m_char->m_char_data.m_powersets[pset_idx].m_powers[pow_idx];
     CharacterEnhancement src_eh = ent.m_char->m_char_data.m_enhancements[src_idx];
 
     // Set Enhancement into Power
     qCDebug(logPowers) << "Set Enhancement" << src_eh.m_name << src_idx << "to" << dest_idx << "for power:"  << pset_idx << pow_idx;
-    src_eh.m_enhancement_idx = dest_idx;
+    src_eh.m_slot_idx = dest_idx;
     tgt_pow->m_enhancements[dest_idx] = src_eh;
 
     // Clear slot in Enhancement Tray
-    CharacterEnhancement blank;
-    blank.m_enhancement_idx = src_idx;
-    ent.m_char->m_char_data.m_enhancements[src_idx] = blank;
+    trashEnhancement(ent.m_char->m_char_data, src_idx);
 }
 
 void trashEnhancement(CharacterData &cd, uint32_t eh_idx)
 {
     CharacterEnhancement enhance;
-    enhance.m_enhancement_idx = eh_idx;
+    enhance.m_slot_idx = eh_idx;
     cd.m_enhancements[eh_idx] = enhance;
 
     qCDebug(logPowers) << "Remove Enhancement from" << eh_idx;
+}
+
+void trashSetEnhancement(CharacterEnhancement &eh, uint32_t eh_idx)
+{
+    CharacterEnhancement enhance;
+    enhance.m_slot_idx = eh_idx;
+    eh = enhance;
+
+    qCDebug(logPowers) << "Remove Enhancement from" << eh_idx;
+}
+
+void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow)
+{
+    MapServerData &data(*getMapServerData());
+    if(pow->m_power_tpl.BoostsAllowed.empty())
+        return;
+
+    // TODO: assign all powers 1 slot, allow players to purchase additional slots during levelup
+    // for now, just give everyone 3 slots
+    if(pow->m_total_eh_slots != 3)
+        pow->m_total_eh_slots = 3;
+
+    // Modify based upon level
+    pow->m_total_eh_slots = pow->m_total_eh_slots + data.countForLevel(cd.m_combat_level - pow->m_level_bought, data.m_pi_schedule.m_FreeBoostSlotsOnPower);
+
+//    if(pow->m_enhancements.size() <= pow->m_total_eh_slots)
+//        pow->m_enhancements.resize(pow->m_total_eh_slots);
+}
+
+float enhancementCombineChances(CharacterEnhancement *eh1, CharacterEnhancement *eh2)
+{
+    MapServerData &data(*getMapServerData());
+    std::vector<float> *combine_chances;
+    int chance_idx = 0;
+    int eh_delta = 0;
+
+    eh_delta = eh1->m_num_combines + eh1->m_level - (eh2->m_num_combines + eh2->m_level);
+    if ( eh_delta >= 0 )
+        chance_idx = eh1->m_num_combines + eh1->m_level - (eh2->m_num_combines + eh2->m_level);
+    else
+        chance_idx = -eh_delta;
+
+    if ( eh1->m_enhance_tpl.parent_StoredPowerSet == eh2->m_enhance_tpl.parent_StoredPowerSet )
+        combine_chances = &data.m_combine_same.CombineChances;
+    else
+        combine_chances = &data.m_combine_chances.CombineChances;
+
+    int chance_count = combine_chances->size();
+    if ( chance_idx >= chance_count )
+    {
+        if ( chance_count > 0 )
+            return combine_chances->at(chance_count - 1);
+        return 0.0f;
+    }
+
+    return combine_chances->at(chance_idx);
+}
+
+void combineEnhancements(Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2)
+{
+    float   chance = 0.0f;
+    bool    success = false;
+    bool    destroy = false;
+
+
+    CharacterEnhancement * eh1 = nullptr;
+    CharacterEnhancement * eh2 = nullptr;
+    eh1 = getSetEnhancementBySlot(ent, slot1.m_pset_idx, slot1.m_pow_idx, slot1.m_eh_idx);
+
+    if(slot2.m_set_in_power == true)
+        eh2 = getSetEnhancementBySlot(ent, slot2.m_pset_idx, slot2.m_pow_idx, slot2.m_eh_idx);
+    else
+        eh2 = &ent.m_char->m_char_data.m_enhancements[slot2.m_eh_idx];
+
+    if(eh1 == nullptr || eh2 == nullptr)
+    {
+        qCDebug(logPowers) << "Entity:" << ent.name() << "failed to find enhancements to merge";
+        return;
+    }
+
+    // get chance
+    chance = enhancementCombineChances(eh1, eh2);
+    float ran = rand() / RAND_MAX;
+    qCDebug(logPowers) << "Rand" << ran << "/" << chance;
+
+    if(ran < chance)
+        success = true;
+
+    if(eh1->m_level < eh2->m_level)
+        destroy = true;
+
+    sendEnhanceCombineResponse(&ent, success, destroy);
+
+    if(success)
+        eh1->m_num_combines++;
+    else if(success && destroy)
+        eh1 = eh2; // succeeded, but eh1 was lower level: replace it
+    else if(!success && !destroy)
+        return;
+
+    if(slot2.m_set_in_power == true)
+        trashSetEnhancement(*eh2, slot2.m_eh_idx); // trash it anyway, we've already copied it to eh1
+    else
+        trashEnhancement(ent.m_char->m_char_data, slot2.m_eh_idx);
+
+    ent.m_char->m_char_data.m_powers_updated = true;
 }
 
 void dumpEnhancements(CharacterData &cd)
@@ -726,14 +867,14 @@ void dumpEnhancements(CharacterData &cd)
 
     for(size_t i = 0; i < cd.m_enhancements.size(); ++i)
     {
-        qDebug().noquote() << "Enhancement: " << cd.m_enhancements[i].m_enhancement_idx
+        qDebug().noquote() << "Enhancement: " << cd.m_enhancements[i].m_slot_idx
                            << cd.m_enhancements[i].m_name;
         qDebug().noquote() << "  SlotUsed: " << cd.m_enhancements[i].m_slot_used;
         qDebug().noquote() << "  Level: " << cd.m_enhancements[i].m_level;
         qDebug().noquote() << "  NumCombines: " << cd.m_enhancements[i].m_num_combines;
-        qDebug().noquote() << "  CategoryIdx: " << cd.m_enhancements[i].m_enhance_tpl.m_category_idx;
-        qDebug().noquote() << "  PowerSetIdx: " << cd.m_enhancements[i].m_enhance_tpl.m_pset_idx;
-        qDebug().noquote() << "  PowerIdx: " << cd.m_enhancements[i].m_enhance_tpl.m_pow_idx;
+        qDebug().noquote() << "  CategoryIdx: " << cd.m_enhancements[i].m_enhance_info.m_pcat_idx;
+        qDebug().noquote() << "  PowerSetIdx: " << cd.m_enhancements[i].m_enhance_info.m_pset_idx;
+        qDebug().noquote() << "  PowerIdx: " << cd.m_enhancements[i].m_enhance_info.m_pow_idx;
     }
 }
 

@@ -329,9 +329,11 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class DialogButton final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     uint32_t button_id;
     DialogButton():MapLinkEvent(MapEventTypes::evDialogButton)
     {}
@@ -348,12 +350,17 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class ActivatePower final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     uint32_t pset_idx;
+    // [[ev_def:field]]
     uint32_t pow_idx;
+    // [[ev_def:field]]
     uint32_t target_idx;
+    // [[ev_def:field]]
     uint32_t target_db_id;
 
     ActivatePower():MapLinkEvent(MapEventTypes::evActivatePower)
@@ -375,13 +382,19 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class ActivatePowerAtLocation final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     uint32_t pset_idx;
+    // [[ev_def:field]]
     uint32_t pow_idx;
+    // [[ev_def:field]]
     uint32_t target_idx;
+    // [[ev_def:field]]
     uint32_t target_db_id;
+    // [[ev_def:field]]
     glm::vec3 location;
 
     ActivatePowerAtLocation():MapLinkEvent(MapEventTypes::evActivatePowerAtLocation)
@@ -409,10 +422,13 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class ActivateInspiration final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     int slot_idx;
+    // [[ev_def:field]]
     int row_idx;
     ActivateInspiration():MapLinkEvent(MapEventTypes::evActivateInspiration)
     {}
@@ -494,10 +510,13 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class RecvSelectedTitles : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     bool m_has_prefix;
+    // [[ev_def:field]]
     uint32_t m_generic, m_origin;
 
     RecvSelectedTitles():MapLinkEvent(MapEventTypes::evRecvSelectedTitles)
@@ -704,10 +723,18 @@ public:
     }
 };
 
+// [[ev_def:type]]
 class MoveInspiration final : public MapLinkEvent
 {
 public:
-    uint32_t src_col, src_row, dest_col, dest_row;
+    // [[ev_def:field]]
+    uint32_t src_col;
+    // [[ev_def:field]]
+    uint32_t src_row;
+    // [[ev_def:field]]
+    uint32_t dest_col;
+    // [[ev_def:field]]
+    uint32_t dest_row;
     MoveInspiration():MapLinkEvent(MapEventTypes::evMoveInspiration)
     {}
     void serializeto(BitStream &bs) const
@@ -723,7 +750,6 @@ public:
     }
 };
 
-#include "Events/EnhancementEvents.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/EntitiesResponse.h"
 #include "Events/FriendsListUpdate.h"
@@ -731,6 +757,7 @@ public:
 #include "Events/LocationVisited.h"
 #include "Events/PlaqueVisited.h"
 #include "Events/PlayerInfo.h"
+#include "Events/PowerSystemEvents.h"
 #include "Events/SaveClientOptions.h"
 #include "Events/SceneEvent.h"
 #include "Events/Shortcuts.h"

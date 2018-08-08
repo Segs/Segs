@@ -513,10 +513,8 @@ void setLevel(Character &c, uint32_t val)
 {
     if(val>50)
         val = 50;
-    c.m_char_data.m_level = val;
-    // TODO: set max attribs based upon level
-    //MapServerData map_server_data;
-    //c.m_experience_points = map_server_data.expForLevel(val);
+    c.m_char_data.m_level = val - 1; // client stores lvl arrays starting at 0
+    c.finalizeLevel();
 }
 
 void setCombatLevel(Character &c, uint32_t val)
@@ -652,6 +650,18 @@ void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount)
 {
     qCDebug(logSlashCommand, "Sending %d FloatingNumbers from %d to %d", amount, src->m_idx, tgt_idx);
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingDamage>(new FloatingDamage(src->m_idx, tgt_idx, amount)));
+}
+
+void sendLevelUp(Entity *tgt)
+{
+    //qCDebug(logSlashCommand) << "Sending LevelUp:" << tgt->m_idx;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<LevelUp>(new LevelUp()));
+}
+
+void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy)
+{
+    //qCDebug(logSlashCommand) << "Sending CombineEnhanceResponse:" << tgt->m_idx;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<CombineEnhanceResponse>(new CombineEnhanceResponse(success, destroy)));
 }
 
 void sendChangeTitle(Entity *tgt, bool select_origin)

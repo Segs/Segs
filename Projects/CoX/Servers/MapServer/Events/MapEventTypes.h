@@ -75,7 +75,7 @@ public:
     EVENT_DECL(evMapXferList                ,158)
     EVENT_DECL(evMapXferListClose           ,159)
 //    EVENT_DECL(evEnableControlLog         ,160)
-//    EVENT_DECL(evLevelUp                  ,161)
+    EVENT_DECL(evLevelUp                    ,161)
     EVENT_DECL(evChangeTitle                ,162)
 //    EVENT_DECL(evCSRBugReport             ,164)
     EVENT_DECL(evEmailHeadersCmd            ,165)
@@ -84,6 +84,7 @@ public:
     EVENT_DECL(evEntityInfoResponse         ,169) // Send entity info (description)
 //    EVENT_DECL(evClueUpdate               ,170)
     EVENT_DECL(evTrayAdd                    ,182)
+    EVENT_DECL(evCombineEnhancResponse      ,183)
 // client -> server commands
     EVENT_DECL(evConsoleCommand             ,200)
     EVENT_DECL(evMiniMapState               ,201)
@@ -117,6 +118,7 @@ public:
     EVENT_DECL(evMoveEnhancement            ,241)
     EVENT_DECL(evSetEnhancement             ,242)
     EVENT_DECL(evTrashEnhancement           ,243)
+    EVENT_DECL(evRecvNewPower               ,246)
     EVENT_DECL(evEntityInfoRequest          ,256) // right-click entity select "Info"
     EVENT_DECL(evLocationVisited            ,262)
     EVENT_DECL(evSwitchViewPoint            ,264)

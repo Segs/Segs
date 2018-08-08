@@ -44,6 +44,6 @@ public:
 #include "Events/FloatingInfo.h"
 #include "Events/ChangeTitle.h"
 #include "Events/SetClientState.h"
+#include "Events/LevelUp.h"
 #include "Events/MapXferList.h"
-#include "Events/MapXferListClose.h"
 #include "Events/TrayAdd.h"

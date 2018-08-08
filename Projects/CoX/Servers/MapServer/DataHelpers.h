@@ -164,6 +164,8 @@ void sendClientState(Entity *tgt, ClientStates client_state);
 void showMapXferList(Entity *ent, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(Entity *tgt, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount);
+void sendLevelUp(Entity *tgt);
+void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy);
 void sendChangeTitle(Entity *tgt, bool select_origin);
 void sendTrayAdd(Entity *tgt, uint32_t pset_idx, uint32_t pow_idx);
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);

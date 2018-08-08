@@ -48,7 +48,7 @@ void serialize(Archive &archive, PowerPool_Info &poolinfo, uint32_t const versio
         return;
     }
 
-    archive(cereal::make_nvp("CategoryIdx", poolinfo.m_category_idx));
+    archive(cereal::make_nvp("CategoryIdx", poolinfo.m_pcat_idx));
     archive(cereal::make_nvp("PowersetIdx", poolinfo.m_pset_idx));
     archive(cereal::make_nvp("PowerIdx", poolinfo.m_pow_idx));
 }
@@ -62,7 +62,7 @@ void serialize(Archive &archive, CharacterInspiration &in, uint32_t const versio
         return;
     }
 
-    archive(cereal::make_nvp("InspirationInfo", in.m_insp_tpl));
+    archive(cereal::make_nvp("InspirationInfo", in.m_insp_info));
     archive(cereal::make_nvp("Name", in.m_name));
     archive(cereal::make_nvp("Col", in.m_col));
     archive(cereal::make_nvp("Row", in.m_row));
@@ -78,8 +78,8 @@ void serialize(Archive &archive, CharacterEnhancement &eh, uint32_t const versio
         return;
     }
 
-    archive(cereal::make_nvp("EnhancementInfo", eh.m_enhance_tpl));
-    archive(cereal::make_nvp("Index", eh.m_enhancement_idx));
+    archive(cereal::make_nvp("EnhancementInfo", eh.m_enhance_info));
+    archive(cereal::make_nvp("Index", eh.m_slot_idx));
     archive(cereal::make_nvp("Name", eh.m_name));
     archive(cereal::make_nvp("Level", eh.m_level));
     archive(cereal::make_nvp("NumCombines", eh.m_num_combines));
@@ -95,7 +95,7 @@ void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version)
         return;
     }
 
-    archive(cereal::make_nvp("PowerInfo", pwr.m_power_tpl));
+    archive(cereal::make_nvp("PowerInfo", pwr.m_power_info));
     archive(cereal::make_nvp("Index", pwr.m_index));
     archive(cereal::make_nvp("Name", pwr.m_name));
     archive(cereal::make_nvp("LevelBought", pwr.m_level_bought));
@@ -105,7 +105,7 @@ void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version)
     archive(cereal::make_nvp("Range", pwr.m_range));
     archive(cereal::make_nvp("RechargeTime", pwr.m_recharge_time));
     archive(cereal::make_nvp("ActivationState", pwr.m_activation_state));
-    archive(cereal::make_nvp("NumEnhancements", pwr.m_available_eh_slots));
+    archive(cereal::make_nvp("NumEnhancements", pwr.m_total_eh_slots));
     archive(cereal::make_nvp("Enhancements", pwr.m_enhancements));
 }
 
@@ -209,6 +209,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("Enhancements", cd.m_enhancements));
     archive(cereal::make_nvp("MaxInspirationCols", cd.m_max_insp_cols));
     archive(cereal::make_nvp("MaxInspirationRows", cd.m_max_insp_rows));
+    archive(cereal::make_nvp("MaxEnhancementSlots", cd.m_max_enhance_slots));
 }
 
 void saveTo(const CharacterData &target, const QString &baseName, bool text_format)

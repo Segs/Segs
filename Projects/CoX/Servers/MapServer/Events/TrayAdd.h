@@ -13,10 +13,13 @@
 
 #include <QtCore/QString>
 
+// [[ev_def:type]]
 class TrayAdd final : public GameCommand
 {
 public:
+    // [[ev_def:field]]
     uint32_t            m_pset_idx;
+    // [[ev_def:field]]
     uint32_t            m_pow_idx;
                 TrayAdd(uint32_t pset_idx, uint32_t pow_idx) : GameCommand(MapEventTypes::evTrayAdd),
                     m_pset_idx(pset_idx),

@@ -84,9 +84,11 @@ void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ToggleExtraInfo(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetClientState(const QString &cmd, MapClientSession &sess);
+void cmdHandler_AddEntirePowerSet(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess);
+void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
@@ -166,9 +168,11 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"extrainfo"},"Toggle extra_info", &cmdHandler_ToggleExtraInfo, 9},
     {{"moveinstantly"},"Toggle move_instantly", &cmdHandler_ToggleMoveInstantly, 9},
     {{"clientstate"},"Set ClientState mode", &cmdHandler_SetClientState, 9},
+    {{"addpowerset"},"Adds entire PowerSet (by 'pcat pset' idxs) to Entity", &cmdHandler_AddEntirePowerSet, 9},
     {{"addpower"},"Adds Power (by 'pcat pset pow' idxs) to Entity", &cmdHandler_AddPower, 9},
     {{"addinsp"},"Adds Inspiration (by name) to Entity", &cmdHandler_AddInspiration, 9},
     {{"addboost", "addEnhancement"},"Adds Enhancement (by name) to Entity", &cmdHandler_AddEnhancement, 9},
+    {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
     /* Access Level 2 Commands */
@@ -440,6 +444,9 @@ void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess)
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setLevel(*sess.m_ent->m_char, attrib); // TODO: Why does this result in -1?
+
+    QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
+    sendFloatingInfo(sess.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 
     QString msg = "Setting Level to: " + QString::number(attrib);
     qCDebug(logSlashCommand) << msg;
@@ -725,6 +732,35 @@ void cmdHandler_SetClientState(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
+void cmdHandler_AddEntirePowerSet(const QString &cmd, MapClientSession &sess)
+{
+    CharacterData &cd = sess.m_ent->m_char->m_char_data;
+    QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundClue).value();
+
+    QVector<QStringRef> args(cmd.splitRef(' '));
+    uint32_t v1 = args.value(1).toInt();
+    uint32_t v2 = args.value(2).toInt();
+
+    if(args.size() < 4)
+    {
+        qCDebug(logSlashCommand) << "Bad invocation:" << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation: " + cmd, &sess);
+    }
+
+    QString msg = QString("Granting Entire PowerSet <%1, %2> to %3").arg(v1).arg(v2).arg(sess.m_ent->name());
+
+    PowerPool_Info ppool;
+    ppool.m_pcat_idx = v1;
+    ppool.m_pset_idx = v2;
+
+    addEntirePowerSet(cd, ppool);
+    cd.m_powers_updated = true;
+
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
+    sendFloatingInfo(sess.m_ent, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+}
+
 void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess)
 {
     CharacterData &cd = sess.m_ent->m_char->m_char_data;
@@ -743,8 +779,13 @@ void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess)
 
     QString msg = QString("Granting Power <%1, %2, %3> to %4").arg(v1).arg(v2).arg(v3).arg(sess.m_ent->name());
 
-    addPower(cd, v1, v2, v3);
-    //sess.m_ent->m_powers_updated = true;
+    PowerPool_Info ppool;
+    ppool.m_pcat_idx = v1;
+    ppool.m_pset_idx = v2;
+    ppool.m_pow_idx = v3;
+
+    addPower(cd, ppool);
+    cd.m_powers_updated = true;
 
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
@@ -760,7 +801,7 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
     QString msg = "Awarding Inspiration '" + val + "' to " + sess.m_ent->name();
 
     addInspirationByName(cd, val);
-    //sess.m_ent->m_powers_updated = true;
+    cd.m_powers_updated = true;
 
     qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
@@ -783,11 +824,28 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
     }
 
     addEnhancementByName(cd, name, level);
-    //sess.m_ent->m_powers_updated = true;
+    cd.m_powers_updated = true;
 
     qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
     sendFloatingInfo(sess.m_ent, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+}
+
+void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
+{
+    int level = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+
+    // levelup command appears to only work 1 level at a time.
+    if(level > sess.m_ent->m_char->m_char_data.m_level+1)
+        level = sess.m_ent->m_char->m_char_data.m_level + 1;
+
+    setLevel(*sess.m_ent->m_char, level);
+
+    QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
+    sendFloatingInfo(sess.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    qCDebug(logPowers) << "Entity: " << sess.m_ent->m_idx << "has leveled up";
+
+    sendLevelUp(sess.m_ent);
 }
 
 // Slash commands for setting bit values
@@ -990,7 +1048,7 @@ void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
     // TODO: Implement true move-to-safe-location-nearby logic
     forcePosition(*sess.m_ent,sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
 
-    QString msg = QString("Resetting location to default spawn (%1,%2,%3)")
+    QString msg = QString("Resetting location to default spawn <%L1, %L2, %L3>")
                       .arg(sess.m_ent->m_entity_data.m_pos.x)
                       .arg(sess.m_ent->m_entity_data.m_pos.y)
                       .arg(sess.m_ent->m_entity_data.m_pos.z);
@@ -1246,16 +1304,18 @@ void cmdHandler_MapXferList(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_ReSpec(const QString &/*cmd*/, MapClientSession &sess)
 {
+    CharacterData &cd = sess.m_ent->m_char->m_char_data;
+
     if(sess.m_ent->m_char->isEmpty())
         return;
 
     QString msg = "No powersets found for player " + sess.m_ent->name();
 
-    if(sess.m_ent->m_char->m_char_data.m_powersets.size() > 1)
+    if(cd.m_powersets.size() > 1)
     {
         msg = "Removing all powers for player " + sess.m_ent->name();
-        sess.m_ent->m_reset_powersets = true;
-        sess.m_ent->m_powers_updated = true;
+        cd.m_reset_powersets = true;
+        cd.m_powers_updated = true;
     }
 
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);

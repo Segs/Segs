@@ -325,10 +325,10 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     player_char.sendFriendList(bs);
 }
 
-void storePowerSpec(const PowerPool_Info &ppool, BitStream &bs)
+void storePowerSpec(uint32_t pset_idx, uint32_t pow_idx, BitStream &bs)
 {
-    bs.StorePackedBits(2, ppool.m_pset_idx);
-    bs.StorePackedBits(1, ppool.m_pow_idx);
+    bs.StorePackedBits(2, pset_idx);
+    bs.StorePackedBits(1, pow_idx);
 }
 
 void storePowerRanges(const CharacterData &cd, BitStream &bs)
@@ -341,7 +341,7 @@ void storePowerRanges(const CharacterData &cd, BitStream &bs)
             //qCDebug(logPowers) << "Sending Power:" << p.m_name << pset.m_index << p.m_index;
 
             bs.StoreBits(1,1); // have power to send.
-            p.m_power_tpl.serializeto(bs);
+            p.m_power_info.serializeto(bs);
             bs.StoreFloat(p.m_range); // nem: I have no idea why it is passed here
         }
     }
@@ -355,22 +355,22 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     assert(e);
     CharacterData *cd = &e->m_char->m_char_data;
 
-    bs.StoreBits(1, e->m_powers_updated);
-    if(!e->m_powers_updated)
+    bs.StoreBits(1, cd->m_powers_updated);
+    if(!cd->m_powers_updated)
     {
         storePowerRanges(*cd, bs);
         return;
     }
-    qCDebug(logPowers) << "Powers Updated:" << e->m_powers_updated;
+    qCDebug(logPowers) << "Powers Updated:" << cd->m_powers_updated;
 
 
     // Reset Powersets (for respec)
-    bs.StoreBits(1, e->m_reset_powersets);
-    if(e->m_reset_powersets)
+    bs.StoreBits(1, cd->m_reset_powersets);
+    if(cd->m_reset_powersets)
     {
-        qCDebug(logPowers) << "Resetting Powers:" << e->m_reset_powersets;
+        qCDebug(logPowers) << "Resetting Powers:" << cd->m_reset_powersets;
         CharacterPowerSet temp;
-        int pcat_idx = getPowerCatByName("Inherent");
+        int pcat_idx = getPowerCatByName("Temporary_Powers");
 
         for(CharacterPowerSet &pset : cd->m_powersets)
         {
@@ -382,14 +382,14 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
         }
 
         if(temp.m_powers.empty())
-            qWarning() << "Failed to find Inherent PowerSet";
+            qWarning() << "Failed to find Temporary_Powers PowerSet";
         else
         {
             cd->m_powersets.clear();
             cd->m_powersets.push_back(temp);
         }
 
-        e->m_reset_powersets = false;
+        cd->m_reset_powersets = false;
     }
 
     // Count all powers owned
@@ -401,43 +401,55 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
 
     qCDebug(logPowers) << "Update Powers:" << total_powers_owned;
     bs.StorePackedBits(1, total_powers_owned);
+    int i = 0;
     for(const CharacterPowerSet &pset : cd->m_powersets)
     {
+        int j = 0;
         for(const CharacterPower &power : pset.m_powers)
         {
             qCDebug(logPowers) << "Power:" << power.m_name << pset.m_index << power.m_index;
-            storePowerSpec(power.m_power_tpl, bs);
+            storePowerSpec(i, j, bs);
 
+            bs.StoreBits(1, !power.m_erase_power);
             if(power.m_erase_power)
             {
                 qCDebug(logPowers) << "  Removing power" << power.m_name << pset.m_index << power.m_index;
-                removePower(*cd, power.m_power_tpl);
+                removePower(*cd, power.m_power_info);
                 continue;
             }
 
-            power.m_power_tpl.serializeto(bs);
+            power.m_power_info.serializeto(bs);
             bs.StorePackedBits(5, pset.m_level_bought);
             bs.StorePackedBits(5, power.m_level_bought);
             bs.StorePackedBits(3, power.m_num_charges);
             bs.StoreFloat(power.m_usage_time);
             bs.StorePackedBits(24, power.m_activation_time);
 
-            qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_available_eh_slots;
-            bs.StorePackedBits(4, power.m_available_eh_slots); // total enhancement slots
-            for(int i = 0; i < power.m_available_eh_slots; ++i)
+            qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_total_eh_slots;
+            bs.StorePackedBits(4, power.m_total_eh_slots); // total owned enhancement slots
+            for(int i = 0; i < power.m_total_eh_slots; ++i)
             {
+                if(power.m_enhancements.empty() || power.m_enhancements[i].m_name.isEmpty())
+                {
+                    qCDebug(logPowers) << "  No Enhancement:" << i;
+                    bs.StoreBits(1, false);
+                    continue;
+                }
+
                 qCDebug(logPowers) << "  Enhancement:" << power.m_enhancements[i].m_name
-                                   << power.m_enhancements[i].m_enhancement_idx
+                                   << power.m_enhancements[i].m_slot_idx
                                    << power.m_enhancements[i].m_slot_used;
                 bs.StoreBits(1, power.m_enhancements[i].m_slot_used);        // slot has enhancement
                 if(power.m_enhancements[i].m_slot_used)
                 {
-                    power.m_enhancements[i].m_enhance_tpl.serializeto(bs);
+                    power.m_enhancements[i].m_enhance_info.serializeto(bs);
                     bs.StorePackedBits(5, power.m_enhancements[i].m_level);
                     bs.StorePackedBits(2, power.m_enhancements[i].m_num_combines);
                 }
             }
+            ++j;
         }
+        ++i;
     }
 
     qCDebug(logPowers) << "Send State of All Powers";
@@ -451,7 +463,7 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
         bs.StoreBits(1, pow->m_active_state_change);
         if(pow->m_active_state_change)
         {
-            storePowerSpec(pow->m_power_tpl, bs);
+            storePowerSpec(pow->m_power_info.m_pset_idx, pow->m_index, bs);
             bs.StorePackedBits(1, pow->m_activation_state);
         }
     }
@@ -464,7 +476,7 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
         bs.StoreBits(1, pow->m_timer_updated);
         if(pow->m_timer_updated)
         {
-            storePowerSpec(pow->m_power_tpl, bs);
+            storePowerSpec(pow->m_power_info.m_pset_idx, pow->m_index, bs);
             bs.StoreFloat(pow->m_recharge_time);
         }
     }
@@ -474,7 +486,6 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     int max_rows = cd->m_max_insp_rows;
     int max_insps = max_cols * max_rows;
     qCDebug(logPowers) << "Max Insp Slots:" << max_insps;
-    //e->m_char->sendInspirations(bs);
 
     storePackedBitsConditional(bs, 4, max_insps);
     for(int i = 0; i < max_cols; ++i)
@@ -488,39 +499,38 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
 
             bs.StoreBits(1, cd->m_inspirations[i][j].m_has_insp);
             if(cd->m_inspirations[i][j].m_has_insp)
-                cd->m_inspirations[i][j].m_insp_tpl.serializeto(bs);
+                cd->m_inspirations[i][j].m_insp_info.serializeto(bs);
         }
     }
 
     // All Owned Enhancements
-    qCDebug(logPowers) << "Owned Enhancements:" << cd->m_enhancements.size();
-    //e->m_char->sendEnhancements(bs);
+    qCDebug(logPowers) << "Enhancement Slots:" << cd->m_enhancements.size();
 
     bs.StorePackedBits(1, cd->m_enhancements.size());
     for(CharacterEnhancement &eh : cd->m_enhancements)
     {
         if(cd->m_enhancements.empty() || eh.m_name.isEmpty())
         {
-            qCDebug(logPowers) << "  No Enhancement:" << eh.m_enhancement_idx;
-            bs.StorePackedBits(3, eh.m_enhancement_idx);
+            qCDebug(logPowers) << "  No Enhancement:" << eh.m_slot_idx;
+            bs.StorePackedBits(3, eh.m_slot_idx);
             bs.StoreBits(1, false);
             continue;
         }
 
-        qCDebug(logPowers) << "  Enhancement:" << eh.m_enhancement_idx
+        qCDebug(logPowers) << "  Enhancement:" << eh.m_slot_idx
                            << eh.m_slot_used;
-        bs.StorePackedBits(3, eh.m_enhancement_idx);
+        bs.StorePackedBits(3, eh.m_slot_idx);
         bs.StoreBits(1, eh.m_slot_used);
         if(eh.m_slot_used)
         {
-            eh.m_enhance_tpl.serializeto(bs);
+            eh.m_enhance_info.serializeto(bs);
             bs.StorePackedBits(5, eh.m_level);
             bs.StorePackedBits(2, eh.m_num_combines);
         }
     }
 
-    e->m_powers_updated = false; // reset flag now that we've updated
-    qCDebug(logPowers) << "  Powers Updated:" << e->m_powers_updated;
+    cd->m_powers_updated = false; // reset flag now that we've updated
+    qCDebug(logPowers) << "  Powers Updated:" << cd->m_powers_updated;
 }
 
 void sendServerControlState(const EntitiesResponse &src,BitStream &bs)

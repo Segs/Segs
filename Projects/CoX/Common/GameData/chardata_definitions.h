@@ -59,6 +59,11 @@ static const constexpr  uint32_t    class_version       = 6; // v6: powersets
                         PowerTrayGroup      m_trays;
                         vInspirations       m_inspirations;
                         vEnhancements       m_enhancements;     // Enhancements owned, but not attached to powers
-                        uint32_t    m_max_insp_cols     = 3;    // Characters start with 3 rows and 1 col
-                        uint32_t    m_max_insp_rows     = 1;    // Characters start with 3 rows and 1 col
+                        uint32_t    m_max_insp_cols     = 0;
+                        uint32_t    m_max_insp_rows     = 0;
+                        uint32_t    m_max_enhance_slots = 0;
+
+                        // No need to serialize these members
+                        bool        m_powers_updated    = false;
+                        bool        m_reset_powersets   = false;
 };

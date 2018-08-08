@@ -8,6 +8,7 @@
 #pragma once
 #include "CommonNetStructures.h"
 #include "BitStream.h"
+#include "GameData/power_definitions.h"
 
 #include <QtCore/QString>
 #include <array>
@@ -27,17 +28,19 @@ enum class TrayItemType : uint32_t
     Count                   = 7,
 };
 
-struct PreorderSprint
+struct EnhancemenSlotEntry
 {
-        bool    m_has_preorder = true;
-        QString m_name;
+    bool        m_set_in_power  = false;
+    uint32_t    m_pset_idx      = 0;
+    uint32_t    m_pow_idx       = 0;
+    uint32_t    m_eh_idx        = 0;
 };
 
 class PowerPool_Info
 {
 public:
 static const constexpr  uint32_t    class_version = 1;
-        uint32_t        m_category_idx     = 0;
+        uint32_t        m_pcat_idx     = 0;
         uint32_t        m_pset_idx         = 0;
         uint32_t        m_pow_idx          = 0;
         void serializefrom( BitStream &src );
@@ -47,7 +50,8 @@ static const constexpr  uint32_t    class_version = 1;
 struct CharacterInspiration
 {
 static const constexpr  uint32_t    class_version = 1;
-        PowerPool_Info  m_insp_tpl;
+        PowerPool_Info  m_insp_info;
+        Power_Data      m_insp_tpl;
         QString         m_name;
         uint32_t        m_col               = 0;
         uint32_t        m_row               = 0;
@@ -59,8 +63,9 @@ using vInspirations = std::array< std::array<CharacterInspiration, 4>, 5>;
 struct CharacterEnhancement
 {
 static const constexpr  uint32_t    class_version = 1;
-        PowerPool_Info  m_enhance_tpl;
-        uint32_t        m_enhancement_idx   = 0;
+        PowerPool_Info  m_enhance_info;
+        Power_Data      m_enhance_tpl;
+        uint32_t        m_slot_idx          = 0;
         QString         m_name;
         uint32_t        m_level             = 0;
         uint32_t        m_num_combines      = 0;
@@ -72,7 +77,8 @@ using vEnhancements = std::array<CharacterEnhancement, 10>;
 struct CharacterPower
 {
 static const constexpr  uint32_t    class_version = 1;
-        PowerPool_Info  m_power_tpl;
+        PowerPool_Info  m_power_info;
+        Power_Data      m_power_tpl;
         uint32_t        m_index             = 0;
         QString         m_name;
         uint32_t        m_level_bought      = 0;
@@ -82,7 +88,7 @@ static const constexpr  uint32_t    class_version = 1;
         float           m_range             = 1.0f;
         float           m_recharge_time     = 0.0f;
         uint32_t        m_activation_state  = 0;
-        uint32_t        m_available_eh_slots = 3;
+        uint32_t        m_total_eh_slots    = 0;
         bool            m_active_state_change   = false;
         bool            m_timer_updated         = false;
         bool            m_erase_power           = false;
@@ -157,15 +163,18 @@ static const int m_num_trays = 2; // was 3, displayed trays
 int     getPowerCatByName(const QString &name);
 int     getPowerSetByName(const QString &name, uint32_t pcat_idx);
 int     getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
-CharacterPower getPowerData(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
-CharacterPowerSet getPowerSetData(uint32_t pcat_idx, uint32_t pset_idx);
+CharacterPower getPowerData(PowerPool_Info &ppool);
+CharacterPowerSet getPowerSetData(PowerPool_Info &ppool);
 CharacterPower * getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
-void addPower(CharacterData &cd, uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
+void addPowerSet(CharacterData &cd, PowerPool_Info &ppool);
+void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool);
+void addPower(CharacterData &cd, PowerPool_Info &ppool);
 void removePower(CharacterData &cd, const PowerPool_Info &ppool);
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
 void dumpPower(const CharacterPower &pow);
 void dumpOwnedPowers(CharacterData &cd);
+
 
 /*
  * Inspirations Methods
@@ -177,12 +186,17 @@ void useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row);
 void dumpInspirations(CharacterData &cd);
 
+
 /*
  * Enhancements Methods
  */
 void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level);
+CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_array, uint32_t pow_idx_in_array, uint32_t eh_slot);
 int getNumberEnhancements(CharacterData &cd);
 void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx);
 void setEnhancement(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t src_idx, uint32_t dest_idx);
 void trashEnhancement(CharacterData &cd, uint32_t eh_idx);
+void trashSetEnhancement(CharacterEnhancement &eh, uint32_t eh_idx);
+void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow);
+void combineEnhancements(Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2);
 void dumpEnhancements(CharacterData &cd);

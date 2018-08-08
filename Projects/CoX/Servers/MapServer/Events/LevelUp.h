@@ -13,15 +13,18 @@
 
 #include <QtCore/QString>
 
-class MapXferListClose final : public GameCommand
+// [[ev_def:type]]
+class LevelUp final : public GameCommand
 {
 public:
-                MapXferListClose() : GameCommand(MapEventTypes::evMapXferListClose)
+                LevelUp() : GameCommand(MapEventTypes::evLevelUp)
                 {
                 }
 
         void    serializeto(BitStream &bs) const override {
-                    bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient); // 59
+                    bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient); // 56
+
+                    // nothing to send
                 }
         void    serializefrom(BitStream &src);
 };

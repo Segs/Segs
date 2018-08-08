@@ -139,8 +139,9 @@ protected:
         void on_move_inspiration(class MoveInspiration *ev);
         void on_recv_selected_titles(class RecvSelectedTitles *ev);
         void on_dialog_button(class DialogButton *ev);
-        void on_combine_enhancements(class CombineEnhancements *ev);
+        void on_combine_enhancements(class CombineEnhancementsReq *ev);
         void on_move_enhancement(class MoveEnhancement *ev);
         void on_set_enhancement(class SetEnhancement *ev);
         void on_trash_enhancement(class TrashEnhancement *ev);
+        void on_recv_new_power(class RecvNewPower *ev);
 };

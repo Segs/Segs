@@ -13,9 +13,11 @@
 
 #include <QtCore/QString>
 
+// [[ev_def:type]]
 class ChangeTitle final : public GameCommand
 {
 public:
+    // [[ev_def:field]]
     bool        m_select_origin;
                 ChangeTitle(bool select_origin) : GameCommand(MapEventTypes::evChangeTitle),
                     m_select_origin(select_origin)
