@@ -27,7 +27,7 @@ static const int g_max_friends = 25;
 void addFriend(Entity &src, Entity &tgt)
 {
     QString msg;
-    FriendsList *src_data(&src.m_char->m_char_data.m_friendlist);
+    FriendsList *src_data = &src.m_char->m_char_data.m_friendlist;
 
     if(src_data->m_friends_count >= g_max_friends)
     {
@@ -60,8 +60,6 @@ void addFriend(Entity &src, Entity &tgt)
     if(logFriends().isDebugEnabled())
         dumpFriends(src);
 
-    qDebug() << "Adding char id " << tgt.m_db_id;
-    qDebug() << "flist: " << src_data;
     EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
     friend_tgt->putq(new FriendAddedMessage({src.m_char->m_db_id,tgt.m_db_id}));
     FriendsList flist = *src_data;
