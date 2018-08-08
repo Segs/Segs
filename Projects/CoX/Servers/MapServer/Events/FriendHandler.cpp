@@ -48,9 +48,10 @@ void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
     uint32_t &m_char_id = ev->m_data.m_char_id;
     FriendsList m_friendslist = ev->m_data.m_friendslist;
 
-    //This code might execute multiple times whenever a player changes zone,
-    //but won't do any harm.  Inefficient though.
     /*
+     * This code might execute multiple times whenever a player changes zone,
+     * but won't do any harm.  Inefficient though.
+     *
      * Iterate over the friends list, and put each friend id as a key,
      * and push the current character id into the set value.
      * We don't have to worry about duplicates because we're using a set.
@@ -65,15 +66,13 @@ void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
         f.m_online_status = is_online(f.m_db_id);
         f.m_mapname = getFriendDisplayMapName(f);
         if(!f.m_online_status){
-//            f.m_map_idx = -1;
+            //f.m_map_idx = -1;
         }
     }
 
     //Send the FriendsList to MapInstance, which will call FriendsListUpdate
     EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
                 s_map_info_map[m_char_id].server_id, s_map_info_map[m_char_id].instance_id);
-//    tgt->putq(new SendFriendListMessage({s_map_info_map[m_char_id].session_token,
-//                                        m_friendslist},s_map_info_map[m_char_id].session_token));
     tgt->putq(new SendFriendListMessage({s_map_info_map[m_char_id].session_token,
                                         m_friendslist}));
 }
@@ -91,8 +90,6 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
 
     //Update this player/character's online status
     s_online_map[m_char_id] = true;
-
-    //EventProcessor *tgt = HandlerLocator::getGame_DB_Handler(s_game_server_id);
 
     EventProcessor *inst_tgt = HandlerLocator::getMapInstance_Handler(
                 s_map_info_map[m_char_id].server_id, s_map_info_map[m_char_id].instance_id);
