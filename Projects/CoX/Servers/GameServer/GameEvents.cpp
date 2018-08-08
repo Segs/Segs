@@ -88,7 +88,7 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
         PlayerData player_data;
         EntityData entity_data;
         toActualCharacter(m_data->m_characters[i],converted,player_data, entity_data);
-        converted.serializetoCharsel(tgt, getEntityMapName(entity_data));
+        converted.serializetoCharsel(tgt, getEntityDisplayMapName(entity_data));
     }
     //tgt.StoreBitArray(m_clientinfo,128);
 }

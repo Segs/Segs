@@ -15,7 +15,7 @@
  * @{
  */
 
-#include "PasswordHasher/PasswordHasher.h"
+#include "PasswordHasher.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>

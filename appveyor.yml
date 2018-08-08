@@ -16,6 +16,7 @@ environment:
 branches:
   only:
   - master
+  - develop
 
 configuration: Release
 shallow_clone: true
