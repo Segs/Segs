@@ -59,15 +59,13 @@ void FriendHandler::on_player_friends(GetPlayerFriendsResponse* ev)
         s_friend_map[m_friendslist.m_friends[i].m_db_id].insert(m_char_id);
     }
 
-    /*
-     * Iterate through the friends list and update online status accordingly
-     */
+    //Iterate through the friends list and update online status accordingly
     for(Friend& f : m_friendslist.m_friends)
     {
         f.m_online_status = is_online(f.m_db_id);
-        f.m_mapname = getFriendMapName(f);
+        f.m_mapname = getFriendDisplayMapName(f);
         if(!f.m_online_status){
-            f.m_map_idx = -1;
+//            f.m_map_idx = -1;
         }
     }
 

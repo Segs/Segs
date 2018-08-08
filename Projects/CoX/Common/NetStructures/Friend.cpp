@@ -60,6 +60,8 @@ void addFriend(Entity &src, Entity &tgt)
     if(logFriends().isDebugEnabled())
         dumpFriends(src);
 
+    qDebug() << "Adding char id " << tgt.m_db_id;
+    qDebug() << "flist: " << src_data;
     EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
     friend_tgt->putq(new FriendAddedMessage({src.m_char->m_db_id,tgt.m_db_id}));
     FriendsList flist = *src_data;
@@ -69,6 +71,7 @@ void addFriend(Entity &src, Entity &tgt)
 void removeFriend(Entity &src, QString friend_name)
 {
     QString msg;
+    uint32_t m_tgt_id;
     FriendsList *src_data(&src.m_char->m_char_data.m_friendlist);
 
     qCDebug(logFriends) << "Searching for friend" << friend_name << "to remove them.";
@@ -79,8 +82,12 @@ void removeFriend(Entity &src, QString friend_name)
 
     if(iter!=src_data->m_friends.end())
     {
+        m_tgt_id = iter->m_db_id;
         msg = "Removing " + iter->m_name + " from your friends list.";
         iter = src_data->m_friends.erase(iter);
+
+        EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
+        friend_tgt->putq(new FriendRemovedMessage({src.m_char->m_db_id,m_tgt_id}));
 
         qCDebug(logFriends) << msg;
         if(logFriends().isDebugEnabled())
@@ -97,8 +104,6 @@ void removeFriend(Entity &src, QString friend_name)
     qCDebug(logFriends).noquote() << msg;
     messageOutput(MessageChannel::FRIENDS, msg, src);
 
-    EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
-    friend_tgt->putq(new FriendRemovedMessage({src.m_char->m_db_id,tgt.m_db_id}));
     FriendsList flist = *src_data;
     sendFriendsListUpdate(&src, flist); // Send FriendsListUpdate
 }

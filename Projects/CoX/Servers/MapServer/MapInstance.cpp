@@ -661,13 +661,14 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
     tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id, e->m_db_id}));
 
-    //Fire off a global event for anyone listening for new connections (like FriendHandler)
-    postGlobalEvent(new ClientConnectedMessage(
-        {ev->session_token(), m_owner_id, m_instance_id, e->m_db_id}));
-
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
     map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
+
+
+    //Fire off a global event for anyone listening for new connections (like FriendHandler)
+    postGlobalEvent(new ClientConnectedMessage(
+        {ev->session_token(), m_owner_id, m_instance_id, e->m_db_id}));
 }
 
 void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
