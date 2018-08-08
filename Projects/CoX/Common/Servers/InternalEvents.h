@@ -153,14 +153,14 @@ struct ClientConnectedData
     uint64_t m_session;
     uint32_t m_server_id;     // id of the server the client connected to.
     uint32_t m_sub_server_id; // only used when server_id is the map server
-    uint32_t m_char_id;       // id of the character connecting
+    uint32_t m_char_db_id;       // id of the character connecting
 };
 ONE_WAY_MESSAGE(ClientConnected)
 
 struct ClientDisconnectedData
 {
     uint64_t m_session;
-    uint32_t m_char_id;       // id of the character disconnected
+    uint32_t m_char_db_id;       // id of the character disconnected
 };
 ONE_WAY_MESSAGE(ClientDisconnected)
 

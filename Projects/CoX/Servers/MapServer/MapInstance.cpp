@@ -589,7 +589,6 @@ void MapInstance::on_update_friendslist(SendFriendListMessage *ev)
 {
     MapClientSession &map_session(m_session_store.session_from_token(ev->m_data.m_session_token));
     Entity * e = map_session.m_ent;
-    e->m_db_id = e->m_char->m_db_id;
     FriendsList flist = ev->m_data.m_friendlist;
     e->m_char->m_char_data.m_friendlist = flist;
     sendFriendsListUpdate(e,flist);
@@ -610,7 +609,6 @@ void MapInstance::on_get_player_friends(GetPlayerFriendsRequest *ev)
 {
     MapClientSession &map_session(m_session_store.session_from_token(ev->m_data.m_session_token));
     Entity * e = map_session.m_ent;
-    e->m_db_id = e->m_char->m_db_id;
     EventProcessor *tgt = HandlerLocator::getFriend_Handler();
     tgt->putq(new GetPlayerFriendsResponse({e->m_db_id,e->m_char->m_char_data.m_friendlist}, ev->session_token()));
 }

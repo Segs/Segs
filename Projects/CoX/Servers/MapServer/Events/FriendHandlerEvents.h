@@ -59,7 +59,7 @@ ONE_WAY_MESSAGE(SendNotifyFriend)
 
 struct FriendAddedData
 {
-    uint32_t m_char_id;         //character who added a new friend
+    uint32_t m_char_db_id;         //character who added a new friend
     uint32_t m_added_id;        //id of player added
 };
 
@@ -67,7 +67,7 @@ ONE_WAY_MESSAGE(FriendAdded)
 
 struct FriendRemovedData
 {
-    uint32_t m_char_id;         //character who removed a friend
+    uint32_t m_char_db_id;         //character who removed a friend
     uint32_t m_removed_id;      //id of player removed
 };
 
@@ -84,7 +84,7 @@ struct GetPlayerFriendsRequestData
 
 struct GetPlayerFriendsResponseData
 {
-    uint32_t m_char_id;
+    uint32_t m_char_db_id;
     FriendsList m_friendslist;
 };
 TWO_WAY_MESSAGE(GetPlayerFriends)
