@@ -106,7 +106,7 @@ void FriendHandler::on_client_connected(ClientConnectedMessage *msg)
     }
 
     //Also read this player's friend list to see who they've added
-    //To do this, we send a GetFriendsListRequest to GameDBSyncHandler
+    //To do this, we send a GetFriendsListRequest to MapInstance
     inst_tgt->putq(new GetPlayerFriendsRequest({s_map_info_map[m_char_id].session_token},msg->session_token(),this));
 }
 
