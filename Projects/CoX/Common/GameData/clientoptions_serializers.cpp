@@ -56,9 +56,6 @@ void saveTo(const ClientOptions &target, const QString &baseName, bool text_form
     commonSaveTo(target,"ClientOptions",baseName,text_format);
 }
 
-template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive &archive, ClientOptions &co, uint32_t const version);
-template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive &archive, ClientOptions &co, uint32_t const version);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(ClientOptions);
 
 //! @}

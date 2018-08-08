@@ -114,9 +114,6 @@ void saveTo(const CharacterData &target, const QString &baseName, bool text_form
     commonSaveTo(target,"CharacterData",baseName,text_format);
 }
 
-template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, CharacterData & m, uint32_t const version);
-template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, CharacterData & m, uint32_t const version);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(CharacterData);
 
 //! @}

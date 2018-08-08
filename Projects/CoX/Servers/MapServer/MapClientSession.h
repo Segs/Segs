@@ -72,7 +72,7 @@ struct MapClientSession
         void                    set_temporary(bool v) { assert(v==false); }
         bool                    is_temporary() const { return false; }
         MapLink *               link() { return m_link; }
-        /// \note setting the link does not preserver the state of the previous one.
+        /// \note setting the link does not preserve the state of the previous one.
         void                    link(MapLink *l) { m_link = l; }
 
 protected:

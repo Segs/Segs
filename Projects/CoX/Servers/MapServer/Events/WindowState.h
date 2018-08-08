@@ -9,9 +9,11 @@
 #include "MapEvents.h"
 #include "Common/GameData/gui_definitions.h"
 
+// [[ev_def:type]]
 class WindowState final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     GUIWindow wnd;
     WindowState():MapLinkEvent(MapEventTypes::evWindowState) {}
     void serializeto(BitStream &bs) const override;

@@ -7,7 +7,6 @@ SET(target_CPP
     DataHelpers.cpp
     EntityStorage.cpp
     EntityUpdateCodec.cpp
-    Events/GameCommandList.cpp
     Events/ChatDividerMoved.cpp
     Events/ChatMessage.cpp
     Events/EntitiesResponse.cpp

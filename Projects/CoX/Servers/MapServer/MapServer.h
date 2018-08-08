@@ -24,12 +24,12 @@ class MapManager;
 static constexpr uint8_t INVALID_GAME_SERVER_ID = 255;
 static constexpr char RUNTIME_DATA_PATH[] = "./data/bin/";
 
-class MapServer : public EventProcessor
+class MapServer final : public EventProcessor
 {
         class PrivateData;
 public:
                                 MapServer(uint8_t id);
-                                ~MapServer(void) override;
+                                ~MapServer() override;
 
         bool                    ReadConfigAndRestart();
 

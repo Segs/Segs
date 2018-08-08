@@ -10,6 +10,7 @@
 #include "MapEvents.h"
 #include "NetCommandManager.h"
 
+// [[ev_def:type]]
 class Shortcuts : public MapLinkEvent
 {
 public:

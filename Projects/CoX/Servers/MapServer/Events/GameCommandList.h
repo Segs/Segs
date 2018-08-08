@@ -22,21 +22,6 @@ virtual             ~GameCommand() = default;
 virtual void        serializeto(BitStream &bs) const = 0;
 };
 
-class PreUpdateCommand : public MapLinkEvent
-{
-    std::vector<std::unique_ptr<GameCommand> > m_contents;
-public:
-                PreUpdateCommand() : MapLinkEvent(MapEventTypes::evPreUpdateCommand) {}
-                template <typename... Commands>
-                PreUpdateCommand(Commands &&... items) : PreUpdateCommand()
-                {
-                    std::unique_ptr<GameCommand> cmdArr[] = {std::unique_ptr<GameCommand>(std::move(items))...};
-                    m_contents = std::vector<std::unique_ptr<GameCommand>>{std::make_move_iterator(std::begin(cmdArr)),
-                                                                           std::make_move_iterator(std::end(cmdArr))};
-                }
-        void    serializeto(BitStream &bs) const;
-        void    serializefrom(BitStream &/*src*/);
-};
 #include "Events/ChatMessage.h"
 #include "Events/StandardDialogCmd.h"
 #include "Events/InfoMessageCmd.h"
