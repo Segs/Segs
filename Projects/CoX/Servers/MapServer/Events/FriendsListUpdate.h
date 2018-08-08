@@ -22,8 +22,6 @@ public:
         m_list = friends_list;
     }
     void    serializeto(BitStream &bs) const override {
-        //Do we need to worry about m_list possibly being changed if two FriendListUpdated
-        //events fire simultaneously?
         bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 37
 
         qCDebug(logFriends) << "FL Update:" << m_list.m_has_friends << m_list.m_friends_count << m_list.m_friends.size();
