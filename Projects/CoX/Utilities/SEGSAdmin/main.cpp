@@ -13,17 +13,39 @@
 #include "SEGSAdminTool.h"
 #include <QApplication>
 #include <QFontDatabase>
+#include <QSplashScreen>
 
 int main(int argc, char *argv[])
 {
+    static const char ENV_VAR_QT_DEVICE_PIXEL_RATIO[] = "QT_DEVICE_PIXEL_RATIO";
+    if (!qEnvironmentVariableIsSet(ENV_VAR_QT_DEVICE_PIXEL_RATIO)
+        && !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")
+        && !qEnvironmentVariableIsSet("QT_SCALE_FACTOR")
+        && !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS")) {
+        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    }
+    
     QApplication a(argc, argv);
-    SEGSAdminTool w;
-    w.show();
 
     // Add custom fonts
     QFontDatabase fontDB;
     fontDB.addApplicationFont(":/fonts/dejavusanscondensed.ttf");
+    QPixmap pixmap(":/logo/segs_splash_1.png");
+    QFont dejavu_font_splash;
+    dejavu_font_splash.setFamily("DejaVu Sans Condensed");
+    dejavu_font_splash.setPointSize(12);
+    dejavu_font_splash.setBold(true);
+    dejavu_font_splash.setStretch(125);
 
+    // Splash screen
+    QSplashScreen *splash = new QSplashScreen(pixmap);
+    splash->setFont(dejavu_font_splash);
+    splash->show();
+    splash->showMessage("Loading", Qt::AlignBottom, Qt::red);
+
+    SEGSAdminTool w;
+    splash->finish(&w);
+    w.show();
     return a.exec();
 }
 

@@ -17,7 +17,8 @@ env:
     - CCACHE_TEMPDIR=/tmp/.ccache-temp
     - CCACHE_COMPRESS=1
     - CASHER_TIME_OUT=1000
-
+    - QT=511
+    
 addons_shortcuts:
   addons_clang50: &clang50
     apt:
@@ -85,14 +86,23 @@ install:
   - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       sudo apt-get install -qq qt59base qt59declarative qt59quickcontrols2; source /opt/qt59/bin/qt59-env.sh;
+      CMAKE_OPTS="";
     else
-      brew install qt5;
-      brew link --force qt5 && sudo ln -s /usr/local/Cellar/qt/5.10.1/mkspecs /usr/local/mkspecs && sudo ln -s /usr/local/Cellar/qt/5.10.1/plugins /usr/local/plugins;
+      brew install cppcheck qt;
+      brew link --force qt;
+      QT5_CMAKE_PREFIX=$(ls -d $(brew --cellar)/qt/*/lib/cmake);
+      CMAKE_OPTS="-DCMAKE_PREFIX_PATH=${QT5_CMAKE_PREFIX}";
     fi
-
+    export CMAKE_OPTS;
+  
 script:
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_EXE_LINKER_FLAGS="${CXX_LINKER_FLAGS}" -DBUILD_WITH_CCACHE=1  -DCLANG_TIDY=$(which ${CLANG_TIDY})
+  - |
+    if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+      cmake .. -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_PREFIX_PATH="$(ls -d $(brew --cellar)/qt/*/lib/cmake)" -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_EXE_LINKER_FLAGS="${CXX_LINKER_FLAGS}" -DBUILD_WITH_CCACHE=1  -DCLANG_TIDY=$(which ${CLANG_TIDY});
+    else
+      cmake .. -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_EXE_LINKER_FLAGS="${CXX_LINKER_FLAGS}" -DBUILD_WITH_CCACHE=1  -DCLANG_TIDY=$(which ${CLANG_TIDY});
+    fi
   - make VERBOSE=1
 # ctest --output-on-failure

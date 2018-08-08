@@ -6,7 +6,10 @@
 *
 */
 
-#define VersionString "segs v0.5.0 (The Unsilencer)";
+#define ProjectName "SEGS"
+#define VersionNumber "0.5.0"
+#define VersionName "The Unsilencer"
+#define VersionString ProjectName " v" VersionNumber " (" VersionName ")"
 #define CopyrightString "Super Entity Game Server\nhttp://github.com/Segs/\nCopyright (c) 2006-2018 Super Entity Game Server Team (see AUTHORS.md)\nThis software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.\n";
 //const char *AdminVersionString="Undefined";
 //const char *AuthVersionString="Undefined";
@@ -22,7 +25,10 @@ public:
 {
         return VersionString;
 }
-
+    static const char *getAuthVersionNumber(void)
+{
+        return VersionNumber;
+}
     static const char *getGameVersion(void);
     static const char *getMapVersion(void);
     static const char *getCopyright(void)
@@ -31,6 +37,9 @@ public:
 }
 };
 
+#undef ProjectName
+#undef VersionName
+#undef VersionNumber
 #undef VersionString
 #undef CopyrightString
 

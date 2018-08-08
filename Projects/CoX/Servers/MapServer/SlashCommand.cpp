@@ -453,7 +453,7 @@ void cmdHandler_DebugChar(const QString &/*cmd*/, MapClientSession &sess)
     QString msg = "DebugChar: " + sess.m_ent->name()
             + "\n  " + chardata.m_char_data.m_origin_name
             + "\n  " + chardata.m_char_data.m_class_name
-            + "\n  map: " + chardata.m_char_data.m_mapName
+            + "\n  map: " + getEntityDisplayMapName(sess.m_ent->m_entity_data)
             + "\n  db_id: " + QString::number(sess.m_ent->m_db_id) + ":" + QString::number(chardata.m_db_id)
             + "\n  idx: " + QString::number(sess.m_ent->m_idx)
             + "\n  access: " + QString::number(sess.m_ent->m_entity_data.m_access_level)
@@ -1100,15 +1100,8 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess)
         tgt = getEntity(&sess,getTargetIdx(*sess.m_ent));
         name = tgt->name();
     }
-    else
-        tgt = getEntity(&sess,name);
 
-    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
-        return;
-
-    // TODO: Implement getCharacterFromDB(name) if target is not online.
-
-    removeFriend(*sess.m_ent,*tgt);
+    removeFriend(*sess.m_ent,name);
 }
 
 void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)

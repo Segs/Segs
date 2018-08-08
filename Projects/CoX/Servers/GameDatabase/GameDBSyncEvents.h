@@ -38,6 +38,9 @@ enum GameDBEventTypes : uint32_t
     // select by id for entity data only
     evGetEntityRequest,
     evGetEntityResponse,
+    // selecy by name for entity data
+    evGetEntityByNameRequest,
+    evGetEntityByNameResponse,
 
     evGameDbError
 };
@@ -137,6 +140,7 @@ struct GameAccountResponseCharacterData
     QString m_name;
     QString m_serialized_chardata;
     QString m_serialized_player_data;
+    QString m_serialized_entity_data;
 
     uint32_t m_db_id;
     uint32_t m_account_id;
@@ -223,6 +227,18 @@ struct GetEntityResponseData
     QString m_ent_data;
 };
 TWO_WAY_MESSAGE(GetEntity)
+
+struct GetEntityByNameRequestData
+{
+    QString m_char_name;
+};
+
+struct GetEntityByNameResponseData
+{
+    uint32_t m_supergroup_id;
+    QString m_ent_data;
+};
+TWO_WAY_MESSAGE(GetEntityByName)
 
 struct WouldNameDuplicateRequestData
 {

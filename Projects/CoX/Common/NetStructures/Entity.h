@@ -121,6 +121,7 @@ class Entity
     friend std::array<Entity,10240>;
     using CharacterPtr = std::unique_ptr<Character>;
     using PlayerPtr = std::unique_ptr<PlayerData>;
+    using EntityPtr = std::unique_ptr<EntityData>;
     using NPCPtr = std::unique_ptr<NPCData>;
 private:
                             Entity();
@@ -135,6 +136,7 @@ public:
         CharacterPtr        m_char;
         // And not all entities are players
         PlayerPtr           m_player;
+        EntityPtr           m_entity;
         NPCPtr              m_npc;
 
         int                 m_full_update_count     = 10; // TODO: remove this after we have proper physics

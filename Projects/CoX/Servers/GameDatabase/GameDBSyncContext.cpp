@@ -124,6 +124,7 @@ bool GameDbSyncContext::loadAndConfigure()
     m_prepared_account_insert = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_account_select = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_entity_select = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_entity_select_by_name = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_char_select = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_char_exists = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_char_insert = std::make_unique<QSqlQuery>(*m_db);
@@ -173,6 +174,7 @@ bool GameDbSyncContext::loadAndConfigure()
                 "INSERT INTO costume (character_id,costume_index,skin_color,parts) VALUES "
                 "(:id,:costume_index,:skin_color,:parts)");
     prepQuery(*m_prepared_entity_select,"SELECT * FROM characters WHERE id=:id");
+    prepQuery(*m_prepared_entity_select_by_name, "SELECT * FROM characters WHERE char_name=:char_name");
     prepQuery(*m_prepared_char_select,"SELECT * FROM characters WHERE account_id=? AND slot_index=?");
     prepQuery(*m_prepared_char_exists,"SELECT exists (SELECT 1 FROM characters WHERE char_name = ? LIMIT 1)");
     prepQuery(*m_prepared_char_delete,"DELETE FROM characters WHERE account_id=? AND slot_index=?");
@@ -255,6 +257,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         character.m_name =  name.isEmpty() ? "EMPTY" : name;
         character.m_serialized_chardata = m_prepared_char_select->value("chardata").toString();
         character.m_serialized_player_data = m_prepared_char_select->value("player_data").toString();
+        character.m_serialized_entity_data = m_prepared_char_select->value("entitydata").toString();
 
         GameAccountResponseCostumeData costume;
         // appearance related.
@@ -374,13 +377,27 @@ bool GameDbSyncContext::createNewChar(const CreateNewCharacterRequestData &data,
 
 bool GameDbSyncContext::getEntity(const GetEntityRequestData &data, GetEntityResponseData &result)
 {
-    m_prepared_entity_select->bindValue(0,data.m_char_id);
+    m_prepared_entity_select->bindValue(0, data.m_char_id);
     if(!doIt(*m_prepared_entity_select))
         return false;
     if(!m_prepared_entity_select->next())
         return false;
     result.m_supergroup_id = m_prepared_entity_select->value("supergroup_id").toUInt();
     result.m_ent_data = m_prepared_entity_select->value("entitydata").toString();
+    return true;
+}
+
+bool GameDbSyncContext::getEntityByName(const GetEntityByNameRequestData &data, GetEntityByNameResponseData &result)
+{
+    m_prepared_entity_select_by_name->bindValue(0, data.m_char_name);
+
+    if(!doIt(*m_prepared_entity_select_by_name))
+        return false;
+    if(!m_prepared_entity_select_by_name->next())
+        return false;
+
+    result.m_supergroup_id = m_prepared_entity_select_by_name->value("supergroup_id").toUInt();
+    result.m_ent_data = m_prepared_entity_select_by_name->value("entitydata").toString();
     return true;
 }
 
