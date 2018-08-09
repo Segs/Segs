@@ -68,7 +68,7 @@ void SettingsDialog::open_settings_dialog()
     QList<QLineEdit *> all_line_edits = ui->tab_settings->findChildren<QLineEdit *>();
     foreach(QLineEdit* le, all_line_edits)
     {
-        le->setStyleSheet("");
+        le->setStyleSheet("background-color: rgb(255, 255, 255)");
     }
     QString fade_in_value = QString::number(ui->map_player_fade_in->value());
     ui->map_player_fade_in_value->setText(fade_in_value);
@@ -365,6 +365,7 @@ void SettingsDialog::field_validator()
     {
         QMessageBox validation_error;
         validation_error.setText("The highlighted fields can not be blank");
+        //validation_error.setText()
         validation_error.setStandardButtons(QMessageBox::Ok);
         validation_error.setDefaultButton(QMessageBox::Ok);
         validation_error.setIcon(QMessageBox::Warning);

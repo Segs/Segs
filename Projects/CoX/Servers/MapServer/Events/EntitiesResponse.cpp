@@ -115,14 +115,11 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
         }
 
         QString member_name     = tm_ent->name();
-        QString member_mapname  = tm_ent->m_client->m_current_map->name();
-        bool tm_on_same_map     = true;
+        QString member_mapname  = getEntityDisplayMapName(tm_ent->m_entity_data);
+        bool tm_on_same_map     = tm_ent->m_entity_data.m_map_idx == e->m_entity_data.m_map_idx;
 
-        if(member_mapname != src.m_client->m_current_map->name())
-            tm_on_same_map = false;
-
-        bs.StoreBits(32,member.tm_idx);
-        bs.StoreBits(1,tm_on_same_map);
+        bs.StoreBits(32, member.tm_idx);
+        bs.StoreBits(1, tm_on_same_map);
 
         if(!tm_on_same_map)
         {

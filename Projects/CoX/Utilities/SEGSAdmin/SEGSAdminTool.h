@@ -24,15 +24,11 @@ class SEGSAdminTool : public QMainWindow
     class GenerateConfigFileDialog *m_generate_config_dialog;
     class SetUpData *m_set_up_data;
     class SettingsDialog *m_settings_dialog;
+    class NetworkManager *m_network_manager;
+    class UpdateDetailDialog *m_update_dialog;
+    class AboutDialog *m_about_dialog;
     bool m_server_running = false;
-
-
-    //int font_output_id = QFontDatabase::addApplicationFont(":/fonts/dejavusanscondensed.ttf");
-    //QString font_output_family = QFontDatabase::applicationFontFamilies(id).at(0);
-    //QFont monospace(font_output_family);
-
-
-    //const QFont fixedFont = QFontDatabase::addApplicationFont(":/fonts/dejavusanscondensed.ttf");
+    QString m_segs_version = "v0.5.0"; // Current segs version, must be updated per new release
 
 public:
     explicit SEGSAdminTool(QWidget *parent = nullptr);
@@ -49,6 +45,7 @@ public slots:
     void read_authserver();
     void check_for_config_file();
     void check_data_and_dir(QString maps_dir);
+    void check_for_latest_release();
 
 signals:
     void readyToRead(QString filePath);
@@ -56,7 +53,9 @@ signals:
     void checkForDB(bool on_startup);
     void addAdminUser();
     void getMapsDirConfigCheck();
-    //void sendMapsDir(QString maps_dir);
+    void sendMapsDir(QString maps_dir);
+    void newVersionAvailable(QString release_id);
+    void getLatestReleases();
 
 
 private:
@@ -65,6 +64,8 @@ private:
     QProcess *m_createUser;
     QProcess *m_createDB;
     QProcess *m_start_auth_server;
+    QStringList m_segs_releases;
+    //QString m_release_id;
 
 };
 
