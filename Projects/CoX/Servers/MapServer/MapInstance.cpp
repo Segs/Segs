@@ -292,9 +292,6 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case FriendHandlerEventTypes::evSendNotifyFriend:
             on_notify_friend(static_cast<SendNotifyFriendMessage *>(ev));
             break;
-        case FriendHandlerEventTypes::evGetPlayerFriendsRequest:
-            on_get_player_friends(static_cast<GetPlayerFriendsRequest *>(ev));
-            break;
         case GameDBEventTypes::evWouldNameDuplicateResponse:
             on_name_clash_check_result(static_cast<WouldNameDuplicateResponse *>(ev));
             break;
@@ -605,14 +602,6 @@ void MapInstance::on_notify_friend(SendNotifyFriendMessage *ev)
     sendInfoMessage(MessageChannel::SERVER,notify_msg,&notify_session);
 }
 
-void MapInstance::on_get_player_friends(GetPlayerFriendsRequest *ev)
-{
-    MapClientSession &map_session(m_session_store.session_from_token(ev->m_data.m_session_token));
-    Entity * e = map_session.m_ent;
-    EventProcessor *tgt = HandlerLocator::getFriend_Handler();
-    tgt->putq(new GetPlayerFriendsResponse({e->m_db_id,e->m_char->m_char_data.m_friendlist}, ev->session_token()));
-}
-
 void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
 {
     MapClientSession &map_session(m_session_store.session_from_event(ev));
@@ -663,9 +652,8 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
 
 
-    //Fire off a global event for anyone listening for new connections (like FriendHandler)
-    postGlobalEvent(new ClientConnectedMessage(
-        {ev->session_token(), m_owner_id, m_instance_id, e->m_db_id}));
+    EventProcessor *f_tgt = HandlerLocator::getFriend_Handler();
+    f_tgt->putq(new FriendConnectedMessage({ev->session_token(),m_owner_id,m_instance_id, e->m_db_id, e->m_char->m_char_data.m_friendlist}));
 }
 
 void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)

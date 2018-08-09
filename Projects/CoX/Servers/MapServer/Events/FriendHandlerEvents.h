@@ -12,12 +12,11 @@
 
 enum FriendHandlerEventTypes : uint32_t
 {
-    evSendFriendList = Internal_EventTypes::evLAST_EVENT,
+    evFriendConnected = Internal_EventTypes::evLAST_EVENT,
+    evSendFriendList,
     evSendNotifyFriend,
     evFriendAdded,
     evFriendRemoved,
-    evGetPlayerFriendsRequest,
-    evGetPlayerFriendsResponse
 };
 
 #define ONE_WAY_MESSAGE(name)\
@@ -41,6 +40,17 @@ struct name ## Response final : public InternalEvent\
     name ## Response(name ## ResponseData &&d,uint64_t token) :  InternalEvent(FriendHandlerEventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
 };
 
+struct FriendConnectedData
+{
+    uint64_t m_session;
+    uint32_t m_server_id;     // id of the server the client connected to.
+    uint32_t m_sub_server_id; // only used when server_id is the map server
+    uint32_t m_char_db_id;       // id of the character connecting
+    FriendsList m_friends_list;
+};
+
+ONE_WAY_MESSAGE(FriendConnected)
+
 struct SendFriendListData
 {
     uint64_t m_session_token;
@@ -61,6 +71,7 @@ struct FriendAddedData
 {
     uint32_t m_char_db_id;         //character who added a new friend
     uint32_t m_added_id;        //id of player added
+    Friend m_friend;
 };
 
 ONE_WAY_MESSAGE(FriendAdded)
@@ -72,19 +83,3 @@ struct FriendRemovedData
 };
 
 ONE_WAY_MESSAGE(FriendRemoved)
-
-/*
- * These two don't need to be a two-way message, since we can
- * simply listen to all GetPlayerFriendsResponse.
-*/
-struct GetPlayerFriendsRequestData
-{
-    uint64_t m_session_token;
-};
-
-struct GetPlayerFriendsResponseData
-{
-    uint32_t m_char_db_id;
-    FriendsList m_friendslist;
-};
-TWO_WAY_MESSAGE(GetPlayerFriends)

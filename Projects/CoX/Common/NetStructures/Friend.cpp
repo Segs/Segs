@@ -37,9 +37,6 @@ void addFriend(Entity &src, Entity &tgt)
         return; // break early
     }
 
-    src_data->m_has_friends = true;
-    src_data->m_friends_count++;
-
     Friend f;
     f.m_online_status   = (tgt.m_client != nullptr); // need some other method for this.
     f.m_db_id           = tgt.m_db_id;
@@ -49,10 +46,6 @@ void addFriend(Entity &src, Entity &tgt)
     f.m_map_idx         = tgt.m_entity_data.m_map_idx;
     f.m_mapname         = getEntityDisplayMapName(tgt.m_entity_data);
 
-    // add to friendlist
-    src_data->m_friends.emplace_back(f);
-    qCDebug(logFriends) << "friendslist size:" << src_data->m_friends_count << src_data->m_friends.size();
-
     msg = "Adding " + tgt.name() + " to your friendlist.";
     qCDebug(logFriends).noquote() << msg;
     messageOutput(MessageChannel::FRIENDS, msg, src);
@@ -61,9 +54,7 @@ void addFriend(Entity &src, Entity &tgt)
         dumpFriends(src);
 
     EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
-    friend_tgt->putq(new FriendAddedMessage({src.m_char->m_db_id,tgt.m_db_id}));
-    FriendsList flist = *src_data;
-    sendFriendsListUpdate(&src, flist); // Send FriendsListUpdate
+    friend_tgt->putq(new FriendAddedMessage({src.m_char->m_db_id,tgt.m_db_id, f}));
 }
 
 void removeFriend(Entity &src, QString friend_name)
@@ -82,7 +73,6 @@ void removeFriend(Entity &src, QString friend_name)
     {
         m_tgt_id = iter->m_db_id;
         msg = "Removing " + iter->m_name + " from your friends list.";
-        iter = src_data->m_friends.erase(iter);
 
         EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
         friend_tgt->putq(new FriendRemovedMessage({src.m_char->m_db_id,m_tgt_id}));
@@ -94,22 +84,8 @@ void removeFriend(Entity &src, QString friend_name)
     else
         msg = friend_name + " is not on your friends list.";
 
-    if(src_data->m_friends.empty())
-        src_data->m_has_friends = false;
-
-    src_data->m_friends_count = src_data->m_friends.size();
-
     qCDebug(logFriends).noquote() << msg;
     messageOutput(MessageChannel::FRIENDS, msg, src);
-
-    FriendsList flist = *src_data;
-    sendFriendsListUpdate(&src, flist); // Send FriendsListUpdate
-}
-
-bool isFriendOnline(Entity &src, uint32_t db_id)
-{
-    // TODO: src is needed for mapclient
-    return getEntityByDBID(src.m_client, db_id) != nullptr;
 }
 
 void toggleFriendList(Entity &src)

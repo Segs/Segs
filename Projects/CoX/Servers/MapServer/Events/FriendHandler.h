@@ -22,6 +22,14 @@ struct MapInfo
     uint32_t instance_id; //this is the template ID aka map instance id
 };
 
+struct PlayerInfo
+{
+    bool m_is_online;
+    std::set<uint32_t> m_players_added; //a set of player ids that added this friend
+    FriendsList m_friends_list;
+    MapInfo m_map_info;
+};
+
 class FriendHandler : public EventProcessor
 {
 private:
@@ -30,10 +38,14 @@ private:
     static std::unordered_map<uint32_t,bool> s_online_map; //key is char ID, bool is if they are online
     //key is char ID, value should have both map server ID and map instance ID
     static std::unordered_map<uint32_t,MapInfo> s_map_info_map;
+
+    static std::unordered_map<uint32_t,PlayerInfo> s_player_info_map;
     static int s_game_server_id;
 
-    void on_player_friends(GetPlayerFriendsResponse* ev);
-    void on_client_connected(ClientConnectedMessage* msg);
+    void send_update_friends_list(uint32_t char_db_id);
+    void update_player_friends(uint32_t char_db_id, FriendsList friends_list);
+    void refresh_player_friends(uint32_t char_db_id);
+    void on_client_connected(FriendConnectedMessage* msg);
     void on_client_disconnected(ClientDisconnectedMessage* msg);
     void on_friend_added(FriendAddedMessage* msg);
     void on_friend_removed(FriendRemovedMessage* msg);
@@ -42,6 +54,6 @@ protected:
 public:
     FriendHandler();
     void set_game_server_id(int m_id);
-    bool is_online(int m_id);
+    bool is_online(uint32_t m_db_id);
     void dispatch(SEGSEvent *ev) override;
 };
