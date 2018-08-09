@@ -10,6 +10,7 @@
  * @{
  */
 #include "InputStates.h"
+#include "Movement.h"
 #include "Common/GameData/CoHMath.h"
 
 const char *control_name[] = {

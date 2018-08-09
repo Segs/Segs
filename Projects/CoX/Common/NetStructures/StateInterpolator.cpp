@@ -12,6 +12,7 @@
 
 #include "StateInterpolator.h"
 #include "Entity.h"
+#include "Movement.h"
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>
 #include <glm/glm.hpp>
@@ -246,6 +247,64 @@ std::array<BinTreeEntry,7> testEncVec(std::vector<PosUpdate> vals, float min_err
         v.m_has_other = v.x!=0 || v.z!=0;
     }
     return enc;
+}
+
+void entCalcInterp(Entity *ent, glm::mat4 *mat4, uint32_t time, glm::vec3 *next_pyr)
+{
+    PosUpdate *posupdate_arr = ent->m_pos_updates;
+    PosUpdate *last;
+    PosUpdate *next;
+    glm::vec3 pos;
+    glm::vec3 pyr;
+    int i;
+
+    for(i = 0; i < 64; ++i)
+    {
+        last = &posupdate_arr[(64 + ent->m_update_idx - i) % 64];
+        if (time > posupdate_arr[(64 + ent->m_update_idx - i) % 64].m_timestamp)
+            break;
+    }
+
+    if (i > 0 && (unsigned int)i < 64 && last->m_timestamp)
+    {
+        next = &posupdate_arr[(ent->m_update_idx - i + 64 + 1) % 64];
+        float timestep = (float)(unsigned int)(posupdate_arr[(ent->m_update_idx - i + 64 + 1) % 64].m_timestamp - last->m_timestamp);
+        float ratio = (float)(time - last->m_timestamp) / timestep;
+
+        for (int j = 0; j < 3; ++j)
+        {
+            pos[j] = (1.0f - ratio) * last->m_position[j] + ratio * next->m_position[j];
+            //pyr[j] = last->m_pyr_angles[j].lerp(next->m_pyr_angles[j], ratio);
+            pyr[j] = glm::mix(last->m_pyr_angles[j], next->m_pyr_angles[j], ratio);
+        }
+    }
+    else
+    {
+        next = &posupdate_arr[ent->m_update_idx];
+        last = &posupdate_arr[(ent->m_update_idx + 64 - 1) % 64];
+
+        if (ent->m_type == EntType::CAR || !ent->m_is_fading) // possibly: e->m_fading_direction != FadeDirection::Out
+        {
+            last->m_position = next->m_position;
+            last->m_pyr_angles = next->m_pyr_angles;
+            pos = next->m_position;
+            next->m_timestamp = time;
+        }
+        else
+        {
+            float scale = (float)(time - last->m_timestamp) / (float)(unsigned int)(next->m_timestamp - last->m_timestamp);
+            glm::vec3 distance = next->m_position - last->m_position;
+            glm::vec3 magnitude = distance * scale;
+            pos = magnitude + last->m_position;
+        }
+        pyr = next->m_pyr_angles;
+    }
+
+    //quat = fromCoHYpr(pos); // below does this
+    transformFromYPRandTranslation(*mat4, pyr, pos);
+
+    if (next_pyr)
+        *next_pyr = pyr;
 }
 
 int storeBinTreesResult(BitStream &bs,const std::array<BinTreeEntry,7> &bintree)

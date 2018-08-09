@@ -12,12 +12,13 @@
 
 #define _USE_MATH_DEFINES
 #include "Entity.h"
+#include "Character.h"
 #include "LFG.h"
 #include "Team.h"
-#include "Character.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/npc_definitions.h"
+
 #include <QtCore/QDebug>
 #include <algorithm>
 #include <cmath>
@@ -81,7 +82,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const ColorAndPartPacke
     e.m_player->m_keybinds.resetKeybinds(default_profiles);
     e.m_is_hero = true;
 
-    e.m_direction                         = glm::quat(1.0f,0.0f,0.0f,0.0f);
+    e.m_direction = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 
 const QString &Entity::name() const {
@@ -246,6 +247,5 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
 void forcePosition(Entity &e, glm::vec3 pos)
 {
     e.m_entity_data.m_pos = pos;
-    e.m_full_update_count = 10;
 }
 //! @}

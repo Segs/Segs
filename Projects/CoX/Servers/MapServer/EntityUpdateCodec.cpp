@@ -66,10 +66,10 @@ void storeCreation(const Entity &src, BitStream &bs)
     if(src.m_hasname)
         bs.StoreString(src.m_char->getName());
     PUTDEBUG("after names");
-    bool fadin = true;
-    bs.StoreBits(1,fadin); // Is entity being faded in ?
+
+    bs.StoreBits(1,src.m_is_fading); // Is entity being faded in ?
     // the following is used as an input to LCG float generator, generated float (0-1) is used as
-    // linear interpolation factor betwwen scale_min and scale_max
+    // linear interpolation factor between scale_min and scale_max
     bs.StoreBits(32,src.m_randSeed);
     bs.StoreBits(1,src.m_has_supergroup); // TODO: This appears to actually be for Villain Groups
     if(src.m_has_supergroup)
@@ -92,7 +92,7 @@ void sendStateMode(const Entity &src,BitStream &bs)
     PUTDEBUG("after sendStateMode");
 }
 
-void storeUnknownBinTree(const Entity &src, BitStream &bs)
+void storeInterpolationTree(const Entity &src, BitStream &bs)
 {  
     std::array<BinTreeEntry,7> tgt;
 
@@ -145,7 +145,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
     glm::vec3 pyr_angles(0);
     pyr_angles.y = src.m_entity_data.m_orientation_pyr.y;
 
-    if(src.m_is_flying)
+    if(src.m_motion_state.m_is_flying)
         pyr_angles.z = src.m_entity_data.m_orientation_pyr.z;
 
     // output everything
@@ -187,7 +187,7 @@ void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
         if(src.m_extra_info) {
             bs.StoreBits(1, src.m_move_instantly);
             // Bintree sending happens here
-            storeUnknownBinTree(src, bs);
+            storeInterpolationTree(src, bs);
         }
         // if extra_inf
         qCDebug(logPosition, "E[%d] pos: %i  extra_info: %d  move_instantly: %d", src.m_idx, src.m_extra_info, src.m_move_instantly);
@@ -384,7 +384,7 @@ void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
 void sendEntCollision(const Entity &src,BitStream &bs)
 {
     // if 1 is sent, client will disregard it's own collision processing.
-    bs.StoreBits(1, src.m_no_collision); // 1/0 only
+    bs.StoreBits(1, src.m_cur_state->m_no_collision); // 1/0 only
 }
 
 void sendNoDrawOnClient(const Entity &src,BitStream &bs)

@@ -7,8 +7,9 @@
 
 #pragma once
 #include "CommonNetStructures.h"
-#include "Powers.h"
 #include "Costume.h"
+#include "Movement.h"
+#include "Powers.h"
 #include "Team.h"
 #include "InputStates.h"
 #include "FixedPointValue.h"
@@ -27,13 +28,6 @@ class Team;
 class Character;
 struct PlayerData;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
-
-struct PosUpdate
-{
-    glm::vec3       m_position;
-    glm::vec3       m_pyr_angles;
-    int             m_timestamp;
-};
 
 enum class FadeDirection
 {
@@ -130,6 +124,7 @@ public:
         StateStorage        m_states;
         InputState          *m_cur_state            = nullptr;
         InputState          *m_prev_state           = nullptr;
+        MotionState         m_motion_state;
         // Some entities might not have a character data ( doors, cars )
         // Making it an unique_ptr<Character> makes it clear that Entity 'owns'
         // and takes care of this data, at the same time it can be missing
@@ -139,12 +134,11 @@ public:
         EntityPtr           m_entity;
         NPCPtr              m_npc;
 
-        int                 m_full_update_count     = 10; // TODO: remove this after we have proper physics
-        bool                m_has_supergroup        = true;
+        EntityData          m_entity_data;
+        Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_team              = false;
-        Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
-        EntityData          m_entity_data;
+        bool                m_has_supergroup        = true;
 
         uint32_t            m_idx                   = {0};
         uint32_t            m_db_id                 = {0};
@@ -159,12 +153,12 @@ public:
         bool                m_is_logging_out        = false;
         int                 m_time_till_logout      = 0;    // time in miliseconds untill given entity should be marked as logged out.
         std::vector<NetFx>  m_fx1;
+        TriggeredMove       m_triggered_moves[20];
         AppearanceType      m_costume_type          = AppearanceType::None;
         int                 m_state_mode            = 0;
         bool                m_state_mode_send       = false;
         bool                m_odd_send              = false;
         bool                m_no_draw_on_client     = false;
-        bool                m_no_collision          = false;
         bool                m_force_camera_dir      = false; // used to force the client camera direction in sendClientData()
         bool                m_is_hero               = false;
         bool                m_is_villian            = false;
@@ -172,17 +166,7 @@ public:
         bool                m_seq_update            = false;
         int                 m_seq_move_idx          = 0;
         uint8_t             m_seq_move_change_time  = 0;
-        bool                m_is_flying             = false;
-        bool                m_is_stunned            = false;
-        bool                m_is_jumping            = false;
-        bool                m_is_sliding            = false;
-        bool                m_is_falling            = false;
-        bool                m_has_jumppack          = false;
-        bool                m_controls_disabled     = false;
-        float               m_backup_spd            = 1.0f;
-        float               m_jump_height           = 2.0f;
-        uint8_t             m_motion_state_id       = 1;
-        bool                m_update_motion_state   = true;     // EntityResponse sendServerControlState
+
         bool                m_update_pos_and_cam    = false;     // EntityResponse sendServerControlState
         bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions

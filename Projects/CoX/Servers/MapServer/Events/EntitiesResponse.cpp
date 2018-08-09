@@ -15,6 +15,7 @@
 #include "NetStructures/Powers.h"
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
+#include "NetStructures/Movement.h"
 #include "NetStructures/InputStates.h"
 #include "GameData/playerdata_definitions.h"
 #include "MapClientSession.h"
@@ -449,48 +450,49 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
     Entity *ent = src.m_client->m_ent; // user entity
 
-    SurfaceParams surface_params[2];
+    SurfaceParams surface_params[2]; // idx 0 is walking, idx 1 is flying
     memset(&surface_params,0,2*sizeof(SurfaceParams));
     surface_params[0].traction = 1.5f;
     surface_params[0].friction = 1.5f;
     surface_params[0].bounce = 1.5f;
-    surface_params[1].max_speed = surface_params[0].max_speed = 1.5f;
-    surface_params[1].gravitational_constant = surface_params[0].gravitational_constant = 3.0f;
+    surface_params[0].max_speed = surface_params[1].max_speed = 1.5f;
+    surface_params[0].gravitational_constant = surface_params[1].gravitational_constant = 3.0f;
 
-    bs.StoreBits(1,ent->m_update_motion_state);
-    if(ent->m_update_motion_state)
+    bs.StoreBits(1,ent->m_motion_state.m_update_motion_state);
+    if(ent->m_motion_state.m_update_motion_state)
     {
         //rand()&0xFF
-        bs.StoreBits(8,ent->m_motion_state_id);
+        bs.StoreBits(8, ent->m_motion_state.m_motion_state_id);
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
 
-        storeVector(bs,ent->m_speed); // This is entity speed vector !!
+        storeVector(bs, ent->m_speed); // This is entity speed vector !!
 
-        bs.StoreFloat(ent->m_backup_spd);         // Backup Speed default = 1.0f
+        bs.StoreFloat(ent->m_motion_state.m_backup_spd);         // Backup Speed default = 1.0f
         bs.StoreBitArray((uint8_t *)&surface_params,2*sizeof(SurfaceParams)*8);
 
-        bs.StoreFloat(ent->m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
-        bs.StoreBits(1,ent->m_is_flying);         // is_flying flag
-        bs.StoreBits(1,ent->m_is_stunned);        // is_stunned flag (lacks overhead 'dizzy' FX)
-        bs.StoreBits(1,ent->m_has_jumppack);      // jumpack flag (lacks costume parts)
+        bs.StoreFloat(ent->m_motion_state.m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
+        bs.StoreBits(1, ent->m_motion_state.m_is_flying);         // is_flying flag
+        bs.StoreBits(1, ent->m_motion_state.m_is_stunned);        // is_stunned flag (lacks overhead 'dizzy' FX)
+        bs.StoreBits(1, ent->m_motion_state.m_has_jumppack);      // jumpack flag (lacks costume parts)
 
-        bs.StoreBits(1,ent->m_controls_disabled); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
-        bs.StoreBits(1,ent->m_is_jumping);        // leaping? seems like the anim changes slightly?
-        bs.StoreBits(1,ent->m_is_sliding);        // sliding? default = 0
+        bs.StoreBits(1, ent->m_motion_state.m_controls_disabled); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
+        bs.StoreBits(1, ent->m_motion_state.m_is_jumping);        // leaping? seems like the anim changes slightly?
+        bs.StoreBits(1, ent->m_motion_state.m_is_sliding);        // sliding? default = 0
     }
+
     // Used to force the client to a position/speed/pitch/rotation by server
-    bs.StoreBits(1,ent->m_update_pos_and_cam);
+    bs.StoreBits(1, ent->m_update_pos_and_cam);
     if(ent->m_update_pos_and_cam)
     {
         bs.StorePackedBits(1, ent->m_cur_state->m_received_id); // sets g_client_pos_id_rel default = 0
-        storeVector(bs,ent->m_entity_data.m_pos);   // server-side pos
-        storeVectorConditional(bs,ent->m_velocity); // server-side spd (probably velocity)
+        storeVector(bs, ent->m_entity_data.m_pos);   // server-side pos
+        storeVectorConditional(bs, ent->m_velocity); // server-side spd (probably velocity)
 
         storeFloatConditional(bs, ent->m_cur_state->m_camera_pyr.x); // Pitch
         storeFloatConditional(bs, ent->m_cur_state->m_camera_pyr.y); // Yaw
         storeFloatConditional(bs, ent->m_cur_state->m_camera_pyr.z); // Roll
 
-        bs.StorePackedBits(1,ent->m_is_falling); // server side forced falling bit
+        bs.StorePackedBits(1, ent->m_motion_state.m_is_falling); // server side forced falling bit
     }
 }
 

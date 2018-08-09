@@ -19,7 +19,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
-#include <optional>
+//#include <optional> // Requires C++17
 
 namespace
 {
