@@ -171,7 +171,7 @@ void World::physicsStep(Entity *e,uint32_t msec)
 
         glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
         //e->m_entity_data.m_pos += ((za*e->m_cur_state->m_pos_delta)*float(msec))/e->u1; // logmovement: why 50? why?
-        e->m_entity_data.m_pos += (za*e->m_cur_state->m_pos_delta)*e->m_velocity*float(msec);
+        e->m_entity_data.m_pos += (za*e->m_cur_state->m_pos_delta)*float(msec)/24;
 
         if(e->m_type == EntType::PLAYER)
         {

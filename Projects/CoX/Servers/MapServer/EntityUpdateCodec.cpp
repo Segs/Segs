@@ -123,8 +123,12 @@ bool storePosition(const Entity &src,BitStream &bs)
 
 bool update_rot(const Entity &src, int axis ) /* returns true if given axis needs updating */
 {
+    if(src.m_prev_state == nullptr)
+        return true;
+
     if(src.m_prev_state->m_orientation_pyr[axis] == src.m_cur_state->m_orientation_pyr[axis])
         return false;
+
     return true;
 }
 

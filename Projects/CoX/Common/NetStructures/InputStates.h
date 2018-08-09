@@ -25,6 +25,15 @@ enum BinaryControl
     LAST_QUANTIZED_VALUE = 7,
 };
 
+static int reverseControlDirection[6] = {
+    BACKWARD,
+    FORWARD,
+    RIGHT,
+    LEFT,
+    DOWN,
+    UP,
+};
+
 extern const char *control_name[];
 
 struct SurfaceParams
@@ -63,13 +72,16 @@ public:
     float       m_velocity_scale        = 1.0f;
     float       m_speed_scale           = 1.0f;
     bool        m_no_collision          = false;
-    bool        m_has_key_release  = 0;
+    bool        m_has_key_release       = 0;
     bool        m_pos_delta_valid[3]    = {false};
     bool        m_pyr_valid[3]          = {false};
     glm::vec3   m_pos_delta             = {0.0f, 0.0f, 0.0f};
     bool        m_controls_disabled     = false;
     float       m_keypress_time[6]      = {0};
     float       m_max_press_time        = 0.0f;
+    bool        m_following             = false;
+    glm::vec3   m_pos_start             = {0.0f, 0.0f, 0.0f};
+    glm::vec3   m_pos_end               = {0.0f, 0.0f, 0.0f};
 
     // Targeting
     bool        m_has_target;
