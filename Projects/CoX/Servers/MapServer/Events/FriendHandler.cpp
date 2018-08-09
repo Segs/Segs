@@ -13,10 +13,6 @@
 #include <QtCore/QDebug>
 
 std::unordered_map<uint32_t,PlayerInfo> FriendHandler::s_player_info_map;
-
-std::unordered_map<uint32_t,std::set<uint32_t>> FriendHandler::s_friend_map;
-std::unordered_map<uint32_t,bool> FriendHandler::s_online_map;
-std::unordered_map<uint32_t,MapInfo> FriendHandler::s_map_info_map;
 int FriendHandler::s_game_server_id;
 
 void FriendHandler::dispatch(SEGSEvent *ev)
