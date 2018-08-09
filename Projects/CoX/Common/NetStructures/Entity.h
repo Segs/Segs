@@ -122,8 +122,6 @@ private:
 virtual                     ~Entity();
 public:
         StateStorage        m_states;
-        InputState          *m_cur_state            = nullptr;
-        InputState          *m_prev_state           = nullptr;
         MotionState         m_motion_state;
         // Some entities might not have a character data ( doors, cars )
         // Making it an unique_ptr<Character> makes it clear that Entity 'owns'
@@ -135,7 +133,7 @@ public:
         NPCPtr              m_npc;
 
         EntityData          m_entity_data;
-        Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
+        Team*               m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_team              = false;
         bool                m_has_supergroup        = true;
@@ -203,13 +201,9 @@ public:
         uint32_t            m_db_store_flags            = 0;
 
         void                dump();
-        void                addPosUpdate(const PosUpdate &p);
-        void                addInterp(const PosUpdate &p);
 
 static  void                sendAllyID(BitStream &bs);
 static  void                sendPvP(BitStream &bs);
-
-        bool                update_rot(int axis) const; // returns true if given axis needs updating;
 
         const QString &     name() const;
         void                fillFromCharacter();
@@ -227,5 +221,4 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant);
 void fillEntityFromNewCharData(Entity &e, BitStream &src, const ColorAndPartPacker *packer, const Parse_AllKeyProfiles &default_profiles);
-void forcePosition(Entity &e,glm::vec3 pos);
 extern void abortLogout(Entity *e);

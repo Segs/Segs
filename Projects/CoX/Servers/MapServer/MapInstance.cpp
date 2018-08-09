@@ -675,13 +675,17 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         e->m_char->m_account_id = map_session.auth_id();
         e->m_client = &map_session;
         map_session.m_ent = e;
+
         glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
         if(!m_new_player_spawns.empty())
             spawn_pos = glm::vec3(m_new_player_spawns[rand()%m_new_player_spawns.size()][3]);
-        forcePosition(*e,spawn_pos);
+
+        forcePosition(*e, spawn_pos);
+
         e->m_entity_data.m_access_level = map_session.m_access_level;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
+
         GameAccountResponseCharacterData char_data;
         fromActualCharacter(*e->m_char,*e->m_player, *e->m_entity, char_data);
         serializeToDb(e->m_entity_data,ent_data);
@@ -824,13 +828,7 @@ void MapInstance::on_input_state(InputStateEvent *st)
     MapClientSession &session(m_session_store.session_from_event(st));
     Entity *   ent = session.m_ent;
 
-    if(ent->m_cur_state == nullptr) // if somehow we made it this far. first time, save state
-        ent->m_states.addNewState(st->m_next_state);
-
-    ent->m_prev_state = &ent->m_states.m_inp_states.back();
-
     ent->m_states.addNewState(st->m_next_state);
-    ent->m_cur_state = &ent->m_states.m_inp_states.back();
 
     if (st->m_next_state.m_has_key_release)
         ent->m_input_ack = st->m_next_state.m_send_id;

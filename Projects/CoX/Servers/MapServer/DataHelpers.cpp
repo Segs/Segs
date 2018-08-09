@@ -149,7 +149,7 @@ void toggleJumppack(Entity &e)
     // TODO: toggle costume part for jetpack back item.
 }
 
-void    toggleControlsDisabled(Entity &e) { e.m_cur_state->m_controls_disabled = !e.m_cur_state->m_controls_disabled; }
+void    toggleControlsDisabled(Entity &e) { e.m_states.current()->m_controls_disabled = !e.m_states.current()->m_controls_disabled; }
 void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
 void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
 void    toggleExtraInfo(Entity &e) { e.m_extra_info = !e.m_extra_info; }

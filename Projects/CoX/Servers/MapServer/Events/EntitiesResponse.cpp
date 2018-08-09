@@ -452,11 +452,17 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 
     SurfaceParams surface_params[2]; // idx 0 is walking, idx 1 is flying
     memset(&surface_params,0,2*sizeof(SurfaceParams));
-    surface_params[0].traction = 1.5f;
-    surface_params[0].friction = 1.5f;
-    surface_params[0].bounce = 1.5f;
-    surface_params[0].max_speed = surface_params[1].max_speed = 1.5f;
-    surface_params[0].gravitational_constant = surface_params[1].gravitational_constant = 3.0f;
+    surface_params[0].traction = 1.0f;
+    surface_params[0].friction = 0.45f;
+    surface_params[0].bounce = 0.01f;
+    surface_params[0].gravitational_constant = 0.065f;
+    surface_params[0].max_speed = 1.00f;
+    surface_params[1].traction = 0.02f;
+    surface_params[1].friction = 0.01f;
+    surface_params[1].bounce = 0.00f;
+    surface_params[1].gravitational_constant = 0.065f;
+    surface_params[1].max_speed = 1.00f;
+
 
     bs.StoreBits(1,ent->m_motion_state.m_update_motion_state);
     if(ent->m_motion_state.m_update_motion_state)
@@ -484,13 +490,13 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     bs.StoreBits(1, ent->m_update_pos_and_cam);
     if(ent->m_update_pos_and_cam)
     {
-        bs.StorePackedBits(1, ent->m_cur_state->m_received_id); // sets g_client_pos_id_rel default = 0
+        bs.StorePackedBits(1, ent->m_states.current()->m_received_id); // sets g_client_pos_id_rel default = 0
         storeVector(bs, ent->m_entity_data.m_pos);   // server-side pos
         storeVectorConditional(bs, ent->m_velocity); // server-side spd (probably velocity)
 
-        storeFloatConditional(bs, ent->m_cur_state->m_camera_pyr.x); // Pitch
-        storeFloatConditional(bs, ent->m_cur_state->m_camera_pyr.y); // Yaw
-        storeFloatConditional(bs, ent->m_cur_state->m_camera_pyr.z); // Roll
+        storeFloatConditional(bs, ent->m_states.current()->m_camera_pyr.x); // Pitch
+        storeFloatConditional(bs, ent->m_states.current()->m_camera_pyr.y); // Yaw
+        storeFloatConditional(bs, ent->m_states.current()->m_camera_pyr.z); // Roll
 
         bs.StorePackedBits(1, ent->m_motion_state.m_is_falling); // server side forced falling bit
     }
@@ -560,9 +566,9 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
     bs.StoreBits(1,ent->m_force_camera_dir);
     if(ent->m_force_camera_dir)
     {
-        bs.StoreFloat(ent->m_cur_state->m_camera_pyr.p); // force camera_pitch
-        bs.StoreFloat(ent->m_cur_state->m_camera_pyr.y); // force camera_yaw
-        bs.StoreFloat(ent->m_cur_state->m_camera_pyr.r); // force camera_roll
+        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.p); // force camera_pitch
+        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.y); // force camera_yaw
+        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.r); // force camera_roll
     }
 }
 }

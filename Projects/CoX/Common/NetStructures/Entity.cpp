@@ -122,15 +122,6 @@ void Entity::dump()
     dumpFriends(*this);
 }
 
-void Entity::addPosUpdate(const PosUpdate & p) {
-    m_update_idx = (m_update_idx+1) % 64;
-    m_pos_updates[m_update_idx] = p;
-}
-
-void Entity::addInterp(const PosUpdate & p) {
-    m_interp_results.emplace_back(p);
-}
-
 Entity::Entity()
 {
 }
@@ -169,12 +160,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_entity.reset(new EntityData);
     e.might_have_rare = e.m_rare_bits   = true;
 
-    // Initialize movement input state pointers
-    InputState empty_state;
-    e.m_states.m_inp_states.push_back(empty_state);
-    e.m_prev_state = &e.m_states.m_inp_states.back();
-    e.m_states.addNewState(empty_state);
-    e.m_cur_state = &e.m_states.m_inp_states.back();
+    e.m_states.init(); // Initialize movement input state pointers
 
     PosUpdate p;
     for(int i = 0; i<9; i++)
@@ -185,12 +171,12 @@ void initializeNewPlayerEntity(Entity &e)
         p.m_position = e.m_entity_data.m_pos;
         p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
         p.m_timestamp = now_ms;
-        e.addInterp(p);
-        e.addPosUpdate(p);
+        addInterp(e, p);
+        addPosUpdate(e, p);
     }
 }
 
-void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
+void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant)
 {
     e.m_costume_type                    = AppearanceType::NpcCostume;
     e.m_destroyed                       = false;
@@ -213,12 +199,7 @@ void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
     e.m_entity.reset(new EntityData);
     e.might_have_rare = e.m_rare_bits   = true;
 
-    // Initialize movement input state pointers
-    InputState empty_state;
-    e.m_states.m_inp_states.push_back(empty_state);
-    e.m_prev_state = &e.m_states.m_inp_states.back();
-    e.m_states.addNewState(empty_state);
-    e.m_cur_state = &e.m_states.m_inp_states.back();
+    e.m_states.init(); // Initialize movement input state pointers
 
     PosUpdate p;
     for(int i = 0; i<9; i++)
@@ -229,8 +210,8 @@ void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
         p.m_position = e.m_entity_data.m_pos;
         p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
         p.m_timestamp = now_ms;
-        e.addInterp(p);
-        e.addPosUpdate(p);
+        addInterp(e, p);
+        addPosUpdate(e, p);
     }
 }
 
@@ -244,8 +225,4 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
     e->m_db_store_flags &= ~uint32_t(f);
 }
 
-void forcePosition(Entity &e, glm::vec3 pos)
-{
-    e.m_entity_data.m_pos = pos;
-}
 //! @}

@@ -101,34 +101,32 @@ void storeInterpolationTree(const Entity &src, BitStream &bs)
     int res = storeBinTreesResult(bs, tgt);
 }
 
-bool storePosition(const Entity &src,BitStream &bs)
+bool storePosition(const Entity &src, BitStream &bs)
 {
-    // TODO: logMovement updated_bit_pos should only be 7 if full_update is required
-    uint8_t updated_bit_pos = 7; // FixMe: updated_bit_pos is explicitly assigned and never modified later.
+    bs.StoreBits(3, src.m_states.current()->m_updated_bit_pos);
 
-    bs.StoreBits(3, updated_bit_pos);
+    bool partial_pos =  src.m_states.current()->m_updated_bit_pos == 7;
 
-    if(updated_bit_pos==0)
+    if(src.m_states.current()->m_updated_bit_pos == 0)
         return false; // no actual update takes place
 
     for(int i=0; i<3; i++)
     {
-        FixedPointValue fpv(src.m_entity_data.m_pos[i]);
-        //diff = packed ^ prev_pos[i]; // changed bits are '1'
-        bs.StoreBits(24, fpv.store);
-        qCDebug(logPosition, "E[%d] position: %d", src.m_idx, (float)fpv.store);
+        if(partial_pos)
+        {
+            //diff = packed ^ prev_pos[i]; // changed bits are '1'
+            FixedPointValue fpv(src.m_entity_data.m_pos[i]);
+            bs.StoreBits(24, fpv.store);
+            qCDebug(logPosition, "E[%d] position: %d", src.m_idx, (float)fpv.store);
+        }
+        else
+        {
+            FixedPointValue fpv(src.m_states.current()->m_pos_delta[i]);
+            bs.StoreBits(8, fpv.store);
+            qCDebug(logPosition, "E[%d] position partial: %d", src.m_idx, (float)fpv.store);
+        }
+
     }
-    return true;
-}
-
-bool update_rot(const Entity &src, int axis ) /* returns true if given axis needs updating */
-{
-    if(src.m_prev_state == nullptr)
-        return true;
-
-    if(src.m_prev_state->m_orientation_pyr[axis] == src.m_cur_state->m_orientation_pyr[axis])
-        return false;
-
     return true;
 }
 
@@ -136,7 +134,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
 {
     // Check if update needed through update_rot()
     uint8_t updates;
-    updates = ((uint8_t)update_rot(src,0)) | (((uint8_t)update_rot(src,1))<<1) | (((uint8_t)update_rot(src,2))<<2);
+    updates = ((uint8_t)updateRotation(src, 0)) | (((uint8_t)updateRotation(src, 1))<<1) | (((uint8_t)updateRotation(src, 2))<<2);
     storeBitsConditional(bs, 3, updates); //frank 7,0,0.1,0
 
     if(src.m_type == EntType::PLAYER)
@@ -153,7 +151,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
     {
         qCDebug(logOrientation, "Player: %d", src.m_idx);
         qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
-        qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.m_cur_state->m_camera_pyr).c_str());
+        qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.m_states.current()->m_camera_pyr).c_str());
         qCDebug(logOrientation, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
         qCDebug(logOrientation, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
         qCDebug(logOrientation, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);
@@ -161,7 +159,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
 
     for(int i=0; i<3; i++)
     {
-        if(!update_rot(src, i))
+        if(!updateRotation(src, i))
             continue;
 
         uint32_t v = AngleQuantize(pyr_angles[i], 9);
@@ -183,7 +181,7 @@ void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
     {
         // if position has changed
         // prepare interpolation table, given previous position
-        bs.StoreBits(1, src.m_extra_info); // not extra_info
+        bs.StoreBits(1, src.m_extra_info); // not "extra info"
         if(src.m_extra_info) {
             bs.StoreBits(1, src.m_move_instantly);
             // Bintree sending happens here
@@ -384,7 +382,7 @@ void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
 void sendEntCollision(const Entity &src,BitStream &bs)
 {
     // if 1 is sent, client will disregard it's own collision processing.
-    bs.StoreBits(1, src.m_cur_state->m_no_collision); // 1/0 only
+    bs.StoreBits(1, src.m_states.current()->m_no_collision); // 1/0 only
 }
 
 void sendNoDrawOnClient(const Entity &src,BitStream &bs)

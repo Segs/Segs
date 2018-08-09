@@ -53,6 +53,8 @@ public:
     uint8_t     m_received_id           = 0;
 
     bool        m_autorun               = 0;    // send_bits? autorun?
+
+    uint8_t     m_updated_bit_pos       = 7;
     uint16_t    m_control_bits[6]       = {0};
     uint16_t    m_prev_control_bits[6]  = {0};  // maybe goes away?
     glm::vec3   m_camera_pyr            = {0.0f, 0.0f, 0.0f};
@@ -106,6 +108,16 @@ public:
     std::vector<TimeState>  m_time_states;
     // std::vector<SpeedState>  m_speed_states;
     // std::vector<MotionState>  m_motion_states;
+
+    void init() {
+        InputState empty_state;
+        addNewState(empty_state);
+    }
+
+    InputState* current() { return &*m_inp_states.rbegin(); }
+    InputState* previous() { return &*m_inp_states.rbegin()+1; }
+    const InputState* current() const { return &*m_inp_states.rbegin(); }
+    const InputState* previous() const { return &*m_inp_states.rbegin()+1; }
 
     void addNewState(InputState &new_state);
 };

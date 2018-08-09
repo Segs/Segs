@@ -28,13 +28,7 @@ struct SurfaceParams
     float max_speed;
 };
 
-static SurfaceParams g_world_surf_params[2] = {
-    // traction, friction, bounce, gravity, max_speed
-    //{ 1.00f, 0.45f, 0.01f, 0.065f, 1.00f }, // ground; from client
-    //{ 0.02f, 0.01f, 0.00f, 0.065f, 1.00f }  // air; from client
-    { 1.50f, 1.50f, 1.50f, 3.000f, 1.50f }, // ground; from nem
-    { 0.00f, 0.00f, 0.00f, 3.000f, 1.50f }  // air; from nem
-};
+extern SurfaceParams g_world_surf_params[2];
 
 enum StuckType
 {
@@ -70,4 +64,8 @@ struct MotionState
                                      {0,0,0,0,0} };
 };
 
-void SetVelocity(Entity *e);
+void setVelocity(Entity &e);
+void addPosUpdate(Entity &e, const PosUpdate &p);
+void addInterp(Entity &e, const PosUpdate &p);
+bool updateRotation(const Entity &e, int axis); // returns true if given axis needs updating;
+void forcePosition(Entity &e, glm::vec3 pos);

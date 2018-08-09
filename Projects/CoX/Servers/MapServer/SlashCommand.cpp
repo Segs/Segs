@@ -234,9 +234,8 @@ void cmdHandler_InfoMessage(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(static_cast<MessageChannel>(cmdType), msg, &sess);
 }
 
-void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess)
+{
     int space = cmd.indexOf(' ');
     QString fileName("scripts/" + cmd.mid(space+1));
     if(!fileName.endsWith(".smlx"))
@@ -255,9 +254,8 @@ void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess) {
     }
 }
 
-void cmdHandler_Fly(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_Fly(const QString &cmd, MapClientSession &sess)
+{
     toggleFlying(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
@@ -265,9 +263,8 @@ void cmdHandler_Fly(const QString &cmd, MapClientSession &sess) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_Falling(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_Falling(const QString &cmd, MapClientSession &sess)
+{
     toggleFalling(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
@@ -275,9 +272,8 @@ void cmdHandler_Falling(const QString &cmd, MapClientSession &sess) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_Sliding(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_Sliding(const QString &cmd, MapClientSession &sess)
+{
     toggleSliding(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
@@ -294,9 +290,8 @@ void cmdHandler_Jumping(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_Stunned(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_Stunned(const QString &cmd, MapClientSession &sess)
+{
     toggleStunned(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
@@ -304,9 +299,8 @@ void cmdHandler_Stunned(const QString &cmd, MapClientSession &sess) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
 
-void cmdHandler_Jumppack(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_Jumppack(const QString &cmd, MapClientSession &sess)
+{
     toggleJumppack(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
@@ -745,7 +739,7 @@ void addNpc(const QString &cmd, MapClientSession &sess)
     glm::vec3 offset = glm::vec3 {2,0,1};
     int idx = npc_store.npc_idx(npc_def);
     Entity *e = sess.m_current_map->m_entities.CreateNpc(*npc_def,idx,variation);
-    forcePosition(*e,gm_loc + offset);
+    forcePosition(*e, gm_loc + offset);
     e->m_velocity = {0,0,0};
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), &sess);
 }
@@ -764,7 +758,7 @@ void moveTo(const QString &cmd, MapClientSession &sess)
       parts[2].toFloat(),
       parts[3].toFloat()
     };
-    forcePosition(*sess.m_ent,new_pos);
+    forcePosition(*sess.m_ent, new_pos);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("New position set"), &sess);
 
 }
@@ -865,7 +859,7 @@ void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess)
 void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 {
     // TODO: Implement true move-to-safe-location-nearby logic
-    forcePosition(*sess.m_ent,sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
+    forcePosition(*sess.m_ent, sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
 
     QString msg = QString("Resetting location to default spawn <%1, %2, %3>")
                       .arg(sess.m_ent->m_entity_data.m_pos.x, 0, 'f', 1)

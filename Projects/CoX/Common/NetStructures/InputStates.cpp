@@ -61,6 +61,9 @@ void TimeState::dump()
 
 void StateStorage::addNewState(InputState &new_state)
 {
+    if(m_inp_states.size() < 1)
+        m_inp_states.push_back(new_state);
+
     // Only update if we've actually received an update
     for(int i=0; i<3; ++i)
     {

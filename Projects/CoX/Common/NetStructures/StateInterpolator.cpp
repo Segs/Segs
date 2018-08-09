@@ -155,7 +155,7 @@ void interpolate_pos_updates(Entity *e, std::array<BinTreeEntry,7> &server_pos_u
         else
             needs_update[s_breadth_first_order[i]] = false;
     }
-    e->addInterp(prev_pos);
+    addInterp(*e, prev_pos);
     if ( num_interp_coeffs )
     {
         dt = cur_pos.m_timestamp - prev_timestamp;
@@ -173,11 +173,11 @@ void interpolate_pos_updates(Entity *e, std::array<BinTreeEntry,7> &server_pos_u
                 {
                     cur_pos_update->m_pyr_angles[j] = glm::mix(cur_pos_update->m_pyr_angles[j], prev_pos.m_pyr_angles[j], lerp_factor);
                 }
-                e->addInterp(step);
+                addInterp(*e, step);
             }
         }
     }
-    e->addInterp(cur_pos);
+    addInterp(*e, cur_pos);
 }
 
 // Take a set of PositionUpdates S . . . . . . . E
@@ -396,10 +396,10 @@ int runTest(Entity &e)
 
     e.m_interp_results.clear();
     // add start and end to prime interpolator.
-    e.addPosUpdate(pos_vals.front());
-    e.addPosUpdate(pos_vals.back());
+    addPosUpdate(e, pos_vals.front());
+    addPosUpdate(e, pos_vals.back());
 
-    interpolate_pos_updates(&e,tgt);
+    interpolate_pos_updates(&e, tgt);
 
     vec3 errsum;
     for(int i=0; i<9; ++i) {
