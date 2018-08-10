@@ -24,7 +24,11 @@
 #include <ace/Event_Handler.h>
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor_Notification_Strategy.h>
-class SEGSEvent;
+
+namespace SEGSEvents
+{
+class Event;
+}
 
 enum class AuthLinkType
 {
@@ -65,11 +69,11 @@ public:
         int             handle_input (ACE_HANDLE) override;
         int             handle_output(ACE_HANDLE fd = ACE_INVALID_HANDLE) override;
         int             handle_close(ACE_HANDLE handle,ACE_Reactor_Mask close_mask) override;
-        void            dispatch(SEGSEvent *ev) override;
+        void            dispatch(SEGSEvents::Event *ev) override;
         stream_type &   peer() {return m_peer;}
         addr_type &     peer_addr() {return m_peer_addr;}
         void            init_crypto(int vers,uint32_t seed);
-        ACE_HANDLE      get_handle (void) const override {return m_peer.get_handle();}
+        ACE_HANDLE      get_handle () const override {return m_peer.get_handle();}
 protected:
         EventProcessor *m_target; // Target handler of this link
         AuthPacketCodec m_codec;
@@ -84,10 +88,10 @@ protected:
         AuthLinkType    m_direction;
 
         bool            send_buffer();
-        void            encode_buffer(const AuthLinkEvent *ev,size_t start);
+        void            encode_buffer(const SEGSEvents::AuthLinkEvent *ev,size_t start);
         void            set_protocol_version(int vers);
         eAuthPacketType OpcodeToType(uint8_t opcode) const;
-        SEGSEvent *     bytes_to_event();
+        SEGSEvents::Event *bytes_to_event();
 };
 
 

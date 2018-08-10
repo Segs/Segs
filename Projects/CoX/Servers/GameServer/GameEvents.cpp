@@ -19,6 +19,8 @@
 
 #include <QtCore/QDebug>
 
+using namespace SEGSEvents;
+
 // SpecHash<std::string,val>
 //
 // get hash index of given key

@@ -20,6 +20,7 @@
 #include <QDebug>
 #include <set>
 
+using namespace SEGSEvents;
 // CRUD link receives messages from ServerEndpoint,
 // these are basically CRUDP_Packets preprocessed by CRUDP_Protocol
 
@@ -65,7 +66,7 @@ void CRUDLink::event_for_packet(PacketEvent * pak_ev)
 ///
 /// \brief CRUDLink::packets_for_event - convert event to 1-n packets and push them to our net_layer()
 /// \param ev - an event that we've received from our downstream.
-void CRUDLink::packets_for_event(SEGSEvent *ev)
+void CRUDLink::packets_for_event(Event *ev)
 {
     lCrudP_Packet   packets_to_send;
     CRUDLink_Event *c_ev = static_cast<CRUDLink_Event *>(ev);
@@ -79,7 +80,7 @@ void CRUDLink::packets_for_event(SEGSEvent *ev)
     if (false == m_protocol.batchSend(packets_to_send))
     {
         // link is unresponsive, tell our target object
-        target()->putq(new SEGSEvent(SEGS_EventTypes::evDisconnect, this));
+        target()->putq(new DisconnectEvent(this));
         return;
     }
     // wrap all packets as PacketEvents and put them on link queue
@@ -118,7 +119,7 @@ int CRUDLink::open (void *p)
 
 int CRUDLink::handle_output( ACE_HANDLE )
 {
-    SEGSEvent *ev;
+    Event *ev;
     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
     while (-1 != getq(ev, &nowait))
     {
@@ -132,7 +133,7 @@ int CRUDLink::handle_output( ACE_HANDLE )
                 connection_update();
                 break;
             case SEGS_EventTypes::evDisconnect:
-                putq(SEGSEvent::s_ev_finish.shallow_copy()); // close the link
+                putq(Finish::s_instance->shallow_copy()); // close the link
                 break;
             case CRUD_EventTypes::evPacket: // CRUDP_Protocol has posted a pre-parsed packet to us
                 event_for_packet(static_cast<PacketEvent *>(ev));

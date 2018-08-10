@@ -16,6 +16,8 @@
 #include "MapClientSession.h"
 #include "Logging.h"
 
+using namespace SEGSEvents;
+
 void InfoMessageCmd::serializeto(BitStream &bs) const
 {
     bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);

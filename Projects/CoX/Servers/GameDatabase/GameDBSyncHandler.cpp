@@ -16,6 +16,8 @@
 #include "GameDBSyncEvents.h"
 #include "MessageBus.h"
 
+using namespace SEGSEvents;
+
 bool GameDBSyncHandler::per_thread_setup()
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
@@ -27,7 +29,7 @@ bool GameDBSyncHandler::per_thread_setup()
     return result;
 }
 
-void GameDBSyncHandler::dispatch(SEGSEvent *ev)
+void GameDBSyncHandler::dispatch(Event *ev)
 {
     // We are servicing a request from message queue, using dispatchSync as a common processing point.
     // nullptr result means that the given message is one-way

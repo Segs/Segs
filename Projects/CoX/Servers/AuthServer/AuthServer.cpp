@@ -28,6 +28,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
+using namespace SEGSEvents;
+
 struct ClientAcceptor : public ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR>
 {
     AuthHandler *m_target;
@@ -63,7 +65,7 @@ AuthServer::~AuthServer()
     delete m_acceptor;
 }
 
-void AuthServer::dispatch(SEGSEvent *ev)
+void AuthServer::dispatch(Event *ev)
 {
     assert(ev);
     switch(ev->type())
@@ -139,10 +141,10 @@ bool AuthServer::ShutDown()
         m_acceptor->close();
     }
     // force our handler to finish
-    m_handler->putq(SEGSEvent::s_ev_finish.shallow_copy());
+    m_handler->putq(Finish::s_instance->shallow_copy());
     m_handler->wait();
     m_running = false;
-    putq(SEGSEvent::s_ev_finish.shallow_copy());
+    putq(Finish::s_instance->shallow_copy());
     wait();
     return true;
 }

@@ -9,6 +9,8 @@
 #include "GameCommandList.h"
 #include "Logging.h"
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class SidekickOffer final : public GameCommand
 {
@@ -27,3 +29,5 @@ public:
             }
     void    serializefrom(BitStream &src);
 };
+} // end of SEGSEvents namespace
+

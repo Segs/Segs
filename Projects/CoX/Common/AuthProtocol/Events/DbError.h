@@ -8,6 +8,8 @@
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class DbError : public AuthLinkEvent
 {
@@ -30,3 +32,4 @@ public:
         buf.uGetBytes(m_err_arr,8);
     }
 };
+} // end of namespace SEGSEvents

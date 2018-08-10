@@ -8,6 +8,8 @@
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class AuthorizationError : public AuthLinkEvent
 {
@@ -32,3 +34,4 @@ public:
         buf.uGet(m_error_type);
     }
 };
+}

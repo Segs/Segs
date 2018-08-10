@@ -15,6 +15,8 @@
 #include "AuthProtocol/AuthOpcodes.h"
 #include "AuthProtocol/AuthEventFactory.h"
 
+using namespace SEGSEvents;
+
 AuthLink::AuthLink() :
     m_received_bytes_storage(0x1000,0,40),
     m_unsent_bytes_storage(0x200,0,40),
@@ -86,7 +88,7 @@ eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode ) const
     return MSG_AUTH_UNKNOWN;
 }
 //! tries to convert the available bytes into a valid AuthHandler LinkLevelEvent.
-SEGSEvent * AuthLink::bytes_to_event()
+SEGSEvents::Event * AuthLink::bytes_to_event()
 {
     uint16_t  packet_size(0);
     uint8_t * tmp(nullptr);
@@ -168,7 +170,7 @@ int AuthLink::handle_input( ACE_HANDLE )
         return 0; // if not enough data even for the simplest of packets
 
     // For now BytesEvent will copy the buffer contents
-    SEGSEvent *s_event=bytes_to_event(); // convert raw bytes into higher level event
+    Event *s_event=bytes_to_event(); // convert raw bytes into higher level event
     //TODO: what about partially received events ?
     if(s_event)
     {
@@ -182,7 +184,7 @@ int AuthLink::handle_input( ACE_HANDLE )
 */
 int AuthLink::handle_output( ACE_HANDLE /*= ACE_INVALID_HANDLE*/ )
 {
-    SEGSEvent *ev;
+    Event *ev;
     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
     while (-1 != getq(ev, &nowait))
     {
@@ -305,7 +307,7 @@ int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 
 }
 
-void AuthLink::dispatch( SEGSEvent */*ev*/ )
+void AuthLink::dispatch( SEGSEvents::Event */*ev*/ )
 {
     assert(!"Should not be called");
 }

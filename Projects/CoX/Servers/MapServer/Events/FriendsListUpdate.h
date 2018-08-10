@@ -12,6 +12,8 @@
 
 #include "MapEvents.h"
 #include "MapLink.h"
+namespace SEGSEvents
+{
 
 // [[ev_def:type]]
 class FriendsListUpdate final : public GameCommand
@@ -52,3 +54,4 @@ public:
     }
     void    serializefrom(BitStream &src);
 };
+} // end of SEGSEvents namespace

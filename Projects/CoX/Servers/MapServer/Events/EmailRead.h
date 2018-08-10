@@ -11,6 +11,8 @@
 #include <QtCore/QString>
 
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class EmailRead final : public GameCommand
 {
@@ -39,3 +41,6 @@ public:
     // [[ev_def:field]]
     QString m_recipient; //Possible misnamed variable, as this is actually the sender in the email's read tab
 };
+
+} // end of SEGSEvents namespace
+

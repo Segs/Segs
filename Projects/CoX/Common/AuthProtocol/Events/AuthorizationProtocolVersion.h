@@ -8,6 +8,8 @@
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 
+namespace SEGSEvents
+{
 
 // [[ev_def:type]]
 class AuthProtocolVersion : public AuthLinkEvent
@@ -51,7 +53,4 @@ public:
                             return m_proto_vers;
                         }
 };
-
-
-
-
+} // end of namespace SEGSEvents

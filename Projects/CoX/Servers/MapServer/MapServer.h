@@ -20,6 +20,10 @@ struct MapClientSession;
 class MapInstance;
 class MapServerData;
 class MapManager;
+namespace SEGSEvents
+{
+struct ExpectMapClientRequest;
+}
 
 static constexpr uint8_t INVALID_GAME_SERVER_ID = 255;
 static constexpr char RUNTIME_DATA_PATH[] = "./data/bin/";
@@ -38,10 +42,10 @@ public:
         MapServerData &         runtimeData();
         void                    sett_game_server_owner(uint8_t owner_id);
 private:
-        bool                    Run(void);
+        bool                    Run();
         // EventProcessor interface
-        void                    dispatch(SEGSEvent *ev) override;
-        void                    on_expect_client(struct ExpectMapClientRequest *ev);
+        void                    dispatch(SEGSEvents::Event *ev) override;
+        void                    on_expect_client(SEGSEvents::ExpectMapClientRequest *ev);
 
         std::unique_ptr<PrivateData> d;
 

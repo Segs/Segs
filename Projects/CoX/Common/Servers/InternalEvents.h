@@ -13,6 +13,9 @@
 #include <QtCore/QString>
 #include <QtCore/QDateTime>
 
+namespace SEGSEvents
+{
+
 struct GameAccountResponseCharacterData;
 
 class Internal_EventTypes
@@ -36,11 +39,11 @@ public:
     END_EVENTS(105)
 };
 
-class InternalEvent : public SEGSEvent
+class InternalEvent : public Event
 {
     uint64_t            m_session_token = 0;
 public:
-    using SEGSEvent::SEGSEvent; // forward all constructors to parent class.
+    using Event::Event; // forward all constructors to parent class.
 
     void                session_token(uint64_t token) { m_session_token = token; }
     uint64_t            session_token() const { return m_session_token; }
@@ -96,6 +99,7 @@ struct ExpectClientResponseData
     uint32_t cookie;
     uint32_t m_server_id; // this is the id of the server that is expecting the client
 };
+//[[ev_def:macro]]
 TWO_WAY_MESSAGE(ExpectClient)
 
 struct ExpectMapClientRequestData
@@ -117,6 +121,7 @@ struct ExpectMapClientResponseData
     uint32_t      m_server_id;       // this is the id of the server that is expecting the client
     ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client
 };
+//[[ev_def:macro]]
 TWO_WAY_MESSAGE(ExpectMapClient)
 
 // For now, no data here, could be a path to a config file?
@@ -124,6 +129,7 @@ struct ReloadConfigData
 {
 
 };
+//[[ev_def:macro]]
 ONE_WAY_MESSAGE(ReloadConfig)
 
 struct GameServerStatusData
@@ -136,6 +142,7 @@ struct GameServerStatusData
     bool m_online;
 };
 // This could be put in Message bus if any other server, apart from Auth needs this info.
+//[[ev_def:macro]]
 ONE_WAY_MESSAGE(GameServerStatus)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,6 +153,7 @@ struct ServiceStatusData
     QString status_message;
     int status_value;
 };
+//[[ev_def:macro]]
 ONE_WAY_MESSAGE(ServiceStatus)
 
 struct ClientConnectedData
@@ -154,14 +162,17 @@ struct ClientConnectedData
     uint32_t m_server_id;     // id of the server the client connected to.
     uint32_t m_sub_server_id; // only used when server_id is the map server
 };
+//[[ev_def:macro]]
 ONE_WAY_MESSAGE(ClientConnected)
 
 struct ClientDisconnectedData
 {
     uint64_t m_session;
 };
+//[[ev_def:macro]]
 ONE_WAY_MESSAGE(ClientDisconnected)
 
 #undef ONE_WAY_MESSAGE
 #undef SIMPLE_TWO_WAY_MESSAGE
 #undef TWO_WAY_MESSAGE
+} // end of SEGSEvents namespace

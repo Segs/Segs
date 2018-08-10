@@ -13,6 +13,8 @@
 #include "Events/SceneEvent.h"
 #include "MapEvents.h"
 
+using namespace SEGSEvents;
+
 SceneEvent::SceneEvent():MapLinkEvent(MapEventTypes::evScene)
 {
 }

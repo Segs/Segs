@@ -10,6 +10,9 @@
 
 #include <QtCore/QString>
 
+namespace SEGSEvents
+{
+
 class EmailHeaders final : public GameCommand
 {
 public:
@@ -54,3 +57,5 @@ public:
     // [[ev_def:field]]
     QVector<EmailHeader> m_emails;
 };
+} // end of SEGSEvents namespace
+

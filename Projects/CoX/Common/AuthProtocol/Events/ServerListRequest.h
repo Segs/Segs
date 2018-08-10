@@ -8,6 +8,8 @@
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class ServerListRequest : public AuthLinkEvent
 {
@@ -33,3 +35,4 @@ public:
     // [[ev_def:field]]
     uint8_t unk1=0xFF;
 };
+} // end of namespace SEGSEvents

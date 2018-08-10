@@ -11,6 +11,8 @@
 #include "GameData/chardata_definitions.h"
 
 #include <QDateTime>
+namespace SEGSEvents
+{
 
 enum GameDBEventTypes : uint32_t
 {
@@ -291,3 +293,4 @@ ONE_WAY_MESSAGE(PlayerUpdate)
 #undef ONE_WAY_MESSAGE
 #undef SIMPLE_TWO_WAY_MESSAGE
 #undef TWO_WAY_MESSAGE
+} // end of SEGSEvents namespace

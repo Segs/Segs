@@ -21,6 +21,8 @@
 #include <QDebug>
 #include <cmath>
 
+using namespace SEGSEvents;
+
 enum BinaryControl
 {
     FORWARD=0,

@@ -29,6 +29,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
+using namespace SEGSEvents;
+
 namespace
 {
     const constexpr int MaxCharacterSlots=8;
@@ -63,12 +65,12 @@ public:
     void ShutDown() const
     {
         // tell our handler to shut down too
-        m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish, nullptr));
+        m_handler->putq(new Event(SEGS_EventTypes::evFinish, nullptr));
         m_handler->wait();
     }
 };
 
-void GameServer::dispatch(SEGSEvent *ev)
+void GameServer::dispatch(SEGSEvents::Event *ev)
 {
     assert(ev);
     switch(ev->type())
@@ -152,7 +154,7 @@ bool GameServer::ReadConfigAndRestart()
 
 bool GameServer::ShutDown()
 {
-    putq(SEGSEvent::s_ev_finish.shallow_copy());
+    putq(SEGSEvents::Finish::s_instance->shallow_copy());
     wait();
     return true;
 }

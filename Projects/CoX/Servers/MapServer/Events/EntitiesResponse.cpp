@@ -30,6 +30,8 @@
 #include <iso646.h>
 #endif
 
+using namespace SEGSEvents;
+
 namespace  {
 struct SurfaceParams
 {

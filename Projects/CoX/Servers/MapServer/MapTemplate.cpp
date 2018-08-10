@@ -41,7 +41,7 @@ void MapTemplate::shut_down_all()
     {
         if(instance->thr_count()>0)
         {
-            instance->putq(SEGSEvent::s_ev_finish.shallow_copy());
+            instance->putq(SEGSEvents::Finish::s_instance->shallow_copy());
             instance->wait();
         }
         delete instance;

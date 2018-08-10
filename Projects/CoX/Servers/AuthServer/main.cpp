@@ -52,6 +52,8 @@
 #include <stdlib.h>
 #include <memory>
 
+using namespace SEGSEvents;
+
 namespace
 {
 static bool s_event_loop_is_done=false; //!< this is set to true when ace reactor is finished.
@@ -71,7 +73,7 @@ struct MessageBusMonitor : public EventProcessor
 
     // EventProcessor interface
 public:
-    void dispatch(SEGSEvent *ev)
+    void dispatch(Event *ev)
     {
         switch(ev->type())
         {
@@ -110,11 +112,11 @@ static void shutDownServers(const char *reason)
     }
     if(s_bus_monitor && s_bus_monitor->thr_count())
     {
-        s_bus_monitor->putq(SEGSEvent::s_ev_finish.shallow_copy());
+        s_bus_monitor->putq(Finish::s_instance->shallow_copy());
     }
     if(g_message_bus && g_message_bus->thr_count())
     {
-        g_message_bus->putq(SEGSEvent::s_ev_finish.shallow_copy());
+        g_message_bus->putq(Finish::s_instance->shallow_copy());
     }
 
     s_event_loop_is_done = true;

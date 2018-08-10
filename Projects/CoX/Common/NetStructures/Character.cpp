@@ -27,11 +27,7 @@
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 
-// Anonymous namespace
-namespace {
-
-}
-// End Anonymous namespace
+using namespace SEGSEvents;
 
 Character::Character()
 {
@@ -106,7 +102,7 @@ void Character::GetCharBuildInfo(BitStream &src)
 
 void Character::SendCharBuildInfo(BitStream &bs) const
 {
-    Character c = *this;
+    const Character &c = *this;
     PowerPool_Info null_power = {0,0,0};
     bs.StoreString(getClass(c));   // class name
     bs.StoreString(getOrigin(c));  // origin name

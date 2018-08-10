@@ -20,8 +20,11 @@
 
 #include <cassert>
 
-class SEGSEvent;
-class PacketEvent;
+namespace SEGSEvents
+{
+    class Event;
+    class PacketEvent;
+}
 class CRUD_EventFactory;
 
 
@@ -45,7 +48,7 @@ public:
     int             open(void * = nullptr) override;
     int             handle_output( ACE_HANDLE = ACE_INVALID_HANDLE ) override;
     void            received_block(BitStream &bytes);
-    void            dispatch(SEGSEvent *) override
+    void            dispatch(SEGSEvents::Event *) override
                     {
                         assert(!"Should not be called");
                     }
@@ -64,8 +67,8 @@ public:
     size_t          client_packets_waiting_for_ack() const { return m_protocol.UnackedPacketCount(); }
 protected:
     int             handle_close(ACE_HANDLE h, ACE_Reactor_Mask c) override;
-    void            event_for_packet(PacketEvent *pak_ev);
-    void            packets_for_event(SEGSEvent *c_ev);
+    void            event_for_packet(SEGSEvents::PacketEvent *pak_ev);
+    void            packets_for_event(SEGSEvents::Event *c_ev);
     void            connection_update();
     void            connection_sent_packet();
     EventProcessor *target() { return m_target; }

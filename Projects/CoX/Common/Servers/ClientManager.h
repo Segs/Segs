@@ -113,7 +113,7 @@ public:
             assert(iter != m_token_to_session.end());
             return iter->second;
         }
-        SESSION_CLASS &session_from_event(SEGSEvent *ev)
+        SESSION_CLASS &session_from_event(SEGSEvents::Event *ev)
         {
             assert(dynamic_cast<LinkBase *>(ev->src())!=nullptr); // make sure the event source is a Link
             LinkBase * lnk = (LinkBase *)ev->src();
@@ -124,7 +124,7 @@ public:
             return session;
         }
 
-        SESSION_CLASS &session_from_event(InternalEvent *ev)
+        SESSION_CLASS &session_from_event(SEGSEvents::InternalEvent *ev)
         {
             auto iter = m_token_to_session.find(ev->session_token());
             assert(iter != m_token_to_session.end());
@@ -266,7 +266,7 @@ public:
                     if(waiting_session.m_session->link()) // it's a temporary session
                     {
                         // telling the temporary link to close.
-                        waiting_session.m_session->link()->putq(SEGSEvent::s_ev_finish.shallow_copy());
+                        waiting_session.m_session->link()->putq(SEGSEvents::Finish::s_instance->shallow_copy());
                     }
                     // we destroy the session object
                     remove_by_token(waiting_session.m_session_token, waiting_session.m_session->auth_id());

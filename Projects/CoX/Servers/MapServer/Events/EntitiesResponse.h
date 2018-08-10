@@ -14,7 +14,9 @@
 #include "MapLink.h"
 
 struct MapClientSession;
-typedef CRUDLink_Event MapLinkEvent; //<MapLink>
+namespace SEGSEvents
+{
+using MapLinkEvent = CRUDLink_Event; //<MapLink>
 
 // [[ev_def:type]]
 class EntitiesResponse : public MapLinkEvent
@@ -53,3 +55,5 @@ public:
         uint32_t    m_num_commands2;
         std::string m_commands2[15];
 };
+} // end of SEGSEvents namespace
+

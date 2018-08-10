@@ -18,7 +18,7 @@ private:
 
     // EventProcessor interface
     bool per_thread_setup() override;
-    void dispatch(SEGSEvent *ev) override;
+    void dispatch(SEGSEvents::Event *ev) override;
 
 public:
     GameDBSyncService(EntityManager &em) : ref_entity_mgr(em) {};

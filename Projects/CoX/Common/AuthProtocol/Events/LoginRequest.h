@@ -16,6 +16,8 @@ struct LoginRequestData
     uint32_t unkval1=0;
     uint16_t unkval2=0;
 };
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class LoginRequest : public AuthLinkEvent
 {
@@ -47,3 +49,4 @@ public:
     // [[ev_def:field]]
     LoginRequestData m_data;
 };
+} // end of namespace SEGSEvents

@@ -12,6 +12,8 @@
 
 #include "MapEvents.h"
 
+using namespace SEGSEvents;
+
 MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
 {
     size_t read_pos = bs.GetReadPos();

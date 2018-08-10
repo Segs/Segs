@@ -18,12 +18,14 @@
 #include <QtCore/QDebug>
 #include <cstring>
 
+using namespace SEGSEvents;
+
 DummyClass::DummyClass()
 {
 
 }
 
-void DummyClass::dispatch(SEGSEvent * ev)
+void DummyClass::dispatch(Event * ev)
 {
     switch(ev->type())
     {

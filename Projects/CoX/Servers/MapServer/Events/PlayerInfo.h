@@ -11,6 +11,8 @@
 #include "MapEvents.h"
 #include "MapLink.h"
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class EntityInfoResponse final : public GameCommand
 {
@@ -45,3 +47,5 @@ public:
         entity_idx = bs.GetPackedBits(12);
     }
 };
+} // end of SEGSEvents namespace
+

@@ -9,6 +9,9 @@
 // if this file is included stand-alone this will pull in common definitions
 #include "MapEvents.h"
 
+namespace SEGSEvents
+{
+//! a new entity entering a map
 // [[ev_def:type]]
 class NewEntity : public MapLinkEvent
 {
@@ -26,3 +29,5 @@ public:
     // [[ev_def:field]]
     BitStream   m_character_data;
 };
+} // end of SEGSEvents namespace
+

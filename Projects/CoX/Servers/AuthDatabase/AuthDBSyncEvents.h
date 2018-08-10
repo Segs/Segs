@@ -10,6 +10,8 @@
 #include "Servers/InternalEvents.h"
 
 #include <QDateTime>
+namespace SEGSEvents
+{
 
 enum AuthDBEventTypes : uint32_t
 {
@@ -109,3 +111,4 @@ TWO_WAY_MESSAGE(ValidatePassword)
 #undef ONE_WAY_MESSAGE
 #undef SIMPLE_TWO_WAY_MESSAGE
 #undef TWO_WAY_MESSAGE
+} // end of SEGSSEvents namespace

@@ -31,6 +31,8 @@
 
 #include <set>
 
+using namespace SEGSEvents;
+
 // global variables
 MapServer *g_GlobalMapServer=nullptr;
 
@@ -138,7 +140,7 @@ bool MapServer::ShutDown()
     qWarning() << "Shutting down map server";
     // tell all instances to shut down too
     d->m_manager.shut_down_all();
-    putq(SEGSEvent::s_ev_finish.shallow_copy());
+    putq(SEGSEvents::Finish::s_instance->shallow_copy());
     return true;
 }
 
@@ -157,7 +159,7 @@ void MapServer::sett_game_server_owner(uint8_t owner_id)
     m_owner_game_server_id = owner_id;
 }
 
-void MapServer::dispatch(SEGSEvent *ev)
+void MapServer::dispatch(Event *ev)
 {
     assert(ev);
     switch(ev->type())
@@ -181,7 +183,7 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
     MapTemplate *tpl    = map_manager().get_template(request_data.m_map_name);
     if(nullptr==tpl)
     {
-        
+
         HandlerLocator::getGame_Handler(m_owner_game_server_id)->putq(
             new ExpectMapClientResponse({1, 0, m_base_location}, ev->session_token()));
         return;

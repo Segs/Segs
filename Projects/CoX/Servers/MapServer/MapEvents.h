@@ -18,11 +18,17 @@
 #include <QtCore/QDebug>
 
 class Entity;
-typedef CRUDLink_Event MapLinkEvent; //<MapLink>
+namespace SEGSEvents
+{
+using MapLinkEvent = CRUDLink_Event; //<MapLink>
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Client -> Server
 #include "Events/NewEntity.h"
+
+namespace SEGSEvents
+{
 
 class MapUnknownRequest final : public MapLinkEvent
 {
@@ -237,12 +243,15 @@ public:
         getPowerForCombinde(bs,second_power);
     }
 };
+} // end of SEGSEvents namespace
 
 #include "Events/InputState.h"
 #include "Events/ChatMessage.h"
 #include "Events/WindowState.h"
 //////////////////////////////////////////////////////////////////////////
 // Server -> Client events
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class MapInstanceConnected final : public MapLinkEvent
 {
@@ -690,6 +699,7 @@ public:
         bs.GetString(profile); // Keybind Profile Name
     }
 };
+} // end of SEGSEvents namespace
 
 #include "Events/ChatDividerMoved.h"
 #include "Events/EntitiesResponse.h"

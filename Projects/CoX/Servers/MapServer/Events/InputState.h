@@ -8,6 +8,8 @@
 #pragma once
 #include "MapEvents.h"
 #include "NetStructures/Entity.h"
+namespace SEGSEvents
+{
 
 // [[ev_def:type]]
 class InputState : public MapLinkEvent
@@ -32,3 +34,5 @@ public:
     void recv_client_opts(BitStream &bs);
     glm::vec3 &pyr() {return m_data.m_camera_pyr;}
 };
+} // end of SEGSEvents namespace
+

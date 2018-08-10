@@ -12,9 +12,10 @@
 
 #include "SEGSEvent.h"
 
-SEGSEvent SEGSEvent::s_ev_finish(SEGS_EventTypes::evFinish,nullptr);
+using namespace SEGSEvents;
+Finish *Finish::s_instance(new Finish());
 
-const char *SEGSEvent::info()
+const char *Event::info()
 {
     return typeid(*this).name();
 }

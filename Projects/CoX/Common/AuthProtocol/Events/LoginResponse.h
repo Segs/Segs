@@ -9,6 +9,8 @@
 #include <cstring>
 #include "AuthProtocol/AuthEvents.h"
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class LoginResponse : public AuthLinkEvent
 {
@@ -48,3 +50,5 @@ public:
         buf.uGet(unk3);
     }
 };
+} //end of namespace SEGSEvents
+

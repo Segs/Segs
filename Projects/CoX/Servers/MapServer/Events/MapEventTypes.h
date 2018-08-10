@@ -7,6 +7,8 @@
 
 #pragma once
 #include "CRUD_Events.h"
+namespace SEGSEvents
+{
 
 class MapEventTypes : public CRUD_EventTypes
 {
@@ -106,3 +108,4 @@ public:
     EVENT_DECL(evDescriptionAndBattleCry    ,267)
     END_EVENTS(1500)
 };
+} // end of SEGSEvents namespace

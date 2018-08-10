@@ -27,6 +27,8 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QDebug>
 
+using namespace SEGSEvents;
+
 /*
  * Entity Methods
  */

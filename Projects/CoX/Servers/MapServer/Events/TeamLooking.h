@@ -13,6 +13,8 @@
 #include "MapEvents.h"
 #include "MapLink.h"
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class TeamLooking final : public GameCommand
 {
@@ -43,3 +45,5 @@ public:
     }
     void    serializefrom(BitStream &src);
 };
+} // end of SEGSEvents namespace
+

@@ -24,6 +24,8 @@
 
 #include <QDebug>
 
+using namespace SEGSEvents;
+
 /// Monotonically incrementing session ids, starting at 1, to make 0 special.
 uint64_t AuthHandler::s_last_session_id=1;
 
@@ -46,7 +48,7 @@ namespace
     const ACE_Time_Value link_is_stale_if_disconnected_for(0,2*1000*1000);
 } // namespace
 
-void AuthHandler::dispatch( SEGSEvent *ev )
+void AuthHandler::dispatch( Event *ev )
 {
     assert(ev);
     switch(ev->type())

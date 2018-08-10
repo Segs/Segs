@@ -31,8 +31,6 @@ namespace std
     };
 }
 
-class SEGSEvent;
-
 class CRUDLink;
 
 // This class represents a UDP port<->Client link router
@@ -61,7 +59,7 @@ public:
         int         open(void *p=nullptr) override;
         void        set_downstream(EventProcessor *ds) { m_downstream = ds;}
 protected:
-        void        dispatch(SEGSEvent *) override
+        void        dispatch(SEGSEvents::Event *) override
                     {
                         ACE_ASSERT(!"All events are dispatched from handle_* methods");
                     }

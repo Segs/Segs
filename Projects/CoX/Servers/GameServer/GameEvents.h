@@ -17,7 +17,9 @@
 #include "GameDatabase/GameDBSyncEvents.h"
 #include <QtCore/QString>
 
-typedef CRUDLink_Event GameLinkEvent;
+namespace SEGSEvents
+{
+using GameLinkEvent = CRUDLink_Event;
 
 struct GameAccountResponseData;
 
@@ -259,3 +261,4 @@ class GameServerReconfigured : public InternalEvent
 public:
     GameServerReconfigured():InternalEvent(GameEventTypes::evServerReconfigured) {}
 };
+} // end of SEGSEvents namespace

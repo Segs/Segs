@@ -16,7 +16,10 @@
 
 class BitStream;
 class MapRef;
-typedef CRUDLink_Event MapLinkEvent; //<MapLink>
+namespace SEGSEvents
+{
+
+using MapLinkEvent = CRUDLink_Event; //<MapLink>
 
 // [[ev_def:type]]
 class SceneEvent : public MapLinkEvent
@@ -62,3 +65,5 @@ protected:
     void reqWorldUpdateIfPak(BitStream &src);
     void groupnetrecv_5(BitStream &src,int a,int b);
 };
+} // end of SEGSEvents namespace
+

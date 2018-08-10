@@ -28,6 +28,8 @@
 #include <QRegularExpression>
 #include <QtCore/QDebug>
 
+using namespace SEGSEvents;
+
 namespace  {
 class InfoMessageCmd; // leverage InfoMessageCmd
 

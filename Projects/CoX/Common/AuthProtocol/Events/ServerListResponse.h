@@ -19,6 +19,8 @@ struct GameServerInfo
     uint8_t  online;
 };
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class ServerListResponse : public AuthLinkEvent
 {
@@ -33,3 +35,4 @@ public:
     void serializeto(GrowingBuffer &buf) const;
     void serializefrom(GrowingBuffer &buf);
 };
+} // end of namespace SEGSEvents

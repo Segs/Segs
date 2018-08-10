@@ -18,6 +18,8 @@
 #include <iso646.h> // visual studio needs this
 #endif
 
+using namespace SEGSEvents;
+
 int EventProcessor::open( void *args /* = 0 */ )
 {
     return super::open(args);
@@ -30,7 +32,7 @@ int EventProcessor::handle_timeout( const ACE_Time_Value &current_time, const vo
     // if target is known
     if(timer_object->target())
     {
-        SEGSEvent *mb=new Timeout(current_time,timer_object->user_id(),this);
+        Event *mb=new Timeout(current_time,timer_object->user_id(),this);
         // post a new event to it
         return timer_object->target()->putq(mb);
     }
@@ -41,7 +43,7 @@ int EventProcessor::svc( )
 {
     if(not this->per_thread_setup())
         return -1;
-    SEGSEvent *mb;
+    Event *mb;
 
     while(getq(mb,nullptr)!=-1)
     {
@@ -61,5 +63,10 @@ int EventProcessor::svc( )
     }
     return 0;
 }
-
+int EventProcessor::putq(Event *ev,ACE_Time_Value *timeout)
+{
+#ifdef EVENT_RECORDING
+#endif
+    return super::putq(ev,timeout);
+}
 //! @}

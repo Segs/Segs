@@ -11,6 +11,8 @@
 
 class QString;
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class ChatDividerMoved : public MapLinkEvent
 {
@@ -23,3 +25,5 @@ public:
     void serializefrom(BitStream &src) override;
     void serializeto(BitStream &) const override;
 };
+} // end of SEGSEvents namespace
+

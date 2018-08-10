@@ -13,6 +13,8 @@
 #include "GameData/keybind_serializers.h"
 #include "GameData/clientoptions_serializers.h"
 
+using namespace SEGSEvents;
+
 bool GameDBSyncService::per_thread_setup()
 {
     //GameDbSyncContext &db_ctx(m_db_context.localData());
@@ -25,7 +27,7 @@ bool GameDBSyncService::per_thread_setup()
     return result;
 }
 
-void GameDBSyncService::dispatch(SEGSEvent *ev)
+void GameDBSyncService::dispatch(Event *ev)
 {
     // We are servicing a request from message queue, using dispatchSync as a common processing point.
     // nullptr result means that the given message is one-way

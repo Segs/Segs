@@ -9,6 +9,8 @@
 #include "MapEvents.h"
 #include "Common/GameData/clientoptions_definitions.h"
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class SaveClientOptions final : public MapLinkEvent
 {
@@ -19,3 +21,5 @@ public:
     void serializeto(BitStream &bs) const override;
     void serializefrom(BitStream &bs) override;
 };
+} // end of SEGSEvents namespace
+

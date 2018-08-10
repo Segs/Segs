@@ -26,6 +26,8 @@
 #include "serialization_types.h"
 #include "MapServer/DataHelpers.h"
 
+using namespace SEGSEvents;
+
 static const uint32_t supported_version=20040422;
 namespace {
 enum {
@@ -55,7 +57,7 @@ void GameHandler::start()
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
 }
 
-void GameHandler::dispatch( SEGSEvent *ev )
+void GameHandler::dispatch( Event *ev )
 {
     assert(ev);
     switch(ev->type())
@@ -281,7 +283,7 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
     lnk->putq(new DisconnectEvent(lnk->session_token())); // this should work, event if different threads try to do it in parallel
 }
 
-void GameHandler::on_link_lost(SEGSEvent *ev)
+void GameHandler::on_link_lost(Event *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
     GameSession &session = m_session_store.session_from_event(ev);

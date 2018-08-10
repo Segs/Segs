@@ -12,9 +12,12 @@
 
 #include <QThreadStorage>
 
+namespace SEGSEvents
+{
 struct CreateAccountMessage;
 struct RetrieveAccountRequest;
 struct ValidatePasswordRequest;
+}
 
 class AuthDBSyncHandler final : public EventProcessor
 {
@@ -23,12 +26,12 @@ class AuthDBSyncHandler final : public EventProcessor
     QThreadStorage<AuthDbSyncContext> m_db_context;
     // EventProcessor interface
     bool per_thread_setup() override;
-    void dispatch(SEGSEvent *ev) override;
+    void dispatch(SEGSEvents::Event *ev) override;
 
     // Event handlers
-    void on_create_account(CreateAccountMessage *msg);
-    void on_retrieve_account(RetrieveAccountRequest *msg);
-    void on_validate_password(ValidatePasswordRequest *msg);
+    void on_create_account(SEGSEvents::CreateAccountMessage *msg);
+    void on_retrieve_account(SEGSEvents::RetrieveAccountRequest *msg);
+    void on_validate_password(SEGSEvents::ValidatePasswordRequest *msg);
 public:
     AuthDBSyncHandler();
 };

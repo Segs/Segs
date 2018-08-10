@@ -10,14 +10,16 @@
 #include "Buffer.h"
 class AuthLink;
 
+namespace SEGSEvents
+{
 //! all events that know how to read from
 //! and write to the buffer inherit from this
-class AuthLinkEvent : public SEGSEvent
+class AuthLinkEvent : public Event
 {
 protected:
         ~AuthLinkEvent() override = default;
 public:
-        AuthLinkEvent(size_t evtype,EventProcessor *ev_src=nullptr) : SEGSEvent(evtype,ev_src)
+        AuthLinkEvent(size_t evtype,EventProcessor *ev_src=nullptr) : Event(evtype,ev_src)
         {}
         virtual void serializeto(GrowingBuffer &) const=0;
         virtual void serializefrom(GrowingBuffer &)=0;
@@ -39,14 +41,14 @@ enum AuthEventTypes
 
 };
 // [[ev_def:type]]
-class SendLeftovers : public SEGSEvent // this event is posted from AuthLink to AuthLink, it means there are leftover unsent bytes.
+class SendLeftovers final : public Event // this event is posted from AuthLink to AuthLink, it means there are leftover unsent bytes.
 {
 public:
-        SendLeftovers() : SEGSEvent(evSendLeftovers)
+        SendLeftovers() : Event(evSendLeftovers)
         {}
 };
 // [[ev_def:type]]
-class ReconnectAttempt : public AuthLinkEvent
+class ReconnectAttempt final : public AuthLinkEvent
 {
 public:
     // [[ev_def:field]]
@@ -67,6 +69,7 @@ public:
         buf.uGetBytes(m_arr,8);
     }
 };
+} // end of SEGSEvents namespace
 #include "Events/AuthorizationError.h"
 #include "Events/AuthorizationProtocolVersion.h"
 #include "Events/DbError.h"

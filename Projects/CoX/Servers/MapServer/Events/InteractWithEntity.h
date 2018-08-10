@@ -12,6 +12,8 @@
 #include "MapEvents.h"
 #include "MapLink.h"
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class InteractWithEntity final : public MapLinkEvent
 {
@@ -29,3 +31,5 @@ public:
         m_srv_idx = src.GetPackedBits(12);
     }
 };
+} // end of SEGSEvents namespace
+

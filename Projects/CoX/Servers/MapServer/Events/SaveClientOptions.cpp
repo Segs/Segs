@@ -12,6 +12,8 @@
 
 #include "SaveClientOptions.h"
 
+using namespace SEGSEvents;
+
 void SaveClientOptions::serializefrom(BitStream & bs)
 {
     qDebug() << "Serializing options from Client";

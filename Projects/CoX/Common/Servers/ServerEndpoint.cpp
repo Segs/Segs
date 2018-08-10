@@ -18,7 +18,9 @@
 #include <ace/Reactor.h>
 #include <ace/Message_Block.h>
 
-ServerEndpoint::~ServerEndpoint() 
+using namespace SEGSEvents;
+
+ServerEndpoint::~ServerEndpoint()
 {
     handle_close(ACE_INVALID_HANDLE, 0);
     m_downstream = nullptr;
@@ -40,7 +42,7 @@ int ServerEndpoint::handle_input(ACE_HANDLE /*fd*/) //! Called when input is ava
 
 int ServerEndpoint::handle_output(ACE_HANDLE /*fd*/) //! Called when output is possible.
 {
-    SEGSEvent *ev;
+    Event *ev;
     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
     while (-1 != getq(ev, &nowait))
     {
@@ -55,7 +57,7 @@ int ServerEndpoint::handle_output(ACE_HANDLE /*fd*/) //! Called when output is p
             if (send_cnt == -1)
             {
                 // inform the link that it should die.
-                pkt_ev->src()->putq(SEGSEvent::s_ev_finish.shallow_copy());
+                pkt_ev->src()->putq(Finish::s_instance->shallow_copy());
                 ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"), ACE_TEXT ("send")));
                 ev->release();
                 break;

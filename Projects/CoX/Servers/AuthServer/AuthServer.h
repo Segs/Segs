@@ -35,5 +35,5 @@ protected:
         std::unique_ptr<AuthHandler> m_handler;     //!< holds the AuthHandler
 
         // EventProcessor interface
-        void dispatch(SEGSEvent *ev);
+        void dispatch(SEGSEvents::Event *ev);
 };

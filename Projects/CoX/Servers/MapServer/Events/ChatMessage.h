@@ -13,6 +13,8 @@
 
 struct MapClientSession;
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class ChatMessage : public GameCommand
 {
@@ -33,5 +35,7 @@ public:
     void            serializeto(BitStream &bs) const override;
     void            serializefrom(BitStream &src);
 };
+
+} // end of SEGSEvents namespace
 
 extern void sendChatMessage(MessageChannel t, QString msg, MapClientSession *src, MapClientSession *tgt);

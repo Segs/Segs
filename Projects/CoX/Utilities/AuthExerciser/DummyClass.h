@@ -11,21 +11,30 @@
 
 class AuthLink;
 
+namespace SEGSEvents
+{
+class ConnectEvent;
+class AuthProtocolVersion;
+class LoginResponse;
+class AuthorizationError;
+class ServerListResponse;
+class ServerSelectResponse;
+}
 class DummyClass : public EventProcessor
 {
 public:
     DummyClass();
 
     // EventProcessor interface
-    void        dispatch(SEGSEvent *ev) override;
+    void        dispatch(SEGSEvents::Event *ev) override;
 
 protected:
-    void        onConnect(class ConnectEvent * ev);
-    void        onServerVersion(class AuthProtocolVersion * ev);
-    void        onLoginResponse(class LoginResponse *ev);
-    void        onAuthorizationError(class AuthorizationError * ev);
-    void        onServerListResponse(class ServerListResponse * ev);
-    void        onServerSelectResponse(class ServerSelectResponse * ev);
+    void        onConnect(SEGSEvents::ConnectEvent * ev);
+    void        onServerVersion(SEGSEvents::AuthProtocolVersion * ev);
+    void        onLoginResponse(SEGSEvents::LoginResponse *ev);
+    void        onAuthorizationError(SEGSEvents::AuthorizationError * ev);
+    void        onServerListResponse(SEGSEvents::ServerListResponse * ev);
+    void        onServerSelectResponse(SEGSEvents::ServerSelectResponse * ev);
 
     AuthLink *  m_our_link = nullptr;
 };

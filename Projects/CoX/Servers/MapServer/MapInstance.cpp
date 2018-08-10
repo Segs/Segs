@@ -47,6 +47,8 @@
 #include <QtCore/QDir>
 #include <stdlib.h>
 
+using namespace SEGSEvents;
+
 namespace
 {
     enum
@@ -270,7 +272,7 @@ void MapInstance::enqueue_client(MapClientSession *clnt)
 }
 
 // Here we would add the handler call in case we get evCombineRequest :)
-void MapInstance::dispatch( SEGSEvent *ev )
+void MapInstance::dispatch( Event *ev )
 {
     assert(ev);
     switch(ev->type())
@@ -466,7 +468,7 @@ void MapInstance::on_client_quit(ClientQuit*ev)
         session.m_ent->beginLogout(10);
 }
 
-void MapInstance::on_link_lost(SEGSEvent *ev)
+void MapInstance::on_link_lost(Event *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapLink *lnk = session.link();

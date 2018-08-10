@@ -22,6 +22,10 @@
 #include <cassert>
 #include <string>
 
+namespace SEGSEvents
+{
+    struct GameAccountResponseCharacterData;
+}
 class CharacterCostume;
 struct PlayerData;
 struct Costume;
@@ -64,8 +68,8 @@ class Character
         PowerTrayGroup          m_trays;
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
-        friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player, EntityData &entity);
-        friend bool fromActualCharacter(const Character &src,const PlayerData &player, const EntityData &entity, GameAccountResponseCharacterData &tgt);
+        friend bool toActualCharacter(const SEGSEvents::GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player, EntityData &entity);
+        friend bool fromActualCharacter(const Character &src,const PlayerData &player, const EntityData &entity, SEGSEvents::GameAccountResponseCharacterData &tgt);
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
@@ -133,5 +137,5 @@ protected:
 
 void serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
 bool initializeCharacterFromCreator();
-bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt, PlayerData &player, EntityData &entity);
-bool fromActualCharacter(const Character &src, const PlayerData &player, const EntityData &entity, GameAccountResponseCharacterData &tgt);
+bool toActualCharacter(const SEGSEvents::GameAccountResponseCharacterData &src, Character &tgt, PlayerData &player, EntityData &entity);
+bool fromActualCharacter(const Character &src, const PlayerData &player, const EntityData &entity, SEGSEvents::GameAccountResponseCharacterData &tgt);

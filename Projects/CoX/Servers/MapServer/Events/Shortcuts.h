@@ -10,6 +10,8 @@
 #include "MapEvents.h"
 #include "NetCommandManager.h"
 
+namespace SEGSEvents 
+{
 // [[ev_def:type]]
 class Shortcuts : public MapLinkEvent
 {
@@ -32,3 +34,5 @@ public:
     std::vector<std::string>  m_shortcuts2;
     MapClientSession *m_client;
 };
+} // end of SEGSEvents namespace
+

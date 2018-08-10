@@ -13,6 +13,8 @@
 #include <QtCore/QString>
 #include <glm/vec3.hpp>
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
 class PlaqueVisited : public MapLinkEvent
 {
@@ -28,3 +30,5 @@ public:
     // [[ev_def:field]]
     glm::vec3 m_pos;
 };
+} // end of SEGSEvents namespace
+

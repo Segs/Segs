@@ -10,16 +10,17 @@
 #include <ace/INET_Addr.h>
 #include "SEGSEvent.h"
 
+namespace SEGSEvents {
 // [[ev_def:type]]
-class ConnectEvent : public SEGSEvent
+class ConnectEvent : public Event
 {
 public:
-    ConnectEvent(EventProcessor *ev_src) : SEGSEvent(SEGS_EventTypes::evConnect,ev_src)
+    ConnectEvent(EventProcessor *ev_src) : Event(SEGS_EventTypes::evConnect,ev_src)
     {
         assert(ev_src);
     }
     ConnectEvent(EventProcessor *ev_src,const ACE_INET_Addr &addr) :
-        SEGSEvent(SEGS_EventTypes::evConnect,ev_src),
+        Event(SEGS_EventTypes::evConnect,ev_src),
         src_addr(addr)
     {
         assert(ev_src);
@@ -28,12 +29,16 @@ public:
     ACE_INET_Addr src_addr;
 };
 // [[ev_def:type]]
-class DisconnectEvent : public SEGSEvent
+class DisconnectEvent : public Event
 {
 public:
     // [[ev_def:field]]
     uint64_t m_session_token;
-    DisconnectEvent(uint64_t token) : SEGSEvent(SEGS_EventTypes::evDisconnect,nullptr),m_session_token(token)
+    DisconnectEvent(EventProcessor *ev_src=nullptr) : Event(SEGS_EventTypes::evDisconnect,ev_src)
+    {
+    }
+    DisconnectEvent(uint64_t token) : Event(SEGS_EventTypes::evDisconnect,nullptr),m_session_token(token)
     {
     }
 };
+} // end of SEGSEvents namespace

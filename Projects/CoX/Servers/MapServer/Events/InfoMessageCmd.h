@@ -12,6 +12,8 @@ struct MapClientSession;
 class QString;
 
 enum class MessageChannel : int;
+namespace SEGSEvents
+{
 
 // [[ev_def:type]]
 class InfoMessageCmd : public GameCommand
@@ -30,5 +32,8 @@ public:
     void            serializeto(BitStream &bs) const override;
     void            serializefrom(BitStream &src);
 };
+
+} // end of SEGSEvents namespace
+
 
 extern void sendInfoMessage(MessageChannel t, QString msg, MapClientSession *tgt);

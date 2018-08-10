@@ -13,6 +13,8 @@
 #include "GameEventFactory.h"
 #include "GameEvents.h"
 
+using namespace SEGSEvents;
+
 GameLinkEvent *GameEventFactory::EventFromStream(BitStream &bs)
 {
     size_t read_pos = bs.GetReadPos();

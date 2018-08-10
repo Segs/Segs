@@ -18,6 +18,8 @@ enum TeamOfferType :  uint8_t
     WithMission     = 1,
     LeaveMission    = 2,
 };
+namespace SEGSEvents
+{
 
 // [[ev_def:type]]
 class TeamOffer final : public GameCommand
@@ -43,3 +45,5 @@ public:
     }
     void    serializefrom(BitStream &src);
 };
+} // end of SEGSEvents namespace
+

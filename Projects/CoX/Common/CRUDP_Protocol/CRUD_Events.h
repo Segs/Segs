@@ -14,6 +14,10 @@
 #include "LinkLevelEvent.h"
 
 #include <memory>
+
+namespace SEGSEvents
+{
+
 class CRUD_EventTypes
 {
 public:
@@ -28,11 +32,12 @@ public:
     EVENT_DECL(evConnectResponse, 7)
     END_EVENTS(8)
 };
-class PacketEvent : public SEGSEvent
+// [[ev_def:type]]
+class PacketEvent : public Event
 {
 public:
     PacketEvent(EventProcessor *evsrc, std::unique_ptr<CrudP_Packet> &&pkt, const ACE_INET_Addr &tgt)
-        : SEGSEvent(CRUD_EventTypes::evPacket, evsrc), m_pkt(std::move(pkt)), target(tgt)
+        : Event(CRUD_EventTypes::evPacket, evsrc), m_pkt(std::move(pkt)), target(tgt)
     {
     }
     std::unique_ptr<CrudP_Packet> m_pkt;
@@ -40,10 +45,10 @@ public:
     const uint8_t *bytes() const { return m_pkt->GetStream()->read_ptr(); }
     size_t         size() const { return m_pkt->GetStream()->GetReadableDataSize(); }
 };
-class CRUDLink_Event : public SEGSEvent
+class CRUDLink_Event : public Event
 {
 public:
-    CRUDLink_Event(size_t evtype, EventProcessor *ev_src = nullptr) : SEGSEvent(evtype, ev_src) //,LINK
+    CRUDLink_Event(size_t evtype, EventProcessor *ev_src = nullptr) : Event(evtype, ev_src) //,LINK
     {
     }
     virtual void serializeto(BitStream &) const = 0;
@@ -52,6 +57,7 @@ public:
     bool         m_reliable = true;
 };
 
+// [[ev_def:type]]
 class ConnectRequest : public CRUDLink_Event
 {
 public:
@@ -67,10 +73,13 @@ public:
         m_tickcount = src.GetPackedBits(1);
         m_version   = src.GetPackedBits(1);
     }
+    // [[ev_def:field]]
     uint32_t m_tickcount;
+    // [[ev_def:field]]
     uint32_t m_version;
 };
 
+// [[ev_def:type]]
 class ConnectResponse : public CRUDLink_Event
 {
 public:
@@ -82,6 +91,7 @@ public:
     }
     void serializefrom(BitStream &) override {}
 };
+// [[ev_def:type]]
 class DisconnectRequest : public CRUDLink_Event
 {
 public:
@@ -97,6 +107,7 @@ public:
         bs.StorePackedBits(1, 5);
     }
 };
+// [[ev_def:type]]
 class DisconnectResponse : public CRUDLink_Event
 {
 public:
@@ -128,11 +139,11 @@ public:
         bs.StorePackedBits(1, 0);
     }
 };
-
+} // end of SEGSEvents namespace
 class CRUD_EventFactory
 {
 public:
-    virtual CRUDLink_Event *EventFromStream(BitStream &bs)
+    virtual SEGSEvents::CRUDLink_Event *EventFromStream(BitStream &bs)
     {
         int32_t opcode = bs.GetPackedBits(1);
         if (opcode != 0)
@@ -142,12 +153,13 @@ public:
         switch (control_opcode)
         {
         case 0:
-            return new IdleEvent(); // CTRL_IDLE
+            return new SEGSEvents::IdleEvent(); // CTRL_IDLE
         case 5:
-            return new DisconnectRequest(); // CTRL_DISCONNECT_REQ
+            return new SEGSEvents::DisconnectRequest(); // CTRL_DISCONNECT_REQ
         default: break;
         }
         qWarning("Unhandled control event type %d", control_opcode);
         return nullptr;
     }
 };
+

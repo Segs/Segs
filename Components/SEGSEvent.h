@@ -11,7 +11,8 @@
 #include <typeinfo>
 #include <cassert>
 class EventProcessor;
-
+namespace SEGSEvents
+{
 // Helper defines to ease the definition of event types
 #define INIT_EVENTS() enum : uint32_t { base = 0,
 #define BEGINE_EVENTS(parent_class) enum : uint32_t { base = parent_class::evLAST_EVENT,
@@ -29,7 +30,7 @@ public:
     END_EVENTS(4)
 };
 
-class SEGSEvent
+class Event
 {
 protected:
         const uint32_t  m_type;
@@ -38,16 +39,16 @@ protected:
 
 public:
 
-virtual                 ~SEGSEvent()
+virtual                 ~Event()
                         {
                             // we allow delete when there is 1 reference left (static variables on exit)
                             assert(m_ref_count<=1);
                             m_event_source=nullptr;
                         }
-                        SEGSEvent(uint32_t evtype,EventProcessor *ev_src=nullptr) :
+                        Event(uint32_t evtype,EventProcessor *ev_src=nullptr) :
                             m_type(evtype),m_event_source(ev_src)
                         {}
-        SEGSEvent *     shallow_copy() // just incrementing the ref count
+        Event *         shallow_copy() // just incrementing the ref count
                         {
                             ++m_ref_count;
                             return this;
@@ -62,12 +63,10 @@ virtual                 ~SEGSEvent()
         EventProcessor *src() const {return m_event_source;}
         uint32_t        type() const {return m_type;}
 virtual const char *    info();
-
-static  SEGSEvent       s_ev_finish;
 };
 
 // [[ev_def:type]]
-class Timeout final: public SEGSEvent
+class Timeout final: public Event
 {
 public:
                         // [[ev_def:field]]
@@ -77,9 +76,17 @@ public:
 
 
                         Timeout(const ACE_Time_Value &time, uint64_t dat,EventProcessor *source)
-                                : SEGSEvent(SEGS_EventTypes::evTimeout,source), m_arrival_time(time), m_timer_id(dat)
+                                : Event(SEGS_EventTypes::evTimeout,source), m_arrival_time(time), m_timer_id(dat)
                         {
                         }
     uint64_t            timer_id() { return m_timer_id; }
     ACE_Time_Value      arrival_time() const { return m_arrival_time; }
 };
+// [[ev_def:type]]
+struct Finish final: public Event
+{
+public:
+                    Finish(EventProcessor *source=nullptr) : Event(SEGS_EventTypes::evFinish,source) {}
+static  Finish *    s_instance;
+};
+} // end of SEGSEventsNamespace

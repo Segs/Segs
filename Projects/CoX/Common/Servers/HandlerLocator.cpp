@@ -16,6 +16,9 @@
 #include "EventProcessor.h"
 
 #include <QDebug>
+
+using namespace SEGSEvents;
+
 EventProcessor * HandlerLocator::m_db_sync_handler = nullptr;
 EventProcessor * HandlerLocator::m_auth_handler = nullptr;
 std::deque<EventProcessor *> HandlerLocator::m_game_servers;
@@ -33,7 +36,7 @@ void shutDownAllActiveHandlers()
         warn<<"Shutting down GameDBSync..";
         while(game_db_handler->thr_count())
         {
-            game_db_handler->putq(SEGSEvent::s_ev_finish.shallow_copy());
+            game_db_handler->putq(Finish::s_instance->shallow_copy());
             game_db_handler->wait();
         }
         warn<<"Done";
@@ -46,7 +49,7 @@ void shutDownAllActiveHandlers()
         warn<<"Shutting down DBSync..";
         if(dbsync->thr_count()>0)
         {
-            dbsync->putq(SEGSEvent::s_ev_finish.shallow_copy());
+            dbsync->putq(Finish::s_instance->shallow_copy());
             dbsync->wait();
         }
         warn<<"Done";
