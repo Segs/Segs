@@ -54,7 +54,7 @@ void AuthHandler::dispatch( Event *ev )
     switch(ev->type())
     {
         case SEGS_EventTypes::evConnect:
-            on_connect(static_cast<ConnectEvent *>(ev));
+            on_connect(static_cast<Connect *>(ev));
             break;
         case SEGS_EventTypes::evTimeout:
             on_timeout(static_cast<Timeout *>(ev));
@@ -73,10 +73,10 @@ void AuthHandler::dispatch( Event *ev )
             break;
         case evDbError:
             // client sends this on exit sometimes ?
-            on_disconnect(static_cast<DisconnectEvent *>(ev));
+            on_disconnect(static_cast<Disconnect *>(ev));
             break;
         case SEGS_EventTypes::evDisconnect:
-            on_disconnect(static_cast<DisconnectEvent *>(ev));
+            on_disconnect(static_cast<Disconnect *>(ev));
             break;
             //////////////////////////////////////////////////////////////////////////
             //  Events from other servers
@@ -120,7 +120,7 @@ void AuthHandler::on_timeout(Timeout *ev)
     }
 }
 
-void AuthHandler::on_connect( ConnectEvent *ev )
+void AuthHandler::on_connect( Connect *ev )
 {
     // TODO: guard for link state update ?
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
@@ -137,7 +137,7 @@ void AuthHandler::on_connect( ConnectEvent *ev )
     lnk->putq(new AuthProtocolVersion(30206,seed));
 }
 
-void AuthHandler::on_disconnect(DisconnectEvent *ev)
+void AuthHandler::on_disconnect(Disconnect *ev)
 {
     // since we cannot trust existence of the DisconnectEvent source at this point, we use the stored token
     if(ev->m_session_token==0)

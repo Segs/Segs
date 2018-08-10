@@ -31,7 +31,7 @@ void DummyClass::dispatch(Event * ev)
     {
         case SEGS_EventTypes::evConnect:
         {
-            onConnect(static_cast<ConnectEvent *>(ev));
+            onConnect(static_cast<Connect *>(ev));
             break;
         }
         case evAuthProtocolVersion:
@@ -64,7 +64,7 @@ void DummyClass::dispatch(Event * ev)
     }
 }
 
-void DummyClass::onConnect(ConnectEvent * ev)
+void DummyClass::onConnect(Connect * ev)
 {
     qInfo() << "ConnectEvent received:" << ev->type();
     AuthLink * lnk = static_cast<AuthLink *>(ev->src());

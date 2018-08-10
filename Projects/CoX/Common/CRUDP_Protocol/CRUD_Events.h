@@ -123,10 +123,10 @@ public:
         bs.StorePackedBits(1, 6);
     }
 };
-class IdleEvent : public CRUDLink_Event
+class Idle : public CRUDLink_Event
 {
 public:
-    IdleEvent() : CRUDLink_Event(CRUD_EventTypes::evIdle) {}
+    Idle() : CRUDLink_Event(CRUD_EventTypes::evIdle) {}
     void serializefrom(BitStream &bs) override
     {
         // TODO: check this
@@ -153,7 +153,7 @@ public:
         switch (control_opcode)
         {
         case 0:
-            return new SEGSEvents::IdleEvent(); // CTRL_IDLE
+            return new SEGSEvents::Idle(); // CTRL_IDLE
         case 5:
             return new SEGSEvents::DisconnectRequest(); // CTRL_DISCONNECT_REQ
         default: break;

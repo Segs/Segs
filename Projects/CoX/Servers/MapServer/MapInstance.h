@@ -30,7 +30,7 @@ class MapSceneGraph;
 namespace SEGSEvents
 {
 class InputState;
-class IdleEvent;
+class Idle;
 class DisconnectRequest;
 class SceneRequest;
 class EntitiesRequest;
@@ -102,7 +102,7 @@ protected:
         void on_timeout(SEGSEvents::Timeout *ev);
         void on_combine_boosts(SEGSEvents::CombineRequest *);
         void on_input_state(SEGSEvents::InputState *st);
-        void on_idle(SEGSEvents::IdleEvent *ev);
+        void on_idle(SEGSEvents::Idle *ev);
         void on_shortcuts_request(SEGSEvents::ShortcutsRequest *ev);
 
         void sendState();

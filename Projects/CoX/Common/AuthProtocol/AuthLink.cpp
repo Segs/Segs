@@ -145,7 +145,7 @@ int AuthLink::open (void *p)
     m_notifier.reactor(reactor());                      // notify reactor with write event,
     msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue() we will be notified
     //TODO: consider using sync query here.
-    m_target->putq(new ConnectEvent(this,m_peer_addr)); // also, inform the AuthHandler of our existence
+    m_target->putq(new Connect(this,m_peer_addr)); // also, inform the AuthHandler of our existence
     return 0;
 }
 /**
@@ -300,7 +300,7 @@ void AuthLink::set_protocol_version( int vers )
 int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 {
     // client handle was closed, posting disconnect event with higher priority
-    m_target->msg_queue()->enqueue_prio(new DisconnectEvent(session_token()),nullptr,100);
+    m_target->msg_queue()->enqueue_prio(new Disconnect(session_token()),nullptr,100);
     if (close_mask == ACE_Event_Handler::WRITE_MASK)
         return 0;
     return super::handle_close (handle, close_mask);

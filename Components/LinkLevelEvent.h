@@ -12,14 +12,14 @@
 
 namespace SEGSEvents {
 // [[ev_def:type]]
-class ConnectEvent : public Event
+class Connect : public Event
 {
 public:
-    ConnectEvent(EventProcessor *ev_src) : Event(SEGS_EventTypes::evConnect,ev_src)
+    Connect(EventProcessor *ev_src) : Event(SEGS_EventTypes::evConnect,ev_src)
     {
         assert(ev_src);
     }
-    ConnectEvent(EventProcessor *ev_src,const ACE_INET_Addr &addr) :
+    Connect(EventProcessor *ev_src,const ACE_INET_Addr &addr) :
         Event(SEGS_EventTypes::evConnect,ev_src),
         src_addr(addr)
     {
@@ -29,15 +29,15 @@ public:
     ACE_INET_Addr src_addr;
 };
 // [[ev_def:type]]
-class DisconnectEvent : public Event
+class Disconnect : public Event
 {
 public:
     // [[ev_def:field]]
     uint64_t m_session_token;
-    DisconnectEvent(EventProcessor *ev_src=nullptr) : Event(SEGS_EventTypes::evDisconnect,ev_src)
+    Disconnect(EventProcessor *ev_src=nullptr) : Event(SEGS_EventTypes::evDisconnect,ev_src)
     {
     }
-    DisconnectEvent(uint64_t token) : Event(SEGS_EventTypes::evDisconnect,nullptr),m_session_token(token)
+    Disconnect(uint64_t token) : Event(SEGS_EventTypes::evDisconnect,nullptr),m_session_token(token)
     {
     }
 };

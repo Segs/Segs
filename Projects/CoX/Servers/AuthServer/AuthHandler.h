@@ -100,8 +100,8 @@ protected:
     void        auth_error(EventProcessor *lnk,uint32_t code);
     //////////////////////////////////////////////////////////////////////////
     // incoming link level event handlers
-    void        on_connect(SEGSEvents::ConnectEvent *ev);
-    void        on_disconnect(SEGSEvents::DisconnectEvent *ev);
+    void        on_connect(SEGSEvents::Connect *ev);
+    void        on_disconnect(SEGSEvents::Disconnect *ev);
     void        on_login( SEGSEvents::LoginRequest *ev );
     void        on_server_list_request( SEGSEvents::ServerListRequest *ev );
     void        on_server_selected(SEGSEvents::ServerSelectRequest *ev);

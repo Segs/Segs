@@ -87,7 +87,7 @@ void GameHandler::dispatch( Event *ev )
         break;
     // Client -> Server messages
     case GameEventTypes::evIdle:
-        on_idle(static_cast<IdleEvent*>(ev));
+        on_idle(static_cast<Idle*>(ev));
         break;
     case GameEventTypes::evDisconnectRequest:
         on_disconnect(static_cast<DisconnectRequest *>(ev));
@@ -199,7 +199,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
     // TODO: Do we update database here? issue #271
 }
 
-void GameHandler::on_idle(IdleEvent */*ev*/)
+void GameHandler::on_idle(Idle */*ev*/)
 {
     // idle for idle 'strategy'
 //    GameLink * lnk = (GameLink *)ev->src();
@@ -219,9 +219,9 @@ void GameHandler::on_check_links()
         }
         // Send at least one packet within maximum_time_without_packets
         if(client_link->last_sent_packets()>maximum_time_without_packets)
-            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+            client_link->putq(new Idle); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
         else if(client_link->client_packets_waiting_for_ack()>MinPacketsToAck)
-            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+            client_link->putq(new Idle); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
     }
 }
 
@@ -280,7 +280,7 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
         m_session_store.session_link_lost(lnk->session_token());
     lnk->putq(new DisconnectResponse);
     // Post disconnect event to link, will close it's processing loop, after it sends the response
-    lnk->putq(new DisconnectEvent(lnk->session_token())); // this should work, event if different threads try to do it in parallel
+    lnk->putq(new Disconnect(lnk->session_token())); // this should work, event if different threads try to do it in parallel
 }
 
 void GameHandler::on_link_lost(Event *ev)
@@ -307,7 +307,7 @@ void GameHandler::on_link_lost(Event *ev)
     else
         m_session_store.session_link_lost(lnk->session_token());
     // Post disconnect event to link, will close it's processing loop
-    lnk->putq(new DisconnectEvent(lnk->session_token()));
+    lnk->putq(new Disconnect(lnk->session_token()));
 }
 
 void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)

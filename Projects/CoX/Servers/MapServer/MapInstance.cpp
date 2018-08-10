@@ -299,7 +299,7 @@ void MapInstance::dispatch( Event *ev )
             on_entity_by_name_response(static_cast<GetEntityByNameResponse *>(ev));
             break;
         case MapEventTypes::evIdle:
-            on_idle(static_cast<IdleEvent *>(ev));
+            on_idle(static_cast<Idle *>(ev));
             break;
         case MapEventTypes::evConnectRequest:
             on_connection_request(static_cast<ConnectRequest *>(ev));
@@ -417,11 +417,11 @@ void MapInstance::dispatch( Event *ev )
     }
 }
 
-void MapInstance::on_idle(IdleEvent *ev)
+void MapInstance::on_idle(Idle *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
-    lnk->putq(new IdleEvent);
+    lnk->putq(new Idle);
 }
 
 void MapInstance::on_check_links()
@@ -437,9 +437,9 @@ void MapInstance::on_check_links()
         }
         // Send at least one packet within maximum_time_without_packets
         if(client_link->last_sent_packets()>maximum_time_without_packets)
-            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+            client_link->putq(new Idle); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
         else if(client_link->client_packets_waiting_for_ack()>MinPacketsToAck)
-            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+            client_link->putq(new Idle); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
     }
 }
 void MapInstance::on_connection_request(ConnectRequest *ev)
@@ -488,7 +488,7 @@ void MapInstance::on_link_lost(Event *ev)
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());
      // close the link by puting an disconnect event there
-    lnk->putq(new DisconnectEvent(session_token));
+    lnk->putq(new Disconnect(session_token));
 }
 
 void MapInstance::on_disconnect(DisconnectRequest *ev)
@@ -511,7 +511,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     m_session_store.remove_by_token(session_token, session.auth_id());
 
     lnk->putq(new DisconnectResponse);
-    lnk->putq(new DisconnectEvent(session_token)); // this should work, event if different threads try to do it in parallel
+    lnk->putq(new Disconnect(session_token)); // this should work, event if different threads try to do it in parallel
 }
 
 void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
@@ -708,7 +708,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
 void MapInstance::on_scene_request(SceneRequest *ev)
 {
     auto *lnk = (MapLink *)ev->src();
-    auto *res = new SceneEvent;
+    auto *res = new Scene;
 
     res->undos_PP              = 0;
     res->is_new_world          = true;

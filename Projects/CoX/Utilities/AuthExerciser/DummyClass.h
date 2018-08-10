@@ -13,7 +13,7 @@ class AuthLink;
 
 namespace SEGSEvents
 {
-class ConnectEvent;
+class Connect;
 class AuthProtocolVersion;
 class LoginResponse;
 class AuthorizationError;
@@ -29,7 +29,7 @@ public:
     void        dispatch(SEGSEvents::Event *ev) override;
 
 protected:
-    void        onConnect(SEGSEvents::ConnectEvent * ev);
+    void        onConnect(SEGSEvents::Connect * ev);
     void        onServerVersion(SEGSEvents::AuthProtocolVersion * ev);
     void        onLoginResponse(SEGSEvents::LoginResponse *ev);
     void        onAuthorizationError(SEGSEvents::AuthorizationError * ev);

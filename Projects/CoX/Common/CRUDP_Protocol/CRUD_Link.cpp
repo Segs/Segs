@@ -80,7 +80,7 @@ void CRUDLink::packets_for_event(Event *ev)
     if (false == m_protocol.batchSend(packets_to_send))
     {
         // link is unresponsive, tell our target object
-        target()->putq(new DisconnectEvent(this));
+        target()->putq(new Disconnect(this));
         return;
     }
     // wrap all packets as PacketEvents and put them on link queue
@@ -129,7 +129,7 @@ int CRUDLink::handle_output( ACE_HANDLE )
                 ev->release();
                 return -1;
             case SEGS_EventTypes::evConnect:
-                m_peer_addr=static_cast<ConnectEvent *>(ev)->src_addr;
+                m_peer_addr=static_cast<Connect *>(ev)->src_addr;
                 connection_update();
                 break;
             case SEGS_EventTypes::evDisconnect:

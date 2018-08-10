@@ -67,7 +67,7 @@ protected:
 
         //////////////////////////////////////////////////////////////////////////
         // Link events
-        void        on_idle(SEGSEvents::IdleEvent *ev);
+        void        on_idle(SEGSEvents::Idle *ev);
         void        on_link_lost(SEGSEvents::Event *ev);
         void        on_disconnect(SEGSEvents::DisconnectRequest *ev);
         void        on_connection_request(SEGSEvents::ConnectRequest *ev);

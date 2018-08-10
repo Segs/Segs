@@ -22,10 +22,10 @@ namespace SEGSEvents
 using MapLinkEvent = CRUDLink_Event; //<MapLink>
 
 // [[ev_def:type]]
-class SceneEvent : public MapLinkEvent
+class Scene : public MapLinkEvent
 {
 public:
-            SceneEvent();
+            Scene();
 
     void    serializefrom(BitStream &src);
     void    serializeto(BitStream &tgt) const;

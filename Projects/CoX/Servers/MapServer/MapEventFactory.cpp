@@ -52,7 +52,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
             if(bs.GetReadableBits()>=8) // at least 1 char readable ?
                 return new ConsoleCommand;
             // otherwise treat as idle
-            return new IdleEvent;
+            return new Idle;
         case 1: return new MiniMapState;
         //case 2: return new Unknown2; // TODO: What is this?
         //case 3: return new RefreshWindows; // TODO: Refreshes all windows? Issue #268

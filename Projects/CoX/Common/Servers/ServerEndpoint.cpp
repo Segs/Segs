@@ -116,7 +116,7 @@ CRUDLink *ServerEndpoint::getClientLink(const ACE_INET_Addr &from_addr)
     res = createLinkInstance(); // create a new client handler
     if(nullptr == res)
         return nullptr;
-    res->putq(new ConnectEvent(this,from_addr)); // and inform it of a new connection
+    res->putq(new Connect(this,from_addr)); // and inform it of a new connection
     client_links[from_addr] = res;
     //TODO: schedule timeout timer here!!
     return res;
