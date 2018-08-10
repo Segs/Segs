@@ -24,6 +24,8 @@
 
 #include <QtCore/QDebug>
 
+using namespace SEGSEvents;
+
 int luaopen_package(lua_State *)
 {
     assert(false && "functionality removed");

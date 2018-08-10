@@ -23,24 +23,21 @@ using GameLinkEvent = CRUDLink_Event;
 
 struct GameAccountResponseData;
 
-class GameEventTypes : public CRUD_EventTypes
+enum GameEventTypes
 {
-public:
-        BEGINE_EVENTS(CRUD_EventTypes)
-        EVENT_DECL(evUpdateServer,      0)
-        EVENT_DECL(evMapServerAddrRequest,    1)
-        EVENT_DECL(evDeleteCharacter,   2)
-        EVENT_DECL(evUpdateCharacter,   3)
-        EVENT_DECL(evGameEntryError,    4)
-        EVENT_DECL(evCharacterSlots,    5)
-        EVENT_DECL(evCharacterResponse, 6)
-        EVENT_DECL(evMapServerAddrResponse,   7)
-        EVENT_DECL(evDeleteAcknowledged,8)
+        BEGINE_EVENTS(GameEventTypes,CRUD_EventTypes)
+        evUpdateServer,
+        evMapServerAddrRequest,
+        evDeleteCharacter,
+        evUpdateCharacter,
+        evGameEntryError,
+        evCharacterSlots,
+        evCharacterResponse,
+        evMapServerAddrResponse,
+        evDeleteAcknowledged,
 
-        EVENT_DECL(evUnknownEvent,16)
-
-        EVENT_DECL(evServerReconfigured,100)
-        END_EVENTS(102)
+        evServerReconfigured = evDeleteAcknowledged+100,
+        END_EVENTS(GameEventTypes,102)
 };
 
 // [[ev_def:type]]
@@ -247,18 +244,10 @@ public:
     void serializefrom( BitStream &) override {}
 };
 
-class GameUnknownRequest : public GameLinkEvent
+// [[ev_def:type]]
+class ServerReconfigured : public InternalEvent
 {
 public:
-    GameUnknownRequest():GameLinkEvent(GameEventTypes::evUnknownEvent)
-    { }
-    void serializeto(BitStream &) const override { }
-    void serializefrom(BitStream &) override { }
-};
-
-class GameServerReconfigured : public InternalEvent
-{
-public:
-    GameServerReconfigured():InternalEvent(GameEventTypes::evServerReconfigured) {}
+    ServerReconfigured():InternalEvent(GameEventTypes::evServerReconfigured) {}
 };
 } // end of SEGSEvents namespace

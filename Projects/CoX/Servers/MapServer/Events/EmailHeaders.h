@@ -24,14 +24,14 @@ public:
     };
 
     /*Send multiple emails*/
-    EmailHeaders(QVector<EmailHeader> &email) : GameCommand(MapEventTypes::evEmailHeadersCmd),
+    EmailHeaders(QVector<EmailHeader> &email) : GameCommand(MapEventTypes::evEmailHeaders),
         m_fullupdate(true),
         m_emails(email)
     {
     }
 
     /*Defines a single email header to send*/
-    EmailHeaders(const int &id, const QString &sender,  const QString &subject, const int &timestamp) : GameCommand(MapEventTypes::evEmailHeadersCmd),
+    EmailHeaders(const int &id, const QString &sender,  const QString &subject, const int &timestamp) : GameCommand(MapEventTypes::evEmailHeaders),
         m_fullupdate(false)
     {
         m_emails.push_back(EmailHeader{ id, sender, subject, timestamp });

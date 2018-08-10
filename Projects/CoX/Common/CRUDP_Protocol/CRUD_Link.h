@@ -23,7 +23,7 @@
 namespace SEGSEvents
 {
     class Event;
-    class PacketEvent;
+    class Packet;
 }
 class CRUD_EventFactory;
 
@@ -67,7 +67,7 @@ public:
     size_t          client_packets_waiting_for_ack() const { return m_protocol.UnackedPacketCount(); }
 protected:
     int             handle_close(ACE_HANDLE h, ACE_Reactor_Mask c) override;
-    void            event_for_packet(SEGSEvents::PacketEvent *pak_ev);
+    void            event_for_packet(SEGSEvents::Packet *pak_ev);
     void            packets_for_event(SEGSEvents::Event *c_ev);
     void            connection_update();
     void            connection_sent_packet();

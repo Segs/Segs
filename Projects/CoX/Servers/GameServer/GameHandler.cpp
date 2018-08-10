@@ -62,23 +62,23 @@ void GameHandler::dispatch( Event *ev )
     assert(ev);
     switch(ev->type())
     {
-    case SEGS_EventTypes::evTimeout:
+    case evTimeout:
         on_timeout(static_cast<Timeout *>(ev));
         break;
-    case SEGS_EventTypes::evDisconnect: // link layer tells us that a link is not responsive/dead
+    case evDisconnect: // link layer tells us that a link is not responsive/dead
         on_link_lost(ev);
         break;
     // Server <-> Server messages
-    case Internal_EventTypes::evExpectClientRequest:
+    case evExpectClientRequest:
         on_expect_client(static_cast<ExpectClientRequest *>(ev));
         break;
-    case Internal_EventTypes::evExpectMapClientResponse:
+    case evExpectMapClientResponse:
         on_client_expected(static_cast<ExpectMapClientResponse *>(ev));
         break;
-    case Internal_EventTypes::evClientConnected:
+    case evClientConnectedMessage:
         on_client_connected_to_other_server(static_cast<ClientConnectedMessage *>(ev));
         break;
-    case Internal_EventTypes::evClientDisconnected:
+    case evClientDisconnectedMessage:
         on_client_disconnected_from_other_server(static_cast<ClientDisconnectedMessage *>(ev));
         break;
     case GameEventTypes::evServerReconfigured:
@@ -86,13 +86,13 @@ void GameHandler::dispatch( Event *ev )
         report_service_status();
         break;
     // Client -> Server messages
-    case GameEventTypes::evIdle:
+    case evIdle:
         on_idle(static_cast<Idle*>(ev));
         break;
-    case GameEventTypes::evDisconnectRequest:
+    case evDisconnectRequest:
         on_disconnect(static_cast<DisconnectRequest *>(ev));
         break;
-    case GameEventTypes::evConnectRequest:
+    case evConnectRequest:
         on_connection_request(static_cast<ConnectRequest *>(ev));
         break;
     case GameEventTypes::evUpdateServer:
@@ -107,11 +107,11 @@ void GameHandler::dispatch( Event *ev )
     case GameEventTypes::evUpdateCharacter:
         on_update_character(static_cast<UpdateCharacter *>(ev));
         break;
-    case GameEventTypes::evUnknownEvent:
-        on_unknown_link_event(static_cast<GameUnknownRequest *>(ev));
+    case evUnknownEvent:
+        on_unknown_link_event(static_cast<UnknownEvent *>(ev));
         break;
     // DB -> Server messages
-    case GameDBEventTypes::evGameDbError:
+    case evGameDbErrorMessage:
         on_game_db_error(static_cast<GameDbErrorMessage *>(ev));
         break;
     case GameDBEventTypes::evGameAccountResponse:
@@ -399,7 +399,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     map_handler->putq(expect_client);
 }
 
-void GameHandler::on_unknown_link_event(GameUnknownRequest *)
+void GameHandler::on_unknown_link_event(UnknownEvent *)
 {
         qWarning() << "Unknown GameHandler link event";
 }

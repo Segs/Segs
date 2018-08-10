@@ -188,7 +188,7 @@ int AuthLink::handle_output( ACE_HANDLE /*= ACE_INVALID_HANDLE*/ )
     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
     while (-1 != getq(ev, &nowait))
     {
-        if(ev->type()==SEGS_EventTypes::evFinish)
+        if(ev->type()==evFinish)
         {
             ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Error sent, closing connection\n")));
             return -1;

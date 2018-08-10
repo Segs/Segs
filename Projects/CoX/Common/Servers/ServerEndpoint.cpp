@@ -46,13 +46,13 @@ int ServerEndpoint::handle_output(ACE_HANDLE /*fd*/) //! Called when output is p
     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
     while (-1 != getq(ev, &nowait))
     {
-        if(ev->type()==SEGS_EventTypes::evFinish)
+        if(ev->type()==evFinish)
         {
             ACE_ASSERT(!"Post finish message to all links");
         }
         else if(ev->type()==CRUD_EventTypes::evPacket)
         {
-            PacketEvent *pkt_ev = (PacketEvent *)ev;
+            Packet *pkt_ev = (Packet *)ev;
             ssize_t send_cnt = endpoint_.send(pkt_ev->bytes(),pkt_ev->size(),pkt_ev->target);
             if (send_cnt == -1)
             {

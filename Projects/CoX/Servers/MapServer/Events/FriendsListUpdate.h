@@ -21,7 +21,7 @@ class FriendsListUpdate final : public GameCommand
 public:
     // [[ev_def:field]]
     FriendsList *m_list;
-    FriendsListUpdate(FriendsList *friends_list) : GameCommand(MapEventTypes::evFriendListUpdated),
+    FriendsListUpdate(FriendsList *friends_list) : GameCommand(MapEventTypes::evFriendsListUpdate),
         m_list(friends_list)
     {
     }

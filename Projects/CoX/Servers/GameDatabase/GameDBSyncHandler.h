@@ -35,7 +35,7 @@ class GameDBSyncHandler final : public EventProcessor
     /// in case there are more `activated` handlers
     QThreadStorage<GameDbSyncContext> m_db_context;
     // EventProcessor interface
-    bool per_thread_setup() override;
+    bool per_thread_startup() override;
     void dispatch(SEGSEvents::Event*ev) override;
     void on_character_update(SEGSEvents::CharacterUpdateMessage *msg);
     void on_costume_update(SEGSEvents::CostumeUpdateMessage *msg);

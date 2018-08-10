@@ -13,6 +13,8 @@
 #include "MapTemplate.h"
 #include "MapInstance.h"
 
+using namespace SEGSEvents;
+
 uint8_t MapTemplate::s_template_id = 1;
 
 MapTemplate::MapTemplate(const QString &filename, uint8_t game_server_id, uint32_t map_server_id,
@@ -41,7 +43,7 @@ void MapTemplate::shut_down_all()
     {
         if(instance->thr_count()>0)
         {
-            instance->putq(SEGSEvents::Finish::s_instance->shallow_copy());
+            instance->putq(Finish::s_instance->shallow_copy());
             instance->wait();
         }
         delete instance;

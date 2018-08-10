@@ -18,25 +18,24 @@ namespace SEGSEvents
 
 struct GameAccountResponseCharacterData;
 
-class Internal_EventTypes
+enum Internal_EventTypes
 {
-public:
-    BEGINE_EVENTS_INTERNAL()
-    EVENT_DECL(evExpectClientRequest,0)
-    EVENT_DECL(evExpectClientResponse,1)
-    EVENT_DECL(evExpectMapClientRequest,2)
-    EVENT_DECL(evExpectMapClientResponse,3)
-    EVENT_DECL(evClientConnectionRequest,4)
-    EVENT_DECL(evClientConnectionResponse,5)
-    EVENT_DECL(evReloadConfig,6) // the server that receives this message will reload it's config file and restart with it
+    BEGINE_EVENTS_INTERNAL(Internal_EventTypes)
+    evExpectClientRequest, //,0)
+    evExpectClientResponse, // ,1)
+    evExpectMapClientRequest, //,2)
+    evExpectMapClientResponse, //,3)
+    evClientConnectionRequest, //,4)
+    evClientConnectionResponse, //,5)
+    evReloadConfigMessage, //,6) // the server that receives this message will reload it's config file and restart with it
 
-    EVENT_DECL(evGameServerStatus,10)
-    EVENT_DECL(evMapServerStatus,11)
+    evGameServerStatusMessage = evReloadConfigMessage+4, //10)
+    evMapServerStatusMessage,                     //11)
     // Message bus events
-    EVENT_DECL(evServiceStatus,101)
-    EVENT_DECL(evClientConnected,102)
-    EVENT_DECL(evClientDisconnected,103)
-    END_EVENTS(105)
+    evServiceStatusMessage = evExpectClientRequest+101,
+    evClientConnectedMessage, // 102
+    evClientDisconnectedMessage,  // 103
+    END_EVENTS(Internal_EventTypes,105)
 };
 
 class InternalEvent : public Event
@@ -54,8 +53,8 @@ public:
 struct name ## Message final : public InternalEvent\
 {\
     name ## Data m_data;\
-    explicit name ## Message() :  InternalEvent(Internal_EventTypes::ev ## name) {}\
-    name ## Message(name ## Data &&d) :  InternalEvent(Internal_EventTypes::ev ## name),m_data(d) {}\
+    explicit name ## Message() :  InternalEvent(Internal_EventTypes::ev ## name ## Message) {}\
+    name ## Message(name ## Data &&d,uint64_t token=0) :  InternalEvent(Internal_EventTypes::ev ## name ## Message),m_data(d) { session_token(token);}\
 };
 
 /// A message without Request having additional data

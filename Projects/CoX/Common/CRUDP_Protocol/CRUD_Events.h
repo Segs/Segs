@@ -18,26 +18,27 @@
 namespace SEGSEvents
 {
 
-class CRUD_EventTypes
+enum CRUD_EventTypes : uint32_t
 {
-public:
-    BEGINE_EVENTS(SEGS_EventTypes)
-    EVENT_DECL(evPacket, 0)
-    EVENT_DECL(evControl, 1)
-    EVENT_DECL(evDisconnectRequest, 2)
-    EVENT_DECL(evIdle, 3)
-    EVENT_DECL(evUnknownEvent, 4)
-    EVENT_DECL(evDisconnectResponse, 5)
-    EVENT_DECL(evConnectRequest, 6)
-    EVENT_DECL(evConnectResponse, 7)
-    END_EVENTS(8)
+    // skip 11 entries here, they are used by AuthEventTypes
+    BEGINE_EVENTS_SKIP(CRUD_EventTypes,CommonTypes,11)
+    evPacket,
+    evControlEvent,
+    evDisconnectRequest,
+    evIdle,
+    evUnknownEvent,
+    evDisconnectResponse,
+    evConnectRequest,
+    evConnectResponse,
+    END_EVENTS(CRUD_EventTypes,8)
 };
 // [[ev_def:type]]
-class PacketEvent : public Event
+class Packet : public Event
 {
 public:
-    PacketEvent(EventProcessor *evsrc, std::unique_ptr<CrudP_Packet> &&pkt, const ACE_INET_Addr &tgt)
-        : Event(CRUD_EventTypes::evPacket, evsrc), m_pkt(std::move(pkt)), target(tgt)
+    Packet() : Event(CRUD_EventTypes::evPacket,nullptr) {}
+    Packet(EventProcessor *evsrc, std::unique_ptr<CrudP_Packet> &&pkt, const ACE_INET_Addr &tgt)
+        : Event(evPacket, evsrc), m_pkt(std::move(pkt)), target(tgt)
     {
     }
     std::unique_ptr<CrudP_Packet> m_pkt;
@@ -123,6 +124,7 @@ public:
         bs.StorePackedBits(1, 6);
     }
 };
+// [[ev_def:type]]
 class Idle : public CRUDLink_Event
 {
 public:
@@ -138,6 +140,15 @@ public:
         bs.StorePackedBits(1, 0);
         bs.StorePackedBits(1, 0);
     }
+};
+// [[ev_def:type]]
+class UnknownEvent : public CRUDLink_Event
+{
+public:
+    UnknownEvent():CRUDLink_Event(evUnknownEvent)
+    { }
+    void serializeto(BitStream &) const override { }
+    void serializefrom(BitStream &) override { }
 };
 } // end of SEGSEvents namespace
 class CRUD_EventFactory

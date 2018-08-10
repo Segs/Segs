@@ -77,7 +77,7 @@ public:
     {
         switch(ev->type())
         {
-        case Internal_EventTypes::evServiceStatus:
+        case evServiceStatusMessage:
             on_service_status(static_cast<ServiceStatusMessage *>(ev));
             break;
         default:
@@ -104,11 +104,11 @@ static void shutDownServers(const char *reason)
     }
     if(g_map_server && g_map_server->thr_count())
     {
-        g_map_server->ShutDown();
+        g_map_server->per_thread_shutdown();
     }
     if(g_auth_server && g_auth_server->thr_count())
     {
-        g_auth_server->ShutDown();
+        g_auth_server->per_thread_shutdown();
     }
     if(s_bus_monitor && s_bus_monitor->thr_count())
     {

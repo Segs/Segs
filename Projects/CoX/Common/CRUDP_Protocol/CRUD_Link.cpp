@@ -43,7 +43,7 @@ CRUDLink::~CRUDLink()
 /// \brief CRUDLink::event_for_packet - convert incoming packet into higher level events and push them to our target()
 /// \param pak_ev - received packet
 ///
-void CRUDLink::event_for_packet(PacketEvent * pak_ev)
+void CRUDLink::event_for_packet(Packet * pak_ev)
 {
     CrudP_Packet *pak=pak_ev->m_pkt.get();
     // switch this to while, maybe many events are coming from single packet ?
@@ -86,7 +86,7 @@ void CRUDLink::packets_for_event(Event *ev)
     // wrap all packets as PacketEvents and put them on link queue
     for (std::unique_ptr<CrudP_Packet> &pkt : packets_to_send)
     {
-        net_layer()->putq(new PacketEvent(this, std::move(pkt), peer_addr()));
+        net_layer()->putq(new Packet(this, std::move(pkt), peer_addr()));
     }
     packets_to_send.clear();
     connection_sent_packet(); // data was sent, update
@@ -125,18 +125,18 @@ int CRUDLink::handle_output( ACE_HANDLE )
     {
         switch(ev->type())
         {
-            case SEGS_EventTypes::evFinish:
+            case evFinish:
                 ev->release();
                 return -1;
-            case SEGS_EventTypes::evConnect:
+            case evConnect:
                 m_peer_addr=static_cast<Connect *>(ev)->src_addr;
                 connection_update();
                 break;
-            case SEGS_EventTypes::evDisconnect:
+            case evDisconnect:
                 putq(Finish::s_instance->shallow_copy()); // close the link
                 break;
-            case CRUD_EventTypes::evPacket: // CRUDP_Protocol has posted a pre-parsed packet to us
-                event_for_packet(static_cast<PacketEvent *>(ev));
+            case evPacket: // CRUDP_Protocol has posted a pre-parsed packet to us
+                event_for_packet(static_cast<Packet *>(ev));
                 connection_update(); // we've received some bytes -> connection update
                 break;
             default:
@@ -169,7 +169,7 @@ void CRUDLink::received_block( BitStream &bytes )
     while(pkt)
     {
         std::unique_ptr<CrudP_Packet> own_it(pkt);
-        putq(new PacketEvent(net_layer(),std::move(own_it),peer_addr()));
+        putq(new Packet(net_layer(),std::move(own_it),peer_addr()));
         ++recv_count;
         pkt=m_protocol.RecvPacket();
     }

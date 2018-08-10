@@ -16,14 +16,15 @@ namespace SEGSEvents
 
 enum GameDBEventTypes : uint32_t
 {
-    evCharacterUpdate= Internal_EventTypes::evLAST_EVENT,
+    BEGINE_EVENTS(GameDBEventTypes,Internal_EventTypes)
+    evCharacterUpdateMessage,
     //updates, no responses
-    evSetClientOptions,
-    evCostumeUpdate,
-    evGuiUpdate,
-    evOptionsUpdate,
-    evKeybindsUpdate,
-    evPlayerUpdate,
+    evSetClientOptionsMessage,
+    evCostumeUpdateMessage,
+    evGuiUpdateMessage,
+    evOptionsUpdateMessage,
+    evKeybindsUpdateMessage,
+    evPlayerUpdateMessage,
     //requests
     evRemoveCharacterRequest,
     evRemoveCharacterResponse,
@@ -44,14 +45,14 @@ enum GameDBEventTypes : uint32_t
     evGetEntityByNameRequest,
     evGetEntityByNameResponse,
 
-    evGameDbError
+    evGameDbErrorMessage
 };
 
 #define ONE_WAY_MESSAGE(name)\
 struct name ## Message final : public InternalEvent\
 {\
     name ## Data m_data;\
-    name ## Message(name ## Data &&d,uint64_t token) :  InternalEvent(GameDBEventTypes::ev ## name),m_data(d) {session_token(token);}\
+    name ## Message(name ## Data &&d,uint64_t token) :  InternalEvent(GameDBEventTypes::ev ## name ## Message),m_data(d) {session_token(token);}\
 };
 
 /// A message without Request having additional data

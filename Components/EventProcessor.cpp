@@ -41,13 +41,13 @@ int EventProcessor::handle_timeout( const ACE_Time_Value &current_time, const vo
 
 int EventProcessor::svc( )
 {
-    if(not this->per_thread_setup())
+    if(not this->per_thread_startup())
         return -1;
     Event *mb;
 
     while(getq(mb,nullptr)!=-1)
     {
-        if(mb->type()==SEGS_EventTypes::evFinish)
+        if(mb->type()==evFinish)
         {
             if (thr_count() > 1)
                 putq(mb); // put this back on our message queue, our siblings will receive it and shut down as well

@@ -65,7 +65,7 @@ public:
     void ShutDown() const
     {
         // tell our handler to shut down too
-        m_handler->putq(new Event(SEGS_EventTypes::evFinish, nullptr));
+        m_handler->putq(new Event(evFinish, nullptr));
         m_handler->wait();
     }
 };
@@ -75,7 +75,7 @@ void GameServer::dispatch(SEGSEvents::Event *ev)
     assert(ev);
     switch(ev->type())
     {
-        case Internal_EventTypes::evReloadConfig:
+        case evReloadConfigMessage:
             ReadConfigAndRestart();
             break;
         default:
@@ -101,7 +101,7 @@ GameServer::~GameServer()
 // later name will be used to read GameServer specific configuration
 bool GameServer::ReadConfigAndRestart()
 {
-    static GameServerReconfigured reconfigured_msg;
+    static ServerReconfigured reconfigured_msg;
     // TODO: consider properly closing all open sessions ?
     delete d->m_endpoint;
     qInfo() << "Loading GameServer settings...";
@@ -154,7 +154,7 @@ bool GameServer::ReadConfigAndRestart()
 
 bool GameServer::ShutDown()
 {
-    putq(SEGSEvents::Finish::s_instance->shallow_copy());
+    putq(Finish::s_instance->shallow_copy());
     wait();
     return true;
 }

@@ -17,7 +17,7 @@ namespace SEGSEvents
 class EmailRead final : public GameCommand
 {
 public:
-    EmailRead(const int id, const QString &message, const QString recipient) : GameCommand(MapEventTypes::evEmailReadCmd),
+    EmailRead(const int id, const QString &message, const QString recipient) : GameCommand(MapEventTypes::evEmailRead),
         m_id(id), m_message(message), m_recipient(recipient)
     {
     }

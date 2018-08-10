@@ -8,8 +8,11 @@
 #pragma once
 #include "SEGSEvent.h"
 #include <ace/Task_Ex_T.h>
-// Independent Task, each EventProcessor when activated dequeues SEGSEvents,
-// and dispatches them
+#include <iosfwd>
+
+/** Independent Task, each EventProcessor when activated dequeues SEGSEvents,
+    and dispatches them
+*/
 class EventProcessor : public ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvents::Event>
 {
 using super = ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvents::Event>;
@@ -22,8 +25,17 @@ public:
 virtual int             putq(SEGSEvents::Event *ev, ACE_Time_Value *timeout=nullptr);
                         /// Called in svc before start of event servicing, if it returns false, the svc will return -1
                         /// thus ending that particular thread
-virtual bool            per_thread_setup() { return true; }
+virtual bool            per_thread_startup() { return true; }
+virtual void            per_thread_shutdown() { ; }
+
 virtual void            dispatch(SEGSEvents::Event *ev)=0;
 };
 
-
+inline void shutdown_event_processor_and_wait(EventProcessor *ep)
+{
+    if(ep && ep->thr_count())
+    {
+        ep->putq(SEGSEvents::Finish::s_instance->shallow_copy());
+        ep->wait();
+    }
+}

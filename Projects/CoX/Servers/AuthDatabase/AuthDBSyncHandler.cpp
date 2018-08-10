@@ -21,7 +21,7 @@
 
 using namespace SEGSEvents;
 
-bool AuthDBSyncHandler::per_thread_setup()
+bool AuthDBSyncHandler::per_thread_startup()
 {
     AuthDbSyncContext &db_ctx(m_db_context.localData());
     bool result = db_ctx.loadAndConfigure();
@@ -39,7 +39,7 @@ void AuthDBSyncHandler::dispatch(Event *ev)
     switch (ev->type())
     {
 
-        case AuthDBEventTypes::evCreateAccount:
+        case AuthDBEventTypes::evCreateAccountMessage:
         on_create_account(static_cast<CreateAccountMessage *>(ev));
         break;
         case AuthDBEventTypes::evRetrieveAccountRequest:

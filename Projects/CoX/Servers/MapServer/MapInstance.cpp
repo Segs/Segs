@@ -277,143 +277,143 @@ void MapInstance::dispatch( Event *ev )
     assert(ev);
     switch(ev->type())
     {
-        case SEGS_EventTypes::evTimeout:
+        case evTimeout:
             on_timeout(static_cast<Timeout *>(ev));
             break;
-        case SEGS_EventTypes::evDisconnect:
+        case evDisconnect:
             on_link_lost(ev);
             break;
-        case Internal_EventTypes::evExpectMapClientRequest:
+        case evExpectMapClientRequest:
             on_expect_client(static_cast<ExpectMapClientRequest *>(ev));
             break;
-        case GameDBEventTypes::evWouldNameDuplicateResponse:
+        case evWouldNameDuplicateResponse:
             on_name_clash_check_result(static_cast<WouldNameDuplicateResponse *>(ev));
             break;
-        case GameDBEventTypes::evCreateNewCharacterResponse:
+        case evCreateNewCharacterResponse:
             on_character_created(static_cast<CreateNewCharacterResponse *>(ev));
             break;
-        case GameDBEventTypes::evGetEntityResponse:
+        case evGetEntityResponse:
             on_entity_response(static_cast<GetEntityResponse *>(ev));
             break;
-        case GameDBEventTypes::evGetEntityByNameResponse:
+        case evGetEntityByNameResponse:
             on_entity_by_name_response(static_cast<GetEntityByNameResponse *>(ev));
             break;
-        case MapEventTypes::evIdle:
+        case evIdle:
             on_idle(static_cast<Idle *>(ev));
             break;
-        case MapEventTypes::evConnectRequest:
+        case evConnectRequest:
             on_connection_request(static_cast<ConnectRequest *>(ev));
             break;
-        case MapEventTypes::evSceneRequest:
+        case evSceneRequest:
             on_scene_request(static_cast<SceneRequest *>(ev));
             break;
-        case MapEventTypes::evDisconnectRequest:
+        case evDisconnectRequest:
             on_disconnect(static_cast<DisconnectRequest *>(ev));
             break;
-        case MapEventTypes::evEntityEnteringMap:
+        case evNewEntity:
             on_create_map_entity(static_cast<NewEntity *>(ev));
             break;
-        case MapEventTypes::evClientQuit:
+        case evClientQuit:
             on_client_quit(static_cast<ClientQuit*>(ev));
             break;
-        case MapEventTypes::evEntitiesRequest:
+        case evEntitiesRequest:
             on_entities_request(static_cast<EntitiesRequest *>(ev));
             break;
-        case MapEventTypes::evShortcutsRequest:
+        case evShortcutsRequest:
             on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
             break;
-        case MapEventTypes::evInputState:
+        case evInputState:
             on_input_state(static_cast<InputState *>(ev));
             break;
-        case MapEventTypes::evCookieRequest:
+        case evCookieRequest:
             on_cookie_confirm(static_cast<CookieRequest *>(ev));
             break;
-        case MapEventTypes::evEnterDoor:
+        case evEnterDoor:
             on_enter_door(static_cast<EnterDoor *>(ev));
             break;
-        case MapEventTypes::evSetDestination:
+        case evSetDestination:
             on_set_destination(static_cast<SetDestination *>(ev));
             break;
-        case MapEventTypes::evWindowState:
+        case evWindowState:
             on_window_state(static_cast<WindowState *>(ev));
             break;
-        case MapEventTypes::evInspirationDockMode:
+        case evInspirationDockMode:
             on_inspiration_dockmode(static_cast<InspirationDockMode *>(ev));
             break;
-        case MapEventTypes::evPowersDockMode:
+        case evPowersDockMode:
             on_powers_dockmode(static_cast<PowersDockMode *>(ev));
             break;
-        case MapEventTypes::evAbortQueuedPower:
+        case evAbortQueuedPower:
             on_abort_queued_power(static_cast<AbortQueuedPower *>(ev));
             break;
-        case MapEventTypes::evConsoleCommand:
+        case evConsoleCommand:
             on_console_command(static_cast<ConsoleCommand *>(ev));
             break;
-        case MapEventTypes::evChatDividerMoved:
+        case evChatDividerMoved:
             on_command_chat_divider_moved(static_cast<ChatDividerMoved *>(ev));
             break;
-        case MapEventTypes::evClientResumedRendering:
+        case evClientResumedRendering:
             on_client_resumed(static_cast<ClientResumedRendering *>(ev));
             break;
-        case MapEventTypes::evMiniMapState:
+        case evMiniMapState:
             on_minimap_state(static_cast<MiniMapState *>(ev));
             break;
-        case MapEventTypes::evLocationVisited:
+        case evLocationVisited:
             on_location_visited(static_cast<LocationVisited *>(ev));
             break;
-        case MapEventTypes::evChatReconfigure:
+        case evChatReconfigure:
             on_chat_reconfigured(static_cast<ChatReconfigure *>(ev));
             break;
-        case MapEventTypes::evPlaqueVisited:
+        case evPlaqueVisited:
             on_plaque_visited(static_cast<PlaqueVisited *>(ev));
             break;
-        case MapEventTypes::evSwitchViewPoint:
+        case evSwitchViewPoint:
             on_switch_viewpoint(static_cast<SwitchViewPoint *>(ev));
             break;
-        case MapEventTypes::evSaveClientOptions:
+        case evSaveClientOptions:
             on_client_options(static_cast<SaveClientOptions *>(ev));
             break;
-        case MapEventTypes::evDescriptionAndBattleCry:
+        case evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
             break;
-        case MapEventTypes::evSetDefaultPowerSend:
+        case evSetDefaultPowerSend:
             on_set_default_power_send(static_cast<SetDefaultPowerSend *>(ev));
             break;
-        case MapEventTypes::evSetDefaultPower:
+        case evSetDefaultPower:
             on_set_default_power(static_cast<SetDefaultPower *>(ev));
             break;
-        case MapEventTypes::evUnqueueAll:
+        case evUnqueueAll:
             on_unqueue_all(static_cast<UnqueueAll *>(ev));
             break;
-        case MapEventTypes::evActivateInspiration:
+        case evActivateInspiration:
             on_activate_inspiration(static_cast<ActivateInspiration *>(ev));
             break;
-        case MapEventTypes::evInteractWithEntity:
+        case evInteractWithEntity:
             on_interact_with(static_cast<InteractWithEntity *>(ev));
             break;
-        case MapEventTypes::evSwitchTray:
+        case evSwitchTray:
             on_switch_tray(static_cast<SwitchTray *>(ev));
             break;
-        case MapEventTypes::evTargetChatChannelSelected:
+        case evTargetChatChannelSelected:
             on_target_chat_channel_selected(static_cast<TargetChatChannelSelected *>(ev));
             break;
-        case MapEventTypes::evEntityInfoRequest:
+        case evEntityInfoRequest:
             on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
             break;
-        case MapEventTypes::evSelectKeybindProfile:
+        case evSelectKeybindProfile:
             on_select_keybind_profile(static_cast<SelectKeybindProfile *>(ev));
             break;
-        case MapEventTypes::evSetKeybind:
+        case evSetKeybind:
             on_set_keybind(static_cast<SetKeybind *>(ev));
             break;
-        case MapEventTypes::evRemoveKeybind:
+        case evRemoveKeybind:
             on_remove_keybind(static_cast<RemoveKeybind *>(ev));
             break;
-        case MapEventTypes::evResetKeybinds:
+        case evResetKeybinds:
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
         default:
-            qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
+            qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
     }
 }
 

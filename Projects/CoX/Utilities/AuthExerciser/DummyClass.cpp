@@ -29,7 +29,7 @@ void DummyClass::dispatch(Event * ev)
 {
     switch(ev->type())
     {
-        case SEGS_EventTypes::evConnect:
+        case evConnect:
         {
             onConnect(static_cast<Connect *>(ev));
             break;

@@ -23,7 +23,7 @@ public:
                                     AuthServer();
                                     ~AuthServer();
 
-        bool                        ShutDown();
+        void                        per_thread_shutdown() override;
         bool                        ReadConfigAndRestart();
 
 protected:

@@ -30,20 +30,6 @@ using MapLinkEvent = CRUDLink_Event; //<MapLink>
 namespace SEGSEvents
 {
 
-class MapUnknownRequest final : public MapLinkEvent
-{
-public:
-    MapUnknownRequest():MapLinkEvent(MapEventTypes::evUnknownEvent)
-    {
-    }
-    void serializeto(BitStream &) const override
-    {
-    }
-    void serializefrom(BitStream &) override
-    {
-    }
-};
-
 // [[ev_def:type]]
 class ShortcutsRequest final : public MapLinkEvent
 {
@@ -116,7 +102,7 @@ class ForcedLogout final : public MapLinkEvent
 public:
     // [[ev_def:field]]
     QString reason;
-    ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForceLogout),reason(_reason)
+    ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForcedLogout),reason(_reason)
     {}
     void serializeto(BitStream &bs) const override
     {

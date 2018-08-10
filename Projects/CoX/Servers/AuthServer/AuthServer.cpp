@@ -70,7 +70,7 @@ void AuthServer::dispatch(Event *ev)
     assert(ev);
     switch(ev->type())
     {
-        case Internal_EventTypes::evReloadConfig:
+        case evReloadConfigMessage:
             ReadConfigAndRestart();
             break;
         default:
@@ -132,7 +132,7 @@ bool AuthServer::Run()
  * @brief Shuts the server down
  * @return bool, if it's false, we failed to close down cleanly
  */
-bool AuthServer::ShutDown()
+void AuthServer::per_thread_shutdown()
 {
     ACE_Guard<ACE_Thread_Mutex> guard(m_mutex);
     if (m_running)
@@ -146,7 +146,6 @@ bool AuthServer::ShutDown()
     m_running = false;
     putq(Finish::s_instance->shallow_copy());
     wait();
-    return true;
 }
 
 //! @}

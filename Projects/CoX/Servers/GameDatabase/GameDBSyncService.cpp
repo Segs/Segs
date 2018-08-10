@@ -15,7 +15,7 @@
 
 using namespace SEGSEvents;
 
-bool GameDBSyncService::per_thread_setup()
+bool GameDBSyncService::per_thread_startup()
 {
     //GameDbSyncContext &db_ctx(m_db_context.localData());
     //bool result = db_ctx.loadAndConfigure();

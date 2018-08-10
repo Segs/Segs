@@ -53,10 +53,10 @@ void AuthHandler::dispatch( Event *ev )
     assert(ev);
     switch(ev->type())
     {
-        case SEGS_EventTypes::evConnect:
+        case evConnect:
             on_connect(static_cast<Connect *>(ev));
             break;
-        case SEGS_EventTypes::evTimeout:
+        case evTimeout:
             on_timeout(static_cast<Timeout *>(ev));
             break;
         case evReconnectAttempt:
@@ -75,7 +75,7 @@ void AuthHandler::dispatch( Event *ev )
             // client sends this on exit sometimes ?
             on_disconnect(static_cast<Disconnect *>(ev));
             break;
-        case SEGS_EventTypes::evDisconnect:
+        case evDisconnect:
             on_disconnect(static_cast<Disconnect *>(ev));
             break;
             //////////////////////////////////////////////////////////////////////////
@@ -84,17 +84,17 @@ void AuthHandler::dispatch( Event *ev )
         case AuthDBEventTypes::evRetrieveAccountResponse:
             on_retrieve_account_response(static_cast<RetrieveAccountResponse *>(ev));
             break;
-        case AuthDBEventTypes::evAuthDbError:
+        case evAuthDbErrorMessage:
             on_db_error(static_cast<AuthDbErrorMessage *>(ev)); break;
         case Internal_EventTypes::evExpectClientResponse:
             on_client_expected(static_cast<ExpectClientResponse *>(ev)); break;
-        case Internal_EventTypes::evClientConnected:
+        case Internal_EventTypes::evClientConnectedMessage:
             on_client_connected_to_other_server(static_cast<ClientConnectedMessage *>(ev));
             break;
-        case Internal_EventTypes::evClientDisconnected:
+        case Internal_EventTypes::evClientDisconnectedMessage:
             on_client_disconnected_from_other_server(static_cast<ClientDisconnectedMessage *>(ev));
             break;
-        case Internal_EventTypes::evGameServerStatus:
+        case Internal_EventTypes::evGameServerStatusMessage:
             on_server_status_change(static_cast<GameServerStatusMessage *>(ev));
             break;
         default:
@@ -107,7 +107,7 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
     assert(HandlerLocator::getAuth_Handler()==nullptr);
     HandlerLocator::setAuth_Handler(this);
     m_sessions.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
-    m_message_bus_endpoint.subscribe(Internal_EventTypes::evGameServerStatus);
+    m_message_bus_endpoint.subscribe(evGameServerStatusMessage);
 }
 
 void AuthHandler::on_timeout(Timeout *ev)

@@ -15,19 +15,19 @@ namespace SEGSEvents
 
 enum AuthDBEventTypes : uint32_t
 {
-    evRetrieveAccountRequest = Internal_EventTypes::evLAST_EVENT,
+    evRetrieveAccountRequest = Internal_EventTypes::ID_LAST_Internal_EventTypes,
     evRetrieveAccountResponse,
     evValidatePasswordRequest,
     evValidatePasswordResponse,
-    evCreateAccount,
-    evAuthDbError
+    evCreateAccountMessage,
+    evAuthDbErrorMessage
 };
 
 #define ONE_WAY_MESSAGE(name)\
 struct name ## Message final : public InternalEvent\
 {\
     name ## Data m_data;\
-    name ## Message(name ## Data &&d) :  InternalEvent(AuthDBEventTypes::ev ## name),m_data(d) {}\
+    name ## Message(name ## Data &&d) :  InternalEvent(AuthDBEventTypes::ev ## name ## Message),m_data(d) {}\
 };
 
 /// A message without Request having additional data

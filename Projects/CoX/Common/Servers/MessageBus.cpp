@@ -106,7 +106,7 @@ void MessageBus::do_publish(Event *ev)
 
 void MessageBus::dispatch(Event *ev)
 {
-    if(ev->src()==this && ev->type()==SEGS_EventTypes::evTimeout)
+    if(ev->src()==this && ev->type()==evTimeout)
     {
         recalculateStatisitcs();
         return;

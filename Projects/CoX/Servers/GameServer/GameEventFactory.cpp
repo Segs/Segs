@@ -32,7 +32,7 @@ GameLinkEvent *GameEventFactory::EventFromStream(BitStream &bs)
     case 3: return new MapServerAddrRequest;
     case 4: return new DeleteCharacter;
     case 5: return new UpdateCharacter;
-    default: return new GameUnknownRequest;
+    default: return new UnknownEvent;
     }
     return ev;
 }

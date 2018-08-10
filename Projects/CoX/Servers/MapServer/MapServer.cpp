@@ -129,19 +129,17 @@ bool MapServer::ReadConfigAndRestart()
 
     if(!d->m_manager.load_templates(map_templates_dir,m_owner_game_server_id,m_id,{m_base_listen_point,m_base_location}))
     {
-        postGlobalEvent(new ServiceStatusMessage({ QString("MapServer: Cannot load map templates from %1").arg(map_templates_dir),-1 }));
+        postGlobalEvent(new ServiceStatusMessage({ QString("MapServer: Cannot load map templates from %1").arg(map_templates_dir),-1 },0));
         return false;
     }
     return Run();
 }
 
-bool MapServer::ShutDown()
+void MapServer::per_thread_shutdown()
 {
     qWarning() << "Shutting down map server";
     // tell all instances to shut down too
     d->m_manager.shut_down_all();
-    putq(SEGSEvents::Finish::s_instance->shallow_copy());
-    return true;
 }
 
 MapManager &MapServer::map_manager()
@@ -164,7 +162,7 @@ void MapServer::dispatch(Event *ev)
     assert(ev);
     switch(ev->type())
     {
-        case Internal_EventTypes::evReloadConfig:
+        case evReloadConfigMessage:
             ReadConfigAndRestart();
             break;
         case Internal_EventTypes::evExpectMapClientRequest:

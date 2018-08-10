@@ -27,7 +27,7 @@ public:
 
 enum AuthEventTypes
 {
-    evSendLeftovers=SEGS_EventTypes::evLAST_EVENT,
+    evSendLeftovers=CommonTypes::ID_LAST_CommonTypes,
     evAuthProtocolVersion,
     evAuthorizationError,
     evServerSelectRequest,

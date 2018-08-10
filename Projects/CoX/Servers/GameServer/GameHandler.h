@@ -76,7 +76,7 @@ protected:
         void        on_update_character(SEGSEvents::UpdateCharacter *ev);
         void        on_delete_character(SEGSEvents::DeleteCharacter *ev);
         void        on_map_req(SEGSEvents::MapServerAddrRequest *ev);
-        void        on_unknown_link_event(SEGSEvents::GameUnknownRequest *ev);
+        void        on_unknown_link_event(SEGSEvents::UnknownEvent *ev);
     //////////////////////////////////////////////////////////////////////////
     // Server <-> Server events
         void        on_expect_client(SEGSEvents::ExpectClientRequest *ev);     // from AuthServer

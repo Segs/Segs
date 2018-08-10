@@ -37,7 +37,7 @@ public:
 
         bool                    ReadConfigAndRestart();
 
-        bool                    ShutDown();
+        void                    per_thread_shutdown() override;
         MapManager &            map_manager();
         MapServerData &         runtimeData();
         void                    sett_game_server_owner(uint8_t owner_id);

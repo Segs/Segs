@@ -17,7 +17,7 @@ private:
     GameDBSyncHandler* m_db_handler;
 
     // EventProcessor interface
-    bool per_thread_setup() override;
+    bool per_thread_startup() override;
     void dispatch(SEGSEvents::Event *ev) override;
 
 public:
