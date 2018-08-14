@@ -2030,12 +2030,12 @@ void MapInstance::on_interact_with(InteractWithEntity *ev)
 
 void MapInstance::on_update_entities()
 {
-    std::vector<MapClientSession *> active_sessions = m_session_store.get_active_sessions();
+    const std::vector<MapClientSession *> &active_sessions (m_session_store.get_active_sessions());
 
     // all active sessions are for player, so we don't need to verify if db_id != 0
-    for (size_t i = 0; i < active_sessions.size(); ++i)
+    for (const auto &sess : active_sessions)
     {
-        Entity *e = active_sessions[i]->m_ent;
+        Entity *e = sess->m_ent;
         send_character_update(e);
 
         /* at the moment we are forcing full character updates, so I'll leave this commented for now

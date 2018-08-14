@@ -63,7 +63,7 @@ mutable std::mutex m_store_mutex;
         }
 
 public:
-        vClients get_active_sessions()
+        const vClients get_active_sessions()
         {
             return m_active_sessions;
         }
