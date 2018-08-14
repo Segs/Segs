@@ -12,6 +12,7 @@ SET(target_CPP
     FixedPointValue.cpp
     Settings.cpp
     Logging.cpp
+    PasswordHasher.cpp
 )
 SET(target_INCLUDE
     BitStream.h
@@ -24,6 +25,7 @@ SET(target_INCLUDE
     FixedPointValue.h
     Settings.h
     Logging.h
+    PasswordHasher.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
