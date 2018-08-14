@@ -52,8 +52,6 @@ void World::physicsStep(Entity *e,uint32_t msec)
     if(glm::length2(e->m_states.current()->m_pos_delta)
             || glm::length2(e->m_states.previous()->m_pos_delta) != glm::length2(e->m_states.current()->m_pos_delta))
     {
-        setVelocity(*e);
-
         // Get timestamp in ms
         auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
 
@@ -66,15 +64,36 @@ void World::physicsStep(Entity *e,uint32_t msec)
         addPosUpdate(*e, pud);
 
         int dt = pud.m_timestamp - prev.m_timestamp;
-        e->m_prev_pos = e->m_entity_data.m_pos;
+        e->m_motion_state.m_last_pos = e->m_entity_data.m_pos;
+        float vel_scale = e->m_states.current()->m_velocity_scale/255.0f;
 
-        glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
-        e->m_entity_data.m_pos += ((za*e->m_states.current()->m_pos_delta)*float(msec))/e->u1; // logmovement: why 50? why?
-        //e->m_entity_data.m_pos += ((za*e->m_states.current()->m_pos_delta)*float(msec))/24;
+        glm::mat3 za;
+
+        // TODO: REMOVE: FOR TESTING ONLY
+        switch(e->u1)
+        {
+        case 1:
+            entMotion(e, e->m_states.current());
+            break;
+        case 2:
+            qDebug() << "m_pos no coll" << glm::to_string(e->m_entity_data.m_pos).c_str();
+            my_entMoveNoColl(e);
+            e->m_entity_data.m_pos += e->m_motion_state.m_last_pos + e->m_velocity * e->m_states.current()->m_time_state.m_timestep;
+            break;
+        case 3:
+            e->m_entity_data.m_pos += e->m_states.current()->m_pos_delta * vel_scale * float(msec)/50;
+            break;
+        default:
+            setVelocity(*e);
+            za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
+            e->m_entity_data.m_pos += ((za*e->m_states.current()->m_pos_delta)*float(msec))/24; // formerly divide by 50
+            break;
+        }
+
+        e->m_interp_bintree = interpolateBinTree(e->m_pos_updates, 0.02f);
 
         if(e->m_type == EntType::PLAYER)
         {
-            float vel_scale = e->m_states.current()->m_velocity_scale/255.0f;
             float distance  = glm::distance(e->m_entity_data.m_pos, e->m_prev_pos);
             qCDebug(logMovement) << "physicsStep:"
                                        << "\n    prev_pos:\t"   << glm::to_string(e->m_prev_pos).c_str()

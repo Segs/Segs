@@ -14,6 +14,7 @@
 
 #include "NetStructures/Character.h"
 #include "NetStructures/Entity.h"
+#include "NetStructures/Movement.h"
 #include "GameData/CoHMath.h"
 #include "Logging.h"
 
@@ -21,36 +22,7 @@
 #include <QDebug>
 #include <cmath>
 
-void InputStateEvent::processDirectionControl(uint8_t dir, int prev_time, int press_release)
-{
-    float delta = 0.0f;
-
-    if(press_release)
-        delta = 1.0f;
-
-    qCDebug(logInput, "Pressed dir: %s \t prev_time: %d \t press_release: %d", control_name[dir], prev_time, press_release);
-    switch(dir)
-    {
-        case 0: m_next_state.m_pos_delta[2] = delta; break;    // FORWARD
-        case 1: m_next_state.m_pos_delta[2] = -delta; break;   // BACKWARD
-        case 2: m_next_state.m_pos_delta[0] = -delta; break;   // LEFT
-        case 3: m_next_state.m_pos_delta[0] = delta; break;    // RIGHT
-        case 4: m_next_state.m_pos_delta[1] = delta; break;    // UP
-        case 5: m_next_state.m_pos_delta[1] = -delta; break;   // DOWN
-    }
-
-    switch(dir)
-    {
-        case 0:
-        case 1: m_next_state.m_pos_delta_valid[2] = true; break;
-        case 2:
-        case 3: m_next_state.m_pos_delta_valid[0] = true; break;
-        case 4:
-        case 5: m_next_state.m_pos_delta_valid[1] = true; break;
-    }
-}
-
-void InputStateEvent::receiveInputStateEnding(BitStream &bs) // formerly partial_2
+void InputStateEvent::receiveControlState(BitStream &bs) // formerly partial_2
 {
     uint8_t     control_id;
     uint32_t    ms_since_prev;
@@ -78,7 +50,7 @@ void InputStateEvent::receiveInputStateEnding(BitStream &bs) // formerly partial
             {
                 bool keypress_state = bs.GetBits(1); // get keypress state
                 m_next_state.m_control_bits[control_id] = keypress_state; // save control_bits
-                processDirectionControl(control_id, ms_since_prev, keypress_state); // TODO: this should be moved out of partial_2?
+                processDirectionControl(&m_next_state, control_id, ms_since_prev, keypress_state);
                 qCDebug(logInput, "key released %f", control_id);
                 break;
             }
@@ -154,7 +126,7 @@ void InputStateEvent::extended_input(BitStream &bs)
         m_next_state.m_send_id = bs.GetBits(16);
 
         //qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_current.m_csc_deltabits, m_current.m_send_id, m_current.current_state_P);
-        receiveInputStateEnding(bs); // formerly partial_2
+        receiveControlState(bs); // formerly partial_2
     }
 
     // Key HELD
@@ -164,7 +136,7 @@ void InputStateEvent::extended_input(BitStream &bs)
         m_next_state.m_control_bits[idx] = keypress_state;
         if(keypress_state==true)
         {
-            processDirectionControl(idx, 0, keypress_state);
+            processDirectionControl(&m_next_state, idx, 0, keypress_state);
             qCDebug(logInput, "key pressed down %f", idx);
         }
     }
@@ -196,7 +168,7 @@ void InputStateEvent::serializefrom(BitStream &bs)
         TimeState fld;
         if(ctrl_idx)
         {
-            fld.serializefrom_delta(bs,prev_fld);
+            fld.serializefrom_delta(bs, prev_fld);
         }
         else // initial values
         {
@@ -206,7 +178,9 @@ void InputStateEvent::serializefrom(BitStream &bs)
         prev_fld = fld;
         ctrl_idx++;
     }
+
     recv_client_opts(bs); // g_pak contents will follow
+
     if(bs.GetReadableBits()>0)
     {
         m_user_commands.ResetOffsets();

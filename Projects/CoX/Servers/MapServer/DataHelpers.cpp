@@ -129,7 +129,7 @@ void setAssistTarget(Entity &e)
 }
 
 // For live debugging
-void    setu1(Entity &e, float val) { e.u1 = val; }
+void    setu1(Entity &e, int val) { e.u1 = val; }
 
 // Toggles
 void    toggleFlying(Entity &e) { e.m_motion_state.m_is_flying = !e.m_motion_state.m_is_flying; }
@@ -152,8 +152,20 @@ void toggleJumppack(Entity &e)
 void    toggleControlsDisabled(Entity &e) { e.m_states.current()->m_controls_disabled = !e.m_states.current()->m_controls_disabled; }
 void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
 void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
-void    toggleExtraInfo(Entity &e) { e.m_extra_info = !e.m_extra_info; }
+void    toggleInterp(Entity &e) { e.m_has_interp = !e.m_has_interp; }
 void    toggleMoveInstantly(Entity &e) { e.m_move_instantly = !e.m_move_instantly; }
+void    toggleCollision(Entity &e)
+{
+    e.m_motion_state.m_no_collision = !e.m_motion_state.m_no_collision;
+    e.m_states.current()->m_no_collision = !e.m_states.current()->m_no_collision;
+
+    if (e.m_states.current()->m_no_collision)
+        e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
+    else
+        e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
+
+    qDebug() << "Collision =" << QString::number(e.m_move_type, 2) << e.m_motion_state.m_no_collision << e.m_states.current()->m_no_collision;
+}
 
 // Misc Methods
 void charUpdateDB(Entity *e)

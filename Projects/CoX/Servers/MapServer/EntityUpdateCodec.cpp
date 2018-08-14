@@ -83,29 +83,26 @@ void storeCreation(const Entity &src, BitStream &bs)
 void sendStateMode(const Entity &src,BitStream &bs)
 {
     PUTDEBUG("before sendStateMode");
-    bs.StoreBits(1,src.m_state_mode_send); // no state mode
+    bs.StoreBits(1, src.m_has_state_mode); // no state mode
     PUTDEBUG("before sendStateMode 2");
-    if(src.m_state_mode_send)
+    if(src.m_has_state_mode)
     {
-        storePackedBitsConditional(bs,3,src.m_state_mode);
+        storePackedBitsConditional(bs, 3, src.m_state_mode);
     }
     PUTDEBUG("after sendStateMode");
 }
 
 void storeInterpolationTree(const Entity &src, BitStream &bs)
 {  
-    std::array<BinTreeEntry,7> tgt;
-
-    tgt = testEncVec(src.m_interp_results, 0.02f); // src.m_pos_updates
-
-    int res = storeBinTreesResult(bs, tgt);
+    if(!storeBinTreesResult(bs, src.m_interp_bintree))
+        qWarning() << "Interpolation Tree doesn't have any values";
 }
 
 bool storePosition(const Entity &src, BitStream &bs)
 {
     bs.StoreBits(3, src.m_states.current()->m_updated_bit_pos);
 
-    bool partial_pos =  src.m_states.current()->m_updated_bit_pos == 7;
+    bool partial_pos =  src.m_states.current()->m_updated_bit_pos != 7;
 
     if(src.m_states.current()->m_updated_bit_pos == 0)
         return false; // no actual update takes place
@@ -114,16 +111,16 @@ bool storePosition(const Entity &src, BitStream &bs)
     {
         if(partial_pos)
         {
+            FixedPointValue fpv(src.m_states.current()->m_pos_delta[i]);
+            bs.StoreBits(8, fpv.store);
+            qCDebug(logPosition, "E[%d] position partial: %d", src.m_idx, (float)fpv.store);
+        }
+        else
+        {
             //diff = packed ^ prev_pos[i]; // changed bits are '1'
             FixedPointValue fpv(src.m_entity_data.m_pos[i]);
             bs.StoreBits(24, fpv.store);
             qCDebug(logPosition, "E[%d] position: %d", src.m_idx, (float)fpv.store);
-        }
-        else
-        {
-            FixedPointValue fpv(src.m_states.current()->m_pos_delta[i]);
-            bs.StoreBits(8, fpv.store);
-            qCDebug(logPosition, "E[%d] position partial: %d", src.m_idx, (float)fpv.store);
         }
 
     }
@@ -179,16 +176,16 @@ void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
     PUTDEBUG("before posInterpolators");
     if(!just_created && position_updated)
     {
-        // if position has changed
-        // prepare interpolation table, given previous position
-        bs.StoreBits(1, src.m_extra_info); // not "extra info"
-        if(src.m_extra_info) {
-            bs.StoreBits(1, src.m_move_instantly);
-            // Bintree sending happens here
-            storeInterpolationTree(src, bs);
+        qCDebug(logPosition, "E[%d]:  has_interp: %d  move_instantly: %d", src.m_idx, src.m_has_interp, src.m_move_instantly);
+        bs.StoreBits(1, src.m_has_interp);
+        if(src.m_has_interp)
+        {
+            // if position has changed and move_instantly is false
+            // send interpolation table, given previous position
+            bs.StoreBits(1, src.m_move_instantly); // use sequences or move instantly?
+            if(!src.m_move_instantly)
+                storeInterpolationTree(src, bs); // Bintree sending happens here
         }
-        // if extra_inf
-        qCDebug(logPosition, "E[%d] pos: %i  extra_info: %d  move_instantly: %d", src.m_idx, src.m_extra_info, src.m_move_instantly);
     }
     PUTDEBUG("before storeOrientation");
     storeOrientation(src,bs);
@@ -199,26 +196,24 @@ void sendSeqMoveUpdate(const Entity &src, BitStream &bs)
 {
     qCDebug(logAnimations, "Sending seq mode update %d", src.m_seq_update);
 
-    bool        seq_update = src.m_seq_update;
-    uint32_t    seq_move_idx = src.m_seq_move_idx;
-    uint8_t     seq_move_change_time = src.m_seq_move_change_time;
-
     PUTDEBUG("before sendSeqMoveUpdate");
-    bs.StoreBits(1, seq_update); // no seq update
-    if(seq_update)
+    bs.StoreBits(1, src.m_seq_update); // no seq update
+    if(src.m_seq_update)
     {
-        storePackedBitsConditional(bs, 8, seq_move_idx); // move index
-        storePackedBitsConditional(bs, 4, seq_move_change_time); // maxval is 255
+        storePackedBitsConditional(bs, 8, src.m_seq_move_idx); // move index
+        storePackedBitsConditional(bs, 4, src.m_seq_move_change_time); // maxval is 255
     }
 }
 void sendSeqTriggeredMoves(const Entity &src, BitStream &bs)
 {
-    TriggeredMove move;
-    qCDebug(logAnimations, "Sending seq triggered moves %d", move.m_num_moves);
+    qCDebug(logAnimations, "Sending seq triggered moves %d", src.m_triggered_moves.size());
+
+    if(src.m_triggered_moves.size() < 20)
+        qWarning() << "Triggered moves array is smaller than 20!";
 
     PUTDEBUG("before sendSeqTriggeredMoves");
-    bs.StorePackedBits(1, move.m_num_moves); // num moves
-    for (uint32_t idx = 0; idx < move.m_num_moves; ++idx )
+    bs.StorePackedBits(1, src.m_triggered_moves.size()); // num moves
+    for(const TriggeredMove &move : src.m_triggered_moves)
     {
         bs.StorePackedBits(10, move.m_move_idx);                   // 2  triggeredMoveIDX
         bs.StorePackedBits(6, move.m_ticks_to_delay);              // 0  ticksToDelay
@@ -455,21 +450,21 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bs.StoreBits(1,src.might_have_rare); //var_C
+    bs.StoreBits(1,src.m_update_anims); //var_C
 
-    if(src.might_have_rare)
-        bs.StoreBits(1,src.m_rare_bits);
+    if(src.m_update_anims)
+        bs.StoreBits(1, src.m_has_triggered_moves);
 
-    if(src.m_rare_bits)
-        sendStateMode(src,bs);
+    if(src.m_has_triggered_moves)
+        sendStateMode(src, bs);
 
-    storePosUpdate(src,update_existence && ent_exists, bs);
+    storePosUpdate(src, update_existence && ent_exists, bs);
 
-    if(src.might_have_rare)
-        sendSeqMoveUpdate(src,bs);
+    if(src.m_update_anims)
+        sendSeqMoveUpdate(src, bs);
 
-    if(src.m_rare_bits)
-        sendSeqTriggeredMoves(src,bs);
+    if(src.m_has_triggered_moves)
+        sendSeqTriggeredMoves(src, bs);
 
     // NPC -> m_pchar_things=0 ?
     PUTDEBUG("before m_pchar_things");
@@ -478,7 +473,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     {
         sendNetFx(src,bs);
     }
-    if(src.m_rare_bits)
+    if(src.m_has_triggered_moves)
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
@@ -492,7 +487,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
         sendBuffsConditional(src,bs);
         sendTargetUpdate(src,bs);
     }
-    if(src.m_rare_bits)
+    if(src.m_has_triggered_moves)
     {
         sendOnOddSend(src,bs); // is one on client end
         sendWhichSideOfTheForce(src,bs);

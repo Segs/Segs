@@ -20,8 +20,7 @@ public:
     InputStateEvent() : MapLinkEvent(MapEventTypes::evInputState),m_user_commands(0)
     {}
 
-    void processDirectionControl(uint8_t dir, int prev_time, int press_release);
-    void receiveInputStateEnding(BitStream &bs);
+    void receiveControlState(BitStream &bs);
     void extended_input(BitStream &bs);
     void serializefrom(BitStream &bs);
     void serializeto(BitStream &) const;

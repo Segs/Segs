@@ -13,8 +13,10 @@
 #include "Team.h"
 #include "InputStates.h"
 #include "FixedPointValue.h"
+#include "StateInterpolator.h"
 #include "Common/GameData/entitydata_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
+#include "Common/GameData/seq_definitions.h"
 #include "Common/GameData/CoHMath.h"
 
 //#include <glm/gtx/quaternion.hpp>
@@ -72,6 +74,17 @@ enum class AppearanceType : uint8_t
     SequencerName = 4
 };
 
+enum class StateMode : uint8_t
+{
+    Simple              = 0,
+    Create_Team         = 1,
+    Create_Team_Wait    = 2,
+    Dead                = 3,
+    Ressurect           = 4,
+    NeedsGurney         = 5,
+    Max_State           = 6
+};
+
 struct SuperGroup
 {
     int             m_SG_id         = {0};
@@ -91,21 +104,28 @@ struct NPCData
     int costume_variant=0;
 };
 
-struct TriggeredMove
+struct NetFxTarget
 {
-    uint32_t m_num_moves = 0;
-    uint32_t m_move_idx = 0;
-    uint32_t m_ticks_to_delay = 0;
-    uint32_t m_trigger_fx_idx = 0;
+    bool        type_is_location = false;
+    uint32_t    ent_idx = 0;
+    glm::vec3   pos;
 };
 
 struct NetFx
 {
-    uint8_t command;
-    uint32_t net_id;
-    uint32_t handle;
-    bool pitch_to_target;
-    uint8_t bone_id;
+    uint8_t     command;
+    uint32_t    net_id;
+    uint32_t    handle;
+    bool        pitch_to_target     = false;
+    uint8_t     bone_id;
+    float       client_timer        = 0;
+    int         client_trigger_fx   = 0;
+    float       duration            = 0;
+    float       radius              = 0;
+    QString     power               = 0;
+    int         debris              = 0;
+    NetFxTarget target;
+    NetFxTarget origin;
 };
 
 class Entity
@@ -146,51 +166,54 @@ public:
         uint32_t            m_target_idx            = 0;
         uint32_t            m_assist_target_idx     = 0;
 
-        int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
-        int                 m_num_fx                = 0;
-        bool                m_is_logging_out        = false;
-        int                 m_time_till_logout      = 0;    // time in miliseconds untill given entity should be marked as logged out.
+        // Animations: Sequencers, NetFx, and TriggeredMoves
         std::vector<NetFx>  m_fx1;
-        TriggeredMove       m_triggered_moves[20];
-        AppearanceType      m_costume_type          = AppearanceType::None;
+        std::array<TriggeredMove, 20> m_triggered_moves;
+        SeqBitSet           m_seq_state;                    // Should be part of SeqState
         int                 m_state_mode            = 0;
-        bool                m_state_mode_send       = false;
+        bool                m_has_state_mode        = false;
+        bool                m_seq_update            = false;
+        int                 m_seq_move_idx          = 0;
+        uint8_t             m_seq_move_change_time  = 0;
+        uint8_t             m_move_type             = 0;
+        int                 m_randSeed              = 0;     // Sequencer uses this as a seed for random bone scale
+        int                 m_num_fx                = 0;
+        bool                m_update_anims          = false;
+        bool                m_has_triggered_moves   = false;
+        bool                m_move_instantly        = true; // move instantly or use sequencers?
+
+        bool                m_is_logging_out        = false;
+        int                 m_time_till_logout      = 0;     // time in miliseconds untill given entity should be marked as logged out.
+        AppearanceType      m_costume_type          = AppearanceType::None;
         bool                m_odd_send              = false;
         bool                m_no_draw_on_client     = false;
         bool                m_force_camera_dir      = false; // used to force the client camera direction in sendClientData()
         bool                m_is_hero               = false;
         bool                m_is_villian            = false;
         bool                m_contact               = false;
-        bool                m_seq_update            = false;
-        int                 m_seq_move_idx          = 0;
-        uint8_t             m_seq_move_change_time  = 0;
 
-        bool                m_update_pos_and_cam    = false;     // EntityResponse sendServerControlState
-        bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
-        bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
-        bool                m_extra_info            = false;    // EntityUpdateCodec storePosUpdate
-        bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
+        bool                m_update_pos_and_cam    = false; // EntityResponse sendServerControlState
+        bool                m_full_update           = true;  // EntityReponse sendServerPhysicsPositions
+        bool                m_has_control_id        = true;  // EntityReponse sendServerPhysicsPositions
+        bool                m_has_interp            = true; // EntityUpdateCodec storePosUpdate
 
-        float               u1 = 24.0f; // used for live-debugging
+        int               u1 = 0; // used for live-debugging
 
-        PosUpdate           m_pos_updates[64];
-        std::vector<PosUpdate> m_interp_results;
+        std::array<PosUpdate, 64> m_pos_updates;
+        std::array<BinTreeEntry, 7> m_interp_bintree;
         size_t              m_update_idx                = 0;
         glm::vec3           m_velocity;
         glm::vec3           m_prev_pos;
         Vector3_FPV         fixedpoint_pos;
         bool                m_pchar_things              = false;
-        bool                might_have_rare             = false;
         bool                m_hasname                   = false;
         bool                m_classname_override        = false;
         bool                m_hasRagdoll                = false;
         bool                m_has_owner                 = false;
         bool                m_create_player             = false;
-        bool                m_rare_bits                 = false;
         int                 current_client_packet_id    = {0};
         QString             m_override_name;
         uint32_t            m_input_ack                 = {0};
-        bool                player_type                 = false;
         bool                m_destroyed                 = false;
         uint32_t            ownerEntityId               = 0;
         uint32_t            creatorEntityId             = 0;

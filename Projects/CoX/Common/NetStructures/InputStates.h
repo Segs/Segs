@@ -36,6 +36,22 @@ static int reverseControlDirection[6] = {
 
 extern const char *control_name[];
 
+class TimeState
+{
+public:
+    int         m_client_timenow;
+    int         m_time_res;
+    float       m_timestep;
+    float       m_time_rel1C;
+    uint64_t    m_perf_cntr_diff;
+    uint64_t    m_perf_freq_diff;
+
+    // recover actual ControlState from network data and previous entry
+    void serializefrom_delta(BitStream &bs, const TimeState &prev);
+    void serializefrom_base(BitStream &bs);
+    void dump();
+};
+
 class InputState
 {
 public:
@@ -70,8 +86,8 @@ public:
     bool        m_pos_delta_valid[3]    = {false};
     bool        m_pyr_valid[3]          = {false};
     glm::vec3   m_pos_delta             = {0.0f, 0.0f, 0.0f};
-    float       m_keypress_time[6]      = {0};
-    float       m_max_press_time        = 0.0f;
+    float       m_keypress_time[6]      = {0};                  // total_move
+    float       m_move_time             = 0.0f;
     bool        m_following             = false;
     glm::vec3   m_pos_start             = {0.0f, 0.0f, 0.0f};
     glm::vec3   m_pos_end               = {0.0f, 0.0f, 0.0f};
@@ -81,31 +97,17 @@ public:
     uint32_t    m_target_idx;
     uint32_t    m_assist_target_idx;
 
+    TimeState   m_time_state;
+
     //InputState & operator=(const InputState &other);
-};
-
-class TimeState
-{
-public:
-    int         m_client_timenow;
-    int         m_time_res;
-    float       m_timestep;
-    float       m_time_rel1C;
-    uint64_t    m_perf_cntr_diff;
-    uint64_t    m_perf_freq_diff;
-
-    // recover actual ControlState from network data and previous entry
-    void serializefrom_delta(BitStream &bs, const TimeState &prev);
-    void serializefrom_base(BitStream &bs);
-    void dump();
 };
 
 class StateStorage
 {
 public:
     std::vector<InputState> m_inp_states;
-    // TODO: maybe move each of these other states inside each InputState?
-    std::vector<TimeState>  m_time_states;
+    // TODO: maybe move these other states here and vectorize StateStorage?
+    // std::vector<TimeState>  m_time_states;
     // std::vector<SpeedState>  m_speed_states;
     // std::vector<MotionState>  m_motion_states;
 

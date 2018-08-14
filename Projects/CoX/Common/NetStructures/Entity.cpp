@@ -153,17 +153,19 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_pchar_things                    = true;
     e.m_target_idx                      = 0;
     e.m_assist_target_idx               = 0;
+    e.m_move_type                       = MoveType::MOVETYPE_WALK;
+    e.m_motion_state.m_is_walking       = true;
 
     e.m_char.reset(new Character);
     e.m_player.reset(new PlayerData);
     e.m_player->reset();
     e.m_entity.reset(new EntityData);
-    e.might_have_rare = e.m_rare_bits   = true;
+    e.m_update_anims = e.m_has_triggered_moves   = true;
 
     e.m_states.init(); // Initialize movement input state pointers
 
     PosUpdate p;
-    for(int i = 0; i<9; i++)
+    for(int i = 0; i<64; i++)
     {
         // Get timestamp in ms
         auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
@@ -171,7 +173,7 @@ void initializeNewPlayerEntity(Entity &e)
         p.m_position = e.m_entity_data.m_pos;
         p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
         p.m_timestamp = now_ms;
-        addInterp(e, p);
+        //addInterp(e, p);
         addPosUpdate(e, p);
     }
 }
@@ -192,17 +194,19 @@ void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int varian
     e.m_pchar_things                    = false;
     e.m_target_idx                      = 0;
     e.m_assist_target_idx               = 0;
+    e.m_move_type                       = MoveType::MOVETYPE_WALK;
+    e.m_motion_state.m_is_walking       = true;
 
     e.m_char.reset(new Character);
     e.m_npc.reset(new NPCData{false,src,idx,variant});
     e.m_player.reset();
     e.m_entity.reset(new EntityData);
-    e.might_have_rare = e.m_rare_bits   = true;
+    e.m_update_anims = e.m_has_triggered_moves   = true;
 
     e.m_states.init(); // Initialize movement input state pointers
 
     PosUpdate p;
-    for(int i = 0; i<9; i++)
+    for(int i = 0; i<64; i++)
     {
         // Get timestamp in ms
         auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
@@ -210,7 +214,7 @@ void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int varian
         p.m_position = e.m_entity_data.m_pos;
         p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
         p.m_timestamp = now_ms;
-        addInterp(e, p);
+        //addInterp(e, p);
         addPosUpdate(e, p);
     }
 }

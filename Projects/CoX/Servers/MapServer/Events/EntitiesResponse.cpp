@@ -492,7 +492,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     {
         bs.StorePackedBits(1, ent->m_states.current()->m_received_id); // sets g_client_pos_id_rel default = 0
         storeVector(bs, ent->m_entity_data.m_pos);   // server-side pos
-        storeVectorConditional(bs, ent->m_velocity); // server-side spd (probably velocity)
+        storeVectorConditional(bs, ent->m_speed); // server-side spd
 
         storeFloatConditional(bs, ent->m_states.current()->m_camera_pyr.x); // Pitch
         storeFloatConditional(bs, ent->m_states.current()->m_camera_pyr.y); // Yaw

@@ -55,7 +55,7 @@ void    setTarget(Entity &e, uint32_t target_idx);
 void    setAssistTarget(Entity &e);
 
 // For live debugging
-void    setu1(Entity &e, float val);
+void    setu1(Entity &e, int val);
 
 // Toggles
 void    toggleFlying(Entity &e);
@@ -67,8 +67,9 @@ void    toggleJumppack(Entity &e);
 void    toggleControlsDisabled(Entity &e);
 void    toggleFullUpdate(Entity &e);
 void    toggleControlId(Entity &e);
-void    toggleExtraInfo(Entity &e);
+void    toggleInterp(Entity &e);
 void    toggleMoveInstantly(Entity &e);
+void    toggleCollision(Entity &e);
 
 // Misc Methods
 void    charUpdateDB(Entity *e);
