@@ -21,9 +21,9 @@ bool GameDBSyncService::per_thread_startup()
     //bool result = db_ctx.loadAndConfigure();
     bool result = true;
     if(!result)
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService failed to load/configure",-1}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService failed to load/configure",-1},0));
     else
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService loaded/configured",0}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService loaded/configured",0},0));
     return result;
 }
 

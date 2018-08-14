@@ -48,7 +48,7 @@ public:
     }
 
     uint8_t     m_csc_deltabits                 = 0;
-    bool        m_send_deltas                   = 0;
+    bool        m_send_deltas                   = false;
     uint16_t    m_control_bits                  = 0;
     uint16_t    m_send_id                       = 0;
     void        *current_state_P                = nullptr;
@@ -68,6 +68,27 @@ public:
 
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_csc_deltabits);
+        ar(m_send_deltas);
+        ar(m_control_bits);
+        ar(m_send_id);
+        ar(m_camera_pyr);
+        ar(m_orientation_pyr);
+        ar(m_direction);
+        ar(m_time_diff1);
+        ar(m_time_diff2);
+        ar(m_input_vel_scale);
+        ar(m_received_server_update_id);
+        ar(m_no_collision);
+        ar(has_input_commit_guess);
+        ar(pos_delta_valid);
+        ar(pyr_valid);
+        ar(pos_delta);
+        ar(m_controls_disabled);
+    }
 };
 
 enum class FadeDirection

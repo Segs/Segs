@@ -16,14 +16,15 @@
 namespace SEGSEvents
 {
 // [[ev_def:type]]
-class TeamLooking final : public GameCommand
+class TeamLooking final : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
     uint32_t m_num = 0;
     // [[ev_def:field]]
     std::vector<LFGMember> m_list;
-    TeamLooking(std::vector<LFGMember> list) : GameCommand(MapEventTypes::evTeamLooking),
+    explicit TeamLooking() : GameCommandEvent(MapEventTypes::evTeamLooking) {}
+    TeamLooking(std::vector<LFGMember> list) : GameCommandEvent(MapEventTypes::evTeamLooking),
         m_num(list.size()),
         m_list(list)
     {
@@ -44,6 +45,7 @@ public:
             dumpLFGList();
     }
     void    serializefrom(BitStream &src);
+    EVENT_IMPL(TeamLooking)
 };
 } // end of SEGSEvents namespace
 

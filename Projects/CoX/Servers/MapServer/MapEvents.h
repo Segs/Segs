@@ -43,6 +43,7 @@ public:
     void serializefrom(BitStream &) override
     {
     }
+    EVENT_IMPL(ShortcutsRequest)
 };
 
 // [[ev_def:type]]
@@ -58,6 +59,7 @@ public:
     void serializefrom(BitStream &) override
     {
     }
+    EVENT_IMPL(SceneRequest)
 };
 
 // [[ev_def:type]]
@@ -73,6 +75,7 @@ public:
     void serializefrom(BitStream &) override
     {
     }
+    EVENT_IMPL(EntitiesRequest)
 };
 
 // [[ev_def:type]]
@@ -93,6 +96,7 @@ public:
         abort_disconnect = bs.GetPackedBits(1);
         // TODO: try to differentiate between quit/logout ?
     }
+    EVENT_IMPL(ClientQuit)
 
 };
 
@@ -102,6 +106,7 @@ class ForcedLogout final : public MapLinkEvent
 public:
     // [[ev_def:field]]
     QString reason;
+    ForcedLogout() :MapLinkEvent(MapEventTypes::evForcedLogout) {}
     ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForcedLogout),reason(_reason)
     {}
     void serializeto(BitStream &bs) const override
@@ -113,6 +118,7 @@ public:
     {
         bs.GetString(reason);
     }
+    EVENT_IMPL(ForcedLogout)
 };
 
 // [[ev_def:type]]
@@ -134,6 +140,7 @@ public:
         cookie = bs.GetPackedBits(1);
         console = bs.GetPackedBits(1);
     }
+    EVENT_IMPL(CookieRequest)
 };
 
 // [[ev_def:type]]
@@ -144,14 +151,15 @@ public:
     QString contents;
     ConsoleCommand():MapLinkEvent(MapEventTypes::evConsoleCommand)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,0); // opcode - Warning -> exactly the same as Connect
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         bs.GetString(contents);
     }
+    EVENT_IMPL(ConsoleCommand)
 };
 
 // [[ev_def:type]]
@@ -160,14 +168,15 @@ class ClientResumedRendering final : public MapLinkEvent
 public:
     ClientResumedRendering():MapLinkEvent(MapEventTypes::evClientResumedRendering)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,4);
     }
-    void serializefrom(BitStream &/*bs*/)
+    void serializefrom(BitStream &/*bs*/) override
     {
 //        Parameterless - serializefrom is no-op
     }
+    EVENT_IMPL(ClientResumedRendering)
 };
 
 // [[ev_def:type]]
@@ -178,14 +187,15 @@ public:
     uint32_t tile_idx=0;
     MiniMapState():MapLinkEvent(MapEventTypes::evMiniMapState)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,1); // opcode - Warning -> exactly the same as Connect
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         tile_idx=bs.GetPackedBits(8);
     }
+    EVENT_IMPL(MiniMapState)
 
 };
 
@@ -198,6 +208,11 @@ public:
         int powerset_array_index;
         int powerset_index;
         int index;
+        template <class Archive>
+        void serialize( Archive & ar )
+        {
+            ar( powerset_array_index,powerset_index,index );
+        }
     };
     // [[ev_def:field]]
     PowerEntry first_power;
@@ -205,7 +220,7 @@ public:
     PowerEntry second_power;
     CombineRequest() : MapLinkEvent(MapEventTypes::evCombineRequest)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,40); // opcode
         assert(false); // since we will not send CombineRequest to anyone :)
@@ -223,11 +238,12 @@ public:
         }
         entry.index = bs.GetPackedBits(1);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         getPowerForCombinde(bs,first_power);
         getPowerForCombinde(bs,second_power);
     }
+    EVENT_IMPL(CombineRequest)
 };
 } // end of SEGSEvents namespace
 
@@ -250,14 +266,14 @@ public:
         m_fatal_error(err)
     {}
 
-    void        serializeto(BitStream &bs) const
+    void        serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,5); //opcode
         bs.StorePackedBits(1,m_resp);
         if(m_resp)
             bs.StoreString(m_fatal_error);
     }
-    void        serializefrom(BitStream &src)
+    void        serializefrom(BitStream &src) override
     {
         m_resp = src.GetPackedBits(1);
         if(m_resp==0)
@@ -267,6 +283,7 @@ public:
     uint32_t    m_resp;
     // [[ev_def:field]]
     QString     m_fatal_error;
+    EVENT_IMPL(MapInstanceConnected)
 
 };
 
@@ -278,15 +295,16 @@ public:
     uint32_t dock_mode = 0;
     InspirationDockMode():MapLinkEvent(MapEventTypes::evInspirationDockMode)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,17);
         bs.StoreBits(32,dock_mode);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         dock_mode = bs.GetBits(32);
     }
+    EVENT_IMPL(InspirationDockMode)
 };
 
 // [[ev_def:type]]
@@ -301,11 +319,11 @@ public:
     QString name;
     EnterDoor():MapLinkEvent(MapEventTypes::evEnterDoor)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,9);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         unspecified_location = bs.GetBits(1);
         if(!unspecified_location)
@@ -316,6 +334,7 @@ public:
         }
         bs.GetString(name);
     }
+    EVENT_IMPL(EnterDoor)
 };
 
 // [[ev_def:type]]
@@ -330,11 +349,11 @@ public:
     int power_index;
     ChangeStance():MapLinkEvent(MapEventTypes::evChangeStance)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,36);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         enter_stance = bs.GetBits(1);
         if(!enter_stance)
@@ -342,6 +361,7 @@ public:
         powerset_index=bs.GetPackedBits(4);
         power_index=bs.GetPackedBits(4);
     }
+    EVENT_IMPL(ChangeStance)
 
 };
 
@@ -355,7 +375,7 @@ public:
     int point_index;
     SetDestination():MapLinkEvent(MapEventTypes::evSetDestination)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,11);
         bs.StoreFloat(destination.x);
@@ -363,13 +383,14 @@ public:
         bs.StoreFloat(destination.z);
         bs.StorePackedBits(1,point_index);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         destination.x = bs.GetFloat();
         destination.y = bs.GetFloat();
         destination.z = bs.GetFloat();
         point_index   = bs.GetPackedBits(1);
     }
+    EVENT_IMPL(SetDestination)
 };
 
 // [[ev_def:type]]
@@ -393,6 +414,7 @@ public:
         slot_idx = bs.GetPackedBits(3);
         row_idx = bs.GetPackedBits(3);
     }
+    EVENT_IMPL(ActivateInspiration)
 };
 
 // [[ev_def:type]]
@@ -405,15 +427,16 @@ public:
     int power_idx;
     SetDefaultPowerSend():MapLinkEvent(MapEventTypes::evSetDefaultPowerSend)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,30);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         powerset_idx = bs.GetPackedBits(4);
         power_idx = bs.GetPackedBits(4);
     }
+    EVENT_IMPL(SetDefaultPowerSend)
 };
 
 // [[ev_def:type]]
@@ -422,15 +445,16 @@ class SetDefaultPower final : public MapLinkEvent
 public:
     SetDefaultPower():MapLinkEvent(MapEventTypes::evSetDefaultPower)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,31);
     }
-    void serializefrom(BitStream &/*bs*/)
+    void serializefrom(BitStream &/*bs*/) override
     {
         // TODO: Seems like nothing is received server side.
         qWarning() << "SetDefaultPower unimplemented.";
     }
+    EVENT_IMPL(SetDefaultPower)
 };
 
 // [[ev_def:type]]
@@ -448,6 +472,7 @@ public:
         // TODO: Seems like nothing is received server side.
         qWarning() << "UnqueueAll unimplemented.";
     }
+    EVENT_IMPL(UnqueueAll)
 };
 
 // [[ev_def:type]]
@@ -456,14 +481,15 @@ class AbortQueuedPower final : public MapLinkEvent
 public:
     AbortQueuedPower():MapLinkEvent(MapEventTypes::evAbortQueuedPower)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,33);
     }
-    void serializefrom(BitStream &/*bs*/)
+    void serializefrom(BitStream &/*bs*/) override
     {
 //        Parameterless - serializefrom is no-op
     }
+    EVENT_IMPL(AbortQueuedPower)
 };
 
 // [[ev_def:type]]
@@ -476,15 +502,16 @@ public:
     QString battlecry;
     DescriptionAndBattleCry():MapLinkEvent(MapEventTypes::evDescriptionAndBattleCry)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,67);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         bs.GetString(description);
         bs.GetString(battlecry);
     }
+    EVENT_IMPL(DescriptionAndBattleCry)
 };
 
 // [[ev_def:type]]
@@ -495,14 +522,15 @@ public:
     bool new_viewpoint_is_firstperson;
     SwitchViewPoint():MapLinkEvent(MapEventTypes::evSwitchViewPoint)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const  override
     {
         bs.StorePackedBits(1,64);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         new_viewpoint_is_firstperson = bs.GetBits(1);
     }
+    EVENT_IMPL(SwitchViewPoint)
 };
 
 // [[ev_def:type]]
@@ -513,14 +541,15 @@ public:
     uint8_t m_chat_type;
     TargetChatChannelSelected():MapLinkEvent(MapEventTypes::evTargetChatChannelSelected)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,37);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         m_chat_type = bs.GetPackedBits(1);
     }
+    EVENT_IMPL(TargetChatChannelSelected)
 };
 
 // [[ev_def:type]]
@@ -533,15 +562,16 @@ public:
     int m_chat_bottom_flags;
     ChatReconfigure():MapLinkEvent(MapEventTypes::evChatReconfigure)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,38);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         m_chat_top_flags = bs.GetPackedBits(1);
         m_chat_bottom_flags = bs.GetPackedBits(1);
     }
+    EVENT_IMPL(ChatReconfigure)
 };
 
 // [[ev_def:type]]
@@ -553,15 +583,16 @@ public:
 
     PowersDockMode():MapLinkEvent(MapEventTypes::evPowersDockMode)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,18);
         bs.StoreBits(1,toggle_secondary_tray);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         toggle_secondary_tray = bs.GetBits(1);
     }
+    EVENT_IMPL(PowersDockMode)
 };
 
 // [[ev_def:type]]
@@ -576,20 +607,21 @@ public:
     uint32_t tray_unk1 = 0;
     SwitchTray():MapLinkEvent(MapEventTypes::evSwitchTray)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,8);
         bs.StorePackedBits(32,tray1_num);
         bs.StorePackedBits(32,tray2_num);
         bs.StoreBits(1,tray_unk1);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         tray1_num = bs.GetPackedBits(32); // Appears to correlate to Tray1's #
         tray2_num = bs.GetPackedBits(32); // Appears to correlate to Tray2's #
         tray_unk1 = bs.GetBits(1);        // TODO: Unused bits!?
         // TODO: "Console command received " blank 40 times?
     }
+    EVENT_IMPL(SwitchTray)
 };
 
 // [[ev_def:type]]
@@ -611,11 +643,11 @@ public:
 
     SetKeybind():MapLinkEvent(MapEventTypes::evSetKeybind)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,19);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         bs.GetString(profile);  // Profile Name
         key_and_secondary = bs.GetBits(32); // Key & Secondary Binding
@@ -626,6 +658,7 @@ public:
         mods = bs.GetBits(32);  // Mods
         bs.GetString(command);  // Command
     }
+    EVENT_IMPL(SetKeybind)
 };
 
 // [[ev_def:type]]
@@ -640,16 +673,17 @@ public:
     uint32_t mods;
     RemoveKeybind():MapLinkEvent(MapEventTypes::evRemoveKeybind)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,20);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         bs.GetString(profile);  // Profile Name
         key = bs.GetBits(32);   // Key
         mods = bs.GetBits(32);  // Mods
     }
+    EVENT_IMPL(RemoveKeybind)
 };
 
 // [[ev_def:type]]
@@ -658,14 +692,15 @@ class ResetKeybinds final : public MapLinkEvent
 public:
     ResetKeybinds():MapLinkEvent(MapEventTypes::evResetKeybinds)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,21);
     }
-    void serializefrom(BitStream &/*bs*/)
+    void serializefrom(BitStream &/*bs*/) override
     {
         // TODO: Seems like nothing is received server side.
     }
+    EVENT_IMPL(ResetKeybind)
 };
 
 // [[ev_def:type]]
@@ -676,14 +711,15 @@ public:
     QString profile;
     SelectKeybindProfile():MapLinkEvent(MapEventTypes::evSelectKeybindProfile)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,22);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         bs.GetString(profile); // Keybind Profile Name
     }
+    EVENT_IMPL(SelectKeybindProfile)
 };
 } // end of SEGSEvents namespace
 

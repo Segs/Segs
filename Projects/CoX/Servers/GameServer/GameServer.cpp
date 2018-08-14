@@ -34,11 +34,11 @@ using namespace SEGSEvents;
 namespace
 {
     const constexpr int MaxCharacterSlots=8;
-    class GameLinkEndpoint : public ServerEndpoint
+    class GameLinkEndpoint final : public ServerEndpoint
     {
         public:
             GameLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
-            ~GameLinkEndpoint()=default;
+            ~GameLinkEndpoint() override = default ;
         protected:
             CRUDLink *createLink(EventProcessor *down) override
             {
@@ -65,12 +65,12 @@ public:
     void ShutDown() const
     {
         // tell our handler to shut down too
-        m_handler->putq(new Event(evFinish, nullptr));
+        m_handler->putq(Finish::s_instance->shallow_copy());
         m_handler->wait();
     }
 };
 
-void GameServer::dispatch(SEGSEvents::Event *ev)
+void GameServer::dispatch(Event *ev)
 {
     assert(ev);
     switch(ev->type())

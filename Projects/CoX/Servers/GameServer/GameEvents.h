@@ -68,6 +68,8 @@ public:
     uint32_t m_mapnumber;
     // [[ev_def:field]]
     QString m_char_name;
+
+    EVENT_IMPL(MapServerAddrRequest)
 };
 
 // [[ev_def:type]]
@@ -117,6 +119,7 @@ public:
     /// 1 - Problem detected in the game database system
     // [[ev_def:field]]
     uint32_t m_map_cookie;
+    EVENT_IMPL(MapServerAddrResponse)
 };
 
 // [[ev_def:type]]
@@ -142,6 +145,7 @@ public:
     uint8_t m_index;
     // [[ev_def:field]]
     QString m_char_name;
+    EVENT_IMPL(DeleteCharacter)
 };
 
 // [[ev_def:type]]
@@ -155,6 +159,7 @@ public:
     void serializefrom(BitStream &bs) override;
     // [[ev_def:field]]
     uint8_t m_index;
+    EVENT_IMPL(UpdateCharacter)
 };
 
 // [[ev_def:type]]
@@ -174,6 +179,7 @@ public:
     uint8_t m_index;
     // [[ev_def:field]]
     GameAccountResponseData m_data;
+    EVENT_IMPL(CharacterResponse)
 };
 
 // [[ev_def:type]]
@@ -185,7 +191,7 @@ public:
     void serializeto( BitStream &tgt ) const override;
     void serializefrom( BitStream &src ) override;
     void dependent_dump() const;
-
+    EVENT_IMPL(UpdateServer)
 
     // [[ev_def:field]]
     uint32_t m_build_date;
@@ -218,6 +224,7 @@ public:
     std::array<uint8_t,16> m_clientinfo;
     // [[ev_def:field]]
     GameAccountResponseData m_data;
+    EVENT_IMPL(CharacterSlots)
 };
 
 // [[ev_def:type]]
@@ -232,6 +239,7 @@ public:
     void serializefrom( BitStream &src ) override;
     // [[ev_def:field]]
     QString m_error;
+    EVENT_IMPL(GameEntryError)
 };
 
 // [[ev_def:type]]
@@ -242,6 +250,7 @@ public:
     {}
     void serializeto( BitStream &tgt ) const override;
     void serializefrom( BitStream &) override {}
+    EVENT_IMPL(DeleteAcknowledged)
 };
 
 // [[ev_def:type]]
@@ -249,5 +258,6 @@ class ServerReconfigured : public InternalEvent
 {
 public:
     ServerReconfigured():InternalEvent(GameEventTypes::evServerReconfigured) {}
+    EVENT_IMPL(ServerReconfigured)
 };
 } // end of SEGSEvents namespace

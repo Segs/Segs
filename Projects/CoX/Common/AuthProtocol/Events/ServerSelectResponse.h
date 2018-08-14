@@ -21,7 +21,7 @@ public:
         m_cookie(cookie),
         m_unk2(0)
     {}
-    void serializefrom(GrowingBuffer &buf)
+    void serializefrom(GrowingBuffer &buf) override
     {
         assert(buf.GetReadableDataSize()>=10);
         uint8_t op;
@@ -30,7 +30,7 @@ public:
         buf.uGet(m_cookie);
         buf.uGet(m_unk2);
     }
-    void serializeto(GrowingBuffer &buf) const
+    void serializeto(GrowingBuffer &buf) const override
     {
         buf.uPut((uint8_t)7);
         buf.uPut(db_server_cookie);
@@ -50,5 +50,6 @@ public:
     uint32_t m_cookie = ~0U;
     // [[ev_def:field]]
     uint8_t m_unk2 = 0xFF;
+    EVENT_IMPL(ServerSelectResponse)
 };
 } // end of namespace SEGSEvents

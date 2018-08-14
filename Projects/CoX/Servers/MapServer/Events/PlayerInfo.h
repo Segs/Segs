@@ -14,12 +14,13 @@
 namespace SEGSEvents
 {
 // [[ev_def:type]]
-class EntityInfoResponse final : public GameCommand
+class EntityInfoResponse final : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
     QString m_info_text;
-    EntityInfoResponse (const QString &txt) : GameCommand(MapEventTypes::evEntityInfoResponse),m_info_text(txt) {}
+    explicit EntityInfoResponse () : GameCommandEvent(MapEventTypes::evEntityInfoResponse) {}
+    EntityInfoResponse (const QString &txt) : GameCommandEvent(MapEventTypes::evEntityInfoResponse),m_info_text(txt) {}
     void serializefrom(BitStream &bs);
 
     void serializeto(BitStream &bs) const override
@@ -28,6 +29,7 @@ public:
         bs.StorePackedBits(1, 69);
         bs.StoreString(m_info_text);
     }
+    EVENT_IMPL(EntityinfoResponse)
 };
 
 // [[ev_def:type]]
@@ -46,6 +48,7 @@ public:
     {
         entity_idx = bs.GetPackedBits(12);
     }
+    EVENT_IMPL(EntityInfoRequest)
 };
 } // end of SEGSEvents namespace
 

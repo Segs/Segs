@@ -21,7 +21,7 @@ class AuthServer : public EventProcessor
 {
 public:
                                     AuthServer();
-                                    ~AuthServer();
+                                    ~AuthServer() override;
 
         void                        per_thread_shutdown() override;
         bool                        ReadConfigAndRestart();

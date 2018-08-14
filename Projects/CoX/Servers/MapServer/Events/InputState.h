@@ -27,12 +27,13 @@ public:
 public:
     InputState() : MapLinkEvent(MapEventTypes::evInputState),m_user_commands(0)
     {}
-    void serializeto(BitStream &) const;
-    void serializefrom(BitStream &bs);
+    void serializeto(BitStream &) const override;
+    void serializefrom(BitStream &bs) override;
     void partial_2(BitStream &bs);
     void extended_input(BitStream &bs);
     void recv_client_opts(BitStream &bs);
     glm::vec3 &pyr() {return m_data.m_camera_pyr;}
+    EVENT_IMPL(InputState)
 };
 } // end of SEGSEvents namespace
 

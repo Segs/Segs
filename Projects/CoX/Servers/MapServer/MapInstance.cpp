@@ -37,6 +37,8 @@
 #include "GameData/keybind_serializers.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
+#include "serialization_common.h"
+#include "serialization_types.h"
 
 #include <ace/Reactor.h>
 
@@ -256,7 +258,7 @@ void MapInstance::reap_stale_links()
 
     SessionStore::MTGuard guard(m_session_store.reap_lock());
     m_session_store.reap_stale_links("MapInstance",link_is_stale_if_disconnected_for,[tgt](uint64_t tok) {
-        tgt->putq(new ClientDisconnectedMessage({tok}));
+        tgt->putq(new ClientDisconnectedMessage({tok},0));
     });
 }
 
@@ -478,7 +480,7 @@ void MapInstance::on_link_lost(Event *ev)
     //todo: notify all clients about entity removal
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token}));
+            ->putq(new ClientDisconnectedMessage({session_token},0));
 
     m_sync_service->updateEntity(ent);
     m_entities.removeEntityFromActiveList(ent);
@@ -501,7 +503,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     assert(ent);
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token}));
+            ->putq(new ClientDisconnectedMessage({session_token},0));
 
     m_sync_service->updateEntity(ent);
     m_entities.removeEntityFromActiveList(ent);
@@ -551,7 +553,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 
     cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
-    if (!request_data.char_from_db)
+    if (request_data.char_from_db_data.isEmpty())
     {
         EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
         game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name},ev->session_token(),this) );
@@ -559,10 +561,12 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
         m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
         return;
     }
+    GameAccountResponseCharacterData char_data;
+    serializeFromQString(char_data,request_data.char_from_db_data);
 
     // existing character
     Entity *ent = m_entities.CreatePlayer();
-    toActualCharacter(*request_data.char_from_db, *ent->m_char,*ent->m_player, *ent->m_entity);
+    toActualCharacter(char_data, *ent->m_char,*ent->m_player, *ent->m_entity);
     ent->fillFromCharacter();
     ent->m_client = &map_session;
     map_session.m_ent = ent;
@@ -615,7 +619,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
 
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
@@ -644,7 +648,7 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
 
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());

@@ -12,22 +12,24 @@
 namespace SEGSEvents
 {
 // [[ev_def:type]]
-class SidekickOffer final : public GameCommand
+class SidekickOffer final : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
-    uint32_t m_db_id;
-            SidekickOffer(uint32_t &db_id) : GameCommand(MapEventTypes::evSidekickOffer),
-                m_db_id(db_id)
-            {
-            }
-    void    serializeto(BitStream &bs) const override 
-            {
-                bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 28
-                bs.StoreBits(32,m_db_id);
-                qCDebug(logTeams) << "Sidekick Offer db_id:" << m_db_id;
-            }
+    uint32_t    m_db_id;
+                SidekickOffer(uint32_t db_id) : GameCommandEvent(MapEventTypes::evSidekickOffer),
+                    m_db_id(db_id)
+                {
+                }
+explicit        SidekickOffer() : GameCommandEvent(MapEventTypes::evSidekickOffer) {}
+    void        serializeto(BitStream &bs) const override
+                {
+                    bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 28
+                    bs.StoreBits(32,m_db_id);
+                    qCDebug(logTeams) << "Sidekick Offer db_id:" << m_db_id;
+                }
     void    serializefrom(BitStream &src);
+    EVENT_IMPL(SidekickOffer)
 };
 } // end of SEGSEvents namespace
 

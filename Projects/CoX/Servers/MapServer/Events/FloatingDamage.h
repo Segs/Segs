@@ -8,15 +8,13 @@
 #pragma once
 #include "GameCommandList.h"
 
-#include "MapEvents.h"
-#include "MapLink.h"
 
 #include <QtCore/QString>
 
 namespace SEGSEvents
 {
 // [[ev_def:type]]
-class FloatingDamage final : public GameCommand
+class FloatingDamage final : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
@@ -25,7 +23,8 @@ public:
     int who_was_damaged;
     // [[ev_def:field]]
     int damage_amount; // should be float?
-    FloatingDamage(int source,int target,int amount) : GameCommand(MapEventTypes::evFloatingDamage),
+    explicit FloatingDamage() : GameCommandEvent(MapEventTypes::evFloatingDamage) {}
+    FloatingDamage(int source,int target,int amount) : GameCommandEvent(MapEventTypes::evFloatingDamage),
         whos_fault_was_it(source),
         who_was_damaged(target),
         damage_amount(amount)
@@ -39,5 +38,6 @@ public:
         bs.StorePackedBits(1,damage_amount);
     }
     void    serializefrom(BitStream &src);
+    EVENT_IMPL(FloatingDamage)
 };
 } //end of SEGSEvents namespace

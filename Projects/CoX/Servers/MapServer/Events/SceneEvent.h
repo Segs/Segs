@@ -27,8 +27,8 @@ class Scene : public MapLinkEvent
 public:
             Scene();
 
-    void    serializefrom(BitStream &src);
-    void    serializeto(BitStream &tgt) const;
+    void    serializefrom(BitStream &src) override;
+    void    serializeto(BitStream &tgt) const override;
 
     // [[ev_def:field]]
     QString m_map_desc;
@@ -60,6 +60,7 @@ public:
     int m_map_number;
     // [[ev_def:field]]
     bool unkn2;
+    EVENT_IMPL(Scene)
 protected:
     void getGrpElem(BitStream &src,int idx);
     void reqWorldUpdateIfPak(BitStream &src);

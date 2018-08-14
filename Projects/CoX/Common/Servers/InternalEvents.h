@@ -49,37 +49,34 @@ public:
 
 };
 
-#define ONE_WAY_MESSAGE(name)\
+#define ONE_WAY_MESSAGE(enum_name,name)\
 struct name ## Message final : public InternalEvent\
 {\
     name ## Data m_data;\
-    explicit name ## Message() :  InternalEvent(Internal_EventTypes::ev ## name ## Message) {}\
-    name ## Message(name ## Data &&d,uint64_t token=0) :  InternalEvent(Internal_EventTypes::ev ## name ## Message),m_data(d) { session_token(token);}\
-};
-
-/// A message without Request having additional data
-#define SIMPLE_TWO_WAY_MESSAGE(name)\
-struct name ## Request final : public InternalEvent\
-{\
-    name ## Message(int token) :  InternalEvent(Internal_EventTypes::ev ## name ## Request) {session_token(token);}\
-};\
-struct name ## Response final : public InternalEvent\
-{\
-    name ## Data m_data;\
-    name ## Response(name ## Data &&d,uint64_t token) :  InternalEvent(Internal_EventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
+    explicit name ## Message() :  InternalEvent(enum_name::ev ## name ## Message) {}\
+    name ## Message(name ## Data &&d,uint64_t token) :  InternalEvent(enum_name::ev ## name ## Message),m_data(d) { session_token(token); }\
+    EVENT_IMPL(name ## Message)\
 };
 
 /// A message with Request having additional data
-#define TWO_WAY_MESSAGE(name)\
+#define TWO_WAY_MESSAGE(enum_name,name)\
 struct name ## Request final : public InternalEvent\
 {\
     name ## RequestData m_data;\
-    name ## Request(name ## RequestData &&d,uint64_t token) : InternalEvent(Internal_EventTypes::ev ## name ## Request),m_data(d) {session_token(token);}\
+    name ## Request(name ## RequestData &&d,uint64_t token,EventProcessor *ev_src=nullptr) : \
+        InternalEvent(enum_name::ev ## name ## Request) , m_data(std::move(d)) {\
+        session_token(token); src(ev_src);}\
+    /* needed for serialization functions */\
+    explicit name ## Request() : InternalEvent(enum_name::ev ## name ## Request) {}\
+    EVENT_IMPL(name ## Request)\
 };\
 struct name ## Response final : public InternalEvent\
 {\
     name ## ResponseData m_data;\
-    name ## Response(name ## ResponseData &&d,uint64_t token) :  InternalEvent(Internal_EventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
+    name ## Response(name ## ResponseData &&d,uint64_t token) :  InternalEvent(enum_name::ev ## name ## Response),m_data(std::move(d)) {session_token(token);}\
+    /* needed for serialization functions */\
+    explicit name ## Response() : InternalEvent(enum_name::ev ## name ## Response) {}\
+    EVENT_IMPL(name ## Response)\
 };
 
 // This tells the server that it should expect a new client connection from given address
@@ -88,6 +85,11 @@ struct ExpectClientRequestData
     uint64_t m_client_id;
     ACE_INET_Addr m_from_addr;
     uint8_t m_access_level;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_client_id,m_from_addr,m_access_level);
+    }
 };
 
 // This event informs the server that given client is now expected on another server
@@ -97,21 +99,31 @@ struct ExpectClientResponseData
     uint64_t client_id;
     uint32_t cookie;
     uint32_t m_server_id; // this is the id of the server that is expecting the client
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(client_id,cookie,m_server_id);
+    }
 };
 //[[ev_def:macro]]
-TWO_WAY_MESSAGE(ExpectClient)
+TWO_WAY_MESSAGE(Internal_EventTypes,ExpectClient)
 
 struct ExpectMapClientRequestData
 {
     uint64_t m_client_id;
     uint8_t m_access_level;
     ACE_INET_Addr m_from_addr;
-    //TODO: pass this as POD, or serialize it into some internal format.
-    GameAccountResponseCharacterData *char_from_db;
+    QString char_from_db_data; //! serialized character data.
     uint16_t m_slot_idx;
     QString m_character_name;
     QString m_map_name;
     uint16_t m_max_slots;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_client_id,m_access_level,m_from_addr,char_from_db_data,
+           m_slot_idx,m_character_name,m_map_name,m_max_slots);
+    }
 };
 
 struct ExpectMapClientResponseData
@@ -119,17 +131,26 @@ struct ExpectMapClientResponseData
     uint32_t      cookie;
     uint32_t      m_server_id;       // this is the id of the server that is expecting the client
     ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(cookie,m_server_id,m_connection_addr);
+    }
 };
 //[[ev_def:macro]]
-TWO_WAY_MESSAGE(ExpectMapClient)
+TWO_WAY_MESSAGE(Internal_EventTypes,ExpectMapClient)
 
 // For now, no data here, could be a path to a config file?
 struct ReloadConfigData
 {
 
+    template<class Archive>
+    void serialize(Archive &)
+    {
+    }
 };
 //[[ev_def:macro]]
-ONE_WAY_MESSAGE(ReloadConfig)
+ONE_WAY_MESSAGE(Internal_EventTypes,ReloadConfig)
 
 struct GameServerStatusData
 {
@@ -139,10 +160,15 @@ struct GameServerStatusData
     uint16_t m_max_players;
     uint8_t m_id;
     bool m_online;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_addr,m_last_status_update,m_current_players,m_max_players,m_id,m_online);
+    }
 };
 // This could be put in Message bus if any other server, apart from Auth needs this info.
 //[[ev_def:macro]]
-ONE_WAY_MESSAGE(GameServerStatus)
+ONE_WAY_MESSAGE(Internal_EventTypes,GameServerStatus)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /// The following messages are put on the global Message Bus, and published there for all subscribers to see
@@ -151,27 +177,39 @@ struct ServiceStatusData
 {
     QString status_message;
     int status_value;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(status_message,status_value);
+    }
 };
 //[[ev_def:macro]]
-ONE_WAY_MESSAGE(ServiceStatus)
+ONE_WAY_MESSAGE(Internal_EventTypes,ServiceStatus)
 
 struct ClientConnectedData
 {
     uint64_t m_session;
     uint32_t m_server_id;     // id of the server the client connected to.
     uint32_t m_sub_server_id; // only used when server_id is the map server
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_session,m_server_id,m_sub_server_id);
+    }
 };
 //[[ev_def:macro]]
-ONE_WAY_MESSAGE(ClientConnected)
+ONE_WAY_MESSAGE(Internal_EventTypes,ClientConnected)
 
 struct ClientDisconnectedData
 {
     uint64_t m_session;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_session);
+    }
 };
 //[[ev_def:macro]]
-ONE_WAY_MESSAGE(ClientDisconnected)
+ONE_WAY_MESSAGE(Internal_EventTypes,ClientDisconnected)
 
-#undef ONE_WAY_MESSAGE
-#undef SIMPLE_TWO_WAY_MESSAGE
-#undef TWO_WAY_MESSAGE
 } // end of SEGSEvents namespace

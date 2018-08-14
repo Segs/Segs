@@ -26,10 +26,11 @@ public:
         bs.StorePackedBits(1, type() - MapEventTypes::evConsoleCommand); // 7
         bs.StorePackedBits(12, m_srv_idx);
     }
-    void serializefrom(BitStream &src)
+    void serializefrom(BitStream &src) override
     {
         m_srv_idx = src.GetPackedBits(12);
     }
+    EVENT_IMPL(InteractWithEntity)
 };
 } // end of SEGSEvents namespace
 

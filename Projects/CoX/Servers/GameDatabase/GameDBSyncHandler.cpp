@@ -23,9 +23,9 @@ bool GameDBSyncHandler::per_thread_startup()
     GameDbSyncContext &db_ctx(m_db_context.localData());
     bool result = db_ctx.loadAndConfigure();
     if(!result)
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSync failed to load/configure",-1}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSync failed to load/configure",-1},0));
     else
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSync loaded/configured",0}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSync loaded/configured",0},0));
     return result;
 }
 

@@ -20,6 +20,7 @@ public:
     WindowState():MapLinkEvent(MapEventTypes::evWindowState) {}
     void serializeto(BitStream &bs) const override;
     void serializefrom(BitStream &bs) override;
+    EVENT_IMPL(WindowState)
 };
 } // end of SEGSEvents namespace
 

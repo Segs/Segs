@@ -11,13 +11,14 @@
  */
 
 #include "SEGSEvent.h"
+#include "SEGSEventFactory.h"
 
 using namespace SEGSEvents;
 Finish *Finish::s_instance(new Finish());
 
 const char *Event::info()
 {
-    return typeid(*this).name();
+    return event_name(this->m_type);
 }
 
 //! @}

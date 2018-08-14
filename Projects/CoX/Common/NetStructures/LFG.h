@@ -16,6 +16,11 @@ struct LFGMember
     QString m_classname;    // player class
     QString m_origin;       // player origin
     uint32_t m_level;       // player level
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_name,m_classname,m_origin,m_level);
+    }
 };
 
 /*

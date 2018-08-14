@@ -17,6 +17,11 @@ struct GameServerInfo
     uint16_t current_players;
     uint16_t max_players;
     uint8_t  online;
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( id, addr, port,current_players, max_players,online );
+    }
 };
 
 namespace SEGSEvents
@@ -32,7 +37,8 @@ public:
     ServerListResponse() : AuthLinkEvent(evServerListResponse)
     {}
     void set_server_list(const std::deque<GameServerInfo> &srv) {m_serv_list=srv;}
-    void serializeto(GrowingBuffer &buf) const;
-    void serializefrom(GrowingBuffer &buf);
+    void serializeto(GrowingBuffer &buf) const override;
+    void serializefrom(GrowingBuffer &buf) override;
+    EVENT_IMPL(ServerListResponse)
 };
 } // end of namespace SEGSEvents

@@ -24,6 +24,7 @@ public:
     // SerializableEvent interface
     void serializefrom(BitStream &src) override;
     void serializeto(BitStream &) const override;
+    EVENT_IMPL(ChatDividerMoved)
 };
 } // end of SEGSEvents namespace
 

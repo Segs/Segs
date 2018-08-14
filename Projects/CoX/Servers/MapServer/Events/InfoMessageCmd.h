@@ -16,7 +16,7 @@ namespace SEGSEvents
 {
 
 // [[ev_def:type]]
-class InfoMessageCmd : public GameCommand
+class InfoMessageCmd : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
@@ -24,13 +24,15 @@ public:
     // [[ev_def:field]]
     MessageChannel  m_channel_type;
     int             m_target_player_id;
-    virtual         ~InfoMessageCmd() = default;
-                    InfoMessageCmd(MessageChannel t, const QString &msg) : GameCommand(MapEventTypes::evInfoMessageCmd),
+                    ~InfoMessageCmd() override = default;
+explicit            InfoMessageCmd() : GameCommandEvent(MapEventTypes::evInfoMessageCmd) {}
+                    InfoMessageCmd(MessageChannel t, const QString &msg) : GameCommandEvent(MapEventTypes::evInfoMessageCmd),
                         m_msg(msg),m_channel_type(t)
                     {
                     }
     void            serializeto(BitStream &bs) const override;
     void            serializefrom(BitStream &src);
+    EVENT_IMPL(InfoMessageCmd)
 };
 
 } // end of SEGSEvents namespace

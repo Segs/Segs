@@ -15,6 +15,11 @@ struct LoginRequestData
     std::array<char,16> password;
     uint32_t unkval1=0;
     uint16_t unkval2=0;
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( login, password, unkval1,unkval2 );
+    }
 };
 namespace SEGSEvents
 {
@@ -24,7 +29,7 @@ class LoginRequest : public AuthLinkEvent
 public:
     LoginRequest() : AuthLinkEvent(evLoginRequest)
     {}
-    void serializeto(GrowingBuffer &buf) const
+    void serializeto(GrowingBuffer &buf) const override
     {
         buf.uPut(uint8_t(0));
         buf.uPutBytes((uint8_t*)m_data.login.data(), m_data.login.size());
@@ -33,7 +38,7 @@ public:
         buf.uPut(m_data.unkval2);
         //assert(!"Not implemented");
     }
-    void serializefrom(GrowingBuffer &buf)
+    void serializefrom(GrowingBuffer &buf) override
     {
         uint8_t packet_code;
         buf.uGet(packet_code);
@@ -48,5 +53,6 @@ public:
     }
     // [[ev_def:field]]
     LoginRequestData m_data;
+    EVENT_IMPL(LoginRequest)
 };
 } // end of namespace SEGSEvents

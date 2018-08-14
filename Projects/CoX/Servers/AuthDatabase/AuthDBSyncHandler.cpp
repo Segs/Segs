@@ -26,9 +26,9 @@ bool AuthDBSyncHandler::per_thread_startup()
     AuthDbSyncContext &db_ctx(m_db_context.localData());
     bool result = db_ctx.loadAndConfigure();
     if(!result)
-        postGlobalEvent(new ServiceStatusMessage({"AuthDBSync failed to load/configure",-1}));
+        postGlobalEvent(new ServiceStatusMessage({"AuthDBSync failed to load/configure",-1},0));
     else
-        postGlobalEvent(new ServiceStatusMessage({"AuthDBSync loaded/configured",0}));
+        postGlobalEvent(new ServiceStatusMessage({"AuthDBSync loaded/configured",0},0));
     return result;
 }
 
@@ -59,7 +59,7 @@ void AuthDBSyncHandler::on_create_account(CreateAccountMessage *msg)
     AuthDbSyncContext &db_ctx(m_db_context.localData());
     if(!db_ctx.addAccount(msg->m_data))
     {
-        msg->src()->putq(new AuthDbErrorMessage({db_ctx.getLastError()->text()}));
+        msg->src()->putq(new AuthDbErrorMessage({db_ctx.getLastError()->text()},msg->session_token()));
     }
 }
 
@@ -74,7 +74,7 @@ void AuthDBSyncHandler::on_retrieve_account(RetrieveAccountRequest *msg)
     }
 
     if (db_ctx.getLastError())
-        msg->src()->putq(new AuthDbErrorMessage({db_ctx.getLastError()->text()}));
+        msg->src()->putq(new AuthDbErrorMessage({db_ctx.getLastError()->text()},msg->session_token()));
     else
         msg->src()->putq(new RetrieveAccountResponse(std::move(resp), msg->session_token()));
 }
@@ -87,7 +87,7 @@ void AuthDBSyncHandler::on_validate_password(ValidatePasswordRequest *msg)
     {
         msg->src()->putq(new ValidatePasswordResponse(std::move(res),msg->session_token()));
     }
-    msg->src()->putq(new AuthDbErrorMessage({db_ctx.getLastError()->text()}));
+    msg->src()->putq(new AuthDbErrorMessage({db_ctx.getLastError()->text()},msg->session_token()));
 }
 
 AuthDBSyncHandler::AuthDBSyncHandler()

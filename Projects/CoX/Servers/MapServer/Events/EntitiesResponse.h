@@ -54,6 +54,7 @@ public:
         std::string m_commands[15];
         uint32_t    m_num_commands2;
         std::string m_commands2[15];
+        EVENT_IMPL(EntitiesResponse)
 };
 } // end of SEGSEvents namespace
 

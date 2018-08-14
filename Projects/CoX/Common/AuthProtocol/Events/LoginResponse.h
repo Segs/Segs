@@ -30,7 +30,7 @@ public:
         memset(unkArray1,0,8);
         memset(unkArray2,0,8);
     }
-    void serializeto(GrowingBuffer &buf) const
+    void serializeto(GrowingBuffer &buf) const override
     {
         buf.uPut((uint8_t)3); // packet code
         buf.uPutBytes(unkArray1, sizeof(unkArray1));
@@ -39,7 +39,7 @@ public:
         buf.uPut(unk2);
         buf.uPut(unk3);
     }
-    void serializefrom(GrowingBuffer &buf)
+    void serializefrom(GrowingBuffer &buf) override
     {
         uint8_t op;
         buf.uGet(op);
@@ -49,6 +49,7 @@ public:
         buf.uGet(unk2);
         buf.uGet(unk3);
     }
+    EVENT_IMPL(LoginResponse)
 };
 } //end of namespace SEGSEvents
 

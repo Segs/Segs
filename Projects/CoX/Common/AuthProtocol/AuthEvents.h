@@ -46,6 +46,7 @@ class SendLeftovers final : public Event // this event is posted from AuthLink t
 public:
         SendLeftovers() : Event(evSendLeftovers)
         {}
+        EVENT_IMPL(SendLeftovers)
 };
 // [[ev_def:type]]
 class ReconnectAttempt final : public AuthLinkEvent
@@ -56,18 +57,19 @@ public:
     ReconnectAttempt() : AuthLinkEvent(evReconnectAttempt)
     {}
     void init(EventProcessor *ev_src,const uint8_t *auth_arr) {memcpy(m_arr,auth_arr,8);m_event_source=ev_src;}
-    void serializeto(GrowingBuffer &buf) const
+    void serializeto(GrowingBuffer &buf) const override
     {
         buf.uPut((uint8_t)3);
         buf.uPutBytes(m_arr,8);
     }
-    void serializefrom(GrowingBuffer &buf)
+    void serializefrom(GrowingBuffer &buf) override
     {
         uint8_t op;
         buf.uGet(op);
         assert(op==3);
         buf.uGetBytes(m_arr,8);
     }
+    EVENT_IMPL(ReconnectAttempt)
 };
 } // end of SEGSEvents namespace
 #include "Events/AuthorizationError.h"

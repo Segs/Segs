@@ -143,11 +143,11 @@ void GameHandler::on_account_data(GameAccountResponse *ev)
     session.m_game_account = ev->m_data;
     // Inform auth server about succesful client connection
     EventProcessor *tgt      = HandlerLocator::getAuth_Handler();
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),0 }));
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),0 },0));
 
     m_session_store.add_to_active_sessions(&session);
     CharacterSlots *slots_event=new CharacterSlots;
-    slots_event->m_data = session.m_game_account;
+    slots_event->m_data = std::move(ev->m_data);
     session.link()->putq(slots_event);
 }
 
@@ -229,7 +229,7 @@ void GameHandler::report_service_status()
 {
     postGlobalEvent(new GameServerStatusMessage({m_server->getAddress(),QDateTime::currentDateTime(),
                                                  uint16_t(m_session_store.num_sessions()),
-                                                 m_server->getMaxPlayers(),m_server->getId(),true}));
+                                                 m_server->getMaxPlayers(),m_server->getId(),true},0));
 }
 
 void GameHandler::on_timeout(Timeout *ev)
@@ -271,7 +271,7 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
         else
         {
             EventProcessor * tgt = HandlerLocator::getAuth_Handler();
-            tgt->putq(new ClientDisconnectedMessage({lnk->session_token()}));
+            tgt->putq(new ClientDisconnectedMessage({lnk->session_token()},0));
             m_session_store.session_link_lost(lnk->session_token());
             m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
         }
@@ -299,7 +299,7 @@ void GameHandler::on_link_lost(Event *ev)
         else
         {
             EventProcessor * tgt = HandlerLocator::getAuth_Handler();
-            tgt->putq(new ClientDisconnectedMessage({lnk->session_token()}));
+            tgt->putq(new ClientDisconnectedMessage({lnk->session_token()},0));
             m_session_store.session_link_lost(lnk->session_token());
             m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
         }
@@ -388,9 +388,13 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     {
         ACE_ASSERT(selected_slot->m_name == ev->m_char_name || !"Server-Client character synchronization failure!");
     }
+    QString chardata;
+    if(selected_slot)
+        serializeToQString(*selected_slot,chardata);
     ExpectMapClientRequest *expect_client =
         new ExpectMapClientRequest({session.m_auth_account_id, session.m_access_level, lnk->peer_addr(),
-                                    selected_slot, ev->m_character_index, ev->m_char_name, map_path,
+                                    chardata,
+                                    ev->m_character_index, ev->m_char_name, map_path,
                                     uint16_t(session.m_game_account.m_max_slots)},
                                    lnk->session_token());
     qInfo("Telling map server to expect a client with character %s, %d\n", qPrintable(ev->m_char_name),
@@ -444,7 +448,7 @@ void GameHandler::reap_stale_links()
     EventProcessor *            tgt      = HandlerLocator::getAuth_Handler();
     m_session_store.reap_stale_links("GameInstance", link_is_stale_if_disconnected_for,
                                      [tgt](uint64_t tok) {
-                                         tgt->putq(new ClientDisconnectedMessage({tok}));
+                                         tgt->putq(new ClientDisconnectedMessage({tok},0));
                                      });
 }
 //! @}

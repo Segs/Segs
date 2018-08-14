@@ -52,5 +52,6 @@ public:
                         {
                             return m_proto_vers;
                         }
+        EVENT_IMPL(AuthProtocolVersion)
 };
 } // end of namespace SEGSEvents

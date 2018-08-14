@@ -28,6 +28,7 @@ public:
     bool        m_new_character;
     // [[ev_def:field]]
     BitStream   m_character_data;
+    EVENT_IMPL(NewEntity)
 };
 } // end of SEGSEvents namespace
 

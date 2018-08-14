@@ -16,13 +16,13 @@ class ServerListRequest : public AuthLinkEvent
 public:
     ServerListRequest() : AuthLinkEvent(evServerListRequest)
     {}
-    void serializeto(GrowingBuffer &buf) const
+    void serializeto(GrowingBuffer &buf) const override
     {
         buf.uPut((uint8_t)5);
         buf.uPutBytes(unkArrayFromLoginResponse, sizeof(unkArrayFromLoginResponse));
         buf.uPut(unk1);
     }
-    void serializefrom(GrowingBuffer &buf)
+    void serializefrom(GrowingBuffer &buf) override
     {
         uint8_t op;
         buf.uGet(op);
@@ -34,5 +34,6 @@ public:
     uint8_t unkArrayFromLoginResponse[8];
     // [[ev_def:field]]
     uint8_t unk1=0xFF;
+    EVENT_IMPL(ServerListRequest)
 };
 } // end of namespace SEGSEvents

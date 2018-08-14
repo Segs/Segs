@@ -28,6 +28,7 @@ public:
     QString m_name;
     // [[ev_def:field]]
     glm::vec3 m_pos;
+    EVENT_IMPL(LocationVisited)
 };
 } // end of SEGSEvents namespace
 

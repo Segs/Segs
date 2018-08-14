@@ -15,7 +15,7 @@
 class CharacterDatabase;
 class GameServerData;
 
-class GameServer  : public EventProcessor
+class GameServer final : public EventProcessor
 {
         class PrivateData;
 public:

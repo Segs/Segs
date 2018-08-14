@@ -59,7 +59,7 @@ class GameHandler final : public EventProcessor
 
 public:
                     GameHandler();
-                    ~GameHandler();
+                    ~GameHandler() override;
         void        set_server(GameServer *s) {m_server=s;}
         void        start();
 protected:

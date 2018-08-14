@@ -82,6 +82,8 @@ virtual                 ~Event()
         EventProcessor *src() const {return m_event_source;}
         uint32_t        type() const {return m_type;}
 virtual const char *    info();
+protected:
+virtual void            do_serialize(std::ostream &os)  = 0;
 };
 #define EVENT_IMPL(name)\
     template<class Archive>\
@@ -110,6 +112,7 @@ public:
                         }
     uint64_t            timer_id() { return m_timer_id; }
     ACE_Time_Value      arrival_time() const { return m_arrival_time; }
+    EVENT_IMPL(Timeout)
 };
 // [[ev_def:type]]
 struct Finish final: public Event
@@ -117,5 +120,6 @@ struct Finish final: public Event
 public:
                     Finish(EventProcessor *source=nullptr) : Event(evFinish,source) {}
 static  Finish *    s_instance;
+        EVENT_IMPL(Finish)
 };
 } // end of SEGSEventsNamespace

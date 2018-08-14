@@ -580,7 +580,7 @@ void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount)
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingDamage>(new FloatingDamage(src->m_idx, tgt_idx, amount)));
 }
 
-void sendFriendsListUpdate(Entity *src, FriendsList *friends_list)
+void sendFriendsListUpdate(Entity *src, const FriendsList &friends_list)
 {
     qCDebug(logFriends) << "Sending FriendsList Update.";
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FriendsListUpdate>(new FriendsListUpdate(friends_list)));

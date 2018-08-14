@@ -17,7 +17,6 @@ class Connect : public Event
 public:
     Connect(EventProcessor *ev_src=nullptr) : Event(evConnect,ev_src)
     {
-        assert(ev_src);
     }
     Connect(EventProcessor *ev_src,const ACE_INET_Addr &addr) :
         Event(evConnect,ev_src),
@@ -25,6 +24,7 @@ public:
     {
         assert(ev_src);
     }
+    EVENT_IMPL(SEGSEvents)
     // [[ev_def:field]]
     ACE_INET_Addr src_addr;
 };
@@ -40,5 +40,6 @@ public:
     Disconnect(uint64_t token) : Event(evDisconnect,nullptr),m_session_token(token)
     {
     }
+    EVENT_IMPL(Disconnect)
 };
 } // end of SEGSEvents namespace

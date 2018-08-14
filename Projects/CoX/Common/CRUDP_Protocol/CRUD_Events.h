@@ -45,6 +45,7 @@ public:
     ACE_INET_Addr  target;
     const uint8_t *bytes() const { return m_pkt->GetStream()->read_ptr(); }
     size_t         size() const { return m_pkt->GetStream()->GetReadableDataSize(); }
+    EVENT_IMPL(Packet)
 };
 class CRUDLink_Event : public Event
 {
@@ -78,6 +79,7 @@ public:
     uint32_t m_tickcount;
     // [[ev_def:field]]
     uint32_t m_version;
+    EVENT_IMPL(ConnectRequest)
 };
 
 // [[ev_def:type]]
@@ -91,6 +93,7 @@ public:
         tgt.StorePackedBits(1, 4); // opcode
     }
     void serializefrom(BitStream &) override {}
+    EVENT_IMPL(ConnectResponse)
 };
 // [[ev_def:type]]
 class DisconnectRequest : public CRUDLink_Event
@@ -107,6 +110,7 @@ public:
         bs.StorePackedBits(1, 0);
         bs.StorePackedBits(1, 5);
     }
+    EVENT_IMPL(DisconnectRequest)
 };
 // [[ev_def:type]]
 class DisconnectResponse : public CRUDLink_Event
@@ -123,6 +127,7 @@ public:
         bs.StorePackedBits(1, 0);
         bs.StorePackedBits(1, 6);
     }
+    EVENT_IMPL(DisconnectResponse)
 };
 // [[ev_def:type]]
 class Idle : public CRUDLink_Event
@@ -140,6 +145,7 @@ public:
         bs.StorePackedBits(1, 0);
         bs.StorePackedBits(1, 0);
     }
+    EVENT_IMPL(Idle)
 };
 // [[ev_def:type]]
 class UnknownEvent : public CRUDLink_Event
@@ -149,6 +155,7 @@ public:
     { }
     void serializeto(BitStream &) const override { }
     void serializefrom(BitStream &) override { }
+    EVENT_IMPL(UnknownEvent)
 };
 } // end of SEGSEvents namespace
 class CRUD_EventFactory

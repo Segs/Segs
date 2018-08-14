@@ -20,6 +20,7 @@ public:
     SaveClientOptions() : MapLinkEvent(MapEventTypes::evSaveClientOptions) {}
     void serializeto(BitStream &bs) const override;
     void serializefrom(BitStream &bs) override;
+    EVENT_IMPL(SaveClientOptions)
 };
 } // end of SEGSEvents namespace
 
