@@ -39,3 +39,25 @@ if(ENABLE_TESTS)
     )
     set(GTest_LIBRARIES gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 endif()
+
+
+#
+# OpenSSL is missing on Windows.
+#
+if(MINGW)
+    message(STATUS "    Installing system-libraries: OpenSSL DLLs.")
+    add_custom_target(
+        openssl ALL
+        DEPENDS ${EXECUTABLE_OUTPUT_PATH}/SEGSAdmin.exe
+    )
+    add_custom_command(
+        TARGET openssl
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/openssl/libeay32.dll ${EXECUTABLE_OUTPUT_PATH}
+    )
+    add_custom_command(
+        TARGET openssl
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/openssl/ssleay32.dll ${EXECUTABLE_OUTPUT_PATH}
+    )
+endif(MINGW)
