@@ -10,6 +10,8 @@
 class QSqlDatabase;
 class QSqlQuery;
 
+namespace SEGSEvents
+{
 struct CharacterUpdateData;
 struct CostumeUpdateData;
 struct PlayerUpdateData;
@@ -26,6 +28,7 @@ struct GetEntityByNameRequestData;
 struct GetEntityByNameResponseData;
 struct SetClientOptionsData;
 
+}
 ///
 /// \brief The DbSyncContext class is used as thread local storage for database related objects
 ///
@@ -54,17 +57,17 @@ public:
     GameDbSyncContext();
     ~GameDbSyncContext();
     bool loadAndConfigure();
-    bool performUpdate(const CharacterUpdateData &data);
-    bool performUpdate(const CostumeUpdateData &data);
-    bool performUpdate(const PlayerUpdateData &data);
-    bool performUpdate(const SetClientOptionsData &data);
-    bool getAccount(const GameAccountRequestData &data,GameAccountResponseData &result);
-    bool removeCharacter(const RemoveCharacterRequestData &data);
-    bool checkNameClash(const WouldNameDuplicateRequestData &data,WouldNameDuplicateResponseData &result);
-    bool createNewChar(const  CreateNewCharacterRequestData&data, CreateNewCharacterResponseData &result);
-    bool getEntity(const  GetEntityRequestData&data, GetEntityResponseData &result);
-    bool getEntityByName(const GetEntityByNameRequestData &data, GetEntityByNameResponseData &result);
-    bool updateClientOptions(const SetClientOptionsData &data);
+    bool performUpdate(const SEGSEvents::CharacterUpdateData &data);
+    bool performUpdate(const SEGSEvents::CostumeUpdateData &data);
+    bool performUpdate(const SEGSEvents::PlayerUpdateData &data);
+    bool performUpdate(const SEGSEvents::SetClientOptionsData &data);
+    bool getAccount(const SEGSEvents::GameAccountRequestData &data,SEGSEvents::GameAccountResponseData &result);
+    bool removeCharacter(const SEGSEvents::RemoveCharacterRequestData &data);
+    bool checkNameClash(const SEGSEvents::WouldNameDuplicateRequestData &data,SEGSEvents::WouldNameDuplicateResponseData &result);
+    bool createNewChar(const  SEGSEvents::CreateNewCharacterRequestData&data, SEGSEvents::CreateNewCharacterResponseData &result);
+    bool getEntity(const  SEGSEvents::GetEntityRequestData&data, SEGSEvents::GetEntityResponseData &result);
+    bool getEntityByName(const SEGSEvents::GetEntityByNameRequestData &data, SEGSEvents::GetEntityByNameResponseData &result);
+    bool updateClientOptions(const SEGSEvents::SetClientOptionsData &data);
 private:
     int64_t getDbVersion(QSqlDatabase &);
 };

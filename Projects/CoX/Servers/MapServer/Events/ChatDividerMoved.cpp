@@ -12,6 +12,8 @@
 
 #include "ChatDividerMoved.h"
 
+using namespace SEGSEvents;
+
 void ChatDividerMoved::serializefrom(BitStream &src)
 {
     m_position = src.GetFloat();

@@ -16,30 +16,32 @@
 #include "GameDBSyncEvents.h"
 #include "MessageBus.h"
 
-bool GameDBSyncHandler::per_thread_setup()
+using namespace SEGSEvents;
+
+bool GameDBSyncHandler::per_thread_startup()
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
     bool result = db_ctx.loadAndConfigure();
     if(!result)
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSync failed to load/configure",-1}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSync failed to load/configure",-1},0));
     else
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSync loaded/configured",0}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSync loaded/configured",0},0));
     return result;
 }
 
-void GameDBSyncHandler::dispatch(SEGSEvent *ev)
+void GameDBSyncHandler::dispatch(Event *ev)
 {
     // We are servicing a request from message queue, using dispatchSync as a common processing point.
     // nullptr result means that the given message is one-way
     switch (ev->type())
     {
-    case GameDBEventTypes::evCharacterUpdate:
+    case GameDBEventTypes::evCharacterUpdateMessage:
         on_character_update(static_cast<CharacterUpdateMessage *>(ev)); break;
-    case GameDBEventTypes::evPlayerUpdate:
+    case GameDBEventTypes::evPlayerUpdateMessage:
         on_player_update(static_cast<PlayerUpdateMessage *>(ev)); break;
     case GameDBEventTypes::evRemoveCharacterRequest:
         on_character_remove(static_cast<RemoveCharacterRequest *>(ev)); break;
-    case GameDBEventTypes::evCostumeUpdate:
+    case GameDBEventTypes::evCostumeUpdateMessage:
         on_costume_update(static_cast<CostumeUpdateMessage *>(ev)); break;
     case GameDBEventTypes::evGameAccountRequest:
         on_account_request(static_cast<GameAccountRequest *>(ev)); break;

@@ -29,14 +29,16 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
+using namespace SEGSEvents;
+
 namespace
 {
     const constexpr int MaxCharacterSlots=8;
-    class GameLinkEndpoint : public ServerEndpoint
+    class GameLinkEndpoint final : public ServerEndpoint
     {
         public:
             GameLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
-            ~GameLinkEndpoint()=default;
+            ~GameLinkEndpoint() override = default ;
         protected:
             CRUDLink *createLink(EventProcessor *down) override
             {
@@ -63,17 +65,17 @@ public:
     void ShutDown() const
     {
         // tell our handler to shut down too
-        m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish, nullptr));
+        m_handler->putq(Finish::s_instance->shallow_copy());
         m_handler->wait();
     }
 };
 
-void GameServer::dispatch(SEGSEvent *ev)
+void GameServer::dispatch(Event *ev)
 {
     assert(ev);
     switch(ev->type())
     {
-        case Internal_EventTypes::evReloadConfig:
+        case evReloadConfigMessage:
             ReadConfigAndRestart();
             break;
         default:
@@ -99,7 +101,7 @@ GameServer::~GameServer()
 // later name will be used to read GameServer specific configuration
 bool GameServer::ReadConfigAndRestart()
 {
-    static GameServerReconfigured reconfigured_msg;
+    static ServerReconfigured reconfigured_msg;
     // TODO: consider properly closing all open sessions ?
     delete d->m_endpoint;
     qInfo() << "Loading GameServer settings...";
@@ -152,7 +154,7 @@ bool GameServer::ReadConfigAndRestart()
 
 bool GameServer::ShutDown()
 {
-    putq(SEGSEvent::s_ev_finish.shallow_copy());
+    putq(Finish::s_instance->shallow_copy());
     wait();
     return true;
 }

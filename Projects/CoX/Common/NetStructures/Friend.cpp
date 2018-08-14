@@ -24,9 +24,9 @@ static const int g_max_friends = 25;
 void addFriend(Entity &src, Entity &tgt)
 {
     QString msg;
-    FriendsList *src_data(&src.m_char->m_char_data.m_friendlist);
+    FriendsList &src_data(src.m_char->m_char_data.m_friendlist);
 
-    if(src_data->m_friends_count >= g_max_friends)
+    if(src_data.m_friends_count >= g_max_friends)
     {
         msg = "You cannot have more than " + QString::number(g_max_friends) + " friends.";
         qCDebug(logFriends).noquote() << msg;
@@ -34,8 +34,8 @@ void addFriend(Entity &src, Entity &tgt)
         return; // break early
     }
 
-    src_data->m_has_friends = true;
-    src_data->m_friends_count++;
+    src_data.m_has_friends = true;
+    src_data.m_friends_count++;
 
     Friend f;
     f.m_online_status   = (tgt.m_client != nullptr); // need some other method for this.
@@ -47,8 +47,8 @@ void addFriend(Entity &src, Entity &tgt)
     f.m_mapname         = getEntityDisplayMapName(tgt.m_entity_data);
 
     // add to friendlist
-    src_data->m_friends.emplace_back(f);
-    qCDebug(logFriends) << "friendslist size:" << src_data->m_friends_count << src_data->m_friends.size();
+    src_data.m_friends.emplace_back(f);
+    qCDebug(logFriends) << "friendslist size:" << src_data.m_friends_count << src_data.m_friends.size();
 
     msg = "Adding " + tgt.name() + " to your friendlist.";
     qCDebug(logFriends).noquote() << msg;
@@ -63,18 +63,18 @@ void addFriend(Entity &src, Entity &tgt)
 void removeFriend(Entity &src, QString friend_name)
 {
     QString msg;
-    FriendsList *src_data(&src.m_char->m_char_data.m_friendlist);
+    FriendsList &src_data(src.m_char->m_char_data.m_friendlist);
 
     qCDebug(logFriends) << "Searching for friend" << friend_name << "to remove them.";
 
     QString lower_name = friend_name.toLower();
-    auto iter = std::find_if( src_data->m_friends.begin(), src_data->m_friends.end(),
+    auto iter = std::find_if( src_data.m_friends.begin(), src_data.m_friends.end(),
                               [lower_name](const Friend& f)->bool {return lower_name==f.m_name.toLower();});
 
-    if(iter!=src_data->m_friends.end())
+    if(iter!=src_data.m_friends.end())
     {
         msg = "Removing " + iter->m_name + " from your friends list.";
-        iter = src_data->m_friends.erase(iter);
+        iter = src_data.m_friends.erase(iter);
 
         qCDebug(logFriends) << msg;
         if(logFriends().isDebugEnabled())
@@ -83,10 +83,10 @@ void removeFriend(Entity &src, QString friend_name)
     else
         msg = friend_name + " is not on your friends list.";
 
-    if(src_data->m_friends.empty())
-        src_data->m_has_friends = false;
+    if(src_data.m_friends.empty())
+        src_data.m_has_friends = false;
 
-    src_data->m_friends_count = src_data->m_friends.size();
+    src_data.m_friends_count = src_data.m_friends.size();
 
     qCDebug(logFriends).noquote() << msg;
     messageOutput(MessageChannel::FRIENDS, msg, src);

@@ -7,7 +7,7 @@ SET(target_CPP
     DataHelpers.cpp
     EntityStorage.cpp
     EntityUpdateCodec.cpp
-    Events/GameCommandList.cpp
+    Events/GameCommand.cpp
     Events/ChatDividerMoved.cpp
     Events/ChatMessage.cpp
     Events/EntitiesResponse.cpp
@@ -38,6 +38,7 @@ SET(target_INCLUDE
     DataHelpers.h
     EntityStorage.h
     EntityUpdateCodec.h
+    Events/GameCommand.h
     Events/GameCommandList.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
@@ -52,6 +53,7 @@ SET(target_INCLUDE
     Events/MapEventTypes.h
     Events/MessageChannels.h
     Events/NewEntity.h
+    Events/MapSessionReference.h
     Events/PlaqueVisited.h
     Events/PlayerInfo.h
     Events/SaveClientOptions.h

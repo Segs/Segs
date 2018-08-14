@@ -15,6 +15,8 @@
 #include "AuthProtocol/AuthOpcodes.h"
 #include "AuthProtocol/AuthEventFactory.h"
 
+using namespace SEGSEvents;
+
 AuthLink::AuthLink() :
     m_received_bytes_storage(0x1000,0,40),
     m_unsent_bytes_storage(0x200,0,40),
@@ -86,7 +88,7 @@ eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode ) const
     return MSG_AUTH_UNKNOWN;
 }
 //! tries to convert the available bytes into a valid AuthHandler LinkLevelEvent.
-SEGSEvent * AuthLink::bytes_to_event()
+SEGSEvents::Event * AuthLink::bytes_to_event()
 {
     uint16_t  packet_size(0);
     uint8_t * tmp(nullptr);
@@ -115,7 +117,7 @@ SEGSEvent * AuthLink::bytes_to_event()
             continue;
         }
         // A catch !
-        if(evt->type() == evLogin) // Is tis' on of those pesky AuthLogin Packets ?!!?
+        if(evt->type() == evLoginRequest) // Is tis' on of those pesky AuthLogin Packets ?!!?
         {
             // Bring out the Codec Cannon, an' load it with Des
             m_codec.DesDecode(tmp+1,30); // It'll crack it's chitinous armor
@@ -143,7 +145,7 @@ int AuthLink::open (void *p)
     m_notifier.reactor(reactor());                      // notify reactor with write event,
     msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue() we will be notified
     //TODO: consider using sync query here.
-    m_target->putq(new ConnectEvent(this,m_peer_addr)); // also, inform the AuthHandler of our existence
+    m_target->putq(new Connect(this,m_peer_addr)); // also, inform the AuthHandler of our existence
     return 0;
 }
 /**
@@ -168,7 +170,7 @@ int AuthLink::handle_input( ACE_HANDLE )
         return 0; // if not enough data even for the simplest of packets
 
     // For now BytesEvent will copy the buffer contents
-    SEGSEvent *s_event=bytes_to_event(); // convert raw bytes into higher level event
+    Event *s_event=bytes_to_event(); // convert raw bytes into higher level event
     //TODO: what about partially received events ?
     if(s_event)
     {
@@ -182,16 +184,16 @@ int AuthLink::handle_input( ACE_HANDLE )
 */
 int AuthLink::handle_output( ACE_HANDLE /*= ACE_INVALID_HANDLE*/ )
 {
-    SEGSEvent *ev;
+    Event *ev;
     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
     while (-1 != getq(ev, &nowait))
     {
-        if(ev->type()==SEGS_EventTypes::evFinish)
+        if(ev->type()==evFinish)
         {
             ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Error sent, closing connection\n")));
             return -1;
         }
-        if(ev->type()==evContinue) // we have asked ourselves to send leftovers
+        if(ev->type()==evSendLeftovers) // we have asked ourselves to send leftovers
         {
             assert(m_unsent_bytes_storage.GetReadableDataSize() > 0); // be sure we have some
         }
@@ -230,10 +232,10 @@ void AuthLink::encode_buffer(const AuthLinkEvent *ev, size_t start)
     ev->serializeto(m_unsent_bytes_storage);
     // calculate the number of stored bytes, and set it in packet_size,
     // -1 because opcode is not counted toward packet size
-    *packet_size = (m_unsent_bytes_storage.GetReadableDataSize() - actual_packet_start) - 1; 
+    *packet_size = (m_unsent_bytes_storage.GetReadableDataSize() - actual_packet_start) - 1;
 
     // additional encryption of login details
-    if(ev->type()==evLogin)
+    if(ev->type()==evLoginRequest)
         m_codec.DesCode(m_unsent_bytes_storage.read_ptr()+actual_packet_start+1,30); //only part of packet is encrypted with des
 
     // every packet, but the authorization protocol, is encrypted
@@ -253,7 +255,7 @@ bool AuthLink::send_buffer()
     }
     if (m_unsent_bytes_storage.GetReadableDataSize() > 0) // and still there is something left
     {
-        ungetq(new ContinueEvent);
+        ungetq(new SendLeftovers);
         return false; // couldn't send all
     }
     return true;
@@ -298,14 +300,14 @@ void AuthLink::set_protocol_version( int vers )
 int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 {
     // client handle was closed, posting disconnect event with higher priority
-    m_target->msg_queue()->enqueue_prio(new DisconnectEvent(session_token()),nullptr,100);
+    m_target->msg_queue()->enqueue_prio(new Disconnect(session_token()),nullptr,100);
     if (close_mask == ACE_Event_Handler::WRITE_MASK)
         return 0;
     return super::handle_close (handle, close_mask);
 
 }
 
-void AuthLink::dispatch( SEGSEvent */*ev*/ )
+void AuthLink::dispatch( SEGSEvents::Event */*ev*/ )
 {
     assert(!"Should not be called");
 }

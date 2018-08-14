@@ -21,9 +21,9 @@ class AuthServer : public EventProcessor
 {
 public:
                                     AuthServer();
-                                    ~AuthServer();
+                                    ~AuthServer() override;
 
-        bool                        ShutDown();
+        void                        per_thread_shutdown() override;
         bool                        ReadConfigAndRestart();
 
 protected:
@@ -35,5 +35,5 @@ protected:
         std::unique_ptr<AuthHandler> m_handler;     //!< holds the AuthHandler
 
         // EventProcessor interface
-        void dispatch(SEGSEvent *ev);
+        void dispatch(SEGSEvents::Event *ev);
 };

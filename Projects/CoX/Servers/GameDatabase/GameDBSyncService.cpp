@@ -2,7 +2,7 @@
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/MessageBus.h"
 #include "Common/Servers/InternalEvents.h"
-#include "GameData/serialization_common.h"
+#include "serialization_common.h"
 #include "GameDBSyncEvents.h"
 #include "Character.h"
 #include "GameData/chardata_serializers.h"
@@ -13,19 +13,21 @@
 #include "GameData/keybind_serializers.h"
 #include "GameData/clientoptions_serializers.h"
 
-bool GameDBSyncService::per_thread_setup()
+using namespace SEGSEvents;
+
+bool GameDBSyncService::per_thread_startup()
 {
     //GameDbSyncContext &db_ctx(m_db_context.localData());
     //bool result = db_ctx.loadAndConfigure();
     bool result = true;
     if(!result)
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService failed to load/configure",-1}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService failed to load/configure",-1},0));
     else
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService loaded/configured",0}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService loaded/configured",0},0));
     return result;
 }
 
-void GameDBSyncService::dispatch(SEGSEvent *ev)
+void GameDBSyncService::dispatch(Event *ev)
 {
     // We are servicing a request from message queue, using dispatchSync as a common processing point.
     // nullptr result means that the given message is one-way

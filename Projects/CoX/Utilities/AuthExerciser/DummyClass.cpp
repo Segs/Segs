@@ -18,23 +18,25 @@
 #include <QtCore/QDebug>
 #include <cstring>
 
+using namespace SEGSEvents;
+
 DummyClass::DummyClass()
 {
 
 }
 
-void DummyClass::dispatch(SEGSEvent * ev)
+void DummyClass::dispatch(Event * ev)
 {
     switch(ev->type())
     {
-        case SEGS_EventTypes::evConnect:
+        case evConnect:
         {
-            onConnect(static_cast<ConnectEvent *>(ev));
+            onConnect(static_cast<Connect *>(ev));
             break;
         }
         case evAuthProtocolVersion:
         {
-            onServerVersion(static_cast<AuthorizationProtocolVersion *>(ev));
+            onServerVersion(static_cast<AuthProtocolVersion *>(ev));
             break;
         }
         case evLoginResponse:
@@ -62,14 +64,14 @@ void DummyClass::dispatch(SEGSEvent * ev)
     }
 }
 
-void DummyClass::onConnect(ConnectEvent * ev)
+void DummyClass::onConnect(Connect * ev)
 {
     qInfo() << "ConnectEvent received:" << ev->type();
     AuthLink * lnk = static_cast<AuthLink *>(ev->src());
     m_our_link = lnk;
 }
 
-void DummyClass::onServerVersion(AuthorizationProtocolVersion * ev)
+void DummyClass::onServerVersion(AuthProtocolVersion *ev)
 {
     qInfo() << "AuthorizationProtocolVersion received:" << ev->type();
     AuthLink * lnk = static_cast<AuthLink *>(ev->src());
@@ -77,8 +79,8 @@ void DummyClass::onServerVersion(AuthorizationProtocolVersion * ev)
     LoginRequest * login_ptr = new LoginRequest();
     const char * my_login = "my_login";
     const char * my_pass = "my_pass";
-    strncpy(login_ptr->m_data.login, my_login, 14);
-    strncpy(login_ptr->m_data.password, my_pass, 16);
+    strncpy(login_ptr->m_data.login.data(), my_login, 14);
+    strncpy(login_ptr->m_data.password.data(), my_pass, 16);
     lnk->putq(login_ptr);
     qInfo() << "LoginRequest sent:" << login_ptr->type();
 }

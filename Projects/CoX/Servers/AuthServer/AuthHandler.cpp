@@ -24,6 +24,8 @@
 
 #include <QDebug>
 
+using namespace SEGSEvents;
+
 /// Monotonically incrementing session ids, starting at 1, to make 0 special.
 uint64_t AuthHandler::s_last_session_id=1;
 
@@ -46,21 +48,21 @@ namespace
     const ACE_Time_Value link_is_stale_if_disconnected_for(0,2*1000*1000);
 } // namespace
 
-void AuthHandler::dispatch( SEGSEvent *ev )
+void AuthHandler::dispatch( Event *ev )
 {
     assert(ev);
     switch(ev->type())
     {
-        case SEGS_EventTypes::evConnect:
-            on_connect(static_cast<ConnectEvent *>(ev));
+        case evConnect:
+            on_connect(static_cast<Connect *>(ev));
             break;
-        case SEGS_EventTypes::evTimeout:
-            on_timeout(static_cast<TimerEvent *>(ev));
+        case evTimeout:
+            on_timeout(static_cast<Timeout *>(ev));
             break;
         case evReconnectAttempt:
             qWarning() << "Unhandled reconnect packet??";
             break;
-        case evLogin:
+        case evLoginRequest:
             on_login(static_cast<LoginRequest *>(ev));
             break;
         case evServerListRequest:
@@ -71,10 +73,10 @@ void AuthHandler::dispatch( SEGSEvent *ev )
             break;
         case evDbError:
             // client sends this on exit sometimes ?
-            on_disconnect(static_cast<DisconnectEvent *>(ev));
+            on_disconnect(static_cast<Disconnect *>(ev));
             break;
-        case SEGS_EventTypes::evDisconnect:
-            on_disconnect(static_cast<DisconnectEvent *>(ev));
+        case evDisconnect:
+            on_disconnect(static_cast<Disconnect *>(ev));
             break;
             //////////////////////////////////////////////////////////////////////////
             //  Events from other servers
@@ -82,17 +84,17 @@ void AuthHandler::dispatch( SEGSEvent *ev )
         case AuthDBEventTypes::evRetrieveAccountResponse:
             on_retrieve_account_response(static_cast<RetrieveAccountResponse *>(ev));
             break;
-        case AuthDBEventTypes::evAuthDbError:
+        case evAuthDbErrorMessage:
             on_db_error(static_cast<AuthDbErrorMessage *>(ev)); break;
         case Internal_EventTypes::evExpectClientResponse:
             on_client_expected(static_cast<ExpectClientResponse *>(ev)); break;
-        case Internal_EventTypes::evClientConnected:
+        case Internal_EventTypes::evClientConnectedMessage:
             on_client_connected_to_other_server(static_cast<ClientConnectedMessage *>(ev));
             break;
-        case Internal_EventTypes::evClientDisconnected:
+        case Internal_EventTypes::evClientDisconnectedMessage:
             on_client_disconnected_from_other_server(static_cast<ClientDisconnectedMessage *>(ev));
             break;
-        case Internal_EventTypes::evGameServerStatus:
+        case Internal_EventTypes::evGameServerStatusMessage:
             on_server_status_change(static_cast<GameServerStatusMessage *>(ev));
             break;
         default:
@@ -105,12 +107,12 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
     assert(HandlerLocator::getAuth_Handler()==nullptr);
     HandlerLocator::setAuth_Handler(this);
     m_sessions.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
-    m_message_bus_endpoint.subscribe(Internal_EventTypes::evGameServerStatus);
+    m_message_bus_endpoint.subscribe(evGameServerStatusMessage);
 }
 
-void AuthHandler::on_timeout(TimerEvent *ev)
+void AuthHandler::on_timeout(Timeout *ev)
 {
-    intptr_t timer_id = (intptr_t)ev->data();
+    intptr_t timer_id = ev->timer_id();
     switch (timer_id) {
         case Session_Reaper_Timer:
             reap_stale_links();
@@ -118,7 +120,7 @@ void AuthHandler::on_timeout(TimerEvent *ev)
     }
 }
 
-void AuthHandler::on_connect( ConnectEvent *ev )
+void AuthHandler::on_connect( Connect *ev )
 {
     // TODO: guard for link state update ?
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
@@ -132,10 +134,10 @@ void AuthHandler::on_connect( ConnectEvent *ev )
     lnk->init_crypto(30206,seed);
     //qWarning("Crypto seed %08x", seed);
 
-    lnk->putq(new AuthorizationProtocolVersion(30206,seed));
+    lnk->putq(new AuthProtocolVersion(30206,seed));
 }
 
-void AuthHandler::on_disconnect(DisconnectEvent *ev)
+void AuthHandler::on_disconnect(Disconnect *ev)
 {
     // since we cannot trust existence of the DisconnectEvent source at this point, we use the stored token
     if(ev->m_session_token==0)
@@ -299,8 +301,8 @@ void AuthHandler::on_login( LoginRequest *ev )
         lnk->putq(s_auth_error_unknown.shallow_copy());
         return;
     }
-    qDebug() << "User" << ev->m_data.login << "trying to login from" << lnk->peer_addr().get_host_addr();
-    if(strlen(ev->m_data.login)<=2)
+    qDebug() << "User" << ev->m_data.login.data() << "trying to login from" << lnk->peer_addr().get_host_addr();
+    if(strlen(ev->m_data.login.data())<=2)
     {
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;
@@ -319,7 +321,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     }
 
     RetrieveAccountRequest *request_event =
-        new RetrieveAccountRequest({ev->m_data.login, ev->m_data.password, 0}, sess_tok);
+        new RetrieveAccountRequest({ev->m_data.login.data(), ev->m_data.password.data(), 0}, sess_tok);
     request_event->src(this);
     auth_db_handler->putq(request_event);
     // here we will wait for db response, so here we're going to put the session on the read-to-reap list

@@ -18,11 +18,13 @@
 #include "Events/StandardDialogCmd.h"
 #include "Common/NetStructures/Entity.h"
 #include "Common/NetStructures/Contact.h"
-#define SOL_CHECK_ARGUMENTS
+#define SOL_CHECK_ARGUMENTS 1
 #include <lua/lua.hpp>
 #include <sol2/sol.hpp>
 
 #include <QtCore/QDebug>
+
+using namespace SEGSEvents;
 
 int luaopen_package(lua_State *)
 {

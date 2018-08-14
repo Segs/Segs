@@ -7,29 +7,49 @@
 
 #pragma once
 #include <ace/Time_Value.h>
+#include "cereal/archives/binary.hpp"
+
 #include <atomic>
 #include <typeinfo>
 #include <cassert>
-class EventProcessor;
 
-// Helper defines to ease the definition of event types
-#define INIT_EVENTS() enum : uint32_t { base = 0,
-#define BEGINE_EVENTS(parent_class) enum : uint32_t { base = parent_class::evLAST_EVENT,
-#define BEGINE_EVENTS_INTERNAL() enum : uint32_t { base = 20000,
-#define EVENT_DECL(name,cnt) name = base+cnt+1,
-#define END_EVENTS(cnt) evLAST_EVENT=base+cnt+1};
-class SEGS_EventTypes
+namespace CompileTimeUtils
 {
-public:
-    INIT_EVENTS()
-    EVENT_DECL(evFinish,0)  // this event will finish the Processor that receives it
-    EVENT_DECL(evConnect,1) //! on the link level this means a new connection, higher level handlers are also notified by this event
-    EVENT_DECL(evDisconnect,2)
-    EVENT_DECL(evTimeout,3)
-    END_EVENTS(4)
+constexpr uint32_t val_32_const     = 0x811c9dc5;
+constexpr uint32_t prime_32_const   = 0x1000193;
+constexpr uint64_t val_64_const     = 0xcbf29ce484222325;
+constexpr uint64_t prime_64_const   = 0x100000001b3;
+
+inline constexpr uint32_t hash_32_fnv1a_const(const char* const str, const uint32_t value = val_32_const) noexcept {
+    return (str[0] == '\0') ? value : hash_32_fnv1a_const(&str[1], (value ^ uint32_t(str[0])) * prime_32_const);
+}
+
+inline constexpr uint64_t hash_64_fnv1a_const(const char* const str, const uint64_t value = val_64_const) noexcept {
+    return (str[0] == '\0') ? value : hash_64_fnv1a_const(&str[1], (value ^ uint64_t(str[0])) * prime_64_const);
+}
+}
+
+class EventProcessor;
+namespace SEGSEvents
+{
+// Helper macros to ease the definition of event types
+#define BEGINE_EVENTS(enum_name,parent_class) base_##enum_name = (uint32_t)parent_class::ID_LAST_##parent_class,
+#define BEGINE_EVENTS_SKIP(enum_name,parent_class,skip) base_##enum_name = (uint32_t)parent_class::ID_LAST_##parent_class + skip,
+#define BEGINE_EVENTS_INTERNAL(enum_name) base_##enum_name = 20000,
+#define EVENT_DECL(enum_name,name,cnt) name = base_##enum_name+cnt+1,
+#define END_EVENTS(enum_name,cnt) ID_LAST_##enum_name=base_##enum_name+cnt+1
+
+enum CommonTypes : uint32_t
+{
+    evFinish=0,  // this event will finish the Processor that receives it
+    evConnect=1, //! on the link level this means a new connection, higher level handlers are also notified by this event
+    evDisconnect=2,
+    evTimeout=3,
+    ID_LAST_CommonTypes
 };
 
-class SEGSEvent
+
+class Event
 {
 protected:
         const uint32_t  m_type;
@@ -38,16 +58,16 @@ protected:
 
 public:
 
-virtual                 ~SEGSEvent()
+virtual                 ~Event()
                         {
                             // we allow delete when there is 1 reference left (static variables on exit)
                             assert(m_ref_count<=1);
                             m_event_source=nullptr;
                         }
-                        SEGSEvent(uint32_t evtype,EventProcessor *ev_src=nullptr) :
+                        Event(uint32_t evtype,EventProcessor *ev_src=nullptr) :
                             m_type(evtype),m_event_source(ev_src)
                         {}
-        SEGSEvent *     shallow_copy() // just incrementing the ref count
+        Event *         shallow_copy() // just incrementing the ref count
                         {
                             ++m_ref_count;
                             return this;
@@ -62,20 +82,44 @@ virtual                 ~SEGSEvent()
         EventProcessor *src() const {return m_event_source;}
         uint32_t        type() const {return m_type;}
 virtual const char *    info();
-
-static  SEGSEvent       s_ev_finish;
+protected:
+virtual void            do_serialize(std::ostream &os)  = 0;
 };
+#define EVENT_IMPL(name)\
+    template<class Archive>\
+    void serialize(Archive & archive); \
+    void do_serialize(std::ostream &os) override {\
+        cereal::BinaryOutputArchive oarchive(os);\
+        oarchive(*this);\
+    }
 
-class TimerEvent final: public SEGSEvent
+// [[ev_def:type]]
+class Timeout final: public Event
 {
-    ACE_Time_Value          m_arrival_time;
-    void *                  m_data;
-
 public:
-                            TimerEvent(const ACE_Time_Value &time, void *dat,EventProcessor *source)
-                                : SEGSEvent(SEGS_EventTypes::evTimeout,source), m_arrival_time(time), m_data(dat)
-                            {
-                            }
-    void *                  data() { return m_data; }
-    const ACE_Time_Value &  arrival_time() { return m_arrival_time; }
+                        // [[ev_def:field]]
+    ACE_Time_Value      m_arrival_time;
+                        // [[ev_def:field]]
+    uint64_t            m_timer_id;
+
+
+                        Timeout(EventProcessor *source=nullptr) : Event(evTimeout,source)
+                        {
+                        }
+                        Timeout(const ACE_Time_Value &time, uint64_t dat,EventProcessor *source)
+                                : Event(evTimeout,source), m_arrival_time(time), m_timer_id(dat)
+                        {
+                        }
+    uint64_t            timer_id() { return m_timer_id; }
+    ACE_Time_Value      arrival_time() const { return m_arrival_time; }
+    EVENT_IMPL(Timeout)
 };
+// [[ev_def:type]]
+struct Finish final: public Event
+{
+public:
+                    Finish(EventProcessor *source=nullptr) : Event(evFinish,source) {}
+static  Finish *    s_instance;
+        EVENT_IMPL(Finish)
+};
+} // end of SEGSEventsNamespace

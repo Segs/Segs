@@ -12,6 +12,8 @@
 
 #include <QThreadStorage>
 
+namespace SEGSEvents
+{
 struct CharacterUpdateMessage;
 struct CostumeUpdateMessage;
 struct GuiUpdateMessage;
@@ -25,6 +27,7 @@ struct WouldNameDuplicateRequest;
 struct CreateNewCharacterRequest;
 struct GetEntityRequest;
 struct GetEntityByNameRequest;
+}
 
 class GameDBSyncHandler final : public EventProcessor
 {
@@ -32,18 +35,18 @@ class GameDBSyncHandler final : public EventProcessor
     /// in case there are more `activated` handlers
     QThreadStorage<GameDbSyncContext> m_db_context;
     // EventProcessor interface
-    bool per_thread_setup() override;
-    void dispatch(SEGSEvent *ev) override;
-    void on_character_update(CharacterUpdateMessage *msg);
-    void on_costume_update(CostumeUpdateMessage *msg);
-    void on_player_update(PlayerUpdateMessage* msg);
-    void on_client_options_update(SetClientOptionsMessage* msg);
-    void on_account_request(GameAccountRequest *msg);
-    void on_character_remove(RemoveCharacterRequest *msg);
-    void on_check_name_clash(WouldNameDuplicateRequest *ev);
-    void on_create_new_char(CreateNewCharacterRequest *ev);
-    void on_get_entity(GetEntityRequest *ev);
-    void on_get_entity_by_name(GetEntityByNameRequest *ev);
+    bool per_thread_startup() override;
+    void dispatch(SEGSEvents::Event*ev) override;
+    void on_character_update(SEGSEvents::CharacterUpdateMessage *msg);
+    void on_costume_update(SEGSEvents::CostumeUpdateMessage *msg);
+    void on_player_update(SEGSEvents::PlayerUpdateMessage* msg);
+    void on_client_options_update(SEGSEvents::SetClientOptionsMessage* msg);
+    void on_account_request(SEGSEvents::GameAccountRequest *msg);
+    void on_character_remove(SEGSEvents::RemoveCharacterRequest *msg);
+    void on_check_name_clash(SEGSEvents::WouldNameDuplicateRequest *ev);
+    void on_create_new_char(SEGSEvents::CreateNewCharacterRequest *ev);
+    void on_get_entity(SEGSEvents::GetEntityRequest *ev);
+    void on_get_entity_by_name(SEGSEvents::GetEntityByNameRequest *ev);
     // This is an unique ID that links this DB with it's Game Server
     uint8_t m_id;
 public:

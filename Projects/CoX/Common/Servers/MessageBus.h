@@ -27,7 +27,7 @@ class MessageBus final : public EventProcessor
     std::unordered_map<uint32_t,std::vector<MessageBusEndpoint *> > m_specific_subscriber_map;
     std::vector<MessageBusEndpoint *> m_catch_all_subscribers;
     std::unique_ptr<SEGSTimer> m_statistics_timer;
-    friend void postGlobalEvent(SEGSEvent *ev);
+    friend void postGlobalEvent(SEGSEvents::Event *ev);
     friend void shutDownMessageBus();
     friend class MessageBusEndpoint; // allow endpoints to register/unregister
 public:
@@ -48,15 +48,15 @@ private:
                 /// \brief unsubscribe from all events ( type == ALL_EVENTS )
                 ///
         void    unsubscribe(uint32_t type,MessageBusEndpoint *);
-        void    on_timer_event(TimerEvent *tmr);
-        void    dispatch(SEGSEvent *ev) override;
+
+        void    dispatch(SEGSEvents::Event *ev) override;
                 ///
                 /// \brief do_publish will locate all handlers ( catch-all, and event specific ), and send message copies to them.
                 /// \param ev this event will be shallow_copy'ied and putq'd to all subscribers
                 ///
-        void    do_publish(SEGSEvent *ev);
+        void    do_publish(SEGSEvents::Event *ev);
         void    recalculateStatisitcs();
 };
 
-void postGlobalEvent(SEGSEvent *ev);
+void postGlobalEvent(SEGSEvents::Event *ev);
 void shutDownMessageBus();

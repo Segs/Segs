@@ -14,6 +14,7 @@
 #include "npc_definitions.h"
 
 #include "serialization_common.h"
+#include "serialization_types.h"
 #include "costume_definitions.h"
 #include "DataStorage.h"
 

@@ -37,6 +37,8 @@
 #include "GameData/keybind_serializers.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
+#include "serialization_common.h"
+#include "serialization_types.h"
 
 #include <ace/Reactor.h>
 
@@ -46,6 +48,8 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
 #include <stdlib.h>
+
+using namespace SEGSEvents;
 
 namespace
 {
@@ -164,10 +168,10 @@ void MapInstance::start(const QString &scenegraph_path)
     m_sync_service->set_db_handler(m_game_server_id);
     m_sync_service->activate();
 
-    m_world_update_timer.reset(new SEGSTimer(this,(void *)World_Update_Timer,world_update_interval,false)); // world simulation ticks
-    m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
-    m_link_timer.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
-    m_sync_service_timer.reset(new SEGSTimer(this,(void *)Sync_Service_Update_Timer,sync_service_update_interval,false));
+    m_world_update_timer.reset(new SEGSTimer(this,World_Update_Timer,world_update_interval,false)); // world simulation ticks
+    m_resend_timer.reset(new SEGSTimer(this,State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
+    m_link_timer.reset(new SEGSTimer(this,Link_Idle_Timer,link_update_interval,false));
+    m_sync_service_timer.reset(new SEGSTimer(this,Sync_Service_Update_Timer,sync_service_update_interval,false));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
 }
 
@@ -254,7 +258,7 @@ void MapInstance::reap_stale_links()
 
     SessionStore::MTGuard guard(m_session_store.reap_lock());
     m_session_store.reap_stale_links("MapInstance",link_is_stale_if_disconnected_for,[tgt](uint64_t tok) {
-        tgt->putq(new ClientDisconnectedMessage({tok}));
+        tgt->putq(new ClientDisconnectedMessage({tok},0));
     });
 }
 
@@ -270,156 +274,156 @@ void MapInstance::enqueue_client(MapClientSession *clnt)
 }
 
 // Here we would add the handler call in case we get evCombineRequest :)
-void MapInstance::dispatch( SEGSEvent *ev )
+void MapInstance::dispatch( Event *ev )
 {
     assert(ev);
     switch(ev->type())
     {
-        case SEGS_EventTypes::evTimeout:
-            on_timeout(static_cast<TimerEvent *>(ev));
+        case evTimeout:
+            on_timeout(static_cast<Timeout *>(ev));
             break;
-        case SEGS_EventTypes::evDisconnect:
+        case evDisconnect:
             on_link_lost(ev);
             break;
-        case Internal_EventTypes::evExpectMapClientRequest:
+        case evExpectMapClientRequest:
             on_expect_client(static_cast<ExpectMapClientRequest *>(ev));
             break;
-        case GameDBEventTypes::evWouldNameDuplicateResponse:
+        case evWouldNameDuplicateResponse:
             on_name_clash_check_result(static_cast<WouldNameDuplicateResponse *>(ev));
             break;
-        case GameDBEventTypes::evCreateNewCharacterResponse:
+        case evCreateNewCharacterResponse:
             on_character_created(static_cast<CreateNewCharacterResponse *>(ev));
             break;
-        case GameDBEventTypes::evGetEntityResponse:
+        case evGetEntityResponse:
             on_entity_response(static_cast<GetEntityResponse *>(ev));
             break;
-        case GameDBEventTypes::evGetEntityByNameResponse:
+        case evGetEntityByNameResponse:
             on_entity_by_name_response(static_cast<GetEntityByNameResponse *>(ev));
             break;
-        case MapEventTypes::evIdle:
-            on_idle(static_cast<IdleEvent *>(ev));
+        case evIdle:
+            on_idle(static_cast<Idle *>(ev));
             break;
-        case MapEventTypes::evConnectRequest:
+        case evConnectRequest:
             on_connection_request(static_cast<ConnectRequest *>(ev));
             break;
-        case MapEventTypes::evSceneRequest:
+        case evSceneRequest:
             on_scene_request(static_cast<SceneRequest *>(ev));
             break;
-        case MapEventTypes::evDisconnectRequest:
+        case evDisconnectRequest:
             on_disconnect(static_cast<DisconnectRequest *>(ev));
             break;
-        case MapEventTypes::evEntityEnteringMap:
+        case evNewEntity:
             on_create_map_entity(static_cast<NewEntity *>(ev));
             break;
-        case MapEventTypes::evClientQuit:
+        case evClientQuit:
             on_client_quit(static_cast<ClientQuit*>(ev));
             break;
-        case MapEventTypes::evEntitiesRequest:
+        case evEntitiesRequest:
             on_entities_request(static_cast<EntitiesRequest *>(ev));
             break;
-        case MapEventTypes::evShortcutsRequest:
+        case evShortcutsRequest:
             on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
             break;
-        case MapEventTypes::evInputState:
+        case evInputState:
             on_input_state(static_cast<InputState *>(ev));
             break;
-        case MapEventTypes::evCookieRequest:
+        case evCookieRequest:
             on_cookie_confirm(static_cast<CookieRequest *>(ev));
             break;
-        case MapEventTypes::evEnterDoor:
+        case evEnterDoor:
             on_enter_door(static_cast<EnterDoor *>(ev));
             break;
-        case MapEventTypes::evSetDestination:
+        case evSetDestination:
             on_set_destination(static_cast<SetDestination *>(ev));
             break;
-        case MapEventTypes::evWindowState:
+        case evWindowState:
             on_window_state(static_cast<WindowState *>(ev));
             break;
-        case MapEventTypes::evInspirationDockMode:
+        case evInspirationDockMode:
             on_inspiration_dockmode(static_cast<InspirationDockMode *>(ev));
             break;
-        case MapEventTypes::evPowersDockMode:
+        case evPowersDockMode:
             on_powers_dockmode(static_cast<PowersDockMode *>(ev));
             break;
-        case MapEventTypes::evAbortQueuedPower:
+        case evAbortQueuedPower:
             on_abort_queued_power(static_cast<AbortQueuedPower *>(ev));
             break;
-        case MapEventTypes::evConsoleCommand:
+        case evConsoleCommand:
             on_console_command(static_cast<ConsoleCommand *>(ev));
             break;
-        case MapEventTypes::evChatDividerMoved:
+        case evChatDividerMoved:
             on_command_chat_divider_moved(static_cast<ChatDividerMoved *>(ev));
             break;
-        case MapEventTypes::evClientResumedRendering:
+        case evClientResumedRendering:
             on_client_resumed(static_cast<ClientResumedRendering *>(ev));
             break;
-        case MapEventTypes::evMiniMapState:
+        case evMiniMapState:
             on_minimap_state(static_cast<MiniMapState *>(ev));
             break;
-        case MapEventTypes::evLocationVisited:
+        case evLocationVisited:
             on_location_visited(static_cast<LocationVisited *>(ev));
             break;
-        case MapEventTypes::evChatReconfigure:
+        case evChatReconfigure:
             on_chat_reconfigured(static_cast<ChatReconfigure *>(ev));
             break;
-        case MapEventTypes::evPlaqueVisited:
+        case evPlaqueVisited:
             on_plaque_visited(static_cast<PlaqueVisited *>(ev));
             break;
-        case MapEventTypes::evSwitchViewPoint:
+        case evSwitchViewPoint:
             on_switch_viewpoint(static_cast<SwitchViewPoint *>(ev));
             break;
-        case MapEventTypes::evSaveClientOptions:
+        case evSaveClientOptions:
             on_client_options(static_cast<SaveClientOptions *>(ev));
             break;
-        case MapEventTypes::evDescriptionAndBattleCry:
+        case evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
             break;
-        case MapEventTypes::evSetDefaultPowerSend:
+        case evSetDefaultPowerSend:
             on_set_default_power_send(static_cast<SetDefaultPowerSend *>(ev));
             break;
-        case MapEventTypes::evSetDefaultPower:
+        case evSetDefaultPower:
             on_set_default_power(static_cast<SetDefaultPower *>(ev));
             break;
-        case MapEventTypes::evUnqueueAll:
+        case evUnqueueAll:
             on_unqueue_all(static_cast<UnqueueAll *>(ev));
             break;
-        case MapEventTypes::evActivateInspiration:
+        case evActivateInspiration:
             on_activate_inspiration(static_cast<ActivateInspiration *>(ev));
             break;
-        case MapEventTypes::evInteractWithEntity:
+        case evInteractWithEntity:
             on_interact_with(static_cast<InteractWithEntity *>(ev));
             break;
-        case MapEventTypes::evSwitchTray:
+        case evSwitchTray:
             on_switch_tray(static_cast<SwitchTray *>(ev));
             break;
-        case MapEventTypes::evTargetChatChannelSelected:
+        case evTargetChatChannelSelected:
             on_target_chat_channel_selected(static_cast<TargetChatChannelSelected *>(ev));
             break;
-        case MapEventTypes::evEntityInfoRequest:
+        case evEntityInfoRequest:
             on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
             break;
-        case MapEventTypes::evSelectKeybindProfile:
+        case evSelectKeybindProfile:
             on_select_keybind_profile(static_cast<SelectKeybindProfile *>(ev));
             break;
-        case MapEventTypes::evSetKeybind:
+        case evSetKeybind:
             on_set_keybind(static_cast<SetKeybind *>(ev));
             break;
-        case MapEventTypes::evRemoveKeybind:
+        case evRemoveKeybind:
             on_remove_keybind(static_cast<RemoveKeybind *>(ev));
             break;
-        case MapEventTypes::evResetKeybinds:
+        case evResetKeybinds:
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
         default:
-            qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
+            qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
     }
 }
 
-void MapInstance::on_idle(IdleEvent *ev)
+void MapInstance::on_idle(Idle *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
-    lnk->putq(new IdleEvent);
+    lnk->putq(new Idle);
 }
 
 void MapInstance::on_check_links()
@@ -435,9 +439,9 @@ void MapInstance::on_check_links()
         }
         // Send at least one packet within maximum_time_without_packets
         if(client_link->last_sent_packets()>maximum_time_without_packets)
-            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+            client_link->putq(new Idle); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
         else if(client_link->client_packets_waiting_for_ack()>MinPacketsToAck)
-            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+            client_link->putq(new Idle); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
     }
 }
 void MapInstance::on_connection_request(ConnectRequest *ev)
@@ -466,7 +470,7 @@ void MapInstance::on_client_quit(ClientQuit*ev)
         session.m_ent->beginLogout(10);
 }
 
-void MapInstance::on_link_lost(SEGSEvent *ev)
+void MapInstance::on_link_lost(Event *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapLink *lnk = session.link();
@@ -476,7 +480,7 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
     //todo: notify all clients about entity removal
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token}));
+            ->putq(new ClientDisconnectedMessage({session_token},0));
 
     m_sync_service->updateEntity(ent);
     m_entities.removeEntityFromActiveList(ent);
@@ -486,7 +490,7 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());
      // close the link by puting an disconnect event there
-    lnk->putq(new DisconnectEvent(session_token));
+    lnk->putq(new Disconnect(session_token));
 }
 
 void MapInstance::on_disconnect(DisconnectRequest *ev)
@@ -499,7 +503,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     assert(ent);
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token}));
+            ->putq(new ClientDisconnectedMessage({session_token},0));
 
     m_sync_service->updateEntity(ent);
     m_entities.removeEntityFromActiveList(ent);
@@ -509,7 +513,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     m_session_store.remove_by_token(session_token, session.auth_id());
 
     lnk->putq(new DisconnectResponse);
-    lnk->putq(new DisconnectEvent(session_token)); // this should work, event if different threads try to do it in parallel
+    lnk->putq(new Disconnect(session_token)); // this should work, event if different threads try to do it in parallel
 }
 
 void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
@@ -549,7 +553,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 
     cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
-    if (!request_data.char_from_db)
+    if (request_data.char_from_db_data.isEmpty())
     {
         EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
         game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name},ev->session_token(),this) );
@@ -557,10 +561,12 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
         m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
         return;
     }
+    GameAccountResponseCharacterData char_data;
+    serializeFromQString(char_data,request_data.char_from_db_data);
 
     // existing character
     Entity *ent = m_entities.CreatePlayer();
-    toActualCharacter(*request_data.char_from_db, *ent->m_char,*ent->m_player, *ent->m_entity);
+    toActualCharacter(char_data, *ent->m_char,*ent->m_player, *ent->m_entity);
     ent->fillFromCharacter();
     ent->m_client = &map_session;
     map_session.m_ent = ent;
@@ -613,7 +619,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
 
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
@@ -642,7 +648,7 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
 
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
@@ -684,7 +690,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         serializeToDb(e->m_entity_data,ent_data);
         // create the character from the data.
         //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
-        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.      
+        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.
         game_db->putq(new CreateNewCharacterRequest({char_data,ent_data, map_session.m_requested_slot_idx,
                                                      map_session.m_max_slots,map_session.m_client_id},
                                                     token,this));
@@ -706,7 +712,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
 void MapInstance::on_scene_request(SceneRequest *ev)
 {
     auto *lnk = (MapLink *)ev->src();
-    auto *res = new SceneEvent;
+    auto *res = new Scene;
 
     res->undos_PP              = 0;
     res->is_new_world          = true;
@@ -744,7 +750,7 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
 }
 
 //! Handle instance-wide timers
-void MapInstance::on_timeout(TimerEvent *ev)
+void MapInstance::on_timeout(Timeout *ev)
 {
     // TODO: This should send 'ping' packets on all client links to which we didn't send
     // anything in the last time quantum
@@ -754,7 +760,7 @@ void MapInstance::on_timeout(TimerEvent *ev)
     // 2. Find all links with inactivity_time() >= disconnect_time
     //   Disconnect given link.
 
-    auto timer_id = (intptr_t)ev->data();
+    auto timer_id = ev->timer_id();
     switch (timer_id) {
         case World_Update_Timer:
             m_world->update(ev->arrival_time());

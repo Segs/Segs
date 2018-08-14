@@ -21,6 +21,8 @@
 
 #include <cmath>
 
+using namespace SEGSEvents;
+
 void ChatMessage::serializeto(BitStream &bs) const
 {
     bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);

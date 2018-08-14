@@ -30,6 +30,8 @@
 #include <QSqlError>
 #include <QString>
 
+using namespace SEGSEvents;
+
 namespace
 {
     bool prepQuery(QSqlQuery &qr,const QString &txt) {

@@ -12,6 +12,8 @@
 
 #include "WindowState.h"
 
+using namespace SEGSEvents;
+
 void WindowState::serializeto(BitStream &bs) const
 {
     bs.StorePackedBits(1,14); // opcode

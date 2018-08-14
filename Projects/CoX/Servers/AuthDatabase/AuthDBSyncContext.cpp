@@ -25,6 +25,8 @@
 #include <QSqlQuery>
 #include <cassert>
 
+using namespace SEGSEvents;
+
 namespace
 {
     static const auto DATABASE_DRIVERS = QStringList {"QSQLITE", "QPSQL", "QMYSQL"};
@@ -161,7 +163,7 @@ bool AuthDbSyncContext::loadAndConfigure()
         qDebug() << "SQL_ERROR:" << m_prepared_select_account_by_username->lastError();
         return false;
     }
-      
+
     if (!m_prepared_select_account_by_id->prepare(SELECT_ACCOUNT_BY_ID_QUERY))
     {
         qDebug() << "SQL_ERROR:" << m_prepared_select_account_by_id->lastError();

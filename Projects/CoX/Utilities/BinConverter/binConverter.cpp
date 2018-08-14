@@ -34,7 +34,7 @@
 #include "Common/GameData/def_serializers.h"
 #include "Common/GameData/other_definitions.h"
 #include "Common/GameData/origin_definitions.h"
-#include "Common/GameData/serialization_common.h"
+#include "serialization_common.h"
 //#include "Common/GameData/particlesys_serializers.h"
 
 #include <QtCore/QCoreApplication>

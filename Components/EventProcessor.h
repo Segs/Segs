@@ -6,21 +6,36 @@
  */
 
 #pragma once
-#include <ace/Task_Ex_T.h>
 #include "SEGSEvent.h"
-// Independent Task, each EventProcessor when activated dequeues SEGSEvents,
-// and dispatches them
-class EventProcessor : public ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvent>
+#include <ace/Task_Ex_T.h>
+#include <iosfwd>
+
+/** Independent Task, each EventProcessor when activated dequeues SEGSEvents,
+    and dispatches them
+*/
+class EventProcessor : public ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvents::Event>
 {
-typedef ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvent> super;
+using super = ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvents::Event>;
 
 
-        int             svc(void) final;
+        int             svc() final;
 public:
-        int             open(void *args = nullptr);
+        int             open(void *args = nullptr) override;
         int             handle_timeout(const ACE_Time_Value &current_time, const void *act /* = 0 */);
-                        /// Called in svc before start of event servicing, if it returns false, the svc will return -1
+virtual int             putq(SEGSEvents::Event *ev, ACE_Time_Value *timeout=nullptr);
+                        /// Called in svc before it starts servicing events, if it returns false, the svc will return -1
                         /// thus ending that particular thread
-virtual bool            per_thread_setup() { return true; }
-virtual void            dispatch(SEGSEvent *ev)=0;
+virtual bool            per_thread_startup() { return true; }
+virtual void            per_thread_shutdown() { ; }
+
+virtual void            dispatch(SEGSEvents::Event *ev)=0;
 };
+
+inline void shutdown_event_processor_and_wait(EventProcessor *ep)
+{
+    if(ep && ep->thr_count())
+    {
+        ep->putq(SEGSEvents::Finish::s_instance->shallow_copy());
+        ep->wait();
+    }
+}

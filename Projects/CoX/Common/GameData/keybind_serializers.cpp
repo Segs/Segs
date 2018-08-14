@@ -13,7 +13,9 @@
 #include "keybind_serializers.h"
 #include "keybind_definitions.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
+#include "Logging.h"
 #include "DataStorage.h"
 
 namespace
@@ -256,10 +258,7 @@ void saveTo(const KeybindSettings &target, const QString &baseName, bool text_fo
     commonSaveTo(target,"KeybindSettings",baseName,text_format);
 }
 
-template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive &archive, KeybindSettings &bds, uint32_t const version);
-template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive &archive, KeybindSettings &bds, uint32_t const version);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(KeybindSettings);
 
 void serializeToDb(const KeybindSettings &data, QString &tgt)
 {

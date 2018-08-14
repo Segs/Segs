@@ -15,7 +15,7 @@
 class CharacterDatabase;
 class GameServerData;
 
-class GameServer  : public EventProcessor
+class GameServer final : public EventProcessor
 {
         class PrivateData;
 public:
@@ -32,6 +32,6 @@ public:
         int                     getMaxCharacterSlots() const;
 protected:
         int                     handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask) override;
-        void                    dispatch(SEGSEvent *ev) override;
+        void                    dispatch(SEGSEvents::Event *ev) override;
         std::unique_ptr<PrivateData> d;
 };

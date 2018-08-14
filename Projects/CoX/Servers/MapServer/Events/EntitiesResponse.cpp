@@ -26,7 +26,11 @@
 #include <QByteArray>
 #include <glm/ext.hpp>
 #include <cmath>
+#ifdef _MSC_VER
 #include <iso646.h>
+#endif
+
+using namespace SEGSEvents;
 
 namespace  {
 struct SurfaceParams
@@ -82,7 +86,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
     // shorthand local vars
     int         team_idx = 0;
     bool        mark_lfg = e->m_char->m_char_data.m_lfg;
-    bool        has_mission = 0;
+    bool        has_mission = false;
     uint32_t    tm_leader_id = 0;
     uint32_t    tm_size = 0;
 
@@ -579,7 +583,7 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
 
 //! EntitiesResponse is sent to a client to inform it about the current world state.
 EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
-    MapLinkEvent(MapEventTypes::evEntitites)
+    MapLinkEvent(MapEventTypes::evEntitiesResponse)
 {
     m_map_time_of_day       = 10;
     m_client                = cl;
