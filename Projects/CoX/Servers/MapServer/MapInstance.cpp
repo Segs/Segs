@@ -32,9 +32,12 @@
 #include "Common/GameData/CoHMath.h"
 #include "SlashCommand.h"
 #include "GameData/playerdata_definitions.h"
-#include "GameData/entitydata_serializers.h"
 #include "GameData/clientoptions_serializers.h"
 #include "GameData/keybind_serializers.h"
+#include "GameData/chardata_serializers.h"
+#include "GameData/entitydata_serializers.h"
+#include "GameData/playerdata_serializers.h"
+#include "GameData/serialization_common.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
 
@@ -160,7 +163,7 @@ void MapInstance::start(const QString &scenegraph_path)
     }
 
     // create a GameDbSyncService
-    m_sync_service = new GameDBSyncService(m_entities);
+    m_sync_service = new GameDBSyncService();
     m_sync_service->set_db_handler(m_game_server_id);
     m_sync_service->activate();
 
@@ -209,7 +212,7 @@ MapInstance::~MapInstance()
     delete m_endpoint;
 
     // one last update on entities before termination of MapInstance, and in turn the SyncService as well
-    m_sync_service->updateEntities();
+    on_update_entities();
     delete m_sync_service;
 }
 
@@ -262,9 +265,6 @@ void MapInstance::enqueue_client(MapClientSession *clnt)
 {
     // m_world stores a ref to m_entities, so its entity mgr is updated as well
     m_entities.InsertPlayer(clnt->m_ent);
-
-    // m_sync_service has its own entity mgr, so add to its own mgr separately
-    // m_sync_service->addPlayer(clnt->m_ent);
 
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
@@ -478,10 +478,9 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token}));
 
-    m_sync_service->updateEntity(ent);
+    // one last character update for the disconnecting entity
+    send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
-
-    //m_sync_service->removePlayer(ent);
 
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());
@@ -501,9 +500,9 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token}));
 
-    m_sync_service->updateEntity(ent);
+    // one last character update for the disconnecting entity
+    send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
-    // m_sync_service->removePlayer(ent);
 
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());
@@ -769,7 +768,7 @@ void MapInstance::on_timeout(TimerEvent *ev)
             reap_stale_links();
             break;
         case Sync_Service_Update_Timer:
-            m_sync_service->updateEntities();
+            on_update_entities();
             break;
     }
 }
@@ -2027,6 +2026,86 @@ void MapInstance::on_interact_with(InteractWithEntity *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with"<<ev->m_srv_idx;
+}
+
+void MapInstance::on_update_entities()
+{
+    const std::vector<MapClientSession *> &active_sessions (m_session_store.get_active_sessions());
+
+    // all active sessions are for player, so we don't need to verify if db_id != 0
+    for (const auto &sess : active_sessions)
+    {
+        Entity *e = sess->m_ent;
+        send_character_update(e);
+
+        /* at the moment we are forcing full character updates, so I'll leave this commented for now
+
+        // full character update
+        if (e->m_db_store_flags & uint32_t(DbStoreFlags::Full))
+            send_character_update(e);
+        // update only player data
+        else if (e->m_db_store_flags & uint32_t(DbStoreFlags::PlayerData))
+            send_player_update(e);
+
+        */
+    }
+}
+
+void MapInstance::send_character_update(Entity *e)
+{
+    QString cerealizedCharData, cerealizedEntityData, cerealizedPlayerData;
+
+    PlayerData playerData = PlayerData({
+                e->m_player->m_gui,
+                e->m_player->m_keybinds,
+                e->m_player->m_options
+                });
+
+    serializeToQString(e->m_char->m_char_data, cerealizedCharData);
+    serializeToQString(e->m_entity_data, cerealizedEntityData);
+    serializeToQString(playerData, cerealizedPlayerData);
+
+    CharacterUpdateMessage* msg = new CharacterUpdateMessage(
+                CharacterUpdateData({
+                                        e->m_char->getName(),
+
+                                        // cerealized blobs
+                                        cerealizedCharData,
+                                        cerealizedEntityData,
+                                        cerealizedPlayerData,
+
+                                        // plain values
+                                        e->m_char->getCurrentCostume()->m_body_type,
+                                        e->m_char->getCurrentCostume()->m_height,
+                                        e->m_char->getCurrentCostume()->m_physique,
+                                        (uint32_t)e->m_supergroup.m_SG_id,
+                                        e->m_char->m_db_id
+        }), (uint64_t)1);
+
+    m_sync_service->putq(msg);
+    unmarkEntityForDbStore(e, DbStoreFlags::Full);
+}
+
+void MapInstance::send_player_update(Entity *e)
+{
+    QString cerealizedPlayerData;
+
+    PlayerData playerData = PlayerData({
+                e->m_player->m_gui,
+                e->m_player->m_keybinds,
+                e->m_player->m_options
+                });
+
+    serializeToQString(playerData, cerealizedPlayerData);
+
+    PlayerUpdateMessage* msg = new PlayerUpdateMessage(
+                PlayerUpdateData({
+                                     e->m_char->m_db_id,
+                                     cerealizedPlayerData
+                                 }), (uint64_t)1);
+
+    m_sync_service->putq(msg);
+    unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
 
 //! @}

@@ -63,6 +63,11 @@ mutable std::mutex m_store_mutex;
         }
 
 public:
+        const vClients& get_active_sessions()
+        {
+            return m_active_sessions;
+        }
+
         ivClients begin()
         {
             return m_active_sessions.begin();

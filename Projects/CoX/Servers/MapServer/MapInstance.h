@@ -100,6 +100,9 @@ protected:
 
         void sendState();
         void on_check_links();
+        void on_update_entities();
+        void send_character_update(Entity *e);
+        void send_player_update(Entity *e);
 
         void on_cookie_confirm(class CookieRequest *ev);
         void on_window_state(class WindowState *ev);
