@@ -76,12 +76,16 @@ void EntityManager::sendGlobalEntDebugInfo( BitStream &tgt ) const
     tgt.StoreBits(1,0);
     // third while loop here
 }
-
-void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
+/**
+ * @brief send the Entity removals to bring the world-state beliefs between server and \a client
+ * @param tgt is the bitstream that will contain the serialized deletes
+ * @param client is used to compare the current world-state beliefs between server and given player
+ */
+void EntityManager::sendDeletes( BitStream &tgt,MapClientSession &client ) const
 {
     std::vector<int> entities_to_remove;
     // find the entities this client believes exist, but they are no longer amongst us.
-    for(const std::pair<const int,ClientEntityStateBelief> &entry : client->m_worldstate_belief)
+    for(const std::pair<const int,ClientEntityStateBelief> &entry : client.m_worldstate_belief)
     {
         if(entry.second.m_entity==nullptr)
             continue;
@@ -93,7 +97,7 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
     {
         tgt.StorePackedBits(12,idx);//index
         tgt.StorePackedBits(12,idx);//
-        client->m_worldstate_belief.erase(idx);
+        client.m_worldstate_belief.erase(idx);
     }
 }
 
@@ -101,10 +105,10 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
  *  \par self_idx index of the entity that is receiving the packet, this is used to prevent marking every entity as a current player
  *
  */
-void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool /*is_incremental*/) const
+void EntityManager::sendEntities(BitStream& bs, MapClientSession &target, bool /*is_incremental*/) const
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_mutex);
-    uint32_t self_idx = getIdx(*target->m_ent);
+    uint32_t self_idx = getIdx(*target.m_ent);
     int prev_idx = -1;
     int delta;
     if(m_live_entlist.empty())
@@ -126,8 +130,8 @@ void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool /
 
         bs.StorePackedBits(1, delta);
         prev_idx = getIdx(*pEnt);
-        ClientEntityStateBelief &belief(target->m_worldstate_belief[pEnt->m_idx]);
-        if(!target->m_in_map)
+        ClientEntityStateBelief &belief(target.m_worldstate_belief[pEnt->m_idx]);
+        if(!target.m_in_map)
             belief.m_entity = nullptr; // force full creates until client is actualy in map
         serializeto(*pEnt,belief, bs);
         PUTDEBUG("end of entity");

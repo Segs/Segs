@@ -110,7 +110,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 
     for(const auto &member : e->m_team->m_team_members)
     {
-        Entity *tm_ent = getEntityByDBID(src.m_client, member.tm_idx);
+        Entity *tm_ent = getEntityByDBID(*src.m_client, member.tm_idx);
 
         if(tm_ent == nullptr)
         {
@@ -586,7 +586,7 @@ EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
     MapLinkEvent(MapEventTypes::evEntitiesResponse)
 {
     m_map_time_of_day       = 10;
-    m_client                = cl;
+    m_client                = {cl ? cl->m_session_token:0,cl};
     g_interpolation_level   = 2;
     g_interpolation_bits    = 1;
 }
@@ -618,7 +618,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     }
     ;
     //else debug_info = false;
-    ent_manager.sendEntities(tgt,m_client,m_incremental);
+    ent_manager.sendEntities(tgt,*m_client,m_incremental);
     if(debug_info)
     {
         ent_manager.sendDebuggedEntities(tgt); // while loop, sending entity id's and debug info for each
@@ -626,7 +626,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     }
     sendServerPhysicsPositions(*this,tgt); // These are not client specific ?
     sendControlState(*this,tgt);// These are not client specific ?
-    ent_manager.sendDeletes(tgt,m_client);
+    ent_manager.sendDeletes(tgt,*m_client);
     // Client specific part
     sendClientData(*this,tgt);
     // Server messages follow the entity update.

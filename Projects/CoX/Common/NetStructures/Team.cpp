@@ -78,7 +78,7 @@ void Team::removeTeamMember(Entity *e)
         int idx = m_team_members.front().tm_idx;
 
         Entity *tgt = nullptr;
-        if((tgt = getEntityByDBID(e->m_client,idx)) == nullptr)
+        if((tgt = getEntityByDBID(*e->m_client,idx)) == nullptr)
             return;
 
         tgt->m_has_team = false;
@@ -283,7 +283,7 @@ void removeSidekick(Entity &src)
         return; // break early
     }
 
-    Entity      *tgt            = getEntityByDBID(src.m_client, src_sk.m_db_id);
+    Entity      *tgt            = getEntityByDBID(*src.m_client, src_sk.m_db_id);
     Sidekick    &tgt_sk         = tgt->m_char->m_char_data.m_sidekick;
 
     if(tgt == nullptr)

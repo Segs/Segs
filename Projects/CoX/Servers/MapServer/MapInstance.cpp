@@ -1071,7 +1071,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             if(tgt == nullptr)
             {
                 prepared_chat_message = QString("No player named \"%1\" currently online.").arg(target_name);
-                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,*sender);
                 break;
             }
             else
@@ -1090,7 +1090,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             if(!sender->m_ent->m_has_team)
             {
                 prepared_chat_message = "You are not a member of a Team.";
-                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,*sender);
                 break;
             }
 
@@ -1112,7 +1112,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             if(!sender->m_ent->m_has_supergroup)
             {
                 prepared_chat_message = "You are not a member of a SuperGroup.";
-                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,*sender);
                 break;
             }
 
@@ -1135,7 +1135,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             if(!fl->m_has_friends || fl->m_friends_count == 0)
             {
                 prepared_chat_message = "You don't have any friends to message.";
-                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,*sender);
                 break;
             }
             // Only send the message to characters in sender's friendslist
@@ -1145,7 +1145,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
                 if(f.m_online_status != true)
                     continue;
 
-                Entity *tgt = getEntityByDBID(sender,f.m_db_id);
+                Entity *tgt = getEntityByDBID(*sender,f.m_db_id);
                 if(tgt == nullptr) // In case we didn't toggle online_status.
                     continue;
 
@@ -1782,7 +1782,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     std::snprintf(buf, 256, "There are %zu active entities and %zu clients", m_entities.active_entities(),
                   m_session_store.num_sessions());
     welcome_msg += buf;
-    sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),&session);
+    sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),session);
 
     sendServerMOTD(&session);
 }
@@ -1792,7 +1792,7 @@ void MapInstance::on_location_visited(LocationVisited *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited",qHash(ev->m_name));
-    sendInfoMessage(MessageChannel::DEBUG_INFO,QString::fromStdString(val),&session);
+    sendInfoMessage(MessageChannel::DEBUG_INFO,QString::fromStdString(val),session);
 
     qCWarning(logMapEvents) << "Unhandled location visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);

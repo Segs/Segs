@@ -98,7 +98,7 @@ void removeFriend(Entity &src, QString friend_name)
 bool isFriendOnline(Entity &src, uint32_t db_id)
 {
     // TODO: src is needed for mapclient
-    return getEntityByDBID(src.m_client, db_id) != nullptr;
+    return getEntityByDBID(*src.m_client, db_id) != nullptr;
 }
 
 void toggleFriendList(Entity &src)

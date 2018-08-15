@@ -145,14 +145,14 @@ int ScriptingEngine::runScript(MapClientSession * client, const QString &script_
     if(!load_res.valid())
     {
         sol::error err = load_res;
-        sendInfoMessage(MessageChannel::ADMIN,err.what(),client);
+        sendInfoMessage(MessageChannel::ADMIN,err.what(),*client);
         return -1;
     }
     sol::protected_function_result script_result = load_res();
     if(!script_result.valid())
     {
         sol::error err = script_result;
-        sendInfoMessage(MessageChannel::ADMIN,err.what(),client);
+        sendInfoMessage(MessageChannel::ADMIN,err.what(),*client);
         return -1;
     }
     return 0;

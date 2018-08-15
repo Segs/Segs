@@ -92,11 +92,17 @@ SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
+scan_event_types(MapEvents ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Events)
+add_event_sources(MapEvents target_SOURCES)
 ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
 target_link_libraries(mapserver_lib PUBLIC CRUDP_Protocol common_runtime)
 target_link_libraries(mapserver_lib PUBLIC Qt5::Core)
+target_link_libraries(mapserver_lib PUBLIC gameData game_db_sync_lib ace_IMP network_structures)
 if(ENABLE_SCRIPTING_ENGINE)
     target_compile_definitions(mapserver_lib PUBLIC -DSCRIPTING_ENABLED=1)
     target_link_libraries(mapserver_lib INTERFACE lua_IMP sol2_IMP)
+endif()
+if(ENABLE_TESTS)
+    add_subdirectory(UnitTests)
 endif()
 

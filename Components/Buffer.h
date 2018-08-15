@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <cstring>
 
+#include <cereal/macros.hpp>
 // Warning those classes aren't thread-safe!
 // NOTE: maybe this should derive from ACE_Data_Block/Message_Block ?
 

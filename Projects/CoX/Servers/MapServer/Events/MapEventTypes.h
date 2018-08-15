@@ -25,7 +25,6 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evClientQuit                ,9)
     EVENT_DECL(MapEventTypes, evForcedLogout              ,10)
     EVENT_DECL(MapEventTypes, evChatDividerMoved          ,36)
-    EVENT_DECL(MapEventTypes, evPreUpdateCommand           ,1013)  // this wraps a list of commands
 // server -> client commands
     EVENT_DECL(MapEventTypes, evFirstServerToClient        ,100)
 //    EVENT_DECL(MapEventTypes, evServerGameCommand        ,113) // 1013?

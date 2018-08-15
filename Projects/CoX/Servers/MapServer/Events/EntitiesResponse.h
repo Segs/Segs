@@ -12,6 +12,8 @@
 #include "MapRef.h"
 #include "CRUD_Events.h"
 #include "MapLink.h"
+#include "MapEventTypes.h"
+#include "MapSessionReference.h"
 
 struct MapClientSession;
 namespace SEGSEvents
@@ -22,6 +24,7 @@ using MapLinkEvent = CRUDLink_Event; //<MapLink>
 class EntitiesResponse : public MapLinkEvent
 {
 public:
+explicit            EntitiesResponse() : MapLinkEvent(MapEventTypes::evEntitiesResponse) {}
                     EntitiesResponse(MapClientSession *cl);
         void        is_incremental(bool v) {m_incremental=v;}
         void        serializefrom(BitStream &) override
@@ -31,7 +34,7 @@ public:
         void        serializeto(BitStream &tgt) const override;
         const char *info() override { return m_incremental ? "Entities_Incremental" : "Entities_Full"; }
         // [[ev_def:field]]
-        MapClientSession * m_client;
+        SessionReference m_client;
         // [[ev_def:field]]
         bool        m_incremental=false; //  if true then this is incremental update
         // [[ev_def:field]]
@@ -50,10 +53,6 @@ public:
         uint8_t     g_interpolation_level;
         // [[ev_def:field]]
         uint8_t     g_interpolation_bits;
-        uint32_t    m_command_idx[15];
-        std::string m_commands[15];
-        uint32_t    m_num_commands2;
-        std::string m_commands2[15];
         EVENT_IMPL(EntitiesResponse)
 };
 } // end of SEGSEvents namespace

@@ -88,7 +88,7 @@ eAuthPacketType AuthLink::OpcodeToType( uint8_t opcode ) const
     return MSG_AUTH_UNKNOWN;
 }
 //! tries to convert the available bytes into a valid AuthHandler LinkLevelEvent.
-SEGSEvents::Event * AuthLink::bytes_to_event()
+Event * AuthLink::bytes_to_event()
 {
     uint16_t  packet_size(0);
     uint8_t * tmp(nullptr);
@@ -307,7 +307,7 @@ int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 
 }
 
-void AuthLink::dispatch( SEGSEvents::Event */*ev*/ )
+void AuthLink::dispatch( Event */*ev*/ )
 {
     assert(!"Should not be called");
 }

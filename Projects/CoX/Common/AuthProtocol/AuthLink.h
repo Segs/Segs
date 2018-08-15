@@ -43,8 +43,8 @@ enum class AuthLinkType
 // Each AuthLink serves as a Client's connection context
 class AuthLink final : public LinkBase
 {
-    typedef EventProcessor super;
-    typedef ACE_Reactor_Notification_Strategy tNotifyStrategy;
+    using super = EventProcessor;
+    using tNotifyStrategy = ACE_Reactor_Notification_Strategy;
     friend class AuthHandler; // auth handler changes our m_state variable
     enum eState
     {

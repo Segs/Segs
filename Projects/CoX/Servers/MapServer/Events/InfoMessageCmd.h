@@ -38,4 +38,4 @@ explicit            InfoMessageCmd() : GameCommandEvent(MapEventTypes::evInfoMes
 } // end of SEGSEvents namespace
 
 
-extern void sendInfoMessage(MessageChannel t, QString msg, MapClientSession *tgt);
+extern void sendInfoMessage(MessageChannel t, QString msg, MapClientSession &tgt);

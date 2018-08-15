@@ -77,7 +77,7 @@ int     getEntityOriginIndex(bool is_player,const QString &origin_name);
 int     getEntityClassIndex(bool is_player, const QString &class_name);
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
-Entity * getEntityByDBID(MapClientSession *src, uint32_t idx);
+Entity * getEntityByDBID(MapClientSession &src, uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
 
 /*

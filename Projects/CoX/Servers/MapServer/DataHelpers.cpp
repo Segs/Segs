@@ -211,7 +211,7 @@ Entity * getEntity(MapClientSession *src, const QString &name)
 
     errormsg = "Entity " + name + " does not exist, or is not currently online.";
     qWarning() << errormsg;
-    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
+    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *src);
     return nullptr;
 }
 
@@ -232,13 +232,18 @@ Entity * getEntity(MapClientSession *src, uint32_t idx)
     }
     errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
     qWarning() << errormsg;
-    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, src);
+    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *src);
     return nullptr;
 }
-
-Entity *getEntityByDBID(MapClientSession *src, uint32_t db_id)
+/**
+ * @brief Finds the Entity in the same MapInstance the querying client is in.
+ * @param src user asking for the given entity
+ * @param db_id db id of the entity to find.
+ * @return pointer to the entity or nullptr if it does not exist.
+ */
+Entity *getEntityByDBID(MapClientSession &src, uint32_t db_id)
 {
-    MapInstance *  mi = src->m_current_map;
+    MapInstance *  mi = src.m_current_map;
     EntityManager &em(mi->m_entities);
     QString        errormsg;
 
@@ -277,7 +282,7 @@ void sendServerMOTD(MapClientSession *tgt)
     else {
         QString errormsg = "Failed to load MOTD file. \'" + file.fileName() + "\' not found.";
         qDebug() << errormsg;
-        sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, tgt);
+        sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, *tgt);
     }
 }
 
@@ -549,7 +554,7 @@ void toggleLFG(Entity &e)
     if(e.m_has_team)
     {
         QString errormsg = "You're already on a team! You cannot toggle LFG.";
-        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, e.m_client);
+        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *e.m_client);
         errormsg = e.name() + "is already on a team and cannot toggle LFG.";
         qCDebug(logTeams) << errormsg;
     }
@@ -568,7 +573,7 @@ void toggleLFG(Entity &e)
  */
 void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
 {
-    sendInfoMessage(ch, msg, tgt.m_client);
+    sendInfoMessage(ch, msg, *tgt.m_client);
 }
 
 /*

@@ -51,7 +51,12 @@ public:
         {
             storeTransformMatrix(tgt,m_matrix);
         }
+    }
 
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_idx,reduced_transform,m_matrix,m_transforms,m_name);
     }
 
 };

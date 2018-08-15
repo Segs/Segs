@@ -272,7 +272,7 @@ struct ControlState
     void dump()
     {
         qCDebug(logInput, "CSC: %d,%d, [%f,%f]", client_timenow, time_res, timestep,time_rel1C);
-        qCDebug(logInput, "(%lld %lld)", m_perf_cntr_diff, m_perf_freq_diff);
+        qCDebug(logInput, "(%lu %lu)", m_perf_cntr_diff, m_perf_freq_diff);
     }
 };
 

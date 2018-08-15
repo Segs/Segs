@@ -40,4 +40,4 @@ public:
 
 } // end of SEGSEvents namespace
 
-extern void sendChatMessage(MessageChannel t, QString msg, MapClientSession *src, MapClientSession *tgt);
+extern void sendChatMessage(MessageChannel t, QString msg, MapClientSession *src, MapClientSession &tgt);

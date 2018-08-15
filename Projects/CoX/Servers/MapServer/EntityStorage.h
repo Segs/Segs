@@ -45,8 +45,8 @@ public:
                     EntityManager();
     void            sendDebuggedEntities(BitStream &tgt) const;
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
-    void            sendDeletes(BitStream &tgt, MapClientSession *client) const;
-    void            sendEntities(BitStream &tgt, MapClientSession *target, bool is_incremental) const;
+    void            sendDeletes(BitStream &tgt, MapClientSession &client) const;
+    void            sendEntities(BitStream &tgt, MapClientSession &target, bool is_incremental) const;
     void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
     Entity *        CreateNpc(const Parse_NPC &tpl, int idx, int variant);

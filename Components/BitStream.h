@@ -18,7 +18,6 @@ Description: The BitStream class allows it's user to manipulate data in
 
 #include "Buffer.h"
 
-#include <cereal/macros.hpp>
 #include <cstdint>
 
 #ifdef CUSTOM_CLIENT_CODE
