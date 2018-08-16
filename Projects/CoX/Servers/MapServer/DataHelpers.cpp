@@ -443,7 +443,6 @@ const QString getFriendDisplayMapName(const Friend &f)
     return getDisplayMapName(f.m_map_idx);
 }
 
-// Setters
 void toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
 
 /*
