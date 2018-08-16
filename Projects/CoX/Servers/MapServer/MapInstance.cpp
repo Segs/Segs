@@ -85,7 +85,7 @@ namespace
     }
 } // namespace
 
-class MapLinkEndpoint : public ServerEndpoint
+class MapLinkEndpoint final : public ServerEndpoint
 {
 public:
     MapLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
@@ -169,10 +169,13 @@ void MapInstance::start(const QString &scenegraph_path)
     m_sync_service->set_db_handler(m_game_server_id);
     m_sync_service->activate();
 
-    m_world_update_timer.reset(new SEGSTimer(this,World_Update_Timer,world_update_interval,false)); // world simulation ticks
-    m_resend_timer.reset(new SEGSTimer(this,State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
-    m_link_timer.reset(new SEGSTimer(this,Link_Idle_Timer,link_update_interval,false));
-    m_sync_service_timer.reset(new SEGSTimer(this,Sync_Service_Update_Timer,sync_service_update_interval,false));
+    // world simulation ticks
+    m_world_update_timer = std::make_unique<SEGSTimer>(this, World_Update_Timer, world_update_interval, false);
+    // state broadcast ticks
+    m_resend_timer = std::make_unique<SEGSTimer>(this, State_Transmit_Timer, resend_interval, false);
+    m_link_timer   = std::make_unique<SEGSTimer>(this, Link_Idle_Timer, link_update_interval, false);
+    m_sync_service_timer =
+        std::make_unique<SEGSTimer>(this, Sync_Service_Update_Timer, sync_service_update_interval, false);
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
 }
 
@@ -720,9 +723,9 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->m_outdoor_mission_map = false;
     res->m_map_number          = 1;
 
-    assert(m_data_path.contains("_"));
+    assert(m_data_path.contains('_'));
     int city_idx = m_data_path.indexOf('/') + 1;
-    int end_or_slash = m_data_path.indexOf("/",city_idx);
+    int end_or_slash = m_data_path.indexOf('/',city_idx);
     assert(city_idx!=0);
     QString map_desc_from_path = m_data_path.mid(city_idx,end_or_slash==-1 ? -1 : m_data_path.size()-end_or_slash);
     res->m_map_desc        = QString("maps/City_Zones/%1/%1.txt").arg(map_desc_from_path);

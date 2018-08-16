@@ -4,6 +4,7 @@ set(GAMEDATA_SRC
     chardata_serializers.cpp
     chardata_serializers.h
     clientoptions_definitions.h
+    clientoptions_definitions.cpp
     clientoptions_serializers.cpp
     clientoptions_serializers.h
     playerdata_serializers.cpp

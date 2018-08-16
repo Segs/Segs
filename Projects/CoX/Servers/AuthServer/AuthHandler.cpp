@@ -125,11 +125,11 @@ void AuthHandler::on_connect( Connect *ev )
     // TODO: guard for link state update ?
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
     assert(lnk!=nullptr);
-    if(lnk->m_state!=AuthLink::INITIAL)
+    if(lnk->get_link_stage()!=AuthLink::INITIAL)
     {
         ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),  ACE_TEXT ("Multiple connection attempts from the same addr/port")));
     }
-    lnk->m_state=AuthLink::CONNECTED;
+    lnk->set_link_stage(AuthLink::CONNECTED);
     uint32_t seed = 0x1; //TODO: rand()
     lnk->init_crypto(30206,seed);
     //qWarning("Crypto seed %08x", seed);
@@ -264,7 +264,7 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
     // inform the client of the successful login attempt
     qDebug() << "Login successful";
     sess_ptr->m_state = AuthSession::LOGGED_IN;
-    lnk->m_state = AuthLink::AUTHORIZED;
+    lnk->set_link_stage(AuthLink::AUTHORIZED);
     m_sessions.setTokenForId(sess_ptr->m_auth_id,lnk->session_token());
     lnk->putq(new LoginResponse());
 }
@@ -296,7 +296,7 @@ void AuthHandler::on_login( LoginRequest *ev )
         return;
     }
 
-    if(lnk->m_state!=AuthLink::CONNECTED)
+    if(lnk->get_link_stage()!=AuthLink::CONNECTED)
     {
         lnk->putq(s_auth_error_unknown.shallow_copy());
         return;
@@ -332,13 +332,13 @@ void AuthHandler::on_login( LoginRequest *ev )
 void AuthHandler::on_server_list_request( ServerListRequest *ev )
 {
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
-    if(lnk->m_state!=AuthLink::AUTHORIZED)
+    if(lnk->get_link_stage()!=AuthLink::AUTHORIZED)
     {
         lnk->putq(s_auth_error_unknown.shallow_copy());
         return;
     }
     qDebug() << "Client requesting server list...";
-    lnk->m_state = AuthLink::CLIENT_SERVSELECT;
+    lnk->set_link_stage(AuthLink::CLIENT_SERVSELECT);
     ServerListResponse *r=new ServerListResponse;
     std::deque<GameServerInfo> info;
     std::vector<GameServerStatusData> status_copy;
@@ -370,7 +370,7 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
 {
     AuthSession &session(m_sessions.session_from_event(ev));
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
-    if(lnk->m_state!=AuthLink::CLIENT_SERVSELECT)
+    if(lnk->get_link_stage()!=AuthLink::CLIENT_SERVSELECT)
     {
         lnk->putq(s_auth_error_unknown.shallow_copy());
         return;
@@ -399,7 +399,7 @@ void AuthHandler::on_client_expected(ExpectClientResponse *ev)
         assert(!"client disconnected before receiving game cookie");
         return;
     }
-    lnk->m_state = AuthLink::CLIENT_AWAITING_DISCONNECT;
+    lnk->set_link_stage(AuthLink::CLIENT_AWAITING_DISCONNECT);
     lnk->putq(new ServerSelectResponse(this,0xCAFEF00D,ev->m_data.cookie));
 }
 

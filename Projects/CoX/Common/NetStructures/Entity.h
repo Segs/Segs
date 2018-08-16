@@ -51,7 +51,6 @@ public:
     bool        m_send_deltas                   = false;
     uint16_t    m_control_bits                  = 0;
     uint16_t    m_send_id                       = 0;
-    void        *current_state_P                = nullptr;
     glm::vec3   m_camera_pyr;
     glm::vec3   m_orientation_pyr;              // Stored in Radians
     glm::quat   m_direction;

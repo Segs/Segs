@@ -592,6 +592,11 @@ EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
     g_interpolation_bits    = 1;
 }
 
+void EntitiesResponse::serializefrom(BitStream &)
+{
+    assert(false);
+}
+
 void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
     MapInstance *mi = m_client->m_current_map;

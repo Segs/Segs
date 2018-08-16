@@ -27,9 +27,7 @@ public:
 explicit            EntitiesResponse() : MapLinkEvent(MapEventTypes::evEntitiesResponse) {}
                     EntitiesResponse(MapClientSession *cl);
         void        is_incremental(bool v) {m_incremental=v;}
-        void        serializefrom(BitStream &) override
-                    {
-                    }
+        void        serializefrom(BitStream &) override;
 
         void        serializeto(BitStream &tgt) const override;
         const char *info() override { return m_incremental ? "Entities_Incremental" : "Entities_Full"; }

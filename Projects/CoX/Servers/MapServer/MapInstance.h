@@ -73,15 +73,16 @@ public:
                                 ~MapInstance() override;
         void                    dispatch(SEGSEvents::Event *ev) override;
 
-        void                    enqueue_client(MapClientSession *clnt);
-        void                    start(const QString &scenegraph_path);
         const QString &         name() const { return m_data_path; }
-        uint32_t                index() const { return m_index; }
-        void                    spin_down();
-        bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         const MapServerData &   serverData() const;
+        bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
+        void                    start(const QString &scenegraph_path);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
 protected:
+        void                    enqueue_client(MapClientSession *clnt);
+        void                    spin_down();
+        uint32_t                index() const { return m_index; }
+
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
         void                    on_client_disconnected_from_other_server(SEGSEvents::ClientDisconnectedMessage *ev);
