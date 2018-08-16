@@ -26,12 +26,12 @@ struct AuthLinkState
         m_unsent_bytes_storage(0x200,0,40),
         m_direction(link_type)
         {}
-    GrowingBuffer   m_received_bytes_storage;       //!< Each link stores incoming bytes locally
-    GrowingBuffer   m_unsent_bytes_storage;         //!< Each link stores outgoing bytes locally
-    AuthLink::eLinkStage          m_connection_stage=AuthLink::INITIAL;
-    AuthLinkType    m_direction;
-    AuthPacketCodec m_codec;
-    int             m_protocol_version=-1;
+    GrowingBuffer           m_received_bytes_storage;       //!< Each link stores incoming bytes locally
+    GrowingBuffer           m_unsent_bytes_storage;         //!< Each link stores outgoing bytes locally
+    AuthLink::eLinkStage    m_connection_stage=AuthLink::INITIAL;
+    AuthLinkType            m_direction;
+    AuthPacketCodec         m_codec;
+    int                     m_protocol_version=-1;
 };
 namespace  {
 static void encode_buffer(AuthLinkState &state,const AuthLinkEvent *ev)
@@ -313,8 +313,6 @@ int AuthLink::handle_output( ACE_HANDLE /*= ACE_INVALID_HANDLE*/ )
         reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
     return 0;
 }
-
-
 
 /**
   \brief Called when this handler is removed from the ACE_Reactor.

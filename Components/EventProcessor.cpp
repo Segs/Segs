@@ -61,7 +61,27 @@ int EventProcessor::svc( )
         dispatch(mb);
         mb->release();
     }
+    this->per_thread_shutdown();
     return 0;
+}
+/**
+ * @brief This is mostly used by unit testing and debugging functions.
+ * @return 0 if no more events on queue, -1 if finish event was encountered., 1 if everything went ok.
+ */
+int EventProcessor::process_single_event()
+{
+    // this event processor cannot have any threads running to allow single-stepping
+    assert(thr_count() < 1);
+    Event *mb;
+    if(getq(mb,nullptr)==-1)
+        return 0;
+    if(mb->type()==SEGSEvents::evFinish)
+    {
+        return -1;
+    }
+    dispatch(mb);
+    mb->release();
+    return 1;
 }
 int EventProcessor::putq(Event *ev,ACE_Time_Value *timeout)
 {
@@ -69,4 +89,5 @@ int EventProcessor::putq(Event *ev,ACE_Time_Value *timeout)
 #endif
     return super::putq(ev,timeout);
 }
+
 //! @}
