@@ -366,7 +366,7 @@ static const std::vector<MapData> g_defined_map_datas =
     {23, "Trial_05_01", "maps/City_Zones/Trial_05_01/Trial_05_01.txt", "Rikti Crash Site"}
 };
 
-MapData getMapData(const QString &map_name)
+const MapData &getMapData(const QString &map_name)
 {
     for (const auto &map_data : g_defined_map_datas)
     {
@@ -396,7 +396,7 @@ uint32_t getMapIndex(const QString &map_name)
     return 0;
 }
 
-const QString getDisplayMapName(const QString &map_name)
+QString getDisplayMapName(const QString &map_name)
 {
     for (const auto &map_data : g_defined_map_datas)
     {
@@ -412,7 +412,7 @@ const QString getDisplayMapName(const QString &map_name)
     return g_defined_map_datas[0].m_display_map_name;
 }
 
-const QString getDisplayMapName(size_t index)
+QString getDisplayMapName(size_t index)
 {
     // Since index is unsigned, it cannot be negative.
     // Thus, no need to check for index < 0.
@@ -425,7 +425,7 @@ const QString getDisplayMapName(size_t index)
     return g_defined_map_datas[index].m_display_map_name;
 }
 
-const QString getMapName(size_t index)
+QString getMapName(size_t index)
 {
     // Since index is unsigned, it cannot be negative.
     // Thus, no need to check for index < 0.
@@ -438,12 +438,12 @@ const QString getMapName(size_t index)
     return g_defined_map_datas[index].m_map_name;
 }
 
-const QString getMapPath(const EntityData &ed)
+QString getMapPath(const EntityData &ed)
 {
     return getMapPath(ed.m_map_idx);
 }
 
-const QString getMapPath(size_t index)
+QString getMapPath(size_t index)
 {
     if(index >= g_defined_map_datas.size()){
         qWarning() << "Sought map index was out of range."
@@ -453,7 +453,7 @@ const QString getMapPath(size_t index)
     return g_defined_map_datas[index].m_map_path;
 }
 
-const QString getEntityDisplayMapName(const EntityData &ed)
+QString getEntityDisplayMapName(const EntityData &ed)
 {
     return getDisplayMapName(ed.m_map_idx);
 }

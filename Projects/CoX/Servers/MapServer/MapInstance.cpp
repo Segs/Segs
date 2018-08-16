@@ -22,6 +22,7 @@
 #include "SEGSTimer.h"
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
+#include "NetStructures/CharacterHelpers.h"
 #include "EntityStorage.h"
 #include "MapSceneGraph.h"
 #include "WorldSimulation.h"
@@ -1029,7 +1030,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             prepared_chat_message = QString("[Local] %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClientSession * cl : recipients)
             {
-                sendChatMessage(MessageChannel::LOCAL,prepared_chat_message,sender,cl);
+                sendChatMessage(MessageChannel::LOCAL,prepared_chat_message,sender,*cl);
             }
             break;
         }
@@ -1040,7 +1041,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString()); // where does [Broadcast] come from? The client?
             for(MapClientSession * cl : recipients)
             {
-                sendChatMessage(MessageChannel::BROADCAST,prepared_chat_message,sender,cl);
+                sendChatMessage(MessageChannel::BROADCAST,prepared_chat_message,sender,*cl);
             }
             break;
         }
@@ -1051,7 +1052,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClientSession * cl : recipients)
             {
-                sendChatMessage(MessageChannel::REQUEST,prepared_chat_message,sender,cl);
+                sendChatMessage(MessageChannel::REQUEST,prepared_chat_message,sender,*cl);
             }
             break;
         }
@@ -1077,10 +1078,10 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             else
             {
                 prepared_chat_message = QString(" -->%1: %2").arg(target_name,msg_content.toString());
-                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,sender); // in this case, sender is target
+                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,*sender); // in this case, sender is target
 
                 prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
-                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,tgt->m_client);
+                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,*tgt->m_client);
             }
 
             break;
@@ -1103,7 +1104,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClientSession * cl : recipients)
             {
-                sendChatMessage(MessageChannel::TEAM,prepared_chat_message,sender,cl);
+                sendChatMessage(MessageChannel::TEAM,prepared_chat_message,sender,*cl);
             }
             break;
         }
@@ -1125,7 +1126,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClientSession * cl : recipients)
             {
-                sendChatMessage(MessageChannel::SUPERGROUP,prepared_chat_message,sender,cl);
+                sendChatMessage(MessageChannel::SUPERGROUP,prepared_chat_message,sender,*cl);
             }
             break;
         }
@@ -1149,9 +1150,9 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
                 if(tgt == nullptr) // In case we didn't toggle online_status.
                     continue;
 
-                sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,tgt->m_client);
+                sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,*tgt->m_client);
             }
-            sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,sender);
+            sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,*sender);
             break;
         }
         default:
@@ -1748,7 +1749,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     }
     for(MapClientSession * cl : recipients)
     {
-        sendChatMessage(MessageChannel::EMOTE,msg,src,cl);
+        sendChatMessage(MessageChannel::EMOTE,msg,src,*cl);
         qCDebug(logEmotes) << msg;
     }
 }

@@ -15,6 +15,7 @@
 #include "LFG.h"
 #include "Team.h"
 #include "Character.h"
+#include "CharacterHelpers.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/npc_definitions.h"

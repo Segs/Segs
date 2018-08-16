@@ -12,6 +12,7 @@
 
 #include "Character.h"
 
+#include "CharacterHelpers.h"
 #include "BitStream.h"
 #include "Entity.h"
 #include "Costume.h"

@@ -49,13 +49,15 @@ private:
                 ///
         void    unsubscribe(uint32_t type,MessageBusEndpoint *);
 
-        void    dispatch(SEGSEvents::Event *ev) override;
                 ///
                 /// \brief do_publish will locate all handlers ( catch-all, and event specific ), and send message copies to them.
                 /// \param ev this event will be shallow_copy'ied and putq'd to all subscribers
                 ///
         void    do_publish(SEGSEvents::Event *ev);
         void    recalculateStatisitcs();
+                // EventProcessor interface
+protected:
+        void    dispatch(SEGSEvents::Event *ev) override;
 };
 
 void postGlobalEvent(SEGSEvents::Event *ev);

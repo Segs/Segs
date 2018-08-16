@@ -13,6 +13,7 @@
 #include "Friend.h"
 
 #include "Servers/MapServer/DataHelpers.h"
+#include "CharacterHelpers.h"
 #include "GameData/playerdata_definitions.h"
 #include "Entity.h"
 #include "Logging.h"

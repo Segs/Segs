@@ -13,6 +13,7 @@
 #include "Team.h"
 
 #include "Servers/MapServer/DataHelpers.h"
+#include "CharacterHelpers.h"
 #include "Entity.h"
 #include "LFG.h"
 #include "Logging.h"

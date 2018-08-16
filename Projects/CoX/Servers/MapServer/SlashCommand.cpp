@@ -16,6 +16,7 @@
 #include "MapInstance.h"
 #include "Settings.h"
 #include "GameData/playerdata_definitions.h"
+#include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/LFG.h"
 #include "MapServerData.h"
 #include "Logging.h"
