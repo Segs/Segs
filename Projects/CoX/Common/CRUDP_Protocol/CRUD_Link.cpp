@@ -108,7 +108,7 @@ void CRUDLink::connection_sent_packet()
 //! when queue() is not empty.
 int CRUDLink::open (void *p)
 {
-    if (EventProcessor::open (p) == -1)
+    if (super::open (p) == -1)
         return -1;
     m_notifier.reactor(reactor());  // notify reactor with write event,
     msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue()
@@ -180,7 +180,7 @@ void CRUDLink::received_block( BitStream &bytes )
 int CRUDLink::handle_close(ACE_HANDLE h, ACE_Reactor_Mask c)
 {
     reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
-    return EventProcessor::handle_close(h,c);
+    return super::handle_close(h,c);
 }
 
 //! @}

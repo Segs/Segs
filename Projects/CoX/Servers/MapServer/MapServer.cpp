@@ -192,4 +192,13 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
     instance->putq(ev->shallow_copy());
 }
 
+void MapServer::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void MapServer::serialize_to(std::ostream &is)
+{
+    assert(false);
+}
 //! @}

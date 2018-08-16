@@ -16,12 +16,9 @@ private:
     int m_update_interval = 5;
     GameDBSyncHandler* m_db_handler;
 
-    // EventProcessor interface
-    bool per_thread_startup() override;
-    void dispatch(SEGSEvents::Event *ev) override;
-
 public:
-    GameDBSyncService(EntityManager &em) : ref_entity_mgr(em) {};
+    IMPL_ID(GameDBSyncService)
+    GameDBSyncService(EntityManager &em) : ref_entity_mgr(em) {}
     //GameDBSyncService(){};
 
     void on_update_timer(const ACE_Time_Value &tick_timer);
@@ -36,6 +33,12 @@ public:
     void sendKeybindsUpdateToHandler(Entity* e);
     void sendPlayerUpdateToHandler(Entity* e);
     void sendCharacterUpdateToHandler(Entity* e);
+protected:
+    // EventProcessor interface
+    bool per_thread_startup() override;
+    void dispatch(SEGSEvents::Event *ev) override;
+    void serialize_from(std::istream &is) override;
+    void serialize_to(std::ostream &is) override;
 };
 
 #endif // GAMEDBSYNCSERVICE_H

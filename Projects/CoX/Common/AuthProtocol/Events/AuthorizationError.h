@@ -20,7 +20,7 @@ public:
     {}
     AuthorizationError(uint32_t err) : AuthLinkEvent(evAuthorizationError),m_error_type(err)
     {}
-    void init(EventProcessor *ev_src,uint32_t error_type) {m_error_type=error_type; m_event_source=ev_src;}
+    void init(EventSrc *ev_src,uint32_t error_type) {m_error_type=error_type; m_event_source=ev_src;}
     void serializeto(GrowingBuffer &buf) const override
     {
         buf.uPut((uint8_t)1);

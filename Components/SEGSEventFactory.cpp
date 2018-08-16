@@ -28,7 +28,7 @@ void register_event_type(const char *name, uint32_t type_id, std::function<Event
     s_id_to_event_descriptor[type_id] = s_all_event_descriptors.size()-1;
 }
 
-Event *create_by_id(uint32_t type_id,EventProcessor *src)
+Event *create_by_id(uint32_t type_id,EventSrc *src)
 {
     auto iter = s_id_to_event_descriptor.find(type_id);
     if(iter==s_id_to_event_descriptor.end())
@@ -37,7 +37,7 @@ Event *create_by_id(uint32_t type_id,EventProcessor *src)
     res->src(src);
     return res;
 }
-Event *create_by_name(const char *name,EventProcessor *src)
+Event *create_by_name(const char *name, EventSrc *src)
 {
     auto iter = s_name_to_event_descriptor.find(name);
     if(iter==s_name_to_event_descriptor.end())

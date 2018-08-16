@@ -32,6 +32,7 @@ class MapServer final : public EventProcessor
 {
         class PrivateData;
 public:
+                                IMPL_ID(MapServer)
                                 MapServer(uint8_t id);
                                 ~MapServer() override;
 
@@ -46,6 +47,8 @@ private:
         // EventProcessor interface
         void                    dispatch(SEGSEvents::Event *ev) override;
         void                    on_expect_client(SEGSEvents::ExpectMapClientRequest *ev);
+        void                    serialize_from(std::istream &is) override;
+        void                    serialize_to(std::ostream &is) override;
 
         std::unique_ptr<PrivateData> d;
 

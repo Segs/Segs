@@ -27,11 +27,14 @@ class AuthDBSyncHandler final : public EventProcessor
     // EventProcessor interface
     bool per_thread_startup() override;
     void dispatch(SEGSEvents::Event *ev) override;
+    void serialize_from(std::istream &is) override;
+    void serialize_to(std::ostream &is) override;
 
     // Event handlers
     void on_create_account(SEGSEvents::CreateAccountMessage *msg);
     void on_retrieve_account(SEGSEvents::RetrieveAccountRequest *msg);
     void on_validate_password(SEGSEvents::ValidatePasswordRequest *msg);
 public:
+    IMPL_ID(AuthDBSyncHandler)
     AuthDBSyncHandler();
 };

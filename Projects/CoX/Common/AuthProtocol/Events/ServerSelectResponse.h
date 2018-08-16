@@ -16,7 +16,7 @@ class ServerSelectResponse : public AuthLinkEvent
 public:
     ServerSelectResponse():AuthLinkEvent(evServerSelectResponse)
     {}
-    ServerSelectResponse(EventProcessor *ev_src,uint32_t cookie,uint32_t dbcookie) : AuthLinkEvent(evServerSelectResponse,ev_src),
+    ServerSelectResponse(EventSrc *ev_src,uint32_t cookie,uint32_t dbcookie) : AuthLinkEvent(evServerSelectResponse,ev_src),
         db_server_cookie(dbcookie),
         m_cookie(cookie),
         m_unk2(0)
@@ -37,7 +37,7 @@ public:
         buf.uPut(m_cookie);
         buf.uPut(m_unk2);
     }
-    void init(EventProcessor *ev_src, uint32_t cookie, uint32_t dbcookie)
+    void init(EventSrc *ev_src, uint32_t cookie, uint32_t dbcookie)
     {
         m_cookie         = cookie;
         db_server_cookie = dbcookie;

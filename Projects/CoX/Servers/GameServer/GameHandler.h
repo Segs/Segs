@@ -58,6 +58,7 @@ class GameHandler final : public EventProcessor
     std::unique_ptr<SEGSTimer> m_service_status_timer;
 
 public:
+                    IMPL_ID(GameHandler)
                     GameHandler();
                     ~GameHandler() override;
         void        set_server(GameServer *s) {m_server=s;}
@@ -97,4 +98,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
         sIds        waiting_for_client; // this hash_set holds all client cookies we wait for
         GameServer *m_server;
+
+        void        serialize_from(std::istream &is) override;
+        void        serialize_to(std::ostream &is) override;
 };

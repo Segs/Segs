@@ -26,18 +26,18 @@ public:
                             m_seed(seed),
                             m_proto_vers(version_id)
                         {}
-        void            init(EventProcessor *ev_src,uint32_t version_id,uint32_t seed)
+        void            init(EventSrc *ev_src,uint32_t version_id,uint32_t seed)
                         {
                             m_proto_vers=version_id;
                             m_event_source=ev_src; m_seed=seed;
                         }
-        void            serializeto(GrowingBuffer &buf) const
+        void            serializeto(GrowingBuffer &buf) const override
                         {
                             buf.uPut((uint8_t)0);
                             buf.uPut(m_seed);
                             buf.uPut(m_proto_vers);
                         }
-        void            serializefrom(GrowingBuffer &buf)
+        void            serializefrom(GrowingBuffer &buf) override
                         {
                             uint8_t packet_type;
                             buf.uGet(packet_type);

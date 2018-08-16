@@ -16,7 +16,7 @@ class ServerSelectRequest : public AuthLinkEvent
 public:
     ServerSelectRequest() : AuthLinkEvent(evServerSelectRequest)
     {}
-    void init(EventProcessor *ev_src,uint8_t server_id)
+    void init(EventSrc *ev_src,uint8_t server_id)
     {
         m_server_id    = server_id;
         m_event_source = ev_src;

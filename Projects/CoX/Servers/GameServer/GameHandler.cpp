@@ -318,6 +318,16 @@ void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)
     session.link()->putq(new DeleteAcknowledged);
 }
 
+void GameHandler::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void GameHandler::serialize_to(std::ostream &is)
+{
+    assert(false);
+}
+
 void GameHandler::on_delete_character(DeleteCharacter *ev)
 {
     EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_server->getId());

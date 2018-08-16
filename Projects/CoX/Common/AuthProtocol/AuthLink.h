@@ -28,7 +28,7 @@ struct AuthLinkState;
 // Each AuthLink serves as a Client's connection context
 class AuthLink final : public LinkBase
 {
-    using super = EventProcessor;
+    using super = LinkBase;
     using tNotifyStrategy = ACE_Reactor_Notification_Strategy;
     friend class AuthHandler; // auth handler changes our m_state variable
 public:
@@ -53,7 +53,6 @@ public:
         int             handle_input (ACE_HANDLE) override;
         int             handle_output(ACE_HANDLE fd = ACE_INVALID_HANDLE) override;
         int             handle_close(ACE_HANDLE handle,ACE_Reactor_Mask close_mask) override;
-        void            dispatch(SEGSEvents::Event *ev) override;
         stream_type &   peer() {return m_peer;}
         addr_type &     peer_addr() {return m_peer_addr;}
         void            init_crypto(int vers,uint32_t seed);
@@ -61,6 +60,7 @@ public:
         eLinkStage      get_link_stage() const;
         void            set_link_stage(AuthLink::eLinkStage stage);
 protected:
+
         EventProcessor *m_target; // Target handler of this link
         tNotifyStrategy m_notifier;                     //!< Our message queue will use this to wake up the reactor on new elements
         stream_type     m_peer;  //!< Underlying client connection object.

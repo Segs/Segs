@@ -69,6 +69,7 @@ public:
         NpcGeneratorStore       m_npc_generators;
 
 public:
+                                IMPL_ID(MapInstance)
                                 MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr);
                                 ~MapInstance() override;
         void                    dispatch(SEGSEvents::Event *ev) override;
@@ -79,6 +80,10 @@ public:
         void                    start(const QString &scenegraph_path);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
 protected:
+        // EventProcessor interface
+        void                    serialize_from(std::istream &is) override;
+        void                    serialize_to(std::ostream &is) override;
+
         void                    enqueue_client(MapClientSession *clnt);
         void                    spin_down();
         uint32_t                index() const { return m_index; }

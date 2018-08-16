@@ -54,6 +54,16 @@ void AuthDBSyncHandler::dispatch(Event *ev)
     }
 }
 
+void AuthDBSyncHandler::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void AuthDBSyncHandler::serialize_to(std::ostream &is)
+{
+    assert(false);
+}
+
 void AuthDBSyncHandler::on_create_account(CreateAccountMessage *msg)
 {
     AuthDbSyncContext &db_ctx(m_db_context.localData());

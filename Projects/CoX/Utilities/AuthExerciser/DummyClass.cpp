@@ -64,6 +64,16 @@ void DummyClass::dispatch(Event * ev)
     }
 }
 
+void DummyClass::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void DummyClass::serialize_to(std::ostream &is)
+{
+    assert(false);
+}
+
 void DummyClass::onConnect(Connect * ev)
 {
     qInfo() << "ConnectEvent received:" << ev->type();

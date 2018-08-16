@@ -8,7 +8,6 @@
 #pragma once
 
 #include "Servers/InternalEvents.h"
-#include "GameData/chardata_definitions.h"
 
 #include <QDateTime>
 namespace SEGSEvents

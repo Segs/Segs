@@ -23,10 +23,14 @@ class ServerSelectResponse;
 class DummyClass : public EventProcessor
 {
 public:
+    IMPL_ID(DummyClass)
     DummyClass();
 
     // EventProcessor interface
     void        dispatch(SEGSEvents::Event *ev) override;
+protected:
+    void        serialize_from(std::istream &is) override;
+    void        serialize_to(std::ostream &is) override;
 
 protected:
     void        onConnect(SEGSEvents::Connect * ev);

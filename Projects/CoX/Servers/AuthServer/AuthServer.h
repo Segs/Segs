@@ -17,23 +17,27 @@
 class AuthLink;
 class AuthHandler;
 struct ClientAcceptor;
-class AuthServer : public EventProcessor
+class AuthServer final : public EventProcessor
 {
 public:
+                                    IMPL_ID(AuthServer)
                                     AuthServer();
                                     ~AuthServer() override;
 
-        void                        per_thread_shutdown() override;
-        bool                        ReadConfigAndRestart();
 
 protected:
+        void                        per_thread_shutdown() override;
+        bool                        per_thread_startup() override;
         bool                        Run();
-        ClientAcceptor *            m_acceptor;     //!< ace acceptor wrapping AuthClientService
+        bool                        ReadConfigAndRestart();
+        std::unique_ptr<ClientAcceptor> m_acceptor; //!< ace acceptor wrapping AuthClientService
         ACE_INET_Addr               m_location;     //!< address this server will bind at.
         bool                        m_running;      //!< true if this server is running
         ACE_Thread_Mutex            m_mutex;        //!< used to prevent multiple threads accessing config reload function
         std::unique_ptr<AuthHandler> m_handler;     //!< holds the AuthHandler
 
         // EventProcessor interface
-        void dispatch(SEGSEvents::Event *ev);
+        void                        dispatch(SEGSEvents::Event *ev) override;
+        void                        serialize_from(std::istream &is) override;
+        void                        serialize_to(std::ostream &is) override;
 };

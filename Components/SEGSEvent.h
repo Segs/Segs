@@ -29,7 +29,7 @@ inline constexpr uint64_t hash_64_fnv1a_const(const char* const str, const uint6
 }
 }
 
-class EventProcessor;
+class EventSrc;
 namespace SEGSEvents
 {
 // Helper macros to ease the definition of event types
@@ -53,7 +53,7 @@ class Event
 {
 protected:
         const uint32_t  m_type;
-        EventProcessor *m_event_source;
+        EventSrc *m_event_source;
         std::atomic<int> m_ref_count {1}; // used to prevent event being deleted when it's in multiple queues
 
 public:
@@ -64,7 +64,7 @@ virtual                 ~Event()
                             assert(m_ref_count<=1);
                             m_event_source=nullptr;
                         }
-                        Event(uint32_t evtype,EventProcessor *ev_src=nullptr) :
+                        Event(uint32_t evtype,EventSrc *ev_src=nullptr) :
                             m_type(evtype),m_event_source(ev_src)
                         {}
         Event *         shallow_copy() // just incrementing the ref count
@@ -78,8 +78,8 @@ virtual                 ~Event()
                                 delete this;
                         }
         int             get_ref_count() const {return m_ref_count; }
-        void            src(EventProcessor *ev_src) {m_event_source=ev_src;}
-        EventProcessor *src() const {return m_event_source;}
+        void            src(EventSrc *ev_src) {m_event_source=ev_src;}
+        EventSrc *      src() const {return m_event_source;}
         uint32_t        type() const {return m_type;}
 virtual const char *    info();
 protected:
@@ -103,10 +103,10 @@ public:
     uint64_t            m_timer_id;
 
 
-                        Timeout(EventProcessor *source=nullptr) : Event(evTimeout,source)
+                        Timeout(EventSrc *source=nullptr) : Event(evTimeout,source)
                         {
                         }
-                        Timeout(const ACE_Time_Value &time, uint64_t dat,EventProcessor *source)
+                        Timeout(const ACE_Time_Value &time, uint64_t dat,EventSrc *source)
                                 : Event(evTimeout,source), m_arrival_time(time), m_timer_id(dat)
                         {
                         }
@@ -118,7 +118,7 @@ public:
 struct Finish final: public Event
 {
 public:
-                    Finish(EventProcessor *source=nullptr) : Event(evFinish,source) {}
+                    Finish(EventSrc *source=nullptr) : Event(evFinish,source) {}
 static  Finish *    s_instance;
         EVENT_IMPL(Finish)
 };

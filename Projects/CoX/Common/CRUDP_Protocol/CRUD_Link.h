@@ -48,10 +48,6 @@ public:
     int             open(void * = nullptr) override;
     int             handle_output( ACE_HANDLE = ACE_INVALID_HANDLE ) override;
     void            received_block(BitStream &bytes);
-    void            dispatch(SEGSEvents::Event *) override
-                    {
-                        assert(!"Should not be called");
-                    }
     CrudP_Protocol *get_proto() { return &m_protocol; }
     stream_type &   peer() { return peer_; }
     addr_type &     peer_addr() { return m_peer_addr; }
@@ -71,14 +67,14 @@ protected:
     void            packets_for_event(SEGSEvents::Event *c_ev);
     void            connection_update();
     void            connection_sent_packet();
-    EventProcessor *target() { return m_target; }
-    EventProcessor *net_layer() { return m_net_layer; }
+    EventSrc *      target() { return m_target; }
+    EventSrc *      net_layer() { return m_net_layer; }
 virtual CRUD_EventFactory &factory() = 0;
 
     CrudP_Protocol  m_protocol;
     stream_type     peer_;  //!< Maintain connection with client.
     addr_type       m_peer_addr;
-    EventProcessor *m_net_layer;      //!< All outgoing events are put here
-    EventProcessor *m_target;         //!< All incoming events are put here
+    EventSrc *      m_net_layer;      //!< All outgoing events are put here
+    EventSrc *      m_target;         //!< All incoming events are put here
 
 };

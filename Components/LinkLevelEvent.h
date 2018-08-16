@@ -15,10 +15,10 @@ namespace SEGSEvents {
 class Connect : public Event
 {
 public:
-    Connect(EventProcessor *ev_src=nullptr) : Event(evConnect,ev_src)
+    Connect(EventSrc *ev_src=nullptr) : Event(evConnect,ev_src)
     {
     }
-    Connect(EventProcessor *ev_src,const ACE_INET_Addr &addr) :
+    Connect(EventSrc *ev_src,const ACE_INET_Addr &addr) :
         Event(evConnect,ev_src),
         src_addr(addr)
     {
@@ -34,7 +34,7 @@ class Disconnect : public Event
 public:
     // [[ev_def:field]]
     uint64_t m_session_token;
-    Disconnect(EventProcessor *ev_src=nullptr) : Event(evDisconnect,ev_src)
+    Disconnect(EventSrc *ev_src=nullptr) : Event(evDisconnect,ev_src)
     {
     }
     Disconnect(uint64_t token) : Event(evDisconnect,nullptr),m_session_token(token)

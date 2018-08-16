@@ -233,7 +233,7 @@ int AuthLink::open (void *p)
     m_state->m_connection_stage=AuthLink::INITIAL;
     if (this->m_peer.get_remote_addr (m_peer_addr) == -1)
         ACE_ERROR_RETURN ((LM_ERROR,ACE_TEXT ("%p\n"),ACE_TEXT ("get_remote_addr")),-1);
-    if (EventProcessor::open (p) == -1)
+    if (super::open (p) == -1)
         return -1;
     // Register this as a READ handler, this way will be notified/waken up when new bytes are available
     if (this->reactor () && this->reactor ()->register_handler(this,ACE_Event_Handler::READ_MASK) == -1)
@@ -325,11 +325,6 @@ int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
         return 0;
     return super::handle_close (handle, close_mask);
 
-}
-
-void AuthLink::dispatch( Event */*ev*/ )
-{
-    assert(!"Should not be called");
 }
 
 //! @}

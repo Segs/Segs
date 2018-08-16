@@ -83,6 +83,16 @@ void GameServer::dispatch(Event *ev)
     }
 }
 
+void GameServer::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void GameServer::serialize_to(std::ostream &os)
+{
+    assert(false);
+}
+
 GameServer::GameServer(int id) : d(new PrivateData)
 {
     d->m_handler = new GameHandler;
@@ -149,13 +159,6 @@ bool GameServer::ReadConfigAndRestart()
     qInfo() << "Configurations loaded";
     d->m_online = true;
     d->m_handler->putq(reconfigured_msg.shallow_copy());
-    return true;
-}
-
-bool GameServer::ShutDown()
-{
-    putq(Finish::s_instance->shallow_copy());
-    wait();
     return true;
 }
 

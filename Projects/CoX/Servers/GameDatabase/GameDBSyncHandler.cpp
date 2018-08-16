@@ -57,6 +57,15 @@ void GameDBSyncHandler::dispatch(Event *ev)
     }
 }
 
+void GameDBSyncHandler::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void GameDBSyncHandler::serialize_to(std::ostream &is)
+{
+    assert(false);
+}
 GameDBSyncHandler::GameDBSyncHandler(uint8_t id) : m_id(id)
 {
     HandlerLocator::setGame_DB_Handler(id,this);

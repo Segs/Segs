@@ -52,18 +52,15 @@ struct ClientAcceptor : public ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR>
  */
 AuthServer::AuthServer()
 {
-    m_acceptor = new ClientAcceptor;
-    m_handler.reset(new AuthHandler(this));
+    m_acceptor = std::make_unique<ClientAcceptor>();
+    m_handler = std::make_unique<AuthHandler>(this);
     m_acceptor->m_target = m_handler.get();
-    // Start two threads to handle Auth events.
-    m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
     m_running=false;
 }
 
-AuthServer::~AuthServer()
-{
-    delete m_acceptor;
-}
+// note - destructor is defaulted in cpp files to prevent compiler from requiring all users of AuthServer.h to
+// know about ClientAcceptor/AuthHandler  destructors
+AuthServer::~AuthServer() = default;
 
 void AuthServer::dispatch(Event *ev)
 {
@@ -76,6 +73,16 @@ void AuthServer::dispatch(Event *ev)
         default:
             assert(!"Unknown event encountered in dispatch.");
     }
+}
+
+void AuthServer::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void AuthServer::serialize_to(std::ostream &is)
+{
+    assert(false);
 }
 
 /*!
@@ -140,12 +147,16 @@ void AuthServer::per_thread_shutdown()
         qWarning() << "Auth server listener is closing down";
         m_acceptor->close();
     }
-    // force our handler to finish
-    m_handler->putq(Finish::s_instance->shallow_copy());
-    m_handler->wait();
+    // force our handler to finish if it's running
+    shutdown_event_processor_and_wait(m_handler.get());
     m_running = false;
-    putq(Finish::s_instance->shallow_copy());
-    wait();
+}
+
+bool AuthServer::per_thread_startup()
+{
+    // Start a single thread to handle Auth events.
+    m_handler->activate();
+    return true;
 }
 
 //! @}

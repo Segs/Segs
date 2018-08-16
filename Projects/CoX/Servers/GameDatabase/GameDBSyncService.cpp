@@ -37,6 +37,16 @@ void GameDBSyncService::dispatch(Event *ev)
     }
 }
 
+void GameDBSyncService::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void GameDBSyncService::serialize_to(std::ostream &is)
+{
+    assert(false);
+}
+
 void GameDBSyncService::set_db_handler(const uint8_t id)
 {
     m_db_handler = static_cast<GameDBSyncHandler*>(

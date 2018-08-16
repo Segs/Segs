@@ -19,7 +19,7 @@ class AuthLinkEvent : public Event
 protected:
         ~AuthLinkEvent() override = default;
 public:
-        AuthLinkEvent(size_t evtype,EventProcessor *ev_src=nullptr) : Event(evtype,ev_src)
+        AuthLinkEvent(size_t evtype,EventSrc *ev_src=nullptr) : Event(evtype,ev_src)
         {}
         virtual void serializeto(GrowingBuffer &) const=0;
         virtual void serializefrom(GrowingBuffer &)=0;
@@ -56,7 +56,7 @@ public:
     uint8_t m_arr[8];
     ReconnectAttempt() : AuthLinkEvent(evReconnectAttempt)
     {}
-    void init(EventProcessor *ev_src,const uint8_t *auth_arr) {memcpy(m_arr,auth_arr,8);m_event_source=ev_src;}
+    void init(EventSrc *ev_src,const uint8_t *auth_arr) {memcpy(m_arr,auth_arr,8);m_event_source=ev_src;}
     void serializeto(GrowingBuffer &buf) const override
     {
         buf.uPut((uint8_t)3);

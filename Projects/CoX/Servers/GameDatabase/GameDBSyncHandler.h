@@ -35,8 +35,11 @@ class GameDBSyncHandler final : public EventProcessor
     /// in case there are more `activated` handlers
     QThreadStorage<GameDbSyncContext> m_db_context;
     // EventProcessor interface
+protected:
     bool per_thread_startup() override;
     void dispatch(SEGSEvents::Event*ev) override;
+    void serialize_from(std::istream &is) override;
+    void serialize_to(std::ostream &is) override;
     void on_character_update(SEGSEvents::CharacterUpdateMessage *msg);
     void on_costume_update(SEGSEvents::CostumeUpdateMessage *msg);
     void on_player_update(SEGSEvents::PlayerUpdateMessage* msg);
@@ -50,5 +53,6 @@ class GameDBSyncHandler final : public EventProcessor
     // This is an unique ID that links this DB with it's Game Server
     uint8_t m_id;
 public:
+    IMPL_ID(GameDBSyncHandler)
     GameDBSyncHandler(uint8_t id);
 };

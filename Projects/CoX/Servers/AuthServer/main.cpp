@@ -70,10 +70,11 @@ struct MessageBusMonitor : public EventProcessor
         m_endpoint.subscribe(MessageBus::ALL_EVENTS);
         activate();
     }
+    IMPL_ID(MessageBusMonitor)
 
     // EventProcessor interface
 public:
-    void dispatch(Event *ev)
+    void dispatch(Event *ev) override
     {
         switch(ev->type())
         {
@@ -83,6 +84,16 @@ public:
         default:
             ;//qDebug() << "Unhandled message bus monitor command" <<ev->info();
         }
+    }
+    // EventProcessor interface
+protected:
+    void serialize_from(std::istream &is) override
+    {
+        assert(false);
+    }
+    void serialize_to(std::ostream &is) override
+    {
+        assert(false);
     }
 private:
     void on_service_status(ServiceStatusMessage *msg);
@@ -98,18 +109,11 @@ static void shutDownServers(const char *reason)
     {
         GlobalTimerQueue::instance()->deactivate();
     }
-    if(g_game_server && g_game_server->thr_count())
-    {
-        g_game_server->ShutDown();
-    }
-    if(g_map_server && g_map_server->thr_count())
-    {
-        g_map_server->per_thread_shutdown();
-    }
-    if(g_auth_server && g_auth_server->thr_count())
-    {
-        g_auth_server->per_thread_shutdown();
-    }
+
+    shutdown_event_processor_and_wait(g_game_server.get());
+    shutdown_event_processor_and_wait(g_map_server.get());
+    shutdown_event_processor_and_wait(g_auth_server.get());
+
     if(s_bus_monitor && s_bus_monitor->thr_count())
     {
         s_bus_monitor->putq(Finish::s_instance->shallow_copy());
@@ -134,7 +138,7 @@ void MessageBusMonitor::on_service_status(ServiceStatusMessage *msg)
 }
 
 // this event stops main processing loop of the whole server
-class ServerStopper : public ACE_Event_Handler
+class ServerStopper final : public ACE_Event_Handler
 {
 public:
     ServerStopper(int signum) // when instantiated adds itself to current reactor
@@ -142,7 +146,7 @@ public:
         ACE_Reactor::instance()->register_handler(signum, this);
 }
     // Called when object is signaled by OS.
-    int handle_signal(int, siginfo_t * /*s_i*/, ucontext_t * /*u_c*/)
+    int handle_signal(int, siginfo_t * /*s_i*/, ucontext_t * /*u_c*/) final
     {
         shutDownServers("Signal");
         return 0;

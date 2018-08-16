@@ -165,7 +165,7 @@ void AuthHandler::on_disconnect(Disconnect *ev)
     // TODO: timed session reaping
 }
 
-void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
+void AuthHandler::auth_error(EventSrc *lnk,uint32_t code)
 {
     lnk->putq(new AuthorizationError(code));
 }
@@ -428,6 +428,16 @@ void AuthHandler::reap_stale_links()
 {
     SessionStore::MTGuard guard(m_sessions.reap_lock());
     m_sessions.reap_stale_links("AuthHandler",link_is_stale_if_disconnected_for);
+}
+
+void AuthHandler::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void AuthHandler::serialize_to(std::ostream &is)
+{
+    assert(false);
 }
 
 void AuthHandler::on_server_status_change(GameServerStatusMessage *ev)

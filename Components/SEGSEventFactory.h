@@ -10,13 +10,13 @@
  * @addtogroup Components
  * @{
  */
-class EventProcessor;
+class EventSrc;
 namespace SEGSEvents
 {
 class Event;
 void register_event_type(const char *name, uint32_t type_id, std::function<Event *()> constructor);
-Event *create_by_id(uint32_t type_id,EventProcessor *src=nullptr);
-Event *create_by_name(const char* name,EventProcessor *src=nullptr);
+Event *create_by_id(uint32_t type_id, EventSrc *src=nullptr);
+Event *create_by_name(const char* name,EventSrc *src=nullptr);
 const char *event_name(uint32_t type_id);
 }
 //! @}

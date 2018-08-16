@@ -79,6 +79,7 @@ class AuthHandler : public EventProcessor
     using MTGuard = ACE_Guard<ACE_Thread_Mutex>;
     using ServerMap = std::map<uint8_t,SEGSEvents::GameServerStatusData>;
 protected:
+    IMPL_ID(AuthHandler)
     static uint64_t s_last_session_id;
     MessageBusEndpoint m_message_bus_endpoint;
     SessionStore m_sessions;
@@ -88,6 +89,8 @@ protected:
 
     bool        isClientConnectedAnywhere(uint32_t client_id);
     void        reap_stale_links();
+    void        serialize_from(std::istream &is) override;
+    void        serialize_to(std::ostream &is) override;
 
     //////////////////////////////////////////////////////////////////////////
     // internal events
@@ -97,7 +100,7 @@ protected:
     void        on_server_status_change(SEGSEvents::GameServerStatusMessage *ev);
     //////////////////////////////////////////////////////////////////////////
     // function that send messages into the link
-    void        auth_error(EventProcessor *lnk,uint32_t code);
+    void        auth_error(EventSrc *lnk, uint32_t code);
     //////////////////////////////////////////////////////////////////////////
     // incoming link level event handlers
     void        on_connect(SEGSEvents::Connect *ev);

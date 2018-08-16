@@ -37,7 +37,7 @@ class Packet : public Event
 {
 public:
     Packet() : Event(CRUD_EventTypes::evPacket,nullptr) {}
-    Packet(EventProcessor *evsrc, std::unique_ptr<CrudP_Packet> &&pkt, const ACE_INET_Addr &tgt)
+    Packet(EventSrc *evsrc, std::unique_ptr<CrudP_Packet> &&pkt, const ACE_INET_Addr &tgt)
         : Event(evPacket, evsrc), m_pkt(std::move(pkt)), target(tgt)
     {
     }
@@ -50,7 +50,7 @@ public:
 class CRUDLink_Event : public Event
 {
 public:
-    CRUDLink_Event(size_t evtype, EventProcessor *ev_src = nullptr) : Event(evtype, ev_src) //,LINK
+    CRUDLink_Event(size_t evtype, EventSrc *ev_src = nullptr) : Event(evtype, ev_src) //,LINK
     {
     }
     virtual void serializeto(BitStream &) const = 0;

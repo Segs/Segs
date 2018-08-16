@@ -7,10 +7,12 @@
 
 #pragma once
 #include <deque>
+#include <unordered_map>
 #include <stdint.h>
 
 class EventProcessor;
 class MessageBus;
+
 ///
 /// \brief The HandlerLocator class is meant as a central point where each service registers it's presence,
 /// and messages can be passed to it.
@@ -23,6 +25,7 @@ class HandlerLocator
     static std::deque<EventProcessor *> m_game_servers;
     static std::deque<EventProcessor *> m_map_servers;
     static std::deque<EventProcessor *> m_game_db_servers;
+    static std::unordered_map<uint32_t,std::deque<EventProcessor *>> m_all_event_processors;
 public:
     HandlerLocator();
     static void setMessageBus(MessageBus *h) { m_message_bus=h; }
@@ -75,6 +78,15 @@ public:
             m_map_servers.resize(id+1);
         m_map_servers[id] = h;
     }
-
+    template<class T>
+    static EventProcessor *lookup(uint32_t instance_id)
+    {
+        auto iter = m_all_event_processors.find(T::processor_id);
+        if(iter==m_all_event_processors.end())
+            return nullptr;
+        if(instance_id>=iter->second.size())
+            return nullptr;
+        return iter->second[instance_id];
+    }
 };
 extern void shutDownAllActiveHandlers();

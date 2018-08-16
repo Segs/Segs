@@ -2012,6 +2012,16 @@ glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
     return glm::vec3(0,0,0);
 }
 
+void MapInstance::serialize_from(istream &is)
+{
+    assert(false);
+}
+
+void MapInstance::serialize_to(ostream &is)
+{
+    assert(false);
+}
+
 void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
 {
     const MapServerData &data(g_GlobalMapServer->runtimeData());

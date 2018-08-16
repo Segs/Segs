@@ -463,11 +463,11 @@ class UnqueueAll final : public MapLinkEvent
 public:
     UnqueueAll():MapLinkEvent(MapEventTypes::evUnqueueAll)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,32);
     }
-    void serializefrom(BitStream &/*bs*/)
+    void serializefrom(BitStream &/*bs*/) override
     {
         // TODO: Seems like nothing is received server side.
         qWarning() << "UnqueueAll unimplemented.";

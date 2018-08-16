@@ -35,6 +35,7 @@ public:
 static constexpr uint32_t ALL_EVENTS = ~0U; // special event type allowing subscriptions to all incoming events
 
 public:
+                IMPL_ID(MessageBus)
                 MessageBus();
                 bool ReadConfigAndRestart();
 private:
@@ -57,6 +58,8 @@ private:
         void    recalculateStatisitcs();
                 // EventProcessor interface
 protected:
+        void    serialize_from(std::istream &is) override;
+        void    serialize_to(std::ostream &os) override;
         void    dispatch(SEGSEvents::Event *ev) override;
 };
 
