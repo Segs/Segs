@@ -235,6 +235,47 @@ static const SlashCommand g_defined_slash_commands[] = {
 };
 
 /************************************************************
+ *  Helper Functions
+ ***********************************************************/
+static QString getCommandParameter(const QString& cmd)
+{
+    const int space = cmd.indexOf(' ');
+    if (space == -1)
+    {
+        return "";
+    }
+
+    return cmd.mid(space + 1);
+}
+
+static Entity* getTargetEntity(MapClientSession& sess)
+{
+    if (sess.m_ent == nullptr)
+    {
+        return nullptr;
+    }
+
+    const uint32_t idx = getTargetIdx(*sess.m_ent);
+    if (idx == 0)
+    {
+        return nullptr;
+    }
+
+    return getEntity(&sess, idx);
+}
+
+static Entity* getEntityFromCommand(const QString &cmd, MapClientSession& sess)
+{
+    const QString name = getCommandParameter(cmd);
+    if (name.isEmpty())
+    {
+        return getTargetEntity(sess);
+    }
+
+    return getEntity(&sess, name);
+}
+
+/************************************************************
  *  Slash Command Handlers
  ***********************************************************/
 
@@ -1184,73 +1225,53 @@ void cmdHandler_MOTD(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
 {
-    Entity *tgt = nullptr;
-    QString msg;
-
-    int space = cmd.indexOf(' ');
-    QString name = cmd.mid(space+1);
-
-    if(space == -1 || name.isEmpty())
+    Entity* const tgt = getEntityFromCommand(cmd, sess);
+    if (tgt == nullptr)
     {
-        tgt = getEntity(&sess,getTargetIdx(*sess.m_ent));
-        name = tgt->name();
-    }
-    else
-        tgt = getEntity(&sess,name);
-
-    if(tgt == nullptr)
         return;
+    }
 
-    if(tgt->m_has_team)
+    if (tgt->m_has_team)
     {
-        msg = tgt->name() + " is already on a team.";
+        const QString msg = tgt->name() + " is already on a team.";
         qCDebug(logTeams) << msg;
         sendInfoMessage(MessageChannel::SERVER, msg, sess);
         return;
     }
 
-    if(tgt->name() == sess.m_name)
+    if (tgt->name() == sess.m_name)
     {
-        msg = "You cannot invite yourself to a team.";
+        const QString msg = "You cannot invite yourself to a team.";
         qCDebug(logTeams) << msg;
         sendInfoMessage(MessageChannel::SERVER, msg, sess);
         return;
     }
 
-    if(sess.m_ent->m_has_team && sess.m_ent->m_team != nullptr)
+    if (sess.m_ent->m_has_team && sess.m_ent->m_team != nullptr)
     {
-        if(!sess.m_ent->m_team->isTeamLeader(sess.m_ent))
+        if (!sess.m_ent->m_team->isTeamLeader(sess.m_ent))
         {
-            msg = "Only the team leader can invite players to the team.";
+            const QString msg = "Only the team leader can invite players to the team.";
             qCDebug(logTeams) << sess.m_ent->name() << msg;
             sendInfoMessage(MessageChannel::TEAM, msg, sess);
             return;
         }
     }
 
-    sendTeamOffer(sess.m_ent,tgt);
+    sendTeamOffer(sess.m_ent, tgt);
 }
 
 void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
 {
-    Entity *tgt = nullptr;
-    QString msg;
-
-    int space = cmd.indexOf(' ');
-    QString name = cmd.mid(space+1);
-
-    if(space == -1 || name.isEmpty())
+    Entity* const tgt = getEntityFromCommand(cmd, sess);
+    if (tgt == nullptr)
     {
-        tgt = getEntity(&sess,getTargetIdx(*sess.m_ent));
-        name = tgt->name();
-    }
-    else
-        tgt = getEntity(&sess,name);
-
-    if(tgt == nullptr)
         return;
+    }
 
-    if(kickTeam(*tgt))
+    const QString name = tgt->name();
+    QString msg;
+    if (kickTeam(*tgt))
         msg = "Kicking " + name + " from team.";
     else
         msg = "Failed to kick " + name;
@@ -1278,24 +1299,15 @@ void cmdHandler_FindMember(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess)
 {
-    Entity *tgt = nullptr;
-    QString msg;
-
-    int space = cmd.indexOf(' ');
-    QString name = cmd.mid(space+1);
-
-    if(space == -1 || name.isEmpty())
+    Entity* const tgt = getEntityFromCommand(cmd, sess);
+    if (tgt == nullptr)
     {
-        tgt = getEntity(&sess,getTargetIdx(*sess.m_ent));
-        name = tgt->name();
-    }
-    else
-        tgt = getEntity(&sess,name);
-
-    if(tgt == nullptr)
         return;
+    }
 
-    if(makeTeamLeader(*sess.m_ent,*tgt))
+    const QString name = tgt->name();
+    QString msg;
+    if (makeTeamLeader(*sess.m_ent,*tgt))
         msg = "Making " + name + " team leader.";
     else
         msg = "Failed to make " + name + " team leader.";
@@ -1323,23 +1335,13 @@ void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_Sidekick(const QString &cmd, MapClientSession &sess)
 {
-    Entity *tgt = nullptr;
-
-    int space = cmd.indexOf(' ');
-    QString name = cmd.mid(space+1);
-
-    if(space == -1 || name.isEmpty())
+    Entity* const tgt = getEntityFromCommand(cmd, sess);
+    if (tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
     {
-        tgt = getEntity(&sess,getTargetIdx(*sess.m_ent));
-        name = tgt->name();
-    }
-    else
-        tgt = getEntity(&sess,name);
-
-    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
         return;
+    }
 
-    inviteSidekick(*sess.m_ent,*tgt);
+    inviteSidekick(*sess.m_ent, *tgt);
 }
 
 void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
@@ -1360,39 +1362,30 @@ void cmdHandler_TeamBuffs(const QString & /*cmd*/, MapClientSession &sess)
 
 void cmdHandler_Friend(const QString &cmd, MapClientSession &sess)
 {
-    Entity *tgt = nullptr;
-
-    int space = cmd.indexOf(' ');
-    QString name = cmd.mid(space+1);
-
-    if(space == -1 || name.isEmpty())
+    const Entity* const tgt = getEntityFromCommand(cmd, sess);
+    if (tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
     {
-        tgt = getEntity(&sess,getTargetIdx(*sess.m_ent));
-        name = tgt->name();
-    }
-    else
-        tgt = getEntity(&sess,name);
-
-    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
         return;
+    }
 
-    addFriend(*sess.m_ent,*tgt);
+    addFriend(*sess.m_ent, *tgt);
 }
 
 void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess)
 {
-    Entity *tgt = nullptr;
+    // Cannot use getEntityFromCommand as we need to be able to unfriend logged out characters.
+    QString name = getCommandParameter(cmd);
+    if (name.isEmpty()) {
+        const Entity* const tgt = getTargetEntity(sess);
+        if (tgt == nullptr)
+        {
+            return;
+        }
 
-    int space = cmd.indexOf(' ');
-    QString name = cmd.mid(space+1);
-
-    if(space == -1 || name.isEmpty())
-    {
-        tgt = getEntity(&sess,getTargetIdx(*sess.m_ent));
         name = tgt->name();
     }
 
-    removeFriend(*sess.m_ent,name);
+    removeFriend(*sess.m_ent, name);
 }
 
 void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)
