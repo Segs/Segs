@@ -67,8 +67,9 @@ void    toggleJumppack(Entity &e);
 void    toggleControlsDisabled(Entity &e);
 void    toggleFullUpdate(Entity &e);
 void    toggleControlId(Entity &e);
-void    toggleExtraInfo(Entity &e);
+void    toggleInterp(Entity &e);
 void    toggleMoveInstantly(Entity &e);
+void    toggleCollision(Entity &e);
 
 // Misc Methods
 void    charUpdateDB(Entity *e);
@@ -79,6 +80,8 @@ Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(MapClientSession *src, uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
+void    positionTest(Entity *e);
+void    setInterpolationSettings(Entity *e, const bool active, const uint8_t level, const uint8_t bits);
 
 /*
  * Character Methods
@@ -150,6 +153,7 @@ void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
+
 
 /*
  * sendEmail Wrappers for providing access to Email Database

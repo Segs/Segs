@@ -13,6 +13,7 @@
 #include <algorithm>
 
 // AngleRadians for use in PosUpdate etc
+// TODO: we can replace this with glm::vec and other methods
 struct AngleRadians
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*glm::pi<float>()/180.0f);}

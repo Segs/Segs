@@ -12,12 +12,13 @@
 
 #define _USE_MATH_DEFINES
 #include "Entity.h"
+#include "Character.h"
 #include "LFG.h"
 #include "Team.h"
-#include "Character.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/npc_definitions.h"
+
 #include <QtCore/QDebug>
 #include <algorithm>
 #include <cmath>
@@ -81,7 +82,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const ColorAndPartPacke
     e.m_player->m_keybinds.resetKeybinds(default_profiles);
     e.m_is_hero = true;
 
-    e.m_direction                         = glm::quat(1.0f,0.0f,0.0f,0.0f);
+    e.m_direction = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 
 const QString &Entity::name() const {
@@ -121,15 +122,6 @@ void Entity::dump()
     dumpFriends(*this);
 }
 
-void Entity::addPosUpdate(const PosUpdate & p) {
-    m_update_idx = (m_update_idx+1) % 64;
-    m_pos_updates[m_update_idx] = p;
-}
-
-void Entity::addInterp(const PosUpdate & p) {
-    interpResults.emplace_back(p);
-}
-
 Entity::Entity()
 {
 }
@@ -161,15 +153,32 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_pchar_things                    = true;
     e.m_target_idx                      = 0;
     e.m_assist_target_idx               = 0;
+    e.m_move_type                       = MoveType::MOVETYPE_WALK;
+    e.m_motion_state.m_is_walking       = true;
 
     e.m_char.reset(new Character);
     e.m_player.reset(new PlayerData);
     e.m_player->reset();
     e.m_entity.reset(new EntityData);
-    e.might_have_rare = e.m_rare_bits   = true;
+    e.m_update_anims = e.m_has_triggered_moves   = true;
+
+    e.m_states.init(); // Initialize movement input state pointers
+
+    PosUpdate p;
+    for(int i = 0; i<64; i++)
+    {
+        // Get timestamp in ms
+        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        p.m_position = e.m_entity_data.m_pos;
+        p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
+        p.m_timestamp = now_ms;
+        //addInterp(e, p);
+        addPosUpdate(e, p);
+    }
 }
 
-void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
+void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant)
 {
     e.m_costume_type                    = AppearanceType::NpcCostume;
     e.m_destroyed                       = false;
@@ -185,12 +194,29 @@ void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
     e.m_pchar_things                    = false;
     e.m_target_idx                      = 0;
     e.m_assist_target_idx               = 0;
+    e.m_move_type                       = MoveType::MOVETYPE_WALK;
+    e.m_motion_state.m_is_walking       = true;
 
     e.m_char.reset(new Character);
     e.m_npc.reset(new NPCData{false,src,idx,variant});
     e.m_player.reset();
     e.m_entity.reset(new EntityData);
-    e.might_have_rare = e.m_rare_bits   = true;
+    e.m_update_anims = e.m_has_triggered_moves   = true;
+
+    e.m_states.init(); // Initialize movement input state pointers
+
+    PosUpdate p;
+    for(int i = 0; i<64; i++)
+    {
+        // Get timestamp in ms
+        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        p.m_position = e.m_entity_data.m_pos;
+        p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
+        p.m_timestamp = now_ms;
+        //addInterp(e, p);
+        addPosUpdate(e, p);
+    }
 }
 
 void markEntityForDbStore(Entity *e, DbStoreFlags f)
@@ -203,9 +229,4 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
     e->m_db_store_flags &= ~uint32_t(f);
 }
 
-void forcePosition(Entity &e, glm::vec3 pos)
-{
-    e.m_entity_data.m_pos = pos;
-    e.m_full_update_count = 10;
-}
 //! @}

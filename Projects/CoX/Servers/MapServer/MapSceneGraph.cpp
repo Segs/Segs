@@ -145,7 +145,7 @@ struct NpcCreator
             {
                 int idx = npc_store.npc_idx(npc_def);
                 Entity *e = map_instance->m_entities.CreateNpc(*npc_def, idx, 0);
-                forcePosition(*e,glm::vec3(v[3]));
+                forcePosition(*e, glm::vec3(v[3]));
                 auto valquat = glm::quat_cast(v);
 
                 glm::vec3 angles = glm::eulerAngles(valquat);

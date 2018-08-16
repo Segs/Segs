@@ -11,7 +11,7 @@ SET(target_CPP
     Events/ChatDividerMoved.cpp
     Events/ChatMessage.cpp
     Events/EntitiesResponse.cpp
-    Events/InputState.cpp
+    Events/InputStateEvent.cpp
     Events/LocationVisited.cpp
     Events/PlaqueVisited.cpp
     Events/NewEntity.cpp
@@ -47,7 +47,7 @@ SET(target_INCLUDE
     Events/EntitiesResponse.h
     Events/FloatingDamage.h
     Events/FriendsListUpdate.h
-    Events/InputState.h
+    Events/InputStateEvent.h
     Events/LocationVisited.h
     Events/MapEventTypes.h
     Events/MessageChannels.h

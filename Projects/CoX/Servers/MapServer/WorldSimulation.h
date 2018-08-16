@@ -12,6 +12,7 @@
 
 #include "MapServer.h"
 #include "NetStructures/Entity.h"
+#include "NetStructures/Character.h"
 #include "EntityStorage.h"
 #include "SceneGraph.h"
 

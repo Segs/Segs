@@ -12,7 +12,7 @@
 
 #include "ChatMessage.h"
 
-#include "Events/InputState.h"
+#include "Events/InputStateEvent.h"
 #include "NetStructures/Entity.h"
 #include "MapEvents.h"
 #include "MapClientSession.h"

@@ -25,7 +25,7 @@
 class IdleEvent;
 class MapServer;
 class SEGSTimer;
-class InputState;
+class InputStateEvent;
 class World;
 class MapServerData;
 struct MapSceneGraph;
@@ -94,7 +94,7 @@ protected:
         void on_create_map_entity(class NewEntity *ev);
         void on_timeout(TimerEvent *ev);
         void on_combine_boosts(class CombineRequest *);
-        void on_input_state(InputState *st);
+        void on_input_state(InputStateEvent *st);
         void on_idle(IdleEvent *ev);
         void on_shortcuts_request(class ShortcutsRequest *ev);
 

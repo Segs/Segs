@@ -11,19 +11,14 @@
  */
 
 #include "WorldSimulation.h"
-
 #include "MapInstance.h"
 
 #include "Common/Servers/Database.h"
+#include "Common/NetStructures/Movement.h"
 #include "Events/GameCommandList.h"
+
 #include <glm/gtx/vector_query.hpp>
-
-void markFlying(Entity &e ,bool is_flying) // Function to set character as flying
-{
-
-    e.m_is_flying = is_flying;
-
-}
+#include <glm/ext.hpp>
 
 void World::update(const ACE_Time_Value &tick_timer)
 {
@@ -51,17 +46,63 @@ void World::update(const ACE_Time_Value &tick_timer)
 
 void World::physicsStep(Entity *e,uint32_t msec)
 {
-    if(glm::length2(e->inp_state.pos_delta))
-    {
-        // todo: take into account time between updates
-        glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
-        //float vel_scale = e->inp_state.m_input_vel_scale/255.0f;
-        e->m_entity_data.m_pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
-        e->m_velocity = za*e->inp_state.pos_delta;
-    }
+    if(e->m_states.current() == nullptr)
+        return;
 
-//    if(e->inp_state.pos_delta[1] == 1.0f) // Will set 'is flying' on jump event
-//        markFlying(*e, true);
+    if(glm::length2(e->m_states.current()->m_pos_delta)
+            || glm::length2(e->m_states.previous()->m_pos_delta) != glm::length2(e->m_states.current()->m_pos_delta))
+    {
+        // Get timestamp in ms
+        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        // add PosUpdate
+        PosUpdate prev      = e->m_pos_updates[(e->m_update_idx + -1 + 64) % 64];
+        PosUpdate pud;
+        pud.m_position      = e->m_entity_data.m_pos;
+        pud.m_pyr_angles    = e->m_entity_data.m_orientation_pyr;
+        pud.m_timestamp     = now_ms;
+        addPosUpdate(*e, pud);
+
+        int dt = pud.m_timestamp - prev.m_timestamp;
+        e->m_motion_state.m_last_pos = e->m_entity_data.m_pos;
+        float vel_scale = e->m_states.current()->m_velocity_scale/255.0f;
+
+        glm::mat3 za;
+
+        // TODO: REMOVE: FOR TESTING ONLY
+        switch(e->u1)
+        {
+        case 1:
+            entMotion(e, e->m_states.current());
+            break;
+        case 2:
+            qDebug() << "m_pos no coll" << glm::to_string(e->m_entity_data.m_pos).c_str();
+            my_entMoveNoColl(e);
+            e->m_entity_data.m_pos += e->m_motion_state.m_last_pos + e->m_velocity * e->m_states.current()->m_time_state.m_timestep;
+            break;
+        case 3:
+            e->m_entity_data.m_pos += e->m_states.current()->m_pos_delta * vel_scale * float(msec)/50;
+            break;
+        default:
+            setVelocity(*e);
+            za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
+            e->m_entity_data.m_pos += ((za*e->m_states.current()->m_pos_delta)*float(msec))/24; // formerly divide by 50
+            break;
+        }
+
+        e->m_interp_bintree = interpolateBinTree(e->m_pos_updates, 0.02f);
+
+        if(e->m_type == EntType::PLAYER)
+        {
+            float distance  = glm::distance(e->m_entity_data.m_pos, e->m_prev_pos);
+            qCDebug(logMovement) << "physicsStep:"
+                                       << "\n    prev_pos:\t"   << glm::to_string(e->m_prev_pos).c_str()
+                                       << "\n    cur_pos:\t"    << glm::to_string(e->m_entity_data.m_pos).c_str()
+                                       << "\n    distance:\t"   << distance
+                                       << "\n    vel_scale:\t"  << vel_scale << e->m_states.current()->m_velocity_scale
+                                       << "\n    velocity:\t"   << glm::to_string(e->m_velocity).c_str();
+        }
+    }
 }
 
 float animateValue(float v,float start,float target,float length,float dT)
@@ -100,15 +141,6 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
         if(e->m_time_till_logout<0)
             e->m_time_till_logout=0;
     }
-
-    /*
-    CharacterDatabase *char_db = AdminServer::instance()->character_db();
-    // TODO: Implement asynchronous database queries
-    DbTransactionGuard grd(*char_db->getDb());
-    if(false==char_db->update(e))
-        return;
-    grd.commit();
-    */
 }
 
 //! @}

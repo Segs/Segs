@@ -220,7 +220,7 @@ public:
     }
 };
 
-#include "Events/InputState.h"
+#include "Events/InputStateEvent.h"
 #include "Events/ChatMessage.h"
 #include "Events/WindowState.h"
 //////////////////////////////////////////////////////////////////////////
