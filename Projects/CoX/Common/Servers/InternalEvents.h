@@ -191,10 +191,11 @@ struct ClientConnectedData
     uint64_t m_session;
     uint32_t m_server_id;     // id of the server the client connected to.
     uint32_t m_sub_server_id; // only used when server_id is the map server
+    uint32_t m_char_db_id;       // id of the character connecting
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_session,m_server_id,m_sub_server_id);
+        ar(m_session,m_server_id,m_sub_server_id,m_char_db_id);
     }
 };
 //[[ev_def:macro]]
@@ -203,10 +204,11 @@ ONE_WAY_MESSAGE(Internal_EventTypes,ClientConnected)
 struct ClientDisconnectedData
 {
     uint64_t m_session;
+    uint32_t m_char_db_id;       // id of the character disconnected
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_session);
+        ar(m_session,m_char_db_id);
     }
 };
 //[[ev_def:macro]]

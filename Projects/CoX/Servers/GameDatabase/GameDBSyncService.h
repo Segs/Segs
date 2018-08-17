@@ -3,10 +3,10 @@
 
 #include "EventProcessor.h"
 #include "Common/Servers/HandlerLocator.h"
-#include "Servers/MapServer/EntityStorage.h"
 #include "Servers/GameDatabase/GameDBSyncHandler.h"
 
-
+class EntityManager;
+class Entity;
 
 class GameDBSyncService : public EventProcessor
 {
@@ -26,7 +26,6 @@ public:
     void set_db_handler(uint8_t id);
     void updateEntity(Entity* e);
     void updateEntities();
-    void addPlayer(Entity* e);
     void removePlayer(Entity* e);
     void sendGuiUpdateToHandler(Entity* e);
     void sendOptionsUpdateToHandler(Entity* e);

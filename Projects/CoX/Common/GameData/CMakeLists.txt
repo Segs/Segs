@@ -63,6 +63,7 @@ set(GAMEDATA_SRC
     scenegraph_definitions.h
     shop_definitions.h
     map_definitions.h
+    map_definitions.cpp
     costume_definitions.h
     bodypart_definitions.h
 

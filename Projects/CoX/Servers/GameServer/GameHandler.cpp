@@ -16,6 +16,7 @@
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
 #include "GameData/chardata_serializers.h"
+#include "GameData/map_definitions.h"
 #include "Common/Servers/InternalEvents.h"
 #include "GameData/entitydata_serializers.h"
 #include "GameLink.h"
@@ -24,7 +25,6 @@
 #include "SEGSTimer.h"
 #include "serialization_common.h"
 #include "serialization_types.h"
-#include "MapServer/DataHelpers.h"
 
 using namespace SEGSEvents;
 

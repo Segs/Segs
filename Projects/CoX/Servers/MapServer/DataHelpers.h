@@ -20,14 +20,6 @@ struct Friend;
 struct FriendsList;
 struct MapClientSession;
 
-struct MapData
-{
-    uint32_t m_map_idx;
-    QString m_map_name;             // City_00_01, City_01_01, etc...
-    QString m_map_path;             // The ones ending with .txt
-    QString m_display_map_name;     // Outbreak, Atlas Park...
-};
-
 /*
  * Entity Methods
  */
@@ -85,12 +77,9 @@ void    sendServerMOTD(MapClientSession *tgt);
 // Toggles
 void    toggleTeamBuffs(PlayerData &c);
 
+const QString &getFriendDisplayMapName(const Friend &f);
 QString     getMapPath(const EntityData &ed);
-QString     getMapPath(size_t index);
-uint32_t    getMapIndex(const QString &map_name);
 QString     getEntityDisplayMapName(const EntityData &ed);
-const MapData &getMapData(const QString &map_name);
-QString     getMapName(const QString &map_name);
 /*
  * Looking for Group
  */

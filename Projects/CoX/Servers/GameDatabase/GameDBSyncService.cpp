@@ -1,7 +1,9 @@
 #include "GameDBSyncService.h"
+
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/MessageBus.h"
 #include "Common/Servers/InternalEvents.h"
+#include "NetStructures/Entity.h"
 #include "serialization_common.h"
 #include "GameDBSyncEvents.h"
 #include "Character.h"
@@ -12,6 +14,8 @@
 #include "GameData/gui_serializers.h"
 #include "GameData/keybind_serializers.h"
 #include "GameData/clientoptions_serializers.h"
+
+#include "MapServer/EntityStorage.h"
 
 using namespace SEGSEvents;
 
@@ -61,19 +65,6 @@ void GameDBSyncService::on_update_timer(const ACE_Time_Value &tick_timer)
 void GameDBSyncService::on_destroy()
 {
     updateEntities();
-}
-
-void GameDBSyncService::addPlayer(Entity* e)
-{
-    ref_entity_mgr.InsertPlayer(e);
-}
-
-void GameDBSyncService::removePlayer(Entity* e)
-{
-    // update player one last time before logging off
-    updateEntity(e);
-
-    ref_entity_mgr.removeEntityFromActiveList(e);
 }
 
 void GameDBSyncService::updateEntities()

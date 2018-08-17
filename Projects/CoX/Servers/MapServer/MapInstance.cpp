@@ -33,6 +33,7 @@
 #include "Common/GameData/CoHMath.h"
 #include "SlashCommand.h"
 #include "GameData/playerdata_definitions.h"
+#include "GameData/map_definitions.h"
 #include "GameData/entitydata_serializers.h"
 #include "GameData/clientoptions_serializers.h"
 #include "GameData/keybind_serializers.h"

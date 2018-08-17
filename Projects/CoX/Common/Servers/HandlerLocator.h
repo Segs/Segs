@@ -22,9 +22,11 @@ class HandlerLocator
     static MessageBus *m_message_bus;
     static EventProcessor *m_db_sync_handler;
     static EventProcessor *m_auth_handler;
+    static EventProcessor *m_friend_handler;
     static std::deque<EventProcessor *> m_game_servers;
     static std::deque<EventProcessor *> m_map_servers;
     static std::deque<EventProcessor *> m_game_db_servers;
+    static std::deque<std::deque<EventProcessor *>> m_map_instances;
     static std::unordered_map<uint32_t,std::deque<EventProcessor *>> m_all_event_processors;
 public:
     HandlerLocator();
@@ -37,6 +39,8 @@ public:
     static void setAuth_Handler(EventProcessor *h) { m_auth_handler=h; }
     static EventProcessor *getAuth_Handler() { return m_auth_handler; }
 
+    static void setFriend_Handler(EventProcessor *h) { m_friend_handler=h; }
+    static EventProcessor *getFriend_Handler() { return m_friend_handler; }
 
     static const std::deque<EventProcessor *> &allGameDBHandlers() { return m_game_db_servers; }
     static const std::deque<EventProcessor *> &allGameHandlers() { return m_game_servers; }
@@ -77,6 +81,22 @@ public:
         if(id>=m_map_servers.size())
             m_map_servers.resize(id+1);
         m_map_servers[id] = h;
+    }
+    static EventProcessor *getMapInstance_Handler(uint8_t id,uint8_t subserver_id)
+    {
+        if(id>=m_map_instances.size())
+            return nullptr;
+        if(subserver_id>=m_map_instances[id].size())
+            return nullptr;
+        return m_map_instances[id][subserver_id];
+    }
+    static void setMapInstance_Handler(uint8_t id,uint8_t subserver_id,EventProcessor *h)
+    {
+        if(id>=m_map_instances.size())
+            m_map_instances.resize(id+1);
+        if(subserver_id>=m_map_instances[id].size())
+            m_map_instances[id].resize(subserver_id+1);
+        m_map_instances[id][subserver_id] = h;
     }
     template<class T>
     static EventProcessor *lookup(uint32_t instance_id)

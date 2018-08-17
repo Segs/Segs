@@ -85,6 +85,16 @@ find_package(Qt5 COMPONENTS Core Sql REQUIRED)
 if(ENABLE_TESTS)
     enable_testing()
     find_package(Qt5 COMPONENTS Test REQUIRED)
+    # Event registration support functionality
+    macro(add_segs_test testname) # followed by a list of directories to scan
+        add_executable(${testname} ${testname}.cpp)
+        add_test(${testname} ${testname})
+
+        target_link_libraries(${testname}
+            Qt5::Test
+            ${ARGN}
+        )
+    endmacro()
 endif()
 ##############################################
 # Event registration support functionality

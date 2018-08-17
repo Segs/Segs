@@ -12,6 +12,7 @@
 
 #include "GameServer.h"
 
+#include "FriendshipService/FriendHandler.h"
 #include "ConfigExtension.h"
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
@@ -50,6 +51,7 @@ namespace
 class GameServer::PrivateData
 {
 public:
+    std::unique_ptr<FriendHandler> m_friendship_service;
     ACE_INET_Addr           m_location; // this value is sent to the clients
     ACE_INET_Addr           m_listen_point; // the server binds here
     QString                 m_serverName="";
@@ -61,12 +63,16 @@ public:
     uint16_t                m_current_players=0;
     int                     m_max_character_slots;
     uint16_t                m_max_players=0;
-
     void ShutDown() const
     {
         // tell our handler to shut down too
         m_handler->putq(Finish::s_instance->shallow_copy());
         m_handler->wait();
+        if(m_friendship_service)
+        {
+            m_friendship_service->putq(Finish::s_instance->shallow_copy());
+            m_friendship_service->wait();
+        }
     }
 };
 
@@ -100,6 +106,8 @@ GameServer::GameServer(int id) : d(new PrivateData)
     d->m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
     d->m_handler->start();
     d->m_id = id;
+    d->m_friendship_service = std::make_unique<FriendHandler>(id);
+    d->m_friendship_service->activate();
     HandlerLocator::setGame_Handler(d->m_id,d->m_handler);
 }
 
