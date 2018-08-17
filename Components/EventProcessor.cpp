@@ -73,7 +73,8 @@ int EventProcessor::process_single_event()
     // this event processor cannot have any threads running to allow single-stepping
     assert(thr_count() < 1);
     Event *mb;
-    if(getq(mb,nullptr)==-1)
+    ACE_Time_Value tv = ACE_OS::gettimeofday();
+    if(getq(mb,&tv)==-1)
         return 0;
     if(mb->type()==SEGSEvents::evFinish)
     {
