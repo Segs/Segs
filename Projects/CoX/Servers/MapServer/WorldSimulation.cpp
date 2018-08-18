@@ -112,18 +112,29 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
     {
         cd->m_idle_time = 0;
         cd->m_afk = false;
+        cd->m_is_on_auto_logout = false;
     }
 
     const MapServerData &data(g_GlobalMapServer->runtimeData());
 
-    if (cd->m_idle_time >= data.m_time_to_afk && cd->m_afk == false)
+    if (cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         cd->m_afk = true;
 
-    if (data.m_uses_auto_logout && cd->m_idle_time >= data.m_time_to_auto_logout)
+    if (data.m_uses_auto_logout && cd->m_idle_time >= data.m_time_to_logout_msg)
     {
         // give message that character will be auto logged out in 2 mins
         if (!cd->m_is_on_task_force && !isEntityOnMissionMap(e->m_entity_data))
-        {}
+        {
+            cd->m_is_on_auto_logout = true;
+            // display message to player that they will be logged out in 2 mins if no action is done
+        }
+
+    }
+
+    if (cd->m_is_on_auto_logout && cd->m_idle_time >=
+            data.m_time_to_logout_msg + data.m_time_to_auto_logout)
+    {
+        // 30 seconds to logout
     }
 
 
