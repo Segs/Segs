@@ -8,7 +8,7 @@ namespace
 {
     const char *event_names[] =
     {
-        "PacketEvent",
+        "Packet",
         "ConnectRequest",
         "ConnectResponse",
         "DisconnectRequest",
