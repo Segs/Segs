@@ -225,4 +225,6 @@ protected:
         void on_recv_new_power(SEGSEvents::RecvNewPower *ev);
         void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
         void on_browser_close(SEGSEvents::BrowserClose *ev);
+        void on_trade_cancelled(SEGSEvents::TradeWasCancelledMessage* ev);
+        void on_trade_updated(SEGSEvents::TradeWasUpdatedMessage* ev);
 };

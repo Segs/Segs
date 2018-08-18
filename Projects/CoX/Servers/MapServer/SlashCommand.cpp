@@ -13,6 +13,7 @@
 #include "SlashCommand.h"
 
 #include "DataHelpers.h"
+#include "Events/ClientStates.h"
 #include "Events/GameCommandList.h"
 #include "Events/MapXferWait.h"
 #include "GameData/GameDataStore.h"
@@ -24,6 +25,7 @@
 #include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/Entity.h"
 #include "NetStructures/LFG.h"
+#include "NetStructures/Trade.h"
 #include "Settings.h"
 #include "Common/GameData/map_definitions.h"
 
@@ -139,6 +141,9 @@ void cmdHandler_EmailHeaders(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
+void cmdHandler_TradeAccept(const QString &cmd, MapClientSession &sess);
+void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess);
 
 static const SlashCommand g_defined_slash_commands[] = {
     /* Access Level 9 Commands */
@@ -222,6 +227,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"friendlist", "fl"}, "Toggle visibility of friendslist", cmdHandler_FriendList, 1},
     {{"MapXferList", "mapmenu"}, "Show MapXferList", cmdHandler_MapXferList, 1},
     {{"respec"}, "Start ReSpec", cmdHandler_ReSpec, 1},
+    {{"trade"}, "Trade with player", cmdHandler_Trade, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
@@ -232,6 +238,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"emailread"}, "Request Email Message with Given ID", cmdHandler_EmailRead, 0},
     {{"emailsend"}, "Send Email", cmdHandler_EmailSend, 0},
     {{"emaildelete"}, "Delete Email with Given ID",cmdHandler_EmailDelete, 0},
+    {{"trade_accept"}, "Accept Trade invite", cmdHandler_TradeAccept, 0},
+    {{"trade_decline"}, "Decline Trade invite", cmdHandler_TradeDecline, 0},
 };
 
 /************************************************************
@@ -1430,6 +1438,17 @@ void cmdHandler_ReSpec(const QString &/*cmd*/, MapClientSession &sess)
     qCDebug(logSlashCommand).noquote() << msg;
 }
 
+void cmdHandler_Trade(const QString &cmd, MapClientSession &sess)
+{
+    Entity* const tgt = getEntityFromCommand(cmd, sess);
+    if (tgt == nullptr || sess.m_ent == nullptr)
+    {
+        return;
+    }
+
+    requestTrade(*sess.m_ent, *tgt);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
@@ -1548,6 +1567,52 @@ void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
     QString msg = "Email Deleted ID: " + QString::number(id);
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_TradeAccept(const QString &cmd, MapClientSession &sess)
+{
+    // Game command: "trade_accept \"From\" to_db_id to_db_id \"To\""
+    const QStringList args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    if (args.size() < 4)
+    {
+        qWarning() << "Wrong number of arguments for TradeAccept:" << cmd;
+        discardTrade(*sess.m_ent);
+        return;
+    }
+
+    // We need only the "from" name.
+    const QString from_name = args.value(1);
+    Entity* const from_ent = getEntity(&sess, from_name);
+    if (from_ent == nullptr)
+    {
+        discardTrade(*sess.m_ent);
+        return;
+    }
+
+    acceptTrade(*sess.m_ent, *from_ent);
+}
+
+void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess)
+{
+    // Game command: "trade_decline \"From\" to_db_id \"To\""
+    const QStringList args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    if (args.size() < 4)
+    {
+        qWarning() << "Wrong number of arguments for TradeAccept:" << cmd;
+        discardTrade(*sess.m_ent);
+        return;
+    }
+
+    // We need only the "from" name.
+    const QString from_name  = args.value(1);
+    Entity* const from_ent = getEntity(&sess, from_name);
+    if (from_ent == nullptr)
+    {
+        discardTrade(*sess.m_ent);
+        return;
+    }
+
+    declineTrade(*sess.m_ent, *from_ent);
 }
 
 bool canAccessCommand(const SlashCommand &cmd, MapClientSession &src)
