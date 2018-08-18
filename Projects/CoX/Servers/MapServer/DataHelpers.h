@@ -100,6 +100,7 @@ const QString       getMapPath(const EntityData &ed);
 const QString       getMapPath(size_t index);
 const QString       getEntityDisplayMapName(const EntityData &ed);
 const QString       getFriendDisplayMapName(const Friend &f);
+const bool          isEntityOnMissionMap(const EntityData &ed);
 uint32_t            getXP(const Character &c);
 uint32_t            getDebt(const Character &c);
 uint32_t            getPatrolXP(const Character &c);

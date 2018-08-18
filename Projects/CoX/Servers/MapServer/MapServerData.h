@@ -55,7 +55,8 @@ public:
         Parse_AllCommandCategories  m_command_categories;
         NPCStorage                  m_npc_store;
         float                       m_player_fade_in;
-        float                       m_time_to_afk = 5 * 60 * 1000;          // 5 mins * 60 seccs * 1000 ms
+        float                       m_time_to_afk = 5 * 60 * 1000;          // 5 mins * 60 secs * 1000 ms
         float                       m_time_to_logout_msg = 18 * 60 * 1000;
         float                       m_time_to_auto_logout = 2 * 60 * 1000;
+        float                       m_uses_auto_logout = true;
 };

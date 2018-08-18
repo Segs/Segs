@@ -451,6 +451,14 @@ const QString getEntityDisplayMapName(const EntityData &ed)
     return getDisplayMapName(ed.m_map_idx);
 }
 
+const bool isEntityOnMissionMap(const EntityData &ed)
+{
+    QString mapName = getMapName(ed.m_map_idx);
+
+    // Hazard and Trial maps are considered as mission maps
+    return mapName.contains("Hazard") || mapName.contains("Trial");
+}
+
 const QString getFriendDisplayMapName(const Friend &f)
 {
     if (!f.m_online_status)

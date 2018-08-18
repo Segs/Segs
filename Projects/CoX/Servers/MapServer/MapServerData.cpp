@@ -234,6 +234,8 @@ bool MapServerData::read_runtime_data(const QString &directory_path)
         return false;
     if(!read_npcs(directory_path))
         return false;
+    if(!read_settings(directory_path))
+        return false;
     qInfo().noquote() << "Finished reading game data.";
     {
         TIMED_LOG({
@@ -369,6 +371,7 @@ bool MapServerData::read_settings(const QString &directory_path)
     // m_time_to_afk = 5 minutes
     // m_time_to_logout_msg = 18 minutes
     // m_time_to_auto_logout = 2 minutes
+    // m_uses_auto_logout = true/false
 
     return true;
 }

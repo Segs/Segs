@@ -13,6 +13,8 @@
 #include "WorldSimulation.h"
 
 #include "MapInstance.h"
+#include "MapServer.h"
+#include "MapServerData.h"
 
 #include "Common/Servers/Database.h"
 #include "Events/GameCommandList.h"
@@ -112,7 +114,18 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
         cd->m_afk = false;
     }
 
-    // TODO: prepare a bunch of if statements based on cd->m_idle_time
+    const MapServerData &data(g_GlobalMapServer->runtimeData());
+
+    if (cd->m_idle_time >= data.m_time_to_afk && cd->m_afk == false)
+        cd->m_afk = true;
+
+    if (data.m_uses_auto_logout && cd->m_idle_time >= data.m_time_to_auto_logout)
+    {
+        // give message that character will be auto logged out in 2 mins
+        if (!cd->m_is_on_task_force && !isEntityOnMissionMap(e->m_entity_data))
+        {}
+    }
+
 
     /*
     CharacterDatabase *char_db = AdminServer::instance()->character_db();
