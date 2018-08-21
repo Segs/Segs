@@ -44,8 +44,9 @@ set(GAMEDATA_SRC
     keybind_serializers.h
     keybind_definitions.h
     keybind_definitions.cpp
-    #particlesys_serializers.cpp
-    #particlesys_serializers.h
+    particlesys_serializers.cpp
+    particlesys_serializers.h
+    particle_definitions.h
     costume_serializers.cpp
     costume_serializers.h
     #def_serializers.cpp

@@ -37,7 +37,8 @@
 #include "Common/GameData/other_definitions.h"
 #include "Common/GameData/origin_definitions.h"
 #include "serialization_common.h"
-//#include "Common/GameData/particlesys_serializers.h"
+#include "Common/GameData/particlesys_serializers.h"
+#include "Common/GameData/particle_definitions.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -77,7 +78,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {levelsdebts_i0_requiredCrc         , eLevelsDebts},
 //    {combining_i0_requiredCrc           , eCombineChances},
 //    {boosteffectiveness_i0_requiredCrc  , eBoostEffectiveness},
-//    {particlesystems_i0_requiredCrc     , eParticleSystems},
+    {particlesystems_i0_requiredCrc     , eParticleSystems},
     {shoplist_i0_requiredCrc            , eShops},
     {shopitems_i0_requiredCrc           , eShopItems},
     {shopdepts_i0_requiredCrc           , eShopDepts},
@@ -148,6 +149,7 @@ void showSupportedBinTypes()
 {
     qDebug()<<"Currently supported file types ";
     qDebug()<<"   I0<"<<QString::number(levelsdebts_i0_requiredCrc,16)<<"> Experience data - 'experience.bin'";
+    qDebug()<<"   I0<"<<QString::number(particlesystems_i0_requiredCrc,16)<<"> Particle system definitions - 'particles.bin'";
     qDebug()<<"   I0<"<<QString::number(shoplist_i0_requiredCrc,16)<<"> Shops data - 'stores.bin'";
     qDebug()<<"   I0<"<<QString::number(shopitems_i0_requiredCrc,16)<<"> Shops items- 'items.bin'";
     qDebug()<<"   I0<"<<QString::number(shopdepts_i0_requiredCrc,16)<<"> Shop department names data - 'depts.bin'";
@@ -198,7 +200,7 @@ int main(int argc,char **argv)
           case eLevelsDebts:    doConvert(doLoadRef<LevelExpAndDebt>(&binfile),target_basename,json_output); break;
 //        case eCombineChances: doConvert(doLoad<Parse_Combining>(&binfile),target_basename,json_output); break;
 //        case eBoostEffectiveness: doConvert(doLoad<Parse_Effectiveness>(&binfile),target_basename,json_output); break;
-//        case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(&binfile),target_basename,json_output); break;
+          case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(&binfile),target_basename,json_output); break;
           case eShops:        doConvert(doLoadRef<AllShops_Data>(&binfile),target_basename,json_output); break;
           case eShopItems:    doConvert(doLoad<AllShopItems_Data>(&binfile),target_basename,json_output); break;
           case eShopDepts:    doConvert(doLoad<AllShopDepts_Data>(&binfile),target_basename,json_output); break;

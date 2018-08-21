@@ -73,6 +73,14 @@ enum GeoEvent_Flags {
     Event_AdoptParentEntity = 4,
     Event_NoReticle = 8,
 };
+struct FxSoundData
+{
+    QString m_Name;
+    float m_Radius = 100.0f;
+    float m_Fade = 20.0f;
+    float m_Volume = 1.0f;
+};
+
 struct FxGeoEntry_Event
 {
     QString m_EName;
@@ -91,7 +99,7 @@ struct FxGeoEntry_Event
     QString m_POther;
     QString m_PMagnet;
     std::vector<EventSplat> m_Splats;
-    std::vector<std::vector<QString>> m_Sound;
+    std::vector<FxSoundData> m_Sounds;
     int m_Debris=0;
     QString m_WorldGroup;
     std::pair<uint8_t,uint8_t> m_Power;

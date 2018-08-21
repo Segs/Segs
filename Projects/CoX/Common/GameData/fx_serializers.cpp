@@ -149,8 +149,18 @@ bool loadFrom(BinStore * s, FxGeoEntry_Event & target)
             target.m_Splats.emplace_back();
             ok &= loadFrom(s,target.m_Splats.back());
         } else if(_name.startsWith("Sound")) {
-            target.m_Sound.emplace_back();
-            ok &= s->read(target.m_Sound.back());
+            std::vector<QString> snd_entry;
+            ok &= s->read(snd_entry);
+            ok &= snd_entry.size()>1;
+            FxSoundData true_data;
+            true_data.m_Name = snd_entry[0];
+            if(snd_entry.size()>1)
+                true_data.m_Radius = snd_entry[1].toFloat();
+            if(snd_entry.size()>2)
+                true_data.m_Fade = snd_entry[2].toFloat();
+            if(snd_entry.size()>3)
+                true_data.m_Volume = snd_entry[3].toFloat();
+            target.m_Sounds.emplace_back(std::move(true_data));
         } else if(_name.startsWith("While")) {
             target.m_While.emplace_back();
             ok &= s->read(target.m_While.back());
@@ -256,7 +266,15 @@ static void serialize(Archive & archive, EventSplat & m)
     archive(cereal::make_nvp("Tex1",m.tex1));
     archive(cereal::make_nvp("Tex2",m.tex2));
 }
-
+template<class Archive>
+static void serialize(Archive & archive, FxSoundData & m)
+{
+    archive(cereal::make_nvp("Name",m.m_Name));
+    // TODO: make the following fields optional
+    archive(cereal::make_nvp("Radius",m.m_Radius));
+    archive(cereal::make_nvp("Fade",m.m_Fade));
+    archive(cereal::make_nvp("Volume",m.m_Volume));
+}
 template<class Archive>
 static void serialize(Archive & archive, FxGeoEntry_Event & m)
 {
@@ -281,7 +299,7 @@ static void serialize(Archive & archive, FxGeoEntry_Event & m)
     archive(cereal::make_nvp("Geoms",m.m_Geom));
     archive(cereal::make_nvp("Parts",m.m_Part));
     archive(cereal::make_nvp("Splats",m.m_Splats));
-    archive(cereal::make_nvp("Sounds",m.m_Sound));
+    archive(cereal::make_nvp("Sounds",m.m_Sounds));
     archive(cereal::make_nvp("Whiles",m.m_While));
     archive(cereal::make_nvp("Untils",m.m_Until));
 }
@@ -370,7 +388,7 @@ bool loadFrom(BinStore * s, Fx_AllBehaviors & target)
     return ok;
 }
 template<class Archive>
-static void serialize(Archive & archive, ColorFx & m)
+void serialize(Archive & archive, ColorFx & m)
 {
     archive(cereal::make_nvp("StartColor",m.startcolor));
     archive(cereal::make_nvp("StartTime",m.startTime));
