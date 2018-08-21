@@ -149,7 +149,12 @@ bool BinStore::read( uint8_t &v )
     size_t res = read_internal(v);
     return res==1;
 }
-
+bool BinStore::readU( uint8_t &v )
+{
+    size_t res = read_internal(v);
+    uint8_t skipover;
+    return res+read_internal(skipover) + read_internal(skipover) + read_internal(skipover)==4;
+}
 bool BinStore::read(Vec2 &val)
 {
     bool parse_ok=true;

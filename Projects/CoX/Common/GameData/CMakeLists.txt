@@ -35,6 +35,9 @@ set(GAMEDATA_SRC
     npc_serializers.cpp
     npc_serializers.h
     npc_definitions.h
+    fx_serializers.cpp
+    fx_serializers.h
+    fx_definitions.h
     other_definitions.h
     origin_definitions.h
     keybind_serializers.cpp
@@ -48,8 +51,9 @@ set(GAMEDATA_SRC
     #def_serializers.cpp
     map_serializers.cpp
     map_serializers.h
-    #seq_serializers.cpp
-    #seq_serializers.h
+#    seq_serializers.cpp
+#    seq_serializers.h
+    seq_definitions.h
     shop_serializers.cpp
     shop_serializers.h
     trick_serializers.cpp

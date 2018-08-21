@@ -28,9 +28,11 @@
 #include "Common/GameData/npc_serializers.h"
 #include "Common/GameData/trick_definitions.h"
 #include "Common/GameData/trick_serializers.h"
+#include "Common/GameData/fx_definitions.h"
+#include "Common/GameData/fx_serializers.h"
+
 #include "Common/GameData/charclass_definitions.h"
 #include "Common/GameData/charclass_serializers.h"
-//#include "Common/GameData/seq_serializers.h"
 #include "Common/GameData/def_serializers.h"
 #include "Common/GameData/other_definitions.h"
 #include "Common/GameData/origin_definitions.h"
@@ -67,6 +69,8 @@ enum BinType {
     eTrickDefinitions,
     ePowerDefinitions,
     eNpcDefinitions,
+    eFxBehavior_Definitions,
+    eFxInfo_Definitions,
 };
 
 const QHash<uint32_t,BinType> knownSerializers = {
@@ -92,6 +96,8 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {origins_i0_requiredCrc             , eEntityOrigins},
     {powers_i0_requiredCrc              , ePowerDefinitions},
     {npccostumesets_i0_requiredCrc      , eNpcDefinitions},
+    {fxbehaviors_i0_requiredCrc         , eFxBehavior_Definitions},
+    {fxinfos_i0_requiredCrc             , eFxInfo_Definitions},
 };
 
 BinType getLoader(const QString &fname)
@@ -158,6 +164,8 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(origins_i0_requiredCrc,16)<<"> Entity origin definitions- 'origins.bin' or 'villain_origins.bin'";
     qDebug()<<"   I0<"<<QString::number(powers_i0_requiredCrc,16)<<"> Power definitions- 'powers.bin'";
     qDebug()<<"   I0<"<<QString::number(npccostumesets_i0_requiredCrc,16)<<"> NPC definitions - 'VillainCostume.bin'";
+    qDebug()<<"   I0<"<<QString::number(fxbehaviors_i0_requiredCrc,16)<<"> FxBehavior definitions - 'behaviors.bin'";
+    qDebug()<<"   I0<"<<QString::number(fxinfos_i0_requiredCrc,16)<<"> FxInfo definitions - 'fxinfo.bin'";
     qDebug()<<"Numbers in brackets are file CRCs - bytes 8 to 13 in the bin.";
 }
 } // end of anonymous namespace
@@ -179,7 +187,7 @@ int main(int argc,char **argv)
     binfile.open(argv[1],0);
     QString target_basename=QFileInfo(argv[1]).baseName();
     bool json_output=true;
- 
+
     try // handle possible cereal::RapidJSONException
     {
       if(app.arguments().size()>2)
@@ -208,6 +216,8 @@ int main(int argc,char **argv)
           case eEntityOrigins: doConvert(doLoadRef<Parse_AllOrigins>(&binfile),target_basename,json_output); break;
           case ePowerDefinitions: doConvert(doLoadRef<AllPowerCategories>(&binfile),target_basename,json_output); break;
           case eNpcDefinitions: doConvert(doLoadRef<AllNpcs_Data>(&binfile),target_basename,json_output); break;
+          case eFxBehavior_Definitions: doConvert(doLoadRef<Fx_AllBehaviors>(&binfile),target_basename,json_output); break;
+          case eFxInfo_Definitions: doConvert(doLoadRef<Fx_AllInfos>(&binfile),target_basename,json_output); break;
           default:
               break;
       }
