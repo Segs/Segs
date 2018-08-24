@@ -12,10 +12,6 @@
 
 #include "WorldSimulation.h"
 
-#include "MapInstance.h"
-#include "MapServer.h"
-#include "MapServerData.h"
-
 #include "Common/Servers/Database.h"
 #include "Events/GameCommandList.h"
 #include "NetStructures/Character.h"
@@ -103,40 +99,6 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
         if(e->m_time_till_logout<0)
             e->m_time_till_logout=0;
     }
-
-    CharacterData* cd = &e->m_char->m_char_data;
-
-    if (e->inp_state.m_input_received == false)
-        cd->m_idle_time += dT.msec();
-    else
-    {
-        cd->m_idle_time = 0;
-        cd->m_afk = false;
-        cd->m_is_on_auto_logout = false;
-    }
-
-    const MapServerData &data(g_GlobalMapServer->runtimeData());
-
-    if (cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
-        cd->m_afk = true;
-
-    if (data.m_uses_auto_logout && cd->m_idle_time >= data.m_time_to_logout_msg)
-    {
-        // give message that character will be auto logged out in 2 mins
-        if (!cd->m_is_on_task_force && !isEntityOnMissionMap(e->m_entity_data))
-        {
-            cd->m_is_on_auto_logout = true;
-            // display message to player that they will be logged out in 2 mins if no action is done
-        }
-
-    }
-
-    if (cd->m_is_on_auto_logout && cd->m_idle_time >=
-            data.m_time_to_logout_msg + data.m_time_to_auto_logout)
-    {
-        // 30 seconds to logout
-    }
-
 
     /*
     CharacterDatabase *char_db = AdminServer::instance()->character_db();

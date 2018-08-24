@@ -58,7 +58,8 @@ namespace
         State_Transmit_Timer = 2,
         Session_Reaper_Timer   = 3,
         Link_Idle_Timer   = 4,
-        Sync_Service_Update_Timer = 5
+        Sync_Service_Update_Timer = 5,
+        Afk_Update_Timer = 6
     };
 
     const ACE_Time_Value reaping_interval(0,1000*1000);
@@ -66,6 +67,7 @@ namespace
     const ACE_Time_Value link_update_interval(0,500*1000);
     const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
     const ACE_Time_Value sync_service_update_interval(0, 30000*1000);
+    const ACE_Time_Value afk_update_interval(0, 1000 * 1000);
     const ACE_Time_Value resend_interval(0,250*1000);
     const ACE_Time_Value maximum_time_without_packets(2,0);
     const constexpr int MinPacketsToAck=5;
@@ -171,6 +173,7 @@ void MapInstance::start(const QString &scenegraph_path)
     m_resend_timer.reset(new SEGSTimer(this,(void *)State_Transmit_Timer,resend_interval,false)); // state broadcast ticks
     m_link_timer.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
     m_sync_service_timer.reset(new SEGSTimer(this,(void *)Sync_Service_Update_Timer,sync_service_update_interval,false));
+    m_afk_update_timer.reset(new SEGSTimer(this, (void *)Afk_Update_Timer, afk_update_interval, false ));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
 }
 
@@ -460,8 +463,15 @@ void MapInstance::on_client_quit(ClientQuit*ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     // process client removal -> sending delete event to all clients etc.
     assert(session.m_ent);
+
     if(ev->abort_disconnect)
-        abortLogout(session.m_ent);
+    {
+        // forbid the player from aborting logout,
+        // if logout is called automatically (through a loooong period of AFK)
+        if (!session.m_ent->m_char->m_char_data.m_is_on_auto_logout)
+            abortLogout(session.m_ent);
+    }
+
     else
         session.m_ent->beginLogout(10);
 }
@@ -769,6 +779,9 @@ void MapInstance::on_timeout(TimerEvent *ev)
             break;
         case Sync_Service_Update_Timer:
             on_update_entities();
+            break;
+        case Afk_Update_Timer:
+            on_afk_update();
             break;
     }
 }
@@ -2026,6 +2039,62 @@ void MapInstance::on_interact_with(InteractWithEntity *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with"<<ev->m_srv_idx;
+}
+
+
+
+void MapInstance::on_afk_update()
+{
+    const std::vector<MapClientSession *> &active_sessions (m_session_store.get_active_sessions());
+
+    for (const auto &sess : active_sessions)
+    {
+        Entity *e = sess->m_ent;
+        CharacterData* cd = &e->m_char->m_char_data;
+
+        if (e->inp_state.m_input_received == false)
+            cd->m_idle_time += afk_update_interval.get_msec();
+        else
+        {
+            cd->m_idle_time = 0;
+            cd->m_afk = false;
+            cd->m_is_on_auto_logout = false;
+        }
+
+        const MapServerData &data(g_GlobalMapServer->runtimeData());
+        QString msg;
+
+        if (cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
+        {
+            toggleAFK(* e->m_char, "Auto AFK");
+            msg = "You are AFKed after x minutes of inactivity";
+            sendInfoMessage(MessageChannel::EMOTE, msg, sess);
+        }
+
+
+        if (data.m_uses_auto_logout && cd->m_idle_time >= data.m_time_to_logout_msg)
+        {
+            // give message that character will be auto logged out in 2 mins
+            // player must not be on task force and is not on mission map for this to happen
+            if (!cd->m_is_on_task_force && !isEntityOnMissionMap(e->m_entity_data))
+            {
+                cd->m_is_on_auto_logout = true;
+                msg = QString("You have been inactive for Y minutes. You will automatically ") +
+                      QString("be logged out if you stay idle for Z minutes");
+                sendInfoMessage(MessageChannel::EMOTE, msg, sess);
+            }
+        }
+
+        // I don't think we need to check if !e->m_is_logging_out, which is the unforced way of logging out
+        if (cd->m_is_on_auto_logout && cd->m_idle_time >=
+                data.m_time_to_logout_msg + data.m_time_to_auto_logout)
+        {
+            e->beginLogout(30);
+            msg = "You have been inactive for too long. Beginning auto-logout process...";
+            sendInfoMessage(MessageChannel::EMOTE, msg, sess);
+        }
+    }
+
 }
 
 void MapInstance::on_update_entities()
