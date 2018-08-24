@@ -13,6 +13,7 @@
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
 #include "MapSceneGraph.h"
+#include "Entity.h"
 
 #include "Events/ChatMessage.h"
 #include "Events/StandardDialogCmd.h"
@@ -62,7 +63,11 @@ ScriptingEngine::ScriptingEngine() : m_private(new ScriptingEnginePrivate)
 ScriptingEngine::~ScriptingEngine()
 {
 }
-
+template<class T>
+static void destruction_is_an_error(T &v)
+{
+    assert(false);
+}
 void ScriptingEngine::registerTypes()
 {
     m_private->m_lua.new_usertype<glm::vec3>( "vec3",
@@ -79,12 +84,19 @@ void ScriptingEngine::registerTypes()
         "display_name", &Contact::m_display_name
     );
     m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
-        "new", sol::no_constructor, // The client links are not constructible from the script side.
+        "new",    sol::no_constructor, // The client links are not constructible from the script side.
+        "m_ent",  sol::readonly( &MapClientSession::m_ent ),
         "admin_chat_message", sendChatMessage,
         "simple_dialog", [](MapClientSession *cl,const char *dlgtext) {
             auto n = new StandardDialogCmd(dlgtext);
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
         }
+    );
+    m_private->m_lua.new_usertype<Entity>( "Entity",
+        "new",    sol::no_constructor, // not constructible from the script side.
+        sol::meta_function::garbage_collect, sol::destructor( destruction_is_an_error<Entity> ),
+        "abort_logout",  abortLogout,
+        "begin_logout",  &Entity::beginLogout
     );
     m_private->m_lua.new_usertype<MapSceneGraph>( "MapSceneGraph",
         "new", sol::no_constructor, // The client links are not constructible from the script side.

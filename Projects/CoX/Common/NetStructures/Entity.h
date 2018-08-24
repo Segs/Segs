@@ -170,8 +170,8 @@ class Entity
     using EntityPtr = std::unique_ptr<EntityData>;
     using NPCPtr = std::unique_ptr<NPCData>;
 private:
-                            Entity();
-virtual                     ~Entity();
+            Entity();
+            ~Entity();
 public:
         struct currentInputState
         {
