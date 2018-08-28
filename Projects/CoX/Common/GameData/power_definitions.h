@@ -237,7 +237,7 @@ struct Power_Data
 
 struct Parse_PowerSet
 {
-    QString                      Name;
+    QString                      m_Name;
     struct StoredPowerCategory * parent_PowerCategory;
     QString                      DisplayName;
     QString                      DisplayHelp;

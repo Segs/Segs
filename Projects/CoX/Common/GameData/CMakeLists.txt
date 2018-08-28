@@ -15,6 +15,8 @@ set(GAMEDATA_SRC
     entitydata_definitions.h
     entitydata_serializers.cpp
     entitydata_serializers.h
+    trays_serializers.cpp
+    trays_serializers.h
 # Resource file formats
     anim_serializers.cpp
     anim_serializers.h

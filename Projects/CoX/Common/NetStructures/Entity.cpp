@@ -159,7 +159,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = true;
-    e.m_target_idx                      = 0;
+    e.m_target_idx                      = e.m_idx;
     e.m_assist_target_idx               = 0;
 
     e.m_char.reset(new Character);

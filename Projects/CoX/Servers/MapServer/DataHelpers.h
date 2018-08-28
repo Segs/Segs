@@ -7,18 +7,23 @@
 
 #pragma once
 #include "Events/MessageChannels.h"
+#include "Events/FloatingInfoStyles.h"
+#include "Events/ClientStates.h"
 #include "glm/vec3.hpp"
 #include <stdint.h>
 #include <QString>
+
 class QString;
 class Entity;
 class Character;
 struct PlayerData;
 struct EntityData;
-
 struct Friend;
 struct FriendsList;
 struct MapClientSession;
+struct CharacterPowerSet;
+struct CharacterPower;
+class MapServerData;
 
 struct MapData
 {
@@ -75,10 +80,12 @@ void    charUpdateDB(Entity *e);
 void    charUpdateGUI(Entity *e);
 int     getEntityOriginIndex(bool is_player,const QString &origin_name);
 int     getEntityClassIndex(bool is_player, const QString &class_name);
+
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(MapClientSession *src, uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
+
 
 /*
  * Character Methods
@@ -104,7 +111,9 @@ uint32_t            getXP(const Character &c);
 uint32_t            getDebt(const Character &c);
 uint32_t            getPatrolXP(const Character &c);
 const QString &     getGenericTitle(const Character &c);
+const QString &     getGenericTitle(uint32_t val);
 const QString &     getOriginTitle(const Character &c);
+const QString &     getOriginTitle(uint32_t val);
 const QString &     getSpecialTitle(const Character &c);
 
 uint32_t            getInf(const Character &c);
@@ -137,6 +146,12 @@ void    toggleLFG(Entity &e);
 
 
 /*
+ * getMapServerData Wrapper to provide access to NetStructures
+ */
+MapServerData *getMapServerData();
+
+
+/*
  * sendInfoMessage wrapper to provide access to NetStructures
  */
 void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
@@ -145,7 +160,14 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendClientState(Entity *tgt, ClientStates client_state);
+void showMapXferList(Entity *ent, bool has_location, glm::vec3 &location, QString &name);
+void sendFloatingInfo(Entity *tgt, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount);
+void sendLevelUp(Entity *tgt);
+void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy);
+void sendChangeTitle(Entity *tgt, bool select_origin);
+void sendTrayAdd(Entity *tgt, uint32_t pset_idx, uint32_t pow_idx);
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);

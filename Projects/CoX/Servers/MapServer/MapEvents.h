@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Events/MapEventTypes.h"
+#include "NetStructures/Powers.h"
 #include "LinkLevelEvent.h"
 #include "BitStream.h"
 #include "CRUD_Link.h"
@@ -182,44 +183,6 @@ public:
 
 };
 
-class CombineRequest final : public MapLinkEvent
-{
-public:
-    struct PowerEntry
-    {
-        int powerset_array_index;
-        int powerset_index;
-        int index;
-    };
-    PowerEntry first_power;
-    PowerEntry second_power;
-    CombineRequest() : MapLinkEvent(MapEventTypes::evCombineRequest)
-    {}
-    void serializeto(BitStream &bs) const
-    {
-        bs.StorePackedBits(1,40); // opcode
-        assert(false); // since we will not send CombineRequest to anyone :)
-    }
-    // now to make this useful ;)
-
-    void getPowerForCombinde(BitStream &bs,PowerEntry &entry)
-    {
-        // first bit tells us if we have full/partial?? data
-        // here we can do a small refactoring, because in both branches of if/else, the last set value is index.
-        if(bs.GetBits(1))
-        {
-            entry.powerset_array_index = bs.GetPackedBits(1);
-            entry.powerset_index = bs.GetPackedBits(1);
-        }
-        entry.index = bs.GetPackedBits(1);
-    }
-    void serializefrom(BitStream &bs)
-    {
-        getPowerForCombinde(bs,first_power);
-        getPowerForCombinde(bs,second_power);
-    }
-};
-
 #include "Events/InputState.h"
 #include "Events/ChatMessage.h"
 #include "Events/WindowState.h"
@@ -300,8 +263,8 @@ class ChangeStance final : public MapLinkEvent
 {
 public:
     bool enter_stance;
-    int powerset_index;
-    int power_index;
+    int pset_idx;
+    int pow_idx;
     ChangeStance():MapLinkEvent(MapEventTypes::evChangeStance)
     {}
     void serializeto(BitStream &bs) const
@@ -313,8 +276,31 @@ public:
         enter_stance = bs.GetBits(1);
         if(!enter_stance)
             return;
-        powerset_index=bs.GetPackedBits(4);
-        power_index=bs.GetPackedBits(4);
+        pset_idx = bs.GetPackedBits(4);
+        pow_idx = bs.GetPackedBits(4);
+    }
+
+};
+
+class SendStance final : public MapLinkEvent
+{
+public:
+    bool             m_enter_stance;
+    uint32_t         m_pset_idx;
+    uint32_t         m_pow_idx;
+    SendStance() : MapLinkEvent(MapEventTypes::evSendStance)
+    {
+    }
+    void serializeto(BitStream &bs) const
+    {
+        bs.StoreBits(1, m_enter_stance);
+        bs.StorePackedBits(4, m_pset_idx);
+        bs.StorePackedBits(4, m_pow_idx);
+    }
+    void serializefrom(BitStream &/*bs*/)
+    {
+        // TODO: Seems like nothing is received server side.
+        qWarning() << "From SendStance unimplemented.";
     }
 
 };
@@ -343,10 +329,106 @@ public:
     }
 };
 
+// [[ev_def:type]]
+class DialogButton final : public MapLinkEvent
+{
+public:
+    // [[ev_def:field]]
+    uint32_t button_id;
+    DialogButton():MapLinkEvent(MapEventTypes::evDialogButton)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,24);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        button_id = bs.GetPackedBits(1);
+        //bs.GetPackedBits(1);
+        //bs.GetPackedBits(1);
+        //bs.GetPackedBits(1);
+    }
+};
+
+// [[ev_def:type]]
+class ActivatePower final : public MapLinkEvent
+{
+public:
+    // [[ev_def:field]]
+    uint32_t pset_idx;
+    // [[ev_def:field]]
+    uint32_t pow_idx;
+    // [[ev_def:field]]
+    uint32_t target_idx;
+    // [[ev_def:field]]
+    uint32_t target_db_id;
+
+    ActivatePower():MapLinkEvent(MapEventTypes::evActivatePower)
+    {}
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,27);
+        bs.StorePackedBits(4, pset_idx);
+        bs.StorePackedBits(4, pow_idx);
+        bs.StorePackedBits(16, target_idx);
+        bs.StorePackedBits(32, target_db_id);
+    }
+    void serializefrom(BitStream &bs) override
+    {
+        pset_idx = bs.GetPackedBits(4);
+        pow_idx = bs.GetPackedBits(4);
+        target_idx = bs.GetPackedBits(16);
+        target_db_id = bs.GetPackedBits(32);
+    }
+};
+
+// [[ev_def:type]]
+class ActivatePowerAtLocation final : public MapLinkEvent
+{
+public:
+    // [[ev_def:field]]
+    uint32_t pset_idx;
+    // [[ev_def:field]]
+    uint32_t pow_idx;
+    // [[ev_def:field]]
+    uint32_t target_idx;
+    // [[ev_def:field]]
+    uint32_t target_db_id;
+    // [[ev_def:field]]
+    glm::vec3 location;
+
+    ActivatePowerAtLocation():MapLinkEvent(MapEventTypes::evActivatePowerAtLocation)
+    {}
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,27);
+        bs.StorePackedBits(4, pset_idx);
+        bs.StorePackedBits(4, pow_idx);
+        bs.StorePackedBits(16, target_idx);
+        bs.StorePackedBits(32, target_db_id);
+        bs.StoreFloat(location.x);
+        bs.StoreFloat(location.y);
+        bs.StoreFloat(location.z);
+    }
+    void serializefrom(BitStream &bs) override
+    {
+        pset_idx = bs.GetPackedBits(4);
+        pow_idx = bs.GetPackedBits(4);
+        target_idx = bs.GetPackedBits(16);
+        target_db_id = bs.GetPackedBits(32);
+        location.x = bs.GetFloat();
+        location.y = bs.GetFloat();
+        location.z = bs.GetFloat();
+    }
+};
+
+// [[ev_def:type]]
 class ActivateInspiration final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     int slot_idx;
+    // [[ev_def:field]]
     int row_idx;
     ActivateInspiration():MapLinkEvent(MapEventTypes::evActivateInspiration)
     {}
@@ -425,6 +507,29 @@ public:
     void serializefrom(BitStream &/*bs*/)
     {
 //        Parameterless - serializefrom is no-op
+    }
+};
+
+// [[ev_def:type]]
+class RecvSelectedTitles : public MapLinkEvent
+{
+public:
+    // [[ev_def:field]]
+    bool m_has_prefix;
+    // [[ev_def:field]]
+    uint32_t m_generic, m_origin;
+
+    RecvSelectedTitles():MapLinkEvent(MapEventTypes::evRecvSelectedTitles)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,66);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        m_has_prefix = bs.GetBits(1);
+        m_generic = bs.GetPackedBits(5);
+        m_origin = bs.GetPackedBits(5);
     }
 };
 
@@ -517,24 +622,24 @@ public:
 class SwitchTray final : public MapLinkEvent
 {
 public:
-    uint32_t tray1_num = 0;
-    uint32_t tray2_num = 0;
-    uint32_t tray_unk1 = 0;
+    //uint32_t tray1_num = 0;
+    //uint32_t tray2_num = 0;
+    PowerTrayGroup tray_group;
+
     SwitchTray():MapLinkEvent(MapEventTypes::evSwitchTray)
     {}
     void serializeto(BitStream &bs) const
     {
         bs.StorePackedBits(1,8);
-        bs.StorePackedBits(32,tray1_num);
-        bs.StorePackedBits(32,tray2_num);
-        bs.StoreBits(1,tray_unk1);
+        //bs.StorePackedBits(32,tray1_num);
+        //bs.StorePackedBits(32,tray2_num);
+        tray_group.serializeto(bs);
     }
     void serializefrom(BitStream &bs)
     {
-        tray1_num = bs.GetPackedBits(32); // Appears to correlate to Tray1's #
-        tray2_num = bs.GetPackedBits(32); // Appears to correlate to Tray2's #
-        tray_unk1 = bs.GetBits(1);        // TODO: Unused bits!?
-        // TODO: "Console command received " blank 40 times?
+        //tray1_num = bs.GetPackedBits(32); // Appears to correlate to Tray1's #
+        //tray2_num = bs.GetPackedBits(32); // Appears to correlate to Tray2's #
+        tray_group.serializefrom(bs);
     }
 };
 
@@ -618,6 +723,33 @@ public:
     }
 };
 
+// [[ev_def:type]]
+class MoveInspiration final : public MapLinkEvent
+{
+public:
+    // [[ev_def:field]]
+    uint32_t src_col;
+    // [[ev_def:field]]
+    uint32_t src_row;
+    // [[ev_def:field]]
+    uint32_t dest_col;
+    // [[ev_def:field]]
+    uint32_t dest_row;
+    MoveInspiration():MapLinkEvent(MapEventTypes::evMoveInspiration)
+    {}
+    void serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1,34);
+    }
+    void serializefrom(BitStream &bs)
+    {
+        src_col = bs.GetPackedBits(3);
+        src_row = bs.GetPackedBits(3);
+        dest_col = bs.GetPackedBits(3);
+        dest_row = bs.GetPackedBits(3);
+    }
+};
+
 #include "Events/ChatDividerMoved.h"
 #include "Events/EntitiesResponse.h"
 #include "Events/FriendsListUpdate.h"
@@ -625,6 +757,7 @@ public:
 #include "Events/LocationVisited.h"
 #include "Events/PlaqueVisited.h"
 #include "Events/PlayerInfo.h"
+#include "Events/PowerSystemEvents.h"
 #include "Events/SaveClientOptions.h"
 #include "Events/SceneEvent.h"
 #include "Events/Shortcuts.h"

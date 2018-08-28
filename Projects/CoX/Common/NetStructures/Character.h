@@ -8,7 +8,6 @@
 #pragma once
 #include "CommonNetStructures.h"
 #include "BitStream.h"
-#include "Powers.h"
 #include "Common/GameData/attrib_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
 #include "Common/GameData/entitydata_definitions.h"
@@ -23,23 +22,10 @@
 #include <string>
 
 class CharacterCostume;
+
 struct PlayerData;
 struct Costume;
-
-struct CharacterPowerBoost
-{
-    PowerPool_Info boost_id;
-    int            level        = 0;
-    int            num_combines = 0;
-};
-
-struct CharacterPower
-{
-    PowerPool_Info                   power_id;
-    int                              bought_at_level = 0;
-    float                            range           = 1.0f;
-    std::vector<CharacterPowerBoost> boosts;
-};
+struct PowerPool_Info;
 
 enum NameFlag : bool
 {
@@ -57,11 +43,8 @@ class Character
 {
         friend  class CharacterDatabase;
 
-        using vPowerPool = std::vector<CharacterPower>;
         using vCostume = std::vector<CharacterCostume>;
 
-        vPowerPool              m_powers;
-        PowerTrayGroup          m_trays;
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
         friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player, EntityData &entity);
@@ -86,17 +69,23 @@ const   QString &       getName() const { return m_name; }
         void            serializeto(BitStream &buffer) const;
         void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool all_costumes=true) const;
         void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
+        void            finalizeLevel();
+        void            addStartingInspirations();
+        void            getStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
+        void            getPowerFromBuildInfo(BitStream &src);
+        void            sendEnhancements(BitStream &bs) const;
+        void            sendInspirations(BitStream &bs) const;
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
         const CharacterCostume *getCurrentCostume() const;
         void            DumpSidekickInfo();
-        void            DumpPowerPoolInfo( const PowerPool_Info &pool_info );
         void            DumpBuildInfo();
         void            face_bits(uint32_t){}
         void            dump();
         void            sendFullStats(BitStream &bs) const;
         void            sendTray(BitStream &bs) const;
+        void            sendOwnedPowers(BitStream &bs) const;
         void            sendDescription(BitStream &bs) const;
         void            sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const;
         void            sendFriendList(BitStream &bs) const;
@@ -110,7 +99,6 @@ const   QString &       getName() const { return m_name; }
         uint32_t            m_db_id;
 
 protected:
-        PowerPool_Info  get_power_info(BitStream &src);
         uint8_t         m_index;
         QString         m_name;
         bool            m_villain;

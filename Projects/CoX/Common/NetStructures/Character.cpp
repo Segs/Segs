@@ -16,12 +16,14 @@
 #include "Entity.h"
 #include "Costume.h"
 #include "Friend.h"
+#include "Powers.h"
 #include "GameData/serialization_common.h"
 #include "Servers/GameDatabase/GameDBSyncEvents.h"
 #include "GameData/chardata_serializers.h"
 #include "GameData/entitydata_serializers.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/playerdata_serializers.h"
+#include "Servers/MapServer/MapServerData.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "Logging.h"
 #include <QtCore/QString>
@@ -55,7 +57,8 @@ Character::Character()
 
 void Character::reset()
 {
-    m_char_data.m_level=0;
+    m_char_data.m_level = 0;
+    m_char_data.m_combat_level = m_char_data.m_level + 1;
     m_name="EMPTY";
     m_char_data.m_class_name="EMPTY";
     m_char_data.m_origin_name="EMPTY";
@@ -68,6 +71,7 @@ void Character::reset()
     m_char_data.m_using_sg_costume=false;
     m_char_data.m_has_titles = false;
     m_char_data.m_sidekick.m_has_sidekick = false;
+    m_char_data.m_powersets.clear();
 }
 
 
@@ -87,95 +91,197 @@ void Character::setName(const QString &val )
 
 void Character::sendTray(BitStream &bs) const
 {
-    m_trays.serializeto(bs);
+    m_char_data.m_trays.serializeto(bs);
+}
+
+void Character::finalizeLevel()
+{
+    MapServerData &data(*getMapServerData());
+    uint32_t max_xp = data.expMaxLevel();
+
+    m_char_data.m_combat_level = m_char_data.m_level + 1; // m_combat_level is display level?
+
+    if(m_char_data.m_combat_level >= max_xp)
+        m_char_data.m_combat_level = max_xp - 1;
+
+    if(m_char_data.m_experience_points < data.expForLevel(m_char_data.m_combat_level))
+        m_char_data.m_experience_points = data.expForLevel(m_char_data.m_combat_level);
+
+    m_char_data.m_max_insp_rows = data.countForLevel(m_char_data.m_combat_level, data.m_pi_schedule.m_InspirationRow);
+    m_char_data.m_max_insp_cols = data.countForLevel(m_char_data.m_combat_level, data.m_pi_schedule.m_InspirationCol);
+    m_char_data.m_max_enhance_slots = data.countForLevel(m_char_data.m_combat_level, data.m_pi_schedule.m_BoostSlot);
+
+    // TODO: client will only accept 5col x 4row of insps MAX, see Issue #524
+    assert(m_char_data.m_max_insp_cols <= 5 || m_char_data.m_max_insp_rows <= 4);
+
+    int num_powersets = m_char_data.m_powersets.size();
+    for(int idx = 1; idx < num_powersets; ++idx) // Skipping 0 powerset (temporary powers)
+    {
+        CharacterPowerSet pset = m_char_data.m_powersets[idx];
+        for(CharacterPower &pow : pset.m_powers)
+            reserveEnhancementSlot(m_char_data, &pow);
+    }
+
+    m_char_data.m_powers_updated = false;
+}
+
+void Character::addStartingInspirations()
+{
+    // TODO: We can make this configurable in settings.cfg
+    QStringList starting_insps = {
+        "Resurgence",       // 25.2.3
+        "Phenomenal_Luck",  // 25.2.0
+    };
+
+    for (QString &name : starting_insps)
+        addInspirationByName(m_char_data, name);
+}
+
+void Character::getStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names)
+{
+    PowerPool_Info ppool;
+
+    ppool.m_pcat_idx = getPowerCatByName(pcat_name);
+    ppool.m_pset_idx = getPowerSetByName(pset_name, ppool.m_pcat_idx);
+
+    addPowerSet(m_char_data, ppool); // add empty powerset
+
+    for(const QString &name : power_names)
+    {
+        ppool.m_pow_idx = getPowerByName(name, ppool.m_pcat_idx, ppool.m_pset_idx);
+        addPower(m_char_data, ppool);
+    }
+}
+
+void Character::getPowerFromBuildInfo(BitStream &src)
+{
+    for(int i = 0; i < 2; ++i)
+    {
+        PowerPool_Info ppinfo;
+        ppinfo.serializefrom(src);
+
+        addPower(m_char_data, ppinfo);
+    }
 }
 
 void Character::GetCharBuildInfo(BitStream &src)
 {
-    m_char_data.m_level=0;
+    m_char_data.m_level = 0;
+    m_char_data.m_combat_level = m_char_data.m_level + 1;
     src.GetString(m_char_data.m_class_name);
     src.GetString(m_char_data.m_origin_name);
-    CharacterPower primary,secondary;
-    primary.power_id.serializefrom(src);
-    secondary.power_id.serializefrom(src);
 
-    m_powers.push_back(primary); // primary_powerset power
-    m_powers.push_back(secondary); // secondary_powerset power
-    m_trays.serializefrom(src);
+    // TODO: Make these configurable in settings.cfg?
+    QStringList starting_temps =
+    {
+        "EMP_Glove",                    // 27.0.0
+        "Cryoprojection_Bracers",       // 27.0.1
+    };
+
+    // TODO: Make these configurable in settings.cfg?
+    QStringList inherent_and_preorders =
+    {
+        "Brawl",                        // 26.0.0
+        "prestige_generic_Sprintp",     // 26.0.1
+        //"prestige_preorder_Sprintp",    // 26.0.2
+        //"prestige_BestBuy_Sprintp",     // 26.0.3
+        //"prestige_EB_Sprintp",          // 26.0.4
+        //"prestige_Gamestop_Sprintp",    // 26.0.5
+        "Sprint",                       // 26.0.6
+        "Rest",                         // 26.0.7
+    };
+
+    // Temporary Powers MUST come first (must be idx 0)
+    getStartingPowers(QStringLiteral("Temporary_Powers"), QStringLiteral("Temporary_Powers"), starting_temps);
+    getStartingPowers(QStringLiteral("Inherent"), QStringLiteral("Inherent"), inherent_and_preorders);
+    getPowerFromBuildInfo(src);     // primary, secondary
+    finalizeLevel();
+    addStartingInspirations();      // resurgence and phenomenal_luck
+
+    m_char_data.m_trays.serializefrom(src);
+}
+
+void Character::sendEnhancements(BitStream &bs) const
+{
+    bs.StorePackedBits(5, m_char_data.m_enhancements.size()); // count
+    for(size_t i = 0; i < m_char_data.m_enhancements.size(); ++i)
+    {
+        bs.StorePackedBits(3, m_char_data.m_enhancements[i].m_slot_idx); // boost idx, maybe use m_enhancement_idx
+        bs.StoreBits(1, m_char_data.m_enhancements[i].m_slot_used); // 1 set, 0 clear
+        if(m_char_data.m_enhancements[i].m_slot_used)
+        {
+            m_char_data.m_enhancements[i].m_enhance_info.serializeto(bs);
+            bs.StorePackedBits(5, m_char_data.m_enhancements[i].m_level); // boost idx
+            bs.StorePackedBits(2, m_char_data.m_enhancements[i].m_num_combines); // boost idx
+        }
+    }
+}
+
+void Character::sendInspirations(BitStream &bs) const
+{
+    int max_cols = m_char_data.m_max_insp_cols;
+    int max_rows = m_char_data.m_max_insp_rows;
+
+    bs.StorePackedBits(3, max_cols); // count
+    bs.StorePackedBits(3, max_rows); // count
+
+    for(int i = 0; i < max_cols; ++i)
+    {
+        for(int j = 0; j < max_rows; ++j)
+        {
+            bs.StoreBits(1, m_char_data.m_inspirations[i][j].m_has_insp);
+            if(m_char_data.m_inspirations[i][j].m_has_insp)
+                m_char_data.m_inspirations[i][j].m_insp_info.serializeto(bs);
+        }
+    }
+}
+
+void Character::sendOwnedPowers(BitStream &bs) const
+{
+    bs.StorePackedBits(4, m_char_data.m_powersets.size()); // count
+    for(const CharacterPowerSet &pset : m_char_data.m_powersets)
+    {
+        bs.StorePackedBits(5, pset.m_level_bought);
+        bs.StorePackedBits(4, pset.m_powers.size());
+        for(const CharacterPower &power : pset.m_powers)
+        {
+            power.m_power_info.serializeto(bs);
+            bs.StorePackedBits(5, power.m_level_bought);
+            bs.StoreFloat(power.m_range);
+
+            bs.StorePackedBits(4, power.m_total_eh_slots);
+            for(int i = 0; i < power.m_total_eh_slots; ++i)
+            {
+                bs.StoreBits(1, power.m_enhancements[i].m_slot_used); // slot has enhancement
+                if(power.m_enhancements[i].m_slot_used)
+                {
+                    power.m_enhancements[i].m_enhance_info.serializeto(bs);
+                    bs.StorePackedBits(5, power.m_enhancements[i].m_level);
+                    bs.StorePackedBits(2, power.m_enhancements[i].m_num_combines);
+                }
+            }
+        }
+    }
 }
 
 void Character::SendCharBuildInfo(BitStream &bs) const
 {
     Character c = *this;
-    PowerPool_Info null_power = {0,0,0};
     bs.StoreString(getClass(c));   // class name
     bs.StoreString(getOrigin(c));  // origin name
-    bs.StorePackedBits(5,getCombatLevel(c)); // related to combat level?
+    bs.StorePackedBits(5, getCombatLevel(c)); // related to combat level?
     PUTDEBUG("SendCharBuildInfo after plevel");
 
-    {
-        // TODO: this is character powers related, refactor it out of here.
-        int count=0; // FixMe: count is explicitly set and never modified.
-        bs.StorePackedBits(4,count); // count
-        for(int i=0; i<count; i++)
-        {
-            uint32_t num_powers=m_powers.size();
-            bs.StorePackedBits(5,0);
-            bs.StorePackedBits(4,num_powers);
-            for(const CharacterPower &power : m_powers)
-            {
-                //sendPower(bs,0,0,0);
-                power.power_id.serializeto(bs);
-                bs.StorePackedBits(5,power.bought_at_level);
-                bs.StoreFloat(power.range);
-                bs.StorePackedBits(4,power.boosts.size());
-
-                for(const CharacterPowerBoost &boost : power.boosts)
-                {
-                    //sendPower(bs,0,0,0);
-                    boost.boost_id.serializeto(bs);
-                    bs.StorePackedBits(5,boost.level);
-                    bs.StorePackedBits(2,boost.num_combines);
-                }
-            }
-        }
-    }
+    // Owned Powers
+    sendOwnedPowers(bs);
     PUTDEBUG("SendCharBuildInfo after powers");
-    // main tray inspirations
-    {
-        uint32_t max_num_cols=3;
-        uint32_t max_num_rows=1;
-        bs.StorePackedBits(3,max_num_cols); // count
-        bs.StorePackedBits(3,max_num_rows); // count
-        for(uint32_t col=0; col<max_num_cols; col++)
-        {
-            for(size_t row=0; row<max_num_rows; ++row)
-            {
-                bool is_power=false; // FixMe: is_power is explicitly set and never modified.
-                bs.StoreBits(1,is_power);
-                if(is_power)
-                    null_power.serializeto(bs);
-            }
-        }
-    }
+
+    // Inspirations
+    sendInspirations(bs);
     PUTDEBUG("SendCharBuildInfo after inspirations");
-    // boosts
-    uint32_t num_boosts=0; // FixMe: num_boosts is never modified and the body of the for loop below will never fire.
-    bs.StorePackedBits(5,num_boosts); // count
-    for(size_t idx=0; idx<num_boosts; ++idx)
-    {
-        bool set_boost=false;
-        bs.StorePackedBits(3,0); // boost idx
-        bs.StoreBits(1,set_boost); // 1 set, 0 clear
-        if(set_boost)
-        {
-            int level=0;
-            int num_combines=0;
-            null_power.serializeto(bs);
-            bs.StorePackedBits(5,level); // boost idx
-            bs.StorePackedBits(2,num_combines); // boost idx
-        }
-    }
+
+    // Enhancements
+    sendEnhancements(bs);
     PUTDEBUG("SendCharBuildInfo after boosts");
 }
 
@@ -253,23 +359,10 @@ void Character::DumpSidekickInfo()
     qDebug().noquote() << msg;
 }
 
-void Character::DumpPowerPoolInfo( const PowerPool_Info &pool_info )
-{
-    for (int i = 0; i < 3; i++)
-    {
-        qDebug().nospace().noquote() << "    "
-                                     << QString("Pool_id[%1]: %2 %3 %4")
-                                            .arg(i)
-                                            .arg(pool_info.category_idx)
-                                            .arg(pool_info.powerset_entry_idx)
-                                            .arg(pool_info.power_idx);
-    }
-}
-
 void Character::DumpBuildInfo()
 {
     Character &c = *this;
-    QString msg = "CharDebug\n  "
+    QString msg = "//--------------Char Debug--------------\n  "
             + getName()
             + "\n  " + getOrigin(c)
             + "\n  " + getClass(c)
@@ -285,20 +378,24 @@ void Character::DumpBuildInfo()
             + "\n  Last Online: " + m_char_data.m_last_online;
 
     qDebug().noquote() << msg;
-    //DumpPowerPoolInfo(m_powers[0].power_id);
-    //DumpPowerPoolInfo(m_powers[1].power_id);
 }
 
 void Character::dump()
 {
     DumpBuildInfo();
+    qDebug() << "//--------------Owned Powers--------------";
+    dumpOwnedPowers(m_char_data);
+    qDebug() << "//-----------Owned Inspirations-----------";
+    dumpInspirations(m_char_data);
+    qDebug() << "//-----------Owned Enhancements-----------";
+    dumpEnhancements(m_char_data);
+    qDebug() << "//--------------Sidekick Info--------------";
     DumpSidekickInfo();
-    qDebug() <<"//------------------Tray------------------";
-    m_trays.dump();
-    qDebug() <<"//-----------------Costume-----------------";
+    qDebug() << "//------------------Tray------------------";
+    m_char_data.m_trays.dump();
+    qDebug() << "//-----------------Costume-----------------";
     if(!m_costumes.empty())
         getCurrentCostume()->dump();
-    qDebug() <<"//-----------------Options-----------------";
 }
 
 void Character::recv_initial_costume( BitStream &src, const ColorAndPartPacker *packer )

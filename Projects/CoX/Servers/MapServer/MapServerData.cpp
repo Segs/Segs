@@ -18,6 +18,7 @@
 #include "Common/GameData/charclass_serializers.h"
 #include "Common/GameData/keybind_serializers.h"
 #include "Common/GameData/npc_serializers.h"
+#include "Common/GameData/power_serializers.h"
 #include "NetStructures/CommonNetStructures.h"
 #include "Logging.h"
 
@@ -234,6 +235,14 @@ bool MapServerData::read_runtime_data(const QString &directory_path)
         return false;
     if(!read_npcs(directory_path))
         return false;
+    if(!read_powers(directory_path))
+        return false;
+    if(!read_combine_chances(directory_path))
+        return false;
+    if(!read_effectiveness(directory_path))
+        return false;
+    if(!read_pi_schedule(directory_path))
+        return false;
     qInfo().noquote() << "Finished reading game data.";
     {
         TIMED_LOG({
@@ -255,6 +264,24 @@ int MapServerData::expDebtForLevel(int lev) const
 {
     assert(lev>0 && lev<(int)m_experience_and_debt_per_level.m_DefeatPenalty.size());
     return m_experience_and_debt_per_level.m_DefeatPenalty.at(lev - 1);
+}
+
+int MapServerData::expMaxLevel()
+{
+    return m_experience_and_debt_per_level.m_ExperienceRequired.size();
+}
+
+int MapServerData::countForLevel(int lvl, std::vector<uint32_t> &schedule) const
+{
+    int i = 0;
+    if(lvl < 0)
+        lvl = 0;
+    for(i = 0; i < schedule.size(); ++i)
+    {
+        if (lvl < schedule[i])
+            break;
+    }
+    return i;
 }
 
 bool MapServerData::read_costumes(const QString &directory_path)
@@ -357,6 +384,48 @@ bool MapServerData::read_npcs(const QString &directory_path)
     qDebug() << "Loading npcs:";
     if (!read_data_to<AllNpcs_Data, npccostumesets_i0_requiredCrc>(directory_path, "VillainCostume.bin",
                                                                    m_npc_store.m_all_npcs))
+        return false;
+    return true;
+}
+
+bool MapServerData::read_powers(const QString &directory_path)
+{
+    qDebug() << "Loading powers:";
+    if (!read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path, "powers.bin",
+                                                                   m_all_powers))
+        return false;
+    return true;
+}
+
+bool MapServerData::read_combine_chances(const QString &directory_path)
+{
+    qDebug() << "Loading Combining schedule:";
+    if (!read_data_to<Parse_Combining, combining_i0_requiredCrc>(directory_path, "combine_chances.bin",
+                                                                   m_combine_chances))
+        return false;
+    if (!read_data_to<Parse_Combining, combining_i0_requiredCrc>(directory_path, "combine_same_set_chances.bin",
+                                                                   m_combine_same))
+        return false;
+    return true;
+}
+
+bool MapServerData::read_effectiveness(const QString &directory_path)
+{
+    qDebug() << "Loading Enhancement Effectiveness:";
+    if (!read_data_to<Parse_Effectiveness, boosteffectiveness_i0_requiredCrc>(directory_path, "boost_effect_above.bin",
+                                                                   m_effectiveness_above))
+        return false;
+    if (!read_data_to<Parse_Effectiveness, boosteffectiveness_i0_requiredCrc>(directory_path, "boost_effect_below.bin",
+                                                                   m_effectiveness_below))
+        return false;
+    return true;
+}
+
+bool MapServerData::read_pi_schedule(const QString &directory_path)
+{
+    qDebug() << "Loading PI Schedule:";
+    if (!read_data_to<Parse_PI_Schedule, pischedule_i0_requiredCrc>(directory_path, "schedules.bin",
+                                                                   m_pi_schedule))
         return false;
     return true;
 }
