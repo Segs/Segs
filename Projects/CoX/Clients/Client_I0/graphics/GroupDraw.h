@@ -58,14 +58,14 @@ struct GroupDef
     float radius;
     int mod_time;
 
-    uint32_t window : 1;       
+    uint32_t window : 1;
     uint32_t window_inside : 1;
     uint32_t saved : 1;
     uint32_t save_temp : 1;
-    uint32_t open : 1;  
-    uint32_t shell : 1; 
-    uint32_t tray : 1;  
-    uint32_t region_marker : 1;// 7 - 0x80 
+    uint32_t open : 1;
+    uint32_t shell : 1;
+    uint32_t tray : 1;
+    uint32_t region_marker : 1;// 7 - 0x80
     uint32_t volume_trigger : 1;// 8 - 0x100
     uint32_t water_volume : 1;// 9 - 0x200
     uint32_t lava_volume : 1;// 10 - 0x400
@@ -91,7 +91,7 @@ struct GroupDef
     uint32_t has_beacon : 1;// 9 0x200
     uint32_t child_beacon : 1;// 10 - 0x400
     uint32_t has_tint_color : 1;// 11 - 0x800
-    uint32_t has_tex : 2;// 
+    uint32_t has_tex : 2;//
     uint32_t has_fx : 1;// 0x4000
     uint32_t has_properties : 1;
     uint32_t child_properties : 1;
@@ -265,7 +265,7 @@ struct FxMiniTracker
 
 struct GroupEnt
 {
-    Matrix4x3 *transform=nullptr;
+    const Matrix4x3 *transform=nullptr;
     GroupDef * m_def     = nullptr;
     char flags_cache=0;
     char flg2=0;

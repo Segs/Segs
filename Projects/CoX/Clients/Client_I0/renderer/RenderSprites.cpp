@@ -127,7 +127,7 @@ unsigned long nextPowerOfTwoLargerThan(unsigned long v)
     v++;
     return v;
 }
-static bool simpleClippingTest(SpriteArrayEntry *spr, float y_scale, int width, int height)
+static bool simpleClippingTest(SpriteArrayEntry *spr, float y_scale, int /*width*/, int height)
 {
     if (spr->type == DISP_STRING)
     {

@@ -46,7 +46,7 @@ struct MikktUserDataWrapper
 
     // Returns the number of vertices on face number iFace
     // iFace is a number in the range {0, 1, ..., getNumFaces()-1}
-    static int getNumVerticesOfFace(const SMikkTSpaceContext * pContext, const int iFace)
+    static int getNumVerticesOfFace(const SMikkTSpaceContext * /*pContext*/, const int /*iFace*/)
     {
         return 3;
     }
@@ -359,7 +359,7 @@ void segs_addModelStubs(AnimList *anm)
     {
         Model *model = &header->models[idx_sub];
         model->vbo = new GeometryData;
-        Parser_Trick *instance_mods = tricks_FindTrick(model->bone_name_offset, 0);
+        Parser_Trick *instance_mods = tricks_FindTrick(model->bone_name_offset, nullptr);
         if (instance_mods)
         {
             if (!model->trck_node)

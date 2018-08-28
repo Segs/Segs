@@ -310,7 +310,7 @@ void MaterialDefinition::setFragmentMode(eBlendMode pixel_mode) {
 
 }
 
-MaterialDefinition::MaterialDefinition(DrawMode vertex_mode, eBlendMode pixel_mode,bool z)
+MaterialDefinition::MaterialDefinition(DrawMode vertex_mode, eBlendMode pixel_mode)
 {
     lightMode        = 0;
     colorSource      = 0;

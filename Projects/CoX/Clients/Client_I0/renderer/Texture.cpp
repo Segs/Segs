@@ -415,7 +415,7 @@ static int tex_LoadDetailAndBump(int how, TextureBind *base)
         segs_tex_texLoad2(bumptex->name1, how, base->use_category);
     return 1;
 }
-void __stdcall texDoThreadedTextureLoading(TextureAPC_Arg *arg)
+void NTAPI texDoThreadedTextureLoading(TextureAPC_Arg *arg)
 {
     if (arg->should_queue == 1 || (arg->should_queue == -1 && int32_85EA3C))
     {
@@ -1085,7 +1085,7 @@ static void __stdcall segs_BackgroudLoaderThread()
     while (true)
         SleepEx(0xFFFFFFFF, 1);
 }
-static void __stdcall heyThreadLoadAnAnim(AnimList *anim_list)
+static void NTAPI heyThreadLoadAnAnim(AnimList *anim_list)
 {
     CriticalSectionGuard anim_guard(crit_section_8A0);
     if (!anim_list->file)

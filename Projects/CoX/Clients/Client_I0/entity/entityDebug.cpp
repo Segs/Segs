@@ -17,7 +17,7 @@ extern "C" {
     __declspec(dllimport) CameraInfo cam_info;
 }
 
-static MaterialDefinition debugDrawMaterial(DrawMode::COLORONLY, eBlendMode::MULTIPLY,true);
+static MaterialDefinition debugDrawMaterial(DrawMode::COLORONLY, eBlendMode::MULTIPLY);
 static GeometryData debug_geom;
 void drawLine3D_2Color(const Vector3 *p1, unsigned int argb_pt1, const Vector3 *p2, unsigned int argb_pt2)
 {

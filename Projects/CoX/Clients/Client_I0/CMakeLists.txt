@@ -23,7 +23,7 @@ include(3rdparty_support)
 set(ThirdParty_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/3rd_party/built)
 
 add_subdirectory(3rd_party)
-
+find_package(Threads REQUIRED)
 link_directories(
     ${ThirdParty_Install_Dir}/lib
     ../patch_tools
@@ -37,8 +37,8 @@ include_directories(
     include
 )
 set(DLL_SOURCES
-	3rd_party/mikktspace/mikktspace.c
-	3rd_party/mikktspace/mikktspace.h
+    3rd_party/mikktspace/mikktspace.c
+    3rd_party/mikktspace/mikktspace.h
     include/GameState.h
     renderer/Model.h
     renderer/ModelCache.cpp

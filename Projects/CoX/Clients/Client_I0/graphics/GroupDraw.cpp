@@ -13,7 +13,7 @@
 
 #include <cmath>
 #include <cstring>
-#pragma pack(push, 8)
+
 struct Grid
 {
     void *cells;
@@ -28,10 +28,10 @@ struct Grid
     MemPool *cells_pool;
     MemPool *idx_lists_pool;
 };
-#pragma pack(pop)
+
+static_assert (sizeof(Grid)==0x34, "sizeof(Grid)==0x34");
 
 extern "C" {
-    __declspec(dllimport) void makeAGroupEnt(GroupEnt *grp, GroupDef *def,const Matrix4x3 *mat, float draw_dist);
     __declspec(dllimport) char *fn_4C6050(GroupDef *grp, const char *name); //groupDefFindPropertyValue
     __declspec(dllimport) char *strstri(const char *str1, const char *str2);
     __declspec(dllimport) DefTracker *groupFindInside(Vector3 *arg0, int find_type);
@@ -94,6 +94,19 @@ static int shadowVolumeVisible(Vector3 *start_point, float step, float length_to
         center += delta;
     }
     return 0;
+}
+static void makeAGroupEnt(GroupEnt &to_init, GroupDef *grpdef, const Matrix4x3 *transform, float draw_dist)
+{
+    to_init.mid_cache  = *transform * grpdef->mid_;
+    to_init.transform = transform;
+    to_init.m_def = grpdef;
+    to_init.vist_dist_cache = draw_dist * grpdef->vis_dist + grpdef->radius;
+    float dist = grpdef->lod_scale * grpdef->vis_dist * draw_dist + grpdef->radius;
+    to_init.vis_dist_sqr_cache = dist * dist;
+    to_init.flags_cache |= (grpdef->parent_fade << 0);
+    to_init.flags_cache |= (grpdef->vis_doorframe << 1);
+    to_init.flags_cache |= (grpdef->child_parent_fade<<2);
+    to_init.flags_cache |= (grpdef->has_fog<<4) | 8;
 }
 bool extractedVisibilityTest(GroupDef *def, Vector3 &pos, float dist)
 {
@@ -263,7 +276,7 @@ void lightModel(Model *model, Matrix4x3 *mat, unsigned __int8 *rgb, DefTracker *
     Grid *light_grid = light_trkr->light_grid;
     if (!light_grid)
         return;
-    
+
     assert(model && model->vbo);
     segs_modelSetupVertexObject(model, 1);
     Vector3 *verts_pos = (Vector3 *)model->vbo->cpuside_memory;
@@ -310,13 +323,13 @@ void lightModel(Model *model, Matrix4x3 *mat, unsigned __int8 *rgb, DefTracker *
                 continue;
             Vector3 vec_to_light = dst - trkr->matrix1.TranslationPart;
             float dist_to_light = vec_to_light.normalize();
-            if (is_omnidir_light && dist_to_light > 3.0f || dist_to_light > def->light_radius)
+            if ((is_omnidir_light && dist_to_light > 3.0f) || dist_to_light > def->light_radius)
                 continue;
             multVertexByMatrix(&verts_normal[i], &mat->ref3(), &normal_in_ws);
             float light_magnitude = -vec_to_light.dot(vec_to_light);
             if (model->Model_flg1 & OBJ_NOLIGHTANGLE)
                 light_magnitude = 1.0;
-            if (light_magnitude < 0.0)
+            if (light_magnitude < 0.0f)
                 continue;
             float light_falloff_radius = def->light_radius / 3.0f;
             float light_mult = 1.0;
@@ -326,7 +339,7 @@ void lightModel(Model *model, Matrix4x3 *mat, unsigned __int8 *rgb, DefTracker *
                 light_mult = tmp * tmp;
             }
             light_mult = light_mult * light_magnitude;
-            if (light_mult >= 0.05)
+            if (light_mult >= 0.05f)
             {
                 light_mult   = light_mult / 255.0f;
                 vec_to_light.x = (float)uint8_t(def->tint_colors[0]) * light_mult;
@@ -507,7 +520,7 @@ DefTracker* doOpen(DefTracker *p_tracker, GroupDef *grp, DrawParams &draw, float
         p_tracker->draw_id = draw_id;
     return res;
 }
-void segs_drawDefInternal(GroupEnt *arg0, const Matrix4x3 *parent_mat, DefTracker *p_tracker, int vis, DrawParams *draw, bool flag, DefDrawContext &ctx);
+void segs_drawDefInternal(GroupEnt &arg0, const Matrix4x3 *parent_mat, DefTracker *p_tracker, int vis, DrawParams *draw, bool flag, DefDrawContext &ctx);
 void recursePortals(DefTracker *tracker, GroupDef *def, DrawParams &draw_self, DrawParams *draw_root, int lod_rela, DefDrawContext &ctx)
 {
     if (!tracker || !tracker->portal_groups || lod_rela == 3)
@@ -528,8 +541,8 @@ void recursePortals(DefTracker *tracker, GroupDef *def, DrawParams &draw_self, D
         GroupEnt tmp_grp;
         if(portal->draw_id == draw_id && (portal->def->vis_blocker & 2)==0)
             continue;
-        makeAGroupEnt(&tmp_grp, portal->def, &portal->matrix1, draw_root->scale);
-        segs_drawDefInternal(&tmp_grp, &cam_info.viewmat, portal, 2, draw_root, portal->draw_id == draw_id, ctx);
+        makeAGroupEnt(tmp_grp, portal->def, &portal->matrix1, draw_root->scale);
+        segs_drawDefInternal(tmp_grp, &cam_info.viewmat, portal, 2, draw_root, portal->draw_id == draw_id, ctx);
     }
 }
 static void recurseSubs(DefTracker *tracker, DefTracker *sub_trackers, GroupDef *grp, DrawParams &draw_dist, Matrix4x3 *mat, float dist_non_sq, int lod_rela, DefDrawContext &ctx)
@@ -538,14 +551,14 @@ static void recurseSubs(DefTracker *tracker, DefTracker *sub_trackers, GroupDef 
     float dist = std::sqrt(dist_non_sq) - grp->radius;
     for (int idx_rz = 0; idx_rz < grp->num_subs; ++idx_rz)
     {
-        GroupEnt * subgrp = &grp->subdefs[idx_rz];
-        if (!(subgrp->flags_cache & 8)) {
-            makeAGroupEnt(subgrp, subgrp->m_def, subgrp->transform, draw_dist.scale);
+        GroupEnt & subgrp(grp->subdefs[idx_rz]);
+        if (!(subgrp.flags_cache & 8)) {
+            makeAGroupEnt(subgrp, subgrp.m_def, subgrp.transform, draw_dist.scale);
         }
-        if (dist < subgrp->vist_dist_cache || subgrp->flags_cache & 0x10)
+        if (dist < subgrp.vist_dist_cache || subgrp.flags_cache & 0x10)
         {
             DefTracker *subgrp_tracker = sub_trackers ? &sub_trackers[idx_rz] : tracker;
-            segs_drawDefInternal(subgrp, mat, subgrp_tracker, mode, &draw_dist, 0, ctx);
+            segs_drawDefInternal(subgrp, mat, subgrp_tracker, mode, &draw_dist, false, ctx);
         }
     }
 }
@@ -560,19 +573,19 @@ static void handleGlobFxMiniTracker(Matrix4x3 *parent_mat, GroupDef *def, FxMini
         globFxMiniTracker->count ++;
     }
 }
-bool pre_test(GroupEnt *grp,DrawParams *draw,const Matrix4x3 &parent_mat,Vector3 &local_mid,float &mid_nonsq_length,DrawParams &tgtdraw)
+bool pre_test(GroupEnt &grp,DrawParams *draw,const Matrix4x3 &parent_mat,Vector3 &local_mid,float &mid_nonsq_length,DrawParams &tgtdraw)
 {
-    local_mid = parent_mat * grp->mid_cache;
-    if (grp->flags_cache & 1 && draw->node_mid.z != 0.0f)
+    local_mid = parent_mat * grp.mid_cache;
+    if (grp.flags_cache & 1 && draw->node_mid.z != 0.0f)
         mid_nonsq_length = draw->node_mid.lengthNonSqrt();
     else
         mid_nonsq_length = local_mid.lengthNonSqrt();
-    if (mid_nonsq_length > grp->vis_dist_sqr_cache && !(grp->flags_cache & 0x16))
+    if (mid_nonsq_length > grp.vis_dist_sqr_cache && !(grp.flags_cache & 0x16))
         return false;
-    if (!extractedVisibilityTest(grp->m_def, local_mid, mid_nonsq_length))
+    if (!extractedVisibilityTest(grp.m_def, local_mid, mid_nonsq_length))
         return false;
-    float combined_lodscale = grp->m_def->lod_scale * draw->scale;
-    float scaled_near = combined_lodscale * grp->m_def->lod_near;
+    float combined_lodscale = grp.m_def->lod_scale * draw->scale;
+    float scaled_near = combined_lodscale * grp.m_def->lod_near;
     if (mid_nonsq_length < scaled_near * scaled_near)
         return false;
     tgtdraw  = *draw;
@@ -580,21 +593,22 @@ bool pre_test(GroupEnt *grp,DrawParams *draw,const Matrix4x3 &parent_mat,Vector3
 
     return true;
 }
-void segs_drawDefInternal(GroupEnt *grp,const Matrix4x3 *parent_mat, DefTracker *p_tracker, int vis, DrawParams *draw, bool flag, DefDrawContext &ctx)
+void segs_drawDefInternal(GroupEnt &grp, const Matrix4x3 *parent_mat, DefTracker *p_tracker, int vis, DrawParams *draw,
+                          bool flag, DefDrawContext &ctx)
 {
     float mid_nonsq_length;
     Matrix4x3 combined_transform = Unity_Matrix;
     DrawParams draw_dist;
     DrawParams tmp_draw;
     bool isbuild = false;
-    if(grp && grp->m_def)
+    if(grp.m_def)
     {
-        isbuild = nullptr != strstr(grp->m_def->ref_name, "_deco3_base");
+        isbuild = nullptr != strstr(grp.m_def->ref_name, "_deco3_base");
         if (isbuild)
         {
             for (int i = 0; i < ctx.depth; ++i)
                 printfDebug("  ");
-            printfDebug("DDI: %s,%s,%s :", grp->m_def->ref_name, grp->m_def->dir, grp->m_def->def_type);
+            printfDebug("DDI: %s,%s,%s :", grp.m_def->ref_name, grp.m_def->dir, grp.m_def->def_type);
         }
     }
     Vector3 local_mid;
@@ -607,8 +621,8 @@ void segs_drawDefInternal(GroupEnt *grp,const Matrix4x3 *parent_mat, DefTracker 
     if (isbuild)
         printfDebug("T\n");
 
-    GroupDef *mdef = grp->m_def;
-    Matrix4x3 *grp_transform = grp->transform;
+    GroupDef *mdef = grp.m_def;
+    const Matrix4x3 *grp_transform = grp.transform;
     float def_and_draw_scale = mdef->lod_scale * draw->scale;
 
     if (mdef->tray && !vis)
@@ -617,7 +631,7 @@ void segs_drawDefInternal(GroupEnt *grp,const Matrix4x3 *parent_mat, DefTracker 
             return;
         vis = 2;
     }
-    if (grp->flags_cache & 8)
+    if (grp.flags_cache & 8)
     {
         combined_transform = *parent_mat *  *grp_transform;
     }
@@ -636,14 +650,14 @@ void segs_drawDefInternal(GroupEnt *grp,const Matrix4x3 *parent_mat, DefTracker 
         Matrix4x3 sub_transform;
         for (int idx_sub = 0; idx_sub < def_num_subs; ++idx_sub)
         {
-            GroupEnt *subdef = &mdef->subdefs[idx_sub];
+            GroupEnt &subdef(mdef->subdefs[idx_sub]);
             DefTracker *tracker = sub_trackers ? &sub_trackers[idx_sub] : p_tracker;
             float sub_mid_nonsq_length;
-            GroupDef *sub_group = subdef->m_def;
+            GroupDef *sub_group = subdef.m_def;
 
-            if (!(subdef->flags_cache & 8))
-                makeAGroupEnt(subdef, subdef->m_def, subdef->transform, tmp_draw.scale);
-            if (rad_diff >= subdef->vist_dist_cache && !(subdef->flags_cache & 0x10))
+            if (!(subdef.flags_cache & 8))
+                makeAGroupEnt(subdef, subdef.m_def, subdef.transform, tmp_draw.scale);
+            if (rad_diff >= subdef.vist_dist_cache && !(subdef.flags_cache & 0x10))
                 continue;
             int lod_rela = init_mode;
             Vector3 sub_midpoint;
@@ -651,13 +665,13 @@ void segs_drawDefInternal(GroupEnt *grp,const Matrix4x3 *parent_mat, DefTracker 
                 continue;
             float combined_lod_scale = tmp_draw.scale * sub_group->lod_scale;
 
-            if (subdef->m_def->tray && !lod_rela) {
-                if (!subdef->m_def->outside)
+            if (subdef.m_def->tray && !lod_rela) {
+                if (!subdef.m_def->outside)
                     continue;
                 lod_rela = 2;
             }
-            if (subdef->flags_cache & 8) {
-                sub_transform = combined_transform * *subdef->transform;
+            if (subdef.flags_cache & 8) {
+                sub_transform = combined_transform * *subdef.transform;
             }
             DefTracker *subgroup_trackers = nullptr;
             if (tracker) {
@@ -704,9 +718,9 @@ void segs_drawDefInternal(GroupEnt *grp,const Matrix4x3 *parent_mat, DefTracker 
                 continue;
             skip_open = true;
         }
-        makeAGroupEnt(&tmp_group_ent, portal_grp->def, &portal_grp->matrix1, draw->scale);
+        makeAGroupEnt(tmp_group_ent, portal_grp->def, &portal_grp->matrix1, draw->scale);
         float portal_mid_nonsq_length;
-        if(false==pre_test(&tmp_group_ent,draw,cam_info.viewmat,portal_local_mid,portal_mid_nonsq_length,draw_dist))
+        if(false==pre_test(tmp_group_ent,draw,cam_info.viewmat,portal_local_mid,portal_mid_nonsq_length,draw_dist))
             continue;
         def_and_draw_scale = tmp_group_ent.m_def->lod_scale * draw->scale;
         if (tmp_group_ent.flags_cache & 8)
@@ -747,8 +761,8 @@ void groupDrawDefTracker(GroupDef *def, DefTracker *tracker, Matrix4x3 *transfor
     ent.transform = nullptr;
     g_fx_light = light;
     g_fx_mini_tracker = fx_tracker;
-    makeAGroupEnt(&ent, def, &Unity_Matrix, draw.scale);
-    segs_drawDefInternal(&ent, transform_mat, tracker, 3, &draw, 0, def_ctx);
+    makeAGroupEnt(ent, def, &Unity_Matrix, draw.scale);
+    segs_drawDefInternal(ent, transform_mat, tracker, 3, &draw, false, def_ctx);
     g_fx_light = nullptr;
     g_fx_mini_tracker = nullptr;
 }
@@ -804,8 +818,8 @@ int segs_groupDrawRefs(const Matrix4x3 *parent_mat)
             camera_is_inside      = 1;
             see_outside           = 0;
             ent.transform          = nullptr;
-            makeAGroupEnt(&ent, trkr->def, &trkr->matrix1, draw.scale);
-            segs_drawDefInternal(&ent, parent_mat, trkr, 1, &draw, false,def_ctx);
+            makeAGroupEnt(ent, trkr->def, &trkr->matrix1, draw.scale);
+            segs_drawDefInternal(ent, parent_mat, trkr, 1, &draw, false,def_ctx);
         }
     }
     if (see_outside || vis==3)
@@ -823,8 +837,8 @@ int segs_groupDrawRefs(const Matrix4x3 *parent_mat)
             ent.vist_dist_cache    = 0.0;
             ent.mid_cache          = { 0,0,0 };
             ent.transform          = nullptr;
-            makeAGroupEnt(&ent, tracker->def, &tracker->matrix1, draw.scale);
-            segs_drawDefInternal(&ent, parent_mat, tracker, vis, &draw, false, def_ctx);
+            makeAGroupEnt(ent, tracker->def, &tracker->matrix1, draw.scale);
+            segs_drawDefInternal(ent, parent_mat, tracker, vis, &draw, false, def_ctx);
         }
     }
     return selDraw();
@@ -887,7 +901,8 @@ void segs_addGroups(Parser_Def *parser_def, GroupDef *pDef, NameList *name_list,
             pDef->subdefs[valid_dev_idx].m_def = findNameInLib_P(buf);
         }
         pDef->subdefs[valid_dev_idx].transform = (Matrix4x3 *)getMemFromPool(group_info.matrix_pool_PP, __FILE__, __LINE__);
-        Matrix4x3 *transform = pDef->subdefs[valid_dev_idx].transform;
+        Matrix4x3 *transform = const_cast<Matrix4x3 *>(pDef->subdefs[valid_dev_idx].transform);
+        assert(&Unity_Matrix!=transform);
         transform->TranslationPart           = parser_def->p_Grp[idx]->pos;
         Rotation_ZXY_Order(&transform->ref3(), &parser_def->p_Grp[idx]->rot);
         //assert(std::abs(transform->r1[2]) != 1.0);
@@ -903,6 +918,7 @@ void segs_addGroups(Parser_Def *parser_def, GroupDef *pDef, NameList *name_list,
         }
     }
 }
+
 void patch_groupdraw()
 {
     patchit("groupfileload_4C1DA0", (void *)segs_addGroups);

@@ -237,7 +237,7 @@ namespace {
 
     void particle_partBuildParticleArray(ParticleSys1 *sys, float alpha, float *verts, char *rgb_memory, float step)
     {
-        char angle_idx; 
+        char angle_idx;
         int color_path_idx;
         Vector3 facing_pos_1;
         Vector3 facing_pos_2;
@@ -313,7 +313,7 @@ namespace {
                 {
                     std::swap(facing_pos_1, facing_pos_2);
                 }
-                angle_idx = int32_t(findAngle(&facing_pos_2, &facing_pos_1)) - 64;
+                angle_idx = char(findAngle(&facing_pos_2, &facing_pos_1) - 64);
             }
             else
             {
@@ -427,7 +427,7 @@ int segs_modelDrawParticleSys(ParticleSys1 *system, float alpha, GLuint buffer, 
     if (!(g_State.view.fx_debug_req & 0x100))
         fakevbo.draw(*material.program, GL_TRIANGLES,6 * system->particle_count,0);
     return system->particle_count;
-} 
+}
 }
 void segs_rdrCleanUpAfterRenderingParticleSystems()
 {

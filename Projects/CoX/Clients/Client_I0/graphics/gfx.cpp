@@ -153,7 +153,6 @@ void segs_gfxtree_gfxTreeDelete(GfxTree_Node *node);
 void  segs_gfx_GfxCardFixes(GfxPrefs *settings)
 {
     SysInfo_2 sys_info;
-    int quality_mod = 3; // original was assuming 0
     //TODO: consider the fact that almost no one has 9500 or GeForce3 anymore
     //TODO: compare lowest end intel graphics card to Radeon 9500 and Geforce3, select default prefs for it
     segs_renderUtil_GetGfxCardVend(&sys_info);
@@ -501,7 +500,7 @@ static void fogBlendWithLast()
 }
 static constexpr float degToRad(float v)
 {
-    return M_PI * v / 180.0f;
+    return glm::pi<float>() * v / 180.0f;
 }
 void fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *cam_pos, GfxTree_Node *node, float scale)
 {
@@ -532,7 +531,7 @@ void fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *cam_pos, 
         to.TranslationPart = *cam_pos;
         fn_5B6740(dword_7B8E08->pyr.y, &to.ref3()); //yawMat3
         fn_5B6840(dword_7B8E08->pyr.z, &to.ref3()); //rollMat3
-        float angle = rot * dword_7B8E08->speed - M_PI + dword_7B8E08->pyr.x;
+        float angle = rot * dword_7B8E08->speed - glm::pi<float>() + dword_7B8E08->pyr.x;
         pitchMat3(angle, &to.ref3());
         dest.r1 = { 1,0,0 };
         dest.r2 = { 0,1,0 };
@@ -595,8 +594,9 @@ void segs_sun_sunUpdate(int init)
 
         if (parsed_sky.cloud[i]->Height.y != 0.0f)
         {
-            float ratio = (cam_info.cammat.TranslationPart.y - parsed_sky.cloud[i]->Height.x) / (parsed_sky.cloud[i]->Height.y - parsed_sky.cloud[i]->Height.x);
-            fogtimefade *= std::max(0.0f,std::min(1.0f,ratio));
+            float fog_ratio = (cam_info.cammat.TranslationPart.y - parsed_sky.cloud[i]->Height.x) /
+                          (parsed_sky.cloud[i]->Height.y - parsed_sky.cloud[i]->Height.x);
+            fogtimefade *= std::max(0.0f,std::min(1.0f,fog_ratio));
         }
         if (s_clouds[i]->model)
         {
@@ -693,7 +693,7 @@ void segs_sun_sunUpdate(int init)
         if (celestial_objects[i].glow)
             fixupCelestialObject(i, 0.0, rot, &player_offset, celestial_objects[i].glow, scale);
     }
-    Parse_Sky copy = parsed_sky;
+
     if (_time <= (*parsed_sky.sun)->LampLightTime.y)
     {
         tmp = std::min(1.0f,_time - ((*parsed_sky.sun)->LampLightTime.x - 1.0f));

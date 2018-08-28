@@ -195,7 +195,7 @@ struct MaterialDefinition
     ShaderProgram *program=nullptr; // non owning program
     void setDrawMode(DrawMode vertex_mode);
     void setFragmentMode(eBlendMode pixel_mode);
-    explicit MaterialDefinition(DrawMode vertex_mode, eBlendMode pixel_mode,bool z);
+    explicit MaterialDefinition(DrawMode vertex_mode, eBlendMode pixel_mode);
     RenderState render_state;
     InstanceDrawData draw_data;
     ~MaterialDefinition();

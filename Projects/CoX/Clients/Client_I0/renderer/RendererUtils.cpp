@@ -51,7 +51,7 @@ __declspec(dllimport) GfxWindow g_frustumdata;
 int enableParticleVBOs;
 int enableVertShaders;
 int UsingVBOs;
-MaterialDefinition g_default_mat(DrawMode::COLORONLY, eBlendMode::MULTIPLY,true);
+MaterialDefinition g_default_mat(DrawMode::COLORONLY, eBlendMode::MULTIPLY);
 enum GpuVendor
 {
     ATI    = 0x1002,
@@ -71,17 +71,7 @@ void segs_setGlossMultiplier(float scale)
 {
     g_sun.gloss_scale = scale;
 }
-static bool checkExt(const char *extname,int &missing)
-{
-    if ( !glewIsSupported(extname) ) // glewIsSupported
-    {
-        ErrorfFL(__FILE__, __LINE__);
-        ErrorfInternal("You card or driver doesn't support %s",extname);
-        missing = 1;
-        return false;
-    }
-    return true;
-}
+
 static void reportOldDrivers(const char *brand)
 {
     sprintf(g_State.driver_notice, "Important: Your computer appears to be using older drivers for your video card.");
