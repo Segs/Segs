@@ -10,8 +10,10 @@ environment:
   matrix:
   - CMAKE_GENERATOR: "Visual Studio 15 2017"
     QT5: C:\Qt\5.10.1\msvc2015
+    VCVARS: "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
   - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
     QT5: C:\Qt\5.10.1\msvc2017_64
+    VCVARS: "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
     
 branches:
   only:
@@ -28,7 +30,8 @@ before_build:
 - if exist "%QT5%" set Path=%QT5%\bin;%Path%
 - md build
 - cmake -H. -Bbuild -G "%CMAKE_GENERATOR%" "-DCMAKE_PREFIX_PATH=%QT5%"
-
+- call %VCVARS%
+- lib /def:Projects\CoX\Clients\patch_tools\CityOfX.def /OUT:Projects/CoX/Clients/patch_tools/CityOfX.lib
 build_script:
 - if "%APPVEYOR_REPO_TAG%"=="true" (set CONFIGURATION=RelWithDebInfo) else (set CONFIGURATION=Debug)
 - cmake --build build --config "%CONFIGURATION%" -- %MSBUILD_FLAGS%
