@@ -137,7 +137,7 @@ void Character::addStartingInspirations()
         addInspirationByName(m_char_data, name);
 }
 
-void Character::getStartingPowers(QString pcat_name, QString pset_name, QStringList &power_names)
+void Character::getStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names)
 {
     PowerPool_Info ppool;
 
