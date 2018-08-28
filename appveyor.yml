@@ -30,7 +30,7 @@ before_build:
 - if exist "%QT5%" set Path=%QT5%\bin;%Path%
 - md build
 - cmake -H. -Bbuild -G "%CMAKE_GENERATOR%" "-DCMAKE_PREFIX_PATH=%QT5%"
-- call %VCVARS%
+- call "%VCVARS%"
 - lib /def:Projects\CoX\Clients\patch_tools\CityOfX.def /OUT:Projects/CoX/Clients/patch_tools/CityOfX.lib
 build_script:
 - if "%APPVEYOR_REPO_TAG%"=="true" (set CONFIGURATION=RelWithDebInfo) else (set CONFIGURATION=Debug)
