@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -22,6 +22,8 @@ struct CreateNewCharacterRequestData;
 struct CreateNewCharacterResponseData;
 struct GetEntityRequestData;
 struct GetEntityResponseData;
+struct GetEntityByNameRequestData;
+struct GetEntityByNameResponseData;
 struct SetClientOptionsData;
 
 ///
@@ -37,6 +39,7 @@ class GameDbSyncContext
     std::unique_ptr<QSqlQuery> m_prepared_account_select;
     std::unique_ptr<QSqlQuery> m_prepared_account_insert;
     std::unique_ptr<QSqlQuery> m_prepared_entity_select;
+    std::unique_ptr<QSqlQuery> m_prepared_entity_select_by_name;
     std::unique_ptr<QSqlQuery> m_prepared_get_char_slots;
     std::unique_ptr<QSqlQuery> m_prepared_char_insert;
     std::unique_ptr<QSqlQuery> m_prepared_char_exists;
@@ -60,6 +63,7 @@ public:
     bool checkNameClash(const WouldNameDuplicateRequestData &data,WouldNameDuplicateResponseData &result);
     bool createNewChar(const  CreateNewCharacterRequestData&data, CreateNewCharacterResponseData &result);
     bool getEntity(const  GetEntityRequestData&data, GetEntityResponseData &result);
+    bool getEntityByName(const GetEntityByNameRequestData &data, GetEntityByNameResponseData &result);
     bool updateClientOptions(const SetClientOptionsData &data);
 private:
     int64_t getDbVersion(QSqlDatabase &);

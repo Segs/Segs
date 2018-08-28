@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -16,12 +16,6 @@
 class CharacterClient;
 class GameServer;
 class SEGSTimer;
-
-enum MapName
-{
-    Outbreak,
-    AtlasPark
-};
 
 struct GameSession
 {
@@ -100,7 +94,6 @@ protected:
         void        on_game_db_error(GameDbErrorMessage *ev);
         void        on_account_data(GameAccountResponse *ev);
         void        on_character_deleted(RemoveCharacterResponse *ev);
-        MapName     checkMap(const QString& map_path);
     //////////////////////////////////////////////////////////////////////////
         sIds        waiting_for_client; // this hash_set holds all client cookies we wait for
         GameServer *m_server;

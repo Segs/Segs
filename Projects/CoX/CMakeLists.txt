@@ -13,10 +13,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/motd.smlx DESTINATION ${EXECU
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/test.smlx DESTINATION ${EXECUTABLE_OUTPUT_PATH}/scripts)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/tutorial.smlx DESTINATION ${EXECUTABLE_OUTPUT_PATH}/scripts)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Data/settings.cfg ${EXECUTABLE_OUTPUT_PATH}/default_dbs/settings.cfg COPYONLY)
-if(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH}/settings.cfg)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Data/settings.cfg ${EXECUTABLE_OUTPUT_PATH}/settings.cfg COPYONLY)
-endif()
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Data/settings_template.cfg ${EXECUTABLE_OUTPUT_PATH}/settings_template.cfg COPYONLY)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/mysql DESTINATION ${EXECUTABLE_OUTPUT_PATH}/default_dbs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/pgsql DESTINATION ${EXECUTABLE_OUTPUT_PATH}/default_dbs)

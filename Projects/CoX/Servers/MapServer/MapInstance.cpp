@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -32,9 +32,12 @@
 #include "Common/GameData/CoHMath.h"
 #include "SlashCommand.h"
 #include "GameData/playerdata_definitions.h"
-#include "GameData/entitydata_serializers.h"
 #include "GameData/clientoptions_serializers.h"
 #include "GameData/keybind_serializers.h"
+#include "GameData/chardata_serializers.h"
+#include "GameData/entitydata_serializers.h"
+#include "GameData/playerdata_serializers.h"
+#include "GameData/serialization_common.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
 
@@ -94,7 +97,8 @@ protected:
 
 using namespace std;
 MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr)
-    : m_data_path(mapdir_path), m_world_update_timer(nullptr), m_addresses(listen_addr)
+  : m_data_path(mapdir_path), m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
+    m_world_update_timer(nullptr), m_addresses(listen_addr)
 {
     m_world = new World(m_entities, serverData().m_player_fade_in);
     m_scripting_interface.reset(new ScriptingEngine);
@@ -159,7 +163,7 @@ void MapInstance::start(const QString &scenegraph_path)
     }
 
     // create a GameDbSyncService
-    m_sync_service = new GameDBSyncService(m_entities);
+    m_sync_service = new GameDBSyncService();
     m_sync_service->set_db_handler(m_game_server_id);
     m_sync_service->activate();
 
@@ -191,11 +195,13 @@ bool MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t 
     m_instance_id = instance_id;
     if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
     {
-        qWarning() << "MapInstance::spin_up_for faile to register_handler, port already open";
+        qWarning() << "MapInstance::spin_up_for failed to register_handler, port already open";
         return false;
     }
     if (m_endpoint->open() == -1) // will register notifications with current reactor
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) MapInstance: ServerEndpoint::open\n"),false);
+
+    qInfo() << "Spun up MapInstance" << m_instance_id << "for MapServer" << m_owner_id;
 
     return true;
 }
@@ -206,7 +212,7 @@ MapInstance::~MapInstance()
     delete m_endpoint;
 
     // one last update on entities before termination of MapInstance, and in turn the SyncService as well
-    m_sync_service->updateEntities();
+    on_update_entities();
     delete m_sync_service;
 }
 
@@ -260,9 +266,6 @@ void MapInstance::enqueue_client(MapClientSession *clnt)
     // m_world stores a ref to m_entities, so its entity mgr is updated as well
     m_entities.InsertPlayer(clnt->m_ent);
 
-    // m_sync_service has its own entity mgr, so add to its own mgr separately
-    m_sync_service->addPlayer(clnt->m_ent);
-
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
 
@@ -289,6 +292,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case GameDBEventTypes::evGetEntityResponse:
             on_entity_response(static_cast<GetEntityResponse *>(ev));
+            break;
+        case GameDBEventTypes::evGetEntityByNameResponse:
+            on_entity_by_name_response(static_cast<GetEntityByNameResponse *>(ev));
             break;
         case MapEventTypes::evIdle:
             on_idle(static_cast<IdleEvent *>(ev));
@@ -472,10 +478,9 @@ void MapInstance::on_link_lost(SEGSEvent *ev)
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token}));
 
-    m_sync_service->updateEntity(ent);
+    // one last character update for the disconnecting entity
+    send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
-
-    //m_sync_service->removePlayer(ent);
 
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());
@@ -495,9 +500,9 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token}));
 
-    m_sync_service->updateEntity(ent);
+    // one last character update for the disconnecting entity
+    send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
-    // m_sync_service->removePlayer(ent);
 
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());
@@ -554,7 +559,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 
     // existing character
     Entity *ent = m_entities.CreatePlayer();
-    toActualCharacter(*request_data.char_from_db, *ent->m_char,*ent->m_player);
+    toActualCharacter(*request_data.char_from_db, *ent->m_char,*ent->m_player, *ent->m_entity);
     ent->fillFromCharacter();
     ent->m_client = &map_session;
     map_session.m_ent = ent;
@@ -610,7 +615,35 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
 
     map_session.m_current_map->enqueue_client(&map_session);
-    setMapName(*map_session.m_ent->m_char, name());
+    setMapIdx(*map_session.m_ent, index());
+    map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
+}
+
+void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
+{
+    // exactly the same function as above, this is just a test to see if getting entitydata by name is working
+    MapClientSession &map_session(m_session_store.session_from_event(ev));
+    m_session_store.locked_unmark_session_for_reaping(&map_session);
+    Entity * e = map_session.m_ent;
+
+    e->m_db_id              = e->m_char->m_db_id;
+    e->m_supergroup.m_SG_id = ev->m_data.m_supergroup_id;
+    serializeFromDb(e->m_entity_data, ev->m_data.m_ent_data);
+
+    // Can't pass direction through cereal, so let's update it here.
+    e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
+
+    if (logSpawn().isDebugEnabled())
+    {
+        qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
+        map_session.m_ent->dump();
+    }
+
+    // Tell our game server we've got the client
+    EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id}));
+
+    map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
     map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
 }
@@ -646,11 +679,11 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
         GameAccountResponseCharacterData char_data;
-        fromActualCharacter(*e->m_char,*e->m_player,char_data);
+        fromActualCharacter(*e->m_char,*e->m_player, *e->m_entity, char_data);
         serializeToDb(e->m_entity_data,ent_data);
         // create the character from the data.
         //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
-        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.
+        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.      
         game_db->putq(new CreateNewCharacterRequest({char_data,ent_data, map_session.m_requested_slot_idx,
                                                      map_session.m_max_slots,map_session.m_client_id},
                                                     token,this));
@@ -658,6 +691,11 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     else
     {
         assert(map_session.m_ent);
+
+        // this is just to test if GetEntityByNameRequest is working, the plan is for other EventProcessors to use this event
+        // game_db->putq(new GetEntityByNameRequest({map_session.m_ent->m_char->getName()}, lnk->session_token(), this));
+
+        // this is what should be used
         game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
     }
     // while we wait for db response, mark session as waiting for reaping
@@ -674,10 +712,10 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->m_outdoor_mission_map = false;
     res->m_map_number          = 1;
 
-    assert(m_data_path.contains("City_"));
-    int city_idx = m_data_path.indexOf("City_");
+    assert(m_data_path.contains("_"));
+    int city_idx = m_data_path.indexOf('/') + 1;
     int end_or_slash = m_data_path.indexOf("/",city_idx);
-    assert(city_idx!=-1);
+    assert(city_idx!=0);
     QString map_desc_from_path = m_data_path.mid(city_idx,end_or_slash==-1 ? -1 : m_data_path.size()-end_or_slash);
     res->m_map_desc        = QString("maps/City_Zones/%1/%1.txt").arg(map_desc_from_path);
     res->current_map_flags = true; // off 1
@@ -730,7 +768,7 @@ void MapInstance::on_timeout(TimerEvent *ev)
             reap_stale_links();
             break;
         case Sync_Service_Update_Timer:
-            m_sync_service->updateEntities();
+            on_update_entities();
             break;
     }
 }
@@ -1988,6 +2026,86 @@ void MapInstance::on_interact_with(InteractWithEntity *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with"<<ev->m_srv_idx;
+}
+
+void MapInstance::on_update_entities()
+{
+    const std::vector<MapClientSession *> &active_sessions (m_session_store.get_active_sessions());
+
+    // all active sessions are for player, so we don't need to verify if db_id != 0
+    for (const auto &sess : active_sessions)
+    {
+        Entity *e = sess->m_ent;
+        send_character_update(e);
+
+        /* at the moment we are forcing full character updates, so I'll leave this commented for now
+
+        // full character update
+        if (e->m_db_store_flags & uint32_t(DbStoreFlags::Full))
+            send_character_update(e);
+        // update only player data
+        else if (e->m_db_store_flags & uint32_t(DbStoreFlags::PlayerData))
+            send_player_update(e);
+
+        */
+    }
+}
+
+void MapInstance::send_character_update(Entity *e)
+{
+    QString cerealizedCharData, cerealizedEntityData, cerealizedPlayerData;
+
+    PlayerData playerData = PlayerData({
+                e->m_player->m_gui,
+                e->m_player->m_keybinds,
+                e->m_player->m_options
+                });
+
+    serializeToQString(e->m_char->m_char_data, cerealizedCharData);
+    serializeToQString(e->m_entity_data, cerealizedEntityData);
+    serializeToQString(playerData, cerealizedPlayerData);
+
+    CharacterUpdateMessage* msg = new CharacterUpdateMessage(
+                CharacterUpdateData({
+                                        e->m_char->getName(),
+
+                                        // cerealized blobs
+                                        cerealizedCharData,
+                                        cerealizedEntityData,
+                                        cerealizedPlayerData,
+
+                                        // plain values
+                                        e->m_char->getCurrentCostume()->m_body_type,
+                                        e->m_char->getCurrentCostume()->m_height,
+                                        e->m_char->getCurrentCostume()->m_physique,
+                                        (uint32_t)e->m_supergroup.m_SG_id,
+                                        e->m_char->m_db_id
+        }), (uint64_t)1);
+
+    m_sync_service->putq(msg);
+    unmarkEntityForDbStore(e, DbStoreFlags::Full);
+}
+
+void MapInstance::send_player_update(Entity *e)
+{
+    QString cerealizedPlayerData;
+
+    PlayerData playerData = PlayerData({
+                e->m_player->m_gui,
+                e->m_player->m_keybinds,
+                e->m_player->m_options
+                });
+
+    serializeToQString(playerData, cerealizedPlayerData);
+
+    PlayerUpdateMessage* msg = new PlayerUpdateMessage(
+                PlayerUpdateData({
+                                     e->m_char->m_db_id,
+                                     cerealizedPlayerData
+                                 }), (uint64_t)1);
+
+    m_sync_service->putq(msg);
+    unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
 
 //! @}

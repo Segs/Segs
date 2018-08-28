@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -453,7 +453,7 @@ void cmdHandler_DebugChar(const QString &/*cmd*/, MapClientSession &sess)
     QString msg = "DebugChar: " + sess.m_ent->name()
             + "\n  " + chardata.m_char_data.m_origin_name
             + "\n  " + chardata.m_char_data.m_class_name
-            + "\n  map: " + chardata.m_char_data.m_mapName
+            + "\n  map: " + getEntityDisplayMapName(sess.m_ent->m_entity_data)
             + "\n  db_id: " + QString::number(sess.m_ent->m_db_id) + ":" + QString::number(chardata.m_db_id)
             + "\n  idx: " + QString::number(sess.m_ent->m_idx)
             + "\n  access: " + QString::number(sess.m_ent->m_entity_data.m_access_level)
@@ -732,6 +732,7 @@ void addNpc(const QString &cmd, MapClientSession &sess)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, &sess);
+        return;
     }
     glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos;
     const NPCStorage & npc_store(sess.m_current_map->serverData().getNPCDefinitions());
@@ -1099,15 +1100,8 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess)
         tgt = getEntity(&sess,getTargetIdx(*sess.m_ent));
         name = tgt->name();
     }
-    else
-        tgt = getEntity(&sess,name);
 
-    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
-        return;
-
-    // TODO: Implement getCharacterFromDB(name) if target is not online.
-
-    removeFriend(*sess.m_ent,*tgt);
+    removeFriend(*sess.m_ent,name);
 }
 
 void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)

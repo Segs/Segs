@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -49,6 +49,8 @@ void GameDBSyncHandler::dispatch(SEGSEvent *ev)
         on_create_new_char(static_cast<CreateNewCharacterRequest *>(ev)); break;
     case GameDBEventTypes::evGetEntityRequest:
         on_get_entity(static_cast<GetEntityRequest *>(ev)); break;
+    case GameDBEventTypes::evGetEntityByNameRequest:
+        on_get_entity_by_name(static_cast<GetEntityByNameRequest *>(ev)); break;
     default: assert(false); break;
     }
 }
@@ -133,6 +135,17 @@ void GameDBSyncHandler::on_get_entity(GetEntityRequest *ev)
 
     if(db_ctx.getEntity(ev->m_data,resp))
         ev->src()->putq(new GetEntityResponse(std::move(resp),ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
+
+void GameDBSyncHandler::on_get_entity_by_name(GetEntityByNameRequest *ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    GetEntityByNameResponseData resp;
+
+    if (db_ctx.getEntityByName(ev->m_data, resp))
+        ev->src()->putq(new GetEntityByNameResponse(std::move(resp), ev->session_token()));
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 }

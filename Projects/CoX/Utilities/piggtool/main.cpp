@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -154,7 +154,6 @@ bool loadPigg(const QString &fname,PiggFile &pigg)
         return false;
     }
 
-    qDebug() << "Header loaded";
     return true;
 }
 
@@ -178,30 +177,77 @@ void saveFile(const QString &fname,const QByteArray &data) {
 
 }
 
-void extractAllFiles(PiggFile &pigg,const QString &tgt_path)
+bool extractAllFiles(PiggFile &pigg, const QString &tgt_path)
 {
     QFile src_fl(pigg.fname);
-    if(!src_fl.open(QFile::ReadOnly)) {
+
+    if (!src_fl.open(QFile::ReadOnly)) {
         qWarning() << "failed to open source file" << pigg.fname;
-        return;
+        return false;
     }
+
+    qInfo() << "Found" << pigg.headers.size() << "internal files in:" << pigg.fname;
+
     const QDir curdir(QDir::current());
+
     for(const PiggInternalHeader & ih : pigg.headers) {
         const QString target_fname=pigg.strings_table.data_parts[ih.name_id];
         //qDebug().noquote() << "Extracting"<<target_fname;
+
         src_fl.seek(ih.offset);
+
         bool was_packed = ih.packed_size!=0;
         QByteArray src_data = src_fl.read(was_packed ? ih.packed_size : ih.size);
+
         const QFileInfo fi(tgt_path+"/"+target_fname);
+
         if(!curdir.exists(fi.path()))
             curdir.mkpath(fi.path());
+
         if(was_packed) {
             QByteArray actual_data = uncompr_zip(src_data,ih.size);
             src_data = actual_data;
         }
+
         saveFile(tgt_path+"/"+target_fname,src_data);
     }
+
+    return true;
 }
+
+bool extractFile(const QString &pigg_filename, const QString &target_directory)
+{
+    qInfo() << "Reading Pigg file:" << pigg_filename;
+
+    PiggFile header;
+
+    if (!loadPigg(pigg_filename, header))
+    {
+        qCritical() << "Failed to read Pigg file:" << pigg_filename;
+        return false;
+    }
+
+    return extractAllFiles(header, target_directory);
+}
+
+void extractFilesFromPath(const QString &source_path, const QString &target_directory)
+{
+    const QFileInfo file_info(source_path);
+
+    if (file_info.isDir())
+    {
+        const auto files = QDir(source_path).entryList(QStringList() << "*.pigg", QDir::Files);
+        qInfo() << "Found" << files.size() << ".pigg files.";
+
+        for (const auto file : files)
+            extractFile(source_path + "/" + file, target_directory);
+    }
+    else if (file_info.isFile())
+    {
+        extractFile(source_path, target_directory);
+    }
+}
+
 }
 
 int main(int argc, char **argv)
@@ -218,23 +264,26 @@ int main(int argc, char **argv)
     parser.addHelpOption();
 
     parser.process(app);
-    if(parser.positionalArguments().isEmpty() || parser.optionNames().isEmpty()) {
+
+    if (parser.positionalArguments().isEmpty() || parser.optionNames().isEmpty())
         parser.showHelp(0);
-    }
+
     QStringList positionals = parser.positionalArguments();
     const QString &pigg_name = positionals.constFirst();
     QString target_dir = positionals.count()>1 ? positionals[1] : "data";
-    PiggFile hdr;
-    if(!loadPigg(pigg_name,hdr))
+
+    if (parser.isSet("l"))
     {
-        qCritical() << "Failed to read"<<pigg_name;
+        PiggFile header;
+
+        if (loadPigg(pigg_name, header))
+          dumpFileList(header);
     }
-    if(parser.isSet("l")) {
-        dumpFileList(hdr);
+    else if (parser.isSet("x"))
+    {
+        extractFilesFromPath(pigg_name, target_dir);
     }
-    else if(parser.isSet("x")) {
-        extractAllFiles(hdr,target_dir);
-    }
+
     return 0;
 }
 

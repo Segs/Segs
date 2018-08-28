@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -83,6 +83,7 @@ protected:
         void                    on_name_clash_check_result(WouldNameDuplicateResponse *ev);
         void                    on_character_created(CreateNewCharacterResponse *ev);
         void                    on_entity_response(GetEntityResponse *ev);
+        void                    on_entity_by_name_response(GetEntityByNameResponse *ev);
         // Server->Server messages
         void on_expect_client(ExpectMapClientRequest *ev);
 
@@ -99,6 +100,9 @@ protected:
 
         void sendState();
         void on_check_links();
+        void on_update_entities();
+        void send_character_update(Entity *e);
+        void send_player_update(Entity *e);
 
         void on_cookie_confirm(class CookieRequest *ev);
         void on_window_state(class WindowState *ev);

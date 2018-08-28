@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -15,6 +15,7 @@
 #include "NetStructures/Costume.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "GameData/playerdata_definitions.h"
+#include "MapServer/DataHelpers.h"
 
 #include <QtCore/QDebug>
 
@@ -85,8 +86,9 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     {
         Character converted;
         PlayerData player_data;
-        toActualCharacter(m_data->m_characters[i],converted,player_data);
-        converted.serializetoCharsel(tgt);
+        EntityData entity_data;
+        toActualCharacter(m_data->m_characters[i],converted,player_data, entity_data);
+        converted.serializetoCharsel(tgt, getEntityDisplayMapName(entity_data));
     }
     //tgt.StoreBitArray(m_clientinfo,128);
 }
@@ -112,7 +114,8 @@ void CharacterResponse::serializeto( BitStream &bs ) const
     GameAccountResponseCharacterData indexed_character(m_data->get_character(m_index));
     Character converted;
     PlayerData player_data;
-    toActualCharacter(indexed_character,converted,player_data);
+    EntityData entity_data;
+    toActualCharacter(indexed_character,converted,player_data, entity_data);
     bs.StorePackedBits(1,6); // opcode
 
     if(indexed_character.m_name.compare("EMPTY")!=0)// actual character was read from db

@@ -2,14 +2,25 @@
     <qresource prefix="/logo">
         <file>logo3.png</file>
         <file>logo4.png</file>
+        <file>segs_splash_1.png</file>
     </qresource>
     <qresource prefix="/icons">
-        <file>icon_warning.png</file>
-        <file>icon_good.png</file>
         <file>segs.bmp</file>
         <file>icon_lookup.png</file>
+        <file>save.svg</file>
+        <file>database.svg</file>
+        <file>file-plus.svg</file>
+        <file>settings.svg</file>
+        <file>sliders.svg</file>
+        <file>users.svg</file>
+        <file>play.svg</file>
+        <file>square.svg</file>
+        <file>download.svg</file>
+        <file>check.svg</file>
+        <file>alert-triangle.svg</file>
     </qresource>
     <qresource prefix="/fonts">
         <file>dejavusanscondensed.ttf</file>
     </qresource>
+    <qresource prefix="/"/>
 </RCC>

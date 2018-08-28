@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -13,12 +13,17 @@
 #include "AddNewUserDialog.h"
 #include "ui_AddNewUserDialog.h"
 #include "SEGSAdminTool.h"
+#include <QDebug>
+#include <QMessageBox>
 
 AddNewUserDialog::AddNewUserDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AddNewUserDialog)
 {
     ui->setupUi(this);
+    // Field Validators
+    ui->usernameedit->setMaxLength(14);
+    ui->passedit->setMaxLength(14);
     connect(ui->buttonBox,&QDialogButtonBox::accepted,this,&AddNewUserDialog::capture_input);
 
 }
@@ -35,6 +40,7 @@ void AddNewUserDialog::on_add_user()
     ui->accleveledit->setValue(1);
     ui->accleveledit->show();
     ui->acclevel->show();
+
     show();
 }
 
@@ -54,7 +60,20 @@ void AddNewUserDialog::capture_input()
     QString username = ui->usernameedit->text();
     QString password = ui->passedit->text();
     QString acclevel = ui->accleveledit->text();
-    emit sendInput(username,password,acclevel);
+    if (username.toLatin1() == username && password.toLatin1() == password)
+    {
+        emit sendInput(username,password,acclevel);
+    }
+    else
+    {
+        QMessageBox invalid_chars_msgBox;
+        invalid_chars_msgBox.setText("Invalid Characters");
+        invalid_chars_msgBox.setInformativeText("Username and Password must contain valid characters");
+        invalid_chars_msgBox.setStandardButtons(QMessageBox::Ok);
+        invalid_chars_msgBox.setDefaultButton(QMessageBox::Ok);
+        invalid_chars_msgBox.setIcon(QMessageBox::Warning);
+        invalid_chars_msgBox.exec();
+    }
 }
 
 //!@}

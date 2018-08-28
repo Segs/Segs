@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -20,6 +20,9 @@ struct MapClientSession;
 class MapInstance;
 class MapServerData;
 class MapManager;
+
+static constexpr uint8_t INVALID_GAME_SERVER_ID = 255;
+static constexpr char RUNTIME_DATA_PATH[] = "./data/bin/";
 
 class MapServer : public EventProcessor
 {
@@ -43,9 +46,9 @@ private:
         std::unique_ptr<PrivateData> d;
 
         uint8_t                 m_id = 1;
-        uint8_t                 m_owner_game_server_id = 255;
-        QString                 m_serverName;
+        uint8_t                 m_owner_game_server_id = INVALID_GAME_SERVER_ID;
         ACE_INET_Addr           m_base_location; //! this is the base map instance address
         ACE_INET_Addr           m_base_listen_point; //! this is used as a base map listening endpoint
 };
+
 extern MapServer *g_GlobalMapServer;

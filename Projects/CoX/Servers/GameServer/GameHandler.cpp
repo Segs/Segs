@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -18,10 +18,12 @@
 #include "GameData/chardata_serializers.h"
 #include "Common/Servers/InternalEvents.h"
 #include "GameData/serialization_common.h"
+#include "GameData/entitydata_serializers.h"
 #include "GameLink.h"
 #include "GameServer.h"
 #include "NetStructures/Character.h"
 #include "SEGSTimer.h"
+#include "MapServer/DataHelpers.h"
 
 static const uint32_t supported_version=20040422;
 namespace {
@@ -308,8 +310,8 @@ void GameHandler::on_link_lost(SEGSEvent *ev)
 void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)
 {
     GameSession &session = m_session_store.session_from_event(ev);
-    auto chr(session.m_game_account.get_character(ev->m_data.slot_idx));
-    chr.reset();
+    GameAccountResponseCharacterData& selected_slot = session.m_game_account.get_character(ev->m_data.slot_idx);
+    selected_slot.reset();
     session.link()->putq(new DeletionAcknowledged);
 }
 
@@ -318,12 +320,13 @@ void GameHandler::on_delete_character(DeleteCharacter *ev)
     EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_server->getId());
     GameSession &session = m_session_store.session_from_event(ev);
     GameLink * lnk = (GameLink *)ev->src();
-    auto chr(session.m_game_account.get_character(ev->m_index));
+    const GameAccountResponseCharacterData& selected_slot = session.m_game_account.get_character(ev->m_index);
+
     // check if character exists, and if it's name is the same as the one passed here
-    if(chr.m_name.compare(ev->m_char_name)==0)
+    if (selected_slot.m_name == ev->m_char_name)
     {
-        game_db->putq(new RemoveCharacterRequest({session.m_game_account.m_game_server_acc_id, chr.index},
-                                                 lnk->session_token(),this));
+        game_db->putq(new RemoveCharacterRequest({session.m_game_account.m_game_server_acc_id, selected_slot.index},
+                                                 lnk->session_token(), this));
     }
     else
     {
@@ -350,10 +353,10 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
         return; // TODO:  return some kind of error.
 
     GameAccountResponseCharacterData *selected_slot = &session.m_game_account.get_character(ev->m_character_index);
-    CharacterData cd;
+    EntityData ed;
     try
     {
-        serializeFromQString(cd,selected_slot->m_serialized_chardata);
+        serializeFromQString(ed,selected_slot->m_serialized_entity_data);
     }
     catch(cereal::RapidJSONException &e)
     {
@@ -364,31 +367,8 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
         qCritical() << e.what();
     }
 
-    QString map_path = cd.m_mapName;
-
-    if (!map_path.isEmpty())
-    {
-        switch(checkMap(map_path))
-        {
-            case Outbreak: map_path = "maps/city_zones/city_00_01/city_00_01.txt"; break;
-            case AtlasPark: map_path = "maps/city_zones/city_01_01/city_01_01.txt"; break;
-        }
-    }
-    else
-    {
-        switch(ev->m_mapnumber)
-        {
-            case 0:
-                map_path = "maps/city_zones/city_00_01/city_00_01.txt";
-            break;
-            case 1: // atlas park
-                map_path = "maps/city_zones/city_01_01/city_01_01.txt";
-            break;
-            case 29:
-                map_path = "maps/city_zones/city_01_03/city_01_03.txt";
-            break;
-        }
-    }
+    // will never be empty because we look based on m_map_idx, and integers cannot be null
+    QString map_path = getMapPath(ed.m_map_idx).toLower();
 
     if(selected_slot->isEmpty())
         selected_slot = nullptr; // passing a null to map server to indicate a new character is being created.
@@ -464,16 +444,4 @@ void GameHandler::reap_stale_links()
                                          tgt->putq(new ClientDisconnectedMessage({tok}));
                                      });
 }
-
-MapName GameHandler::checkMap(const QString& map_path)
-{
-    if (map_path.contains("City_00_01", Qt::CaseInsensitive))
-        return Outbreak;
-    if (map_path.contains("City_01_01", Qt::CaseInsensitive))
-        return AtlasPark;
-
-    // let's default to Outbreak in case things go wrong
-    return Outbreak;
-}
-
 //! @}

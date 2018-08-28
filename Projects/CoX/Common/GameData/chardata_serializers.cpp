@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -101,7 +101,6 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("LastOnline",cd.m_last_online));
     archive(cereal::make_nvp("Class",cd.m_class_name));
     archive(cereal::make_nvp("Origin",cd.m_origin_name));
-    archive(cereal::make_nvp("MapName",cd.m_mapName));
     archive(cereal::make_nvp("SuperGroupCostume",cd.m_supergroup_costume));
     archive(cereal::make_nvp("UsingSGCostume",cd.m_using_sg_costume));
     archive(cereal::make_nvp("SideKick",cd.m_sidekick));

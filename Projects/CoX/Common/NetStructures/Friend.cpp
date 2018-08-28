@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -44,7 +44,7 @@ void addFriend(Entity &src, Entity &tgt)
     f.m_class_idx       = tgt.m_entity_data.m_class_idx;
     f.m_origin_idx      = tgt.m_entity_data.m_origin_idx;
     f.m_map_idx         = tgt.m_entity_data.m_map_idx;
-    f.m_mapname         = tgt.m_char->m_char_data.m_mapName;
+    f.m_mapname         = getEntityDisplayMapName(tgt.m_entity_data);
 
     // add to friendlist
     src_data->m_friends.emplace_back(f);
@@ -60,26 +60,28 @@ void addFriend(Entity &src, Entity &tgt)
     sendFriendsListUpdate(&src, src_data); // Send FriendsListUpdate
 }
 
-void removeFriend(Entity &src, Entity &tgt)
+void removeFriend(Entity &src, QString friend_name)
 {
     QString msg;
     FriendsList *src_data(&src.m_char->m_char_data.m_friendlist);
 
-    qCDebug(logFriends) << "Searching for friend" << tgt.name() << "to remove them.";
-    int id_to_find = tgt.m_db_id;
+    qCDebug(logFriends) << "Searching for friend" << friend_name << "to remove them.";
+
+    QString lower_name = friend_name.toLower();
     auto iter = std::find_if( src_data->m_friends.begin(), src_data->m_friends.end(),
-                              [id_to_find](const Friend& f)->bool {return id_to_find==f.m_db_id;});
+                              [lower_name](const Friend& f)->bool {return lower_name==f.m_name.toLower();});
+
     if(iter!=src_data->m_friends.end())
     {
+        msg = "Removing " + iter->m_name + " from your friends list.";
         iter = src_data->m_friends.erase(iter);
 
-        msg = "Removing " + iter->m_name + " from your friends list.";
         qCDebug(logFriends) << msg;
         if(logFriends().isDebugEnabled())
             dumpFriends(src);
     }
     else
-        msg = tgt.name() + "is not on your friends list.";
+        msg = friend_name + " is not on your friends list.";
 
     if(src_data->m_friends.empty())
         src_data->m_has_friends = false;

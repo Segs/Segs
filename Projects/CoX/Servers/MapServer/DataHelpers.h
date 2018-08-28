@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -14,9 +14,19 @@ class QString;
 class Entity;
 class Character;
 struct PlayerData;
+struct EntityData;
 
+struct Friend;
 struct FriendsList;
 struct MapClientSession;
+
+struct MapData
+{
+    uint32_t m_map_idx;
+    QString m_map_name;             // City_00_01, City_01_01, etc...
+    QString m_map_path;             // The ones ending with .txt
+    QString m_display_map_name;     // Outbreak, Atlas Park...
+};
 
 /*
  * Entity Methods
@@ -76,12 +86,20 @@ void    sendServerMOTD(MapClientSession *tgt);
 // Getters
 uint32_t            getLevel(const Character &c);
 uint32_t            getCombatLevel(const Character &c);
-float getHP(const Character &c);
-float getEnd(const Character &c);
+float               getHP(const Character &c);
+float               getEnd(const Character &c);
 uint64_t            getLastCostumeId(const Character &c);
 const QString &     getOrigin(const Character &c);
 const QString &     getClass(const Character &c);
-const QString &     getMapName(const Character &c);
+MapData             getMapData(const QString &map_name);
+uint32_t            getMapIndex(const QString &map_name);
+const QString       getDisplayMapName(const QString &map_name);
+const QString       getDisplayMapName(size_t index);
+const QString       getMapName(size_t index);
+const QString       getMapPath(const EntityData &ed);
+const QString       getMapPath(size_t index);
+const QString       getEntityDisplayMapName(const EntityData &ed);
+const QString       getFriendDisplayMapName(const Friend &f);
 uint32_t            getXP(const Character &c);
 uint32_t            getDebt(const Character &c);
 uint32_t            getPatrolXP(const Character &c);
@@ -100,7 +118,6 @@ void    setCombatLevel(Character &c, uint32_t val);
 void    setHP(Character &c, float val);
 void    setEnd(Character &c, float val);
 void    setLastCostumeId(Character &c, uint64_t val);
-void    setMapName(Character &c, const QString &val);
 void    setXP(Character &c, uint32_t val);
 void    setDebt(Character &c, uint32_t val);
 void    setTitles(Character &c, bool prefix = false, QString generic = "", QString origin = "", QString special = "");
