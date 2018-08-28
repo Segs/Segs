@@ -58,6 +58,7 @@ static const constexpr  uint32_t    class_version = 1;
         bool            m_has_insp          = false;
 };
 
+// TODO: client will only accept 5col x 4row of insps MAX, see Issue #524
 using vInspirations = std::array< std::array<CharacterInspiration, 4>, 5>;
 
 struct CharacterEnhancement
@@ -196,7 +197,9 @@ int getNumberEnhancements(CharacterData &cd);
 void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx);
 void setEnhancement(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t src_idx, uint32_t dest_idx);
 void trashEnhancement(CharacterData &cd, uint32_t eh_idx);
-void trashSetEnhancement(CharacterEnhancement &eh, uint32_t eh_idx);
+void trashEnhancementInPower(CharacterData &cd, uint32_t pset_idx, uint32_t pow_idx, uint32_t eh_idx);
+void trashComboEnhancement(CharacterEnhancement &eh, uint32_t eh_idx);
+void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow_idx);
 void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow);
 void combineEnhancements(Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2);
 void dumpEnhancements(CharacterData &cd);

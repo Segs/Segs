@@ -82,6 +82,8 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 41: return new MoveEnhancement;
         case 42: return new SetEnhancement;
         case 43: return new TrashEnhancement;
+        case 44: return new TrashEnhancementInPower;
+        case 45: return new BuyEnhancementSlot;
         case 46: return new RecvNewPower;
         case 56: return new EntityInfoRequest;
         case 57: return new SendStance;

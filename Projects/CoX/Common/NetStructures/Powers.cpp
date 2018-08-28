@@ -401,14 +401,26 @@ void removePower(CharacterData &cd, const PowerPool_Info &ppool)
     qCDebug(logPowers) << "Player does not own Power:" << ppool.m_pcat_idx << ppool.m_pset_idx << ppool.m_pow_idx;
 }
 
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t /*tgt_idx*/, uint32_t /*tgt_id*/)
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)
 {
     // Add to activepowers queue
     CharacterPower * ppower = nullptr;
     ppower = getOwnedPower(ent, pset_idx, pow_idx);
-
     if(ppower != nullptr && !ppower->m_name.isEmpty())
         ent.m_queued_powers.push_back(ppower);
+
+    float endurance = getEnd(*ent.m_char);
+    float end_cost = std::max(ppower->m_power_tpl.EnduranceCost, 1.0f);
+
+    qCDebug(logPowers) << "Endurance Cost" << end_cost << "/" << endurance;
+    if(end_cost > endurance)
+    {
+        QString msg = "Not enough endurance to use power" + ppower->m_name;
+        messageOutput(MessageChannel::DEBUG_INFO, msg, ent);
+        return;
+    }
+
+    setEnd(*ent.m_char, endurance-end_cost);
 
     // TODO: Do actual power stuff. For now, be silly.
     QStringList batman_kerpow{"AIEEE!", "ARRRGH!", "AWKKKKKK!", "BAM!", "BANG!", "BAP!",
@@ -425,9 +437,39 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t /*tgt_i
     std::random_device rng;
     std::mt19937 urng(rng());
     std::shuffle(batman_kerpow.begin(), batman_kerpow.end(), urng);
-    QString contents = batman_kerpow.first();
+    QString floating_msg = batman_kerpow.first();
+    QString console_msg;
 
-    sendFloatingInfo(&ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    sendFloatingInfo(&ent, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+
+    if(tgt_idx == ent.m_idx) // Skip the rest if targeting self.
+        return;
+
+    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx << tgt_id;
+        return;
+    }
+
+    // calculate damage
+    float damage = 1.0f;
+
+    // Send message to source
+    console_msg = floating_msg + " You hit " + target_ent->name() + " for " + QString::number(damage) + " damage!";
+    messageOutput(MessageChannel::COMBAT, console_msg, ent);
+
+    if(target_ent->m_type != EntType::PLAYER)
+        return;
+
+    // Send message to target
+    sendFloatingInfo(target_ent, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    console_msg = floating_msg + " You were hit by " + ent.name() + " for " + QString::number(damage) + " damage!";
+    messageOutput(MessageChannel::COMBAT, console_msg, *target_ent);
+
+    // Deal Damage
+    sendFloatingNumbers(&ent, tgt_idx, damage);
+    setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
 }
 
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo)
@@ -502,6 +544,7 @@ void addInspirationByName(CharacterData &cd, QString &name)
                 pset_idx = i;
                 pow_idx = j;
                 insp.m_insp_tpl = pow;
+                break;
             }
 
             j++;
@@ -590,7 +633,9 @@ void useInspiration(Entity &ent, uint32_t col, uint32_t row)
         return;
 
     removeInspiration(cd, col, row);
-    // TODO: Do inspiration benefit
+
+    // TODO: Do inspiration benefit. For now, just heal a bit
+    setHP(*ent.m_char, getHP(*ent.m_char)+15.0);
 
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
     QString contents = "Inspired!";
@@ -599,7 +644,7 @@ void useInspiration(Entity &ent, uint32_t col, uint32_t row)
 
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)
 {
-    //int max_cols = ent.m_char->m_char_data.m_max_insp_cols;
+    //int max_cols = cd.m_max_insp_cols;
     int max_rows = cd.m_max_insp_rows;
 
     CharacterInspiration insp;
@@ -666,6 +711,7 @@ void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level)
             found = true;
             pset_idx = i;
             enhance.m_enhance_tpl = pset.m_Powers.front();
+            break;
         }
 
         i++;
@@ -681,9 +727,9 @@ void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level)
     enhance.m_slot_idx                      = 0;
     enhance.m_name                          = name;
     enhance.m_level                         = level;
-    enhance.m_enhance_info.m_pcat_idx    = pcat_idx;
-    enhance.m_enhance_info.m_pset_idx        = pset_idx;
-    enhance.m_enhance_info.m_pow_idx         = pow_idx; // always zero
+    enhance.m_enhance_info.m_pcat_idx       = pcat_idx;
+    enhance.m_enhance_info.m_pset_idx       = pset_idx;
+    enhance.m_enhance_info.m_pow_idx        = pow_idx; // always zero
 
     for(size_t iter = 0; iter < cd.m_enhancements.size(); ++iter)
     {
@@ -729,6 +775,7 @@ void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx)
     std::swap(cd.m_enhancements[src_idx], cd.m_enhancements[dest_idx]);
 
     qCDebug(logPowers) << "Moving Enhancement from" << src_idx << "to" << dest_idx;
+    cd.m_powers_updated = true; // update client on power status
 }
 
 void setEnhancement(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t src_idx, uint32_t dest_idx)
@@ -754,13 +801,37 @@ void trashEnhancement(CharacterData &cd, uint32_t eh_idx)
     qCDebug(logPowers) << "Remove Enhancement from" << eh_idx;
 }
 
-void trashSetEnhancement(CharacterEnhancement &eh, uint32_t eh_idx)
+void trashEnhancementInPower(CharacterData &cd, uint32_t pset_idx, uint32_t pow_idx, uint32_t eh_idx)
+{
+    CharacterEnhancement enhance;
+    enhance.m_slot_idx = eh_idx;
+    cd.m_powersets[pset_idx].m_powers[pow_idx].m_enhancements[eh_idx] = enhance;
+
+    qCDebug(logPowers) << "Remove Enhancement from" << pset_idx << pow_idx << eh_idx;
+}
+
+void trashComboEnhancement(CharacterEnhancement &eh, uint32_t eh_idx)
 {
     CharacterEnhancement enhance;
     enhance.m_slot_idx = eh_idx;
     eh = enhance;
 
     qCDebug(logPowers) << "Remove Enhancement from" << eh_idx;
+}
+
+void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow_idx)
+{
+    CharacterPower * pow = nullptr;
+    pow = getOwnedPower(e, pset_idx, pow_idx);
+
+    if(pow != nullptr && !pow->m_name.isEmpty())
+        qFatal("Cannot find Power for buying enhancement slot: %d %d", pset_idx, pow_idx);
+
+    if(pow->m_power_tpl.BoostsAllowed.empty())
+        return;
+
+    // Modify based upon level
+    pow->m_total_eh_slots += num;
 }
 
 void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow)
@@ -789,21 +860,27 @@ float enhancementCombineChances(CharacterEnhancement *eh1, CharacterEnhancement 
     int eh_delta = 0;
 
     eh_delta = eh1->m_num_combines + eh1->m_level - (eh2->m_num_combines + eh2->m_level);
-    if ( eh_delta >= 0 )
-        chance_idx = eh1->m_num_combines + eh1->m_level - (eh2->m_num_combines + eh2->m_level);
+    if(eh_delta >= 0)
+        chance_idx = eh_delta;
     else
         chance_idx = -eh_delta;
 
-    if ( eh1->m_enhance_tpl.parent_StoredPowerSet == eh2->m_enhance_tpl.parent_StoredPowerSet )
+    qCDebug(logPowers) << "eh_delta" << eh_delta;
+    qCDebug(logPowers) << "chance_idx" << chance_idx;
+
+    if(eh1->m_enhance_tpl.parent_StoredPowerSet == eh2->m_enhance_tpl.parent_StoredPowerSet)
         combine_chances = &data.m_combine_same.CombineChances;
     else
         combine_chances = &data.m_combine_chances.CombineChances;
 
     int chance_count = combine_chances->size();
+    qCDebug(logPowers) << "combine_chances size" << chance_count;
+
     if ( chance_idx >= chance_count )
     {
         if ( chance_count > 0 )
             return combine_chances->at(chance_count - 1);
+
         return 0.0f;
     }
 
@@ -834,7 +911,7 @@ void combineEnhancements(Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotE
 
     // get chance
     chance = enhancementCombineChances(eh1, eh2);
-    float ran = rand() / RAND_MAX;
+    float ran = float(rand()) / float(RAND_MAX);
     qCDebug(logPowers) << "Rand" << ran << "/" << chance;
 
     if(ran < chance)
@@ -853,7 +930,7 @@ void combineEnhancements(Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotE
         return;
 
     if(slot2.m_set_in_power == true)
-        trashSetEnhancement(*eh2, slot2.m_eh_idx); // trash it anyway, we've already copied it to eh1
+        trashComboEnhancement(*eh2, slot2.m_eh_idx); // trash it anyway, we've already copied it to eh1
     else
         trashEnhancement(ent.m_char->m_char_data, slot2.m_eh_idx);
 

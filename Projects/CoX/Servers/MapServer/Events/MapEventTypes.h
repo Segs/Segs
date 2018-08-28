@@ -118,6 +118,8 @@ public:
     EVENT_DECL(evMoveEnhancement            ,241)
     EVENT_DECL(evSetEnhancement             ,242)
     EVENT_DECL(evTrashEnhancement           ,243)
+    EVENT_DECL(evTrashEnhancementInPower    ,244)
+    EVENT_DECL(evBuyEnhancementSlot         ,245)
     EVENT_DECL(evRecvNewPower               ,246)
     EVENT_DECL(evEntityInfoRequest          ,256) // right-click entity select "Info"
     EVENT_DECL(evLocationVisited            ,262)

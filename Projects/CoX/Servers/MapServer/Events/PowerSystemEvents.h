@@ -142,6 +142,56 @@ public:
 };
 
 // [[ev_def:type]]
+class TrashEnhancementInPower final : public MapLinkEvent
+{
+public:
+    // [[ev_def:field]]
+    int m_pset_idx;
+    // [[ev_def:field]]
+    int m_pow_idx;
+    // [[ev_def:field]]
+    int m_eh_idx;
+    TrashEnhancementInPower() : MapLinkEvent(MapEventTypes::evTrashEnhancementInPower)
+    {}
+    void    serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1, 44);
+        assert(false); // we don't send this, we receive it.
+    }
+    void    serializefrom(BitStream &bs)
+    {
+        m_pset_idx  = bs.GetPackedBits(1);
+        m_pow_idx   = bs.GetPackedBits(1);
+        m_eh_idx = bs.GetPackedBits(1);
+    }
+};
+
+// [[ev_def:type]]
+class BuyEnhancementSlot final : public MapLinkEvent
+{
+public:
+    // [[ev_def:field]]
+    int m_num;
+    // [[ev_def:field]]
+    int m_pset_idx;
+    // [[ev_def:field]]
+    int m_pow_idx;
+    BuyEnhancementSlot() : MapLinkEvent(MapEventTypes::evBuyEnhancementSlot)
+    {}
+    void    serializeto(BitStream &bs) const
+    {
+        bs.StorePackedBits(1, 45);
+        assert(false); // we don't send this, we receive it.
+    }
+    void    serializefrom(BitStream &bs)
+    {
+        m_num       = bs.GetPackedBits(1);
+        m_pset_idx  = bs.GetPackedBits(1);
+        m_pow_idx   = bs.GetPackedBits(1);
+    }
+};
+
+// [[ev_def:type]]
 class RecvNewPower final : public MapLinkEvent
 {
 public:

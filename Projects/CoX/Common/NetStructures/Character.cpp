@@ -111,6 +111,9 @@ void Character::finalizeLevel()
     m_char_data.m_max_insp_cols = data.countForLevel(m_char_data.m_combat_level, data.m_pi_schedule.m_InspirationCol);
     m_char_data.m_max_enhance_slots = data.countForLevel(m_char_data.m_combat_level, data.m_pi_schedule.m_BoostSlot);
 
+    // TODO: client will only accept 5col x 4row of insps MAX, see Issue #524
+    assert(m_char_data.m_max_insp_cols <= 5 || m_char_data.m_max_insp_rows <= 4);
+
     int num_powersets = m_char_data.m_powersets.size();
     for(int idx = 1; idx < num_powersets; ++idx) // Skipping 0 powerset (temporary powers)
     {
@@ -134,50 +137,16 @@ void Character::addStartingInspirations()
         addInspirationByName(m_char_data, name);
 }
 
-void Character::getTemporaryPowers()
+void Character::getStartingPowers(QString pcat_name, QString pset_name, QStringList &power_names)
 {
     PowerPool_Info ppool;
-    // TODO: Make these configurable in settings.cfg?
-    QStringList starting_temps =
-    {
-        "EMP_Glove",                    // 27.0.0
-        "Cryoprojection_Bracers",       // 27.0.1
-    };
 
-    ppool.m_pcat_idx = getPowerCatByName("Temporary_Powers");                   // idx: 27
-    ppool.m_pset_idx = getPowerSetByName("Temporary_Powers", ppool.m_pcat_idx); // idx: 0
+    ppool.m_pcat_idx = getPowerCatByName(pcat_name);
+    ppool.m_pset_idx = getPowerSetByName(pset_name, ppool.m_pcat_idx);
 
     addPowerSet(m_char_data, ppool); // add empty powerset
 
-    for(const QString &name : starting_temps)
-    {
-        ppool.m_pow_idx = getPowerByName(name, ppool.m_pcat_idx, ppool.m_pset_idx);
-        addPower(m_char_data, ppool);
-    }
-}
-
-void Character::getInherentPowers()
-{
-    PowerPool_Info ppool;
-    // TODO: Make these configurable in settings.cfg?
-    QStringList inherent_and_preorders =
-    {
-        "Brawl",                        // 26.0.0
-        "prestige_generic_Sprintp",     // 26.0.1
-        //"prestige_preorder_Sprintp",    // 26.0.2
-        //"prestige_BestBuy_Sprintp",     // 26.0.3
-        //"prestige_EB_Sprintp",          // 26.0.4
-        //"prestige_Gamestop_Sprintp",    // 26.0.5
-        "Sprint",                       // 26.0.6
-        "Rest",                         // 26.0.7
-    };
-
-    ppool.m_pcat_idx = getPowerCatByName("Inherent");           // idx: 26
-    ppool.m_pset_idx = getPowerSetByName("Inherent", ppool.m_pcat_idx); // idx: 0
-
-    addPowerSet(m_char_data, ppool); // add empty powerset
-
-    for(const QString &name : inherent_and_preorders)
+    for(const QString &name : power_names)
     {
         ppool.m_pow_idx = getPowerByName(name, ppool.m_pcat_idx, ppool.m_pset_idx);
         addPower(m_char_data, ppool);
@@ -202,8 +171,29 @@ void Character::GetCharBuildInfo(BitStream &src)
     src.GetString(m_char_data.m_class_name);
     src.GetString(m_char_data.m_origin_name);
 
-    getTemporaryPowers();           // temporary_powers (must be idx 0)
-    getInherentPowers();            // inherent
+    // TODO: Make these configurable in settings.cfg?
+    QStringList starting_temps =
+    {
+        "EMP_Glove",                    // 27.0.0
+        "Cryoprojection_Bracers",       // 27.0.1
+    };
+
+    // TODO: Make these configurable in settings.cfg?
+    QStringList inherent_and_preorders =
+    {
+        "Brawl",                        // 26.0.0
+        "prestige_generic_Sprintp",     // 26.0.1
+        //"prestige_preorder_Sprintp",    // 26.0.2
+        //"prestige_BestBuy_Sprintp",     // 26.0.3
+        //"prestige_EB_Sprintp",          // 26.0.4
+        //"prestige_Gamestop_Sprintp",    // 26.0.5
+        "Sprint",                       // 26.0.6
+        "Rest",                         // 26.0.7
+    };
+
+    // Temporary Powers MUST come first (must be idx 0)
+    getStartingPowers(QStringLiteral("Temporary_Powers"), QStringLiteral("Temporary_Powers"), starting_temps);
+    getStartingPowers(QStringLiteral("Inherent"), QStringLiteral("Inherent"), inherent_and_preorders);
     getPowerFromBuildInfo(src);     // primary, secondary
     finalizeLevel();
     addStartingInspirations();      // resurgence and phenomenal_luck

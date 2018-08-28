@@ -307,6 +307,7 @@ void readEmailMessage(Entity *e, const int id){
 /*
  * Character Methods
  */
+// TODO: get titles from texts/English/titles_def
 static const QStringList g_generic_titles =
 {
     "NULL",
@@ -331,6 +332,7 @@ static const QStringList g_generic_titles =
     "Wonderful",
 };
 
+// TODO: get titles from texts/English/titles_def
 static const QStringList g_origin_titles =
 {
     "NULL",

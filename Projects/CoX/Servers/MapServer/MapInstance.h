@@ -143,5 +143,7 @@ protected:
         void on_move_enhancement(class MoveEnhancement *ev);
         void on_set_enhancement(class SetEnhancement *ev);
         void on_trash_enhancement(class TrashEnhancement *ev);
+        void on_trash_enhancement_in_power(class TrashEnhancementInPower *ev);
+        void on_buy_enhancement_slot(class BuyEnhancementSlot *ev);
         void on_recv_new_power(class RecvNewPower *ev);
 };

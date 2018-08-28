@@ -237,6 +237,10 @@ bool MapServerData::read_runtime_data(const QString &directory_path)
         return false;
     if(!read_powers(directory_path))
         return false;
+    if(!read_combine_chances(directory_path))
+        return false;
+    if(!read_effectiveness(directory_path))
+        return false;
     if(!read_pi_schedule(directory_path))
         return false;
     qInfo().noquote() << "Finished reading game data.";

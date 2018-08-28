@@ -443,6 +443,12 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evTrashEnhancement:
             on_trash_enhancement(static_cast<TrashEnhancement *>(ev));
             break;
+        case MapEventTypes::evTrashEnhancementInPower:
+            on_trash_enhancement_in_power(static_cast<TrashEnhancementInPower *>(ev));
+            break;
+        case MapEventTypes::evBuyEnhancementSlot:
+            on_buy_enhancement_slot(static_cast<BuyEnhancementSlot *>(ev));
+            break;
         case MapEventTypes::evRecvNewPower:
             on_recv_new_power(static_cast<RecvNewPower *>(ev));
             break;
@@ -2176,6 +2182,20 @@ void MapInstance::on_trash_enhancement(TrashEnhancement *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_idx);
+}
+
+void MapInstance::on_trash_enhancement_in_power(TrashEnhancementInPower *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    trashEnhancementInPower(session.m_ent->m_char->m_char_data, ev->m_pset_idx, ev->m_pow_idx, ev->m_eh_idx);
+}
+
+void MapInstance::on_buy_enhancement_slot(BuyEnhancementSlot *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    buyEnhancementSlot(*session.m_ent, ev->m_num, ev->m_pset_idx, ev->m_pow_idx);
 }
 
 void MapInstance::on_recv_new_power(RecvNewPower *ev)
