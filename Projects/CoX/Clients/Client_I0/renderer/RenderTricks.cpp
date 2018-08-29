@@ -242,25 +242,18 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,Material
             if (!( flags & std::get<0>(tex_bit) ))
                 continue;
             def.setReflectionModeFlag(MaterialDefinition::ReflectionModeFlags(std::get<2>(tex_bit)));
-            if ( model->Model_flg1 & 0x2000 ) //OBJ_CUBEMAP ?
-            {
-                def.set_usingCubemaps(true);
-                glm::mat3 inv_viewmat (cam_info.inv_viewmat.r1.x, cam_info.inv_viewmat.r1.y, cam_info.inv_viewmat.r1.z,
-                                        cam_info.inv_viewmat.r2.x, cam_info.inv_viewmat.r2.y, cam_info.inv_viewmat.r2.z,
-                                        cam_info.inv_viewmat.r3.x, cam_info.inv_viewmat.r3.y, cam_info.inv_viewmat.r3.z);
-                if(std::get<1>(tex_bit)==GL_TEXTURE0)
-                    def.draw_data.textureMatrix0 = glm::mat4(inv_viewmat);
-                else
-                    def.draw_data.textureMatrix1 = glm::mat4(inv_viewmat);
-            }
-            /*
-             glEnable(GL_TEXTURE_GEN_S);
-             glEnable(GL_TEXTURE_GEN_T);
-            glEnable(GL_TEXTURE_GEN_R);
-            glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-            glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-            glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-             */
+            def.set_usingCubemaps((model->Model_flg1 & OBJ_CUBEMAP));
+
+            if (!(model->Model_flg1 & OBJ_CUBEMAP))
+                continue;
+
+            glm::mat3 inv_viewmat (cam_info.inv_viewmat.r1.x, cam_info.inv_viewmat.r1.y, cam_info.inv_viewmat.r1.z,
+                                   cam_info.inv_viewmat.r2.x, cam_info.inv_viewmat.r2.y, cam_info.inv_viewmat.r2.z,
+                                   cam_info.inv_viewmat.r3.x, cam_info.inv_viewmat.r3.y, cam_info.inv_viewmat.r3.z);
+            if(std::get<1>(tex_bit)==GL_TEXTURE0)
+                def.draw_data.textureMatrix0 = glm::mat4(inv_viewmat);
+            else
+                def.draw_data.textureMatrix1 = glm::mat4(inv_viewmat);
         }
     }
     if (flags & 0x2000000)

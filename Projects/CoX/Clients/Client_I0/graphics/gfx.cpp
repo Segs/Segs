@@ -39,7 +39,7 @@ struct HashTab_Entry
     void *value;
     int u_C;
 };
-
+std::unordered_map<GfxTree_Node *, std::string> g_node_infos; // used to record additional gfx tree node info, that cannot be put inside the object, only use this for debugging.
 extern "C" {
     __declspec(dllimport) void hashtab_first(HashTable *arg0, Hash_Iter *iter);
     __declspec(dllimport) HashTab_Entry *hashtab_next(Hash_Iter *iter);
@@ -325,6 +325,7 @@ GfxTree_Node *sunAddNode(const char *model_name, int which_graph_to_insert)
         result = segs_createGfxTreeNode_with_parent(nullptr);
     else
         result = segs_gfxtree_CreateSkyGfxTreeRoot(nullptr);
+    g_node_infos[result] = model_name;
     fn_4BF9F0(model_name, filename);
     if (!filename[0])
         VfPrintfWrapper("\nSky builder can't find '%s' in the object_libray.\n", model_name);
@@ -524,18 +525,14 @@ void fixupCelestialObject(int idx, float add_dist, float rot, Vector3 *cam_pos, 
     Matrix4x3 to;
     if (node)
     {
-        const CelestialFixups *dword_7B8E08 = &objects[idx];
-        to.r1 = { 1,0,0 };
-        to.r2 = { 0,1,0 };
-        to.r3 = { 0,0,1 };
+        const CelestialFixups *selected_body_data = &objects[idx];
+        to = Unity_Matrix;
         to.TranslationPart = *cam_pos;
-        fn_5B6740(dword_7B8E08->pyr.y, &to.ref3()); //yawMat3
-        fn_5B6840(dword_7B8E08->pyr.z, &to.ref3()); //rollMat3
-        float angle = rot * dword_7B8E08->speed - glm::pi<float>() + dword_7B8E08->pyr.x;
+        fn_5B6740(selected_body_data->pyr.y, &to.ref3()); //yawMat3
+        fn_5B6840(selected_body_data->pyr.z, &to.ref3()); //rollMat3
+        float angle = rot * selected_body_data->speed - glm::pi<float>() + selected_body_data->pyr.x;
         pitchMat3(angle, &to.ref3());
-        dest.r1 = { 1,0,0 };
-        dest.r2 = { 0,1,0 };
-        dest.r3 = { 0,0,1 };
+        dest = Unity_Matrix;
         pitchMat3(-degToRad(90), &dest.ref3());
         dest.TranslationPart.y = add_dist + 7500.0f;
         dest.TranslationPart.x = 3000.0;

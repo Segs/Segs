@@ -541,7 +541,7 @@ void modelDrawTexNormals(Model *model, MaterialDefinition &material)
 {
 
     assert(model && model->vbo);
-    bool override_light = model->Model_flg1 & 0x10;
+    bool override_light = model->Model_flg1 & OBJ_NOLIGHTANGLE;
     if (override_light)
     {
         material.draw_data.light0.Ambient = g_sun.no_angle_light;
@@ -579,7 +579,7 @@ void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int 
 //    }
     const std::string part_name = std::string(__FUNCTION__) +"_"+model->parent_anim->headers->name;
     GLDebugGuard debug_guard(part_name.c_str());
-    bool is_dual_tex = (model->Model_flg1 & 0x40);
+    bool is_dual_tex = (model->Model_flg1 & OBJ_DUALTEXTURE);
 
     TrickNode *trick = draw_settings;
     if (!draw_settings)
@@ -622,7 +622,7 @@ void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int 
     material_definition.draw_data.light0.Diffuse = diffuse_light;
     material_definition.draw_data.modelViewMatrix = mat->toGLM();
     GLuint colorbuf = rgb_entries;
-    if ( model->Model_flg1 & 4 )
+    if (model->Model_flg1 & OBJ_FULLBRIGHT)
     {
         if ( !s_rgb_buf )
         {
@@ -638,16 +638,16 @@ void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int 
         if ( trick && trick->_TrickFlags & 0x1000 )
         {
             modelDrawWireframe(&trick->TintColor0, model);
-        }
-        else if(!( model->Model_flg1 & 0x10000 ))
+        } 
+        else if (!(model->Model_flg1 & OBJ_HIDE))
         {
-            if ( model->Model_flg1 & 0x800 )
+            if (model->Model_flg1 & OBJ_BUMPMAP)
             {
                 if (blend_mode != eBlendMode::BUMPMAP_COLORBLEND_DUAL)
                     bumpRenderObj(model, mat, colorbuf, &ambient_light, &diffuse_light,material_definition);
                 else {
                     GfxTree_Node *node = modelInitADummyNode(model, mat);
-                    model->Model_flg1 |= 0x4000u;
+                    model->Model_flg1 |= OBJ_DRAW_AS_ENT;
                     segs_modelDrawBonedNode(node, material_definition);
                 }
             }

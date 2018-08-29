@@ -116,7 +116,7 @@ inline void ShaderUniform<glm::mat4>::upload(glm::mat4 v)
     {
         return;
     }
-    glUniformMatrix4fv(id, 1,false,glm::value_ptr(v));
+    glUniformMatrix4fv(id, 1, false, glm::value_ptr(v));
 }
 
 struct ShaderProgram

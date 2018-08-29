@@ -152,6 +152,9 @@ void RenderStateWrapper::apply(const RenderState& v)
     if (before_first_apply || v.stencil_mode != current_state.stencil_mode || (v.stencil_ref != current_state.stencil_ref) || (v.stencil_mask != current_state.stencil_mask)
         || (v.stencil_fail != current_state.stencil_fail) || (v.stencil_zfail != current_state.stencil_zfail) || (v.stencil_zpass != current_state.stencil_zpass))
     {
+        assert(v.stencil_fail < 0x80000000);
+        assert(v.stencil_zfail < 0x80000000);
+        assert(v.stencil_zpass < 0x80000000);
         num_changes++;
         switch (v.stencil_mode)
         {

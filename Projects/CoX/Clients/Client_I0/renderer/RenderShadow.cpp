@@ -192,14 +192,15 @@ void setupVolume(Vector3 *vertices, Vector3i *triangles, int *p_triangle_count, 
     *p_triangle_count = created_tri_idx;
 }
 
-void drawVolume(const GLvoid *indices, int count)
+void drawVolume(GeometryData &geom_data, const ShaderProgram &drawprog,uint32_t count)
 {
-    glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, indices);
+    assert(glGetError() == GL_NO_ERROR);
+    geom_data.draw(drawprog, GL_TRIANGLES, count, 0);
+    assert(glGetError() == GL_NO_ERROR);
     struct_9E7300.shadow_tri_count += count / 3;
 }
-void debugDrawShadowVolume(const GLvoid *vbuf, MaterialDefinition &material, const GLvoid *indices, int count)
+void debugDrawShadowVolume(GeometryData &fakevbo, const MaterialDefinition &material, int index_count)
 {
-    static GeometryData fakevbo;
     MaterialDefinition mat(material);
     static const RGBA c_drawColors[] = {
         RGBA(0, 0, 0, 0),
@@ -222,11 +223,10 @@ void debugDrawShadowVolume(const GLvoid *vbuf, MaterialDefinition &material, con
     mat.draw_data.globalColor = c_drawColors[g_State.view.bShadowVol].to4Floats();
     mat.render_state.setCullMode(c_cullModes[g_State.view.bShadowVol]);
     mat.apply();
-    fakevbo.uploadVerticesToBuffer((float *)vbuf, count);
-
-    drawVolume(indices, count);
+    drawVolume(fakevbo, *mat.program, index_count);
 }
-void stencilShadowVolume(const GLvoid *pointer, size_t vbo_size_in_floats, const GLvoid *indices, int count, const Matrix4x3 &mat, uint8_t alpha, unsigned int mask)
+void stencilShadowVolume(const GLvoid *pointer, size_t vbo_size_in_floats, const Vector3i *indices, int count,
+                         const Matrix4x3 &mat, uint8_t alpha, unsigned int mask)
 {
     static uint8_t gl_ColorArray[100000];
     static bool s_StipplePatterns_initialized = false;
@@ -236,14 +236,23 @@ void stencilShadowVolume(const GLvoid *pointer, size_t vbo_size_in_floats, const
         memset(gl_ColorArray, 1, 100000u);
     }
     MaterialDefinition stencilMat(g_default_mat);
+
     stencilMat.setDrawMode(DrawMode::SINGLETEX);
     stencilMat.setFragmentMode(eBlendMode::MULTIPLY);
     segs_wcw_UnBindBufferARB();
     segs_texBindTexture(GL_TEXTURE_2D, 0, g_whiteTexture);
     segs_texBindTexture(GL_TEXTURE_2D, 1, g_whiteTexture);
     stencilMat.draw_data.modelViewMatrix = mat.toGLM();
+
+    static GeometryData fakevbo;
+    fakevbo.createVAO();
+    fakevbo.uploadVerticesToBuffer((float *)pointer, vbo_size_in_floats);
+    fakevbo.uploadIndicesToBuffer((const uint32_t *)&indices->i0, count * 3);
+    fakevbo.uploadColorsToBuffer(gl_ColorArray, 100000);
+
+
     if (g_State.view.bShadowVol)
-        debugDrawShadowVolume(pointer, stencilMat, indices, count*3);
+        debugDrawShadowVolume(fakevbo, stencilMat, count * 3);
     stencilMat.render_state.setCullMode(RenderState::CULL_NONE);
     stencilMat.apply();
     MaterialDefinition stencilFlatMat(g_default_mat);
@@ -277,10 +286,6 @@ void stencilShadowVolume(const GLvoid *pointer, size_t vbo_size_in_floats, const
     }
     stencilFlatMat.render_state.setColorWrite(false);
     stencilFlatMat.render_state.setDepthWrite(false);
-    static GeometryData fakevbo;
-    fakevbo.createVAO();
-    fakevbo.uploadVerticesToBuffer((float *)pointer, vbo_size_in_floats);
-    fakevbo.uploadColorsToBuffer(gl_ColorArray, 100000);
     stencilFlatMat.apply();
 
     stencilFlatMat.render_state.setDepthTestMode(RenderState::CMP_LESS);
@@ -289,18 +294,18 @@ void stencilShadowVolume(const GLvoid *pointer, size_t vbo_size_in_floats, const
     stencilFlatMat.render_state.stencil_fail = GL_KEEP;
     stencilFlatMat.render_state.setStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
     stencilFlatMat.apply();
-    drawVolume(indices, count * 3);
+    
+    drawVolume(fakevbo,*stencilFlatMat.program,count*3);
     stencilFlatMat.render_state.setCullMode(RenderState::CULL_CCW);
     stencilFlatMat.render_state.setStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
     stencilFlatMat.apply();
-    drawVolume(indices, count * 3);
+    drawVolume(fakevbo, *stencilFlatMat.program, count * 3);
     stencilFlatMat.render_state.setCullMode(RenderState::CULL_CCW);
     stencilFlatMat.render_state.setColorWrite(true);
     stencilFlatMat.render_state.setDepthWrite(true);
     stencilFlatMat.render_state.setDepthTestMode(RenderState::CMP_LESSEQUAL);
     stencilFlatMat.render_state.stencil_mode = RenderState::STENCIL_NONE;
     stencilFlatMat.apply();
-    glDisable(GL_POLYGON_STIPPLE);
 }
 void drawModelShadowVolume(Model *model,Matrix4x3 &mat, uint8_t alpha, int shadowmask, struct GfxTree_Node *node)
 {
@@ -340,7 +345,7 @@ void drawShadowColor(RenderState &rs)
     shadow_color_mat.setDrawMode(DrawMode::COLORONLY);
     shadow_color_mat.setFragmentMode(eBlendMode::MULTIPLY);
     shadow_color_mat.render_state = rs;
-    glPushAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+    //glPushAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
     shadow_color_mat.draw_data.projectionMatrix = glm::ortho(0.0, 640.0, 0.0, 480.0, -1.0, 1.0);
     shadow_color_mat.draw_data.modelViewMatrix = glm::mat4(1);
     shadow_color_mat.draw_data.light0.State = false;
@@ -365,7 +370,7 @@ void drawShadowColor(RenderState &rs)
     shadow_color_mat.set_colorSource(0); // global color only
     shadow_color_mat.apply();
     fakevbo.drawArray(*shadow_color_mat.program, GL_TRIANGLES, 6, 0);
-    glPopAttrib();
+    //glPopAttrib();
 }
 }// end of anonymous namespace
 

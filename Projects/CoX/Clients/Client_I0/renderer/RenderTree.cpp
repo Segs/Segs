@@ -77,7 +77,7 @@ void segs_modelDrawGfxNode(GfxTree_Node *node)
     }
     else
     {
-        if ( node->model->Model_flg1 & 0x100 )
+        if (node->model->Model_flg1 & OBJ_TREE)
             segs_modelDrawAlphaSortHackNode(node);
         else
             segs_modelDrawNode(node,node_base_material);
@@ -97,7 +97,7 @@ void segs_addViewSortNode(GfxTree_Node *node, Model *model, Matrix4x3 *mat, Vect
     assert(model);
     assert(vsArray.size() + size_t(nodeTotal) == (ModelArrayTypeSort.size() + ModelArrayDistSort.size()));
     bool is_dist_sorted = false;
-    if (alpha != 255 || model->Model_flg1 & 0x101 || (node != nullptr && node->flg & 0x100000))
+    if (alpha != 255 || model->Model_flg1 & (OBJ_TREE | OBJ_ALPHASORT) || (node != nullptr && node->flg & 0x100000))
     {
         dist_sq = mid->z;
         is_dist_sorted = true;
@@ -214,7 +214,8 @@ void segs_gfxTreeDrawNode(GfxTree_Node *basenode, Matrix4x3 *parent_mat)
         if (node_->children_list || node_->model)
         {
             Model *model = node_->model;
-            if (!model || ((!(model->Model_flg1 & 0x100)) && node_->flg & 0x400000 && model->Model_flg1 & 0x4000))
+            if (!model ||
+                ((!(model->Model_flg1 & OBJ_TREE)) && node_->flg & 0x400000 && model->Model_flg1 & OBJ_DRAW_AS_ENT))
             {
                 node_->viewspace = &tmp;
             }

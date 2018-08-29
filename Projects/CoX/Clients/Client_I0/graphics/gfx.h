@@ -1,6 +1,7 @@
 #pragma once
 #pragma pack(push, 1)
 #include "renderer/RenderBonedModel.h"
+#include <unordered_map>
 
 struct GfxPrefs
 {
@@ -116,7 +117,7 @@ struct Parsed_SkyScene
     struct Parse_TexSwap **TexSwap;
 };
 #pragma pack(pop)
-
+extern std::unordered_map<GfxTree_Node *, std::string> g_node_infos;
 void segs_gfxUpdateFrame(bool force_render_world, bool head_shot);
 void segs_sun_sunUpdate(int init);
 extern void patch_gfx();

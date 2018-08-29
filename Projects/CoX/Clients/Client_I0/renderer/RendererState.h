@@ -156,9 +156,9 @@ struct RenderState
     StencilMode stencil_mode;
     GLint stencil_ref;
     GLuint stencil_mask = ~0U;
-    GLenum stencil_fail;
-    GLenum stencil_zfail;
-    GLenum stencil_zpass;
+    GLenum stencil_fail=0;
+    GLenum stencil_zfail=0;
+    GLenum stencil_zpass=0;
     void setDepthTestMode(CompareMode mode) { depth_cmp = mode; }
     void setDepthWrite(bool enable) { depth_write = enable; }
     void setColorWrite(bool enable) { color_write = enable; }

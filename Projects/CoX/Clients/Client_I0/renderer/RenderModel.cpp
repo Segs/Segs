@@ -3,6 +3,8 @@
 #include "RenderBonedModel.h"
 #include "RendererState.h"
 #include "Model.h"
+// only to retrieve node info map
+#include "graphics/gfx.h"
 #include "utils/dll_patcher.h"
 #include "GameState.h"
 #include "RendererUtils.h"
@@ -37,7 +39,7 @@ void segs_modelDrawNode(GfxTree_Node *node,const MaterialDefinition &initial_mat
     GLDebugGuard debug_guard(__FUNCTION__);
     Model *model = node->model;
     drawOrder = g_nextdraw++ * node->unique_id;
-    if (model->Model_flg1 & 0x4000 && node->flg & 0x400000)
+    if (model->Model_flg1 & OBJ_DRAW_AS_ENT && node->flg & 0x400000)
     {
         ++boned;
         segs_modelDrawBonedNode(node, initial_mat);
@@ -111,7 +113,19 @@ void segs_gfxTreeDrawNodeSky(GfxTree_Node *skynode, Matrix4x3 *mat)
         {
             if (g_State.view.bWireframe && !inEditMode())
                 xyprintf(10, row++, "%s %d", model->bone_name_offset, node->alpha());
-            segs_modelDraw(model, &res, node->trick_node, node->alpha(), node->rgb_entries, nullptr,base_sky_material);
+            auto iter = g_node_infos.find(node);
+            if (iter != g_node_infos.end())
+            {
+                GLDebugGuard debug(iter->second.c_str());
+                segs_modelDraw(model, &res, node->trick_node, node->alpha(), node->rgb_entries, nullptr,
+                               base_sky_material);
+            } 
+            else
+            {
+                segs_modelDraw(model, &res, node->trick_node, node->alpha(), node->rgb_entries, nullptr,
+                               base_sky_material);
+                
+            }
         }
         if (node->children_list)
             segs_gfxTreeDrawNodeSky(node->children_list, &res);

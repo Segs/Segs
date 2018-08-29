@@ -304,7 +304,7 @@ void GeometryData::prepareDraw(const ShaderProgram& drawprog)
         }
         if (drawprog.vertexUV1_Location != ~0U)
         {
-            glVertexAttribPointer(drawprog.vertexUV1_Location, 2, GL_FLOAT, GL_FALSE, 0, uv_base_offset_in_buffer + uv2_offset);
+            glVertexAttribPointer(drawprog.vertexUV1_Location, 2, GL_FLOAT, GL_FALSE, 0, uv_base_offset_in_buffer + uv1_offset);
             glEnableVertexAttribArray(drawprog.vertexUV1_Location);
         }
         if (segs_data->uv_vbo.buffer_id != ~0U)
@@ -351,7 +351,7 @@ void GeometryData::prepareDraw(const ShaderProgram& drawprog)
 void GeometryData::draw(const ShaderProgram &drawprog,GLenum drawtype,size_t count,size_t offset)
 {
     prepareDraw(drawprog);
-    glDrawElements(drawtype, count, GL_UNSIGNED_INT, (void *)(offset*4));
+    glDrawElements(drawtype, count, GL_UNSIGNED_INT, (void *)(offset*4));   
     glBindVertexArray(0);
 
 }

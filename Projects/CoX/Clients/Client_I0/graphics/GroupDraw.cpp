@@ -419,7 +419,7 @@ void drawDefSub(GroupDef *defc, DrawParams *draw_params, Matrix4x3 *mat, Vector3
                 if (parent_group && groupDefIsDoorGenerator(parent_group->def))
                     lightGiveLightTrackerToMyDoor(tracker->parent_group, draw_params->pGrp);
                 Model *model = tracker->def->model;
-                if (!(model->Model_flg1 & 4))
+                if (!(model->Model_flg1 & OBJ_FULLBRIGHT))
                 {
                     if (!model->trck_node || !(model->trck_node->_TrickFlags & EditorVisible))
                         colorizeTracker(mat, tracker, draw_params->pGrp);
@@ -874,16 +874,16 @@ struct Parser_Def
 struct NameList;
 extern "C"
 {
-    __declspec(dllimport) void groupRename(NameList *, const char *, const char *, int );
+    __declspec(dllimport) void groupRename(NameList *, const char *, char *, int );
     __declspec(dllimport) int error_ReportParsing(const char *filename, const char *fmt, ...);
     __declspec(dllimport) GroupDef *findNameInLib_P(const char *);
     __declspec(dllimport) void *getMemFromPool(MemPool *pool, const char *filename, int line);
     __declspec(dllimport) int fn_4C13C0(const char *);
     __declspec(dllimport) void Rotation_ZXY_Order(Matrix3x3 *mat, Vector3 *angles);
 }
-void segs_addGroups(Parser_Def *parser_def, GroupDef *pDef, NameList *name_list, char *filename) //groupfileload_4C1DA0
+void segs_addGroups(Parser_Def *parser_def, GroupDef *pDef, NameList *name_list, const char *filename) //groupfileload_4C1DA0
 {
-    char buf[400];
+    char buf[800]={0};
     int  cnt       = COH_ARRAY_SIZE(parser_def->p_Grp);
     pDef->num_subs = cnt;
     if (!pDef->num_subs)

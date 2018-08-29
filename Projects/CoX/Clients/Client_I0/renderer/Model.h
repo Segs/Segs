@@ -91,11 +91,13 @@ struct GeometryData
         segs_data->color_buffer.offset = 0;
         glBufferData(GL_ARRAY_BUFFER, count, colors, GL_DYNAMIC_DRAW);
     }
-    void uploadVerticesToBuffer(float *data, size_t count)
+    void uploadVerticesToBuffer(float *data, size_t count, GLenum usage = GL_DYNAMIC_DRAW,const char *name = nullptr)
     {
         if (!segs_data->we_own_vertex_buffer)
         {
             glGenBuffers(1, &gl_vertex_buffer);
+            if (name)
+                glObjectLabel(GL_BUFFER, gl_vertex_buffer, -1, name);
             segs_data->we_own_vertex_buffer  = true;
             segs_data->vertex_buffer_changed = true;
         }
@@ -103,12 +105,14 @@ struct GeometryData
         glBufferData(GL_ARRAY_BUFFER, count * sizeof(float), data, GL_DYNAMIC_DRAW);
         vertices = nullptr;
     }
-    void createSizedVBO(size_t count)
+    void createSizedVBO(size_t count,const char *name=nullptr)
     {
         assert(gl_vertex_buffer == 0);
         if (!segs_data->we_own_vertex_buffer)
         {
             glGenBuffers(1, &gl_vertex_buffer);
+            if (name)
+                glObjectLabel(GL_BUFFER, gl_vertex_buffer, -1, name);
             segs_data->we_own_vertex_buffer  = true;
             segs_data->vertex_buffer_changed = true;
         }
@@ -120,7 +124,7 @@ struct GeometryData
         glBindBuffer(GL_ARRAY_BUFFER, gl_vertex_buffer);
         glBufferSubData(GL_ARRAY_BUFFER, offset, count * sizeof(float), data);
     }
-    void uploadIndicesToBuffer(uint32_t *data, size_t count)
+    void uploadIndicesToBuffer(const uint32_t *data, size_t count)
     {
         // assert(gl_index_buffer == 0);
         if (!segs_data->we_own_index_buffer)
@@ -130,7 +134,7 @@ struct GeometryData
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_index_buffer);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_DYNAMIC_DRAW);
-        vertices = nullptr;
+        triangles = nullptr;
     }
     ~GeometryData()
     {

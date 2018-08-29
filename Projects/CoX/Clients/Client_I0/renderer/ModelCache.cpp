@@ -268,7 +268,7 @@ void segs_modelSetupVertexObject(Model *model, int useVbos)
     if (num_tex_coords2)
     {
         vbo->uv2_offset = getMemoryLocationAndIncrementOffset<Vector2>(mem,model_vertex_count,offset);
-        memcpy(vbo->uv2_offset, vbo->uv1_offset, 8 * model_vertex_count);
+        memcpy(vbo->uv2_offset, vbo->uv1_offset, num_tex_coords1);
     }
     if (weightsTotalSize || boneIndicesTotalSize)
     {
@@ -311,15 +311,16 @@ void segs_modelSetupVertexObject(Model *model, int useVbos)
     if (useVbos == 2)
         return;
 
-    if (!vbo->segs_data)
-        vbo->segs_data = new GeometryData::SegsGeometryData;
-
-    glGenVertexArrays(1, &vbo->segs_data->vao_id);
+    vbo->createVAO();
     glBindVertexArray(vbo->segs_data->vao_id);
     const char *last_part = strrchr(model->parent_anim->name, '/') + 1;
+    if (0 != strstr(last_part ,"concrete1"))
+    {
+        printf("con") ;
+    }
     glGenBuffers(1, &vbo->gl_index_buffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo->gl_index_buffer);
-    snprintf(buff, 128, "ModelCache_VBO_%s_Indices",last_part);
+    snprintf(buff, 128, "%s_IBO_%d",last_part,size);
     glObjectLabel(GL_BUFFER, vbo->gl_index_buffer, -1, buff);
     if (size)
     {
@@ -330,7 +331,7 @@ void segs_modelSetupVertexObject(Model *model, int useVbos)
     int32_9ED15C += total_size + size;
     glGenBuffers(1, &vbo->gl_vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vbo->gl_vertex_buffer);
-    snprintf(buff, 128, "ModelCache_VBO_%s_Verts",last_part);
+    snprintf(buff, 128, "%s_VBO_%d",last_part,total_size);
     glObjectLabel(GL_BUFFER, vbo->gl_vertex_buffer, -1, buff);
     glBufferData(GL_ARRAY_BUFFER, total_size, mem, GL_STATIC_DRAW);
 

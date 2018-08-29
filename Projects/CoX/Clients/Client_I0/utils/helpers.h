@@ -158,7 +158,7 @@ struct Vector3i
 };
 struct Vector4
 {
-    float x,y,z,w;
+    float x=0,y=0,z=0,w=0;
     Vector4() = default;
     constexpr Vector4(float x_,float y_,float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {}
     Vector4(Vector3 v3,float w_) : x(v3.x),y(v3.y),z(v3.z),w(w_) {}
@@ -189,9 +189,9 @@ struct Vector4
     }
 };
 struct Matrix3x3 {
-    Vector3 r1;
-    Vector3 r2;
-    Vector3 r3;
+    Vector3 r1 {1, 0, 0};
+    Vector3 r2 {0, 1, 0};
+    Vector3 r3 {0, 0, 1};
     Vector3 operator *(const Vector3 &val) const
     {
         return {
@@ -242,10 +242,10 @@ struct Matrix3x3 {
 };
 struct Matrix4x3
 {
-    Vector3 r1;
-    Vector3 r2;
-    Vector3 r3;
-    Vector3 TranslationPart;
+    Vector3          r1{1, 0, 0};
+    Vector3          r2{0, 1, 0};
+    Vector3          r3{0, 0, 1};
+    Vector3          TranslationPart {0,0,0};
     Matrix3x3 &ref3() { return (Matrix3x3&)*this; }
     const Matrix3x3 &ref3() const { return (const Matrix3x3&)*this; }
     Vector3 operator *(const Vector3 &val) const
@@ -290,10 +290,10 @@ extern const Matrix4x3 Unity_Matrix;
 
 struct Matrix4x4
 {
-    Vector4 r1;
-    Vector4 r2;
-    Vector4 r3;
-    Vector4 TranslationPart;
+    Vector4 r1{1, 0, 0, 0};
+    Vector4 r2{0, 1, 0, 0};
+    Vector4 r3{0, 0, 1, 0};
+    Vector4 TranslationPart{0, 0, 0, 1};
     Matrix4x4 &operator=(const Matrix4x3 &v) {
         r1 = v.r1;
         r2 = v.r2;
