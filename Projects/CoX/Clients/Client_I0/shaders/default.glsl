@@ -12,6 +12,8 @@
 #define LIGHT_MODE_LIT 2
 #define LIGHT_MODE_BUMP_LIT 3
 const int c_TextureUnitCount = TEXTURES;
+const int c_autogen_uv0 = REFLECTION_MODE_T0;
+const int c_autogen_uv1 = REFLECTION_MODE_T1;
 // Optional flags
 // SKINNING
 // BUMP
@@ -87,7 +89,21 @@ out VS_Output {
 layout(xfb_buffer = 0) out vec4 outValue;
 #endif
 
-void calculateTextureCoordinates()
+// default vertex shader
+vec3 reflectionMap(in vec3 normal, in vec3 ecPosition3)
+{
+   float NdotU, m;
+   vec3 u;
+   u = normalize(ecPosition3);
+   return (reflect(u, normal));
+}
+vec4 ftexgen(in vec3 normal, in vec4 ecPosition)
+{
+    vec3 ecPosition3 = (vec3(ecPosition))/ecPosition.w;
+    vec3 reflection = reflectionMap( normal, ecPosition3 );
+    return vec4( reflection, 1.0);
+}
+void calculateTextureCoordinates(in vec3 normal, in vec4 ecPosition)
 {
     // Calculate base and blend texture coordinates
 #if TC_XFORM == TEX_XFORM_OFFSET
@@ -100,20 +116,14 @@ void calculateTextureCoordinates()
     vec2 uv0	= vertexUV0.xy;
     vec2 uv1	= vertexUV1.xy;
 #endif
-}
-// default vertex shader
-vec3 reflectionMap(in vec3 normal, in vec3 ecPosition3)
-{
-   float NdotU, m;
-   vec3 u;
-   u = normalize(ecPosition3);
-   return (reflect(u, normal));
-}
-vec4 ftexgen(in vec3 normal, in vec4 ecPosition)
-{
-    vec3 ecPosition3;    ecPosition3 = (vec3(ecPosition))/ecPosition.w;
-    vec3 reflection = reflectionMap( normal, ecPosition3 );
-    return vec4( reflection, 1.0);
+    uv0 = c_autogen_uv0==1 ? ftexgen(normal,ecPosition).xy : uv0;
+    uv1 = c_autogen_uv1==1 ? ftexgen(normal,ecPosition).xy : uv1;
+    if(c_TextureUnitCount>0)
+        v_out.texCoord0 = uv0;
+    if(c_TextureUnitCount>1)
+        v_out.texCoord1 = uv1;
+    if(c_TextureUnitCount>2)
+        v_out.texCoord2 = uv1; // normal map coords
 }
 #if VERTEX_PROCESSING==VERTEX_PROCESSING_SKINNING
 vec3 boneTransform(vec4 pos,int boneidx)
@@ -184,6 +194,27 @@ void calc_tangent_space_light_and_position( vec3 normal_vs, vec3 tangent_vs, flo
     // Compute position in tangent space (used by fragment shader to determine half vector)
     o_position_ts = M_ts * position_vs;
 }
+void calculateColorBasedOnLightMode(const int light_mode, vec4 position_vs, vec3 normal)
+{
+    switch (light_mode)
+    {
+    case LIGHT_MODE_NONE:
+        v_out.Color.rgba = globalColor.rgba * vertexColor;
+        break;
+    case LIGHT_MODE_PRE_LIT:
+        v_out.Color.rgba = vertexColor;
+        break;
+    default:
+    {
+        // Compute the normal
+        normal          = normalize(transpose(inverse(modelViewMatrix)) * vec4(normal, 0)).xyz;
+        vec4 ecPosition = modelViewMatrix * position_vs;
+        vec3 lightvec   = light0.Position.xyz - ecPosition.xyz;
+        v_out.Color.rgb = diffuse(normal.xyz, lightvec, globalColor).rgb;
+        v_out.Color.a   = globalColor.a;
+    }
+    }
+}
 void main()
 {
     vec4 position_vs = preprocessVertex4(vertexPos);
@@ -238,24 +269,9 @@ void main()
 #ifdef FOG
     v_out.fogFragCoord = length((modelview_pos).xyz);
 #endif
-#if LIGHT_MODE==LIGHT_MODE_NONE
-    v_out.Color.rgba = globalColor.rgba*vertexColor;
-#elif LIGHT_MODE==LIGHT_MODE_PRE_LIT
-    v_out.Color.rgba = globalColor.rgba*vertexColor;
-#else
-    //Compute the normal
-    normal = normalize(transpose(inverse(modelViewMatrix)) * vec4(normal,0)).xyz;
-    vec4 ecPosition = modelViewMatrix * position_vs;
-    vec3 lightvec = light0.Position.xyz - ecPosition.xyz;
-    v_out.Color.rgb = diffuse(normal.xyz,lightvec,globalColor).rgb;
-	v_out.Color.a = globalColor.a;
-#endif
-    if(c_TextureUnitCount>0)
-        v_out.texCoord0 = vertexUV0;
-    if(c_TextureUnitCount>1)
-        v_out.texCoord1 = vertexUV1;
-    if(c_TextureUnitCount>2)
-        v_out.texCoord2 = vertexUV1; // normal map coords
+    calculateColorBasedOnLightMode(LIGHT_MODE,position_vs,normal);
+
+    calculateTextureCoordinates(normal,gl_Position);
 #ifdef TRANSFORM_FEEDBACK
     outValue = gl_Position;
 #endif

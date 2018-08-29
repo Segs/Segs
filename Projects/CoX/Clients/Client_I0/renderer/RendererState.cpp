@@ -187,29 +187,29 @@ void MaterialDefinition::setDrawMode(DrawMode vertex_mode)
 {
     int new_texUnits    = 0;
     int new_colorSource = 0;
-    int new_lightMode   = 2;
+    int new_lightMode   = LIGHT_MODE_LIT;
     int new_bumpMapMode = 0;
     int new_vertexMode  = 0;
 
     switch (vertex_mode)
     {
     case DrawMode::SINGLETEX:
-        new_lightMode          = 1;
+        new_lightMode          = LIGHT_MODE_PRE_LIT;
         new_texUnits           = 1;
         draw_data.tex_id_1 = g_whiteTexture;
         new_colorSource        = 1; // per vertex color
         break;
     case DrawMode::DUALTEX:
-        new_lightMode   = 1;
+        new_lightMode   = LIGHT_MODE_PRE_LIT;
         new_texUnits    = 2;
         new_colorSource = 1; // per vertex color
         break;
     case DrawMode::FILL:
-        new_lightMode   = 1; // behave as pre-lit
+        new_lightMode   = LIGHT_MODE_PRE_LIT; // behave as pre-lit
         new_colorSource = 1; // per vertex color
         break;
     case DrawMode::COLORONLY:
-        new_lightMode   = 1; // behave as pre-lit
+        new_lightMode   = LIGHT_MODE_PRE_LIT; // behave as pre-lit
         new_colorSource = 1; // per vertex color
         break;
     case DrawMode::DUALTEX_NORMALS:
@@ -227,23 +227,23 @@ void MaterialDefinition::setDrawMode(DrawMode vertex_mode)
         draw_data.globalColor = Vector4{1, 1, 1, 1};
         break;
     case DrawMode::BUMPMAP_SKINNED:
-        new_lightMode   = 3;
+        new_lightMode   = LIGHT_MODE_BUMP_LIT;
         new_vertexMode  = 1;
         new_bumpMapMode = 1;
         new_texUnits    = 3; // base + blend + normal
         break;
     case DrawMode::BUMPMAP_NORMALS:
-        new_lightMode   = 3;
+        new_lightMode   = LIGHT_MODE_BUMP_LIT;
         new_bumpMapMode = 1;
         new_texUnits    = 3; // base + blend + normal
         break;
     case DrawMode::BUMPMAP_DUALTEX:
-        new_lightMode   = 3;
+        new_lightMode   = LIGHT_MODE_BUMP_LIT;
         new_bumpMapMode = 1;
         new_texUnits    = 3; // base + blend + normal
         break;
     case DrawMode::BUMPMAP_RGBS:
-        new_lightMode   = 3;
+        new_lightMode   = LIGHT_MODE_BUMP_LIT;
         new_bumpMapMode = 1;
         new_texUnits    = 3; // base + blend + normal
         new_colorSource = 1;
@@ -312,7 +312,7 @@ void MaterialDefinition::setFragmentMode(eBlendMode pixel_mode) {
 
 MaterialDefinition::MaterialDefinition(DrawMode vertex_mode, eBlendMode pixel_mode)
 {
-    lightMode        = 0;
+    lightMode        = LIGHT_MODE_NONE;
     colorSource      = 0;
     vertexMode       = 0;
     texUnits         = 0;

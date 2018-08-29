@@ -573,10 +573,10 @@ void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int 
     assert ( model->loadstate & LOADED );
     if ( alpha==0 )
         return;
-    if(strcmp(model->parent_anim->headers->name,"vents_etc")==0)
-    {
-        printf("doing vents\n");
-    }
+//    if(strcmp(model->parent_anim->headers->name,"vents_etc")==0)
+//    {
+//        printf("doing vents\n");
+//    }
     const std::string part_name = std::string(__FUNCTION__) +"_"+model->parent_anim->headers->name;
     GLDebugGuard debug_guard(part_name.c_str());
     bool is_dual_tex = (model->Model_flg1 & 0x40);

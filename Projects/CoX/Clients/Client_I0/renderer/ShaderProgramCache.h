@@ -27,7 +27,7 @@ struct ShaderUniform
         int loc = glGetUniformLocation(program, name);
         if (loc < 0)
         {
-            printf("Missing uniform '%s'", name);
+            printf("Missing uniform '%s'\n", name);
             id = -1;
         }
         else

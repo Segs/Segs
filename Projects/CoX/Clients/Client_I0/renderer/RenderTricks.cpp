@@ -100,21 +100,9 @@ void segs_animateSts(Parser_StAnim *arg0,InstanceDrawData &instance_data)
     {
         //assert(false); // this should set program variables instead.
         animateStsTexture(&tex_xform, time, arg0->btrackTex0, arg0->st_scale, frame_snap);
-        glm::mat4x3 helper;
-        for(int r=0; r<4; r++)
-        {
-            for(int c=0; c<3; c++)
-                helper[r][c] = tex_xform[r][c];
-        }
-        instance_data.textureMatrix0 = glm::mat4(helper);
-        //assert(false); // this should set program variables instead.
+        instance_data.textureMatrix0 = tex_xform.toGLM();
         animateStsTexture(&tex_xform, time, arg0->btrackTex1,arg0->st_scale, frame_snap);
-        for(int r=0; r<4; r++)
-        {
-            for(int c=0; c<3; c++)
-                helper[r][c] = tex_xform[r][c];
-        }
-        instance_data.textureMatrix1 = glm::mat4(helper);
+        instance_data.textureMatrix1 = tex_xform.toGLM();
     }
 }
 int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,MaterialDefinition &def)
@@ -254,15 +242,16 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,Material
             if (!( flags & std::get<0>(tex_bit) ))
                 continue;
             def.setReflectionModeFlag(MaterialDefinition::ReflectionModeFlags(std::get<2>(tex_bit)));
-            glActiveTexture(std::get<1>(tex_bit));
             if ( model->Model_flg1 & 0x2000 ) //OBJ_CUBEMAP ?
             {
                 def.set_usingCubemaps(true);
                 glm::mat3 inv_viewmat (cam_info.inv_viewmat.r1.x, cam_info.inv_viewmat.r1.y, cam_info.inv_viewmat.r1.z,
                                         cam_info.inv_viewmat.r2.x, cam_info.inv_viewmat.r2.y, cam_info.inv_viewmat.r2.z,
                                         cam_info.inv_viewmat.r3.x, cam_info.inv_viewmat.r3.y, cam_info.inv_viewmat.r3.z);
-                def.draw_data.textureMatrix0 = glm::mat4(inv_viewmat);
-
+                if(std::get<1>(tex_bit)==GL_TEXTURE0)
+                    def.draw_data.textureMatrix0 = glm::mat4(inv_viewmat);
+                else
+                    def.draw_data.textureMatrix1 = glm::mat4(inv_viewmat);
             }
             /*
              glEnable(GL_TEXTURE_GEN_S);

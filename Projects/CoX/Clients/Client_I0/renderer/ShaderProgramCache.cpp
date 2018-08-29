@@ -140,6 +140,10 @@ ShaderProgram &ShaderProgramCache::getOrCreateProgram(MaterialDefinition &mat_de
     defines.emplace_back(s_buf);
     snprintf(s_buf, 512, "BUMP_MODE %d", mat_def.get_bumpMapMode());
     defines.emplace_back(s_buf);
+    snprintf(s_buf, 512, "REFLECTION_MODE_T0 %d", mat_def.get_reflectionMode() & MaterialDefinition::REFLECTION_AUTOGEN_UV0);
+    defines.emplace_back(s_buf);
+    snprintf(s_buf, 512, "REFLECTION_MODE_T1 %d", mat_def.get_reflectionMode() & MaterialDefinition::REFLECTION_AUTOGEN_UV1);
+    defines.emplace_back(s_buf);
     snprintf(s_buf, 512, "TEXTURES %d", mat_def.get_texUnits());
     defines.emplace_back(s_buf);
     snprintf(s_buf, 512, "VERTEX_PROCESSING %d", mat_def.get_vertexMode());
@@ -211,7 +215,7 @@ ShaderProgram &ShaderProgramCache::getOrCreateProgram(MaterialDefinition &mat_de
     }
 
     GLint baseImageLoc = glGetUniformLocation(program_id, "myTextureMap");
-    GLint modMapLoc = glGetUniformLocation(program_id, "myTextureMap2");
+    GLint modMapLoc    = glGetUniformLocation(program_id, "myTextureMap2");
     GLint normalMapLoc = glGetUniformLocation(program_id, "myTextureMap3");
     glUseProgram(program_id);
     glUniform1i(baseImageLoc, 0); //Texture unit 0 is for base images.
@@ -219,6 +223,12 @@ ShaderProgram &ShaderProgramCache::getOrCreateProgram(MaterialDefinition &mat_de
     if (normalMapLoc != -1)
         glUniform1i(normalMapLoc, 2); //Texture unit 2 is for normal maps.
     m_cache_data[mat_def] = new_program;
+    printf("Uniform setup for shader:\n    ");
+    for(const std::string & def : defines)
+    {
+        printf("%s, ",def.c_str());
+    }
+    printf("\n");
     m_cache_data[mat_def].setupUniforms();
     m_cache_data[mat_def].setupAttributes();
 
