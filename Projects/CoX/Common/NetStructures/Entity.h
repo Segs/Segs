@@ -184,6 +184,10 @@ public:
         uint32_t            m_target_idx            = 0;
         uint32_t            m_assist_target_idx     = 0;
 
+        std::vector<CharacterPower *> m_queued_powers;
+        std::vector<CharacterPower *> m_recharging_powers;
+        CharacterPower    * m_stance                = nullptr;
+
         int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
         int                 m_num_fx                = 0;
         bool                m_is_logging_out        = false;

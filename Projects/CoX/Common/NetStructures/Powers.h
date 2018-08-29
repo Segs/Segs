@@ -7,8 +7,14 @@
 
 #pragma once
 #include "CommonNetStructures.h"
-#include <QtCore/QString>
 #include "BitStream.h"
+#include "GameData/power_definitions.h"
+
+#include <QtCore/QString>
+#include <array>
+
+class Entity;
+struct CharacterData;
 
 enum class TrayItemType : uint32_t
 {
@@ -22,35 +28,107 @@ enum class TrayItemType : uint32_t
     Count                   = 7,
 };
 
+struct EnhancemenSlotEntry
+{
+    bool        m_set_in_power  = false;
+    uint32_t    m_pset_idx      = 0;
+    uint32_t    m_pow_idx       = 0;
+    uint32_t    m_eh_idx        = 0;
+};
+
 class PowerPool_Info
 {
 public:
-    int category_idx;
-    int powerset_entry_idx;
-    int power_idx;
-    void serializefrom( BitStream &src );
-    void serializeto( BitStream &src ) const;
+static const constexpr  uint32_t    class_version = 1;
+        uint32_t        m_pcat_idx     = 0;
+        uint32_t        m_pset_idx         = 0;
+        uint32_t        m_pow_idx          = 0;
+        void serializefrom( BitStream &src );
+        void serializeto( BitStream &src ) const;
 };
 
-class Power
+struct CharacterInspiration
+{
+static const constexpr  uint32_t    class_version = 1;
+        PowerPool_Info  m_insp_info;
+        Power_Data      m_insp_tpl;
+        QString         m_name;
+        uint32_t        m_col               = 0;
+        uint32_t        m_row               = 0;
+        bool            m_has_insp          = false;
+};
+
+// TODO: client will only accept 5col x 4row of insps MAX, see Issue #524
+using vInspirations = std::array< std::array<CharacterInspiration, 4>, 5>;
+
+struct CharacterEnhancement
+{
+static const constexpr  uint32_t    class_version = 1;
+        PowerPool_Info  m_enhance_info;
+        Power_Data      m_enhance_tpl;
+        uint32_t        m_slot_idx          = 0;
+        QString         m_name;
+        uint32_t        m_level             = 0;
+        uint32_t        m_num_combines      = 0;
+        bool            m_slot_used         = false;
+};
+
+using vEnhancements = std::array<CharacterEnhancement, 10>;
+
+struct CharacterPower
+{
+static const constexpr  uint32_t    class_version = 1;
+        PowerPool_Info  m_power_info;
+        Power_Data      m_power_tpl;
+        uint32_t        m_index             = 0;
+        QString         m_name;
+        uint32_t        m_level_bought      = 0;
+        uint32_t        m_num_charges       = 0;
+        float           m_usage_time        = 0.0f;
+        uint32_t        m_activation_time   = 0;    // seconds since Jan 1, 2000
+        float           m_range             = 1.0f;
+        float           m_recharge_time     = 0.0f;
+        uint32_t        m_activation_state  = 0;
+        uint32_t        m_total_eh_slots    = 0;
+        bool            m_active_state_change   = false;
+        bool            m_timer_updated         = false;
+        bool            m_erase_power           = false;
+        std::array<CharacterEnhancement, 6> m_enhancements;
+};
+
+struct CharacterPowerSet
+{
+static const constexpr  uint32_t    class_version   = 1;
+        uint32_t                    m_index         = 0;
+        uint32_t                    m_category      = 0;
+        uint32_t                    m_level_bought  = 0;
+        std::vector<CharacterPower> m_powers;
+};
+
+using vPowerSets = std::vector<CharacterPowerSet>;
+
+class PowerTrayItem
 {
 public:
-    TrayItemType entry_type=TrayItemType(0);
-    int powerset_idx,power_idx;
-    QString command;
-    QString short_name;
-    QString icon_name;
+static const constexpr  uint32_t    class_version = 1;
+    TrayItemType    m_entry_type    = TrayItemType(0);
+    uint32_t        m_pset_idx      = 0;
+    uint32_t        m_pow_idx       = 0;
+    QString         m_command;
+    QString         m_short_name;
+    QString         m_icon_name;
+
     void serializeto(BitStream &tgt) const;
     void serializefrom(BitStream &src);
-
     void Dump();
 };
 
 class PowerTray
 {
 public:
-    Power m_powers[10];
-    Power *getPower(size_t idx);
+static const constexpr  uint32_t    class_version = 1;
+    std::array<PowerTrayItem, 10>     m_tray_items;
+    PowerTrayItem *getPowerTrayItem(size_t idx);
     int setPowers();
     void serializefrom(BitStream &src);
     void serializeto(BitStream &tgt) const;
@@ -59,20 +137,69 @@ public:
 
 class PowerTrayGroup
 {
-    static const int num_trays=2; // was 3, displayed trays
-    PowerTray m_trays[9];
-    uint32_t m_default_powerset_idx,m_default_power_idx;
-    bool m_c;
-    int primary_tray_idx=0;
-    int secondary_tray_idx=1;
 public:
+static const constexpr  uint32_t    class_version = 1;
+static const int m_num_trays = 2; // was 3, displayed trays
+    std::array<PowerTray, 9>     m_trays;
+    uint32_t m_default_pset_idx = 0;
+    uint32_t m_default_pow_idx  = 0;
+    bool m_has_default_power    = false;
+    int m_primary_tray_idx      = 0;
+    int m_second_tray_idx       = 1;
     PowerTrayGroup()
     {
-        m_default_powerset_idx=m_default_power_idx=0;
-        m_c=false;
+        m_default_pset_idx = m_default_pow_idx = 0;
+        m_has_default_power = false;
     }
     void serializeto(BitStream &tgt) const;
     void serializefrom(BitStream &src);
     void dump();
 
 };
+
+
+/*
+ * Powers Methods
+ */
+int     getPowerCatByName(const QString &name);
+int     getPowerSetByName(const QString &name, uint32_t pcat_idx);
+int     getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
+CharacterPower getPowerData(PowerPool_Info &ppool);
+CharacterPowerSet getPowerSetData(PowerPool_Info &ppool);
+CharacterPower * getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
+void addPowerSet(CharacterData &cd, PowerPool_Info &ppool);
+void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool);
+void addPower(CharacterData &cd, PowerPool_Info &ppool);
+void removePower(CharacterData &cd, const PowerPool_Info &ppool);
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
+void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
+void dumpPower(const CharacterPower &pow);
+void dumpOwnedPowers(CharacterData &cd);
+
+
+/*
+ * Inspirations Methods
+ */
+void addInspirationByName(CharacterData &cd, QString &name);
+void addInspirationToChar(CharacterData &cd, CharacterInspiration insp);
+void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
+void useInspiration(Entity &ent, uint32_t col, uint32_t row);
+void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row);
+void dumpInspirations(CharacterData &cd);
+
+
+/*
+ * Enhancements Methods
+ */
+void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level);
+CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_array, uint32_t pow_idx_in_array, uint32_t eh_slot);
+int getNumberEnhancements(CharacterData &cd);
+void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx);
+void setEnhancement(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t src_idx, uint32_t dest_idx);
+void trashEnhancement(CharacterData &cd, uint32_t eh_idx);
+void trashEnhancementInPower(CharacterData &cd, uint32_t pset_idx, uint32_t pow_idx, uint32_t eh_idx);
+void trashComboEnhancement(CharacterEnhancement &eh, uint32_t eh_idx);
+void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow_idx);
+void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow);
+void combineEnhancements(Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2);
+void dumpEnhancements(CharacterData &cd);

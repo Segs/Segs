@@ -140,11 +140,11 @@ void saveTo(const LevelExpAndDebt & target, const QString & baseName, bool text_
     commonSaveTo(target,"LevelExpAndDebt",baseName,text_format);
 }
 
-bool loadFrom(BinStore * s, Parse_Combining * target)
+bool loadFrom(BinStore * s, Parse_Combining &target)
 {
     s->prepare();
     bool ok = true;
-    ok &= s->read(target->CombineChances);
+    ok &= s->read(target.CombineChances);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok && s->end_encountered());
     return ok;
@@ -155,11 +155,11 @@ void saveTo(const Parse_Combining & target, const QString & baseName, bool text_
     commonSaveTo(target,"CombiningChances",baseName,text_format);
 }
 
-bool loadFrom(BinStore * s, Parse_Effectiveness * target)
+bool loadFrom(BinStore * s, Parse_Effectiveness &target)
 {
     s->prepare();
     bool ok = true;
-    ok &= s->read(target->Effectiveness);
+    ok &= s->read(target.Effectiveness);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     return ok;
@@ -199,17 +199,17 @@ void saveTo(const Parse_AllOrigins & target, const QString & baseName, bool text
     commonSaveTo(target,"Origins",baseName,text_format);
 }
 
-bool loadFrom(BinStore * s, Parse_PI_Schedule * target)
+bool loadFrom(BinStore * s, Parse_PI_Schedule &target)
 {
     s->prepare();
     bool ok = true;
-    ok &= s->read(target->m_FreeBoostSlotsOnPower);
-    ok &= s->read(target->m_PoolPowerSet);
-    ok &= s->read(target->m_Power);
-    ok &= s->read(target->m_AssignableBoost);
-    ok &= s->read(target->m_InspirationCol);
-    ok &= s->read(target->m_InspirationRow);
-    ok &= s->read(target->m_BoostSlot);
+    ok &= s->read(target.m_FreeBoostSlotsOnPower);
+    ok &= s->read(target.m_PoolPowerSet);
+    ok &= s->read(target.m_Power);
+    ok &= s->read(target.m_AssignableBoost);
+    ok &= s->read(target.m_InspirationCol);
+    ok &= s->read(target.m_InspirationRow);
+    ok &= s->read(target.m_BoostSlot);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     return ok;

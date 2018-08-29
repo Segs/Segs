@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include <stdint.h>
-
-class PowerTrayItem;
-class PowerTray;
-class PowerTrayGroup;
-struct PlayerData;
-
-template<class Archive>
-void serialize(Archive &archive, PlayerData &pd, uint32_t const version);
+enum ClientStates {
+    SIMPLE = 0,
+    CREATE_TEAM_CONTAINER = 1,
+    CREATE_TEAM_CONTAINER_WAIT_MAPSVRR_RESPONSE = 2,
+    DEAD = 3,
+    RESURRECT = 4,
+    AWAITING_GURNEY_XFER = 5,
+    MAX_CLIENT_STATE
+};
