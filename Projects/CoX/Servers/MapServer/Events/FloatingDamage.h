@@ -16,21 +16,21 @@
 class FloatingDamage final : public GameCommand
 {
 public:
-    int whos_fault_was_it;
-    int who_was_damaged;
-    int damage_amount; // should be float?
+    int m_source;
+    int m_target;
+    int m_dmg_amount;
     FloatingDamage(int source,int target,int amount) : GameCommand(MapEventTypes::evFloatingDamage),
-        whos_fault_was_it(source),
-        who_was_damaged(target),
-        damage_amount(amount)
+        m_source(source),
+        m_target(target),
+        m_dmg_amount(amount)
     {
     }
     void    serializeto(BitStream &bs) const override {
         bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
 
-        bs.StorePackedBits(1,whos_fault_was_it);
-        bs.StorePackedBits(1,who_was_damaged);
-        bs.StorePackedBits(1,damage_amount);
+        bs.StorePackedBits(1,m_source);
+        bs.StorePackedBits(1,m_target);
+        bs.StorePackedBits(1,m_dmg_amount);
     }
     void    serializefrom(BitStream &src);
 };

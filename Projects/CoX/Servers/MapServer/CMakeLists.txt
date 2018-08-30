@@ -39,28 +39,37 @@ SET(target_INCLUDE
     EntityStorage.h
     EntityUpdateCodec.h
     Events/GameCommandList.h
+    Events/ChangeTitle.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
+    Events/ClientStates.h
     Events/EmailHeaders.h
     Events/EmailMessageStatus.h
     Events/EmailRead.h
     Events/EntitiesResponse.h
     Events/FloatingDamage.h
+    Events/FloatingInfo.h
+    Events/FloatingInfoStyles.h
     Events/FriendsListUpdate.h
     Events/InputState.h
     Events/LocationVisited.h
+    Events/LevelUp.h
     Events/MapEventTypes.h
+    Events/MapXferList.h
     Events/MessageChannels.h
     Events/NewEntity.h
     Events/PlaqueVisited.h
     Events/PlayerInfo.h
+    Events/PowerSystemEvents.h
     Events/SaveClientOptions.h
     Events/SceneEvent.h
+    Events/SetClientState.h
     Events/Shortcuts.h
     Events/SidekickOffer.h
     Events/StandardDialogCmd.h
     Events/TeamLooking.h
     Events/TeamOffer.h
+    Events/TrayAdd.h
     Events/InfoMessageCmd.h
     Events/InteractWithEntity.h
     Events/WindowState.h

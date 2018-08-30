@@ -8,6 +8,7 @@
 #pragma once
 
 #include "Common/NetStructures/Friend.h"
+#include "Common/NetStructures/Powers.h"
 #include "Common/GameData/attrib_definitions.h"
 #include <QtCore/QString>
 #include <vector>
@@ -29,7 +30,7 @@ static const constexpr  uint32_t        class_version   = 1;
 
 struct CharacterData
 {
-static const constexpr  uint32_t    class_version       = 6;    // v6: add m_is_on_task_force, m_is_on_auto_logout and m_idle_time
+static const constexpr  uint32_t    class_version       = 7; // v7: afk stuff
                         uint32_t    m_level             = 0;
                         uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
                         uint32_t    m_experience_points = 0;
@@ -49,7 +50,6 @@ static const constexpr  uint32_t    class_version       = 6;    // v6: add m_is_
                         QString     m_last_online;
                         QString     m_class_name;
                         QString     m_origin_name;
-                        uint32_t    m_mapIdx;
                         bool        m_supergroup_costume;       // player has a sg costume
                         bool        m_using_sg_costume;         // player uses sg costume currently
                         Sidekick    m_sidekick;                 // Sidekick Struct
@@ -58,4 +58,15 @@ static const constexpr  uint32_t    class_version       = 6;    // v6: add m_is_
                         bool        m_is_on_task_force  = false;
                         bool        m_is_on_auto_logout = false;
                         float       m_idle_time         = 0;
+                        vPowerSets          m_powersets;
+                        PowerTrayGroup      m_trays;
+                        vInspirations       m_inspirations;
+                        vEnhancements       m_enhancements;     // Enhancements owned, but not attached to powers
+                        uint32_t    m_max_insp_cols     = 0;
+                        uint32_t    m_max_insp_rows     = 0;
+                        uint32_t    m_max_enhance_slots = 0;
+
+                        // No need to serialize these members
+                        bool        m_powers_updated    = false;
+                        bool        m_reset_powersets   = false;
 };

@@ -48,6 +48,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <random>
 #include <stdlib.h>
 
 namespace
@@ -272,7 +273,6 @@ void MapInstance::enqueue_client(MapClientSession *clnt)
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
 
-// Here we would add the handler call in case we get evCombineRequest :)
 void MapInstance::dispatch( SEGSEvent *ev )
 {
     assert(ev);
@@ -332,6 +332,12 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evEnterDoor:
             on_enter_door(static_cast<EnterDoor *>(ev));
             break;
+        case MapEventTypes::evChangeStance:
+            on_change_stance(static_cast<ChangeStance *>(ev));
+            break;
+        case MapEventTypes::evSendStance:
+            on_send_stance(static_cast<SendStance *>(ev));
+            break;
         case MapEventTypes::evSetDestination:
             on_set_destination(static_cast<SetDestination *>(ev));
             break;
@@ -386,6 +392,12 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evUnqueueAll:
             on_unqueue_all(static_cast<UnqueueAll *>(ev));
             break;
+        case MapEventTypes::evActivatePower:
+            on_activate_power(static_cast<ActivatePower *>(ev));
+            break;
+        case MapEventTypes::evActivatePowerAtLocation:
+            on_activate_power_at_location(static_cast<ActivatePowerAtLocation *>(ev));
+            break;
         case MapEventTypes::evActivateInspiration:
             on_activate_inspiration(static_cast<ActivateInspiration *>(ev));
             break;
@@ -412,6 +424,36 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case MapEventTypes::evResetKeybinds:
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
+            break;
+        case MapEventTypes::evMoveInspiration:
+            on_move_inspiration(static_cast<MoveInspiration *>(ev));
+            break;
+        case MapEventTypes::evRecvSelectedTitles:
+            on_recv_selected_titles(static_cast<RecvSelectedTitles *>(ev));
+            break;
+        case MapEventTypes::evDialogButton:
+            on_dialog_button(static_cast<DialogButton *>(ev));
+            break;
+        case MapEventTypes::evCombineEnhancements:
+            on_combine_enhancements(static_cast<CombineEnhancementsReq *>(ev));
+            break;
+        case MapEventTypes::evMoveEnhancement:
+            on_move_enhancement(static_cast<MoveEnhancement *>(ev));
+            break;
+        case MapEventTypes::evSetEnhancement:
+            on_set_enhancement(static_cast<SetEnhancement *>(ev));
+            break;
+        case MapEventTypes::evTrashEnhancement:
+            on_trash_enhancement(static_cast<TrashEnhancement *>(ev));
+            break;
+        case MapEventTypes::evTrashEnhancementInPower:
+            on_trash_enhancement_in_power(static_cast<TrashEnhancementInPower *>(ev));
+            break;
+        case MapEventTypes::evBuyEnhancementSlot:
+            on_buy_enhancement_slot(static_cast<BuyEnhancementSlot *>(ev));
+            break;
+        case MapEventTypes::evRecvNewPower:
+            on_recv_new_power(static_cast<RecvNewPower *>(ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
@@ -823,9 +865,12 @@ void MapInstance::sendState() {
 
 }
 
-void MapInstance::on_combine_boosts(CombineRequest */*req*/)
+void MapInstance::on_combine_enhancements(CombineEnhancementsReq *ev)
 {
-    //TODO: do something here !
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    combineEnhancements(*session.m_ent, ev->first_power, ev->second_power);
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to merge enhancements" /*<< ev->first_power << ev->second_power*/;
 }
 
 void MapInstance::on_input_state(InputState *st)
@@ -1773,7 +1818,7 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    qCDebug(logMiniMap) << "MiniMapState tile "<<ev->tile_idx << " for player" << ent->name();
+    qCDebug(logMiniMap) << "MiniMapState tile "<< ev->tile_idx << " for player" << ent->name();
     // TODO: Save these tile #s to dbase and (presumably) load upon entering map to remove fog-of-war from map
 }
 
@@ -1824,11 +1869,25 @@ void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
 
 void MapInstance::on_enter_door(EnterDoor *ev)
 {
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    QString contents;
+
+    QStringList door_text{"KNOCK KNOCK!!", "Trick or Treat!", "Hewwoooo!",
+                         "No one's home!", "Occupied!", "NO SOLICITORS!",
+                         "Who's there?", "It's locked..."};
+
+    std::random_device rng;
+    std::mt19937 urng(rng());
+    std::shuffle(door_text.begin(), door_text.end(), urng);
+    contents = door_text.first();
+    sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+
     qCWarning(logMapEvents).noquote() << "Unhandled door entry request to:" << ev->name;
     if(ev->unspecified_location)
         qCWarning(logMapEvents).noquote() << "    no location provided";
     else
         qCWarning(logMapEvents).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
+
     //pseudocode:
     //  auto door = get_door(ev->name,ev->location);
     //  if(door and player_can_enter(door)
@@ -1837,11 +1896,34 @@ void MapInstance::on_enter_door(EnterDoor *ev)
 
 void MapInstance::on_change_stance(ChangeStance * ev)
 {
-    qCWarning(logMapEvents) << "Unhandled change stance request";
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
     if(ev->enter_stance)
-        qCWarning(logMapEvents) << "  enter stance" <<ev->powerset_index<<ev->power_index;
+    {
+        //session.m_ent->m_stance = &getPower(*session.m_ent, ev->pset_idx, ev->pow_idx);
+        qCWarning(logMapEvents) << "Unhandled change stance request" << session.m_ent->m_idx << ev->pset_idx << ev->pow_idx;
+    }
     else
-        qCWarning(logMapEvents) << "  exit stance";
+    {
+        session.m_ent->m_stance = nullptr;
+        qCWarning(logMapEvents) << "Unhandled exit stance request" << session.m_ent->m_idx;
+    }
+}
+
+void MapInstance::on_send_stance(SendStance * ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    //ev->m_enter_stance = true;
+    //ev->m_pset_idx = session.m_ent->m_stance->m_power_tpl.m_pset_idx;
+    //ev->m_pow_idx = session.m_ent->m_stance->m_power_tpl.m_pow_idx;
+
+    qCWarning(logMapEvents) << "Unhandled send stance request";
+
+    if(ev->m_enter_stance)
+        qCWarning(logMapEvents) << "Entity" << session.m_ent->name() << "SendStance" << ev->m_pset_idx << ev->m_pow_idx;
+    else
+        qCWarning(logMapEvents) << "Entity" << session.m_ent->name() << "SendStance is zero";
 }
 
 void MapInstance::on_set_destination(SetDestination * ev)
@@ -1934,6 +2016,8 @@ void MapInstance::on_unqueue_all(UnqueueAll *ev)
     ent->m_target_idx = 0;
     ent->m_assist_target_idx = 0;
     // cancelAttack(ent);
+    // unqueuePowers(ent);
+    // unqueueInspirations(ent); // merge this with unqueuePowers()?
 
     qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }
@@ -1943,14 +2027,39 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    qCDebug(logMapEvents) << "Saving chat channel type to GUISettings:" << ev->m_chat_type;
     ent->m_player->m_gui.m_cur_chat_channel = ev->m_chat_type;
+    qCDebug(logMapEvents) << "Saving chat channel type to GUISettings:" << ev->m_chat_type;
+}
+
+void MapInstance::on_activate_power(ActivatePower *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    uint32_t tgt_idx = ev->target_idx;
+
+    if(ev->target_idx == 0)
+        tgt_idx = session.m_ent->m_idx;
+
+    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
+    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
+}
+
+void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    // TODO: Check that target is valid, then Do Power!
+    QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
+    sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+
+    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
 {
-    qCWarning(logMapEvents) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
-    // TODO: not sure what the client expects from the server here
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    useInspiration(*session.m_ent, ev->slot_idx, ev->row_idx);
+    // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
 }
 
 void MapInstance::on_powers_dockmode(PowersDockMode *ev)
@@ -1959,7 +2068,7 @@ void MapInstance::on_powers_dockmode(PowersDockMode *ev)
     Entity *ent = session.m_ent;
 
     ent->m_player->m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
-    qCDebug(logMapEvents) << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
+    //qCDebug(logMapEvents) << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
 }
 
 void MapInstance::on_switch_tray(SwitchTray *ev)
@@ -1967,14 +2076,12 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
 
-    ent->m_player->m_gui.m_tray1_number = ev->tray1_num;
-    ent->m_player->m_gui.m_tray2_number = ev->tray2_num;
-    ent->m_player->m_gui.m_tray3_number = ev->tray_unk1;
+    ent->m_player->m_gui.m_tray1_number = ev->tray_group.m_primary_tray_idx;
+    ent->m_player->m_gui.m_tray2_number = ev->tray_group.m_second_tray_idx;
+    ent->m_char->m_char_data.m_trays = ev->tray_group;
     markEntityForDbStore(ent, DbStoreFlags::PlayerData);
 
-    qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray1_num+1 << "Tray2:" << ev->tray2_num+1 << "Unk1:" << ev->tray_unk1;
-    // TODO: need to load powers for new tray.
-    qCWarning(logMapEvents) << "TODO: Need to load powers for new trays";
+   //qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray_group.m_primary_tray_idx+1 << "Tray2:" << ev->tray_group.m_second_tray_idx+1;
 }
 
 void MapInstance::on_set_keybind(SetKeybind *ev)
@@ -2022,7 +2129,7 @@ void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
     Entity *ent = session.m_ent;
 
     ent->m_player->m_keybinds.resetKeybinds(default_profiles);
-    qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
+    //qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
 }
 
 void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
@@ -2031,14 +2138,83 @@ void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
     Entity *ent = session.m_ent;
 
     ent->m_player->m_keybinds.setKeybindProfile(ev->profile);
-    qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
+    //qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }
 
 void MapInstance::on_interact_with(InteractWithEntity *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with"<<ev->m_srv_idx;
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
+}
+
+void MapInstance::on_move_inspiration(MoveInspiration *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    moveInspiration(session.m_ent->m_char->m_char_data, ev->src_col, ev->src_row, ev->dest_col, ev->dest_row);
+}
+
+void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    QString generic, origin, special;
+
+    generic = getGenericTitle(ev->m_generic);
+    origin  = getOriginTitle(ev->m_origin);
+    special = getSpecialTitle(*session.m_ent->m_char);
+
+    setTitles(*session.m_ent->m_char, ev->m_has_prefix, generic, origin, special);
+    qCDebug(logMapEvents) << "Entity sending titles: " << session.m_ent->m_idx << ev->m_has_prefix << generic << origin << special;
+}
+
+void MapInstance::on_dialog_button(DialogButton *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id;
+}
+
+void MapInstance::on_move_enhancement(MoveEnhancement *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    moveEnhancement(session.m_ent->m_char->m_char_data, ev->m_src_idx, ev->m_dest_idx);
+}
+
+void MapInstance::on_set_enhancement(SetEnhancement *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    setEnhancement(*session.m_ent, ev->m_pset_idx, ev->m_pow_idx, ev->m_src_idx, ev->m_dest_idx);
+}
+
+void MapInstance::on_trash_enhancement(TrashEnhancement *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_idx);
+}
+
+void MapInstance::on_trash_enhancement_in_power(TrashEnhancementInPower *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    trashEnhancementInPower(session.m_ent->m_char->m_char_data, ev->m_pset_idx, ev->m_pow_idx, ev->m_eh_idx);
+}
+
+void MapInstance::on_buy_enhancement_slot(BuyEnhancementSlot *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    buyEnhancementSlot(*session.m_ent, ev->m_num, ev->m_pset_idx, ev->m_pow_idx);
+}
+
+void MapInstance::on_recv_new_power(RecvNewPower *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    addPower(session.m_ent->m_char->m_char_data, ev->ppool);
 }
 
 

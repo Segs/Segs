@@ -165,7 +165,7 @@ int getEntityOriginIndex(bool is_player, const QString &origin_name)
     const MapServerData &data(g_GlobalMapServer->runtimeData());
     const Parse_AllOrigins &origins_to_search(is_player ? data.m_player_origins : data.m_other_origins);
 
-    int idx=0;
+    int idx = 0;
     for(const Parse_Origin &orig : origins_to_search)
     {
         if(orig.Name.compare(origin_name,Qt::CaseInsensitive)==0)
@@ -181,7 +181,7 @@ int getEntityClassIndex(bool is_player, const QString &class_name)
     const MapServerData &data(g_GlobalMapServer->runtimeData());
     const Parse_AllCharClasses &classes_to_search(is_player ? data.m_player_classes : data.m_other_classes);
 
-    int idx=0;
+    int idx = 0;
     for(const CharClass_Data &classdata : classes_to_search)
     {
         if(classdata.m_Name.compare(class_name,Qt::CaseInsensitive)==0)
@@ -307,6 +307,56 @@ void readEmailMessage(Entity *e, const int id){
 /*
  * Character Methods
  */
+// TODO: get titles from texts/English/titles_def
+static const QStringList g_generic_titles =
+{
+    "NULL",
+    "Awesome",
+    "Bold",
+    "Courageous",
+    "Daring",
+    "Extraordinary",
+    "Famous",
+    "Gallant",
+    "Heroic",
+    "Incomparable",
+    "Legendary",
+    "Magnificent",
+    "Outstanding",
+    "Powerful",
+    "Remarkable",
+    "Startling",
+    "Terrific",
+    "Ultimate",
+    "Valiant",
+    "Wonderful",
+};
+
+// TODO: get titles from texts/English/titles_def
+static const QStringList g_origin_titles =
+{
+    "NULL",
+    "Adept",
+    "Bright",
+    "Curious",
+    "Deductiv",
+    "Exceptional",
+    "Far Seeing",
+    "Glorious",
+    "Honorable",
+    "Indescribable",
+    "Lucky",
+    "Majestic",
+    "Otherworldly",
+    "Phenomenal",
+    "Redoubtable",
+    "Stupendous",
+    "Thoughtful",
+    "Unearthly",
+    "Venturous",
+    "Watchful",
+};
+
 // Getter
 uint32_t            getLevel(const Character &c) { return c.m_char_data.m_level; }
 uint32_t            getCombatLevel(const Character &c) { return c.m_char_data.m_combat_level; }
@@ -319,7 +369,9 @@ uint32_t            getXP(const Character &c) { return c.m_char_data.m_experienc
 uint32_t            getDebt(const Character &c) { return c.m_char_data.m_experience_debt; }
 uint32_t            getPatrolXP(const Character &c) { return c.m_char_data.m_experience_patrol; }
 const QString &     getGenericTitle(const Character &c) { return c.m_char_data.m_titles[0]; }
+const QString &     getGenericTitle(uint32_t val) { return g_generic_titles.at(val); }
 const QString &     getOriginTitle(const Character &c) { return c.m_char_data.m_titles[1]; }
+const QString &     getOriginTitle(uint32_t val) { return g_origin_titles.at(val); }
 const QString &     getSpecialTitle(const Character &c) { return c.m_char_data.m_titles[2]; }
 uint32_t            getInf(const Character &c) { return c.m_char_data.m_influence; }
 const QString &     getDescription(const Character &c) { return c.m_char_data.m_character_description ; }
@@ -471,10 +523,8 @@ void setLevel(Character &c, uint32_t val)
 {
     if(val>50)
         val = 50;
-    c.m_char_data.m_level = val;
-    // TODO: set max attribs based upon level
-    //MapServerData map_server_data;
-    //c.m_experience_points = map_server_data.expForLevel(val);
+    c.m_char_data.m_level = val - 1; // client stores lvl arrays starting at 0
+    c.finalizeLevel();
 }
 
 void setCombatLevel(Character &c, uint32_t val)
@@ -570,6 +620,14 @@ void toggleLFG(Entity &e)
 }
 
 /*
+ * getMapServerData Wrapper to provide access to NetStructures
+ */
+MapServerData *getMapServerData()
+{
+    return &g_GlobalMapServer->runtimeData();
+}
+
+/*
  * sendInfoMessage wrapper to provide access to NetStructures
  */
 void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
@@ -580,10 +638,52 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendClientState(Entity *tgt, ClientStates client_state)
+{
+    qCDebug(logSlashCommand) << "Sending ClientState:" << tgt->m_idx << QString::number(client_state);
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<SetClientState>(new SetClientState(client_state)));
+}
+
+void showMapXferList(Entity *ent, bool has_location, glm::vec3 &location, QString &name)
+{
+    qCDebug(logSlashCommand) << "Showing MapXferList:" << ent->m_idx << name;
+    ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<MapXferList>(new MapXferList(has_location, location, name)));
+}
+
+void sendFloatingInfo(Entity *tgt, QString &msg, FloatingInfoStyle style, float delay)
+{
+    qCDebug(logSlashCommand) << "Sending FloatingInfo:" << tgt->m_idx << msg;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingInfo>(new FloatingInfo(tgt->m_idx, msg, style, delay)));
+}
+
 void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount)
 {
     qCDebug(logSlashCommand, "Sending %d FloatingNumbers from %d to %d", amount, src->m_idx, tgt_idx);
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FloatingDamage>(new FloatingDamage(src->m_idx, tgt_idx, amount)));
+}
+
+void sendLevelUp(Entity *tgt)
+{
+    //qCDebug(logSlashCommand) << "Sending LevelUp:" << tgt->m_idx;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<LevelUp>(new LevelUp()));
+}
+
+void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy)
+{
+    //qCDebug(logSlashCommand) << "Sending CombineEnhanceResponse:" << tgt->m_idx;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<CombineEnhanceResponse>(new CombineEnhanceResponse(success, destroy)));
+}
+
+void sendChangeTitle(Entity *tgt, bool select_origin)
+{
+    //qCDebug(logSlashCommand) << "Sending ChangeTitle Dialog:" << tgt->m_idx << "select_origin:" << select_origin;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<ChangeTitle>(new ChangeTitle(select_origin)));
+}
+
+void sendTrayAdd(Entity *tgt, uint32_t pset_idx, uint32_t pow_idx)
+{
+    qCDebug(logSlashCommand) << "Sending TrayAdd:" << tgt->m_idx << pset_idx << pow_idx;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TrayAdd>(new TrayAdd(pset_idx, pow_idx)));
 }
 
 void sendFriendsListUpdate(Entity *src, FriendsList *friends_list)
