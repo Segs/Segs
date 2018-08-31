@@ -23,7 +23,7 @@ CREATE TABLE `characters` (
   `account_id` int(11) NOT NULL,
   `slot_index` int(11) NOT NULL DEFAULT '0',
   `char_name` text CHARACTER SET latin1 NOT NULL,
-  `chardata` blob,
+  `chardata` mediumblob,
   `entitydata` blob,
   `bodytype` int(11) NOT NULL DEFAULT '4',
   `height` double NOT NULL DEFAULT '0',
