@@ -90,6 +90,7 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
+void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
 void moveTo(const QString &cmd, MapClientSession &sess);
@@ -174,6 +175,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"addboost", "addEnhancement"},"Adds Enhancement (by name) to Entity", &cmdHandler_AddEnhancement, 9},
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
+    {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
 
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", addNpc, 2},
@@ -375,9 +377,9 @@ void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess)
 {
     float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
 
-    modifyHealth(*sess.m_ent, attrib);
+    modifyHealth(sess.m_ent, attrib, true);
 
-    QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(maxattrib);
+    QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(sess.m_ent->m_char->m_max_attribs.m_HitPoints);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
 }
@@ -674,7 +676,7 @@ void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess)
     {
         sendFloatingNumbers(sess.m_ent, tgt->m_idx, int(amount));
 
-        healthModified(*tgt, -amount, true); // deal dmg
+        modifyHealth(tgt, -amount, true); // deal dmg
 
         if(amount >= 0) // damage
         {
@@ -854,6 +856,11 @@ void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
     QString msg = "Set u1 to: " + QString::number(val);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, &sess);
+}
+
+void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)
+{
+    sess.m_current_map->on_awaiting_dead_no_gurney_test(new AwaitingDeadNoGurney(), sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

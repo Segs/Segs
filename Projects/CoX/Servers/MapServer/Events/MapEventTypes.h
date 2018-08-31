@@ -93,6 +93,7 @@ public:
     EVENT_DECL(evInteractWithEntity         ,207)
     EVENT_DECL(evSwitchTray                 ,208) // Switch Tray using left-right arrows next to power tray
     EVENT_DECL(evEnterDoor                  ,209)
+    EVENT_DECL(evAwaitingDeadNoGurney       ,210)
     EVENT_DECL(evSetDestination             ,211)
     EVENT_DECL(evWindowState                ,214)
     EVENT_DECL(evInspirationDockMode        ,217)

@@ -469,7 +469,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
 
     // Deal Damage
     sendFloatingNumbers(&ent, tgt_idx, damage);
-    modifyHealth(&target_ent, -damage, true);
+    modifyHealth(target_ent, -damage, true);
 }
 
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo)

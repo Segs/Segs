@@ -534,13 +534,6 @@ void setEnd(Character &c, float val)
 void modifyHealth(Entity *tgt, float amount, bool send_events)
 {    
     tgt->m_char->setHealth(amount);
-    if (tgt->m_client != nullptr && && send_events)
-    {
-        if (tgt.getHealth() == 0)
-        {
-            tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
-        }
-    }
 }
 
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }

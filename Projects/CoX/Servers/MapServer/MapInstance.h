@@ -74,6 +74,7 @@ public:
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         const MapServerData &   serverData() const;
         glm::vec3               closest_safe_location(glm::vec3 v) const;
+        void                    on_awaiting_dead_no_gurney_test(class AwaitingDeadNoGurney *ev, MapClientSession &sess); // Testing only. Should be protected.
 protected:
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(ClientConnectedMessage *ev);
@@ -149,4 +150,5 @@ protected:
         void on_trash_enhancement_in_power(class TrashEnhancementInPower *ev);
         void on_buy_enhancement_slot(class BuyEnhancementSlot *ev);
         void on_recv_new_power(class RecvNewPower *ev);
+        void on_awaiting_dead_no_gurney(class AwaitingDeadNoGurney *ev);      
 };

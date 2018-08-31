@@ -259,6 +259,20 @@ public:
     }
 };
 
+class AwaitingDeadNoGurney final : public MapLinkEvent
+{
+public:
+    AwaitingDeadNoGurney():MapLinkEvent(MapEventTypes::evAwaitingDeadNoGurney)
+    {}
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,10); // opcode
+    }
+    void serializefrom(BitStream &) override
+    {
+    }
+};
+
 class ChangeStance final : public MapLinkEvent
 {
 public:
