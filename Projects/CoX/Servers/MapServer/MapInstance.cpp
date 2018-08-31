@@ -2210,7 +2210,7 @@ void MapInstance::on_recv_new_power(RecvNewPower *ev)
 void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney));
+    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
 }
 
 void MapInstance::on_awaiting_dead_no_gurney_test(AwaitingDeadNoGurney *ev, MapClientSession &session)
