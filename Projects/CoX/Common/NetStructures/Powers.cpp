@@ -635,7 +635,7 @@ void useInspiration(Entity &ent, uint32_t col, uint32_t row)
     removeInspiration(cd, col, row);
 
     // TODO: Do inspiration benefit. For now, just heal a bit
-    modifyHealth(*ent, 15, false);
+    modifyHealth(&ent, 15, false);
 
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
     QString contents = "Inspired!";
