@@ -47,3 +47,4 @@ public:
 #include "Events/LevelUp.h"
 #include "Events/MapXferList.h"
 #include "Events/TrayAdd.h"
+#include "Events/DeadNoGurney.h"

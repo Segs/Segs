@@ -374,12 +374,8 @@ void cmdHandler_SetJumpHeight(const QString &cmd, MapClientSession &sess)
 void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess)
 {
     float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
-    float maxattrib =sess.m_ent->m_char->m_max_attribs.m_HitPoints;
 
-    if(attrib > maxattrib)
-        attrib = maxattrib;
-
-    setHP(*sess.m_ent->m_char,attrib);
+    modifyHealth(*sess.m_ent, attrib);
 
     QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(maxattrib);
     qCDebug(logSlashCommand) << msg;
@@ -678,7 +674,7 @@ void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess)
     {
         sendFloatingNumbers(sess.m_ent, tgt->m_idx, int(amount));
 
-        setHP(*tgt->m_char, getHP(*tgt->m_char)-amount); // deal dmg
+        healthModified(*tgt, -amount, true); // deal dmg
 
         if(amount >= 0) // damage
         {

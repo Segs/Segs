@@ -65,7 +65,7 @@ public:
 //    EVENT_DECL(evTimeUpdate               ,148)
 //    EVENT_DECL(evMissionEntryText         ,149)
 //    EVENT_DECL(evMissionKick              ,150)
-//    EVENT_DECL(evDeadNoGurney             ,151)
+    EVENT_DECL(evDeadNoGurney               ,151)
 //    EVENT_DECL(evDoorAnimStart            ,152)
 //    EVENT_DECL(evDoorAnimExit             ,153)
 //    EVENT_DECL(evFaceEntity               ,154)

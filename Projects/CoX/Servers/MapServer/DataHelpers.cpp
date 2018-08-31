@@ -526,14 +526,21 @@ void setCombatLevel(Character &c, uint32_t val)
     c.m_char_data.m_combat_level = val;
 }
 
-void setHP(Character &c, float val)
-{
-    c.m_char_data.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val,c.m_max_attribs.m_HitPoints));
-}
-
 void setEnd(Character &c, float val)
 {
     c.m_char_data.m_current_attribs.m_Endurance = std::max(0.0f, std::min(val,c.m_max_attribs.m_Endurance));
+}
+
+void modifyHealth(Entity *tgt, float amount, bool send_events)
+{    
+    tgt->m_char->setHealth(amount);
+    if (tgt->m_client != nullptr && && send_events)
+    {
+        if (tgt.getHealth() == 0)
+        {
+            tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
+        }
+    }
 }
 
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }

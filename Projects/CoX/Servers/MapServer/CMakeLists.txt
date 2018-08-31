@@ -43,6 +43,7 @@ SET(target_INCLUDE
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
     Events/ClientStates.h
+    Events/DeadNoGurney.h
     Events/EmailHeaders.h
     Events/EmailMessageStatus.h
     Events/EmailRead.h

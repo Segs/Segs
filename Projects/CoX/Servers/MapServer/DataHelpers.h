@@ -124,8 +124,8 @@ const QString &     getAlignment(const Character &c);
 // Setters
 void    setLevel(Character &c, uint32_t val);
 void    setCombatLevel(Character &c, uint32_t val);
-void    setHP(Character &c, float val);
 void    setEnd(Character &c, float val);
+void    modifyHealth(Entity *tgt, float val, bool is_damage, bool send_events);
 void    setLastCostumeId(Character &c, uint64_t val);
 void    setXP(Character &c, uint32_t val);
 void    setDebt(Character &c, uint32_t val);

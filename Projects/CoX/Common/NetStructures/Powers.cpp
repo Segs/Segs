@@ -469,7 +469,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
 
     // Deal Damage
     sendFloatingNumbers(&ent, tgt_idx, damage);
-    setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
+    modifyHealth(&target_ent, -damage, true);
 }
 
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo)
@@ -635,7 +635,7 @@ void useInspiration(Entity &ent, uint32_t col, uint32_t row)
     removeInspiration(cd, col, row);
 
     // TODO: Do inspiration benefit. For now, just heal a bit
-    setHP(*ent.m_char, getHP(*ent.m_char)+15.0);
+    modifyHealth(*ent, 15, false);
 
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
     QString contents = "Inspired!";
