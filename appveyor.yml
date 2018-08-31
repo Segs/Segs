@@ -8,8 +8,9 @@ environment:
     PLATFORMTOOLSET: "v140"
   MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
   matrix:
-  - CMAKE_GENERATOR: "Visual Studio 15 2017"
-    QT5: C:\Qt\5.10.1\msvc2015
+# For now, maybe we disable 32 bit build-testing as it's unlikely for our users
+#  - CMAKE_GENERATOR: "Visual Studio 15 2017"
+#    QT5: C:\Qt\5.10.1\msvc2015
   - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
     QT5: C:\Qt\5.10.1\msvc2017_64
     
