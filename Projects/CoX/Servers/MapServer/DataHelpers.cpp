@@ -713,4 +713,15 @@ void sendTeamOffer(Entity *src, Entity *tgt)
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
 }
 
+void sendFaceEntity(Entity *src, Entity *tgt)
+{
+    qCDebug(logPosition) << QString("Sending Face Entity to %1").arg(tgt->name());
+    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceEntity>(new FaceEntity(tgt->m_idx)));
+}
+void sendFaceLocation(Entity *src, glm::vec3 &loc)
+{
+    qCDebug(logPosition) << QString("Sending Face Location to x: %1 y: %2 z: %3").arg(loc.x).arg(loc.y).arg(loc.z);
+    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceLocation>(new FaceLocation(loc)));
+}
+
 //! @}

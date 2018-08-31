@@ -68,8 +68,8 @@ public:
 //    EVENT_DECL(evDeadNoGurney             ,151)
 //    EVENT_DECL(evDoorAnimStart            ,152)
 //    EVENT_DECL(evDoorAnimExit             ,153)
-//    EVENT_DECL(evFaceEntity               ,154)
-//    EVENT_DECL(evFaceLocation             ,155)
+    EVENT_DECL(evFaceEntity                 ,154)
+    EVENT_DECL(evFaceLocation               ,155)
     EVENT_DECL(evFloatingInfo               ,156)
     EVENT_DECL(evSendStance                 ,157) // I think?
     EVENT_DECL(evMapXferList                ,158)

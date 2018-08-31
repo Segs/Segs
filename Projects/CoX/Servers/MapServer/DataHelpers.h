@@ -172,6 +172,8 @@ void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
+void sendFaceEntity(Entity *src, Entity *tgt);
+void sendFaceLocation(Entity *src, glm::vec3 &location);
 
 /*
  * sendEmail Wrappers for providing access to Email Database
