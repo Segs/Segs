@@ -393,7 +393,7 @@ bool MapServerData::read_npcs(const QString &directory_path)
 // should read from settings.cfg
 bool MapServerData::read_settings(const QString &directory_path)
 {
-    qDebug() << "Loading data from settings:";
+    qDebug() << "TODO: Loading data from settings";
 
     // m_time_to_afk = 5 minutes
     // m_time_to_logout_msg = 18 minutes
