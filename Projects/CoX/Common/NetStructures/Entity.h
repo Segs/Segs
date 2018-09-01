@@ -222,6 +222,8 @@ public:
         bool                m_extra_info            = false;    // EntityUpdateCodec storePosUpdate
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
 
+        bool                m_has_input_on_timeframe= false;
+
         int                 u1 = 0; // used for live-debugging
 
         PosUpdate           m_pos_updates[64];

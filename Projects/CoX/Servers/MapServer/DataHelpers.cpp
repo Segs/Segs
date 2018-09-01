@@ -586,11 +586,17 @@ void setDescription(Character &c, QString val) { c.m_char_data.m_character_descr
 void setBattleCry(Character &c, QString val) { c.m_char_data.m_battle_cry = val; }
 
 // Toggles
-void toggleAFK(Character &c, const QString &msg)
+void toggleAFK(Character &c, const bool isTrue, const QString &msg)
 {
-    c.m_char_data.m_afk = !c.m_char_data.m_afk;
+    c.m_char_data.m_afk = isTrue;
+    //c.m_char_data.m_afk = !c.m_char_data.m_afk;
     if(c.m_char_data.m_afk)
         c.m_char_data.m_afk_msg = msg;
+}
+
+void toggleAFK(Character &c, const QString &msg)
+{
+    toggleAFK(c, !c.m_char_data.m_afk, msg);
 }
 
 void toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }

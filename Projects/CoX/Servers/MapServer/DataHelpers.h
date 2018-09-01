@@ -137,6 +137,7 @@ void    setBattleCry(Character &c, QString val);
 
 // Toggles
 void    toggleAFK(Character &c, const QString &msg = "");
+void    toggleAFK(Character &c, const bool isTrue, const QString &msg = "");
 void    toggleTeamBuffs(PlayerData &c);
 
 

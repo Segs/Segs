@@ -656,6 +656,9 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     // Can't pass direction through cereal, so let's update it here.
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
+    // make sure to 'off' the AFK from the character in db first
+    toggleAFK(*e->m_char, false);
+
     if (logSpawn().isDebugEnabled())
     {
         qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
@@ -733,6 +736,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         GameAccountResponseCharacterData char_data;
         fromActualCharacter(*e->m_char,*e->m_player, *e->m_entity, char_data);
         serializeToDb(e->m_entity_data,ent_data);
+
         // create the character from the data.
         //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
         // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.      
@@ -880,6 +884,9 @@ void MapInstance::on_input_state(InputState *st)
     if (st->m_data.m_key_released)
         ent->m_input_ack = st->m_data.m_send_id;
     ent->inp_state = st->m_data;
+
+    if (st->m_data.m_input_received)
+        ent->m_has_input_on_timeframe = st->m_data.m_input_received;
 
     // Set Target
     if(st->m_has_target && (getTargetIdx(*ent) != st->m_target_idx))
@@ -2228,13 +2235,18 @@ void MapInstance::on_afk_update()
         Entity *e = sess->m_ent;
         CharacterData* cd = &e->m_char->m_char_data;
 
-        if (e->inp_state.m_input_received == false)
-            cd->m_idle_time += afk_update_interval.get_msec();
+        if (e->m_has_input_on_timeframe == false)
+            cd->m_idle_time += afk_update_interval.sec();
         else
         {
+            sendInfoMessage(MessageChannel::EMOTE, "Receiving input from player", sess);
             cd->m_idle_time = 0;
-            cd->m_afk = false;
+
+            if (cd->m_afk)
+                toggleAFK(*e->m_char, false);
             cd->m_is_on_auto_logout = false;
+
+            e->m_has_input_on_timeframe = false;
         }
 
         const MapServerData &data(g_GlobalMapServer->runtimeData());
@@ -2242,8 +2254,8 @@ void MapInstance::on_afk_update()
 
         if (cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         {
-            toggleAFK(* e->m_char, "Auto AFK");
-            msg = "You are AFKed after x minutes of inactivity";
+            toggleAFK(* e->m_char, true, "Auto AFK");
+            msg = QString("You are AFKed after %1 seconds of inactivity").arg(data.m_time_to_afk);
             sendInfoMessage(MessageChannel::EMOTE, msg, sess);
         }
 
@@ -2252,18 +2264,18 @@ void MapInstance::on_afk_update()
         {
             // give message that character will be auto logged out in 2 mins
             // player must not be on task force and is not on mission map for this to happen
-            if (!cd->m_is_on_task_force && !isEntityOnMissionMap(e->m_entity_data))
+            if (!cd->m_is_on_task_force && !isEntityOnMissionMap(e->m_entity_data) && !cd->m_is_on_auto_logout)
             {
                 cd->m_is_on_auto_logout = true;
-                msg = QString("You have been inactive for Y minutes. You will automatically ") +
-                      QString("be logged out if you stay idle for Z minutes");
+                msg = QString("You have been inactive for %1 seconds. You will automatically ").arg(data.m_time_to_logout_msg) +
+                      QString("be logged out if you stay idle for %1 seconds").arg(data.m_time_to_auto_logout);
                 sendInfoMessage(MessageChannel::EMOTE, msg, sess);
             }
         }
 
-        // I don't think we need to check if !e->m_is_logging_out, which is the unforced way of logging out
         if (cd->m_is_on_auto_logout && cd->m_idle_time >=
-                data.m_time_to_logout_msg + data.m_time_to_auto_logout)
+                data.m_time_to_logout_msg + data.m_time_to_auto_logout
+                && !e->m_is_logging_out)
         {
             e->beginLogout(30);
             msg = "You have been inactive for too long. Beginning auto-logout process...";
