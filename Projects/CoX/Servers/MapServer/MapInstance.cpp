@@ -2234,6 +2234,8 @@ void MapInstance::on_recv_new_power(RecvNewPower *ev)
 void MapInstance::on_afk_update()
 {
     const std::vector<MapClientSession *> &active_sessions (m_session_store.get_active_sessions());
+    const MapServerData &data(g_GlobalMapServer->runtimeData());
+    QString msg;
 
     for (const auto &sess : active_sessions)
     {
@@ -2244,7 +2246,8 @@ void MapInstance::on_afk_update()
             cd->m_idle_time += afk_update_interval.sec();
         else
         {
-            sendInfoMessage(MessageChannel::EMOTE, "Receiving input from player", sess);
+            msg = QString("Receiving input from player: ") + &e->m_char->getName();
+            qCDebug(logInput) << msg;
             cd->m_idle_time = 0;
 
             if (cd->m_afk)
@@ -2254,14 +2257,11 @@ void MapInstance::on_afk_update()
             e->m_has_input_on_timeframe = false;
         }
 
-        const MapServerData &data(g_GlobalMapServer->runtimeData());
-        QString msg;
-
         if (cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         {
             toggleAFK(* e->m_char, true, "Auto AFK");
             msg = QString("You are AFKed after %1 seconds of inactivity").arg(data.m_time_to_afk);
-            sendInfoMessage(MessageChannel::EMOTE, msg, sess);
+            sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
         }
 
 
@@ -2274,7 +2274,7 @@ void MapInstance::on_afk_update()
                 cd->m_is_on_auto_logout = true;
                 msg = QString("You have been inactive for %1 seconds. You will automatically ").arg(data.m_time_to_logout_msg) +
                       QString("be logged out if you stay idle for %1 seconds").arg(data.m_time_to_auto_logout);
-                sendInfoMessage(MessageChannel::EMOTE, msg, sess);
+                sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
             }
         }
 
@@ -2284,7 +2284,7 @@ void MapInstance::on_afk_update()
         {
             e->beginLogout(30);
             msg = "You have been inactive for too long. Beginning auto-logout process...";
-            sendInfoMessage(MessageChannel::EMOTE, msg, sess);
+            sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
         }
     }
 
