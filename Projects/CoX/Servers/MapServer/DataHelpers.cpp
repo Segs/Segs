@@ -533,7 +533,8 @@ void setEnd(Character &c, float val)
 
 void modifyHealth(Entity *tgt, float amount, bool send_events)
 {    
-    tgt->m_char->setHealth(amount);
+    float current_health = tgt->m_char->getHealth();
+    tgt->m_char->setHealth(current_health + amount);
 }
 
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
