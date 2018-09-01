@@ -1237,6 +1237,8 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
 
     //printf("Console command received %s\n",qPrintable(ev->contents));
 
+    ent->m_has_input_on_timeframe = true;
+
     if(isChatMessage(contents))
     {
         process_chat(&session,contents);
@@ -1260,7 +1262,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     QString cmd_str = command.section(QRegularExpression("\\s+"), 0, 0);
     QString original_emote = command.section(QRegularExpression("\\s+"), 1, -1);
     QString lowerContents = original_emote.toLower();
-                                                                                // Normal Emotes
+                                                                             // Normal Emotes
     static const QStringList afraidCommands = {"afraid", "cower", "fear", "scared"};
     static const QStringList akimboCommands = {"akimbo", "wings"};
     static const QStringList bigWaveCommands = {"bigwave", "overhere"};
@@ -2041,6 +2043,7 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
 void MapInstance::on_activate_power(ActivatePower *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
+    session.m_ent->m_has_input_on_timeframe = true;
     uint32_t tgt_idx = ev->target_idx;
 
     if(ev->target_idx == 0)
@@ -2053,6 +2056,7 @@ void MapInstance::on_activate_power(ActivatePower *ev)
 void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
+    session.m_ent->m_has_input_on_timeframe = true;
 
     // TODO: Check that target is valid, then Do Power!
     QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
@@ -2065,6 +2069,7 @@ void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
+    session.m_ent->m_has_input_on_timeframe = true;
     useInspiration(*session.m_ent, ev->slot_idx, ev->row_idx);
     // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
 }

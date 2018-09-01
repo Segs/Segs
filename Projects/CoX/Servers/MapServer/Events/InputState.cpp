@@ -141,6 +141,10 @@ void InputState::partial_2(BitStream &bs)
             ms_since_prev=bs.GetBits(2)+32; // delta from prev event
         else
             ms_since_prev=bs.GetBits(m_data.m_csc_deltabits);
+
+        if (control_id < 8)
+            m_data.m_input_received = true;
+
         switch(control_id)
         {
             case FORWARD: case BACKWARD:
@@ -221,6 +225,9 @@ void InputState::extended_input(BitStream &bs)
     if(m_data.m_control_bits)
         qCDebug(logInput, "E input %x : ",m_data.m_control_bits);
 
+    if (m_data.m_control_bits != 0)
+        m_data.m_input_received = true;
+
     if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )
     {
         m_data.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11);
@@ -280,18 +287,18 @@ void InputState::serializefrom(BitStream &bs)
     m_data.m_send_deltas=false;
 
     if(bs.GetBits(1))
-    {
-        m_data.m_input_received = true;
         extended_input(bs);
-    }
-    else
-        m_data.m_input_received = false;
 
     m_has_target = bs.GetBits(1);
     m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
 
+    // NOTE: Even if the targeting happens a long time ago, m_input_received would be true from here
     if(m_has_target)
+    {
         qCDebug(logTarget, "Has Target? %d | TargetIdx: %d", m_has_target, m_target_idx);
+        m_data.m_input_received = true;
+    }
+
 
     int ctrl_idx=0;
     ControlState prev_fld;
@@ -316,6 +323,7 @@ void InputState::serializefrom(BitStream &bs)
         m_user_commands.ResetOffsets();
         bs.ByteAlign(true,false);
         m_user_commands.StoreBitArray(bs.read_ptr(),bs.GetReadableBits());
+
         // all remaining bits were moved to m_user_commands.
         bs.SetReadPos(bs.GetWritePos());
     }
