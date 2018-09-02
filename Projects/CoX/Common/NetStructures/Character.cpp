@@ -229,11 +229,10 @@ void Character::sendInspirations(BitStream &bs) const
     {
         for(int j = 0; j < max_rows; ++j)
         {
-            CharacterInspiration& inspiration = m_char_data.m_inspirations.at(i, j);
-            bs.StoreBits(1, inspiration.m_has_insp);
+            bs.StoreBits(1, m_char_data.m_inspirations.value(i, j).m_has_insp);
 
-            if(inspiration.m_has_insp)
-                inspiration.m_insp_info.serializeto(bs);
+            if(m_char_data.m_inspirations.value(i, j).m_has_insp)
+                m_char_data.m_inspirations.value(i, j).m_insp_info.serializeto(bs);
         }
     }
 }

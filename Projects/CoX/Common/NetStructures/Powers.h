@@ -61,6 +61,7 @@ static const constexpr  uint32_t    class_version = 1;
 
 struct vInspirations
 {
+    static const constexpr uint32_t class_version = 1;
     std::vector<CharacterInspiration> m_inspirations;
 
     // although in some cases people prefer [row][col], i'll be using x -> col and y -> row
@@ -90,9 +91,14 @@ struct vInspirations
         return m_inspirations.size();
     }
 
-    CharacterInspiration& at (size_t col, size_t row) const
+    CharacterInspiration& at (const size_t col, const size_t row)
     {
         // Note: possible arrayIndexOutOfRange exception here
+        return m_inspirations[col * row];
+    }
+
+    CharacterInspiration value(const size_t col, const size_t row) const
+    {
         return m_inspirations[col * row];
     }
 };
