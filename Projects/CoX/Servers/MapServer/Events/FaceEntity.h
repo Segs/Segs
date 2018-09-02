@@ -13,6 +13,7 @@
 
 #include <QtCore/QString>
 
+// [[ev_def:type]]
 class FaceEntity : public GameCommand
 {
 public:
@@ -28,5 +29,6 @@ public:
     };
 
 protected:
+    //  [[ev_def:field]]
     uint32_t m_target;
 };

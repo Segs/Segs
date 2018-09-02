@@ -2025,6 +2025,8 @@ void MapInstance::on_activate_power(ActivatePower *ev)
 
     if(ev->target_idx == 0)
         tgt_idx = session.m_ent->m_idx;
+    else
+        sendFaceEntity(session.m_ent, tgt_idx);
 
     usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
@@ -2037,6 +2039,7 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
     // TODO: Check that target is valid, then Do Power!
     QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
     sendFloatingInfo(session.m_ent, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    sendFaceLocation(session.m_ent, ev->location);
 
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }

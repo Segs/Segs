@@ -869,7 +869,7 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
     Entity *tgt = nullptr;
     QVector<QStringRef> parts;
     parts = cmd.splitRef(' ');
-    if (parts.size()<2)
+    if (parts.size() < 2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, &sess);
@@ -883,7 +883,7 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
         sendInfoMessage(MessageChannel::USER_ERROR, msg, &sess);
         return;
     }
-    sendFaceEntity(sess.m_ent, tgt);
+    sendFaceEntity(sess.m_ent, tgt->m_idx);
 }
 void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
 {

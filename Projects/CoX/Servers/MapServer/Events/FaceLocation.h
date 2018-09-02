@@ -13,6 +13,7 @@
 
 #include <QtCore/QString>
 
+// [[ev_def:type]]
 class FaceLocation : public GameCommand
 {
 public:
@@ -30,5 +31,6 @@ public:
     }
     
 protected:
+    // [[ev_def:field]]
     glm::vec3 m_loc;
 };
