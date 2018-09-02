@@ -11,6 +11,7 @@
 #include "GameData/power_definitions.h"
 
 #include <QtCore/QString>
+#include <QtCore/QDebug>
 #include <array>
 
 class Entity;
@@ -58,8 +59,43 @@ static const constexpr  uint32_t    class_version = 1;
         bool            m_has_insp          = false;
 };
 
-// TODO: client will only accept 5col x 4row of insps MAX, see Issue #524
-using vInspirations = std::array< std::array<CharacterInspiration, 4>, 5>;
+struct vInspirations
+{
+    std::vector<CharacterInspiration> m_inspirations;
+
+    // although in some cases people prefer [row][col], i'll be using x -> col and y -> row
+    size_t m_rows, m_cols;
+
+    vInspirations()
+    {
+        m_cols = 5;
+        m_rows = 4;
+        // m_inspirations.reserve(m_rows * m_cols);
+    }
+
+    vInspirations(size_t cols, size_t rows)
+    {
+        if (cols > 5)
+            qCritical() << "vInspirations has more than 5 columns!";
+        if (rows > 4)
+            qCritical() << "vInspirations has more than 4 rows!";
+
+        m_cols = cols;
+        m_rows = rows;
+        // m_inspirations.reserve(m_cols * m_rows);
+    }
+
+    const size_t size()
+    {
+        return m_inspirations.size();
+    }
+
+    CharacterInspiration& at (size_t col, size_t row) const
+    {
+        // Note: possible arrayIndexOutOfRange exception here
+        return m_inspirations[col * row];
+    }
+};
 
 struct CharacterEnhancement
 {

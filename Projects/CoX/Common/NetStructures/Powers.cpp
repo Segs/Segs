@@ -574,9 +574,9 @@ void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
     int max_rows = cd.m_max_insp_rows;
     int count = 0;
 
-    for(int i = 0; i < max_rows; ++i)
+    for(int i = 0; i < max_cols; ++i)
     {
-        for(int j = 0; j < max_cols; ++j)
+        for(int j = 0; j < max_rows; ++j)
         {
             if(count >= max_cols*max_rows)
             {
@@ -584,13 +584,13 @@ void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
                 return;
             }
 
-            if(cd.m_inspirations[j][i].m_has_insp)
+            if(cd.m_inspirations.at(i, j).m_has_insp)
                 count++;
             else
             {
-                insp.m_col = j;
-                insp.m_row = i;
-                cd.m_inspirations[j][i] = insp;
+                insp.m_col = i;
+                insp.m_row = j;
+                cd.m_inspirations.at(i, j) = insp;
                 qCDebug(logPowers) << "Character received inspiration:"
                                    << insp.m_insp_info.m_pcat_idx
                                    << insp.m_insp_info.m_pset_idx
@@ -604,8 +604,8 @@ void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row)
 {
     vInspirations *insp_arr = &cd.m_inspirations;
-    int max_cols = cd.m_max_insp_cols;
-    int max_rows = cd.m_max_insp_rows;
+    size_t max_cols = cd.m_max_insp_cols;
+    size_t max_rows = cd.m_max_insp_rows;
 
     if(dest_col > max_cols || dest_row > max_rows)
     {
@@ -614,11 +614,11 @@ void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint
     }
 
     // save src_insp incase of switch
-    insp_arr->at(src_col).at(src_row).m_col = dest_col;
-    insp_arr->at(src_col).at(src_row).m_row = dest_row;
-    insp_arr->at(dest_col).at(dest_row).m_col = src_col;
-    insp_arr->at(dest_col).at(dest_row).m_row = src_row;
-    std::swap(insp_arr->at(src_col).at(src_row), insp_arr->at(dest_col).at(dest_row));
+    insp_arr->at(src_col, src_row).m_col = dest_col;
+    insp_arr->at(src_col, src_row).m_row = dest_row;
+    insp_arr->at(dest_col, dest_row).m_col = src_col;
+    insp_arr->at(dest_col, dest_row).m_row = src_row;
+    std::swap(insp_arr->at(src_col, src_row), insp_arr->at(dest_col, dest_row));
 
     cd.m_powers_updated = true; // update client on power status
 
@@ -629,7 +629,7 @@ void useInspiration(Entity &ent, uint32_t col, uint32_t row)
 {
     CharacterData &cd = ent.m_char->m_char_data;
 
-    if(!cd.m_inspirations[col][row].m_has_insp)
+    if(!cd.m_inspirations.at(col, row).m_has_insp)
         return;
 
     removeInspiration(cd, col, row);
@@ -649,7 +649,7 @@ void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)
 
     CharacterInspiration insp;
     qCDebug(logPowers) << "Removing inspiration from " << col << "x" << row;
-    cd.m_inspirations[col][row] = insp;
+    cd.m_inspirations.at(col, row) = insp;
 
     for(int j = row; j < max_rows; ++j)
     {
@@ -674,13 +674,13 @@ void dumpInspirations(CharacterData &cd)
     {
         for(int j = 0; j < max_rows; ++j)
         {
-            qDebug().noquote() << "Inspiration: " << cd.m_inspirations[i][j].m_name;
-            qDebug().noquote() << "  HasInsp: " << cd.m_inspirations[i][j].m_has_insp;
-            qDebug().noquote() << "  Col: " << cd.m_inspirations[i][j].m_col;
-            qDebug().noquote() << "  Row: " << cd.m_inspirations[i][j].m_row;
-            qDebug().noquote() << "  CategoryIdx: " << cd.m_inspirations[i][j].m_insp_info.m_pcat_idx;
-            qDebug().noquote() << "  PowerSetIdx: " << cd.m_inspirations[i][j].m_insp_info.m_pset_idx;
-            qDebug().noquote() << "  PowerIdx: " << cd.m_inspirations[i][j].m_insp_info.m_pow_idx;
+            qDebug().noquote() << "Inspiration: " << cd.m_inspirations.at(i, j).m_name;
+            qDebug().noquote() << "  HasInsp: " << cd.m_inspirations.at(i, j).m_has_insp;
+            qDebug().noquote() << "  Col: " << cd.m_inspirations.at(i, j).m_col;
+            qDebug().noquote() << "  Row: " << cd.m_inspirations.at(i, j).m_row;
+            qDebug().noquote() << "  CategoryIdx: " << cd.m_inspirations.at(i, j).m_insp_info.m_pcat_idx;
+            qDebug().noquote() << "  PowerSetIdx: " << cd.m_inspirations.at(i, j).m_insp_info.m_pset_idx;
+            qDebug().noquote() << "  PowerIdx: " << cd.m_inspirations.at(i, j).m_insp_info.m_pow_idx;
         }
     }
 }
