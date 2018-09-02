@@ -430,17 +430,17 @@ bool MapServerData::read_pi_schedule(const QString &directory_path)
     return true;
 }
 
-Parse_PowerSet MapServerData::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)
+const Parse_PowerSet& MapServerData::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)
 {
     return m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx];
 }
 
-Power_Data MapServerData::get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+const Power_Data& MapServerData::get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
 {
     return m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
 }
 
-StoredPowerCategory MapServerData::get_power_category(uint32_t pcat_idx)
+const StoredPowerCategory& MapServerData::get_power_category(uint32_t pcat_idx)
 {
     return m_all_powers.m_categories[pcat_idx];
 }

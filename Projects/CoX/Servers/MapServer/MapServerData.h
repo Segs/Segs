@@ -69,8 +69,8 @@ public:
         float                       m_player_fade_in;
 
         // keep in mind the hierarchy is all_powers -> powercat -> powerset -> powerdata (template)
-        StoredPowerCategory get_power_category(uint32_t pcat_idx);
-        Parse_PowerSet      get_powerset(uint32_t pcat_idx, uint32_t pset_idx);
-        Power_Data          get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
+        const StoredPowerCategory&  get_power_category(uint32_t pcat_idx);
+        const Parse_PowerSet&       get_powerset(uint32_t pcat_idx, uint32_t pset_idx);
+        const Power_Data&           get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
 
 };
