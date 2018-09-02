@@ -282,6 +282,7 @@ void segs_drawAllSprites(MaterialDefinition &material)
     bool in_shell = inShellMode() && !loadingScreenVisible();
     get_screen_size(&width, &height);
     get_screen_scaling(&x_scale, &y_scale);
+    auto restore = g_render_state.getGlobal();
     //ShaderProgram &selected = segs_setupShading(DrawMode::SINGLETEX,eBlendMode::MULTIPLY,true);
     if (in_shell)
     {
@@ -387,10 +388,10 @@ void segs_drawAllSprites(MaterialDefinition &material)
             float factor_w = float(sprite_array_entry.texture->width) / nextPowerOfTwoLargerThan(sprite_array_entry.texture->width);
             float factor_h = float(sprite_array_entry.texture->height) / nextPowerOfTwoLargerThan(sprite_array_entry.texture->height);
 
-            glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            //glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            //glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            //glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            //glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             Matrix4x3 dest = Unity_Matrix;
             fn_5B6740(sprite_array_entry.angle, &dest.ref3());
             float x1 = (float)(-sprite_array_entry.texture->width / 2) * sprite_array_entry.xScale * tex_x_scale;
@@ -451,10 +452,10 @@ void segs_drawAllSprites(MaterialDefinition &material)
             }
             else
             {
-                glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                //glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                //glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                //glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                //glSamplerParameteri(perUnitSamplers[0], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             }
             segs_texBindTexture(GL_TEXTURE_2D, 0, sprite_array_entry.texture);
             material.draw_data.tex_id_0 = sprite_array_entry.texture;
@@ -485,6 +486,7 @@ void segs_drawAllSprites(MaterialDefinition &material)
     }
     segs_clrLastSpriteIdx();
     glDisable(GL_SCISSOR_TEST);
+    g_render_state.apply(restore);
 }
 static int DrawText2DWithScalingHandler(DrawTextParam *param)
 {

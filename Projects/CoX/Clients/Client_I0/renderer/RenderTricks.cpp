@@ -113,34 +113,34 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,Material
         return 1;
 
     uint32_t flags = tricks->_TrickFlags;
-    if ( flags & 0x4000 )
+    if ( flags & TF_STAnimate )
     {
         assert(tricks->info && tricks->info->StAnim);
         segs_animateSts(*tricks->info->StAnim,def.draw_data);
     }
-    if ( flags & 2 ) {
+    if ( flags & TF_ScrollST0 ) {
         scrollTex(0, &tricks->ScrollST0,def.draw_data.textureMatrix0);
     }
-    if ( flags & 0x200 )
+    if ( flags & TF_ScrollST1 )
         scrollTex(1, &tricks->ScrollST1,def.draw_data.textureMatrix1);
-    if ( flags & 0x40000000 )
+    if ( flags & TF_STSScale )
     {
         segs_scaleTex(&tricks->tex_scale);
     }
-    if ( flags & 1 ) // Additive
+    if ( flags & TF_Additive ) // Additive
     {
         def.render_state.setBlendMode(RenderState::BLEND_ADDALPHA);
         def.draw_data.fog_params.enabled = false;
     }
-    if ( flags & 4 && lhs )
+    if ( flags & TF_FaceFront && lhs )
         fn_4DEBB0(lhs, 0.0);
-    if ( flags & 0x800000 && lhs )
+    if ( flags & TF_LightFace && lhs )
     {
         matMul3x3(&cam_info.inv_viewmat.ref3(), &lhs->ref3(), &dst.ref3());
         float angle = -std::atan2(dst.r3.x, dst.r3.z) - std::atan2(g_sun.shadow_direction.x, -g_sun.shadow_direction.z);
         fn_5B6740(angle, (Matrix3x3 *)lhs);
     }
-    if ( flags & 8 && lhs )
+    if ( flags & TF_FaceCamera && lhs )
     {
         lhs->ref3() = Unity_Matrix.ref3();
         float z_translated = -lhs->TranslationPart.z - 1.2f;
@@ -154,23 +154,23 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,Material
             lhs->TranslationPart.z *= scale;
         }
     }
-    if (flags & 0x20)
+    if (flags & TF_ColorOnly)
     {
         def.draw_data.globalColor = tricks->TintColor0.to4Floats();
     }
-    if (flags & 0x40)
+    if (flags & TF_DoubleSided)
     {
         def.render_state.setCullMode(RenderState::CULL_NONE);
     }
-    if (flags & 0x80)
+    if (flags & TF_NoZTest)
     {
         def.render_state.setDepthTestMode(RenderState::CMP_NONE);
     }
-    if (flags & 0x800)
+    if (flags & TF_NoZWrite)
     {
         def.render_state.setDepthWrite(false);
     }
-    if ( flags & 0x10000000 )
+    if ( flags & TF_NightGlow )
     {
         if ( server_visible_state.map_time_of_day > tricks->info->NightGlow.x ||
              server_visible_state.map_time_of_day < tricks->info->NightGlow.y )
@@ -179,9 +179,10 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,Material
             def.draw_data.light0.Diffuse = { 0,0,0,1 };
         }
     }
-    if ( flags & 0x400 )
+    if (flags & TF_NightLight)
     {
-        if ( model && g_curr_blend_state == eBlendMode::ADDGLOW && model->num_textures > 0 )
+        // if fragment mode is eBlendMode::ADDGLOWm replace grey with black texture
+        if (model && (def.get_fragmentMode() == 2) && model->num_textures > 0)
         {
             for(int i=0; i<model->num_textures; ++i)
             {
@@ -190,20 +191,24 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,Material
             }
         }
         int alpha_val = g_sun.lamp_alpha;
-        if ( flags & 0x10 )
+        if (flags & TF_DistAlpha)
         {
             alpha_val = (alpha_val * tricks->TintColor0.a) >> 8;
         }
-        // lightsOn is only used by ADDGLOW shader
+        // lightsOn is only used by ADDGLOW shader path
         def.draw_data.lightsOn = {alpha_val / 255.0f, 0.0, 0.0, 0.0};
-        if ( g_curr_blend_state != eBlendMode::ADDGLOW )
+        if (def.get_fragmentMode() == 2)
         {
+            if (alpha_val >= 100)
+                assert(false); // glFinalCombinerInputNV(GL_VARIABLE_D_NV, GL_TEXTURE1, GL_UNSIGNED_IDENTITY_NV, GL_RGB);
+            else
+                assert(false); // glFinalCombinerInputNV(GL_VARIABLE_D_NV, 0, GL_UNSIGNED_IDENTITY_NV, GL_RGB);
+        }
             if ( 0==alpha_val )
                 return 0;
             def.draw_data.constColor1.w *= g_sun.lamp_alpha;
         }
-    }
-    if ( flags & 0x20000 )
+    if ( flags & TF_SetColor )
     {
         def.draw_data.constColor1.ref3() = tricks->TintColor0.to3Floats();
         def.draw_data.constColor2.ref3() = tricks->TintColor1.to3Floats();
@@ -265,7 +270,7 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,Material
         segs_setTexUnitLoadBias(GL_TEXTURE0, tricks->info->ObjTexBias);
     return 1;
 }
-void segs_gfxNodeTricksUndo(TrickNode *trick, Model *model)
+void segs_gfxNodeTricksUndo(TrickNode *trick, Model *model,const MaterialDefinition &def)
 {
     if (!trick)
         return;
@@ -295,9 +300,9 @@ void segs_gfxNodeTricksUndo(TrickNode *trick, Model *model)
     }
     if (trickflags & 0x40000)
     {
-        ;// unhandled unused in glsl
+        ;// unhandled/unused in glsl
     }
-    if (trickflags & 0x400 && g_curr_blend_state == eBlendMode::ADDGLOW)
+    if (trickflags & 0x400 && def.get_fragmentMode()==2) //eBlendMode::ADDGLOW
     {
         if (model && model->num_textures > 0)
         {

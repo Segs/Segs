@@ -99,7 +99,7 @@ void segs_renderUtil_GetGfxCardVend(SysInfo_2 *sysinfo)
     case INTEL:
     {
         //TODO: implement me
-        strcpy(sysinfo->driver_version, "Intel v.999");
+        strncpy(sysinfo->driver_version, "Intel v.999",255);
         break;
     }
     case NVIDIA:
@@ -109,14 +109,14 @@ void segs_renderUtil_GetGfxCardVend(SysInfo_2 *sysinfo)
         break;
     }
     default:
-        strcpy(sysinfo->driver_version, "Unknown Vendor");
+        strncpy(sysinfo->driver_version,"Unknown Vendor",255);
     }
 }
 void segs_rendererInit()
 {
     glClearColor(0.0, 0.0, 0.0, 0.0);
 
-    RenderState basic_rs;
+    RenderState basic_rs=g_render_state.getGlobal();
     basic_rs.setCullMode(RenderState::CULL_CCW);
     basic_rs.setBlendMode(RenderState::BLEND_ALPHA);
     basic_rs.setDepthTestMode(RenderState::CMP_LESSEQUAL);
@@ -206,6 +206,8 @@ void segs_renderUtil_4E0CA0()
 void segs_rdrRenderGame()
 {
     MaterialDefinition text_mat(g_default_mat);
+    auto restore = g_render_state.getGlobal();
+
     text_mat.setDrawMode(DrawMode::SINGLETEX);
     text_mat.setFragmentMode(eBlendMode::MULTIPLY);
     text_mat.draw_data.projectionMatrix = glm::ortho<float>(0.0, g_State.view.screen_w, 0.0, g_State.view.screen_h, -1.0, 100.0);
@@ -226,6 +228,7 @@ void segs_rdrRenderGame()
         segs_drawAllSprites(text_mat);
         TTF_TClearAll();
     }
+    g_render_state.apply(restore);
 }
 struct FontRel
 {
@@ -308,7 +311,7 @@ void segs_rdrRenderEditor(FontRel *font_array, int count)
         std::vector<Vector3> bg_positions;
         std::vector<Vector2> bg_uvs;
         std::vector<uint32_t> bg_indices;
-        for ( const char *i = font_array[idx].string; *i!=0; i++)
+        for ( auto i = (const uint8_t *)font_array[idx].string; *i!=0; i++)
         {
             int letter_index  = fnt->indices[*i];
             FontMapEntry *letter = &fnt->letters[letter_index];
@@ -388,16 +391,12 @@ void segs_rdrPerspective(float fovy, float aspect, float zNear, float _zFar)
 }
 void segs_gfxWindowSetAng(float fovy, float aspect, float zNear, float zFar)
 {
-    float v_ang;
-    float h_ang;
-    float h_cos;
-    float v_cos;
 
     segs_rdrPerspective(fovy, aspect, zNear, zFar);
-    v_ang = glm::radians(fovy);
-    h_ang = std::atan(aspect * std::tan(v_ang / 2.0f));
-    h_cos = std::cos(h_ang);
-    v_cos = std::cos(v_ang / 2.0f);
+    float v_ang = glm::radians(fovy);
+    float h_ang = std::atan(aspect * std::tan(v_ang / 2.0f));
+    float h_cos = std::cos(h_ang);
+    float v_cos = std::cos(v_ang / 2.0f);
     g_frustumdata.hvam = std::sin(h_ang) / h_cos;
     g_frustumdata.hcos = h_cos;
     g_frustumdata.vvam = std::sin(v_ang / 2.0f) / v_cos;

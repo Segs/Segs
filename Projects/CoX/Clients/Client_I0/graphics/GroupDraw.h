@@ -322,4 +322,4 @@ struct GroupInfo
 extern int camera_is_inside;
 
 extern void patch_groupdraw();
-extern int segs_groupDrawRefs(const Matrix4x3 *parent_mat);
+extern int segs_groupDrawRefs(const Matrix4x3 &parent_mat);

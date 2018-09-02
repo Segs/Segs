@@ -22,11 +22,10 @@ extern "C" {
     __declspec(dllimport) void handleErrorStr(const char *, ...);
     __declspec(dllimport) void scaleMat3Vec3(Matrix4x3 *, Vector3 *);
 
-    __declspec(dllimport) int viewspaceMatCount;
     __declspec(dllimport) int see_outside;
 
-    __declspec(dllimport) Matrix4x3 viewspaceMats[6000];
 }
+int viewspaceMatCount;
 int sortedByDist;
 int sortedByType;
 int drawGfxNodeCalls;
@@ -36,6 +35,8 @@ TextureBind *g_global_texbinds[3];
 std::vector<ViewSortNode> vsArray;
 std::vector<SortThing> ModelArrayTypeSort;
 std::vector<SortThing> ModelArrayDistSort;
+
+static Matrix4x3 viewspaceMats[6000];
 
 void segs_modelDrawGfxNode(GfxTree_Node *node)
 {
@@ -162,7 +163,7 @@ void segs_addViewSortNode(GfxTree_Node *node, Model *model, Matrix4x3 *mat, Vect
     }
     assert(vsArray.size() + size_t(nodeTotal) == (ModelArrayTypeSort.size() + ModelArrayDistSort.size()));
 }
-void segs_gfxTreeDrawNode(GfxTree_Node *basenode, Matrix4x3 *parent_mat)
+void segs_gfxTreeDrawNode(GfxTree_Node *basenode,const Matrix4x3 &parent_mat)
 {
     Vector3 src;
     Matrix4x3 dest;
@@ -185,7 +186,8 @@ void segs_gfxTreeDrawNode(GfxTree_Node *basenode, Matrix4x3 *parent_mat)
             assert(node_->seqGfxData);
             if (see_outside)
             {
-                if (node_->seqGfxData->tray && !bsearch(&node_->seqGfxData->tray, visibleTrays.data(), visibleTrays.size(), sizeof(void *), (int(*)(const void *, const void *))trackerCMP))
+                if (node_->seqGfxData->tray && !bsearch(&node_->seqGfxData->tray, visibleTrays.data(), visibleTrays.size(),
+                                                        sizeof(void *), (int (*)(const void *, const void *))trackerCMP))
                 {
                     continue;
                 }
@@ -206,13 +208,13 @@ void segs_gfxTreeDrawNode(GfxTree_Node *basenode, Matrix4x3 *parent_mat)
             dest = Unity_Matrix;
             scaleMat3Vec3(&dest, &node_->boneScale);
             res                 = node_->mat * dest;
-            *bone_mat           = *parent_mat * res;
+            *bone_mat           = parent_mat * res;
             src                 = -seqGfxData->boneTranslations[uint8_t(node_->bone_slot)];
             bone_mat->TranslationPart = *bone_mat * src;
             node_->setAlpha(seqGfxData->alpha);
         }
-        if (node_->children_list || node_->model)
-        {
+        if (!node_->children_list && !node_->model)
+            continue;
             Model *model = node_->model;
             if (!model ||
                 ((!(model->Model_flg1 & OBJ_TREE)) && node_->flg & 0x400000 && model->Model_flg1 & OBJ_DRAW_AS_ENT))
@@ -225,7 +227,7 @@ void segs_gfxTreeDrawNode(GfxTree_Node *basenode, Matrix4x3 *parent_mat)
                     handleErrorStr("viewspaceMatCount >= MAX_VIEWSPACEMATS");
                 node_->viewspace = &viewspaceMats[viewspaceMatCount++];
             }
-            *node_->viewspace = *parent_mat * node_->mat; // MatMult4x3(parent_mat, &node_->mat, );
+        *node_->viewspace = parent_mat * node_->mat; // MatMult4x3(parent_mat, &node_->mat, );
             if (node_->model && !(node_->flg & 0x80000) && node_->alpha() >= 5u)
             {
                 if (node_->model->loadstate & 4)
@@ -235,8 +237,7 @@ void segs_gfxTreeDrawNode(GfxTree_Node *basenode, Matrix4x3 *parent_mat)
                 }
             }
             if (node_->children_list)
-                segs_gfxTreeDrawNode(node_->children_list, node_->viewspace);
-        }
+            segs_gfxTreeDrawNode(node_->children_list, *node_->viewspace);
     }
 }
 void segs_rendertree_modelDrawWorldmodel(ViewSortNode *vs)
@@ -262,7 +263,7 @@ void segs_rendertree_modelDrawWorldmodel(ViewSortNode *vs)
         trick->TintColor1 = vs->tint_colors[1];
     }
     Model *model = vs->model;
-    if ( model->Model_flg1 & 0x100 )
+    if ( model->Model_flg1 & OBJ_TREE )
         segs_modelDrawAlphaSortHack(model, &vs->mat, vs->alpha, &vs->mid, vs->rgbs, vs->light);
     else
         segs_modelDraw(model, &vs->mat, nullptr, vs->alpha, vs->rgbs, vs->light,base_material);

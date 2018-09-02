@@ -5,18 +5,18 @@
 struct MaterialDefinition;
 enum TrickFlags : uint32_t
 {
-    Additive = 0x1,
+    TF_Additive = 0x1,
     TF_ScrollST0 = 0x2,
-    FaceFront = 0x4,
-    FaceCamera = 0x8,
+    TF_FaceFront = 0x4,
+    TF_FaceCamera = 0x8,
     TF_DistAlpha = 0x10,
-    ColorOnly = 0x20,
-    DoubleSided = 0x40,
-    NoZTest = 0x80,
+    TF_ColorOnly = 0x20,
+    TF_DoubleSided = 0x40,
+    TF_NoZTest = 0x80,
     ReflectTex1 = 0x100,
     TF_ScrollST1 = 0x200,
-    NightLight = 0x400,
-    NoZWrite = 0x800,
+    TF_NightLight = 0x400,
+    TF_NoZWrite = 0x800,
     TF_Wireframe = 0x1000,
     NoDraw = 0x2000,
     TF_STAnimate = 0x4000,
@@ -28,7 +28,7 @@ enum TrickFlags : uint32_t
     FogHasStartAndEnd = 0x100000,
     EditorVisible = 0x200000,
     CastShadow = 0x400000,
-    LightFace = 0x800000,
+    TF_LightFace = 0x800000,
     ReflectTex0 = 0x1000000,
     TF_AlphaRef = 0x2000000,
     SimpleAlphaSort = 0x4000000,
@@ -146,7 +146,7 @@ struct SunTime
 extern Vector4 g_tex_scrolls;
 
 int segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,MaterialDefinition &def);
-void segs_gfxNodeTricksUndo(TrickNode *trick, Model *model);
+void segs_gfxNodeTricksUndo(TrickNode *trick, Model *model,const MaterialDefinition &def);
 void segs_animateSts(Parser_StAnim *anim,struct InstanceDrawData &instance_data);
 TrickNode *segs_getOrCreateTrickNode(Model *model);
 extern void patch_rendertricks();

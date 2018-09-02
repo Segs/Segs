@@ -391,7 +391,8 @@ void segs_shadowFinishScene()
 {
     if (g_State.view.bShadowVol == 2 || g_sun.shadowcolor.w < 0.05f)
         return;
-    RenderState shadow_rs;
+    RenderState shadow_rs = g_render_state.getGlobal();
+    RenderState recovery = g_render_state.getGlobal();
     shadow_rs.setDepthWrite(false);
     shadow_rs.setDepthTestMode(RenderState::CMP_ALWAYS);
     shadow_rs.stencil_mode = RenderState::STENCIL_NOTEQUAL;
@@ -399,7 +400,6 @@ void segs_shadowFinishScene()
     shadow_rs.stencil_mask = ~0xC0u;
     shadow_rs.setStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     drawShadowColor(shadow_rs);
-    RenderState recovery;
     recovery.setDepthWrite(true);
     recovery.setDepthTestMode(RenderState::CMP_LESSEQUAL);
     recovery.stencil_mode = RenderState::STENCIL_NONE;
@@ -408,6 +408,7 @@ void segs_shadowFinishScene()
 
 void segs_modelDrawShadowObject(Matrix4x3 *viewSpaceTransform, SplatSib *splat,const MaterialDefinition &base_material)
 {
+    RenderState reset_mat = g_render_state.getGlobal();
     GLDebugGuard debug_guard(__FUNCTION__);
     Matrix4x3 res;
     Matrix4x3 dest;
@@ -479,7 +480,6 @@ void segs_modelDrawShadowObject(Matrix4x3 *viewSpaceTransform, SplatSib *splat,c
     fakevbo.uploadIndicesToBuffer((uint32_t *)splat->indices, 3*splat->triangleCount);
     fakevbo.draw(*shadowObjectMaterial.program, GL_TRIANGLES, 3 * splat->triangleCount, 0);
     {
-        RenderState reset_mat;
         if (splat->flags & 1)
         {
             reset_mat.setBlendMode(RenderState::BLEND_ALPHA);

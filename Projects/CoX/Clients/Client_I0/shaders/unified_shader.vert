@@ -62,28 +62,32 @@ uniform lightParameters light0;
 
 uniform vec4 globalColor; // replacement for gl_Color
 uniform vec3 viewerPosition;
-#if TEX_XFORM == TEX_XFORM_OFFSET
+#if TC_XFORM == TEX_XFORM_OFFSET
 uniform vec4 textureScroll; // xy - scroll for Texture 0, zw scroll for Texture 1
-#elif TEX_XFORM == TEX_XFORM_MATRIX
+#elif TC_XFORM == TEX_XFORM_MATRIX
 uniform mat4 textureMatrix0;
 uniform mat4 textureMatrix1;
 #endif
 #if VERTEX_PROCESSING==VERTEX_PROCESSING_SKINNING
 uniform vec4 boneMatrices[48]; // mat 3x4
 #endif
-
+#if FLAT_SHADED==1
+#define SHADE_MODEL flat
+#else
+#define SHADE_MODEL smooth
+#endif
 out VS_Output {
     #if BUMP_MODE==BUMP_MODE_BASIC
-    vec3 light_ts;
-    vec3 view_ts;
+    SHADE_MODEL vec3 light_ts;
+    SHADE_MODEL vec3 view_ts;
     #endif
-    vec2 texCoord0;
-    vec2 texCoord1;
-    vec2 texCoord2;
+    SHADE_MODEL vec2 texCoord0;
+    SHADE_MODEL vec2 texCoord1;
+    SHADE_MODEL vec2 texCoord2;
     #ifdef FOG
-    float fogFragCoord;
+    SHADE_MODEL float fogFragCoord;
     #endif
-    vec4 Color;
+    SHADE_MODEL vec4 Color;
 } v_out;
 #ifdef TRANSFORM_FEEDBACK
 layout(xfb_buffer = 0) out vec4 outValue;
@@ -110,8 +114,8 @@ void calculateTextureCoordinates(in vec3 normal, in vec4 ecPosition)
     vec2 uv0	= vertexUV0.xy + textureScroll.xy;		// @todo combine these into one constant without affecting register combiner path
     vec2 uv1	= vertexUV1.xy + textureScroll.zw;
 #elif TC_XFORM == TEX_XFORM_MATRIX
-    vec2 uv0 = vec4( textureMatrix0 * vertexUV0 ).xy;
-    vec2 uv1 = vec4( textureMatrix1 * vertexUV1 ).xy;
+    vec2 uv0 = vec4( textureMatrix0 * vec4(vertexUV0,0,1) ).xy;
+    vec2 uv1 = vec4( textureMatrix1 * vec4(vertexUV1,0,1) ).xy;
 #else	// TC_XFORM == NONE
     vec2 uv0	= vertexUV0.xy;
     vec2 uv1	= vertexUV1.xy;
@@ -261,10 +265,14 @@ void main()
 
     // transform vertices into projection space using the pre-multiplied matrix
     modelview_pos = position_vs.xyz;
-    gl_Position = projectionMatrix * position_vs;
+    gl_Position = projectionMatrix * modelViewMatrix * position_vs;
 #else
     modelview_pos = vec4(modelViewMatrix * position_vs).xyz;
+#if VERTEX_PROCESSING==VERTEX_PROCESSING_SKINNING
+    gl_Position = projectionMatrix * position_vs;
+#else
     gl_Position = projectionMatrix * modelViewMatrix *position_vs;
+#endif
 #endif
 #ifdef FOG
     v_out.fogFragCoord = length((modelview_pos).xyz);

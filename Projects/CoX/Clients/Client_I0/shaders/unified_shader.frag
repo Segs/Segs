@@ -8,14 +8,17 @@
 #define LIGHT_MODE_PRE_LIT 1
 #define LIGHT_MODE_LIT 2
 #define LIGHT_MODE_BUMP_LIT 3
-#define MULTIPLY_FS 1
-#define MULTIPLY_REG_FS 2
-#define COLORBLEND_DUAL_FS 3
-#define ADDGLOW_FS 4
-#define ALPHADETAIL_FS 5
-#define BUMPMAP_MULTIPLY_FS 6
-#define BUMPMAP_COLORBLEND_DUAL_FS 7
 
+#define FRAGMENT_MODE_MULTIPLY 0
+#define FRAGMENT_MODE_MULTIPLY_REG 1
+#define FRAGMENT_MODE_COLORBLEND_DUAL 2
+#define FRAGMENT_MODE_ADDGLOW 3
+#define FRAGMENT_MODE_ALPHADETAIL 4
+#if FLAT_SHADED==1
+#define SHADE_MODEL flat
+#else
+#define SHADE_MODEL smooth
+#endif
 const uint stippler[16][4] = uint[16][4](
 uint[4](0x55555555u,0x00000000u,0x11111111u,0x00000000u), // 0 -15
 uint[4](0x55555555u,0x00000000u,0x11111111u,0x00000000u), // 16-31
@@ -45,16 +48,16 @@ const int c_AlphaDiscard = ALPHA_DISCARD_MODE;
 //
 in VS_Output {
     #if BUMP_MODE==BUMP_MODE_BASIC
-    vec3 light_ts;
-    vec3 view_ts;
+    SHADE_MODEL vec3 light_ts;
+    SHADE_MODEL vec3 view_ts;
     #endif
-    vec2 texCoord0;
-    vec2 texCoord1;
-    vec2 texCoord2;
+    SHADE_MODEL vec2 texCoord0;
+    SHADE_MODEL vec2 texCoord1;
+    SHADE_MODEL vec2 texCoord2;
     #ifdef FOG
-    float fogFragCoord;
+    SHADE_MODEL float fogFragCoord;
     #endif
-    vec4 Color;
+    SHADE_MODEL vec4 Color;
 } v_in;
 // output from vertex shader
 out vec4 out_Color;
@@ -96,7 +99,7 @@ vec4 diffuse(vec3 normal, vec3 lightv, vec4 color)
     return max(dot(normal, lightv), 0.0) * color;
 }
 
-vec4 calcFog(vec4 in_color)
+vec3 calcFog(vec3 in_color)
 {
 #ifdef FOG
     if(fog_params.mode!=0)
@@ -104,7 +107,7 @@ vec4 calcFog(vec4 in_color)
         float fog;
         fog = (fog_params.v_block[2] - v_in.fogFragCoord) * (fog_params.v_block[2]-fog_params.v_block[1]);
         fog = clamp(fog, 0.0, 1.0);
-        return vec4(mix( fog_params.color.xyz, in_color.xyz, fog), in_color.a);
+        return mix( fog_params.color.xyz, in_color.xyz, fog);
     }
 #endif
     return in_color;
@@ -112,11 +115,12 @@ vec4 calcFog(vec4 in_color)
 vec4 calc_dual_tint(vec4 const0, vec4 const1, vec4 tex0, vec4 tex1)
 {
     vec4 dual_color;
-    dual_color.rgb = mix(const0.rgb,const1.rgb,tex1.rgb);
+    dual_color.rgb = mix(const1.rgb,const0.rgb,tex1.rgb);
     dual_color.rgb = mix(dual_color.rgb, vec3(1.0, 1.0, 1.0),tex0.w);
     dual_color.rgb *= tex0.rgb;
     dual_color.a   = tex1.a * const0.a;
     return dual_color;
+
 }
 void discardStippledFragment()
 {
@@ -129,10 +133,16 @@ void discardStippledFragment()
       discard;
 #endif
 }
+vec4 calc_tint(in vec4 color, in vec4 tex)
+{
+	vec3 tinted = mix(color.rgb, tex.rgb, tex.a);
+	return vec4( tinted, color.a );
+}
 void main()
 {
     //original shaders were saling some color operations by 8?
     const float scale_factor = 1.0; //8.0
+	const float scale_factor_reg = 1.0; //8.0
     discardStippledFragment();
     vec4 outColor; // color accumulator variable
     vec4 tex_base;
@@ -155,34 +165,36 @@ void main()
     }
     else
         tex_normal = vec4(0,0,0,0);
-    if(c_UseMaterialBlending==1)
+	switch(c_FragmentMode)
     {
-        if(c_TextureUnitCount<2)
-            outColor = vec4(1,0,0,1); // it's an error to try and blend materials without blend and base textures
-        else
-            outColor = calc_dual_tint(constColor1,constColor2,tex_base,tex_blend);
-    }
-    else if(c_FragmentMode==0) // mulitply
-    {
+	case FRAGMENT_MODE_MULTIPLY:
         outColor = tex_blend*tex_base;
         outColor *= scale_factor*v_in.Color; // scale factor is actually only used in MULTIPLY_REG fs
+		break;
+	case FRAGMENT_MODE_MULTIPLY_REG:
+        outColor = tex_base * tex_blend;
+        outColor.rgb	*= scale_factor_reg * v_in.Color.rgb;
         if(c_LodAlpha==1)
-            outColor.w *= constColor1.w; // modulate by lod alpha
-    }
-    else if(c_FragmentMode==3) // add glow
-    {
-        outColor.xyz = mix(constColor1,tex_base,tex_base.w).xyz*4.0*v_in.Color.xyz;
-        outColor.w = constColor1.w;
+            outColor.a		*= constColor1.a;		// modulate by lod alpha
+		break;
+
+	case FRAGMENT_MODE_COLORBLEND_DUAL:
+		outColor = calc_dual_tint(constColor1,constColor2,tex_base,tex_blend);
+        outColor.rgb *= scale_factor; // *v_in.Color.rgb;
+		break;
+	case FRAGMENT_MODE_ADDGLOW:
+		outColor = calc_tint(constColor1, tex_base );
+		outColor.rgb	*= scale_factor * v_in.Color.rgb;
         //add glow for places with lightsOn.x set
-        outColor.xyz += tex_blend.xyz * lightsOn.x;
-    }
-    else if(c_FragmentMode==4) // alpha detail
-    {
+		outColor.xyz += tex_blend.xyz * lightsOn.x; // TODO: consider adding glow after fog processing ?
+		break;
+	case FRAGMENT_MODE_ALPHADETAIL:
         // Uses texture 0 (base) alpha as a blend mask between texture 0 and 1.
         // Uses texture 1 (blend) alpha to modulate current constant alpha
         outColor.rgb	= mix( tex_blend.rgb, tex_base.rgb, tex_base.a );
-        outColor.rgb	*= 4.0 * v_in.Color.rgb;			// modulate with vertex color * 4 (matches old assets and reg combiner programs)
+		outColor.rgb	*= scale_factor * v_in.Color.rgb;
         outColor.a		= constColor1.a * tex_blend.a;
+		break;
     }
     #
     if(c_BumpMode==1)
@@ -196,26 +208,8 @@ void main()
         vec4 diffuse = diffuse_factor*light0.Diffuse;
         specular_factor = pow(specular_factor, 128);
         vec3 specular_val = vec3(specular_factor,specular_factor,specular_factor);
-        /*
-    #ifdef BUMP_COLOR_BLEND_DUAL
-        vec4 diffuse = light0.Diffuse;
-        vec4 specular;
-        // Compute lighting
-        specular_factor = pow(specular_factor,light0.Specular.w);
-        diffuse.w = clamp(dot(tex_normal.xyz, light_ts),0.0,1.0);
-        vec3 gloss = clamp(tex_normal.w * glossFactor.w,0.0,1.0) * light0.Specular.xyz;
-        vec3 light_contribution = diffuse.w * light0.Diffuse.xyz + light0.Ambient.xyz;
-        outColor.xyz = specular.w*gloss.xyz+light_contribution*outColor.rgb;
-    #elifdef BUMP_MULTIPLY
-        float specular_factor = clamp(dot(tex_normal.xyz, halfway),0.0,1.0);
-        specular_factor = pow(specular_factor,light0.Specular.w);
-        vec3 specular = specular_factor * light0.Specular.xyz * tex_normal.a;
-        outColor.rgb += specular.rgb;
-        outColor.a   = tex_base.a * tex_blend.a * constColor1.a;
-    #endif*/
         //outColor.rgb = outColor.rgb*diffuse.rgb + specular_val.rgb + light0.Ambient.rgb;
         outColor.rgb = outColor.rgb*(diffuse.rgb  + light0.Ambient.rgb) + specular_val.rgb; //*light0.Specular.rgb;
-
 #endif
     }
     if(c_AlphaDiscard==1)
@@ -228,11 +222,6 @@ void main()
         if(outColor.a>ALPHA_DISCARD_VALUE)
             discard;
     }
-    out_Color = calcFog(outColor);
+    out_Color.rgb = calcFog(outColor.rgb);
+	out_Color.a = outColor.a;
 }
-
-/*
-if (intensity <= 3)
-{
-
-*/

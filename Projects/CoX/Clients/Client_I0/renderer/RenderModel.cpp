@@ -71,7 +71,6 @@ void segs_modelDrawAlphaSortHack(Model *model, Matrix4x3 *mat, int alpha, Vector
         mat_def.render_state.setDepthWrite(false);
         alpha = 255;
         segs_modelDraw(model, mat, nullptr, 0xFF, rgbs, light,mat_def);
-        mat_def.render_state.setDepthWrite(true);
     }
     float refc = std::max(0.0f,float(alpha)/255.0f - 0.4f);
     if ( g_State.view.fancytrees )
@@ -82,16 +81,16 @@ void segs_modelDrawAlphaSortHack(Model *model, Matrix4x3 *mat, int alpha, Vector
         mat_def.set_useAlphaDiscard(2);
         mat_def.draw_data.setDiscardAlpha(refc);
         segs_modelDraw(model, mat, nullptr, alpha, rgbs, light,mat_def);
-        mat_def.render_state.setDepthWrite(true);
         // re-enable stencil testing
         mat_def.render_state.stencil_mode = RenderState::STENCIL_ALWAYS;
     }
     mat_def.draw_data.setDiscardAlpha(refc);
+    mat_def.render_state.setDepthWrite(true);
     segs_modelDraw(model, mat, nullptr, alpha, rgbs, light,mat_def);
     mat_def.set_useAlphaDiscard(false);
     //assert(false); // the code below sets up rendering for.... what part exactly ?
 
-    RenderState setup_rs;
+    RenderState setup_rs  = g_render_state.getGlobal();
     setup_rs.stencil_mode = RenderState::STENCIL_ALWAYS;
     setup_rs.stencil_ref = 128;
     setup_rs.stencil_mask = ~0U;
@@ -107,25 +106,15 @@ void segs_gfxTreeDrawNodeSky(GfxTree_Node *skynode, Matrix4x3 *mat)
     base_sky_material.setFragmentMode(eBlendMode::MULTIPLY);
     for (GfxTree_Node *node = skynode; node; node = node->next)
     {
+        assert(g_render_state.getGlobal().depth_cmp != RenderState::CMP_NONE);
         MatMult4x3(mat, &node->mat, &res);
         Model *model = node->model;
         if (model && node->alpha() >= 5 && (model->loadstate & 4) && !(node->flg & 0x80000))
         {
             if (g_State.view.bWireframe && !inEditMode())
                 xyprintf(10, row++, "%s %d", model->bone_name_offset, node->alpha());
-            auto iter = g_node_infos.find(node);
-            if (iter != g_node_infos.end())
-            {
-                GLDebugGuard debug(iter->second.c_str());
                 segs_modelDraw(model, &res, node->trick_node, node->alpha(), node->rgb_entries, nullptr,
                                base_sky_material);
-            } 
-            else
-            {
-                segs_modelDraw(model, &res, node->trick_node, node->alpha(), node->rgb_entries, nullptr,
-                               base_sky_material);
-                
-            }
         }
         if (node->children_list)
             segs_gfxTreeDrawNodeSky(node->children_list, &res);

@@ -162,6 +162,7 @@ void processWithMikt(Model *m)
     wrap.m_pInterface = &access_interface;
     wrap.m_pUserData = &val;
     genTangSpaceDefault(&wrap);
+    wrap.m_pUserData = nullptr;
 }
 static void tangentBasis(const glm::vec3 &pv0, const  glm::vec3 &pv1, const  glm::vec3 &pv2, const  glm::vec2 &t0, const  glm::vec2 &t1, const  glm::vec2 &t2, glm::vec3 &n, glm::vec3 &tangent, glm::vec3 &bitangent)
 {
@@ -314,10 +315,7 @@ void segs_modelSetupVertexObject(Model *model, int useVbos)
     vbo->createVAO();
     glBindVertexArray(vbo->segs_data->vao_id);
     const char *last_part = strrchr(model->parent_anim->name, '/') + 1;
-    if (0 != strstr(last_part ,"concrete1"))
-    {
-        printf("con") ;
-    }
+
     glGenBuffers(1, &vbo->gl_index_buffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo->gl_index_buffer);
     snprintf(buff, 128, "%s_IBO_%d",last_part,size);

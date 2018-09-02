@@ -39,7 +39,7 @@ struct HashTab_Entry
     void *value;
     int u_C;
 };
-std::unordered_map<GfxTree_Node *, std::string> g_node_infos; // used to record additional gfx tree node info, that cannot be put inside the object, only use this for debugging.
+//std::unordered_map<GfxTree_Node *, std::string> g_node_infos; // used to record additional gfx tree node info, that cannot be put inside the object, only use this for debugging.
 extern "C" {
     __declspec(dllimport) void hashtab_first(HashTable *arg0, Hash_Iter *iter);
     __declspec(dllimport) HashTab_Entry *hashtab_next(Hash_Iter *iter);
@@ -69,7 +69,6 @@ extern "C" {
     __declspec(dllimport) void xyprintf(int x, int y, const char *fmt, ...);
     __declspec(dllimport) bool inEditMode();
     __declspec(dllimport) void fx_fxRunEngine();
-    __declspec(dllimport) void resetViewspaceMatCount();
     __declspec(dllimport) void gfx_PrintSeqInfo();
     __declspec(dllimport) void sunGlareDisable();
     __declspec(dllimport) void drawStuffOnEntities();
@@ -147,6 +146,10 @@ void drawLightDirLines(Matrix4x3 *mat, MaterialDefinition &material);
 GfxTree_Node *segs_createGfxTreeNode_with_parent(GfxTree_Node *);
 GfxTree_Node *segs_gfxtree_Allocgfxtreenode(MemPool *pool);
 void segs_gfxtree_gfxTreeDelete(GfxTree_Node *node);
+static void resetViewspaceMatCount()
+{
+    viewspaceMatCount = 0;
+}
 
 
 // should be named: getDefaultPreferences()
@@ -235,6 +238,7 @@ static void drawColoredBox(float x1, float y1, float x2, float y2, uint32_t clr1
 void drawFlatBox(int x1, int y1, int x2, int y2, uint32_t color)
 {
     GLDebugGuard guard(__FUNCTION__);
+    auto restore = g_render_state.getGlobal();
     MaterialDefinition flat_material(g_default_mat);
     flat_material.setDrawMode(DrawMode::COLORONLY);
     flat_material.setFragmentMode(eBlendMode::MULTIPLY);
@@ -249,6 +253,7 @@ void drawFlatBox(int x1, int y1, int x2, int y2, uint32_t color)
     flat_material.render_state.setDepthWrite(true);
     flat_material.apply();
     drawColoredBox(x1, y1, x2, y2, color, color, color, color, flat_material);
+    g_render_state.apply(restore);
 }
 void segs_ttDrawBoxBasic(float x1, float y1, float x2, float y2,uint32_t clr2, uint32_t clr3, uint32_t clr1, uint32_t clr4, int draw_quad)
 {
@@ -325,7 +330,7 @@ GfxTree_Node *sunAddNode(const char *model_name, int which_graph_to_insert)
         result = segs_createGfxTreeNode_with_parent(nullptr);
     else
         result = segs_gfxtree_CreateSkyGfxTreeRoot(nullptr);
-    g_node_infos[result] = model_name;
+    //g_node_infos[result] = model_name;
     fn_4BF9F0(model_name, filename);
     if (!filename[0])
         VfPrintfWrapper("\nSky builder can't find '%s' in the object_libray.\n", model_name);
@@ -944,7 +949,7 @@ void segs_drawBox(int x1, int y1, int x2, int y2, uint32_t argb)
 static int cmpSortThingsType(const SortThing *a, const SortThing *b)
 {
     int result = a->blendMode - b->blendMode;
-    if (a->blendMode == b->blendMode)
+    if (result==0)
         result = (a->model - b->model) / sizeof(Model);
     return result;
 }
@@ -1011,7 +1016,7 @@ void segs_setLightForCharacterEditor()
     g_sun.diffuse_for_players = { 0.19f,0.19f,0.19f,0.19f };
     float x = std::cos(angle);
     float y = std::sin(angle);
-    angle += 0.005;
+    angle += 0.005f;
     g_sun.direction.x = x;// 1.0;
     g_sun.direction.y = y;// 1.0;
     g_sun.direction.z = 1.0;
@@ -1074,6 +1079,7 @@ void segs_gfxUpdateFrame(bool force_render_world, bool head_shot)
     vsArray.clear();
     nodeTotal = 0;
     segs_renderUtil_ClearGL();
+    g_default_mat.render_state = g_render_state.getGlobal();
     if (!head_shot)
         segs_gfxWindowReshape();
     segs_gfxSetViewMat(&cam_info.cammat, &cam_info.viewmat, &cam_info.inv_viewmat);
@@ -1108,12 +1114,10 @@ void segs_gfxUpdateFrame(bool force_render_world, bool head_shot)
             if (!inEditMode() && !g_State.view.ortho && !g_State.view.disablesky)
                 segs_gfxTreeDrawNodeSky(sky_gfx_tree_root, &cam_info.viewmat);
             if (g_State.view.game_mode == 1 || force_render_world)
-                segs_groupDrawRefs(&cam_info.viewmat);
+                segs_groupDrawRefs(cam_info.viewmat);
         }
         qsort(visibleTrays.data(), visibleTrays.size(), sizeof(DefTracker *), (int(*)(const void *, const void *))cmpPtrQSort);
-        segs_gfxTreeDrawNode(gfx_tree_root, &cam_info.viewmat);
-        g_curr_blend_state = eBlendMode::INVALID;
-        g_curr_draw_state = DrawMode::INVALID;
+        segs_gfxTreeDrawNode(gfx_tree_root, cam_info.viewmat);
         drawSortedModels();
         segs_shadowFinishScene();
     }

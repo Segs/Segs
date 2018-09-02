@@ -46,8 +46,9 @@ extern int NodesDrawn;
 extern int drawGfxNodeCalls;
 extern int sortedByDist;
 extern int sortedByType;
+extern int viewspaceMatCount;
 
-extern void segs_gfxTreeDrawNode(GfxTree_Node *basenode, Matrix4x3 *parent_mat);
+extern void segs_gfxTreeDrawNode(GfxTree_Node *basenode, const Matrix4x3 &parent_mat);
 extern void segs_rendertree_modelDrawWorldmodel(ViewSortNode *vs);
 extern void segs_modelDrawGfxNode(struct GfxTree_Node *node);
 extern void patch_rendertree();

@@ -2,15 +2,15 @@
 
 #include "dll_patcher.h"
 
-#include <cstring>
+#include "graphics/gfx.h"
 #include <cctype>
 #include <cstdarg>
 #include <cstdio>
+#include <cstring>
 #include <windows.h>
 
 const Matrix4x3 Unity_Matrix = {{1,0,0},{0,1,0},{0,0,1},{0,0,0}};
-extern "C"
-{
+extern "C" {
     __declspec(dllimport) char *fix_path_slashes(char *);
 }
 const char *strcasestr(const char *haystack, const char *needle)
@@ -56,7 +56,8 @@ bool isVectorDistanceLessThenEps(Vector3* a, Vector3* b, float eps)
     return (*a - *b).lengthNonSqrt() < eps;
 }
 
-void multVertexByMatrix(Vector3 *src, Matrix3x3 *mat, Vector3 *dst) {
+void multVertexByMatrix(Vector3 *src, Matrix3x3 *mat, Vector3 *dst)
+{
     dst->x = src->x * mat->r1.x + src->y * mat->r2.x + src->z * mat->r3.x;
     dst->y = src->x * mat->r1.y + src->y * mat->r2.y + src->z * mat->r3.y;
     dst->z = src->x * mat->r1.z + src->y * mat->r2.z + src->z * mat->r3.z;
@@ -83,7 +84,7 @@ void segs_fxCleanFileName(char *dst, const char *src)
     {
         fx_loc += strlen("/FX/");
     }
-    else if ( 0==strncmp(dst, "FX/", 3) )
+    else if (0 == strncmp(dst, "FX/", 3))
     {
         fx_loc = dst + strlen("FX/");
     }

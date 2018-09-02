@@ -217,22 +217,22 @@ namespace {
         float calcd;
         Vector3 diff = *vec2 - *vec1;
         int sign = 1;
-        if (diff.x == 0.0)
+        if (diff.x == 0.0f)
             return 64.0;
         float diff_y_over_x = diff.y / diff.x;
         float abs_y_over_x = std::abs(diff_y_over_x);
-        if (diff_y_over_x < 0.0)
+        if (diff_y_over_x < 0.0f)
         {
             sign = -1;
         }
-        if (abs_y_over_x <= 1.0)
-            calcd = abs_y_over_x / (abs_y_over_x * abs_y_over_x * 0.280872 + 1.0);
+        if (abs_y_over_x <= 1.0f)
+            calcd = abs_y_over_x / (abs_y_over_x * abs_y_over_x * 0.280872f + 1.0f);
         else
-            calcd = glm::half_pi<float>() - abs_y_over_x / (abs_y_over_x * abs_y_over_x + 0.280872);
-        float res = sign * calcd * 40.74368;
-        if (diff.x < 0.0)
-            res += 128.0;
-        return res;
+            calcd = glm::half_pi<float>() - abs_y_over_x / (abs_y_over_x * abs_y_over_x + 0.280872f);
+        float res = sign * calcd * 40.74368f;
+        if (diff.x < 0.0f)
+            res += 128.0f;
+        return int(res);
     }
 
     void particle_partBuildParticleArray(ParticleSys1 *sys, float alpha, float *verts, char *rgb_memory, float step)
@@ -318,7 +318,7 @@ namespace {
             else
             {
                 part_entry->theta += char(part_entry->spin);
-                angle_idx = part_entry->theta;
+                angle_idx = char(part_entry->theta);
             }
             // fill VBO with a quad
             tgt_vertices[0] = part_size * g_precomp_cos[uint8_t(angle_idx + 96)] + facing_pos_1.x;
@@ -431,19 +431,19 @@ int segs_modelDrawParticleSys(ParticleSys1 *system, float alpha, GLuint buffer, 
 }
 void segs_rdrCleanUpAfterRenderingParticleSystems()
 {
-    RenderState reset_state;
+    RenderState reset_state = g_render_state.getGlobal();
     reset_state.setBlendMode(RenderState::BLEND_ALPHA);
     reset_state.setDepthWrite(true);
     reset_state.setCullMode(RenderState::CULL_CCW);
+    reset_state.setDepthTestMode(RenderState::CMP_LESSEQUAL);
     g_render_state.apply(reset_state);
 
-    glShadeModel(GL_SMOOTH);
     segs_wcw_UnBindBufferARB();
 }
 static int partCompareSysDist(ParticleSys1 *sysOne, ParticleSys1 *sysTwo, ParticleSys1 * /*unused*/)
 {
-    const double distOne = sysOne->totalAlpha - sysOne->sysInfo->m_SortBias;
-    const double distTwo = sysTwo->totalAlpha - sysTwo->sysInfo->m_SortBias;
+    const float distOne = sysOne->totalAlpha - sysOne->sysInfo->m_SortBias;
+    const float distTwo = sysTwo->totalAlpha - sysTwo->sysInfo->m_SortBias;
     if (distOne > distTwo)
         return -1;
     if (distOne < distTwo)
@@ -967,7 +967,7 @@ void segs_releaseParticleSystem(ParticleSys1 *sys, int id)
 }
 void segs_partRunEngine()
 {
-    static uint32_t g_highest_part_count;
+    static int32_t g_highest_part_count;
 
     bool still_alive;
     ParticleSys1 *next_iter;
@@ -977,7 +977,7 @@ void segs_partRunEngine()
     int parts_drawn = 0;
     int part_sys_updated = 0;
     int part_sys_drawn = 0;
-    uint32_t total_parts = 0;
+    int32_t total_parts = 0;
     if (g_particle_engine.dat.num_systems && g_State.view.noParticles == 0)
     {
         MaterialDefinition part_mat(g_default_mat);
@@ -1253,8 +1253,8 @@ static Parse_PSystem *partGiveNewParameters(ParticleSys1 *system, int sys_id, co
     if(!info)
         return nullptr;
     system->sysInfo = info;
-    system->KickStart = info->m_KickStart;
-    system->KillOnZero = info->m_KillOnZero;
+    system->KickStart = info->m_KickStart!=0;
+    system->KillOnZero = info->m_KillOnZero!=0;
     float power_scale = system->power * 0.1f;
     assert(power_scale > 0 && power_scale <= 1.0f);
     system->m_NewPerFrame = lerp(info->m_NewPerFrame[1],info->m_NewPerFrame[0],power_scale);
@@ -1339,7 +1339,7 @@ void segs_LoadParticles()
     char buf[300];
 
     utils_report_log_to_file1("Preloading particles..");
-    ParserLoadFiles("fx", ".part", "particles.bin", 1, ParticleSystem_Token, &dword_7F8898, 0, 0, 0);
+    ParserLoadFiles("fx", ".part", "particles.bin", 1, ParticleSystem_Token, &dword_7F8898, nullptr, nullptr, nullptr);
     int arr_size = COH_ARRAY_SIZE(dword_7F8898);
     for (int i = 0; i < arr_size; ++i )
     {

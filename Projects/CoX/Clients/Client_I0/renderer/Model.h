@@ -45,13 +45,19 @@ struct GeometryData
         GLuint               vao_id                 = 0;
         VBODataSource        color_buffer           = {~0U, 0};
         VBODataSource        uv_vbo                 = {~0U, 0};
-        bool                 attributes_were_set_up = false;
-        bool                 color_buffer_changed   = false;
-        bool                 vertex_buffer_changed  = false;
-        bool                 we_own_color_buffer    = false;
-        bool                 we_own_vertex_buffer   = false;
-        bool                 we_own_index_buffer    = false;
         const ShaderProgram *bound_attributes       = nullptr;
+        uint8_t              attributes_were_set_up : 1;
+        uint8_t              color_buffer_changed : 1;
+        uint8_t              vertex_buffer_changed : 1;
+        uint8_t              we_own_color_buffer : 1;
+        uint8_t              we_own_vertex_buffer : 1;
+        uint8_t              we_own_index_buffer : 1;
+        SegsGeometryData()
+        {
+            attributes_were_set_up = color_buffer_changed = vertex_buffer_changed = we_own_color_buffer =
+                we_own_vertex_buffer = we_own_index_buffer = false;
+        }
+
         ~SegsGeometryData()
         {
             if (we_own_color_buffer)
@@ -68,11 +74,13 @@ struct GeometryData
     }
     void setColorBuffer(VBODataSource colorbuf)
     {
+        assert(colorbuf.buffer_id!=0);
         segs_data->color_buffer_changed = !(colorbuf == segs_data->color_buffer);
         segs_data->color_buffer         = colorbuf;
     }
     void setUVVbo(GLuint bufname)
     {
+        assert(bufname);
         segs_data->uv_vbo.buffer_id = bufname;
         segs_data->uv_vbo.offset    = 0;
         uv1_offset                  = nullptr;
@@ -124,17 +132,21 @@ struct GeometryData
         glBindBuffer(GL_ARRAY_BUFFER, gl_vertex_buffer);
         glBufferSubData(GL_ARRAY_BUFFER, offset, count * sizeof(float), data);
     }
-    void uploadIndicesToBuffer(const uint32_t *data, size_t count)
+    void uploadIndicesToBuffer(const uint32_t *data, size_t count, const char *name = nullptr,
+                               GLenum draw_type = GL_DYNAMIC_DRAW)
     {
         // assert(gl_index_buffer == 0);
         if (!segs_data->we_own_index_buffer)
         {
             glGenBuffers(1, &gl_index_buffer);
+            if (name)
+                glObjectLabel(GL_BUFFER, gl_index_buffer, -1, name);
             segs_data->we_own_index_buffer = true;
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_index_buffer);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_DYNAMIC_DRAW);
-        triangles = nullptr;
+        if (count)
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, draw_type);
+        vertices = nullptr;
     }
     ~GeometryData()
     {
@@ -247,7 +259,7 @@ enum ModelFlags : uint32_t
 };
 struct Model
 {
-    int                     Model_flg1;
+    uint32_t                Model_flg1;
     float                   model_VisSphereRadius;
     GeometryData *          vbo;
     int                     num_textures;

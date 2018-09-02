@@ -7,45 +7,10 @@
 #include <cstring>
 #include <string>
 #include "RendererUtils.h"
+#include <windows.h>
 
 ShaderProgramCache g_program_cache;
-// vertex shaders
-/*
-// SKINNING MODES
-SKIN=0/1
-LIGHT_SPACE=VIEW/MODEL
 
-// VERTEX_LIT MODES
-#define NONE			0
-#define PRELIT			2	// use vertex supplied incoming COLOR attribute /baked instance lighting
-#define DIFFUSE			3
-#define FF_LIT_GL		4	// calculate fully lit vertex and modulate by vetex color to emulate OpenGL fixed function using gl state (alpha is vertex color alpha)
-#define FF_UNLIT_GL		5	// unlit so just pass vetex color to emulate OpenGL fixed function using gl state (alpha is vertex color alpha)
-#define PRELIT_WHITE	6	// @todo this is currently a hack for multi9 which always expects a vertex color as a variant w/o is never built
-
-// PIXEL_LIT MODES
-//#define NONE			0
-#define LIT				1	// per pixel lighting using geometry (no bumpmaps)
-#define BUMP_SPEC		2	// per pixel bump mapping of specular only
-#define BUMP_ALL		3	// per pixel bump mapping of diffuse and specular
-#define BUMP_ALL_HQ		4	// per pixel bump mapping of diffuse and specular (high quality)
-
-// TC_XFORM MODES			Texture Coordinate Transformations
-//#define NONE			0
-#define TC_OFFSET		1	// apply texture coord offset shader param constants
-#define TC_MATRIX		2	// apply texture matrices from OpenGL state
-
-// REFLECT MODES			Reflection data generation modes and selectors
-//#define NONE			0
-#define FAUX_0_0		1	// calculate legacy faux reflection tex coords and check material selectors to subsitute for uv0,uv1
-#define FAUX_0_1		2	// calculate legacy faux reflection tex coords and check material selectors to subsitute for uv0,uv1
-#define FAUX_MULTI		3	// calculate legacy faux reflection tex coords and check material selectors to provide 'multiply' tex coords to MULTI shader
-
-// LIGHT_SPACE				Coordinate space in which to generate source lighting vectors
-#define VIEW			0	// note that SKIN implies VIEW light space
-#define MODEL			1
-
-*/
 static std::string addDefines(const char *baseText, const std::vector<std::string> &defines)
 {
     std::string temp;
@@ -128,7 +93,7 @@ ShaderProgram &ShaderProgramCache::getOrCreateProgram(MaterialDefinition &mat_de
     }
 
     std::vector<std::string> defines;
-    const char *fs_source_name = "shaders/unified_fragment_shader.glsl";
+    const char *fs_source_name = "shaders/unified_shader.frag";
 
     snprintf(s_buf, 512, "COLORBLEND %d", mat_def.get_colorBlending());
     defines.emplace_back( s_buf );
@@ -150,7 +115,13 @@ ShaderProgram &ShaderProgramCache::getOrCreateProgram(MaterialDefinition &mat_de
     defines.emplace_back(s_buf);
     snprintf(s_buf, 512, "FRAGMENT_MODE %d", mat_def.get_fragmentMode());
     defines.emplace_back(s_buf);
+    snprintf(s_buf, 512, "TC_XFORM %d", mat_def.get_texTransform());
+    defines.emplace_back(s_buf);
+    snprintf(s_buf, 512, "USE_CUBEMAP %d", mat_def.get_usingCubemaps());
+    defines.emplace_back(s_buf);
     snprintf(s_buf, 512, "LOD_ALPHA %d", mat_def.get_useLodAlpha() ? 1 : 0);
+    defines.emplace_back(s_buf);
+    snprintf(s_buf, 512, "FLAT_SHADED %d", mat_def.get_shadeModel() == MaterialDefinition::FLAT);
     defines.emplace_back(s_buf);
     if (mat_def.get_useTransformFeedback())
         defines.emplace_back("TRANSFORM_FEEDBACK");
@@ -166,7 +137,7 @@ ShaderProgram &ShaderProgramCache::getOrCreateProgram(MaterialDefinition &mat_de
     snprintf(s_buf, 256, "VS_%x", mat_def.hash_val());
     glObjectLabel(GL_SHADER, vert_shader.id, -1, s_buf);
 
-    compileShader("shaders/default.glsl", vert_shader, defines);
+    compileShader("shaders/unified_shader.vert", vert_shader, defines);
 
     GLuint program_id = glCreateProgram();
     char buffer[128];
@@ -271,12 +242,13 @@ void GeometryData::prepareDraw(const ShaderProgram& drawprog)
         glVertexAttribPointer(drawprog.vertexPos_Location, 3, GL_FLOAT, GL_FALSE, 0, vertices);
         glEnableVertexAttribArray(drawprog.vertexPos_Location);
         segs_data->vertex_buffer_changed = false;
-
     }
-    if (segs_data->bound_attributes != &drawprog)
-    {
+    if (segs_data->bound_attributes == &drawprog)
+        return;
+
         if (segs_data->bound_attributes)
             segs_data->bound_attributes->disableAllEnabled();
+
         glBindBuffer(GL_ARRAY_BUFFER, gl_vertex_buffer);
 
         glVertexAttribPointer(drawprog.vertexPos_Location, 3, GL_FLOAT, GL_FALSE, 0, vertices);
@@ -344,13 +316,39 @@ void GeometryData::prepareDraw(const ShaderProgram& drawprog)
             glEnableVertexAttribArray(drawprog.tangent_Location);
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_index_buffer);
+
         segs_data->bound_attributes = &drawprog;
     }
-}
+void debugVAOState(std::string baseMessage)
+{
+    baseMessage.append(" ... querying VAO state:\n");
+    int vab, eabb, eabbs, mva, isOn(1), vaabb;
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &vab);
+    glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &eabb);
+    glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &eabbs);
 
+    baseMessage.append("  VAO: " + std::to_string(vab) + "\n");
+    baseMessage.append("  IBO: " + std::to_string(eabb) + ", size=" + std::to_string(eabbs) + "\n");
+
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &mva);
+    for (unsigned i = 0; i < mva; ++i)
+    {
+        glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &isOn);
+        if (isOn)
+        {
+            glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &vaabb);
+            GLint size_vbo;
+            glGetNamedBufferParameteriv(vaabb, GL_BUFFER_SIZE, &size_vbo);
+
+            baseMessage.append("  attrib #" + std::to_string(i) + ": VBO=" + std::to_string(vaabb) + "size="+std::to_string(size_vbo)+"\n");
+        }
+    }
+    OutputDebugString(baseMessage.c_str());
+}
 void GeometryData::draw(const ShaderProgram &drawprog,GLenum drawtype,size_t count,size_t offset)
 {
     prepareDraw(drawprog);
+    //debugVAOState("GeometryData::draw");
     glDrawElements(drawtype, count, GL_UNSIGNED_INT, (void *)(offset*4));   
     glBindVertexArray(0);
 
@@ -397,6 +395,9 @@ void ShaderProgram::uploadUniforms(InstanceDrawData &instance_data)
     light0.Ambient = instance_data.light0.Ambient;
     light0.Diffuse = instance_data.light0.Diffuse;
     light0.Position = instance_data.light0.Position;
+    textureScroll   = instance_data.textureScroll;
+    textureMatrix0 = instance_data.textureMatrix0;
+    textureMatrix1  = instance_data.textureMatrix1;
 }
 void ShaderProgram::forceUploadUniforms(InstanceDrawData &instance_data)
 {
@@ -418,6 +419,9 @@ void ShaderProgram::forceUploadUniforms(InstanceDrawData &instance_data)
     light0.Ambient.assign(instance_data.light0.Ambient);
     light0.Diffuse.assign(instance_data.light0.Diffuse);
     light0.Position.assign(instance_data.light0.Position);
+    textureScroll.assign(instance_data.textureScroll);
+    textureMatrix0.assign(instance_data.textureMatrix0);
+    textureMatrix1.assign(instance_data.textureMatrix1);
 }
 void ShaderProgram::setupUniforms()
 {

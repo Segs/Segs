@@ -91,7 +91,7 @@ void segs_PBuffer__RenderTexQuad(TextureBind *tex, int width, int height, float 
     static GeometryData fake_vbo;
     segs_setupRenderTarget(&struct_8D15DC);
     glViewport(0, 0, struct_8D15DC.width, struct_8D15DC.height);
-
+    auto restore = g_render_state.getGlobal();
     segs_rendererInit();
     fake_vbo.createVAO();
     MaterialDefinition mat(g_default_mat);
@@ -134,6 +134,7 @@ void segs_PBuffer__RenderTexQuad(TextureBind *tex, int width, int height, float 
     segs_texBindTexture(GL_TEXTURE_2D, 0, tex);
     fake_vbo.draw(*mat.program, GL_TRIANGLES, 6, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    g_render_state.apply(restore);
 }
 void hwcursorInit()
 {

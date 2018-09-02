@@ -29,8 +29,6 @@ MaterialDefinition *MaterialDefinition::last_applied=nullptr;
 RenderStateWrapper g_render_state;
 FogState g_fog_state;
 LightState g_light_state;
-DrawMode g_curr_draw_state;
-eBlendMode g_curr_blend_state;
 GLuint perUnitSamplers[4];
 
 void initializeRenderer()
@@ -40,6 +38,9 @@ void initializeRenderer()
 
 void segs_setTexUnitLoadBias(uint32_t texture, float param)
 {
+//TODO:
+    return;
+    /*
     float lodBias[4] = {0,0,0,0};
     uint32_t tex_idx=texture-GL_TEXTURE0;
     assert(tex_idx<4);
@@ -49,6 +50,7 @@ void segs_setTexUnitLoadBias(uint32_t texture, float param)
         glSamplerParameterf(perUnitSamplers[tex_idx], GL_TEXTURE_LOD_BIAS, param);
         lodBias[tex_idx] = param;
     }
+    */
 }
 static const GLuint idxToUnit[] = { GL_TEXTURE0, GL_TEXTURE1, GL_TEXTURE2, GL_TEXTURE3 };
 void  segs_wcw_statemgmt_bindTexture(GLenum target, signed int idx, GLuint texture)
@@ -74,9 +76,9 @@ void  segs_texSetAllToWhite()
 }
 void segs_createSamplers()
 {
-    glGenSamplers(4, perUnitSamplers);
-    for (GLuint i = 0; i < 4; ++i)
-        glBindSampler(i, perUnitSamplers[i]);
+//    glGenSamplers(4, perUnitSamplers);
+//    for (GLuint i = 0; i < 4; ++i)
+//        glBindSampler(i, perUnitSamplers[i]);
 }
 
 void patch_render_state()
@@ -146,6 +148,7 @@ void RenderStateWrapper::apply(const RenderState& v)
             break;
         case RenderState::CMP_NONE:
             glDisable(GL_DEPTH_TEST);
+            glDepthFunc(GL_ALWAYS);
             break;
         }
     }
@@ -193,7 +196,7 @@ void MaterialDefinition::setDrawMode(DrawMode vertex_mode)
     int new_lightMode   = LIGHT_MODE_LIT;
     int new_bumpMapMode = 0;
     int new_vertexMode  = 0;
-
+    TexAnimMode new_tex_transform = TEX_NONE;
     switch (vertex_mode)
     {
     case DrawMode::SINGLETEX:
@@ -201,28 +204,34 @@ void MaterialDefinition::setDrawMode(DrawMode vertex_mode)
         new_texUnits           = 1;
         draw_data.tex_id_1 = g_whiteTexture;
         new_colorSource        = 1; // per vertex color
+        new_tex_transform     = TEX_MATRIX;
         break;
     case DrawMode::DUALTEX:
         new_lightMode   = LIGHT_MODE_PRE_LIT;
         new_texUnits    = 2;
         new_colorSource = 1; // per vertex color
+        new_tex_transform = TEX_MATRIX;
         break;
     case DrawMode::FILL:
         new_lightMode   = LIGHT_MODE_PRE_LIT; // behave as pre-lit
         new_colorSource = 1; // per vertex color
+        new_tex_transform = TEX_MATRIX;
         break;
     case DrawMode::COLORONLY:
         new_lightMode   = LIGHT_MODE_PRE_LIT; // behave as pre-lit
         new_colorSource = 1; // per vertex color
+        new_tex_transform = TEX_MATRIX;
         break;
     case DrawMode::DUALTEX_NORMALS:
         draw_data.globalColor = Vector4{1, 1, 1, 1};
         new_texUnits              = 2; // base + blend
+        new_tex_transform    = TEX_MATRIX;
         break;
     case DrawMode::SINGLETEX_NORMALS:
         draw_data.tex_id_1    = g_whiteTexture;
         draw_data.globalColor = Vector4{1, 1, 1, 1};
         new_texUnits              = 1; // base
+        new_tex_transform    = TEX_MATRIX;
         break;
     case DrawMode::HW_SKINNED:
         new_vertexMode            = 1;
@@ -239,17 +248,20 @@ void MaterialDefinition::setDrawMode(DrawMode vertex_mode)
         new_lightMode   = LIGHT_MODE_BUMP_LIT;
         new_bumpMapMode = 1;
         new_texUnits    = 3; // base + blend + normal
+        new_tex_transform = TEX_OFFSET;
         break;
     case DrawMode::BUMPMAP_DUALTEX:
         new_lightMode   = LIGHT_MODE_BUMP_LIT;
         new_bumpMapMode = 1;
         new_texUnits    = 3; // base + blend + normal
+        new_tex_transform = TEX_OFFSET;
         break;
     case DrawMode::BUMPMAP_RGBS:
         new_lightMode   = LIGHT_MODE_BUMP_LIT;
         new_bumpMapMode = 1;
         new_texUnits    = 3; // base + blend + normal
         new_colorSource = 1;
+        new_tex_transform = TEX_OFFSET;
         break;
     }
     if (new_texUnits != texUnits)
@@ -262,19 +274,21 @@ void MaterialDefinition::setDrawMode(DrawMode vertex_mode)
         needs_shader_recompile = true;
     if (new_vertexMode != vertexMode)
         needs_shader_recompile = true;
-    texUnits = new_texUnits;
+    if (new_tex_transform!=texTransform)
+        needs_shader_recompile = true;
+    texUnits    = new_texUnits;
     colorSource = new_colorSource;
     lightMode = new_lightMode;
     bumpMapMode = new_bumpMapMode;
     vertexMode = new_vertexMode;
+    texTransform = new_tex_transform;
 }
 
 void MaterialDefinition::setFragmentMode(eBlendMode pixel_mode) {
-    g_curr_blend_state = pixel_mode;
-    int new_fragmentMode=0;
+    int new_fragmentMode=(int)pixel_mode;
     bool new_useLodAlpha = false;
     int new_colorBlending = 0;
-
+    // bump map mode is assigned from vertex mode
     switch (pixel_mode)
     {
 
@@ -285,18 +299,17 @@ void MaterialDefinition::setFragmentMode(eBlendMode pixel_mode) {
         break;
     case eBlendMode::COLORBLEND_DUAL:
         new_colorBlending = 1;
-        new_fragmentMode = 3;
         break;
     case eBlendMode::ADDGLOW:
-        new_fragmentMode = 2;
         break;
     case eBlendMode::ALPHADETAIL:
-        new_fragmentMode = 3;
         break;
     case eBlendMode::BUMPMAP_MULTIPLY:
+        new_fragmentMode = (int)eBlendMode::MULTIPLY_REG;
+        new_useLodAlpha  = false;
         break;
     case eBlendMode::BUMPMAP_COLORBLEND_DUAL:
-        new_colorBlending = 1;
+        new_fragmentMode  = (int)eBlendMode::COLORBLEND_DUAL;
         break;
     default:
         assert(false);
@@ -325,6 +338,13 @@ MaterialDefinition::MaterialDefinition(DrawMode vertex_mode, eBlendMode pixel_mo
     //TODO: this should also set specular exponent to 128
     setDrawMode(vertex_mode);
     setFragmentMode(pixel_mode);
+    // sanity check, only allow bumpmap blend on bumpmap vertex
+    const bool vp_is_bumpmap = (vertex_mode == DrawMode::BUMPMAP_DUALTEX) ||
+                         (vertex_mode == DrawMode::BUMPMAP_NORMALS) || (vertex_mode == DrawMode::BUMPMAP_RGBS) ||
+                         (vertex_mode == DrawMode::BUMPMAP_SKINNED);
+    const bool fp_is_bumpmap =
+        (pixel_mode == eBlendMode::BUMPMAP_COLORBLEND_DUAL) || (pixel_mode == eBlendMode::BUMPMAP_MULTIPLY);
+    assert(vp_is_bumpmap == fp_is_bumpmap);
 }
 
 MaterialDefinition::~MaterialDefinition()
@@ -348,14 +368,6 @@ void MaterialDefinition::apply()
     }
 
     g_render_state.apply(render_state);
-    switch(shadeModel) {
-    case SMOOTH:
-        glShadeModel(GL_SMOOTH);
-        break;
-    case FLAT:
-        glShadeModel(GL_FLAT);
-        break;
-    }
     last_applied = this;
 
 }

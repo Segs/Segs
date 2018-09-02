@@ -520,7 +520,7 @@ DefTracker* doOpen(DefTracker *p_tracker, GroupDef *grp, DrawParams &draw, float
         p_tracker->draw_id = draw_id;
     return res;
 }
-void segs_drawDefInternal(GroupEnt &arg0, const Matrix4x3 *parent_mat, DefTracker *p_tracker, int vis, DrawParams *draw, bool flag, DefDrawContext &ctx);
+void segs_drawDefInternal(GroupEnt &arg0, const Matrix4x3 &parent_mat, DefTracker *p_tracker, int vis, DrawParams *draw, bool flag, DefDrawContext &ctx);
 void recursePortals(DefTracker *tracker, GroupDef *def, DrawParams &draw_self, DrawParams *draw_root, int lod_rela, DefDrawContext &ctx)
 {
     if (!tracker || !tracker->portal_groups || lod_rela == 3)
@@ -542,10 +542,10 @@ void recursePortals(DefTracker *tracker, GroupDef *def, DrawParams &draw_self, D
         if(portal->draw_id == draw_id && (portal->def->vis_blocker & 2)==0)
             continue;
         makeAGroupEnt(tmp_grp, portal->def, &portal->matrix1, draw_root->scale);
-        segs_drawDefInternal(tmp_grp, &cam_info.viewmat, portal, 2, draw_root, portal->draw_id == draw_id, ctx);
+        segs_drawDefInternal(tmp_grp, cam_info.viewmat, portal, 2, draw_root, portal->draw_id == draw_id, ctx);
     }
 }
-static void recurseSubs(DefTracker *tracker, DefTracker *sub_trackers, GroupDef *grp, DrawParams &draw_dist, Matrix4x3 *mat, float dist_non_sq, int lod_rela, DefDrawContext &ctx)
+static void recurseSubs(DefTracker *tracker, DefTracker *sub_trackers, GroupDef *grp, DrawParams &draw_dist, const Matrix4x3 &mat, float dist_non_sq, int lod_rela, DefDrawContext &ctx)
 {
     int mode = lod_rela==3 ? 3 : 0;
     float dist = std::sqrt(dist_non_sq) - grp->radius;
@@ -564,12 +564,14 @@ static void recurseSubs(DefTracker *tracker, DefTracker *sub_trackers, GroupDef 
 }
 static void handleGlobFxMiniTracker(Matrix4x3 *parent_mat, GroupDef *def, FxMiniTracker *globFxMiniTracker, float draw_scale)
 {
-    Matrix4x3 src = cam_info.inv_viewmat * *parent_mat;
     if (globFxMiniTracker->count<5)
     {
+        Matrix4x3 world_mat          = cam_info.inv_viewmat * *parent_mat;
         float lod_far_fade = draw_scale * def->lod_far_fade;
         float vis_dist = draw_scale * def->vis_dist;
-        globFxMiniTracker->fxIds[globFxMiniTracker->count] = fxManageWorldFx(globFxMiniTracker->fxIds[globFxMiniTracker->count], def->def_type, &src, vis_dist, lod_far_fade, nullptr);
+        globFxMiniTracker->fxIds[globFxMiniTracker->count] =
+            fxManageWorldFx(globFxMiniTracker->fxIds[globFxMiniTracker->count], def->def_type, &world_mat, vis_dist,
+                            lod_far_fade, nullptr);
         globFxMiniTracker->count ++;
     }
 }
@@ -593,7 +595,7 @@ bool pre_test(GroupEnt &grp,DrawParams *draw,const Matrix4x3 &parent_mat,Vector3
 
     return true;
 }
-void segs_drawDefInternal(GroupEnt &grp, const Matrix4x3 *parent_mat, DefTracker *p_tracker, int vis, DrawParams *draw,
+void segs_drawDefInternal(GroupEnt &grp, const Matrix4x3 &parent_mat, DefTracker *p_tracker, int vis, DrawParams *draw,
                           bool flag, DefDrawContext &ctx)
 {
     float mid_nonsq_length;
@@ -612,7 +614,7 @@ void segs_drawDefInternal(GroupEnt &grp, const Matrix4x3 *parent_mat, DefTracker
         }
     }
     Vector3 local_mid;
-    if (!pre_test(grp, draw, *parent_mat, local_mid, mid_nonsq_length, tmp_draw))
+    if (!pre_test(grp, draw, parent_mat, local_mid, mid_nonsq_length, tmp_draw))
     {
         if(isbuild)
             printfDebug("F\n");
@@ -633,7 +635,7 @@ void segs_drawDefInternal(GroupEnt &grp, const Matrix4x3 *parent_mat, DefTracker
     }
     if (grp.flags_cache & 8)
     {
-        combined_transform = *parent_mat *  *grp_transform;
+        combined_transform = parent_mat *  *grp_transform;
     }
     if (p_tracker && ((g_State.can_edit && p_tracker->instance_mods != nullptr && p_tracker->instance_mods->_TrickFlags & 0x2000) || p_tracker->flags & 0x20))
         return;
@@ -686,7 +688,7 @@ void segs_drawDefInternal(GroupEnt &grp, const Matrix4x3 *parent_mat, DefTracker
             }
             addToVisibleTraysAndDraw(tracker, sub_group, sub_transform, sub_midpoint, draw_dist);
             ctx.depth++;
-            recurseSubs(tracker,subgroup_trackers,sub_group,draw_dist,&sub_transform,sub_mid_nonsq_length,lod_rela,ctx);
+            recurseSubs(tracker,subgroup_trackers,sub_group,draw_dist,sub_transform,sub_mid_nonsq_length,lod_rela,ctx);
             recursePortals(tracker, sub_group, draw_dist, &tmp_draw, lod_rela,ctx);
             ctx.depth--;
         }
@@ -735,7 +737,7 @@ void segs_drawDefInternal(GroupEnt &grp, const Matrix4x3 *parent_mat, DefTracker
         {
             DefTracker *portal_trackers = doOpen(portal_grp, portal_grp->def, draw_dist, def_and_draw_scale, 0);
             addToVisibleTraysAndDraw(portal_grp, portal_grp->def, sub_transform, portal_local_mid, draw_dist);
-            recurseSubs(portal_grp,portal_trackers,portal_grp->def,draw_dist,&sub_transform,portal_mid_nonsq_length,0,ctx);
+            recurseSubs(portal_grp,portal_trackers,portal_grp->def,draw_dist,sub_transform,portal_mid_nonsq_length,0,ctx);
         }
         recursePortals(portal_grp, portal_grp->def, draw_dist, draw, 0,ctx);
     }
@@ -762,7 +764,7 @@ void groupDrawDefTracker(GroupDef *def, DefTracker *tracker, Matrix4x3 *transfor
     g_fx_light = light;
     g_fx_mini_tracker = fx_tracker;
     makeAGroupEnt(ent, def, &Unity_Matrix, draw.scale);
-    segs_drawDefInternal(ent, transform_mat, tracker, 3, &draw, false, def_ctx);
+    segs_drawDefInternal(ent, *transform_mat, tracker, 3, &draw, false, def_ctx);
     g_fx_light = nullptr;
     g_fx_mini_tracker = nullptr;
 }
@@ -772,10 +774,9 @@ static float skyGetFogFarDist()
         return g_FogStartEnd.startEnd.y;
     return 0.0f;
 }
-int segs_groupDrawRefs(const Matrix4x3 *parent_mat)
+int segs_groupDrawRefs(const Matrix4x3 &parent_mat)
 {
     DrawParams draw;
-    GroupEnt ent;
     int vis = 0;
     initSwayTable();
     sway_count += g_TIMESTEP;
@@ -810,14 +811,9 @@ int segs_groupDrawRefs(const Matrix4x3 *parent_mat)
         DefTracker *trkr = groupFindInside(&cam_info.cammat.TranslationPart, 2); //FINDINSIDE_TRAYONLY
         if (trkr) {
             DefDrawContext def_ctx;
-            ent.transform          = nullptr;
-            ent.flags_cache        = 0;
-            ent.vis_dist_sqr_cache = 0.0;
-            ent.vist_dist_cache    = 0.0;
-            ent.mid_cache          = {0, 0, 0};
+            GroupEnt       ent;
             camera_is_inside      = 1;
             see_outside           = 0;
-            ent.transform          = nullptr;
             makeAGroupEnt(ent, trkr->def, &trkr->matrix1, draw.scale);
             segs_drawDefInternal(ent, parent_mat, trkr, 1, &draw, false,def_ctx);
         }
@@ -831,12 +827,7 @@ int segs_groupDrawRefs(const Matrix4x3 *parent_mat)
                 continue;
             DefDrawContext def_ctx;
             def_ctx.ref_idx = i;
-            ent.m_def              = nullptr;
-            ent.flags_cache        = 0;
-            ent.vis_dist_sqr_cache = 0.0;
-            ent.vist_dist_cache    = 0.0;
-            ent.mid_cache          = { 0,0,0 };
-            ent.transform          = nullptr;
+            GroupEnt ent;
             makeAGroupEnt(ent, tracker->def, &tracker->matrix1, draw.scale);
             segs_drawDefInternal(ent, parent_mat, tracker, vis, &draw, false, def_ctx);
         }
@@ -926,6 +917,6 @@ void patch_groupdraw()
     patchit("fn_492140", (void *)groupDrawDefTracker);
     patchit("seqgraphics_4979B0",(void *)seqSetStaticLight);
     BREAK_FUNC(drawDefInternal);
-    PATCH_FUNC(groupDrawRefs);
+    BREAK_FUNC(groupDrawRefs);
     PATCH_FUNC(seqgraphics_getBoneNodes);
 }

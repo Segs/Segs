@@ -50,7 +50,7 @@ static int segs_modelBindBuffer(Model *model)
 {
     GeometryData *vbo = model->vbo;
     assert(UsingVBOs);
-    glBindVertexArray(vbo->segs_data->vao_id);
+    //glBindVertexArray(vbo->segs_data->vao_id);
     return 1;
 }
 void calcNodeLights(GfxTree_Node *node,Vector4 &ambient_col,Vector4 &diffuse_col,Vector3 &light_pos)
@@ -275,14 +275,13 @@ static void segs_modelDrawBonedNodeSingleTex(GfxTree_Node *node, const MaterialD
     }
     glActiveTextureARB(GL_TEXTURE0);
     segs_texBindTexture(GL_TEXTURE_2D, 2, g_whiteTexture);
-    segs_gfxNodeTricksUndo(tricks, model);
+    segs_gfxNodeTricksUndo(tricks, model,selected_material);
 }
 static void segs_modelDrawBonedNodeMultiTex(GfxTree_Node *node, const MaterialDefinition &init_mat)
 {
     Vector4 ambient_col;
     Vector4 diffuse_col;
-    TextureBind *tex=nullptr;
-    TextureBind *tex2=nullptr;
+    TextureBind *tex;
     Vector4 light_pos;
     Vector4 gloss_amounts;
     MaterialDefinition material_def(init_mat);
@@ -382,7 +381,7 @@ static void segs_modelDrawBonedNodeMultiTex(GfxTree_Node *node, const MaterialDe
     {
         GLsizei count = 3 * model->texture_bind_offsets[i].tri_count;
         tex = vbo->textureP_arr[i];
-        tex2 = tex->tex_links[0];
+        TextureBind *tex2 = tex->tex_links[0];
         segs_texBindTexture(GL_TEXTURE_2D, 0, tex);
         segs_texBindTexture(GL_TEXTURE_2D, 1, tex2);
         assert(enableVertShaders);
@@ -418,10 +417,12 @@ static void segs_modelDrawBonedNodeMultiTex(GfxTree_Node *node, const MaterialDe
     }
     glActiveTextureARB(GL_TEXTURE0);
     segs_texBindTexture(GL_TEXTURE_2D, 2, g_whiteTexture);
-    segs_gfxNodeTricksUndo(tricks, model);
+    segs_gfxNodeTricksUndo(tricks, model,material_def);
 }
 void segs_modelDrawBonedNode(GfxTree_Node *node, const MaterialDefinition &init_mat)
 {
+    const std::string part_name = std::string(__FUNCTION__) + "_" + node->model->parent_anim->headers->name;
+    GLDebugGuard      debug_guard(part_name.c_str());
     if (node->flg & 0x40000)
     {
         segs_modelDrawBonedNodeSingleTex(node, init_mat);
@@ -498,6 +499,8 @@ void bumpRenderObj(Model *model, Matrix4x3 *mat, GLuint colorbuf, Vector4 *ambie
 
     assert(vbo && ( model->loadstate & LOADED ));
     assert(model && model->vbo);
+    const std::string part_name = std::string(__FUNCTION__) + "_" + model->parent_anim->headers->name;
+    GLDebugGuard      debug_guard(part_name.c_str());
 
     segs_modelSetupVertexObject(model, 1);
     segs_modelBindBuffer(model);
@@ -518,12 +521,14 @@ void bumpRenderObj(Model *model, Matrix4x3 *mat, GLuint colorbuf, Vector4 *ambie
     bump_material.apply();
     if(nullptr!=strstr(model->bone_name_offset, feedback_model_name))
         drawToFeedbackBuffer(model, bump_material, colorbuf);
-    vbo->setColorBuffer({ colorbuf,0 });
+    vbo->setColorBuffer({ colorbuf ? colorbuf : ~0U,0 });
     drawLoop(model,*bump_material.program);
 }
 static void modelDrawTexRgb(Model *model, GLuint color_buf,MaterialDefinition &mat)
 {
     assert ( model && model->vbo );
+    const std::string part_name = std::string(__FUNCTION__) + "_" + model->parent_anim->headers->name;
+    GLDebugGuard      debug_guard(part_name.c_str());
     segs_modelSetupVertexObject(model, 1);
     segs_modelBindBuffer(model);
 
@@ -541,6 +546,9 @@ void modelDrawTexNormals(Model *model, MaterialDefinition &material)
 {
 
     assert(model && model->vbo);
+    const std::string part_name = std::string(__FUNCTION__) + "_" + model->parent_anim->headers->name;
+    GLDebugGuard      debug_guard(part_name.c_str());
+
     bool override_light = model->Model_flg1 & OBJ_NOLIGHTANGLE;
     if (override_light)
     {
@@ -565,7 +573,7 @@ void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int 
 {
     static GLuint s_rgb_buf=0;
     static RGBA white{ 255,255,255,255 };
-
+    auto restore = g_render_state.getGlobal();
     Vector4 diffuse_light;
     Vector4 ambient_light;
 
@@ -597,7 +605,8 @@ void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int 
     segs_setTexUnitLoadBias(GL_TEXTURE0, -0.5);
     if (!segs_gfxNodeTricks(trick, model, mat,material_definition))
     {
-        segs_gfxNodeTricksUndo(trick, model);
+        debug_guard.insertMessage("Discarded by day/night alpha");
+        segs_gfxNodeTricksUndo(trick, model,material_definition);
         return;
     }
     if (light_params && light_params->use & ENTLIGHT_INDOOR_LIGHT)
@@ -628,7 +637,7 @@ void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int 
         {
             assert(UsingVBOs);
             std::array<RGBA, 5000> buf;
-            buf.fill(RGBA(63, 63, 63, 63));
+            buf.fill(RGBA(63, 63, 63, 255));
             s_rgb_buf = segs_modelConvertRgbBuffer(buf.data(), buf.size(), false);
         }
         colorbuf = s_rgb_buf;
@@ -684,7 +693,9 @@ void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int 
         struct_9E7300.vert_unique_count += model->vertex_count;
         model->vbo->frame_id = struct_9E7300.frame_id;
     }
-    segs_gfxNodeTricksUndo(trick, model);
+    segs_gfxNodeTricksUndo(trick, model,material_definition);
+
+    g_render_state.apply(restore);
 }
 BoneInfo * assignDummyBoneInfo(char *boneset_name) //4D5610
 {
