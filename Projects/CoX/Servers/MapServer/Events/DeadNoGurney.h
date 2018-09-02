@@ -13,6 +13,7 @@
 
 #include <QtCore/QString>
 
+// [[ev_def:type]]
 class DeadNoGurney : public GameCommand
 {
 public:
