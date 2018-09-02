@@ -247,7 +247,7 @@ void Character::sendOwnedPowers(BitStream &bs) const
         {
             power.m_power_info.serializeto(bs);
             bs.StorePackedBits(5, power.m_level_bought);
-            bs.StoreFloat(power.m_range);
+            bs.StoreFloat(power.get_power_template().Range);
 
             bs.StorePackedBits(4, power.m_total_eh_slots);
             for(int i = 0; i < power.m_total_eh_slots; ++i)

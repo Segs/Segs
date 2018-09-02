@@ -67,4 +67,10 @@ public:
         Parse_Effectiveness         m_effectiveness_below;
         Parse_PI_Schedule           m_pi_schedule;
         float                       m_player_fade_in;
+
+        // keep in mind the hierarchy is all_powers -> powercat -> powerset -> powerdata (template)
+        StoredPowerCategory get_power_category(uint32_t pcat_idx);
+        Parse_PowerSet      get_powerset(uint32_t pcat_idx, uint32_t pset_idx);
+        Power_Data          get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
+
 };

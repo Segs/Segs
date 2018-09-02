@@ -9,6 +9,8 @@
 #include "CommonNetStructures.h"
 #include "BitStream.h"
 #include "GameData/power_definitions.h"
+#include "Servers/MapServer/MapServerData.h"
+#include "Servers/MapServer/DataHelpers.h"
 
 #include <QtCore/QString>
 #include <array>
@@ -79,21 +81,19 @@ struct CharacterPower
 {
 static const constexpr  uint32_t    class_version = 1;
         PowerPool_Info  m_power_info;
-        Power_Data      m_power_tpl;
         uint32_t        m_index             = 0;
-        QString         m_name;
         uint32_t        m_level_bought      = 0;
-        uint32_t        m_num_charges       = 0;
-        float           m_usage_time        = 0.0f;
-        uint32_t        m_activation_time   = 0;    // seconds since Jan 1, 2000
-        float           m_range             = 1.0f;
-        float           m_recharge_time     = 0.0f;
         uint32_t        m_activation_state  = 0;
         uint32_t        m_total_eh_slots    = 0;
         bool            m_active_state_change   = false;
         bool            m_timer_updated         = false;
         bool            m_erase_power           = false;
         std::array<CharacterEnhancement, 6> m_enhancements;
+
+        Power_Data get_power_template() const
+        {
+            return getMapServerData()->get_power_template(m_power_info.m_pcat_idx, m_power_info.m_pset_idx, m_power_info.m_pow_idx);
+        }
 };
 
 struct CharacterPowerSet

@@ -218,9 +218,7 @@ int getPowerSetByName(const QString &name, uint32_t pcat_idx)
 {
     int idx = 0;
 
-    const MapServerData &data(*getMapServerData());
-
-    for(const Parse_PowerSet &pset : data.m_all_powers.m_categories[pcat_idx].m_PowerSets)
+    for(const Parse_PowerSet &pset : getMapServerData()->get_power_category(pcat_idx).m_PowerSets)
     {
         if(pset.m_Name.compare(name, Qt::CaseInsensitive) == 0)
             return idx;
@@ -236,9 +234,7 @@ int getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx)
 {
     int idx = 0;
 
-    const MapServerData &data(*getMapServerData());
-
-    for(const Power_Data &pow : data.m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers)
+    for(const Power_Data &pow : getMapServerData()->get_powerset(pcat_idx, pset_idx).m_Powers)
     {
         if(pow.m_Name.compare(name, Qt::CaseInsensitive) == 0)
             return idx;
@@ -252,19 +248,14 @@ int getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx)
 
 CharacterPower getPowerData(PowerPool_Info &ppool)
 {
-    const MapServerData &data(*getMapServerData());
-    Power_Data power = data.m_all_powers.m_categories[ppool.m_pcat_idx].m_PowerSets[ppool.m_pset_idx].m_Powers[ppool.m_pow_idx];
+    Power_Data power = getMapServerData()->get_power_template(ppool.m_pcat_idx, ppool.m_pset_idx, ppool.m_pow_idx);
 
     CharacterPower result;
     result.m_power_info.m_pcat_idx      = ppool.m_pcat_idx;
     result.m_power_info.m_pset_idx      = ppool.m_pset_idx;
     result.m_power_info.m_pow_idx       = ppool.m_pow_idx;
-    result.m_name                       = power.m_Name;
     result.m_index                      = ppool.m_pow_idx;
-    result.m_num_charges                = power.m_NumCharges;
-    result.m_range                      = power.Range;
-    result.m_recharge_time              = power.RechargeTime;
-    result.m_power_tpl                  = power; // Maybe there's a better way to access this when needed?
+    // result.m_num_charges                = power.m_NumCharges;
 
     if(!power.BoostsAllowed.empty())
         result.m_total_eh_slots = 3; // TODO: buy during levelup. For now, everyone has 3!
@@ -278,8 +269,7 @@ CharacterPower getPowerData(PowerPool_Info &ppool)
 CharacterPowerSet getPowerSetData(PowerPool_Info &ppool)
 {
     CharacterPowerSet result;
-    const MapServerData &data(*getMapServerData());
-    Parse_PowerSet powerset = data.m_all_powers.m_categories[ppool.m_pcat_idx].m_PowerSets[ppool.m_pset_idx];
+    Parse_PowerSet powerset = getMapServerData()->get_powerset(ppool.m_pcat_idx, ppool.m_pset_idx);
 
     for(int pow_idx = 0; pow_idx < powerset.m_Powers.size(); ++pow_idx)
     {
@@ -295,13 +285,13 @@ CharacterPower *getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
     CharacterData *cd = &e.m_char->m_char_data;
 
     if(pset_idx > cd->m_powersets.size()
-            || cd->m_powersets[pset_idx].m_powers[pow_idx].m_name.isEmpty())
+            || cd->m_powersets[pset_idx].m_powers[pow_idx].get_power_template().m_Name.isEmpty())
     {
         qWarning() << "Failed to locate Power by index" << pset_idx << pow_idx;
         return nullptr;
     }
 
-    qCDebug(logPowers) << "getPower returned" << cd->m_powersets[pset_idx].m_powers[pow_idx].m_name;
+    qCDebug(logPowers) << "getPower returned" << cd->m_powersets[pset_idx].m_powers[pow_idx].get_power_template().m_Name;
     return &cd->m_powersets[pset_idx].m_powers[pow_idx];
 }
 
@@ -406,16 +396,16 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     // Add to activepowers queue
     CharacterPower * ppower = nullptr;
     ppower = getOwnedPower(ent, pset_idx, pow_idx);
-    if(ppower != nullptr && !ppower->m_name.isEmpty())
+    if(ppower != nullptr && !ppower->get_power_template().m_Name.isEmpty())
         ent.m_queued_powers.push_back(ppower);
 
     float endurance = getEnd(*ent.m_char);
-    float end_cost = std::max(ppower->m_power_tpl.EnduranceCost, 1.0f);
+    float end_cost = std::max(ppower->get_power_template().EnduranceCost, 1.0f);
 
     qCDebug(logPowers) << "Endurance Cost" << end_cost << "/" << endurance;
     if(end_cost > endurance)
     {
-        QString msg = "Not enough endurance to use power" + ppower->m_name;
+        QString msg = "Not enough endurance to use power" + ppower->get_power_template().m_Name;
         messageOutput(MessageChannel::DEBUG_INFO, msg, ent);
         return;
     }
@@ -482,15 +472,15 @@ void dumpPowerPoolInfo(const PowerPool_Info &pinfo)
 
 void dumpPower(const CharacterPower &pow)
 {
-    qDebug().noquote() << pow.m_name;
+    qDebug().noquote() << pow.get_power_template().m_Name;
     qDebug().noquote() << "  Index: " << pow.m_index;
     dumpPowerPoolInfo(pow.m_power_info);
     qDebug().noquote() << "  LevelBought: " << pow.m_level_bought;
-    qDebug().noquote() << "  NumCharges: " << pow.m_num_charges;
-    qDebug().noquote() << "  UsageTime: " << pow.m_usage_time;
-    qDebug().noquote() << "  ActivationTime: " << pow.m_activation_time;
-    qDebug().noquote() << "  Range: " << pow.m_range;
-    qDebug().noquote() << "  RechargeTime: " << pow.m_recharge_time;
+    qDebug().noquote() << "  NumCharges: " << pow.get_power_template().m_NumCharges;
+    qDebug().noquote() << "  UsageTime: " << pow.get_power_template().m_UsageTime;
+    qDebug().noquote() << "  ActivationTime: " << pow.get_power_template().ActivatePeriod;
+    qDebug().noquote() << "  Range: " << pow.get_power_template().Range;
+    qDebug().noquote() << "  RechargeTime: " << pow.get_power_template().RechargeTime;
     qDebug().noquote() << "  ActivationState: " << pow.m_activation_state;
     qDebug().noquote() << "  ActivationStateChange: " << pow.m_active_state_change;
     qDebug().noquote() << "  TimerUpdated: " << pow.m_timer_updated;
@@ -525,14 +515,13 @@ void dumpOwnedPowers(CharacterData &cd)
  */
 void addInspirationByName(CharacterData &cd, QString &name)
 {
-    const MapServerData &data(*getMapServerData());
     CharacterInspiration insp;
     uint32_t pcat_idx = getPowerCatByName("Inspirations");
     uint32_t pset_idx, pow_idx    = 0;
     bool found  = false;
 
     int i = 0;
-    for(const Parse_PowerSet &pset : data.m_all_powers.m_categories[pcat_idx].m_PowerSets)
+    for(const Parse_PowerSet &pset : getMapServerData()->get_power_category(pcat_idx).m_PowerSets)
     {
         int j = 0;
         for(const Power_Data &pow : pset.m_Powers)
@@ -690,7 +679,6 @@ void dumpInspirations(CharacterData &cd)
  */
 void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level)
 {
-    const MapServerData &data(*getMapServerData());
     CharacterEnhancement enhance;
     uint32_t pcat_idx = getPowerCatByName("Boosts");
     uint32_t pset_idx, pow_idx    = 0;
@@ -703,7 +691,7 @@ void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level)
     }
 
     int i = 0;
-    for(const Parse_PowerSet &pset : data.m_all_powers.m_categories[pcat_idx].m_PowerSets)
+    for(const Parse_PowerSet &pset : getMapServerData()->get_power_category(pcat_idx).m_PowerSets)
     {
         if(pset.m_Name.compare(name, Qt::CaseInsensitive) == 0)
         {
@@ -824,10 +812,10 @@ void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow
     CharacterPower * pow = nullptr;
     pow = getOwnedPower(e, pset_idx, pow_idx);
 
-    if(pow != nullptr && !pow->m_name.isEmpty())
+    if(pow != nullptr && !pow->get_power_template().m_Name.isEmpty())
         qFatal("Cannot find Power for buying enhancement slot: %d %d", pset_idx, pow_idx);
 
-    if(pow->m_power_tpl.BoostsAllowed.empty())
+    if(pow->get_power_template().BoostsAllowed.empty())
         return;
 
     // Modify based upon level
@@ -837,7 +825,7 @@ void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow
 void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow)
 {
     MapServerData &data(*getMapServerData());
-    if(pow->m_power_tpl.BoostsAllowed.empty())
+    if(pow->get_power_template().BoostsAllowed.empty())
         return;
 
     // TODO: assign all powers 1 slot, allow players to purchase additional slots during levelup

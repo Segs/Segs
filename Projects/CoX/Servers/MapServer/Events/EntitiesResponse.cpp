@@ -342,7 +342,7 @@ void storePowerRanges(const CharacterData &cd, BitStream &bs)
 
             bs.StoreBits(1,1); // have power to send.
             p.m_power_info.serializeto(bs);
-            bs.StoreFloat(p.m_range); // nem: I have no idea why it is passed here
+            bs.StoreFloat(p.get_power_template().Range); // nem: I have no idea why it is passed here
         }
     }
     bs.StoreBits(1,0); // no more powers to send.
@@ -407,13 +407,13 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
         int j = 0;
         for(const CharacterPower &power : pset.m_powers)
         {
-            qCDebug(logPowers) << "Power:" << power.m_name << pset.m_index << power.m_index;
+            qCDebug(logPowers) << "Power:" << power.get_power_template().m_Name << pset.m_index << power.m_index;
             storePowerSpec(i, j, bs);
 
             bs.StoreBits(1, !power.m_erase_power);
             if(power.m_erase_power)
             {
-                qCDebug(logPowers) << "  Removing power" << power.m_name << pset.m_index << power.m_index;
+                qCDebug(logPowers) << "  Removing power" << power.get_power_template().m_Name << pset.m_index << power.m_index;
                 removePower(*cd, power.m_power_info);
                 continue;
             }
@@ -421,9 +421,9 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
             power.m_power_info.serializeto(bs);
             bs.StorePackedBits(5, pset.m_level_bought);
             bs.StorePackedBits(5, power.m_level_bought);
-            bs.StorePackedBits(3, power.m_num_charges);
-            bs.StoreFloat(power.m_usage_time);
-            bs.StorePackedBits(24, power.m_activation_time);
+            bs.StorePackedBits(3, power.get_power_template().m_NumCharges);
+            bs.StoreFloat(power.get_power_template().m_UsageTime);
+            bs.StorePackedBits(24, power.get_power_template().ActivatePeriod);
 
             qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_total_eh_slots;
             bs.StorePackedBits(4, power.m_total_eh_slots); // total owned enhancement slots
@@ -459,7 +459,7 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     bs.StorePackedBits(4, e->m_queued_powers.size()); // Count all active powers
     for(const CharacterPower *pow : e->m_queued_powers)
     {
-        qCDebug(logPowers) << "  QueuedPower:" << pow->m_name << pow->m_index;
+        qCDebug(logPowers) << "  QueuedPower:" << pow->get_power_template().m_Name << pow->m_index;
         bs.StoreBits(1, pow->m_active_state_change);
         if(pow->m_active_state_change)
         {
@@ -472,12 +472,12 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     bs.StorePackedBits(1, e->m_recharging_powers.size());
     for(const CharacterPower *pow : e->m_recharging_powers)
     {
-        qCDebug(logPowers) << "  RechargeCountdown:" << pow->m_timer_updated << pow->m_recharge_time;
+        qCDebug(logPowers) << "  RechargeCountdown:" << pow->m_timer_updated << pow->get_power_template().RechargeTime;
         bs.StoreBits(1, pow->m_timer_updated);
         if(pow->m_timer_updated)
         {
             storePowerSpec(pow->m_power_info.m_pset_idx, pow->m_index, bs);
-            bs.StoreFloat(pow->m_recharge_time);
+            bs.StoreFloat(pow->get_power_template().RechargeTime);
         }
     }
 
