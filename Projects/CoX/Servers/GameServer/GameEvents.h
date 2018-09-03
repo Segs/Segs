@@ -16,6 +16,7 @@
 // GameEvents make use of some of the event Data defined in GameDBSyncEvents
 #include "GameDatabase/GameDBSyncEvents.h"
 #include <QtCore/QString>
+#include <array>
 
 namespace SEGSEvents
 {
@@ -130,13 +131,13 @@ public:
     {}
     DeleteCharacter(EventProcessor *evsrc,uint8_t idx,const QString &name) : GameLinkEvent(GameEventTypes::evDeleteCharacter,evsrc),m_index(idx),m_char_name(name)
     {}
-    void serializeto(BitStream &bs) const override 
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,4); // opcode
         bs.StorePackedBits(1,m_index);
         bs.StoreString(m_char_name);
     }
-    void serializefrom(BitStream &bs) override 
+    void serializefrom(BitStream &bs) override
     {
         m_index=bs.GetPackedBits(1);
         bs.GetString(m_char_name);
