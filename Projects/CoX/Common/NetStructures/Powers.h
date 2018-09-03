@@ -62,7 +62,7 @@ static const constexpr  uint32_t    class_version = 1;
 struct vInspirations
 {
     static const constexpr uint32_t class_version = 1;
-    std::vector<CharacterInspiration> m_inspirations;
+    std::vector<std::vector<CharacterInspiration>> m_inspirations;
 
     // although in some cases people prefer [row][col], i'll be using x -> col and y -> row
     size_t m_rows, m_cols;
@@ -84,22 +84,41 @@ struct vInspirations
         m_cols = cols;
         m_rows = rows;
         // m_inspirations.reserve(m_cols * m_rows);
+
+        // first, create the columns
+        m_inspirations.reserve(m_cols);
+
+        // then in each column, create the rows
+        for (size_t i = 0; i < m_cols; ++i)
+            m_inspirations[i].reserve(m_rows);
     }
 
-    const size_t size()
+    const int& size()
     {
-        return m_inspirations.size();
+        return m_cols * m_rows;
     }
 
     CharacterInspiration& at (const size_t col, const size_t row)
     {
-        // Note: possible arrayIndexOutOfRange exception here
-        return m_inspirations[col * row];
+        if (col >= m_cols || row >= m_rows)
+            qCritical() << QString("Trying to access vInspirations of %1 rows %2 cols using params %3 rows %4 cols");
+
+        return m_inspirations[col][row];
     }
 
     CharacterInspiration value(const size_t col, const size_t row) const
     {
-        return m_inspirations[col * row];
+        return m_inspirations[col][row];
+    }
+
+    void resize (const size_t newCol, const size_t newRow)
+    {
+        m_inspirations.resize(newCol);
+        for (size_t i = 0; i < m_cols; ++i)
+            m_inspirations[i].resize(newRow);
+
+        m_cols = newCol;
+        m_rows = newRow;
     }
 };
 
