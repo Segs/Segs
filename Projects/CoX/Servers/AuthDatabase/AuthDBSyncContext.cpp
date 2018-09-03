@@ -25,6 +25,8 @@
 #include <QSqlQuery>
 #include <cassert>
 
+using namespace SEGSEvents;
+
 namespace
 {
     static const auto DATABASE_DRIVERS = QStringList {"QSQLITE", "QPSQL", "QMYSQL"};

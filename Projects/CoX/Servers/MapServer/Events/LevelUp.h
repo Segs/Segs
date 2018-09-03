@@ -12,19 +12,21 @@
 #include "MapLink.h"
 
 #include <QtCore/QString>
-
+namespace SEGSEvents
+{
 // [[ev_def:type]]
-class LevelUp final : public GameCommand
+class LevelUp final : public GameCommandEvent
 {
 public:
-                LevelUp() : GameCommand(MapEventTypes::evLevelUp)
+                LevelUp() : GameCommandEvent(evLevelUp)
                 {
                 }
 
         void    serializeto(BitStream &bs) const override {
-                    bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient); // 56
+                    bs.StorePackedBits(1, type()-evFirstServerToClient); // 56
 
                     // nothing to send
                 }
-        void    serializefrom(BitStream &src);
+        EVENT_IMPL(LevelUp)
 };
+} // end of SEGSEvents namespace

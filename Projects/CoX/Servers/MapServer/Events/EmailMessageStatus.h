@@ -10,24 +10,29 @@
 
 #include <QtCore/QString>
 
-class EmailMessageStatus final : public GameCommand
+namespace SEGSEvents
+{
+// [[ev_def:type]]
+class EmailMessageStatus final : public GameCommandEvent
 {
 public:
-    EmailMessageStatus(const int status, const QString &recipient) : GameCommand(MapEventTypes::evEmailMsgStatus),
+    explicit EmailMessageStatus() : GameCommandEvent(evEmailMessageStatus) {}
+    EmailMessageStatus(const int status, const QString &recipient) : GameCommandEvent(evEmailMessageStatus),
         m_status(status),
         m_recipient(recipient)
     {
     }
 
     void    serializeto(BitStream &bs) const override {
-        bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient);
-        bs.StorePackedBits(1, status);
+        bs.StorePackedBits(1, type()-evFirstServerToClient);
+        bs.StorePackedBits(1, m_status);
         bs.StoreString(m_recipient);
     }
 
-    void    serializefrom(BitStream &src);
-
-protected:
+    // [[ev_def:field]]
     int m_status;
+    // [[ev_def:field]]
     QString m_recipient;
+    EVENT_IMPL(EmailMessageStatus)
 };
+}

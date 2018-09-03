@@ -20,6 +20,7 @@
 #include <QDebug>
 #include <set>
 
+using namespace SEGSEvents;
 // CRUD link receives messages from ServerEndpoint,
 // these are basically CRUDP_Packets preprocessed by CRUDP_Protocol
 
@@ -42,7 +43,7 @@ CRUDLink::~CRUDLink()
 /// \brief CRUDLink::event_for_packet - convert incoming packet into higher level events and push them to our target()
 /// \param pak_ev - received packet
 ///
-void CRUDLink::event_for_packet(PacketEvent * pak_ev)
+void CRUDLink::event_for_packet(Packet * pak_ev)
 {
     CrudP_Packet *pak=pak_ev->m_pkt.get();
     // switch this to while, maybe many events are coming from single packet ?
@@ -65,7 +66,7 @@ void CRUDLink::event_for_packet(PacketEvent * pak_ev)
 ///
 /// \brief CRUDLink::packets_for_event - convert event to 1-n packets and push them to our net_layer()
 /// \param ev - an event that we've received from our downstream.
-void CRUDLink::packets_for_event(SEGSEvent *ev)
+void CRUDLink::packets_for_event(Event *ev)
 {
     lCrudP_Packet   packets_to_send;
     CRUDLink_Event *c_ev = static_cast<CRUDLink_Event *>(ev);
@@ -79,13 +80,13 @@ void CRUDLink::packets_for_event(SEGSEvent *ev)
     if (false == m_protocol.batchSend(packets_to_send))
     {
         // link is unresponsive, tell our target object
-        target()->putq(new SEGSEvent(SEGS_EventTypes::evDisconnect, this));
+        target()->putq(new Disconnect(this));
         return;
     }
     // wrap all packets as PacketEvents and put them on link queue
     for (std::unique_ptr<CrudP_Packet> &pkt : packets_to_send)
     {
-        net_layer()->putq(new PacketEvent(this, std::move(pkt), peer_addr()));
+        net_layer()->putq(new Packet(this, std::move(pkt), peer_addr()));
     }
     packets_to_send.clear();
     connection_sent_packet(); // data was sent, update
@@ -107,7 +108,7 @@ void CRUDLink::connection_sent_packet()
 //! when queue() is not empty.
 int CRUDLink::open (void *p)
 {
-    if (EventProcessor::open (p) == -1)
+    if (super::open (p) == -1)
         return -1;
     m_notifier.reactor(reactor());  // notify reactor with write event,
     msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue()
@@ -118,24 +119,24 @@ int CRUDLink::open (void *p)
 
 int CRUDLink::handle_output( ACE_HANDLE )
 {
-    SEGSEvent *ev;
+    Event *ev;
     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
     while (-1 != getq(ev, &nowait))
     {
         switch(ev->type())
         {
-            case SEGS_EventTypes::evFinish:
+            case evFinish:
                 ev->release();
                 return -1;
-            case SEGS_EventTypes::evConnect:
-                m_peer_addr=static_cast<ConnectEvent *>(ev)->src_addr;
+            case evConnect:
+                m_peer_addr=static_cast<Connect *>(ev)->src_addr;
                 connection_update();
                 break;
-            case SEGS_EventTypes::evDisconnect:
-                putq(SEGSEvent::s_ev_finish.shallow_copy()); // close the link
+            case evDisconnect:
+                putq(Finish::s_instance->shallow_copy()); // close the link
                 break;
-            case CRUD_EventTypes::evPacket: // CRUDP_Protocol has posted a pre-parsed packet to us
-                event_for_packet(static_cast<PacketEvent *>(ev));
+            case evPacket: // CRUDP_Protocol has posted a pre-parsed packet to us
+                event_for_packet(static_cast<Packet *>(ev));
                 connection_update(); // we've received some bytes -> connection update
                 break;
             default:
@@ -168,7 +169,7 @@ void CRUDLink::received_block( BitStream &bytes )
     while(pkt)
     {
         std::unique_ptr<CrudP_Packet> own_it(pkt);
-        putq(new PacketEvent(net_layer(),std::move(own_it),peer_addr()));
+        putq(new Packet(net_layer(),std::move(own_it),peer_addr()));
         ++recv_count;
         pkt=m_protocol.RecvPacket();
     }
@@ -179,7 +180,7 @@ void CRUDLink::received_block( BitStream &bytes )
 int CRUDLink::handle_close(ACE_HANDLE h, ACE_Reactor_Mask c)
 {
     reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
-    return EventProcessor::handle_close(h,c);
+    return super::handle_close(h,c);
 }
 
 //! @}

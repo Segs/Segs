@@ -8,29 +8,35 @@
 #pragma once
 #include "GameCommandList.h"
 
-#include "MapEvents.h"
-#include "MapLink.h"
 
 #include <QtCore/QString>
 
-class FloatingDamage final : public GameCommand
+namespace SEGSEvents
+{
+// [[ev_def:type]]
+class FloatingDamage final : public GameCommandEvent
 {
 public:
-    int m_source;
-    int m_target;
-    int m_dmg_amount;
-    FloatingDamage(int source,int target,int amount) : GameCommand(MapEventTypes::evFloatingDamage),
-        m_source(source),
-        m_target(target),
-        m_dmg_amount(amount)
+    // [[ev_def:field]]
+    int m_damage_source;
+    // [[ev_def:field]]
+    int m_damage_target;
+    // [[ev_def:field]]
+    int m_amount; // should be float?
+    explicit FloatingDamage() : GameCommandEvent(MapEventTypes::evFloatingDamage) {}
+    FloatingDamage(int source,int target,int amount) : GameCommandEvent(MapEventTypes::evFloatingDamage),
+        m_damage_source(source),
+        m_damage_target(target),
+        m_amount(amount)
     {
     }
     void    serializeto(BitStream &bs) const override {
         bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
 
-        bs.StorePackedBits(1,m_source);
-        bs.StorePackedBits(1,m_target);
-        bs.StorePackedBits(1,m_dmg_amount);
+        bs.StorePackedBits(1,m_damage_source);
+        bs.StorePackedBits(1,m_damage_target);
+        bs.StorePackedBits(1,m_amount);
     }
-    void    serializefrom(BitStream &src);
+    EVENT_IMPL(FloatingDamage)
 };
+} //end of SEGSEvents namespace
