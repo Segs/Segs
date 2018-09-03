@@ -10,10 +10,14 @@
 
 #include <QtCore/QString>
 
-class EmailRead final : public GameCommand
+namespace SEGSEvents
+{
+// [[ev_def:type]]
+class EmailRead final : public GameCommandEvent
 {
 public:
-    EmailRead(const int id, const QString &message, const QString recipient) : GameCommand(MapEventTypes::evEmailReadCmd),
+explicit    EmailRead() : GameCommandEvent(MapEventTypes::evEmailRead) {}
+            EmailRead(const int id, const QString &message, const QString recipient) : GameCommandEvent(MapEventTypes::evEmailRead),
         m_id(id), m_message(message), m_recipient(recipient)
     {
     }
@@ -26,11 +30,15 @@ public:
         bs.StoreString(m_recipient);
     }
 
-    void    serializefrom(BitStream &src);
-
-protected:
+            // [[ev_def:field]]
     int m_id;
+            // [[ev_def:field]]
     QString m_message;
+            // [[ev_def:field]]
     int m_count = 1; //Doesn't do anything in Issue 0, seemingly, so hardcoding as 1
+            // [[ev_def:field]]
     QString m_recipient; //Possible misnamed variable, as this is actually the sender in the email's read tab
+            EVENT_IMPL(EmailRead)
 };
+} // end of SEGSEvents namespace
+

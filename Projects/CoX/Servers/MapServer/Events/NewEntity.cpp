@@ -12,6 +12,8 @@
 
 #include "Events/NewEntity.h"
 
+using namespace SEGSEvents;
+
 void NewEntity::serializeto( BitStream & ) const
 {
     assert(!"TODO");

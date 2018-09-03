@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "Events/MapEventTypes.h"
 #include "GameCommandList.h"
 #include "ClientStates.h"
 
@@ -13,20 +14,25 @@
 #include "MapLink.h"
 
 #include <QtCore/QString>
+namespace SEGSEvents
+{
 
-class SetClientState final : public GameCommand
+// [[ev_def:type]]
+class SetClientState final : public GameCommandEvent
 {
 public:
-    ClientStates    m_new_state;
-                SetClientState(ClientStates new_state) : GameCommand(MapEventTypes::evSetClientState),
-                    m_new_state(new_state)
-                {
-                }
+        // [[ev_def:field]]
+        ClientStates    m_new_state;
+                        SetClientState(ClientStates new_state=SIMPLE) : GameCommandEvent(evSetClientState), m_new_state(new_state)
+                        {
+                        }
 
-        void    serializeto(BitStream &bs) const override {
-                    bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient); // 18
+        void            serializeto(BitStream &bs) const override
+                        {
+                            bs.StorePackedBits(1, type() - evFirstServerToClient); // 18
+                            bs.StorePackedBits(1, uint32_t(m_new_state));
+                        }
 
-                    bs.StorePackedBits(1, uint32_t(m_new_state));
-                }
-        void    serializefrom(BitStream &src);
+                        EVENT_IMPL(SetClientState)
 };
+} // end of namespace SEGSEvents

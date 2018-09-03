@@ -52,11 +52,6 @@ void removeLFG(Entity &tgt)
     }
 }
 
-void findTeamMember(Entity &tgt)
-{
-    sendTeamLooking(&tgt);
-}
-
 void dumpLFGList()
 {
     QString output = "LFG List:" + QString::number(g_lfg_list.size());

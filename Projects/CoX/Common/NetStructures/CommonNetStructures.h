@@ -26,6 +26,12 @@ public:
         glm::vec3 v2;
         glm::vec3 v3;
         bool v1_set,v2_set,v3_set;
+        template<class Archive>
+        void serialize(Archive &ar)
+        {
+            ar(v1,v2,v3);
+            ar(v1_set,v2_set,v3_set);
+        }
 };
 
 ///
