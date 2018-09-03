@@ -62,16 +62,21 @@ public:
 static const constexpr uint32_t class_version = 1;
 
     // Other Options
-    int32_t control_debug       = 0;
+    int32_t controldebug       = 0;
     int32_t no_strafe           = 0;
     int32_t alwaysmobile        = 0; // 1 - player is always mobile (can't be immobilized by powers)
     int32_t repredict           = 0; // 1 - client is out of sync with server, asking for new physics state info.
     int32_t neterrorcorrection  = 0;
     float   speed_scale         = 0;
 
-    int32_t svr_lag,svr_lag_vary,svr_pl,svr_oo_packets,client_pos_id;
+    int32_t svr_lag,svr_lag_vary,svr_pl,svr_oo_packets,client_pos_id,pause;
     int32_t atest0,atest1,atest2,atest3,atest4,atest5,atest6,atest7,atest8,atest9;
-    int32_t predict,notimeout,selected_ent_server_index;
+    int32_t predict,notimeout,selected_ent_server_index,disablegurneys,canlook;
+    int32_t camrotate,forward,backward,up,down,nocoll,nosync,turnleft,turnright;
+    int32_t zoomin,zoomout,lookup,lookdown,third,first,mouse_invert,autorun;
+    int32_t left,right,nostrafe;
+
+    float time,timescale,timestepscale,speed_turn,velscale,yaw,mouse_speed;
 
     // Options
     bool    m_first_person_view = false;
