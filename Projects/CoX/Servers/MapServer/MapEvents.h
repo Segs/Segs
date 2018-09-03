@@ -19,10 +19,6 @@
 #include <QtCore/QDebug>
 
 class Entity;
-namespace SEGSEvents
-{
-using MapLinkEvent = CRUDLink_Event; //<MapLink>
-}
 
 //////////////////////////////////////////////////////////////////////////
 // Client -> Server
@@ -858,24 +854,8 @@ public:
 #include "Events/FriendsListUpdate.h"
 #include "Events/GameCommandList.h"
 #include "Events/InteractWithEntity.h"
-#include "Events/MapXferList.h"
-#include "Events/LevelUp.h"
-#include "Events/FloatingInfo.h"
-#include "Events/FloatingDamage.h"
-#include "Events/ChangeTitle.h"
 #include "Events/LocationVisited.h"
 #include "Events/PlaqueVisited.h"
-#include "Events/PlayerInfo.h"
-#include "Events/PowerSystemEvents.h"
 #include "Events/SaveClientOptions.h"
 #include "Events/SceneEvent.h"
-#include "Events/SetClientState.h"
 #include "Events/Shortcuts.h"
-#include "Events/SidekickOffer.h"
-#include "Events/TeamLooking.h"
-#include "Events/TeamOffer.h"
-#include "Events/TrayAdd.h"
-
-#include "Events/EmailHeaders.h"
-#include "Events/EmailMessageStatus.h"
-#include "Events/EmailRead.h"

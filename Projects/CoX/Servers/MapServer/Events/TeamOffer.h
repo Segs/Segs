@@ -6,11 +6,8 @@
  */
 
 #pragma once
-#include "GameCommandList.h"
-#include "Logging.h"
-
-#include "MapEvents.h"
-#include "MapLink.h"
+#include "MapEventTypes.h"
+#include "GameCommand.h"
 
 enum TeamOfferType :  uint8_t
 {
@@ -43,7 +40,7 @@ explicit    TeamOffer() : GameCommandEvent(MapEventTypes::evTeamOffer) {}
                 bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 24
                 bs.StoreBits(32,m_db_id);   // team offeree db_id
                 bs.StoreString(m_name);     // team offerer name
-                        bs.StoreBits(2,m_offer_type);     // team with mission?
+                bs.StoreBits(2,m_offer_type);     // team with mission?
             }
             EVENT_IMPL(TeamOffer)
 };

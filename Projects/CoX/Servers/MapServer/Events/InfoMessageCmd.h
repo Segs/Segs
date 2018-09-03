@@ -6,7 +6,8 @@
  */
 
 #pragma once
-#include "GameCommandList.h"
+#include "GameCommand.h"
+#include "MapEventTypes.h"
 
 struct MapClientSession;
 class QString;

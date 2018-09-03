@@ -6,14 +6,14 @@
  */
 
 #pragma once
-#include <vector>
-#include <string>
-#include "BitStream.h"
-#include "MapRef.h"
-#include "CRUD_Events.h"
 #include "MapLink.h"
 #include "MapEventTypes.h"
 #include "MapSessionReference.h"
+#include "BitStream.h"
+#include "MapRef.h"
+#include "CRUD_Events.h"
+#include <vector>
+#include <string>
 
 struct MapClientSession;
 namespace SEGSEvents

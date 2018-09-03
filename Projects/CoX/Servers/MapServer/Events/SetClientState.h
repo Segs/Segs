@@ -6,12 +6,9 @@
  */
 
 #pragma once
-#include "Events/MapEventTypes.h"
-#include "GameCommandList.h"
 #include "ClientStates.h"
-
-#include "MapEvents.h"
-#include "MapLink.h"
+#include "MapEventTypes.h"
+#include "GameCommand.h"
 
 #include <QtCore/QString>
 namespace SEGSEvents

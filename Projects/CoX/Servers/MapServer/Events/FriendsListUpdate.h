@@ -6,12 +6,11 @@
  */
 
 #pragma once
-#include "GameCommandList.h"
+#include "GameCommand.h"
+#include "MapEventTypes.h"
 #include "NetStructures/Friend.h"
 #include "Logging.h"
 
-#include "MapEvents.h"
-#include "MapLink.h"
 namespace SEGSEvents
 {
 

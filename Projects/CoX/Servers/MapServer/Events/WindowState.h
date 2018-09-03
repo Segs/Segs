@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "MapEvents.h"
+#include "MapEventTypes.h"
 #include "Common/GameData/gui_definitions.h"
 
 namespace SEGSEvents

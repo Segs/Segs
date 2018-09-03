@@ -6,7 +6,8 @@
  */
 
 #pragma once
-#include "GameCommandList.h"
+#include "MapEventTypes.h"
+#include "GameCommand.h"
 #include "Logging.h"
 
 namespace SEGSEvents

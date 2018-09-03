@@ -13,16 +13,18 @@
 #include "SlashCommand.h"
 
 #include "DataHelpers.h"
-#include "MapInstance.h"
-#include "Settings.h"
-#include "GameData/playerdata_definitions.h"
-#include "NetStructures/CharacterHelpers.h"
-#include "NetStructures/LFG.h"
-#include "GameData/GameDataStore.h"
-#include "Logging.h"
-#include "NetStructures/Entity.h"
-#include "NetStructures/Character.h"
 #include "Events/ClientStates.h"
+#include "Events/StandardDialogCmd.h"
+#include "Events/InfoMessageCmd.h"
+#include "GameData/GameDataStore.h"
+#include "GameData/playerdata_definitions.h"
+#include "Logging.h"
+#include "MapInstance.h"
+#include "NetStructures/Character.h"
+#include "NetStructures/CharacterHelpers.h"
+#include "NetStructures/Entity.h"
+#include "NetStructures/LFG.h"
+#include "Settings.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFile>

@@ -6,9 +6,8 @@
  */
 
 #pragma once
+#include "MapEventTypes.h"
 #include "GameCommand.h"
-
-#include "MapEvents.h"
 
 #include <QtCore/QString>
 

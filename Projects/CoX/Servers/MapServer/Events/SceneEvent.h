@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "CRUD_Events.h"
-#include "MapLink.h"
+#include "GameCommand.h"
+#include "MapEventTypes.h"
 
 #include <QtCore/QString>
 #include <vector>

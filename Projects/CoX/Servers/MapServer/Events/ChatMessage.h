@@ -6,10 +6,11 @@
  */
 
 #pragma once
-#include "GameCommand.h"
 #include "MessageChannels.h"
+#include "GameCommand.h"
+#include "MapEventTypes.h"
 
-#include <QString>
+
 
 struct MapClientSession;
 

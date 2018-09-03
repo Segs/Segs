@@ -6,7 +6,8 @@
  */
 
 #pragma once
-#include "MapEvents.h"
+#include "GameCommand.h"
+#include "MapEventTypes.h"
 #include "NetStructures/Entity.h"
 namespace SEGSEvents
 {

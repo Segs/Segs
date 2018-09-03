@@ -17,6 +17,7 @@
 
 #include "Events/ChatMessage.h"
 #include "Events/StandardDialogCmd.h"
+#include "Events/InfoMessageCmd.h"
 #include "Common/NetStructures/Entity.h"
 #include "Common/NetStructures/Contact.h"
 #define SOL_CHECK_ARGUMENTS 1

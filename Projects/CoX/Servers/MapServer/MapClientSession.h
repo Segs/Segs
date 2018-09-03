@@ -7,7 +7,8 @@
 
 #pragma once
 #include "FixedPointValue.h"
-#include "Events/GameCommandList.h"
+#include "Events/GameCommand.h"
+#include "NetCommandManager.h"
 #include "AuthDatabase/AuthDBSyncEvents.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 

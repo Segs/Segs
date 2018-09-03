@@ -9,6 +9,7 @@
 #include "CRUD_Events.h"
 namespace SEGSEvents
 {
+using MapLinkEvent = CRUDLink_Event;
 
 enum MapEventTypes
 {
