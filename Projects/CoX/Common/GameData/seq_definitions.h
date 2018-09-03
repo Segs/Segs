@@ -13,7 +13,13 @@
 #include <stdint.h>
 
 struct AnimTrack;
-
+// WHY, WINDOWS, WHY ?
+#ifdef FAR
+#undef FAR
+#endif
+#ifdef NEAR
+#undef NEAR
+#endif
 enum class SeqBitNames : uint32_t {
     INVALID_BIT=0,
     FORWARD=1,
