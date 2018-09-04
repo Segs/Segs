@@ -477,10 +477,12 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     qCDebug(logMapEvents) << "got map handler";
     fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
     qCDebug(logMapEvents) << "got character data";
-    map_server->putq(new ExpectMapClientRequest({session.auth_id(), session.m_access_level, session.link()->peer_addr(),
-                                                &c_data, session.m_requested_slot_idx, session.m_name, QString("maps/city_zones/City_01_02/City_01_02.txt"),
-                                                uint16_t(session.m_max_slots)}, 
-                                                session.link()->session_token()));
+    
+    ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, session.link()->peer_addr(),
+                                    &c_data, session.m_requested_slot_idx, session.m_name, QString("maps/city_zones/City_01_02/City_01_02.txt"),
+                                    uint16_t(session.m_max_slots)},
+                                   session.link()->session_token(),this);
+    map_server->putq(map_req);
                                                 
     
 }
