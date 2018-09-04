@@ -12,6 +12,8 @@
 
 #include "PlaqueVisited.h"
 
+using namespace SEGSEvents;
+
 void PlaqueVisited::serializefrom(BitStream & src)
 {
     src.GetString(m_name);

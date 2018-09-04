@@ -12,28 +12,24 @@
 
 #include "Character.h"
 
+#include "CharacterHelpers.h"
 #include "BitStream.h"
 #include "Entity.h"
 #include "Costume.h"
 #include "Friend.h"
-#include "Powers.h"
-#include "GameData/serialization_common.h"
+#include "serialization_common.h"
 #include "Servers/GameDatabase/GameDBSyncEvents.h"
 #include "GameData/chardata_serializers.h"
 #include "GameData/entitydata_serializers.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/playerdata_serializers.h"
-#include "Servers/MapServer/MapServerData.h"
+#include "GameData/GameDataStore.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "Logging.h"
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 
-// Anonymous namespace
-namespace {
-
-}
-// End Anonymous namespace
+using namespace SEGSEvents;
 
 Character::Character()
 {
@@ -94,9 +90,8 @@ void Character::sendTray(BitStream &bs) const
     m_char_data.m_trays.serializeto(bs);
 }
 
-void Character::finalizeLevel()
+void Character::finalizeLevel(const GameDataStore &data)
 {
-    MapServerData &data(*getMapServerData());
     uint32_t max_xp = data.expMaxLevel();
 
     m_char_data.m_combat_level = m_char_data.m_level + 1; // m_combat_level is display level?
@@ -119,13 +114,13 @@ void Character::finalizeLevel()
     {
         CharacterPowerSet pset = m_char_data.m_powersets[idx];
         for(CharacterPower &pow : pset.m_powers)
-            reserveEnhancementSlot(m_char_data, &pow);
+            reserveEnhancementSlot(data,m_char_data, &pow);
     }
 
     m_char_data.m_powers_updated = false;
 }
 
-void Character::addStartingInspirations()
+void Character::addStartingInspirations(const GameDataStore &data)
 {
     // TODO: We can make this configurable in settings.cfg
     QStringList starting_insps = {
@@ -134,37 +129,37 @@ void Character::addStartingInspirations()
     };
 
     for (QString &name : starting_insps)
-        addInspirationByName(m_char_data, name);
+        addInspirationByName(data,m_char_data, name);
 }
 
-void Character::getStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names)
+void Character::getStartingPowers(const GameDataStore &data,const QString &pcat_name, const QString &pset_name, const QStringList &power_names)
 {
     PowerPool_Info ppool;
 
-    ppool.m_pcat_idx = getPowerCatByName(pcat_name);
-    ppool.m_pset_idx = getPowerSetByName(pset_name, ppool.m_pcat_idx);
+    ppool.m_pcat_idx = getPowerCatByName(data,pcat_name);
+    ppool.m_pset_idx = getPowerSetByName(data,pset_name, ppool.m_pcat_idx);
 
     addPowerSet(m_char_data, ppool); // add empty powerset
 
     for(const QString &name : power_names)
     {
-        ppool.m_pow_idx = getPowerByName(name, ppool.m_pcat_idx, ppool.m_pset_idx);
-        addPower(m_char_data, ppool);
+        ppool.m_pow_idx = getPowerByName(data,name, ppool.m_pcat_idx, ppool.m_pset_idx);
+        addPower(data,m_char_data, ppool);
     }
 }
 
-void Character::getPowerFromBuildInfo(BitStream &src)
+void Character::getPowerFromBuildInfo(const GameDataStore &data,BitStream &src)
 {
     for(int i = 0; i < 2; ++i)
     {
         PowerPool_Info ppinfo;
         ppinfo.serializefrom(src);
 
-        addPower(m_char_data, ppinfo);
+        addPower(data,m_char_data, ppinfo);
     }
 }
 
-void Character::GetCharBuildInfo(BitStream &src)
+void Character::GetCharBuildInfo(BitStream &src, const GameDataStore &data)
 {
     m_char_data.m_level = 0;
     m_char_data.m_combat_level = m_char_data.m_level + 1;
@@ -192,11 +187,11 @@ void Character::GetCharBuildInfo(BitStream &src)
     };
 
     // Temporary Powers MUST come first (must be idx 0)
-    getStartingPowers(QStringLiteral("Temporary_Powers"), QStringLiteral("Temporary_Powers"), starting_temps);
-    getStartingPowers(QStringLiteral("Inherent"), QStringLiteral("Inherent"), inherent_and_preorders);
-    getPowerFromBuildInfo(src);     // primary, secondary
-    finalizeLevel();
-    addStartingInspirations();      // resurgence and phenomenal_luck
+    getStartingPowers(data,QStringLiteral("Temporary_Powers"), QStringLiteral("Temporary_Powers"), starting_temps);
+    getStartingPowers(data,QStringLiteral("Inherent"), QStringLiteral("Inherent"), inherent_and_preorders);
+    getPowerFromBuildInfo(data,src);     // primary, secondary
+    finalizeLevel(data);
+    addStartingInspirations(data);      // resurgence and phenomenal_luck
 
     m_char_data.m_trays.serializefrom(src);
 }

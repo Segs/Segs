@@ -13,11 +13,13 @@
 #include "Events/SceneEvent.h"
 #include "MapEvents.h"
 
-SceneEvent::SceneEvent():MapLinkEvent(MapEventTypes::evScene)
+using namespace SEGSEvents;
+
+Scene::Scene():MapLinkEvent(MapEventTypes::evScene)
 {
 }
 
-void SceneEvent::getGrpElem(BitStream &src,int idx)
+void Scene::getGrpElem(BitStream &src,int idx)
 {
     if(src.GetBits(1))
     {
@@ -37,13 +39,13 @@ void SceneEvent::getGrpElem(BitStream &src,int idx)
     }
 }
 
-void SceneEvent::reqWorldUpdateIfPak(BitStream &)
+void Scene::reqWorldUpdateIfPak(BitStream &)
 {
     //src.GetBits(1);
     assert(0);
 }
 
-void SceneEvent::groupnetrecv_5(BitStream &src,int /*a*/,int /*b*/)
+void Scene::groupnetrecv_5(BitStream &src,int /*a*/,int /*b*/)
 {
     if(!src.GetBits(1))
         return;
@@ -52,7 +54,7 @@ void SceneEvent::groupnetrecv_5(BitStream &src,int /*a*/,int /*b*/)
     src.GetString(def_filename);
 }
 
-void SceneEvent::serializefrom(BitStream &src)
+void Scene::serializefrom(BitStream &src)
 {
     unkn1=false;
     //bool IAmAnArtist=false;
@@ -111,7 +113,7 @@ static void storeStringWithOptionalPrefix(BitStream &tgt,const char *prefix,cons
         tgt.StoreString(prefix);
     tgt.StoreString(b);
 }
-void SceneEvent::serializeto(BitStream &tgt) const
+void Scene::serializeto(BitStream &tgt) const
 {
     tgt.StorePackedBits(1,6); // opcode
     tgt.StorePackedBits(1,undos_PP);

@@ -6,32 +6,33 @@
  */
 
 #pragma once
-#include "GameCommandList.h"
-
-#include "MapEvents.h"
-#include "MapLink.h"
+#include "MapEventTypes.h"
+#include "GameCommand.h"
 
 #include <QtCore/QString>
-
+namespace SEGSEvents
+{
 // [[ev_def:type]]
-class TrayAdd final : public GameCommand
+class TrayAdd final : public GameCommandEvent
 {
 public:
-    // [[ev_def:field]]
+                        // [[ev_def:field]]
     uint32_t            m_pset_idx;
-    // [[ev_def:field]]
+                        // [[ev_def:field]]
     uint32_t            m_pow_idx;
-                TrayAdd(uint32_t pset_idx, uint32_t pow_idx) : GameCommand(MapEventTypes::evTrayAdd),
-                    m_pset_idx(pset_idx),
-                    m_pow_idx(pow_idx)
-                {
-                }
+    explicit            TrayAdd() : GameCommandEvent(evTrayAdd) {}
+                        TrayAdd(uint32_t pset_idx, uint32_t pow_idx) : GameCommandEvent(evTrayAdd),
+                            m_pset_idx(pset_idx),
+                            m_pow_idx(pow_idx)
+                        {
+                        }
 
-        void    serializeto(BitStream &bs) const override {
-                    bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient); // 56
+    void                serializeto(BitStream &bs) const override {
+                            bs.StorePackedBits(1, type()-evFirstServerToClient); // 56
 
-                    bs.StorePackedBits(1, m_pset_idx);
-                    bs.StorePackedBits(1, m_pow_idx);
-                }
-        void    serializefrom(BitStream &src);
+                            bs.StorePackedBits(1, m_pset_idx);
+                            bs.StorePackedBits(1, m_pow_idx);
+                        }
+                        EVENT_IMPL(TrayAdd)
 };
+} // end of SEGSEvents namespace

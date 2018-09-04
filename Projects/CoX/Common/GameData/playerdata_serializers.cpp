@@ -37,9 +37,6 @@ void serialize(Archive &archive, PlayerData &pd, uint32_t const version)
     archive(cereal::make_nvp("Options", pd.m_options));
 }
 
-template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, PlayerData & m, uint32_t const version);
-template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, PlayerData & m, uint32_t const version);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(PlayerData);
 
 //! @}

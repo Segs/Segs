@@ -11,7 +11,7 @@
  */
 
 #include "MapManager.h"
-#include "DataHelpers.h"
+#include "GameData/map_definitions.h"
 #include "Logging.h"
 #include "MapTemplate.h"
 

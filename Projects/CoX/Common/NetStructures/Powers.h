@@ -10,13 +10,14 @@
 #include "BitStream.h"
 #include "GameData/power_definitions.h"
 
+#include <cereal/cereal.hpp>
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 #include <array>
 
 class Entity;
 struct CharacterData;
-
+class GameDataStore;
 enum class TrayItemType : uint32_t
 {
     None                    = 0,
@@ -35,6 +36,11 @@ struct EnhancemenSlotEntry
     uint32_t    m_pset_idx      = 0;
     uint32_t    m_pow_idx       = 0;
     uint32_t    m_eh_idx        = 0;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_set_in_power,m_pset_idx,m_pow_idx,m_eh_idx);
+    }
 };
 
 class PowerPool_Info
@@ -182,6 +188,23 @@ static const constexpr  uint32_t    class_version = 1;
     void serializeto(BitStream &tgt) const;
     void serializefrom(BitStream &src);
     void Dump();
+
+    template<class Archive>
+    void serialize(Archive &archive, uint32_t const version)
+    {
+        if (version != PowerTrayItem::class_version)
+        {
+            qCritical() << "Failed to serialize PowerTrayItem, incompatible serialization format version " << version;
+            return;
+        }
+
+        archive(cereal::make_nvp("EntryType", m_entry_type));
+        archive(cereal::make_nvp("PowerSetIdx", m_pset_idx));
+        archive(cereal::make_nvp("PowerIdx", m_pow_idx));
+        archive(cereal::make_nvp("Command", m_command));
+        archive(cereal::make_nvp("ShortName", m_short_name));
+        archive(cereal::make_nvp("IconName", m_icon_name));
+    }
 };
 
 class PowerTray
@@ -194,6 +217,17 @@ static const constexpr  uint32_t    class_version = 1;
     void serializefrom(BitStream &src);
     void serializeto(BitStream &tgt) const;
     void Dump();
+    template<class Archive>
+    void serialize(Archive &archive, uint32_t const version)
+    {
+        if (version != PowerTray::class_version)
+        {
+            qCritical() << "Failed to serialize PowerTray, incompatible serialization format version " << version;
+            return;
+        }
+        archive(cereal::make_nvp("Powers", m_tray_items));
+    }
+
 };
 
 class PowerTrayGroup
@@ -215,6 +249,19 @@ static const int m_num_trays = 2; // was 3, displayed trays
     void serializeto(BitStream &tgt) const;
     void serializefrom(BitStream &src);
     void dump();
+    template<class Archive>
+    void serialize(Archive &archive, uint32_t const version)
+    {
+        if (version != PowerTrayGroup::class_version)
+        {
+            qCritical() << "Failed to serialize PowerTrayGroup, incompatible serialization format version " << version;
+            return;
+        }
+
+        archive(cereal::make_nvp("DefaultPowerSet", m_default_pset_idx));
+        archive(cereal::make_nvp("DefaultPower", m_default_pow_idx));
+        archive(cereal::make_nvp("PowerTrays", m_trays));
+    }
 
 };
 
@@ -222,17 +269,16 @@ static const int m_num_trays = 2; // was 3, displayed trays
 /*
  * Powers Methods
  */
-int     getPowerCatByName(const QString &name);
-int     getPowerSetByName(const QString &name, uint32_t pcat_idx);
-int     getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
-CharacterPower getPowerData(PowerPool_Info &ppool);
-CharacterPowerSet getPowerSetData(PowerPool_Info &ppool);
+int     getPowerCatByName(const GameDataStore &data,const QString &name);
+int     getPowerSetByName(const GameDataStore &data,const QString &name, uint32_t pcat_idx);
+int     getPowerByName(const GameDataStore &data,const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
+CharacterPower getPowerData(const GameDataStore &data, PowerPool_Info &ppool);
+CharacterPowerSet getPowerSetData(const GameDataStore &data, PowerPool_Info &ppool);
 CharacterPower * getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
 void addPowerSet(CharacterData &cd, PowerPool_Info &ppool);
-void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool);
-void addPower(CharacterData &cd, PowerPool_Info &ppool);
+void addEntirePowerSet(const GameDataStore &data,CharacterData &cd, PowerPool_Info &ppool);
+void addPower(const GameDataStore &data,CharacterData &cd, PowerPool_Info &ppool);
 void removePower(CharacterData &cd, const PowerPool_Info &ppool);
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
 void dumpPower(const CharacterPower &pow);
 void dumpOwnedPowers(CharacterData &cd);
@@ -241,7 +287,7 @@ void dumpOwnedPowers(CharacterData &cd);
 /*
  * Inspirations Methods
  */
-void addInspirationByName(CharacterData &cd, QString &name);
+void addInspirationByName(const GameDataStore &data,CharacterData &cd, QString &name);
 void addInspirationToChar(CharacterData &cd, CharacterInspiration insp);
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
 void useInspiration(Entity &ent, uint32_t col, uint32_t row);
@@ -252,7 +298,7 @@ void dumpInspirations(CharacterData &cd);
 /*
  * Enhancements Methods
  */
-void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level);
+void addEnhancementByName(const GameDataStore &data,CharacterData &cd, QString &name, uint32_t &level);
 CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_array, uint32_t pow_idx_in_array, uint32_t eh_slot);
 int getNumberEnhancements(CharacterData &cd);
 void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx);
@@ -261,6 +307,12 @@ void trashEnhancement(CharacterData &cd, uint32_t eh_idx);
 void trashEnhancementInPower(CharacterData &cd, uint32_t pset_idx, uint32_t pow_idx, uint32_t eh_idx);
 void trashComboEnhancement(CharacterEnhancement &eh, uint32_t eh_idx);
 void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow_idx);
-void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow);
-void combineEnhancements(Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2);
+void reserveEnhancementSlot(const GameDataStore &data,CharacterData &cd, CharacterPower *pow);
+struct CombineResult
+{
+    bool success;
+    bool destroyed;
+};
+
+CombineResult combineEnhancements(const GameDataStore &data,Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2);
 void dumpEnhancements(CharacterData &cd);
