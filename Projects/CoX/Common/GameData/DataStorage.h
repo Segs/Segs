@@ -64,6 +64,7 @@ public:
     bool        read(float &v);
     bool        read(uint16_t &v);
     bool        read(uint8_t &v);
+    bool        readU(uint8_t &v);
     bool        read(Vec2 &v);
     bool        read(Vec3 &v);
     bool        read(RGBA &v);
@@ -74,6 +75,11 @@ public:
     bool        read(std::vector<std::vector<QString>> &res);
     bool        read(uint8_t *&val, uint32_t length);
     bool        read(QString &val);
+    bool        read(std::pair<uint8_t,uint8_t> &v) {
+                    uint8_t skipped, skipped2;
+                    return read_internal(v.first)!=0 &&
+                    read_internal(v.second)!=0 && read_internal(skipped) != 0 && read_internal(skipped2) != 0;
+                }
                 template<class Enum>
     bool        readEnum(Enum &val)
                 {

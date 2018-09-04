@@ -51,12 +51,10 @@ class NetCommandManager
     QHash<QString,NetCommand *> m_name_to_command;
     vNetCommand m_commands_level0;
     void            serializeto(BitStream &tgt,
-                                const vNetCommand &commands,
-                                const vNetCommand &commands2);
+                                const vNetCommand &commands);
 public:
     void            SendCommandShortcuts(MapClientSession *client,
-                                         BitStream &tgt,
-                                         const std::vector<NetCommand *> &commands2);
+                                         BitStream &tgt);
     NetCommand *    getCommandByName(const QString &name);
     void            addCommand(NetCommand *cmd);
 };

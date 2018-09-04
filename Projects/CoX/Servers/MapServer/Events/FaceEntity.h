@@ -13,22 +13,28 @@
 
 #include <QtCore/QString>
 
-// [[ev_def:type]]
-class FaceEntity : public GameCommand
+namespace SEGSEvents
 {
-public:
-    FaceEntity(uint32_t target) : GameCommand(MapEventTypes::evFaceEntity),
-        m_target(target) 
-    {}
-    
-    // SerializableEvent interface
-    void serializefrom(BitStream &src);
-    void serializeto(BitStream &bs) const override {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
-        bs.StorePackedBits(3, m_target);
-    };
+    // [[ev_def:type]]
+    class FaceEntity : public GameCommandEvent
+    {
+    public:
+        explicit FaceEntity() : GameCommandEvent(MapEventTypes::evFaceEntity) {}
+        FaceEntity(uint32_t target) : GameCommandEvent(MapEventTypes::evFaceEntity),
+            m_target(target) 
+        {}
+        
+        // SerializableEvent interface
+        void serializefrom(BitStream &src) override
+        {}
+        void serializeto(BitStream &bs) const override {
+            bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+            bs.StorePackedBits(3, m_target);
+        }
+        EVENT_IMPL(FaceEntity)
 
-protected:
-    //  [[ev_def:field]]
-    uint32_t m_target;
-};
+    protected:
+        //  [[ev_def:field]]
+        uint32_t m_target;
+    };
+}

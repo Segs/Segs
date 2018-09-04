@@ -13,24 +13,30 @@
 
 #include <QtCore/QString>
 
-// [[ev_def:type]]
-class FaceLocation : public GameCommand
+namespace SEGSEvents
 {
-public:
-    FaceLocation(glm::vec3 loc) : GameCommand(MapEventTypes::evFaceLocation),
-        m_loc(loc)
-    {}
+    // [[ev_def:type]]
+    class FaceLocation : public GameCommandEvent
+    {
+    public:
+        explicit FaceLocation() : GameCommandEvent(MapEventTypes::evFaceLocation) {}
+        FaceLocation(glm::vec3 loc) : GameCommandEvent(MapEventTypes::evFaceLocation),
+            m_loc(loc)
+        {}
 
-    // SerializableEvent interface
-    void serializefrom(BitStream &src);
-    void serializeto(BitStream &bs) const override {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
-        bs.StoreFloat(m_loc.x);
-        bs.StoreFloat(m_loc.y);
-        bs.StoreFloat(m_loc.z);
-    }
-    
-protected:
-    // [[ev_def:field]]
-    glm::vec3 m_loc;
-};
+        // SerializableEvent interface
+        void serializefrom(BitStream &src) override
+        {}
+        void serializeto(BitStream &bs) const override {
+            bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+            bs.StoreFloat(m_loc.x);
+            bs.StoreFloat(m_loc.y);
+            bs.StoreFloat(m_loc.z);
+        }
+        EVENT_IMPL(FaceLocation)
+        
+    protected:
+        // [[ev_def:field]]
+        glm::vec3 m_loc;
+    };
+}

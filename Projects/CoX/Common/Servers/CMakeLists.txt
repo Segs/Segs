@@ -22,6 +22,8 @@ SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
+scan_event_types(cox_server_common ${CMAKE_CURRENT_SOURCE_DIR})
+add_event_sources(cox_server_common target_SOURCES)
 
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(SYSTEM ${ACE_path})

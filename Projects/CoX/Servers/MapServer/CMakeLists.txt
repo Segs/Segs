@@ -7,7 +7,6 @@ SET(target_CPP
     DataHelpers.cpp
     EntityStorage.cpp
     EntityUpdateCodec.cpp
-    Events/GameCommandList.cpp
     Events/ChatDividerMoved.cpp
     Events/ChatMessage.cpp
     Events/EntitiesResponse.cpp
@@ -19,7 +18,6 @@ SET(target_CPP
     Events/SceneEvent.cpp
     Events/InfoMessageCmd.cpp
     Events/WindowState.cpp
-    NpcStore.cpp
     NpcGenerator.cpp
     MapEventFactory.cpp
     MapInstance.cpp
@@ -27,7 +25,6 @@ SET(target_CPP
     MapManager.cpp
     MapSceneGraph.cpp
     MapServer.cpp
-    MapServerData.cpp
     MapTemplate.cpp
     NetCommandManager.cpp
     SlashCommand.cpp
@@ -60,6 +57,7 @@ SET(target_INCLUDE
     Events/MapXferList.h
     Events/MessageChannels.h
     Events/NewEntity.h
+    Events/MapSessionReference.h
     Events/PlaqueVisited.h
     Events/PlayerInfo.h
     Events/PowerSystemEvents.h
@@ -75,7 +73,6 @@ SET(target_INCLUDE
     Events/InfoMessageCmd.h
     Events/InteractWithEntity.h
     Events/WindowState.h
-    NpcStore.h
     NpcGenerator.h
     MapEventFactory.h
     MapEvents.h
@@ -85,7 +82,6 @@ SET(target_INCLUDE
     MapRef.h
     MapSceneGraph.h
     MapServer.h
-    MapServerData.h
     MapTemplate.h
     NetCommandManager.h
     ScriptingEngine.h
@@ -101,11 +97,18 @@ SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
+scan_event_types(MapEvents ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Events)
+add_event_sources(MapEvents target_SOURCES)
 ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
 target_link_libraries(mapserver_lib PUBLIC CRUDP_Protocol common_runtime)
 target_link_libraries(mapserver_lib PUBLIC Qt5::Core)
+target_link_libraries(mapserver_lib PUBLIC network_structures)
+#target_link_libraries(mapserver_lib PUBLIC gameData game_db_sync_lib ace_IMP network_structures)
 if(ENABLE_SCRIPTING_ENGINE)
     target_compile_definitions(mapserver_lib PUBLIC -DSCRIPTING_ENABLED=1)
     target_link_libraries(mapserver_lib INTERFACE lua_IMP sol2_IMP)
+endif()
+if(ENABLE_TESTS)
+    add_subdirectory(UnitTests)
 endif()
 
