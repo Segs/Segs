@@ -555,7 +555,7 @@ void useInspiration(Entity &ent, uint32_t col, uint32_t row)
     removeInspiration(cd, col, row);
 
     // TODO: Do inspiration benefit. For now, just heal a bit
-    setHP(ent->m_char, getHP(ent->m_char) + 15, false);
+    setHP(*ent.m_char, getHP(*ent.m_char) + 15);
 
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
 }

@@ -382,7 +382,7 @@ void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess)
 {
     float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
 
-    setHP(sess.m_ent->m_char, attrib);
+    setHP(*sess.m_ent->m_char, attrib);
 
     QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(sess.m_ent->m_char->m_max_attribs.m_HitPoints);
     qCDebug(logSlashCommand) << msg;
@@ -681,7 +681,7 @@ void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess)
     {
         sendFloatingNumbers(sess, tgt->m_idx, int(amount));
 
-        setHP(tgt->m_char, getHP(tgt->m_char) - amount); // deal dmg
+        setHP(*tgt->m_char, getHP(*tgt->m_char) - amount); // deal dmg
 
         if(amount >= 0) // damage
         {
@@ -865,7 +865,7 @@ void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)
 {
-    sess.m_current_map->on_awaiting_dead_no_gurney_test(new AwaitingDeadNoGurney(), sess);
+    on_awaiting_dead_no_gurney_test(sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

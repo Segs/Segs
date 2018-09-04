@@ -16,13 +16,12 @@
 namespace SEGSEvents
 {
 // [[ev_def:type]]
-    class DeadNoGurney : public GameCommand
+    class DeadNoGurney : public GameCommandEvent
     {
     public:
-        DeadNoGurney() : GameCommand(MapEventTypes::evDeadNoGurney) {}
+        DeadNoGurney() : GameCommandEvent(MapEventTypes::evDeadNoGurney) {}
 
         // SerializableEvent interface
-        void serializefrom(BitStream &src);
         void serializeto(BitStream &bs) const override {
             bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
         };
