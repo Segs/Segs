@@ -482,10 +482,7 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
                                                 uint16_t(session.m_max_slots)}, 
                                                 session.link()->session_token()));
                                                 
-    MapXferRequest *map_xfer_req = new MapXferRequest();
-    map_xfer_req->m_address = ACE_INET_Addr(7004, "192.168.1.12"); // TODO: change to use map server port + address
-    map_xfer_req->m_map_cookie = 1; // TODO: cahnge to use actual map cookie
-    session.link()->putq(map_xfer_req);
+    
 }
 
 void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
@@ -610,7 +607,12 @@ void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
 
 void MapInstance::on_expect_client_response(ExpectMapClientResponse *ev)
 {
+    MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "MapClientResponse after transfer";
+    MapXferRequest *map_xfer_req = new MapXferRequest();
+    map_xfer_req->m_address = ev->m_data.m_connection_addr; // TODO: change to use map server port + address
+    map_xfer_req->m_map_cookie = ev->m_data.cookie; // TODO: cahnge to use actual map cookie
+    session.link()->putq(map_xfer_req);
 }
 
 void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
