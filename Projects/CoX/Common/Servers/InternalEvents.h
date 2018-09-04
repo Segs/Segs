@@ -112,7 +112,7 @@ struct ExpectMapClientRequestData
     uint64_t m_client_id;
     uint8_t m_access_level;
     ACE_INET_Addr m_from_addr;
-    QString char_from_db_data; //! serialized character data.
+    QString char_from_db_data; //! serialized character data, if this is empty Map server assumes a new character
     uint16_t m_slot_idx;
     QString m_character_name;
     QString m_map_name;
