@@ -99,7 +99,7 @@ struct vInspirations
             m_inspirations[i].reserve(m_rows);
     }
 
-    const int& size()
+    const int size()
     {
         return m_cols * m_rows;
     }
@@ -110,6 +110,14 @@ struct vInspirations
             qCritical() << QString("Trying to access vInspirations of %1 rows %2 cols using params %3 rows %4 cols");
 
         return m_inspirations[col][row];
+    }
+
+    CharacterInspiration& from_first_row (const size_t col)
+    {
+        if (!m_inspirations[col][0].m_has_insp)
+            push_to_first_row(col);
+
+        return m_inspirations[col][0];
     }
 
     CharacterInspiration value(const size_t col, const size_t row) const
@@ -125,6 +133,17 @@ struct vInspirations
 
         m_cols = newCol;
         m_rows = newRow;
+    }
+
+    void push_to_first_row (const size_t col)
+    {
+        size_t i = 1;
+        while (m_inspirations[col][0].m_has_insp && i < m_rows)
+        {
+            if (m_inspirations[col][i].m_has_insp)
+                std::swap(m_inspirations[col][0], m_inspirations[col][i]);
+            i++;
+        }
     }
 };
 
