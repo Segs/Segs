@@ -87,6 +87,9 @@ protected:
         // Server->Server messages
         void on_expect_client(ExpectMapClientRequest *ev);
 
+        void on_initiate_map_transfer(InitiateMapXfer *ev);
+        void on_map_xfer_complete(MapXferComplete *ev);
+
         void on_link_lost(SEGSEvent *ev);
         void on_disconnect(class DisconnectRequest *ev);
         void on_scene_request(class SceneRequest *ev);

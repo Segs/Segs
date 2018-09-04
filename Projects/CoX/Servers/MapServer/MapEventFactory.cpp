@@ -34,6 +34,8 @@ MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
         case 6: return new CookieRequest;
         case 7: return new ClientQuit;
         case 9: return new NewEntity;
+        case 11: return new InitiateMapXfer;
+        case 12: return new MapXferComplete;
             //   default: return new MapUnknownRequest;
     }
     qCWarning(logMapEvents, "Unhandled event type %d", opcode);

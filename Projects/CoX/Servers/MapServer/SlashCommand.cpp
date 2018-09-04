@@ -22,6 +22,7 @@
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
 #include "Events/ClientStates.h"
+#include "GameServer/GameEvents.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFile>
@@ -90,6 +91,7 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
+void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
 void moveTo(const QString &cmd, MapClientSession &sess);
@@ -174,6 +176,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"addboost", "addEnhancement"},"Adds Enhancement (by name) to Entity", &cmdHandler_AddEnhancement, 9},
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
+    {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
 
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", addNpc, 2},
@@ -218,6 +221,15 @@ static const SlashCommand g_defined_slash_commands[] = {
 /************************************************************
  *  Slash Command Handlers
  ***********************************************************/
+
+void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
+{
+    uint8_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
+    QString map_name = getMapName(map_idx);
+    QString map_path = getMapPath(map_idx);
+    qCDebug(logMapEvents) << map_path;
+    sess.link()->putq(new MapXferWait(map_path));  
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 9 Commands (GMs)
@@ -1297,7 +1309,12 @@ void cmdHandler_MapXferList(const QString &/*cmd*/, MapClientSession &sess)
 {
     bool has_location = true;
     glm::vec3 location = sess.m_ent->m_entity_data.m_pos;
-    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table><a href=CONTACTLINK_NEWPLAYERTELEPORT_AP><tr><td>One day this link will take you somewhere!</a></tr></td></table>";
+    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table>";
+    for (auto &map_data : getAllMapData())
+    {
+        msg_body.append(QString("<a href=\"cmd:enterdoorvolume %1\"><tr><td>%2</td></tr></a>").arg(map_data.m_map_idx).arg(map_data.m_display_map_name));
+    }
+    msg_body.append("</table>");
 
     showMapXferList(sess.m_ent, has_location, location, msg_body);
 }

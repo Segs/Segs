@@ -182,8 +182,7 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
     if(nullptr==tpl)
     {
         
-        HandlerLocator::getGame_Handler(m_owner_game_server_id)->putq(
-            new ExpectMapClientResponse({1, 0, m_base_location}, ev->session_token()));
+        ev->src()->putq(new ExpectMapClientResponse({1, 0, m_base_location}, ev->session_token()));
         return;
     }
     EventProcessor *instance = tpl->get_instance();

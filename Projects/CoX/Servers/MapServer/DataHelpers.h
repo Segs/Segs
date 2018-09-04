@@ -12,6 +12,7 @@
 #include "glm/vec3.hpp"
 #include <stdint.h>
 #include <QString>
+#include <vector>
 
 class QString;
 class Entity;
@@ -105,6 +106,7 @@ const QString       getDisplayMapName(size_t index);
 const QString       getMapName(size_t index);
 const QString       getMapPath(const EntityData &ed);
 const QString       getMapPath(size_t index);
+std::vector<MapData>         getAllMapData();
 const QString       getEntityDisplayMapName(const EntityData &ed);
 const QString       getFriendDisplayMapName(const Friend &f);
 uint32_t            getXP(const Character &c);

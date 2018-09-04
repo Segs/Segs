@@ -40,6 +40,7 @@
 #include "GameData/serialization_common.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
+#include "GameServer/GameEvents.h"
 
 #include <ace/Reactor.h>
 
@@ -452,9 +453,31 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evRecvNewPower:
             on_recv_new_power(static_cast<RecvNewPower *>(ev));
             break;
+        case MapEventTypes::evInitiateMapXfer:
+            on_initiate_map_transfer(static_cast<InitiateMapXfer *>(ev));
+            break;
+        case MapEventTypes::evMapXferComplete:
+            on_map_xfer_complete(static_cast<MapXferComplete *>(ev));
+            break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
     }
+}
+
+void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
+{
+    qCDebug(logMapEvents) << "Map Transfer Initiated";
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    MapXferRequest *map_xfer_req = new MapXferRequest();
+    map_xfer_req->m_address = ACE_INET_Addr(7004, "192.168.1.12"); // TODO: change to use map server port + address
+    map_xfer_req->m_map_cookie = 1; // TODO: cahnge to use actual map cookie
+    session.link()->putq(map_xfer_req);
+}
+
+void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
+{
+    qCDebug(logMapEvents) << "Map Xfer Complete";
+    // TODO: Do anything necessary after connecting to new map instance here.
 }
 
 void MapInstance::on_idle(IdleEvent *ev)
@@ -698,50 +721,58 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     uint64_t token = m_session_store.connected_client(ev->m_cookie - 2);
     EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
 
-    assert(token != ~0U);
-    MapClientSession &map_session(m_session_store.session_from_token(token));
-    map_session.link(lnk);
-    lnk->session_token(token);
-    if (ev->m_new_character)
+    // TODO for now this else is required to stop the server failing the assert when doing map transfers.
+    if (token != ~0U)
     {
-        QString ent_data;
-        Entity *e = m_entities.CreatePlayer();
+        assert(token != ~0U);
+        MapClientSession &map_session(m_session_store.session_from_token(token));
+        map_session.link(lnk);
+        lnk->session_token(token);
+        if (ev->m_new_character)
+        {
+            QString ent_data;
+            Entity *e = m_entities.CreatePlayer();
 
-        const MapServerData &data(g_GlobalMapServer->runtimeData());
+            const MapServerData &data(g_GlobalMapServer->runtimeData());
 
-        fillEntityFromNewCharData(*e, ev->m_character_data, data.getPacker(),data.m_keybind_profiles);
-        e->m_char->m_account_id = map_session.auth_id();
-        e->m_client = &map_session;
-        map_session.m_ent = e;
-        glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
-        if(!m_new_player_spawns.empty())
-            spawn_pos = glm::vec3(m_new_player_spawns[rand()%m_new_player_spawns.size()][3]);
-        forcePosition(*e,spawn_pos);
-        e->m_entity_data.m_access_level = map_session.m_access_level;
-        // new characters are transmitted nameless, use the name provided in on_expect_client
-        e->m_char->setName(map_session.m_name);
-        GameAccountResponseCharacterData char_data;
-        fromActualCharacter(*e->m_char,*e->m_player, *e->m_entity, char_data);
-        serializeToDb(e->m_entity_data,ent_data);
-        // create the character from the data.
-        //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
-        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.      
-        game_db->putq(new CreateNewCharacterRequest({char_data,ent_data, map_session.m_requested_slot_idx,
-                                                     map_session.m_max_slots,map_session.m_client_id},
-                                                    token,this));
+            fillEntityFromNewCharData(*e, ev->m_character_data, data.getPacker(),data.m_keybind_profiles);
+            e->m_char->m_account_id = map_session.auth_id();
+            e->m_client = &map_session;
+            map_session.m_ent = e;
+            glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
+            if(!m_new_player_spawns.empty())
+                spawn_pos = glm::vec3(m_new_player_spawns[rand()%m_new_player_spawns.size()][3]);
+            forcePosition(*e,spawn_pos);
+            e->m_entity_data.m_access_level = map_session.m_access_level;
+            // new characters are transmitted nameless, use the name provided in on_expect_client
+            e->m_char->setName(map_session.m_name);
+            GameAccountResponseCharacterData char_data;
+            fromActualCharacter(*e->m_char,*e->m_player, *e->m_entity, char_data);
+            serializeToDb(e->m_entity_data,ent_data);
+            // create the character from the data.
+            //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
+            // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.      
+            game_db->putq(new CreateNewCharacterRequest({char_data,ent_data, map_session.m_requested_slot_idx,
+                                                        map_session.m_max_slots,map_session.m_client_id},
+                                                        token,this));
+        }
+        else
+        {
+            assert(map_session.m_ent);
+
+            // this is just to test if GetEntityByNameRequest is working, the plan is for other EventProcessors to use this event
+            // game_db->putq(new GetEntityByNameRequest({map_session.m_ent->m_char->getName()}, lnk->session_token(), this));
+
+            // this is what should be used
+            game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
+        }
+        // while we wait for db response, mark session as waiting for reaping
+        m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token());
     }
     else
     {
-        assert(map_session.m_ent);
-
-        // this is just to test if GetEntityByNameRequest is working, the plan is for other EventProcessors to use this event
-        // game_db->putq(new GetEntityByNameRequest({map_session.m_ent->m_char->getName()}, lnk->session_token(), this));
-
-        // this is what should be used
-        game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
+        qCDebug(logMapEvents) << QString("On Create New Entity after MapXfer");
     }
-    // while we wait for db response, mark session as waiting for reaping
-    m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token());
 }
 
 void MapInstance::on_scene_request(SceneRequest *ev)

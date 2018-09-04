@@ -39,6 +39,32 @@ public:
     }
 };
 
+class InitiateMapXfer final : public MapLinkEvent
+{
+public:
+    InitiateMapXfer() : MapLinkEvent(MapEventTypes::evInitiateMapXfer)
+    {
+    }
+    void serializeto(BitStream &) const override
+    {}
+
+    void serializefrom(BitStream &) override
+    {}
+};
+
+class MapXferComplete final : public MapLinkEvent
+{
+public:
+    MapXferComplete() : MapLinkEvent(MapEventTypes::evMapXferComplete)
+    {}
+
+    void serializeto(BitStream &) const override
+    {}
+
+    void serializefrom(BitStream &) override
+    {}
+};
+
 class ShortcutsRequest final : public MapLinkEvent
 {
 public:

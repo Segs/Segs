@@ -23,6 +23,8 @@ public:
     EVENT_DECL(evInputState                 ,8)
     EVENT_DECL(evClientQuit                 ,9)
     EVENT_DECL(evForceLogout                ,10)
+    EVENT_DECL(evInitiateMapXfer            ,11)
+    EVENT_DECL(evMapXferComplete            ,12)
     EVENT_DECL(evChatDividerMoved           ,36)
     EVENT_DECL(evPreUpdateCommand           ,1013)  // this wraps a list of commands
 // server -> client commands

@@ -498,6 +498,11 @@ const QString getMapPath(size_t index)
     return g_defined_map_datas[index].m_map_path;
 }
 
+std::vector<MapData> getAllMapData()
+{
+    return g_defined_map_datas;
+}
+
 const QString getEntityDisplayMapName(const EntityData &ed)
 {
     return getDisplayMapName(ed.m_map_idx);

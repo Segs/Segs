@@ -23,20 +23,77 @@ class GameEventTypes : public CRUD_EventTypes
 {
 public:
         BEGINE_EVENTS(CRUD_EventTypes)
-        EVENT_DECL(evUpdateServer,      0)
-        EVENT_DECL(evMapAddrRequest,    1)
-        EVENT_DECL(evDeleteCharacter,   2)
-        EVENT_DECL(evUpdateCharacter,   3)
-        EVENT_DECL(evGameEntryError,    4)
-        EVENT_DECL(evCharacterSlots,    5)
-        EVENT_DECL(evCharacterResponse, 6)
-        EVENT_DECL(evMapAddrResponse,   7)
-        EVENT_DECL(evDeleteAcknowledged,8)
+        EVENT_DECL(evUpdateServer,          0)
+        EVENT_DECL(evMapAddrRequest,        1)
+        EVENT_DECL(evDeleteCharacter,       2)
+        EVENT_DECL(evUpdateCharacter,       3)
+        EVENT_DECL(evGameEntryError,        4)
+        EVENT_DECL(evCharacterSlots,        5)
+        EVENT_DECL(evCharacterResponse,     6)
+        EVENT_DECL(evMapAddrResponse,       7)
+        EVENT_DECL(evDeleteAcknowledged,    8)
+        EVENT_DECL(evMapXferWait,           10)
+        EVENT_DECL(evMapXferRequest,        11)
 
         EVENT_DECL(evUnknownEvent,16)
 
         EVENT_DECL(evServerReconfigured,100)
         END_EVENTS(102)
+};
+
+class MapXferRequest final : public GameLinkEvent
+{
+public:
+                MapXferRequest() : GameLinkEvent(GameEventTypes::evMapXferRequest)
+                {
+                    unused1 = unused2 = unused3 = unused4 = 0;
+                }
+
+        void    serializeto(BitStream &bs) const override {
+                    bs.StorePackedBits(1, 11); // opcode
+                    uint32_t ipaddr = htonl(m_address.get_ip_address());
+                    uint16_t port   = m_address.get_port_number();
+                    bs.StorePackedBits(1,unused1);
+                    bs.StorePackedBits(1,unused2);
+                    bs.StorePackedBits(1,ipaddr);
+                    bs.StorePackedBits(1,unused3);
+                    bs.StorePackedBits(1,port);
+                    bs.StorePackedBits(1,unused4);
+                    bs.StorePackedBits(1,m_map_cookie); 
+                }
+        void    serializefrom(BitStream &src) override
+        {
+        }
+
+    uint8_t unused1;
+    uint8_t unused2;
+    uint8_t unused3;
+    uint8_t unused4;
+    ACE_INET_Addr m_address;
+    // 0 - Name already taken.
+    // 1 - Problem detected in the game database system
+    uint32_t m_map_cookie;
+};
+
+// [[ev_def:type]]
+class MapXferWait final : public GameLinkEvent
+{
+public:
+                MapXferWait(QString map_name) : GameLinkEvent(GameEventTypes::evMapXferWait)
+                {
+                    m_map_name = map_name;
+                }
+
+    void        serializeto(BitStream &bs) const override {
+                    bs.StorePackedBits(1, 10);  // opcode 
+                    bs.StoreString(m_map_name);
+                }
+    void        serializefrom(BitStream &src) override
+                {
+                }
+
+            // [[ev_def:field]]
+    QString     m_map_name;
 };
 
 class MapServerAddrRequest : public GameLinkEvent
