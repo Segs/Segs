@@ -285,6 +285,9 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case Internal_EventTypes::evExpectMapClientRequest:
             on_expect_client(static_cast<ExpectMapClientRequest *>(ev));
             break;
+        case Internal_EventTypes::evExpectMapClientResponse:
+            on_expect_client_response(static_cast<ExpectMapClientResponse *>(ev));
+            break;
         case GameDBEventTypes::evWouldNameDuplicateResponse:
             on_name_clash_check_result(static_cast<WouldNameDuplicateResponse *>(ev));
             break;
@@ -466,8 +469,19 @@ void MapInstance::dispatch( SEGSEvent *ev )
 
 void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
 {
-    qCDebug(logMapEvents) << "Map Transfer Initiated";
+    
     MapClientSession &session(m_session_store.session_from_event(ev));
+    qCDebug(logMapEvents) << "Map Transfer Initiated with token" << session.link()->session_token();
+    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_owner_id);
+    GameAccountResponseCharacterData c_data;
+    qCDebug(logMapEvents) << "got map handler";
+    fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
+    qCDebug(logMapEvents) << "got character data";
+    map_server->putq(new ExpectMapClientRequest({session.auth_id(), session.m_access_level, session.link()->peer_addr(),
+                                                &c_data, session.m_requested_slot_idx, session.m_name, QString("maps/city_zones/City_01_02/City_01_02.txt"),
+                                                uint16_t(session.m_max_slots)}, 
+                                                session.link()->session_token()));
+                                                
     MapXferRequest *map_xfer_req = new MapXferRequest();
     map_xfer_req->m_address = ACE_INET_Addr(7004, "192.168.1.12"); // TODO: change to use map server port + address
     map_xfer_req->m_map_cookie = 1; // TODO: cahnge to use actual map cookie
@@ -594,10 +608,16 @@ void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
     }
 }
 
+void MapInstance::on_expect_client_response(ExpectMapClientResponse *ev)
+{
+    qCDebug(logMapEvents) << "MapClientResponse after transfer";
+}
+
 void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 {
     // TODO: handle contention while creating 2 characters with the same name from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
+    qCDebug(logMapEvents) << "MapInstance::on_expect_client";
     const ExpectMapClientRequestData &request_data(ev->m_data);
 
     // make sure that this is not a duplicate session
@@ -718,10 +738,12 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     // TODO: At this point we should pre-process the NewEntity packet and let the proper CoXMapInstance handle the rest
     // of processing
     auto *lnk   = (MapLink *)ev->src();
+    qCDebug(logMapEvents) << "cookie " << ev->m_cookie;
     uint64_t token = m_session_store.connected_client(ev->m_cookie - 2);
     EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
 
     // TODO for now this else is required to stop the server failing the assert when doing map transfers.
+    qCDebug(logMapEvents) << "token " << token << "new character" << ev->m_new_character;
     if (token != ~0U)
     {
         assert(token != ~0U);

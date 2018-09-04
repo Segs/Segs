@@ -175,17 +175,21 @@ void MapServer::dispatch(SEGSEvent *ev)
 
 void MapServer::on_expect_client(ExpectMapClientRequest *ev)
 {
+    qCDebug(logMapEvents) << "MapServer::ExpectMapClientRequest";
     // TODO: handle contention while creating 2 characters with the same name from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
     const ExpectMapClientRequestData &request_data(ev->m_data);
-    MapTemplate *tpl    = map_manager().get_template(request_data.m_map_name);
+    qCDebug(logMapEvents) << "MapName: " << request_data.m_map_name;
+    MapTemplate *tpl    = map_manager().get_template(request_data.m_map_name.toLower());
     if(nullptr==tpl)
     {
-        
+        qCDebug(logMapEvents) << "Returning response for base location...";
         ev->src()->putq(new ExpectMapClientResponse({1, 0, m_base_location}, ev->session_token()));
         return;
     }
+    qCDebug(logMapEvents) << "Found map template";
     EventProcessor *instance = tpl->get_instance();
+    qCDebug(logMapEvents) << "Found map instance";
     // now we know which instance will handle this client, pass the event to it,
     // remember to shallow_copy to mark the event as still owned.
     instance->putq(ev->shallow_copy());
