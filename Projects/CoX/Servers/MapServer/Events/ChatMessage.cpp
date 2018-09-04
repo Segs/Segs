@@ -21,6 +21,8 @@
 
 #include <cmath>
 
+using namespace SEGSEvents;
+
 void ChatMessage::serializeto(BitStream &bs) const
 {
     bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
@@ -36,13 +38,13 @@ void ChatMessage::serializefrom(BitStream &src)
     src.GetString(m_msg);
 }
 
-void sendChatMessage(MessageChannel t, QString msg, MapClientSession *src, MapClientSession *tgt)
+void sendChatMessage(MessageChannel t, QString msg, MapClientSession *src, MapClientSession &tgt)
 {
     ChatMessage * res = new ChatMessage(t,msg);
     res->m_source_player_id = getIdx(*src->m_ent);
     res->m_target_player_id = getIdx(*src->m_ent);
 
-    tgt->addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
+    tgt.addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
 
     qCDebug(logChat).noquote() << "ChatMessage:"
              << "\n  Channel:" << int(res->m_channel_type)

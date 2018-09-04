@@ -28,6 +28,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
+using namespace SEGSEvents;
+
 struct ClientAcceptor : public ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR>
 {
     AuthHandler *m_target;
@@ -50,30 +52,39 @@ struct ClientAcceptor : public ACE_Acceptor<AuthLink, ACE_SOCK_ACCEPTOR>
  */
 AuthServer::AuthServer()
 {
-    m_acceptor = new ClientAcceptor;
-    m_handler.reset(new AuthHandler(this));
+    m_acceptor = std::make_unique<ClientAcceptor>();
+    m_handler = std::make_unique<AuthHandler>(this);
     m_acceptor->m_target = m_handler.get();
-    // Start two threads to handle Auth events.
-    m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,2);
     m_running=false;
 }
 
 AuthServer::~AuthServer()
 {
-    delete m_acceptor;
+
+    shutdown_event_processor_and_wait(m_handler.get());
 }
 
-void AuthServer::dispatch(SEGSEvent *ev)
+void AuthServer::dispatch(Event *ev)
 {
     assert(ev);
     switch(ev->type())
     {
-        case Internal_EventTypes::evReloadConfig:
+        case evReloadConfigMessage:
             ReadConfigAndRestart();
             break;
         default:
             assert(!"Unknown event encountered in dispatch.");
     }
+}
+
+void AuthServer::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void AuthServer::serialize_to(std::ostream &is)
+{
+    assert(false);
 }
 
 /*!
@@ -130,7 +141,7 @@ bool AuthServer::Run()
  * @brief Shuts the server down
  * @return bool, if it's false, we failed to close down cleanly
  */
-bool AuthServer::ShutDown()
+void AuthServer::per_thread_shutdown()
 {
     ACE_Guard<ACE_Thread_Mutex> guard(m_mutex);
     if (m_running)
@@ -138,12 +149,15 @@ bool AuthServer::ShutDown()
         qWarning() << "Auth server listener is closing down";
         m_acceptor->close();
     }
-    // force our handler to finish
-    m_handler->putq(SEGSEvent::s_ev_finish.shallow_copy());
-    m_handler->wait();
+    // force our handler to finish if it's running
+    shutdown_event_processor_and_wait(m_handler.get());
     m_running = false;
-    putq(SEGSEvent::s_ev_finish.shallow_copy());
-    wait();
+}
+
+bool AuthServer::per_thread_startup()
+{
+    // Start a single thread to handle Auth events.
+    m_handler->activate();
     return true;
 }
 

@@ -1,8 +1,8 @@
 #include "NpcGenerator.h"
 
 #include "MapInstance.h"
-#include "MapServerData.h"
-#include "NpcStore.h"
+#include "GameData/GameDataStore.h"
+#include "GameData/NpcStore.h"
 #include "NetStructures/Character.h"
 
 #include <QRegularExpression>
@@ -22,7 +22,7 @@ void NpcGenerator::generate(MapInstance *map_instance)
     for(const glm::mat4 &v : initial_positions)
     {
         int idx = npc_store.npc_idx(npc_def);
-        Entity *e = map_instance->m_entities.CreateGeneric(*npc_def, idx, 0,type);
+        Entity *e = map_instance->m_entities.CreateGeneric(map_instance->serverData(),*npc_def, idx, 0,type);
         forcePosition(*e,glm::vec3(v[3]));
         auto valquat = glm::quat_cast(v);
 

@@ -60,10 +60,7 @@ void saveTo(const GUISettings &target, const QString &baseName, bool text_format
     commonSaveTo(target,"GUISettings",baseName,text_format);
 }
 
-template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive &archive, GUISettings &co, uint32_t const version);
-template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive &archive, GUISettings &co, uint32_t const version);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(GUISettings);
 
 void serializeToDb(const GUISettings &data, QString &tgt)
 {

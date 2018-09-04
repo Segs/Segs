@@ -13,11 +13,14 @@ class QSqlQuery;
 class QSqlError;
 class QString;
 
+namespace SEGSEvents
+{
 struct CreateAccountData;
 struct RetrieveAccountRequestData;
 struct RetrieveAccountResponseData;
 struct ValidatePasswordRequestData;
 struct ValidatePasswordResponseData;
+}
 
 ///
 /// \brief The AuthDbSyncContext class is used as thread local storage for auth database related objects
@@ -39,10 +42,10 @@ public:
     ~AuthDbSyncContext();
     QSqlError *getLastError() const { return last_error.get(); }
     bool loadAndConfigure();
-    bool addAccount(const struct CreateAccountData &data);
-    bool retrieveAccountAndCheckPassword(const RetrieveAccountRequestData &data,RetrieveAccountResponseData &result);
+    bool addAccount(const SEGSEvents::CreateAccountData &data);
+    bool retrieveAccountAndCheckPassword(const SEGSEvents::RetrieveAccountRequestData &data,SEGSEvents::RetrieveAccountResponseData &result);
 //    bool retrieveAccount(const RetrieveAccountRequestData &data, RetrieveAccountResponseData &result);
-    bool getPasswordValidity(const ValidatePasswordRequestData &data, ValidatePasswordResponseData &result);
+    bool getPasswordValidity(const SEGSEvents::ValidatePasswordRequestData &data, SEGSEvents::ValidatePasswordResponseData &result);
 protected:
     bool checkPassword(const QString &login, const QString &password);
 };
