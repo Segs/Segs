@@ -13,15 +13,19 @@
 
 #include <QtCore/QString>
 
-// [[ev_def:type]]
-class DeadNoGurney : public GameCommand
+namespace SEGSEvents
 {
-public:
-    DeadNoGurney() : GameCommand(MapEventTypes::evDeadNoGurney) {}
+// [[ev_def:type]]
+    class DeadNoGurney : public GameCommand
+    {
+    public:
+        DeadNoGurney() : GameCommand(MapEventTypes::evDeadNoGurney) {}
 
-    // SerializableEvent interface
-    void serializefrom(BitStream &src);
-    void serializeto(BitStream &bs) const override {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+        // SerializableEvent interface
+        void serializefrom(BitStream &src);
+        void serializeto(BitStream &bs) const override {
+            bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+        };
+        EVENT_IMPL(DeadNoGurney)
     };
-};
+}
