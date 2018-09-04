@@ -22,7 +22,7 @@ SET (target_SOURCES
 
 ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
 target_link_libraries(authserver_lib PUBLIC Qt5::Core)
-add_dependencies(authserver_lib ace_IMP)
+target_link_libraries(authserver_lib PUBLIC ace_IMP cox_server_common AuthProtocol SEGS_Components)
 IF(BUILD_SEPARATE)
     ADD_DEFINITIONS(-DSEPARATE)
     ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
@@ -32,14 +32,13 @@ IF(BUILD_SEPARATE)
         gameserver_lib
         mapserver_lib
         game_db_sync_lib
-        cox_server_common
         network_structures
-        AuthProtocol
         ${target_DEPENDS} gameData
-        SEGS_Components
         ${SCRIPTING_LIBRARY}
+        mapserver_lib
         Threads::Threads
         ace_IMP
+        ${CMAKE_DL_LIBS}
     )
     ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
     ADD_DEPENDENCIES(authserver ACE_BUILD)

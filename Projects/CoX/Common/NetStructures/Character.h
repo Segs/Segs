@@ -8,6 +8,7 @@
 #pragma once
 #include "CommonNetStructures.h"
 #include "BitStream.h"
+#include "Powers.h"
 #include "Common/GameData/attrib_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
 #include "Common/GameData/entitydata_definitions.h"
@@ -21,11 +22,16 @@
 #include <cassert>
 #include <string>
 
+namespace SEGSEvents
+{
+    struct GameAccountResponseCharacterData;
+}
 class CharacterCostume;
 
 struct PlayerData;
 struct Costume;
-struct PowerPool_Info;
+class PowerPool_Info;
+class GameDataStore;
 
 enum NameFlag : bool
 {
@@ -47,8 +53,8 @@ class Character
 
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
-        friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player, EntityData &entity);
-        friend bool fromActualCharacter(const Character &src,const PlayerData &player, const EntityData &entity, GameAccountResponseCharacterData &tgt);
+        friend bool toActualCharacter(const SEGSEvents::GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player, EntityData &entity);
+        friend bool fromActualCharacter(const Character &src,const PlayerData &player, const EntityData &entity, SEGSEvents::GameAccountResponseCharacterData &tgt);
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
@@ -71,13 +77,13 @@ const   QString &       getName() const { return m_name; }
         void            serializeto(BitStream &buffer) const;
         void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool all_costumes=true) const;
         void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
-        void            finalizeLevel();
-        void            addStartingInspirations();
-        void            getStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
-        void            getPowerFromBuildInfo(BitStream &src);
+        void            finalizeLevel(const GameDataStore &data);
+        void            addStartingInspirations(const GameDataStore &data);
+        void            getStartingPowers(const GameDataStore &data, const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
+        void            getPowerFromBuildInfo(const GameDataStore &data,BitStream &src);
         void            sendEnhancements(BitStream &bs) const;
         void            sendInspirations(BitStream &bs) const;
-        void            GetCharBuildInfo(BitStream &src); // serialize from char creation
+        void            GetCharBuildInfo(BitStream &src, const GameDataStore &data); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
         const CharacterCostume *getCurrentCostume() const;
@@ -123,5 +129,5 @@ protected:
 
 void serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
 bool initializeCharacterFromCreator();
-bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt, PlayerData &player, EntityData &entity);
-bool fromActualCharacter(const Character &src, const PlayerData &player, const EntityData &entity, GameAccountResponseCharacterData &tgt);
+bool toActualCharacter(const SEGSEvents::GameAccountResponseCharacterData &src, Character &tgt, PlayerData &player, EntityData &entity);
+bool fromActualCharacter(const Character &src, const PlayerData &player, const EntityData &entity, SEGSEvents::GameAccountResponseCharacterData &tgt);

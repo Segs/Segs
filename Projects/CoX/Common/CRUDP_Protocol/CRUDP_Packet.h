@@ -46,7 +46,7 @@ public:
 
     //  Accessors
     //////////////////////////////////////////////////////////////////////////
-    uint8_t  *  GetBuffer()         const   { return m_stream->GetBuffer(); }
+    uint8_t  *  GetBuffer()                 { return m_stream->GetBuffer(); }
     size_t      GetPacketLength()   const   { return m_stream->GetReadableDataSize();}
     BitStream * GetStream()                 { return m_stream;                      }
     bool        getIsCompressed()   const   { return m_compressed;                  }

@@ -24,7 +24,7 @@ class MessageBusEndpoint
 public:
     MessageBusEndpoint(EventProcessor &h) : m_true_handler(h) {}
     ~MessageBusEndpoint();
-    void putq(SEGSEvent *e)
+    void putq(SEGSEvents::Event *e)
     {
         m_true_handler.putq(e);
     }

@@ -112,7 +112,7 @@ inline glm::vec3 toCoH_YPR(const glm::quat &q)
     float qwx(q.w * q.x);
     float qwy(q.w * q.y);
     float qwz(q.w * q.z);
-    glm::mat3 mat(mat3_cast(q));
+    //glm::mat3 mat(mat3_cast(q));
     //float mat00 = 1 - 2 * (qyy + qzz);
     float mat01 = 2 * (qxy + qwz);
     //float mat02 = 2 * (qxz - qwy);

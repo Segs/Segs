@@ -6,18 +6,21 @@
  */
 
 #pragma once
-#include "GameCommandList.h"
-
-#include "MapEvents.h"
-#include "MapLink.h"
+#include "MapEventTypes.h"
+#include "GameCommand.h"
 
 #include <QtCore/QString>
 
-class StandardDialogCmd final : public GameCommand
+namespace SEGSEvents
+{
+// [[ev_def:type]]
+class StandardDialogCmd final : public GameCommandEvent
 {
 public:
+    // [[ev_def:field]]
     QString     m_msg;
-                StandardDialogCmd(QString msg) : GameCommand(MapEventTypes::evStandardDialogCmd),m_msg(msg)
+                StandardDialogCmd() : GameCommandEvent(MapEventTypes::evStandardDialogCmd) {}
+                StandardDialogCmd(QString msg) : GameCommandEvent(MapEventTypes::evStandardDialogCmd),m_msg(msg)
                 {
                 }
 
@@ -25,5 +28,7 @@ public:
                     bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
                     bs.StoreString(m_msg);
                 }
-        void    serializefrom(BitStream &src);
+        EVENT_IMPL(StandardDialogCmd)
 };
+} // end of SEGSEvents namespace
+

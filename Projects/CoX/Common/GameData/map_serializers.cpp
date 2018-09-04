@@ -12,6 +12,7 @@
 
 #include "map_serializers.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
 #include "map_definitions.h"
 #include "DataStorage.h"

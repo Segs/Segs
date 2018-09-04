@@ -35,7 +35,6 @@ const   uint32_t    m_team_idx          = 0;
         void        dump();
         void        listTeamMembers();
         void        addTeamMember(Entity *e);
-        void        removeTeamMember(Entity *e);
         bool        isTeamLeader(Entity *e);
 
 private:
@@ -50,12 +49,5 @@ bool sameTeam(Entity &src, Entity &tgt);
 bool makeTeamLeader(Entity &src, Entity &tgt);
 bool inviteTeam(Entity &src, Entity &tgt);
 bool kickTeam(Entity &tgt);
-void leaveTeam(Entity &e);
+void removeTeamMember(Team &self,Entity *e);
 
-/*
- * Sidekick Methods -- Sidekick system requires teaming.
- */
-bool isSidekickMentor(const Entity &e);
-void inviteSidekick(Entity &src, Entity &tgt);
-void addSidekick(Entity &tgt, Entity &src);
-void removeSidekick(Entity &src);

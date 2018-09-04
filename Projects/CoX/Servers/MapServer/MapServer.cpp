@@ -15,7 +15,7 @@
 #include "Servers/HandlerLocator.h"
 #include "ConfigExtension.h"
 #include "MapManager.h"
-#include "MapServerData.h"
+#include "GameData/GameDataStore.h"
 #include "MapTemplate.h"
 #include "MapInstance.h"
 #include "SEGSTimer.h"
@@ -30,6 +30,8 @@
 #include <QtCore/QDebug>
 
 #include <set>
+
+using namespace SEGSEvents;
 
 // global variables
 MapServer *g_GlobalMapServer=nullptr;
@@ -47,7 +49,7 @@ namespace
 class MapServer::PrivateData
 {
 public:
-        MapServerData   m_runtime_data;
+        GameDataStore   m_runtime_data;
         MapManager      m_manager;
 };
 
@@ -127,19 +129,17 @@ bool MapServer::ReadConfigAndRestart()
 
     if(!d->m_manager.load_templates(map_templates_dir,m_owner_game_server_id,m_id,{m_base_listen_point,m_base_location}))
     {
-        postGlobalEvent(new ServiceStatusMessage({ QString("MapServer: Cannot load map templates from %1").arg(map_templates_dir),-1 }));
+        postGlobalEvent(new ServiceStatusMessage({ QString("MapServer: Cannot load map templates from %1").arg(map_templates_dir),-1 },0));
         return false;
     }
     return Run();
 }
 
-bool MapServer::ShutDown()
+void MapServer::per_thread_shutdown()
 {
     qWarning() << "Shutting down map server";
     // tell all instances to shut down too
     d->m_manager.shut_down_all();
-    putq(SEGSEvent::s_ev_finish.shallow_copy());
-    return true;
 }
 
 MapManager &MapServer::map_manager()
@@ -147,7 +147,7 @@ MapManager &MapServer::map_manager()
     return d->m_manager;
 }
 
-MapServerData &MapServer::runtimeData()
+GameDataStore &MapServer::runtimeData()
 {
     return d->m_runtime_data;
 }
@@ -157,12 +157,12 @@ void MapServer::sett_game_server_owner(uint8_t owner_id)
     m_owner_game_server_id = owner_id;
 }
 
-void MapServer::dispatch(SEGSEvent *ev)
+void MapServer::dispatch(Event *ev)
 {
     assert(ev);
     switch(ev->type())
     {
-        case Internal_EventTypes::evReloadConfig:
+        case evReloadConfigMessage:
             ReadConfigAndRestart();
             break;
         case Internal_EventTypes::evExpectMapClientRequest:
@@ -181,7 +181,7 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
     MapTemplate *tpl    = map_manager().get_template(request_data.m_map_name);
     if(nullptr==tpl)
     {
-        
+
         HandlerLocator::getGame_Handler(m_owner_game_server_id)->putq(
             new ExpectMapClientResponse({1, 0, m_base_location}, ev->session_token()));
         return;
@@ -192,4 +192,13 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
     instance->putq(ev->shallow_copy());
 }
 
+void MapServer::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void MapServer::serialize_to(std::ostream &is)
+{
+    assert(false);
+}
 //! @}

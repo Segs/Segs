@@ -16,13 +16,6 @@ class PowerTrayItem;
 class PowerTray;
 class PowerTrayGroup;
 
-template<class Archive>
-void serialize(Archive &archive, PowerTrayItem &pwr, uint32_t const version);
-template<class Archive>
-void serialize(Archive &archive, PowerTray &ptray, uint32_t const version);
-template<class Archive>
-void serialize(Archive &archive, PowerTrayGroup &ptraygroup, uint32_t const version);
-
 void saveTo(const PowerTrayGroup &target, const QString &baseName, bool text_format=false);
 
 void serializeToDb(const PowerTrayGroup &data, QString &tgt);

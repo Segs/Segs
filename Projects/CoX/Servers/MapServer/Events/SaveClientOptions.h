@@ -6,14 +6,22 @@
  */
 
 #pragma once
-#include "MapEvents.h"
+#include "GameCommand.h"
+#include "MapEventTypes.h"
 #include "Common/GameData/clientoptions_definitions.h"
 
+namespace SEGSEvents
+{
+// [[ev_def:type]]
 class SaveClientOptions final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     ClientOptions data;
     SaveClientOptions() : MapLinkEvent(MapEventTypes::evSaveClientOptions) {}
     void serializeto(BitStream &bs) const override;
     void serializefrom(BitStream &bs) override;
+    EVENT_IMPL(SaveClientOptions)
 };
+} // end of SEGSEvents namespace
+
