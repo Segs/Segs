@@ -45,6 +45,8 @@
 #include "serialization_types.h"
 #include "version.h"
 #include "Common/Servers/InternalEvents.h"
+#include "Events/MapXferWait.h"
+#include "Events/MapXferRequest.h"
 
 #include <ace/Reactor.h>
 

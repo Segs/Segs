@@ -16,6 +16,7 @@
 #include "Events/ClientStates.h"
 #include "Events/StandardDialogCmd.h"
 #include "Events/InfoMessageCmd.h"
+#include "Events/MapXferWait.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
 #include "Logging.h"
