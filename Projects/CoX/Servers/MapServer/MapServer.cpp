@@ -218,6 +218,12 @@ uint8_t MapServer::session_map_xfer_idx(uint64_t session_token)
         return m_current_map_xfers[session_token];
 }
 
+void MapServer::session_xfer_complete(uint64_t session_token)
+{
+    if (session_has_xfer_in_progress(session_token))
+        m_current_map_xfers.erase(session_token);
+}
+
 void MapServer::serialize_from(std::istream &is)
 {
     assert(false);

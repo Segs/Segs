@@ -1891,10 +1891,10 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
     qCDebug(logMapEvents) << QString("Client Resumed Rendering with session %1").arg(session.link()->session_token());
+    if(session.m_in_map==false)
+        session.m_in_map = true;
     if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
-        if(session.m_in_map==false)
-            session.m_in_map = true;
         char buf[256];
         std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
         std::snprintf(buf, 256, "There are %zu active entities and %zu clients", m_entities.active_entities(),
@@ -1904,7 +1904,12 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
 
         sendServerMOTD(&session);
     }
-    // else don't send motd, as this is from a map transfer
+    else
+    {
+        // else don't send motd, as this is from a map transfer
+        // TODO: check if there's a better place to complete the map transfer..
+        map_server->session_xfer_complete(session.link()->session_token());
+    }
 }
 
 void MapInstance::on_location_visited(LocationVisited *ev)

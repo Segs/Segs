@@ -45,6 +45,7 @@ public:
         void                    sett_game_server_owner(uint8_t owner_id);
         bool                    session_has_xfer_in_progress(uint64_t session_token);
         uint8_t                 session_map_xfer_idx(uint64_t session_token);
+        void                    session_xfer_complete(uint64_t session_token);
 private:
         bool                    Run();
         // EventProcessor interface
