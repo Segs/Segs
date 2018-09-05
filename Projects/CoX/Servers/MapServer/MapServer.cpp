@@ -168,6 +168,9 @@ void MapServer::dispatch(Event *ev)
         case Internal_EventTypes::evExpectMapClientRequest:
             on_expect_client(static_cast<ExpectMapClientRequest *>(ev));
             break;
+        case Internal_EventTypes::evClientMapXferMessage:
+            on_client_map_xfer(static_cast<ClientMapXferMessage *>(ev));
+            break;
         default:
             assert(!"Unknown event encountered in dispatch.");
     }
@@ -189,6 +192,30 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
     // now we know which instance will handle this client, pass the event to it,
     // remember to shallow_copy to mark the event as still owned.
     instance->putq(ev->shallow_copy());
+}
+
+void MapServer::on_client_map_xfer(ClientMapXferMessage *ev)
+{
+    if (m_current_map_xfers.find(ev->m_data.m_session) == m_current_map_xfers.end())
+    {
+        qCDebug(logMapEvents) << QString("Adding client transfer map index for client session %1 to map index %2").arg(ev->m_data.m_session).arg(ev->m_data.m_map_idx);
+        m_current_map_xfers.insert(std::pair<uint64_t, uint8_t>(ev->m_data.m_session, ev->m_data.m_map_idx));
+    }
+    else
+    {
+        qCDebug(logMapEvents) << QString("Client session %1 attempted to request a second map transfer while having an existing transfer in progress").arg(ev->m_data.m_session);
+    }
+}
+
+bool MapServer::session_has_xfer_in_progress(uint64_t session_token)
+{
+    return m_current_map_xfers.find(session_token) != m_current_map_xfers.end();
+}
+
+uint8_t MapServer::session_map_xfer_idx(uint64_t session_token)
+{
+    if (session_has_xfer_in_progress(session_token))
+        return m_current_map_xfers[session_token];
 }
 
 void MapServer::serialize_from(std::istream &is)

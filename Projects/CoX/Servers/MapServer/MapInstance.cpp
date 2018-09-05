@@ -474,24 +474,8 @@ void MapInstance::dispatch( Event *ev )
         case MapEventTypes::evMapXferComplete:
             on_map_xfer_complete(static_cast<MapXferComplete *>(ev));
             break;
-        case Internal_EventTypes::evClientMapTransferMessage:
-            on_client_map_xfer(static_cast<ClientMapTransferMessage *>(ev));
-            break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
-    }
-}
-
-void MapInstance::on_client_map_xfer(ClientMapTransferMessage *ev)
-{
-    if (m_client_map_transfer_requests.find(ev->m_data.m_session) == m_client_map_transfer_requests.end())
-    {
-        qCDebug(logMapEvents) << QString("Adding client transfer map index for client session %1 to map index %2").arg(ev->m_data.m_session).arg(ev->m_data.m_map_idx);
-        m_client_map_transfer_requests.insert(std::pair<uint64_t, uint8_t>(ev->m_data.m_session, ev->m_data.m_map_idx));
-    }
-    else
-    {
-        qCDebug(logMapEvents) << QString("Client session %1 attempted to request a second map transfer while having an existing transfer in progress").arg(ev->m_data.m_session);
     }
 }
 
@@ -499,23 +483,26 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
 {
     
     MapClientSession &session(m_session_store.session_from_event(ev));
-    qCDebug(logMapEvents) << "Map Transfer Initiated with token" << session.link()->session_token();
+    MapLink *lnk = session.link();
+    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
+    qCDebug(logMapEvents) << "Map Transfer Initiated with token" << lnk->session_token();
     
-    if (m_client_map_transfer_requests.find(session.link()->session_token()) != m_client_map_transfer_requests.end())
+    if (map_server->session_has_xfer_in_progress(lnk->session_token()))
     {
-        uint8_t map_idx = m_client_map_transfer_requests[session.link()->session_token()]; 
-        m_client_map_transfer_requests.erase(map_idx);
+        // This is used here to get the map idx to send to the client for the transfer, but we
+        // remove it from the std::map after the client has sent us the ClientRenderingResumed event so we
+        // can prevent motd showing every time.
+        uint8_t map_idx = map_server->session_map_xfer_idx(lnk->session_token()); 
         QString map_path = getMapPath(map_idx).toLower();
-        MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_owner_id);
         GameAccountResponseCharacterData c_data;
         QString serialized_data;
         
         fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
         serializeToQString(c_data, serialized_data);
-        ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, session.link()->peer_addr(),
+        ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, lnk->peer_addr(),
                                         serialized_data, session.m_requested_slot_idx, session.m_name, map_path,
                                         uint16_t(session.m_max_slots)},
-                                    session.link()->session_token(),this);
+                                        lnk->session_token(),this);
         map_server->putq(map_req);
     }
     else
@@ -672,6 +659,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     map_session.m_max_slots   = request_data.m_max_slots;
     map_session.m_access_level = request_data.m_access_level;
     map_session.m_client_id    = request_data.m_client_id;
+    map_session.is_connected_to_game_server_id = m_game_server_id;
     cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
     if (request_data.char_from_db_data.isEmpty())
@@ -1899,18 +1887,24 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
 
 void MapInstance::on_client_resumed(ClientResumedRendering *ev)
 {
+    // TODO only do this the first time a client connects, not after map transfers..
     MapClientSession &session(m_session_store.session_from_event(ev));
+    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
+    qCDebug(logMapEvents) << QString("Client Resumed Rendering with session %1").arg(session.link()->session_token());
+    if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
+    {
+        if(session.m_in_map==false)
+            session.m_in_map = true;
+        char buf[256];
+        std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
+        std::snprintf(buf, 256, "There are %zu active entities and %zu clients", m_entities.active_entities(),
+                    m_session_store.num_sessions());
+        welcome_msg += buf;
+        sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),session);
 
-    if(session.m_in_map==false)
-        session.m_in_map = true;
-    char buf[256];
-    std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
-    std::snprintf(buf, 256, "There are %zu active entities and %zu clients", m_entities.active_entities(),
-                  m_session_store.num_sessions());
-    welcome_msg += buf;
-    sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),session);
-
-    sendServerMOTD(&session);
+        sendServerMOTD(&session);
+    }
+    // else don't send motd, as this is from a map transfer
 }
 
 void MapInstance::on_location_visited(LocationVisited *ev)
@@ -1945,11 +1939,13 @@ void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
 void MapInstance::on_enter_door(EnterDoor *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
+    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
     
     // ev->name is the map_idx when using the map menu currently.
-    if (m_client_map_transfer_requests.find(session.link()->session_token()) == m_client_map_transfer_requests.end())
+    if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
-        m_client_map_transfer_requests[session.link()->session_token()] = ev->name.toInt();
+        qCDebug(logMapEvents) << QString("Adding session %1 to the map requests").arg(session.link()->session_token());
+        map_server->putq(new ClientMapXferMessage({session.link()->session_token(), ev->name.toInt()},0));
         session.link()->putq(new MapXferWait(getMapPath(ev->name.toInt()))); 
     }
     else

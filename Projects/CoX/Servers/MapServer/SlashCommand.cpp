@@ -236,7 +236,8 @@ void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
     qCDebug(logMapEvents) << map_path;
     sess.link()->putq(new MapXferWait(map_path));  
 
-    sess.m_current_map->putq(new ClientMapTransferMessage({sess.link()->session_token(), map_idx}, 0));
+    HandlerLocator::getMap_Handler(sess.is_connected_to_game_server_id)
+        ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_idx}, 0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
