@@ -65,14 +65,10 @@ public:
 
     void ShutDown() const
     {
-        // tell our handler to shut down too
-        m_handler->putq(Finish::s_instance->shallow_copy());
-        m_handler->wait();
-        if(m_friendship_service)
-        {
-            m_friendship_service->putq(Finish::s_instance->shallow_copy());
-            m_friendship_service->wait();
-        }
+        // tell our handler to shut down
+        shutdown_event_processor_and_wait(m_handler);
+        // tell our friendship service to close too
+        shutdown_event_processor_and_wait(m_friendship_service.get());
     }
 };
 
@@ -112,6 +108,7 @@ GameServer::GameServer(int id) : d(new PrivateData)
 
 GameServer::~GameServer()
 {
+    d->ShutDown();
     delete d->m_endpoint;
 }
 

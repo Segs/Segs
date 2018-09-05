@@ -105,7 +105,7 @@ bool loadFrom(BinStore * s, EventSplat & target)
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok && s->end_encountered());
     return ok;
-};
+}
 
 bool loadFrom(BinStore * s, FxGeoEntry_Event & target)
 {

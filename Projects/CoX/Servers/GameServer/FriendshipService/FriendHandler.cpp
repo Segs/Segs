@@ -22,12 +22,12 @@ void send_update_friends_list(FriendHandlerState &state,uint32_t char_db_id)
 {
     if(state.is_online(char_db_id))
     {
+        const PlayerInfo &entry(state.m_player_info_map[char_db_id]);
         EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
-                    state.m_player_info_map[char_db_id].m_map_info.server_id,
-                    state.m_player_info_map[char_db_id].m_map_info.instance_id);
+                    entry.m_map_info.server_id,
+                    entry.m_map_info.instance_id);
 
-        tgt->putq(new SendFriendListMessage({state.m_player_info_map[char_db_id].m_map_info.session_token,
-                                            state.m_player_info_map[char_db_id].m_friends_list},0));
+        tgt->putq(new SendFriendListMessage({entry.m_map_info.session_token, entry.m_friends_list},0));
     }
 }
 /*

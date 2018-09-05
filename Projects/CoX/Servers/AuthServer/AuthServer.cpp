@@ -58,9 +58,11 @@ AuthServer::AuthServer()
     m_running=false;
 }
 
-// note - destructor is defaulted in cpp files to prevent compiler from requiring all users of AuthServer.h to
-// know about ClientAcceptor/AuthHandler  destructors
-AuthServer::~AuthServer() = default;
+AuthServer::~AuthServer()
+{
+
+    shutdown_event_processor_and_wait(m_handler.get());
+}
 
 void AuthServer::dispatch(Event *ev)
 {
