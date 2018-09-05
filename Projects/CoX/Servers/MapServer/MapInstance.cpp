@@ -44,6 +44,7 @@
 #include "serialization_common.h"
 #include "serialization_types.h"
 #include "version.h"
+#include "Common/Servers/InternalEvents.h"
 
 #include <ace/Reactor.h>
 
@@ -471,8 +472,24 @@ void MapInstance::dispatch( Event *ev )
         case MapEventTypes::evMapXferComplete:
             on_map_xfer_complete(static_cast<MapXferComplete *>(ev));
             break;
+        case Internal_EventTypes::evClientMapTransferMessage:
+            on_client_map_xfer(static_cast<ClientMapTransferMessage *>(ev));
+            break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
+    }
+}
+
+void MapInstance::on_client_map_xfer(ClientMapTransferMessage *ev)
+{
+    if (m_client_map_transfer_requests.find(ev->m_data.m_session) == m_client_map_transfer_requests.end())
+    {
+        qCDebug(logMapEvents) << QString("Adding client transfer map index for client session %1 to map index %2").arg(ev->m_data.m_session).arg(ev->m_data.m_map_idx);
+        m_client_map_transfer_requests.insert(std::pair<uint64_t, uint8_t>(ev->m_data.m_session, ev->m_data.m_map_idx));
+    }
+    else
+    {
+        qCDebug(logMapEvents) << QString("Client session %1 attempted to request a second map transfer while having an existing transfer in progress").arg(ev->m_data.m_session);
     }
 }
 
@@ -481,21 +498,28 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Map Transfer Initiated with token" << session.link()->session_token();
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_owner_id);
-    GameAccountResponseCharacterData c_data;
-    QString serialized_data;
-    serializeToQString(c_data, serialized_data);
-    qCDebug(logMapEvents) << "got map handler";
-    fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
-    qCDebug(logMapEvents) << "got character data";
     
-    ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, session.link()->peer_addr(),
-                                    serialized_data, session.m_requested_slot_idx, session.m_name, QString("maps/city_zones/City_01_02/City_01_02.txt"),
-                                    uint16_t(session.m_max_slots)},
-                                   session.link()->session_token(),this);
-    map_server->putq(map_req);
-                                                
-    
+    if (m_client_map_transfer_requests.find(session.link()->session_token()) != m_client_map_transfer_requests.end())
+    {
+        uint8_t map_idx = m_client_map_transfer_requests[session.link()->session_token()]; 
+        m_client_map_transfer_requests.erase(map_idx);
+        QString map_path = getMapPath(map_idx).toLower();
+        MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_owner_id);
+        GameAccountResponseCharacterData c_data;
+        QString serialized_data;
+        
+        fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
+        serializeToQString(c_data, serialized_data);
+        ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, session.link()->peer_addr(),
+                                        serialized_data, session.m_requested_slot_idx, session.m_name, map_path,
+                                        uint16_t(session.m_max_slots)},
+                                    session.link()->session_token(),this);
+        map_server->putq(map_req);
+    }
+    else
+    {
+        qCDebug(logMapEvents) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
+    }
 }
 
 void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
@@ -624,10 +648,9 @@ void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
 void MapInstance::on_expect_client_response(ExpectMapClientResponse *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    qCDebug(logMapEvents) << "MapClientResponse after transfer";
     MapXferRequest *map_xfer_req = new MapXferRequest();
-    map_xfer_req->m_address = ev->m_data.m_connection_addr; // TODO: change to use map server port + address
-    map_xfer_req->m_map_cookie = ev->m_data.cookie; // TODO: cahnge to use actual map cookie
+    map_xfer_req->m_address = ev->m_data.m_connection_addr;
+    map_xfer_req->m_map_cookie = ev->m_data.cookie;
     session.link()->putq(map_xfer_req);
 }
 
@@ -635,7 +658,6 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 {
     // TODO: handle contention while creating 2 characters with the same name from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
-    qCDebug(logMapEvents) << "MapInstance::on_expect_client";
     const ExpectMapClientRequestData &request_data(ev->m_data);
 
     // make sure that this is not a duplicate session
@@ -648,11 +670,12 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     map_session.m_max_slots   = request_data.m_max_slots;
     map_session.m_access_level = request_data.m_access_level;
     map_session.m_client_id    = request_data.m_client_id;
-
     cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
+
     if (request_data.char_from_db_data.isEmpty())
     {
+        qCDebug(logMapEvents) << "Character data empty";
         EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
         game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name},ev->session_token(),this) );
         // while we wait for db response, mark session as waiting for reaping
@@ -661,17 +684,15 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     }
     GameAccountResponseCharacterData char_data;
     serializeFromQString(char_data,request_data.char_from_db_data);
-
     // existing character
-    Entity *ent = m_entities.CreatePlayer();
+    Entity *ent = m_entities.CreatePlayer();    
     toActualCharacter(char_data, *ent->m_char,*ent->m_player, *ent->m_entity);
     ent->fillFromCharacter(serverData());
     ent->m_client = &map_session;
     map_session.m_ent = ent;
     // Now we inform our game server that this Map server instance is ready for the client
 
-    HandlerLocator::getGame_Handler(m_game_server_id)
-        ->putq(new ExpectMapClientResponse({cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
+    ev->src()->putq(new ExpectMapClientResponse({cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
 }
 
 void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
