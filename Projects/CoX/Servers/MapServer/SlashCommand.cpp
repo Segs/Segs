@@ -21,7 +21,6 @@
 #include "Logging.h"
 #include "MapInstance.h"
 #include "NetStructures/Character.h"
-#include "GameServer/GameEvents.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/Entity.h"
 #include "NetStructures/LFG.h"

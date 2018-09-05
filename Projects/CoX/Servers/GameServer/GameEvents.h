@@ -36,7 +36,6 @@ enum GameEventTypes
         evCharacterResponse,
         evMapServerAddrResponse,
         evDeleteAcknowledged,
-        
         evServerReconfigured = evDeleteAcknowledged+100,
         END_EVENTS(GameEventTypes,102)
 };

@@ -672,10 +672,8 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     map_session.m_client_id    = request_data.m_client_id;
     cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
-
     if (request_data.char_from_db_data.isEmpty())
     {
-        qCDebug(logMapEvents) << "Character data empty";
         EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
         game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name},ev->session_token(),this) );
         // while we wait for db response, mark session as waiting for reaping
@@ -685,7 +683,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     GameAccountResponseCharacterData char_data;
     serializeFromQString(char_data,request_data.char_from_db_data);
     // existing character
-    Entity *ent = m_entities.CreatePlayer();    
+    Entity *ent = m_entities.CreatePlayer();
     toActualCharacter(char_data, *ent->m_char,*ent->m_player, *ent->m_entity);
     ent->fillFromCharacter(serverData());
     ent->m_client = &map_session;
@@ -825,7 +823,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
     }
     // while we wait for db response, mark session as waiting for reaping
-m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token());
+    m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token());
 }
 
 void MapInstance::on_scene_request(SceneRequest *ev)

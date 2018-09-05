@@ -13,7 +13,7 @@ using MapLinkEvent = CRUDLink_Event;
 
 enum MapEventTypes
 {
-    BEGINE_EVENTS(MapEventTypes, CRUD_EventTypes)
+    BEGINE_EVENTS(MapEventTypes,CRUD_EventTypes)
     EVENT_DECL(MapEventTypes, evNewEntity                  ,0)
     EVENT_DECL(MapEventTypes, evMapInstanceConnected       ,1)
     EVENT_DECL(MapEventTypes, evShortcutsRequest           ,2)
@@ -21,7 +21,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evSceneRequest               ,4)
     EVENT_DECL(MapEventTypes, evScene                      ,5)
     EVENT_DECL(MapEventTypes, evEntitiesRequest            ,6)
-    EVENT_DECL(MapEventTypes, evEntitiesResponse          ,7)
+    EVENT_DECL(MapEventTypes, evEntitiesResponse           ,7)
     EVENT_DECL(MapEventTypes, evInputState                 ,8)
     EVENT_DECL(MapEventTypes, evClientQuit                 ,9)
     EVENT_DECL(MapEventTypes, evForcedLogout               ,10)
