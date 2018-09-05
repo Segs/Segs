@@ -9,8 +9,8 @@
 #define EMAILHANDLER_H
 
 #include "EventProcessor.h"
-#include "EmailEvents.h"
 #include "Servers/MessageBusEndpoint.h"
+#include "Servers/InternalEvents.h"
 #include "GameDatabase/GameDBSyncHandler.h"
 #include <map>
 

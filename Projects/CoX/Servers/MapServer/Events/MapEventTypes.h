@@ -6,7 +6,7 @@
  */
 
 #pragma once
-
+#include "CRUD_Events.h"
 namespace SEGSEvents
 {
 using MapLinkEvent = CRUDLink_Event;
@@ -131,3 +131,4 @@ enum MapEventTypes
     END_EVENTS(MapEventTypes, 1500)
 };
 } // end of SEGSEvents namespace
+
