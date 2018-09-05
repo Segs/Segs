@@ -31,6 +31,8 @@ enum MapEventTypes
 // server -> client commands
     EVENT_DECL(MapEventTypes, evFirstServerToClient        ,100)
 //    EVENT_DECL(MapEventTypes, evServerGameCommand        ,113) // 1013?
+    EVENT_DECL(MapEventTypes, evMapXferWait                ,110)
+    EVENT_DECL(MapEventTypes, evMapXferRequest             ,111)
     EVENT_DECL(MapEventTypes, evStandardDialogCmd          ,114)
     EVENT_DECL(MapEventTypes, evInfoMessageCmd             ,115)
 //    EVENT_DECL(MapEventTypes, evDoorMsg                  ,116)
