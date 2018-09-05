@@ -1945,23 +1945,21 @@ void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
 void MapInstance::on_enter_door(EnterDoor *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    QString contents;
-
-    QStringList door_text{"KNOCK KNOCK!!", "Trick or Treat!", "Hewwoooo!",
-                         "No one's home!", "Occupied!", "NO SOLICITORS!",
-                         "Who's there?", "It's locked..."};
-
-    std::random_device rng;
-    std::mt19937 urng(rng());
-    std::shuffle(door_text.begin(), door_text.end(), urng);
-    contents = door_text.first();
-    sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-
-    qCWarning(logMapEvents).noquote() << "Unhandled door entry request to:" << ev->name;
-    if(ev->unspecified_location)
-        qCWarning(logMapEvents).noquote() << "    no location provided";
+    
+    // ev->name is the map_idx when using the map menu currently.
+    if (m_client_map_transfer_requests.find(session.link()->session_token()) == m_client_map_transfer_requests.end())
+    {
+        m_client_map_transfer_requests[session.link()->session_token()] = ev->name.toInt();
+        session.link()->putq(new MapXferWait(getMapPath(ev->name.toInt()))); 
+    }
     else
-        qCWarning(logMapEvents).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
+    {
+        qCWarning(logMapEvents).noquote() << "Unhandled door entry request to:" << ev->name;
+        if(ev->unspecified_location)
+            qCWarning(logMapEvents).noquote() << "    no location provided";
+        else
+            qCWarning(logMapEvents).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
+    }
 
     //pseudocode:
     //  auto door = get_door(ev->name,ev->location);
