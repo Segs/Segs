@@ -12,6 +12,7 @@
 
 #include "GameServer.h"
 
+#include "FriendshipService/FriendHandler.h"
 #include "ConfigExtension.h"
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
@@ -30,14 +31,15 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
+using namespace SEGSEvents;
 namespace
 {
     const constexpr int MaxCharacterSlots=8;
-    class GameLinkEndpoint : public ServerEndpoint
+    class GameLinkEndpoint final : public ServerEndpoint
     {
         public:
             GameLinkEndpoint(const ACE_INET_Addr &local_addr) : ServerEndpoint(local_addr) {}
-            ~GameLinkEndpoint()=default;
+            ~GameLinkEndpoint() override = default ;
         protected:
             CRUDLink *createLink(EventProcessor *down) override
             {
@@ -49,12 +51,13 @@ namespace
 class GameServer::PrivateData
 {
 public:
+    std::unique_ptr<FriendHandler> m_friendship_service;
+    std::unique_ptr<EmailHandler> m_email_service;
     ACE_INET_Addr           m_location; // this value is sent to the clients
     ACE_INET_Addr           m_listen_point; // the server binds here
     QString                 m_serverName="";
     GameLinkEndpoint *      m_endpoint=nullptr;
     GameHandler *           m_handler=nullptr;
-    EmailHandler *          m_email_handler=nullptr;
     GameLink *              m_game_link=nullptr;
     bool                    m_online=false;
     uint8_t                 m_id=1;
@@ -64,18 +67,19 @@ public:
 
     void ShutDown() const
     {
-        // tell our handler to shut down too
-        m_handler->putq(new SEGSEvent(SEGS_EventTypes::evFinish, nullptr));
-        m_handler->wait();
+        // tell our handler to shut down
+        shutdown_event_processor_and_wait(m_handler);
+        // tell our friendship service to close too
+        shutdown_event_processor_and_wait(m_friendship_service.get());
     }
 };
 
-void GameServer::dispatch(SEGSEvent *ev)
+void GameServer::dispatch(Event *ev)
 {
     assert(ev);
     switch(ev->type())
     {
-        case Internal_EventTypes::evReloadConfig:
+        case evReloadConfigMessage:
             ReadConfigAndRestart();
             break;
         default:
@@ -83,6 +87,15 @@ void GameServer::dispatch(SEGSEvent *ev)
     }
 }
 
+void GameServer::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void GameServer::serialize_to(std::ostream &os)
+{
+    assert(false);
+}
 GameServer::GameServer(int id) : d(new PrivateData)
 {
     d->m_handler = new GameHandler;
@@ -91,21 +104,26 @@ GameServer::GameServer(int id) : d(new PrivateData)
     d->m_handler->start();
     d->m_id = id;
 
-    d->m_email_handler = new EmailHandler();
+    d->m_email_handler = std::make_unique<EmailHandler>(id);
     d->m_email_handler->activate();
     d->m_email_handler->set_db_handler(d->m_id);
+
+    d->m_friendship_service = std::make_unique<FriendHandler>(id);
+    d->m_friendship_service->activate();
+
     HandlerLocator::setGame_Handler(d->m_id,d->m_handler);
 }
 
 GameServer::~GameServer()
 {
+    d->ShutDown();
     delete d->m_endpoint;
 }
 
 // later name will be used to read GameServer specific configuration
 bool GameServer::ReadConfigAndRestart()
 {
-    static GameServerReconfigured reconfigured_msg;
+    static ServerReconfigured reconfigured_msg;
     // TODO: consider properly closing all open sessions ?
     delete d->m_endpoint;
     qInfo() << "Loading GameServer settings...";
@@ -153,13 +171,6 @@ bool GameServer::ReadConfigAndRestart()
     qInfo() << "Configurations loaded";
     d->m_online = true;
     d->m_handler->putq(reconfigured_msg.shallow_copy());
-    return true;
-}
-
-bool GameServer::ShutDown()
-{
-    putq(SEGSEvent::s_ev_finish.shallow_copy());
-    wait();
     return true;
 }
 

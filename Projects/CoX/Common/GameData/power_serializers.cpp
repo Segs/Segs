@@ -13,6 +13,7 @@
 #include "power_serializers.h"
 #include "power_definitions.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 #include "DataStorage.h"
 
 #include <type_traits>
@@ -141,7 +142,7 @@ bool loadFrom(BinStore *s, Parse_PowerSet &target)
 {
     bool ok = true;
     s->prepare();
-    ok &= s->read(target.Name);
+    ok &= s->read(target.m_Name);
     ok &= s->read(target.DisplayName);
     ok &= s->read(target.DisplayHelp);
     ok &= s->read(target.DisplayShortHelp);
@@ -340,7 +341,7 @@ static void serialize(Archive & archive, Power_Data & src)
 template<class Archive>
 static void serialize(Archive & archive, Parse_PowerSet & src)
 {
-    archive(cereal::make_nvp("Name",src.Name));
+    archive(cereal::make_nvp("Name",src.m_Name));
     archive(cereal::make_nvp("DisplayName",src.DisplayName));
     archive(cereal::make_nvp("DisplayHelp",src.DisplayHelp));
     archive(cereal::make_nvp("DisplayShortHelp",src.DisplayShortHelp));

@@ -25,6 +25,14 @@ SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
+scan_event_types(GameEvents ${CMAKE_CURRENT_SOURCE_DIR})
+add_event_sources(GameEvents target_SOURCES)
+
+add_subdirectory(FriendshipService)
 ADD_LIBRARY(gameserver_lib STATIC ${target_SOURCES})
-target_link_libraries(gameserver_lib PUBLIC Qt5::Core)
+target_link_libraries(gameserver_lib PUBLIC Qt5::Core friendshipservice_lib )
+target_link_libraries(gameserver_lib INTERFACE SEGS_Components network_structures gameData )
 ADD_DEPENDENCIES(gameserver_lib gameData ${target_DEPENDS})
+if(ENABLE_TESTS)
+    add_subdirectory(UnitTests)
+endif()

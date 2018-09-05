@@ -12,18 +12,21 @@
 
 #include "GameHandler.h"
 
-#include "GameEvents.h"
-#include "Servers/HandlerLocator.h"
-#include "Servers/MessageBus.h"
-#include "GameData/chardata_serializers.h"
 #include "Common/Servers/InternalEvents.h"
-#include "GameData/serialization_common.h"
+#include "GameData/chardata_serializers.h"
 #include "GameData/entitydata_serializers.h"
+#include "GameData/map_definitions.h"
+#include "GameEvents.h"
 #include "GameLink.h"
 #include "GameServer.h"
 #include "NetStructures/Character.h"
 #include "SEGSTimer.h"
-#include "MapServer/DataHelpers.h"
+#include "Servers/HandlerLocator.h"
+#include "Servers/MessageBus.h"
+#include "serialization_common.h"
+#include "serialization_types.h"
+
+using namespace SEGSEvents;
 
 static const uint32_t supported_version=20040422;
 namespace {
@@ -49,33 +52,33 @@ GameHandler::~GameHandler() = default;
 void GameHandler::start()
 {
     ACE_ASSERT(m_link_checker==nullptr);
-    m_link_checker.reset(new SEGSTimer(this,(void *)Link_Idle_Timer,link_update_interval,false));
-    m_service_status_timer.reset(new SEGSTimer(this,(void *)Service_Status_Timer,service_update_interval,false));
+    m_link_checker.reset(new SEGSTimer(this, Link_Idle_Timer,link_update_interval,false));
+    m_service_status_timer.reset(new SEGSTimer(this,Service_Status_Timer,service_update_interval,false));
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
 }
 
-void GameHandler::dispatch( SEGSEvent *ev )
+void GameHandler::dispatch( Event *ev )
 {
     assert(ev);
     switch(ev->type())
     {
-    case SEGS_EventTypes::evTimeout:
-        on_timeout(static_cast<TimerEvent *>(ev));
+    case evTimeout:
+        on_timeout(static_cast<Timeout *>(ev));
         break;
-    case SEGS_EventTypes::evDisconnect: // link layer tells us that a link is not responsive/dead
+    case evDisconnect: // link layer tells us that a link is not responsive/dead
         on_link_lost(ev);
         break;
     // Server <-> Server messages
-    case Internal_EventTypes::evExpectClientRequest:
+    case evExpectClientRequest:
         on_expect_client(static_cast<ExpectClientRequest *>(ev));
         break;
-    case Internal_EventTypes::evExpectMapClientResponse:
+    case evExpectMapClientResponse:
         on_client_expected(static_cast<ExpectMapClientResponse *>(ev));
         break;
-    case Internal_EventTypes::evClientConnected:
+    case evClientConnectedMessage:
         on_client_connected_to_other_server(static_cast<ClientConnectedMessage *>(ev));
         break;
-    case Internal_EventTypes::evClientDisconnected:
+    case evClientDisconnectedMessage:
         on_client_disconnected_from_other_server(static_cast<ClientDisconnectedMessage *>(ev));
         break;
     case GameEventTypes::evServerReconfigured:
@@ -83,19 +86,19 @@ void GameHandler::dispatch( SEGSEvent *ev )
         report_service_status();
         break;
     // Client -> Server messages
-    case GameEventTypes::evIdle:
-        on_idle(static_cast<IdleEvent*>(ev));
+    case evIdle:
+        on_idle(static_cast<Idle*>(ev));
         break;
-    case GameEventTypes::evDisconnectRequest:
+    case evDisconnectRequest:
         on_disconnect(static_cast<DisconnectRequest *>(ev));
         break;
-    case GameEventTypes::evConnectRequest:
+    case evConnectRequest:
         on_connection_request(static_cast<ConnectRequest *>(ev));
         break;
     case GameEventTypes::evUpdateServer:
         on_update_server(static_cast<UpdateServer *>(ev));
         break;
-    case GameEventTypes::evMapAddrRequest:
+    case GameEventTypes::evMapServerAddrRequest:
         on_map_req(static_cast<MapServerAddrRequest *>(ev));
         break;
     case GameEventTypes::evDeleteCharacter:
@@ -104,11 +107,11 @@ void GameHandler::dispatch( SEGSEvent *ev )
     case GameEventTypes::evUpdateCharacter:
         on_update_character(static_cast<UpdateCharacter *>(ev));
         break;
-    case GameEventTypes::evUnknownEvent:
-        on_unknown_link_event(static_cast<GameUnknownRequest *>(ev));
+    case evUnknownEvent:
+        on_unknown_link_event(static_cast<UnknownEvent *>(ev));
         break;
     // DB -> Server messages
-    case GameDBEventTypes::evGameDbError:
+    case evGameDbErrorMessage:
         on_game_db_error(static_cast<GameDbErrorMessage *>(ev));
         break;
     case GameDBEventTypes::evGameAccountResponse:
@@ -140,11 +143,11 @@ void GameHandler::on_account_data(GameAccountResponse *ev)
     session.m_game_account = ev->m_data;
     // Inform auth server about succesful client connection
     EventProcessor *tgt      = HandlerLocator::getAuth_Handler();
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),0 }));
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),ev->m_data.m_game_server_acc_id },0));
 
     m_session_store.add_to_active_sessions(&session);
     CharacterSlots *slots_event=new CharacterSlots;
-    slots_event->set_account_data(&session.m_game_account);
+    slots_event->m_data = std::move(ev->m_data);
     session.link()->putq(slots_event);
 }
 
@@ -191,12 +194,12 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
     GameSession &session = m_session_store.session_from_event(ev);
     assert(session.m_game_account.valid());
 
-    ev->src()->putq(new CharacterResponse(this,ev->m_index,&session.m_game_account));
+    ev->src()->putq(new CharacterResponse(this,ev->m_index,session.m_game_account));
 
     // TODO: Do we update database here? issue #271
 }
 
-void GameHandler::on_idle(IdleEvent */*ev*/)
+void GameHandler::on_idle(Idle */*ev*/)
 {
     // idle for idle 'strategy'
 //    GameLink * lnk = (GameLink *)ev->src();
@@ -216,9 +219,9 @@ void GameHandler::on_check_links()
         }
         // Send at least one packet within maximum_time_without_packets
         if(client_link->last_sent_packets()>maximum_time_without_packets)
-            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+            client_link->putq(new Idle); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
         else if(client_link->client_packets_waiting_for_ack()>MinPacketsToAck)
-            client_link->putq(new IdleEvent); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
+            client_link->putq(new Idle); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
     }
 }
 
@@ -226,10 +229,10 @@ void GameHandler::report_service_status()
 {
     postGlobalEvent(new GameServerStatusMessage({m_server->getAddress(),QDateTime::currentDateTime(),
                                                  uint16_t(m_session_store.num_sessions()),
-                                                 m_server->getMaxPlayers(),m_server->getId(),true}));
+                                                 m_server->getMaxPlayers(),m_server->getId(),true},0));
 }
 
-void GameHandler::on_timeout(TimerEvent *ev)
+void GameHandler::on_timeout(Timeout *ev)
 {
     // TODO: This should send 'ping' packets on all client links to which we didn't send
     // anything in the last time quantum
@@ -239,7 +242,7 @@ void GameHandler::on_timeout(TimerEvent *ev)
     // 2. Find all links with inactivity_time() >= disconnect_time
     //   Disconnect given link.
 
-    intptr_t timer_id = (intptr_t)ev->data();
+    intptr_t timer_id = ev->timer_id();
     switch (timer_id) {
         case Link_Idle_Timer:
             on_check_links();
@@ -268,7 +271,8 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
         else
         {
             EventProcessor * tgt = HandlerLocator::getAuth_Handler();
-            tgt->putq(new ClientDisconnectedMessage({lnk->session_token()}));
+            tgt->putq(
+                new ClientDisconnectedMessage({lnk->session_token(), session.m_game_account.m_game_server_acc_id}, 0));
             m_session_store.session_link_lost(lnk->session_token());
             m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
         }
@@ -277,10 +281,11 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
         m_session_store.session_link_lost(lnk->session_token());
     lnk->putq(new DisconnectResponse);
     // Post disconnect event to link, will close it's processing loop, after it sends the response
-    lnk->putq(new DisconnectEvent(lnk->session_token())); // this should work, event if different threads try to do it in parallel
+    lnk->putq(
+        new Disconnect(lnk->session_token())); // this should work, event if different threads try to do it in parallel
 }
 
-void GameHandler::on_link_lost(SEGSEvent *ev)
+void GameHandler::on_link_lost(Event *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
     GameSession &session = m_session_store.session_from_event(ev);
@@ -296,7 +301,7 @@ void GameHandler::on_link_lost(SEGSEvent *ev)
         else
         {
             EventProcessor * tgt = HandlerLocator::getAuth_Handler();
-            tgt->putq(new ClientDisconnectedMessage({lnk->session_token()}));
+            tgt->putq(new ClientDisconnectedMessage({lnk->session_token(), session.m_game_account.m_game_server_acc_id}, 0));
             m_session_store.session_link_lost(lnk->session_token());
             m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
         }
@@ -304,7 +309,7 @@ void GameHandler::on_link_lost(SEGSEvent *ev)
     else
         m_session_store.session_link_lost(lnk->session_token());
     // Post disconnect event to link, will close it's processing loop
-    lnk->putq(new DisconnectEvent(lnk->session_token()));
+    lnk->putq(new Disconnect(lnk->session_token()));
 }
 
 void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)
@@ -312,7 +317,17 @@ void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)
     GameSession &session = m_session_store.session_from_event(ev);
     GameAccountResponseCharacterData& selected_slot = session.m_game_account.get_character(ev->m_data.slot_idx);
     selected_slot.reset();
-    session.link()->putq(new DeletionAcknowledged);
+    session.link()->putq(new DeleteAcknowledged);
+}
+
+void GameHandler::serialize_from(std::istream &/*is*/)
+{
+    assert(false);
+}
+
+void GameHandler::serialize_to(std::ostream &/*is*/)
+{
+    assert(false);
 }
 
 void GameHandler::on_delete_character(DeleteCharacter *ev)
@@ -367,14 +382,8 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
         qCritical() << e.what();
     }
 
-    QString map_path = ed.m_current_map;
-
-    if (!map_path.isEmpty())
-        map_path = getMapPath(ed).toLower();
-    else
-    {
-        map_path = getMapPath(ev->m_mapnumber).toLower();
-    }
+    // will never be empty because we look based on m_map_idx, and integers cannot be null
+    QString map_path = getMapPath(ed.m_map_idx).toLower();
 
     if(selected_slot->isEmpty())
         selected_slot = nullptr; // passing a null to map server to indicate a new character is being created.
@@ -389,20 +398,24 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
     assert(map_handler);
     if(selected_slot )
     {
-        ACE_ASSERT(selected_slot->m_name == ev->m_char_name || !"Server-Client character synchronization failure!");
+        ACE_ASSERT(selected_slot->m_name == ev->m_char_name || !"Server-Client character synchronizatigon failure!");
     }
+    QString chardata;
+    if(selected_slot)
+        serializeToQString(*selected_slot,chardata);
     ExpectMapClientRequest *expect_client =
         new ExpectMapClientRequest({session.m_auth_account_id, session.m_access_level, lnk->peer_addr(),
-                                    selected_slot, ev->m_character_index, ev->m_char_name, map_path,
+                                    chardata,
+                                    ev->m_character_index, ev->m_char_name, map_path,
                                     uint16_t(session.m_game_account.m_max_slots)},
-                                   lnk->session_token());
+                                   lnk->session_token(),this);
     qInfo("Telling map server to expect a client with character %s, %d\n", qPrintable(ev->m_char_name),
             ev->m_character_index);
     session.m_direction = GameSession::EXITING_TO_MAP;
     map_handler->putq(expect_client);
 }
 
-void GameHandler::on_unknown_link_event(GameUnknownRequest *)
+void GameHandler::on_unknown_link_event(UnknownEvent *)
 {
         qWarning() << "Unknown GameHandler link event";
 }
@@ -453,7 +466,7 @@ void GameHandler::reap_stale_links()
     EventProcessor *            tgt      = HandlerLocator::getAuth_Handler();
     m_session_store.reap_stale_links("GameInstance", link_is_stale_if_disconnected_for,
                                      [tgt](uint64_t tok) {
-                                         tgt->putq(new ClientDisconnectedMessage({tok}));
+                                         tgt->putq(new ClientDisconnectedMessage({tok},0));
                                      });
 }
 //! @}

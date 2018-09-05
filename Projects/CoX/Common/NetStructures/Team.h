@@ -19,14 +19,14 @@ public:
 virtual ~Team() = default;
 
         struct TeamMember {
-            uint32_t    tm_idx;
+            uint32_t    tm_idx  = 0;
             QString     tm_name; // stored here for quick lookup.
         };
 
         // Member Vars
         std::vector<TeamMember> m_team_members;
 
-const   uint32_t    m_team_idx;
+const   uint32_t    m_team_idx          = 0;
         uint32_t    m_max_team_size     = 8;        // max is always 8
         uint32_t    m_team_leader_idx   = 0;
         bool        m_team_has_mission  = false;    // it's possible that this belongs to entity or char instead
@@ -35,7 +35,6 @@ const   uint32_t    m_team_idx;
         void        dump();
         void        listTeamMembers();
         void        addTeamMember(Entity *e);
-        void        removeTeamMember(Entity *e);
         bool        isTeamLeader(Entity *e);
 
 private:
@@ -50,12 +49,5 @@ bool sameTeam(Entity &src, Entity &tgt);
 bool makeTeamLeader(Entity &src, Entity &tgt);
 bool inviteTeam(Entity &src, Entity &tgt);
 bool kickTeam(Entity &tgt);
-void leaveTeam(Entity &e);
+void removeTeamMember(Team &self,Entity *e);
 
-/*
- * Sidekick Methods -- Sidekick system requires teaming.
- */
-bool isSidekickMentor(const Entity &e);
-void inviteSidekick(Entity &src, Entity &tgt);
-void addSidekick(Entity &tgt, Entity &src);
-void removeSidekick(Entity &src);

@@ -16,30 +16,32 @@
 #include "GameDBSyncEvents.h"
 #include "MessageBus.h"
 
-bool GameDBSyncHandler::per_thread_setup()
+using namespace SEGSEvents;
+
+bool GameDBSyncHandler::per_thread_startup()
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
     bool result = db_ctx.loadAndConfigure();
     if(!result)
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSync failed to load/configure",-1}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSync failed to load/configure",-1},0));
     else
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSync loaded/configured",0}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSync loaded/configured",0},0));
     return result;
 }
 
-void GameDBSyncHandler::dispatch(SEGSEvent *ev)
+void GameDBSyncHandler::dispatch(Event *ev)
 {
     // We are servicing a request from message queue, using dispatchSync as a common processing point.
     // nullptr result means that the given message is one-way
     switch (ev->type())
     {
-    case GameDBEventTypes::evCharacterUpdate:
+    case GameDBEventTypes::evCharacterUpdateMessage:
         on_character_update(static_cast<CharacterUpdateMessage *>(ev)); break;
-    case GameDBEventTypes::evPlayerUpdate:
+    case GameDBEventTypes::evPlayerUpdateMessage:
         on_player_update(static_cast<PlayerUpdateMessage *>(ev)); break;
     case GameDBEventTypes::evRemoveCharacterRequest:
         on_character_remove(static_cast<RemoveCharacterRequest *>(ev)); break;
-    case GameDBEventTypes::evCostumeUpdate:
+    case GameDBEventTypes::evCostumeUpdateMessage:
         on_costume_update(static_cast<CostumeUpdateMessage *>(ev)); break;
     case GameDBEventTypes::evGameAccountRequest:
         on_account_request(static_cast<GameAccountRequest *>(ev)); break;
@@ -49,10 +51,21 @@ void GameDBSyncHandler::dispatch(SEGSEvent *ev)
         on_create_new_char(static_cast<CreateNewCharacterRequest *>(ev)); break;
     case GameDBEventTypes::evGetEntityRequest:
         on_get_entity(static_cast<GetEntityRequest *>(ev)); break;
+    case GameDBEventTypes::evGetEntityByNameRequest:
+        on_get_entity_by_name(static_cast<GetEntityByNameRequest *>(ev)); break;
     default: assert(false); break;
     }
 }
 
+void GameDBSyncHandler::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void GameDBSyncHandler::serialize_to(std::ostream &is)
+{
+    assert(false);
+}
 GameDBSyncHandler::GameDBSyncHandler(uint8_t id) : m_id(id)
 {
     HandlerLocator::setGame_DB_Handler(id,this);
@@ -133,6 +146,17 @@ void GameDBSyncHandler::on_get_entity(GetEntityRequest *ev)
 
     if(db_ctx.getEntity(ev->m_data,resp))
         ev->src()->putq(new GetEntityResponse(std::move(resp),ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
+
+void GameDBSyncHandler::on_get_entity_by_name(GetEntityByNameRequest *ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    GetEntityByNameResponseData resp;
+
+    if (db_ctx.getEntityByName(ev->m_data, resp))
+        ev->src()->putq(new GetEntityByNameResponse(std::move(resp), ev->session_token()));
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 }

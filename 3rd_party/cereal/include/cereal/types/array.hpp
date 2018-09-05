@@ -61,6 +61,8 @@ namespace cereal
                           || !std::is_arithmetic<T>::value, void>::type
   CEREAL_SAVE_FUNCTION_NAME( Archive & ar, std::array<T, N> const & array )
   {
+    size_type size=N;
+    ar( make_size_tag( size ) );
     for( auto const & i : array )
       ar( i );
   }
@@ -71,6 +73,10 @@ namespace cereal
                           || !std::is_arithmetic<T>::value, void>::type
   CEREAL_LOAD_FUNCTION_NAME( Archive & ar, std::array<T, N> & array )
   {
+    size_type size;
+    ar( make_size_tag( size ) );
+    if(N!=size)
+        throw cereal::Exception("Wrong std::array size while loading");
     for( auto & i : array )
       ar( i );
   }

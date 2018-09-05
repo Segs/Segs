@@ -13,7 +13,8 @@
 #include "Costume.h"
 
 #include "BitStream.h"
-#include "Common/GameData/serialization_common.h"
+#include "serialization_common.h"
+#include "serialization_types.h"
 #include <QtCore/QDebug>
 
 namespace
