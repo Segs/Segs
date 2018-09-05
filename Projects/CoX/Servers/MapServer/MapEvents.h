@@ -103,7 +103,7 @@ class MapXferWait final : public MapLinkEvent
 public:
                 MapXferWait() : MapLinkEvent(MapEventTypes::evMapXferWait)
                 {}
-                MapXferWait(QString map_name) : GameLinkEvent(MapEventTypes::evMapXferWait)
+                MapXferWait(QString map_name) : MapLinkEvent(MapEventTypes::evMapXferWait)
                 {
                     m_map_name = map_name;
                 }
