@@ -297,8 +297,8 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     bs.StoreString(getDescription(player_char));    // max 1024
     PUTDEBUG("before windows");
     sendWindows(player_data.m_gui, bs);
-    bs.StoreBits(1,player_char.m_char_data.m_lfg);              // lfg related
-    bs.StoreBits(1,player_char.m_char_data.m_using_sg_costume); // SG mode
+    bs.StoreBits(1,player_char.m_char_data.m_lfg);  // lfg related
+    bs.StoreBits(1,player_char.m_char_data.m_supergroup.m_using_sg_costume); // SG mode
     sendTeamBuffMode(player_data.m_gui,bs);
     sendDockMode(player_data.m_gui,bs);
     sendChatSettings(player_data.m_gui,bs);

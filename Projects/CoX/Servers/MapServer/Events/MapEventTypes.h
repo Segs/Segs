@@ -25,6 +25,7 @@ public:
     EVENT_DECL(evForceLogout                ,10)
     EVENT_DECL(evChatDividerMoved           ,36)
     EVENT_DECL(evPreUpdateCommand           ,1013)  // this wraps a list of commands
+
 // server -> client commands
     EVENT_DECL(evFirstServerToClient        ,100)
 //    EVENT_DECL(evServerGameCommand        ,113) // 1013?
@@ -43,9 +44,9 @@ public:
 //    EVENT_DECL(evTaskForceKick            ,126)
 //    EVENT_DECL(evTaskForceQuit            ,127)
     EVENT_DECL(evSidekickOffer              ,128)
-//    EVENT_DECL(evSuperGroupOffer          ,129)
-//    EVENT_DECL(evSuperGroupResponse       ,130)
-//    EVENT_DECL(evSuperGroupCostume        ,131)
+    EVENT_DECL(evSuperGroupOffer            ,129)
+    EVENT_DECL(evSuperGroupResponse         ,130)
+    EVENT_DECL(evSuperGroupCostume          ,131)
 //    EVENT_DECL(evTradeOffer               ,132)
 //    EVENT_DECL(evTradeInit                ,133)
 //    EVENT_DECL(evTradeCancel              ,134)
@@ -71,7 +72,6 @@ public:
 //    EVENT_DECL(evFaceEntity               ,154)
 //    EVENT_DECL(evFaceLocation             ,155)
     EVENT_DECL(evFloatingInfo               ,156)
-    EVENT_DECL(evSendStance                 ,157) // I think?
     EVENT_DECL(evMapXferList                ,158)
     EVENT_DECL(evMapXferListClose           ,159)
 //    EVENT_DECL(evEnableControlLog         ,160)
@@ -83,8 +83,10 @@ public:
     EVENT_DECL(evEmailMsgStatus             ,167)
     EVENT_DECL(evEntityInfoResponse         ,169) // Send entity info (description)
 //    EVENT_DECL(evClueUpdate               ,170)
+    EVENT_DECL(evRegisterSuperGroup         ,174)
     EVENT_DECL(evTrayAdd                    ,182)
     EVENT_DECL(evCombineEnhancResponse      ,183)
+
 // client -> server commands
     EVENT_DECL(evConsoleCommand             ,200)
     EVENT_DECL(evMiniMapState               ,201)
@@ -121,7 +123,12 @@ public:
     EVENT_DECL(evTrashEnhancementInPower    ,244)
     EVENT_DECL(evBuyEnhancementSlot         ,245)
     EVENT_DECL(evRecvNewPower               ,246)
+    EVENT_DECL(evSuperGroupMode             ,253)
     EVENT_DECL(evEntityInfoRequest          ,256) // right-click entity select "Info"
+    EVENT_DECL(evCreateSuperGroup           ,257)
+    EVENT_DECL(evChangeSuperGroupColors     ,258)
+    EVENT_DECL(evCancelSuperGroupCreation   ,259)
+    EVENT_DECL(evSendStance                 ,267)
     EVENT_DECL(evLocationVisited            ,262)
     EVENT_DECL(evSwitchViewPoint            ,264)
     EVENT_DECL(evSaveClientOptions          ,265)

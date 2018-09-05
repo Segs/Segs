@@ -116,7 +116,6 @@ protected:
         void on_inspiration_dockmode(class InspirationDockMode *ev);
         void on_enter_door(class EnterDoor *ev);
         void on_change_stance(class ChangeStance *ev);
-        void on_send_stance(class SendStance *ev);
         void on_set_destination(class SetDestination *ev);
         void on_abort_queued_power(class AbortQueuedPower *ev);
         void on_description_and_battlecry(class DescriptionAndBattleCry *ev);
@@ -149,4 +148,8 @@ protected:
         void on_trash_enhancement_in_power(class TrashEnhancementInPower *ev);
         void on_buy_enhancement_slot(class BuyEnhancementSlot *ev);
         void on_recv_new_power(class RecvNewPower *ev);
+        void on_create_supergroup(class CreateSuperGroup *ev);
+        void on_change_supergroup_colors(class ChangeSuperGroupColors *ev);
+        void on_cancel_supergroup_creation(class CancelSuperGroupCreation *ev);
+        void on_supergroup_mode(class SuperGroupMode *ev);
 };

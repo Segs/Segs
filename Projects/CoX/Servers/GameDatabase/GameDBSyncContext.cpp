@@ -382,7 +382,6 @@ bool GameDbSyncContext::getEntity(const GetEntityRequestData &data, GetEntityRes
         return false;
     if(!m_prepared_entity_select->next())
         return false;
-    result.m_supergroup_id = m_prepared_entity_select->value("supergroup_id").toUInt();
     result.m_ent_data = m_prepared_entity_select->value("entitydata").toString();
     return true;
 }
@@ -396,7 +395,6 @@ bool GameDbSyncContext::getEntityByName(const GetEntityByNameRequestData &data, 
     if(!m_prepared_entity_select_by_name->next())
         return false;
 
-    result.m_supergroup_id = m_prepared_entity_select_by_name->value("supergroup_id").toUInt();
     result.m_ent_data = m_prepared_entity_select_by_name->value("entitydata").toString();
     return true;
 }

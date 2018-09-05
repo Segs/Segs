@@ -223,7 +223,6 @@ struct GetEntityRequestData
 
 struct GetEntityResponseData
 {
-    uint32_t m_supergroup_id;
     QString m_ent_data;
 };
 TWO_WAY_MESSAGE(GetEntity)
@@ -235,7 +234,6 @@ struct GetEntityByNameRequestData
 
 struct GetEntityByNameResponseData
 {
-    uint32_t m_supergroup_id;
     QString m_ent_data;
 };
 TWO_WAY_MESSAGE(GetEntityByName)

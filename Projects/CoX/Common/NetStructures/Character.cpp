@@ -40,9 +40,7 @@ Character::Character()
     m_multiple_costumes                         = false;
     m_current_costume_idx                       = 0;
     m_current_costume_set                       = false;
-    m_char_data.m_supergroup_costume            = false;
     m_sg_costume                                = nullptr;
-    m_char_data.m_using_sg_costume              = false;
     m_char_data.m_current_attribs.m_HitPoints   = 25;
     m_max_attribs.m_HitPoints                   = 50;
     m_char_data.m_current_attribs.m_Endurance   = 33;
@@ -66,9 +64,7 @@ void Character::reset()
     m_multiple_costumes=false;
     m_current_costume_idx=0;
     m_current_costume_set=false;
-    m_char_data.m_supergroup_costume=false;
     m_sg_costume=nullptr;
-    m_char_data.m_using_sg_costume=false;
     m_char_data.m_has_titles = false;
     m_char_data.m_sidekick.m_has_sidekick = false;
     m_char_data.m_powersets.clear();
@@ -335,12 +331,12 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
         {
             ::serializeto(m_costumes[m_current_costume_idx],bs,packer);
         }
-        bs.StoreBits(1,m_char_data.m_supergroup_costume);
-        if(m_char_data.m_supergroup_costume)
+        bs.StoreBits(1,m_char_data.m_supergroup.m_supergroup_costume);
+        if(m_char_data.m_supergroup.m_supergroup_costume)
         {
             ::serializeto(*m_sg_costume,bs,packer);
 
-            bs.StoreBits(1,m_char_data.m_using_sg_costume);
+            bs.StoreBits(1,m_char_data.m_supergroup.m_using_sg_costume);
         }
     }
     else // other player's costumes we're sending only their current.
@@ -349,7 +345,7 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
     }
 }
 
-void Character::DumpSidekickInfo()
+void Character::dumpSidekickInfo()
 {
     QString msg = QString("Sidekick Info\n  has_sidekick: %1 \n  db_id: %2 \n  type: %3 ")
             .arg(m_char_data.m_sidekick.m_has_sidekick)
@@ -390,7 +386,9 @@ void Character::dump()
     qDebug() << "//-----------Owned Enhancements-----------";
     dumpEnhancements(m_char_data);
     qDebug() << "//--------------Sidekick Info--------------";
-    DumpSidekickInfo();
+    dumpSidekickInfo();
+    qDebug() << "//-------------SuperGroup Info-------------";
+    m_char_data.m_supergroup.dump();
     qDebug() << "//------------------Tray------------------";
     m_char_data.m_trays.dump();
     qDebug() << "//-----------------Costume-----------------";

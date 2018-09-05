@@ -17,6 +17,7 @@ struct CharacterPowerSet;
 struct Friend;
 struct FriendsList;
 struct Sidekick;
+struct SuperGroupStats;
 struct CharacterData;
 
 template<class Archive>
@@ -35,6 +36,8 @@ template<class Archive>
 void serialize(Archive &archive, FriendsList &fl, uint32_t const version);
 template<class Archive>
 void serialize(Archive &archive, Sidekick &sk, uint32_t const version);
+template<class Archive>
+void serialize(Archive &archive, SuperGroupStats &sg, uint32_t const version);
 template<class Archive>
 void serialize(Archive &archive, CharacterData &cd, uint32_t const version);
 

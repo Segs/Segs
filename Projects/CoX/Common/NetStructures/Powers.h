@@ -28,6 +28,13 @@ enum class TrayItemType : uint32_t
     Count                   = 7,
 };
 
+struct PowerStance
+{
+    bool        has_stance  = false;
+    uint32_t    pset_idx    = 0;
+    uint32_t    pow_idx     = 0;
+};
+
 struct EnhancemenSlotEntry
 {
     bool        m_set_in_power  = false;

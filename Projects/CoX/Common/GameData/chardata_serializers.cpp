@@ -27,6 +27,7 @@ const constexpr uint32_t CharacterPower::class_version;
 const constexpr uint32_t CharacterPowerSet::class_version;
 const constexpr uint32_t Friend::class_version;
 const constexpr uint32_t FriendsList::class_version;
+const constexpr uint32_t SuperGroupStats::class_version;
 const constexpr uint32_t Sidekick::class_version;
 const constexpr uint32_t CharacterData::class_version;
 CEREAL_CLASS_VERSION(PowerPool_Info, PowerPool_Info::class_version)   // register PowerPool_Info class version
@@ -34,10 +35,11 @@ CEREAL_CLASS_VERSION(CharacterInspiration, CharacterInspiration::class_version) 
 CEREAL_CLASS_VERSION(CharacterEnhancement, CharacterEnhancement::class_version)   // register CharacterEnhancement struct version
 CEREAL_CLASS_VERSION(CharacterPower, CharacterPower::class_version)             // register CharacterPower struct version
 CEREAL_CLASS_VERSION(CharacterPowerSet, CharacterPowerSet::class_version)       // register CharacterPowerSet struct version
-CEREAL_CLASS_VERSION(Friend, Friend::class_version)                 // register Friend struct version
-CEREAL_CLASS_VERSION(FriendsList, FriendsList::class_version)       // register FriendList struct version
-CEREAL_CLASS_VERSION(Sidekick, Sidekick::class_version)             // register Sidekick struct version
-CEREAL_CLASS_VERSION(CharacterData, CharacterData::class_version)   // register CharacterData struct version
+CEREAL_CLASS_VERSION(Friend, Friend::class_version)                     // register Friend struct version
+CEREAL_CLASS_VERSION(FriendsList, FriendsList::class_version)           // register FriendList struct version
+CEREAL_CLASS_VERSION(Sidekick, Sidekick::class_version)                 // register Sidekick struct version
+CEREAL_CLASS_VERSION(SuperGroupStats, SuperGroupStats::class_version)   // register SuperGroupStats struct version
+CEREAL_CLASS_VERSION(CharacterData, CharacterData::class_version)       // register CharacterData struct version
 
 template<class Archive>
 void serialize(Archive &archive, PowerPool_Info &poolinfo, uint32_t const version)
@@ -171,6 +173,23 @@ void serialize(Archive &archive, Sidekick &sk, uint32_t const version)
 }
 
 template<class Archive>
+void serialize(Archive &archive, SuperGroupStats &sg, uint32_t const version)
+{
+    if (version != SuperGroupStats::class_version)
+    {
+        qCritical() << "Failed to serialize SuperGroupStats, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("HasSuperGroup",sg.m_has_supergroup));
+    archive(cereal::make_nvp("SuperGroupDbId",sg.m_sg_idx));
+    archive(cereal::make_nvp("SuperGroupRank",sg.m_sg_rank));
+    archive(cereal::make_nvp("SGDateJoined",sg.m_date_joined));
+    archive(cereal::make_nvp("HasSGCostume",sg.m_supergroup_costume));
+    archive(cereal::make_nvp("UsingSGCostume",sg.m_using_sg_costume));
+}
+
+template<class Archive>
 void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
 {
     if (version != CharacterData::class_version)
@@ -198,8 +217,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("LastOnline",cd.m_last_online));
     archive(cereal::make_nvp("Class",cd.m_class_name));
     archive(cereal::make_nvp("Origin",cd.m_origin_name));
-    archive(cereal::make_nvp("SuperGroupCostume",cd.m_supergroup_costume));
-    archive(cereal::make_nvp("UsingSGCostume",cd.m_using_sg_costume));
+    archive(cereal::make_nvp("SuperGroup",cd.m_supergroup));
     archive(cereal::make_nvp("SideKick",cd.m_sidekick));
     archive(cereal::make_nvp("FriendList",cd.m_friendlist));
     archive(cereal::make_nvp("CurrentAttribs", cd.m_current_attribs));

@@ -332,9 +332,6 @@ void MapInstance::dispatch( SEGSEvent *ev )
         case MapEventTypes::evChangeStance:
             on_change_stance(static_cast<ChangeStance *>(ev));
             break;
-        case MapEventTypes::evSendStance:
-            on_send_stance(static_cast<SendStance *>(ev));
-            break;
         case MapEventTypes::evSetDestination:
             on_set_destination(static_cast<SetDestination *>(ev));
             break;
@@ -451,6 +448,18 @@ void MapInstance::dispatch( SEGSEvent *ev )
             break;
         case MapEventTypes::evRecvNewPower:
             on_recv_new_power(static_cast<RecvNewPower *>(ev));
+            break;
+        case MapEventTypes::evCreateSuperGroup:
+            on_create_supergroup(static_cast<CreateSuperGroup *>(ev));
+            break;
+        case MapEventTypes::evChangeSuperGroupColors:
+            on_change_supergroup_colors(static_cast<ChangeSuperGroupColors *>(ev));
+            break;
+        case MapEventTypes::evCancelSuperGroupCreation:
+            on_cancel_supergroup_creation(static_cast<CancelSuperGroupCreation *>(ev));
+            break;
+        case MapEventTypes::evSuperGroupMode:
+            on_supergroup_mode(static_cast<SuperGroupMode *>(ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base);
@@ -640,7 +649,6 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     Entity * e = map_session.m_ent;
 
     e->m_db_id              = e->m_char->m_db_id;
-    e->m_supergroup.m_SG_id = ev->m_data.m_supergroup_id;
     serializeFromDb(e->m_entity_data, ev->m_data.m_ent_data);
 
     // Can't pass direction through cereal, so let's update it here.
@@ -669,7 +677,6 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
     Entity * e = map_session.m_ent;
 
     e->m_db_id              = e->m_char->m_db_id;
-    e->m_supergroup.m_SG_id = ev->m_data.m_supergroup_id;
     serializeFromDb(e->m_entity_data, ev->m_data.m_ent_data);
 
     // Can't pass direction through cereal, so let's update it here.
@@ -1147,7 +1154,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
         }
         case MessageChannel::SUPERGROUP:
         {
-            if(!sender->m_ent->m_has_supergroup)
+            if(!sender->m_ent->m_char->m_char_data.m_supergroup.m_has_supergroup)
             {
                 prepared_chat_message = "You are not a member of a SuperGroup.";
                 sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,sender);
@@ -1157,7 +1164,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             // Only send the message to characters in sender's supergroup
             for(MapClientSession *cl : m_session_store)
             {
-                if(sender->m_ent->m_supergroup.m_SG_id == cl->m_ent->m_supergroup.m_SG_id)
+                if(sender->m_ent->m_char->m_char_data.m_supergroup.m_sg_idx == cl->m_ent->m_char->m_char_data.m_supergroup.m_sg_idx)
                     recipients.push_back(cl);
             }
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
@@ -1885,32 +1892,16 @@ void MapInstance::on_change_stance(ChangeStance * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    if(ev->enter_stance)
+    if(ev->m_stance.has_stance)
     {
-        //session.m_ent->m_stance = &getPower(*session.m_ent, ev->pset_idx, ev->pow_idx);
-        qCWarning(logMapEvents) << "Unhandled change stance request" << session.m_ent->m_idx << ev->pset_idx << ev->pow_idx;
+        session.m_ent->m_stance = ev->m_stance;
+        qCWarning(logMapEvents) << "Change stance request" << session.m_ent->m_idx << ev->m_stance.pset_idx << ev->m_stance.pow_idx;
     }
     else
     {
-        session.m_ent->m_stance = nullptr;
-        qCWarning(logMapEvents) << "Unhandled exit stance request" << session.m_ent->m_idx;
+        session.m_ent->m_stance = ev->m_stance;
+        qCWarning(logMapEvents) << "Exit stance request" << session.m_ent->m_idx;
     }
-}
-
-void MapInstance::on_send_stance(SendStance * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    //ev->m_enter_stance = true;
-    //ev->m_pset_idx = session.m_ent->m_stance->m_power_tpl.m_pset_idx;
-    //ev->m_pow_idx = session.m_ent->m_stance->m_power_tpl.m_pow_idx;
-
-    qCWarning(logMapEvents) << "Unhandled send stance request";
-
-    if(ev->m_enter_stance)
-        qCWarning(logMapEvents) << "Entity" << session.m_ent->name() << "SendStance" << ev->m_pset_idx << ev->m_pow_idx;
-    else
-        qCWarning(logMapEvents) << "Entity" << session.m_ent->name() << "SendStance is zero";
 }
 
 void MapInstance::on_set_destination(SetDestination * ev)
@@ -2204,6 +2195,55 @@ void MapInstance::on_recv_new_power(RecvNewPower *ev)
     addPower(session.m_ent->m_char->m_char_data, ev->ppool);
 }
 
+void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    //static const ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received Create SuperGroup"
+                          << ev->data.m_sg_name
+                          << ev->data.m_sg_titles[0]
+                          << ev->data.m_sg_titles[1]
+                          << ev->data.m_sg_titles[2]
+                          << ev->data.m_sg_emblem
+                          << ev->data.m_sg_colors[0].val
+                          << ev->data.m_sg_colors[1].val;
+
+
+    // Check for everything, then give success
+    //Costume sg_costume;
+    //bool val = true;
+    //session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<SuperGroupResponse>(new SuperGroupResponse(val)));
+    //session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<SuperGroupCostume>(new SuperGroupCostume(sg_costume, packer)));
+    g_AllSuperGroups->addSuperGroup(*session.m_ent, ev->data);
+}
+
+void MapInstance::on_change_supergroup_colors(ChangeSuperGroupColors *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received Change SuperGroup Colors"
+                          << ev->m_sg_colors[0].val
+                          << ev->m_sg_colors[1].val;
+
+    //changeSGColors(ev->m_sg_name, ev->m_sg_titles, ev->m_sg_emblem, ev->m_sg_colors);
+}
+
+void MapInstance::on_cancel_supergroup_creation(CancelSuperGroupCreation *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received Cancel SuperGroup Creation";
+
+    //cancelSGCreation();
+}
+
+void MapInstance::on_supergroup_mode(SuperGroupMode *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received SuperGroup Mode";
+
+    //changeSGMode();
+}
+
 void MapInstance::on_update_entities()
 {
     const std::vector<MapClientSession *> &active_sessions (m_session_store.get_active_sessions());
@@ -2254,7 +2294,6 @@ void MapInstance::send_character_update(Entity *e)
                                         e->m_char->getCurrentCostume()->m_body_type,
                                         e->m_char->getCurrentCostume()->m_height,
                                         e->m_char->getCurrentCostume()->m_physique,
-                                        (uint32_t)e->m_supergroup.m_SG_id,
                                         e->m_char->m_db_id
         }), (uint64_t)1);
 

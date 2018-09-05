@@ -70,34 +70,34 @@ void    setTeamID(Entity &e, uint8_t team_id)
                        << "\n  Members:" << e.m_team->m_team_members.data();
 }
 
-void    setSuperGroup(Entity &e, int sg_id, QString sg_name, uint32_t sg_rank)
+void setSuperGroup(Entity &e, bool has_sg, QString &sg_name)
 {
-    // TODO: provide method for updating SuperGroup Colors
-    if(sg_id == 0)
+    CharacterData cd = e.m_char->m_char_data;
+
+    if(has_sg == false)
     {
-        e.m_has_supergroup          = false;
-        e.m_supergroup.m_SG_id      = 0;
-        e.m_supergroup.m_SG_name    = "";
-        e.m_supergroup.m_SG_color1  = 0x996633FF;
-        e.m_supergroup.m_SG_color2  = 0x336699FF;
-        e.m_supergroup.m_SG_rank    = 0;
+        cd.m_supergroup.m_has_supergroup = false;
+        cd.m_supergroup.m_sg_idx = 0;
+        cd.m_supergroup.m_sg_rank = 0;
+        cd.m_supergroup.m_supergroup_costume = false;
+        cd.m_supergroup.getSuperGroup()->dump();
+        return;
     }
-    else
-    {
-        e.m_has_supergroup          = true;
-        e.m_supergroup.m_SG_id      = sg_id;
-        e.m_supergroup.m_SG_name    = sg_name;
-        e.m_supergroup.m_SG_color1  = 0xAA3366FF;
-        e.m_supergroup.m_SG_color2  = 0x66AA33FF;
-        e.m_supergroup.m_SG_rank    = sg_rank;
-    }
-    qDebug().noquote() << "SG Info:"
-             << "\n  Has Team:" << e.m_has_supergroup
-             << "\n  ID:" << e.m_supergroup.m_SG_id
-             << "\n  Name:" << e.m_supergroup.m_SG_name
-             << "\n  Color1:" << e.m_supergroup.m_SG_color1
-             << "\n  Color2:" << e.m_supergroup.m_SG_color2
-             << "\n  Rank:" << e.m_supergroup.m_SG_rank;
+
+    SuperGroupData sg;
+    sg.m_sg_name       = sg_name;
+    sg.m_sg_titles[0]  = "Leader";
+    sg.m_sg_titles[1]  = "Captain";
+    sg.m_sg_titles[2]  = "Member";
+    sg.m_sg_emblem     = "Anarchy";
+    sg.m_sg_colors[0]  = 0x996633FF;
+    sg.m_sg_colors[1]  = 0x336699FF;
+    sg.m_sg_leader_idx = e.m_idx;
+    sg.m_sg_motd       = "MOTD Test";
+    sg.m_sg_motto      = "MOTTO Test";
+
+    g_AllSuperGroups->addSuperGroup(e, sg);
+    cd.m_supergroup.getSuperGroup()->dump();
 }
 
 void setTarget(Entity &e, uint32_t target_idx)
@@ -630,6 +630,12 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendRegisterSuperGroup(Entity *tgt, QString &val)
+{
+    qCDebug(logSlashCommand) << "Sending RegisterSuperGroup:" << tgt->m_idx << val;
+    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<RegisterSuperGroup>(new RegisterSuperGroup(val)));
+}
+
 void sendClientState(Entity *tgt, ClientStates client_state)
 {
     qCDebug(logSlashCommand) << "Sending ClientState:" << tgt->m_idx << QString::number(client_state);

@@ -61,20 +61,23 @@ void storeCreation(const Entity &src, BitStream &bs)
         if(src.m_char->m_char_data.m_has_titles)
             src.m_char->sendTitles(bs,NameFlag::NoName,ConditionalFlag::Conditional); // NoName b/c We send it below
     }
+
     bs.StoreBits(1,src.m_hasname);
     if(src.m_hasname)
         bs.StoreString(src.m_char->getName());
     PUTDEBUG("after names");
+
     bool fadin = true;
     bs.StoreBits(1,fadin); // Is entity being faded in ?
     // the following is used as an input to LCG float generator, generated float (0-1) is used as
     // linear interpolation factor betwwen scale_min and scale_max
-    bs.StoreBits(32,src.m_randSeed);
-    bs.StoreBits(1,src.m_has_supergroup); // TODO: This appears to actually be for Villain Groups
-    if(src.m_has_supergroup)
+    bs.StoreBits(32, src.m_randSeed);
+
+    bs.StoreBits(1, src.m_faction_data.m_has_faction); // TODO: This appears to actually be for Villain Groups
+    if(src.m_faction_data.m_has_faction)
     {
-        bs.StorePackedBits(2,src.m_supergroup.m_SG_rank);   // this will be put in field_1830 (iRank) of created entity
-        bs.StoreString(src.m_supergroup.m_SG_name);         // villain group name?
+        bs.StorePackedBits(2, src.m_faction_data.m_rank);   // this will be put in field_1830 (iRank) of created entity
+        bs.StoreString(src.m_faction_data.m_faction_name);  // villain group name?
     }
     PUTDEBUG("end storeCreation");
 }
@@ -380,17 +383,19 @@ void sendAFK(const Entity &src, BitStream &bs)
 }
 
 void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
-{
-    bs.StoreBits(1,src.m_has_supergroup); // src.m_has_supergroup?
-    if(!src.m_has_supergroup)
+{   
+    CharacterData cd = src.m_char->m_char_data;
+    bs.StoreBits(1, cd.m_supergroup.m_has_supergroup);
+    if(!cd.m_supergroup.m_has_supergroup)
         return;
-    bs.StorePackedBits(2,src.m_supergroup.m_SG_id);
-    if(src.m_supergroup.m_SG_id)
+
+    bs.StorePackedBits(2, cd.m_supergroup.getSuperGroup()->m_sg_idx);
+    if(cd.m_supergroup.getSuperGroup()->m_sg_idx)
     {
-        bs.StoreString(src.m_supergroup.m_SG_name);//64 chars max
-        bs.StoreString("");//128 chars max -> hash table key from the CostumeString_HTable. Maybe emblem?
-        bs.StoreBits(32,src.m_supergroup.m_SG_color1); // supergroup color 1
-        bs.StoreBits(32,src.m_supergroup.m_SG_color2); // supergroup color 2
+        bs.StoreString(cd.m_supergroup.getSuperGroup()->m_data.m_sg_name);    // 64 chars max
+        bs.StoreString(cd.m_supergroup.getSuperGroup()->m_data.m_sg_emblem);  // 128 chars max -> hash table key from the CostumeString_HTable. Maybe emblem?
+        bs.StoreBits(32, cd.m_supergroup.getSuperGroup()->m_data.m_sg_colors[0].val); // supergroup color 1
+        bs.StoreBits(32, cd.m_supergroup.getSuperGroup()->m_data.m_sg_colors[1].val); // supergroup color 2
     }
 }
 

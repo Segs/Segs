@@ -55,7 +55,7 @@ void    setBackupSpd(Entity &e, float val);
 void    setJumpHeight(Entity &e, float val);
 void    setUpdateID(Entity &e, uint8_t val);
 void    setTeamID(Entity &e, uint8_t team_id);
-void    setSuperGroup(Entity &e, int sg_id = 0, QString sg_name = "", uint32_t sg_rank = 3);
+void    setSuperGroup(Entity &e, bool has_sg, QString &sg_name);
 void    setTarget(Entity &e, uint32_t target_idx);
 void    setAssistTarget(Entity &e);
 
@@ -160,6 +160,7 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendRegisterSuperGroup(Entity *tgt, QString &val);
 void sendClientState(Entity *tgt, ClientStates client_state);
 void showMapXferList(Entity *ent, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(Entity *tgt, QString &msg, FloatingInfoStyle style, float delay);

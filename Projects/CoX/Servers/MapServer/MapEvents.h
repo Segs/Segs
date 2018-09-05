@@ -262,45 +262,22 @@ public:
 class ChangeStance final : public MapLinkEvent
 {
 public:
-    bool enter_stance;
-    int pset_idx;
-    int pow_idx;
-    ChangeStance():MapLinkEvent(MapEventTypes::evChangeStance)
+    PowerStance m_stance;
+    ChangeStance():MapLinkEvent(MapEventTypes::evChangeStance) // opcode 36
     {}
     void serializeto(BitStream &bs) const
     {
+        qDebug() << "ChangeStance to";
         bs.StorePackedBits(1,36);
     }
     void serializefrom(BitStream &bs)
     {
-        enter_stance = bs.GetBits(1);
-        if(!enter_stance)
+        qDebug() << "ChangeStance from";
+        m_stance.has_stance = bs.GetBits(1);
+        if(!m_stance.has_stance)
             return;
-        pset_idx = bs.GetPackedBits(4);
-        pow_idx = bs.GetPackedBits(4);
-    }
-
-};
-
-class SendStance final : public MapLinkEvent
-{
-public:
-    bool             m_enter_stance;
-    uint32_t         m_pset_idx;
-    uint32_t         m_pow_idx;
-    SendStance() : MapLinkEvent(MapEventTypes::evSendStance)
-    {
-    }
-    void serializeto(BitStream &bs) const
-    {
-        bs.StoreBits(1, m_enter_stance);
-        bs.StorePackedBits(4, m_pset_idx);
-        bs.StorePackedBits(4, m_pow_idx);
-    }
-    void serializefrom(BitStream &/*bs*/)
-    {
-        // TODO: Seems like nothing is received server side.
-        qWarning() << "From SendStance unimplemented.";
+        m_stance.pset_idx = bs.GetPackedBits(4);
+        m_stance.pow_idx = bs.GetPackedBits(4);
     }
 
 };
@@ -760,8 +737,10 @@ public:
 #include "Events/PowerSystemEvents.h"
 #include "Events/SaveClientOptions.h"
 #include "Events/SceneEvent.h"
+#include "Events/SendStance.h"
 #include "Events/Shortcuts.h"
 #include "Events/SidekickOffer.h"
+#include "Events/SuperGroupEvents.h"
 #include "Events/TeamLooking.h"
 #include "Events/TeamOffer.h"
 #include "Events/InteractWithEntity.h"

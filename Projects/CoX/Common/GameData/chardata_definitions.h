@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "Common/NetStructures/SuperGroup.h"
 #include "Common/NetStructures/Friend.h"
 #include "Common/NetStructures/Powers.h"
 #include "Common/GameData/attrib_definitions.h"
@@ -30,7 +31,7 @@ static const constexpr  uint32_t        class_version   = 1;
 
 struct CharacterData
 {
-static const constexpr  uint32_t    class_version       = 6; // v6: powersets
+static const constexpr  uint32_t    class_version       = 7; // v7: supergroupstats
                         uint32_t    m_level             = 0;
                         uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
                         uint32_t    m_experience_points = 0;
@@ -50,10 +51,9 @@ static const constexpr  uint32_t    class_version       = 6; // v6: powersets
                         QString     m_last_online;
                         QString     m_class_name;
                         QString     m_origin_name;
-                        bool        m_supergroup_costume;       // player has a sg costume
-                        bool        m_using_sg_costume;         // player uses sg costume currently
                         Sidekick    m_sidekick;                 // Sidekick Struct
                         FriendsList m_friendlist;               // Friendslist Struct
+                        SuperGroupStats     m_supergroup;       // This player's supergroupstats
                         Parse_CharAttrib    m_current_attribs;
                         vPowerSets          m_powersets;
                         PowerTrayGroup      m_trays;

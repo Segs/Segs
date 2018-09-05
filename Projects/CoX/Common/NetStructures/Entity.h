@@ -22,7 +22,6 @@
 #include <memory>
 
 struct MapClientSession;
-class Team;
 class Character;
 struct PlayerData;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
@@ -113,15 +112,11 @@ enum class AppearanceType : uint8_t
     SequencerName = 4
 };
 
-struct SuperGroup
+struct FactionData
 {
-    int             m_SG_id                 = {0};
-    QString         m_SG_name               = "Supergroup"; // 64 chars max
-    //QString         m_SG_motto;
-    //QString         m_SG_costume;                         // 128 chars max -> hash table key from the CostumeString_HTable
-    uint32_t        m_SG_color1             = 0;            // supergroup color 1
-    uint32_t        m_SG_color2             = 0;            // supergroup color 2
-    int             m_SG_rank               = 1;
+    bool    m_has_faction = false;  // send Faction info
+    int     m_rank = 0;             // iRank
+    QString m_faction_name;         // group_name
 };
 
 struct NPCData
@@ -140,6 +135,7 @@ struct NetFx
     bool pitch_to_target;
     uint8_t bone_id;
 };
+
 class Entity
 {
     // only EntityStore can create instances of this class
@@ -169,11 +165,10 @@ public:
         NPCPtr              m_npc;
 
         int                 m_full_update_count     = 10; // TODO: remove this after we have proper physics
-        bool                m_has_supergroup        = true;
-        SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_team              = false;
         Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
         EntityData          m_entity_data;
+        FactionData         m_faction_data;
 
         uint32_t            m_idx                   = {0};
         uint32_t            m_db_id                 = {0};
@@ -185,7 +180,7 @@ public:
 
         std::vector<CharacterPower *> m_queued_powers;
         std::vector<CharacterPower *> m_recharging_powers;
-        CharacterPower    * m_stance                = nullptr;
+        PowerStance         m_stance;
 
         int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
         int                 m_num_fx                = 0;
@@ -238,7 +233,6 @@ public:
         bool                m_create_player             = false;
         bool                m_rare_bits                 = false;
         int                 current_client_packet_id    = {0};
-        QString             m_override_name;
         uint32_t            m_input_ack                 = {0};
         bool                player_type                 = false;
         bool                m_destroyed                 = false;

@@ -106,8 +106,7 @@ void Entity::dump()
                              + QString::number(m_entity_data.m_orientation_pyr.y) + ", "
                              + QString::number(m_entity_data.m_orientation_pyr.r)
             + "\n  target: " + QString::number(m_target_idx)
-            + "\n  assist target: " + QString::number(m_assist_target_idx)
-            + "\n  m_SG_id: " + QString::number(m_supergroup.m_SG_id);
+            + "\n  assist target: " + QString::number(m_assist_target_idx);
 
     qDebug().noquote() << msg;
 
@@ -156,7 +155,6 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = {0};
     e.m_hasname                         = true;
-    e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = true;
     e.m_target_idx                      = e.m_idx;
@@ -169,7 +167,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.might_have_rare = e.m_rare_bits   = true;
 }
 
-void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
+void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant)
 {
     e.m_costume_type                    = AppearanceType::NpcCostume;
     e.m_destroyed                       = false;
@@ -180,9 +178,10 @@ void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = getEntityClassIndex(false,src->m_Class);
     e.m_hasname                         = true;
-    e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = false;
+    e.m_faction_data.m_has_faction      = true;
+    e.m_faction_data.m_rank             = src->m_Rank;
     e.m_target_idx                      = 0;
     e.m_assist_target_idx               = 0;
 
@@ -191,6 +190,7 @@ void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
     e.m_player.reset();
     e.m_entity.reset(new EntityData);
     e.might_have_rare = e.m_rare_bits   = true;
+    e.m_char->m_char_data.m_level       = src->m_Level;
 }
 
 void markEntityForDbStore(Entity *e, DbStoreFlags f)
