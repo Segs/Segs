@@ -11,7 +11,6 @@
 #include "Events/ClientStates.h"
 #include "glm/vec3.hpp"
 #include <QString>
-#include <vector>
 #include <cstdint>
 
 class QString;
