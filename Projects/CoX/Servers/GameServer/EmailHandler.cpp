@@ -10,7 +10,9 @@
 #include "GameEvents.h"
 #include "EmailEvents.h"
 
-void EmailHandler::dispatch(SEGSEvent *ev)
+using namespace SEGSEvents;
+
+void EmailHandler::dispatch(Event *ev)
 {
     assert(ev);
     switch(ev->type())
@@ -18,21 +20,21 @@ void EmailHandler::dispatch(SEGSEvent *ev)
         case EmailEventTypes::evEmailHeaderRequest:
         on_email_header(static_cast<EmailHeaderRequest *>(ev));
         break;
-        case EmailEventTypes::evEmailRead:
+        case EmailEventTypes::evEmailReadMessage:
         on_email_read(static_cast<EmailReadMessage *>(ev));
         break;
-        case EmailEventTypes::evEmailSend:
+        case EmailEventTypes::evEmailSendMessage:
         on_email_send(static_cast<EmailSendMessage *>(ev));
         break;
-        case EmailEventTypes::evEmailDelete:
+        case EmailEventTypes::evEmailDeleteMessage:
         on_email_delete(static_cast<EmailDeleteMessage *>(ev));
         break;
 
         // will be obtained from MessageBusEndpoint
-        case Internal_EventTypes::evClientConnected:
+        case Internal_EventTypes::evClientConnectedMessage:
         on_client_connected(static_cast<ClientConnectedMessage *>(ev));
         break;
-        case Internal_EventTypes::evClientDisconnected:
+        case Internal_EventTypes::evClientDisconnectedMessage:
         on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
         break;
         default: break;
@@ -58,7 +60,7 @@ void EmailHandler::on_email_header(EmailHeaderRequest *msg)
 void EmailHandler::on_email_read(EmailReadMessage *msg)
 {
     // later on, find the message from DB
-    QString message = "Email ID \n" + QString::number(msg->m_data.id);
+    QString message = "Email ID \n" + QString::number(msg->m_data.email_id);
 
     /*
     EmailRead *emailRead = new EmailRead(
@@ -100,21 +102,33 @@ void EmailHandler::on_email_delete(EmailDeleteMessage *msg)
 void EmailHandler::on_client_connected(ClientConnectedMessage *msg)
 {
     // m_session is the key, m_server_id and m_sub_server_id are the values
-    m_stored_client_datas[msg->m_data.m_session] =
-            ClientSessionData{msg->m_data.m_server_id, msg->m_data.m_sub_server_id};
+    m_state.m_stored_client_datas[msg->m_data.m_char_db_id] =
+            ClientSessionData{msg->m_data.m_session, msg->m_data.m_server_id, msg->m_data.m_sub_server_id};
 }
 
 void EmailHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 {
-    if (m_stored_client_datas.count(msg->m_data.m_session) > 0)
-        m_stored_client_datas.erase(msg->m_data.m_session);
+    if (m_state.m_stored_client_datas.count(msg->m_data.m_char_db_id) > 0)
+        m_state.m_stored_client_datas.erase(msg->m_data.m_char_db_id);
 }
 
-EmailHandler::EmailHandler() : m_message_bus_endpoint(*this)
+EmailHandler::EmailHandler(int for_game_server_id) : m_message_bus_endpoint(*this)
 {
+    m_state.m_game_server_id = for_game_server_id;
+
     assert(HandlerLocator::getEmail_Handler() == nullptr);
     HandlerLocator::setEmail_Handler(this);
 
-    m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientConnected);
-    m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientDisconnected);
+    m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientConnectedMessage);
+    m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientDisconnectedMessage);
+}
+
+void EmailHandler::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void EmailHandler::serialize_to(std::ostream &is)
+{
+    assert(false);
 }

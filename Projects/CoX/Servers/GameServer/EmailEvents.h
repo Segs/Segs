@@ -29,48 +29,89 @@ enum EmailEventTypes : uint32_t
 
 struct EmailHeaderRequestData
 {
-    int id;
+    int email_id;
     QString sender;
     QString subject;
     int timestamp;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(email_id, sender, subject, timestamp);
+    }
 };
 
 struct EmailHeaderResponseData
 {
-    int id;
+    int email_id;
     QString sender;
     QString subject;
     int timestamp;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(email_id, sender, subject, timestamp);
+    }
 };
-TWO_WAY_MESSAGE(EmailEventTypes, EmailHeader)
+//[[ev_def:macro]]
+TWO_WAY_MESSAGE(EmailEventTypes,EmailHeader)
 
 struct EmailReadData
 {
-    int id;
+    int email_id;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(email_id);
+    }
 };
-ONE_WAY_MESSAGE(EmailEventTypes, EmailRead)
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(EmailEventTypes,EmailRead)
 
 struct EmailSendData
 {
-    int id;
+    int email_id;
     QString sender;
     QString recipient;
     QString subject;
     QString message;
     int timestamp;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(email_id, sender, recipient, subject, message, timestamp);
+    }
 };
-ONE_WAY_MESSAGE(EmailEventTypes, EmailSend)
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(EmailEventTypes,EmailSend)
 
 struct EmailDeleteData
 {
-    int id;
+    int email_id;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(email_id);
+    }
 };
-ONE_WAY_MESSAGE(EmailEventTypes, EmailDelete)
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(EmailEventTypes,EmailDelete)
 
 struct EmailWasReadByRecipientData
 {
-    int id;
+    int email_id;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(email_id);
+    }
 };
-ONE_WAY_MESSAGE(EmailEventTypes, EmailWasReadByRecipient)
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(EmailEventTypes,EmailWasReadByRecipient)
 
 } // end of SEGSEvent namespace

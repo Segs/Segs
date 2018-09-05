@@ -14,32 +14,52 @@
 #include "GameDatabase/GameDBSyncHandler.h"
 #include <map>
 
+namespace SEGSEvents
+{
+    struct EmailHeaderRequest;
+    struct EmailSendMessage;
+    struct EmailReadMessage;
+    struct EmailDeleteMessage;
+    struct ClientConnectedMessage;
+    struct ClientDisconnectedMessage;
+}
+
 struct ClientSessionData
 {
+    uint64_t m_session_token;
     uint32_t m_server_id;
-    uint32_t m_sub_server_id;
+    uint32_t m_instance_id;
+};
+
+struct EmailHandlerState
+{
+    std::unordered_map<uint64_t, ClientSessionData> m_stored_client_datas;
+    int m_game_server_id;
 };
 
 class EmailHandler : public EventProcessor
 {
 private:
     // EventProcessor interface
-    void dispatch(SEGSEvent *ev) override;
+    void dispatch(SEGSEvents::Event *ev) override;
 
-    void on_email_header(EmailHeaderRequest* msg);
-    void on_email_send(EmailSendMessage* msg);
-    void on_email_read(EmailReadMessage* msg);
-    void on_email_delete(EmailDeleteMessage* msg);
-    void on_client_connected(ClientConnectedMessage* msg);
-    void on_client_disconnected(ClientDisconnectedMessage *msg);
+    void on_email_header(SEGSEvents::EmailHeaderRequest* msg);
+    void on_email_send(SEGSEvents::EmailSendMessage* msg);
+    void on_email_read(SEGSEvents::EmailReadMessage* msg);
+    void on_email_delete(SEGSEvents::EmailDeleteMessage* msg);
+    void on_client_connected(SEGSEvents::ClientConnectedMessage* msg);
+    void on_client_disconnected(SEGSEvents::ClientDisconnectedMessage *msg);
 protected:
     MessageBusEndpoint m_message_bus_endpoint;
-    std::map<uint64_t, ClientSessionData> m_stored_client_datas;
     GameDBSyncHandler* m_db_handler;
+    void serialize_from(std::istream &is) override;
+    void serialize_to(std::ostream &is) override;
+    EmailHandlerState m_state;
     // QVector<ClientConnectedData> m_stored_client_datas;
 public:
-    EmailHandler();
+    EmailHandler(int for_game_server_id);
     void set_db_handler(uint8_t id);
+    IMPL_ID(EmailHandler)
 };
 
 #endif // EMAILHANDLER_H

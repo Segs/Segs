@@ -104,9 +104,9 @@ GameServer::GameServer(int id) : d(new PrivateData)
     d->m_handler->start();
     d->m_id = id;
 
-    d->m_email_handler = std::make_unique<EmailHandler>(id);
-    d->m_email_handler->activate();
-    d->m_email_handler->set_db_handler(d->m_id);
+    d->m_email_service = std::make_unique<EmailHandler>(id);
+    d->m_email_service->activate();
+    d->m_email_service->set_db_handler(d->m_id);
 
     d->m_friendship_service = std::make_unique<FriendHandler>(id);
     d->m_friendship_service->activate();

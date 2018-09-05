@@ -81,6 +81,8 @@ class TrashEnhancement;
 class TrashEnhancementInPower;
 class BuyEnhancementSlot;
 class RecvNewPower;
+class EmailHeaderResponse;
+class EmailWasReadByRecipientMessage;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -196,9 +198,9 @@ protected:
         void on_set_keybind(SEGSEvents::SetKeybind *ev);
         void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
-        void on_interact_with(class InteractWithEntity *ev);
-        void on_email_header_response(class EmailHeaderResponse* msg);
-        void on_email_read_by_recipient(class EmailWasReadByRecipientMessage* msg);
+        void on_interact_with(SEGSEvents::InteractWithEntity *ev);
+        void on_email_header_response(SEGSEvents::EmailHeaderResponse* msg);
+        void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage* msg);
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
         void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
         void on_dialog_button(SEGSEvents::DialogButton *ev);

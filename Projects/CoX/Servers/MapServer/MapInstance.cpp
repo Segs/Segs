@@ -432,9 +432,9 @@ void MapInstance::dispatch( Event *ev )
         case evResetKeybinds:
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
-        case EmailEventTypes::evEmailHeaderResponse:
+        case evEmailHeaderResponse:
         break;
-        case EmailEventTypes::evEmailWasReadByRecipient:
+        case evEmailWasReadByRecipientMessage:
         break;
         case evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));
