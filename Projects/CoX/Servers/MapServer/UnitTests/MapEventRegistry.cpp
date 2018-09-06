@@ -62,7 +62,7 @@ namespace
         "SceneRequest",
         "SelectKeybindProfile",
         "SendStance",
-        "SetClientState"
+        "SetClientState",
         "SetDefaultPower",
         "SetDefaultPowerSend",
         "SetDestination",
