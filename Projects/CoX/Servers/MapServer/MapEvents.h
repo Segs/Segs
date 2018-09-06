@@ -56,7 +56,7 @@ public:
     EVENT_IMPL(MapXferComplete)
 };
 
-// [[ev_dev:type]]
+// [[ev_def:type]]
 class AwaitingDeadNoGurney final : public MapLinkEvent
 {
 public:

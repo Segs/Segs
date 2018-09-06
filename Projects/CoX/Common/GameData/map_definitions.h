@@ -32,4 +32,4 @@ uint32_t       getMapIndex(const QString &map_name);
 const MapData &getMapData(const QString &map_name);
 QString        getMapName(size_t index);
 QString        getDisplayMapName(size_t index);
-const std::vector<MapData>   getAllMapData();
+const std::vector<MapData> &getAllMapData();

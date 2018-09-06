@@ -35,7 +35,7 @@ static const std::vector<MapData> g_defined_map_datas =
     {23, "Trial_05_01", "maps/City_Zones/Trial_05_01/Trial_05_01.txt", "Rikti Crash Site"}
 };
 
-const std::vector<MapData> getAllMapData()
+const std::vector<MapData> &getAllMapData()
 {
     return g_defined_map_datas;
 }

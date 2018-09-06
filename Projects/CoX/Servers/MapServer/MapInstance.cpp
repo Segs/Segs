@@ -489,29 +489,27 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     MapLink *lnk = session.link();
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
     qCDebug(logMapEvents) << "Map Transfer Initiated with token" << lnk->session_token();
+    if (!map_server->session_has_xfer_in_progress(lnk->session_token()))
+    {
+         qCDebug(logMapEvents) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
+         return;
+    }
     
-    if (map_server->session_has_xfer_in_progress(lnk->session_token()))
-    {
-        // This is used here to get the map idx to send to the client for the transfer, but we
-        // remove it from the std::map after the client has sent us the ClientRenderingResumed event so we
-        // can prevent motd showing every time.
-        uint8_t map_idx = map_server->session_map_xfer_idx(lnk->session_token()); 
-        QString map_path = getMapPath(map_idx).toLower();
-        GameAccountResponseCharacterData c_data;
-        QString serialized_data;
-        
-        fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
-        serializeToQString(c_data, serialized_data);
-        ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, lnk->peer_addr(),
-                                        serialized_data, session.m_requested_slot_idx, session.m_name, map_path,
-                                        uint16_t(session.m_max_slots)},
-                                        lnk->session_token(),this);
-        map_server->putq(map_req);
-    }
-    else
-    {
-        qCDebug(logMapEvents) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
-    }
+    // This is used here to get the map idx to send to the client for the transfer, but we
+    // remove it from the std::map after the client has sent us the ClientRenderingResumed event so we
+    // can prevent motd showing every time.
+    uint8_t map_idx = map_server->session_map_xfer_idx(lnk->session_token()); 
+    QString map_path = getMapPath(map_idx).toLower();
+    GameAccountResponseCharacterData c_data;
+    QString serialized_data;
+    
+    fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
+    serializeToQString(c_data, serialized_data);
+    ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, lnk->peer_addr(),
+                                    serialized_data, session.m_requested_slot_idx, session.m_name, map_path,
+                                    uint16_t(session.m_max_slots)},
+                                    lnk->session_token(),this);
+    map_server->putq(map_req);
 }
 
 void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
