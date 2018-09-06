@@ -10,6 +10,7 @@
 #include "EntityStorage.h"
 #include "EventProcessor.h"
 #include "Common/Servers/ClientManager.h"
+#include "Common/GameData/scenegraph_definitions.h"
 #include "Servers/ServerEndpoint.h"
 #include "Servers/GameDatabase/GameDBSyncService.h"
 #include "ScriptingEngine.h"
@@ -27,6 +28,7 @@ class SEGSTimer;
 class World;
 class GameDataStore;
 class MapSceneGraph;
+class MapSwap;
 namespace SEGSEvents
 {
 class InputState;
@@ -102,6 +104,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_link_timer;
         std::unique_ptr<SEGSTimer> m_sync_service_timer;
         std::vector<glm::mat4>  m_new_player_spawns;
+        std::vector<MapSwap>  m_map_swaps;
 
         World *                 m_world;
         GameDBSyncService*      m_sync_service;

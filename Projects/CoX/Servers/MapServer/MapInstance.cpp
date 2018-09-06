@@ -154,12 +154,14 @@ void MapInstance::start(const QString &scenegraph_path)
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
                 m_new_player_spawns = m_map_scenegraph->spawn_points("NewPlayer");
+                m_map_swaps = m_map_scenegraph->map_swaps();
             }, "Loading original scene graph"
             );
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);
             m_npc_generators.generate(this);
             },"Spawning npcs");
+        
         qInfo() << "Loading custom scripts";
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
