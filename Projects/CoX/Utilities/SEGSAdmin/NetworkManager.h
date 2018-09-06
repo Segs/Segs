@@ -21,9 +21,10 @@ public:
 public slots:
     void get_latest_releases();
     void store_latest_releases();
+    void check_reply();
 
 signals:
-    void releasesReadyToRead();
+    void releasesReadyToRead(const QString &error = "No Errors");
 
 private:
     QNetworkReply *m_network_reply;

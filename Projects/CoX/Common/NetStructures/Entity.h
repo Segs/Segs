@@ -25,6 +25,7 @@ struct MapClientSession;
 class Team;
 class Character;
 struct PlayerData;
+class GameDataStore;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
 
 class PosUpdate
@@ -48,10 +49,9 @@ public:
     }
 
     uint8_t     m_csc_deltabits                 = 0;
-    bool        m_send_deltas                   = 0;
+    bool        m_send_deltas                   = false;
     uint16_t    m_control_bits                  = 0;
     uint16_t    m_send_id                       = 0;
-    void        *current_state_P                = nullptr;
     glm::vec3   m_camera_pyr;
     glm::vec3   m_orientation_pyr;              // Stored in Radians
     glm::quat   m_direction;
@@ -69,6 +69,27 @@ public:
 
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_csc_deltabits);
+        ar(m_send_deltas);
+        ar(m_control_bits);
+        ar(m_send_id);
+        ar(m_camera_pyr);
+        ar(m_orientation_pyr);
+        ar(m_direction);
+        ar(m_time_diff1);
+        ar(m_time_diff2);
+        ar(m_input_vel_scale);
+        ar(m_received_server_update_id);
+        ar(m_no_collision);
+        ar(m_key_released);
+        ar(pos_delta_valid);
+        ar(pyr_valid);
+        ar(pos_delta);
+        ar(m_controls_disabled);
+    }
 };
 
 enum class FadeDirection
@@ -152,7 +173,7 @@ class Entity
     using NPCPtr = std::unique_ptr<NPCData>;
 private:
                             Entity();
-virtual                     ~Entity();
+                            ~Entity();
 public:
         struct currentInputState
         {
@@ -263,7 +284,7 @@ static  void                sendPvP(BitStream &bs);
         bool                update_rot(int axis) const; // returns true if given axis needs updating;
 
         const QString &     name() const;
-        void                fillFromCharacter();
+        void                fillFromCharacter(const GameDataStore &data);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 };
 
@@ -276,7 +297,7 @@ enum class DbStoreFlags : uint32_t
 void markEntityForDbStore(Entity *e,DbStoreFlags f);
 void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
-void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant);
-void fillEntityFromNewCharData(Entity &e, BitStream &src, const ColorAndPartPacker *packer, const Parse_AllKeyProfiles &default_profiles);
+void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
+void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);
 void forcePosition(Entity &e,glm::vec3 pos);
 extern void abortLogout(Entity *e);

@@ -8,21 +8,20 @@
 #pragma once
 
 #include "GameLink.h"
-#include "MapServer/EntityStorage.h"
 
 #include <memory>
 
 class CharacterDatabase;
 class GameServerData;
 
-class GameServer  : public EventProcessor
+class GameServer final : public EventProcessor
 {
         class PrivateData;
 public:
+                                IMPL_ID(GameServer)
                                 ~GameServer() override;
                                 GameServer(int id);
         bool                    ReadConfigAndRestart();
-        bool                    ShutDown() ;
         const ACE_INET_Addr &   getAddress();
 
         QString                 getName();
@@ -32,6 +31,8 @@ public:
         int                     getMaxCharacterSlots() const;
 protected:
         int                     handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask) override;
-        void                    dispatch(SEGSEvent *ev) override;
+        void                    dispatch(SEGSEvents::Event *ev) override;
+        void                    serialize_from(std::istream &is) override;
+        void                    serialize_to(std::ostream &os) override;
         std::unique_ptr<PrivateData> d;
 };

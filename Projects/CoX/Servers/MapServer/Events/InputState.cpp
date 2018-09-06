@@ -21,6 +21,8 @@
 #include <QDebug>
 #include <cmath>
 
+using namespace SEGSEvents;
+
 enum BinaryControl
 {
     FORWARD=0,
@@ -213,8 +215,7 @@ void InputState::extended_input(BitStream &bs)
     {
         m_data.m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
         m_data.m_send_id = bs.GetBits(16);
-        m_data.current_state_P = nullptr;
-        qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_data.m_csc_deltabits, m_data.m_send_id, m_data.current_state_P);
+        qCDebug(logInput, "CSC_DELTA[%x-%x] : ", m_data.m_csc_deltabits, m_data.m_send_id);
         partial_2(bs);
 
     }

@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <QtCore/QString>
 #include <stdint.h>
 #include <vector>
 #include <array>
@@ -113,7 +112,7 @@ public:
 class GUISettings
 {
 public:
-    GUISettings() { }
+    GUISettings() = default;
 
 // GUISettings serialization class version
 static const constexpr uint32_t class_version = 1;

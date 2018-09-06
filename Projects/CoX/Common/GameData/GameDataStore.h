@@ -21,7 +21,7 @@
 class ColorAndPartPacker;
 class QString;
 
-class MapServerData
+class GameDataStore
 {
         ColorAndPartPacker *packer_instance;
         LevelExpAndDebt     m_experience_and_debt_per_level;
@@ -40,14 +40,14 @@ class MapServerData
         bool            read_effectiveness(const QString &directory_path);
         bool            read_pi_schedule(const QString &directory_path);
 public:
-                        MapServerData();
-                        ~MapServerData();
+                        GameDataStore();
+                        ~GameDataStore();
         bool            read_runtime_data(const QString &directory_path);
         const ColorAndPartPacker *getPacker() const { return packer_instance; }
         int             expForLevel(int lev) const;
         int             expDebtForLevel(int lev) const;
-        int             expMaxLevel();
-        int             countForLevel(int lvl, std::vector<uint32_t> &schedule) const;
+        int             expMaxLevel() const;
+        int             countForLevel(int lvl,const std::vector<uint32_t> &schedule) const;
         const NPCStorage & getNPCDefinitions() const
                         {
                             return m_npc_store;
@@ -78,3 +78,5 @@ public:
         float                       m_time_to_auto_logout = 60;
         float                       m_uses_auto_logout = true;
 };
+int getEntityOriginIndex(const GameDataStore &data,bool is_player, const QString &origin_name);
+int getEntityClassIndex(const GameDataStore &data,bool is_player, const QString &class_name);

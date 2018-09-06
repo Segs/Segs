@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>258</width>
+    <width>260</width>
     <height>105</height>
    </rect>
   </property>
@@ -108,9 +108,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset>
-         <normalon>:/icons/icon_lookup.png</normalon>
-        </iconset>
+        <iconset resource="resources.qrc">
+         <normaloff>:/icons/Resources/icon_lookup.png</normaloff>:/icons/Resources/icon_lookup.png</iconset>
        </property>
        <property name="flat">
         <bool>false</bool>
@@ -135,7 +134,9 @@
   <tabstop>config_server_name_edit</tabstop>
   <tabstop>config_ip_edit</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
