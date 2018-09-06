@@ -246,6 +246,11 @@ void sendServerMOTD(MapClientSession *tgt)
     }
 }
 
+void on_awaiting_dead_no_gurney_test(MapClientSession &session)
+{
+    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
+}
+
 void sendEmailHeaders(Entity *e)
 {
     if(!e->m_client)
