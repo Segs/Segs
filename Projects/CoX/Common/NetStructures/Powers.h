@@ -75,14 +75,7 @@ struct vInspirations
     // although in some cases people prefer [row][col], i'll be using x -> col and y -> row
     size_t m_rows, m_cols;
 
-    vInspirations()
-    {
-        m_cols = 5;
-        m_rows = 4;
-        // m_inspirations.reserve(m_rows * m_cols);
-    }
-
-    vInspirations(size_t cols, size_t rows)
+    vInspirations(size_t cols = 5, size_t rows = 4)
     {
         if (cols > 5)
             qCritical() << "vInspirations has more than 5 columns!";
@@ -94,14 +87,14 @@ struct vInspirations
         // m_inspirations.reserve(m_cols * m_rows);
 
         // first, create the columns
-        m_inspirations.reserve(m_cols);
+        m_inspirations.resize(m_cols);
 
         // then in each column, create the rows
         for (size_t i = 0; i < m_cols; ++i)
-            m_inspirations[i].reserve(m_rows);
+            m_inspirations[i].resize(m_rows);
     }
 
-    const int size()
+    int size()
     {
         return m_cols * m_rows;
     }
