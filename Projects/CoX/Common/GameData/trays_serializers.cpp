@@ -38,6 +38,7 @@ void saveTo(const PowerTrayGroup &target, const QString &baseName, bool text_for
 {
     commonSaveTo(target,"PowerTrayGroups",baseName,text_format);
 }
+
 template
 void PowerTrayGroup::serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, uint32_t const version);
 template

@@ -221,6 +221,6 @@ void saveTo(const CharacterData &target, const QString &baseName, bool text_form
     commonSaveTo(target,"CharacterData",baseName,text_format);
 }
 
-SPECIALIZE_VERSIONED_SERIALIZATIONS(CharacterData);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(CharacterData)
 
 //! @}
