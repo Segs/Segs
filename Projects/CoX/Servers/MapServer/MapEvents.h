@@ -27,6 +27,22 @@ namespace SEGSEvents
 {
 
 // [[ev_def:type]]
+class AwaitingDeadNoGurney final : public MapLinkEvent
+{
+public:
+    AwaitingDeadNoGurney() : MapLinkEvent(MapEventTypes::evAwaitingDeadNoGurney)
+    {}
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,10); // opcode
+    }
+    void serializefrom(BitStream &) override
+    {
+    }
+    EVENT_IMPL(AwaitingDeadNoGurney)
+};
+
+// [[ev_def:type]]
 class ShortcutsRequest final : public MapLinkEvent
 {
 public:
