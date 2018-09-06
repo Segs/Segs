@@ -70,12 +70,12 @@ public:
         float                       m_player_fade_in;
 
         // auto-AFK and logout settings, auto-AFK is mandatory, server can choose between auto-logout or not
-        float                       m_time_to_afk = 30;          // 30 secs
+        float                       m_time_to_afk = 5 * 60;     // default afk time is 5 mins (300 secs)
         // when player has reached the threshold for m_time_to_logout, they will be notified that they will be
         // auto-logged out in m_time_to_auto_logout seconds
         // so m_time_to_logout_msg + m_time_to_auto_logout is when the player will be kicked out of the server
-        float                       m_time_to_logout_msg = 45;  // 60 secs
-        float                       m_time_to_auto_logout = 60;
+        float                       m_time_to_logout_msg = 18 * 60;
+        float                       m_time_to_auto_logout = 2 * 60;
         float                       m_uses_auto_logout = true;
 };
 int getEntityOriginIndex(const GameDataStore &data,bool is_player, const QString &origin_name);

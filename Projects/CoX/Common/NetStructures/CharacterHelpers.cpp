@@ -99,7 +99,7 @@ void toggleAFK(Character &c, const bool isTrue, QString msg)
     c.m_char_data.m_afk = isTrue;
     //c.m_char_data.m_afk = !c.m_char_data.m_afk;
     if(c.m_char_data.m_afk)
-        c.m_char_data.m_afk_msg = msg;
+        c.m_char_data.m_afk_msg = msg; 
 }
 
 void toggleAFK(Character &c, QString msg)
