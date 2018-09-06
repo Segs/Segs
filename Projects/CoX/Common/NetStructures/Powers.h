@@ -36,6 +36,7 @@ struct EnhancemenSlotEntry
     uint32_t    m_pset_idx      = 0;
     uint32_t    m_pow_idx       = 0;
     uint32_t    m_eh_idx        = 0;
+
     template<class Archive>
     void serialize(Archive &ar)
     {
@@ -47,9 +48,10 @@ class PowerPool_Info
 {
 public:
 static const constexpr  uint32_t    class_version = 1;
-        uint32_t        m_pcat_idx     = 0;
-        uint32_t        m_pset_idx         = 0;
-        uint32_t        m_pow_idx          = 0;
+        uint32_t        m_pcat_idx          = 0;
+        uint32_t        m_pset_idx          = 0;
+        uint32_t        m_pow_idx           = 0;
+
         void serializefrom( BitStream &src );
         void serializeto( BitStream &src ) const;
 };
@@ -233,9 +235,11 @@ static const constexpr  uint32_t    class_version = 1;
     std::array<PowerTrayItem, 10>     m_tray_items;
     PowerTrayItem *getPowerTrayItem(size_t idx);
     int setPowers();
+
     void serializefrom(BitStream &src);
     void serializeto(BitStream &tgt) const;
     void Dump();
+
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version)
     {
@@ -260,14 +264,17 @@ static const int m_num_trays = 2; // was 3, displayed trays
     bool m_has_default_power    = false;
     int m_primary_tray_idx      = 0;
     int m_second_tray_idx       = 1;
+
     PowerTrayGroup()
     {
         m_default_pset_idx = m_default_pow_idx = 0;
         m_has_default_power = false;
     }
+
     void serializeto(BitStream &tgt) const;
     void serializefrom(BitStream &src);
     void dump();
+
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version)
     {
@@ -327,6 +334,7 @@ void trashEnhancementInPower(CharacterData &cd, uint32_t pset_idx, uint32_t pow_
 void trashComboEnhancement(CharacterEnhancement &eh, uint32_t eh_idx);
 void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow_idx);
 void reserveEnhancementSlot(const GameDataStore &data,CharacterData &cd, CharacterPower *pow);
+
 struct CombineResult
 {
     bool success;

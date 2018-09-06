@@ -36,7 +36,8 @@ private slots:
         register_AuthEvents();
         for(const char *ev_name : event_names)
         {
-            QVERIFY2(create_by_name(ev_name)!=nullptr,"all types registered, create_by_name result should be non-null");
+            QVERIFY2(create_by_name(ev_name) != nullptr,
+                     qPrintable(QString("all types registered, create_by_name(%1) result should be non-null").arg(ev_name)));
         }
     }
 };

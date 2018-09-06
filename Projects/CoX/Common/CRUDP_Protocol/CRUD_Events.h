@@ -6,10 +6,8 @@
  */
 
 #pragma once
-#include "Buffer.h"
 #include "Logging.h"
 #include "CRUDP_Packet.h"
-#include "CRUDP_Protocol.h"
 #include "EventProcessor.h"
 #include "LinkLevelEvent.h"
 
