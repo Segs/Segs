@@ -370,6 +370,8 @@ void toggleLFG(Entity &e)
         sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *e.m_client);
         errormsg = e.name() + "is already on a team and cannot toggle LFG.";
         qCDebug(logTeams) << errormsg;
+        removeLFG(e); // just in-case
+        return;
     }
 
     if(cd->m_lfg)
