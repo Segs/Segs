@@ -50,7 +50,7 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     m_send_id                   = other.m_send_id;
     m_time_diff1                = other.m_time_diff1;
     m_time_diff2                = other.m_time_diff2;
-    m_key_released              = other.m_key_released;
+    m_has_input_commit_guess    = other.m_has_input_commit_guess;
     m_received_server_update_id = other.m_received_server_update_id;
     m_no_collision              = other.m_no_collision;
     m_controls_disabled         = other.m_controls_disabled;
@@ -210,8 +210,8 @@ void InputState::partial_2(BitStream &bs)
 
 void InputState::extended_input(BitStream &bs)
 {
-    m_data.m_key_released = bs.GetBits(1);
-    if(m_data.m_key_released) // list of partial_2 follows
+    m_data.m_has_input_commit_guess = bs.GetBits(1);
+    if(m_data.m_has_input_commit_guess) // list of partial_2 follows
     {
         m_data.m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
         m_data.m_send_id = bs.GetBits(16);
