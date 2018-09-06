@@ -903,6 +903,8 @@ void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
       parts[3].toFloat()
     };
     sendFaceLocation(sess.m_ent, loc);
+}
+
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)
 {
     on_awaiting_dead_no_gurney_test(sess);
