@@ -910,7 +910,10 @@ void MapInstance::on_input_state(InputState *st)
 
     // Set Target
     if(st->m_has_target && (getTargetIdx(*ent) != st->m_target_idx))
+    {
+        ent->m_has_input_on_timeframe = true;
         setTarget(*ent, st->m_target_idx);
+    }
 
     // Set Orientation
     if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r)
@@ -2301,7 +2304,7 @@ void MapInstance::on_afk_update()
         if (cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         {
             toggleAFK(* e->m_char, true, "Auto AFK");
-            msg = QString("You are AFKed after %1 seconds of inactivity. Player: %2").arg(data.m_time_to_afk);
+            msg = QString("You are AFKed after %1 seconds of inactivity.").arg(data.m_time_to_afk);
             sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *sess);
         }
 

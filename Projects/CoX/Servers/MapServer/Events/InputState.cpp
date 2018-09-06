@@ -293,13 +293,8 @@ void InputState::serializefrom(BitStream &bs)
     m_has_target = bs.GetBits(1);
     m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
 
-    // NOTE: Even if the targeting happens a long time ago, m_input_received would be true from here
     if(m_has_target)
-    {
         qCDebug(logTarget, "Has Target? %d | TargetIdx: %d", m_has_target, m_target_idx);
-        m_data.m_input_received = true;
-    }
-
 
     int ctrl_idx=0;
     ControlState prev_fld;
