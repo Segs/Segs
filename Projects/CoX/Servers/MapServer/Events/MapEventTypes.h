@@ -66,7 +66,7 @@ enum MapEventTypes
 //    EVENT_DECL(MapEventTypes, evTimeUpdate               ,148)
 //    EVENT_DECL(MapEventTypes, evMissionEntryText         ,149)
 //    EVENT_DECL(MapEventTypes, evMissionKick              ,150)
-//    EVENT_DECL(MapEventTypes, evDeadNoGurney             ,151)
+    EVENT_DECL(MapEventTypes, evDeadNoGurney               ,151)
 //    EVENT_DECL(MapEventTypes, evDoorAnimStart            ,152)
 //    EVENT_DECL(MapEventTypes, evDoorAnimExit             ,153)
     EVENT_DECL(MapEventTypes, evFaceEntity                 ,154)
@@ -94,6 +94,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evInteractWithEntity         ,207)
     EVENT_DECL(MapEventTypes, evSwitchTray                 ,208) // Switch Tray using left-right arrows next to power tray
     EVENT_DECL(MapEventTypes, evEnterDoor                  ,209)
+    EVENT_DECL(MapEventTypes, evAwaitingDeadNoGurney       ,210)
     EVENT_DECL(MapEventTypes, evSetDestination             ,211)
     EVENT_DECL(MapEventTypes, evWindowState                ,214)
     EVENT_DECL(MapEventTypes, evInspirationDockMode        ,217)

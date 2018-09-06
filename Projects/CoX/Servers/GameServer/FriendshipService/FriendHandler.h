@@ -58,7 +58,6 @@ public:
 
     FriendHandler(int for_game_server_id);
     ~FriendHandler() override;
-    bool is_online(uint32_t m_db_id);
     void dispatch(SEGSEvents::Event *ev) override;
 
     FriendHandlerState m_state;

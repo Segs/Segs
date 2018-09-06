@@ -28,3 +28,4 @@
 #include "Events/EmailHeaders.h"
 #include "Events/EmailMessageStatus.h"
 #include "Events/EmailRead.h"
+#include "Events/DeadNoGurney.h"
