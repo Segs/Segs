@@ -99,7 +99,7 @@ class Timeout final: public Event
 {
 public:
                         // [[ev_def:field]]
-    ACE_Time_Value          m_arrival_time;
+    ACE_Time_Value      m_arrival_time;
                         // [[ev_def:field]]
     uint64_t            m_timer_id;
 

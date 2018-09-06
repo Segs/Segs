@@ -8,10 +8,12 @@
 #ifndef SEGSADMINTOOL_H
 #define SEGSADMINTOOL_H
 
+#include "version.h"
 #include <QMainWindow>
 #include <QDialog>
 #include <QProcess>
 #include <QFontDatabase>
+
 
 namespace Ui {
 class SEGSAdminTool;
@@ -28,7 +30,6 @@ class SEGSAdminTool : public QMainWindow
     class UpdateDetailDialog *m_update_dialog;
     class AboutDialog *m_about_dialog;
     bool m_server_running = false;
-    QString m_segs_version = "v0.5.0"; // Current segs version, must be updated per new release
 
 public:
     explicit SEGSAdminTool(QWidget *parent = nullptr);
@@ -45,7 +46,7 @@ public slots:
     void read_authserver();
     void check_for_config_file();
     void check_data_and_dir(QString maps_dir);
-    void check_for_latest_release();
+    void read_release_info(const QString &error);
 
 signals:
     void readyToRead(QString filePath);
@@ -65,8 +66,6 @@ private:
     QProcess *m_createDB;
     QProcess *m_start_auth_server;
     QStringList m_segs_releases;
-    //QString m_release_id;
-
 };
 
 #endif // SEGSADMINTOOL_H

@@ -76,6 +76,7 @@ Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
+void    on_awaiting_dead_no_gurney_test(MapClientSession &session);
 
 
 

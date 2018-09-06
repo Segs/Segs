@@ -474,6 +474,9 @@ void MapInstance::dispatch( Event *ev )
         case MapEventTypes::evMapXferComplete:
             on_map_xfer_complete(static_cast<MapXferComplete *>(ev));
             break;
+        case evAwaitingDeadNoGurney:
+            on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
+            break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
     }
@@ -2302,6 +2305,12 @@ void MapInstance::on_recv_new_power(RecvNewPower *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     addPower(serverData(), session.m_ent->m_char->m_char_data, ev->ppool);
+}
+
+void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
 }
 
 void MapInstance::on_update_entities()

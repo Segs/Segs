@@ -98,6 +98,7 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
+void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
 void moveTo(const QString &cmd, MapClientSession &sess);
@@ -183,6 +184,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
     {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
+    {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
 
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", addNpc, 2},
@@ -395,14 +397,10 @@ void cmdHandler_SetJumpHeight(const QString &cmd, MapClientSession &sess)
 void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess)
 {
     float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
-    float maxattrib =sess.m_ent->m_char->m_max_attribs.m_HitPoints;
 
-    if(attrib > maxattrib)
-        attrib = maxattrib;
+    setHP(*sess.m_ent->m_char, attrib);
 
-    setHP(*sess.m_ent->m_char,attrib);
-
-    QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(maxattrib);
+    QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(sess.m_ent->m_char->m_max_attribs.m_HitPoints);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
@@ -699,7 +697,7 @@ void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess)
     {
         sendFloatingNumbers(sess, tgt->m_idx, int(amount));
 
-        setHP(*tgt->m_char, getHP(*tgt->m_char)-amount); // deal dmg
+        setHP(*tgt->m_char, getHP(*tgt->m_char) - amount); // deal dmg
 
         if(amount >= 0) // damage
         {
@@ -879,6 +877,11 @@ void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
     QString msg = "Set u1 to: " + QString::number(val);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)
+{
+    on_awaiting_dead_no_gurney_test(sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
