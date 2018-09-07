@@ -2045,7 +2045,7 @@ void MapInstance::on_activate_power(ActivatePower *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     uint32_t tgt_idx = ev->target_idx;
 
-    if(ev->target_idx == 0)
+    if(ev->target_idx == 0 || ev->target_idx == session.m_ent->m_idx)
         tgt_idx = session.m_ent->m_idx;
     else
         sendFaceEntity(session.m_ent, tgt_idx);
