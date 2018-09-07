@@ -56,6 +56,6 @@ void saveTo(const ClientOptions &target, const QString &baseName, bool text_form
     commonSaveTo(target,"ClientOptions",baseName,text_format);
 }
 
-SPECIALIZE_VERSIONED_SERIALIZATIONS(ClientOptions);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(ClientOptions)
 
 //! @}

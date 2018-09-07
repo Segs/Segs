@@ -60,7 +60,7 @@ void saveTo(const GUISettings &target, const QString &baseName, bool text_format
     commonSaveTo(target,"GUISettings",baseName,text_format);
 }
 
-SPECIALIZE_VERSIONED_SERIALIZATIONS(GUISettings);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(GUISettings)
 
 void serializeToDb(const GUISettings &data, QString &tgt)
 {

@@ -370,6 +370,8 @@ void toggleLFG(Entity &e)
         sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *e.m_client);
         errormsg = e.name() + "is already on a team and cannot toggle LFG.";
         qCDebug(logTeams) << errormsg;
+        removeLFG(e); // just in-case
+        return;
     }
 
     if(cd->m_lfg)
@@ -904,6 +906,12 @@ void removeTeamMember(Team &self, Entity *e)
         self.listTeamMembers();
 }
 
+bool isEntityOnMissionMap(const EntityData &ed)
+{
+    QString mapName = getMapName(ed.m_map_idx);
+    // Hazard and Trial maps are considered as mission maps
+    return mapName.contains("Hazard") || mapName.contains("Trial");
+}
 
 //! @}
 

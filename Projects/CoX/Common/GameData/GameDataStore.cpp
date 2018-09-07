@@ -233,6 +233,8 @@ bool GameDataStore::read_runtime_data(const QString &directory_path)
         return false;
     if(!read_npcs(directory_path))
         return false;
+    if(!read_settings(directory_path))
+        return false;
     if(!read_powers(directory_path))
         return false;
     if(!read_combine_chances(directory_path))
@@ -386,6 +388,19 @@ bool GameDataStore::read_npcs(const QString &directory_path)
     return true;
 }
 
+// should read from settings.cfg
+bool GameDataStore::read_settings(const QString &directory_path)
+{
+    qDebug() << "TODO: Loading data from settings";
+
+    // m_time_to_afk = 5 minutes
+    // m_time_to_logout_msg = 18 minutes
+    // m_time_to_auto_logout = 2 minutes
+    // m_uses_auto_logout = true/false
+
+    return true;
+}
+
 bool GameDataStore::read_powers(const QString &directory_path)
 {
     qDebug() << "Loading powers:";
@@ -425,6 +440,7 @@ bool GameDataStore::read_pi_schedule(const QString &directory_path)
     if (!read_data_to<Parse_PI_Schedule, pischedule_i0_requiredCrc>(directory_path, "schedules.bin",
                                                                    m_pi_schedule))
         return false;
+
     return true;
 }
 

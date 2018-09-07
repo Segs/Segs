@@ -30,7 +30,7 @@ static const constexpr  uint32_t        class_version   = 1;
 
 struct CharacterData
 {
-static const constexpr  uint32_t    class_version       = 6; // v6: powersets
+static const constexpr  uint32_t    class_version       = 7; // v7: afk stuff
                         uint32_t    m_level             = 0;
                         uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
                         uint32_t    m_experience_points = 0;
@@ -55,6 +55,9 @@ static const constexpr  uint32_t    class_version       = 6; // v6: powersets
                         Sidekick    m_sidekick;                 // Sidekick Struct
                         FriendsList m_friendlist;               // Friendslist Struct
                         Parse_CharAttrib    m_current_attribs;
+                        bool        m_is_on_task_force  = false;
+                        bool        m_is_on_auto_logout = false;
+                        float       m_idle_time         = 0;
                         vPowerSets          m_powersets;
                         PowerTrayGroup      m_trays;
                         vInspirations       m_inspirations;
