@@ -16,6 +16,8 @@
 #include <ciso646>
 #endif
 
+using namespace SEGSEvents;
+
 void ServerListResponse::serializeto( GrowingBuffer &buf ) const
 {
     assert(not m_serv_list.empty());

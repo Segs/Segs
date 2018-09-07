@@ -12,6 +12,8 @@
 
 #include "MapEvents.h"
 
+using namespace SEGSEvents;
+
 MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
 {
     size_t read_pos = bs.GetReadPos();
@@ -50,7 +52,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
             if(bs.GetReadableBits()>=8) // at least 1 char readable ?
                 return new ConsoleCommand;
             // otherwise treat as idle
-            return new IdleEvent;
+            return new Idle;
         case 1: return new MiniMapState;
         case 4: return new ClientResumedRendering;
         case 7: return new InteractWithEntity;
@@ -85,6 +87,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 44: return new TrashEnhancementInPower;
         case 45: return new BuyEnhancementSlot;
         case 46: return new RecvNewPower;
+        case 53: return new SuperGroupMode;
         case 56: return new EntityInfoRequest;
         case 57: return new CreateSuperGroup;
         case 58: return new ChangeSuperGroupColors;

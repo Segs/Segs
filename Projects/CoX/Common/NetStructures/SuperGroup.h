@@ -7,7 +7,7 @@
 
 #pragma once
 #include "CommonNetStructures.h"
-#include "GameData/Colors.h"
+#include "Colors.h"
 #include <deque>
 
 class Entity;

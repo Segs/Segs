@@ -6,19 +6,17 @@
  */
 
 #pragma once
-#include "Colors.h"
-#include "Logging.h"
-#include <glm/vec3.hpp>
-#include <glm/vec2.hpp>
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
+#include <cereal/types/deque.hpp>
 #include <cereal/types/array.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/cereal.hpp>
 
 #include <QtCore/QString>
 #include <QtCore/QFile>
+#include <QtCore/QDebug>
 
 template<class T>
 void commonSaveTo(const T & target, const char *classname, const QString & baseName, bool text_format)
@@ -138,53 +136,33 @@ void serializeFromQString(T &data,const QString &src)
         ar(data);
     }
 }
+#define SPECIALIZE_SERIALIZATIONS(type)\
+template \
+void type::serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive);\
+template \
+void type::serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive);\
+template \
+void type::serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive);\
+template \
+void type::serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive);
+#define SPECIALIZE_VERSIONED_SERIALIZATIONS(type)\
+template \
+void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, type & m, uint32_t const version);\
+template \
+void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, type & m, uint32_t const version);\
+template \
+void serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive, type & m, uint32_t const version);\
+template \
+void serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive, type & m, uint32_t const version);
 
-namespace cereal {
-inline void epilogue(BinaryOutputArchive &, QString const &) { }
-inline void epilogue(BinaryInputArchive &, QString const &) { }
-inline void epilogue(JSONOutputArchive &, QString const &) { }
-inline void epilogue(JSONInputArchive &, QString const &) { }
 
-inline void prologue(JSONOutputArchive &, QString const &) { }
-inline void prologue(JSONInputArchive &, QString const &) { }
-inline void prologue(BinaryOutputArchive &, QString const &) { }
-inline void prologue(BinaryInputArchive &, QString const &) { }
+#define SPECIALIZE_SPLIT_SERIALIZATIONS(type)\
+template \
+void CEREAL_SAVE_FUNCTION_NAME<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, const type & m);\
+template \
+void CEREAL_SAVE_FUNCTION_NAME<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive, const type & m);\
+template \
+void CEREAL_LOAD_FUNCTION_NAME<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, type & m);\
+template \
+void CEREAL_LOAD_FUNCTION_NAME<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive, type & m);
 
-template<class Archive> inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, ::QString const & str)
-{
-    ar( str.toStdString() );
-}
-
-//! Serialization for basic_string types, if binary data is supported
-template<class Archive> inline void CEREAL_LOAD_FUNCTION_NAME(Archive & ar, ::QString & str)
-{
-    std::string rd;
-    ar( rd );
-    str = QString::fromStdString(rd);
-}
-
-template<class Archive>
-void serialize(Archive & archive, glm::vec3 & m)
-{
-    size_type size=3;
-    archive( make_size_tag( size ) ); // this is new
-    for( int i=0; i<3; ++i )
-      archive( m[i] );
-}
-
-template<class Archive>
-void serialize(Archive & archive, glm::vec2 & m)
-{
-    size_type size=2;
-    archive( make_size_tag( size ) ); // this is new
-    for( int i=0; i<2; ++i )
-      archive( m[i] );
-}
-
-template<class Archive>
-void serialize(Archive & archive, RGBA & m)
-{
-    archive(cereal::make_nvp("rgba",m.val));
-}
-
-} // namespace cereal

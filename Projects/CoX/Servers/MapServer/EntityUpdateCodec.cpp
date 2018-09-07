@@ -16,7 +16,7 @@
 #include "NetStructures/Character.h"
 #include "NetStructures/Entity.h"
 #include "MapServer.h"
-#include "MapServerData.h"
+#include "GameData/GameDataStore.h"
 #include "GameData/CoHMath.h"
 #include "DataHelpers.h"
 #include "Logging.h"

@@ -10,8 +10,8 @@
 #include "Events/FloatingInfoStyles.h"
 #include "Events/ClientStates.h"
 #include "glm/vec3.hpp"
-#include <stdint.h>
 #include <QString>
+#include <cstdint>
 
 class QString;
 class Entity;
@@ -23,15 +23,8 @@ struct FriendsList;
 struct MapClientSession;
 struct CharacterPowerSet;
 struct CharacterPower;
-class MapServerData;
+class GameDataStore;
 
-struct MapData
-{
-    uint32_t m_map_idx;
-    QString m_map_name;             // City_00_01, City_01_01, etc...
-    QString m_map_path;             // The ones ending with .txt
-    QString m_display_map_name;     // Outbreak, Atlas Park...
-};
 
 /*
  * Entity Methods
@@ -46,6 +39,7 @@ glm::vec3   getSpeed(const Entity &e);
 float       getBackupSpd(const Entity &e);
 float       getJumpHeight(const Entity &e);
 uint8_t     getUpdateId(const Entity &e);
+bool        isEntityOnMissionMap(const EntityData &ed);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);
@@ -78,67 +72,21 @@ void    toggleMoveInstantly(Entity &e);
 // Misc Methods
 void    charUpdateDB(Entity *e);
 void    charUpdateGUI(Entity *e);
-int     getEntityOriginIndex(bool is_player,const QString &origin_name);
-int     getEntityClassIndex(bool is_player, const QString &class_name);
 
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
-Entity * getEntityByDBID(MapClientSession *src, uint32_t idx);
+Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
+void    on_awaiting_dead_no_gurney_test(MapClientSession &session);
 
 
-/*
- * Character Methods
- */
-// Getters
-uint32_t            getLevel(const Character &c);
-uint32_t            getCombatLevel(const Character &c);
-float               getHP(const Character &c);
-float               getEnd(const Character &c);
-uint64_t            getLastCostumeId(const Character &c);
-const QString &     getOrigin(const Character &c);
-const QString &     getClass(const Character &c);
-MapData             getMapData(const QString &map_name);
-uint32_t            getMapIndex(const QString &map_name);
-const QString       getDisplayMapName(const QString &map_name);
-const QString       getDisplayMapName(size_t index);
-const QString       getMapName(size_t index);
-const QString       getMapPath(const EntityData &ed);
-const QString       getMapPath(size_t index);
-const QString       getEntityDisplayMapName(const EntityData &ed);
-const QString       getFriendDisplayMapName(const Friend &f);
-uint32_t            getXP(const Character &c);
-uint32_t            getDebt(const Character &c);
-uint32_t            getPatrolXP(const Character &c);
-const QString &     getGenericTitle(const Character &c);
-const QString &     getGenericTitle(uint32_t val);
-const QString &     getOriginTitle(const Character &c);
-const QString &     getOriginTitle(uint32_t val);
-const QString &     getSpecialTitle(const Character &c);
-
-uint32_t            getInf(const Character &c);
-const QString &     getDescription(const Character &c);
-const QString &     getBattleCry(const Character &c);
-const QString &     getAlignment(const Character &c);
-
-// Setters
-void    setLevel(Character &c, uint32_t val);
-void    setCombatLevel(Character &c, uint32_t val);
-void    setHP(Character &c, float val);
-void    setEnd(Character &c, float val);
-void    setLastCostumeId(Character &c, uint64_t val);
-void    setXP(Character &c, uint32_t val);
-void    setDebt(Character &c, uint32_t val);
-void    setTitles(Character &c, bool prefix = false, QString generic = "", QString origin = "", QString special = "");
-void    setInf(Character &c, uint32_t val);
-void    setDescription(Character &c, QString val);
-void    setBattleCry(Character &c, QString val);
 
 // Toggles
-void    toggleAFK(Character &c, const QString &msg = "");
 void    toggleTeamBuffs(PlayerData &c);
 
 
+const QString &getFriendDisplayMapName(const Friend &f);
+QString     getEntityDisplayMapName(const EntityData &ed);
 /*
  * Looking for Group
  */
@@ -148,7 +96,7 @@ void    toggleLFG(Entity &e);
 /*
  * getMapServerData Wrapper to provide access to NetStructures
  */
-MapServerData *getMapServerData();
+GameDataStore *getMapServerData();
 
 
 /*
@@ -160,22 +108,43 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
-void sendRegisterSuperGroup(Entity *tgt, QString &val);
-void sendClientState(Entity *tgt, ClientStates client_state);
-void showMapXferList(Entity *ent, bool has_location, glm::vec3 &location, QString &name);
-void sendFloatingInfo(Entity *tgt, QString &msg, FloatingInfoStyle style, float delay);
-void sendFloatingNumbers(Entity *src, uint32_t tgt_idx, int32_t amount);
+void sendRegisterSuperGroup(MapClientSession &ent, QString &val);
+void sendClientState(MapClientSession &ent, ClientStates client_state);
+void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name);
+void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay);
+void sendFloatingNumbers(MapClientSession &src, uint32_t tgt_idx, int32_t amount);
 void sendLevelUp(Entity *tgt);
 void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy);
 void sendChangeTitle(Entity *tgt, bool select_origin);
 void sendTrayAdd(Entity *tgt, uint32_t pset_idx, uint32_t pow_idx);
-void sendFriendsListUpdate(Entity *src, FriendsList *friends_list);
+void sendFriendsListUpdate(Entity *src, const FriendsList &friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
 
+
+const QString &getGenericTitle(uint32_t val);
+const QString &getOriginTitle(uint32_t val);
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
 void sendEmailHeaders(Entity *e);
 void readEmailMessage(Entity *e, const int id);
+
+
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
+
+void addFriend(Entity &src, Entity &tgt);
+void removeFriend(Entity &src, QString friendName);
+bool isFriendOnline(Entity &src, uint32_t db_id);
+void findTeamMember(Entity &tgt);
+
+/*
+ * Sidekick Methods -- Sidekick system requires teaming.
+ */
+bool isSidekickMentor(const Entity &e);
+void inviteSidekick(Entity &src, Entity &tgt);
+void addSidekick(Entity &tgt, Entity &src);
+void removeSidekick(Entity &src);
+void leaveTeam(Entity &e);
+void removeTeamMember(class Team &self, Entity *e);

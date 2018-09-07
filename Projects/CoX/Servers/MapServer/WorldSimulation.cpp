@@ -12,10 +12,9 @@
 
 #include "WorldSimulation.h"
 
-#include "MapInstance.h"
-
 #include "Common/Servers/Database.h"
 #include "Events/GameCommandList.h"
+#include "NetStructures/Character.h"
 #include <glm/gtx/vector_query.hpp>
 
 void markFlying(Entity &e ,bool is_flying) // Function to set character as flying

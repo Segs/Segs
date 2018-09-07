@@ -5,25 +5,29 @@
 #include "Common/Servers/HandlerLocator.h"
 #include "Servers/GameDatabase/GameDBSyncHandler.h"
 #include <QVector>
-
+namespace SEGSEvents {
+struct PlayerUpdateMessage;
+struct CharacterUpdateMessage;
+}
 class GameDBSyncService : public EventProcessor
 {
 private:
     GameDBSyncHandler* m_db_handler;
 
-    // EventProcessor interface
-    bool per_thread_setup() override;
-    void dispatch(SEGSEvent *ev) override;
-
-    //void sendGuiUpdateToHandler(Entity* e);
-    //void sendOptionsUpdateToHandler(Entity* e);
-    //void sendKeybindsUpdateToHandler(Entity* e);
-    void on_player_update(PlayerUpdateMessage* msg);
-    void on_character_update(CharacterUpdateMessage* msg);
+    void on_player_update(SEGSEvents::PlayerUpdateMessage* msg);
+    void on_character_update(SEGSEvents::CharacterUpdateMessage* msg);
 
 public:
-    GameDBSyncService() {};
+    IMPL_ID(GameDBSyncService)
+    GameDBSyncService() {}
     void set_db_handler(uint8_t id);
+protected:
+    // EventProcessor interface
+    bool per_thread_startup() override;
+    void dispatch(SEGSEvents::Event *ev) override;
+    void serialize_from(std::istream &is) override;
+    void serialize_to(std::ostream &is) override;
+
 };
 
 #endif // GAMEDBSYNCSERVICE_H

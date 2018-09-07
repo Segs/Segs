@@ -15,6 +15,7 @@
 #include "anim_definitions.h"
 #include "DataStorage.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
 bool loadFrom(BinStore * s, TextureAnim_Data & target)
 {

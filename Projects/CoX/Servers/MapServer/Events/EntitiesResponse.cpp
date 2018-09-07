@@ -15,6 +15,7 @@
 #include "NetStructures/Powers.h"
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
+#include "NetStructures/CharacterHelpers.h"
 #include "GameData/playerdata_definitions.h"
 #include "MapClientSession.h"
 #include "MapEvents.h"
@@ -26,7 +27,11 @@
 #include <QByteArray>
 #include <glm/ext.hpp>
 #include <cmath>
+#ifdef _MSC_VER
 #include <iso646.h>
+#endif
+
+using namespace SEGSEvents;
 
 namespace  {
 struct SurfaceParams
@@ -82,7 +87,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
     // shorthand local vars
     int         team_idx = 0;
     bool        mark_lfg = e->m_char->m_char_data.m_lfg;
-    bool        has_mission = 0;
+    bool        has_mission = false;
     uint32_t    tm_leader_id = 0;
     uint32_t    tm_size = 0;
 
@@ -106,7 +111,7 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 
     for(const auto &member : e->m_team->m_team_members)
     {
-        Entity *tm_ent = getEntityByDBID(src.m_client, member.tm_idx);
+        Entity *tm_ent = getEntityByDBID(src.m_client->m_current_map, member.tm_idx);
 
         if(tm_ent == nullptr)
         {
@@ -325,10 +330,10 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     player_char.sendFriendList(bs);
 }
 
-void storePowerSpec(uint32_t pset_idx, uint32_t pow_idx, BitStream &bs)
+void storePowerSpec(uint32_t powerset_idx,uint32_t power_idx,BitStream &bs)
 {
-    bs.StorePackedBits(2, pset_idx);
-    bs.StorePackedBits(1, pow_idx);
+    bs.StorePackedBits(2,powerset_idx);
+    bs.StorePackedBits(1,power_idx);
 }
 
 void storePowerRanges(const CharacterData &cd, BitStream &bs)
@@ -349,7 +354,7 @@ void storePowerRanges(const CharacterData &cd, BitStream &bs)
     //qCDebug(logPowers) << "No more powers to send.";
 }
 
-void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
+void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src, BitStream &bs)
 {
     Entity *e = src.m_client->m_ent;
     assert(e);
@@ -370,7 +375,7 @@ void storePowerInfoUpdate(const EntitiesResponse &src, BitStream &bs)
     {
         qCDebug(logPowers) << "Resetting Powers:" << cd->m_reset_powersets;
         CharacterPowerSet temp;
-        int pcat_idx = getPowerCatByName("Temporary_Powers");
+        int pcat_idx = getPowerCatByName(data,"Temporary_Powers");
 
         for(CharacterPowerSet &pset : cd->m_powersets)
         {
@@ -627,7 +632,7 @@ void sendCommands(const EntitiesResponse &src,BitStream &tgt)
     tgt.StorePackedBits(1,0);
 }
 
-void sendClientData(const EntitiesResponse &src,BitStream &bs)
+void sendClientData(const GameDataStore &data,const EntitiesResponse &src,BitStream &bs)
 {
     Entity *ent=src.m_client->m_ent;
 
@@ -644,7 +649,7 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
         player_char.sendFullStats(bs);
     }
     //qCDebug(logPowers) << "Before storePowerInfoUpdate";
-    storePowerInfoUpdate(src,bs);
+    storePowerInfoUpdate(data,src,bs);
     //qCDebug(logPowers) << "After storePowerInfoUpdate";
     storeTeamList(src,bs);
     storeSuperStats(src,bs);
@@ -662,14 +667,18 @@ void sendClientData(const EntitiesResponse &src,BitStream &bs)
 
 //! EntitiesResponse is sent to a client to inform it about the current world state.
 EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
-    MapLinkEvent(MapEventTypes::evEntitites)
+    MapLinkEvent(MapEventTypes::evEntitiesResponse)
 {
     m_map_time_of_day       = 10;
-    m_client                = cl;
+    m_client                = {cl ? cl->m_session_token:0,cl};
     g_interpolation_level   = 2;
     g_interpolation_bits    = 1;
 }
 
+void EntitiesResponse::serializefrom(BitStream &)
+{
+    assert(false);
+}
 void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
     MapInstance *mi = m_client->m_current_map;
@@ -697,7 +706,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     }
     ;
     //else debug_info = false;
-    ent_manager.sendEntities(tgt,m_client,m_incremental);
+    ent_manager.sendEntities(tgt,*m_client,m_incremental);
     if(debug_info)
     {
         ent_manager.sendDebuggedEntities(tgt); // while loop, sending entity id's and debug info for each
@@ -705,9 +714,9 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     }
     sendServerPhysicsPositions(*this,tgt); // These are not client specific ?
     sendControlState(*this,tgt);// These are not client specific ?
-    ent_manager.sendDeletes(tgt,m_client);
+    ent_manager.sendDeletes(tgt,*m_client);
     // Client specific part
-    sendClientData(*this,tgt);
+    sendClientData(mi->serverData(),*this,tgt);
     // Server messages follow the entity update.
     auto v= std::move(m_client->m_contents);
     for(const auto &command : v)

@@ -86,7 +86,7 @@ void SuperGroup::removeSGMember(Entity *e)
         int idx = m_sg_members.front().idx;
 
         Entity *tgt = nullptr;
-        if((tgt = getEntityByDBID(e->m_client,idx)) == nullptr)
+        if((tgt/* = getEntityByDBID(e->m_client->m_current_map,idx)*/) == nullptr)
             return;
 
         cd.m_supergroup.m_has_supergroup = false;

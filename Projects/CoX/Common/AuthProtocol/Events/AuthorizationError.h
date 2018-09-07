@@ -8,25 +8,31 @@
 #pragma once
 #include "AuthProtocol/AuthEvents.h"
 
+namespace SEGSEvents
+{
+// [[ev_def:type]]
 class AuthorizationError : public AuthLinkEvent
 {
-    uint32_t m_error_type;
 public:
-    AuthorizationError() : AuthLinkEvent(evAuthorizationError),m_error_type(0)
+    // [[ev_def:field]]
+    uint32_t m_error_type = 0;
+    AuthorizationError() : AuthLinkEvent(evAuthorizationError)
     {}
     AuthorizationError(uint32_t err) : AuthLinkEvent(evAuthorizationError),m_error_type(err)
     {}
-    void init(EventProcessor *ev_src,uint32_t error_type) {m_error_type=error_type; m_event_source=ev_src;}
-    void serializeto(GrowingBuffer &buf) const
+    void init(EventSrc *ev_src,uint32_t error_type) {m_error_type=error_type; m_event_source=ev_src;}
+    void serializeto(GrowingBuffer &buf) const override
     {
         buf.uPut((uint8_t)1);
         buf.uPut(m_error_type);
     }
-    void serializefrom(GrowingBuffer &buf)
+    void serializefrom(GrowingBuffer &buf) override
     {
         uint8_t op;
         buf.uGet(op);
         assert(op==1);
         buf.uGet(m_error_type);
     }
+    EVENT_IMPL(AuthorizationError)
 };
+}

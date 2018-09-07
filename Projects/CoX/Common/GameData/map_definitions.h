@@ -18,4 +18,18 @@ struct Map_Data
     QString Name;
     QString Icon;
 };
+struct MapData
+{
+    uint32_t m_map_idx;
+    QString m_map_name;             // City_00_01, City_01_01, etc...
+    QString m_map_path;             // The ones ending with .txt
+    QString m_display_map_name;     // Outbreak, Atlas Park...
+};
 typedef std::vector<Map_Data> AllMaps_Data;
+
+uint32_t       getMapIndex(const QString &map_name);
+const MapData &getMapData(const QString &map_name);
+QString        getMapName(const QString &map_name);
+QString        getMapName(size_t map_idx);
+QString        getDisplayMapName(size_t index);
+QString        getMapPath(size_t index);

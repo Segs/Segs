@@ -21,7 +21,7 @@
 class ColorAndPartPacker;
 class QString;
 
-class MapServerData
+class GameDataStore
 {
         ColorAndPartPacker *packer_instance;
         LevelExpAndDebt     m_experience_and_debt_per_level;
@@ -34,19 +34,20 @@ class MapServerData
         bool            read_keybinds(const QString &src_filename);
         bool            read_commands(const QString &src_filename);
         bool            read_npcs(const QString &directory_path);
+        bool            read_settings(const QString &directory_path);
         bool            read_powers(const QString &directory_path);
         bool            read_combine_chances(const QString &directory_path);
         bool            read_effectiveness(const QString &directory_path);
         bool            read_pi_schedule(const QString &directory_path);
 public:
-                        MapServerData();
-                        ~MapServerData();
+                        GameDataStore();
+                        ~GameDataStore();
         bool            read_runtime_data(const QString &directory_path);
         const ColorAndPartPacker *getPacker() const { return packer_instance; }
         int             expForLevel(int lev) const;
         int             expDebtForLevel(int lev) const;
-        int             expMaxLevel();
-        int             countForLevel(int lvl, std::vector<uint32_t> &schedule) const;
+        int             expMaxLevel() const;
+        int             countForLevel(int lvl,const std::vector<uint32_t> &schedule) const;
         const NPCStorage & getNPCDefinitions() const
                         {
                             return m_npc_store;
@@ -67,4 +68,15 @@ public:
         Parse_Effectiveness         m_effectiveness_below;
         Parse_PI_Schedule           m_pi_schedule;
         float                       m_player_fade_in;
+
+        // auto-AFK and logout settings, auto-AFK is mandatory, server can choose between auto-logout or not
+        float                       m_time_to_afk = 5 * 60;     // default afk time is 5 mins (300 secs)
+        // when player has reached the threshold for m_time_to_logout, they will be notified that they will be
+        // auto-logged out in m_time_to_auto_logout seconds
+        // so m_time_to_logout_msg + m_time_to_auto_logout is when the player will be kicked out of the server
+        float                       m_time_to_logout_msg = 18 * 60;
+        float                       m_time_to_auto_logout = 2 * 60;
+        float                       m_uses_auto_logout = true;
 };
+int getEntityOriginIndex(const GameDataStore &data,bool is_player, const QString &origin_name);
+int getEntityClassIndex(const GameDataStore &data,bool is_player, const QString &class_name);

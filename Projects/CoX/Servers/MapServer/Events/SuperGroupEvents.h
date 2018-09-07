@@ -6,17 +6,19 @@
  */
 
 #pragma once
-#include "GameCommandList.h"
+#include "GameCommand.h"
+#include "MapEventTypes.h"
 #include "NetStructures/Costume.h"
 #include "NetStructures/SuperGroup.h"
-#include "GameData/Colors.h"
+#include "Colors.h"
 #include "Logging.h"
 
-#include "MapEvents.h"
-#include "MapLink.h"
+#include <QtCore/QString>
 
+namespace SEGSEvents
+{
 // [[ev_def:type]]
-class SuperGroupOffer final : public GameCommand
+class SuperGroupOffer final : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
@@ -24,7 +26,8 @@ public:
     // [[ev_def:field]]
     QString m_name;
 
-    SuperGroupOffer(uint32_t &db_id, QString &name) : GameCommand(MapEventTypes::evSuperGroupOffer),
+explicit SuperGroupOffer() : GameCommandEvent(MapEventTypes::evSuperGroupOffer) {}
+    SuperGroupOffer(uint32_t &db_id, QString &name) : GameCommandEvent(MapEventTypes::evSuperGroupOffer),
         m_db_id(db_id),
         m_name(name)
     {
@@ -37,16 +40,18 @@ public:
         qCDebug(logSuperGroups) << "SuperGroupOffer";
     }
     void    serializefrom(BitStream &src);
+    EVENT_IMPL(SuperGroupOffer)
 };
 
 // [[ev_def:type]]
-class SuperGroupResponse final : public GameCommand
+class SuperGroupResponse final : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
     bool m_success;
 
-    SuperGroupResponse(bool &success) : GameCommand(MapEventTypes::evSuperGroupResponse),
+explicit SuperGroupResponse() : GameCommandEvent(MapEventTypes::evSuperGroupResponse) {}
+    SuperGroupResponse(bool &success) : GameCommandEvent(MapEventTypes::evSuperGroupResponse),
         m_success(success)
     {
     }
@@ -59,10 +64,11 @@ public:
         // send costume
     }
     void    serializefrom(BitStream &src);
+    EVENT_IMPL(SuperGroupResponse)
 };
 
 // [[ev_def:type]]
-class SuperGroupCostume final : public GameCommand
+class SuperGroupCostume final : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
@@ -70,7 +76,8 @@ public:
     // [[ev_def:field]]
     const ColorAndPartPacker *m_packer;
 
-    SuperGroupCostume(Costume &costume, ColorAndPartPacker *packer) : GameCommand(MapEventTypes::evSuperGroupCostume),
+explicit SuperGroupCostume() : GameCommandEvent(MapEventTypes::evSuperGroupCostume) {}
+    SuperGroupCostume(Costume &costume, ColorAndPartPacker *packer) : GameCommandEvent(MapEventTypes::evSuperGroupCostume),
         m_costume(costume),
         m_packer(packer)
     {
@@ -82,16 +89,18 @@ public:
         qCDebug(logSuperGroups) << "SuperGroupCostume";
     }
     void    serializefrom(BitStream &src);
+    EVENT_IMPL(SuperGroupCostume)
 };
 
 // [[ev_def:type]]
-class RegisterSuperGroup final : public GameCommand
+class RegisterSuperGroup final : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
     QString m_unknown;
 
-    RegisterSuperGroup(QString &unknown) : GameCommand(MapEventTypes::evRegisterSuperGroup),
+explicit RegisterSuperGroup() : GameCommandEvent(MapEventTypes::evRegisterSuperGroup) {}
+    RegisterSuperGroup(QString &unknown) : GameCommandEvent(MapEventTypes::evRegisterSuperGroup),
         m_unknown(unknown)
     {
     }
@@ -101,6 +110,7 @@ public:
         qCDebug(logSuperGroups) << "RegisterSuperGroup:" << m_unknown;
     }
     void    serializefrom(BitStream &src);
+    EVENT_IMPL(RegisterSuperGroup)
 };
 
 // [[ev_def:type]]
@@ -118,6 +128,7 @@ public:
     {
         qCDebug(logSuperGroups) << "Changing SuperGroup Mode";
     }
+    EVENT_IMPL(SuperGroupMode)
 };
 
 // [[ev_def:type]]
@@ -145,6 +156,7 @@ public:
         data.m_sg_colors[1] = RGBA(bs.GetPackedBits(32));
         qCDebug(logSuperGroups) << "CreateSuperGroup";
     }
+    EVENT_IMPL(CreateSuperGroup)
 };
 
 // [[ev_def:type]]
@@ -167,6 +179,7 @@ public:
         m_sg_colors[1] = RGBA(bs.GetPackedBits(32));
         qCDebug(logSuperGroups) << "Changing SuperGroup Colors";
     }
+    EVENT_IMPL(ChangeSuperGroupColors)
 };
 
 // [[ev_def:type]]
@@ -184,4 +197,6 @@ public:
     {
         qCDebug(logSuperGroups) << "Cancel SuperGroup Creation";
     }
+    EVENT_IMPL(CancelSuperGroupCreation)
 };
+} // end of SEGSEvents namespace
