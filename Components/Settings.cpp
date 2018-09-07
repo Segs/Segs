@@ -135,6 +135,12 @@ void Settings::setDefaultSettings()
         config.setValue("maps","DefaultMapInstances");
         config.setValue("player_fade_in", "380.0");
     config.endGroup();
+    config.beginGroup("AFK Settings");
+        config.setValue("time_to_afk","300");
+        config.setValue("time_to_logout_msg","1080");
+        config.setValue("time_to_auto_logout","120");
+        config.setValue("uses_auto_logout", "true");
+    config.endGroup();
     config.beginGroup("Logging");
         config.setValue("log_logging","false");
         config.setValue("log_keybinds","false");
