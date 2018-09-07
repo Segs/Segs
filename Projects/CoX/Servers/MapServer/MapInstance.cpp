@@ -488,10 +488,9 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapLink *lnk = session.link();
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    qCDebug(logMapEvents) << "Map Transfer Initiated with token" << lnk->session_token();
     if (!map_server->session_has_xfer_in_progress(lnk->session_token()))
     {
-         qCDebug(logMapEvents) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
+         qCDebug(logMapXfers) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
          return;
     }
     
@@ -514,7 +513,6 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
 
 void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
 {
-    qCDebug(logMapEvents) << "Map Xfer Complete";
     // TODO: Do anything necessary after connecting to new map instance here.
 }
 
@@ -1891,7 +1889,6 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     // TODO only do this the first time a client connects, not after map transfers..
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    qCDebug(logMapEvents) << QString("Client Resumed Rendering with session %1").arg(session.link()->session_token());
     if(session.m_in_map==false)
         session.m_in_map = true;
     if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
@@ -1949,18 +1946,26 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     
     // ev->name is the map_idx when using the map menu currently.
     if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
-    {
-        qCDebug(logMapEvents) << QString("Adding session %1 to the map requests").arg(session.link()->session_token());
-        map_server->putq(new ClientMapXferMessage({session.link()->session_token(), ev->name.toInt()},0));
-        session.link()->putq(new MapXferWait(getMapPath(ev->name.toInt()))); 
+    {   
+        uint8_t map_idx = ev->name.toInt();
+        if (ev->location.x != 0 || ev->location.y != 0 || ev->location.z != 0)
+            map_idx = std::rand() % 23;
+
+        // TODO: change this to not be hacky.
+        // change the map idx if you're trying to load the map you're currently on
+        // this should only ever happen with /movezone commands after doors work correctly.
+        if (map_idx == m_index)
+            map_idx = (map_idx + 1) % 23;
+        map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
+        session.link()->putq(new MapXferWait(getMapPath(map_idx))); 
     }
     else
     {
-        qCWarning(logMapEvents).noquote() << "Unhandled door entry request to:" << ev->name;
+        qCWarning(logMapXfers).noquote() << "Unhandled door entry request to:" << ev->name;
         if(ev->unspecified_location)
-            qCWarning(logMapEvents).noquote() << "    no location provided";
+            qCWarning(logMapXfers).noquote() << "    no location provided";
         else
-            qCWarning(logMapEvents).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
+            qCWarning(logMapXfers).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
     }
 
     //pseudocode:

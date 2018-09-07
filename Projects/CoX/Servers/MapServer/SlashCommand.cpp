@@ -233,9 +233,9 @@ static const SlashCommand g_defined_slash_commands[] = {
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
 {
     uint8_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
-    QString map_name = getMapName(map_idx);
+    if (map_idx == getMapIndex(sess.m_current_map->name()))
+        map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
     QString map_path = getMapPath(map_idx);
-    qCDebug(logMapEvents) << map_path;
     sess.link()->putq(new MapXferWait(map_path));  
 
     HandlerLocator::getMap_Handler(sess.is_connected_to_game_server_id)

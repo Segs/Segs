@@ -198,12 +198,11 @@ void MapServer::on_client_map_xfer(ClientMapXferMessage *ev)
 {
     if (m_current_map_xfers.find(ev->m_data.m_session) == m_current_map_xfers.end())
     {
-        qCDebug(logMapEvents) << QString("Adding client transfer map index for client session %1 to map index %2").arg(ev->m_data.m_session).arg(ev->m_data.m_map_idx);
         m_current_map_xfers.insert(std::pair<uint64_t, uint8_t>(ev->m_data.m_session, ev->m_data.m_map_idx));
     }
     else
     {
-        qCDebug(logMapEvents) << QString("Client session %1 attempted to request a second map transfer while having an existing transfer in progress").arg(ev->m_data.m_session);
+        qCDebug(logMapXfers) << QString("Client session %1 attempted to request a second map transfer while having an existing transfer in progress").arg(ev->m_data.m_session);
     }
 }
 

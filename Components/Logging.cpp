@@ -35,6 +35,7 @@ SEGS_LOGGING_CATEGORY(logEmotes,       "log.emotes")
 SEGS_LOGGING_CATEGORY(logTarget,       "log.target")
 SEGS_LOGGING_CATEGORY(logSpawn,        "log.spawn")
 SEGS_LOGGING_CATEGORY(logMapEvents,    "log.mapevents")
+SEGS_LOGGING_CATEGORY(logMapXfers,     "log.mapxfers")
 SEGS_LOGGING_CATEGORY(logSlashCommand, "log.slashcommand")
 SEGS_LOGGING_CATEGORY(logDescription,  "log.description")
 SEGS_LOGGING_CATEGORY(logFriends,      "log.friends")
@@ -65,6 +66,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.target="         + config.value("log_target","false").toString();
     filter_rules += "\nlog.spawn="          + config.value("log_spawn","false").toString();
     filter_rules += "\nlog.mapevents="      + config.value("log_mapevents","true").toString();
+    filter_rules += "\nlog.mapxfers="       + config.value("log.mapxfers", "true").toString();
     filter_rules += "\nlog.slashcommand="   + config.value("log_slashcommand","true").toString();
     filter_rules += "\nlog.description="    + config.value("log_description","false").toString();
     filter_rules += "\nlog.friends="        + config.value("log_friends","false").toString();
@@ -117,6 +119,8 @@ void toggleLogging(QString &category)
         cat = &logSpawn();
     else if(category.contains("mapevents",Qt::CaseInsensitive))
         cat = &logMapEvents();
+    else if (category.contains("mapxfers",Qt::CaseInsensitive))
+        cat = &logMapXfers();
     else if(category.contains("slashcommand",Qt::CaseInsensitive))
         cat = &logSlashCommand();
     else if(category.contains("description",Qt::CaseInsensitive))
