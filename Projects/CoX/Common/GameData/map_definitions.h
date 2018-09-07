@@ -27,8 +27,9 @@ struct MapData
 };
 typedef std::vector<Map_Data> AllMaps_Data;
 
-QString        getMapPath(size_t index);
 uint32_t       getMapIndex(const QString &map_name);
 const MapData &getMapData(const QString &map_name);
 QString        getMapName(const QString &map_name);
+QString        getMapName(size_t map_idx);
 QString        getDisplayMapName(size_t index);
+QString        getMapPath(size_t index);

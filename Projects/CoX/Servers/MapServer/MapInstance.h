@@ -99,6 +99,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
         std::unique_ptr<SEGSTimer> m_sync_service_timer;
+        std::unique_ptr<SEGSTimer> m_afk_update_timer;
         std::vector<glm::mat4>  m_new_player_spawns;
         World *                 m_world;
         GameDBSyncService*      m_sync_service;
@@ -160,6 +161,7 @@ protected:
         void sendState();
         void on_check_links();
         void on_update_entities();
+        void on_afk_update();
         void send_character_update(Entity *e);
         void send_player_update(Entity *e);
 
