@@ -1917,7 +1917,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 
     qCWarning(logMapEvents).noquote() << "Unhandled door entry request to:" << ev->name;
-    if(ev->unspecified_location)
+    if(ev->no_location)
         qCWarning(logMapEvents).noquote() << "    no location provided";
     else
         qCWarning(logMapEvents).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
