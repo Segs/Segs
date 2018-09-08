@@ -198,12 +198,11 @@ void MapServer::on_client_map_xfer(ClientMapXferMessage *ev)
 {
     if (m_current_map_xfers.find(ev->m_data.m_session) == m_current_map_xfers.end())
     {
-        qCDebug(logMapEvents) << QString("Adding client transfer map index for client session %1 to map index %2").arg(ev->m_data.m_session).arg(ev->m_data.m_map_idx);
         m_current_map_xfers.insert(std::pair<uint64_t, uint8_t>(ev->m_data.m_session, ev->m_data.m_map_idx));
     }
     else
     {
-        qCDebug(logMapEvents) << QString("Client session %1 attempted to request a second map transfer while having an existing transfer in progress").arg(ev->m_data.m_session);
+        qCDebug(logMapXfers) << QString("Client session %1 attempted to request a second map transfer while having an existing transfer in progress").arg(ev->m_data.m_session);
     }
 }
 
@@ -214,14 +213,14 @@ bool MapServer::session_has_xfer_in_progress(uint64_t session_token)
 
 uint8_t MapServer::session_map_xfer_idx(uint64_t session_token)
 {
-    if (session_has_xfer_in_progress(session_token))
-        return m_current_map_xfers[session_token];
+    assert(session_has_xfer_in_progress(session_token));
+    return m_current_map_xfers[session_token];
 }
 
 void MapServer::session_xfer_complete(uint64_t session_token)
 {
-    if (session_has_xfer_in_progress(session_token))
-        m_current_map_xfers.erase(session_token);
+    assert(session_has_xfer_in_progress(session_token));
+    m_current_map_xfers.erase(session_token);
 }
 
 void MapServer::serialize_from(std::istream &is)

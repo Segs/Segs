@@ -109,7 +109,7 @@
      </property>
      <property name="icon">
       <iconset resource="resources.qrc">
-       <normaloff>:/icons/download.svg</normaloff>:/icons/download.svg</iconset>
+       <normaloff>:/icons/Resources/download.svg</normaloff>:/icons/Resources/download.svg</iconset>
      </property>
      <property name="iconSize">
       <size>

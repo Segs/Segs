@@ -17,6 +17,7 @@
 
 #include "Common/Servers/Database.h"
 #include "Events/GameCommandList.h"
+#include "NetStructures/Character.h"
 #include <glm/gtx/vector_query.hpp>
 
 using namespace SEGSEvents;

@@ -86,6 +86,7 @@ class RecvNewPower;
 class MapXferComplete;
 class InitiateMapXfer;
 class ClientMapXferMessage;
+class AwaitingDeadNoGurney;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -103,6 +104,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
         std::unique_ptr<SEGSTimer> m_sync_service_timer;
+        std::unique_ptr<SEGSTimer> m_afk_update_timer;
         std::vector<glm::mat4>  m_new_player_spawns;
         std::vector<MapSwap>  m_map_swaps;
 
@@ -132,6 +134,7 @@ public:
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         void                    start(const QString &scenegraph_path);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
+        
 protected:
         // EventProcessor interface
         void                    serialize_from(std::istream &is) override;
@@ -169,6 +172,7 @@ protected:
         void sendState();
         void on_check_links();
         void on_update_entities();
+        void on_afk_update();
         void send_character_update(Entity *e);
         void send_player_update(Entity *e);
 
@@ -219,4 +223,5 @@ protected:
         void on_buy_enhancement_slot(SEGSEvents::BuyEnhancementSlot *ev);
         void on_recv_new_power(SEGSEvents::RecvNewPower *ev);
         void on_map_swap_collision(SEGSEvents::MapSwapCollisionMessage *ev);
+        void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev); 
 };

@@ -39,6 +39,7 @@ glm::vec3   getSpeed(const Entity &e);
 float       getBackupSpd(const Entity &e);
 float       getJumpHeight(const Entity &e);
 uint8_t     getUpdateId(const Entity &e);
+bool        isEntityOnMissionMap(const EntityData &ed);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);
@@ -76,6 +77,7 @@ Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
+void    on_awaiting_dead_no_gurney_test(MapClientSession &session);
 
 
 

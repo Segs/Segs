@@ -98,6 +98,7 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
+void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
 void moveTo(const QString &cmd, MapClientSession &sess);
@@ -183,6 +184,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
     {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
+    {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
 
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", addNpc, 2},
@@ -231,9 +233,9 @@ static const SlashCommand g_defined_slash_commands[] = {
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
 {
     uint8_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
-    QString map_name = getMapName(map_idx);
+    if (map_idx == getMapIndex(sess.m_current_map->name()))
+        map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
     QString map_path = getMapPath(map_idx);
-    qCDebug(logMapEvents) << map_path;
     sess.link()->putq(new MapXferWait(map_path));  
 
     HandlerLocator::getMap_Handler(sess.is_connected_to_game_server_id)
@@ -395,14 +397,10 @@ void cmdHandler_SetJumpHeight(const QString &cmd, MapClientSession &sess)
 void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess)
 {
     float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
-    float maxattrib =sess.m_ent->m_char->m_max_attribs.m_HitPoints;
 
-    if(attrib > maxattrib)
-        attrib = maxattrib;
+    setHP(*sess.m_ent->m_char, attrib);
 
-    setHP(*sess.m_ent->m_char,attrib);
-
-    QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(maxattrib);
+    QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(sess.m_ent->m_char->m_max_attribs.m_HitPoints);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
@@ -699,7 +697,7 @@ void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess)
     {
         sendFloatingNumbers(sess, tgt->m_idx, int(amount));
 
-        setHP(*tgt->m_char, getHP(*tgt->m_char)-amount); // deal dmg
+        setHP(*tgt->m_char, getHP(*tgt->m_char) - amount); // deal dmg
 
         if(amount >= 0) // damage
         {
@@ -881,6 +879,11 @@ void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
+void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)
+{
+    on_awaiting_dead_no_gurney_test(sess);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 2 Commands
 void addNpc(const QString &cmd, MapClientSession &sess)
@@ -978,13 +981,19 @@ void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_AFK(const QString &cmd, MapClientSession &sess)
 {
+    Entity* e = sess.m_ent;
+
     int space = cmd.indexOf(' ');
     QString val = cmd.mid(space+1);
-    toggleAFK(*sess.m_ent->m_char, val);
+    toggleAFK(*e->m_char, val);
 
     QString msg = "Setting afk message to: " + val;
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::EMOTE, msg, sess);
+
+    // the server regards writing on chat (including cmd commands) as an input
+    // so specifically for afk, we treat it as a non-input in this way
+    e->m_has_input_on_timeframe = false;
 }
 
 void cmdHandler_WhoAll(const QString &/*cmd*/, MapClientSession &sess)
