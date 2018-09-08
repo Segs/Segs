@@ -639,6 +639,8 @@ void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
         uint32_t cookie = m_session_store.get_cookie_for_session(ev->session_token());
         assert(cookie!=0);
         // Now we inform our game server that this Map server instance is ready for the client
+        MapClientSession &map_session(m_session_store.session_from_event(ev));
+        m_session_store.locked_unmark_session_for_reaping(&map_session);
         HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ExpectMapClientResponse({2+cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
     }
