@@ -906,6 +906,12 @@ void removeTeamMember(Team &self, Entity *e)
         self.listTeamMembers();
 }
 
+bool isEntityOnMissionMap(const EntityData &ed)
+{
+    QString mapName = getMapName(ed.m_map_idx);
+    // Hazard and Trial maps are considered as mission maps
+    return mapName.contains("Hazard") || mapName.contains("Trial");
+}
 
 //! @}
 
