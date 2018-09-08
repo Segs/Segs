@@ -19,7 +19,7 @@ struct MapSwap
     QString m_spawn_link_val;
     QString m_map_link_val;
     QString m_node_name;
-    std::vector<glm::vec3> m_positions;
+    glm::vec3 m_position;
 };
 
 ///

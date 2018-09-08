@@ -13,10 +13,13 @@
 #include "WorldSimulation.h"
 
 #include "MapInstance.h"
+#include "Common/Servers/InternalEvents.h"
 
 #include "Common/Servers/Database.h"
 #include "Events/GameCommandList.h"
 #include <glm/gtx/vector_query.hpp>
+
+using namespace SEGSEvents;
 
 void markFlying(Entity &e ,bool is_flying) // Function to set character as flying
 {
@@ -91,9 +94,28 @@ void World::effectsStep(Entity *e,uint32_t msec)
     }
 }
 
+void World::collisionStep(Entity *e, uint32_t major)
+{
+    if (e->m_player != nullptr && !e->m_map_swap_collided)
+    {
+        for(auto &map_swap : m_map_swaps)
+        {
+            if ((e->m_entity_data.m_pos.x >= map_swap.m_position.x - 25 && e->m_entity_data.m_pos.x <= map_swap.m_position.x + 25) &&
+                (e->m_entity_data.m_pos.y >= map_swap.m_position.y - 25 && e->m_entity_data.m_pos.y <= map_swap.m_position.y + 25) &&
+                (e->m_entity_data.m_pos.z >= map_swap.m_position.z - 25 && e->m_entity_data.m_pos.z <= map_swap.m_position.z + 25))
+            {
+                e->m_map_swap_collided = true;  // So we don't send repeated events for the same entity
+                m_owner_instance->putq(new MapSwapCollisionMessage({e->m_db_id, e->m_entity_data.m_pos, map_swap.m_map_link_val.split('.')[0]}, 0));
+                return; // don't want to keep checking for other maps for this entity
+            }
+        }
+    }
+}
+
 void World::updateEntity(Entity *e, const ACE_Time_Value &dT) {
     physicsStep(e,dT.msec());
     effectsStep(e,dT.msec());
+    collisionStep(e,dT.msec());
     if(e->m_is_logging_out)
     {
         e->m_time_till_logout -= dT.msec();

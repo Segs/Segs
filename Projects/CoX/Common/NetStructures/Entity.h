@@ -241,6 +241,7 @@ public:
         bool                m_has_control_id        = false;    // EntityReponse sendServerPhysicsPositions
         bool                m_extra_info            = false;    // EntityUpdateCodec storePosUpdate
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
+        bool                m_map_swap_collided     = false;
 
         int                 u1 = 0; // used for live-debugging
 

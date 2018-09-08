@@ -110,7 +110,7 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
   : m_data_path(mapdir_path), m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
     m_world_update_timer(nullptr), m_addresses(listen_addr)
 {
-    m_world = new World(m_entities, serverData().m_player_fade_in);
+    m_world = new World(m_entities, serverData().m_player_fade_in, this);
     m_scripting_interface.reset(new ScriptingEngine);
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
@@ -161,7 +161,8 @@ void MapInstance::start(const QString &scenegraph_path)
             m_map_scenegraph->spawn_npcs(this);
             m_npc_generators.generate(this);
             },"Spawning npcs");
-        
+
+        m_world->set_map_swaps(m_map_swaps);
         qInfo() << "Loading custom scripts";
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
@@ -470,11 +471,14 @@ void MapInstance::dispatch( Event *ev )
         case evRecvNewPower:
             on_recv_new_power(static_cast<RecvNewPower *>(ev));
             break;
-        case MapEventTypes::evInitiateMapXfer:
+        case evInitiateMapXfer:
             on_initiate_map_transfer(static_cast<InitiateMapXfer *>(ev));
             break;
-        case MapEventTypes::evMapXferComplete:
+        case evMapXferComplete:
             on_map_xfer_complete(static_cast<MapXferComplete *>(ev));
+            break;
+        case evMapSwapCollisionMessage:
+            on_map_swap_collision(static_cast<MapSwapCollisionMessage *>(ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
@@ -2384,6 +2388,19 @@ void MapInstance::send_player_update(Entity *e)
 
     m_sync_service->putq(msg);
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
+}
+
+void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
+{
+    qDebug() << "Map Swap Collision in MapInstance";
+    uint8_t map_idx = getMapIndex(ev->m_data.m_map_name);
+    Entity *e = getEntityByDBID(this, ev->m_data.m_ent_db_id);
+    MapClientSession &sess = *e->m_client;
+
+    sess.link()->putq(new MapXferWait(ev->m_data.m_map_name)); 
+    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
+    map_server->putq(new ClientMapXferMessage({sess.link()->session_token(), map_idx}, 0));
+    e->m_map_swap_collided = false;
 }
 
 //! @}

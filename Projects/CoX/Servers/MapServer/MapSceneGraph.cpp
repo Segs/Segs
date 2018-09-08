@@ -261,79 +261,49 @@ struct MapSwapLocator
     {}
     bool operator()(SceneNode *n, const glm::mat4 &v)
     {
-        bool found_map_swap = false;
+        
         if (!n->properties)
         {
-            if (n->children.size() > 0)
+            for (auto &child : n->children)
             {
-                for (auto &child : n->children)
+                bool found_map_swap = false;
+                if (child.node->properties != nullptr)
                 {
-                    QString name = child.node->name;
-                    auto iter = std::find_if(m_targets->begin(), m_targets->end(), [&name](const MapSwap &obj) { return obj.m_node_name == name; });
-                    if (iter != m_targets->end())
+                    MapSwap map_swap = MapSwap();
+                    // Probably haven't processed the map swap node yet, so add it and handle later
+                    for (GroupProperty_Data &prop : *child.node->properties)
                     {
-                        iter->m_positions.emplace_back(child.m_translation);
-                    }
-                    else if (child.node->properties != nullptr)
-                    {
-                        // Probably haven't processed the map swap node yet, so add it and handle later
-                        for (GroupProperty_Data &prop : *child.node->properties)
+                        if (prop.propName == "GotoSpawn")
                         {
-                            if (prop.propName == "GotoSpawn")
-                            {   
-                                MapSwap map_swap = MapSwap();
-                                map_swap.m_node_name = child.node->name;
-                                map_swap.m_positions.emplace_back(child.m_translation);
-                                m_targets->emplace_back(map_swap);
-                                return true;
-                            }
-                            if (prop.propName == "GotoMap")
-                            {
-                                MapSwap map_swap = MapSwap();
-                                map_swap.m_node_name = child.node->name;
-                                map_swap.m_positions.emplace_back(child.m_translation);
-                                m_targets->emplace_back(map_swap);
-                                return true;
-                            }
+                            map_swap.m_spawn_link_val = prop.propValue;
+                            found_map_swap = true;
                         }
- 
+                        if (prop.propName == "GotoMap")
+                        {
+                            map_swap.m_map_link_val = prop.propValue;
+                            found_map_swap = true;
+                        }
+                    }
+                    if (found_map_swap)
+                    {
+                        map_swap.m_node_name = child.node->name;
+
+                        // get position
+                        glm::mat4 transform(child.m_matrix2);
+                        transform[3] = glm::vec4(child.m_translation,1);
+                        transform = v * transform;
+                        glm::vec4 pos4 {0,0,0,1};
+                        pos4 = transform * pos4;
+                        glm::vec3 pos3 = glm::vec3(pos4);
+
+                        map_swap.m_position = pos3;
+                        m_targets->emplace_back(map_swap);
+                        return false;
                     }
                 }
             }
-            return true;
         }
 
-        QString name = n->name;
-        auto iter = std::find_if(m_targets->begin(), m_targets->end(), [&name](const MapSwap &obj) { return obj.m_node_name == name; });
-        MapSwap map_swap;
-        if (iter != m_targets->end())
-        {
-            map_swap = *iter;
-        }
-        else
-        {
-            map_swap = MapSwap();
-        }
-
-        for (GroupProperty_Data &prop : *n->properties)
-        {
-            if (prop.propName == "GotoSpawn")
-            {   
-                map_swap.m_spawn_link_val = prop.propValue;
-                found_map_swap = true;
-            }
-            if (prop.propName == "GotoMap")
-            {
-                map_swap.m_map_link_val = prop.propValue;
-                found_map_swap = true;
-            }
-        }
-        if (found_map_swap && iter != m_targets->end())
-        {
-            map_swap.m_node_name = n->name;
-            m_targets->emplace_back(map_swap);
-            return false;
-        }
         return true;
     }
 };

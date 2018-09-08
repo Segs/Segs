@@ -218,4 +218,5 @@ protected:
         void on_trash_enhancement_in_power(SEGSEvents::TrashEnhancementInPower *ev);
         void on_buy_enhancement_slot(SEGSEvents::BuyEnhancementSlot *ev);
         void on_recv_new_power(SEGSEvents::RecvNewPower *ev);
+        void on_map_swap_collision(SEGSEvents::MapSwapCollisionMessage *ev);
 };
