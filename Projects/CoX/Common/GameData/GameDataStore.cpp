@@ -21,6 +21,7 @@
 #include "Common/GameData/power_serializers.h"
 #include "NetStructures/CommonNetStructures.h"
 #include "Logging.h"
+#include "Settings.h"
 
 #include <QtCore/QDebug>
 
@@ -388,15 +389,17 @@ bool GameDataStore::read_npcs(const QString &directory_path)
     return true;
 }
 
-// should read from settings.cfg
 bool GameDataStore::read_settings(const QString &directory_path)
 {
-    qDebug() << "TODO: Loading data from settings";
+    qInfo() << "Loading AFK settings...";
+    QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
-    // m_time_to_afk = 5 minutes
-    // m_time_to_logout_msg = 18 minutes
-    // m_time_to_auto_logout = 2 minutes
-    // m_uses_auto_logout = true/false
+    config.beginGroup(QStringLiteral("AFK Settings"));
+        m_time_to_afk = config.value(QStringLiteral("time_to_afk"), "300").toInt();
+        m_time_to_logout_msg = config.value(QStringLiteral("time_to_logout_msg"), "1080").toInt();
+        m_time_to_auto_logout = config.value(QStringLiteral("time_to_auto_logout"), "120").toInt();
+        m_uses_auto_logout = config.value(QStringLiteral("uses_auto_logout"), "true").toBool();
+    config.endGroup(); // AFK Settings
 
     return true;
 }

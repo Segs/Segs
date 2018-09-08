@@ -307,7 +307,7 @@ class EnterDoor final : public MapLinkEvent
 {
 public:
     // [[ev_def:field]]
-    bool unspecified_location;
+    bool no_location;
     // [[ev_def:field]]
     glm::vec3 location;
     // [[ev_def:field]]
@@ -320,8 +320,8 @@ public:
     }
     void serializefrom(BitStream &bs) override
     {
-        unspecified_location = bs.GetBits(1);
-        if(!unspecified_location)
+        no_location = bs.GetBits(1);
+        if(!no_location)
         {
             location.x = bs.GetFloat();
             location.y = bs.GetFloat();
