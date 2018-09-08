@@ -59,8 +59,9 @@ public:
     int         m_time_diff2                    = 0;
     uint8_t     m_input_vel_scale               = 0; // TODO: Should be float?
     uint8_t     m_received_server_update_id     = 0;
-    bool        m_no_collision                       = false;
-    bool        has_input_commit_guess          = false;
+    bool        m_no_collision                  = false;
+    bool        m_input_received                = false;
+    bool        m_has_input_commit_guess        = false; // was has_input_commit_guess
     bool        pos_delta_valid[3]              = {};
     bool        pyr_valid[3]                    = {};
     glm::vec3   pos_delta;
@@ -83,7 +84,7 @@ public:
         ar(m_input_vel_scale);
         ar(m_received_server_update_id);
         ar(m_no_collision);
-        ar(has_input_commit_guess);
+        ar(m_has_input_commit_guess);
         ar(pos_delta_valid);
         ar(pyr_valid);
         ar(pos_delta);
@@ -241,6 +242,8 @@ public:
         bool                m_has_control_id        = false;    // EntityReponse sendServerPhysicsPositions
         bool                m_extra_info            = false;    // EntityUpdateCodec storePosUpdate
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
+
+        bool                m_has_input_on_timeframe= false;
 
         int                 u1 = 0; // used for live-debugging
 

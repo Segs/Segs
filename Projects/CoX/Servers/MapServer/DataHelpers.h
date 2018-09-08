@@ -39,6 +39,7 @@ glm::vec3   getSpeed(const Entity &e);
 float       getBackupSpd(const Entity &e);
 float       getJumpHeight(const Entity &e);
 uint8_t     getUpdateId(const Entity &e);
+bool        isEntityOnMissionMap(const EntityData &ed);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);

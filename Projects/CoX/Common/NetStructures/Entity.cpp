@@ -10,7 +10,6 @@
  * @{
  */
 
-#define _USE_MATH_DEFINES
 #include "Entity.h"
 #include "LFG.h"
 #include "Team.h"

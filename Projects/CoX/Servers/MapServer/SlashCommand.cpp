@@ -1007,13 +1007,19 @@ void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_AFK(const QString &cmd, MapClientSession &sess)
 {
+    Entity* e = sess.m_ent;
+
     int space = cmd.indexOf(' ');
     QString val = cmd.mid(space+1);
-    toggleAFK(*sess.m_ent->m_char, val);
+    toggleAFK(*e->m_char, val);
 
     QString msg = "Setting afk message to: " + val;
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::EMOTE, msg, sess);
+
+    // the server regards writing on chat (including cmd commands) as an input
+    // so specifically for afk, we treat it as a non-input in this way
+    e->m_has_input_on_timeframe = false;
 }
 
 void cmdHandler_WhoAll(const QString &/*cmd*/, MapClientSession &sess)
