@@ -18,6 +18,7 @@ SET(target_CPP
     Events/SceneEvent.cpp
     Events/InfoMessageCmd.cpp
     Events/WindowState.cpp
+    MapClientSession.cpp
     NpcGenerator.cpp
     MapEventFactory.cpp
     MapInstance.cpp

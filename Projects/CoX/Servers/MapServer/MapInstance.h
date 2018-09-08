@@ -82,10 +82,13 @@ class TrashEnhancementInPower;
 class BuyEnhancementSlot;
 class RecvNewPower;
 class AwaitingDeadNoGurney;
-
 // server<-> server event types
 struct ExpectMapClientRequest;
-
+struct WouldNameDuplicateResponse;
+struct WouldNameDuplicateResponse;
+struct CreateNewCharacterResponse;
+struct GetEntityResponse;
+struct GetEntityByNameResponse;
 }
 class MapLinkEndpoint;
 
@@ -127,7 +130,7 @@ public:
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         void                    start(const QString &scenegraph_path);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
-        
+
 protected:
         // EventProcessor interface
         void                    serialize_from(std::istream &is) override;
@@ -211,5 +214,5 @@ protected:
         void on_trash_enhancement_in_power(SEGSEvents::TrashEnhancementInPower *ev);
         void on_buy_enhancement_slot(SEGSEvents::BuyEnhancementSlot *ev);
         void on_recv_new_power(SEGSEvents::RecvNewPower *ev);
-        void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev); 
+        void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
 };

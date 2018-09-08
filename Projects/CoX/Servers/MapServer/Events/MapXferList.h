@@ -62,7 +62,7 @@ public:
         void    serializeto(BitStream &bs) const override {
                     bs.StorePackedBits(1, type()-evFirstServerToClient); // 59
                 }
-        void    serializefrom(BitStream &src) override
+        void    serializefrom(BitStream &/*src*/) override
                 {
                     assert(false);
                 }

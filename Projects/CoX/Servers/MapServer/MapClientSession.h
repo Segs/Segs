@@ -7,13 +7,12 @@
 
 #pragma once
 #include "FixedPointValue.h"
-#include "Events/GameCommand.h"
 #include "NetCommandManager.h"
-#include "AuthDatabase/AuthDBSyncEvents.h"
-#include "GameDatabase/GameDBSyncEvents.h"
+#include "Events/GameCommand.h"
 
 #include <map>
 #include <memory>
+
 
 class MapHandler;
 class MapInstance;
@@ -54,18 +53,8 @@ struct MapClientSession
         // The values below might be needed for map<->map handover ?
         uint32_t                is_connected_to_map_server_id   = 0;
         uint32_t                is_connected_to_map_instance_id = 0;
-        void                    addCommandToSendNextUpdate(std::unique_ptr<SEGSEvents::GameCommandEvent> &&v) {
-                                    m_contents.emplace_back(std::move(v));
-                                }
-        void                    AddShortcut(int index, NetCommand *command)
-                                {
-                                    if (m_shortcuts.find(index) != m_shortcuts.end())
-                                    {
-                                        qDebug() << "Replacing command" << index << m_shortcuts[index]->m_name <<
-                                                    "->" << command->m_name;
-                                    }
-                                    m_shortcuts[index] = command;
-                                }
+        void                    addCommandToSendNextUpdate(std::unique_ptr<SEGSEvents::GameCommandEvent> &&v);
+        void                    AddShortcut(int index, NetCommand *command);
 
         uint32_t                auth_id() const { return m_client_id; }
                                 // TODO: for now session reuse does not retain any data, should it ?
