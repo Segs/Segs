@@ -44,8 +44,8 @@ public:
                         ~GameDataStore();
         bool            read_runtime_data(const QString &directory_path);
         const ColorAndPartPacker *getPacker() const { return packer_instance; }
-        uint32_t        expForLevel(int lev) const;
-        uint32_t        expDebtForLevel(int lev) const;
+        uint32_t        expForLevel(uint32_t lev) const;
+        uint32_t        expDebtForLevel(uint32_t lev) const;
         uint32_t        expMaxLevel() const;
         int             countForLevel(uint32_t lvl,const std::vector<uint32_t> &schedule) const;
         const NPCStorage & getNPCDefinitions() const
