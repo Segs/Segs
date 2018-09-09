@@ -2412,8 +2412,8 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
                           << ev->data.m_sg_titles[1]
                           << ev->data.m_sg_titles[2]
                           << ev->data.m_sg_emblem
-                          << ev->data.m_sg_colors[0].val
-                          << ev->data.m_sg_colors[1].val;
+                          << ev->data.m_sg_colors[0]
+                          << ev->data.m_sg_colors[1];
 
 
     // Check for everything, then give success
@@ -2428,8 +2428,8 @@ void MapInstance::on_change_supergroup_colors(ChangeSuperGroupColors *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received Change SuperGroup Colors"
-                          << ev->m_sg_colors[0].val
-                          << ev->m_sg_colors[1].val;
+                          << ev->m_sg_colors[0]
+                          << ev->m_sg_colors[1];
 
     //changeSGColors(ev->m_sg_name, ev->m_sg_titles, ev->m_sg_emblem, ev->m_sg_colors);
 }

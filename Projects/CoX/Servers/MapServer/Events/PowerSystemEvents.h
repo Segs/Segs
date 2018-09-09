@@ -8,6 +8,7 @@
 #pragma once
 #include "GameCommand.h"
 #include "MapEventTypes.h"
+#include "Powers.h"
 
 #include <QtCore/QString>
 namespace SEGSEvents

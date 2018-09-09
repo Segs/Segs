@@ -18,9 +18,21 @@ struct SuperGroupData
     QString     m_sg_motto;
     QString     m_sg_motd;
     QString     m_sg_emblem;                // 128 chars max -> hash table key from the CostumeString_HTable. Maybe Emblem?
-    RGBA        m_sg_colors[2];
+    uint32_t    m_sg_colors[2] = {0};
     QString     m_sg_titles[3];             // Eventually we'll need to support additional titles (I23+)
-    uint32_t    m_sg_leader_idx     = 0;
+    uint32_t    m_sg_leader_idx = 0;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_sg_name);
+        ar(m_sg_motto);
+        ar(m_sg_motd);
+        ar(m_sg_emblem);
+        ar(m_sg_colors);
+        ar(m_sg_titles);
+        ar(m_sg_leader_idx);
+    }
 };
 
 class SuperGroup

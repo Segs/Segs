@@ -36,6 +36,14 @@ struct PowerStance
     bool        has_stance  = false;
     uint32_t    pset_idx    = 0;
     uint32_t    pow_idx     = 0;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(has_stance);
+        ar(pset_idx);
+        ar(pow_idx);
+    }
 };
 
 struct EnhancemenSlotEntry

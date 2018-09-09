@@ -42,6 +42,21 @@ struct CostumePart
     uint32_t m_colors[2] = {0};
     uint8_t m_type=0; // arms/legs etc..
     bool m_full_part;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_geometry);
+        ar(m_texture_1);
+        ar(m_texture_2);
+        ar(name_3);
+        ar(name_4);
+        ar(name_5);
+        ar(name_6);
+        ar(m_colors);
+        ar(m_type);
+        ar(m_full_part);
+    }
 };
 
 void serializeto(const CostumePart &part, BitStream &bs, const ColorAndPartPacker *packingContext);
@@ -68,6 +83,19 @@ struct Costume
     void serializeToDb(QString &tgt) const;
     void serializeFromDb(const QString &src);
     void    dump() const;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_height);
+        ar(m_physique);
+        ar(skin_color);
+        ar(m_non_default_costme_p);
+        ar(m_num_parts);
+        ar(m_floats);
+        ar(m_parts);
+        ar(m_body_type);
+    }
 protected:
 };
 

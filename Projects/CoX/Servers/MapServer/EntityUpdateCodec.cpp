@@ -394,8 +394,8 @@ void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
     {
         bs.StoreString(cd.m_supergroup.getSuperGroup()->m_data.m_sg_name);    // 64 chars max
         bs.StoreString(cd.m_supergroup.getSuperGroup()->m_data.m_sg_emblem);  // 128 chars max -> hash table key from the CostumeString_HTable. Maybe emblem?
-        bs.StoreBits(32, cd.m_supergroup.getSuperGroup()->m_data.m_sg_colors[0].val); // supergroup color 1
-        bs.StoreBits(32, cd.m_supergroup.getSuperGroup()->m_data.m_sg_colors[1].val); // supergroup color 2
+        bs.StoreBits(32, cd.m_supergroup.getSuperGroup()->m_data.m_sg_colors[0]); // supergroup color 1
+        bs.StoreBits(32, cd.m_supergroup.getSuperGroup()->m_data.m_sg_colors[1]); // supergroup color 2
     }
 }
 
