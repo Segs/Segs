@@ -1,9 +1,3 @@
-#include <memory>
-
-#include <memory>
-
-#include <memory>
-
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
@@ -30,6 +24,7 @@
 #include <cmath>
 #include <limits>
 #include <sstream>
+#include <memory>
 
 //TODO: this file needs to know the MapInstance's WorldSimulation rate - Maybe extract it as a configuration object ?
 
