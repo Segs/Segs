@@ -51,6 +51,7 @@ struct MapClientSession
         bool                    m_in_map                        = false;
 
         // The values below might be needed for map<->map handover ?
+        uint32_t                is_connected_to_game_server_id = 0;
         uint32_t                is_connected_to_map_server_id   = 0;
         uint32_t                is_connected_to_map_instance_id = 0;
         void                    addCommandToSendNextUpdate(std::unique_ptr<SEGSEvents::GameCommandEvent> &&v);
