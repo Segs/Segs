@@ -143,7 +143,10 @@ void GameHandler::on_account_data(GameAccountResponse *ev)
     session.m_game_account = ev->m_data;
     // Inform auth server about succesful client connection
     EventProcessor *tgt      = HandlerLocator::getAuth_Handler();
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),ev->m_data.m_game_server_acc_id },0));
+
+    // Putting m_db_id as 0 to remove wmissing warning because I'm not sure what to pick...
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),
+                                          ev->m_data.m_game_server_acc_id, 0},0));
 
     m_session_store.add_to_active_sessions(&session);
     CharacterSlots *slots_event=new CharacterSlots;
@@ -458,9 +461,11 @@ void GameHandler::reap_stale_links()
 {
     SessionStore::MTGuard guard(m_session_store.reap_lock());
     EventProcessor *            tgt      = HandlerLocator::getAuth_Handler();
+
+    // Putting m_db_id as 0 to remove wmissing warning
     m_session_store.reap_stale_links("GameInstance", link_is_stale_if_disconnected_for,
                                      [tgt](uint64_t tok) {
-                                         tgt->putq(new ClientDisconnectedMessage({tok},0));
+                                         tgt->putq(new ClientDisconnectedMessage({tok, 0},0));
                                      });
 }
 //! @}
