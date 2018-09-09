@@ -16,6 +16,7 @@
 #include "Events/ClientStates.h"
 #include "Events/StandardDialogCmd.h"
 #include "Events/InfoMessageCmd.h"
+#include "Events/MapXferWait.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
 #include "Logging.h"
@@ -25,6 +26,7 @@
 #include "NetStructures/Entity.h"
 #include "NetStructures/LFG.h"
 #include "Settings.h"
+#include "Common/GameData/map_definitions.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFile>
@@ -97,6 +99,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess);
+void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
@@ -184,6 +187,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
     {{"face"}, "Face a target", cmdHandler_FaceEntity, 9},
     {{"faceLocation"}, "Face a location", cmdHandler_FaceLocation, 9},
+    {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
 
     /* Access Level 2 Commands */
@@ -229,6 +233,18 @@ static const SlashCommand g_defined_slash_commands[] = {
 /************************************************************
  *  Slash Command Handlers
  ***********************************************************/
+
+void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
+{
+    uint8_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
+    if (map_idx == getMapIndex(sess.m_current_map->name()))
+        map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
+    QString map_path = getMapPath(map_idx);
+    sess.link()->putq(new MapXferWait(map_path));  
+
+    HandlerLocator::getMap_Handler(sess.is_connected_to_game_server_id)
+        ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_idx}, 0));
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 9 Commands (GMs)
@@ -451,6 +467,7 @@ void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess)
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setLevel(*sess.m_ent->m_char, attrib); // TODO: Why does this result in -1?
+    sess.m_ent->m_char->finalizeLevel(sess.m_current_map->serverData());
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(sess, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -847,6 +864,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
         level = sess.m_ent->m_char->m_char_data.m_level + 1;
 
     setLevel(*sess.m_ent->m_char, level);
+    sess.m_ent->m_char->finalizeLevel(sess.m_current_map->serverData());
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(sess, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -1353,7 +1371,12 @@ void cmdHandler_MapXferList(const QString &/*cmd*/, MapClientSession &sess)
 {
     bool has_location = true;
     glm::vec3 location = sess.m_ent->m_entity_data.m_pos;
-    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table><a href=CONTACTLINK_NEWPLAYERTELEPORT_AP><tr><td>One day this link will take you somewhere!</a></tr></td></table>";
+    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table>";
+    for (auto &map_data : getAllMapData())
+    {
+        msg_body.append(QString("<a href=\"cmd:enterdoorvolume %1\"><tr><td>%2</td></tr></a>").arg(map_data.m_map_idx).arg(map_data.m_display_map_name));
+    }
+    msg_body.append("</table>");
 
     showMapXferList(sess, has_location, location, msg_body);
 }

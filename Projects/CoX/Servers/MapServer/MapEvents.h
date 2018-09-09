@@ -27,6 +27,36 @@ namespace SEGSEvents
 {
 
 // [[ev_def:type]]
+class InitiateMapXfer final : public MapLinkEvent
+{
+public:
+    InitiateMapXfer() : MapLinkEvent(MapEventTypes::evInitiateMapXfer)
+    {
+    }
+    void serializeto(BitStream &) const override
+    {}
+
+    void serializefrom(BitStream &) override
+    {}
+    EVENT_IMPL(InitiateMapXfer)
+};
+
+// [[ev_def:type]]
+class MapXferComplete final : public MapLinkEvent
+{
+public:
+    MapXferComplete() : MapLinkEvent(MapEventTypes::evMapXferComplete)
+    {}
+
+    void serializeto(BitStream &) const override
+    {}
+
+    void serializefrom(BitStream &) override
+    {}
+    EVENT_IMPL(MapXferComplete)
+};
+
+// [[ev_def:type]]
 class AwaitingDeadNoGurney final : public MapLinkEvent
 {
 public:
