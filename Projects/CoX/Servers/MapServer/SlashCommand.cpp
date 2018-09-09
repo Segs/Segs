@@ -19,6 +19,7 @@
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
 #include "Logging.h"
+#include "MapLink.h"
 #include "MapInstance.h"
 #include "NetStructures/Character.h"
 #include "NetStructures/CharacterHelpers.h"
