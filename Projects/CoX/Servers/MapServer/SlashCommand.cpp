@@ -15,6 +15,7 @@
 #include "DataHelpers.h"
 #include "Events/ClientStates.h"
 #include "Events/StandardDialogCmd.h"
+#include "Events/DoorMessage.h"
 #include "Events/InfoMessageCmd.h"
 #include "Events/MapXferWait.h"
 #include "GameData/GameDataStore.h"
@@ -101,9 +102,12 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
+void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess);
+
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
 void moveTo(const QString &cmd, MapClientSession &sess);
+
 // Access Level 1 Commands
 void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AFK(const QString &cmd, MapClientSession &sess);
@@ -128,6 +132,7 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FriendList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MapXferList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ReSpec(const QString &cmd, MapClientSession &sess);
+
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess);
@@ -189,6 +194,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"faceLocation"}, "Face a location", cmdHandler_FaceLocation, 9},
     {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
+    {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
 
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", addNpc, 2},
@@ -284,9 +290,8 @@ void cmdHandler_InfoMessage(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(static_cast<MessageChannel>(cmdType), msg, sess);
 }
 
-void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess)
+{
     int space = cmd.indexOf(' ');
     QString fileName("scripts/" + cmd.mid(space+1));
     if(!fileName.endsWith(".smlx"))
@@ -305,9 +310,8 @@ void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess) {
     }
 }
 
-void cmdHandler_Fly(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_Fly(const QString &cmd, MapClientSession &sess)
+{
     toggleFlying(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
@@ -315,9 +319,8 @@ void cmdHandler_Fly(const QString &cmd, MapClientSession &sess) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_Falling(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_Falling(const QString &cmd, MapClientSession &sess)
+{
     toggleFalling(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
@@ -325,9 +328,8 @@ void cmdHandler_Falling(const QString &cmd, MapClientSession &sess) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_Sliding(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_Sliding(const QString &cmd, MapClientSession &sess)
+{
     toggleSliding(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
@@ -344,9 +346,8 @@ void cmdHandler_Jumping(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_Stunned(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_Stunned(const QString &cmd, MapClientSession &sess)
+{
     toggleStunned(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
@@ -354,9 +355,8 @@ void cmdHandler_Stunned(const QString &cmd, MapClientSession &sess) {
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_Jumppack(const QString &cmd, MapClientSession &sess) {
-
-
+void cmdHandler_Jumppack(const QString &cmd, MapClientSession &sess)
+{
     toggleJumppack(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
@@ -910,22 +910,53 @@ void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     parts = cmd.splitRef(' ');
+
     if (parts.size() < 4)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
     }
+
     glm::vec3 loc {
       parts[1].toFloat(),
       parts[2].toFloat(),
       parts[3].toFloat()
     };
+
     sendFaceLocation(sess.m_ent, loc);
 }
 
-void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)
+void cmdHandler_TestDeadNoGurney(const QString &/*cmd*/, MapClientSession &sess)
 {
     on_awaiting_dead_no_gurney_test(sess);
+}
+
+void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess)
+{
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    args.removeFirst(); // remove cmdstring
+
+    if (args.size() < 2)
+    {
+        qCDebug(logSlashCommand) << "Bad invocation:" << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + cmd, sess);
+        return;
+    }
+
+    bool ok = true;
+    uint32_t delay_status = args[0].toInt(&ok);
+    args.removeFirst(); // remove integer
+    QString msg = args.join(" ");
+
+    if(!ok || delay_status < 0 || delay_status > 2)
+    {
+        qCDebug(logSlashCommand) << "First argument must be 0, 1, or 2;" << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "First argument must be 0, 1, or 2;" + cmd, sess);
+        return;
+    }
+
+    sendDoorMessage(sess, DoorMessageStatus(delay_status), msg);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

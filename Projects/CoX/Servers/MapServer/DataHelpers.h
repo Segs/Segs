@@ -122,6 +122,7 @@ void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
 void sendFaceEntity(Entity *src, uint8_t tgt_idx);
 void sendFaceLocation(Entity *src, glm::vec3 &location);
+void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg);
 
 
 const QString &getGenericTitle(uint32_t val);
