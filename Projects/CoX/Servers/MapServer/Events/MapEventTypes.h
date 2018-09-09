@@ -73,8 +73,8 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evDeadNoGurney               ,151)
 //    EVENT_DECL(MapEventTypes, evDoorAnimStart            ,152)
 //    EVENT_DECL(MapEventTypes, evDoorAnimExit             ,153)
-//    EVENT_DECL(MapEventTypes, evFaceEntity               ,154)
-//    EVENT_DECL(MapEventTypes, evFaceLocation             ,155)
+    EVENT_DECL(MapEventTypes, evFaceEntity                 ,154)
+    EVENT_DECL(MapEventTypes, evFaceLocation               ,155)
     EVENT_DECL(MapEventTypes, evFloatingInfo               ,156)
     EVENT_DECL(MapEventTypes, evSendStance                 ,157) // I think?
     EVENT_DECL(MapEventTypes, evMapXferList                ,158)
