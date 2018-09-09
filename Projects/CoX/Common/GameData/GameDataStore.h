@@ -76,7 +76,7 @@ public:
         // so m_time_to_logout_msg + m_time_to_auto_logout is when the player will be kicked out of the server
         float                       m_time_to_logout_msg = 18 * 60;
         float                       m_time_to_auto_logout = 2 * 60;
-        float                       m_uses_auto_logout = true;
+        bool                        m_uses_auto_logout = true;
 };
 int getEntityOriginIndex(const GameDataStore &data,bool is_player, const QString &origin_name);
 int getEntityClassIndex(const GameDataStore &data,bool is_player, const QString &class_name);

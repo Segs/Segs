@@ -81,6 +81,9 @@ class TrashEnhancement;
 class TrashEnhancementInPower;
 class BuyEnhancementSlot;
 class RecvNewPower;
+class MapXferComplete;
+class InitiateMapXfer;
+class ClientMapXferMessage;
 class AwaitingDeadNoGurney;
 class CreateSuperGroup;
 class ChangeSuperGroupColors;
@@ -105,6 +108,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_sync_service_timer;
         std::unique_ptr<SEGSTimer> m_afk_update_timer;
         std::vector<glm::mat4>  m_new_player_spawns;
+
         World *                 m_world;
         GameDBSyncService*      m_sync_service;
         uint8_t                 m_game_server_id=255; // 255 is `invalid` id
@@ -112,7 +116,7 @@ class MapInstance final : public EventProcessor
         uint32_t                m_instance_id;
 
 public:
-        SessionStore            m_session_store;
+        SessionStore            m_session_store;        
         EntityManager           m_entities;
         ScriptEnginePtr         m_scripting_interface;
         MapLinkEndpoint *       m_endpoint = nullptr;
@@ -151,6 +155,10 @@ protected:
         void                    on_entity_by_name_response(SEGSEvents::GetEntityByNameResponse *ev);
         // Server->Server messages
         void on_expect_client(SEGSEvents::ExpectMapClientRequest *ev);
+        void on_expect_client_response(SEGSEvents::ExpectMapClientResponse *ev);
+
+        void on_initiate_map_transfer(SEGSEvents::InitiateMapXfer *ev);
+        void on_map_xfer_complete(SEGSEvents::MapXferComplete *ev);
 
         void on_link_lost(SEGSEvents::Event *ev);
         void on_disconnect(SEGSEvents::DisconnectRequest *ev);
