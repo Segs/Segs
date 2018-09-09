@@ -463,6 +463,7 @@ void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess)
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setLevel(*sess.m_ent->m_char, attrib); // TODO: Why does this result in -1?
+    sess.m_ent->m_char->finalizeLevel(sess.m_current_map->serverData());
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(sess, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -859,6 +860,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
         level = sess.m_ent->m_char->m_char_data.m_level + 1;
 
     setLevel(*sess.m_ent->m_char, level);
+    sess.m_ent->m_char->finalizeLevel(sess.m_current_map->serverData());
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(sess, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
