@@ -34,7 +34,7 @@ void World::update(const ACE_Time_Value &tick_timer)
     }
     else
         delta = tick_timer - prev_tick_time;
-    m_time_of_day+= 4.8*((float(delta.msec())/1000.0f)/(60.0*60)); // 1 sec of real time is 48s of ingame time
+    m_time_of_day+= 4.8f*((float(delta.msec())/1000.0f)/(60.0f*60)); // 1 sec of real time is 48s of ingame time
     if(m_time_of_day>=24.0f)
         m_time_of_day-=24.0f;
     sim_frame_time = delta.msec()/1000.0f;

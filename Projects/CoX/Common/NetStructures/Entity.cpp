@@ -1,3 +1,9 @@
+#include <memory>
+
+#include <memory>
+
+#include <memory>
+
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
@@ -161,10 +167,10 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_target_idx                      = e.m_idx;
     e.m_assist_target_idx               = 0;
 
-    e.m_char.reset(new Character);
-    e.m_player.reset(new PlayerData);
+    e.m_char = std::make_unique<Character>();
+    e.m_player = std::make_unique<PlayerData>();
     e.m_player->reset();
-    e.m_entity.reset(new EntityData);
+    e.m_entity = std::make_unique<EntityData>();
     e.might_have_rare = e.m_rare_bits   = true;
 }
 
@@ -185,10 +191,10 @@ void initializeNewNpcEntity(const GameDataStore &data,Entity &e,const Parse_NPC 
     e.m_target_idx                      = 0;
     e.m_assist_target_idx               = 0;
 
-    e.m_char.reset(new Character);
-    e.m_npc.reset(new NPCData{false,src,idx,variant});
+    e.m_char = std::make_unique<Character>();
+    e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
     e.m_player.reset();
-    e.m_entity.reset(new EntityData);
+    e.m_entity = std::make_unique<EntityData>();
     e.might_have_rare = e.m_rare_bits   = true;
 }
 
