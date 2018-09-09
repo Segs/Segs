@@ -853,7 +853,7 @@ CombineResult combineEnhancements(const GameDataStore &data,Entity &ent, Enhance
 void dumpEnhancements(CharacterData &cd)
 {
     if(getNumberEnhancements(cd) == 0)
-        qDebug().noquote() << "This character has no inspirations.";
+        qDebug().noquote() << "This character has no enhancements.";
 
     for(size_t i = 0; i < cd.m_enhancements.size(); ++i)
     {
