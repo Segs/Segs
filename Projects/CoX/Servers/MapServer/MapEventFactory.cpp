@@ -12,6 +12,8 @@
 
 #include "MapEvents.h"
 
+using namespace SEGSEvents;
+
 MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
 {
     size_t read_pos = bs.GetReadPos();
@@ -34,6 +36,8 @@ MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
         case 6: return new CookieRequest;
         case 7: return new ClientQuit;
         case 9: return new NewEntity;
+        case 11: return new InitiateMapXfer;
+        case 12: return new MapXferComplete;
             //   default: return new MapUnknownRequest;
     }
     qCWarning(logMapEvents, "Unhandled event type %d", opcode);
@@ -50,7 +54,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
             if(bs.GetReadableBits()>=8) // at least 1 char readable ?
                 return new ConsoleCommand;
             // otherwise treat as idle
-            return new IdleEvent;
+            return new Idle;
         case 1: return new MiniMapState;
         case 4: return new ClientResumedRendering;
         case 7: return new InteractWithEntity;

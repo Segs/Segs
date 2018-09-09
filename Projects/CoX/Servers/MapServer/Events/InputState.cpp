@@ -21,6 +21,8 @@
 #include <QDebug>
 #include <cmath>
 
+using namespace SEGSEvents;
+
 enum BinaryControl
 {
     FORWARD=0,
@@ -48,7 +50,7 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     m_send_id                   = other.m_send_id;
     m_time_diff1                = other.m_time_diff1;
     m_time_diff2                = other.m_time_diff2;
-    has_input_commit_guess      = other.has_input_commit_guess;
+    m_has_input_commit_guess    = other.m_has_input_commit_guess;
     m_received_server_update_id = other.m_received_server_update_id;
     m_no_collision              = other.m_no_collision;
     m_controls_disabled         = other.m_controls_disabled;
@@ -141,6 +143,10 @@ void InputState::partial_2(BitStream &bs)
             ms_since_prev=bs.GetBits(2)+32; // delta from prev event
         else
             ms_since_prev=bs.GetBits(m_data.m_csc_deltabits);
+
+        if (control_id < 8)
+            m_data.m_input_received = true;
+
         switch(control_id)
         {
             case FORWARD: case BACKWARD:
@@ -204,13 +210,12 @@ void InputState::partial_2(BitStream &bs)
 
 void InputState::extended_input(BitStream &bs)
 {
-    m_data.has_input_commit_guess = bs.GetBits(1);
-    if(m_data.has_input_commit_guess) // list of partial_2 follows
+    m_data.m_has_input_commit_guess = bs.GetBits(1);
+    if(m_data.m_has_input_commit_guess) // list of partial_2 follows
     {
         m_data.m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
         m_data.m_send_id = bs.GetBits(16);
-        m_data.current_state_P = nullptr;
-        qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_data.m_csc_deltabits, m_data.m_send_id, m_data.current_state_P);
+        qCDebug(logInput, "CSC_DELTA[%x-%x] : ", m_data.m_csc_deltabits, m_data.m_send_id);
         partial_2(bs);
 
     }
@@ -220,6 +225,9 @@ void InputState::extended_input(BitStream &bs)
 
     if(m_data.m_control_bits)
         qCDebug(logInput, "E input %x : ",m_data.m_control_bits);
+
+    if (m_data.m_control_bits != 0)
+        m_data.m_input_received = true;
 
     if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )
     {
@@ -311,6 +319,7 @@ void InputState::serializefrom(BitStream &bs)
         m_user_commands.ResetOffsets();
         bs.ByteAlign(true,false);
         m_user_commands.StoreBitArray(bs.read_ptr(),bs.GetReadableBits());
+
         // all remaining bits were moved to m_user_commands.
         bs.SetReadPos(bs.GetWritePos());
     }

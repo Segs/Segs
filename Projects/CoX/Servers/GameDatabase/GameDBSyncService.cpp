@@ -4,32 +4,43 @@
 #include "Common/Servers/InternalEvents.h"
 #include "GameDBSyncEvents.h"
 
-bool GameDBSyncService::per_thread_setup()
+using namespace SEGSEvents;
+
+bool GameDBSyncService::per_thread_startup()
 {
     //GameDbSyncContext &db_ctx(m_db_context.localData());
     //bool result = db_ctx.loadAndConfigure();
     bool result = true;
     if(!result)
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService failed to load/configure",-1}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService failed to load/configure",-1},0));
     else
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService loaded/configured",0}));
+        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService loaded/configured",0},0));
     return result;
 }
 
-void GameDBSyncService::dispatch(SEGSEvent *ev)
+void GameDBSyncService::dispatch(Event *ev)
 {
     // We are servicing a request from message queue, using dispatchSync as a common processing point.
     // nullptr result means that the given message is one-way
     switch (ev->type())
     {
-    case GameDBEventTypes::evCharacterUpdate:
+    case evCharacterUpdateMessage:
         on_character_update(static_cast<CharacterUpdateMessage *>(ev)); break;
-    case GameDBEventTypes::evPlayerUpdate:
+    case evPlayerUpdateMessage:
         on_player_update(static_cast<PlayerUpdateMessage *>(ev)); break;
     default: assert(false); break;
     }
 }
 
+void GameDBSyncService::serialize_from(std::istream &is)
+{
+    assert(false);
+}
+
+void GameDBSyncService::serialize_to(std::ostream &is)
+{
+    assert(false);
+}
 void GameDBSyncService::set_db_handler(const uint8_t id)
 {
     m_db_handler = static_cast<GameDBSyncHandler*>(

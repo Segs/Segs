@@ -9,6 +9,8 @@
 #include "CommonNetStructures.h"
 
 class Entity;
+// Max number of friends on friendslist -- client caps at 25 entries
+static const int g_max_friends = 25;
 
 struct Friend
 {
@@ -30,9 +32,6 @@ static const constexpr  uint32_t    class_version   = 1;
                         std::vector<Friend> m_friends;
 };
 
-void addFriend(Entity &src, Entity &tgt);
-void removeFriend(Entity &src, QString friendName);
-bool isFriendOnline(Entity &src, uint32_t db_id);
 void toggleFriendList(Entity &src);
 void dumpFriends(const Entity &src);
 void dumpFriendsList(const Friend &f);

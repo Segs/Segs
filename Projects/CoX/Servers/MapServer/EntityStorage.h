@@ -45,12 +45,12 @@ public:
                     EntityManager();
     void            sendDebuggedEntities(BitStream &tgt) const;
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
-    void            sendDeletes(BitStream &tgt, MapClientSession *client) const;
-    void            sendEntities(BitStream &tgt, MapClientSession *target, bool is_incremental) const;
+    void            sendDeletes(BitStream &tgt, MapClientSession &client) const;
+    void            sendEntities(BitStream &tgt, MapClientSession &target, bool is_incremental) const;
     void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
-    Entity *        CreateNpc(const Parse_NPC &tpl, int idx, int variant);
-    Entity *        CreateGeneric(const Parse_NPC &tpl, int idx, int variant, EntType type);
+    Entity *        CreateNpc(const GameDataStore &data, const Parse_NPC &tpl, int idx, int variant);
+    Entity *        CreateGeneric(const GameDataStore &data, const Parse_NPC &tpl, int idx, int variant, EntType type);
     void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }

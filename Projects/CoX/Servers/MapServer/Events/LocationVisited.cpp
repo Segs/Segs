@@ -12,6 +12,8 @@
 
 #include "LocationVisited.h"
 
+using namespace SEGSEvents;
+
 void LocationVisited::serializefrom(BitStream & src)
 {
     src.GetString(m_name);

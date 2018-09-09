@@ -6,47 +6,49 @@
  */
 
 #pragma once
-#include "GameCommandList.h"
+#include "GameCommand.h"
+#include "MapEventTypes.h"
 
-#include "MapEvents.h"
-#include "MapLink.h"
 
 #include <QtCore/QString>
-
+namespace SEGSEvents
+{
 // [[ev_def:type]]
-class CombineEnhanceResponse final : public GameCommand
+class CombineEnhanceResponse final : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
     uint32_t            m_was_success;
     // [[ev_def:field]]
     uint32_t            m_destroyed_on_fail;
-                CombineEnhanceResponse(uint32_t success, uint32_t destroy) : GameCommand(MapEventTypes::evCombineEnhancResponse),
+    explicit    CombineEnhanceResponse() : GameCommandEvent(evCombineEnhanceResponse) {}
+                CombineEnhanceResponse(uint32_t success, uint32_t destroy) : GameCommandEvent(evCombineEnhanceResponse),
                     m_was_success(success),
                     m_destroyed_on_fail(destroy)
                 {
                 }
 
         void    serializeto(BitStream &bs) const override {
-                    bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient); // 56
+                    bs.StorePackedBits(1, type()-evFirstServerToClient); // 56
 
                     bs.StorePackedBits(1, m_was_success);
                     bs.StorePackedBits(1, m_destroyed_on_fail);
                 }
-        void    serializefrom(BitStream &src);
+        EVENT_IMPL(CombineEnhanceResponse)
+
 };
 
 // [[ev_def:type]]
 class CombineEnhancementsReq final : public MapLinkEvent
 {
-public:    
+public:
     // [[ev_def:field]]
     EnhancemenSlotEntry first_power;
     // [[ev_def:field]]
     EnhancemenSlotEntry second_power;
-    CombineEnhancementsReq() : MapLinkEvent(MapEventTypes::evCombineEnhancements)
+    CombineEnhancementsReq() : MapLinkEvent(evCombineEnhancementsReq)
     {}
-    void serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,40); // opcode
         assert(false); // since we will not send CombineEnhancements to anyone :)
@@ -65,11 +67,13 @@ public:
         }
         entry.m_eh_idx = bs.GetPackedBits(1);
     }
-    void serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         getPowerForCombine(bs, first_power);
         getPowerForCombine(bs, second_power);
     }
+    EVENT_IMPL(CombineEnhancementsReq)
+
 };
 
 // [[ev_def:type]]
@@ -82,16 +86,17 @@ public:
     int m_dest_idx;
     MoveEnhancement() : MapLinkEvent(MapEventTypes::evMoveEnhancement)
     {}
-    void    serializeto(BitStream &bs) const
+    void    serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1, 41);
         assert(false); // we don't send this, we receive it.
     }
-    void    serializefrom(BitStream &bs)
+    void    serializefrom(BitStream &bs) override
     {
         m_src_idx = bs.GetPackedBits(1);
         m_dest_idx = bs.GetPackedBits(1);
     }
+    EVENT_IMPL(MoveEnhancement)
 };
 
 // [[ev_def:type]]
@@ -106,20 +111,21 @@ public:
     uint32_t m_src_idx;
     // [[ev_def:field]]
     uint32_t m_dest_idx;
-    SetEnhancement() : MapLinkEvent(MapEventTypes::evSetEnhancement)
+    SetEnhancement() : MapLinkEvent(evSetEnhancement)
     {}
-    void    serializeto(BitStream &bs) const
+    void    serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1, 42);
         assert(false); // we don't send this, we receive it.
     }
-    void    serializefrom(BitStream &bs)
+    void    serializefrom(BitStream &bs) override
     {
         m_pset_idx = bs.GetPackedBits(1);
         m_pow_idx = bs.GetPackedBits(1);
         m_src_idx = bs.GetPackedBits(1);
         m_dest_idx = bs.GetPackedBits(1);
     }
+    EVENT_IMPL(SetEnhancement)
 };
 
 // [[ev_def:type]]
@@ -128,17 +134,18 @@ class TrashEnhancement final : public MapLinkEvent
 public:
     // [[ev_def:field]]
     int m_idx;
-    TrashEnhancement() : MapLinkEvent(MapEventTypes::evTrashEnhancement)
+    TrashEnhancement() : MapLinkEvent(evTrashEnhancement)
     {}
-    void    serializeto(BitStream &bs) const
+    void    serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1, 43);
         assert(false); // we don't send this, we receive it.
     }
-    void    serializefrom(BitStream &bs)
+    void    serializefrom(BitStream &bs) override
     {
         m_idx = bs.GetPackedBits(1);
     }
+    EVENT_IMPL(TrashEnhancement)
 };
 
 // [[ev_def:type]]
@@ -153,17 +160,18 @@ public:
     int m_eh_idx;
     TrashEnhancementInPower() : MapLinkEvent(MapEventTypes::evTrashEnhancementInPower)
     {}
-    void    serializeto(BitStream &bs) const
+    void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1, 44);
         assert(false); // we don't send this, we receive it.
     }
-    void    serializefrom(BitStream &bs)
+    void serializefrom(BitStream &bs) override
     {
         m_pset_idx  = bs.GetPackedBits(1);
         m_pow_idx   = bs.GetPackedBits(1);
         m_eh_idx = bs.GetPackedBits(1);
     }
+    EVENT_IMPL(TrashEnhancementInPower)
 };
 
 // [[ev_def:type]]
@@ -178,36 +186,40 @@ public:
     int m_pow_idx;
     BuyEnhancementSlot() : MapLinkEvent(MapEventTypes::evBuyEnhancementSlot)
     {}
-    void    serializeto(BitStream &bs) const
+    void    serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1, 45);
         assert(false); // we don't send this, we receive it.
     }
-    void    serializefrom(BitStream &bs)
+    void    serializefrom(BitStream &bs) override
     {
         m_num       = bs.GetPackedBits(1);
         m_pset_idx  = bs.GetPackedBits(1);
         m_pow_idx   = bs.GetPackedBits(1);
     }
+    EVENT_IMPL(BuyEnhancementSlot)
+
 };
 
 // [[ev_def:type]]
 class RecvNewPower final : public MapLinkEvent
 {
 public:
-    // [[ev_def:field]]
-    PowerPool_Info ppool;
-    RecvNewPower() : MapLinkEvent(MapEventTypes::evRecvNewPower)
-    {}
-    void    serializeto(BitStream &bs) const
-    {
-        bs.StorePackedBits(1, 46);
-        assert(false); // we don't send this, we receive it.
-    }
-    void    serializefrom(BitStream &bs)
-    {
-        ppool.m_pcat_idx    = bs.GetPackedBits(3);
-        ppool.m_pset_idx    = bs.GetPackedBits(3);
-        ppool.m_pow_idx     = bs.GetPackedBits(3);
-    }
+                    // [[ev_def:field]]
+    PowerPool_Info  ppool;
+                    RecvNewPower() : MapLinkEvent(MapEventTypes::evRecvNewPower)
+                    {}
+    void            serializeto(BitStream &bs) const override
+                    {
+                        bs.StorePackedBits(1, 46);
+                        assert(false); // we don't send this, we receive it.
+                    }
+    void            serializefrom(BitStream &bs) override
+                    {
+                        ppool.m_pcat_idx    = bs.GetPackedBits(3);
+                        ppool.m_pset_idx    = bs.GetPackedBits(3);
+                        ppool.m_pow_idx     = bs.GetPackedBits(3);
+                    }
+                    EVENT_IMPL(RecvNewPower)
 };
+} // end of SEGSEvents namespace

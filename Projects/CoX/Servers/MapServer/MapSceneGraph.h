@@ -18,9 +18,11 @@ class QString;
 ///
 class MapSceneGraph
 {
-    glm::vec3 m_spawn_point;
     std::unique_ptr<struct SceneGraph> m_scene_graph;
+    //! Contains all nodes from the scene graph that have any properties set, for faster lookups.
+    //! @todo consider creating a property-name => [SceneNode,SceneNode] mapping instead ?
     std::vector<struct SceneNode *> m_nodes_with_properties;
+    glm::vec3 m_spawn_point;
 public:
     MapSceneGraph();
     ~MapSceneGraph();
@@ -29,4 +31,6 @@ public:
     glm::vec3 spawn_location() const { return m_spawn_point; }
     std::vector<glm::mat4> spawn_points(const QString &kind) const;
     void spawn_npcs(class MapInstance *instance);
+    void build_combat_navigation_graph();
+    void build_pedestrian_navigation_graph();
 };

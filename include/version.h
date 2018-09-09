@@ -6,6 +6,7 @@
 *
 */
 
+#pragma once
 #define ProjectName "SEGS"
 #define VersionNumber "0.5.0"
 #define VersionName "The Unsilencer"
@@ -28,6 +29,10 @@ public:
     static const char *getAuthVersionNumber(void)
 {
         return VersionNumber;
+}
+    static const char *getVersionName(void)
+{
+        return VersionName;
 }
     static const char *getGameVersion(void);
     static const char *getMapVersion(void);

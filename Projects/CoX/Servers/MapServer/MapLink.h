@@ -8,9 +8,9 @@
 #pragma once
 #include "Common/CRUDP_Protocol/CRUD_Link.h"
 #include "MapEventFactory.h"
-struct MapLink : public CRUDLink
+struct MapLink final : public CRUDLink
 {
-    MapLink(EventProcessor *tgt,EventProcessor *linktgt) : CRUDLink() {
+    MapLink(EventSrc *tgt,EventSrc *linktgt) : CRUDLink() {
         m_net_layer = linktgt;
         m_target = tgt;
         assert(tgt);

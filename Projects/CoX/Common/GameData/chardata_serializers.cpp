@@ -13,10 +13,13 @@
 #include "chardata_serializers.h"
 #include "chardata_definitions.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
+#include "NetStructures/Powers.h"
 
 #include "DataStorage.h"
 #include "trays_serializers.h"
 #include "attrib_serializers.h"
+#include <QDebug>
 
 #include "Logging.h"
 
@@ -197,6 +200,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("SideKick",cd.m_sidekick));
     archive(cereal::make_nvp("FriendList",cd.m_friendlist));
     archive(cereal::make_nvp("CurrentAttribs", cd.m_current_attribs));
+    archive(cereal::make_nvp("OnTaskForce", cd.m_is_on_task_force));
     archive(cereal::make_nvp("PowerSets", cd.m_powersets));
     archive(cereal::make_nvp("PowerTrayGroups", cd.m_trays));
     archive(cereal::make_nvp("Inspirations", cd.m_inspirations));
@@ -211,9 +215,6 @@ void saveTo(const CharacterData &target, const QString &baseName, bool text_form
     commonSaveTo(target,"CharacterData",baseName,text_format);
 }
 
-template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, CharacterData & m, uint32_t const version);
-template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, CharacterData & m, uint32_t const version);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(CharacterData)
 
 //! @}

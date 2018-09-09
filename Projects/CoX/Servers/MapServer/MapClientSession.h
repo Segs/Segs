@@ -7,7 +7,8 @@
 
 #pragma once
 #include "FixedPointValue.h"
-#include "Events/GameCommandList.h"
+#include "Events/GameCommand.h"
+#include "NetCommandManager.h"
 #include "AuthDatabase/AuthDBSyncEvents.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 
@@ -33,9 +34,10 @@ struct MapClientSession
 {
     using mNetCommands = std::map<int, NetCommand *>;
     using vBelief      = std::map<int, ClientEntityStateBelief>;
-    using vStoredCommands = std::vector<std::unique_ptr<GameCommand>>;
+    using vStoredCommands = std::vector<std::unique_ptr<SEGSEvents::GameCommandEvent>>;
     friend class CharacterDatabase;
 
+        uint64_t                m_session_token= 0; // a back-link to owning session, used in serialization
         uint32_t                m_client_id    = 0;
         uint8_t                 m_access_level = 0;
         uint16_t                m_requested_slot_idx=0;
@@ -50,9 +52,10 @@ struct MapClientSession
         bool                    m_in_map                        = false;
 
         // The values below might be needed for map<->map handover ?
+        uint32_t                is_connected_to_game_server_id = 0;
         uint32_t                is_connected_to_map_server_id   = 0;
         uint32_t                is_connected_to_map_instance_id = 0;
-        void                    addCommandToSendNextUpdate(std::unique_ptr<GameCommand> &&v) {
+        void                    addCommandToSendNextUpdate(std::unique_ptr<SEGSEvents::GameCommandEvent> &&v) {
                                     m_contents.emplace_back(std::move(v));
                                 }
         void                    AddShortcut(int index, NetCommand *command)
@@ -72,9 +75,19 @@ struct MapClientSession
         void                    set_temporary(bool v) { assert(v==false); }
         bool                    is_temporary() const { return false; }
         MapLink *               link() { return m_link; }
-        /// \note setting the link does not preserver the state of the previous one.
+        /// \note setting the link does not preserve the state of the previous one.
         void                    link(MapLink *l) { m_link = l; }
+        template<class T, typename... Args>
+        void addCommand(Args&&... args)
+        {
+            addCommandToSendNextUpdate(std::make_unique<T>(std::forward<Args>(args)...));
+        }
 
 protected:
         MapLink *               m_link = nullptr;
 };
+template<class T, typename... Args>
+void addSessionCommand(MapClientSession &sess,Args&&... args)
+{
+    sess.addCommand(std::make_unique<T>(std::forward<Args>(args)...));
+}
