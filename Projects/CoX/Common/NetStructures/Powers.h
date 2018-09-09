@@ -247,7 +247,7 @@ void dumpInspirations(CharacterData &cd);
  */
 void addEnhancementByName(const GameDataStore &data,CharacterData &cd, QString &name, uint32_t &level);
 CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_array, uint32_t pow_idx_in_array, uint32_t eh_slot);
-int getNumberEnhancements(CharacterData &cd);
+uint32_t getNumberEnhancements(CharacterData &cd);
 void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx);
 void setEnhancement(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t src_idx, uint32_t dest_idx);
 void trashEnhancement(CharacterData &cd, uint32_t eh_idx);

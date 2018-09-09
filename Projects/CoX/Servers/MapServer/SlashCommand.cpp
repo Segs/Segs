@@ -836,7 +836,7 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
 {
-    int level = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    uint32_t level = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     // levelup command appears to only work 1 level at a time.
     if(level > sess.m_ent->m_char->m_char_data.m_level+1)
@@ -854,7 +854,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
 // Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
 {
-    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    uint32_t val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setu1(*sess.m_ent, val);
 
@@ -863,7 +863,7 @@ void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)
+void cmdHandler_TestDeadNoGurney(const QString &/*cmd*/, MapClientSession &sess)
 {
     on_awaiting_dead_no_gurney_test(sess);
 }

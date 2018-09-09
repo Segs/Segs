@@ -272,7 +272,7 @@ CharacterPowerSet getPowerSetData(const GameDataStore &data, PowerPool_Info &ppo
     CharacterPowerSet result;
     Parse_PowerSet powerset = data.m_all_powers.m_categories[ppool.m_pcat_idx].m_PowerSets[ppool.m_pset_idx];
 
-    for(int pow_idx = 0; pow_idx < powerset.m_Powers.size(); ++pow_idx)
+    for(uint32_t pow_idx = 0; pow_idx < powerset.m_Powers.size(); ++pow_idx)
     {
         ppool.m_pow_idx = pow_idx;
         CharacterPower p = getPowerData(data,ppool);
@@ -524,8 +524,8 @@ void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row)
 {
     vInspirations *insp_arr = &cd.m_inspirations;
-    int max_cols = cd.m_max_insp_cols;
-    int max_rows = cd.m_max_insp_rows;
+    uint32_t max_cols = cd.m_max_insp_cols;
+    uint32_t max_rows = cd.m_max_insp_rows;
 
     if(dest_col > max_cols || dest_row > max_rows)
     {
@@ -648,11 +648,11 @@ void addEnhancementByName(const GameDataStore &data,CharacterData &cd, QString &
     enhance.m_enhance_info.m_pset_idx       = pset_idx;
     enhance.m_enhance_info.m_pow_idx        = pow_idx; // always zero
 
-    for(size_t iter = 0; iter < cd.m_enhancements.size(); ++iter)
+    for(uint32_t iter = 0; iter < cd.m_enhancements.size(); ++iter)
     {
         if(!cd.m_enhancements[iter].m_slot_used)
         {
-            enhance.m_slot_idx = uint32_t(iter);
+            enhance.m_slot_idx = iter;
             cd.m_enhancements[iter] = enhance;
             qCDebug(logPowers) << "Character received Enhancement:" << iter
                                << enhance.m_name
@@ -674,7 +674,7 @@ CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_ar
     return &pow->m_enhancements[eh_slot];
 }
 
-int getNumberEnhancements(CharacterData &cd)
+uint32_t getNumberEnhancements(CharacterData &cd)
 {
     int count = 0;
     for(const auto & enhancement : cd.m_enhancements)

@@ -187,12 +187,12 @@ void FriendHandler::dispatch(SEGSEvents::Event *ev)
     }
 }
 
-void FriendHandler::serialize_from(std::istream &is)
+void FriendHandler::serialize_from(std::istream &/*is*/)
 {
     assert(false);
 }
 
-void FriendHandler::serialize_to(std::ostream &is)
+void FriendHandler::serialize_to(std::ostream &/*is*/)
 {
     assert(false);
 }

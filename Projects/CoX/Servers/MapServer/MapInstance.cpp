@@ -269,8 +269,10 @@ void MapInstance::reap_stale_links()
     EventProcessor *            tgt      = HandlerLocator::getGame_Handler(m_game_server_id);
 
     SessionStore::MTGuard guard(m_session_store.reap_lock());
+
+    // TODO: How to get m_char_db_id in this?
     m_session_store.reap_stale_links("MapInstance",link_is_stale_if_disconnected_for,[tgt](uint64_t tok) {
-        tgt->putq(new ClientDisconnectedMessage({tok},0));
+        tgt->putq(new ClientDisconnectedMessage({tok, 0},0));
     });
 }
 
@@ -541,7 +543,7 @@ void MapInstance::on_link_lost(Event *ev)
     //todo: notify all clients about entity removal
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token},0));
+            ->putq(new ClientDisconnectedMessage({session_token, ent->m_db_id},0));
 
     // one last character update for the disconnecting entity
     send_character_update(ent);
@@ -563,7 +565,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     assert(ent);
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token},0));
+            ->putq(new ClientDisconnectedMessage({session_token, ent->m_db_id},0));
 
     removeLFG(*ent);
     leaveTeam(*ent);
@@ -685,7 +687,8 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
 
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id},0));
+    tgt->putq(new ClientConnectedMessage(
+        {ev->session_token(),m_owner_id,m_instance_id, e->m_db_id},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
@@ -714,7 +717,8 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
 
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id},0));
+    tgt->putq(new ClientConnectedMessage(
+        {ev->session_token(),m_owner_id,m_instance_id, e->m_db_id},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
@@ -2162,12 +2166,12 @@ glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
     return glm::vec3(0,0,0);
 }
 
-void MapInstance::serialize_from(istream &is)
+void MapInstance::serialize_from(istream &/*is*/)
 {
     assert(false);
 }
 
-void MapInstance::serialize_to(ostream &is)
+void MapInstance::serialize_to(ostream &/*is*/)
 {
     assert(false);
 }

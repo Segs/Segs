@@ -347,7 +347,7 @@ QString getEntityDisplayMapName(const EntityData &ed)
     return getDisplayMapName(ed.m_map_idx);
 }
 
-const QString &getFriendDisplayMapName(const Friend &f)
+const QString getFriendDisplayMapName(const Friend &f)
 {
     static const QString offline(QStringLiteral("OFFLINE"));
     if (!f.m_online_status)
@@ -887,7 +887,7 @@ void removeTeamMember(Team &self, Entity *e)
     if(logTeams().isDebugEnabled())
         self.listTeamMembers();
 
-    int idx = self.m_team_members.front().tm_idx;
+    // int idx = self.m_team_members.front().tm_idx;
 
     assert(false);
     // TODO: this should post an Team-removal event to the target entity, since we can't access other server's
