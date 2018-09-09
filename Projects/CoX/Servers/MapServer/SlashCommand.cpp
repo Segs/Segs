@@ -98,6 +98,8 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
+void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess);
+void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
@@ -189,6 +191,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"addboost", "addEnhancement"},"Adds Enhancement (by name) to Entity", &cmdHandler_AddEnhancement, 9},
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
+    {{"face"}, "Face a target", cmdHandler_FaceEntity, 9},
+    {{"faceLocation"}, "Face a location", cmdHandler_FaceLocation, 9},
     {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
 
@@ -467,6 +471,7 @@ void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess)
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setLevel(*sess.m_ent->m_char, attrib); // TODO: Why does this result in -1?
+    sess.m_ent->m_char->finalizeLevel(sess.m_current_map->serverData());
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(sess, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -876,6 +881,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
         level = sess.m_ent->m_char->m_char_data.m_level + 1;
 
     setLevel(*sess.m_ent->m_char, level);
+    sess.m_ent->m_char->finalizeLevel(sess.m_current_map->serverData());
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(sess, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -894,6 +900,44 @@ void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
     QString msg = "Set u1 to: " + QString::number(val);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
+{
+    Entity *tgt = nullptr;
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+    if (parts.size() < 2)
+    {
+        qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
+    }
+    QString name = parts[1].toString();
+    tgt = getEntity(&sess, name); // get Entity by name
+    if (tgt == nullptr)
+    {
+        QString msg = QString("FaceEntity target %1 cannot be found.").arg(name);
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        return;
+    }
+    sendFaceEntity(sess.m_ent, tgt->m_idx);
+}
+void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+    if (parts.size() < 4)
+    {
+        qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
+    }
+    glm::vec3 loc {
+      parts[1].toFloat(),
+      parts[2].toFloat(),
+      parts[3].toFloat()
+    };
+    sendFaceLocation(sess.m_ent, loc);
 }
 
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)

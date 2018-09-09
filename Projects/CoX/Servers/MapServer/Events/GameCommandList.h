@@ -23,6 +23,8 @@
 #include "Events/TeamLooking.h"
 #include "Events/TeamOffer.h"
 #include "Events/TrayAdd.h"
+#include "Events/FaceEntity.h"
+#include "Events/FaceLocation.h"
 
 #include "Events/EmailHeaders.h"
 #include "Events/EmailMessageStatus.h"

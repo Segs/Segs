@@ -18,6 +18,7 @@
 class Entity;
 struct CharacterData;
 class GameDataStore;
+
 enum class TrayItemType : uint32_t
 {
     None                    = 0,
@@ -47,7 +48,7 @@ struct EnhancemenSlotEntry
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_set_in_power,m_pset_idx,m_pow_idx,m_eh_idx);
+        ar(m_set_in_power, m_pset_idx, m_pow_idx, m_eh_idx);
     }
 };
 
