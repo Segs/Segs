@@ -946,7 +946,7 @@ void MapInstance::sendState() {
 void MapInstance::on_combine_enhancements(CombineEnhancementsReq *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    CombineResult res=combineEnhancements(serverData(),*session.m_ent, ev->first_power, ev->second_power);
+    CombineResult res=combineEnhancements(*session.m_ent, ev->first_power, ev->second_power);
     sendEnhanceCombineResponse(session.m_ent, res.success, res.destroyed);
     session.m_ent->m_char->m_char_data.m_powers_updated = res.success || res.destroyed;
 
@@ -2338,7 +2338,7 @@ void MapInstance::on_recv_new_power(RecvNewPower *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    addPower(serverData(), session.m_ent->m_char->m_char_data, ev->ppool);
+    addPower(session.m_ent->m_char->m_char_data, ev->ppool);
 }
 
 void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)

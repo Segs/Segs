@@ -463,7 +463,7 @@ void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess)
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setLevel(*sess.m_ent->m_char, attrib); // TODO: Why does this result in -1?
-    sess.m_ent->m_char->finalizeLevel(sess.m_current_map->serverData());
+    sess.m_ent->m_char->finalizeLevel();
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(sess, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -773,7 +773,7 @@ void cmdHandler_AddEntirePowerSet(const QString &cmd, MapClientSession &sess)
     ppool.m_pcat_idx = v1;
     ppool.m_pset_idx = v2;
 
-    addEntirePowerSet(*getMapServerData(), cd, ppool);
+    addEntirePowerSet(cd, ppool);
     cd.m_powers_updated = true;
 
     qCDebug(logSlashCommand) << msg;
@@ -804,7 +804,7 @@ void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess)
     ppool.m_pset_idx = v2;
     ppool.m_pow_idx = v3;
 
-    addPower(*getMapServerData(),cd, ppool);
+    addPower(cd, ppool);
     cd.m_powers_updated = true;
 
     qCDebug(logSlashCommand) << msg;
@@ -820,7 +820,7 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
     QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
     QString msg = "Awarding Inspiration '" + val + "' to " + sess.m_ent->name();
 
-    addInspirationByName(*getMapServerData(),cd, val);
+    addInspirationByName(cd, val);
     cd.m_powers_updated = true;
 
     qCDebug(logSlashCommand).noquote() << msg;
@@ -843,7 +843,7 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
         level = cd.m_level;
     }
 
-    addEnhancementByName(*getMapServerData(), cd, name, level);
+    addEnhancementByName(cd, name, level);
     cd.m_powers_updated = true;
 
     qCDebug(logSlashCommand).noquote() << msg;
@@ -860,7 +860,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
         level = sess.m_ent->m_char->m_char_data.m_level + 1;
 
     setLevel(*sess.m_ent->m_char, level);
-    sess.m_ent->m_char->finalizeLevel(sess.m_current_map->serverData());
+    sess.m_ent->m_char->finalizeLevel();
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(sess, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);

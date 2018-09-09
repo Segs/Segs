@@ -375,7 +375,7 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
     {
         qCDebug(logPowers) << "Resetting Powers:" << cd->m_reset_powersets;
         CharacterPowerSet temp;
-        int pcat_idx = getPowerCatByName(data,"Temporary_Powers");
+        int pcat_idx = getPowerCatByName("Temporary_Powers");
 
         for(CharacterPowerSet &pset : cd->m_powersets)
         {

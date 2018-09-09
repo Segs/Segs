@@ -217,15 +217,15 @@ static const int m_num_trays = 2; // was 3, displayed trays
 /*
  * Powers Methods
  */
-int     getPowerCatByName(const GameDataStore &data,const QString &name);
-int     getPowerSetByName(const GameDataStore &data,const QString &name, uint32_t pcat_idx);
-int     getPowerByName(const GameDataStore &data,const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
-CharacterPower getPowerData(const GameDataStore &data, PowerPool_Info &ppool);
-CharacterPowerSet getPowerSetData(const GameDataStore &data, PowerPool_Info &ppool);
+int     getPowerCatByName(const QString &name);
+int     getPowerSetByName(const QString &name, uint32_t pcat_idx);
+int     getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
+CharacterPower getPowerData(PowerPool_Info &ppool);
+CharacterPowerSet getPowerSetData(PowerPool_Info &ppool);
 CharacterPower * getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
 void addPowerSet(CharacterData &cd, PowerPool_Info &ppool);
-void addEntirePowerSet(const GameDataStore &data,CharacterData &cd, PowerPool_Info &ppool);
-void addPower(const GameDataStore &data,CharacterData &cd, PowerPool_Info &ppool);
+void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool);
+void addPower(CharacterData &cd, PowerPool_Info &ppool);
 void removePower(CharacterData &cd, const PowerPool_Info &ppool);
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
 void dumpPower(const CharacterPower &pow);
@@ -235,7 +235,7 @@ void dumpOwnedPowers(CharacterData &cd);
 /*
  * Inspirations Methods
  */
-void addInspirationByName(const GameDataStore &data,CharacterData &cd, QString &name);
+void addInspirationByName(CharacterData &cd, QString &name);
 void addInspirationToChar(CharacterData &cd, CharacterInspiration insp);
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
 void useInspiration(Entity &ent, uint32_t col, uint32_t row);
@@ -246,7 +246,7 @@ void dumpInspirations(CharacterData &cd);
 /*
  * Enhancements Methods
  */
-void addEnhancementByName(const GameDataStore &data,CharacterData &cd, QString &name, uint32_t &level);
+void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level);
 CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_array, uint32_t pow_idx_in_array, uint32_t eh_slot);
 int getNumberEnhancements(CharacterData &cd);
 void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx);
@@ -255,7 +255,7 @@ void trashEnhancement(CharacterData &cd, uint32_t eh_idx);
 void trashEnhancementInPower(CharacterData &cd, uint32_t pset_idx, uint32_t pow_idx, uint32_t eh_idx);
 void trashComboEnhancement(CharacterEnhancement &eh, uint32_t eh_idx);
 void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow_idx);
-void reserveEnhancementSlot(const GameDataStore &data,CharacterData &cd, CharacterPower *pow);
+void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow);
 
 struct CombineResult
 {
@@ -263,5 +263,5 @@ struct CombineResult
     bool destroyed;
 };
 
-CombineResult combineEnhancements(const GameDataStore &data,Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2);
+CombineResult combineEnhancements(Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2);
 void dumpEnhancements(CharacterData &cd);
