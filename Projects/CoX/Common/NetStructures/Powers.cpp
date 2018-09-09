@@ -492,25 +492,15 @@ void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
 {
     int max_cols = cd.m_max_insp_cols;
     int max_rows = cd.m_max_insp_rows;
-    int count = 0;
 
-    for(int i = 0; i < max_cols; ++i)
+    for(int i = 0; i < max_rows; ++i)
     {
-        for(int j = 0; j < max_rows; ++j)
+        for(int j = 0; j < max_cols; ++j)
         {
-            if(count >= max_cols*max_rows)
-            {
-                qCDebug(logPowers) << "Character cannot hold any more inspirations";
-                return;
-            }
-
-            if(cd.m_inspirations.at(i, j).m_has_insp)
-                count++;
-            else
-            {
-                insp.m_col = i;
-                insp.m_row = j;
-                cd.m_inspirations.at(i, j) = insp;
+            if(!cd.m_inspirations.at(j, i).m_has_insp)
+                insp.m_col = j;
+                insp.m_row = i;
+                cd.m_inspirations.at(j, i) = insp;
                 qCDebug(logPowers) << "Character received inspiration:"
                                    << insp.m_insp_info.m_pcat_idx
                                    << insp.m_insp_info.m_pset_idx
@@ -524,8 +514,8 @@ void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row)
 {
     vInspirations *insp_arr = &cd.m_inspirations;
-    size_t max_cols = cd.m_max_insp_cols;
-    size_t max_rows = cd.m_max_insp_rows;
+    uint32_t max_cols = cd.m_max_insp_cols;
+    uint32_t max_rows = cd.m_max_insp_rows;
 
     if(dest_col > max_cols || dest_row > max_rows)
     {
