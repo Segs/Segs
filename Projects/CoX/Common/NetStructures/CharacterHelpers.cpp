@@ -29,10 +29,8 @@ void setLevel(Character &c, uint32_t val)
 {
     if(val>50)
         val = 50;
-    c.m_char_data.m_level = val;
-    // TODO: set max attribs based upon level
-    //MapServerData map_server_data;
-    //c.m_experience_points = map_server_data.expForLevel(val);
+    c.m_char_data.m_level = val - 1; // client stores lvl arrays starting at 0
+    //c.finalizeLevel(sess);
 }
 
 void setCombatLevel(Character &c, uint32_t val)
