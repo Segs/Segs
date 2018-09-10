@@ -475,8 +475,8 @@ void MapInstance::dispatch( Event *ev )
         case evChangeSuperGroupColors:
             on_change_supergroup_colors(static_cast<ChangeSuperGroupColors *>(ev));
             break;
-        case evCancelSuperGroupCreation:
-            on_cancel_supergroup_creation(static_cast<CancelSuperGroupCreation *>(ev));
+        case evAcceptSuperGroupChanges:
+            on_accept_supergroup_changes(static_cast<AcceptSuperGroupChanges *>(ev));
             break;
         case evSuperGroupMode:
             on_supergroup_mode(static_cast<SuperGroupMode *>(ev));
@@ -2421,7 +2421,7 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
     //bool val = true;
     //session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<SuperGroupResponse>(new SuperGroupResponse(val)));
     //session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<SuperGroupCostume>(new SuperGroupCostume(sg_costume, packer)));
-    g_AllSuperGroups->addSuperGroup(*session.m_ent, ev->data);
+    addSuperGroup(*session.m_ent, ev->data);
 }
 
 void MapInstance::on_change_supergroup_colors(ChangeSuperGroupColors *ev)
@@ -2434,12 +2434,12 @@ void MapInstance::on_change_supergroup_colors(ChangeSuperGroupColors *ev)
     //changeSGColors(ev->m_sg_name, ev->m_sg_titles, ev->m_sg_emblem, ev->m_sg_colors);
 }
 
-void MapInstance::on_cancel_supergroup_creation(CancelSuperGroupCreation *ev)
+void MapInstance::on_accept_supergroup_changes(AcceptSuperGroupChanges *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received Cancel SuperGroup Creation";
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received SuperGroup Settings Accept Changes";
 
-    //cancelSGCreation();
+    //makeSGChanges();
 }
 
 void MapInstance::on_supergroup_mode(SuperGroupMode *ev)
@@ -2447,7 +2447,10 @@ void MapInstance::on_supergroup_mode(SuperGroupMode *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received SuperGroup Mode";
 
-    //changeSGMode();
+    if(toggleSGMode(*session.m_ent))
+        qCDebug(logSuperGroups) << "Entering SG Mode";
+
+    qCDebug(logSuperGroups) << "Leaving SG Mode";
 }
 
 void MapInstance::on_update_entities()

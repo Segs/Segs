@@ -36,7 +36,7 @@ Character::Character()
     m_multiple_costumes                         = false;
     m_current_costume_idx                       = 0;
     m_current_costume_set                       = false;
-    m_sg_costume                                = nullptr;
+    m_char_data.m_supergroup.m_sg_costume                                = nullptr;
     m_char_data.m_current_attribs.m_HitPoints   = 25;
     m_max_attribs.m_HitPoints                   = 50;
     m_char_data.m_current_attribs.m_Endurance   = 33;
@@ -67,7 +67,7 @@ void Character::reset()
     m_multiple_costumes=false;
     m_current_costume_idx=0;
     m_current_costume_set=false;
-    m_sg_costume=nullptr;
+    m_char_data.m_supergroup.m_sg_costume = nullptr;
     m_char_data.m_has_titles = false;
     m_char_data.m_sidekick.m_has_sidekick = false;
     m_char_data.m_powersets.clear();
@@ -321,6 +321,7 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
             bs.StoreBits(32,m_current_costume_idx);
             bs.StoreBits(32,uint32_t(m_costumes.size()));
         }
+
         bs.StoreBits(1,m_multiple_costumes);
         if(m_multiple_costumes)
         {
@@ -333,12 +334,13 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
         {
             ::serializeto(m_costumes[m_current_costume_idx],bs,packer);
         }
-        bs.StoreBits(1,m_char_data.m_supergroup.m_supergroup_costume);
-        if(m_char_data.m_supergroup.m_supergroup_costume)
-        {
-            ::serializeto(*m_sg_costume,bs,packer);
 
-            bs.StoreBits(1,m_char_data.m_supergroup.m_using_sg_costume);
+        bs.StoreBits(1,m_char_data.m_supergroup.m_has_sg_costume);
+        if(m_char_data.m_supergroup.m_has_sg_costume)
+        {
+            ::serializeto(*m_char_data.m_supergroup.m_sg_costume, bs, packer);
+
+            bs.StoreBits(1, m_char_data.m_supergroup.m_sg_mode);
         }
     }
     else // other player's costumes we're sending only their current.

@@ -93,7 +93,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 56: return new EntityInfoRequest;
         case 57: return new CreateSuperGroup;
         case 58: return new ChangeSuperGroupColors;
-        case 59: return new CancelSuperGroupCreation;
+        case 59: return new AcceptSuperGroupChanges;
         case 62: return new LocationVisited;
         case 64: return new SwitchViewPoint;
         case 65: return new SaveClientOptions;

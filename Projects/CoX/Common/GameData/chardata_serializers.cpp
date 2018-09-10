@@ -186,10 +186,10 @@ void serialize(Archive &archive, SuperGroupStats &sg, uint32_t const version)
 
     archive(cereal::make_nvp("HasSuperGroup",sg.m_has_supergroup));
     archive(cereal::make_nvp("SuperGroupDbId",sg.m_sg_idx));
-    archive(cereal::make_nvp("SuperGroupRank",sg.m_sg_rank));
+    archive(cereal::make_nvp("SuperGroupRank",sg.m_rank));
     archive(cereal::make_nvp("SGDateJoined",sg.m_date_joined));
-    archive(cereal::make_nvp("HasSGCostume",sg.m_supergroup_costume));
-    archive(cereal::make_nvp("UsingSGCostume",sg.m_using_sg_costume));
+    archive(cereal::make_nvp("HasSGCostume",sg.m_has_sg_costume));
+    archive(cereal::make_nvp("UsingSGCostume",sg.m_sg_mode));
 }
 
 template<class Archive>

@@ -75,32 +75,38 @@ void    setTeamID(Entity &e, uint8_t team_id)
 
 void setSuperGroup(Entity &e, bool has_sg, QString &sg_name)
 {
-    CharacterData cd = e.m_char->m_char_data;
+    CharacterData *cd = &e.m_char->m_char_data;
 
     if(has_sg == false)
     {
-        cd.m_supergroup.m_has_supergroup = false;
-        cd.m_supergroup.m_sg_idx = 0;
-        cd.m_supergroup.m_sg_rank = 0;
-        cd.m_supergroup.m_supergroup_costume = false;
-        cd.m_supergroup.getSuperGroup()->dump();
+        cd->m_supergroup.m_has_supergroup = false;
+        cd->m_supergroup.m_sg_idx = 0;
+        cd->m_supergroup.m_rank = 0;
+        cd->m_supergroup.m_has_sg_costume = false;
         return;
     }
 
-    SuperGroupData sg;
-    sg.m_sg_name       = sg_name;
-    sg.m_sg_titles[0]  = "Leader";
-    sg.m_sg_titles[1]  = "Captain";
-    sg.m_sg_titles[2]  = "Member";
-    sg.m_sg_emblem     = "Anarchy";
-    sg.m_sg_colors[0]  = 0x996633FF;
-    sg.m_sg_colors[1]  = 0x336699FF;
-    sg.m_sg_leader_idx = e.m_idx;
-    sg.m_sg_motd       = "MOTD Test";
-    sg.m_sg_motto      = "MOTTO Test";
+    SuperGroupData sgd;
+    sgd.m_sg_name       = sg_name;
+    sgd.m_sg_titles[0]  = "Leader";
+    sgd.m_sg_titles[1]  = "Captain";
+    sgd.m_sg_titles[2]  = "Member";
+    sgd.m_sg_emblem     = "Anarchy";
+    sgd.m_sg_colors[0]  = 0x996633FF;
+    sgd.m_sg_colors[1]  = 0x336699FF;
+    sgd.m_sg_leader_db_id = e.m_idx;
+    sgd.m_sg_motd       = "MOTD Test";
+    sgd.m_sg_motto      = "MOTTO Test";
 
-    g_AllSuperGroups->addSuperGroup(e, sg);
-    cd.m_supergroup.getSuperGroup()->dump();
+    addSuperGroup(e, sgd);
+
+    SuperGroup * sg = getSuperGroupByIdx(cd->m_supergroup.m_sg_idx);
+    if(sg == nullptr)
+    {
+        qFatal("getSuperGroupByIdx returned nullptr");
+        return; // if somehow qFatal doesn't do it
+    }
+    sg->dump();
 }
 
 void setTarget(Entity &e, uint32_t target_idx)

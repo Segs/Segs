@@ -53,7 +53,8 @@ struct CostumePart
         ar(name_4);
         ar(name_5);
         ar(name_6);
-        ar(m_colors);
+        ar(m_colors[0]);
+        ar(m_colors[1]);
         ar(m_type);
         ar(m_full_part);
     }

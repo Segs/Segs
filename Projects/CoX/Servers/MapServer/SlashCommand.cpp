@@ -102,9 +102,11 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
+
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
 void moveTo(const QString &cmd, MapClientSession &sess);
+
 // Access Level 1 Commands
 void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AFK(const QString &cmd, MapClientSession &sess);
@@ -131,6 +133,8 @@ void cmdHandler_MapXferList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ReSpec(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SuperGroupStats(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SuperGroupLeave(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SuperGroupInvite(const QString &cmd, MapClientSession &sess);
+
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess);
@@ -226,6 +230,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"respec"}, "Start ReSpec", cmdHandler_ReSpec, 1},
     {{"sgstats"}, "Show or refresh SG Window", cmdHandler_SuperGroupStats, 1},
     {{"sgleave"}, "Leave SuperGroup", cmdHandler_SuperGroupLeave, 1},
+    {{"sginvite", "sgi"}, "Invite to SuperGroup", cmdHandler_SuperGroupInvite, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
@@ -1428,6 +1433,30 @@ void cmdHandler_SuperGroupLeave(const QString &cmd, MapClientSession &sess)
     leaveSG(*sess.m_ent);
     QString msg = "Leaving SuperGroup";
     qCDebug(logSlashCommand).noquote() << msg;
+    sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
+}
+
+void cmdHandler_SuperGroupInvite(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    Entity *tgt = nullptr;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(&sess, getTargetIdx(*sess.m_ent));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(&sess,name);
+
+    if(tgt == nullptr)
+        return;
+
+    msg = inviteSG(*sess.m_ent, *tgt);
+    qCDebug(logSuperGroups) << sess.m_ent->name() << msg;
     sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
 }
 

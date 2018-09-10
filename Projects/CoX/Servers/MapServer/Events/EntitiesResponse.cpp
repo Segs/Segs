@@ -15,6 +15,7 @@
 #include "NetStructures/Powers.h"
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
+#include "NetStructures/SuperGroup.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "GameData/playerdata_definitions.h"
 #include "MapClientSession.h"
@@ -44,9 +45,56 @@ struct SurfaceParams
 };
 static_assert(2*sizeof(SurfaceParams)==320/8,"Required since it's sent as an bit array");
 
-void storeSuperStats(const EntitiesResponse &/*src*/,BitStream &bs)
+void storeSuperStats(const EntitiesResponse &src, BitStream &bs)
 {
-    bs.StorePackedBits(1,0);
+    Entity *e = src.m_client->m_ent;
+    assert(e);
+    bool has_sg_stats = false;
+
+    if(!e->m_char->m_char_data.m_supergroup.m_has_supergroup)
+    {
+        bs.StorePackedBits(1, 0);
+        return;
+    }
+
+    SuperGroup * sg = getSuperGroupByIdx(e->m_char->m_char_data.m_supergroup.m_sg_idx);
+    if(sg == nullptr)
+    {
+        qFatal("getSuperGroupByIdx returned nullptr in storeSuperStats");
+        return; // if somehow qFatal doesn't do it
+    }
+
+    bs.StorePackedBits(1, sg->m_sg_members.size());
+
+    if(sg->m_sg_members.size() > 0)
+        has_sg_stats = true;
+    else
+        return;
+
+    bs.StoreBits(1, has_sg_stats);
+
+    for(SuperGroupStats &m : sg->m_sg_members)
+    {
+        bs.StoreString(m.m_name);
+        bs.StorePackedBits(1, m.m_db_id);
+        bs.StorePackedBits(1, m.m_rank);
+        bs.StorePackedBits(1, m.m_hours_logged);
+        bs.StoreBits(32, m.m_date_joined);
+        bs.StoreBits(32, m.m_last_online);
+        bs.StoreBits(1, m.m_is_online);
+        bs.StoreString(m.m_class_icon);
+        bs.StoreString(m.m_origin_icon);
+    }
+
+    bs.StoreString(sg->m_data.m_sg_name);
+    bs.StoreString(sg->m_data.m_sg_motto);
+    bs.StoreString(sg->m_data.m_sg_motd);
+    bs.StoreString(sg->m_data.m_sg_titles[0]);
+    bs.StoreString(sg->m_data.m_sg_titles[1]);
+    bs.StoreString(sg->m_data.m_sg_titles[2]);
+    bs.StoreString(sg->m_data.m_sg_emblem);
+    bs.StorePackedBits(1, sg->m_data.m_sg_colors[0]);
+    bs.StorePackedBits(1, sg->m_data.m_sg_colors[1]);
 }
 
 void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
@@ -303,7 +351,7 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     PUTDEBUG("before windows");
     sendWindows(player_data.m_gui, bs);
     bs.StoreBits(1,player_char.m_char_data.m_lfg);  // lfg related
-    bs.StoreBits(1,player_char.m_char_data.m_supergroup.m_using_sg_costume); // SG mode
+    bs.StoreBits(1,player_char.m_char_data.m_supergroup.m_sg_mode); // SG mode
     sendTeamBuffMode(player_data.m_gui,bs);
     sendDockMode(player_data.m_gui,bs);
     sendChatSettings(player_data.m_gui,bs);

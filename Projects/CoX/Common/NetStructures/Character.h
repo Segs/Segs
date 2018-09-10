@@ -111,7 +111,6 @@ protected:
         QString         m_name;
         bool            m_villain;
         vCostume        m_costumes;
-        Costume *       m_sg_costume;
         uint32_t        m_current_costume_idx;
         bool            m_current_costume_set;
         uint32_t        m_num_costumes;

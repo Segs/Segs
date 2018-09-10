@@ -186,10 +186,10 @@ public:
 };
 
 // [[ev_def:type]]
-class CancelSuperGroupCreation final : public MapLinkEvent
+class AcceptSuperGroupChanges final : public MapLinkEvent
 {
 public:
-    CancelSuperGroupCreation() : MapLinkEvent(MapEventTypes::evCancelSuperGroupCreation)
+    AcceptSuperGroupChanges() : MapLinkEvent(MapEventTypes::evAcceptSuperGroupChanges)
     {
     }
     void    serializeto(BitStream &bs) const override
@@ -198,9 +198,9 @@ public:
     }
     void    serializefrom(BitStream &bs)
     {
-        qCDebug(logSuperGroups) << "Cancel SuperGroup Creation";
+        qCDebug(logSuperGroups) << "Accept SuperGroup Changes";
     }
 
-    EVENT_IMPL(CancelSuperGroupCreation)
+    EVENT_IMPL(AcceptSuperGroupChanges)
 };
 } // end of SEGSEvents namespace

@@ -135,7 +135,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evEntityInfoRequest          ,256) // right-click entity select "Info"
     EVENT_DECL(MapEventTypes, evCreateSuperGroup           ,257)
     EVENT_DECL(MapEventTypes, evChangeSuperGroupColors     ,258)
-    EVENT_DECL(MapEventTypes, evCancelSuperGroupCreation   ,259)
+    EVENT_DECL(MapEventTypes, evAcceptSuperGroupChanges   ,259)
     EVENT_DECL(MapEventTypes, evLocationVisited            ,262)
     EVENT_DECL(MapEventTypes, evSwitchViewPoint            ,264)
     EVENT_DECL(MapEventTypes, evSaveClientOptions          ,265)

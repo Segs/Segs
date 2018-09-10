@@ -87,7 +87,7 @@ class ClientMapXferMessage;
 class AwaitingDeadNoGurney;
 class CreateSuperGroup;
 class ChangeSuperGroupColors;
-class CancelSuperGroupCreation;
+class AcceptSuperGroupChanges;
 class SuperGroupMode;
 
 // server<-> server event types
@@ -225,6 +225,6 @@ protected:
         void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev); 
         void on_create_supergroup(SEGSEvents::CreateSuperGroup *ev);
         void on_change_supergroup_colors(SEGSEvents::ChangeSuperGroupColors *ev);
-        void on_cancel_supergroup_creation(SEGSEvents::CancelSuperGroupCreation *ev);
+        void on_accept_supergroup_changes(SEGSEvents::AcceptSuperGroupChanges *ev);
         void on_supergroup_mode(SEGSEvents::SuperGroupMode *ev);
 };

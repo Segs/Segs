@@ -98,25 +98,6 @@ void Costume::storeCharselParts( BitStream &bs ) const
     }
 }
 
-template<class Archive>
-void serialize(Archive &arc, CostumePart &cp) {
-    arc(cp.m_type);
-    arc(cp.m_geometry);
-    arc(cp.m_texture_1);
-    arc(cp.m_texture_2);
-    arc(cp.name_3);
-    arc(cp.name_4);
-    arc(cp.name_5);
-    arc(cp.m_full_part);
-    arc(cp.m_colors[0]);
-    arc(cp.m_colors[1]);
-}
-
-template<class Archive>
-void serialize(Archive &arc, Costume &c) {
-    arc(c.m_parts);
-}
-
 void Costume::serializeToDb(QString &tgt) const
 {
 // for now only parts are serialized

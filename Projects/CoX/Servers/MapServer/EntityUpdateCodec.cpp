@@ -389,13 +389,20 @@ void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
     if(!cd.m_supergroup.m_has_supergroup)
         return;
 
-    bs.StorePackedBits(2, cd.m_supergroup.getSuperGroup()->m_sg_idx);
-    if(cd.m_supergroup.getSuperGroup()->m_sg_idx)
+    SuperGroup * sg = getSuperGroupByIdx(cd.m_supergroup.m_sg_idx);
+    if(sg == nullptr)
     {
-        bs.StoreString(cd.m_supergroup.getSuperGroup()->m_data.m_sg_name);    // 64 chars max
-        bs.StoreString(cd.m_supergroup.getSuperGroup()->m_data.m_sg_emblem);  // 128 chars max -> hash table key from the CostumeString_HTable. Maybe emblem?
-        bs.StoreBits(32, cd.m_supergroup.getSuperGroup()->m_data.m_sg_colors[0]); // supergroup color 1
-        bs.StoreBits(32, cd.m_supergroup.getSuperGroup()->m_data.m_sg_colors[1]); // supergroup color 2
+        qFatal("getSuperGroupByIdx returned nullptr");
+        return; // if somehow qFatal doesn't do it
+    }
+
+    bs.StorePackedBits(2, sg->m_sg_idx);
+    if(sg->m_sg_idx)
+    {
+        bs.StoreString(sg->m_data.m_sg_name);    // 64 chars max
+        bs.StoreString(sg->m_data.m_sg_emblem);  // 128 chars max -> hash table key from the CostumeString_HTable. Maybe emblem?
+        bs.StoreBits(32, sg->m_data.m_sg_colors[0]); // supergroup color 1
+        bs.StoreBits(32, sg->m_data.m_sg_colors[1]); // supergroup color 2
     }
 }
 
