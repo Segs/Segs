@@ -149,6 +149,7 @@ static const constexpr  uint32_t    class_version = 1;
         archive(cereal::make_nvp("IconName", m_icon_name));
     }
 };
+CEREAL_CLASS_VERSION(PowerTrayItem, PowerTrayItem::class_version)   // register PowerTrayItem class version
 
 class PowerTray
 {
@@ -174,6 +175,7 @@ static const constexpr  uint32_t    class_version = 1;
     }
 
 };
+CEREAL_CLASS_VERSION(PowerTray, PowerTray::class_version)           // register PowerTray class version
 
 class PowerTrayGroup
 {
@@ -212,6 +214,7 @@ static const int m_num_trays = 2; // was 3, displayed trays
     }
 
 };
+CEREAL_CLASS_VERSION(PowerTrayGroup, PowerTrayGroup::class_version) // register PowerTrayGroup class version
 
 
 /*
