@@ -134,6 +134,12 @@ void cmdHandler_ReSpec(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SuperGroupStats(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SuperGroupLeave(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SuperGroupInvite(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SuperGroupKick(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SuperGroupMOTD(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SuperGroupMotto(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SuperGroupMode(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SuperGroupPromote(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SuperGroupDemote(const QString &cmd, MapClientSession &sess);
 
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
@@ -231,6 +237,12 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"sgstats"}, "Show or refresh SG Window", cmdHandler_SuperGroupStats, 1},
     {{"sgleave"}, "Leave SuperGroup", cmdHandler_SuperGroupLeave, 1},
     {{"sginvite", "sgi"}, "Invite to SuperGroup", cmdHandler_SuperGroupInvite, 1},
+    {{"sgkick", "sgk"}, "Kick from SuperGroup", cmdHandler_SuperGroupKick, 1},
+    {{"sgmotd"}, "Change SuperGroup Message of the Day", cmdHandler_SuperGroupMOTD, 1},
+    {{"sgsetmotto", "sgmotto"}, "Change SuperGroup Motto", cmdHandler_SuperGroupMotto, 1},
+    {{"sgmode"}, "Toggle SuperGroup Mode", cmdHandler_SuperGroupMode, 1},
+    {{"promote"}, "Promote SuperGroup member to next rank", cmdHandler_SuperGroupPromote, 1},
+    {{"demote"}, "Demote SuperGroup member to next lower rank", cmdHandler_SuperGroupDemote, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
@@ -1456,6 +1468,107 @@ void cmdHandler_SuperGroupInvite(const QString &cmd, MapClientSession &sess)
         return;
 
     msg = inviteSG(*sess.m_ent, *tgt);
+    qCDebug(logSuperGroups) << sess.m_ent->name() << msg;
+    sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
+}
+
+void cmdHandler_SuperGroupKick(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    Entity *tgt = nullptr;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(&sess, getTargetIdx(*sess.m_ent));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(&sess,name);
+
+    if(tgt == nullptr)
+        return;
+
+    msg = kickSG(*sess.m_ent, *tgt);
+    qCDebug(logSuperGroups) << sess.m_ent->name() << msg;
+    sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
+}
+
+void cmdHandler_SuperGroupMOTD(const QString &cmd, MapClientSession &sess)
+{
+    int space = cmd.indexOf(' ');
+    QString motd = cmd.mid(space+1);
+    QString msg = setSGMOTD(*sess.m_ent, motd);
+
+    qCDebug(logSlashCommand).noquote() << msg;
+    sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
+}
+
+void cmdHandler_SuperGroupMotto(const QString &cmd, MapClientSession &sess)
+{
+    int space = cmd.indexOf(' ');
+    QString motto = cmd.mid(space+1);
+    QString msg = setSGMotto(*sess.m_ent, motto);
+
+    qCDebug(logSlashCommand).noquote() << msg;
+    sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
+}
+
+void cmdHandler_SuperGroupMode(const QString &cmd, MapClientSession &sess)
+{
+    bool result = toggleSGMode(*sess.m_ent);
+
+    QString msg = "Toggling SuperGroup Mode to " + result;
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
+}
+
+void cmdHandler_SuperGroupPromote(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    Entity *tgt = nullptr;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(&sess, getTargetIdx(*sess.m_ent));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(&sess,name);
+
+    if(tgt == nullptr)
+        return;
+
+    msg = modifySGRank(*sess.m_ent, *tgt, 1);
+    qCDebug(logSuperGroups) << sess.m_ent->name() << msg;
+    sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
+}
+
+void cmdHandler_SuperGroupDemote(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    Entity *tgt = nullptr;
+
+    int space = cmd.indexOf(' ');
+    QString name = cmd.mid(space+1);
+
+    if(space == -1 || name.isEmpty())
+    {
+        tgt = getEntity(&sess, getTargetIdx(*sess.m_ent));
+        name = tgt->name();
+    }
+    else
+        tgt = getEntity(&sess,name);
+
+    if(tgt == nullptr)
+        return;
+
+    msg = modifySGRank(*sess.m_ent, *tgt, -1);
     qCDebug(logSuperGroups) << sess.m_ent->name() << msg;
     sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
 }

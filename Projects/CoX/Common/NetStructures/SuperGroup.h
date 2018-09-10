@@ -8,7 +8,6 @@
 #pragma once
 #include "CommonNetStructures.h"
 #include "Costume.h"
-#include <deque>
 
 class Entity;
 class SuperGroup;
@@ -84,7 +83,7 @@ const   uint32_t    m_max_sg_size       = 150;  // max is always 150
         // Methods
         void        dump();
         void        listSGMembers();
-        void        addSGMember(Entity *e);
+        void        addSGMember(Entity *e, int rank = 0);
         void        removeSGMember(Entity *e);
         bool        isSGLeader(Entity *e);
         bool        makeSGLeader(Entity &src, Entity &tgt);
@@ -99,10 +98,15 @@ static  uint32_t  m_sg_idx_counter;
  */
 bool sameSG(Entity &src, Entity &tgt);
 QString inviteSG(Entity &src, Entity &tgt);
-bool kickSG(Entity &tgt);
+QString kickSG(Entity &src, Entity &tgt);
 void leaveSG(Entity &e);
 bool toggleSGMode(Entity &e);
+QString setSGMOTD(Entity &e, QString &motd);
+QString setSGMotto(Entity &e, QString &motto);
+QString modifySGRank(Entity &src, Entity &tgt, int rank_mod);
+QString demoteSG(Entity &src, Entity &tgt);
 
+SuperGroupStats *getSGMember(Entity &tgt, uint32_t sg_idx);
 SuperGroup* getSuperGroupByIdx(uint32_t sg_idx);
 void addSuperGroup(Entity &e, SuperGroupData data);
 

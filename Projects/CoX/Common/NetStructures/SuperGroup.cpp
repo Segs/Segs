@@ -35,7 +35,7 @@ int64_t getTimeSince2000Epoch()
  */
 uint32_t SuperGroup::m_sg_idx_counter = 0;
 
-void SuperGroup::addSGMember(Entity *e)
+void SuperGroup::addSGMember(Entity *e, int rank)
 {
     CharacterData *cd = &e->m_char->m_char_data;
 
@@ -48,7 +48,7 @@ void SuperGroup::addSGMember(Entity *e)
     SuperGroupStats sgs;
     sgs.m_name          = e->name();
     sgs.m_db_id         = e->m_db_id;
-    sgs.m_rank          = 3;
+    sgs.m_rank          = rank;
     sgs.m_hours_logged  = 0;
     sgs.m_date_joined   = getTimeSince2000Epoch();
     sgs.m_last_online   = getTimeSince2000Epoch();
@@ -164,7 +164,7 @@ bool SuperGroup::makeSGLeader(Entity &src, Entity &tgt)
 
 QString inviteSG(Entity &src, Entity &tgt)
 {
-    QString msg;
+    QString msg = "Inviting " + tgt.name() + " to SuperGroup.";
 
     SuperGroupStats *src_sg = &src.m_char->m_char_data.m_supergroup;
     SuperGroupStats *tgt_sg = &tgt.m_char->m_char_data.m_supergroup;
@@ -175,33 +175,36 @@ QString inviteSG(Entity &src, Entity &tgt)
     if(tgt.name() == src.name())
         return msg = "You cannot invite yourself to a supergroup.";
 
-    if(src_sg->m_has_supergroup && src_sg->m_rank <= 1)
+    if(src_sg->m_has_supergroup && src_sg->m_rank < 1)
         return msg = "You do not have high enough rank to invite players to the SuperGroup.";
 
     SuperGroup * sg = getSuperGroupByIdx(src_sg->m_sg_idx);
     if(sg == nullptr)
-        qFatal("getSuperGroupByIdx returned nullptr");
+        qFatal("getSuperGroupByIdx returned nullptr for inviteSG");
 
-    sg->addSGMember(&tgt);
+    sg->addSGMember(&tgt, 0);
     return msg;
 }
 
-bool kickSG(Entity &tgt)
+QString kickSG(Entity &src, Entity &tgt)
 {
-    CharacterData *cd = &tgt.m_char->m_char_data;
+    QString msg = "Kicking " + tgt.name() + " from SuperGroup.";
 
-    if (!cd->m_supergroup.m_has_supergroup)
-        return false;
+    SuperGroupStats *src_sg = &src.m_char->m_char_data.m_supergroup;
+    SuperGroupStats *tgt_sg = &tgt.m_char->m_char_data.m_supergroup;
 
-    SuperGroup * sg = getSuperGroupByIdx(cd->m_supergroup.m_sg_idx);
+    if(!tgt_sg->m_has_supergroup || !sameSG(src, tgt))
+        return msg = tgt.name() + " is not in your SuperGroup.";
+
+    if(src_sg->m_rank < 1)
+        return msg = src.name() + " does not have authority to kick SuperGroup members.";
+
+    SuperGroup * sg = getSuperGroupByIdx(tgt_sg->m_sg_idx);
     if(sg == nullptr)
-    {
-        qFatal("getSuperGroupByIdx returned nullptr");
-        return false; // if somehow qFatal doesn't do it
-    }
+        qFatal("getSuperGroupByIdx returned nullptr for kickSG");
 
     sg->removeSGMember(&tgt);
-    return true;
+    return msg;
 }
 
 void leaveSG(Entity &e)
@@ -217,7 +220,7 @@ void leaveSG(Entity &e)
     SuperGroup * sg = getSuperGroupByIdx(cd->m_supergroup.m_sg_idx);
     if(sg == nullptr)
     {
-        qFatal("getSuperGroupByIdx returned nullptr");
+        qFatal("getSuperGroupByIdx returned nullptr for leaveSG");
         return; // if somehow qFatal doesn't do it
     }
 
@@ -240,6 +243,109 @@ bool toggleSGMode(Entity &e)
     return cd->m_supergroup.m_sg_mode;
 }
 
+QString setSGMOTD(Entity &e, QString &motd)
+{
+    QString msg = "Successfully changed SuperGroup MOTD.";
+    SuperGroupStats *sgs = &e.m_char->m_char_data.m_supergroup;
+
+    if(!sgs->m_has_supergroup)
+        return msg = "You are not in a SuperGroup.";
+
+    if(sgs->m_rank < 1)
+        return msg = "You do not have the authority to set the SuperGroup MOTD.";
+
+    if(motd.isEmpty())
+        return msg = "You must provide a new MOTD.";
+
+    SuperGroup * sg = getSuperGroupByIdx(sgs->m_sg_idx);
+    if(sg == nullptr)
+        qFatal("getSuperGroupByIdx returned nullptr for setSGMOTD");
+
+    sg->m_data.m_sg_motd = motd;
+    return msg;
+}
+
+QString setSGMotto(Entity &e, QString &motto)
+{
+    QString msg = "Successfully changed SuperGroup Motto.";
+    SuperGroupStats *sgs = &e.m_char->m_char_data.m_supergroup;
+
+    if(!sgs->m_has_supergroup)
+        return msg = "You are not in a SuperGroup.";
+
+    if(sgs->m_rank < 1)
+        return msg = "You do not have the authority to set the SuperGroup Motto.";
+
+    if(motto.isEmpty())
+        return msg = "You must provide a new Motto.";
+
+    SuperGroup * sg = getSuperGroupByIdx(sgs->m_sg_idx);
+    if(sg == nullptr)
+        qFatal("getSuperGroupByIdx returned nullptr for setSGMotto");
+
+    sg->m_data.m_sg_motto = motto;
+    return msg;
+}
+
+QString modifySGRank(Entity &src, Entity &tgt, int rank_mod)
+{
+    QString msg = "Modifying " + tgt.name() + "'s rank in SuperGroup by " + QString::number(rank_mod);
+
+    SuperGroupStats *src_sg = &src.m_char->m_char_data.m_supergroup;
+    SuperGroupStats *tgt_sg = &tgt.m_char->m_char_data.m_supergroup;
+
+    if(!tgt_sg->m_has_supergroup || !sameSG(src, tgt))
+        return msg = tgt.name() + " is not in your SuperGroup.";
+
+    if(src_sg->m_rank < 2)
+        return msg = src.name() + " does not have authority to promote/demote SuperGroup members.";
+
+    if(rank_mod == 0)
+        return msg = "SuperGroup rank unmodified.";
+
+    if((tgt_sg->m_rank == 2 && rank_mod > 0) || (tgt_sg->m_rank == 0 && rank_mod < 0))
+        return msg = tgt.name() + " cannot modify range outside of range 1 to 3.";
+
+    SuperGroupStats *tgt_revised = getSGMember(tgt, src_sg->m_sg_idx);
+    if(tgt_revised == nullptr)
+        return msg = "getSGMember returned nullptr for promoteSG";
+
+    uint32_t new_rank = tgt_sg->m_rank + rank_mod;
+    new_rank = std::min(std::max(rank_mod,0),2); // if somehow we messed up, limit range from 1 to 3.
+
+    tgt_sg->m_rank = tgt_revised->m_rank = new_rank;
+
+    return msg;
+}
+
+
+SuperGroupStats* getSGMember(Entity &tgt, uint32_t sg_idx)
+{
+    int idx = -1;
+
+    qCDebug(logSuperGroups) << "Seaching for SuperGroup Member" << tgt.name();
+    if(sg_idx == 0 || !tgt.m_char->m_char_data.m_supergroup.m_has_supergroup)
+        return nullptr;
+
+    SuperGroup *sg = getSuperGroupByIdx(sg_idx);
+    if(sg == nullptr)
+        qFatal("getSuperGroupByIdx returned nullptr for getSGMember");
+
+    uint32_t id_to_find = tgt.m_char->m_db_id;
+    auto iter = std::find_if( sg->m_sg_members.begin(), sg->m_sg_members.end(),
+                              [id_to_find](const SuperGroupStats& m)->bool {return id_to_find==m.m_db_id;});
+    if(iter != sg->m_sg_members.end())
+    {
+        qCDebug(logSuperGroups) << "Returning SuperGroup Member" << iter->m_name;
+        idx = std::distance(sg->m_sg_members.begin(), iter);
+    }
+
+    if(idx == -1)
+        return nullptr;
+
+    return &sg->m_sg_members.at(idx);
+}
+
 SuperGroup* getSuperGroupByIdx(uint32_t sg_idx)
 {
     qCDebug(logSuperGroups) << "Seaching for SuperGroup" << sg_idx;
@@ -255,7 +361,7 @@ void addSuperGroup(Entity &e, SuperGroupData data)
     SuperGroup sg;
 
     sg.m_data = data;
-    sg.addSGMember(&e);
+    sg.addSGMember(&e, 2);
     g_all_supergroups.push_back(sg);
 
     if(logSuperGroups().isDebugEnabled())
@@ -263,7 +369,7 @@ void addSuperGroup(Entity &e, SuperGroupData data)
 
     cd->m_supergroup.m_sg_idx           = sg.m_sg_idx;
     cd->m_supergroup.m_has_supergroup   = true;
-    cd->m_supergroup.m_rank             = 3;
+    cd->m_supergroup.m_rank             = 2;
     cd->m_supergroup.m_has_sg_costume   = true;
     cd->m_supergroup.m_sg_mode          = false;
     cd->m_supergroup.m_sg_costume       = e.m_char->getCurrentCostume();
