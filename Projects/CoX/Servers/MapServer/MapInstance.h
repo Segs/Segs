@@ -83,11 +83,10 @@ class BuyEnhancementSlot;
 class RecvNewPower;
 class MapXferComplete;
 class InitiateMapXfer;
-class ClientMapXferMessage;
+struct ClientMapXferMessage;
 class AwaitingDeadNoGurney;
 // server<-> server event types
 struct ExpectMapClientRequest;
-struct WouldNameDuplicateResponse;
 struct WouldNameDuplicateResponse;
 struct CreateNewCharacterResponse;
 struct GetEntityResponse;
@@ -100,22 +99,21 @@ class MapInstance final : public EventProcessor
         using SessionStore = ClientSessionStore<MapClientSession>;
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
         QString                m_data_path;
-        uint32_t               m_index = 1; // what does client expect this to store, and where do we send it?
+        std::vector<glm::mat4>  m_new_player_spawns;
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
         std::unique_ptr<SEGSTimer> m_sync_service_timer;
         std::unique_ptr<SEGSTimer> m_afk_update_timer;
-        std::vector<glm::mat4>  m_new_player_spawns;
-
         World *                 m_world;
         GameDBSyncService*      m_sync_service;
-        uint8_t                 m_game_server_id=255; // 255 is `invalid` id
         uint32_t                m_owner_id;
         uint32_t                m_instance_id;
+        uint32_t                m_index = 1; // what does client expect this to store, and where do we send it?
+        uint8_t                 m_game_server_id=255; // 255 is `invalid` id
 
 public:
-        SessionStore            m_session_store;        
+        SessionStore            m_session_store;
         EntityManager           m_entities;
         ScriptEnginePtr         m_scripting_interface;
         MapLinkEndpoint *       m_endpoint = nullptr;

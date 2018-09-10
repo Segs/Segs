@@ -81,13 +81,13 @@ struct name ## Response final : public InternalEvent\
 // This tells the server that it should expect a new client connection from given address
 struct ExpectClientRequestData
 {
-    uint64_t m_client_id;
     ACE_INET_Addr m_from_addr;
+    uint32_t m_client_id;
     uint8_t m_access_level;
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_client_id,m_from_addr,m_access_level);
+        ar(m_from_addr,m_client_id,m_access_level);
     }
 };
 
@@ -190,7 +190,7 @@ struct ClientConnectedData
     uint64_t m_session;
     uint32_t m_server_id;     // id of the server the client connected to.
     uint32_t m_sub_server_id; // only used when server_id is the map server
-    uint64_t m_char_db_id;       // id of the character connecting
+    uint32_t m_char_db_id;       // id of the character connecting
     template<class Archive>
     void serialize(Archive &ar)
     {
@@ -203,7 +203,7 @@ ONE_WAY_MESSAGE(Internal_EventTypes,ClientConnected)
 struct ClientDisconnectedData
 {
     uint64_t m_session;
-    uint64_t m_char_db_id;       // id of the character disconnected
+    uint32_t m_char_db_id;       // id of the character disconnected
     template<class Archive>
     void serialize(Archive &ar)
     {
