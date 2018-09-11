@@ -223,12 +223,12 @@ void MapServer::session_xfer_complete(uint64_t session_token)
     m_current_map_xfers.erase(session_token);
 }
 
-void MapServer::serialize_from(std::istream &is)
+void MapServer::serialize_from(std::istream &/*is*/)
 {
     assert(false);
 }
 
-void MapServer::serialize_to(std::ostream &is)
+void MapServer::serialize_to(std::ostream &/*os*/)
 {
     assert(false);
 }

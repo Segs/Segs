@@ -34,7 +34,7 @@ public:
                     bs.StorePackedBits(1,unused4);
                     bs.StorePackedBits(1,m_map_cookie); 
                 }
-        void    serializefrom(BitStream &src) override
+        void    serializefrom(BitStream &/*src*/) override
         {
         }
         EVENT_IMPL(MapXferRequest)

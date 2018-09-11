@@ -255,34 +255,32 @@ bool GameDataStore::read_runtime_data(const QString &directory_path)
     return true;
 }
 
-int GameDataStore::expForLevel(int lev) const
+uint32_t GameDataStore::expForLevel(uint32_t lev) const
 {
-    assert(lev>0 && lev<(int)m_experience_and_debt_per_level.m_ExperienceRequired.size());
+    assert(lev>0 && lev<m_experience_and_debt_per_level.m_ExperienceRequired.size());
     return m_experience_and_debt_per_level.m_ExperienceRequired.at(lev - 1);
 }
 
-int GameDataStore::expDebtForLevel(int lev) const
+uint32_t GameDataStore::expDebtForLevel(uint32_t lev) const
 {
-    assert(lev>0 && lev<(int)m_experience_and_debt_per_level.m_DefeatPenalty.size());
+    assert(lev>0 && lev<m_experience_and_debt_per_level.m_DefeatPenalty.size());
     return m_experience_and_debt_per_level.m_DefeatPenalty.at(lev - 1);
 }
 
-int GameDataStore::expMaxLevel() const
+uint32_t GameDataStore::expMaxLevel() const
 {
     return m_experience_and_debt_per_level.m_ExperienceRequired.size();
 }
 
-int GameDataStore::countForLevel(int lvl, const std::vector<uint32_t> &schedule) const
+int GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &schedule) const
 {
-    int i = 0;
-    if(lvl < 0)
-        lvl = 0;
-    for(i = 0; i < schedule.size(); ++i)
+    for(uint32_t i = 0; i < schedule.size(); ++i)
     {
         if (lvl < schedule[i])
-            break;
+            return i;
     }
-    return i;
+
+    return 0;
 }
 
 bool GameDataStore::read_costumes(const QString &directory_path)
@@ -389,7 +387,7 @@ bool GameDataStore::read_npcs(const QString &directory_path)
     return true;
 }
 
-bool GameDataStore::read_settings(const QString &directory_path)
+bool GameDataStore::read_settings(const QString &/*directory_path*/)
 {
     qInfo() << "Loading AFK settings...";
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
