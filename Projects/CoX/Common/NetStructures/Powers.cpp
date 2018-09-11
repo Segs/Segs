@@ -498,6 +498,7 @@ void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
         for(int j = 0; j < max_cols; ++j)
         {
             if(!cd.m_inspirations.at(j, i).m_has_insp)
+            {
                 insp.m_col = j;
                 insp.m_row = i;
                 cd.m_inspirations.at(j, i) = insp;
