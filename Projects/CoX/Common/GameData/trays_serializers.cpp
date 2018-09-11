@@ -22,11 +22,6 @@ const constexpr uint32_t PowerTrayItem::class_version;
 const constexpr uint32_t PowerTray::class_version;
 const constexpr uint32_t PowerTrayGroup::class_version;
 
-CEREAL_CLASS_VERSION(PowerTrayItem, PowerTrayItem::class_version)   // register PowerTrayItem class version
-CEREAL_CLASS_VERSION(PowerTray, PowerTray::class_version)           // register PowerTray class version
-CEREAL_CLASS_VERSION(PowerTrayGroup, PowerTrayGroup::class_version) // register PowerTrayGroup class version
-
-
 template
 void PowerTray::serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, uint32_t const version);
 template
@@ -38,6 +33,7 @@ void saveTo(const PowerTrayGroup &target, const QString &baseName, bool text_for
 {
     commonSaveTo(target,"PowerTrayGroups",baseName,text_format);
 }
+
 template
 void PowerTrayGroup::serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, uint32_t const version);
 template

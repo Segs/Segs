@@ -249,7 +249,12 @@ void sendServerMOTD(MapClientSession *tgt)
     }
 }
 
-void sendEmailHeaders(MapClientSession& sess)
+void on_awaiting_dead_no_gurney_test(MapClientSession &session)
+{
+    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
+}
+
+void sendEmailHeaders(MapClientSession &sess)
 {
     if(!sess.m_ent->m_client)
     {
@@ -407,6 +412,8 @@ void toggleLFG(Entity &e)
         sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *e.m_client);
         errormsg = e.name() + "is already on a team and cannot toggle LFG.";
         qCDebug(logTeams) << errormsg;
+        removeLFG(e); // just in-case
+        return;
     }
 
     if(cd->m_lfg)
@@ -519,6 +526,25 @@ void sendTeamOffer(Entity *src, Entity *tgt)
     qCDebug(logTeams) << "Sending Teamup Offer" << db_id << name << type;
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
 }
+
+void sendFaceEntity(Entity *src, uint8_t tgt_idx)
+{
+    qCDebug(logOrientation) << QString("Sending Face Entity to %1").arg(tgt_idx);
+    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceEntity>(new FaceEntity(tgt_idx)));
+}
+
+void sendFaceLocation(Entity *src, glm::vec3 &loc)
+{
+    qCDebug(logOrientation) << QString("Sending Face Location to x: %1 y: %2 z: %3").arg(loc.x).arg(loc.y).arg(loc.z);
+    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceLocation>(new FaceLocation(loc)));
+}
+
+void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg)
+{
+    qCDebug(logMapXfers) << QString("Sending Door Message; delay: %1 msg: %2").arg(delay_status).arg(msg);
+    tgt.addCommand<DoorMessage>(DoorMessageStatus(delay_status), msg);
+}
+
 
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)
 {
@@ -941,6 +967,12 @@ void removeTeamMember(Team &self, Entity *e)
         self.listTeamMembers();
 }
 
+bool isEntityOnMissionMap(const EntityData &ed)
+{
+    QString mapName = getMapName(ed.m_map_idx);
+    // Hazard and Trial maps are considered as mission maps
+    return mapName.contains("Hazard") || mapName.contains("Trial");
+}
 
 //! @}
 

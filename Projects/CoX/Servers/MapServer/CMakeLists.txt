@@ -18,6 +18,7 @@ SET(target_CPP
     Events/SceneEvent.cpp
     Events/InfoMessageCmd.cpp
     Events/WindowState.cpp
+    MapClientSession.cpp
     NpcGenerator.cpp
     MapEventFactory.cpp
     MapInstance.cpp
@@ -40,10 +41,14 @@ SET(target_INCLUDE
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
     Events/ClientStates.h
+    Events/DeadNoGurney.h
+    Events/DoorMessage.h
     Events/EmailHeaders.h
     Events/EmailMessageStatus.h
     Events/EmailRead.h
     Events/EntitiesResponse.h
+    Events/FaceEntity.h
+    Events/FaceLocation.h
     Events/FloatingDamage.h
     Events/FloatingInfo.h
     Events/FloatingInfoStyles.h

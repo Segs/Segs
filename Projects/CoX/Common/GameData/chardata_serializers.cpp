@@ -32,6 +32,7 @@ const constexpr uint32_t Friend::class_version;
 const constexpr uint32_t FriendsList::class_version;
 const constexpr uint32_t Sidekick::class_version;
 const constexpr uint32_t CharacterData::class_version;
+const constexpr uint32_t vInspirations::class_version;
 CEREAL_CLASS_VERSION(PowerPool_Info, PowerPool_Info::class_version)   // register PowerPool_Info class version
 CEREAL_CLASS_VERSION(CharacterInspiration, CharacterInspiration::class_version)   // register CharacterInspiration struct version
 CEREAL_CLASS_VERSION(CharacterEnhancement, CharacterEnhancement::class_version)   // register CharacterEnhancement struct version
@@ -41,6 +42,7 @@ CEREAL_CLASS_VERSION(Friend, Friend::class_version)                 // register 
 CEREAL_CLASS_VERSION(FriendsList, FriendsList::class_version)       // register FriendList struct version
 CEREAL_CLASS_VERSION(Sidekick, Sidekick::class_version)             // register Sidekick struct version
 CEREAL_CLASS_VERSION(CharacterData, CharacterData::class_version)   // register CharacterData struct version
+CEREAL_CLASS_VERSION(vInspirations, vInspirations::class_version)   // register vInspirations struct version
 
 template<class Archive>
 void serialize(Archive &archive, PowerPool_Info &poolinfo, uint32_t const version)
@@ -70,6 +72,18 @@ void serialize(Archive &archive, CharacterInspiration &in, uint32_t const versio
     archive(cereal::make_nvp("Col", in.m_col));
     archive(cereal::make_nvp("Row", in.m_row));
     archive(cereal::make_nvp("HasInsp", in.m_has_insp));
+}
+
+template<class Archive>
+void serialize(Archive &archive, vInspirations &vIn, uint32_t const version)
+{
+    if (version != vInspirations::class_version)
+    {
+        qCritical() << "Failed to serialize vInspirations, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("Inspirations", vIn.m_inspirations));
 }
 
 template<class Archive>
@@ -206,6 +220,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("SideKick",cd.m_sidekick));
     archive(cereal::make_nvp("FriendList",cd.m_friendlist));
     archive(cereal::make_nvp("CurrentAttribs", cd.m_current_attribs));
+    archive(cereal::make_nvp("OnTaskForce", cd.m_is_on_task_force));
     archive(cereal::make_nvp("PowerSets", cd.m_powersets));
     archive(cereal::make_nvp("PowerTrayGroups", cd.m_trays));
     archive(cereal::make_nvp("Inspirations", cd.m_inspirations));
@@ -220,6 +235,6 @@ void saveTo(const CharacterData &target, const QString &baseName, bool text_form
     commonSaveTo(target,"CharacterData",baseName,text_format);
 }
 
-SPECIALIZE_VERSIONED_SERIALIZATIONS(CharacterData);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(CharacterData)
 
 //! @}

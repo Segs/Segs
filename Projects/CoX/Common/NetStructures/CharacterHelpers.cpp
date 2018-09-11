@@ -29,10 +29,8 @@ void setLevel(Character &c, uint32_t val)
 {
     if(val>50)
         val = 50;
-    c.m_char_data.m_level = val;
-    // TODO: set max attribs based upon level
-    //MapServerData map_server_data;
-    //c.m_experience_points = map_server_data.expForLevel(val);
+    c.m_char_data.m_level = val - 1; // client stores lvl arrays starting at 0
+    // TODO: run finalizelevel here, but requires MapClientSession
 }
 
 void setCombatLevel(Character &c, uint32_t val)
@@ -94,9 +92,15 @@ void setDescription(Character &c, QString val) { c.m_char_data.m_character_descr
 void setBattleCry(Character &c, QString val) { c.m_char_data.m_battle_cry = val; }
 
 // Toggles
-void toggleAFK(Character &c, const QString &msg)
+void toggleAFK(Character &c, const bool isTrue, QString msg)
 {
-    c.m_char_data.m_afk = !c.m_char_data.m_afk;
+    c.m_char_data.m_afk = isTrue;
+    //c.m_char_data.m_afk = !c.m_char_data.m_afk;
     if(c.m_char_data.m_afk)
-        c.m_char_data.m_afk_msg = msg;
+        c.m_char_data.m_afk_msg = msg; 
+}
+
+void toggleAFK(Character &c, QString msg)
+{
+    toggleAFK(c, !c.m_char_data.m_afk, msg);
 }

@@ -27,7 +27,7 @@ enum Internal_EventTypes
     evClientConnectionRequest, //,4)
     evClientConnectionResponse, //,5)
     evReloadConfigMessage, //,6) // the server that receives this message will reload it's config file and restart with it
-
+    evClientMapXferMessage,
     evGameServerStatusMessage = evReloadConfigMessage+4, //10)
     evMapServerStatusMessage,                     //11)
     // Message bus events
@@ -81,13 +81,13 @@ struct name ## Response final : public InternalEvent\
 // This tells the server that it should expect a new client connection from given address
 struct ExpectClientRequestData
 {
-    uint64_t m_client_id;
     ACE_INET_Addr m_from_addr;
+    uint32_t m_client_id;
     uint8_t m_access_level;
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_client_id,m_from_addr,m_access_level);
+        ar(m_from_addr,m_client_id,m_access_level);
     }
 };
 
@@ -212,5 +212,18 @@ struct ClientDisconnectedData
 };
 //[[ev_def:macro]]
 ONE_WAY_MESSAGE(Internal_EventTypes,ClientDisconnected)
+
+struct ClientMapXferData
+{
+    uint64_t m_session;
+    uint8_t m_map_idx;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_session, m_map_idx);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(Internal_EventTypes,ClientMapXfer)
 
 } // end of SEGSEvents namespace

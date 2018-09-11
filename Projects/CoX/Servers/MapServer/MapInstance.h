@@ -83,10 +83,16 @@ class BuyEnhancementSlot;
 class RecvNewPower;
 class EmailHeaderResponse;
 class EmailWasReadByRecipientMessage;
-
+class MapXferComplete;
+class InitiateMapXfer;
+struct ClientMapXferMessage;
+class AwaitingDeadNoGurney;
 // server<-> server event types
 struct ExpectMapClientRequest;
-
+struct WouldNameDuplicateResponse;
+struct CreateNewCharacterResponse;
+struct GetEntityResponse;
+struct GetEntityByNameResponse;
 }
 class MapLinkEndpoint;
 
@@ -95,17 +101,18 @@ class MapInstance final : public EventProcessor
         using SessionStore = ClientSessionStore<MapClientSession>;
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
         QString                m_data_path;
-        uint32_t               m_index = 1; // what does client expect this to store, and where do we send it?
+        std::vector<glm::mat4>  m_new_player_spawns;
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
         std::unique_ptr<SEGSTimer> m_sync_service_timer;
-        std::vector<glm::mat4>  m_new_player_spawns;
+        std::unique_ptr<SEGSTimer> m_afk_update_timer;
         World *                 m_world;
         GameDBSyncService*      m_sync_service;
-        uint8_t                 m_game_server_id=255; // 255 is `invalid` id
         uint32_t                m_owner_id;
         uint32_t                m_instance_id;
+        uint32_t                m_index = 1; // what does client expect this to store, and where do we send it?
+        uint8_t                 m_game_server_id=255; // 255 is `invalid` id
 
 public:
         SessionStore            m_session_store;
@@ -127,6 +134,7 @@ public:
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         void                    start(const QString &scenegraph_path);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
+
 protected:
         // EventProcessor interface
         void                    serialize_from(std::istream &is) override;
@@ -146,6 +154,10 @@ protected:
         void                    on_entity_by_name_response(SEGSEvents::GetEntityByNameResponse *ev);
         // Server->Server messages
         void on_expect_client(SEGSEvents::ExpectMapClientRequest *ev);
+        void on_expect_client_response(SEGSEvents::ExpectMapClientResponse *ev);
+
+        void on_initiate_map_transfer(SEGSEvents::InitiateMapXfer *ev);
+        void on_map_xfer_complete(SEGSEvents::MapXferComplete *ev);
 
         void on_link_lost(SEGSEvents::Event *ev);
         void on_disconnect(SEGSEvents::DisconnectRequest *ev);
@@ -160,6 +172,7 @@ protected:
         void sendState();
         void on_check_links();
         void on_update_entities();
+        void on_afk_update();
         void send_character_update(Entity *e);
         void send_player_update(Entity *e);
 
@@ -211,4 +224,5 @@ protected:
         void on_trash_enhancement_in_power(SEGSEvents::TrashEnhancementInPower *ev);
         void on_buy_enhancement_slot(SEGSEvents::BuyEnhancementSlot *ev);
         void on_recv_new_power(SEGSEvents::RecvNewPower *ev);
+        void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
 };

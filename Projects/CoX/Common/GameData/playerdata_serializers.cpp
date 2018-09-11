@@ -37,6 +37,6 @@ void serialize(Archive &archive, PlayerData &pd, uint32_t const version)
     archive(cereal::make_nvp("Options", pd.m_options));
 }
 
-SPECIALIZE_VERSIONED_SERIALIZATIONS(PlayerData);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(PlayerData)
 
 //! @}

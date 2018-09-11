@@ -39,6 +39,7 @@ glm::vec3   getSpeed(const Entity &e);
 float       getBackupSpd(const Entity &e);
 float       getJumpHeight(const Entity &e);
 uint8_t     getUpdateId(const Entity &e);
+bool        isEntityOnMissionMap(const EntityData &ed);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);
@@ -76,6 +77,7 @@ Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
+void    on_awaiting_dead_no_gurney_test(MapClientSession &session);
 
 
 
@@ -118,6 +120,9 @@ void sendFriendsListUpdate(Entity *src, const FriendsList &friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
+void sendFaceEntity(Entity *src, uint8_t tgt_idx);
+void sendFaceLocation(Entity *src, glm::vec3 &location);
+void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg);
 
 
 const QString &getGenericTitle(uint32_t val);

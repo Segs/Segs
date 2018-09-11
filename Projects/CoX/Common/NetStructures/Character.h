@@ -61,6 +61,8 @@ public:
 // Getters and setters
 const   QString &       getName() const { return m_name; }
         void            setName(const QString &val);
+        float           getHealth() { return m_char_data.m_current_attribs.m_HitPoints; }
+        void            setHealth(float val) { m_char_data.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val, m_max_attribs.m_HitPoints)); }        
         uint8_t         getIndex() const { return m_index; }
         void            setIndex(uint8_t val) { m_index = val; }
         uint64_t        getAccountId() const { return m_owner_account_id; }

@@ -50,8 +50,8 @@ enum CommonTypes : uint32_t
 class Event
 {
 protected:
-        const uint32_t  m_type;
         EventSrc *m_event_source;
+        const uint32_t  m_type;
         std::atomic<int> m_ref_count {1}; // used to prevent event being deleted when it's in multiple queues
 
 public:
@@ -63,7 +63,7 @@ virtual                 ~Event()
                             m_event_source=nullptr;
                         }
                         Event(uint32_t evtype,EventSrc *ev_src=nullptr) :
-                            m_type(evtype),m_event_source(ev_src)
+                            m_event_source(ev_src),m_type(evtype)
                         {}
         Event *         shallow_copy() // just incrementing the ref count
                         {
@@ -99,7 +99,7 @@ class Timeout final: public Event
 {
 public:
                         // [[ev_def:field]]
-    ACE_Time_Value          m_arrival_time;
+    ACE_Time_Value      m_arrival_time;
                         // [[ev_def:field]]
     uint64_t            m_timer_id;
 

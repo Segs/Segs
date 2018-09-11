@@ -49,6 +49,13 @@ Character::Character()
             || !m_char_data.m_titles[2].isEmpty();
     m_char_data.m_sidekick.m_has_sidekick = false;
     m_char_data.m_current_attribs.initAttribArrays();
+
+    int eh_idx = 0;
+    for(CharacterEnhancement &eh : m_char_data.m_enhancements)
+    {
+        eh.m_slot_idx = eh_idx;
+        ++eh_idx;
+    }
 }
 
 void Character::reset()
@@ -224,9 +231,10 @@ void Character::sendInspirations(BitStream &bs) const
     {
         for(int j = 0; j < max_rows; ++j)
         {
-            bs.StoreBits(1, m_char_data.m_inspirations[i][j].m_has_insp);
-            if(m_char_data.m_inspirations[i][j].m_has_insp)
-                m_char_data.m_inspirations[i][j].m_insp_info.serializeto(bs);
+            bs.StoreBits(1, m_char_data.m_inspirations.value(i, j).m_has_insp);
+
+            if(m_char_data.m_inspirations.value(i, j).m_has_insp)
+                m_char_data.m_inspirations.value(i, j).m_insp_info.serializeto(bs);
         }
     }
 }
