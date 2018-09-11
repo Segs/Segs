@@ -84,7 +84,7 @@ void storeCreation(const Entity &src, BitStream &bs)
 void sendStateMode(const Entity &src,BitStream &bs)
 {
     PUTDEBUG("before sendStateMode");
-    bs.StoreBits(1,src.m_has_state_mode); // no state mode
+    bs.StoreBits(1, src.m_has_state_mode); // no state mode
     PUTDEBUG("before sendStateMode 2");
     if(src.m_has_state_mode)
     {
@@ -207,10 +207,8 @@ void sendSeqMoveUpdate(const Entity &src, BitStream &bs)
 
 void sendSeqTriggeredMoves(const Entity &src, BitStream &bs)
 {
-    uint32_t num_moves = 0; // FixMe: num_moves is never modified and the body of the for loop below will never fire.
     qCDebug(logAnimations, "Sending seq triggered moves %d", src.m_triggered_moves.size());
 
-    bs.StorePackedBits(1,num_moves); // num moves
     if(src.m_triggered_moves.size() < 20)
         qWarning() << "Triggered moves array is smaller than 20!";
 

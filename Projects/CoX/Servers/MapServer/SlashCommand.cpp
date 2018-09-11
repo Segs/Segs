@@ -188,7 +188,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"toggleLogging", "log"}, "Modify log categories (e.g. input, teams, ...)", cmdHandler_ToggleLogging, 9},
     {{"friendsDump", "friendsDebug"}, "Output friendlist info to console", cmdHandler_FriendsListDebug, 9},
     {{"damage", "heal"}, "Make current target (or self) take damage/health", cmdHandler_SendFloatingNumbers, 9},
-    {{"toggleinterp"},"Toggle Interpolation", &cmdHandler_ToggleInterp, 9},
+    {{"interp"},"Toggle Interpolation", &cmdHandler_ToggleInterp, 9},
     {{"moveinstantly"},"Toggle move_instantly", &cmdHandler_ToggleMoveInstantly, 9},
     {{"collision"},"Toggle Collision on/off", &cmdHandler_ToggleCollision, 9},
     {{"movement"},"Toggle server authority for Movement on/off", &cmdHandler_ToggleMovementAuthority, 9},

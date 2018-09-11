@@ -650,7 +650,8 @@ void sendEmailHeaders(Entity *e)
     src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
 }
 
-void readEmailMessage(Entity *e, const int id){
+void readEmailMessage(Entity *e, const int id)
+{
     if(!e->m_client)
     {
         qWarning() << "m_client does not yet exist!";
