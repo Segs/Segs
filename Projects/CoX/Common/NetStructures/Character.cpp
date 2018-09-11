@@ -28,6 +28,7 @@
 #include "Logging.h"
 #include <QtCore/QString>
 #include <QtCore/QDebug>
+#include "Settings.h"
 
 using namespace SEGSEvents;
 
@@ -127,14 +128,8 @@ void Character::finalizeLevel(const GameDataStore &data)
     m_char_data.m_powers_updated = false;
 }
 
-void Character::addStartingInspirations(const GameDataStore &data)
+void Character::addStartingInspirations(const GameDataStore &data, QStringList starting_insps)
 {
-    // TODO: We can make this configurable in settings.cfg
-    QStringList starting_insps = {
-        "Resurgence",       // 25.2.3
-        "Phenomenal_Luck",  // 25.2.0
-    };
-
     for (QString &name : starting_insps)
         addInspirationByName(data,m_char_data, name);
 }
@@ -168,37 +163,30 @@ void Character::getPowerFromBuildInfo(const GameDataStore &data,BitStream &src)
 
 void Character::GetCharBuildInfo(BitStream &src, const GameDataStore &data)
 {
-    m_char_data.m_level = 0;
-    m_char_data.m_combat_level = m_char_data.m_level + 1;
     src.GetString(m_char_data.m_class_name);
     src.GetString(m_char_data.m_origin_name);
 
-    // TODO: Make these configurable in settings.cfg?
-    QStringList starting_temps =
-    {
-        "EMP_Glove",                    // 27.0.0
-        "Cryoprojection_Bracers",       // 27.0.1
-    };
+    qInfo() << "Loading Starting Character Settings...";
+    QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
-    // TODO: Make these configurable in settings.cfg?
-    QStringList inherent_and_preorders =
-    {
-        "Brawl",                        // 26.0.0
-        "prestige_generic_Sprintp",     // 26.0.1
-        //"prestige_preorder_Sprintp",    // 26.0.2
-        //"prestige_BestBuy_Sprintp",     // 26.0.3
-        //"prestige_EB_Sprintp",          // 26.0.4
-        //"prestige_Gamestop_Sprintp",    // 26.0.5
-        "Sprint",                       // 26.0.6
-        "Rest",                         // 26.0.7
-    };
+    config.beginGroup("StartingCharacter");
+        QStringList inherent_and_preorders = config.value("inherent_powers","Brawl").toString().split(',');
+        QStringList starting_temps = config.value("starting_temps","EMP_Glove").toString().split(',');
+        QStringList starting_insps = config.value("starting_inspirations","Resurgence").toString().split(',');
+        int startlevel = config.value(QStringLiteral("level_bonus"), "0").toInt();
+        int startinf = config.value(QStringLiteral("starting_inf"), "0").toInt();
+    config.endGroup();
+
+    m_char_data.m_level = startlevel; //combat level is m_level +1
+    m_char_data.m_influence = startinf;
 
     // Temporary Powers MUST come first (must be idx 0)
     getStartingPowers(data,QStringLiteral("Temporary_Powers"), QStringLiteral("Temporary_Powers"), starting_temps);
     getStartingPowers(data,QStringLiteral("Inherent"), QStringLiteral("Inherent"), inherent_and_preorders);
+
     getPowerFromBuildInfo(data,src);     // primary, secondary
     finalizeLevel(data);
-    addStartingInspirations(data);      // resurgence and phenomenal_luck
+    addStartingInspirations(data, starting_insps);
 
     m_char_data.m_trays.serializefrom(src);
 }
