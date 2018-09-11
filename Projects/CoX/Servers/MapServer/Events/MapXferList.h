@@ -9,6 +9,7 @@
 #include "GameCommand.h"
 #include "MapEventTypes.h"
 
+#include "glm/vec3.hpp"
 #include <QtCore/QString>
 
 namespace SEGSEvents
@@ -44,7 +45,7 @@ public:
                         }
                         bs.StoreString(m_name);
                     }
-        void        serializefrom(BitStream &src) override
+        void        serializefrom(BitStream &/*src*/) override
                     {
                         assert(false);
                     }
@@ -62,7 +63,7 @@ public:
         void    serializeto(BitStream &bs) const override {
                     bs.StorePackedBits(1, type()-evFirstServerToClient); // 59
                 }
-        void    serializefrom(BitStream &src) override
+        void    serializefrom(BitStream &/*src*/) override
                 {
                     assert(false);
                 }

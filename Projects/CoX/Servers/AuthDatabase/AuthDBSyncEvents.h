@@ -54,9 +54,9 @@ struct RetrieveAccountResponseData
 {
     static constexpr uint64_t INVALID_ACCOUNT_ID = 0;
 
-    uint64_t m_acc_server_acc_id;
     QString m_login;
     QDateTime m_creation_date;
+    uint32_t m_acc_server_acc_id;
     uint8_t m_access_level;
 
     void mark_as_missing() { m_acc_server_acc_id = INVALID_ACCOUNT_ID; }
@@ -66,7 +66,7 @@ struct RetrieveAccountResponseData
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_acc_server_acc_id,m_login,m_creation_date,m_access_level );
+        ar( m_login,m_creation_date,m_acc_server_acc_id,m_access_level );
     }
 };
 

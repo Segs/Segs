@@ -7,11 +7,10 @@
 
 #pragma once
 
-#include "MapEventTypes.h"
-#include "MapLink.h"
+#include "SEGSEvent.h"
 
 class QString;
-
+class BitStream;
 namespace SEGSEvents
 {
 class GameCommandEvent : public Event
