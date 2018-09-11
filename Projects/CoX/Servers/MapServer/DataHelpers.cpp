@@ -508,7 +508,6 @@ void sendBrowser(MapClientSession &tgt, QString &content)
     tgt.addCommand<Browser>(content);
 }
 
-
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)
 {
     // Add to activepowers queue
@@ -911,7 +910,7 @@ void removeTeamMember(Team &self, Entity *e)
     if(logTeams().isDebugEnabled())
         self.listTeamMembers();
 
-    int idx = self.m_team_members.front().tm_idx;
+    // int idx = self.m_team_members.front().tm_idx;
 
     assert(false);
     // TODO: this should post an Team-removal event to the target entity, since we can't access other server's

@@ -27,6 +27,7 @@ SET(target_INCLUDE
     SEGSEvent.h
     SEGSEventFactory.h
     LinkLevelEvent.h
+    TimeEvent.h
     SEGSTimer.h
     FixedPointValue.h
     Settings.h

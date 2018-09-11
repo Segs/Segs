@@ -86,12 +86,14 @@ class InitiateMapXfer;
 struct ClientMapXferMessage;
 class AwaitingDeadNoGurney;
 class BrowserClose;
+
 // server<-> server event types
 struct ExpectMapClientRequest;
 struct WouldNameDuplicateResponse;
 struct CreateNewCharacterResponse;
 struct GetEntityResponse;
 struct GetEntityByNameResponse;
+class Timeout;
 }
 class MapLinkEndpoint;
 

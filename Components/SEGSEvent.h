@@ -50,9 +50,9 @@ enum CommonTypes : uint32_t
 class Event
 {
 protected:
-        EventSrc *m_event_source;
         const uint32_t  m_type;
         std::atomic<int> m_ref_count {1}; // used to prevent event being deleted when it's in multiple queues
+        EventSrc *m_event_source;
 
 public:
 
@@ -63,7 +63,7 @@ virtual                 ~Event()
                             m_event_source=nullptr;
                         }
                         Event(uint32_t evtype,EventSrc *ev_src=nullptr) :
-                            m_event_source(ev_src),m_type(evtype)
+                            m_type(evtype),m_event_source(ev_src)
                         {}
         Event *         shallow_copy() // just incrementing the ref count
                         {
@@ -94,26 +94,6 @@ virtual void            do_serialize(std::ostream &os)  = 0;
     ~name() override = default;
 
 
-// [[ev_def:type]]
-class Timeout final: public Event
-{
-public:
-                        // [[ev_def:field]]
-    ACE_Time_Value      m_arrival_time;
-                        // [[ev_def:field]]
-    uint64_t            m_timer_id;
-
-                        Timeout(EventSrc *source=nullptr) : Event(evTimeout,source)
-                            {
-                            }
-                        Timeout(const ACE_Time_Value &time, uint64_t dat,EventSrc *source)
-                                : Event(evTimeout,source), m_arrival_time(time), m_timer_id(dat)
-                        {
-                        }
-    uint64_t            timer_id() { return m_timer_id; }
-    ACE_Time_Value      arrival_time() const { return m_arrival_time; }
-    EVENT_IMPL(Timeout)
-};
 // [[ev_def:type]]
 struct Finish final: public Event
 {

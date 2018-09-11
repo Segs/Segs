@@ -11,6 +11,7 @@
  */
 
 #include "GameServer.h"
+#include "GameEvents.h"
 
 #include "FriendshipService/FriendHandler.h"
 #include "ConfigExtension.h"
@@ -85,12 +86,12 @@ void GameServer::dispatch(Event *ev)
     }
 }
 
-void GameServer::serialize_from(std::istream &is)
+void GameServer::serialize_from(std::istream &/*is*/)
 {
     assert(false);
 }
 
-void GameServer::serialize_to(std::ostream &os)
+void GameServer::serialize_to(std::ostream &/*os*/)
 {
     assert(false);
 }
