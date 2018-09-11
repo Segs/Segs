@@ -7,23 +7,25 @@
 
 #pragma once
 
-#include "Entity.h"
+#include "CommonNetStructures.h"
+#include <array>
 
-struct BinTreeEntry {
+class Entity;
+struct PosUpdate;
+
+struct BinTreeEntry
+{
     int16_t x=0,y=0,z=0;
-    uint8_t m_has_height :1;
-    uint8_t m_has_other  :1;
-};
-
-struct BinTreeBase {
-    BinTreeEntry m_interp_pos[7];
+    bool m_has_height = false;
+    bool m_has_other  = false;
 };
 
 extern  bool        g_interpolating;
 extern  uint8_t     g_interpolation_level;
 extern  uint8_t     g_interpolation_bits;
 
-void interpolate_pos_updates(Entity *e, std::array<BinTreeEntry,7> &server_pos_update);
-std::array<BinTreeEntry,7> testEncVec(std::array<PosUpdate, 9> &vals, float min_error);
-int storeBinTreesResult(BitStream &bs,const std::array<BinTreeEntry,7> &bintree);
+void interpolatePosUpdates(Entity *e, std::array<BinTreeEntry,7> &server_pos_update);
+std::array<BinTreeEntry,7> interpolateBinTree(std::array<PosUpdate, 64> vals, float min_error);
+void entCalcInterp(Entity *ent, glm::mat4 *mat4, uint32_t time, glm::vec3 *next_pyr);
+int storeBinTreesResult(BitStream &bs, const std::array<BinTreeEntry, 7> &bintree);
 int runTest(Entity &e);

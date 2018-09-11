@@ -157,7 +157,7 @@ struct NpcCreator
                 e->m_char->setName(makeReadableName(persistent_name));
                 e->m_direction = valquat;
                 e->m_entity_data.m_orientation_pyr = {angles.x,angles.y,angles.z};
-                e->m_velocity = { 0,0,0 };
+                e->m_motion_state.m_velocity = { 0,0,0 };
             }
         }
         return true;

@@ -66,8 +66,12 @@ void    toggleJumppack(Entity &e);
 void    toggleControlsDisabled(Entity &e);
 void    toggleFullUpdate(Entity &e);
 void    toggleControlId(Entity &e);
-void    toggleExtraInfo(Entity &e);
+void    toggleInterp(Entity &e);
 void    toggleMoveInstantly(Entity &e);
+void    toggleCollision(Entity &e);
+void    toggleMovementAuthority(Entity &e);
+void    toggleTeamBuffs(PlayerData &c);
+void    toggleLFG(Entity &e);
 
 // Misc Methods
 void    charUpdateDB(Entity *e);
@@ -77,20 +81,12 @@ Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
-void    on_awaiting_dead_no_gurney_test(MapClientSession &session);
+void    positionTest(MapClientSession *tgt);
+void    setInterpolationSettings(MapClientSession *src, const bool active, const uint8_t level, const uint8_t bits);
 
-
-
-// Toggles
-void    toggleTeamBuffs(PlayerData &c);
-
-
-const QString &getFriendDisplayMapName(const Friend &f);
+const QString &getGenericTitle(uint32_t val);
+const QString &getOriginTitle(uint32_t val);
 QString     getEntityDisplayMapName(const EntityData &ed);
-/*
- * Looking for Group
- */
-void    toggleLFG(Entity &e);
 
 
 /*
@@ -108,6 +104,7 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendTimeStateLog(MapClientSession &src, uint32_t control_log);
 void sendClientState(MapClientSession &ent, ClientStates client_state);
 void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay);
@@ -123,10 +120,15 @@ void sendTeamOffer(Entity *src, Entity *tgt);
 void sendFaceEntity(Entity *src, uint8_t tgt_idx);
 void sendFaceLocation(Entity *src, glm::vec3 &location);
 void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg);
+void on_awaiting_dead_no_gurney_test(MapClientSession &session);
 
 
-const QString &getGenericTitle(uint32_t val);
-const QString &getOriginTitle(uint32_t val);
+/*
+ * Power System Methods
+ */
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
+
+
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
@@ -134,12 +136,15 @@ void sendEmailHeaders(Entity *e);
 void readEmailMessage(Entity *e, const int id);
 
 
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
-
+/*
+ * Friend Methods -- Friend System
+ */
+const QString &getFriendDisplayMapName(const Friend &f);
 void addFriend(Entity &src, Entity &tgt);
 void removeFriend(Entity &src, QString friendName);
 bool isFriendOnline(Entity &src, uint32_t db_id);
 void findTeamMember(Entity &tgt);
+
 
 /*
  * Sidekick Methods -- Sidekick system requires teaming.

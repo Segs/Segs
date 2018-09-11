@@ -22,7 +22,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evScene                      ,5)
     EVENT_DECL(MapEventTypes, evEntitiesRequest            ,6)
     EVENT_DECL(MapEventTypes, evEntitiesResponse           ,7)
-    EVENT_DECL(MapEventTypes, evInputState                 ,8)
+    EVENT_DECL(MapEventTypes, evInputStateEvent            ,8)
     EVENT_DECL(MapEventTypes, evClientQuit                 ,9)
     EVENT_DECL(MapEventTypes, evForcedLogout               ,10)
     EVENT_DECL(MapEventTypes, evInitiateMapXfer            ,11)
@@ -79,7 +79,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evSendStance                 ,157) // I think?
     EVENT_DECL(MapEventTypes, evMapXferList                ,158)
     EVENT_DECL(MapEventTypes, evMapXferListClose           ,159)
-//    EVENT_DECL(MapEventTypes, evEnableControlLog         ,160)
+    EVENT_DECL(MapEventTypes, evAddTimeStateLog            ,160)
     EVENT_DECL(MapEventTypes, evLevelUp                    ,161)
     EVENT_DECL(MapEventTypes, evChangeTitle                ,162)
 //    EVENT_DECL(MapEventTypes, evCSRBugReport             ,164)

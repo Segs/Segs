@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Events/StandardDialogCmd.h"
+#include "Events/AddTimeStateLog.h"
 #include "Events/ChangeTitle.h"
 #include "Events/DeadNoGurney.h"
 #include "Events/DoorMessage.h"
@@ -25,6 +25,7 @@
 #include "Events/PowerSystemEvents.h"
 #include "Events/SetClientState.h"
 #include "Events/SidekickOffer.h"
+#include "Events/StandardDialogCmd.h"
 #include "Events/TeamLooking.h"
 #include "Events/TeamOffer.h"
 #include "Events/TrayAdd.h"

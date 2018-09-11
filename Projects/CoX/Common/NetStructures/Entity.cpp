@@ -81,10 +81,11 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const GameDataStore &da
     e.m_player->m_keybinds.resetKeybinds(data.m_keybind_profiles);
     e.m_is_hero = true;
 
-    e.m_direction                         = glm::quat(1.0f,0.0f,0.0f,0.0f);
+    e.m_direction = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 
-const QString &Entity::name() const {
+const QString &Entity::name() const
+{
     return m_char->getName();
 }
 
@@ -121,15 +122,6 @@ void Entity::dump()
     dumpFriends(*this);
 }
 
-void Entity::addPosUpdate(const PosUpdate & p) {
-    m_update_idx = (m_update_idx+1) % 64;
-    m_pos_updates[m_update_idx] = p;
-}
-
-void Entity::addInterp(const PosUpdate & p) {
-    interpResults.emplace_back(p);
-}
-
 Entity::Entity()
 {
 }
@@ -161,15 +153,33 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_pchar_things                    = true;
     e.m_target_idx                      = e.m_idx;
     e.m_assist_target_idx               = 0;
+    e.m_move_type                       = MoveType::MOVETYPE_WALK;
+    e.m_motion_state.m_is_falling       = true;
+    e.m_update_anims = e.m_entity_full_update   = true;
 
     e.m_char = std::make_unique<Character>();
     e.m_player = std::make_unique<PlayerData>();
     e.m_player->reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.might_have_rare = e.m_rare_bits   = true;
+
+    e.m_states.init(); // Initialize movement input state pointers
+    e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
+    e.m_states.previous()->m_pos_start = e.m_states.previous()->m_pos_end = e.m_entity_data.m_pos;
+
+    PosUpdate p;
+    for(int i = 0; i<64; i++)
+    {
+        // Get timestamp in ms
+        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        p.m_position = e.m_entity_data.m_pos;
+        p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
+        p.m_timestamp = now_ms;
+        addPosUpdate(e, p);
+    }
 }
 
-void initializeNewNpcEntity(const GameDataStore &data,Entity &e,const Parse_NPC *src,int idx,int variant)
+void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant)
 {
     e.m_costume_type                    = AppearanceType::NpcCostume;
     e.m_destroyed                       = false;
@@ -185,12 +195,30 @@ void initializeNewNpcEntity(const GameDataStore &data,Entity &e,const Parse_NPC 
     e.m_pchar_things                    = false;
     e.m_target_idx                      = 0;
     e.m_assist_target_idx               = 0;
+    e.m_move_type                       = MoveType::MOVETYPE_WALK;
+    e.m_motion_state.m_is_falling       = true;
+    e.m_update_anims = e.m_entity_full_update   = true;
 
     e.m_char = std::make_unique<Character>();
     e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
     e.m_player.reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.might_have_rare = e.m_rare_bits   = true;
+
+    e.m_states.init(); // Initialize movement input state pointers
+    e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
+    e.m_states.previous()->m_pos_start = e.m_states.previous()->m_pos_end = e.m_entity_data.m_pos;
+
+    PosUpdate p;
+    for(int i = 0; i<64; i++)
+    {
+        // Get timestamp in ms
+        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        p.m_position = e.m_entity_data.m_pos;
+        p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
+        p.m_timestamp = now_ms;
+        addPosUpdate(e, p);
+    }
 }
 
 void markEntityForDbStore(Entity *e, DbStoreFlags f)
@@ -203,9 +231,4 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
     e->m_db_store_flags &= ~uint32_t(f);
 }
 
-void forcePosition(Entity &e, glm::vec3 pos)
-{
-    e.m_entity_data.m_pos = pos;
-    e.m_full_update_count = 10;
-}
 //! @}

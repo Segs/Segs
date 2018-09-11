@@ -39,18 +39,18 @@ uint32_t    getDbId(const Entity &e) { return e.m_db_id; }
 uint32_t    getAccessLevel(const Entity &e) { return e.m_entity_data.m_access_level; }
 uint32_t    getTargetIdx(const Entity &e) { return e.m_target_idx; }
 uint32_t    getAssistTargetIdx(const Entity &e) { return e.m_assist_target_idx; }
-glm::vec3   getSpeed(const Entity &e) { return e.m_spd; }
-float       getBackupSpd(const Entity &e) { return e.m_backup_spd; }
-float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
-uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
+glm::vec3   getSpeed(const Entity &e) { return e.m_motion_state.m_speed; }
+float       getBackupSpd(const Entity &e) { return e.m_motion_state.m_backup_spd; }
+float       getJumpHeight(const Entity &e) { return e.m_motion_state.m_jump_height; }
+uint8_t     getUpdateId(const Entity &e) { return e.m_motion_state.m_motion_state_id; }
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
 void    setMapIdx(Entity &e, uint32_t val) { e.m_entity_data.m_map_idx = val; }
-void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_spd = {v1,v2,v3}; }
-void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
-void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
-void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
+void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_motion_state.m_speed = {v1,v2,v3}; }
+void    setBackupSpd(Entity &e, float val) { e.m_motion_state.m_backup_spd = val; }
+void    setJumpHeight(Entity &e, float val) { e.m_motion_state.m_jump_height = val; }
+void    setUpdateID(Entity &e, uint8_t val) { e.m_motion_state.m_motion_state_id = val;}
 
 void    setTeamID(Entity &e, uint8_t team_id)
 {
@@ -134,28 +134,75 @@ void setAssistTarget(Entity &e)
 void    setu1(Entity &e, int val) { e.u1 = val; }
 
 // Toggles
-void    toggleFlying(Entity &e) { e.m_is_flying = !e.m_is_flying; }
-void    toggleFalling(Entity &e) { e.m_is_falling = !e.m_is_falling; }
-void    toggleJumping(Entity &e) { e.m_is_jumping = !e.m_is_jumping; }
-void    toggleSliding(Entity &e) { e.m_is_sliding = !e.m_is_sliding; }
+void    toggleFlying(Entity &e) { e.m_motion_state.m_is_flying = !e.m_motion_state.m_is_flying; }
+void    toggleFalling(Entity &e) { e.m_motion_state.m_is_falling = !e.m_motion_state.m_is_falling; }
+void    toggleJumping(Entity &e) { e.m_motion_state.m_is_jumping = !e.m_motion_state.m_is_jumping; }
+void    toggleSliding(Entity &e) { e.m_motion_state.m_is_sliding = !e.m_motion_state.m_is_sliding; }
 
 void toggleStunned(Entity &e)
 {
-    e.m_is_stunned = !e.m_is_stunned;
+    e.m_motion_state.m_is_stunned = !e.m_motion_state.m_is_stunned;
     // TODO: toggle stunned FX above head
 }
 
 void toggleJumppack(Entity &e)
 {
-    e.m_has_jumppack = !e.m_has_jumppack;
+    e.m_motion_state.m_has_jumppack = !e.m_motion_state.m_has_jumppack;
     // TODO: toggle costume part for jetpack back item.
 }
 
-void    toggleControlsDisabled(Entity &e) { e.m_controls_disabled = !e.m_controls_disabled; }
+void    toggleControlsDisabled(Entity &e) { e.m_states.current()->m_controls_disabled = !e.m_states.current()->m_controls_disabled; }
 void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
 void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
-void    toggleExtraInfo(Entity &e) { e.m_extra_info = !e.m_extra_info; }
+void    toggleInterp(Entity &e) { e.m_has_interp = !e.m_has_interp; }
 void    toggleMoveInstantly(Entity &e) { e.m_move_instantly = !e.m_move_instantly; }
+
+void toggleCollision(Entity &e)
+{
+    e.m_motion_state.m_no_collision = !e.m_motion_state.m_no_collision;
+    e.m_states.current()->m_no_collision = !e.m_states.current()->m_no_collision;
+
+    if (e.m_motion_state.m_no_collision)
+        e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
+    else
+        e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
+
+    qDebug() << "Collision =" << QString::number(e.m_move_type, 2) << e.m_motion_state.m_no_collision << e.m_states.current()->m_no_collision;
+}
+
+void toggleMovementAuthority(Entity &e)
+{
+    toggleFullUpdate(e);
+    toggleControlId(e);
+}
+
+void toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
+
+/*
+ * Looking For Group
+ */
+void toggleLFG(Entity &e)
+{
+    CharacterData *cd = &e.m_char->m_char_data;
+
+    if(e.m_has_team)
+    {
+        QString errormsg = "You're already on a team! You cannot toggle LFG.";
+        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *e.m_client);
+        errormsg = e.name() + "is already on a team and cannot toggle LFG.";
+        qCDebug(logTeams) << errormsg;
+        removeLFG(e); // just in-case
+        return;
+    }
+
+    if(cd->m_lfg)
+        removeLFG(e);
+    else
+    {
+        addLFG(e);
+        sendTeamLooking(&e);
+    }
+}
 
 // Misc Methods
 void charUpdateDB(Entity *e)
@@ -246,34 +293,62 @@ void sendServerMOTD(MapClientSession *tgt)
     }
 }
 
+void positionTest(MapClientSession *tgt)
+{
+    if(tgt->m_ent->m_type != EntType::PLAYER)
+        return;
+
+    QString output = "==== Position Test =======================\n";
+
+    output += QString("Move Time: %1\n")
+            .arg(tgt->m_ent->m_states.current()->m_move_time, 0, 'f', 1);
+
+    output += QString("Prev Pos <%1, %2, %3>\n")
+            .arg(tgt->m_ent->m_motion_state.m_last_pos.x, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_last_pos.y, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_last_pos.z, 0, 'f', 1);
+
+    output += QString("Server Pos <%1, %2, %3>\n")
+            .arg(tgt->m_ent->m_entity_data.m_pos.x, 0, 'f', 1)
+            .arg(tgt->m_ent->m_entity_data.m_pos.y, 0, 'f', 1)
+            .arg(tgt->m_ent->m_entity_data.m_pos.z, 0, 'f', 1);
+
+    FixedPointValue fpvx(tgt->m_ent->m_entity_data.m_pos.x);
+    FixedPointValue fpvy(tgt->m_ent->m_entity_data.m_pos.y);
+    FixedPointValue fpvz(tgt->m_ent->m_entity_data.m_pos.z);
+    output += QString("Client Pos <%1, %2, %3>\n")
+            .arg(fpvx.store)
+            .arg(fpvy.store)
+            .arg(fpvz.store);
+
+    output += QString("Velocity <%1, %2, %3> @ %4\n")
+            .arg(tgt->m_ent->m_motion_state.m_velocity.x, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_velocity.y, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_velocity.z, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_velocity_scale/255, 0, 'f', 1);
+
+    qDebug().noquote() << output;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, output, *tgt);
+}
+
+void setInterpolationSettings(MapClientSession *src, const bool active, const uint8_t level, const uint8_t bits)
+{
+    g_interpolating = active;
+    g_interpolation_level = level;
+    g_interpolation_bits = bits;
+
+    QString output = QString("Setting Interpolation Settings (active, level, bits): %1, %2, %3")
+            .arg(g_interpolating)
+            .arg(g_interpolation_level)
+            .arg(g_interpolation_bits);
+
+    sendInfoMessage(MessageChannel::DEBUG_INFO, output, *src);
+    qCDebug(logPosition) << output;
+}
+
 void on_awaiting_dead_no_gurney_test(MapClientSession &session)
 {
     session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
-}
-
-void sendEmailHeaders(Entity *e)
-{
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
-
-    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
-}
-
-void readEmailMessage(Entity *e, const int id){
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
-
-    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
 }
 
 /*
@@ -328,10 +403,12 @@ static const QStringList g_origin_titles =
     "Venturous",
     "Watchful",
 };
+
 const QString &getGenericTitle(uint32_t val)
 {
     return g_generic_titles.at(val);
 }
+
 const QString &getOriginTitle(uint32_t val)
 {
     return g_origin_titles.at(val);
@@ -355,33 +432,6 @@ const QString &getFriendDisplayMapName(const Friend &f)
     return getDisplayMapName(f.m_map_idx);
 }
 
-void toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
-
-/*
- * Looking For Group
- */
-void toggleLFG(Entity &e)
-{
-    CharacterData *cd = &e.m_char->m_char_data;
-
-    if(e.m_has_team)
-    {
-        QString errormsg = "You're already on a team! You cannot toggle LFG.";
-        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *e.m_client);
-        errormsg = e.name() + "is already on a team and cannot toggle LFG.";
-        qCDebug(logTeams) << errormsg;
-        removeLFG(e); // just in-case
-        return;
-    }
-
-    if(cd->m_lfg)
-        removeLFG(e);
-    else
-    {
-        addLFG(e);
-        sendTeamLooking(&e);
-    }
-}
 
 /*
  * getMapServerData Wrapper to provide access to NetStructures
@@ -402,6 +452,12 @@ void messageOutput(MessageChannel ch, QString &msg, Entity &tgt)
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendTimeStateLog(MapClientSession &src, uint32_t control_log)
+{
+    qCDebug(logSlashCommand, "Sending %d ControlLog %d", control_log);
+    src.addCommand<AddTimeStateLog>(control_log);
+}
+
 void sendClientState(MapClientSession &ent, ClientStates client_state)
 {
     qCDebug(logSlashCommand) << "Sending ClientState:" << QString::number(client_state);
@@ -576,6 +632,40 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     sendFloatingNumbers(*ent.m_client, tgt_idx, damage);
     setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
 }
+
+
+/*
+ * sendEmail Wrappers for providing access to Email Database
+ */
+void sendEmailHeaders(Entity *e)
+{
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+    MapClientSession *src = e->m_client;
+
+    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
+    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+}
+
+void readEmailMessage(Entity *e, const int id){
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+    MapClientSession *src = e->m_client;
+
+    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
+    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
+}
+
+
+/*
+ * Friend Methods -- Friend System
+ */
 void addFriend(Entity &src, Entity &tgt)
 {
     QString msg;
@@ -661,6 +751,7 @@ void findTeamMember(Entity &tgt)
 {
     sendTeamLooking(&tgt);
 }
+
 bool inviteTeam(Entity &src, Entity &tgt)
 {
     if(src.name() == tgt.name())
@@ -876,6 +967,7 @@ void removeSidekick(Entity &src)
     qCDebug(logTeams).noquote() << msg;
     messageOutput(MessageChannel::USER_ERROR, msg, src);
 }
+
 void removeTeamMember(Team &self, Entity *e)
 {
     qCDebug(logTeams) << "Searching team members for" << e->name() << "to remove them.";
