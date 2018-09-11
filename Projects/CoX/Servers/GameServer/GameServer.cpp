@@ -11,6 +11,7 @@
  */
 
 #include "GameServer.h"
+#include "GameEvents.h"
 
 #include "FriendshipService/FriendHandler.h"
 #include "ConfigExtension.h"

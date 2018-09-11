@@ -347,7 +347,7 @@ QString getEntityDisplayMapName(const EntityData &ed)
     return getDisplayMapName(ed.m_map_idx);
 }
 
-const QString getFriendDisplayMapName(const Friend &f)
+const QString &getFriendDisplayMapName(const Friend &f)
 {
     static const QString offline(QStringLiteral("OFFLINE"));
     if (!f.m_online_status)
@@ -502,7 +502,6 @@ void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg)
     qCDebug(logMapXfers) << QString("Sending Door Message; delay: %1 msg: %2").arg(delay_status).arg(msg);
     tgt.addCommand<DoorMessage>(DoorMessageStatus(delay_status), msg);
 }
-
 
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)
 {

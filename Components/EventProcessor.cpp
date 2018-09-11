@@ -12,6 +12,7 @@
 
 #include "EventProcessor.h"
 #include "SEGSTimer.h"
+#include "TimeEvent.h"
 
 #include <cassert>
 #ifdef _MSC_VER

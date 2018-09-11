@@ -33,6 +33,7 @@
 #include "MapManager.h"
 #include "MapSceneGraph.h"
 #include "MapServer.h"
+#include "TimeEvent.h"
 #include "GameData/GameDataStore.h"
 #include "MapTemplate.h"
 #include "NetStructures/Character.h"
@@ -79,7 +80,7 @@ namespace
     const ACE_Time_Value sync_service_update_interval(0, 30000*1000);
     const ACE_Time_Value afk_update_interval(0, 1000 * 1000);
     const ACE_Time_Value resend_interval(0,250*1000);
-    const ACE_Time_Value maximum_time_without_packets(2,0);
+    const CRUDLink::duration maximum_time_without_packets(2000);
     const constexpr int MinPacketsToAck=5;
 
     void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &locations_scriptname)
@@ -110,7 +111,7 @@ protected:
 using namespace std;
 MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr)
   : m_data_path(mapdir_path), m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
-    m_world_update_timer(nullptr), m_addresses(listen_addr)
+    m_addresses(listen_addr)
 {
     m_world = new World(m_entities, serverData().m_player_fade_in);
     m_scripting_interface.reset(new ScriptingEngine);
@@ -589,7 +590,7 @@ void MapInstance::on_link_lost(Event *ev)
     //todo: notify all clients about entity removal
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token, ent->m_db_id},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
 
     // one last character update for the disconnecting entity
     send_character_update(ent);
@@ -611,7 +612,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     assert(ent);
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token, ent->m_db_id},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
 
     removeLFG(*ent);
     leaveTeam(*ent);
@@ -743,7 +744,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
     tgt->putq(new ClientConnectedMessage(
-        {ev->session_token(),m_owner_id,m_instance_id, e->m_db_id},0));
+        {ev->session_token(),m_owner_id,m_instance_id,map_session.auth_id()},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
@@ -773,7 +774,7 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
     tgt->putq(new ClientConnectedMessage(
-        {ev->session_token(),m_owner_id,m_instance_id, e->m_db_id},0));
+        {ev->session_token(),m_owner_id,m_instance_id, map_session.auth_id()},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());

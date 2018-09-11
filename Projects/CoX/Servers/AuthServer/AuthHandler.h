@@ -24,6 +24,7 @@ namespace SEGSEvents
 {
 struct RetrieveAccountResponse;
 struct ValidatePasswordResponse;
+class Timeout;
 }
 
 enum eAuthError

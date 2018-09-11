@@ -85,7 +85,7 @@ void    on_awaiting_dead_no_gurney_test(MapClientSession &session);
 void    toggleTeamBuffs(PlayerData &c);
 
 
-const QString getFriendDisplayMapName(const Friend &f);
+const QString &getFriendDisplayMapName(const Friend &f);
 QString     getEntityDisplayMapName(const EntityData &ed);
 /*
  * Looking for Group
