@@ -85,6 +85,7 @@ class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;
 class AwaitingDeadNoGurney;
+class BrowserClose;
 // server<-> server event types
 struct ExpectMapClientRequest;
 struct WouldNameDuplicateResponse;
@@ -221,4 +222,5 @@ protected:
         void on_buy_enhancement_slot(SEGSEvents::BuyEnhancementSlot *ev);
         void on_recv_new_power(SEGSEvents::RecvNewPower *ev);
         void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
+        void on_browser_close(SEGSEvents::BrowserClose *ev);
 };

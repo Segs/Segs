@@ -481,6 +481,9 @@ void MapInstance::dispatch( Event *ev )
         case evAwaitingDeadNoGurney:
             on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
             break;
+        case evBrowserClose:
+            on_browser_close(static_cast<BrowserClose *>(ev));
+            break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
     }
@@ -2348,6 +2351,13 @@ void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
+}
+
+void MapInstance::on_browser_close(BrowserClose *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received BrowserClose";
 }
 
 

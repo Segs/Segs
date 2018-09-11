@@ -88,6 +88,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evEmailMessageStatus         ,167)
     EVENT_DECL(MapEventTypes, evEntityInfoResponse         ,169) // Send entity info (description)
 //    EVENT_DECL(MapEventTypes, evClueUpdate               ,170)
+    EVENT_DECL(MapEventTypes, evBrowser                    ,176)
     EVENT_DECL(MapEventTypes, evTrayAdd                    ,182)
     EVENT_DECL(MapEventTypes, evCombineEnhanceResponse     ,183)
 // client -> server commands
@@ -133,6 +134,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evSaveClientOptions          ,265)
     EVENT_DECL(MapEventTypes, evRecvSelectedTitles         ,266)
     EVENT_DECL(MapEventTypes, evDescriptionAndBattleCry    ,267)
+    EVENT_DECL(MapEventTypes, evBrowserClose               ,277)
     END_EVENTS(MapEventTypes, 1500)
 };
 } // end of SEGSEvents namespace

@@ -895,6 +895,7 @@ public:
 };
 } // end of SEGSEvents namespace
 
+#include "Events/Browser.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/EntitiesResponse.h"
 #include "Events/FriendsListUpdate.h"

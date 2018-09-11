@@ -12,6 +12,8 @@ namespace
         "ActivateInspiration",
         "ActivatePower",
         "ActivatePowerAtLocation",
+        "Browser",
+        "BrowserClose",
         "BuyEnhancementSlot",
         "ChangeStance",
         "ChangeTitle",
