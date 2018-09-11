@@ -12,6 +12,15 @@
 
 class EventProcessor;
 class MessageBus;
+//!
+//! \brief The EventProcessorHandle struct is used as a pointer-free reference to an EventProcessor
+//! It's used for serializing SEGSEvents::Event 's event sources
+//!
+struct EventProcessorHandle
+{
+    uint32_t m_type_id;
+    uint32_t m_instance_id;
+};
 ///
 /// \brief The HandlerLocator class is meant as a central point where each service registers it's presence,
 /// and messages can be passed to it.

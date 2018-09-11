@@ -45,7 +45,8 @@ namespace
             {
                 return new GameLink(down,this);
             }
-        };
+            IMPL_ID(GameLinkEndpoint)
+    };
 }
 
 class GameServer::PrivateData

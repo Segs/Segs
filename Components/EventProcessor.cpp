@@ -13,6 +13,10 @@
 #include "EventProcessor.h"
 #include "SEGSTimer.h"
 #include "TimeEvent.h"
+#include "cereal/cereal.hpp"
+#include "cereal/archives/binary.hpp"
+#include "cereal/types/string.hpp"
+#include "cereal/types/deque.hpp"
 
 #include <cassert>
 #ifdef _MSC_VER
@@ -88,8 +92,30 @@ int EventProcessor::process_single_event()
 int EventProcessor::putq(Event *ev,ACE_Time_Value *timeout)
 {
 #ifdef EVENT_RECORDING
+    std::stringstream os;
+    ev->do_serialize(os);
+    m_previous_events.push_back(os.str());
+    if(m_previous_events.size()>1000)
+        m_previous_events.pop_front();
 #endif
     return super::putq(ev,timeout);
+}
+
+void EventProcessor::save_state(std::ostream &os)
+{
+    cereal::BinaryOutputArchive archive(os);
+    archive(cereal::make_nvp("Handle", get_id()));
+    archive(cereal::make_nvp("State", m_previous_state));
+    archive(cereal::make_nvp("Events", m_previous_events));
+}
+
+void EventProcessor::restore_state(std::istream &is)
+{
+    cereal::BinaryInputArchive archive(is);
+    EventHistory history;
+    SerializedState state_data;
+    archive(cereal::make_nvp("State", state_data));
+    archive(cereal::make_nvp("Events", history));
 }
 
 //! @}

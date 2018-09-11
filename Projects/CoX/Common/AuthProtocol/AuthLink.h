@@ -59,6 +59,7 @@ public:
         ACE_HANDLE      get_handle () const override {return m_peer.get_handle();}
         eLinkStage      get_link_stage() const;
         void            set_link_stage(AuthLink::eLinkStage stage);
+                        IMPL_ID(AuthLink)
 protected:
 
         EventProcessor *m_target; // Target handler of this link

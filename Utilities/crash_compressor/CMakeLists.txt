@@ -1,0 +1,1 @@
+add_executable(crash_compressor main.cpp)

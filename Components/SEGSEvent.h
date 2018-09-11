@@ -80,8 +80,6 @@ virtual                 ~Event()
         EventSrc *      src() const {return m_event_source;}
         uint32_t        type() const {return m_type;}
 virtual const char *    info();
-
-protected:
 virtual void            do_serialize(std::ostream &os)  = 0;
 };
 #define EVENT_IMPL(name)\
@@ -89,6 +87,8 @@ virtual void            do_serialize(std::ostream &os)  = 0;
     void serialize(Archive & archive); \
     void do_serialize(std::ostream &os) override {\
         cereal::BinaryOutputArchive oarchive(os);\
+        oarchive(cereal::make_nvp("Type", this->type()));\
+        oarchive(cereal::make_nvp("SourceHandle", uint64_t(m_event_source)));\
         oarchive(*this);\
     }\
     ~name() override = default;

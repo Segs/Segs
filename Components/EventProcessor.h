@@ -9,12 +9,18 @@
 #include "SEGSEvent.h"
 #include <ace/Task_Ex_T.h>
 #include <iosfwd>
+#include <deque>
+
+#define EVENT_RECORDING
+
 // Independent Task, each EventProcessor when activated dequeues SEGSEvents,
 // and dispatches them
 class EventSrc : public ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvents::Event>
 {
 public:
-    using ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvents::Event>::ACE_Task_Ex;
+using ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvents::Event>::ACE_Task_Ex;
+
+virtual uint64_t        get_id() const = 0;
 };
 /** Independent Task, each EventProcessor when activated dequeues SEGSEvents,
     and dispatches them
@@ -22,7 +28,8 @@ public:
 class EventProcessor : public EventSrc
 {
 using super = EventSrc;
-
+using EventHistory = std::deque<std::string>;
+using SerializedState = std::string;
 
         int             svc() final;
 public:
@@ -30,7 +37,8 @@ public:
         int             open(void *args = nullptr) override;
         int             process_single_event();
 virtual int             putq(SEGSEvents::Event *ev, ACE_Time_Value *timeout=nullptr);
-virtual uint64_t        get_id() const = 0;
+        void            save_state(std::ostream &is);
+        void            restore_state(std::istream &is);
 protected:
                         /// Called in svc before it starts servicing events, if it returns false, the svc will return -1
                         /// thus ending that particular thread
@@ -38,8 +46,13 @@ virtual bool            per_thread_startup() { return true; }
 virtual void            per_thread_shutdown() { ; }
 
 virtual void            dispatch(SEGSEvents::Event *ev)=0;
+
 virtual void            serialize_from(std::istream &is) = 0;
 virtual void            serialize_to(std::ostream &is) = 0;
+#ifdef EVENT_RECORDING
+        EventHistory    m_previous_events;
+        SerializedState m_previous_state;
+#endif
 };
 #define IMPL_ID(EventProcessorChildType)\
     enum { processor_id = CompileTimeUtils::hash_64_fnv1a_const(#EventProcessorChildType) };\

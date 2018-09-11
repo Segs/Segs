@@ -17,6 +17,7 @@ struct GameLink : public CRUDLink
         m_target = tgt;
         assert(tgt);
     }
+    IMPL_ID(GameLink)
     // CRUDLink interface
 protected:
     CRUD_EventFactory &factory() override

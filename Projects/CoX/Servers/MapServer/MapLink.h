@@ -15,6 +15,7 @@ struct MapLink final : public CRUDLink
         m_target = tgt;
         assert(tgt);
     }
+    IMPL_ID(MapLink)
     // CRUDLink interface
 protected:
     CRUD_EventFactory &factory() override
