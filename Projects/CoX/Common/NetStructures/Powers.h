@@ -68,8 +68,80 @@ static const constexpr  uint32_t    class_version = 1;
         bool            m_has_insp          = false;
 };
 
-// TODO: client will only accept 5col x 4row of insps MAX, see Issue #524
-using vInspirations = std::array< std::array<CharacterInspiration, 4>, 5>;
+struct vInspirations
+{
+    static const constexpr uint32_t class_version = 1;
+    std::vector<std::vector<CharacterInspiration>> m_inspirations;
+
+    // although in some cases people prefer [row][col], i'll be using x -> col and y -> row
+    size_t m_rows, m_cols;
+
+    vInspirations(size_t cols = 5, size_t rows = 4)
+    {
+        if (cols > 5)
+            qCritical() << "vInspirations has more than 5 columns!";
+        if (rows > 4)
+            qCritical() << "vInspirations has more than 4 rows!";
+
+        m_cols = cols;
+        m_rows = rows;
+        // m_inspirations.reserve(m_cols * m_rows);
+
+        // first, create the columns
+        m_inspirations.resize(m_cols);
+
+        // then in each column, create the rows
+        for (size_t i = 0; i < m_cols; ++i)
+            m_inspirations[i].resize(m_rows);
+    }
+
+    int size()
+    {
+        return m_cols * m_rows;
+    }
+
+    CharacterInspiration& at (const size_t col, const size_t row)
+    {
+        if (col >= m_cols || row >= m_rows)
+            qCritical() << QString("Trying to access vInspirations of %1 rows %2 cols using params %3 rows %4 cols");
+
+        return m_inspirations[col][row];
+    }
+
+    CharacterInspiration& from_first_row (const size_t col)
+    {
+        if (!m_inspirations[col][0].m_has_insp)
+            push_to_first_row(col);
+
+        return m_inspirations[col][0];
+    }
+
+    CharacterInspiration value(const size_t col, const size_t row) const
+    {
+        return m_inspirations[col][row];
+    }
+
+    void resize (const size_t newCol, const size_t newRow)
+    {
+        m_inspirations.resize(newCol);
+        for (size_t i = 0; i < m_cols; ++i)
+            m_inspirations[i].resize(newRow);
+
+        m_cols = newCol;
+        m_rows = newRow;
+    }
+
+    void push_to_first_row (const size_t col)
+    {
+        size_t i = 1;
+        while (m_inspirations[col][0].m_has_insp && i < m_rows)
+        {
+            if (m_inspirations[col][i].m_has_insp)
+                std::swap(m_inspirations[col][0], m_inspirations[col][i]);
+            i++;
+        }
+    }
+};
 
 struct CharacterEnhancement
 {
