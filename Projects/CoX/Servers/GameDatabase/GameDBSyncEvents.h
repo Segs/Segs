@@ -193,7 +193,7 @@ struct GameAccountResponseCharacterData
 
 struct GameAccountResponseData
 {
-    uint64_t m_game_server_acc_id;
+    uint32_t m_game_server_acc_id;
     int m_max_slots;
     std::vector<GameAccountResponseCharacterData> m_characters;
     GameAccountResponseCharacterData &get_character(size_t idx)

@@ -497,14 +497,14 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
     {
         for(int j = 0; j < max_rows; ++j)
         {
-            qCDebug(logPowers) << "  Inspiration:" << i << j << cd->m_inspirations[i][j].m_has_insp;
+            qCDebug(logPowers) << "  Inspiration:" << i << j << cd->m_inspirations.at(i, j).m_has_insp;
 
             bs.StorePackedBits(3, i); // iCol
             bs.StorePackedBits(3, j); // iRow
 
-            bs.StoreBits(1, cd->m_inspirations[i][j].m_has_insp);
-            if(cd->m_inspirations[i][j].m_has_insp)
-                cd->m_inspirations[i][j].m_insp_info.serializeto(bs);
+            bs.StoreBits(1, cd->m_inspirations.at(i, j).m_has_insp);
+            if(cd->m_inspirations.at(i, j).m_has_insp)
+                cd->m_inspirations.at(i, j).m_insp_info.serializeto(bs);
         }
     }
 

@@ -488,7 +488,7 @@ void MapInstance::dispatch( Event *ev )
 
 void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
 {
-    
+
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapLink *lnk = session.link();
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
@@ -497,15 +497,15 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
          qCDebug(logMapXfers) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
          return;
     }
-    
+
     // This is used here to get the map idx to send to the client for the transfer, but we
     // remove it from the std::map after the client has sent us the ClientRenderingResumed event so we
     // can prevent motd showing every time.
-    uint8_t map_idx = map_server->session_map_xfer_idx(lnk->session_token()); 
+    uint8_t map_idx = map_server->session_map_xfer_idx(lnk->session_token());
     QString map_path = getMapPath(map_idx).toLower();
     GameAccountResponseCharacterData c_data;
     QString serialized_data;
-    
+
     fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
     serializeToQString(c_data, serialized_data);
     ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, lnk->peer_addr(),
@@ -588,7 +588,7 @@ void MapInstance::on_link_lost(Event *ev)
     //todo: notify all clients about entity removal
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
 
     // one last character update for the disconnecting entity
     send_character_update(ent);
@@ -1971,10 +1971,10 @@ void MapInstance::on_enter_door(EnterDoor *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    
+
     // ev->name is the map_idx when using the map menu currently.
     if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
-    {   
+    {
         uint8_t map_idx = ev->name.toInt();
         if (ev->location.x != 0 || ev->location.y != 0 || ev->location.z != 0)
             map_idx = std::rand() % 23;
@@ -1985,7 +1985,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
         if (map_idx == m_index)
             map_idx = (map_idx + 1) % 23;
         map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
-        session.link()->putq(new MapXferWait(getMapPath(map_idx))); 
+        session.link()->putq(new MapXferWait(getMapPath(map_idx)));
     }
     else
     {

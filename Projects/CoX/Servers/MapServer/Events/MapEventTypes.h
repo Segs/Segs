@@ -35,7 +35,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evMapXferRequest             ,111)
     EVENT_DECL(MapEventTypes, evStandardDialogCmd          ,114)
     EVENT_DECL(MapEventTypes, evInfoMessageCmd             ,115)
-//    EVENT_DECL(MapEventTypes, evDoorMsg                  ,116)
+    EVENT_DECL(MapEventTypes, evDoorMessage                ,116)
 //    EVENT_DECL(MapEventTypes, evConsoleOutput            ,117)
     EVENT_DECL(MapEventTypes, evSetClientState             ,118)
 //    EVENT_DECL(MapEventTypes, evConPrintf                ,119)

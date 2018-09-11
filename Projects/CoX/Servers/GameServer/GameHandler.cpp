@@ -143,7 +143,7 @@ void GameHandler::on_account_data(GameAccountResponse *ev)
     session.m_game_account = ev->m_data;
     // Inform auth server about succesful client connection
     EventProcessor *tgt      = HandlerLocator::getAuth_Handler();
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),ev->m_data.m_game_server_acc_id },0));
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),0,ev->m_data.m_game_server_acc_id },0));
 
     m_session_store.add_to_active_sessions(&session);
     CharacterSlots *slots_event=new CharacterSlots;

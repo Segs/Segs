@@ -24,6 +24,7 @@
 #include "glm/mat4x4.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <QSet>
+#include <memory>
 
 namespace
 {
@@ -41,7 +42,7 @@ MapSceneGraph::~MapSceneGraph()
 
 bool MapSceneGraph::loadFromFile(const QString &filename)
 {
-    m_scene_graph.reset(new SceneGraph);
+    m_scene_graph = std::make_unique<SceneGraph>();
     LoadingContext ctx;
     ctx.m_target = m_scene_graph.get();
     int geobin_idx= filename.indexOf("geobin");
@@ -68,6 +69,7 @@ void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function
 {
     if (!visit_func(self, accumulated))
         return;
+
     for(const auto & child : self->children)
     {
         glm::mat4 transform(child.m_matrix2);

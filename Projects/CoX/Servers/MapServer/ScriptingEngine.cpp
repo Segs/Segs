@@ -66,7 +66,7 @@ ScriptingEngine::~ScriptingEngine()
 }
 
 template<class T>
-static void destruction_is_an_error(T &v)
+static void destruction_is_an_error(T &/*v*/)
 {
     assert(false);
 }

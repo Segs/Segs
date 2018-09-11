@@ -18,6 +18,7 @@ struct Friend;
 struct FriendsList;
 struct Sidekick;
 struct CharacterData;
+struct vInspirations;
 
 template<class Archive>
 void serialize(Archive &archive, PowerPool_Info &poolinfo, uint32_t const version);
@@ -37,5 +38,7 @@ template<class Archive>
 void serialize(Archive &archive, Sidekick &sk, uint32_t const version);
 template<class Archive>
 void serialize(Archive &archive, CharacterData &cd, uint32_t const version);
+template<class Archive>
+void serialize(Archive &archive, vInspirations &vIn, uint32_t const version);
 
 void saveTo(const CharacterData &target,const QString &baseName,bool text_format=false);
