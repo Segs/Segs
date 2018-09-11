@@ -7,18 +7,16 @@
 
 #pragma once
 #include "CRUDP_Protocol.h"
-#include "EventProcessor.h"
 #include "Common/CRUDP_Protocol/ILink.h"
-#include "PacketCodec.h"
 
-#include <ace/ACE.h>
-#include <ace/Synch.h>
-#include <ace/SOCK_Dgram.h>
+#include <ace/INET_Addr.h>
 #include <ace/Reactor_Notification_Strategy.h>
-#include <ace/Thread_Mutex.h>
-#include <ace/Guard_T.h>
+#include <ace/SOCK_Dgram.h>
+#include <ace/config-macros.h>
+#include <stddef.h>
+#include <chrono>
 
-#include <cassert>
+class EventSrc;
 
 namespace SEGSEvents
 {
@@ -35,7 +33,8 @@ public:
 
 using stream_type = ACE_SOCK_Dgram;
 using addr_type = ACE_INET_Addr;
-
+using time_point = std::chrono::steady_clock::time_point;
+using duration = std::chrono::milliseconds;
 public:
                             CRUDLink();
                             ~CRUDLink() override;
@@ -47,14 +46,8 @@ public:
         stream_type &       peer() { return peer_; }
         addr_type &         peer_addr() { return m_peer_addr; }
 
-        ACE_Time_Value      client_last_seen_packets() const //! return the amount of time this client hasn't received anything
-                            {
-                                return ACE_OS::gettimeofday()-m_last_recv_activity;
-                            }
-        ACE_Time_Value      last_sent_packets() const //! return the amount of time this client wasn't sending anything
-                            {
-                                return ACE_OS::gettimeofday()-m_last_send_activity;
-                            }
+        duration            client_last_seen_packets() const;
+        duration            last_sent_packets() const;
         size_t              client_packets_waiting_for_ack() const { return m_protocol.UnackedPacketCount(); }
 protected:
         int                 handle_close(ACE_HANDLE h, ACE_Reactor_Mask c) override;
@@ -68,8 +61,8 @@ virtual CRUD_EventFactory &                 factory() = 0;
         ACE_HANDLE                          get_handle() const override {return peer_.get_handle();}
 
         ACE_Reactor_Notification_Strategy   m_notifier; //!< our queue will use this to inform the reactor of it's new elements
-        ACE_Time_Value                      m_last_recv_activity; //!< last link activity time
-        ACE_Time_Value                      m_last_send_activity; //!< last send activity on the link
+        time_point                          m_last_recv_activity; //!< last link activity time
+        time_point                          m_last_send_activity; //!< last send activity on the link
         CrudP_Protocol                      m_protocol;
         stream_type                         peer_;  //!< Maintain connection with client.
         addr_type                           m_peer_addr;

@@ -32,12 +32,12 @@ void GameDBSyncService::dispatch(Event *ev)
     }
 }
 
-void GameDBSyncService::serialize_from(std::istream &is)
+void GameDBSyncService::serialize_from(std::istream &/*is*/)
 {
     assert(false);
 }
 
-void GameDBSyncService::serialize_to(std::ostream &is)
+void GameDBSyncService::serialize_to(std::ostream &/*is*/)
 {
     assert(false);
 }

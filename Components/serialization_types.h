@@ -19,6 +19,7 @@
 #include <cereal/types/vector.hpp>
 #include <cereal/types/array.hpp>
 #include <cereal/types/string.hpp>
+#include <cereal/types/chrono.hpp>
 #include <cereal/cereal.hpp>
 #include <ace/Time_Value.h>
 #include <ace/INET_Addr.h>
