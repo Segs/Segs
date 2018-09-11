@@ -236,8 +236,7 @@ void sendServerMOTD(MapClientSession *tgt)
     if(file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         QString contents(file.readAll());
-        StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-        tgt->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+        tgt->addCommand<StandardDialogCmd>(contents);
     }
     else {
         QString errormsg = "Failed to load MOTD file. \'" + file.fileName() + "\' not found.";
@@ -501,6 +500,12 @@ void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg)
 {
     qCDebug(logMapXfers) << QString("Sending Door Message; delay: %1 msg: %2").arg(delay_status).arg(msg);
     tgt.addCommand<DoorMessage>(DoorMessageStatus(delay_status), msg);
+}
+
+void sendBrowser(MapClientSession &tgt, QString &content)
+{
+    qCDebug(logMapEvents) << QString("Sending Browser");
+    tgt.addCommand<Browser>(content);
 }
 
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)

@@ -13,10 +13,7 @@
 #include "SlashCommand.h"
 
 #include "DataHelpers.h"
-#include "Events/ClientStates.h"
-#include "Events/StandardDialogCmd.h"
-#include "Events/DoorMessage.h"
-#include "Events/InfoMessageCmd.h"
+#include "Events/GameCommandList.h"
 #include "Events/MapXferWait.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
@@ -104,6 +101,8 @@ void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
 void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Browser(const QString &cmd, MapClientSession &sess);
+
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
 void moveTo(const QString &cmd, MapClientSession &sess);
@@ -193,6 +192,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
     {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
+    {{"browser"}, "Test Browser. Sends content to a browser window", cmdHandler_Browser, 9},
 
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", addNpc, 2},
@@ -957,6 +957,14 @@ void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess)
     sendDoorMessage(sess, DoorMessageStatus(delay_status), msg);
 }
 
+void cmdHandler_Browser(const QString &cmd, MapClientSession &sess)
+{
+    int space = cmd.indexOf(' ');
+    QString content = cmd.mid(space+1);
+    sendBrowser(sess, content);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 2 Commands
 void addNpc(const QString &cmd, MapClientSession &sess)
@@ -1024,7 +1032,7 @@ void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess)
 {
 
     QString msg = "Below is a list of all slash commands that your account can access. They are not case sensitive.\n";
-    QString msg_dlg = "<face heading><span align=center><color #ff0000>Command List</color></span></face><br>\n<br>\n";
+    QString content = "<face heading><span align=center><color #ff0000>Command List</color></span></face><br>\n<br>\n";
 
     for (const auto &sc : g_defined_slash_commands)
     {
@@ -1039,15 +1047,14 @@ void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess)
         // Use msg for std out, msg_dlg for ingame dialog box
         msg += "\t" + sc.m_valid_prefixes.join(", ") + " [" + QString::number(sc.m_required_access_level) +
                "]:\t" + sc.m_help_text + "\n";
-        msg_dlg += QString("<color #ffCC99><i>%1</i></color>[<color #66ffff>%2</color>]: %3<br>")
+        content += QString("<color #ffCC99><i>%1</i></color>[<color #66ffff>%2</color>]: %3<br>")
                        .arg(sc.m_valid_prefixes.join(", "))
                        .arg(sc.m_required_access_level)
                        .arg(sc.m_help_text);
     }
 
-    // Dialog output
-    StandardDialogCmd *dlg = new StandardDialogCmd(msg_dlg);
-    sess.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+    // Browser output
+    sess.addCommand<Browser>(content);
     // CMD line (debug) output
     qCDebug(logSlashCommand).noquote() << cmd << ":\n" << msg;
 }
