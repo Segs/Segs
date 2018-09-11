@@ -490,11 +490,19 @@ void sendFaceEntity(Entity *src, uint8_t tgt_idx)
     qCDebug(logOrientation) << QString("Sending Face Entity to %1").arg(tgt_idx);
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceEntity>(new FaceEntity(tgt_idx)));
 }
+
 void sendFaceLocation(Entity *src, glm::vec3 &loc)
 {
     qCDebug(logOrientation) << QString("Sending Face Location to x: %1 y: %2 z: %3").arg(loc.x).arg(loc.y).arg(loc.z);
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceLocation>(new FaceLocation(loc)));
 }
+
+void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg)
+{
+    qCDebug(logMapXfers) << QString("Sending Door Message; delay: %1 msg: %2").arg(delay_status).arg(msg);
+    tgt.addCommand<DoorMessage>(DoorMessageStatus(delay_status), msg);
+}
+
 
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)
 {
