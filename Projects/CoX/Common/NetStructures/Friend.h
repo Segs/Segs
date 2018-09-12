@@ -16,7 +16,7 @@ struct Friend
 {
 static const constexpr  uint32_t    class_version   = 1;
                         bool        m_online_status;
-                        int         m_db_id;           // m_db_id
+                        uint32_t    m_db_id;           // m_db_id
                         QString     m_name;
                         uint8_t     m_class_idx;
                         uint8_t     m_origin_idx;

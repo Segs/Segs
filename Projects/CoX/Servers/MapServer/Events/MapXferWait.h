@@ -28,7 +28,7 @@ public:
                     bs.StorePackedBits(1, 10);  // opcode 
                     bs.StoreString(m_map_name);
                 }
-    void        serializefrom(BitStream &src) override
+    void        serializefrom(BitStream &/*src*/) override
                 {
                 }
     EVENT_IMPL(MapXferWait)

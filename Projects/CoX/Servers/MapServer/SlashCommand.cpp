@@ -139,7 +139,6 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FriendList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MapXferList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ReSpec(const QString &cmd, MapClientSession &sess);
-
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess);
@@ -937,7 +936,7 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
 {
-    int level = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    uint32_t level = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     // levelup command appears to only work 1 level at a time.
     if(level > sess.m_ent->m_char->m_char_data.m_level+1)

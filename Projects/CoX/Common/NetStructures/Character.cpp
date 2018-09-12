@@ -253,7 +253,7 @@ void Character::sendOwnedPowers(BitStream &bs) const
             bs.StoreFloat(power.m_range);
 
             bs.StorePackedBits(4, power.m_total_eh_slots);
-            for(int i = 0; i < power.m_total_eh_slots; ++i)
+            for(uint32_t i = 0; i < power.m_total_eh_slots; ++i)
             {
                 bs.StoreBits(1, power.m_enhancements[i].m_slot_used); // slot has enhancement
                 if(power.m_enhancements[i].m_slot_used)

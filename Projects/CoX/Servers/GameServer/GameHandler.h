@@ -6,8 +6,6 @@
  */
 
 #pragma once
-#include "GameLink.h"
-#include "GameEvents.h"
 #include "EventProcessor.h"
 #include "Common/Servers/ClientManager.h"
 #include "GameDatabase/GameDBSyncEvents.h"
@@ -16,7 +14,21 @@
 class CharacterClient;
 class GameServer;
 class SEGSTimer;
+struct GameLink;
+namespace SEGSEvents
+{
+class UpdateServer;
+class UpdateCharacter;
+class DeleteCharacter;
+class MapServerAddrRequest;
+class Timeout;
 
+// internal events
+class Idle;
+class DisconnectRequest;
+class ConnectRequest;
+class UnknownEvent;
+}
 struct GameSession
 {
     enum eTravelDirection

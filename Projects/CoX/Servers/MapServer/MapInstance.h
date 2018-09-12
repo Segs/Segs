@@ -87,6 +87,7 @@ class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;
 class AwaitingDeadNoGurney;
+class Timeout;
 // server<-> server event types
 struct ExpectMapClientRequest;
 struct WouldNameDuplicateResponse;
