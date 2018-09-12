@@ -173,11 +173,14 @@ void Character::GetCharBuildInfo(BitStream &src, const GameDataStore &data)
         QStringList inherent_and_preorders = config.value("inherent_powers","Brawl").toString().split(',');
         QStringList starting_temps = config.value("starting_temps","EMP_Glove").toString().split(',');
         QStringList starting_insps = config.value("starting_inspirations","Resurgence").toString().split(',');
-        int startlevel = config.value(QStringLiteral("level_bonus"), "0").toInt();
+        int startlevel = config.value(QStringLiteral("starting_level"), "1").toInt() -1; //combat level is m_level +1, so it gets back to starting_level
         int startinf = config.value(QStringLiteral("starting_inf"), "0").toInt();
     config.endGroup();
 
-    m_char_data.m_level = startlevel; //combat level is m_level +1
+    if (startlevel<0)
+        startlevel = 0;// make sure it isn't negative
+
+    m_char_data.m_level = startlevel;
     m_char_data.m_influence = startinf;
 
     // Temporary Powers MUST come first (must be idx 0)
