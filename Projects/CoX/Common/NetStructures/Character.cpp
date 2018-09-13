@@ -101,7 +101,7 @@ void Character::sendTray(BitStream &bs) const
 void Character::finalizeLevel(const GameDataStore &data)
 {
     uint32_t max_xp = data.expMaxLevel();
-
+    if (m_char_data.m_level == 4294967295){m_char_data.m_level = 0;}// /levelup can set this negative, need to bring it up
     m_char_data.m_combat_level = m_char_data.m_level + 1; // m_combat_level is display level?
 
     if(m_char_data.m_combat_level >= max_xp)
@@ -128,7 +128,7 @@ void Character::finalizeLevel(const GameDataStore &data)
     m_char_data.m_powers_updated = false;
 }
 
-void Character::addStartingInspirations(const GameDataStore &data, QStringList starting_insps)
+void Character::addStartingInspirations(const GameDataStore &data, QStringList &starting_insps)
 {
     for (QString &name : starting_insps)
         addInspirationByName(data,m_char_data, name);
@@ -173,12 +173,9 @@ void Character::GetCharBuildInfo(BitStream &src, const GameDataStore &data)
         QStringList inherent_and_preorders = config.value("inherent_powers","Brawl").toString().split(',');
         QStringList starting_temps = config.value("starting_temps","EMP_Glove").toString().split(',');
         QStringList starting_insps = config.value("starting_inspirations","Resurgence").toString().split(',');
-        int startlevel = config.value(QStringLiteral("starting_level"), "1").toInt() -1; //combat level is m_level +1, so it gets back to starting_level
-        int startinf = config.value(QStringLiteral("starting_inf"), "0").toInt();
+        uint startlevel = config.value(QStringLiteral("starting_level"), "1").toUInt() -1; //combat level is m_level +1, so it gets back to starting_level
+        uint startinf = config.value(QStringLiteral("starting_inf"), "0").toUInt();
     config.endGroup();
-
-    if (startlevel<0)
-        startlevel = 0;// make sure it isn't negative
 
     m_char_data.m_level = startlevel;
     m_char_data.m_influence = startinf;
