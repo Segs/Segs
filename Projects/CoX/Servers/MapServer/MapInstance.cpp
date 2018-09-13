@@ -2404,7 +2404,6 @@ void MapInstance::on_afk_update()
 void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    //static const ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received Create SuperGroup"
                           << ev->data.m_sg_name
@@ -2416,11 +2415,14 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
                           << ev->data.m_sg_colors[1];
 
 
-    // Check for everything, then give success
-    //Costume sg_costume;
-    //bool val = true;
-    //session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<SuperGroupResponse>(new SuperGroupResponse(val)));
-    //session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<SuperGroupCostume>(new SuperGroupCostume(sg_costume, packer)));
+    Costume costume = *session.m_ent->m_char->getCurrentCostume();
+    // Check everything first, then give success
+    bool val = false;
+    if(ev->data.m_sg_name.contains("Success", Qt::CaseInsensitive))
+        val = true;
+
+    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<SuperGroupResponse>(new SuperGroupResponse(val, costume)));
+
     addSuperGroup(*session.m_ent, ev->data);
 }
 

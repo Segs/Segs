@@ -24,6 +24,9 @@ struct MapClientSession;
 struct CharacterPowerSet;
 struct CharacterPower;
 class GameDataStore;
+struct Costume;
+class BitStream;
+
 
 
 /*
@@ -123,6 +126,7 @@ void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
 void sendFaceEntity(Entity *src, uint8_t tgt_idx);
 void sendFaceLocation(Entity *src, glm::vec3 &location);
+void serializeCostume(Costume costume, BitStream bs);
 
 
 const QString &getGenericTitle(uint32_t val);

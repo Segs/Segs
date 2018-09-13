@@ -10,6 +10,7 @@
 #include "MapEventTypes.h"
 #include "NetStructures/Costume.h"
 #include "NetStructures/SuperGroup.h"
+#include "DataHelpers.h"
 #include "Logging.h"
 
 #include <QtCore/QString>
@@ -49,10 +50,13 @@ class SuperGroupResponse final : public GameCommandEvent
 public:
     // [[ev_def:field]]
     bool m_success;
+    // [[ev_def:field]]
+    Costume m_costume;
 
     explicit SuperGroupResponse() : GameCommandEvent(MapEventTypes::evSuperGroupResponse) {}
-    SuperGroupResponse(bool &success) : GameCommandEvent(MapEventTypes::evSuperGroupResponse),
-        m_success(success)
+    SuperGroupResponse(bool &success, Costume &costume) : GameCommandEvent(MapEventTypes::evSuperGroupResponse),
+        m_success(success),
+        m_costume(costume)
     {
     }
     void    serializeto(BitStream &bs) const override
@@ -61,8 +65,9 @@ public:
         bs.StoreBits(1, m_success);
 
         qCDebug(logSuperGroups) << "SuperGroupResponse" << m_success;
-        // report result
-        // send costume
+        // if successful, send SG costume
+        if(m_success)
+            serializeCostume(m_costume, bs);
     }
 
     EVENT_IMPL(SuperGroupResponse)
@@ -84,7 +89,7 @@ public:
     {
         bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 31
         // send costume
-        //::serializeto(m_costume, bs, *m_packer);
+        serializeCostume(m_costume, bs);
         qCDebug(logSuperGroups) << "SuperGroupCostume";
     }
 

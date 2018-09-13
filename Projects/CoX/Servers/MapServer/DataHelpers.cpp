@@ -508,6 +508,14 @@ void sendFaceLocation(Entity *src, glm::vec3 &loc)
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceLocation>(new FaceLocation(loc)));
 }
 
+void serializeCostume(Costume costume, BitStream bs)
+{
+    // This method must be here, because NetStructures can't access g_GlobalMapServer =(
+    static const ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
+
+    serializeto(costume, bs, packer);
+}
+
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)
 {
     // Add to activepowers queue
