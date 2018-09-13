@@ -82,6 +82,7 @@ void cmdHandler_HasControlId(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetTeam(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetSuperGroup(const QString &cmd, MapClientSession &sess);
 void cmdHandler_RegisterSuperGroup(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SuperGroupCostume(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SettingsDump(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TeamDebug(const QString &cmd, MapClientSession &sess);
 void cmdHandler_GUIDebug(const QString &, MapClientSession &sess);
@@ -98,11 +99,12 @@ void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess);
-void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
+
+void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
 // Access Level 2[GM] Commands
 void addNpc(const QString &cmd, MapClientSession &sess);
@@ -184,7 +186,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"hascontrolid"},"Force the server to acknowledge input ids", cmdHandler_HasControlId, 9},
     {{"setTeam", "setTeamID"},"Set the team idx", cmdHandler_SetTeam, 9},
     {{"setSuperGroup","setSG"},"Set your Super Group", cmdHandler_SetSuperGroup, 9},
-    {{"registerSG"},"Register a Super Group", cmdHandler_RegisterSuperGroup, 9},
+    {{"registerSG", "newSG"},"Register a Super Group", cmdHandler_RegisterSuperGroup, 9},
+    {{"SGcostume"},"Send Super Group Costume", cmdHandler_SuperGroupCostume, 9},
     {{"settingsDump","settingsDebug"},"Output settings.cfg to console", cmdHandler_SettingsDump, 9},
     {{"teamDump", "teamDebug"}, "Output team settings to console", cmdHandler_TeamDebug, 9},
     {{"guiDump", "guiDebug"}, "Output gui settings to console", cmdHandler_GUIDebug, 9},
@@ -589,18 +592,6 @@ void cmdHandler_SetTeam(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_RegisterSuperGroup(const QString &cmd, MapClientSession &sess)
-{
-    int space = cmd.indexOf(' ');
-    QString val = cmd.mid(space+1);
-
-    sendRegisterSuperGroup(sess, val);
-
-    QString msg = QString("Register SuperGroup: %1").arg(val);
-    qCDebug(logSlashCommand) << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
-}
-
 void cmdHandler_SetSuperGroup(const QString &cmd, MapClientSession &sess)
 {
     QStringList args;
@@ -614,6 +605,31 @@ void cmdHandler_SetSuperGroup(const QString &cmd, MapClientSession &sess)
     QString msg = QString("Set SuperGroup:  has_sg: %1  name: %2")
             .arg(QString::number(has_sg))
             .arg(sg_name);
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_RegisterSuperGroup(const QString &cmd, MapClientSession &sess)
+{
+    int space = cmd.indexOf(' ');
+    QString val = cmd.mid(space+1);
+
+    sendRegisterSuperGroup(sess, val);
+
+    QString msg = QString("Register SuperGroup: %1").arg(val);
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_SuperGroupCostume(const QString &/*cmd*/, MapClientSession &sess)
+{
+    SuperGroupStats *sgs = &sess.m_ent->m_char->m_char_data.m_supergroup;
+    if(!sgs->m_has_supergroup && !sgs->m_has_sg_costume)
+        return;
+
+    sendSuperGroupCostume(sess, sgs->m_sg_costume);
+
+    QString msg = QString("Sending SuperGroup Costume");
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
