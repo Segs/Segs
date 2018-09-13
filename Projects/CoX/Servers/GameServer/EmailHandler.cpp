@@ -37,7 +37,7 @@ void EmailHandler::dispatch(Event *ev)
         case Internal_EventTypes::evClientDisconnectedMessage:
         on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
         break;
-        default: break;
+        default: assert(false); break;
     }
 }
 

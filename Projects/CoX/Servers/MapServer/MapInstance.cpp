@@ -221,6 +221,7 @@ bool MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t 
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) MapInstance: ServerEndpoint::open\n"),false);
 
     qInfo() << "Spun up MapInstance" << m_instance_id << "for MapServer" << m_owner_id;
+    HandlerLocator::setMapInstance_Handler(m_owner_id, m_instance_id, this);
 
     return true;
 }
@@ -2515,11 +2516,11 @@ void MapInstance::on_email_header_response(EmailHeaderResponse* msg)
     map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
 }
 
-// Comes from /emailread slashCommand
 void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage* msg)
 {
 
     // this is sent from the reader back to the sender via EmailHandler
+    // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance
 }
 
 //! @}

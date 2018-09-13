@@ -16,7 +16,7 @@ namespace SEGSEvents
 
 enum EmailEventTypes : uint32_t
 {
-    evEmailHeaderRequest,
+    evEmailHeaderRequest = Internal_EventTypes::ID_LAST_Internal_EventTypes,
     evEmailHeaderResponse,
     evEmailReadMessage,
     evEmailSendMessage,
