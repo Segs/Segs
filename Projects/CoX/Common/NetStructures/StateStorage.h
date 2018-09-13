@@ -62,7 +62,7 @@ public:
 
     bool        m_full_timeupdate               = 0;    // send_bits? autorun?
 
-    uint8_t     m_updated_bit_pos       = 7;
+    uint8_t     m_updated_bit_pos       = 7;  // 7 is full update
     uint16_t    m_control_bits[6]       = {0};
     glm::vec3   m_camera_pyr            = {0.0f, 0.0f, 0.0f};
     glm::vec3   m_orientation_pyr;      // Stored in Radians
@@ -82,6 +82,7 @@ public:
     float       m_keypress_time[6]      = {0};                  // total_move
     std::chrono::steady_clock::duration m_svr_keypress_time[6];                  // for debugging
     float       m_move_time             = 0.0f;
+    float       m_ms_since_prev;
     bool        m_following             = false;
     glm::vec3   m_pos_start             = {0.0f, 0.0f, 0.0f};
     glm::vec3   m_pos_end               = {0.0f, 0.0f, 0.0f};

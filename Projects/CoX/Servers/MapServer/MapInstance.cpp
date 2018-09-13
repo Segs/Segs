@@ -2389,7 +2389,7 @@ void MapInstance::on_afk_update()
         else
         {
             msg = QString("Receiving input from player: ") + &e->m_char->getName();
-            qCDebug(logInput) << msg;
+            //qCDebug(logInput) << msg;
             cd->m_idle_time = 0;
 
             if (cd->m_afk)

@@ -141,7 +141,7 @@ struct MotionState // current derived state of motion
                                      {0,0,0,0,0} };
 };
 
-void processDirectionControl(InputState *next_state, uint8_t dir, int prev_time, int press_release);
+void processDirectionControl(InputState *next_state, uint8_t control_id, int ms_since_prev, int keypress_state);
 void entMotion(Entity *ent, InputState *new_state);
 void my_entMoveNoColl(Entity *ent);
 void setVelocity(Entity &e);

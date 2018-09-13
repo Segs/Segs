@@ -53,15 +53,15 @@ void roundVelocityToZero(glm::vec3 *vel)
 }
 
 // This will be deprecated in favor of setVelocity()
-void processDirectionControl(InputState *next_state, uint8_t dir, int prev_time, int press_release)
+void processDirectionControl(InputState *next_state, uint8_t control_id, int ms_since_prev, int keypress_state)
 {
     float delta = 0.0f;
 
-    if(press_release)
+    if(keypress_state)
         delta = 1.0f;
 
-    qCDebug(logInput, "Pressed dir: %s \t prev_time: %d \t press_release: %d", control_name[dir], prev_time, press_release);
-    switch(dir)
+    qCDebug(logInput, "Pressed dir: %s \t ms_since_prev: %d \t press_release: %d", control_name[control_id], ms_since_prev, keypress_state);
+    switch(control_id)
     {
         case 0: next_state->m_pos_delta[2] = delta; break;    // FORWARD
         case 1: next_state->m_pos_delta[2] = -delta; break;   // BACKWARD
@@ -71,7 +71,7 @@ void processDirectionControl(InputState *next_state, uint8_t dir, int prev_time,
         case 5: next_state->m_pos_delta[1] = -delta; break;   // DOWN
     }
 
-    switch(dir)
+    switch(control_id)
     {
         case 0:
         case 1: next_state->m_pos_delta_valid[2] = true; break;
@@ -166,7 +166,6 @@ void setVelocity(Entity &e) // pmotionSetVel
 
     float       control_amounts[6] = {0};
     int         max_press_time  = 0;
-    int         press_time      = 0;
     float       vel_scale_copy  = state->m_velocity_scale;
 
     if (state->m_no_collision)
@@ -175,8 +174,8 @@ void setVelocity(Entity &e) // pmotionSetVel
         e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
 
     if(state->m_no_collision
-            && state->m_full_timeupdate
-            && (motion->m_controls_disabled || state->m_landing_recovery_time || motion->m_has_headpain))
+            && e.m_player->m_options.alwaysmobile
+            && (motion->m_controls_disabled || state->m_landing_recovery_time || state->m_controls_disabled))
     {
         if(e.m_type == EntType::PLAYER)
             qCDebug(logMovement) << "Input Vel is <0, 0, 0>. No coll?" << state->m_no_collision;
@@ -187,7 +186,7 @@ void setVelocity(Entity &e) // pmotionSetVel
     {
         for (int i = BinaryControl::FORWARD; i < BinaryControl::LAST_BINARY_VALUE; ++i)
         {
-            press_time = state->m_keypress_time[i];
+            float press_time = state->m_keypress_time[i];
 
             if(press_time > 0)
                 qCDebug(logMovement) << "keypress_time" << i << press_time;
@@ -238,6 +237,7 @@ void setVelocity(Entity &e) // pmotionSetVel
         if (motion->m_is_stunned)
             vel_scale_copy *= 0.1f;
 
+        // Client returns 0 for negative length vector
         if(glm::length(horiz_vel) <= 0.0f)
             horiz_vel = glm::vec3(0,0,0);
         else
@@ -261,8 +261,8 @@ void setVelocity(Entity &e) // pmotionSetVel
         else
         {
             vel.y *= glm::clamp(motion->m_jump_height, 0.0f, 1.0f);
-            //if (!e.m_is_sliding)
-                //ent->motion.flag_5 = false; // flag_5 moving on y-axis?
+            if (!e.m_motion_state.m_is_sliding)
+                e.m_motion_state.m_flag_5 = false; // flag_5 moving on y-axis?
         }
 
     }
@@ -292,7 +292,7 @@ void setVelocity(Entity &e) // pmotionSetVel
     }
 
     // setPlayerVelQuat(&vel, vel_scale_copy); // we don't need this?
-    motion->m_velocity = vel * vel_scale_copy/255;
+    motion->m_velocity = vel;
 }
 
 void my_entMoveNoColl(Entity *ent)
@@ -1116,7 +1116,7 @@ void forcePosition(Entity &e, glm::vec3 pos)
 // Move to Sequences or Triggers files later
 void addTriggeredMove(Entity &e, TriggeredMove &trig)
 {
-    e.m_entity_full_update = true;
+    e.m_rare_update = true;
     e.m_triggered_moves.at(trig.m_move_idx) = trig;
 }
 

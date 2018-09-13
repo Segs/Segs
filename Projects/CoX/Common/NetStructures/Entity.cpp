@@ -155,7 +155,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_assist_target_idx               = 0;
     e.m_move_type                       = MoveType::MOVETYPE_WALK;
     e.m_motion_state.m_is_falling       = true;
-    e.m_update_anims = e.m_entity_full_update   = true;
+    e.m_update_anims = e.m_rare_update   = true;
 
     e.m_char = std::make_unique<Character>();
     e.m_player = std::make_unique<PlayerData>();
@@ -197,7 +197,7 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_assist_target_idx               = 0;
     e.m_move_type                       = MoveType::MOVETYPE_WALK;
     e.m_motion_state.m_is_falling       = true;
-    e.m_update_anims = e.m_entity_full_update   = true;
+    e.m_update_anims = e.m_rare_update   = true;
 
     e.m_char = std::make_unique<Character>();
     e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});

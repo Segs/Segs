@@ -454,9 +454,9 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     bs.StoreBits(1,src.m_update_anims); //var_C
 
     if(src.m_update_anims)
-        bs.StoreBits(1, src.m_entity_full_update);
+        bs.StoreBits(1, src.m_rare_update);
 
-    if(src.m_entity_full_update)
+    if(src.m_rare_update)
         sendStateMode(src, bs);
 
     storePosUpdate(src, update_existence && ent_exists, bs);
@@ -464,7 +464,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     if(src.m_update_anims)
         sendSeqMoveUpdate(src, bs);
 
-    if(src.m_entity_full_update)
+    if(src.m_rare_update)
         sendSeqTriggeredMoves(src, bs);
 
     // NPC -> m_pchar_things=0 ?
@@ -475,7 +475,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
         sendNetFx(src,bs);
     }
 
-    if(src.m_entity_full_update)
+    if(src.m_rare_update)
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
@@ -491,7 +491,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
         sendTargetUpdate(src,bs);
     }
 
-    if(src.m_entity_full_update)
+    if(src.m_rare_update)
     {
         sendOnOddSend(src,bs); // is one on client end
         sendWhichSideOfTheForce(src,bs);

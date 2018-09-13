@@ -183,7 +183,7 @@ public:
 
         int                 m_num_fx                = 0;
         bool                m_update_anims          = false;
-        bool                m_entity_full_update    = false;
+        bool                m_rare_update    = false;
         bool                m_move_instantly        = true;  // move instantly or use sequencers?
 
         bool                m_is_logging_out        = false;

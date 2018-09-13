@@ -602,7 +602,7 @@ void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
     if( target->m_full_update || target->m_has_control_id)
         bs.StoreBits(16, target->m_input_pkt_id); //target->m_input_ack
 
-    if(target->m_full_update)
+    if(target->m_full_update) // target->m_full_update
     {
         for(int i=0; i<3; ++i)
             bs.StoreFloat(target->m_entity_data.m_pos[i]); // server position

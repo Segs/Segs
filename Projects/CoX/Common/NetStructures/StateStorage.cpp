@@ -44,14 +44,14 @@ void TimeState::serializefrom_base(BitStream &bs)
 {
     m_client_timenow   = bs.GetBits(32);    // result of time(NULL)
     m_time_res = bs.GetBits(32);            // result of timeGetTime()
-    m_timestep = bs.GetFloat();             //client global TIMESTEP - per frame time
+    m_timestep = bs.GetFloat();             // client global TIMESTEP - per frame time
 
     m_time_rel1C = m_timestep;
-    if(bs.GetBits(1))                       //timestep!=time_rel1C
+    if(bs.GetBits(1))                       // timestep!=time_rel1C
         m_time_rel1C = bs.GetFloat();       // simulation timestep ?
 
-    m_perf_cntr_diff = bs.Get64Bits();      //next_state->ticks - current_state->ticks
-    m_perf_freq_diff = bs.Get64Bits();      //v7->perf_cntr1
+    m_perf_cntr_diff = bs.Get64Bits();      // next_state->ticks - current_state->ticks
+    m_perf_freq_diff = bs.Get64Bits();      // v7->perf_cntr1
 }
 
 void TimeState::dump()

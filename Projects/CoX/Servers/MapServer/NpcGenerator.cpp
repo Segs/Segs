@@ -23,7 +23,7 @@ void NpcGenerator::generate(MapInstance *map_instance)
     {
         int idx = npc_store.npc_idx(npc_def);
         Entity *e = map_instance->m_entities.CreateGeneric(map_instance->serverData(),*npc_def, idx, 0,type);
-        forcePosition(*e,glm::vec3(v[3]));
+        forcePosition(*e, glm::vec3(v[3]));
         auto valquat = glm::quat_cast(v);
 
         glm::vec3 angles = glm::eulerAngles(valquat);

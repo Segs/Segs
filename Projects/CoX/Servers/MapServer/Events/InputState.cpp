@@ -29,8 +29,6 @@ void InputStateEvent::receiveControlState(BitStream &bs) // formerly partial_2
     uint32_t    ms_since_prev = 0;
     float       angle = 0.0f;
 
-    auto now_ms = std::chrono::steady_clock::now();
-
     do
     {
         if(bs.GetBits(1))
@@ -46,7 +44,7 @@ void InputStateEvent::receiveControlState(BitStream &bs) // formerly partial_2
         if (control_id < 8)
                     m_next_state.m_input_received = true;
 
-        m_next_state.m_keypress_time[control_id] = ms_since_prev;
+        m_next_state.m_ms_since_prev = ms_since_prev;
 
         switch(control_id)
         {
@@ -55,11 +53,14 @@ void InputStateEvent::receiveControlState(BitStream &bs) // formerly partial_2
             case UP: case DOWN:
             {
                 bool keypress_state = bs.GetBits(1); // get keypress state
-                m_next_state.m_control_bits[control_id] = keypress_state; // save control_bits
+                auto now_ms = std::chrono::steady_clock::now();
                 m_next_state.m_svr_keypress_time[control_id] = now_ms - m_next_state.m_keypress_start[control_id];
+
+                m_next_state.m_control_bits[control_id] = keypress_state; // save control_bits state
                 processDirectionControl(&m_next_state, control_id, ms_since_prev, keypress_state);
-                qCDebug(logInput, "key released %f", control_id);
-                qCDebug(logMovement, "svr vs client keypress time: %d %d", m_next_state.m_svr_keypress_time[control_id], ms_since_prev);
+
+                qCDebug(logInput, "key released %d", control_id);
+                qCDebug(logLFG, "svr vs client keypress time: %f %f : %f", m_next_state.m_svr_keypress_time[control_id].count(), m_next_state.m_keypress_time[control_id], m_next_state.m_ms_since_prev);
                 break;
             }
             case PITCH: // camera pitch (Insert/Delete keybinds)
@@ -129,7 +130,7 @@ void InputStateEvent::receiveControlState(BitStream &bs) // formerly partial_2
 
     } while(bs.GetBits(1));
 
-    qCDebug(logInput, "recv control_id 9 %f", m_next_state.m_every_4_ticks);
+    //qCDebug(logInput, "recv control_id 9 %f", m_next_state.m_every_4_ticks);
 }
 
 void InputStateEvent::extended_input(BitStream &bs)
@@ -146,7 +147,7 @@ void InputStateEvent::extended_input(BitStream &bs)
         receiveControlState(bs); // formerly partial_2
     }
 
-    // Key HELD
+    // Key Pressed/Held
     for(int idx=0; idx<6; ++idx)
     {
         keypress_state = bs.GetBits(1);
@@ -154,8 +155,8 @@ void InputStateEvent::extended_input(BitStream &bs)
         if(keypress_state==true)
         {
             m_next_state.m_keypress_start[idx] = std::chrono::steady_clock::now();
-            processDirectionControl(&m_next_state, idx, 0, keypress_state);
-            qCDebug(logInput, "key pressed down %f", idx);
+            //processDirectionControl(&m_next_state, idx, 0, keypress_state);
+            qCDebug(logInput, "keypress down %d", idx);
         }
     }
 
@@ -166,7 +167,7 @@ void InputStateEvent::extended_input(BitStream &bs)
     {
         m_next_state.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11);
         m_next_state.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11);
-        qCDebug(logInput, "extended pitch: %f \tyaw: %f", m_next_state.m_orientation_pyr[0], m_next_state.m_orientation_pyr[1]);
+        qCDebug(logOrientation, "extended pitch: %f \tyaw: %f", m_next_state.m_orientation_pyr[0], m_next_state.m_orientation_pyr[1]);
     }
 }
 

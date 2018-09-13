@@ -108,7 +108,7 @@ void toggleLogging(QString &category)
     else if(category.contains("position",Qt::CaseInsensitive))
         cat = &logPosition();
     else if(category.contains("movement",Qt::CaseInsensitive))
-        cat = &logPosition();
+        cat = &logMovement();
     else if(category.contains("orientation",Qt::CaseInsensitive))
         cat = &logOrientation();
     else if(category.contains("chat",Qt::CaseInsensitive))
