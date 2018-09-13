@@ -446,9 +446,11 @@ void MapInstance::dispatch( Event *ev )
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
         case evEmailHeaderResponse:
-        break;
+            on_email_header_response(static_cast<EmailHeaderResponse *>(ev));
+            break;
         case evEmailWasReadByRecipientMessage:
-        break;
+            on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev));
+            break;
         case evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));
             break;
@@ -2500,13 +2502,23 @@ void MapInstance::send_player_update(Entity *e)
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
 
+// EmailHandler will send this event here
 void MapInstance::on_email_header_response(EmailHeaderResponse* msg)
 {
-    // src->addCommandToSendNextUpdate for the recipient
+    EmailHeaders *header = new EmailHeaders(
+                    msg->m_data.email_id,
+                    msg->m_data.sender_name,
+                    msg->m_data.subject,
+                    msg->m_data.timestamp);
+
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
 }
 
+// Comes from /emailread slashCommand
 void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage* msg)
 {
+
     // this is sent from the reader back to the sender via EmailHandler
 }
 

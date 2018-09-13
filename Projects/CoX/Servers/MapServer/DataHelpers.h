@@ -133,7 +133,7 @@ const QString &getOriginTitle(uint32_t val);
  */
 void sendEmailHeaders(MapClientSession& sess);
 void readEmailMessage(MapClientSession& sess, const int id);
-void sendEmail(MapClientSession& sess, int id, QString recipient, QString subject, QString message);
+void sendEmail(MapClientSession& sess, uint32_t recipient_id, QString subject, QString message);
 void deleteEmailHeaders(MapClientSession& sess, const int id);
 
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);

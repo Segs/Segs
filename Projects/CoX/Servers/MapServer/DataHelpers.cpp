@@ -262,13 +262,17 @@ void sendEmailHeaders(MapClientSession &sess)
         return;
     }
 
-    EmailHeaderRequest* msgToHandler = new EmailHeaderRequest(
-                EmailHeaderRequestData({152, "TestSender", "TEST", 576956720}),
+    // later on the email id should be auto-incremented from DB
+    EmailHeaderRequest* msgToHandler = new EmailHeaderRequest({
+                                        sess.m_ent->m_char->m_db_id,
+                                        sess.m_ent->m_char->getName(),
+                                        "TEST", 576956720},
                 sess.link()->session_token());
-    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+    EventProcessor* tgt = HandlerLocator::getEmail_Handler();
+    tgt->putq(msgToHandler);
 }
 
-void sendEmail(MapClientSession& sess, const int id, QString recipient, QString subject, QString message)
+void sendEmail(MapClientSession& sess, uint32_t recipient_id, QString subject, QString message)
 {
     if(!sess.m_ent->m_client)
     {
@@ -277,9 +281,10 @@ void sendEmail(MapClientSession& sess, const int id, QString recipient, QString 
     }
 
     EmailSendMessage* msgToHandler = new EmailSendMessage(
-                EmailSendData({id,
-                               sess.m_ent->m_client->m_name,    // -> sender
-                               recipient, subject, message, 0}),
+                EmailSendData({sess.m_ent->m_char->m_db_id,
+                               recipient_id,
+                               sess.m_ent->m_char->getName(),    // -> sender
+                               subject, message, 0}),
                 sess.link()->session_token());
 
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);

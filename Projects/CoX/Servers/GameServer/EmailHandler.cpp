@@ -48,13 +48,20 @@ void EmailHandler::set_db_handler(uint8_t id)
 }
 
 void EmailHandler::on_email_header(EmailHeaderRequest *msg)
-{    
-    /*EmailHeaders *header = new EmailHeaders(
-                msg->m_data.id,
-                msg->m_data.sender,
-                msg->m_data.subject,
-                msg->m_data.timestamp);*/
-    // msg->m_data.src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+{
+    // this function is test to send email to self :)
+
+    const ClientSessionData &recipient_data (m_state.m_stored_client_datas[msg->m_data.sender_id]);
+    EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
+                recipient_data.m_server_id,
+                recipient_data.m_instance_id);
+
+    tgt->putq(new EmailHeaderResponse({
+                                          m_stored_email_count++,
+                                          msg->m_data.sender_name,
+                                          msg->m_data.subject,
+                                          msg->m_data.timestamp
+                                      }, msg->session_token()));
 }
 
 void EmailHandler::on_email_read(EmailReadMessage *msg)
@@ -119,16 +126,16 @@ EmailHandler::EmailHandler(int for_game_server_id) : m_message_bus_endpoint(*thi
     assert(HandlerLocator::getEmail_Handler() == nullptr);
     HandlerLocator::setEmail_Handler(this);
 
-    m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientConnectedMessage);
-    m_message_bus_endpoint.subscribe(Internal_EventTypes::evClientDisconnectedMessage);
+    m_message_bus_endpoint.subscribe(evClientConnectedMessage);
+    m_message_bus_endpoint.subscribe(evClientDisconnectedMessage);
 }
 
-void EmailHandler::serialize_from(std::istream &is)
+void EmailHandler::serialize_from(std::istream &/*is*/)
 {
     assert(false);
 }
 
-void EmailHandler::serialize_to(std::ostream &is)
+void EmailHandler::serialize_to(std::ostream &/*os*/)
 {
     assert(false);
 }

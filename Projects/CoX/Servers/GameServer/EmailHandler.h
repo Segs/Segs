@@ -33,7 +33,7 @@ struct ClientSessionData
 
 struct EmailHandlerState
 {
-    std::unordered_map<uint64_t, ClientSessionData> m_stored_client_datas;
+    std::map<uint64_t, ClientSessionData> m_stored_client_datas;
     int m_game_server_id;
 };
 
@@ -50,6 +50,8 @@ private:
     void on_client_connected(SEGSEvents::ClientConnectedMessage* msg);
     void on_client_disconnected(SEGSEvents::ClientDisconnectedMessage *msg);
 protected:
+    // this is probably temporary until we have the DB!
+    uint32_t m_stored_email_count;
     MessageBusEndpoint m_message_bus_endpoint;
     GameDBSyncHandler* m_db_handler;
     void serialize_from(std::istream &is) override;

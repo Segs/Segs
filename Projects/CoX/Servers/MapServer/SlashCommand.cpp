@@ -1532,12 +1532,12 @@ void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess){
 
-    // args[0] is "emailsend", args[1] email id, args[2] email recipient
-    // args[3] email subject, args[4] email message
+    // args[0] is "emailsend", args[1] email recipient's id
+    // args[2] email subject, args[3] email message
     QVector<QStringRef> args(cmd.splitRef(' '));
-    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+    uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
-    if (args.size() < 5)
+    if (args.size() < 1)
     {
         qWarning() << "Not enough parameters for email send!";
         return;
@@ -1545,7 +1545,7 @@ void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess){
 
     // Later on, we should check the email database and get the increment of the latest email ID
     // Also, some utility class to convert current time to timestamp
-    sendEmail(sess, id, args[2].toString(), args[3].toString(), args[4].toString());
+    sendEmail(sess, args[1].toUInt(), args[2].toString(), args[3].toString());
 
     QString msg = "Email Sent with ID:" + id;
     qDebug().noquote() << msg;
