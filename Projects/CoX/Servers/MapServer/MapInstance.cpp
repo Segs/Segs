@@ -593,7 +593,7 @@ void MapInstance::on_link_lost(Event *ev)
     //todo: notify all clients about entity removal
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id(), ent->m_char->m_db_id, m_owner_id},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id(), m_owner_id},0));
 
     // one last character update for the disconnecting entity
     send_character_update(ent);
@@ -615,7 +615,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     assert(ent);
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id(), ent->m_char->m_db_id, m_owner_id},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id(), m_owner_id},0));
 
     removeLFG(*ent);
     leaveTeam(*ent);
