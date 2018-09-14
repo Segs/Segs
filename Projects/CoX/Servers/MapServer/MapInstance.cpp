@@ -259,11 +259,15 @@ void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*
 void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    session.is_connected_to_map_server_id = 0;
-    session.is_connected_to_map_instance_id = 0;
+    qCDebug(logMapXfers) << QString("disconnect_from_instance ev.instance: %1 sess.instance: %2").arg(ev->m_data.m_map_instance_id).arg(m_instance_id);
+    if (ev->m_data.m_map_instance_id == m_instance_id)
     {
-        SessionStore::MTGuard guard(m_session_store.reap_lock());
-        m_session_store.mark_session_for_reaping(&session,ev->session_token());
+        session.is_connected_to_map_server_id = 0;
+        session.is_connected_to_map_instance_id = 0;
+        {
+            SessionStore::MTGuard guard(m_session_store.reap_lock());
+            m_session_store.mark_session_for_reaping(&session,ev->session_token());
+        }
     }
 }
 
