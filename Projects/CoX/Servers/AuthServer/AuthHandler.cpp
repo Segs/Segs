@@ -21,6 +21,7 @@
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
 #include "SEGSTimer.h"
+#include "TimeEvent.h"
 
 #include <QDebug>
 

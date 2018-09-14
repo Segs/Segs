@@ -13,7 +13,6 @@
 #include <list>
 #include <chrono>
 #include <mutex>
-#include <ace/INET_Addr.h>
 
 template <size_t size>
 struct FixedSizePacketQueue

@@ -77,12 +77,12 @@ void AuthServer::dispatch(Event *ev)
     }
 }
 
-void AuthServer::serialize_from(std::istream &is)
+void AuthServer::serialize_from(std::istream &/*is*/)
 {
     assert(false);
 }
 
-void AuthServer::serialize_to(std::ostream &is)
+void AuthServer::serialize_to(std::ostream &/*is*/)
 {
     assert(false);
 }

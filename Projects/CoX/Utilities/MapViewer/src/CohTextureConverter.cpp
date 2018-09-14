@@ -227,7 +227,7 @@ void preloadTextureNames()
     QDirIterator iter(basepath+"texture_library", QDir::Files, QDirIterator::Subdirectories);
     while (iter.hasNext()) {
         QString fpath = iter.next();
-        QString texture_key = QFileInfo(iter.fileInfo()).baseName().toLower();
+        QString texture_key = iter.fileInfo().baseName().toLower();
         s_texture_paths[texture_key] = fpath;
         loadTexHeader(fpath);
     }

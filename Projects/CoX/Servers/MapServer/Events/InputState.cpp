@@ -66,7 +66,7 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
         if(other.pyr_valid[i])
             m_camera_pyr[i] = other.m_camera_pyr[i];
 
-        if(other.m_orientation_pyr[i])
+        if(other.m_orientation_pyr[i]!=0.0f)
         {
             qCDebug(logOrientation) << other.m_orientation_pyr[i];
             m_orientation_pyr[i] = other.m_orientation_pyr[i];
@@ -140,9 +140,9 @@ void InputState::partial_2(BitStream &bs)
             control_id = bs.GetBits(4);
 
         if(bs.GetBits(1))
-            ms_since_prev=bs.GetBits(2)+32; // delta from prev event
+            ms_since_prev = bs.GetBits(2)+32; // delta from prev event
         else
-            ms_since_prev=bs.GetBits(m_data.m_csc_deltabits);
+            ms_since_prev = bs.GetBits(m_data.m_csc_deltabits);
 
         if (control_id < 8)
             m_data.m_input_received = true;
@@ -279,7 +279,7 @@ struct ControlState
     void dump()
     {
         qCDebug(logInput, "CSC: %d,%d, [%f,%f]", client_timenow, time_res, timestep,time_rel1C);
-        qCDebug(logInput, "(%lld %lld)", m_perf_cntr_diff, m_perf_freq_diff);
+        qCDebug(logInput, "(%lu %lu)", m_perf_cntr_diff, m_perf_freq_diff);
     }
 };
 

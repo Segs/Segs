@@ -25,6 +25,7 @@
 #include "Servers/MessageBus.h"
 #include "serialization_common.h"
 #include "serialization_types.h"
+#include "TimeEvent.h"
 
 using namespace SEGSEvents;
 
@@ -38,7 +39,7 @@ enum {
 const ACE_Time_Value link_update_interval(0,500*1000);
 const ACE_Time_Value service_update_interval(5,0);
 const ACE_Time_Value session_reaping_interval(1,0);
-const ACE_Time_Value maximum_time_without_packets(1,0);
+const CRUDLink::duration maximum_time_without_packets(1000);
 const ACE_Time_Value link_is_stale_if_disconnected_for(5,0);
 const constexpr int MinPacketsToAck=5;
 }
@@ -143,7 +144,9 @@ void GameHandler::on_account_data(GameAccountResponse *ev)
     session.m_game_account = ev->m_data;
     // Inform auth server about succesful client connection
     EventProcessor *tgt      = HandlerLocator::getAuth_Handler();
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),0,ev->m_data.m_game_server_acc_id },0));
+
+    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_server->getId(),
+                                          ev->m_data.m_game_server_acc_id, ev->m_data.m_game_server_acc_id},0));
 
     m_session_store.add_to_active_sessions(&session);
     CharacterSlots *slots_event=new CharacterSlots;
@@ -458,9 +461,11 @@ void GameHandler::reap_stale_links()
 {
     SessionStore::MTGuard guard(m_session_store.reap_lock());
     EventProcessor *            tgt      = HandlerLocator::getAuth_Handler();
+
+    // Putting m_db_id as 0 to remove wmissing warning
     m_session_store.reap_stale_links("GameInstance", link_is_stale_if_disconnected_for,
                                      [tgt](uint64_t tok) {
-                                         tgt->putq(new ClientDisconnectedMessage({tok},0));
+                                         tgt->putq(new ClientDisconnectedMessage({tok, 0},0));
                                      });
 }
 //! @}

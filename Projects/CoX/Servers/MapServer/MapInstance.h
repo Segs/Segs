@@ -89,6 +89,8 @@ class CreateSuperGroup;
 class ChangeSuperGroupColors;
 class AcceptSuperGroupChanges;
 class SuperGroupMode;
+class BrowserClose;
+
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -96,6 +98,7 @@ struct WouldNameDuplicateResponse;
 struct CreateNewCharacterResponse;
 struct GetEntityResponse;
 struct GetEntityByNameResponse;
+class Timeout;
 }
 class MapLinkEndpoint;
 
@@ -224,9 +227,11 @@ protected:
         void on_trash_enhancement_in_power(SEGSEvents::TrashEnhancementInPower *ev);
         void on_buy_enhancement_slot(SEGSEvents::BuyEnhancementSlot *ev);
         void on_recv_new_power(SEGSEvents::RecvNewPower *ev);
-        void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev); 
         void on_create_supergroup(SEGSEvents::CreateSuperGroup *ev);
         void on_change_supergroup_colors(SEGSEvents::ChangeSuperGroupColors *ev);
         void on_accept_supergroup_changes(SEGSEvents::AcceptSuperGroupChanges *ev);
         void on_supergroup_mode(SEGSEvents::SuperGroupMode *ev);
+        void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
+        void on_browser_close(SEGSEvents::BrowserClose *ev);
+>>>>>>> upstream/develop
 };

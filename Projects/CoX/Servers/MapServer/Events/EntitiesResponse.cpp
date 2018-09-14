@@ -423,7 +423,7 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
     {
         qCDebug(logPowers) << "Resetting Powers:" << cd->m_reset_powersets;
         CharacterPowerSet temp;
-        int pcat_idx = getPowerCatByName(data,"Temporary_Powers");
+        uint32_t pcat_idx = getPowerCatByName(data,"Temporary_Powers");
 
         for(CharacterPowerSet &pset : cd->m_powersets)
         {
@@ -480,7 +480,7 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
 
             qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_total_eh_slots;
             bs.StorePackedBits(4, power.m_total_eh_slots); // total owned enhancement slots
-            for(int i = 0; i < power.m_total_eh_slots; ++i)
+            for(uint32_t i = 0; i < power.m_total_eh_slots; ++i)
             {
                 if(power.m_enhancements.empty() || power.m_enhancements[i].m_name.isEmpty())
                 {
@@ -545,14 +545,14 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
     {
         for(int j = 0; j < max_rows; ++j)
         {
-            qCDebug(logPowers) << "  Inspiration:" << i << j << cd->m_inspirations[i][j].m_has_insp;
+            qCDebug(logPowers) << "  Inspiration:" << i << j << cd->m_inspirations.at(i, j).m_has_insp;
 
             bs.StorePackedBits(3, i); // iCol
             bs.StorePackedBits(3, j); // iRow
 
-            bs.StoreBits(1, cd->m_inspirations[i][j].m_has_insp);
-            if(cd->m_inspirations[i][j].m_has_insp)
-                cd->m_inspirations[i][j].m_insp_info.serializeto(bs);
+            bs.StoreBits(1, cd->m_inspirations.at(i, j).m_has_insp);
+            if(cd->m_inspirations.at(i, j).m_has_insp)
+                cd->m_inspirations.at(i, j).m_insp_info.serializeto(bs);
         }
     }
 

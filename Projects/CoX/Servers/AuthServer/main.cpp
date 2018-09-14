@@ -87,11 +87,11 @@ public:
     }
     // EventProcessor interface
 protected:
-    void serialize_from(std::istream &is) override
+    void serialize_from(std::istream &/*is*/) override
     {
         assert(false);
     }
-    void serialize_to(std::ostream &is) override
+    void serialize_to(std::ostream &/*os*/) override
     {
         assert(false);
     }

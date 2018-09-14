@@ -33,6 +33,7 @@
 #include "MapManager.h"
 #include "MapSceneGraph.h"
 #include "MapServer.h"
+#include "TimeEvent.h"
 #include "GameData/GameDataStore.h"
 #include "MapTemplate.h"
 #include "NetStructures/Character.h"
@@ -79,7 +80,7 @@ namespace
     const ACE_Time_Value sync_service_update_interval(0, 30000*1000);
     const ACE_Time_Value afk_update_interval(0, 1000 * 1000);
     const ACE_Time_Value resend_interval(0,250*1000);
-    const ACE_Time_Value maximum_time_without_packets(2,0);
+    const CRUDLink::duration maximum_time_without_packets(2000);
     const constexpr int MinPacketsToAck=5;
 
     void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &locations_scriptname)
@@ -110,7 +111,7 @@ protected:
 using namespace std;
 MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr)
   : m_data_path(mapdir_path), m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
-    m_world_update_timer(nullptr), m_addresses(listen_addr)
+    m_addresses(listen_addr)
 {
     m_world = new World(m_entities, serverData().m_player_fade_in);
     m_scripting_interface.reset(new ScriptingEngine);
@@ -273,8 +274,9 @@ void MapInstance::reap_stale_links()
     EventProcessor *            tgt      = HandlerLocator::getGame_Handler(m_game_server_id);
 
     SessionStore::MTGuard guard(m_session_store.reap_lock());
+    // TODO: How to get m_char_db_id in this?
     m_session_store.reap_stale_links("MapInstance",link_is_stale_if_disconnected_for,[tgt](uint64_t tok) {
-        tgt->putq(new ClientDisconnectedMessage({tok},0));
+        tgt->putq(new ClientDisconnectedMessage({tok, 0},0));
     });
 }
 
@@ -490,6 +492,9 @@ void MapInstance::dispatch( Event *ev )
         case evAwaitingDeadNoGurney:
             on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
             break;
+        case evBrowserClose:
+            on_browser_close(static_cast<BrowserClose *>(ev));
+            break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
     }
@@ -497,7 +502,7 @@ void MapInstance::dispatch( Event *ev )
 
 void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
 {
-
+    
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapLink *lnk = session.link();
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
@@ -506,25 +511,25 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
          qCDebug(logMapXfers) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
          return;
     }
-
+    
     // This is used here to get the map idx to send to the client for the transfer, but we
     // remove it from the std::map after the client has sent us the ClientRenderingResumed event so we
     // can prevent motd showing every time.
-    uint8_t map_idx = map_server->session_map_xfer_idx(lnk->session_token());
+    uint8_t map_idx = map_server->session_map_xfer_idx(lnk->session_token()); 
     QString map_path = getMapPath(map_idx).toLower();
     GameAccountResponseCharacterData c_data;
     QString serialized_data;
-
+    
     fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
     serializeToQString(c_data, serialized_data);
     ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, lnk->peer_addr(),
                                     serialized_data, session.m_requested_slot_idx, session.m_name, map_path,
-                                    uint16_t(session.m_max_slots)},
+                                    session.m_max_slots},
                                     lnk->session_token(),this);
     map_server->putq(map_req);
 }
 
-void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
+void MapInstance::on_map_xfer_complete(MapXferComplete */*ev*/)
 {
     // TODO: Do anything necessary after connecting to new map instance here.
 }
@@ -619,7 +624,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     assert(ent);
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
 
     removeLFG(*ent);
     leaveTeam(*ent);
@@ -749,7 +754,8 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
 
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id},0));
+    tgt->putq(new ClientConnectedMessage(
+        {ev->session_token(),m_owner_id,m_instance_id,map_session.auth_id()},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
@@ -777,7 +783,8 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
 
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
-    tgt->putq(new ClientConnectedMessage({ev->session_token(),m_owner_id,m_instance_id},0));
+    tgt->putq(new ClientConnectedMessage(
+        {ev->session_token(),m_owner_id,m_instance_id, map_session.auth_id()},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
@@ -1978,10 +1985,10 @@ void MapInstance::on_enter_door(EnterDoor *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-
+    
     // ev->name is the map_idx when using the map menu currently.
     if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
-    {
+    {   
         uint8_t map_idx = ev->name.toInt();
         if (ev->location.x != 0 || ev->location.y != 0 || ev->location.z != 0)
             map_idx = std::rand() % 23;
@@ -1992,7 +1999,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
         if (map_idx == m_index)
             map_idx = (map_idx + 1) % 23;
         map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
-        session.link()->putq(new MapXferWait(getMapPath(map_idx)));
+        session.link()->putq(new MapXferWait(getMapPath(map_idx))); 
     }
     else
     {
@@ -2229,12 +2236,12 @@ glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
     return glm::vec3(0,0,0);
 }
 
-void MapInstance::serialize_from(istream &is)
+void MapInstance::serialize_from(istream &/*is*/)
 {
     assert(false);
 }
 
-void MapInstance::serialize_to(ostream &is)
+void MapInstance::serialize_to(ostream &/*is*/)
 {
     assert(false);
 }
@@ -2338,6 +2345,13 @@ void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
+}
+
+void MapInstance::on_browser_close(BrowserClose *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received BrowserClose";
 }
 
 

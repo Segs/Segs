@@ -227,9 +227,10 @@ void Character::sendInspirations(BitStream &bs) const
     {
         for(int j = 0; j < max_rows; ++j)
         {
-            bs.StoreBits(1, m_char_data.m_inspirations[i][j].m_has_insp);
-            if(m_char_data.m_inspirations[i][j].m_has_insp)
-                m_char_data.m_inspirations[i][j].m_insp_info.serializeto(bs);
+            bs.StoreBits(1, m_char_data.m_inspirations.value(i, j).m_has_insp);
+
+            if(m_char_data.m_inspirations.value(i, j).m_has_insp)
+                m_char_data.m_inspirations.value(i, j).m_insp_info.serializeto(bs);
         }
     }
 }
@@ -248,7 +249,7 @@ void Character::sendOwnedPowers(BitStream &bs) const
             bs.StoreFloat(power.m_range);
 
             bs.StorePackedBits(4, power.m_total_eh_slots);
-            for(int i = 0; i < power.m_total_eh_slots; ++i)
+            for(uint32_t i = 0; i < power.m_total_eh_slots; ++i)
             {
                 bs.StoreBits(1, power.m_enhancements[i].m_slot_used); // slot has enhancement
                 if(power.m_enhancements[i].m_slot_used)

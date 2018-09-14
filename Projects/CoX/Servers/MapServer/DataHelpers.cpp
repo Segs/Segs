@@ -242,8 +242,7 @@ void sendServerMOTD(MapClientSession *tgt)
     if(file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         QString contents(file.readAll());
-        StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-        tgt->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+        tgt->addCommand<StandardDialogCmd>(contents);
     }
     else {
         QString errormsg = "Failed to load MOTD file. \'" + file.fileName() + "\' not found.";
@@ -509,10 +508,23 @@ void sendFaceEntity(Entity *src, uint8_t tgt_idx)
     qCDebug(logOrientation) << QString("Sending Face Entity to %1").arg(tgt_idx);
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceEntity>(new FaceEntity(tgt_idx)));
 }
+
 void sendFaceLocation(Entity *src, glm::vec3 &loc)
 {
     qCDebug(logOrientation) << QString("Sending Face Location to x: %1 y: %2 z: %3").arg(loc.x).arg(loc.y).arg(loc.z);
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceLocation>(new FaceLocation(loc)));
+}
+
+void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg)
+{
+    qCDebug(logMapXfers) << QString("Sending Door Message; delay: %1 msg: %2").arg(delay_status).arg(msg);
+    tgt.addCommand<DoorMessage>(DoorMessageStatus(delay_status), msg);
+}
+
+void sendBrowser(MapClientSession &tgt, QString &content)
+{
+    qCDebug(logMapEvents) << QString("Sending Browser");
+    tgt.addCommand<Browser>(content);
 }
 
 void serializeCostume(Costume costume, BitStream bs)
@@ -927,7 +939,7 @@ void removeTeamMember(Team &self, Entity *e)
     if(logTeams().isDebugEnabled())
         self.listTeamMembers();
 
-    int idx = self.m_team_members.front().tm_idx;
+    // int idx = self.m_team_members.front().tm_idx;
 
     assert(false);
     // TODO: this should post an Team-removal event to the target entity, since we can't access other server's
