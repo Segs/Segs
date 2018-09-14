@@ -449,11 +449,16 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
 void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
 {
     GameSession &session(m_session_store.session_from_token(ev->m_data.m_session));
-    session.is_connected_to_map_server_id = 0;
-    session.is_connected_to_map_instance_id = 0;
+    // Prevent altering the session when disconnecting from a map server after a map transfer in cases
+    // where the disconnect is handled after the reconnection.
+    if (ev->m_data.m_map_server_id == session.is_connected_to_map_server_id)
     {
-        SessionStore::MTGuard guard(m_session_store.reap_lock());
-        m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
+        session.is_connected_to_map_server_id = 0;
+        session.is_connected_to_map_instance_id = 0;
+        {
+            SessionStore::MTGuard guard(m_session_store.reap_lock());
+            m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
+        }
     }
 }
 
