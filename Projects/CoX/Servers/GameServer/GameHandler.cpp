@@ -451,7 +451,8 @@ void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
     GameSession &session(m_session_store.session_from_token(ev->m_data.m_session));
     // Prevent altering the session when disconnecting from a map server after a map transfer in cases
     // where the disconnect is handled after the reconnection.
-    if (ev->m_data.m_map_server_id == session.is_connected_to_map_server_id)
+    qCDebug(logMapXfers) << QString("client_disconnected_from ev.id: %1 sess.id: %2").arg(ev->m_data.m_map_instance_id).arg(session.is_connected_to_map_instance_id);
+    if (ev->m_data.m_map_instance_id == session.is_connected_to_map_instance_id)
     {
         session.is_connected_to_map_server_id = 0;
         session.is_connected_to_map_instance_id = 0;
