@@ -525,6 +525,8 @@ void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapXfers) << QString("Map xfer complete for session: %1").arg(session.link()->session_token());
+    qCDebug(logMapXfers) << QString("Previous Map Instance ID: %1 Current Map Instance ID: %2").arg(session.is_connected_to_map_instance_id).arg(m_index);
+    session.is_connected_to_map_instance_id = m_index;  // change map instance to new instance.
     // TODO: Do anything necessary after connecting to new map instance here.
 }
 
