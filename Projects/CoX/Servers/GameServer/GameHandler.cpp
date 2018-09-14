@@ -442,6 +442,8 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
         // check if this session perhaps is in ready for reaping set
         m_session_store.unmark_session_for_reaping(&session);
     }
+
+    qCDebug(logMapXfers) << QString("client_connected_to_other ev.id: %1 sess.id: %2").arg(ev->m_data.m_sub_server_id).arg(session.is_connected_to_map_instance_id);
     session.is_connected_to_map_server_id = ev->m_data.m_server_id;
     session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
 }

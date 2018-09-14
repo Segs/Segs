@@ -497,7 +497,7 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapLink *lnk = session.link();
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    qCDebug(logMapXfers) << QString("Initiating map transfer for session: %1").arg(lnk->session_token());
+    qCDebug(logMapXfers) << QString("Initiating map transfer for session: %1 on map instance %2").arg(lnk->session_token()).arg(m_instance_id);
     if (!map_server->session_has_xfer_in_progress(lnk->session_token()))
     {
          qCDebug(logMapXfers) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
@@ -525,8 +525,8 @@ void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapXfers) << QString("Map xfer complete for session: %1").arg(session.link()->session_token());
-    qCDebug(logMapXfers) << QString("Previous Map Instance ID: %1 Current Map Instance ID: %2").arg(session.is_connected_to_map_instance_id).arg(m_index);
-    session.is_connected_to_map_instance_id = m_index;  // change map instance to new instance.
+    qCDebug(logMapXfers) << QString("Previous Map Instance ID: %1 Current Map Instance ID: %2").arg(session.is_connected_to_map_instance_id).arg(m_instance_id);
+    session.is_connected_to_map_instance_id = m_instance_id;  // change map instance to new instance.
     // TODO: Do anything necessary after connecting to new map instance here.
 }
 
