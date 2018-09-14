@@ -680,6 +680,7 @@ void findTeamMember(Entity &tgt)
 {
     sendTeamLooking(&tgt);
 }
+
 bool inviteTeam(Entity &src, Entity &tgt)
 {
     if(src.name() == tgt.name())
@@ -895,6 +896,7 @@ void removeSidekick(Entity &src)
     qCDebug(logTeams).noquote() << msg;
     messageOutput(MessageChannel::USER_ERROR, msg, src);
 }
+
 void removeTeamMember(Team &self, Entity *e)
 {
     qCDebug(logTeams) << "Searching team members for" << e->name() << "to remove them.";

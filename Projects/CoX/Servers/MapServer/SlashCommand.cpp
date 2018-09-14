@@ -17,6 +17,7 @@
 #include "Events/StandardDialogCmd.h"
 #include "Events/InfoMessageCmd.h"
 #include "Events/MapXferWait.h"
+#include "Events/SuperGroupEvents.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
 #include "Logging.h"
@@ -143,6 +144,7 @@ void cmdHandler_SuperGroupMotto(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SuperGroupMode(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SuperGroupPromote(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SuperGroupDemote(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SuperGroupTitles(const QString &cmd, MapClientSession &sess);
 
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
@@ -204,11 +206,13 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"addinsp"},"Adds Inspiration (by name) to Entity", &cmdHandler_AddInspiration, 9},
     {{"addboost", "addEnhancement"},"Adds Enhancement (by name) to Entity", &cmdHandler_AddEnhancement, 9},
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
-    {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
     {{"face"}, "Face a target", cmdHandler_FaceEntity, 9},
     {{"faceLocation"}, "Face a location", cmdHandler_FaceLocation, 9},
     {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
+
+    /* For live debugging */
+    {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", addNpc, 2},
@@ -242,17 +246,18 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"sgleave"}, "Leave SuperGroup", cmdHandler_SuperGroupLeave, 1},
     {{"sginvite", "sgi"}, "Invite to SuperGroup", cmdHandler_SuperGroupInvite, 1},
     {{"sgkick", "sgk"}, "Kick from SuperGroup", cmdHandler_SuperGroupKick, 1},
-    {{"sgmotd"}, "Change SuperGroup Message of the Day", cmdHandler_SuperGroupMOTD, 1},
-    {{"sgsetmotto", "sgmotto"}, "Change SuperGroup Motto", cmdHandler_SuperGroupMotto, 1},
+    {{"sgSetMOTD", "sgmotd"}, "Change SuperGroup Message of the Day", cmdHandler_SuperGroupMOTD, 1},
+    {{"sgSetMotto", "sgmotto"}, "Change SuperGroup Motto", cmdHandler_SuperGroupMotto, 1},
     {{"sgmode"}, "Toggle SuperGroup Mode", cmdHandler_SuperGroupMode, 1},
     {{"promote"}, "Promote SuperGroup member to next rank", cmdHandler_SuperGroupPromote, 1},
     {{"demote"}, "Demote SuperGroup member to next lower rank", cmdHandler_SuperGroupDemote, 1},
+    {{"sgTitles", "nameLeader", "nameCaptain", "nameMember"}, "Set SuperGroup member rank title names", cmdHandler_SuperGroupTitles, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
     {{"team_decline"}, "Decline Team invite", cmdHandler_TeamDecline, 0},
-    {{"supergroup_accept"}, "Accept SuperGroup invite", cmdHandler_SuperGroupAccept, 0},
-    {{"supergroup_decline"}, "Decline SuperGroup invite", cmdHandler_SuperGroupDecline, 0},
+    {{"sg_accept"}, "Accept SuperGroup invite", cmdHandler_SuperGroupAccept, 0},
+    {{"sg_decline"}, "Decline SuperGroup invite", cmdHandler_SuperGroupDecline, 0},
     {{"sidekick_accept"}, "Accept Sidekick invite", cmdHandler_SidekickAccept, 0},
     {{"sidekick_decline"}, "Decline Sidekick invite", cmdHandler_SidekickDecline, 0},
     {{"emailheaders"}, "Request Email Headers", cmdHandler_EmailHeaders, 0},
@@ -1479,12 +1484,22 @@ void cmdHandler_SuperGroupInvite(const QString &cmd, MapClientSession &sess)
         name = tgt->name();
     }
     else
-        tgt = getEntity(&sess,name);
+        tgt = getEntity(&sess, name);
 
     if(tgt == nullptr)
         return;
 
-    msg = inviteSG(*sess.m_ent, *tgt);
+    qCDebug(logSuperGroups) << sess.m_ent->name() << sess.m_ent->m_db_id << tgt->m_db_id << tgt->name();
+
+    if(!tgt->m_char->m_char_data.m_supergroup.m_has_supergroup)
+    {
+        QString from_name = sess.m_ent->name();
+        tgt->m_client->addCommand<SuperGroupOffer>(sess.m_ent->m_db_id, from_name);
+        msg = "Inviting " + tgt->name() + " to your supergroup.";
+    }
+    else
+        msg = tgt->name() + " is already a member of a SuperGroup!";
+
     qCDebug(logSuperGroups) << sess.m_ent->name() << msg;
     sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
 }
@@ -1590,6 +1605,37 @@ void cmdHandler_SuperGroupDemote(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
 }
 
+void cmdHandler_SuperGroupTitles(const QString &cmd, MapClientSession &sess)
+{
+    int idx = 0;
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    QString msg = "Failed to change SG Titles.";
+
+    if(cmd.startsWith("nameLeader ", Qt::CaseInsensitive))
+        idx = 0;
+    else if(cmd.startsWith("nameCaptain ", Qt::CaseInsensitive))
+        idx = 1;
+    else if(cmd.startsWith("nameMember ", Qt::CaseInsensitive))
+        idx = 2;
+    else
+        idx = 3; // all titles
+
+    if(idx == 3)
+    {
+        msg.clear();
+
+        for(int i = 0; i<3; ++i)
+            msg += setSGTitle(*sess.m_ent, i, args[i+1]) + "\n";
+    }
+    else
+        msg = setSGTitle(*sess.m_ent, idx, args[1]); // take first arg only
+
+    qCDebug(logSuperGroups) << sess.m_ent->name() << msg;
+    sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
@@ -1656,38 +1702,33 @@ void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
 void cmdHandler_SuperGroupAccept(const QString &cmd, MapClientSession &sess)
 {
     // game command: "sg_accept \"From\" to_db_id to_db_id \"To\""
-
-    QString msgfrom = "Something went wrong with SuperGroupAccept.";
-    QString msgtgt = "Something went wrong with SuperGroupAccept.";
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
     QString from_name       = args.value(1);
-    uint32_t tgt_db_id      = args.value(2).toUInt();
-    uint32_t tgt_db_id_2    = args.value(3).toUInt(); // always the same?
+    uint32_t src_db_id      = args.value(2).toUInt();
+    uint32_t tgt_db_id      = args.value(3).toUInt(); // always the same?
     QString tgt_name        = args.value(4);
 
-    if(tgt_db_id != tgt_db_id_2)
-        qWarning() << "SuperGroupAccept db_ids do not match!";
+    if(tgt_name != sess.m_ent->name())
+    {
+        qCDebug(logSlashCommand) << "SuperGroupAccept name does not match target.";
+        return;
+    }
 
-    Entity *from_ent = getEntity(&sess,from_name);
+    qCDebug(logSuperGroups) << from_name << src_db_id << tgt_db_id << tgt_name;
+
+    Entity *from_ent = getEntity(&sess, from_name);
     if(from_ent == nullptr)
         return;
 
-    if(inviteTeam(*from_ent,*sess.m_ent))
-    {
-        msgfrom = "Inviting " + tgt_name + " to SuperGroup.";
-        msgtgt = "Joining " + from_name + "'s SuperGroup.";
+    SGResponse response = inviteSG(*from_ent, *sess.m_ent);
 
-    }
-    else
-    {
-        msgfrom = "Failed to invite " + tgt_name + ". They are already in a SuperGroup.";
-    }
+    qCDebug(logSlashCommand).noquote() << response.msgfrom;
+    sendInfoMessage(MessageChannel::SUPERGROUP, response.msgfrom, *from_ent->m_client);
 
-    qCDebug(logSlashCommand).noquote() << msgfrom;
-    sendInfoMessage(MessageChannel::TEAM, msgfrom, *from_ent->m_client);
-    sendInfoMessage(MessageChannel::TEAM, msgtgt, sess);
+    if(response.is_success)
+        sendInfoMessage(MessageChannel::SUPERGROUP, response.msgtgt, sess);
 }
 
 void cmdHandler_SuperGroupDecline(const QString &cmd, MapClientSession &sess)
@@ -1705,13 +1746,13 @@ void cmdHandler_SuperGroupDecline(const QString &cmd, MapClientSession &sess)
     if(from_ent == nullptr)
         return;
 
-    msg = tgt_name + " declined a SuperGroup invite from " + from_name + QString::number(tgt_db_id);
+    msg = tgt_name + " declined a SuperGroup invite from " + from_name + " db_id: " + QString::number(tgt_db_id);
     qCDebug(logSlashCommand).noquote() << msg;
 
     msg = tgt_name + " declined your SuperGroup invite."; // to sender
-    sendInfoMessage(MessageChannel::TEAM, msg, *from_ent->m_client);
+    sendInfoMessage(MessageChannel::SUPERGROUP, msg, *from_ent->m_client);
     msg = "You declined the SuperGroup invite from " + from_name; // to target
-    sendInfoMessage(MessageChannel::TEAM, msg, sess);
+    sendInfoMessage(MessageChannel::SUPERGROUP, msg, sess);
 }
 
 void cmdHandler_SidekickAccept(const QString &/*cmd*/, MapClientSession &sess)

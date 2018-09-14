@@ -162,28 +162,43 @@ bool SuperGroup::makeSGLeader(Entity &src, Entity &tgt)
     return true;
 }
 
-QString inviteSG(Entity &src, Entity &tgt)
+SGResponse inviteSG(Entity &src, Entity &tgt)
 {
-    QString msg = "Inviting " + tgt.name() + " to SuperGroup.";
+    SGResponse response;
+    response.is_success = false;
 
     SuperGroupStats *src_sg = &src.m_char->m_char_data.m_supergroup;
     SuperGroupStats *tgt_sg = &tgt.m_char->m_char_data.m_supergroup;
 
     if(tgt_sg->m_has_supergroup)
-        return msg = tgt.name() + " already has a SuperGroup.";
+    {
+        // NOTE: we should never get to this point
+        response.msgfrom = tgt.name() + " already has a SuperGroup.";
+        return response;
+    }
 
     if(tgt.name() == src.name())
-        return msg = "You cannot invite yourself to a supergroup.";
+    {
+        response.msgfrom = "You cannot invite yourself to a supergroup.";
+        return response;
+    }
 
     if(src_sg->m_has_supergroup && src_sg->m_rank < 1)
-        return msg = "You do not have high enough rank to invite players to the SuperGroup.";
+    {
+        response.msgfrom = "You do not have high enough rank to invite players to the SuperGroup.";
+        return response;
+    }
 
     SuperGroup * sg = getSuperGroupByIdx(src_sg->m_sg_idx);
     if(sg == nullptr)
         qFatal("getSuperGroupByIdx returned nullptr for inviteSG");
 
+    response.is_success = true;
+    response.msgfrom = "Inviting " + tgt.name() + " to SuperGroup.";
+    response.msgtgt = src.name() + " has invited you to join their SuperGroup.";
+
     sg->addSGMember(&tgt, 0);
-    return msg;
+    return response;
 }
 
 QString kickSG(Entity &src, Entity &tgt)
@@ -287,6 +302,35 @@ QString setSGMotto(Entity &e, QString &motto)
     return msg;
 }
 
+QString setSGTitle(Entity &e, int idx, QString &title)
+{
+    SuperGroupStats *sgs = &e.m_char->m_char_data.m_supergroup;
+    SuperGroup * sg = getSuperGroupByIdx(sgs->m_sg_idx);
+    if(sg == nullptr)
+        qFatal("getSuperGroupByIdx returned nullptr for setSGTitle");
+
+    // limit idx to 0...2
+    idx = std::min(std::max(idx,0),2);
+    QString msg = "Setting SuperGroup rank titles for " + sg->m_data.m_sg_name;
+
+    switch(idx)
+    {
+    case 0:
+        msg = "Setting Leader title to ";
+        break;
+    case 1:
+        msg = "Setting Captain title to ";
+        break;
+    case 2:
+        msg = "Setting Member title to ";
+        break;
+    }
+
+    msg += title;
+    sg->m_data.m_sg_titles[idx] = title;
+    return msg;
+}
+
 QString modifySGRank(Entity &src, Entity &tgt, int rank_mod)
 {
     QString msg = "Modifying " + tgt.name() + "'s rank in SuperGroup by " + QString::number(rank_mod);
@@ -323,7 +367,7 @@ SuperGroupStats* getSGMember(Entity &tgt, uint32_t sg_idx)
 {
     int idx = -1;
 
-    qCDebug(logSuperGroups) << "Seaching for SuperGroup Member" << tgt.name();
+    qCDebug(logSuperGroups) << "Searching for SuperGroup Member" << tgt.name();
     if(sg_idx == 0 || !tgt.m_char->m_char_data.m_supergroup.m_has_supergroup)
         return nullptr;
 
@@ -348,7 +392,7 @@ SuperGroupStats* getSGMember(Entity &tgt, uint32_t sg_idx)
 
 SuperGroup* getSuperGroupByIdx(uint32_t sg_idx)
 {
-    qCDebug(logSuperGroups) << "Seaching for SuperGroup" << sg_idx;
+    //qCDebug(logSuperGroups) << "Searching for SuperGroup" << sg_idx;
     if(sg_idx != 0)
         return &g_all_supergroups.at(sg_idx-1);
 

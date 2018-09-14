@@ -12,6 +12,13 @@
 class Entity;
 class SuperGroup;
 
+struct SGResponse
+{
+    bool        is_success = false;
+    QString     msgfrom;
+    QString     msgtgt;
+};
+
 struct SuperGroupData
 {
     QString     m_sg_name;                  // 64 chars max
@@ -97,12 +104,13 @@ static  uint32_t  m_sg_idx_counter;
  * SG Methods
  */
 bool sameSG(Entity &src, Entity &tgt);
-QString inviteSG(Entity &src, Entity &tgt);
+SGResponse inviteSG(Entity &src, Entity &tgt);
 QString kickSG(Entity &src, Entity &tgt);
 void leaveSG(Entity &e);
 bool toggleSGMode(Entity &e);
 QString setSGMOTD(Entity &e, QString &motd);
 QString setSGMotto(Entity &e, QString &motto);
+QString setSGTitle(Entity &e, int idx, QString &title);
 QString modifySGRank(Entity &src, Entity &tgt, int rank_mod);
 QString demoteSG(Entity &src, Entity &tgt);
 
