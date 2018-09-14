@@ -92,8 +92,8 @@ const   uint32_t    m_max_sg_size       = 150;  // max is always 150
         void        listSGMembers();
         void        addSGMember(Entity *e, int rank = 0);
         void        removeSGMember(Entity *e);
-        bool        isSGLeader(Entity *e);
-        bool        makeSGLeader(Entity &src, Entity &tgt);
+        uint32_t    getSGLeaderDBID();
+        bool        makeSGLeader(Entity &tgt);
 
 private:
 static  uint32_t  m_sg_idx_counter;

@@ -91,27 +91,14 @@ void SuperGroup::removeSGMember(Entity *e)
             listSGMembers();
     }
 
-    // TODO: This goes away, because SG sizes of 1 are permitted?
-    if(m_sg_members.size() <= 1)
+    if(m_sg_members.size() == 1)
     {
-        qCDebug(logSuperGroups) << "One player left on SuperGroup. Removing last entity and deleting SuperGroup.";
+        qCDebug(logSuperGroups) << "One player left on SuperGroup. Making them leader.";
         if(logSuperGroups().isDebugEnabled())
             listSGMembers();
 
-        int idx = m_sg_members.front().m_db_id;
-
-        Entity *tgt = nullptr;
-        if((tgt/* = getEntityByDBID(e->m_client->m_current_map,idx)*/) == nullptr)
-            return;
-
-        cd->m_supergroup.m_has_supergroup = false;
-        cd->m_supergroup.m_sg_idx = 0;
-        m_sg_members.clear();
-        m_data.m_sg_leader_db_id = 0;
-
-        qCDebug(logSuperGroups) << "After removing all entities.";
-        if(logSuperGroups().isDebugEnabled())
-            listSGMembers();
+        m_data.m_sg_leader_db_id = m_sg_members.front().m_db_id;
+        // TODO: fix entity's rank somehow
     }
 }
 
@@ -137,9 +124,9 @@ void SuperGroup::listSGMembers()
     qDebug().noquote() << output;
 }
 
-bool SuperGroup::isSGLeader(Entity *e)
+uint32_t SuperGroup::getSGLeaderDBID()
 {
-    return m_data.m_sg_leader_db_id == e->m_db_id;
+    return m_data.m_sg_leader_db_id;
 }
 
 bool sameSG(Entity &src, Entity &tgt)
@@ -147,17 +134,17 @@ bool sameSG(Entity &src, Entity &tgt)
     return src.m_char->m_char_data.m_supergroup.m_sg_idx == tgt.m_char->m_char_data.m_supergroup.m_sg_idx;
 }
 
-bool SuperGroup::makeSGLeader(Entity &src, Entity &tgt)
+bool SuperGroup::makeSGLeader(Entity &tgt)
 {
-    CharacterData *src_cd = &src.m_char->m_char_data;
     CharacterData *tgt_cd = &tgt.m_char->m_char_data;
 
-    if(!src_cd->m_supergroup.m_has_supergroup || !tgt_cd->m_supergroup.m_has_supergroup
-            || !sameSG(src,tgt)
-            || !isSGLeader(&src))
+    if(!tgt_cd->m_supergroup.m_has_supergroup
+            || m_sg_idx != tgt_cd->m_supergroup.m_sg_idx
+            || getSGLeaderDBID() == tgt.m_db_id)
         return false;
 
     m_data.m_sg_leader_db_id = tgt.m_db_id;
+    tgt_cd->m_supergroup.m_rank = 2;
 
     return true;
 }

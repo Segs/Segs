@@ -233,5 +233,4 @@ protected:
         void on_supergroup_mode(SEGSEvents::SuperGroupMode *ev);
         void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
         void on_browser_close(SEGSEvents::BrowserClose *ev);
->>>>>>> upstream/develop
 };
