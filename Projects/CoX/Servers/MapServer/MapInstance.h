@@ -82,6 +82,7 @@ class TrashEnhancementInPower;
 class BuyEnhancementSlot;
 class RecvNewPower;
 class EmailHeaderResponse;
+class EmailReadResponse;
 class EmailWasReadByRecipientMessage;
 class MapXferComplete;
 class InitiateMapXfer;
@@ -214,6 +215,7 @@ protected:
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
         void on_email_header_response(SEGSEvents::EmailHeaderResponse* msg);
+        void on_email_read_response(SEGSEvents::EmailReadResponse* msg);
         void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage* msg);
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
         void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);

@@ -18,7 +18,7 @@ namespace SEGSEvents
 {
     struct EmailHeaderRequest;
     struct EmailSendMessage;
-    struct EmailReadMessage;
+    struct EmailReadRequest;
     struct EmailDeleteMessage;
     struct ClientConnectedMessage;
     struct ClientDisconnectedMessage;
@@ -37,6 +37,18 @@ struct EmailHandlerState
     int m_game_server_id;
 };
 
+struct EmailData
+{
+    uint32_t m_email_id;
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;
+    QString m_sender_name;
+    QString m_subject;
+    QString m_message;
+    uint32_t timestamp;
+    bool m_is_read_by_recipient;
+};
+
 class EmailHandler : public EventProcessor
 {
 private:
@@ -45,12 +57,13 @@ private:
 
     void on_email_header(SEGSEvents::EmailHeaderRequest* msg);
     void on_email_send(SEGSEvents::EmailSendMessage* msg);
-    void on_email_read(SEGSEvents::EmailReadMessage* msg);
+    void on_email_read(SEGSEvents::EmailReadRequest* msg);
     void on_email_delete(SEGSEvents::EmailDeleteMessage* msg);
     void on_client_connected(SEGSEvents::ClientConnectedMessage* msg);
     void on_client_disconnected(SEGSEvents::ClientDisconnectedMessage *msg);
 protected:
     // this is probably temporary until we have the DB!
+    std::map<uint32_t, EmailData> m_emails;
     uint32_t m_stored_email_count;
     MessageBusEndpoint m_message_bus_endpoint;
     GameDBSyncHandler* m_db_handler;

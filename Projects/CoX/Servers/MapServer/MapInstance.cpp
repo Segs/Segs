@@ -449,6 +449,9 @@ void MapInstance::dispatch( Event *ev )
         case evEmailHeaderResponse:
             on_email_header_response(static_cast<EmailHeaderResponse *>(ev));
             break;
+        case evEmailReadResponse:
+            on_email_read_response(static_cast<EmailReadResponse *>(ev));
+            break;
         case evEmailWasReadByRecipientMessage:
             on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev));
             break;
@@ -2516,8 +2519,22 @@ void MapInstance::on_email_header_response(EmailHeaderResponse* msg)
     map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
 }
 
+void MapInstance::on_email_read_response(EmailReadResponse *msg)
+{
+    EmailRead *email_read = new EmailRead(
+                msg->m_data.email_id,
+                msg->m_data.message,
+                msg->m_data.sender_name
+                );
+
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(email_read));
+}
+
 void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage* msg)
 {
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, "Your email has been read by A", map_session);
 
     // this is sent from the reader back to the sender via EmailHandler
     // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance

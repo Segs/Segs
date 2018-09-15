@@ -18,7 +18,8 @@ enum EmailEventTypes : uint32_t
 {
     evEmailHeaderRequest = Internal_EventTypes::ID_LAST_Internal_EventTypes,
     evEmailHeaderResponse,
-    evEmailReadMessage,
+    evEmailReadRequest,
+    evEmailReadResponse,
     evEmailSendMessage,
     evEmailDeleteMessage,
     evEmailWasReadByRecipientMessage
@@ -57,7 +58,7 @@ struct EmailHeaderResponseData
 //[[ev_def:macro]]
 TWO_WAY_MESSAGE(EmailEventTypes,EmailHeader)
 
-struct EmailReadData
+struct EmailReadRequestData
 {
     uint32_t email_id;
 
@@ -67,8 +68,21 @@ struct EmailReadData
         ar(email_id);
     }
 };
+
+struct EmailReadResponseData
+{
+    uint32_t email_id;
+    QString message;
+    QString sender_name;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(email_id, message, sender_name);
+    }
+};
 //[[ev_def:macro]]
-ONE_WAY_MESSAGE(EmailEventTypes,EmailRead)
+TWO_WAY_MESSAGE(EmailEventTypes,EmailRead)
 
 struct EmailSendData
 {

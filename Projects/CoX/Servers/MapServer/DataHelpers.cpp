@@ -280,11 +280,11 @@ void sendEmail(MapClientSession& sess, uint32_t recipient_id, QString subject, Q
         return;
     }
 
-    EmailSendMessage* msgToHandler = new EmailSendMessage(
-                EmailSendData({sess.m_ent->m_char->m_db_id,
-                               recipient_id,
-                               sess.m_ent->m_char->getName(),    // -> sender
-                               subject, message, 0}),
+    EmailSendMessage* msgToHandler = new EmailSendMessage({
+                                                            sess.m_ent->m_char->m_db_id,
+                                                            recipient_id,
+                                                            sess.m_ent->m_char->getName(),    // -> sender
+                                                            subject, message, 0},
                 sess.link()->session_token());
 
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
@@ -298,20 +298,8 @@ void readEmailMessage(MapClientSession& sess, const int id)
         return;
     }
 
-    QString message = "Email ID \n" + QString::number(id);
-
-    EmailRead *emailRead = new EmailRead(
-                id,
-                message,
-                sess.m_ent->m_client->m_name);
-
-    sess.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(emailRead));
-
-    /*
-    EmailReadMessage* msgToHandler = new EmailReadMessage(
-                EmailReadData({e->m_client, id}));
+    EmailReadRequest* msgToHandler = new EmailReadRequest({id}, sess.link()->session_token());
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
-    */
 }
 
 void deleteEmailHeaders(MapClientSession& sess, const int id)

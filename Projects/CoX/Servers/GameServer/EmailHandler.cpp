@@ -20,8 +20,8 @@ void EmailHandler::dispatch(Event *ev)
         case EmailEventTypes::evEmailHeaderRequest:
         on_email_header(static_cast<EmailHeaderRequest *>(ev));
         break;
-        case EmailEventTypes::evEmailReadMessage:
-        on_email_read(static_cast<EmailReadMessage *>(ev));
+        case EmailEventTypes::evEmailReadRequest:
+        on_email_read(static_cast<EmailReadRequest *>(ev));
         break;
         case EmailEventTypes::evEmailSendMessage:
         on_email_send(static_cast<EmailSendMessage *>(ev));
@@ -52,34 +52,50 @@ void EmailHandler::on_email_header(EmailHeaderRequest *msg)
     // this function is test to send email to self :)
 
     const ClientSessionData &recipient_data (m_state.m_stored_client_datas[msg->m_data.sender_id]);
+
+    m_emails[m_stored_email_count] = EmailData{
+                m_stored_email_count,
+                msg->m_data.sender_id,
+                msg->m_data.sender_id,
+                QString("Test Sender"),
+                msg->m_data.subject,
+                QString("Placeholder Message \n Hi"),
+                msg->m_data.timestamp,
+                false};
+
     EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
                 recipient_data.m_server_id,
                 recipient_data.m_instance_id);
 
     tgt->putq(new EmailHeaderResponse({
-                                          m_stored_email_count++,
+                                          m_stored_email_count,
                                           msg->m_data.sender_name,
                                           msg->m_data.subject,
                                           msg->m_data.timestamp
                                       }, msg->session_token()));
+    m_stored_email_count++;
 }
 
-void EmailHandler::on_email_read(EmailReadMessage *msg)
+void EmailHandler::on_email_read(EmailReadRequest *msg)
 {
-    // later on, find the message from DB
-    QString message = "Email ID \n" + QString::number(msg->m_data.email_id);
+    EmailData& email_data (m_emails[msg->m_data.email_id]);
+    email_data.m_is_read_by_recipient = true;
 
-    /*
-    EmailRead *emailRead = new EmailRead(
-                msg->m_data.id,
-                message,
-                msg->m_data.src->m_name);*/
+    const ClientSessionData &sender_data (m_state.m_stored_client_datas[email_data.m_sender_id]);
+    const ClientSessionData &recipient_data (m_state.m_stored_client_datas[email_data.m_recipient_id]);
 
-    // TODO: Implement 'EmailWasReadByRecipientMessage' and send them all to interested parties
-    // The recipient is the one sending EmailReadMessage to here in the first place, so leave him out
-    // So, we send this message to the sender in wherever MapInstance he is at
+    EventProcessor *sender_map_instance = HandlerLocator::getMapInstance_Handler(
+                sender_data.m_server_id,
+                sender_data.m_instance_id);
 
-    //msg->m_data.src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(emailRead));
+    EventProcessor *recipient_map_instance = HandlerLocator::getMapInstance_Handler(
+                recipient_data.m_server_id,
+                recipient_data.m_instance_id);
+
+    sender_map_instance->putq(new EmailWasReadByRecipientMessage(
+        {msg->m_data.email_id}, sender_data.m_session_token));
+    recipient_map_instance->putq(new EmailReadResponse(
+        {msg->m_data.email_id, email_data.m_message, email_data.m_sender_name}, recipient_data.m_session_token));
 }
 
 void EmailHandler::on_email_send(EmailSendMessage *msg)
@@ -104,6 +120,7 @@ void EmailHandler::on_email_send(EmailSendMessage *msg)
 void EmailHandler::on_email_delete(EmailDeleteMessage *msg)
 {
     // delete email in db and that's it, shouldn't be any need to toss responses and messages around
+    m_emails.erase(msg->m_data.email_id);
 }
 
 void EmailHandler::on_client_connected(ClientConnectedMessage *msg)
@@ -111,6 +128,8 @@ void EmailHandler::on_client_connected(ClientConnectedMessage *msg)
     // m_session is the key, m_server_id and m_sub_server_id are the values
     m_state.m_stored_client_datas[msg->m_data.m_char_db_id] =
             ClientSessionData{msg->m_data.m_session, msg->m_data.m_server_id, msg->m_data.m_sub_server_id};
+
+    // send all emails where this client is the recipient
 }
 
 void EmailHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
