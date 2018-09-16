@@ -18,7 +18,6 @@
 #include "Logging.h"
 #include "Powers.h"
 
-
 namespace {
 
 static bool hasRoomForTradeInfluence(Entity& src)
@@ -174,7 +173,7 @@ static void finishTrade(Entity& src, Entity& tgt)
 
     sendTradeSuccess(src, tgt);
 
-    qCDebug(logSlashCommand) << "Trade successful betweeen" << src.name() << "and" << tgt.name(); // TODO: Trade debug
+    qCDebug(logTrades) << "Trade successful betweeen" << src.name() << "and" << tgt.name();
 }
 
 } // Anonymous namespace.
@@ -262,8 +261,6 @@ bool Trade::isAccepted() const {
 }
 
 
-// TODO: Need a logTrades log level.
-
 void requestTrade(Entity& src, Entity& tgt)
 {
     // TODO: Clean up trade when a player logs out.
@@ -279,7 +276,7 @@ void requestTrade(Entity& src, Entity& tgt)
                              "You are already in a trade." :
                              "You are already considering a trade offer.");
         messageOutput(MessageChannel::SERVER, msg, src);
-        qCDebug(logSlashCommand) << "Trade invite from" << src.name() << "to" << tgt.name() << "failed:" << msg; // TODO: Trade debug
+        qCDebug(logTrades) << "Trade invite from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
 
@@ -289,7 +286,7 @@ void requestTrade(Entity& src, Entity& tgt)
                              tgt.name() + " is already in a trade." :
                              tgt.name() + " is already considering a trade offer.");
         messageOutput(MessageChannel::SERVER, msg, src);
-        qCDebug(logSlashCommand) << "Trade invite from" << src.name() << "to" << tgt.name() << "failed:" << msg; // TODO: Trade debug
+        qCDebug(logTrades) << "Trade invite from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
 
@@ -303,7 +300,7 @@ void requestTrade(Entity& src, Entity& tgt)
     const QString msg_tgt = src.name() + " sent a trade request.";
     messageOutput(MessageChannel::SERVER, msg_src, src);
     messageOutput(MessageChannel::SERVER, msg_tgt, tgt);
-    qCDebug(logSlashCommand) << src.name() << "sent a trade request to" << tgt.name(); // TODO: Trade debug
+    qCDebug(logTrades) << src.name() << "sent a trade request to" << tgt.name();
 }
 
 void acceptTrade(Entity& src, Entity& tgt)
@@ -320,7 +317,7 @@ void acceptTrade(Entity& src, Entity& tgt)
     {
         const QString msg = "You have not been sent a trade offer.";
         messageOutput(MessageChannel::SERVER, msg, src);
-        qWarning() << "Trade accept from" << src.name() << "to" << tgt.name() << "failed:" << msg; // TODO: Trade debug
+        qWarning() << "Trade accept from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
 
@@ -328,7 +325,7 @@ void acceptTrade(Entity& src, Entity& tgt)
     {
         const QString msg = tgt.name() + " have not sent a trade offer.";
         messageOutput(MessageChannel::SERVER, msg, src);
-        qWarning() << "Trade accept from" << src.name() << "to" << tgt.name() << "failed:" << msg; // TODO: Trade debug
+        qWarning() << "Trade accept from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
 
@@ -336,7 +333,7 @@ void acceptTrade(Entity& src, Entity& tgt)
     {
         const QString msg = "You are not considering a trade offer from " + tgt.name() + ".";
         messageOutput(MessageChannel::SERVER, msg, src);
-        qWarning() << "Trade accept from" << src.name() << "to" << tgt.name() << "failed:" << msg; // TODO: Trade debug
+        qWarning() << "Trade accept from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
 
@@ -349,7 +346,7 @@ void acceptTrade(Entity& src, Entity& tgt)
     const QString msg_tgt = src.name() + " accepted your trade invite.";
     messageOutput(MessageChannel::SERVER, msg_src, src);
     messageOutput(MessageChannel::SERVER, msg_tgt, tgt);
-    qCDebug(logSlashCommand) << src.name() << "accepted a trade invite from" << tgt.name(); // TODO: Trade debug
+    qCDebug(logTrades) << src.name() << "accepted a trade invite from" << tgt.name();
 }
 
 void declineTrade(Entity& src, Entity& tgt)
@@ -360,7 +357,7 @@ void declineTrade(Entity& src, Entity& tgt)
     {
         const QString msg = "You have not been sent a trade offer.";
         messageOutput(MessageChannel::SERVER, msg, src);
-        qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:" << msg; // TODO: Trade debug
+        qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
 
@@ -368,7 +365,7 @@ void declineTrade(Entity& src, Entity& tgt)
     {
         const QString msg = tgt.name() + " have not sent a trade offer.";
         messageOutput(MessageChannel::SERVER, msg, src);
-        qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:" << msg; // TODO: Trade debug
+        qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
 
@@ -376,7 +373,7 @@ void declineTrade(Entity& src, Entity& tgt)
     {
         const QString msg = "You are not considering a trade offer from " + tgt.name() + ".";
         messageOutput(MessageChannel::SERVER, msg, src);
-        qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:" << msg; // TODO: Trade debug
+        qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
 
@@ -388,7 +385,7 @@ void declineTrade(Entity& src, Entity& tgt)
     const QString msg_tgt = src.name() + " declined your trade invite.";
     messageOutput(MessageChannel::SERVER, msg_src, src);
     messageOutput(MessageChannel::SERVER, msg_tgt, tgt);
-    qCDebug(logSlashCommand) << src.name() << "declined a trade invite from" << tgt.name(); // TODO: Trade debug
+    qCDebug(logTrades) << src.name() << "declined a trade invite from" << tgt.name();
 }
 
 void cancelTrade(Entity& src)
@@ -410,7 +407,7 @@ void cancelTrade(Entity& src)
         const QString msg = "Trade cancelled because the other player left.";
         sendTradeCancel(src, msg);
 
-        qCDebug(logSlashCommand) << src.name() << "cancelled a trade where target has disappeared"; // TODO: Trade debug
+        qCDebug(logTrades) << src.name() << "cancelled a trade where target has disappeared";
         return;
     }
 
@@ -422,7 +419,7 @@ void cancelTrade(Entity& src)
     sendTradeCancel(src, msg_src);
     sendTradeCancel(*tgt, msg_tgt);
 
-    qCDebug(logSlashCommand) << src.name() << "cancelled a trade with" << tgt->name(); // TODO: Trade debug
+    qCDebug(logTrades) << src.name() << "cancelled a trade with" << tgt->name();
 }
 
 void updateTrade(Entity& src, const TradeInfo& info)
@@ -466,7 +463,7 @@ void updateTrade(Entity& src, const TradeInfo& info)
     }
 
     sendTradeUpdate(src, *tgt, trade_src, trade_tgt);
-    qCDebug(logSlashCommand) << src.name() << "updated a trade with" << tgt->name(); // TODO: Trade debug
+    qCDebug(logTrades) << src.name() << "updated a trade with" << tgt->name();
 
     if (trade.isAccepted())
     {

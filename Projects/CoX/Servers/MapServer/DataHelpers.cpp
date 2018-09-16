@@ -941,8 +941,7 @@ void sendTradeOffer(const Entity& src, Entity& tgt)
     const QString name = src.name();
     const uint32_t db_id = tgt.m_db_id;
 
-    // TODO: Add logTrades
-    qCDebug(logSlashCommand) << "Sending Trade Offer" << db_id << name;
+    qCDebug(logTrades) << "Sending Trade Offer" << db_id << name;
     tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeOffer>(db_id, name));
 }
 
@@ -951,23 +950,20 @@ void sendTradeInit(Entity& src, Entity& tgt)
     const uint32_t src_db_id = src.m_db_id;
     const uint32_t tgt_db_id = tgt.m_db_id;
 
-    // TODO: Add logTrades
-    qCDebug(logSlashCommand) << "Sending Trade Init" << src_db_id << tgt_db_id;
+    qCDebug(logTrades) << "Sending Trade Init" << src_db_id << tgt_db_id;
     tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeInit>(src_db_id));
     src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeInit>(tgt_db_id));
 }
 
 void sendTradeCancel(Entity& ent, const QString& msg)
 {
-    // TODO: Add logTrades
-    qCDebug(logSlashCommand) << "Sending Trade Cancel" << msg;
+    qCDebug(logTrades) << "Sending Trade Cancel" << msg;
     ent.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeCancel>(msg));
 }
 
 void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt)
 {
-    // TODO: Add logTrades
-    qCDebug(logSlashCommand) << "Sending Trade Update";
+    qCDebug(logTrades) << "Sending Trade Update";
     src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeUpdate>(trade_src, trade_tgt, tgt));
     tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeUpdate>(trade_tgt, trade_src, src));
 }
@@ -977,8 +973,7 @@ void sendTradeSuccess(Entity& src, Entity& tgt)
     const QString msg_src = "Trade with " + tgt.name() + " was a success.";
     const QString msg_tgt = "Trade with " + src.name() + " was a success.";
 
-    // TODO: Add logTrades
-    qCDebug(logSlashCommand) << "Sending Trade Success";
+    qCDebug(logTrades) << "Sending Trade Success";
     src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_src));
     tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_tgt));
 }
