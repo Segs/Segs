@@ -128,7 +128,7 @@ void sendBrowser(MapClientSession &tgt, QString &content);
 void sendTradeOffer(const Entity& src, Entity& tgt);
 void sendTradeInit(Entity& src, Entity& tgt);
 void sendTradeCancel(Entity& ent, const QString& msg);
-void sendTradeUpdate(Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt);
+void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt);
 void sendTradeSuccess(Entity& src, Entity& tgt);
 
 const QString &getGenericTitle(uint32_t val);

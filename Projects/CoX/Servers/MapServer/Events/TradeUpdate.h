@@ -7,20 +7,17 @@
 #pragma once
 
 #include "GameCommandList.h"
+#include "NetStructures/Trade.h"
 
-class TradeMember;
 
 class TradeUpdate final : public GameCommand
 {
 public:
-    TradeUpdate(const TradeMember& trade_self, const TradeMember& trade_other);
+    TradeUpdate(const TradeMember& trade_self, const TradeMember& trade_other, const Entity& entity_other);
     virtual ~TradeUpdate() override = default;
     virtual void serializeto(BitStream& bs) const override;
 
-    const uint32_t m_db_id;
-    const bool m_self_accepted;
-    const bool m_other_accepted;
-    const uint32_t m_self_influence;
-    const uint32_t m_other_influence;
-    // TODO: Inspirations and enhancements.
+    const TradeMember m_trade_self;
+    const TradeMember m_trade_other;
+    const Entity& m_entity_other;
 };

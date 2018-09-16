@@ -23,5 +23,5 @@ public:
     virtual void serializefrom(BitStream &bs) override;
     virtual void serializeto(BitStream &) const override;
 
-    TradeUpdateInfo m_info;
+    TradeInfo m_info;
 };

@@ -964,11 +964,12 @@ void sendTradeCancel(Entity& ent, const QString& msg)
     ent.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeCancel>(msg));
 }
 
-void sendTradeUpdate(Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt)
+void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt)
 {
     // TODO: Add logTrades
     qCDebug(logSlashCommand) << "Sending Trade Update";
-    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeUpdate>(trade_tgt, trade_src));
+    src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeUpdate>(trade_src, trade_tgt, tgt));
+    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeUpdate>(trade_tgt, trade_src, src));
 }
 
 void sendTradeSuccess(Entity& src, Entity& tgt)
