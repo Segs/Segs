@@ -12,6 +12,10 @@
 
 #include "TradeWasCancelledMessage.h"
 
+namespace SEGSEvents
+{
+
+
 TradeWasCancelledMessage::TradeWasCancelledMessage()
     : MapLinkEvent(MapEventTypes::evTradeWasCancelledMessage)
 {
@@ -24,7 +28,9 @@ void TradeWasCancelledMessage::serializefrom(BitStream& bs)
 
 void TradeWasCancelledMessage::serializeto(BitStream &) const
 {
-    assert(!"unimplemented");
+    assert(false);
 }
 
+
+} // namespace SEGSEvents
 //! @}

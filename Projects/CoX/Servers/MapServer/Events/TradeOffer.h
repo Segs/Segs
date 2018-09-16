@@ -8,14 +8,27 @@
 
 #include "GameCommandList.h"
 
+#include <QtCore/QString>
 
-class TradeOffer final : public GameCommand
+
+namespace SEGSEvents
+{
+
+
+// [[ev_def:type]]
+class TradeOffer final : public GameCommandEvent
 {
 public:
+    EVENT_IMPL(TradeOffer)
+    TradeOffer();
     TradeOffer(uint32_t db_id, const QString& name);
-    virtual ~TradeOffer() override = default;
-    virtual void serializeto(BitStream& bs) const override;
+    void serializeto(BitStream& bs) const override;
 
-    const uint32_t m_db_id;
-    const QString m_name;
+    // [[ev_def:field]]
+    uint32_t m_db_id = 0;
+    // [[ev_def:field]]
+    QString m_name;
 };
+
+
+} // namespace SEGSEvents

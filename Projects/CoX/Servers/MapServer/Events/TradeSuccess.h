@@ -8,13 +8,25 @@
 
 #include "GameCommandList.h"
 
+#include <QtCore/QString>
 
-class TradeSuccess final : public GameCommand
+
+namespace SEGSEvents
+{
+
+
+// [[ev_def:type]]
+class TradeSuccess final : public GameCommandEvent
 {
 public:
+    EVENT_IMPL(TradeSuccess)
+    TradeSuccess();
     explicit TradeSuccess(const QString& msg);
-    virtual ~TradeSuccess() override = default;
-    virtual void serializeto(BitStream& bs) const override;
+    void serializeto(BitStream& bs) const override;
 
-    const QString m_msg;
+    // [[ev_def:field]]
+    QString m_msg;
 };
+
+
+} // namespace SEGSEvents

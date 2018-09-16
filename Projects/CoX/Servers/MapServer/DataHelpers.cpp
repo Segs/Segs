@@ -580,7 +580,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     sendFloatingNumbers(*ent.m_client, tgt_idx, damage);
     setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
 }
-void addFriend(Entity &src, Entity &tgt)
+void addFriend(Entity &src, const Entity &tgt)
 {
     QString msg;
     FriendsList &src_data(src.m_char->m_char_data.m_friendlist);

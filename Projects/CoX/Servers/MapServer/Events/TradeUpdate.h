@@ -9,15 +9,30 @@
 #include "GameCommandList.h"
 #include "NetStructures/Trade.h"
 
+#include <vector>
 
-class TradeUpdate final : public GameCommand
+namespace SEGSEvents
+{
+
+
+// [[ev_def:type]]
+class TradeUpdate final : public GameCommandEvent
 {
 public:
+    EVENT_IMPL(TradeUpdate)
+    TradeUpdate();
     TradeUpdate(const TradeMember& trade_self, const TradeMember& trade_other, const Entity& entity_other);
-    virtual ~TradeUpdate() override = default;
-    virtual void serializeto(BitStream& bs) const override;
+    void serializeto(BitStream& bs) const override;
 
-    const TradeMember m_trade_self;
-    const TradeMember m_trade_other;
-    const Entity& m_entity_other;
+    // [[ev_def:field]]
+    TradeMember m_trade_self;
+    // [[ev_def:field]]
+    TradeMember m_trade_other;
+    // [[ev_def:field]]
+    std::vector<CharacterEnhancement> m_enhancements;
+    // [[ev_def:field]]
+    std::vector<CharacterInspiration> m_inspirations;
 };
+
+
+} // namespace SEGSEvents

@@ -6,9 +6,17 @@
 #include "TradeOffer.h"
 #include "MapEvents.h"
 
+namespace SEGSEvents
+{
+
+
+TradeOffer::TradeOffer()
+    : GameCommandEvent(MapEventTypes::evTradeOffer)
+{
+}
 
 TradeOffer::TradeOffer(uint32_t db_id, const QString& name)
-    : GameCommand(MapEventTypes::evTradeOffer)
+    : GameCommandEvent(MapEventTypes::evTradeOffer)
     , m_db_id(db_id)
     , m_name(name)
 {
@@ -20,4 +28,6 @@ void TradeOffer::serializeto(BitStream& bs) const {
     bs.StoreString(m_name);
 }
 
+
+} // namespace SEGSEvents
 //! @}

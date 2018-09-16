@@ -7,8 +7,17 @@
 #include "MapEvents.h"
 
 
+namespace SEGSEvents
+{
+
+
+TradeSuccess::TradeSuccess()
+    : GameCommandEvent(MapEventTypes::evTradeSuccess)
+{
+}
+
 TradeSuccess::TradeSuccess(const QString& msg)
-    : GameCommand(MapEventTypes::evTradeSuccess)
+    : GameCommandEvent(MapEventTypes::evTradeSuccess)
     , m_msg(msg)
 {
 }
@@ -18,4 +27,6 @@ void TradeSuccess::serializeto(BitStream& bs) const {
     bs.StoreString(m_msg);
 }
 
+
+} // namespace SEGSEvents
 //! @}

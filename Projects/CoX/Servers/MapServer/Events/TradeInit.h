@@ -9,12 +9,22 @@
 #include "GameCommandList.h"
 
 
-class TradeInit final : public GameCommand
+namespace SEGSEvents
+{
+
+
+// [[ev_def:type]]
+class TradeInit final : public GameCommandEvent
 {
 public:
+    EVENT_IMPL(TradeInit)
+    TradeInit();
     explicit TradeInit(uint32_t db_id);
-    virtual ~TradeInit() override = default;
-    virtual void serializeto(BitStream& bs) const override;
+    void serializeto(BitStream& bs) const override;
 
-    const uint32_t m_db_id;
+    // [[ev_def:field]]
+    uint32_t m_db_id = 0;
 };
+
+
+} // namespace SEGSEvents

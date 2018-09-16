@@ -13,7 +13,9 @@
 #include "Trade.h"
 
 #include "Servers/MapServer/DataHelpers.h"
+#include "Servers/MapServer/MapClientSession.h"
 #include "Character.h"
+#include "CharacterHelpers.h"
 #include "Entity.h"
 #include "Logging.h"
 #include "Powers.h"
@@ -196,6 +198,11 @@ bool TradeInfo::isEqualContent(const TradeInfo& info) const
     return (m_influence == info.m_influence &&
             m_enhancements == info.m_enhancements &&
             m_inspirations == info.m_inspirations);
+}
+
+
+TradeMember::TradeMember()
+{
 }
 
 
@@ -398,7 +405,7 @@ void cancelTrade(Entity& src)
     }
 
     const uint32_t tgt_db_id = src.m_trade->getOtherMember(src).m_db_id;
-    Entity* const tgt = getEntityByDBID(src.m_client, tgt_db_id);
+    Entity* const tgt = getEntityByDBID(src.m_client->m_current_map, tgt_db_id);
     if (tgt == nullptr)
     {
         // Only one side left in the game.
@@ -424,7 +431,7 @@ void cancelTrade(Entity& src)
 
 void updateTrade(Entity& src, const TradeInfo& info)
 {
-    Entity* const tgt = getEntityByDBID(src.m_client, info.m_db_id);
+    Entity* const tgt = getEntityByDBID(src.m_client->m_current_map, info.m_db_id);
     if (tgt == nullptr)
     {
         return;
@@ -446,7 +453,7 @@ void updateTrade(Entity& src, const TradeInfo& info)
     Trade& trade = *src.m_trade;
     TradeMember& trade_src = trade.getMember(src);
     TradeMember& trade_tgt = trade.getMember(*tgt);
-    const bool is_content_modified = not trade_src.m_info.isEqualContent(info);
+    const bool is_content_modified = !trade_src.m_info.isEqualContent(info);
     trade_src.m_info = info;
 
     // Trade acceptance must be canceled if the trade content has changed.

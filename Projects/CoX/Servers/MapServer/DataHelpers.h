@@ -142,7 +142,7 @@ void readEmailMessage(Entity *e, const int id);
 
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
 
-void addFriend(Entity &src, Entity &tgt);
+void addFriend(Entity &src, const Entity &tgt);
 void removeFriend(Entity &src, QString friendName);
 bool isFriendOnline(Entity &src, uint32_t db_id);
 void findTeamMember(Entity &tgt);

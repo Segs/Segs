@@ -10,18 +10,24 @@
 #include "MapLink.h"
 #include "NetStructures/Trade.h"
 
-#include <QtCore/QString>
-//#include <glm/vec3.hpp>
+namespace SEGSEvents
+{
 
+
+// [[ev_def:type]]
 class TradeWasUpdatedMessage : public MapLinkEvent
 {
 public:
+    EVENT_IMPL(TradeWasUpdatedMessage)
     TradeWasUpdatedMessage();
-    virtual ~TradeWasUpdatedMessage() override = default;
 
     // SerializableEvent interface
-    virtual void serializefrom(BitStream &bs) override;
-    virtual void serializeto(BitStream &) const override;
+    void serializefrom(BitStream &bs) override;
+    void serializeto(BitStream &) const override;
 
+    // [[ev_def:field]]
     TradeInfo m_info;
 };
+
+
+} // namespace SEGSEvents

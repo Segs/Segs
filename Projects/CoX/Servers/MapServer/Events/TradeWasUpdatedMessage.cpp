@@ -12,6 +12,9 @@
 
 #include "TradeWasUpdatedMessage.h"
 
+namespace SEGSEvents
+{
+
 
 TradeWasUpdatedMessage::TradeWasUpdatedMessage()
     : MapLinkEvent(MapEventTypes::evTradeWasUpdatedMessage)
@@ -45,4 +48,6 @@ void TradeWasUpdatedMessage::serializeto(BitStream &) const
     assert(false);
 }
 
+
+} // namespace SEGSEvents
 //! @}

@@ -86,6 +86,8 @@ class InitiateMapXfer;
 struct ClientMapXferMessage;
 class AwaitingDeadNoGurney;
 class BrowserClose;
+class TradeWasCancelledMessage;
+class TradeWasUpdatedMessage;
 
 // server<-> server event types
 struct ExpectMapClientRequest;

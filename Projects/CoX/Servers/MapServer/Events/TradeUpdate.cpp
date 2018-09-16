@@ -8,23 +8,59 @@
 #include "MapEvents.h"
 #include "NetStructures/Powers.h"
 
-namespace  {
+namespace SEGSEvents
+{
 
-void serializePowerInfo(BitStream& bs, const PowerPool_Info& info)
+
+namespace {
+
+static std::vector<CharacterEnhancement> getTradedEnhancements(const Entity& ent, const TradeInfo& info)
+{
+    std::vector<CharacterEnhancement> result;
+
+    for (const uint32_t idx : info.m_enhancements)
+    {
+       const CharacterEnhancement* enh = getEnhancement(ent, idx);
+       if (enh != nullptr)
+       {
+           result.push_back(*enh);
+       }
+    }
+
+    return result;
+}
+
+static std::vector<CharacterInspiration> getTradedInspirations(const Entity& ent, const TradeInfo& info)
+{
+    std::vector<CharacterInspiration> result;
+
+    for (const TradeInspiration& trade_insp : info.m_inspirations)
+    {
+        const CharacterInspiration* insp = getInspiration(ent, trade_insp.m_col, trade_insp.m_row);
+        if (insp != nullptr)
+        {
+            result.push_back(*insp);
+        }
+    }
+
+    return result;
+}
+
+static void serializePowerInfo(BitStream& bs, const PowerPool_Info& info)
 {
     bs.StorePackedBits(3, info.m_pcat_idx);
     bs.StorePackedBits(3, info.m_pset_idx);
     bs.StorePackedBits(3, info.m_pow_idx);
 }
 
-void serializeEnhancement(BitStream& bs, const CharacterEnhancement& enh)
+static void serializeEnhancement(BitStream& bs, const CharacterEnhancement& enh)
 {
     serializePowerInfo(bs, enh.m_enhance_info);
     bs.StorePackedBits(5, enh.m_level);
     bs.StorePackedBits(2, enh.m_num_combines);
 }
 
-void serializeInspiration(BitStream& bs, const CharacterInspiration& insp)
+static void serializeInspiration(BitStream& bs, const CharacterInspiration& insp)
 {
     serializePowerInfo(bs, insp.m_insp_info);
 }
@@ -32,12 +68,18 @@ void serializeInspiration(BitStream& bs, const CharacterInspiration& insp)
 } // anonymous namespace
 
 
+TradeUpdate::TradeUpdate()
+    : GameCommandEvent(MapEventTypes::evTradeUpdate)
+{
+}
+
 TradeUpdate::TradeUpdate(const TradeMember& trade_self, const TradeMember& trade_other, const Entity& entity_other)
-    : GameCommand(MapEventTypes::evTradeUpdate)
+    : GameCommandEvent(MapEventTypes::evTradeUpdate)
     , m_trade_self(trade_self)
     , m_trade_other(trade_other)
-    , m_entity_other(entity_other)
 {
+    m_enhancements = getTradedEnhancements(entity_other, trade_other.m_info);
+    m_inspirations = getTradedInspirations(entity_other, trade_other.m_info);
 }
 
 void TradeUpdate::serializeto(BitStream& bs) const {
@@ -56,33 +98,17 @@ void TradeUpdate::serializeto(BitStream& bs) const {
     bs.StorePackedBits(1, info_other.m_enhancements.size());
     bs.StorePackedBits(1, info_other.m_inspirations.size());
 
-    for (const uint32_t idx : info_other.m_enhancements)
+    for (const CharacterEnhancement& enh : m_enhancements)
     {
-       const CharacterEnhancement* enh = getEnhancement(m_entity_other, idx);
-       if (enh != nullptr)
-       {
-           serializeEnhancement(bs, *enh);
-       }
-       else
-       {
-           // Write dummy values to uphold the communication protocol.
-           serializeEnhancement(bs, CharacterEnhancement());
-       }
+       serializeEnhancement(bs, enh);
     }
 
-    for (const TradeInspiration& trade_insp : info_other.m_inspirations)
+    for (const CharacterInspiration& insp : m_inspirations)
     {
-        const CharacterInspiration* insp = getInspiration(m_entity_other, trade_insp.m_col, trade_insp.m_row);
-        if (insp != nullptr)
-        {
-            serializeInspiration(bs, *insp);
-        }
-        else
-        {
-            // Write dummy values to uphold the communication protocol.
-            serializeInspiration(bs, CharacterInspiration());
-        }
+       serializeInspiration(bs, insp);
     }
 }
 
+
+} // namespace SEGSEvents
 //! @}

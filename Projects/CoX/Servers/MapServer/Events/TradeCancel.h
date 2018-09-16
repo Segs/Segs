@@ -8,13 +8,25 @@
 
 #include "GameCommandList.h"
 
+#include <QtCore/QString>
 
-class TradeCancel final : public GameCommand
+
+namespace SEGSEvents
+{
+
+
+// [[ev_def:type]]
+class TradeCancel final : public GameCommandEvent
 {
 public:
+    EVENT_IMPL(TradeCancel)
+    TradeCancel();
     explicit TradeCancel(const QString& msg);
-    virtual ~TradeCancel() override = default;
-    virtual void serializeto(BitStream& bs) const override;
+    void serializeto(BitStream& bs) const override;
 
-    const QString m_msg;
+    // [[ev_def:field]]
+    QString m_msg;
 };
+
+
+} // namespace SEGSEvents

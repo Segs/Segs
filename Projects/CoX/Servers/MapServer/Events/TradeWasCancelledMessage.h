@@ -9,18 +9,24 @@
 #include "MapEvents.h"
 #include "MapLink.h"
 
-#include <QtCore/QString>
-//#include <glm/vec3.hpp>
+namespace SEGSEvents
+{
 
+
+// [[ev_def:type]]
 class TradeWasCancelledMessage : public MapLinkEvent
 {
 public:
+    EVENT_IMPL(TradeWasCancelledMessage)
     TradeWasCancelledMessage();
-    virtual ~TradeWasCancelledMessage() override = default;
 
     // SerializableEvent interface
-    virtual void serializefrom(BitStream &bs) override;
-    virtual void serializeto(BitStream &) const override;
+    void serializefrom(BitStream &bs) override;
+    void serializeto(BitStream &) const override;
 
+    // [[ev_def:field]]
     int m_reason = 0; // 0 - target entity no longer exists, 1 - user selects cancel button.
 };
+
+
+} // namespace SEGSEvents
