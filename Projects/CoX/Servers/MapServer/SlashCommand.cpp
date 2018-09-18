@@ -819,15 +819,23 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
     CharacterData &cd = sess.m_ent->m_char->m_char_data;
     int space = cmd.indexOf(' ');
     QString val = cmd.mid(space+1);
-    QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
-    QString msg = "Awarding Inspiration '" + val + "' to " + sess.m_ent->name();
+    QString msg = "There was an error adding this inspiration!";
 
-    addInspirationByName(*getMapServerData(),cd, val);
-    cd.m_powers_updated = true;
+    if(getNumberInspirations(cd) < getMaxInspirations(cd))
+    {
+        msg = "Awarding Inspiration '" + val + "' to " + sess.m_ent->name();
+
+        addInspirationByName(*getMapServerData(),cd, val);
+        cd.m_powers_updated = true;
+
+        QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
+        sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    }
+    else
+        msg = "You do not have room for any more inspirations!";
 
     qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
-    sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 }
 
 void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
@@ -836,21 +844,28 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
     QVector<QStringRef> args(cmd.splitRef(' '));
     QString name = args.value(1).toString();
     uint32_t level = args.value(2).toInt();
-
-    QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
-    QString msg = "Awarding Enhancement '" + name + "' to " + sess.m_ent->name();
+    QString msg = "There was an error adding this enhancement!";
 
     if(args.size() < 3)
     {
         level = cd.m_level;
     }
 
-    addEnhancementByName(*getMapServerData(), cd, name, level);
-    cd.m_powers_updated = true;
+    if(getNumberEnhancements(cd) < 10)
+    {
+        msg = "Awarding Enhancement '" + name + "' to " + sess.m_ent->name();
+
+        addEnhancementByName(*getMapServerData(), cd, name, level);
+        cd.m_powers_updated = true;
+
+        QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
+        sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    }
+    else
+        msg = "You do not have room for any more enhancements!";
 
     qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
-    sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 }
 
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)

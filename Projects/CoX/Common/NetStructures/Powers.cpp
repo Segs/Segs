@@ -512,6 +512,30 @@ void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
     }
 }
 
+uint32_t getMaxInspirations(CharacterData &cd)
+{
+    return (cd.m_max_insp_cols)*(cd.m_max_insp_rows);
+}
+
+uint32_t getNumberInspirations(CharacterData &cd)
+{
+    int max_cols = cd.m_max_insp_cols;
+    int max_rows = cd.m_max_insp_rows;
+
+    int count = 0;
+
+    for(int i = 0; i < max_rows; ++i)
+    {
+        for(int j = 0; j < max_cols; ++j)
+        {
+            if(cd.m_inspirations.at(j, i).m_has_insp)
+               ++count;
+        }
+    }
+
+    return count;
+}
+
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row)
 {
     vInspirations *insp_arr = &cd.m_inspirations;

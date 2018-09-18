@@ -312,6 +312,8 @@ void dumpOwnedPowers(CharacterData &cd);
  */
 void addInspirationByName(const GameDataStore &data,CharacterData &cd, QString &name);
 void addInspirationToChar(CharacterData &cd, CharacterInspiration insp);
+uint32_t getMaxInspirations(CharacterData &cd);
+uint32_t getNumberInspirations(CharacterData &cd);
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
 void useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row);
