@@ -51,11 +51,14 @@ public:
     // [[ev_def:field]]
     bool m_success;
     // [[ev_def:field]]
+    bool m_send_costume;
+    // [[ev_def:field]]
     Costume m_costume;
 
     explicit SuperGroupResponse() : GameCommandEvent(MapEventTypes::evSuperGroupResponse) {}
-    SuperGroupResponse(bool &success, Costume &costume) : GameCommandEvent(MapEventTypes::evSuperGroupResponse),
+    SuperGroupResponse(bool &success, bool &send_costume, Costume &costume) : GameCommandEvent(MapEventTypes::evSuperGroupResponse),
         m_success(success),
+        m_send_costume(send_costume),
         m_costume(costume)
     {
     }
@@ -66,7 +69,7 @@ public:
 
         qCDebug(logSuperGroups) << "SuperGroupResponse" << m_success;
         // if successful, send SG costume
-        if(m_success)
+        if(m_send_costume)
             serializeCostume(m_costume, bs);
     }
 

@@ -2430,14 +2430,17 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
 
 
     Costume costume = *session.m_ent->m_char->getCurrentCostume();
-    // Check everything first, then give success
-    bool val = false;
+    // Check to ensure name isn't already in use or restricted
+    // Check to ensure titles aren't restricted (foul language, etc)
+    // If everything checks out, then give success
+    bool success = false;
+    bool send_costume = false;
     if(ev->data.m_sg_name.contains("Success", Qt::CaseInsensitive))
-        val = true;
+        success = true;
 
-    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<SuperGroupResponse>(new SuperGroupResponse(val, costume)));
-
+    session.m_ent->m_client->addCommand<SuperGroupResponse>(success, send_costume, costume);
     addSuperGroup(*session.m_ent, ev->data);
+    session.m_ent->m_client->addCommand<RegisterSuperGroup>(ev->data.m_sg_name);
 }
 
 void MapInstance::on_change_supergroup_colors(ChangeSuperGroupColors *ev)
