@@ -164,6 +164,8 @@ void Settings::setDefaultSettings()
         config.setValue("log_lfg","false");
         config.setValue("log_npcs","false");
         config.setValue("log_animations","false");
+        config.setValue("log_powers","false");
+        config.setValue("log_trades","false");
     config.endGroup();
     config.beginGroup("StartingCharacter");
         config.setValue("inherent_powers","Brawl");

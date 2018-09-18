@@ -108,6 +108,14 @@ struct vInspirations
         return m_inspirations[col][row];
     }
 
+    const CharacterInspiration& at (const size_t col, const size_t row) const
+    {
+        if (col >= m_cols || row >= m_rows)
+            qCritical() << QString("Trying to access vInspirations of %1 rows %2 cols using params %3 rows %4 cols");
+
+        return m_inspirations[col][row];
+    }
+
     CharacterInspiration& from_first_row (const size_t col)
     {
         if (!m_inspirations[col][0].m_has_insp)
@@ -310,10 +318,11 @@ void dumpOwnedPowers(CharacterData &cd);
 /*
  * Inspirations Methods
  */
-void addInspirationByName(const GameDataStore &data,CharacterData &cd, QString &name);
-void addInspirationToChar(CharacterData &cd, CharacterInspiration insp);
-uint32_t getMaxInspirations(CharacterData &cd);
-uint32_t getNumberInspirations(CharacterData &cd);
+void addInspirationByName(const GameDataStore &data, CharacterData &cd, QString &name);
+void addInspirationToChar(CharacterData &cd, const CharacterInspiration& insp);
+const CharacterInspiration* getInspiration(const Entity &ent, uint32_t col, uint32_t row);
+int getNumberInspirations(const CharacterData &cd);
+int getMaxNumberInspirations(const CharacterData &cd);
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
 void useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row);
@@ -323,9 +332,12 @@ void dumpInspirations(CharacterData &cd);
 /*
  * Enhancements Methods
  */
-void addEnhancementByName(const GameDataStore &data,CharacterData &cd, QString &name, uint32_t &level);
+void addEnhancementByName(const GameDataStore &data, CharacterData &cd, QString &name, uint32_t &level);
+void addEnhancementToChar(CharacterData &cd, const CharacterEnhancement& enh);
 CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_array, uint32_t pow_idx_in_array, uint32_t eh_slot);
-uint32_t getNumberEnhancements(CharacterData &cd);
+const CharacterEnhancement* getEnhancement(const Entity &ent, uint32_t idx);
+uint32_t getNumberEnhancements(const CharacterData& cd);
+uint32_t getMaxNumberEnhancements(const CharacterData &cd);
 void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx);
 void setEnhancement(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t src_idx, uint32_t dest_idx);
 void trashEnhancement(CharacterData &cd, uint32_t eh_idx);

@@ -89,6 +89,8 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 44: return new TrashEnhancementInPower;
         case 45: return new BuyEnhancementSlot;
         case 46: return new RecvNewPower;
+        case 54: return new TradeWasCancelledMessage;
+        case 55: return new TradeWasUpdatedMessage;
         case 56: return new EntityInfoRequest;
         case 57: return new SendStance;
         case 62: return new LocationVisited;
