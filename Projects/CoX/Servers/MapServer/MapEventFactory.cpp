@@ -90,6 +90,8 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 45: return new BuyEnhancementSlot;
         case 46: return new RecvNewPower;
         case 53: return new SuperGroupMode;
+        case 54: return new TradeWasCancelledMessage;
+        case 55: return new TradeWasUpdatedMessage;
         case 56: return new EntityInfoRequest;
         case 57: return new CreateSuperGroup;
         case 58: return new ChangeSuperGroupColors;

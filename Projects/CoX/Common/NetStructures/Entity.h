@@ -22,6 +22,8 @@
 #include <memory>
 
 struct MapClientSession;
+class Team;
+class Trade;
 class Character;
 struct PlayerData;
 class GameDataStore;
@@ -167,6 +169,7 @@ class Entity
     using PlayerPtr = std::unique_ptr<PlayerData>;
     using EntityPtr = std::unique_ptr<EntityData>;
     using NPCPtr = std::unique_ptr<NPCData>;
+    using TradePtr = std::shared_ptr<Trade>;
 private:
                             Entity();
                             ~Entity();
@@ -189,6 +192,7 @@ public:
         int                 m_full_update_count     = 10; // TODO: remove this after we have proper physics
         bool                m_has_team              = false;
         Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
+        TradePtr            m_trade;
         EntityData          m_entity_data;
         FactionData         m_faction_data;
 
