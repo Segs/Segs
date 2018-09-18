@@ -556,9 +556,7 @@ int getNumberInspirations(const CharacterData &cd)
         for(uint32_t col = 0; col < max_cols; ++col)
         {
             if (cd.m_inspirations.at(col, row).m_has_insp)
-            {
-                count++;
-            }
+                ++count;
         }
     }
 
