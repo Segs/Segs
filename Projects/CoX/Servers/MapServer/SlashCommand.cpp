@@ -877,6 +877,7 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
         addInspirationByName(*getMapServerData(),cd, val);
         cd.m_powers_updated = true;
 
+        // NOTE: floating message shows no message here, but plays the awarding insp sound!
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
         sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
     } 
