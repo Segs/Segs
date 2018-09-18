@@ -868,7 +868,7 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
     CharacterData &cd = sess.m_ent->m_char->m_char_data;
     int space = cmd.indexOf(' ');
     QString val = cmd.mid(space+1);
-    QString msg = "There was an error adding this inspiration!";
+    QString msg = "You do not have room for any more inspirations!";
 
     if(getNumberInspirations(cd) < getMaxNumberInspirations(cd))
     {
@@ -879,9 +879,7 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
 
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
         sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    }
-    else
-        msg = "You do not have room for any more inspirations!";
+    } 
 
     qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
@@ -893,7 +891,7 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
     QVector<QStringRef> args(cmd.splitRef(' '));
     QString name = args.value(1).toString();
     uint32_t level = args.value(2).toInt();
-    QString msg = "There was an error adding this enhancement!";
+    QString msg = "You do not have room for any more enhancements!";
 
     if(args.size() < 3)
     {
@@ -910,8 +908,6 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
         sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
     }
-    else
-        msg = "You do not have room for any more enhancements!";
 
     qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
