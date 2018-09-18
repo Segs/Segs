@@ -488,20 +488,23 @@ void addInspirationByName(const GameDataStore &data,CharacterData &cd, QString &
     addInspirationToChar(cd, insp);
 }
 
-void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
+void addInspirationToChar(CharacterData &cd, const CharacterInspiration& insp)
 {
-    int max_cols = cd.m_max_insp_cols;
-    int max_rows = cd.m_max_insp_rows;
+    const uint32_t max_cols = cd.m_max_insp_cols;
+    const uint32_t max_rows = cd.m_max_insp_rows;
 
-    for(int i = 0; i < max_rows; ++i)
+    for (uint32_t row = 0; row < max_rows; ++row)
     {
-        for(int j = 0; j < max_cols; ++j)
+        for (uint32_t col = 0; col < max_cols; ++col)
         {
-            if(!cd.m_inspirations.at(j, i).m_has_insp)
+            if (!cd.m_inspirations.at(col, row).m_has_insp)
             {
-                insp.m_col = j;
-                insp.m_row = i;
-                cd.m_inspirations.at(j, i) = insp;
+                cd.m_inspirations.at(col, row) = insp;
+                cd.m_inspirations.at(col, row).m_col = col;
+                cd.m_inspirations.at(col, row).m_row = row;
+                cd.m_inspirations.at(col, row).m_has_insp = true;
+                cd.m_powers_updated = true; // update client on power status
+
                 qCDebug(logPowers) << "Character received inspiration:"
                                    << insp.m_insp_info.m_pcat_idx
                                    << insp.m_insp_info.m_pset_idx
@@ -510,6 +513,61 @@ void addInspirationToChar(CharacterData &cd, CharacterInspiration insp)
             }
         }
     }
+
+    qCDebug(logPowers) << "Character cannot hold any more inspirations";
+}
+
+const CharacterInspiration* getInspiration(const Entity &ent, uint32_t col, uint32_t row)
+{
+    const CharacterData& cd = ent.m_char->m_char_data;
+    const uint32_t max_cols = cd.m_max_insp_cols;
+    const uint32_t max_rows = cd.m_max_insp_rows;
+
+    if (col >= max_cols)
+    {
+        qCWarning(logPowers) << "getInspiration: Invalid inspiration column:" << col;
+        return nullptr;
+    }
+
+    if (row >= max_rows)
+    {
+        qCWarning(logPowers) << "getInspiration: Invalid inspiration row:" << row;
+        return nullptr;
+    }
+
+    const CharacterInspiration& insp = cd.m_inspirations.at(col, row);
+    if (!insp.m_has_insp)
+    {
+        qCWarning(logPowers) << "getInspiration: No inspiration at col:" << col << "row:" << row;
+        return nullptr;
+    }
+
+    return &insp;
+}
+
+int getNumberInspirations(const CharacterData &cd)
+{
+    const uint32_t max_cols = cd.m_max_insp_cols;
+    const uint32_t max_rows = cd.m_max_insp_rows;
+    int count = 0;
+
+    for(uint32_t row = 0; row < max_rows; ++row)
+    {
+        for(uint32_t col = 0; col < max_cols; ++col)
+        {
+            if (cd.m_inspirations.at(col, row).m_has_insp)
+            {
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+
+int getMaxNumberInspirations(const CharacterData &cd)
+{
+    return static_cast<int>(cd.m_max_insp_cols * cd.m_max_insp_rows);
 }
 
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row)
@@ -553,11 +611,13 @@ void useInspiration(Entity &ent, uint32_t col, uint32_t row)
 
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)
 {
-    //int max_cols = cd.m_max_insp_cols;
+    qCDebug(logPowers) << "Removing inspiration from " << col << "x" << row;
+
     int max_rows = cd.m_max_insp_rows;
 
     CharacterInspiration insp;
-    qCDebug(logPowers) << "Removing inspiration from " << col << "x" << row;
+    insp.m_col = col;
+    insp.m_row = row;
     cd.m_inspirations.at(col, row) = insp;
 
     for(int j = row; j < max_rows; ++j)
@@ -639,18 +699,28 @@ void addEnhancementByName(const GameDataStore &data,CharacterData &cd, QString &
     enhance.m_enhance_info.m_pset_idx       = pset_idx;
     enhance.m_enhance_info.m_pow_idx        = pow_idx; // always zero
 
-    for(uint32_t iter = 0; iter < cd.m_enhancements.size(); ++iter)
+    addEnhancementToChar(cd, enhance);
+}
+
+void addEnhancementToChar(CharacterData &cd, const CharacterEnhancement& enh)
+{
+    for (uint32_t idx = 0; idx < cd.m_enhancements.size(); ++idx)
     {
-        if(!cd.m_enhancements[iter].m_slot_used)
+        if (!cd.m_enhancements[idx].m_slot_used)
         {
-            enhance.m_slot_idx = iter;
-            cd.m_enhancements[iter] = enhance;
-            qCDebug(logPowers) << "Character received Enhancement:" << iter
-                               << enhance.m_name
-                               << enhance.m_level;
+            cd.m_enhancements[idx] = enh;
+            cd.m_enhancements[idx].m_slot_idx = idx;
+            cd.m_enhancements[idx].m_slot_used = true;
+            cd.m_powers_updated = true; // update client on power status
+
+            qCDebug(logPowers) << "Character received Enhancement:" << idx
+                               << enh.m_name
+                               << enh.m_level;
             return;
         }
     }
+
+    qCDebug(logPowers) << "Character cannot hold any more enhancements";
 }
 
 CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_array, uint32_t pow_idx_in_array, uint32_t eh_slot)
@@ -665,15 +735,39 @@ CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_ar
     return &pow->m_enhancements[eh_slot];
 }
 
-uint32_t getNumberEnhancements(CharacterData &cd)
+const CharacterEnhancement* getEnhancement(const Entity &ent, uint32_t idx)
 {
-    int count = 0;
+    const CharacterData& cd = ent.m_char->m_char_data;
+    if (idx >= cd.m_enhancements.size())
+    {
+        qCWarning(logPowers) << "getEnhancement: Invalid enhancement index:" << idx;
+        return nullptr;
+    }
+
+    const CharacterEnhancement& enh = cd.m_enhancements[idx];
+    if (!enh.m_slot_used)
+    {
+        qCWarning(logPowers) << "getEnhancement: No enhancement at index:" << idx;
+        return nullptr;
+    }
+
+    return &enh;
+}
+
+uint32_t getNumberEnhancements(const CharacterData &cd)
+{
+    uint32_t count = 0;
     for(const auto & enhancement : cd.m_enhancements)
     {
         if(enhancement.m_slot_used)
             count++;
     }
     return count;
+}
+
+uint32_t getMaxNumberEnhancements(const CharacterData &cd)
+{
+    return cd.m_enhancements.size();
 }
 
 void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx)
@@ -705,6 +799,7 @@ void trashEnhancement(CharacterData &cd, uint32_t eh_idx)
     CharacterEnhancement enhance;
     enhance.m_slot_idx = eh_idx;
     cd.m_enhancements[eh_idx] = enhance;
+    cd.m_powers_updated = true; // update client on power status
 
     qCDebug(logPowers) << "Remove Enhancement from" << eh_idx;
 }

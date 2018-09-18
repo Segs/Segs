@@ -51,11 +51,11 @@ enum MapEventTypes
 //    EVENT_DECL(MapEventTypes, evSuperGroupOffer          ,129)
 //    EVENT_DECL(MapEventTypes, evSuperGroupResponse       ,130)
 //    EVENT_DECL(MapEventTypes, evSuperGroupCostume        ,131)
-//    EVENT_DECL(MapEventTypes, evTradeOffer               ,132)
-//    EVENT_DECL(MapEventTypes, evTradeInit                ,133)
-//    EVENT_DECL(MapEventTypes, evTradeCancel              ,134)
-//    EVENT_DECL(MapEventTypes, evTradeUpdate              ,135)
-//    EVENT_DECL(MapEventTypes, evTradeSuccess             ,136)
+    EVENT_DECL(MapEventTypes, evTradeOffer                 ,132)
+    EVENT_DECL(MapEventTypes, evTradeInit                  ,133)
+    EVENT_DECL(MapEventTypes, evTradeCancel                ,134)
+    EVENT_DECL(MapEventTypes, evTradeUpdate                ,135)
+    EVENT_DECL(MapEventTypes, evTradeSuccess               ,136)
     EVENT_DECL(MapEventTypes, evFriendsListUpdate          ,137)
 //    EVENT_DECL(MapEventTypes, evControlPlayer            ,138)
 //    EVENT_DECL(MapEventTypes, evContactDialog            ,139)
@@ -128,6 +128,8 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evTrashEnhancementInPower    ,244)
     EVENT_DECL(MapEventTypes, evBuyEnhancementSlot         ,245)
     EVENT_DECL(MapEventTypes, evRecvNewPower               ,246)
+    EVENT_DECL(MapEventTypes, evTradeWasCancelledMessage   ,254) // Trade window: player clicked "Cancel" or closed the window.
+    EVENT_DECL(MapEventTypes, evTradeWasUpdatedMessage     ,255) // Trade window: player changed something in the window.
     EVENT_DECL(MapEventTypes, evEntityInfoRequest          ,256) // right-click entity select "Info"
     EVENT_DECL(MapEventTypes, evLocationVisited            ,262)
     EVENT_DECL(MapEventTypes, evSwitchViewPoint            ,264)
