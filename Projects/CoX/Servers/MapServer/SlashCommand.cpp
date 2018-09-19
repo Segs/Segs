@@ -874,7 +874,7 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
     {
         msg = "Awarding Inspiration '" + val + "' to " + sess.m_ent->name();
 
-        addInspirationByName(*getMapServerData(),cd, val);
+        addInspirationByName(cd, val);
         cd.m_powers_updated = true;
 
         // NOTE: floating message shows no message here, but plays the awarding insp sound!
@@ -903,7 +903,7 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
     {
         msg = "Awarding Enhancement '" + name + "' to " + sess.m_ent->name();
 
-        addEnhancementByName(*getMapServerData(), cd, name, level);
+        addEnhancementByName(cd, name, level);
         cd.m_powers_updated = true;
 
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();

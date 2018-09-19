@@ -318,8 +318,9 @@ void dumpOwnedPowers(CharacterData &cd);
 /*
  * Inspirations Methods
  */
+const CharacterInspiration* getInspiration(const Entity &ent, uint32_t col, uint32_t row);
 void addInspirationByName(CharacterData &cd, QString &name);
-void addInspirationToChar(CharacterData &cd, CharacterInspiration insp);
+void addInspirationToChar(CharacterData &cd, const CharacterInspiration& insp);
 int getNumberInspirations(const CharacterData &cd);
 int getMaxNumberInspirations(const CharacterData &cd);
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
