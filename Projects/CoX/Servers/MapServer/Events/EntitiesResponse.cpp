@@ -537,19 +537,6 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
     Entity *ent = src.m_client->m_ent; // user entity
 
-    SurfaceParams surface_params[2]; // idx 0 is walking, idx 1 is flying
-    memset(&surface_params,0,2*sizeof(SurfaceParams));
-    surface_params[0].traction = 1.0f;
-    surface_params[0].friction = 0.45f;
-    surface_params[0].bounce = 0.01f;
-    surface_params[0].gravity = 0.065f;
-    surface_params[0].max_speed = 1.00f;
-    surface_params[1].traction = 0.02f;
-    surface_params[1].friction = 0.01f;
-    surface_params[1].bounce = 0.00f;
-    surface_params[1].gravity = 0.065f;
-    surface_params[1].max_speed = 1.00f;
-
     bs.StoreBits(1,ent->m_motion_state.m_update_motion_state);
     if(ent->m_motion_state.m_update_motion_state)
     {
@@ -560,7 +547,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         storeVector(bs, ent->m_motion_state.m_speed);           // This is entity speed vector !!
 
         bs.StoreFloat(ent->m_motion_state.m_backup_spd);        // Backup Speed default = 1.0f
-        bs.StoreBitArray((uint8_t *)&surface_params,2*sizeof(SurfaceParams)*8);
+        bs.StoreBitArray((uint8_t *)&ent->m_motion_state.m_surf_mods,2*sizeof(SurfaceParams)*8);
 
         bs.StoreFloat(ent->m_motion_state.m_jump_height);       // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
         bs.StoreBits(1, ent->m_motion_state.m_is_flying);       // is_flying flag
@@ -578,7 +565,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
     {
         bs.StorePackedBits(1, ent->m_states.current()->m_every_4_ticks);    // sets g_client_pos_id_rel default = 0
         storeVector(bs, ent->m_entity_data.m_pos);                          // server-side pos
-        storeVectorConditional(bs, ent->m_motion_state.m_speed);            // server-side spd
+        storeVectorConditional(bs, ent->m_motion_state.m_velocity);         // server-side velocity
 
         storeFloatConditional(bs, ent->m_states.current()->m_camera_pyr.x); // Pitch
         storeFloatConditional(bs, ent->m_states.current()->m_camera_pyr.y); // Yaw

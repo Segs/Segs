@@ -29,7 +29,7 @@ static glm::mat3    s_identity_matrix = glm::mat3(1.0f);
 static int          s_landed_on_ground = 0;
 //static CollInfo     s_last_surf;
 
-static SurfaceParams s_world_surf_params[2] = {
+SurfaceParams g_world_surf_params[2] = {
     // traction, friction, bounce, gravity, max_speed
     { 1.00f, 0.45f, 0.01f, 0.065f, 1.00f }, // ground; from client
     { 0.02f, 0.01f, 0.00f, 0.065f, 1.00f }  // air; from client
@@ -298,7 +298,7 @@ void setVelocity(Entity &e) // pmotionSetVel
 void my_entMoveNoColl(Entity *ent)
 {
     ent->m_motion_state.m_is_falling = true;
-    //ent->m_motion_state.m_velocity = glm::vec3(0,0,0);
+    ent->m_motion_state.m_velocity = glm::vec3(0,0,0);
     ent->m_motion_state.m_move_time += ent->m_states.current()->m_time_state.m_timestep;
     float time_scale = (ent->m_motion_state.m_move_time + 6.0f) / 6.0f;
 
@@ -322,9 +322,9 @@ void my_entMoveNoColl(Entity *ent)
 void entWorldGetSurface(Entity *ent, SurfaceParams *surf_params)
 {
     if (ent->m_motion_state.m_is_falling || ent->m_motion_state.m_is_flying)
-        *surf_params = s_world_surf_params[1];
+        *surf_params = g_world_surf_params[1];
     else
-        *surf_params = s_world_surf_params[0];
+        *surf_params = g_world_surf_params[0];
 
     if(!(ent->m_motion_state.m_is_falling || ent->m_motion_state.m_is_flying))
     {
@@ -1032,7 +1032,7 @@ void entWorldCollide(Entity *ent, SurfaceParams *surface_params)
             || !(ent->m_states.current()->m_pos_delta == ent->m_motion_state.m_last_pos)
             || ent->m_motion_state.m_surf_normal2.y >= 0.5f)
     {
-        //ent->m_motion_state.m_flag_14  = s_last_surf.ctri != nullptr;
+        ent->m_motion_state.m_flag_14 = true; // s_last_surf.ctri != nullptr;
         //ent->m_motion_state.m_surf_normal2 = s_last_surf.mat.row2;
     }
     else

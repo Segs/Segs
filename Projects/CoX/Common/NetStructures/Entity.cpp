@@ -162,6 +162,9 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_player->reset();
     e.m_entity = std::make_unique<EntityData>();
 
+    for(int i = 0; i < 2; ++i)
+        e.m_motion_state.m_surf_mods[i] = g_world_surf_params[i];
+
     e.m_states.init(); // Initialize movement input state pointers
     e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
     e.m_states.previous()->m_pos_start = e.m_states.previous()->m_pos_end = e.m_entity_data.m_pos;
@@ -203,6 +206,9 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
     e.m_player.reset();
     e.m_entity = std::make_unique<EntityData>();
+
+    for(int i = 0; i < 2; ++i)
+        e.m_motion_state.m_surf_mods[i] = g_world_surf_params[i];
 
     e.m_states.init(); // Initialize movement input state pointers
     e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;

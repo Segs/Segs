@@ -12,6 +12,7 @@
 
 class Entity;
 
+
 struct PosUpdate // PosUpdatePair
 {
     glm::vec3       m_position;
@@ -22,12 +23,17 @@ struct PosUpdate // PosUpdatePair
 
 struct SurfaceParams
 {
-    float traction;
-    float friction;
-    float bounce;
-    float gravity;
-    float max_speed;
+    float traction = 0.0f;
+    float friction = 0.0f;
+    float bounce = 0.0f;
+    float gravity = 0.0f;
+    float max_speed = 0.0f;
 };
+
+/*
+ * Global Surface Params
+ */
+extern SurfaceParams g_world_surf_params[2];
 
 static int reverse_control_direction[6] = {
     BinaryControl::BACKWARD,
