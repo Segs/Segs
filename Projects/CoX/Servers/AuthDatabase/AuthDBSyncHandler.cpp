@@ -54,12 +54,12 @@ void AuthDBSyncHandler::dispatch(Event *ev)
     }
 }
 
-void AuthDBSyncHandler::serialize_from(std::istream &is)
+void AuthDBSyncHandler::serialize_from(std::istream &/*is*/)
 {
     assert(false);
 }
 
-void AuthDBSyncHandler::serialize_to(std::ostream &is)
+void AuthDBSyncHandler::serialize_to(std::ostream &/*os*/)
 {
     assert(false);
 }

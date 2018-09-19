@@ -85,12 +85,17 @@ class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;
 class AwaitingDeadNoGurney;
+class BrowserClose;
+class TradeWasCancelledMessage;
+class TradeWasUpdatedMessage;
+
 // server<-> server event types
 struct ExpectMapClientRequest;
 struct WouldNameDuplicateResponse;
 struct CreateNewCharacterResponse;
 struct GetEntityResponse;
 struct GetEntityByNameResponse;
+class Timeout;
 }
 class MapLinkEndpoint;
 
@@ -221,4 +226,7 @@ protected:
         void on_buy_enhancement_slot(SEGSEvents::BuyEnhancementSlot *ev);
         void on_recv_new_power(SEGSEvents::RecvNewPower *ev);
         void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
+        void on_browser_close(SEGSEvents::BrowserClose *ev);
+        void on_trade_cancelled(SEGSEvents::TradeWasCancelledMessage* ev);
+        void on_trade_updated(SEGSEvents::TradeWasUpdatedMessage* ev);
 };

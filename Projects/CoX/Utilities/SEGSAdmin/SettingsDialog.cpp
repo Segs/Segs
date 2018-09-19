@@ -162,6 +162,8 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->log_lfg->setChecked(config_file.value("log_lfg","").toBool());
     ui->log_npcs->setChecked(config_file.value("log_npcs","").toBool());
     ui->log_animations->setChecked(config_file.value("log_animations","").toBool());
+    ui->log_powers->setChecked(config_file.value("log_powers","").toBool());
+    ui->log_trades->setChecked(config_file.value("log_trades","").toBool());
 }
 
 void SettingsDialog::generate_default_config_file(QString server_name, QString ip)
@@ -225,6 +227,8 @@ void SettingsDialog::generate_default_config_file(QString server_name, QString i
     config_file_write.setValue("log_lfg","false");
     config_file_write.setValue("log_npcs","false");
     config_file_write.setValue("log_animations","false");
+    config_file_write.setValue("log_powers","false");
+    config_file_write.setValue("log_trades","false");
     config_file_write.endGroup();
 
     config_file_write.sync();
@@ -288,6 +292,8 @@ void SettingsDialog::save_changes_config_file()
     config_file_write.setValue("log_lfg",ui->log_lfg->isChecked());
     config_file_write.setValue("log_npcs",ui->log_npcs->isChecked());
     config_file_write.setValue("log_animations",ui->log_animations->isChecked());
+    config_file_write.setValue("log_powers",ui->log_powers->isChecked());
+    config_file_write.setValue("log_trades",ui->log_trades->isChecked());
     config_file_write.endGroup();
 
     config_file_write.sync();
@@ -345,6 +351,8 @@ void SettingsDialog::set_default_values()
     ui->log_lfg->setChecked(false);
     ui->log_npcs->setChecked(false);
     ui->log_animations->setChecked(false);
+    ui->log_powers->setChecked(false);
+    ui->log_trades->setChecked(false);
 }
 
 void SettingsDialog::field_validator()

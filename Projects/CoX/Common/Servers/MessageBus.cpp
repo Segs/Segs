@@ -119,12 +119,12 @@ void MessageBus::recalculateStatisitcs()
 
 }
 
-void MessageBus::serialize_from(std::istream &is)
+void MessageBus::serialize_from(std::istream &/*is*/)
 {
     assert(false);
 }
 
-void MessageBus::serialize_to(std::ostream &os)
+void MessageBus::serialize_to(std::ostream &/*os*/)
 {
     assert(false);
 }

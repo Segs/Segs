@@ -5,7 +5,7 @@ template <class Archive>
 void CEREAL_SAVE_FUNCTION_NAME( Archive & ar, const BitStream &bs )
 {
     ar( cereal::make_size_tag( bs.m_size ) ); // number of elements
-    for(int i=0; i<bs.m_size; ++i)
+    for(size_t i=0; i<bs.m_size; ++i)
         ar(bs.m_buf[i]);
     ar(bs.m_write_off,bs.m_read_off,bs.m_max_size,bs.m_last_err,bs.m_safe_area);
     ar( bs.m_byteAligned,bs.m_read_bit_off,bs.m_write_bit_off );
@@ -19,7 +19,7 @@ void CEREAL_LOAD_FUNCTION_NAME( Archive & ar,BitStream &bs )
     ar( cereal::make_size_tag( vectorSize ) );
     bs.m_size = vectorSize;
     bs.m_buf = new uint8_t [bs.m_size];
-    for(int i=0; i<bs.m_size; ++i)
+    for(size_t i=0; i<bs.m_size; ++i)
         ar(bs.m_buf[i]);
     ar(bs.m_write_off,bs.m_read_off,bs.m_max_size,bs.m_last_err,bs.m_safe_area);
     ar( bs.m_byteAligned,bs.m_read_bit_off,bs.m_write_bit_off );

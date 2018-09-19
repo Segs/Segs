@@ -16,6 +16,13 @@ SET(target_CPP
     Events/NewEntity.cpp
     Events/SaveClientOptions.cpp
     Events/SceneEvent.cpp
+    Events/TradeCancel.cpp
+    Events/TradeInit.cpp
+    Events/TradeOffer.cpp
+    Events/TradeSuccess.cpp
+    Events/TradeUpdate.cpp
+    Events/TradeWasCancelledMessage.cpp
+    Events/TradeWasUpdatedMessage.cpp
     Events/InfoMessageCmd.cpp
     Events/WindowState.cpp
     MapClientSession.cpp
@@ -37,6 +44,7 @@ SET(target_INCLUDE
     EntityStorage.h
     EntityUpdateCodec.h
     Events/GameCommandList.h
+    Events/Browser.h
     Events/ChangeTitle.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
@@ -72,6 +80,13 @@ SET(target_INCLUDE
     Events/StandardDialogCmd.h
     Events/TeamLooking.h
     Events/TeamOffer.h
+    Events/TradeCancel.h
+    Events/TradeInit.h
+    Events/TradeOffer.h
+    Events/TradeSuccess.h
+    Events/TradeUpdate.h
+    Events/TradeWasCancelledMessage.h
+    Events/TradeWasUpdatedMessage.h
     Events/TrayAdd.h
     Events/InfoMessageCmd.h
     Events/InteractWithEntity.h

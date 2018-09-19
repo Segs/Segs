@@ -24,6 +24,7 @@ struct MapClientSession;
 struct CharacterPowerSet;
 struct CharacterPower;
 class GameDataStore;
+class TradeMember;
 
 
 /*
@@ -102,7 +103,7 @@ GameDataStore *getMapServerData();
 /*
  * sendInfoMessage wrapper to provide access to NetStructures
  */
-void messageOutput(MessageChannel ch, QString &msg, Entity &tgt);
+void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt);
 
 
 /*
@@ -123,7 +124,12 @@ void sendTeamOffer(Entity *src, Entity *tgt);
 void sendFaceEntity(Entity *src, uint8_t tgt_idx);
 void sendFaceLocation(Entity *src, glm::vec3 &location);
 void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg);
-
+void sendBrowser(MapClientSession &tgt, QString &content);
+void sendTradeOffer(const Entity& src, Entity& tgt);
+void sendTradeInit(Entity& src, Entity& tgt);
+void sendTradeCancel(Entity& ent, const QString& msg);
+void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt);
+void sendTradeSuccess(Entity& src, Entity& tgt);
 
 const QString &getGenericTitle(uint32_t val);
 const QString &getOriginTitle(uint32_t val);
@@ -136,7 +142,7 @@ void readEmailMessage(Entity *e, const int id);
 
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
 
-void addFriend(Entity &src, Entity &tgt);
+void addFriend(Entity &src, const Entity &tgt);
 void removeFriend(Entity &src, QString friendName);
 bool isFriendOnline(Entity &src, uint32_t db_id);
 void findTeamMember(Entity &tgt);
