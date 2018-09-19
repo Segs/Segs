@@ -12,7 +12,12 @@ namespace
         "ActivateInspiration",
         "ActivatePower",
         "ActivatePowerAtLocation",
+<<<<<<< HEAD
         "AddTimeStateLog",
+=======
+        "Browser",
+        "BrowserClose",
+>>>>>>> upstream/develop
         "BuyEnhancementSlot",
         "ChangeStance",
         "ChangeTitle",
@@ -79,6 +84,11 @@ namespace
         "TargetChatChannelSelected",
         "TeamLooking",
         "TeamOffer",
+        "TradeCancel",
+        "TradeInit",
+        "TradeOffer",
+        "TradeSuccess",
+        "TradeUpdate",
         "TrashEnhancement",
         "TrashEnhancementInPower",
         "TrayAdd",

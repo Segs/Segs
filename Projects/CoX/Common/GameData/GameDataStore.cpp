@@ -274,13 +274,15 @@ uint32_t GameDataStore::expMaxLevel() const
 
 int GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &schedule) const
 {
-    for(uint32_t i = 0; i < schedule.size(); ++i)
+    uint32_t i = 0;
+
+    for(i = 0; i < schedule.size(); ++i)
     {
         if (lvl < schedule[i])
-            return i;
+            break; // i must pass through for values at the end of schedule array
     }
 
-    return 0;
+    return i;
 }
 
 bool GameDataStore::read_costumes(const QString &directory_path)

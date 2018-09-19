@@ -26,6 +26,7 @@
 
 struct MapClientSession;
 class Team;
+class Trade;
 class Character;
 struct PlayerData;
 class GameDataStore;
@@ -137,6 +138,7 @@ class Entity
     using PlayerPtr = std::unique_ptr<PlayerData>;
     using EntityPtr = std::unique_ptr<EntityData>;
     using NPCPtr = std::unique_ptr<NPCData>;
+    using TradePtr = std::shared_ptr<Trade>;
 private:
                             Entity();
                             ~Entity();
@@ -157,6 +159,7 @@ public:
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_team              = false;
         bool                m_has_supergroup        = true;
+        TradePtr            m_trade;
 
         uint32_t            m_idx                   = {0};
         uint32_t            m_db_id                 = {0};

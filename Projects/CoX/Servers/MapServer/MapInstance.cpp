@@ -39,6 +39,7 @@
 #include "NetStructures/Character.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/Entity.h"
+#include "NetStructures/Trade.h"
 #include "SEGSTimer.h"
 #include "SlashCommand.h"
 #include "WorldSimulation.h"
@@ -473,6 +474,11 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evRecvNewPower:
             on_recv_new_power(static_cast<RecvNewPower *>(ev));
+        case MapEventTypes::evTradeWasCancelledMessage:
+            on_trade_cancelled(static_cast<TradeWasCancelledMessage *>(ev));
+            break;
+        case MapEventTypes::evTradeWasUpdatedMessage:
+            on_trade_updated(static_cast<TradeWasUpdatedMessage *>(ev));
             break;
         case MapEventTypes::evInitiateMapXfer:
             on_initiate_map_transfer(static_cast<InitiateMapXfer *>(ev));
@@ -482,6 +488,9 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evAwaitingDeadNoGurney:
             on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
+            break;
+        case evBrowserClose:
+            on_browser_close(static_cast<BrowserClose *>(ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
@@ -2371,6 +2380,13 @@ void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
     session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
 }
 
+void MapInstance::on_browser_close(BrowserClose *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received BrowserClose";
+}
+
 
 
 void MapInstance::on_afk_update()
@@ -2511,5 +2527,18 @@ void MapInstance::send_player_update(Entity *e)
     m_sync_service->putq(msg);
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
+
+void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
+{
+    MapClientSession& session = m_session_store.session_from_event(ev);
+    cancelTrade(*session.m_ent);
+}
+
+void MapInstance::on_trade_updated(TradeWasUpdatedMessage* ev)
+{
+    MapClientSession& session = m_session_store.session_from_event(ev);
+    updateTrade(*session.m_ent, ev->m_info);
+}
+
 
 //! @}

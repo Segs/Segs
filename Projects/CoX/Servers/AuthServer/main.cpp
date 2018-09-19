@@ -203,7 +203,7 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     log_buffer[0] = 0;
     category_text[0] = 0;
     if(strcmp(context.category,"default")!=0)
-        snprintf(category_text,256,"[%s]",context.category);
+        snprintf(category_text,sizeof(category_text),"[%s]",context.category);
     QFile segs_log_target;
     segs_log_target.setFileName("output.log");
     if (!segs_log_target.open(QFile::WriteOnly | QFile::Append))
@@ -215,20 +215,20 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     switch (type)
     {
         case QtDebugMsg:
-            snprintf(log_buffer,4096,"%sDebug   : %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer,sizeof(log_buffer),"%sDebug   : %s\n",category_text,localMsg.constData());
             break;
         case QtInfoMsg:
             // no prefix or category for informational messages, as these are end-user facing
-            snprintf(log_buffer,4096,"%s\n",localMsg.constData());
+            snprintf(log_buffer,sizeof(log_buffer),"%s\n",localMsg.constData());
             break;
         case QtWarningMsg:
-            snprintf(log_buffer,4096,"%sWarning : %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer,sizeof(log_buffer),"%sWarning : %s\n",category_text,localMsg.constData());
             break;
         case QtCriticalMsg:
-            snprintf(log_buffer,4096,"%sCritical: %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer,sizeof(log_buffer),"%sCritical: %s\n",category_text,localMsg.constData());
             break;
         case QtFatalMsg:
-            snprintf(log_buffer,4096,"%sFatal: %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer,sizeof(log_buffer),"%sFatal: %s\n",category_text,localMsg.constData());
     }
     fprintf(stdout, "%s", log_buffer);
     fflush(stdout);

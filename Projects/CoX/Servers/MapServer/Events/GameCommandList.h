@@ -8,6 +8,8 @@
 #pragma once
 
 #include "Events/AddTimeStateLog.h"
+#include "Events/Browser.h"
+#include "Events/StandardDialogCmd.h"
 #include "Events/ChangeTitle.h"
 #include "Events/DeadNoGurney.h"
 #include "Events/DoorMessage.h"

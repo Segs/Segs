@@ -165,6 +165,15 @@ void Settings::setDefaultSettings()
         config.setValue("log_lfg","false");
         config.setValue("log_npcs","false");
         config.setValue("log_animations","false");
+        config.setValue("log_powers","false");
+        config.setValue("log_trades","false");
+    config.endGroup();
+    config.beginGroup("StartingCharacter");
+        config.setValue("inherent_powers","Brawl");
+        config.setValue("starting_temps","EMP_Glove");
+        config.setValue("starting_inspirations","Resurgence");
+        config.setValue("starting_level", 1);
+        config.setValue("starting_inf", 0);
     config.endGroup();
 
     config.sync(); // sync changes or they wont be saved to file.
