@@ -27,6 +27,11 @@ struct WouldNameDuplicateRequest;
 struct CreateNewCharacterRequest;
 struct GetEntityRequest;
 struct GetEntityByNameRequest;
+struct CreateNewSuperGroupRequest;
+struct GetSuperGroupRequest;
+struct SuperGroupUpdateMessage;
+struct SuperGroupNameDuplicateRequest;
+struct RemoveSuperGroupRequest;
 }
 
 class GameDBSyncHandler final : public EventProcessor
@@ -50,6 +55,12 @@ protected:
     void on_create_new_char(SEGSEvents::CreateNewCharacterRequest *ev);
     void on_get_entity(SEGSEvents::GetEntityRequest *ev);
     void on_get_entity_by_name(SEGSEvents::GetEntityByNameRequest *ev);
+    void on_create_new_supergroup(SEGSEvents::CreateNewSuperGroupRequest *ev);
+    void on_get_supergroup(SEGSEvents::GetSuperGroupRequest *msg);
+    void on_supergroup_name_clash(SEGSEvents::SuperGroupNameDuplicateRequest *ev);
+    void on_supergroup_update(SEGSEvents::SuperGroupUpdateMessage* msg);
+    void on_supergroup_remove(SEGSEvents::RemoveSuperGroupRequest *msg);
+
     // This is an unique ID that links this DB with it's Game Server
     uint8_t m_id;
 public:

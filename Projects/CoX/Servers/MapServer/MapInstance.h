@@ -183,6 +183,7 @@ protected:
         void on_afk_update();
         void send_character_update(Entity *e);
         void send_player_update(Entity *e);
+        void send_supergroup_update(SuperGroup *sg);
 
         void on_cookie_confirm(SEGSEvents::CookieRequest *ev);
         void on_window_state(SEGSEvents::WindowState *ev);

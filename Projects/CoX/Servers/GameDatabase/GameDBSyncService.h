@@ -5,10 +5,14 @@
 #include "Common/Servers/HandlerLocator.h"
 #include "Servers/GameDatabase/GameDBSyncHandler.h"
 #include <QVector>
-namespace SEGSEvents {
+
+namespace SEGSEvents
+{
 struct PlayerUpdateMessage;
 struct CharacterUpdateMessage;
+struct SuperGroupUpdateMessage;
 }
+
 class GameDBSyncService : public EventProcessor
 {
 private:
@@ -16,6 +20,7 @@ private:
 
     void on_player_update(SEGSEvents::PlayerUpdateMessage* msg);
     void on_character_update(SEGSEvents::CharacterUpdateMessage* msg);
+    void on_supergroup_update(SEGSEvents::SuperGroupUpdateMessage* msg);
 
 public:
     IMPL_ID(GameDBSyncService)

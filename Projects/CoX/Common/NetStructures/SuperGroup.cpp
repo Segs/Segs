@@ -20,8 +20,10 @@
 #include <QDateTime>
 
 
-// global variable -- we probably don't want to do this
+// global variable -- a supergroup service is probably better
 std::vector<SuperGroup> g_all_supergroups;
+// Max size is probably hardcoded, but I can't get 75 friends together to check =P
+static const uint32_t s_max_sg_size = 75;  // max is 75 in I1 client, later raised to 150
 
 int64_t getTimeSince2000Epoch()
 {
@@ -39,7 +41,7 @@ void SuperGroup::addSGMember(Entity *e, int rank)
 {
     CharacterData *cd = &e->m_char->m_char_data;
 
-    if(m_sg_members.size() >= m_max_sg_size)
+    if(m_sg_members.size() >= s_max_sg_size)
         return;
 
     if(cd->m_supergroup.m_has_supergroup)
@@ -185,6 +187,7 @@ SGResponse inviteSG(Entity &src, Entity &tgt)
     response.msgtgt = src.name() + " has invited you to join their SuperGroup.";
 
     sg->addSGMember(&tgt, 0);
+    markSuperGroupForDbStore(sg, SuperGroupDbStoreFlags::Full);
     return response;
 }
 
@@ -206,6 +209,7 @@ QString kickSG(Entity &src, Entity &tgt)
         qFatal("getSuperGroupByIdx returned nullptr for kickSG");
 
     sg->removeSGMember(&tgt);
+    markSuperGroupForDbStore(sg, SuperGroupDbStoreFlags::Full);
     return msg;
 }
 
@@ -227,7 +231,11 @@ void leaveSG(Entity &e)
     }
 
     sg->removeSGMember(&e);
+    markSuperGroupForDbStore(sg, SuperGroupDbStoreFlags::Full);
+
     // if there are no members left, delete SG
+    //if(sg->m_sg_members.size == 0)
+        //removeSuperGroup(sg);
 }
 
 bool toggleSGMode(Entity &e)
@@ -264,6 +272,7 @@ QString setSGMOTD(Entity &e, QString &motd)
         qFatal("getSuperGroupByIdx returned nullptr for setSGMOTD");
 
     sg->m_data.m_sg_motd = motd;
+    markSuperGroupForDbStore(sg, SuperGroupDbStoreFlags::Full);
     return msg;
 }
 
@@ -286,6 +295,7 @@ QString setSGMotto(Entity &e, QString &motto)
         qFatal("getSuperGroupByIdx returned nullptr for setSGMotto");
 
     sg->m_data.m_sg_motto = motto;
+    markSuperGroupForDbStore(sg, SuperGroupDbStoreFlags::Full);
     return msg;
 }
 
@@ -315,6 +325,7 @@ QString setSGTitle(Entity &e, int idx, QString &title)
 
     msg += title;
     sg->m_data.m_sg_titles[idx] = title;
+    markSuperGroupForDbStore(sg, SuperGroupDbStoreFlags::Full);
     return msg;
 }
 
@@ -346,6 +357,11 @@ QString modifySGRank(Entity &src, Entity &tgt, int rank_mod)
 
     tgt_sg->m_rank = tgt_revised->m_rank = new_rank;
 
+    SuperGroup * sg = getSuperGroupByIdx(tgt_sg->m_sg_idx);
+    if(sg == nullptr)
+        qFatal("getSuperGroupByIdx returned nullptr for modifySGRank");
+
+    markSuperGroupForDbStore(sg, SuperGroupDbStoreFlags::Full);
     return msg;
 }
 
@@ -424,6 +440,20 @@ void SuperGroupStats::dump()
             .arg(m_rank);
 
     qDebug().noquote() << msg;
+}
+
+
+/*
+ * Mark for db update
+ */
+void markSuperGroupForDbStore(SuperGroup *sg, SuperGroupDbStoreFlags f)
+{
+    sg->m_db_store_flags |= uint32_t(f);
+}
+
+void unmarkSuperGroupForDbStore(SuperGroup *sg, SuperGroupDbStoreFlags f)
+{
+    sg->m_db_store_flags &= ~uint32_t(f);
 }
 
 //! @}

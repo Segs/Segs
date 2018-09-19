@@ -39,6 +39,7 @@
 #include "NetStructures/Character.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/Entity.h"
+#include "NetStructures/SuperGroup.h"
 #include "NetStructures/Trade.h"
 #include "SEGSTimer.h"
 #include "SlashCommand.h"
@@ -2423,7 +2424,9 @@ void MapInstance::on_afk_update()
 
 void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
 {
+    EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
     MapClientSession &session(m_session_store.session_from_event(ev));
+    auto *lnk   = (MapLink *)ev->src();
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received Create SuperGroup"
                           << ev->data.m_sg_name
@@ -2433,7 +2436,6 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
                           << ev->data.m_sg_emblem
                           << ev->data.m_sg_colors[0]
                           << ev->data.m_sg_colors[1];
-
 
     Costume costume = *session.m_ent->m_char->getCurrentCostume();
     // Check to ensure name isn't already in use or restricted
@@ -2445,8 +2447,16 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
         success = true;
 
     session.m_ent->m_client->addCommand<SuperGroupResponse>(success, send_costume, costume);
+    //session.m_ent->m_client->addCommand<RegisterSuperGroup>(ev->data.m_sg_name);
+
+    // Save SG to Database
+    /*
+    game_db->putq(new CreateNewSuperGroupRequest({ev->data.m_sg_name, ev->data},
+                                                 lnk->session_token(), this));
+    */
+
+    // Finalize adding SG to sg storage and entity to memberlist
     addSuperGroup(*session.m_ent, ev->data);
-    session.m_ent->m_client->addCommand<RegisterSuperGroup>(ev->data.m_sg_name);
 }
 
 void MapInstance::on_change_supergroup_colors(ChangeSuperGroupColors *ev)
@@ -2555,6 +2565,26 @@ void MapInstance::send_player_update(Entity *e)
 
     m_sync_service->putq(msg);
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
+}
+
+void MapInstance::send_supergroup_update(SuperGroup *sg)
+{
+    QString cerealizedSuperGroupData;
+    serializeToQString(sg->m_data, cerealizedSuperGroupData);
+
+    QString cerealizedSuperGroupMembers;
+    serializeToQString(sg->m_sg_members, cerealizedSuperGroupMembers);
+
+    SuperGroupUpdateMessage* msg = new SuperGroupUpdateMessage(
+                SuperGroupUpdateData({
+                                     sg->m_sg_idx,
+                                     sg->m_sg_name,
+                                     cerealizedSuperGroupData,
+                                     cerealizedSuperGroupMembers
+                                 }), (uint64_t)1);
+
+    m_sync_service->putq(msg);
+    unmarkSuperGroupForDbStore(sg, SuperGroupDbStoreFlags::Full);
 }
 
 void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)

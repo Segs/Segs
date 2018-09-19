@@ -28,6 +28,8 @@ void GameDBSyncService::dispatch(Event *ev)
         on_character_update(static_cast<CharacterUpdateMessage *>(ev)); break;
     case evPlayerUpdateMessage:
         on_player_update(static_cast<PlayerUpdateMessage *>(ev)); break;
+    case evSuperGroupUpdateMessage:
+        on_supergroup_update(static_cast<SuperGroupUpdateMessage *>(ev)); break;
     default: assert(false); break;
     }
 }
@@ -77,6 +79,19 @@ void GameDBSyncService::on_character_update(CharacterUpdateMessage* msg)
                     msg->m_data.m_supergroup_id,
                     msg->m_data.m_id
     }, uint64_t(1));
+
+    m_db_handler->putq(newMsg);
+}
+
+void GameDBSyncService::on_supergroup_update(SuperGroupUpdateMessage * msg)
+{
+    SuperGroupUpdateMessage* newMsg = new SuperGroupUpdateMessage(
+    {
+                    msg->m_data.m_sg_id,
+                    msg->m_data.m_sg_name,
+                    msg->m_data.m_serialized_sg_data,
+                    msg->m_data.m_serialized_sg_members
+                }, uint64_t(1));
 
     m_db_handler->putq(newMsg);
 }

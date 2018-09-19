@@ -43,6 +43,16 @@ enum GameDBEventTypes : uint32_t
     // selecy by name for entity data
     evGetEntityByNameRequest,
     evGetEntityByNameResponse,
+    // Supergroups
+    evCreateNewSuperGroupRequest,
+    evCreateNewSuperGroupResponse,
+    evGetSuperGroupRequest,
+    evGetSuperGroupResponse,
+    evSuperGroupNameDuplicateRequest,
+    evSuperGroupNameDuplicateResponse,
+    evSuperGroupUpdateMessage,
+    evRemoveSuperGroupRequest,
+    evRemoveSuperGroupResponse,
 
     evGameDbErrorMessage
 };
@@ -360,5 +370,128 @@ struct PlayerUpdateData
 };
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(GameDBEventTypes,PlayerUpdate)
+
+// SuperGroups
+struct SuperGroupUpdateData
+{
+    uint32_t m_sg_id;
+    QString m_sg_name;
+    QString m_serialized_sg_data;
+    QString m_serialized_sg_members;
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( m_sg_id );
+        ar( m_sg_name );
+        ar( m_serialized_sg_data );
+        ar( m_serialized_sg_members );
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(GameDBEventTypes,SuperGroupUpdate)
+
+struct CreateNewSuperGroupRequestData
+{
+    QString m_sg_name;
+    QString m_serialized_sg_data;
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( m_sg_name );
+        ar( m_serialized_sg_data );
+    }
+};
+
+struct CreateNewSuperGroupResponseData
+{
+    uint32_t m_sg_id;
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( m_sg_id );
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,CreateNewSuperGroup)
+
+struct SuperGroupNameDuplicateRequestData
+{
+    QString m_sg_name;
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( m_sg_name  );
+    }
+};
+
+struct SuperGroupNameDuplicateResponseData
+{
+    bool m_supergroup_duplicate;
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( m_supergroup_duplicate  );
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,SuperGroupNameDuplicate)
+
+struct GetSuperGroupRequestData
+{
+    uint32_t m_sg_id;
+    QString m_sg_name;
+    bool create_if_does_not_exist;
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( m_sg_id );
+        ar( m_sg_name );
+        ar( create_if_does_not_exist);
+    }
+};
+
+struct GetSuperGroupResponseData
+{
+    uint32_t m_sg_id;
+    QString m_sg_name;
+    QString m_serialized_sg_data;
+    QString m_serialized_sg_members;
+    bool isEmpty() const
+    {
+        return 0==m_sg_name.compare("EMPTY",Qt::CaseInsensitive);
+    }
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( m_sg_id );
+        ar( m_sg_name );
+        ar( m_serialized_sg_data );
+        ar( m_serialized_sg_members );
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,GetSuperGroup)
+
+struct RemoveSuperGroupRequestData
+{
+    uint32_t m_sg_id;
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( m_sg_id  );
+    }
+};
+
+struct RemoveSuperGroupResponseData
+{
+    uint32_t m_sg_id;
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( m_sg_id  );
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,RemoveSuperGroup)
 
 } // end of SEGSEvents namespace

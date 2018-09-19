@@ -53,6 +53,16 @@ void GameDBSyncHandler::dispatch(Event *ev)
         on_get_entity(static_cast<GetEntityRequest *>(ev)); break;
     case GameDBEventTypes::evGetEntityByNameRequest:
         on_get_entity_by_name(static_cast<GetEntityByNameRequest *>(ev)); break;
+    case GameDBEventTypes::evCreateNewSuperGroupRequest:
+        on_create_new_supergroup(static_cast<CreateNewSuperGroupRequest *>(ev)); break;
+    case GameDBEventTypes::evGetSuperGroupRequest:
+        on_get_supergroup(static_cast<GetSuperGroupRequest *>(ev)); break;
+    case GameDBEventTypes::evSuperGroupNameDuplicateRequest:
+        on_supergroup_name_clash(static_cast<SuperGroupNameDuplicateRequest *>(ev)); break;
+    case GameDBEventTypes::evSuperGroupUpdateMessage:
+        on_supergroup_update(static_cast<SuperGroupUpdateMessage *>(ev)); break;
+    case GameDBEventTypes::evRemoveSuperGroupRequest:
+        on_supergroup_remove(static_cast<RemoveSuperGroupRequest *>(ev)); break;
     default: assert(false); break;
     }
 }
@@ -159,6 +169,55 @@ void GameDBSyncHandler::on_get_entity_by_name(GetEntityByNameRequest *ev)
         ev->src()->putq(new GetEntityByNameResponse(std::move(resp), ev->session_token()));
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
+
+void GameDBSyncHandler::on_create_new_supergroup(CreateNewSuperGroupRequest * ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    CreateNewSuperGroupResponseData resp;
+
+    if(db_ctx.createNewSuperGroup(ev->m_data,resp))
+        ev->src()->putq(new CreateNewSuperGroupResponse(std::move(resp),ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
+
+void GameDBSyncHandler::on_get_supergroup(GetSuperGroupRequest *msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    GetSuperGroupResponseData resp;
+    if(db_ctx.getSuperGroup(msg->m_data,resp))
+        msg->src()->putq(new GetSuperGroupResponse(std::move(resp),msg->session_token()));
+    else
+        msg->src()->putq(new GameDbErrorMessage({"on_get_supergroup:Game db error"},msg->session_token()));
+
+}
+
+void GameDBSyncHandler::on_supergroup_name_clash(SuperGroupNameDuplicateRequest * ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    SuperGroupNameDuplicateResponseData resp;
+
+    if(db_ctx.checkNameClash(ev->m_data,resp))
+        ev->src()->putq(new SuperGroupNameDuplicateResponse(std::move(resp),ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"on_supergroup_name_clash:Game db error"},ev->session_token()));
+}
+
+void GameDBSyncHandler::on_supergroup_update(SuperGroupUpdateMessage *msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.performUpdate(msg->m_data);
+}
+
+void GameDBSyncHandler::on_supergroup_remove(RemoveSuperGroupRequest *msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+
+    if (!db_ctx.removeSuperGroup(msg->m_data))
+        msg->src()->putq(new GameDbErrorMessage({"on_supergroup_remove : Game db error"}, msg->session_token()));
+    else
+        msg->src()->putq(new RemoveSuperGroupResponse({msg->m_data.m_sg_id}, msg->session_token()));
 }
 
 //! @}

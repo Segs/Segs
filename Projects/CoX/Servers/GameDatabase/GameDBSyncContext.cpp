@@ -137,23 +137,26 @@ bool GameDbSyncContext::loadAndConfigure()
     m_prepared_get_char_slots = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_options_update = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_player_update = std::make_unique<QSqlQuery>(*m_db);
-
-    // TO-DO: prepQuery for playerUpdate
+    m_prepared_supergroup_insert = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_supergroup_select = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_supergroup_exists = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_supergroup_delete = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_supergroup_update = std::make_unique<QSqlQuery>(*m_db);
 
     prepQuery(*m_prepared_char_update,
-                "UPDATE characters SET "
-                "char_name=:char_name, chardata=:chardata, entitydata=:entitydata, bodytype=:bodytype, "
-                "height=:height, physique=:physique,"
-                "supergroup_id=:supergroup_id, player_data=:player_data "
-                "WHERE id=:id ");
+              "UPDATE characters SET "
+              "char_name=:char_name, chardata=:chardata, entitydata=:entitydata, bodytype=:bodytype, "
+              "height=:height, physique=:physique,"
+              "supergroup_id=:supergroup_id, player_data=:player_data "
+              "WHERE id=:id ");
     prepQuery(*m_prepared_player_update,
               "UPDATE characters SET "
               "player_data=:player_data "
               "WHERE id=:id ");
     prepQuery(*m_prepared_costume_update,
-                "UPDATE costume SET "
-                "costume_index=:costume_index, skin_color=:skin_color, parts=:parts "
-                "WHERE character_id=:id ");
+              "UPDATE costume SET "
+              "costume_index=:costume_index, skin_color=:skin_color, parts=:parts "
+              "WHERE character_id=:id ");
     prepQuery(*m_prepared_options_update,
               "UPDATE characters SET "
               "player_data=:player_data "
@@ -181,6 +184,20 @@ bool GameDbSyncContext::loadAndConfigure()
     prepQuery(*m_prepared_char_exists,"SELECT exists (SELECT 1 FROM characters WHERE char_name = ? LIMIT 1)");
     prepQuery(*m_prepared_char_delete,"DELETE FROM characters WHERE account_id=? AND slot_index=?");
     prepQuery(*m_prepared_get_char_slots,"SELECT slot_index FROM characters WHERE account_id=?");
+
+    prepQuery(*m_prepared_supergroup_insert,
+                "INSERT INTO characters  ("
+                "sg_idx, sg_name, sg_data, sg_members"
+                ") VALUES ("
+                ":sg_idx, :sg_name, :sg_data, :sg_members"
+                ")");
+    prepQuery(*m_prepared_supergroup_select,"SELECT * FROM supergroups WHERE sg_idx=?");
+    prepQuery(*m_prepared_supergroup_exists,"SELECT exists (SELECT 1 FROM supergroups WHERE sg_name=? LIMIT 1)");
+    prepQuery(*m_prepared_supergroup_delete,"DELETE FROM supergroups WHERE sg_idx=?");
+    prepQuery(*m_prepared_supergroup_update,
+              "UPDATE supergroups SET "
+              "sg_data=:sg_data "
+              "WHERE sg_idx=:sg_idx ");
 
     return true;
 }
@@ -409,6 +426,96 @@ bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
     m_prepared_options_update->bindValue(":keybinds", data.m_keybinds);
     if (!doIt(*m_prepared_options_update))
         return false;
+    return true;
+}
+
+// SuperGroups
+bool GameDbSyncContext::createNewSuperGroup(const CreateNewSuperGroupRequestData &data, CreateNewSuperGroupResponseData &result)
+{
+    DbTransactionGuard grd(*m_db);
+
+    //m_sg_created = QDateTime::currentDateTimeUtc().toString();
+    m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_name"), data.m_sg_name);
+    m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_data"), data.m_serialized_sg_data);
+    //m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_members"), data.m_serialized_sg_members);
+
+    if(!doIt(*m_prepared_supergroup_insert))
+        return false;
+
+    assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
+    uint32_t sg_id = m_prepared_supergroup_insert->lastInsertId().toUInt();
+    result.m_sg_id = sg_id; // return sg_id here, so that every sg has unique idx
+
+    m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_idx"), sg_id);
+
+    if(!doIt(*m_prepared_supergroup_insert))
+        return false;
+
+    grd.commit();
+    return true;
+}
+
+bool GameDbSyncContext::getSuperGroup(const GetSuperGroupRequestData &data, GetSuperGroupResponseData &result)
+{
+    // Try to find the supergroup in db
+    m_prepared_supergroup_select->bindValue(0, data.m_sg_id);
+    if(!doIt(*m_prepared_supergroup_select))
+        return false;
+    bool supergroup_exists = m_prepared_supergroup_select->next();
+    if(!supergroup_exists && !data.create_if_does_not_exist)
+        return false;
+
+    if(!supergroup_exists && data.create_if_does_not_exist)
+    {
+        m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_idx"), data.m_sg_id);
+        m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_name"), data.m_sg_name);
+        if(!doIt(*m_prepared_supergroup_insert))
+            return false;
+
+        m_prepared_supergroup_select->bindValue(0, data.m_sg_id);
+        if(!doIt(*m_prepared_supergroup_select))
+            return false;
+        if(!m_prepared_supergroup_select->next() && !data.create_if_does_not_exist)
+            return false;
+    }
+
+    result.m_sg_id = data.m_sg_id;
+    QString name = m_prepared_supergroup_select->value("sg_name").toString();
+    result.m_sg_name =  name.isEmpty() ? "EMPTY" : name;
+    result.m_serialized_sg_data = m_prepared_supergroup_select->value("sg_data").toString();
+    result.m_serialized_sg_members = m_prepared_supergroup_select->value("sg_members").toString();
+
+    return true;
+}
+
+bool GameDbSyncContext::checkNameClash(const SuperGroupNameDuplicateRequestData &data, SuperGroupNameDuplicateResponseData &result)
+{
+    m_prepared_supergroup_exists->bindValue(0,data.m_sg_name);
+    if(!doIt(*m_prepared_supergroup_exists))
+        return false;
+
+    if(!m_prepared_supergroup_exists->next())
+        return false;
+
+    result.m_supergroup_duplicate = m_prepared_supergroup_exists->value(0).toBool();
+    return true;
+}
+
+bool GameDbSyncContext::performUpdate(const SuperGroupUpdateData &data)
+{
+    m_prepared_supergroup_update->bindValue(QStringLiteral(":sg_idx"), data.m_sg_id);
+    m_prepared_supergroup_update->bindValue(QStringLiteral(":sg_name"), data.m_sg_name);
+    m_prepared_supergroup_update->bindValue(QStringLiteral(":sg_data"), data.m_serialized_sg_data);
+    m_prepared_supergroup_update->bindValue(QStringLiteral(":sg_members"), data.m_serialized_sg_members);
+    return doIt(*m_prepared_supergroup_update);
+}
+
+bool GameDbSyncContext::removeSuperGroup(const RemoveSuperGroupRequestData &data)
+{
+    m_prepared_supergroup_delete->bindValue(0,data.m_sg_id);
+    if(!doIt(*m_prepared_supergroup_delete))
+        return false;
+
     return true;
 }
 

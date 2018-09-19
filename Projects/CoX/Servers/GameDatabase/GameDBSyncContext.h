@@ -27,6 +27,14 @@ struct GetEntityResponseData;
 struct GetEntityByNameRequestData;
 struct GetEntityByNameResponseData;
 struct SetClientOptionsData;
+struct CreateNewSuperGroupRequestData;
+struct CreateNewSuperGroupResponseData;
+struct GetSuperGroupRequestData;
+struct GetSuperGroupResponseData;
+struct SuperGroupNameDuplicateRequestData;
+struct SuperGroupNameDuplicateResponseData;
+struct SuperGroupUpdateData;
+struct RemoveSuperGroupRequestData;
 
 }
 ///
@@ -39,6 +47,7 @@ class GameDbSyncContext
     std::unique_ptr<QSqlQuery> m_prepared_char_update;
     std::unique_ptr<QSqlQuery> m_prepared_costume_update;
     std::unique_ptr<QSqlQuery> m_prepared_player_update;
+    std::unique_ptr<QSqlQuery> m_prepared_supergroup_update;
     std::unique_ptr<QSqlQuery> m_prepared_account_select;
     std::unique_ptr<QSqlQuery> m_prepared_account_insert;
     std::unique_ptr<QSqlQuery> m_prepared_entity_select;
@@ -48,6 +57,10 @@ class GameDbSyncContext
     std::unique_ptr<QSqlQuery> m_prepared_char_exists;
     std::unique_ptr<QSqlQuery> m_prepared_char_delete;
     std::unique_ptr<QSqlQuery> m_prepared_char_select;
+    std::unique_ptr<QSqlQuery> m_prepared_supergroup_insert;
+    std::unique_ptr<QSqlQuery> m_prepared_supergroup_exists;
+    std::unique_ptr<QSqlQuery> m_prepared_supergroup_delete;
+    std::unique_ptr<QSqlQuery> m_prepared_supergroup_select;
     std::unique_ptr<QSqlQuery> m_prepared_options_update;
     std::unique_ptr<QSqlQuery> m_prepared_fill;
     std::unique_ptr<QSqlQuery> m_prepared_costume_insert;
@@ -64,10 +77,15 @@ public:
     bool getAccount(const SEGSEvents::GameAccountRequestData &data,SEGSEvents::GameAccountResponseData &result);
     bool removeCharacter(const SEGSEvents::RemoveCharacterRequestData &data);
     bool checkNameClash(const SEGSEvents::WouldNameDuplicateRequestData &data,SEGSEvents::WouldNameDuplicateResponseData &result);
-    bool createNewChar(const  SEGSEvents::CreateNewCharacterRequestData&data, SEGSEvents::CreateNewCharacterResponseData &result);
+    bool createNewChar(const  SEGSEvents::CreateNewCharacterRequestData &data, SEGSEvents::CreateNewCharacterResponseData &result);
     bool getEntity(const  SEGSEvents::GetEntityRequestData&data, SEGSEvents::GetEntityResponseData &result);
     bool getEntityByName(const SEGSEvents::GetEntityByNameRequestData &data, SEGSEvents::GetEntityByNameResponseData &result);
     bool updateClientOptions(const SEGSEvents::SetClientOptionsData &data);
+    bool createNewSuperGroup(const  SEGSEvents::CreateNewSuperGroupRequestData &data, SEGSEvents::CreateNewSuperGroupResponseData &result);
+    bool getSuperGroup(const SEGSEvents::GetSuperGroupRequestData &data,SEGSEvents::GetSuperGroupResponseData &result);
+    bool checkNameClash(const SEGSEvents::SuperGroupNameDuplicateRequestData &data,SEGSEvents::SuperGroupNameDuplicateResponseData &result);
+    bool performUpdate(const SEGSEvents::SuperGroupUpdateData &data);
+    bool removeSuperGroup(const SEGSEvents::RemoveSuperGroupRequestData &data);
 private:
     int64_t getDbVersion(QSqlDatabase &);
 };

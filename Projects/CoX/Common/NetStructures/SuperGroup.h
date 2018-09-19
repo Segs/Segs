@@ -21,12 +21,12 @@ struct SGResponse
 
 struct SuperGroupData
 {
-    QString     m_sg_name;                  // 64 chars max
+    QString     m_sg_name;                  // 64 chars max. Here for quick lookup.
     QString     m_sg_motto;
     QString     m_sg_motd;
-    QString     m_sg_emblem;                // 128 chars max -> hash table key from the CostumeString_HTable. Maybe Emblem?
+    QString     m_sg_emblem;                // 128 chars max -> Emblem hash table key from the CostumeString_HTable.
     uint32_t    m_sg_colors[2] = {0};
-    QString     m_sg_titles[3];             // Eventually we'll need to support additional titles (I23+)
+    QString     m_sg_titles[3];             // Eventually we'll need to support additional titles (I6+)
     uint32_t    m_sg_leader_db_id = 0;
 
     template<class Archive>
@@ -81,11 +81,12 @@ public:
 virtual ~SuperGroup() = default;
 
         // Member Vars
-        std::vector<SuperGroupStats> m_sg_members;
+const   uint32_t    m_sg_idx            = 0;
+        QString     m_sg_name;                 // 64 chars max. Must be here for simple DB lookups
+        uint32_t    m_db_store_flags    = 0;
         SuperGroupData m_data;
 
-const   uint32_t    m_sg_idx            = 0;
-const   uint32_t    m_max_sg_size       = 150;  // max is always 150
+        std::vector<SuperGroupStats> m_sg_members;
 
         // Methods
         void        dump();
@@ -119,3 +120,17 @@ SuperGroup* getSuperGroupByIdx(uint32_t sg_idx);
 void addSuperGroup(Entity &e, SuperGroupData data);
 
 extern std::vector<SuperGroup> g_all_supergroups;
+
+
+/*
+ * Mark for db update
+ */
+enum class SuperGroupDbStoreFlags : uint32_t
+{
+    Data    = 1,
+    Members = 2,
+    Full    = ~0U,
+};
+
+void markSuperGroupForDbStore(SuperGroup *sg, SuperGroupDbStoreFlags f);
+void unmarkSuperGroupForDbStore(SuperGroup *sg, SuperGroupDbStoreFlags f);
