@@ -363,6 +363,18 @@ void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt)
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendTimeStateLog(MapClientSession &src, uint32_t control_log)
+{
+    qCDebug(logSlashCommand, "Sending TimeStateLog %d", control_log);
+    src.addCommand<AddTimeStateLog>(control_log);
+}
+
+void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000)
+{
+    qCDebug(logSlashCommand, "Sending TimeUpdate %d", sec_since_jan_1_2000);
+    src.addCommand<TimeUpdate>(sec_since_jan_1_2000);
+}
+
 void sendClientState(MapClientSession &ent, ClientStates client_state)
 {
     qCDebug(logSlashCommand) << "Sending ClientState:" << QString::number(client_state);
@@ -543,7 +555,7 @@ void readEmailMessage(Entity *e, const int id){
 
 
 /*
- * usePower exposed for future Lua support
+ * usePower here to provide access to messageOutput
  */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)
 {

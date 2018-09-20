@@ -191,6 +191,7 @@ struct NetFx
     NetFxTarget origin;
 };
 
+
 class Entity
 {
     // only EntityStore can create instances of this class

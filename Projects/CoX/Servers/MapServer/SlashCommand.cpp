@@ -91,6 +91,7 @@ void cmdHandler_FriendsListDebug(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ToggleExtraInfo(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess);
+void cmdHandler_AddTimeStateLog(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetClientState(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddEntirePowerSet(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess);
@@ -103,6 +104,7 @@ void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
 void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Browser(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendTimeUpdate(const QString &cmd, MapClientSession &sess);
 
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
@@ -188,6 +190,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"damage", "heal"}, "Make current target (or self) take damage/health", cmdHandler_SendFloatingNumbers, 9},
     {{"extrainfo"},"Toggle extra_info", &cmdHandler_ToggleExtraInfo, 9},
     {{"moveinstantly"},"Toggle move_instantly", &cmdHandler_ToggleMoveInstantly, 9},
+    {{"timestate", "setTimeStateLog"},"Set TimeStateLog value.", cmdHandler_AddTimeStateLog, 9},
     {{"clientstate"},"Set ClientState mode", &cmdHandler_SetClientState, 9},
     {{"addpowerset"},"Adds entire PowerSet (by 'pcat pset' idxs) to Entity", &cmdHandler_AddEntirePowerSet, 9},
     {{"addpower"},"Adds Power (by 'pcat pset pow' idxs) to Entity", &cmdHandler_AddPower, 9},
@@ -200,6 +203,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
     {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
     {{"browser"}, "Test Browser. Sends content to a browser window", cmdHandler_Browser, 9},
+    {{"timeupdate"}, "Test TimeUpdate. Sends time update to server", cmdHandler_SendTimeUpdate, 9},
 
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
@@ -297,7 +301,7 @@ void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
     if (map_idx == getMapIndex(sess.m_current_map->name()))
         map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
     QString map_path = getMapPath(map_idx);
-    sess.link()->putq(new MapXferWait(map_path));  
+    sess.link()->putq(new MapXferWait(map_path));
 
     HandlerLocator::getMap_Handler(sess.is_connected_to_game_server_id)
         ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_idx}, 0));
@@ -796,6 +800,20 @@ void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
+void cmdHandler_AddTimeStateLog(const QString &cmd, MapClientSession &sess)
+{
+    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+
+    if(val == 0)
+        val = std::time(nullptr);
+
+    sendTimeStateLog(sess, val);
+
+    QString msg = "Set TimeStateLog to: " + QString::number(val);
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
 void cmdHandler_SetClientState(const QString &cmd, MapClientSession &sess)
 {
     int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
@@ -884,7 +902,7 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
         // NOTE: floating message shows no message here, but plays the awarding insp sound!
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
         sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    } 
+    }
 
     qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
@@ -1017,6 +1035,16 @@ void cmdHandler_Browser(const QString &cmd, MapClientSession &sess)
     QString content = cmd.mid(space+1);
     sendBrowser(sess, content);
 }
+
+void cmdHandler_SendTimeUpdate(const QString &/*cmd*/, MapClientSession &sess)
+{
+    // client expects PostgresEpoch of Jan 1 2000
+    QDateTime base_date(QDate(2000,1,1));
+    int32_t time_in_sec = static_cast<int32_t>(base_date.secsTo(QDateTime::currentDateTime()));
+
+    sendTimeUpdate(sess, time_in_sec);
+}
+
 
 // Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
