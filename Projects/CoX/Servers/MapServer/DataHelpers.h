@@ -40,7 +40,6 @@ glm::vec3   getSpeed(const Entity &e);
 float       getBackupSpd(const Entity &e);
 float       getJumpHeight(const Entity &e);
 uint8_t     getUpdateId(const Entity &e);
-bool        isEntityOnMissionMap(const EntityData &ed);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);
@@ -69,29 +68,25 @@ void    toggleFullUpdate(Entity &e);
 void    toggleControlId(Entity &e);
 void    toggleExtraInfo(Entity &e);
 void    toggleMoveInstantly(Entity &e);
+void    toggleTeamBuffs(PlayerData &c);
+void    toggleLFG(Entity &e);
 
 // Misc Methods
 void    charUpdateDB(Entity *e);
-void    charUpdateGUI(Entity *e);
 
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
 void    on_awaiting_dead_no_gurney_test(MapClientSession &session);
+bool    isFriendOnline(Entity &src, uint32_t db_id);
 
 
-
-// Toggles
-void    toggleTeamBuffs(PlayerData &c);
-
-
-const QString &getFriendDisplayMapName(const Friend &f);
-QString     getEntityDisplayMapName(const EntityData &ed);
 /*
- * Looking for Group
+ * Titles -- TODO: get titles from texts/English/titles_def
  */
-void    toggleLFG(Entity &e);
+const QString &getGenericTitle(uint32_t val);
+const QString &getOriginTitle(uint32_t val);
 
 
 /*
@@ -131,8 +126,7 @@ void sendTradeCancel(Entity& ent, const QString& msg);
 void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt);
 void sendTradeSuccess(Entity& src, Entity& tgt);
 
-const QString &getGenericTitle(uint32_t val);
-const QString &getOriginTitle(uint32_t val);
+
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
@@ -140,19 +134,7 @@ void sendEmailHeaders(Entity *e);
 void readEmailMessage(Entity *e, const int id);
 
 
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
-
-void addFriend(Entity &src, const Entity &tgt);
-void removeFriend(Entity &src, QString friendName);
-bool isFriendOnline(Entity &src, uint32_t db_id);
-void findTeamMember(Entity &tgt);
-
 /*
- * Sidekick Methods -- Sidekick system requires teaming.
+ * usePower exposed for future Lua support
  */
-bool isSidekickMentor(const Entity &e);
-void inviteSidekick(Entity &src, Entity &tgt);
-void addSidekick(Entity &tgt, Entity &src);
-void removeSidekick(Entity &src);
-void leaveTeam(Entity &e);
-void removeTeamMember(class Team &self, Entity *e);
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);

@@ -97,7 +97,6 @@ void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess);
-void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
@@ -105,9 +104,12 @@ void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
 void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Browser(const QString &cmd, MapClientSession &sess);
 
+void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
+
 // Access Level 2[GM] Commands
-void addNpc(const QString &cmd, MapClientSession &sess);
-void moveTo(const QString &cmd, MapClientSession &sess);
+void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess);
+void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess);
+
 // Access Level 1 Commands
 void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AFK(const QString &cmd, MapClientSession &sess);
@@ -132,6 +134,8 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FriendList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MapXferList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ReSpec(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
+
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess);
@@ -141,7 +145,6 @@ void cmdHandler_EmailHeaders(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess);
-void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TradeAccept(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess);
 
@@ -191,7 +194,6 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"addinsp"},"Adds Inspiration (by name) to Entity", &cmdHandler_AddInspiration, 9},
     {{"addboost", "addEnhancement"},"Adds Enhancement (by name) to Entity", &cmdHandler_AddEnhancement, 9},
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
-    {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
     {{"face"}, "Face a target", cmdHandler_FaceEntity, 9},
     {{"faceLocation"}, "Face a location", cmdHandler_FaceLocation, 9},
     {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
@@ -199,9 +201,11 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
     {{"browser"}, "Test Browser. Sends content to a browser window", cmdHandler_Browser, 9},
 
+    {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
+
     /* Access Level 2 Commands */
-    {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", addNpc, 2},
-    {{"moveTo"},"set the gm's position to <x> <y> <z>", moveTo, 2},
+    {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", cmdHandler_AddNPC, 2},
+    {{"moveTo", "setpospyr"},"set the gm's position to <x> <y> <z>", cmdHandler_MoveTo, 2},
 
     /* Access Level 1 Commands */
     {{"cmdlist","commandlist"},"List all accessible commands", cmdHandler_CmdList, 1},
@@ -932,18 +936,6 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
     sendLevelUp(sess.m_ent);
 }
 
-// Slash commands for setting bit values
-void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
-{
-    uint32_t val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
-
-    setu1(*sess.m_ent, val);
-
-    QString msg = "Set u1 to: " + QString::number(val);
-    qCDebug(logSlashCommand) << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
-}
-
 void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
 {
     Entity *tgt = nullptr;
@@ -965,6 +957,7 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
     }
     sendFaceEntity(sess.m_ent, tgt->m_idx);
 }
+
 void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
@@ -1025,10 +1018,22 @@ void cmdHandler_Browser(const QString &cmd, MapClientSession &sess)
     sendBrowser(sess, content);
 }
 
+// Slash commands for setting bit values
+void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
+{
+    uint32_t val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+
+    setu1(*sess.m_ent, val);
+
+    QString msg = "Set u1 to: " + QString::number(val);
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 2 Commands
-void addNpc(const QString &cmd, MapClientSession &sess)
+void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     int variation = 0;
@@ -1062,13 +1067,14 @@ void addNpc(const QString &cmd, MapClientSession &sess)
     }
     glm::vec3 offset = glm::vec3 {2,0,1};
     int idx = npc_store.npc_idx(npc_def);
+
     Entity *e = sess.m_current_map->m_entities.CreateNpc(*getMapServerData(),*npc_def,idx,variation);
     forcePosition(*e,gm_loc + offset);
     e->m_velocity = {0,0,0};
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), sess);
 }
 
-void moveTo(const QString &cmd, MapClientSession &sess)
+void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     parts = cmd.splitRef(' ');
@@ -1077,14 +1083,15 @@ void moveTo(const QString &cmd, MapClientSession &sess)
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
     }
+
     glm::vec3 new_pos {
       parts[1].toFloat(),
       parts[2].toFloat(),
       parts[3].toFloat()
     };
+
     forcePosition(*sess.m_ent,new_pos);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("New position set"), sess);
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1217,12 +1224,13 @@ void cmdHandler_SetSpecialTitle(const QString &cmd, MapClientSession &sess)
 void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 {
     // TODO: Implement true move-to-safe-location-nearby logic
-    forcePosition(*sess.m_ent,sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
+    forcePosition(*sess.m_ent, sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
 
-    QString msg = QString("Resetting location to default spawn <%L1, %L2, %L3>")
-                      .arg(sess.m_ent->m_entity_data.m_pos.x)
-                      .arg(sess.m_ent->m_entity_data.m_pos.y)
-                      .arg(sess.m_ent->m_entity_data.m_pos.z);
+    QString msg = QString("Resetting location to default spawn <%1, %2, %3>")
+            .arg(sess.m_ent->m_entity_data.m_pos.x, 0, 'f', 1)
+            .arg(sess.m_ent->m_entity_data.m_pos.y, 0, 'f', 1)
+            .arg(sess.m_ent->m_entity_data.m_pos.z, 0, 'f', 1);
+
     qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }

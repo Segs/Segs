@@ -11,6 +11,8 @@
 #include <QtCore/QString>
 #include <vector>
 
+struct EntityData;
+
 struct Map_Data
 {
     glm::vec2 Location;
@@ -18,6 +20,7 @@ struct Map_Data
     QString Name;
     QString Icon;
 };
+
 struct MapData
 {
     uint32_t m_map_idx;
@@ -28,9 +31,12 @@ struct MapData
 typedef std::vector<Map_Data> AllMaps_Data;
 
 uint32_t       getMapIndex(const QString &map_name);
+const std::vector<MapData> &getAllMapData();
 const MapData &getMapData(const QString &map_name);
 QString        getMapName(const QString &map_name);
 QString        getMapName(size_t map_idx);
 const QString &getDisplayMapName(size_t index);
+QString        getEntityDisplayMapName(const EntityData &ed);
+bool           isEntityOnMissionMap(const EntityData &ed);
 QString        getMapPath(size_t index);
-const std::vector<MapData> &getAllMapData();
+QString        getMapPath(const EntityData &ed);

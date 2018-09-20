@@ -136,15 +136,27 @@ enum class AppearanceType : uint8_t
     SequencerName = 4
 };
 
+enum class StateMode : uint8_t
+{
+    Simple              = 0,
+    Create_Team         = 1,
+    Create_Team_Wait    = 2,
+    Dead                = 3,
+    Ressurect           = 4,
+    NeedsGurney         = 5,
+    Max_State           = 6
+};
+
 struct SuperGroup
 {
-    int             m_SG_id                 = {0};
-    QString         m_SG_name               = "Supergroup"; // 64 chars max
-    //QString         m_SG_motto;
-    //QString         m_SG_costume;                         // 128 chars max -> hash table key from the CostumeString_HTable
-    uint32_t        m_SG_color1             = 0;            // supergroup color 1
-    uint32_t        m_SG_color2             = 0;            // supergroup color 2
-    int             m_SG_rank               = 1;
+    int             m_SG_id         = {0};
+    QString         m_SG_name       = "Supergroup"; // 64 chars max
+    QString         m_SG_motto;
+    QString         m_SG_motd;
+    QString         m_SG_emblem;         // 128 chars max -> hash table key from the CostumeString_HTable
+    uint32_t        m_SG_color1     = 0; // supergroup color 1
+    uint32_t        m_SG_color2     = 0; // supergroup color 2
+    int             m_SG_rank       = 1;
 };
 
 struct NPCData
@@ -155,14 +167,30 @@ struct NPCData
     int costume_variant=0;
 };
 
+struct NetFxTarget
+{
+    bool        type_is_location = false;
+    uint32_t    ent_idx = 0;
+    glm::vec3   pos;
+};
+
 struct NetFx
 {
-    uint8_t command;
-    uint32_t net_id;
-    uint32_t handle;
-    bool pitch_to_target;
-    uint8_t bone_id;
+    uint8_t     command;
+    uint32_t    net_id;
+    uint32_t    handle;
+    bool        pitch_to_target     = false;
+    uint8_t     bone_id;
+    float       client_timer        = 0;
+    int         client_trigger_fx   = 0;
+    float       duration            = 0;
+    float       radius              = 0;
+    QString     power               = 0;
+    int         debris              = 0;
+    NetFxTarget target;
+    NetFxTarget origin;
 };
+
 class Entity
 {
     // only EntityStore can create instances of this class
