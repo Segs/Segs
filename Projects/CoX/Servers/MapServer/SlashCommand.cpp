@@ -104,6 +104,7 @@ void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
 void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Browser(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendTimeUpdate(const QString &cmd, MapClientSession &sess);
 
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
@@ -202,6 +203,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
     {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
     {{"browser"}, "Test Browser. Sends content to a browser window", cmdHandler_Browser, 9},
+    {{"timeupdate"}, "Test TimeUpdate. Sends time update to server", cmdHandler_SendTimeUpdate, 9},
 
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
@@ -1032,6 +1034,20 @@ void cmdHandler_Browser(const QString &cmd, MapClientSession &sess)
     int space = cmd.indexOf(' ');
     QString content = cmd.mid(space+1);
     sendBrowser(sess, content);
+}
+
+void cmdHandler_SendTimeUpdate(const QString &/*cmd*/, MapClientSession &sess)
+{
+    // I thought this would require time since postgres epoch, like other timers
+    // but sending this crashes the client. Leaving this here during the
+    // review process as perhaps I'm overlooking something.
+    //QDateTime base_date(QDate(2000,1,1));
+    //int32_t time_in_sec = static_cast<int32_t>(base_date.secsTo(QDateTime::currentDateTime()));
+
+    // Sec since epoch works without crashing the client
+    int32_t time_in_sec = static_cast<int32_t>(QDateTime::currentSecsSinceEpoch());
+
+    sendTimeUpdate(sess, time_in_sec);
 }
 
 // Slash commands for setting bit values

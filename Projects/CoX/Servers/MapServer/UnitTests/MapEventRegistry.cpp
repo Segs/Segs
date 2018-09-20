@@ -81,6 +81,7 @@ namespace
         "TargetChatChannelSelected",
         "TeamLooking",
         "TeamOffer",
+        "TimeUpdate",
         "TradeCancel",
         "TradeInit",
         "TradeOffer",
