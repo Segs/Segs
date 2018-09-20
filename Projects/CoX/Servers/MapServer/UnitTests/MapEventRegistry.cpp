@@ -12,6 +12,7 @@ namespace
         "ActivateInspiration",
         "ActivatePower",
         "ActivatePowerAtLocation",
+        "AddTimeStateLog",
         "Browser",
         "BrowserClose",
         "BuyEnhancementSlot",

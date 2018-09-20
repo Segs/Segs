@@ -401,6 +401,12 @@ void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt)
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendTimeStateLog(MapClientSession &src, uint32_t control_log)
+{
+    qCDebug(logSlashCommand, "Sending ControlLog %d", control_log);
+    src.addCommand<AddTimeStateLog>(control_log);
+}
+
 void sendClientState(MapClientSession &ent, ClientStates client_state)
 {
     qCDebug(logSlashCommand) << "Sending ClientState:" << QString::number(client_state);

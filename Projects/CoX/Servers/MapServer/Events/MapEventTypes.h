@@ -79,7 +79,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evSendStance                 ,157) // I think?
     EVENT_DECL(MapEventTypes, evMapXferList                ,158)
     EVENT_DECL(MapEventTypes, evMapXferListClose           ,159)
-//    EVENT_DECL(MapEventTypes, evEnableControlLog         ,160)
+    EVENT_DECL(MapEventTypes, evAddTimeStateLog            ,160)
     EVENT_DECL(MapEventTypes, evLevelUp                    ,161)
     EVENT_DECL(MapEventTypes, evChangeTitle                ,162)
 //    EVENT_DECL(MapEventTypes, evCSRBugReport             ,164)
