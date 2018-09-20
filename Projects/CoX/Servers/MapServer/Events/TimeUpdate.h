@@ -17,17 +17,17 @@ class TimeUpdate final : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
-    int m_time_since_jan_1_2000 = 0;
+    int32_t m_time_since_jan_1_2000 = 0;
 
     explicit TimeUpdate() : GameCommandEvent(evTimeUpdate) {}
-    TimeUpdate(int time) : GameCommandEvent(evTimeUpdate),
+    TimeUpdate(int32_t time) : GameCommandEvent(evTimeUpdate),
         m_time_since_jan_1_2000(time)
     {
     }
     void    serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,type()-evFirstServerToClient); // pkt 48
-        bs.StorePackedBits(1, m_time_since_jan_1_2000);
+        bs.StorePackedBits(32, m_time_since_jan_1_2000);
     }
 
     EVENT_IMPL(TimeUpdate)

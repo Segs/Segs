@@ -1038,14 +1038,9 @@ void cmdHandler_Browser(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_SendTimeUpdate(const QString &/*cmd*/, MapClientSession &sess)
 {
-    // I thought this would require time since postgres epoch, like other timers
-    // but sending this crashes the client. Leaving this here during the
-    // review process as perhaps I'm overlooking something.
-    //QDateTime base_date(QDate(2000,1,1));
-    //int32_t time_in_sec = static_cast<int32_t>(base_date.secsTo(QDateTime::currentDateTime()));
-
-    // Sec since epoch works without crashing the client
-    int32_t time_in_sec = static_cast<int32_t>(QDateTime::currentSecsSinceEpoch());
+    // client expects PostgresEpoch of Jan 1 2000
+    QDateTime base_date(QDate(2000,1,1));
+    int32_t time_in_sec = static_cast<int32_t>(base_date.secsTo(QDateTime::currentDateTime()));
 
     sendTimeUpdate(sess, time_in_sec);
 }
