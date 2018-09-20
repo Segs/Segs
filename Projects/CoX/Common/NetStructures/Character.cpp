@@ -37,7 +37,7 @@ Character::Character()
     m_multiple_costumes                         = false;
     m_current_costume_idx                       = 0;
     m_current_costume_set                       = false;
-    m_char_data.m_supergroup.m_sg_costume                                = nullptr;
+    //m_char_data.m_supergroup.m_sg_costume       = nullptr;
     m_char_data.m_current_attribs.m_HitPoints   = 25;
     m_max_attribs.m_HitPoints                   = 50;
     m_char_data.m_current_attribs.m_Endurance   = 33;
@@ -68,7 +68,7 @@ void Character::reset()
     m_multiple_costumes=false;
     m_current_costume_idx=0;
     m_current_costume_set=false;
-    m_char_data.m_supergroup.m_sg_costume = nullptr;
+    //m_char_data.m_supergroup.m_sg_costume = nullptr;
     m_char_data.m_has_titles = false;
     m_char_data.m_sidekick.m_has_sidekick = false;
     m_char_data.m_powersets.clear();
@@ -327,7 +327,7 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
         bs.StoreBits(1,m_char_data.m_supergroup.m_has_sg_costume);
         if(m_char_data.m_supergroup.m_has_sg_costume)
         {
-            ::serializeto(*m_char_data.m_supergroup.m_sg_costume, bs, packer);
+            ::serializeto(m_char_data.m_supergroup.m_sg_costume, bs, packer);
 
             bs.StoreBits(1, m_char_data.m_supergroup.m_sg_mode);
         }
@@ -549,7 +549,7 @@ void toActualCostume(const GameAccountResponseCostumeData &src, Costume &tgt)
         qCritical() << e.what();
     }
 
-    tgt.m_non_default_costme_p = false;
+    tgt.m_send_full_costume = false;
 }
 
 void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)

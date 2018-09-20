@@ -413,11 +413,10 @@ void sendRegisterSuperGroup(MapClientSession &ent, QString &val)
     ent.addCommand<RegisterSuperGroup>(val);
 }
 
-void sendSuperGroupCostume(MapClientSession &ent, const Costume *costume)
+void sendSuperGroupCostume(MapClientSession &ent, Costume &costume)
 {
-    Costume costumecpy = *costume;
     qCDebug(logSlashCommand) << "Sending SuperGroupCostume:" << ent.m_ent->m_idx;
-    ent.addCommand<SuperGroupCostume>(costumecpy);
+    ent.addCommand<SuperGroupCostume>(costume);
 }
 
 void sendClientState(MapClientSession &ent, ClientStates client_state)

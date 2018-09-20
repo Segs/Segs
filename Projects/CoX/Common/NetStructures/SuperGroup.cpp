@@ -417,9 +417,10 @@ void addSuperGroup(Entity &e, SuperGroupData data)
     cd->m_supergroup.m_sg_idx           = sg.m_sg_idx;
     cd->m_supergroup.m_has_supergroup   = true;
     cd->m_supergroup.m_rank             = 2; // first member should be leader
-    cd->m_supergroup.m_has_sg_costume   = true;
-    cd->m_supergroup.m_sg_mode          = false;
-    cd->m_supergroup.m_sg_costume       = e.m_char->getCurrentCostume();
+    cd->m_supergroup.m_has_sg_costume   = false;
+    cd->m_supergroup.m_sg_mode          = true;
+    cd->m_supergroup.m_sg_costume       = *e.m_char->getCurrentCostume();
+    cd->m_supergroup.m_sg_costume.m_send_full_costume = false;
 }
 
 

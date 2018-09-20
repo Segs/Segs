@@ -54,7 +54,7 @@ struct SuperGroupStats
     uint32_t    m_rank              = 0; // This character's rank in the SG
     bool        m_has_sg_costume    = false; // player has a sg costume
     bool        m_sg_mode           = false; // player uses sg costume currently
-    const Costume * m_sg_costume;
+    Costume     m_sg_costume;
 
     // The below are needed by /sgstats
     uint32_t    m_db_id         = 0;

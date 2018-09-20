@@ -68,7 +68,7 @@ struct Costume
     float m_height=0;
     float m_physique=0;
     uint32_t skin_color=0;
-    bool m_non_default_costme_p;
+    bool m_send_full_costume;
     int m_num_parts=0;
     float m_floats[8];
     std::vector<CostumePart> m_parts;
@@ -91,7 +91,7 @@ struct Costume
         ar(m_height);
         ar(m_physique);
         ar(skin_color);
-        ar(m_non_default_costme_p);
+        ar(m_send_full_costume);
         ar(m_num_parts);
         ar(m_floats);
         ar(m_parts);

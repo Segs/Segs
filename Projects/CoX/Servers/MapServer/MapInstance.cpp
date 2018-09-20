@@ -2442,11 +2442,10 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
     // Check to ensure titles aren't restricted (foul language, etc)
     // If everything checks out, then give success
     bool success = false;
-    bool send_costume = false;
     if(ev->data.m_sg_name.contains("Success", Qt::CaseInsensitive))
         success = true;
 
-    session.m_ent->m_client->addCommand<SuperGroupResponse>(success, send_costume, costume);
+    session.m_ent->m_client->addCommand<SuperGroupResponse>(success, costume);
     //session.m_ent->m_client->addCommand<RegisterSuperGroup>(ev->data.m_sg_name);
 
     // Save SG to Database
