@@ -198,7 +198,6 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"movement"},"Toggle server authority for Movement on/off", &cmdHandler_ToggleMovementAuthority, 9},
     {{"setSeq"},"Set Sequence values <update> <move_idx> <duration>", &cmdHandler_SetSequence, 9},
     {{"addTriggeredMove"},"Set TriggeredMove values <move_idx> <delay> <fx_idx>", &cmdHandler_AddTriggeredMove, 9},
-    {{"setTimeStateLog"},"Set TimeStateLog value.", cmdHandler_AddTimeStateLog, 9},
     {{"timestate", "setTimeStateLog"},"Set TimeStateLog value.", cmdHandler_AddTimeStateLog, 9},
     {{"clientstate"},"Set ClientState mode", &cmdHandler_SetClientState, 9},
     {{"addpowerset"},"Adds entire PowerSet (by 'pcat pset' idxs) to Entity", &cmdHandler_AddEntirePowerSet, 9},

@@ -157,7 +157,6 @@ void Settings::setDefaultSettings()
         config.setValue("log_db","false");
         config.setValue("log_input","false");
         config.setValue("log_position","false");
-        config.setValue("log_movement","false");
         config.setValue("log_orientation","false");
         config.setValue("log_movement","false");
         config.setValue("log_chat","false");
