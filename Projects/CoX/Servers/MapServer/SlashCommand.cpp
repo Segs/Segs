@@ -108,6 +108,7 @@ void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
 void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Browser(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendTimeUpdate(const QString &cmd, MapClientSession &sess);
 
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
@@ -139,6 +140,8 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FriendList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MapXferList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ReSpec(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
+
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess);
@@ -148,7 +151,6 @@ void cmdHandler_EmailHeaders(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess);
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess);
-void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TradeAccept(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess);
 
@@ -197,19 +199,22 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setSeq"},"Set Sequence values <update> <move_idx> <duration>", &cmdHandler_SetSequence, 9},
     {{"addTriggeredMove"},"Set TriggeredMove values <move_idx> <delay> <fx_idx>", &cmdHandler_AddTriggeredMove, 9},
     {{"setTimeStateLog"},"Set TimeStateLog value.", cmdHandler_AddTimeStateLog, 9},
+    {{"timestate", "setTimeStateLog"},"Set TimeStateLog value.", cmdHandler_AddTimeStateLog, 9},
     {{"clientstate"},"Set ClientState mode", &cmdHandler_SetClientState, 9},
     {{"addpowerset"},"Adds entire PowerSet (by 'pcat pset' idxs) to Entity", &cmdHandler_AddEntirePowerSet, 9},
     {{"addpower"},"Adds Power (by 'pcat pset pow' idxs) to Entity", &cmdHandler_AddPower, 9},
     {{"addinsp"},"Adds Inspiration (by name) to Entity", &cmdHandler_AddInspiration, 9},
     {{"addboost", "addEnhancement"},"Adds Enhancement (by name) to Entity", &cmdHandler_AddEnhancement, 9},
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
-    {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
     {{"face"}, "Face a target", cmdHandler_FaceEntity, 9},
     {{"faceLocation"}, "Face a location", cmdHandler_FaceLocation, 9},
     {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
     {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
     {{"browser"}, "Test Browser. Sends content to a browser window", cmdHandler_Browser, 9},
+    {{"timeupdate"}, "Test TimeUpdate. Sends time update to server", cmdHandler_SendTimeUpdate, 9},
+
+    {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", cmdHandler_AddNPC, 2},
@@ -305,7 +310,7 @@ void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
     if (map_idx == getMapIndex(sess.m_current_map->name()))
         map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
     QString map_path = getMapPath(map_idx);
-    sess.link()->putq(new MapXferWait(map_path));  
+    sess.link()->putq(new MapXferWait(map_path));
 
     HandlerLocator::getMap_Handler(sess.is_connected_to_game_server_id)
         ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_idx}, 0));
@@ -960,7 +965,7 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
         // NOTE: floating message shows no message here, but plays the awarding insp sound!
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
         sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    } 
+    }
 
     qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
@@ -1033,6 +1038,7 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
     }
     sendFaceEntity(sess.m_ent, tgt->m_idx);
 }
+
 void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
@@ -1093,10 +1099,19 @@ void cmdHandler_Browser(const QString &cmd, MapClientSession &sess)
     sendBrowser(sess, content);
 }
 
+void cmdHandler_SendTimeUpdate(const QString &/*cmd*/, MapClientSession &sess)
+{
+    // client expects PostgresEpoch of Jan 1 2000
+    QDateTime base_date(QDate(2000,1,1));
+    int32_t time_in_sec = static_cast<int32_t>(base_date.secsTo(QDateTime::currentDateTime()));
+
+    sendTimeUpdate(sess, time_in_sec);
+}
+
 // Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
 {
-    int val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    uint32_t val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
 
     setu1(*sess.m_ent, val);
 
@@ -1104,6 +1119,7 @@ void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 2 Commands
@@ -1158,8 +1174,7 @@ void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
     }
 
-    glm::vec3 new_pos
-    {
+    glm::vec3 new_pos {
       parts[1].toFloat(),
       parts[2].toFloat(),
       parts[3].toFloat()
@@ -1167,7 +1182,6 @@ void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
 
     forcePosition(*sess.m_ent,new_pos);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("New position set"), sess);
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1303,9 +1317,9 @@ void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
     forcePosition(*sess.m_ent, sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
 
     QString msg = QString("Resetting location to default spawn <%1, %2, %3>")
-                      .arg(sess.m_ent->m_entity_data.m_pos.x, 0, 'f', 1)
-                      .arg(sess.m_ent->m_entity_data.m_pos.y, 0, 'f', 1)
-                      .arg(sess.m_ent->m_entity_data.m_pos.z, 0, 'f', 1);
+            .arg(sess.m_ent->m_entity_data.m_pos.x, 0, 'f', 1)
+            .arg(sess.m_ent->m_entity_data.m_pos.y, 0, 'f', 1)
+            .arg(sess.m_ent->m_entity_data.m_pos.z, 0, 'f', 1);
 
     qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);

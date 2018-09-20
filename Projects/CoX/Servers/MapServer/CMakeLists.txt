@@ -81,6 +81,7 @@ SET(target_INCLUDE
     Events/StandardDialogCmd.h
     Events/TeamLooking.h
     Events/TeamOffer.h
+    Events/TimeUpdate.h
     Events/TradeCancel.h
     Events/TradeInit.h
     Events/TradeOffer.h

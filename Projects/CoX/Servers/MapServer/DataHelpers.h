@@ -106,6 +106,7 @@ void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt);
  * SendUpdate Wrappers to provide access to NetStructures
  */
 void sendTimeStateLog(MapClientSession &src, uint32_t control_log);
+void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000);
 void sendClientState(MapClientSession &ent, ClientStates client_state);
 void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay);

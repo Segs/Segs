@@ -91,9 +91,10 @@ struct SuperGroup
     int             m_SG_id         = {0};
     QString         m_SG_name       = "Supergroup"; // 64 chars max
     QString         m_SG_motto;
-    QString         m_SG_costume;                   // 128 chars max -> hash table key from the CostumeString_HTable
-    uint32_t        m_SG_color1     = 0;            // supergroup color 1
-    uint32_t        m_SG_color2     = 0;            // supergroup color 2
+    QString         m_SG_motd;
+    QString         m_SG_emblem;         // 128 chars max -> hash table key from the CostumeString_HTable
+    uint32_t        m_SG_color1     = 0; // supergroup color 1
+    uint32_t        m_SG_color2     = 0; // supergroup color 2
     int             m_SG_rank       = 1;
 };
 

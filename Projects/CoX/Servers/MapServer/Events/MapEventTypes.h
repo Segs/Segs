@@ -67,7 +67,7 @@ enum MapEventTypes
 //    EVENT_DECL(MapEventTypes, evTaskStatusList           ,145)
 //    EVENT_DECL(MapEventTypes, evTaskSelect               ,146)
 //    EVENT_DECL(MapEventTypes, evTaskRemoveTeammates      ,147)
-//    EVENT_DECL(MapEventTypes, evTimeUpdate               ,148)
+    EVENT_DECL(MapEventTypes, evTimeUpdate                 ,148)
 //    EVENT_DECL(MapEventTypes, evMissionEntryText         ,149)
 //    EVENT_DECL(MapEventTypes, evMissionKick              ,150)
     EVENT_DECL(MapEventTypes, evDeadNoGurney               ,151)
