@@ -79,6 +79,7 @@ SET(target_INCLUDE
     Events/Shortcuts.h
     Events/SidekickOffer.h
     Events/StandardDialogCmd.h
+    Events/TailorOpen.h
     Events/TeamLooking.h
     Events/TeamOffer.h
     Events/TimeUpdate.h

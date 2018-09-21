@@ -474,16 +474,16 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evRecvNewPower:
             on_recv_new_power(static_cast<RecvNewPower *>(ev));
-        case MapEventTypes::evTradeWasCancelledMessage:
+        case evTradeWasCancelledMessage:
             on_trade_cancelled(static_cast<TradeWasCancelledMessage *>(ev));
             break;
-        case MapEventTypes::evTradeWasUpdatedMessage:
+        case evTradeWasUpdatedMessage:
             on_trade_updated(static_cast<TradeWasUpdatedMessage *>(ev));
             break;
-        case MapEventTypes::evInitiateMapXfer:
+        case evInitiateMapXfer:
             on_initiate_map_transfer(static_cast<InitiateMapXfer *>(ev));
             break;
-        case MapEventTypes::evMapXferComplete:
+        case evMapXferComplete:
             on_map_xfer_complete(static_cast<MapXferComplete *>(ev));
             break;
         case evAwaitingDeadNoGurney:
@@ -491,6 +491,9 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evBrowserClose:
             on_browser_close(static_cast<BrowserClose *>(ev));
+            break;
+        case evRecvCostumeChange:
+            on_recv_costume_change(static_cast<RecvCostumeChange *>(ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
@@ -2368,6 +2371,15 @@ void MapInstance::on_browser_close(BrowserClose *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received BrowserClose";
+}
+
+void MapInstance::on_recv_costume_change(RecvCostumeChange *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    uint32_t idx = session.m_ent->m_char->getCurrentCostume()->getSlotIndex();
+    session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received CostumeChange";
 }
 
 

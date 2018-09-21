@@ -28,6 +28,7 @@
 #include "Events/SetClientState.h"
 #include "Events/SidekickOffer.h"
 #include "Events/StandardDialogCmd.h"
+#include "Events/TailorOpen.h"
 #include "Events/TeamLooking.h"
 #include "Events/TeamOffer.h"
 #include "Events/TimeUpdate.h"

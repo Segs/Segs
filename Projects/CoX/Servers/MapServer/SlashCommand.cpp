@@ -137,6 +137,8 @@ void cmdHandler_FriendList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MapXferList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ReSpec(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Tailor(const QString &cmd, MapClientSession &sess);
+void cmdHandler_CostumeChange(const QString &cmd, MapClientSession &sess);
 
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
@@ -236,6 +238,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"MapXferList", "mapmenu"}, "Show MapXferList", cmdHandler_MapXferList, 1},
     {{"respec"}, "Start ReSpec", cmdHandler_ReSpec, 1},
     {{"trade"}, "Trade with player", cmdHandler_Trade, 1},
+    {{"tailor"}, "Open Tailor Window", cmdHandler_Tailor, 1},
+    {{"cc"}, "Costume Change", cmdHandler_CostumeChange, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
@@ -1494,6 +1498,21 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess)
     }
 
     requestTrade(*sess.m_ent, *tgt);
+}
+
+void cmdHandler_Tailor(const QString &/*cmd*/, MapClientSession &sess)
+{
+    sendTailorOpen(sess);
+}
+
+void cmdHandler_CostumeChange(const QString &cmd, MapClientSession &sess)
+{
+    uint32_t costume_idx = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+
+    sess.m_ent->m_char->setCurrentCostume(costume_idx);
+
+    QString msg = "Changing costume to: " + QString::number(costume_idx);
+    qCDebug(logTailor) << msg;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

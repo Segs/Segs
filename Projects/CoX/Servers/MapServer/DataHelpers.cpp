@@ -520,6 +520,12 @@ void sendBrowser(MapClientSession &tgt, QString &content)
     tgt.addCommand<Browser>(content);
 }
 
+void sendTailorOpen(MapClientSession &tgt)
+{
+    qCDebug(logTailor) << QString("Sending TailorOpen");
+    tgt.addCommand<TailorOpen>();
+}
+
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)
 {
     // Add to activepowers queue
@@ -988,6 +994,18 @@ void sendTradeSuccess(Entity& src, Entity& tgt)
     qCDebug(logTrades) << "Sending Trade Success";
     src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_src));
     tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_tgt));
+}
+
+
+/*
+ * Tailor and Costume Methods
+ */
+void receiveCostume(CharacterCostume &new_costume, BitStream bs)
+{
+    // This method must be here, because NetStructures can't access g_GlobalMapServer =(
+    static const ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
+
+    serializefrom(new_costume, bs, packer);
 }
 
 //! @}

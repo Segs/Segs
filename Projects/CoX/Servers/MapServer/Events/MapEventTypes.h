@@ -91,6 +91,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evBrowser                    ,176)
     EVENT_DECL(MapEventTypes, evTrayAdd                    ,182)
     EVENT_DECL(MapEventTypes, evCombineEnhanceResponse     ,183)
+    EVENT_DECL(MapEventTypes, evTailorOpen                 ,188)
 // client -> server commands
     EVENT_DECL(MapEventTypes, evConsoleCommand             ,200)
     EVENT_DECL(MapEventTypes, evMiniMapState               ,201)
@@ -131,6 +132,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evTradeWasCancelledMessage   ,254) // Trade window: player clicked "Cancel" or closed the window.
     EVENT_DECL(MapEventTypes, evTradeWasUpdatedMessage     ,255) // Trade window: player changed something in the window.
     EVENT_DECL(MapEventTypes, evEntityInfoRequest          ,256) // right-click entity select "Info"
+    EVENT_DECL(MapEventTypes, evRecvCostumeChange          ,260)
     EVENT_DECL(MapEventTypes, evLocationVisited            ,262)
     EVENT_DECL(MapEventTypes, evSwitchViewPoint            ,264)
     EVENT_DECL(MapEventTypes, evSaveClientOptions          ,265)

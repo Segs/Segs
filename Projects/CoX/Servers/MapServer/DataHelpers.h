@@ -25,6 +25,8 @@ struct CharacterPowerSet;
 struct CharacterPower;
 class GameDataStore;
 class TradeMember;
+class CharacterCostume;
+class BitStream;
 
 
 /*
@@ -132,6 +134,7 @@ void sendTradeInit(Entity& src, Entity& tgt);
 void sendTradeCancel(Entity& ent, const QString& msg);
 void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt);
 void sendTradeSuccess(Entity& src, Entity& tgt);
+void sendTailorOpen(MapClientSession &tgt);
 
 const QString &getGenericTitle(uint32_t val);
 const QString &getOriginTitle(uint32_t val);
@@ -158,3 +161,9 @@ void addSidekick(Entity &tgt, Entity &src);
 void removeSidekick(Entity &src);
 void leaveTeam(Entity &e);
 void removeTeamMember(class Team &self, Entity *e);
+
+
+/*
+ * Tailor and Costume Methods
+ */
+void receiveCostume(CharacterCostume &new_costume, BitStream bs);

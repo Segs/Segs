@@ -46,6 +46,7 @@ SEGS_LOGGING_CATEGORY(logNPCs,         "log.npcs")
 SEGS_LOGGING_CATEGORY(logAnimations,   "log.animations")
 SEGS_LOGGING_CATEGORY(logPowers,       "log.powers")
 SEGS_LOGGING_CATEGORY(logTrades,       "log.trades")
+SEGS_LOGGING_CATEGORY(logTailor,       "log.tailor")
 
 void setLoggingFilter()
 {
@@ -79,6 +80,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.animations="     + config.value("log_animations","false").toString();
     filter_rules += "\nlog.powers="         + config.value("log_powers","false").toString();
     filter_rules += "\nlog.trades="         + config.value("log_trades","false").toString();
+    filter_rules += "\nlog.tailor="         + config.value("log_tailor","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -145,6 +147,8 @@ void toggleLogging(QString &category)
         cat = &logPowers();
     else if(category.contains("trades",Qt::CaseInsensitive))
         cat = &logTrades();
+    else if(category.contains("tailor",Qt::CaseInsensitive))
+        cat = &logTailor();
     else
         return;
 
@@ -184,6 +188,7 @@ void dumpLogging()
     output += "\n\t animations: "   + QString::number(logAnimations().isDebugEnabled());
     output += "\n\t powers: "       + QString::number(logPowers().isDebugEnabled());
     output += "\n\t trades: "       + QString::number(logTrades().isDebugEnabled());
+    output += "\n\t tailor: "       + QString::number(logTailor().isDebugEnabled());
 
     qDebug().noquote() << output;
 }

@@ -99,7 +99,8 @@ void Costume::storeCharselParts( BitStream &bs ) const
 }
 
 template<class Archive>
-void serialize(Archive &arc, CostumePart &cp) {
+void serialize(Archive &arc, CostumePart &cp)
+{
     arc(cp.m_type);
     arc(cp.m_geometry);
     arc(cp.m_texture_1);
@@ -113,8 +114,27 @@ void serialize(Archive &arc, CostumePart &cp) {
 }
 
 template<class Archive>
-void serialize(Archive &arc, Costume &c) {
+void serialize(Archive &arc, Costume &c)
+{
+    arc(c.m_height);
+    arc(c.m_physique);
+    arc(c.skin_color);
+    arc(c.m_non_default_costme_p);
+    arc(c.m_num_parts);
+    arc(c.m_floats);
     arc(c.m_parts);
+    arc(c.m_body_type);
+}
+
+template<class Archive>
+void serialize(Archive &arc, CharacterCostume &c)
+{
+    // We pass this cast to the base type for each base type we
+    // need to serialize.  Do this instead of calling serialize functions
+    // directly
+    arc(cereal::base_class<Costume>(c));
+    arc(c.m_slot_index);
+    arc(c.m_character_id);
 }
 
 void Costume::serializeToDb(QString &tgt) const

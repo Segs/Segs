@@ -93,6 +93,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 55: return new TradeWasUpdatedMessage;
         case 56: return new EntityInfoRequest;
         case 57: return new SendStance;
+        case 60: return new RecvCostumeChange;
         case 62: return new LocationVisited;
         case 64: return new SwitchViewPoint;
         case 65: return new SaveClientOptions;

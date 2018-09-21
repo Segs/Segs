@@ -303,6 +303,18 @@ const CharacterCostume * Character::getCurrentCostume() const
         return &m_costumes[0];
 }
 
+void Character::setCurrentCostume(uint32_t idx)
+{
+    m_current_costume_set = true;
+    m_current_costume_idx = idx;
+}
+
+void Character::saveCostume(uint32_t idx, CharacterCostume &new_costume)
+{
+    new_costume.setCharacterId(static_cast<uint64_t>(m_db_id));
+    m_costumes[idx] = new_costume;
+}
+
 void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *packer , bool all_costumes) const
 {
     // full costume

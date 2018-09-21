@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CommonNetStructures.h"
+#include "serialization_common.h"
 #include "BitStream.h"
 
 #include <QtCore/QString>
@@ -85,4 +86,7 @@ public:
     void        setSlotIndex(uint8_t val) { m_slot_index = val; }
     uint64_t    getCharacterId() const { return m_character_id; }
     void        setCharacterId(uint64_t val) { m_character_id = val; }
+
+    template<class Archive>
+    void serialize(Archive &arc, CharacterCostume &c);
 };
