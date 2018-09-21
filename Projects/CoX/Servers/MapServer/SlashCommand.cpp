@@ -34,6 +34,7 @@
 #include <QtCore/QFileInfo>
 #include <QRegularExpression>
 #include <QtCore/QDebug>
+#include <ctime>
 
 using namespace SEGSEvents;
 
