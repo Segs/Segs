@@ -50,11 +50,11 @@ void serializefrom(CostumePart &part, BitStream &bs, const ColorAndPartPacker *p
 
 struct Costume
 {
-    float m_height=0;
-    float m_physique=0;
-    uint32_t skin_color=0;
-    bool m_non_default_costme_p;
-    int m_num_parts=0;
+    float m_height      = 0;
+    float m_physique    = 0;
+    uint32_t skin_color = 0;
+    bool m_send_full_costume;
+    int m_num_parts     = 0;
     float m_floats[8];
     std::vector<CostumePart> m_parts;
     uint32_t m_body_type;
@@ -88,5 +88,6 @@ public:
     void        setCharacterId(uint64_t val) { m_character_id = val; }
 
     template<class Archive>
-    void serialize(Archive &arc, CharacterCostume &c);
+    void serialize(Archive &arc);
 };
+

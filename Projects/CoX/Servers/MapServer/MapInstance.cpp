@@ -2379,7 +2379,7 @@ void MapInstance::on_recv_costume_change(RecvCostumeChange *ev)
 
     uint32_t idx = session.m_ent->m_char->getCurrentCostume()->getSlotIndex();
     session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received CostumeChange";
+    qCDebug(logTailor) << "Entity: " << session.m_ent->m_idx << "has received CostumeChange";
 }
 
 

@@ -313,6 +313,7 @@ void Character::saveCostume(uint32_t idx, CharacterCostume &new_costume)
 {
     new_costume.setCharacterId(static_cast<uint64_t>(m_db_id));
     m_costumes[idx] = new_costume;
+    setCurrentCostume(idx);
 }
 
 void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *packer , bool all_costumes) const
@@ -561,7 +562,7 @@ void toActualCostume(const GameAccountResponseCostumeData &src, Costume &tgt)
         qCritical() << e.what();
     }
 
-    tgt.m_non_default_costme_p = false;
+    tgt.m_send_full_costume = false;
 }
 
 void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)

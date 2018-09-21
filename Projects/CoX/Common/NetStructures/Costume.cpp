@@ -116,26 +116,35 @@ void serialize(Archive &arc, CostumePart &cp)
 template<class Archive>
 void serialize(Archive &arc, Costume &c)
 {
-    arc(c.m_height);
-    arc(c.m_physique);
-    arc(c.skin_color);
-    arc(c.m_non_default_costme_p);
-    arc(c.m_num_parts);
-    arc(c.m_floats);
+    //arc(c.m_height);
+    //arc(c.m_physique);
+    //arc(c.skin_color);
+    //arc(c.m_non_default_costme_p);
+    //arc(c.m_num_parts);
+    //arc(c.m_floats);
     arc(c.m_parts);
-    arc(c.m_body_type);
+    //arc(c.m_body_type);
 }
 
 template<class Archive>
-void serialize(Archive &arc, CharacterCostume &c)
+void CharacterCostume::serialize(Archive &arc)
 {
     // We pass this cast to the base type for each base type we
     // need to serialize.  Do this instead of calling serialize functions
     // directly
-    arc(cereal::base_class<Costume>(c));
-    arc(c.m_slot_index);
-    arc(c.m_character_id);
+    arc(cereal::base_class<Costume>(this));
+    arc(m_slot_index);
+    arc(m_character_id);
 }
+
+template
+void CharacterCostume::serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive);
+template
+void CharacterCostume::serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive);
+template
+void CharacterCostume::serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive);
+template
+void CharacterCostume::serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive);
 
 void Costume::serializeToDb(QString &tgt) const
 {
@@ -198,7 +207,7 @@ void serializeto(const Costume &costume,BitStream &bs,const ColorAndPartPacker *
     bs.StoreFloat(costume.m_height);
     bs.StoreFloat(costume.m_physique);
 
-    bs.StoreBits(1,costume.m_non_default_costme_p);
+    bs.StoreBits(1,costume.m_send_full_costume);
     //m_num_parts = m_parts.size();
     assert(!costume.m_parts.empty());
     bs.StorePackedBits(4,costume.m_parts.size());
@@ -209,7 +218,7 @@ void serializeto(const Costume &costume,BitStream &bs,const ColorAndPartPacker *
         {
             CostumePart part=costume.m_parts[costume_part];
             // TODO: this is bad code, it's purpose is to NOT send all part strings if m_non_default_costme_p is false
-            part.m_full_part = costume.m_non_default_costme_p;
+            part.m_full_part = costume.m_send_full_costume;
             ::serializeto(part,bs,packer);
         }
     }
@@ -231,7 +240,7 @@ void serializefrom(Costume &tgt, BitStream &src,const ColorAndPartPacker *packer
     tgt.m_height = src.GetFloat();
     tgt.m_physique = src.GetFloat();
 
-    tgt.m_non_default_costme_p = src.GetBits(1);
+    tgt.m_send_full_costume = src.GetBits(1);
     tgt.m_num_parts = src.GetPackedBits(4);
 
     try
@@ -239,7 +248,7 @@ void serializefrom(Costume &tgt, BitStream &src,const ColorAndPartPacker *packer
         for(int costume_part=0; costume_part<tgt.m_num_parts;costume_part++)
         {
             CostumePart part;
-            part.m_full_part = tgt.m_non_default_costme_p;
+            part.m_full_part = tgt.m_send_full_costume;
             ::serializefrom(part,src,packer);
             tgt.m_parts.push_back(part);
         }
