@@ -1045,6 +1045,7 @@ void cmdHandler_SendTimeUpdate(const QString &/*cmd*/, MapClientSession &sess)
     sendTimeUpdate(sess, time_in_sec);
 }
 
+
 // Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
 {

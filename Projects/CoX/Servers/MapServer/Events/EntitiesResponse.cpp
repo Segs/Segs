@@ -17,6 +17,7 @@
 #include "NetStructures/Character.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "GameData/playerdata_definitions.h"
+#include "GameData/map_definitions.h"
 #include "MapClientSession.h"
 #include "MapEvents.h"
 #include "MapInstance.h"
