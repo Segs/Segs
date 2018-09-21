@@ -85,3 +85,4 @@ public:
 };
 int getEntityOriginIndex(const GameDataStore &data,bool is_player, const QString &origin_name);
 int getEntityClassIndex(const GameDataStore &data,bool is_player, const QString &class_name);
+extern GameDataStore& getGameData();

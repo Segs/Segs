@@ -491,4 +491,10 @@ int getEntityClassIndex(const GameDataStore &data, bool is_player, const QString
     return 0;
 }
 
+GameDataStore &getGameData() {
+    static GameDataStore instance;
+    return instance;
+}
+
 //! @}
+
