@@ -562,7 +562,7 @@ void toActualCostume(const GameAccountResponseCostumeData &src, Costume &tgt)
         qCritical() << e.what();
     }
 
-    tgt.m_send_full_costume = false;
+    tgt.m_full_costume = false;
 }
 
 void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)
