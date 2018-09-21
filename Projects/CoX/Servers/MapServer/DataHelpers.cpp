@@ -525,16 +525,16 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     // Add to activepowers queue
     CharacterPower * ppower = nullptr;
     ppower = getOwnedPower(ent, pset_idx, pow_idx);
-    if(ppower != nullptr && !ppower->m_name.isEmpty())
+    if(ppower != nullptr && !ppower->getPowerTemplate().m_Name.isEmpty())
         ent.m_queued_powers.push_back(ppower);
 
     float endurance = getEnd(*ent.m_char);
-    float end_cost = std::max(ppower->m_power_tpl.EnduranceCost, 1.0f);
+    float end_cost = std::max(ppower->getPowerTemplate().EnduranceCost, 1.0f);
 
     qCDebug(logPowers) << "Endurance Cost" << end_cost << "/" << endurance;
     if(end_cost > endurance)
     {
-        QString msg = "Not enough endurance to use power" + ppower->m_name;
+        QString msg = "Not enough endurance to use power" + ppower->getPowerTemplate().m_Name;
         messageOutput(MessageChannel::DEBUG_INFO, msg, ent);
         return;
     }

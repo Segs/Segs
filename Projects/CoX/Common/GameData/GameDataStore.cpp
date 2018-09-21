@@ -447,6 +447,20 @@ bool GameDataStore::read_pi_schedule(const QString &directory_path)
     return true;
 }
 
+const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)
+{
+    return m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx];
+}
+
+const Power_Data& GameDataStore::get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+{
+    return m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
+}
+
+const StoredPowerCategory& GameDataStore::get_power_category(uint32_t pcat_idx)
+{
+    return m_all_powers.m_categories[pcat_idx];
+}
 
 int getEntityOriginIndex(const GameDataStore &data, bool is_player, const QString &origin_name)
 {
@@ -475,7 +489,6 @@ int getEntityClassIndex(const GameDataStore &data, bool is_player, const QString
     }
     qWarning() << "Failed to locate class index for"<<class_name;
     return 0;
-
 }
 
 //! @}
