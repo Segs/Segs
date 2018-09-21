@@ -103,7 +103,7 @@ void Character::finalizeLevel()
     GameDataStore *data = getMapServerData();
     uint32_t max_xp = data->expMaxLevel();
 
-    if (m_char_data.m_level == 4294967295 || m_char_data.m_level >= 50)
+    if (m_char_data.m_level >= 50)
         m_char_data.m_level = 0;// /levelup can set this negative, need to bring it up
 
     m_char_data.m_combat_level = m_char_data.m_level + 1; // m_combat_level is display level?
