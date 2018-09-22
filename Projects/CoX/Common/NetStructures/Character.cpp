@@ -106,8 +106,8 @@ void Character::finalizeLevel()
     if(m_char_data.m_level > max_level)
         m_char_data.m_level = max_level - 1;
 
-    if(m_char_data.m_experience_points < data.expForLevel(m_char_data.m_combat_level))
-        m_char_data.m_experience_points = data.expForLevel(m_char_data.m_combat_level);
+    if(m_char_data.m_experience_points < data.expForLevel(m_char_data.m_level))
+        m_char_data.m_experience_points = data.expForLevel(m_char_data.m_level);
 
     m_char_data.m_max_insp_rows = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_InspirationRow);
     m_char_data.m_max_insp_cols = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_InspirationCol);

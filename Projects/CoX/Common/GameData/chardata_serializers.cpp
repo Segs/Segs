@@ -191,7 +191,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     }
 
     archive(cereal::make_nvp("Level",cd.m_level));
-    archive(cereal::make_nvp("CombatLevel",cd.m_combat_level+1));
+    archive(cereal::make_nvp("CombatLevel",cd.m_combat_level));
     archive(cereal::make_nvp("XP",cd.m_experience_points));
     archive(cereal::make_nvp("Debt",cd.m_experience_debt));
     archive(cereal::make_nvp("PatrolXP",cd.m_experience_patrol));
