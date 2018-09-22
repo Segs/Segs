@@ -22,6 +22,9 @@
 #include "UpdateDetailDialog.h"
 #include "AboutDialog.h"
 #include "version.h"
+
+#include "jcon/json_rpc_websocket_client.h"
+
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
@@ -471,5 +474,21 @@ void SEGSAdminTool::read_release_info(const QString &error)
     }
 
 }
+void SEGSAdminTool::on_btnTest_clicked()
+{
+    auto rpc_client = new jcon::JsonRpcWebSocketClient(this);
+    rpc_client->connectToServer("127.0.0.1", 6001);
+    auto result = rpc_client->call("heyServer");
+
+    if (result->isSuccess()) {
+        QMessageBox::information(nullptr,"Yay","Server responded");
+        QVariant res = result->result();
+        res.toBool();
+    } else {
+        QMessageBox::warning(nullptr,"Sad","Server no talky");
+        QString err_str = result->toString();
+    }
+}
 //!@}
+
 

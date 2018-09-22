@@ -59,6 +59,9 @@ signals:
     void getLatestReleases();
 
 
+private slots:
+    void on_btnTest_clicked();
+
 private:
     Ui::SEGSAdminTool *ui;
     void is_server_running();

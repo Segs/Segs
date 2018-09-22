@@ -10,14 +10,16 @@ set(CMAKE_PREFIX_PATH ${QTDIR})
 file(GLOB ${PROJECT_NAME}_headers *.h)
 file(GLOB ${PROJECT_NAME}_sources *.cpp)
 
-add_definitions(-DJCON_DLL)
+#add_definitions(-DJCON_DLL)
 
-add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_headers} ${${PROJECT_NAME}_sources})
+add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_headers} ${${PROJECT_NAME}_sources})
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${${PROJECT_NAME}_headers}")
 
 find_package(Qt5 COMPONENTS Core)
-qt5_use_modules(${PROJECT_NAME} Core Network Test WebSockets Widgets)
-
+qt5_use_modules(${PROJECT_NAME} Core Network Test WebSockets)
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib/static)
+        ARCHIVE DESTINATION lib
+		PUBLIC_HEADER DESTINATION include/jcon
+)

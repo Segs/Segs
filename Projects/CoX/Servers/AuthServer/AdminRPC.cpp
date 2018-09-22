@@ -1,0 +1,24 @@
+#include "AdminRPC.h"
+#include "jcon/json_rpc_server.h"
+#include "jcon/json_rpc_websocket_server.h"
+using namespace jcon;
+AdminRPC::AdminRPC()
+{
+}
+
+bool AdminRPC::heyServer()
+{
+    qDebug() << "Someone said hello !";
+    return true;
+}
+
+void startWebSocketServer(const char *addr, int port)
+{
+    static jcon::JsonRpcWebSocketServer *m_server;
+    if(!m_server)
+    {
+        m_server = new JsonRpcWebSocketServer();
+    }
+    m_server->registerServices({ new AdminRPC() });
+    m_server->listen(QHostAddress(addr),port);
+}

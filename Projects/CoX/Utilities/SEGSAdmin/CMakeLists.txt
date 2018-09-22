@@ -39,4 +39,4 @@ set(SEGSADMIN_SOURCES
 
 )
 add_executable(SEGSAdmin WIN32 ${SEGSADMIN_SOURCES})
-target_link_libraries(SEGSAdmin PUBLIC Qt5::Core Qt5::Widgets Qt5::Network)
+target_link_libraries(SEGSAdmin PUBLIC jcon_IMP Qt5::Core Qt5::Widgets Qt5::Network)
