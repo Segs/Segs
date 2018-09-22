@@ -205,6 +205,13 @@ bool read_data_to(const QString &directory_path,const QString &storage,TARGET &t
 
 GameDataStore::GameDataStore()
 {
+    static bool was_created = false;
+    if(!was_created)
+        was_created = true;
+    else
+    {
+        qCritical() << "Multiple instances of GameDataStore created in a single process, expect trouble";
+    }
     packer_instance = new HashBasedPacker;
 }
 
