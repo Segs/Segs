@@ -62,7 +62,7 @@ Character::Character()
 void Character::reset()
 {
     m_char_data.m_level = 0;
-    m_char_data.m_combat_level = m_char_data.m_level + 1;
+    m_char_data.m_combat_level = m_char_data.m_level;
     m_name="EMPTY";
     m_char_data.m_class_name="EMPTY";
     m_char_data.m_origin_name="EMPTY";
@@ -103,20 +103,17 @@ void Character::finalizeLevel()
     GameDataStore *data = getMapServerData();
     uint32_t max_xp = data->expMaxLevel();
 
-    if (m_char_data.m_level >= 50)
-        m_char_data.m_level = 0;// /levelup can set this negative, need to bring it up
+    if(m_char_data.m_level > max_xp)
+        m_char_data.m_level = max_xp - 1;
 
-    m_char_data.m_combat_level = m_char_data.m_level + 1; // m_combat_level is display level?
-
-    if(m_char_data.m_combat_level >= max_xp)
-        m_char_data.m_combat_level = max_xp - 1;
-
-    if(m_char_data.m_experience_points < data->expForLevel(m_char_data.m_combat_level))
-        m_char_data.m_experience_points = data->expForLevel(m_char_data.m_combat_level);
+    if(m_char_data.m_experience_points < data->expForLevel(m_char_data.m_level))
+        m_char_data.m_experience_points = data->expForLevel(m_char_data.m_level);
 
     m_char_data.m_max_insp_rows = data->countForLevel(m_char_data.m_level, data->m_pi_schedule.m_InspirationRow);
     m_char_data.m_max_insp_cols = data->countForLevel(m_char_data.m_level, data->m_pi_schedule.m_InspirationCol);
     m_char_data.m_max_enhance_slots = data->countForLevel(m_char_data.m_level, data->m_pi_schedule.m_BoostSlot);
+
+    m_char_data.m_combat_level = m_char_data.m_level; // todo: check if sidekicked before setting m_combat_level
 
     // TODO: client will only accept 5col x 4row of insps MAX, see Issue #524
     assert(m_char_data.m_max_insp_cols <= 5 || m_char_data.m_max_insp_rows <= 4);
@@ -129,6 +126,7 @@ void Character::finalizeLevel()
             reserveEnhancementSlot(m_char_data, &pow);
     }
 
+    getMaxAttribs(*data);
     m_char_data.m_powers_updated = false;
 }
 
@@ -177,7 +175,7 @@ void Character::GetCharBuildInfo(BitStream &src)
         QStringList inherent_and_preorders = config.value("inherent_powers","Brawl").toString().split(',');
         QStringList starting_temps = config.value("starting_temps","EMP_Glove").toString().split(',');
         QStringList starting_insps = config.value("starting_inspirations","Resurgence").toString().split(',');
-        uint startlevel = config.value(QStringLiteral("starting_level"), "1").toUInt() -1; //combat level is m_level +1, so it gets back to starting_level
+        uint startlevel = config.value(QStringLiteral("starting_level"), "1").toUInt() -1; //convert from 1-50 to 0-49
         uint startinf = config.value(QStringLiteral("starting_inf"), "0").toUInt();
     config.endGroup();
 
@@ -491,7 +489,13 @@ void Character::sendDescription(BitStream &bs) const
     bs.StoreString(m_char_data.m_character_description);
     bs.StoreString(m_char_data.m_battle_cry);
 }
+void Character::getMaxAttribs(const GameDataStore &data)
+{
+    int entclass = getEntityClassIndex(data, true, m_char_data.m_class_name);
+    m_max_attribs.m_HitPoints = data.m_player_classes[entclass].m_AttribMaxTable[0].m_HitPoints[m_char_data.m_combat_level];
+    m_max_attribs.m_Endurance = data.m_player_classes[entclass].m_AttribMaxTable[0].m_Endurance[m_char_data.m_combat_level];
 
+}
 void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const
 {
     if(hasname == NameFlag::HasName)

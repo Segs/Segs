@@ -257,14 +257,14 @@ bool GameDataStore::read_runtime_data(const QString &directory_path)
 
 uint32_t GameDataStore::expForLevel(uint32_t lev) const
 {
-    assert(lev>0 && lev<m_experience_and_debt_per_level.m_ExperienceRequired.size());
-    return m_experience_and_debt_per_level.m_ExperienceRequired.at(lev - 1);
+    assert(lev>=0 && lev<m_experience_and_debt_per_level.m_ExperienceRequired.size());
+    return m_experience_and_debt_per_level.m_ExperienceRequired.at(lev);
 }
 
 uint32_t GameDataStore::expDebtForLevel(uint32_t lev) const
 {
-    assert(lev>0 && lev<m_experience_and_debt_per_level.m_DefeatPenalty.size());
-    return m_experience_and_debt_per_level.m_DefeatPenalty.at(lev - 1);
+    assert(lev>=0 && lev<m_experience_and_debt_per_level.m_DefeatPenalty.size());
+    return m_experience_and_debt_per_level.m_DefeatPenalty.at(lev);
 }
 
 uint32_t GameDataStore::expMaxLevel() const
