@@ -12,7 +12,6 @@
 
 #include "Friend.h"
 
-#include "Servers/MapServer/DataHelpers.h"
 #include "CharacterHelpers.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/map_definitions.h"
@@ -64,17 +63,14 @@ void dumpFriendsList(const Friend &f)
              << "\n\t" << "mapname:" << f.m_mapname;
 }
 
-void addFriend(Entity &src, const Entity &tgt)
+FriendListChangeStatus addFriend(Entity &src, const Entity &tgt)
 {
     QString msg;
     FriendsList &src_data(src.m_char->m_char_data.m_friendlist);
 
     if(src_data.m_friends_count >= g_max_friends)
     {
-        msg = "You cannot have more than " + QString::number(g_max_friends) + " friends.";
-        qCDebug(logFriends).noquote() << msg;
-        messageOutput(MessageChannel::USER_ERROR, msg, src);
-        return; // break early
+        return FriendListChangeStatus::MAX_FRIENDS_REACHED;
     }
 
     src_data.m_has_friends = true;
@@ -93,17 +89,12 @@ void addFriend(Entity &src, const Entity &tgt)
     src_data.m_friends.emplace_back(f);
     qCDebug(logFriends) << "friendslist size:" << src_data.m_friends_count << src_data.m_friends.size();
 
-    msg = "Adding " + tgt.name() + " to your friendlist.";
-    qCDebug(logFriends).noquote() << msg;
-    messageOutput(MessageChannel::FRIENDS, msg, src);
-
     if(logFriends().isDebugEnabled())
         dumpFriends(src);
-
-    sendFriendsListUpdate(&src, src_data); // Send FriendsListUpdate
+    return FriendListChangeStatus::FRIEND_ADDED;
 }
 
-void removeFriend(Entity &src, QString friend_name)
+FriendListChangeStatus removeFriend(Entity &src, QString friend_name)
 {
     QString msg;
     FriendsList &src_data(src.m_char->m_char_data.m_friendlist);
@@ -114,17 +105,15 @@ void removeFriend(Entity &src, QString friend_name)
     auto iter = std::find_if( src_data.m_friends.begin(), src_data.m_friends.end(),
                               [lower_name](const Friend& f)->bool {return lower_name==f.m_name.toLower();});
 
-    if(iter!=src_data.m_friends.end())
-    {
-        msg = "Removing " + iter->m_name + " from your friends list.";
-        iter = src_data.m_friends.erase(iter);
+    if(iter==src_data.m_friends.end())
+        return FriendListChangeStatus::FRIEND_NOT_FOUND;
 
-        qCDebug(logFriends) << msg;
-        if(logFriends().isDebugEnabled())
-            dumpFriends(src);
-    }
-    else
-        msg = friend_name + " is not on your friends list.";
+    msg = "Removing " + iter->m_name + " from your friends list.";
+    iter = src_data.m_friends.erase(iter);
+
+    qCDebug(logFriends) << msg;
+    if(logFriends().isDebugEnabled())
+        dumpFriends(src);
 
     if(src_data.m_friends.empty())
         src_data.m_has_friends = false;
@@ -132,10 +121,7 @@ void removeFriend(Entity &src, QString friend_name)
     src_data.m_friends_count = src_data.m_friends.size();
 
     qCDebug(logFriends).noquote() << msg;
-    messageOutput(MessageChannel::FRIENDS, msg, src);
-
-    // Send FriendsListUpdate
-    sendFriendsListUpdate(&src, src_data);
+    return FriendListChangeStatus::FRIEND_REMOVED;
 }
 
 const QString &getFriendDisplayMapName(const Friend &f)

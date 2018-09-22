@@ -343,15 +343,6 @@ const QString &getOriginTitle(uint32_t val)
     return g_origin_titles.at(val);
 }
 
-
-/*
- * getMapServerData Wrapper to provide access to NetStructures
- */
-GameDataStore *getMapServerData()
-{
-    return &g_GlobalMapServer->runtimeData();
-}
-
 /*
  * sendInfoMessage wrapper to provide access to NetStructures
  */
@@ -630,5 +621,9 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
 }
 
+void findTeamMember(Entity &tgt)
+{
+    sendTeamLooking(&tgt);
+}
 //! @}
 

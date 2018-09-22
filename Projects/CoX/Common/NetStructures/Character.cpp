@@ -100,20 +100,24 @@ void Character::sendTray(BitStream &bs) const
 
 void Character::finalizeLevel()
 {
-    GameDataStore *data = getMapServerData();
-    uint32_t max_xp = data->expMaxLevel();
+    GameDataStore &data(getGameData());
+    uint32_t max_level = data.expMaxLevel();
 
-    if(m_char_data.m_level > max_xp)
-        m_char_data.m_level = max_xp - 1;
+    if(m_char_data.m_level > max_level)
+        m_char_data.m_level = max_level - 1;
 
-    if(m_char_data.m_experience_points < data->expForLevel(m_char_data.m_level))
-        m_char_data.m_experience_points = data->expForLevel(m_char_data.m_level);
+    if(m_char_data.m_experience_points < data.expForLevel(m_char_data.m_combat_level))
+        m_char_data.m_experience_points = data.expForLevel(m_char_data.m_combat_level);
 
-    m_char_data.m_max_insp_rows = data->countForLevel(m_char_data.m_level, data->m_pi_schedule.m_InspirationRow);
-    m_char_data.m_max_insp_cols = data->countForLevel(m_char_data.m_level, data->m_pi_schedule.m_InspirationCol);
-    m_char_data.m_max_enhance_slots = data->countForLevel(m_char_data.m_level, data->m_pi_schedule.m_BoostSlot);
+    m_char_data.m_max_insp_rows = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_InspirationRow);
+    m_char_data.m_max_insp_cols = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_InspirationCol);
+    m_char_data.m_max_enhance_slots = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_BoostSlot);
 
-    m_char_data.m_combat_level = m_char_data.m_level; // todo: check if sidekicked before setting m_combat_level
+    if (m_char_data.m_sidekick.m_type  != SidekickType::IsSidekick){
+         m_char_data.m_combat_level = m_char_data.m_level;              // if sidekicked, m_combat_level is linked to
+         finalizeCombatLevel();
+    }
+    //if (m_char_data.m_sidekick.m_type   == SidekickType::IsMentor)       //todo: set sidekick's level to keep up with mentor
 
     // TODO: client will only accept 5col x 4row of insps MAX, see Issue #524
     assert(m_char_data.m_max_insp_cols <= 5 || m_char_data.m_max_insp_rows <= 4);
@@ -126,7 +130,6 @@ void Character::finalizeLevel()
             reserveEnhancementSlot(m_char_data, &pow);
     }
 
-    getMaxAttribs(*data);
     m_char_data.m_powers_updated = false;
 }
 
@@ -489,8 +492,10 @@ void Character::sendDescription(BitStream &bs) const
     bs.StoreString(m_char_data.m_character_description);
     bs.StoreString(m_char_data.m_battle_cry);
 }
-void Character::getMaxAttribs(const GameDataStore &data)
+void Character::finalizeCombatLevel()
 {
+    GameDataStore &data(getGameData());
+
     int entclass = getEntityClassIndex(data, true, m_char_data.m_class_name);
     m_max_attribs.m_HitPoints = data.m_player_classes[entclass].m_AttribMaxTable[0].m_HitPoints[m_char_data.m_combat_level];
     m_max_attribs.m_Endurance = data.m_player_classes[entclass].m_AttribMaxTable[0].m_Endurance[m_char_data.m_combat_level];

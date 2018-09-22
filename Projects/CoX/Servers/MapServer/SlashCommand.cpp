@@ -34,6 +34,7 @@
 #include <QtCore/QFileInfo>
 #include <QRegularExpression>
 #include <QtCore/QDebug>
+#include <ctime>
 
 using namespace SEGSEvents;
 
@@ -522,7 +523,6 @@ void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess)
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt()-1; // convert from 1-50 to 0-49
 
     setLevel(*sess.m_ent->m_char, attrib);
-    sess.m_ent->m_char->finalizeLevel();
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(sess, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -942,7 +942,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
 
     // levelup command appears to only work 1 level at a time.
     if(level > sess.m_ent->m_char->m_char_data.m_level)
-        level = sess.m_ent->m_char->m_char_data.m_level;
+        level = sess.m_ent->m_char->m_char_data.m_level + 1;
 
     setLevel(*sess.m_ent->m_char, level);
     sess.m_ent->m_char->finalizeLevel();
@@ -1086,7 +1086,7 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
         return;
     }
     glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos;
-    const NPCStorage & npc_store(sess.m_current_map->serverData().getNPCDefinitions());
+    const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(parts[1]);
     if(!npc_def)
     {
@@ -1096,7 +1096,7 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     glm::vec3 offset = glm::vec3 {2,0,1};
     int idx = npc_store.npc_idx(npc_def);
 
-    Entity *e = sess.m_current_map->m_entities.CreateNpc(*getMapServerData(),*npc_def,idx,variation);
+    Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(),*npc_def,idx,variation);
     forcePosition(*e,gm_loc + offset);
     e->m_velocity = {0,0,0};
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), sess);
@@ -1397,15 +1397,73 @@ void cmdHandler_Sidekick(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    inviteSidekick(*sess.m_ent, *tgt);
+    auto res=inviteSidekick(*sess.m_ent, *tgt);
+    static const QLatin1Literal possible_messages[] = {
+        QLatin1String("Unable to add sidekick."),
+        QLatin1String("To Mentor another player, you must be at least 3 levels higher than them."),
+        QLatin1String("To Mentor another player, you must be at least level 10."),
+        QLatin1String("You are already Mentoring someone."),
+        QLatin1String("Target is already a sidekick."),
+        QLatin1String("To Mentor another player, you must be on the same team."),
+    };
+    if(res==SidekickChangeStatus::SUCCESS)
+    {
+        // sendSidekickOffer
+        sendSidekickOffer(tgt, sess.m_ent->m_db_id); // tgt gets dialog, src.db_id is named.
+    }
+    else
+    {
+        qCDebug(logTeams).noquote() << possible_messages[int(res)-1];
+        messageOutput(MessageChannel::USER_ERROR, possible_messages[int(res)-1], *sess.m_ent);
+    }
 }
 
 void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
 {
     if(sess.m_ent->m_char->isEmpty())
         return;
+    QString msg;
 
-    removeSidekick(*sess.m_ent);
+    uint32_t sidekick_id = getSidekickId(*sess.m_ent->m_char);
+    Entity *tgt = getEntityByDBID(sess.m_current_map,sidekick_id);
+    auto res = removeSidekick(*sess.m_ent,tgt);
+    if(res==SidekickChangeStatus::GENERIC_FAILURE)
+    {
+        msg = "You are not sidekicked with anyone.";
+        qCDebug(logTeams).noquote() << msg;
+        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+    }
+    else if(res==SidekickChangeStatus::SUCCESS)
+    {
+        QString tgt_name = tgt ? tgt->name() : "Unknown Player";
+        if(isSidekickMentor(*sess.m_ent))
+        {
+            // src is mentor, tgt is sidekick
+            msg = QString("You are no longer mentoring %1.").arg(tgt_name);
+            messageOutput(MessageChannel::TEAM, msg, *sess.m_ent);
+            if(tgt)
+            {
+                msg = QString("%1 is no longer mentoring you.").arg(sess.m_ent->name());
+                messageOutput(MessageChannel::TEAM, msg, *tgt);
+            }
+        }
+        else
+        {
+            // src is sidekick, tgt is mentor
+            if(tgt)
+            {
+                msg = QString("You are no longer mentoring %1.").arg(sess.m_ent->name());
+                messageOutput(MessageChannel::TEAM, msg, *tgt);
+            }
+            msg = QString("%1 is no longer mentoring you.").arg(tgt_name);
+            messageOutput(MessageChannel::TEAM, msg, *sess.m_ent);
+        }
+    }
+    else if(res==SidekickChangeStatus::NOT_SIDEKICKED_CURRENTLY)
+    {
+        msg = QString("You are no longer sidekicked with anyone.");
+        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+    }
 }
 
 void cmdHandler_TeamBuffs(const QString & /*cmd*/, MapClientSession &sess)
@@ -1424,7 +1482,21 @@ void cmdHandler_Friend(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    addFriend(*sess.m_ent, *tgt);
+    FriendListChangeStatus status = addFriend(*sess.m_ent, *tgt);
+    if(status==FriendListChangeStatus::MAX_FRIENDS_REACHED)
+    {
+        QString msg = "You cannot have more than " + QString::number(g_max_friends) + " friends.";
+        qCDebug(logFriends).noquote() << msg;
+        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+    }
+    else
+    {
+        QString msg = "Adding " + tgt->name() + " to your friendlist.";
+        qCDebug(logFriends).noquote() << msg;
+        messageOutput(MessageChannel::FRIENDS, msg, *sess.m_ent);
+        // Send FriendsListUpdate
+        sendFriendsListUpdate(sess.m_ent, sess.m_ent->m_char->m_char_data.m_friendlist);
+    }
 }
 
 void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess)
@@ -1441,7 +1513,20 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess)
         name = tgt->name();
     }
 
-    removeFriend(*sess.m_ent, name);
+    FriendListChangeStatus status =  removeFriend(*sess.m_ent, name);
+    if(status==FriendListChangeStatus::FRIEND_REMOVED)
+    {
+        QString msg = "Removing " + name + " from your friends list.";
+        messageOutput(MessageChannel::FRIENDS, msg, *sess.m_ent);
+
+        // Send FriendsListUpdate
+        sendFriendsListUpdate(sess.m_ent, sess.m_ent->m_char->m_char_data.m_friendlist);
+    }
+    else
+    {
+        QString msg = name + " is not on your friends list.";
+        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+    }
 }
 
 void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)
@@ -1569,6 +1654,11 @@ void cmdHandler_SidekickAccept(const QString &/*cmd*/, MapClientSession &sess)
         return;
 
     addSidekick(*sess.m_ent,*tgt);
+    // Send message to each player
+    QString msg = QString("You are now Mentoring %1.").arg(tgt->name()); // Customize for src.
+    messageOutput(MessageChannel::TEAM, msg, *sess.m_ent);
+    msg = QString("%1 is now Mentoring you.").arg(sess.m_ent->name()); // Customize for src.
+    messageOutput(MessageChannel::TEAM, msg, *tgt);
 }
 
 void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)

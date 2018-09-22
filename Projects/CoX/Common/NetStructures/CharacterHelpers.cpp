@@ -30,7 +30,7 @@ void setLevel(Character &c, uint32_t val)
     if(val>49)
         val = 49;
     c.m_char_data.m_level = val; // client stores lvl arrays starting at 0
-    // TODO: run finalizelevel here, but requires MapClientSession
+    c.finalizeLevel();
 }
 
 void setCombatLevel(Character &c, uint32_t val)
@@ -38,6 +38,7 @@ void setCombatLevel(Character &c, uint32_t val)
     if(val>49)
         val = 49;
     c.m_char_data.m_combat_level = val;
+    c.finalizeCombatLevel();
 }
 
 void setHP(Character &c, float val)

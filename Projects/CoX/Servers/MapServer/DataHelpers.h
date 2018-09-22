@@ -90,12 +90,6 @@ const QString &getOriginTitle(uint32_t val);
 
 
 /*
- * getMapServerData Wrapper to provide access to NetStructures
- */
-GameDataStore *getMapServerData();
-
-
-/*
  * sendInfoMessage wrapper to provide access to NetStructures
  */
 void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt);
@@ -140,3 +134,8 @@ void readEmailMessage(Entity *e, const int id);
  * usePower exposed for future Lua support
  */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
+
+/*
+ * Team related helpers
+ */
+void findTeamMember(Entity &tgt);
