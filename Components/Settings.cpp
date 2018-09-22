@@ -157,6 +157,7 @@ void Settings::setDefaultSettings()
         config.setValue("log_target","false");
         config.setValue("log_spawn","false");
         config.setValue("log_mapevents","false");
+        config.setValue("log_mapxfers", "false");
         config.setValue("log_slashcommands","false");
         config.setValue("log_description","false");
         config.setValue("log_friends","false");
