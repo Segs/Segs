@@ -86,6 +86,10 @@ void segs_renderUtil_GetGfxCardVend(SysInfo_2 *sysinfo)
     renderUtil_fn_4DFEF0(sysinfo->video_card, &sysinfo->pci_ven, &sysinfo->pci_dev);
     // fill in memory information
     sysutil_5AFA70(&sysinfo->total_physical_memory, &sysinfo->AvailPhys);
+    if(sysinfo->total_physical_memory<0)
+        sysinfo->total_physical_memory = std::numeric_limits<int>::max();
+    if(sysinfo->AvailPhys<0)
+        sysinfo->AvailPhys = std::numeric_limits<int>::max();
     // fill in cpu
     sysinfo->cpu_freq = GetCpuMhz();
     // TODO: extract card from gl info
@@ -132,7 +136,7 @@ void segs_rendererInit()
     g_default_mat.draw_data.fog_params.enabled = true;
     g_default_mat.draw_data.fog_params.setMode(2);
     g_default_mat.draw_data.fog_params.setDensity(0.01f);
-    g_default_mat.draw_data.light0.State = true;
+    g_default_mat.draw_data.light0.State = 1;
     g_default_mat.apply();
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glActiveTexture(GL_TEXTURE0);
@@ -157,24 +161,6 @@ void segs_renderUtil_4E0CA0()
     printf("Enabling GLSL support\n");
     // since we use CORE GL profile, this is a given
     GPU_FLAGS = f_GL_FragmentShader | f_GL_VertexShader;
-    int driver_version = 0;
-    const char *version_str = strrchr(struct_9A09A0.driver_version, '.');
-    if ( version_str )
-        driver_version = atoi(version_str + 1);
-    if ( GPU_FLAGS & fATI_fragment_shader && ( driver_version < 0x10B1 ) )
-    {
-        g_State.unkn_1FD8 = 1;
-        reportOldDrivers("www.ati.com");
-    }
-    else if ( (GPU_FLAGS & fNV_vertex_program) && driver_version <= 0x1460 )
-    {
-        g_State.unkn_1FD8 = 1;
-        reportOldDrivers("www.nvidia.com");
-    }
-    else if ( g_State.unkn_1FD8 == 1 )
-    {
-        reportOldDrivers("");
-    }
 
     g_using_bump_maps = 1;
     enableVertShaders = 1;
@@ -213,7 +199,7 @@ void segs_rdrRenderGame()
     text_mat.draw_data.projectionMatrix = glm::ortho<float>(0.0, g_State.view.screen_w, 0.0, g_State.view.screen_h, -1.0, 100.0);
     segs_texSetAllToWhite();
     text_mat.draw_data.modelViewMatrix = glm::mat4(1);
-    text_mat.draw_data.light0.State = false;
+    text_mat.draw_data.light0.State = 0;
     text_mat.draw_data.fog_params.enabled = false;
     text_mat.draw_data.globalColor = { 1,1,1,1 };
     text_mat.render_state.setDepthTestMode(RenderState::CMP_NONE);
@@ -276,7 +262,7 @@ void segs_rdrRenderEditor(FontRel *font_array, int count)
     text_mat.render_state.setDepthTestMode(RenderState::CMP_NONE);
     text_mat.draw_data.globalColor = { 1,1,1,1 };
     text_mat.draw_data.fog_params.enabled = false;
-    text_mat.draw_data.light0.State = false;
+    text_mat.draw_data.light0.State = 0;
     text_mat.apply();
 
     segs_texSetAllToWhite();

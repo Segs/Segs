@@ -24,7 +24,7 @@
 extern "C" {
 __declspec(dllimport) void  fn_4DEBB0(Matrix4x3 *, float );
 __declspec(dllimport) void  matMul3x3(const Matrix3x3 *rhs, const Matrix3x3 *lhs, Matrix3x3 *dst);
-__declspec(dllimport) void  fn_5B6740(float yaw_angle, Matrix3x3 *a2);
+__declspec(dllimport) void  fn_5B6740(float yaw_angle, Matrix3x3 *res);
 __declspec(dllimport) int animateStsTexture(Matrix4x3 *res, float time, AnimTrack_Entry *bt, float stScale, int frameSnap);
 
 __declspec(dllimport) TextureBind *g_greyTexture;
@@ -96,14 +96,14 @@ void segs_animateSts(Parser_StAnim *arg0,InstanceDrawData &instance_data)
     int frame_snap = !(arg0->flags & 1);
     bool are_same = (arg0->btrackTex0==nullptr) == (arg0->btrackTex1==nullptr);
     assert(are_same);
-    if (arg0->btrackTex0)
-    {
-        //assert(false); // this should set program variables instead.
-        animateStsTexture(&tex_xform, time, arg0->btrackTex0, arg0->st_scale, frame_snap);
-        instance_data.textureMatrix0 = tex_xform.toGLM();
-        animateStsTexture(&tex_xform, time, arg0->btrackTex1,arg0->st_scale, frame_snap);
-        instance_data.textureMatrix1 = tex_xform.toGLM();
-    }
+    if (!arg0->btrackTex0)
+        return;
+
+    //assert(false); // this should set program variables instead.
+    animateStsTexture(&tex_xform, time, arg0->btrackTex0, arg0->st_scale, frame_snap);
+    instance_data.textureMatrix0 = tex_xform.toGLM();
+    animateStsTexture(&tex_xform, time, arg0->btrackTex1,arg0->st_scale, frame_snap);
+    instance_data.textureMatrix1 = tex_xform.toGLM();
 }
 int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,MaterialDefinition &def)
 {
@@ -181,7 +181,7 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,Material
     }
     if (flags & TF_NightLight)
     {
-        // if fragment mode is eBlendMode::ADDGLOWm replace grey with black texture
+        // if fragment mode is eBlendMode::ADDGLOW replace grey with black texture
         if (model && (def.get_fragmentMode() == 2) && model->num_textures > 0)
         {
             for(int i=0; i<model->num_textures; ++i)
@@ -197,17 +197,20 @@ int  segs_gfxNodeTricks(TrickNode *tricks, Model *model, Matrix4x3 *lhs,Material
         }
         // lightsOn is only used by ADDGLOW shader path
         def.draw_data.lightsOn = {alpha_val / 255.0f, 0.0, 0.0, 0.0};
-        if (def.get_fragmentMode() == 2)
+        if (def.get_fragmentMode() == int(eBlendMode::ADDGLOW))
         {
-            if (alpha_val >= 100)
-                assert(false); // glFinalCombinerInputNV(GL_VARIABLE_D_NV, GL_TEXTURE1, GL_UNSIGNED_IDENTITY_NV, GL_RGB);
-            else
-                assert(false); // glFinalCombinerInputNV(GL_VARIABLE_D_NV, 0, GL_UNSIGNED_IDENTITY_NV, GL_RGB);
-        }
+            //if (alpha_val >= 100)
+                //assert(false); // glFinalCombinerInputNV(GL_VARIABLE_D_NV, GL_TEXTURE1, GL_UNSIGNED_IDENTITY_NV, GL_RGB);
+            //else
+              //  assert(false); // glFinalCombinerInputNV(GL_VARIABLE_D_NV, 0, GL_UNSIGNED_IDENTITY_NV, GL_RGB);
+        } 
+        else
+        {
             if ( 0==alpha_val )
                 return 0;
             def.draw_data.constColor1.w *= g_sun.lamp_alpha;
         }
+    }
     if ( flags & TF_SetColor )
     {
         def.draw_data.constColor1.ref3() = tricks->TintColor0.to3Floats();

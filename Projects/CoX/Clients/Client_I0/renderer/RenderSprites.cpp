@@ -108,14 +108,7 @@ static_assert(sizeof(TTBufferredText)==0x50, "");
 static std::vector<SpriteArrayEntry> g_sprites_arr;
 
 void segs_DrawText2DWithScaling(TTDrawContext *draw_ctx, float x, float y, float z, float xScale, float yScale, uint32_t *rgba, wchar_t *text, int len);
-void segs_colorsToShaderConstants(uint32_t clr1, uint32_t clr2,InstanceDrawData &drawdata)
-{
-    for (int i = 0; i < 4; ++i )
-    {
-        drawdata.constColor1[i] = float((clr1 >> (8 * i)) & 0xFF) / 255.0f;
-        drawdata.constColor2[i] = float((clr2 >> (8 * i)) & 0xFF) / 255.0f;
-    }
-}
+
 unsigned long nextPowerOfTwoLargerThan(unsigned long v)
 {
     v--;

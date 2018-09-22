@@ -217,8 +217,19 @@ struct MaterialDefinition
     {
         LIGHT_MODE_NONE = 0,
         LIGHT_MODE_PRE_LIT,
-        LIGHT_MODE_LIT,
-        LIGHT_MODE_BUMP_LIT
+        LIGHT_MODE_DIFFUSE, // per-vertex color, only use diffuse part
+        LIGHT_MODE_LIT
+    };
+    enum class BumpMode : int
+    {
+        NONE = 0,
+        SPECULAR_ONLY=1,
+        ALL,
+    };
+    enum class LightSpace : int
+    {
+        VIEW_SPACE=0,
+        MODEL_SPACE=1,
     };
     enum TexAnimMode
     {
@@ -234,7 +245,9 @@ struct MaterialDefinition
             lightMode==oth.lightMode &&
             bumpMapMode==oth.bumpMapMode &&
             reflectionMode==oth.reflectionMode &&
-            usingCubemaps==oth.usingCubemaps
+            usingCubemaps==oth.usingCubemaps &&
+            colorBlending==oth.colorBlending &&
+            fragmentMode==oth.fragmentMode
             ;
     }
 
@@ -248,7 +261,9 @@ struct MaterialDefinition
         if (!is_dirty)
             return precomp_hash;
         precomp_hash = 0x42;
-        hash_combine(precomp_hash, texUnits, vertexMode, lightMode, bumpMapMode, colorBlending, fragmentMode, useLodAlpha, useAlphaDiscard, colorSource, reflectionMode,usingCubemaps, useStippling, useTransformFeedback);
+        hash_combine(precomp_hash, texUnits, vertexMode, lightMode, bumpMapMode, colorBlending, fragmentMode,
+                     useLodAlpha, useAlphaDiscard, colorSource, reflectionMode, usingCubemaps, useStippling,
+                     useTransformFeedback, int(shadeModel), int(texTransform), int(light_space));
         is_dirty = false;
         return precomp_hash;
     }
@@ -262,7 +277,8 @@ public:
     STATE_ACCESSORS(int,texUnits)
     STATE_ACCESSORS(int,vertexMode)
     STATE_ACCESSORS(int,lightMode)
-    STATE_ACCESSORS(int,bumpMapMode)
+    STATE_ACCESSORS(LightSpace, light_space)
+    STATE_ACCESSORS(BumpMode, bumpMapMode)
     STATE_ACCESSORS(int,colorBlending)
     STATE_ACCESSORS(int,fragmentMode)
     STATE_ACCESSORS(bool,useLodAlpha)
@@ -276,7 +292,8 @@ private:
     int texUnits = 0;  //number of used texture units
     int vertexMode = 0; // 0 - no processing, 1 - skinned
     int lightMode=0;  // int : 0 - unlit, 1 - prelit, 2-lit, 3 - bump-map ( per-pixel specular )
-    int bumpMapMode = 0; // int :
+    LightSpace  light_space    = LightSpace::VIEW_SPACE;
+    BumpMode bumpMapMode = BumpMode::NONE;
     int colorBlending = 0; // 0 - no color blending, 1 - blend between colors based on blend texture
     int fragmentMode = 0; // basically eBlendMode converted to plain int
     bool useLodAlpha = false; //

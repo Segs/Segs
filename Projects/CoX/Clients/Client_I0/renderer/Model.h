@@ -110,7 +110,7 @@ struct GeometryData
             segs_data->vertex_buffer_changed = true;
         }
         glBindBuffer(GL_ARRAY_BUFFER, gl_vertex_buffer);
-        glBufferData(GL_ARRAY_BUFFER, count * sizeof(float), data, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, count * sizeof(float), data, usage);
         vertices = nullptr;
     }
     void createSizedVBO(size_t count,const char *name=nullptr)

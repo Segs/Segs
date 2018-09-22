@@ -194,8 +194,9 @@ void MaterialDefinition::setDrawMode(DrawMode vertex_mode)
     int new_texUnits    = 0;
     int new_colorSource = 0;
     int new_lightMode   = LIGHT_MODE_LIT;
-    int new_bumpMapMode = 0;
+    BumpMode new_bumpMapMode = BumpMode::NONE;
     int new_vertexMode  = 0;
+    LightSpace new_light_space   = LightSpace::VIEW_SPACE;
     TexAnimMode new_tex_transform = TEX_NONE;
     switch (vertex_mode)
     {
@@ -213,52 +214,57 @@ void MaterialDefinition::setDrawMode(DrawMode vertex_mode)
         new_tex_transform = TEX_MATRIX;
         break;
     case DrawMode::FILL:
-        new_lightMode   = LIGHT_MODE_PRE_LIT; // behave as pre-lit
+        new_lightMode     = LIGHT_MODE_NONE; // behave as pre-lit
         new_colorSource = 1; // per vertex color
         new_tex_transform = TEX_MATRIX;
         break;
     case DrawMode::COLORONLY:
-        new_lightMode   = LIGHT_MODE_PRE_LIT; // behave as pre-lit
+        new_lightMode     = LIGHT_MODE_NONE; // behave as pre-lit
         new_colorSource = 1; // per vertex color
         new_tex_transform = TEX_MATRIX;
         break;
     case DrawMode::DUALTEX_NORMALS:
+        new_lightMode   = LIGHT_MODE_LIT;
         draw_data.globalColor = Vector4{1, 1, 1, 1};
         new_texUnits              = 2; // base + blend
         new_tex_transform    = TEX_MATRIX;
         break;
     case DrawMode::SINGLETEX_NORMALS:
+        new_lightMode   = LIGHT_MODE_LIT;
         draw_data.tex_id_1    = g_whiteTexture;
         draw_data.globalColor = Vector4{1, 1, 1, 1};
         new_texUnits              = 1; // base
         new_tex_transform    = TEX_MATRIX;
         break;
     case DrawMode::HW_SKINNED:
+        new_lightMode         = LIGHT_MODE_DIFFUSE;
         new_vertexMode            = 1;
         new_texUnits              = 2;
         draw_data.globalColor = Vector4{1, 1, 1, 1};
         break;
     case DrawMode::BUMPMAP_SKINNED:
-        new_lightMode   = LIGHT_MODE_BUMP_LIT;
+        new_lightMode   = LIGHT_MODE_NONE;
         new_vertexMode  = 1;
-        new_bumpMapMode = 1;
+        new_bumpMapMode = BumpMode::ALL;
         new_texUnits    = 3; // base + blend + normal
         break;
     case DrawMode::BUMPMAP_NORMALS:
-        new_lightMode   = LIGHT_MODE_BUMP_LIT;
-        new_bumpMapMode = 1;
+        new_light_space   = LightSpace::MODEL_SPACE;
+        new_lightMode     = LIGHT_MODE_DIFFUSE;
+        new_bumpMapMode = BumpMode::SPECULAR_ONLY;
         new_texUnits    = 3; // base + blend + normal
         new_tex_transform = TEX_OFFSET;
         break;
     case DrawMode::BUMPMAP_DUALTEX:
-        new_lightMode   = LIGHT_MODE_BUMP_LIT;
-        new_bumpMapMode = 1;
+        new_lightMode   = LIGHT_MODE_NONE;
+        new_bumpMapMode = BumpMode::ALL;
         new_texUnits    = 3; // base + blend + normal
         new_tex_transform = TEX_OFFSET;
         break;
     case DrawMode::BUMPMAP_RGBS:
-        new_lightMode   = LIGHT_MODE_BUMP_LIT;
-        new_bumpMapMode = 1;
+        new_light_space   = LightSpace::MODEL_SPACE;
+        new_lightMode   = LIGHT_MODE_PRE_LIT;
+        new_bumpMapMode = BumpMode::SPECULAR_ONLY;
         new_texUnits    = 3; // base + blend + normal
         new_colorSource = 1;
         new_tex_transform = TEX_OFFSET;
@@ -276,12 +282,16 @@ void MaterialDefinition::setDrawMode(DrawMode vertex_mode)
         needs_shader_recompile = true;
     if (new_tex_transform!=texTransform)
         needs_shader_recompile = true;
+    if (new_light_space!=light_space)
+        needs_shader_recompile = true;
+
     texUnits    = new_texUnits;
     colorSource = new_colorSource;
     lightMode = new_lightMode;
     bumpMapMode = new_bumpMapMode;
     vertexMode = new_vertexMode;
     texTransform = new_tex_transform;
+    light_space  = new_light_space;
 }
 
 void MaterialDefinition::setFragmentMode(eBlendMode pixel_mode) {
@@ -360,6 +370,8 @@ void MaterialDefinition::apply()
         program = &g_program_cache.getOrCreateProgram(*this);
         needs_shader_recompile = false;
         program->forceUploadUniforms(draw_data);
+        if(lightMode == LIGHT_MODE_LIT)
+            assert(draw_data.light0.State==1);
     }
     else
     {

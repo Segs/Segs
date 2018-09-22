@@ -84,8 +84,8 @@ struct Parse_SkyTime
 
 struct Parse_Sky
 {
-    Parse_Sun **sun;
-    int num_suns;
+    Parse_Sun **sky;
+    int num_moons;
     Parse_SkyCloud **cloud;
     int num_clouds;
     Parse_SkyTime **skytime;
@@ -124,3 +124,4 @@ extern void patch_gfx();
 void segs_gfxSetViewMat(const Matrix4x3 *cam_mat, Matrix4x3 *view_mat, Matrix4x3 *inv_viewmat);
 void segs_gfxDoNothingFrame();
 void modelFreeAllCache(int arg0);
+void segs_sunGlareDisable();

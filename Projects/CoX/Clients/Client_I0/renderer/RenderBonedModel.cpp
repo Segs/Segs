@@ -202,7 +202,7 @@ static void segs_modelDrawBonedNodeSingleTex(GfxTree_Node *node, const MaterialD
     light_pos.w = 0.5;
     TextureBind *tex = node->customtex[0];
     TextureBind *tex2 = node->customtex[1];
-    material_def.draw_data.constColor1 = { 1,1,1,(node->flg & 0xFF) / 255.0f };
+    material_def.draw_data.constColor1 = { 1,1,1,node->alpha() / 255.0f };
     segs_gfxNodeTricks(tricks, model, nullptr, material_def);
     if (node->flg & 0x200000)
     {
@@ -328,7 +328,7 @@ static void segs_modelDrawBonedNodeMultiTex(GfxTree_Node *node, const MaterialDe
     diffuse_col.w = 1.0;
     light_pos.w = 0.5;
     int tex_cnt = model->num_textures;
-    material_def.draw_data.constColor1 = {1,1,1,(node->flg&0xFF)/255.0f};
+    material_def.draw_data.constColor1 = {1,1,1,node->alpha()/255.0f};
     segs_gfxNodeTricks(tricks, model, nullptr,material_def);
     if ( node->flg & 0x200000 )
     {
@@ -486,7 +486,7 @@ static GfxTree_Node *modelInitADummyNode(Model *model, Matrix4x3 *mat)
     s_node.model = model;
     model->boneinfo = s_fakeBoneInfos;
     s_node.trick_node = model->trck_node;
-    s_node.flg = (s_node.flg&(~0xFF)) | 0xFF;
+    s_node.setAlpha(255);
     return &s_node;
 }
 void bumpRenderObj(Model *model, Matrix4x3 *mat, GLuint colorbuf, Vector4 *ambient, Vector4 *diffuse,const MaterialDefinition &base_mat)
@@ -644,7 +644,7 @@ void segs_modelDraw(Model *model, Matrix4x3 *mat, TrickNode *draw_settings, int 
     }
     if ( g_State.view.bWireframe != 2 )
     {
-        if ( trick && trick->_TrickFlags & 0x1000 )
+        if (trick && trick->_TrickFlags & TF_Wireframe)
         {
             modelDrawWireframe(&trick->TintColor0, model);
         } 

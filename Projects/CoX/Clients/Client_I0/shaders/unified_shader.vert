@@ -6,11 +6,13 @@
 
 #define BUMP_MODE_NONE 0
 #define BUMP_MODE_BASIC 1
+#define BUMP_MODE_ALL 2
 
 #define LIGHT_MODE_NONE 0
 #define LIGHT_MODE_PRE_LIT 1
-#define LIGHT_MODE_LIT 2
-#define LIGHT_MODE_BUMP_LIT 3
+#define LIGHT_MODE_DIFFUSE 2
+#define LIGHT_MODE_LIT 3
+#define LIGHT_MODE_BUMP_LIT 4
 const int c_TextureUnitCount = TEXTURES;
 const int c_autogen_uv0 = REFLECTION_MODE_T0;
 const int c_autogen_uv1 = REFLECTION_MODE_T1;
@@ -25,22 +27,16 @@ const int c_autogen_uv1 = REFLECTION_MODE_T1;
 #define TEX_XFORM_OFFSET 1
 #define TEX_XFORM_MATRIX 2
 #define TEX_XFORM_GEN 3
-// per-vertex data
-in vec4 vertexPos;
-in vec3 vertexNormal;
-in vec2 vertexUV0;
-in vec2 vertexUV1;
-in vec4 vertexColor;
 
-#if VERTEX_PROCESSING==VERTEX_PROCESSING_SKINNING
-in vec2 boneWeights; // attr 1
-in vec2 boneIndices; // attr5
-#endif
-#if BUMP_MODE==BUMP_MODE_BASIC
-in vec4 tangent;
+#if FLAT_SHADED==1
+#define SHADE_MODEL flat
+#else
+#define SHADE_MODEL smooth
 #endif
 
-// per run data
+///////////////////////////////////////////////////////////////////////////////
+// vertex shader uniforms
+///////////////////////////////////////////////////////////////////////////////
 struct lightParameters
 {
     vec4 Position;
@@ -71,23 +67,39 @@ uniform mat4 textureMatrix1;
 #if VERTEX_PROCESSING==VERTEX_PROCESSING_SKINNING
 uniform vec4 boneMatrices[48]; // mat 3x4
 #endif
-#if FLAT_SHADED==1
-#define SHADE_MODEL flat
-#else
-#define SHADE_MODEL smooth
+
+///////////////////////////////////////////////////////////////////////////////
+// per-vertex attributes
+///////////////////////////////////////////////////////////////////////////////
+in vec4 vertexPos;
+in vec3 vertexNormal;
+in vec2 vertexUV0;
+in vec2 vertexUV1;
+in vec4 vertexColor;
+
+#if VERTEX_PROCESSING==VERTEX_PROCESSING_SKINNING
+in vec2 boneWeights; // attr 1
+in vec2 boneIndices; // attr 5
 #endif
+#if BUMP_MODE==BUMP_MODE_BASIC
+in vec4 tangent;
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+// Vertex shader outputs
+///////////////////////////////////////////////////////////////////////////////
 out VS_Output {
-    #if BUMP_MODE==BUMP_MODE_BASIC
+    SHADE_MODEL vec4 Color;
+    vec2 texCoord0;
+    vec2 texCoord1;
+    vec2 texCoord2;
+#if BUMP_MODE>=BUMP_MODE_BASIC
     SHADE_MODEL vec3 light_ts;
     SHADE_MODEL vec3 view_ts;
-    #endif
-    SHADE_MODEL vec2 texCoord0;
-    SHADE_MODEL vec2 texCoord1;
-    SHADE_MODEL vec2 texCoord2;
-    #ifdef FOG
+#endif
+#ifdef FOG
     SHADE_MODEL float fogFragCoord;
-    #endif
-    SHADE_MODEL vec4 Color;
+#endif
 } v_out;
 #ifdef TRANSFORM_FEEDBACK
 layout(xfb_buffer = 0) out vec4 outValue;
@@ -96,9 +108,7 @@ layout(xfb_buffer = 0) out vec4 outValue;
 // default vertex shader
 vec3 reflectionMap(in vec3 normal, in vec3 ecPosition3)
 {
-   float NdotU, m;
-   vec3 u;
-   u = normalize(ecPosition3);
+   vec3 u = normalize(ecPosition3);
    return (reflect(u, normal));
 }
 vec4 ftexgen(in vec3 normal, in vec4 ecPosition)
@@ -107,6 +117,7 @@ vec4 ftexgen(in vec3 normal, in vec4 ecPosition)
     vec3 reflection = reflectionMap( normal, ecPosition3 );
     return vec4( reflection, 1.0);
 }
+
 void calculateTextureCoordinates(in vec3 normal, in vec4 ecPosition)
 {
     // Calculate base and blend texture coordinates
@@ -154,12 +165,13 @@ vec4 diffuse(vec3 normal, vec3 lightv, vec4 color)
 }
 vec4 preprocessVertex4(vec4 v) {
     vec4 res;
+    // @note bone matrices transform directly to view space
 #if VERTEX_PROCESSING==VERTEX_PROCESSING_SKINNING
     res.xyz = boneTransform(v,int(boneIndices.x))* boneWeights.x;
     // second bone contribution
     res.xyz += boneTransform(v,int(boneIndices.y)) * boneWeights.y;
 #else
-    res = v;
+    res = modelViewMatrix * v;
 #endif
     return res;
 }
@@ -198,31 +210,53 @@ void calc_tangent_space_light_and_position( vec3 normal_vs, vec3 tangent_vs, flo
     // Compute position in tangent space (used by fragment shader to determine half vector)
     o_position_ts = M_ts * position_vs;
 }
-void calculateColorBasedOnLightMode(const int light_mode, vec4 position_vs, vec3 normal)
+vec4 lit(float NdotL, float NdotH, float m)
+{
+  float specular = (NdotL > 0) ? pow(max(0.0, NdotH), m) : 0;
+  return vec4(1.0, max(0.0, NdotL), specular, 1.0);
+}
+void calculateColorBasedOnLightMode(const int light_mode, vec4 position_vs, vec3 light, vec3 normal,vec3 view)
 {
     switch (light_mode)
     {
-    case LIGHT_MODE_NONE:
-        v_out.Color.rgba = globalColor.rgba * vertexColor;
-        break;
-    case LIGHT_MODE_PRE_LIT:
-        v_out.Color.rgba = vertexColor;
-        break;
-    default:
-    {
-        // Compute the normal
-        normal          = normalize(transpose(inverse(modelViewMatrix)) * vec4(normal, 0)).xyz;
-        vec4 ecPosition = modelViewMatrix * position_vs;
-        vec3 lightvec   = light0.Position.xyz - ecPosition.xyz;
-        v_out.Color.rgb = diffuse(normal.xyz, lightvec, globalColor).rgb;
-        v_out.Color.a   = globalColor.a;
+        case LIGHT_MODE_NONE:
+            v_out.Color = vec4(1,1,1,1); //globalColor.rgba * vertexColor;
+            break;
+        case LIGHT_MODE_PRE_LIT:
+            v_out.Color = vertexColor;
+            break;
+        case LIGHT_MODE_DIFFUSE:
+            v_out.Color = clamp( dot( normal, light),0.0,1.0) * globalColor + light0.Ambient;
+            break;
+        case LIGHT_MODE_LIT:
+        {
+            vec3 H_vs = normalize( light + view );
+            // Compute diffuse and specular dot products and use LIT to compute
+            // lighting coefficients.
+            float NdotL = dot(normal, light);
+            float NdotH = dot(normal, H_vs);
+            vec4 dots = lit( NdotL, NdotH, 128.0 );
+
+            // Accumulate color contributions.
+            vec4 lightAccum = (( dots.y * light0.Diffuse ) + light0.Ambient );
+
+            v_out.Color.xyz = (( dots.z * light0.Specular ) + lightAccum ).xyz;
+            v_out.Color.w = vertexColor.w;
+        }
     }
-    }
+}
+void calculateVertexFog(vec3 vertex_pos)
+{
+#ifdef FOG
+    v_out.fogFragCoord = length(vertex_pos);
+#endif
 }
 void main()
 {
     vec4 position_vs = preprocessVertex4(vertexPos);
     position_vs.w=1.0;
+    gl_Position = projectionMatrix * position_vs;
+    calculateVertexFog(position_vs.xyz);
 
     vec3 normal = preprocessVertex3(vertexNormal);
     vec3 light = light0.Position.xyz;
@@ -231,19 +265,21 @@ void main()
     // Compute lighting vectors in model space (attribute normal is already in model space)
     light    = normalize( light - vertexPos.xyz );
     view    = normalize( viewerPosition.xyz - vertexPos.xyz ); // view vector in model space (vector to eye)
-#else // most common case is VIEW space lighting
+#else
+    // VIEW space lighting
     #ifndef SKIN
-        normal = normalize(mat3(modelViewMatrix) * normal.xyz);
+        normal = normalize(mat3(modelViewMatrix) * vertexNormal.xyz);
     #endif
-    view = normalize( -position_vs );    // view vector in view space (vector to eye) is just reverse of position vector
+    view = normalize( -position_vs ).xyz;    // view vector in view space (vector to eye) is just reverse of position vector
 #endif
+    // per vertex light calculations
+    calculateColorBasedOnLightMode(LIGHT_MODE,position_vs,light,normal,view);
 
 #if (BUMP_MODE==BUMP_MODE_BASIC) && defined(UNLIT)
     bumpMappingNeedsALightToWork();
 #endif
-    vec3 modelview_pos;
 #if BUMP_MODE==BUMP_MODE_BASIC
-    vec4 tangent_vs = preprocessVertex4(tangent);
+    vec3 tangent_vs = preprocessVertex3(tangent.xyz);
     // normalize tangent basis
     vec3 light_modelspace = light0.Position.xyz - vertexPos.xyz;
     //view vector in model space
@@ -255,29 +291,14 @@ void main()
 #if LIGHT_SPACE == VIEW
     // lighting vectors xform into view space for skinned models
     #ifndef SKINNING
-        tangent_vs.xyz = normalize(mat3(modelViewMatrix) * tangent_vs.xyz);
+        tangent_vs = normalize(mat3(modelViewMatrix) * tangent_vs);
     #endif
 #endif
     vec3 o_position_ts, o_light_ts;
     calc_tangent_space_light_and_position( normal, tangent_vs.xyz, sign(tangent.w), position_vs.xyz, light, o_position_ts, o_light_ts );
     v_out.light_ts    = vec3( o_light_ts);
     v_out.view_ts     = vec3( -o_position_ts);
-
-    // transform vertices into projection space using the pre-multiplied matrix
-    modelview_pos = position_vs.xyz;
-    gl_Position = projectionMatrix * modelViewMatrix * position_vs;
-#else
-    modelview_pos = vec4(modelViewMatrix * position_vs).xyz;
-#if VERTEX_PROCESSING==VERTEX_PROCESSING_SKINNING
-    gl_Position = projectionMatrix * position_vs;
-#else
-    gl_Position = projectionMatrix * modelViewMatrix *position_vs;
 #endif
-#endif
-#ifdef FOG
-    v_out.fogFragCoord = length((modelview_pos).xyz);
-#endif
-    calculateColorBasedOnLightMode(LIGHT_MODE,position_vs,normal);
 
     calculateTextureCoordinates(normal,gl_Position);
 #ifdef TRANSFORM_FEEDBACK

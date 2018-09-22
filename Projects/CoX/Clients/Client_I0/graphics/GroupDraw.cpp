@@ -155,7 +155,7 @@ int modelCalcAlpha(Vector3 *mid, GroupDef *def, float lod_scale)
     assert(model);
     if (scale_a < 50.0f)
     {
-        if (model->Model_flg1 & 0x100)
+        if (model->Model_flg1 & OBJ_TREE)
             return 254;
     }
     if (lod_near - 0.5f > scale_a)
@@ -206,7 +206,7 @@ int segs_seqgraphics_getBoneNodes(GfxTree_Node *node, GfxTree_Node **all_nodes, 
         if (node->seqHandle != seq_handle)
             continue;
 
-        if (legitBone(node->anim_id()) && node->model && node->model->Model_flg1 & 0x8000)
+        if (legitBone(node->anim_id()) && node->model && node->model->Model_flg1 & OBJ_STATICFX)
         {
             all_nodes[node->anim_id()] = node;
             ++found_count;
@@ -918,5 +918,5 @@ void patch_groupdraw()
     patchit("seqgraphics_4979B0",(void *)seqSetStaticLight);
     BREAK_FUNC(drawDefInternal);
     BREAK_FUNC(groupDrawRefs);
-    PATCH_FUNC(seqgraphics_getBoneNodes);
+    BREAK_FUNC(seqgraphics_getBoneNodes);
 }

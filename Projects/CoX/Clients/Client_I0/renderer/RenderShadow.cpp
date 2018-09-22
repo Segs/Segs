@@ -340,44 +340,44 @@ void drawModelShadowVolume(Model *model,Matrix4x3 &mat, uint8_t alpha, int shado
 }
 void drawShadowColor(RenderState &rs)
 {
+    GLDebugGuard deb(__FUNCTION__);
     Vector4 v = g_sun.shadowcolor;
     MaterialDefinition shadow_color_mat(g_default_mat);
     shadow_color_mat.setDrawMode(DrawMode::COLORONLY);
     shadow_color_mat.setFragmentMode(eBlendMode::MULTIPLY);
     shadow_color_mat.render_state = rs;
     //glPushAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+    shadow_color_mat.draw_data.constColor1  = g_sun.shadowcolor;
     shadow_color_mat.draw_data.projectionMatrix = glm::ortho(0.0, 640.0, 0.0, 480.0, -1.0, 1.0);
     shadow_color_mat.draw_data.modelViewMatrix = glm::mat4(1);
-    shadow_color_mat.draw_data.light0.State = false;
+    shadow_color_mat.draw_data.light0.State = 0;
     shadow_color_mat.draw_data.fog_params.enabled = false;
-    static GeometryData  fakevbo;
+    shadow_color_mat.draw_data.globalColor        = v;
+    static GeometryData fakevbo;
     if (!fakevbo.segs_data)
+    {
         fakevbo.createVAO();
-    glActiveTextureARB(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, g_whiteTexture->gltexture_id);
-    shadow_color_mat.draw_data.globalColor = v;
+        Vector3 pos[] = {
+            {0, 480, 0},
+            {640, 480, 0},
+            {640, 0, 0},
+            {0, 0, 0},
+        };
+        uint32_t quad_indices[] = {0, 1, 2, 0, 2, 3};
+        fakevbo.uploadVerticesToBuffer((float *)pos, 12);
+        fakevbo.uploadIndicesToBuffer(quad_indices, 6);
+    }
 
-    Vector3 pos[] = {
-        {0, 480,0 },
-        {640, 480,0 },
-        {640, 0,0 },
-        {0, 0,0 },
-    };
-    uint32_t quad_indices[] = {0, 1, 2, 0, 2, 3};
 
-    fakevbo.uploadVerticesToBuffer(pos[0].data(),12);
-    fakevbo.uploadIndicesToBuffer(quad_indices, 6);
     shadow_color_mat.set_colorSource(0); // global color only
     shadow_color_mat.apply();
-    fakevbo.drawArray(*shadow_color_mat.program, GL_TRIANGLES, 6, 0);
+    fakevbo.draw(*shadow_color_mat.program, GL_TRIANGLES, 6, 0);
     //glPopAttrib();
 }
 }// end of anonymous namespace
 
 void  segs_rendertree_drawShadows()
 {
-    //return;
-    ;
     for(ShadowNode &shadow_node : shadowNodes)
     {
         if (shadow_node.model)
@@ -465,8 +465,10 @@ void segs_modelDrawShadowObject(Matrix4x3 *viewSpaceTransform, SplatSib *splat,c
     shadowObjectMaterial.render_state.setDepthWrite(false);
 
     shadowObjectMaterial.apply();
-    static GeometryData fakevbo;
+    GeometryData fakevbo;
+    fakevbo.createVAO();
     size_t current_offset = 0;
+    fakevbo.createSizedVBO(splat->vertexCount * (3+2+2));
     fakevbo.uploadSubBufferToVertices((float *)splat->vertices, splat->vertexCount * 3, current_offset);
     current_offset += splat->vertexCount * 3;
     fakevbo.uploadSubBufferToVertices((float *)splat->tex_scroll1, splat->vertexCount * 2, current_offset);

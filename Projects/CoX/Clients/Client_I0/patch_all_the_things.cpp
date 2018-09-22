@@ -20,9 +20,13 @@
 #include "utils/dll_patcher.h"
 #include "entity/EntClient.h"
 #include "graphics/GroupDraw.h"
-
+int segs_sysutil_IsMemoryDebugEnabled()
+{
+    return 0;
+}
 void patch_all_the_things()
 {
+    PATCH_FUNC(sysutil_IsMemoryDebugEnabled);
     patch_helperutils();
     patch_gfx();
     patch_render_utils();

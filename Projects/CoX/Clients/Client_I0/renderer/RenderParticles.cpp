@@ -324,8 +324,8 @@ namespace {
             tgt_vertices[0] = part_size * g_precomp_cos[uint8_t(angle_idx + 96)] + facing_pos_1.x;
             tgt_vertices[1]  = part_size * g_precomp_sin[uint8_t(angle_idx + 96)] + facing_pos_1.y;
             tgt_vertices[2] = facing_pos_1.z;
-            tgt_vertices[3]  = part_size * g_precomp_cos[uint8_t(angle_idx + 96)] + facing_pos_1.x;
-            tgt_vertices[4]  = part_size * g_precomp_sin[uint8_t(angle_idx + 96)] + facing_pos_1.y;
+            tgt_vertices[3]  = part_size * g_precomp_cos[uint8_t(angle_idx + 32)] + facing_pos_1.x;
+            tgt_vertices[4]  = part_size * g_precomp_sin[uint8_t(angle_idx + 32)] + facing_pos_1.y;
             tgt_vertices[5] = facing_pos_1.z;
             tgt_vertices[6]  = part_size * g_precomp_cos[uint8_t(angle_idx - 96)] + facing_pos_2.x;
             tgt_vertices[7]  = part_size * g_precomp_sin[uint8_t(angle_idx - 96)] + facing_pos_2.y;

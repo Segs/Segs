@@ -28,7 +28,6 @@ __declspec(dllimport) void gfxTreeFindWorldSpaceMat(Matrix4x3 *src, GfxTree_Node
 __declspec(dllimport) void toggle_3d_game_modes(int);
 __declspec(dllimport) int particle_4ACB90(ParticleSys1 *, int , Matrix4x3 *);
 __declspec(dllimport) void lightEnt(EntLight *light, Vector3 *pos, float min_ambient, float max_ambient);
-__declspec(dllimport) void sunGlareDisable();
 __declspec(dllimport) void set_func_D4AC20(void (*fn)(struct CamPos *)); // set input->camera state mapping function
 __declspec(dllimport) void animSetHeader(SeqInstance *seq);
 __declspec(dllimport) void animPlayInst(SeqInstance *seq);
@@ -140,21 +139,21 @@ uint8_t *takeAPicture(SeqInstance *seq, Vector3 *offset, float fovy, GLsizei wid
         }
     }
     player = getControlledPlayerEntity();
-    hidePlayer = 0;
+    hidePlayer = false;
     if ( player && player->seq && player->seq->gfx_root )
     {
         hidePlayer = (player->seq->gfx_root->flg & 0x20000) != 0;
         player->seq->gfx_root->flg |= 0x20000;
     }
     fn_5B6740(-0.2f, &seq->gfx_root->mat.ref3());
-    sunGlareDisable();
-    segs_gfxUpdateFrame(0, 1);
+    segs_sunGlareDisable();
+    segs_gfxUpdateFrame(false, true);
     waitForAllAnimsToLoad();
     waitForAllTexturesToLoad();
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    segs_gfxUpdateFrame(0, 1);
-    segs_gfxUpdateFrame(0, 1);
-    segs_gfxUpdateFrame(0, 1);
+    segs_gfxUpdateFrame(false, true);
+    segs_gfxUpdateFrame(false, true);
+    segs_gfxUpdateFrame(false, true);
     if ( !hidePlayer )
     {
         Entity *e = getControlledPlayerEntity();

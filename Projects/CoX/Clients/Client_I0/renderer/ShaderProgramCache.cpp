@@ -123,6 +123,8 @@ ShaderProgram &ShaderProgramCache::getOrCreateProgram(MaterialDefinition &mat_de
     defines.emplace_back(s_buf);
     snprintf(s_buf, 512, "FLAT_SHADED %d", mat_def.get_shadeModel() == MaterialDefinition::FLAT);
     defines.emplace_back(s_buf);
+    snprintf(s_buf, 512, "LIGHT_SPACE %d", mat_def.get_light_space());
+    defines.emplace_back(s_buf);
     if (mat_def.get_useTransformFeedback())
         defines.emplace_back("TRANSFORM_FEEDBACK");
 
@@ -159,7 +161,7 @@ ShaderProgram &ShaderProgramCache::getOrCreateProgram(MaterialDefinition &mat_de
         new_program.required_attributes.insert("UV1");
     if(mat_def.get_vertexMode()==1)
         new_program.required_attributes.insert({ "BONEWEIGHTS","BONEINDICES"});
-    if(mat_def.get_bumpMapMode()>0)
+    if(mat_def.get_bumpMapMode()!=MaterialDefinition::BumpMode::NONE)
         new_program.required_attributes.insert("TANGENTS");
     for (int i = 0; i<mat_def.get_texUnits(); ++i)
         new_program.required_units.emplace_back(i);
@@ -182,6 +184,7 @@ ShaderProgram &ShaderProgramCache::getOrCreateProgram(MaterialDefinition &mat_de
         infoLog.resize(length);
         glGetInfoLogARB(program_id, length, nullptr, infoLog.data());
         printfDebug("%s\n", infoLog.data());
+        printf(infoLog.data());
         assert(false);
     }
 
@@ -229,7 +232,8 @@ void GeometryData::prepareDraw(const ShaderProgram& drawprog)
             else
             {
                 glBindBuffer(GL_ARRAY_BUFFER, segs_data->color_buffer.buffer_id);
-                glVertexAttribPointer(drawprog.vertexColor_Location, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (void *)segs_data->color_buffer.offset);
+                glVertexAttribPointer(drawprog.vertexColor_Location, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,
+                                      (void *)segs_data->color_buffer.offset);
                 glEnableVertexAttribArray(drawprog.vertexColor_Location);
             }
         }
@@ -246,79 +250,80 @@ void GeometryData::prepareDraw(const ShaderProgram& drawprog)
     if (segs_data->bound_attributes == &drawprog)
         return;
 
-        if (segs_data->bound_attributes)
-            segs_data->bound_attributes->disableAllEnabled();
+    if (segs_data->bound_attributes)
+        segs_data->bound_attributes->disableAllEnabled();
 
+    glBindBuffer(GL_ARRAY_BUFFER, gl_vertex_buffer);
+
+    glVertexAttribPointer(drawprog.vertexPos_Location, 3, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(drawprog.vertexPos_Location);
+
+    if (drawprog.vertexNormal_Location != ~0U)
+    {
+        if (normals_offset == vertices)
+        {
+            glDisableVertexAttribArray(drawprog.vertexColor_Location);
+        }
+        else
+        {
+            glVertexAttribPointer(drawprog.vertexNormal_Location, 3, GL_FLOAT, GL_FALSE, 0, normals_offset);
+            glEnableVertexAttribArray(drawprog.vertexNormal_Location);
+        }
+    }
+    uint32_t uv_base_offset_in_buffer = segs_data->uv_vbo.offset;
+    if (segs_data->uv_vbo.buffer_id != ~0U)
+        glBindBuffer(GL_ARRAY_BUFFER, segs_data->uv_vbo.buffer_id);
+    if (drawprog.vertexUV0_Location != ~0U)
+    {
+        glVertexAttribPointer(drawprog.vertexUV0_Location, 2, GL_FLOAT, GL_FALSE, 0, uv_base_offset_in_buffer + uv1_offset);
+        glEnableVertexAttribArray(drawprog.vertexUV0_Location);
+    }
+    if (drawprog.vertexUV1_Location != ~0U)
+    {
+        glVertexAttribPointer(drawprog.vertexUV1_Location, 2, GL_FLOAT, GL_FALSE, 0, uv_base_offset_in_buffer + uv1_offset);
+        glEnableVertexAttribArray(drawprog.vertexUV1_Location);
+    }
+    if (segs_data->uv_vbo.buffer_id != ~0U)
         glBindBuffer(GL_ARRAY_BUFFER, gl_vertex_buffer);
 
-        glVertexAttribPointer(drawprog.vertexPos_Location, 3, GL_FLOAT, GL_FALSE, 0, vertices);
-        glEnableVertexAttribArray(drawprog.vertexPos_Location);
-
-        if (drawprog.vertexNormal_Location != ~0U)
+    if (drawprog.vertexColor_Location != ~0U)
+    {
+        if(segs_data->color_buffer.buffer_id == ~0U)
         {
-            if (normals_offset == vertices)
-            {
-                glDisableVertexAttribArray(drawprog.vertexColor_Location);
-            }
-            else
-            {
-                glVertexAttribPointer(drawprog.vertexNormal_Location, 3, GL_FLOAT, GL_FALSE, 0, normals_offset);
-                glEnableVertexAttribArray(drawprog.vertexNormal_Location);
-            }
+            glDisableVertexAttribArray(drawprog.vertexColor_Location);
+            glVertexAttrib4f(drawprog.vertexColor_Location, 1, 1, 1, 1);
         }
-        uint32_t uv_base_offset_in_buffer = segs_data->uv_vbo.offset;
-        if (segs_data->uv_vbo.buffer_id != ~0U)
-            glBindBuffer(GL_ARRAY_BUFFER, segs_data->uv_vbo.buffer_id);
-        if (drawprog.vertexUV0_Location != ~0U)
+        else
         {
-            glVertexAttribPointer(drawprog.vertexUV0_Location, 2, GL_FLOAT, GL_FALSE, 0, uv_base_offset_in_buffer + uv1_offset);
-            glEnableVertexAttribArray(drawprog.vertexUV0_Location);
+            assert(segs_data->color_buffer.buffer_id < 10000); // dumb check for pointers passed to color_buffer
+            if(segs_data->color_buffer.buffer_id!=gl_vertex_buffer)
+                glBindBuffer(GL_ARRAY_BUFFER, segs_data->color_buffer.buffer_id);
+            glVertexAttribPointer(drawprog.vertexColor_Location, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,
+                              (void *)segs_data->color_buffer.offset);
+            glEnableVertexAttribArray(drawprog.vertexColor_Location);
+            if (segs_data->color_buffer.buffer_id != gl_vertex_buffer)
+                glBindBuffer(GL_ARRAY_BUFFER, gl_vertex_buffer);
         }
-        if (drawprog.vertexUV1_Location != ~0U)
-        {
-            glVertexAttribPointer(drawprog.vertexUV1_Location, 2, GL_FLOAT, GL_FALSE, 0, uv_base_offset_in_buffer + uv1_offset);
-            glEnableVertexAttribArray(drawprog.vertexUV1_Location);
-        }
-        if (segs_data->uv_vbo.buffer_id != ~0U)
-            glBindBuffer(GL_ARRAY_BUFFER, gl_vertex_buffer);
-
-        if (drawprog.vertexColor_Location != ~0U)
-        {
-            if(segs_data->color_buffer.buffer_id == ~0U)
-            {
-                glDisableVertexAttribArray(drawprog.vertexColor_Location);
-                glVertexAttrib4f(drawprog.vertexColor_Location, 1, 1, 1, 1);
-            }
-            else
-            {
-                assert(segs_data->color_buffer.buffer_id < 10000); // dumb check for pointers passed to color_buffer
-                if(segs_data->color_buffer.buffer_id!=gl_vertex_buffer)
-                    glBindBuffer(GL_ARRAY_BUFFER, segs_data->color_buffer.buffer_id);
-                glVertexAttribPointer(drawprog.vertexColor_Location, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (void *)segs_data->color_buffer.offset);
-                glEnableVertexAttribArray(drawprog.vertexColor_Location);
-                if (segs_data->color_buffer.buffer_id != gl_vertex_buffer)
-                    glBindBuffer(GL_ARRAY_BUFFER, gl_vertex_buffer);
-            }
-        }
-        if (drawprog.boneWeights_Location != ~0U)
-        {
-            glVertexAttribPointer(drawprog.boneWeights_Location, 2, GL_FLOAT, GL_FALSE, 0, weights);
-            glEnableVertexAttribArray(drawprog.boneWeights_Location);
-        }
-        if (drawprog.boneIndices_Location != ~0U)
-        {
-            glVertexAttribPointer(drawprog.boneIndices_Location, 2, GL_SHORT, GL_FALSE, 0, boneIndices);
-            glEnableVertexAttribArray(drawprog.boneIndices_Location);
-        }
-        if (drawprog.tangent_Location != ~0U)
-        {
-            glVertexAttribPointer(drawprog.tangent_Location, 4, GL_FLOAT, GL_FALSE, 0, tangents_directions);
-            glEnableVertexAttribArray(drawprog.tangent_Location);
-        }
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_index_buffer);
-
-        segs_data->bound_attributes = &drawprog;
     }
+    if (drawprog.boneWeights_Location != ~0U)
+    {
+        glVertexAttribPointer(drawprog.boneWeights_Location, 2, GL_FLOAT, GL_FALSE, 0, weights);
+        glEnableVertexAttribArray(drawprog.boneWeights_Location);
+    }
+    if (drawprog.boneIndices_Location != ~0U)
+    {
+        glVertexAttribPointer(drawprog.boneIndices_Location, 2, GL_SHORT, GL_FALSE, 0, boneIndices);
+        glEnableVertexAttribArray(drawprog.boneIndices_Location);
+    }
+    if (drawprog.tangent_Location != ~0U)
+    {
+        glVertexAttribPointer(drawprog.tangent_Location, 4, GL_FLOAT, GL_FALSE, 0, tangents_directions);
+        glEnableVertexAttribArray(drawprog.tangent_Location);
+    }
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_index_buffer);
+
+    segs_data->bound_attributes = &drawprog;
+}
 void debugVAOState(std::string baseMessage)
 {
     baseMessage.append(" ... querying VAO state:\n");
@@ -378,11 +383,9 @@ void ShaderProgram::uploadUniforms(InstanceDrawData &instance_data)
 {
     projectionMatrix = instance_data.projectionMatrix;
     modelViewMatrix = instance_data.modelViewMatrix;
-    if(instance_data.colorConstsEnabled)
-    {
-        constColor1 = instance_data.constColor1;
-        constColor2 = instance_data.constColor2;
-    }
+    constColor1 = instance_data.constColor1;
+    assert(instance_data.constColor2.w == 1);
+    constColor2 = instance_data.constColor2;
     globalColor = instance_data.globalColor;
 
     fog_params.mode = instance_data.fog_params.getMode();
@@ -403,11 +406,9 @@ void ShaderProgram::forceUploadUniforms(InstanceDrawData &instance_data)
 {
     projectionMatrix.assign(instance_data.projectionMatrix);
     modelViewMatrix.assign(instance_data.modelViewMatrix);
-    if (instance_data.colorConstsEnabled)
-    {
-        constColor1.assign(instance_data.constColor1);
-        constColor2.assign(instance_data.constColor2);
-    }
+    constColor1.assign(instance_data.constColor1);
+    assert(instance_data.constColor2.w == 1);
+    constColor2.assign(instance_data.constColor2);
     globalColor.assign(instance_data.globalColor);
     fog_params.mode.assign(instance_data.fog_params.getMode());
     if (instance_data.fog_params.enabled)

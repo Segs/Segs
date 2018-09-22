@@ -46,7 +46,6 @@ static_assert (sizeof(tSplatParams)==0x78);
 void segs_entclient_updateSimpleShadow(SeqInstance *seq, float distFromCamera, float maxDeathAlpha)
 {
     static tSplatParams s_SplatParams;
-
     tSplatParams *splatParams = &s_SplatParams;
     if (!gfxTreeNodeIsValid(seq->simpleShadow, seq->simpleShadowUniqueId))
         seq->simpleShadow = splat_49A1B0(&seq->simpleShadowUniqueId, seq->ent_type_info.ShadowTexture, "white", 0);

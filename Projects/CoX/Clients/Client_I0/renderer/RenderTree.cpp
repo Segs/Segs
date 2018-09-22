@@ -181,23 +181,20 @@ void segs_gfxTreeDrawNode(GfxTree_Node *basenode,const Matrix4x3 &parent_mat)
             if (strstri(node_->model->bone_name_offset, "sunglow"))
                 xyprintf(10, 40, "Drawing %s %d", node_->model->bone_name_offset, node_->alpha());
         }
-        if(node_->flg & 0x10000)
+        if (node_->flg & 0x10000)
         {
             assert(node_->seqGfxData);
-            if (see_outside)
+            if (!see_outside || node_->seqGfxData->tray)
             {
-                if (node_->seqGfxData->tray && !bsearch(&node_->seqGfxData->tray, visibleTrays.data(), visibleTrays.size(),
-                                                        sizeof(void *), (int (*)(const void *, const void *))trackerCMP))
+                if (see_outside || !node_->seqGfxData->tray)
+                    continue;
+                if (!bsearch(&node_->seqGfxData->tray, visibleTrays.data(), visibleTrays.size(),
+                    sizeof(DefTracker *),
+                    (int(*)(const void *, const void *))trackerCMP))
                 {
                     continue;
                 }
             }
-            else if (!node_->seqGfxData->tray)
-            {
-                continue;
-            }
-            if (!bsearch(&node_->seqGfxData->tray, visibleTrays.data(), visibleTrays.size(), sizeof(void *), (int(*)(const void *, const void *))trackerCMP))
-                continue;
         }
         if (legitBone(node_->bone_slot) && node_->seqHandle)
         {
@@ -215,29 +212,30 @@ void segs_gfxTreeDrawNode(GfxTree_Node *basenode,const Matrix4x3 &parent_mat)
         }
         if (!node_->children_list && !node_->model)
             continue;
-            Model *model = node_->model;
-            if (!model ||
-                ((!(model->Model_flg1 & OBJ_TREE)) && node_->flg & 0x400000 && model->Model_flg1 & OBJ_DRAW_AS_ENT))
-            {
-                node_->viewspace = &tmp;
-            }
-            else
-            {
-                if (viewspaceMatCount >= 6000)
-                    handleErrorStr("viewspaceMatCount >= MAX_VIEWSPACEMATS");
-                node_->viewspace = &viewspaceMats[viewspaceMatCount++];
-            }
+        Model *model = node_->model;
+        if (!model ||
+            !(model->Model_flg1 & OBJ_TREE) && node_->flg & 0x400000 && model->Model_flg1 & OBJ_DRAW_AS_ENT)
+        {
+            node_->viewspace = &tmp;
+        }
+        else
+        {
+            if (viewspaceMatCount >= 6000)
+                handleErrorStr("viewspaceMatCount >= MAX_VIEWSPACEMATS");
+            node_->viewspace = &viewspaceMats[viewspaceMatCount++];
+        }
         *node_->viewspace = parent_mat * node_->mat; // MatMult4x3(parent_mat, &node_->mat, );
-            if (node_->model && !(node_->flg & 0x80000) && node_->alpha() >= 5u)
+
+        if (node_->model && !(node_->flg & 0x80000) && node_->alpha() >= 5u)
+        {
+            if (node_->model->loadstate & 4)
             {
-                if (node_->model->loadstate & 4)
-                {
-                    ++NodesDrawn;
-                    segs_addViewSortNode(node_, node_->model, nullptr, &node_->viewspace->TranslationPart, node_->alpha(), node_->rgb_entries, nullptr, nullptr, nullptr);
-                }
+                ++NodesDrawn;
+                segs_addViewSortNode(node_, node_->model, nullptr, &node_->viewspace->TranslationPart, node_->alpha(), node_->rgb_entries, nullptr, nullptr, nullptr);
             }
-            if (node_->children_list)
-            segs_gfxTreeDrawNode(node_->children_list, *node_->viewspace);
+        }
+        if (node_->children_list)
+          segs_gfxTreeDrawNode(node_->children_list, *node_->viewspace);
     }
 }
 void segs_rendertree_modelDrawWorldmodel(ViewSortNode *vs)
@@ -300,3 +298,4 @@ void patch_rendertree()
     BREAK_FUNC(addViewSortNode);
     PATCH_FUNC(rendertree_SetColors);
 }
+

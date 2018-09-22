@@ -47,17 +47,17 @@ const int c_AlphaDiscard = ALPHA_DISCARD_MODE;
 // input from vertex shader
 //
 in VS_Output {
-    #if BUMP_MODE==BUMP_MODE_BASIC
+    SHADE_MODEL vec4 Color;
+    vec2 texCoord0;
+    vec2 texCoord1;
+    vec2 texCoord2;
+    #if BUMP_MODE>=BUMP_MODE_BASIC
     SHADE_MODEL vec3 light_ts;
     SHADE_MODEL vec3 view_ts;
     #endif
-    SHADE_MODEL vec2 texCoord0;
-    SHADE_MODEL vec2 texCoord1;
-    SHADE_MODEL vec2 texCoord2;
     #ifdef FOG
     SHADE_MODEL float fogFragCoord;
     #endif
-    SHADE_MODEL vec4 Color;
 } v_in;
 // output from vertex shader
 out vec4 out_Color;
@@ -135,14 +135,14 @@ void discardStippledFragment()
 }
 vec4 calc_tint(in vec4 color, in vec4 tex)
 {
-	vec3 tinted = mix(color.rgb, tex.rgb, tex.a);
-	return vec4( tinted, color.a );
+    vec3 tinted = mix(color.rgb, tex.rgb, tex.a);
+    return vec4( tinted, color.a );
 }
 void main()
 {
     //original shaders were saling some color operations by 8?
     const float scale_factor = 1.0; //8.0
-	const float scale_factor_reg = 1.0; //8.0
+    const float scale_factor_reg = 1.0; //8.0
     discardStippledFragment();
     vec4 outColor; // color accumulator variable
     vec4 tex_base;
@@ -165,36 +165,36 @@ void main()
     }
     else
         tex_normal = vec4(0,0,0,0);
-	switch(c_FragmentMode)
+    switch(c_FragmentMode)
     {
-	case FRAGMENT_MODE_MULTIPLY:
+    case FRAGMENT_MODE_MULTIPLY:
         outColor = tex_blend*tex_base;
         outColor *= scale_factor*v_in.Color; // scale factor is actually only used in MULTIPLY_REG fs
-		break;
-	case FRAGMENT_MODE_MULTIPLY_REG:
+        break;
+    case FRAGMENT_MODE_MULTIPLY_REG:
         outColor = tex_base * tex_blend;
         outColor.rgb	*= scale_factor_reg * v_in.Color.rgb;
         if(c_LodAlpha==1)
             outColor.a		*= constColor1.a;		// modulate by lod alpha
-		break;
+        break;
 
-	case FRAGMENT_MODE_COLORBLEND_DUAL:
-		outColor = calc_dual_tint(constColor1,constColor2,tex_base,tex_blend);
+    case FRAGMENT_MODE_COLORBLEND_DUAL:
+        outColor = calc_dual_tint(constColor1,constColor2,tex_base,tex_blend);
         outColor.rgb *= scale_factor; // *v_in.Color.rgb;
-		break;
-	case FRAGMENT_MODE_ADDGLOW:
-		outColor = calc_tint(constColor1, tex_base );
-		outColor.rgb	*= scale_factor * v_in.Color.rgb;
+        break;
+    case FRAGMENT_MODE_ADDGLOW:
+        outColor = calc_tint(constColor1, tex_base );
+        outColor.rgb	*= scale_factor * v_in.Color.rgb;
         //add glow for places with lightsOn.x set
-		outColor.xyz += tex_blend.xyz * lightsOn.x; // TODO: consider adding glow after fog processing ?
-		break;
-	case FRAGMENT_MODE_ALPHADETAIL:
+        outColor.xyz += tex_blend.xyz * lightsOn.x; // TODO: consider adding glow after fog processing ?
+        break;
+    case FRAGMENT_MODE_ALPHADETAIL:
         // Uses texture 0 (base) alpha as a blend mask between texture 0 and 1.
         // Uses texture 1 (blend) alpha to modulate current constant alpha
         outColor.rgb	= mix( tex_blend.rgb, tex_base.rgb, tex_base.a );
-		outColor.rgb	*= scale_factor * v_in.Color.rgb;
+        outColor.rgb	*= scale_factor * v_in.Color.rgb;
         outColor.a		= constColor1.a * tex_blend.a;
-		break;
+        break;
     }
     #
     if(c_BumpMode==1)
@@ -223,5 +223,5 @@ void main()
             discard;
     }
     out_Color.rgb = calcFog(outColor.rgb);
-	out_Color.a = outColor.a;
+    out_Color.a = outColor.a;
 }
