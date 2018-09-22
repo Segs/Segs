@@ -718,7 +718,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     sendControlState(*this,tgt);// These are not client specific ?
     ent_manager.sendDeletes(tgt,*m_client);
     // Client specific part
-    sendClientData(mi->serverData(),*this,tgt);
+    sendClientData(getGameData(),*this,tgt);
     // Server messages follow the entity update.
     auto v= std::move(m_client->m_contents);
     for(const auto &command : v)

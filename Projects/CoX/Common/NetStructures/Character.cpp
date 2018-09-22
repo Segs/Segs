@@ -100,8 +100,8 @@ void Character::sendTray(BitStream &bs) const
 
 void Character::finalizeLevel()
 {
-    GameDataStore *data = getMapServerData();
-    uint32_t max_xp = data->expMaxLevel();
+    GameDataStore &data(getGameData());
+    uint32_t max_xp = data.expMaxLevel();
 
     if (m_char_data.m_level >= 50)
         m_char_data.m_level = 0;// /levelup can set this negative, need to bring it up
@@ -111,12 +111,12 @@ void Character::finalizeLevel()
     if(m_char_data.m_combat_level >= max_xp)
         m_char_data.m_combat_level = max_xp - 1;
 
-    if(m_char_data.m_experience_points < data->expForLevel(m_char_data.m_combat_level))
-        m_char_data.m_experience_points = data->expForLevel(m_char_data.m_combat_level);
+    if(m_char_data.m_experience_points < data.expForLevel(m_char_data.m_combat_level))
+        m_char_data.m_experience_points = data.expForLevel(m_char_data.m_combat_level);
 
-    m_char_data.m_max_insp_rows = data->countForLevel(m_char_data.m_level, data->m_pi_schedule.m_InspirationRow);
-    m_char_data.m_max_insp_cols = data->countForLevel(m_char_data.m_level, data->m_pi_schedule.m_InspirationCol);
-    m_char_data.m_max_enhance_slots = data->countForLevel(m_char_data.m_level, data->m_pi_schedule.m_BoostSlot);
+    m_char_data.m_max_insp_rows = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_InspirationRow);
+    m_char_data.m_max_insp_cols = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_InspirationCol);
+    m_char_data.m_max_enhance_slots = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_BoostSlot);
 
     // TODO: client will only accept 5col x 4row of insps MAX, see Issue #524
     assert(m_char_data.m_max_insp_cols <= 5 || m_char_data.m_max_insp_rows <= 4);

@@ -141,13 +141,13 @@ struct NpcCreator
         if(has_npc && map_instance)
         {
             qCDebug(logNPCs) << "Attempting to spawn npc" << persistent_name << "at" << v[3][0] << v[3][1] << v[3][2];
-            const NPCStorage & npc_store(map_instance->serverData().getNPCDefinitions());
+            const NPCStorage & npc_store(getGameData().getNPCDefinitions());
             QString npc_costume_name = convertNpcName(persistent_name);
             const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_costume_name);
             if (npc_def)
             {
                 int idx = npc_store.npc_idx(npc_def);
-                Entity *e = map_instance->m_entities.CreateNpc(map_instance->serverData(),*npc_def, idx, 0);
+                Entity *e = map_instance->m_entities.CreateNpc(getGameData(),*npc_def, idx, 0);
                 forcePosition(*e,glm::vec3(v[3]));
                 auto valquat = glm::quat_cast(v);
 

@@ -147,12 +147,7 @@ MapManager &MapServer::map_manager()
     return d->m_manager;
 }
 
-GameDataStore &MapServer::runtimeData()
-{
-    return d->m_runtime_data;
-}
-
-void MapServer::sett_game_server_owner(uint8_t owner_id)
+void MapServer::set_game_server_owner(uint8_t owner_id)
 {
     m_owner_game_server_id = owner_id;
 }

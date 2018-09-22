@@ -10,7 +10,6 @@
 #include "BitStream.h"
 #include "GameData/power_definitions.h"
 #include "GameData/GameDataStore.h"
-#include "Servers/MapServer/DataHelpers.h"
 
 #include <cereal/cereal.hpp>
 #include <QtCore/QString>
@@ -182,7 +181,7 @@ static const constexpr  uint32_t    class_version = 1;
 
         Power_Data getPowerTemplate() const
         {
-            return getMapServerData()->get_power_template(m_power_info.m_pcat_idx, m_power_info.m_pset_idx, m_power_info.m_pow_idx);
+            return getGameData().get_power_template(m_power_info.m_pcat_idx, m_power_info.m_pset_idx, m_power_info.m_pow_idx);
         }
 };
 

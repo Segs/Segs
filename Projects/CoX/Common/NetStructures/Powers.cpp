@@ -199,7 +199,7 @@ int getPowerCatByName(const QString &name)
 {
     int idx = 0;
 
-    for(const StoredPowerCategory &pcat : getMapServerData()->m_all_powers.m_categories)
+    for(const StoredPowerCategory &pcat : getGameData().m_all_powers.m_categories)
     {
         if(pcat.name.compare(name, Qt::CaseInsensitive) == 0)
             return idx;
@@ -215,7 +215,7 @@ int getPowerSetByName(const QString &name, uint32_t pcat_idx)
 {
     int idx = 0;
 
-    for(const Parse_PowerSet &pset : getMapServerData()->get_power_category(pcat_idx).m_PowerSets)
+    for(const Parse_PowerSet &pset : getGameData().get_power_category(pcat_idx).m_PowerSets)
     {
         if(pset.m_Name.compare(name, Qt::CaseInsensitive) == 0)
             return idx;
@@ -231,7 +231,7 @@ int getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx)
 {
     int idx = 0;
 
-    for(const Power_Data &pow : getMapServerData()->get_powerset(pcat_idx, pset_idx).m_Powers)
+    for(const Power_Data &pow : getGameData().get_powerset(pcat_idx, pset_idx).m_Powers)
     {
         if(pow.m_Name.compare(name, Qt::CaseInsensitive) == 0)
             return idx;
@@ -245,7 +245,7 @@ int getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx)
 
 CharacterPower getPowerData(PowerPool_Info &ppool)
 {
-    Power_Data power = getMapServerData()->get_power_template(ppool.m_pcat_idx, ppool.m_pset_idx, ppool.m_pow_idx);
+    Power_Data power = getGameData().get_power_template(ppool.m_pcat_idx, ppool.m_pset_idx, ppool.m_pow_idx);
 
     CharacterPower result;
     result.m_power_info.m_pcat_idx      = ppool.m_pcat_idx;
@@ -266,7 +266,7 @@ CharacterPower getPowerData(PowerPool_Info &ppool)
 CharacterPowerSet getPowerSetData(PowerPool_Info &ppool)
 {
     CharacterPowerSet result;
-    Parse_PowerSet powerset = getMapServerData()->get_powerset(ppool.m_pcat_idx, ppool.m_pset_idx);
+    Parse_PowerSet powerset = getGameData().get_powerset(ppool.m_pcat_idx, ppool.m_pset_idx);
 
     for(uint32_t pow_idx = 0; pow_idx < powerset.m_Powers.size(); ++pow_idx)
     {
@@ -448,7 +448,7 @@ void addInspirationByName(CharacterData &cd, QString &name)
     bool found  = false;
 
     int i = 0;
-    for(const Parse_PowerSet &pset : getMapServerData()->get_power_category(pcat_idx).m_PowerSets)
+    for(const Parse_PowerSet &pset : getGameData().get_power_category(pcat_idx).m_PowerSets)
     {
         int j = 0;
         for(const Power_Data &pow : pset.m_Powers)
@@ -665,7 +665,7 @@ void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level)
     }
 
     int i = 0;
-    for(const Parse_PowerSet &pset : getMapServerData()->get_power_category(pcat_idx).m_PowerSets)
+    for(const Parse_PowerSet &pset : getGameData().get_power_category(pcat_idx).m_PowerSets)
     {
         if(pset.m_Name.compare(name, Qt::CaseInsensitive) == 0)
         {
@@ -842,8 +842,8 @@ void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow)
         pow->m_total_eh_slots = 3;
 
     // Modify based upon level
-    pow->m_total_eh_slots = pow->m_total_eh_slots + getMapServerData()->countForLevel(
-                cd.m_combat_level - pow->m_level_bought, getMapServerData()->m_pi_schedule.m_FreeBoostSlotsOnPower);
+    pow->m_total_eh_slots = pow->m_total_eh_slots + getGameData().countForLevel(
+                cd.m_combat_level - pow->m_level_bought, getGameData().m_pi_schedule.m_FreeBoostSlotsOnPower);
 
 //    if(pow->m_enhancements.size() <= pow->m_total_eh_slots)
 //        pow->m_enhancements.resize(pow->m_total_eh_slots);
@@ -865,9 +865,9 @@ float enhancementCombineChances(CharacterEnhancement *eh1, CharacterEnhancement 
     qCDebug(logPowers) << "chance_idx" << chance_idx;
 
     if(eh1->m_enhance_tpl.parent_StoredPowerSet == eh2->m_enhance_tpl.parent_StoredPowerSet)
-        combine_chances = &getMapServerData()->m_combine_same.CombineChances;
+        combine_chances = &getGameData().m_combine_same.CombineChances;
     else
-        combine_chances = &getMapServerData()->m_combine_chances.CombineChances;
+        combine_chances = &getGameData().m_combine_chances.CombineChances;
 
     int chance_count = combine_chances->size();
     qCDebug(logPowers) << "combine_chances size" << chance_count;
