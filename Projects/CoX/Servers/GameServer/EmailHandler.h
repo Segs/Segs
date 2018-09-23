@@ -31,22 +31,39 @@ struct ClientSessionData
     uint32_t m_instance_id;
 };
 
+struct EmailData
+{
+    uint32_t m_email_id;
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;
+    QString m_sender_name;          // take this from db during runtime based on sender_id?
+    QString m_subject;
+    QString m_message;
+    uint32_t m_timestamp;
+    bool m_is_read_by_recipient;
+};
+
+template<class Archive>
+static void serialize(Archive & archive, EmailData & src)
+{
+    archive(cereal::make_nvp("SenderName",src.m_sender_name));
+    archive(cereal::make_nvp("Subject",src.m_subject));
+    archive(cereal::make_nvp("Message",src.m_message));
+    archive(cereal::make_nvp("TimeStamp",src.m_timestamp));
+    archive(cereal::make_nvp("IsRead",src.m_is_read_by_recipient));
+}
+
 struct EmailHandlerState
 {
     std::map<uint64_t, ClientSessionData> m_stored_client_datas;
     int m_game_server_id;
 };
 
-struct EmailData
+struct PlayerEmailState
 {
-    uint32_t m_email_id;
-    uint32_t m_sender_id;
-    uint32_t m_recipient_id;
-    QString m_sender_name;
-    QString m_subject;
-    QString m_message;
-    uint32_t timestamp;
-    bool m_is_read_by_recipient;
+    std::vector<EmailData> m_received_emails;
+    std::vector<EmailData> m_sent_emails;
+    std::set<uint32_t> m_unread_email_ids;
 };
 
 class EmailHandler : public EventProcessor
