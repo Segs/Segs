@@ -40,6 +40,7 @@
 #include "NetStructures/Character.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/Entity.h"
+#include "NetStructures/Trade.h"
 #include "SEGSTimer.h"
 #include "SlashCommand.h"
 #include "WorldSimulation.h"
@@ -114,7 +115,7 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
   : m_data_path(mapdir_path), m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
     m_addresses(listen_addr)
 {
-    m_world = new World(m_entities, serverData().m_player_fade_in);
+    m_world = new World(m_entities, getGameData().m_player_fade_in);
     m_scripting_interface.reset(new ScriptingEngine);
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
@@ -484,6 +485,11 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evRecvNewPower:
             on_recv_new_power(static_cast<RecvNewPower *>(ev));
+        case MapEventTypes::evTradeWasCancelledMessage:
+            on_trade_cancelled(static_cast<TradeWasCancelledMessage *>(ev));
+            break;
+        case MapEventTypes::evTradeWasUpdatedMessage:
+            on_trade_updated(static_cast<TradeWasUpdatedMessage *>(ev));
             break;
         case MapEventTypes::evInitiateMapXfer:
             on_initiate_map_transfer(static_cast<InitiateMapXfer *>(ev));
@@ -493,6 +499,9 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evAwaitingDeadNoGurney:
             on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
+            break;
+        case evBrowserClose:
+            on_browser_close(static_cast<BrowserClose *>(ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
@@ -700,7 +709,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     // existing character
     Entity *ent = m_entities.CreatePlayer();
     toActualCharacter(char_data, *ent->m_char,*ent->m_player, *ent->m_entity);
-    ent->fillFromCharacter(serverData());
+    ent->fillFromCharacter(getGameData());
     ent->m_client = &map_session;
     map_session.m_ent = ent;
     // Now we inform our game server that this Map server instance is ready for the client
@@ -809,7 +818,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         QString ent_data;
         Entity *e = m_entities.CreatePlayer();
 
-        const GameDataStore &data(g_GlobalMapServer->runtimeData());
+        const GameDataStore &data(getGameData());
 
         fillEntityFromNewCharData(*e, ev->m_character_data, data);
         e->m_char->m_account_id = map_session.auth_id();
@@ -961,7 +970,7 @@ void MapInstance::sendState() {
 void MapInstance::on_combine_enhancements(CombineEnhancementsReq *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    CombineResult res=combineEnhancements(serverData(),*session.m_ent, ev->first_power, ev->second_power);
+    CombineResult res=combineEnhancements(*session.m_ent, ev->first_power, ev->second_power);
     sendEnhanceCombineResponse(session.m_ent, res.success, res.destroyed);
     session.m_ent->m_char->m_char_data.m_powers_updated = res.success || res.destroyed;
 
@@ -2239,11 +2248,6 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
     //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
-const GameDataStore &MapInstance::serverData() const
-{
-    return g_GlobalMapServer->runtimeData();
-}
-
 glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
 {
     Q_UNUSED(v);
@@ -2265,7 +2269,7 @@ void MapInstance::serialize_to(ostream &/*is*/)
 }
 void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
 {
-    const GameDataStore &data(g_GlobalMapServer->runtimeData());
+    const GameDataStore &data(getGameData());
     const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
@@ -2356,7 +2360,7 @@ void MapInstance::on_recv_new_power(RecvNewPower *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    addPower(serverData(), session.m_ent->m_char->m_char_data, ev->ppool);
+    addPower(session.m_ent->m_char->m_char_data, ev->ppool);
 }
 
 void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
@@ -2365,12 +2369,19 @@ void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
     session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
 }
 
+void MapInstance::on_browser_close(BrowserClose *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received BrowserClose";
+}
+
 
 
 void MapInstance::on_afk_update()
 {
     const std::vector<MapClientSession *> &active_sessions (m_session_store.get_active_sessions());
-    const GameDataStore &data(g_GlobalMapServer->runtimeData());
+    const GameDataStore &data(getGameData());
     QString msg;
 
     for (const auto &sess : active_sessions)
@@ -2538,6 +2549,18 @@ void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage* msg
 
     // this is sent from the reader back to the sender via EmailHandler
     // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance
+}
+
+void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
+{
+    MapClientSession& session = m_session_store.session_from_event(ev);
+    cancelTrade(*session.m_ent);
+}
+
+void MapInstance::on_trade_updated(TradeWasUpdatedMessage* ev)
+{
+    MapClientSession& session = m_session_store.session_from_event(ev);
+    updateTrade(*session.m_ent, ev->m_info);
 }
 
 //! @}

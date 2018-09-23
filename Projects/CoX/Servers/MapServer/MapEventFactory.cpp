@@ -89,6 +89,8 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 44: return new TrashEnhancementInPower;
         case 45: return new BuyEnhancementSlot;
         case 46: return new RecvNewPower;
+        case 54: return new TradeWasCancelledMessage;
+        case 55: return new TradeWasUpdatedMessage;
         case 56: return new EntityInfoRequest;
         case 57: return new SendStance;
         case 62: return new LocationVisited;
@@ -96,6 +98,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 65: return new SaveClientOptions;
         case 66: return new RecvSelectedTitles;
         case 67: return new DescriptionAndBattleCry;
+        case 77: return new BrowserClose;
     }
     qCWarning(logMapEvents, "Unhandled command event type %d", opcode);
     return nullptr;

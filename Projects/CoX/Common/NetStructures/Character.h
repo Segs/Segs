@@ -77,13 +77,13 @@ const   QString &       getName() const { return m_name; }
         void            serializeto(BitStream &buffer) const;
         void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool all_costumes=true) const;
         void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
-        void            finalizeLevel(const GameDataStore &data);
-        void            addStartingInspirations(const GameDataStore &data);
-        void            getStartingPowers(const GameDataStore &data, const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
-        void            getPowerFromBuildInfo(const GameDataStore &data,BitStream &src);
+        void            finalizeLevel();
+        void            addStartingInspirations(QStringList &starting_insps);
+        void            getStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
+        void            getPowerFromBuildInfo(BitStream &src);
         void            sendEnhancements(BitStream &bs) const;
         void            sendInspirations(BitStream &bs) const;
-        void            GetCharBuildInfo(BitStream &src, const GameDataStore &data); // serialize from char creation
+        void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
         const CharacterCostume *getCurrentCostume() const;

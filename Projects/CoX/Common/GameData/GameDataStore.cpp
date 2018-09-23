@@ -205,6 +205,13 @@ bool read_data_to(const QString &directory_path,const QString &storage,TARGET &t
 
 GameDataStore::GameDataStore()
 {
+    static bool was_created = false;
+    if(!was_created)
+        was_created = true;
+    else
+    {
+        qCritical() << "Multiple instances of GameDataStore created in a single process, expect trouble";
+    }
     packer_instance = new HashBasedPacker;
 }
 
@@ -274,13 +281,15 @@ uint32_t GameDataStore::expMaxLevel() const
 
 int GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &schedule) const
 {
-    for(uint32_t i = 0; i < schedule.size(); ++i)
+    uint32_t i = 0;
+
+    for(i = 0; i < schedule.size(); ++i)
     {
         if (lvl < schedule[i])
-            return i;
+            break; // i must pass through for values at the end of schedule array
     }
 
-    return 0;
+    return i;
 }
 
 bool GameDataStore::read_costumes(const QString &directory_path)
@@ -445,6 +454,20 @@ bool GameDataStore::read_pi_schedule(const QString &directory_path)
     return true;
 }
 
+const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)
+{
+    return m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx];
+}
+
+const Power_Data& GameDataStore::get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+{
+    return m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
+}
+
+const StoredPowerCategory& GameDataStore::get_power_category(uint32_t pcat_idx)
+{
+    return m_all_powers.m_categories[pcat_idx];
+}
 
 int getEntityOriginIndex(const GameDataStore &data, bool is_player, const QString &origin_name)
 {
@@ -473,7 +496,12 @@ int getEntityClassIndex(const GameDataStore &data, bool is_player, const QString
     }
     qWarning() << "Failed to locate class index for"<<class_name;
     return 0;
+}
 
+GameDataStore &getGameData() {
+    static GameDataStore instance;
+    return instance;
 }
 
 //! @}
+

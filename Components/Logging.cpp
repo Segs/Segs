@@ -29,6 +29,7 @@ SEGS_LOGGING_CATEGORY(logDB,           "log.db")
 SEGS_LOGGING_CATEGORY(logInput,        "log.input")
 SEGS_LOGGING_CATEGORY(logOrientation,  "log.orientation")
 SEGS_LOGGING_CATEGORY(logPosition,     "log.position")
+SEGS_LOGGING_CATEGORY(logMovement,     "log.movement")
 SEGS_LOGGING_CATEGORY(logChat,         "log.chat")
 SEGS_LOGGING_CATEGORY(logInfoMsg,      "log.infomsg")
 SEGS_LOGGING_CATEGORY(logEmotes,       "log.emotes")
@@ -44,6 +45,7 @@ SEGS_LOGGING_CATEGORY(logLFG,          "log.lfg")
 SEGS_LOGGING_CATEGORY(logNPCs,         "log.npcs")
 SEGS_LOGGING_CATEGORY(logAnimations,   "log.animations")
 SEGS_LOGGING_CATEGORY(logPowers,       "log.powers")
+SEGS_LOGGING_CATEGORY(logTrades,       "log.trades")
 
 void setLoggingFilter()
 {
@@ -60,6 +62,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.input="          + config.value("log_input","false").toString();
     filter_rules += "\nlog.position="       + config.value("log_position","false").toString();
     filter_rules += "\nlog.orientation="    + config.value("log_orientation","false").toString();
+    filter_rules += "\nlog.movement="       + config.value("log_movement","false").toString();
     filter_rules += "\nlog.chat="           + config.value("log_chat","false").toString();
     filter_rules += "\nlog.infomsg="        + config.value("log_infomsg","false").toString();
     filter_rules += "\nlog.emotes="         + config.value("log_emotes","true").toString();
@@ -75,6 +78,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.npcs="           + config.value("log_npcs","false").toString();
     filter_rules += "\nlog.animations="     + config.value("log_animations","false").toString();
     filter_rules += "\nlog.powers="         + config.value("log_powers","false").toString();
+    filter_rules += "\nlog.trades="         + config.value("log_trades","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -105,8 +109,10 @@ void toggleLogging(QString &category)
         cat = &logInput();
     else if(category.contains("position",Qt::CaseInsensitive))
         cat = &logPosition();
-    else if(category.contains("orentation",Qt::CaseInsensitive))
+    else if(category.contains("orientation",Qt::CaseInsensitive))
         cat = &logOrientation();
+    else if(category.contains("movement",Qt::CaseInsensitive))
+        cat = &logMovement();
     else if(category.contains("chat",Qt::CaseInsensitive))
         cat = &logChat();
     else if(category.contains("infomsg",Qt::CaseInsensitive))
@@ -137,6 +143,8 @@ void toggleLogging(QString &category)
         cat = &logAnimations();
     else if(category.contains("powers",Qt::CaseInsensitive))
         cat = &logPowers();
+    else if(category.contains("trades",Qt::CaseInsensitive))
+        cat = &logTrades();
     else
         return;
 
@@ -158,8 +166,9 @@ void dumpLogging()
     output += "\n\t teams: "        + QString::number(logTeams().isDebugEnabled());
     output += "\n\t db: "           + QString::number(logDB().isDebugEnabled());
     output += "\n\t input: "        + QString::number(logInput().isDebugEnabled());
-    output += "\n\t position: "     + QString::number(logLFG().isDebugEnabled());
+    output += "\n\t position: "     + QString::number(logPosition().isDebugEnabled());
     output += "\n\t orientation: "  + QString::number(logOrientation().isDebugEnabled());
+    output += "\n\t movement: "     + QString::number(logMovement().isDebugEnabled());
     output += "\n\t chat: "         + QString::number(logChat().isDebugEnabled());
     output += "\n\t infomsg: "      + QString::number(logInfoMsg().isDebugEnabled());
     output += "\n\t emotes: "       + QString::number(logEmotes().isDebugEnabled());
@@ -174,6 +183,7 @@ void dumpLogging()
     output += "\n\t npcs: "         + QString::number(logNPCs().isDebugEnabled());
     output += "\n\t animations: "   + QString::number(logAnimations().isDebugEnabled());
     output += "\n\t powers: "       + QString::number(logPowers().isDebugEnabled());
+    output += "\n\t trades: "       + QString::number(logTrades().isDebugEnabled());
 
     qDebug().noquote() << output;
 }

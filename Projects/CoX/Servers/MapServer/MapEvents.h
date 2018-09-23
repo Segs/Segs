@@ -895,6 +895,7 @@ public:
 };
 } // end of SEGSEvents namespace
 
+#include "Events/Browser.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/EntitiesResponse.h"
 #include "Events/FriendsListUpdate.h"
@@ -905,3 +906,10 @@ public:
 #include "Events/SaveClientOptions.h"
 #include "Events/SceneEvent.h"
 #include "Events/Shortcuts.h"
+#include "Events/TradeCancel.h"
+#include "Events/TradeInit.h"
+#include "Events/TradeOffer.h"
+#include "Events/TradeSuccess.h"
+#include "Events/TradeUpdate.h"
+#include "Events/TradeWasCancelledMessage.h"
+#include "Events/TradeWasUpdatedMessage.h"

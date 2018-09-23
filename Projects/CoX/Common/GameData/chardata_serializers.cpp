@@ -114,13 +114,7 @@ void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version)
 
     archive(cereal::make_nvp("PowerInfo", pwr.m_power_info));
     archive(cereal::make_nvp("Index", pwr.m_index));
-    archive(cereal::make_nvp("Name", pwr.m_name));
     archive(cereal::make_nvp("LevelBought", pwr.m_level_bought));
-    archive(cereal::make_nvp("NumCharges", pwr.m_num_charges));
-    archive(cereal::make_nvp("UsageTime", pwr.m_usage_time));
-    archive(cereal::make_nvp("ActivationTime", pwr.m_activation_time));
-    archive(cereal::make_nvp("Range", pwr.m_range));
-    archive(cereal::make_nvp("RechargeTime", pwr.m_recharge_time));
     archive(cereal::make_nvp("ActivationState", pwr.m_activation_state));
     archive(cereal::make_nvp("NumEnhancements", pwr.m_total_eh_slots));
     archive(cereal::make_nvp("Enhancements", pwr.m_enhancements));
