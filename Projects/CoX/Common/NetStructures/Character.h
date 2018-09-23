@@ -81,6 +81,7 @@ const   QString &       getName() const { return m_name; }
         void            addStartingInspirations(QStringList &starting_insps);
         void            getStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
         void            getPowerFromBuildInfo(BitStream &src);
+        void            finalizeCombatLevel();
         void            sendEnhancements(BitStream &bs) const;
         void            sendInspirations(BitStream &bs) const;
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation

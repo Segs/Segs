@@ -843,7 +843,7 @@ void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow)
 
     // Modify based upon level
     pow->m_total_eh_slots = pow->m_total_eh_slots + getGameData().countForLevel(
-                cd.m_combat_level - pow->m_level_bought, getGameData().m_pi_schedule.m_FreeBoostSlotsOnPower);
+                cd.m_level - pow->m_level_bought, getGameData().m_pi_schedule.m_FreeBoostSlotsOnPower);
 
 //    if(pow->m_enhancements.size() <= pow->m_total_eh_slots)
 //        pow->m_enhancements.resize(pow->m_total_eh_slots);

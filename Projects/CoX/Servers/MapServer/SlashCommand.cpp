@@ -520,26 +520,25 @@ void cmdHandler_SetInf(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess)
 {
-    uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt()-1; // convert from 1-50 to 0-49
 
-    setLevel(*sess.m_ent->m_char, attrib); // TODO: Why does this result in -1?
-    sess.m_ent->m_char->finalizeLevel();
+    setLevel(*sess.m_ent->m_char, attrib);
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(sess, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 
-    QString msg = "Setting Level to: " + QString::number(attrib);
+    QString msg = "Setting Level to: " + QString::number(attrib + 1);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
 void cmdHandler_SetCombatLevel(const QString &cmd, MapClientSession &sess)
 {
-    uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt()-1; // convert from 1-50 to 0-49
 
-    setCombatLevel(*sess.m_ent->m_char, attrib); // TODO: Why does this result in -1?
+    setCombatLevel(*sess.m_ent->m_char, attrib);
 
-    QString msg = "Setting Combat Level to: " + QString::number(attrib);
+    QString msg = "Setting Combat Level to: " + QString::number(attrib+1);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
@@ -564,7 +563,7 @@ void cmdHandler_DebugChar(const QString &/*cmd*/, MapClientSession &sess)
             + "\n  idx: " + QString::number(sess.m_ent->m_idx)
             + "\n  access: " + QString::number(sess.m_ent->m_entity_data.m_access_level)
             + "\n  acct: " + QString::number(chardata.m_account_id)
-            + "\n  lvl/clvl: " + QString::number(chardata.m_char_data.m_level) + "/" + QString::number(chardata.m_char_data.m_combat_level)
+            + "\n  lvl/clvl: " + QString::number(chardata.m_char_data.m_level+1) + "/" + QString::number(chardata.m_char_data.m_combat_level+1)
             + "\n  inf: " + QString::number(chardata.m_char_data.m_influence)
             + "\n  xp/debt: " + QString::number(chardata.m_char_data.m_experience_points) + "/" + QString::number(chardata.m_char_data.m_experience_debt)
             + "\n  lfg: " + QString::number(chardata.m_char_data.m_lfg)
@@ -914,7 +913,7 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
     CharacterData &cd = sess.m_ent->m_char->m_char_data;
     QVector<QStringRef> args(cmd.splitRef(' '));
     QString name = args.value(1).toString();
-    uint32_t level = args.value(2).toInt();
+    uint32_t level = args.value(2).toUInt() -1;
     QString msg = "You do not have room for any more enhancements!";
 
     if(args.size() < 3)
@@ -939,10 +938,10 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
 {
-    uint32_t level = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    uint32_t level = cmd.midRef(cmd.indexOf(' ')+1).toUInt() -1; // convert from 1-50 to 0-49
 
     // levelup command appears to only work 1 level at a time.
-    if(level > sess.m_ent->m_char->m_char_data.m_level+1)
+    if(level > sess.m_ent->m_char->m_char_data.m_level)
         level = sess.m_ent->m_char->m_char_data.m_level + 1;
 
     setLevel(*sess.m_ent->m_char, level);
