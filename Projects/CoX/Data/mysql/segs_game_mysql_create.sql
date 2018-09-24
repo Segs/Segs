@@ -68,7 +68,7 @@ CREATE TABLE `table_versions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO `table_versions` (`id`, `table_name`, `version`, `last_update`) VALUES
-(1, 'db_version', 7, '2018-05-03 17:54:32'),
+(1, 'db_version', 8, '2018-05-03 17:54:32'),
 (2, 'table_versions', 0, '2017-11-11 08:57:42'),
 (3, 'accounts', 1, '2018-05-03 12:52:03'),
 (4, 'characters', 8, '2018-05-04 14:58:27'),

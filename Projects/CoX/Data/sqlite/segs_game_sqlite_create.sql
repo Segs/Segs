@@ -7,7 +7,7 @@ CREATE TABLE `table_versions` (
     `last_update` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO table_versions VALUES(1,'db_version',7,'2018-05-03 17:52:33');
+INSERT INTO table_versions VALUES(1,'db_version',8,'2018-05-03 17:52:33');
 INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
 INSERT INTO table_versions VALUES(3,'accounts',1,'2017-05-03 12:56:03');
 INSERT INTO table_versions VALUES(4,'characters',8,'2018-05-04 14:58:27');

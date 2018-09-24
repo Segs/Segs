@@ -53,6 +53,18 @@ void GameDBSyncHandler::dispatch(Event *ev)
         on_get_entity(static_cast<GetEntityRequest *>(ev)); break;
     case GameDBEventTypes::evGetEntityByNameRequest:
         on_get_entity_by_name(static_cast<GetEntityByNameRequest *>(ev)); break;
+    case GameDBEventTypes::evEmailCreateMessage:
+        on_email_create(static_cast<EmailCreateMessage *>(ev)); break;
+    case GameDBEventTypes::evEmailUpdateMessage:
+        on_email_update(static_cast<EmailUpdateMessage *>(ev)); break;
+    case GameDBEventTypes::evEmailRemoveMessage:
+        on_email_remove(static_cast<EmailRemoveMessage *>(ev)); break;
+    case GameDBEventTypes::evGetEmailRequest:
+        on_get_email(static_cast<GetEmailRequest *>(ev)); break;
+    case GameDBEventTypes::evGetEmailBySenderIdRequest:
+        on_get_email_by_sender_id(static_cast<GetEmailBySenderIdRequest *>(ev)); break;
+    case GameDBEventTypes::evGetEmailByRecipientIdRequest:
+        on_get_email_by_recipient_id(static_cast<GetEmailByRecipientIdRequest *>(ev)); break;
     default: assert(false); break;
     }
 }
@@ -160,5 +172,23 @@ void GameDBSyncHandler::on_get_entity_by_name(GetEntityByNameRequest *ev)
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 }
+
+void GameDBSyncHandler::on_email_create(EmailCreateMessage* msg)
+{}
+
+void GameDBSyncHandler::on_email_update(EmailUpdateMessage* msg)
+{}
+
+void GameDBSyncHandler::on_email_remove(EmailRemoveMessage* msg)
+{}
+
+void GameDBSyncHandler::on_get_email(GetEmailRequest* ev)
+{}
+
+void GameDBSyncHandler::on_get_email_by_sender_id(GetEmailBySenderIdRequest* ev)
+{}
+
+void GameDBSyncHandler::on_get_email_by_recipient_id(GetEmailByRecipientIdRequest* ev)
+{}
 
 //! @}

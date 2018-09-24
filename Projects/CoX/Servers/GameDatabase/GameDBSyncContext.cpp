@@ -138,6 +138,15 @@ bool GameDbSyncContext::loadAndConfigure()
     m_prepared_options_update = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_player_update = std::make_unique<QSqlQuery>(*m_db);
 
+    // emails
+    m_prepared_email_insert = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_update = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_delete = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_select = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_select_by_sender_id = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_select_by_recipient_id = std::make_unique<QSqlQuery>(*m_db);
+
+
     // TO-DO: prepQuery for playerUpdate
 
     prepQuery(*m_prepared_char_update,
@@ -181,6 +190,19 @@ bool GameDbSyncContext::loadAndConfigure()
     prepQuery(*m_prepared_char_exists,"SELECT exists (SELECT 1 FROM characters WHERE char_name = ? LIMIT 1)");
     prepQuery(*m_prepared_char_delete,"DELETE FROM characters WHERE account_id=? AND slot_index=?");
     prepQuery(*m_prepared_get_char_slots,"SELECT slot_index FROM characters WHERE account_id=?");
+
+    // email prepQueries
+    prepQuery(*m_prepared_email_insert, "INSERT INTO emails (id, sender_id, recipient_id, email_data)"
+                                        "VALUES (:id, :sender_id, :recipient_id, :email_data");
+
+    // new_id is either sender_id or 0 (deleted chara and/or account, could separate this tho)
+    prepQuery(*m_prepared_email_update, "UPDATE emails SET "
+                                        "email_data=:email_data, sender_id=:new_id "
+                                        "WHERE id=:id");
+    prepQuery(*m_prepared_email_delete, "DELETE FROM emails WHERE id=?");
+    prepQuery(*m_prepared_email_select, "SELECT * FROM emails where id=?");
+    prepQuery(*m_prepared_email_select_by_sender_id, "SELECT * FROM emails where sender_id=?");
+    prepQuery(*m_prepared_email_select_by_recipient_id, "SELECT * FROM emails where recipient_id=?");
 
     return true;
 }
