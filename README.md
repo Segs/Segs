@@ -138,7 +138,7 @@ Finally, click `Configure Project`.
 **3. Build All**
 
 If everything went well, you'll see the SEGS file tree in the _Projects Pane_ of QTCreator.
-![Projects Pane](https://segs.nemerle.eu/user/pages/02.developers/ProjectConfiguration.png "Projects Pane")
+![Projects Pane](https://segs.io/user/pages/02.developers/ConfiguredProject.png "Projects Pane")
 
 Now, select `Build > Build All` from the menu at the top of QTCreator. The bottom half of the window will show compiling output as SEGS builds. The first time you build SEGS it may take several minutes and the output window may show hundreds of warnings, but if compiled successfully, you'll see the following in the _Compile Output_ window.
 ```
