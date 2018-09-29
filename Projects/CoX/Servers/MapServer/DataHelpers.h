@@ -125,6 +125,7 @@ void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, con
 void sendTradeSuccess(Entity& src, Entity& tgt);
 void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts);
 void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno);
+void sendContactDialogClose(MapClientSession &src);
 
 
 /*

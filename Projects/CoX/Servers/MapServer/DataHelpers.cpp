@@ -532,6 +532,12 @@ void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_
         src.addCommand<ContactDialogOk>(msg_body);
 }
 
+void sendContactDialogClose(MapClientSession &src)
+{
+    qCDebug(logSlashCommand) << "Sending ContactDialogClose";
+    src.addCommand<ContactDialogClose>();
+}
+
 
 /*
  * sendEmail Wrappers for providing access to Email Database
