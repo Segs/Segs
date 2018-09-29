@@ -117,6 +117,8 @@ void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version)
     archive(cereal::make_nvp("LevelBought", pwr.m_level_bought));
     archive(cereal::make_nvp("ActivationState", pwr.m_activation_state));
     archive(cereal::make_nvp("NumEnhancements", pwr.m_total_eh_slots));
+    archive(cereal::make_nvp("IsLimited", pwr.m_is_limited));
+    archive(cereal::make_nvp("ChargeRemaining", pwr.m_charges_remaining));
     archive(cereal::make_nvp("Enhancements", pwr.m_enhancements));
 }
 
@@ -192,6 +194,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
 
     archive(cereal::make_nvp("Level",cd.m_level));
     archive(cereal::make_nvp("CombatLevel",cd.m_combat_level));
+    archive(cereal::make_nvp("SecurityThreat",cd.m_security_threat));
     archive(cereal::make_nvp("XP",cd.m_experience_points));
     archive(cereal::make_nvp("Debt",cd.m_experience_debt));
     archive(cereal::make_nvp("PatrolXP",cd.m_experience_patrol));

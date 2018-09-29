@@ -390,10 +390,10 @@ void sendFloatingNumbers(MapClientSession &src, uint32_t tgt_idx, int32_t amount
     src.addCommand<FloatingDamage>(src.m_ent->m_idx, tgt_idx, amount);
 }
 
-void sendLevelUp(Entity *tgt)
+void sendLevelUp(MapClientSession &src)
 {
-    //qCDebug(logSlashCommand) << "Sending LevelUp:" << tgt->m_idx;
-    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<LevelUp>(new LevelUp()));
+    //qCDebug(logSlashCommand) << "Sending LevelUp:" << src.m_idx;
+    src.addCommand<LevelUp>();
 }
 
 void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy)
@@ -552,9 +552,25 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
 {
     // Add to activepowers queue
     CharacterPower * ppower = nullptr;
-    ppower = getOwnedPower(ent, pset_idx, pow_idx);
-    if(ppower != nullptr && !ppower->getPowerTemplate().m_Name.isEmpty())
-        ent.m_queued_powers.push_back(ppower);
+    ppower = getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
+
+    if(ppower == nullptr || ppower->getPowerTemplate().m_Name.isEmpty())
+        return;
+
+    if(ppower->m_is_limited && ppower->m_charges_remaining)
+        --ppower->m_charges_remaining;
+
+    // Queue power
+    ppower->m_active_state_change   = true;
+    ppower->m_activation_state      = true;
+    ent.m_queued_powers.push_back(ppower->m_power_info); // must send powers vector idx here
+
+    // Recharging Queue
+    if(ppower->getPowerTemplate().RechargeTime)
+    {
+        ppower->m_timer_updated = true;
+        ent.m_recharging_powers.push_back(ppower->m_power_info);
+    }
 
     float endurance = getEnd(*ent.m_char);
     float end_cost = std::max(ppower->getPowerTemplate().EnduranceCost, 1.0f);
@@ -588,6 +604,9 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     QString console_msg;
     assert(ent.m_client);
     sendFloatingInfo(*ent.m_client, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+
+    if(ppower->m_is_limited && !ppower->m_charges_remaining)
+        ppower->m_erase_power = true; // mark for removal
 
     if(tgt_idx == ent.m_idx) // Skip the rest if targeting self.
         return;

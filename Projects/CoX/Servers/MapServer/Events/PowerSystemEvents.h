@@ -179,11 +179,12 @@ class BuyEnhancementSlot final : public MapLinkEvent
 {
 public:
     // [[ev_def:field]]
-    int m_num;
+    int m_available_slots;
     // [[ev_def:field]]
-    int m_pset_idx;
+    std::vector<int> m_pset_idx;
     // [[ev_def:field]]
-    int m_pow_idx;
+    std::vector<int> m_pow_idx;
+
     BuyEnhancementSlot() : MapLinkEvent(MapEventTypes::evBuyEnhancementSlot)
     {}
     void    serializeto(BitStream &bs) const override
@@ -193,9 +194,12 @@ public:
     }
     void    serializefrom(BitStream &bs) override
     {
-        m_num       = bs.GetPackedBits(1);
-        m_pset_idx  = bs.GetPackedBits(1);
-        m_pow_idx   = bs.GetPackedBits(1);
+        m_available_slots = bs.GetPackedBits(1);
+        for(int i = 0; i < m_available_slots; ++i)
+        {
+            m_pset_idx.push_back(bs.GetPackedBits(1));
+            m_pow_idx.push_back(bs.GetPackedBits(1));
+        }
     }
     EVENT_IMPL(BuyEnhancementSlot)
 

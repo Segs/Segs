@@ -136,17 +136,6 @@ enum class AppearanceType : uint8_t
     SequencerName = 4
 };
 
-enum class StateMode : uint8_t
-{
-    Simple              = 0,
-    Create_Team         = 1,
-    Create_Team_Wait    = 2,
-    Dead                = 3,
-    Ressurect           = 4,
-    NeedsGurney         = 5,
-    Max_State           = 6
-};
-
 struct SuperGroup
 {
     int             m_SG_id         = {0};
@@ -237,18 +226,20 @@ public:
         uint32_t            m_target_idx            = 0;
         uint32_t            m_assist_target_idx     = 0;
 
-        std::vector<CharacterPower *> m_queued_powers;
-        std::vector<CharacterPower *> m_recharging_powers;
+        QVector<PowerPool_Info> m_buffs;
+        QVector<PowerPool_Info> m_queued_powers;
+        QVector<PowerPool_Info> m_recharging_powers;
+        QVector<NetFx>          m_net_fx;
         CharacterPower    * m_stance                = nullptr;
+        bool                m_update_buffs          = false;
 
         int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
         int                 m_num_fx                = 0;
         bool                m_is_logging_out        = false;
         int                 m_time_till_logout      = 0;    // time in miliseconds untill given entity should be marked as logged out.
-        std::vector<NetFx>  m_fx1;
         AppearanceType      m_costume_type          = AppearanceType::None;
         int                 m_state_mode            = 0;
-        bool                m_state_mode_send       = false;
+        bool                m_has_state_mode       = false;
         bool                m_odd_send              = false;
         bool                m_no_draw_on_client     = false;
         bool                m_seq_update            = false;

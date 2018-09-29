@@ -40,10 +40,6 @@ Character::Character()
     m_char_data.m_supergroup_costume            = false;
     m_sg_costume                                = nullptr;
     m_char_data.m_using_sg_costume              = false;
-    m_char_data.m_current_attribs.m_HitPoints   = 25;
-    m_max_attribs.m_HitPoints                   = 50;
-    m_char_data.m_current_attribs.m_Endurance   = 33;
-    m_max_attribs.m_Endurance                   = 43;
     m_char_data.m_has_titles = m_char_data.m_has_the_prefix
             || !m_char_data.m_titles[0].isEmpty()
             || !m_char_data.m_titles[1].isEmpty()
@@ -100,6 +96,8 @@ void Character::sendTray(BitStream &bs) const
 
 void Character::finalizeLevel()
 {
+    qCDebug(logPowers) << "Finalizing Level";
+
     GameDataStore &data(getGameData());
     uint32_t max_level = data.expMaxLevel();
 
@@ -119,18 +117,27 @@ void Character::finalizeLevel()
     }
     //if (m_char_data.m_sidekick.m_type   == SidekickType::IsMentor)       //todo: set sidekick's level to keep up with mentor
 
-    // TODO: client will only accept 5col x 4row of insps MAX, see Issue #524
+    m_char_data.m_security_threat = m_char_data.m_level;
+
+    // client will only accept 5col x 4row of insps MAX
     assert(m_char_data.m_max_insp_cols <= 5 || m_char_data.m_max_insp_rows <= 4);
 
+    // Add inherent powers for this level
+    addPowersByLevel(QStringLiteral("Inherent"), QStringLiteral("Inherent"), m_char_data.m_level);
+
+    /*
     int num_powersets = m_char_data.m_powersets.size();
     for(int idx = 1; idx < num_powersets; ++idx) // Skipping 0 powerset (temporary powers)
     {
         CharacterPowerSet pset = m_char_data.m_powersets[idx];
         for(CharacterPower &pow : pset.m_powers)
-            reserveEnhancementSlot(m_char_data, &pow);
+            reserveEnhancementSlot(&pow, m_char_data.m_level);
     }
+    */
 
-    m_char_data.m_powers_updated = false;
+    m_char_data.m_has_updated_powers = true; // this must be true, because we're updating powers
+    m_char_data.m_reset_powersets = true; // possible that we need to reset the powerset array client side
+
 }
 
 void Character::addStartingInspirations(QStringList &starting_insps)
@@ -139,7 +146,7 @@ void Character::addStartingInspirations(QStringList &starting_insps)
         addInspirationByName(m_char_data, name);
 }
 
-void Character::getStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names)
+void Character::addStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names)
 {
     PowerPool_Info ppool;
 
@@ -150,8 +157,37 @@ void Character::getStartingPowers(const QString &pcat_name, const QString &pset_
 
     for(const QString &name : power_names)
     {
+        // Because we pull from settings.cfg, it's possible
+        // that power_names is empty but still contains one
+        // item with a value of "". So we break here.
+        if(name.isEmpty())
+            break;
+
         ppool.m_pow_idx = getPowerByName(name, ppool.m_pcat_idx, ppool.m_pset_idx);
         addPower(m_char_data, ppool);
+    }
+}
+
+void Character::addPowersByLevel(const QString &pcat_name, const QString &pset_name, uint32_t level)
+{
+    PowerPool_Info ppool;
+    ppool.m_pcat_idx = getPowerCatByName(pcat_name);
+    ppool.m_pset_idx = getPowerSetByName(pset_name, ppool.m_pcat_idx);
+
+    Parse_PowerSet pset = getGameData().get_powerset(ppool.m_pcat_idx, ppool.m_pset_idx);
+
+    // Iterate through the availability of all powers in the set
+    for(size_t i = 0; i < pset.Available.size(); ++i)
+    {
+        if(level >= pset.Available.at(i))
+        {
+            // skip prestige powers
+            if(pset.m_Powers.at(i).m_Name.contains("prestige_", Qt::CaseInsensitive))
+                continue;
+
+            ppool.m_pow_idx = uint32_t(i);
+            addPower(m_char_data, ppool); // skips powers already owned
+        }
     }
 }
 
@@ -186,10 +222,16 @@ void Character::GetCharBuildInfo(BitStream &src)
     m_char_data.m_influence = startinf;
 
     // Temporary Powers MUST come first (must be idx 0)
-    getStartingPowers(QStringLiteral("Temporary_Powers"), QStringLiteral("Temporary_Powers"), starting_temps);
-    getStartingPowers(QStringLiteral("Inherent"), QStringLiteral("Inherent"), inherent_and_preorders);
+    addStartingPowers(QStringLiteral("Temporary_Powers"), QStringLiteral("Temporary_Powers"), starting_temps);
+    addStartingPowers(QStringLiteral("Inherent"), QStringLiteral("Inherent"), inherent_and_preorders);
     getPowerFromBuildInfo(src);     // primary, secondary
+
+    // Now that character is created. Finalize level and update hp and end
     finalizeLevel();
+    setHP(*this); // set max hp
+    setEnd(*this); // set max end
+
+    // This must come after finalize
     addStartingInspirations(starting_insps);      // resurgence and phenomenal_luck
 
     m_char_data.m_trays.serializefrom(src);
@@ -219,14 +261,14 @@ void Character::sendInspirations(BitStream &bs) const
     bs.StorePackedBits(3, max_cols); // count
     bs.StorePackedBits(3, max_rows); // count
 
-    for(int i = 0; i < max_cols; ++i)
+    for(int col = 0; col < max_cols; ++col)
     {
-        for(int j = 0; j < max_rows; ++j)
+        for(int row = 0; row < max_rows; ++row)
         {
-            bs.StoreBits(1, m_char_data.m_inspirations.value(i, j).m_has_insp);
+            bs.StoreBits(1, m_char_data.m_inspirations.value(col, row).m_has_insp);
 
-            if(m_char_data.m_inspirations.value(i, j).m_has_insp)
-                m_char_data.m_inspirations.value(i, j).m_insp_info.serializeto(bs);
+            if(m_char_data.m_inspirations.value(col, row).m_has_insp)
+                m_char_data.m_inspirations.value(col, row).m_insp_info.serializeto(bs);
         }
     }
 }
@@ -244,15 +286,18 @@ void Character::sendOwnedPowers(BitStream &bs) const
             bs.StorePackedBits(5, power.m_level_bought);
             bs.StoreFloat(power.getPowerTemplate().Range);
 
-            bs.StorePackedBits(4, power.m_total_eh_slots);
-            for(uint32_t i = 0; i < power.m_total_eh_slots; ++i)
+            if(power.m_total_eh_slots > power.m_enhancements.size())
+                qCWarning(logPowers) << "sendOwnedPowers: Total EH Slots larger than vector!";
+
+            bs.StorePackedBits(4, power.m_enhancements.size());
+            for(const CharacterEnhancement &eh : power.m_enhancements)
             {
-                bs.StoreBits(1, power.m_enhancements[i].m_slot_used); // slot has enhancement
-                if(power.m_enhancements[i].m_slot_used)
+                bs.StoreBits(1, eh.m_slot_used); // slot has enhancement
+                if(eh.m_slot_used)
                 {
-                    power.m_enhancements[i].m_enhance_info.serializeto(bs);
-                    bs.StorePackedBits(5, power.m_enhancements[i].m_level);
-                    bs.StorePackedBits(2, power.m_enhancements[i].m_num_combines);
+                    eh.m_enhance_info.serializeto(bs);
+                    bs.StorePackedBits(5, eh.m_level);
+                    bs.StorePackedBits(2, eh.m_num_combines);
                 }
             }
         }
@@ -264,7 +309,7 @@ void Character::SendCharBuildInfo(BitStream &bs) const
     Character c = *this;
     bs.StoreString(getClass(c));   // class name
     bs.StoreString(getOrigin(c));  // origin name
-    bs.StorePackedBits(5, getCombatLevel(c)); // related to combat level?
+    bs.StorePackedBits(5, getLevel(c)); // plevel is level
     PUTDEBUG("SendCharBuildInfo after plevel");
 
     // Owned Powers
@@ -496,7 +541,7 @@ void Character::finalizeCombatLevel()
 {
     GameDataStore &data(getGameData());
 
-    int entclass = getEntityClassIndex(data, true, m_char_data.m_class_name);
+    int entclass = getEntityClassIndex(data, true, getClass(*this));
     m_max_attribs.m_HitPoints = data.m_player_classes[entclass].m_AttribMaxTable[0].m_HitPoints[m_char_data.m_combat_level];
     m_max_attribs.m_Endurance = data.m_player_classes[entclass].m_AttribMaxTable[0].m_Endurance[m_char_data.m_combat_level];
 

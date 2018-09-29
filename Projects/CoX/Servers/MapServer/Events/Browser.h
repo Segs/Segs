@@ -53,7 +53,8 @@ namespace SEGSEvents
         {
             qCDebug(logMapEvents) << "Browser Close Event";
         }
-         EVENT_IMPL(BrowserClose)
+
+        EVENT_IMPL(BrowserClose)
     };
 
 } // end of SEGSEvents namespace

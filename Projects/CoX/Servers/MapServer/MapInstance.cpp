@@ -474,16 +474,17 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evRecvNewPower:
             on_recv_new_power(static_cast<RecvNewPower *>(ev));
-        case MapEventTypes::evTradeWasCancelledMessage:
+            break;
+        case evTradeWasCancelledMessage:
             on_trade_cancelled(static_cast<TradeWasCancelledMessage *>(ev));
             break;
-        case MapEventTypes::evTradeWasUpdatedMessage:
+        case evTradeWasUpdatedMessage:
             on_trade_updated(static_cast<TradeWasUpdatedMessage *>(ev));
             break;
-        case MapEventTypes::evInitiateMapXfer:
+        case evInitiateMapXfer:
             on_initiate_map_transfer(static_cast<InitiateMapXfer *>(ev));
             break;
-        case MapEventTypes::evMapXferComplete:
+        case evMapXferComplete:
             on_map_xfer_complete(static_cast<MapXferComplete *>(ev));
             break;
         case evAwaitingDeadNoGurney:
@@ -491,6 +492,9 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evBrowserClose:
             on_browser_close(static_cast<BrowserClose *>(ev));
+            break;
+        case evLevelUpResponse:
+            on_levelup_response(static_cast<LevelUpResponse *>(ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
@@ -750,6 +754,9 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
         map_session.m_ent->dump();
     }
 
+    // Finalize level to calculate max attribs etc.
+    e->m_char->finalizeLevel();
+
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
     tgt->putq(new ClientConnectedMessage(
@@ -961,7 +968,7 @@ void MapInstance::on_combine_enhancements(CombineEnhancementsReq *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     CombineResult res=combineEnhancements(*session.m_ent, ev->first_power, ev->second_power);
     sendEnhanceCombineResponse(session.m_ent, res.success, res.destroyed);
-    session.m_ent->m_char->m_char_data.m_powers_updated = res.success || res.destroyed;
+    session.m_ent->m_char->m_char_data.m_has_updated_powers = res.success || res.destroyed;
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to merge enhancements" /*<< ev->first_power << ev->second_power*/;
 }
@@ -2055,9 +2062,17 @@ void MapInstance::on_set_destination(SetDestination * ev)
                << "loc" << ev->destination.x << ev->destination.y << ev->destination.z;
 }
 
-void MapInstance::on_abort_queued_power(AbortQueuedPower * /*ev*/)
+void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
 {
-    qCWarning(logMapEvents) << "Unhandled abort queued power request";
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    if(session.m_ent->m_queued_powers.isEmpty())
+        return;
+
+    // erase first queued power
+    session.m_ent->m_queued_powers.pop_front();
+
+    qCWarning(logMapEvents) << "Aborting queued power";
 }
 
 void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
@@ -2137,9 +2152,9 @@ void MapInstance::on_unqueue_all(UnqueueAll *ev)
     // What else could go here?
     ent->m_target_idx = 0;
     ent->m_assist_target_idx = 0;
+    ent->m_queued_powers.clear();
+
     // cancelAttack(ent);
-    // unqueuePowers(ent);
-    // unqueueInspirations(ent); // merge this with unqueuePowers()?
 
     qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }
@@ -2164,8 +2179,8 @@ void MapInstance::on_activate_power(ActivatePower *ev)
     else
         sendFaceEntity(session.m_ent, tgt_idx);
 
-    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
+    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
 }
 
 void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
@@ -2342,7 +2357,7 @@ void MapInstance::on_buy_enhancement_slot(BuyEnhancementSlot *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    buyEnhancementSlot(*session.m_ent, ev->m_num, ev->m_pset_idx, ev->m_pow_idx);
+    buyEnhancementSlots(*session.m_ent, ev->m_available_slots, ev->m_pset_idx, ev->m_pow_idx);
 }
 
 void MapInstance::on_recv_new_power(RecvNewPower *ev)
@@ -2365,7 +2380,25 @@ void MapInstance::on_browser_close(BrowserClose *ev)
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received BrowserClose";
 }
 
+void MapInstance::on_levelup_response(LevelUpResponse *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
 
+    // if successful, set level
+    setLevel(*session.m_ent->m_char, getLevel(*session.m_ent->m_char)+1);
+    // increase security level every time we visit a trainer and level up
+    ++session.m_ent->m_char->m_char_data.m_security_threat;
+
+    QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
+    sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has leveled up";
+
+    // if security threat is less than level, send levelup again
+    if(getSecurityThreat(*session.m_ent->m_char) < getLevel(*session.m_ent->m_char))
+        sendLevelUp(session);
+
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received LevelUpResponse" << ev->button_id << ev->result;
+}
 
 void MapInstance::on_afk_update()
 {

@@ -128,6 +128,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evTrashEnhancementInPower    ,244)
     EVENT_DECL(MapEventTypes, evBuyEnhancementSlot         ,245)
     EVENT_DECL(MapEventTypes, evRecvNewPower               ,246)
+    EVENT_DECL(MapEventTypes, evLevelUpResponse            ,247)
     EVENT_DECL(MapEventTypes, evTradeWasCancelledMessage   ,254) // Trade window: player clicked "Cancel" or closed the window.
     EVENT_DECL(MapEventTypes, evTradeWasUpdatedMessage     ,255) // Trade window: player changed something in the window.
     EVENT_DECL(MapEventTypes, evEntityInfoRequest          ,256) // right-click entity select "Info"

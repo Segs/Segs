@@ -46,6 +46,12 @@ struct EnhancemenSlotEntry
     }
 };
 
+struct PowerVecIndexes
+{
+    uint32_t        m_pset_vec_idx      = 0;
+    uint32_t        m_pow_vec_idx       = 0;
+};
+
 class PowerPool_Info
 {
 public:
@@ -168,16 +174,18 @@ using vEnhancements = std::array<CharacterEnhancement, 10>;
 
 struct CharacterPower
 {
-static const constexpr  uint32_t    class_version = 1;
+static const constexpr  uint32_t    class_version = 2; // v2: is_limited and charges
         PowerPool_Info  m_power_info;
         uint32_t        m_index             = 0;
         uint32_t        m_level_bought      = 0;
-        uint32_t        m_activation_state  = 0;
         uint32_t        m_total_eh_slots    = 0;
+        uint32_t        m_charges_remaining = 0;
+        bool            m_is_limited            = false; // some temporary powers have charges or a time limit
         bool            m_active_state_change   = false;
+        bool            m_activation_state      = false;
         bool            m_timer_updated         = false;
         bool            m_erase_power           = false;
-        std::array<CharacterEnhancement, 6> m_enhancements;
+        std::vector<CharacterEnhancement> m_enhancements; // max of 5 enhancement slots for this client version
 
         Power_Data getPowerTemplate() const
         {
@@ -304,11 +312,14 @@ int     getPowerSetByName(const QString &name, uint32_t pcat_idx);
 int     getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
 CharacterPower getPowerData(PowerPool_Info &ppool);
 CharacterPowerSet getPowerSetData(PowerPool_Info &ppool);
-CharacterPower * getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
+CharacterPower *getOwnedPowerByVecIdx(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
+CharacterPower *getOwnedPowerByTpl(Entity &e, const PowerPool_Info &ppool);
+PowerVecIndexes getOwnedPowerIndexes(Entity &e, const PowerPool_Info &ppool);
 void addPowerSet(CharacterData &cd, PowerPool_Info &ppool);
 void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool);
 void addPower(CharacterData &cd, PowerPool_Info &ppool);
 void removePower(CharacterData &cd, const PowerPool_Info &ppool);
+uint32_t countAllOwnedPowers(CharacterData &cd);
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
 void dumpPower(const CharacterPower &pow);
 void dumpOwnedPowers(CharacterData &cd);
@@ -342,8 +353,9 @@ void setEnhancement(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t s
 void trashEnhancement(CharacterData &cd, uint32_t eh_idx);
 void trashEnhancementInPower(CharacterData &cd, uint32_t pset_idx, uint32_t pow_idx, uint32_t eh_idx);
 void trashComboEnhancement(CharacterEnhancement &eh, uint32_t eh_idx);
-void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow_idx);
-void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow);
+void reserveEnhancementSlot(CharacterPower *pow, uint32_t level_purchased);
+void buyEnhancementSlots(Entity &ent, uint32_t available_slots, std::vector<int> pset_idx, std::vector<int> pow_idx);
+
 
 struct CombineResult
 {

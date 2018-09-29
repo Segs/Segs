@@ -81,13 +81,13 @@ void storeCreation(const Entity &src, BitStream &bs)
 
 void sendStateMode(const Entity &src,BitStream &bs)
 {
+    // if(state_mode & 2) then RespawnIfDead, AliveEnough==true, close some windows
     PUTDEBUG("before sendStateMode");
-    bs.StoreBits(1,src.m_state_mode_send); // no state mode
+    bs.StoreBits(1,src.m_has_state_mode);
     PUTDEBUG("before sendStateMode 2");
-    if(src.m_state_mode_send)
-    {
-        storePackedBitsConditional(bs,3,src.m_state_mode);
-    }
+    if(src.m_has_state_mode)
+        storePackedBitsConditional(bs, 3, src.m_state_mode);
+
     PUTDEBUG("after sendStateMode");
 }
 
@@ -208,10 +208,10 @@ void sendNetFx(const Entity &src,BitStream &bs)
     //NetFx.serializeto();
     for(int i=0; i<src.m_num_fx; i++)
     {
-        bs.StoreBits(8,src.m_fx1[i].command); // command
-        bs.StoreBits(32,src.m_fx1[i].net_id); // NetID
-        bs.StoreBits(1,src.m_fx1[i].pitch_to_target);
-        storePackedBitsConditional(bs,10, src.m_fx1[i].handle); // handle
+        bs.StoreBits(8,src.m_net_fx[i].command); // command
+        bs.StoreBits(32,src.m_net_fx[i].net_id); // NetID
+        bs.StoreBits(1,src.m_net_fx[i].pitch_to_target);
+        storePackedBitsConditional(bs,10, src.m_net_fx[i].handle); // handle
         storeBitsConditional(bs,4,0); // client timer
         storeBitsConditional(bs,32,0); // clientTriggerFx
         storeFloatConditional(bs,0.0); // duration
@@ -312,15 +312,11 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
     serializeStats(*src.m_char,bs,false);
 }
 
-void sendBuffsConditional(const Entity &src,BitStream &bs)
+void sendBuffsConditional(const Entity &src, BitStream &bs)
 {
-    //TODO: implement this
-    bool have_buffs = false;
-    bs.StoreBits(1,have_buffs); // nothing here for now
-    if(have_buffs)
-    {
+    bs.StoreBits(1, src.m_update_buffs); // TODO: use m_buffs.size() instead?
+    if(src.m_update_buffs)
         sendBuffs(src,bs);
-    }
 }
 
 void sendTargetUpdate(const Entity &src,BitStream &bs)
@@ -409,9 +405,11 @@ void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStrea
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 } // end of anonoymous namespace
-void sendBuffs(const Entity &/*src*/,BitStream &bs)
+void sendBuffs(const Entity &src, BitStream &bs)
 {
-    bs.StorePackedBits(5,0);
+    bs.StorePackedBits(5, src.m_buffs.size());
+    for(const PowerPool_Info &ppool : src.m_buffs)
+        ppool.serializeto(bs);
 }
 
 void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream &bs )

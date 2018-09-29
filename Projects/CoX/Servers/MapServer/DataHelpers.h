@@ -104,7 +104,7 @@ void sendClientState(MapClientSession &ent, ClientStates client_state);
 void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(MapClientSession &src, uint32_t tgt_idx, int32_t amount);
-void sendLevelUp(Entity *tgt);
+void sendLevelUp(MapClientSession &src);
 void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy);
 void sendChangeTitle(Entity *tgt, bool select_origin);
 void sendTrayAdd(Entity *tgt, uint32_t pset_idx, uint32_t pow_idx);
