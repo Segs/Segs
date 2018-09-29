@@ -12,6 +12,7 @@
 #include "glm/vec3.hpp"
 #include <QString>
 #include <cstdint>
+#include <vector>
 
 class QString;
 class Entity;
@@ -25,6 +26,7 @@ struct CharacterPowerSet;
 struct CharacterPower;
 class GameDataStore;
 class TradeMember;
+struct ContactEntry;
 
 
 /*
@@ -121,6 +123,8 @@ void sendTradeInit(Entity& src, Entity& tgt);
 void sendTradeCancel(Entity& ent, const QString& msg);
 void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt);
 void sendTradeSuccess(Entity& src, Entity& tgt);
+void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts);
+void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno);
 
 
 /*
