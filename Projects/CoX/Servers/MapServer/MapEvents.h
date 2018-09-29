@@ -422,6 +422,8 @@ class DialogButton final : public MapLinkEvent
 public:
     // [[ev_def:field]]
     uint32_t button_id;
+    // [[ev_def:field]]
+    uint32_t success;
 
     DialogButton():MapLinkEvent(MapEventTypes::evDialogButton)
     {}
@@ -432,6 +434,8 @@ public:
     void serializefrom(BitStream &bs) override
     {
         button_id = bs.GetPackedBits(1);
+        if(bs.GetReadableBits() == 1)
+            success = bs.GetBits(1);
     }
 
     EVENT_IMPL(DialogButton)
