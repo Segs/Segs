@@ -18,6 +18,7 @@
 #include "GameData/playerdata_definitions.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/Character.h"
+#include "NetStructures/Contact.h"
 #include "NetStructures/Team.h"
 #include "NetStructures/LFG.h"
 #include "MapEvents.h"
@@ -513,6 +514,28 @@ void sendTradeSuccess(Entity& src, Entity& tgt)
     qCDebug(logTrades) << "Sending Trade Success";
     src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_src));
     tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_tgt));
+}
+
+void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts)
+{
+    qCDebug(logSlashCommand) << "Sending ContactDialog:" << msg_body;
+    src.addCommand<ContactDialog>(msg_body, active_contacts);
+}
+
+void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno)
+{
+    qCDebug(logSlashCommand) << "Sending ContactDialogYesNo:" << has_yesno << msg_body;
+
+    if(has_yesno)
+        src.addCommand<ContactDialogYesNo>(msg_body);
+    else
+        src.addCommand<ContactDialogOk>(msg_body);
+}
+
+void sendContactDialogClose(MapClientSession &src)
+{
+    qCDebug(logSlashCommand) << "Sending ContactDialogClose";
+    src.addCommand<ContactDialogClose>();
 }
 
 

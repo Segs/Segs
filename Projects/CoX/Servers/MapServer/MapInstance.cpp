@@ -2307,6 +2307,25 @@ void MapInstance::on_dialog_button(DialogButton *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
+    switch(ev->button_id)
+    {
+    case 0:
+        // cancel?
+        break;
+    case 1:
+        // accept?
+        break;
+    case 2:
+        // no idea
+        break;
+    case 3:
+        sendContactDialogClose(session);
+        break;
+    default:
+        // close all windows?
+        break;
+    }
+
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id;
 }
 

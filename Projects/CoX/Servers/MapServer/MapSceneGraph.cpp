@@ -145,7 +145,7 @@ struct NpcCreator
             QString npc_costume_name = convertNpcName(persistent_name);
             const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_costume_name);
             if (npc_def)
-            {
+            {    
                 int idx = npc_store.npc_idx(npc_def);
                 Entity *e = map_instance->m_entities.CreateNpc(getGameData(),*npc_def, idx, 0);
                 forcePosition(*e,glm::vec3(v[3]));
