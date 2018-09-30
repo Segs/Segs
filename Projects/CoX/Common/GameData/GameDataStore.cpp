@@ -417,6 +417,23 @@ bool GameDataStore::read_powers(const QString &directory_path)
     if (!read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path, "powers.bin",
                                                                    m_all_powers))
         return false;
+   StoredAttribMod temp; // just a bit of hardcoding stats to test powers
+   temp.name = "Damage";
+   temp.Magnitude = 5;
+   m_all_powers.m_categories[26].m_PowerSets[0].m_Powers[0].pAttribMod.push_back(temp);//brawl
+   m_all_powers.m_categories[32].m_PowerSets[1].m_Powers[0].pAttribMod.push_back(temp);
+    m_all_powers.m_categories[32].m_PowerSets[1].m_Powers[1].pAttribMod.push_back(temp);
+    m_all_powers.m_categories[30].m_PowerSets[1].m_Powers[0].pAttribMod.push_back(temp);
+    temp.name = "Knockback";
+    m_all_powers.m_categories[32].m_PowerSets[1].m_Powers[0].pAttribMod.push_back(temp);
+
+    temp.name = "Healing";
+    m_all_powers.m_categories[26].m_PowerSets[0].m_Powers[7].pAttribMod.push_back(temp);//rest
+    m_all_powers.m_categories[27].m_PowerSets[0].m_Powers[24].pAttribMod.push_back(temp);//medkit?
+    temp.name = "Speed_Boost";
+    temp.Magnitude = 0.5;
+    m_all_powers.m_categories[26].m_PowerSets[0].m_Powers[6].pAttribMod.push_back(temp);//sprint
+
     return true;
 }
 

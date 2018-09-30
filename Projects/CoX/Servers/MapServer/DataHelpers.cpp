@@ -553,22 +553,83 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     // Add to activepowers queue
     CharacterPower * ppower = nullptr;
     ppower = getOwnedPower(ent, pset_idx, pow_idx);
-    if(ppower != nullptr && !ppower->getPowerTemplate().m_Name.isEmpty())
+    Power_Data pdata = ppower->getPowerTemplate();
+
+    if(ppower != nullptr && !pdata.m_Name.isEmpty())
         ent.m_queued_powers.push_back(ppower);
 
-    float endurance = getEnd(*ent.m_char);
-    float end_cost = std::max(ppower->getPowerTemplate().EnduranceCost, 1.0f);
+    dumpPower(*ppower);
 
-    qCDebug(logPowers) << "Endurance Cost" << end_cost << "/" << endurance;
-    if(end_cost > endurance)
+    if (pdata.Type != PowerType::Toggle && pdata.Type != PowerType::Click)      //treat toggle as clicks, ignore everything else for now
+        return;
+   // if (pdata.Target == StoredEntEnum::Foe)
+ //   if(tgt_idx == ent.m_idx) // Skip the rest if targeting self.
+  //      return;
+
+    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
+    if(target_ent == nullptr)
     {
-        QString msg = "Not enough endurance to use power" + ppower->getPowerTemplate().m_Name;
-        messageOutput(MessageChannel::DEBUG_INFO, msg, ent);
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx << tgt_id;
         return;
     }
+    //consider if target is valid target
 
+    glm::vec3 senderpos = ent.m_entity_data.m_pos;          // Check if the target is in range
+    glm::vec3 recpos = target_ent->m_entity_data.m_pos;
+        if (glm::distance(senderpos,recpos) > pdata.Range + 5)
+        {
+            QString contents = FloatingInfoMsg.find(FloatingMsg_OutOfRange).value();
+            sendFloatingInfo(*ent.m_client, contents, FloatingInfoStyle::FloatingInfo_Info, 1.0);
+            //messageOutput(MessageChannel::DEBUG_INFO, "out of range", ent);
+            return;
+        }
+        float endurance = getEnd(*ent.m_char);
+        float end_cost = std::max(pdata.EnduranceCost, 1.0f);
+
+    qCDebug(logPowers) << "Endurance Cost" << end_cost << "/" << endurance;
+    if(end_cost > endurance)                                // Check for endurance
+    {
+        QString contents = FloatingInfoMsg.find(FloatingMsg_OutOfRange).value();
+        sendFloatingInfo(*ent.m_client, contents, FloatingInfoStyle::FloatingInfo_Info, 1.0);
+        //QString msg = "Not enough endurance to use power" + pdata.m_Name;
+        //messageOutput(MessageChannel::DEBUG_INFO, msg, ent);
+        return;
+    }
     setEnd(*ent.m_char, endurance-end_cost);
 
+    //if not auto hit consider accuracy
+  /*  if (pdata.EffectArea == StoredAffectArea::Character)//single target
+      if (pdata.EffectArea == StoredAffectArea::Cone)//AoE target
+      if (pdata.EffectArea == StoredAffectArea::Location)//targeted area
+      if (pdata.EffectArea == StoredAffectArea::Sphere)//pbaoe */
+    if (pdata.pAttribMod.size() > 0){
+        QString msg;
+        for(uint32_t i = 0; i<pdata.pAttribMod.size(); i++)
+        {
+            if (pdata.pAttribMod[i].name == "Damage"){// Deal Damage
+                sendFloatingNumbers(*ent.m_client, tgt_idx, pdata.pAttribMod[i].Magnitude);
+                setHP(*target_ent->m_char, getHP(*target_ent->m_char)-pdata.pAttribMod[i].Magnitude);
+                msg = QString::number(pdata.pAttribMod[i].Magnitude) + " damage with " + pdata.m_Name;
+            }
+            else if (pdata.pAttribMod[i].name == "Healing"){
+                sendFloatingNumbers(*ent.m_client, tgt_idx, pdata.pAttribMod[i].Magnitude);
+                setHP(*target_ent->m_char, getHP(*target_ent->m_char)+pdata.pAttribMod[i].Magnitude);
+                msg = QString::number(pdata.pAttribMod[i].Magnitude) + " healing with " + pdata.m_Name;
+            }
+            else {                                  // TODO: buffs, debuffs, CC, summons, etc
+                msg = pdata.pAttribMod[i].name + " buff of magnitude "+ QString::number(pdata.pAttribMod[i].Magnitude) + " from " + pdata.m_Name;
+                if (pdata.pAttribMod[i].Duration > 0)
+                    msg += " for a duration of " + QString::number(pdata.pAttribMod[i].Duration);
+            }
+            messageOutput(MessageChannel::COMBAT, "You cause "+msg, ent);
+            if(target_ent->m_type == EntType::PLAYER && tgt_idx != ent.m_idx){          //send them the message too
+                messageOutput(MessageChannel::COMBAT, "You recieve "+msg, *target_ent);
+            }
+         }
+
+        return;
+    }
+    else{
     // TODO: Do actual power stuff. For now, be silly.
     QStringList batman_kerpow{"AIEEE!", "ARRRGH!", "AWKKKKKK!", "BAM!", "BANG!", "BAP!",
                      "BIFF!", "BLOOP!", "BLURP!", "BOFF!", "BONK!", "CLANK!",
@@ -589,16 +650,6 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     assert(ent.m_client);
     sendFloatingInfo(*ent.m_client, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 
-    if(tgt_idx == ent.m_idx) // Skip the rest if targeting self.
-        return;
-
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-    if(target_ent == nullptr)
-    {
-        qCDebug(logPowers) << "Failed to find target:" << tgt_idx << tgt_id;
-        return;
-    }
-
     // calculate damage
     float damage = 1.0f;
 
@@ -615,10 +666,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     sendFloatingInfo(*target_ent->m_client, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
     console_msg = floating_msg + " You were hit by " + ent.name() + " for " + QString::number(damage) + " damage!";
     messageOutput(MessageChannel::COMBAT, console_msg, *target_ent);
-
-    // Deal Damage
-    sendFloatingNumbers(*ent.m_client, tgt_idx, damage);
-    setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
+    }
 }
 
 void findTeamMember(Entity &tgt)
