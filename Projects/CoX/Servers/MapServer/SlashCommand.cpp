@@ -946,7 +946,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
     // increase xp accordingly
     GameDataStore &data(getGameData());
     if(getXP(*sess.m_ent->m_char) < data.expForLevel(level))
-        setXP(*sess.m_ent->m_char, data.expForLevel(level));
+        setXP(*sess.m_ent->m_char, data.expForLevel(level-1));
 
     qCDebug(logPowers) << "NumPowers:" << countAllOwnedPowers(sess.m_ent->m_char->m_char_data)
                        << "Count4Level:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
