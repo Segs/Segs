@@ -108,6 +108,7 @@ void cmdHandler_Browser(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendTimeUpdate(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendContactDialog(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendContactDialogYesNoOk(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess);
 
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
@@ -209,6 +210,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"timeupdate"}, "Test TimeUpdate. Sends time update to server", cmdHandler_SendTimeUpdate, 9},
     {{"contactdlg", "cdlg"}, "Test ContactDialog. Sends contact dialog with responses to server", cmdHandler_SendContactDialog, 9},
     {{"contactdlgyesno", "cdlg2"}, "Test ContactDialogYesNoOk. Sends contact dialog with yes/no response to server", cmdHandler_SendContactDialogYesNoOk, 9},
+    {{"setwaypoint"}, "Test SendWaypoint. Send waypoint to client", cmdHandler_SendWaypoint, 9},
 
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
@@ -963,11 +965,14 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
     Entity *tgt = nullptr;
     QVector<QStringRef> parts;
     parts = cmd.splitRef(' ');
+
     if (parts.size() < 2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
+        return;
     }
+
     QString name = parts[1].toString();
     tgt = getEntity(&sess, name); // get Entity by name
     if (tgt == nullptr)
@@ -989,6 +994,7 @@ void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
+        return;
     }
 
     glm::vec3 loc {
@@ -1092,6 +1098,39 @@ void cmdHandler_SendContactDialogYesNoOk(const QString &cmd, MapClientSession &s
     }
 
     sendContactDialogYesNoOk(sess, content, has_yesno);
+}
+
+void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if (parts.size() < 4)
+    {
+        qCDebug(logSlashCommand) << "Bad invocation: " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + cmd, sess);
+        return;
+    }
+
+    Destination cur_dest = getCurrentDestination(*sess.m_ent);
+    int idx = cur_dest.point_idx + 1;
+
+    glm::vec3 loc {
+      parts[1].toFloat(),
+      parts[2].toFloat(),
+      parts[3].toFloat()
+    };
+
+    QString msg = QString("Sending SendWaypoint: %1 <%2, %3, %4>")
+                  .arg(idx)
+                  .arg(loc.x, 0, 'f', 1)
+                  .arg(loc.y, 0, 'f', 1)
+                  .arg(loc.z, 0, 'f', 1);
+
+
+    sendWaypoint(sess, idx, loc);
+    setCurrentDestination(*sess.m_ent, idx, loc);
+    sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
 }
 
 

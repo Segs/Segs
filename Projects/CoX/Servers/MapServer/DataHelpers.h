@@ -27,6 +27,7 @@ struct CharacterPower;
 class GameDataStore;
 class TradeMember;
 struct ContactEntry;
+struct Destination;
 
 
 /*
@@ -42,6 +43,7 @@ glm::vec3   getSpeed(const Entity &e);
 float       getBackupSpd(const Entity &e);
 float       getJumpHeight(const Entity &e);
 uint8_t     getUpdateId(const Entity &e);
+Destination getCurrentDestination(const Entity &e);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);
@@ -54,6 +56,7 @@ void    setTeamID(Entity &e, uint8_t team_id);
 void    setSuperGroup(Entity &e, int sg_id = 0, QString sg_name = "", uint32_t sg_rank = 3);
 void    setTarget(Entity &e, uint32_t target_idx);
 void    setAssistTarget(Entity &e);
+void    setCurrentDestination(Entity &e, int point_idx, glm::vec3 location);
 
 // For live debugging
 void    setu1(Entity &e, int val);
@@ -126,6 +129,7 @@ void sendTradeSuccess(Entity& src, Entity& tgt);
 void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts);
 void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno);
 void sendContactDialogClose(MapClientSession &src);
+void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location);
 
 
 /*
