@@ -6,17 +6,24 @@
  */
 
 #pragma once
-#include "GameCommandList.h"
+#include "GameCommand.h"
+#include "MapEventTypes.h"
 
-#include "MapEvents.h"
-#include "MapLink.h"
 
-class EntityInfoResponse final : public GameCommand
+namespace SEGSEvents
+{
+// [[ev_def:type]]
+class EntityInfoResponse final : public GameCommandEvent
 {
 public:
+    // [[ev_def:field]]
     QString m_info_text;
-    EntityInfoResponse (const QString &txt) : GameCommand(MapEventTypes::evEntityInfoResponse),m_info_text(txt) {}
-    void serializefrom(BitStream &bs);
+    explicit EntityInfoResponse () : GameCommandEvent(MapEventTypes::evEntityInfoResponse)
+    {
+    }
+    EntityInfoResponse (const QString &txt) : GameCommandEvent(MapEventTypes::evEntityInfoResponse),m_info_text(txt)
+    {
+    }
 
     void serializeto(BitStream &bs) const override
     {
@@ -24,11 +31,14 @@ public:
         bs.StorePackedBits(1, 69);
         bs.StoreString(m_info_text);
     }
+    EVENT_IMPL(EntityInfoResponse)
 };
 
+// [[ev_def:type]]
 class EntityInfoRequest final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     int entity_idx;
     EntityInfoRequest():MapLinkEvent(MapEventTypes::evEntityInfoRequest)
     {}
@@ -40,4 +50,7 @@ public:
     {
         entity_idx = bs.GetPackedBits(12);
     }
+    EVENT_IMPL(EntityInfoRequest)
 };
+} // end of SEGSEvents namespace
+

@@ -35,7 +35,6 @@ const   uint32_t    m_team_idx          = 0;
         void        dump();
         void        listTeamMembers();
         void        addTeamMember(Entity *e);
-        void        removeTeamMember(Entity *e);
         bool        isTeamLeader(Entity *e);
 
 private:
@@ -51,11 +50,26 @@ bool makeTeamLeader(Entity &src, Entity &tgt);
 bool inviteTeam(Entity &src, Entity &tgt);
 bool kickTeam(Entity &tgt);
 void leaveTeam(Entity &e);
+void removeTeamMember(Team &self,Entity *e);
+enum class SidekickChangeStatus
+{
+    SUCCESS,
+    GENERIC_FAILURE=1,
+    LEVEL_DIFFERENCE_TOO_HIGH,
+    MENTOR_LEVEL_TOO_LOW, // player level is not high enough
+    CANNOT_MENTOR_YET, // player level must be higher to have a sidekick
+    HAVE_SIDEKICK_ALREADY,
+    TARGET_IS_SIDEKICKING_ALREADY,
+    NO_TEAM_OR_SAME_TEAM_REQUIRED,
+    NOT_SIDEKICKED_CURRENTLY,
+};
 
 /*
  * Sidekick Methods -- Sidekick system requires teaming.
  */
+
+uint32_t getSidekickId(const class Character &src);
 bool isSidekickMentor(const Entity &e);
-void inviteSidekick(Entity &src, Entity &tgt);
+SidekickChangeStatus inviteSidekick(Entity &src, Entity &tgt);
 void addSidekick(Entity &tgt, Entity &src);
-void removeSidekick(Entity &src);
+SidekickChangeStatus removeSidekick(Entity &src, Entity *tgt);

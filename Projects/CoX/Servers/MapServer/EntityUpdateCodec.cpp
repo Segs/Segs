@@ -16,7 +16,7 @@
 #include "NetStructures/Character.h"
 #include "NetStructures/Entity.h"
 #include "MapServer.h"
-#include "MapServerData.h"
+#include "GameData/GameDataStore.h"
 #include "GameData/CoHMath.h"
 #include "DataHelpers.h"
 #include "Logging.h"
@@ -256,7 +256,7 @@ void sendNetFx(const Entity &src,BitStream &bs)
 void sendCostumes(const Entity &src,BitStream &bs)
 {
     //NOTE: this will only be initialized once, and no changes later on will influence this
-    static const ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
+    static const ColorAndPartPacker *packer = getGameData().getPacker();
     PUTDEBUG("before sendCostumes");
     storePackedBitsConditional(bs,2,uint8_t(src.m_costume_type));
     switch(src.m_costume_type)

@@ -12,6 +12,6 @@
 class AuthEventFactory
 {
 public:
-static  AuthLinkEvent * EventForType(eAuthPacketType type);
-static  void            Destroy(AuthLinkEvent *what);
+static  SEGSEvents::AuthLinkEvent * EventForType(eAuthPacketType type);
+static  void            Destroy(SEGSEvents::AuthLinkEvent *what);
 };

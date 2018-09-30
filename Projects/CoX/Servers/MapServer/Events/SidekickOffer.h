@@ -6,22 +6,30 @@
  */
 
 #pragma once
-#include "GameCommandList.h"
+#include "MapEventTypes.h"
+#include "GameCommand.h"
 #include "Logging.h"
 
-class SidekickOffer final : public GameCommand
+namespace SEGSEvents
+{
+// [[ev_def:type]]
+class SidekickOffer final : public GameCommandEvent
 {
 public:
-    uint32_t m_db_id;
-            SidekickOffer(uint32_t &db_id) : GameCommand(MapEventTypes::evSidekickOffer),
+    // [[ev_def:field]]
+    uint32_t    m_db_id;
+                SidekickOffer(uint32_t db_id) : GameCommandEvent(MapEventTypes::evSidekickOffer),
                 m_db_id(db_id)
-            {
-            }
-    void    serializeto(BitStream &bs) const override 
-            {
-                bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 28
-                bs.StoreBits(32,m_db_id);
-                qCDebug(logTeams) << "Sidekick Offer db_id:" << m_db_id;
-            }
-    void    serializefrom(BitStream &src);
+                {
+                }
+explicit        SidekickOffer() : GameCommandEvent(MapEventTypes::evSidekickOffer) {}
+    void        serializeto(BitStream &bs) const override
+                {
+                    bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 28
+                    bs.StoreBits(32,m_db_id);
+                    qCDebug(logTeams) << "Sidekick Offer db_id:" << m_db_id;
+                }
+    EVENT_IMPL(SidekickOffer)
 };
+} // end of SEGSEvents namespace
+

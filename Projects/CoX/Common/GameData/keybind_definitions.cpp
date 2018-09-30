@@ -12,6 +12,7 @@
 
 #include "keybind_definitions.h"
 
+#include "GameDataStore.h"
 #include "Logging.h"
 
 QString makeKeyString(const KeyName &key, const ModKeys &mods)
@@ -54,9 +55,6 @@ const CurrentKeybinds &KeybindSettings::getCurrentKeybinds() const
 
 void KeybindSettings::resetKeybinds(const Parse_AllKeyProfiles &default_profiles)
 {
-//    const MapServerData &data(g_GlobalMapServer->runtimeData());
-//    const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
-
     m_keybind_profiles = default_profiles;
 }
 

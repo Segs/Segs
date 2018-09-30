@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>849</width>
-    <height>451</height>
+    <width>870</width>
+    <height>462</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,7 +38,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="tabsClosable">
       <bool>false</bool>
@@ -1088,6 +1088,30 @@
          </property>
         </widget>
        </item>
+       <item row="9" column="1" colspan="2">
+        <widget class="QCheckBox" name="log_powers">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Powers</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="1" colspan="2">
+        <widget class="QCheckBox" name="log_trades">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Trades</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -1110,9 +1134,8 @@
       <string> Auto Populate IPs</string>
      </property>
      <property name="icon">
-      <iconset>
-       <normalon>:/icons/icon_lookup.png</normalon>
-      </iconset>
+      <iconset resource="resources.qrc">
+       <normaloff>:/icons/Resources/icon_lookup.png</normaloff>:/icons/Resources/icon_lookup.png</iconset>
      </property>
      <property name="flat">
       <bool>false</bool>
@@ -1203,7 +1226,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

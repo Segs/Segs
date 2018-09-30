@@ -22,7 +22,7 @@ namespace Urho3D
 {
     class Node;
     class Context;
-};
+}
 
 enum
 {

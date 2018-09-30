@@ -12,18 +12,19 @@
 #include "MapSceneGraph.h"
 
 #include "GameData/CoHMath.h"
-#include "MapServerData.h"
+#include "GameData/GameDataStore.h"
 #include "SceneGraph.h"
 #include "EntityStorage.h"
 #include "Logging.h"
 #include "Common/NetStructures/Character.h"
 #include "NpcGenerator.h"
 #include "MapInstance.h"
-#include "NpcStore.h"
+#include "GameData/NpcStore.h"
 
 #include "glm/mat4x4.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <QSet>
+#include <memory>
 
 namespace
 {
@@ -41,7 +42,7 @@ MapSceneGraph::~MapSceneGraph()
 
 bool MapSceneGraph::loadFromFile(const QString &filename)
 {
-    m_scene_graph.reset(new SceneGraph);
+    m_scene_graph = std::make_unique<SceneGraph>();
     LoadingContext ctx;
     ctx.m_target = m_scene_graph.get();
     int geobin_idx= filename.indexOf("geobin");
@@ -68,6 +69,7 @@ void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function
 {
     if (!visit_func(self, accumulated))
         return;
+
     for(const auto & child : self->children)
     {
         glm::mat4 transform(child.m_matrix2);
@@ -121,6 +123,7 @@ struct NpcCreator
 
     bool checkPersistent(SceneNode *n, const glm::mat4 &v)
     {
+        assert(map_instance);
         bool has_npc = false;
         QString persistent_name;
         for (GroupProperty_Data &prop : *n->properties)
@@ -138,13 +141,13 @@ struct NpcCreator
         if(has_npc && map_instance)
         {
             qCDebug(logNPCs) << "Attempting to spawn npc" << persistent_name << "at" << v[3][0] << v[3][1] << v[3][2];
-            const NPCStorage & npc_store(map_instance->serverData().getNPCDefinitions());
+            const NPCStorage & npc_store(getGameData().getNPCDefinitions());
             QString npc_costume_name = convertNpcName(persistent_name);
             const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_costume_name);
             if (npc_def)
-            {
+            {    
                 int idx = npc_store.npc_idx(npc_def);
-                Entity *e = map_instance->m_entities.CreateNpc(*npc_def, idx, 0);
+                Entity *e = map_instance->m_entities.CreateNpc(getGameData(),*npc_def, idx, 0);
                 forcePosition(*e,glm::vec3(v[3]));
                 auto valquat = glm::quat_cast(v);
 

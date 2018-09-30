@@ -18,6 +18,8 @@
 #include "SEGSTimer.h"
 #include <cassert>
 
+using namespace SEGSEvents;
+
 namespace
 {
     enum
@@ -43,7 +45,7 @@ namespace
 
 MessageBus::MessageBus()
 {
-    m_statistics_timer.reset(new SEGSTimer(this,(void *)Statistics_Timer,statistic_update_interval,false)); // world simulation ticks
+    m_statistics_timer.reset(new SEGSTimer(this,Statistics_Timer,statistic_update_interval,false)); // world simulation ticks
 }
 
 bool MessageBus::ReadConfigAndRestart()
@@ -85,7 +87,7 @@ void MessageBus::unsubscribe(uint32_t type, MessageBusEndpoint *e)
     }
 }
 
-void MessageBus::do_publish(SEGSEvent *ev)
+void MessageBus::do_publish(Event *ev)
 {
     assert(ev->get_ref_count()==1);
     for(MessageBusEndpoint *ep : m_catch_all_subscribers)
@@ -102,9 +104,9 @@ void MessageBus::do_publish(SEGSEvent *ev)
     }
 }
 
-void MessageBus::dispatch(SEGSEvent *ev)
+void MessageBus::dispatch(Event *ev)
 {
-    if(ev->src()==this && ev->type()==SEGS_EventTypes::evTimeout)
+    if(ev->src()==this && ev->type()==evTimeout)
     {
         recalculateStatisitcs();
         return;
@@ -117,7 +119,17 @@ void MessageBus::recalculateStatisitcs()
 
 }
 
-void postGlobalEvent(SEGSEvent *ev)
+void MessageBus::serialize_from(std::istream &/*is*/)
+{
+    assert(false);
+}
+
+void MessageBus::serialize_to(std::ostream &/*os*/)
+{
+    assert(false);
+}
+
+void postGlobalEvent(Event *ev)
 {
     HandlerLocator::getMessageBus()->putq(ev);
 }
@@ -127,7 +139,7 @@ void postGlobalEvent(SEGSEvent *ev)
 /// \note this cannot be called from one of the message bus handling threads.
 void shutDownMessageBus()
 {
-    HandlerLocator::getMessageBus()->putq(SEGSEvent::s_ev_finish.shallow_copy());
+    HandlerLocator::getMessageBus()->putq(Finish::s_instance->shallow_copy());
     HandlerLocator::getMessageBus()->wait();
 
 }

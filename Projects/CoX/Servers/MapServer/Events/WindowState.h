@@ -6,14 +6,21 @@
  */
 
 #pragma once
-#include "MapEvents.h"
+#include "MapEventTypes.h"
 #include "Common/GameData/gui_definitions.h"
 
+namespace SEGSEvents
+{
+// [[ev_def:type]]
 class WindowState final : public MapLinkEvent
 {
 public:
+    // [[ev_def:field]]
     GUIWindow wnd;
     WindowState():MapLinkEvent(MapEventTypes::evWindowState) {}
     void serializeto(BitStream &bs) const override;
     void serializefrom(BitStream &bs) override;
+    EVENT_IMPL(WindowState)
 };
+} // end of SEGSEvents namespace
+

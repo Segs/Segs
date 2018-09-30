@@ -30,6 +30,8 @@
 #include <QSqlError>
 #include <QString>
 
+using namespace SEGSEvents;
+
 namespace
 {
     bool prepQuery(QSqlQuery &qr,const QString &txt) {
@@ -236,7 +238,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
             return false;
     }
     result.m_game_server_acc_id = data.m_auth_account_id;
-    result.m_max_slots = m_prepared_account_select->value("max_slots").toULongLong();
+    result.m_max_slots = m_prepared_account_select->value("max_slots").toUInt();
     result.m_characters.resize(result.m_max_slots);
     int idx=0;
     m_prepared_char_select->bindValue(0,quint64(result.m_game_server_acc_id));
@@ -404,7 +406,7 @@ bool GameDbSyncContext::getEntityByName(const GetEntityByNameRequestData &data, 
 // Update Client Options/Keybinds
 bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
 {
-    m_prepared_options_update->bindValue(":id", (quint64)data.m_client_id); // for WHERE statement only
+    m_prepared_options_update->bindValue(":id", data.m_client_id); // for WHERE statement only
     m_prepared_options_update->bindValue(":options", data.m_options);
     m_prepared_options_update->bindValue(":keybinds", data.m_keybinds);
     if (!doIt(*m_prepared_options_update))

@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <QtCore/QString>
 #include <stdint.h>
 #include <vector>
 #include <array>
@@ -16,7 +15,7 @@
 #include <QDebug>
 
 enum WindowIDX : uint32_t {
-    wdw_Unknown0        = 0,
+    wdw_DockDraw        = 0,
     wdw_Status          = 1,
     wdw_Target          = 2,
     wdw_PowersTray      = 3,
@@ -27,7 +26,7 @@ enum WindowIDX : uint32_t {
     wdw_Map             = 8,
     wdw_ChatOptions     = 9,
     wdw_Friends         = 10,
-    wdw_Unknown11       = 11,
+    wdw_ContactDiag     = 11,
     wdw_Inspirations    = 12,
     wdw_SuperGroup      = 13,
     wdw_Emails          = 14,
@@ -35,21 +34,21 @@ enum WindowIDX : uint32_t {
     wdw_Contacts        = 16,
     wdw_Missions        = 17,
     wdw_Clues           = 18,
-    wdw_Unknown19       = 19,
+    wdw_Trade           = 19,
     wdw_Quit            = 20,
     wdw_Info            = 21,
     wdw_Help            = 22,
-    wdw_Unknown23       = 23,
+    wdw_MissionSummary  = 23,
     wdw_Actions         = 24,
-    wdw_Unknown25       = 25,
+    wdw_Browser         = 25,
     wdw_Search          = 26,
-    wdw_Unknown27       = 27,
+    wdw_Shop            = 27,
     wdw_GenericDlg      = 28,
-    wdw_Unknown29       = 29,
+    wdw_MissionFeedback = 29,
     wdw_Support         = 30,
-    wdw_Unknown31       = 31,
+    wdw_TitleSelect     = 31,
     wdw_Defeated        = 32,
-    wdw_Unknown33       = 33,
+    wdw_MapXferList     = 33,
     wdw_CostumeSelect   = 34,
 };
 
@@ -82,7 +81,7 @@ class GUIWindow
 public:
 
         // GUI Window Params
-        WindowIDX           m_idx               = wdw_Unknown0;
+        WindowIDX           m_idx               = wdw_DockDraw;
         WindowVisibility    m_mode              = wv_Uninitialized;
         bool                m_draggable_frame   = false;
         int32_t             m_posx              = 0;
@@ -113,7 +112,7 @@ public:
 class GUISettings
 {
 public:
-    GUISettings() { }
+    GUISettings() = default;
 
 // GUISettings serialization class version
 static const constexpr uint32_t class_version = 1;

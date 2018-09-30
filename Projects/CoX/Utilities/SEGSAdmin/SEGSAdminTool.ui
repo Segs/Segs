@@ -39,7 +39,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
-    <normaloff>:/icons/segs.bmp</normaloff>:/icons/segs.bmp</iconset>
+    <normaloff>:/icons/Resources/app-icon.svg</normaloff>:/icons/Resources/app-icon.svg</iconset>
   </property>
   <property name="documentMode">
    <bool>false</bool>
@@ -49,28 +49,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_3">
-    <item row="0" column="0" rowspan="2">
-     <widget class="QLabel" name="label">
-      <property name="minimumSize">
-       <size>
-        <width>118</width>
-        <height>115</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>600</width>
-        <height>300</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/logo/logo4.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="1">
      <widget class="QLabel" name="authserver_label">
       <property name="minimumSize">
@@ -96,6 +74,44 @@
        <string>Server Status:</string>
       </property>
      </widget>
+    </item>
+    <item row="0" column="0" rowspan="2">
+     <widget class="QLabel" name="label">
+      <property name="minimumSize">
+       <size>
+        <width>118</width>
+        <height>115</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>600</width>
+        <height>300</height>
+       </size>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="resources.qrc">:/logo/Resources/logo4.png</pixmap>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <spacer name="horizontalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>392</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
     </item>
     <item row="0" column="2">
      <widget class="QLabel" name="authserver_status">
@@ -126,19 +142,6 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="3">
-     <spacer name="horizontalSpacer_3">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>392</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
     <item row="0" column="4">
      <widget class="QLabel" name="segs_admin_version_label">
       <property name="minimumSize">
@@ -162,6 +165,53 @@
       </property>
       <property name="text">
        <string>Version:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="6">
+     <widget class="QPushButton" name="update_detail">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QPushButton" name="authserver_start">
+      <property name="minimumSize">
+       <size>
+        <width>181</width>
+        <height>41</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>300</width>
+        <height>41</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0, 170, 0);</string>
+      </property>
+      <property name="text">
+       <string> Start Server</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources.qrc">
+        <normaloff>:/icons/Resources/play.svg</normaloff>:/icons/Resources/play.svg</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>21</width>
+        <height>21</height>
+       </size>
       </property>
      </widget>
     </item>
@@ -194,14 +244,86 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="6">
-     <widget class="QPushButton" name="update_detail">
-      <property name="text">
-       <string/>
+    <item row="5" column="0">
+     <widget class="QGroupBox" name="user_box">
+      <property name="minimumSize">
+       <size>
+        <width>226</width>
+        <height>73</height>
+       </size>
       </property>
-      <property name="flat">
-       <bool>true</bool>
+      <property name="maximumSize">
+       <size>
+        <width>226</width>
+        <height>73</height>
+       </size>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Account Management</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="createUser">
+         <property name="minimumSize">
+          <size>
+           <width>167</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>167</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adds a new user account&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>   Add User Account</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/icons/Resources/users.svg</normaloff>:/icons/Resources/users.svg</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>18</width>
+           <height>18</height>
+          </size>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+         <property name="autoExclusive">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>26</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
     </item>
     <item row="1" column="1" rowspan="5" colspan="6">
@@ -256,49 +378,15 @@
          <property name="plainText">
           <string/>
          </property>
+         <property name="textInteractionFlags">
+          <set>Qt::TextSelectableByMouse</set>
+         </property>
          <property name="backgroundVisible">
           <bool>false</bool>
          </property>
         </widget>
        </item>
       </layout>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QPushButton" name="authserver_start">
-      <property name="minimumSize">
-       <size>
-        <width>181</width>
-        <height>41</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>300</width>
-        <height>41</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 170, 0);</string>
-      </property>
-      <property name="text">
-       <string> Start Server</string>
-      </property>
-      <property name="icon">
-       <iconset resource="resources.qrc">
-        <normaloff>:/icons/play.svg</normaloff>:/icons/play.svg</iconset>
-      </property>
-      <property name="iconSize">
-       <size>
-        <width>21</width>
-        <height>21</height>
-       </size>
-      </property>
      </widget>
     </item>
     <item row="3" column="0">
@@ -370,7 +458,7 @@
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
-           <normaloff>:/icons/file-plus.svg</normaloff>:/icons/file-plus.svg</iconset>
+           <normaloff>:/icons/Resources/file-plus.svg</normaloff>:/icons/Resources/file-plus.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -429,7 +517,7 @@
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
-           <normaloff>:/icons/settings.svg</normaloff>:/icons/settings.svg</iconset>
+           <normaloff>:/icons/Resources/settings.svg</normaloff>:/icons/Resources/settings.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -466,7 +554,7 @@
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
-           <normaloff>:/icons/database.svg</normaloff>:/icons/database.svg</iconset>
+           <normaloff>:/icons/Resources/database.svg</normaloff>:/icons/Resources/database.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -545,7 +633,7 @@
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
-           <normaloff>:/icons/sliders.svg</normaloff>:/icons/sliders.svg</iconset>
+           <normaloff>:/icons/Resources/sliders.svg</normaloff>:/icons/Resources/sliders.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -560,88 +648,6 @@
        </item>
        <item row="0" column="1">
         <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>26</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="5" column="0">
-     <widget class="QGroupBox" name="user_box">
-      <property name="minimumSize">
-       <size>
-        <width>226</width>
-        <height>73</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>226</width>
-        <height>73</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="title">
-       <string>Account Management</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_5">
-       <item row="0" column="0">
-        <widget class="QPushButton" name="createUser">
-         <property name="minimumSize">
-          <size>
-           <width>167</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>167</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>9</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adds a new user account&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>   Add User Account</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources.qrc">
-           <normaloff>:/icons/users.svg</normaloff>:/icons/users.svg</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>18</width>
-           <height>18</height>
-          </size>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-         <property name="autoExclusive">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>

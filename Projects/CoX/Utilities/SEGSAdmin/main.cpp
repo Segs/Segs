@@ -11,6 +11,8 @@
  */
 
 #include "SEGSAdminTool.h"
+#include "Globals.h"
+#include "version.h"
 #include <QApplication>
 #include <QFontDatabase>
 #include <QSplashScreen>
@@ -30,7 +32,7 @@ int main(int argc, char *argv[])
     // Add custom fonts
     QFontDatabase fontDB;
     fontDB.addApplicationFont(":/fonts/dejavusanscondensed.ttf");
-    QPixmap pixmap(":/logo/segs_splash_1.png");
+    QPixmap pixmap(":/logo/Resources/splash-lg.png");
     QFont dejavu_font_splash;
     dejavu_font_splash.setFamily("DejaVu Sans Condensed");
     dejavu_font_splash.setPointSize(12);
@@ -41,8 +43,8 @@ int main(int argc, char *argv[])
     QSplashScreen *splash = new QSplashScreen(pixmap);
     splash->setFont(dejavu_font_splash);
     splash->show();
-    splash->showMessage("Loading", Qt::AlignBottom, Qt::red);
-
+    splash->showMessage(QString("Loading ") + VersionInfo::getAuthVersionNumber() + " " + VersionInfo::getVersionName(),
+                        Qt::AlignRight | Qt::AlignBottom, Qt::yellow);
     SEGSAdminTool w;
     splash->finish(&w);
     w.show();

@@ -21,6 +21,7 @@
 #include "NetworkManager.h"
 #include "UpdateDetailDialog.h"
 #include "AboutDialog.h"
+#include "version.h"
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
@@ -43,7 +44,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     ui->output->setFont(dejavu_font);
     ui->update_detail->setFont(dejavu_font);
     ui->output->appendPlainText("*** Welcome to SEGSAdmin ***");
-    ui->segs_admin_version->setText(m_segs_version);
+    ui->segs_admin_version->setText(QString("v") + VersionInfo::getAuthVersionNumber());
     m_add_user_dialog = new AddNewUserDialog(this);
     m_set_up_data = new SetUpData(this);
     m_settings_dialog = new SettingsDialog(this);
@@ -85,7 +86,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
 
     // Network Manager Signals
     connect(this,&SEGSAdminTool::getLatestReleases,m_network_manager,&NetworkManager::get_latest_releases);
-    connect(m_network_manager,&NetworkManager::releasesReadyToRead,this,&SEGSAdminTool::check_for_latest_release);
+    connect(m_network_manager,&NetworkManager::releasesReadyToRead,this,&SEGSAdminTool::read_release_info);
 
     // Send startup signals
     emit checkForConfigFile();
@@ -102,6 +103,8 @@ SEGSAdminTool::~SEGSAdminTool()
 
 void SEGSAdminTool::check_data_and_dir(QString maps_dir) // Checks for data sub dirs and maps dir
 {
+    QPixmap check_icon(":icons/Resources/check.svg");
+    QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->output->appendPlainText("Checking for correct data and maps directories...");
     QStringList data_dirs = {"data/bin","data/geobin","data/object_library"}; // Currently only checking for these 3 sub dirs, check for all files could be overkill
     bool all_maps_exist = true;
@@ -120,12 +123,12 @@ void SEGSAdminTool::check_data_and_dir(QString maps_dir) // Checks for data sub 
     }
     if(all_data_dirs_exist && all_maps_exist)
     {
-        ui->icon_status_data->setText("<html><head/><body><p><img src=':/icons/check.svg'/></p></body></html>");
+        ui->icon_status_data->setPixmap(check_icon);
         ui->output->appendPlainText("SUCCESS: Data and maps directories found!");
     }
     else
     {
-        ui->icon_status_data->setText("<html><head/><body><p><img src=':/icons/alert-triangle.svg'/></p></body></html>");
+        ui->icon_status_data->setPixmap(alert_triangle);
         ui->output->appendPlainText("WARNING: We couldn't find the correct data and/or maps directories. Please use the server setup to your left");
     }
 
@@ -181,6 +184,8 @@ void SEGSAdminTool::read_createuser()
 
 void SEGSAdminTool::check_db_exist(bool on_startup)
 {
+    QPixmap check_icon(":icons/Resources/check.svg");
+    QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->output->appendPlainText("Checking for existing databases...");
     qDebug() << "Checking for existing databases...";
     QFileInfo file1("segs");
@@ -190,7 +195,7 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
         if (file1.exists() && file2.exists())
         {
             ui->output->appendPlainText("SUCCESS: Existing databases found!");
-            ui->icon_status_db->setText("<html><head/><body><p><img src=':/icons/check.svg'/></p></body></html>");
+            ui->icon_status_db->setPixmap(check_icon);
             ui->runDBTool->setText("Create New Databases");
             ui->runDBTool->setEnabled(true);
             ui->createUser->setEnabled(true);
@@ -198,7 +203,7 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
         else
         {
             ui->output->appendPlainText("WARNING: Not all databases were found. Please use the server setup to your left");
-            ui->icon_status_db->setText("<html><head/><body><p><img src=':/icons/alert-triangle.svg'/></p></body></html>");
+            ui->icon_status_db->setPixmap(alert_triangle);
             ui->createUser->setEnabled(false); // Cannot create users until DB's created
         }
     }
@@ -233,6 +238,8 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
 
 void SEGSAdminTool::create_databases(bool overwrite)
 {
+    QPixmap check_icon(":icons/Resources/check.svg");
+    QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->runDBTool->setEnabled(false);
     ui->runDBTool->setText("Please Wait...");
     ui->output->appendPlainText("Setting arguments...");
@@ -260,7 +267,7 @@ void SEGSAdminTool::create_databases(bool overwrite)
         m_createDB->closeWriteChannel();
         m_createDB->waitForFinished();
         emit checkForDB(true);
-        ui->icon_status_db->setText("<html><head/><body><p><img src=':/icons/check.svg'/></p></body></html>");
+        ui->icon_status_db->setPixmap(check_icon);
         qApp->processEvents();
         emit addAdminUser();
     }
@@ -329,12 +336,12 @@ void SEGSAdminTool::start_auth_server()
             ui->authserver_status->setStyleSheet("QLabel {color: rgb(0, 200, 0)}");
             ui->authserver_start->setStyleSheet("color: rgb(255, 0, 0);");
             ui->authserver_start->setText("Stop Server");
-            ui->authserver_start->setIcon(QIcon(":/icons/square.svg"));
+            ui->authserver_start->setIcon(QIcon(":/icons/Resources/square.svg"));
             ui->user_box->setEnabled(false);
             ui->server_setup_box->setEnabled(false);
             ui->server_config->setEnabled(false);
-            int pid = m_start_auth_server->processId();
-            qDebug()<<pid;
+            //qint64 pid = m_start_auth_server->processId();
+            //qDebug()<<pid;
             m_server_running = true;
         }
         if(m_start_auth_server->state()==QProcess::NotRunning)
@@ -387,7 +394,7 @@ void SEGSAdminTool::stop_auth_server()
         ui->authserver_status->setStyleSheet("QLabel {color: rgb(255, 0, 0)}");
         ui->authserver_start->setStyleSheet("color: rgb(0, 170, 0);");
         ui->authserver_start->setText("Start Server");
-        ui->authserver_start->setIcon(QIcon(":/icons/play.svg"));
+        ui->authserver_start->setIcon(QIcon(":/icons/Resources/play.svg"));
         ui->user_box->setEnabled(true);
         ui->server_setup_box->setEnabled(true);
         ui->server_config->setEnabled(true);
@@ -398,6 +405,8 @@ void SEGSAdminTool::stop_auth_server()
 
 void SEGSAdminTool::check_for_config_file() // Does this on application start
 {
+    QPixmap check_icon(":icons/Resources/check.svg");
+    QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     // Load settings.cfg if exists
     ui->output->appendPlainText("Checking for existing configuration file...");
     QFileInfo config_file("settings.cfg");
@@ -405,7 +414,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
     {
         QString config_file_path = config_file.absoluteFilePath();
         ui->output->appendPlainText("SUCCESS: Configuration file found!");
-        ui->icon_status_config->setText("<html><head/><body><p><img src=':/icons/check.svg'/></p></body></html>");
+        ui->icon_status_config->setPixmap(check_icon);
         ui->gen_config_file->setEnabled(false);
         ui->runDBTool->setEnabled(true);
         ui->set_up_data_button->setEnabled(true);
@@ -416,7 +425,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
     else
     {
         ui->output->appendPlainText("WARNING: No settings.cfg file found! Please use the server setup to your left");
-        ui->icon_status_config->setText("<html><head/><body><p><img src=':/icons/alert-triangle.svg'/></p></body></html>");
+        ui->icon_status_config->setPixmap(alert_triangle);
         ui->runDBTool->setEnabled(false); // Cannot create DB without settings.cfg
         ui->createUser->setEnabled(false); // Cannot create user without settings.cfg
         ui->set_up_data_button->setEnabled(false); // Shouldn't create data before config file exists
@@ -425,24 +434,42 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
     }
 }
 
-void SEGSAdminTool::check_for_latest_release()
+void SEGSAdminTool::read_release_info(const QString &error)
 {
-    ui->update_detail->setText("Checking for updates...");
-    if (g_segs_release_info[0].tag_name == m_segs_version)
+    QString version_number = VersionInfo::getAuthVersionNumber();
+    version_number.prepend("v");
+    if (!g_segs_release_info.isEmpty())
     {
+        ui->update_detail->setText("Checking for updates...");
+        if (g_segs_release_info[0].tag_name == version_number)
+        {
 
-        qDebug()<<"CURRENT VERSION";
-        ui->update_detail->setText("Up to date");
-        ui->update_detail->setStyleSheet("color: rgb(0, 200, 0)");
+            qDebug()<<"CURRENT VERSION";
+            ui->update_detail->setText("Up to date");
+            ui->update_detail->setStyleSheet("color: rgb(0, 200, 0)");
+        }
+        else
+        {
+            qDebug()<<"NEW VERSION";
+            ui->update_detail->setEnabled(true);
+            ui->update_detail->setStyleSheet("color: rgb(204, 0, 0)");
+            ui->update_detail->setText("Update available!");
+            ui->update_detail->setFlat(false);
+        }
     }
     else
     {
-        qDebug()<<"NEW VERSION";
-        ui->update_detail->setEnabled(true);
-        ui->update_detail->setStyleSheet("color: rgb(204, 0, 0)");
-        ui->update_detail->setText("Update available!");
-        ui->update_detail->setFlat(false);
+        ui->update_detail->setText("Error fetching latest releases");
+        ui->update_detail->setStyleSheet("color: rgb(255, 0, 0)");
+        ui->output->appendPlainText("*********************************WARNING***********************************\n"
+                                    "There was an error fetching the latest release information. You may be missing"
+                                    " the OpenSSL library files. Please refer to README.MD for more info\n"
+                                    "You can view the latest releases by visiting https://github.com/Segs/Segs/releases"
+                                    "\n******************************************************************************"
+                                    "\nError Message: " + error);
+
     }
+
 }
 //!@}
 

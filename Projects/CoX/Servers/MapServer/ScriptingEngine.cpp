@@ -13,16 +13,20 @@
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
 #include "MapSceneGraph.h"
+#include "Entity.h"
 
 #include "Events/ChatMessage.h"
 #include "Events/StandardDialogCmd.h"
+#include "Events/InfoMessageCmd.h"
 #include "Common/NetStructures/Entity.h"
 #include "Common/NetStructures/Contact.h"
-#define SOL_CHECK_ARGUMENTS
+#define SOL_CHECK_ARGUMENTS 1
 #include <lua/lua.hpp>
 #include <sol2/sol.hpp>
 
 #include <QtCore/QDebug>
+
+using namespace SEGSEvents;
 
 int luaopen_package(lua_State *)
 {
@@ -61,6 +65,11 @@ ScriptingEngine::~ScriptingEngine()
 {
 }
 
+template<class T>
+static void destruction_is_an_error(T &/*v*/)
+{
+    assert(false);
+}
 void ScriptingEngine::registerTypes()
 {
     m_private->m_lua.new_usertype<glm::vec3>( "vec3",
@@ -78,11 +87,18 @@ void ScriptingEngine::registerTypes()
     );
     m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
         "new", sol::no_constructor, // The client links are not constructible from the script side.
+        "m_ent",  sol::readonly( &MapClientSession::m_ent ),
         "admin_chat_message", sendChatMessage,
         "simple_dialog", [](MapClientSession *cl,const char *dlgtext) {
             auto n = new StandardDialogCmd(dlgtext);
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
         }
+    );
+    m_private->m_lua.new_usertype<Entity>( "Entity",
+        "new",    sol::no_constructor, // not constructible from the script side.
+        sol::meta_function::garbage_collect, sol::destructor( destruction_is_an_error<Entity> ),
+        "abort_logout",  abortLogout,
+        "begin_logout",  &Entity::beginLogout
     );
     m_private->m_lua.new_usertype<MapSceneGraph>( "MapSceneGraph",
         "new", sol::no_constructor, // The client links are not constructible from the script side.
@@ -143,14 +159,14 @@ int ScriptingEngine::runScript(MapClientSession * client, const QString &script_
     if(!load_res.valid())
     {
         sol::error err = load_res;
-        sendInfoMessage(MessageChannel::ADMIN,err.what(),client);
+        sendInfoMessage(MessageChannel::ADMIN,err.what(),*client);
         return -1;
     }
     sol::protected_function_result script_result = load_res();
     if(!script_result.valid())
     {
         sol::error err = script_result;
-        sendInfoMessage(MessageChannel::ADMIN,err.what(),client);
+        sendInfoMessage(MessageChannel::ADMIN,err.what(),*client);
         return -1;
     }
     return 0;

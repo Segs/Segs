@@ -23,8 +23,10 @@
 
 struct MapClientSession;
 class Team;
+class Trade;
 class Character;
 struct PlayerData;
+class GameDataStore;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
 
 class PosUpdate
@@ -48,10 +50,9 @@ public:
     }
 
     uint8_t     m_csc_deltabits                 = 0;
-    bool        m_send_deltas                   = 0;
+    bool        m_send_deltas                   = false;
     uint16_t    m_control_bits                  = 0;
     uint16_t    m_send_id                       = 0;
-    void        *current_state_P                = nullptr;
     glm::vec3   m_camera_pyr;
     glm::vec3   m_orientation_pyr;              // Stored in Radians
     glm::quat   m_direction;
@@ -59,8 +60,9 @@ public:
     int         m_time_diff2                    = 0;
     uint8_t     m_input_vel_scale               = 0; // TODO: Should be float?
     uint8_t     m_received_server_update_id     = 0;
-    bool        m_no_collision                       = false;
-    bool        has_input_commit_guess          = 0;
+    bool        m_no_collision                  = false;
+    bool        m_input_received                = false;
+    bool        m_has_input_commit_guess        = false; // was has_input_commit_guess
     bool        pos_delta_valid[3]              = {};
     bool        pyr_valid[3]                    = {};
     glm::vec3   pos_delta;
@@ -68,6 +70,27 @@ public:
 
     InputStateStorage & operator=(const InputStateStorage &other);
     void processDirectionControl(int dir, int prev_time, int press_release);
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_csc_deltabits);
+        ar(m_send_deltas);
+        ar(m_control_bits);
+        ar(m_send_id);
+        ar(m_camera_pyr);
+        ar(m_orientation_pyr);
+        ar(m_direction);
+        ar(m_time_diff1);
+        ar(m_time_diff2);
+        ar(m_input_vel_scale);
+        ar(m_received_server_update_id);
+        ar(m_no_collision);
+        ar(m_has_input_commit_guess);
+        ar(pos_delta_valid);
+        ar(pyr_valid);
+        ar(pos_delta);
+        ar(m_controls_disabled);
+    }
 };
 
 enum class FadeDirection
@@ -113,15 +136,27 @@ enum class AppearanceType : uint8_t
     SequencerName = 4
 };
 
+enum class StateMode : uint8_t
+{
+    Simple              = 0,
+    Create_Team         = 1,
+    Create_Team_Wait    = 2,
+    Dead                = 3,
+    Ressurect           = 4,
+    NeedsGurney         = 5,
+    Max_State           = 6
+};
+
 struct SuperGroup
 {
-    int             m_SG_id                 = {0};
-    QString         m_SG_name               = "Supergroup"; // 64 chars max
-    //QString         m_SG_motto;
-    //QString         m_SG_costume;                         // 128 chars max -> hash table key from the CostumeString_HTable
-    uint32_t        m_SG_color1             = 0;            // supergroup color 1
-    uint32_t        m_SG_color2             = 0;            // supergroup color 2
-    int             m_SG_rank               = 1;
+    int             m_SG_id         = {0};
+    QString         m_SG_name       = "Supergroup"; // 64 chars max
+    QString         m_SG_motto;
+    QString         m_SG_motd;
+    QString         m_SG_emblem;         // 128 chars max -> hash table key from the CostumeString_HTable
+    uint32_t        m_SG_color1     = 0; // supergroup color 1
+    uint32_t        m_SG_color2     = 0; // supergroup color 2
+    int             m_SG_rank       = 1;
 };
 
 struct NPCData
@@ -132,14 +167,31 @@ struct NPCData
     int costume_variant=0;
 };
 
+struct NetFxTarget
+{
+    bool        type_is_location = false;
+    uint32_t    ent_idx = 0;
+    glm::vec3   pos;
+};
+
 struct NetFx
 {
-    uint8_t command;
-    uint32_t net_id;
-    uint32_t handle;
-    bool pitch_to_target;
-    uint8_t bone_id;
+    uint8_t     command;
+    uint32_t    net_id;
+    uint32_t    handle;
+    bool        pitch_to_target     = false;
+    uint8_t     bone_id;
+    float       client_timer        = 0;
+    int         client_trigger_fx   = 0;
+    float       duration            = 0;
+    float       radius              = 0;
+    QString     power               = 0;
+    int         debris              = 0;
+    NetFxTarget target;
+    NetFxTarget origin;
 };
+
+
 class Entity
 {
     // only EntityStore can create instances of this class
@@ -149,9 +201,10 @@ class Entity
     using PlayerPtr = std::unique_ptr<PlayerData>;
     using EntityPtr = std::unique_ptr<EntityData>;
     using NPCPtr = std::unique_ptr<NPCData>;
+    using TradePtr = std::shared_ptr<Trade>;
 private:
                             Entity();
-virtual                     ~Entity();
+                            ~Entity();
 public:
         struct currentInputState
         {
@@ -173,6 +226,7 @@ public:
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_team              = false;
         Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
+        TradePtr            m_trade;
         EntityData          m_entity_data;
 
         uint32_t            m_idx                   = {0};
@@ -182,6 +236,10 @@ public:
         glm::vec3           m_spd                   = {1,1,1};
         uint32_t            m_target_idx            = 0;
         uint32_t            m_assist_target_idx     = 0;
+
+        std::vector<CharacterPower *> m_queued_powers;
+        std::vector<CharacterPower *> m_recharging_powers;
+        CharacterPower    * m_stance                = nullptr;
 
         int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
         int                 m_num_fx                = 0;
@@ -216,6 +274,8 @@ public:
         bool                m_has_control_id        = false;    // EntityReponse sendServerPhysicsPositions
         bool                m_extra_info            = false;    // EntityUpdateCodec storePosUpdate
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
+
+        bool                m_has_input_on_timeframe= false;
 
         int                 u1 = 0; // used for live-debugging
 
@@ -256,7 +316,7 @@ static  void                sendPvP(BitStream &bs);
         bool                update_rot(int axis) const; // returns true if given axis needs updating;
 
         const QString &     name() const;
-        void                fillFromCharacter();
+        void                fillFromCharacter(const GameDataStore &data);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 };
 
@@ -269,7 +329,7 @@ enum class DbStoreFlags : uint32_t
 void markEntityForDbStore(Entity *e,DbStoreFlags f);
 void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
-void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant);
-void fillEntityFromNewCharData(Entity &e, BitStream &src, const ColorAndPartPacker *packer, const Parse_AllKeyProfiles &default_profiles);
+void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
+void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);
 void forcePosition(Entity &e,glm::vec3 pos);
 extern void abortLogout(Entity *e);
