@@ -15,6 +15,7 @@
 #include "MapSceneGraph.h"
 #include "Entity.h"
 
+#include "Events/Browser.h"
 #include "Events/ChatMessage.h"
 #include "Events/StandardDialogCmd.h"
 #include "Events/InfoMessageCmd.h"
@@ -92,8 +93,33 @@ void ScriptingEngine::registerTypes()
         "simple_dialog", [](MapClientSession *cl,const char *dlgtext) {
             auto n = new StandardDialogCmd(dlgtext);
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
-        }
-    );
+        },
+    "browser", [](MapClientSession *cl, const char *content){
+        cl->addCommand<Browser>(content);
+    },
+    "contact_dialog",[](MapClientSession *cl, const char *content, const char *responseChar, const char *contactLinkHashChar){
+            std::vector<ContactEntry> active_contacts;
+            QString response = QString::fromUtf8(const_cast<char *>(responseChar));
+            QString contactLinkHash = QString::fromUtf8(const_cast<char *>(contactLinkHashChar));
+            QStringList contactLinkHashes = contactLinkHash.split(',');
+            QStringList responses = response.split(',');
+
+             for(int i = 0; i < responses.length(); ++i)
+            {
+                ContactEntry con;
+                con.m_response_text = responses[i];
+                con.m_link = contactLinkHashes[i].toUInt(); // TODO allow script to send contactLinkHash string
+
+                sendInfoMessage(MessageChannel::ADMIN, contactLinkHashes[i],*cl);
+                active_contacts.push_back(con);
+            }
+
+            cl->addCommand<ContactDialog>(content, active_contacts);
+    },
+    "close_dialog", [](MapClientSession *cl){
+     cl->addCommand<ContactDialogClose>();
+    });
+
     m_private->m_lua.new_usertype<Entity>( "Entity",
         "new",    sol::no_constructor, // not constructible from the script side.
         sol::meta_function::garbage_collect, sol::destructor( destruction_is_an_error<Entity> ),
