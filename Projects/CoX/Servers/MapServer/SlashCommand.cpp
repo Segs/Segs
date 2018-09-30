@@ -1113,7 +1113,7 @@ void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess)
     }
 
     Destination cur_dest = getCurrentDestination(*sess.m_ent);
-    int idx = cur_dest.point_idx + 1;
+    int idx = cur_dest.point_idx; // client will only change waypoint if idx == client_side_idx
 
     glm::vec3 loc {
       parts[1].toFloat(),
