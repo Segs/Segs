@@ -106,6 +106,8 @@ void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess);
 void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Browser(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendTimeUpdate(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendContactDialog(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendContactDialogYesNoOk(const QString &cmd, MapClientSession &sess);
 
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
@@ -205,6 +207,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
     {{"browser"}, "Test Browser. Sends content to a browser window", cmdHandler_Browser, 9},
     {{"timeupdate"}, "Test TimeUpdate. Sends time update to server", cmdHandler_SendTimeUpdate, 9},
+    {{"contactdlg", "cdlg"}, "Test ContactDialog. Sends contact dialog with responses to server", cmdHandler_SendContactDialog, 9},
+    {{"contactdlgyesno", "cdlg2"}, "Test ContactDialogYesNoOk. Sends contact dialog with yes/no response to server", cmdHandler_SendContactDialogYesNoOk, 9},
 
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
@@ -1044,6 +1048,51 @@ void cmdHandler_SendTimeUpdate(const QString &/*cmd*/, MapClientSession &sess)
     int32_t time_in_sec = static_cast<int32_t>(base_date.secsTo(QDateTime::currentDateTime()));
 
     sendTimeUpdate(sess, time_in_sec);
+}
+
+void cmdHandler_SendContactDialog(const QString &cmd, MapClientSession &sess)
+{
+    int space = cmd.indexOf(' ');
+    QString content = cmd.mid(space+1);
+    std::vector<ContactEntry> active_contacts;
+
+    for(int i = 0; i < 4; ++i)
+    {
+        ContactEntry con;
+        con.m_response_text = QString("Response #%1").arg(i);
+        con.m_link = i; // a reference to contactLinkHash?
+        active_contacts.push_back(con);
+    }
+
+    sendContactDialog(sess, content, active_contacts);
+}
+
+void cmdHandler_SendContactDialogYesNoOk(const QString &cmd, MapClientSession &sess)
+{
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+    args.removeFirst(); // remove cmdstring
+
+    if (args.size() < 2)
+    {
+        qCDebug(logSlashCommand) << "Bad invocation:" << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + cmd, sess);
+        return;
+    }
+
+    bool ok = true;
+    bool has_yesno = args[0].toInt(&ok);
+    args.removeFirst(); // remove integer
+    QString content = args.join(" ");
+
+    if(!ok)
+    {
+        qCDebug(logSlashCommand) << "First argument must be boolean value;" << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "First argument must be boolean value;" + cmd, sess);
+        return;
+    }
+
+    sendContactDialogYesNoOk(sess, content, has_yesno);
 }
 
 
