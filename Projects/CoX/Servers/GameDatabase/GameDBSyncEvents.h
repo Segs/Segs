@@ -45,7 +45,8 @@ enum GameDBEventTypes : uint32_t
     evGetEntityByNameResponse,
 
     // email stuff
-    evEmailCreateMessage,
+    evEmailCreateRequest,
+    evEmailCreateResponse
     evEmailUpdateMessage,
     evEmailRemoveMessage,
     evGetEmailRequest,
@@ -374,7 +375,20 @@ struct PlayerUpdateData
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(GameDBEventTypes,PlayerUpdate)
 
-struct EmailCreateData
+struct EmailCreateRequestData
+{
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;
+    QString m_email_data; // cerealized email
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_sender_id, m_recipient_id, m_email_data);
+    }
+};
+
+struct EmailCreateResponseData
 {
     uint32_t m_email_id;
     uint32_t m_sender_id;
@@ -388,7 +402,7 @@ struct EmailCreateData
     }
 };
 // [[ev_def:macro]]
-ONE_WAY_MESSAGE(GameDBEventTypes,EmailCreate)
+TWO_WAY_MESSAGE(GameDBEventTypes,EmailCreate)
 
 struct EmailUpdateData
 {

@@ -53,8 +53,8 @@ void GameDBSyncHandler::dispatch(Event *ev)
         on_get_entity(static_cast<GetEntityRequest *>(ev)); break;
     case GameDBEventTypes::evGetEntityByNameRequest:
         on_get_entity_by_name(static_cast<GetEntityByNameRequest *>(ev)); break;
-    case GameDBEventTypes::evEmailCreateMessage:
-        on_email_create(static_cast<EmailCreateMessage *>(ev)); break;
+    case GameDBEventTypes::evEmailCreateRequest:
+        on_email_create(static_cast<evEmailCreateRequest *>(ev)); break;
     case GameDBEventTypes::evEmailUpdateMessage:
         on_email_update(static_cast<EmailUpdateMessage *>(ev)); break;
     case GameDBEventTypes::evEmailRemoveMessage:
@@ -173,22 +173,60 @@ void GameDBSyncHandler::on_get_entity_by_name(GetEntityByNameRequest *ev)
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 }
 
-void GameDBSyncHandler::on_email_create(EmailCreateMessage* msg)
-{}
+void GameDBSyncHandler::on_email_create(EmailCreateRequest* ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    EmailCreateResponseData resp;
+
+    if (!db_ctx.createEmail(ev->m_data, resp))
+        ev->src()->putq(new EmailCreateResponse(std::move(resp), ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
 
 void GameDBSyncHandler::on_email_update(EmailUpdateMessage* msg)
-{}
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.updateEmail(msg->m_data);
+}
 
 void GameDBSyncHandler::on_email_remove(EmailRemoveMessage* msg)
-{}
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.deleteEmail(msg->m_data);
+}
 
 void GameDBSyncHandler::on_get_email(GetEmailRequest* ev)
-{}
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    GetEmailResponseData resp;
+
+    if (db_ctx.getEmail(ev->m_data, resp))
+        ev->src()->putq(new GetEmailResponse(std::move(resp),ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
 
 void GameDBSyncHandler::on_get_email_by_sender_id(GetEmailBySenderIdRequest* ev)
-{}
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    GetEmailBySenderIdResponseData resp;
+
+    if (db_ctx.getEmailBySenderId(ev->m_data, resp))
+        ev->src()->putq(new GetEmailBySenderIdResponse(std::move(resp), ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
 
 void GameDBSyncHandler::on_get_email_by_recipient_id(GetEmailByRecipientIdRequest* ev)
-{}
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    GetEmailByRecipientIdResponseData resp;
+
+    if (db_ctx.getEmailByRecipientId(ev->m_data, resp))
+        ev->src()->putq(new GetEmailByRecipientIdResponse(std::move(resp), ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
 
 //! @}

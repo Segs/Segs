@@ -27,7 +27,8 @@ struct WouldNameDuplicateRequest;
 struct CreateNewCharacterRequest;
 struct GetEntityRequest;
 struct GetEntityByNameRequest;
-struct EmailCreateMessage;
+struct EmailCreateRequest;
+struct EmailCreateResponse;
 struct EmailUpdateMessage;
 struct EmailRemoveMessage;
 struct GetEmailRequest;
@@ -58,7 +59,7 @@ protected:
     void on_get_entity_by_name(SEGSEvents::GetEntityByNameRequest *ev);
 
     // email stuff
-    void on_email_create(SEGSEvents::EmailCreateMessage *msg);
+    void on_email_create(SEGSEvents::EmailCreateRequest *ev);
     void on_email_update(SEGSEvents::EmailUpdateMessage *msg);
     void on_email_remove(SEGSEvents::EmailRemoveMessage *msg);
     void on_get_email(SEGSEvents::GetEmailRequest* ev);

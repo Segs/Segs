@@ -9,6 +9,8 @@
 #include "Common/Servers/HandlerLocator.h"
 #include "GameEvents.h"
 #include "EmailEvents.h"
+#include "serialization_common.h"
+#include "serialization_types.h"
 
 using namespace SEGSEvents;
 
@@ -28,6 +30,9 @@ void EmailHandler::dispatch(Event *ev)
         break;
         case EmailEventTypes::evEmailDeleteMessage:
         on_email_delete(static_cast<EmailDeleteMessage *>(ev));
+        break;
+        case GameDBEventTypes::evEmailCreateResponse:
+        on_email_create_response(static_cast<EmailCreateResponse *>(ev));
         break;
 
         // will be obtained from MessageBusEndpoint
@@ -53,8 +58,7 @@ void EmailHandler::on_email_header(EmailHeaderRequest *msg)
 
     const ClientSessionData &recipient_data (m_state.m_stored_client_datas[msg->m_data.sender_id]);
 
-    m_emails[m_stored_email_count] = EmailData{
-                m_stored_email_count,
+    EmailData emailData = EmailData{
                 msg->m_data.sender_id,
                 msg->m_data.sender_id,
                 QString("Test Sender"),
@@ -63,23 +67,47 @@ void EmailHandler::on_email_header(EmailHeaderRequest *msg)
                 msg->m_data.timestamp,
                 false};
 
+    QString cerealizedEmailData;
+    serializeToQString(emailData, cerealizedEmailData);
+
+    m_db_handler->putq(new EmailCreateRequest({
+                                                  msg->m_data.sender_id,
+                                                  msg->m_data.sender_id,
+                                                  cerealizedEmailData
+                                              }, uint64_t(1)));
+
     EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
                 recipient_data.m_server_id,
                 recipient_data.m_instance_id);
 
     tgt->putq(new EmailHeaderResponse({
-                                          m_stored_email_count,
+                                          0,
                                           msg->m_data.sender_name,
                                           msg->m_data.subject,
                                           msg->m_data.timestamp
                                       }, msg->session_token()));
-    m_stored_email_count++;
+}
+
+void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
+{
+    EmailData emailData;
+    serializeFromQString(emailData, msg->m_data.m_email_data);
+
+    m_state.m_stored_client_datas[msg->m_data.m_sender_id]
+            .m_email_state.m_sent_email_ids.insert(msg->m_data.m_email_id);
+    m_state.m_stored_client_datas[msg->m_data.m_recipient_id]
+            .m_email_state.m_received_email_ids.insert(msg->m_data.m_email_id);
+    m_state.m_stored_client_datas[msg->m_data.m_recipient_id]
+            .m_email_state.m_unread_email_ids.insert(msg->m_data.m_email_id);
 }
 
 void EmailHandler::on_email_read(EmailReadRequest *msg)
 {
-    EmailData& email_data (m_emails[msg->m_data.email_id]);
+    EmailData& email_data (m_state.m_stored_email_datas[msg->m_data.email_id]);
     email_data.m_is_read_by_recipient = true;
+
+    m_state.m_stored_client_datas[email_data.m_recipient_id].
+            m_email_state.m_received_email_ids.erase(msg->m_data.email_id);
 
     const ClientSessionData &sender_data (m_state.m_stored_client_datas[email_data.m_sender_id]);
     const ClientSessionData &recipient_data (m_state.m_stored_client_datas[email_data.m_recipient_id]);
@@ -119,16 +147,27 @@ void EmailHandler::on_email_send(EmailSendMessage *msg)
 
 void EmailHandler::on_email_delete(EmailDeleteMessage *msg)
 {
-    // delete email in db and that's it, shouldn't be any need to toss responses and messages around
-    m_emails.erase(msg->m_data.email_id);
+    m_db_handler->putq(new EmailRemoveMessage({msg->m_data.email_id}, uint64_t(1)));
+
+    EmailData emailData = m_state.m_stored_email_datas[msg->m_data.email_id];
+    m_state.m_stored_email_datas.erase(msg->m_data.email_id);
+
+    // if the recipient requests an email delete, then surely he has read the email already.
+    // so we don't need remove from m_unread_email_ids here
+    m_state.m_stored_client_datas[emailData.m_sender_id].
+            m_email_state.m_sent_email_ids.erase(msg->m_data.email_id);
+    m_state.m_stored_client_datas[emailData.m_recipient_id].
+            m_email_state.m_received_email_ids.erase(msg->m_data.email_id);
 }
 
 void EmailHandler::on_client_connected(ClientConnectedMessage *msg)
 {
+    PlayerEmailState emailState;
+    fill_email_state(emailState, msg->m_data.m_char_db_id);
+
     // m_session is the key, m_server_id and m_sub_server_id are the values
     m_state.m_stored_client_datas[msg->m_data.m_char_db_id] =
-            ClientSessionData{msg->m_data.m_session, msg->m_data.m_server_id, msg->m_data.m_sub_server_id};
-
+            ClientSessionData{msg->m_data.m_session, msg->m_data.m_server_id, msg->m_data.m_sub_server_id, emailState};
     // send all emails where this client is the recipient
 }
 
@@ -136,6 +175,19 @@ void EmailHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 {
     if (m_state.m_stored_client_datas.count(msg->m_data.m_char_db_id) > 0)
         m_state.m_stored_client_datas.erase(msg->m_data.m_char_db_id);
+}
+
+void EmailHandler::fill_email_state(PlayerEmailState& emailState, uint32_t m_char_id)
+{
+    for(const auto &data : m_state.m_stored_email_datas)
+    {
+        if (data.second.m_sender_id == m_char_id)
+            emailState.m_sent_email_ids.insert(data.first);
+        if (data.second.m_recipient_id == m_char_id)
+            emailState.m_received_email_ids.insert(data.first);
+        if (data.second.m_recipient_id == m_char_id && !data.second.m_is_read_by_recipient)
+            emailState.m_unread_email_ids.insert(data.first);
+    }
 }
 
 EmailHandler::EmailHandler(int for_game_server_id) : m_message_bus_endpoint(*this)

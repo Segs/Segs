@@ -74,7 +74,7 @@ INSERT INTO `table_versions` (`id`, `table_name`, `version`, `last_update`) VALU
 (4, 'characters', 8, '2018-05-04 14:58:27'),
 (5, 'costume', 0, '2017-11-11 08:57:43'),
 (7, 'supergroups', 1, '2018-05-03 12:52:53'),
-(8, 'emails', 1, '2018-09-23 08:00;00');
+(8, 'emails', 0, '2018-09-23 08:00;00');
 
 ALTER TABLE `accounts`
   ADD PRIMARY KEY (`id`);

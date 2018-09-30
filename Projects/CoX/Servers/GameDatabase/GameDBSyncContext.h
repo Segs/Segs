@@ -27,7 +27,8 @@ struct GetEntityResponseData;
 struct GetEntityByNameRequestData;
 struct GetEntityByNameResponseData;
 struct SetClientOptionsData;
-struct EmailCreateData;
+struct EmailCreateRequestData;
+struct EmailCreateResponseData;
 struct EmailUpdateData;
 struct EmailRemoveData;
 struct GetEmailRequestData;
@@ -86,7 +87,7 @@ public:
     bool updateClientOptions(const SEGSEvents::SetClientOptionsData &data);
 
     // email stuff
-    bool createEmail(const SEGSEvents::EmailCreateData &data);
+    bool createEmail(const SEGSEvents::EmailCreateRequestData &data, SEGSEvents::EmailCreateResponseData &result);
     bool updateEmail(const SEGSEvents::EmailUpdateData &data);
     bool deleteEmail(const SEGSEvents::EmailRemoveData &data);
     bool getEmail(const SEGSEvents::GetEmailRequestData &data, SEGSEvents::GetEmailResponseData &result);

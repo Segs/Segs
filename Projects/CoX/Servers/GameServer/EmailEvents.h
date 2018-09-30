@@ -33,7 +33,7 @@ struct EmailHeaderRequestData
     uint32_t sender_id;
     QString sender_name;
     QString subject;
-    int timestamp;
+    uint32_t timestamp;
 
     template<class Archive>
     void serialize(Archive &ar)
@@ -47,7 +47,7 @@ struct EmailHeaderResponseData
     uint32_t email_id;
     QString sender_name;
     QString subject;
-    int timestamp;
+    uint32_t timestamp;
 
     template<class Archive>
     void serialize(Archive &ar)
@@ -61,11 +61,12 @@ TWO_WAY_MESSAGE(EmailEventTypes,EmailHeader)
 struct EmailReadRequestData
 {
     uint32_t email_id;
+    uint32_t reader_id;
 
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(email_id);
+        ar(email_id, reader_id);
     }
 };
 

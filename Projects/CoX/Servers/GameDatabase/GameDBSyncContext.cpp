@@ -436,4 +436,62 @@ bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
     return true;
 }
 
+bool GameDbSyncContext::createEmail(const EmailCreateRequestData &data, EmailCreateResponseData &result)
+{
+    DbTransactionGuard grd(*m_db);
+
+    m_prepared_email_insert->bindValue(":sender_id", data.m_sender_id);
+    m_prepared_email_insert->bindValue(":recipient_id", data.m_recipient_id);
+    m_prepared_email_insert->bindValue(":email_data", data.m_email_data);
+
+    if (!doIt(*m_prepared_email_insert))
+        return false;
+
+    assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
+
+    result.m_email_id = m_prepared_email_insert->lastInsertId().toUInt();
+
+    grd.commit();
+    return true;
+}
+
+bool GameDbSyncContext::updateEmail(const EmailUpdateData &data)
+{
+    return true;
+}
+
+bool GameDbSyncContext::deleteEmail(const EmailRemoveData &data)
+{
+    m_prepared_email_delete->bindValue(0, data.m_email_id);
+
+    if(!doIt(*m_prepared_char_delete))
+        return false;
+    return true;
+}
+
+bool GameDbSyncContext::getEmail(const GetEmailRequestData &data, GetEmailResponseData &result)
+{
+    m_prepared_email_select->bindValue(0, data.m_email_id);
+
+    if (!doIt(*m_prepared_email_select))
+        return false;
+    if (!m_prepared_email_select->next())
+        return false;
+
+    result.m_email_id = m_prepared_email_select->value("id").toUInt();
+    result.m_email_data = m_prepared_email_select->value("email_data").toString();
+
+    return true;
+}
+
+bool GameDbSyncContext::getEmailBySenderId(const GetEmailBySenderIdRequestData &data, GetEmailBySenderIdResponseData &result)
+{
+    return true;
+}
+
+bool GameDbSyncContext::getEmailByRecipientId(const GetEmailByRecipientIdRequestData &data, GetEmailByRecipientIdResponseData &result)
+{
+    return true;
+}
+
 //! @}
