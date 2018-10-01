@@ -724,7 +724,6 @@ void MapInstance::on_update_friendslist(SendFriendListMessage *ev){
     Entity * e = map_session.m_ent;
     FriendsList flist = ev->m_data.m_friendlist;
     e->m_char->m_char_data.m_friendlist = flist;
-    qDebug("on update friendslist");
     sendFriendsListUpdate(e,flist);
 }
 
