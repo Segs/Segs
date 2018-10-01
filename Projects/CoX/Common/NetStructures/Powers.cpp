@@ -438,19 +438,19 @@ void removePower(CharacterData &cd, const PowerPool_Info &ppool)
     qCDebug(logPowers) << "Player does not own Power:" << ppool.m_pcat_idx << ppool.m_pset_idx << ppool.m_pow_idx;
 }
 
-uint32_t countAllOwnedPowers(CharacterData &cd)
+uint32_t countAllOwnedPowers(CharacterData &cd, bool include_temps)
 {
     uint32_t count = 0;
 
     for(const CharacterPowerSet &pset : cd.m_powersets)
     {
-        if(pset.m_index == 0) // don't count temporary_powers
+        if(pset.m_index == 0 && !include_temps) // don't count temporary_powers
             continue;
 
         count += pset.m_powers.size(); // total up all powers
     }
 
-    qCDebug(logPowers) << "Total Owned Powers:" << count;
+    qCDebug(logPowers) << "Total Owned Powers:" << include_temps << count;
     return count;
 }
 

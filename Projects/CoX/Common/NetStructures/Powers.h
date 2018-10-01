@@ -344,7 +344,7 @@ void addPowerSet(CharacterData &cd, PowerPool_Info &ppool);
 void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool);
 void addPower(CharacterData &cd, PowerPool_Info &ppool);
 void removePower(CharacterData &cd, const PowerPool_Info &ppool);
-uint32_t countAllOwnedPowers(CharacterData &cd);
+uint32_t countAllOwnedPowers(CharacterData &cd, bool include_temps);
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
 void dumpPower(const CharacterPower &pow);
 void dumpOwnedPowers(CharacterData &cd);

@@ -374,7 +374,7 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
     if(cd->m_reset_powersets)
         cd->m_reset_powersets = false; // toggle this false because we're done
 
-    bs.StorePackedBits(1, countAllOwnedPowers(*cd));
+    bs.StorePackedBits(1, countAllOwnedPowers(*cd, true)); // must include temp powers
     int pset_idx = 0;
     for(const CharacterPowerSet &pset : cd->m_powersets)
     {
