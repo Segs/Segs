@@ -668,7 +668,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     }    //todo check for auto hit
  //   if (pdata.EffectArea == StoredAffectArea::Character)//single target so do the following once
  //   else                                                // AOE has to check all valid targets, and do the following
-    if (pdata.pAttribMod.size() > 0)
+    if (!pdata.pAttribMod.empty())
     {                       // effects done here
         for(uint32_t i = 0; i<pdata.pAttribMod.size(); i++)
         {
