@@ -22,6 +22,7 @@ namespace SEGSEvents
     struct EmailDeleteMessage;
     struct ClientConnectedMessage;
     struct ClientDisconnectedMessage;
+    struct GetEmailsResponse;
 }
 
 struct EmailData
@@ -84,6 +85,7 @@ private:
     void on_client_connected(SEGSEvents::ClientConnectedMessage* msg);
     void on_client_disconnected(SEGSEvents::ClientDisconnectedMessage *msg);
     void on_email_create_response(SEGSEvents::EmailCreateResponse* msg);
+    void on_get_emails_response(SEGSEvents::GetEmailsResponse* msg);
 
     void fill_email_state(PlayerEmailState& emailState, uint32_t m_char_id);
 protected:

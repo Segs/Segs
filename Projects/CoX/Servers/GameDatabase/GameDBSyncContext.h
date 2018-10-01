@@ -29,10 +29,13 @@ struct GetEntityByNameResponseData;
 struct SetClientOptionsData;
 struct EmailCreateRequestData;
 struct EmailCreateResponseData;
-struct EmailUpdateData;
+struct EmailMarkAsReadData;
+struct EmailUpdateOnCharDeleteData;
 struct EmailRemoveData;
 struct GetEmailRequestData;
 struct GetEmailResponseData;
+struct GetEmailsRequestData;
+struct GetEmailsResponseData;
 struct GetEmailBySenderIdRequestData;
 struct GetEmailBySenderIdResponseData;
 struct GetEmailByRecipientIdRequestData;
@@ -63,9 +66,11 @@ class GameDbSyncContext
 
     // email stuff
     std::unique_ptr<QSqlQuery> m_prepared_email_insert;
-    std::unique_ptr<QSqlQuery> m_prepared_email_update;
+    std::unique_ptr<QSqlQuery> m_prepared_email_mark_as_read;
+    std::unique_ptr<QSqlQuery> m_prepared_email_update_on_char_delete;
     std::unique_ptr<QSqlQuery> m_prepared_email_delete;
     std::unique_ptr<QSqlQuery> m_prepared_email_select;
+    std::unique_ptr<QSqlQuery> m_prepared_email_select_all;
     std::unique_ptr<QSqlQuery> m_prepared_email_select_by_sender_id;
     std::unique_ptr<QSqlQuery> m_prepared_email_select_by_recipient_id;
 
@@ -88,9 +93,11 @@ public:
 
     // email stuff
     bool createEmail(const SEGSEvents::EmailCreateRequestData &data, SEGSEvents::EmailCreateResponseData &result);
-    bool updateEmail(const SEGSEvents::EmailUpdateData &data);
+    bool markEmailAsRead(const SEGSEvents::EmailMarkAsReadData &data);
+    bool updateEmailOnCharDelete(const SEGSEvents::EmailUpdateOnCharDeleteData &data);
     bool deleteEmail(const SEGSEvents::EmailRemoveData &data);
     bool getEmail(const SEGSEvents::GetEmailRequestData &data, SEGSEvents::GetEmailResponseData &result);
+    bool getEmails(const SEGSEvents::GetEmailsRequestData &data, SEGSEvents::GetEmailsResponseData &result);
     bool getEmailBySenderId(const SEGSEvents::GetEmailBySenderIdRequestData &data, SEGSEvents::GetEmailBySenderIdResponseData &result);
     bool getEmailByRecipientId(const SEGSEvents::GetEmailByRecipientIdRequestData &data, SEGSEvents::GetEmailByRecipientIdResponseData &result);
 private:

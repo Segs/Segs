@@ -33,6 +33,8 @@ void EmailHandler::dispatch(Event *ev)
         break;
         case GameDBEventTypes::evEmailCreateResponse:
         on_email_create_response(static_cast<EmailCreateResponse *>(ev));
+        case GameDBEventTypes::evGetEmailsResponse:
+        on_get_emails_response(static_cast<GetEmailsResponse *>(ev));
         break;
 
         // will be obtained from MessageBusEndpoint
@@ -54,11 +56,7 @@ void EmailHandler::set_db_handler(uint8_t id)
 
 void EmailHandler::on_email_header(EmailHeaderRequest *msg)
 {
-    // this function is test to send email to self :)
-
-    const ClientSessionData &recipient_data (m_state.m_stored_client_datas[msg->m_data.sender_id]);
-
-    EmailData emailData = EmailData{
+    EmailData email_data = EmailData{
                 msg->m_data.sender_id,
                 msg->m_data.sender_id,
                 QString("Test Sender"),
@@ -68,30 +66,19 @@ void EmailHandler::on_email_header(EmailHeaderRequest *msg)
                 false};
 
     QString cerealizedEmailData;
-    serializeToQString(emailData, cerealizedEmailData);
+    serializeToQString(email_data, cerealizedEmailData);
 
     m_db_handler->putq(new EmailCreateRequest({
                                                   msg->m_data.sender_id,
-                                                  msg->m_data.sender_id,
+                                                  msg->m_data.sender_id, //recipient id
                                                   cerealizedEmailData
                                               }, uint64_t(1)));
-
-    EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
-                recipient_data.m_server_id,
-                recipient_data.m_instance_id);
-
-    tgt->putq(new EmailHeaderResponse({
-                                          0,
-                                          msg->m_data.sender_name,
-                                          msg->m_data.subject,
-                                          msg->m_data.timestamp
-                                      }, msg->session_token()));
 }
 
 void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
 {
-    EmailData emailData;
-    serializeFromQString(emailData, msg->m_data.m_email_data);
+    EmailData email_data;
+    serializeFromQString(email_data, msg->m_data.m_email_data);
 
     m_state.m_stored_client_datas[msg->m_data.m_sender_id]
             .m_email_state.m_sent_email_ids.insert(msg->m_data.m_email_id);
@@ -99,6 +86,25 @@ void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
             .m_email_state.m_received_email_ids.insert(msg->m_data.m_email_id);
     m_state.m_stored_client_datas[msg->m_data.m_recipient_id]
             .m_email_state.m_unread_email_ids.insert(msg->m_data.m_email_id);
+
+    const ClientSessionData &recipient_data (m_state.m_stored_client_datas[msg->m_data.m_sender_id]);
+
+    EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
+                recipient_data.m_server_id,
+                recipient_data.m_instance_id);
+
+    tgt->putq(new EmailHeaderResponse({
+                                          msg->m_data.m_email_id,
+                                          email_data.m_sender_name,
+                                          email_data.m_subject,
+                                          email_data.m_timestamp
+                                      }, msg->session_token()));
+}
+
+void EmailHandler::on_get_emails_response(GetEmailsResponse *msg)
+{
+    EmailData email_data;
+    m_state.m_stored_email_datas[0] = email_data;
 }
 
 void EmailHandler::on_email_read(EmailReadRequest *msg)
@@ -108,6 +114,11 @@ void EmailHandler::on_email_read(EmailReadRequest *msg)
 
     m_state.m_stored_client_datas[email_data.m_recipient_id].
             m_email_state.m_received_email_ids.erase(msg->m_data.email_id);
+
+    QString cerealizedEmailData;
+    serializeToQString(email_data, cerealizedEmailData);
+
+    m_db_handler->putq(new EmailMarkAsReadMessage({msg->m_data.email_id, cerealizedEmailData}, uint64_t(1)));
 
     const ClientSessionData &sender_data (m_state.m_stored_client_datas[email_data.m_sender_id]);
     const ClientSessionData &recipient_data (m_state.m_stored_client_datas[email_data.m_recipient_id]);
@@ -128,21 +139,23 @@ void EmailHandler::on_email_read(EmailReadRequest *msg)
 
 void EmailHandler::on_email_send(EmailSendMessage *msg)
 {
-    /*EmailHeaders *header = new EmailHeaders(
-                msg->m_data.id,
-                msg->m_data.sender,
+    EmailData email_data = EmailData{
+                msg->m_data.sender_id,
+                msg->m_data.recipient_id,
+                msg->m_data.sender_name,
                 msg->m_data.subject,
-                msg->m_data.timestamp); */
+                msg->m_data.message,
+                msg->m_data.timestamp,
+                false};
 
-    // saveEmailInDb()
+    QString cerealizedEmailData;
+    serializeToQString(email_data, cerealizedEmailData);
 
-    // msg->m_data.src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
-
-    // TODO: Send EmailHeaderResponse to the relevant EventProcessor (in this case MapInstance)
-    // based on the server_id and subserver_id retrieved based on session_id
-    // then the MapInstance can addCommandToSendNextUpdate for the appropriate session/entity
-
-    // addCommandToSendNextUpdate for recipient?
+    m_db_handler->putq(new EmailCreateRequest({
+                                                  msg->m_data.sender_id,
+                                                  msg->m_data.sender_id, //recipient id
+                                                  cerealizedEmailData
+                                              }, uint64_t(1)));
 }
 
 void EmailHandler::on_email_delete(EmailDeleteMessage *msg)
@@ -199,6 +212,9 @@ EmailHandler::EmailHandler(int for_game_server_id) : m_message_bus_endpoint(*thi
 
     m_message_bus_endpoint.subscribe(evClientConnectedMessage);
     m_message_bus_endpoint.subscribe(evClientDisconnectedMessage);
+
+    set_db_handler(for_game_server_id);
+    m_db_handler->putq(new GetEmailsRequest({}, uint64_t(1)));
 }
 
 void EmailHandler::serialize_from(std::istream &/*is*/)

@@ -1679,7 +1679,7 @@ void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
 {
-    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+    uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
     readEmailMessage(sess, id);
 
@@ -1705,18 +1705,16 @@ void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess){
     // Also, some utility class to convert current time to timestamp
     sendEmail(sess, args[1].toUInt(), args[2].toString(), args[3].toString());
 
-    QString msg = "Email Sent with ID:" + id;
+    QString msg = "Email Sent to recipient: recipient";
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
 
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
 {
-    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+    uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
     deleteEmailHeaders(sess, id);
-
-    //deleteEmailFromDB(id);
 
     QString msg = "Email Deleted ID: " + QString::number(id);
     qDebug().noquote() << msg;

@@ -54,9 +54,11 @@ void GameDBSyncHandler::dispatch(Event *ev)
     case GameDBEventTypes::evGetEntityByNameRequest:
         on_get_entity_by_name(static_cast<GetEntityByNameRequest *>(ev)); break;
     case GameDBEventTypes::evEmailCreateRequest:
-        on_email_create(static_cast<evEmailCreateRequest *>(ev)); break;
-    case GameDBEventTypes::evEmailUpdateMessage:
-        on_email_update(static_cast<EmailUpdateMessage *>(ev)); break;
+        on_email_create(static_cast<EmailCreateRequest *>(ev)); break;
+    case GameDBEventTypes::evEmailMarkAsReadMessage:
+        on_email_mark_as_read(static_cast<EmailMarkAsReadMessage *>(ev)); break;
+    case GameDBEventTypes::evEmailUpdateOnCharDeleteMessage:
+        on_email_update_on_char_delete(static_cast<EmailUpdateOnCharDeleteMessage *>(ev)); break;
     case GameDBEventTypes::evEmailRemoveMessage:
         on_email_remove(static_cast<EmailRemoveMessage *>(ev)); break;
     case GameDBEventTypes::evGetEmailRequest:
@@ -184,10 +186,16 @@ void GameDBSyncHandler::on_email_create(EmailCreateRequest* ev)
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 }
 
-void GameDBSyncHandler::on_email_update(EmailUpdateMessage* msg)
+void GameDBSyncHandler::on_email_mark_as_read(EmailMarkAsReadMessage* msg)
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
-    db_ctx.updateEmail(msg->m_data);
+    db_ctx.markEmailAsRead(msg->m_data);
+}
+
+void GameDBSyncHandler::on_email_update_on_char_delete(EmailUpdateOnCharDeleteMessage* msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.updateEmailOnCharDelete(msg->m_data);
 }
 
 void GameDBSyncHandler::on_email_remove(EmailRemoveMessage* msg)

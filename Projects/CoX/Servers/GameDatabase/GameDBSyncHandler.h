@@ -29,7 +29,8 @@ struct GetEntityRequest;
 struct GetEntityByNameRequest;
 struct EmailCreateRequest;
 struct EmailCreateResponse;
-struct EmailUpdateMessage;
+struct EmailMarkAsReadMessage;
+struct EmailUpdateOnCharDeleteMessage;
 struct EmailRemoveMessage;
 struct GetEmailRequest;
 struct GetEmailBySenderIdRequest;
@@ -60,7 +61,8 @@ protected:
 
     // email stuff
     void on_email_create(SEGSEvents::EmailCreateRequest *ev);
-    void on_email_update(SEGSEvents::EmailUpdateMessage *msg);
+    void on_email_mark_as_read(SEGSEvents::EmailMarkAsReadMessage *msg);
+    void on_email_update_on_char_delete(SEGSEvents::EmailUpdateOnCharDeleteMessage *msg);
     void on_email_remove(SEGSEvents::EmailRemoveMessage *msg);
     void on_get_email(SEGSEvents::GetEmailRequest* ev);
     void on_get_email_by_sender_id(SEGSEvents::GetEmailBySenderIdRequest* ev);

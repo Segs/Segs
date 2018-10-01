@@ -303,17 +303,21 @@ void sendEmail(MapClientSession& sess, uint32_t recipient_id, QString subject, Q
         return;
     }
 
+    uint32_t timestamp = 0;
+
     EmailSendMessage* msgToHandler = new EmailSendMessage({
                                                             sess.m_ent->m_char->m_db_id,
                                                             recipient_id,
                                                             sess.m_ent->m_char->getName(),    // -> sender
-                                                            subject, message, 0},
+                                                            subject,
+                                                            message,
+                                                            timestamp},
                 sess.link()->session_token());
 
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
-void readEmailMessage(MapClientSession& sess, const int id)
+void readEmailMessage(MapClientSession& sess, const uint32_t email_id)
 {
     if(!sess.m_ent->m_client)
     {
@@ -321,17 +325,20 @@ void readEmailMessage(MapClientSession& sess, const int id)
         return;
     }
 
-    EmailReadRequest* msgToHandler = new EmailReadRequest({id}, sess.link()->session_token());
+    EmailReadRequest* msgToHandler = new EmailReadRequest({email_id}, sess.link()->session_token());
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
-void deleteEmailHeaders(MapClientSession& sess, const int id)
+void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id)
 {
     if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
         return;
     }
+
+    EmailDeleteMessage* msgToHandler = new EmailDeleteMessage({email_id}, sess.link()->session_token());
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
 bool isFriendOnline(Entity &src, uint32_t db_id)

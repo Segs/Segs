@@ -140,9 +140,11 @@ bool GameDbSyncContext::loadAndConfigure()
 
     // emails
     m_prepared_email_insert = std::make_unique<QSqlQuery>(*m_db);
-    m_prepared_email_update = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_mark_as_read = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_update_on_char_delete = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_email_delete = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_email_select = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_select_all = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_email_select_by_sender_id = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_email_select_by_recipient_id = std::make_unique<QSqlQuery>(*m_db);
 
@@ -196,11 +198,15 @@ bool GameDbSyncContext::loadAndConfigure()
                                         "VALUES (:id, :sender_id, :recipient_id, :email_data");
 
     // new_id is either sender_id or 0 (deleted chara and/or account, could separate this tho)
-    prepQuery(*m_prepared_email_update, "UPDATE emails SET "
+    prepQuery(*m_prepared_email_mark_as_read, "UPDATE emails SET "
                                         "email_data=:email_data, sender_id=:new_id "
                                         "WHERE id=:id");
+    prepQuery(*m_prepared_email_update_on_char_delete, "UPDATE emails SET "
+              "sender_id=:deleted_id WHERE sender_id=:deleted_id"
+              "recipient_id=:deleted_id WHERE recipient_id=:deleted_id");
     prepQuery(*m_prepared_email_delete, "DELETE FROM emails WHERE id=?");
     prepQuery(*m_prepared_email_select, "SELECT * FROM emails where id=?");
+    prepQuery(*m_prepared_email_select_all, "SELECT * FROM emails");
     prepQuery(*m_prepared_email_select_by_sender_id, "SELECT * FROM emails where sender_id=?");
     prepQuery(*m_prepared_email_select_by_recipient_id, "SELECT * FROM emails where recipient_id=?");
 
@@ -455,18 +461,23 @@ bool GameDbSyncContext::createEmail(const EmailCreateRequestData &data, EmailCre
     return true;
 }
 
-bool GameDbSyncContext::updateEmail(const EmailUpdateData &data)
+bool GameDbSyncContext::markEmailAsRead(const EmailMarkAsReadData &data)
 {
-    return true;
+    m_prepared_email_mark_as_read->bindValue(":id", data.m_email_id);
+    m_prepared_email_mark_as_read->bindValue(":email_data", data.m_email_data);
+    return doIt(*m_prepared_email_mark_as_read);
+}
+
+bool GameDbSyncContext::updateEmailOnCharDelete(const EmailUpdateOnCharDeleteData &data)
+{
+    m_prepared_email_update_on_char_delete->bindValue(":deleted_id", data.m_deleted_char_id);
+    return doIt(*m_prepared_email_update_on_char_delete);
 }
 
 bool GameDbSyncContext::deleteEmail(const EmailRemoveData &data)
 {
-    m_prepared_email_delete->bindValue(0, data.m_email_id);
-
-    if(!doIt(*m_prepared_char_delete))
-        return false;
-    return true;
+    m_prepared_email_delete->bindValue(0, data.m_email_id);    
+    return doIt(*m_prepared_char_delete);
 }
 
 bool GameDbSyncContext::getEmail(const GetEmailRequestData &data, GetEmailResponseData &result)
@@ -480,6 +491,23 @@ bool GameDbSyncContext::getEmail(const GetEmailRequestData &data, GetEmailRespon
 
     result.m_email_id = m_prepared_email_select->value("id").toUInt();
     result.m_email_data = m_prepared_email_select->value("email_data").toString();
+
+    return true;
+}
+
+// GetEmailsRequestData has 0 params
+bool GameDbSyncContext::getEmails(const GetEmailsRequestData &/*data*/, GetEmailsResponseData &result)
+{
+    if (!doIt(*m_prepared_email_select_all))
+        return false;
+
+    while (m_prepared_email_select_all->next())
+    {
+        result.m_email_ids.push_back(m_prepared_email_select_all->value("id").toUInt());
+        result.m_sender_ids.push_back(m_prepared_email_select_all->value("sender_id").toUInt());
+        result.m_recipient_ids.push_back(m_prepared_email_select_all->value("recipient_id").toUInt());
+        result.m_cerealized_email_datas.push_back(m_prepared_email_select_all->value("email_data").toString());
+    }
 
     return true;
 }

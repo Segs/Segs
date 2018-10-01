@@ -129,9 +129,9 @@ const QString &getOriginTitle(uint32_t val);
  * sendEmail Wrappers for providing access to Email Database
  */
 void sendEmailHeaders(MapClientSession& sess);
-void readEmailMessage(MapClientSession& sess, const int id);
+void readEmailMessage(MapClientSession& sess, const uint32_t email_id);
 void sendEmail(MapClientSession& sess, uint32_t recipient_id, QString subject, QString message);
-void deleteEmailHeaders(MapClientSession& sess, const int id);
+void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
 
 /*
  * usePower exposed for future Lua support

@@ -46,11 +46,14 @@ enum GameDBEventTypes : uint32_t
 
     // email stuff
     evEmailCreateRequest,
-    evEmailCreateResponse
-    evEmailUpdateMessage,
+    evEmailCreateResponse,
+    evEmailMarkAsReadMessage,
+    evEmailUpdateOnCharDeleteMessage,
     evEmailRemoveMessage,
     evGetEmailRequest,
     evGetEmailResponse,
+    evGetEmailsRequest,
+    evGetEmailsResponse,
     evGetEmailBySenderIdRequest,
     evGetEmailBySenderIdResponse,
     evGetEmailByRecipientIdRequest,
@@ -404,18 +407,32 @@ struct EmailCreateResponseData
 // [[ev_def:macro]]
 TWO_WAY_MESSAGE(GameDBEventTypes,EmailCreate)
 
-struct EmailUpdateData
+struct EmailUpdateOnCharDeleteData
 {
-    uint32_t m_email_id;
+    uint32_t m_deleted_char_id;
 
     template <class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_email_id);
+        ar(m_deleted_char_id);
     }
 };
 // [[ev_def:macro]]
-ONE_WAY_MESSAGE(GameDBEventTypes,EmailUpdate)
+ONE_WAY_MESSAGE(GameDBEventTypes,EmailUpdateOnCharDelete)
+
+struct EmailMarkAsReadData
+{
+    uint32_t m_email_id;
+    QString m_email_data; // because m_is_read is inside the blob
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id, m_email_data);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(GameDBEventTypes,EmailMarkAsRead)
 
 // cannot use EmailDelete because it's used in EmailEvents already
 struct EmailRemoveData
@@ -457,6 +474,29 @@ struct GetEmailResponseData
 };
 // [[ev_def:macro]]
 TWO_WAY_MESSAGE(GameDBEventTypes,GetEmail)
+
+struct GetEmailsRequestData
+{
+    template <class Archive>
+    void serialize(Archive &ar)
+    {}
+};
+
+struct GetEmailsResponseData
+{
+    std::vector<uint32_t> m_email_ids;
+    std::vector<uint32_t> m_sender_ids;
+    std::vector<uint32_t> m_recipient_ids;
+    std::vector<QString> m_cerealized_email_datas;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_ids, m_sender_ids, m_recipient_ids, m_cerealized_email_datas);
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,GetEmails)
 
 struct GetEmailBySenderIdRequestData
 {

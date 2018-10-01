@@ -92,7 +92,7 @@ struct EmailSendData
     QString sender_name;
     QString subject;
     QString message;
-    int timestamp;
+    uint32_t timestamp;
 
     template<class Archive>
     void serialize(Archive &ar)
