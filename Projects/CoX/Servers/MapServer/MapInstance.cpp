@@ -724,15 +724,11 @@ void MapInstance::on_update_friendslist(SendFriendListMessage *ev){
     Entity * e = map_session.m_ent;
     FriendsList flist = ev->m_data.m_friendlist;
     e->m_char->m_char_data.m_friendlist = flist;
-    qDebug("on update friendslist");
     sendFriendsListUpdate(e,flist);
 }
 
 void MapInstance::on_notify_friend(SendNotifyFriendMessage *ev){
     //Get the session we want to notify, and the session of who connected (so we can get the name)
-
-    //MapClientSession &notify_session(*m_session_store.create_or_reuse_session_for(ev->m_data.m_notify_token));
-    //MapClientSession &connected_session(*m_session_store.create_or_reuse_session_for(ev->m_data.m_connected_token));
     MapClientSession &notify_session(m_session_store.session_from_token(ev->m_data.m_notify_token));
     MapClientSession &connected_session(m_session_store.session_from_token(ev->m_data.m_connected_token));
     Entity * e = connected_session.m_ent;

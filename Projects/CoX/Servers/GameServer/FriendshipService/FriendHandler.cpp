@@ -173,9 +173,6 @@ void FriendHandler::dispatch(SEGSEvents::Event *ev)
         case evFriendConnectedMessage:
             on_client_connected(m_state,static_cast<FriendConnectedMessage *>(ev));
             break;
-//        case evClientDisconnectedMessage:
-//            on_client_disconnected(m_state,static_cast<ClientDisconnectedMessage *>(ev));
-//            break;
         case evFriendDisconnectedMessage:
             on_client_disconnected(m_state,static_cast<FriendDisconnectedMessage *>(ev));
             break;
