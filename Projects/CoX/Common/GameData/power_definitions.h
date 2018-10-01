@@ -129,9 +129,9 @@ enum class AttackType : uint32_t {
     Smashing = 120,
     Lethal = 124,
     Fire = 128,
-    Ice = 132,
+    Cold = 132,
     Energy = 136,
-    Neagative = 140
+    Negative_Energy = 140
 };
 
 struct StoredAttribMod
