@@ -76,9 +76,6 @@ FriendListChangeStatus addFriend(Entity &src, const Entity &tgt)
         return FriendListChangeStatus::MAX_FRIENDS_REACHED;
     }
 
-//    src_data.m_has_friends = true;
-//    src_data.m_friends_count++;
-
     Friend f;
     f.m_online_status   = (tgt.m_client != nullptr); // need some other method for this.
     f.m_db_id           = tgt.m_db_id;
