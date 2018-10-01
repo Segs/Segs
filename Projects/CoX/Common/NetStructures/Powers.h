@@ -15,7 +15,6 @@
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 #include <array>
-#include <chrono>
 
 class Entity;
 struct CharacterData;
@@ -56,12 +55,12 @@ struct PowerVecIndexes
 struct QueuedPowers
 {
     PowerVecIndexes m_pow_idxs;
+    float           m_activate_period       = 0.0f;
+    float           m_recharge_time         = 0.0f;
+    float           m_time_to_activate      = 0.0f;
     bool            m_active_state_change   = false;
     bool            m_activation_state      = false;
     bool            m_timer_updated         = false;
-    float           m_recharge_time         = 0.0f;
-    float           m_time_to_activate      = 0.0f;
-    float           m_activate_period       = 0.0f;
 };
 
 class PowerPool_Info

@@ -423,7 +423,7 @@ public:
     // [[ev_def:field]]
     uint32_t button_id;
     // [[ev_def:field]]
-    uint32_t success;
+    bool success;
 
     DialogButton():MapLinkEvent(MapEventTypes::evDialogButton)
     {}

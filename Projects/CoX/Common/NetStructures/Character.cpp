@@ -100,9 +100,7 @@ void Character::finalizeLevel()
 
     GameDataStore &data(getGameData());
     uint32_t max_level = data.expMaxLevel();
-
-    if(m_char_data.m_level > max_level)
-        m_char_data.m_level = max_level - 1;
+    m_char_data.m_level = std::max(uint32_t(0), std::min(m_char_data.m_level, max_level));
 
     if(m_char_data.m_experience_points < data.expForLevel(m_char_data.m_level))
         m_char_data.m_experience_points = data.expForLevel(m_char_data.m_level);

@@ -1,5 +1,4 @@
 #include "CharacterHelpers.h"
-
 #include "Character.h"
 
 /*

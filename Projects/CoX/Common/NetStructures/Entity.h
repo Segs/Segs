@@ -266,6 +266,7 @@ public:
         bool                m_has_control_id        = false;    // EntityReponse sendServerPhysicsPositions
         bool                m_extra_info            = false;    // EntityUpdateCodec storePosUpdate
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
+        bool                m_in_training           = false;
 
         bool                m_has_input_on_timeframe= false;
 

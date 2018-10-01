@@ -451,7 +451,7 @@ void sendTeamOffer(Entity *src, Entity *tgt)
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
 }
 
-void sendFaceEntity(Entity *src, int8_t tgt_idx)
+void sendFaceEntity(Entity *src, int32_t tgt_idx)
 {
     qCDebug(logOrientation) << QString("Sending Face Entity to %1").arg(tgt_idx);
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceEntity>(new FaceEntity(tgt_idx)));
@@ -586,7 +586,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         --ppower->m_charges_remaining;
 
     float endurance = getEnd(*ent.m_char);
-    float end_cost = std::max(powtpl.EnduranceCost, 1.0f);
+    float end_cost = powtpl.EnduranceCost;
 
     qCDebug(logPowers) << "Endurance Cost" << end_cost << "/" << endurance;
     if(end_cost > endurance)
@@ -662,16 +662,27 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
     if(target_ent->m_type != EntType::PLAYER)
         return;
 
+    // Deal Damage
+    sendFloatingNumbers(*ent.m_client, tgt_idx, damage);
+    setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
+
     // Send message to target
     assert(target_ent->m_client);
 
     sendFloatingInfo(*target_ent->m_client, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
     console_msg = floating_msg + " You were hit by " + ent.name() + " for " + QString::number(damage) + " damage!";
     messageOutput(MessageChannel::COMBAT, console_msg, *target_ent);
+}
 
-    // Deal Damage
-    sendFloatingNumbers(*ent.m_client, tgt_idx, damage);
-    setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
+void increaseLevel(Entity &ent)
+{
+    setLevel(*ent.m_char, getLevel(*ent.m_char)+1);
+    // increase security level every time we visit a trainer and level up
+    ++ent.m_char->m_char_data.m_security_threat;
+    ent.m_char->m_in_training = false; // we're done training
+
+    QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
+    sendFloatingInfo(*ent.m_client, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 }
 
 void findTeamMember(Entity &tgt)

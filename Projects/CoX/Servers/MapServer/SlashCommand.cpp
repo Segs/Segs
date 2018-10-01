@@ -140,6 +140,7 @@ void cmdHandler_FriendList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MapXferList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ReSpec(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Train(const QString &cmd, MapClientSession &sess);
 
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
@@ -241,6 +242,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"MapXferList", "mapmenu"}, "Show MapXferList", cmdHandler_MapXferList, 1},
     {{"respec"}, "Start ReSpec", cmdHandler_ReSpec, 1},
     {{"trade"}, "Trade with player", cmdHandler_Trade, 1},
+    {{"train"}, "Train Up Level", cmdHandler_Train, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
@@ -943,17 +945,16 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
 {
+    GameDataStore &data(getGameData());
+
     // must adjust level for 0-index array, capped at 49
     uint32_t level = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
-    if(level > 0)
-        --level;
-    if(level > 49)
-        level = 49;
+    uint32_t max_level = data.expMaxLevel();
+    level = std::max(uint32_t(0), std::min(level, max_level));
 
     // XP must be high enough for the level you're advancing to
     // since this slash command is forcing a levelup, let's
     // increase xp accordingly
-    GameDataStore &data(getGameData());
     if(getXP(*sess.m_ent->m_char) < data.expForLevel(level))
         setXP(*sess.m_ent->m_char, data.expForLevel(level));
     else
@@ -964,6 +965,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
                        << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
 
     // send levelup pkt to client
+    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
     sendLevelUp(sess);
 }
 
@@ -1638,6 +1640,29 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess)
     }
 
     requestTrade(*sess.m_ent, *tgt);
+}
+
+void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
+{
+    int level = getLevel(*sess.m_ent->m_char)+1;
+
+    // XP must be high enough for the level you're advancing to
+    GameDataStore &data(getGameData());
+    if(getXP(*sess.m_ent->m_char) < data.expForLevel(level))
+    {
+        QString msg = "You do not have enough Experience Points to train to the next level!";
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        return;
+    }
+
+    qCDebug(logPowers) << "LEVELUP" << sess.m_ent->name() << "to" << level+1
+                       << "NumPowers:" << countAllOwnedPowers(sess.m_ent->m_char->m_char_data, false) // no temps
+                       << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
+
+    // send levelup pkt to client
+    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
+    sendLevelUp(sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -2337,9 +2337,18 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     {
     case 0:
         // cancel?
+        if(ev->success) // only sent by contactresponse
+            qDebug() << "success" << ev->success;
+
         break;
     case 1:
         // accept?
+        if(ev->success) // only sent by contactresponse
+            qDebug() << "success" << ev->success;
+
+        if(session.m_ent->m_char->m_in_training)
+            increaseLevel(*session.m_ent);
+
         break;
     case 2:
         // no idea
@@ -2352,7 +2361,7 @@ void MapInstance::on_dialog_button(DialogButton *ev)
         break;
     }
 
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id;
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id << ev->success;
 }
 
 void MapInstance::on_move_enhancement(MoveEnhancement *ev)
@@ -2415,12 +2424,7 @@ void MapInstance::on_levelup_response(LevelUpResponse *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     // if successful, set level
-    setLevel(*session.m_ent->m_char, getLevel(*session.m_ent->m_char)+1);
-    // increase security level every time we visit a trainer and level up
-    ++session.m_ent->m_char->m_char_data.m_security_threat;
-
-    QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
-    sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    increaseLevel(*session.m_ent);
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received LevelUpResponse" << ev->button_id << ev->result;
 }

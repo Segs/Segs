@@ -44,7 +44,8 @@ void KeybindSettings::setKeybindProfile(QString &profile)
 const CurrentKeybinds &KeybindSettings::getCurrentKeybinds() const
 {
     GameDataStore &data(getGameData());
-    if(!m_keybind_profiles.size())
+    assert(!data.m_keybind_profiles.empty()); // just incase GameData fails us
+    if(m_keybind_profiles.empty())
         return data.m_keybind_profiles.front().KeybindArr;
 
     for(const auto &p : m_keybind_profiles)

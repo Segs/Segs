@@ -107,6 +107,7 @@ const   QString &       getName() const { return m_name; }
 
         uint32_t            m_account_id;
         uint32_t            m_db_id;
+        bool                m_in_training   = false;
 
 protected:
         uint8_t         m_index;
