@@ -1543,8 +1543,7 @@ void cmdHandler_Friend(const QString &cmd, MapClientSession &sess)
         QString msg = "Adding " + tgt->name() + " to your friendlist.";
         qCDebug(logFriends).noquote() << msg;
         messageOutput(MessageChannel::FRIENDS, msg, *sess.m_ent);
-        // Send FriendsListUpdate
-        sendFriendsListUpdate(sess.m_ent, sess.m_ent->m_char->m_char_data.m_friendlist);
+        //Friend handler will send a friend list update, calling it here will cause crashes
     }
 }
 
