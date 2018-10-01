@@ -943,14 +943,14 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
 {
-    uint32_t level = cmd.midRef(cmd.indexOf(' ')+1).toUInt() - 1; // must subtract 1
+    uint32_t level = cmd.midRef(cmd.indexOf(' ')+1).toUInt() -1;
 
     // XP must be high enough for the level you're advancing to
     // since this slash command is forcing a levelup, let's
     // increase xp accordingly
     GameDataStore &data(getGameData());
     if(getXP(*sess.m_ent->m_char) < data.expForLevel(level))
-        setXP(*sess.m_ent->m_char, data.expForLevel(level-1));
+        setXP(*sess.m_ent->m_char, data.expForLevel(level));
 
     qCDebug(logPowers) << "NumPowers:" << countAllOwnedPowers(sess.m_ent->m_char->m_char_data)
                        << "Count4Level:" << data.countForLevel(level, data.m_pi_schedule.m_Power);

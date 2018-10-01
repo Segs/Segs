@@ -43,6 +43,10 @@ void KeybindSettings::setKeybindProfile(QString &profile)
 
 const CurrentKeybinds &KeybindSettings::getCurrentKeybinds() const
 {
+    GameDataStore &data(getGameData());
+    if(!m_keybind_profiles.size())
+        return data.m_keybind_profiles.front().KeybindArr;
+
     for(const auto &p : m_keybind_profiles)
     {
         if(p.Name == m_cur_keybind_profile)
@@ -50,7 +54,7 @@ const CurrentKeybinds &KeybindSettings::getCurrentKeybinds() const
     }
 
     qCDebug(logKeybinds) << "Could not get Current Keybinds. Returning first keybind profile.";
-    return m_keybind_profiles.at(0).KeybindArr;
+    return m_keybind_profiles.front().KeybindArr;
 }
 
 void KeybindSettings::resetKeybinds(const Parse_AllKeyProfiles &default_profiles)

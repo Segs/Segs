@@ -15,6 +15,7 @@
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 #include <array>
+#include <chrono>
 
 class Entity;
 struct CharacterData;
@@ -52,6 +53,17 @@ struct PowerVecIndexes
     uint32_t        m_pow_vec_idx       = 0;
 };
 
+struct QueuedPowers
+{
+    PowerVecIndexes m_pow_idxs;
+    bool            m_active_state_change   = false;
+    bool            m_activation_state      = false;
+    bool            m_timer_updated         = false;
+    float           m_recharge_time         = 0.0f;
+    float           m_time_to_activate      = 0.0f;
+    float           m_activate_period       = 0.0f;
+};
+
 class PowerPool_Info
 {
 public:
@@ -62,6 +74,13 @@ static const constexpr  uint32_t    class_version = 1;
 
         void serializefrom( BitStream &src );
         void serializeto( BitStream &src ) const;
+};
+
+struct Buffs
+{
+    PowerPool_Info  m_buff_info;
+    float           m_time_to_activate      = 0.0f;
+    float           m_activate_period       = 0.0f;
 };
 
 struct CharacterInspiration
@@ -180,11 +199,17 @@ static const constexpr  uint32_t    class_version = 2; // v2: is_limited and cha
         uint32_t        m_level_bought      = 0;
         uint32_t        m_total_eh_slots    = 0;
         uint32_t        m_charges_remaining = 0;
+
+        // Timers and Flags
+        uint32_t        m_activate_period       = 0;     // casting time
+        float           m_usage_time            = 0.0f;  // total time you can use toggle power
+        float           m_lifetime              = 0.0f;  // lifetime for temp powers
         bool            m_is_limited            = false; // some temporary powers have charges or a time limit
         bool            m_active_state_change   = false;
         bool            m_activation_state      = false;
         bool            m_timer_updated         = false;
         bool            m_erase_power           = false;
+
         std::vector<CharacterEnhancement> m_enhancements; // max of 5 enhancement slots for this client version
 
         Power_Data getPowerTemplate() const
@@ -336,6 +361,7 @@ int getMaxNumberInspirations(const CharacterData &cd);
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
 void useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row);
+void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
 void dumpInspirations(CharacterData &cd);
 
 

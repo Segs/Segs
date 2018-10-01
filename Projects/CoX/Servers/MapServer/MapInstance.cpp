@@ -403,11 +403,11 @@ void MapInstance::dispatch( Event *ev )
         case evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
             break;
-        case evSetDefaultPowerSend:
-            on_set_default_power_send(static_cast<SetDefaultPowerSend *>(ev));
-            break;
         case evSetDefaultPower:
             on_set_default_power(static_cast<SetDefaultPower *>(ev));
+            break;
+        case evUnsetDefaultPower:
+            on_unset_default_power(static_cast<UnsetDefaultPower *>(ev));
             break;
         case evUnqueueAll:
             on_unqueue_all(static_cast<UnqueueAll *>(ev));
@@ -1381,7 +1381,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     static const QStringList hmmCommands = {"hmmm", "plotting"};
     static const QStringList laugh2Commands = {"laugh2", "biglaugh", "laughtoo"};
     static const QStringList martialArtsCommands = {"martialarts", "kata"};
-    static const QStringList newspaperCommands = {"newspaper", "afk"};
+    static const QStringList newspaperCommands = {"newspaper"};
     static const QStringList noCommands = {"no", "dontattack"};
     static const QStringList plotCommands = {"plot", "scheme"};
     static const QStringList stopCommands = {"stop", "raisehand"};
@@ -2069,8 +2069,9 @@ void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
     if(session.m_ent->m_queued_powers.isEmpty())
         return;
 
-    // erase first queued power
-    session.m_ent->m_queued_powers.pop_front();
+    // remove first queued power
+    session.m_ent->m_queued_powers.dequeue();
+    session.m_ent->m_char->m_char_data.m_has_updated_powers = true; // this must be true, because we're updating queued powers
 
     qCWarning(logMapEvents) << "Aborting queued power";
 }
@@ -2107,7 +2108,6 @@ void MapInstance::on_client_options(SaveClientOptions * ev)
 {
     // Save options/keybinds to character entity and entry in the database.
     MapClientSession &session(m_session_store.session_from_event(ev));
-    //LinkBase * lnk = (LinkBase *)ev->src();
 
     Entity *ent = session.m_ent;
     markEntityForDbStore(ent,DbStoreFlags::PlayerData);
@@ -2134,14 +2134,28 @@ void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
     qCDebug(logMapEvents) << "Saving chat channel mask settings to GUISettings" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
 }
 
-void MapInstance::on_set_default_power_send(SetDefaultPowerSend *ev)
+void MapInstance::on_set_default_power(SetDefaultPower *ev)
 {
-    qCWarning(logMapEvents) << "Unhandled Set Default Power Send request:" << ev->powerset_idx << ev->power_idx;
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    PowerTrayGroup *ptray = &session.m_ent->m_char->m_char_data.m_trays;
+
+    ptray->m_has_default_power = true;
+    ptray->m_default_pset_idx = ev->powerset_idx;
+    ptray->m_default_pow_idx = ev->power_idx;
+
+    qCWarning(logMapEvents) << "Set Default Power:" << ev->powerset_idx << ev->power_idx;
 }
 
-void MapInstance::on_set_default_power(SetDefaultPower */*ev*/)
+void MapInstance::on_unset_default_power(UnsetDefaultPower *ev)
 {
-    qCWarning(logMapEvents) << "Unhandled Set Default Power request.";
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    PowerTrayGroup *ptray = &session.m_ent->m_char->m_char_data.m_trays;
+
+    ptray->m_has_default_power = false;
+    ptray->m_default_pset_idx = 0;
+    ptray->m_default_pow_idx = 0;
+
+    qCWarning(logMapEvents) << "Unset Default Power.";
 }
 
 void MapInstance::on_unqueue_all(UnqueueAll *ev)
@@ -2150,11 +2164,9 @@ void MapInstance::on_unqueue_all(UnqueueAll *ev)
     Entity *ent = session.m_ent;
 
     // What else could go here?
-    ent->m_target_idx = 0;
-    ent->m_assist_target_idx = 0;
+    ent->m_target_idx = -1;
+    ent->m_assist_target_idx = -1;
     ent->m_queued_powers.clear();
-
-    // cancelAttack(ent);
 
     qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }
@@ -2174,8 +2186,8 @@ void MapInstance::on_activate_power(ActivatePower *ev)
     session.m_ent->m_has_input_on_timeframe = true;
     uint32_t tgt_idx = ev->target_idx;
 
-    if(ev->target_idx == 0 || ev->target_idx == session.m_ent->m_idx)
-        tgt_idx = session.m_ent->m_idx;
+    if(ev->target_idx <= 0 || ev->target_idx == session.m_ent->m_idx)
+        tgt_idx = -1;
     else
         sendFaceEntity(session.m_ent, tgt_idx);
 
@@ -2237,7 +2249,6 @@ void MapInstance::on_set_keybind(SetKeybind *ev)
 
     KeyName key = static_cast<KeyName>(ev->key);
     ModKeys mod = static_cast<ModKeys>(ev->mods);
-
 
     ent->m_player->m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
     //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
@@ -2410,11 +2421,6 @@ void MapInstance::on_levelup_response(LevelUpResponse *ev)
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has leveled up";
-
-    // if security threat is less than level, send levelup again
-    if(getSecurityThreat(*session.m_ent->m_char) < getLevel(*session.m_ent->m_char))
-        sendLevelUp(session);
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received LevelUpResponse" << ev->button_id << ev->result;
 }

@@ -248,11 +248,13 @@ CharacterPower getPowerData(PowerPool_Info &ppool)
     Power_Data power = getGameData().get_power_template(ppool.m_pcat_idx, ppool.m_pset_idx, ppool.m_pow_idx);
 
     CharacterPower result;
-    result.m_power_info.m_pcat_idx      = ppool.m_pcat_idx;
-    result.m_power_info.m_pset_idx      = ppool.m_pset_idx;
-    result.m_power_info.m_pow_idx       = ppool.m_pow_idx;
-    result.m_index                      = ppool.m_pow_idx;
-    result.m_charges_remaining          = power.m_NumCharges;
+    result.m_power_info.m_pcat_idx  = ppool.m_pcat_idx;
+    result.m_power_info.m_pset_idx  = ppool.m_pset_idx;
+    result.m_power_info.m_pow_idx   = ppool.m_pow_idx;
+    result.m_index                  = ppool.m_pow_idx;
+    result.m_charges_remaining      = power.m_NumCharges;
+    result.m_activate_period        = power.ActivatePeriod;
+    result.m_usage_time             = power.m_UsageTime;
 
     if(power.m_NumCharges > 0)
         result.m_is_limited = true;
@@ -442,6 +444,9 @@ uint32_t countAllOwnedPowers(CharacterData &cd)
 
     for(const CharacterPowerSet &pset : cd.m_powersets)
     {
+        if(pset.m_index == 0) // don't count temporary_powers
+            continue;
+
         count += pset.m_powers.size(); // total up all powers
     }
 
@@ -652,14 +657,13 @@ void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint
 void useInspiration(Entity &ent, uint32_t col, uint32_t row)
 {
     CharacterData &cd = ent.m_char->m_char_data;
+    const CharacterInspiration *insp = getInspiration(ent, col, row);
 
-    if(!cd.m_inspirations.at(col, row).m_has_insp)
+    if(!insp->m_has_insp)
         return;
 
+    applyInspirationEffect(ent, col, row);
     removeInspiration(cd, col, row);
-
-    // TODO: Do inspiration benefit. For now, just heal a bit
-    setHP(*ent.m_char, getHP(*ent.m_char) + 15);
 
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
 }
@@ -684,6 +688,47 @@ void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)
     }
 
     cd.m_has_updated_powers = true; // update client on power status
+}
+
+void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
+{
+    const CharacterInspiration *insp = getInspiration(ent, col, row);
+
+    // TODO: Refactor this
+    QStringList health_names = {
+        "Respite",
+        "Dramatic_Improvement",
+        "Resurgence",
+    };
+
+    QStringList endurance_names = {
+        "Catch_a_Breath",
+        "Take_a_Breather",
+        "Second_Wind",
+    };
+
+    QStringList luck_names = {
+        "Luck",
+        "Good_Luck",
+        "Phenomenal_Luck",
+    };
+
+    if(health_names.contains(insp->m_name, Qt::CaseInsensitive))
+        setHP(*ent.m_char, getHP(*ent.m_char) + 15);
+
+    if(endurance_names.contains(insp->m_name, Qt::CaseInsensitive))
+        setEnd(*ent.m_char, getEnd(*ent.m_char) + 15);
+
+    // Test Buff System. Refactor all of this out.
+    if(luck_names.contains(insp->m_name, Qt::CaseInsensitive))
+    {
+        Buffs buff;
+        buff.m_buff_info = insp->m_insp_info;
+        buff.m_activate_period = 30.0f; // hardcoded for now
+        ent.m_buffs.push_back(buff);
+        ent.m_update_buffs = true;
+        return;
+    }
 }
 
 void dumpInspirations(CharacterData &cd)

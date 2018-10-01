@@ -114,7 +114,7 @@ void sendFriendsListUpdate(Entity *src, const FriendsList &friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
-void sendFaceEntity(Entity *src, uint8_t tgt_idx);
+void sendFaceEntity(Entity *src, int8_t tgt_idx);
 void sendFaceLocation(Entity *src, glm::vec3 &location);
 void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg);
 void sendBrowser(MapClientSession &tgt, QString &content);
@@ -138,7 +138,7 @@ void readEmailMessage(Entity *e, const int id);
 /*
  * usePower exposed for future Lua support
  */
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id);
 
 /*
  * Team related helpers

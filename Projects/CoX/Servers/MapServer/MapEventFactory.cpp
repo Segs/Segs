@@ -73,8 +73,8 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 27: return new ActivatePower;
         case 28: return new ActivatePowerAtLocation;
         case 29: return new ActivateInspiration;
-        case 30: return new SetDefaultPowerSend;
-        case 31: return new SetDefaultPower;
+        case 30: return new SetDefaultPower;
+        case 31: return new UnsetDefaultPower;
         case 32: return new UnqueueAll;
         case 33: return new AbortQueuedPower;
         case 34: return new MoveInspiration;

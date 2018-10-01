@@ -112,8 +112,8 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evActivatePower              ,227)
     EVENT_DECL(MapEventTypes, evActivatePowerAtLocation    ,228)
     EVENT_DECL(MapEventTypes, evActivateInspiration        ,229) // Hit F1, F2, F3, F4, F5 or Click on Inspiration in Tray
-    EVENT_DECL(MapEventTypes, evSetDefaultPowerSend        ,230) // Send Default Powerset
-    EVENT_DECL(MapEventTypes, evSetDefaultPower            ,231) // Clicking 'z'
+    EVENT_DECL(MapEventTypes, evSetDefaultPower            ,230) // Send Default Powerset
+    EVENT_DECL(MapEventTypes, evUnsetDefaultPower          ,231) // Clicking 'z'
     EVENT_DECL(MapEventTypes, evUnqueueAll                 ,232) // Click on another entity or Clicking 'z'
     EVENT_DECL(MapEventTypes, evAbortQueuedPower           ,233) // Clicking 'z'
     EVENT_DECL(MapEventTypes, evMoveInspiration            ,234)

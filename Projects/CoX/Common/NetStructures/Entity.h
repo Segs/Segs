@@ -18,6 +18,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/constants.hpp>
 
+#include <QQueue>
 #include <array>
 #include <memory>
 
@@ -223,13 +224,13 @@ public:
         EntType             m_type                  = {EntType::Invalid};
         glm::quat           m_direction;
         glm::vec3           m_spd                   = {1,1,1};
-        uint32_t            m_target_idx            = 0;
-        uint32_t            m_assist_target_idx     = 0;
+        int32_t             m_target_idx            = -1;
+        int32_t             m_assist_target_idx     = -1;
 
-        QVector<PowerPool_Info> m_buffs;
-        QVector<PowerPool_Info> m_queued_powers;
-        QVector<PowerPool_Info> m_recharging_powers;
-        QVector<NetFx>          m_net_fx;
+        std::vector<Buffs>          m_buffs;
+        QQueue<QueuedPowers>        m_queued_powers;
+        std::vector<QueuedPowers>   m_recharging_powers;
+        std::vector<NetFx>          m_net_fx;
         CharacterPower    * m_stance                = nullptr;
         bool                m_update_buffs          = false;
 

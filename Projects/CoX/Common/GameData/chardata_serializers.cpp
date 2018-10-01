@@ -119,6 +119,7 @@ void serialize(Archive &archive, CharacterPower &pwr, uint32_t const version)
     archive(cereal::make_nvp("NumEnhancements", pwr.m_total_eh_slots));
     archive(cereal::make_nvp("IsLimited", pwr.m_is_limited));
     archive(cereal::make_nvp("ChargeRemaining", pwr.m_charges_remaining));
+    archive(cereal::make_nvp("Lifetime", pwr.m_lifetime));
     archive(cereal::make_nvp("Enhancements", pwr.m_enhancements));
 }
 

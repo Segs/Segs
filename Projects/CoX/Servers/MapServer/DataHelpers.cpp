@@ -16,6 +16,7 @@
 #include "MapInstance.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
+#include "GameData/power_definitions.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/Character.h"
 #include "NetStructures/Contact.h"
@@ -450,7 +451,7 @@ void sendTeamOffer(Entity *src, Entity *tgt)
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
 }
 
-void sendFaceEntity(Entity *src, uint8_t tgt_idx)
+void sendFaceEntity(Entity *src, int8_t tgt_idx)
 {
     qCDebug(logOrientation) << QString("Sending Face Entity to %1").arg(tgt_idx);
     src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceEntity>(new FaceEntity(tgt_idx)));
@@ -571,42 +572,65 @@ void readEmailMessage(Entity *e, const int id){
 /*
  * usePower here to provide access to messageOutput
  */
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id)
 {
     // Add to activepowers queue
     CharacterPower * ppower = nullptr;
     ppower = getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
+    const Power_Data powtpl = ppower->getPowerTemplate();
 
-    if(ppower == nullptr || ppower->getPowerTemplate().m_Name.isEmpty())
+    if(ppower == nullptr || powtpl.m_Name.isEmpty())
         return;
 
     if(ppower->m_is_limited && ppower->m_charges_remaining)
         --ppower->m_charges_remaining;
 
-    // Queue power
-    ppower->m_active_state_change   = true;
-    ppower->m_activation_state      = true;
-    ent.m_queued_powers.push_back(ppower->m_power_info); // must send powers vector idx here
-
-    // Recharging Queue
-    if(ppower->getPowerTemplate().RechargeTime)
-    {
-        ppower->m_timer_updated = true;
-        ent.m_recharging_powers.push_back(ppower->m_power_info);
-    }
-
     float endurance = getEnd(*ent.m_char);
-    float end_cost = std::max(ppower->getPowerTemplate().EnduranceCost, 1.0f);
+    float end_cost = std::max(powtpl.EnduranceCost, 1.0f);
 
     qCDebug(logPowers) << "Endurance Cost" << end_cost << "/" << endurance;
     if(end_cost > endurance)
     {
-        QString msg = "Not enough endurance to use power" + ppower->getPowerTemplate().m_Name;
+        QString msg = "Not enough endurance to use power" + powtpl.m_Name;
         messageOutput(MessageChannel::DEBUG_INFO, msg, ent);
         return;
     }
 
+    // set endurance based upon end cost
     setEnd(*ent.m_char, endurance-end_cost);
+
+    // Queue power
+    QueuedPowers qpowers;
+    qpowers.m_pow_idxs = {pset_idx, pow_idx};
+    qpowers.m_active_state_change   = true;
+    qpowers.m_activation_state      = true;
+    qpowers.m_timer_updated         = true;
+    qpowers.m_time_to_activate      = powtpl.TimeToActivate;
+    qpowers.m_recharge_time         = powtpl.RechargeTime;
+    qpowers.m_activate_period       = powtpl.ActivatePeriod;
+
+    // Add to queues
+    ent.m_queued_powers.push_back(qpowers); // Activation Queue
+    ent.m_recharging_powers.push_back(qpowers); // Recharging Queue
+
+    if(ppower->m_is_limited && !ppower->m_charges_remaining)
+    {
+        ppower->m_erase_power = true; // mark for removal
+        ent.m_char->m_char_data.m_reset_powersets = true; // powerset array has changed
+    }
+
+    // Update Powers to Client to show Recharging/Timers/Etc in UI
+    ent.m_char->m_char_data.m_has_updated_powers = true;
+
+    if(tgt_idx == ent.m_idx || tgt_idx == -1) // Skip the rest if targeting self.
+        return;
+
+    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx << tgt_id;
+        return;
+    }
 
     // TODO: Do actual power stuff. For now, be silly.
     QStringList batman_kerpow{"AIEEE!", "ARRRGH!", "AWKKKKKK!", "BAM!", "BANG!", "BAP!",
@@ -627,19 +651,6 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     QString console_msg;
     assert(ent.m_client);
     sendFloatingInfo(*ent.m_client, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-
-    if(ppower->m_is_limited && !ppower->m_charges_remaining)
-        ppower->m_erase_power = true; // mark for removal
-
-    if(tgt_idx == ent.m_idx) // Skip the rest if targeting self.
-        return;
-
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-    if(target_ent == nullptr)
-    {
-        qCDebug(logPowers) << "Failed to find target:" << tgt_idx << tgt_id;
-        return;
-    }
 
     // calculate damage
     float damage = 1.0f;

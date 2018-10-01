@@ -195,7 +195,7 @@ static void sendTrayMode(const GUISettings &gui, BitStream &bs)
 //////////////////////////////
 //                Keybinds
 static void sendKeybinds(const KeybindSettings &keybinds,BitStream &bs)
-{
+{     
     const CurrentKeybinds &cur_keybinds = keybinds.getCurrentKeybinds();
     int total_keybinds = cur_keybinds.size();
 
@@ -369,38 +369,10 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
     }
     qCDebug(logPowers) << "Powers Updated:" << cd->m_has_updated_powers;
 
-
     // Reset Powersets (the array has changed)
     bs.StoreBits(1, cd->m_reset_powersets);
     if(cd->m_reset_powersets)
-    {
-        /* possible that this simply resets the powers array on the client side
-         * so we don't actually need to reset server side?
-        qCDebug(logPowers) << "Resetting Powers:" << cd->m_reset_powersets;
-        CharacterPowerSet temp;
-
-        uint32_t pcat_idx = getPowerCatByName("Temporary_Powers");
-
-        for(CharacterPowerSet &pset : cd->m_powersets)
-        {
-            if(pset.m_category == pcat_idx)
-            {
-                temp = pset;
-                break;
-            }
-        }
-
-        if(temp.m_powers.empty())
-            qWarning() << "Failed to find Temporary_Powers PowerSet";
-        else
-        {
-            cd->m_powersets.clear();
-            cd->m_powersets.push_back(temp);
-        }
-        */
-
         cd->m_reset_powersets = false; // toggle this false because we're done
-    }
 
     bs.StorePackedBits(1, countAllOwnedPowers(*cd));
     int pset_idx = 0;
@@ -423,9 +395,9 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
             power.m_power_info.serializeto(bs);
             bs.StorePackedBits(5, pset.m_level_bought);
             bs.StorePackedBits(5, power.m_level_bought);
-            bs.StorePackedBits(3, power.getPowerTemplate().m_NumCharges);
-            bs.StoreFloat(power.getPowerTemplate().m_UsageTime);
-            bs.StorePackedBits(24, power.getPowerTemplate().ActivatePeriod);
+            bs.StorePackedBits(3, power.m_charges_remaining);
+            bs.StoreFloat(power.m_usage_time);
+            bs.StorePackedBits(24, power.m_activate_period);
 
             qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_total_eh_slots << "/" << power.m_enhancements.size();
             if(power.m_total_eh_slots > power.m_enhancements.size())
@@ -455,42 +427,30 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
 
     qCDebug(logPowers) << "NumQueuedPowers:" << e->m_queued_powers.size();
     bs.StorePackedBits(4, e->m_queued_powers.size()); // Count all active powers
-    for(const PowerPool_Info &ppinfo : e->m_queued_powers)
+    for(const QueuedPowers &qpow : e->m_queued_powers)
     {
         qCDebug(logPowers) << "  QueuedPower:"
-                           << ppinfo.m_pcat_idx
-                           << ppinfo.m_pset_idx
-                           << ppinfo.m_pow_idx;
+                           << qpow.m_pow_idxs.m_pset_vec_idx
+                           << qpow.m_pow_idxs.m_pow_vec_idx;
 
-        // Add to activepowers queue
-        CharacterPower *pow = nullptr;
-        pow = getOwnedPowerByTpl(*e, ppinfo);
-        qCDebug(logPowers) << "  QueuedPower:" << pow->getPowerTemplate().m_Name << pow->m_index;
-        bs.StoreBits(1, pow->m_active_state_change);
-        if(pow->m_active_state_change)
+        bs.StoreBits(1, qpow.m_active_state_change);
+        if(qpow.m_active_state_change)
         {
-            PowerVecIndexes vec_indexes;
-            vec_indexes = getOwnedPowerIndexes(*e, ppinfo);
-
-            storePowerSpec(vec_indexes.m_pset_vec_idx, vec_indexes.m_pow_vec_idx, bs);
-            bs.StorePackedBits(1, pow->m_activation_state);
+            storePowerSpec(qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx, bs);
+            bs.StorePackedBits(1, qpow.m_activation_state);
         }
     }
 
     qCDebug(logPowers) << "NumRechargingTimers:" << e->m_recharging_powers.size();
     bs.StorePackedBits(1, e->m_recharging_powers.size());
-    for(const PowerPool_Info &ppinfo : e->m_recharging_powers)
+    for(const QueuedPowers &rpow : e->m_recharging_powers)
     {
-        CharacterPower *pow = getOwnedPowerByTpl(*e, ppinfo);
-        qCDebug(logPowers) << "  RechargeCountdown:" << pow->m_timer_updated << pow->getPowerTemplate().RechargeTime;
-        bs.StoreBits(1, pow->m_timer_updated);
-        if(pow->m_timer_updated)
+        qCDebug(logPowers) << "  RechargeCountdown:" << rpow.m_timer_updated << rpow.m_recharge_time;
+        bs.StoreBits(1, rpow.m_timer_updated);
+        if(rpow.m_timer_updated)
         {
-            PowerVecIndexes vec_indexes;
-            vec_indexes = getOwnedPowerIndexes(*e, ppinfo);
-
-            storePowerSpec(vec_indexes.m_pset_vec_idx, vec_indexes.m_pow_vec_idx, bs);
-            bs.StoreFloat(pow->getPowerTemplate().RechargeTime);
+            storePowerSpec(rpow.m_pow_idxs.m_pset_vec_idx, rpow.m_pow_idxs.m_pow_vec_idx, bs);
+            bs.StoreFloat(rpow.m_recharge_time);
         }
     }
 

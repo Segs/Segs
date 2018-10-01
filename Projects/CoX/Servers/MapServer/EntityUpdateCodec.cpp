@@ -314,7 +314,7 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
 
 void sendBuffsConditional(const Entity &src, BitStream &bs)
 {
-    bs.StoreBits(1, src.m_update_buffs); // TODO: use m_buffs.size() instead?
+    bs.StoreBits(1, src.m_update_buffs);
     if(src.m_update_buffs)
         sendBuffs(src,bs);
 }
@@ -408,8 +408,8 @@ void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStrea
 void sendBuffs(const Entity &src, BitStream &bs)
 {
     bs.StorePackedBits(5, src.m_buffs.size());
-    for(const PowerPool_Info &ppool : src.m_buffs)
-        ppool.serializeto(bs);
+    for(const Buffs &buff : src.m_buffs)
+        buff.m_buff_info.serializeto(bs);
 }
 
 void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream &bs )
