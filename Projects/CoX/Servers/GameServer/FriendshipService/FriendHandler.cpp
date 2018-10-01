@@ -37,6 +37,7 @@ void update_player_friends(FriendHandlerState &state,uint32_t char_db_id, Friend
 {
     state.m_player_info_map[char_db_id].m_friends_list = friends_list;
     FriendsList *ptr_list = &state.m_player_info_map[char_db_id].m_friends_list; //just done for readability sake
+
     /*
      * Add our character to the set for each character we've added.
      */
