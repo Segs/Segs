@@ -18,6 +18,7 @@
 namespace SEGSEvents
 {
 struct FriendConnectedMessage;
+struct FriendDisconnectedMessage;
 struct FriendAddedMessage;
 struct FriendRemovedMessage;
 } // end of namespace SEGSEvents

@@ -15,6 +15,7 @@ namespace SEGSEvents
 enum FriendHandlerEventTypes : uint32_t
 {
     evFriendConnectedMessage = Internal_EventTypes::ID_LAST_Internal_EventTypes,
+    evFriendDisconnectedMessage,
     evSendFriendListMessage,
     evSendNotifyFriendMessage,
     evFriendAddedMessage,
@@ -37,6 +38,19 @@ struct FriendConnectedData
 
 //[[ev_def:macro]]
 ONE_WAY_MESSAGE(FriendHandlerEventTypes,FriendConnected)
+
+struct FriendDisconnectedData
+{
+    uint32_t m_char_db_id;       // id of the character disconnecting
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_char_db_id);
+    }
+};
+
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(FriendHandlerEventTypes,FriendDisconnected)
 
 struct SendFriendListData
 {

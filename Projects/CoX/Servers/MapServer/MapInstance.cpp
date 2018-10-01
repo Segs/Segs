@@ -15,6 +15,7 @@
 #include "Common/GameData/CoHMath.h"
 #include "Common/Servers/Database.h"
 #include "Common/Servers/HandlerLocator.h"
+#include "GameServer/FriendshipService/FriendHandlerEvents.h"
 #include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/MessageBus.h"
 #include "DataHelpers.h"
@@ -46,7 +47,6 @@
 #include "serialization_common.h"
 #include "serialization_types.h"
 #include "version.h"
-#include "Common/Servers/InternalEvents.h"
 #include "Events/MapXferWait.h"
 #include "Events/MapXferRequest.h"
 
@@ -212,6 +212,7 @@ bool MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t 
     m_game_server_id = game_server_id;
     m_owner_id = owner_id;
     m_instance_id = instance_id;
+    HandlerLocator::setMapInstance_Handler(owner_id,instance_id,this);
     if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
     {
         qWarning() << "MapInstance::spin_up_for failed to register_handler, port already open";
@@ -486,6 +487,12 @@ void MapInstance::dispatch( Event *ev )
         case MapEventTypes::evMapXferComplete:
             on_map_xfer_complete(static_cast<MapXferComplete *>(ev));
             break;
+        case evSendFriendListMessage:
+            on_update_friendslist(static_cast<SendFriendListMessage *>(ev));
+            break;
+        case evSendNotifyFriendMessage:
+            on_notify_friend(static_cast<SendNotifyFriendMessage *>(ev));
+            break;
         case evAwaitingDeadNoGurney:
             on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
             break;
@@ -601,6 +608,9 @@ void MapInstance::on_link_lost(Event *ev)
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
 
+    EventProcessor *f_tgt = HandlerLocator::getFriend_Handler();
+    f_tgt->putq(new FriendDisconnectedMessage({ent->m_db_id},0));
+
     // one last character update for the disconnecting entity
     send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
@@ -622,6 +632,9 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
+
+    EventProcessor *f_tgt = HandlerLocator::getFriend_Handler();
+    f_tgt->putq(new FriendDisconnectedMessage({ent->m_db_id},0));
 
     removeLFG(*ent);
     leaveTeam(*ent);
@@ -706,6 +719,27 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     ev->src()->putq(new ExpectMapClientResponse({cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
 }
 
+void MapInstance::on_update_friendslist(SendFriendListMessage *ev){
+    MapClientSession &map_session(m_session_store.session_from_token(ev->m_data.m_session_token));
+    Entity * e = map_session.m_ent;
+    FriendsList flist = ev->m_data.m_friendlist;
+    e->m_char->m_char_data.m_friendlist = flist;
+    sendFriendsListUpdate(e,flist);
+}
+
+void MapInstance::on_notify_friend(SendNotifyFriendMessage *ev){
+    //Get the session we want to notify, and the session of who connected (so we can get the name)
+
+    //MapClientSession &notify_session(*m_session_store.create_or_reuse_session_for(ev->m_data.m_notify_token));
+    //MapClientSession &connected_session(*m_session_store.create_or_reuse_session_for(ev->m_data.m_connected_token));
+    MapClientSession &notify_session(m_session_store.session_from_token(ev->m_data.m_notify_token));
+    MapClientSession &connected_session(m_session_store.session_from_token(ev->m_data.m_connected_token));
+    Entity * e = connected_session.m_ent;
+
+    QString notify_msg = "Your friend " + e->m_char->getName() + " is now online.";
+    sendInfoMessage(MessageChannel::SERVER,notify_msg,notify_session);
+}
+
 void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
 {
     MapClientSession &map_session(m_session_store.session_from_event(ev));
@@ -758,6 +792,9 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
     map_session.link()->putq(new MapInstanceConnected(this, 1, ""));
+
+    EventProcessor *f_tgt = HandlerLocator::getFriend_Handler();
+    f_tgt->putq(new FriendConnectedMessage({ev->session_token(),m_owner_id,m_instance_id, e->m_db_id, e->m_char->m_char_data.m_friendlist},0));
 }
 
 void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
