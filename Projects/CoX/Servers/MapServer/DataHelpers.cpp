@@ -740,7 +740,9 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     messageOutput(MessageChannel::COMBAT, console_msg, *target_ent);
     }
 }
-void findTeamMember(Entity &tgt){
-    sendTeamLooking(&tgt);}
+void findTeamMember(Entity &tgt)
+{
+    sendTeamLooking(&tgt);
+}
 //! @}
 
