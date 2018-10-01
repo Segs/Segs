@@ -22,7 +22,6 @@ void send_update_friends_list(FriendHandlerState &state,uint32_t char_db_id)
 {
     if(state.is_online(char_db_id))
     {
-        qDebug("sending friend list message");
         const PlayerInfo &entry(state.m_player_info_map[char_db_id]);
         EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
                     entry.m_map_info.server_id,
@@ -61,13 +60,11 @@ void update_player_friends(FriendHandlerState &state,uint32_t char_db_id, Friend
  */
 void refresh_player_friends(FriendHandlerState &state,uint32_t char_db_id)
 {
-    qDebug("refresh player friends");
     FriendsList *ptr_list = &state.m_player_info_map[char_db_id].m_friends_list; //just done for readability sake
 
     //Iterate through the friends list and update online status accordingly
     for(Friend& f : ptr_list->m_friends)
     {
-        qDebug("refresh for loop");
         f.m_online_status = state.is_online(f.m_db_id);
         //f.m_mapname = getFriendDisplayMapName(f);
     }
@@ -120,7 +117,6 @@ void on_client_connected(FriendHandlerState &state,FriendConnectedMessage *msg)
  */
 void on_client_disconnected(FriendHandlerState &state,FriendDisconnectedMessage *msg)
 {
-    qDebug("character disconnecting");
     uint32_t char_db_id = msg->m_data.m_char_db_id;
     state.m_player_info_map[char_db_id].m_is_online = false;
 

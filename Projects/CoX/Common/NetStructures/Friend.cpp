@@ -88,15 +88,11 @@ FriendListChangeStatus addFriend(Entity &src, const Entity &tgt)
     f.m_map_idx         = tgt.m_entity_data.m_map_idx;
     f.m_mapname         = getEntityDisplayMapName(tgt.m_entity_data);
 
-    // add to friendlist
-    src_data.m_friends.emplace_back(f);
-    qCDebug(logFriends) << "friendslist size:" << src_data.m_friends_count << src_data.m_friends.size();
-
     if(logFriends().isDebugEnabled())
         dumpFriends(src);
 
     EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
-    friend_tgt->putq(new FriendAddedMessage({src.m_char->m_db_id,tgt.m_db_id, f}));
+    friend_tgt->putq(new SEGSEvents::FriendAddedMessage({src.m_char->m_db_id,tgt.m_db_id, f},0));
 
     return FriendListChangeStatus::FRIEND_ADDED;
 }
@@ -105,12 +101,12 @@ FriendListChangeStatus removeFriend(Entity &src, QString friend_name)
 {
     QString msg;
     uint32_t m_tgt_id;
-    FriendsList &src_data(src.m_char->m_char_data.m_friendlist);
+    FriendsList *src_data(&src.m_char->m_char_data.m_friendlist);
 
     qCDebug(logFriends) << "Searching for friend" << friend_name << "to remove them.";
 
     QString lower_name = friend_name.toLower();
-    auto iter = std::find_if( src_data.m_friends.begin(), src_data.m_friends.end(),
+    auto iter = std::find_if( src_data->m_friends.begin(), src_data->m_friends.end(),
                               [lower_name](const Friend& f)->bool {return lower_name==f.m_name.toLower();});
 
     if(iter!=src_data->m_friends.end())
@@ -119,21 +115,19 @@ FriendListChangeStatus removeFriend(Entity &src, QString friend_name)
         msg = "Removing " + iter->m_name + " from your friends list.";
 
         EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
-        friend_tgt->putq(new FriendRemovedMessage({src.m_char->m_db_id,m_tgt_id}));
+        friend_tgt->putq(new SEGSEvents::FriendRemovedMessage({src.m_char->m_db_id,m_tgt_id},0));
 
         qCDebug(logFriends) << msg;
         if(logFriends().isDebugEnabled())
             dumpFriends(src);
 
         qCDebug(logFriends).noquote() << msg;
-        messageOutput(MessageChannel::FRIENDS, msg, src);
         return FriendListChangeStatus::FRIEND_REMOVED;
     }
     else
     {
         msg = friend_name + " is not on your friends list.";
         qCDebug(logFriends) << msg;
-        messageOutput(MessageChannel::FRIENDS, msg, src);
         return FriendListChangeStatus::FRIEND_NOT_FOUND;
     }
 }

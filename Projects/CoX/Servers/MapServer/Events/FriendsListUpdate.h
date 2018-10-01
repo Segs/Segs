@@ -30,6 +30,7 @@ public:
     {
         bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 37
 
+        qDebug("FL Update");
         qCDebug(logFriends) << "FL Update:" << m_list.m_has_friends << m_list.m_friends_count << m_list.m_friends.size();
         bs.StorePackedBits(1,1); // v2 = force_update
         bs.StorePackedBits(1,m_list.m_friends_count);
