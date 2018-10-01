@@ -106,7 +106,13 @@ FriendListChangeStatus removeFriend(Entity &src, QString friend_name)
     auto iter = std::find_if( src_data->m_friends.begin(), src_data->m_friends.end(),
                               [lower_name](const Friend& f)->bool {return lower_name==f.m_name.toLower();});
 
-    if(iter!=src_data->m_friends.end())
+    if(iter==src_data->m_friends.end())
+    {
+        msg = friend_name + " is not on your friends list.";
+        qCDebug(logFriends) << msg;
+        return FriendListChangeStatus::FRIEND_NOT_FOUND;
+    }
+    else
     {
         m_tgt_id = iter->m_db_id;
         msg = "Removing " + iter->m_name + " from your friends list.";
@@ -120,12 +126,6 @@ FriendListChangeStatus removeFriend(Entity &src, QString friend_name)
 
         qCDebug(logFriends).noquote() << msg;
         return FriendListChangeStatus::FRIEND_REMOVED;
-    }
-    else
-    {
-        msg = friend_name + " is not on your friends list.";
-        qCDebug(logFriends) << msg;
-        return FriendListChangeStatus::FRIEND_NOT_FOUND;
     }
 }
 
