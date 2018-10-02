@@ -260,11 +260,15 @@ void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*
 void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    session.is_connected_to_map_server_id = 0;
-    session.is_connected_to_map_instance_id = 0;
+    qCDebug(logMapXfers) << QString("disconnect_from_instance ev.instance: %1 sess.instance: %2").arg(ev->m_data.m_map_instance_id).arg(m_instance_id);
+    if (ev->m_data.m_map_instance_id == m_instance_id)
     {
-        SessionStore::MTGuard guard(m_session_store.reap_lock());
-        m_session_store.mark_session_for_reaping(&session,ev->session_token());
+        session.is_connected_to_map_server_id = 0;
+        session.is_connected_to_map_instance_id = 0;
+        {
+            SessionStore::MTGuard guard(m_session_store.reap_lock());
+            m_session_store.mark_session_for_reaping(&session,ev->session_token());
+        }
     }
 }
 
@@ -503,6 +507,7 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapLink *lnk = session.link();
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
+    qCDebug(logMapXfers) << QString("Initiating map transfer for session: %1 on map instance %2").arg(lnk->session_token()).arg(m_instance_id);
     if (!map_server->session_has_xfer_in_progress(lnk->session_token()))
     {
          qCDebug(logMapXfers) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
@@ -526,8 +531,12 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     map_server->putq(map_req);
 }
 
-void MapInstance::on_map_xfer_complete(MapXferComplete */*ev*/)
+void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
 {
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    qCDebug(logMapXfers) << QString("Map xfer complete for session: %1").arg(session.link()->session_token());
+    qCDebug(logMapXfers) << QString("Previous Map Instance ID: %1 Current Map Instance ID: %2").arg(session.is_connected_to_map_instance_id).arg(m_instance_id);
+    session.is_connected_to_map_instance_id = m_instance_id;  // change map instance to new instance.
     // TODO: Do anything necessary after connecting to new map instance here.
 }
 
@@ -599,7 +608,7 @@ void MapInstance::on_link_lost(Event *ev)
     //todo: notify all clients about entity removal
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id(), m_instance_id},0));
 
     // one last character update for the disconnecting entity
     send_character_update(ent);
@@ -621,7 +630,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     assert(ent);
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id(), m_instance_id},0));
 
     removeLFG(*ent);
     leaveTeam(*ent);
@@ -651,6 +660,7 @@ void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
         assert(cookie!=0);
         // Now we inform our game server that this Map server instance is ready for the client
         MapClientSession &map_session(m_session_store.session_from_event(ev));
+        qCDebug(logMapXfers) << "Unmark session for reaping in name_clash_check";
         m_session_store.locked_unmark_session_for_reaping(&map_session);
         HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ExpectMapClientResponse({2+cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
@@ -660,6 +670,7 @@ void MapInstance::on_name_clash_check_result(WouldNameDuplicateResponse *ev)
 void MapInstance::on_expect_client_response(ExpectMapClientResponse *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
+    qCDebug(logMapXfers) << QString("Response for map transfer for session: %1 for map: %2").arg(session.link()->session_token()).arg(ev->m_data.cookie);
     MapXferRequest *map_xfer_req = new MapXferRequest();
     map_xfer_req->m_address = ev->m_data.m_connection_addr;
     map_xfer_req->m_map_cookie = ev->m_data.cookie;
@@ -690,6 +701,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
         EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
         game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name},ev->session_token(),this) );
         // while we wait for db response, mark session as waiting for reaping
+        qCDebug(logMapXfers) << "Reaping token in on_expect_client";
         m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
         return;
     }
@@ -709,6 +721,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
 void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
 {
     MapClientSession &map_session(m_session_store.session_from_event(ev));
+    qCDebug(logMapXfers) << "Unmark session for reaping in on_char_created";
     m_session_store.locked_unmark_session_for_reaping(&map_session);
     if(ev->m_data.slot_idx<0)
     {
@@ -725,12 +738,14 @@ void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
     // TODO: we've just put the entity in the db, and now we have to load it back ??
     game_db->putq(new GetEntityRequest({ev->m_data.m_char_id},ev->session_token(),this));
     // while we wait for db response, mark session as waiting for reaping
+    qCDebug(logMapXfers) << "Mark session for reaping in character created";
     m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
 }
 
 void MapInstance::on_entity_response(GetEntityResponse *ev)
 {
     MapClientSession &map_session(m_session_store.session_from_event(ev));
+    qCDebug(logMapXfers) << "Unmark session for reaping in on_entity_response";
     m_session_store.locked_unmark_session_for_reaping(&map_session);
     Entity * e = map_session.m_ent;
 
@@ -764,6 +779,7 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
 {
     // exactly the same function as above, this is just a test to see if getting entitydata by name is working
     MapClientSession &map_session(m_session_store.session_from_event(ev));
+    qCDebug(logMapXfers) << "Unmark session for reaping in on_entity_by_name";
     m_session_store.locked_unmark_session_for_reaping(&map_session);
     Entity * e = map_session.m_ent;
 
@@ -842,6 +858,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
     }
     // while we wait for db response, mark session as waiting for reaping
+    qCDebug(logMapXfers) << "Mark session for reaping in create_map_entity";
     m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token());
 }
 

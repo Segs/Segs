@@ -442,6 +442,8 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
         // check if this session perhaps is in ready for reaping set
         m_session_store.unmark_session_for_reaping(&session);
     }
+
+    qCDebug(logMapXfers) << QString("client_connected_to_other ev.id: %1 sess.id: %2").arg(ev->m_data.m_sub_server_id).arg(session.is_connected_to_map_instance_id);
     session.is_connected_to_map_server_id = ev->m_data.m_server_id;
     session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
 }
@@ -449,11 +451,17 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
 void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
 {
     GameSession &session(m_session_store.session_from_token(ev->m_data.m_session));
-    session.is_connected_to_map_server_id = 0;
-    session.is_connected_to_map_instance_id = 0;
+    // Prevent altering the session when disconnecting from a map server after a map transfer in cases
+    // where the disconnect is handled after the reconnection.
+    qCDebug(logMapXfers) << QString("client_disconnected_from ev.id: %1 sess.id: %2").arg(ev->m_data.m_map_instance_id).arg(session.is_connected_to_map_instance_id);
+    if (ev->m_data.m_map_instance_id == session.is_connected_to_map_instance_id)
     {
-        SessionStore::MTGuard guard(m_session_store.reap_lock());
-        m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
+        session.is_connected_to_map_server_id = 0;
+        session.is_connected_to_map_instance_id = 0;
+        {
+            SessionStore::MTGuard guard(m_session_store.reap_lock());
+            m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
+        }
     }
 }
 

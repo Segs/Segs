@@ -204,10 +204,11 @@ struct ClientDisconnectedData
 {
     uint64_t m_session;
     uint32_t m_char_db_id;       // id of the character disconnected
+    uint32_t m_map_instance_id;
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_session,m_char_db_id);
+        ar(m_session,m_char_db_id, m_map_instance_id);
     }
 };
 //[[ev_def:macro]]
