@@ -276,7 +276,8 @@ uint32_t GameDataStore::expDebtForLevel(uint32_t lev) const
 
 uint32_t GameDataStore::expMaxLevel() const
 {
-    return m_experience_and_debt_per_level.m_ExperienceRequired.size();
+    // return -1 because level is stored in indexed array (starting 0)
+    return m_experience_and_debt_per_level.m_ExperienceRequired.size()-1;
 }
 
 int GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &schedule) const
