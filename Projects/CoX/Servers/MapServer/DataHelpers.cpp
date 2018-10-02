@@ -736,8 +736,6 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
 
     if(target_ent->m_type != EntType::PLAYER || tgt_idx == ent.m_idx)
         return;
-    if(tgt_idx == ent.m_idx) // Skip the rest if targeting self.
-        return;
 
     // Send message to target
     assert(target_ent->m_client);
