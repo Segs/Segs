@@ -195,11 +195,11 @@ void PowerPool_Info::serializeto(BitStream &src) const
  * Powers Methods
  */
 
-int getPowerCatByName(const GameDataStore &data,const QString &name)
+int getPowerCatByName(const QString &name)
 {
     int idx = 0;
 
-    for(const StoredPowerCategory &pcat : data.m_all_powers.m_categories)
+    for(const StoredPowerCategory &pcat : getGameData().m_all_powers.m_categories)
     {
         if(pcat.name.compare(name, Qt::CaseInsensitive) == 0)
             return idx;
@@ -211,11 +211,11 @@ int getPowerCatByName(const GameDataStore &data,const QString &name)
     return 0;
 }
 
-int getPowerSetByName(const GameDataStore &data,const QString &name, uint32_t pcat_idx)
+int getPowerSetByName(const QString &name, uint32_t pcat_idx)
 {
     int idx = 0;
 
-    for(const Parse_PowerSet &pset : data.m_all_powers.m_categories[pcat_idx].m_PowerSets)
+    for(const Parse_PowerSet &pset : getGameData().get_power_category(pcat_idx).m_PowerSets)
     {
         if(pset.m_Name.compare(name, Qt::CaseInsensitive) == 0)
             return idx;
@@ -227,11 +227,11 @@ int getPowerSetByName(const GameDataStore &data,const QString &name, uint32_t pc
     return 0;
 }
 
-int getPowerByName(const GameDataStore &data, const QString &name, uint32_t pcat_idx, uint32_t pset_idx)
+int getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx)
 {
     int idx = 0;
 
-    for(const Power_Data &pow : data.m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers)
+    for(const Power_Data &pow : getGameData().get_powerset(pcat_idx, pset_idx).m_Powers)
     {
         if(pow.m_Name.compare(name, Qt::CaseInsensitive) == 0)
             return idx;
@@ -243,20 +243,16 @@ int getPowerByName(const GameDataStore &data, const QString &name, uint32_t pcat
     return 0;
 }
 
-CharacterPower getPowerData(const GameDataStore &data, PowerPool_Info &ppool)
+CharacterPower getPowerData(PowerPool_Info &ppool)
 {
-    Power_Data power = data.m_all_powers.m_categories[ppool.m_pcat_idx].m_PowerSets[ppool.m_pset_idx].m_Powers[ppool.m_pow_idx];
+    Power_Data power = getGameData().get_power_template(ppool.m_pcat_idx, ppool.m_pset_idx, ppool.m_pow_idx);
 
     CharacterPower result;
     result.m_power_info.m_pcat_idx      = ppool.m_pcat_idx;
     result.m_power_info.m_pset_idx      = ppool.m_pset_idx;
     result.m_power_info.m_pow_idx       = ppool.m_pow_idx;
-    result.m_name                       = power.m_Name;
     result.m_index                      = ppool.m_pow_idx;
-    result.m_num_charges                = power.m_NumCharges;
-    result.m_range                      = power.Range;
-    result.m_recharge_time              = power.RechargeTime;
-    result.m_power_tpl                  = power; // Maybe there's a better way to access this when needed?
+    // result.m_num_charges                = power.m_NumCharges;
 
     if(!power.BoostsAllowed.empty())
         result.m_total_eh_slots = 3; // TODO: buy during levelup. For now, everyone has 3!
@@ -267,15 +263,15 @@ CharacterPower getPowerData(const GameDataStore &data, PowerPool_Info &ppool)
     return result;
 }
 
-CharacterPowerSet getPowerSetData(const GameDataStore &data, PowerPool_Info &ppool)
+CharacterPowerSet getPowerSetData(PowerPool_Info &ppool)
 {
     CharacterPowerSet result;
-    Parse_PowerSet powerset = data.m_all_powers.m_categories[ppool.m_pcat_idx].m_PowerSets[ppool.m_pset_idx];
+    Parse_PowerSet powerset = getGameData().get_powerset(ppool.m_pcat_idx, ppool.m_pset_idx);
 
     for(uint32_t pow_idx = 0; pow_idx < powerset.m_Powers.size(); ++pow_idx)
     {
         ppool.m_pow_idx = pow_idx;
-        CharacterPower p = getPowerData(data,ppool);
+        CharacterPower p = getPowerData(ppool);
         result.m_powers.push_back(p);
     }
     return result;
@@ -286,13 +282,13 @@ CharacterPower *getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
     CharacterData *cd = &e.m_char->m_char_data;
 
     if(pset_idx > cd->m_powersets.size()
-            || cd->m_powersets[pset_idx].m_powers[pow_idx].m_name.isEmpty())
+            || cd->m_powersets[pset_idx].m_powers[pow_idx].getPowerTemplate().m_Name.isEmpty())
     {
         qWarning() << "Failed to locate Power by index" << pset_idx << pow_idx;
         return nullptr;
     }
 
-    qCDebug(logPowers) << "getPower returned" << cd->m_powersets[pset_idx].m_powers[pow_idx].m_name;
+    qCDebug(logPowers) << "getPower returned" << cd->m_powersets[pset_idx].m_powers[pow_idx].getPowerTemplate().m_Name;
     return &cd->m_powersets[pset_idx].m_powers[pow_idx];
 }
 
@@ -309,13 +305,13 @@ void addPowerSet(CharacterData &cd, PowerPool_Info &ppool)
     cd.m_powersets.push_back(pset);
 }
 
-void addEntirePowerSet(const GameDataStore &data,CharacterData &cd, PowerPool_Info &ppool)
+void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool)
 {
     CharacterPowerSet pset;
 
     qCDebug(logPowers) << "Adding entire PowerSet:" << ppool.m_pcat_idx << ppool.m_pset_idx;
 
-    pset = getPowerSetData(data,ppool);
+    pset = getPowerSetData(ppool);
     pset.m_level_bought = cd.m_level;
     pset.m_index        = ppool.m_pset_idx;
     pset.m_category     = ppool.m_pcat_idx;
@@ -323,12 +319,12 @@ void addEntirePowerSet(const GameDataStore &data,CharacterData &cd, PowerPool_In
     cd.m_powersets.push_back(pset);
 }
 
-void addPower(const GameDataStore &data,CharacterData &cd, PowerPool_Info &ppool)
+void addPower(CharacterData &cd, PowerPool_Info &ppool)
 {
     CharacterPowerSet new_pset;
     CharacterPower new_power;
 
-    new_power               = getPowerData(data,ppool);
+    new_power               = getPowerData(ppool);
     new_pset.m_level_bought = cd.m_level;
     new_power.m_index       = ppool.m_pow_idx;
     new_pset.m_index        = ppool.m_pset_idx;
@@ -392,7 +388,6 @@ void removePower(CharacterData &cd, const PowerPool_Info &ppool)
     qCDebug(logPowers) << "Player does not own Power:" << ppool.m_pcat_idx << ppool.m_pset_idx << ppool.m_pow_idx;
 }
 
-
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo)
 {
     qDebug().nospace().noquote() << QString("  PPInfo: %1 %2 %3")
@@ -403,15 +398,16 @@ void dumpPowerPoolInfo(const PowerPool_Info &pinfo)
 
 void dumpPower(const CharacterPower &pow)
 {
-    qDebug().noquote() << pow.m_name;
+    Power_Data power_tpl(pow.getPowerTemplate());
+    qDebug().noquote() << power_tpl.m_Name;
     qDebug().noquote() << "  Index: " << pow.m_index;
     dumpPowerPoolInfo(pow.m_power_info);
     qDebug().noquote() << "  LevelBought: " << pow.m_level_bought;
-    qDebug().noquote() << "  NumCharges: " << pow.m_num_charges;
-    qDebug().noquote() << "  UsageTime: " << pow.m_usage_time;
-    qDebug().noquote() << "  ActivationTime: " << pow.m_activation_time;
-    qDebug().noquote() << "  Range: " << pow.m_range;
-    qDebug().noquote() << "  RechargeTime: " << pow.m_recharge_time;
+    qDebug().noquote() << "  NumCharges: " << power_tpl.m_NumCharges;
+    qDebug().noquote() << "  UsageTime: " << power_tpl.m_UsageTime;
+    qDebug().noquote() << "  ActivationTime: " << power_tpl.ActivatePeriod;
+    qDebug().noquote() << "  Range: " << power_tpl.Range;
+    qDebug().noquote() << "  RechargeTime: " << power_tpl.RechargeTime;
     qDebug().noquote() << "  ActivationState: " << pow.m_activation_state;
     qDebug().noquote() << "  ActivationStateChange: " << pow.m_active_state_change;
     qDebug().noquote() << "  TimerUpdated: " << pow.m_timer_updated;
@@ -444,15 +440,15 @@ void dumpOwnedPowers(CharacterData &cd)
 /*
  * Inspirations Methods
  */
-void addInspirationByName(const GameDataStore &data,CharacterData &cd, QString &name)
+void addInspirationByName(CharacterData &cd, QString &name)
 {
     CharacterInspiration insp;
-    uint32_t pcat_idx = getPowerCatByName(data,"Inspirations");
+    uint32_t pcat_idx = getPowerCatByName("Inspirations");
     uint32_t pset_idx, pow_idx    = 0;
     bool found  = false;
 
     int i = 0;
-    for(const Parse_PowerSet &pset : data.m_all_powers.m_categories[pcat_idx].m_PowerSets)
+    for(const Parse_PowerSet &pset : getGameData().get_power_category(pcat_idx).m_PowerSets)
     {
         int j = 0;
         for(const Power_Data &pow : pset.m_Powers)
@@ -655,10 +651,10 @@ void dumpInspirations(CharacterData &cd)
 /*
  * Enhancements (boosts) Methods
  */
-void addEnhancementByName(const GameDataStore &data,CharacterData &cd, QString &name, uint32_t &level)
+void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level)
 {
     CharacterEnhancement enhance;
-    uint32_t pcat_idx = getPowerCatByName(data,"Boosts");
+    uint32_t pcat_idx = getPowerCatByName("Boosts");
     uint32_t pset_idx, pow_idx    = 0;
     bool found  = false;
 
@@ -669,7 +665,7 @@ void addEnhancementByName(const GameDataStore &data,CharacterData &cd, QString &
     }
 
     int i = 0;
-    for(const Parse_PowerSet &pset : data.m_all_powers.m_categories[pcat_idx].m_PowerSets)
+    for(const Parse_PowerSet &pset : getGameData().get_power_category(pcat_idx).m_PowerSets)
     {
         if(pset.m_Name.compare(name, Qt::CaseInsensitive) == 0)
         {
@@ -825,19 +821,19 @@ void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow
     CharacterPower * pow = nullptr;
     pow = getOwnedPower(e, pset_idx, pow_idx);
 
-    if(pow != nullptr && !pow->m_name.isEmpty())
+    if(pow != nullptr && !pow->getPowerTemplate().m_Name.isEmpty())
         qFatal("Cannot find Power for buying enhancement slot: %d %d", pset_idx, pow_idx);
 
-    if(pow->m_power_tpl.BoostsAllowed.empty())
+    if(pow->getPowerTemplate().BoostsAllowed.empty())
         return;
 
     // Modify based upon level
     pow->m_total_eh_slots += num;
 }
 
-void reserveEnhancementSlot(const GameDataStore &data,CharacterData &cd, CharacterPower *pow)
+void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow)
 {
-    if(pow->m_power_tpl.BoostsAllowed.empty())
+    if(pow->getPowerTemplate().BoostsAllowed.empty())
         return;
 
     // TODO: assign all powers 1 slot, allow players to purchase additional slots during levelup
@@ -846,13 +842,14 @@ void reserveEnhancementSlot(const GameDataStore &data,CharacterData &cd, Charact
         pow->m_total_eh_slots = 3;
 
     // Modify based upon level
-    pow->m_total_eh_slots = pow->m_total_eh_slots + data.countForLevel(cd.m_combat_level - pow->m_level_bought, data.m_pi_schedule.m_FreeBoostSlotsOnPower);
+    pow->m_total_eh_slots = pow->m_total_eh_slots + getGameData().countForLevel(
+                cd.m_level - pow->m_level_bought, getGameData().m_pi_schedule.m_FreeBoostSlotsOnPower);
 
 //    if(pow->m_enhancements.size() <= pow->m_total_eh_slots)
 //        pow->m_enhancements.resize(pow->m_total_eh_slots);
 }
 
-float enhancementCombineChances(const GameDataStore &data,CharacterEnhancement *eh1, CharacterEnhancement *eh2)
+float enhancementCombineChances(CharacterEnhancement *eh1, CharacterEnhancement *eh2)
 {
     const std::vector<float> *combine_chances;
     int chance_idx = 0;
@@ -868,9 +865,9 @@ float enhancementCombineChances(const GameDataStore &data,CharacterEnhancement *
     qCDebug(logPowers) << "chance_idx" << chance_idx;
 
     if(eh1->m_enhance_tpl.parent_StoredPowerSet == eh2->m_enhance_tpl.parent_StoredPowerSet)
-        combine_chances = &data.m_combine_same.CombineChances;
+        combine_chances = &getGameData().m_combine_same.CombineChances;
     else
-        combine_chances = &data.m_combine_chances.CombineChances;
+        combine_chances = &getGameData().m_combine_chances.CombineChances;
 
     int chance_count = combine_chances->size();
     qCDebug(logPowers) << "combine_chances size" << chance_count;
@@ -886,7 +883,7 @@ float enhancementCombineChances(const GameDataStore &data,CharacterEnhancement *
     return combine_chances->at(chance_idx);
 }
 
-CombineResult combineEnhancements(const GameDataStore &data,Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2)
+CombineResult combineEnhancements(Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2)
 {
     float   chance = 0.0f;
     bool    success = false;
@@ -909,7 +906,7 @@ CombineResult combineEnhancements(const GameDataStore &data,Entity &ent, Enhance
     }
 
     // get chance
-    chance = enhancementCombineChances(data,eh1, eh2);
+    chance = enhancementCombineChances(eh1, eh2);
     float ran = float(rand()) / float(RAND_MAX);
     qCDebug(logPowers) << "Rand" << ran << "/" << chance;
 

@@ -188,7 +188,7 @@ int main(int argc,char **argv)
     binfile.open(argv[1],0);
     QString target_basename=QFileInfo(argv[1]).baseName();
     bool json_output=true;
- 
+
     try // handle possible cereal::RapidJSONException
     {
       if(app.arguments().size()>2)
@@ -216,7 +216,26 @@ int main(int argc,char **argv)
           case eEntityClasses: doConvert(doLoadRef<Parse_AllCharClasses>(&binfile),target_basename,json_output); break;
           case eEntityOrigins: doConvert(doLoadRef<Parse_AllOrigins>(&binfile),target_basename,json_output); break;
           case ePowerDefinitions: doConvert(doLoadRef<AllPowerCategories>(&binfile),target_basename,json_output); break;
-          case eNpcDefinitions: doConvert(doLoadRef<AllNpcs_Data>(&binfile),target_basename,json_output); break;
+          case eNpcDefinitions:
+         {
+            auto data = doLoadRef<AllNpcs_Data>(&binfile);
+            if (qApp->arguments().size() > 2)
+            {
+                QString name_to_find = app.arguments()[2];
+                std::sort(data->begin(), data->end(), [](const Parse_NPC &a, const Parse_NPC &b) -> bool {
+                    return a.m_Name.compare(b.m_Name, Qt::CaseInsensitive) < 0;
+                });
+                auto iter = std::find_if(data->begin(), data->end(), [name_to_find](const Parse_NPC &n) -> bool {
+                    if (n.m_Name == name_to_find)
+                        return true;
+                    return false;
+                });
+                qDebug() << iter - data->begin();
+            } else
+                doConvert(data, target_basename, json_output);
+        }
+
+          break;
           case eFxBehavior_Definitions: doConvert(doLoadRef<Fx_AllBehaviors>(&binfile),target_basename,json_output); break;
           case eFxInfo_Definitions: doConvert(doLoadRef<Fx_AllInfos>(&binfile),target_basename,json_output); break;
           default:

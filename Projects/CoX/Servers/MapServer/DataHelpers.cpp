@@ -16,9 +16,9 @@
 #include "MapInstance.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
-#include "GameData/map_definitions.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/Character.h"
+#include "NetStructures/Contact.h"
 #include "NetStructures/Team.h"
 #include "NetStructures/LFG.h"
 #include "MapEvents.h"
@@ -162,6 +162,31 @@ void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
 void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
 void    toggleExtraInfo(Entity &e) { e.m_extra_info = !e.m_extra_info; }
 void    toggleMoveInstantly(Entity &e) { e.m_move_instantly = !e.m_move_instantly; }
+void    toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
+
+void toggleLFG(Entity &e)
+{
+    CharacterData *cd = &e.m_char->m_char_data;
+
+    if(e.m_has_team)
+    {
+        QString errormsg = "You're already on a team! You cannot toggle LFG.";
+        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *e.m_client);
+        errormsg = e.name() + "is already on a team and cannot toggle LFG.";
+        qCDebug(logTeams) << errormsg;
+        removeLFG(e); // just in-case
+        return;
+    }
+
+    if(cd->m_lfg)
+        removeLFG(e);
+    else
+    {
+        addLFG(e);
+        sendTeamLooking(&e);
+    }
+}
+
 
 // Misc Methods
 void charUpdateDB(Entity *e)
@@ -256,35 +281,25 @@ void on_awaiting_dead_no_gurney_test(MapClientSession &session)
     session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
 }
 
-void sendEmailHeaders(Entity *e)
+bool isFriendOnline(Entity &src, uint32_t db_id)
 {
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
-
-    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+    // TODO: src is needed for mapclient
+    return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
 }
 
-void readEmailMessage(Entity *e, const int id){
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
+void serializeCostume(Costume costume, BitStream bs)
+{
+    GameDataStore &data(getGameData());
+    // This method must be here, because NetStructures can't access g_GlobalMapServer =(
+    static const ColorAndPartPacker *packer = data.getPacker();
 
-    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
+    serializeto(costume, bs, packer);
 }
+
 
 /*
- * Character Methods
+ * Titles -- TODO: get titles from texts/English/titles_def
  */
-// TODO: get titles from texts/English/titles_def
 static const QStringList g_generic_titles =
 {
     "NULL",
@@ -333,67 +348,15 @@ static const QStringList g_origin_titles =
     "Venturous",
     "Watchful",
 };
+
 const QString &getGenericTitle(uint32_t val)
 {
     return g_generic_titles.at(val);
 }
+
 const QString &getOriginTitle(uint32_t val)
 {
     return g_origin_titles.at(val);
-}
-
-QString getMapPath(const EntityData &ed)
-{
-    return getMapPath(ed.m_map_idx);
-}
-
-QString getEntityDisplayMapName(const EntityData &ed)
-{
-    return getDisplayMapName(ed.m_map_idx);
-}
-
-const QString &getFriendDisplayMapName(const Friend &f)
-{
-    static const QString offline(QStringLiteral("OFFLINE"));
-    if (!f.m_online_status)
-        return offline;
-    return getDisplayMapName(f.m_map_idx);
-}
-
-void toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
-
-/*
- * Looking For Group
- */
-void toggleLFG(Entity &e)
-{
-    CharacterData *cd = &e.m_char->m_char_data;
-
-    if(e.m_has_team)
-    {
-        QString errormsg = "You're already on a team! You cannot toggle LFG.";
-        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *e.m_client);
-        errormsg = e.name() + "is already on a team and cannot toggle LFG.";
-        qCDebug(logTeams) << errormsg;
-        removeLFG(e); // just in-case
-        return;
-    }
-
-    if(cd->m_lfg)
-        removeLFG(e);
-    else
-    {
-        addLFG(e);
-        sendTeamLooking(&e);
-    }
-}
-
-/*
- * getMapServerData Wrapper to provide access to NetStructures
- */
-GameDataStore *getMapServerData()
-{
-    return &g_GlobalMapServer->runtimeData();
 }
 
 /*
@@ -407,6 +370,18 @@ void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt)
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendTimeStateLog(MapClientSession &src, uint32_t control_log)
+{
+    qCDebug(logSlashCommand, "Sending TimeStateLog %d", control_log);
+    src.addCommand<AddTimeStateLog>(control_log);
+}
+
+void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000)
+{
+    qCDebug(logSlashCommand, "Sending TimeUpdate %d", sec_since_jan_1_2000);
+    src.addCommand<TimeUpdate>(sec_since_jan_1_2000);
+}
+
 void sendRegisterSuperGroup(MapClientSession &ent, QString &val)
 {
     qCDebug(logSlashCommand) << "Sending RegisterSuperGroup:" << ent.m_ent->m_idx << val;
@@ -526,29 +501,118 @@ void sendBrowser(MapClientSession &tgt, QString &content)
     tgt.addCommand<Browser>(content);
 }
 
-void serializeCostume(Costume costume, BitStream bs)
+void sendTradeOffer(const Entity& src, Entity& tgt)
 {
-    // This method must be here, because NetStructures can't access g_GlobalMapServer =(
-    static const ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
+    const QString name = src.name();
+    const uint32_t db_id = tgt.m_db_id;
 
-    serializeto(costume, bs, packer);
+    qCDebug(logTrades) << "Sending Trade Offer" << db_id << name;
+    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeOffer>(db_id, name));
 }
 
+void sendTradeInit(Entity& src, Entity& tgt)
+{
+    const uint32_t src_db_id = src.m_db_id;
+    const uint32_t tgt_db_id = tgt.m_db_id;
+
+    qCDebug(logTrades) << "Sending Trade Init" << src_db_id << tgt_db_id;
+    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeInit>(src_db_id));
+    src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeInit>(tgt_db_id));
+}
+
+void sendTradeCancel(Entity& ent, const QString& msg)
+{
+    qCDebug(logTrades) << "Sending Trade Cancel" << msg;
+    ent.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeCancel>(msg));
+}
+
+void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt)
+{
+    qCDebug(logTrades) << "Sending Trade Update";
+    src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeUpdate>(trade_src, trade_tgt, tgt));
+    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeUpdate>(trade_tgt, trade_src, src));
+}
+
+void sendTradeSuccess(Entity& src, Entity& tgt)
+{
+    const QString msg_src = "Trade with " + tgt.name() + " was a success.";
+    const QString msg_tgt = "Trade with " + src.name() + " was a success.";
+
+    qCDebug(logTrades) << "Sending Trade Success";
+    src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_src));
+    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_tgt));
+}
+
+void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts)
+{
+    qCDebug(logSlashCommand) << "Sending ContactDialog:" << msg_body;
+    src.addCommand<ContactDialog>(msg_body, active_contacts);
+}
+
+void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno)
+{
+    qCDebug(logSlashCommand) << "Sending ContactDialogYesNo:" << has_yesno << msg_body;
+
+    if(has_yesno)
+        src.addCommand<ContactDialogYesNo>(msg_body);
+    else
+        src.addCommand<ContactDialogOk>(msg_body);
+}
+
+void sendContactDialogClose(MapClientSession &src)
+{
+    qCDebug(logSlashCommand) << "Sending ContactDialogClose";
+    src.addCommand<ContactDialogClose>();
+}
+
+
+/*
+ * sendEmail Wrappers for providing access to Email Database
+ */
+void sendEmailHeaders(Entity *e)
+{
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+    MapClientSession *src = e->m_client;
+
+    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
+    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+}
+
+void readEmailMessage(Entity *e, const int id){
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+    MapClientSession *src = e->m_client;
+
+    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
+    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
+}
+
+
+/*
+ * usePower here to provide access to messageOutput
+ */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)
 {
     // Add to activepowers queue
     CharacterPower * ppower = nullptr;
     ppower = getOwnedPower(ent, pset_idx, pow_idx);
-    if(ppower != nullptr && !ppower->m_name.isEmpty())
+    if(ppower != nullptr && !ppower->getPowerTemplate().m_Name.isEmpty())
         ent.m_queued_powers.push_back(ppower);
 
     float endurance = getEnd(*ent.m_char);
-    float end_cost = std::max(ppower->m_power_tpl.EnduranceCost, 1.0f);
+    float end_cost = std::max(ppower->getPowerTemplate().EnduranceCost, 1.0f);
 
     qCDebug(logPowers) << "Endurance Cost" << end_cost << "/" << endurance;
     if(end_cost > endurance)
     {
-        QString msg = "Not enough endurance to use power" + ppower->m_name;
+        QString msg = "Not enough endurance to use power" + ppower->getPowerTemplate().m_Name;
         messageOutput(MessageChannel::DEBUG_INFO, msg, ent);
         return;
     }
@@ -606,404 +670,14 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     sendFloatingNumbers(*ent.m_client, tgt_idx, damage);
     setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
 }
-void addFriend(Entity &src, const Entity &tgt)
-{
-    QString msg;
-    FriendsList &src_data(src.m_char->m_char_data.m_friendlist);
-
-    if(src_data.m_friends_count >= g_max_friends)
-    {
-        msg = "You cannot have more than " + QString::number(g_max_friends) + " friends.";
-        qCDebug(logFriends).noquote() << msg;
-        messageOutput(MessageChannel::USER_ERROR, msg, src);
-        return; // break early
-    }
-
-    src_data.m_has_friends = true;
-    src_data.m_friends_count++;
-
-    Friend f;
-    f.m_online_status   = (tgt.m_client != nullptr); // need some other method for this.
-    f.m_db_id           = tgt.m_db_id;
-    f.m_name            = tgt.name();
-    f.m_class_idx       = tgt.m_entity_data.m_class_idx;
-    f.m_origin_idx      = tgt.m_entity_data.m_origin_idx;
-    f.m_map_idx         = tgt.m_entity_data.m_map_idx;
-    f.m_mapname         = getEntityDisplayMapName(tgt.m_entity_data);
-
-    // add to friendlist
-    src_data.m_friends.emplace_back(f);
-    qCDebug(logFriends) << "friendslist size:" << src_data.m_friends_count << src_data.m_friends.size();
-
-    msg = "Adding " + tgt.name() + " to your friendlist.";
-    qCDebug(logFriends).noquote() << msg;
-    messageOutput(MessageChannel::FRIENDS, msg, src);
-
-    if(logFriends().isDebugEnabled())
-        dumpFriends(src);
-
-    sendFriendsListUpdate(&src, src_data); // Send FriendsListUpdate
-}
-
-void removeFriend(Entity &src, QString friend_name)
-{
-    QString msg;
-    FriendsList &src_data(src.m_char->m_char_data.m_friendlist);
-
-    qCDebug(logFriends) << "Searching for friend" << friend_name << "to remove them.";
-
-    QString lower_name = friend_name.toLower();
-    auto iter = std::find_if( src_data.m_friends.begin(), src_data.m_friends.end(),
-                              [lower_name](const Friend& f)->bool {return lower_name==f.m_name.toLower();});
-
-    if(iter!=src_data.m_friends.end())
-    {
-        msg = "Removing " + iter->m_name + " from your friends list.";
-        iter = src_data.m_friends.erase(iter);
-
-        qCDebug(logFriends) << msg;
-        if(logFriends().isDebugEnabled())
-            dumpFriends(src);
-    }
-    else
-        msg = friend_name + " is not on your friends list.";
-
-    if(src_data.m_friends.empty())
-        src_data.m_has_friends = false;
-
-    src_data.m_friends_count = src_data.m_friends.size();
-
-    qCDebug(logFriends).noquote() << msg;
-    messageOutput(MessageChannel::FRIENDS, msg, src);
-
-    // Send FriendsListUpdate
-    sendFriendsListUpdate(&src, src_data);
-}
-
-bool isFriendOnline(Entity &src, uint32_t db_id)
-{
-    // TODO: src is needed for mapclient
-    return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
-}
 
 
+/*
+ * Team related helpers
+ */
 void findTeamMember(Entity &tgt)
 {
     sendTeamLooking(&tgt);
-}
-
-bool inviteTeam(Entity &src, Entity &tgt)
-{
-    if(src.name() == tgt.name())
-    {
-        qCDebug(logTeams) << "You cannot invite yourself to a team.";
-        return false;
-    }
-
-    if(!src.m_has_team)
-    {
-        qCDebug(logTeams) << src.name() << "is forming a team.";
-        src.m_team = new Team;
-        src.m_team->addTeamMember(&src);
-
-        tgt.m_team = src.m_team;
-        src.m_team->addTeamMember(&tgt);
-        return true;
-    }
-    else if (src.m_has_team && src.m_team->isTeamLeader(&src))
-    {
-        src.m_team->addTeamMember(&tgt);
-        return true;
-    }
-    else
-    {
-        qCDebug(logTeams) << src.name() << "is not team leader.";
-        return false;
-    }
-
-    qCWarning(logTeams) << "How did we get here in inviteTeam?";
-    return false;
-}
-
-bool kickTeam(Entity &tgt)
-{
-    if (!tgt.m_has_team)
-        return false;
-
-    removeTeamMember(*tgt.m_team,&tgt);
-    return true;
-}
-
-void leaveTeam(Entity &e)
-{
-    if(!e.m_team)
-    {
-        qCWarning(logTeams) << "Trying to leave a team, but Entity has no team!?";
-        return;
-    }
-
-    removeTeamMember(*e.m_team,&e);
-}
-
-/*
- * Sidekick Methods -- Sidekick system requires teaming.
- */
-// TODO: expose these to config and fail-test
-static const int g_max_sidekick_level_difference = 3;
-static const int g_min_sidekick_mentor_level = 10;
-
-bool isSidekickMentor(const Entity &e)
-{
-    return (e.m_char->m_char_data.m_sidekick.m_type == SidekickType::IsMentor);
-}
-
-void inviteSidekick(Entity &src, Entity &tgt)
-{
-    const QString possible_messages[] = {
-        QStringLiteral("Unable to add sidekick."),
-        QStringLiteral("To Mentor another player, you must be at least 3 levels higher than them."),
-        QStringLiteral("To Mentor another player, you must be at least level 10."),
-        QStringLiteral("You are already Mentoring someone."),
-        tgt.name() + QStringLiteral("is already a sidekick."),
-        QStringLiteral("To Mentor another player, you must be on the same team."),
-    };
-
-    QString     msg = possible_messages[0];
-    Sidekick    &src_sk = src.m_char->m_char_data.m_sidekick;
-    Sidekick    &tgt_sk = tgt.m_char->m_char_data.m_sidekick;
-    uint32_t    src_lvl = getLevel(*src.m_char);
-    uint32_t    tgt_lvl = getLevel(*tgt.m_char);
-
-    // Only a mentor may invite a sidekick
-    if(src_lvl < tgt_lvl+g_max_sidekick_level_difference)
-        msg = possible_messages[1];
-    else if(src_lvl < g_min_sidekick_mentor_level)
-        msg = possible_messages[2];
-    else if(src_sk.m_has_sidekick)
-        msg = possible_messages[3];
-    else if (tgt_sk.m_has_sidekick)
-        msg = possible_messages[4];
-    else if(!src.m_has_team || !tgt.m_has_team || src.m_team == nullptr || tgt.m_team == nullptr)
-        msg = possible_messages[5];
-    else if(src.m_team->m_team_idx != tgt.m_team->m_team_idx)
-        msg = possible_messages[5];
-    else
-    {
-        // Store this here now for sidekick_accept / decline
-        tgt_sk.m_db_id = src.m_db_id;
-
-        // sendSidekickOffer
-        sendSidekickOffer(&tgt, src.m_db_id); // tgt gets dialog, src.db_id is named.
-        return; // break early
-    }
-
-    qCDebug(logTeams).noquote() << msg;
-    messageOutput(MessageChannel::USER_ERROR, msg, src);
-}
-
-void addSidekick(Entity &tgt, Entity &src)
-{
-    QString     msg;
-    Sidekick    &src_sk = src.m_char->m_char_data.m_sidekick;
-    Sidekick    &tgt_sk = tgt.m_char->m_char_data.m_sidekick;
-    uint32_t    src_lvl = getLevel(*src.m_char);
-
-    src_sk.m_has_sidekick = true;
-    tgt_sk.m_has_sidekick = true;
-    src_sk.m_db_id = tgt.m_db_id;
-    tgt_sk.m_db_id = src.m_db_id;
-    src_sk.m_type = SidekickType::IsMentor;
-    tgt_sk.m_type = SidekickType::IsSidekick;
-    setCombatLevel(*tgt.m_char, src_lvl - 1);
-    // TODO: Implement 225 feet "leash" for sidekicks.
-
-    msg = QString("%1 is now Mentoring %2.").arg(src.name(),tgt.name());
-    qCDebug(logTeams).noquote() << msg;
-
-    // Send message to each player
-    msg = QString("You are now Mentoring %1.").arg(tgt.name()); // Customize for src.
-    messageOutput(MessageChannel::TEAM, msg, src);
-    msg = QString("%1 is now Mentoring you.").arg(src.name()); // Customize for src.
-    messageOutput(MessageChannel::TEAM, msg, tgt);
-}
-
-void removeSidekick(Entity &src)
-{
-    QString     msg = "Unable to remove sidekick.";
-    Sidekick    &src_sk = src.m_char->m_char_data.m_sidekick;
-
-    if(!src_sk.m_has_sidekick || src_sk.m_db_id == 0)
-    {
-        msg = "You are not sidekicked with anyone.";
-        qCDebug(logTeams).noquote() << msg;
-        messageOutput(MessageChannel::USER_ERROR, msg, src);
-        return; // break early
-    }
-    assert(false);
-    //TODO: this function should actually post messages related to de-sidekicking to our target entity.
-    Entity      *tgt            = nullptr; //getEntityByDBID(src_sk.m_db_id);
-    Sidekick    &tgt_sk         = tgt->m_char->m_char_data.m_sidekick;
-
-    if(tgt == nullptr)
-    {
-        msg = "Your sidekick is not currently online.";
-        qCDebug(logTeams).noquote() << msg;
-
-        // reset src Sidekick relationship
-        src_sk.m_has_sidekick = false;
-        src_sk.m_type         = SidekickType::NoSidekick;
-        src_sk.m_db_id        = 0;
-        setCombatLevel(*src.m_char,getLevel(*src.m_char)); // reset CombatLevel
-
-        return; // break early
-    }
-
-    // Anyone can terminate a Sidekick relationship
-    if(!tgt_sk.m_has_sidekick || (tgt_sk.m_db_id != src.m_db_id))
-    {
-        // tgt doesn't know it's sidekicked with src. So clear src sidekick info.
-        src_sk.m_has_sidekick = false;
-        src_sk.m_type         = SidekickType::NoSidekick;
-        src_sk.m_db_id        = 0;
-        setCombatLevel(*src.m_char,getLevel(*src.m_char)); // reset CombatLevel
-        msg = QString("You are no longer sidekicked with anyone.");
-    }
-    else {
-
-        // Send message to each player
-        if(isSidekickMentor(src))
-        {
-            // src is mentor, tgt is sidekick
-            msg = QString("You are no longer mentoring %1.").arg(tgt->name());
-            messageOutput(MessageChannel::TEAM, msg, src);
-            msg = QString("%1 is no longer mentoring you.").arg(src.name());
-            messageOutput(MessageChannel::TEAM, msg, *tgt);
-        }
-        else
-        {
-            // src is sidekick, tgt is mentor
-            msg = QString("You are no longer mentoring %1.").arg(src.name());
-            messageOutput(MessageChannel::TEAM, msg, *tgt);
-            msg = QString("%1 is no longer mentoring you.").arg(tgt->name());
-            messageOutput(MessageChannel::TEAM, msg, src);
-        }
-
-        src_sk.m_has_sidekick = false;
-        src_sk.m_type         = SidekickType::NoSidekick;
-        src_sk.m_db_id        = 0;
-        setCombatLevel(*src.m_char,getLevel(*src.m_char)); // reset CombatLevel
-
-        tgt_sk.m_has_sidekick = false;
-        tgt_sk.m_type         = SidekickType::NoSidekick;
-        tgt_sk.m_db_id        = 0;
-        setCombatLevel(*tgt->m_char,getLevel(*tgt->m_char)); // reset CombatLevel
-
-        msg = QString("%1 and %2 are no longer sidekicked.").arg(src.name(),tgt->name());
-        qCDebug(logTeams).noquote() << msg;
-
-        return; // break early
-    }
-
-    qCDebug(logTeams).noquote() << msg;
-    messageOutput(MessageChannel::USER_ERROR, msg, src);
-}
-
-void removeTeamMember(Team &self, Entity *e)
-{
-    qCDebug(logTeams) << "Searching team members for" << e->name() << "to remove them.";
-    uint32_t id_to_find = e->m_db_id;
-    auto iter = std::find_if( self.m_team_members.begin(), self.m_team_members.end(),
-                              [id_to_find](const Team::TeamMember& t)->bool {return id_to_find==t.tm_idx;});
-    if(iter!=self.m_team_members.end())
-    {
-        if(iter->tm_idx == self.m_team_leader_idx)
-            self.m_team_leader_idx = self.m_team_members.front().tm_idx;
-
-        iter = self.m_team_members.erase(iter);
-        e->m_has_team = false;
-        e->m_team = nullptr;
-
-        if(e->m_char->m_char_data.m_sidekick.m_has_sidekick)
-            removeSidekick(*e);
-
-        qCDebug(logTeams) << "Removing" << iter->tm_name << "from team" << self.m_team_idx;
-        if(logTeams().isDebugEnabled())
-            self.listTeamMembers();
-    }
-
-    if(self.m_team_members.size() > 1)
-        return;
-
-    qCDebug(logTeams) << "One player left on team. Removing last entity and deleting team.";
-    if(logTeams().isDebugEnabled())
-        self.listTeamMembers();
-
-    // int idx = self.m_team_members.front().tm_idx;
-
-    assert(false);
-    // TODO: this should post an Team-removal event to the target entity, since we can't access other server's
-    // Entity lists
-    Entity *tgt = nullptr; //getEntityByDBID(idx);
-    if(tgt == nullptr)
-        return;
-
-    tgt->m_has_team = false;
-    tgt->m_team = nullptr;
-    self.m_team_members.clear();
-    self.m_team_leader_idx = 0;
-
-    qCDebug(logTeams) << "After removing all entities.";
-    if(logTeams().isDebugEnabled())
-        self.listTeamMembers();
-}
-
-bool isEntityOnMissionMap(const EntityData &ed)
-{
-    QString mapName = getMapName(ed.m_map_idx);
-    // Hazard and Trial maps are considered as mission maps
-    return mapName.contains("Hazard") || mapName.contains("Trial");
-}
-
-void sendTradeOffer(const Entity& src, Entity& tgt)
-{
-    const QString name = src.name();
-    const uint32_t db_id = tgt.m_db_id;
-
-    qCDebug(logTrades) << "Sending Trade Offer" << db_id << name;
-    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeOffer>(db_id, name));
-}
-
-void sendTradeInit(Entity& src, Entity& tgt)
-{
-    const uint32_t src_db_id = src.m_db_id;
-    const uint32_t tgt_db_id = tgt.m_db_id;
-
-    qCDebug(logTrades) << "Sending Trade Init" << src_db_id << tgt_db_id;
-    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeInit>(src_db_id));
-    src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeInit>(tgt_db_id));
-}
-
-void sendTradeCancel(Entity& ent, const QString& msg)
-{
-    qCDebug(logTrades) << "Sending Trade Cancel" << msg;
-    ent.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeCancel>(msg));
-}
-
-void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt)
-{
-    qCDebug(logTrades) << "Sending Trade Update";
-    src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeUpdate>(trade_src, trade_tgt, tgt));
-    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeUpdate>(trade_tgt, trade_src, src));
-}
-
-void sendTradeSuccess(Entity& src, Entity& tgt)
-{
-    const QString msg_src = "Trade with " + tgt.name() + " was a success.";
-    const QString msg_tgt = "Trade with " + src.name() + " was a success.";
-
-    qCDebug(logTrades) << "Sending Trade Success";
-    src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_src));
-    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_tgt));
 }
 
 //! @}

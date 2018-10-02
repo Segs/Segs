@@ -27,17 +27,18 @@ const QString &     getAlignment(const Character &c) { return c.m_char_data.m_al
 // Setters
 void setLevel(Character &c, uint32_t val)
 {
-    if(val>50)
-        val = 50;
-    c.m_char_data.m_level = val - 1; // client stores lvl arrays starting at 0
-    // TODO: run finalizelevel here, but requires MapClientSession
+    if(val>49)
+        val = 49;
+    c.m_char_data.m_level = val; // client stores lvl arrays starting at 0
+    c.finalizeLevel();
 }
 
 void setCombatLevel(Character &c, uint32_t val)
 {
-    if(val>50)
-        val = 50;
+    if(val>49)
+        val = 49;
     c.m_char_data.m_combat_level = val;
+    c.finalizeCombatLevel();
 }
 
 void setHP(Character &c, float val)

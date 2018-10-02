@@ -138,7 +138,6 @@ public:
         void                    dispatch(SEGSEvents::Event *ev) override;
 
         const QString &         name() const { return m_data_path; }
-        const GameDataStore &   serverData() const;
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         void                    start(const QString &scenegraph_path);
         glm::vec3               closest_safe_location(glm::vec3 v) const;

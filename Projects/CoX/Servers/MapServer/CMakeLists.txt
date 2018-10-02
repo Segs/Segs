@@ -44,11 +44,13 @@ SET(target_INCLUDE
     EntityStorage.h
     EntityUpdateCodec.h
     Events/GameCommandList.h
+    Events/AddTimeStateLog.h
     Events/Browser.h
     Events/ChangeTitle.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
     Events/ClientStates.h
+    Events/ContactDialogs.h
     Events/DeadNoGurney.h
     Events/DoorMessage.h
     Events/EmailHeaders.h
@@ -82,6 +84,7 @@ SET(target_INCLUDE
     Events/SuperGroupEvents.h
     Events/TeamLooking.h
     Events/TeamOffer.h
+    Events/TimeUpdate.h
     Events/TradeCancel.h
     Events/TradeInit.h
     Events/TradeOffer.h

@@ -151,14 +151,30 @@ struct NPCData
     int costume_variant=0;
 };
 
+struct NetFxTarget
+{
+    bool        type_is_location = false;
+    uint32_t    ent_idx = 0;
+    glm::vec3   pos;
+};
+
 struct NetFx
 {
-    uint8_t command;
-    uint32_t net_id;
-    uint32_t handle;
-    bool pitch_to_target;
-    uint8_t bone_id;
+    uint8_t     command;
+    uint32_t    net_id;
+    uint32_t    handle;
+    bool        pitch_to_target     = false;
+    uint8_t     bone_id;
+    float       client_timer        = 0;
+    int         client_trigger_fx   = 0;
+    float       duration            = 0;
+    float       radius              = 0;
+    QString     power               = 0;
+    int         debris              = 0;
+    NetFxTarget target;
+    NetFxTarget origin;
 };
+
 
 class Entity
 {

@@ -1,4 +1,5 @@
 #include "map_definitions.h"
+#include "entitydata_definitions.h"
 
 #include "Logging.h"
 
@@ -99,6 +100,18 @@ const QString &getDisplayMapName(size_t index)
     return g_defined_map_datas[index].m_display_map_name;
 }
 
+QString getEntityDisplayMapName(const EntityData &ed)
+{
+    return getDisplayMapName(ed.m_map_idx);
+}
+
+bool isEntityOnMissionMap(const EntityData &ed)
+{
+    QString mapName = getMapName(ed.m_map_idx);
+    // Hazard and Trial maps are considered as mission maps
+    return mapName.contains("Hazard") || mapName.contains("Trial");
+}
+
 QString getMapName(size_t index)
 {
     // Since index is unsigned, it cannot be negative.
@@ -120,4 +133,9 @@ QString getMapPath(size_t index)
         index = 0;
     }
     return g_defined_map_datas[index].m_map_path;
+}
+
+QString getMapPath(const EntityData &ed)
+{
+    return getMapPath(ed.m_map_idx);
 }

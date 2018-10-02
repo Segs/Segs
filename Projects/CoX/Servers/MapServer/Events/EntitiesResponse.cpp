@@ -18,6 +18,7 @@
 #include "NetStructures/SuperGroup.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "GameData/playerdata_definitions.h"
+#include "GameData/map_definitions.h"
 #include "MapClientSession.h"
 #include "MapEvents.h"
 #include "MapInstance.h"
@@ -395,7 +396,7 @@ void storePowerRanges(const CharacterData &cd, BitStream &bs)
 
             bs.StoreBits(1,1); // have power to send.
             p.m_power_info.serializeto(bs);
-            bs.StoreFloat(p.m_range); // nem: I have no idea why it is passed here
+            bs.StoreFloat(p.getPowerTemplate().Range); // nem: I have no idea why it is passed here
         }
     }
     bs.StoreBits(1,0); // no more powers to send.
@@ -423,7 +424,8 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
     {
         qCDebug(logPowers) << "Resetting Powers:" << cd->m_reset_powersets;
         CharacterPowerSet temp;
-        uint32_t pcat_idx = getPowerCatByName(data,"Temporary_Powers");
+
+        uint32_t pcat_idx = getPowerCatByName("Temporary_Powers");
 
         for(CharacterPowerSet &pset : cd->m_powersets)
         {
@@ -460,13 +462,13 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
         int j = 0;
         for(const CharacterPower &power : pset.m_powers)
         {
-            qCDebug(logPowers) << "Power:" << power.m_name << pset.m_index << power.m_index;
+            qCDebug(logPowers) << "Power:" << power.getPowerTemplate().m_Name << pset.m_index << power.m_index;
             storePowerSpec(i, j, bs);
 
             bs.StoreBits(1, !power.m_erase_power);
             if(power.m_erase_power)
             {
-                qCDebug(logPowers) << "  Removing power" << power.m_name << pset.m_index << power.m_index;
+                qCDebug(logPowers) << "  Removing power" << power.getPowerTemplate().m_Name << pset.m_index << power.m_index;
                 removePower(*cd, power.m_power_info);
                 continue;
             }
@@ -474,9 +476,9 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
             power.m_power_info.serializeto(bs);
             bs.StorePackedBits(5, pset.m_level_bought);
             bs.StorePackedBits(5, power.m_level_bought);
-            bs.StorePackedBits(3, power.m_num_charges);
-            bs.StoreFloat(power.m_usage_time);
-            bs.StorePackedBits(24, power.m_activation_time);
+            bs.StorePackedBits(3, power.getPowerTemplate().m_NumCharges);
+            bs.StoreFloat(power.getPowerTemplate().m_UsageTime);
+            bs.StorePackedBits(24, power.getPowerTemplate().ActivatePeriod);
 
             qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_total_eh_slots;
             bs.StorePackedBits(4, power.m_total_eh_slots); // total owned enhancement slots
@@ -512,7 +514,7 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
     bs.StorePackedBits(4, e->m_queued_powers.size()); // Count all active powers
     for(const CharacterPower *pow : e->m_queued_powers)
     {
-        qCDebug(logPowers) << "  QueuedPower:" << pow->m_name << pow->m_index;
+        qCDebug(logPowers) << "  QueuedPower:" << pow->getPowerTemplate().m_Name << pow->m_index;
         bs.StoreBits(1, pow->m_active_state_change);
         if(pow->m_active_state_change)
         {
@@ -525,12 +527,12 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
     bs.StorePackedBits(1, e->m_recharging_powers.size());
     for(const CharacterPower *pow : e->m_recharging_powers)
     {
-        qCDebug(logPowers) << "  RechargeCountdown:" << pow->m_timer_updated << pow->m_recharge_time;
+        qCDebug(logPowers) << "  RechargeCountdown:" << pow->m_timer_updated << pow->getPowerTemplate().RechargeTime;
         bs.StoreBits(1, pow->m_timer_updated);
         if(pow->m_timer_updated)
         {
             storePowerSpec(pow->m_power_info.m_pset_idx, pow->m_index, bs);
-            bs.StoreFloat(pow->m_recharge_time);
+            bs.StoreFloat(pow->getPowerTemplate().RechargeTime);
         }
     }
 
@@ -764,7 +766,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     sendControlState(*this,tgt);// These are not client specific ?
     ent_manager.sendDeletes(tgt,*m_client);
     // Client specific part
-    sendClientData(mi->serverData(),*this,tgt);
+    sendClientData(getGameData(),*this,tgt);
     // Server messages follow the entity update.
     auto v= std::move(m_client->m_contents);
     for(const auto &command : v)

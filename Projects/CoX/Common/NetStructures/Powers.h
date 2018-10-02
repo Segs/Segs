@@ -9,6 +9,7 @@
 #include "CommonNetStructures.h"
 #include "BitStream.h"
 #include "GameData/power_definitions.h"
+#include "GameData/GameDataStore.h"
 
 #include <cereal/cereal.hpp>
 #include <QtCore/QString>
@@ -184,21 +185,19 @@ struct CharacterPower
 {
 static const constexpr  uint32_t    class_version = 1;
         PowerPool_Info  m_power_info;
-        Power_Data      m_power_tpl;
         uint32_t        m_index             = 0;
-        QString         m_name;
         uint32_t        m_level_bought      = 0;
-        uint32_t        m_num_charges       = 0;
-        float           m_usage_time        = 0.0f;
-        uint32_t        m_activation_time   = 0;    // seconds since Jan 1, 2000
-        float           m_range             = 1.0f;
-        float           m_recharge_time     = 0.0f;
         uint32_t        m_activation_state  = 0;
         uint32_t        m_total_eh_slots    = 0;
         bool            m_active_state_change   = false;
         bool            m_timer_updated         = false;
         bool            m_erase_power           = false;
         std::array<CharacterEnhancement, 6> m_enhancements;
+
+        Power_Data getPowerTemplate() const
+        {
+            return getGameData().get_power_template(m_power_info.m_pcat_idx, m_power_info.m_pset_idx, m_power_info.m_pow_idx);
+        }
 };
 
 struct CharacterPowerSet
@@ -315,15 +314,15 @@ CEREAL_CLASS_VERSION(PowerTrayGroup, PowerTrayGroup::class_version) // register 
 /*
  * Powers Methods
  */
-int     getPowerCatByName(const GameDataStore &data,const QString &name);
-int     getPowerSetByName(const GameDataStore &data,const QString &name, uint32_t pcat_idx);
-int     getPowerByName(const GameDataStore &data,const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
-CharacterPower getPowerData(const GameDataStore &data, PowerPool_Info &ppool);
-CharacterPowerSet getPowerSetData(const GameDataStore &data, PowerPool_Info &ppool);
+int     getPowerCatByName(const QString &name);
+int     getPowerSetByName(const QString &name, uint32_t pcat_idx);
+int     getPowerByName(const QString &name, uint32_t pcat_idx, uint32_t pset_idx);
+CharacterPower getPowerData(PowerPool_Info &ppool);
+CharacterPowerSet getPowerSetData(PowerPool_Info &ppool);
 CharacterPower * getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx);
 void addPowerSet(CharacterData &cd, PowerPool_Info &ppool);
-void addEntirePowerSet(const GameDataStore &data,CharacterData &cd, PowerPool_Info &ppool);
-void addPower(const GameDataStore &data,CharacterData &cd, PowerPool_Info &ppool);
+void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool);
+void addPower(CharacterData &cd, PowerPool_Info &ppool);
 void removePower(CharacterData &cd, const PowerPool_Info &ppool);
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
 void dumpPower(const CharacterPower &pow);
@@ -333,9 +332,9 @@ void dumpOwnedPowers(CharacterData &cd);
 /*
  * Inspirations Methods
  */
-void addInspirationByName(const GameDataStore &data, CharacterData &cd, QString &name);
-void addInspirationToChar(CharacterData &cd, const CharacterInspiration& insp);
 const CharacterInspiration* getInspiration(const Entity &ent, uint32_t col, uint32_t row);
+void addInspirationByName(CharacterData &cd, QString &name);
+void addInspirationToChar(CharacterData &cd, const CharacterInspiration& insp);
 int getNumberInspirations(const CharacterData &cd);
 int getMaxNumberInspirations(const CharacterData &cd);
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
@@ -347,7 +346,7 @@ void dumpInspirations(CharacterData &cd);
 /*
  * Enhancements Methods
  */
-void addEnhancementByName(const GameDataStore &data, CharacterData &cd, QString &name, uint32_t &level);
+void addEnhancementByName(CharacterData &cd, QString &name, uint32_t &level);
 void addEnhancementToChar(CharacterData &cd, const CharacterEnhancement& enh);
 CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_array, uint32_t pow_idx_in_array, uint32_t eh_slot);
 const CharacterEnhancement* getEnhancement(const Entity &ent, uint32_t idx);
@@ -359,7 +358,7 @@ void trashEnhancement(CharacterData &cd, uint32_t eh_idx);
 void trashEnhancementInPower(CharacterData &cd, uint32_t pset_idx, uint32_t pow_idx, uint32_t eh_idx);
 void trashComboEnhancement(CharacterEnhancement &eh, uint32_t eh_idx);
 void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow_idx);
-void reserveEnhancementSlot(const GameDataStore &data,CharacterData &cd, CharacterPower *pow);
+void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow);
 
 struct CombineResult
 {
@@ -367,5 +366,5 @@ struct CombineResult
     bool destroyed;
 };
 
-CombineResult combineEnhancements(const GameDataStore &data,Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2);
+CombineResult combineEnhancements(Entity &ent, EnhancemenSlotEntry slot1, EnhancemenSlotEntry slot2);
 void dumpEnhancements(CharacterData &cd);

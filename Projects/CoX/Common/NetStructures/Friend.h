@@ -32,6 +32,22 @@ static const constexpr  uint32_t    class_version   = 1;
                         std::vector<Friend> m_friends;
 };
 
+enum class FriendListChangeStatus
+{
+    FRIEND_ADDED,
+    FRIEND_REMOVED,
+    MAX_FRIENDS_REACHED,
+    FRIEND_NOT_FOUND,
+};
+
+/*
+ * Friend Methods
+ */
 void toggleFriendList(Entity &src);
 void dumpFriends(const Entity &src);
 void dumpFriendsList(const Friend &f);
+
+FriendListChangeStatus addFriend(Entity &src, const Entity &tgt);
+FriendListChangeStatus removeFriend(Entity &src, QString friendName);
+
+const QString &getFriendDisplayMapName(const Friend &f);

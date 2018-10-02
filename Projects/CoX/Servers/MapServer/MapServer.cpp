@@ -49,7 +49,6 @@ namespace
 class MapServer::PrivateData
 {
 public:
-        GameDataStore   m_runtime_data;
         MapManager      m_manager;
 };
 
@@ -70,7 +69,7 @@ bool MapServer::Run()
 {
     assert(m_owner_game_server_id != INVALID_GAME_SERVER_ID);
 
-    if (!d->m_runtime_data.read_runtime_data(RUNTIME_DATA_PATH))
+    if (!getGameData().read_runtime_data(RUNTIME_DATA_PATH))
         return false;
 
     assert(d->m_manager.num_templates() > 0);
@@ -118,7 +117,7 @@ bool MapServer::ReadConfigAndRestart()
 
     bool ok = true;
     QVariant fade_in_variant = config.value("player_fade_in","380.0");
-    d->m_runtime_data.m_player_fade_in = fade_in_variant.toFloat(&ok);
+    getGameData().m_player_fade_in = fade_in_variant.toFloat(&ok);
     if(!ok)
     {
         qCritical() << "Badly formed float for 'player_fade_in': " << fade_in_variant.toString();
@@ -147,12 +146,7 @@ MapManager &MapServer::map_manager()
     return d->m_manager;
 }
 
-GameDataStore &MapServer::runtimeData()
-{
-    return d->m_runtime_data;
-}
-
-void MapServer::sett_game_server_owner(uint8_t owner_id)
+void MapServer::set_game_server_owner(uint8_t owner_id)
 {
     m_owner_game_server_id = owner_id;
 }

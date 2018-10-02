@@ -12,6 +12,7 @@
 #include "glm/vec3.hpp"
 #include <QString>
 #include <cstdint>
+#include <vector>
 
 class QString;
 class Entity;
@@ -27,6 +28,7 @@ class GameDataStore;
 struct Costume;
 class BitStream;
 class TradeMember;
+struct ContactEntry;
 
 
 
@@ -43,7 +45,6 @@ glm::vec3   getSpeed(const Entity &e);
 float       getBackupSpd(const Entity &e);
 float       getJumpHeight(const Entity &e);
 uint8_t     getUpdateId(const Entity &e);
-bool        isEntityOnMissionMap(const EntityData &ed);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);
@@ -72,35 +73,26 @@ void    toggleFullUpdate(Entity &e);
 void    toggleControlId(Entity &e);
 void    toggleExtraInfo(Entity &e);
 void    toggleMoveInstantly(Entity &e);
+void    toggleTeamBuffs(PlayerData &c);
+void    toggleLFG(Entity &e);
 
 // Misc Methods
 void    charUpdateDB(Entity *e);
-void    charUpdateGUI(Entity *e);
 
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
 void    on_awaiting_dead_no_gurney_test(MapClientSession &session);
-
-
-
-// Toggles
-void    toggleTeamBuffs(PlayerData &c);
-
-
-const QString &getFriendDisplayMapName(const Friend &f);
-QString     getEntityDisplayMapName(const EntityData &ed);
-/*
- * Looking for Group
- */
-void    toggleLFG(Entity &e);
+bool    isFriendOnline(Entity &src, uint32_t db_id);
+void    serializeCostume(Costume costume, BitStream bs);
 
 
 /*
- * getMapServerData Wrapper to provide access to NetStructures
+ * Titles -- TODO: get titles from texts/English/titles_def
  */
-GameDataStore *getMapServerData();
+const QString &getGenericTitle(uint32_t val);
+const QString &getOriginTitle(uint32_t val);
 
 
 /*
@@ -112,6 +104,8 @@ void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt);
 /*
  * SendUpdate Wrappers to provide access to NetStructures
  */
+void sendTimeStateLog(MapClientSession &src, uint32_t control_log);
+void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000);
 void sendRegisterSuperGroup(MapClientSession &ent, QString &val);
 void sendSuperGroupCostume(MapClientSession &ent, Costume &costume);
 void sendClientState(MapClientSession &ent, ClientStates client_state);
@@ -135,11 +129,11 @@ void sendTradeInit(Entity& src, Entity& tgt);
 void sendTradeCancel(Entity& ent, const QString& msg);
 void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt);
 void sendTradeSuccess(Entity& src, Entity& tgt);
+void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts);
+void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno);
+void sendContactDialogClose(MapClientSession &src);
 
-void serializeCostume(Costume costume, BitStream bs);
 
-const QString &getGenericTitle(uint32_t val);
-const QString &getOriginTitle(uint32_t val);
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
@@ -147,19 +141,12 @@ void sendEmailHeaders(Entity *e);
 void readEmailMessage(Entity *e, const int id);
 
 
+/*
+ * usePower
+ */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
 
-void addFriend(Entity &src, const Entity &tgt);
-void removeFriend(Entity &src, QString friendName);
-bool isFriendOnline(Entity &src, uint32_t db_id);
-void findTeamMember(Entity &tgt);
-
 /*
- * Sidekick Methods -- Sidekick system requires teaming.
+ * Team related helpers
  */
-bool isSidekickMentor(const Entity &e);
-void inviteSidekick(Entity &src, Entity &tgt);
-void addSidekick(Entity &tgt, Entity &src);
-void removeSidekick(Entity &src);
-void leaveTeam(Entity &e);
-void removeTeamMember(class Team &self, Entity *e);
+void findTeamMember(Entity &tgt);
