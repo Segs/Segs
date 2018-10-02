@@ -417,22 +417,23 @@ bool GameDataStore::read_powers(const QString &directory_path)
     if (!read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path, "powers.bin",
                                                                    m_all_powers))
         return false;
-   StoredAttribMod temp; // just a bit of hardcoding stats to test powers
-   temp.name = "Damage";
-   temp.Magnitude = 5;
-   m_all_powers.m_categories[26].m_PowerSets[0].m_Powers[0].pAttribMod.push_back(temp);//brawl
-   m_all_powers.m_categories[32].m_PowerSets[1].m_Powers[0].pAttribMod.push_back(temp);
-    m_all_powers.m_categories[32].m_PowerSets[1].m_Powers[1].pAttribMod.push_back(temp);
-    m_all_powers.m_categories[30].m_PowerSets[1].m_Powers[0].pAttribMod.push_back(temp);
-    temp.name = "Knockback";
-    m_all_powers.m_categories[32].m_PowerSets[1].m_Powers[0].pAttribMod.push_back(temp);
+
+    StoredAttribMod temp; // just a bit of hardcoding stats to test powers
+    temp.name = "Damage";
+    temp.Magnitude = 5;
+    Power_Data *temppower = lookUpPower(26,0,0);  //brawl
+    temppower->pAttribMod.push_back(temp);
 
     temp.name = "Healing";
-    m_all_powers.m_categories[26].m_PowerSets[0].m_Powers[7].pAttribMod.push_back(temp);//rest
-    m_all_powers.m_categories[27].m_PowerSets[0].m_Powers[24].pAttribMod.push_back(temp);//medkit?
+    temppower = lookUpPower(26,0,7);             //rest
+    temppower->pAttribMod.push_back(temp);
+    temppower = lookUpPower(27,0,24);            //medkit
+    temppower->pAttribMod.push_back(temp);
+
     temp.name = "Speed_Boost";
     temp.Magnitude = 0.5;
-    m_all_powers.m_categories[26].m_PowerSets[0].m_Powers[6].pAttribMod.push_back(temp);//sprint
+    temppower = lookUpPower(26,0,6);             //sprint
+    temppower->pAttribMod.push_back(temp);
 
     return true;
 }
@@ -480,7 +481,10 @@ const Power_Data& GameDataStore::get_power_template(uint32_t pcat_idx, uint32_t 
 {
     return m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
 }
-
+Power_Data * GameDataStore::lookUpPower(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+{
+    return &m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
+}
 const StoredPowerCategory& GameDataStore::get_power_category(uint32_t pcat_idx)
 {
     return m_all_powers.m_categories[pcat_idx];

@@ -605,8 +605,13 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     if (pdata.Type != PowerType::Toggle && pdata.Type != PowerType::Click)      //treat toggle as clicks, ignore everything else for now
         return;
     Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-
-    if (pdata.Range != float(0.0)) {               // self targetting doesn't need these checks
+    if (pdata.Range == float(0.0))              // self targetting doesn't need these checks
+    {
+        target_ent = &ent;
+        tgt_idx = ent.m_idx;
+    }
+    else
+    {
         if(target_ent == nullptr)
         {
             qCDebug(logPowers) << "Failed to find target:" << tgt_idx << tgt_id;
@@ -617,17 +622,19 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
         if(pdata.Target == StoredEntEnum::Enemy || pdata.Target == StoredEntEnum::Foe
                 || pdata.Target == StoredEntEnum::NPC)
         {
-            if (!target_ent->m_is_villian){
+            if (!target_ent->m_is_villian)
+            {
                 messageOutput(MessageChannel::COMBAT, QString("needs foe, targeting ally"), ent);
                 return;
             }
         }
         else{
-            if (target_ent->m_is_villian){
+            if (target_ent->m_is_villian)
+            {
                 messageOutput(MessageChannel::COMBAT, QString("needs ally, targeting foe"), ent);
                 return;
-                }
             }
+        }
         glm::vec3 senderpos = ent.m_entity_data.m_pos;          // Check if the target is in range
         glm::vec3 recpos = target_ent->m_entity_data.m_pos;
 
@@ -727,9 +734,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     console_msg = floating_msg + " You hit " + target_ent->name() + " for " + QString::number(damage) + " damage!";
     messageOutput(MessageChannel::COMBAT, console_msg, ent);
 
-    if(target_ent->m_type != EntType::PLAYER)
-        return;
-    if(tgt_idx == ent.m_idx) // Skip the rest if targeting self.
+    if(target_ent->m_type != EntType::PLAYER || tgt_idx == ent.m_idx)
         return;
 
     // Send message to target
