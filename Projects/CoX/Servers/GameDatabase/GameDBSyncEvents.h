@@ -63,7 +63,7 @@ struct CharacterUpdateData
     QString m_char_name;
     // Cerealized blobs
     QString m_char_data;
-    QString m_entitydata;
+    QString m_entity_data;
     QString m_player_data;
     // plain values
     uint32_t m_bodytype;
@@ -74,9 +74,9 @@ struct CharacterUpdateData
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_char_name,m_char_data,m_entitydata,m_player_data );
-        ar( m_bodytype,m_height,m_physique );
-        ar( m_supergroup_id,m_id );
+        ar( m_char_name, m_char_data, m_entity_data, m_player_data );
+        ar( m_bodytype, m_height, m_physique );
+        ar( m_supergroup_id, m_id );
     }
 };
 // [[ev_def:macro]]
@@ -146,9 +146,9 @@ struct GameAccountResponseCostumeData
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_serialized_data,m_character_id );
-        ar( m_body_type,m_height, m_physique);
-        ar( skin_color,m_slot_index );
+        ar( m_serialized_data, m_character_id );
+        ar( m_body_type, m_height, m_physique);
+        ar( skin_color, m_slot_index );
     }
 };
 

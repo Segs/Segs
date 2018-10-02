@@ -17,19 +17,13 @@
 #include "Entity.h"
 #include "Character.h"
 #include "Logging.h"
-#include <QDateTime>
+#include "TimeHelpers.h"
 
 
 // global variable -- a supergroup service is probably better
 std::vector<SuperGroup> g_all_supergroups;
 // Max size is probably hardcoded, but I can't get 75 friends together to check =P
 static const uint32_t s_max_sg_size = 75;  // max is 75 in I1 client, later raised to 150
-
-int64_t getTimeSince2000Epoch()
-{
-    QDateTime base_date(QDate(2000,1,1));
-    return base_date.secsTo(QDateTime::currentDateTime());
-}
 
 
 /*
@@ -52,8 +46,8 @@ void SuperGroup::addSGMember(Entity *e, int rank)
     sgs.m_db_id         = e->m_db_id;
     sgs.m_rank          = rank;
     sgs.m_hours_logged  = 0;
-    sgs.m_date_joined   = getTimeSince2000Epoch();
-    sgs.m_last_online   = getTimeSince2000Epoch();
+    sgs.m_date_joined   = getSecsSince2000Epoch();
+    sgs.m_last_online   = getSecsSince2000Epoch();
     sgs.m_is_online     = true;
     sgs.m_class_icon    = e->m_char->m_char_data.m_class_name;
     sgs.m_origin_icon   = e->m_char->m_char_data.m_origin_name;

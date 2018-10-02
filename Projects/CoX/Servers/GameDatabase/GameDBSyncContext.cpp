@@ -186,7 +186,7 @@ bool GameDbSyncContext::loadAndConfigure()
     prepQuery(*m_prepared_get_char_slots,"SELECT slot_index FROM characters WHERE account_id=?");
 
     prepQuery(*m_prepared_supergroup_insert,
-                "INSERT INTO characters  ("
+                "INSERT INTO supergroups  ("
                 "sg_idx, sg_name, sg_data, sg_members"
                 ") VALUES ("
                 ":sg_idx, :sg_name, :sg_data, :sg_members"
@@ -196,7 +196,7 @@ bool GameDbSyncContext::loadAndConfigure()
     prepQuery(*m_prepared_supergroup_delete,"DELETE FROM supergroups WHERE sg_idx=?");
     prepQuery(*m_prepared_supergroup_update,
               "UPDATE supergroups SET "
-              "sg_data=:sg_data "
+              "sg_name=:sg_name, sg_data=:sg_data "
               "WHERE sg_idx=:sg_idx ");
 
     return true;
@@ -207,7 +207,7 @@ bool GameDbSyncContext::performUpdate(const CharacterUpdateData &data)
     m_prepared_char_update->bindValue(QStringLiteral(":id"), data.m_id); // for WHERE statement only
     m_prepared_char_update->bindValue(QStringLiteral(":char_name"), data.m_char_name);
     m_prepared_char_update->bindValue(QStringLiteral(":chardata"), data.m_char_data);
-    m_prepared_char_update->bindValue(QStringLiteral(":entitydata"), data.m_entitydata);
+    m_prepared_char_update->bindValue(QStringLiteral(":entitydata"), data.m_entity_data);
     m_prepared_char_update->bindValue(QStringLiteral(":bodytype"), data.m_bodytype);
     m_prepared_char_update->bindValue(QStringLiteral(":height"), data.m_height);
     m_prepared_char_update->bindValue(QStringLiteral(":physique"), data.m_physique);

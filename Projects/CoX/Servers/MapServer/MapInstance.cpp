@@ -50,6 +50,7 @@
 #include "Common/Servers/InternalEvents.h"
 #include "Events/MapXferWait.h"
 #include "Events/MapXferRequest.h"
+#include "TimeHelpers.h"
 
 #include <ace/Reactor.h>
 
@@ -472,10 +473,11 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evRecvNewPower:
             on_recv_new_power(static_cast<RecvNewPower *>(ev));
-        case MapEventTypes::evTradeWasCancelledMessage:
+            break;
+        case evTradeWasCancelledMessage:
             on_trade_cancelled(static_cast<TradeWasCancelledMessage *>(ev));
             break;
-        case MapEventTypes::evTradeWasUpdatedMessage:
+        case evTradeWasUpdatedMessage:
             on_trade_updated(static_cast<TradeWasUpdatedMessage *>(ev));
             break;
         case evCreateSuperGroup:
@@ -635,8 +637,9 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
 
     removeLFG(*ent);
     leaveTeam(*ent);
-    // one last character update for the disconnecting entity
+    setLastOnline(*ent->m_char);
 
+    // one last character update for the disconnecting entity
     send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
 
@@ -2440,7 +2443,6 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
 {
     EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
     MapClientSession &session(m_session_store.session_from_event(ev));
-    auto *lnk   = (MapLink *)ev->src();
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received Create SuperGroup"
                           << ev->data.m_sg_name
@@ -2462,14 +2464,12 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
     session.m_ent->m_client->addCommand<SuperGroupResponse>(success, costume);
     //session.m_ent->m_client->addCommand<RegisterSuperGroup>(ev->data.m_sg_name);
 
-    // Save SG to Database
-    /*
-    game_db->putq(new CreateNewSuperGroupRequest({ev->data.m_sg_name, ev->data},
-                                                 lnk->session_token(), this));
-    */
-
     // Finalize adding SG to sg storage and entity to memberlist
     addSuperGroup(*session.m_ent, ev->data);
+
+    // Finally, create SG in Database
+    game_db->putq(new CreateNewSuperGroupRequest({ev->data.m_sg_name, ev->data},
+                                                 session.m_session_token, this));
 }
 
 void MapInstance::on_change_supergroup_colors(ChangeSuperGroupColors *ev)
@@ -2509,6 +2509,7 @@ void MapInstance::on_update_entities()
     for (const auto &sess : active_sessions)
     {
         Entity *e = sess->m_ent;
+        setLastOnline(*e->m_char); // set this here, in case we disconnect unexpectedly
         send_character_update(e);
 
         /* at the moment we are forcing full character updates, so I'll leave this commented for now

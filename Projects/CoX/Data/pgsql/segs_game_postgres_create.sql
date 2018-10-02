@@ -8,12 +8,12 @@ CREATE TABLE "table_versions" (
   OIDS=FALSE
 );
 
-INSERT INTO table_versions VALUES(1,'db_version',7,'2018-05-03 17:52:33');
+INSERT INTO table_versions VALUES(1,'db_version',8,'2018-10-02 02:56:43');
 INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
 INSERT INTO table_versions VALUES(3,'accounts',1,'2018-05-03 14:06:03');
 INSERT INTO table_versions VALUES(4,'characters',8,'2018-05-04 14:58:27');
 INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(7,'supergroups',1,'2018-05-03 14:06:43');
+INSERT INTO table_versions VALUES(7,'supergroups',2,'2018-10-02 02:56:43');
 
 
 CREATE TABLE "accounts" (
@@ -61,12 +61,7 @@ CREATE TABLE "characters" (
 CREATE TABLE "supergroups" (
     "id" serial NOT NULL,
     "sg_name" varchar(30) NOT NULL,
-    "sg_motto" varchar(128) NOT NULL,
-    "sg_motd" varchar(1024) NOT NULL,
-    "sg_rank_names" bytea NOT NULL,
-    "sg_rank_perms" bytea NOT NULL,
-    "sg_emblem" bytea NOT NULL,
-    "sg_colors" bytea NOT NULL,
+    "sg_data" bytea NOT NULL,
     "sg_members" bytea NOT NULL,
     CONSTRAINT supergroups_pk PRIMARY KEY ("id")
 ) WITH (

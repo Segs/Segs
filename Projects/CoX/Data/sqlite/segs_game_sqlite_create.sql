@@ -7,12 +7,12 @@ CREATE TABLE `table_versions` (
     `last_update` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO table_versions VALUES(1,'db_version',7,'2018-05-03 17:52:33');
+INSERT INTO table_versions VALUES(1,'db_version',8,'2018-10-02 02:56:43');
 INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
 INSERT INTO table_versions VALUES(3,'accounts',1,'2017-05-03 12:56:03');
 INSERT INTO table_versions VALUES(4,'characters',8,'2018-05-04 14:58:27');
 INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
-INSERT INTO table_versions VALUES(7,'supergroups',1,'2018-05-03 12:56:43');
+INSERT INTO table_versions VALUES(7,'supergroups',2,'2018-10-02 02:56:43');
 
 CREATE TABLE `accounts` (
     `id` INTEGER PRIMARY KEY,
@@ -47,13 +47,9 @@ CREATE TABLE `costume` (
 CREATE TABLE `supergroups` (
     `id`	INTEGER PRIMARY KEY AUTOINCREMENT,
     `sg_name`	TEXT NOT NULL,
-    `sg_motto`	TEXT,
-    `sg_motd`	TEXT,
-    `sg_rank_names`	BLOB,
-    `sg_rank_perms`	BLOB,
-    `sg_emblem`	BLOB,
-    `sg_colors`	BLOB,
-    `sg_members`	BLOB
+    `sg_data`	BLOB,
+    `sg_members`    BLOB
 );
+
 COMMIT;
 
