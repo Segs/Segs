@@ -719,7 +719,8 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     ev->src()->putq(new ExpectMapClientResponse({cookie, 0, m_addresses.m_location_addr}, ev->session_token()));
 }
 
-void MapInstance::on_update_friendslist(SendFriendListMessage *ev){
+void MapInstance::on_update_friendslist(SendFriendListMessage *ev)
+{
     MapClientSession &map_session(m_session_store.session_from_token(ev->m_data.m_session_token));
     Entity * e = map_session.m_ent;
     FriendsList flist = ev->m_data.m_friendlist;
@@ -727,7 +728,8 @@ void MapInstance::on_update_friendslist(SendFriendListMessage *ev){
     sendFriendsListUpdate(e,flist);
 }
 
-void MapInstance::on_notify_friend(SendNotifyFriendMessage *ev){
+void MapInstance::on_notify_friend(SendNotifyFriendMessage *ev)
+{
     //Get the session we want to notify, and the session of who connected (so we can get the name)
     MapClientSession &notify_session(m_session_store.session_from_token(ev->m_data.m_notify_token));
     MapClientSession &connected_session(m_session_store.session_from_token(ev->m_data.m_connected_token));

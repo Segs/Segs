@@ -12,7 +12,6 @@
 
 #include "Friend.h"
 
-#include "Servers/MapServer/DataHelpers.h"
 #include "CharacterHelpers.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/map_definitions.h"
@@ -112,21 +111,19 @@ FriendListChangeStatus removeFriend(Entity &src, QString friend_name)
         qCDebug(logFriends) << msg;
         return FriendListChangeStatus::FRIEND_NOT_FOUND;
     }
-    else
-    {
-        m_tgt_id = iter->m_db_id;
-        msg = "Removing " + iter->m_name + " from your friends list.";
 
-        EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
-        friend_tgt->putq(new SEGSEvents::FriendRemovedMessage({src.m_char->m_db_id,m_tgt_id},0));
+    m_tgt_id = iter->m_db_id;
+    msg = "Removing " + iter->m_name + " from your friends list.";
 
-        qCDebug(logFriends) << msg;
-        if(logFriends().isDebugEnabled())
-            dumpFriends(src);
+    EventProcessor *friend_tgt = HandlerLocator::getFriend_Handler();
+    friend_tgt->putq(new SEGSEvents::FriendRemovedMessage({src.m_char->m_db_id,m_tgt_id},0));
 
-        qCDebug(logFriends).noquote() << msg;
-        return FriendListChangeStatus::FRIEND_REMOVED;
-    }
+    qCDebug(logFriends) << msg;
+    if(logFriends().isDebugEnabled())
+        dumpFriends(src);
+
+    qCDebug(logFriends).noquote() << msg;
+    return FriendListChangeStatus::FRIEND_REMOVED;
 }
 
 const QString &getFriendDisplayMapName(const Friend &f)
