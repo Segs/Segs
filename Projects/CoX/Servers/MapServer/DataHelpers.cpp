@@ -43,6 +43,7 @@ glm::vec3   getSpeed(const Entity &e) { return e.m_spd; }
 float       getBackupSpd(const Entity &e) { return e.m_backup_spd; }
 float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
 uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
+Destination getCurrentDestination(const Entity &e) { return e.m_cur_destination; }
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
@@ -128,6 +129,12 @@ void setAssistTarget(Entity &e)
     e.m_assist_target_idx = getTargetIdx(*target_ent);
 
     qCDebug(logTarget) << "Assist Target is:" << getAssistTargetIdx(e);
+}
+
+void setCurrentDestination(Entity &e, int point_idx, glm::vec3 location)
+{
+    e.m_cur_destination.point_idx = point_idx;
+    e.m_cur_destination.location = location;
 }
 
 // For live debugging
@@ -536,6 +543,17 @@ void sendContactDialogClose(MapClientSession &src)
 {
     qCDebug(logSlashCommand) << "Sending ContactDialogClose";
     src.addCommand<ContactDialogClose>();
+}
+
+void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location)
+{
+    qCDebug(logSlashCommand) << QString("Sending SendWaypoint: %1 <%2, %3, %4>")
+                                .arg(point_idx)
+                                .arg(location.x, 0, 'f', 1)
+                                .arg(location.y, 0, 'f', 1)
+                                .arg(location.z, 0, 'f', 1);
+
+    src.addCommand<SendWaypoint>(point_idx, location);
 }
 
 

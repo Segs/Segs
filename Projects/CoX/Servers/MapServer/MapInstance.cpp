@@ -2050,9 +2050,17 @@ void MapInstance::on_send_stance(SendStance * ev)
 
 void MapInstance::on_set_destination(SetDestination * ev)
 {
-    qCWarning(logMapEvents) << "Unhandled set destination request"
-               << "\n\t" << "index" << ev->point_index
-               << "loc" << ev->destination.x << ev->destination.y << ev->destination.z;
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCWarning(logMapEvents) << QString("SetDestination request: %1 <%2, %3, %4>")
+                                .arg(ev->point_index)
+                                .arg(ev->destination.x, 0, 'f', 1)
+                                .arg(ev->destination.y, 0, 'f', 1)
+                                .arg(ev->destination.z, 0, 'f', 1);
+
+    // store destination, confirm accuracy and send back to client as waypoint.
+    setCurrentDestination(*session.m_ent, ev->point_index, ev->destination);
+    sendWaypoint(session, ev->point_index, ev->destination);
 }
 
 void MapInstance::on_abort_queued_power(AbortQueuedPower * /*ev*/)
@@ -2293,8 +2301,9 @@ void MapInstance::on_move_inspiration(MoveInspiration *ev)
 void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    QString generic, origin, special;
+    sendContactDialogClose(session); // must do this here, due to I1 client bug
 
+    QString generic, origin, special;
     generic = getGenericTitle(ev->m_generic);
     origin  = getOriginTitle(ev->m_origin);
     special = getSpecialTitle(*session.m_ent->m_char);
