@@ -100,6 +100,10 @@ struct WouldNameDuplicateResponse;
 struct CreateNewCharacterResponse;
 struct GetEntityResponse;
 struct GetEntityByNameResponse;
+struct CreateNewSuperGroupResponse;
+struct GetSuperGroupResponse;
+struct SuperGroupNameDuplicateResponse;
+struct RemoveSuperGroupResponse;
 class Timeout;
 }
 class MapLinkEndpoint;
@@ -159,6 +163,10 @@ protected:
         void                    on_character_created(SEGSEvents::CreateNewCharacterResponse *ev);
         void                    on_entity_response(SEGSEvents::GetEntityResponse *ev);
         void                    on_entity_by_name_response(SEGSEvents::GetEntityByNameResponse *ev);
+        void                    on_supergroup_created(SEGSEvents::CreateNewSuperGroupResponse *ev);
+        void                    on_get_supergroup(SEGSEvents::GetSuperGroupResponse *ev);
+        void                    on_supergroup_name_clash(SEGSEvents::SuperGroupNameDuplicateResponse *ev);
+        void                    on_remove_supergroup(SEGSEvents::RemoveSuperGroupResponse *ev);
         // Server->Server messages
         void on_expect_client(SEGSEvents::ExpectMapClientRequest *ev);
         void on_expect_client_response(SEGSEvents::ExpectMapClientResponse *ev);

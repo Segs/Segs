@@ -486,11 +486,11 @@ struct RemoveSuperGroupRequestData
 
 struct RemoveSuperGroupResponseData
 {
-    uint32_t m_sg_id;
+    bool m_success;
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_sg_id  );
+        ar( m_success  );
     }
 };
 // [[ev_def:macro]]

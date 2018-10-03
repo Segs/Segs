@@ -321,6 +321,18 @@ void MapInstance::dispatch( Event *ev )
         case evGetEntityByNameResponse:
             on_entity_by_name_response(static_cast<GetEntityByNameResponse *>(ev));
             break;
+        case evCreateNewSuperGroupResponse:
+            on_supergroup_created(static_cast<CreateNewSuperGroupResponse *>(ev));
+            break;
+        case evGetSuperGroupResponse:
+            on_get_supergroup(static_cast<GetSuperGroupResponse *>(ev));
+            break;
+        case evSuperGroupNameDuplicateResponse:
+            on_supergroup_name_clash(static_cast<SuperGroupNameDuplicateResponse *>(ev));
+            break;
+        case evRemoveSuperGroupResponse:
+            on_remove_supergroup(static_cast<RemoveSuperGroupResponse *>(ev));
+            break;
         case evIdle:
             on_idle(static_cast<Idle *>(ev));
             break;
@@ -1280,7 +1292,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             // Only send the message to characters in sender's supergroup
             for(MapClientSession *cl : m_session_store)
             {
-                if(sender->m_ent->m_char->m_char_data.m_supergroup.m_sg_idx == cl->m_ent->m_char->m_char_data.m_supergroup.m_sg_idx)
+                if(sender->m_ent->m_char->m_char_data.m_supergroup.m_sg_db_id == cl->m_ent->m_char->m_char_data.m_supergroup.m_sg_db_id)
                     recipients.push_back(cl);
             }
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
@@ -2595,7 +2607,7 @@ void MapInstance::send_supergroup_update(SuperGroup *sg)
 
     SuperGroupUpdateMessage* msg = new SuperGroupUpdateMessage(
                 SuperGroupUpdateData({
-                                     sg->m_sg_idx,
+                                     sg->m_sg_db_id,
                                      sg->m_sg_name,
                                      cerealizedSuperGroupData,
                                      cerealizedSuperGroupMembers
@@ -2603,6 +2615,54 @@ void MapInstance::send_supergroup_update(SuperGroup *sg)
 
     m_sync_service->putq(msg);
     unmarkSuperGroupForDbStore(sg, SuperGroupDbStoreFlags::Full);
+}
+
+void MapInstance::on_supergroup_created(CreateNewSuperGroupResponse *ev)
+{
+    MapClientSession &sess(m_session_store.session_from_event(ev));
+    Entity *ent = sess.m_ent;
+
+    SuperGroup *sg = &g_all_supergroups.at(ev->m_data.m_sg_id);
+    sg->m_sg_db_id = ev->m_data.m_sg_id;
+    ent->m_char->m_char_data.m_supergroup.m_sg_db_id = ev->m_data.m_sg_id;
+}
+
+void MapInstance::on_get_supergroup(GetSuperGroupResponse *ev)
+{
+    MapClientSession &sess(m_session_store.session_from_event(ev));
+    Entity *ent = sess.m_ent;
+
+    SuperGroup sg;
+    sg.m_sg_db_id = ev->m_data.m_sg_id;
+    sg.m_sg_name = ev->m_data.m_sg_name;
+    serializeFromQString(sg.m_data, ev->m_data.m_serialized_sg_data);
+    serializeFromQString(sg.m_sg_members, ev->m_data.m_serialized_sg_members);
+
+    if(!g_all_supergroups.size()-1 < ev->m_data.m_sg_id)
+    {
+        //g_all_supergroups.insert(sg.m_sg_db_id, sg);
+        return;
+    }
+
+    // else update existing supergroup array entry
+    g_all_supergroups.at(sg.m_sg_db_id).m_sg_db_id      = sg.m_sg_db_id;
+    g_all_supergroups.at(sg.m_sg_db_id).m_sg_name       = sg.m_sg_name;
+    g_all_supergroups.at(sg.m_sg_db_id).m_data          = sg.m_data;
+    g_all_supergroups.at(sg.m_sg_db_id).m_sg_members    = sg.m_sg_members;
+}
+
+void MapInstance::on_supergroup_name_clash(SuperGroupNameDuplicateResponse *ev)
+{
+    if(ev->m_data.m_supergroup_duplicate)
+        return;
+
+    // TODO: otherwise add supergroup.
+}
+
+void MapInstance::on_remove_supergroup(RemoveSuperGroupResponse *ev)
+{
+    // find supergroup by idx
+    // remove
 }
 
 void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)

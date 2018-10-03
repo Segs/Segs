@@ -21,6 +21,7 @@ struct SGResponse
 
 struct SuperGroupData
 {
+    uint32_t    m_sg_db_id;
     QString     m_sg_name;                  // 64 chars max. Here for quick lookup.
     QString     m_sg_created_date;
     QString     m_sg_motto;
@@ -33,6 +34,7 @@ struct SuperGroupData
     template<class Archive>
     void serialize(Archive &ar)
     {
+        ar(m_sg_db_id);
         ar(m_sg_name);
         ar(m_sg_created_date);
         ar(m_sg_motto);
@@ -52,14 +54,14 @@ struct SuperGroupStats
 {
     static const constexpr  uint32_t        class_version   = 1;
     bool        m_has_supergroup    = false;
-    uint32_t    m_sg_idx            = 0; // db_id of supergroup
+    uint32_t    m_sg_db_id          = 0;
     uint32_t    m_rank              = 0; // This character's rank in the SG
     bool        m_has_sg_costume    = false; // player has a sg costume
     bool        m_sg_mode           = false; // player uses sg costume currently
     Costume     m_sg_costume;
 
     // The below are needed by /sgstats
-    uint32_t    m_db_id         = 0;
+    uint32_t    m_member_db_id  = 0; // db_id of supergroup
     uint32_t    m_date_joined   = 0; // date joined as ms since Jan 1 2000
     uint32_t    m_hours_logged  = 0; // hours logged in sg_mode
     uint32_t    m_last_online   = 0; // last online as ms since Jan 1 2000
@@ -78,17 +80,17 @@ class SuperGroup
 {
 public:
         SuperGroup()
-            : m_sg_idx( ++m_sg_idx_counter )
+            : m_sg_db_id( ++m_sg_idx_counter )
         { }
 virtual ~SuperGroup() = default;
 
         // Member Vars
-const   uint32_t    m_sg_idx            = 0;
-        QString     m_sg_name;                 // 64 chars max. Must be here for simple DB lookups
-        uint32_t    m_db_store_flags    = 0;
+        uint32_t    m_sg_db_id          = 0;
+        QString     m_sg_name;                  // 64 chars max. Must be here for simple DB lookups
         SuperGroupData m_data;
-
         std::vector<SuperGroupStats> m_sg_members;
+
+        uint32_t    m_db_store_flags    = 0;
 
         // Methods
         void        dump();

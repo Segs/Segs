@@ -43,7 +43,7 @@ void SuperGroup::addSGMember(Entity *e, int rank)
 
     SuperGroupStats sgs;
     sgs.m_name          = e->name();
-    sgs.m_db_id         = e->m_db_id;
+    sgs.m_member_db_id  = e->m_db_id;
     sgs.m_rank          = rank;
     sgs.m_hours_logged  = 0;
     sgs.m_date_joined   = getSecsSince2000Epoch();
@@ -54,12 +54,12 @@ void SuperGroup::addSGMember(Entity *e, int rank)
 
     m_sg_members.push_back(sgs);
     cd->m_supergroup.m_has_supergroup = true;
-    cd->m_supergroup.m_sg_idx = m_sg_idx;
+    cd->m_supergroup.m_sg_db_id = m_sg_db_id;
 
     if(m_sg_members.size() <= 1)
         m_data.m_sg_leader_db_id = e->m_db_id;
 
-    qCDebug(logSuperGroups) << "Adding" << e->name() << "to supergroup" << m_sg_idx;
+    qCDebug(logSuperGroups) << "Adding" << e->name() << "to supergroup" << m_sg_db_id;
     if(logSuperGroups().isDebugEnabled())
         dump();
 
@@ -72,17 +72,17 @@ void SuperGroup::removeSGMember(Entity *e)
     qCDebug(logSuperGroups) << "Searching SuperGroup members for" << e->name() << "to remove them.";
     uint32_t id_to_find = e->m_db_id;
     auto iter = std::find_if( m_sg_members.begin(), m_sg_members.end(),
-                              [id_to_find](const SuperGroupStats& m)->bool {return id_to_find==m.m_db_id;});
+                              [id_to_find](const SuperGroupStats& m)->bool {return id_to_find==m.m_member_db_id;});
     if(iter!=m_sg_members.end())
     {
-        if(iter->m_db_id == m_data.m_sg_leader_db_id)
-            m_data.m_sg_leader_db_id = m_sg_members.front().m_db_id;
+        if(iter->m_member_db_id == m_data.m_sg_leader_db_id)
+            m_data.m_sg_leader_db_id = m_sg_members.front().m_member_db_id;
 
         iter = m_sg_members.erase(iter);
         cd->m_supergroup.m_has_supergroup = false;
-        cd->m_supergroup.m_sg_idx = 0;
+        cd->m_supergroup.m_sg_db_id = 0;
 
-        qCDebug(logSuperGroups) << "Removing" << iter->m_name << "from SuperGroup" << m_sg_idx;
+        qCDebug(logSuperGroups) << "Removing" << iter->m_name << "from SuperGroup" << m_sg_db_id;
         if(logSuperGroups().isDebugEnabled())
             listSGMembers();
     }
@@ -93,16 +93,16 @@ void SuperGroup::removeSGMember(Entity *e)
         if(logSuperGroups().isDebugEnabled())
             listSGMembers();
 
-        m_data.m_sg_leader_db_id = m_sg_members.front().m_db_id;
+        m_data.m_sg_leader_db_id = m_sg_members.front().m_member_db_id;
         // TODO: fix entity's rank somehow
     }
 }
 
 void SuperGroup::dump()
 {
-    QString output = "Debugging SuperGroups: " + QString::number(m_sg_idx)
+    QString output = "Debugging SuperGroups: " + QString::number(m_sg_db_id)
             + "\n\t name: " + m_data.m_sg_name
-            + "\n\t db_id: " + QString::number(m_sg_idx)
+            + "\n\t db_id: " + QString::number(m_sg_db_id)
             + "\n\t created_date: " + m_data.m_sg_created_date
             + "\n\t leader db_id: " + QString::number(m_data.m_sg_leader_db_id)
             + "\n\t size: " + QString::number(m_sg_members.size());
@@ -116,7 +116,7 @@ void SuperGroup::listSGMembers()
     QString output = "SG Members:";
 
     for (auto &member : m_sg_members)
-        output += "\n\t" + member.m_name + " db_id: " + QString::number(member.m_db_id);
+        output += "\n\t" + member.m_name + " db_id: " + QString::number(member.m_member_db_id);
 
     qDebug().noquote() << output;
 }
@@ -128,7 +128,7 @@ uint32_t SuperGroup::getSGLeaderDBID()
 
 bool sameSG(Entity &src, Entity &tgt)
 {
-    return src.m_char->m_char_data.m_supergroup.m_sg_idx == tgt.m_char->m_char_data.m_supergroup.m_sg_idx;
+    return src.m_char->m_char_data.m_supergroup.m_sg_db_id == tgt.m_char->m_char_data.m_supergroup.m_sg_db_id;
 }
 
 bool SuperGroup::makeSGLeader(Entity &tgt)
@@ -136,7 +136,7 @@ bool SuperGroup::makeSGLeader(Entity &tgt)
     CharacterData *tgt_cd = &tgt.m_char->m_char_data;
 
     if(!tgt_cd->m_supergroup.m_has_supergroup
-            || m_sg_idx != tgt_cd->m_supergroup.m_sg_idx
+            || m_sg_db_id != tgt_cd->m_supergroup.m_sg_db_id
             || getSGLeaderDBID() == tgt.m_db_id)
         return false;
 
@@ -173,7 +173,7 @@ SGResponse inviteSG(Entity &src, Entity &tgt)
         return response;
     }
 
-    SuperGroup * sg = getSuperGroupByIdx(src_sg->m_sg_idx);
+    SuperGroup * sg = getSuperGroupByIdx(src_sg->m_sg_db_id);
     if(sg == nullptr)
         qFatal("getSuperGroupByIdx returned nullptr for inviteSG");
 
@@ -199,7 +199,7 @@ QString kickSG(Entity &src, Entity &tgt)
     if(src_sg->m_rank < 1)
         return msg = src.name() + " does not have authority to kick SuperGroup members.";
 
-    SuperGroup * sg = getSuperGroupByIdx(tgt_sg->m_sg_idx);
+    SuperGroup * sg = getSuperGroupByIdx(tgt_sg->m_sg_db_id);
     if(sg == nullptr)
         qFatal("getSuperGroupByIdx returned nullptr for kickSG");
 
@@ -218,7 +218,7 @@ void leaveSG(Entity &e)
         return;
     }
 
-    SuperGroup * sg = getSuperGroupByIdx(cd->m_supergroup.m_sg_idx);
+    SuperGroup * sg = getSuperGroupByIdx(cd->m_supergroup.m_sg_db_id);
     if(sg == nullptr)
     {
         qFatal("getSuperGroupByIdx returned nullptr for leaveSG");
@@ -262,7 +262,7 @@ QString setSGMOTD(Entity &e, QString &motd)
     if(motd.isEmpty())
         return msg = "You must provide a new MOTD.";
 
-    SuperGroup * sg = getSuperGroupByIdx(sgs->m_sg_idx);
+    SuperGroup * sg = getSuperGroupByIdx(sgs->m_sg_db_id);
     if(sg == nullptr)
         qFatal("getSuperGroupByIdx returned nullptr for setSGMOTD");
 
@@ -285,7 +285,7 @@ QString setSGMotto(Entity &e, QString &motto)
     if(motto.isEmpty())
         return msg = "You must provide a new Motto.";
 
-    SuperGroup * sg = getSuperGroupByIdx(sgs->m_sg_idx);
+    SuperGroup * sg = getSuperGroupByIdx(sgs->m_sg_db_id);
     if(sg == nullptr)
         qFatal("getSuperGroupByIdx returned nullptr for setSGMotto");
 
@@ -297,7 +297,7 @@ QString setSGMotto(Entity &e, QString &motto)
 QString setSGTitle(Entity &e, int idx, QString &title)
 {
     SuperGroupStats *sgs = &e.m_char->m_char_data.m_supergroup;
-    SuperGroup * sg = getSuperGroupByIdx(sgs->m_sg_idx);
+    SuperGroup * sg = getSuperGroupByIdx(sgs->m_sg_db_id);
     if(sg == nullptr)
         qFatal("getSuperGroupByIdx returned nullptr for setSGTitle");
 
@@ -343,7 +343,7 @@ QString modifySGRank(Entity &src, Entity &tgt, int rank_mod)
     if((tgt_sg->m_rank == 2 && rank_mod > 0) || (tgt_sg->m_rank == 0 && rank_mod < 0))
         return msg = tgt.name() + " cannot modify range outside of range 1 to 3.";
 
-    SuperGroupStats *tgt_revised = getSGMember(tgt, src_sg->m_sg_idx);
+    SuperGroupStats *tgt_revised = getSGMember(tgt, src_sg->m_sg_db_id);
     if(tgt_revised == nullptr)
         return msg = "getSGMember returned nullptr for promoteSG";
 
@@ -352,7 +352,7 @@ QString modifySGRank(Entity &src, Entity &tgt, int rank_mod)
 
     tgt_sg->m_rank = tgt_revised->m_rank = new_rank;
 
-    SuperGroup * sg = getSuperGroupByIdx(tgt_sg->m_sg_idx);
+    SuperGroup * sg = getSuperGroupByIdx(tgt_sg->m_sg_db_id);
     if(sg == nullptr)
         qFatal("getSuperGroupByIdx returned nullptr for modifySGRank");
 
@@ -375,7 +375,7 @@ SuperGroupStats* getSGMember(Entity &tgt, uint32_t sg_idx)
 
     uint32_t id_to_find = tgt.m_char->m_db_id;
     auto iter = std::find_if( sg->m_sg_members.begin(), sg->m_sg_members.end(),
-                              [id_to_find](const SuperGroupStats& m)->bool {return id_to_find==m.m_db_id;});
+                              [id_to_find](const SuperGroupStats& m)->bool {return id_to_find==m.m_member_db_id;});
     if(iter != sg->m_sg_members.end())
     {
         qCDebug(logSuperGroups) << "Returning SuperGroup Member" << iter->m_name;
@@ -409,7 +409,7 @@ void addSuperGroup(Entity &e, SuperGroupData data)
     if(logSuperGroups().isDebugEnabled())
         g_all_supergroups.back().dump();
 
-    cd->m_supergroup.m_sg_idx           = sg.m_sg_idx;
+    cd->m_supergroup.m_sg_db_id         = sg.m_sg_db_id;
     cd->m_supergroup.m_has_supergroup   = true;
     cd->m_supergroup.m_rank             = 2; // first member should be leader
     cd->m_supergroup.m_has_sg_costume   = false;
@@ -424,15 +424,15 @@ void addSuperGroup(Entity &e, SuperGroupData data)
  */
 SuperGroup* SuperGroupStats::getSuperGroup()
 {
-    if(m_has_supergroup && m_sg_idx != 0)
-        return getSuperGroupByIdx(m_sg_idx);
+    if(m_has_supergroup && m_sg_db_id != 0)
+        return getSuperGroupByIdx(m_sg_db_id);
 }
 
 void SuperGroupStats::dump()
 {
     QString msg = QString("SuperGroup Info\n  has_supergroup: %1 \n  db_id: %2 \n  rank: %3 ")
             .arg(m_has_supergroup)
-            .arg(m_sg_idx)
+            .arg(m_sg_db_id)
             .arg(m_rank);
 
     qDebug().noquote() << msg;

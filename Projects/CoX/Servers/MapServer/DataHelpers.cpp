@@ -80,7 +80,7 @@ void setSuperGroup(Entity &e, bool has_sg, QString &sg_name)
     if(has_sg == false)
     {
         cd->m_supergroup.m_has_supergroup = false;
-        cd->m_supergroup.m_sg_idx = 0;
+        cd->m_supergroup.m_sg_db_id = 0;
         cd->m_supergroup.m_rank = 0;
         cd->m_supergroup.m_has_sg_costume = false;
         return;
@@ -100,7 +100,7 @@ void setSuperGroup(Entity &e, bool has_sg, QString &sg_name)
 
     addSuperGroup(e, sgd);
 
-    SuperGroup * sg = getSuperGroupByIdx(cd->m_supergroup.m_sg_idx);
+    SuperGroup * sg = getSuperGroupByIdx(cd->m_supergroup.m_sg_db_id);
     if(sg == nullptr)
     {
         qFatal("getSuperGroupByIdx returned nullptr");

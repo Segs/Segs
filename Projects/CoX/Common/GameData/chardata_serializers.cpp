@@ -193,7 +193,7 @@ void serialize(Archive &archive, SuperGroupStats &sg, uint32_t const version)
     }
 
     archive(cereal::make_nvp("HasSuperGroup",sg.m_has_supergroup));
-    archive(cereal::make_nvp("SuperGroupDbId",sg.m_sg_idx));
+    archive(cereal::make_nvp("SuperGroupDbId",sg.m_member_db_id));
     archive(cereal::make_nvp("SuperGroupRank",sg.m_rank));
     archive(cereal::make_nvp("SGDateJoined",sg.m_date_joined));
     archive(cereal::make_nvp("HasSGCostume",sg.m_has_sg_costume));

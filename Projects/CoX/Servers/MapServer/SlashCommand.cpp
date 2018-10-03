@@ -260,7 +260,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"MapXferList", "mapmenu"}, "Show MapXferList", cmdHandler_MapXferList, 1},
     {{"respec"}, "Start ReSpec", cmdHandler_ReSpec, 1},
     {{"trade"}, "Trade with player", cmdHandler_Trade, 1},
-    {{"sgstats2"}, "Show or refresh SG Window", cmdHandler_SuperGroupStats, 1},
+    {{"sgstats"}, "Show or refresh SG Window", cmdHandler_SuperGroupStats, 1},
     {{"sgleave"}, "Leave SuperGroup", cmdHandler_SuperGroupLeave, 1},
     {{"sginvite", "sgi"}, "Invite to SuperGroup", cmdHandler_SuperGroupInvite, 1},
     {{"sgkick", "sgk"}, "Kick from SuperGroup", cmdHandler_SuperGroupKick, 1},

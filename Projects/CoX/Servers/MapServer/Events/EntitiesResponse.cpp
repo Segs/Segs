@@ -58,7 +58,7 @@ void storeSuperStats(const EntitiesResponse &src, BitStream &bs)
         return;
     }
 
-    SuperGroup * sg = getSuperGroupByIdx(e->m_char->m_char_data.m_supergroup.m_sg_idx);
+    SuperGroup * sg = getSuperGroupByIdx(e->m_char->m_char_data.m_supergroup.m_sg_db_id);
     if(sg == nullptr)
     {
         qFatal("getSuperGroupByIdx returned nullptr in storeSuperStats");
@@ -77,7 +77,7 @@ void storeSuperStats(const EntitiesResponse &src, BitStream &bs)
     for(SuperGroupStats &m : sg->m_sg_members)
     {
         bs.StoreString(m.m_name);
-        bs.StorePackedBits(1, m.m_db_id);
+        bs.StorePackedBits(1, m.m_member_db_id);
         bs.StorePackedBits(1, m.m_rank);
         bs.StorePackedBits(1, m.m_hours_logged);
         bs.StoreBits(32, m.m_date_joined);

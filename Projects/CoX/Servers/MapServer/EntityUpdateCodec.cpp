@@ -389,15 +389,15 @@ void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
     if(!cd.m_supergroup.m_has_supergroup)
         return;
 
-    SuperGroup * sg = getSuperGroupByIdx(cd.m_supergroup.m_sg_idx);
+    SuperGroup * sg = getSuperGroupByIdx(cd.m_supergroup.m_sg_db_id);
     if(sg == nullptr)
     {
         qFatal("getSuperGroupByIdx returned nullptr");
         return; // if somehow qFatal doesn't do it
     }
 
-    bs.StorePackedBits(2, sg->m_sg_idx);
-    if(sg->m_sg_idx)
+    bs.StorePackedBits(2, sg->m_sg_db_id);
+    if(sg->m_sg_db_id)
     {
         bs.StoreString(sg->m_data.m_sg_name);    // 64 chars max
         bs.StoreString(sg->m_data.m_sg_emblem);  // 128 chars max -> hash table key from the CostumeString_HTable. Maybe emblem?
