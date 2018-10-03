@@ -418,6 +418,27 @@ bool GameDataStore::read_powers(const QString &directory_path)
     if (!read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path, "powers.bin",
                                                                    m_all_powers))
         return false;
+
+    // Hardcoding of stats to test powers
+    StoredAttribMod temp;
+    Power_Data *temppower = nullptr;
+
+    temp.name = "Damage";
+    temp.Magnitude = 5;
+    temppower = editable_power_tpl(26,0,0);    // brawl
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "Healing";
+    temppower = editable_power_tpl(26,0,7);    // rest
+    temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(27,0,24);   // medkit
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "Speed_Boost";
+    temp.Magnitude = 0.5;
+    temppower = editable_power_tpl(26,0,6);    // sprint
+    temppower->pAttribMod.push_back(temp);
+
     return true;
 }
 
@@ -463,6 +484,11 @@ const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t ps
 const Power_Data& GameDataStore::get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
 {
     return m_all_powers.m_categories.at(pcat_idx).m_PowerSets.at(pset_idx).m_Powers.at(pow_idx);
+}
+
+Power_Data * GameDataStore::editable_power_tpl(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+{
+    return &m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
 }
 
 const StoredPowerCategory& GameDataStore::get_power_category(uint32_t pcat_idx)
