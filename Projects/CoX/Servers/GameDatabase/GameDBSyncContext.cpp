@@ -119,7 +119,7 @@ bool GameDbSyncContext::loadAndConfigure()
     int db_version=getDbVersion(*m_db);
     if(db_version!=required_db_version)
     {
-        qCritical() << "Wrong db version:"<<db_version<<"this GameDatabase service requires:"<<required_db_version;
+        qCritical() << "Wrong db version:" << db_version << "this GameDatabase service requires:" << required_db_version;
         return false;
     }
     m_prepared_fill = std::make_unique<QSqlQuery>(*m_db);
@@ -186,18 +186,15 @@ bool GameDbSyncContext::loadAndConfigure()
     prepQuery(*m_prepared_get_char_slots,"SELECT slot_index FROM characters WHERE account_id=?");
 
     prepQuery(*m_prepared_supergroup_insert,
-                "INSERT INTO supergroups  ("
-                "sg_idx, sg_name, sg_data, sg_members"
-                ") VALUES ("
-                ":sg_idx, :sg_name, :sg_data, :sg_members"
-                ")");
+                "INSERT INTO supergroups (id, sg_name, sg_data, sg_members) "
+                "VALUES (:sg_idx, :sg_name, :sg_data, :sg_members)");
     prepQuery(*m_prepared_supergroup_select,"SELECT * FROM supergroups WHERE sg_idx=?");
     prepQuery(*m_prepared_supergroup_exists,"SELECT exists (SELECT 1 FROM supergroups WHERE sg_name=? LIMIT 1)");
     prepQuery(*m_prepared_supergroup_delete,"DELETE FROM supergroups WHERE sg_idx=?");
     prepQuery(*m_prepared_supergroup_update,
-              "UPDATE supergroups SET "
-              "sg_name=:sg_name, sg_data=:sg_data "
-              "WHERE sg_idx=:sg_idx ");
+                "UPDATE supergroups SET "
+                "sg_name=:sg_name, sg_data=:sg_data, sg_members=:sg_members "
+                "WHERE sg_idx=:sg_idx ");
 
     return true;
 }
@@ -434,21 +431,24 @@ bool GameDbSyncContext::createNewSuperGroup(const CreateNewSuperGroupRequestData
 {
     DbTransactionGuard grd(*m_db);
 
-    //m_sg_created = QDateTime::currentDateTimeUtc().toString();
+    qDebug() << "Before hasFeature";
+    assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
+    uint32_t sg_id = m_prepared_supergroup_insert->lastInsertId().toUInt();
+    qDebug() << "Before bindValues";
+    m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_idx"), sg_id);
     m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_name"), data.m_sg_name);
     m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_data"), data.m_serialized_sg_data);
-    //m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_members"), data.m_serialized_sg_members);
-
+    m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_members"), data.m_serialized_sg_members);
+    qDebug() << "After bindValues";
+    qDebug() << "Before doIt";
     if(!doIt(*m_prepared_supergroup_insert))
         return false;
 
-    assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
-    uint32_t sg_id = m_prepared_supergroup_insert->lastInsertId().toUInt();
     result.m_sg_id = sg_id; // return sg_id here, so that every sg has unique idx
 
-    m_prepared_supergroup_insert->bindValue(QStringLiteral(":sg_idx"), sg_id);
+    m_prepared_supergroup_update->bindValue(QStringLiteral(":sg_idx"), sg_id);
 
-    if(!doIt(*m_prepared_supergroup_insert))
+    if(!doIt(*m_prepared_supergroup_update))
         return false;
 
     grd.commit();

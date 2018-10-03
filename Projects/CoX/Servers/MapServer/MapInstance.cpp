@@ -2456,6 +2456,7 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
     Costume costume = *session.m_ent->m_char->getCurrentCostume();
     // Check to ensure name isn't already in use or restricted
     // Check to ensure titles aren't restricted (foul language, etc)
+    // verifySuperGroupData();
     // If everything checks out, then give success
     bool success = false;
     if(ev->data.m_sg_name.contains("Success", Qt::CaseInsensitive))
@@ -2468,7 +2469,10 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
     addSuperGroup(*session.m_ent, ev->data);
 
     // Finally, create SG in Database
-    game_db->putq(new CreateNewSuperGroupRequest({ev->data.m_sg_name, ev->data},
+    QString serialized_sg_data, serialized_sg_members;
+    serializeToQString(ev->data, serialized_sg_data);
+    serializeToQString(session.m_ent->m_char->m_char_data.m_supergroup.getSuperGroup()->m_sg_members, serialized_sg_members);
+    game_db->putq(new CreateNewSuperGroupRequest({ev->data.m_sg_name, serialized_sg_data, serialized_sg_members},
                                                  session.m_session_token, this));
 }
 

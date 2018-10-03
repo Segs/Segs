@@ -103,6 +103,7 @@ void SuperGroup::dump()
     QString output = "Debugging SuperGroups: " + QString::number(m_sg_idx)
             + "\n\t name: " + m_data.m_sg_name
             + "\n\t db_id: " + QString::number(m_sg_idx)
+            + "\n\t created_date: " + m_data.m_sg_created_date
             + "\n\t leader db_id: " + QString::number(m_data.m_sg_leader_db_id)
             + "\n\t size: " + QString::number(m_sg_members.size());
     qDebug().noquote() << output;

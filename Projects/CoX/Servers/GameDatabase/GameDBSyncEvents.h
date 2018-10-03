@@ -394,11 +394,13 @@ struct CreateNewSuperGroupRequestData
 {
     QString m_sg_name;
     QString m_serialized_sg_data;
+    QString m_serialized_sg_members;
     template <class Archive>
     void serialize( Archive & ar )
     {
         ar( m_sg_name );
         ar( m_serialized_sg_data );
+        ar( m_serialized_sg_members );
     }
 };
 

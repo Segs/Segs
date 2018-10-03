@@ -22,6 +22,7 @@ struct SGResponse
 struct SuperGroupData
 {
     QString     m_sg_name;                  // 64 chars max. Here for quick lookup.
+    QString     m_sg_created_date;
     QString     m_sg_motto;
     QString     m_sg_motd;
     QString     m_sg_emblem;                // 128 chars max -> Emblem hash table key from the CostumeString_HTable.
@@ -33,6 +34,7 @@ struct SuperGroupData
     void serialize(Archive &ar)
     {
         ar(m_sg_name);
+        ar(m_sg_created_date);
         ar(m_sg_motto);
         ar(m_sg_motd);
         ar(m_sg_emblem);

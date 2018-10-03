@@ -42,7 +42,7 @@ struct RemoveSuperGroupRequestData;
 ///
 class GameDbSyncContext
 {
-    static constexpr int required_db_version = 7;
+    static constexpr int required_db_version = 8;
     std::unique_ptr<QSqlDatabase> m_db;
     std::unique_ptr<QSqlQuery> m_prepared_char_update;
     std::unique_ptr<QSqlQuery> m_prepared_costume_update;
