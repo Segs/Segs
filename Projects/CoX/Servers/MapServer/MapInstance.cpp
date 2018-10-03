@@ -167,8 +167,10 @@ void MapInstance::start(const QString &scenegraph_path)
         qInfo() << "Loading custom scripts";
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
+        QString entities_scriptname=m_data_path+'/'+"entities.lua";
         loadAndRunLua(m_scripting_interface,locations_scriptname);
         loadAndRunLua(m_scripting_interface,plaques_scriptname);
+        loadAndRunLua(m_scripting_interface,entities_scriptname);
     }
     else
     {
@@ -989,6 +991,7 @@ void MapInstance::on_input_state(InputState *st)
     {
         ent->m_has_input_on_timeframe = true;
         setTarget(*ent, st->m_target_idx);
+        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target",qHash(st->m_target_idx));
     }
 
     // Set Orientation
@@ -2313,6 +2316,7 @@ void MapInstance::on_interact_with(InteractWithEntity *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"entity_interact",ev->m_srv_idx);
 }
 
 void MapInstance::on_move_inspiration(MoveInspiration *ev)
@@ -2369,6 +2373,7 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     }
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id << ev->success;
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
 }
 
 void MapInstance::on_move_enhancement(MoveEnhancement *ev)
