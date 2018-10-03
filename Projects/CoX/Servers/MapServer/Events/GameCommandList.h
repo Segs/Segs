@@ -34,4 +34,5 @@
 #include "Events/TeamOffer.h"
 #include "Events/TimeUpdate.h"
 #include "Events/TrayAdd.h"
+#include "Waypoints.h"
 

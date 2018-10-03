@@ -44,7 +44,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evChatMessage                ,120)
     EVENT_DECL(MapEventTypes, evFloatingDamage             ,121)
 //    EVENT_DECL(MapEventTypes, evVisitMapCells            ,122)
-//    EVENT_DECL(MapEventTypes, evSendWaypoint             ,123)
+    EVENT_DECL(MapEventTypes, evSendWaypoint               ,123)
     EVENT_DECL(MapEventTypes, evTeamOffer                  ,124)
     EVENT_DECL(MapEventTypes, evTeamLooking                ,125)
 //    EVENT_DECL(MapEventTypes, evTaskForceKick            ,126)

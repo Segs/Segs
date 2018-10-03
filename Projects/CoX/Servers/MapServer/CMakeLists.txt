@@ -95,6 +95,7 @@ SET(target_INCLUDE
     Events/TrayAdd.h
     Events/InfoMessageCmd.h
     Events/InteractWithEntity.h
+    Events/Waypoints.h
     Events/WindowState.h
     NpcGenerator.h
     MapEventFactory.h

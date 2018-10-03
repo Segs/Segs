@@ -361,34 +361,6 @@ public:
 };
 
 // [[ev_def:type]]
-class SetDestination final : public MapLinkEvent
-{
-public:
-    // [[ev_def:field]]
-    glm::vec3 destination;
-    // [[ev_def:field]]
-    int point_index;
-    SetDestination():MapLinkEvent(MapEventTypes::evSetDestination)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,11);
-        bs.StoreFloat(destination.x);
-        bs.StoreFloat(destination.y);
-        bs.StoreFloat(destination.z);
-        bs.StorePackedBits(1,point_index);
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        destination.x = bs.GetFloat();
-        destination.y = bs.GetFloat();
-        destination.z = bs.GetFloat();
-        point_index   = bs.GetPackedBits(1);
-    }
-    EVENT_IMPL(SetDestination)
-};
-
-// [[ev_def:type]]
 class DialogButton final : public MapLinkEvent
 {
 public:
@@ -894,3 +866,4 @@ public:
 #include "Events/TradeUpdate.h"
 #include "Events/TradeWasCancelledMessage.h"
 #include "Events/TradeWasUpdatedMessage.h"
+#include "Events/Waypoints.h"

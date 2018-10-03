@@ -99,6 +99,12 @@ enum class FadeDirection
     Out
 };
 
+struct Destination // aka waypoint
+{
+    int point_idx = 0;
+    glm::vec3 location;
+};
+
 // returned by getEntityFromDB()
 struct CharacterFromDB
 {
@@ -287,6 +293,7 @@ public:
         MapClientSession *  m_client                    = nullptr;
         FadeDirection       m_fading_direction          = FadeDirection::In;
         uint32_t            m_db_store_flags            = 0;
+        Destination         m_cur_destination;
 
         void                dump();
         void                addPosUpdate(const PosUpdate &p);

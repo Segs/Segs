@@ -123,6 +123,15 @@ enum class AttackType : uint32_t {
     Teleport = 10,
     Carry = 11,
     Club = 12,
+    Ranged = 108,
+    Melee = 112,
+    Aoe = 116,
+    Smashing = 120,
+    Lethal = 124,
+    Fire = 128,
+    Cold = 132,
+    Energy = 136,
+    Negative_Energy = 140
 };
 
 struct StoredAttribMod
