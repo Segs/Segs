@@ -21,6 +21,7 @@
 
 #include "Events/Browser.h"
 #include "Events/ChatMessage.h"
+#include "Events/FloatingDamage.h"
 #include "Events/StandardDialogCmd.h"
 #include "Events/InfoMessageCmd.h"
 #include "Common/NetStructures/Entity.h"
@@ -95,25 +96,31 @@ void ScriptingEngine::registerTypes()
         "new", sol::no_constructor, // The client links are not constructible from the script side.
         "m_ent",  sol::readonly( &MapClientSession::m_ent ),
         "admin_chat_message", sendChatMessage,
-        "simple_dialog", [](MapClientSession *cl,const char *dlgtext) {
+        "simple_dialog", [](MapClientSession *cl,const char *dlgtext)
+        {
             auto n = new StandardDialogCmd(dlgtext);
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
         },
         "browser", [](MapClientSession *cl, const char *content){
             cl->addCommand<Browser>(content);
         },
-        "contact_dialog",[](MapClientSession *cl, const char *message, sol::as_table_t<std::map<std::string, sol::as_table_t<std::vector<std::string>>>> buttons){
+        "contact_dialog",[](MapClientSession *cl, const char *message, sol::as_table_t<std::map<std::string, sol::as_table_t<std::vector<std::string>>>> buttons)
+        {
             std::vector<ContactEntry> active_contacts;
             const auto& listMap = buttons.source;
 
-            for (const auto& kvp : listMap) {
+            for (const auto& kvp : listMap)
+            {
                 const std::vector<std::string>& strings = kvp.second.source;
                 int count = 0;
                 ContactEntry con;
                 for (const auto& s: strings){
-                    if(count == 0){
+                    if(count == 0)
+                    {
                         con.m_response_text = QString::fromStdString(s);
-                    }else{
+                    }
+                    else
+                    {
                          con.m_link = contactLinkHash.find(QString::fromStdString(s)).value();
                     }
                     //sendInfoMessage(MessageChannel::ADMIN, QString::fromStdString(s) ,*cl);
@@ -122,31 +129,30 @@ void ScriptingEngine::registerTypes()
                 }
                 active_contacts.push_back(con);
             }
-
             cl->addCommand<ContactDialog>(message, active_contacts);
         },
         "close_dialog", [](MapClientSession *cl){
             cl->addCommand<ContactDialogClose>();
         },
-        "sendFloatingInfo",[](MapClientSession *cl, int messageType){
-            FloatingInfoMsgKey fInfoMessage = static_cast<FloatingInfoMsgKey>(messageType);
-            QString message = FloatingInfoMsg.find(fInfoMessage).value();
+        "sendFloatingInfo",[](MapClientSession *cl, int message_type){
+            FloatingInfoMsgKey f_info_message = static_cast<FloatingInfoMsgKey>(message_type);
+            QString message = FloatingInfoMsg.find(f_info_message).value();
             cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, message, FloatingInfo_Attention , 4.0);
         }
         );
 
     m_private->m_lua.new_usertype<Character>("Character",
-
-
-    "giveDebt", [](MapClientSession *cl, int debt){
-        uint32_t currentDebt = getDebt(*cl->m_ent->m_char);
-        uint32_t debtToGive = currentDebt + debt;
-        setDebt(*cl->m_ent->m_char, debtToGive);
-        QString msg = "Setting Debt to " + QString::number(debtToGive);
+    "giveDebt", [](MapClientSession *cl, int debt)
+    {
+        uint32_t current_debt = getDebt(*cl->m_ent->m_char);
+        uint32_t debt_to_give = current_debt + debt;
+        setDebt(*cl->m_ent->m_char, debt_to_give);
+        QString msg = "Setting Debt to " + QString::number(debt_to_give);
         qCDebug(logSlashCommand) << msg;
         sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
     },
-    "giveEnhancement",[](MapClientSession *cl, sol::as_table_t<std::vector<std::string>> enhancement){
+    "giveEnhancement",[](MapClientSession *cl, sol::as_table_t<std::vector<std::string>> enhancement)
+    {
 
         CharacterData &cd = cl->m_ent->m_char->m_char_data;
         QString name;
@@ -178,28 +184,31 @@ void ScriptingEngine::registerTypes()
         qCDebug(logSlashCommand).noquote() << msg;
         sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
     },
-    "giveEnd", [](MapClientSession *cl, float end){
-        float currentEnd = getEnd(*cl->m_ent->m_char);
-        float endToSet = currentEnd + end;
-        setEnd(*cl->m_ent->m_char, endToSet);
-        QString msg = QString("Setting Endurance to: %1").arg(endToSet);
+    "giveEnd", [](MapClientSession *cl, float end)
+    {
+        float current_end = getEnd(*cl->m_ent->m_char);
+        float end_to_set = current_end + end;
+        setEnd(*cl->m_ent->m_char, end_to_set);
+        QString msg = QString("Setting Endurance to: %1").arg(end_to_set);
         qCDebug(logSlashCommand) << msg;
         sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
     },
 
-    "giveHp", [](MapClientSession *cl, float hp){
-        float currentHp = getHP(*cl->m_ent->m_char);
-        float hpToSet = currentHp + hp;
-        setHP(*cl->m_ent->m_char, hpToSet);
-        QString msg = QString("Setting HP to: %1").arg(hpToSet);
+    "giveHp", [](MapClientSession *cl, float hp)
+    {
+        float current_hp = getHP(*cl->m_ent->m_char);
+        float hp_to_set = current_hp + hp;
+        setHP(*cl->m_ent->m_char, hp_to_set);
+        QString msg = QString("Setting HP to: %1").arg(hp_to_set);
         qCDebug(logSlashCommand) << msg;
         sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
     },
-    "giveInf", [](MapClientSession *cl, int inf){
-        uint32_t currentInf = getInf(*cl->m_ent->m_char);
-        uint32_t infToSet = currentInf + inf;
-        setInf(*cl->m_ent->m_char, infToSet);
-        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Setting inf to %1").arg(infToSet), *cl);
+    "giveInf", [](MapClientSession *cl, int inf)
+    {
+        uint32_t current_inf = getInf(*cl->m_ent->m_char);
+        uint32_t inf_to_set = current_inf + inf;
+        setInf(*cl->m_ent->m_char, inf_to_set);
+        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Setting inf to %1").arg(inf_to_set), *cl);
     },
     "giveInsp", [](MapClientSession *cl, const char *value){
 
@@ -224,43 +233,50 @@ void ScriptingEngine::registerTypes()
     },
     "giveXp", [](MapClientSession *cl, int xp){
         uint32_t lvl = getLevel(*cl->m_ent->m_char);
-        uint32_t currentXp = getXP(*cl->m_ent->m_char);
+        uint32_t current_xp = getXP(*cl->m_ent->m_char);
 
         // Calculate XP - Debt difference by server settings?
 
-        uint32_t currentDebt = getDebt(*cl->m_ent->m_char);
-        if(currentDebt > 0){
-            uint32_t debtToPay = 0;
-            uint32_t halfXp = xp / 2;
-            if(currentDebt > halfXp){
-                debtToPay = halfXp; //Half to debt
-                xp = halfXp;
+        uint32_t current_debt = getDebt(*cl->m_ent->m_char);
+        if(current_debt > 0)
+        {
+            uint32_t debt_to_pay = 0;
+            uint32_t half_xp = xp / 2;
+            if(current_debt > half_xp)
+            {
 
-            }else{
-                debtToPay = currentDebt;
-                xp = xp - currentDebt;
+                debt_to_pay = half_xp; //Half to debt
+                xp = half_xp;
             }
-            uint32_t newDebt = currentDebt - debtToPay;
+            else
+            {
+                debt_to_pay = current_debt;
+                xp = xp - current_debt;
+            }
+            uint32_t newDebt = current_debt - debt_to_pay;
             setDebt(*cl->m_ent->m_char, newDebt);
-            sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You paid %1 to your debt").arg(debtToPay), *cl);
+            sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You paid %1 to your debt").arg(debt_to_pay), *cl);
         }
-        uint32_t xpToGive = currentXp + xp;
-        setXP(*cl->m_ent->m_char, xpToGive);
+        uint32_t xp_to_give = current_xp + xp;
+        setXP(*cl->m_ent->m_char, xp_to_give);
         sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were awarded %1 XP").arg(xp), *cl);
-        QString msg = "Setting XP to " + QString::number(xpToGive);
-        uint32_t newlvl = getLevel(*cl->m_ent->m_char);
-        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were lvl %1 now %2").arg(lvl).arg(newlvl), *cl);
+        QString msg = "Setting XP to " + QString::number(xp_to_give);
+        uint32_t new_lvl = getLevel(*cl->m_ent->m_char);
+        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were lvl %1 now %2").arg(lvl).arg(new_lvl), *cl);
 
         //This check doesn't show level change
 
-        if(newlvl != lvl){
+        if(new_lvl != lvl){
             cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, FloatingInfoMsg.find(FloatingMsg_Leveled).value(), FloatingInfo_Attention , 4.0);
-            msg += " and LVL to " + QString::number(newlvl);
+            msg += " and LVL to " + QString::number(new_lvl);
         }
         qCDebug(logSlashCommand) << msg;
         sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+    },
+    "sendFloatingDamage", [](MapClientSession *cl, int target, int amount)
+    {
+         cl->addCommand<FloatingDamage>(cl->m_ent->m_idx, target, amount);
     }
-
     );
 
     m_private->m_lua.new_usertype<Entity>( "Entity",
