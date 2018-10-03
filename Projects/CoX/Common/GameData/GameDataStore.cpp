@@ -276,7 +276,8 @@ uint32_t GameDataStore::expDebtForLevel(uint32_t lev) const
 
 uint32_t GameDataStore::expMaxLevel() const
 {
-    return m_experience_and_debt_per_level.m_ExperienceRequired.size();
+    // return -1 because level is stored in indexed array (starting 0)
+    return m_experience_and_debt_per_level.m_ExperienceRequired.size()-1;
 }
 
 int GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &schedule) const
@@ -418,21 +419,24 @@ bool GameDataStore::read_powers(const QString &directory_path)
                                                                    m_all_powers))
         return false;
 
-    StoredAttribMod temp; // just a bit of hardcoding stats to test powers
+    // Hardcoding of stats to test powers
+    StoredAttribMod temp;
+    Power_Data *temppower = nullptr;
+
     temp.name = "Damage";
     temp.Magnitude = 5;
-    Power_Data *temppower = lookUpPower(26,0,0);  //brawl
+    temppower = editable_power_tpl(26,0,0);    // brawl
     temppower->pAttribMod.push_back(temp);
 
     temp.name = "Healing";
-    temppower = lookUpPower(26,0,7);             //rest
+    temppower = editable_power_tpl(26,0,7);    // rest
     temppower->pAttribMod.push_back(temp);
-    temppower = lookUpPower(27,0,24);            //medkit
+    temppower = editable_power_tpl(27,0,24);   // medkit
     temppower->pAttribMod.push_back(temp);
 
     temp.name = "Speed_Boost";
     temp.Magnitude = 0.5;
-    temppower = lookUpPower(26,0,6);             //sprint
+    temppower = editable_power_tpl(26,0,6);    // sprint
     temppower->pAttribMod.push_back(temp);
 
     return true;
@@ -474,20 +478,22 @@ bool GameDataStore::read_pi_schedule(const QString &directory_path)
 
 const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)
 {
-    return m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx];
+    return m_all_powers.m_categories.at(pcat_idx).m_PowerSets.at(pset_idx);
 }
 
 const Power_Data& GameDataStore::get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
 {
-    return m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
+    return m_all_powers.m_categories.at(pcat_idx).m_PowerSets.at(pset_idx).m_Powers.at(pow_idx);
 }
-Power_Data * GameDataStore::lookUpPower(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+
+Power_Data * GameDataStore::editable_power_tpl(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
 {
     return &m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
 }
+
 const StoredPowerCategory& GameDataStore::get_power_category(uint32_t pcat_idx)
 {
-    return m_all_powers.m_categories[pcat_idx];
+    return m_all_powers.m_categories.at(pcat_idx);
 }
 
 int getEntityOriginIndex(const GameDataStore &data, bool is_player, const QString &origin_name)
@@ -515,7 +521,7 @@ int getEntityClassIndex(const GameDataStore &data, bool is_player, const QString
             return idx;
         idx++;
     }
-    qWarning() << "Failed to locate class index for"<<class_name;
+    qWarning() << "Failed to locate class index for" << class_name;
     return 0;
 }
 

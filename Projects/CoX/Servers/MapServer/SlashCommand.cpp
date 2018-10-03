@@ -141,6 +141,7 @@ void cmdHandler_FriendList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MapXferList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ReSpec(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Train(const QString &cmd, MapClientSession &sess);
 
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
@@ -243,6 +244,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"MapXferList", "mapmenu"}, "Show MapXferList", cmdHandler_MapXferList, 1},
     {{"respec"}, "Start ReSpec", cmdHandler_ReSpec, 1},
     {{"trade"}, "Trade with player", cmdHandler_Trade, 1},
+    {{"train"}, "Train Up Level", cmdHandler_Train, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
@@ -853,7 +855,7 @@ void cmdHandler_AddEntirePowerSet(const QString &cmd, MapClientSession &sess)
     ppool.m_pset_idx = v2;
 
     addEntirePowerSet(cd, ppool);
-    cd.m_powers_updated = true;
+    cd.m_has_updated_powers = true;
 
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
@@ -865,15 +867,17 @@ void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess)
     CharacterData &cd = sess.m_ent->m_char->m_char_data;
     QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundClue).value();
 
+    bool ok;
     QVector<QStringRef> args(cmd.splitRef(' '));
-    uint32_t v1 = args.value(1).toInt();
+    uint32_t v1 = args.value(1).toInt(&ok);
     uint32_t v2 = args.value(2).toInt();
     uint32_t v3 = args.value(3).toInt();
 
-    if(args.size() < 4)
+    if(args.size() < 4 || !ok)
     {
         qCDebug(logSlashCommand) << "Bad invocation:" << cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation: " + cmd, sess);
+        return;
     }
 
     QString msg = QString("Granting Power <%1, %2, %3> to %4").arg(v1).arg(v2).arg(v3).arg(sess.m_ent->name());
@@ -884,7 +888,6 @@ void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess)
     ppool.m_pow_idx = v3;
 
     addPower(cd, ppool);
-    cd.m_powers_updated = true;
 
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
@@ -903,7 +906,7 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
         msg = "Awarding Inspiration '" + val + "' to " + sess.m_ent->name();
 
         addInspirationByName(cd, val);
-        cd.m_powers_updated = true;
+        cd.m_has_updated_powers = true;
 
         // NOTE: floating message shows no message here, but plays the awarding insp sound!
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
@@ -932,7 +935,7 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
         msg = "Awarding Enhancement '" + name + "' to " + sess.m_ent->name();
 
         addEnhancementByName(cd, name, level);
-        cd.m_powers_updated = true;
+        cd.m_has_updated_powers = true;
 
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
         sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -944,20 +947,28 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
 {
-    uint32_t level = cmd.midRef(cmd.indexOf(' ')+1).toUInt() -1; // convert from 1-50 to 0-49
+    GameDataStore &data(getGameData());
 
-    // levelup command appears to only work 1 level at a time.
-    if(level > sess.m_ent->m_char->m_char_data.m_level)
-        level = sess.m_ent->m_char->m_char_data.m_level + 1;
+    // must adjust level for 0-index array, capped at 49
+    uint32_t level = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    uint32_t max_level = data.expMaxLevel();
+    level = std::max(uint32_t(0), std::min(level, max_level));
 
-    setLevel(*sess.m_ent->m_char, level);
-    sess.m_ent->m_char->finalizeLevel();
+    // XP must be high enough for the level you're advancing to
+    // since this slash command is forcing a levelup, let's
+    // increase xp accordingly
+    if(getXP(*sess.m_ent->m_char) < data.expForLevel(level))
+        setXP(*sess.m_ent->m_char, data.expForLevel(level));
+    else
+        return;
 
-    QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
-    sendFloatingInfo(sess, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    qCDebug(logPowers) << "Entity: " << sess.m_ent->m_idx << "has leveled up";
+    qCDebug(logPowers) << "LEVELUP" << sess.m_ent->name() << "to" << level+1
+                       << "NumPowers:" << countAllOwnedPowers(sess.m_ent->m_char->m_char_data, false) // no temps
+                       << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
 
-    sendLevelUp(sess.m_ent);
+    // send levelup pkt to client
+    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
+    sendLevelUp(sess);
 }
 
 void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
@@ -982,7 +993,7 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
         sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
         return;
     }
-    sendFaceEntity(sess.m_ent, tgt->m_idx);
+    sendFaceEntity(*sess.m_ent, tgt->m_idx);
 }
 
 void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
@@ -1003,7 +1014,7 @@ void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
       parts[3].toFloat()
     };
 
-    sendFaceLocation(sess.m_ent, loc);
+    sendFaceLocation(*sess.m_ent, loc);
 }
 
 void cmdHandler_TestDeadNoGurney(const QString &/*cmd*/, MapClientSession &sess)
@@ -1652,7 +1663,7 @@ void cmdHandler_ReSpec(const QString &/*cmd*/, MapClientSession &sess)
     {
         msg = "Removing all powers for player " + sess.m_ent->name();
         cd.m_reset_powersets = true;
-        cd.m_powers_updated = true;
+        cd.m_has_updated_powers = true;
     }
 
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
@@ -1668,6 +1679,29 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess)
     }
 
     requestTrade(*sess.m_ent, *tgt);
+}
+
+void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
+{
+    int level = getLevel(*sess.m_ent->m_char)+1;
+
+    // XP must be high enough for the level you're advancing to
+    GameDataStore &data(getGameData());
+    if(getXP(*sess.m_ent->m_char) < data.expForLevel(level))
+    {
+        QString msg = "You do not have enough Experience Points to train to the next level!";
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        return;
+    }
+
+    qCDebug(logPowers) << "LEVELUP" << sess.m_ent->name() << "to" << level+1
+                       << "NumPowers:" << countAllOwnedPowers(sess.m_ent->m_char->m_char_data, false) // no temps
+                       << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
+
+    // send levelup pkt to client
+    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
+    sendLevelUp(sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
