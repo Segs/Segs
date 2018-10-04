@@ -130,7 +130,7 @@ const QString &getOriginTitle(uint32_t val);
  */
 void sendEmailHeaders(MapClientSession& sess);
 void readEmailMessage(MapClientSession& sess, const uint32_t email_id);
-void sendEmail(MapClientSession& sess, uint32_t recipient_id, QString subject, QString message);
+void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message);
 void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
 
 /*

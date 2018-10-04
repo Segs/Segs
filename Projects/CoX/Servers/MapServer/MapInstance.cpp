@@ -450,6 +450,9 @@ void MapInstance::dispatch( Event *ev )
         case evEmailHeaderResponse:
             on_email_header_response(static_cast<EmailHeaderResponse *>(ev));
             break;
+        case evEmailHeadersToClientMessage:
+            on_email_headers_to_client(static_cast<EmailHeadersToClientMessage *>(ev));
+            break;
         case evEmailReadResponse:
             on_email_read_response(static_cast<EmailReadResponse *>(ev));
             break;
@@ -2518,27 +2521,45 @@ void MapInstance::send_player_update(Entity *e)
 }
 
 // EmailHandler will send this event here
-void MapInstance::on_email_header_response(EmailHeaderResponse* msg)
+void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
 {
     EmailHeaders *header = new EmailHeaders(
-                    msg->m_data.email_id,
-                    msg->m_data.sender_name,
-                    msg->m_data.subject,
-                    msg->m_data.timestamp);
+                    ev->m_data.m_email_id,
+                    ev->m_data.m_sender_name,
+                    ev->m_data.m_subject,
+                    ev->m_data.m_timestamp);
 
-    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
     map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
 }
 
-void MapInstance::on_email_read_response(EmailReadResponse *msg)
+void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
 {
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
+
+    for (const auto &data : ev->m_data.m_email_headers)
+    {
+        EmailHeaders *header = new EmailHeaders(
+                    data.m_email_id,
+                    data.m_sender_name,
+                    data.m_subject,
+                    data.m_timestamp);
+        map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+    }
+
+    QString message = QString("You have %1 unread emails.").arg(ev->m_data.m_unread_emails_count);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, message, map_session);
+}
+
+void MapInstance::on_email_read_response(EmailReadResponse *ev)
+{    
     EmailRead *email_read = new EmailRead(
-                msg->m_data.email_id,
-                msg->m_data.message,
-                msg->m_data.sender_name
+                ev->m_data.m_email_id,
+                ev->m_data.m_message,
+                ev->m_data.m_sender_name
                 );
 
-    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
     map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(email_read));
 }
 

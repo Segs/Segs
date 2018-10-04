@@ -33,6 +33,7 @@ struct EmailMarkAsReadMessage;
 struct EmailUpdateOnCharDeleteMessage;
 struct EmailRemoveMessage;
 struct GetEmailRequest;
+struct GetEmailsRequest;
 struct GetEmailBySenderIdRequest;
 struct GetEmailByRecipientIdRequest;
 }
@@ -65,6 +66,7 @@ protected:
     void on_email_update_on_char_delete(SEGSEvents::EmailUpdateOnCharDeleteMessage *msg);
     void on_email_remove(SEGSEvents::EmailRemoveMessage *msg);
     void on_get_email(SEGSEvents::GetEmailRequest* ev);
+    void on_get_emails(SEGSEvents::GetEmailsRequest *ev);
     void on_get_email_by_sender_id(SEGSEvents::GetEmailBySenderIdRequest* ev);
     void on_get_email_by_recipient_id(SEGSEvents::GetEmailByRecipientIdRequest* ev);
 

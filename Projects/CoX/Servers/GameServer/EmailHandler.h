@@ -12,6 +12,7 @@
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/InternalEvents.h"
 #include "GameDatabase/GameDBSyncHandler.h"
+#include "EmailDefinitions.h"
 #include <map>
 
 namespace SEGSEvents
@@ -23,27 +24,7 @@ namespace SEGSEvents
     struct ClientConnectedMessage;
     struct ClientDisconnectedMessage;
     struct GetEmailsResponse;
-}
-
-struct EmailData
-{
-    uint32_t m_sender_id;
-    uint32_t m_recipient_id;
-    QString m_sender_name;          // take this from db during runtime based on sender_id?
-    QString m_subject;
-    QString m_message;
-    uint32_t m_timestamp;
-    bool m_is_read_by_recipient;
-};
-
-template<class Archive>
-static void serialize(Archive & archive, EmailData & src)
-{
-    archive(cereal::make_nvp("SenderName",src.m_sender_name));
-    archive(cereal::make_nvp("Subject",src.m_subject));
-    archive(cereal::make_nvp("Message",src.m_message));
-    archive(cereal::make_nvp("TimeStamp",src.m_timestamp));
-    archive(cereal::make_nvp("IsRead",src.m_is_read_by_recipient));
+    struct GetCharIdFromNameResponse;
 }
 
 struct PlayerEmailState
@@ -86,8 +67,10 @@ private:
     void on_client_disconnected(SEGSEvents::ClientDisconnectedMessage *msg);
     void on_email_create_response(SEGSEvents::EmailCreateResponse* msg);
     void on_get_emails_response(SEGSEvents::GetEmailsResponse* msg);
+    void on_get_char_id_from_name_response(SEGSEvents::GetCharIdFromNameResponse* msg);
 
-    void fill_email_state(PlayerEmailState& emailState, uint32_t m_char_id);
+    void fill_email_state(PlayerEmailState& emailState, uint32_t char_id);
+    void fill_email_headers(std::vector<EmailHeaderData>& emailHeaders, uint32_t char_id, int &unread_emails_count);
 protected:
     MessageBusEndpoint m_message_bus_endpoint;
     void serialize_from(std::istream &is) override;

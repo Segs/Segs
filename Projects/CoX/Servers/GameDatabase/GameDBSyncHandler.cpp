@@ -63,6 +63,8 @@ void GameDBSyncHandler::dispatch(Event *ev)
         on_email_remove(static_cast<EmailRemoveMessage *>(ev)); break;
     case GameDBEventTypes::evGetEmailRequest:
         on_get_email(static_cast<GetEmailRequest *>(ev)); break;
+    case GameDBEventTypes::evGetEmailsRequest:
+        on_get_emails(static_cast<GetEmailsRequest *>(ev)); break;
     case GameDBEventTypes::evGetEmailBySenderIdRequest:
         on_get_email_by_sender_id(static_cast<GetEmailBySenderIdRequest *>(ev)); break;
     case GameDBEventTypes::evGetEmailByRecipientIdRequest:
@@ -180,10 +182,10 @@ void GameDBSyncHandler::on_email_create(EmailCreateRequest* ev)
     GameDbSyncContext &db_ctx(m_db_context.localData());
     EmailCreateResponseData resp;
 
-    if (!db_ctx.createEmail(ev->m_data, resp))
-        ev->src()->putq(new EmailCreateResponse(std::move(resp), ev->session_token()));
+    if (db_ctx.createEmail(ev->m_data, resp))
+        HandlerLocator::getEmail_Handler()->putq(new EmailCreateResponse(std::move(resp), ev->session_token()));
     else
-        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+        HandlerLocator::getEmail_Handler()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 }
 
 void GameDBSyncHandler::on_email_mark_as_read(EmailMarkAsReadMessage* msg)
@@ -210,7 +212,19 @@ void GameDBSyncHandler::on_get_email(GetEmailRequest* ev)
     GetEmailResponseData resp;
 
     if (db_ctx.getEmail(ev->m_data, resp))
-        ev->src()->putq(new GetEmailResponse(std::move(resp),ev->session_token()));
+        HandlerLocator::getEmail_Handler()->putq(new GetEmailResponse(std::move(resp),ev->session_token()));
+    else
+        HandlerLocator::getEmail_Handler()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
+
+void GameDBSyncHandler::on_get_emails(GetEmailsRequest* ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    GetEmailsResponseData resp;
+
+    // TODO: Investigate why I can't use ev->src()
+    if (db_ctx.getEmails(ev->m_data, resp))
+        HandlerLocator::getEmail_Handler()->putq(new GetEmailsResponse(std::move(resp), ev->session_token()));
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 }

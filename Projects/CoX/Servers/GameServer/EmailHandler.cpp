@@ -33,6 +33,7 @@ void EmailHandler::dispatch(Event *ev)
         break;
         case GameDBEventTypes::evEmailCreateResponse:
         on_email_create_response(static_cast<EmailCreateResponse *>(ev));
+        break;
         case GameDBEventTypes::evGetEmailsResponse:
         on_get_emails_response(static_cast<GetEmailsResponse *>(ev));
         break;
@@ -56,6 +57,7 @@ void EmailHandler::set_db_handler(uint8_t id)
 
 void EmailHandler::on_email_header(EmailHeaderRequest *msg)
 {
+    /*
     EmailData email_data = EmailData{
                 msg->m_data.sender_id,
                 msg->m_data.sender_id,
@@ -72,13 +74,13 @@ void EmailHandler::on_email_header(EmailHeaderRequest *msg)
                                                   msg->m_data.sender_id,
                                                   msg->m_data.sender_id, //recipient id
                                                   cerealizedEmailData
-                                              }, uint64_t(1)));
+                                              }, uint64_t(1)));*/
 }
 
 void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
 {
     EmailData email_data;
-    serializeFromQString(email_data, msg->m_data.m_email_data);
+    serializeFromQString(email_data, msg->m_data.m_cerealized_email_data);
 
     m_state.m_stored_client_datas[msg->m_data.m_sender_id]
             .m_email_state.m_sent_email_ids.insert(msg->m_data.m_email_id);
@@ -103,22 +105,33 @@ void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
 
 void EmailHandler::on_get_emails_response(GetEmailsResponse *msg)
 {
-    EmailData email_data;
-    m_state.m_stored_email_datas[0] = email_data;
+    for(const auto &data : msg->m_data.m_email_response_datas)
+    {
+        EmailData email_data;
+        serializeFromQString(email_data, data.m_cerealized_email_data);
+
+        email_data.m_sender_id = data.m_sender_id;
+        email_data.m_recipient_id = data.m_recipient_id;
+
+        m_state.m_stored_email_datas[data.m_email_id] = email_data;
+    }
 }
 
 void EmailHandler::on_email_read(EmailReadRequest *msg)
 {
-    EmailData& email_data (m_state.m_stored_email_datas[msg->m_data.email_id]);
+    EmailData& email_data (m_state.m_stored_email_datas[msg->m_data.m_email_id]);
     email_data.m_is_read_by_recipient = true;
 
     m_state.m_stored_client_datas[email_data.m_recipient_id].
-            m_email_state.m_received_email_ids.erase(msg->m_data.email_id);
+            m_email_state.m_received_email_ids.erase(msg->m_data.m_email_id);
+
+    if (email_data.m_sender_id == 0)
+        email_data.m_sender_name = "DELETED CHARACTER";
 
     QString cerealizedEmailData;
     serializeToQString(email_data, cerealizedEmailData);
 
-    m_db_handler->putq(new EmailMarkAsReadMessage({msg->m_data.email_id, cerealizedEmailData}, uint64_t(1)));
+    m_db_handler->putq(new EmailMarkAsReadMessage({msg->m_data.m_email_id, cerealizedEmailData}, uint64_t(1)));
 
     const ClientSessionData &sender_data (m_state.m_stored_client_datas[email_data.m_sender_id]);
     const ClientSessionData &recipient_data (m_state.m_stored_client_datas[email_data.m_recipient_id]);
@@ -132,56 +145,73 @@ void EmailHandler::on_email_read(EmailReadRequest *msg)
                 recipient_data.m_instance_id);
 
     sender_map_instance->putq(new EmailWasReadByRecipientMessage(
-        {msg->m_data.email_id}, sender_data.m_session_token));
+        {msg->m_data.m_email_id}, sender_data.m_session_token));
     recipient_map_instance->putq(new EmailReadResponse(
-        {msg->m_data.email_id, email_data.m_message, email_data.m_sender_name}, recipient_data.m_session_token));
+        {msg->m_data.m_email_id, email_data.m_message, email_data.m_sender_name}, recipient_data.m_session_token));
 }
 
 void EmailHandler::on_email_send(EmailSendMessage *msg)
 {
+    /*
     EmailData email_data = EmailData{
-                msg->m_data.sender_id,
-                msg->m_data.recipient_id,
-                msg->m_data.sender_name,
-                msg->m_data.subject,
-                msg->m_data.message,
-                msg->m_data.timestamp,
+                msg->m_data.m_sender_id,
+                msg->m_data.m_recipient_name,
+                msg->m_data.m_sender_name,
+                msg->m_data.m_subject,
+                msg->m_data.m_message,
+                msg->m_data.m_timestamp,
                 false};
 
     QString cerealizedEmailData;
     serializeToQString(email_data, cerealizedEmailData);
 
     m_db_handler->putq(new EmailCreateRequest({
-                                                  msg->m_data.sender_id,
-                                                  msg->m_data.sender_id, //recipient id
+                                                  msg->m_data.m_sender_id,
+                                                  msg->m_data.m_sender_id, //recipient id
                                                   cerealizedEmailData
                                               }, uint64_t(1)));
+    */
+}
+
+void on_get_character_id_response()
+{
+
 }
 
 void EmailHandler::on_email_delete(EmailDeleteMessage *msg)
 {
-    m_db_handler->putq(new EmailRemoveMessage({msg->m_data.email_id}, uint64_t(1)));
+    m_db_handler->putq(new EmailRemoveMessage({msg->m_data.m_email_id}, uint64_t(1)));
 
-    EmailData emailData = m_state.m_stored_email_datas[msg->m_data.email_id];
-    m_state.m_stored_email_datas.erase(msg->m_data.email_id);
+    EmailData emailData = m_state.m_stored_email_datas[msg->m_data.m_email_id];
+    m_state.m_stored_email_datas.erase(msg->m_data.m_email_id);
 
     // if the recipient requests an email delete, then surely he has read the email already.
     // so we don't need remove from m_unread_email_ids here
     m_state.m_stored_client_datas[emailData.m_sender_id].
-            m_email_state.m_sent_email_ids.erase(msg->m_data.email_id);
+            m_email_state.m_sent_email_ids.erase(msg->m_data.m_email_id);
     m_state.m_stored_client_datas[emailData.m_recipient_id].
-            m_email_state.m_received_email_ids.erase(msg->m_data.email_id);
+            m_email_state.m_received_email_ids.erase(msg->m_data.m_email_id);
 }
 
 void EmailHandler::on_client_connected(ClientConnectedMessage *msg)
 {
-    PlayerEmailState emailState;
-    fill_email_state(emailState, msg->m_data.m_char_db_id);
+    PlayerEmailState email_state;
+    fill_email_state(email_state, msg->m_data.m_char_db_id);
 
     // m_session is the key, m_server_id and m_sub_server_id are the values
     m_state.m_stored_client_datas[msg->m_data.m_char_db_id] =
-            ClientSessionData{msg->m_data.m_session, msg->m_data.m_server_id, msg->m_data.m_sub_server_id, emailState};
+            ClientSessionData{msg->m_data.m_session, msg->m_data.m_server_id, msg->m_data.m_sub_server_id, email_state};
     // send all emails where this client is the recipient
+
+    std::vector<EmailHeaderData> email_headers;
+    int unread_emails_count = 0;
+    fill_email_headers(email_headers, msg->m_data.m_char_db_id, unread_emails_count);
+
+    EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
+                msg->m_data.m_server_id,
+                msg->m_data.m_sub_server_id);
+
+    tgt->putq(new EmailHeadersToClientMessage({email_headers, unread_emails_count}, msg->m_data.m_session));
 }
 
 void EmailHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
@@ -190,16 +220,33 @@ void EmailHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
         m_state.m_stored_client_datas.erase(msg->m_data.m_char_db_id);
 }
 
-void EmailHandler::fill_email_state(PlayerEmailState& emailState, uint32_t m_char_id)
+void EmailHandler::fill_email_state(PlayerEmailState& email_state, uint32_t char_id)
 {
     for(const auto &data : m_state.m_stored_email_datas)
     {
-        if (data.second.m_sender_id == m_char_id)
-            emailState.m_sent_email_ids.insert(data.first);
-        if (data.second.m_recipient_id == m_char_id)
-            emailState.m_received_email_ids.insert(data.first);
-        if (data.second.m_recipient_id == m_char_id && !data.second.m_is_read_by_recipient)
-            emailState.m_unread_email_ids.insert(data.first);
+        if (data.second.m_sender_id == char_id)
+            email_state.m_sent_email_ids.insert(data.first);
+        if (data.second.m_recipient_id == char_id)
+            email_state.m_received_email_ids.insert(data.first);
+        if (data.second.m_recipient_id == char_id && !data.second.m_is_read_by_recipient)
+            email_state.m_unread_email_ids.insert(data.first);
+    }
+}
+
+void EmailHandler::fill_email_headers(std::vector<EmailHeaderData>& email_headers, uint32_t char_id, int &unread_emails_count)
+{
+    for(const auto &email_id: m_state.m_stored_client_datas[char_id].m_email_state.m_received_email_ids)
+    {
+        EmailHeaderData email_header_data;
+        email_header_data.m_email_id = email_id;
+        email_header_data.m_sender_name = m_state.m_stored_email_datas[email_id].m_sender_name;
+        email_header_data.m_subject = m_state.m_stored_email_datas[email_id].m_subject;
+        email_header_data.m_timestamp = m_state.m_stored_email_datas[email_id].m_timestamp;
+
+        email_headers.push_back(email_header_data);
+
+        if (!m_state.m_stored_email_datas[email_id].m_is_read_by_recipient)
+            unread_emails_count++;
     }
 }
 

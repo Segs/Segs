@@ -295,7 +295,7 @@ void sendEmailHeaders(MapClientSession &sess)
     tgt->putq(msgToHandler);
 }
 
-void sendEmail(MapClientSession& sess, uint32_t recipient_id, QString subject, QString message)
+void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
 {
     if(!sess.m_ent->m_client)
     {
@@ -307,8 +307,8 @@ void sendEmail(MapClientSession& sess, uint32_t recipient_id, QString subject, Q
 
     EmailSendMessage* msgToHandler = new EmailSendMessage({
                                                             sess.m_ent->m_char->m_db_id,
-                                                            recipient_id,
                                                             sess.m_ent->m_char->getName(),    // -> sender
+                                                            recipient_name,
                                                             subject,
                                                             message,
                                                             timestamp},

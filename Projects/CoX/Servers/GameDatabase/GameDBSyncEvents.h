@@ -40,7 +40,7 @@ enum GameDBEventTypes : uint32_t
     // select by id for entity data only
     evGetEntityRequest,
     evGetEntityResponse,
-    // selecy by name for entity data
+    // select by name for char id
     evGetEntityByNameRequest,
     evGetEntityByNameResponse,
 
@@ -311,7 +311,7 @@ struct GetEntityByNameResponseData
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_supergroup_id , m_ent_data);
+        ar(m_supergroup_id, m_ent_data);
     }
 };
 // [[ev_def:macro]]
@@ -396,12 +396,12 @@ struct EmailCreateResponseData
     uint32_t m_email_id;
     uint32_t m_sender_id;
     uint32_t m_recipient_id;
-    QString m_email_data; // cerealized email
+    QString m_cerealized_email_data; // cerealized email
 
     template <class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_email_id, m_sender_id, m_recipient_id, m_email_data);
+        ar(m_email_id, m_sender_id, m_recipient_id, m_cerealized_email_data);
     }
 };
 // [[ev_def:macro]]
@@ -475,24 +475,35 @@ struct GetEmailResponseData
 // [[ev_def:macro]]
 TWO_WAY_MESSAGE(GameDBEventTypes,GetEmail)
 
+struct EmailResponseData
+{
+    uint32_t m_email_id;
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;
+    QString m_cerealized_email_data;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id, m_sender_id, m_recipient_id, m_cerealized_email_data);
+    }
+};
+
 struct GetEmailsRequestData
 {
     template <class Archive>
-    void serialize(Archive &ar)
+    void serialize(Archive &/*ar*/)
     {}
 };
 
 struct GetEmailsResponseData
 {
-    std::vector<uint32_t> m_email_ids;
-    std::vector<uint32_t> m_sender_ids;
-    std::vector<uint32_t> m_recipient_ids;
-    std::vector<QString> m_cerealized_email_datas;
+    std::vector<EmailResponseData> m_email_response_datas;
 
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_email_ids, m_sender_ids, m_recipient_ids, m_cerealized_email_datas);
+        ar(m_email_response_datas);
     }
 };
 // [[ev_def:macro]]

@@ -187,28 +187,34 @@ bool GameDbSyncContext::loadAndConfigure()
                 "INSERT INTO costume (character_id,costume_index,skin_color,parts) VALUES "
                 "(:id,:costume_index,:skin_color,:parts)");
     prepQuery(*m_prepared_entity_select,"SELECT * FROM characters WHERE id=:id");
-    prepQuery(*m_prepared_entity_select_by_name, "SELECT * FROM characters WHERE char_name=:char_name");
+    prepQuery(*m_prepared_entity_select_by_name, "SELECT id FROM characters WHERE char_name=:char_name");
     prepQuery(*m_prepared_char_select,"SELECT * FROM characters WHERE account_id=? AND slot_index=?");
     prepQuery(*m_prepared_char_exists,"SELECT exists (SELECT 1 FROM characters WHERE char_name = ? LIMIT 1)");
     prepQuery(*m_prepared_char_delete,"DELETE FROM characters WHERE account_id=? AND slot_index=?");
     prepQuery(*m_prepared_get_char_slots,"SELECT slot_index FROM characters WHERE account_id=?");
 
     // email prepQueries
+
+
     prepQuery(*m_prepared_email_insert, "INSERT INTO emails (id, sender_id, recipient_id, email_data)"
-                                        "VALUES (:id, :sender_id, :recipient_id, :email_data");
+                                        "VALUES (:id, :sender_id, :recipient_id, :email_data)");
+
 
     // new_id is either sender_id or 0 (deleted chara and/or account, could separate this tho)
+
     prepQuery(*m_prepared_email_mark_as_read, "UPDATE emails SET "
-                                        "email_data=:email_data, sender_id=:new_id "
+                                        "email_data=:email_data "
                                         "WHERE id=:id");
+
     prepQuery(*m_prepared_email_update_on_char_delete, "UPDATE emails SET "
-              "sender_id=:deleted_id WHERE sender_id=:deleted_id"
-              "recipient_id=:deleted_id WHERE recipient_id=:deleted_id");
+              "sender_id='0' WHERE sender_id=:deleted_id");
+     //       "recipient_id='0' WHERE recipient_id=:deleted_id");
+
     prepQuery(*m_prepared_email_delete, "DELETE FROM emails WHERE id=?");
-    prepQuery(*m_prepared_email_select, "SELECT * FROM emails where id=?");
+    prepQuery(*m_prepared_email_select, "SELECT * FROM emails WHERE id=?");
     prepQuery(*m_prepared_email_select_all, "SELECT * FROM emails");
-    prepQuery(*m_prepared_email_select_by_sender_id, "SELECT * FROM emails where sender_id=?");
-    prepQuery(*m_prepared_email_select_by_recipient_id, "SELECT * FROM emails where recipient_id=?");
+    prepQuery(*m_prepared_email_select_by_sender_id, "SELECT * FROM emails WHERE sender_id=?");
+    prepQuery(*m_prepared_email_select_by_recipient_id, "SELECT * FROM emails WHERE recipient_id=?");
 
     return true;
 }
@@ -444,7 +450,7 @@ bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
 
 bool GameDbSyncContext::createEmail(const EmailCreateRequestData &data, EmailCreateResponseData &result)
 {
-    DbTransactionGuard grd(*m_db);
+    //DbTransactionGuard grd(*m_db);
 
     m_prepared_email_insert->bindValue(":sender_id", data.m_sender_id);
     m_prepared_email_insert->bindValue(":recipient_id", data.m_recipient_id);
@@ -456,8 +462,10 @@ bool GameDbSyncContext::createEmail(const EmailCreateRequestData &data, EmailCre
     assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
 
     result.m_email_id = m_prepared_email_insert->lastInsertId().toUInt();
+    result.m_sender_id = data.m_sender_id;
+    result.m_recipient_id = data.m_recipient_id;
 
-    grd.commit();
+    // grd.commit();
     return true;
 }
 
@@ -503,10 +511,12 @@ bool GameDbSyncContext::getEmails(const GetEmailsRequestData &/*data*/, GetEmail
 
     while (m_prepared_email_select_all->next())
     {
-        result.m_email_ids.push_back(m_prepared_email_select_all->value("id").toUInt());
-        result.m_sender_ids.push_back(m_prepared_email_select_all->value("sender_id").toUInt());
-        result.m_recipient_ids.push_back(m_prepared_email_select_all->value("recipient_id").toUInt());
-        result.m_cerealized_email_datas.push_back(m_prepared_email_select_all->value("email_data").toString());
+        EmailResponseData emailResponseData;
+        emailResponseData.m_email_id = m_prepared_email_select_all->value("id").toUInt();
+        emailResponseData.m_sender_id = m_prepared_email_select_all->value("sender_id").toUInt();
+        emailResponseData.m_recipient_id = m_prepared_email_select_all->value("recipient_id").toUInt();
+        emailResponseData.m_cerealized_email_data = m_prepared_email_select_all->value("email_data").toString();
+        result.m_email_response_datas.push_back(emailResponseData);
     }
 
     return true;
