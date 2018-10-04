@@ -855,7 +855,6 @@ void cmdHandler_AddEntirePowerSet(const QString &cmd, MapClientSession &sess)
     ppool.m_pset_idx = v2;
 
     addEntirePowerSet(cd, ppool);
-    cd.m_has_updated_powers = true;
 
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
@@ -906,7 +905,6 @@ void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
         msg = "Awarding Inspiration '" + val + "' to " + sess.m_ent->name();
 
         addInspirationByName(cd, val);
-        cd.m_has_updated_powers = true;
 
         // NOTE: floating message shows no message here, but plays the awarding insp sound!
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
@@ -935,7 +933,6 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
         msg = "Awarding Enhancement '" + name + "' to " + sess.m_ent->name();
 
         addEnhancementByName(cd, name, level);
-        cd.m_has_updated_powers = true;
 
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
         sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);

@@ -125,6 +125,7 @@ Model *convertAndInsertModel(GeoSet &tgt, const Model32 *v)
     tgt.subs.push_back(z);
     return z;
 }
+
 void geosetLoadHeader(QFile &fp, GeoSet *geoset)
 {
     unsigned int anm_hdr_size;
@@ -165,6 +166,7 @@ void geosetLoadHeader(QFile &fp, GeoSet *geoset)
 //    if (!geoset->subs.empty())
 //        addModelStubs(geoset);
 }
+
 GeoSet *findAndPrepareGeoSet(const QString &fname,LoadingContext &ctx)
 {
     GeoSet *geoset = nullptr;
@@ -177,27 +179,31 @@ GeoSet *findAndPrepareGeoSet(const QString &fname,LoadingContext &ctx)
         geosetLoadHeader(fp, geoset);
         fp.seek(0);
         s_name_to_geoset[fname] = geoset;
-    } else {
-        qCritical() <<"Can't find .geo file"<<fname;
     }
+    else
+        qCritical() <<"Can't find .geo file"<<fname;
+
     return geoset;
 }
+
 /// load the given geoset, used when loading scene-subgraph and nodes
 GeoSet * geosetLoad(const QString &m,LoadingContext &ctx)
 {
     GeoSet * res = s_name_to_geoset.value(m,nullptr);
     if(res)
         return res;
+
     return findAndPrepareGeoSet(m,ctx);
 }
 
 bool groupInLibSub(const QString &name)
 {
-    if(name.contains('/')) {
+    if(name.contains('/'))
         return !name.startsWith("maps");
-    }
+
     return !name.startsWith("grp");
 }
+
 SceneNode * getNodeByName(const SceneGraph &graph,const QString &name)
 {
     QString filename;
@@ -206,8 +212,10 @@ SceneNode * getNodeByName(const SceneGraph &graph,const QString &name)
         filename = name;
     else
         filename = name.mid(idx+1);
+
     return graph.name_to_node.value(filename.toLower(),nullptr);
 }
+
 QString  groupMakeName(const QString &base,LoadingContext &ctx)
 {
     QString buf;
@@ -216,6 +224,7 @@ QString  groupMakeName(const QString &base,LoadingContext &ctx)
     while (getNodeByName(*ctx.m_target,buf));
     return buf;
 }
+
 // Create new names for any 'numbered' scene nodes
 QString groupRename(LoadingContext &ctx, const QString &oldname, bool is_def)
 {
@@ -225,6 +234,7 @@ QString groupRename(LoadingContext &ctx, const QString &oldname, bool is_def)
         return str;
     if ( !is_def && !str.contains("/grp",Qt::CaseInsensitive) && !str.contains("/map",Qt::CaseInsensitive) )
         return str;
+
     QString querystring = str.toLower();
     auto str_iter = ctx.m_renamer.new_names.find(querystring);
 
@@ -252,12 +262,14 @@ QString groupRename(LoadingContext &ctx, const QString &oldname, bool is_def)
     ctx.m_renamer.new_names[querystring] = tgt;
     return tgt;
 }
+
 QString buildBaseName(const QString& path)
 {
     QStringList z = path.split(QDir::separator());
 
     if(z.size()>1)
         z.pop_back(); // remove file name
+
     if(z.front()=="object_library")
         z.pop_front();
     else if(z.contains("maps",Qt::CaseInsensitive))
@@ -265,8 +277,8 @@ QString buildBaseName(const QString& path)
         while(0!=z.front().compare("maps",Qt::CaseInsensitive))
             z.pop_front();
     }
-    return z.join('/');
 
+    return z.join('/');
 }
 
 QString mapNameToPath(const QString &name,LoadingContext &ctx)
@@ -274,12 +286,15 @@ QString mapNameToPath(const QString &name,LoadingContext &ctx)
     int start_idx = name.indexOf("object_library",Qt::CaseInsensitive);
     if ( -1==start_idx )
         start_idx = name.indexOf("maps",Qt::CaseInsensitive);
+
     QString buf = ctx.m_base_path+"geobin/" + name.midRef(start_idx);
+
     const int last_dot = buf.lastIndexOf('.');
     if(-1==last_dot)
         buf+=".bin";
     else if(!buf.contains(".crl"))
         buf.replace(last_dot,buf.size()-last_dot,".bin");
+
     return buf;
 }
 RootNode *newRef(SceneGraph &scene)
@@ -288,10 +303,13 @@ RootNode *newRef(SceneGraph &scene)
     for(idx=0; idx<scene.refs.size(); ++idx)
         if(!scene.refs[idx] || !scene.refs[idx]->node)
             break;
-    if(idx>=scene.refs.size()) {
+
+    if(idx>=scene.refs.size())
+    {
         idx = scene.refs.size();
         scene.refs.emplace_back();
     }
+
     scene.refs[idx] = new RootNode;
     scene.refs[idx]->index_in_roots_array = idx;
     return scene.refs[idx];
@@ -301,11 +319,13 @@ void addRoot(const SceneRootNode_Data &refload, LoadingContext &ctx, PrefabStore
 {
     QString newname = groupRename(ctx, refload.name, false);
     auto *def = getNodeByName(*ctx.m_target,newname);
-    if(!def) {
+    if(!def)
+    {
         if(store.loadNamedPrefab(newname,ctx))
             def = getNodeByName(*ctx.m_target,newname);
     }
-    if(!def) {
+    if(!def)
+    {
         qCritical() << "Missing reference:"<<newname;
         return;
     }
@@ -313,6 +333,7 @@ void addRoot(const SceneRootNode_Data &refload, LoadingContext &ctx, PrefabStore
     ref->node = def;
     transformFromYPRandTranslation(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z},refload.pos);
 }
+
 SceneNode *newDef(SceneGraph &scene)
 {
     SceneNode *res = new SceneNode;
@@ -320,6 +341,7 @@ SceneNode *newDef(SceneGraph &scene)
     scene.all_converted_defs.emplace_back(res);
     return res;
 }
+
 void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
 {
     QString result;
@@ -328,23 +350,27 @@ void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
         obj_path.remove(0, strlenobjec + 1);
     if ( groupInLibSub(obj_path) )
         result = "object_library/";
+
     result += obj_path;
     int last_separator = result.lastIndexOf('/');
     QStringRef key = result.midRef(last_separator + 1);
     QString lowkey = key.toString().toLower();
+
     auto iter = scene.name_to_node.find(lowkey);
-    if(iter==scene.name_to_node.end()) {
+    if(iter==scene.name_to_node.end())
         iter=scene.name_to_node.insert(lowkey,node);
-    }
+
     node->name = iter.key();
     node->dir.clear();
     if ( key.position() != 0 )
         node->dir = result.mid(0,key.position()-1);
 }
+
 void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, LoadingContext &ctx, PrefabStore &store)
 {
     if ( inp_data.p_Grp.empty() )
         return;
+
     node->children.reserve(inp_data.p_Grp.size());
     for(const GroupLoc_Data & dat : inp_data.p_Grp)
     {
@@ -366,11 +392,10 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
         if ( child.node )
             node->children.emplace_back(child);
         else
-        {
             qCritical() << "Node"<<node->name<<"\ncan't find member" << dat.name;
-        }
     }
 }
+
 void addLod(const std::vector<DefLod_Data> &lods, SceneNode *a2)
 {
     if(lods.empty())
@@ -387,6 +412,7 @@ void addLod(const std::vector<DefLod_Data> &lods, SceneNode *a2)
     a2->lod_near      = lod_data.Near;
     a2->lod_near_fade = lod_data.NearFade;
 }
+
 bool nodeCalculateBounds(SceneNode *group)
 {
     float geometry_radius=0.0f;
@@ -396,6 +422,7 @@ bool nodeCalculateBounds(SceneNode *group)
     bool set = false;
     if ( !group )
         return false;
+
     if ( group->model )
     {
         model = group->model;
@@ -404,6 +431,7 @@ bool nodeCalculateBounds(SceneNode *group)
         geometry_radius = glm::length(bbox.size()) * 0.5f;
         set = true;
     }
+
     for ( SceneNodeChildTransform & child : group->children )
     {
         glm::vec3 dst(child.node->center * child.m_matrix2 + child.m_translation);
@@ -412,10 +440,10 @@ bool nodeCalculateBounds(SceneNode *group)
         bbox.merge(dst-v_radius);
         set = true;
     }
+
     if ( !set )
-    {
         bbox.clear();
-    }
+
     group->radius = glm::length(bbox.size()) * 0.5f;
     group->m_bbox = bbox;
     group->center = bbox.center(); // center
@@ -425,21 +453,26 @@ bool nodeCalculateBounds(SceneNode *group)
         float r = glm::length(toChildCenter) + child.node->radius;
         maxrad = std::max(maxrad,r);
     }
+
     if ( maxrad != 0.0f )
         group->radius = maxrad;
+
     group->radius = std::max(geometry_radius,group->radius);
     return group->radius == 0.0f && !group->children.empty();
 }
+
 void  nodeSetVisBounds(SceneNode *group)
 {
     //TODO: fix this
     glm::vec3 dv;
     float maxrad = 0.0;
     float maxvis = 0.0;
+
     if ( !group )
         return;
     if ( group->lod_scale == 0.0f )
         group->lod_scale = 1.0f;
+
     if ( group->model )
     {
         Model *model = group->model;
@@ -453,6 +486,7 @@ void  nodeSetVisBounds(SceneNode *group)
         }
         maxvis = group->lod_far + group->lod_far_fade;
     }
+
     for (SceneNodeChildTransform &entr : group->children)
     {
         dv = entr.m_matrix2 * entr.node->center + entr.m_translation;
@@ -460,8 +494,10 @@ void  nodeSetVisBounds(SceneNode *group)
         maxrad = std::max(maxrad,glm::length(dv) + entr.node->radius + entr.node->shadow_dist);
         maxvis = std::max(maxvis,glm::length(dv) + entr.node->vis_dist * entr.node->lod_scale);
     }
+
     if ( group->shadow_dist == 0.0f )
         group->shadow_dist = maxrad - group->radius;
+
     group->vis_dist = maxvis;
 }
 
@@ -477,6 +513,7 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
         if (!defload.p_Property.empty())
             node->properties = new std::vector<GroupProperty_Data> (defload.p_Property);
     }
+
     if ( !defload.p_Obj.isEmpty() )
     {
         node->model = prefabs.groupModelFind(defload.p_Obj,ctx);
@@ -541,6 +578,7 @@ static void registerGeometryModifier(GeometryModifiers *mod)
         mod->node.TintColor0 = RGBA(0xFFFFFFFF);
     if (mod->node.TintColor1.rgb_are_zero())
         mod->node.TintColor1 = RGBA(0xFFFFFFFF);
+
     mod->AlphaRef /= 255.0f;
     if (mod->ObjTexBias != 0.0f)
         mod->node._TrickFlags |= TexBias;
@@ -565,12 +603,14 @@ static void registerGeometryModifier(GeometryModifiers *mod)
         mod->ObjFlags |= 0x400;
     if (mod->name.isEmpty())
         qDebug() << "No name in trick";
+
     auto iter = g_tricks_string_hash_tab.find(mod->name.toLower());
     if (iter!=g_tricks_string_hash_tab.end())
     {
         qDebug() << "duplicate model trick!";
         return;
     }
+
     g_tricks_string_hash_tab[mod->name.toLower()]=mod;
 }
 
@@ -596,12 +636,14 @@ static void setupTexOpt(TextureModifiers *tex)
     tex->name = tex->name.mid(0,tex->name.lastIndexOf('.')); // cut last extension part
     if(tex->name.startsWith('/'))
         tex->name.remove(0,1);
+
     auto iter = g_texture_path_to_mod.find(tex->name.toLower());
     if (iter!=g_texture_path_to_mod.end())
     {
         qDebug() << "duplicate texture info: "<<tex->name;
         return;
     }
+
     g_texture_path_to_mod[tex->name.toLower()] = tex;
 }
 static void  trickLoadPostProcess(AllTricks_Data *a2)
@@ -632,9 +674,11 @@ bool PrefabStore::prepareGeoLookupArray(const QString &base_path)
         qCritical() << "Failed to open defnames.bin";
         return false;
     }
+
     QByteArrayList defnames_arr;
     for (const QByteArray &entr : defnames.readAll().split('\0'))
         defnames_arr.push_back(entr);
+
     QString lookup_str;
     GeoStoreDef *current_geosetinf = nullptr;
     for (QString str : defnames_arr)
@@ -651,6 +695,7 @@ bool PrefabStore::prepareGeoLookupArray(const QString &base_path)
         current_geosetinf->entries << str.mid(last_slash + 1);
         m_modelname_to_geostore[str.mid(last_slash + 1)] = current_geosetinf;
     }
+
     return loadTricksBin(base_path);
 }
 
@@ -670,6 +715,7 @@ bool PrefabStore::loadPrefabForNode(SceneNode *node, LoadingContext &ctx) //grou
         if (!node->geoset_info)
             node->geoset_info = (GeoStoreDef *)-1; // prevent future load attempts
     }
+
     if (!gf || gf == (GeoStoreDef *)-1)
         return false;
     if (!gf->loaded)
@@ -677,6 +723,7 @@ bool PrefabStore::loadPrefabForNode(SceneNode *node, LoadingContext &ctx) //grou
         gf->loaded = true;
         loadSubgraph(gf->geopath,ctx,*this);
     }
+
     return true;
 }
 bool PrefabStore::loadNamedPrefab(const QString &name, LoadingContext &ctx) //groupFileLoadFromName
@@ -696,7 +743,8 @@ Model *modelFind(const QString &geoset_name, const QString &model_name,LoadingCo
 {
     Model *ptr_sub = nullptr;
 
-    if (model_name.isEmpty() || geoset_name.isEmpty()) {
+    if (model_name.isEmpty() || geoset_name.isEmpty())
+    {
         qCritical() << "Bad model/geometry set requested:";
         if (!model_name.isEmpty())
             qCritical() << "Model: " << model_name;
@@ -704,12 +752,15 @@ Model *modelFind(const QString &geoset_name, const QString &model_name,LoadingCo
             qCritical() << "GeoFile: " << geoset_name;
         return nullptr;
     }
+
     GeoSet *geoset = geosetLoad(geoset_name,ctx);
     if (!geoset) // failed to load the geometry set
         return nullptr;
+
     int end_of_name_idx = model_name.indexOf("__");
     if (end_of_name_idx == -1)
         end_of_name_idx = model_name.size();
+
     QStringRef basename(model_name.midRef(0, end_of_name_idx));
 
     for (Model *m : geoset->subs)

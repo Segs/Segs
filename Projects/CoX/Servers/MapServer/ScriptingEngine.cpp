@@ -101,7 +101,8 @@ void ScriptingEngine::registerTypes()
             auto n = new StandardDialogCmd(dlgtext);
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
         },
-        "browser", [](MapClientSession *cl, const char *content){
+        "browser", [](MapClientSession *cl, const char *content)
+        {
             cl->addCommand<Browser>(content);
         },
         "contact_dialog",[](MapClientSession *cl, const char *message, sol::as_table_t<std::map<std::string, sol::as_table_t<std::vector<std::string>>>> buttons)
@@ -114,15 +115,13 @@ void ScriptingEngine::registerTypes()
                 const std::vector<std::string>& strings = kvp.second.source;
                 int count = 0;
                 ContactEntry con;
-                for (const auto& s: strings){
+                for (const auto& s: strings)
+                {
                     if(count == 0)
-                    {
                         con.m_response_text = QString::fromStdString(s);
-                    }
                     else
-                    {
-                         con.m_link = contactLinkHash.find(QString::fromStdString(s)).value();
-                    }
+                        con.m_link = contactLinkHash.find(QString::fromStdString(s)).value();
+
                     //sendInfoMessage(MessageChannel::ADMIN, QString::fromStdString(s) ,*cl);
 
                     count++;
@@ -131,10 +130,12 @@ void ScriptingEngine::registerTypes()
             }
             cl->addCommand<ContactDialog>(message, active_contacts);
         },
-        "close_dialog", [](MapClientSession *cl){
+        "close_dialog", [](MapClientSession *cl)
+        {
             cl->addCommand<ContactDialogClose>();
         },
-        "sendFloatingInfo",[](MapClientSession *cl, int message_type){
+        "sendFloatingInfo",[](MapClientSession *cl, int message_type)
+        {
             FloatingInfoMsgKey f_info_message = static_cast<FloatingInfoMsgKey>(message_type);
             QString message = FloatingInfoMsg.find(f_info_message).value();
             cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, message, FloatingInfo_Attention , 4.0);
@@ -161,12 +162,13 @@ void ScriptingEngine::registerTypes()
 
         const auto& strings = enhancement.source;
         int count = 0;
-        for (const auto& s : strings) {
-            if(count == 0){
+        for (const auto& s : strings)
+        {
+            if(count == 0)
                 name = QString::fromStdString(s);
-            }else{
+            else
                 level = QString::fromStdString(s).toInt();
-            }
+
             count++;
         }
 
@@ -175,7 +177,6 @@ void ScriptingEngine::registerTypes()
             msg = "Awarding Enhancement '" + name + "' to " + cl->m_ent->name();
 
             addEnhancementByName(cd, name, level);
-            cd.m_powers_updated = true;
 
             QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
             sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -193,7 +194,6 @@ void ScriptingEngine::registerTypes()
         qCDebug(logSlashCommand) << msg;
         sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
     },
-
     "giveHp", [](MapClientSession *cl, float hp)
     {
         float current_hp = getHP(*cl->m_ent->m_char);
@@ -210,7 +210,8 @@ void ScriptingEngine::registerTypes()
         setInf(*cl->m_ent->m_char, inf_to_set);
         sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Setting inf to %1").arg(inf_to_set), *cl);
     },
-    "giveInsp", [](MapClientSession *cl, const char *value){
+    "giveInsp", [](MapClientSession *cl, const char *value)
+    {
 
         CharacterData &cd = cl->m_ent->m_char->m_char_data;
         QString val = QString::fromUtf8(value);
@@ -221,7 +222,6 @@ void ScriptingEngine::registerTypes()
             msg = "Awarding Inspiration '" + val + "' to " + cl->m_ent->name();
 
             addInspirationByName(cd, val);
-            cd.m_powers_updated = true;
 
             // NOTE: floating message shows no message here, but plays the awarding insp sound!
             QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
@@ -231,7 +231,8 @@ void ScriptingEngine::registerTypes()
         qCDebug(logSlashCommand).noquote() << msg;
         sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
     },
-    "giveXp", [](MapClientSession *cl, int xp){
+    "giveXp", [](MapClientSession *cl, int xp)
+    {
         uint32_t lvl = getLevel(*cl->m_ent->m_char);
         uint32_t current_xp = getXP(*cl->m_ent->m_char);
 
@@ -244,7 +245,6 @@ void ScriptingEngine::registerTypes()
             uint32_t half_xp = xp / 2;
             if(current_debt > half_xp)
             {
-
                 debt_to_pay = half_xp; //Half to debt
                 xp = half_xp;
             }
@@ -266,7 +266,8 @@ void ScriptingEngine::registerTypes()
 
         //This check doesn't show level change
 
-        if(new_lvl != lvl){
+        if(new_lvl != lvl)
+        {
             cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, FloatingInfoMsg.find(FloatingMsg_Leveled).value(), FloatingInfo_Attention , 4.0);
             msg += " and LVL to " + QString::number(new_lvl);
         }

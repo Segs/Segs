@@ -101,7 +101,8 @@ void on_client_connected(FriendHandlerState &state,FriendConnectedMessage *msg)
     for(auto const& val : state.m_player_info_map[char_db_id].m_players_added)
     {
         //We need to notify all the people who added this player (if they're online)
-        if(state.is_online(val)){
+        if(state.is_online(val))
+        {
             uint32_t friend_id = val;
             refresh_player_friends(state,val);
             inst_tgt->putq(new SendNotifyFriendMessage({state.m_player_info_map[char_db_id].m_map_info.session_token,

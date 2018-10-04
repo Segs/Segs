@@ -95,9 +95,7 @@ static std::vector<CharacterEnhancement> removeTradedEnhancements(Entity& ent, c
     {
         const CharacterEnhancement* const enh = getEnhancement(ent, idx);
         if (enh == nullptr)
-        {
             continue;
-        }
 
         result.push_back(*enh);
         trashEnhancement(cd, idx);
@@ -111,9 +109,7 @@ static void addTradedEnhancements(Entity& ent, const std::vector<CharacterEnhanc
     CharacterData& cd = ent.m_char->m_char_data;
 
     for (const CharacterEnhancement& enh : enhs)
-    {
         addEnhancementToChar(cd, enh);
-    }
 }
 
 static std::vector<CharacterInspiration> removeTradedInspirations(Entity& ent, const TradeInfo& info)
@@ -125,9 +121,7 @@ static std::vector<CharacterInspiration> removeTradedInspirations(Entity& ent, c
     {
         const CharacterInspiration* const insp = getInspiration(ent, trade_insp.m_col, trade_insp.m_row);
         if (insp == nullptr)
-        {
             continue;
-        }
 
         result.push_back(*insp);
         removeInspiration(cd, trade_insp.m_col, trade_insp.m_row);
@@ -141,9 +135,7 @@ static void addTradedInspirations(Entity& ent, const std::vector<CharacterInspir
     CharacterData& cd = ent.m_char->m_char_data;
 
     for (const CharacterInspiration& insp : insps)
-    {
         addInspirationToChar(cd, insp);
-    }
 }
 
 static void finishTrade(Entity& src, Entity& tgt)
@@ -221,49 +213,38 @@ Trade::Trade(const Entity& ent_a, const Entity& ent_b)
 
 TradeMember& Trade::getMember(const Entity& ent)
 {
-    if (m_member_a.m_db_id == getDbId(ent)) {
+    if (m_member_a.m_db_id == getDbId(ent))
         return m_member_a;
-    }
     else
-    {
         return m_member_b;
-    }
 }
 
 const TradeMember& Trade::getMember(const Entity& ent) const
 {
-    if (m_member_a.m_db_id == getDbId(ent)) {
+    if (m_member_a.m_db_id == getDbId(ent))
         return m_member_a;
-    }
     else
-    {
         return m_member_b;
-    }
 }
 
 TradeMember& Trade::getOtherMember(const Entity& ent)
 {
-    if (m_member_a.m_db_id == getDbId(ent)) {
+    if (m_member_a.m_db_id == getDbId(ent))
         return m_member_b;
-    }
     else
-    {
         return m_member_a;
-    }
 }
 
 const TradeMember& Trade::getOtherMember(const Entity& ent) const
 {
-    if (m_member_a.m_db_id == getDbId(ent)) {
+    if (m_member_a.m_db_id == getDbId(ent))
         return m_member_b;
-    }
     else
-    {
         return m_member_a;
-    }
 }
 
-bool Trade::isAccepted() const {
+bool Trade::isAccepted() const
+{
     return (m_member_a.m_info.m_accepted && m_member_b.m_info.m_accepted);
 }
 
@@ -433,9 +414,7 @@ void updateTrade(Entity& src, const TradeInfo& info)
 {
     Entity* const tgt = getEntityByDBID(src.m_client->m_current_map, info.m_db_id);
     if (tgt == nullptr)
-    {
         return;
-    }
 
     if (src.m_trade != tgt->m_trade)
     {
@@ -465,17 +444,13 @@ void updateTrade(Entity& src, const TradeInfo& info)
 
     // A trade cannot be accepted if there is not enough space.
     if (trade_src.m_info.m_accepted && !hasRoomForTrade(src))
-    {
         trade_src.m_info.m_accepted = false;
-    }
 
     sendTradeUpdate(src, *tgt, trade_src, trade_tgt);
     qCDebug(logTrades) << src.name() << "updated a trade with" << tgt->name();
 
     if (trade.isAccepted())
-    {
         finishTrade(src, *tgt);
-    }
 }
 
 void discardTrade(Entity& ent)

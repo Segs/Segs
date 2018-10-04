@@ -127,7 +127,8 @@ QString getMapName(size_t index)
 
 QString getMapPath(size_t index)
 {
-    if(index >= g_defined_map_datas.size()){
+    if(index >= g_defined_map_datas.size())
+    {
         qWarning() << "Sought map index was out of range."
                    << "Returning Outbreak's map path as default...";
         index = 0;

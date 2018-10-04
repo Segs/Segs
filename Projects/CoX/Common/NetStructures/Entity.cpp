@@ -121,12 +121,14 @@ void Entity::dump()
     dumpFriends(*this);
 }
 
-void Entity::addPosUpdate(const PosUpdate & p) {
+void Entity::addPosUpdate(const PosUpdate & p)
+{
     m_update_idx = (m_update_idx+1) % 64;
     m_pos_updates[m_update_idx] = p;
 }
 
-void Entity::addInterp(const PosUpdate & p) {
+void Entity::addInterp(const PosUpdate & p)
+{
     interpResults.emplace_back(p);
 }
 

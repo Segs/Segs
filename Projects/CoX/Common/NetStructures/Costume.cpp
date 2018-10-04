@@ -99,7 +99,8 @@ void Costume::storeCharselParts( BitStream &bs ) const
 }
 
 template<class Archive>
-void serialize(Archive &arc, CostumePart &cp) {
+void serialize(Archive &arc, CostumePart &cp)
+{
     arc(cp.m_type);
     arc(cp.m_geometry);
     arc(cp.m_texture_1);
@@ -113,13 +114,14 @@ void serialize(Archive &arc, CostumePart &cp) {
 }
 
 template<class Archive>
-void serialize(Archive &arc, Costume &c) {
+void serialize(Archive &arc, Costume &c)
+{
     arc(c.m_parts);
 }
 
 void Costume::serializeToDb(QString &tgt) const
 {
-// for now only parts are serialized
+    // for now only parts are serialized
     // format is a simple [[]]
     std::ostringstream ostr;
     {
@@ -139,12 +141,11 @@ void Costume::serializeFromDb(const QString &src)
         cereal::JSONInputArchive ar(istr);
         ar(*this);
     }
+
     // Set the part types
     uint8_t part_type=0;
     for(CostumePart & part : m_parts)
-    {
         part.m_type = part_type++;
-    }
 }
 
 void Costume::dump() const

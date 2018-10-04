@@ -574,7 +574,8 @@ void sendEmailHeaders(Entity *e)
     src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
 }
 
-void readEmailMessage(Entity *e, const int id){
+void readEmailMessage(Entity *e, const int id)
+{
     if(!e->m_client)
     {
         qWarning() << "m_client does not yet exist!";
@@ -733,7 +734,6 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
             sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
             return;
         }
-
     }
 
     // TODO: check for auto hit EntsAutoHit for StoredEntsEnum::CASTER
@@ -745,7 +745,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         // effects done here
         for(uint32_t i = 0; i<powtpl.pAttribMod.size(); i++)
         {
-            if (powtpl.pAttribMod[i].name.compare("Damage", Qt::CaseInsensitive))
+            if (powtpl.pAttribMod[i].name.compare("Damage", Qt::CaseInsensitive) == 0)
             {
                 // Deal Damage
                 sendFloatingNumbers(*ent.m_client, tgt_idx, powtpl.pAttribMod[i].Magnitude);
@@ -761,7 +761,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
                         .arg(powtpl.pAttribMod[i].Magnitude)
                         .arg(powtpl.m_Name);
             }
-            else if (powtpl.pAttribMod[i].name.compare("Healing", Qt::CaseInsensitive))
+            else if (powtpl.pAttribMod[i].name.compare("Healing", Qt::CaseInsensitive) == 0)
             {
                 // Do Healing
                 sendFloatingNumbers(*ent.m_client, tgt_idx, powtpl.pAttribMod[i].Magnitude);

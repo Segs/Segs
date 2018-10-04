@@ -74,10 +74,10 @@ void PowerTrayItem::Dump()
     {
     case TrayItemType::Power:
     case TrayItemType::Inspiration:
-            qDebug().noquote() << "[(" << QString::number(m_pset_idx,16) << ',' << QString::number(m_pow_idx,16)<<")]";
+        qDebug().noquote() << "[(" << QString::number(m_pset_idx,16) << ',' << QString::number(m_pow_idx,16)<<")]";
         break;
     case TrayItemType::Macro:
-            qDebug() << "[(" << m_command << ',' << m_short_name<<',' << m_icon_name<<")]";
+        qDebug() << "[(" << m_command << ',' << m_short_name<<',' << m_icon_name<<")]";
         break;
     case TrayItemType::None:
         break;
@@ -111,6 +111,7 @@ void PowerTrayGroup::serializefrom(BitStream &src)
     {
         tray.serializefrom(src);
     }
+
     m_has_default_power = src.GetBits(1);
     if(m_has_default_power)
     {
@@ -127,6 +128,7 @@ void PowerTrayGroup::dump()
     {
         if(m_trays[bar_num].setPowers()==0)
             continue;
+
         qDebug() << "Tray: " << bar_num;
         m_trays[bar_num].Dump();
     }
@@ -142,6 +144,7 @@ PowerTrayItem *PowerTray::getPowerTrayItem(size_t idx)
 {
     if(idx<10)
         return &m_tray_items[idx];
+
     return nullptr;
 }
 
@@ -149,9 +152,8 @@ int PowerTray::setPowers()
 {
     int res=0;
     for(const PowerTrayItem &pow : m_tray_items)
-    {
         res += (pow.m_entry_type!=TrayItemType::None);
-    }
+
     return res;
 }
 
@@ -170,10 +172,7 @@ void PowerTray::serializeto(BitStream &tgt) const
 void PowerTray::Dump()
 {
     for(PowerTrayItem &pow : m_tray_items)
-    {
         pow.Dump();
-    }
-
 }
 
 void PowerPool_Info::serializefrom(BitStream &src)
@@ -346,6 +345,8 @@ void addPowerSet(CharacterData &cd, PowerPool_Info &ppool)
     pset.m_category     = ppool.m_pcat_idx;
 
     cd.m_powersets.push_back(pset);
+    cd.m_has_updated_powers = true; // update client on power status
+    cd.m_reset_powersets = true; // possible that we need to reset the powerset array client side
 }
 
 void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool)
@@ -360,6 +361,8 @@ void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool)
     pset.m_category     = ppool.m_pcat_idx;
 
     cd.m_powersets.push_back(pset);
+    cd.m_has_updated_powers = true; // update client on power status
+    cd.m_reset_powersets = true; // possible that we need to reset the powerset array client side
 }
 
 void addPower(CharacterData &cd, PowerPool_Info &ppool)
@@ -431,6 +434,9 @@ void removePower(CharacterData &cd, const PowerPool_Info &ppool)
         {
             qCDebug(logPowers) << "Removing Power:" << ppool.m_pcat_idx << ppool.m_pset_idx << ppool.m_pow_idx;
             pset.m_powers.erase(iter);
+            cd.m_has_updated_powers = true; // update client on power status
+            cd.m_reset_powersets = true; // possible that we need to reset the powerset array client side
+
             return;
         }
     }
@@ -909,6 +915,7 @@ void trashEnhancementInPower(CharacterData &cd, uint32_t pset_idx, uint32_t pow_
     CharacterEnhancement enhance;
     enhance.m_slot_idx = eh_idx;
     cd.m_powersets[pset_idx].m_powers[pow_idx].m_enhancements[eh_idx] = enhance;
+    cd.m_has_updated_powers = true; // update client on power status
 
     qCDebug(logPowers) << "Remove Enhancement from" << pset_idx << pow_idx << eh_idx;
 }
@@ -1059,6 +1066,7 @@ CombineResult combineEnhancements(Entity &ent, EnhancemenSlotEntry slot1, Enhanc
     else
         trashEnhancement(ent.m_char->m_char_data, slot2.m_eh_idx);
 
+    ent.m_char->m_char_data.m_has_updated_powers = true; // update client on power status
     return {success,destroy};
 }
 
