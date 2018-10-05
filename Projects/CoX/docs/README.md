@@ -149,7 +149,7 @@ Enjoy!
 HELP AND MORE INFORMATION
 ------
 
-Mae sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200
+Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200
 
 For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.io/
 
