@@ -118,7 +118,7 @@ void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
 void sendFaceEntity(Entity &src, int32_t tgt_idx);
-void sendFaceLocation(Entity &src, glm::vec3 &location);
+void sendFaceLocation(Entity &src, glm::vec3 &loc);
 void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg);
 void sendBrowser(MapClientSession &tgt, QString &content);
 void sendTradeOffer(const Entity& src, Entity& tgt);

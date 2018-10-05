@@ -262,7 +262,7 @@ void ScriptingEngine::registerTypes()
             msg = "Awarding Enhancement '" + name + "' to " + cl->m_ent->name();
 
             addEnhancementByName(cd, name, level);
-            cd.m_powers_updated = true;
+            cd.m_has_updated_powers = true;
 
             QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
             sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -308,7 +308,7 @@ void ScriptingEngine::registerTypes()
             msg = "Awarding Inspiration '" + val + "' to " + cl->m_ent->name();
 
             addInspirationByName(cd, val);
-            cd.m_powers_updated = true;
+            cd.m_has_updated_powers = true;
 
             // NOTE: floating message shows no message here, but plays the awarding insp sound!
             QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
@@ -366,7 +366,7 @@ void ScriptingEngine::registerTypes()
     },
     "faceEntity",[](MapClientSession *cl, int target)
     {
-        sendFaceEntity(cl->m_ent, target);
+        sendFaceEntity(*cl->m_ent, target);
     },
     "faceLocation", [](MapClientSession *cl, sol::as_table_t<std::vector<std::float_t>> location)
     {
@@ -391,7 +391,7 @@ void ScriptingEngine::registerTypes()
         }
 
         qCDebug(logScripts) << QString("Facing location. X: %1 Y: %2 Z: %3").arg(loc.x).arg(loc.y).arg(loc.z);
-        sendFaceLocation(cl->m_ent, loc);
+        sendFaceLocation(*cl->m_ent, loc);
     }
     );
 
