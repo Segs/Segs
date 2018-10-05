@@ -27,7 +27,6 @@
 #include "Events/InfoMessageCmd.h"
 #include "Common/NetStructures/Entity.h"
 #include "Common/NetStructures/Contact.h"
-#include <iomanip>
 #define SOL_CHECK_ARGUMENTS 1
 #include <lua/lua.hpp>
 #include <sol2/sol.hpp>
@@ -186,7 +185,7 @@ void ScriptingEngine::registerTypes()
         {
             sendInfoMessage(static_cast<MessageChannel>(channel), QString::fromUtf8(message), *cl);
         }
-    , // Error on line 165 prevents this from working. Not sure how to handle
+    ,
     "addNpc", [](MapClientSession &cl, const char* name, sol::as_table_t<std::vector<std::float_t>> location, int variation)
     {
         glm::vec3 gm_loc = cl.m_ent->m_entity_data.m_pos;
