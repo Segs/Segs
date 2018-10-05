@@ -27,6 +27,7 @@ public:
     std::string callFunc(const char *name,int arg1, glm::vec3 vec3);
     int runScript(const QString &script_contents,const char *script_name="unnamed script");
     int runScript(MapClientSession *client,const QString &script_contents,const char *script_name="unnamed script");
+    bool setIncludeDir(const QString &path);
 private:
 #ifdef SCRIPTING_ENABLED
     struct ScriptingEnginePrivate;

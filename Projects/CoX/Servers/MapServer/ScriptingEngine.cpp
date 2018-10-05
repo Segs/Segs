@@ -32,10 +32,12 @@
 #include <lua/lua.hpp>
 #include <sol2/sol.hpp>
 
+#include <QtCore/QFileInfo> // for include support
+#include <QtCore/QDir>
 #include <QtCore/QDebug>
 
 using namespace SEGSEvents;
-
+static constexpr const int MAX_INCLUDED_FILE_SIZE=1024*1024; // 1MB of lua code should be enough for anyone :P
 int luaopen_package(lua_State *)
 {
     assert(false && "functionality removed");
@@ -62,16 +64,54 @@ struct ScriptingEngine::ScriptingEnginePrivate
                              sol::lib::utf8, sol::lib::debug);
 
     }
+    bool performInclude(const char *path)
+    {
+        if(m_restricted_include_dir.isEmpty())
+            return false;
+        QString full_path=QDir(m_restricted_include_dir).filePath(QDir::cleanPath(path));
+        if(m_alread_included_and_ran.contains(full_path))
+            return true;
+        QFileInfo include_info(full_path);
+        if(!include_info.exists() || !include_info.isReadable() || !include_info.isFile())
+            return false;
+        QFile content_file(full_path);
+        if(!content_file.open(QFile::ReadOnly))
+            return false;
+        QByteArray script_contents = content_file.read(MAX_INCLUDED_FILE_SIZE);
+        if(script_contents.size()==MAX_INCLUDED_FILE_SIZE)
+        {
+            return false;
+        }
+        sol::load_result load_res=m_lua.load(script_contents.toStdString(),qPrintable(include_info.filePath()));
+        if(!load_res.valid())
+        {
+            sol::error err = load_res;
+            qWarning() << err.what();
+            return false;
+        }
+        // Run the included code
+        sol::protected_function_result script_result = load_res();
+        if(!script_result.valid())
+        {
+            sol::error err = script_result;
+            qWarning() << err.what();
+            return false;
+        }
+        m_alread_included_and_ran.insert(full_path);
+        return true;
+    }
+
     sol::state m_lua;
+    QString m_restricted_include_dir;
+    QSet<QString> m_alread_included_and_ran;
 };
 
 ScriptingEngine::ScriptingEngine() : m_private(new ScriptingEnginePrivate)
 {
+    m_private->m_lua["include_lua"] = [this](const char *path) -> bool { return m_private->performInclude(path); };
 }
 
-ScriptingEngine::~ScriptingEngine()
-{
-}
+ScriptingEngine::~ScriptingEngine() = default;
 
 template<class T>
 static void destruction_is_an_error(T &/*v*/)
@@ -487,5 +527,14 @@ int ScriptingEngine::runScript(const QString &script_contents, const char *scrip
     }
     return 0;
 }
-
+bool ScriptingEngine::setIncludeDir(const QString &path)
+{
+    QFileInfo fi(path);
+    if(!fi.absoluteFilePath().startsWith(QDir::currentPath()))
+    {
+        qWarning() << "Includes directory must be a subdirectory of the runtime" << QDir::currentPath();
+        return false;
+    }
+    m_private->m_restricted_include_dir = fi.absoluteFilePath();
+}
 //! @}

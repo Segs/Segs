@@ -81,7 +81,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const GameDataStore &da
     e.m_player->m_keybinds.resetKeybinds(data.m_keybind_profiles);
     e.m_is_hero = true;
 
-    e.m_direction                         = glm::quat(1.0f,0.0f,0.0f,0.0f);
+    e.m_direction = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 
 const QString &Entity::name() const {

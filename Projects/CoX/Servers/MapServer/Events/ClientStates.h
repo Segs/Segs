@@ -7,7 +7,8 @@
 
 #pragma once
 
-enum ClientStates {
+enum ClientStates
+{
     SIMPLE = 0,
     CREATE_TEAM_CONTAINER = 1,
     CREATE_TEAM_CONTAINER_WAIT_MAPSVRR_RESPONSE = 2,
