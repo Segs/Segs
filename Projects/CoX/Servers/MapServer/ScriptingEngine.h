@@ -9,6 +9,7 @@
 #define SCRIPTINGENGINE_H
 #include <memory>
 #include <string>
+#include "NetStructures/CommonNetStructures.h"
 
 class QString;
 struct MapClientSession;
@@ -21,7 +22,9 @@ public:
     void registerTypes();
     int loadAndRunFile(const QString &path);
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1);
+    std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1, glm::vec3 vec3);
     std::string callFunc(const char *name,int arg1);
+    std::string callFunc(const char *name,int arg1, glm::vec3 vec3);
     int runScript(const QString &script_contents,const char *script_name="unnamed script");
     int runScript(MapClientSession *client,const QString &script_contents,const char *script_name="unnamed script");
 private:

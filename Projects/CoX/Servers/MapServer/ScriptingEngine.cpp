@@ -16,6 +16,7 @@
 #include "DataHelpers.h"
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
+#include "MapInstance.h"
 #include "MapSceneGraph.h"
 #include "Entity.h"
 
@@ -26,6 +27,7 @@
 #include "Events/InfoMessageCmd.h"
 #include "Common/NetStructures/Entity.h"
 #include "Common/NetStructures/Contact.h"
+#include <iomanip>
 #define SOL_CHECK_ARGUMENTS 1
 #include <lua/lua.hpp>
 #include <sol2/sol.hpp>
@@ -134,11 +136,57 @@ void ScriptingEngine::registerTypes()
         "close_dialog", [](MapClientSession *cl){
             cl->addCommand<ContactDialogClose>();
         },
-        "sendFloatingInfo",[](MapClientSession *cl, int message_type){
+        "sendFloatingInfo",[](MapClientSession *cl, int message_type)
+        {
             FloatingInfoMsgKey f_info_message = static_cast<FloatingInfoMsgKey>(message_type);
             QString message = FloatingInfoMsg.find(f_info_message).value();
             cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, message, FloatingInfo_Attention , 4.0);
+        },
+        "sendInfoMessage", [](MapClientSession *cl, int channel, const char* message)
+        {
+            sendInfoMessage(static_cast<MessageChannel>(channel), QString::fromUtf8(message), *cl);
         }
+    , // Error on line 165 prevents this from working. Not sure how to handle
+    "addNpc", [](MapClientSession &cl, const char* name, sol::as_table_t<std::vector<std::float_t>> location, int variation)
+    {
+        glm::vec3 gm_loc = cl.m_ent->m_entity_data.m_pos;
+        const NPCStorage & npc_store(getGameData().getNPCDefinitions());
+        const QString name_string = QString::fromUtf8(name);
+        QStringRef npc_name = QStringRef(&name_string);
+
+        const Parse_NPC * npc_def = npc_store.npc_by_name(npc_name);
+        if(!npc_def)
+        {
+            sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for:"+npc_name, cl);
+            return;
+        }
+        int idx = npc_store.npc_idx(npc_def);
+        Entity *e = cl.m_current_map->m_entities.CreateNpc(getGameData(),*npc_def,idx,variation);
+
+        glm::vec3 loc;
+        const auto& floats = location.source;
+        int count = 0;
+        for (const auto& f : floats)
+        {
+            if(count == 0)
+            {
+                loc.x = f;
+            }
+            else if (count == 1)
+            {
+                loc.y = f;
+            }
+            else
+            {
+                loc.z = f;
+            }
+            count++;
+        }
+
+        forcePosition(*e, loc);
+        e->m_velocity = {0,0,0};
+        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), cl);
+    }
         );
 
     m_private->m_lua.new_usertype<Character>("Character",
@@ -153,7 +201,6 @@ void ScriptingEngine::registerTypes()
     },
     "giveEnhancement",[](MapClientSession *cl, sol::as_table_t<std::vector<std::string>> enhancement)
     {
-
         CharacterData &cd = cl->m_ent->m_char->m_char_data;
         QString name;
         uint32_t level;
@@ -244,7 +291,6 @@ void ScriptingEngine::registerTypes()
             uint32_t half_xp = xp / 2;
             if(current_debt > half_xp)
             {
-
                 debt_to_pay = half_xp; //Half to debt
                 xp = half_xp;
             }
@@ -266,7 +312,8 @@ void ScriptingEngine::registerTypes()
 
         //This check doesn't show level change
 
-        if(new_lvl != lvl){
+        if(new_lvl != lvl)
+        {
             cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, FloatingInfoMsg.find(FloatingMsg_Leveled).value(), FloatingInfo_Attention , 4.0);
             msg += " and LVL to " + QString::number(new_lvl);
         }
@@ -276,6 +323,35 @@ void ScriptingEngine::registerTypes()
     "sendFloatingDamage", [](MapClientSession *cl, int target, int amount)
     {
          cl->addCommand<FloatingDamage>(cl->m_ent->m_idx, target, amount);
+    },
+    "faceEntity",[](MapClientSession *cl, int target)
+    {
+        sendFaceEntity(cl->m_ent, target);
+    },
+    "faceLocation", [](MapClientSession *cl, sol::as_table_t<std::vector<std::float_t>> location)
+    {
+        glm::vec3 loc;
+        const auto& floats = location.source;
+        int count = 0;
+        for (const auto& f : floats)
+        {
+            if(count == 0)
+            {
+                loc.x = f;
+            }
+            else if (count == 1)
+            {
+                loc.y = f;
+            }
+            else
+            {
+                loc.z = f;
+            }
+            count++;
+        }
+
+        qCDebug(logScripts) << QString("Facing location. X: %1 Y: %2 Z: %3").arg(loc.x).arg(loc.y).arg(loc.z);
+        sendFaceLocation(cl->m_ent, loc);
     }
     );
 
@@ -291,6 +367,10 @@ void ScriptingEngine::registerTypes()
     );
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
     m_private->m_lua["contactTable"] = m_private->m_lua.create_named_table("contactTable");
+    m_private->m_lua["printDebug"] = [](const char* msg)
+    {
+        qCDebug(logScripts) << msg;
+    };
 }
 
 int ScriptingEngine::loadAndRunFile(const QString &filename)
@@ -319,6 +399,13 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     return callFunc(name,arg1);
 }
 
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, glm::vec3 vec3)
+{
+    m_private->m_lua["client"] = client;
+    m_private->m_lua["heroName"] = qPrintable(client->m_name);
+    return callFunc(name,arg1,vec3);
+}
+
 std::string ScriptingEngine::callFunc(const char *name, int arg1)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
@@ -329,6 +416,29 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
         return "";
     }
     auto result = funcwrap(arg1);
+    if(!result.valid())
+    {
+        sol::error err = result;
+        qCritical() << "Failed to run script func:"<<name<<err.what();
+        return "";
+    }
+    return result.get<std::string>();
+}
+
+std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 vec3)
+{
+    sol::protected_function funcwrap = m_private->m_lua[name];
+    funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
+
+    sol::table loc_table = m_private->m_lua.create_table_with("x", vec3.x, "y",  vec3.y, "z", vec3.z);
+    sol::table table = m_private->m_lua.create_table_with("id", arg1, "loc" , loc_table);
+
+    if(!funcwrap.valid())
+    {
+        qCritical() << "Failed to retrieve script func:"<<name;
+        return "";
+    }
+    auto result = funcwrap(table);
     if(!result.valid())
     {
         sol::error err = result;
