@@ -428,11 +428,11 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     return callFunc(name,arg1);
 }
 
-std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, glm::vec3 vec3)
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, std::vector<std::float_t> loc)
 {
     m_private->m_lua["client"] = client;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
-    return callFunc(name,arg1,vec3);
+    return callFunc(name,arg1,loc);
 }
 
 std::string ScriptingEngine::callFunc(const char *name, int arg1)
@@ -454,12 +454,12 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     return result.get<std::string>();
 }
 
-std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 vec3)
+std::string ScriptingEngine::callFunc(const char *name, int arg1, std::vector<std::float_t> loc)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
     funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
 
-    sol::table loc_table = m_private->m_lua.create_table_with("x", vec3.x, "y",  vec3.y, "z", vec3.z);
+    sol::table loc_table = m_private->m_lua.create_table_with("x", loc[0], "y",  loc[1], "z", loc[2]);
     sol::table table = m_private->m_lua.create_table_with("id", arg1, "loc" , loc_table);
 
     if(!funcwrap.valid())
