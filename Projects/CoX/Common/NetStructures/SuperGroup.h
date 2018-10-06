@@ -75,6 +75,7 @@ struct SuperGroupStats
     void        dump();
 };
 
+using vSuperGroupRoster = std::vector<SuperGroupStats>;
 
 class SuperGroup
 {
@@ -88,7 +89,7 @@ virtual ~SuperGroup() = default;
         uint32_t    m_sg_db_id          = 0;
         QString     m_sg_name;                  // 64 chars max. Must be here for simple DB lookups
         SuperGroupData m_data;
-        std::vector<SuperGroupStats> m_sg_members;
+        vSuperGroupRoster m_sg_members;
 
         uint32_t    m_db_store_flags    = 0;
 
