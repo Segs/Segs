@@ -1705,9 +1705,17 @@ void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
     result[1].replace("\\q", "");
 
     // 1 -> recipient name, 3 -> email subject, 4 -> email message
+    // cannot send email to self as that will trigger /emailRead without the data in db nor EmailHandler
+    // and that will segfault the server :)
+    if (result[1] == sess.m_ent->m_char->getName())
+    {
+        sendInfoMessage(MessageChannel::SERVER, "You cannot send an email to yourself!", sess);
+        return;
+    }
+
     sendEmail(sess, result[1], result[3], result[4]);
 
-    QString msg = "Email Sent to recipient: recipient";
+    QString msg = "Email Sent to recipient: " + result[1];
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }

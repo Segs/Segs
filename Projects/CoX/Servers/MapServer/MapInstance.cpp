@@ -459,6 +459,9 @@ void MapInstance::dispatch( Event *ev )
         case evEmailWasReadByRecipientMessage:
             on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev));
             break;
+        case evEmailSendErrorMessage:
+            on_email_send_error(static_cast<EmailSendErrorMessage *>(ev));
+            break;
         case evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));
             break;
@@ -767,7 +770,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
     tgt->putq(new ClientConnectedMessage(
-        {ev->session_token(),m_owner_id,m_instance_id,map_session.auth_id()},0));
+        {ev->session_token(),m_owner_id,m_instance_id,map_session.m_ent->m_char->m_db_id},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
@@ -2563,13 +2566,19 @@ void MapInstance::on_email_read_response(EmailReadResponse *ev)
     map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(email_read));
 }
 
-void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage* msg)
+void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg)
 {
     MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
-    sendInfoMessage(MessageChannel::DEBUG_INFO, "Your email has been read by A", map_session);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg->m_data.m_message, map_session);
 
     // this is sent from the reader back to the sender via EmailHandler
     // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance
+}
+
+void MapInstance::on_email_send_error(EmailSendErrorMessage *msg)
+{
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg->m_data.m_error_message, map_session);
 }
 
 void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)

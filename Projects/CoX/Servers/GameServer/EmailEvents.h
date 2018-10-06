@@ -23,6 +23,7 @@ enum EmailEventTypes : uint32_t
     evEmailReadRequest,
     evEmailReadResponse,
     evEmailSendMessage,
+    evEmailSendErrorMessage,
     evEmailDeleteMessage,
     evEmailWasReadByRecipientMessage
 };
@@ -119,6 +120,19 @@ struct EmailSendData
 //[[ev_def:macro]]
 ONE_WAY_MESSAGE(EmailEventTypes,EmailSend)
 
+struct EmailSendErrorData
+{
+    QString m_error_message;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar (m_error_message);
+    }
+};
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(EmailEventTypes,EmailSendError)
+
 struct EmailDeleteData
 {
     uint32_t m_email_id;
@@ -134,12 +148,12 @@ ONE_WAY_MESSAGE(EmailEventTypes,EmailDelete)
 
 struct EmailWasReadByRecipientData
 {
-    uint32_t m_email_id;
+    QString m_message;
 
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_email_id);
+        ar(m_message);
     }
 };
 //[[ev_def:macro]]

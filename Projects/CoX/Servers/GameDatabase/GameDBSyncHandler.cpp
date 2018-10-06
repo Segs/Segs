@@ -65,10 +65,8 @@ void GameDBSyncHandler::dispatch(Event *ev)
         on_get_email(static_cast<GetEmailRequest *>(ev)); break;
     case GameDBEventTypes::evGetEmailsRequest:
         on_get_emails(static_cast<GetEmailsRequest *>(ev)); break;
-    case GameDBEventTypes::evGetEmailBySenderIdRequest:
-        on_get_email_by_sender_id(static_cast<GetEmailBySenderIdRequest *>(ev)); break;
-    case GameDBEventTypes::evGetEmailByRecipientIdRequest:
-        on_get_email_by_recipient_id(static_cast<GetEmailByRecipientIdRequest *>(ev)); break;
+    case GameDBEventTypes::evFillEmailRecipientIdRequest:
+        on_fill_email_recipient_id(static_cast<FillEmailRecipientIdRequest *>(ev)); break;
     default: assert(false); break;
     }
 }
@@ -229,26 +227,21 @@ void GameDBSyncHandler::on_get_emails(GetEmailsRequest* ev)
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 }
 
-void GameDBSyncHandler::on_get_email_by_sender_id(GetEmailBySenderIdRequest* ev)
+void GameDBSyncHandler::on_fill_email_recipient_id(FillEmailRecipientIdRequest *ev)
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
-    GetEmailBySenderIdResponseData resp;
+    FillEmailRecipientIdResponseData resp;
 
-    if (db_ctx.getEmailBySenderId(ev->m_data, resp))
-        ev->src()->putq(new GetEmailBySenderIdResponse(std::move(resp), ev->session_token()));
+    if (db_ctx.fillEmailRecipientId(ev->m_data, resp))
+        HandlerLocator::getEmail_Handler()->putq(new FillEmailRecipientIdResponse(std::move(resp), ev->session_token()));
     else
-        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
-}
+    {
+        QString error_msg = QString("Failed to send email because character "
+                                    "with name %1 doesn't exist in this server!").arg(ev->m_data.m_recipient_name);
+        HandlerLocator::getEmail_Handler()->putq(new FillEmailRecipientIdErrorMessage(
+            {ev->m_data.m_sender_id, error_msg}, ev->session_token()));
+    }
 
-void GameDBSyncHandler::on_get_email_by_recipient_id(GetEmailByRecipientIdRequest* ev)
-{
-    GameDbSyncContext &db_ctx(m_db_context.localData());
-    GetEmailByRecipientIdResponseData resp;
-
-    if (db_ctx.getEmailByRecipientId(ev->m_data, resp))
-        ev->src()->putq(new GetEmailByRecipientIdResponse(std::move(resp), ev->session_token()));
-    else
-        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
 }
 
 //! @}

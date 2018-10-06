@@ -321,6 +321,12 @@ void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)
     GameAccountResponseCharacterData& selected_slot = session.m_game_account.get_character(ev->m_data.slot_idx);
     selected_slot.reset();
     session.link()->putq(new DeleteAcknowledged);
+
+    // change all emails where sender_id or recipient_id == char_id to 0
+    EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_server->getId());
+    game_db->putq(new EmailUpdateOnCharDeleteMessage({selected_slot.m_db_id}, uint64_t(1)));
+
+    // game_db->putq()
 }
 
 void GameHandler::serialize_from(std::istream &/*is*/)
@@ -345,9 +351,6 @@ void GameHandler::on_delete_character(DeleteCharacter *ev)
     {
         game_db->putq(new RemoveCharacterRequest({session.m_game_account.m_game_server_acc_id, selected_slot.index},
                                                  lnk->session_token(), this));
-
-        // change all emails where sender_id or recipient_id == char_id to 0
-        game_db->putq(new EmailUpdateOnCharDeleteMessage({selected_slot.m_db_id}, lnk->session_token()));
     }
     else
     {

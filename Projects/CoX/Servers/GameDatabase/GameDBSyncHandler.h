@@ -34,8 +34,7 @@ struct EmailUpdateOnCharDeleteMessage;
 struct EmailRemoveMessage;
 struct GetEmailRequest;
 struct GetEmailsRequest;
-struct GetEmailBySenderIdRequest;
-struct GetEmailByRecipientIdRequest;
+struct FillEmailRecipientIdRequest;
 }
 
 class GameDBSyncHandler final : public EventProcessor
@@ -67,8 +66,7 @@ protected:
     void on_email_remove(SEGSEvents::EmailRemoveMessage *msg);
     void on_get_email(SEGSEvents::GetEmailRequest* ev);
     void on_get_emails(SEGSEvents::GetEmailsRequest *ev);
-    void on_get_email_by_sender_id(SEGSEvents::GetEmailBySenderIdRequest* ev);
-    void on_get_email_by_recipient_id(SEGSEvents::GetEmailByRecipientIdRequest* ev);
+    void on_fill_email_recipient_id(SEGSEvents::FillEmailRecipientIdRequest *ev);
 
     // This is an unique ID that links this DB with it's Game Server
     uint8_t m_id;

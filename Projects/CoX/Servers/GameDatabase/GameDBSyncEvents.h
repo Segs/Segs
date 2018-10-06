@@ -8,6 +8,7 @@
 #pragma once
 
 #include "Servers/InternalEvents.h"
+#include "Servers/GameServer/EmailDefinitions.h"
 
 #include <QDateTime>
 namespace SEGSEvents
@@ -58,6 +59,9 @@ enum GameDBEventTypes : uint32_t
     evGetEmailBySenderIdResponse,
     evGetEmailByRecipientIdRequest,
     evGetEmailByRecipientIdResponse,
+    evFillEmailRecipientIdRequest,
+    evFillEmailRecipientIdResponse,
+    evFillEmailRecipientIdErrorMessage,
 
     evGameDbErrorMessage
 };
@@ -475,20 +479,6 @@ struct GetEmailResponseData
 // [[ev_def:macro]]
 TWO_WAY_MESSAGE(GameDBEventTypes,GetEmail)
 
-struct EmailResponseData
-{
-    uint32_t m_email_id;
-    uint32_t m_sender_id;
-    uint32_t m_recipient_id;
-    QString m_cerealized_email_data;
-
-    template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar(m_email_id, m_sender_id, m_recipient_id, m_cerealized_email_data);
-    }
-};
-
 struct GetEmailsRequestData
 {
     template <class Archive>
@@ -562,5 +552,53 @@ struct GetEmailByRecipientIdResponseData
 };
 // [[ev_def:macro]]
 TWO_WAY_MESSAGE(GameDBEventTypes,GetEmailByRecipientId)
+
+struct FillEmailRecipientIdRequestData
+{
+    uint32_t m_sender_id;
+    QString m_sender_name;
+    QString m_recipient_name;
+    QString m_subject;
+    QString m_message;
+    uint32_t m_timestamp;
+
+    template <class Archive>
+    void serialize (Archive &ar)
+    {
+        ar (m_sender_id, m_sender_name, m_recipient_name, m_subject, m_message, m_timestamp);
+    }
+};
+
+struct FillEmailRecipientIdResponseData
+{
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;    // the point of this is to get recipient_id from recipient_name :)
+    QString m_sender_name;
+    QString m_subject;
+    QString m_message;
+    uint32_t m_timestamp;
+
+    template <class Archive>
+    void serialize (Archive &ar)
+    {
+        ar (m_sender_id, m_recipient_id, m_sender_name, m_subject, m_message, m_timestamp);
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,FillEmailRecipientId)
+
+struct FillEmailRecipientIdErrorData
+{
+    uint32_t m_sender_id;
+    QString m_error_message;
+
+    template <class Archive>
+    void serialize (Archive &ar)
+    {
+        ar (m_sender_id, m_error_message);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(GameDBEventTypes,FillEmailRecipientIdError)
 
 } // end of SEGSEvents namespace

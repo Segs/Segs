@@ -21,7 +21,7 @@ struct EmailData
     QString m_subject;
     QString m_message;
     uint32_t m_timestamp;
-    bool m_is_read_by_recipient;
+    bool m_is_read_by_recipient = false;
 };
 
 template<class Archive>
@@ -46,6 +46,21 @@ struct EmailHeaderData
     void serialize(Archive &ar)
     {
         ar(m_email_id, m_sender_name, m_subject, m_timestamp);
+    }
+};
+
+// used by GameDbSyncEvent
+struct EmailResponseData
+{
+    uint32_t m_email_id;
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;
+    QString m_cerealized_email_data;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id, m_sender_id, m_recipient_id, m_cerealized_email_data);
     }
 };
 

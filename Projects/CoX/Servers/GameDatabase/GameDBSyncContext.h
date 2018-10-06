@@ -38,8 +38,8 @@ struct GetEmailsRequestData;
 struct GetEmailsResponseData;
 struct GetEmailBySenderIdRequestData;
 struct GetEmailBySenderIdResponseData;
-struct GetEmailByRecipientIdRequestData;
-struct GetEmailByRecipientIdResponseData;
+struct FillEmailRecipientIdRequestData;
+struct FillEmailRecipientIdResponseData;
 }
 ///
 /// \brief The DbSyncContext class is used as thread local storage for database related objects
@@ -67,12 +67,12 @@ class GameDbSyncContext
     // email stuff
     std::unique_ptr<QSqlQuery> m_prepared_email_insert;
     std::unique_ptr<QSqlQuery> m_prepared_email_mark_as_read;
-    std::unique_ptr<QSqlQuery> m_prepared_email_update_on_char_delete;
+    std::unique_ptr<QSqlQuery> m_prepared_email_update_sender_id_on_char_delete;
+    std::unique_ptr<QSqlQuery> m_prepared_email_update_recipient_id_on_char_delete;
     std::unique_ptr<QSqlQuery> m_prepared_email_delete;
     std::unique_ptr<QSqlQuery> m_prepared_email_select;
     std::unique_ptr<QSqlQuery> m_prepared_email_select_all;
-    std::unique_ptr<QSqlQuery> m_prepared_email_select_by_sender_id;
-    std::unique_ptr<QSqlQuery> m_prepared_email_select_by_recipient_id;
+    std::unique_ptr<QSqlQuery> m_prepared_email_fill_recipient_id;
 
     bool m_setup_complete = false;
 public:
@@ -98,8 +98,7 @@ public:
     bool deleteEmail(const SEGSEvents::EmailRemoveData &data);
     bool getEmail(const SEGSEvents::GetEmailRequestData &data, SEGSEvents::GetEmailResponseData &result);
     bool getEmails(const SEGSEvents::GetEmailsRequestData &data, SEGSEvents::GetEmailsResponseData &result);
-    bool getEmailBySenderId(const SEGSEvents::GetEmailBySenderIdRequestData &data, SEGSEvents::GetEmailBySenderIdResponseData &result);
-    bool getEmailByRecipientId(const SEGSEvents::GetEmailByRecipientIdRequestData &data, SEGSEvents::GetEmailByRecipientIdResponseData &result);
+    bool fillEmailRecipientId(const SEGSEvents::FillEmailRecipientIdRequestData &data, SEGSEvents::FillEmailRecipientIdResponseData &result);
 private:
     int64_t getDbVersion(QSqlDatabase &);
 };

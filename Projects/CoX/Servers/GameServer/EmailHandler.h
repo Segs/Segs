@@ -24,7 +24,8 @@ namespace SEGSEvents
     struct ClientConnectedMessage;
     struct ClientDisconnectedMessage;
     struct GetEmailsResponse;
-    struct GetCharIdFromNameResponse;
+    struct FillEmailRecipientIdResponse;
+    struct FillEmailRecipientIdErrorMessage;
 }
 
 struct PlayerEmailState
@@ -67,7 +68,8 @@ private:
     void on_client_disconnected(SEGSEvents::ClientDisconnectedMessage *msg);
     void on_email_create_response(SEGSEvents::EmailCreateResponse* msg);
     void on_get_emails_response(SEGSEvents::GetEmailsResponse* msg);
-    void on_get_char_id_from_name_response(SEGSEvents::GetCharIdFromNameResponse* msg);
+    void on_fill_email_recipient_id_response(SEGSEvents::FillEmailRecipientIdResponse* msg);
+    void on_fill_email_recipient_id_error(SEGSEvents::FillEmailRecipientIdErrorMessage* msg);
 
     void fill_email_state(PlayerEmailState& emailState, uint32_t char_id);
     void fill_email_headers(std::vector<EmailHeaderData>& emailHeaders, uint32_t char_id, int &unread_emails_count);

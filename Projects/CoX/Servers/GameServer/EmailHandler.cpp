@@ -37,6 +37,12 @@ void EmailHandler::dispatch(Event *ev)
         case GameDBEventTypes::evGetEmailsResponse:
         on_get_emails_response(static_cast<GetEmailsResponse *>(ev));
         break;
+        case GameDBEventTypes::evFillEmailRecipientIdResponse:
+        on_fill_email_recipient_id_response(static_cast<FillEmailRecipientIdResponse *>(ev));
+        break;
+        case GameDBEventTypes::evFillEmailRecipientIdErrorMessage:
+        on_fill_email_recipient_id_error(static_cast<FillEmailRecipientIdErrorMessage *>(ev));
+        break;
 
         // will be obtained from MessageBusEndpoint
         case Internal_EventTypes::evClientConnectedMessage:
@@ -82,12 +88,20 @@ void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
     EmailData email_data;
     serializeFromQString(email_data, msg->m_data.m_cerealized_email_data);
 
+    m_state.m_stored_email_datas[msg->m_data.m_email_id] = email_data;
+    m_state.m_stored_email_datas[msg->m_data.m_email_id].m_sender_id = msg->m_data.m_sender_id;
+    m_state.m_stored_email_datas[msg->m_data.m_email_id].m_recipient_id = msg->m_data.m_recipient_id;
+
     m_state.m_stored_client_datas[msg->m_data.m_sender_id]
             .m_email_state.m_sent_email_ids.insert(msg->m_data.m_email_id);
     m_state.m_stored_client_datas[msg->m_data.m_recipient_id]
             .m_email_state.m_received_email_ids.insert(msg->m_data.m_email_id);
     m_state.m_stored_client_datas[msg->m_data.m_recipient_id]
             .m_email_state.m_unread_email_ids.insert(msg->m_data.m_email_id);
+
+    // if the recipient is not online during the time of send, return
+    if (m_state.m_stored_client_datas.count(msg->m_data.m_recipient_id) <= 0)
+        return;
 
     const ClientSessionData &recipient_data (m_state.m_stored_client_datas[msg->m_data.m_sender_id]);
 
@@ -133,29 +147,51 @@ void EmailHandler::on_email_read(EmailReadRequest *msg)
 
     m_db_handler->putq(new EmailMarkAsReadMessage({msg->m_data.m_email_id, cerealizedEmailData}, uint64_t(1)));
 
-    const ClientSessionData &sender_data (m_state.m_stored_client_datas[email_data.m_sender_id]);
-    const ClientSessionData &recipient_data (m_state.m_stored_client_datas[email_data.m_recipient_id]);
 
-    EventProcessor *sender_map_instance = HandlerLocator::getMapInstance_Handler(
-                sender_data.m_server_id,
-                sender_data.m_instance_id);
+    if (m_state.m_stored_client_datas.count(email_data.m_sender_id) > 0)
+    {
+        const ClientSessionData &sender_data (m_state.m_stored_client_datas[email_data.m_sender_id]);
+        EventProcessor *sender_map_instance = HandlerLocator::getMapInstance_Handler(
+                    sender_data.m_server_id,
+                    sender_data.m_instance_id);
+
+        QString msgToSender = QString("Your email with subject %1 has been read by its recipient!").arg(email_data.m_subject);
+
+        sender_map_instance->putq(new EmailWasReadByRecipientMessage(
+            {msgToSender}, sender_data.m_session_token));
+    }
+
+    const ClientSessionData &recipient_data (m_state.m_stored_client_datas[email_data.m_recipient_id]);
 
     EventProcessor *recipient_map_instance = HandlerLocator::getMapInstance_Handler(
                 recipient_data.m_server_id,
                 recipient_data.m_instance_id);
 
-    sender_map_instance->putq(new EmailWasReadByRecipientMessage(
-        {msg->m_data.m_email_id}, sender_data.m_session_token));
     recipient_map_instance->putq(new EmailReadResponse(
         {msg->m_data.m_email_id, email_data.m_message, email_data.m_sender_name}, recipient_data.m_session_token));
 }
 
 void EmailHandler::on_email_send(EmailSendMessage *msg)
 {
-    /*
+    // from this, you'd still need:
+    // 1. email_id, that comes from creating the email in db
+    // 2. recipient_id, which will be searched based on recipient_name
+    // so, the route is emailSend -> FillEmailRecipientId -> EmailCreate
+    m_db_handler->putq(new FillEmailRecipientIdRequest({
+                                                           msg->m_data.m_sender_id,
+                                                           msg->m_data.m_sender_name,
+                                                           msg->m_data.m_recipient_name,
+                                                           msg->m_data.m_subject,
+                                                           msg->m_data.m_message,
+                                                           msg->m_data.m_timestamp
+                                                       }, uint64_t(1)));
+}
+
+void EmailHandler::on_fill_email_recipient_id_response(FillEmailRecipientIdResponse *msg)
+{
     EmailData email_data = EmailData{
                 msg->m_data.m_sender_id,
-                msg->m_data.m_recipient_name,
+                msg->m_data.m_recipient_id,
                 msg->m_data.m_sender_name,
                 msg->m_data.m_subject,
                 msg->m_data.m_message,
@@ -167,14 +203,22 @@ void EmailHandler::on_email_send(EmailSendMessage *msg)
 
     m_db_handler->putq(new EmailCreateRequest({
                                                   msg->m_data.m_sender_id,
-                                                  msg->m_data.m_sender_id, //recipient id
+                                                  msg->m_data.m_recipient_id, //recipient id
                                                   cerealizedEmailData
                                               }, uint64_t(1)));
-    */
 }
 
-void on_get_character_id_response()
+void EmailHandler::on_fill_email_recipient_id_error(FillEmailRecipientIdErrorMessage *msg)
 {
+    const ClientSessionData &sender_data (m_state.m_stored_client_datas[msg->m_data.m_sender_id]);
+    EventProcessor *sender_map_instance = HandlerLocator::getMapInstance_Handler(
+                sender_data.m_server_id,
+                sender_data.m_instance_id);
+
+    // send error msg to sender map instance
+
+    sender_map_instance->putq(new EmailSendErrorMessage(
+        {msg->m_data.m_error_message}, sender_data.m_session_token));
 
 }
 
