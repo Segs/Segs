@@ -17,7 +17,7 @@ class InteractWithEntity final : public MapLinkEvent
 {
 public:
     // [[ev_def:field]]
-    uint32_t m_srv_idx = 0;
+    int32_t m_srv_idx = 0;
     InteractWithEntity() : MapLinkEvent(MapEventTypes::evInteractWithEntity) {}
     void serializeto(BitStream &bs) const override
     {

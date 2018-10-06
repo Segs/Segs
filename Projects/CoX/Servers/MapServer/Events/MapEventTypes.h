@@ -42,7 +42,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evChatMessage                ,120)
     EVENT_DECL(MapEventTypes, evFloatingDamage             ,121)
 //    EVENT_DECL(MapEventTypes, evVisitMapCells            ,122)
-//    EVENT_DECL(MapEventTypes, evSendWaypoint             ,123)
+    EVENT_DECL(MapEventTypes, evSendWaypoint               ,123)
     EVENT_DECL(MapEventTypes, evTeamOffer                  ,124)
     EVENT_DECL(MapEventTypes, evTeamLooking                ,125)
 //    EVENT_DECL(MapEventTypes, evTaskForceKick            ,126)
@@ -58,10 +58,10 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evTradeSuccess               ,136)
     EVENT_DECL(MapEventTypes, evFriendsListUpdate          ,137)
 //    EVENT_DECL(MapEventTypes, evControlPlayer            ,138)
-//    EVENT_DECL(MapEventTypes, evContactDialog            ,139)
-//    EVENT_DECL(MapEventTypes, evContactDialogClose       ,140)
-//    EVENT_DECL(MapEventTypes, evContactDialogOk          ,141)
-//    EVENT_DECL(MapEventTypes, evContactDialogYesNo       ,142)
+    EVENT_DECL(MapEventTypes, evContactDialog              ,139)
+    EVENT_DECL(MapEventTypes, evContactDialogClose         ,140)
+    EVENT_DECL(MapEventTypes, evContactDialogOk            ,141)
+    EVENT_DECL(MapEventTypes, evContactDialogYesNo         ,142)
 //    EVENT_DECL(MapEventTypes, evContactStatusList        ,143)
 //    EVENT_DECL(MapEventTypes, evContactSelect            ,144)
 //    EVENT_DECL(MapEventTypes, evTaskStatusList           ,145)
@@ -112,8 +112,8 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evActivatePower              ,227)
     EVENT_DECL(MapEventTypes, evActivatePowerAtLocation    ,228)
     EVENT_DECL(MapEventTypes, evActivateInspiration        ,229) // Hit F1, F2, F3, F4, F5 or Click on Inspiration in Tray
-    EVENT_DECL(MapEventTypes, evSetDefaultPowerSend        ,230) // Send Default Powerset
-    EVENT_DECL(MapEventTypes, evSetDefaultPower            ,231) // Clicking 'z'
+    EVENT_DECL(MapEventTypes, evSetDefaultPower            ,230) // Send Default Powerset
+    EVENT_DECL(MapEventTypes, evUnsetDefaultPower          ,231) // Clicking 'z'
     EVENT_DECL(MapEventTypes, evUnqueueAll                 ,232) // Click on another entity or Clicking 'z'
     EVENT_DECL(MapEventTypes, evAbortQueuedPower           ,233) // Clicking 'z'
     EVENT_DECL(MapEventTypes, evMoveInspiration            ,234)
@@ -128,6 +128,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evTrashEnhancementInPower    ,244)
     EVENT_DECL(MapEventTypes, evBuyEnhancementSlot         ,245)
     EVENT_DECL(MapEventTypes, evRecvNewPower               ,246)
+    EVENT_DECL(MapEventTypes, evLevelUpResponse            ,247)
     EVENT_DECL(MapEventTypes, evTradeWasCancelledMessage   ,254) // Trade window: player clicked "Cancel" or closed the window.
     EVENT_DECL(MapEventTypes, evTradeWasUpdatedMessage     ,255) // Trade window: player changed something in the window.
     EVENT_DECL(MapEventTypes, evEntityInfoRequest          ,256) // right-click entity select "Info"

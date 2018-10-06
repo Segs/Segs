@@ -12,6 +12,7 @@
 #include "glm/vec3.hpp"
 #include <QString>
 #include <cstdint>
+#include <vector>
 
 class QString;
 class Entity;
@@ -25,6 +26,8 @@ struct CharacterPowerSet;
 struct CharacterPower;
 class GameDataStore;
 class TradeMember;
+struct ContactEntry;
+struct Destination;
 
 
 /*
@@ -40,6 +43,7 @@ glm::vec3   getSpeed(const Entity &e);
 float       getBackupSpd(const Entity &e);
 float       getJumpHeight(const Entity &e);
 uint8_t     getUpdateId(const Entity &e);
+Destination getCurrentDestination(const Entity &e);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);
@@ -52,6 +56,7 @@ void    setTeamID(Entity &e, uint8_t team_id);
 void    setSuperGroup(Entity &e, int sg_id = 0, QString sg_name = "", uint32_t sg_rank = 3);
 void    setTarget(Entity &e, uint32_t target_idx);
 void    setAssistTarget(Entity &e);
+void    setCurrentDestination(Entity &e, int point_idx, glm::vec3 location);
 
 // For live debugging
 void    setu1(Entity &e, int val);
@@ -104,7 +109,7 @@ void sendClientState(MapClientSession &ent, ClientStates client_state);
 void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(MapClientSession &src, uint32_t tgt_idx, int32_t amount);
-void sendLevelUp(Entity *tgt);
+void sendLevelUp(MapClientSession &src);
 void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy);
 void sendChangeTitle(Entity *tgt, bool select_origin);
 void sendTrayAdd(Entity *tgt, uint32_t pset_idx, uint32_t pow_idx);
@@ -112,8 +117,8 @@ void sendFriendsListUpdate(Entity *src, const FriendsList &friends_list);
 void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
-void sendFaceEntity(Entity *src, uint8_t tgt_idx);
-void sendFaceLocation(Entity *src, glm::vec3 &location);
+void sendFaceEntity(Entity &src, int32_t tgt_idx);
+void sendFaceLocation(Entity &src, glm::vec3 &location);
 void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg);
 void sendBrowser(MapClientSession &tgt, QString &content);
 void sendTradeOffer(const Entity& src, Entity& tgt);
@@ -121,6 +126,10 @@ void sendTradeInit(Entity& src, Entity& tgt);
 void sendTradeCancel(Entity& ent, const QString& msg);
 void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt);
 void sendTradeSuccess(Entity& src, Entity& tgt);
+void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts);
+void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno);
+void sendContactDialogClose(MapClientSession &src);
+void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location);
 
 const QString &getGenericTitle(uint32_t val);
 const QString &getOriginTitle(uint32_t val);
@@ -136,7 +145,8 @@ void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
 /*
  * usePower exposed for future Lua support
  */
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id);
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id);
+void increaseLevel(Entity &ent);
 
 /*
  * Team related helpers

@@ -248,14 +248,16 @@ CharacterPower getPowerData(PowerPool_Info &ppool)
     Power_Data power = getGameData().get_power_template(ppool.m_pcat_idx, ppool.m_pset_idx, ppool.m_pow_idx);
 
     CharacterPower result;
-    result.m_power_info.m_pcat_idx      = ppool.m_pcat_idx;
-    result.m_power_info.m_pset_idx      = ppool.m_pset_idx;
-    result.m_power_info.m_pow_idx       = ppool.m_pow_idx;
-    result.m_index                      = ppool.m_pow_idx;
-    // result.m_num_charges                = power.m_NumCharges;
+    result.m_power_info.m_pcat_idx  = ppool.m_pcat_idx;
+    result.m_power_info.m_pset_idx  = ppool.m_pset_idx;
+    result.m_power_info.m_pow_idx   = ppool.m_pow_idx;
+    result.m_index                  = ppool.m_pow_idx;
+    result.m_charges_remaining      = power.m_NumCharges;
+    result.m_activate_period        = power.ActivatePeriod;
+    result.m_usage_time             = power.m_UsageTime;
 
-    if(!power.BoostsAllowed.empty())
-        result.m_total_eh_slots = 3; // TODO: buy during levelup. For now, everyone has 3!
+    if(power.m_NumCharges > 0)
+        result.m_is_limited = true;
 
     //if(logPowers().isDebugEnabled())
         //dumpPower(result);
@@ -277,19 +279,60 @@ CharacterPowerSet getPowerSetData(PowerPool_Info &ppool)
     return result;
 }
 
-CharacterPower *getOwnedPower(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
+PowerVecIndexes getOwnedPowerIndexes(Entity &e, const PowerPool_Info &ppool)
 {
+    PowerVecIndexes vec_indexes;
+
+    int pset_idx_in_vec = 0;
+    for(CharacterPowerSet &pset : e.m_char->m_char_data.m_powersets)
+    {
+        int pow_idx_in_vec = 0;
+        for(CharacterPower &pow : pset.m_powers)
+        {
+            if(pow.m_power_info.m_pcat_idx == ppool.m_pcat_idx
+                    && pow.m_power_info.m_pset_idx == ppool.m_pset_idx
+                    && pow.m_power_info.m_pow_idx == ppool.m_pow_idx)
+            {
+                vec_indexes.m_pset_vec_idx = pset_idx_in_vec;
+                vec_indexes.m_pow_vec_idx = pow_idx_in_vec;
+                return vec_indexes;
+            }
+            ++pow_idx_in_vec;
+        }
+        ++pset_idx_in_vec;
+    }
+
+    return vec_indexes;
+}
+
+CharacterPower *getOwnedPowerByVecIdx(Entity &e, uint32_t pset_idx, uint32_t pow_idx)
+{
+    bool fail = false;
     CharacterData *cd = &e.m_char->m_char_data;
 
-    if(pset_idx > cd->m_powersets.size()
-            || cd->m_powersets[pset_idx].m_powers[pow_idx].getPowerTemplate().m_Name.isEmpty())
+    if(pset_idx > cd->m_powersets.size())
+        fail = true;
+    else if(pow_idx > cd->m_powersets.at(pset_idx).m_powers.size()) // must check after confirming pset_idx is valid
+        fail = true;
+
+    if(fail)
     {
-        qWarning() << "Failed to locate Power by index" << pset_idx << pow_idx;
+        qWarning() << "Failed to locate Power by index."
+                   << pset_idx
+                   << pow_idx;
         return nullptr;
     }
 
     qCDebug(logPowers) << "getPower returned" << cd->m_powersets[pset_idx].m_powers[pow_idx].getPowerTemplate().m_Name;
-    return &cd->m_powersets[pset_idx].m_powers[pow_idx];
+
+    return &cd->m_powersets.at(pset_idx).m_powers.at(pow_idx);
+}
+
+CharacterPower *getOwnedPowerByTpl(Entity &e, const PowerPool_Info &ppool)
+{
+    PowerVecIndexes vec_indexes = getOwnedPowerIndexes(e, ppool);
+
+    return getOwnedPowerByVecIdx(e, vec_indexes.m_pset_vec_idx, vec_indexes.m_pow_vec_idx);
 }
 
 void addPowerSet(CharacterData &cd, PowerPool_Info &ppool)
@@ -322,13 +365,17 @@ void addEntirePowerSet(CharacterData &cd, PowerPool_Info &ppool)
 void addPower(CharacterData &cd, PowerPool_Info &ppool)
 {
     CharacterPowerSet new_pset;
-    CharacterPower new_power;
-
-    new_power               = getPowerData(ppool);
-    new_pset.m_level_bought = cd.m_level;
-    new_power.m_index       = ppool.m_pow_idx;
-    new_pset.m_index        = ppool.m_pset_idx;
     new_pset.m_category     = ppool.m_pcat_idx;
+    new_pset.m_index        = ppool.m_pset_idx;
+    new_pset.m_level_bought = cd.m_level;
+
+    CharacterPower new_power;
+    new_power               = getPowerData(ppool);
+    new_power.m_index       = ppool.m_pow_idx;
+    new_power.m_level_bought = cd.m_level;
+
+    // powers start with 1 free eh slot
+    reserveEnhancementSlot(&new_power, cd.m_level);
 
     // Does Power or PowerSet already exist?
     int existing_pset = 0;
@@ -353,6 +400,7 @@ void addPower(CharacterData &cd, PowerPool_Info &ppool)
             if(logPowers().isDebugEnabled())
                 dumpPower(new_power);
 
+            cd.m_has_updated_powers = true; // update client on power status
             return;
         }
 
@@ -368,6 +416,8 @@ void addPower(CharacterData &cd, PowerPool_Info &ppool)
 
     // Add powerset to vector
     cd.m_powersets.push_back(new_pset);
+    cd.m_has_updated_powers = true; // update client on power status
+    cd.m_reset_powersets = true; // possible that we need to reset the powerset array client side
 }
 
 void removePower(CharacterData &cd, const PowerPool_Info &ppool)
@@ -386,6 +436,22 @@ void removePower(CharacterData &cd, const PowerPool_Info &ppool)
     }
 
     qCDebug(logPowers) << "Player does not own Power:" << ppool.m_pcat_idx << ppool.m_pset_idx << ppool.m_pow_idx;
+}
+
+uint32_t countAllOwnedPowers(CharacterData &cd, bool include_temps)
+{
+    uint32_t count = 0;
+
+    for(const CharacterPowerSet &pset : cd.m_powersets)
+    {
+        if(pset.m_index == 0 && !include_temps) // don't count temporary_powers
+            continue;
+
+        count += pset.m_powers.size(); // total up all powers
+    }
+
+    qCDebug(logPowers) << "Total Owned Powers:" << include_temps << count;
+    return count;
 }
 
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo)
@@ -499,7 +565,7 @@ void addInspirationToChar(CharacterData &cd, const CharacterInspiration& insp)
                 cd.m_inspirations.at(col, row).m_col = col;
                 cd.m_inspirations.at(col, row).m_row = row;
                 cd.m_inspirations.at(col, row).m_has_insp = true;
-                cd.m_powers_updated = true; // update client on power status
+                cd.m_has_updated_powers = true; // update client on power status
 
                 qCDebug(logPowers) << "Character received inspiration:"
                                    << insp.m_insp_info.m_pcat_idx
@@ -583,7 +649,7 @@ void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint
     insp_arr->at(dest_col, dest_row).m_row = src_row;
     std::swap(insp_arr->at(src_col, src_row), insp_arr->at(dest_col, dest_row));
 
-    cd.m_powers_updated = true; // update client on power status
+    cd.m_has_updated_powers = true; // update client on power status
 
     qCDebug(logPowers) << "Moving inspiration from" << src_col << "x" << src_row << "to" << dest_col << "x" << dest_row;
 }
@@ -591,14 +657,13 @@ void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint
 void useInspiration(Entity &ent, uint32_t col, uint32_t row)
 {
     CharacterData &cd = ent.m_char->m_char_data;
+    const CharacterInspiration *insp = getInspiration(ent, col, row);
 
-    if(!cd.m_inspirations.at(col, row).m_has_insp)
+    if(!insp->m_has_insp)
         return;
 
+    applyInspirationEffect(ent, col, row);
     removeInspiration(cd, col, row);
-
-    // TODO: Do inspiration benefit. For now, just heal a bit
-    setHP(*ent.m_char, getHP(*ent.m_char) + 15);
 
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
 }
@@ -622,7 +687,48 @@ void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)
         moveInspiration(cd, col, j+1, col, j);
     }
 
-    cd.m_powers_updated = true; // update client on power status
+    cd.m_has_updated_powers = true; // update client on power status
+}
+
+void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
+{
+    const CharacterInspiration *insp = getInspiration(ent, col, row);
+
+    // TODO: Refactor this
+    QStringList health_names = {
+        "Respite",
+        "Dramatic_Improvement",
+        "Resurgence",
+    };
+
+    QStringList endurance_names = {
+        "Catch_a_Breath",
+        "Take_a_Breather",
+        "Second_Wind",
+    };
+
+    QStringList luck_names = {
+        "Luck",
+        "Good_Luck",
+        "Phenomenal_Luck",
+    };
+
+    if(health_names.contains(insp->m_name, Qt::CaseInsensitive))
+        setHP(*ent.m_char, getHP(*ent.m_char) + 15);
+
+    if(endurance_names.contains(insp->m_name, Qt::CaseInsensitive))
+        setEnd(*ent.m_char, getEnd(*ent.m_char) + 15);
+
+    // Test Buff System. Refactor all of this out.
+    if(luck_names.contains(insp->m_name, Qt::CaseInsensitive))
+    {
+        Buffs buff;
+        buff.m_buff_info = insp->m_insp_info;
+        buff.m_activate_period = 30.0f; // hardcoded for now
+        ent.m_buffs.push_back(buff);
+        ent.m_update_buffs = true;
+        return;
+    }
 }
 
 void dumpInspirations(CharacterData &cd)
@@ -705,7 +811,7 @@ void addEnhancementToChar(CharacterData &cd, const CharacterEnhancement& enh)
             cd.m_enhancements[idx] = enh;
             cd.m_enhancements[idx].m_slot_idx = idx;
             cd.m_enhancements[idx].m_slot_used = true;
-            cd.m_powers_updated = true; // update client on power status
+            cd.m_has_updated_powers = true; // update client on power status
 
             qCDebug(logPowers) << "Character received Enhancement:" << idx
                                << enh.m_name
@@ -771,7 +877,7 @@ void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx)
     std::swap(cd.m_enhancements[src_idx], cd.m_enhancements[dest_idx]);
 
     qCDebug(logPowers) << "Moving Enhancement from" << src_idx << "to" << dest_idx;
-    cd.m_powers_updated = true; // update client on power status
+    cd.m_has_updated_powers = true; // update client on power status
 }
 
 void setEnhancement(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t src_idx, uint32_t dest_idx)
@@ -793,7 +899,7 @@ void trashEnhancement(CharacterData &cd, uint32_t eh_idx)
     CharacterEnhancement enhance;
     enhance.m_slot_idx = eh_idx;
     cd.m_enhancements[eh_idx] = enhance;
-    cd.m_powers_updated = true; // update client on power status
+    cd.m_has_updated_powers = true; // update client on power status
 
     qCDebug(logPowers) << "Remove Enhancement from" << eh_idx;
 }
@@ -816,38 +922,63 @@ void trashComboEnhancement(CharacterEnhancement &eh, uint32_t eh_idx)
     qCDebug(logPowers) << "Remove Enhancement from" << eh_idx;
 }
 
-void buyEnhancementSlot(Entity &e, uint32_t num, uint32_t pset_idx, uint32_t pow_idx)
-{
-    CharacterPower * pow = nullptr;
-    pow = getOwnedPower(e, pset_idx, pow_idx);
-
-    if(pow != nullptr && !pow->getPowerTemplate().m_Name.isEmpty())
-        qFatal("Cannot find Power for buying enhancement slot: %d %d", pset_idx, pow_idx);
-
-    if(pow->getPowerTemplate().BoostsAllowed.empty())
-        return;
-
-    // Modify based upon level
-    pow->m_total_eh_slots += num;
-}
-
-void reserveEnhancementSlot(CharacterData &cd, CharacterPower *pow)
+void reserveEnhancementSlot(CharacterPower *pow, uint32_t level_purchased)
 {
     if(pow->getPowerTemplate().BoostsAllowed.empty())
         return;
 
-    // TODO: assign all powers 1 slot, allow players to purchase additional slots during levelup
-    // for now, just give everyone 3 slots
-    if(pow->m_total_eh_slots != 3)
-        pow->m_total_eh_slots = 3;
-
     // Modify based upon level
-    pow->m_total_eh_slots = pow->m_total_eh_slots + getGameData().countForLevel(
-                cd.m_combat_level - pow->m_level_bought, getGameData().m_pi_schedule.m_FreeBoostSlotsOnPower);
+    auto free_boosts_by_level = getGameData().m_pi_schedule.m_FreeBoostSlotsOnPower;
+    int lvl_delta = level_purchased - pow->m_level_bought;
+    int count_for_level = getGameData().countForLevel(lvl_delta, free_boosts_by_level);
+    int cur_max_eh_slots = pow->m_total_eh_slots + count_for_level;
 
-//    if(pow->m_enhancements.size() <= pow->m_total_eh_slots)
-//        pow->m_enhancements.resize(pow->m_total_eh_slots);
+    if(cur_max_eh_slots > 5)
+        cur_max_eh_slots = 5; // I0 and I1 client cannot handle more than 5 eh slots
+
+    qCDebug(logPowers) << "Total EH Slots + free slots based upon level" << pow->m_total_eh_slots
+                       << "lvl_delta:" << lvl_delta
+                       << "count_for_level" << count_for_level
+                       << "cur_max_eh_slots" << cur_max_eh_slots;
+
+    while(pow->m_enhancements.size() < cur_max_eh_slots)
+    {
+        CharacterEnhancement eh;
+        eh.m_enhance_info = pow->m_power_info;
+        eh.m_slot_idx = pow->m_enhancements.size();
+        pow->m_enhancements.push_back(eh);
+        pow->m_total_eh_slots = pow->m_enhancements.size();
+
+        qCDebug(logPowers) << "Adding empty EH Slot" << eh.m_slot_idx
+                           << eh.m_enhance_info.m_pset_idx
+                           << eh.m_enhance_info.m_pow_idx;
+    }
 }
+
+void buyEnhancementSlots(Entity &ent, uint32_t available_slots, std::vector<int> pset_idx, std::vector<int> pow_idx)
+{
+    if(pow_idx.size() != available_slots)
+        qCDebug(logPowers) << "EH vector size does not equal available slots";
+
+    for(int i = 0; i < available_slots; ++i)
+    {
+        CharacterPower * pow = nullptr;
+        pow = getOwnedPowerByVecIdx(ent, pset_idx[i], pow_idx[i]);
+
+        qCDebug(logPowers) << "Power for EH slot:" << i
+                           << pow->getPowerTemplate().m_Name
+                           << "indexes" << pow->m_power_info.m_pcat_idx
+                           << pow->m_power_info.m_pset_idx
+                           << pow->m_power_info.m_pow_idx;
+
+        if(pow == nullptr && pow->getPowerTemplate().m_Name.isEmpty())
+            qFatal("Cannot find Power for buying enhancement slot: %d %d", pset_idx[i], pow_idx[i]);
+
+        //++pow->m_total_eh_slots;
+        reserveEnhancementSlot(pow, getLevel(*ent.m_char));
+    }
+}
+
 
 float enhancementCombineChances(CharacterEnhancement *eh1, CharacterEnhancement *eh2)
 {

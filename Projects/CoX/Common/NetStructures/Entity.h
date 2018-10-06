@@ -18,6 +18,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/constants.hpp>
 
+#include <QQueue>
 #include <array>
 #include <memory>
 
@@ -99,6 +100,12 @@ enum class FadeDirection
     Out
 };
 
+struct Destination // aka waypoint
+{
+    int point_idx = 0;
+    glm::vec3 location;
+};
+
 // returned by getEntityFromDB()
 struct CharacterFromDB
 {
@@ -134,17 +141,6 @@ enum class AppearanceType : uint8_t
     NpcCostume    = 2,
     VillainIndex  = 3,
     SequencerName = 4
-};
-
-enum class StateMode : uint8_t
-{
-    Simple              = 0,
-    Create_Team         = 1,
-    Create_Team_Wait    = 2,
-    Dead                = 3,
-    Ressurect           = 4,
-    NeedsGurney         = 5,
-    Max_State           = 6
 };
 
 struct SuperGroup
@@ -234,21 +230,23 @@ public:
         EntType             m_type                  = {EntType::Invalid};
         glm::quat           m_direction;
         glm::vec3           m_spd                   = {1,1,1};
-        uint32_t            m_target_idx            = 0;
-        uint32_t            m_assist_target_idx     = 0;
+        int32_t             m_target_idx            = -1;
+        int32_t             m_assist_target_idx     = -1;
 
-        std::vector<CharacterPower *> m_queued_powers;
-        std::vector<CharacterPower *> m_recharging_powers;
+        std::vector<Buffs>          m_buffs;
+        QQueue<QueuedPowers>        m_queued_powers;
+        std::vector<QueuedPowers>   m_recharging_powers;
+        std::vector<NetFx>          m_net_fx;
         CharacterPower    * m_stance                = nullptr;
+        bool                m_update_buffs          = false;
 
         int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
         int                 m_num_fx                = 0;
         bool                m_is_logging_out        = false;
         int                 m_time_till_logout      = 0;    // time in miliseconds untill given entity should be marked as logged out.
-        std::vector<NetFx>  m_fx1;
         AppearanceType      m_costume_type          = AppearanceType::None;
         int                 m_state_mode            = 0;
-        bool                m_state_mode_send       = false;
+        bool                m_has_state_mode       = false;
         bool                m_odd_send              = false;
         bool                m_no_draw_on_client     = false;
         bool                m_seq_update            = false;
@@ -274,6 +272,7 @@ public:
         bool                m_has_control_id        = false;    // EntityReponse sendServerPhysicsPositions
         bool                m_extra_info            = false;    // EntityUpdateCodec storePosUpdate
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
+        bool                m_in_training           = false;
 
         bool                m_has_input_on_timeframe= false;
 
@@ -305,6 +304,7 @@ public:
         MapClientSession *  m_client                    = nullptr;
         FadeDirection       m_fading_direction          = FadeDirection::In;
         uint32_t            m_db_store_flags            = 0;
+        Destination         m_cur_destination;
 
         void                dump();
         void                addPosUpdate(const PosUpdate &p);

@@ -1,5 +1,4 @@
 #include "CharacterHelpers.h"
-
 #include "Character.h"
 
 /*
@@ -8,6 +7,7 @@
 // Getter
 uint32_t            getLevel(const Character &c) { return c.m_char_data.m_level; }
 uint32_t            getCombatLevel(const Character &c) { return c.m_char_data.m_combat_level; }
+uint32_t            getSecurityThreat(const Character &c) { return c.m_char_data.m_security_threat; }
 float               getHP(const Character &c) { return c.m_char_data.m_current_attribs.m_HitPoints; }
 float               getEnd(const Character &c) { return c.m_char_data.m_current_attribs.m_Endurance; }
 uint64_t            getLastCostumeId(const Character &c) { return c.m_char_data.m_last_costume_id; }
@@ -27,17 +27,25 @@ const QString &     getAlignment(const Character &c) { return c.m_char_data.m_al
 // Setters
 void setLevel(Character &c, uint32_t val)
 {
-    if(val>50)
-        val = 50;
-    c.m_char_data.m_level = val - 1; // client stores lvl arrays starting at 0
-    // TODO: run finalizelevel here, but requires MapClientSession
+    if(val>49)
+        val = 49;
+    c.m_char_data.m_level = val; // client stores lvl arrays starting at 0
+    c.finalizeLevel();
 }
 
 void setCombatLevel(Character &c, uint32_t val)
 {
-    if(val>50)
-        val = 50;
+    if(val>49)
+        val = 49;
     c.m_char_data.m_combat_level = val;
+    c.finalizeCombatLevel();
+}
+
+void setSecurityThreat(Character &c, uint32_t val)
+{
+    if(val>49)
+        val = 49;
+    c.m_char_data.m_security_threat = val;
 }
 
 void setHP(Character &c, float val)
@@ -45,9 +53,19 @@ void setHP(Character &c, float val)
     c.m_char_data.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val,c.m_max_attribs.m_HitPoints));
 }
 
+void setHP(Character &c)
+{
+    setHP(c, c.m_max_attribs.m_HitPoints);
+}
+
 void setEnd(Character &c, float val)
 {
     c.m_char_data.m_current_attribs.m_Endurance = std::max(0.0f, std::min(val,c.m_max_attribs.m_Endurance));
+}
+
+void setEnd(Character &c)
+{
+    setEnd(c, c.m_max_attribs.m_Endurance);
 }
 
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
@@ -55,14 +73,6 @@ void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_cost
 void setXP(Character &c, uint32_t val)
 {
     c.m_char_data.m_experience_points = val;
-    for (auto const &lvl : c.m_other_attribs.m_ExperienceRequired)
-    {
-        if (val >= lvl && val < lvl + 1)
-        {
-            setLevel(c, lvl);
-            // TODO: set max attribs based upon level.
-        }
-    }
 }
 
 void setDebt(Character &c, uint32_t val) { c.m_char_data.m_experience_debt = val; }
