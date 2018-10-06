@@ -208,18 +208,13 @@ void ScriptingEngine::registerTypes()
         for (const auto& f : floats)
         {
             if(count == 0)
-            {
                 loc.x = f;
-            }
-            else if (count == 1)
-            {
+            else if(count == 1)
                 loc.y = f;
-            }
             else
-            {
                 loc.z = f;
-            }
-            count++;
+
+            ++count;
         }
 
         forcePosition(*e, loc);
@@ -375,18 +370,13 @@ void ScriptingEngine::registerTypes()
         for (const auto& f : floats)
         {
             if(count == 0)
-            {
                 loc.x = f;
-            }
-            else if (count == 1)
-            {
+            else if(count == 1)
                 loc.y = f;
-            }
             else
-            {
                 loc.z = f;
-            }
-            count++;
+
+            ++count;
         }
 
         qCDebug(logScripts) << QString("Facing location. X: %1 Y: %2 Z: %3").arg(loc.x).arg(loc.y).arg(loc.z);
