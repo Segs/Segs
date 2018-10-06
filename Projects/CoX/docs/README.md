@@ -124,7 +124,9 @@ If you're looking to compile SEGS from source, or need to do an advanced manual 
 
       SEGS requires several CoH files to run. Clicking this button will prompt you to enter the path to your CoX directory. Once selected, it will copy several files from the CoX directory, and extract a portion of those files to your `SEGS/data/` subdirectory. These `.bin` files are required by SEGS to load CoX maps, and spawn NPCs. Once completed, SEGSAdmin will clean up any unnecessary files.
 
-
+  4. **Network Ports**
+      Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200
+      
 4. **(Optional) Add User Account**
 
    Optionally, you may elect to add additional user accounts by clicking this button on the left side of the SEGSAdmin window. SEGSAdmin will prompt you to enter a username, password, and access level for each account. A user's access level is used to determine their permissions within your server. Please reference this chart:
