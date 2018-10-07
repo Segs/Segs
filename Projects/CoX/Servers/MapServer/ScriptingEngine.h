@@ -22,7 +22,7 @@ public:
     void registerTypes();
     int loadAndRunFile(const QString &path);
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1);
-    std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1, float x, float y, float z);
+    std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1, std::vector<float>);
     std::string callFunc(const char *name,int arg1);
     std::string callFunc(const char *name,int arg1, std::vector<float> loc);
     int runScript(const QString &script_contents,const char *script_name="unnamed script");

@@ -428,12 +428,10 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     return callFunc(name,arg1);
 }
 
-std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, float x, float y, float z)
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, std::vector<float> loc)
 {
     m_private->m_lua["client"] = client;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
-
-    std::vector<float> loc = {x,y,z};
     return callFunc(name,arg1,loc);
 }
 
