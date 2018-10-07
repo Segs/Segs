@@ -188,7 +188,6 @@ void ScriptingEngine::registerTypes()
     ,
     "addNpc", [](MapClientSession &cl, const char* name, sol::as_table_t<std::vector<std::float_t>> location, int variation)
     {
-        glm::vec3 gm_loc = cl.m_ent->m_entity_data.m_pos;
         const NPCStorage & npc_store(getGameData().getNPCDefinitions());
         const QString name_string = QString::fromUtf8(name);
         QStringRef npc_name = QStringRef(&name_string);
@@ -428,7 +427,7 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     return callFunc(name,arg1);
 }
 
-std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, std::vector<float> loc)
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, glm::vec3 loc)
 {
     m_private->m_lua["client"] = client;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
@@ -454,12 +453,12 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     return result.get<std::string>();
 }
 
-std::string ScriptingEngine::callFunc(const char *name, int arg1, std::vector<float> loc)
+std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
     funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
 
-    sol::table loc_table = m_private->m_lua.create_table_with("x", loc[0], "y",  loc[1], "z", loc[2]);
+    sol::table loc_table = m_private->m_lua.create_table_with("x", loc.x, "y",  loc.y, "z", loc.z);
     sol::table table = m_private->m_lua.create_table_with("id", arg1, "loc" , loc_table);
 
     if(!funcwrap.valid())
