@@ -1967,11 +1967,11 @@ void MapInstance::on_location_visited(LocationVisited *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
 
-    std::vector<std::float_t> loc =
+    std::vector<float> loc =
     {
-        static_cast<std::float_t>(ev->m_pos.x),
-        static_cast<std::float_t>(ev->m_pos.y),
-        static_cast<std::float_t>(ev->m_pos.z)
+        ev->m_pos.x,
+        ev->m_pos.y,
+        ev->m_pos.z
     };
 
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited",qHash(ev->m_name), loc);
@@ -1986,11 +1986,11 @@ void MapInstance::on_plaque_visited(PlaqueVisited * ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
 
-    std::vector<std::float_t> loc =
+    std::vector<float> loc =
     {
-        static_cast<std::float_t>(ev->m_pos.x),
-        static_cast<std::float_t>(ev->m_pos.y),
-        static_cast<std::float_t>(ev->m_pos.z)
+        ev->m_pos.x,
+        ev->m_pos.y,
+        ev->m_pos.z
     };
 
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited",qHash(ev->m_name), loc);
