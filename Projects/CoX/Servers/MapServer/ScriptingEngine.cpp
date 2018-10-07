@@ -428,7 +428,7 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     return callFunc(name,arg1);
 }
 
-std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, std::vector<float> loc)
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, std::vector<float> *loc)
 {
     m_private->m_lua["client"] = client;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
@@ -454,7 +454,7 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     return result.get<std::string>();
 }
 
-std::string ScriptingEngine::callFunc(const char *name, int arg1, std::vector<float> loc)
+std::string ScriptingEngine::callFunc(const char *name, int arg1, std::vector<float> *loc)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
     funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
