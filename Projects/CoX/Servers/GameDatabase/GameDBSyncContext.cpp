@@ -540,7 +540,7 @@ bool GameDbSyncContext::fillEmailRecipientId(const FillEmailRecipientIdRequestDa
     result.m_message = data.m_message;
     result.m_timestamp = data.m_timestamp;
 
-    result.m_recipient_id = m_prepared_entity_select->value(0).toUInt();
+    result.m_recipient_id = m_prepared_email_fill_recipient_id->value(0).toUInt();
     return true;
 }
 

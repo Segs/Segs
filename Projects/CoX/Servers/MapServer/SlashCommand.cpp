@@ -1791,11 +1791,6 @@ void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
     sendEmailHeaders(sess);
-
-    QString msg = "Sent Email Headers";
-
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)

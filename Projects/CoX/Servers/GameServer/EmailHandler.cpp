@@ -19,6 +19,7 @@ void EmailHandler::dispatch(Event *ev)
     assert(ev);
     switch(ev->type())
     {
+        // EmailEvents
         case EmailEventTypes::evEmailHeaderRequest:
         on_email_header(static_cast<EmailHeaderRequest *>(ev));
         break;
@@ -31,6 +32,8 @@ void EmailHandler::dispatch(Event *ev)
         case EmailEventTypes::evEmailDeleteMessage:
         on_email_delete(static_cast<EmailDeleteMessage *>(ev));
         break;
+
+        // GameDbEvents
         case GameDBEventTypes::evEmailCreateResponse:
         on_email_create_response(static_cast<EmailCreateResponse *>(ev));
         break;
@@ -94,16 +97,17 @@ void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
 
     m_state.m_stored_client_datas[msg->m_data.m_sender_id]
             .m_email_state.m_sent_email_ids.insert(msg->m_data.m_email_id);
-    m_state.m_stored_client_datas[msg->m_data.m_recipient_id]
-            .m_email_state.m_received_email_ids.insert(msg->m_data.m_email_id);
-    m_state.m_stored_client_datas[msg->m_data.m_recipient_id]
-            .m_email_state.m_unread_email_ids.insert(msg->m_data.m_email_id);
 
     // if the recipient is not online during the time of send, return
     if (m_state.m_stored_client_datas.count(msg->m_data.m_recipient_id) <= 0)
         return;
 
-    const ClientSessionData &recipient_data (m_state.m_stored_client_datas[msg->m_data.m_sender_id]);
+    const ClientSessionData &recipient_data (m_state.m_stored_client_datas[msg->m_data.m_recipient_id]);
+
+    m_state.m_stored_client_datas[msg->m_data.m_recipient_id]
+            .m_email_state.m_received_email_ids.insert(msg->m_data.m_email_id);
+    m_state.m_stored_client_datas[msg->m_data.m_recipient_id]
+            .m_email_state.m_unread_email_ids.insert(msg->m_data.m_email_id);
 
     EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
                 recipient_data.m_server_id,
@@ -114,7 +118,7 @@ void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
                                           email_data.m_sender_name,
                                           email_data.m_subject,
                                           email_data.m_timestamp
-                                      }, msg->session_token()));
+                                      }, recipient_data.m_session_token));
 }
 
 void EmailHandler::on_get_emails_response(GetEmailsResponse *msg)
@@ -133,6 +137,7 @@ void EmailHandler::on_get_emails_response(GetEmailsResponse *msg)
 
 void EmailHandler::on_email_read(EmailReadRequest *msg)
 {
+    // on_email_read comes from recipient, so they are always online in this case
     EmailData& email_data (m_state.m_stored_email_datas[msg->m_data.m_email_id]);
     email_data.m_is_read_by_recipient = true;
 
@@ -147,7 +152,7 @@ void EmailHandler::on_email_read(EmailReadRequest *msg)
 
     m_db_handler->putq(new EmailMarkAsReadMessage({msg->m_data.m_email_id, cerealizedEmailData}, uint64_t(1)));
 
-
+    // the sender is not always online in this case
     if (m_state.m_stored_client_datas.count(email_data.m_sender_id) > 0)
     {
         const ClientSessionData &sender_data (m_state.m_stored_client_datas[email_data.m_sender_id]);
@@ -173,7 +178,7 @@ void EmailHandler::on_email_read(EmailReadRequest *msg)
 
 void EmailHandler::on_email_send(EmailSendMessage *msg)
 {
-    // from this, you'd still need:
+    // from this, you still need:
     // 1. email_id, that comes from creating the email in db
     // 2. recipient_id, which will be searched based on recipient_name
     // so, the route is emailSend -> FillEmailRecipientId -> EmailCreate
