@@ -186,7 +186,7 @@ void ScriptingEngine::registerTypes()
             sendInfoMessage(static_cast<MessageChannel>(channel), QString::fromUtf8(message), *cl);
         }
     ,
-    "addNpc", [](MapClientSession &cl, const char* name, sol::as_table_t<std::vector<float>> location, int variation)
+    "addNpc", [](MapClientSession &cl, const char* name, sol::as_table_t<std::vector<std::float_t>> location, int variation)
     {
         glm::vec3 gm_loc = cl.m_ent->m_entity_data.m_pos;
         const NPCStorage & npc_store(getGameData().getNPCDefinitions());
@@ -362,7 +362,7 @@ void ScriptingEngine::registerTypes()
     {
         sendFaceEntity(*cl->m_ent, target);
     },
-    "faceLocation", [](MapClientSession *cl, sol::as_table_t<std::vector<float>> location)
+    "faceLocation", [](MapClientSession *cl, sol::as_table_t<std::vector<float_t>> location)
     {
         glm::vec3 loc;
         const auto& floats = location.source;
@@ -428,10 +428,12 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     return callFunc(name,arg1);
 }
 
-std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, std::vector<float> *loc)
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, float x, float y, float z)
 {
     m_private->m_lua["client"] = client;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
+
+    std::vector<float> loc = {x,y,z};
     return callFunc(name,arg1,loc);
 }
 
@@ -454,7 +456,7 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     return result.get<std::string>();
 }
 
-std::string ScriptingEngine::callFunc(const char *name, int arg1, std::vector<float> *loc)
+std::string ScriptingEngine::callFunc(const char *name, int arg1, std::vector<float> loc)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
     funcwrap.error_handler = m_private->m_lua["ErrorHandler"];

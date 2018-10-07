@@ -1967,14 +1967,7 @@ void MapInstance::on_location_visited(LocationVisited *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
 
-    std::vector<float> loc =
-    {
-        ev->m_pos.x,
-        ev->m_pos.y,
-        ev->m_pos.z
-    };
-
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited",qHash(ev->m_name), &loc);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited",qHash(ev->m_name), ev->m_pos.x, ev->m_pos.y, ev->m_pos.z);
     sendInfoMessage(MessageChannel::DEBUG_INFO,QString::fromStdString(val),session);
 
     qCWarning(logMapEvents) << "Unhandled location visited event:" << ev->m_name <<
@@ -1986,14 +1979,7 @@ void MapInstance::on_plaque_visited(PlaqueVisited * ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
 
-    std::vector<float> loc =
-    {
-        ev->m_pos.x,
-        ev->m_pos.y,
-        ev->m_pos.z
-    };
-
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited",qHash(ev->m_name), &loc);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited",qHash(ev->m_name), ev->m_pos.x, ev->m_pos.y, ev->m_pos.z);
     qCWarning(logMapEvents) << "Unhandled plaque visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 }
