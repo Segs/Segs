@@ -123,6 +123,7 @@ QString demoteSG(Entity &src, Entity &tgt);
 SuperGroupStats *getSGMember(Entity &tgt, uint32_t sg_idx);
 SuperGroup* getSuperGroupByIdx(uint32_t sg_idx);
 void addSuperGroup(Entity &e, SuperGroupData data);
+void removeSuperGroup(uint32_t sg_db_id);
 
 extern std::vector<SuperGroup> g_all_supergroups;
 

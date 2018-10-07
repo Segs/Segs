@@ -406,11 +406,11 @@ struct CreateNewSuperGroupRequestData
 
 struct CreateNewSuperGroupResponseData
 {
-    uint32_t m_sg_id;
+    uint32_t m_sg_db_id;
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_sg_id );
+        ar( m_sg_db_id );
     }
 };
 // [[ev_def:macro]]

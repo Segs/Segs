@@ -15,12 +15,51 @@ namespace SEGSEvents
 
 enum SuperGroupHandlerEventTypes : uint32_t
 {
-    evSGMemberConnectedMessage = Internal_EventTypes::ID_LAST_Internal_EventTypes,
+    evCreateSuperGroupMessage = Internal_EventTypes::ID_LAST_Internal_EventTypes,
+    evRemoveSuperGroupMessage,
+    evSGMemberConnectedMessage,
     evSendSGRosterMessage,
     evSendNotifySGMembersMessage,
     evSGMemberAddedMessage,
     evSGMemberRemovedMessage,
 };
+
+struct CreateSuperGroupData
+{
+    uint64_t m_session_token;
+    uint32_t m_sg_db_id;
+    QString m_sg_name;
+    SuperGroupData m_data;
+    vSuperGroupRoster m_sg_members;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_session_token);
+        ar(m_sg_db_id);
+        ar(m_sg_name);
+        ar(m_data);
+        ar(m_sg_members);
+    }
+};
+
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes,CreateSuperGroup)
+
+struct RemoveSuperGroupData
+{
+    uint64_t m_session_token;
+    uint32_t m_sg_db_id;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_session_token, m_sg_db_id);
+    }
+};
+
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes,RemoveSuperGroup)
 
 struct SGMemberConnectedData
 {
@@ -37,7 +76,7 @@ struct SGMemberConnectedData
 };
 
 //[[ev_def:macro]]
-ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes, SGMemberConnected)
+ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes,SGMemberConnected)
 
 struct SendSGRosterData
 {
@@ -52,7 +91,7 @@ struct SendSGRosterData
 };
 
 //[[ev_def:macro]]
-ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes, SendSGRoster)
+ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes,SendSGRoster)
 
 struct SendNotifySGMembersData
 {
@@ -66,7 +105,7 @@ struct SendNotifySGMembersData
 };
 
 //[[ev_def:macro]]
-ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes, SendNotifySGMembers)
+ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes,SendNotifySGMembers)
 
 struct SGMemberAddedData
 {
@@ -81,7 +120,7 @@ struct SGMemberAddedData
 };
 
 //[[ev_def:macro]]
-ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes, SGMemberAdded)
+ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes,SGMemberAdded)
 
 struct SGMemberRemovedData
 {
@@ -95,5 +134,5 @@ struct SGMemberRemovedData
 };
 
 //[[ev_def:macro]]
-ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes, SGMemberRemoved)
+ONE_WAY_MESSAGE(SuperGroupHandlerEventTypes,SGMemberRemoved)
 } // end of namespace SEGSEvents

@@ -412,12 +412,19 @@ void addSuperGroup(Entity &e, SuperGroupData data)
     cd->m_supergroup.m_sg_db_id         = sg.m_sg_db_id;
     cd->m_supergroup.m_has_supergroup   = true;
     cd->m_supergroup.m_rank             = 2; // first member should be leader
-    cd->m_supergroup.m_has_sg_costume   = false;
+    cd->m_supergroup.m_has_sg_costume   = true;
     cd->m_supergroup.m_sg_mode          = true;
     cd->m_supergroup.m_sg_costume       = *e.m_char->getCurrentCostume();
     cd->m_supergroup.m_sg_costume.m_send_full_costume = false;
 }
 
+void removeSuperGroup(uint32_t sg_db_id)
+{
+    auto iter = std::find_if( g_all_supergroups.begin(), g_all_supergroups.end(),
+                              [sg_db_id](const SuperGroup& sg)->bool {return sg_db_id==sg.m_sg_db_id;});
+    if(iter!=g_all_supergroups.end())
+        iter = g_all_supergroups.erase(iter);
+}
 
 /*
  * SuperGroupStats

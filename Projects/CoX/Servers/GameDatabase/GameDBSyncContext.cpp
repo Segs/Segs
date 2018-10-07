@@ -440,7 +440,7 @@ bool GameDbSyncContext::createNewSuperGroup(const CreateNewSuperGroupRequestData
 
     assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
     uint32_t sg_id = m_prepared_supergroup_insert->lastInsertId().toUInt();
-    result.m_sg_id = sg_id; // return sg_id here, so that every sg has unique idx
+    result.m_sg_db_id = sg_id; // return sg_id here, so that every sg has unique idx
 
     grd.commit();
     return true;

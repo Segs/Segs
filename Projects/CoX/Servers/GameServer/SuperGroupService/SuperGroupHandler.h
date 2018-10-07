@@ -17,6 +17,8 @@
 
 namespace SEGSEvents
 {
+struct CreateSuperGroupMessage;
+struct RemoveSuperGroupMessage;
 struct SGMemberConnectedMessage;
 struct SGMemberAddedMessage;
 struct SGMemberRemovedMessage;
@@ -29,9 +31,9 @@ struct MapInfo
     uint32_t instance_id; //this is the template ID aka map instance id
 };
 
-struct PlayerInfo
+struct SuperGroupInfo
 {
-    std::set<uint32_t> m_players_added; //a set of player ids in this SuperGroup
+    std::set<uint32_t> m_sg_idxs; //a set of sg_db_ids
     vSuperGroupRoster m_sg_members;
     MapInfo m_map_info;
     bool m_is_online;
@@ -40,13 +42,13 @@ struct PlayerInfo
 struct SuperGroupHandlerState
 {
     //Key is db ID of char, value is everything associated
-    std::unordered_map<uint32_t,PlayerInfo> m_player_info_map;
+    std::unordered_map<uint32_t, SuperGroupInfo> m_sg_info_map;
     int m_game_server_id;
 
     bool is_online(uint32_t m_db_id) const
     {
-        auto search = m_player_info_map.find(m_db_id);
-        if(search == m_player_info_map.end())
+        auto search = m_sg_info_map.find(m_db_id);
+        if(search == m_sg_info_map.end())
             return false;
         return search->second.m_is_online;
     }

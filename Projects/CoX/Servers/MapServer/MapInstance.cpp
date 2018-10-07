@@ -2631,9 +2631,9 @@ void MapInstance::on_supergroup_created(CreateNewSuperGroupResponse *ev)
     MapClientSession &sess(m_session_store.session_from_event(ev));
     Entity *ent = sess.m_ent;
 
-    SuperGroup *sg = &g_all_supergroups.at(ev->m_data.m_sg_id);
-    sg->m_sg_db_id = ev->m_data.m_sg_id;
-    ent->m_char->m_char_data.m_supergroup.m_sg_db_id = ev->m_data.m_sg_id;
+    SuperGroup *sg = &g_all_supergroups.at(ev->m_data.m_sg_db_id);
+    sg->m_sg_db_id = ev->m_data.m_sg_db_id;
+    ent->m_char->m_char_data.m_supergroup.m_sg_db_id = ev->m_data.m_sg_db_id;
 }
 
 void MapInstance::on_get_supergroup(GetSuperGroupResponse *ev)
