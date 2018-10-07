@@ -42,7 +42,7 @@ scan_event_types(AuthEvents ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_D
 add_event_sources(AuthEvents target_SOURCES)
 
 ADD_LIBRARY(AuthProtocol STATIC ${target_SOURCES})
-target_link_libraries(AuthProtocol PUBLIC Qt5::Core)
+target_link_libraries(AuthProtocol PUBLIC Qt5::Core ace_IMP)
 target_link_libraries(AuthProtocol INTERFACE SEGS_Components)
 set_property(TARGET AuthProtocol PROPERTY POSITION_INDEPENDENT_CODE ON)
 if(ENABLE_TESTS)
