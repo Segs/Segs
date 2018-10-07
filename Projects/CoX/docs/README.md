@@ -128,7 +128,7 @@ If you're looking to compile SEGS from source, or need to do an advanced manual 
       Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200
      These are the same ports that the original game client and now, SEGS uses as well.
       
-4. **(Optional) Add User Account**
+5. **(Optional) Add User Account**
 
    Optionally, you may elect to add additional user accounts by clicking this button on the left side of the SEGSAdmin window. SEGSAdmin will prompt you to enter a username, password, and access level for each account. A user's access level is used to determine their permissions within your server. Please reference this chart:
    
