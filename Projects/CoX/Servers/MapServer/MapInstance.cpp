@@ -629,8 +629,9 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
 
     removeLFG(*ent);
     leaveTeam(*ent);
-    // one last character update for the disconnecting entity
+    setLastOnline(*ent->m_char);
 
+    // one last character update for the disconnecting entity
     send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
 
@@ -2485,6 +2486,7 @@ void MapInstance::on_update_entities()
     {
         Entity *e = sess->m_ent;
         send_character_update(e);
+        setLastOnline(*e->m_char); // set this here, in case we disconnect unexpectedly
 
         /* at the moment we are forcing full character updates, so I'll leave this commented for now
 

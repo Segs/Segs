@@ -245,7 +245,7 @@ public:
 
         // Animations: Sequencers, NetFx, and TriggeredMoves
         std::vector<NetFx>  m_net_fx;
-        std::array<TriggeredMove, 20> m_triggered_moves;
+        std::vector<TriggeredMove> m_triggered_moves;
         SeqBitSet           m_seq_state;                    // Should be part of SeqState
         int                 m_state_mode            = 0;
         bool                m_has_state_mode        = false;

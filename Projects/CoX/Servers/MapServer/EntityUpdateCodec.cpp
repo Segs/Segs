@@ -176,7 +176,8 @@ void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
 
 void sendSeqMoveUpdate(const Entity &src, BitStream &bs)
 {
-    qCDebug(logAnimations, "Sending seq mode update %d", src.m_seq_update);
+    if(src.m_type == EntType::PLAYER)
+        qCDebug(logAnimations, "Sending seq mode update %d", src.m_seq_update);
 
     PUTDEBUG("before sendSeqMoveUpdate");
     bs.StoreBits(1, src.m_seq_update); // no seq update
@@ -189,10 +190,10 @@ void sendSeqMoveUpdate(const Entity &src, BitStream &bs)
 void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
 {
     PUTDEBUG("before sendSeqTriggeredMoves");
-    qCDebug(logAnimations, "Sending seq triggered moves %d", src.m_triggered_moves.size());
-    if(src.m_triggered_moves.size() < 20)
-        qWarning() << "Triggered moves array is smaller than 20!";
+    if(src.m_type == EntType::PLAYER)
+        qCDebug(logAnimations, "Sending seq triggered moves %d", src.m_triggered_moves.size());
 
+    // client appears to process only the last 20 triggered moves
     bs.StorePackedBits(1, src.m_triggered_moves.size()); // num moves
     for(const TriggeredMove &move : src.m_triggered_moves)
     {
