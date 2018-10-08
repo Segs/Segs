@@ -275,7 +275,6 @@ void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMes
 
 void MapInstance::reap_stale_links()
 {
-
     ACE_Time_Value              time_now = ACE_OS::gettimeofday();
     EventProcessor *            tgt      = HandlerLocator::getGame_Handler(m_game_server_id);
 
@@ -623,7 +622,7 @@ void MapInstance::on_link_lost(Event *ev)
     //todo: notify all clients about entity removal
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.m_ent->m_char->m_db_id},0));
 
     // one last character update for the disconnecting entity
     send_character_update(ent);
@@ -645,7 +644,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     assert(ent);
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.m_ent->m_char->m_db_id},0));
 
     removeLFG(*ent);
     leaveTeam(*ent);
