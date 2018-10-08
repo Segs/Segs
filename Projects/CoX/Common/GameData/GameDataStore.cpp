@@ -205,6 +205,13 @@ bool read_data_to(const QString &directory_path,const QString &storage,TARGET &t
 
 GameDataStore::GameDataStore()
 {
+    static bool was_created = false;
+    if(!was_created)
+        was_created = true;
+    else
+    {
+        qCritical() << "Multiple instances of GameDataStore created in a single process, expect trouble";
+    }
     packer_instance = new HashBasedPacker;
 }
 
@@ -257,19 +264,20 @@ bool GameDataStore::read_runtime_data(const QString &directory_path)
 
 uint32_t GameDataStore::expForLevel(uint32_t lev) const
 {
-    assert(lev>0 && lev<m_experience_and_debt_per_level.m_ExperienceRequired.size());
-    return m_experience_and_debt_per_level.m_ExperienceRequired.at(lev - 1);
+    assert(lev>=0 && lev<m_experience_and_debt_per_level.m_ExperienceRequired.size());
+    return m_experience_and_debt_per_level.m_ExperienceRequired.at(lev);
 }
 
 uint32_t GameDataStore::expDebtForLevel(uint32_t lev) const
 {
-    assert(lev>0 && lev<m_experience_and_debt_per_level.m_DefeatPenalty.size());
-    return m_experience_and_debt_per_level.m_DefeatPenalty.at(lev - 1);
+    assert(lev>=0 && lev<m_experience_and_debt_per_level.m_DefeatPenalty.size());
+    return m_experience_and_debt_per_level.m_DefeatPenalty.at(lev);
 }
 
 uint32_t GameDataStore::expMaxLevel() const
 {
-    return m_experience_and_debt_per_level.m_ExperienceRequired.size();
+    // return -1 because level is stored in indexed array (starting 0)
+    return m_experience_and_debt_per_level.m_ExperienceRequired.size()-1;
 }
 
 int GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &schedule) const
@@ -410,6 +418,27 @@ bool GameDataStore::read_powers(const QString &directory_path)
     if (!read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path, "powers.bin",
                                                                    m_all_powers))
         return false;
+
+    // Hardcoding of stats to test powers
+    StoredAttribMod temp;
+    Power_Data *temppower = nullptr;
+
+    temp.name = "Damage";
+    temp.Magnitude = 5;
+    temppower = editable_power_tpl(26,0,0);    // brawl
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "Healing";
+    temppower = editable_power_tpl(26,0,7);    // rest
+    temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(27,0,24);   // medkit
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "Speed_Boost";
+    temp.Magnitude = 0.5;
+    temppower = editable_power_tpl(26,0,6);    // sprint
+    temppower->pAttribMod.push_back(temp);
+
     return true;
 }
 
@@ -447,6 +476,25 @@ bool GameDataStore::read_pi_schedule(const QString &directory_path)
     return true;
 }
 
+const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)
+{
+    return m_all_powers.m_categories.at(pcat_idx).m_PowerSets.at(pset_idx);
+}
+
+const Power_Data& GameDataStore::get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+{
+    return m_all_powers.m_categories.at(pcat_idx).m_PowerSets.at(pset_idx).m_Powers.at(pow_idx);
+}
+
+Power_Data * GameDataStore::editable_power_tpl(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
+{
+    return &m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
+}
+
+const StoredPowerCategory& GameDataStore::get_power_category(uint32_t pcat_idx)
+{
+    return m_all_powers.m_categories.at(pcat_idx);
+}
 
 int getEntityOriginIndex(const GameDataStore &data, bool is_player, const QString &origin_name)
 {
@@ -473,9 +521,14 @@ int getEntityClassIndex(const GameDataStore &data, bool is_player, const QString
             return idx;
         idx++;
     }
-    qWarning() << "Failed to locate class index for"<<class_name;
+    qWarning() << "Failed to locate class index for" << class_name;
     return 0;
+}
 
+GameDataStore &getGameData() {
+    static GameDataStore instance;
+    return instance;
 }
 
 //! @}
+

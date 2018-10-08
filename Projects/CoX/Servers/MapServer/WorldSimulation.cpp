@@ -14,16 +14,15 @@
 #include "MapInstance.h"
 
 #include "Common/Servers/Database.h"
-#include "Common/NetStructures/Movement.h"
 #include "Events/GameCommandList.h"
-#include "NetStructures/Character.h"
-
+#include "Character.h"
+#include "CharacterHelpers.h"
+#include "Movement.h"
 #include <glm/gtx/vector_query.hpp>
-#include <glm/ext.hpp>
+//#include <glm/ext.hpp>
 
 void World::update(const ACE_Time_Value &tick_timer)
 {
-
     ACE_Time_Value delta;
     if(prev_tick_time==ACE_Time_Value::zero)
     {
@@ -136,10 +135,86 @@ void World::effectsStep(Entity *e,uint32_t msec)
     }
 }
 
+void World::checkPowerTimers(Entity *e, uint32_t msec)
+{
+    // for now we only run this on players
+    if(e->m_type != EntType::PLAYER)
+        return;
+
+    // Activation Timers -- queue FIFO
+    if(e->m_queued_powers.size() > 0)
+    {
+        QueuedPowers &qpow = e->m_queued_powers.front();
+        qpow.m_activate_period -= (float(msec)/1000);
+
+        // this must come before the activation_period check
+        // to ensure that the queued power ui-effect is reset properly
+        if(qpow.m_activation_state == false)
+        {
+            e->m_queued_powers.dequeue(); // remove first from queue
+            e->m_char->m_char_data.m_has_updated_powers = true;
+        }
+
+        if(qpow.m_activate_period <= 0)
+            qpow.m_activation_state = false;
+    }
+
+    // Recharging Timers -- iterate through and remove finished timers
+    auto rpow_idx = e->m_recharging_powers.begin();
+    for(QueuedPowers &rpow : e->m_recharging_powers)
+    {
+        rpow.m_recharge_time -= (float(msec)/1000);
+
+        if(rpow.m_recharge_time <= 0)
+        {
+            rpow_idx = e->m_recharging_powers.erase(rpow_idx);
+
+            // Check if rpow is default power, if so usePower again
+            if(e->m_char->m_char_data.m_trays.m_has_default_power)
+            {
+                if(rpow.m_pow_idxs.m_pset_vec_idx == e->m_char->m_char_data.m_trays.m_default_pset_idx
+                        && rpow.m_pow_idxs.m_pow_vec_idx == e->m_char->m_char_data.m_trays.m_default_pow_idx)
+                {
+                    usePower(*e, rpow.m_pow_idxs.m_pset_vec_idx, rpow.m_pow_idxs.m_pow_vec_idx, getTargetIdx(*e), getTargetIdx(*e));
+                }
+            }
+
+            e->m_char->m_char_data.m_has_updated_powers = true;
+        }
+        else
+            ++rpow_idx;
+    }
+
+    // Buffs
+    auto buff_idx = e->m_buffs.begin();
+    for(Buffs &buff : e->m_buffs)
+    {
+        buff.m_activate_period -= (float(msec)/1000); // activate period is in minutes
+
+        if(buff.m_activate_period <= 0)
+            buff_idx = e->m_buffs.erase(buff_idx);
+        else
+            ++buff_idx;
+    }
+}
+
 void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
 {
     physicsStep(e,dT.msec());
     effectsStep(e,dT.msec());
+    checkPowerTimers(e, dT.msec());
+
+    // recover endurance and health; for now on players only
+    if(e->m_type == EntType::PLAYER)
+    {
+        float hp = getHP(*e->m_char);
+        float end = getEnd(*e->m_char);
+        float regeneration = hp * (1.0/20.0) * dT.msec()/1000/12;
+        float recovery = end * (1.0/15.0) * dT.msec()/1000/12;
+        setHP(*e->m_char, hp + regeneration);
+        setEnd(*e->m_char, end + recovery);
+    }
+
     if(e->m_is_logging_out)
     {
         e->m_time_till_logout -= dT.msec();

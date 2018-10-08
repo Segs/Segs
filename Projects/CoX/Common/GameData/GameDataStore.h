@@ -69,6 +69,12 @@ public:
         Parse_PI_Schedule           m_pi_schedule;
         float                       m_player_fade_in;
 
+        // keep in mind the hierarchy is all_powers -> powercat -> powerset -> powerdata (template)
+        const StoredPowerCategory&  get_power_category(uint32_t pcat_idx);
+        const Parse_PowerSet&       get_powerset(uint32_t pcat_idx, uint32_t pset_idx);
+        const Power_Data&           get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
+        Power_Data*                 editable_power_tpl(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
+
         // auto-AFK and logout settings, auto-AFK is mandatory, server can choose between auto-logout or not
         float                       m_time_to_afk = 5 * 60;     // default afk time is 5 mins (300 secs)
         // when player has reached the threshold for m_time_to_logout, they will be notified that they will be
@@ -80,3 +86,4 @@ public:
 };
 int getEntityOriginIndex(const GameDataStore &data,bool is_player, const QString &origin_name);
 int getEntityClassIndex(const GameDataStore &data,bool is_player, const QString &class_name);
+extern GameDataStore& getGameData();

@@ -67,7 +67,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const GameDataStore &da
     QString description;
     QString battlecry;
     e.m_type = EntType(src.GetPackedBits(1));
-    e.m_char->GetCharBuildInfo(src,data);
+    e.m_char->GetCharBuildInfo(src);
     e.m_char->recv_initial_costume(src,data.getPacker());
     e.m_char->m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
     if(e.m_char->m_char_data.m_has_the_prefix)

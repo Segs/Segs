@@ -15,14 +15,14 @@ QString makeReadableName(QString &name)
 
 void NpcGenerator::generate(MapInstance *map_instance)
 {
-    const NPCStorage & npc_store(map_instance->serverData().getNPCDefinitions());
+    const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&costume_name);
     if (!npc_def)
         return;
     for(const glm::mat4 &v : initial_positions)
     {
         int idx = npc_store.npc_idx(npc_def);
-        Entity *e = map_instance->m_entities.CreateGeneric(map_instance->serverData(),*npc_def, idx, 0,type);
+        Entity *e = map_instance->m_entities.CreateGeneric(getGameData(), *npc_def, idx, 0, type);
         forcePosition(*e, glm::vec3(v[3]));
         auto valquat = glm::quat_cast(v);
 

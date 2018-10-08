@@ -19,6 +19,7 @@
 #include "NetStructures/Movement.h"
 #include "NetStructures/StateStorage.h"
 #include "GameData/playerdata_definitions.h"
+#include "GameData/map_definitions.h"
 #include "MapClientSession.h"
 #include "MapEvents.h"
 #include "MapInstance.h"
@@ -189,7 +190,7 @@ static void sendTrayMode(const GUISettings &gui, BitStream &bs)
 //////////////////////////////
 //                Keybinds
 static void sendKeybinds(const KeybindSettings &keybinds,BitStream &bs)
-{
+{     
     const CurrentKeybinds &cur_keybinds = keybinds.getCurrentKeybinds();
     int total_keybinds = cur_keybinds.size();
 
@@ -342,7 +343,7 @@ void storePowerRanges(const CharacterData &cd, BitStream &bs)
 
             bs.StoreBits(1,1); // have power to send.
             p.m_power_info.serializeto(bs);
-            bs.StoreFloat(p.m_range); // nem: I have no idea why it is passed here
+            bs.StoreFloat(p.getPowerTemplate().Range); // nem: I have no idea why it is passed here
         }
     }
     bs.StoreBits(1,0); // no more powers to send.
@@ -355,65 +356,33 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
     assert(e);
     CharacterData *cd = &e->m_char->m_char_data;
 
-    bs.StoreBits(1, cd->m_powers_updated);
-    if(!cd->m_powers_updated)
+    bs.StoreBits(1, cd->m_has_updated_powers);
+    if(!cd->m_has_updated_powers)
     {
         storePowerRanges(*cd, bs);
         return;
     }
-    qCDebug(logPowers) << "Powers Updated:" << cd->m_powers_updated;
+    qCDebug(logPowers) << "Powers Updated:" << cd->m_has_updated_powers;
 
-
-    // Reset Powersets (for respec)
+    // Reset Powersets (the array has changed)
     bs.StoreBits(1, cd->m_reset_powersets);
     if(cd->m_reset_powersets)
-    {
-        qCDebug(logPowers) << "Resetting Powers:" << cd->m_reset_powersets;
-        CharacterPowerSet temp;
-        uint32_t pcat_idx = getPowerCatByName(data,"Temporary_Powers");
+        cd->m_reset_powersets = false; // toggle this false because we're done
 
-        for(CharacterPowerSet &pset : cd->m_powersets)
-        {
-            if(pset.m_category == pcat_idx)
-            {
-                temp = pset;
-                break;
-            }
-        }
-
-        if(temp.m_powers.empty())
-            qWarning() << "Failed to find Temporary_Powers PowerSet";
-        else
-        {
-            cd->m_powersets.clear();
-            cd->m_powersets.push_back(temp);
-        }
-
-        cd->m_reset_powersets = false;
-    }
-
-    // Count all powers owned
-    uint32_t total_powers_owned = 0;
+    bs.StorePackedBits(1, countAllOwnedPowers(*cd, true)); // must include temp powers
+    int pset_idx = 0;
     for(const CharacterPowerSet &pset : cd->m_powersets)
     {
-        total_powers_owned += pset.m_powers.size(); // total up all powers
-    }
-
-    qCDebug(logPowers) << "Update Powers:" << total_powers_owned;
-    bs.StorePackedBits(1, total_powers_owned);
-    int i = 0;
-    for(const CharacterPowerSet &pset : cd->m_powersets)
-    {
-        int j = 0;
+        int pow_idx = 0;
         for(const CharacterPower &power : pset.m_powers)
         {
-            qCDebug(logPowers) << "Power:" << power.m_name << pset.m_index << power.m_index;
-            storePowerSpec(i, j, bs);
+            qCDebug(logPowers) << "Power:" << power.getPowerTemplate().m_Name << pset.m_index << power.m_index;
+            storePowerSpec(pset_idx, pow_idx, bs); // must send powers vector idx here
 
             bs.StoreBits(1, !power.m_erase_power);
             if(power.m_erase_power)
             {
-                qCDebug(logPowers) << "  Removing power" << power.m_name << pset.m_index << power.m_index;
+                qCDebug(logPowers) << "  Removing power" << power.getPowerTemplate().m_Name << pset.m_index << power.m_index;
                 removePower(*cd, power.m_power_info);
                 continue;
             }
@@ -421,21 +390,17 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
             power.m_power_info.serializeto(bs);
             bs.StorePackedBits(5, pset.m_level_bought);
             bs.StorePackedBits(5, power.m_level_bought);
-            bs.StorePackedBits(3, power.m_num_charges);
+            bs.StorePackedBits(3, power.m_charges_remaining);
             bs.StoreFloat(power.m_usage_time);
-            bs.StorePackedBits(24, power.m_activation_time);
+            bs.StorePackedBits(24, power.m_activate_period);
 
-            qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_total_eh_slots;
-            bs.StorePackedBits(4, power.m_total_eh_slots); // total owned enhancement slots
-            for(uint32_t i = 0; i < power.m_total_eh_slots; ++i)
+            qCDebug(logPowers) << "  NumOfEnhancements:" << power.m_total_eh_slots << "/" << power.m_enhancements.size();
+            if(power.m_total_eh_slots > power.m_enhancements.size())
+                qCWarning(logPowers) << "storePowerInfoUpdate: Total EH Slots larger than vector!";
+
+            bs.StorePackedBits(4, power.m_enhancements.size()); // power.m_total_eh_slots; total owned enhancement slots
+            for(uint32_t i = 0; i < power.m_enhancements.size(); ++i)
             {
-                if(power.m_enhancements.empty() || power.m_enhancements[i].m_name.isEmpty())
-                {
-                    qCDebug(logPowers) << "  No Enhancement:" << i;
-                    bs.StoreBits(1, false);
-                    continue;
-                }
-
                 qCDebug(logPowers) << "  Enhancement:" << power.m_enhancements[i].m_name
                                    << power.m_enhancements[i].m_slot_idx
                                    << power.m_enhancements[i].m_slot_used;
@@ -447,9 +412,9 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
                     bs.StorePackedBits(2, power.m_enhancements[i].m_num_combines);
                 }
             }
-            ++j;
+            ++pow_idx;
         }
-        ++i;
+        ++pset_idx;
     }
 
     qCDebug(logPowers) << "Send State of All Powers";
@@ -457,27 +422,30 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
 
     qCDebug(logPowers) << "NumQueuedPowers:" << e->m_queued_powers.size();
     bs.StorePackedBits(4, e->m_queued_powers.size()); // Count all active powers
-    for(const CharacterPower *pow : e->m_queued_powers)
+    for(const QueuedPowers &qpow : e->m_queued_powers)
     {
-        qCDebug(logPowers) << "  QueuedPower:" << pow->m_name << pow->m_index;
-        bs.StoreBits(1, pow->m_active_state_change);
-        if(pow->m_active_state_change)
+        qCDebug(logPowers) << "  QueuedPower:"
+                           << qpow.m_pow_idxs.m_pset_vec_idx
+                           << qpow.m_pow_idxs.m_pow_vec_idx;
+
+        bs.StoreBits(1, qpow.m_active_state_change);
+        if(qpow.m_active_state_change)
         {
-            storePowerSpec(pow->m_power_info.m_pset_idx, pow->m_index, bs);
-            bs.StorePackedBits(1, pow->m_activation_state);
+            storePowerSpec(qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx, bs);
+            bs.StorePackedBits(1, qpow.m_activation_state);
         }
     }
 
     qCDebug(logPowers) << "NumRechargingTimers:" << e->m_recharging_powers.size();
     bs.StorePackedBits(1, e->m_recharging_powers.size());
-    for(const CharacterPower *pow : e->m_recharging_powers)
+    for(const QueuedPowers &rpow : e->m_recharging_powers)
     {
-        qCDebug(logPowers) << "  RechargeCountdown:" << pow->m_timer_updated << pow->m_recharge_time;
-        bs.StoreBits(1, pow->m_timer_updated);
-        if(pow->m_timer_updated)
+        qCDebug(logPowers) << "  RechargeCountdown:" << rpow.m_timer_updated << rpow.m_recharge_time;
+        bs.StoreBits(1, rpow.m_timer_updated);
+        if(rpow.m_timer_updated)
         {
-            storePowerSpec(pow->m_power_info.m_pset_idx, pow->m_index, bs);
-            bs.StoreFloat(pow->m_recharge_time);
+            storePowerSpec(rpow.m_pow_idxs.m_pset_vec_idx, rpow.m_pow_idxs.m_pow_vec_idx, bs);
+            bs.StoreFloat(rpow.m_recharge_time);
         }
     }
 
@@ -488,18 +456,18 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
     qCDebug(logPowers) << "Max Insp Slots:" << max_insps;
 
     storePackedBitsConditional(bs, 4, max_insps);
-    for(int i = 0; i < max_cols; ++i)
+    for(int col = 0; col < max_cols; ++col)
     {
-        for(int j = 0; j < max_rows; ++j)
+        for(int row = 0; row < max_rows; ++row)
         {
-            qCDebug(logPowers) << "  Inspiration:" << i << j << cd->m_inspirations.at(i, j).m_has_insp;
+            qCDebug(logPowers) << "  Inspiration:" << col << row << cd->m_inspirations.at(col, row).m_has_insp;
 
-            bs.StorePackedBits(3, i); // iCol
-            bs.StorePackedBits(3, j); // iRow
+            bs.StorePackedBits(3, col); // iCol
+            bs.StorePackedBits(3, row); // iRow
 
-            bs.StoreBits(1, cd->m_inspirations.at(i, j).m_has_insp);
-            if(cd->m_inspirations.at(i, j).m_has_insp)
-                cd->m_inspirations.at(i, j).m_insp_info.serializeto(bs);
+            bs.StoreBits(1, cd->m_inspirations.at(col, row).m_has_insp);
+            if(cd->m_inspirations.at(col, row).m_has_insp)
+                cd->m_inspirations.at(col, row).m_insp_info.serializeto(bs);
         }
     }
 
@@ -529,8 +497,8 @@ void storePowerInfoUpdate(const GameDataStore &data, const EntitiesResponse &src
         }
     }
 
-    cd->m_powers_updated = false; // reset flag now that we've updated
-    qCDebug(logPowers) << "  Powers Updated:" << cd->m_powers_updated;
+    cd->m_has_updated_powers = false; // set flag false now that we're all updated
+    qCDebug(logPowers) << "  Powers Updated:" << cd->m_has_updated_powers;
 }
 
 void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
@@ -701,7 +669,7 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     sendControlState(*this,tgt);// These are not client specific ?
     ent_manager.sendDeletes(tgt,*m_client);
     // Client specific part
-    sendClientData(mi->serverData(),*this,tgt);
+    sendClientData(getGameData(),*this,tgt);
     // Server messages follow the entity update.
     auto v= std::move(m_client->m_contents);
     for(const auto &command : v)

@@ -21,6 +21,7 @@
 
 #include <glm/gtc/constants.hpp>
 
+#include <QQueue>
 #include <array>
 #include <memory>
 
@@ -36,6 +37,12 @@ enum class FadeDirection
 {
     In,
     Out
+};
+
+struct Destination // aka waypoint
+{
+    int point_idx = 0;
+    glm::vec3 location;
 };
 
 // returned by getEntityFromDB()
@@ -73,17 +80,6 @@ enum class AppearanceType : uint8_t
     NpcCostume    = 2,
     VillainIndex  = 3,
     SequencerName = 4
-};
-
-enum class StateMode : uint8_t
-{
-    Simple              = 0,
-    Create_Team         = 1,
-    Create_Team_Wait    = 2,
-    Dead                = 3,
-    Ressurect           = 4,
-    NeedsGurney         = 5,
-    Max_State           = 6
 };
 
 struct SuperGroup
@@ -166,11 +162,9 @@ public:
         uint32_t            m_db_id                 = {0};
         EntType             m_type                  = {EntType::Invalid};
         glm::quat           m_direction;
-        uint32_t            m_target_idx            = 0;
-        uint32_t            m_assist_target_idx     = 0;
 
         // Animations: Sequencers, NetFx, and TriggeredMoves
-        std::vector<NetFx>  m_fx;
+        std::vector<NetFx>  m_net_fx;
         std::array<TriggeredMove, 20> m_triggered_moves;
         SeqBitSet           m_seq_state;                    // Should be part of SeqState
         int                 m_state_mode            = 0;
@@ -181,13 +175,19 @@ public:
         uint8_t             m_move_type             = 0;
         int                 m_randSeed              = 0;     // Sequencer uses this as a seed for random bone scale
 
-        std::vector<CharacterPower *> m_queued_powers;
-        std::vector<CharacterPower *> m_recharging_powers;
+        int32_t             m_target_idx            = -1;
+        int32_t             m_assist_target_idx     = -1;
+
+        std::vector<Buffs>          m_buffs;
+        QQueue<QueuedPowers>        m_queued_powers;
+        std::vector<QueuedPowers>   m_recharging_powers;
+
         CharacterPower    * m_stance                = nullptr;
+        bool                m_update_buffs          = false;
 
         int                 m_num_fx                = 0;
         bool                m_update_anims          = false;
-        bool                m_rare_update    = false;
+        bool                m_rare_update           = false;
         bool                m_move_instantly        = true;  // move instantly or use sequencers?
 
         bool                m_is_logging_out        = false;
@@ -200,11 +200,24 @@ public:
         bool                m_is_villian            = false;
         bool                m_contact               = false;
 
+        int                 m_seq_upd_num1          = 0;
+        int                 m_seq_upd_num2          = 0;
+        bool                m_is_flying             = false;
+        bool                m_is_stunned            = false;
+        bool                m_is_jumping            = false;
+        bool                m_is_sliding            = false;
+        bool                m_is_falling            = false;
+        bool                m_has_jumppack          = false;
+        bool                m_controls_disabled     = false;
+        float               m_backup_spd            = 1.0f;
+        float               m_jump_height           = 2.0f;
+        uint8_t             m_update_id             = 1;
         bool                m_update_pos_and_cam    = false; // EntityResponse sendServerControlState
         bool                m_full_update           = true;  // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = true;  // EntityReponse sendServerPhysicsPositions
         bool                m_has_interp            = true;  // EntityUpdateCodec storePosUpdate
         bool                m_has_input_on_timeframe= false;
+        bool                m_in_training           = false;
 
         int                 u1 = 0; // used for live-debugging
 
@@ -226,6 +239,7 @@ public:
         MapClientSession *  m_client                    = nullptr;
         FadeDirection       m_fading_direction          = FadeDirection::In;
         uint32_t            m_db_store_flags            = 0;
+        Destination         m_cur_destination;
 
         void                dump();
 
