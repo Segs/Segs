@@ -358,9 +358,6 @@ void MapInstance::dispatch( Event *ev )
         case evChangeStance:
             on_change_stance(static_cast<ChangeStance *>(ev));
             break;
-        case evSendStance:
-            on_send_stance(static_cast<SendStance *>(ev));
-            break;
         case evSetDestination:
             on_set_destination(static_cast<SetDestination *>(ev));
             break;
@@ -2030,33 +2027,11 @@ void MapInstance::on_change_stance(ChangeStance * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    if(ev->enter_stance)
-    {
-        //session.m_ent->m_stance = &getPower(*session.m_ent, ev->pset_idx, ev->pow_idx);
-        qCWarning(logMapEvents) << "Unhandled change stance request" << session.m_ent->m_idx << ev->powerset_index
-                                << ev->power_index;
-    }
+    session.m_ent->m_stance = ev->m_stance;
+    if(ev->m_stance.has_stance)
+        qCDebug(logMapEvents) << "Change stance request" << session.m_ent->m_idx << ev->m_stance.pset_idx << ev->m_stance.pow_idx;
     else
-    {
-        session.m_ent->m_stance = nullptr;
-        qCWarning(logMapEvents) << "Unhandled exit stance request" << session.m_ent->m_idx;
-    }
-}
-
-void MapInstance::on_send_stance(SendStance * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    //ev->m_enter_stance = true;
-    //ev->m_pset_idx = session.m_ent->m_stance->m_power_tpl.m_pset_idx;
-    //ev->m_pow_idx = session.m_ent->m_stance->m_power_tpl.m_pow_idx;
-
-    qCWarning(logMapEvents) << "Unhandled send stance request";
-
-    if(ev->m_enter_stance)
-        qCWarning(logMapEvents) << "Entity" << session.m_ent->name() << "SendStance" << ev->m_pset_idx << ev->m_pow_idx;
-    else
-        qCWarning(logMapEvents) << "Entity" << session.m_ent->name() << "SendStance is zero";
+        qCDebug(logMapEvents) << "Exit stance request" << session.m_ent->m_idx;
 }
 
 void MapInstance::on_set_destination(SetDestination * ev)
@@ -2155,7 +2130,7 @@ void MapInstance::on_set_default_power(SetDefaultPower *ev)
     ptray->m_default_pset_idx = ev->powerset_idx;
     ptray->m_default_pow_idx = ev->power_idx;
 
-    qCWarning(logMapEvents) << "Set Default Power:" << ev->powerset_idx << ev->power_idx;
+    qCDebug(logMapEvents) << "Set Default Power:" << ev->powerset_idx << ev->power_idx;
 }
 
 void MapInstance::on_unset_default_power(UnsetDefaultPower *ev)
@@ -2167,7 +2142,7 @@ void MapInstance::on_unset_default_power(UnsetDefaultPower *ev)
     ptray->m_default_pset_idx = 0;
     ptray->m_default_pow_idx = 0;
 
-    qCWarning(logMapEvents) << "Unset Default Power.";
+    qCDebug(logMapEvents) << "Unset Default Power.";
 }
 
 void MapInstance::on_unqueue_all(UnqueueAll *ev)

@@ -1,5 +1,6 @@
 #include "CharacterHelpers.h"
 #include "Character.h"
+#include <QDateTime>
 
 /*
  * Character Methods
@@ -23,6 +24,7 @@ uint32_t            getInf(const Character &c) { return c.m_char_data.m_influenc
 const QString &     getDescription(const Character &c) { return c.m_char_data.m_character_description ; }
 const QString &     getBattleCry(const Character &c) { return c.m_char_data.m_battle_cry; }
 const QString &     getAlignment(const Character &c) { return c.m_char_data.m_alignment; }
+const QString &     getLastOnline(const Character &c) { return c.m_char_data.m_last_online; }
 
 // Setters
 void setLevel(Character &c, uint32_t val)
@@ -100,6 +102,11 @@ void setTitles(Character &c, bool prefix, QString generic, QString origin, QStri
 void setInf(Character &c, uint32_t val) { c.m_char_data.m_influence = val; }
 void setDescription(Character &c, QString val) { c.m_char_data.m_character_description = val; }
 void setBattleCry(Character &c, QString val) { c.m_char_data.m_battle_cry = val; }
+
+void setLastOnline(Character &c)
+{
+    c.m_char_data.m_last_online = QDateTime::currentDateTime().toString();
+}
 
 // Toggles
 void toggleAFK(Character &c, const bool isTrue, QString msg)
