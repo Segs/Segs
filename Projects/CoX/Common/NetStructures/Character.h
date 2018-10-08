@@ -79,7 +79,8 @@ const   QString &       getName() const { return m_name; }
         void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
         void            finalizeLevel();
         void            addStartingInspirations(QStringList &starting_insps);
-        void            getStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
+        void            addStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
+        void            addPowersByLevel(const QString &pcat_name, const QString &pset_name, uint32_t level);
         void            getPowerFromBuildInfo(BitStream &src);
         void            finalizeCombatLevel();
         void            sendEnhancements(BitStream &bs) const;
@@ -106,6 +107,7 @@ const   QString &       getName() const { return m_name; }
 
         uint32_t            m_account_id;
         uint32_t            m_db_id;
+        bool                m_in_training   = false;
 
 protected:
         uint8_t         m_index;

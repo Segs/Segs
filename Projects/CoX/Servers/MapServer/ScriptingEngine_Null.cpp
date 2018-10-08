@@ -38,7 +38,10 @@ int ScriptingEngine::loadAndRunFile(const QString &path)
     Q_UNUSED(path);
     return -1;
 }
-
+bool ScriptingEngine::setIncludeDir(const QString &)
+{
+    return false;
+}
 std::string ScriptingEngine::callFunc(const char *name, int arg1)
 {
     Q_UNUSED(name);

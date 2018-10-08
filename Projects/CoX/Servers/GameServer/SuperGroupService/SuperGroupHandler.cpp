@@ -34,7 +34,7 @@ void on_create_supergroup(SuperGroupHandlerState &state, CreateSuperGroupMessage
  */
 void on_remove_supergroup(SuperGroupHandlerState &state, RemoveSuperGroupMessage *msg)
 {
-    removeSuperGroup(msg->m_sg_db_id);
+    removeSuperGroup(msg->m_data.m_sg_db_id);
 }
 
 /*

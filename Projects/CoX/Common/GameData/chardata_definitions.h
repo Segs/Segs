@@ -31,9 +31,10 @@ static const constexpr  uint32_t        class_version   = 1;
 
 struct CharacterData
 {
-static const constexpr  uint32_t    class_version       = 8; // v8: supergroupstats
+static const constexpr  uint32_t    class_version       = 9; // v9: supergroupstats
                         uint32_t    m_level             = 0;
-                        uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
+                        uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar.
+                        uint32_t    m_security_threat   = 0; // used to limit a character's participation in Task Forces, Strike Forces, and Trials
                         uint32_t    m_experience_points = 0;
                         uint32_t    m_experience_debt   = 0;
                         uint32_t    m_experience_patrol = 0; // planned future use
@@ -67,6 +68,6 @@ static const constexpr  uint32_t    class_version       = 8; // v8: supergroupst
                         uint32_t    m_max_enhance_slots = 0;
 
                         // No need to serialize these members
-                        bool        m_powers_updated    = false;
+                        bool        m_has_updated_powers    = false;
                         bool        m_reset_powersets   = false;
 };

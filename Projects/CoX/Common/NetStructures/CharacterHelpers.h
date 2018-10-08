@@ -20,6 +20,7 @@ struct Friend;
 // Getters
 uint32_t            getLevel(const Character &c);
 uint32_t            getCombatLevel(const Character &c);
+uint32_t            getSecurityThreat(const Character &c);
 float               getHP(const Character &c);
 float               getEnd(const Character &c);
 uint64_t            getLastCostumeId(const Character &c);
@@ -41,8 +42,11 @@ const QString &     getLastOnline(const Character &c);
 // Setters
 void    setLevel(Character &c, uint32_t val);
 void    setCombatLevel(Character &c, uint32_t val);
+void    setSecurityThreat(Character &c, uint32_t val);
 void    setHP(Character &c, float val);
 void    setEnd(Character &c, float val);
+void    setHP(Character &c);
+void    setEnd(Character &c);
 void    setLastCostumeId(Character &c, uint64_t val);
 void    setXP(Character &c, uint32_t val);
 void    setDebt(Character &c, uint32_t val);

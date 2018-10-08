@@ -73,8 +73,8 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 27: return new ActivatePower;
         case 28: return new ActivatePowerAtLocation;
         case 29: return new ActivateInspiration;
-        case 30: return new SetDefaultPowerSend;
-        case 31: return new SetDefaultPower;
+        case 30: return new SetDefaultPower;
+        case 31: return new UnsetDefaultPower;
         case 32: return new UnqueueAll;
         case 33: return new AbortQueuedPower;
         case 34: return new MoveInspiration;
@@ -89,6 +89,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 44: return new TrashEnhancementInPower;
         case 45: return new BuyEnhancementSlot;
         case 46: return new RecvNewPower;
+        case 47: return new LevelUpResponse;
         case 53: return new SuperGroupMode;
         case 54: return new TradeWasCancelledMessage;
         case 55: return new TradeWasUpdatedMessage;

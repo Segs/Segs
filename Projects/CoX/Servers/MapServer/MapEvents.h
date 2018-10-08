@@ -367,7 +367,7 @@ public:
     // [[ev_def:field]]
     uint32_t button_id;
     // [[ev_def:field]]
-    uint32_t success;
+    bool success;
 
     DialogButton():MapLinkEvent(MapEventTypes::evDialogButton)
     {}
@@ -383,145 +383,6 @@ public:
     }
 
     EVENT_IMPL(DialogButton)
-};
-
-// [[ev_def:type]]
-class ActivatePower final : public MapLinkEvent
-{
-public:
-    // [[ev_def:field]]
-    uint32_t pset_idx;
-    // [[ev_def:field]]
-    uint32_t pow_idx;
-    // [[ev_def:field]]
-    uint32_t target_idx;
-    // [[ev_def:field]]
-    uint32_t target_db_id;
-
-    ActivatePower():MapLinkEvent(MapEventTypes::evActivatePower)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,27);
-        bs.StorePackedBits(4, pset_idx);
-        bs.StorePackedBits(4, pow_idx);
-        bs.StorePackedBits(16, target_idx);
-        bs.StorePackedBits(32, target_db_id);
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        pset_idx = bs.GetPackedBits(4);
-        pow_idx = bs.GetPackedBits(4);
-        target_idx = bs.GetPackedBits(16);
-        target_db_id = bs.GetPackedBits(32);
-    }
-    EVENT_IMPL(ActivatePower)
-};
-
-// [[ev_def:type]]
-class ActivatePowerAtLocation final : public MapLinkEvent
-{
-public:
-    // [[ev_def:field]]
-    uint32_t pset_idx;
-    // [[ev_def:field]]
-    uint32_t pow_idx;
-    // [[ev_def:field]]
-    uint32_t target_idx;
-    // [[ev_def:field]]
-    uint32_t target_db_id;
-    // [[ev_def:field]]
-    glm::vec3 location;
-
-    ActivatePowerAtLocation():MapLinkEvent(MapEventTypes::evActivatePowerAtLocation)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,27);
-        bs.StorePackedBits(4, pset_idx);
-        bs.StorePackedBits(4, pow_idx);
-        bs.StorePackedBits(16, target_idx);
-        bs.StorePackedBits(32, target_db_id);
-        bs.StoreFloat(location.x);
-        bs.StoreFloat(location.y);
-        bs.StoreFloat(location.z);
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        pset_idx = bs.GetPackedBits(4);
-        pow_idx = bs.GetPackedBits(4);
-        target_idx = bs.GetPackedBits(16);
-        target_db_id = bs.GetPackedBits(32);
-        location.x = bs.GetFloat();
-        location.y = bs.GetFloat();
-        location.z = bs.GetFloat();
-    }
-    EVENT_IMPL(ActivatePowerAtLocation)
-
-};
-
-// [[ev_def:type]]
-class ActivateInspiration final : public MapLinkEvent
-{
-public:
-    // [[ev_def:field]]
-    int slot_idx;
-    // [[ev_def:field]]
-    int row_idx;
-    ActivateInspiration():MapLinkEvent(MapEventTypes::evActivateInspiration)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,29);
-        bs.StorePackedBits(3,slot_idx);
-        bs.StorePackedBits(3,row_idx);
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        slot_idx = bs.GetPackedBits(3);
-        row_idx = bs.GetPackedBits(3);
-    }
-    EVENT_IMPL(ActivateInspiration)
-};
-
-// [[ev_def:type]]
-class SetDefaultPowerSend final : public MapLinkEvent
-{
-public:
-    // [[ev_def:field]]
-    int powerset_idx;
-    // [[ev_def:field]]
-    int power_idx;
-    SetDefaultPowerSend():MapLinkEvent(MapEventTypes::evSetDefaultPowerSend)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,30);
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        powerset_idx = bs.GetPackedBits(4);
-        power_idx = bs.GetPackedBits(4);
-    }
-    EVENT_IMPL(SetDefaultPowerSend)
-};
-
-// [[ev_def:type]]
-class SetDefaultPower final : public MapLinkEvent
-{
-public:
-    SetDefaultPower():MapLinkEvent(MapEventTypes::evSetDefaultPower)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,31);
-    }
-    void serializefrom(BitStream &/*bs*/) override
-    {
-        // TODO: Seems like nothing is received server side.
-        qWarning() << "SetDefaultPower unimplemented.";
-    }
-    EVENT_IMPL(SetDefaultPower)
 };
 
 // [[ev_def:type]]
@@ -851,6 +712,7 @@ public:
 #include "Events/InteractWithEntity.h"
 #include "Events/LocationVisited.h"
 #include "Events/PlaqueVisited.h"
+#include "Events/PowerSystemEvents.h"
 #include "Events/SaveClientOptions.h"
 #include "Events/SceneEvent.h"
 #include "Events/SendStance.h"
