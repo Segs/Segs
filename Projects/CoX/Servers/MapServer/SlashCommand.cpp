@@ -857,15 +857,14 @@ void cmdHandler_SetSequence(const QString &cmd, MapClientSession &sess)
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
-    TriggeredMove trig;
-    trig.m_move_idx         = args.value(1).toUInt();
-    trig.m_ticks_to_delay   = args.value(2).toUInt();
-    trig.m_trigger_fx_idx   = args.value(3).toUInt();
+    uint32_t move_idx, delay, fx_idx;
+    move_idx    = args.value(1).toUInt();
+    delay       = args.value(2).toUInt();
+    fx_idx      = args.value(3).toUInt();
 
-    addTriggeredMove(*sess.m_ent, trig);
+    addTriggeredMove(*sess.m_ent, move_idx, delay, fx_idx);
 
-    QString msg = QString("Setting TriggeredMove: idx %1;  ticks: %2;  fx_idx: %3").arg(trig.m_move_idx)
-            .arg(trig.m_ticks_to_delay).arg(trig.m_trigger_fx_idx);
+    QString msg = QString("Setting TriggeredMove: idx %1;  ticks: %2;  fx_idx: %3").arg(move_idx).arg(delay).arg(fx_idx);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }

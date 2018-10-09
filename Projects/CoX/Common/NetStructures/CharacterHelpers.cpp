@@ -103,7 +103,7 @@ void setInf(Character &c, uint32_t val) { c.m_char_data.m_influence = val; }
 void setDescription(Character &c, QString val) { c.m_char_data.m_character_description = val; }
 void setBattleCry(Character &c, QString val) { c.m_char_data.m_battle_cry = val; }
 
-void setLastOnline(Character &c)
+void updateLastOnline(Character &c)
 {
     c.m_char_data.m_last_online = QDateTime::currentDateTime().toString();
 }

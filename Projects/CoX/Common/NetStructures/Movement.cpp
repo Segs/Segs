@@ -63,10 +63,19 @@ void forcePosition(Entity &e, glm::vec3 pos)
 }
 
 // Move to Sequences or Triggers files later
-void addTriggeredMove(Entity &e, TriggeredMove &trig)
+void addTriggeredMove(Entity &e, uint32_t move_idx, uint32_t delay, uint32_t fx_idx)
 {
+    e.m_update_anim = true;
     e.m_rare_update = true;
-    e.m_triggered_moves.at(trig.m_move_idx) = trig;
+
+    TriggeredMove tmove;
+    tmove.m_move_idx = move_idx;
+    tmove.m_ticks_to_delay = delay;
+    tmove.m_trigger_fx_idx = fx_idx;
+
+    e.m_triggered_moves.push_back(tmove);
+    qCDebug(logAnimations) << "Queueing triggered move:"
+                           << move_idx << delay << fx_idx;
 }
 
 //! @}

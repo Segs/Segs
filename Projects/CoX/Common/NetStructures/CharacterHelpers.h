@@ -54,7 +54,7 @@ void    setTitles(Character &c, bool prefix = false, QString generic = "", QStri
 void    setInf(Character &c, uint32_t val);
 void    setDescription(Character &c, QString val);
 void    setBattleCry(Character &c, QString val);
-void    setLastOnline(Character &c);
+void    updateLastOnline(Character &c);
 
 // Toggles
 void    toggleAFK(Character &c, const bool isTrue, QString msg = "");

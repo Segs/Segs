@@ -90,4 +90,4 @@ void addInterp(const PosUpdate & p);
 void forcePosition(Entity &e, glm::vec3 pos);
 
 // Move to Sequences or Triggers files later
-void addTriggeredMove(Entity &e, TriggeredMove &trig);
+void addTriggeredMove(Entity &e, uint32_t move_idx, uint32_t delay, uint32_t fx_idx);

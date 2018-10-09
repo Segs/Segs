@@ -718,6 +718,15 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
     ent.m_stance = pstance;
     sendStance(*ent.m_client, pstance);
 
+    // Clear old moves and add TriggeredMove to queue
+    ent.m_triggered_moves.clear();
+    for(auto bits : powtpl.AttackBits)
+    {
+        // TODO: pull from stored FX name and lookup idx
+        // for now, send bits again
+        addTriggeredMove(ent, bits, powtpl.m_AttackFrames, bits);
+    }
+
     // Check and set endurance based upon end cost
     // TODO: refactor as checkEnduranceCost()
     float endurance = getEnd(*ent.m_char);

@@ -629,7 +629,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
 
     removeLFG(*ent);
     leaveTeam(*ent);
-    setLastOnline(*ent->m_char);
+    updateLastOnline(*ent->m_char);
 
     // one last character update for the disconnecting entity
     send_character_update(ent);
@@ -2199,10 +2199,13 @@ void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     session.m_ent->m_has_input_on_timeframe = true;
-    useInspiration(*session.m_ent, ev->slot_idx, ev->row_idx);
+    bool success = useInspiration(*session.m_ent, ev->slot_idx, ev->row_idx);
+
+    if(!success)
+        return;
+
     QString contents = "Inspired!";
     sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-
     // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
 }
 
@@ -2486,7 +2489,7 @@ void MapInstance::on_update_entities()
     {
         Entity *e = sess->m_ent;
         send_character_update(e);
-        setLastOnline(*e->m_char); // set this here, in case we disconnect unexpectedly
+        updateLastOnline(*e->m_char); // set this here, in case we disconnect unexpectedly
 
         /* at the moment we are forcing full character updates, so I'll leave this commented for now
 
