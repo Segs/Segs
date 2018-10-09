@@ -19,7 +19,6 @@
 #include "CharacterHelpers.h"
 #include "Movement.h"
 #include <glm/gtx/vector_query.hpp>
-//#include <glm/ext.hpp>
 
 void World::update(const ACE_Time_Value &tick_timer)
 {
@@ -84,7 +83,7 @@ void World::physicsStep(Entity *e, uint32_t msec)
         }
         case 2:
         {
-            my_entMoveNoColl(e);
+            entMoveNoCollision(e);
             //e->m_entity_data.m_pos = e->m_motion_state.m_last_pos;
             e->m_entity_data.m_pos = e->m_motion_state.m_last_pos + e->m_motion_state.m_velocity * float(msec);
             break;

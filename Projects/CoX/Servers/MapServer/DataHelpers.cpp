@@ -22,6 +22,9 @@
 #include "NetStructures/Contact.h"
 #include "NetStructures/Team.h"
 #include "NetStructures/LFG.h"
+#include "Events/EmailHeaders.h"
+#include "Events/EmailRead.h"
+#include "Servers/GameServer/EmailEvents.h"
 #include "MapEvents.h"
 #include "Logging.h"
 
@@ -189,7 +192,6 @@ void toggleLFG(Entity &e)
     }
 }
 
-
 void toggleCollision(Entity &e)
 {
     e.m_motion_state.m_no_collision = !e.m_motion_state.m_no_collision;
@@ -354,6 +356,70 @@ void setInterpolationSettings(MapClientSession *src, const bool active, const ui
 void on_awaiting_dead_no_gurney_test(MapClientSession &session)
 {
     session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
+}
+
+void sendEmailHeaders(MapClientSession &sess)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    // later on the email id should be auto-incremented from DB
+    EmailHeaderRequest* msgToHandler = new EmailHeaderRequest({
+                                        sess.m_ent->m_char->m_db_id,
+                                        sess.m_ent->m_char->getName(),
+                                        "TEST", 576956720},
+                sess.link()->session_token());
+    EventProcessor* tgt = HandlerLocator::getEmail_Handler();
+    tgt->putq(msgToHandler);
+}
+
+void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    uint32_t timestamp = 0;
+
+    EmailSendMessage* msgToHandler = new EmailSendMessage({
+                                                            sess.m_ent->m_char->m_db_id,
+                                                            sess.m_ent->m_char->getName(),    // -> sender
+                                                            recipient_name,
+                                                            subject,
+                                                            message,
+                                                            timestamp},
+                sess.link()->session_token());
+
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+}
+
+void readEmailMessage(MapClientSession& sess, const uint32_t email_id)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    EmailReadRequest* msgToHandler = new EmailReadRequest({email_id}, sess.link()->session_token());
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+}
+
+void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    EmailDeleteMessage* msgToHandler = new EmailDeleteMessage({email_id}, sess.link()->session_token());
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
 bool isFriendOnline(Entity &src, uint32_t db_id)
@@ -662,6 +728,12 @@ void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location)
     src.addCommand<SendWaypoint>(point_idx, location);
 }
 
+void sendStance(MapClientSession &src, PowerStance stance)
+{
+    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    src.addCommand<SendStance>(stance);
+}
+
 
 /*
  * usePower here to provide access to messageOutput
@@ -748,6 +820,23 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
 
         // Face towards your target
         sendFaceEntity(ent, tgt_idx);
+    }
+
+    // Send PowerStance to client
+    PowerStance pstance;
+    pstance.has_stance = true;
+    pstance.pset_idx = pset_idx;
+    pstance.pow_idx = pow_idx;
+    ent.m_stance = pstance;
+    sendStance(*ent.m_client, pstance);
+
+    // Clear old moves and add TriggeredMove to queue
+    ent.m_triggered_moves.clear();
+    for(auto bits : powtpl.AttackBits)
+    {
+        // TODO: pull from stored FX name and lookup idx
+        // for now, send bits again
+        addTriggeredMove(ent, bits, powtpl.m_AttackFrames, bits);
     }
 
     // Check and set endurance based upon end cost

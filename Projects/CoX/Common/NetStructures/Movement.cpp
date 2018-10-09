@@ -295,7 +295,7 @@ void setVelocity(Entity &e) // pmotionSetVel
     motion->m_velocity = vel;
 }
 
-void my_entMoveNoColl(Entity *ent)
+void entMoveNoCollision(Entity *ent)
 {
     ent->m_motion_state.m_is_falling = true;
     ent->m_motion_state.m_velocity = glm::vec3(0,0,0);
@@ -470,7 +470,7 @@ void checkJump(Entity *ent, InputState *new_state, SurfaceParams *surf_params)
             ent->m_motion_state.m_is_jumping    = false;
 
         // TODO: Flesh out Seq system
-        ent->m_seq_state.setVal(SeqBitNames::SB_JETPACK, ent->m_motion_state.m_is_jumping);
+        ent->m_seq_state.setVal(SeqBitNames::JETPACK, ent->m_motion_state.m_is_jumping);
     }
     else if (ent->m_motion_state.m_input_velocity.y != 0.0f
              && surf_params->gravity != 0.0f
@@ -515,23 +515,23 @@ void doPhysics(Entity *ent, SurfaceParams *surf_mods)
     if(ent->m_motion_state.m_is_falling)
     {
         if (ent->m_motion_state.m_velocity.y > 0.0f && ent->m_motion_state.m_velocity.y < 0.3f)
-            ent->m_seq_state.set(SeqBitNames::SB_APEX);
+            ent->m_seq_state.set(SeqBitNames::APEX);
 
         if(ent->m_motion_state.m_velocity.y < 0.0f)
         {
             if(!(ent->m_move_type & MoveType::MOVETYPE_JETPACK))
                 ent->m_motion_state.m_is_jumping = false; // no longer counted as jump, we're falling
 
-            ent->m_seq_state.setVal(SeqBitNames::SB_JUMP, false);
+            ent->m_seq_state.setVal(SeqBitNames::JUMP, false);
         }
 
         if(ent->m_motion_state.m_is_falling)
-            ent->m_seq_state.set(SeqBitNames::SB_AIR);
+            ent->m_seq_state.set(SeqBitNames::AIR);
     }
     if(ent->m_motion_state.m_is_jumping)
     {
         if(ent->m_move_type & MoveType::MOVETYPE_JETPACK)
-            ent->m_seq_state.set(SeqBitNames::SB_JETPACK);
+            ent->m_seq_state.set(SeqBitNames::JETPACK);
     }
 }
 
@@ -565,7 +565,7 @@ void entWalk(Entity *ent, InputState *new_state)
     if(is_sliding && ent->m_motion_state.m_velocity.y <= 0.0f)
     {
         ent->m_motion_state.m_is_sliding = true;
-        ent->m_seq_state.set(SeqBitNames::SB_SLIDING);
+        ent->m_seq_state.set(SeqBitNames::SLIDING);
     }
 
     if(s_landed_on_ground)
@@ -594,7 +594,7 @@ void entMotion(Entity *ent, InputState *new_state)
         if (ent->m_move_type & MoveType::MOVETYPE_NOCOLL)
         {
             debugmsg = "entMotion with no Collision";
-            my_entMoveNoColl(ent);
+            entMoveNoCollision(ent);
         }
         else if(ent->m_move_type & MoveType::MOVETYPE_WALK )
         {
@@ -695,28 +695,28 @@ void motionSetSequence(Entity *ent, InputState *new_state)
     negative_control_delta = 0;
 
     if(ent->m_motion_state.m_is_flying)
-        ent->m_seq_state.set(SeqBitNames::SB_FLY);
+        ent->m_seq_state.set(SeqBitNames::FLY);
     if(ent->m_motion_state.m_is_stunned )
-        ent->m_seq_state.set(SeqBitNames::SB_STUN);
+        ent->m_seq_state.set(SeqBitNames::STUN);
     if(ent->m_motion_state.m_has_jumppack)
-        ent->m_seq_state.set(SeqBitNames::SB_JETPACK);
+        ent->m_seq_state.set(SeqBitNames::JETPACK);
     if(ent->m_motion_state.m_is_jumping)
-        ent->m_seq_state.set(SeqBitNames::SB_JUMP);
+        ent->m_seq_state.set(SeqBitNames::JUMP);
     if(ent->m_motion_state.m_is_sliding)
-        ent->m_seq_state.set(SeqBitNames::SB_SLIDING);
+        ent->m_seq_state.set(SeqBitNames::SLIDING);
     if(ent->m_motion_state.m_is_bouncing)
-        ent->m_seq_state.set(SeqBitNames::SB_BOUNCING);
+        ent->m_seq_state.set(SeqBitNames::BOUNCING);
 
     if(ent->m_motion_state.m_is_falling)
     {
-        ent->m_seq_state.set(SeqBitNames::SB_AIR);
+        ent->m_seq_state.set(SeqBitNames::AIR);
         bool sliding = ent->m_motion_state.m_is_sliding;
 
         if ( !sliding && ent->m_motion_state.m_velocity.y < -0.6f && ent->m_motion_state.m_jump_apex - ent->m_states.current()->m_pos_delta.y > 3.5f )
-            ent->m_seq_state.set(SeqBitNames::SB_BIGFALL);
+            ent->m_seq_state.set(SeqBitNames::BIGFALL);
     }
     else if (ent->m_motion_state.m_has_headpain)
-        ent->m_seq_state.set(SeqBitNames::SB_HEADPAIN);
+        ent->m_seq_state.set(SeqBitNames::HEADPAIN);
 
     if(ent->m_states.current()->m_no_collision
             && ent->m_player->m_options.alwaysmobile
@@ -732,24 +732,24 @@ void motionSetSequence(Entity *ent, InputState *new_state)
             {
                 negative_control_delta = 1;
                 if ( is_moving_backwards )
-                    ent->m_seq_state.set(SeqBitNames::SB_BACKWARD);
+                    ent->m_seq_state.set(SeqBitNames::BACKWARD);
                 else
-                    ent->m_seq_state.set(SeqBitNames::SB_FORWARD);
+                    ent->m_seq_state.set(SeqBitNames::FORWARD);
             }
         }
         else if(ent->m_motion_state.m_input_velocity.x != 0.0f)
         {
             negative_control_delta = 1;
             if(ent->m_motion_state.m_input_velocity.x <= 0.0f)
-                ent->m_seq_state.set(SeqBitNames::SB_STEPLEFT);
+                ent->m_seq_state.set(SeqBitNames::STEPLEFT);
             else
-                ent->m_seq_state.set(SeqBitNames::SB_STEPRIGHT);
+                ent->m_seq_state.set(SeqBitNames::STEPRIGHT);
         }
 
         if(z_mag_delta > 0)
         {
             if (ent->m_motion_state.m_is_flying)
-                ent->m_seq_state.set(SeqBitNames::SB_JUMP);
+                ent->m_seq_state.set(SeqBitNames::JUMP);
         }
 
         if (ent->m_motion_state.m_input_velocity.z != 0.0f )
@@ -761,9 +761,9 @@ void motionSetSequence(Entity *ent, InputState *new_state)
 
             negative_control_delta = 1;
             if ( z_axis <= 0.0f )
-                ent->m_seq_state.set(SeqBitNames::SB_BACKWARD);
+                ent->m_seq_state.set(SeqBitNames::BACKWARD);
             else
-                ent->m_seq_state.set(SeqBitNames::SB_FORWARD);
+                ent->m_seq_state.set(SeqBitNames::FORWARD);
         }
 
         if(negative_control_delta)
@@ -777,7 +777,7 @@ void motionSetSequence(Entity *ent, InputState *new_state)
 
         if (guess_timestep > 0.0f && guess_timestep <= 2.0f)
         {
-            if(ent->m_seq_state.isSet(SeqBitNames::SB_COMBAT)
+            if(ent->m_seq_state.isSet(SeqBitNames::COMBAT)
                  || ent->m_motion_state.m_is_falling
                  || ent->m_motion_state.m_is_flying)
             {
@@ -786,8 +786,8 @@ void motionSetSequence(Entity *ent, InputState *new_state)
             else
             {
                 guess_timestep -= ent->m_states.current()->m_time_state.m_timestep;
-                ent->m_seq_state.set(SeqBitNames::SB_FORWARD);
-                ent->m_seq_state.set(SeqBitNames::SB_IDLE);
+                ent->m_seq_state.set(SeqBitNames::FORWARD);
+                ent->m_seq_state.set(SeqBitNames::IDLE);
             }
         }
 
@@ -797,7 +797,7 @@ void motionSetSequence(Entity *ent, InputState *new_state)
             for ( i = 0; i < 10; ++i )
             {
                 if(cs->atest_par[i])
-                    ent->m_seq_state->set(SeqBitNames(uint32_t(SeqBitNames::SB_TEST0)+i));
+                    ent->m_seq_state->set(SeqBitNames(uint32_t(SeqBitNames::TEST0)+i));
             }
         }
         */
@@ -1114,10 +1114,19 @@ void forcePosition(Entity &e, glm::vec3 pos)
 }
 
 // Move to Sequences or Triggers files later
-void addTriggeredMove(Entity &e, TriggeredMove &trig)
+void addTriggeredMove(Entity &e, uint32_t move_idx, uint32_t delay, uint32_t fx_idx)
 {
+    e.m_update_anims = true;
     e.m_rare_update = true;
-    e.m_triggered_moves.at(trig.m_move_idx) = trig;
+
+    TriggeredMove tmove;
+    tmove.m_move_idx = move_idx;
+    tmove.m_ticks_to_delay = delay;
+    tmove.m_trigger_fx_idx = fx_idx;
+
+    e.m_triggered_moves.push_back(tmove);
+    qCDebug(logAnimations) << "Queueing triggered move:"
+                           << move_idx << delay << fx_idx;
 }
 
 //! @}

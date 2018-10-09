@@ -33,6 +33,7 @@ struct PlayerData;
 class GameDataStore;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
 
+
 enum class FadeDirection
 {
     In,
@@ -94,6 +95,13 @@ struct SuperGroup
     int             m_SG_rank       = 1;
 };
 
+struct FactionData
+{
+    bool    m_has_faction = false;  // send Faction info
+    int     m_rank = 0;             // iRank
+    QString m_faction_name;         // group_name
+};
+
 struct NPCData
 {
     bool m_is_owned = false;
@@ -120,7 +128,7 @@ struct NetFx
     int         client_trigger_fx   = 0;
     float       duration            = 0;
     float       radius              = 0;
-    QString     power               = 0;
+    int         power               = 0; // char.toInt()
     int         debris              = 0;
     NetFxTarget target;
     NetFxTarget origin;
@@ -157,6 +165,7 @@ public:
         bool                m_has_team              = false;
         bool                m_has_supergroup        = true;
         TradePtr            m_trade;
+        FactionData         m_faction_data;
 
         uint32_t            m_idx                   = {0};
         uint32_t            m_db_id                 = {0};
@@ -165,7 +174,7 @@ public:
 
         // Animations: Sequencers, NetFx, and TriggeredMoves
         std::vector<NetFx>  m_net_fx;
-        std::array<TriggeredMove, 20> m_triggered_moves;
+        std::vector<TriggeredMove> m_triggered_moves;
         SeqBitSet           m_seq_state;                    // Should be part of SeqState
         int                 m_state_mode            = 0;
         bool                m_has_state_mode        = false;
@@ -181,14 +190,8 @@ public:
         std::vector<Buffs>          m_buffs;
         QQueue<QueuedPowers>        m_queued_powers;
         std::vector<QueuedPowers>   m_recharging_powers;
-
-        CharacterPower    * m_stance                = nullptr;
-        bool                m_update_buffs          = false;
-
-        int                 m_num_fx                = 0;
-        bool                m_update_anims          = false;
-        bool                m_rare_update           = false;
-        bool                m_move_instantly        = true;  // move instantly or use sequencers?
+        PowerStance                 m_stance;
+        bool                        m_update_buffs  = false;
 
         bool                m_is_logging_out        = false;
         int                 m_time_till_logout      = 0;     // time in miliseconds untill given entity should be marked as logged out.
@@ -200,8 +203,6 @@ public:
         bool                m_is_villian            = false;
         bool                m_contact               = false;
 
-        int                 m_seq_upd_num1          = 0;
-        int                 m_seq_upd_num2          = 0;
         bool                m_is_flying             = false;
         bool                m_is_stunned            = false;
         bool                m_is_jumping            = false;
@@ -213,9 +214,10 @@ public:
         float               m_jump_height           = 2.0f;
         uint8_t             m_update_id             = 1;
         bool                m_update_pos_and_cam    = false; // EntityResponse sendServerControlState
-        bool                m_full_update           = true;  // EntityReponse sendServerPhysicsPositions
-        bool                m_has_control_id        = true;  // EntityReponse sendServerPhysicsPositions
-        bool                m_has_interp            = true;  // EntityUpdateCodec storePosUpdate
+        bool                m_full_update           = false;    // EntityReponse sendServerPhysicsPositions
+        bool                m_has_control_id        = false;    // EntityReponse sendServerPhysicsPositions
+        bool                m_has_interp            = false;    // EntityUpdateCodec storePosUpdate
+        bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
         bool                m_has_input_on_timeframe= false;
         bool                m_in_training           = false;
 
@@ -225,12 +227,17 @@ public:
         std::array<BinTreeEntry, 7> m_interp_bintree;
         size_t              m_update_idx                = 0;
         bool                m_pchar_things              = false;
+
+        bool                m_update_anims              = false;
         bool                m_hasname                   = false;
         bool                m_classname_override        = false;
         bool                m_hasRagdoll                = false;
         bool                m_has_owner                 = false;
         bool                m_create_player             = false;
         uint32_t            m_input_pkt_id              = {0};
+        bool                m_rare_update                 = false;
+        uint32_t            m_input_ack                 = {0};
+        bool                player_type                 = false;
         bool                m_destroyed                 = false;
         uint32_t            ownerEntityId               = 0;
         uint32_t            creatorEntityId             = 0;

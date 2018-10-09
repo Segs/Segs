@@ -76,7 +76,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evFaceEntity                 ,154)
     EVENT_DECL(MapEventTypes, evFaceLocation               ,155)
     EVENT_DECL(MapEventTypes, evFloatingInfo               ,156)
-    EVENT_DECL(MapEventTypes, evSendStance                 ,157) // I think?
+    EVENT_DECL(MapEventTypes, evSendStance                 ,157)
     EVENT_DECL(MapEventTypes, evMapXferList                ,158)
     EVENT_DECL(MapEventTypes, evMapXferListClose           ,159)
     EVENT_DECL(MapEventTypes, evAddTimeStateLog            ,160)
@@ -141,3 +141,4 @@ enum MapEventTypes
     END_EVENTS(MapEventTypes, 1500)
 };
 } // end of SEGSEvents namespace
+

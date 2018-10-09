@@ -149,7 +149,7 @@ struct MotionState // current derived state of motion
 
 void processDirectionControl(InputState *next_state, uint8_t control_id, int ms_since_prev, int keypress_state);
 void entMotion(Entity *ent, InputState *new_state);
-void my_entMoveNoColl(Entity *ent);
+void entMoveNoCollision(Entity *ent);
 void setVelocity(Entity &e);
 void calculateKeypressTime(Entity *ent, InputState *controls, std::chrono::steady_clock::time_point cur_time);
 void resetKeypressTime(InputState *controls, std::chrono::steady_clock::time_point curtime);
@@ -159,4 +159,5 @@ bool updateRotation(const Entity &e, int axis); // returns true if given axis ne
 void forcePosition(Entity &e, glm::vec3 pos);
 
 // Move to Sequences or Triggers files later
-void addTriggeredMove(Entity &e, TriggeredMove &trig);
+void addTriggeredMove(Entity &e, uint32_t move_idx, uint32_t delay, uint32_t fx_idx);
+

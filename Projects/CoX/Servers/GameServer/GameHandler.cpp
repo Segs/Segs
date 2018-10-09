@@ -321,6 +321,12 @@ void GameHandler::on_character_deleted(RemoveCharacterResponse *ev)
     GameAccountResponseCharacterData& selected_slot = session.m_game_account.get_character(ev->m_data.slot_idx);
     selected_slot.reset();
     session.link()->putq(new DeleteAcknowledged);
+
+    // change all emails where sender_id or recipient_id == char_id to 0
+    EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_server->getId());
+    game_db->putq(new EmailUpdateOnCharDeleteMessage({selected_slot.m_db_id}, uint64_t(1)));
+
+    // game_db->putq()
 }
 
 void GameHandler::serialize_from(std::istream &/*is*/)
@@ -442,8 +448,12 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
         // check if this session perhaps is in ready for reaping set
         m_session_store.unmark_session_for_reaping(&session);
     }
+
     session.is_connected_to_map_server_id = ev->m_data.m_server_id;
     session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
+
+    postGlobalEvent(new ClientConnectedMessage(
+    {ev->m_data.m_session, ev->m_data.m_server_id, ev->m_data.m_sub_server_id, ev->m_data.m_char_db_id}, 0));
 }
 
 void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
@@ -455,6 +465,8 @@ void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
         SessionStore::MTGuard guard(m_session_store.reap_lock());
         m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
     }
+
+    postGlobalEvent(new ClientDisconnectedMessage({ev->m_data.m_session, ev->m_data.m_char_db_id}, 0));
 }
 
 void GameHandler::reap_stale_links()

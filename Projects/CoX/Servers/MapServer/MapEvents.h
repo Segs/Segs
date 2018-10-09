@@ -333,62 +333,6 @@ public:
 };
 
 // [[ev_def:type]]
-class ChangeStance final : public MapLinkEvent
-{
-public:
-    // [[ev_def:field]]
-    bool enter_stance;
-    // [[ev_def:field]]
-    int powerset_index;
-    // [[ev_def:field]]
-    int power_index;
-    ChangeStance():MapLinkEvent(MapEventTypes::evChangeStance)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,36);
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        enter_stance = bs.GetBits(1);
-        if(!enter_stance)
-            return;
-        powerset_index=bs.GetPackedBits(4);
-        power_index=bs.GetPackedBits(4);
-    }
-    EVENT_IMPL(ChangeStance)
-
-};
-
-// [[ev_def:type]]
-class SendStance final : public MapLinkEvent
-{
-public:
-    // [[ev_def:field]]
-    bool             m_enter_stance;
-    // [[ev_def:field]]
-    uint32_t         m_pset_idx;
-    // [[ev_def:field]]
-    uint32_t         m_pow_idx;
-    SendStance() : MapLinkEvent(MapEventTypes::evSendStance)
-    {
-    }
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StoreBits(1, m_enter_stance);
-        bs.StorePackedBits(4, m_pset_idx);
-        bs.StorePackedBits(4, m_pow_idx);
-    }
-    void serializefrom(BitStream &/*bs*/) override
-    {
-        // TODO: Seems like nothing is received server side.
-        qWarning() << "From SendStance unimplemented.";
-    }
-    EVENT_IMPL(SendStance)
-
-};
-
-// [[ev_def:type]]
 class DialogButton final : public MapLinkEvent
 {
 public:
@@ -743,6 +687,7 @@ public:
 #include "Events/PowerSystemEvents.h"
 #include "Events/SaveClientOptions.h"
 #include "Events/SceneEvent.h"
+#include "Events/SendStance.h"
 #include "Events/Shortcuts.h"
 #include "Events/TradeCancel.h"
 #include "Events/TradeInit.h"

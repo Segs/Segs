@@ -68,20 +68,20 @@ void storeCreation(const Entity &src, BitStream &bs)
         bs.StoreString(src.m_char->getName());
     PUTDEBUG("after names");
 
-    bs.StoreBits(1,src.m_is_fading); // Is entity being faded in ?
+    bs.StoreBits(1, src.m_is_fading); // Is entity being faded in ?
     // the following is used as an input to LCG float generator, generated float (0-1) is used as
     // linear interpolation factor between scale_min and scale_max
-    bs.StoreBits(32,src.m_randSeed);
-    bs.StoreBits(1,src.m_has_supergroup); // TODO: This appears to actually be for Villain Groups
-    if(src.m_has_supergroup)
+    bs.StoreBits(32, src.m_randSeed);
+    bs.StoreBits(1, src.m_faction_data.m_has_faction);
+    if(src.m_faction_data.m_has_faction)
     {
-        bs.StorePackedBits(2,src.m_supergroup.m_SG_rank);   // this will be put in field_1830 (iRank) of created entity
-        bs.StoreString(src.m_supergroup.m_SG_name);         // villain group name?
+        bs.StorePackedBits(2, src.m_faction_data.m_rank);    // this will be put in field_1830 (iRank) of created entity
+        bs.StoreString(src.m_faction_data.m_faction_name);  // villain group name?
     }
     PUTDEBUG("end storeCreation");
 }
 
-void sendStateMode(const Entity &src,BitStream &bs)
+void sendStateMode(const Entity &src, BitStream &bs)
 {
     // if(state_mode & 2) then RespawnIfDead, AliveEnough==true, close some windows
     PUTDEBUG("before sendStateMode");
@@ -194,7 +194,8 @@ void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
 
 void sendSeqMoveUpdate(const Entity &src, BitStream &bs)
 {
-    qCDebug(logAnimations, "Sending seq mode update %d", src.m_seq_update);
+    if(src.m_type == EntType::PLAYER)
+        qCDebug(logAnimations, "Sending seq mode update %d", src.m_seq_update);
 
     PUTDEBUG("before sendSeqMoveUpdate");
     bs.StoreBits(1, src.m_seq_update); // no seq update
@@ -207,12 +208,11 @@ void sendSeqMoveUpdate(const Entity &src, BitStream &bs)
 
 void sendSeqTriggeredMoves(const Entity &src, BitStream &bs)
 {
-    qCDebug(logAnimations, "Sending seq triggered moves %d", src.m_triggered_moves.size());
-
-    if(src.m_triggered_moves.size() < 20)
-        qWarning() << "Triggered moves array is smaller than 20!";
-
     PUTDEBUG("before sendSeqTriggeredMoves");
+    if(src.m_type == EntType::PLAYER)
+        qCDebug(logAnimations, "Sending seq triggered moves %d", src.m_triggered_moves.size());
+
+    // client appears to process only the last 20 triggered moves
     bs.StorePackedBits(1, src.m_triggered_moves.size()); // num moves
     for(const TriggeredMove &move : src.m_triggered_moves)
     {
@@ -222,54 +222,45 @@ void sendSeqTriggeredMoves(const Entity &src, BitStream &bs)
     }
 }
 
-void sendNetFx(const Entity &src,BitStream &bs)
+void sendNetFx(const Entity &src, BitStream &bs)
 {
-    bs.StorePackedBits(1,src.m_num_fx); // num fx
-    //NetFx.serializeto();
-    for(int i=0; i<src.m_num_fx; i++)
+    bs.StorePackedBits(1, src.m_net_fx.size()); // num fx
+    for(const NetFx &fx : src.m_net_fx)
     {
-        bs.StoreBits(8,src.m_net_fx[i].command); // command
-        bs.StoreBits(32,src.m_net_fx[i].net_id); // NetID
-        bs.StoreBits(1,src.m_net_fx[i].pitch_to_target);
-        storePackedBitsConditional(bs,10, src.m_net_fx[i].handle); // handle
-        storeBitsConditional(bs,4,0); // client timer
-        storeBitsConditional(bs,32,0); // clientTriggerFx
-        storeFloatConditional(bs,0.0); // duration
-        storeFloatConditional(bs,10.0); // radius
-        storeBitsConditional(bs,4,10);  // power
-        storeBitsConditional(bs,32,0);  // debris
-        int val=0; // FixMe: if comparison below is never true due to this explicit assignment of 0.
-        storeBitsConditional(bs,2,val); // origiType
-        if(val==1)
-        {
-            bs.StoreFloat(0.0); // origin Pos
-            bs.StoreFloat(0.0);
-            bs.StoreFloat(0.0);
-        }
-        else
-        {
-            if(val)
-            {
-                //"netbug"
-            }
-            else
-            {
-                storePackedBitsConditional(bs,8,0); // origin entity
-                bs.StorePackedBits(2,0); // bone id
+        // refactor as fx.serializeto() ?
+        bs.StoreBits(8, fx.command); // command
+        bs.StoreBits(32, fx.net_id); // NetID
+        bs.StoreBits(1, fx.pitch_to_target);
+        storePackedBitsConditional(bs, 10, fx.handle); // handle
+        storeBitsConditional(bs, 4, fx.client_timer); // client timer
+        storeBitsConditional(bs, 32, fx.client_trigger_fx); // clientTriggerFx
+        storeFloatConditional(bs, fx.duration); // duration
+        storeFloatConditional(bs, fx.radius); // radius
+        storeBitsConditional(bs, 4, fx.power);  // power
+        storeBitsConditional(bs, 32, fx.debris);  // debris
 
-            }
-        }
-        storeBitsConditional(bs,2,0); // target type
-        if(false)
+        storeBitsConditional(bs, 2, fx.origin.type_is_location); // origiType
+        if(fx.origin.type_is_location)
         {
-            bs.StoreFloat(0); // targetPos
-            bs.StoreFloat(0);
-            bs.StoreFloat(0);
+            bs.StoreFloat(fx.target.pos.x); // origin Pos
+            bs.StoreFloat(fx.target.pos.y);
+            bs.StoreFloat(fx.target.pos.z);
         }
         else
         {
-            storePackedBitsConditional(bs,12,0x19b); // target entity
+            storePackedBitsConditional(bs, 8, fx.origin.ent_idx); // origin entity
+            bs.StorePackedBits(2,fx.bone_id); // bone id
         }
+
+        storeBitsConditional(bs, 2, fx.target.type_is_location); // target type
+        if(fx.target.type_is_location)
+        {
+            bs.StoreFloat(fx.target.pos.x); // targetPos x
+            bs.StoreFloat(fx.target.pos.y); // targetPos y
+            bs.StoreFloat(fx.target.pos.z); // targetPos z
+        }
+        else
+            storePackedBitsConditional(bs, 12, fx.target.ent_idx); // target entity
     }
 }
 
@@ -357,27 +348,27 @@ void sendTargetUpdate(const Entity &src,BitStream &bs)
         bs.StorePackedBits(12,assist_id);
 }
 
-void sendOnOddSend(const Entity &src,BitStream &bs)
+void sendOnOddSend(const Entity &src, BitStream &bs)
 {
     // if this is set the entity on client will :
     // set move change timer to be always 0
     // calculate interpolations using slow timer
-    //
-    bs.StoreBits(1,src.m_odd_send);
+    bs.StoreBits(1, src.m_odd_send);
 }
 
-void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
+void sendWhichSideOfTheForce(const Entity &src, BitStream &bs)
 {
     bs.StoreBits(1,src.m_is_villian); // on team evil ?
     bs.StoreBits(1,src.m_is_hero); // on team good ?
 }
-void sendEntCollision(const Entity &src,BitStream &bs)
+
+void sendEntCollision(const Entity &src, BitStream &bs)
 {
     // if 1 is sent, client will disregard it's own collision processing.
     bs.StoreBits(1, src.m_states.current()->m_no_collision); // 1/0 only
 }
 
-void sendNoDrawOnClient(const Entity &src,BitStream &bs)
+void sendNoDrawOnClient(const Entity &src, BitStream &bs)
 {
     bs.StoreBits(1, src.m_no_draw_on_client); // 1/0 only
 }
@@ -425,6 +416,7 @@ void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStrea
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 } // end of anonoymous namespace
+
 void sendBuffs(const Entity &src, BitStream &bs)
 {
     bs.StorePackedBits(5, src.m_buffs.size());
@@ -434,14 +426,15 @@ void sendBuffs(const Entity &src, BitStream &bs)
 
 void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream &bs )
 {
-    bool client_believes_ent_exists=belief.m_entity!=nullptr;
+    bool client_believes_ent_exists = belief.m_entity!=nullptr;
     bool ent_exists = src.m_destroyed==false;
-    bool update_existence=client_believes_ent_exists!=ent_exists;
+    bool update_existence = client_believes_ent_exists!=ent_exists;
 
     //////////////////////////////////////////////////////////////////////////
     bs.StoreBits(1,update_existence);
     if(update_existence)
-        storeCreation(src,bs);
+        storeCreation(src, bs);
+
     belief.m_entity = ent_exists ? &src : nullptr;
     if(!ent_exists)
         return;
@@ -449,7 +442,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bs.StoreBits(1,src.m_update_anims); //var_C
+    bs.StoreBits(1, src.m_update_anims); //var_C
 
     if(src.m_update_anims)
         bs.StoreBits(1, src.m_rare_update);
@@ -467,37 +460,35 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
 
     // NPC -> m_pchar_things=0 ?
     PUTDEBUG("before m_pchar_things");
-    bs.StoreBits(1,src.m_pchar_things);
+    bs.StoreBits(1, src.m_pchar_things);
     if(src.m_pchar_things)
-    {
-        sendNetFx(src,bs);
-    }
+        sendNetFx(src, bs);
 
     if(src.m_rare_update)
     {
-        sendCostumes(src,bs);
-        sendXLuency(bs,src.translucency);
+        sendCostumes(src, bs);
+        sendXLuency(bs, src.translucency);
         bs.StoreBits(1, src.m_char->m_char_data.m_has_titles); // Does entity have titles?
         if(src.m_char->m_char_data.m_has_titles)
-            src.m_char->sendTitles(bs,NameFlag::HasName,ConditionalFlag::Conditional);
+            src.m_char->sendTitles(bs, NameFlag::HasName,ConditionalFlag::Conditional);
     }
 
     if(src.m_pchar_things)
     {
-        sendCharacterStats(src,bs);
-        sendBuffsConditional(src,bs);
-        sendTargetUpdate(src,bs);
+        sendCharacterStats(src, bs);
+        sendBuffsConditional(src, bs);
+        sendTargetUpdate(src, bs);
     }
 
     if(src.m_rare_update)
     {
-        sendOnOddSend(src,bs); // is one on client end
-        sendWhichSideOfTheForce(src,bs);
-        sendEntCollision(src,bs);
-        sendNoDrawOnClient(src,bs);
-        sendAFK(src,bs);
-        sendOtherSupergroupInfo(src,bs);
-        sendLogoutUpdate(src,belief,bs);
+        sendOnOddSend(src, bs); // is one on client end
+        sendWhichSideOfTheForce(src, bs);
+        sendEntCollision(src, bs);
+        sendNoDrawOnClient(src, bs);
+        sendAFK(src, bs);
+        sendOtherSupergroupInfo(src, bs);
+        sendLogoutUpdate(src, belief, bs);
     }
 }
 

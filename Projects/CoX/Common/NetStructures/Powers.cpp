@@ -661,18 +661,18 @@ void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint
     qCDebug(logPowers) << "Moving inspiration from" << src_col << "x" << src_row << "to" << dest_col << "x" << dest_row;
 }
 
-void useInspiration(Entity &ent, uint32_t col, uint32_t row)
+bool useInspiration(Entity &ent, uint32_t col, uint32_t row)
 {
     CharacterData &cd = ent.m_char->m_char_data;
     const CharacterInspiration *insp = getInspiration(ent, col, row);
 
-    if(!insp->m_has_insp)
-        return;
-
-    applyInspirationEffect(ent, col, row);
-    removeInspiration(cd, col, row);
+    if(insp == nullptr)
+        return 0;
 
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
+    applyInspirationEffect(ent, col, row);
+    removeInspiration(cd, col, row);
+    return true;
 }
 
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)

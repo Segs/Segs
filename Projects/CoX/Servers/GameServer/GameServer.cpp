@@ -18,6 +18,7 @@
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
 #include "Common/Servers/ServerEndpoint.h"
+#include "EmailHandler.h"
 #include "Settings.h"
 
 #include <ace/Synch.h>
@@ -52,6 +53,7 @@ class GameServer::PrivateData
 {
 public:
     std::unique_ptr<FriendHandler> m_friendship_service;
+    std::unique_ptr<EmailHandler> m_email_service;
     ACE_INET_Addr           m_location; // this value is sent to the clients
     ACE_INET_Addr           m_listen_point; // the server binds here
     QString                 m_serverName="";
@@ -102,8 +104,14 @@ GameServer::GameServer(int id) : d(new PrivateData)
     d->m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
     d->m_handler->start();
     d->m_id = id;
+
+    d->m_email_service = std::make_unique<EmailHandler>(id);
+    d->m_email_service->activate();
+    d->m_email_service->set_db_handler(d->m_id);
+
     d->m_friendship_service = std::make_unique<FriendHandler>(id);
     d->m_friendship_service->activate();
+
     HandlerLocator::setGame_Handler(d->m_id,d->m_handler);
 }
 

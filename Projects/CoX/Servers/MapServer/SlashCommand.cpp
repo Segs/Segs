@@ -857,15 +857,14 @@ void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess)
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
-    TriggeredMove trig;
-    trig.m_move_idx         = args.value(1).toUInt();
-    trig.m_ticks_to_delay   = args.value(2).toUInt();
-    trig.m_trigger_fx_idx   = args.value(3).toUInt();
+    uint32_t move_idx, delay, fx_idx;
+    move_idx    = args.value(1).toUInt();
+    delay       = args.value(2).toUInt();
+    fx_idx      = args.value(3).toUInt();
 
-    addTriggeredMove(*sess.m_ent, trig);
+    addTriggeredMove(*sess.m_ent, move_idx, delay, fx_idx);
 
-    QString msg = QString("Setting TriggeredMove: idx %1;  ticks: %2;  fx_idx: %3").arg(trig.m_move_idx)
-            .arg(trig.m_ticks_to_delay).arg(trig.m_trigger_fx_idx);
+    QString msg = QString("Setting TriggeredMove: idx %1;  ticks: %2;  fx_idx: %3").arg(move_idx).arg(delay).arg(fx_idx);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
@@ -1849,39 +1848,57 @@ void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
-    sendEmailHeaders(sess.m_ent);
-    QString msg = "Sent Email Headers";
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+    sendEmailHeaders(sess);
 }
 
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
 {
-    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+    uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
-    readEmailMessage(sess.m_ent, id);
+    readEmailMessage(sess, id);
 
     QString msg = "Opening Email ID: " + QString::number(id);
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess){
+void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
+{
+    QStringList parts = cmd.split("\"");
+    QStringList result;
+    for(int i = 0; i < parts.size(); i++)
+    {
+        if(parts[i].endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
+            result.back() += parts[i]+"\"";
+        else
+            result.push_back(parts[i]);
+    }
 
-    QVector<QStringRef> args(cmd.splitRef(' '));
+    assert(result.size() >= 5);
+    result[1].replace("\\q ", "");
+    result[1].replace("\\q", "");
 
-    //storeEmailInDB(src, args);
+    // 1 -> recipient name, 3 -> email subject, 4 -> email message
+    // cannot send email to self as that will trigger /emailRead without the data in db nor EmailHandler
+    // and that will segfault the server :)
+    if (result[1] == sess.m_ent->m_char->getName())
+    {
+        sendInfoMessage(MessageChannel::SERVER, "You cannot send an email to yourself!", sess);
+        return;
+    }
 
-    QString msg = "Email Sent";
+    sendEmail(sess, result[1], result[3], result[4]);
+
+    QString msg = "Email Sent to recipient: " + result[1];
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
 
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
 {
-    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+    uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
-    //deleteEmailFromDB(id);
+    deleteEmailHeaders(sess, id);
 
     QString msg = "Email Deleted ID: " + QString::number(id);
     qDebug().noquote() << msg;
