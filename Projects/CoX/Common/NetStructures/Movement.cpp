@@ -1111,6 +1111,14 @@ bool updateRotation(const Entity &src, int axis ) /* returns true if given axis 
 void forcePosition(Entity &e, glm::vec3 pos)
 {
     e.m_entity_data.m_pos = pos;
+    e.m_update_pos_and_cam = true;
+}
+
+void forceOrientation(Entity &e, glm::vec3 pyr)
+{
+    e.m_direction = glm::quat(pyr);
+    e.m_entity_data.m_orientation_pyr = pyr;
+    e.m_update_pos_and_cam = true;
 }
 
 // Move to Sequences or Triggers files later

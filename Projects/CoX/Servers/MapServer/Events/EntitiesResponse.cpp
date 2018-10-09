@@ -505,6 +505,9 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
     Entity *ent = src.m_client->m_ent; // user entity
 
+    // TODO: actually calculate these in movement.cpp
+    std::copy(g_world_surf_params, g_world_surf_params+2, ent->m_motion_state.m_surf_mods);
+
     bs.StoreBits(1,ent->m_motion_state.m_update_motion_state);
     if(ent->m_motion_state.m_update_motion_state)
     {

@@ -171,6 +171,14 @@ public:
         uint32_t            m_db_id                 = {0};
         EntType             m_type                  = {EntType::Invalid};
         glm::quat           m_direction;
+        int32_t             m_target_idx            = -1;
+        int32_t             m_assist_target_idx     = -1;
+
+        std::vector<Buffs>          m_buffs;
+        QQueue<QueuedPowers>        m_queued_powers;
+        std::vector<QueuedPowers>   m_recharging_powers;
+        PowerStance                 m_stance;
+        bool                        m_update_buffs  = false;
 
         // Animations: Sequencers, NetFx, and TriggeredMoves
         std::vector<NetFx>  m_net_fx;
@@ -184,15 +192,6 @@ public:
         uint8_t             m_move_type             = 0;
         int                 m_randSeed              = 0;     // Sequencer uses this as a seed for random bone scale
 
-        int32_t             m_target_idx            = -1;
-        int32_t             m_assist_target_idx     = -1;
-
-        std::vector<Buffs>          m_buffs;
-        QQueue<QueuedPowers>        m_queued_powers;
-        std::vector<QueuedPowers>   m_recharging_powers;
-        PowerStance                 m_stance;
-        bool                        m_update_buffs  = false;
-
         bool                m_is_logging_out        = false;
         int                 m_time_till_logout      = 0;     // time in miliseconds untill given entity should be marked as logged out.
         AppearanceType      m_costume_type          = AppearanceType::None;
@@ -202,7 +201,6 @@ public:
         bool                m_is_hero               = false;
         bool                m_is_villian            = false;
         bool                m_contact               = false;
-
         bool                m_is_flying             = false;
         bool                m_is_stunned            = false;
         bool                m_is_jumping            = false;

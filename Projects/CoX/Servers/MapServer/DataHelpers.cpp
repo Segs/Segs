@@ -631,37 +631,6 @@ void sendTradeOffer(const Entity& src, Entity& tgt)
     tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeOffer>(db_id, name));
 }
 
-
-/*
- * sendEmail Wrappers for providing access to Email Database
- */
-void sendEmailHeaders(Entity *e)
-{
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
-
-    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
-}
-
-void readEmailMessage(Entity *e, const int id)
-{
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
-
-    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
-}
-
-
 void sendTradeInit(Entity& src, Entity& tgt)
 {
     const uint32_t src_db_id = src.m_db_id;
@@ -732,6 +701,36 @@ void sendStance(MapClientSession &src, PowerStance stance)
 {
     qCDebug(logSlashCommand) << "Sending new PowerStance";
     src.addCommand<SendStance>(stance);
+}
+
+
+/*
+ * sendEmail Wrappers for providing access to Email Database
+ */
+void sendEmailHeaders(Entity *e)
+{
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+    MapClientSession *src = e->m_client;
+
+    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
+    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+}
+
+void readEmailMessage(Entity *e, const int id)
+{
+    if(!e->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+    MapClientSession *src = e->m_client;
+
+    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
+    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
 }
 
 
