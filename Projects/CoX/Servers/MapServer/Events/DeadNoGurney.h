@@ -23,7 +23,7 @@ namespace SEGSEvents
 
         // SerializableEvent interface
         void serializeto(BitStream &bs) const override {
-            bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+            bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // pkt 51
         };
         EVENT_IMPL(DeadNoGurney)
     };
