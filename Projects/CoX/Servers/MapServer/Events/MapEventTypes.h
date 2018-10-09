@@ -141,3 +141,4 @@ enum MapEventTypes
     END_EVENTS(MapEventTypes, 1500)
 };
 } // end of SEGSEvents namespace
+

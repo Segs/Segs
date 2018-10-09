@@ -8,6 +8,7 @@
 #pragma once
 
 #include "Servers/InternalEvents.h"
+#include "Servers/GameServer/EmailDefinitions.h"
 
 #include <QDateTime>
 namespace SEGSEvents
@@ -40,9 +41,27 @@ enum GameDBEventTypes : uint32_t
     // select by id for entity data only
     evGetEntityRequest,
     evGetEntityResponse,
-    // selecy by name for entity data
+    // select by name for char id
     evGetEntityByNameRequest,
     evGetEntityByNameResponse,
+
+    // email stuff
+    evEmailCreateRequest,
+    evEmailCreateResponse,
+    evEmailMarkAsReadMessage,
+    evEmailUpdateOnCharDeleteMessage,
+    evEmailRemoveMessage,
+    evGetEmailRequest,
+    evGetEmailResponse,
+    evGetEmailsRequest,
+    evGetEmailsResponse,
+    evGetEmailBySenderIdRequest,
+    evGetEmailBySenderIdResponse,
+    evGetEmailByRecipientIdRequest,
+    evGetEmailByRecipientIdResponse,
+    evFillEmailRecipientIdRequest,
+    evFillEmailRecipientIdResponse,
+    evFillEmailRecipientIdErrorMessage,
 
     evGameDbErrorMessage
 };
@@ -296,7 +315,7 @@ struct GetEntityByNameResponseData
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_supergroup_id , m_ent_data);
+        ar(m_supergroup_id, m_ent_data);
     }
 };
 // [[ev_def:macro]]
@@ -362,5 +381,224 @@ struct PlayerUpdateData
 };
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(GameDBEventTypes,PlayerUpdate)
+
+struct EmailCreateRequestData
+{
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;
+    QString m_email_data; // cerealized email
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_sender_id, m_recipient_id, m_email_data);
+    }
+};
+
+struct EmailCreateResponseData
+{
+    uint32_t m_email_id;
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;
+    QString m_cerealized_email_data; // cerealized email
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id, m_sender_id, m_recipient_id, m_cerealized_email_data);
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,EmailCreate)
+
+struct EmailUpdateOnCharDeleteData
+{
+    uint32_t m_deleted_char_id;
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_deleted_char_id);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(GameDBEventTypes,EmailUpdateOnCharDelete)
+
+struct EmailMarkAsReadData
+{
+    uint32_t m_email_id;
+    QString m_email_data; // because m_is_read is inside the blob
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id, m_email_data);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(GameDBEventTypes,EmailMarkAsRead)
+
+// cannot use EmailDelete because it's used in EmailEvents already
+struct EmailRemoveData
+{
+    uint32_t m_email_id;
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(GameDBEventTypes,EmailRemove)
+
+struct GetEmailRequestData
+{
+    uint32_t m_email_id;
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id);
+    }
+};
+
+struct GetEmailResponseData
+{
+    uint32_t m_email_id;
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;
+    QString m_email_data; // cerealized email
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id, m_sender_id, m_recipient_id, m_email_data);
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,GetEmail)
+
+struct GetEmailsRequestData
+{
+    template <class Archive>
+    void serialize(Archive &/*ar*/)
+    {}
+};
+
+struct GetEmailsResponseData
+{
+    std::vector<EmailResponseData> m_email_response_datas;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_response_datas);
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,GetEmails)
+
+struct GetEmailBySenderIdRequestData
+{
+    uint32_t m_sender_id;
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_sender_id);
+    }
+};
+
+struct GetEmailBySenderIdResponseData
+{
+    uint32_t m_email_id;
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;
+    QString m_email_data; // cerealized email
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id, m_sender_id, m_recipient_id, m_email_data);
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,GetEmailBySenderId)
+
+struct GetEmailByRecipientIdRequestData
+{
+    uint32_t m_recipient_id;
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_recipient_id);
+    }
+};
+
+struct GetEmailByRecipientIdResponseData
+{
+    uint32_t m_email_id;
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;
+    QString m_email_data; // cerealized email
+
+    template <class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id, m_sender_id, m_recipient_id, m_email_data);
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,GetEmailByRecipientId)
+
+struct FillEmailRecipientIdRequestData
+{
+    uint32_t m_sender_id;
+    QString m_sender_name;
+    QString m_recipient_name;
+    QString m_subject;
+    QString m_message;
+    uint32_t m_timestamp;
+
+    template <class Archive>
+    void serialize (Archive &ar)
+    {
+        ar (m_sender_id, m_sender_name, m_recipient_name, m_subject, m_message, m_timestamp);
+    }
+};
+
+struct FillEmailRecipientIdResponseData
+{
+    uint32_t m_sender_id;
+    uint32_t m_recipient_id;    // the point of this is to get recipient_id from recipient_name :)
+    QString m_sender_name;
+    QString m_subject;
+    QString m_message;
+    uint32_t m_timestamp;
+
+    template <class Archive>
+    void serialize (Archive &ar)
+    {
+        ar (m_sender_id, m_recipient_id, m_sender_name, m_subject, m_message, m_timestamp);
+    }
+};
+// [[ev_def:macro]]
+TWO_WAY_MESSAGE(GameDBEventTypes,FillEmailRecipientId)
+
+struct FillEmailRecipientIdErrorData
+{
+    uint32_t m_sender_id;
+    QString m_error_message;
+
+    template <class Archive>
+    void serialize (Archive &ar)
+    {
+        ar (m_sender_id, m_error_message);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(GameDBEventTypes,FillEmailRecipientIdError)
 
 } // end of SEGSEvents namespace
