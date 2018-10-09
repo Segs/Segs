@@ -22,6 +22,9 @@
 #include "NetStructures/Contact.h"
 #include "NetStructures/Team.h"
 #include "NetStructures/LFG.h"
+#include "Events/EmailHeaders.h"
+#include "Events/EmailRead.h"
+#include "Servers/GameServer/EmailEvents.h"
 #include "MapEvents.h"
 #include "Logging.h"
 
@@ -298,6 +301,70 @@ void sendServerMOTD(MapClientSession *tgt)
 void on_awaiting_dead_no_gurney_test(MapClientSession &session)
 {
     session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
+}
+
+void sendEmailHeaders(MapClientSession &sess)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    // later on the email id should be auto-incremented from DB
+    EmailHeaderRequest* msgToHandler = new EmailHeaderRequest({
+                                        sess.m_ent->m_char->m_db_id,
+                                        sess.m_ent->m_char->getName(),
+                                        "TEST", 576956720},
+                sess.link()->session_token());
+    EventProcessor* tgt = HandlerLocator::getEmail_Handler();
+    tgt->putq(msgToHandler);
+}
+
+void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    uint32_t timestamp = 0;
+
+    EmailSendMessage* msgToHandler = new EmailSendMessage({
+                                                            sess.m_ent->m_char->m_db_id,
+                                                            sess.m_ent->m_char->getName(),    // -> sender
+                                                            recipient_name,
+                                                            subject,
+                                                            message,
+                                                            timestamp},
+                sess.link()->session_token());
+
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+}
+
+void readEmailMessage(MapClientSession& sess, const uint32_t email_id)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    EmailReadRequest* msgToHandler = new EmailReadRequest({email_id}, sess.link()->session_token());
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+}
+
+void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    EmailDeleteMessage* msgToHandler = new EmailDeleteMessage({email_id}, sess.link()->session_token());
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
 bool isFriendOnline(Entity &src, uint32_t db_id)

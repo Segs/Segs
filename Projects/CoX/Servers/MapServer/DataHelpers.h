@@ -136,13 +136,16 @@ void sendContactDialogClose(MapClientSession &src);
 void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location);
 void sendStance(MapClientSession &src, PowerStance stance);
 
+const QString &getGenericTitle(uint32_t val);
+const QString &getOriginTitle(uint32_t val);
 
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
-void sendEmailHeaders(Entity *e);
-void readEmailMessage(Entity *e, const int id);
-
+void sendEmailHeaders(MapClientSession& sess);
+void readEmailMessage(MapClientSession& sess, const uint32_t email_id);
+void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message);
+void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
 
 /*
  * usePower exposed for future Lua support

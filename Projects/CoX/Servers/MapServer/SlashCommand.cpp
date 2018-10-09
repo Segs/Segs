@@ -1848,39 +1848,57 @@ void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
-    sendEmailHeaders(sess.m_ent);
-    QString msg = "Sent Email Headers";
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+    sendEmailHeaders(sess);
 }
 
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
 {
-    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+    uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
-    readEmailMessage(sess.m_ent, id);
+    readEmailMessage(sess, id);
 
     QString msg = "Opening Email ID: " + QString::number(id);
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess){
+void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
+{
+    QStringList parts = cmd.split("\"");
+    QStringList result;
+    for(int i = 0; i < parts.size(); i++)
+    {
+        if(parts[i].endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
+            result.back() += parts[i]+"\"";
+        else
+            result.push_back(parts[i]);
+    }
 
-    QVector<QStringRef> args(cmd.splitRef(' '));
+    assert(result.size() >= 5);
+    result[1].replace("\\q ", "");
+    result[1].replace("\\q", "");
 
-    //storeEmailInDB(src, args);
+    // 1 -> recipient name, 3 -> email subject, 4 -> email message
+    // cannot send email to self as that will trigger /emailRead without the data in db nor EmailHandler
+    // and that will segfault the server :)
+    if (result[1] == sess.m_ent->m_char->getName())
+    {
+        sendInfoMessage(MessageChannel::SERVER, "You cannot send an email to yourself!", sess);
+        return;
+    }
 
-    QString msg = "Email Sent";
+    sendEmail(sess, result[1], result[3], result[4]);
+
+    QString msg = "Email Sent to recipient: " + result[1];
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
 
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
 {
-    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+    uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
-    //deleteEmailFromDB(id);
+    deleteEmailHeaders(sess, id);
 
     QString msg = "Email Deleted ID: " + QString::number(id);
     qDebug().noquote() << msg;
