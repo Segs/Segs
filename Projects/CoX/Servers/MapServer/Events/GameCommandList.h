@@ -27,11 +27,12 @@
 #include "Events/PlayerInfo.h"
 #include "Events/PowerSystemEvents.h"
 #include "Events/SetClientState.h"
+#include "Events/SendStance.h"
 #include "Events/SidekickOffer.h"
 #include "Events/StandardDialogCmd.h"
 #include "Events/TeamLooking.h"
 #include "Events/TeamOffer.h"
 #include "Events/TimeUpdate.h"
 #include "Events/TrayAdd.h"
-#include "Waypoints.h"
+#include "Events/Waypoints.h"
 

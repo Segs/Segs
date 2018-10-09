@@ -90,8 +90,12 @@ void cmdHandler_KeybindDebug(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ToggleLogging(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FriendsListDebug(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess);
-void cmdHandler_ToggleExtraInfo(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ToggleInterp(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ToggleCollision(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ToggleMovementAuthority(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetSequence(const QString &cmd, MapClientSession &sess);
+void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddTimeStateLog(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetClientState(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddEntirePowerSet(const QString &cmd, MapClientSession &sess);
@@ -193,8 +197,12 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"toggleLogging", "log"}, "Modify log categories (e.g. input, teams, ...)", cmdHandler_ToggleLogging, 9},
     {{"friendsDump", "friendsDebug"}, "Output friendlist info to console", cmdHandler_FriendsListDebug, 9},
     {{"damage", "heal"}, "Make current target (or self) take damage/health", cmdHandler_SendFloatingNumbers, 9},
-    {{"extrainfo"},"Toggle extra_info", &cmdHandler_ToggleExtraInfo, 9},
+    {{"interp"},"Toggle Interpolation", &cmdHandler_ToggleInterp, 9},
     {{"moveinstantly"},"Toggle move_instantly", &cmdHandler_ToggleMoveInstantly, 9},
+    {{"collision"},"Toggle Collision on/off", &cmdHandler_ToggleCollision, 9},
+    {{"movement"},"Toggle server authority for Movement on/off", &cmdHandler_ToggleMovementAuthority, 9},
+    {{"setSeq"},"Set Sequence values <update> <move_idx> <duration>", &cmdHandler_SetSequence, 9},
+    {{"addTriggeredMove"},"Set TriggeredMove values <move_idx> <delay> <fx_idx>", &cmdHandler_AddTriggeredMove, 9},
     {{"timestate", "setTimeStateLog"},"Set TimeStateLog value.", cmdHandler_AddTimeStateLog, 9},
     {{"clientstate"},"Set ClientState mode", &cmdHandler_SetClientState, 9},
     {{"addpowerset"},"Adds entire PowerSet (by 'pcat pset' idxs) to Entity", &cmdHandler_AddEntirePowerSet, 9},
@@ -790,9 +798,9 @@ void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess)
     }
 }
 
-void cmdHandler_ToggleExtraInfo(const QString &cmd, MapClientSession &sess)
+void cmdHandler_ToggleInterp(const QString &cmd, MapClientSession &sess)
 {
-    toggleExtraInfo(*sess.m_ent);
+    toggleInterp(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
     qCDebug(logSlashCommand) << msg;
@@ -804,6 +812,59 @@ void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess)
     toggleMoveInstantly(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_ToggleCollision(const QString &cmd, MapClientSession &sess)
+{
+    toggleCollision(*sess.m_ent);
+
+    QString msg = "Toggling " + cmd;
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_ToggleMovementAuthority(const QString &cmd, MapClientSession &sess)
+{
+    toggleMovementAuthority(*sess.m_ent);
+
+    QString msg = "Toggling " + cmd;
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_SetSequence(const QString &cmd, MapClientSession &sess)
+{
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    bool        update  = args.value(1).toUInt();
+    uint32_t    idx     = args.value(2).toUInt();
+    uint8_t     time    = args.value(3).toUInt();
+
+    QString msg = "Setting Sequence " + QString::number(idx) + " for " + QString::number(time);
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+
+    sess.m_ent->m_seq_update = update;
+    sess.m_ent->m_seq_move_idx = idx;
+    sess.m_ent->m_seq_move_change_time = time;
+}
+
+ void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess)
+{
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    uint32_t move_idx, delay, fx_idx;
+    move_idx    = args.value(1).toUInt();
+    delay       = args.value(2).toUInt();
+    fx_idx      = args.value(3).toUInt();
+
+    addTriggeredMove(*sess.m_ent, move_idx, delay, fx_idx);
+
+    QString msg = QString("Setting TriggeredMove: idx %1;  ticks: %2;  fx_idx: %3").arg(move_idx).arg(delay).arg(fx_idx);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }

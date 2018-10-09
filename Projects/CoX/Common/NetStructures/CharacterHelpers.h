@@ -37,6 +37,7 @@ uint32_t            getInf(const Character &c);
 const QString &     getDescription(const Character &c);
 const QString &     getBattleCry(const Character &c);
 const QString &     getAlignment(const Character &c);
+const QString &     getLastOnline(const Character &c);
 
 // Setters
 void    setLevel(Character &c, uint32_t val);
@@ -53,6 +54,7 @@ void    setTitles(Character &c, bool prefix = false, QString generic = "", QStri
 void    setInf(Character &c, uint32_t val);
 void    setDescription(Character &c, QString val);
 void    setBattleCry(Character &c, QString val);
+void    updateLastOnline(Character &c);
 
 // Toggles
 void    toggleAFK(Character &c, const bool isTrue, QString msg = "");

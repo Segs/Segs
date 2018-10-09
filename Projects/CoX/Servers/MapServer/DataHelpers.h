@@ -28,6 +28,7 @@ class GameDataStore;
 class TradeMember;
 struct ContactEntry;
 struct Destination;
+struct PowerStance;
 
 
 /*
@@ -71,8 +72,10 @@ void    toggleJumppack(Entity &e);
 void    toggleControlsDisabled(Entity &e);
 void    toggleFullUpdate(Entity &e);
 void    toggleControlId(Entity &e);
-void    toggleExtraInfo(Entity &e);
+void    toggleInterp(Entity &e);
 void    toggleMoveInstantly(Entity &e);
+void    toggleCollision(Entity &e);
+void    toggleMovementAuthority(Entity &e);
 void    toggleTeamBuffs(PlayerData &c);
 void    toggleLFG(Entity &e);
 
@@ -85,6 +88,7 @@ Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
 void    on_awaiting_dead_no_gurney_test(MapClientSession &session);
 bool    isFriendOnline(Entity &src, uint32_t db_id);
+void    setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits);
 
 
 /*
@@ -130,6 +134,7 @@ void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<Cont
 void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno);
 void sendContactDialogClose(MapClientSession &src);
 void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location);
+void sendStance(MapClientSession &src, PowerStance stance);
 
 const QString &getGenericTitle(uint32_t val);
 const QString &getOriginTitle(uint32_t val);

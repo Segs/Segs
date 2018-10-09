@@ -7,15 +7,17 @@
 
 #pragma once
 #include "CommonNetStructures.h"
-#include "Powers.h"
 #include "Costume.h"
-#include "Team.h"
 #include "FixedPointValue.h"
+#include "Movement.h"
+#include "Powers.h"
+#include "StateInterpolator.h"
+#include "Team.h"
 #include "Common/GameData/entitydata_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
+#include "Common/GameData/seq_definitions.h"
 #include "Common/GameData/CoHMath.h"
 
-#include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/constants.hpp>
 
 #include <QQueue>
@@ -30,13 +32,6 @@ struct PlayerData;
 class GameDataStore;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
 
-class PosUpdate
-{
-public:
-    glm::vec3       m_position;
-    AngleRadians    m_pyr_angles[3];
-    int             m_timestamp;
-};
 
 class InputStateStorage
 {
@@ -155,6 +150,13 @@ struct SuperGroup
     int             m_SG_rank       = 1;
 };
 
+struct FactionData
+{
+    bool    m_has_faction = false;  // send Faction info
+    int     m_rank = 0;             // iRank
+    QString m_faction_name;         // group_name
+};
+
 struct NPCData
 {
     bool m_is_owned = false;
@@ -181,7 +183,7 @@ struct NetFx
     int         client_trigger_fx   = 0;
     float       duration            = 0;
     float       radius              = 0;
-    QString     power               = 0;
+    int         power               = 0; // char.toInt()
     int         debris              = 0;
     NetFxTarget target;
     NetFxTarget origin;
@@ -224,6 +226,7 @@ public:
         Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
         TradePtr            m_trade;
         EntityData          m_entity_data;
+        FactionData         m_faction_data;
 
         uint32_t            m_idx                   = {0};
         uint32_t            m_db_id                 = {0};
@@ -236,26 +239,31 @@ public:
         std::vector<Buffs>          m_buffs;
         QQueue<QueuedPowers>        m_queued_powers;
         std::vector<QueuedPowers>   m_recharging_powers;
-        std::vector<NetFx>          m_net_fx;
-        CharacterPower    * m_stance                = nullptr;
-        bool                m_update_buffs          = false;
+        PowerStance                 m_stance;
+        bool                        m_update_buffs  = false;
 
-        int                 m_randSeed              = 0;    // Sequencer uses this as a seed for random bone scale
-        int                 m_num_fx                = 0;
+
+        // Animations: Sequencers, NetFx, and TriggeredMoves
+        std::vector<NetFx>  m_net_fx;
+        std::vector<TriggeredMove> m_triggered_moves;
+        SeqBitSet           m_seq_state;                    // Should be part of SeqState
+        int                 m_state_mode            = 0;
+        bool                m_has_state_mode        = false;
+        bool                m_seq_update            = false;
+        int                 m_seq_move_idx          = 0;
+        uint8_t             m_seq_move_change_time  = 0;
+        uint8_t             m_move_type             = 0;
+        int                 m_randSeed              = 0;     // Sequencer uses this as a seed for random bone scale
+
         bool                m_is_logging_out        = false;
         int                 m_time_till_logout      = 0;    // time in miliseconds untill given entity should be marked as logged out.
         AppearanceType      m_costume_type          = AppearanceType::None;
-        int                 m_state_mode            = 0;
-        bool                m_has_state_mode       = false;
         bool                m_odd_send              = false;
         bool                m_no_draw_on_client     = false;
-        bool                m_seq_update            = false;
         bool                m_force_camera_dir      = false; // used to force the client camera direction in sendClientData()
         bool                m_is_hero               = false;
         bool                m_is_villian            = false;
         bool                m_contact               = false;
-        int                 m_seq_upd_num1          = 0;
-        int                 m_seq_upd_num2          = 0;
         bool                m_is_flying             = false;
         bool                m_is_stunned            = false;
         bool                m_is_jumping            = false;
@@ -270,28 +278,28 @@ public:
         bool                m_force_pos_and_cam     = true;     // EntityResponse sendServerControlState
         bool                m_full_update           = false;    // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = false;    // EntityReponse sendServerPhysicsPositions
-        bool                m_extra_info            = false;    // EntityUpdateCodec storePosUpdate
+        bool                m_has_interp            = false;    // EntityUpdateCodec storePosUpdate
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
         bool                m_in_training           = false;
-
         bool                m_has_input_on_timeframe= false;
 
         int                 u1 = 0; // used for live-debugging
 
-        PosUpdate           m_pos_updates[64];
+        std::array<PosUpdate, 64> m_pos_updates;
+        std::array<BinTreeEntry, 7> m_interp_bintree;
         std::vector<PosUpdate> interpResults;
         size_t              m_update_idx                = 0;
         glm::vec3           m_velocity;
         glm::vec3           m_prev_pos;
         Vector3_FPV         fixedpoint_pos;
         bool                m_pchar_things              = false;
-        bool                might_have_rare             = false;
+        bool                m_update_anim             = false;
         bool                m_hasname                   = false;
         bool                m_classname_override        = false;
         bool                m_hasRagdoll                = false;
         bool                m_has_owner                 = false;
         bool                m_create_player             = false;
-        bool                m_rare_bits                 = false;
+        bool                m_rare_update                 = false;
         int                 current_client_packet_id    = {0};
         QString             m_override_name;
         uint32_t            m_input_ack                 = {0};
@@ -331,5 +339,4 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
 void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);
-void forcePosition(Entity &e,glm::vec3 pos);
 extern void abortLogout(Entity *e);

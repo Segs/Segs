@@ -165,7 +165,7 @@ void toggleJumppack(Entity &e)
 void    toggleControlsDisabled(Entity &e) { e.m_controls_disabled = !e.m_controls_disabled; }
 void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
 void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
-void    toggleExtraInfo(Entity &e) { e.m_extra_info = !e.m_extra_info; }
+void    toggleInterp(Entity &e) { e.m_has_interp = !e.m_has_interp; }
 void    toggleMoveInstantly(Entity &e) { e.m_move_instantly = !e.m_move_instantly; }
 void    toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
 
@@ -190,6 +190,23 @@ void toggleLFG(Entity &e)
         addLFG(e);
         sendTeamLooking(&e);
     }
+}
+
+void toggleCollision(Entity &e)
+{
+    e.inp_state.m_no_collision = !e.inp_state.m_no_collision;
+
+    if (e.inp_state.m_no_collision)
+        e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
+    else
+        e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
+     qDebug() << "Collision =" << QString::number(e.m_move_type, 2) << e.inp_state.m_no_collision;
+}
+
+void toggleMovementAuthority(Entity &e)
+{
+    toggleFullUpdate(e);
+    toggleControlId(e);
 }
 
 
@@ -355,6 +372,20 @@ bool isFriendOnline(Entity &src, uint32_t db_id)
     // TODO: src is needed for mapclient
     return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
 }
+
+void setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits)
+{
+    g_interpolating = active;
+    g_interpolation_level = level;
+    g_interpolation_bits = bits;
+     QString output = QString("Setting Interpolation Settings (active, level, bits): %1, %2, %3")
+            .arg(g_interpolating)
+            .arg(g_interpolation_level)
+            .arg(g_interpolation_bits);
+     sendInfoMessage(MessageChannel::DEBUG_INFO, output, *sess);
+    qCDebug(logPosition) << output;
+}
+
 
 /*
  * Titles -- TODO: get titles from texts/English/titles_def
@@ -623,6 +654,12 @@ void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location)
     src.addCommand<SendWaypoint>(point_idx, location);
 }
 
+void sendStance(MapClientSession &src, PowerStance stance)
+{
+    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    src.addCommand<SendStance>(stance);
+}
+
 
 /*
  * sendEmail Wrappers for providing access to Email Database
@@ -738,6 +775,23 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
 
         // Face towards your target
         sendFaceEntity(ent, tgt_idx);
+    }
+
+    // Send PowerStance to client
+    PowerStance pstance;
+    pstance.has_stance = true;
+    pstance.pset_idx = pset_idx;
+    pstance.pow_idx = pow_idx;
+    ent.m_stance = pstance;
+    sendStance(*ent.m_client, pstance);
+
+    // Clear old moves and add TriggeredMove to queue
+    ent.m_triggered_moves.clear();
+    for(auto bits : powtpl.AttackBits)
+    {
+        // TODO: pull from stored FX name and lookup idx
+        // for now, send bits again
+        addTriggeredMove(ent, bits, powtpl.m_AttackFrames, bits);
     }
 
     // Check and set endurance based upon end cost
