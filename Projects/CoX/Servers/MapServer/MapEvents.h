@@ -57,22 +57,6 @@ public:
 };
 
 // [[ev_def:type]]
-class AwaitingDeadNoGurney final : public MapLinkEvent
-{
-public:
-    AwaitingDeadNoGurney() : MapLinkEvent(MapEventTypes::evAwaitingDeadNoGurney)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,10); // opcode
-    }
-    void serializefrom(BitStream &) override
-    {
-    }
-    EVENT_IMPL(AwaitingDeadNoGurney)
-};
-
-// [[ev_def:type]]
 class ShortcutsRequest final : public MapLinkEvent
 {
 public:
@@ -330,34 +314,6 @@ public:
         bs.GetString(name);
     }
     EVENT_IMPL(EnterDoor)
-};
-
-// [[ev_def:type]]
-class ChangeStance final : public MapLinkEvent
-{
-public:
-    // [[ev_def:field]]
-    PowerStance m_stance;
-
-    ChangeStance():MapLinkEvent(MapEventTypes::evChangeStance) // opcode 36
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        qDebug() << "ChangeStance to";
-        bs.StorePackedBits(1,36);
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        qDebug() << "ChangeStance from";
-        m_stance.has_stance = bs.GetBits(1);
-        if(!m_stance.has_stance)
-            return;
-
-        m_stance.pset_idx = bs.GetPackedBits(4);
-        m_stance.pow_idx = bs.GetPackedBits(4);
-    }
-    EVENT_IMPL(ChangeStance)
-
 };
 
 // [[ev_def:type]]
@@ -706,6 +662,7 @@ public:
 #include "Events/Browser.h"
 #include "Events/ChatDividerMoved.h"
 #include "Events/ContactDialogs.h"
+#include "Events/DeadNoGurney.h"
 #include "Events/EntitiesResponse.h"
 #include "Events/FriendsListUpdate.h"
 #include "Events/GameCommandList.h"

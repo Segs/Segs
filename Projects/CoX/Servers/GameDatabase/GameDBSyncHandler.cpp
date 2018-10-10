@@ -63,6 +63,20 @@ void GameDBSyncHandler::dispatch(Event *ev)
         on_supergroup_update(static_cast<SuperGroupUpdateMessage *>(ev)); break;
     case GameDBEventTypes::evRemoveSuperGroupRequest:
         on_supergroup_remove(static_cast<RemoveSuperGroupRequest *>(ev)); break;
+    case GameDBEventTypes::evEmailCreateRequest:
+        on_email_create(static_cast<EmailCreateRequest *>(ev)); break;
+    case GameDBEventTypes::evEmailMarkAsReadMessage:
+        on_email_mark_as_read(static_cast<EmailMarkAsReadMessage *>(ev)); break;
+    case GameDBEventTypes::evEmailUpdateOnCharDeleteMessage:
+        on_email_update_on_char_delete(static_cast<EmailUpdateOnCharDeleteMessage *>(ev)); break;
+    case GameDBEventTypes::evEmailRemoveMessage:
+        on_email_remove(static_cast<EmailRemoveMessage *>(ev)); break;
+    case GameDBEventTypes::evGetEmailRequest:
+        on_get_email(static_cast<GetEmailRequest *>(ev)); break;
+    case GameDBEventTypes::evGetEmailsRequest:
+        on_get_emails(static_cast<GetEmailsRequest *>(ev)); break;
+    case GameDBEventTypes::evFillEmailRecipientIdRequest:
+        on_fill_email_recipient_id(static_cast<FillEmailRecipientIdRequest *>(ev)); break;
     default: assert(false); break;
     }
 }
@@ -218,6 +232,74 @@ void GameDBSyncHandler::on_supergroup_remove(RemoveSuperGroupRequest *msg)
         msg->src()->putq(new GameDbErrorMessage({"on_supergroup_remove : Game db error"}, msg->session_token()));
     else
         msg->src()->putq(new RemoveSuperGroupResponse({msg->m_data.m_sg_id}, msg->session_token()));
+}
+
+void GameDBSyncHandler::on_email_create(EmailCreateRequest* ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    EmailCreateResponseData resp;
+
+    if (db_ctx.createEmail(ev->m_data, resp))
+        HandlerLocator::getEmail_Handler()->putq(new EmailCreateResponse(std::move(resp), ev->session_token()));
+    else
+        HandlerLocator::getEmail_Handler()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
+
+void GameDBSyncHandler::on_email_mark_as_read(EmailMarkAsReadMessage* msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.markEmailAsRead(msg->m_data);
+}
+
+void GameDBSyncHandler::on_email_update_on_char_delete(EmailUpdateOnCharDeleteMessage* msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.updateEmailOnCharDelete(msg->m_data);
+}
+
+void GameDBSyncHandler::on_email_remove(EmailRemoveMessage* msg)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    db_ctx.deleteEmail(msg->m_data);
+}
+
+void GameDBSyncHandler::on_get_email(GetEmailRequest* ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    GetEmailResponseData resp;
+
+    if (db_ctx.getEmail(ev->m_data, resp))
+        HandlerLocator::getEmail_Handler()->putq(new GetEmailResponse(std::move(resp),ev->session_token()));
+    else
+        HandlerLocator::getEmail_Handler()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
+
+void GameDBSyncHandler::on_get_emails(GetEmailsRequest* ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    GetEmailsResponseData resp;
+
+    // TODO: Investigate why I can't use ev->src()
+    if (db_ctx.getEmails(ev->m_data, resp))
+        HandlerLocator::getEmail_Handler()->putq(new GetEmailsResponse(std::move(resp), ev->session_token()));
+    else
+        ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
+}
+
+void GameDBSyncHandler::on_fill_email_recipient_id(FillEmailRecipientIdRequest *ev)
+{
+    GameDbSyncContext &db_ctx(m_db_context.localData());
+    FillEmailRecipientIdResponseData resp;
+
+    if (db_ctx.fillEmailRecipientId(ev->m_data, resp))
+        HandlerLocator::getEmail_Handler()->putq(new FillEmailRecipientIdResponse(std::move(resp), ev->session_token()));
+    else
+    {
+        QString error_msg = QString("Failed to send email because character "
+                                    "with name %1 doesn't exist in this server!").arg(ev->m_data.m_recipient_name);
+        HandlerLocator::getEmail_Handler()->putq(new FillEmailRecipientIdErrorMessage(
+            {ev->m_data.m_sender_id, error_msg}, ev->session_token()));
+    }
 }
 
 //! @}

@@ -23,6 +23,8 @@ uint32_t            getCombatLevel(const Character &c);
 uint32_t            getSecurityThreat(const Character &c);
 float               getHP(const Character &c);
 float               getEnd(const Character &c);
+float               getMaxHP(const Character &c);
+float               getMaxEnd(const Character &c);
 uint64_t            getLastCostumeId(const Character &c);
 const QString &     getOrigin(const Character &c);
 const QString &     getClass(const Character &c);
@@ -45,8 +47,8 @@ void    setCombatLevel(Character &c, uint32_t val);
 void    setSecurityThreat(Character &c, uint32_t val);
 void    setHP(Character &c, float val);
 void    setEnd(Character &c, float val);
-void    setHP(Character &c);
-void    setEnd(Character &c);
+void    setMaxHP(Character &c);
+void    setMaxEnd(Character &c);
 void    setLastCostumeId(Character &c, uint64_t val);
 void    setXP(Character &c, uint32_t val);
 void    setDebt(Character &c, uint32_t val);
@@ -54,7 +56,7 @@ void    setTitles(Character &c, bool prefix = false, QString generic = "", QStri
 void    setInf(Character &c, uint32_t val);
 void    setDescription(Character &c, QString val);
 void    setBattleCry(Character &c, QString val);
-void    setLastOnline(Character &c);
+void    updateLastOnline(Character &c);
 
 // Toggles
 void    toggleAFK(Character &c, const bool isTrue, QString msg = "");

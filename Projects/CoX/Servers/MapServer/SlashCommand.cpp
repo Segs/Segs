@@ -13,12 +13,13 @@
 #include "SlashCommand.h"
 
 #include "DataHelpers.h"
-#include "Events/ClientStates.h"
 #include "Events/GameCommandList.h"
 #include "Events/MapXferWait.h"
 #include "Events/SuperGroupEvents.h"
+#include "GameData/ClientStates.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
+#include "GameData/map_definitions.h"
 #include "Logging.h"
 #include "MapLink.h"
 #include "MapInstance.h"
@@ -28,7 +29,6 @@
 #include "NetStructures/LFG.h"
 #include "NetStructures/Trade.h"
 #include "Settings.h"
-#include "Common/GameData/map_definitions.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFile>
@@ -93,8 +93,12 @@ void cmdHandler_KeybindDebug(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ToggleLogging(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FriendsListDebug(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess);
-void cmdHandler_ToggleExtraInfo(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ToggleInterp(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ToggleCollision(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ToggleMovementAuthority(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetSequence(const QString &cmd, MapClientSession &sess);
+void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddTimeStateLog(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetClientState(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddEntirePowerSet(const QString &cmd, MapClientSession &sess);
@@ -112,6 +116,8 @@ void cmdHandler_SendTimeUpdate(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendContactDialog(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendContactDialogYesNoOk(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetStateMode(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Revive(const QString &cmd, MapClientSession &sess);
 
 /* For live debugging */
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
@@ -211,8 +217,12 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"toggleLogging", "log"}, "Modify log categories (e.g. input, teams, ...)", cmdHandler_ToggleLogging, 9},
     {{"friendsDump", "friendsDebug"}, "Output friendlist info to console", cmdHandler_FriendsListDebug, 9},
     {{"damage", "heal"}, "Make current target (or self) take damage/health", cmdHandler_SendFloatingNumbers, 9},
-    {{"extrainfo"},"Toggle extra_info", &cmdHandler_ToggleExtraInfo, 9},
+    {{"interp"},"Toggle Interpolation", &cmdHandler_ToggleInterp, 9},
     {{"moveinstantly"},"Toggle move_instantly", &cmdHandler_ToggleMoveInstantly, 9},
+    {{"collision"},"Toggle Collision on/off", &cmdHandler_ToggleCollision, 9},
+    {{"movement"},"Toggle server authority for Movement on/off", &cmdHandler_ToggleMovementAuthority, 9},
+    {{"setSeq"},"Set Sequence values <update> <move_idx> <duration>", &cmdHandler_SetSequence, 9},
+    {{"addTriggeredMove"},"Set TriggeredMove values <move_idx> <delay> <fx_idx>", &cmdHandler_AddTriggeredMove, 9},
     {{"timestate", "setTimeStateLog"},"Set TimeStateLog value.", cmdHandler_AddTimeStateLog, 9},
     {{"clientstate"},"Set ClientState mode", &cmdHandler_SetClientState, 9},
     {{"addpowerset"},"Adds entire PowerSet (by 'pcat pset' idxs) to Entity", &cmdHandler_AddEntirePowerSet, 9},
@@ -230,6 +240,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"contactdlg", "cdlg"}, "Test ContactDialog. Sends contact dialog with responses to server", cmdHandler_SendContactDialog, 9},
     {{"contactdlgyesno", "cdlg2"}, "Test ContactDialogYesNoOk. Sends contact dialog with yes/no response to server", cmdHandler_SendContactDialogYesNoOk, 9},
     {{"setwaypoint"}, "Test SendWaypoint. Send waypoint to client", cmdHandler_SendWaypoint, 9},
+    {{"setstatemode"}, "Send StateMode. Send StateMode to client", cmdHandler_SetStateMode, 9},
+    {{"revive"}, "Revive Self or Target Player", cmdHandler_Revive, 9},
 
     /* For live debugging */
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -499,7 +511,8 @@ void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess)
 
     setHP(*sess.m_ent->m_char, attrib);
 
-    QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(sess.m_ent->m_char->m_max_attribs.m_HitPoints);
+    QString msg = QString("Setting HP to: %1 / %2")
+            .arg(attrib).arg(getMaxHP(*sess.m_ent->m_char));
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
@@ -847,9 +860,9 @@ void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess)
     }
 }
 
-void cmdHandler_ToggleExtraInfo(const QString &cmd, MapClientSession &sess)
+void cmdHandler_ToggleInterp(const QString &cmd, MapClientSession &sess)
 {
-    toggleExtraInfo(*sess.m_ent);
+    toggleInterp(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
     qCDebug(logSlashCommand) << msg;
@@ -861,6 +874,59 @@ void cmdHandler_ToggleMoveInstantly(const QString &cmd, MapClientSession &sess)
     toggleMoveInstantly(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_ToggleCollision(const QString &cmd, MapClientSession &sess)
+{
+    toggleCollision(*sess.m_ent);
+
+    QString msg = "Toggling " + cmd;
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_ToggleMovementAuthority(const QString &cmd, MapClientSession &sess)
+{
+    toggleMovementAuthority(*sess.m_ent);
+
+    QString msg = "Toggling " + cmd;
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_SetSequence(const QString &cmd, MapClientSession &sess)
+{
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    bool        update  = args.value(1).toUInt();
+    uint32_t    idx     = args.value(2).toUInt();
+    uint8_t     time    = args.value(3).toUInt();
+
+    QString msg = "Setting Sequence " + QString::number(idx) + " for " + QString::number(time);
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+
+    sess.m_ent->m_seq_update = update;
+    sess.m_ent->m_seq_move_idx = idx;
+    sess.m_ent->m_seq_move_change_time = time;
+}
+
+ void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess)
+{
+    QStringList args;
+    args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
+
+    uint32_t move_idx, delay, fx_idx;
+    move_idx    = args.value(1).toUInt();
+    delay       = args.value(2).toUInt();
+    fx_idx      = args.value(3).toUInt();
+
+    addTriggeredMove(*sess.m_ent, move_idx, delay, fx_idx);
+
+    QString msg = QString("Setting TriggeredMove: idx %1;  ticks: %2;  fx_idx: %3").arg(move_idx).arg(delay).arg(fx_idx);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
@@ -1071,9 +1137,10 @@ void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
     sendFaceLocation(*sess.m_ent, loc);
 }
 
-void cmdHandler_TestDeadNoGurney(const QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)
 {
-    on_awaiting_dead_no_gurney_test(sess);
+    qCDebug(logSlashCommand) << "Sending DeadNoGurney:" << cmd;
+    sendDeadNoGurney(sess);
 }
 
 void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess)
@@ -1196,6 +1263,55 @@ void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess)
     sendWaypoint(sess, idx, loc);
     setCurrentDestination(*sess.m_ent, idx, loc);
     sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+}
+
+void cmdHandler_SetStateMode(const QString &cmd, MapClientSession &sess)
+{
+    uint32_t val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+
+    sess.m_ent->m_rare_update = true; // this must also be true for statemode to send
+    sess.m_ent->m_has_state_mode = true;
+    sess.m_ent->m_state_mode = static_cast<ClientStates>(val);
+
+    QString msg = "Set StateMode to: " + QString::number(val);
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_Revive(const QString &cmd, MapClientSession &sess)
+{
+    Entity *tgt = nullptr;
+    QString msg = "Revive format is '/revive {lvl} {optional: target_name}'";
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if (parts.size() < 2)
+    {
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        return;
+    }
+
+    int revive_lvl = parts[1].toUInt();
+    if(parts.size() > 2)
+    {
+        QString name = parts[2].toString();
+        tgt = getEntity(&sess, name); // get Entity by name
+        if (tgt == nullptr)
+        {
+            msg = QString("Revive target %1 cannot be found. Targeting Self.").arg(name);
+            qCDebug(logSlashCommand) << msg;
+            sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+            tgt = sess.m_ent;
+        }
+    }
+    else
+        tgt = sess.m_ent;
+
+    revivePlayer(*tgt, static_cast<ReviveLevel>(revive_lvl));
+
+    msg = "Reviving " + tgt->name();
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
 
@@ -2079,39 +2195,57 @@ void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
-    sendEmailHeaders(sess.m_ent);
-    QString msg = "Sent Email Headers";
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+    sendEmailHeaders(sess);
 }
 
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
 {
-    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+    uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
-    readEmailMessage(sess.m_ent, id);
+    readEmailMessage(sess, id);
 
     QString msg = "Opening Email ID: " + QString::number(id);
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess){
+void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
+{
+    QStringList parts = cmd.split("\"");
+    QStringList result;
+    for(int i = 0; i < parts.size(); i++)
+    {
+        if(parts[i].endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
+            result.back() += parts[i]+"\"";
+        else
+            result.push_back(parts[i]);
+    }
 
-    QVector<QStringRef> args(cmd.splitRef(' '));
+    assert(result.size() >= 5);
+    result[1].replace("\\q ", "");
+    result[1].replace("\\q", "");
 
-    //storeEmailInDB(src, args);
+    // 1 -> recipient name, 3 -> email subject, 4 -> email message
+    // cannot send email to self as that will trigger /emailRead without the data in db nor EmailHandler
+    // and that will segfault the server :)
+    if (result[1] == sess.m_ent->m_char->getName())
+    {
+        sendInfoMessage(MessageChannel::SERVER, "You cannot send an email to yourself!", sess);
+        return;
+    }
 
-    QString msg = "Email Sent";
+    sendEmail(sess, result[1], result[3], result[4]);
+
+    QString msg = "Email Sent to recipient: " + result[1];
     qDebug().noquote() << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
 
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
 {
-    int id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
+    uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
-    //deleteEmailFromDB(id);
+    deleteEmailHeaders(sess, id);
 
     QString msg = "Email Deleted ID: " + QString::number(id);
     qDebug().noquote() << msg;

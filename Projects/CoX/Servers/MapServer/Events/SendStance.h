@@ -10,10 +10,9 @@
 #include "GameCommand.h"
 #include "MapEventTypes.h"
 
-#include <QtCore/QString>
-
 namespace SEGSEvents
 {
+
 // [[ev_def:type]]
 class SendStance final : public GameCommandEvent
 {
@@ -21,16 +20,15 @@ public:
     // [[ev_def:field]]
     PowerStance m_stance;
 
-explicit SendStance() : GameCommandEvent(MapEventTypes::evSendStance) {}
-    SendStance(PowerStance pow_stance) : GameCommandEvent(MapEventTypes::evSendStance),
+explicit SendStance() : GameCommandEvent(evSendStance) {}
+    SendStance(PowerStance pow_stance) : GameCommandEvent(evSendStance),
         m_stance(pow_stance)
     {
     }
 
     void serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient); // 57
-
+        bs.StorePackedBits(1, type()-evFirstServerToClient); // pkt 57
         bs.StoreBits(1, m_stance.has_stance);
         if(!m_stance.has_stance)
             return;
@@ -40,4 +38,29 @@ explicit SendStance() : GameCommandEvent(MapEventTypes::evSendStance) {}
     }
     EVENT_IMPL(SendStance)
 };
+
+// [[ev_def:type]]
+class ChangeStance final : public MapLinkEvent
+{
+public:
+    // [[ev_def:field]]
+    PowerStance m_stance;
+
+    ChangeStance():MapLinkEvent(MapEventTypes::evChangeStance)
+    {}
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,36);
+    }
+    void serializefrom(BitStream &bs) override
+    {
+        m_stance.has_stance = bs.GetBits(1);
+        if(!m_stance.has_stance)
+            return;
+        m_stance.pset_idx = bs.GetPackedBits(4);
+        m_stance.pow_idx  = bs.GetPackedBits(4);
+    }
+    EVENT_IMPL(ChangeStance)
+};
+
 } //end of SEGSEvents namespace

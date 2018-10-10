@@ -55,8 +55,8 @@ set(GAMEDATA_SRC
     #def_serializers.cpp
     map_serializers.cpp
     map_serializers.h
-    #seq_serializers.cpp
-    #seq_serializers.h
+    seq_serializers.cpp
+    seq_serializers.h
     seq_definitions.h
     shop_serializers.cpp
     shop_serializers.h
@@ -81,6 +81,7 @@ set(GAMEDATA_SRC
     GameDataStore.h
     NpcStore.cpp
     NpcStore.h
+    ClientStates.h
 
     #TODO: move this to Components Library
     CoXHash.cpp

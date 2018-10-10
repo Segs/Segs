@@ -223,8 +223,8 @@ void Character::GetCharBuildInfo(BitStream &src)
 
     // Now that character is created. Finalize level and update hp and end
     finalizeLevel();
-    setHP(*this); // set max hp
-    setEnd(*this); // set max end
+    setMaxHP(*this); // set max hp
+    setMaxEnd(*this); // set max end
 
     // This must come after finalize
     addStartingInspirations(starting_insps);      // resurgence and phenomenal_luck
@@ -396,7 +396,7 @@ void Character::dumpSidekickInfo()
     qDebug().noquote() << msg;
 }
 
-void Character::DumpBuildInfo()
+void Character::dumpBuildInfo()
 {
     Character &c = *this;
     QString msg = "//--------------Char Debug--------------\n  "
@@ -419,7 +419,7 @@ void Character::DumpBuildInfo()
 
 void Character::dump()
 {
-    DumpBuildInfo();
+    dumpBuildInfo();
     qDebug() << "//--------------Owned Powers--------------";
     dumpOwnedPowers(m_char_data);
     qDebug() << "//-----------Owned Inspirations-----------";

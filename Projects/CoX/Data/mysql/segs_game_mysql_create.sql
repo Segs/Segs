@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS `progress`;
 DROP TABLE IF EXISTS `costume`;
 DROP TABLE IF EXISTS `characters`;
 DROP TABLE IF EXISTS `accounts`;
+DROP TABLE IF EXISTS `emails`;
 
 CREATE TABLE `accounts` (
   `id` int(11) NOT NULL,
@@ -47,6 +48,13 @@ CREATE TABLE `supergroups` (
   `sg_members` blob
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+CREATE TABLE `emails`(
+	`id` int(11) NOT NULL,
+	`sender_id` int(11) NOT NULL,
+	`recipient_id` int(11) NOT NULL,
+	`email_data` blob
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 CREATE TABLE `table_versions` (
   `id` int(11) NOT NULL,
   `table_name` varchar(20) NOT NULL,
@@ -55,13 +63,22 @@ CREATE TABLE `table_versions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO `table_versions` (`id`, `table_name`, `version`, `last_update`) VALUES
+<<<<<<< HEAD
 (1, 'db_version', 8, '2018-10-02 02:56:43'),
+=======
+(1, 'db_version', 8, '2018-05-03 17:54:32'),
+>>>>>>> upstream/develop
 (2, 'table_versions', 0, '2017-11-11 08:57:42'),
 (3, 'accounts', 1, '2018-05-03 12:52:03'),
 (4, 'characters', 8, '2018-05-04 14:58:27'),
 (5, 'costume', 0, '2017-11-11 08:57:43'),
+<<<<<<< HEAD
 (7, 'supergroups', 2, '2018-10-02 02:56:43');
 
+=======
+(7, 'supergroups', 1, '2018-05-03 12:52:53'),
+(8, 'emails', 0, '2018-09-23 08:00;00');
+>>>>>>> upstream/develop
 
 ALTER TABLE `accounts`
   ADD PRIMARY KEY (`id`);
@@ -76,6 +93,9 @@ ALTER TABLE `costume`
 
 ALTER TABLE `supergroups`
   ADD PRIMARY KEY (`id`);
+  
+ALTER TABLE `emails`
+  ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `table_versions`
   ADD PRIMARY KEY (`id`);
@@ -87,6 +107,8 @@ ALTER TABLE `costume`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 ALTER TABLE `supergroups`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `emails`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 ALTER TABLE `table_versions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
@@ -95,6 +117,10 @@ ALTER TABLE `characters`
 
 ALTER TABLE `costume`
   ADD CONSTRAINT `costume_ibfk_1` FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`) ON DELETE CASCADE;
+  
+ALTER TABLE `emails`
+  ADD CONSTRAINT `emails_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `characters` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `emails_ibfk_2` FOREIGN KEY (`recipient_id`) REFERENCES `characters` (`id`) ON DELETE CASCADE;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

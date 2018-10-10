@@ -32,6 +32,16 @@ enum class TrayItemType : uint32_t
     Count                   = 7,
 };
 
+enum class ReviveLevel
+{
+    AWAKEN              = 1,
+    BOUNCE_BACK         = 2,
+    RESTORATION         = 3,
+    IMMORTAL_RECOVERY   = 4,
+    REGEN_REVIVE        = 5,
+    FULL                = 6,
+};
+
 struct PowerStance
 {
     bool        has_stance  = false;
@@ -373,7 +383,7 @@ void addInspirationToChar(CharacterData &cd, const CharacterInspiration& insp);
 int getNumberInspirations(const CharacterData &cd);
 int getMaxNumberInspirations(const CharacterData &cd);
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
-void useInspiration(Entity &ent, uint32_t col, uint32_t row);
+bool useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row);
 void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
 void dumpInspirations(CharacterData &cd);

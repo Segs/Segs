@@ -81,6 +81,11 @@ class TrashEnhancement;
 class TrashEnhancementInPower;
 class BuyEnhancementSlot;
 class RecvNewPower;
+class EmailHeaderResponse;
+class EmailReadResponse;
+class EmailWasReadByRecipientMessage;
+class EmailHeadersToClientMessage;
+class EmailSendErrorMessage;
 class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;
@@ -93,6 +98,7 @@ class BrowserClose;
 class LevelUpResponse;
 class TradeWasCancelledMessage;
 class TradeWasUpdatedMessage;
+class DeadNoGurneyOK;
 
 
 // server<-> server event types
@@ -228,6 +234,11 @@ protected:
         void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
+        void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
+        void on_email_header_response(SEGSEvents::EmailHeaderResponse *ev);
+        void on_email_read_response(SEGSEvents::EmailReadResponse *ev);
+        void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage *ev);
+        void on_email_send_error(SEGSEvents::EmailSendErrorMessage *ev);
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
         void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
         void on_dialog_button(SEGSEvents::DialogButton *ev);
@@ -243,6 +254,7 @@ protected:
         void on_accept_supergroup_changes(SEGSEvents::AcceptSuperGroupChanges *ev);
         void on_supergroup_mode(SEGSEvents::SuperGroupMode *ev);
         void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
+        void on_dead_no_gurney_ok(SEGSEvents::DeadNoGurneyOK *ev);
         void on_browser_close(SEGSEvents::BrowserClose *ev);
         void on_levelup_response(SEGSEvents::LevelUpResponse *ev);
         void on_trade_cancelled(SEGSEvents::TradeWasCancelledMessage* ev);

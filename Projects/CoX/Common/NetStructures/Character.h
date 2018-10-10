@@ -90,7 +90,7 @@ const   QString &       getName() const { return m_name; }
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
         const CharacterCostume *getCurrentCostume() const;
         void            dumpSidekickInfo();
-        void            DumpBuildInfo();
+        void            dumpBuildInfo();
         void            face_bits(uint32_t){}
         void            dump();
         void            sendFullStats(BitStream &bs) const;

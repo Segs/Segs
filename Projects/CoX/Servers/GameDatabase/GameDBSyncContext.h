@@ -27,6 +27,8 @@ struct GetEntityResponseData;
 struct GetEntityByNameRequestData;
 struct GetEntityByNameResponseData;
 struct SetClientOptionsData;
+
+// Supergroups
 struct CreateNewSuperGroupRequestData;
 struct CreateNewSuperGroupResponseData;
 struct GetSuperGroupRequestData;
@@ -36,6 +38,20 @@ struct SuperGroupNameDuplicateResponseData;
 struct SuperGroupUpdateData;
 struct RemoveSuperGroupRequestData;
 
+// Emails
+struct EmailCreateRequestData;
+struct EmailCreateResponseData;
+struct EmailMarkAsReadData;
+struct EmailUpdateOnCharDeleteData;
+struct EmailRemoveData;
+struct GetEmailRequestData;
+struct GetEmailResponseData;
+struct GetEmailsRequestData;
+struct GetEmailsResponseData;
+struct GetEmailBySenderIdRequestData;
+struct GetEmailBySenderIdResponseData;
+struct FillEmailRecipientIdRequestData;
+struct FillEmailRecipientIdResponseData;
 }
 ///
 /// \brief The DbSyncContext class is used as thread local storage for database related objects
@@ -65,6 +81,16 @@ class GameDbSyncContext
     std::unique_ptr<QSqlQuery> m_prepared_fill;
     std::unique_ptr<QSqlQuery> m_prepared_costume_insert;
 
+    // email stuff
+    std::unique_ptr<QSqlQuery> m_prepared_email_insert;
+    std::unique_ptr<QSqlQuery> m_prepared_email_mark_as_read;
+    std::unique_ptr<QSqlQuery> m_prepared_email_update_sender_id_on_char_delete;
+    std::unique_ptr<QSqlQuery> m_prepared_email_update_recipient_id_on_char_delete;
+    std::unique_ptr<QSqlQuery> m_prepared_email_delete;
+    std::unique_ptr<QSqlQuery> m_prepared_email_select;
+    std::unique_ptr<QSqlQuery> m_prepared_email_select_all;
+    std::unique_ptr<QSqlQuery> m_prepared_email_fill_recipient_id;
+
     bool m_setup_complete = false;
 public:
     GameDbSyncContext();
@@ -81,11 +107,23 @@ public:
     bool getEntity(const  SEGSEvents::GetEntityRequestData&data, SEGSEvents::GetEntityResponseData &result);
     bool getEntityByName(const SEGSEvents::GetEntityByNameRequestData &data, SEGSEvents::GetEntityByNameResponseData &result);
     bool updateClientOptions(const SEGSEvents::SetClientOptionsData &data);
+
+    // Supergroups
     bool createNewSuperGroup(const  SEGSEvents::CreateNewSuperGroupRequestData &data, SEGSEvents::CreateNewSuperGroupResponseData &result);
     bool getSuperGroup(const SEGSEvents::GetSuperGroupRequestData &data,SEGSEvents::GetSuperGroupResponseData &result);
     bool checkNameClash(const SEGSEvents::SuperGroupNameDuplicateRequestData &data,SEGSEvents::SuperGroupNameDuplicateResponseData &result);
     bool performUpdate(const SEGSEvents::SuperGroupUpdateData &data);
     bool removeSuperGroup(const SEGSEvents::RemoveSuperGroupRequestData &data);
+
+    // email stuff
+    bool createEmail(const SEGSEvents::EmailCreateRequestData &data, SEGSEvents::EmailCreateResponseData &result);
+    bool markEmailAsRead(const SEGSEvents::EmailMarkAsReadData &data);
+    bool updateEmailOnCharDelete(const SEGSEvents::EmailUpdateOnCharDeleteData &data);
+    bool deleteEmail(const SEGSEvents::EmailRemoveData &data);
+    bool getEmail(const SEGSEvents::GetEmailRequestData &data, SEGSEvents::GetEmailResponseData &result);
+    bool getEmails(const SEGSEvents::GetEmailsRequestData &data, SEGSEvents::GetEmailsResponseData &result);
+    bool fillEmailRecipientId(const SEGSEvents::FillEmailRecipientIdRequestData &data, SEGSEvents::FillEmailRecipientIdResponseData &result);
+
 private:
     int64_t getDbVersion(QSqlDatabase &);
 };
