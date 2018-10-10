@@ -226,8 +226,8 @@ void Character::GetCharBuildInfo(BitStream &src)
 
     // Now that character is created. Finalize level and update hp and end
     finalizeLevel();
-    setHP(*this); // set max hp
-    setEnd(*this); // set max end
+    setMaxHP(*this); // set max hp
+    setMaxEnd(*this); // set max end
 
     // This must come after finalize
     addStartingInspirations(starting_insps);      // resurgence and phenomenal_luck

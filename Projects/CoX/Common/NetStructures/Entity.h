@@ -13,6 +13,7 @@
 #include "Powers.h"
 #include "StateInterpolator.h"
 #include "Team.h"
+#include "Common/GameData/ClientStates.h"
 #include "Common/GameData/entitydata_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
 #include "Common/GameData/seq_definitions.h"
@@ -247,7 +248,7 @@ public:
         std::vector<NetFx>  m_net_fx;
         std::vector<TriggeredMove> m_triggered_moves;
         SeqBitSet           m_seq_state;                    // Should be part of SeqState
-        int                 m_state_mode            = 0;
+        ClientStates        m_state_mode            = ClientStates::SIMPLE;
         bool                m_has_state_mode        = false;
         bool                m_seq_update            = false;
         int                 m_seq_move_idx          = 0;
@@ -340,3 +341,4 @@ void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
 void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);
 extern void abortLogout(Entity *e);
+void revivePlayer(Entity &e, ReviveLevel lvl);
