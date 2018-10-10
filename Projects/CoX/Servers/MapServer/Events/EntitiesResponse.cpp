@@ -16,6 +16,7 @@
 #include "NetStructures/Entity.h"
 #include "NetStructures/Character.h"
 #include "NetStructures/CharacterHelpers.h"
+#include "NetStructures/Movement.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/map_definitions.h"
 #include "MapClientSession.h"
@@ -35,6 +36,7 @@
 using namespace SEGSEvents;
 
 namespace  {
+
 struct SurfaceParams
 {
     float traction;
@@ -57,6 +59,7 @@ void storeGroupDyn(const EntitiesResponse &/*src*/,BitStream &bs)
     bs.StorePackedBits(1,num_graph_nodes_changed);
     if(num_graph_nodes_changed==0)
         return;
+
     if(num_graph_nodes_changed>0)
     {
         for(uint32_t i=0; i<num_graph_nodes_changed; ++i)
@@ -140,7 +143,6 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
 //                GUI
 void sendChatSettings(const GUISettings &gui,BitStream &bs)
 {
-    //int i;
     bs.StoreFloat(gui.m_chat_divider_pos); // chat divider position
     bs.StorePackedBits(1,gui.m_chat_top_flags); // bitmask of channels (top window )
     bs.StorePackedBits(1,gui.m_chat_bottom_flags); // bitmask of channels (bottom )

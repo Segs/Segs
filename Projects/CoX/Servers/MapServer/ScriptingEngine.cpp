@@ -215,7 +215,6 @@ void ScriptingEngine::registerTypes()
             msg = "Awarding Enhancement '" + name + "' to " + cl->m_ent->name();
 
             addEnhancementByName(cd, name, level);
-            cd.m_powers_updated = true;
 
             QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
             sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -261,7 +260,6 @@ void ScriptingEngine::registerTypes()
             msg = "Awarding Inspiration '" + val + "' to " + cl->m_ent->name();
 
             addInspirationByName(cd, val);
-            cd.m_powers_updated = true;
 
             // NOTE: floating message shows no message here, but plays the awarding insp sound!
             QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();

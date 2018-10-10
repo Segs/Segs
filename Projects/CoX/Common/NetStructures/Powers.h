@@ -32,6 +32,21 @@ enum class TrayItemType : uint32_t
     Count                   = 7,
 };
 
+struct PowerStance
+{
+    bool        has_stance  = false;
+    uint32_t    pset_idx    = 0;
+    uint32_t    pow_idx     = 0;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(has_stance);
+        ar(pset_idx);
+        ar(pow_idx);
+    }
+};
+
 struct EnhancemenSlotEntry
 {
     bool        m_set_in_power  = false;
@@ -358,7 +373,7 @@ void addInspirationToChar(CharacterData &cd, const CharacterInspiration& insp);
 int getNumberInspirations(const CharacterData &cd);
 int getMaxNumberInspirations(const CharacterData &cd);
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
-void useInspiration(Entity &ent, uint32_t col, uint32_t row);
+bool useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row);
 void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
 void dumpInspirations(CharacterData &cd);

@@ -84,7 +84,8 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const GameDataStore &da
     e.m_direction = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 
-const QString &Entity::name() const {
+const QString &Entity::name() const
+{
     return m_char->getName();
 }
 
@@ -119,15 +120,6 @@ void Entity::dump()
     if(m_type == EntType::PLAYER)
         m_player->dump();
     dumpFriends(*this);
-}
-
-void Entity::addPosUpdate(const PosUpdate & p) {
-    m_update_idx = (m_update_idx+1) % 64;
-    m_pos_updates[m_update_idx] = p;
-}
-
-void Entity::addInterp(const PosUpdate & p) {
-    interpResults.emplace_back(p);
 }
 
 Entity::Entity()
@@ -166,10 +158,10 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_player = std::make_unique<PlayerData>();
     e.m_player->reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.might_have_rare = e.m_rare_bits   = true;
+    e.m_update_anim = e.m_rare_update   = true;
 }
 
-void initializeNewNpcEntity(const GameDataStore &data,Entity &e,const Parse_NPC *src,int idx,int variant)
+void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant)
 {
     e.m_costume_type                    = AppearanceType::NpcCostume;
     e.m_destroyed                       = false;
@@ -183,6 +175,8 @@ void initializeNewNpcEntity(const GameDataStore &data,Entity &e,const Parse_NPC 
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = false;
+    e.m_faction_data.m_has_faction      = true;
+    e.m_faction_data.m_rank             = src->m_Rank;
     e.m_target_idx                      = 0;
     e.m_assist_target_idx               = 0;
 
@@ -190,7 +184,8 @@ void initializeNewNpcEntity(const GameDataStore &data,Entity &e,const Parse_NPC 
     e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
     e.m_player.reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.might_have_rare = e.m_rare_bits   = true;
+    e.m_update_anim = e.m_rare_update   = true;
+    e.m_char->m_char_data.m_level       = src->m_Level;
 }
 
 void markEntityForDbStore(Entity *e, DbStoreFlags f)
@@ -203,9 +198,4 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
     e->m_db_store_flags &= ~uint32_t(f);
 }
 
-void forcePosition(Entity &e, glm::vec3 pos)
-{
-    e.m_entity_data.m_pos = pos;
-    e.m_full_update_count = 10;
-}
 //! @}

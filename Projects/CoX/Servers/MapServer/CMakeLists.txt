@@ -76,6 +76,7 @@ SET(target_INCLUDE
     Events/PowerSystemEvents.h
     Events/SaveClientOptions.h
     Events/SceneEvent.h
+    Events/SendStance.h
     Events/SetClientState.h
     Events/Shortcuts.h
     Events/SidekickOffer.h
