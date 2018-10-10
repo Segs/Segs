@@ -222,7 +222,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"contactdlg", "cdlg"}, "Test ContactDialog. Sends contact dialog with responses to server", cmdHandler_SendContactDialog, 9},
     {{"contactdlgyesno", "cdlg2"}, "Test ContactDialogYesNoOk. Sends contact dialog with yes/no response to server", cmdHandler_SendContactDialogYesNoOk, 9},
     {{"setwaypoint"}, "Test SendWaypoint. Send waypoint to client", cmdHandler_SendWaypoint, 9},
-    {{"setstatemode"}, "Test SendWaypoint. Send waypoint to client", cmdHandler_SetStateMode, 9},
+    {{"setstatemode"}, "Send StateMode. Send StateMode to client", cmdHandler_SetStateMode, 9},
     {{"revive"}, "Revive Self or Target Player", cmdHandler_Revive, 9},
 
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
