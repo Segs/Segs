@@ -15,6 +15,7 @@
 #include "MapServer.h"
 #include "MapInstance.h"
 #include "GameData/GameDataStore.h"
+#include "GameData/ClientStates.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/power_definitions.h"
 #include "NetStructures/CharacterHelpers.h"
@@ -47,7 +48,8 @@ glm::vec3   getSpeed(const Entity &e) { return e.m_spd; }
 float       getBackupSpd(const Entity &e) { return e.m_backup_spd; }
 float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
 uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
-Destination getCurrentDestination(const Entity &e) { return e.m_cur_destination; }
+Destination     getCurrentDestination(const Entity &e) { return e.m_cur_destination; }
+ClientStates    getStateMode(const Entity &e) { return e.m_state_mode; }
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
@@ -139,6 +141,13 @@ void setCurrentDestination(Entity &e, int point_idx, glm::vec3 location)
 {
     e.m_cur_destination.point_idx = point_idx;
     e.m_cur_destination.location = location;
+}
+
+void setStateMode(Entity &e, ClientStates state)
+{
+    e.m_rare_update = true; // this must also be true for statemode to send
+    e.m_has_state_mode = true;
+    e.m_state_mode = state;
 }
 
 // For live debugging
@@ -296,11 +305,6 @@ void sendServerMOTD(MapClientSession *tgt)
         qDebug() << errormsg;
         sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, *tgt);
     }
-}
-
-void on_awaiting_dead_no_gurney_test(MapClientSession &session)
-{
-    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
 }
 
 void sendEmailHeaders(MapClientSession &sess)
@@ -472,10 +476,10 @@ void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000)
     src.addCommand<TimeUpdate>(sec_since_jan_1_2000);
 }
 
-void sendClientState(MapClientSession &ent, ClientStates client_state)
+void sendClientState(MapClientSession &sess, ClientStates client_state)
 {
-    qCDebug(logSlashCommand) << "Sending ClientState:" << QString::number(client_state);
-    ent.addCommand<SetClientState>(client_state);
+    qCDebug(logSlashCommand) << "Sending ClientState:" << uint8_t(client_state);
+    sess.addCommand<SetClientState>(client_state);
 }
 
 void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name)
@@ -660,33 +664,10 @@ void sendStance(MapClientSession &src, PowerStance stance)
     src.addCommand<SendStance>(stance);
 }
 
-
-/*
- * sendEmail Wrappers for providing access to Email Database
- */
-void sendEmailHeaders(Entity *e)
+void sendDeadNoGurney(MapClientSession &sess)
 {
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
-
-    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
-}
-
-void readEmailMessage(Entity *e, const int id){
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
-
-    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
+    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    sess.addCommand<DeadNoGurney>();
 }
 
 

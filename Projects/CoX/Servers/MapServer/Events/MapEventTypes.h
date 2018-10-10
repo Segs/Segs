@@ -117,6 +117,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evUnqueueAll                 ,232) // Click on another entity or Clicking 'z'
     EVENT_DECL(MapEventTypes, evAbortQueuedPower           ,233) // Clicking 'z'
     EVENT_DECL(MapEventTypes, evMoveInspiration            ,234)
+    EVENT_DECL(MapEventTypes, evDeadNoGurneyOK             ,235) // player click OK on death dialog
     EVENT_DECL(MapEventTypes, evChangeStance               ,236)
     EVENT_DECL(MapEventTypes, evTargetChatChannelSelected  ,237) // Change chat type using the letters in the chat window 'l, b, g, sg, r, f"
     EVENT_DECL(MapEventTypes, evChatReconfigure            ,238)

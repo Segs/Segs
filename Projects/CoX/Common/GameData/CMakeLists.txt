@@ -81,6 +81,7 @@ set(GAMEDATA_SRC
     GameDataStore.h
     NpcStore.cpp
     NpcStore.h
+    ClientStates.h
 
     #TODO: move this to Components Library
     CoXHash.cpp

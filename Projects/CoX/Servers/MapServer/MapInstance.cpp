@@ -506,6 +506,9 @@ void MapInstance::dispatch( Event *ev )
         case evAwaitingDeadNoGurney:
             on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
             break;
+        case evDeadNoGurneyOK:
+            on_dead_no_gurney_ok(static_cast<DeadNoGurneyOK *>(ev));
+            break;
         case evBrowserClose:
             on_browser_close(static_cast<BrowserClose *>(ev));
             break;
@@ -943,8 +946,8 @@ void MapInstance::on_timeout(Timeout *ev)
     }
 }
 
-void MapInstance::sendState() {
-
+void MapInstance::sendState()
+{
     if(m_session_store.num_sessions()==0)
         return;
 
@@ -2417,7 +2420,31 @@ void MapInstance::on_recv_new_power(RecvNewPower *ev)
 void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received AwaitingDeadNoGurney";
+
+    // TODO: Check if disablegurney
+    /*
+    setStateMode(*session.m_ent, ClientStates::AWAITING_GURNEY_XFER);
+    sendClientState(session, ClientStates::AWAITING_GURNEY_XFER);
+    sendDeadNoGurney(session);
+    */
+    // otherwise
+    // Set statemode to Resurrect
+    setStateMode(*session.m_ent, ClientStates::RESURRECT);
+    // TODO: spawn in hospital, resurrect animations, "summoning sickness"
+    revivePlayer(*session.m_ent, ReviveLevel::FULL);
+}
+
+void MapInstance::on_dead_no_gurney_ok(DeadNoGurneyOK *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DeadNoGurneyOK";
+
+    // Set statemode to Ressurrect
+    setStateMode(*session.m_ent, ClientStates::RESURRECT);
+    revivePlayer(*session.m_ent, ReviveLevel::FULL);
+
+    // TODO: Spawn where you go with no gurneys (no hospitals)
 }
 
 void MapInstance::on_browser_close(BrowserClose *ev)

@@ -198,4 +198,40 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
     e->m_db_store_flags &= ~uint32_t(f);
 }
 
+void revivePlayer(Entity &e, ReviveLevel lvl)
+{
+    float cur_hp = getHP(*e.m_char);
+    if(e.m_type != EntType::PLAYER && cur_hp != 0)
+        return;
+
+    switch(lvl)
+    {
+    case ReviveLevel::AWAKEN:
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.25);
+        break;
+    case ReviveLevel::BOUNCE_BACK:
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.5);
+        break;
+    case ReviveLevel::RESTORATION:
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.75);
+        break;
+    case ReviveLevel::IMMORTAL_RECOVERY:
+        setMaxHP(*e.m_char);
+        break;
+    case ReviveLevel::REGEN_REVIVE:
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.75);
+        setEnd(*e.m_char, getMaxEnd(*e.m_char)*0.5);
+        break;
+    case ReviveLevel::FULL:
+    default:
+        // Set HP and End to Max
+        setMaxHP(*e.m_char);
+        setMaxEnd(*e.m_char);
+        break;
+    }
+
+    // reset state to simple
+    setStateMode(e, ClientStates::SIMPLE);
+}
+
 //! @}
