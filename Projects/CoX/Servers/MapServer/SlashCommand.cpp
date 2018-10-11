@@ -13,11 +13,12 @@
 #include "SlashCommand.h"
 
 #include "DataHelpers.h"
-#include "Events/ClientStates.h"
 #include "Events/GameCommandList.h"
 #include "Events/MapXferWait.h"
+#include "GameData/ClientStates.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
+#include "GameData/map_definitions.h"
 #include "Logging.h"
 #include "MapLink.h"
 #include "MapInstance.h"
@@ -27,7 +28,6 @@
 #include "NetStructures/LFG.h"
 #include "NetStructures/Trade.h"
 #include "Settings.h"
-#include "Common/GameData/map_definitions.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFile>
@@ -113,6 +113,8 @@ void cmdHandler_SendTimeUpdate(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendContactDialog(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendContactDialogYesNoOk(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetStateMode(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Revive(const QString &cmd, MapClientSession &sess);
 
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
@@ -220,6 +222,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"contactdlg", "cdlg"}, "Test ContactDialog. Sends contact dialog with responses to server", cmdHandler_SendContactDialog, 9},
     {{"contactdlgyesno", "cdlg2"}, "Test ContactDialogYesNoOk. Sends contact dialog with yes/no response to server", cmdHandler_SendContactDialogYesNoOk, 9},
     {{"setwaypoint"}, "Test SendWaypoint. Send waypoint to client", cmdHandler_SendWaypoint, 9},
+    {{"setstatemode"}, "Send StateMode. Send StateMode to client", cmdHandler_SetStateMode, 9},
+    {{"revive"}, "Revive Self or Target Player", cmdHandler_Revive, 9},
 
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
@@ -476,7 +480,8 @@ void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess)
 
     setHP(*sess.m_ent->m_char, attrib);
 
-    QString msg = QString("Setting HP to: %1 / %2").arg(attrib).arg(sess.m_ent->m_char->m_max_attribs.m_HitPoints);
+    QString msg = QString("Setting HP to: %1 / %2")
+            .arg(attrib).arg(getMaxHP(*sess.m_ent->m_char));
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
@@ -1075,9 +1080,10 @@ void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
     sendFaceLocation(*sess.m_ent, loc);
 }
 
-void cmdHandler_TestDeadNoGurney(const QString &/*cmd*/, MapClientSession &sess)
+void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)
 {
-    on_awaiting_dead_no_gurney_test(sess);
+    qCDebug(logSlashCommand) << "Sending DeadNoGurney:" << cmd;
+    sendDeadNoGurney(sess);
 }
 
 void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess)
@@ -1200,6 +1206,55 @@ void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess)
     sendWaypoint(sess, idx, loc);
     setCurrentDestination(*sess.m_ent, idx, loc);
     sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+}
+
+void cmdHandler_SetStateMode(const QString &cmd, MapClientSession &sess)
+{
+    uint32_t val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+
+    sess.m_ent->m_rare_update = true; // this must also be true for statemode to send
+    sess.m_ent->m_has_state_mode = true;
+    sess.m_ent->m_state_mode = static_cast<ClientStates>(val);
+
+    QString msg = "Set StateMode to: " + QString::number(val);
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_Revive(const QString &cmd, MapClientSession &sess)
+{
+    Entity *tgt = nullptr;
+    QString msg = "Revive format is '/revive {lvl} {optional: target_name}'";
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if (parts.size() < 2)
+    {
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        return;
+    }
+
+    int revive_lvl = parts[1].toUInt();
+    if(parts.size() > 2)
+    {
+        QString name = parts[2].toString();
+        tgt = getEntity(&sess, name); // get Entity by name
+        if (tgt == nullptr)
+        {
+            msg = QString("Revive target %1 cannot be found. Targeting Self.").arg(name);
+            qCDebug(logSlashCommand) << msg;
+            sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+            tgt = sess.m_ent;
+        }
+    }
+    else
+        tgt = sess.m_ent;
+
+    revivePlayer(*tgt, static_cast<ReviveLevel>(revive_lvl));
+
+    msg = "Reviving " + tgt->name();
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
 

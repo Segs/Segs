@@ -27,6 +27,7 @@ namespace
         "CombineEnhancementsReq",
         "ConsoleCommand",
         "CookieRequest",
+        "DeadNoGurneyOK",
         "DescriptionAndBattleCry",
         "DialogButton",
         "DoorMessage",

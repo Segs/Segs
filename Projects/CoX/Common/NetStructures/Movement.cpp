@@ -28,12 +28,21 @@
 static glm::mat3    s_identity_matrix = glm::mat3(1.0f);
 static int          s_landed_on_ground = 0;
 //static CollInfo     s_last_surf;
+static int          s_reverse_control_dir[6] = {
+    BinaryControl::BACKWARD,
+    BinaryControl::FORWARD,
+    BinaryControl::RIGHT,
+    BinaryControl::LEFT,
+    BinaryControl::DOWN,
+    BinaryControl::UP,
+};
 
 SurfaceParams g_world_surf_params[2] = {
     // traction, friction, bounce, gravity, max_speed
     { 1.00f, 0.45f, 0.01f, 0.065f, 1.00f }, // ground; from client
     { 0.02f, 0.01f, 0.00f, 0.065f, 1.00f }  // air; from client
 };
+
 
 // Private Methods
 void entWorldCollide(Entity *ent, SurfaceParams *surface_params);
@@ -102,7 +111,7 @@ void calculateKeypressTime(Entity *ent, InputState *controls, std::chrono::stead
             continue;
         }
 
-        if(!controls->m_control_bits[ctrl_id] || controls->m_control_bits[reverse_control_direction[ctrl_id]]) // not pressed or pressed both direction at once
+        if(!controls->m_control_bits[ctrl_id] || controls->m_control_bits[s_reverse_control_dir[ctrl_id]]) // not pressed or pressed both direction at once
             continue;
 
         press_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(cur_time - controls->m_keypress_start[ctrl_id]).count();
@@ -145,7 +154,7 @@ void resetKeypressTime(InputState *controls, std::chrono::steady_clock::time_poi
     for (int i = 0; i <= BinaryControl::LAST_BINARY_VALUE; ++i )
     {
         // reset total time if button is released, or reverse button is pressed
-        if ( !controls->m_control_bits[i] || controls->m_control_bits[reverse_control_direction[i]] )
+        if ( !controls->m_control_bits[i] || controls->m_control_bits[s_reverse_control_dir[i]] )
             controls->m_keypress_time[i] = 0;
         controls->m_keypress_start[i] = curtime;
     }

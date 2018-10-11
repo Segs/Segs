@@ -197,22 +197,43 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     }
 }
 
-void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
+bool World::isPlayerDead(Entity *e)
 {
-    physicsStep(e,dT.msec());
-    effectsStep(e,dT.msec());
-    checkPowerTimers(e, dT.msec());
+    if(e->m_type == EntType::PLAYER
+            && getHP(*e->m_char) == 0.0)
+    {
+        setStateMode(*e, ClientStates::DEAD);
+        return true;
+    }
 
-    // recover endurance and health; for now on players only
+    return false;
+}
+
+void World::regenHealthEnd(Entity *e, uint32_t msec)
+{
+    // for now on Players only
     if(e->m_type == EntType::PLAYER)
     {
         float hp = getHP(*e->m_char);
         float end = getEnd(*e->m_char);
-        float regeneration = hp * (1.0/20.0) * dT.msec()/1000/12;
-        float recovery = end * (1.0/15.0) * dT.msec()/1000/12;
+
+        float regeneration = hp * (1.0/20.0) * msec/1000/12;
+        float recovery = end * (1.0/15.0) * msec/1000/12;
         setHP(*e->m_char, hp + regeneration);
         setEnd(*e->m_char, end + recovery);
     }
+}
+
+void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
+{
+    physicsStep(e, dT.msec());
+    effectsStep(e, dT.msec());
+    checkPowerTimers(e, dT.msec());
+
+    // check death, set clienstate if dead, and
+    // if alive, recover endurance and health
+    if(!isPlayerDead(e))
+        regenHealthEnd(e, dT.msec());
 
     if(e->m_is_logging_out)
     {

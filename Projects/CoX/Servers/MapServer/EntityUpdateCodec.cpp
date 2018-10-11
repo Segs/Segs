@@ -88,7 +88,7 @@ void sendStateMode(const Entity &src, BitStream &bs)
     bs.StoreBits(1,src.m_has_state_mode);
     PUTDEBUG("before sendStateMode 2");
     if(src.m_has_state_mode)
-        storePackedBitsConditional(bs, 3, src.m_state_mode);
+        storePackedBitsConditional(bs, 3, uint32_t(src.m_state_mode));
 
     PUTDEBUG("after sendStateMode");
 }

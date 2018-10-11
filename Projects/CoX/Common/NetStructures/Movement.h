@@ -35,15 +35,6 @@ struct SurfaceParams
  */
 extern SurfaceParams g_world_surf_params[2];
 
-static int reverse_control_direction[6] = {
-    BinaryControl::BACKWARD,
-    BinaryControl::FORWARD,
-    BinaryControl::RIGHT,
-    BinaryControl::LEFT,
-    BinaryControl::DOWN,
-    BinaryControl::UP,
-};
-
 enum CollFlags // TODO: Move to Collision file
 {
     COLL_DISTFROMSTART      = 0x1,

@@ -15,6 +15,7 @@
 #include "MapServer.h"
 #include "MapInstance.h"
 #include "GameData/GameDataStore.h"
+#include "GameData/ClientStates.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/power_definitions.h"
 #include "NetStructures/CharacterHelpers.h"
@@ -47,7 +48,8 @@ glm::vec3   getSpeed(const Entity &e) { return e.m_motion_state.m_speed; }
 float       getBackupSpd(const Entity &e) { return e.m_motion_state.m_backup_spd; }
 float       getJumpHeight(const Entity &e) { return e.m_motion_state.m_jump_height; }
 uint8_t     getUpdateId(const Entity &e) { return e.m_motion_state.m_motion_state_id; }
-Destination getCurrentDestination(const Entity &e) { return e.m_cur_destination; }
+Destination     getCurrentDestination(const Entity &e) { return e.m_cur_destination; }
+ClientStates    getStateMode(const Entity &e) { return e.m_state_mode; }
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
@@ -139,6 +141,13 @@ void setCurrentDestination(Entity &e, int point_idx, glm::vec3 location)
 {
     e.m_cur_destination.point_idx = point_idx;
     e.m_cur_destination.location = location;
+}
+
+void setStateMode(Entity &e, ClientStates state)
+{
+    e.m_rare_update = true; // this must also be true for statemode to send
+    e.m_has_state_mode = true;
+    e.m_state_mode = state;
 }
 
 // For live debugging
@@ -338,6 +347,12 @@ void positionTest(MapClientSession *tgt)
     sendInfoMessage(MessageChannel::DEBUG_INFO, output, *tgt);
 }
 
+bool isFriendOnline(Entity &src, uint32_t db_id)
+{
+    // TODO: src is needed for mapclient
+    return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
+}
+
 void setInterpolationSettings(MapClientSession *src, const bool active, const uint8_t level, const uint8_t bits)
 {
     g_interpolating = active;
@@ -353,11 +368,10 @@ void setInterpolationSettings(MapClientSession *src, const bool active, const ui
     qCDebug(logPosition) << output;
 }
 
-void on_awaiting_dead_no_gurney_test(MapClientSession &session)
-{
-    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
-}
 
+/*
+ * sendEmail Wrappers for providing access to Email Database
+ */
 void sendEmailHeaders(MapClientSession &sess)
 {
     if(!sess.m_ent->m_client)
@@ -420,12 +434,6 @@ void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id)
 
     EmailDeleteMessage* msgToHandler = new EmailDeleteMessage({email_id}, sess.link()->session_token());
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
-}
-
-bool isFriendOnline(Entity &src, uint32_t db_id)
-{
-    // TODO: src is needed for mapclient
-    return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
 }
 
 
@@ -515,10 +523,10 @@ void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000)
     src.addCommand<TimeUpdate>(sec_since_jan_1_2000);
 }
 
-void sendClientState(MapClientSession &ent, ClientStates client_state)
+void sendClientState(MapClientSession &sess, ClientStates client_state)
 {
-    qCDebug(logSlashCommand) << "Sending ClientState:" << QString::number(client_state);
-    ent.addCommand<SetClientState>(client_state);
+    qCDebug(logSlashCommand) << "Sending ClientState:" << uint8_t(client_state);
+    sess.addCommand<SetClientState>(client_state);
 }
 
 void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name)
@@ -703,34 +711,10 @@ void sendStance(MapClientSession &src, PowerStance stance)
     src.addCommand<SendStance>(stance);
 }
 
-
-/*
- * sendEmail Wrappers for providing access to Email Database
- */
-void sendEmailHeaders(Entity *e)
+void sendDeadNoGurney(MapClientSession &sess)
 {
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
-
-    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
-}
-
-void readEmailMessage(Entity *e, const int id)
-{
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
-
-    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
+    qCDebug(logSlashCommand) << "Sending DeadNoGurney";
+    sess.addCommand<DeadNoGurney>();
 }
 
 
