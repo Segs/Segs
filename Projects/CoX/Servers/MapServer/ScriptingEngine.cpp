@@ -201,53 +201,16 @@ void ScriptingEngine::registerTypes()
 
     m_private->m_lua.new_usertype<Character>("Character",
     "giveDebt", giveDebt,
-    "giveEnhancement",[](MapClientSession *cl, sol::as_table_t<std::vector<std::string>> enhancement)
-    {
-        CharacterData &cd = cl->m_ent->m_char->m_char_data;
-        QString name;
-        uint32_t level;
-        QString msg = "You do not have room for any more enhancements!";
-        const auto& strings = enhancement.source;
-
-        int count = 0;
-        for (const auto& s : strings) {
-            if(count == 0){
-
-                name = QString::fromStdString(s);
-            }
-            else
-            {
-                level = QString::fromStdString(s).toInt();
-            }
-            count++;
-        }
-
-        if(getNumberEnhancements(cd) < 10)
-        {
-            msg = "Awarding Enhancement '" + name + "' to " + cl->m_ent->name();
-            addEnhancementByName(cd, name, level);
-            cd.m_has_updated_powers = true;
-
-            QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
-            sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-        }
-        qCDebug(logSlashCommand).noquote() << msg;
-        sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
-    },
+    "giveEnhancement", giveEnhancement,
     "giveEnd", giveEnd,
     "giveHp", giveHp,
     "giveInf",giveInf,
     "giveInsp", giveInsp,
     "giveXp", giveXp,
     "sendFloatingDamage",sendFloatingNumbers,
-    "faceEntity",[](MapClientSession *cl, int target)
-    {
-        sendFaceEntity(*cl->m_ent, target);
-    },
-    "faceLocation",  [](MapClientSession *cl, glm::vec3 loc)
-    {
-        sendFaceLocation(*cl->m_ent, loc);
-    }
+    "faceEntity",sendFaceEntity,
+    "faceLocation",  sendFaceLocation
+
     );
 
     m_private->m_lua.new_usertype<Entity>( "Entity",

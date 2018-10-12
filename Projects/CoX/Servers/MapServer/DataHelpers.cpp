@@ -998,13 +998,32 @@ void addNpc(MapClientSession &cl, const char* name, glm::vec3 *loc, int variatio
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc->x).arg(loc->y).arg(loc->z), cl);
 }
 
+void giveEnhancement(MapClientSession *cl, const char* e_name, int e_level)
+{
+    CharacterData &cd = cl->m_ent->m_char->m_char_data;
+    QString name = QString::fromUtf8(e_name);
+    uint32_t level = e_level;
+    QString msg = "You do not have room for any more enhancements!";
+
+    if(getNumberEnhancements(cd) < 10)
+    {
+        msg = "Awarding Enhancement '" + name + "' to " + cl->m_ent->name();
+        addEnhancementByName(cd, name, level);
+
+        QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
+        sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    }
+    qCDebug(logScripts()).noquote() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+}
+
 void giveDebt(MapClientSession *cl, int debt)
 {
     uint32_t current_debt = getDebt(*cl->m_ent->m_char);
     uint32_t debt_to_give = current_debt + debt;
     setDebt(*cl->m_ent->m_char, debt_to_give);
     QString msg = "Setting Debt to " + QString::number(debt_to_give);
-    qCDebug(logSlashCommand) << msg;
+    qCDebug(logScripts) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
 }
 
@@ -1014,7 +1033,7 @@ void giveEnd(MapClientSession *cl, float end)
     float end_to_set = current_end + end;
     setEnd(*cl->m_ent->m_char, end_to_set);
     QString msg = QString("Setting Endurance to: %1").arg(end_to_set);
-    qCDebug(logSlashCommand) << msg;
+    qCDebug(logScripts) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
 }
 
@@ -1024,7 +1043,7 @@ void giveHp(MapClientSession *cl, float hp)
     float hp_to_set = current_hp + hp;
     setHP(*cl->m_ent->m_char, hp_to_set);
     QString msg = QString("Setting HP to: %1").arg(hp_to_set);
-    qCDebug(logSlashCommand) << msg;
+    qCDebug(logScripts) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
 }
 
@@ -1047,14 +1066,13 @@ void giveInsp(MapClientSession *cl, const char *value)
         msg = "Awarding Inspiration '" + val + "' to " + cl->m_ent->name();
 
         addInspirationByName(cd, val);
-        cd.m_has_updated_powers = true;
 
         // NOTE: floating message shows no message here, but plays the awarding insp sound!
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
         sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
     }
 
-    qCDebug(logSlashCommand).noquote() << msg;
+    qCDebug(logScripts).noquote() << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
 }
 
@@ -1098,7 +1116,7 @@ void giveXp(MapClientSession *cl, int xp)
         cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, FloatingInfoMsg.find(FloatingMsg_Leveled).value(), FloatingInfo_Attention , 4.0);
         msg += " and LVL to " + QString::number(new_lvl);
     }
-    qCDebug(logSlashCommand) << msg;
+    qCDebug(logScripts) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
 }
 
