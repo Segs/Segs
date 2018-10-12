@@ -28,6 +28,7 @@
 #include "GameData/playerdata_serializers.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "Logging.h"
+#include "Servers/GameServer/EmailEvents.h"
 #include "GameServer/GameEvents.h"
 #include "MapEvents.h"
 #include "MapManager.h"
@@ -224,6 +225,7 @@ bool MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t 
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) MapInstance: ServerEndpoint::open\n"),false);
 
     qInfo() << "Spun up MapInstance" << m_instance_id << "for MapServer" << m_owner_id;
+    HandlerLocator::setMapInstance_Handler(m_owner_id, m_instance_id, this);
 
     return true;
 }
@@ -273,7 +275,6 @@ void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMes
 
 void MapInstance::reap_stale_links()
 {
-
     ACE_Time_Value              time_now = ACE_OS::gettimeofday();
     EventProcessor *            tgt      = HandlerLocator::getGame_Handler(m_game_server_id);
 
@@ -357,9 +358,6 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evChangeStance:
             on_change_stance(static_cast<ChangeStance *>(ev));
-            break;
-        case evSendStance:
-            on_send_stance(static_cast<SendStance *>(ev));
             break;
         case evSetDestination:
             on_set_destination(static_cast<SetDestination *>(ev));
@@ -448,6 +446,21 @@ void MapInstance::dispatch( Event *ev )
         case evResetKeybinds:
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
+        case evEmailHeaderResponse:
+            on_email_header_response(static_cast<EmailHeaderResponse *>(ev));
+            break;
+        case evEmailHeadersToClientMessage:
+            on_email_headers_to_client(static_cast<EmailHeadersToClientMessage *>(ev));
+            break;
+        case evEmailReadResponse:
+            on_email_read_response(static_cast<EmailReadResponse *>(ev));
+            break;
+        case evEmailWasReadByRecipientMessage:
+            on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev));
+            break;
+        case evEmailSendErrorMessage:
+            on_email_send_error(static_cast<EmailSendErrorMessage *>(ev));
+            break;
         case evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));
             break;
@@ -492,6 +505,9 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evAwaitingDeadNoGurney:
             on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
+            break;
+        case evDeadNoGurneyOK:
+            on_dead_no_gurney_ok(static_cast<DeadNoGurneyOK *>(ev));
             break;
         case evBrowserClose:
             on_browser_close(static_cast<BrowserClose *>(ev));
@@ -606,7 +622,7 @@ void MapInstance::on_link_lost(Event *ev)
     //todo: notify all clients about entity removal
 
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.m_ent->m_char->m_db_id},0));
 
     // one last character update for the disconnecting entity
     send_character_update(ent);
@@ -628,12 +644,13 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     assert(ent);
         //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
-            ->putq(new ClientDisconnectedMessage({session_token,session.auth_id()},0));
+            ->putq(new ClientDisconnectedMessage({session_token,session.m_ent->m_char->m_db_id},0));
 
     removeLFG(*ent);
     leaveTeam(*ent);
-    // one last character update for the disconnecting entity
+    updateLastOnline(*ent->m_char);
 
+    // one last character update for the disconnecting entity
     send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
 
@@ -763,7 +780,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     // Tell our game server we've got the client
     EventProcessor *tgt = HandlerLocator::getGame_Handler(m_game_server_id);
     tgt->putq(new ClientConnectedMessage(
-        {ev->session_token(),m_owner_id,m_instance_id,map_session.auth_id()},0));
+        {ev->session_token(),m_owner_id,m_instance_id,map_session.m_ent->m_char->m_db_id},0));
 
     map_session.m_current_map->enqueue_client(&map_session);
     setMapIdx(*map_session.m_ent, index());
@@ -929,8 +946,8 @@ void MapInstance::on_timeout(Timeout *ev)
     }
 }
 
-void MapInstance::sendState() {
-
+void MapInstance::sendState()
+{
     if(m_session_store.num_sessions()==0)
         return;
 
@@ -2032,33 +2049,11 @@ void MapInstance::on_change_stance(ChangeStance * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    if(ev->enter_stance)
-    {
-        //session.m_ent->m_stance = &getPower(*session.m_ent, ev->pset_idx, ev->pow_idx);
-        qCWarning(logMapEvents) << "Unhandled change stance request" << session.m_ent->m_idx << ev->powerset_index
-                                << ev->power_index;
-    }
+    session.m_ent->m_stance = ev->m_stance;
+    if(ev->m_stance.has_stance)
+        qCDebug(logMapEvents) << "Change stance request" << session.m_ent->m_idx << ev->m_stance.pset_idx << ev->m_stance.pow_idx;
     else
-    {
-        session.m_ent->m_stance = nullptr;
-        qCWarning(logMapEvents) << "Unhandled exit stance request" << session.m_ent->m_idx;
-    }
-}
-
-void MapInstance::on_send_stance(SendStance * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    //ev->m_enter_stance = true;
-    //ev->m_pset_idx = session.m_ent->m_stance->m_power_tpl.m_pset_idx;
-    //ev->m_pow_idx = session.m_ent->m_stance->m_power_tpl.m_pow_idx;
-
-    qCWarning(logMapEvents) << "Unhandled send stance request";
-
-    if(ev->m_enter_stance)
-        qCWarning(logMapEvents) << "Entity" << session.m_ent->name() << "SendStance" << ev->m_pset_idx << ev->m_pow_idx;
-    else
-        qCWarning(logMapEvents) << "Entity" << session.m_ent->name() << "SendStance is zero";
+        qCDebug(logMapEvents) << "Exit stance request" << session.m_ent->m_idx;
 }
 
 void MapInstance::on_set_destination(SetDestination * ev)
@@ -2157,7 +2152,7 @@ void MapInstance::on_set_default_power(SetDefaultPower *ev)
     ptray->m_default_pset_idx = ev->powerset_idx;
     ptray->m_default_pow_idx = ev->power_idx;
 
-    qCWarning(logMapEvents) << "Set Default Power:" << ev->powerset_idx << ev->power_idx;
+    qCDebug(logMapEvents) << "Set Default Power:" << ev->powerset_idx << ev->power_idx;
 }
 
 void MapInstance::on_unset_default_power(UnsetDefaultPower *ev)
@@ -2169,7 +2164,7 @@ void MapInstance::on_unset_default_power(UnsetDefaultPower *ev)
     ptray->m_default_pset_idx = 0;
     ptray->m_default_pow_idx = 0;
 
-    qCWarning(logMapEvents) << "Unset Default Power.";
+    qCDebug(logMapEvents) << "Unset Default Power.";
 }
 
 void MapInstance::on_unqueue_all(UnqueueAll *ev)
@@ -2225,10 +2220,13 @@ void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     session.m_ent->m_has_input_on_timeframe = true;
-    useInspiration(*session.m_ent, ev->slot_idx, ev->row_idx);
+    bool success = useInspiration(*session.m_ent, ev->slot_idx, ev->row_idx);
+
+    if(!success)
+        return;
+
     QString contents = "Inspired!";
     sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-
     // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
 }
 
@@ -2424,7 +2422,31 @@ void MapInstance::on_recv_new_power(RecvNewPower *ev)
 void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received AwaitingDeadNoGurney";
+
+    // TODO: Check if disablegurney
+    /*
+    setStateMode(*session.m_ent, ClientStates::AWAITING_GURNEY_XFER);
+    sendClientState(session, ClientStates::AWAITING_GURNEY_XFER);
+    sendDeadNoGurney(session);
+    */
+    // otherwise
+    // Set statemode to Resurrect
+    setStateMode(*session.m_ent, ClientStates::RESURRECT);
+    // TODO: spawn in hospital, resurrect animations, "summoning sickness"
+    revivePlayer(*session.m_ent, ReviveLevel::FULL);
+}
+
+void MapInstance::on_dead_no_gurney_ok(DeadNoGurneyOK *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DeadNoGurneyOK";
+
+    // Set statemode to Ressurrect
+    setStateMode(*session.m_ent, ClientStates::RESURRECT);
+    revivePlayer(*session.m_ent, ReviveLevel::FULL);
+
+    // TODO: Spawn where you go with no gurneys (no hospitals)
 }
 
 void MapInstance::on_browser_close(BrowserClose *ev)
@@ -2512,6 +2534,7 @@ void MapInstance::on_update_entities()
     {
         Entity *e = sess->m_ent;
         send_character_update(e);
+        updateLastOnline(*e->m_char); // set this here, in case we disconnect unexpectedly
 
         /* at the moment we are forcing full character updates, so I'll leave this commented for now
 
@@ -2583,6 +2606,64 @@ void MapInstance::send_player_update(Entity *e)
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
 
+// EmailHandler will send this event here
+void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
+{
+    EmailHeaders *header = new EmailHeaders(
+                    ev->m_data.m_email_id,
+                    ev->m_data.m_sender_name,
+                    ev->m_data.m_subject,
+                    ev->m_data.m_timestamp);
+
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
+    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+}
+
+void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
+{
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
+
+    for (const auto &data : ev->m_data.m_email_headers)
+    {
+        EmailHeaders *header = new EmailHeaders(
+                    data.m_email_id,
+                    data.m_sender_name,
+                    data.m_subject,
+                    data.m_timestamp);
+        map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+    }
+
+    QString message = QString("You have %1 unread emails.").arg(ev->m_data.m_unread_emails_count);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, message, map_session);
+}
+
+void MapInstance::on_email_read_response(EmailReadResponse *ev)
+{    
+    EmailRead *email_read = new EmailRead(
+                ev->m_data.m_email_id,
+                ev->m_data.m_message,
+                ev->m_data.m_sender_name
+                );
+
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
+    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(email_read));
+}
+
+void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg)
+{
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg->m_data.m_message, map_session);
+
+    // this is sent from the reader back to the sender via EmailHandler
+    // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance
+}
+
+void MapInstance::on_email_send_error(EmailSendErrorMessage *msg)
+{
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg->m_data.m_error_message, map_session);
+}
+
 void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
 {
     MapClientSession& session = m_session_store.session_from_event(ev);
@@ -2594,6 +2675,5 @@ void MapInstance::on_trade_updated(TradeWasUpdatedMessage* ev)
     MapClientSession& session = m_session_store.session_from_event(ev);
     updateTrade(*session.m_ent, ev->m_info);
 }
-
 
 //! @}

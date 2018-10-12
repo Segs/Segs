@@ -227,6 +227,7 @@ void ScriptingEngine::registerTypes()
             msg = "Awarding Enhancement '" + name + "' to " + cl->m_ent->name();
             addEnhancementByName(cd, name, level);
             cd.m_has_updated_powers = true;
+
             QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
             sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
         }

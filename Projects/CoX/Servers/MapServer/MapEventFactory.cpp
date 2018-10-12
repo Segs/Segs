@@ -60,6 +60,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 7: return new InteractWithEntity;
         case 8: return new SwitchTray;
         case 9: return new EnterDoor;
+        case 10: return new AwaitingDeadNoGurney;
         case 11: return new SetDestination;
         case 14: return new WindowState;
         case 16: return new ChatDividerMoved;
@@ -78,6 +79,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 32: return new UnqueueAll;
         case 33: return new AbortQueuedPower;
         case 34: return new MoveInspiration;
+        case 35: return new DeadNoGurneyOK;
         case 36: return new ChangeStance;
         case 37: return new TargetChatChannelSelected;
         case 38: return new ChatReconfigure;
@@ -93,7 +95,6 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 54: return new TradeWasCancelledMessage;
         case 55: return new TradeWasUpdatedMessage;
         case 56: return new EntityInfoRequest;
-        case 57: return new SendStance;
         case 62: return new LocationVisited;
         case 64: return new SwitchViewPoint;
         case 65: return new SaveClientOptions;
